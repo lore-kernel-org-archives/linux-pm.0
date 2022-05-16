@@ -2,100 +2,143 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3464C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 16 May 2022 10:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA539C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 16 May 2022 11:11:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237910AbiEPKpL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 May 2022 06:45:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52662 "EHLO
+        id S242932AbiEPLLs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 May 2022 07:11:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242891AbiEPKpB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2022 06:45:01 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3327725280;
-        Mon, 16 May 2022 03:44:59 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id AB8D960F27;
-        Mon, 16 May 2022 10:44:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBA7DC34119;
-        Mon, 16 May 2022 10:44:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1652697898;
-        bh=8e86Bl8VYKJuozeVnXgHNviEIwU1zooEoIg8B9aysS8=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=XNsx9Lp0Uyr3ubMiRW1dnbg/fR0pDdvuXh+0oYQBEMrDDUk7iAiW7GbC58D/yK3RE
-         8umVVFbUErwYkcH5VZhcqI6Ao/CAv4o3Tw1+81cBW+guGBXn/TjW6grLmokZ5X4cs0
-         EBfhCSbEvwKRrtNDDv41BtzLuySfmEZ+CXplj4sSzALvc9548rBa0Yqo/IodbscYA0
-         WzFDgN7rAgWx/IsNO6OYBSy1wbc/oCJYoYlECO2QN1MM55/s6IsdY8vW1QBkM2QXmC
-         enrtrJs8SXiTewhml8IOKlqFjFT11gu7bYe5S9TVetdtpO0oq/vxS/pWK4gZCJe8jc
-         UKY0TS8MNdvtw==
-Message-ID: <874f08d9-e67e-f7f3-4d98-89bdb8333ce5@kernel.org>
-Date:   Mon, 16 May 2022 12:44:52 +0200
+        with ESMTP id S242922AbiEPLLo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2022 07:11:44 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9281B2AD3;
+        Mon, 16 May 2022 04:11:39 -0700 (PDT)
+X-UUID: 934a62a40a6d4404862cd3ab34257fb6-20220516
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:149a575f-bb4a-44f7-a1af-1bb4f419b3f7,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:2a19b09,CLOUDID:1914c0b9-9f46-4d76-a271-164488ed79f1,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
+        ,QS:0,BEC:nil
+X-UUID: 934a62a40a6d4404862cd3ab34257fb6-20220516
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 423380597; Mon, 16 May 2022 19:11:32 +0800
+Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Mon, 16 May 2022 19:11:32 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Mon, 16 May 2022 19:11:32 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 16 May 2022 19:11:32 +0800
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
+        <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
+        <matthias.bgg@gmail.com>
+CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
+        <hsinyi@google.com>, <khilman@baylibre.com>,
+        <angelogioacchino.delregno@collabora.com>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Rex-BC Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH v7 3/3] arm64: dts: mediatek: Add mediatek,cci property for MT8183 cpufreq
+Date:   Mon, 16 May 2022 19:11:30 +0800
+Message-ID: <20220516111130.13325-4-rex-bc.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220516111130.13325-1-rex-bc.chen@mediatek.com>
+References: <20220516111130.13325-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCHv2 4/6] thermal: exynos: fixed the efuse min/max value for
- exynos5422
-Content-Language: en-US
-To:     kernel test robot <lkp@intel.com>,
-        Anand Moon <linux.amoon@gmail.com>,
-        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org
-References: <20220515064126.1424-5-linux.amoon@gmail.com>
- <202205161820.8rHIcsvI-lkp@intel.com>
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-In-Reply-To: <202205161820.8rHIcsvI-lkp@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 16/05/2022 12:42, kernel test robot wrote:
-> Hi Anand,
-> 
-> Thank you for the patch! Perhaps something to improve:
-> 
-> [auto build test WARNING on ec7f49619d8ee13e108740c82f942cd401b989e9]
-> 
-> url:    https://github.com/intel-lab-lkp/linux/commits/Anand-Moon/Exynos-Thermal-code-inprovement/20220515-144336
-> base:   ec7f49619d8ee13e108740c82f942cd401b989e9
-> config: hexagon-randconfig-r033-20220516 (https://download.01.org/0day-ci/archive/20220516/202205161820.8rHIcsvI-lkp@intel.com/config)
-> compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 853fa8ee225edf2d0de94b0dcbd31bea916e825e)
-> reproduce (this is a W=1 build):
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # https://github.com/intel-lab-lkp/linux/commit/eb50b0c2100fabd6d09b87abd11f52c5295512e8
->         git remote add linux-review https://github.com/intel-lab-lkp/linux
->         git fetch --no-tags linux-review Anand-Moon/Exynos-Thermal-code-inprovement/20220515-144336
->         git checkout eb50b0c2100fabd6d09b87abd11f52c5295512e8
->         # save the config file
->         mkdir build_dir && cp config build_dir/.config
->         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=hexagon SHELL=/bin/bash drivers/thermal/samsung/
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> All warnings (new ones prefixed by >>):
-> 
->>> drivers/thermal/samsung/exynos_tmu.c:929:40: warning: overlapping comparisons always evaluate to false [-Wtautological-overlap-compare]
->                    if (data->soc == SOC_ARCH_EXYNOS5420 &&
->                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~
->    1 warning generated.
+Add mediatek,cci property to support MediaTek CCI feature.
 
-Ah, I did not notice it and it seems code was not compile-tested with W=1.
+Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Anand, please be sure you compile your code with W=1...
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 21ec9f1ef406..7c0ed2642b69 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -337,6 +337,7 @@
+ 			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -352,6 +353,7 @@
+ 			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu2: cpu@2 {
+@@ -367,6 +369,7 @@
+ 			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu3: cpu@3 {
+@@ -382,6 +385,7 @@
+ 			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu4: cpu@100 {
+@@ -397,6 +401,7 @@
+ 			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu5: cpu@101 {
+@@ -412,6 +417,7 @@
+ 			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu6: cpu@102 {
+@@ -427,6 +433,7 @@
+ 			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		cpu7: cpu@103 {
+@@ -442,6 +449,7 @@
+ 			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
++			mediatek,cci = <&cci>;
+ 		};
+ 
+ 		idle-states {
+-- 
+2.18.0
 
-
-Best regards,
-Krzysztof
