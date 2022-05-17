@@ -2,131 +2,188 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E04DC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 18:00:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6FDEC43217
+	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 18:06:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351593AbiEQSAD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 May 2022 14:00:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58702 "EHLO
+        id S1351781AbiEQSGe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 May 2022 14:06:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39820 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351684AbiEQSAC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2022 14:00:02 -0400
-Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A6665006C;
-        Tue, 17 May 2022 11:00:01 -0700 (PDT)
-Received: by mail-oi1-f180.google.com with SMTP id r1so23236483oie.4;
-        Tue, 17 May 2022 11:00:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=l7jwPeZVluBx37sWW9p9486vXPERkHZmYslmM7IERC4=;
-        b=43XkGRcVuTTh230Pv5bQyUCpPPNsX2IgRO3LJuMOiWh9q6wY9fxPfzNMPtM21RkokF
-         K5eI3N+KQX9yIsdsWr7fGwfI5fnDTyf8WLuzCy8Lp88VcLytOiVjJRi45iIpu52Q6uaP
-         fhdp0oPniDCmw/OQPJsJPZWLA4MwKmZKR8jZ4MitHdLiRtBbD/sAdFomnaeOWmeTPe4l
-         CUNgvBuMVrPctwIeTPXzi25YaBS+jHQe1sPLQ0HzaRdD8BLbF5mdJnbsUqsfgFNJ+0lS
-         LYanbBz/OmJLSY1Z4baOGyNIZiUUXgJglbkkqZ1cTZXRm3ikskFrMMw9B6KA1pLskq0U
-         j2aA==
-X-Gm-Message-State: AOAM530pZo3eyg2AW9O0gF9DUk4dtwKpCcUbPCzGrHcQYQy9Vn13K6qK
-        SD2vCAmdSitv9b+Vanuncw==
-X-Google-Smtp-Source: ABdhPJx4RCb0btBoBhki2+B8BgBEyjjkwfHWi2cScgsuArwHCQwCh02D1YsNTXiRT5shZKje2MpLpA==
-X-Received: by 2002:aca:1108:0:b0:328:ef13:311c with SMTP id 8-20020aca1108000000b00328ef13311cmr6474612oir.220.1652810400759;
-        Tue, 17 May 2022 11:00:00 -0700 (PDT)
-Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id i204-20020acab8d5000000b00326414c1bb7sm63836oif.35.2022.05.17.10.59.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 May 2022 11:00:00 -0700 (PDT)
-Received: (nullmailer pid 1327168 invoked by uid 1000);
-        Tue, 17 May 2022 17:59:58 -0000
-Date:   Tue, 17 May 2022 12:59:58 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Alexandre Bailon <abailon@baylibre.com>, krzk+dt@kernel.org,
-        matthias.bgg@gmail.com, p.zabel@pengutronix.de, rafael@kernel.org,
-        daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
-        michael.kao@mediatek.com, ben.tseng@mediatek.com,
-        ethan.chang@mediatek.com, frank-w@public-files.de,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, khilman@baylibre.com
-Subject: Re: [PATCH v6 2/7] dt-bindings: thermal: Add binding document for
- mt6873 thermal controller
-Message-ID: <20220517175958.GA1321687-robh@kernel.org>
-References: <20220512122433.1399802-1-abailon@baylibre.com>
- <20220512122433.1399802-3-abailon@baylibre.com>
- <546ddbd4-927d-2e28-6e82-a67b4584a17f@linaro.org>
+        with ESMTP id S1352084AbiEQSGH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2022 14:06:07 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9046250B1F;
+        Tue, 17 May 2022 11:05:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1652810749; x=1684346749;
+  h=message-id:subject:from:reply-to:to:cc:date:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=G5Wv9shpOpxZTi2I/lWPe2CBntwVSC8iH9Z7DnGd2zo=;
+  b=Ce8caY3KTpwcG1kJRg521Hgq68jJuqxCs+ak/crw7MMv/G+pXOD9349g
+   7x8ZQDpnxI8lQTxx40/scBbtVHLBReCxLBBk1ptqPLKjeWouOHmiYcHbw
+   KJe2GPe2OxWuPFIpuLOyNXT+8RToL4CUvVDNeT26JVhRzaSgZgdpaNDMk
+   On3xZbla9cRsVxmGnj+FFYSwn/1lrhNq8C1g2cSNm0eAbEIRqt0JaXWV9
+   BC3/u5UiINpsLlEX0HSC2aTa1IROGTeYc6AX6bcriIUQsaXgcKm74u7sa
+   jsICuqR2HAPlI7PHmho3AjLJ7WlnqHtEYrnPxWg0//7pItpEfshqXnP7O
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10350"; a="296556739"
+X-IronPort-AV: E=Sophos;i="5.91,233,1647327600"; 
+   d="scan'208";a="296556739"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 May 2022 11:05:49 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.91,233,1647327600"; 
+   d="scan'208";a="545024206"
+Received: from linux.intel.com ([10.54.29.200])
+  by orsmga006.jf.intel.com with ESMTP; 17 May 2022 11:05:48 -0700
+Received: from debox1-desk1.jf.intel.com (debox1-desk1.jf.intel.com [10.54.75.53])
+        by linux.intel.com (Postfix) with ESMTP id DE05A5807E8;
+        Tue, 17 May 2022 11:05:48 -0700 (PDT)
+Message-ID: <92f32b4703091acb0aaf3f784be448d469e9e2fa.camel@linux.intel.com>
+Subject: Re: [PATCH v5 2/2] PCI/PM: Fix pci_pm_suspend_noirq() to disable PTM
+From:   "David E. Box" <david.e.box@linux.intel.com>
+Reply-To: david.e.box@linux.intel.com
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>
+Cc:     "Jingar, Rajvi" <rajvi.jingar@intel.com>,
+        "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Date:   Tue, 17 May 2022 11:05:48 -0700
+In-Reply-To: <CAJZ5v0iNaAd=yP3DgDVVpffKU6kt+nSpPeqxWJyRddaX5K4FRA@mail.gmail.com>
+References: <CAJZ5v0g6GdKfN4b5uwHEhh4hBuG=haVHaXc-XuMQLe8Wd41Y3g@mail.gmail.com>
+         <20220517144846.GA1068039@bhelgaas>
+         <CAJZ5v0iNaAd=yP3DgDVVpffKU6kt+nSpPeqxWJyRddaX5K4FRA@mail.gmail.com>
+Organization: David E. Box
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.4 (3.38.4-1.fc33) 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <546ddbd4-927d-2e28-6e82-a67b4584a17f@linaro.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, May 12, 2022 at 04:25:51PM +0200, Krzysztof Kozlowski wrote:
-> On 12/05/2022 14:24, Alexandre Bailon wrote:
-> > From: Michael Kao <michael.kao@mediatek.com>
+On Tue, 2022-05-17 at 16:54 +0200, Rafael J. Wysocki wrote:
+> On Tue, May 17, 2022 at 4:48 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
 > > 
-> > This patch adds binding document for mt6873 thermal controller.
-> 
-> Thank you for your patch. There is something to discuss/improve.
-> 
+> > On Mon, May 16, 2022 at 10:59:32PM +0200, Rafael J. Wysocki wrote:
+> > > On Mon, May 16, 2022 at 10:09 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > > > On Fri, May 13, 2022 at 10:00:48PM +0000, Jingar, Rajvi wrote:
+> > > > > > -----Original Message-----
+> > > > > > From: Bjorn Helgaas <helgaas@kernel.org>
+> > > > > > Sent: Thursday, May 12, 2022 11:36 AM
+> > > > > > To: Rafael J. Wysocki <rafael@kernel.org>
+> > > > > > Cc: Jingar, Rajvi <rajvi.jingar@intel.com>; Wysocki, Rafael J
+> > > > > > <rafael.j.wysocki@intel.com>; Bjorn Helgaas <bhelgaas@google.com>;
+> > > > > > David Box
+> > > > > > <david.e.box@linux.intel.com>; Linux PCI <linux-pci@vger.kernel.org>;
+> > > > > > Linux
+> > > > > > Kernel Mailing List <linux-kernel@vger.kernel.org>; Linux PM <linux-
+> > > > > > pm@vger.kernel.org>
+> > > > > > Subject: Re: [PATCH v5 2/2] PCI/PM: Fix pci_pm_suspend_noirq() to
+> > > > > > disable PTM
+> > > > > > 
+> > > > > > On Thu, May 12, 2022 at 07:52:36PM +0200, Rafael J. Wysocki wrote:
+> > > > > > > On Thu, May 12, 2022 at 7:42 PM Bjorn Helgaas <helgaas@kernel.org>
+> > > > > > > wrote:
+> > > > > > > > On Thu, May 12, 2022 at 03:49:18PM +0200, Rafael J. Wysocki wrote:
+> > > > > > 
+> > > > > > > > > Something like this should suffice IMV:
+> > > > > > > > > 
+> > > > > > > > > if (!dev_state_saved || pci_dev->current_state != PCI_D3cold)
+> > > > > > > > > 
+> > > > > > > > >         pci_disable_ptm(pci_dev);
+> > > > > > > > 
+> > > > > > > > It makes sense to me that we needn't disable PTM if the device is
+> > > > > > > > in
+> > > > > > > > D3cold.  But the "!dev_state_saved" condition depends on what the
+> > > > > > > > driver did.  Why is that important?  Why should we not do the
+> > > > > > > > following?
+> > > > > > > > 
+> > > > > > > >   if (pci_dev->current_state != PCI_D3cold)
+> > > > > > > >     pci_disable_ptm(pci_dev);
+> > > > > > > 
+> > > > > > > We can do this too.  I thought we could skip the power state
+> > > > > > > check if dev_state_saved was unset, because then we would know
+> > > > > > > that the power state was not D3cold.  It probably isn't worth
+> > > > > > > the hassle though.
+> > > > > 
+> > > > > We see issue with certain platforms where only checking if device
+> > > > > power state in D3Cold is not enough and the !dev_state_saved check
+> > > > > is needed when disabling PTM. Device like nvme is relying on ASPM,
+> > > > > it stays in D0 but state is saved. Touching the config space wakes
+> > > > > up the device which prevents the system from entering into low power
+> > > > > state.
+> > > > 
+> > > > Correct me if I'm wrong: for NVMe devices, nvme_suspend() has already
+> > > > saved state and put the device in some low-power state.  Disabling PTM
+> > > > here is functionally OK but prevents a system low power state, so you
+> > > > want to leave PTM enabled.
+> > > > 
+> > > > But I must be missing something because pci_prepare_to_sleep()
+> > > > currently disables PTM for Root Ports.  If we leave PTM enabled on
+> > > > NVMe but disable it on the Root Port above it, any PTM Request from
+> > > > NVMe will cause an Unsupported Request error.
+> > > > 
+> > > > Disabling PTM must be coordinated across PTM Requesters and PTM
+> > > > Responders.  That means the decision to disable cannot depend on
+> > > > driver-specific things like whether the driver has saved state.
+> > > 
+> > > Setting state_saved generally informs pci_pm_suspend_noirq() that the
+> > > device has already been handled and it doesn't need to do anything to
+> > > it.
+> > > 
+> > > But you are right that PTM should be disabled on downstream devices as
+> > > well as on the ports that those devices are connected to and it can be
+> > > done even if the given device has already been handled, so the
+> > > state_saved value is technically irrelevant.
+> > > 
+> > > That's why I suggested to check if the power state is between D0 and
+> > > D3cold (exclusive) and only disable PTM if that is the case.  It is
+> > > pointless to disable PTM for devices in D3cold and it may be harmful
+> > > for devices that are left in D0.
 > > 
-> > Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-> > Signed-off-by: Ben Tseng <ben.tseng@mediatek.com>
-> > ---
-> >  .../thermal/mediatek-thermal-lvts.yaml        | 81 +++++++++++++++++++
-> >  1 file changed, 81 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml
-> > 
-> > diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml b/Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml
-> > new file mode 100644
-> > index 000000000000..69ffe7b14c21
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml
+> > "... it may be harmful for devices that are left in D0" -- I want to
+> > understand this better.  It sounds like nvme_suspend() leaves the
+> > device in some device-specific low-power flavor of D0, and subsequent
+> > config accesses take it out of that low-power situation?
 > 
-> filename: vendor,device
-> so something like mediatek,mt6873-lvts.yaml or
-> mediatek,mt6873-lvts-thermal.yaml
-> 
-> > @@ -0,0 +1,81 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/thermal/mediatek-thermal-lvts.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: Mediatek SoC LVTS thermal controller (DTS) binding
-> 
-> s/(DTS) binding//
-> (unless DTS means something related to hardware)
-> 
-> > +
-> > +maintainers:
-> > +  - Yu-Chia Chang <ethan.chang@mediatek.com>
-> > +  - Ben Tseng <ben.tseng@mediatek.com>
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: mediatek,mt6873-lvts
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  clocks:
-> > +    maxItems: 1
-> > +
-> > +  clock-names:
-> > +    items:
-> > +      - const: lvts_clk
-> 
-> Skip "_clk" suffix, so just lvts.
 
-Or drop altogether. There's generally no good name when there's only one 
-entry so folks just make up 'clk', 'phy', 'rst', etc. or $block for the 
-name.
+This is exactly what we see. It's not all machines, but in our lab we've seen in
+it on 3 production systems out of about 20. And they were all different
+generations, a 7th, 8th, and 10th gen.
 
-Rob
+nvme_suspend is relying on NVMe APST / PCIe ASPM to put the device in a low
+power state. The link state will be L1 or deeper while the device remains in D0.
+
+https://nvmexpress.org/resources/nvm-express-technology-features/nvme-technology-power-features/
+
+
+> That's my understanding of it.
+> 
+> > If that's the case, it sounds a little brittle.  I don't think it's
+> > obvious that "pci_dev->state_saved was set by the driver" means "no
+> > config accesses allowed in pci_pm_suspend_noirq()."
+> 
+> Well, yes and no.  The device may be in D3cold then, so
+> pci_pm_suspend_noirq() should at least check that before accessing its
+> config space.
+> 
+> > And pci_pm_suspend_noirq() calls quirks via pci_fixup_device(), which are
+> > very likely to do config accesses.
+> > 
+> > Maybe PTM needs to be disabled earlier, e.g., in pci_pm_suspend()?  I
+> > don't think PTM uses any interrupts, so there's probably no reason
+> > interrupts need to be disabled before disabling PTM.
+> 
+> That certainly is worth investigation.  For one, I don't see any
+> obvious downsides of doing so.
+
+We will look at this.
+
+David
+
+
