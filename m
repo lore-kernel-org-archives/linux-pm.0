@@ -2,106 +2,214 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14F3BC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 10:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11FC0C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 10:02:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238377AbiEQKCV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 May 2022 06:02:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57422 "EHLO
+        id S245490AbiEQKCx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 May 2022 06:02:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59508 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231372AbiEQKCQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2022 06:02:16 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04E35F2D;
-        Tue, 17 May 2022 03:02:14 -0700 (PDT)
-X-UUID: b63e995b8210496ba0dba6811dc8b7f3-20220517
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:401017f9-3c99-46d5-b8bf-e3595f1903e4,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:45
-X-CID-INFO: VERSION:1.1.5,REQID:401017f9-3c99-46d5-b8bf-e3595f1903e4,OB:0,LOB:
-        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
-        N:release,TS:45
-X-CID-META: VersionHash:2a19b09,CLOUDID:31577ce2-edbf-4bd4-8a34-dfc5f7bb086d,C
-        OID:b694db9682df,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:1,File:nil,QS:0,BEC:nil
-X-UUID: b63e995b8210496ba0dba6811dc8b7f3-20220517
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 195184224; Tue, 17 May 2022 18:02:08 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Tue, 17 May 2022 18:02:07 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 17 May 2022 18:02:07 +0800
-Message-ID: <eab324a190c47cd139c243d1034fa44aa51f9377.camel@mediatek.com>
-Subject: Re: [PATCH v6 00/10] cpufreq: mediatek: Cleanup and support MT8183
- and MT8186
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     Matthias Brugger <matthias.bgg@gmail.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-CC:     <rafael@kernel.org>, <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
-        <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
-        <hsinyi@google.com>, <khilman@baylibre.com>,
-        <angelogioacchino.delregno@collabora.com>,
-        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Tue, 17 May 2022 18:02:07 +0800
-In-Reply-To: <dde746ce-5663-e12f-4537-4206945b6b59@gmail.com>
-References: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
-         <20220506042004.hqzpb66shak4y7rz@vireshk-i7>
-         <86851bd03128cc61082d516ebff929d3637063cb.camel@mediatek.com>
-         <20220512052732.iqphgpveoyrqjlqg@vireshk-i7>
-         <af82434adea0b648d74ed5ffd123e0faaaac6508.camel@mediatek.com>
-         <20220512054825.aqe4g4lupuqj3rcq@vireshk-i7>
-         <ca85977bcff2e3de925d7ab834b8654ec5ddf8c1.camel@mediatek.com>
-         <dde746ce-5663-e12f-4537-4206945b6b59@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S229792AbiEQKCs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2022 06:02:48 -0400
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2053.outbound.protection.outlook.com [40.107.243.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F03472CDE8;
+        Tue, 17 May 2022 03:02:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=JLaTZIgPYGPqOxeaOb+l7ofMDrtEmXqEq/DAq7MxMaUDJ7ta6nLsPfAklziMALJzhTiIKz1aa3ul7Il2cMd7pdvgbdqBd8kk0GqwvEvyLK00bcIObIe5Cv6LKOaCaBKsGyGoC+F+MZZAZwxAZq2myaBOrFyQXW5q21RCsPWzDFHATBQNEwQzstzeXfeK6Wm+zCcCnx/iY33Pdg9XdTMDq32C2S4VtXuvuy/yQ6y7XiT7AQHHO1rRzXOY32pPjC6jXtzuXZlrqh+OfSQAihidMr1DLbUx0zpL9lu06DZNPN6ijEQTl08mFfcBfNcl3mQsjrE05xraRa3Gm5IS2HIfiw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ftJwlz+hNN8i20Tovb9/C+Z9VCP6pdxowx/RRmpe7nU=;
+ b=hr3mv/21ukNPGc1Jaz6DBeWWZKDePBtVsdZ0gtMCGeNwAe2xDsMr9XQBi5mRBmxij9i2mamMxpEh9xQZ0SZpegjLwGE1b+sWQTLJwl6KS79RkcKxub/joj0BAt0JjYw7V4cITkHIvATNyIDwAmZq2OQlynKGPc2zaoh0r03W/QgCKGwGT5Gc/xFJ4M1SylorGD7Z32Ya1vnform8SnERfAON+1Zxm+G+ssYGj/B0WVB4KMJpOwQ9XqQ2FDfPp/uOlHMZIgGPuPpszNPmVE3e58dBxP/pcaKHPSMkZbEHdGqEuE0qD1qezsaCcrlYjYieK0xVfsqqJ0CA2cPLDW5dHA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 12.22.5.236) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ftJwlz+hNN8i20Tovb9/C+Z9VCP6pdxowx/RRmpe7nU=;
+ b=pZqw+S6XMbUATUdar2j9bRVflL2WjWjTlXYPw3QbYeXYoAYW/Gh4kYXkfLznz5v+QzhgvN2nKzk6eFV+qrfpI38NOr1/KB43hj58Vd8qnbzi0hsP1QAmOalFK0pv4/gfgPqcMiizGTC2yVboOHwKHKZUmscqaraT/EPaKvE4phjz1vvKTMfmbjZQwWBh9Wu0xqrnvTT9oJ+UrRH9Nd3j31wjpIofRfCEmnBmenygbBeSGZIcNhvd/jHrdfBvuVoYuEeBJqXmjFMouIpeFL6BuUn4hXwuo312esRz0mCvL7hmnEkZ6sy4C4LpnjZ48LYyEtjpi9zOa87Lg02OFCoB8g==
+Received: from MW4PR04CA0274.namprd04.prod.outlook.com (2603:10b6:303:89::9)
+ by MN2PR12MB3375.namprd12.prod.outlook.com (2603:10b6:208:cc::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.17; Tue, 17 May
+ 2022 10:02:45 +0000
+Received: from CO1NAM11FT041.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:303:89:cafe::23) by MW4PR04CA0274.outlook.office365.com
+ (2603:10b6:303:89::9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.14 via Frontend
+ Transport; Tue, 17 May 2022 10:02:45 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 12.22.5.236)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 12.22.5.236 as permitted sender) receiver=protection.outlook.com;
+ client-ip=12.22.5.236; helo=mail.nvidia.com;
+Received: from mail.nvidia.com (12.22.5.236) by
+ CO1NAM11FT041.mail.protection.outlook.com (10.13.174.217) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.20.5250.13 via Frontend Transport; Tue, 17 May 2022 10:02:45 +0000
+Received: from drhqmail203.nvidia.com (10.126.190.182) by
+ DRHQMAIL109.nvidia.com (10.27.9.19) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.32; Tue, 17 May 2022 10:02:39 +0000
+Received: from drhqmail203.nvidia.com (10.126.190.182) by
+ drhqmail203.nvidia.com (10.126.190.182) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.22; Tue, 17 May 2022 03:02:38 -0700
+Received: from nvidia-abhsahu-1.nvidia.com (10.127.8.9) by mail.nvidia.com
+ (10.126.190.182) with Microsoft SMTP Server id 15.2.986.22 via Frontend
+ Transport; Tue, 17 May 2022 03:02:33 -0700
+From:   Abhishek Sahu <abhsahu@nvidia.com>
+To:     Alex Williamson <alex.williamson@redhat.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Jason Gunthorpe <jgg@nvidia.com>,
+        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+CC:     Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+        Abhishek Sahu <abhsahu@nvidia.com>
+Subject: [PATCH v4 1/4] vfio/pci: Invalidate mmaps and block the access in D3hot power state
+Date:   Tue, 17 May 2022 15:32:16 +0530
+Message-ID: <20220517100219.15146-2-abhsahu@nvidia.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20220517100219.15146-1-abhsahu@nvidia.com>
+References: <20220517100219.15146-1-abhsahu@nvidia.com>
+X-NVConfidentiality: public
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: dd361098-0c30-4ac9-ffa4-08da37ec63d6
+X-MS-TrafficTypeDiagnostic: MN2PR12MB3375:EE_
+X-Microsoft-Antispam-PRVS: <MN2PR12MB337561191AB66DEC67F756A9CCCE9@MN2PR12MB3375.namprd12.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Z8mCICEDaOF5Nvx+rsybOi+4dZ4sr6qnFCcJXCgMsEo6uSc5/uqcJ0HkKHa2Zvbvw4KxoQjnZ0ctgInMpPh6ZFO2+srr0oZLYQVNJ3ozjRjJov25/ZHs5xCk+CwzEKVbnj9TPvPJSJJtyJHZiWwt1UG0LiYY5+WaFfV59yO9fiOri+/fR6fEkqUCSCPc6hchO1ub72YuHGpPCf+6k51XjP8BCAl/2Q7lomu6FjLhZDdbILwYs+F+hQ6CK9CGweFCNkjiYaSvxY1VIslnhV0NxJQPUCrtUMwnrzH3ocnl1Fmo+woeB1v2soP3zaQ/35SvNK+ZvDMigQnQ1Gpj2ImOnbT2CboklU6Ez4lNN//zRP7j7uh5P1UMHbid/0NOBU66XRNF8IX1da27SnK8yu3hV62Lq5JL3y7tlDJsuKpcCoWFgd8Q24+u/62hJ46kKGiSOETSBGoZrjBXAKu1lBNz9cXDKWOKGmSE4754pMD96aG4vtyQN4F2DTYbPW4c+HS5CJbYQkclA5tltUbJqMajkGSW0NB1Knh/SCIriTLO+zF0azH56IksLAN0+BPxZ+XotX0lgBuyLpvxYk5fFxf1Q/Rmn2dtzSKrV6c+wuGrhIM3RHr6O9YUJnMJBoRNbLwQUaUV6tw3UuAoO970UfQlOFbDAOiUQJTsfW6+fPwPLlLrMtCD79Kb2E84wduzRW1mMbndVw/019+ZnXXPlwIj88Lg7Ljf76zAoEzkgc0guk4=
+X-Forefront-Antispam-Report: CIP:12.22.5.236;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:InfoNoRecords;CAT:NONE;SFS:(13230001)(4636009)(36840700001)(40470700004)(46966006)(316002)(7696005)(82310400005)(110136005)(186003)(1076003)(8676002)(83380400001)(2616005)(336012)(426003)(86362001)(6666004)(70206006)(107886003)(47076005)(81166007)(26005)(7416002)(5660300002)(40460700003)(8936002)(70586007)(54906003)(36756003)(36860700001)(4326008)(356005)(508600001)(2906002)(32563001)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 May 2022 10:02:45.1784
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: dd361098-0c30-4ac9-ffa4-08da37ec63d6
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[12.22.5.236];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT041.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB3375
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 2022-05-17 at 11:57 +0200, Matthias Brugger wrote:
-> 
-> On 12/05/2022 08:05, Rex-BC Chen wrote:
-> > On Thu, 2022-05-12 at 11:18 +0530, Viresh Kumar wrote:
-> > > On 12-05-22, 13:33, Rex-BC Chen wrote:
-> > > > Matthias is not the member of mediatek, so I think we still
-> > > > need
-> > > > his
-> > > > feedback for these three patches.
-> > > 
-> > > Please ping him and ask for his feedback then.
-> > > 
-> > 
-> > ok, I will do this.
-> > Thanks!
-> > 
-> 
-> Sorry for the late reply. I'll take the DTS patches through my tree.
-> As I'm late 
-> to the game this will be for v5.20.
-> 
-> Regards,
-> Matthias
+According to [PCIe v5 5.3.1.4.1] for D3hot state
 
-Hello Matthias,
+ "Configuration and Message requests are the only TLPs accepted by a
+  Function in the D3Hot state. All other received Requests must be
+  handled as Unsupported Requests, and all received Completions may
+  optionally be handled as Unexpected Completions."
 
-Thanks for you reply,
-I send another version for this series.
-Please refer to this:
-https://patchwork.kernel.org/project/linux-mediatek/list/?series=641933
+Currently, if the vfio PCI device has been put into D3hot state and if
+user makes non-config related read/write request in D3hot state, these
+requests will be forwarded to the host and this access may cause
+issues on a few systems.
 
-BRs,
-Rex
+This patch leverages the memory-disable support added in commit
+'abafbc551fdd ("vfio-pci: Invalidate mmaps and block MMIO access on
+disabled memory")' to generate page fault on mmap access and
+return error for the direct read/write. If the device is D3hot state,
+then the error will be returned for MMIO access. The IO access generally
+does not make the system unresponsive so the IO access can still happen
+in D3hot state. The default value should be returned in this case
+without bringing down the complete system.
+
+Also, the power related structure fields need to be protected so
+we can use the same 'memory_lock' to protect these fields also.
+This protection is mainly needed when user changes the PCI
+power state by writing into PCI_PM_CTRL register.
+vfio_pci_lock_and_set_power_state() wrapper function will take the
+required locks and then it will invoke the vfio_pci_set_power_state().
+
+Signed-off-by: Abhishek Sahu <abhsahu@nvidia.com>
+---
+ drivers/vfio/pci/vfio_pci_config.c |  7 +++++--
+ drivers/vfio/pci/vfio_pci_core.c   | 16 ++++++++++++++++
+ include/linux/vfio_pci_core.h      |  2 ++
+ 3 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/vfio/pci/vfio_pci_config.c b/drivers/vfio/pci/vfio_pci_config.c
+index 6e58b4bf7a60..d9077627117f 100644
+--- a/drivers/vfio/pci/vfio_pci_config.c
++++ b/drivers/vfio/pci/vfio_pci_config.c
+@@ -402,11 +402,14 @@ bool __vfio_pci_memory_enabled(struct vfio_pci_core_device *vdev)
+ 	u16 cmd = le16_to_cpu(*(__le16 *)&vdev->vconfig[PCI_COMMAND]);
+ 
+ 	/*
++	 * Memory region cannot be accessed if device power state is D3.
++	 *
+ 	 * SR-IOV VF memory enable is handled by the MSE bit in the
+ 	 * PF SR-IOV capability, there's therefore no need to trigger
+ 	 * faults based on the virtual value.
+ 	 */
+-	return pdev->no_command_memory || (cmd & PCI_COMMAND_MEMORY);
++	return pdev->current_state < PCI_D3hot &&
++	       (pdev->no_command_memory || (cmd & PCI_COMMAND_MEMORY));
+ }
+ 
+ /*
+@@ -718,7 +721,7 @@ static int vfio_pm_config_write(struct vfio_pci_core_device *vdev, int pos,
+ 			break;
+ 		}
+ 
+-		vfio_pci_set_power_state(vdev, state);
++		vfio_pci_lock_and_set_power_state(vdev, state);
+ 	}
+ 
+ 	return count;
+diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
+index 05a3aa95ba52..b9f222ca48cf 100644
+--- a/drivers/vfio/pci/vfio_pci_core.c
++++ b/drivers/vfio/pci/vfio_pci_core.c
+@@ -255,6 +255,22 @@ int vfio_pci_set_power_state(struct vfio_pci_core_device *vdev, pci_power_t stat
+ 	return ret;
+ }
+ 
++/*
++ * It takes all the required locks to protect the access of power related
++ * variables and then invokes vfio_pci_set_power_state().
++ */
++void vfio_pci_lock_and_set_power_state(struct vfio_pci_core_device *vdev,
++				       pci_power_t state)
++{
++	if (state >= PCI_D3hot)
++		vfio_pci_zap_and_down_write_memory_lock(vdev);
++	else
++		down_write(&vdev->memory_lock);
++
++	vfio_pci_set_power_state(vdev, state);
++	up_write(&vdev->memory_lock);
++}
++
+ int vfio_pci_core_enable(struct vfio_pci_core_device *vdev)
+ {
+ 	struct pci_dev *pdev = vdev->pdev;
+diff --git a/include/linux/vfio_pci_core.h b/include/linux/vfio_pci_core.h
+index 23c176d4b073..8f20056e0b8d 100644
+--- a/include/linux/vfio_pci_core.h
++++ b/include/linux/vfio_pci_core.h
+@@ -189,6 +189,8 @@ extern int vfio_pci_register_dev_region(struct vfio_pci_core_device *vdev,
+ 
+ extern int vfio_pci_set_power_state(struct vfio_pci_core_device *vdev,
+ 				    pci_power_t state);
++extern void vfio_pci_lock_and_set_power_state(struct vfio_pci_core_device *vdev,
++					      pci_power_t state);
+ 
+ extern bool __vfio_pci_memory_enabled(struct vfio_pci_core_device *vdev);
+ extern void vfio_pci_zap_and_down_write_memory_lock(struct vfio_pci_core_device
+-- 
+2.17.1
 
