@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CDC1C433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 01:38:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69545C4332F
+	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 01:38:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231482AbiEQBh6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 May 2022 21:37:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54746 "EHLO
+        id S229692AbiEQBiF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 May 2022 21:38:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54840 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229692AbiEQBh5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2022 21:37:57 -0400
+        with ESMTP id S236861AbiEQBiD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2022 21:38:03 -0400
 Received: from m12-13.163.com (m12-13.163.com [220.181.12.13])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 72AC72E6A2;
-        Mon, 16 May 2022 18:37:53 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 28C7042EEF;
+        Mon, 16 May 2022 18:38:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=7G8Kb
-        AmludJDMdA3ZiXqK+V/H8kA2kjapKKgVRW8jhc=; b=lJE2W15X5D1aKIQlx7UNx
-        ZMWlyYARWJYJf05qA7uRMDHbZAb1E10n6frNPPXux7L/4eR6aDVjmYNUbvSghR7z
-        6m2q3ghPxQCyAstAw9lAIcLGjuUPv/FTlgABl6WnKDZHdLvNlUi8NZ0KInuv+hHp
-        WqUV+Ux6n0SHQNSjDcqqGo=
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=k0ctV
+        enGMMCdu3p7b3myrdeaZuuz8j0YlMGMike2E58=; b=FkmEWkafRVvthQnx/j2sK
+        /7z7EOTH1BAtpoONhF8/ExSjcVQY/mdPTfcxWiXdwTGaVPA2TXD2rCJxbb7vIFV2
+        b9V6oW9WIU/pXuMubfKzsnRlkYmZKLerWC1VkRmBrpRL5b5/aIa73E7kqPIo4asF
+        5gbfMc+M596rkBjId5e0hU=
 Received: from DESKTOP-B1R4FVG.localdomain (unknown [218.201.129.20])
-        by smtp9 (Coremail) with SMTP id DcCowAB3USwR_IJiF3ohDQ--.61255S2;
-        Tue, 17 May 2022 09:36:18 +0800 (CST)
+        by smtp9 (Coremail) with SMTP id DcCowAB3USwR_IJiF3ohDQ--.61255S5;
+        Tue, 17 May 2022 09:36:20 +0800 (CST)
 From:   qianfanguijin@163.com
 To:     linux-sunxi@lists.linux.dev
 Cc:     Rob Herring <robh+dt@kernel.org>,
@@ -34,111 +34,106 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         qianfan Zhao <qianfanguijin@163.com>
-Subject: [PATCH v5 0/3] ARM: sun8i-r40: CPU improve
-Date:   Tue, 17 May 2022 09:36:04 +0800
-Message-Id: <20220517013607.2252-1-qianfanguijin@163.com>
+Subject: [PATCH v5 3/3] ARM: dts: sun8i-r40: Add thermal trip points/cooling maps
+Date:   Tue, 17 May 2022 09:36:07 +0800
+Message-Id: <20220517013607.2252-4-qianfanguijin@163.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220517013607.2252-1-qianfanguijin@163.com>
+References: <20220517013607.2252-1-qianfanguijin@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DcCowAB3USwR_IJiF3ohDQ--.61255S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxAFykZw13Xr4rAryUuw1kuFg_yoWrJFWfpr
-        1UJr1UGr4UJr1UJr17tr1rJr1UJr1UJr1UJr15Jr1UJr1UJF1UJr1UJr15Jr4UGrn8Ar1U
-        tr1UJryUG34DJrUanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zNfOxUUUUUU=
+X-CM-TRANSID: DcCowAB3USwR_IJiF3ohDQ--.61255S5
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Aw4UArW7Wr4fJFW5Jw1kZrb_yoW8CF4xpF
+        1xCw4FqF1jgr1Sq3Wa9r4DXas8Ca4vkF48Krs7WFykAr98XFZrtry2yw1ftFyDGF1rAw40
+        9w4Yvr1xG3Z8A37anT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07U9Aw3UUUUU=
 X-Originating-IP: [218.201.129.20]
-X-CM-SenderInfo: htld0w5dqj3xxmlqqiywtou0bp/1tbiXBME7VXl26j8kwAAsK
+X-CM-SenderInfo: htld0w5dqj3xxmlqqiywtou0bp/1tbiGhUE7VaEBpyRLgAAsR
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 From: qianfan Zhao <qianfanguijin@163.com>
 
-Change history:
-===============
-v5(2022-05-17):
-- Move opp tables to sun8i-r40-cpu-opp.dtsi
-- cpufreq supports 720M, 912M, 1G, 1.1G, 1.2G
-- Add cooling supports
+For the trip points, I used values from the BSP code.
 
-v4(2022-05-16):
-- Invert two patches.
-- Drop the cpufreqs that exceeds 1G in opp tables.
+The critical trip point value is 30°C above the maximum recommended
+ambient temperature (85°C) for the SoC from the datasheet, so there's
+some headroom even at such a high ambient temperature.
 
-v3:
-- remove "allwinner-r40" compatible from allowlist.
-- split dts in two part.
+Signed-off-by: qianfan Zhao <qianfanguijin@163.com>
+---
+ arch/arm/boot/dts/sun8i-r40.dtsi | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-Test:
-=====
-
-cpufreq was tested by tools: https://github.com/ssvb/cpuburn-arm
-
-1. cpufreq-ljt-stress-test
-
-- root@ubuntu:~/cpuburn-arm-master# ./cpufreq-ljt-stress-test 
-- CPU stress test, which is doing JPEG decoding by libjpeg-turbo
-- at different cpufreq operating points.
-- 
-- Testing CPU 0
--  1200 MHz ............................................................ OK
--  1104 MHz ............................................................ OK
--  1008 MHz ............................................................ OK
--   912 MHz ............................................................ OK
--   720 MHz ............................................................ OK
-- 
-- Testing CPU 1
--  1200 MHz ............................................................ OK
--  1104 MHz ............................................................ OK
--  1008 MHz ............................................................ OK
--   912 MHz ............................................................ OK
--   720 MHz ............................................................ OK
-- 
-- Testing CPU 2
--  1200 MHz ............................................................ OK
--  1104 MHz ............................................................ OK
--  1008 MHz ............................................................ OK
--   912 MHz ............................................................ OK
--   720 MHz ............................................................ OK
-- 
-- Testing CPU 3
--  1200 MHz ............................................................ OK
--  1104 MHz ............................................................ OK
--  1008 MHz ............................................................ OK
--   912 MHz ............................................................ OK
--   720 MHz ............................................................ OK
-
-Overall result : PASSED
-
-2. cpu freq slow down when cpuburn-a7.out running
-
-- temperature: 79213, online: 0-3, freq: 1200000
-- temperature: 79213, online: 0-3, freq: 1200000
-- temperature: 80230, online: 0-3, freq: 1104000
-- temperature: 78874, online: 0-3, freq: 1200000
-- temperature: 80004, online: 0-3, freq: 1104000
-- temperature: 79213, online: 0-3, freq: 1200000
-- temperature: 78196, online: 0-3, freq: 1200000
-- temperature: 79891, online: 0-3, freq: 1200000
-- temperature: 78422, online: 0-3, freq: 1200000
-- temperature: 80343, online: 0-3, freq: 1104000
-- temperature: 80343, online: 0-3, freq: 1104000
-
-
-qianfan Zhao (3):
-  ARM: dts: sun8i-r40: Add "cpu-supply" node for sun8i-r40 based board
-  ARM: dts: sun8i-r40: add opp table for cpu
-  ARM: dts: sun8i-r40: Add thermal trip points/cooling maps
-
- .../boot/dts/sun8i-r40-bananapi-m2-ultra.dts  |  5 ++
- arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi      | 52 +++++++++++++++++++
- arch/arm/boot/dts/sun8i-r40-feta40i.dtsi      |  5 ++
- arch/arm/boot/dts/sun8i-r40.dtsi              | 36 +++++++++++++
- arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts      |  5 ++
- .../boot/dts/sun8i-v40-bananapi-m2-berry.dts  |  5 ++
- 6 files changed, 108 insertions(+)
- create mode 100644 arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi
-
+diff --git a/arch/arm/boot/dts/sun8i-r40.dtsi b/arch/arm/boot/dts/sun8i-r40.dtsi
+index ae2a5ebd9924..b43f3f72a915 100644
+--- a/arch/arm/boot/dts/sun8i-r40.dtsi
++++ b/arch/arm/boot/dts/sun8i-r40.dtsi
+@@ -86,6 +86,7 @@ cpu0: cpu@0 {
+ 			reg = <0>;
+ 			clocks = <&ccu CLK_CPU>;
+ 			clock-names = "cpu";
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -94,6 +95,7 @@ cpu1: cpu@1 {
+ 			reg = <1>;
+ 			clocks = <&ccu CLK_CPU>;
+ 			clock-names = "cpu";
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu2: cpu@2 {
+@@ -102,6 +104,7 @@ cpu2: cpu@2 {
+ 			reg = <2>;
+ 			clocks = <&ccu CLK_CPU>;
+ 			clock-names = "cpu";
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu3: cpu@3 {
+@@ -110,6 +113,7 @@ cpu3: cpu@3 {
+ 			reg = <3>;
+ 			clocks = <&ccu CLK_CPU>;
+ 			clock-names = "cpu";
++			#cooling-cells = <2>;
+ 		};
+ 	};
+ 
+@@ -125,6 +129,30 @@ cpu_thermal: cpu0-thermal {
+ 			polling-delay-passive = <0>;
+ 			polling-delay = <0>;
+ 			thermal-sensors = <&ths 0>;
++
++			trips {
++				cpu_hot_trip: cpu-hot {
++					temperature = <80000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++
++				cpu_very_hot_trip: cpu-very-hot {
++					temperature = <115000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				cpu-hot-limit {
++					trip = <&cpu_hot_trip>;
++					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
+ 		};
+ 
+ 		gpu_thermal: gpu-thermal {
 -- 
 2.25.1
 
