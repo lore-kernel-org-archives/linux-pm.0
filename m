@@ -2,26 +2,26 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C5F5C433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 01:53:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B7C4C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 02:24:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236826AbiEQBxm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 May 2022 21:53:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54558 "EHLO
+        id S233914AbiEQCYJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 May 2022 22:24:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232437AbiEQBxl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2022 21:53:41 -0400
+        with ESMTP id S229553AbiEQCYE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2022 22:24:04 -0400
 Received: from m12-13.163.com (m12-13.163.com [220.181.12.13])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C5CF134B9C;
-        Mon, 16 May 2022 18:53:39 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4B9E53D1FC;
+        Mon, 16 May 2022 19:24:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=Sv4p5
-        7RP4vVkhn/nojtlVRpzvQRuq8AhJ6Z3TmpD4+w=; b=VxH5ML3iwGU3p2+s48oUA
-        VlBBYuU1SIfOAwIg4a2DQ1H3ahskebu2lahBGeRqfSIeD74nHbIcFTcnxmNPCjCv
-        ALCYc2BjIxAW0DSTFSgb3I43FFFHsY4qt52PxMQg93zZu+unp19LrZdyRdqFMQ44
-        3coOnfQvmoiHx/0JkuempQ=
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=lTBhx
+        p2EfVojczwDke4E/Onuf36SXf/m+vxj1MMdS2Y=; b=K6NlZ9QpriWOehObiwcCW
+        pE3iFoBEuRVoIUNkpmAnABQTWS8xwo6jXXfDwuQ5jbHAhPGifkxC5uTlGvPQuGiy
+        kUsAAnQ9eT0171ARPVgOufstlCt9tFJLy0bZgjlR45aNrDd9IDvSeFkNoFonE878
+        KrJ3CCaBcKTwmrhIejxA8A=
 Received: from DESKTOP-B1R4FVG.localdomain (unknown [218.201.129.20])
-        by smtp9 (Coremail) with SMTP id DcCowAB3USwR_IJiF3ohDQ--.61255S3;
+        by smtp9 (Coremail) with SMTP id DcCowAB3USwR_IJiF3ohDQ--.61255S4;
         Tue, 17 May 2022 09:36:19 +0800 (CST)
 From:   qianfanguijin@163.com
 To:     linux-sunxi@lists.linux.dev
@@ -34,97 +34,183 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         qianfan Zhao <qianfanguijin@163.com>
-Subject: [PATCH v5 1/3] ARM: dts: sun8i-r40: Add "cpu-supply" node for sun8i-r40 based board
-Date:   Tue, 17 May 2022 09:36:05 +0800
-Message-Id: <20220517013607.2252-2-qianfanguijin@163.com>
+Subject: [PATCH v5 2/3] ARM: dts: sun8i-r40: add opp table for cpu
+Date:   Tue, 17 May 2022 09:36:06 +0800
+Message-Id: <20220517013607.2252-3-qianfanguijin@163.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220517013607.2252-1-qianfanguijin@163.com>
 References: <20220517013607.2252-1-qianfanguijin@163.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DcCowAB3USwR_IJiF3ohDQ--.61255S3
-X-Coremail-Antispam: 1Uf129KBjvJXoW7Aw4UuryxWFW3uw4UGw4fuFg_yoW8ur4xpw
-        17CrZ7Gwn3WF15t347WrWDGr1UCFykW3yYvF15C34fJrsrXaykXryftwnakrZ8Xr4fJ3y0
-        93s5Xr97Xw4DX3JanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0ziQVyfUUUUU=
+X-CM-TRANSID: DcCowAB3USwR_IJiF3ohDQ--.61255S4
+X-Coremail-Antispam: 1Uf129KBjvJXoWxGrWxXF1UKw4xur17Xry5urg_yoWrZFy8pw
+        17Zr4kGrs7Wr1Yq342gry8KF18uFWv9F4Yyry5C348Jrn7X34DJr97tr9akrWDXr43X3yI
+        9Fs5Xr9rtw1DZaDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07Ubo7tUUUUU=
 X-Originating-IP: [218.201.129.20]
-X-CM-SenderInfo: htld0w5dqj3xxmlqqiywtou0bp/xtbCqRwE7V0Dfef3EwAAs8
+X-CM-SenderInfo: htld0w5dqj3xxmlqqiywtou0bp/1tbiQhQE7VaECXNrTAAAsw
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 From: qianfan Zhao <qianfanguijin@163.com>
 
-The CPU of sun8i-r40 is powered by PMIC, let's add "cpu-supply" node.
+OPP table value is get from allwinner lichee linux-3.10 kernel driver
 
 Signed-off-by: qianfan Zhao <qianfanguijin@163.com>
 ---
- arch/arm/boot/dts/sun8i-r40-bananapi-m2-ultra.dts | 4 ++++
- arch/arm/boot/dts/sun8i-r40-feta40i.dtsi          | 4 ++++
- arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts          | 4 ++++
- arch/arm/boot/dts/sun8i-v40-bananapi-m2-berry.dts | 4 ++++
- 4 files changed, 16 insertions(+)
+ .../boot/dts/sun8i-r40-bananapi-m2-ultra.dts  |  1 +
+ arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi      | 52 +++++++++++++++++++
+ arch/arm/boot/dts/sun8i-r40-feta40i.dtsi      |  1 +
+ arch/arm/boot/dts/sun8i-r40.dtsi              |  8 +++
+ arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts      |  1 +
+ .../boot/dts/sun8i-v40-bananapi-m2-berry.dts  |  1 +
+ 6 files changed, 64 insertions(+)
+ create mode 100644 arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi
 
 diff --git a/arch/arm/boot/dts/sun8i-r40-bananapi-m2-ultra.dts b/arch/arm/boot/dts/sun8i-r40-bananapi-m2-ultra.dts
-index a6a1087a0c9b..4f30018ec4a2 100644
+index 4f30018ec4a2..28197bbcb1d5 100644
 --- a/arch/arm/boot/dts/sun8i-r40-bananapi-m2-ultra.dts
 +++ b/arch/arm/boot/dts/sun8i-r40-bananapi-m2-ultra.dts
-@@ -113,6 +113,10 @@ &ahci {
- 	status = "okay";
- };
+@@ -43,6 +43,7 @@
  
-+&cpu0 {
-+	cpu-supply = <&reg_dcdc2>;
+ /dts-v1/;
+ #include "sun8i-r40.dtsi"
++#include "sun8i-r40-cpu-opp.dtsi"
+ 
+ #include <dt-bindings/gpio/gpio.h>
+ 
+diff --git a/arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi b/arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi
+new file mode 100644
+index 000000000000..4faa22d3bac8
+--- /dev/null
++++ b/arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi
+@@ -0,0 +1,52 @@
++/{
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-720000000 {
++			opp-hz = /bits/ 64 <720000000>;
++			opp-microvolt = <1000000 1000000 1300000>;
++			clock-latency-ns = <2000000>;
++		};
++
++		opp-912000000 {
++			opp-hz = /bits/ 64 <912000000>;
++			opp-microvolt = <1100000 1100000 1300000>;
++			clock-latency-ns = <2000000>;
++		};
++
++		opp-1008000000 {
++			opp-hz = /bits/ 64 <1008000000>;
++			opp-microvolt = <1160000 1160000 1300000>;
++			clock-latency-ns = <2000000>;
++		};
++
++		opp-1104000000 {
++			opp-hz = /bits/ 64 <1104000000>;
++			opp-microvolt = <1240000 1240000 1300000>;
++			clock-latency-ns = <2000000>;
++		};
++
++		opp-1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <1300000 1300000 1300000>;
++			clock-latency-ns = <2000000>;
++		};
++	};
 +};
 +
- &de {
- 	status = "okay";
- };
++&cpu0 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
++
++&cpu1 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
++
++&cpu2 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
++
++&cpu3 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
 diff --git a/arch/arm/boot/dts/sun8i-r40-feta40i.dtsi b/arch/arm/boot/dts/sun8i-r40-feta40i.dtsi
-index 265e0fa57a32..b872b51a346d 100644
+index b872b51a346d..9f39b5a2bb35 100644
 --- a/arch/arm/boot/dts/sun8i-r40-feta40i.dtsi
 +++ b/arch/arm/boot/dts/sun8i-r40-feta40i.dtsi
-@@ -6,6 +6,10 @@
+@@ -5,6 +5,7 @@
+ //  Copyright (C) 2017 Icenowy Zheng <icenowy@aosc.io>
  
  #include "sun8i-r40.dtsi"
++#include "sun8i-r40-cpu-opp.dtsi"
  
-+&cpu0 {
-+	cpu-supply = <&reg_dcdc2>;
-+};
-+
- &i2c0 {
- 	status = "okay";
+ &cpu0 {
+ 	cpu-supply = <&reg_dcdc2>;
+diff --git a/arch/arm/boot/dts/sun8i-r40.dtsi b/arch/arm/boot/dts/sun8i-r40.dtsi
+index 291f4784e86c..ae2a5ebd9924 100644
+--- a/arch/arm/boot/dts/sun8i-r40.dtsi
++++ b/arch/arm/boot/dts/sun8i-r40.dtsi
+@@ -84,24 +84,32 @@ cpu0: cpu@0 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0>;
++			clocks = <&ccu CLK_CPU>;
++			clock-names = "cpu";
+ 		};
+ 
+ 		cpu1: cpu@1 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <1>;
++			clocks = <&ccu CLK_CPU>;
++			clock-names = "cpu";
+ 		};
+ 
+ 		cpu2: cpu@2 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <2>;
++			clocks = <&ccu CLK_CPU>;
++			clock-names = "cpu";
+ 		};
+ 
+ 		cpu3: cpu@3 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <3>;
++			clocks = <&ccu CLK_CPU>;
++			clock-names = "cpu";
+ 		};
+ 	};
  
 diff --git a/arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts b/arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts
-index 6931aaab2382..0eb1990742ff 100644
+index 0eb1990742ff..9f472521f4a4 100644
 --- a/arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts
 +++ b/arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts
-@@ -88,6 +88,10 @@ &ahci {
- 	status = "okay";
- };
+@@ -45,6 +45,7 @@
  
-+&cpu0 {
-+	cpu-supply = <&reg_dcdc2>;
-+};
-+
- &de {
- 	status = "okay";
- };
+ /dts-v1/;
+ #include "sun8i-r40.dtsi"
++#include "sun8i-r40-cpu-opp.dtsi"
+ 
+ #include <dt-bindings/gpio/gpio.h>
+ 
 diff --git a/arch/arm/boot/dts/sun8i-v40-bananapi-m2-berry.dts b/arch/arm/boot/dts/sun8i-v40-bananapi-m2-berry.dts
-index 47954551f573..fdf8bd12faaa 100644
+index fdf8bd12faaa..434871040aca 100644
 --- a/arch/arm/boot/dts/sun8i-v40-bananapi-m2-berry.dts
 +++ b/arch/arm/boot/dts/sun8i-v40-bananapi-m2-berry.dts
-@@ -107,6 +107,10 @@ &ahci {
- 	status = "okay";
- };
+@@ -42,6 +42,7 @@
  
-+&cpu0 {
-+	cpu-supply = <&reg_dcdc2>;
-+};
-+
- &de {
- 	status = "okay";
- };
+ /dts-v1/;
+ #include "sun8i-r40.dtsi"
++#include "sun8i-r40-cpu-opp.dtsi"
+ 
+ #include <dt-bindings/gpio/gpio.h>
+ 
 -- 
 2.25.1
 
