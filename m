@@ -2,221 +2,226 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA80FC433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 10:04:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6521C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 17 May 2022 10:05:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343537AbiEQKEt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 May 2022 06:04:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34890 "EHLO
+        id S234408AbiEQKFp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 May 2022 06:05:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343531AbiEQKEE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2022 06:04:04 -0400
-Received: from NAM02-BN1-obe.outbound.protection.outlook.com (mail-bn1nam07on2051.outbound.protection.outlook.com [40.107.212.51])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DB5647393;
-        Tue, 17 May 2022 03:03:20 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ms+6GSCAAQsiE+m4zdbckZLOph9vNxNIRETNLEXwUE7fMasDB7QP0uHC00M28JoLy0pr4NKZrtF6YaFhKoaeTn7k55NMkM/bWUELQTLjM6bOvBYtM94+/lBOCCYllTrxjpHcgxMPu2BYAQSHUHJH5KZcpgK/gQja5bj+ppZWDfeKMjuR2c+ZTPsQO45j2XolFmGl+Z0owIUXYDz+Qn6ZZVLx7fYyUFZ2QRmvxXiMsoycCPBvMFMUg7bLw55b8W88k1KqY85ytrrMoGHwOCbqPKuXzAs6c4F+BvW8r4sXuTNd5kM5rzcfUgutlARosB5/7r0ezI3t4gzLvUfxMypRkw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vdME6vPxUISYgZVGmHwkzLnGlWlreSxXUxnkAsPFLI4=;
- b=jpQ754AITyHxNvLaeFjlHRD96lD4ZMLBw6BSgcAVSWBeqd/ZpKFhrgxv8fLIfuuO5iZFw3kI+R18tqTe6Pg04DFz6Daum5frE4+qF0Zynzl3FX6u90NZyNUWwcNEInmluHEI8OmF9YmGRVLNWH4fR/38+GJj9BqwarwlmH1r/4/rbEmJBcGxbS/9ZLM9rvND7IJe4LQKaiDeZJ2Ou2TMsiMfeibgemYnQJO1e/5Do5v80XdSINiOIMb3hoDEQbEfXJv58Dxaio9UMO/M05TfY3u/7z7YeT+XmzaCK0ZAIGSr3AnWzWLPV1v+03D5HEpfaks2Wv4IyUgYIoXej1IGAQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 12.22.5.235) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vdME6vPxUISYgZVGmHwkzLnGlWlreSxXUxnkAsPFLI4=;
- b=QCeq6swzg0A8xVBZl9eWbCmrqV2l2++nP8E191lCyP+GBxpdOBvv9y2vYq3mpcAu0FblCOkjeezd8t4A/HH2I6UvebcqgGVAE+Gm3wxjGYlOU4bwAAARbu521vChpUjkwGwjlFs1SNNyXupMsicAHEL2UZfd3lqWWdTaSlZ9khZ1HSo5vUm+63nQ8J8w17t9HrR/Lrpy5ReaWa1YULqmupUF1lIJEc3EQnd9bLgQOpT/073F4S154i7neQV2w++nmqKzZYKXyPtHZx791OhgOrvvgDQJlymSsCfLpL/Hj7HDqAW4EiB1xUghrgyCz4Wlfd8WFhbS0WXFUBpn2UXf/Q==
-Received: from MW4PR04CA0106.namprd04.prod.outlook.com (2603:10b6:303:83::21)
- by BN7PR12MB2660.namprd12.prod.outlook.com (2603:10b6:408:29::26) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.17; Tue, 17 May
- 2022 10:03:18 +0000
-Received: from CO1NAM11FT026.eop-nam11.prod.protection.outlook.com
- (2603:10b6:303:83:cafe::8f) by MW4PR04CA0106.outlook.office365.com
- (2603:10b6:303:83::21) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5273.13 via Frontend
- Transport; Tue, 17 May 2022 10:03:18 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 12.22.5.235)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 12.22.5.235 as permitted sender) receiver=protection.outlook.com;
- client-ip=12.22.5.235; helo=mail.nvidia.com;
-Received: from mail.nvidia.com (12.22.5.235) by
- CO1NAM11FT026.mail.protection.outlook.com (10.13.175.67) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.20.5250.13 via Frontend Transport; Tue, 17 May 2022 10:03:18 +0000
-Received: from drhqmail201.nvidia.com (10.126.190.180) by
- DRHQMAIL107.nvidia.com (10.27.9.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.32; Tue, 17 May 2022 10:02:33 +0000
-Received: from drhqmail203.nvidia.com (10.126.190.182) by
- drhqmail201.nvidia.com (10.126.190.180) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.22; Tue, 17 May 2022 03:02:33 -0700
-Received: from nvidia-abhsahu-1.nvidia.com (10.127.8.9) by mail.nvidia.com
- (10.126.190.182) with Microsoft SMTP Server id 15.2.986.22 via Frontend
- Transport; Tue, 17 May 2022 03:02:28 -0700
-From:   Abhishek Sahu <abhsahu@nvidia.com>
-To:     Alex Williamson <alex.williamson@redhat.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Jason Gunthorpe <jgg@nvidia.com>,
-        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
-        Kevin Tian <kevin.tian@intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-CC:     Max Gurtovoy <mgurtovoy@nvidia.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
-        Abhishek Sahu <abhsahu@nvidia.com>
-Subject: [PATCH v4 0/4] vfio/pci: power management changes
-Date:   Tue, 17 May 2022 15:32:15 +0530
-Message-ID: <20220517100219.15146-1-abhsahu@nvidia.com>
-X-Mailer: git-send-email 2.17.1
-X-NVConfidentiality: public
+        with ESMTP id S1343557AbiEQKFf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2022 06:05:35 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 434F846162
+        for <linux-pm@vger.kernel.org>; Tue, 17 May 2022 03:04:50 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id ch13so33590164ejb.12
+        for <linux-pm@vger.kernel.org>; Tue, 17 May 2022 03:04:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=TkqgfhBAHMMgBalqrvTDFOjNTPjFrXbry01Ikd0kdOI=;
+        b=nHlv6zuxB9JbZ1kWO/hxvdEMAaLFLStrM+H0a9/ffCqJBVMzD+64YCO3vVjeR/qw1x
+         Wtvmncr+CmoWF0ZHpR1F3tvTEHo2vvZ2WOfqJlBM6U8CNYcqGg7DPyZGVpUswQdkqM4M
+         9VT9VcY56KJ1I7tiA3IBb2UPFz8PtUVbEWHPE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=TkqgfhBAHMMgBalqrvTDFOjNTPjFrXbry01Ikd0kdOI=;
+        b=6JWI05Br0WMMNDWtL6Be8uJZyzwXrLvb4tfaJyyIrtEEzwy/RhndSutVAQQZzhK5o+
+         siuOyZHNoQ1jTPMzgbGAI24AvLezBd+gWpA9NUrb4/uQalEhcmzOJZ6ylcX7WDuMjO0V
+         QDlM5rVrRZ5KRNBi71DyfR267kWCBPmXLfeU1eZ0lYwTawSx4ITqRpknVTYbLhjJakoC
+         y7FFo9lIYKqrgLOgxoRYoiIVLi6daC5O7VdQYBH7tQlf6eYhV2R/lbtyR7FBPxHMp4TK
+         LvwIN7RaVhL1KgRVa/PB1ZzXU3qYo8zR1Eo6OTZIr5D0I/xsEVicS8iHDxxywl/CIqRs
+         STHA==
+X-Gm-Message-State: AOAM531vCLzphaq1lNIWI3OvTwny75x66iqMh+BFHlTf3j9pk/kO9Sug
+        EW30j5PHx9p49KJQ3vZc3Lb7u4dutWFSQrhocGuBNA==
+X-Google-Smtp-Source: ABdhPJzKwXDEj+JdNqfJLCrHs8oDN4eTDZdF3mdG81BSdMMdoDedAIMzTlZiJN5CfqOKYW5Byiul9f/04xxDBhzcwHI=
+X-Received: by 2002:a17:907:1b14:b0:6ef:a5c8:afbd with SMTP id
+ mp20-20020a1709071b1400b006efa5c8afbdmr19498704ejc.151.1652781888704; Tue, 17
+ May 2022 03:04:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: cdaf3adc-81bc-4b0f-84ad-08da37ec7794
-X-MS-TrafficTypeDiagnostic: BN7PR12MB2660:EE_
-X-Microsoft-Antispam-PRVS: <BN7PR12MB2660C4C3D37F6612B6B157FECCCE9@BN7PR12MB2660.namprd12.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: vHNFWs1C7oBZocGs9Y3410CDaBE+Ztu3bdLXeGbGTIIwU88hVD+zE3edc2r3NYWXSLDWTYfELd5SoFxkYFlZXXDsuYwL+NQ/acA8tjoQTHqyDyRgNg+hZYl6BRsdX6RN+OhLKl1GULMTiJhq9Ce2lhtf1tBeaI92q/vKn8mOsjN5eJiUO2mT9n4h8uefI9zxHqyr7klV2aj597wVLTl+4GiJdaWyI6CpmxDIySXLVeaytCjsegymkhTIfLyQ3w2L+aFRBghKhCBS2L5CDX8V3MtS1+G1stMWnDE+2YXhm7tRBgQyTuNvRUyUJLsOyuI0rsL2HviP8pdMkSCVxAlKJ6W5w9EYNql+3Y7NzP6o+/jPfOSoCDcg5KtUgZMI8UMgHXchpK2/qCZsM0zXRk/ypagZ6boS7qd7dF4ZK0qq91XCBjMi2+K0woV598UvEvZWjF2CGcZu+NRu2W80mshfGH04aLzqQ0RPdJ9MitacuDRQzgfgpJQeq3QFt4HpXx0eokZYf9o3OJ4JUQ9RGcmm6jaJfmonDURuFDcSFK1EKLVo/SXNH6NlnwBW8jBV4xWieiw385F9GCTlw+euyKuI3yLUS+VQ8j7ta1WlrUGzSls6C2/FC572qbnW5HN5Xc0UCNI3IzAOf/g+mT6LOFHbMk+d/2PHL+WYVf1pOXjL9G2DjgcjO8Hk+S+ri88TqA+x2t5iNF6haVnn9FYGKu3M2TrIeBs8w6V2YWmsmSvHM8k5/JANQ1QIT60pIhmJ1RxDLKoSZNW9QCFwJxI1KDo9ZJA1TOlBTjz3WiQh7HGeZQfIAwfbaTZvwZlZEv6i8yX8pnam2Z8egnoUnVFA2nWGUg==
-X-Forefront-Antispam-Report: CIP:12.22.5.235;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:InfoNoRecords;CAT:NONE;SFS:(13230001)(4636009)(46966006)(40470700004)(36840700001)(508600001)(4326008)(8676002)(8936002)(70206006)(70586007)(7416002)(5660300002)(7696005)(40460700003)(966005)(86362001)(26005)(2616005)(107886003)(36756003)(336012)(47076005)(426003)(356005)(2906002)(6666004)(81166007)(36860700001)(83380400001)(186003)(1076003)(82310400005)(110136005)(316002)(54906003)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 May 2022 10:03:18.3284
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: cdaf3adc-81bc-4b0f-84ad-08da37ec7794
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[12.22.5.235];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT026.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PR12MB2660
+References: <20220516004311.18358-1-roger.lu@mediatek.com>
+In-Reply-To: <20220516004311.18358-1-roger.lu@mediatek.com>
+From:   Chen-Yu Tsai <wenst@chromium.org>
+Date:   Tue, 17 May 2022 18:04:37 +0800
+Message-ID: <CAGXv+5GSdWPZe3fNpBJ_WW0zCL8Skg6fHx9ATxaKU1hyMEt2Ww@mail.gmail.com>
+Subject: Re: [PATCH v25 0/7] soc: mediatek: SVS: introduce MTK SVS
+To:     Roger Lu <roger.lu@mediatek.com>
+Cc:     Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Fan Chen <fan.chen@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com,
+        Guenter Roeck <linux@roeck-us.net>,
+        Jia-wei Chang <jia-wei.chang@mediatek.com>,
+        =?UTF-8?B?UmV4LUJDIENoZW4gKOmZs+afj+i+sCk=?= 
+        <rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, there is very limited power management support available
-in the upstream vfio-pci driver. If there is no user of vfio-pci device,
-then it will be moved into D3Hot state. Similarly, if we enable the
-runtime power management for vfio-pci device in the guest OS, then the
-device is being runtime suspended (for linux guest OS) and the PCI
-device will be put into D3hot state (in function
-vfio_pm_config_write()). If the D3cold state can be used instead of
-D3hot, then it will help in saving maximum power. The D3cold state can't
-be possible with native PCI PM. It requires interaction with platform
-firmware which is system-specific. To go into low power states
-(including D3cold), the runtime PM framework can be used which
-internally interacts with PCI and platform firmware and puts the device
-into the lowest possible D-States.
+On Mon, May 16, 2022 at 8:43 AM Roger Lu <roger.lu@mediatek.com> wrote:
+>
+> The Smart Voltage Scaling(SVS) engine is a piece of hardware
+> which calculates suitable SVS bank voltages to OPP voltage table.
+> Then, DVFS driver could apply those SVS bank voltages to PMIC/Buck
+> when receiving OPP_EVENT_ADJUST_VOLTAGE.
+>
+> 1. SVS driver uses OPP adjust event in [1] to update OPP table voltage part.
+> 2. SVS driver gets thermal/GPU device by node [2][3] and CPU device by get_cpu_device().
+> After retrieving subsys device, SVS driver calls device_link_add() to make sure probe/suspend callback priority.
+>
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git/commit/?h=opp/linux-next&id=25cb20a212a1f989385dfe23230817e69c62bee5
+> [2] https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git/commit/?h=opp/linux-next&id=b325ce39785b1408040d90365a6ab1aa36e94f87
+> [3] https://git.kernel.org/pub/scm/linux/kernel/git/matthias.bgg/linux.git/commit/?h=v5.16-next/dts64&id=a8168cebf1bca1b5269e8a7eb2626fb76814d6e2
+>
+> Change since v24:
+> - Rebase to Linux 5.18-rc6
+> - Show specific fail log in svs_platform_probe() to help catch which step fails quickly
+> - Remove struct svs_bank member "pd_dev" because all subsys device's power domain has been merged into one node like above [3]
+>
+> Test in below environment:
+> SW: Integration Tree [4] + Thermal patch [5] + SVS v25 (this patchset)
+> HW: mt8183-Krane
+>
+> [4] https://github.com/wens/linux/commits/mt8183-cpufreq-cci-svs-test
 
-This patch series registers the vfio-pci driver with runtime
-PM framework and uses the same for moving the physical PCI
-device to go into the low power state for unused idle devices.
-There will be separate patch series that will add the support
-for using runtime PM framework for used idle devices.
+I've updated my branch to include all the latest versions of the relevant
+patch series:
 
-The current PM support was added with commit 6eb7018705de ("vfio-pci:
-Move idle devices to D3hot power state") where the following point was
-mentioned regarding D3cold state.
+- anx7625 DPI bus type series v2 (so the display works)
+- MT8183 thermal series v9 (this seems to have been overlooked by the
+maintainer)
+- MTK SVS driver series v25
+- devfreq: cpu based scaling support to passive governor series v5
+- MTK CCI devfreq series v4
+- MT8183 cpufreq series v7
+- Additional WIP patches for panfrost MTK devfreq
 
- "It's tempting to try to use D3cold, but we have no reason to inhibit
-  hotplug of idle devices and we might get into a loop of having the
-  device disappear before we have a chance to try to use it."
+ChenYu
 
-With the runtime PM, if the user want to prevent going into D3cold then
-/sys/bus/pci/devices/.../d3cold_allowed can be set to 0 for the
-devices where the above functionality is required instead of
-disallowing the D3cold state for all the cases.
-
-The BAR access needs to be disabled if device is in D3hot state.
-Also, there should not be any config access if device is in D3cold
-state. For SR-IOV, the PF power state should be higher than VF's power
-state.
-
-* Changes in v4
-
-- Rebased over https://github.com/awilliam/linux-vfio/tree/next.
-- Split the patch series into 2 parts. This part contains the patches
-  for using runtime PM for unused idle device.
-- Used the 'pdev->current_state' for checking if the device in D3 state.
-- Adds the check in __vfio_pci_memory_enabled() function itself instead
-  of adding power state check at each caller.
-- Make vfio_pci_lock_and_set_power_state() global since it is needed
-  in different files.
-- Used vfio_pci_lock_and_set_power_state() instead of
-  vfio_pci_set_power_state() before pci_enable_sriov().
-- Inside vfio_pci_core_sriov_configure(), handled both the cases
-  (the device is in low power state with and without user).
-- Used list_for_each_entry_continue_reverse() in
-  vfio_pci_dev_set_pm_runtime_get().
-
-* Changes in v3
-  (https://lore.kernel.org/lkml/20220425092615.10133-1-abhsahu@nvidia.com)
-
-- Rebased patches on v5.18-rc3.
-- Marked this series as PATCH instead of RFC.
-- Addressed the review comments given in v2.
-- Removed the limitation to keep device in D0 state if there is any
-  access from host side. This is specific to NVIDIA use case and
-  will be handled separately.
-- Used the existing DEVICE_FEATURE IOCTL itself instead of adding new
-  IOCTL for power management.
-- Removed all custom code related with power management in runtime
-  suspend/resume callbacks and IOCTL handling. Now, the callbacks
-  contain code related with INTx handling and few other stuffs and
-  all the PCI state and platform PM handling will be done by PCI core
-  functions itself.
-- Add the support of wake-up in main vfio layer itself since now we have
-  more vfio/pci based drivers.
-- Instead of assigning the 'struct dev_pm_ops' in individual parent
-  driver, now the vfio_pci_core tself assigns the 'struct dev_pm_ops'. 
-- Added handling of power management around SR-IOV handling.
-- Moved the setting of drvdata in a separate patch.
-- Masked INTx before during runtime suspended state.
-- Changed the order of patches so that Fix related things are at beginning
-  of this patch series.
-- Removed storing the power state locally and used one new boolean to
-  track the d3 (D3cold and D3hot) power state 
-- Removed check for IO access in D3 power state.
-- Used another helper function vfio_lock_and_set_power_state() instead
-  of touching vfio_pci_set_power_state().
-- Considered the fixes made in
-  https://lore.kernel.org/lkml/20220217122107.22434-1-abhsahu@nvidia.com
-  and updated the patches accordingly.
-
-* Changes in v2
-  (https://lore.kernel.org/lkml/20220124181726.19174-1-abhsahu@nvidia.com)
-
-- Rebased patches on v5.17-rc1.
-- Included the patch to handle BAR access in D3cold.
-- Included the patch to fix memory leak.
-- Made a separate IOCTL that can be used to change the power state from
-  D3hot to D3cold and D3cold to D0.
-- Addressed the review comments given in v1.
-
-* v1
-  https://lore.kernel.org/lkml/20211115133640.2231-1-abhsahu@nvidia.com/
-
-Abhishek Sahu (4):
-  vfio/pci: Invalidate mmaps and block the access in D3hot power state
-  vfio/pci: Change the PF power state to D0 before enabling VFs
-  vfio/pci: Virtualize PME related registers bits and initialize to zero
-  vfio/pci: Move the unused device into low power state with runtime PM
-
- drivers/vfio/pci/vfio_pci_config.c |  40 +++++-
- drivers/vfio/pci/vfio_pci_core.c   | 195 +++++++++++++++++++++--------
- include/linux/vfio_pci_core.h      |   2 +
- 3 files changed, 181 insertions(+), 56 deletions(-)
-
--- 
-2.17.1
-
+> [5] https://patchwork.kernel.org/project/linux-pm/patch/20210820095206.30981-1-ben.tseng@mediatek.com
+>
+> Boots up log:
+> [    4.447369]  SVSB_CPU_LITTLE: svs_init01_isr_handler: VDN74~30:0x141e262e~0x33373c42, DC:0x02f3010b
+> [    4.447623]  SVSB_CPU_BIG: svs_init01_isr_handler: VDN74~30:0x151f2830~0x363a4046, DC:0x02f90141
+> [    4.447872]  SVSB_CCI: svs_init01_isr_handler: VDN74~30:0x141a232b~0x30363d42, DC:0x02ed00d5
+> [    4.448119]  SVSB_GPU: svs_init01_isr_handler: VDN74~30:0x1416171a~0x1d202327, DC:0x02f7012f
+> [    4.448239]  SVSB_CPU_LITTLE: svs_init02_isr_handler: VOP74~30:0x1b252d35~0x3a3e4349, DC:0x02f30000
+> [    4.448343]  SVSB_CPU_BIG: svs_init02_isr_handler: VOP74~30:0x1c262f37~0x3d41474d, DC:0x02f90000
+> [    4.448400]  SVSB_CCI: svs_init02_isr_handler: VOP74~30:0x1b212a32~0x373d4449, DC:0x02ed0000
+> [    4.448499]  SVSB_GPU: svs_init02_isr_handler: VOP74~30:0x1618191c~0x1f222529, DC:0x02f70000
+>
+> SVS commands log:
+> localhost ~ # cat /sys/kernel/debug/svs/*/*
+> init2
+> SVSB_CCI: temperature ignore, turn_pt = 0
+> opp_freq[00]: 1196000000, opp_volt[00]: 968750, svsb_volt[00]: 0x4b, freq_pct[00]: 100
+> opp_freq[01]: 1144000000, opp_volt[01]: 956250, svsb_volt[01]: 0x49, freq_pct[01]: 96
+> opp_freq[02]: 1092000000, opp_volt[02]: 937500, svsb_volt[02]: 0x46, freq_pct[02]: 92
+> opp_freq[03]: 1027000000, opp_volt[03]: 918750, svsb_volt[03]: 0x43, freq_pct[03]: 86
+> opp_freq[04]: 962000000, opp_volt[04]: 893750, svsb_volt[04]: 0x3f, freq_pct[04]: 81
+> opp_freq[05]: 923000000, opp_volt[05]: 881250, svsb_volt[05]: 0x3d, freq_pct[05]: 78
+> opp_freq[06]: 871000000, opp_volt[06]: 856250, svsb_volt[06]: 0x39, freq_pct[06]: 73
+> opp_freq[07]: 845000000, opp_volt[07]: 850000, svsb_volt[07]: 0x38, freq_pct[07]: 71
+> opp_freq[08]: 767000000, opp_volt[08]: 825000, svsb_volt[08]: 0x34, freq_pct[08]: 65
+> opp_freq[09]: 689000000, opp_volt[09]: 800000, svsb_volt[09]: 0x30, freq_pct[09]: 58
+> opp_freq[10]: 624000000, opp_volt[10]: 775000, svsb_volt[10]: 0x2c, freq_pct[10]: 53
+> opp_freq[11]: 546000000, opp_volt[11]: 750000, svsb_volt[11]: 0x28, freq_pct[11]: 46
+> opp_freq[12]: 463000000, opp_volt[12]: 718750, svsb_volt[12]: 0x23, freq_pct[12]: 39
+> opp_freq[13]: 403000000, opp_volt[13]: 700000, svsb_volt[13]: 0x20, freq_pct[13]: 34
+> opp_freq[14]: 338000000, opp_volt[14]: 681250, svsb_volt[14]: 0x1d, freq_pct[14]: 29
+> opp_freq[15]: 273000000, opp_volt[15]: 650000, svsb_volt[15]: 0x1a, freq_pct[15]: 23
+> init2
+> SVSB_CPU_BIG: temperature ignore, turn_pt = 0
+> opp_freq[00]: 1989000000, opp_volt[00]: 1050000, svsb_volt[00]: 0x59, freq_pct[00]: 100
+> opp_freq[01]: 1924000000, opp_volt[01]: 1025000, svsb_volt[01]: 0x57, freq_pct[01]: 97
+> opp_freq[02]: 1846000000, opp_volt[02]: 1000000, svsb_volt[02]: 0x53, freq_pct[02]: 93
+> opp_freq[03]: 1781000000, opp_volt[03]: 975000, svsb_volt[03]: 0x50, freq_pct[03]: 90
+> opp_freq[04]: 1716000000, opp_volt[04]: 950000, svsb_volt[04]: 0x4d, freq_pct[04]: 87
+> opp_freq[05]: 1677000000, opp_volt[05]: 931250, svsb_volt[05]: 0x4c, freq_pct[05]: 85
+> opp_freq[06]: 1625000000, opp_volt[06]: 912500, svsb_volt[06]: 0x49, freq_pct[06]: 82
+> opp_freq[07]: 1586000000, opp_volt[07]: 900000, svsb_volt[07]: 0x47, freq_pct[07]: 80
+> opp_freq[08]: 1508000000, opp_volt[08]: 875000, svsb_volt[08]: 0x43, freq_pct[08]: 76
+> opp_freq[09]: 1417000000, opp_volt[09]: 850000, svsb_volt[09]: 0x40, freq_pct[09]: 72
+> opp_freq[10]: 1326000000, opp_volt[10]: 825000, svsb_volt[10]: 0x3b, freq_pct[10]: 67
+> opp_freq[11]: 1248000000, opp_volt[11]: 800000, svsb_volt[11]: 0x38, freq_pct[11]: 63
+> opp_freq[12]: 1131000000, opp_volt[12]: 775000, svsb_volt[12]: 0x32, freq_pct[12]: 57
+> opp_freq[13]: 1014000000, opp_volt[13]: 750000, svsb_volt[13]: 0x2d, freq_pct[13]: 51
+> opp_freq[14]: 910000000, opp_volt[14]: 725000, svsb_volt[14]: 0x28, freq_pct[14]: 46
+> opp_freq[15]: 793000000, opp_volt[15]: 700000, svsb_volt[15]: 0x23, freq_pct[15]: 40
+> init2
+> SVSB_CPU_LITTLE: temperature ignore, turn_pt = 0
+> opp_freq[00]: 1989000000, opp_volt[00]: 968750, svsb_volt[00]: 0x4b, freq_pct[00]: 100
+> opp_freq[01]: 1924000000, opp_volt[01]: 956250, svsb_volt[01]: 0x49, freq_pct[01]: 97
+> opp_freq[02]: 1846000000, opp_volt[02]: 931250, svsb_volt[02]: 0x45, freq_pct[02]: 93
+> opp_freq[03]: 1781000000, opp_volt[03]: 918750, svsb_volt[03]: 0x43, freq_pct[03]: 90
+> opp_freq[04]: 1716000000, opp_volt[04]: 900000, svsb_volt[04]: 0x40, freq_pct[04]: 87
+> opp_freq[05]: 1677000000, opp_volt[05]: 893750, svsb_volt[05]: 0x3f, freq_pct[05]: 85
+> opp_freq[06]: 1625000000, opp_volt[06]: 875000, svsb_volt[06]: 0x3c, freq_pct[06]: 82
+> opp_freq[07]: 1586000000, opp_volt[07]: 868750, svsb_volt[07]: 0x3b, freq_pct[07]: 80
+> opp_freq[08]: 1508000000, opp_volt[08]: 843750, svsb_volt[08]: 0x37, freq_pct[08]: 76
+> opp_freq[09]: 1417000000, opp_volt[09]: 825000, svsb_volt[09]: 0x34, freq_pct[09]: 72
+> opp_freq[10]: 1326000000, opp_volt[10]: 793750, svsb_volt[10]: 0x2f, freq_pct[10]: 67
+> opp_freq[11]: 1248000000, opp_volt[11]: 775000, svsb_volt[11]: 0x2c, freq_pct[11]: 63
+> opp_freq[12]: 1131000000, opp_volt[12]: 743750, svsb_volt[12]: 0x27, freq_pct[12]: 57
+> opp_freq[13]: 1014000000, opp_volt[13]: 712500, svsb_volt[13]: 0x22, freq_pct[13]: 51
+> opp_freq[14]: 910000000, opp_volt[14]: 681250, svsb_volt[14]: 0x1d, freq_pct[14]: 46
+> opp_freq[15]: 793000000, opp_volt[15]: 650000, svsb_volt[15]: 0x18, freq_pct[15]: 40
+> mon mode
+> SVSB_GPU: temperature = 33492, turn_pt = 0
+> opp_freq[00]: 800000000, opp_volt[00]: 743750, svsb_volt[00]: 0x27, freq_pct[00]: 100
+> opp_freq[01]: 743000000, opp_volt[01]: 731250, svsb_volt[01]: 0x25, freq_pct[01]: 93
+> opp_freq[02]: 698000000, opp_volt[02]: 718750, svsb_volt[02]: 0x23, freq_pct[02]: 88
+> opp_freq[03]: 653000000, opp_volt[03]: 712500, svsb_volt[03]: 0x22, freq_pct[03]: 82
+> opp_freq[04]: 620000000, opp_volt[04]: 700000, svsb_volt[04]: 0x20, freq_pct[04]: 78
+> opp_freq[05]: 580000000, opp_volt[05]: 693750, svsb_volt[05]: 0x1f, freq_pct[05]: 73
+> opp_freq[06]: 540000000, opp_volt[06]: 681250, svsb_volt[06]: 0x1d, freq_pct[06]: 68
+> opp_freq[07]: 500000000, opp_volt[07]: 675000, svsb_volt[07]: 0x1c, freq_pct[07]: 63
+> opp_freq[08]: 460000000, opp_volt[08]: 662500, svsb_volt[08]: 0x1a, freq_pct[08]: 58
+> opp_freq[09]: 420000000, opp_volt[09]: 656250, svsb_volt[09]: 0x19, freq_pct[09]: 53
+> opp_freq[10]: 400000000, opp_volt[10]: 643750, svsb_volt[10]: 0x17, freq_pct[10]: 50
+> opp_freq[11]: 380000000, opp_volt[11]: 643750, svsb_volt[11]: 0x17, freq_pct[11]: 48
+> opp_freq[12]: 360000000, opp_volt[12]: 637500, svsb_volt[12]: 0x16, freq_pct[12]: 45
+> opp_freq[13]: 340000000, opp_volt[13]: 637500, svsb_volt[13]: 0x16, freq_pct[13]: 43
+> opp_freq[14]: 320000000, opp_volt[14]: 625000, svsb_volt[14]: 0x14, freq_pct[14]: 40
+> opp_freq[15]: 300000000, opp_volt[15]: 625000, svsb_volt[15]: 0x14, freq_pct[15]: 38
+>
+> Roger Lu (7):
+>   [v25,1/7] dt-bindings: soc: mediatek: add mtk svs dt-bindings
+>   [v25,2/7] arm64: dts: mt8183: add svs device information
+>   [v25,3/7] soc: mediatek: SVS: introduce MTK SVS engine
+>   [v25,4/7] soc: mediatek: SVS: add monitor mode
+>   [v25,5/7] soc: mediatek: SVS: add debug commands
+>   [v25,6/7] dt-bindings: soc: mediatek: add mt8192 svs dt-bindings
+>   [v25,7/7] soc: mediatek: SVS: add mt8192 SVS GPU driver
+>
+>  .../bindings/soc/mediatek/mtk-svs.yaml        |   91 +
+>  arch/arm64/boot/dts/mediatek/mt8183.dtsi      |   16 +
+>  drivers/soc/mediatek/Kconfig                  |   10 +
+>  drivers/soc/mediatek/Makefile                 |    1 +
+>  drivers/soc/mediatek/mtk-svs.c                | 2399 +++++++++++++++++
+>  5 files changed, 2517 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+>  create mode 100644 drivers/soc/mediatek/mtk-svs.c
+>
+>
+>
+> _______________________________________________
+> Linux-mediatek mailing list
+> Linux-mediatek@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-mediatek
