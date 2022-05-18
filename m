@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5943DC433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 22:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4200C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 22:55:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230255AbiERWyi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 May 2022 18:54:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38260 "EHLO
+        id S230415AbiERWy7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 May 2022 18:54:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38384 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229960AbiERWyg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2022 18:54:36 -0400
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBD232265D0;
-        Wed, 18 May 2022 15:54:35 -0700 (PDT)
-Received: from in01.mta.xmission.com ([166.70.13.51]:60712)
-        by out03.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        with ESMTP id S230314AbiERWyq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2022 18:54:46 -0400
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF9C52265E4;
+        Wed, 18 May 2022 15:54:44 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:54828)
+        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nrSYj-00CkVI-6u; Wed, 18 May 2022 16:54:25 -0600
+        id 1nrSZ1-001T58-Fx; Wed, 18 May 2022 16:54:43 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:38724 helo=localhost.localdomain)
         by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nrSYf-002Z0O-Er; Wed, 18 May 2022 16:54:24 -0600
+        id 1nrSZ0-002Z0O-DQ; Wed, 18 May 2022 16:54:43 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -50,50 +50,79 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
-        "Eric W. Biederman" <ebiederm@xmission.com>,
-        linux-alpha@vger.kernel.org
-Date:   Wed, 18 May 2022 17:53:40 -0500
-Message-Id: <20220518225355.784371-1-ebiederm@xmission.com>
+        "Eric W. Biederman" <ebiederm@xmission.com>
+Date:   Wed, 18 May 2022 17:53:44 -0500
+Message-Id: <20220518225355.784371-5-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <871qwq5ucx.fsf_-_@email.froward.int.ebiederm.org>
 References: <871qwq5ucx.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nrSYf-002Z0O-Er;;;mid=<20220518225355.784371-1-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1+VdHu+AQ1uu8lMLBODEbaBhkaz/j3E23I=
+X-XM-SPF: eid=1nrSZ0-002Z0O-DQ;;;mid=<20220518225355.784371-5-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX19bmUj59Un5KGL2qB5b8KKLljIsiq43aWI=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH 01/16] signal/alpha: Remove unused definition of TASK_REAL_PARENT
+Subject: [PATCH 05/16] ptrace: Remove dead code from __ptrace_detach
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Rather than update this defition when I move tsk->real_parent into
-signal_struct remove it now.
+Ever since commit 28d838cc4dfe ("Fix ptrace self-attach rule") it has
+been impossible to attach another thread in the same thread group.
 
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matt Turner <mattst88@gmail.com>
-Cc: linux-alpha@vger.kernel.org
+Remove the code from __ptrace_detach that was trying to support
+detaching from a thread in the same thread group.  The code is
+dead and I can not make sense of what it is trying to do.
+
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- arch/alpha/kernel/asm-offsets.c | 1 -
- 1 file changed, 1 deletion(-)
+ kernel/ptrace.c | 24 +++---------------------
+ 1 file changed, 3 insertions(+), 21 deletions(-)
 
-diff --git a/arch/alpha/kernel/asm-offsets.c b/arch/alpha/kernel/asm-offsets.c
-index 2e125e5c1508..0fca99dc5757 100644
---- a/arch/alpha/kernel/asm-offsets.c
-+++ b/arch/alpha/kernel/asm-offsets.c
-@@ -21,7 +21,6 @@ void foo(void)
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 328a34a99124..ca0e47691229 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -526,19 +526,6 @@ static int ptrace_traceme(void)
+ 	return ret;
+ }
  
-         DEFINE(TASK_BLOCKED, offsetof(struct task_struct, blocked));
-         DEFINE(TASK_CRED, offsetof(struct task_struct, cred));
--        DEFINE(TASK_REAL_PARENT, offsetof(struct task_struct, real_parent));
-         DEFINE(TASK_GROUP_LEADER, offsetof(struct task_struct, group_leader));
-         DEFINE(TASK_TGID, offsetof(struct task_struct, tgid));
-         BLANK();
+-/*
+- * Called with irqs disabled, returns true if childs should reap themselves.
+- */
+-static int ignoring_children(struct sighand_struct *sigh)
+-{
+-	int ret;
+-	spin_lock(&sigh->siglock);
+-	ret = (sigh->action[SIGCHLD-1].sa.sa_handler == SIG_IGN) ||
+-	      (sigh->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT);
+-	spin_unlock(&sigh->siglock);
+-	return ret;
+-}
+-
+ /*
+  * Called with tasklist_lock held for writing.
+  * Unlink a traced task, and clean it up if it was a traced zombie.
+@@ -565,14 +552,9 @@ static bool __ptrace_detach(struct task_struct *tracer, struct task_struct *p)
+ 
+ 	dead = !thread_group_leader(p);
+ 
+-	if (!dead && thread_group_empty(p)) {
+-		if (!same_thread_group(p->real_parent, tracer))
+-			dead = do_notify_parent(p, p->exit_signal);
+-		else if (ignoring_children(tracer->sighand)) {
+-			__wake_up_parent(p, tracer);
+-			dead = true;
+-		}
+-	}
++	if (!dead && thread_group_empty(p))
++		dead = do_notify_parent(p, p->exit_signal);
++
+ 	/* Mark it as in the process of being reaped. */
+ 	if (dead)
+ 		p->exit_state = EXIT_DEAD;
 -- 
 2.35.3
 
