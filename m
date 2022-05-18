@@ -2,231 +2,746 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 171E6C433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 11:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54476C433FE
+	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 12:19:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235515AbiERLRg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 May 2022 07:17:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50240 "EHLO
+        id S236265AbiERMTa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 May 2022 08:19:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235498AbiERLRZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2022 07:17:25 -0400
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2046.outbound.protection.outlook.com [40.107.237.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 598A4712CA;
-        Wed, 18 May 2022 04:17:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=SY6/mcc/PX40qoIeqjwGKxxnpO958f5HCU65h0PteeM0TkzPpfIyvTihR1347gBMrTB53G6Y295Z+YATMzyCaA2JLUVUymqzKkvEcDMUwBXsZ10tQWId71QM/hIkM6EsXttc+kbZGx34Cv8ox9d8g0XNDnthmpbWYanYV5MDtLf9G5az+vUm17zDlbcuUL5w07G0quSEUkz1VZRCrDgE/jIuvGm0kKfnvaR/hJKfFbUMg43Fw5NHOt5pAhRmhPY5I8jv20g1ignBAc89AN1GBM5tSTrVajdY6tgojvLGwHb6WVlrn5QcOmV/vYEQheY/Z+xCPoRrafcGX4Qk9FGXXg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ckZNf76vXNF0gCLtTyWXDiodvzXxVNyqHCsixTx7kg0=;
- b=RvE9nL3dAhF944q4aEtNR3lfakX4bpcfLiu+yhqyU++OJLtMEmgEjvKt7hPXOAcvUmzcgLbQawBv/+ST3z2nnaWMdu9gHwgDv4ZWNvgbD2tTvUb1AuIlbqwVCbixZ4EUQgVIN7/v+WlMirCF0rR/WVVPTjtLZr+jwWg80SwIpdpQ8AdcuIgaxyPTSlNcdMvQ8Ear3ih/bBtvGLMVdJOgtAEybA4NwypNwQOw4O7PwPH54Hunlp4vLovdoLgX/6BZ2yFebjgEnPeEHGlb6gH3b5SL1NCA7+3KhFPW19Wy2jaNe/Ata8rnocA9OT1vCqEoAEryMVc9wwbzA9p1+spYFg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 12.22.5.235) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ckZNf76vXNF0gCLtTyWXDiodvzXxVNyqHCsixTx7kg0=;
- b=tTUNnaVfDYi5QH0v2elMiHBSv9yGHdNXQMg4l9zl+8ch0IfWJEut8AScs3p13q6ESpqvPQhs5vjJlnvkJZh9xMWQOgnjn7bR0Ith+9Pk+JIDseCB21CwLWLi+OhzVs5mVn4YmVUmbcmUiDROF6lXrr6dS5SjH3yHF6kePJRe1lGZCpAbdwM0yGfJugB+ADG2+2QIeZ7HeAbSw0Aanna3FH4xGLXRr4rq/SFbxsXqr3/MIHGPsVU248jM05JEDAVD4AWhqZVW4ndpsTP4S9SagBWnDF7+nQ60nnwd/reFZf6ZMeoQI7CeS1Bsnau59MFDey+kp0+767LbZEtXo+ujHw==
-Received: from DS7PR03CA0216.namprd03.prod.outlook.com (2603:10b6:5:3ba::11)
- by MN0PR12MB6004.namprd12.prod.outlook.com (2603:10b6:208:380::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.18; Wed, 18 May
- 2022 11:17:21 +0000
-Received: from DM6NAM11FT057.eop-nam11.prod.protection.outlook.com
- (2603:10b6:5:3ba:cafe::4) by DS7PR03CA0216.outlook.office365.com
- (2603:10b6:5:3ba::11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.14 via Frontend
- Transport; Wed, 18 May 2022 11:17:20 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 12.22.5.235)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 12.22.5.235 as permitted sender) receiver=protection.outlook.com;
- client-ip=12.22.5.235; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (12.22.5.235) by
- DM6NAM11FT057.mail.protection.outlook.com (10.13.172.252) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.20.5273.14 via Frontend Transport; Wed, 18 May 2022 11:17:20 +0000
-Received: from rnnvmail205.nvidia.com (10.129.68.10) by DRHQMAIL107.nvidia.com
- (10.27.9.16) with Microsoft SMTP Server (TLS) id 15.0.1497.32; Wed, 18 May
- 2022 11:16:20 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by rnnvmail205.nvidia.com
- (10.129.68.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.22; Wed, 18 May
- 2022 04:16:19 -0700
-Received: from nvidia-abhsahu-1.nvidia.com (10.127.8.9) by mail.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server id 15.2.986.22 via Frontend
- Transport; Wed, 18 May 2022 04:16:14 -0700
-From:   Abhishek Sahu <abhsahu@nvidia.com>
-To:     Alex Williamson <alex.williamson@redhat.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Jason Gunthorpe <jgg@nvidia.com>,
-        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
-        Kevin Tian <kevin.tian@intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-CC:     Max Gurtovoy <mgurtovoy@nvidia.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
-        Abhishek Sahu <abhsahu@nvidia.com>
-Subject: [PATCH v5 0/4] vfio/pci: power management changes
-Date:   Wed, 18 May 2022 16:46:08 +0530
-Message-ID: <20220518111612.16985-1-abhsahu@nvidia.com>
-X-Mailer: git-send-email 2.17.1
-X-NVConfidentiality: public
+        with ESMTP id S236253AbiERMT3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2022 08:19:29 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6E915B3F3;
+        Wed, 18 May 2022 05:19:26 -0700 (PDT)
+X-UUID: ec8f9464bc374defb3a3f6b0723bd22a-20220518
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:748e9568-0c00-4656-8b08-2344e07374ba,OB:0,LO
+        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:5
+X-CID-META: VersionHash:2a19b09,CLOUDID:3200a7e2-edbf-4bd4-8a34-dfc5f7bb086d,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+        ,QS:0,BEC:nil
+X-UUID: ec8f9464bc374defb3a3f6b0723bd22a-20220518
+Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw01.mediatek.com
+        (envelope-from <johnson.wang@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 296804066; Wed, 18 May 2022 20:19:21 +0800
+Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Wed, 18 May 2022 20:19:20 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Wed, 18 May 2022 20:19:20 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Wed, 18 May 2022 20:19:19 +0800
+Message-ID: <7eec74e32bb482ba6984c6789f598ee9965f49b3.camel@mediatek.com>
+Subject: Re: [RESEND v4 2/2] PM / devfreq: mediatek: Introduce MediaTek CCI
+ devfreq driver
+From:   Johnson Wang <johnson.wang@mediatek.com>
+To:     Chen-Yu Tsai <wenst@chromium.org>
+CC:     <cw00.choi@samsung.com>, <krzk+dt@kernel.org>,
+        <robh+dt@kernel.org>, <kyungmin.park@samsung.com>,
+        <djakov@kernel.org>, <khilman@kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>, <jia-wei.chang@mediatek.com>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Wed, 18 May 2022 20:19:20 +0800
+In-Reply-To: <CAGXv+5Em2eq8g8phC7MVcEP-sCsSsKa9FQjOra2UN3pib_psLA@mail.gmail.com>
+References: <20220513032832.17645-1-johnson.wang@mediatek.com>
+         <20220513032832.17645-3-johnson.wang@mediatek.com>
+         <CAGXv+5Em2eq8g8phC7MVcEP-sCsSsKa9FQjOra2UN3pib_psLA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: f2b71050-040e-4cd1-46c6-08da38bff9d6
-X-MS-TrafficTypeDiagnostic: MN0PR12MB6004:EE_
-X-Microsoft-Antispam-PRVS: <MN0PR12MB600439F104C609214A2F0F83CCD19@MN0PR12MB6004.namprd12.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: wfIu4kvvMbgBseMV1suafEOgduZapT709N2kYf0slta18nK1IAeHJNShllj2dSZivMtfd7ifNlxf9ybD6945DlMneoHtvYiOyIjjvd0g3FccIojUI/l1Tw+8V1lBw/0BFXrCfz5aNAWDLvks9QgY3NlgsWbqQ3tc9Iy6wys8inekKjjYo2oP0sPwLst+LVDAwupPXoth/CbjyAKKRAbGpWC22BD39aYMB79yk0lnRc5UArittz61ebrX8G0W3d0SzoPPm9jiy1GTqFV8iFbUE0QC+daQDPh4F9bzpg0hXFwBtTISswMq7OmHS3oov00wyeJPYkDjOg3ZK0NpkILqgm16qB5kTRECS+4VI87suiDG3oHZVUw8Hnen7YcZBli1QJMNl7p+SlwAia630p5O7PO82aLGyQnzj2Ws4N386FNS6U8yGLV1ZjUKEhSjeypHwaRB584uBeXTUzap7+UehIFiO7g09FsjysCezjrIzRLRMMFR+p98UBWiW7ouXfijOEPXDYVwwwgCvse6HCe3xbIeyCsvSer2vCdxe0cS8RzbYP1NbxYWPoSvzgTDKZfS0nJac7l4CxMorkqH7WFI2uMS5Xaj9q/FEdbhQSd+38Rp6B81/OhK9wBg8uTUcqQy5Oxa7ufE/KAmAU8xUfYB08gjepKQ4T1B9Pkd/AitSEEpKV3J9qKU4TKvmwiX/g0rDgP+A89LLP7y76wbnlln4L1PyZCJiVl+qg1TuDOT3Ndo1yEcMNbxT3SlB+c0y5KvUbx+T0PmFjzJS2cwvvus+GtMBI3mztetzpIna2mAilnLGXpYMJdE3WXwLO/Be1k+UzNdUkfWoQqJ8/4kFkdArA==
-X-Forefront-Antispam-Report: CIP:12.22.5.235;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:InfoNoRecords;CAT:NONE;SFS:(13230001)(4636009)(46966006)(40470700004)(36840700001)(86362001)(36860700001)(316002)(6666004)(36756003)(5660300002)(83380400001)(26005)(4326008)(508600001)(7696005)(8676002)(70206006)(70586007)(82310400005)(966005)(1076003)(336012)(426003)(40460700003)(186003)(8936002)(2616005)(107886003)(7416002)(54906003)(110136005)(2906002)(47076005)(356005)(81166007)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2022 11:17:20.6575
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f2b71050-040e-4cd1-46c6-08da38bff9d6
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[12.22.5.235];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT057.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB6004
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, there is very limited power management support available
-in the upstream vfio-pci driver. If there is no user of vfio-pci device,
-then it will be moved into D3Hot state. Similarly, if we enable the
-runtime power management for vfio-pci device in the guest OS, then the
-device is being runtime suspended (for linux guest OS) and the PCI
-device will be put into D3hot state (in function
-vfio_pm_config_write()). If the D3cold state can be used instead of
-D3hot, then it will help in saving maximum power. The D3cold state can't
-be possible with native PCI PM. It requires interaction with platform
-firmware which is system-specific. To go into low power states
-(including D3cold), the runtime PM framework can be used which
-internally interacts with PCI and platform firmware and puts the device
-into the lowest possible D-States.
+Hi Chen-Yu,
 
-This patch series registers the vfio-pci driver with runtime
-PM framework and uses the same for moving the physical PCI
-device to go into the low power state for unused idle devices.
-There will be separate patch series that will add the support
-for using runtime PM framework for used idle devices.
+On Fri, 2022-05-13 at 11:54 +0800, Chen-Yu Tsai wrote:
+> On Fri, May 13, 2022 at 11:31 AM Johnson Wang <
+> johnson.wang@mediatek.com> wrote:
+> > 
+> > We introduce a devfreq driver for the MediaTek Cache Coherent
+> > Interconnect
+> > (CCI) used by some MediaTek SoCs.
+> > 
+> > In this driver, we use the passive devfreq driver to get target
+> > frequencies
+> > and adjust voltages accordingly. In MT8183 and MT8186, the MediaTek
+> > CCI
+> > is supplied by the same regulators with the little core CPUs.
+> > 
+> > Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+> > Signed-off-by: Johnson Wang <johnson.wang@mediatek.com>
+> > Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> > ---
+> > This patch depends on "devfreq-testing"[1].
+> > [1]
+> > https://urldefense.com/v3/__https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/log/?h=devfreq-testing__;!!CTRNKA9wMg0ARbw!zzOSoso9udvDV3h6kYlmizFtbn3ACA5aS2jCAjKyvtu4z0fobv1mD5uF9YbPSme8l_NnR05unTxkZfDdzohu8asWZQ$
+> >  
+> > ---
+> >  drivers/devfreq/Kconfig           |  10 +
+> >  drivers/devfreq/Makefile          |   1 +
+> >  drivers/devfreq/mtk-cci-devfreq.c | 474
+> > ++++++++++++++++++++++++++++++
+> >  3 files changed, 485 insertions(+)
+> >  create mode 100644 drivers/devfreq/mtk-cci-devfreq.c
+> > 
+> > diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> > index 87eb2b837e68..9754d8b31621 100644
+> > --- a/drivers/devfreq/Kconfig
+> > +++ b/drivers/devfreq/Kconfig
+> > @@ -120,6 +120,16 @@ config ARM_TEGRA_DEVFREQ
+> >           It reads ACTMON counters of memory controllers and
+> > adjusts the
+> >           operating frequencies and voltages with OPP support.
+> > 
+> > +config ARM_MEDIATEK_CCI_DEVFREQ
+> > +       tristate "MEDIATEK CCI DEVFREQ Driver"
+> > +       depends on ARM_MEDIATEK_CPUFREQ || COMPILE_TEST
+> > +       select DEVFREQ_GOV_PASSIVE
+> > +       help
+> > +         This adds a devfreq driver for MediaTek Cache Coherent
+> > Interconnect
+> > +         which is shared the same regulators with the cpu cluster.
+> > It can track
+> > +         buck voltages and update a proper CCI frequency. Use the
+> > notification
+> > +         to get the regulator status.
+> > +
+> >  config ARM_RK3399_DMC_DEVFREQ
+> >         tristate "ARM RK3399 DMC DEVFREQ Driver"
+> >         depends on (ARCH_ROCKCHIP && HAVE_ARM_SMCCC) || \
+> > diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+> > index 0b6be92a25d9..bf40d04928d0 100644
+> > --- a/drivers/devfreq/Makefile
+> > +++ b/drivers/devfreq/Makefile
+> > @@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)     +=
+> > governor_passive.o
+> >  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)   += exynos-bus.o
+> >  obj-$(CONFIG_ARM_IMX_BUS_DEVFREQ)      += imx-bus.o
+> >  obj-$(CONFIG_ARM_IMX8M_DDRC_DEVFREQ)   += imx8m-ddrc.o
+> > +obj-$(CONFIG_ARM_MEDIATEK_CCI_DEVFREQ) += mtk-cci-devfreq.o
+> >  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)   += rk3399_dmc.o
+> >  obj-$(CONFIG_ARM_SUN8I_A33_MBUS_DEVFREQ)       += sun8i-a33-mbus.o
+> >  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)                += tegra30-
+> > devfreq.o
+> > diff --git a/drivers/devfreq/mtk-cci-devfreq.c
+> > b/drivers/devfreq/mtk-cci-devfreq.c
+> > new file mode 100644
+> > index 000000000000..aa8c37eb4a06
+> > --- /dev/null
+> > +++ b/drivers/devfreq/mtk-cci-devfreq.c
+> > @@ -0,0 +1,474 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * Copyright (C) 2022 MediaTek Inc.
+> > + */
+> > +
+> > +#include <linux/clk.h>
+> > +#include <linux/devfreq.h>
+> > +#include <linux/minmax.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_device.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/pm_opp.h>
+> > +#include <linux/regulator/consumer.h>
+> > +
+> > +struct mtk_ccifreq_platform_data {
+> > +       int min_volt_shift;
+> > +       int max_volt_shift;
+> > +       int proc_max_volt;
+> > +       int sram_min_volt;
+> > +       int sram_max_volt;
+> > +};
+> > +
+> > +struct mtk_ccifreq_drv {
+> > +       struct device *dev;
+> > +       struct devfreq *devfreq;
+> > +       struct regulator *proc_reg;
+> > +       struct regulator *sram_reg;
+> > +       struct clk *cci_clk;
+> > +       struct clk *inter_clk;
+> > +       int inter_voltage;
+> > +       int pre_voltage;
+> > +       unsigned long pre_freq;
+> > +       /* Avoid race condition for regulators between notify and
+> > policy */
+> > +       struct mutex reg_lock;
+> > +       struct notifier_block opp_nb;
+> > +       const struct mtk_ccifreq_platform_data *soc_data;
+> > +       int vtrack_max;
+> > +};
+> > +
+> > +static int mtk_ccifreq_set_voltage(struct mtk_ccifreq_drv *drv,
+> > int new_voltage)
+> > +{
+> > +       const struct mtk_ccifreq_platform_data *soc_data = drv-
+> > >soc_data;
+> > +       struct device *dev = drv->dev;
+> > +       int pre_voltage, pre_vsram, new_vsram, vsram, voltage, ret;
+> > +       int retry_max = drv->vtrack_max;
+> > +
+> > +       if (!drv->sram_reg) {
+> > +               ret = regulator_set_voltage(drv->proc_reg,
+> > new_voltage,
+> > +                                           drv->soc_data-
+> > >proc_max_volt);
+> > +               goto out_set_voltage;
+> > +       }
+> > +
+> > +       pre_voltage = regulator_get_voltage(drv->proc_reg);
+> > +       if (pre_voltage < 0) {
+> > +               dev_err(dev, "invalid vproc value: %d\n",
+> > pre_voltage);
+> > +               return pre_voltage;
+> > +       }
+> > +
+> > +       pre_vsram = regulator_get_voltage(drv->sram_reg);
+> > +       if (pre_vsram < 0) {
+> > +               dev_err(dev, "invalid vsram value: %d\n",
+> > pre_vsram);
+> > +               return pre_vsram;
+> > +       }
+> > +
+> > +       new_vsram = clamp(new_voltage + soc_data->min_volt_shift,
+> > +                         soc_data->sram_min_volt, soc_data-
+> > >sram_max_volt);
+> > +
+> > +       do {
+> > +               if (pre_voltage <= new_voltage) {
+> > +                       vsram = clamp(pre_voltage + soc_data-
+> > >max_volt_shift,
+> > +                                     soc_data->sram_min_volt,
+> > new_vsram);
+> > +                       ret = regulator_set_voltage(drv->sram_reg,
+> > vsram,
+> > +                                                   soc_data-
+> > >sram_max_volt);
+> > +                       if (ret)
+> > +                               return ret;
+> > +
+> > +                       if (vsram == soc_data->sram_max_volt ||
+> > +                           new_vsram == soc_data->sram_min_volt)
+> > +                               voltage = new_voltage;
+> > +                       else
+> > +                               voltage = vsram - soc_data-
+> > >min_volt_shift;
+> > +
+> > +                       ret = regulator_set_voltage(drv->proc_reg,
+> > voltage,
+> > +                                                   soc_data-
+> > >proc_max_volt);
+> > +                       if (ret) {
+> > +                               regulator_set_voltage(drv-
+> > >sram_reg, pre_vsram,
+> > +                                                     soc_data-
+> > >sram_max_volt);
+> > +                               return ret;
+> > +                       }
+> > +               } else if (pre_voltage > new_voltage) {
+> > +                       voltage = max(new_voltage,
+> > +                                     pre_vsram - soc_data-
+> > >max_volt_shift);
+> > +                       ret = regulator_set_voltage(drv->proc_reg,
+> > voltage,
+> > +                                                   soc_data-
+> > >proc_max_volt);
+> > +                       if (ret)
+> > +                               return ret;
+> > +
+> > +                       if (voltage == new_voltage)
+> > +                               vsram = new_vsram;
+> > +                       else
+> > +                               vsram = max(new_vsram,
+> > +                                           voltage + soc_data-
+> > >min_volt_shift);
+> > +
+> > +                       ret = regulator_set_voltage(drv->sram_reg,
+> > vsram,
+> > +                                                   soc_data-
+> > >sram_max_volt);
+> > +                       if (ret) {
+> > +                               regulator_set_voltage(drv-
+> > >proc_reg, pre_voltage,
+> > +                                                     soc_data-
+> > >proc_max_volt);
+> > +                               return ret;
+> > +                       }
+> > +               }
+> > +
+> > +               pre_voltage = voltage;
+> > +               pre_vsram = vsram;
+> > +
+> > +               if (--retry_max < 0) {
+> > +                       dev_err(dev,
+> > +                               "over loop count, failed to set
+> > voltage\n");
+> > +                       return -EINVAL;
+> > +               }
+> > +       } while (voltage != new_voltage || vsram != new_vsram);
+> > +
+> > +out_set_voltage:
+> > +       if (!ret)
+> > +               drv->pre_voltage = new_voltage;
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +static int mtk_ccifreq_target(struct device *dev, unsigned long
+> > *freq,
+> > +                             u32 flags)
+> > +{
+> > +       struct mtk_ccifreq_drv *drv = dev_get_drvdata(dev);
+> > +       struct clk *cci_pll = clk_get_parent(drv->cci_clk);
+> > +       struct dev_pm_opp *opp;
+> > +       unsigned long opp_rate;
+> > +       int voltage, pre_voltage, inter_voltage, target_voltage,
+> > ret;
+> > +
+> > +       if (!drv)
+> > +               return -EINVAL;
+> > +
+> > +       if (drv->pre_freq == *freq)
+> > +               return 0;
+> > +
+> > +       inter_voltage = drv->inter_voltage;
+> > +
+> > +       opp_rate = *freq;
+> > +       opp = devfreq_recommended_opp(dev, &opp_rate, 1);
+> > +       if (IS_ERR(opp)) {
+> > +               dev_err(dev, "failed to find opp for freq: %ld\n",
+> > opp_rate);
+> > +               return PTR_ERR(opp);
+> > +       }
+> > +
+> > +       mutex_lock(&drv->reg_lock);
+> > +
+> > +       voltage = dev_pm_opp_get_voltage(opp);
+> > +       dev_pm_opp_put(opp);
+> > +
+> > +       if (unlikely(drv->pre_voltage <= 0))
+> > +               pre_voltage = regulator_get_voltage(drv->proc_reg);
+> > +       else
+> > +               pre_voltage = drv->pre_voltage;
+> 
+> Could you explain why the previous voltage setting is cached like
+> this?
+> 
+> The CCI is sharing the regulator supply with one of the CPU clusters,
+> and cpufreq could also change the voltage, so it's better to always
+> retrieve the current setting directly from the regulator core. And
+> those values might be cached iun the core, so it's unlikely to incur
+> a significant cost.
 
-The current PM support was added with commit 6eb7018705de ("vfio-pci:
-Move idle devices to D3hot power state") where the following point was
-mentioned regarding D3cold state.
+Thanks for your suggestion.
+I will modify it as mtk_ccifreq_set_voltage() does.
+In that way I will try to remove pre_voltage member because it's no
+longer needed.
+> > +
+> > +       if (pre_voltage < 0) {
+> > +               dev_err(dev, "invalid vproc value: %d\n",
+> > pre_voltage);
+> > +               return pre_voltage;
+> > +       }
+> > +
+> > +       /* scale up: set voltage first then freq. */
+> > +       target_voltage = max(inter_voltage, voltage);
+> > +       if (pre_voltage <= target_voltage) {
+> > +               ret = mtk_ccifreq_set_voltage(drv, target_voltage);
+> > +               if (ret) {
+> > +                       dev_err(dev, "failed to scale up
+> > voltage\n");
+> > +                       goto out_restore_voltage;
+> > +               }
+> > +       }
+> > +
+> > +       /* switch the cci clock to intermediate clock source. */
+> > +       ret = clk_set_parent(drv->cci_clk, drv->inter_clk);
+> > +       if (ret) {
+> > +               dev_err(dev, "failed to re-parent cci clock\n");
+> > +               goto out_restore_voltage;
+> > +       }
+> > +
+> > +       /* set the original clock to target rate. */
+> > +       ret = clk_set_rate(cci_pll, *freq);
+> > +       if (ret) {
+> > +               dev_err(dev, "failed to set cci pll rate: %d\n",
+> > ret);
+> > +               clk_set_parent(drv->cci_clk, cci_pll);
+> > +               goto out_restore_voltage;
+> > +       }
+> > +
+> > +       /* switch the cci clock back to the original clock source.
+> > */
+> > +       ret = clk_set_parent(drv->cci_clk, cci_pll);
+> > +       if (ret) {
+> > +               dev_err(dev, "failed to re-parent cci clock\n");
+> > +               mtk_ccifreq_set_voltage(drv, inter_voltage);
+> > +               goto out_unlock;
+> > +       }
+> > +
+> > +       /*
+> > +        * If the new voltage is lower than the intermediate
+> > voltage or the
+> > +        * original voltage, scale down to the new voltage.
+> > +        */
+> > +       if (voltage < inter_voltage || voltage < pre_voltage) {
+> > +               ret = mtk_ccifreq_set_voltage(drv, voltage);
+> > +               if (ret) {
+> > +                       dev_err(dev, "failed to scale down
+> > voltage\n");
+> > +                       goto out_unlock;
+> > +               }
+> > +       }
+> > +
+> > +       drv->pre_freq = *freq;
+> > +       mutex_unlock(&drv->reg_lock);
+> > +
+> > +       return 0;
+> > +
+> > +out_restore_voltage:
+> > +       mtk_ccifreq_set_voltage(drv, pre_voltage);
+> > +
+> > +out_unlock:
+> > +       mutex_unlock(&drv->reg_lock);
+> > +       return ret;
+> > +}
+> > +
+> > +static int mtk_ccifreq_opp_notifier(struct notifier_block *nb,
+> > +                                   unsigned long event, void
+> > *data)
+> > +{
+> > +       struct dev_pm_opp *opp = data;
+> > +       struct mtk_ccifreq_drv *drv;
+> > +       unsigned long freq, volt;
+> > +
+> > +       drv = container_of(nb, struct mtk_ccifreq_drv, opp_nb);
+> > +
+> > +       if (event == OPP_EVENT_ADJUST_VOLTAGE) {
+> > +               freq = dev_pm_opp_get_freq(opp);
+> > +
+> > +               mutex_lock(&drv->reg_lock);
+> > +               /* current opp item is changed */
+> > +               if (freq == drv->pre_freq) {
+> > +                       volt = dev_pm_opp_get_voltage(opp);
+> > +                       mtk_ccifreq_set_voltage(drv, volt);
+> > +               }
+> > +               mutex_unlock(&drv->reg_lock);
+> > +       }
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static struct devfreq_dev_profile mtk_ccifreq_profile = {
+> > +       .target = mtk_ccifreq_target,
+> > +};
+> > +
+> > +static int mtk_ccifreq_probe(struct platform_device *pdev)
+> > +{
+> > +       struct device *dev = &pdev->dev;
+> > +       struct mtk_ccifreq_drv *drv;
+> > +       struct devfreq_passive_data *passive_data;
+> > +       struct dev_pm_opp *opp;
+> > +       unsigned long rate, opp_volt;
+> > +       int ret;
+> > +
+> > +       drv = devm_kzalloc(dev, sizeof(*drv), GFP_KERNEL);
+> > +       if (!drv)
+> > +               return -ENOMEM;
+> > +
+> > +       drv->dev = dev;
+> > +       drv->soc_data = (const struct mtk_ccifreq_platform_data *)
+> > +                               of_device_get_match_data(&pdev-
+> > >dev);
+> > +       mutex_init(&drv->reg_lock);
+> > +       platform_set_drvdata(pdev, drv);
+> > +
+> > +       drv->cci_clk = devm_clk_get(dev, "cci");
+> > +       if (IS_ERR(drv->cci_clk)) {
+> > +               ret = PTR_ERR(drv->cci_clk);
+> > +               return dev_err_probe(dev, ret,
+> > +                                    "failed to get cci clk: %d\n",
+> > ret);
+> > +       }
+> > +
+> > +       drv->inter_clk = devm_clk_get(dev, "intermediate");
+> > +       if (IS_ERR(drv->inter_clk)) {
+> > +               ret = PTR_ERR(drv->inter_clk);
+> > +               dev_err_probe(dev, ret,
+> > +                             "failed to get intermediate clk:
+> > %d\n", ret);
+> > +               goto out_free_resources;
+> > +       }
+> > +
+> > +       drv->proc_reg = devm_regulator_get_optional(dev, "proc");
+> > +       if (IS_ERR(drv->proc_reg)) {
+> > +               ret = PTR_ERR(drv->proc_reg);
+> > +               dev_err_probe(dev, ret,
+> > +                             "failed to get proc regulator: %d\n",
+> > ret);
+> > +               goto out_free_resources;
+> > +       }
+> > +
+> > +       ret = regulator_enable(drv->proc_reg);
+> > +       if (ret) {
+> > +               dev_err(dev, "failed to enable proc regulator\n");
+> > +               goto out_free_resources;
+> > +       }
+> > +
+> > +       drv->sram_reg = regulator_get_optional(dev, "sram");
+> 
+> devm_ for this as well?
+> 
+I will modify it in the next version.
 
- "It's tempting to try to use D3cold, but we have no reason to inhibit
-  hotplug of idle devices and we might get into a loop of having the
-  device disappear before we have a chance to try to use it."
+> > +       if (IS_ERR(drv->sram_reg))
+> > +               drv->sram_reg = NULL;
+> > +       else {
+> > +               ret = regulator_enable(drv->sram_reg);
+> > +               if (ret) {
+> > +                       dev_err(dev, "failed to enable sram
+> > regulator\n");
+> > +                       goto out_free_resources;
+> > +               }
+> > +       }
+> > +
+> > +       /*
+> > +        * We assume min voltage is 0 and tracking target voltage
+> > using
+> > +        * min_volt_shift for each iteration.
+> > +        * The retry_max is 3 times of expeted iteration count.
+> 
+> expected?
+> 
+Maybe "the maximum" will be more appropriate?
 
-With the runtime PM, if the user want to prevent going into D3cold then
-/sys/bus/pci/devices/.../d3cold_allowed can be set to 0 for the
-devices where the above functionality is required instead of
-disallowing the D3cold state for all the cases.
+> > +        */
+> > +       drv->vtrack_max = 3 * DIV_ROUND_UP(max(drv->soc_data-
+> > >sram_max_volt,
+> > +                                              drv->soc_data-
+> > >proc_max_volt),
+> > +                                          drv->soc_data-
+> > >min_volt_shift);
+> > +
+> > +       ret = clk_prepare_enable(drv->cci_clk);
+> > +       if (ret)
+> > +               goto out_free_resources;
+> > +
+> > +       ret = clk_prepare_enable(drv->inter_clk);
+> 
+> You don't need to enable the intermediate clock here. You shouldn't
+> need
+> to at all, as the CCF core will do it when the CCI clock is
+> reparented
+> over to it.
 
-The BAR access needs to be disabled if device is in D3hot state.
-Also, there should not be any config access if device is in D3cold
-state. For SR-IOV, the PF power state should be higher than VF's power
-state.
+I will remove it and all of clk_disable_unprepare(drv->inter_clk) in
+this file.
+> 
+> > +       if (ret)
+> > +               goto out_disable_cci_clk;
+> > +
+> > +       ret = dev_pm_opp_of_add_table(dev);
+> > +       if (ret) {
+> > +               dev_err(dev, "failed to add opp table: %d\n", ret);
+> > +               goto out_disable_inter_clk;
+> > +       }
+> > +
+> > +       rate = clk_get_rate(drv->inter_clk);
+> > +       opp = dev_pm_opp_find_freq_ceil(dev, &rate);
+> > +       if (IS_ERR(opp)) {
+> > +               ret = PTR_ERR(opp);
+> > +               dev_err(dev, "failed to get intermediate opp:
+> > %d\n", ret);
+> > +               goto out_remove_opp_table;
+> > +       }
+> > +       drv->inter_voltage = dev_pm_opp_get_voltage(opp);
+> > +       dev_pm_opp_put(opp);
+> > +
+> > +       rate = U32_MAX;
+> > +       opp = dev_pm_opp_find_freq_floor(drv->dev, &rate);
+> > +       if (IS_ERR(opp)) {
+> > +               dev_err(dev, "failed to get opp\n");
+> > +               ret = PTR_ERR(opp);
+> > +               goto out_remove_opp_table;
+> > +       }
+> > +
+> > +       opp_volt = dev_pm_opp_get_voltage(opp);
+> > +       dev_pm_opp_put(opp);
+> > +       ret = mtk_ccifreq_set_voltage(drv, opp_volt);
+> > +       if (ret) {
+> > +               dev_err(dev, "failed to scale to highest voltage
+> > %lu in proc_reg\n",
+> > +                       opp_volt);
+> > +               goto out_remove_opp_table;
+> > +       }
+> > +
+> > +       passive_data = devm_kzalloc(dev, sizeof(struct
+> > devfreq_passive_data),
+> > +                                   GFP_KERNEL);
+> > +       if (!passive_data) {
+> > +               ret = -ENOMEM;
+> > +               goto out_remove_opp_table;
+> > +       }
+> > +
+> > +       passive_data->parent_type = CPUFREQ_PARENT_DEV;
+> > +       drv->devfreq = devm_devfreq_add_device(dev,
+> > &mtk_ccifreq_profile,
+> > +                                              DEVFREQ_GOV_PASSIVE,
+> > +                                              passive_data);
+> > +       if (IS_ERR(drv->devfreq)) {
+> > +               ret = -EPROBE_DEFER;
+> > +               dev_err(dev, "failed to add devfreq device: %ld\n",
+> > +                       PTR_ERR(drv->devfreq));
+> > +               goto out_remove_opp_table;
+> > +       }
+> > +
+> > +       drv->opp_nb.notifier_call = mtk_ccifreq_opp_notifier;
+> > +       ret = dev_pm_opp_register_notifier(dev, &drv->opp_nb);
+> > +       if (ret) {
+> > +               dev_err(dev, "failed to register opp notifier:
+> > %d\n", ret);
+> > +               goto out_remove_devfreq_device;
+> > +       }
+> > +       return 0;
+> > +
+> > +out_remove_devfreq_device:
+> > +       devm_devfreq_remove_device(dev, drv->devfreq);
+> > +
+> > +out_remove_opp_table:
+> > +       dev_pm_opp_of_remove_table(dev);
+> > +
+> > +out_disable_inter_clk:
+> > +       clk_disable_unprepare(drv->inter_clk);
+> > +
+> > +out_disable_cci_clk:
+> > +       clk_disable_unprepare(drv->cci_clk);
+> > +
+> > +out_free_resources:
+> > +       if (regulator_is_enabled(drv->proc_reg))
+> > +               regulator_disable(drv->proc_reg);
+> > +       if (drv->sram_reg && regulator_is_enabled(drv->sram_reg))
+> > +               regulator_disable(drv->sram_reg);
+> > +
+> > +       if (!IS_ERR(drv->proc_reg))
+> > +               regulator_put(drv->proc_reg);
+> > +       if (!IS_ERR(drv->sram_reg))
+> > +               regulator_put(drv->sram_reg);
+> > +       if (!IS_ERR(drv->cci_clk))
+> > +               clk_put(drv->cci_clk);
+> > +       if (!IS_ERR(drv->inter_clk))
+> > +               clk_put(drv->inter_clk);
+> 
+> You don't need to "put" the resources you got using devm_ variants.
+> If you really want to, you need to use devm_(clk|regulator)_put.
+> 
 
-* Changes in v5
+I think I will remove these lines in the next version.
 
-- Rebased over https://github.com/awilliam/linux-vfio/tree/next.
-- Renamed vfio_pci_lock_and_set_power_state() to
-  vfio_lock_and_set_power_state() and made it static.
-- Inside vfio_pci_core_sriov_configure(), protected setting of
-  power state and sriov enablement with 'memory_lock'.
-- Removed CONFIG_PM macro use since it is not needed with current
-  code.
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +static int mtk_ccifreq_remove(struct platform_device *pdev)
+> > +{
+> > +       struct device *dev = &pdev->dev;
+> > +       struct mtk_ccifreq_drv *drv;
+> > +
+> > +       drv = platform_get_drvdata(pdev);
+> > +
+> > +       dev_pm_opp_unregister_notifier(dev, &drv->opp_nb);
+> > +       dev_pm_opp_of_remove_table(dev);
+> > +       clk_disable_unprepare(drv->inter_clk);
+> > +       clk_disable_unprepare(drv->cci_clk);
+> > +       regulator_disable(drv->proc_reg);
+> > +       if (drv->sram_reg)
+> > +               regulator_disable(drv->sram_reg);
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static const struct mtk_ccifreq_platform_data mt8183_platform_data
+> > = {
+> > +       .min_volt_shift = 100000,
+> > +       .max_volt_shift = 200000,
+> > +       .proc_max_volt = 1150000,
+> > +       .sram_min_volt = 0,
+> > +       .sram_max_volt = 1150000,
+> 
+> AFAICT there's no sram supply for MT8183, so set max to zero as well?
+> And you can just drop the two lines instead of explicitly setting
+> them to zero.
+> 
 
-* Changes in v4
-  (https://lore.kernel.org/lkml/20220517100219.15146-1-abhsahu@nvidia.com)
+Sure, I will drop these two line.
 
-- Rebased over https://github.com/awilliam/linux-vfio/tree/next.
-- Split the patch series into 2 parts. This part contains the patches
-  for using runtime PM for unused idle device.
-- Used the 'pdev->current_state' for checking if the device in D3 state.
-- Adds the check in __vfio_pci_memory_enabled() function itself instead
-  of adding power state check at each caller.
-- Make vfio_pci_lock_and_set_power_state() global since it is needed
-  in different files.
-- Used vfio_pci_lock_and_set_power_state() instead of
-  vfio_pci_set_power_state() before pci_enable_sriov().
-- Inside vfio_pci_core_sriov_configure(), handled both the cases
-  (the device is in low power state with and without user).
-- Used list_for_each_entry_continue_reverse() in
-  vfio_pci_dev_set_pm_runtime_get().
+> > +};
+> > +
+> > +static const struct mtk_ccifreq_platform_data mt8186_platform_data
+> > = {
+> > +       .min_volt_shift = 100000,
+> > +       .max_volt_shift = 250000,
+> > +       .proc_max_volt = 1118750,
+> > +       .sram_min_volt = 850000,
+> > +       .sram_max_volt = 1118750,
+> 
+> A side note about this: the min/max voltage values should also be set
+> on the regulator nodes in the device tree. The range then gets
+> enforced
+> by the regulator core.
+> 
 
-* Changes in v3
-  (https://lore.kernel.org/lkml/20220425092615.10133-1-abhsahu@nvidia.com)
+Thanks for your reminder.
+We will notice this when we are sending dts patches.
 
-- Rebased patches on v5.18-rc3.
-- Marked this series as PATCH instead of RFC.
-- Addressed the review comments given in v2.
-- Removed the limitation to keep device in D0 state if there is any
-  access from host side. This is specific to NVIDIA use case and
-  will be handled separately.
-- Used the existing DEVICE_FEATURE IOCTL itself instead of adding new
-  IOCTL for power management.
-- Removed all custom code related with power management in runtime
-  suspend/resume callbacks and IOCTL handling. Now, the callbacks
-  contain code related with INTx handling and few other stuffs and
-  all the PCI state and platform PM handling will be done by PCI core
-  functions itself.
-- Add the support of wake-up in main vfio layer itself since now we have
-  more vfio/pci based drivers.
-- Instead of assigning the 'struct dev_pm_ops' in individual parent
-  driver, now the vfio_pci_core tself assigns the 'struct dev_pm_ops'. 
-- Added handling of power management around SR-IOV handling.
-- Moved the setting of drvdata in a separate patch.
-- Masked INTx before during runtime suspended state.
-- Changed the order of patches so that Fix related things are at beginning
-  of this patch series.
-- Removed storing the power state locally and used one new boolean to
-  track the d3 (D3cold and D3hot) power state 
-- Removed check for IO access in D3 power state.
-- Used another helper function vfio_lock_and_set_power_state() instead
-  of touching vfio_pci_set_power_state().
-- Considered the fixes made in
-  https://lore.kernel.org/lkml/20220217122107.22434-1-abhsahu@nvidia.com
-  and updated the patches accordingly.
+BRs,
+Johnson Wang
 
-* Changes in v2
-  (https://lore.kernel.org/lkml/20220124181726.19174-1-abhsahu@nvidia.com)
-
-- Rebased patches on v5.17-rc1.
-- Included the patch to handle BAR access in D3cold.
-- Included the patch to fix memory leak.
-- Made a separate IOCTL that can be used to change the power state from
-  D3hot to D3cold and D3cold to D0.
-- Addressed the review comments given in v1.
-
-* v1
-  https://lore.kernel.org/lkml/20211115133640.2231-1-abhsahu@nvidia.com/
-
-Abhishek Sahu (4):
-  vfio/pci: Invalidate mmaps and block the access in D3hot power state
-  vfio/pci: Change the PF power state to D0 before enabling VFs
-  vfio/pci: Virtualize PME related registers bits and initialize to zero
-  vfio/pci: Move the unused device into low power state with runtime PM
-
- drivers/vfio/pci/vfio_pci_config.c |  56 ++++++++-
- drivers/vfio/pci/vfio_pci_core.c   | 178 ++++++++++++++++++++---------
- 2 files changed, 178 insertions(+), 56 deletions(-)
-
--- 
-2.17.1
+> 
+> Regards
+> ChenYu
+> 
+> > +};
+> > +
+> > +static const struct of_device_id mtk_ccifreq_machines[] = {
+> > +       { .compatible = "mediatek,mt8183-cci", .data =
+> > &mt8183_platform_data },
+> > +       { .compatible = "mediatek,mt8186-cci", .data =
+> > &mt8186_platform_data },
+> > +       { },
+> > +};
+> > +MODULE_DEVICE_TABLE(of, mtk_ccifreq_machines);
+> > +
+> > +static struct platform_driver mtk_ccifreq_platdrv = {
+> > +       .probe  = mtk_ccifreq_probe,
+> > +       .remove = mtk_ccifreq_remove,
+> > +       .driver = {
+> > +               .name = "mtk-ccifreq",
+> > +               .of_match_table = mtk_ccifreq_machines,
+> > +       },
+> > +};
+> > +module_platform_driver(mtk_ccifreq_platdrv);
+> > +
+> > +MODULE_DESCRIPTION("MediaTek CCI devfreq driver");
+> > +MODULE_AUTHOR("Jia-Wei Chang <jia-wei.chang@mediatek.com>");
+> > +MODULE_LICENSE("GPL v2");
+> > --
+> > 2.18.0
+> > 
+> > 
+> > _______________________________________________
+> > Linux-mediatek mailing list
+> > Linux-mediatek@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-mediatek
 
