@@ -2,203 +2,211 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A39C9C433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 17:45:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B751CC433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 17:51:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241212AbiERRpz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 May 2022 13:45:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37862 "EHLO
+        id S241136AbiERRvh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 May 2022 13:51:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241215AbiERRpy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2022 13:45:54 -0400
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA2321F60B;
-        Wed, 18 May 2022 10:45:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1652895953; x=1684431953;
-  h=message-id:date:subject:to:cc:references:from:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=wDZHOF+uht3wNtPWbSu0WdoCsoXbeSOWwE8EG3rbEZg=;
-  b=lc3WS+SnlPmdta4YAMlAfUU4AyqMmUTKasQkPMLYRcoYhz4NN2QNxgVk
-   V4TrkUg4VsM0KrgcY8rDXGZv2Tymzxs5taVZzjpZIOwEtj/jvSLLViz+Q
-   IUgarAXJsMOWLEt6knf799dcsA4Z/x+NPui6kfwsk426wmg7UvxyA1Lv2
-   73OIhVhaRl1aIE+E15DVnGEDgKYSAq1EmA6+LxKUrr9kLO4OLY7g74reT
-   5FhiQBKcdpBln/7XQse1F+18XzNsAOYBPU+lEA/Tj+b7p0SIopBM0Wx5V
-   SXH28JfoylecvYkE960N04rQ00/sPjdIeTaCkfp5PToZnKFyLd16DL5A4
-   Q==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10351"; a="252318277"
-X-IronPort-AV: E=Sophos;i="5.91,235,1647327600"; 
-   d="scan'208";a="252318277"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 May 2022 10:20:18 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,235,1647327600"; 
-   d="scan'208";a="569639147"
-Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
-  by orsmga007.jf.intel.com with ESMTP; 18 May 2022 10:20:17 -0700
-Received: from fmsmsx612.amr.corp.intel.com (10.18.126.92) by
- fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27; Wed, 18 May 2022 10:20:17 -0700
-Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
- fmsmsx612.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27 via Frontend Transport; Wed, 18 May 2022 10:20:17 -0700
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.108)
- by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2308.27; Wed, 18 May 2022 10:20:17 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=KgdCI2j/tbjhk0KD/XcKCyh9xV+eCq7Z8Jta8GUv8+EYt9wfAtwWMto/oESoE07x1MehDw+po7CNv1LlbsyOx1Mnh+9tjt4uGCZ/fS7II8rRgug9J0EVKTq2z2OheKberSn29QvwvFuJI/wXAQpFqIyFTGs8X+L0U0jiyBhbE66+PNx+59kJjMk2DNZ3giDcHRUfaqRV6hs4BkwKNM3iE8AHp/ltc/MTipcsxKgBXQxu440SvpjqF8db+nCzMjTPh1a9JhEjtAw3PMNfMM6adglTuK/nw3a4jadfUOVq0UoSZmdxHx7RAzS5k9oJe9gP6kWMAHLPc5bwuHT3gzXlDQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Vp0UQ5ox2Mf8kWkQHBN5zSwC9mIH3jT7XNDdHEfMCPQ=;
- b=YBlfnDM4wfvJ/Vn6rL//FHI4R2qFbHjNWX8Um6t5CS7E/kd5uKhbFtZ51DAlMs+tWcTSrkDILqiOmumwBj2JGFsrLL7SFUpAb6+SwlEl9Nqpuy6Auv/Pwip4EHhSdb1e7CwAye2ONVspXL933Otdy4otrB/o1B0+wLKnye6Z0fcyl9cou+0HO3ghtHOYSkw1y485ZShf94K0DXDBRyTfYDgEm5CbzRgp4/2Jl0FdxjVtW9MgoOowx/fjcKN4EVpH5iy06pcMoJxQEf22Ung1dcnjJSWmN846VJxOzcPIPKquvVCdPVVlWfDS2OPfUioMEzv53zb+9LpwDqSylxptJw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from PH0PR11MB4855.namprd11.prod.outlook.com (2603:10b6:510:41::12)
- by BN7PR11MB2833.namprd11.prod.outlook.com (2603:10b6:406:b5::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5273.15; Wed, 18 May
- 2022 17:20:15 +0000
-Received: from PH0PR11MB4855.namprd11.prod.outlook.com
- ([fe80::1c70:a7e4:c7e5:1c9c]) by PH0PR11MB4855.namprd11.prod.outlook.com
- ([fe80::1c70:a7e4:c7e5:1c9c%8]) with mapi id 15.20.5273.013; Wed, 18 May 2022
- 17:20:15 +0000
-Message-ID: <d081a3f8-4a66-f411-f1cd-e80d752d3851@intel.com>
-Date:   Wed, 18 May 2022 10:20:13 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH v4 1/2] x86/fpu: Add a helper to prepare AMX state for
- low-power CPU idle
-Content-Language: en-CA
-To:     Dave Hansen <dave.hansen@intel.com>,
-        <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
-        <linux-pm@vger.kernel.org>
-CC:     <tglx@linutronix.de>, <dave.hansen@linux.intel.com>,
-        <peterz@infradead.org>, <bp@alien8.de>, <rafael@kernel.org>,
-        <ravi.v.shankar@intel.com>
-References: <20220517222430.24524-1-chang.seok.bae@intel.com>
- <20220517222430.24524-2-chang.seok.bae@intel.com>
- <25a2a82f-b5e5-0fce-86c8-03d7da5fcdd1@intel.com>
-From:   "Chang S. Bae" <chang.seok.bae@intel.com>
-In-Reply-To: <25a2a82f-b5e5-0fce-86c8-03d7da5fcdd1@intel.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BYAPR07CA0030.namprd07.prod.outlook.com
- (2603:10b6:a02:bc::43) To PH0PR11MB4855.namprd11.prod.outlook.com
- (2603:10b6:510:41::12)
+        with ESMTP id S241247AbiERRvg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2022 13:51:36 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9DAFC36E3B
+        for <linux-pm@vger.kernel.org>; Wed, 18 May 2022 10:51:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1652896292;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Nk8FG1zVlK+b3cf8Z9HOHSMj2oGGXMKoRhmwTtaFzXg=;
+        b=awERrsvg2MQ7E8oIgWuNDW/kZKqWrIBF6PrRGZVzV4+10W+nH3cYSaVRb67yYpJolUiWak
+        vW7MxRUGmu/ItWoQynaVBrXZzy1AwS2Gs/DojJIMpMpgPZft1ReCia6f+K9iqXTQ88Kboh
+        OJNjH8eBuz2GZ+xGRmQIP/95NzGXjXM=
+Received: from mail-il1-f200.google.com (mail-il1-f200.google.com
+ [209.85.166.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-133-CFRDCxOZOyOiIbEL41f_pw-1; Wed, 18 May 2022 13:51:31 -0400
+X-MC-Unique: CFRDCxOZOyOiIbEL41f_pw-1
+Received: by mail-il1-f200.google.com with SMTP id d6-20020a056e02214600b002d1508d53edso1602781ilv.16
+        for <linux-pm@vger.kernel.org>; Wed, 18 May 2022 10:51:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:organization:mime-version:content-transfer-encoding;
+        bh=Nk8FG1zVlK+b3cf8Z9HOHSMj2oGGXMKoRhmwTtaFzXg=;
+        b=mcaXubmm5oRNZV8ZlxZcHWiVqarsRTGuhJrnjhoGCtpYqTFurKYxZJItnYvTbUhPud
+         WkJy3o+uD8scO3j5++dbXefBM2Eew77pOTbBwVzcHCUtkRZtis5RCFgugFQaC+D5fk1O
+         BA9AZ20MQ2+yECT69IxWbmU5QtrpHTywJ/Jo4SSjpA78pSHpHnr4fJGNDfVZIj29y+vy
+         yNNbwTUgNtIUWD3yC91jFIpkNJ3k9j2f2vGdAgT42E63xQSm7jnKlN1PreXRP7pJXV55
+         gEfC6RX5ORUm0HoAZtla6cOH/6MiTb0sy6KECbxHPFf12qexnhncBtXZotrHosepxv94
+         kMuw==
+X-Gm-Message-State: AOAM533wbcgwCCN7CAgp7JwldI4PT1P0/ic2EirwaheghJ8sHKbLRh+y
+        hrQnm6BsWWhBE20QJkxNAJFVl+fm4tG7okfOCYNvppJwdeSL+Hgud8p7W+QS8GxiDXox3O30/qA
+        GLRR6t/5IBwdGhG7lcBQ=
+X-Received: by 2002:a05:6e02:170b:b0:2cf:970f:6050 with SMTP id u11-20020a056e02170b00b002cf970f6050mr502312ill.5.1652896290458;
+        Wed, 18 May 2022 10:51:30 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJyvGIXeh5ZKDwW8XXL/TqH2zn8XMIgmzLTRYqD89L8R+HvJolPMaoY0IBC9xwKmkIM5aMFVTw==
+X-Received: by 2002:a05:6e02:170b:b0:2cf:970f:6050 with SMTP id u11-20020a056e02170b00b002cf970f6050mr502296ill.5.1652896290223;
+        Wed, 18 May 2022 10:51:30 -0700 (PDT)
+Received: from redhat.com ([38.15.36.239])
+        by smtp.gmail.com with ESMTPSA id d15-20020a02a48f000000b0032b3a7817bdsm31618jam.129.2022.05.18.10.51.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 May 2022 10:51:29 -0700 (PDT)
+Date:   Wed, 18 May 2022 11:51:29 -0600
+From:   Alex Williamson <alex.williamson@redhat.com>
+To:     Abhishek Sahu <abhsahu@nvidia.com>
+Cc:     Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Jason Gunthorpe <jgg@nvidia.com>,
+        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH v5 0/4] vfio/pci: power management changes
+Message-ID: <20220518115129.72beddcd.alex.williamson@redhat.com>
+In-Reply-To: <20220518111612.16985-1-abhsahu@nvidia.com>
+References: <20220518111612.16985-1-abhsahu@nvidia.com>
+Organization: Red Hat
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 9802e098-49f7-4ac6-f20c-08da38f2ac76
-X-MS-TrafficTypeDiagnostic: BN7PR11MB2833:EE_
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-X-Microsoft-Antispam-PRVS: <BN7PR11MB283378635A514EB278BCA0EBD8D19@BN7PR11MB2833.namprd11.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: t04l2rgUyzpFUwffUCHcK5ShkVPxPZvxoMS3PKaBxt8L4bmEWEoP1Z+VO3eK8mSRppZB/r5DPyUntwe4Yz9Ya1U8dt1H1qD+lmPJQsCIiNlBhHcwh5YdA34/z9EngC1ZAgGOqV6Wla8jXjQuuLPW0dCGlf2f94hfkJiC3cOm7y1toCs/M+ncdsekhIqnacFn08nAkltSRbsREuLxBvvXNFwQmB4nwZirPtmslAARFWb9VyF+7QlY5Mg+LV21oWU4ZAybXrYDm7dUdVbJaCEHnJxTZ1kfQhYuIFpvsFR+d87A6kfLRs/1cu65lkCb4apLJtXV6nBr9yLloVz/LGJr31LPxiEZereXHSs3NVvdCPD+CDVWvnf0FeN6oeGJUm/dnk+/Kx4TzDMwK9yzFeI+M2fyNuQCnBNiKj0+MmclG0/K5ruozPZGGDBEevVNdTcUV0tjFX9u/ggAfGbndt6U8fVqV0Kl+WdAuNwSPaXJFiNFghg3Y2uSrvA8QnwzlJSfYUFmZulW4Nof7WIiK1mXGUOJYN+DGvYnvEN/JEl3slO074WtHDfIH/h4hOtDiKkmdJo1JZ8Vsn4dRqCzxAc18JJgTdFrb73qyf7RNRbzsHoVvfB/viiclKPujZPECY4L3C8sL9xEC+1Pb7/pO+omQO2vXmfhShiVhomJocXTaswQQwx+CkoZErwmX5UXi55EmroFdtrOvvnPHMT7NckitZSG6I2yRJSNaQxz0dN8KMw=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR11MB4855.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(366004)(6486002)(2906002)(508600001)(31696002)(4326008)(316002)(86362001)(8676002)(66946007)(83380400001)(66476007)(5660300002)(8936002)(66556008)(31686004)(36756003)(53546011)(186003)(6506007)(2616005)(6512007)(26005)(38100700002)(82960400001)(43740500002)(45980500001);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eTB6elVzdkU1V0hlV08xemlVbDFRV2plYUV6ekZSOUUvVU5ia2lPZ0lFZjJL?=
- =?utf-8?B?UUhwNVRoSXR5b2lqQzBlWTErWkxEKzhMZGtrUlF6ZnRqZHp2aDhGVjNKSzRk?=
- =?utf-8?B?b2hhMU9YbEFKNERLWG9jbEtsR1Jka1RHNDcxbS9kOFNvcHZDQ09qVjRGVHFK?=
- =?utf-8?B?V1FBUmJ5ekI3NkFGb21ZbS8vWlJQSkxsbjlveDJqQTNGUTJJcWNIZG9iY0p5?=
- =?utf-8?B?L2pseHUvZ0toWFJ1ZmpUZ3NBYmVPQ2lOZWUzNFVCSDd6cnNWeEc3YWtiYWJs?=
- =?utf-8?B?Sk5BcUJoaklqaHIxdHAzYWNaRjlZTmNnZ0dDSkVQeHhNYndDRzFlczJDbC9P?=
- =?utf-8?B?MTgwVFVBL0VqYWN6YU50cFdKejZRdHl1WE90Z25ibk95cE1nUTR4YmJYRlBz?=
- =?utf-8?B?YmtscjBkRnBFczR1Vy95R3RSN0FRcDJlNlpSL1lmZzhSbE0wSGNJUmwyc3Yv?=
- =?utf-8?B?K3dGMUFrRlNpODhpRm01S0FybW5hb2tIcyswS0JscVlFd2cwUXBpckJNOGZi?=
- =?utf-8?B?V0ovTkkzaXpiaTNOQlFwQmxCWk5NNGlBRkpWVWtvOEEvSDhtNTlSUTZJY0FY?=
- =?utf-8?B?Z280dnhhNFdjWXVBNjFHcHI2U1IySXFuZFFGdnVvNVdVUE0rRC9JZXNTZnU0?=
- =?utf-8?B?bzQrdlRYSDZzYUg0SjVFbkhRYzgzL0NFak9qRVAvY3pJUVpEeU43OXpVcjRj?=
- =?utf-8?B?SGp4Yzg1aVNHWWlacWJwQzQ3dlg4OEhEeTBTMmorMWxza0EvUkVTMGNjUHo3?=
- =?utf-8?B?NFNsTFQrL1l4OUdUVWl1cUdUeE5zSkpyeVNtRmt5RXNTNWdOaTY2Q3MyZkQy?=
- =?utf-8?B?a1F0VktHakpid1Y0QzJmU2pLNERlVUxWNDIrdG55ZUpJbDdKWVhDK0V3QitL?=
- =?utf-8?B?TWQ3b0R3ajBmcTVOWnJyMGhiTUN2dHZHOWY0RjFOeGlQN1luSG5rUEhtS0k1?=
- =?utf-8?B?cVYxRW9aU3VKTk9vcGhCaDJtVnNqV1dRbGlHR09DaWRwZnZCTSszY2lsMXBJ?=
- =?utf-8?B?c1hRV0FOZlB1SXVTWWhTVzYwSmsrSERMbGZaZXVBbERwVEVJMHY3VmhFNkdE?=
- =?utf-8?B?RThseS85ZEhKVHFBeGprZWlFRDQ2eTFxL1BYWENDTFhQaGF1ZFhTUmkvWnJV?=
- =?utf-8?B?d09UNXVVKzliRzVBdXhsR2xBQXRWWGEzS091QlMyYlZ0RmN3NjhFNFBpN3d5?=
- =?utf-8?B?OVRjSG1uVmhUUnNpOVhsRGtiNnRFL0hZUzR1Sm5mUEg1N0NOTE9XNW8wRjkv?=
- =?utf-8?B?ckRRbFNMYlZGRGRwcE1XZ1RNU0lzU3FOa2xkQXRiWTh4YytGVTJGWk5kdDl0?=
- =?utf-8?B?ZG1EaDRLTE52K3FXSHYrd0FlSWZMaXhvQ3RxTHk2b3g2aGZ3b1RvUEp5Q3VE?=
- =?utf-8?B?djA2RE9WSFBTb2t2L0FhWUppaUVTZkRLS3FhR3dpUU81ZzRxYzdZeFF1Z3Aw?=
- =?utf-8?B?R3JNQURBSFhFdDB2Wk12VzE2c2QwOEpMMFdncDF6T1JQbHplVnFnVnpOcjhr?=
- =?utf-8?B?dHQyWVYxOE42emhrbWNNcVk3eVhBYmZmb0lkQWR5TllNbDZUVzk0Zit4N1Yy?=
- =?utf-8?B?SUQvWE4zc3BUcXNjTjhwRFlESGRCUGlUVkJsQXgrK3BIM01iMG5FUHRja1FR?=
- =?utf-8?B?ZWdQd0ltaVlyMFpOcUxyaUdabzRQMURXWVV5QVJKaFhtQjdrajlLS3RQMVdY?=
- =?utf-8?B?RWdxUkc2bmhLNm9peWh6Vmk4bFY1eGQ5UytTTStDSDJBNWdpRzdEMDRaMmZU?=
- =?utf-8?B?MzE5MkZHNGwwMnJaK2xwai9pdFo3SFB4WVdzQ1F3dm9mU09oM04rNXEwcWMr?=
- =?utf-8?B?eFdvbnU2aVBNWWlYVVN6OFZDOVc1ZHJCQVo5bTJZWlFwUExWemV4bUNZa3Ur?=
- =?utf-8?B?anNmeng2SGppZk1VMzZSQUJ1ODdPaDNDRCtWYkFSYUwySDB3ZWxRTzc5SC9D?=
- =?utf-8?B?czkxV29OUzBBQ0Q1aEZKckNrNWNKcUZ6bzNlZVBHQkNLeGdybUNWbGdGdHBk?=
- =?utf-8?B?bTY1T1Q1ay8rRXZITWxGZzc1YlhPbW5nK2pBTWRadWxYejhsbnpCOE5QaEM0?=
- =?utf-8?B?MFFEenN5MjhMYloxN2o0R3J0OVRBT2ErRnVuS0RaU09zOXlMako0UjZHdGRW?=
- =?utf-8?B?NWFvVFlEVWhaSkowNTVCZDM5QTFaM1VPNVdUTVlFS1g0T2NmcU85Wk90V0t2?=
- =?utf-8?B?V01rNldLU1VUMitEUXAyYnorekdDL3BSU1QvdmE2ZmVWQ2QxeEJQSmFqV1FI?=
- =?utf-8?B?SjByelp0QmJzdEFkSnJaMGswMXFpd2RlNkQ0YmdDbXlkYUtGNUEwd1QrSFMx?=
- =?utf-8?B?dE45Z2JKejg1REtxZXVpeVNBODQ3a0JaVzhOTDNUOUUyYkZHRXBiMW9RdHB3?=
- =?utf-8?Q?Zwd/lPLKEJf/4v6Q=3D?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9802e098-49f7-4ac6-f20c-08da38f2ac76
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR11MB4855.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2022 17:20:15.4782
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ga+oXcvb5w9ih1B8lVQC9OgPcHlf/9/6g4KEk3da6+2uY2jki+WW6UFhjFjC7gF8BP3bqJZom3ak/81WJyxIuYnoSADz2w42ewJpRY6SFCo=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PR11MB2833
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 5/18/2022 8:41 AM, Dave Hansen wrote:
-> 
-> This is a pretty minor nit, but:
-> 
-> X86_FEATURE_XFD depends on X86_FEATURE_XGETBV1
-> 
-> and
-> 
-> X86_FEATURE_AMX_TILE depends on X86_FEATURE_XFD
-> 
-> via cpu_deps[].  So there is an implicit dependency all the way from AMX
-> to XGETBV1.  It's also not patently obvious what X86_FEATURE_XGETBV1 has
-> to do with the rest of the if().
-> 
-> Would this make more logical sense to folks?
-> 
-> 	/* Note: AMX_TILE being enabled implies XGETBV1 support */
-> 	if (cpu_feature_enabled(X86_FEATURE_AMX_TILE) &&
-> 	    (xfeatures_in_use() & XFEATURE_MASK_XTILE)) {
-> 		tile_release();
-> 		fpregs_deactivate(&current->thread.fpu);
-> 	}
+On Wed, 18 May 2022 16:46:08 +0530
+Abhishek Sahu <abhsahu@nvidia.com> wrote:
 
-With the note, I guess people will have no problem with AMX->XGETBV1. 
-But I would leave this question to others who can tell.
-
+> Currently, there is very limited power management support available
+> in the upstream vfio-pci driver. If there is no user of vfio-pci device,
+> then it will be moved into D3Hot state. Similarly, if we enable the
+> runtime power management for vfio-pci device in the guest OS, then the
+> device is being runtime suspended (for linux guest OS) and the PCI
+> device will be put into D3hot state (in function
+> vfio_pm_config_write()). If the D3cold state can be used instead of
+> D3hot, then it will help in saving maximum power. The D3cold state can't
+> be possible with native PCI PM. It requires interaction with platform
+> firmware which is system-specific. To go into low power states
+> (including D3cold), the runtime PM framework can be used which
+> internally interacts with PCI and platform firmware and puts the device
+> into the lowest possible D-States.
 > 
-> That also has a nice side effect that non-AMX systems will get to use a
-> static branch and can also skip over the XGETBV1 entirely.
-
-Yes, but FWIW, as it is non-architectural, the function should be 
-consumed only by drivers for AMX systems.
-
+> This patch series registers the vfio-pci driver with runtime
+> PM framework and uses the same for moving the physical PCI
+> device to go into the low power state for unused idle devices.
+> There will be separate patch series that will add the support
+> for using runtime PM framework for used idle devices.
 > 
-> The downside is that there's no explicit XGETBV1 check before calling
-> xfeatures_in_use().  But, I don't really expect the AMX->XGETBV1
-> dependency to go away either.
+> The current PM support was added with commit 6eb7018705de ("vfio-pci:
+> Move idle devices to D3hot power state") where the following point was
+> mentioned regarding D3cold state.
+> 
+>  "It's tempting to try to use D3cold, but we have no reason to inhibit
+>   hotplug of idle devices and we might get into a loop of having the
+>   device disappear before we have a chance to try to use it."
+> 
+> With the runtime PM, if the user want to prevent going into D3cold then
+> /sys/bus/pci/devices/.../d3cold_allowed can be set to 0 for the
+> devices where the above functionality is required instead of
+> disallowing the D3cold state for all the cases.
+> 
+> The BAR access needs to be disabled if device is in D3hot state.
+> Also, there should not be any config access if device is in D3cold
+> state. For SR-IOV, the PF power state should be higher than VF's power
+> state.
+> 
+> * Changes in v5
+> 
+> - Rebased over https://github.com/awilliam/linux-vfio/tree/next.
+> - Renamed vfio_pci_lock_and_set_power_state() to
+>   vfio_lock_and_set_power_state() and made it static.
+> - Inside vfio_pci_core_sriov_configure(), protected setting of
+>   power state and sriov enablement with 'memory_lock'.
+> - Removed CONFIG_PM macro use since it is not needed with current
+>   code.
 
-Yes, as long as AMX is wanted as a dynamic feature I think.
+Applied to vfio next branch for v5.19.  Thanks!
 
-Thanks,
-Chang
+Alex
+
+> * Changes in v4
+>   (https://lore.kernel.org/lkml/20220517100219.15146-1-abhsahu@nvidia.com)
+> 
+> - Rebased over https://github.com/awilliam/linux-vfio/tree/next.
+> - Split the patch series into 2 parts. This part contains the patches
+>   for using runtime PM for unused idle device.
+> - Used the 'pdev->current_state' for checking if the device in D3 state.
+> - Adds the check in __vfio_pci_memory_enabled() function itself instead
+>   of adding power state check at each caller.
+> - Make vfio_pci_lock_and_set_power_state() global since it is needed
+>   in different files.
+> - Used vfio_pci_lock_and_set_power_state() instead of
+>   vfio_pci_set_power_state() before pci_enable_sriov().
+> - Inside vfio_pci_core_sriov_configure(), handled both the cases
+>   (the device is in low power state with and without user).
+> - Used list_for_each_entry_continue_reverse() in
+>   vfio_pci_dev_set_pm_runtime_get().
+> 
+> * Changes in v3
+>   (https://lore.kernel.org/lkml/20220425092615.10133-1-abhsahu@nvidia.com)
+> 
+> - Rebased patches on v5.18-rc3.
+> - Marked this series as PATCH instead of RFC.
+> - Addressed the review comments given in v2.
+> - Removed the limitation to keep device in D0 state if there is any
+>   access from host side. This is specific to NVIDIA use case and
+>   will be handled separately.
+> - Used the existing DEVICE_FEATURE IOCTL itself instead of adding new
+>   IOCTL for power management.
+> - Removed all custom code related with power management in runtime
+>   suspend/resume callbacks and IOCTL handling. Now, the callbacks
+>   contain code related with INTx handling and few other stuffs and
+>   all the PCI state and platform PM handling will be done by PCI core
+>   functions itself.
+> - Add the support of wake-up in main vfio layer itself since now we have
+>   more vfio/pci based drivers.
+> - Instead of assigning the 'struct dev_pm_ops' in individual parent
+>   driver, now the vfio_pci_core tself assigns the 'struct dev_pm_ops'. 
+> - Added handling of power management around SR-IOV handling.
+> - Moved the setting of drvdata in a separate patch.
+> - Masked INTx before during runtime suspended state.
+> - Changed the order of patches so that Fix related things are at beginning
+>   of this patch series.
+> - Removed storing the power state locally and used one new boolean to
+>   track the d3 (D3cold and D3hot) power state 
+> - Removed check for IO access in D3 power state.
+> - Used another helper function vfio_lock_and_set_power_state() instead
+>   of touching vfio_pci_set_power_state().
+> - Considered the fixes made in
+>   https://lore.kernel.org/lkml/20220217122107.22434-1-abhsahu@nvidia.com
+>   and updated the patches accordingly.
+> 
+> * Changes in v2
+>   (https://lore.kernel.org/lkml/20220124181726.19174-1-abhsahu@nvidia.com)
+> 
+> - Rebased patches on v5.17-rc1.
+> - Included the patch to handle BAR access in D3cold.
+> - Included the patch to fix memory leak.
+> - Made a separate IOCTL that can be used to change the power state from
+>   D3hot to D3cold and D3cold to D0.
+> - Addressed the review comments given in v1.
+> 
+> * v1
+>   https://lore.kernel.org/lkml/20211115133640.2231-1-abhsahu@nvidia.com/
+> 
+> Abhishek Sahu (4):
+>   vfio/pci: Invalidate mmaps and block the access in D3hot power state
+>   vfio/pci: Change the PF power state to D0 before enabling VFs
+>   vfio/pci: Virtualize PME related registers bits and initialize to zero
+>   vfio/pci: Move the unused device into low power state with runtime PM
+> 
+>  drivers/vfio/pci/vfio_pci_config.c |  56 ++++++++-
+>  drivers/vfio/pci/vfio_pci_core.c   | 178 ++++++++++++++++++++---------
+>  2 files changed, 178 insertions(+), 56 deletions(-)
+> 
+
