@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59155C433F5
-	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 22:55:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1308C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 18 May 2022 22:55:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230469AbiERWzL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 May 2022 18:55:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38778 "EHLO
+        id S231129AbiERWzf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 May 2022 18:55:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230460AbiERWzA (ORCPT
+        with ESMTP id S230466AbiERWzA (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2022 18:55:00 -0400
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDFF022DA18;
-        Wed, 18 May 2022 15:54:55 -0700 (PDT)
-Received: from in01.mta.xmission.com ([166.70.13.51]:55168)
-        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F68B2265DF;
+        Wed, 18 May 2022 15:54:59 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:33018)
+        by out03.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nrSZC-003bc3-Uc; Wed, 18 May 2022 16:54:54 -0600
+        id 1nrSZG-00CkZV-Mj; Wed, 18 May 2022 16:54:58 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:38724 helo=localhost.localdomain)
         by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nrSZB-002Z0O-N6; Wed, 18 May 2022 16:54:54 -0600
+        id 1nrSZF-002Z0O-HE; Wed, 18 May 2022 16:54:58 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -51,133 +51,59 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
         "Eric W. Biederman" <ebiederm@xmission.com>
-Date:   Wed, 18 May 2022 17:53:47 -0500
-Message-Id: <20220518225355.784371-8-ebiederm@xmission.com>
+Date:   Wed, 18 May 2022 17:53:48 -0500
+Message-Id: <20220518225355.784371-9-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <871qwq5ucx.fsf_-_@email.froward.int.ebiederm.org>
 References: <871qwq5ucx.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nrSZB-002Z0O-N6;;;mid=<20220518225355.784371-8-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX19U9H+LaT04oPfJY3DaaeOb2O0QxRcclq0=
+X-XM-SPF: eid=1nrSZF-002Z0O-HE;;;mid=<20220518225355.784371-9-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX19tbqiOJHWnZVuKgNQ7Jp3oXCI1nNuPXUo=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH 08/16] ptrace: Only populate last_siginfo from ptrace
+Subject: [PATCH 09/16] ptrace: In ptrace_setsiginfo deal with invalid si_signo
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The code in ptrace_signal to populate siginfo if the signal number
-changed is buggy.  If the tracer contined the tracee using
-ptrace_detach it is guaranteed to use the real_parent (or possibly a
-new tracer) but definitely not the origional tracer to populate si_pid
-and si_uid.
+If the tracer calls PTRACE_SETSIGINFO it only has an effect if the
+tracee is stopped in ptrace_signal.
 
-Fix this bug by only updating siginfo from the tracer so that the
-tracers pid and the tracers uid are always used.
+When one of PTRACE_DETACH, PTRACE_SINGLESTEP, PTRACE_SINGLEBLOCK,
+PTRACE_SYSEMU, PTRACE_SYSEMU_SINGLESTEP, PTRACE_SYSCALL, or
+PTRACE_CONT pass in a signel number to continue with the kernel
+validates that signal number and the ptrace_signal verifies the signal
+number matches the si_signo, before the siginfo is used.
 
-If it happens that ptrace_resume or ptrace_detach don't have
-a signal to continue with clear siginfo.
+As the signal number to continue with is verified to be a valid signal
+number the signal number in si_signo must be a valid signal number.
 
-This is a very old bug that has been fixable since commit 1669ce53e2ff
-("Add PTRACE_GETSIGINFO and PTRACE_SETSIGINFO") when last_siginfo was
-introduced and the tracer could change siginfo.
+Make this obvious and avoid needing checks later by immediately
+clearing siginfo if si_signo is not valid.
 
-Fixes: v2.1.68
-History-Tree: https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- kernel/ptrace.c | 31 +++++++++++++++++++++++++++++--
- kernel/signal.c | 18 ------------------
- 2 files changed, 29 insertions(+), 20 deletions(-)
+ kernel/ptrace.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index 15e93eafa6f0..a24eed725cec 100644
+index a24eed725cec..a0a07d140751 100644
 --- a/kernel/ptrace.c
 +++ b/kernel/ptrace.c
-@@ -526,6 +526,33 @@ static int ptrace_traceme(void)
- 	return ret;
+@@ -716,7 +716,9 @@ static int ptrace_setsiginfo(struct task_struct *child, const kernel_siginfo_t *
+ 	if (unlikely(!child->last_siginfo))
+ 		return -EINVAL;
+ 
+-	copy_siginfo(child->last_siginfo, info);
++	clear_siginfo(child->last_siginfo);
++	if (valid_signal(info->si_signo))
++		copy_siginfo(child->last_siginfo, info);
+ 	return 0;
  }
  
-+static void ptrace_set_signr(struct task_struct *child, unsigned int signr)
-+{
-+	struct kernel_siginfo *info = child->last_siginfo;
-+
-+	child->exit_code = signr;
-+	/*
-+	 * Update the siginfo structure if the signal has
-+	 * changed.  If the debugger wanted something
-+	 * specific in the siginfo structure then it should
-+	 * have updated *info via PTRACE_SETSIGINFO.
-+	 */
-+	if (info && (info->si_signo != signr)) {
-+		clear_siginfo(info);
-+
-+		if (signr != 0) {
-+			info->si_signo = signr;
-+			info->si_errno = 0;
-+			info->si_code = SI_USER;
-+			rcu_read_lock();
-+			info->si_pid = task_pid_nr_ns(current, task_active_pid_ns(child));
-+			info->si_uid = from_kuid_munged(task_cred_xxx(child, user_ns),
-+						current_uid());
-+			rcu_read_unlock();
-+		}
-+	}
-+}
-+
- /*
-  * Called with tasklist_lock held for writing.
-  * Unlink a traced task, and clean it up if it was a traced zombie.
-@@ -579,7 +606,7 @@ static int ptrace_detach(struct task_struct *child, unsigned int data)
- 	 * tasklist_lock avoids the race with wait_task_stopped(), see
- 	 * the comment in ptrace_resume().
- 	 */
--	child->exit_code = data;
-+	ptrace_set_signr(child, data);
- 	__ptrace_detach(current, child);
- 	write_unlock_irq(&tasklist_lock);
- 
-@@ -851,7 +878,7 @@ static int ptrace_resume(struct task_struct *child, long request,
- 	 * wait_task_stopped() after resume.
- 	 */
- 	spin_lock_irq(&child->sighand->siglock);
--	child->exit_code = data;
-+	ptrace_set_signr(child, data);
- 	child->jobctl &= ~JOBCTL_TRACED;
- 	wake_up_state(child, __TASK_TRACED);
- 	spin_unlock_irq(&child->sighand->siglock);
-diff --git a/kernel/signal.c b/kernel/signal.c
-index e782c2611b64..ff4a52352390 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -2562,24 +2562,6 @@ static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
- 	if (signr == 0)
- 		return signr;
- 
--	/*
--	 * Update the siginfo structure if the signal has
--	 * changed.  If the debugger wanted something
--	 * specific in the siginfo structure then it should
--	 * have updated *info via PTRACE_SETSIGINFO.
--	 */
--	if (signr != info->si_signo) {
--		clear_siginfo(info);
--		info->si_signo = signr;
--		info->si_errno = 0;
--		info->si_code = SI_USER;
--		rcu_read_lock();
--		info->si_pid = task_pid_vnr(current->parent);
--		info->si_uid = from_kuid_munged(current_user_ns(),
--						task_uid(current->parent));
--		rcu_read_unlock();
--	}
--
- 	/* If the (new) signal is now blocked, requeue it.  */
- 	if (sigismember(&current->blocked, signr) ||
- 	    fatal_signal_pending(current)) {
 -- 
 2.35.3
 
