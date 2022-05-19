@@ -2,165 +2,158 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D307CC4321E
-	for <linux-pm@archiver.kernel.org>; Thu, 19 May 2022 12:20:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BD23C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 19 May 2022 12:44:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237828AbiESMUj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 May 2022 08:20:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52332 "EHLO
+        id S237967AbiESMoJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 May 2022 08:44:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42002 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232584AbiESMUg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2022 08:20:36 -0400
-Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B947AB041F;
-        Thu, 19 May 2022 05:20:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
-        s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=e6xrJm1a3ay+4weLnrCkh2SRSEeyZycIIB/twweqf9Y=; b=BhOEtl3IEpq+ZutVgH7P2rHsfA
-        mhGkC2PSuDrVyQ8IQfXtbB2pfD2fLPqKTP1L2vPLew3hLPbkforpZGHUalxvr86M8T2G/zNh0P/pw
-        wi++cJ5XXfisCo4sQPAYOpaVMhBvNWB3svhNAgbQKxYFPy0Oeko+Z9jhUOVMogS4VQkCRHPLo2bnq
-        jjqxb69zYzPORFRcZZlayXhHSqDz7B+6f3XjEVdBQ2ftzK2PDz+TwQa11JztdT1Ouzc0j+U1m1POY
-        rbklHHuyIwI+fwGIyQbgwTEldlCv1PEui/a5Qzds7nWr2ZDdu+bcGybfUaDSvUQ/88wOr+qjGKQ2s
-        3BFZ9Urg==;
-Received: from 200-161-159-120.dsl.telesp.net.br ([200.161.159.120] helo=[192.168.1.60])
-        by fanzine2.igalia.com with esmtpsa 
-        (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
-        id 1nrf8d-00BEVm-Gn; Thu, 19 May 2022 14:20:19 +0200
-Message-ID: <edbaa4fa-561c-6f5e-f2ab-43ae68acaede@igalia.com>
-Date:   Thu, 19 May 2022 09:19:31 -0300
+        with ESMTP id S237950AbiESMoH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2022 08:44:07 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0237EBA98C
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2022 05:44:06 -0700 (PDT)
+Date:   Thu, 19 May 2022 12:44:03 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1652964244;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=MipY6BWsRxQ9IN24bzY+2magn6bWwPkvA6hN+gVE9vA=;
+        b=W2oVmhmaatG6stMVjTmYUTQhA8LzjHMq1qq48EyTXbgEWWNQgBIXNY+0nH1gOl+uuKaxHi
+        ciIZ4EzBEhakwaCT5nsGmoZkSK3wXApGEyQ3PXo0RRnOn3UDzskRw4ePHO+0zel3ZZqb+f
+        /zVtNO72cjG0F1gspnEF/gIbzxxEgirDv4eHIbf10m7/6+iio0ZiHeMeFr5b4vy4YXY1D6
+        4ULBNuD/PSN1bSbYhoPbWx6wbK7eKxkNWV9LCOR9aib2wskAB83fZay1SbQl5qB5d4kxYc
+        sSgOL7iDn/59kADoX/spv1IKYZLGcGh+7piR6v3sd8qrfrA875OsKex0o6MQaw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1652964244;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=MipY6BWsRxQ9IN24bzY+2magn6bWwPkvA6hN+gVE9vA=;
+        b=rpuOCn/mFOX7QrWN3fjN3bU9hAGTeEue+YJVXCLiJ2Ab15SFjL2LjWJ4WiHYP7UCgOxaa2
+        5//muNSQoPCCk7DQ==
+From:   "thermal-bot for Keerthy" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-pm@vger.kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [thermal: thermal/next] dt-bindings: thermal: k3-j72xx: Add VTM
+ bindings documentation
+Cc:     Keerthy <j-keerthy@ti.com>, Rob Herring <robh@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20220517172920.10857-2-j-keerthy@ti.com>
+References: <20220517172920.10857-2-j-keerthy@ti.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH 19/30] panic: Add the panic hypervisor notifier list
-Content-Language: en-US
-To:     Scott Branden <scott.branden@broadcom.com>,
-        Petr Mladek <pmladek@suse.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Desmond yan <desmond.yan@broadcom.com>
-Cc:     David Gow <davidgow@google.com>, Evan Green <evgreen@chromium.org>,
-        Julius Werner <jwerner@chromium.org>,
-        bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org,
-        akpm@linux-foundation.org, bhe@redhat.com,
-        kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
-        linux-hyperv@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linux-remoteproc@vger.kernel.org, linux-s390@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-um@lists.infradead.org,
-        linux-xtensa@linux-xtensa.org, netdev@vger.kernel.org,
-        openipmi-developer@lists.sourceforge.net, rcu@vger.kernel.org,
-        sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
-        x86@kernel.org, kernel-dev@igalia.com, kernel@gpiccoli.net,
-        halves@canonical.com, fabiomirmar@gmail.com,
-        alejandro.j.jimenez@oracle.com, andriy.shevchenko@linux.intel.com,
-        arnd@arndb.de, bp@alien8.de, corbet@lwn.net,
-        d.hatayama@jp.fujitsu.com, dave.hansen@linux.intel.com,
-        dyoung@redhat.com, feng.tang@intel.com, gregkh@linuxfoundation.org,
-        mikelley@microsoft.com, hidehiro.kawai.ez@hitachi.com,
-        jgross@suse.com, john.ogness@linutronix.de, keescook@chromium.org,
-        luto@kernel.org, mhiramat@kernel.org, mingo@redhat.com,
-        paulmck@kernel.org, peterz@infradead.org, rostedt@goodmis.org,
-        senozhatsky@chromium.org, stern@rowland.harvard.edu,
-        tglx@linutronix.de, vgoyal@redhat.com, vkuznets@redhat.com,
-        will@kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
-        Andrea Parri <parri.andrea@gmail.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Brian Norris <computersforpeace@gmail.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        "David S. Miller" <davem@davemloft.net>,
-        Dexuan Cui <decui@microsoft.com>,
-        Doug Berger <opendmb@gmail.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Justin Chen <justinpopo6@gmail.com>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Markus Mayer <mmayer@broadcom.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Mihai Carabas <mihai.carabas@oracle.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
-        Shile Zhang <shile.zhang@linux.alibaba.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Tianyu Lan <Tianyu.Lan@microsoft.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Wang ShaoBo <bobo.shaobowang@huawei.com>,
-        Wei Liu <wei.liu@kernel.org>,
-        zhenwei pi <pizhenwei@bytedance.com>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-20-gpiccoli@igalia.com> <YoJZVZl/MH0KiE/J@alley>
- <ad082ce7-db50-13bb-3dbb-9b595dfa78be@igalia.com> <YoOpyW1+q+Z5as78@alley>
- <d72b9aab-675c-ac89-b73a-b1de4a0b722d@igalia.com>
- <81878a67-21f1-fee8-1add-f381bc8b05df@broadcom.com>
-From:   "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-In-Reply-To: <81878a67-21f1-fee8-1add-f381bc8b05df@broadcom.com>
-Content-Type: text/plain; charset=UTF-8
+Message-ID: <165296424352.4207.15120944950429601793.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2@linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 18/05/2022 19:17, Scott Branden wrote:
-> Hi Guilherme,
-> 
-> +Desmond
-> [...] 
->>>> I'm afraid it breaks kdump if this device is not reset beforehand - it's
->>>> a doorbell write, so not high risk I think...
->>>>
->>>> But in case the not-reset device can be probed normally in kdump kernel,
->>>> then I'm fine in moving this to the reboot list! I don't have the HW to
->>>> test myself.
->>>
->>> Good question. Well, it if has to be called before kdump then
->>> even "hypervisor" list is a wrong place because is not always
->>> called before kdump.
->> [...]
-> We register to the panic notifier so that we can kill the VK card ASAP
-> to stop DMAing things over to the host side.  If it is not notified then
-> memory may not be frozen when kdump is occurring.
-> Notifying the card on panic is also needed to allow for any type of 
-> reset to occur.
-> 
-> So, the only thing preventing moving the notifier later is the chance
-> that memory is modified while kdump is occurring.  Or, if DMA is 
-> disabled before kdump already then this wouldn't be an issue and the 
-> notification to the card (to allow for clean resets) can be done later.
+The following commit has been merged into the thermal/next branch of thermal:
 
-Hi Scott / Desmond, thanks for the detailed answer! Is this adapter
-designed to run in x86 only or you have other architectures' use cases?
+Commit-ID:     031c2952d1588d47829da3639eaaa5e35ffe4e6e
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//031c2952d1588d47829da3639eaaa5e35ffe4e6e
+Author:        Keerthy <j-keerthy@ti.com>
+AuthorDate:    Tue, 17 May 2022 22:59:19 +05:30
+Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
+CommitterDate: Thu, 19 May 2022 12:11:53 +02:00
 
-I'm not expert on that, but I guess whether DMA is "kept" or not depends
-a bit if IOMMU is used. IIRC, there was a copy of the DMAR table in
-kdump (at least for Intel IOMMU). Also, devices are not properly
-quiesced on kdump IIUC, we don't call shutdown/reset handlers, they're
-skip due to the crash nature - so there is a risk of devices doing bad
-things in the new kernel.
+dt-bindings: thermal: k3-j72xx: Add VTM bindings documentation
 
-With that said, and given this is a lightweight notifier that ideally
-should run ASAP, I'd keep this one in the hypervisor list. We can
-"adjust" the semantic of this list to include lightweight notifiers that
-reset adapters.
+Add VTM bindings documentation. In the Voltage Thermal
+Management Module(VTM), K3 J72XX supplies a voltage
+reference and a temperature sensor feature that are gathered in the band
+gap voltage and temperature sensor (VBGAPTS) module. The band
+gap provides current and voltage reference for its internal
+circuits and other analog IP blocks. The analog-to-digital
+converter (ADC) produces an output value that is proportional
+to the silicon temperature.
 
-With that said, Petr has a point - not always such list is going to be
-called before kdump. So, that makes me think in another idea: what if we
-have another list, but not on panic path, but instead in the custom
-crash_shutdown()? Drivers could add callbacks there that must execute
-before kexec/kdump, no matter what.
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Link: https://lore.kernel.org/r/20220517172920.10857-2-j-keerthy@ti.com
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml | 63 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
 
-Let me know your thoughts Scott / Desmond / Petr and all interested parties.
-Cheers,
-
-
-Guilherme
+diff --git a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+new file mode 100644
+index 0000000..c74f124
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+@@ -0,0 +1,63 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/ti,j72xx-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Texas Instruments J72XX VTM (DTS) binding
++
++maintainers:
++  - Keerthy <j-keerthy@ti.com>
++
++properties:
++  compatible:
++    enum:
++      - ti,j721e-vtm
++      - ti,j7200-vtm
++
++  reg:
++    items:
++      - description: VTM cfg1 register space
++      - description: VTM cfg2 register space
++      - description: VTM efuse register space
++
++  power-domains:
++    maxItems: 1
++
++  "#thermal-sensor-cells":
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - power-domains
++  - "#thermal-sensor-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/soc/ti,sci_pm_domain.h>
++    wkup_vtm0: thermal-sensor@42040000 {
++        compatible = "ti,j721e-vtm";
++        reg = <0x42040000 0x350>,
++              <0x42050000 0x350>,
++              <0x43000300 0x10>;
++        power-domains = <&k3_pds 154 TI_SCI_PD_EXCLUSIVE>;
++        #thermal-sensor-cells = <1>;
++    };
++
++    mpu_thermal: mpu-thermal {
++        polling-delay-passive = <250>; /* milliseconds */
++        polling-delay = <500>; /* milliseconds */
++        thermal-sensors = <&wkup_vtm0 0>;
++
++        trips {
++            mpu_crit: mpu-crit {
++                temperature = <125000>; /* milliCelsius */
++                hysteresis = <2000>; /* milliCelsius */
++                type = "critical";
++            };
++        };
++    };
++...
