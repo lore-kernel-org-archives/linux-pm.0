@@ -2,226 +2,433 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8826FC433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 19 May 2022 13:12:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDD40C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 19 May 2022 13:49:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233781AbiESNMc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 May 2022 09:12:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43774 "EHLO
+        id S236749AbiESNtH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 May 2022 09:49:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237529AbiESNMb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2022 09:12:31 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9E8AB41FA
-        for <linux-pm@vger.kernel.org>; Thu, 19 May 2022 06:12:28 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id o22so6170680ljp.8
-        for <linux-pm@vger.kernel.org>; Thu, 19 May 2022 06:12:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Tbdzb2bRxg6928mKfr1eQOs/EHKsEy71qlxik1ZfHuc=;
-        b=tPZRoKf1FlzJiaJ/LSleGDTLKgl7yH7IGkYrmC9jz8fvV59szPSLEx9tzbAJuOYU8k
-         hllYDvJHQtHZNRxc1bZ0kYGluAm3oi81WSbXFp7wA8pUYdqZZYxUDbQkVIvSGveNfZQ5
-         ordtsUr+t5+4hUODc0Ikjsi9nK1nRTPDpO8ewpxWr9wC7+U+6cP/97mUOeC2H5hsoTWY
-         s/2pWEkuiucEchrCOqINbhN+8T85nI3kof5SooGUz6erEZYnsbQQn29SsqevWcRxij4e
-         kr1RoaRklvO6n+JCOxp/U+f2f+3BWg2GCVk2xGxCv7oFjTGbiUgt9vN7Y49/IjMSOc/i
-         Vzxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Tbdzb2bRxg6928mKfr1eQOs/EHKsEy71qlxik1ZfHuc=;
-        b=R5WENf22ihT1MkcH2ANDcX6uUBqTlaWYDjv/fG5SaNa2xIua5Wjq7PSbDaKeIXnU9f
-         BfP7rWPTw2cZmPOz4RONug30ycfoM74S2Bm1dZz3Yf24XK6h5/57tlJvb6kgUvJ3Rf/V
-         0muNwlGcwgh58OPLoZ+1+C38v3yLRzUqsiccOHVdxkvLusbYQIB+A4z581fHn/aBTmrG
-         Kj61hIEY9OIy4F6p+RmjmW+TLrdTCHqJXCqkZjNZIZzkVI7Ub5rsZUBJxlBF5Ml4ANNv
-         eqKlaSGTML2Dp3C1mgtIcTep8mNAKfeqy2OwjO1bBLIPQugrKTfbljVG3GgIh0hG7jIh
-         GoWg==
-X-Gm-Message-State: AOAM530XHWNBTxePhLUn3LA1QY8y5Ahpe/iCUo1V6PzB2PPagk71sBxN
-        jj7lvDq4vZRSiPk0qrGtvnxmEv4LO5Tx932MzWp9pQ==
-X-Google-Smtp-Source: ABdhPJwnhgPHFqa5mGfL1upSwxPA4GdglCVq6IdM8730POYTcoZpgJGdmGeVx20WdRrQeXywDLaSPOPlVzmQrnlRv1k=
-X-Received: by 2002:a2e:954c:0:b0:253:d9bf:9f55 with SMTP id
- t12-20020a2e954c000000b00253d9bf9f55mr469067ljh.300.1652965947206; Thu, 19
- May 2022 06:12:27 -0700 (PDT)
+        with ESMTP id S239286AbiESNtE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2022 09:49:04 -0400
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on20609.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eab::609])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA0B463AF;
+        Thu, 19 May 2022 06:48:47 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=YW1WKv8gn45p94Zw5lxqlBrhfb6KctqCh/R7ZyVwAu7+wdH/fpNl/RYZlQj2InCXQpSk0yLmoKjhxWfflutb2sAvWh0g51Eo0bj1J/BR49QZNX2Z8MaJw6+Zh26+9Pqo0jMktjhgTexa/YuY8N2z08or/jEFzRnGHGL505NdR0Tq5t7+a0W+xIkqbIsGKHSTIadDAPT6+dY2qSBRV7xTJ98jd8f3n10TwCRAAYjorMHAjXILKTrNdJewrGo5TqKJJL9b8Z4vwip+iLyCXUOt0weFus6IMAWEF9ZAMSUSdYzJIeqxuz5HLBen299mbdP9og+Y/mK+nM32/jRoJzWifg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=dMS0KIT5zi3HbRcPHdoPs8D4m1tTMbAyvvohsHgh9YM=;
+ b=cY2YTm8gvh7CMdUFfPYC3lKv37jQsYdpeHsYI8P5ctjagQ4Hs5cQuuAEgOMptlZAmWQds9g1kyOhCWkNzRcgqnRgN+F6O+Xs1HHiK9ocq3wh0qF1VGr9JO9lf4beoYvxYOEViWmjgcwUiG3fnGb+JlvqHEe4Q2xoF2VfItobrmo/tiqpJLDHbOmpnKoLQakVKt0d1XIf+naCr4K4mxg8lBek5A2DEa+9KqnR516hF0AO/M/zd+K03y1sHodAky93xksxtvnVMr0KCZoNNZU7R8KWjJOHWS0hqQ7OPlQouqZeiiDT/TQDD6IwxCXEJ9u1bFd+4GPxYW+5XF92FnPosQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=linuxfoundation.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=dMS0KIT5zi3HbRcPHdoPs8D4m1tTMbAyvvohsHgh9YM=;
+ b=U+M4mP9a85AUjBin0NWTCUA4wTR1L37k8VYfAWlB6K86slLBQVO+AIIqqMoZLr3Xdj7O0Eg1DrIX72ZQ+u+AO2gSRDRbzXkStc+7XjkhXO5fzJsBwB+RBQB9Q2AOlXhTuOSIFxecxaNLNs9FhXfb907NLFQYdDhx0ykS0Xaq9V8=
+Received: from BN9PR03CA0353.namprd03.prod.outlook.com (2603:10b6:408:f6::28)
+ by DM5PR12MB1660.namprd12.prod.outlook.com (2603:10b6:4:9::22) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.5273.13; Thu, 19 May 2022 13:48:05 +0000
+Received: from BN8NAM11FT052.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:f6:cafe::c9) by BN9PR03CA0353.outlook.office365.com
+ (2603:10b6:408:f6::28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5273.14 via Frontend
+ Transport; Thu, 19 May 2022 13:48:05 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ BN8NAM11FT052.mail.protection.outlook.com (10.13.177.210) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.5273.14 via Frontend Transport; Thu, 19 May 2022 13:48:04 +0000
+Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Thu, 19 May
+ 2022 08:48:00 -0500
+From:   Meng Li <li.meng@amd.com>
+To:     Shuah Khan <skhan@linuxfoundation.org>,
+        Huang Rui <ray.huang@amd.com>, <linux-pm@vger.kernel.org>
+CC:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Nathan Fontenot <nathan.fontenot@amd.com>,
+        Deepak Sharma <deepak.sharma@amd.com>,
+        "Alex Deucher" <alexander.deucher@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Jinzhou Su <Jinzhou.Su@amd.com>,
+        Perry Yuan <Perry.Yuan@amd.com>,
+        Xiaojian Du <Xiaojian.Du@amd.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Borislav Petkov <bp@alien8.de>, <linux-kernel@vger.kernel.org>,
+        Meng Li <li.meng@amd.com>
+Subject: [PATCH V6 2/4] cpufreq: amd-pstate: Add test module for amd-pstate driver
+Date:   Thu, 19 May 2022 21:47:35 +0800
+Message-ID: <20220519134737.359290-3-li.meng@amd.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220519134737.359290-1-li.meng@amd.com>
+References: <20220519134737.359290-1-li.meng@amd.com>
 MIME-Version: 1.0
-References: <1652275016-13423-1-git-send-email-quic_mkshah@quicinc.com> <1652275016-13423-3-git-send-email-quic_mkshah@quicinc.com>
-In-Reply-To: <1652275016-13423-3-git-send-email-quic_mkshah@quicinc.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 19 May 2022 15:11:51 +0200
-Message-ID: <CAPDyKFqVU_8d_eMWHPByc5JiCdQGnYfWFc9HRv83X55N8UYCfg@mail.gmail.com>
-Subject: Re: [PATCH v2 2/6] soc: qcom: rpmh-rsc: Attach RSC to cluster PM domain
-To:     Maulik Shah <quic_mkshah@quicinc.com>
-Cc:     bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        rafael@kernel.org, daniel.lezcano@linaro.org,
-        quic_lsrao@quicinc.com, quic_rjendra@quicinc.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 41a29bfc-b8f1-475f-1bf9-08da399e32fc
+X-MS-TrafficTypeDiagnostic: DM5PR12MB1660:EE_
+X-Microsoft-Antispam-PRVS: <DM5PR12MB166095D652EC12C40DD19C97F7D09@DM5PR12MB1660.namprd12.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 5Uw5xcmQgqUJZtxrPtcuiNvOUXaJAjvhmH/Y5wg+gaH5+Mq8oB23wv8FEKyIlIhbsU8cmuMkEs1dQGUriZwGQOAysDq+CKK681AH170eDuXsVDHGiS5iuVzvFjjNwbTg/V2hWqybtuxZYKa5oOE84Sv88FWzZx+kFHU+gPIiBnkiDvNX5ZptLJZfRHAUh6Ly2yj7fuwjkVRMo42AtW3zZAyJlaBvAQZbdzMsyWQJES3RyVI4e7pirm9/Z/2o3FRCsrpUSgcy37RmCZfjr46R1yEaXUkWF8NQWQKgVn/ginGLuKWTVKyUr/+1VspMyO0/pJhbBjIoEu7NfigICQ6ObDAtydw1UiX9RJZw+28c7VWCzIvndMldsQBAOMFAlqZeqc58wyozOKBzehV/mu53rFEllQbJiyFESdGAZ1cqx6H8ggyeKojh2P22wlHl6CMjO8ueSPnREfVrQ3uSW/j1pRup+8a7L73sJrRke4nbPZuHXUD9wEzvaX2OzXU0KgDFViISk/k5zoMwjYJ/t/RcSne6R5XdqkNWgKBCBytVOlkBgIlUwXOtDOfBSuDtKl/Wc7VHd3qGQ+jZ0iRTXI0/xkijUjPeZTMMoST8phQJU3VtCSg/yI9P3ZMINYvFREg5L8mKQqSyMFjTxbtZl/fRF1AZveiACgVC9M+iZ/qlFEbHozQk+UKGoLn3GP2y4bMrTFimJAfgP5t8GoLi5T+qTA==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(46966006)(36840700001)(40470700004)(7696005)(70206006)(26005)(508600001)(81166007)(110136005)(54906003)(2906002)(316002)(8676002)(86362001)(356005)(4326008)(6666004)(40460700003)(83380400001)(36756003)(8936002)(5660300002)(36860700001)(47076005)(336012)(426003)(82310400005)(1076003)(16526019)(2616005)(70586007)(186003)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 May 2022 13:48:04.8720
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 41a29bfc-b8f1-475f-1bf9-08da399e32fc
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT052.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR12MB1660
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 11 May 2022 at 15:17, Maulik Shah <quic_mkshah@quicinc.com> wrote:
->
-> From: Lina Iyer <ilina@codeaurora.org>
->
-> RSC is part the CPU subsystem and powers off the CPU domains when all
-> the CPUs and no RPMH transactions are pending from any of the drivers.
-> The RSC needs to flush the 'sleep' and 'wake' votes that are critical
-> for saving power when all the CPUs are in idle.
->
-> Let's make RSC part of the CPU PM domains, by attaching it to the
-> cluster power domain. Registering for PM domain notifications, RSC
-> driver can be notified that the last CPU is powering down. When the last
-> CPU is powering down the domain, let's flush the 'sleep' and 'wake'
-> votes that are stored in the data buffers into the hardware and also
-> write next wakeup in CONTROL_TCS.
->
-> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-> Signed-off-by: Maulik Shah <quic_mkshah@quicinc.com>
+Add amd-pstate-ut module, which is conceptually out-of-tree module
+and provides ways for selftests/amd-pstate driver to test various
+kernel module-related functionality. This module will be expected by
+some of selftests to be present and loaded.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Meng Li <li.meng@amd.com>
+Acked-by: Huang Rui <ray.huang@amd.com>
+---
+ drivers/cpufreq/Kconfig.x86     |   6 +
+ drivers/cpufreq/Makefile        |   1 +
+ drivers/cpufreq/amd-pstate-ut.c | 278 ++++++++++++++++++++++++++++++++
+ 3 files changed, 285 insertions(+)
+ create mode 100644 drivers/cpufreq/amd-pstate-ut.c
 
-Kind regards
-Uffe
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 55516043b656..37ba282cd156 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -51,6 +51,12 @@ config X86_AMD_PSTATE
+ 
+ 	  If in doubt, say N.
+ 
++config X86_AMD_PSTATE_UT
++	tristate "selftest for AMD Processor P-State driver"
++	depends on X86_AMD_PSTATE
++	help
++	  This kernel module is used for testing. It's safe to say M here.
++
+ config X86_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+ 	depends on ACPI_PROCESSOR
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 285de70af877..49b98c62c5af 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -30,6 +30,7 @@ amd_pstate-y				:= amd-pstate.o amd-pstate-trace.o
+ 
+ obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
+ obj-$(CONFIG_X86_AMD_PSTATE)		+= amd_pstate.o
++obj-$(CONFIG_X86_AMD_PSTATE_UT)		+= amd-pstate-ut.o
+ obj-$(CONFIG_X86_POWERNOW_K8)		+= powernow-k8.o
+ obj-$(CONFIG_X86_PCC_CPUFREQ)		+= pcc-cpufreq.o
+ obj-$(CONFIG_X86_POWERNOW_K6)		+= powernow-k6.o
+diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+new file mode 100644
+index 000000000000..a510355b804e
+--- /dev/null
++++ b/drivers/cpufreq/amd-pstate-ut.c
+@@ -0,0 +1,278 @@
++// SPDX-License-Identifier: GPL-1.0-or-later
++/*
++ * AMD Processor P-state Frequency Driver Unit Test
++ *
++ * Copyright (C) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
++ *
++ * Author: Meng Li <li.meng@amd.com>
++ *
++ * The AMD P-State Unit Test is a test module for testing the amd-pstate
++ * driver. 1) It can help all users to verify their processor support
++ * (SBIOS/Firmware or Hardware). 2) Kernel can have a basic function
++ * test to avoid the kernel regression during the update. 3) We can
++ * introduce more functional or performance tests to align the result
++ * together, it will benefit power and performance scale optimization.
++ *
++ * At present, it only implements the basic framework and some simple
++ * test cases. Next, 1) we will add a rst document. 2) we will add more
++ * test cases to improve the depth and coverage of the test.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include "../tools/testing/selftests/kselftest_module.h"
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/fs.h>
++#include <linux/amd-pstate.h>
++
++#include <acpi/cppc_acpi.h>
++
++/*
++ * Abbreviations:
++ * aput: used as a shortform for AMD P-State unit test.
++ * It helps to keep variable names smaller, simpler
++ */
++
++KSTM_MODULE_GLOBALS();
++
++/*
++ * Kernel module for testing the AMD P-State unit test
++ */
++enum aput_result {
++	APUT_RESULT_PASS,
++	APUT_RESULT_FAIL,
++	MAX_APUT_RESULT,
++};
++
++struct aput_struct {
++	const char *name;
++	void (*func)(u32 index);
++	enum aput_result result;
++};
++
++static void aput_acpi_cpc(u32 index);
++static void aput_check_enabled(u32 index);
++static void aput_check_perf(u32 index);
++static void aput_check_freq(u32 index);
++
++static struct aput_struct aput_cases[] = {
++	{"acpi_cpc_valid",   aput_acpi_cpc         },
++	{"check_enabled",    aput_check_enabled    },
++	{"check_perf",       aput_check_perf       },
++	{"check_freq",       aput_check_freq       }
++};
++
++static bool get_shared_mem(void)
++{
++	bool result = false;
++	char buf[5] = {0};
++	struct file *filp = NULL;
++	loff_t pos = 0;
++	ssize_t ret;
++
++	if (!boot_cpu_has(X86_FEATURE_CPPC)) {
++		filp = filp_open("/sys/module/amd_pstate/parameters/shared_mem", FMODE_PREAD, 0);
++		if (IS_ERR(filp))
++			pr_err("%s Open param file fail!\n", __func__);
++		else {
++			ret = kernel_read(filp, &buf, sizeof(buf), &pos);
++			if (ret < 0)
++				pr_err("%s ret=%ld unable to read from param file!\n",
++					__func__, ret);
++			filp_close(filp, NULL);
++		}
++
++		if ('Y' == *buf)
++			result = true;
++	}
++
++	return result;
++}
++
++static void aput_acpi_cpc(u32 index)
++{
++	if (acpi_cpc_valid())
++		aput_cases[index].result = APUT_RESULT_PASS;
++	else
++		aput_cases[index].result = APUT_RESULT_FAIL;
++}
++
++static void aput_pstate_enable(u32 index)
++{
++	int ret = 0;
++	u64 cppc_enable = 0;
++
++	ret = rdmsrl_safe(MSR_AMD_CPPC_ENABLE, &cppc_enable);
++	if (ret) {
++		aput_cases[index].result = APUT_RESULT_FAIL;
++		pr_err("%s rdmsrl_safe MSR_AMD_CPPC_ENABLE ret=%d is error!\n", __func__, ret);
++		return;
++	}
++	if (cppc_enable)
++		aput_cases[index].result = APUT_RESULT_PASS;
++	else
++		aput_cases[index].result = APUT_RESULT_FAIL;
++}
++
++/*
++ *Check if enabled amd pstate
++ */
++static void aput_check_enabled(u32 index)
++{
++	if (get_shared_mem())
++		aput_cases[index].result = APUT_RESULT_PASS;
++	else
++		aput_pstate_enable(index);
++}
++
++/*
++ * Check if the each performance values are reasonable.
++ * highest_perf >= nominal_perf > lowest_nonlinear_perf > lowest_perf > 0
++ */
++static void aput_check_perf(u32 index)
++{
++	int cpu = 0, ret = 0;
++	u32 highest_perf = 0, nominal_perf = 0, lowest_nonlinear_perf = 0, lowest_perf = 0;
++	u64 cap1 = 0;
++	struct cppc_perf_caps cppc_perf;
++	struct cpufreq_policy *policy = NULL;
++	struct amd_cpudata *cpudata = NULL;
++
++	highest_perf = amd_get_highest_perf();
++
++	for_each_possible_cpu(cpu) {
++		policy = cpufreq_cpu_get(cpu);
++		if (!policy)
++			break;
++		cpudata = policy->driver_data;
++
++		if (get_shared_mem()) {
++			ret = cppc_get_perf_caps(cpu, &cppc_perf);
++			if (ret) {
++				aput_cases[index].result = APUT_RESULT_FAIL;
++				pr_err("%s cppc_get_perf_caps ret=%d is error!\n", __func__, ret);
++				return;
++			}
++
++			nominal_perf = cppc_perf.nominal_perf;
++			lowest_nonlinear_perf = cppc_perf.lowest_nonlinear_perf;
++			lowest_perf = cppc_perf.lowest_perf;
++		} else {
++			ret = rdmsrl_safe_on_cpu(cpu, MSR_AMD_CPPC_CAP1, &cap1);
++			if (ret) {
++				aput_cases[index].result = APUT_RESULT_FAIL;
++				pr_err("%s read CPPC_CAP1 ret=%d is error!\n", __func__, ret);
++				return;
++			}
++
++			nominal_perf = AMD_CPPC_NOMINAL_PERF(cap1);
++			lowest_nonlinear_perf = AMD_CPPC_LOWNONLIN_PERF(cap1);
++			lowest_perf = AMD_CPPC_LOWEST_PERF(cap1);
++		}
++
++		if ((highest_perf != READ_ONCE(cpudata->highest_perf)) ||
++			(nominal_perf != READ_ONCE(cpudata->nominal_perf)) ||
++			(lowest_nonlinear_perf != READ_ONCE(cpudata->lowest_nonlinear_perf)) ||
++			(lowest_perf != READ_ONCE(cpudata->lowest_perf))) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d highest=%d %d nominal=%d %d lowest_nonlinear=%d %d lowest=%d %d are not equal!\n",
++				__func__, cpu, highest_perf, cpudata->highest_perf,
++				nominal_perf, cpudata->nominal_perf,
++				lowest_nonlinear_perf, cpudata->lowest_nonlinear_perf,
++				lowest_perf, cpudata->lowest_perf);
++			return;
++		}
++
++		if (!((highest_perf >= nominal_perf) &&
++			(nominal_perf > lowest_nonlinear_perf) &&
++			(lowest_nonlinear_perf > lowest_perf) &&
++			(lowest_perf > 0))) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d highest=%d nominal=%d lowest_nonlinear=%d lowest=%d have error!\n",
++				__func__, cpu, highest_perf, nominal_perf,
++				lowest_nonlinear_perf, lowest_perf);
++			return;
++		}
++	}
++
++	aput_cases[index].result = APUT_RESULT_PASS;
++}
++
++/*
++ * Check if the each frequency values are reasonable.
++ * max_freq >= nominal_freq > lowest_nonlinear_freq > min_freq > 0
++ * check max freq when set support boost mode.
++ */
++static void aput_check_freq(u32 index)
++{
++	int cpu = 0;
++	struct cpufreq_policy *policy = NULL;
++	struct amd_cpudata *cpudata = NULL;
++
++	for_each_possible_cpu(cpu) {
++		policy = cpufreq_cpu_get(cpu);
++		if (!policy)
++			break;
++		cpudata = policy->driver_data;
++
++		if (!((cpudata->max_freq >= cpudata->nominal_freq) &&
++			(cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
++			(cpudata->lowest_nonlinear_freq > cpudata->min_freq) &&
++			(cpudata->min_freq > 0))) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d max=%d nominal=%d lowest_nonlinear=%d min=%d have error!\n",
++				__func__, cpu, cpudata->max_freq, cpudata->nominal_freq,
++				cpudata->lowest_nonlinear_freq, cpudata->min_freq);
++			return;
++		}
++
++		if (cpudata->min_freq != policy->min) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d cpudata_min_freq=%d policy_min=%d have error!\n",
++				__func__, cpu, cpudata->min_freq, policy->min);
++			return;
++		}
++
++		if (cpudata->boost_supported) {
++			if ((policy->max == cpudata->max_freq) ||
++					(policy->max == cpudata->nominal_freq))
++				aput_cases[index].result = APUT_RESULT_PASS;
++			else {
++				aput_cases[index].result = APUT_RESULT_FAIL;
++				pr_err("%s cpu%d policy_max=%d cpu_max=%d cpu_nominal=%d have error!\n",
++					__func__, cpu, policy->max, cpudata->max_freq,
++					cpudata->nominal_freq);
++				return;
++			}
++		} else {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d not support boost!\n", __func__, cpu);
++			return;
++		}
++	}
++}
++
++static void aput_do_test_case(void)
++{
++	u32 i = 0, arr_size = ARRAY_SIZE(aput_cases);
++
++	for (i = 0; i < arr_size; i++) {
++		pr_info("****** Begin %-5d\t %-20s\t ******\n", i+1, aput_cases[i].name);
++		aput_cases[i].func(i);
++		KSTM_CHECK_ZERO(aput_cases[i].result);
++		pr_info("****** End   %-5d\t %-20s\t ******\n", i+1, aput_cases[i].name);
++	}
++}
++
++static void __init selftest(void)
++{
++	aput_do_test_case();
++}
++
++KSTM_MODULE_LOADERS(amd_pstate_ut);
++MODULE_AUTHOR("Meng Li <li.meng@amd.com>");
++MODULE_DESCRIPTION("Unit test for AMD P-state driver");
++MODULE_LICENSE("GPL");
+-- 
+2.25.1
 
-> ---
->  drivers/soc/qcom/rpmh-internal.h |  4 ++-
->  drivers/soc/qcom/rpmh-rsc.c      | 67 +++++++++++++++++++++++++++++++++++++---
->  2 files changed, 66 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-> index 344ba68..cd3d6ce 100644
-> --- a/drivers/soc/qcom/rpmh-internal.h
-> +++ b/drivers/soc/qcom/rpmh-internal.h
-> @@ -97,7 +97,8 @@ struct rpmh_ctrlr {
->   * @rsc_pm:             CPU PM notifier for controller.
->   *                      Used when solver mode is not present.
->   * @cpus_in_pm:         Number of CPUs not in idle power collapse.
-> - *                      Used when solver mode is not present.
-> + *                      Used when solver mode and "power-domains" is not present.
-> + * @genpd_nb:           PM Domain notifier for cluster genpd notifications.
->   * @tcs:                TCS groups.
->   * @tcs_in_use:         S/W state of the TCS; only set for ACTIVE_ONLY
->   *                      transfers, but might show a sleep/wake TCS in use if
-> @@ -117,6 +118,7 @@ struct rsc_drv {
->         int id;
->         int num_tcs;
->         struct notifier_block rsc_pm;
-> +       struct notifier_block genpd_nb;
->         atomic_t cpus_in_pm;
->         struct tcs_group tcs[TCS_TYPE_NR];
->         DECLARE_BITMAP(tcs_in_use, MAX_TCS_NR);
-> diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-> index 01c2f50c..050b5f5c 100644
-> --- a/drivers/soc/qcom/rpmh-rsc.c
-> +++ b/drivers/soc/qcom/rpmh-rsc.c
-> @@ -14,10 +14,13 @@
->  #include <linux/kernel.h>
->  #include <linux/list.h>
->  #include <linux/module.h>
-> +#include <linux/notifier.h>
->  #include <linux/of.h>
->  #include <linux/of_irq.h>
->  #include <linux/of_platform.h>
->  #include <linux/platform_device.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/slab.h>
->  #include <linux/spinlock.h>
->  #include <linux/wait.h>
-> @@ -834,6 +837,50 @@ static int rpmh_rsc_cpu_pm_callback(struct notifier_block *nfb,
->         return ret;
->  }
->
-> +/**
-> + * rpmh_rsc_pd_callback() - Check if any of the AMCs are busy.
-> + * @nfb:    Pointer to the genpd notifier block in struct rsc_drv.
-> + * @action: GENPD_NOTIFY_PRE_OFF, GENPD_NOTIFY_OFF, GENPD_NOTIFY_PRE_ON or GENPD_NOTIFY_ON.
-> + * @v:      Unused
-> + *
-> + * This function is given to dev_pm_genpd_add_notifier() so we can be informed
-> + * about when cluster-pd is going down. When cluster go down we know no more active
-> + * transfers will be started so we write sleep/wake sets. This function gets
-> + * called from cpuidle code paths and also at system suspend time.
-> + *
-> + * If AMCs are not busy then writes cached sleep and wake messages to TCSes.
-> + * The firmware then takes care of triggering them when entering deepest low power modes.
-> + *
-> + * Return:
-> + * * NOTIFY_OK          - success
-> + * * NOTIFY_BAD         - failure
-> + */
-> +static int rpmh_rsc_pd_callback(struct notifier_block *nfb,
-> +                               unsigned long action, void *v)
-> +{
-> +       struct rsc_drv *drv = container_of(nfb, struct rsc_drv, genpd_nb);
-> +
-> +       /* We don't need to lock as genpd on/off are serialized */
-> +       if ((action == GENPD_NOTIFY_PRE_OFF) &&
-> +           (rpmh_rsc_ctrlr_is_busy(drv) || rpmh_flush(&drv->client)))
-> +               return NOTIFY_BAD;
-> +
-> +       return NOTIFY_OK;
-> +}
-> +
-> +static int rpmh_rsc_pd_attach(struct rsc_drv *drv, struct device *dev)
-> +{
-> +       int ret;
-> +
-> +       pm_runtime_enable(dev);
-> +       drv->genpd_nb.notifier_call = rpmh_rsc_pd_callback;
-> +       ret = dev_pm_genpd_add_notifier(dev, &drv->genpd_nb);
-> +       if (ret)
-> +               pm_runtime_disable(dev);
-> +
-> +       return ret;
-> +}
-> +
->  static int rpmh_probe_tcs_config(struct platform_device *pdev,
->                                  struct rsc_drv *drv, void __iomem *base)
->  {
-> @@ -963,7 +1010,7 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
->                 return ret;
->
->         /*
-> -        * CPU PM notification are not required for controllers that support
-> +        * CPU PM/genpd notification are not required for controllers that support
->          * 'HW solver' mode where they can be in autonomous mode executing low
->          * power mode to power down.
->          */
-> @@ -971,8 +1018,14 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
->         solver_config &= DRV_HW_SOLVER_MASK << DRV_HW_SOLVER_SHIFT;
->         solver_config = solver_config >> DRV_HW_SOLVER_SHIFT;
->         if (!solver_config) {
-> -               drv->rsc_pm.notifier_call = rpmh_rsc_cpu_pm_callback;
-> -               cpu_pm_register_notifier(&drv->rsc_pm);
-> +               if (pdev->dev.pm_domain) {
-> +                       ret = rpmh_rsc_pd_attach(drv, &pdev->dev);
-> +                       if (ret)
-> +                               return ret;
-> +               } else {
-> +                       drv->rsc_pm.notifier_call = rpmh_rsc_cpu_pm_callback;
-> +                       cpu_pm_register_notifier(&drv->rsc_pm);
-> +               }
->         }
->
->         /* Enable the active TCS to send requests immediately */
-> @@ -985,7 +1038,13 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
->
->         dev_set_drvdata(&pdev->dev, drv);
->
-> -       return devm_of_platform_populate(&pdev->dev);
-> +       ret = devm_of_platform_populate(&pdev->dev);
-> +       if (ret && pdev->dev.pm_domain) {
-> +               dev_pm_genpd_remove_notifier(&pdev->dev);
-> +               pm_runtime_disable(&pdev->dev);
-> +       }
-> +
-> +       return ret;
->  }
->
->  static const struct of_device_id rpmh_drv_match[] = {
-> --
-> 2.7.4
->
