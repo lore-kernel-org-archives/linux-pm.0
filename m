@@ -2,464 +2,250 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A94D4C4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 20 May 2022 00:52:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FFC8C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 20 May 2022 01:28:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344140AbiETAwm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 May 2022 20:52:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57610 "EHLO
+        id S242398AbiETB2i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 May 2022 21:28:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43930 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232937AbiETAwm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2022 20:52:42 -0400
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C282741999;
-        Thu, 19 May 2022 17:52:40 -0700 (PDT)
-Received: by mail-wr1-x435.google.com with SMTP id t6so9445286wra.4;
-        Thu, 19 May 2022 17:52:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=message-id:date:from:to:cc:subject:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=8wmu68V4CsX/EUhtdLMZtJOtGaV8vxzQ5sczCJqnhcM=;
-        b=NT5kma0B7Op4v2qovqLRUNpC6SqHdqRVsspUeL4JOFv0uoOWMVa5xL2KWipXwhCATy
-         8BWz8tjm3Ta4bflZp1Ev59HwdwK7evHDpFx6gKeUneLZ9OPr7ci0m8mKBxjJpw2QePlo
-         XlrCGrJ7vj828yV3jF9K50FWfEd1Z6tVdR4ClhBHE1SvwEzAliKtP8HV88kgVmNhGt4w
-         BKBQBokvWv1RH96525koPJtWHNc2DCywF1W2CzDT07Bp7jv0bWyinSbCOTEvTNQFMrq6
-         PRN9WfEV57n9Op3wqTeG6xbpP4xdMR7NDFRPysdFIb/8tvJfXDWu0F9zWCfUTHvbxuIC
-         WA0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:from:to:cc:subject:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=8wmu68V4CsX/EUhtdLMZtJOtGaV8vxzQ5sczCJqnhcM=;
-        b=LFR7gVKKXgQ/QYchyVglMRtPIm7vn7uidvopUDoVEgj7nKHcRou3fRpV3wDouAdZXx
-         IXWf/7gtedVJPsdmgkig/wnE73Xkr+5QEw9RPyXoI2jc4pvWF051GU6985g1mcWXWX2i
-         VMe11lOM4/7+Sga3U4w+hvITuDgkv37xgxRpZphtQbzLHntgqPX5Me5++U6hXq/Z5fa+
-         vpEgqKxOL4Hyyqzzu23tnZhADwoSRGYqhd30G3pyYclYGMS6DTI8wPLYz/vcuK2fTahR
-         L+TgZb4vDyWRj0db0OKTsjkWHC3LXheFvB28aUpph31r9RYHWEIB1ypGXdia3SFKdV2D
-         bWYQ==
-X-Gm-Message-State: AOAM530U0BxftzxMKlem+H2s+4FptYvBZE4ymZg2+xDgnqjk6Xkn+55N
-        P7fQvwd3DNaUdudyFh5jS4A=
-X-Google-Smtp-Source: ABdhPJwc8Bb01KOPGzN1thsODDHXEi1v+DZ6lfdVI+U7aMQ4AnhZTFY7m7MqzcIcJIx0+cRpfWhBnQ==
-X-Received: by 2002:a05:6000:1acc:b0:20c:67ff:e8b7 with SMTP id i12-20020a0560001acc00b0020c67ffe8b7mr6170381wry.646.1653007959005;
-        Thu, 19 May 2022 17:52:39 -0700 (PDT)
-Received: from Ansuel-xps. (93-42-70-190.ip85.fastwebnet.it. [93.42.70.190])
-        by smtp.gmail.com with ESMTPSA id e30-20020adfa45e000000b0020c5253d8e6sm916921wra.50.2022.05.19.17.52.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 May 2022 17:52:38 -0700 (PDT)
-Message-ID: <6286e656.1c69fb81.27e64.4cfc@mx.google.com>
-X-Google-Original-Message-ID: <YobmVODvpR9Uk0Hu@Ansuel-xps.>
-Date:   Fri, 20 May 2022 02:52:36 +0200
-From:   Ansuel Smith <ansuelsmth@gmail.com>
-To:     Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     Rob Herring <robh+dt@kernel.org>, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] devfreq: qcom: Add L2 Krait Cache devfreq scaling
- driver
-References: <CGME20200929162941epcas1p4a6f524f2406785934918c2a9f556ae4b@epcas1p4.samsung.com>
- <20200929162926.139-1-ansuelsmth@gmail.com>
- <53bcf684-54e7-13e2-2b41-26b6791f7469@samsung.com>
+        with ESMTP id S232996AbiETB2h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2022 21:28:37 -0400
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5A3B5AEDB
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2022 18:28:34 -0700 (PDT)
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20220520012832epoutp023bb1c2c00fc7f9a16cfc8c79c880fedc~wq-CA8h2T0511005110epoutp02_
+        for <linux-pm@vger.kernel.org>; Fri, 20 May 2022 01:28:32 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20220520012832epoutp023bb1c2c00fc7f9a16cfc8c79c880fedc~wq-CA8h2T0511005110epoutp02_
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1653010112;
+        bh=twiM4nG0XN/IUozHsDktNZyZ2toUSdhZtbW2WtXJVBc=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=qiPvgqtBfZ4TLcHEJiO27tGhxsQpdt91F8up45SHy4sqEf+x+Jsoi7r/1u2+3RltH
+         RB/4XBSSZZo6rxZtvSNvjn36sqbaeb9/yNLveF6HpaHwpmiSFxIuUFY3Z1w5vbAosJ
+         9dOo7E+UGBGPiaNswu5VkZSPHQg7PZywLnQBdKBQ=
+Received: from epsnrtp2.localdomain (unknown [182.195.42.163]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
+        20220520012832epcas1p3e8f58526d0971fc256847bb7086f09e0~wq-BYR-Yo3128131281epcas1p3M;
+        Fri, 20 May 2022 01:28:32 +0000 (GMT)
+Received: from epsmges1p3.samsung.com (unknown [182.195.38.235]) by
+        epsnrtp2.localdomain (Postfix) with ESMTP id 4L48Hy4C8sz4x9QB; Fri, 20 May
+        2022 01:28:30 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
+        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
+        24.1A.10038.EBEE6826; Fri, 20 May 2022 10:28:30 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20220520012830epcas1p11bffd5f9b19f4267232f005a867c176f~wq_-ouLDq1281212812epcas1p11;
+        Fri, 20 May 2022 01:28:30 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20220520012830epsmtrp24f2ab9b7b0e738784b2b64ff7b023cc4~wq_-naWSn1570315703epsmtrp2j;
+        Fri, 20 May 2022 01:28:30 +0000 (GMT)
+X-AuditID: b6c32a37-111ff70000002736-4d-6286eebe6e68
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        55.F1.11276.DBEE6826; Fri, 20 May 2022 10:28:29 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20220520012829epsmtip29a57e9b7706d44b3d50c22d2bf3ef24b~wq_-LA16Q0122901229epsmtip2F;
+        Fri, 20 May 2022 01:28:29 +0000 (GMT)
+Subject: Re: [PATCH v25 0/7] soc: mediatek: SVS: introduce MTK SVS
+To:     Kevin Hilman <khilman@kernel.org>,
+        Chen-Yu Tsai <wenst@chromium.org>
+Cc:     Roger Lu <roger.lu@mediatek.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Fan Chen <fan.chen@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com,
+        Guenter Roeck <linux@roeck-us.net>,
+        Jia-wei Chang <jia-wei.chang@mediatek.com>,
+        =?UTF-8?B?UmV4LUJDIENoZW4gKOmZs+afj+i+sCk=?= 
+        <rex-bc.chen@mediatek.com>
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <5a1767dc-ba2d-4de5-d8fe-2f308d3318a9@samsung.com>
+Date:   Fri, 20 May 2022 10:54:48 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <53bcf684-54e7-13e2-2b41-26b6791f7469@samsung.com>
+In-Reply-To: <7hmtfdbcsc.fsf@baylibre.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Te0xTZxTPd++lLW7YS3l9QmDQbYkwHi1Q+HjGObJcnW4kBLcZtRR6B0hp
+        ax97RUMd5SHxAZswqAoYYAbCY7YOgQklCAOiLpAONDzUpSjgBJmEgmEza3vdxn+/c87vd875
+        nS8fB+fp2L6cXLmGVsklMj5rG9F5MzgirG+5OFNQe8YfrZ9sYKO1ah2B6gZ/dUGWqTUcjW02
+        s5BtZhNDw+ZGNnpksmLIaJ20V3suspClcByg1TODAM1dvo2hprvjGPpGH4WebtzB0Oz9EQI9
+        by8lUN+t73FU1DvIRhbrVRZ6OXmVQNXFFpddPlRrbSugLujGCarbMMum6o1aythyikWZGgso
+        /aiZoM79LaC613VsavjedYxaNQakvnYwLzGHlkhpVSAtz1JIc+XZSfwP0sTviUUxAmGYMA7F
+        8gPlknw6iZ+yLzXs/VyZ3TA/8HOJTGtPpUrUan5EcqJKodXQgTkKtSaJTyulMqVIGa6W5Ku1
+        8uxwOa2JFwoEkSI7MSMv54HtuLJr55c/97RgOrAZVAY4HEhGQ/2LT8rANg6P7AKwzPaIzQTP
+        AZyYXHIpA672wAagcfmIAzsEbb//hTH5XgD1lw4xgmcA3p2uB46CB7kbTpvnWQ7sSVLwl85v
+        WQ4STvax4JWGAcJRYJEh0Lxwz0nikkFwYsPqFLuRydBmnsQdmCDfhu0nm5xbeJEH4Gin/hXH
+        HY7WzDn7uNr7WCuHnX1w0gdOzdVhDH4DXl+6iDNbm1xhiS6dwSlwybCBMdgDPhm+xmawL1xd
+        7nUuCslCAHUL04AJTgM49PgswbCioLnpO8xxPJwMhh09EUw6CHZvXgLM4O1wee20C3NfN1ha
+        zGMob0LLw9lXc3fAhpJTrHLAN2yxY9hiwbDFguH/YfWAaAHetFKdn02rhcqo/946S5FvBM6v
+        EBLbBaqWVsIHAMYBAwBycL6nG8jXZ/LcpJKvvqZVCrFKK6PVA0BkP3AF7uuVpbD/JblGLIyO
+        E0THREZFI2GMkO/j1lJ1S8IjsyUaOo+mlbTqXx3GcfXVYUfSTNKaO/uPH1gI/yiAfKetz/dc
+        0Zjp2U/vijruH/yjNaG6Y+gQkeYDrLz9i9RDRe9Kumj+Zt8Nv7UHzSfG3SsON2fvS/izP/Nj
+        /0SYES6dj+tcLMA7X48Pruw1Vxd5B/pljPTsFrt/8WJnHVfUNlVQKxbqo/SFOyrSSjXcHyTx
+        9XnjK8nlCi4ILS+tarxSPKf38cbJwsKUyMbYmdkLU3v7Zz4s+/Gltb2b6z4Rf7l/TOXnZT7/
+        ZE+LjVW5R8N9izdU8lTmUZGAHR0JXWSf2CXvsPRfSw9N3msyHfs0afthz/OZWGiNxw35Z6bf
+        Qvybuv084hJutx87uu6/0vo4QLucxyfUORJhCK5SS/4BDb/h95MEAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SWUwTURhGuTPDdChWh4LhoglIXVgSK1Wj16jEqNFJNG4PosaFApOWSJd0
+        qAtxqVJEcENFxUrABSNWJdIqa0oNiwiIUtGKCxgtCA9gcGtREKVtTHg7yXfOf18uhQsHiClU
+        sjKV1SilKSKST5TVicJmW74cS4gprlmCXEdu8NDPPB2BCuuf+aL2tz9x1DZ8m0TO98MYarQW
+        8VCP2YEhk8M+tlblk6g93QbQ91P1AHVfe4qhm69tGDqqn4f6h1ox1Nn1hEDfSo4TqKblEo4y
+        LPU81O4oJdGovZRAecfafZcFM3cL7gLmis5GMJWGTh5z1aRlTMYskjEXHWb0TVaCOfMnhql0
+        6XhMY0c5xnw3hW7w38ZfksSmJO9hNXNi4/nyD84D6orIfdVVRkwHhsOzgR8F6fnw3scRLBvw
+        KSFdDWBXYwvpHULgRVsDng2oMQ6EdXWc1xkAMH3Y6Ot2Aunl8J211+MH0Qx8XHaOdEs4XUvC
+        S1UdhLf4jcEfj62Y2yLpaGjt6/AUk+hw+GrIAdwsoGOh02rH3UzQM2HJkZueFybTm2FlkQPz
+        OgGw6XI34Wa/sTuOC42eOzgdAUcKXuBeDoZvuwsxL4fB8oF8PAcEGsblhnGJYVxiGJdcBYQR
+        hLBqTiFTcBK1RMnuFXNSBadVysSJKoUJeH5EdFQFKDcOimsBRoFaAClcFCQACn2CUJAk3Z/G
+        alS7NNoUlqsFUylCFCxoy27aJaRl0lR2N8uqWc3/FaP8puiwVFmOKy8xtHnhJuEas+F+7L6V
+        yfszX+RG1Mi1vfZD+R/KsxKuT5tUqnoZd+F8fVqDZR3/uHaLM6zoXfqDdLDC9TzJf6N5QxvY
+        2r36a0DE3D9Ppf3FPotDU6iX/SbV4DX74cidR3NGrQ/OxGl4t5cu1K+aJVnTrMc+hS+KEWzt
+        /NwiWXDiSQ/cFLT6x2m5qHj0xJ4dorUNvaqT9ISsnlvxJRmgWRwZr1wakzYxYXprnNisQibn
+        hL5cSp35iDb7c/K+v9W2zKG8VtGj5pE2l561fK1cnz+oi+qifTLuFKSenaEttMiYeEXdXuHp
+        5V0rNecORs8I+fWm6WEa32d7kiqgU0RwcqkkGtdw0n+123gWgAMAAA==
+X-CMS-MailID: 20220520012830epcas1p11bffd5f9b19f4267232f005a867c176f
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20220519182512epcas1p3020bd4713580c9244f759971b8bd2c3a
+References: <20220516004311.18358-1-roger.lu@mediatek.com>
+        <CAGXv+5GSdWPZe3fNpBJ_WW0zCL8Skg6fHx9ATxaKU1hyMEt2Ww@mail.gmail.com>
+        <7h4k1ndaui.fsf@baylibre.com> <7hy1yzbtb7.fsf@baylibre.com>
+        <CAGXv+5GT=3m=pVPwUOWR42BR=emCpBXvvoAiRV7YKt2kEKWdAQ@mail.gmail.com>
+        <CGME20220519182512epcas1p3020bd4713580c9244f759971b8bd2c3a@epcas1p3.samsung.com>
+        <7hmtfdbcsc.fsf@baylibre.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, May 20, 2022 at 10:11:16AM +0900, Chanwoo Choi wrote:
-> Hi Ansuel,
-> 
-> 
-> The 5.19-rc1 will support the cpu based scaling support[2]
-> as your needed. So that if you use passive governor with CPUFREQ_PARENT_DEV,
-> you can scale the cache frequency according to cpu frequency change.
-> 
-> [1] https://patchwork.kernel.org/project/linux-pm/patch/3acd6c32-6e78-dfc2-3e45-84f69a7d5f36@samsung.com/
-> [2] PM / devfreq: Add cpu based scaling support to passive governor
-> 
-> 
-> Best Regards,
-> Chanwoo Choi
->
+Hi Kevin, Chen-Yu,
 
-Oh wow thanks a lot for this. Wonder if this is finally the right time
-for a correct handling of cache scaling for krait. Will rework this and
-send a new version with the new implementation!
-Again thanks.
+On 5/20/22 3:25 AM, Kevin Hilman wrote:
+> Chen-Yu Tsai <wenst@chromium.org> writes:
+> 
+>> n Wed, May 18, 2022 at 8:03 AM Kevin Hilman <khilman@kernel.org> wrote:
+>>>
+>>> Kevin Hilman <khilman@kernel.org> writes:
+>>>
+>>>> Chen-Yu Tsai <wenst@chromium.org> writes:
+>>>>
+>>>>> On Mon, May 16, 2022 at 8:43 AM Roger Lu <roger.lu@mediatek.com> wrote:
+>>>>>>
+>>>>>> The Smart Voltage Scaling(SVS) engine is a piece of hardware
+>>>>>> which calculates suitable SVS bank voltages to OPP voltage table.
+>>>>>> Then, DVFS driver could apply those SVS bank voltages to PMIC/Buck
+>>>>>> when receiving OPP_EVENT_ADJUST_VOLTAGE.
+>>>>>>
+>>>>>> 1. SVS driver uses OPP adjust event in [1] to update OPP table voltage part.
+>>>>>> 2. SVS driver gets thermal/GPU device by node [2][3] and CPU device by get_cpu_device().
+>>>>>> After retrieving subsys device, SVS driver calls device_link_add() to make sure probe/suspend callback priority.
+>>>>>>
+>>>>>> [1] https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git/commit/?h=opp/linux-next&id=25cb20a212a1f989385dfe23230817e69c62bee5
+>>>>>> [2] https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git/commit/?h=opp/linux-next&id=b325ce39785b1408040d90365a6ab1aa36e94f87
+>>>>>> [3] https://git.kernel.org/pub/scm/linux/kernel/git/matthias.bgg/linux.git/commit/?h=v5.16-next/dts64&id=a8168cebf1bca1b5269e8a7eb2626fb76814d6e2
+>>>>>>
+>>>>>> Change since v24:
+>>>>>> - Rebase to Linux 5.18-rc6
+>>>>>> - Show specific fail log in svs_platform_probe() to help catch which step fails quickly
+>>>>>> - Remove struct svs_bank member "pd_dev" because all subsys device's power domain has been merged into one node like above [3]
+>>>>>>
+>>>>>> Test in below environment:
+>>>>>> SW: Integration Tree [4] + Thermal patch [5] + SVS v25 (this patchset)
+>>>>>> HW: mt8183-Krane
+>>>>>>
+>>>>>> [4] https://protect2.fireeye.com/v1/url?k=847bae75-e5f0bb43-847a253a-000babff9b5d-0b6f42041b9dea1d&q=1&e=37a26c43-8564-4808-9701-dc76d1ebbb27&u=https%3A%2F%2Fgithub.com%2Fwens%2Flinux%2Fcommits%2Fmt8183-cpufreq-cci-svs-test
+>>>>>
+>>>>> I've updated my branch to include all the latest versions of the relevant
+>>>>> patch series:
+>>>>>
+>>>>> - anx7625 DPI bus type series v2 (so the display works)
+>>>>> - MT8183 thermal series v9 (this seems to have been overlooked by the
+>>>>> maintainer)
+>>>>> - MTK SVS driver series v25
+>>>>> - devfreq: cpu based scaling support to passive governor series v5
+>>>>> - MTK CCI devfreq series v4
+>>>>> - MT8183 cpufreq series v7
+>>>>> - Additional WIP patches for panfrost MTK devfreq
+>>>>
+>>>> Thanks for preparing an integration branch Chen-Yu.
+>>>>
+>>>> I'm testing this on mt8183-pumpkin with one patch to add the CCI
+>>>> regulator[1], and the defconfig you posted in a previous rev of this
+>>>> series, but the CCI driver still causes a fault on boot[2] on my
+>>>> platform.
+>>>>
+>>>> I mentioned in earlier reviews that I think there's potentially a race
+>>>> between CCI and SVS loading since they are co-dependent.  My hunch is
+>>>> that this is still not being handled properly.
+>>>
+>>> Ah, actually it's crashing when I try to boot the platform with
+>>> `maxcpus=4` on the cmdline (which I have to do because mt8183-pumpkin is
+>>> unstable upstream with the 2nd cluster enabled.)
 
-> On 9/30/20 1:29 AM, Ansuel Smith wrote:
-> > Qcom L2 Krait CPUs use the generic cpufreq-dt driver and doesn't actually
-> > scale the Cache frequency when the CPU frequency is changed. This
-> > devfreq driver register with the cpu notifier and scale the Cache
-> > based on the max Freq across all core as the CPU cache is shared across
-> > all of them. If provided this also scale the voltage of the regulator
-> > attached to the CPU cache. The scaling logic is based on the CPU freq
-> > and the 3 scaling interval are set by the device dts.
-> > 
-> > Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-> > ---
-> > v2:
-> > * Change cpu-freq to qcom,cpu-freq
-> > * Skip freq change if prev is the same target freq
-> > 
-> >  drivers/devfreq/Kconfig               |  10 +
-> >  drivers/devfreq/Makefile              |   1 +
-> >  drivers/devfreq/krait-cache-devfreq.c | 301 ++++++++++++++++++++++++++
-> >  3 files changed, 312 insertions(+)
-> >  create mode 100644 drivers/devfreq/krait-cache-devfreq.c
-> > 
-> > diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> > index 37dc40d1fcfb..99051aaf9c5e 100644
-> > --- a/drivers/devfreq/Kconfig
-> > +++ b/drivers/devfreq/Kconfig
-> > @@ -143,6 +143,16 @@ config ARM_RK3399_DMC_DEVFREQ
-> >  	  It sets the frequency for the memory controller and reads the usage counts
-> >  	  from hardware.
-> >  
-> > +config ARM_KRAIT_CACHE_DEVFREQ
-> > +	tristate "Scaling support for Krait CPU Cache Devfreq"
-> > +	depends on ARCH_QCOM || COMPILE_TEST
-> > +	help
-> > +	  This adds the DEVFREQ driver for the Krait CPU L2 Cache shared by all cores.
-> > +
-> > +	  The driver register with the cpufreq notifier and find the right frequency
-> > +	  based on the max frequency across all core and the range set in the device
-> > +	  dts. If provided this scale also the regulator attached to the l2 cache.
-> > +
-> >  source "drivers/devfreq/event/Kconfig"
-> >  
-> >  endif # PM_DEVFREQ
-> > diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> > index 3ca1ad0ecb97..bb87925a6a2d 100644
-> > --- a/drivers/devfreq/Makefile
-> > +++ b/drivers/devfreq/Makefile
-> > @@ -14,6 +14,7 @@ obj-$(CONFIG_ARM_IMX8M_DDRC_DEVFREQ)	+= imx8m-ddrc.o
-> >  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
-> >  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
-> >  obj-$(CONFIG_ARM_TEGRA20_DEVFREQ)	+= tegra20-devfreq.o
-> > +obj-$(CONFIG_ARM_KRAIT_CACHE_DEVFREQ)	+= krait-cache-devfreq.o
-> >  
-> >  # DEVFREQ Event Drivers
-> >  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
-> > diff --git a/drivers/devfreq/krait-cache-devfreq.c b/drivers/devfreq/krait-cache-devfreq.c
-> > new file mode 100644
-> > index 000000000000..101a13b6927a
-> > --- /dev/null
-> > +++ b/drivers/devfreq/krait-cache-devfreq.c
-> > @@ -0,0 +1,301 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +
-> > +#include <linux/kernel.h>
-> > +#include <linux/init.h>
-> > +#include <linux/module.h>
-> > +#include <linux/cpufreq.h>
-> > +#include <linux/devfreq.h>
-> > +#include <linux/of.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/clk.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/regulator/consumer.h>
-> > +#include <linux/pm_opp.h>
-> > +
-> > +#include "governor.h"
-> > +
-> > +struct krait_data {
-> > +	struct device *dev;
-> > +	struct devfreq *devfreq;
-> > +
-> > +	struct clk *l2_clk;
-> > +
-> > +	unsigned long *freq_table; /* L2 bus clock rate */
-> > +	unsigned int *l2_cpufreq; /* L2 target CPU frequency */
-> > +
-> > +	struct notifier_block nb;
-> > +};
-> > +
-> > +static int krait_cache_set_opp(struct dev_pm_set_opp_data *data)
-> > +{
-> > +	unsigned long old_freq = data->old_opp.rate, freq = data->new_opp.rate;
-> > +	struct dev_pm_opp_supply *supply = &data->new_opp.supplies[0];
-> > +	struct regulator *reg = data->regulators[0];
-> > +	struct clk *clk = data->clk;
-> > +	struct krait_data *kdata;
-> > +	unsigned long idle_freq;
-> > +	int ret;
-> > +
-> > +	kdata = (struct krait_data *)dev_get_drvdata(data->dev);
-> > +
-> > +	idle_freq = kdata->freq_table[0];
-> > +
-> > +	if (reg) {
-> > +		ret = regulator_set_voltage_triplet(reg, supply->u_volt_min,
-> > +						    supply->u_volt,
-> > +						    supply->u_volt_max);
-> > +		if (ret)
-> > +			goto exit;
-> > +	}
-> > +
-> > +	/*
-> > +	 * Set to idle bin if switching from normal to high bin
-> > +	 * or vice versa. It has been notice that a bug is triggered
-> > +	 * in cache scaling when more than one bin is scaled, to fix
-> > +	 * this we first need to transition to the base rate and then
-> > +	 * to target rate
-> > +	 */
-> > +	if (likely(freq != idle_freq && old_freq != idle_freq)) {
-> > +		ret = clk_set_rate(clk, idle_freq);
-> > +		if (ret)
-> > +			goto exit;
-> > +	}
-> > +
-> > +	ret = clk_set_rate(clk, freq);
-> > +	if (ret)
-> > +		goto exit;
-> > +
-> > +exit:
-> > +	return ret;
-> > +};
-> > +
-> > +static int krait_cache_target(struct device *dev, unsigned long *freq,
-> > +			      u32 flags)
-> > +{
-> > +	return dev_pm_opp_set_rate(dev, *freq);
-> > +};
-> > +
-> > +static int krait_cache_get_dev_status(struct device *dev,
-> > +				      struct devfreq_dev_status *stat)
-> > +{
-> > +	struct krait_data *data = dev_get_drvdata(dev);
-> > +
-> > +	stat->busy_time = 0;
-> > +	stat->total_time = 0;
-> > +	stat->current_frequency = clk_get_rate(data->l2_clk);
-> > +
-> > +	return 0;
-> > +};
-> > +
-> > +static int krait_cache_get_cur_freq(struct device *dev, unsigned long *freq)
-> > +{
-> > +	struct krait_data *data = dev_get_drvdata(dev);
-> > +
-> > +	*freq = clk_get_rate(data->l2_clk);
-> > +
-> > +	return 0;
-> > +};
-> > +
-> > +static struct devfreq_dev_profile tegra_devfreq_profile = {
-> > +	.target = krait_cache_target,
-> > +	.get_dev_status = krait_cache_get_dev_status,
-> > +	.get_cur_freq = krait_cache_get_cur_freq
-> > +};
-> > +
-> > +static int krait_cache_notifier(struct notifier_block *nb, unsigned long action,
-> > +				void *v)
-> > +{
-> > +	struct cpufreq_freqs *freqs;
-> > +	unsigned int cpu, cur_cpu;
-> > +	struct krait_data *data;
-> > +	struct devfreq *devfreq;
-> > +	unsigned long freq;
-> > +	int ret = 0;
-> > +
-> > +	if (action != CPUFREQ_POSTCHANGE)
-> > +		return NOTIFY_OK;
-> > +
-> > +	data = container_of(nb, struct krait_data, nb);
-> > +	devfreq = data->devfreq;
-> > +
-> > +	mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
-> > +
-> > +	freqs = (struct cpufreq_freqs *)v;
-> > +	freq = freqs->new;
-> > +	cur_cpu = freqs->policy->cpu;
-> > +
-> > +	/* find the max freq across all core */
-> > +	for_each_present_cpu(cpu)
-> > +		if (cpu != cur_cpu)
-> > +			freq = max(freq, (unsigned long)cpufreq_quick_get(cpu));
-> > +
-> > +	devfreq->governor->get_target_freq(devfreq, &freq);
-> > +
-> > +	if (devfreq->previous_freq == freq)
-> > +		goto out;
-> > +
-> > +	ret = devfreq->profile->target(data->dev, &freq, 0);
-> > +	if (ret < 0)
-> > +		goto out;
-> > +
-> > +	if (devfreq->profile->freq_table &&
-> > +	    (devfreq_update_status(devfreq, freq)))
-> > +		dev_err(data->dev,
-> > +			"Couldn't update frequency transition information.\n");
-> > +
-> > +	devfreq->previous_freq = freq;
-> > +
-> > +out:
-> > +	mutex_unlock(&devfreq->lock);
-> > +	return notifier_from_errno(ret);
-> > +};
-> > +
-> > +static int krait_cache_governor_get_target(struct devfreq *devfreq,
-> > +					   unsigned long *freq)
-> > +{
-> > +	unsigned int *l2_cpufreq;
-> > +	unsigned long *freq_table;
-> > +	unsigned long target_freq = *freq;
-> > +	struct krait_data *data = dev_get_drvdata(devfreq->dev.parent);
-> > +
-> > +	l2_cpufreq = data->l2_cpufreq;
-> > +	freq_table = data->freq_table;
-> > +
-> > +	/*
-> > +	 * Find the highest l2 freq interval based on the max cpufreq
-> > +	 * across all core
-> > +	 */
-> > +	while (*(l2_cpufreq = l2_cpufreq + 1) && target_freq >= *l2_cpufreq)
-> > +		freq_table = freq_table + 1;
-> > +
-> > +	*freq = *freq_table;
-> > +
-> > +	return 0;
-> > +};
-> > +
-> > +static int krait_cache_governor_event_handler(struct devfreq *devfreq,
-> > +					      unsigned int event, void *data)
-> > +{
-> > +	struct krait_data *kdata = dev_get_drvdata(devfreq->dev.parent);
-> > +	int ret = 0;
-> > +
-> > +	switch (event) {
-> > +	case DEVFREQ_GOV_START:
-> > +		kdata->nb.notifier_call = krait_cache_notifier;
-> > +		ret = cpufreq_register_notifier(&kdata->nb,
-> > +						CPUFREQ_TRANSITION_NOTIFIER);
-> > +		break;
-> > +
-> > +	case DEVFREQ_GOV_STOP:
-> > +		cpufreq_unregister_notifier(&kdata->nb,
-> > +					    CPUFREQ_TRANSITION_NOTIFIER);
-> > +		break;
-> > +	}
-> > +
-> > +	return ret;
-> > +};
-> > +
-> > +static struct devfreq_governor krait_devfreq_governor = {
-> > +	.name = "krait_governor",
-> > +	.get_target_freq = krait_cache_governor_get_target,
-> > +	.event_handler = krait_cache_governor_event_handler,
-> > +	.immutable = true,
-> > +};
-> > +
-> > +static int krait_cache_probe(struct platform_device *pdev)
-> > +{
-> > +	int ret, count;
-> > +	struct opp_table *table;
-> > +	struct krait_data *data;
-> > +	struct device *dev = &pdev->dev;
-> > +	struct device_node *node = dev->of_node;
-> > +
-> > +	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-> > +	if (!data)
-> > +		return -ENOMEM;
-> > +
-> > +	data->dev = dev;
-> > +
-> > +	data->l2_clk = devm_clk_get(dev, "l2");
-> > +	if (IS_ERR(data->l2_clk))
-> > +		return PTR_ERR(data->l2_clk);
-> > +
-> > +	table = dev_pm_opp_set_regulators(dev, (const char *[]){ "l2" }, 1);
-> > +	if (IS_ERR(table)) {
-> > +		ret = PTR_ERR(table);
-> > +		dev_err(dev, "failed to set regulators %d\n", ret);
-> > +		return ret;
-> > +	}
-> > +
-> > +	ret = PTR_ERR_OR_ZERO(
-> > +		dev_pm_opp_register_set_opp_helper(dev, krait_cache_set_opp));
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	ret = dev_pm_opp_of_add_table(dev);
-> > +	if (ret) {
-> > +		dev_err(dev, "failed to parse L2 freq thresholds\n");
-> > +		return ret;
-> > +	}
-> > +
-> > +	count = dev_pm_opp_get_opp_count(dev);
-> > +
-> > +	data->l2_cpufreq =
-> > +		devm_kzalloc(dev, sizeof(unsigned int) * count, GFP_KERNEL);
-> > +	if (!data->l2_cpufreq)
-> > +		return -ENOMEM;
-> > +
-> > +	ret = of_property_read_u32_array(node, "qcom,l2-cpufreq", data->l2_cpufreq,
-> > +					 count);
-> > +	if (ret) {
-> > +		dev_err(dev, "failed to parse L2 cpufreq thresholds\n");
-> > +		return ret;
-> > +	}
-> > +
-> > +	ret = devfreq_add_governor(&krait_devfreq_governor);
-> > +	if (ret) {
-> > +		dev_err(&pdev->dev, "Failed to add governor: %d\n", ret);
-> > +		return ret;
-> > +	}
-> > +
-> > +	platform_set_drvdata(pdev, data);
-> > +
-> > +	data->devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
-> > +					   "krait_governor", NULL);
-> > +
-> > +	/* Cache freq_table to quickly get it when needed */
-> > +	data->freq_table = data->devfreq->profile->freq_table;
-> > +
-> > +	if (IS_ERR(data->devfreq))
-> > +		return PTR_ERR(data->devfreq);
-> > +
-> > +	return 0;
-> > +};
-> > +
-> > +static int krait_cache_remove(struct platform_device *pdev)
-> > +{
-> > +	struct krait_data *data = platform_get_drvdata(pdev);
-> > +
-> > +	dev_pm_opp_remove_table(data->dev);
-> > +
-> > +	return 0;
-> > +};
-> > +
-> > +static const struct of_device_id krait_cache_match_table[] = {
-> > +	{ .compatible = "qcom,krait-cache" },
-> > +	{}
-> > +};
-> > +
-> > +static struct platform_driver krait_cache_driver = {
-> > +	.probe		= krait_cache_probe,
-> > +	.remove		= krait_cache_remove,
-> > +	.driver		= {
-> > +		.name   = "krait-cache-scaling",
-> > +		.of_match_table = krait_cache_match_table,
-> > +	},
-> > +};
-> > +module_platform_driver(krait_cache_driver);
-> > +
-> > +MODULE_DESCRIPTION("Krait CPU Cache Scaling driver");
-> > +MODULE_AUTHOR("Ansuel Smith <ansuelsmth@gmail.com>");
-> > +MODULE_LICENSE("GPL v2");
-> > 
+This warning message is printed by 'WARN_ON(cpufreq_passive_unregister_notifier(devfreq))'
+on devfreq passive governor. 
+
+If the cpufreq drivers are not probed before of probing cci devfreq driver
+with passive governor, passive governor shows this warning message.
+Because passive governor with CPUFREQ_PARENT_DEV depends on the cpufreq driver
+in order to get 'struct cpufreq_policy'[2].
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/tree/drivers/devfreq/governor_passive.c?h=devfreq-testing#n339
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/tree/drivers/devfreq/governor_passive.c?h=devfreq-testing#n282
+
+But, as I knew, this message might not stop the kernel. Just show the warning
+message and then return -EPROBE_DEFER error. It means that maybe try to
+probe the cci devfreq driver on late time of kernel booting
+and then will be working. But, I need the full kernel booting log
+and the booting sequence of between cpufreq and cci devfreq driver.
+
+In order to fix your issue, could you share the full booting log?
+And if possible, please explain the more detailed something about this.
+
+>>>
+>>> The CCI driver should be a bit more robust about detecting
+>>> available/online CPUs
+>>
+>> This all seems to be handled in the devfreq passive governor.
 > 
+> Well, that's the initial crash.  But the SVS driver will also go through
+> its svs_mt8183_banks[] array (including both big & little clusters) and
+> try to init SVS, so presumably that will have some problems also if only
+> one cluster is enabled.
 > 
-> -- 
-> Best Regards,
-> Chanwoo Choi
-> Samsung Electronics
+>> And presumably we'd like to have CCI devfreq running even if just one
+>> core was booted.
+> 
+> Yes, I assume so also.
+> 
+>> Added Chanwoo for more ideas.
+> 
+> OK, thanks.
+> 
+> Kevin
+
 
 -- 
-	Ansuel
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
