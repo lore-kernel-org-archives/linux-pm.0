@@ -2,94 +2,190 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB873C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 23 May 2022 07:33:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F121C4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 23 May 2022 08:25:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229660AbiEWHcy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 May 2022 03:32:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47130 "EHLO
+        id S231615AbiEWIZi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 May 2022 04:25:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57774 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230403AbiEWHcj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2022 03:32:39 -0400
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28A7826E5
-        for <linux-pm@vger.kernel.org>; Mon, 23 May 2022 00:32:04 -0700 (PDT)
-Received: by mail-pl1-x634.google.com with SMTP id b5so5286506plx.10
-        for <linux-pm@vger.kernel.org>; Mon, 23 May 2022 00:32:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=l6vKoyEya/r3/MqVEEJWzCpNcuuesZvhsyqXin89G20=;
-        b=QkkPzppkGobaBMNtLMjTdS88K0En7cKbJRSLr/uCDJHYpNDsXdoNt7dKWMSOumeJuW
-         2hUbrbUVFiJiun2+NVvuDJghnz5x3AhxhqVZh7ilPtoik3nOgS6EwjLGMR57IVlIsMIS
-         E51jAnuW6i5mKRZ36FgcV6rz2yQXfXyZdbsLWcMk4m3+fvRBa2MD3Dy1nAg1QiRfXSkv
-         ZqsxVjyeUlyzPoEpqYpxtQy5j0L6WE2P3v486BQvYR0FuuXCjYH+CSGEucQ0NFS/aM7K
-         oGOQU/xmKbrDqirJI0e1slSZb2NDdorb53JovJb8o4GRFSKF3iRHzvvfECqhiufy81fH
-         fO9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=l6vKoyEya/r3/MqVEEJWzCpNcuuesZvhsyqXin89G20=;
-        b=lf/bqv0Fg8fFMISECO4Fcp7kKD1PKkPes0TGDZf6D/PDWkiVbRV2Dxr4g8nI31wXdb
-         yQQI67punSLyJq8loK6DIeOMHzrO87uqZIozQeVg6m4RyLMCKNLCcNlgmfulUuBFFzlE
-         5Lpy80Y9uEns28BlMIf20shhaR5jGGIKzcekqGC7qMw4imtDukYUeCXgsUhQWiX813rK
-         ekjSiu4BmtBF+MBWUOO7XmLkke9hneosb+Q0H+uMdiAKYNmBe65VZTGlQV7ohGEI5BzT
-         yLL9WNNZYgcQwOlptvkfnbZRJGnoNIs4gXSl8gt94qwv7pWa5KDS4vIPqEdtbex6TX7R
-         NRug==
-X-Gm-Message-State: AOAM531IMtMk0fATGn8hKDX7K4/kS7BV8oL+FkLgmrQVNqswPLwgT7a1
-        Vt4WcjTCBD0ZQUf597AKYMQIDg==
-X-Google-Smtp-Source: ABdhPJxua26V/dTD9Xrx6ogoO6c0plBdrLo/kP7vn5fAlM3y5vBZrLDMIXXKyZRHMsd33ZQVnFsxyA==
-X-Received: by 2002:a17:902:f710:b0:15f:165f:b50b with SMTP id h16-20020a170902f71000b0015f165fb50bmr22287217plo.158.1653291123694;
-        Mon, 23 May 2022 00:32:03 -0700 (PDT)
-Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id u6-20020a17090341c600b0015e8d4eb2d8sm4322308ple.290.2022.05.23.00.32.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 May 2022 00:32:03 -0700 (PDT)
-Date:   Mon, 23 May 2022 13:02:01 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Meng Li <li.meng@amd.com>
-Cc:     Shuah Khan <skhan@linuxfoundation.org>,
-        Huang Rui <ray.huang@amd.com>, linux-pm@vger.kernel.org,
+        with ESMTP id S231634AbiEWIZf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2022 04:25:35 -0400
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2084.outbound.protection.outlook.com [40.107.93.84])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B0A56431;
+        Mon, 23 May 2022 01:25:32 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Y5eUOuHh38vsNzyujHO5gSxIOwNzQ8g+I9tlrrQrd3SjpUkXDbHmjnJXEovYl55u+Fwk83RtqbzfgbuowBeQ/deaGaORnKyQQseK7zESlTcnKqndeD94IR68D5nc1nRb/Kkx+wO1E6K8qhQXNp5ZINEvCIoIUI3Z5MvlbbHQ4znthjNa3HQrl1Az+3QkPacMPcYqRBDbLBLl6nm9MWH57lmRo/pwaKeIDzs32hOalz4B2adRl+9Lb4bPN/Zmxo7nprQgU1NeOdhZSZJTwLDEwsbOk9C/umyEK5oOYT3MolFsYCaqsti5wBzyJJuMkY1g32s7UvpUGiDvyrfqED3Oag==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=uXizruybj1Qs5gl7fqQ2Vn+F4IDjtP338AIxTX0jacA=;
+ b=d4A9XLN9bdXzGBGpWtPPNFJMOP/XYNaciqo/3FhKcG2Q6CL6xinQU89lEjB8DvWv18HBxFQCV3GWzdOK7RluIyrnf5nXkIZmkuBWTeGJeLGvGOlRoyZOS7fx4hquey9V7JLz1uVDZvr9v22xvWxyv8FoVFQKd+vJdjulNpqvRQi8GDdAcOs+7SPbs41xnKRI8JPVkzcMdt/dG7RKCX2l73GLwVOL9aKeEO1ikGroG/jOU70VUIYdGDlewMn0NKjZFW0DUN+mqpdNMwOSW4clfvpmOmlqWJsopCn5lN72xSxJd3RUXAS8DM2/SWUO7+TriUsokG+zYHJng6jawY5NLA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=uXizruybj1Qs5gl7fqQ2Vn+F4IDjtP338AIxTX0jacA=;
+ b=to0B0zt2Nm7ijiW+0RXL13YKVcxC6XMruXV8kdobiD/c1rXGVhVGmn5o2wYOwVBgA9WcM7IC/krSJOhIX8kYYHEXMfbdGMP4NdI+2cIwbtFla+OHzvZCOMsoN9tHmNE5arpC6FuD0YIQwIajk6JtnImEE1mz66+jJxuAGWurR/E=
+Received: from DM4PR12MB6351.namprd12.prod.outlook.com (2603:10b6:8:a2::6) by
+ IA1PR12MB6330.namprd12.prod.outlook.com (2603:10b6:208:3e4::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5273.22; Mon, 23 May
+ 2022 08:25:30 +0000
+Received: from DM4PR12MB6351.namprd12.prod.outlook.com
+ ([fe80::243c:893a:a5db:1689]) by DM4PR12MB6351.namprd12.prod.outlook.com
+ ([fe80::243c:893a:a5db:1689%9]) with mapi id 15.20.5273.023; Mon, 23 May 2022
+ 08:25:28 +0000
+From:   "Meng, Li (Jassmine)" <Li.Meng@amd.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+CC:     Shuah Khan <skhan@linuxfoundation.org>,
+        "Huang, Ray" <Ray.Huang@amd.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Nathan Fontenot <nathan.fontenot@amd.com>,
-        Deepak Sharma <deepak.sharma@amd.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Jinzhou Su <Jinzhou.Su@amd.com>,
-        Perry Yuan <Perry.Yuan@amd.com>,
-        Xiaojian Du <Xiaojian.Du@amd.com>,
-        Borislav Petkov <bp@alien8.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V7 2/4] cpufreq: amd-pstate: Add test module for
+        "Fontenot, Nathan" <Nathan.Fontenot@amd.com>,
+        "Sharma, Deepak" <Deepak.Sharma@amd.com>,
+        "Deucher, Alexander" <Alexander.Deucher@amd.com>,
+        "Limonciello, Mario" <Mario.Limonciello@amd.com>,
+        "Su, Jinzhou (Joe)" <Jinzhou.Su@amd.com>,
+        "Yuan, Perry" <Perry.Yuan@amd.com>,
+        "Du, Xiaojian" <Xiaojian.Du@amd.com>,
+        Borislav Petkov <bp@alien8.de>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH V7 2/4] cpufreq: amd-pstate: Add test module for
  amd-pstate driver
-Message-ID: <20220523073201.asdi35v5f43aoaee@vireshk-i7>
+Thread-Topic: [PATCH V7 2/4] cpufreq: amd-pstate: Add test module for
+ amd-pstate driver
+Thread-Index: AQHYbdLLgXfeBE11A0GbQrf3/h8d/a0sEryAgAAM7LA=
+Date:   Mon, 23 May 2022 08:25:28 +0000
+Message-ID: <DM4PR12MB6351C32C58F5BA063E89D1A8F7D49@DM4PR12MB6351.namprd12.prod.outlook.com>
 References: <20220522115423.1147282-1-li.meng@amd.com>
  <20220522115423.1147282-3-li.meng@amd.com>
+ <20220523073201.asdi35v5f43aoaee@vireshk-i7>
+In-Reply-To: <20220523073201.asdi35v5f43aoaee@vireshk-i7>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_Enabled=true;
+ MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_SetDate=2022-05-23T08:21:57Z;
+ MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_Method=Standard;
+ MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_Name=General;
+ MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_SiteId=3dd8961f-e488-4e60-8e11-a82d994e183d;
+ MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_ActionId=9dc4f8e7-3745-4e6b-9636-3ab89b8d27b7;
+ MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_ContentBits=1
+msip_label_4342314e-0df4-4b58-84bf-38bed6170a0f_enabled: true
+msip_label_4342314e-0df4-4b58-84bf-38bed6170a0f_setdate: 2022-05-23T08:25:26Z
+msip_label_4342314e-0df4-4b58-84bf-38bed6170a0f_method: Standard
+msip_label_4342314e-0df4-4b58-84bf-38bed6170a0f_name: General
+msip_label_4342314e-0df4-4b58-84bf-38bed6170a0f_siteid: 3dd8961f-e488-4e60-8e11-a82d994e183d
+msip_label_4342314e-0df4-4b58-84bf-38bed6170a0f_actionid: 3e26b4d8-5895-4f63-815c-97c73a4a193c
+msip_label_4342314e-0df4-4b58-84bf-38bed6170a0f_contentbits: 0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 35769cb5-cc03-47ff-d469-08da3c95cb8b
+x-ms-traffictypediagnostic: IA1PR12MB6330:EE_
+x-microsoft-antispam-prvs: <IA1PR12MB63308B6F151A44CF232CAD5BF7D49@IA1PR12MB6330.namprd12.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: k9JSXQlOWYYg5lRZQyT0hL2ljXdUJS23+oN9RbKOtA3s2RRLJGtGA4v6hsTJ5GqeWu3/tyFnm/3/rWcjEt0f9ucI5Nbvh6ktmlk6gRYVtTiipciOgU69IyKoNk4/i274yXG03GWVWSPOaofOdCGFi3hhUw82VJGIDJzJExk8hii3TI/xE4Sopwkx26aDlmrPV3s2qfep5RPUSR6a4DX+zqklPaC6E/vF/K8sDBhkrTlc1stcII5AcblvehdFTgt7Apj6AEF5hlvEF/nK0LU9uZks/gkAgEK8I/hfNWthgwXQuHqsFtcsc/lomb88DMhiyFesb0AuTP+ba1a9xTufB4zynOomGbmF+6yuT7JHCs7iF2zOn8LdWSAR3wAVt64IZ99K4cspeuv07ox+fopI3hsOEYUQ5a+ME7M6aEBkehopsM2Vgqfx13jZsQqJzvLHE/EN83HV538OgeTIJpktxkPu4cVfG3PQfudtbRsCAnwUFszDdyS4Opq34by/5Zdsu8FZitvBkEwAXCGfCHlxTUwFd1B91PSMSsvhuLkEde41gcfjKV9mcfbDiMux9/dRAXBGVbMZowXmOO+FVlUmwadPAWjp1YwMGWbgUfciLsSuI5kcj+3A0bEbpnckNBeGtHDVp8H2rmCNvGi33tamwG6z8Jh9p0XW6j5YqYIba3mUD2RTAXThNVz1iDKRmzSswCleQIVsaiFq8LTrKjYMmA==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB6351.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(6506007)(2906002)(86362001)(9686003)(7696005)(8936002)(52536014)(508600001)(53546011)(5660300002)(33656002)(76116006)(83380400001)(186003)(122000001)(38100700002)(38070700005)(64756008)(54906003)(316002)(55016003)(8676002)(4326008)(6916009)(66446008)(66556008)(66946007)(66476007)(71200400001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 2
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?3/BLtZf7yay6I+0sfSoPMhb/5XolqFfshbomnNpYFzFbJOf5tWhZtOL5P1xX?=
+ =?us-ascii?Q?zvOym+TooEzXWfYYNHqVpgTM6t4r05tFFHITPMd5D+5XOUW4wGjYWHMZ62fe?=
+ =?us-ascii?Q?m/unu9ybrBRju2CSD8Oz9aFld6zmz9jruWWe3XB95Nep2DrGf/hM03oKFJSP?=
+ =?us-ascii?Q?pmcpHx+z8vYmTWSsjLNuJJyMxwzvRS4zsHE1Xr9ueK8XDo/qWcXVe5uE6X7W?=
+ =?us-ascii?Q?OVTpu406O8rcEZMelxd3X+fEpEyqtR0JNUqvsgOLLzYL9St2+Vm2O1TiL+jh?=
+ =?us-ascii?Q?eZ1WKC1Dt8ZCRbT6ZPXTJ0kYZ0udK5ub+auKpZr6iTC1LG11RmMcUQLsojR/?=
+ =?us-ascii?Q?zJuKOEiqDWvvGFMMhlrLTXCAP89X0noXisWBgXiJqfv7r6NhbI61ZHrPFU2v?=
+ =?us-ascii?Q?EbxE0b5zk4SFyybhjWSnIKvlvhP4r8haqPANptjL4DBv+9icT2TOl+f4LDlP?=
+ =?us-ascii?Q?zmZJk22l70/phMiJK51PeLLSQLlXHTvT03aZU8LaYi10rjrG3/7BUqqRcv/f?=
+ =?us-ascii?Q?ZofHhQRl8EgPCwHRe3wbfcPCIXrtYUqhLfjrZSUb9BaezzOIH6pcqHz3dpPZ?=
+ =?us-ascii?Q?C2cvPMLaGXdwhzRym72pYwYNThUq/F3NUvbQJtl+RCl2AKi5bg3pmKderDjn?=
+ =?us-ascii?Q?COTZ4PUgWCvEb482WBALTHrzxfxDRBC5ZqR4r5MOQzksYnDiGeJizNnxYdhY?=
+ =?us-ascii?Q?+0tc0ppf/09K4QdJGTNtFZsZ54EQOz+XZxnHGJRV/Ckyp6GBs8OfkDJ8JeYm?=
+ =?us-ascii?Q?j+Ym2tDPG5mw3RToEUsbOxLdHjcQLijfZhOoPMSWPYDSapIp1cTQXxRRi804?=
+ =?us-ascii?Q?WkSwIus1Hlw3Rd4xpaUEXGi+LiTpEblIZL9KmpYbUB1TdHBiFKyzzBhKNwl9?=
+ =?us-ascii?Q?HG8EPOLynTaDXE3udeS299hERC3oCHLXJ70U4ak0eOILoTp1/hAQVOJd9Vs2?=
+ =?us-ascii?Q?1sOJcR42GnW1MwFDy96pEZ+LrWJuDNkjsQkW8qXq6lQMSxh0uPjBtGE8Sehm?=
+ =?us-ascii?Q?CTYgfhMa2gYmmLPHhfVoBFrbshQzUsgmcPi8qdTV/StawtPVVa7DxwwvUTrb?=
+ =?us-ascii?Q?gso9RKYNuefgKAvCrt5ZEFEIXPOFmhukghm5C6N3Rd+xTrCUi2d92Djz8WyV?=
+ =?us-ascii?Q?dcCOg7UIfJGOvDN17139K19N8Hilc+Euc+e1TJmHSxNX3lS6XzmK0ijPtET8?=
+ =?us-ascii?Q?HGdZ0PFFcgRkgXqBSSTogCSjrcmjW7gHuGvXX++u0+P1rwnMr3bOi26cpoZ9?=
+ =?us-ascii?Q?pVtuPtE8keo2sxiDU3qg/J8xQjyJ1FF2zuX8j42ArrHjciuPyR2C4QRuB18A?=
+ =?us-ascii?Q?7SR5kq0njbvRYbGXwqZtvAjm/05oDrBWH8MsZ/QWh5dbK64YJbJQlDn+lXxJ?=
+ =?us-ascii?Q?S+YSKWrt7PXPW40FfoUq/5KyimaoVCu6EHFJIfas+3BZg2GlnCdvQAd4ZrRV?=
+ =?us-ascii?Q?RdgOTcMKYPKnYww6uYUbcPa2Xuv0c1HbjGxUgOxn9ZAX8XNG+mgM/s/p3boT?=
+ =?us-ascii?Q?tyAvTVnKLNXpAcjjr2NKnpZek4TVzePZxTxN/fpidfHxa2drPVQFZyesCo9a?=
+ =?us-ascii?Q?NC6CYlKxDYmBptR0E3ErKC2YbqFnjPB+ByDfGaGnhZKqNoo5Qn47W8kWdtdD?=
+ =?us-ascii?Q?r1sxQB+ME0mGoxjAP3O0YakgehQJje+H0PAOrscnu9fnJ+ir2s54A7MQ0VHT?=
+ =?us-ascii?Q?i8IjncH7yG1ba1YdrO/aF+AY5M/yNH/tkyTpcicbUSgu4SvwtdiPf06iDx9c?=
+ =?us-ascii?Q?tO1h4zavZ0Dd9lnpLhVctZnua6xOMx5AfMGMgQpmif1g2S+1lxjzhhYFk/hx?=
+x-ms-exchange-antispam-messagedata-1: zGp8oGF3VWxDCg==
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220522115423.1147282-3-li.meng@amd.com>
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB6351.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 35769cb5-cc03-47ff-d469-08da3c95cb8b
+X-MS-Exchange-CrossTenant-originalarrivaltime: 23 May 2022 08:25:28.8454
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 1Bz+LNoQ6POIx25Kzs1mr+L1/nI3WXDcDwT9ZsYINuGG2GN4auFOBlUEMe89Bsp7Xwp0+j+AGFrQ/MmuvSGFnw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6330
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 22-05-22, 19:54, Meng Li wrote:
-> Add amd-pstate-ut module, which is conceptually out-of-tree module
-> and provides ways for selftests/amd-pstate driver to test various
-> kernel module-related functionality. This module will be expected by
-> some of selftests to be present and loaded.
-> 
-> Signed-off-by: Meng Li <li.meng@amd.com>
-> Acked-by: Huang Rui <ray.huang@amd.com>
-> ---
->  drivers/cpufreq/Kconfig.x86     |   7 +
->  drivers/cpufreq/Makefile        |   1 +
->  drivers/cpufreq/amd-pstate-ut.c | 293 ++++++++++++++++++++++++++++++++
->  3 files changed, 301 insertions(+)
->  create mode 100644 drivers/cpufreq/amd-pstate-ut.c
+[AMD Official Use Only - General]
 
-I wonder if this should be moved to selftest directories instead ?
 
--- 
-viresh
+
+> -----Original Message-----
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Sent: Monday, May 23, 2022 3:32 PM
+> To: Meng, Li (Jassmine) <Li.Meng@amd.com>
+> Cc: Shuah Khan <skhan@linuxfoundation.org>; Huang, Ray
+> <Ray.Huang@amd.com>; linux-pm@vger.kernel.org; Rafael J . Wysocki
+> <rafael.j.wysocki@intel.com>; Fontenot, Nathan
+> <Nathan.Fontenot@amd.com>; Sharma, Deepak
+> <Deepak.Sharma@amd.com>; Deucher, Alexander
+> <Alexander.Deucher@amd.com>; Limonciello, Mario
+> <Mario.Limonciello@amd.com>; Su, Jinzhou (Joe) <Jinzhou.Su@amd.com>;
+> Yuan, Perry <Perry.Yuan@amd.com>; Du, Xiaojian <Xiaojian.Du@amd.com>;
+> Borislav Petkov <bp@alien8.de>; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH V7 2/4] cpufreq: amd-pstate: Add test module for amd-
+> pstate driver
+>=20
+> [CAUTION: External Email]
+>=20
+> On 22-05-22, 19:54, Meng Li wrote:
+> > Add amd-pstate-ut module, which is conceptually out-of-tree module and
+> > provides ways for selftests/amd-pstate driver to test various kernel
+> > module-related functionality. This module will be expected by some of
+> > selftests to be present and loaded.
+> >
+> > Signed-off-by: Meng Li <li.meng@amd.com>
+> > Acked-by: Huang Rui <ray.huang@amd.com>
+> > ---
+> >  drivers/cpufreq/Kconfig.x86     |   7 +
+> >  drivers/cpufreq/Makefile        |   1 +
+> >  drivers/cpufreq/amd-pstate-ut.c | 293
+> > ++++++++++++++++++++++++++++++++
+> >  3 files changed, 301 insertions(+)
+> >  create mode 100644 drivers/cpufreq/amd-pstate-ut.c
+>=20
+> I wonder if this should be moved to selftest directories instead ?
+>=20
+> --
+> Viresh
+
+Thanks.
+We took Shuah's comments and put test driver under drivers/cpufreq.
+
+[Meng, Li (Jassmine)]=20
