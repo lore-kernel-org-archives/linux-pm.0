@@ -2,100 +2,172 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9B7BC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 24 May 2022 15:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F2BAC433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 24 May 2022 15:28:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238881AbiEXP15 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 May 2022 11:27:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50528 "EHLO
+        id S238878AbiEXP2W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 May 2022 11:28:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50722 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238878AbiEXP1z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2022 11:27:55 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A69F95FF0D
-        for <linux-pm@vger.kernel.org>; Tue, 24 May 2022 08:27:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1653406073;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=0dpLkRs1d/f4IvFC0kcR0J1iYghGd/WbywlFV5pQCIw=;
-        b=ilxgQ6U8GlBMouQlFtovYTXM67zgxZVH/c42YJBzDXFoxkUcyUDu4BNQS2loManxhvBDMK
-        zM9Vrlv8rqmbSqCnv7o7DzCBL6t1uclplZaT7ZgKI2M2nhtMLlAM6f278mbNfnIZ4WJhIU
-        hC12Qro0TEMUulO2E4ATCRY04s3wsJE=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-586-StCUA6iqOkemmeQYbKoalw-1; Tue, 24 May 2022 11:27:48 -0400
-X-MC-Unique: StCUA6iqOkemmeQYbKoalw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id D2ABC3810D25;
-        Tue, 24 May 2022 15:27:46 +0000 (UTC)
-Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.195.109])
-        by smtp.corp.redhat.com (Postfix) with SMTP id EB1312166B29;
-        Tue, 24 May 2022 15:27:26 +0000 (UTC)
-Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
-        oleg@redhat.com; Tue, 24 May 2022 17:27:46 +0200 (CEST)
-Date:   Tue, 24 May 2022 17:27:25 +0200
-From:   Oleg Nesterov <oleg@redhat.com>
-To:     "Eric W. Biederman" <ebiederm@xmission.com>
-Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
-        Will Deacon <will@kernel.org>, tj@kernel.org,
-        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-        Richard Weinberger <richard@nod.at>,
-        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-        Johannes Berg <johannes@sipsolutions.net>,
-        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
-        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
-        Robert OCallahan <roc@pernos.co>, Kyle Huey <khuey@pernos.co>,
-        Richard Henderson <rth@twiddle.net>,
-        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-        Matt Turner <mattst88@gmail.com>,
-        Jason Wessel <jason.wessel@windriver.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Douglas Anderson <dianders@chromium.org>,
-        Douglas Miller <dougmill@linux.vnet.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 08/16] ptrace: Only populate last_siginfo from ptrace
-Message-ID: <20220524152725.GE14347@redhat.com>
-References: <871qwq5ucx.fsf_-_@email.froward.int.ebiederm.org>
- <20220518225355.784371-8-ebiederm@xmission.com>
+        with ESMTP id S238931AbiEXP2T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2022 11:28:19 -0400
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0690A5FF11
+        for <linux-pm@vger.kernel.org>; Tue, 24 May 2022 08:28:06 -0700 (PDT)
+Received: by mail-wr1-x42d.google.com with SMTP id m20so15097766wrb.13
+        for <linux-pm@vger.kernel.org>; Tue, 24 May 2022 08:28:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=MuJUprVkec1LhN6o7SGN7yS6FtU75T+9Wd1DOyeL8ik=;
+        b=cXViV63iRSsMqW3XAi/zQKnSpJARlA/rf5fRH6+kSetZovEs5U2oYe2hHvprEFaZFr
+         vHgoIQ2/m6pWstO2paqiiTVf1lazwwki/PMZiHiAwFraMXiFSjb7z18b4hFHGOr7faY4
+         qMQSahJsZlMtKLt4yxdownjKXhfxRs+b9tCxfa8ZTK4/ODqqAbnDW9GZ5YfaRk72rN9D
+         Nkv+lT52o+aTj/2yun+3xAdvR4DxtZfe4ohuen7ZrwxA18kX4hmEp3EoKKt4DjMpC68e
+         aLvca5iCRNTTJThD/PeYwqHLB0fAdmQi1qkDsDsw2RxTN11aY0cC3/ugEnClljCb4ZZF
+         XJdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=MuJUprVkec1LhN6o7SGN7yS6FtU75T+9Wd1DOyeL8ik=;
+        b=vJNNN+rJZbqCwFDHUSor2wbuQ7mj2thNLTYZWP5lhBfqJs46ooRxSllkQhAt3OJWrh
+         xdAmUpYC+z4X43nOzcGoFxjCrMninxHyW8bzwctSC6wCUmlbjA6Aa/F4lk+YUf4Trj5Z
+         5yLNn85ysYqXSIePaDqQO+CkVnYtkKhcW7Z0aXxtt/cUDRhqCVwJehTHJGYoJpPL0yaF
+         YSstqGqIeZf1lFEvO1gYG1nCiA9j/Gjw9cSjQ6eUvhWGRtBAcLdTO+qFGDpzaItPRgBv
+         btpbFJbku2u37L4cPHGhIDrEGhVVcSbzJG0NAlPII9KW4y+KkimbVXLwc7PyG6Lo7NxB
+         cQhw==
+X-Gm-Message-State: AOAM533DBUVmhw041Kg1RvMARxHtcR+MFbmuok1GhpyohRejP0KSObbV
+        AI8ANYqaXPFFYS+ZiPwI+tGyRFpmv8/qJI80xog=
+X-Google-Smtp-Source: ABdhPJwGvaG1N+rlSqIUh/89AyIZlqskmxR/ikdhIJdjlbxerIP+U4FECFmabv4sskd0a2Nbk5lnWQ==
+X-Received: by 2002:a05:6000:178d:b0:20f:e7da:6a21 with SMTP id e13-20020a056000178d00b0020fe7da6a21mr6657054wrg.689.1653406084354;
+        Tue, 24 May 2022 08:28:04 -0700 (PDT)
+Received: from xps-9300.baylibre (laubervilliers-658-1-213-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
+        by smtp.gmail.com with ESMTPSA id k24-20020a05600c1c9800b003974027722csm2703693wms.47.2022.05.24.08.28.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 May 2022 08:28:03 -0700 (PDT)
+From:   Alexandre Bailon <abailon@baylibre.com>
+To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        amitk@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        khilman@baylibre.com, mka@chromium.org, robh+dt@kernel.org,
+        krzk+dt@kernel.org, matthias.bgg@gmail.com, p.zabel@pengutronix.de,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, james.lo@mediatek.com,
+        fan.chen@mediatek.com, louis.yu@mediatek.com,
+        rex-bc.chen@mediatek.com, Michael Kao <michael.kao@mediatek.com>,
+        Ben Tseng <ben.tseng@mediatek.com>
+Subject: [PATCH v7 1/6] thermal: mediatek: Relocate driver to mediatek folder
+Date:   Tue, 24 May 2022 17:25:48 +0200
+Message-Id: <20220524152552.246193-2-abailon@baylibre.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220524152552.246193-1-abailon@baylibre.com>
+References: <20220524152552.246193-1-abailon@baylibre.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220518225355.784371-8-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.78 on 10.11.54.6
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/18, Eric W. Biederman wrote:
->
-> The code in ptrace_signal to populate siginfo if the signal number
-> changed is buggy.  If the tracer contined the tracee using
-> ptrace_detach it is guaranteed to use the real_parent (or possibly a
-> new tracer) but definitely not the origional tracer to populate si_pid
-> and si_uid.
+From: Michael Kao <michael.kao@mediatek.com>
 
-I guess nobody cares. As the comment says
+Add Mediatek proprietary folder to upstream more thermal zone and cooler
+drivers. Relocate the original thermal controller driver to it and rename
+as soc_temp.c to show its purpose more clearly.
 
-	 If the debugger wanted something
-	 specific in the siginfo structure then it should
-	 have updated *info via PTRACE_SETSIGINFO.
+Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+Signed-off-by: Ben Tseng <ben.tseng@mediatek.com>
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+---
+ drivers/thermal/Kconfig                       | 14 ++++-------
+ drivers/thermal/Makefile                      |  2 +-
+ drivers/thermal/mediatek/Kconfig              | 23 +++++++++++++++++++
+ drivers/thermal/mediatek/Makefile             |  1 +
+ .../{mtk_thermal.c => mediatek/soc_temp.c}    |  0
+ 5 files changed, 29 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/thermal/mediatek/Kconfig
+ create mode 100644 drivers/thermal/mediatek/Makefile
+ rename drivers/thermal/{mtk_thermal.c => mediatek/soc_temp.c} (100%)
 
-otherwise I don't think si_pid/si_uid have any value.
-
-However the patch looks fine to me, just the word "buggy" looks a bit
-too strong imo.
-
-Oleg.
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index e37691e0bf20..8669d7278055 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -410,16 +410,10 @@ config DA9062_THERMAL
+ 	  zone.
+ 	  Compatible with the DA9062 and DA9061 PMICs.
+ 
+-config MTK_THERMAL
+-	tristate "Temperature sensor driver for mediatek SoCs"
+-	depends on ARCH_MEDIATEK || COMPILE_TEST
+-	depends on HAS_IOMEM
+-	depends on NVMEM || NVMEM=n
+-	depends on RESET_CONTROLLER
+-	default y
+-	help
+-	  Enable this option if you want to have support for thermal management
+-	  controller present in Mediatek SoCs
++menu "Mediatek thermal drivers"
++depends on ARCH_MEDIATEK || COMPILE_TEST
++source "drivers/thermal/mediatek/Kconfig"
++endmenu
+ 
+ config AMLOGIC_THERMAL
+ 	tristate "Amlogic Thermal Support"
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index f0c36a1530d5..9ade39bdb525 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -55,7 +55,7 @@ obj-y				+= st/
+ obj-$(CONFIG_QCOM_TSENS)	+= qcom/
+ obj-y				+= tegra/
+ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+-obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
++obj-$(CONFIG_MTK_THERMAL)	+= mediatek/
+ obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
+ obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
+ obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
+diff --git a/drivers/thermal/mediatek/Kconfig b/drivers/thermal/mediatek/Kconfig
+new file mode 100644
+index 000000000000..592c849b9fed
+--- /dev/null
++++ b/drivers/thermal/mediatek/Kconfig
+@@ -0,0 +1,23 @@
++config MTK_THERMAL
++	tristate "MediaTek thermal drivers"
++	depends on THERMAL_OF
++	help
++	  This is the option for MediaTek thermal software
++	  solutions. Please enable corresponding options to
++	  get temperature information from thermal sensors or
++	  turn on throttle mechaisms for thermal mitigation.
++
++if MTK_THERMAL
++
++config MTK_SOC_THERMAL
++	tristate "Temperature sensor driver for MediaTek SoCs"
++	depends on HAS_IOMEM
++	depends on NVMEM
++	depends on RESET_CONTROLLER
++	help
++	  Enable this option if you want to get SoC temperature
++	  information for MediaTek platforms. This driver
++	  configures thermal controllers to collect temperature
++	  via AUXADC interface.
++
++endif
+diff --git a/drivers/thermal/mediatek/Makefile b/drivers/thermal/mediatek/Makefile
+new file mode 100644
+index 000000000000..f75313ddce5e
+--- /dev/null
++++ b/drivers/thermal/mediatek/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_MTK_SOC_THERMAL)	+= soc_temp.o
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mediatek/soc_temp.c
+similarity index 100%
+rename from drivers/thermal/mtk_thermal.c
+rename to drivers/thermal/mediatek/soc_temp.c
+-- 
+2.35.1
 
