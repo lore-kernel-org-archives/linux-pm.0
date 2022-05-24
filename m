@@ -2,70 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF71BC433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 24 May 2022 23:42:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C140EC433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 25 May 2022 00:40:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242911AbiEXXmS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 May 2022 19:42:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51604 "EHLO
+        id S232361AbiEYAkE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 May 2022 20:40:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55002 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242901AbiEXXmS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2022 19:42:18 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7581F57B35;
-        Tue, 24 May 2022 16:42:17 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 2FDF7B81C07;
-        Tue, 24 May 2022 23:42:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CE66FC34117;
-        Tue, 24 May 2022 23:42:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1653435734;
-        bh=2xLVxDBN96RpkS5KPp4X/Q7fEY/yzOzqwveZEuMO1uI=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=dNfqX/v+/4MgIt/7NROt4lAT9JHF7UM0l+IJU0ehRcLY+PHNtnJ5/95wHYgYYTfg+
-         edrPeZlCmwHf/VB40PvZByQPEodofL43wPwoYI2KuOdFDyW+4MH6CttMthP6msJJzP
-         MqSzWcqAgGzK1YgcqxzOJzHKg10IQknm7QVgZln5zUGBQ0QNB8/a1+0CMnJ5hNwjcx
-         lDICNqmyIKU3gYUGiTfxDkdnfXPyA+iIgXmbRGIH4GNH8X6RdRPIUU5Cz4eQrsGAac
-         +feFej80CSy95N6ADc0FI2aLXD2xTFtCQ6qOIEQGbAuQMYpvhNxxYfcW95LCvdxaxq
-         769XNtH3nu5cw==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id B3D3EF03938;
-        Tue, 24 May 2022 23:42:14 +0000 (UTC)
-Subject: Re: [GIT PULL] ACPI updates for v5.19-rc1
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0iMu3BP9bo_pjHmCB=+Y_7yir3pvLvoALR98=6NoE7ZYw@mail.gmail.com>
-References: <CAJZ5v0iMu3BP9bo_pjHmCB=+Y_7yir3pvLvoALR98=6NoE7ZYw@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0iMu3BP9bo_pjHmCB=+Y_7yir3pvLvoALR98=6NoE7ZYw@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.19-rc1
-X-PR-Tracked-Commit-Id: 5db9ce20951c8163ee3d505b81d458c83155e311
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 1961b06c9126e5b2b949fab806c4e4304d1eae8b
-Message-Id: <165343573472.8820.5229179370018405921.pr-tracker-bot@kernel.org>
-Date:   Tue, 24 May 2022 23:42:14 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        the arch/x86 maintainers <x86@kernel.org>
+        with ESMTP id S229603AbiEYAkD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2022 20:40:03 -0400
+X-Greylist: delayed 2616 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 24 May 2022 17:40:00 PDT
+Received: from hobbes.mraw.org (hobbes.mraw.org [195.154.31.160])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CECB03915E
+        for <linux-pm@vger.kernel.org>; Tue, 24 May 2022 17:40:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mraw.org;
+        s=mail2022; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+        Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+        :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+        List-Post:List-Owner:List-Archive;
+        bh=gqCLtPa2Zzz2oEdqi3oj2xUKzoRcEUhnAmWGh8qOxXY=; b=yy2Kp0nLeoG5AeQGjfDVrGhQ+y
+        pEiZi9XROenv64p5mfS5GascFcVo2s/tCfVLYCgvnF3pRUOs7+BVEFfdAmao18gKYjCtebxa/JS3e
+        IcoqNGCZkcYT75K9Hbf2VdouOIHG2PIgPhlMT5zHs8EjoTy7OyektrI5a7jP6WCrP3DNVbd+R7Wpv
+        TvQR8FyqLbRYID50wuxE43ROx7cJ4Hp0qLU2hAlEeGLn7CQKk84Nj8fqp22q6nx/Xc/cisb4m/aMB
+        CVHVYgm1DCal2/sM4xnmGO+AuAbHiJQUvALG3xktns1r4XdOVvSR1VWjW7gZnXsihKD6LqDPxv6Xg
+        5HuC7ieQ==;
+Received: from 82-64-171-251.subs.proxad.net ([82.64.171.251] helo=mraw.org)
+        by hobbes.mraw.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <kibi@debian.org>)
+        id 1nteNj-003nRz-K7; Wed, 25 May 2022 01:56:07 +0200
+Date:   Wed, 25 May 2022 01:56:05 +0200
+From:   Cyril Brulebois <kibi@debian.org>
+To:     Jim Quinlan <jim2101024@gmail.com>
+Cc:     Bjorn Helgaas <helgaas@kernel.org>,
+        linux-pci <linux-pci@vger.kernel.org>,
+        Nicolas Saenz Julienne <nsaenz@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        James Dutton <james.dutton@gmail.com>,
+        bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>,
+        Jim Quinlan <james.quinlan@broadcom.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+        "moderated list:BROADCOM BCM2711/BCM2835 ARM ARCHITECTURE" 
+        <linux-rpi-kernel@lists.infradead.org>,
+        "moderated list:BROADCOM BCM2711/BCM2835 ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v1] PCI: brcmstb: Fix regression regarding missing PCIe
+ linkup
+Message-ID: <20220524235605.rz3cyw7akw3327ip@mraw.org>
+Organization: Debian
+References: <CANCKTBvqp7_MSG3aMpp6pmNoPUnYpH0c+8-r7Pzgebuzb4sZPA@mail.gmail.com>
+ <20220523221036.GA130515@bhelgaas>
+ <CANCKTBsEjkbdWCB4D22iamPr7YP0qUX=M1dZNNgxkfk1EwjjZQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="gj63ap2kyrcnvzrr"
+Content-Disposition: inline
+In-Reply-To: <CANCKTBsEjkbdWCB4D22iamPr7YP0qUX=M1dZNNgxkfk1EwjjZQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Mon, 23 May 2022 21:05:50 +0200:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.19-rc1
+--gj63ap2kyrcnvzrr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/1961b06c9126e5b2b949fab806c4e4304d1eae8b
+Hi Jim,
 
-Thank you!
+Jim Quinlan <jim2101024@gmail.com> (2022-05-24):
+> Yes. One repo did not have this node (Cyril/debina?), one did
+> (https://github.com/raspberrypi/firmware/tree/master/boot).
+> Of course there is nothing wrong with omitting the node; it should
+> have pcie linkup regardless.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+I work/debug stuff on Debian systems, but Debian's just shipping what's
+in mainline. Raspberry people maintain their own vendor DTBs.
+
+> Unless you object, I plan on sending you a v2 of my regression fix
+> which will correct the commit message, change the "if (busno =3D=3D 1)"
+> conditional to only guard the pcie linkup call, and add further
+> comments.
+>=20
+> I have noted and will also address your other concerns and suggestions
+> in a future patchset as I think it is best that I get my hands on a
+> CM4 board before I submit any more changes.
+
+For the record, I'm still happy to be cc'ed so that I spend time testing
+further patches, be it the short-term regression fix (for inclusion in
+master, but also checking it fixes linux-5.17.y and now linux-5.18.y,
+if stable maintainers would welcome the extra testing), or the future
+patchset.
+
+I can't guarantee you'll have an answer in a few hours like that
+happened during the past few days (during which I prioritized testing
+over anything else so as not to be a blocker in case it could be
+squeezed into v5.18). But I'm still willing to allocate some time to
+make sure the CM4 keeps working, even if you don't get your hands on
+such systems right away.
+
+
+Cheers,
+--=20
+Cyril Brulebois (kibi@debian.org)            <https://debamax.com/>
+D-I release manager -- Release team member -- Freelance Consultant
+
+--gj63ap2kyrcnvzrr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEtg6/KYRFPHDXTPR4/5FK8MKzVSAFAmKNcI8ACgkQ/5FK8MKz
+VSCfFw/9ExgzEXqJQAACsMXdquRjdNCULhvZUtAQFLvLgusQmQ//RL+XzP5k8z6F
+j8WS/0fQMMoA9uIySXgLHFKJ5LXBgt3TG/x8KQqpYwM4Kir6XiG+g1iOnuLaTzRv
+xRVe31HhOSHP5XdrQqRgzjZRKBxP/llg/NNzbn4ZwL2M+TTNyMsZg/B5pLyGs+yp
+62ip+XyiIZtYMb63K3/rEH0gKNY+6P+XjRMfW55gPbz+hoXafuuJuElrlXaWeGj8
+i4DEOQNFH9Mqiy783Fm2+FpEMNC5sWlgg5DO8zzTUILKDMpi+IB9BxCD4M494ycD
+CWmJWx88mu4iKu62DIViW8Vb1Oi9PyZm0JauLGqjK/jQ/vljQgSr0sBpHc/vW9Lr
+sOy/b6ZhikOaYto/MgNkct2DE1Vlx/SOIsZPg3v7GDDBAw/j5pkEEghJFu8grpQp
+hyhI98GTEghoWOOHSZsxZ8xYCsXC4b6KcF4D6FBeyWygZtE+L4PPx/lLUl5z8N/G
+u7vvGdlFk/Eko5QOp7rR6qo+daaFhrAhUgDbRFL8Drgpawfze6XnebsgZV6t9mEs
+uwFOmPUaovWWRqCa65CEBJd6oqeL5LfSMPrvn6j2gLmwouMEzBAgN3O46WvOOYNn
+HxH7rCEK6s+Rxq2XcfUtez2tCNurBGRQCACaNBV8rElb/4nLJZE=
+=zXtQ
+-----END PGP SIGNATURE-----
+
+--gj63ap2kyrcnvzrr--
