@@ -2,69 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5626C433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 25 May 2022 15:13:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E409C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 25 May 2022 15:19:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244982AbiEYPNK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 May 2022 11:13:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48134 "EHLO
+        id S245000AbiEYPTn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 May 2022 11:19:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245158AbiEYPMa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2022 11:12:30 -0400
-Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85358B36E1
-        for <linux-pm@vger.kernel.org>; Wed, 25 May 2022 08:12:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
-        from:to:cc:subject:date:message-id:mime-version
-        :content-transfer-encoding; s=k1; bh=L+KAYre4ng4FJ9S1+Bregm7R20q
-        ElPptj+7ZwPDaqXA=; b=fsMVZnzGM2LUMKesCF5QkVVWdX71ygJT1TDy6E05IsV
-        5UOPO9ghldwS89rHcwYfgl0xYTQt0xGphh89GYo25NDtLNETSgOJNQ/O9l0ClIjq
-        EeIyf1ks2PsIC4M+bAc2ikgVnhDQbX6H1r5OOXMBqtmq9aIg4XmQ5HQZ28L4JR0I
-        =
-Received: (qmail 1644697 invoked from network); 25 May 2022 17:12:21 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 25 May 2022 17:12:21 +0200
-X-UD-Smtp-Session: l3s3148p1@QnLpf9ff0BRZD++C
-From:   Wolfram Sang <wsa+renesas@sang-engineering.com>
-To:     linux-renesas-soc@vger.kernel.org
-Cc:     Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] thermal: rcar_gen3_thermal: Add r8a779f0 support
-Date:   Wed, 25 May 2022 17:12:15 +0200
-Message-Id: <20220525151216.24133-1-wsa+renesas@sang-engineering.com>
-X-Mailer: git-send-email 2.35.1
+        with ESMTP id S236085AbiEYPTm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2022 11:19:42 -0400
+Received: from mail-io1-xd33.google.com (mail-io1-xd33.google.com [IPv6:2607:f8b0:4864:20::d33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A44DB0A6D
+        for <linux-pm@vger.kernel.org>; Wed, 25 May 2022 08:19:41 -0700 (PDT)
+Received: by mail-io1-xd33.google.com with SMTP id f4so21710112iov.2
+        for <linux-pm@vger.kernel.org>; Wed, 25 May 2022 08:19:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=veK8CNlACACGckQnA58+yIukb+Kk/ZhuNFtCylx0sWE=;
+        b=QfLT9UTMnadNtFhkcygEPXxRpVzagooKGAz46mBUgBX47qWTLlDYdYYErRJf090W5z
+         HweIp4nOhaE21p480b+8Uu1JuSSuyM2Si4KQU7Wf1toOVZo8pcl4L8o1Tro2FRRCypxw
+         olwamMw3m120J2IjBMzdkZi8a9DYnj4POk7sI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=veK8CNlACACGckQnA58+yIukb+Kk/ZhuNFtCylx0sWE=;
+        b=jsWMWnuqZE2cYXtcjEphWYqjFr51fiC2qklDTIEC26wyVAMnrt35T2UOkgUXA2c+ku
+         BCc8M2bb+PlOaemK4o1+Wz6QUq8DUyYqyABuSQaN9Z6zkafV2S/BU5QcHerQXbm1ZBgD
+         P8pwFItxhtWFIiu/zkkRfLJptiuCCSe63pH7mTv5x4/0WGZhMw8j4IcZKAuug/nsgQJ8
+         yeRg/fff3AKKVXeqt6fEAZW4ImeaKsfm/W8j+hwHY/scaT2GHR1cmYIVA3aTIvpVQGkk
+         +Sdl5nDpW7GRBwLxQ0ITz15vnwkFrdA+QpignSeTnRrw7OuQJIVU9D8sL3T2IWrEqlwG
+         TecQ==
+X-Gm-Message-State: AOAM531mlRSLUP1hzwGTpXooIj1o4tdMd+Z892RaKg/2hoTwdrVffPU1
+        BvPOQNyJPBunSZPIZ4p/fnErpQ==
+X-Google-Smtp-Source: ABdhPJyV3LqOu6RlqHnaYxGMBNPgT0wQcKmAJNlUXGMCYKaWS5PAd092OryCHPFAPckBKFQL1SsV6w==
+X-Received: by 2002:a5e:d614:0:b0:65e:42c8:c51b with SMTP id w20-20020a5ed614000000b0065e42c8c51bmr14603152iom.78.1653491980660;
+        Wed, 25 May 2022 08:19:40 -0700 (PDT)
+Received: from [192.168.1.128] ([38.15.45.1])
+        by smtp.gmail.com with ESMTPSA id 1-20020a921301000000b002cde6e35302sm5396250ilt.76.2022.05.25.08.19.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 25 May 2022 08:19:40 -0700 (PDT)
+Subject: Re: [PATCH V7 1/4] cpufreq: amd-pstate: Expose struct amd_cpudata
+To:     Meng Li <li.meng@amd.com>, Huang Rui <ray.huang@amd.com>,
+        linux-pm@vger.kernel.org
+Cc:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Nathan Fontenot <nathan.fontenot@amd.com>,
+        Deepak Sharma <deepak.sharma@amd.com>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Jinzhou Su <Jinzhou.Su@amd.com>,
+        Perry Yuan <Perry.Yuan@amd.com>,
+        Xiaojian Du <Xiaojian.Du@amd.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Borislav Petkov <bp@alien8.de>, linux-kernel@vger.kernel.org,
+        Shuah Khan <skhan@linuxfoundation.org>
+References: <20220522115423.1147282-1-li.meng@amd.com>
+ <20220522115423.1147282-2-li.meng@amd.com>
+From:   Shuah Khan <skhan@linuxfoundation.org>
+Message-ID: <b847b0c2-6e6a-41a9-7d1b-35a14cb9dddd@linuxfoundation.org>
+Date:   Wed, 25 May 2022 09:19:39 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220522115423.1147282-2-li.meng@amd.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for R-Car S4.
+On 5/22/22 5:54 AM, Meng Li wrote:
+> Expose struct amd_cpudata to AMD P-State unit test module.
+> 
+> This data struct will be used on the following AMD P-State unit test
+> (amd-pstate-ut) module. The amd-pstate-ut module can get some
+> AMD infomations by this data struct. For example: highest perf,
+> nominal perf, boost supported etc.
+> 
+> Signed-off-by: Meng Li <li.meng@amd.com>
+> Acked-by: Huang Rui <ray.huang@amd.com>
+> ---
+>   MAINTAINERS                  |  1 +
+>   drivers/cpufreq/amd-pstate.c | 60 +---------------------------
+>   include/linux/amd-pstate.h   | 77 ++++++++++++++++++++++++++++++++++++
+>   3 files changed, 79 insertions(+), 59 deletions(-)
+>   create mode 100644 include/linux/amd-pstate.h
+> 
 
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
- drivers/thermal/rcar_gen3_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Looks good to me.
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 43eb25b167bc..ccdf8a24ddc7 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -399,6 +399,10 @@ static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
- 		.compatible = "renesas,r8a779a0-thermal",
- 		.data = &rcar_gen3_ths_tj_1,
- 	},
-+	{
-+		.compatible = "renesas,r8a779f0-thermal",
-+		.data = &rcar_gen3_ths_tj_1,
-+	},
- 	{},
- };
- MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
--- 
-2.35.1
+Acked-by: Shuah Khan <skhan@linuxfoundation.org>
 
+thanks,
+-- Shuah
