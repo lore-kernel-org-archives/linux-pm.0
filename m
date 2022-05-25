@@ -2,41 +2,41 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C11AC433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 25 May 2022 18:21:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 146C0C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 25 May 2022 18:21:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343655AbiEYSU6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 May 2022 14:20:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35100 "EHLO
+        id S242665AbiEYSVk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 May 2022 14:21:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38126 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343692AbiEYSUy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2022 14:20:54 -0400
+        with ESMTP id S229688AbiEYSVk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2022 14:21:40 -0400
 Received: from alexa-out-sd-01.qualcomm.com (alexa-out-sd-01.qualcomm.com [199.106.114.38])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FDC5ABF7A;
-        Wed, 25 May 2022 11:20:52 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D61BCA5026;
+        Wed, 25 May 2022 11:21:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
-  t=1653502853; x=1685038853;
+  t=1653502898; x=1685038898;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version;
-  bh=3D+YwoOAN6F/e0/dMEX3mguRsyH1dQLTeRMOVqsuOfU=;
-  b=KjtObko+gNTko4pVJxrGYyC3VFn1DFDmKzexjUj56ZpouXrLHx8nGCGk
-   aDvOyMr0LBx6YN08Es3C6EQ1jV9l/oIwA9eqtMTJsCNiorhFg6YfqjJrE
-   UpngakyI2I81Yk3mq7pzatuodtUAhciE4YKZHB3CPUw3mLZ9pdM1tRbGu
-   Q=;
-Received: from unknown (HELO ironmsg-SD-alpha.qualcomm.com) ([10.53.140.30])
-  by alexa-out-sd-01.qualcomm.com with ESMTP; 25 May 2022 11:20:52 -0700
+  bh=Nfkv+4eY4YXFFYfGobF1DPR6cfo7NJOqSSGFIKGYvTE=;
+  b=zCoJEyW7Kr33Gfl9oTjukKOBfGrskq7w/c5brYBp5P5sBTod6lx0AW7D
+   VXmWKpTgyGHznxLzTAtPObQ/ja5WVUjC+SIDiRdubfc0UVrZ6d2BmsfEq
+   7K/ccdWUlaDOm34TEikxKWldq/dgWTMZGyBxZX6IGkj2rCs5WuiV94KdH
+   k=;
+Received: from unknown (HELO ironmsg05-sd.qualcomm.com) ([10.53.140.145])
+  by alexa-out-sd-01.qualcomm.com with ESMTP; 25 May 2022 11:21:38 -0700
 X-QCInternal: smtphost
 Received: from nasanex01c.na.qualcomm.com ([10.47.97.222])
-  by ironmsg-SD-alpha.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 May 2022 11:20:51 -0700
+  by ironmsg05-sd.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 May 2022 11:21:37 -0700
 Received: from nalasex01a.na.qualcomm.com (10.47.209.196) by
  nasanex01c.na.qualcomm.com (10.47.97.222) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.22; Wed, 25 May 2022 11:20:51 -0700
+ 15.2.986.22; Wed, 25 May 2022 11:21:04 -0700
 Received: from hu-kriskura-hyd.qualcomm.com (10.80.80.8) by
  nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.22; Wed, 25 May 2022 11:20:45 -0700
+ 15.2.986.22; Wed, 25 May 2022 11:20:58 -0700
 From:   Krishna Kurapati <quic_kriskura@quicinc.com>
 To:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -54,9 +54,9 @@ CC:     <devicetree@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
         <quic_ppratap@quicinc.com>, <quic_vpulyala@quicinc.com>,
         Sandeep Maheswaram <quic_c_sanm@quicinc.com>,
         Krishna Kurapati <quic_kriskura@quicinc.com>
-Subject: [PATCH v18 2/5] usb: dwc3: core: Host wake up support from system suspend
-Date:   Wed, 25 May 2022 23:50:23 +0530
-Message-ID: <1653502826-24256-3-git-send-email-quic_kriskura@quicinc.com>
+Subject: [PATCH v18 4/5] usb: dwc3: qcom: Configure wakeup interrupts during suspend
+Date:   Wed, 25 May 2022 23:50:25 +0530
+Message-ID: <1653502826-24256-5-git-send-email-quic_kriskura@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1653502826-24256-1-git-send-email-quic_kriskura@quicinc.com>
 References: <1653502826-24256-1-git-send-email-quic_kriskura@quicinc.com>
@@ -71,96 +71,144 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Sandeep Maheswaram <quic_c_sanm@quicinc.com>
 
-Check wakeup-source property for dwc3 core node to set the
-wakeup capability. Drop the device_init_wakeup call from
-runtime suspend and resume.
-
-If the dwc3 is wakeup capable, don't power down the USB PHY(s).
-The glue drivers are expected to take care of configuring the
-additional wakeup settings if needed based on the dwc3 wakeup
-capability status. In some SOC designs, powering off the PHY is
-resulting in higher leakage, so this patch save power on such boards.
+Configure DP/DM line interrupts based on the USB2 device attached to
+the root hub port. When HS/FS device is connected, configure the DP line
+as falling edge to detect both disconnect and remote wakeup scenarios. When
+LS device is connected, configure DM line as falling edge to detect both
+disconnect and remote wakeup. When no device is connected, configure both
+DP and DM lines as rising edge to detect HS/HS/LS device connect scenario.
 
 Signed-off-by: Sandeep Maheswaram <quic_c_sanm@quicinc.com>
 Signed-off-by: Krishna Kurapati <quic_kriskura@quicinc.com>
-Reviewed-by: Pavankumar Kondeti <quic_pkondeti@quicinc.com>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- drivers/usb/dwc3/core.c | 26 ++++++++++++--------------
- 1 file changed, 12 insertions(+), 14 deletions(-)
+ drivers/usb/dwc3/dwc3-qcom.c | 72 ++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 62 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
-index e027c04..2b1b3f7 100644
---- a/drivers/usb/dwc3/core.c
-+++ b/drivers/usb/dwc3/core.c
-@@ -1787,6 +1787,7 @@ static int dwc3_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, dwc);
- 	dwc3_cache_hwparams(dwc);
-+	device_init_wakeup(&pdev->dev, of_property_read_bool(dev->of_node, "wakeup-source"));
- 
- 	spin_lock_init(&dwc->lock);
- 	mutex_init(&dwc->mutex);
-@@ -1948,11 +1949,6 @@ static int dwc3_suspend_common(struct dwc3 *dwc, pm_message_t msg)
- 		dwc3_core_exit(dwc);
- 		break;
- 	case DWC3_GCTL_PRTCAP_HOST:
--		if (!PMSG_IS_AUTO(msg)) {
--			dwc3_core_exit(dwc);
--			break;
--		}
+diff --git a/drivers/usb/dwc3/dwc3-qcom.c b/drivers/usb/dwc3/dwc3-qcom.c
+index 7352124..56ecee0 100644
+--- a/drivers/usb/dwc3/dwc3-qcom.c
++++ b/drivers/usb/dwc3/dwc3-qcom.c
+@@ -20,7 +20,8 @@
+ #include <linux/usb/of.h>
+ #include <linux/reset.h>
+ #include <linux/iopoll.h>
 -
- 		/* Let controller to suspend HSPHY before PHY driver suspends */
- 		if (dwc->dis_u2_susphy_quirk ||
- 		    dwc->dis_enblslpm_quirk) {
-@@ -1967,6 +1963,11 @@ static int dwc3_suspend_common(struct dwc3 *dwc, pm_message_t msg)
++#include <linux/usb/hcd.h>
++#include <linux/usb.h>
+ #include "core.h"
  
- 		phy_pm_runtime_put_sync(dwc->usb2_generic_phy);
- 		phy_pm_runtime_put_sync(dwc->usb3_generic_phy);
-+
-+		if (!PMSG_IS_AUTO(msg)) {
-+			if (!device_can_wakeup(dwc->dev))
-+				dwc3_core_exit(dwc);
-+		}
- 		break;
- 	case DWC3_GCTL_PRTCAP_OTG:
- 		/* do nothing during runtime_suspend */
-@@ -2010,11 +2011,12 @@ static int dwc3_resume_common(struct dwc3 *dwc, pm_message_t msg)
- 		break;
- 	case DWC3_GCTL_PRTCAP_HOST:
- 		if (!PMSG_IS_AUTO(msg)) {
--			ret = dwc3_core_init_for_resume(dwc);
--			if (ret)
--				return ret;
--			dwc3_set_prtcap(dwc, DWC3_GCTL_PRTCAP_HOST);
--			break;
-+			if (!device_can_wakeup(dwc->dev)) {
-+				ret = dwc3_core_init_for_resume(dwc);
-+				if (ret)
-+					return ret;
-+				dwc3_set_prtcap(dwc, DWC3_GCTL_PRTCAP_HOST);
-+			}
- 		}
- 		/* Restore GUSB2PHYCFG bits that were modified in suspend */
- 		reg = dwc3_readl(dwc->regs, DWC3_GUSB2PHYCFG(0));
-@@ -2086,8 +2088,6 @@ static int dwc3_runtime_suspend(struct device *dev)
- 	if (ret)
- 		return ret;
+ /* USB QSCRATCH Hardware registers */
+@@ -76,6 +77,7 @@ struct dwc3_qcom {
+ 	int			dp_hs_phy_irq;
+ 	int			dm_hs_phy_irq;
+ 	int			ss_phy_irq;
++	enum usb_device_speed	usb2_speed;
  
--	device_init_wakeup(dev, true);
--
- 	return 0;
+ 	struct extcon_dev	*edev;
+ 	struct extcon_dev	*host_edev;
+@@ -296,11 +298,34 @@ static void dwc3_qcom_interconnect_exit(struct dwc3_qcom *qcom)
+ 	icc_put(qcom->icc_path_apps);
  }
  
-@@ -2096,8 +2096,6 @@ static int dwc3_runtime_resume(struct device *dev)
- 	struct dwc3     *dwc = dev_get_drvdata(dev);
- 	int		ret;
+-static void dwc3_qcom_enable_wakeup_irq(int irq)
++enum usb_device_speed dwc3_qcom_update_usb2_speed(struct dwc3_qcom *qcom)
++{
++	struct dwc3 *dwc = platform_get_drvdata(qcom->dwc3);
++	struct usb_hcd *hcd = platform_get_drvdata(dwc->xhci);
++	struct usb_device *udev;
++
++	/*
++	 * It is possible to query the speed of all children of
++	 * USB2.0 root hub via usb_hub_for_each_child(). DWC3 code
++	 * currently supports only 1 port per controller. So
++	 * this is sufficient.
++	 */
++	udev = usb_hub_find_child(hcd->self.root_hub, 1);
++
++	if (!udev)
++		return USB_SPEED_UNKNOWN;
++
++	return udev->speed;
++}
++
++static void dwc3_qcom_enable_wakeup_irq(int irq, unsigned int polarity)
+ {
+ 	if (!irq)
+ 		return;
  
--	device_init_wakeup(dev, false);
++	if (polarity)
++		irq_set_irq_type(irq, polarity);
++
+ 	enable_irq(irq);
+ 	enable_irq_wake(irq);
+ }
+@@ -318,22 +343,47 @@ static void dwc3_qcom_disable_interrupts(struct dwc3_qcom *qcom)
+ {
+ 	dwc3_qcom_disable_wakeup_irq(qcom->hs_phy_irq);
+ 
+-	dwc3_qcom_disable_wakeup_irq(qcom->dp_hs_phy_irq);
 -
- 	ret = dwc3_resume_common(dwc, PMSG_AUTO_RESUME);
+-	dwc3_qcom_disable_wakeup_irq(qcom->dm_hs_phy_irq);
++	if (qcom->usb2_speed == USB_SPEED_LOW) {
++		dwc3_qcom_disable_wakeup_irq(qcom->dm_hs_phy_irq);
++	} else if ((qcom->usb2_speed == USB_SPEED_HIGH) ||
++			(qcom->usb2_speed == USB_SPEED_FULL)) {
++		dwc3_qcom_disable_wakeup_irq(qcom->dp_hs_phy_irq);
++	} else {
++		dwc3_qcom_disable_wakeup_irq(qcom->dp_hs_phy_irq);
++		dwc3_qcom_disable_wakeup_irq(qcom->dm_hs_phy_irq);
++	}
+ 
+ 	dwc3_qcom_disable_wakeup_irq(qcom->ss_phy_irq);
+ }
+ 
+ static void dwc3_qcom_enable_interrupts(struct dwc3_qcom *qcom)
+ {
+-	dwc3_qcom_enable_wakeup_irq(qcom->hs_phy_irq);
++	dwc3_qcom_enable_wakeup_irq(qcom->hs_phy_irq, 0);
+ 
+-	dwc3_qcom_enable_wakeup_irq(qcom->dp_hs_phy_irq);
++	/*
++	 * Configure DP/DM line interrupts based on the USB2 device attached to
++	 * the root hub port. When HS/FS device is connected, configure the DP line
++	 * as falling edge to detect both disconnect and remote wakeup scenarios. When
++	 * LS device is connected, configure DM line as falling edge to detect both
++	 * disconnect and remote wakeup. When no device is connected, configure both
++	 * DP and DM lines as rising edge to detect HS/HS/LS device connect scenario.
++	 */
+ 
+-	dwc3_qcom_enable_wakeup_irq(qcom->dm_hs_phy_irq);
++	if (qcom->usb2_speed == USB_SPEED_LOW) {
++		dwc3_qcom_enable_wakeup_irq(qcom->dm_hs_phy_irq,
++						IRQ_TYPE_EDGE_FALLING);
++	} else if ((qcom->usb2_speed == USB_SPEED_HIGH) ||
++			(qcom->usb2_speed == USB_SPEED_FULL)) {
++		dwc3_qcom_enable_wakeup_irq(qcom->dp_hs_phy_irq,
++						IRQ_TYPE_EDGE_FALLING);
++	} else {
++		dwc3_qcom_enable_wakeup_irq(qcom->dp_hs_phy_irq,
++						IRQ_TYPE_EDGE_RISING);
++		dwc3_qcom_enable_wakeup_irq(qcom->dm_hs_phy_irq,
++						IRQ_TYPE_EDGE_RISING);
++	}
+ 
+-	dwc3_qcom_enable_wakeup_irq(qcom->ss_phy_irq);
++	dwc3_qcom_enable_wakeup_irq(qcom->ss_phy_irq, 0);
+ }
+ 
+ static int dwc3_qcom_suspend(struct dwc3_qcom *qcom)
+@@ -355,8 +405,10 @@ static int dwc3_qcom_suspend(struct dwc3_qcom *qcom)
  	if (ret)
- 		return ret;
+ 		dev_warn(qcom->dev, "failed to disable interconnect: %d\n", ret);
+ 
+-	if (device_may_wakeup(qcom->dev))
++	if (device_may_wakeup(qcom->dev)) {
++		qcom->usb2_speed = dwc3_qcom_update_usb2_speed(qcom);
+ 		dwc3_qcom_enable_interrupts(qcom);
++	}
+ 
+ 	qcom->is_suspended = true;
+ 
 -- 
 2.7.4
 
