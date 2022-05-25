@@ -2,135 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DD4DC433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 25 May 2022 19:49:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 807FFC433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 25 May 2022 21:38:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344764AbiEYTtl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 May 2022 15:49:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47366 "EHLO
+        id S235135AbiEYViI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 May 2022 17:38:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344755AbiEYTtk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2022 15:49:40 -0400
-Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A444B66CBA
-        for <linux-pm@vger.kernel.org>; Wed, 25 May 2022 12:49:38 -0700 (PDT)
-Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-2fee010f509so225670207b3.11
-        for <linux-pm@vger.kernel.org>; Wed, 25 May 2022 12:49:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=lcsU1M3aHmWM93+N/Pq2k69CNkfyIQUCxczoLH0OLPk=;
-        b=hGvqDCPINlCno6IGVx/RQ4/atSQ+dW08eMaP/4u4J2Rx0AU21Orr25m5AgNUJgVoBC
-         3FFOnaz5xSM9a3RRyGWmmLYgiZVdvKzEmj7vsHFg6Sh7EwGqNKrvH43xPCnlETqRbyTJ
-         rUgPCSCAGnF+I3fcFxMltq5wx33LgoLK4ERO4IR4Sot/Uaxxldi6tkX+WdLxAvCCiEtI
-         QP4xUPzpC2rlJZR8sd1n3W8vuHEHoaO4LC9YRcKisj9Uq+DszGcvpWkcK75IpZtbpf64
-         JIxJLJ+6BngIh5kjOcaFiUEdbJbMoovEHpIlAtRm4xeoQYYTe1wf9PGaYkAV8y48Abi0
-         +6Hg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=lcsU1M3aHmWM93+N/Pq2k69CNkfyIQUCxczoLH0OLPk=;
-        b=AKBtjG83Q1Tlnw2/WW2UPbLjQ9mOhpAlBLL2VV2nwo+9+MIAsD5exksfnZyTspk3j/
-         AJp6ocWXjLr0SOM8C8OJwFCziJIEintz3rojDse+VjfrcSSCajIpCOD0F4ZYGrKW80yg
-         s5eVVltGPdPGd+7qBnuXHXazcE+CFfnyQsCKv3TjeeQYlFPn1YRMmqmsa5BJNJHxDJgF
-         HgKkg6O2K7cJ+FEfZiYkrohZr71xGcLZgXcFifMCHNlj9hrc88MkE0Uoe9aad+BSI6+2
-         H5hqsPbma1BzdeVDrbcQvUD1jk2Byk/gwSh4sL/DJjsI/yBym+ZASPD9glGRaxfa2CYq
-         BTLQ==
-X-Gm-Message-State: AOAM533LUpJGrdDZ3MIXSknj3oHubMYzgRfom91SbF5WUcuPxZ8qscA7
-        rqzC3sFczgGBkycQWkqNZdwgdGJhXa+SB+ZjazQaSQ==
-X-Google-Smtp-Source: ABdhPJye/LYmXdbx2DRGvhYd77idEIGqJLpVK4M7sUVcSaytWZ/KajOi10nwmyuJy9EQw0Od4wYghiCxgCclb01GpVs=
-X-Received: by 2002:a81:72c5:0:b0:300:7d0:a642 with SMTP id
- n188-20020a8172c5000000b0030007d0a642mr14402533ywc.80.1653508177547; Wed, 25
- May 2022 12:49:37 -0700 (PDT)
+        with ESMTP id S232503AbiEYViH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2022 17:38:07 -0400
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0655EAB0C8;
+        Wed, 25 May 2022 14:38:05 -0700 (PDT)
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 24PLbpnL034943;
+        Wed, 25 May 2022 16:37:51 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1653514671;
+        bh=unEU3yu6XitRBUF0X3b3HqPGfQ24x1GXFPO/xiQYto8=;
+        h=From:To:CC:Subject:Date;
+        b=LXM/LbXnyVD/xHo53tWgYowMmQtgdVWU0/jqn6R9yjDbK0dZANeS8CKvR6zDWGsTi
+         QUdPGak+SxW1PGd4FR7NXmqHjJW9SnSpX6Wo6eTZi/B5uVmJULbU6K4pRAjMBV4BnX
+         puP/WKbz3ixFWI3uzDTjSDFFriCZcDXqSiA9mpB4=
+Received: from DFLE100.ent.ti.com (dfle100.ent.ti.com [10.64.6.21])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 24PLbpDB007258
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 25 May 2022 16:37:51 -0500
+Received: from DFLE105.ent.ti.com (10.64.6.26) by DFLE100.ent.ti.com
+ (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Wed, 25
+ May 2022 16:37:51 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE105.ent.ti.com
+ (10.64.6.26) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
+ Frontend Transport; Wed, 25 May 2022 16:37:51 -0500
+Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 24PLbpFS018664;
+        Wed, 25 May 2022 16:37:51 -0500
+From:   Bryan Brattlof <bb@ti.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+CC:     Keerthy <j-keerthy@ti.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, Bryan Brattlof <bb@ti.com>
+Subject: [PATCH] thermal: k3_j72xx_bandgap: Fix ref_table memory leak during probe
+Date:   Wed, 25 May 2022 16:36:17 -0500
+Message-ID: <20220525213617.30002-1-bb@ti.com>
+X-Mailer: git-send-email 2.17.1
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1539; h=from:subject; bh=jAry1GfKB2IXde/WjnhULMOUIPI3IX37C1dJv1gsc9s=; b=owEBbQGS/pANAwAKAcD4q9PiE9cMAcsmYgBijqFQoomfFMXwXhjrDSIGMaT+atNSHe1YzydEHzZY RLtkYHOJATMEAAEKAB0WIQT86LDvkHWcjT+1Kb7A+KvT4hPXDAUCYo6hUAAKCRDA+KvT4hPXDAnDB/ 4jE6Up2Wn5ZbODu6KFyeMvWn5O03dNwlXDj9/pYdo39zDZ3elEKfk5rZXLOXncwzJE/+Q8orPhD9P2 QW99DNp26O/Rm9a0LnTEdnBTsP5KdcRp7DD86G7KqDsYDqYXNVnaNZgiQsX76G4JIllOpsOKps5UKx 7vJExENpewfgdHFyopQg/PXZ+lPwjY9vognA13ehw2Z0jSekmoMjwVpPp1Ci79zp+dNJSdaz3JV/tr RtTr0yyl9AFI82L1kMVjar+1O+npoJqkI36vXEEQb0zKhFhT64xSDmvHbsZC0v89y114omcKOGorBJ Dov0KJBYStFtjCQZEuAMWzlrZBua34
+X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
 MIME-Version: 1.0
-References: <YogkhvFGVcjNQ21Z@dev-arch.thelio-3990X> <CAGETcx9nvBs1b4M=2hBhrLX_2-rzLtAmV9WfTXu0MC7JnsBvwA@mail.gmail.com>
- <YogsiMCDupNUhMgL@dev-fedora.thelio-3990X> <CAGETcx-JyWwoGA3o8eep7E29Cm4DcVT6D1JFJh72jLcqm_mjCQ@mail.gmail.com>
- <Youleo3Ganxbc1sq@dev-arch.thelio-3990X> <CAGETcx-sL08h2toEyxY6ztc6xNuJiPok6iDEeuJ1mOA3nvE+vA@mail.gmail.com>
- <YowHNo4sBjr9ijZr@dev-arch.thelio-3990X> <CAGETcx91_WgpmwEA7mBSvUdyJV0a8ymfaNKTmXq=mAJYAjzq1A@mail.gmail.com>
- <Yo0KyWx+3oX3cMCS@linutronix.de> <CAGETcx_qTLwbjzMruLThLYV+MZD5W2Ox-QwLFQeW=eQgxzq-Hw@mail.gmail.com>
- <Yo3WvGnNk3LvLb7R@linutronix.de>
-In-Reply-To: <Yo3WvGnNk3LvLb7R@linutronix.de>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Wed, 25 May 2022 12:49:00 -0700
-Message-ID: <CAGETcx84ja_w_=vXKDOZnM8EVEcuAg1tX9Kqy57PTkDb1=H4FA@mail.gmail.com>
-Subject: Re: [PATCH v1] driver core: Extend deferred probe timeout on driver registration
-To:     Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc:     Nathan Chancellor <nathan@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Rob Herring <robh@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Will Deacon <will@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Thierry Reding <treding@nvidia.com>,
-        Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        Paul Kocialkowski <paul.kocialkowski@bootlin.com>,
-        linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux-foundation.org, kernel-team@android.com,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-s390@vger.kernel.org, John Stultz <jstultz@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, May 25, 2022 at 12:12 AM Sebastian Andrzej Siewior
-<bigeasy@linutronix.de> wrote:
->
-> On 2022-05-24 10:46:49 [-0700], Saravana Kannan wrote:
-> > > Removing probe_timeout_waitqueue (as suggested) or setting the timeou=
-t
-> > > to 0 avoids the delay.
-> >
-> > In your case, I think it might be working as intended? Curious, what
-> > was the call stack in your case where it was blocked?
->
-> Why is then there 10sec delay during boot? The backtrace is
-> |------------[ cut here ]------------
-> |WARNING: CPU: 4 PID: 1 at drivers/base/dd.c:742 wait_for_device_probe+0x=
-30/0x110
-> |Modules linked in:
-> |CPU: 4 PID: 1 Comm: swapper/0 Not tainted 5.18.0-rc5+ #154
-> |RIP: 0010:wait_for_device_probe+0x30/0x110
-> |Call Trace:
-> | <TASK>
-> | prepare_namespace+0x2b/0x160
-> | kernel_init_freeable+0x2b3/0x2dd
-> | kernel_init+0x11/0x110
-> | ret_from_fork+0x22/0x30
-> | </TASK>
->
-> Looking closer, it can't access init. This in particular box boots
-> directly the kernel without an initramfs so the kernel later mounts
-> /dev/sda1 and everything is good.  So that seems to be the reason=E2=80=
-=A6
+If an error occurs in the k3_j72xx_bandgap_probe() function the memory
+allocated to the 'ref_table' will not be released.
 
-Hmmm... that part shouldn't matter. As long as you are hitting the
-same code path. My guess is one of them has CONFIG_MODULES enabled and
-the other doesn't.
+Add a err_free_ref_table step to the error path to free 'ref_table'
 
-In either case, I think the patch needs to be reverted (I'll send out
-one soon), but that'll also mean I need to revert part of my patch
-(sets the timeout back to 0) or I need to fix this case:
-https://lore.kernel.org/lkml/TYAPR01MB45443DF63B9EF29054F7C41FD8C60@TYAPR01=
-MB4544.jpnprd01.prod.outlook.com/
+Fixes: 72b3fc61c752 ("thermal: k3_j72xx_bandgap: Add the bandgap driver support")
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Bryan Brattlof <bb@ti.com>
+---
+ drivers/thermal/k3_j72xx_bandgap.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-I'll try to do the latter if I can get something reasonable soon.
-Otherwise, I'll just do the revert + partial revert.
+diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
+index 64e3231589527..3a35aa38ff512 100644
+--- a/drivers/thermal/k3_j72xx_bandgap.c
++++ b/drivers/thermal/k3_j72xx_bandgap.c
+@@ -433,7 +433,7 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 				     GFP_KERNEL);
+ 	if (!derived_table) {
+ 		ret = -ENOMEM;
+-		goto err_alloc;
++		goto err_free_ref_table;
+ 	}
+ 
+ 	/* Workaround not needed if bit30/bit31 is set even for J721e */
+@@ -483,7 +483,7 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 		if (IS_ERR(ti_thermal)) {
+ 			dev_err(bgp->dev, "thermal zone device is NULL\n");
+ 			ret = PTR_ERR(ti_thermal);
+-			goto err_alloc;
++			goto err_free_ref_table;
+ 		}
+ 	}
+ 
+@@ -514,6 +514,9 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_free_ref_table:
++	kfree(ref_table);
++
+ err_alloc:
+ 	pm_runtime_put_sync(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+-- 
+2.17.1
 
--Saravana
-
-
-> My other machine with an initramfs does not show this problem.
->
-> > -Saravana
->
-> Sebastian
