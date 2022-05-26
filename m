@@ -2,174 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E58AC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 19:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82795C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 19:46:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348816AbiEZTpM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 May 2022 15:45:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50302 "EHLO
+        id S1348812AbiEZTqH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 May 2022 15:46:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346398AbiEZTpI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 15:45:08 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 816F96A044
-        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 12:45:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1653594303;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=wGw3S4Q9Vcbsrn/loM6Su2TerHvvfSdMEurV8a8JpS4=;
-        b=WHCbOQi3YCpmULupJqbys9ph7x6GZgl3hyhkyplzF9CwJlCTeHQX+Ts89YXVtxat5BBPl6
-        Dac4deE1S8ym53PstiaXkXltvMnC9x9rTwO4IgkLNpZuQ09wjtqIcH1fs0aF1YYbzgLiha
-        F2ZqGXSV1MzFhnvqo7a2wbtw+pTs2T4=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-574-s_2j5mSHMUeeFkrfH07JZQ-1; Thu, 26 May 2022 15:44:59 -0400
-X-MC-Unique: s_2j5mSHMUeeFkrfH07JZQ-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        with ESMTP id S1347797AbiEZTqH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 15:46:07 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF5126A044;
+        Thu, 26 May 2022 12:46:05 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 57AF280418B;
-        Thu, 26 May 2022 19:44:59 +0000 (UTC)
-Received: from fuller.cnet (ovpn-112-2.gru2.redhat.com [10.97.112.2])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 2833A2166B26;
-        Thu, 26 May 2022 19:44:59 +0000 (UTC)
-Received: by fuller.cnet (Postfix, from userid 1000)
-        id 5EA67416F574; Wed, 25 May 2022 14:31:29 -0300 (-03)
-Date:   Wed, 25 May 2022 14:31:29 -0300
-From:   Marcelo Tosatti <mtosatti@redhat.com>
-To:     Eiichi Tsukata <eiichi.tsukata@nutanix.com>
-Cc:     rafael@kernel.org, daniel.lezcano@linaro.org, rostedt@goodmis.org,
-        mingo@redhat.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, joao.m.martins@oracle.com
-Subject: Re: [PATCH v2] cpuidle: haltpoll: Add trace points for
- guest_halt_poll_ns grow/shrink
-Message-ID: <Yo5n8TsSuU9/IxEh@fuller.cnet>
-References: <20220523235332.162966-1-eiichi.tsukata@nutanix.com>
+        by ams.source.kernel.org (Postfix) with ESMTPS id 97255B821C1;
+        Thu, 26 May 2022 19:46:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 208F2C385A9;
+        Thu, 26 May 2022 19:46:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1653594363;
+        bh=7FI667e7U2jabDh81g1Pb93At+46ha0ofKyCgD2Ol9A=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=kZgHsGVFkPQdxB0JkDvNCk3JEpHa7Y2s5nDVqdTd6p/5sNCi06u/Eb2JUBXJTqxgp
+         6vLNsBiEq+wt51bAOEYWCX24hzBFEHeRrHU+KJJClQ6KgZEgMsK/EERjMuJQF8vcfb
+         f+Y4H3Du60A95U65nPREyzWCXLM5F1KTwOi8nFMB9k3tBshnCXlu+GSPfp3lE9XAcN
+         cLlLUZ18pCdgDe3M9QSjz8dLU60iKoJv4UvKtCoU051leo/yWkbLfpzfFTFg4xYlV7
+         RsBPllYVsqNL8B5ys46O3Gon6g1o4oYlN7nERGuFUUIYxi+OpGFz+uaq3PVmPWg7aF
+         mutWuBvZIux9g==
+Date:   Thu, 26 May 2022 14:46:01 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Anders Roxell <anders.roxell@linaro.org>
+Subject: Re: [PATCH v1 06/11] PCI/PM: Write 0 to PMCSR in pci_power_up() in
+ all cases
+Message-ID: <20220526194601.GA344086@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220523235332.162966-1-eiichi.tsukata@nutanix.com>
-X-Scanned-By: MIMEDefang 2.78 on 10.11.54.6
+In-Reply-To: <20220526165422.GA338382@bhelgaas>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, May 23, 2022 at 11:53:32PM +0000, Eiichi Tsukata wrote:
-> Add trace points as are implemented in KVM host halt polling.
-> This helps tune guest halt polling params.
+On Thu, May 26, 2022 at 11:54:22AM -0500, Bjorn Helgaas wrote:
+> On Thu, May 05, 2022 at 08:10:43PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Make pci_power_up() write 0 to the device's PCI_PM_CTRL register in
+> > order to put it into D0 regardless of the power state returned by
+> > the previous read from that register which should not matter.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/pci/pci.c |   11 +++--------
+> >  1 file changed, 3 insertions(+), 8 deletions(-)
+> > 
+> > Index: linux-pm/drivers/pci/pci.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/pci/pci.c
+> > +++ linux-pm/drivers/pci/pci.c
+> > @@ -1230,15 +1230,10 @@ int pci_power_up(struct pci_dev *dev)
+> >  	}
+> >  
+> >  	/*
+> > -	 * If we're (effectively) in D3, force entire word to 0. This doesn't
+> > -	 * affect PME_Status, disables PME_En, and sets PowerState to 0.
+> > +	 * Force the entire word to 0. This doesn't affect PME_Status, disables
+> > +	 * PME_En, and sets PowerState to 0.
+> >  	 */
+> > -	if (state == PCI_D3hot)
+> > -		pmcsr = 0;
+> > -	else
+> > -		pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
+> > -
+> > -	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
+> > +	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, 0);
 > 
-> Signed-off-by: Eiichi Tsukata <eiichi.tsukata@nutanix.com>
-> ---
->  drivers/cpuidle/governors/haltpoll.c | 15 ++++++++-----
->  include/trace/events/power.h         | 33 ++++++++++++++++++++++++++++
->  2 files changed, 43 insertions(+), 5 deletions(-)
+> Can you reassure me why this is safe and useful?
 > 
-> diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
-> index cb2a96eafc02..a5b6ad32956c 100644
-> --- a/drivers/cpuidle/governors/haltpoll.c
-> +++ b/drivers/cpuidle/governors/haltpoll.c
-> @@ -19,6 +19,7 @@
->  #include <linux/sched.h>
->  #include <linux/module.h>
->  #include <linux/kvm_para.h>
-> +#include <trace/events/power.h>
->  
->  static unsigned int guest_halt_poll_ns __read_mostly = 200000;
->  module_param(guest_halt_poll_ns, uint, 0644);
-> @@ -77,13 +78,16 @@ static int haltpoll_select(struct cpuidle_driver *drv,
->  
->  static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
->  {
-> -	unsigned int val;
-> +	unsigned int val, old;
->  
-> -	/* Grow cpu_halt_poll_us if
-> -	 * cpu_halt_poll_us < block_ns < guest_halt_poll_us
-> +	val = dev->poll_limit_ns;
-> +	old = val;
-> +
-> +	/* Grow poll_limit_ns if
-> +	 * poll_limit_ns < block_ns < guest_halt_poll_ns
->  	 */
->  	if (block_ns > dev->poll_limit_ns && block_ns <= guest_halt_poll_ns) {
-> -		val = dev->poll_limit_ns * guest_halt_poll_grow;
-> +		val *= guest_halt_poll_grow;
->  
->  		if (val < guest_halt_poll_grow_start)
->  			val = guest_halt_poll_grow_start;
-> @@ -91,16 +95,17 @@ static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
->  			val = guest_halt_poll_ns;
->  
-
-Can do it before the assignment:
-
-		trace_guest_halt_poll_ns_grow(val, dev->poll_limit_ns);
-
->  		dev->poll_limit_ns = val;
-> +		trace_guest_halt_poll_ns_grow(smp_processor_id(), val, old);
->  	} else if (block_ns > guest_halt_poll_ns &&
->  		   guest_halt_poll_allow_shrink) {
->  		unsigned int shrink = guest_halt_poll_shrink;
->  
-> -		val = dev->poll_limit_ns;
->  		if (shrink == 0)
->  			val = 0;
->  		else
->  			val /= shrink;
->  		dev->poll_limit_ns = val;
-> +		trace_guest_halt_poll_ns_shrink(smp_processor_id(), val, old);
->  	}
->  }
->  
-> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-> index af5018aa9517..db065af9c3c0 100644
-> --- a/include/trace/events/power.h
-> +++ b/include/trace/events/power.h
-> @@ -500,6 +500,39 @@ DEFINE_EVENT(dev_pm_qos_request, dev_pm_qos_remove_request,
->  
->  	TP_ARGS(name, type, new_value)
->  );
-> +
-> +TRACE_EVENT(guest_halt_poll_ns,
-> +
-> +	TP_PROTO(bool grow, unsigned int cpu_id,
-> +		 unsigned int new, unsigned int old),
-> +
-> +	TP_ARGS(grow, cpu_id, new, old),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(bool, grow)
-> +		__field(unsigned int, cpu_id)
-> +		__field(unsigned int, new)
-> +		__field(unsigned int, old)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->grow   = grow;
-> +		__entry->cpu_id = cpu_id;
-> +		__entry->new    = new;
-> +		__entry->old    = old;
-> +	),
-> +
-> +	TP_printk("cpu %u: halt_poll_ns %u (%s %u)",
-> +		__entry->cpu_id,
-> +		__entry->new,
-> +		__entry->grow ? "grow" : "shrink",
-> +		__entry->old)
-> +);
-> +
-> +#define trace_guest_halt_poll_ns_grow(cpu_id, new, old) \
-> +	trace_guest_halt_poll_ns(true, cpu_id, new, old)
-> +#define trace_guest_halt_poll_ns_shrink(cpu_id, new, old) \
-> +	trace_guest_halt_poll_ns(false, cpu_id, new, old)
->  #endif /* _TRACE_POWER_H */
->  
->  /* This part must be outside protection */
-> -- 
-> 2.36.1
+> This is a 16-bit write that includes (PCIe r6.0, sec 7.5.2.2):
 > 
+>   0x0003 PowerState     RW
+>   0x0004                RsvdP
+>   0x0008 No_Soft_Reset  RO
+>   0x00f0                RsvdP
+>   0x0100 PME_En         RW/RWS
+>   0x1e00 Data_Select    RW, VF ROZ
+>   0x6000 Data_Scale     RO, VF ROZ
+>   0x8000 PME_Status     RW1CS
 > 
+> We intend to set PowerState to 0 (D0), apparently intend to clear
+> PME_En, and PME_Status is "write 1 to clear" to writing 0 does
+> nothing, so those look OK.
+> 
+> But the RsvdP fields are reserved for future RW bits and should be
+> preserved, and it looks like clearing Data_Select could potentially
+> break the Data Register power consumption reporting (which I don't
+> think we support today).
+> 
+> It seems like maybe we should do this instead:
+> 
+>   pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL,
+>                         pmcsr & ~PCI_PM_CTRL_STATE_MASK)
+> 
+> to just unconditionally clear PowerState?
 
+Or I guess this, since we want to clear PME_En as well?
+
+  pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr &
+                        ~(PCI_PM_CTRL_STATE_MASK | PCI_PM_CTRL_PME_ENABLE));
