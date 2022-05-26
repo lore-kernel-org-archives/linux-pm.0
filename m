@@ -2,63 +2,66 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB0D2C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 11:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EBA5C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 11:45:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347287AbiEZLpS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 May 2022 07:45:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57844 "EHLO
+        id S232161AbiEZLpV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 May 2022 07:45:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347372AbiEZLo4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 07:44:56 -0400
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03328496B6
-        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:44 -0700 (PDT)
-Received: by mail-pf1-x433.google.com with SMTP id j6so1463938pfe.13
-        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:44 -0700 (PDT)
+        with ESMTP id S1347275AbiEZLoj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 07:44:39 -0400
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E1B4D4102
+        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:25 -0700 (PDT)
+Received: by mail-pf1-x42a.google.com with SMTP id bo5so1500093pfb.4
+        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=2GyYsGJSyLdpY6YjxA3xivfl9Pu65955UdoiLRgF0nI=;
-        b=l8dxC5jwAwaKkGfZE/RaVevT1zFOqmGKUMqy3FpkiXne/z70OeEIECPflRPW7Q/Q6q
-         vgL+4EYhQJmQF9x94iJehCaU/NO+bdf/s8cH1LIasc4Xe/UHp8D7R+CkOqwCysrgsEs6
-         SosYZXHGvcrTLUC5xRKSzyFLrx/ZgOb/assJ9CVCbwUUPHhJjJOWajmiCtw8ttFdK59B
-         f5pj57HHznA7bMim/Ujtfx5+wc+xPHAnLU6+MxhaLfY3C4O7jaHTXqHa/RyxtXnuBm1O
-         9YSEew7XrNZmAzjRnDJQEXvOLIg7lfUOmldw2KGs0B96bU1m8KtJncLXbof6HB+IrwaO
-         61GQ==
+        bh=aFDZFO8zcq3mdOYMY85R5XhCqGoT7ekIVqfcal4vq9k=;
+        b=DdLAOSyeCe3VdSlghPOPR26L4TtMKKCTQ5eKXAKK+10kIhUkQ83tMrA/1RpbabSazS
+         kV6nbvicZrBGsl5IcdntaWX0fV6MCSW1wdiQJTxyHiodRUYUZ11tf5PZA2ahicLgxrUo
+         6ZacmpFJ5OF6b5gRWNANLmf6dpaESFfPH99GDIPXtJ3SwlNJutaOa3SCUTYIXpdBo+Vd
+         I8V9aMtIybOdUujY41iWsXh0sgD7XOPwT6wyHWCJDn/ZIfp5B3sfGTv08/HbdRdVSuce
+         kSLvoxCYkqh6y9ZDmfwO4qM+DWWM36B5cyqGUtzByYX9EUBXqpGlCNxEkh2MUme2AAB9
+         K6kA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=2GyYsGJSyLdpY6YjxA3xivfl9Pu65955UdoiLRgF0nI=;
-        b=xvo7noJaPS0lMFanwKHi7KUG7Z2BIJVFzwyfVm6XtNPl7RluQ9THOtnPajiTjUC8ZZ
-         kohr8jDiP2RqTITjFYRB1psUe0/4wSwtii0+OWIDbcelsGWBBBnfB+tfSv2v/hQUuLfZ
-         3WpAK4L9l2V0XOU+bsvx+6J3HvPBBF7Zox2oABqmazollNXEgbvXjoAyfELxVjizQX9f
-         gUq+8A8x5QnhSBPvHdIEvaTgLH/v2ebWRQLKf0RMCt6m9Je0J/PqppSe0zVZB1yPJOSl
-         T+pbTZRzV1yImjk89+brUWlrExkNyTuco1mgEPC6GCAYwZJwzTGvXVsBD7uQrrU/2j96
-         LMGQ==
-X-Gm-Message-State: AOAM5312EbdJcRDQ+Q87xNiPsNTTNNozKnLEDN0Gnk74IU7GGMndQTjO
-        SfV0kpfDYviHqTEIr8ZASyoxuQ==
-X-Google-Smtp-Source: ABdhPJy3YcgtcoDGxztR99tPx35mpt5XTIrynFTggmeVtJAPk0xKZu9fo/mKxviLaJs+DkLe26O7Rg==
-X-Received: by 2002:a63:e449:0:b0:3fb:10d9:ec18 with SMTP id i9-20020a63e449000000b003fb10d9ec18mr2812166pgk.43.1653565484562;
-        Thu, 26 May 2022 04:44:44 -0700 (PDT)
+        bh=aFDZFO8zcq3mdOYMY85R5XhCqGoT7ekIVqfcal4vq9k=;
+        b=YuA3HkHgGPV9EtFqNl2o4tx9B4YEOYWvIAgZx/Xm/eJGpuPoyiFpdQ7apII9ukUv9M
+         xMZBVdN+KLwtvUzdMeAP9GRgLkiIEVF48ND9bF2dRwQNvW2l4FjRs6ocZkKnVUsUVJ9g
+         pOGsUcOw9Tj9E4pXHuJTEefRFHOLYJPtLR8xLIUIRBcr56+LjmTadOwbVHUI7Rkdvwis
+         77lckcA0ucqXV8YA6Kw4X2fcsp2jWBiwO5wYa3NK/0iRXfo1J3UkkLXur+43FkX1Shkh
+         rOzxAjDHE91EXO84Cit9oyHUJIojLF1GS5jxMMKrgfeUIGrC7XV238AAOnALeCYJ3N8i
+         Uc6w==
+X-Gm-Message-State: AOAM530cp1yF5Q2q83ezIQuYMmlJPBl/cBQxi7t9VPoW8rGAqelTG5ql
+        7lpIb5VAAPynnc3vzXOXM4ro7w==
+X-Google-Smtp-Source: ABdhPJymmr3E7XzXOfh11AxGgFOnPpiUnAkMyJxfXNlpjU0Cl3k3slf4lmK7hGJQYeI+J0tXrl2TGQ==
+X-Received: by 2002:a63:8bc1:0:b0:3f9:f00b:f877 with SMTP id j184-20020a638bc1000000b003f9f00bf877mr21914328pge.378.1653565465428;
+        Thu, 26 May 2022 04:44:25 -0700 (PDT)
 Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id n16-20020aa79050000000b00518c6887217sm1277301pfo.58.2022.05.26.04.44.43
+        by smtp.gmail.com with ESMTPSA id f13-20020aa782cd000000b0051887e34143sm1269772pfn.129.2022.05.26.04.44.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 May 2022 04:44:44 -0700 (PDT)
+        Thu, 26 May 2022 04:44:25 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Rafael Wysocki <rjw@rjwysocki.net>,
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
         Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        linux-mmc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 25/31] OPP: Remove dev_pm_opp_set_regulators() and friends
-Date:   Thu, 26 May 2022 17:12:24 +0530
-Message-Id: <799420aa820061490aadedc0e88e456ae6435401.1653564321.git.viresh.kumar@linaro.org>
+Subject: [PATCH 19/31] mmc: sdhci-msm: Migrate to dev_pm_opp_set_config()
+Date:   Thu, 26 May 2022 17:12:18 +0530
+Message-Id: <80314068d96eb53e0d9838736415b96015803844.1653564321.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 In-Reply-To: <cover.1653564321.git.viresh.kumar@linaro.org>
 References: <cover.1653564321.git.viresh.kumar@linaro.org>
@@ -68,234 +71,39 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that everyone has migrated to dev_pm_opp_set_config(), remove the
-public interface for dev_pm_opp_set_regulators() and friends.
+The OPP core now provides a unified API for setting all configuration
+types, i.e. dev_pm_opp_set_config().
+
+Lets start using it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c     | 95 ++++++++++--------------------------------
- include/linux/pm_opp.h | 17 --------
- 2 files changed, 22 insertions(+), 90 deletions(-)
+ drivers/mmc/host/sdhci-msm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 30dbef0f4d17..9297b5e944f7 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -987,8 +987,8 @@ static int _set_opp_custom(const struct opp_table *opp_table,
- 	int size;
+diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
+index 50c71e0ba5e4..994f3f0231f7 100644
+--- a/drivers/mmc/host/sdhci-msm.c
++++ b/drivers/mmc/host/sdhci-msm.c
+@@ -2496,6 +2496,9 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 	const struct sdhci_msm_offset *msm_offset;
+ 	const struct sdhci_msm_variant_info *var_info;
+ 	struct device_node *node = pdev->dev.of_node;
++	struct dev_pm_opp_config opp_config = {
++		.clk_name = "core",
++	};
  
- 	/*
--	 * We support this only if dev_pm_opp_set_regulators() was called
--	 * earlier.
-+	 * We support this only if dev_pm_opp_set_config() was called
-+	 * earlier to set regulators.
- 	 */
- 	if (opp_table->sod_supplies) {
- 		size = sizeof(*old_opp->supplies) * opp_table->regulator_count;
-@@ -2093,7 +2093,7 @@ void dev_pm_opp_put_prop_name(struct opp_table *opp_table)
- EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
+ 	host = sdhci_pltfm_init(pdev, &sdhci_msm_pdata, sizeof(*msm_host));
+ 	if (IS_ERR(host))
+@@ -2564,7 +2567,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto bus_clk_disable;
  
- /**
-- * dev_pm_opp_set_regulators() - Set regulator names for the device
-+ * _opp_set_regulators() - Set regulator names for the device
-  * @dev: Device for which regulator name is being set.
-  * @names: Array of pointers to the names of the regulator.
-  * @count: Number of regulators.
-@@ -2104,36 +2104,22 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
-  *
-  * This must be called before any OPPs are initialized for the device.
-  */
--struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
--					    const char * const names[],
--					    unsigned int count)
-+static int _opp_set_regulators(struct opp_table *opp_table, struct device *dev,
-+			       const char * const names[], unsigned int count)
- {
- 	struct dev_pm_opp_supply *supplies;
--	struct opp_table *opp_table;
- 	struct regulator *reg;
- 	int ret, i;
+-	ret = devm_pm_opp_set_clkname(&pdev->dev, "core");
++	ret = devm_pm_opp_set_config(&pdev->dev, &opp_config);
+ 	if (ret)
+ 		goto bus_clk_disable;
  
--	opp_table = _add_opp_table(dev, false);
--	if (IS_ERR(opp_table))
--		return opp_table;
--
--	/* This should be called before OPPs are initialized */
--	if (WARN_ON(!list_empty(&opp_table->opp_list))) {
--		ret = -EBUSY;
--		goto err;
--	}
--
- 	/* Another CPU that shares the OPP table has set the regulators ? */
- 	if (opp_table->regulators)
--		return opp_table;
-+		return 0;
- 
- 	opp_table->regulators = kmalloc_array(count,
- 					      sizeof(*opp_table->regulators),
- 					      GFP_KERNEL);
--	if (!opp_table->regulators) {
--		ret = -ENOMEM;
--		goto err;
--	}
-+	if (!opp_table->regulators)
-+		return -ENOMEM;
- 
- 	for (i = 0; i < count; i++) {
- 		reg = regulator_get_optional(dev, names[i]);
-@@ -2163,7 +2149,7 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 	}
- 	mutex_unlock(&opp_table->lock);
- 
--	return opp_table;
-+	return 0;
- 
- free_regulators:
- 	while (i != 0)
-@@ -2172,26 +2158,20 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 	kfree(opp_table->regulators);
- 	opp_table->regulators = NULL;
- 	opp_table->regulator_count = -1;
--err:
--	dev_pm_opp_put_opp_table(opp_table);
- 
--	return ERR_PTR(ret);
-+	return ret;
- }
--EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulators);
- 
- /**
-- * dev_pm_opp_put_regulators() - Releases resources blocked for regulator
-- * @opp_table: OPP table returned from dev_pm_opp_set_regulators().
-+ * _opp_put_regulators() - Releases resources blocked for regulator
-+ * @opp_table: OPP table returned from _opp_set_regulators().
-  */
--void dev_pm_opp_put_regulators(struct opp_table *opp_table)
-+static void _opp_put_regulators(struct opp_table *opp_table)
- {
- 	int i;
- 
--	if (unlikely(!opp_table))
--		return;
--
- 	if (!opp_table->regulators)
--		goto put_opp_table;
-+		return;
- 
- 	if (opp_table->enabled) {
- 		for (i = opp_table->regulator_count - 1; i >= 0; i--)
-@@ -2214,41 +2194,7 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
- 	kfree(opp_table->regulators);
- 	opp_table->regulators = NULL;
- 	opp_table->regulator_count = -1;
--
--put_opp_table:
--	dev_pm_opp_put_opp_table(opp_table);
--}
--EXPORT_SYMBOL_GPL(dev_pm_opp_put_regulators);
--
--static void devm_pm_opp_regulators_release(void *data)
--{
--	dev_pm_opp_put_regulators(data);
--}
--
--/**
-- * devm_pm_opp_set_regulators() - Set regulator names for the device
-- * @dev: Device for which regulator name is being set.
-- * @names: Array of pointers to the names of the regulator.
-- * @count: Number of regulators.
-- *
-- * This is a resource-managed variant of dev_pm_opp_set_regulators().
-- *
-- * Return: 0 on success and errorno otherwise.
-- */
--int devm_pm_opp_set_regulators(struct device *dev,
--			       const char * const names[],
--			       unsigned int count)
--{
--	struct opp_table *opp_table;
--
--	opp_table = dev_pm_opp_set_regulators(dev, names, count);
--	if (IS_ERR(opp_table))
--		return PTR_ERR(opp_table);
--
--	return devm_add_action_or_reset(dev, devm_pm_opp_regulators_release,
--					opp_table);
- }
--EXPORT_SYMBOL_GPL(devm_pm_opp_set_regulators);
- 
- /**
-  * dev_pm_opp_set_clkname() - Set clk name for the device
-@@ -2634,6 +2580,7 @@ struct opp_table *dev_pm_opp_set_config(struct device *dev,
- 					struct dev_pm_opp_config *config)
- {
- 	struct opp_table *opp_table, *ret;
-+	int err;
- 
- 	opp_table = _add_opp_table(dev, false);
- 	if (IS_ERR(opp_table))
-@@ -2676,10 +2623,13 @@ struct opp_table *dev_pm_opp_set_config(struct device *dev,
- 
- 	// Configure supplies
- 	if (config->regulator_names) {
--		ret = dev_pm_opp_set_regulators(dev, config->regulator_names,
--						config->regulator_count);
--		if (IS_ERR(ret))
-+		err = _opp_set_regulators(opp_table, dev,
-+					  config->regulator_names,
-+					  config->regulator_count);
-+		if (err) {
-+			ret = ERR_PTR(err);
- 			goto err;
-+		}
- 	}
- 
- 	// Attach genpds
-@@ -2716,8 +2666,7 @@ void dev_pm_opp_clear_config(struct opp_table *opp_table)
- 	if (opp_table->genpd_virt_devs)
- 		dev_pm_opp_detach_genpd(opp_table);
- 
--	if (opp_table->regulators)
--		dev_pm_opp_put_regulators(opp_table);
-+	_opp_put_regulators(opp_table);
- 
- 	if (opp_table->supported_hw)
- 		dev_pm_opp_put_supported_hw(opp_table);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 0d5d07dd164a..11896ebe1fb1 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -189,9 +189,6 @@ void dev_pm_opp_put_supported_hw(struct opp_table *opp_table);
- int devm_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
- struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name);
- void dev_pm_opp_put_prop_name(struct opp_table *opp_table);
--struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count);
--void dev_pm_opp_put_regulators(struct opp_table *opp_table);
--int devm_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count);
- struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char *name);
- void dev_pm_opp_put_clkname(struct opp_table *opp_table);
- int devm_pm_opp_set_clkname(struct device *dev, const char *name);
-@@ -409,20 +406,6 @@ static inline struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, con
- 
- static inline void dev_pm_opp_put_prop_name(struct opp_table *opp_table) {}
- 
--static inline struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count)
--{
--	return ERR_PTR(-EOPNOTSUPP);
--}
--
--static inline void dev_pm_opp_put_regulators(struct opp_table *opp_table) {}
--
--static inline int devm_pm_opp_set_regulators(struct device *dev,
--					     const char * const names[],
--					     unsigned int count)
--{
--	return -EOPNOTSUPP;
--}
--
- static inline struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char *name)
- {
- 	return ERR_PTR(-EOPNOTSUPP);
 -- 
 2.31.1.272.g89b43f80a514
 
