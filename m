@@ -2,64 +2,63 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31DA9C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 11:45:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4AC2C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 11:45:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347257AbiEZLpX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 May 2022 07:45:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59106 "EHLO
+        id S1345980AbiEZLpb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 May 2022 07:45:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347260AbiEZLoi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 07:44:38 -0400
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F4B4AFB11
-        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:22 -0700 (PDT)
-Received: by mail-pj1-x1030.google.com with SMTP id x2-20020a17090a1f8200b001e07a64c461so4190957pja.4
-        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:22 -0700 (PDT)
+        with ESMTP id S1347406AbiEZLo5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 07:44:57 -0400
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B2EED6838
+        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:48 -0700 (PDT)
+Received: by mail-pj1-x1036.google.com with SMTP id w2-20020a17090ac98200b001e0519fe5a8so1498259pjt.4
+        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=JDQmr69N/dl5Dq6JBRKXlWACskRSPFONQYIFomxUe+4=;
-        b=fjSvNeVTUzzKQj774ztXjpUw9ebSX9tuHPbUVSBhP2kCSmHxqdjdLVvoZi4zRsOwAo
-         IuM3v4wlNfUCWAfOlajUQ3TK04x0FgViwJGJ98eo5eYpWI3wY+ughlZaZ5U/altE/sr0
-         O1dEBMXcZdtXQpOV2RMwY81ZfdHLdKV+Iw6FkzSC82sNSfSULfuSOHzeLRCWs0mBVMD+
-         1L2XZwGHgUzeGy4KLIKQOtggFj2X+KjfLDIAJeHaGKj7Qffz/I+/MOy4ZG7/RJn1d0+6
-         556j/tr8OQqeNXwZDQr8+i3boAhpqvMSgfKmN09MBu7L/Yl6QoDPqfhEu0y686C5Hyu6
-         jmSQ==
+        bh=aBl1CC0647PH0W5NTycQQML4b7lHvkQNUHifdM1GDAY=;
+        b=XU6kHOyVAe6IVpqMU7mG7mrqIele38tK/JE36YPUd6201Yvo2CZj62/LV3oLeN+lyO
+         TodZyd/JTrQHXAUhZuHFofbvf9oXBuJQMQxS1BBCR3N9TEQL6FJ00w42/etUQfdvWIk1
+         NcP6llHTwf0aceT5mdHaijXhyAIQq92uTXX6LlJRliMPc3BwFfdqXxqWBfXm10d45wsG
+         lTEhCwCsMk2e6bCOndjaujvO9dZzzkevXZkke3SC5JIubIhlLpO/iyFPrf1NHverHb0a
+         Qd0UyugsV2QfUrpqNVFJj1cfHiwZ0bl6ImlqwC4KWyVi1E9c+l92441XrvCsnDnaEhEO
+         N/WQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=JDQmr69N/dl5Dq6JBRKXlWACskRSPFONQYIFomxUe+4=;
-        b=Yhc27h/7svozo73yzacokaSbEggoZ3kaEf9B6OBdfERR4PctVbHt9vlqKPabEaJtel
-         tVhBrcv5V1r66zVlbbH46mEcs7HEm9zsdNLfMSkMtwCm60pvSA4H8PZ2YaMhxXCRPemf
-         XAMtXi0wofRBpC4dehm6LyYmZ5uL6kUncxO+yj3IaWonz5ZB03HYKarfYhZh0UaFHu1p
-         MAArZuS3up9oQtTj+VBbnc3Hj63yTdHlThKm7tRUJWeYadm74VTjUdPR+0/5PmWSiTgC
-         uJft6X+KE/j/PRqp+URFaVRlD8wH5uYQZYyj6ZbQNQR9ivTxl75ROxcziJObv2V7NIJh
-         Soxg==
-X-Gm-Message-State: AOAM533o/SNMNTIkP7fGMvP10gUWIdPvo4MUlQ/KdWCcNw/bZGf2+2Ps
-        5JqihyTnWv5rs5/4KA3pUe5axR2WIdsXZg==
-X-Google-Smtp-Source: ABdhPJxByslYzaPrFJBCGZDzY/gRdK8UOblXVaYz51u2TNu9nIEwRROLsSZebLnfRSSRxACNF3ljLA==
-X-Received: by 2002:a17:90a:ead5:b0:1df:8229:87b7 with SMTP id ev21-20020a17090aead500b001df822987b7mr2253959pjb.104.1653565462245;
-        Thu, 26 May 2022 04:44:22 -0700 (PDT)
+        bh=aBl1CC0647PH0W5NTycQQML4b7lHvkQNUHifdM1GDAY=;
+        b=CogVFnZbVtuHxEVm0EVCVTuzs9fJRF1VfQdCjgoRWc8lxkcxKpqM52g5maEQcInQZO
+         uWfsnzVcs2/RAhMnBAvr4BZIy9ZSSJ2mYw8Hoj9uI6tzUos2l9BeyUeehUQ1loIZSiY4
+         mPkyajAGkXPTTc8gzeCmkfSz2tLUI2ny9eAhCX9m0iI9xF6zUSC+sWQXkf1tnJ7TDGE7
+         w+9t+F6WihnqR/44pOyouVD5TGmOcWQP6xLGzSzuFy2X344hlOW1p5OWwLQ8JKJtIEvE
+         /u+hSta/CZT82uMdTqKoe7H1/oaYgrerAs3EEM0lwW7MjEFWftmI1asZGQRwlDuXdm2p
+         6W1w==
+X-Gm-Message-State: AOAM530LCfn3ZcBpPtSIVaaHQhynFefOkLBCe49FemAms7EKsit5IxaP
+        hcfW7ndjHSsOWDGa8wqXbFBG1w==
+X-Google-Smtp-Source: ABdhPJz3zYjTuxMYWiz3B6eAEhxfQdRcN7ZzzRRNKFLbGJu16yTRln18Pe6QDLjgBngfPyNCQLwP1g==
+X-Received: by 2002:a17:902:9b94:b0:161:5a74:aa6c with SMTP id y20-20020a1709029b9400b001615a74aa6cmr36906593plp.108.1653565488042;
+        Thu, 26 May 2022 04:44:48 -0700 (PDT)
 Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id u21-20020a631415000000b003c14af50626sm1262487pgl.62.2022.05.26.04.44.21
+        by smtp.gmail.com with ESMTPSA id br19-20020a17090b0f1300b001d954837197sm3420044pjb.22.2022.05.26.04.44.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 May 2022 04:44:21 -0700 (PDT)
+        Thu, 26 May 2022 04:44:47 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>
+To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Rafael Wysocki <rjw@rjwysocki.net>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
         Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH 18/31] media: tegra: Migrate to dev_pm_opp_set_config()
-Date:   Thu, 26 May 2022 17:12:17 +0530
-Message-Id: <67b10cc516558405bfff0fc7749cee9d3bf02fc0.1653564321.git.viresh.kumar@linaro.org>
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 26/31] OPP: Remove dev_pm_opp_set_supported_hw() and friends
+Date:   Thu, 26 May 2022 17:12:25 +0530
+Message-Id: <c8dc74650009e96ef5f8741b77e3e49e50ba458c.1653564321.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 In-Reply-To: <cover.1653564321.git.viresh.kumar@linaro.org>
 References: <cover.1653564321.git.viresh.kumar@linaro.org>
@@ -69,51 +68,191 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The OPP core now provides a unified API for setting all configuration
-types, i.e. dev_pm_opp_set_config().
-
-Lets start using it.
+Now that everyone has migrated to dev_pm_opp_set_config(), remove the
+public interface for dev_pm_opp_set_supported_hw() and friends.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/memory/tegra/tegra124-emc.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/opp/core.c     | 88 +++++++++++-------------------------------
+ include/linux/pm_opp.h | 19 ---------
+ 2 files changed, 22 insertions(+), 85 deletions(-)
 
-diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
-index 908f8d5392b2..d1e8f9ffef63 100644
---- a/drivers/memory/tegra/tegra124-emc.c
-+++ b/drivers/memory/tegra/tegra124-emc.c
-@@ -1395,13 +1395,17 @@ static int tegra_emc_interconnect_init(struct tegra_emc *emc)
- static int tegra_emc_opp_table_init(struct tegra_emc *emc)
- {
- 	u32 hw_version = BIT(tegra_sku_info.soc_speedo_id);
--	struct opp_table *hw_opp_table;
-+	struct opp_table *opp_table;
- 	int err;
-+	struct dev_pm_opp_config config = {
-+		.supported_hw = &hw_version,
-+		.supported_hw_count = 1,
-+	};
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 9297b5e944f7..07cb8ff33a6d 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1948,7 +1948,7 @@ int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
+ }
  
--	hw_opp_table = dev_pm_opp_set_supported_hw(emc->dev, &hw_version, 1);
--	err = PTR_ERR_OR_ZERO(hw_opp_table);
-+	opp_table = dev_pm_opp_set_config(emc->dev, &config);
-+	err = PTR_ERR_OR_ZERO(opp_table);
- 	if (err) {
--		dev_err(emc->dev, "failed to set OPP supported HW: %d\n", err);
-+		dev_err(emc->dev, "failed to set OPP config: %d\n", err);
- 		return err;
+ /**
+- * dev_pm_opp_set_supported_hw() - Set supported platforms
++ * _opp_set_supported_hw() - Set supported platforms
+  * @dev: Device for which supported-hw has to be set.
+  * @versions: Array of hierarchy of versions to match.
+  * @count: Number of elements in the array.
+@@ -1958,84 +1958,39 @@ int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
+  * OPPs, which are available for those versions, based on its 'opp-supported-hw'
+  * property.
+  */
+-struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev,
+-			const u32 *versions, unsigned int count)
++static int _opp_set_supported_hw(struct opp_table *opp_table,
++				 const u32 *versions, unsigned int count)
+ {
+-	struct opp_table *opp_table;
+-
+-	opp_table = _add_opp_table(dev, false);
+-	if (IS_ERR(opp_table))
+-		return opp_table;
+-
+-	/* Make sure there are no concurrent readers while updating opp_table */
+-	WARN_ON(!list_empty(&opp_table->opp_list));
+-
+ 	/* Another CPU that shares the OPP table has set the property ? */
+ 	if (opp_table->supported_hw)
+-		return opp_table;
++		return 0;
+ 
+ 	opp_table->supported_hw = kmemdup(versions, count * sizeof(*versions),
+ 					GFP_KERNEL);
+-	if (!opp_table->supported_hw) {
+-		dev_pm_opp_put_opp_table(opp_table);
+-		return ERR_PTR(-ENOMEM);
+-	}
++	if (!opp_table->supported_hw)
++		return -ENOMEM;
+ 
+ 	opp_table->supported_hw_count = count;
+ 
+-	return opp_table;
++	return 0;
+ }
+-EXPORT_SYMBOL_GPL(dev_pm_opp_set_supported_hw);
+ 
+ /**
+- * dev_pm_opp_put_supported_hw() - Releases resources blocked for supported hw
+- * @opp_table: OPP table returned by dev_pm_opp_set_supported_hw().
++ * _opp_put_supported_hw() - Releases resources blocked for supported hw
++ * @opp_table: OPP table returned by _opp_set_supported_hw().
+  *
+  * This is required only for the V2 bindings, and is called for a matching
+- * dev_pm_opp_set_supported_hw(). Until this is called, the opp_table structure
++ * _opp_set_supported_hw(). Until this is called, the opp_table structure
+  * will not be freed.
+  */
+-void dev_pm_opp_put_supported_hw(struct opp_table *opp_table)
+-{
+-	if (unlikely(!opp_table))
+-		return;
+-
+-	kfree(opp_table->supported_hw);
+-	opp_table->supported_hw = NULL;
+-	opp_table->supported_hw_count = 0;
+-
+-	dev_pm_opp_put_opp_table(opp_table);
+-}
+-EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
+-
+-static void devm_pm_opp_supported_hw_release(void *data)
+-{
+-	dev_pm_opp_put_supported_hw(data);
+-}
+-
+-/**
+- * devm_pm_opp_set_supported_hw() - Set supported platforms
+- * @dev: Device for which supported-hw has to be set.
+- * @versions: Array of hierarchy of versions to match.
+- * @count: Number of elements in the array.
+- *
+- * This is a resource-managed variant of dev_pm_opp_set_supported_hw().
+- *
+- * Return: 0 on success and errorno otherwise.
+- */
+-int devm_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
+-				 unsigned int count)
++static void _opp_put_supported_hw(struct opp_table *opp_table)
+ {
+-	struct opp_table *opp_table;
+-
+-	opp_table = dev_pm_opp_set_supported_hw(dev, versions, count);
+-	if (IS_ERR(opp_table))
+-		return PTR_ERR(opp_table);
+-
+-	return devm_add_action_or_reset(dev, devm_pm_opp_supported_hw_release,
+-					opp_table);
++	if (opp_table->supported_hw) {
++		kfree(opp_table->supported_hw);
++		opp_table->supported_hw = NULL;
++		opp_table->supported_hw_count = 0;
++	}
+ }
+-EXPORT_SYMBOL_GPL(devm_pm_opp_set_supported_hw);
+ 
+ /**
+  * dev_pm_opp_set_prop_name() - Set prop-extn name
+@@ -2615,10 +2570,12 @@ struct opp_table *dev_pm_opp_set_config(struct device *dev,
+ 
+ 	// Configure supported hardware
+ 	if (config->supported_hw) {
+-		ret = dev_pm_opp_set_supported_hw(dev, config->supported_hw,
+-						  config->supported_hw_count);
+-		if (IS_ERR(ret))
++		err = _opp_set_supported_hw(opp_table, config->supported_hw,
++					    config->supported_hw_count);
++		if (err) {
++			ret = ERR_PTR(err);
+ 			goto err;
++		}
  	}
  
-@@ -1430,7 +1434,7 @@ static int tegra_emc_opp_table_init(struct tegra_emc *emc)
- remove_table:
- 	dev_pm_opp_of_remove_table(emc->dev);
- put_hw_table:
--	dev_pm_opp_put_supported_hw(hw_opp_table);
-+	dev_pm_opp_clear_config(opp_table);
+ 	// Configure supplies
+@@ -2668,8 +2625,7 @@ void dev_pm_opp_clear_config(struct opp_table *opp_table)
  
- 	return err;
+ 	_opp_put_regulators(opp_table);
+ 
+-	if (opp_table->supported_hw)
+-		dev_pm_opp_put_supported_hw(opp_table);
++	_opp_put_supported_hw(opp_table);
+ 
+ 	if (opp_table->set_opp)
+ 		dev_pm_opp_unregister_set_opp_helper(opp_table);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 11896ebe1fb1..b80982e5a067 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -184,9 +184,6 @@ struct opp_table *dev_pm_opp_set_config(struct device *dev, struct dev_pm_opp_co
+ int devm_pm_opp_set_config(struct device *dev, struct dev_pm_opp_config *config);
+ void dev_pm_opp_clear_config(struct opp_table *opp_table);
+ 
+-struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
+-void dev_pm_opp_put_supported_hw(struct opp_table *opp_table);
+-int devm_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
+ struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name);
+ void dev_pm_opp_put_prop_name(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char *name);
+@@ -369,22 +366,6 @@ static inline int dev_pm_opp_unregister_notifier(struct device *dev, struct noti
+ 	return -EOPNOTSUPP;
  }
+ 
+-static inline struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev,
+-							    const u32 *versions,
+-							    unsigned int count)
+-{
+-	return ERR_PTR(-EOPNOTSUPP);
+-}
+-
+-static inline void dev_pm_opp_put_supported_hw(struct opp_table *opp_table) {}
+-
+-static inline int devm_pm_opp_set_supported_hw(struct device *dev,
+-					       const u32 *versions,
+-					       unsigned int count)
+-{
+-	return -EOPNOTSUPP;
+-}
+-
+ static inline struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+ 			int (*set_opp)(struct dev_pm_set_opp_data *data))
+ {
 -- 
 2.31.1.272.g89b43f80a514
 
