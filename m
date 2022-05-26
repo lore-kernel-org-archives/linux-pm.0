@@ -2,68 +2,63 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A55D5C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 11:44:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5333C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 11:44:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346429AbiEZLoU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 May 2022 07:44:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55950 "EHLO
+        id S243727AbiEZLoZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 May 2022 07:44:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57622 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346653AbiEZLoF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 07:44:05 -0400
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D47EF49CA8
-        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:43:59 -0700 (PDT)
-Received: by mail-pj1-x1029.google.com with SMTP id cv10so1514241pjb.4
-        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:43:59 -0700 (PDT)
+        with ESMTP id S1347171AbiEZLoV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 07:44:21 -0400
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBED148880
+        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:06 -0700 (PDT)
+Received: by mail-pg1-x533.google.com with SMTP id j21so1107387pga.13
+        for <linux-pm@vger.kernel.org>; Thu, 26 May 2022 04:44:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=6s0x8dJmuy2Ybw2lPLVZk+KMGhxE6UiFXXt2n7Y53xs=;
-        b=U7t6fFDjDa0Ctor2pMs5mB+RkfuEaQPk9jAll6z0ozbTwHH7hCCOV39QhC1AudH7B7
-         mQNpvXHdoHtmlP/l8G9ftM8cnpNgbGwwGz9I+OmYGanwKqbuDAFiLpXAxWh8NKaVHaAA
-         aBOK8br6uQdtX1bFAvIQ7JvqoxwHiCHDyyeEoXHWCbLWoVvk7zriP5dvMGGKYIuZyP3N
-         Ec0tGGa/3p+cdA3hyyIF0IaJc8Wg1rXpfwN5vn1/9ccbu8Tx6TT0v0YsqfAustZYcUM+
-         AEv36mJY1RccxXovNcGZX5iR8HI63Dc4GaojNxWzAlkrNrcHbTysqe9W1RvbTeEt6NOm
-         3OfA==
+        bh=3XNML7XiFhEmWhS7Wmn0QQk81yeWXZBxdfXtoqtiuEE=;
+        b=F0RZwf+QVtfdPntABkUWCqnKWd9ZvaRtPa4RLbnjoS3Mv9huYArM/2p97ntmluKcx5
+         sbuzSjy+OWEN6dzN7C6RYQgoNFlHohr4VKNTUfutPa7zwq1JV6AtX9/fNvPMAlVNPSPb
+         KXM9WqnEd/bX9iVNhvKaU4SeqlFiBrGMgDvhqFvZDYJz3W6jnOESDByw3Ffm0L/ubDbR
+         Bsb4ZMDq0fueO+vqGE5Nen8Ix6yV//gu8uLXJcIAIAtx1hxrVAeCjxHqFjCo+/yp4cL8
+         YAFRMkagm/VLnmb1a+Jz/JKzq00ysjOHsH0DS9QGm64iB/sk/GCEc4J+kb224nRIYVL/
+         uK7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=6s0x8dJmuy2Ybw2lPLVZk+KMGhxE6UiFXXt2n7Y53xs=;
-        b=pLNhE32eBLHfhmplo43SgjciTkK+2xsUAlB6Jym8Ka3EWdC7jYTTQdV6Pa8q3t1Y8q
-         TX518IDWKaoFLtTXIJ86qr1D5l0Yv+08djoXVfNecJTl3Z/Ymq9Q7/nZcljmfqrzxjgs
-         V+6arCaV6T8bdk/pIdRQDk5purxDZLDham/pKQhQmdZDECKPy+jUfyicG5emmuA4DeYb
-         /U2J8d7V0L/mu6Tu3d3zcr6Yc39SASEmIE+MGU3AI7h0xbGdeTWbKKYYagZE95cJragA
-         54Oraj+jK30vlWWf8cxGXzZON7zWBGrjRNSQDABeTNQqk2ukVrCQ6FXZ0s7vfSYs9zk9
-         IS2w==
-X-Gm-Message-State: AOAM530ZvoC/ImmvEcW8IjBJuxkXQT6i4dkjWSp13+9zvsnpmU+myfzv
-        fTZrc51cWddXMmHq7N0sHp7dxg==
-X-Google-Smtp-Source: ABdhPJxbhS8femEgYxRhuPmf1pbTSv1ParpKVoHJCFN/pCA01ph85V+OU8iJG6Dir5uT/slHjL/sTg==
-X-Received: by 2002:a17:90a:4cc2:b0:1dd:1010:d10d with SMTP id k60-20020a17090a4cc200b001dd1010d10dmr2174506pjh.205.1653565439389;
-        Thu, 26 May 2022 04:43:59 -0700 (PDT)
+        bh=3XNML7XiFhEmWhS7Wmn0QQk81yeWXZBxdfXtoqtiuEE=;
+        b=NIuSrK8Vygo/qOw9NvmoHR3OXNb/Mj9fKqXV0tJIjbCEpr1g49VO/LSv7FHubml3MT
+         xfL9c8sEkl7MV8DReedXPshGoIabxt3dx6SRP2iQQ6uVw+GrIvUw9/+c5cveJeGpm8+q
+         fgQPXXU6OevGqOchumDFptUdvGzEFe/SoFDr9B1DCjGRR9+AbimdJEm5eVRYVGMZzbUG
+         5UAlgjo7xXxg/QxyyeQWTsp41pJIcIWM0WtTHp6CbJLLE8iMr4zXltwemWmWfD24bqV+
+         4B2d98fms0yeZzCwMKKW+cAArZkJaIFfoNLWxad/POV1ks0Iaq+xuXLljyfcMasytAwn
+         IdGA==
+X-Gm-Message-State: AOAM530YaEBG+lGuVijHBMlqkyPbmEJ4socrogIeE4+1h8srzR/BoXtz
+        j7fPV1Zx5ZfG1rwtN7tZ1xBl5w==
+X-Google-Smtp-Source: ABdhPJz4oCK0FlHgCt3OpAXEyjzMx8MM0BIoifZPvN2PfUIfJKR2EWbMtcAxZKXzchUrRLOzNjahKA==
+X-Received: by 2002:a05:6a00:1487:b0:518:b952:889b with SMTP id v7-20020a056a00148700b00518b952889bmr16382659pfu.43.1653565445537;
+        Thu, 26 May 2022 04:44:05 -0700 (PDT)
 Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id v5-20020a62a505000000b005183434ec86sm1261317pfm.135.2022.05.26.04.43.58
+        by smtp.gmail.com with ESMTPSA id o13-20020a170903210d00b0015e8d4eb213sm1283995ple.93.2022.05.26.04.44.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 May 2022 04:43:59 -0700 (PDT)
+        Thu, 26 May 2022 04:44:05 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Samuel Holland <samuel@sholland.org>
+To:     Qiang Yu <yuq825@gmail.com>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Rafael Wysocki <rjw@rjwysocki.net>,
         Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
         Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
+        dri-devel@lists.freedesktop.org, lima@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 11/31] devfreq: sun8i: Migrate to dev_pm_opp_set_config()
-Date:   Thu, 26 May 2022 17:12:10 +0530
-Message-Id: <276f3e9b7d9b696cbfa1e5546f79db7029510fb4.1653564321.git.viresh.kumar@linaro.org>
+Subject: [PATCH 13/31] drm/lima: Migrate to dev_pm_opp_set_config()
+Date:   Thu, 26 May 2022 17:12:12 +0530
+Message-Id: <22268a714109e8f18ee0612d2e0f746a357af9c3.1653564321.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 In-Reply-To: <cover.1653564321.git.viresh.kumar@linaro.org>
 References: <cover.1653564321.git.viresh.kumar@linaro.org>
@@ -80,35 +75,38 @@ Lets start using it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/devfreq/sun8i-a33-mbus.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/lima/lima_devfreq.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/devfreq/sun8i-a33-mbus.c b/drivers/devfreq/sun8i-a33-mbus.c
-index 13d32213139f..125b479c9d6d 100644
---- a/drivers/devfreq/sun8i-a33-mbus.c
-+++ b/drivers/devfreq/sun8i-a33-mbus.c
-@@ -337,6 +337,9 @@ static int sun8i_a33_mbus_probe(struct platform_device *pdev)
- 	unsigned int max_state;
- 	const char *err;
- 	int i, ret;
+diff --git a/drivers/gpu/drm/lima/lima_devfreq.c b/drivers/gpu/drm/lima/lima_devfreq.c
+index 8989e215dfc9..e792ab5cd76a 100644
+--- a/drivers/gpu/drm/lima/lima_devfreq.c
++++ b/drivers/gpu/drm/lima/lima_devfreq.c
+@@ -111,6 +111,11 @@ int lima_devfreq_init(struct lima_device *ldev)
+ 	struct dev_pm_opp *opp;
+ 	unsigned long cur_freq;
+ 	int ret;
 +	struct dev_pm_opp_config config = {
-+		.clk_name = "dram",
++		.regulator_names = (const char *[]){ "mali" },
++		.regulator_count = 1,
++		.clk_name = "core",
 +	};
  
- 	variant = device_get_match_data(dev);
- 	if (!variant)
-@@ -404,9 +407,9 @@ static int sun8i_a33_mbus_probe(struct platform_device *pdev)
- 	priv->profile.freq_table	= priv->freq_table;
- 	priv->profile.max_state		= max_state;
+ 	if (!device_property_present(dev, "operating-points-v2"))
+ 		/* Optional, continue without devfreq */
+@@ -118,11 +123,7 @@ int lima_devfreq_init(struct lima_device *ldev)
  
--	ret = devm_pm_opp_set_clkname(dev, "dram");
+ 	spin_lock_init(&ldevfreq->lock);
+ 
+-	ret = devm_pm_opp_set_clkname(dev, "core");
+-	if (ret)
+-		return ret;
+-
+-	ret = devm_pm_opp_set_regulators(dev, (const char *[]){ "mali" }, 1);
 +	ret = devm_pm_opp_set_config(dev, &config);
  	if (ret) {
--		err = "failed to add OPP table\n";
-+		err = "failed to set OPP config\n";
- 		goto err_unlock_mbus;
- 	}
- 
+ 		/* Continue if the optional regulator is missing */
+ 		if (ret != -ENODEV)
 -- 
 2.31.1.272.g89b43f80a514
 
