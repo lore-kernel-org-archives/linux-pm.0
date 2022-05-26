@@ -2,71 +2,79 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F48DC433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 12:58:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B1B4C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 26 May 2022 13:20:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347292AbiEZM6Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 May 2022 08:58:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59866 "EHLO
+        id S1347499AbiEZNUn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 May 2022 09:20:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57748 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234058AbiEZM6P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 08:58:15 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F39985C763;
-        Thu, 26 May 2022 05:58:10 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: kholk11)
-        with ESMTPSA id BC0671F45606
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1653569889;
-        bh=0EdiI4UQ62Oms7jhkCwXc010LL9bgAzrmJqjHMZq+s4=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=hG8tTMicAxc9tkcBCjll+kmxdI0KFOZiKfGF9HkmV4NeA+m4JIMBbQDAjbWgltFtR
-         7w1ziS85DOPFjNMrevW86fNGRfvTHsa5a5jhO0DvcGC1gn15X7lk5ECX33Qe7doS3A
-         GwniaDrRNj7O2brEBTb3egVMxLIZ7O2wznwCKm9Dt+izVDe+weTTO6JTK4O3bE4znv
-         CBuDXV+Ywa9AP5H5YfOpZXphRkUErFnCFDkxwYYiJy2bAmTK9if+z2lFBcJaGrgssV
-         aTa07hwR7m8JPTw4OKv3rQ/SFXrRVJlsQpfQkSDfiYt1cLU/3kmRBDv2mmyShIM8tf
-         YhV2HtQqPGpiA==
-Message-ID: <3d2b130c-9826-1440-3ec9-28a44b767de9@collabora.com>
-Date:   Thu, 26 May 2022 14:58:05 +0200
+        with ESMTP id S233310AbiEZNUm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 09:20:42 -0400
+Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B723D682B;
+        Thu, 26 May 2022 06:20:41 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R771e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0VEST7R4_1653571236;
+Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0VEST7R4_1653571236)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Thu, 26 May 2022 21:20:37 +0800
+From:   Yang Li <yang.lee@linux.alibaba.com>
+To:     vireshk@kernel.org
+Cc:     nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Yang Li <yang.lee@linux.alibaba.com>,
+        Abaci Robot <abaci@linux.alibaba.com>
+Subject: [PATCH -next] opp: Fix some kernel-doc comments
+Date:   Thu, 26 May 2022 21:20:35 +0800
+Message-Id: <20220526132035.112026-1-yang.lee@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH v7 1/6] thermal: mediatek: Relocate driver to mediatek
- folder
-Content-Language: en-US
-To:     Alexandre Bailon <abailon@baylibre.com>, rafael@kernel.org,
-        rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        khilman@baylibre.com, mka@chromium.org, robh+dt@kernel.org,
-        krzk+dt@kernel.org, matthias.bgg@gmail.com, p.zabel@pengutronix.de,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, james.lo@mediatek.com,
-        fan.chen@mediatek.com, louis.yu@mediatek.com,
-        rex-bc.chen@mediatek.com, Michael Kao <michael.kao@mediatek.com>,
-        Ben Tseng <ben.tseng@mediatek.com>
-References: <20220524152552.246193-1-abailon@baylibre.com>
- <20220524152552.246193-2-abailon@baylibre.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220524152552.246193-2-abailon@baylibre.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 24/05/22 17:25, Alexandre Bailon ha scritto:
-> From: Michael Kao <michael.kao@mediatek.com>
-> 
-> Add Mediatek proprietary folder to upstream more thermal zone and cooler
-> drivers. Relocate the original thermal controller driver to it and rename
-> as soc_temp.c to show its purpose more clearly.
-> 
-> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-> Signed-off-by: Ben Tseng <ben.tseng@mediatek.com>
-> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+Make @freq to @bw in dev_pm_opp_find_bw_ceil() and
+dev_pm_opp_find_bw_floor() kernel-doc comment to
+remove warnings found by running scripts/kernel-doc,
+which is caused by using 'make W=1'.
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+drivers/opp/core.c:753: warning: Function parameter or member 'bw' not
+described in 'dev_pm_opp_find_bw_ceil'
+drivers/opp/core.c:753: warning: Excess function parameter 'freq'
+description in 'dev_pm_opp_find_bw_ceil'
+drivers/opp/core.c:812: warning: Function parameter or member 'bw' not
+described in 'dev_pm_opp_find_bw_floor'
+drivers/opp/core.c:812: warning: Excess function parameter 'freq'
+description in 'dev_pm_opp_find_bw_floor'
 
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+---
+ drivers/opp/core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 84063eaebb91..e44b73af2824 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -732,7 +732,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_level_ceil);
+ /**
+  * dev_pm_opp_find_bw_ceil() - Search for a rounded ceil bandwidth
+  * @dev:	device for which we do this operation
+- * @freq:	start bandwidth
++ * @bw:	start bandwidth
+  * @index:	which bandwidth to compare, in case of OPPs with several values
+  *
+  * Search for the matching floor *available* OPP from a starting bandwidth
+@@ -791,7 +791,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_bw_ceil);
+ /**
+  * dev_pm_opp_find_bw_floor() - Search for a rounded floor bandwidth
+  * @dev:	device for which we do this operation
+- * @freq:	start bandwidth
++ * @bw:	start bandwidth
+  * @index:	which bandwidth to compare, in case of OPPs with several values
+  *
+  * Search for the matching floor *available* OPP from a starting bandwidth
+-- 
+2.20.1.7.g153144c
 
