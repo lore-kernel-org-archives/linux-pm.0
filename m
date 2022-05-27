@@ -2,230 +2,235 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99B35C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 27 May 2022 07:30:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2157BC433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 27 May 2022 11:00:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345981AbiE0Hai (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 May 2022 03:30:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40520 "EHLO
+        id S1350935AbiE0LAw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 May 2022 07:00:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58438 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242155AbiE0Had (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 May 2022 03:30:33 -0400
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C042FF749E;
-        Fri, 27 May 2022 00:30:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1653636624; x=1685172624;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=4H5ZZox4Hea9gHi0yLFufIXq1tOa7VmXgab7ZUUNkMc=;
-  b=AxO3Azap0C6CgFYEodF2SC3lgGCktcQ0eAOMUxWPQphLbP9sOC8N1tBq
-   I6vVIkVKXKyFN4Nmul0UtgEXvOUHPVJ6GTgDs7/47Z1jKncn5DXC0kXf+
-   4+8jiWRBi/QK5in4e4n9GCXewTVgrLmInMEdMP++wCpTVxM78cZpCcYC1
-   AyKKE6FtfM8VneWlxCIiCRcgVQEm3sEn/AkTU6tXOmoYc3GpuoLM4TB4a
-   WcI3yZVICmwJyyrDnEEVQ6ukbEsz687Yz9HPUsUdIHGU8TUi3v8s/X0wh
-   PmrCCWvC/0zi2Xo7eq+pLgVxRlov9UY+GPaXV9Qt4gCNE85reR6ExDcUR
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10359"; a="299751159"
-X-IronPort-AV: E=Sophos;i="5.91,254,1647327600"; 
-   d="scan'208";a="299751159"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 May 2022 00:30:21 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,254,1647327600"; 
-   d="scan'208";a="704990295"
-Received: from lkp-server01.sh.intel.com (HELO db63a1be7222) ([10.239.97.150])
-  by orsmga004.jf.intel.com with ESMTP; 27 May 2022 00:30:19 -0700
-Received: from kbuild by db63a1be7222 with local (Exim 4.95)
-        (envelope-from <lkp@intel.com>)
-        id 1nuUQM-0004WA-7y;
-        Fri, 27 May 2022 07:30:18 +0000
-Date:   Fri, 27 May 2022 15:30:01 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 4eec359c469be110cdaa32c4a511930e9459fd8b
-Message-ID: <62907df9.MhV6PMu3R7X9bBr/%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S229463AbiE0LAu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 May 2022 07:00:50 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B724712E304;
+        Fri, 27 May 2022 04:00:44 -0700 (PDT)
+X-UUID: 9f7e399d05fd4930a27752363d6e98fa-20220527
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:111726ff-308a-4b2a-a5ab-455f17080bb4,OB:0,LO
+        B:0,IP:0,URL:25,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:25
+X-CID-META: VersionHash:2a19b09,CLOUDID:1daabb47-4fb1-496b-8f1d-39e733fed1ea,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+        ,QS:0,BEC:nil
+X-UUID: 9f7e399d05fd4930a27752363d6e98fa-20220527
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
+        (envelope-from <johnson.wang@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1788419224; Fri, 27 May 2022 19:00:40 +0800
+Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Fri, 27 May 2022 19:00:38 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 27 May 2022 19:00:38 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 27 May 2022 19:00:38 +0800
+From:   Johnson Wang <johnson.wang@mediatek.com>
+To:     <cw00.choi@samsung.com>, <krzk+dt@kernel.org>,
+        <robh+dt@kernel.org>, <kyungmin.park@samsung.com>
+CC:     <khilman@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>, <jia-wei.chang@mediatek.com>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Johnson Wang <johnson.wang@mediatek.com>
+Subject: [PATCH v6 1/2] dt-bindings: interconnect: Add MediaTek CCI dt-bindings
+Date:   Fri, 27 May 2022 19:00:35 +0800
+Message-ID: <20220527110036.8810-2-johnson.wang@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220527110036.8810-1-johnson.wang@mediatek.com>
+References: <20220527110036.8810-1-johnson.wang@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 4eec359c469be110cdaa32c4a511930e9459fd8b  Merge branch 'pm-docs' into linux-next
+Add devicetree binding of MediaTek CCI on MT8183 and MT8186.
 
-Unverified Warning (likely false positive, please contact us if interested):
+Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+Signed-off-by: Johnson Wang <johnson.wang@mediatek.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Chen-Yu Tsai <wenst@chromium.org>
+---
+ .../bindings/interconnect/mediatek,cci.yaml   | 141 ++++++++++++++++++
+ MAINTAINERS                                   |   1 +
+ 2 files changed, 142 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
 
-kernel/reboot.c:554:43: warning: Parameter 'power_off' can be declared with const [constParameter]
-
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- m68k-randconfig-p001-20220524
-|   `-- kernel-reboot.c:warning:Parameter-power_off-can-be-declared-with-const-constParameter
-`-- microblaze-randconfig-p002-20220524
-    `-- kernel-reboot.c:warning:Parameter-power_off-can-be-declared-with-const-constParameter
-
-elapsed time: 723m
-
-configs tested: 142
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-arm64                               defconfig
-i386                          randconfig-c001
-powerpc                          allmodconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-arm                            mps2_defconfig
-arm                         assabet_defconfig
-sh                          polaris_defconfig
-powerpc                      pcm030_defconfig
-mips                         db1xxx_defconfig
-arm                           imxrt_defconfig
-parisc                           alldefconfig
-arm                         vf610m4_defconfig
-parisc64                            defconfig
-sh                            titan_defconfig
-sh                           sh2007_defconfig
-openrisc                         alldefconfig
-sh                           se7712_defconfig
-arm                          pxa3xx_defconfig
-sh                ecovec24-romimage_defconfig
-mips                         bigsur_defconfig
-powerpc                      ep88xc_defconfig
-arc                           tb10x_defconfig
-powerpc                         ps3_defconfig
-sh                          sdk7786_defconfig
-mips                  maltasmvp_eva_defconfig
-powerpc                   motionpro_defconfig
-nios2                         10m50_defconfig
-arm                            zeus_defconfig
-um                               alldefconfig
-sh                           se7619_defconfig
-powerpc                     asp8347_defconfig
-sparc                       sparc32_defconfig
-arm                            pleb_defconfig
-arm                     eseries_pxa_defconfig
-sparc                       sparc64_defconfig
-sh                        apsh4ad0a_defconfig
-sh                           se7343_defconfig
-s390                       zfcpdump_defconfig
-arm                        trizeps4_defconfig
-sh                            hp6xx_defconfig
-mips                 decstation_r4k_defconfig
-riscv                    nommu_k210_defconfig
-m68k                        m5407c3_defconfig
-powerpc                     ep8248e_defconfig
-arc                            hsdk_defconfig
-arm                  randconfig-c002-20220526
-arm                  randconfig-c002-20220524
-x86_64                        randconfig-c001
-ia64                                defconfig
-ia64                             allyesconfig
-ia64                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                                defconfig
-parisc                              defconfig
-parisc                           allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a006
-i386                          randconfig-a001
-i386                          randconfig-a003
-i386                          randconfig-a005
-x86_64                        randconfig-a015
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-arc                  randconfig-r043-20220524
-s390                 randconfig-r044-20220524
-riscv                randconfig-r042-20220524
-arc                  randconfig-r043-20220526
-riscv                randconfig-r042-20220526
-s390                 randconfig-r044-20220526
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                             allnoconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                              defconfig
-x86_64                                  kexec
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                           rhel-8.3-syz
-
-clang tested configs:
-powerpc                  mpc885_ads_defconfig
-mips                        workpad_defconfig
-mips                       rbtx49xx_defconfig
-powerpc                      walnut_defconfig
-mips                         tb0287_defconfig
-powerpc                      obs600_defconfig
-arm                        mvebu_v5_defconfig
-mips                      pic32mzda_defconfig
-arm                     am200epdkit_defconfig
-mips                           ip28_defconfig
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-x86_64                        randconfig-a005
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a013
-i386                          randconfig-a011
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220524
-hexagon              randconfig-r045-20220526
-hexagon              randconfig-r041-20220526
-hexagon              randconfig-r041-20220524
-
+diff --git a/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml b/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
+new file mode 100644
+index 000000000000..449c7c988229
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
+@@ -0,0 +1,141 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/mediatek,cci.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MediaTek Cache Coherent Interconnect (CCI) frequency and voltage scaling
++
++maintainers:
++  - Jia-Wei Chang <jia-wei.chang@mediatek.com>
++  - Johnson Wang <johnson.wang@mediatek.com>
++
++description: |
++  MediaTek Cache Coherent Interconnect (CCI) is a hardware engine used by
++  MT8183 and MT8186 SoCs to scale the frequency and adjust the voltage in
++  hardware. It can also optimize the voltage to reduce the power consumption.
++
++properties:
++  compatible:
++    enum:
++      - mediatek,mt8183-cci
++      - mediatek,mt8186-cci
++
++  clocks:
++    items:
++      - description:
++          The multiplexer for clock input of the bus.
++      - description:
++          A parent of "bus" clock which is used as an intermediate clock source
++          when the original clock source (PLL) is under transition and not
++          stable yet.
++
++  clock-names:
++    items:
++      - const: cci
++      - const: intermediate
++
++  operating-points-v2: true
++  opp-table: true
++
++  proc-supply:
++    description:
++      Phandle of the regulator for CCI that provides the supply voltage.
++
++  sram-supply:
++    description:
++      Phandle of the regulator for sram of CCI that provides the supply
++      voltage. When it is present, the implementation needs to do
++      "voltage tracking" to step by step scale up/down Vproc and Vsram to fit
++      SoC specific needs. When absent, the voltage scaling flow is handled by
++      hardware, hence no software "voltage tracking" is needed.
++
++required:
++  - compatible
++  - clocks
++  - clock-names
++  - operating-points-v2
++  - proc-supply
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/mt8183-clk.h>
++    cci: cci {
++        compatible = "mediatek,mt8183-cci";
++        clocks = <&mcucfg CLK_MCU_BUS_SEL>,
++                 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++        clock-names = "cci", "intermediate";
++        operating-points-v2 = <&cci_opp>;
++        proc-supply = <&mt6358_vproc12_reg>;
++    };
++
++    cci_opp: opp-table-cci {
++        compatible = "operating-points-v2";
++        opp-shared;
++        opp2_00: opp-273000000 {
++            opp-hz = /bits/ 64 <273000000>;
++            opp-microvolt = <650000>;
++        };
++        opp2_01: opp-338000000 {
++            opp-hz = /bits/ 64 <338000000>;
++            opp-microvolt = <687500>;
++        };
++        opp2_02: opp-403000000 {
++            opp-hz = /bits/ 64 <403000000>;
++            opp-microvolt = <718750>;
++        };
++        opp2_03: opp-463000000 {
++            opp-hz = /bits/ 64 <463000000>;
++            opp-microvolt = <756250>;
++        };
++        opp2_04: opp-546000000 {
++            opp-hz = /bits/ 64 <546000000>;
++            opp-microvolt = <800000>;
++        };
++        opp2_05: opp-624000000 {
++            opp-hz = /bits/ 64 <624000000>;
++            opp-microvolt = <818750>;
++        };
++        opp2_06: opp-689000000 {
++            opp-hz = /bits/ 64 <689000000>;
++            opp-microvolt = <850000>;
++        };
++        opp2_07: opp-767000000 {
++            opp-hz = /bits/ 64 <767000000>;
++            opp-microvolt = <868750>;
++        };
++        opp2_08: opp-845000000 {
++            opp-hz = /bits/ 64 <845000000>;
++            opp-microvolt = <893750>;
++        };
++        opp2_09: opp-871000000 {
++            opp-hz = /bits/ 64 <871000000>;
++            opp-microvolt = <906250>;
++        };
++        opp2_10: opp-923000000 {
++            opp-hz = /bits/ 64 <923000000>;
++            opp-microvolt = <931250>;
++        };
++        opp2_11: opp-962000000 {
++            opp-hz = /bits/ 64 <962000000>;
++            opp-microvolt = <943750>;
++        };
++        opp2_12: opp-1027000000 {
++            opp-hz = /bits/ 64 <1027000000>;
++            opp-microvolt = <975000>;
++        };
++        opp2_13: opp-1092000000 {
++            opp-hz = /bits/ 64 <1092000000>;
++            opp-microvolt = <1000000>;
++        };
++        opp2_14: opp-1144000000 {
++            opp-hz = /bits/ 64 <1144000000>;
++            opp-microvolt = <1025000>;
++        };
++        opp2_15: opp-1196000000 {
++            opp-hz = /bits/ 64 <1196000000>;
++            opp-microvolt = <1050000>;
++        };
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 41c9c8f2b96d..7239f0e0c47b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5735,6 +5735,7 @@ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git
+ F:	Documentation/devicetree/bindings/devfreq/
++F:	Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
+ F:	drivers/devfreq/
+ F:	include/linux/devfreq.h
+ F:	include/trace/events/devfreq.h
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.18.0
+
