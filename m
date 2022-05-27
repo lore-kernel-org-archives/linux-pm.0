@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71ED6C4167E
-	for <linux-pm@archiver.kernel.org>; Fri, 27 May 2022 02:35:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD46EC4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 27 May 2022 02:35:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235848AbiE0CfK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 May 2022 22:35:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33988 "EHLO
+        id S235935AbiE0CfL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 May 2022 22:35:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34032 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232417AbiE0CfI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 22:35:08 -0400
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B01C0E7300;
-        Thu, 26 May 2022 19:35:07 -0700 (PDT)
-Received: by mail-ej1-x62b.google.com with SMTP id n10so6241973ejk.5;
-        Thu, 26 May 2022 19:35:07 -0700 (PDT)
+        with ESMTP id S235921AbiE0CfL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2022 22:35:11 -0400
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43DA9E64C1;
+        Thu, 26 May 2022 19:35:10 -0700 (PDT)
+Received: by mail-ed1-x531.google.com with SMTP id h11so3830430eda.8;
+        Thu, 26 May 2022 19:35:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=sDZ/G0YfQBuvKWmot1TiK8cSRjIWW8sqvlvgqtbxUAM=;
-        b=PLMSNyocMVzT3IY5f+1Ckgxium6vWZYQHaQS3rg7muFGJcLjLR68wtrlXViB+xtQpJ
-         hrhf9j3e4Wwev7le1VBN01T5T3DPOkdkUNglmiNh1A4ADEGdiIVd/454kLj0oDfp0aeV
-         3auSAM8IPG78IDMStyXVya7LiUoryjYIkBpLfHaQnlG64jquEFOhjYsX9Gm+vlQiD4vL
-         8DhkdlS711QmjCVuqCm88S8bffZOSLTpDzZuJEkf4o8bQaEjUEWseId0HltPi42ZeeKc
-         f6quR+g5huY03igrCLKsCZa0imIw3Kp+elXB0jJJ/qzlRr3k7xw3G+oFsBOEOELuE5jT
-         Akfw==
+        bh=+zy0ZMngfTOngFEr2IYaeKfKrlSi1ZcJUZpm4PtyoKk=;
+        b=CFTp3sTkY5CI8c8bv7T4i4oB//dxfwZP4PtkA6hHzdT4UKYA8tNK7wAfjOBE6a42vf
+         5x4Nhboo4ywWbGmUC0MnTHWWyRWFdpUCcoaZBU/91pVIXK0iPoZri4fj4PhW45ZOSCpR
+         dIGcD0f/dVXwUlviSMq+MzFU0Y79Y8fLKWxIUTTKo6IHV85Vgha/2wo6hF1Y+310LCZ2
+         x4Cyk2W89y01zeST7O5hZE/wcHkaqcgnVQ2JEfFFAS3NOCbBFPVcr9oeeYPNDUIkeIt1
+         OHp+yn7GDG61dNUnuHmUO+kmuUxpfL4YfE8FkJ4xp/Hzc791fONPNqksMZWzJv8zChlB
+         B4Fw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=sDZ/G0YfQBuvKWmot1TiK8cSRjIWW8sqvlvgqtbxUAM=;
-        b=YUn6mFBCJulUBjPxjSsZZI+ENcBPqo6Yw1D/6zEm/A6cdjJlW2B1KIGAj/Mmvv7Fhl
-         O3HCxvpRE9OBnN/nRhZoqna2Pe2KAmBLFPHNlknesnzjz8ObCmnUJeJaB1TJFhXSH/kp
-         fv2XolNEElP+GLuPQDln3WRJ6bCROOJSTM9HW6Qk9BiD1WsrlNElMUwLpy654h5xwjAg
-         J4dGqG4IGbwr+INUBiGgRDguan5jjh0RZuOfyMq6a3H0meGQWJzKB/vPUbTdKm6gy0C4
-         H0gwE4ZcTd3JxSF+1JTM+CxcfeB4QmDkgMJiby7g6/gXFJwm5PLlFwkZGGjj9BEsXnwq
-         FvKQ==
-X-Gm-Message-State: AOAM533xXO/zXcwKlgo9TVpy8Jvx/SXFhe5rlQ4+c0k/dt1Hfrq28p3z
-        vrJyo7VN5+PFdXQk81Mf/SFqzDJfTaY=
-X-Google-Smtp-Source: ABdhPJzFKTuKnAGK900l+zi060kYdMGkv+0mxrqDuEd6uCDxL5LFmfpLUExgyWoJlYC/ur+JNpFR+w==
-X-Received: by 2002:a17:906:478b:b0:6f8:5850:4da9 with SMTP id cw11-20020a170906478b00b006f858504da9mr35851982ejc.619.1653618906257;
-        Thu, 26 May 2022 19:35:06 -0700 (PDT)
+        bh=+zy0ZMngfTOngFEr2IYaeKfKrlSi1ZcJUZpm4PtyoKk=;
+        b=IaWOFYWf1YM08hX6gXuDXios51R2ndHRivWsrUqyOMd/hrhLrEVreV+9/D0UdcPnr9
+         V0cUU6JJXiAO8pQs7JifLdviiHQ5xfdZyscd9WAAcR40DoB5IYQGDaqIIeLAHNOJSxYh
+         K4q842qbGiJM9R6DTmQFXQ30TW/EjU4JiEF18y4dHgqZgTqDIbVnPySwdrc769ANqID5
+         gp81eFyZj6Nq7HKuOQKlb6RBt8EAybZsodyBtGPtspyRcwCWcv+dAtq+LrD613Oan+Z6
+         ErNNqO1Q9gG6gurTyWI3EejkWkatemL1qKYm8iE5GmkeGWrqRg+VzkdgouyBPQWhKhSq
+         8DCw==
+X-Gm-Message-State: AOAM531QJbVCok+3trYOs0k0AZH23Ud8pS9b8VtPoSa9XddjA6ngrne1
+        bMHxnBSZHep59l3ag3e0e6A=
+X-Google-Smtp-Source: ABdhPJwFjNXrX7OMZt7PLSL2J6omXHehakVkWuDP2UASzot24lrRxYlHgRbZuREjkzMOZYQMbZjLuw==
+X-Received: by 2002:a05:6402:2682:b0:42b:5ace:b0e5 with SMTP id w2-20020a056402268200b0042b5aceb0e5mr26557462edd.358.1653618908819;
+        Thu, 26 May 2022 19:35:08 -0700 (PDT)
 Received: from xws.localdomain ([37.120.217.83])
-        by smtp.gmail.com with ESMTPSA id qn12-20020a170907210c00b006fe89cafc42sm1025167ejb.172.2022.05.26.19.35.05
+        by smtp.gmail.com with ESMTPSA id qn12-20020a170907210c00b006fe89cafc42sm1025167ejb.172.2022.05.26.19.35.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 May 2022 19:35:05 -0700 (PDT)
+        Thu, 26 May 2022 19:35:08 -0700 (PDT)
 From:   Maximilian Luz <luzmaximilian@gmail.com>
 To:     Hans de Goede <hdegoede@redhat.com>,
         Jiri Kosina <jikos@kernel.org>,
@@ -57,9 +57,9 @@ Cc:     Mark Gross <markgross@kernel.org>,
         platform-driver-x86@vger.kernel.org, linux-input@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
         Maximilian Luz <luzmaximilian@gmail.com>
-Subject: [PATCH v2 04/12] platform/surface: aggregator_registry: Use client device wrappers for notifier registration
-Date:   Fri, 27 May 2022 04:34:39 +0200
-Message-Id: <20220527023447.2460025-5-luzmaximilian@gmail.com>
+Subject: [PATCH v2 06/12] power/supply: surface_battery: Use client device wrappers for notifier registration
+Date:   Fri, 27 May 2022 04:34:41 +0200
+Message-Id: <20220527023447.2460025-7-luzmaximilian@gmail.com>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220527023447.2460025-1-luzmaximilian@gmail.com>
 References: <20220527023447.2460025-1-luzmaximilian@gmail.com>
@@ -79,40 +79,31 @@ Changes in v2:
   - none
 
 ---
- drivers/platform/surface/surface_aggregator_registry.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/power/supply/surface_battery.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index ce2bd88feeaa..9f630e890ff7 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -468,7 +468,7 @@ static int ssam_base_hub_probe(struct ssam_device *sdev)
+diff --git a/drivers/power/supply/surface_battery.c b/drivers/power/supply/surface_battery.c
+index 5ec2e6bb2465..540707882bb0 100644
+--- a/drivers/power/supply/surface_battery.c
++++ b/drivers/power/supply/surface_battery.c
+@@ -802,7 +802,7 @@ static int spwr_battery_register(struct spwr_battery_device *bat)
+ 	if (IS_ERR(bat->psy))
+ 		return PTR_ERR(bat->psy);
  
- 	ssam_device_set_drvdata(sdev, hub);
- 
--	status = ssam_notifier_register(sdev->ctrl, &hub->notif);
-+	status = ssam_device_notifier_register(sdev, &hub->notif);
- 	if (status)
- 		return status;
- 
-@@ -480,7 +480,7 @@ static int ssam_base_hub_probe(struct ssam_device *sdev)
- 	return 0;
- 
- err:
--	ssam_notifier_unregister(sdev->ctrl, &hub->notif);
-+	ssam_device_notifier_unregister(sdev, &hub->notif);
- 	cancel_delayed_work_sync(&hub->update_work);
- 	ssam_remove_clients(&sdev->dev);
- 	return status;
-@@ -492,7 +492,7 @@ static void ssam_base_hub_remove(struct ssam_device *sdev)
- 
- 	sysfs_remove_group(&sdev->dev.kobj, &ssam_base_hub_group);
- 
--	ssam_notifier_unregister(sdev->ctrl, &hub->notif);
-+	ssam_device_notifier_unregister(sdev, &hub->notif);
- 	cancel_delayed_work_sync(&hub->update_work);
- 	ssam_remove_clients(&sdev->dev);
+-	return ssam_notifier_register(bat->sdev->ctrl, &bat->notif);
++	return ssam_device_notifier_register(bat->sdev, &bat->notif);
  }
+ 
+ 
+@@ -837,7 +837,7 @@ static void surface_battery_remove(struct ssam_device *sdev)
+ {
+ 	struct spwr_battery_device *bat = ssam_device_get_drvdata(sdev);
+ 
+-	ssam_notifier_unregister(sdev->ctrl, &bat->notif);
++	ssam_device_notifier_unregister(sdev, &bat->notif);
+ 	cancel_delayed_work_sync(&bat->update_work);
+ }
+ 
 -- 
 2.36.1
 
