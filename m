@@ -2,143 +2,92 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48924C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 30 May 2022 17:37:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99824C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 30 May 2022 18:38:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238966AbiE3RhZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 May 2022 13:37:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41370 "EHLO
+        id S242850AbiE3Sin (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 May 2022 14:38:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45010 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237263AbiE3RhW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2022 13:37:22 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 90B7B50B34
-        for <linux-pm@vger.kernel.org>; Mon, 30 May 2022 10:37:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1653932240;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Ki6v5xLxLFY/6GL0UoRKrfzO5KtuWLGLHBkS7AIWb/o=;
-        b=igaVXLakst+HWyYJNeqed0vTuJ+Xxu9xZBJPHBujBuSnZz7BVznJvqmFbTKyMslTt0tosE
-        KjhZtilm6jhLZqOIWJiX2OdaK8iEjDnvJW/iHEjkgw5N8iuSGeER0JxVW0bEcqyEEpv6HW
-        UhAGyb12YljSo7VWa3q8d+zdm1yD7fA=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-412-r8zveUoeMXm2RS3aS3jANA-1; Mon, 30 May 2022 13:37:16 -0400
-X-MC-Unique: r8zveUoeMXm2RS3aS3jANA-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1134D185A794;
-        Mon, 30 May 2022 17:37:16 +0000 (UTC)
-Received: from fuller.cnet (ovpn-112-3.gru2.redhat.com [10.97.112.3])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id CD72C140EBD5;
-        Mon, 30 May 2022 17:37:15 +0000 (UTC)
-Received: by fuller.cnet (Postfix, from userid 1000)
-        id C3AAE4169537; Mon, 30 May 2022 12:17:49 -0300 (-03)
-Date:   Mon, 30 May 2022 12:17:49 -0300
-From:   Marcelo Tosatti <mtosatti@redhat.com>
-To:     Eiichi Tsukata <eiichi.tsukata@nutanix.com>
-Cc:     rafael@kernel.org, daniel.lezcano@linaro.org, rostedt@goodmis.org,
-        mingo@redhat.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, joao.m.martins@oracle.com
-Subject: Re: [PATCH v4] cpuidle: haltpoll: Add trace points for
- guest_halt_poll_ns grow/shrink
-Message-ID: <YpTgHeSJA4Ha3Gs4@fuller.cnet>
-References: <20220527005345.189906-1-eiichi.tsukata@nutanix.com>
+        with ESMTP id S237048AbiE3Sim (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2022 14:38:42 -0400
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBC288D699
+        for <linux-pm@vger.kernel.org>; Mon, 30 May 2022 11:38:40 -0700 (PDT)
+Received: by mail-wm1-x32e.google.com with SMTP id y24so6867557wmq.5
+        for <linux-pm@vger.kernel.org>; Mon, 30 May 2022 11:38:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gAZcIMVkbwQAZDaJSRG1uLvlbaEmw/pRqP3mytMc9Sk=;
+        b=SSgqIfRN0e3iUy0WuvEyWAskLlKpZcfPbBZyeZwWyTWSZlWlnExNurqhWYS8sLxgJs
+         7AnGX6iYAE/6GhEXOEm2FfMW6r7e/yEPkJ+PrRGgT9Uj/cHp0YFa3cURpQV5JM8vr9jK
+         BYkmPCoItCfRIsVO8xEq3T2KiHK34zxYxAOWzToJ25n563MLV64bq+nTA81GC7P+uShv
+         OiLSM7gSyh/46FH92dhVAQW2MwUvMn0PthAI145pTEhIGJsGV0ginynxkdvOSaX0qeL7
+         h6It4lXQuM/Tv4KXceslm6JN7BV1I2WEER5Ume6m6qw44SStThVESKEORJHCA4mSG3qy
+         lYbg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gAZcIMVkbwQAZDaJSRG1uLvlbaEmw/pRqP3mytMc9Sk=;
+        b=elUfGStkuYEpo1RvWmRcr3m504kDkVrn+6yzxJ24NbNOAboU+0spM28FrPC3pBHHqJ
+         VdPDdqys5rKnSOp57IAgkYwe/NUzkHLiKiOB85iUn4i2RUOXQj5W0LW0zOMomId0Ni62
+         s5YHfg7dv0p188sgSbnImOHUC5Rsp9/rKso4vWZRaPiVwfkCvibANaHPgjHAtYTD5W4n
+         PjeHlVtlh3IaDYYoQCLe22oLHpqP9uAxZIP4F7vsDzDA0v3nhOCXAP3jiEnjRCyyVo1l
+         L9QL1qub/dND4YPJB8QP2B2nfY4GJRWGrJcBMulwz4PUw9A1P4QpUIVkPyJZ9F9YFETz
+         aIbA==
+X-Gm-Message-State: AOAM532q8mqgNhK0Fsu9yIy9yoGMxLrce2tY1dQhqGlMorNUUqU7ls5x
+        xQxYqJVkXHmVdxH2uDWi07reRQ==
+X-Google-Smtp-Source: ABdhPJynr97IYtN0ZgoGAiRMpzW0FEJgGKAE0GAOj8GidWDJahFEiTIA+vDnJ9z6b1hv/Uv3l1DE/A==
+X-Received: by 2002:a05:600c:3799:b0:397:7c8c:bbd4 with SMTP id o25-20020a05600c379900b003977c8cbbd4mr19488928wmr.161.1653935919394;
+        Mon, 30 May 2022 11:38:39 -0700 (PDT)
+Received: from localhost.localdomain ([88.160.162.107])
+        by smtp.gmail.com with ESMTPSA id e9-20020adfe389000000b0020c5253d8fcsm11459088wrm.72.2022.05.30.11.38.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 May 2022 11:38:38 -0700 (PDT)
+From:   Fabien Parent <fparent@baylibre.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>
+Cc:     Fabien Parent <fparent@baylibre.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org
+Subject: [PATCH 1/3] dt-bindings: thermal: mediatek: add binding documentation for MT8365 SoC
+Date:   Mon, 30 May 2022 20:38:31 +0200
+Message-Id: <20220530183833.863040-1-fparent@baylibre.com>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220527005345.189906-1-eiichi.tsukata@nutanix.com>
-X-Scanned-By: MIMEDefang 2.85 on 10.11.54.7
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, May 27, 2022 at 12:53:45AM +0000, Eiichi Tsukata wrote:
-> Add trace points as are implemented in KVM host halt polling.
-> This helps tune guest halt polling params.
-> 
-> Signed-off-by: Eiichi Tsukata <eiichi.tsukata@nutanix.com>
-> ---
->  drivers/cpuidle/governors/haltpoll.c |  3 +++
->  include/trace/events/power.h         | 29 ++++++++++++++++++++++++++++
->  2 files changed, 32 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
-> index cb2a96eafc02..1dff3a52917d 100644
-> --- a/drivers/cpuidle/governors/haltpoll.c
-> +++ b/drivers/cpuidle/governors/haltpoll.c
-> @@ -19,6 +19,7 @@
->  #include <linux/sched.h>
->  #include <linux/module.h>
->  #include <linux/kvm_para.h>
-> +#include <trace/events/power.h>
->  
->  static unsigned int guest_halt_poll_ns __read_mostly = 200000;
->  module_param(guest_halt_poll_ns, uint, 0644);
-> @@ -90,6 +91,7 @@ static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
->  		if (val > guest_halt_poll_ns)
->  			val = guest_halt_poll_ns;
->  
-> +		trace_guest_halt_poll_ns_grow(val, dev->poll_limit_ns);
->  		dev->poll_limit_ns = val;
->  	} else if (block_ns > guest_halt_poll_ns &&
->  		   guest_halt_poll_allow_shrink) {
-> @@ -100,6 +102,7 @@ static void adjust_poll_limit(struct cpuidle_device *dev, u64 block_ns)
->  			val = 0;
->  		else
->  			val /= shrink;
-> +		trace_guest_halt_poll_ns_shrink(val, dev->poll_limit_ns);
->  		dev->poll_limit_ns = val;
->  	}
->  }
-> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-> index af5018aa9517..c708521e4ed5 100644
-> --- a/include/trace/events/power.h
-> +++ b/include/trace/events/power.h
-> @@ -500,6 +500,35 @@ DEFINE_EVENT(dev_pm_qos_request, dev_pm_qos_remove_request,
->  
->  	TP_ARGS(name, type, new_value)
->  );
-> +
-> +TRACE_EVENT(guest_halt_poll_ns,
-> +
-> +	TP_PROTO(bool grow, unsigned int new, unsigned int old),
-> +
-> +	TP_ARGS(grow, new, old),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(bool, grow)
-> +		__field(unsigned int, new)
-> +		__field(unsigned int, old)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->grow   = grow;
-> +		__entry->new    = new;
-> +		__entry->old    = old;
-> +	),
-> +
-> +	TP_printk("halt_poll_ns %u (%s %u)",
-> +		__entry->new,
-> +		__entry->grow ? "grow" : "shrink",
-> +		__entry->old)
-> +);
-> +
-> +#define trace_guest_halt_poll_ns_grow(new, old) \
-> +	trace_guest_halt_poll_ns(true, new, old)
-> +#define trace_guest_halt_poll_ns_shrink(new, old) \
-> +	trace_guest_halt_poll_ns(false, new, old)
->  #endif /* _TRACE_POWER_H */
->  
->  /* This part must be outside protection */
-> -- 
-> 2.36.1
-> 
-> 
+Add the binding documentation for the thermal support on MT8365 SoC.
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Fabien Parent <fparent@baylibre.com>
+---
+ Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+index 5c7e7bdd029a..ba4ebffeade4 100644
+--- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+@@ -14,6 +14,7 @@ Required properties:
+   - "mediatek,mt2712-thermal" : For MT2712 family of SoCs
+   - "mediatek,mt7622-thermal" : For MT7622 SoC
+   - "mediatek,mt8183-thermal" : For MT8183 family of SoCs
++  - "mediatek,mt8365-thermal" : For MT8365 family of SoCs
+   - "mediatek,mt8516-thermal", "mediatek,mt2701-thermal : For MT8516 family of SoCs
+ - reg: Address range of the thermal controller
+ - interrupts: IRQ for the thermal controller
+-- 
+2.36.1
 
