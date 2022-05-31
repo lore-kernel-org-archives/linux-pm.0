@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45222C43219
-	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 12:34:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4C78C43217
+	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 12:35:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344282AbiEaMeZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 May 2022 08:34:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57564 "EHLO
+        id S1344298AbiEaMfL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 May 2022 08:35:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244604AbiEaMeX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 08:34:23 -0400
-Received: from mail-oa1-x44.google.com (mail-oa1-x44.google.com [IPv6:2001:4860:4864:20::44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D818DFD3;
-        Tue, 31 May 2022 05:34:21 -0700 (PDT)
-Received: by mail-oa1-x44.google.com with SMTP id 586e51a60fabf-f3381207a5so6862039fac.4;
-        Tue, 31 May 2022 05:34:21 -0700 (PDT)
+        with ESMTP id S244604AbiEaMfJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 08:35:09 -0400
+Received: from mail-vk1-xa41.google.com (mail-vk1-xa41.google.com [IPv6:2607:f8b0:4864:20::a41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16726DEF6;
+        Tue, 31 May 2022 05:35:08 -0700 (PDT)
+Received: by mail-vk1-xa41.google.com with SMTP id j11so6132429vka.6;
+        Tue, 31 May 2022 05:35:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WjL5ChPbIi7K/V0MdTfM2rPQhvrdOuYsXgOFgMyivaI=;
-        b=Dt4cmAwTJzLQp+0BhvSpwI46ky2dI72Ho0ICX5p7qoY/Cq20zgcg3MruR/EMF2Bq/b
-         bttgX4DseumTdpOkyOeLDbhu/g0tdhRqMTJq3xHeH7Y+46XvfvsF6ZP0IAktzO7U/eKj
-         0versn33tjTT0IlRhUYB+CU5TjsWXAfTIXhupO9UAG0+WcQTF2olwkKQexwJa36jFxyt
-         JYXcZGUcWG0zYb6nYsM9gn3xgDRKrfJ+kh54KRUoE8hpcI5Mj4N0PWANGjFFYncNE+7l
-         5k9RicWNlg6t8/gUtoxx5UXQY1J+ugPqpYcnRDiZjTqXfOM7cSycfbANCKRtA0ZdAi/2
-         Pi6Q==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=NLlQWPmyPhz9LkYQh7iizThmB3DZjfxS2yfzbAOphFg=;
+        b=dR/tmmYf6X+SPz7vVDCZSTvJxhSmPumrcdc8D9eCahiy7k5GDXb8cgd5Oz+V7Xx0PC
+         hAmjVU30wiCV7GMwbEfx0EI6okI7wgqBJjhtxxQOaoMd+KgOUEjQWC7TaK13GS+wbNV3
+         4nMpIu8GOnQGX2cEOSo5rOoPbmdvRMkGyIytuDFbw6Q1ndzsjki6TmeyBbqod00KmjJ+
+         LwkmKZN9M46Mt3KB7twZ0g+yay2qgsRP7Ds07ocwfWBkCmEM/RZTwEDb24Rtex7xJinQ
+         +c3SJX7hCPVwQTa0GmgjxG6xpuflTpqYSLVacboKq/ZCOD8dvEg/RhMzwuNJRlDQQuiN
+         AOmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WjL5ChPbIi7K/V0MdTfM2rPQhvrdOuYsXgOFgMyivaI=;
-        b=Z/JSQBPCpEoMP+iYcyo+7G+aKY35HXC1oWJBL1DPAQ5jbOGa9LYUVzkUslNMu4Q6iY
-         52PHtKhKMV+5gOSk0e3sishXwj4SWBhq9lozbcCktZcUQC/b05vViXEp+g7hxdUkhOGp
-         7ZA9RM3Sb5cECBiymtogU7jdSAYzXcsVgc4McukK1EwvnM5cbVpx1QOu5/ir8TQtB70U
-         AZIuAWeJbnX7DlvdpRZAmiyrd+5Ml9NbvikEosAgSaLwvENkWo8gl2hFOL8jRUgt005m
-         2fgtXKyYNU2MMx9D/OFgfbfqbngpts+yBqDBHb6IzenZTDew4tOhlRwGiKegIza8Z4b1
-         Yc5w==
-X-Gm-Message-State: AOAM5320XJtxd9Gu3ZKb0EFb0bmN5TO8C9/5Jzj8MrE3FS9rtl5xjRpH
-        fi9q7HmohuW1Sbhs/yg4vyz4WtildpI=
-X-Google-Smtp-Source: ABdhPJxcNj1TTo46zD0wjy4+ZyPww3ji1KDlsT3qEGdzSt4nXnXjTaqvtqMA3y7vBlN14PrpZHzriQ==
-X-Received: by 2002:a17:90b:33c8:b0:1df:aaf7:5822 with SMTP id lk8-20020a17090b33c800b001dfaaf75822mr27811307pjb.9.1653993738855;
-        Tue, 31 May 2022 03:42:18 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=NLlQWPmyPhz9LkYQh7iizThmB3DZjfxS2yfzbAOphFg=;
+        b=bsqyDNIpLeRXV/HXhzaWJnOjMk3zx0BpvHjPYh1IOIGxDA63MvPdYXSIg5XowtWgan
+         s74W0IF2fRfPEUNP42Bvt63w2c//pYSlbjPmrfBKfXZsoW3wGN/C/hUPgVM95W6yP9lS
+         mBtF7kYLfOHyYPzxgtr+V4Lqk7FfjXazyKrjIDFUns67oMpmq7YUYSmC7tdL9HRau1sX
+         nwj2rso1+pPJHauy3o4fAjbDaR4KnjfQiIec/LOvGc0yIZecHwBwYZfpnhM3jTu86iLR
+         QGYc8TwZsq+Wnnzo1tsLxGb4v1BF4++C2ORaLVCTwjVBc1+wdkfRA2Wk0JojwHIsC1mg
+         k7bQ==
+X-Gm-Message-State: AOAM53322Azxa5OjVDMUZ+e+VVh/Y2gA479e2H7rHTtycvv46M5V26ss
+        apI9UdNMvzhOxBNmiKeq0y/JdZAAT2Q=
+X-Google-Smtp-Source: ABdhPJwMUDWTQjzldPrXFAGVjBuisYokJWG2xm0cEnR/uFycvlSkZSU8HIszco6eDBSdMG6hx3eaRg==
+X-Received: by 2002:a17:902:9349:b0:158:a6f7:e280 with SMTP id g9-20020a170902934900b00158a6f7e280mr60247418plp.155.1653993750981;
+        Tue, 31 May 2022 03:42:30 -0700 (PDT)
 Received: from RD-3580-24288.rt.l (42-72-220-172.emome-ip.hinet.net. [42.72.220.172])
-        by smtp.gmail.com with ESMTPSA id d19-20020a17090ac25300b001cd4989feebsm1525829pjx.55.2022.05.31.03.42.13
+        by smtp.gmail.com with ESMTPSA id d19-20020a17090ac25300b001cd4989feebsm1525829pjx.55.2022.05.31.03.42.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 May 2022 03:42:18 -0700 (PDT)
+        Tue, 31 May 2022 03:42:30 -0700 (PDT)
 From:   ChiaEn Wu <peterwu.pub@gmail.com>
 To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
         jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
@@ -62,10 +62,12 @@ Cc:     cy_huang@richtek.com, alice_chen@richtek.com,
         linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 09/14] dt-bindings: usb: Add Mediatek MT6370 TCPC binding documentation
-Date:   Tue, 31 May 2022 18:42:06 +0800
-Message-Id: <20220531104211.17106-1-peterwu.pub@gmail.com>
+Subject: [PATCH 11/14] dt-bindings: leds: mt6370: Add Mediatek mt6370 indicator documentation
+Date:   Tue, 31 May 2022 18:42:08 +0800
+Message-Id: <20220531104211.17106-3-peterwu.pub@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220531104211.17106-1-peterwu.pub@gmail.com>
+References: <20220531104211.17106-1-peterwu.pub@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -74,55 +76,77 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: ChiYuan Huang <cy_huang@richtek.com>
 
-Add Mediatek MT6370 TCPC binding documentation.
+Add Mediatek mt6370 indicator documentation.
 
 Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 ---
- .../bindings/usb/mediatek,mt6370-tcpc.yaml    | 35 +++++++++++++++++++
- 1 file changed, 35 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml
+ .../leds/mediatek,mt6370-indicator.yaml       | 57 +++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
 
-diff --git a/Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml b/Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml
+diff --git a/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
 new file mode 100644
-index 000000000000..49316633f92f
+index 000000000000..823be3add097
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/usb/mediatek,mt6370-tcpc.yaml
-@@ -0,0 +1,35 @@
++++ b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+@@ -0,0 +1,57 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/usb/mediatek,mt6370-tcpc.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++$id: http://devicetree.org/schemas/leds/mediatek,mt6370-indicator.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Mediatek MT6370 Type-C Port Switch and Power Delivery controller DT bindings
++title: LED driver for MT6370 PMIC from MediaTek Integrated.
 +
 +maintainers:
-+  - ChiYuan Huang <cy_huang@richtek.com>
++  - Alice Chen <alice_chen@richtek.com>
 +
 +description: |
-+  Mediatek MT6370 is a multi-functional device. It integrates charger, ADC, flash, RGB indicators,
-+  regulators (DSV/VIBLDO), and TypeC Port Switch with Power Delivery controller.
-+  This document only describes MT6370 Type-C Port Switch and Power Delivery controller.
++  This module is part of the MT6370 MFD device.
++  see Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
++  Add MT6370 LED driver include 4-channel RGB LED support Register/PWM/Breath Mode
 +
 +properties:
 +  compatible:
-+    enum:
-+      - mediatek,mt6370-tcpc
++    const: mediatek,mt6370-indicator
 +
-+  interrupts:
-+    maxItems: 1
++  "#address-cells":
++    const: 1
 +
-+  connector:
++  "#size-cells":
++    const: 0
++
++patternProperties:
++  "^(multi-)?led@[0-3]$":
++    description: |
++      Properties for a single LED.
++    $ref: common.yaml#
 +    type: object
-+    $ref: /schemas/connector/usb-connector.yaml#
-+    description:
-+      Properties for usb c connector.
 +
-+additionalProperties: false
++    properties:
++      reg:
++        description: |
++          Index of the LED.
++        enum:
++          - 0 # LED output ISINK1
++          - 1 # LED output ISINK2
++          - 2 # LED output ISINK3
++          - 3 # LED output ISINK4
++
++      mediatek,soft-start:
++        description: |
++          soft start step control, support /0.5ms/1ms/1.5ms/2ms.
++        $ref: /schemas/types.yaml#/definitions/uint32
++        enum: [0, 1, 2, 3]
++
++    unevaluatedProperties: false
 +
 +required:
 +  - compatible
-+  - interrupts
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties: false
 -- 
 2.25.1
 
