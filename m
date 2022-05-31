@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F325CC4321E
-	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 12:33:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E8ABC43219
+	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 12:33:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344259AbiEaMdL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 May 2022 08:33:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56548 "EHLO
+        id S1344268AbiEaMd0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 May 2022 08:33:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56698 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237954AbiEaMdK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 08:33:10 -0400
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com [IPv6:2607:f8b0:4864:20::d41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1FA8DEF6;
-        Tue, 31 May 2022 05:33:08 -0700 (PDT)
-Received: by mail-io1-xd41.google.com with SMTP id d198so13895033iof.12;
-        Tue, 31 May 2022 05:33:08 -0700 (PDT)
+        with ESMTP id S1344264AbiEaMdU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 08:33:20 -0400
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B277EE3B;
+        Tue, 31 May 2022 05:33:19 -0700 (PDT)
+Received: by mail-pl1-x643.google.com with SMTP id n18so12715412plg.5;
+        Tue, 31 May 2022 05:33:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
         bh=2QW6EAQHfNGL3WRo5wHoHfZuTn8wkaAQDQ0iJvuyzQA=;
-        b=pSoCECW7l7ogsdkRWbAgKx4BphhhHPUzOpdwGI0tyddfQ0JoW8pezHuF99q3cvGLYo
-         LnX5/Pt76tE2Hpa/3reEPFg1qOZGV7SrJH6jtbNGf02QZ5nbYVLah52CCcfMYnsI0epE
-         RUn8mNU3n7T9wcpwmVrrMIn5HRaeAtp0zm3lxbW0UriIV1m6vpQIc9b+INuxY9rp25qI
-         t57F5jzz+KpECz/WFU/CRiMr5TYAvmZqxcwTuNfqjmZoqUus8HohR6vvOjTIe/OrVKYi
-         QPXNmoEqZYv6x51GxdP9Ao7eo1Vcx99NV5xYS7J26v7vBmMNMvZ/i2lNpXHMD6Kt6JBD
-         3hBw==
+        b=RrSuDC7i2u2nW9hMh9Ny3GvrMQIk+SVCYBpEcD0uZWeMVkl/vPmNrzBzuL6wb9BIf+
+         1KyxGycVTzPiHy+lXQu+xxudvluyl9W11NauQT9GdtN1jk0ehs+Uv5GjM9ol6hX13A0G
+         geBCCYZvcIVy1NbwZeaQosAytvUkC5hai/gV8h065GWy/5fZA3iB9ypSM/THNGlJ0j9x
+         XA2uVFyiNGuXJpGal7PjvbBFlfn5r02EHO4O+wxQHWz6EcnJlQStTb82AabWUxDCBggJ
+         Y7E7aNxzUUNJ6MtPvDS2oyjLW5q7Yp24Ky6mRs5hddYVOdng/7SRplXDTSU9bCnphgHL
+         vG6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
         bh=2QW6EAQHfNGL3WRo5wHoHfZuTn8wkaAQDQ0iJvuyzQA=;
-        b=QCOLtRuaxv57QRWtYfr/hKsgU6gdJH6j8kgHVgpGTJ2vSbAqGEgjRVk6F6vjthSP4H
-         NWKg/hQrS5ifZCfuv2THSq02+nu5wrpEJbjzpzbzsrBl1fIDzU2zNVqeBkXWivXHjJS1
-         P2AD2B+55b7rGQeSbzVkU9d2ZRkkVCyze02XSdhdACKQWABPViLkodw+BJuBfHVoYnsA
-         HwA8lDT2LI6xyF3rdB+LAvQujFBV40nWu8wqCtcBH1lZ6KHdi+FMxhXn79Nn07tg21in
-         vl4lrgN3ipjluJo2wE7zSiEc/CbVu7z9MdjaQ3hhx80nokKwU1ugOT48rG/p2s7Ju6Q3
-         IH4Q==
-X-Gm-Message-State: AOAM532v1XXJp3LAzJ8B9JMeA9Rgo7YMc5UUIxk8fiIvvv6phnhs9T1L
-        PCXuxefy3ERzS3/Vd8JSHguk6M/9pXs=
-X-Google-Smtp-Source: ABdhPJyxDQ1vBVuzKpzw6DdO7fUy7QY/febE476l02rDnEsCI0JTpMac3/9JG6HvMjk6Oy0dY8tacg==
-X-Received: by 2002:a63:5b0d:0:b0:3fb:9316:88ff with SMTP id p13-20020a635b0d000000b003fb931688ffmr19509313pgb.530.1653993767246;
-        Tue, 31 May 2022 03:42:47 -0700 (PDT)
+        b=OcjyJlrHRNJ8Vuxa4JNPEnWXk2LnTbcNH9BvfG8rtBpRDglvEtD6+TlJ1rKRQdUTD9
+         MaEgxxVMwt0hLtd6QdMvdP+ESQhD3ftJaDCOtTvHhHiCIocAwC4V5NyLD5PZA/1GN+SX
+         M7DwQ0mV1X5Qdk5jTtqaLTlt0X8+WHzlaTnMIZLm7mNvTDMEMxpv8qd9TlNz+j9DBuMA
+         oKaukUeFoIretJ4NL3nrsoWwLqxoQlJMdsm/RUQHiVLRAHamHLkW/4C01C6mqg8+kjQL
+         6ojWYq+euSzqqGevIUIlVMcNfgNqWYGxE1B6tpX1GU7GldK2Qr1kDj3jypAXFQn47JPu
+         4BHQ==
+X-Gm-Message-State: AOAM532cIoeqLzggYvpPvI8gxZTnJwxP42GULMwXaviYpDRDU3Zy/ZBn
+        k7tspfpLAu23Xzk+9qrwFQU4F9UGnE8=
+X-Google-Smtp-Source: ABdhPJwZm33tqRsVdmEX4vFeS9jJ2fZrxiRKc4xUjnduBRlKIW6QOz4i66PFMvG7tXUpG7DU67A/Ig==
+X-Received: by 2002:a05:6a00:1a44:b0:510:a043:3b09 with SMTP id h4-20020a056a001a4400b00510a0433b09mr60586611pfv.62.1653993089425;
+        Tue, 31 May 2022 03:31:29 -0700 (PDT)
 Received: from RD-3580-24288.rt.l (42-72-220-172.emome-ip.hinet.net. [42.72.220.172])
-        by smtp.gmail.com with ESMTPSA id d19-20020a17090ac25300b001cd4989feebsm1525829pjx.55.2022.05.31.03.42.42
+        by smtp.gmail.com with ESMTPSA id c1-20020a63d501000000b003c14af50631sm10216519pgg.73.2022.05.31.03.31.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 May 2022 03:42:46 -0700 (PDT)
+        Tue, 31 May 2022 03:31:29 -0700 (PDT)
 From:   ChiaEn Wu <peterwu.pub@gmail.com>
 To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
         jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
@@ -63,11 +63,11 @@ Cc:     cy_huang@richtek.com, alice_chen@richtek.com,
         linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
 Subject: [PATCH 14/14] dt-bindings: mfd: Add Mediatek MT6370 binding documentation
-Date:   Tue, 31 May 2022 18:42:11 +0800
-Message-Id: <20220531104211.17106-6-peterwu.pub@gmail.com>
+Date:   Tue, 31 May 2022 18:28:09 +0800
+Message-Id: <20220531102809.11976-15-peterwu.pub@gmail.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220531104211.17106-1-peterwu.pub@gmail.com>
-References: <20220531104211.17106-1-peterwu.pub@gmail.com>
+In-Reply-To: <20220531102809.11976-1-peterwu.pub@gmail.com>
+References: <20220531102809.11976-1-peterwu.pub@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
