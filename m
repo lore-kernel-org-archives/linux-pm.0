@@ -2,266 +2,493 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF86AC433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 12:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F325CC4321E
+	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 12:33:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344215AbiEaMZj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 May 2022 08:25:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41422 "EHLO
+        id S1344259AbiEaMdL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 May 2022 08:33:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344224AbiEaMZi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 08:25:38 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 980EC8FFB4;
-        Tue, 31 May 2022 05:25:32 -0700 (PDT)
-X-UUID: 677773f18cee47b9a534dfaefdb15a0d-20220531
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:4f2e94e7-7d11-4f8b-9093-0dbca211270a,OB:0,LO
-        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:5
-X-CID-META: VersionHash:2a19b09,CLOUDID:2e746614-f88c-475e-badf-d9ee54230b8f,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
-        ,QS:0,BEC:nil
-X-UUID: 677773f18cee47b9a534dfaefdb15a0d-20220531
-Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw02.mediatek.com
-        (envelope-from <jia-wei.chang@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1830817681; Tue, 31 May 2022 20:25:23 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Tue, 31 May 2022 20:25:22 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 31 May 2022 20:25:21 +0800
-Message-ID: <31eca4ae2ec103e95bf3faf70d8810dc972db344.camel@mediatek.com>
-Subject: Re: [PATCH v6 2/2] PM / devfreq: mediatek: Introduce MediaTek CCI
- devfreq driver
-From:   Jia-Wei Chang <jia-wei.chang@mediatek.com>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Johnson Wang <johnson.wang@mediatek.com>,
-        <cw00.choi@samsung.com>, <krzk+dt@kernel.org>,
-        <robh+dt@kernel.org>, <kyungmin.park@samsung.com>
-CC:     <khilman@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Tue, 31 May 2022 20:25:22 +0800
-In-Reply-To: <e4d3ab91-9c53-79a0-76f8-098e6b846441@collabora.com>
-References: <20220527110036.8810-1-johnson.wang@mediatek.com>
-         <20220527110036.8810-3-johnson.wang@mediatek.com>
-         <e4d3ab91-9c53-79a0-76f8-098e6b846441@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S237954AbiEaMdK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 08:33:10 -0400
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com [IPv6:2607:f8b0:4864:20::d41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1FA8DEF6;
+        Tue, 31 May 2022 05:33:08 -0700 (PDT)
+Received: by mail-io1-xd41.google.com with SMTP id d198so13895033iof.12;
+        Tue, 31 May 2022 05:33:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=2QW6EAQHfNGL3WRo5wHoHfZuTn8wkaAQDQ0iJvuyzQA=;
+        b=pSoCECW7l7ogsdkRWbAgKx4BphhhHPUzOpdwGI0tyddfQ0JoW8pezHuF99q3cvGLYo
+         LnX5/Pt76tE2Hpa/3reEPFg1qOZGV7SrJH6jtbNGf02QZ5nbYVLah52CCcfMYnsI0epE
+         RUn8mNU3n7T9wcpwmVrrMIn5HRaeAtp0zm3lxbW0UriIV1m6vpQIc9b+INuxY9rp25qI
+         t57F5jzz+KpECz/WFU/CRiMr5TYAvmZqxcwTuNfqjmZoqUus8HohR6vvOjTIe/OrVKYi
+         QPXNmoEqZYv6x51GxdP9Ao7eo1Vcx99NV5xYS7J26v7vBmMNMvZ/i2lNpXHMD6Kt6JBD
+         3hBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=2QW6EAQHfNGL3WRo5wHoHfZuTn8wkaAQDQ0iJvuyzQA=;
+        b=QCOLtRuaxv57QRWtYfr/hKsgU6gdJH6j8kgHVgpGTJ2vSbAqGEgjRVk6F6vjthSP4H
+         NWKg/hQrS5ifZCfuv2THSq02+nu5wrpEJbjzpzbzsrBl1fIDzU2zNVqeBkXWivXHjJS1
+         P2AD2B+55b7rGQeSbzVkU9d2ZRkkVCyze02XSdhdACKQWABPViLkodw+BJuBfHVoYnsA
+         HwA8lDT2LI6xyF3rdB+LAvQujFBV40nWu8wqCtcBH1lZ6KHdi+FMxhXn79Nn07tg21in
+         vl4lrgN3ipjluJo2wE7zSiEc/CbVu7z9MdjaQ3hhx80nokKwU1ugOT48rG/p2s7Ju6Q3
+         IH4Q==
+X-Gm-Message-State: AOAM532v1XXJp3LAzJ8B9JMeA9Rgo7YMc5UUIxk8fiIvvv6phnhs9T1L
+        PCXuxefy3ERzS3/Vd8JSHguk6M/9pXs=
+X-Google-Smtp-Source: ABdhPJyxDQ1vBVuzKpzw6DdO7fUy7QY/febE476l02rDnEsCI0JTpMac3/9JG6HvMjk6Oy0dY8tacg==
+X-Received: by 2002:a63:5b0d:0:b0:3fb:9316:88ff with SMTP id p13-20020a635b0d000000b003fb931688ffmr19509313pgb.530.1653993767246;
+        Tue, 31 May 2022 03:42:47 -0700 (PDT)
+Received: from RD-3580-24288.rt.l (42-72-220-172.emome-ip.hinet.net. [42.72.220.172])
+        by smtp.gmail.com with ESMTPSA id d19-20020a17090ac25300b001cd4989feebsm1525829pjx.55.2022.05.31.03.42.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 May 2022 03:42:46 -0700 (PDT)
+From:   ChiaEn Wu <peterwu.pub@gmail.com>
+To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
+        sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de
+Cc:     cy_huang@richtek.com, alice_chen@richtek.com,
+        chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 14/14] dt-bindings: mfd: Add Mediatek MT6370 binding documentation
+Date:   Tue, 31 May 2022 18:42:11 +0800
+Message-Id: <20220531104211.17106-6-peterwu.pub@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220531104211.17106-1-peterwu.pub@gmail.com>
+References: <20220531104211.17106-1-peterwu.pub@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 2022-05-30 at 14:16 +0200, AngeloGioacchino Del Regno wrote:
-> Il 27/05/22 13:00, Johnson Wang ha scritto:
-> > We introduce a devfreq driver for the MediaTek Cache Coherent
-> > Interconnect
-> > (CCI) used by some MediaTek SoCs.
-> > 
-> > In this driver, we use the passive devfreq driver to get target
-> > frequencies
-> > and adjust voltages accordingly. In MT8183 and MT8186, the MediaTek
-> > CCI
-> > is supplied by the same regulators with the little core CPUs.
-> > 
-> > Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
-> > Signed-off-by: Johnson Wang <johnson.wang@mediatek.com>
-> > Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> > ---
-> > This patch depends on "devfreq-testing"[1].
-> > [1]
-> > https://urldefense.com/v3/__https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/log/?h=devfreq-testing__;!!CTRNKA9wMg0ARbw!2ldxtrMmK2WJP8_r1DcJRm0XQOSZQJfbI5DlNDPEfz84Ble0R7pSP7PbYLreNgVGRyFfDQ$
-> >  
-> > ---
-> >   drivers/devfreq/Kconfig           |  10 +
-> >   drivers/devfreq/Makefile          |   1 +
-> >   drivers/devfreq/mtk-cci-devfreq.c | 441
-> > ++++++++++++++++++++++++++++++
-> >   3 files changed, 452 insertions(+)
-> >   create mode 100644 drivers/devfreq/mtk-cci-devfreq.c
-> > 
-> > diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> > index 87eb2b837e68..9754d8b31621 100644
-> > --- a/drivers/devfreq/Kconfig
-> > +++ b/drivers/devfreq/Kconfig
-> > @@ -120,6 +120,16 @@ config ARM_TEGRA_DEVFREQ
-> >   	  It reads ACTMON counters of memory controllers and adjusts
-> > the
-> >   	  operating frequencies and voltages with OPP support.
-> >   
-> > +config ARM_MEDIATEK_CCI_DEVFREQ
-> > +	tristate "MEDIATEK CCI DEVFREQ Driver"
-> > +	depends on ARM_MEDIATEK_CPUFREQ || COMPILE_TEST
-> > +	select DEVFREQ_GOV_PASSIVE
-> > +	help
-> > +	  This adds a devfreq driver for MediaTek Cache Coherent
-> > Interconnect
-> > +	  which is shared the same regulators with the cpu cluster. It
-> > can track
-> > +	  buck voltages and update a proper CCI frequency. Use the
-> > notification
-> > +	  to get the regulator status.
-> > +
-> >   config ARM_RK3399_DMC_DEVFREQ
-> >   	tristate "ARM RK3399 DMC DEVFREQ Driver"
-> >   	depends on (ARCH_ROCKCHIP && HAVE_ARM_SMCCC) || \
-> > diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> > index 0b6be92a25d9..bf40d04928d0 100644
-> > --- a/drivers/devfreq/Makefile
-> > +++ b/drivers/devfreq/Makefile
-> > @@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+=
-> > governor_passive.o
-> >   obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
-> >   obj-$(CONFIG_ARM_IMX_BUS_DEVFREQ)	+= imx-bus.o
-> >   obj-$(CONFIG_ARM_IMX8M_DDRC_DEVFREQ)	+= imx8m-ddrc.o
-> > +obj-$(CONFIG_ARM_MEDIATEK_CCI_DEVFREQ)	+= mtk-cci-devfreq.o
-> >   obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
-> >   obj-$(CONFIG_ARM_SUN8I_A33_MBUS_DEVFREQ)	+= sun8i-a33-mbus.o
-> >   obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
-> > diff --git a/drivers/devfreq/mtk-cci-devfreq.c
-> > b/drivers/devfreq/mtk-cci-devfreq.c
-> > new file mode 100644
-> > index 000000000000..df42da35b312
-> > --- /dev/null
-> > +++ b/drivers/devfreq/mtk-cci-devfreq.c
-> > @@ -0,0 +1,441 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * Copyright (C) 2022 MediaTek Inc.
-> > + */
-> > +
-> 
-> ..snip..
-> 
-> > +};
-> > +
-> > +static int mtk_ccifreq_probe(struct platform_device *pdev)
-> > +{
-> > +	struct device *dev = &pdev->dev;
-> > +	struct mtk_ccifreq_drv *drv;
-> > +	struct devfreq_passive_data *passive_data;
-> > +	struct dev_pm_opp *opp;
-> > +	unsigned long rate, opp_volt;
-> > +	int ret;
-> > +
-> > +	drv = devm_kzalloc(dev, sizeof(*drv), GFP_KERNEL);
-> > +	if (!drv)
-> > +		return -ENOMEM;
-> > +
-> > +	drv->dev = dev;
-> > +	drv->soc_data = (const struct mtk_ccifreq_platform_data *)
-> > +				of_device_get_match_data(&pdev->dev);
-> > +	mutex_init(&drv->reg_lock);
-> > +	platform_set_drvdata(pdev, drv);
-> > +
-> > +	drv->cci_clk = devm_clk_get(dev, "cci");
-> > +	if (IS_ERR(drv->cci_clk)) {
-> > +		ret = PTR_ERR(drv->cci_clk);
-> > +		return dev_err_probe(dev, ret,
-> > +				     "failed to get cci clk: %d\n",
-> > ret);
-> > +	}
-> > +
-> > +	drv->inter_clk = devm_clk_get(dev, "intermediate");
-> > +	if (IS_ERR(drv->inter_clk)) {
-> > +		ret = PTR_ERR(drv->inter_clk);
-> > +		return dev_err_probe(dev, ret,
-> > +				     "failed to get intermediate clk:
-> > %d\n", ret);
-> > +	}
-> > +
-> > +	drv->proc_reg = devm_regulator_get_optional(dev, "proc");
-> 
-> In the devicetree binding for this driver, the "proc" regulator is
-> *not* optional,
-> but here you're using devm_regulator_get_optional.
-> 
-> If this is not optional, you should use devm_regulator_get() instead.
-> 
+From: ChiYuan Huang <cy_huang@richtek.com>
 
-Hi Angelo,
+Add Mediatek MT6370 binding documentation.
 
-This is similiar case to mediatek-cpufreq.c [1].
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+---
+ .../bindings/mfd/mediatek,mt6370.yaml         | 282 ++++++++++++++++++
+ .../dt-bindings/iio/adc/mediatek,mt6370_adc.h |  18 ++
+ include/dt-bindings/mfd/mediatek,mt6370.h     |  83 ++++++
+ 3 files changed, 383 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+ create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
+ create mode 100644 include/dt-bindings/mfd/mediatek,mt6370.h
 
-Regulator framework has three variants of APIs for getting regulator
-handler.
-We do NOT choose regulator_get_exclusive() because cpufreq and cci
-share with the same power rail.
-We choose regulator_get_optional() so that we can handle error if it
-returns ERR_PTR(-ENODEV) rather than a dummy handler from
-regulator_get().
-
-Please inform me if I get it wrong.
-That's what I understand and you can refer to [2].
-
-Thanks.
-
-[1]: 20220408045908.21671-4-rex-bc.chen@mediatek.com
-[2]: 
-https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1327385.html
-
-> > +	if (IS_ERR(drv->proc_reg)) {
-> > +		ret = PTR_ERR(drv->proc_reg);
-> > +		return dev_err_probe(dev, ret,
-> > +				     "failed to get proc regulator:
-> > %d\n", ret);
-> 
-> There's no need to print ret... dev_err_probe() takes care of that
-> for you already:
-> in this case, you're printing the value of ret twice.
-> 
-> > +	}
-> > +
-> > +	ret = regulator_enable(drv->proc_reg);
-> 
-> If you move this call after the devm_regulator_get_optional() call
-> for the sram
-> vreg, you will be able to use dev_err_probe for the latter as well.
-> 
-> > +	if (ret) {
-> > +		dev_err(dev, "failed to enable proc regulator\n");
-> 
-> Why aren't you using dev_err_probe here, like you've done for the
-> other instances?
-> 
-> > +		return ret;
-> > +	}
-> > +
-> > +	drv->sram_reg = devm_regulator_get_optional(dev, "sram");
-> > +	if (IS_ERR(drv->sram_reg))
-> > +		drv->sram_reg = NULL;
-> 
-> When you use regulator_get_optional() (including the devm_ variant of
-> it), you
-> shall return an error, if there's any... that's what the _optional()
-> is for.
-> 
-> if (IS_ERR(drv->sram_reg))
-> 	return dev_err_probe(dev, PTR_ERR(drv->proc_reg),
-> 			     "failed to get sram regulator");
-> 
-> > +	else {
-> > +		ret = regulator_enable(drv->sram_reg);
-> > +		if (ret) {
-> > +			dev_err(dev, "failed to enable sram
-> > regulator\n");
-> > +			goto out_free_resources;
-> > +		}
-> > +	}
-> > +
-> 
-> Regards,
-> Angelo
-> 
-> 
+diff --git a/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml b/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+new file mode 100644
+index 000000000000..96a12dce0108
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+@@ -0,0 +1,282 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/mediatek,mt6370.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Mediatek MT6370 SubPMIC
++
++maintainers:
++  - ChiYuan Huang <cy_huang@richtek.com>
++
++description: |
++  MT6370 is a highly-integrated smart power management IC, which includes a
++  single cell Li-Ion/Li-Polymer switching battery charger, a USB Type-C &
++  Power Delivery (PD) controller, dual flash LED current sources, a RGB LED
++  driver, a backlight WLED driver, a display bias driver and a general LDO for
++  portable devices.
++
++properties:
++  compatible:
++    const: mediatek,mt6370
++
++  reg:
++    maxItems: 1
++
++  wakeup-source: true
++
++  interrupts:
++    maxItems: 1
++
++  interrupt-controller: true
++
++  '#interrupt-cells':
++    const: 1
++
++  adc:
++    type: object
++    description: |
++      List the compatible configurations of MT6370 ADC.
++
++    properties:
++      compatible:
++        const: mediatek,mt6370-adc
++
++      "#io-channel-cells":
++        const: 1
++
++    required:
++      - compatible
++      - '#io-channel-cells'
++
++  backlight:
++    type: object
++    $ref: /schemas/leds/backlight/mediatek,mt6370-backlight.yaml#
++
++  charger:
++    type: object
++    $ref: /schemas/power/supply/mediatek,mt6370-charger.yaml#
++
++  tcpc:
++    type: object
++    $ref: /schemas/usb/mediatek,mt6370-tcpc.yaml#
++
++  indicator:
++    type: object
++    $ref: /schemas/leds/mediatek,mt6370-indicator.yaml#
++
++  flashlight:
++    type: object
++    $ref: /schemas/leds/mediatek,mt6370-flashlight.yaml#
++
++  regulators:
++    type: object
++    description: |
++      List all supported regulators
++
++    patternProperties:
++      "^(dsvbst|vibldo)$":
++        $ref: /schemas/regulator/regulator.yaml#
++        type: object
++        unevaluatedProperties: false
++
++      "^(dsvpos|dsvneg)$":
++        $ref: /schemas/regulator/regulator.yaml#
++        type: object
++        unevaluatedProperties: false
++
++        properties:
++          enable-gpio:
++            maxItems: 1
++            description: |
++              Specify a valid 'enable' gpio for the regulator and it's optional
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - interrupt-controller
++  - '#interrupt-cells'
++  - regulators
++  - adc
++  - backlight
++  - indicator
++  - tcpc
++  - charger
++  - flashlight
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++    #include <dt-bindings/leds/common.h>
++    #include <dt-bindings/mfd/mediatek,mt6370.h>
++    #include <dt-bindings/iio/adc/mediatek,mt6370_adc.h>
++    #include <dt-bindings/usb/pd.h>
++    i2c {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      mt6370@34 {
++        compatible = "mediatek,mt6370";
++        reg = <0x34>;
++        wakeup-source;
++        interrupts-extended = <&gpio26 3 IRQ_TYPE_LEVEL_LOW>;
++        interrupt-controller;
++        #interrupt-cells = <1>;
++
++        mt6370_adc: adc {
++          compatible = "mediatek,mt6370-adc";
++          #io-channel-cells = <1>;
++        };
++
++        backlight {
++          compatible = "mediatek,mt6370-backlight";
++          mediatek,bled-channel-use = /bits/ 8 <15>;
++        };
++
++        charger {
++          compatible = "mediatek,mt6370-charger";
++          interrupts = <MT6370_IRQ_ATTACH>, <MT6370_IRQ_OVPCTRL_UVP_D>,
++                       <MT6370_IRQ_CHG_MIVR>;
++          interrupt-names = "attach_i", "uvp_d_evt", "mivr";
++          io-channels = <&mt6370_adc MT6370_CHAN_IBUS>;
++
++          mt6370_otg_vbus: usb-otg-vbus {
++            regulator-compatible = "mt6370,otg-vbus";
++            regulator-name = "usb-otg-vbus";
++            regulator-min-microvolt = <4350000>;
++            regulator-max-microvolt = <5800000>;
++            regulator-min-microamp = <500000>;
++            regulator-max-microamp = <3000000>;
++          };
++        };
++
++        indicator {
++          compatible = "mediatek,mt6370-indicator";
++          #address-cells = <1>;
++          #size-cells = <0>;
++
++          multi-led@0 {
++            reg = <0>;
++            function = LED_FUNCTION_INDICATOR;
++            color = <LED_COLOR_ID_RGB>;
++            led-max-microamp = <24000>;
++            #address-cells = <1>;
++            #size-cells = <0>;
++            mediatek,soft-start = <3>;
++              led@0 {
++                reg = <0>;
++                color = <LED_COLOR_ID_RED>;
++              };
++              led@1 {
++                reg = <1>;
++                color = <LED_COLOR_ID_GREEN>;
++              };
++              led@2 {
++                reg = <2>;
++                color = <LED_COLOR_ID_BLUE>;
++              };
++            };
++          led@3 {
++            reg = <3>;
++            function = LED_FUNCTION_INDICATOR;
++            color = <LED_COLOR_ID_WHITE>;
++            led-max-microamp = <6000>;
++          };
++        };
++
++        flashlight {
++          compatible = "mediatek,mt6370-flashlight";
++          #address-cells = <1>;
++          #size-cells = <0>;
++          led@0 {
++            reg = <0>;
++            led-sources = <0>;
++            function = LED_FUNCTION_FLASH;
++            color = <LED_COLOR_ID_WHITE>;
++            function-enumerator = <1>;
++            led-max-microamp = <200000>;
++            flash-max-microamp = <500000>;
++            flash-max-timeout-us = <1248000>;
++          };
++          led@1 {
++            reg = <1>;
++            led-sources = <1>;
++            function = LED_FUNCTION_FLASH;
++            color = <LED_COLOR_ID_WHITE>;
++            function-enumerator = <2>;
++            led-max-microamp = <200000>;
++            flash-max-microamp = <500000>;
++            flash-max-timeout-us = <1248000>;
++          };
++        };
++
++        tcpc {
++          compatible = "mediatek,mt6370-tcpc";
++          interrupts-extended = <&gpio26 4 IRQ_TYPE_LEVEL_LOW>;
++
++          connector {
++            compatible = "usb-c-connector";
++            label = "USB-C";
++            vbus-supply = <&mt6370_otg_vbus>;
++            data-role = "dual";
++            power-role = "dual";
++            try-power-role = "sink";
++            source-pdos = <PDO_FIXED(5000, 1000, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP)>;
++            sink-pdos = <PDO_FIXED(5000, 2000, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP)>;
++            op-sink-microwatt = <10000000>;
++
++            ports {
++              #address-cells = <1>;
++              #size-cells = <0>;
++
++              port@0 {
++                reg = <0>;
++                endpoint {
++                  remote-endpoint = <&usb_hs>;
++                };
++              };
++              port@1 {
++                reg = <1>;
++                endpoint {
++                  remote-endpoint = <&usb_ss>;
++                };
++              };
++              port@2 {
++                reg = <2>;
++                endpoint {
++                  remote-endpoint = <&dp_aux>;
++                };
++              };
++            };
++          };
++        };
++
++        regulators {
++          dsvbst {
++            regulator-name = "mt6370-dsv-vbst";
++            regulator-min-microvolt = <4000000>;
++            regulator-max-microvolt = <6200000>;
++          };
++          dsvpos {
++            regulator-name = "mt6370-dsv-vpos";
++            regulator-min-microvolt = <4000000>;
++            regulator-max-microvolt = <6000000>;
++            regulator-boot-on;
++          };
++          dsvneg {
++            regulator-name = "mt6370-dsv-vneg";
++            regulator-min-microvolt = <4000000>;
++            regulator-max-microvolt = <6000000>;
++            regulator-boot-on;
++          };
++          vibldo {
++            regulator-name = "mt6370-vib-ldo";
++            regulator-min-microvolt = <1600000>;
++            regulator-max-microvolt = <4000000>;
++          };
++        };
++      };
++    };
+diff --git a/include/dt-bindings/iio/adc/mediatek,mt6370_adc.h b/include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
+new file mode 100644
+index 000000000000..18ce2fef8f9e
+--- /dev/null
++++ b/include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef __DT_BINDINGS_MEDIATEK_MT6370_ADC_H__
++#define __DT_BINDINGS_MEDIATEK_MT6370_ADC_H__
++
++/* ADC Channel Index */
++#define MT6370_CHAN_VBUSDIV5	0
++#define MT6370_CHAN_VBUSDIV2	1
++#define MT6370_CHAN_VSYS	2
++#define MT6370_CHAN_VBAT	3
++#define MT6370_CHAN_TS_BAT	4
++#define MT6370_CHAN_IBUS	5
++#define MT6370_CHAN_IBAT	6
++#define MT6370_CHAN_CHG_VDDP	7
++#define MT6370_CHAN_TEMP_JC	8
++#define MT6370_CHAN_MAX		9
++
++#endif
+diff --git a/include/dt-bindings/mfd/mediatek,mt6370.h b/include/dt-bindings/mfd/mediatek,mt6370.h
+new file mode 100644
+index 000000000000..df641e5d651f
+--- /dev/null
++++ b/include/dt-bindings/mfd/mediatek,mt6370.h
+@@ -0,0 +1,83 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef __DT_BINDINGS_MEDIATEK_MT6370_H__
++#define __DT_BINDINGS_MEDIATEK_MT6370_H__
++
++/* IRQ definitions */
++#define MT6370_IRQ_DIRCHGON		0
++#define MT6370_IRQ_CHG_TREG		4
++#define MT6370_IRQ_CHG_AICR		5
++#define MT6370_IRQ_CHG_MIVR		6
++#define MT6370_IRQ_PWR_RDY		7
++#define MT6370_IRQ_FL_CHG_VINOVP	11
++#define MT6370_IRQ_CHG_VSYSUV		12
++#define MT6370_IRQ_CHG_VSYSOV		13
++#define MT6370_IRQ_CHG_VBATOV		14
++#define MT6370_IRQ_CHG_VINOVPCHG	15
++#define MT6370_IRQ_TS_BAT_COLD		20
++#define MT6370_IRQ_TS_BAT_COOL		21
++#define MT6370_IRQ_TS_BAT_WARM		22
++#define MT6370_IRQ_TS_BAT_HOT		23
++#define MT6370_IRQ_TS_STATC		24
++#define MT6370_IRQ_CHG_FAULT		25
++#define MT6370_IRQ_CHG_STATC		26
++#define MT6370_IRQ_CHG_TMR		27
++#define MT6370_IRQ_CHG_BATABS		28
++#define MT6370_IRQ_CHG_ADPBAD		29
++#define MT6370_IRQ_CHG_RVP		30
++#define MT6370_IRQ_TSHUTDOWN		31
++#define MT6370_IRQ_CHG_IINMEAS		32
++#define MT6370_IRQ_CHG_ICCMEAS		33
++#define MT6370_IRQ_CHGDET_DONE		34
++#define MT6370_IRQ_WDTMR		35
++#define MT6370_IRQ_SSFINISH		36
++#define MT6370_IRQ_CHG_RECHG		37
++#define MT6370_IRQ_CHG_TERM		38
++#define MT6370_IRQ_CHG_IEOC		39
++#define MT6370_IRQ_ADC_DONE		40
++#define MT6370_IRQ_PUMPX_DONE		41
++#define MT6370_IRQ_BST_BATUV		45
++#define MT6370_IRQ_BST_MIDOV		46
++#define MT6370_IRQ_BST_OLP		47
++#define MT6370_IRQ_ATTACH		48
++#define MT6370_IRQ_DETACH		49
++#define MT6370_IRQ_HVDCP_STPDONE	51
++#define MT6370_IRQ_HVDCP_VBUSDET_DONE	52
++#define MT6370_IRQ_HVDCP_DET		53
++#define MT6370_IRQ_CHGDET		54
++#define MT6370_IRQ_DCDT			55
++#define MT6370_IRQ_DIRCHG_VGOK		59
++#define MT6370_IRQ_DIRCHG_WDTMR		60
++#define MT6370_IRQ_DIRCHG_UC		61
++#define MT6370_IRQ_DIRCHG_OC		62
++#define MT6370_IRQ_DIRCHG_OV		63
++#define MT6370_IRQ_OVPCTRL_SWON		67
++#define MT6370_IRQ_OVPCTRL_UVP_D	68
++#define MT6370_IRQ_OVPCTRL_UVP		69
++#define MT6370_IRQ_OVPCTRL_OVP_D	70
++#define MT6370_IRQ_OVPCTRL_OVP		71
++#define MT6370_IRQ_FLED_STRBPIN		72
++#define MT6370_IRQ_FLED_TORPIN		73
++#define MT6370_IRQ_FLED_TX		74
++#define MT6370_IRQ_FLED_LVF		75
++#define MT6370_IRQ_FLED2_SHORT		78
++#define MT6370_IRQ_FLED1_SHORT		79
++#define MT6370_IRQ_FLED2_STRB		80
++#define MT6370_IRQ_FLED1_STRB		81
++#define mT6370_IRQ_FLED2_STRB_TO	82
++#define MT6370_IRQ_FLED1_STRB_TO	83
++#define MT6370_IRQ_FLED2_TOR		84
++#define MT6370_IRQ_FLED1_TOR		85
++#define MT6370_IRQ_OTP			93
++#define MT6370_IRQ_VDDA_OVP		94
++#define MT6370_IRQ_VDDA_UV		95
++#define MT6370_IRQ_LDO_OC		103
++#define MT6370_IRQ_BLED_OCP		118
++#define MT6370_IRQ_BLED_OVP		119
++#define MT6370_IRQ_DSV_VNEG_OCP		123
++#define MT6370_IRQ_DSV_VPOS_OCP		124
++#define MT6370_IRQ_DSV_BST_OCP		125
++#define MT6370_IRQ_DSV_VNEG_SCP		126
++#define MT6370_IRQ_DSV_VPOS_SCP		127
++
++#endif /* __DT_BINDINGS_MEDIATEK_MT6370_H__ */
+-- 
+2.25.1
 
