@@ -2,77 +2,77 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF991C4167E
-	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 22:47:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5134C35296
+	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 22:47:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348476AbiEaWrD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 May 2022 18:47:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49328 "EHLO
+        id S1348525AbiEaWrE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 May 2022 18:47:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49214 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348400AbiEaWrA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 18:47:00 -0400
-Received: from mail-oa1-f44.google.com (mail-oa1-f44.google.com [209.85.160.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84FFDA466;
-        Tue, 31 May 2022 15:46:58 -0700 (PDT)
-Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-f2a4c51c45so355449fac.9;
-        Tue, 31 May 2022 15:46:58 -0700 (PDT)
+        with ESMTP id S1348515AbiEaWq6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 18:46:58 -0400
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0163360C6;
+        Tue, 31 May 2022 15:46:57 -0700 (PDT)
+Received: by mail-oi1-f180.google.com with SMTP id k11so318948oia.12;
+        Tue, 31 May 2022 15:46:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
          :message-id;
-        bh=AE9Fbrj6BPIXSH+6mmzzM5HJbPbBIVW+lbxzy622FhY=;
-        b=FC7YLCXVp+3Ey9OIsvgjO8KDG576KFeauHlGw9t9IKSPQoYy+B6Ehbg9N7Ys8Qmj2b
-         LmcAk4uBcXej5lFY3eJX00+fNT8nCYwM/FRlLQfSW+e63Gm5Ym6KP9OzTPCEBOOS4Nyb
-         9zDQIgoWggBTkFJizFd/bNEYl5SFd/MmWq8FTMjpzoQchlx9V8rP/Wn/KsfApTRhgMSS
-         LaPB5j8BSqzY4JQskTvNxp8wnrjQAM7K4YKN4W+xacuhXcIEcwiq4ZwFZ4MqP4kNam4g
-         7BvXB8v5N932AluPgFhuJUMJPCODzVK25uYIeDByuuvShMa0raQfnf/DEX1Q0e4kpZxD
-         VB+w==
-X-Gm-Message-State: AOAM531mZzff7zTh95UL62AZHhRlpQ7yBeIKsHZgTgAJaKmDydXz1SO+
-        k26Mv1kGjKXdj/z5e2B4Vg==
-X-Google-Smtp-Source: ABdhPJz9hzTJNp12uYZ4vHIk6ZhMev4DpgOt2zBvhqRIr7g1l5auyN0vlOttAqh+FCiKDf2dw2zOIw==
-X-Received: by 2002:a05:6870:b254:b0:ec:6ca4:c89f with SMTP id b20-20020a056870b25400b000ec6ca4c89fmr15083367oam.272.1654037217725;
-        Tue, 31 May 2022 15:46:57 -0700 (PDT)
+        bh=2Z7nZCZCrp6yDZohpwqv7FuEhmrYv7mpBJYl13nUGZE=;
+        b=h8pyHggECMQnN4+tn4AA32NaL0V4jwHXPi71wtPsA82kGKaeXmBIdXHXGDYpSjNNOp
+         gJGApLqj8turIq2loAj3eYlglK39G5aJLAX8E8tkmPtaY+dvYG27pGedkSiB8JFf2esI
+         aDRbAoU3wkAAX8yoh4p1aJ1UdUz6HRTptidqElTGfrgZOlMtQc1dU/Rq53hYsmPkF88C
+         IRUrzJu1Se2v2LWIBjlndv4W1h1RFiOLRDsvp0TVgEAspE4zKIF5KQcOgIt8DtiEnbnm
+         pvQqdDZKMa9eT4ZFtKw1KXYixHcC4f1jFeO3wn9qRNlDetAahOD/SdCm4PUMj8c3cPGY
+         T9PQ==
+X-Gm-Message-State: AOAM532+Z27LPAhaZYyBLOyLqsTeKlRVTTCwUec5qS8bv6RAwLhNiTHb
+        TJEFPaIy6bYFy/e92KD9KA==
+X-Google-Smtp-Source: ABdhPJyCt/w64P3Qhbl9BTehgfuVFmuXiRTTi5iJf9VTUqZA4lc6Tq78gjAB18eUT2wVhb7SnkTfDA==
+X-Received: by 2002:a05:6808:1454:b0:328:82a9:cb08 with SMTP id x20-20020a056808145400b0032882a9cb08mr13482779oiv.106.1654037216107;
+        Tue, 31 May 2022 15:46:56 -0700 (PDT)
 Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id u3-20020a056830248300b0060603221247sm7000503ots.23.2022.05.31.15.46.56
+        by smtp.gmail.com with ESMTPSA id m19-20020a056820051300b0035eb4e5a6b0sm128663ooj.6.2022.05.31.15.46.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 May 2022 15:46:57 -0700 (PDT)
-Received: (nullmailer pid 2476555 invoked by uid 1000);
+        Tue, 31 May 2022 15:46:55 -0700 (PDT)
+Received: (nullmailer pid 2476551 invoked by uid 1000);
         Tue, 31 May 2022 22:46:54 -0000
 From:   Rob Herring <robh@kernel.org>
 To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     heikki.krogerus@linux.intel.com, broonie@kernel.org,
-        linux-kernel@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, pavel@ucw.cz, sre@kernel.org,
-        dri-devel@lists.freedesktop.org, gregkh@linuxfoundation.org,
-        jic23@kernel.org, linux-iio@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        lgirdwood@gmail.com, linux-leds@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux@roeck-us.net,
-        chunfeng.yun@mediatek.com, linux-usb@vger.kernel.org,
-        alice_chen@richtek.com, lee.jones@linaro.org,
-        daniel.thompson@linaro.org, cy_huang@richtek.com,
-        robh+dt@kernel.org, chiaen_wu@richtek.com,
-        linux-fbdev@vger.kernel.org, jingoohan1@gmail.com, deller@gmx.de,
-        linux-pm@vger.kernel.org, lars@metafoo.de
-In-Reply-To: <20220531111900.19422-5-peterwu.pub@gmail.com>
-References: <20220531111900.19422-1-peterwu.pub@gmail.com> <20220531111900.19422-5-peterwu.pub@gmail.com>
-Subject: Re: [RESEND 04/14] dt-bindings: leds: Add Mediatek MT6370 flashlight binding
+Cc:     lee.jones@linaro.org, linux-fbdev@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, sre@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, linux-leds@vger.kernel.org,
+        gregkh@linuxfoundation.org, lgirdwood@gmail.com,
+        chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        heikki.krogerus@linux.intel.com, alice_chen@richtek.com,
+        broonie@kernel.org, linux-usb@vger.kernel.org, pavel@ucw.cz,
+        robh+dt@kernel.org, linux@roeck-us.net, matthias.bgg@gmail.com,
+        deller@gmx.de, linux-arm-kernel@lists.infradead.org,
+        chunfeng.yun@mediatek.com, jingoohan1@gmail.com,
+        daniel.thompson@linaro.org, jic23@kernel.org, cy_huang@richtek.com,
+        lars@metafoo.de
+In-Reply-To: <20220531111900.19422-4-peterwu.pub@gmail.com>
+References: <20220531111900.19422-1-peterwu.pub@gmail.com> <20220531111900.19422-4-peterwu.pub@gmail.com>
+Subject: Re: [RESEND 03/14] dt-bindings: leds: mt6370: Add Mediatek mt6370 indicator
 Date:   Tue, 31 May 2022 17:46:54 -0500
-Message-Id: <1654037214.468113.2476554.nullmailer@robh.at.kernel.org>
+Message-Id: <1654037214.458913.2476550.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 31 May 2022 19:18:50 +0800, ChiaEn Wu wrote:
-> From: Alice Chen <alice_chen@richtek.com>
+On Tue, 31 May 2022 19:18:49 +0800, ChiaEn Wu wrote:
+> From: ChiYuan Huang <cy_huang@richtek.com>
 > 
-> Add Mediatek MT6370 flashlight binding documentation
+> Add Mediatek mt6370 indicator documentation.
 > 
-> Signed-off-by: Alice Chen <alice_chen@richtek.com>
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 > ---
->  .../leds/mediatek,mt6370-flashlight.yaml      | 48 +++++++++++++++++++
->  1 file changed, 48 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-flashlight.yaml
+>  .../leds/mediatek,mt6370-indicator.yaml       | 57 +++++++++++++++++++
+>  1 file changed, 57 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
 > 
 
 My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
@@ -81,12 +81,11 @@ on your patch (DT_CHECKER_FLAGS is new in v5.13):
 yamllint warnings/errors:
 
 dtschema/dtc warnings/errors:
-./Documentation/devicetree/bindings/leds/mediatek,mt6370-flashlight.yaml: $id: relative path/filename doesn't match actual path or filename
-	expected: http://devicetree.org/schemas/leds/mediatek,mt6370-flashlight.yaml#
+
 
 doc reference errors (make refcheckdocs):
-Warning: Documentation/devicetree/bindings/leds/mediatek,mt6370-flashlight.yaml references a file that doesn't exist: Documentation/devicetree/bindings/mfd/mt6370.yaml
-Documentation/devicetree/bindings/leds/mediatek,mt6370-flashlight.yaml: Documentation/devicetree/bindings/mfd/mt6370.yaml
+Warning: Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml references a file that doesn't exist: Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml: Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
 
 See https://patchwork.ozlabs.org/patch/
 
