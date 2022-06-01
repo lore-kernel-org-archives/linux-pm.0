@@ -2,57 +2,52 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1F77C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 07:07:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B7C4C433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 07:08:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350152AbiFAHHy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jun 2022 03:07:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36770 "EHLO
+        id S243798AbiFAHI5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jun 2022 03:08:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34870 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350110AbiFAHHj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 03:07:39 -0400
-Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03D278CCC8
-        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 00:07:29 -0700 (PDT)
-Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-30974094b5cso8176157b3.20
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 00:07:29 -0700 (PDT)
+        with ESMTP id S1344420AbiFAHHP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 03:07:15 -0400
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 781CB7981A
+        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 00:07:12 -0700 (PDT)
+Received: by mail-pl1-x64a.google.com with SMTP id i16-20020a170902cf1000b001540b6a09e3so693801plg.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 00:07:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=eS/2TM+GfDlfIh94cuHfgXIohxcqeVLl/51vayxOGcM=;
-        b=nEbS5SUQKPV2uEuRcyqOCeYxkIcVm6QtbRuafH1IWgffM/UiSk4n7jieCoUxjX9Oaq
-         WdF2MZAjtTV+A+oRtPcrP2vyYILJP7A+Sg3USDA4WMYh1mFqe4FUjmEsa0guT0E1V4tj
-         CRvpIOw9ggRCgKvj+BCr2MskAML9dPYYf+XO0/d9/Xj9Uc/+LTk7YMR8wiug+nW8uluL
-         vowkrv4PAa7gy873wiXvd7t6in/QuT1Qpd5KLLyCXllUZoQDqvWM1KUKzksMRYWJwumF
-         +1QzKxLzBi0hg9GJrGLwC8SMCfssBQpKzUmvRevuplmTStk4Ali/UF0v2Vw1hH1Gn3Yl
-         JBDw==
+        h=date:message-id:mime-version:subject:from:to:cc;
+        bh=Mk17D+aOzb7UCdNS2oz9IAwDr5MmRg+quCipw6fx4RQ=;
+        b=hQa0JnnmV2cX05wxogayF7DAeIwm91UA5DD4Pd0261qK2nG5mlRfb8p0PwXRgLwmcG
+         6gimTBEfRJnzqCBPwGFDLXwY23Jge7qCK5EKBtDVk+4ZHueBZe2ScEh2abiJOXvqClXF
+         aItT2KKmdUihJqxg6KlMJQ+n9hDQfaXwUgpDUXId5vW641rUWKofWrnrujEe72Sytvnk
+         iXsC3g9D+PkO64XwFNhsJCy/xgMMwq44IzwR510vfqTBnn54+HA0yDiVcTK99umRrrcq
+         KawtwQ3E7vKCwmO2izMB9zQh9evWd8zx74HbqExwInwGL34iXnuFQ1QqmbkBW7qSDv5A
+         GPbA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=eS/2TM+GfDlfIh94cuHfgXIohxcqeVLl/51vayxOGcM=;
-        b=Y6C9jQ9+CNT/mUo8IY/NrV3GatrN2srHo2G2P6Ecz9uZlwDV1+0ZDgRZrj8/KM4dUw
-         87t9irNGBUTDcfJtiopTqfBz7LLPPdzvYqiKUFdrL+2I/TTMLdEYXZEpjJfS4xs2UlSR
-         H4z3ZqF5z09cVDmUAdLWkJtfTDG7EqcCBsPbxO/Dw16POFLcn68OWbtXNkWDinC/eXaC
-         kPzVASVwMD/mfDij1TrZJ5sig5OWlWvvn42JjgLO0vMt1bDYBh7PsOQg+NE9gY14UT2K
-         zZRVWFQfulNgmzSTUcBTnIUInutBBTXddljdbzypeTRCruJbJ9oqfpA2wqB4yw+xaKED
-         cyrg==
-X-Gm-Message-State: AOAM533Ld6BlQdfmCLEU2n5okOuWKQ78vut6nzzcG+sFlFwHFrdQUtJG
-        UoyRR4hW6qBlQlv5R31BJtBB25t96K7C/lc=
-X-Google-Smtp-Source: ABdhPJwtAnnXhJAd8leQI7IsJQYpPEGmerba49yF9GJ2QPuTWzcc40IB9+ccBefvJrVmInskP9rGOF8g1cQWJjY=
+        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
+        bh=Mk17D+aOzb7UCdNS2oz9IAwDr5MmRg+quCipw6fx4RQ=;
+        b=wXKOQ20Q7c6l6qGh6dnhcbhM5fAaPAV9Isx2Jo7YLEPa849UsBHkS4jg7gvIRyFZsC
+         m+e/jPu80JsvgnjGId5iyKnD+GxSmjRH+5w7cfCrbekKWfrylSl3xtmH3mE6+Dtn9WsX
+         Rz8Yo6s9IIShRAKzx1bGUX2+0goj5j1asE15EOTE+iCyEkvlX64F2EP5dyBIdVfchLQ+
+         O2qbao9G83XrunkPq5qZjzKdJTvjt8MODtd84trSdSO239+SA0qj4wDdgKaqiHlggt/P
+         CS18h4IMu1VJK5zzNWL11MAQALXQfzOYpX5w1tUJjUD/InMeIDduJ68npIhmjAxKz3JN
+         kR6A==
+X-Gm-Message-State: AOAM533dg90yw1Giw3VlLlWGHMhJcd6g48apICckr0N1CjlP+XHtCrwp
+        CQVLv/z8rUkfUzd3czqCXbMct/b1TtxPaSo=
+X-Google-Smtp-Source: ABdhPJwo0w/Ul81l80Uz+X1lE0Knuok5VeKXEtMoQ0Yzewr/LH6PL8JE3PUvMoXQAWKjDKNKYDX9hXZkKLb6+II=
 X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:f3aa:cafe:c20a:e136])
- (user=saravanak job=sendgmr) by 2002:a81:ac67:0:b0:30c:4692:77fd with SMTP id
- z39-20020a81ac67000000b0030c469277fdmr16106442ywj.180.1654067249191; Wed, 01
- Jun 2022 00:07:29 -0700 (PDT)
-Date:   Wed,  1 Jun 2022 00:07:02 -0700
-In-Reply-To: <20220601070707.3946847-1-saravanak@google.com>
-Message-Id: <20220601070707.3946847-7-saravanak@google.com>
+ (user=saravanak job=sendgmr) by 2002:a17:902:da8e:b0:164:537:d910 with SMTP
+ id j14-20020a170902da8e00b001640537d910mr7067516plx.75.1654067231712; Wed, 01
+ Jun 2022 00:07:11 -0700 (PDT)
+Date:   Wed,  1 Jun 2022 00:06:56 -0700
+Message-Id: <20220601070707.3946847-1-saravanak@google.com>
 Mime-Version: 1.0
-References: <20220601070707.3946847-1-saravanak@google.com>
 X-Mailer: git-send-email 2.36.1.255.ge46751e96f-goog
-Subject: [PATCH v2 6/9] Revert "driver core: Set default deferred_probe_timeout
- back to 0."
+Subject: [PATCH v2 0/9] deferred_probe_timeout logic clean up
 From:   Saravana Kannan <saravanak@google.com>
 To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -79,32 +74,89 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This reverts commit 11f7e7ef553b6b93ac1aa74a3c2011b9cc8aeb61.
+This series is based on linux-next + these 2 small patches applies on top:
+https://lore.kernel.org/lkml/20220526034609.480766-1-saravanak@google.com/
 
-Let's take another shot at getting deferred_probe_timeout=10 to work.
+A lot of the deferred_probe_timeout logic is redundant with
+fw_devlink=on.  Also, enabling deferred_probe_timeout by default breaks
+a few cases.
 
-Signed-off-by: Saravana Kannan <saravanak@google.com>
----
- drivers/base/dd.c | 5 +++++
- 1 file changed, 5 insertions(+)
+This series tries to delete the redundant logic, simplify the frameworks
+that use driver_deferred_probe_check_state(), enable
+deferred_probe_timeout=10 by default, and fixes the nfsroot failure
+case.
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 4a55fbb7e0da..335e71d3a618 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -256,7 +256,12 @@ static int deferred_devs_show(struct seq_file *s, void *data)
- }
- DEFINE_SHOW_ATTRIBUTE(deferred_devs);
- 
-+#ifdef CONFIG_MODULES
-+int driver_deferred_probe_timeout = 10;
-+#else
- int driver_deferred_probe_timeout;
-+#endif
-+
- EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
- 
- static int __init deferred_probe_timeout_setup(char *str)
+The overall idea of this series is to replace the global behavior of
+driver_deferred_probe_check_state() where all devices give up waiting on
+supplier at the same time with a more granular behavior:
+
+1. Devices with all their suppliers successfully probed by late_initcall
+   probe as usual and avoid unnecessary deferred probe attempts.
+
+2. At or after late_initcall, in cases where boot would break because of
+   fw_devlink=on being strict about the ordering, we
+
+   a. Temporarily relax the enforcement to probe any unprobed devices
+      that can probe successfully in the current state of the system.
+      For example, when we boot with a NFS rootfs and no network device
+      has probed.
+   b. Go back to enforcing the ordering for any devices that haven't
+      probed.
+
+3. After deferred probe timeout expires, we permanently give up waiting
+   on supplier devices without drivers. At this point, whatever devices
+   can probe without some of their optional suppliers end up probing.
+
+In the case where module support is disabled, it's fairly
+straightforward and all device probes are completed before the initcalls
+are done.
+
+Patches 1 to 3 are fairly straightforward and can probably be applied
+right away.
+
+Patches 4 to 6 are for fixing the NFS rootfs issue and setting the
+default deferred_probe_timeout back to 10 seconds when modules are
+enabled.
+
+Patches 7 to 9 are further clean up of the deferred_probe_timeout logic
+so that no framework has to know/care about deferred_probe_timeout.
+
+Yoshihiro/Geert,
+
+If you can test this patch series and confirm that the NFS root case
+works, I'd really appreciate that.
+
+Thanks,
+Saravana
+
+v1 -> v2:
+Rewrote the NFS rootfs fix to be a lot less destructive on the
+fw_devlink ordering for devices that don't end up probing during the
+"best effort" attempt at probing all devices needed for a network rootfs
+
+Saravana Kannan (9):
+  PM: domains: Delete usage of driver_deferred_probe_check_state()
+  pinctrl: devicetree: Delete usage of
+    driver_deferred_probe_check_state()
+  net: mdio: Delete usage of driver_deferred_probe_check_state()
+  driver core: Add wait_for_init_devices_probe helper function
+  net: ipconfig: Relax fw_devlink if we need to mount a network rootfs
+  Revert "driver core: Set default deferred_probe_timeout back to 0."
+  driver core: Set fw_devlink.strict=1 by default
+  iommu/of: Delete usage of driver_deferred_probe_check_state()
+  driver core: Delete driver_deferred_probe_check_state()
+
+ drivers/base/base.h            |   1 +
+ drivers/base/core.c            | 102 ++++++++++++++++++++++++++++++---
+ drivers/base/dd.c              |  54 ++++++-----------
+ drivers/base/power/domain.c    |   2 +-
+ drivers/iommu/of_iommu.c       |   2 +-
+ drivers/net/mdio/fwnode_mdio.c |   4 +-
+ drivers/pinctrl/devicetree.c   |   2 +-
+ include/linux/device/driver.h  |   2 +-
+ net/ipv4/ipconfig.c            |   6 ++
+ 9 files changed, 126 insertions(+), 49 deletions(-)
+
 -- 
 2.36.1.255.ge46751e96f-goog
 
