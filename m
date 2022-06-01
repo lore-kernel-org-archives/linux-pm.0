@@ -2,413 +2,313 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F27DCC43219
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 09:46:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F637C433EF
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 09:49:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351328AbiFAJqh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jun 2022 05:46:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45286 "EHLO
+        id S1351023AbiFAJt2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jun 2022 05:49:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52588 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351380AbiFAJqa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 05:46:30 -0400
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 196208AE72
-        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 02:46:28 -0700 (PDT)
-Received: by mail-wr1-x42d.google.com with SMTP id k19so1535986wrd.8
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 02:46:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=Og6FPm4sRa8uBiwJMQ4UeYWy3rDVm5W0tUEfClTWPxE=;
-        b=gZvVSMzlksdRRWkClbiKbVMJ9XTEssLAgwE8fZ//ZlvSg2el0nXOb8vwKKb4QjjKGd
-         b0Mvq3t07Ze4UOAwJ7OUGeogoi50GCQePaG/JhB0N68gQ4SXN2o0AV+0V4tnlbDKjWN9
-         FfdFyLSjSWpSG7OvnoeYLA0oHcGOmPJOanodt2aOSrQ3ftqidDbnDh0EU7RHwZrMjD/e
-         wZ3ReN+aVZIe5oTKgs6Ov8vIR2DOnJgiD5xxgjrc7naFHHDbSyssszDj3wx/6MRLV91M
-         kKSP/0cTvVes7C67yNg7qnfRqaJRtVFoBiN5NubZNXrIHgrNcNr7dTF2BFUicHHOZcJc
-         c6ng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Og6FPm4sRa8uBiwJMQ4UeYWy3rDVm5W0tUEfClTWPxE=;
-        b=mWssbosZkvu08fGCSZIz1iI6xXzia44YKksLFLGLzJ55NRkzDtGbv7RAnnv7dj7c2k
-         lTp7FDQ8K0iZTL7IVhPQOVD+WX5J4XYx1fO3fI7cLkazk+L2qQ1TpSEA2S706ZNreUZD
-         oVCmgzKRkallKDLU/yVIg+HfySlPQ0fxUcmbvOq4jI/j6vhQ+C/MlSZRm9EOkzAiI5ja
-         s/iSMtfd7EteBQSlxCgl+G8i+i2pEN/xO6t8mCXSRJxtcdpCUxCZCmZSdgRDBolSuMq5
-         1Cu23gu17oRyNWsDFnTpm/uPjZGl+miA9adx7zUIW/1VYtQTKKJxYzYd+s1E9ndRXmcT
-         oIkA==
-X-Gm-Message-State: AOAM532PkkN8s2S2VSajUBStN6R9Xv1BIuCfh5POGTF5qVmQFP3kgAUJ
-        XGTbDh//rlKPcQjL8T4g3B1X9g==
-X-Google-Smtp-Source: ABdhPJzZB7kdzKNqkGXawocBomBN1LXxN/TJFSKFbeKmnRK3bttFBwdbDOqE9RxtXkI+73YmA/Yabw==
-X-Received: by 2002:a5d:5342:0:b0:210:c508:956d with SMTP id t2-20020a5d5342000000b00210c508956dmr1423246wrv.205.1654076786432;
-        Wed, 01 Jun 2022 02:46:26 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id l24-20020a05600c1d1800b00397342bcfb7sm1575251wms.46.2022.06.01.02.46.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jun 2022 02:46:25 -0700 (PDT)
-Date:   Wed, 1 Jun 2022 10:46:23 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     lee.jones@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
-        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        cy_huang@richtek.com, alice_chen@richtek.com,
-        chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [RESEND 14/14] video: backlight: mt6370: Add Mediatek MT6370
- support
-Message-ID: <20220601094623.jnwh2fgsqepy72tc@maple.lan>
-References: <20220531111900.19422-1-peterwu.pub@gmail.com>
- <20220531111900.19422-15-peterwu.pub@gmail.com>
+        with ESMTP id S240188AbiFAJt1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 05:49:27 -0400
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2060.outbound.protection.outlook.com [40.107.220.60])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D2A221819;
+        Wed,  1 Jun 2022 02:49:23 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=S28hEqQCYlIFz2N0MA69WYeUs4nuV5IMMNLv+ijUqLCu1+siR7q9kPpZ/wzHM2Ji3DtXnQFmkMW7uaLiO4PyMOhBf7F8/gLDM3NOFMTOOa6fm1f0voWDPfiJgdThxIdsBXazn+YC5HmvVR7F25VRzqp5Fe3Oq0J2Cw6kDBHkWkyaHZ1810aHpT8VNZaDw3b+VhUxW/uRONtogYBurkTUUp8mwM7uhhygsniUvTk8t8oYsGo/e3m3OIUX+s8qjSxiuC8k+CRxLaJiCQnBqx5VrBe9CqwMNqJ/0LJ2ghckD95zz9pcR2MmgVeG/rpLcBEFNm2nTp3ouGDWyk1wJ5X11g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Xl5+0lazUBTg0sakyJbNPsF9l3GwSXCMctuIX/EqIbU=;
+ b=gw3Rc+KIkoQAYTagJHN2ySnylNbEKCwpygi7SZinq0doq+o8yt9+YxodH+4pZeADqNViBDRr8dA44ktgxYQvfq6c//cpykGZGXovYY3bUbAbz7QuEylJGsAqdnq34x4E82Ol/qTMgRHmmZqpUfl9N2h+hLjI6x+sWTy1lxbwIwdXnoVBEUr2vvr7Ktf0kvuSAWpWT+3kd8BDUz0JGZn2h9GfpkLkMT0dvgNoder3CA00BPzEDjj+kumA8Gp7VX/qpYF7P5qEqoCuH6eTI0NyHsszdeycMME0VQHBPoKvveSOSzcFg4dVhKko97v8bE9qAQ5DVfenJL3NdZQS6FecdQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Xl5+0lazUBTg0sakyJbNPsF9l3GwSXCMctuIX/EqIbU=;
+ b=px5zxRbP+ZkFPjYsdRmreosP0uw+wWLXiqS6sqwJVeEC5R8r7CfoG97joAQ8FUkWOACLRU7ns/gMu4XmFBnQYiUZ2RFalw3pbAryjkDvxtxel33CPVcU0B4c+DIaZHI/9v3yH2NpBfEowyzJN1a8ScSydRj5bV6cJjD0ottL1D/9mkdRhcduHvkcV48QQUpUvOYtBWxFQ0qhUwiFb7VqC44YDHrarCIG4H0e1q8YzcABr8QP6TgDAYgHSHx8THDgame73KnX6mz/4kbvmFWnA5eRbfPVW3jTe5HO9x2IxT5Fqy9uRpiYJrh/tu2kOdDZJlZw66HFTQaxwPSNPd150g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from BL1PR12MB5304.namprd12.prod.outlook.com (2603:10b6:208:314::13)
+ by MN2PR12MB4783.namprd12.prod.outlook.com (2603:10b6:208:3e::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5314.13; Wed, 1 Jun
+ 2022 09:49:21 +0000
+Received: from BL1PR12MB5304.namprd12.prod.outlook.com
+ ([fe80::b844:73a2:d4b8:c057]) by BL1PR12MB5304.namprd12.prod.outlook.com
+ ([fe80::b844:73a2:d4b8:c057%4]) with mapi id 15.20.5314.013; Wed, 1 Jun 2022
+ 09:49:20 +0000
+Message-ID: <00b6e380-ecf4-1eaf-f950-2c418bdb6cac@nvidia.com>
+Date:   Wed, 1 Jun 2022 15:19:07 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH v3 8/8] vfio/pci: Add the support for PCI D3cold state
+Content-Language: en-US
+To:     Alex Williamson <alex.williamson@redhat.com>,
+        Jason Gunthorpe <jgg@nvidia.com>
+Cc:     Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
+References: <20220425092615.10133-1-abhsahu@nvidia.com>
+ <20220425092615.10133-9-abhsahu@nvidia.com>
+ <20220504134551.70d71bf0.alex.williamson@redhat.com>
+ <9e44e9cc-a500-ab0d-4785-5ae26874b3eb@nvidia.com>
+ <20220509154844.79e4915b.alex.williamson@redhat.com>
+ <68463d9b-98ee-b9ec-1a3e-1375e50a2ad2@nvidia.com>
+ <42518bd5-da8b-554f-2612-80278b527bf5@nvidia.com>
+ <20220530122546.GZ1343366@nvidia.com>
+ <c73d537b-a653-bf79-68cd-ddc8f0f62a25@nvidia.com>
+ <20220531194304.GN1343366@nvidia.com>
+ <20220531165209.1c18854f.alex.williamson@redhat.com>
+X-Nvconfidentiality: public
+From:   Abhishek Sahu <abhsahu@nvidia.com>
+In-Reply-To: <20220531165209.1c18854f.alex.williamson@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MA0PR01CA0033.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:b8::15) To BL1PR12MB5304.namprd12.prod.outlook.com
+ (2603:10b6:208:314::13)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220531111900.19422-15-peterwu.pub@gmail.com>
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 9167450c-8bd9-475a-57cc-08da43b40031
+X-MS-TrafficTypeDiagnostic: MN2PR12MB4783:EE_
+X-Microsoft-Antispam-PRVS: <MN2PR12MB478310328CB20BC43016958FCCDF9@MN2PR12MB4783.namprd12.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: pz4AWlIdRkz1oi9VkD+FHt2hF3nfPsDw+abM4f8DUAKUYoeZ7y0zUdVROvFPQoPmk9rxwhfaPKrCRNvtzwFnVXhLMn55kWR46Lm1hjTOA0RFi2LtGFsslOzrcZXqtzZtKmNLELzyI1i1wvqJ9yuGnw6ChrZ/1Cb0HW64flm8pLcBoZtksJQNZYXKvqTCbpUnxGzPQeANCyqscBQwwqkSEQ0fbfLJHJzmuaUGYfl9/JSysktAAC8fNEQQkqGqEfejmFnxBgRzvuK89fk5hO8f870ZrcDpin5wPVB1ljCb7JKt12muyKjSAwTAbPBQGFtTz1AlUUGhmXPnTVnRzQLV2/DtIAzot5ZbVNB2reXzU/G48QQ3brTei+7ItTRD+l6wuW7jvzaf1/RKNtDIOxleKjrwlC/LmWurAnSdAtMtfRshGlWbk0aR6A+3wKrrYF+c9Eqii+UhZcKh+ACNmFYkwaHlH7z2ZTm4ZWblJETjpqoQSdBXNYR1LaBeByj0dj8rXkPoKwE3wsHPl3vaGPRCemkVJQzlJIO2AW/XSbxGlc5iMaGQeir5Ue9Gi8DjJVQZE0sDjGR6mEnhkp5Kx8r6KA/BYoIUi+tR3YLDO32JbBH6f4S6JKVmOiCrt/L3MFE1LMNdjuz36T1BaXOoZfcyarjQ2Xcu+cRZnwiH3TwIXORHww8hMGyFkAbiT426q8QVVNv7sRufM3RFTOfeHE4FCH7eMyvb+PWvZHoMAA1o+4yK3UygacmbIow1PzXRSfIH+fdfO6Oy5TX8JOxPw0XeTg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL1PR12MB5304.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(86362001)(31696002)(66556008)(66476007)(66946007)(4326008)(8676002)(316002)(38100700002)(6636002)(110136005)(508600001)(54906003)(186003)(2616005)(55236004)(53546011)(6666004)(6506007)(6512007)(2906002)(26005)(36756003)(8936002)(31686004)(83380400001)(7416002)(5660300002)(6486002)(32563001)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?WlhyNVdNeXhEZmx3OTVTdzhIMTgzT3JXOVR0VjNIRlE1Q1AwVU0rdVNZWkIr?=
+ =?utf-8?B?S2Y1d3o2eGg4T3FpMGtvcm9sY1hsN1ZNbm45ZFdkaEs4bUwreWtiaXBPUTBM?=
+ =?utf-8?B?bS9USitkSDNhczRpN3ZKL210MEdHS2kvV09hTFlLS2thR1J5c2VDM0l1amRL?=
+ =?utf-8?B?bnhYcDlXemZqTkxjejN0VGF3TEpkL0NpcUNpZWhYWDl3bkJTM0JPZnozTVBC?=
+ =?utf-8?B?WnJmM2UyVTlWWmxKeTFMOTRYUjJUVmhsbXlJSTB5N2dXdXhML0hDT09Cd0VP?=
+ =?utf-8?B?T25GUlR6bXNpY3lvNFkxRitESXlBaVhWQXE0L2hmaHViQWFSSkx6cERzV3g5?=
+ =?utf-8?B?QXQxQUt5czNrT3NaUlFGbkVMS1d0M3ZRcnExdmZmU1BpQjRhUmpYUXJoNmU0?=
+ =?utf-8?B?VHQ4YjF1WkF0VU1NRExHV3V2cjlEcnVHZ0doSUt4SndqbzFrYzViYmxRU2Uy?=
+ =?utf-8?B?bEgxa0JzeXk3SmVINngrT1h6T2ptL1J2Snk4czhTaFd5UnN4UzR4Z0hZSTVi?=
+ =?utf-8?B?ZEZoSXFyVjcyT05qdjQ2ZXZhVGJFek1QWm1iQzVScVl2SEMrejRycTltNCt3?=
+ =?utf-8?B?TU55RXd2c1VxYzBsZEU1Y3h2T1RJTUJ1L001d1NaNXp4aGFEL29zVno2RlBW?=
+ =?utf-8?B?WXRDQ1BUOTIvTSswKzM5VGlHOVEyRldyODRjdWFjZllhRHJVK0N5T1VvS2VW?=
+ =?utf-8?B?RjVUS05zdnE3dlc5cHVOcHB6Z2s4d2VGdWN1c25Td1lweE1QTFU2ZkJlY3hz?=
+ =?utf-8?B?RER0MUR3MHlsUmRzUEdXWWJQU0lMSlBwNFhRejJyMlV0TFowMFJNbmNKZlFo?=
+ =?utf-8?B?TWw1WUc0NzdwZjlDVFhReWdGK1kwWU1qcVgrUHVVN213ZjdhVkVKUkU1V1Zp?=
+ =?utf-8?B?SGN1em8vSHYxNTQvaEt6SG12aVFPWTNMblBaRmdja1FaS3BtNENxRklVTTRi?=
+ =?utf-8?B?UXFVM1crY25hdkwwNUUyTnU1U2EwNHlsaC9CZklPYno4c0wxa0dUVG9BaUdH?=
+ =?utf-8?B?WGRrZncrREk2Y3dmNUR0ampFQTlUUjYxcWttUzFPMWtmZWZpM1dkTzE3dG42?=
+ =?utf-8?B?MGIvbUxxU1lmVUNoVjFQKzNvQlF2MXRCS0xBcTUxVytTV2R0YzRnUFpDL3do?=
+ =?utf-8?B?aWxNajdIaXQxRDdLYU0zSDNja2Y5cDJCYXhiM0U3S05kMXZvL0FEYXg0NGtB?=
+ =?utf-8?B?VTI0WUpXT2FOckx0YUZGQ2lZOElJV2RiRGs4TkN4Vi80aXh4cXYvU0N0RmE2?=
+ =?utf-8?B?S05GS2JmL1BvOEF4Vk9KQlVlMEtzS21RcUxhOVVNeDc3eDRhRmxzSXVoMk1B?=
+ =?utf-8?B?aFArMW9TWGxrbGhNbitvdDF6YzQ0LzREdW9nRGJmWEJuTUNJQkI3cnpGRjAx?=
+ =?utf-8?B?ZGN5NnVoQVNkMnpRWlB3M1lXanZqNUpWdGRpcmZZcDZab0RVekJzcG55ZVc2?=
+ =?utf-8?B?TWkycjFRYTh1RG16WHZVSEpFeUpVeFQwS1EzUlpZSXdWVFBjbU8rM3ZWNU1K?=
+ =?utf-8?B?cFJKZzc4ZFRKSnFiZjYxSWVxMXlHcHVBVVdKdWE3ZXJuTnR4aDVqRlp3V3Nj?=
+ =?utf-8?B?QWJRVXVCUUIrZnNSNFlQY0JYcGZTRGhiaDdobmdqTnhob0dYMmFIYzFOT2hy?=
+ =?utf-8?B?MTJ2MWI0MDNGTExXcGRTNkhtWU9teEdHWEU2elBHS2ZtVVhGYXoyRXZaK2F3?=
+ =?utf-8?B?enNaMGg2YkxVZzJEWStuQ0RxQXBBdWVXS2tLcWVyczlQUUpnSXIrYU5qanll?=
+ =?utf-8?B?V1hyUHVnd2hWQkgzOHdrSWZXU2RnT2ZueUZ4MFQwNkg0R2NLVU1PNm5zQWlN?=
+ =?utf-8?B?elMzTk1vR0pmcHRiZWZhWE83VHpzQjBWa0ZVWEl1dDVEMVBrYTJTWHNsZjBo?=
+ =?utf-8?B?MDhQMTBpS0s4QTIrWGlvaVJTeENpQnlkODdTZUxUQ3dQN21vbStpZmJYaXJN?=
+ =?utf-8?B?M1JiSG11cWNHTzI5TTBQUXlXaitTeDhqVUtYemxJUFFpZk5aQjBzUGwwalZ3?=
+ =?utf-8?B?NUpVTDA0T2VxS0N3VW1mYmQ1eHI3aXBvSjN1SGhVaFYveW1LeFUyU2tsUkNk?=
+ =?utf-8?B?WVZSQWxNZ0xxaTdNMHEwVXN6cTVRZDJMOXNncmxvbzFqT2VIQ1duYUFRUXE0?=
+ =?utf-8?B?RG9iZDhIK1lsVTN6WkhFS1ZVZGRxQXk4S1ZBa01NemtabUNoMUJNUitvQzFJ?=
+ =?utf-8?B?WlFueDU5Q2FUWHpNNjlVSWVDNUU2YnFBbVBFOE1lNy9KU3MwUXJBOU42d3I2?=
+ =?utf-8?B?OW1VTEYvTU1tczlZMXVrT2RnZ0tLYWxVb0Y4dkVqZDFqMldkMUhiUnhVU3Zy?=
+ =?utf-8?B?UDJyaFZZdnJKQW9sQklsNXZZN00yYXMwUTY1Y252cS9oNEJzVVpRUT09?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9167450c-8bd9-475a-57cc-08da43b40031
+X-MS-Exchange-CrossTenant-AuthSource: BL1PR12MB5304.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2022 09:49:20.6816
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: nXDM4FXI9faf1O/6nCQgW27vplk27kBexy/Fvct5OvghjjOf4KR3RVj4VG84KkPGvlsOLeLS9MgoC/MY+vmYVg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4783
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, May 31, 2022 at 07:19:00PM +0800, ChiaEn Wu wrote:
-> From: ChiaEn Wu <chiaen_wu@richtek.com>
+On 6/1/2022 4:22 AM, Alex Williamson wrote:
+> On Tue, 31 May 2022 16:43:04 -0300
+> Jason Gunthorpe <jgg@nvidia.com> wrote:
 > 
-> Add Mediatek MT6370 Backlight support.
+>> On Tue, May 31, 2022 at 05:44:11PM +0530, Abhishek Sahu wrote:
+>>> On 5/30/2022 5:55 PM, Jason Gunthorpe wrote:  
+>>>> On Mon, May 30, 2022 at 04:45:59PM +0530, Abhishek Sahu wrote:
+>>>>   
+>>>>>  1. In real use case, config or any other ioctl should not come along
+>>>>>     with VFIO_DEVICE_FEATURE_POWER_MANAGEMENT ioctl request.
+>>>>>  
+>>>>>  2. Maintain some 'access_count' which will be incremented when we
+>>>>>     do any config space access or ioctl.  
+>>>>
+>>>> Please don't open code locks - if you need a lock then write a proper
+>>>> lock. You can use the 'try' variants to bail out in cases where that
+>>>> is appropriate.
+>>>>
+>>>> Jason  
+>>>
+>>>  Thanks Jason for providing your inputs.
+>>>
+>>>  In that case, should I introduce new rw_semaphore (For example
+>>>  power_lock) and move ‘platform_pm_engaged’ under ‘power_lock’ ?  
+>>
+>> Possibly, this is better than an atomic at least
+>>
+>>>  1. At the beginning of config space access or ioctl, we can take the
+>>>     lock
+>>>  
+>>>      down_read(&vdev->power_lock);  
+>>
+>> You can also do down_read_trylock() here and bail out as you were
+>> suggesting with the atomic.
+>>
+>> trylock doesn't have lock odering rules because it can't sleep so it
+>> gives a bit more flexability when designing the lock ordering.
+>>
+>> Though userspace has to be able to tolerate the failure, or never make
+>> the request.
+>>
+
+ Thanks Alex and Jason for providing your inputs.
+
+ Using down_read_trylock() along with Alex suggestion seems fine.
+ In real use case, config space access should not happen when the
+ device is in low power state so returning error should not
+ cause any issue in this case.
+
+>>>          down_write(&vdev->power_lock);
+>>>          ...
+>>>          switch (vfio_pm.low_power_state) {
+>>>          case VFIO_DEVICE_LOW_POWER_STATE_ENTER:
+>>>                  ...
+>>>                          vfio_pci_zap_and_down_write_memory_lock(vdev);
+>>>                          vdev->power_state_d3 = true;
+>>>                          up_write(&vdev->memory_lock);
+>>>
+>>>          ...
+>>>          up_write(&vdev->power_lock);  
+>>
+>> And something checks the power lock before allowing the memor to be
+>> re-enabled?
+>>
+>>>  4.  For ioctl access, as mentioned previously I need to add two
+>>>      callbacks functions (one for start and one for end) in the struct
+>>>      vfio_device_ops and call the same at start and end of ioctl from
+>>>      vfio_device_fops_unl_ioctl().  
+>>
+>> Not sure I followed this..
 > 
-> Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> ---
->  drivers/video/backlight/Kconfig            |   8 +
->  drivers/video/backlight/Makefile           |   1 +
->  drivers/video/backlight/mt6370-backlight.c | 338 +++++++++++++++++++++
->  3 files changed, 347 insertions(+)
->  create mode 100644 drivers/video/backlight/mt6370-backlight.c
+> I'm kinda lost here too.
+
+
+ I have summarized the things below
+
+ 1. In the current patch (v3 8/8), if config space access or ioctl was
+    being made by the user when the device is already in low power state,
+    then it was waking the device. This wake up was happening with
+    pm_runtime_resume_and_get() API in vfio_pci_config_rw() and
+    vfio_device_fops_unl_ioctl() (with patch v3 7/8 in this patch series).
+
+ 2. Now, it has been decided to return error instead of waking the
+    device if the device is already in low power state.
+
+ 3. Initially I thought to add following code in config space path
+    (and similar in ioctl)
+
+        vfio_pci_config_rw() {
+            ...
+            down_read(&vdev->memory_lock);
+            if (vdev->platform_pm_engaged)
+            {
+                up_read(&vdev->memory_lock);
+                return -EIO;
+            }
+            ...
+        }
+
+     And then there was a possibility that the physical config happens
+     when the device in D3cold in case of race condition.
+
+ 4.  So, I wanted to add some mechanism so that the low power entry
+     ioctl will be serialized with other ioctl or config space. With this
+     if low power entry gets scheduled first then config/other ioctls will
+     get failure, otherwise low power entry will wait.
+
+ 5.  For serializing this access, I need to ensure that lock is held
+     throughout the operation. For config space I can add the code in
+     vfio_pci_config_rw(). But for ioctls, I was not sure what is the best
+     way since few ioctls (VFIO_DEVICE_FEATURE_MIGRATION,
+     VFIO_DEVICE_FEATURE_MIG_DEVICE_STATE etc.) are being handled in the
+     vfio core layer itself.
+
+ The memory_lock and the variables to track low power in specific to
+ vfio-pci so I need some mechanism by which I add low power check for
+ each ioctl. For serialization, I need to call function implemented in
+ vfio-pci before vfio core layer makes the actual ioctl to grab the
+ locks. Similarly, I need to release the lock once vfio core layer
+ finished the actual ioctl. I have mentioned about this problem in the
+ above point (point 4 in my earlier mail).
+
+> A couple replies back there was some concern
+> about race scenarios with multiple user threads accessing the device.
+> The ones concerning non-deterministic behavior if a user is
+> concurrently changing power state and performing other accesses are a
+> non-issue, imo.  
+
+ What does non-deterministic behavior here mean.
+ Is it for user side that user will see different result
+ (failure or success) during race condition or in the kernel side
+ (as explained in point 3 above where physical config access
+ happens when the device in D3cold) ? My concern here is for later
+ part where this config space access in D3cold can cause fatal error
+ on the system side as we have seen for memory disablement.
+
+> I think our goal is only to expand the current
+> memory_lock to block accesses, including config space, while the device
+> is in low power, or some approximation bounded by the entry/exit ioctl.
 > 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index a003e02e13ce..d9868fbe7488 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -268,6 +268,14 @@ config BACKLIGHT_MAX8925
->  	  If you have a LCD backlight connected to the WLED output of MAX8925
->  	  WLED output, say Y here to enable this driver.
->  
-> +config BACKLIGHT_MT6370
+> I think the remaining issues is how to do that relative to the fact
+> that config space access can change the memory enable state and would
+> therefore need to upgrade the memory_lock read-lock to a write-lock.
+> For that I think we can simply drop the read-lock, acquire the
+> write-lock, and re-test the low power state.  If it has changed, that
+> suggests the user has again raced changing power state with another
+> access and we can simply drop the lock and return -EIO.
+> 
 
-Is MT6370 really the best name for this driver? In other words, you
-don't expect there to be any family resemblance between this backlight
-and the backlight in the *next* Mediatak PMIC?
+ Yes. This looks better option. So, just to confirm, I can take the
+ memory_lock read-lock at the starting of vfio_pci_config_rw() and
+ release it just before returning from vfio_pci_config_rw() and
+ for memory related config access, we will release this lock and
+ re-aquiring again write version of this. Once memory write happens,
+ then we can downgrade this write lock to read lock ?
 
-Moreover, 
+ Also, what about IOCTLs. How can I take and release memory_lock for
+ ioctl. is it okay to go with Patch 7 where we call
+ pm_runtime_resume_and_get() before each ioctl or we need to do the
+ same low power check for ioctl also ?
+ In Later case, I am not sure how should I do the implementation so
+ that all other ioctl are covered from vfio core layer itself.
 
+ Thanks,
+ Abhishek
 
-> +	tristate "Mediatek MT6370 Backlight Driver"
-> +	depends on MFD_MT6370
-> +	help
-> +	  Say Y here to enable MT6370 Backlight support.
-> +	  It's commonly used to drive the display WLED. There're 4 channels
-> +	  inisde, and each channel can provide up to 30mA current.
+> If I'm still misunderstanding, please let me know.  Thanks,
+> 
+> Alex
+> 
 
-Nitpicking but this doesn't align well with other help texts in this
-file.
-
-
-> +
->  config BACKLIGHT_APPLE
->  	tristate "Apple Backlight Driver"
->  	depends on X86 && ACPI
-> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-> index cae2c83422ae..e815f3f1deff 100644
-> --- a/drivers/video/backlight/Makefile
-> +++ b/drivers/video/backlight/Makefile
-> @@ -44,6 +44,7 @@ obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
->  obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
->  obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
->  obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
-> +obj-$(CONFIG_BACKLIGHT_MT6370)		+= mt6370-backlight.o
->  obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
->  obj-$(CONFIG_BACKLIGHT_PANDORA)		+= pandora_bl.o
->  obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
-> diff --git a/drivers/video/backlight/mt6370-backlight.c b/drivers/video/backlight/mt6370-backlight.c
-> new file mode 100644
-> index 000000000000..f8a8d33203ed
-> --- /dev/null
-> +++ b/drivers/video/backlight/mt6370-backlight.c
-> @@ -0,0 +1,338 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#include <linux/backlight.h>
-> +#include <linux/bitfield.h>
-> +#include <linux/bits.h>
-> +#include <linux/gpio/consumer.h>
-> +#include <linux/gpio/driver.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +
-> +#define MT6370_REG_DEV_INFO		0x100
-> +#define MT6370_REG_BL_EN		0x1A0
-> +#define MT6370_REG_BL_BSTCTRL		0x1A1
-> +#define MT6370_REG_BL_PWM		0x1A2
-> +#define MT6370_REG_BL_DIM2		0x1A4
-> +
-> +#define MT6370_VENID_MASK		GENMASK(7, 4)
-> +#define MT6370_BL_EXT_EN_MASK		BIT(7)
-> +#define MT6370_BL_EN_MASK		BIT(6)
-> +#define MT6370_BL_CONFIG_MASK		BIT(0)
-> +#define MT6370_BL_CH_MASK		GENMASK(5, 2)
-> +#define MT6370_BL_DIM2_MASK		GENMASK(2, 0)
-> +#define MT6370_BL_DUMMY_6372_MASK	GENMASK(2, 0)
-> +#define MT6370_BL_DIM2_6372_SHIFT	3
-> +#define MT6370_BL_PWM_EN_MASK		BIT(7)
-> +#define MT6370_BL_PWM_HYS_EN_MASK	BIT(2)
-> +#define MT6370_BL_PWM_HYS_SEL_MASK	GENMASK(1, 0)
-> +#define MT6370_BL_OVP_EN_MASK		BIT(7)
-> +#define MT6370_BL_OVP_SEL_MASK		GENMASK(6, 5)
-> +#define MT6370_BL_OC_EN_MASK		BIT(3)
-> +#define MT6370_BL_OC_SEL_MASK		GENMASK(2, 1)
-> +
-> +#define MT6370_BL_MAX_BRIGHTNESS	2048
-> +
-> +enum {
-> +	MT6370_VID_COMMON = 0,
-> +	MT6370_VID_6372,
-> +	MT6370_VID_MAX,
-
-Unused.
-
-> +};
-> +
-> +enum mt6370_prop_type {
-> +	MT6370_PARSE_TYPE_BOOL = 0,
-> +	MT6370_PARSE_TYPE_U8,
-> +	MT6370_PARSE_TYPE_MAX,
-
-Unused.
-
-> +};
-> +
-> +struct mt6370_priv {
-> +	int vid_type;
-> +	struct backlight_device *bl;
-> +	struct device *dev;
-> +	struct gpio_desc *enable_gpio;
-> +	struct regmap *regmap;
-> +};
-> +
-> +static int mt6370_bl_update_status(struct backlight_device *bl_dev)
-> +{
-> +	struct mt6370_priv *priv = bl_get_data(bl_dev);
-> +	int brightness = backlight_get_brightness(bl_dev);
-> +	unsigned int enable_val;
-> +	u8 brightness_val[2];
-> +	int ret;
-> +
-> +	if (brightness) {
-> +		brightness_val[0] = (brightness - 1) & MT6370_BL_DIM2_MASK;
-> +		brightness_val[1] = (brightness - 1)
-> +					>> fls(MT6370_BL_DIM2_MASK);
-> +
-> +		if (priv->vid_type == MT6370_VID_6372) {
-> +			brightness_val[0] <<= MT6370_BL_DIM2_6372_SHIFT;
-> +			brightness_val[0] |= MT6370_BL_DUMMY_6372_MASK;
-
-Comment explaining why we have to set these bits would be useful.
-
-
-> +		}
-> +
-> +		ret = regmap_raw_write(priv->regmap, MT6370_REG_BL_DIM2,
-> +				       brightness_val, sizeof(brightness_val));
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	if (priv->enable_gpio)
-> +		gpiod_set_value(priv->enable_gpio, brightness ? 1 : 0);
-> +
-> +	enable_val = brightness ? MT6370_BL_EN_MASK : 0;
-> +	return regmap_update_bits(priv->regmap, MT6370_REG_BL_EN,
-> +				  MT6370_BL_EN_MASK, enable_val);
-> +}
-> +
-
-<snip>
-
-> +#define MT6370_DT_PROP_DECL(_name, _type, _reg, _mask, _max, _inv)	\
-> +{									\
-> +	.name = "mediatek,bled-" #_name,				\
-
-I'd rather have the whole DT property in the macro (because it helps
-with grepability).
-
-
-> +	.type = MT6370_PARSE_TYPE_##_type,				\
-> +	.reg = _reg,							\
-> +	.mask = _mask,							\
-> +	.max_val = _max,						\
-> +	.invert = _inv,							\
-> +}
-> +
-> +static int mt6370_init_backlight_properties(struct mt6370_priv *priv,
-> +					    struct backlight_properties *props)
-> +{
-> +	struct device *dev = priv->dev;
-> +	u8 prop_val;
-> +	u32 brightness;
-> +	unsigned int mask, val;
-> +	static const struct {
-> +		char *name;
-> +		enum mt6370_prop_type type;
-> +		unsigned int reg;
-> +		unsigned int mask;
-> +		u8 max_val;
-> +		bool invert;
-> +	} vendor_opt_props[] = {
-> +		MT6370_DT_PROP_DECL(pwm-enable, BOOL, MT6370_REG_BL_PWM,
-> +				    MT6370_BL_PWM_EN_MASK, 1, false),
-> +		MT6370_DT_PROP_DECL(pwm-hys-enable, BOOL, MT6370_REG_BL_PWM,
-> +				    MT6370_BL_PWM_HYS_EN_MASK, 1, false),
-> +		MT6370_DT_PROP_DECL(pwm-hys-sel, U8, MT6370_REG_BL_PWM,
-> +				    MT6370_BL_PWM_HYS_SEL_MASK, 3, false),
-> +		MT6370_DT_PROP_DECL(ovp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
-> +				    MT6370_BL_OVP_SEL_MASK, 3, false),
-> +		MT6370_DT_PROP_DECL(ovp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
-> +				    MT6370_BL_OVP_EN_MASK, 1, true),
-> +		MT6370_DT_PROP_DECL(ocp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
-> +				    MT6370_BL_OC_SEL_MASK, 3, false),
-> +		MT6370_DT_PROP_DECL(ocp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
-> +				    MT6370_BL_OC_EN_MASK, 1, true),
-> +	}, *prop_now;
-> +	int i, ret;
-> +
-> +	/* vendor optional properties */
-> +	for (i = 0; i < ARRAY_SIZE(vendor_opt_props); i++) {
-> +		prop_now = vendor_opt_props + i;
-> +
-> +		switch (prop_now->type) {
-> +		case MT6370_PARSE_TYPE_BOOL:
-> +			if (device_property_read_bool(dev, prop_now->name))
-> +				val = 1;
-> +			else
-> +				val = 0;
-> +			break;
-> +		case MT6370_PARSE_TYPE_U8:
-> +			ret = device_property_read_u8(dev, prop_now->name,
-> +						      &prop_val);
-> +			/* Property not exist, keep value in default */
-> +			if (ret)
-> +				continue;
-> +
-> +			val = min_t(u8, prop_val, prop_now->max_val);
-> +			break;
-> +		default:
-> +			return -EINVAL;
-> +		}
-> +
-> +		if (prop_now->invert)
-> +			val = prop_now->max_val - val;
-> +
-> +		val <<= ffs(prop_now->mask) - 1;
-> +
-> +		ret = regmap_update_bits(priv->regmap, prop_now->reg,
-> +					 prop_now->mask, val);
-> +		if (ret)
-> +			return ret;
-> +	}
-
-Is it really worth all this tricky code for 7 properties?
-
-The code would be much easier to read and maintain if it were coded
-directly. For example, the inverted boolean code is hard to read and
-can be written directly as:
-
-
-        val = device_property_read_bool(dev, "mediatek,bled-ovp_shutdown");
-	ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BST_CTRL,
-	                         MT6370_BL_OVP_EN_MASK,
-				 MT6370_BL_OVP_EN_MASK * !val);
-	if (ret)
-		return ret;
-
-The direct coded approach will probably also pay off if you switch
-the bindings over to microvolts/microamps since it becomes much more
-natural to call out to a lookup function to convert it into a register
-value.
-
-> +
-> +	/* common properties */
-> +	ret = device_property_read_u32(dev, "max-brightness", &brightness);
-> +	if (ret)
-> +		brightness = MT6370_BL_MAX_BRIGHTNESS;
-> +
-> +	props->max_brightness = min_t(u32, brightness,
-> +				      MT6370_BL_MAX_BRIGHTNESS);
-> +
-> +	ret = device_property_read_u32(dev, "default-brightness", &brightness);
-> +	if (ret)
-> +		brightness = props->max_brightness;
-> +
-> +	props->brightness = min_t(u32, brightness, props->max_brightness);
-> +
-> +
-> +	ret = device_property_read_u8(dev, "mediatek,bled-channel-use",
-> +				      &prop_val);
-> +	if (ret) {
-> +		dev_err(dev, "mediatek,bled-channel-use DT property missing\n");
-> +		return ret;
-> +	}
-> +
-> +	if (!prop_val) {
-> +		dev_err(dev, "No channel specified\n");
-> +		return -EINVAL;
-> +	}
-
-If we are going to validity check this property then it needs an upper
-bounds check to (e.g. consider if property is set to 64).
-
-
-> +
-> +	mask = MT6370_BL_EXT_EN_MASK | MT6370_BL_CH_MASK;
-> +	val = prop_val << (ffs(MT6370_BL_CH_MASK) - 1);
-> +
-> +	if (priv->enable_gpio)
-> +		val |= MT6370_BL_EXT_EN_MASK;
-> +
-> +	return regmap_update_bits(priv->regmap, MT6370_REG_BL_EN, mask, val);
-> +}
-> +
-> +static int mt6370_check_vendor_info(struct mt6370_priv *priv)
-
-A comment explaining what variants this function is intended to
-supported here would be good here.
-
-
-> +{
-> +	unsigned int dev_info, vid;
-> +	int ret;
-> +
-> +	ret = regmap_read(priv->regmap, MT6370_REG_DEV_INFO, &dev_info);
-> +	if (ret)
-> +		return ret;
-> +
-> +	vid = FIELD_GET(MT6370_VENID_MASK, dev_info);
-> +	if (vid == 0x9 || vid == 0xb)
-> +		priv->vid_type = MT6370_VID_6372;
-> +	else
-> +		priv->vid_type = MT6370_VID_COMMON;
-> +
-> +	return 0;
-> +}
-
-
-No furthers comments so I trimmed the rest.
-
-
-Daniel.
