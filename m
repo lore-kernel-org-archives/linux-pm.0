@@ -2,172 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D0DFC433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 31 May 2022 22:52:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FD92C4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 07:07:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348578AbiEaWwP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 May 2022 18:52:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37348 "EHLO
+        id S1343991AbiFAHHR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jun 2022 03:07:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235623AbiEaWwO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2022 18:52:14 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9C08127CF3
-        for <linux-pm@vger.kernel.org>; Tue, 31 May 2022 15:52:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1654037532;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=9q9k+C5RGQU4qKgmWFkXDcgQ25M6UKH1DBXC6+yr110=;
-        b=E8E9R7zmtGGFSoCgN1WEBfttrIFe142RHCIs3N/J7k/laNcpKXQcjeOVw8WsgBIc56QPhH
-        NPE9SExht5T5qy3SHxf0Qgo90E2oHpsNZXJiNnKmvg5Yu3GItknp9kJ78Nd7R0PzucS3Li
-        yyslTAj5nF5PajyfZ3LAuuD8bekEiwI=
-Received: from mail-io1-f72.google.com (mail-io1-f72.google.com
- [209.85.166.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-659-11tj9_0APMGcioMXJQ4hYA-1; Tue, 31 May 2022 18:52:11 -0400
-X-MC-Unique: 11tj9_0APMGcioMXJQ4hYA-1
-Received: by mail-io1-f72.google.com with SMTP id k5-20020a6bba05000000b00668eb755190so1398645iof.13
-        for <linux-pm@vger.kernel.org>; Tue, 31 May 2022 15:52:11 -0700 (PDT)
+        with ESMTP id S242200AbiFAHHQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 03:07:16 -0400
+Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67E7A636D
+        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 00:07:15 -0700 (PDT)
+Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-2dc7bdd666fso8452587b3.7
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 00:07:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=Eq6nH6aGeuKpMU9nM7ibONmheABIDjQM7t9UjsNcl+w=;
+        b=dvfs6aw0o9enYr6q5JvsoITL1cIodQJtPwQKFVNV/ElWQiITwvlgBGIYVXYubJ0EWb
+         hQZknjUn8hWhfVG63Q26ahXT/ybuECTh3IQ0hlFzpMrRfffJaSxehOVATgqcGdOl5B63
+         UAGusDHfZ1+bZx3UPXTCMA74yfTvat1qBDbQNIwN2gBcEL0s2lgJJxBkvLKW4seHwHfy
+         yy/kVDyKrdiePicpV782RiPioPYMYI6dNrIPSqSRQjnVUQlBHfFoZNPq2vXgAhQA5tJ2
+         qPRfgtRDz89n2glwq1xvIPHXD3I9kan+rQBxaKWDF0fkq11SsjvYI3DlubXtUCtJ5N2t
+         udoA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
-         :references:organization:mime-version:content-transfer-encoding;
-        bh=9q9k+C5RGQU4qKgmWFkXDcgQ25M6UKH1DBXC6+yr110=;
-        b=EJeycJHa7MYL3AvTMIfRvWebztO7Fim8jIry5MHs1xAb8T/G1GT/Q3dpTiCr6nM6jM
-         PaHdcgg+1TrCDahNHeWSpB8SJkMY4/MASLkY1mZU1yk3SmE2izt8RprHOQpRWcagwQ+o
-         pThLxxzwU30cMtNWppLIMfkRqsCPvevYBEd5HHL+rf+Ik3dwAlgYvyH2HaEPR+W5JLar
-         b8XPPBzVdGDO3QyEU5bKQI3EcnXUi2cqkrnpQpAtWz4gHYTBszUt4B05zoojApQ6GXZ6
-         XYWkYYR5knWAER+6WI5uTSaXrgDH5bhJ9RdLX6LBSvatJ7hDSQN7aoL3Xslm2Z5vZDl7
-         cbew==
-X-Gm-Message-State: AOAM530W0VMU/XHC9/y3/2g0Qf/BdOI15Oxkc7czTxU5K50Zo3axh/OM
-        n7hC0RCJYz8FFoP2X2tGgp0xo5hwxIAv9HIsIRaKBnD/FCtk7LXiuQNcYJEx9qR1QFM6wpn8B8V
-        2h7OFEhxOqjXrv+59MtQ=
-X-Received: by 2002:a05:6638:dc6:b0:32e:e2d7:8261 with SMTP id m6-20020a0566380dc600b0032ee2d78261mr21306062jaj.152.1654037531004;
-        Tue, 31 May 2022 15:52:11 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJyFaz/Zncf57CZD055l8ggcPaldX2dVcDSiNf2yikAtVetyU+4sMp+QQR12XvYG/vo4kFwZKA==
-X-Received: by 2002:a05:6638:dc6:b0:32e:e2d7:8261 with SMTP id m6-20020a0566380dc600b0032ee2d78261mr21306045jaj.152.1654037530793;
-        Tue, 31 May 2022 15:52:10 -0700 (PDT)
-Received: from redhat.com ([38.15.36.239])
-        by smtp.gmail.com with ESMTPSA id c18-20020a92c8d2000000b002cde6e352ffsm33236ilq.73.2022.05.31.15.52.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 May 2022 15:52:10 -0700 (PDT)
-Date:   Tue, 31 May 2022 16:52:09 -0600
-From:   Alex Williamson <alex.williamson@redhat.com>
-To:     Jason Gunthorpe <jgg@nvidia.com>
-Cc:     Abhishek Sahu <abhsahu@nvidia.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
-        Kevin Tian <kevin.tian@intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Max Gurtovoy <mgurtovoy@nvidia.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH v3 8/8] vfio/pci: Add the support for PCI D3cold state
-Message-ID: <20220531165209.1c18854f.alex.williamson@redhat.com>
-In-Reply-To: <20220531194304.GN1343366@nvidia.com>
-References: <20220425092615.10133-1-abhsahu@nvidia.com>
-        <20220425092615.10133-9-abhsahu@nvidia.com>
-        <20220504134551.70d71bf0.alex.williamson@redhat.com>
-        <9e44e9cc-a500-ab0d-4785-5ae26874b3eb@nvidia.com>
-        <20220509154844.79e4915b.alex.williamson@redhat.com>
-        <68463d9b-98ee-b9ec-1a3e-1375e50a2ad2@nvidia.com>
-        <42518bd5-da8b-554f-2612-80278b527bf5@nvidia.com>
-        <20220530122546.GZ1343366@nvidia.com>
-        <c73d537b-a653-bf79-68cd-ddc8f0f62a25@nvidia.com>
-        <20220531194304.GN1343366@nvidia.com>
-Organization: Red Hat
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=Eq6nH6aGeuKpMU9nM7ibONmheABIDjQM7t9UjsNcl+w=;
+        b=kOvOsx6RJXSav56UaFoXzuKd6GHtsmNvQtT/VSLlclfW6SphmcRIRcdm0Ji4isjntG
+         nlRtYEuuAApHbIbG5rqzkfM8t+Wyh2S8YPh/bU1t0MikjZxww7ZC1sg2hOtOJgl89GLJ
+         tc+JouQay5JgpBVzyRs+CEC+Tvbhs9DyWzwPucYTEB/xMvVDJz1jvRvCFf20nXZ/Km++
+         +tq4ZTvighc7mZpJYgvruBKJ1RLgyJSE0EWJGdGVP8oFfIUWs2m6OeM48FK5xg7CY1ww
+         28C1OhM4u41htxDYd9M+gbTnVKEIuXfgVVXjV+YtDAexd+EnBXxsqpr+Qvjab45y8hYN
+         A8Lw==
+X-Gm-Message-State: AOAM533sxrTVG1iPoT7D4i/R45fG8c58x1eImtheeZxEJX5ObQUQXjDy
+        bPmro1bXKvhAWMLzddO1WkPHalIjUafbucQ=
+X-Google-Smtp-Source: ABdhPJyEEJmzYE3LJbKEPxep9Txd8IS2Y3Ohb4w4RDlkBWekTGGi+00/Yu83BjSHoAA0YZYV1qdNB+xcoJAZ8NA=
+X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:f3aa:cafe:c20a:e136])
+ (user=saravanak job=sendgmr) by 2002:a25:2e06:0:b0:65c:ed2e:31bd with SMTP id
+ u6-20020a252e06000000b0065ced2e31bdmr13135711ybu.244.1654067234572; Wed, 01
+ Jun 2022 00:07:14 -0700 (PDT)
+Date:   Wed,  1 Jun 2022 00:06:57 -0700
+In-Reply-To: <20220601070707.3946847-1-saravanak@google.com>
+Message-Id: <20220601070707.3946847-2-saravanak@google.com>
+Mime-Version: 1.0
+References: <20220601070707.3946847-1-saravanak@google.com>
+X-Mailer: git-send-email 2.36.1.255.ge46751e96f-goog
+Subject: [PATCH v2 1/9] PM: domains: Delete usage of driver_deferred_probe_check_state()
+From:   Saravana Kannan <saravanak@google.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        David Ahern <dsahern@kernel.org>
+Cc:     Saravana Kannan <saravanak@google.com>, kernel-team@android.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+        linux-gpio@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 31 May 2022 16:43:04 -0300
-Jason Gunthorpe <jgg@nvidia.com> wrote:
+Now that fw_devlink=on by default and fw_devlink supports
+"power-domains" property, the execution will never get to the point
+where driver_deferred_probe_check_state() is called before the supplier
+has probed successfully or before deferred probe timeout has expired.
 
-> On Tue, May 31, 2022 at 05:44:11PM +0530, Abhishek Sahu wrote:
-> > On 5/30/2022 5:55 PM, Jason Gunthorpe wrote: =20
-> > > On Mon, May 30, 2022 at 04:45:59PM +0530, Abhishek Sahu wrote:
-> > >  =20
-> > >>  1. In real use case, config or any other ioctl should not come along
-> > >>     with VFIO_DEVICE_FEATURE_POWER_MANAGEMENT ioctl request.
-> > >> =20
-> > >>  2. Maintain some 'access_count' which will be incremented when we
-> > >>     do any config space access or ioctl. =20
-> > >=20
-> > > Please don't open code locks - if you need a lock then write a proper
-> > > lock. You can use the 'try' variants to bail out in cases where that
-> > > is appropriate.
-> > >=20
-> > > Jason =20
-> >=20
-> >  Thanks Jason for providing your inputs.
-> >=20
-> >  In that case, should I introduce new rw_semaphore (For example
-> >  power_lock) and move =E2=80=98platform_pm_engaged=E2=80=99 under =E2=
-=80=98power_lock=E2=80=99 ? =20
->=20
-> Possibly, this is better than an atomic at least
->=20
-> >  1. At the beginning of config space access or ioctl, we can take the
-> >     lock
-> > =20
-> >      down_read(&vdev->power_lock); =20
->=20
-> You can also do down_read_trylock() here and bail out as you were
-> suggesting with the atomic.
->=20
-> trylock doesn't have lock odering rules because it can't sleep so it
-> gives a bit more flexability when designing the lock ordering.
->=20
-> Though userspace has to be able to tolerate the failure, or never make
-> the request.
->=20
-> >          down_write(&vdev->power_lock);
-> >          ...
-> >          switch (vfio_pm.low_power_state) {
-> >          case VFIO_DEVICE_LOW_POWER_STATE_ENTER:
-> >                  ...
-> >                          vfio_pci_zap_and_down_write_memory_lock(vdev);
-> >                          vdev->power_state_d3 =3D true;
-> >                          up_write(&vdev->memory_lock);
-> >=20
-> >          ...
-> >          up_write(&vdev->power_lock); =20
->=20
-> And something checks the power lock before allowing the memor to be
-> re-enabled?
->=20
-> >  4.  For ioctl access, as mentioned previously I need to add two
-> >      callbacks functions (one for start and one for end) in the struct
-> >      vfio_device_ops and call the same at start and end of ioctl from
-> >      vfio_device_fops_unl_ioctl(). =20
->=20
-> Not sure I followed this..
+So, delete the call and replace it with -ENODEV.
 
-I'm kinda lost here too.  A couple replies back there was some concern
-about race scenarios with multiple user threads accessing the device.
-The ones concerning non-deterministic behavior if a user is
-concurrently changing power state and performing other accesses are a
-non-issue, imo.  I think our goal is only to expand the current
-memory_lock to block accesses, including config space, while the device
-is in low power, or some approximation bounded by the entry/exit ioctl.
+Signed-off-by: Saravana Kannan <saravanak@google.com>
+---
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I think the remaining issues is how to do that relative to the fact
-that config space access can change the memory enable state and would
-therefore need to upgrade the memory_lock read-lock to a write-lock.
-For that I think we can simply drop the read-lock, acquire the
-write-lock, and re-test the low power state.  If it has changed, that
-suggests the user has again raced changing power state with another
-access and we can simply drop the lock and return -EIO.
-
-If I'm still misunderstanding, please let me know.  Thanks,
-
-Alex
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 739e52cd4aba..3e86772d5fac 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2730,7 +2730,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
+ 		mutex_unlock(&gpd_list_lock);
+ 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+ 			__func__, PTR_ERR(pd));
+-		return driver_deferred_probe_check_state(base_dev);
++		return -ENODEV;
+ 	}
+ 
+ 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+-- 
+2.36.1.255.ge46751e96f-goog
 
