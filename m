@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B011C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 09:44:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 134F4C433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 09:44:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351295AbiFAJoL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jun 2022 05:44:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42104 "EHLO
+        id S1351347AbiFAJo1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jun 2022 05:44:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42310 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351258AbiFAJoK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 05:44:10 -0400
-Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2043.outbound.protection.outlook.com [40.107.21.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04EB45AEFF;
-        Wed,  1 Jun 2022 02:44:10 -0700 (PDT)
+        with ESMTP id S1351319AbiFAJoX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 05:44:23 -0400
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2077.outbound.protection.outlook.com [40.107.21.77])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 257855C658;
+        Wed,  1 Jun 2022 02:44:21 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=CB6E0+Py5mVPLYMRgM/YuX6vi9tdsBrZ47NF5Yi/SFyKh5KyY85CrjaPltx7hcxsxOYKNIrNVHdlWzostdXYFZmy+vDgGRT45SJvvTl28XnctWay+07vA+fIIL8pGLZVcQCbKPVoupYBrtIv0zJnV8vtdARc4nih8qEspMdHRsYDK0C8qr8r5UW+5p6aUv2ESnbKawO3CTVrPd6INfQc8Tyh16uW9onNf5wRqwy8BH2ul6kQwujPHGEO5cK3IhjTw707OMYdu8N56kQo8T6OFokSFsRzIzCULRmTCvVO5U5+Qs65cjvyFpJIWyvDgEvovG0HMDprDbvcdbAu6DqbUw==
+ b=HBTCZfv4Wgh4PUmPl9Eh3EbuuNDlURaK11rESAPKo6HVpie+Gq4EF24Lvef/v2I7rAyao/zNJzcX9H+MBK9uzGcJNp9iZhbQ7t+U2g564anxZe/Ooks9VJ2kaLZXNu+/kDakSXn9zZ+CDoIln5yXneWdmwVoXstGsRJ3hoeZTFMYSUOqkn0o2oLqgPjjNYwz44O95iYvQW9MGYMc+b7fzGoLtDaG8vCSKQuGU1IGYDEmQMc2Xu+iC5AjhgmY3jd1SfGTHHjYtocGIRD/FeNU/YYaTapAKfgoP62pjZ7R2UNKimi0RF4rbMcfDKQ3vurzBPe7w4Ln4eoxQAeeCdvYww==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=LZI7qG5/515drLM7ZES47yjJNZpw9esD1lytih0Cg6s=;
- b=jdxxgNDEF4NjhIeCBwOlUzblL8qaRMlAFb48YOqLPMHVW1XFso8/jBgM8VdWvFDBwd/8Ku+LFCGNMp4Wp54lbR+TYKpiEO1qqBkjzlSxo3Jyffl3TI5/Qqlu8ot9RM03RFdrMWa5TTy5X+BIP88swH5hT2NhXXTfcc/8/yXoHrBVN4+0gI0PestzQ7gw+yIDio3E2TnNSOtOjwN77KYEoV2ZmRcYUx9zYZI5LKgXZDH1y7sf3AzslSsOhJRIMtj6wuXjHc/heS2PWrUPLBpBlfJYrFpkk07vDCAnMiParnAKp3kY99IJNNNt2xPIrFgBx9/eNdcSrjpweTfjgYkmlg==
+ bh=DnL+NWiTNsTZR5BTaiLSpWZeivbzbsiwNwr8e0HtaeI=;
+ b=BMd9gtmbCRC0MfbNWez+CXuSrPgbitqQqemYJw7XbdoBi3zZp0nSIYpjfws/lr22FNMwE6WcBb8l/S9XfdP247cuXDHAzWF7T4KLhSEGSnz4CM9Xeach82o+q801Niv9VHnfS+xouZzojfdHnCw5Anu6EMI+p3aggKVTSmnGokkl03psyb/gFLDZ9+V4G7QPDE0qcBKYNDEmVsGcPGUYEIDwZ55JLyZ5Ni2MQMLH3GGJqNxjtrDix0cTHZv4b3NAFN4kH09DDLBC2a5H+W8vqk1RyHEI50/rwjzpxg3iNIzI7MkrVSXJwDYvJcSPW/7zB+t7DXZpPy9LaDb9ptgj4w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector2-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=LZI7qG5/515drLM7ZES47yjJNZpw9esD1lytih0Cg6s=;
- b=cqJM3+0BblI25BGjzVtO4Dkl2aHDix2ZWXt9xh1/3VFQanFenGkvk1jreuqdzpG6C7gTfXDO0ctiCdUnmSelDGz7lXuq2MhHiA0Q2kzsIxyNIP3s3PKuKWK8YwD7K4MSTW8rBpdM8aWfk++WpoxHGu2DTitQ86hWtCmscYwP/B8=
+ bh=DnL+NWiTNsTZR5BTaiLSpWZeivbzbsiwNwr8e0HtaeI=;
+ b=gZ4kwF2WuSPHocg4fjynworiLPu07Gj6392oUqEUVQTPZ4sepmSYN4gaj7G/9nUunscQG0A5bn/BXa/mJKAfRngjifSQ2AtSXj/5m2KjyBlBsCimd7G6uHlyvmgFnlMxYS8Sq8F0DdXRsipaL8bzUDYB9mCk0TYG8RkbkEEdWF0=
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from DU0PR04MB9417.eurprd04.prod.outlook.com (2603:10a6:10:358::11)
  by AS4PR04MB9507.eurprd04.prod.outlook.com (2603:10a6:20b:4ca::5) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5314.12; Wed, 1 Jun
- 2022 09:44:06 +0000
+ 2022 09:44:18 +0000
 Received: from DU0PR04MB9417.eurprd04.prod.outlook.com
  ([fe80::a892:e4a9:4769:13a5]) by DU0PR04MB9417.eurprd04.prod.outlook.com
  ([fe80::a892:e4a9:4769:13a5%9]) with mapi id 15.20.5293.019; Wed, 1 Jun 2022
- 09:44:06 +0000
+ 09:44:18 +0000
 From:   "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
 To:     djakov@kernel.org, shawnguo@kernel.org, s.hauer@pengutronix.de,
         festevam@gmail.com, robh+dt@kernel.org,
@@ -52,9 +52,9 @@ Cc:     kernel@pengutronix.de, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-imx@nxp.com,
         Peng Fan <peng.fan@nxp.com>
-Subject: [PATCH 2/8] dt-bindings: soc: imx: add interconnect property for i.MX8MP hdmi blk ctrl
-Date:   Wed,  1 Jun 2022 17:45:31 +0800
-Message-Id: <20220601094537.3390127-3-peng.fan@oss.nxp.com>
+Subject: [PATCH 4/8] soc: imx: add icc paths for i.MX8MP media blk ctrl
+Date:   Wed,  1 Jun 2022 17:45:33 +0800
+Message-Id: <20220601094537.3390127-5-peng.fan@oss.nxp.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220601094537.3390127-1-peng.fan@oss.nxp.com>
 References: <20220601094537.3390127-1-peng.fan@oss.nxp.com>
@@ -65,56 +65,56 @@ X-ClientProxiedBy: SG2PR06CA0185.apcprd06.prod.outlook.com (2603:1096:4:1::17)
 MIME-Version: 1.0
 X-MS-Exchange-MessageSentRepresentingType: 1
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 720ba5a3-cc38-40da-fd99-08da43b34504
+X-MS-Office365-Filtering-Correlation-Id: 52b0af07-598f-477c-0b6c-08da43b34c66
 X-MS-TrafficTypeDiagnostic: AS4PR04MB9507:EE_
 X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-Microsoft-Antispam-PRVS: <AS4PR04MB950735A0E3501AD7EF60ACEFC9DF9@AS4PR04MB9507.eurprd04.prod.outlook.com>
+X-Microsoft-Antispam-PRVS: <AS4PR04MB950748BD4D3537E8919F0AAAC9DF9@AS4PR04MB9507.eurprd04.prod.outlook.com>
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: OMNDsa+aU/W1h399p76SNolLj0zOaL2Gdm06t6AM3Yt2L6FYYu3/SL2cGOTsNsa+wcrvSDGylCxRfdtPx8XNAVKeAuaGMXcw34dHSUnUmzHN968u/J0bFmg4y/jZEKqoqDUKhtp4mMnjtqzTNpblJs8WGxRN8Z75U3JYDXHz+3oVzvPuh0BHZINjKVJvRMx7eYc8LrnaaOW3k+nWJYsjz6N1oYL3hguHRL6tOx/Hvt7P4qWWiWgHAAkjc7xWm0iy2l54TsEhT5RHNK691tGPweXXdDpOjQEonHDQqBkpDYd6Yn0huFbFB2SIuZErgOKIHQSd9J6kGdeKaK0d+o6YIbvuGWSDGUfWk83xCsJf5CjdANjNHGH4yUg7oqN7pYQu09lJk4hQBDKp4djRpGjs4FtbhLt2QFcauoJuCuru6EBkyipjahY6ofa17oqaYjvFz3j8USEgXhvMimruCdJw97Lji4z05Pxi+cI2HCws6RvAcpywsl8CGGCMClBtZodFNarPHo2bd3xu4k34nAuOCVsIgQ4rk7mLvMRvH+UA0TnZ8uf360XOQor5hCHRuqjiMioiuZ0/StPoKyCN6a9ihKTinydf4ljNS0CtwOqZkw1vKNCtsDvwm4OrIzKlnXTSvIE7KCGK+8wbrX5sWW5pdfaK5kWnH9w0oG5wsuUXkVkvCt1rPTE7MhFkuPw9ixjjok3Qx1zSgTiLpCm7LLj7ArzsWWIxbmFP7h0UQ/IhdAM=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9417.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(8936002)(508600001)(921005)(6512007)(4744005)(6486002)(86362001)(5660300002)(52116002)(38350700002)(38100700002)(7416002)(6666004)(4326008)(66476007)(8676002)(66946007)(66556008)(26005)(6506007)(316002)(186003)(1076003)(2616005)(2906002);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: p4pfi7wPs4ySpkfnOiBhu6v7wJRyEmLeaRMej9QsWenKTOCUizKz299O4i8rh7sgdJ7Lv6LomzCkEIFpWUk2EvBl/jdvWU+RL6bcnY8HI8uIaBZ2bdHOux3Yu8bF0IJEiEXNJaki+LAFu9u+J3i6X2MJqOBa1jxfMxrqby8Jr4ff44H+JbHAdlmsGeIPvNEXhC6YYdFFbBRkUnEL2ThfcrI0wT88aSo7vppUTudqcSCqDrun3jGPYMhxJ62w/HMl8rCCjbTNf9Aj1BEe1b5aezJ9pBjl7SpWVLtkPuTpL5h5vtFpliQngClmK9YdBHgWBNtfUURfV0sD25019JGIJws1Pr4ETB2bO2to6vdx0piKK9+gA+eomZYoVa3j9qQsR7tktXbqBq95/WvYSCpMtevacVr7mlF6Snny0HvDehm9pVSucScO/yB6l2fFzIn3+4rCUSTnVctJ7C7LEBMo5mgL731mQs46egkUoVbXW4oD0RO/iXTAsk4vwuES7hRHIX0JcNJ7fAby7ffETZvHLGLnzxnk2CgIpTuh4IMEazkgZKGbknpE1ppJQ7oA5a6qDX2QSh7D1ML2VxWemPSCVg831rxipvBCjdVdMz0Brcf9e8fdiDdHGQFM8yIBc/YoKRM/a4u0EknmEVcA3tdLPeIJYZ5D7+/ZIQr8TZ47VuDvwu3SOrfEOILpgoEDWQWFrRR02eQZwoaXDAshwSzby0M+pEjeHnICqpfvXQNh5sY=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9417.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(8936002)(508600001)(921005)(6512007)(6486002)(86362001)(5660300002)(52116002)(38350700002)(38100700002)(7416002)(6666004)(4326008)(66476007)(8676002)(66946007)(66556008)(26005)(6506007)(316002)(186003)(1076003)(83380400001)(2616005)(2906002);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?WqDDhniHDRjUSCvtB5emwl78pb5tHeLnZlxBNxEv2etOUps/7MbSaNyAySzH?=
- =?us-ascii?Q?QrDq1zrozQrcV5xJSUOgmdMopR84b69h0FMZlYAhfmPjdYtTbM1GS2U6iPhI?=
- =?us-ascii?Q?Aji8jK3jxyuWvCurGSaevPm+RVw1nj1r/Bh1alzT8xYNHSojBr56Wk725b6/?=
- =?us-ascii?Q?j8lgno4TT6dvkCONoGf0edzsZG8fl/bjtmFmKIssKlw+aStCh5g7MU2wwtMl?=
- =?us-ascii?Q?gx/5/WiCwj3R44kjYomwqkdnqM+yn2QXU4w+DqNPmubmMRrVXuuXzAwMICcj?=
- =?us-ascii?Q?c6wvPgBsTFYYvNHDrGR3BN1BXeOzNhcDqUbyT9lvQHeTuwQLRmXYfLpGMKi6?=
- =?us-ascii?Q?CtLr6yVW1zQP97pjfmcGuu1OdDGOvuoGY9D5umfd+ckGT6mr2EipmjJ68UQJ?=
- =?us-ascii?Q?4dpas/iek1tfMJEIZ2yz60/0+ti6J4Cq70dAwCDJDNgjFApsTs/DwXR+pZI+?=
- =?us-ascii?Q?NW19dkce3hLHMnmDtxWxJ0JpEzFhfl6ZJUI4Wl2djPKy0wt+0hokvYF4juES?=
- =?us-ascii?Q?M1TEkNXHRUdukxZlM8KWU2+eBIygqBOYCX1m+mgt39MEsbqVBD7ADakhMa+x?=
- =?us-ascii?Q?nalR9EdD1nG/7k5mB7Mx8BX53KJx3q/pi+fF/hyM5Ucgc9tocdFHjYS9vM/2?=
- =?us-ascii?Q?awQnNVuP2SVGmQVVOlVbzzPdfBDWbhm2lg8xQjJfcdHrkb+F0kYeYsPnC056?=
- =?us-ascii?Q?i4vGbDwUvFQD0pHte2exC0zCwglRz2bq0U4ZkcSQcfvWuAJllsBjqKV0TFsH?=
- =?us-ascii?Q?e19qCbXx/UiF6mfu90hmikwSd7vSFp5v4GAjWRTUN0z9W4YA1/v5KF9SxP4r?=
- =?us-ascii?Q?O4tazVYie0uS3DGjJyDghOuiSBkajcdpqH7ezD62BoqbPs218FixWu0C5/dD?=
- =?us-ascii?Q?izPlQMicClq3t1ZciN9sXcDxpg50SFIv5HnjbBbDZO4kEsDS7jBW98Wwxdhv?=
- =?us-ascii?Q?Wb8ikpC3H33SuWIC0lBNM+8dPYKRLlzm7BSpQIUgZgtU/i4qXLZurvR3OMc5?=
- =?us-ascii?Q?nCW2fCVHSQPLKW+P5SiGSLxtDbaAHR0Z1WRsTdy2MSBOU1Xlljmwje8OLazZ?=
- =?us-ascii?Q?2JytaHea+t56QxexpiBIUscyZ7oWWsq/IkRL1UeQk9Ly74kkS4WlJaDi3Z8F?=
- =?us-ascii?Q?Di1/dddGXHvnpY+EbA5FidmDZ75jYPtpJ1S8UZZ6LKKSAeb9RAs2QD2tYGl4?=
- =?us-ascii?Q?pLyYD9ow7rqHHI5FmqhETvBJeyXDdnN5DLNHX7CNAOIdier5Ft2qT6Zv000k?=
- =?us-ascii?Q?bz95Al7hbSsXML37Lo1AtnaRYaao0lpciRCQG7HUZ++FgO4bZeWQShP9teNR?=
- =?us-ascii?Q?aU+Fyd7XMKX0wCSfpPKnknYyvsdB25jg/I/CSFFSoODBB/LB4AiEBdKPmT5B?=
- =?us-ascii?Q?rJ5bDXc1McweWUQPIUJAFU3NPdOgZXxqM7TYj9jmIZ/bAyFDB//IFcURblQa?=
- =?us-ascii?Q?4WLsECWbxvq7duH6z4+FJU8yzGm+F5Dl56vpArrtHyE/retQ8n2eRd4bbwJF?=
- =?us-ascii?Q?9513MLICuhMs4rWolAKvpzi4Ejq1UA8frLeyriV9GrvNonvZm1wMuIQ37crj?=
- =?us-ascii?Q?7ciGwGGbAq4kx+EUaOX8fbRJ7pIZ5H+H/C9YPgW8v+Pbs8YSDs31HW1s03PN?=
- =?us-ascii?Q?9gJ4daZsaBaD12VS5uLtZxa3dyg0WUSWotRKHVpcuPpAcshwgkRTl2h/LkmI?=
- =?us-ascii?Q?YzQMpDkaPlLYeheJz5YcO39c5ZfhI/TbqATV8hR+eI9EP87OmIDCtvKv9aMO?=
- =?us-ascii?Q?tdK+4o4MTg=3D=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?vWSYtOhXXRuVb0d90Q/Lgo1M5uIs6SFJXjQPnYXiAAAaPJ9ANhMwzeUSeYMD?=
+ =?us-ascii?Q?MP5bY2xRfJjJ6GuZ2T5ktrXY/6KSdGqlLVw0K+l6VmPlErBBpSVrxM4j+2j8?=
+ =?us-ascii?Q?JECjfNo5jeZxhR8MjhlCRga3L7XF5QOXynm5WsV5c7Jc0wl4C0Z6+XGnrsWc?=
+ =?us-ascii?Q?7F9z0hXmqRc4AobAdIa7u+P0ZSQZMaQov4pY5qqfO8Dd+0hTtKae81eh/T2y?=
+ =?us-ascii?Q?+4nla/NDc86SKreyFU+zO0gBTlLql9i3Qob64tMo4ATDmlQ5vCma82rgxhHW?=
+ =?us-ascii?Q?gxeY5bRLYLj0ABPB+ctw6yURKAOd/K14FIh0p1byiZFuJA7hp6vsQTdOGQux?=
+ =?us-ascii?Q?XS4YqW3NcsUsKrX+2cbtu3iK5qir/r7xXEJt5/Xj69aqBEWRLPUXIUKV2CZZ?=
+ =?us-ascii?Q?OMwWcu58XRAviQO8okK4ZEKGsJIxVWVHEV/veng8MMY8cjPsHz5ZtpeIVb/c?=
+ =?us-ascii?Q?MClrMmCH0ldgo7ocPfiq9nf++F2LpuOWHuFCj3S+QISDF6XkPY2I3LkbkC85?=
+ =?us-ascii?Q?AVdPvmjGiC3bYB5RU31HJvtW1tR63LOX8fHqMhTRQzJlmgqcfDs4zlm3nCOM?=
+ =?us-ascii?Q?n3Kg+CwJ1Lod5wy/ZzCI9aOdxg9bcwx1CuNKC63wfg77k37FgCHj0BJ3WM4K?=
+ =?us-ascii?Q?NO1g+3FSiXpFnHvscfVebT4Y8F8TDOtSnWMbpqYQ2gp1bqoFcQ+sEsNtrcRD?=
+ =?us-ascii?Q?bwGtSzx6M22EeIpw3zfHS1GnAY7+fV40ebLZcgGVMpMp1ehkMhOysgauO0v8?=
+ =?us-ascii?Q?StdkfQYb32WNsE4WBNIti4+/XU5ygZxNChqlyTId3wWQWKva4zrWiqQnECbD?=
+ =?us-ascii?Q?ttfAXUBQRZiRjRmACAAJ7cDaWtejNgZjYYC8VXun5f3j1KjTXG/3VpZJyK4j?=
+ =?us-ascii?Q?k59LHQ8dIz6Oy7WcGL220jHOUwrpAgPuAmVKgZFg5dQplXCw3hkRLwzvGjkJ?=
+ =?us-ascii?Q?rK51DVgBfLAuzUBVhLGkum7y/1Z566c4fuRdmB7Fd2gndoxjlh2axiKCrGS6?=
+ =?us-ascii?Q?1kNOnqXPYKCscPLvDCOKhC/nHYtoHI4pGGgXAlZhHANdHVOadShmeSOfbay8?=
+ =?us-ascii?Q?t3St1X256BweVJb7bJO18uAAyuW05Blq3VAGWZxoDWABQoLg08wybHYTMULs?=
+ =?us-ascii?Q?ZeevJ9Y8vkX0vDqWJl53uBdTxjdJpklSvH6oIX3XAlQmNm12GswO+kRqz0Bx?=
+ =?us-ascii?Q?I5nhwbZwXEUKfiFiZivPXH13XSwSZa9p/dY6Yd3RoSgbq/HutHG/FEe/Bl4I?=
+ =?us-ascii?Q?flZ7OFlLkcioi9Wm1O9uBYH6enuXbzvx7CvRmr107JjP8nPFSYL3wETW/lry?=
+ =?us-ascii?Q?F45k4q9DG7HAbUiTobnyy+zAeBT6oTSMY1Lzx8V+pPGAwRGRF/ycmpej2hm2?=
+ =?us-ascii?Q?XRXpwbKMvK6exdkDdL+nJf0ZAkajTTffgp1L2EgtgfJRZVfLPdRBxndIfCqY?=
+ =?us-ascii?Q?lu7iQ0EmdjY1fNG0n2MALz6QbfjiGGpfFO2tIFZPBKzyfvNtZXBnwZsgp1Ty?=
+ =?us-ascii?Q?PHckgsok8b+YI8/wUSIWovsp4s7tGSK8wXIjOvQc/NNLq2vvol+tGWLGoG5U?=
+ =?us-ascii?Q?TqoXQwdNWu3w6t0UaPKw/nUsu7C4Co7Lsr/bB4jAxp18Hzvi8pC7nO+0R7iI?=
+ =?us-ascii?Q?HoRv2wTuPPocWzbucjCftR3V2zcmXhSd9gPzM0Mwe+xXlKvA2cwK20zli8KS?=
+ =?us-ascii?Q?lcxxNP+aTP204hbz+EKbtNpZn20AmON29Kg7kaIvxeVmHRVS1bxtul3J3zaW?=
+ =?us-ascii?Q?JaEpP8S7vw=3D=3D?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 720ba5a3-cc38-40da-fd99-08da43b34504
+X-MS-Exchange-CrossTenant-Network-Message-Id: 52b0af07-598f-477c-0b6c-08da43b34c66
 X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9417.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2022 09:44:06.8288
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2022 09:44:18.8184
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: EzYpbHzMLiXUiFYQHW4kP1I2TisZpJJkJxwggA6u0YdqrzpKIMdikwsLx50F81gRHh+2TF+XsfjQvdeIkzjA+g==
+X-MS-Exchange-CrossTenant-UserPrincipalName: q11NyAG0zeOKS425EJG9UagHzNv+nfusj4UWbi2hs/3yCBGdla/G3NOnagns626ECS7b29PekrwqsKMqlWYk3A==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS4PR04MB9507
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -122,33 +122,136 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Peng Fan <peng.fan@nxp.com>
 
-Add interconnect property for i.MX8MP hdmi blk ctrl
+Add interconnect paths for i.MX8MP media blk ctrl
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- .../bindings/soc/imx/fsl,imx8mp-hdmi-blk-ctrl.yaml       | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm64/boot/dts/freescale/imx8mp.dtsi |  1 +
+ drivers/soc/imx/imx8m-blk-ctrl.c          | 31 +++++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-hdmi-blk-ctrl.yaml b/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-hdmi-blk-ctrl.yaml
-index 563e1d0e327f..1be4ce2a45e8 100644
---- a/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-hdmi-blk-ctrl.yaml
-+++ b/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-hdmi-blk-ctrl.yaml
-@@ -52,6 +52,15 @@ properties:
-       - const: ref_266m
-       - const: ref_24m
+diff --git a/arch/arm64/boot/dts/freescale/imx8mp.dtsi b/arch/arm64/boot/dts/freescale/imx8mp.dtsi
+index d9542dfff83f..2a1c6ff37e03 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mp.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mp.dtsi
+@@ -4,6 +4,7 @@
+  */
  
-+  interconnects:
-+    maxItems: 3
+ #include <dt-bindings/clock/imx8mp-clock.h>
++#include <dt-bindings/interconnect/fsl,imx8mp.h>
+ #include <dt-bindings/power/imx8mp-power.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/input/input.h>
+diff --git a/drivers/soc/imx/imx8m-blk-ctrl.c b/drivers/soc/imx/imx8m-blk-ctrl.c
+index 7f49385ed2f8..423cac0c9cb6 100644
+--- a/drivers/soc/imx/imx8m-blk-ctrl.c
++++ b/drivers/soc/imx/imx8m-blk-ctrl.c
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/interconnect.h>
+ #include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+@@ -37,6 +38,8 @@ struct imx8m_blk_ctrl_domain_data {
+ 	const char *name;
+ 	const char * const *clk_names;
+ 	int num_clks;
++	const char * const *path_names;
++	int num_paths;
+ 	const char *gpc_name;
+ 	u32 rst_mask;
+ 	u32 clk_mask;
+@@ -52,11 +55,13 @@ struct imx8m_blk_ctrl_domain_data {
+ };
+ 
+ #define DOMAIN_MAX_CLKS 4
++#define DOMAIN_MAX_PATHS 4
+ 
+ struct imx8m_blk_ctrl_domain {
+ 	struct generic_pm_domain genpd;
+ 	const struct imx8m_blk_ctrl_domain_data *data;
+ 	struct clk_bulk_data clks[DOMAIN_MAX_CLKS];
++	struct icc_bulk_data paths[DOMAIN_MAX_PATHS];
+ 	struct device *power_dev;
+ 	struct imx8m_blk_ctrl *bc;
+ };
+@@ -117,6 +122,10 @@ static int imx8m_blk_ctrl_power_on(struct generic_pm_domain *genpd)
+ 	if (data->mipi_phy_rst_mask)
+ 		regmap_set_bits(bc->regmap, BLK_MIPI_RESET_DIV, data->mipi_phy_rst_mask);
+ 
++	ret = icc_bulk_set_bw(data->num_paths, domain->paths);
++	if (ret)
++		dev_err(bc->dev, "failed to set icc bw\n");
 +
-+  interconnect-names:
-+    items:
-+      - const: hrv
-+      - const: lcdif-hdmi
-+      - const: hdcp
+ 	/* disable upstream clocks */
+ 	clk_bulk_disable_unprepare(data->num_clks, domain->clks);
+ 
+@@ -228,6 +237,18 @@ static int imx8m_blk_ctrl_probe(struct platform_device *pdev)
+ 		for (j = 0; j < data->num_clks; j++)
+ 			domain->clks[j].id = data->clk_names[j];
+ 
++		for (j = 0; j < data->num_paths; j++) {
++			domain->paths[j].name = data->path_names[j];
++			domain->paths[j].avg_bw = INT_MAX;
++			domain->paths[j].peak_bw = INT_MAX;
++		}
 +
- required:
-   - compatible
-   - reg
++		ret = devm_of_icc_bulk_get(dev, data->num_paths, domain->paths);
++		if (ret) {
++			dev_err_probe(dev, ret, "failed to get noc entries\n");
++			goto cleanup_pds;
++		}
++
+ 		ret = devm_clk_bulk_get(dev, data->num_clks, domain->clks);
+ 		if (ret) {
+ 			dev_err_probe(dev, ret, "failed to get clock\n");
+@@ -647,6 +668,8 @@ static const struct imx8m_blk_ctrl_domain_data imx8mp_media_blk_ctl_domain_data[
+ 		.gpc_name = "lcdif1",
+ 		.rst_mask = BIT(4) | BIT(5) | BIT(23),
+ 		.clk_mask = BIT(4) | BIT(5) | BIT(23),
++		.path_names = (const char *[]){"lcdif-rd", "lcdif-wr"},
++		.num_paths = 2,
+ 	},
+ 	[IMX8MP_MEDIABLK_PD_ISI] = {
+ 		.name = "mediablk-isi",
+@@ -655,6 +678,8 @@ static const struct imx8m_blk_ctrl_domain_data imx8mp_media_blk_ctl_domain_data[
+ 		.gpc_name = "isi",
+ 		.rst_mask = BIT(6) | BIT(7),
+ 		.clk_mask = BIT(6) | BIT(7),
++		.path_names = (const char *[]){"isi0", "isi1", "isi2"},
++		.num_paths = 3,
+ 	},
+ 	[IMX8MP_MEDIABLK_PD_MIPI_CSI2_2] = {
+ 		.name = "mediablk-mipi-csi2-2",
+@@ -672,6 +697,8 @@ static const struct imx8m_blk_ctrl_domain_data imx8mp_media_blk_ctl_domain_data[
+ 		.gpc_name = "lcdif2",
+ 		.rst_mask = BIT(11) | BIT(12) | BIT(24),
+ 		.clk_mask = BIT(11) | BIT(12) | BIT(24),
++		.path_names = (const char *[]){"lcdif-rd", "lcdif-wr"},
++		.num_paths = 2,
+ 	},
+ 	[IMX8MP_MEDIABLK_PD_ISP] = {
+ 		.name = "mediablk-isp",
+@@ -680,6 +707,8 @@ static const struct imx8m_blk_ctrl_domain_data imx8mp_media_blk_ctl_domain_data[
+ 		.gpc_name = "isp",
+ 		.rst_mask = BIT(16) | BIT(17) | BIT(18),
+ 		.clk_mask = BIT(16) | BIT(17) | BIT(18),
++		.path_names = (const char *[]){"isp0", "isp1"},
++		.num_paths = 2,
+ 	},
+ 	[IMX8MP_MEDIABLK_PD_DWE] = {
+ 		.name = "mediablk-dwe",
+@@ -688,6 +717,8 @@ static const struct imx8m_blk_ctrl_domain_data imx8mp_media_blk_ctl_domain_data[
+ 		.gpc_name = "dwe",
+ 		.rst_mask = BIT(19) | BIT(20) | BIT(21),
+ 		.clk_mask = BIT(19) | BIT(20) | BIT(21),
++		.path_names = (const char *[]){"dwe"},
++		.num_paths = 1,
+ 	},
+ 	[IMX8MP_MEDIABLK_PD_MIPI_DSI_2] = {
+ 		.name = "mediablk-mipi-dsi-2",
 -- 
 2.25.1
 
