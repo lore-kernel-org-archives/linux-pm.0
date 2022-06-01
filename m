@@ -2,161 +2,106 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B7C4C433FE
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 07:08:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDF7DC433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 07:12:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243798AbiFAHI5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jun 2022 03:08:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34870 "EHLO
+        id S1350214AbiFAHMO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jun 2022 03:12:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47556 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344420AbiFAHHP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 03:07:15 -0400
-Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 781CB7981A
-        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 00:07:12 -0700 (PDT)
-Received: by mail-pl1-x64a.google.com with SMTP id i16-20020a170902cf1000b001540b6a09e3so693801plg.0
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 00:07:12 -0700 (PDT)
+        with ESMTP id S1350213AbiFAHMO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 03:12:14 -0400
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 733187981A
+        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 00:12:12 -0700 (PDT)
+Received: by mail-ed1-x531.google.com with SMTP id z7so872985edm.13
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 00:12:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=date:message-id:mime-version:subject:from:to:cc;
-        bh=Mk17D+aOzb7UCdNS2oz9IAwDr5MmRg+quCipw6fx4RQ=;
-        b=hQa0JnnmV2cX05wxogayF7DAeIwm91UA5DD4Pd0261qK2nG5mlRfb8p0PwXRgLwmcG
-         6gimTBEfRJnzqCBPwGFDLXwY23Jge7qCK5EKBtDVk+4ZHueBZe2ScEh2abiJOXvqClXF
-         aItT2KKmdUihJqxg6KlMJQ+n9hDQfaXwUgpDUXId5vW641rUWKofWrnrujEe72Sytvnk
-         iXsC3g9D+PkO64XwFNhsJCy/xgMMwq44IzwR510vfqTBnn54+HA0yDiVcTK99umRrrcq
-         KawtwQ3E7vKCwmO2izMB9zQh9evWd8zx74HbqExwInwGL34iXnuFQ1QqmbkBW7qSDv5A
-         GPbA==
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=trhwASX+lfcvBV60r3M43wKh+E4woS61gxL4WkTNutQ=;
+        b=VsYG//kIrthv8XP+4a96/hG0sceqoJrsQgbNzhr3ch3jYwTr440p6rYIhEr25TiOXl
+         oDghDolp1X46DwLfW6ETlPbgBR9uXI+JODIGEQoKaEWvXs0K0oGDH9fIp5RrH9puRTw8
+         jQzoE9C+VlKj0JIgne7TaoRy0UEr97/7nMkblSVmQ+ERN7FOIJUFw3q6X9Ev4Gk/JK1O
+         ms4hT2DPd6WeSkDJ4kAlGX0Rg8rhLwfXxDoh1wlhkFTNm4bbPcK0kMWmoP3Dse2g2dVk
+         JuhTTXK8RcaLgbT2hcbyvp8IOWA3+doBvX8i7f2TnzMVKxMzfGLcCw2ErqxVCf1xQiMC
+         Ck1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
-        bh=Mk17D+aOzb7UCdNS2oz9IAwDr5MmRg+quCipw6fx4RQ=;
-        b=wXKOQ20Q7c6l6qGh6dnhcbhM5fAaPAV9Isx2Jo7YLEPa849UsBHkS4jg7gvIRyFZsC
-         m+e/jPu80JsvgnjGId5iyKnD+GxSmjRH+5w7cfCrbekKWfrylSl3xtmH3mE6+Dtn9WsX
-         Rz8Yo6s9IIShRAKzx1bGUX2+0goj5j1asE15EOTE+iCyEkvlX64F2EP5dyBIdVfchLQ+
-         O2qbao9G83XrunkPq5qZjzKdJTvjt8MODtd84trSdSO239+SA0qj4wDdgKaqiHlggt/P
-         CS18h4IMu1VJK5zzNWL11MAQALXQfzOYpX5w1tUJjUD/InMeIDduJ68npIhmjAxKz3JN
-         kR6A==
-X-Gm-Message-State: AOAM533dg90yw1Giw3VlLlWGHMhJcd6g48apICckr0N1CjlP+XHtCrwp
-        CQVLv/z8rUkfUzd3czqCXbMct/b1TtxPaSo=
-X-Google-Smtp-Source: ABdhPJwo0w/Ul81l80Uz+X1lE0Knuok5VeKXEtMoQ0Yzewr/LH6PL8JE3PUvMoXQAWKjDKNKYDX9hXZkKLb6+II=
-X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:f3aa:cafe:c20a:e136])
- (user=saravanak job=sendgmr) by 2002:a17:902:da8e:b0:164:537:d910 with SMTP
- id j14-20020a170902da8e00b001640537d910mr7067516plx.75.1654067231712; Wed, 01
- Jun 2022 00:07:11 -0700 (PDT)
-Date:   Wed,  1 Jun 2022 00:06:56 -0700
-Message-Id: <20220601070707.3946847-1-saravanak@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.36.1.255.ge46751e96f-goog
-Subject: [PATCH v2 0/9] deferred_probe_timeout logic clean up
-From:   Saravana Kannan <saravanak@google.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-        David Ahern <dsahern@kernel.org>
-Cc:     Saravana Kannan <saravanak@google.com>, kernel-team@android.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
-        linux-gpio@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=trhwASX+lfcvBV60r3M43wKh+E4woS61gxL4WkTNutQ=;
+        b=u0F+KpRFzyld1b0W+PnMHq9EPPXanf9y1OYfMYSi3eeVyH3eZRWJGkrxbGrvNEWCwv
+         oi7hWSzn3ymaxrCDK2XeJMqLJiZ8l2EN3rY5tc3FPbifRf41oQen9JsKJ1AOph2eugry
+         9Nr/+oFbcL7y4+923Pd6t8Yrd/DMpiE9FjlBHoY8r3fpFsshJmi8Dl3XOLOVv6jB+Hjh
+         DVUU8JS0PFNDHmduUGWvMyqhqsJ7p450I9vR/eSbdYfBXY6uE3z+4MbaernNhY7pIPOm
+         lmuIi8ndkSEnPL13kejC0yVttFIlIAT5DFakc90+xolv6SipLCpFm2AzTDnFNQ6LXtd3
+         B6Qw==
+X-Gm-Message-State: AOAM533tci8EqoSMQ7EN+/RYXM59rjqXc1VBBHdJy6Col5RPCmzuCUYV
+        txfWbcOD/GoEQ2i0mbq36vkSfA==
+X-Google-Smtp-Source: ABdhPJwqkfpw/36eeo4iKm/FtLUf93jLYEwb0D93rirRhTpoZezYM47nJJPfx729OU6HFBULnvyhAg==
+X-Received: by 2002:a05:6402:3551:b0:42b:6d38:9485 with SMTP id f17-20020a056402355100b0042b6d389485mr49145090edd.234.1654067530663;
+        Wed, 01 Jun 2022 00:12:10 -0700 (PDT)
+Received: from [192.168.0.179] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id pk16-20020a170906d7b000b006fee526ed72sm332280ejb.217.2022.06.01.00.12.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Jun 2022 00:12:10 -0700 (PDT)
+Message-ID: <95bbe6b0-1c56-9be9-0343-a24fe1970705@linaro.org>
+Date:   Wed, 1 Jun 2022 09:12:09 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH v3 2/4] soc: qcom: icc-bwmon: Add bandwidth monitoring
+ driver
+Content-Language: en-US
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc:     Thara Gopinath <thara.gopinath@linaro.org>
+References: <20220531105137.110050-1-krzysztof.kozlowski@linaro.org>
+ <20220531105137.110050-3-krzysztof.kozlowski@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220531105137.110050-3-krzysztof.kozlowski@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series is based on linux-next + these 2 small patches applies on top:
-https://lore.kernel.org/lkml/20220526034609.480766-1-saravanak@google.com/
+On 31/05/2022 12:51, Krzysztof Kozlowski wrote:
+> +	window = mult_frac(bwmon->sample_ms, HW_TIMER_HZ, MSEC_PER_SEC);
+> +	/* Maximum sampling window: 0xfffff */
+> +	writel_relaxed(window, bwmon->base + BWMON_SAMPLE_WINDOW);
+> +
+> +	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_HIGH,
+> +			    data->default_highbw_kbps);
+> +	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_MED,
+> +			    data->default_medbw_kbps);
+> +	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_LOW,
+> +			    data->default_lowbw_kbps);
+> +
+> +	thres_count = data->zone3_thres_count << BWMON_THRESHOLD_COUNT_ZONE3_SHIFT |
+> +		      BWMON_THRESHOLD_COUNT_ZONE2_DEFAULT << BWMON_THRESHOLD_COUNT_ZONE2_SHIFT |
+> +		      data->zone1_thres_count << BWMON_THRESHOLD_COUNT_ZONE1_SHIFT |
+> +		      BWMON_THRESHOLD_COUNT_ZONE0_DEFAULT;
+> +	writel_relaxed(thres_count, bwmon->base + BWMON_THRESHOLD_COUNT);
+> +	writel_relaxed(BWMON_ZONE_ACTIONS_DEFAULT,
+> +		       bwmon->base + BWMON_ZONE_ACTIONS);
+> +
+> +	/* Write barriers in bwmon_clear() */
+> +	irq_enable = BIT(BWMON_IRQ_ENABLE_ZONE1_SHIFT) |
+> +		     BIT(BWMON_IRQ_ENABLE_ZONE3_SHIFT);
 
-A lot of the deferred_probe_timeout logic is redundant with
-fw_devlink=on.  Also, enabling deferred_probe_timeout by default breaks
-a few cases.
+Unusued variable, I will send a v4.
 
-This series tries to delete the redundant logic, simplify the frameworks
-that use driver_deferred_probe_check_state(), enable
-deferred_probe_timeout=10 by default, and fixes the nfsroot failure
-case.
 
-The overall idea of this series is to replace the global behavior of
-driver_deferred_probe_check_state() where all devices give up waiting on
-supplier at the same time with a more granular behavior:
 
-1. Devices with all their suppliers successfully probed by late_initcall
-   probe as usual and avoid unnecessary deferred probe attempts.
-
-2. At or after late_initcall, in cases where boot would break because of
-   fw_devlink=on being strict about the ordering, we
-
-   a. Temporarily relax the enforcement to probe any unprobed devices
-      that can probe successfully in the current state of the system.
-      For example, when we boot with a NFS rootfs and no network device
-      has probed.
-   b. Go back to enforcing the ordering for any devices that haven't
-      probed.
-
-3. After deferred probe timeout expires, we permanently give up waiting
-   on supplier devices without drivers. At this point, whatever devices
-   can probe without some of their optional suppliers end up probing.
-
-In the case where module support is disabled, it's fairly
-straightforward and all device probes are completed before the initcalls
-are done.
-
-Patches 1 to 3 are fairly straightforward and can probably be applied
-right away.
-
-Patches 4 to 6 are for fixing the NFS rootfs issue and setting the
-default deferred_probe_timeout back to 10 seconds when modules are
-enabled.
-
-Patches 7 to 9 are further clean up of the deferred_probe_timeout logic
-so that no framework has to know/care about deferred_probe_timeout.
-
-Yoshihiro/Geert,
-
-If you can test this patch series and confirm that the NFS root case
-works, I'd really appreciate that.
-
-Thanks,
-Saravana
-
-v1 -> v2:
-Rewrote the NFS rootfs fix to be a lot less destructive on the
-fw_devlink ordering for devices that don't end up probing during the
-"best effort" attempt at probing all devices needed for a network rootfs
-
-Saravana Kannan (9):
-  PM: domains: Delete usage of driver_deferred_probe_check_state()
-  pinctrl: devicetree: Delete usage of
-    driver_deferred_probe_check_state()
-  net: mdio: Delete usage of driver_deferred_probe_check_state()
-  driver core: Add wait_for_init_devices_probe helper function
-  net: ipconfig: Relax fw_devlink if we need to mount a network rootfs
-  Revert "driver core: Set default deferred_probe_timeout back to 0."
-  driver core: Set fw_devlink.strict=1 by default
-  iommu/of: Delete usage of driver_deferred_probe_check_state()
-  driver core: Delete driver_deferred_probe_check_state()
-
- drivers/base/base.h            |   1 +
- drivers/base/core.c            | 102 ++++++++++++++++++++++++++++++---
- drivers/base/dd.c              |  54 ++++++-----------
- drivers/base/power/domain.c    |   2 +-
- drivers/iommu/of_iommu.c       |   2 +-
- drivers/net/mdio/fwnode_mdio.c |   4 +-
- drivers/pinctrl/devicetree.c   |   2 +-
- include/linux/device/driver.h  |   2 +-
- net/ipv4/ipconfig.c            |   6 ++
- 9 files changed, 126 insertions(+), 49 deletions(-)
-
--- 
-2.36.1.255.ge46751e96f-goog
-
+Best regards,
+Krzysztof
