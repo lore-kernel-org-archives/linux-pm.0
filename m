@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CE2DC433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 07:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43489C4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jun 2022 07:19:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350298AbiFAHTc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jun 2022 03:19:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36692 "EHLO
+        id S1350274AbiFAHTe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jun 2022 03:19:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36852 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350258AbiFAHT1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 03:19:27 -0400
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB9E913D72
-        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 00:19:25 -0700 (PDT)
-Received: by mail-ej1-x633.google.com with SMTP id f21so1814605ejh.11
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 00:19:25 -0700 (PDT)
+        with ESMTP id S1350291AbiFAHTc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2022 03:19:32 -0400
+Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F13D4F47A
+        for <linux-pm@vger.kernel.org>; Wed,  1 Jun 2022 00:19:29 -0700 (PDT)
+Received: by mail-ej1-x629.google.com with SMTP id u12so1841882eja.8
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2022 00:19:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=sFHTTgpzWh1X2kU61LH+ozniVe7avF1oD6MyUb1nFlw=;
-        b=JhClqqiGuZnkQDox/hUhOZMoOiJPzCcpVYaTRf4QcExfDNMhsi8myCeHESCpy+P4RS
-         Y6cOsPuEG06xmppycyjaPVYMhy4ak4Tbwh8vddqZd0Cf7JNtj4bVtxwjyZ2uOXC2qKRc
-         JAeRyS06bfesWcsWwbWMJUbzLldWxez+UxcGtqXD4Fdknd6JjTMGAA5hIQM1XAhdahYW
-         +AM6YLJ5Hs92H5zZiCKcdSEoe6uOaHQ9QEJ1fvOYCieqePDtySNsaAXAygrM9oEPRTjI
-         X6n0hYueQPCoQBYgn/urUM276E7cfonVUrwEy1ww41lI8jLfH8lAGh5FKdx6O+3B1zmr
-         FO6g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=nAMM4lRuazejy0EDJVvU8shLpINg8wAqjAlfsJ24pMs=;
+        b=MFhEN9UtsamUd6w8K2RVOWB94T0PodLHRCO2sIU63o/34w555v55HCkvO11Lh/RM0a
+         3+VPXnzbdjMQd00RL4JJvKoFgTTFha+byS9O5dECxgzSALna9VVe9xpuKCMkIqroIlOc
+         BRmibRDM9bpKF7umvnxkOKrL2GzITJwd7DvpKna1ZXHlcyGng4lOaFv0pnJ/5Yeh2+Do
+         JNX9kE13mnSKtoZBhPyVniz45n1dqdAr9l1hloDscFsHII4s5xC3OkOSdLsrBJoRGTmU
+         3JEquJhaX13Nh7BWl6+zOWV3qoOvXplE1Ezgbi22YtzGmge2p+dcVWRRUKNOIF24MWT4
+         dh7w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=sFHTTgpzWh1X2kU61LH+ozniVe7avF1oD6MyUb1nFlw=;
-        b=ImiVMgUrxiW9bEKSlqfjisbrMjA5mjgFUpaFkmJqqPW0WkHxESQNiEB5azflT4dNHF
-         UK2d3JJjNAMImJE9rXsysDJ+ygdtE8pSk3w267dzrPcFnaGUPOZtR+ECdychd/iUEFMI
-         LDgXaH24ZVvBPrJUXicg479qHJq1Db3iXKkqjJF5KYiwDRlr2wXN7bF+dFMFRdSL6But
-         cspqK29M/N8Z5J5kb+/n4q/WUAvmn6Zeuu1MAjAXYxgVUui9W7M+2EQ1OnhwUj2LyUN+
-         tpVCtmLWm+5UraCuKL7457FznybVg6GstmZFz19txsqt1Cb13oC/Pj1B4iaGP8yqETXx
-         IliQ==
-X-Gm-Message-State: AOAM530QSuJxZWcJ3/U+vIsE5wWLUeB1Hk4c8S39Vwp1Fi+AIVo0XK9x
-        AUB2AGbmKNxjuu8gX0WYMGMMsg==
-X-Google-Smtp-Source: ABdhPJyfshPk80g9xKAbLEuToIc9ClZTMcVqk9A86vdPPGtI2sruppsVdMnmbEn3HqQneIpreEv3cA==
-X-Received: by 2002:a17:907:3f90:b0:6fe:cd08:dc21 with SMTP id hr16-20020a1709073f9000b006fecd08dc21mr44428596ejc.136.1654067964500;
-        Wed, 01 Jun 2022 00:19:24 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=nAMM4lRuazejy0EDJVvU8shLpINg8wAqjAlfsJ24pMs=;
+        b=txy/Tx7OZ7aDFOdp+6aXyiFRmedTTOCQ6H3eZj+EWUofUvzlryB63wVgIX74hYF6Tv
+         6md6IBGvKyigA3lzpc1s0fo7Nbh9glzBgHPdcTrNALxQ7m9volXqaMCTH1lg3irvj6QM
+         dEmS3OjMv0+4JcWih+rrIP10443WUHrxef9a93pQ1f7btpIAuLLkln6QpunBXtn3mJ6w
+         A5EFq8IMPQ0jNpPBaQ4f+t/v4IVPSpRnPPbOaLTRar9MzrG74HWOn2mcxOwBxVUlsX33
+         pEb9kPD+n+CbgBsrCOSo2mRLwRg2z7h560nLip2c5ONBbyiLmAttbHCF2ycZlZXEWPf3
+         MLPQ==
+X-Gm-Message-State: AOAM533eHadJskYTlfJOVBttGl3Ssw4xONqfPpCGo2mPZBNscla8AGrS
+        ZtlrW8tp8F9w2qLGpNPGbSeiUWD1D6FbIROA
+X-Google-Smtp-Source: ABdhPJx3HWipshhxFlcuIAl26zCYvNK1o9wkgX//LLgCC/LPRIUoXZ26kEjL6jpWBYjstExVcgbU1A==
+X-Received: by 2002:a17:907:6d0e:b0:708:3ada:184c with SMTP id sa14-20020a1709076d0e00b007083ada184cmr318627ejc.192.1654067967665;
+        Wed, 01 Jun 2022 00:19:27 -0700 (PDT)
 Received: from localhost.localdomain (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id f27-20020a17090624db00b006f3ef214dcdsm358486ejb.51.2022.06.01.00.19.23
+        by smtp.gmail.com with ESMTPSA id f27-20020a17090624db00b006f3ef214dcdsm358486ejb.51.2022.06.01.00.19.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jun 2022 00:19:23 -0700 (PDT)
+        Wed, 01 Jun 2022 00:19:27 -0700 (PDT)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -55,37 +55,39 @@ To:     Sebastian Reichel <sre@kernel.org>,
         Dmitry Osipenko <digetx@gmail.com>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH 1/4] dt-bindings: power: supply: bq24190: use regulator schema for child node
-Date:   Wed,  1 Jun 2022 09:19:08 +0200
-Message-Id: <20220601071911.6435-1-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH 4/4] dt-bindings: power: supply: summit,smb347: use absolute path to schema
+Date:   Wed,  1 Jun 2022 09:19:11 +0200
+Message-Id: <20220601071911.6435-4-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220601071911.6435-1-krzysztof.kozlowski@linaro.org>
+References: <20220601071911.6435-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The 'usb-otg-vbus' child node is a regulator so reference the regulator
-schema for proper evaluation.
+Reference regulator schema by absolute path, as expected by DT schema
+coding style.
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- Documentation/devicetree/bindings/power/supply/bq24190.yaml | 2 +-
+ .../devicetree/bindings/power/supply/summit,smb347-charger.yaml | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.yaml b/Documentation/devicetree/bindings/power/supply/bq24190.yaml
-index 0d7cbbdf808b..402d9d2ed2b9 100644
---- a/Documentation/devicetree/bindings/power/supply/bq24190.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/bq24190.yaml
-@@ -28,7 +28,7 @@ properties:
-     maxItems: 1
+diff --git a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
+index 20862cdfc116..ce0bca4689f6 100644
+--- a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
++++ b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
+@@ -82,7 +82,7 @@ properties:
+       - 1 # SMB3XX_SYSOK_INOK_ACTIVE_HIGH
  
-   usb-otg-vbus:
--    type: object
+   usb-vbus:
+-    $ref: "../../regulator/regulator.yaml#"
 +    $ref: /schemas/regulator/regulator.yaml#
-     description: |
-       Regulator that is used to control the VBUS voltage direction for
-       either USB host mode or for charging on the OTG port
+     type: object
+ 
+     properties:
 -- 
 2.34.1
 
