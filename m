@@ -2,87 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03BC2C43334
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Jun 2022 15:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1955EC43334
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Jun 2022 16:18:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235319AbiFBPzg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Jun 2022 11:55:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44606 "EHLO
+        id S232686AbiFBQS1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Jun 2022 12:18:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236645AbiFBPzf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2022 11:55:35 -0400
-X-Greylist: delayed 461 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 02 Jun 2022 08:55:33 PDT
-Received: from ixit.cz (ip-94-112-206-30.net.upcbroadband.cz [94.112.206.30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B762818379
-        for <linux-pm@vger.kernel.org>; Thu,  2 Jun 2022 08:55:33 -0700 (PDT)
-Received: from [192.168.43.127] (unknown [89.24.43.208])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        with ESMTP id S231533AbiFBQS0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2022 12:18:26 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F49966AE2;
+        Thu,  2 Jun 2022 09:18:25 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ixit.cz (Postfix) with ESMTPSA id 0C4AF2007F;
-        Thu,  2 Jun 2022 17:47:47 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
-        t=1654184868;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=cFipLSaSNt6AVZj+ipJuiWLqxOfkAwoPaoKp6HET13A=;
-        b=Px/3AEjj0ms3qrktWNl/+/H/NLVeovGt6F4eeiEjwwtQcKAJTH+lymb0lVYTNIiH99/Cko
-        zTHPO5GcDkbMou8ZNea8hjm4k+lRoHY5jz/lNOPbF+HTMHTEenckKoJjG+81ah0hs1PHQO
-        sS+EjBpCDaEoaWjA+oqggXoDirxalwk=
-Message-ID: <9a7b3be5-f75d-d269-1113-f2865e9c4919@ixit.cz>
-Date:   Thu, 2 Jun 2022 17:47:43 +0200
+        by ams.source.kernel.org (Postfix) with ESMTPS id 16113B81F1B;
+        Thu,  2 Jun 2022 16:18:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D50ACC385A5;
+        Thu,  2 Jun 2022 16:18:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1654186702;
+        bh=7V0y/ZW966JADd4R8xjyTkPmLwvVxuyoXRlhbmeyn0g=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=CL2qs9DX6AOYlVKAq5RD4aLfaxjM7lqNolI5z6e241jviXa7XvHU4hMepnOIh5Obz
+         wVOdZ3hoKsTaJDjWOEErtQf4UerwJRQXLXdraRAejbZzzxc4uRj+CYJa3nu6RVXT26
+         Zf5T4VkHz5HqQFxRFxTD37VFPgdPfmbn0Q15eEnaZPH1uT055zV+ZdQ6eRukMW4qG+
+         3J6e7Sslkz3GM+p/qdhVeoshIlqxSUVyyMtDaSNtV/IAlrWuj6Wxbtm90O3tRYfNBu
+         y/xcmOOLkxysY1guP2FHutrQGovN4NOKM+Tc9DEeNk4MEjN47tc+smx+IJe4BRbTTQ
+         YatyQEcxtqi4w==
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-2ef5380669cso56428297b3.9;
+        Thu, 02 Jun 2022 09:18:22 -0700 (PDT)
+X-Gm-Message-State: AOAM530o7risNguj2/061d+vRW2NF5rpKM4f0HbR8gCJ1bZ41lxjBhu0
+        vrLsAMcnUIhMeO7g3nykZnZhEC0ZZ5bCfd+Kb28=
+X-Google-Smtp-Source: ABdhPJxovnL02BvPqYSXWr4MroPObCPVq7tSHLA99lR6suneLeJ+y7EomaATc3KSXJD7rrDjUZc2w5C3D51O8XUJeTI=
+X-Received: by 2002:a0d:fc83:0:b0:2e5:b0f4:c125 with SMTP id
+ m125-20020a0dfc83000000b002e5b0f4c125mr6542276ywf.347.1654186701949; Thu, 02
+ Jun 2022 09:18:21 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH 4/4] dt-bindings: power: supply: summit,smb347: use
- absolute path to schema
-Content-Language: en-US
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Dmitry Osipenko <digetx@gmail.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20220601071911.6435-1-krzysztof.kozlowski@linaro.org>
- <20220601071911.6435-4-krzysztof.kozlowski@linaro.org>
-From:   David Heidelberg <david@ixit.cz>
-In-Reply-To: <20220601071911.6435-4-krzysztof.kozlowski@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <CAK8P3a1mkHEjRJgJPsRy+kuN=48=JEDJAeR2z9n+O71qbJ8hSA@mail.gmail.com>
+ <6caf53e059758234ee12a236f967412f1df1f8a0.camel@linux.intel.com>
+In-Reply-To: <6caf53e059758234ee12a236f967412f1df1f8a0.camel@linux.intel.com>
+From:   Arnd Bergmann <arnd@kernel.org>
+Date:   Thu, 2 Jun 2022 18:18:05 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a1mHe3TkZa443fzsPnGUP1XT3w-DN3U5KAL6NBhc2nEsw@mail.gmail.com>
+Message-ID: <CAK8P3a1mHe3TkZa443fzsPnGUP1XT3w-DN3U5KAL6NBhc2nEsw@mail.gmail.com>
+Subject: Re: x86/mce/therm_throt incorrect THERM_STATUS_CLEAR_CORE_MASK?
+To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     Len Brown <len.brown@intel.com>,
+        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Reviewed-by: David Heidelberg <david@ixit.cz>
-
-On 01/06/2022 09:19, Krzysztof Kozlowski wrote:
-> Reference regulator schema by absolute path, as expected by DT schema
-> coding style.
+On Thu, Jun 2, 2022 at 5:52 PM srinivas pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
 >
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
->   .../devicetree/bindings/power/supply/summit,smb347-charger.yaml | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-> index 20862cdfc116..ce0bca4689f6 100644
-> --- a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-> +++ b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-> @@ -82,7 +82,7 @@ properties:
->         - 1 # SMB3XX_SYSOK_INOK_ACTIVE_HIGH
->   
->     usb-vbus:
-> -    $ref: "../../regulator/regulator.yaml#"
-> +    $ref: /schemas/regulator/regulator.yaml#
->       type: object
->   
->       properties:
+> On Thu, 2022-06-02 at 11:19 +0200, Arnd Bergmann wrote:
+> > I have a Xeon W-2265 (family 6, model 85, stepping 7) that started
+> > constantly spewing messages from the therm_throt driver after one
+> > core overheated:
+> >
+> I think this is a Cascade Lake system. Have you tried the latest micro-
+> code?
 
--- 
-David Heidelberg
-Consultant Software Engineer
+Thanks for your quick reply. I have installed the latest microcode 0x5003302
+now (manually, because the version provided by the distro was still using
+version 0x5003102).
 
-Matrix: @okias:matrix.org
+After that, I tried writing the value 0x2a80 from userspace, and
+that did not cause a trap, so I assume that fixed it.
 
+It's hard to be sure, as the system has only run into the broken
+state twice during its life, and now it's fine. I'll reply here if it
+ever comes back with the new microcode.
+
+Thanks a lot!
+
+       Arnd
