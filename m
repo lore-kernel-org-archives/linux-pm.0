@@ -2,82 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FAC2CCA47A
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Jun 2022 14:43:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00B5CC43334
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Jun 2022 15:52:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235695AbiFBOnQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Jun 2022 10:43:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40610 "EHLO
+        id S234823AbiFBPwx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Jun 2022 11:52:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60422 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235660AbiFBOnO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2022 10:43:14 -0400
-Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77B17255A1;
-        Thu,  2 Jun 2022 07:43:13 -0700 (PDT)
-Received: by mail-oi1-f171.google.com with SMTP id p129so2123701oig.3;
-        Thu, 02 Jun 2022 07:43:13 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=3ARHoM5LHWT9TByTd9RguxGGMAsE/6ISibQgr6i7ICU=;
-        b=3y8kPGjEjOtvm4XrogPqr+InlNByySuOMBafi+Lt6MAjrlE6/nKhOTeN9aPpXMhuCr
-         x3tcq3L6jLeWZFYMDoUpeQwoyEl8oUmwy3sLigPdf91c6Zo8oPhhqBm3jBOoNwZHCr33
-         eXimUm0HnT+oBQ9xz3YmCx+zAhHCA/Xqev489Kjfw3b+8oFid6il9fSB0j81ODIOcUTK
-         QdtWLfdBKaHKLdhgSMfRWkH+dF8IT2092klWccUjcZFcuXd1ysAAQZriQ3wwqfXQnTn2
-         OigUGwdYxaSJsYd5/P6YV9TD3GNFBsr/UZtYPDTmPd2XaRJdzj4mVS8yrR10CSRV/rfe
-         juFw==
-X-Gm-Message-State: AOAM530zJkS2MzHeHX959Xb6mUlFLFzOtfwmJlgMpDzsgwonEiat59P+
-        B56nqFDamFJWZrfArFCndQ==
-X-Google-Smtp-Source: ABdhPJysiNjG99QgKgCjncBPlVVdav9tlJP2F5lRbb9jnwiLuIn1hoWcc91mSkX8MrmN+cktC9jNwg==
-X-Received: by 2002:a05:6808:1686:b0:2f7:2f03:9792 with SMTP id bb6-20020a056808168600b002f72f039792mr17778848oib.278.1654180992727;
-        Thu, 02 Jun 2022 07:43:12 -0700 (PDT)
-Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id c16-20020a544e90000000b0032b1b84f4e3sm2348061oiy.22.2022.06.02.07.43.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jun 2022 07:43:12 -0700 (PDT)
-Received: (nullmailer pid 2283162 invoked by uid 1000);
-        Thu, 02 Jun 2022 14:43:11 -0000
-Date:   Thu, 2 Jun 2022 09:43:11 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Sibi Sankar <quic_sibis@quicinc.com>, bjorn.andersson@linaro.org,
-        agross@kernel.org, djakov@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, p.zabel@pengutronix.de,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH 1/3] dt-bindings: interconnect: Update email address
-Message-ID: <20220602144311.GA2278169-robh@kernel.org>
-References: <1654130923-18722-1-git-send-email-quic_sibis@quicinc.com>
- <cb8c7e28-dfef-78e2-c97c-11b9dee02fed@linaro.org>
+        with ESMTP id S235319AbiFBPwx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2022 11:52:53 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79D471153;
+        Thu,  2 Jun 2022 08:52:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1654185172; x=1685721172;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=stX6Gbo8Um10A6pAxqR7sGPejpzsxUNu9FxYx00Kap4=;
+  b=cmmH804WMCgdWqBbGi9PAHWdewtf0Acbsc2AHjOKjIGGj/F7TeDz9RCa
+   eiqNBYEukIPoPtDnxHV+UxihmGF+OOx4pe08hDffANZNqVpdHT64iddu1
+   qNA+dICQlk/lnUXQLRuCTJH+16qkXo5UUDgaarP4lXf6lZDrqTjB/f/yh
+   VrNuLlAc90M8uQ+ccS+HLCgjCkXYMsH+azoK2H8Hh8VwiaKMnxdjiV1zz
+   Qz/j7TsMgNAdMkO2+O0otoooXk8/ApKUNdHFkE+RcrNB7prdbG2M1Ycsh
+   Gx0vwnVvO/GNdfL2VpMTTnh4j2ipH+tjbCggvHr9CK5du1imrWmo4mv8S
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10366"; a="256468521"
+X-IronPort-AV: E=Sophos;i="5.91,271,1647327600"; 
+   d="scan'208";a="256468521"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2022 08:52:50 -0700
+X-IronPort-AV: E=Sophos;i="5.91,271,1647327600"; 
+   d="scan'208";a="606908627"
+Received: from bcappucc-mobl3.amr.corp.intel.com (HELO spandruv-desk1.amr.corp.intel.com) ([10.212.183.28])
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2022 08:52:49 -0700
+Message-ID: <6caf53e059758234ee12a236f967412f1df1f8a0.camel@linux.intel.com>
+Subject: Re: x86/mce/therm_throt incorrect THERM_STATUS_CLEAR_CORE_MASK?
+From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Arnd Bergmann <arnd@kernel.org>, Len Brown <len.brown@intel.com>,
+        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Date:   Thu, 02 Jun 2022 08:52:49 -0700
+In-Reply-To: <CAK8P3a1mkHEjRJgJPsRy+kuN=48=JEDJAeR2z9n+O71qbJ8hSA@mail.gmail.com>
+References: <CAK8P3a1mkHEjRJgJPsRy+kuN=48=JEDJAeR2z9n+O71qbJ8hSA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.42.4 (3.42.4-2.fc35) 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cb8c7e28-dfef-78e2-c97c-11b9dee02fed@linaro.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 02, 2022 at 01:48:21PM +0200, Krzysztof Kozlowski wrote:
-> On 02/06/2022 02:48, Sibi Sankar wrote:
-> > Update email address to the quicinc.com domain.
-> > 
-> > Signed-off-by: Sibi Sankar <quic_sibis@quicinc.com>
-> > ---
-> >  Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml | 2 +-
+On Thu, 2022-06-02 at 11:19 +0200, Arnd Bergmann wrote:
+> I have a Xeon W-2265 (family 6, model 85, stepping 7) that started
+> constantly spewing messages from the therm_throt driver after one
+> core overheated:
 > 
-> Thanks for updating the email addresses. All three patches should be
-> rather squashed to one (and taken by Rob for example), it's quite a
-> churn. Anyway:
+I think this is a Cascade Lake system. Have you tried the latest micro-
+code?
 
-I've applied the series and did this.
+Thanks,
+Srinivas
 
-Rob
 
+> May 31 13:57:54 kernel: [15512.209474] unchecked MSR access error:
+> WRMSR to 0x19c (tried to write 0x0000000000002a80) at rIP:
+> 0xffffffff9f67f974 (native_write_msr+0x4/0x20)
+> May 31 13:57:54 kernel: [15512.209486] Call Trace:
+> May 31 13:57:54 kernel: [15512.209488]  <TASK>
+> May 31 13:57:54 kernel: [15512.209489]  ?
+> throttle_active_work+0xea/0x1f0
+> May 31 13:57:54 kernel: [15512.209498]  process_one_work+0x21d/0x3c0
+> May 31 13:57:54 kernel: [15512.209502]  worker_thread+0x4d/0x3f0
+> May 31 13:57:54 kernel: [15512.209505]  ?
+> process_one_work+0x3c0/0x3c0
+> May 31 13:57:54 kernel: [15512.209508]  kthread+0x127/0x150
+> May 31 13:57:54 kernel: [15512.209510]  ?
+> set_kthread_struct+0x40/0x40
+> May 31 13:57:54 kernel: [15512.209513]  ret_from_fork+0x1f/0x30
+> ...
+> May 31 13:57:59 kernel: [15517.333445] CPU11: Core temperature is
+> above threshold, cpu clock is throttled (total events = 3)
 > 
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> I could not find CPU model specific documentation for this register,
+> but I see that in [1], the bits 13 through 15 are marked as reserved
+> in some cases but not others. Manually writing the value 0xa80
+> instead of 0x2a80 from user space makes the warnings stop, so
+> my guess is that this CPU does not support the 0x2000 bit:
 > 
+> $ sudo  wrmsr -p 11 0x19c 0xa80 ; dmesg
+> [177764.874555] msr: Write to unrecognized MSR 0x19c by wrmsr (pid:
+> 142969).
+> [177764.874560] msr: See
+> https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/about for
+> details.
+> [177765.371180] CPU11: Core temperature/speed normal (total events =
+> 42)
+> [177765.371180] CPU23: Core temperature/speed normal (total events =
+> 42)
 > 
-> Best regards,
-> Krzysztof
+> I have not tried the patch below, but I think this would address it
+> on my
+> system, while likely breaking other machines. Any ideas what the
+> correct fix is?
 > 
+>       Arnd
+> 
+> diff --git a/drivers/thermal/intel/therm_throt.c
+> b/drivers/thermal/intel/therm_throt.c
+> index 8352083b87c7..620d7f4c013e 100644
+> --- a/drivers/thermal/intel/therm_throt.c
+> +++ b/drivers/thermal/intel/therm_throt.c
+> @@ -196,7 +196,7 @@ static const struct attribute_group
+> thermal_attr_group = {
+>  #define THERM_THROT_POLL_INTERVAL      HZ
+>  #define THERM_STATUS_PROCHOT_LOG       BIT(1)
+> 
+> -#define THERM_STATUS_CLEAR_CORE_MASK (BIT(1) | BIT(3) | BIT(5) |
+> BIT(7) | BIT(9) | BIT(11) | BIT(13) | BIT(15))
+> +#define THERM_STATUS_CLEAR_CORE_MASK (BIT(1) | BIT(3) | BIT(5) |
+> BIT(7) | BIT(9) | BIT(11))
+>  #define THERM_STATUS_CLEAR_PKG_MASK  (BIT(1) | BIT(3) | BIT(5) |
+> BIT(7) | BIT(9) | BIT(11))
+> 
+>  static void clear_therm_status_log(int level)
+> 
+> [1]
+> https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3b-part-2-manual.pdf
+
