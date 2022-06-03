@@ -2,110 +2,177 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0CC4CCA47C
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Jun 2022 17:22:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 710F0C43334
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Jun 2022 18:54:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245734AbiFCRWe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Jun 2022 13:22:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32844 "EHLO
+        id S244651AbiFCSyq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Jun 2022 14:54:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344365AbiFCRWd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2022 13:22:33 -0400
-Received: from hostingweb31-40.netsons.net (hostingweb31-40.netsons.net [89.40.174.40])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8169D6396;
-        Fri,  3 Jun 2022 10:22:31 -0700 (PDT)
-Received: from [77.244.183.192] (port=64530 helo=melee.fritz.box)
-        by hostingweb31.netsons.net with esmtpa (Exim 4.95)
-        (envelope-from <luca@lucaceresoli.net>)
-        id 1nx9hv-0009cb-DZ;
-        Fri, 03 Jun 2022 17:59:27 +0200
-From:   Luca Ceresoli <luca@lucaceresoli.net>
-To:     linux-kernel@vger.kernel.org
-Cc:     Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Leon Luo <leonl@leopardimaging.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>, linux-clk@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        Luca Ceresoli <luca@lucaceresoli.net>,
-        Luca Ceresoli <luca.ceresoli@bootlin.com>
-Subject: [PATCH 2/6] dt-bindings: update Luca Ceresoli's e-mail address
-Date:   Fri,  3 Jun 2022 17:57:23 +0200
-Message-Id: <20220603155727.1232061-2-luca@lucaceresoli.net>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220603155727.1232061-1-luca@lucaceresoli.net>
-References: <20220603155727.1232061-1-luca@lucaceresoli.net>
+        with ESMTP id S1347797AbiFCSyo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2022 14:54:44 -0400
+Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com [209.85.219.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D787289B6;
+        Fri,  3 Jun 2022 11:54:43 -0700 (PDT)
+Received: by mail-yb1-f182.google.com with SMTP id w2so15280118ybi.7;
+        Fri, 03 Jun 2022 11:54:43 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=lsii2M/Z+BjHQ59FvjJ8av50zu7xha2i5JDwxAF3srs=;
+        b=t8bCVTdhcprieEQdJqIg2y/nndA5I93jpd4sgMYDrpi0xnbz68kQ3f22fOUNCihCS4
+         bsBKSnzsY8N9oXEFh56UMQHiB403GhHct9GUtes7r9myu57fujIyFdO3aHdyd5jzoWxR
+         hJ27eomJTdKNWG7nplj85e+z4kiH7lcxLWeipm/bVVWtBMZYPr7/+Df3q+QJEpx/L4DF
+         MP51hrfN/0b4cqaqzXDELAoOk15lxsxCqqc73i3QQLV6BXzxUQUYMYj/ELFf6BPNSOAL
+         1jPhgv/1VR3v3D02ZqXl8pzecLeydTsk9/cf9OqT0PGhLUtxrh8t5ipzF30dS4Q8tDk3
+         BTNw==
+X-Gm-Message-State: AOAM530U3en2oYbr2wPTkRgzun5OUUbFwQyVn/a1yTPXs3Q9JkoOrz8M
+        8W0OMU1ItXFDMOMqIpIKRy7aL69BDbsUdrTKQgg=
+X-Google-Smtp-Source: ABdhPJxB4pVovVskOU85j4HEBytnIdMzJtv/l+nGCWtbsux7xavEE6caGgyM1Qro50zwzIcWaOennN+kqEZC0EQP+vo=
+X-Received: by 2002:a25:2004:0:b0:650:740:f31d with SMTP id
+ g4-20020a252004000000b006500740f31dmr12046953ybg.81.1654282482815; Fri, 03
+ Jun 2022 11:54:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - hostingweb31.netsons.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lucaceresoli.net
-X-Get-Message-Sender-Via: hostingweb31.netsons.net: authenticated_id: luca+lucaceresoli.net/only user confirmed/virtual account not confirmed
-X-Authenticated-Sender: hostingweb31.netsons.net: luca@lucaceresoli.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+References: <YpnwZ/Q5yTKRDBOD@kroah.com> <20220603113138.2689444-1-gregkh@linuxfoundation.org>
+In-Reply-To: <20220603113138.2689444-1-gregkh@linuxfoundation.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 3 Jun 2022 20:54:31 +0200
+Message-ID: <CAJZ5v0hJ_uPakb8s8v4VJw86ShsN8Y0Hnk2NZ4ta7GKGQeW8pg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] driver core: Fix wait_for_device_probe() &
+ deferred_probe_timeout interaction
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Saravana Kannan <saravanak@google.com>,
+        John Stultz <jstultz@google.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        Jakub Kicinski <kuba@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Rob Herring <robh@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Naresh Kamboju <naresh.kamboju@linaro.org>,
+        Basil Eljuse <Basil.Eljuse@arm.com>,
+        Ferry Toth <fntoth@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+        Anders Roxell <anders.roxell@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-My Bootlin address is preferred from now on.
+On Fri, Jun 3, 2022 at 1:32 PM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> From: Saravana Kannan <saravanak@google.com>
+>
+> Mounting NFS rootfs was timing out when deferred_probe_timeout was
+> non-zero [1].  This was because ip_auto_config() initcall times out
+> waiting for the network interfaces to show up when
+> deferred_probe_timeout was non-zero. While ip_auto_config() calls
+> wait_for_device_probe() to make sure any currently running deferred
+> probe work or asynchronous probe finishes, that wasn't sufficient to
+> account for devices being deferred until deferred_probe_timeout.
+>
+> Commit 35a672363ab3 ("driver core: Ensure wait_for_device_probe() waits
+> until the deferred_probe_timeout fires") tried to fix that by making
+> sure wait_for_device_probe() waits for deferred_probe_timeout to expire
+> before returning.
+>
+> However, if wait_for_device_probe() is called from the kernel_init()
+> context:
+>
+> - Before deferred_probe_initcall() [2], it causes the boot process to
+>   hang due to a deadlock.
+>
+> - After deferred_probe_initcall() [3], it blocks kernel_init() from
+>   continuing till deferred_probe_timeout expires and beats the point of
+>   deferred_probe_timeout that's trying to wait for userspace to load
+>   modules.
+>
+> Neither of this is good. So revert the changes to
+> wait_for_device_probe().
+>
+> [1] - https://lore.kernel.org/lkml/TYAPR01MB45443DF63B9EF29054F7C41FD8C60@TYAPR01MB4544.jpnprd01.prod.outlook.com/
+> [2] - https://lore.kernel.org/lkml/YowHNo4sBjr9ijZr@dev-arch.thelio-3990X/
+> [3] - https://lore.kernel.org/lkml/Yo3WvGnNk3LvLb7R@linutronix.de/
+>
+> Fixes: 35a672363ab3 ("driver core: Ensure wait_for_device_probe() waits until the deferred_probe_timeout fires")
+> Cc: John Stultz <jstultz@google.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+> Cc: Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+> Cc: Robin Murphy <robin.murphy@arm.com>
+> Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: Naresh Kamboju <naresh.kamboju@linaro.org>
+> Cc: Basil Eljuse <Basil.Eljuse@arm.com>
+> Cc: Ferry Toth <fntoth@gmail.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Anders Roxell <anders.roxell@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Reported-by: Nathan Chancellor <nathan@kernel.org>
+> Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: John Stultz <jstultz@google.com>
+> Signed-off-by: Saravana Kannan <saravanak@google.com>
+> Link: https://lore.kernel.org/r/20220526034609.480766-2-saravanak@google.com
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Signed-off-by: Luca Ceresoli <luca@lucaceresoli.net>
-Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
----
- Documentation/devicetree/bindings/clock/idt,versaclock5.yaml    | 2 +-
- Documentation/devicetree/bindings/mfd/maxim,max77714.yaml       | 2 +-
- .../devicetree/bindings/power/supply/maxim,max77976.yaml        | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Reviewed-by: Rafael J. Wysocki <rafael@kernel.org>
 
-diff --git a/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml b/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml
-index be66f1e8b547..7c331bfbe370 100644
---- a/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml
-+++ b/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml
-@@ -45,7 +45,7 @@ description: |
-   The case where SH and SP are both 1 is likely not very interesting.
- 
- maintainers:
--  - Luca Ceresoli <luca@lucaceresoli.net>
-+  - Luca Ceresoli <luca.ceresoli@bootlin.com>
- 
- properties:
-   compatible:
-diff --git a/Documentation/devicetree/bindings/mfd/maxim,max77714.yaml b/Documentation/devicetree/bindings/mfd/maxim,max77714.yaml
-index 74a6867d3c82..edac14af101e 100644
---- a/Documentation/devicetree/bindings/mfd/maxim,max77714.yaml
-+++ b/Documentation/devicetree/bindings/mfd/maxim,max77714.yaml
-@@ -7,7 +7,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
- title: MAX77714 PMIC with GPIO, RTC and watchdog from Maxim Integrated.
- 
- maintainers:
--  - Luca Ceresoli <luca@lucaceresoli.net>
-+  - Luca Ceresoli <luca.ceresoli@bootlin.com>
- 
- description: |
-   MAX77714 is a Power Management IC with 4 buck regulators, 9
-diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max77976.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max77976.yaml
-index 675b9b26d233..f23dcc50793e 100644
---- a/Documentation/devicetree/bindings/power/supply/maxim,max77976.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/maxim,max77976.yaml
-@@ -7,7 +7,7 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
- title: Maxim Integrated MAX77976 Battery charger
- 
- maintainers:
--  - Luca Ceresoli <luca@lucaceresoli.net>
-+  - Luca Ceresoli <luca.ceresoli@bootlin.com>
- 
- description: |
-   The Maxim MAX77976 is a 19Vin / 5.5A, 1-Cell Li+ battery charger
--- 
-2.25.1
-
+> ---
+>  drivers/base/dd.c | 5 -----
+>  1 file changed, 5 deletions(-)
+>
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 2fc8507f59ee..91f63cd33b12 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -263,7 +263,6 @@ int driver_deferred_probe_timeout;
+>  #endif
+>
+>  EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
+> -static DECLARE_WAIT_QUEUE_HEAD(probe_timeout_waitqueue);
+>
+>  static int __init deferred_probe_timeout_setup(char *str)
+>  {
+> @@ -318,7 +317,6 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
+>         list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe)
+>                 dev_info(p->device, "deferred probe pending\n");
+>         mutex_unlock(&deferred_probe_mutex);
+> -       wake_up_all(&probe_timeout_waitqueue);
+>  }
+>  static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);
+>
+> @@ -736,9 +734,6 @@ int driver_probe_done(void)
+>   */
+>  void wait_for_device_probe(void)
+>  {
+> -       /* wait for probe timeout */
+> -       wait_event(probe_timeout_waitqueue, !driver_deferred_probe_timeout);
+> -
+>         /* wait for the deferred probe workqueue to finish */
+>         flush_work(&deferred_probe_work);
+>
+> --
+> 2.36.1
+>
