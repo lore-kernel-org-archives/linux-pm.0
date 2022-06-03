@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5141C3F2D4
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Jun 2022 13:56:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F27FAC43334
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Jun 2022 13:56:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243109AbiFCN4p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Jun 2022 09:56:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48686 "EHLO
+        id S244903AbiFCN4q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Jun 2022 09:56:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244889AbiFCN4m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2022 09:56:42 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F1DE381BB;
-        Fri,  3 Jun 2022 06:56:40 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id n124-20020a1c2782000000b003972dfca96cso4378143wmn.4;
-        Fri, 03 Jun 2022 06:56:40 -0700 (PDT)
+        with ESMTP id S244880AbiFCN4o (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2022 09:56:44 -0400
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6731939821;
+        Fri,  3 Jun 2022 06:56:43 -0700 (PDT)
+Received: by mail-wm1-x330.google.com with SMTP id z17so4142417wmf.1;
+        Fri, 03 Jun 2022 06:56:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=cx/gp/Zf/QVveVxqbkMsGI/KUlqkSV+vcSUZPyo3kCI=;
-        b=qXerizvOA8TIf75essVIOe5kIDsQgJljHoxAdQ6GXgfCz02Nlq590sXYdsIuX3aj48
-         XEmkYXi33q3Q12V/x1MXN1v2I1om6nkk9ADN880tSaa+USVy4opnTfXO/lmRi06xgNFf
-         W7y7mq+8gsRdLdoVn683ldRY2m+dPPM5/6mpOFQ3dsWaEl9LwtPx9TI3sBJiFcRw5/qU
-         /C7clgzt64udQ9zsdX7RN1dWCkIPx6yFYTY8p6Plv61LXcgfJ2uW6pq3AG7xbsH7Td+V
-         HDqlunMTxMkm1/rM2M2QOriZiFvOp3jW2S7UgN3o3+VsyZlNE4arvt8ORVVdgNdUEYf4
-         q4UA==
+        bh=I3/ArNj3Gx6ysweu6QmWCkRaXZNp/b8pZqhl3nfQBWw=;
+        b=ZVsQkdWZwki7857RR0N7O8162fv72qfm+dNqCFCFfzBjAeracnkR3fl6ejkCmmikaG
+         JLW0xmoFyX0dds5TZt0BkWXSsoH3gXUqJuSwVcJQ75aO1xVP17MErHY0hNrKmpaRCYMc
+         dROl2/1Yw1XLLCEvZ3wSTS2WxgtxNspljGSOmPIAE84ahPukfNsym/pRIOfd6ynt+2ME
+         xWMsNG3dhZ3sI0iVN0xpeDUivu1BVsuffwDSo8MkP3QPGBcOEqGLnqu++SPM0XDQypVr
+         HPmEJrZNhtrZakZyj65/NnkI3Xtgj6HKfuFbSFcgce2BV18muIsqyRv1MxUVnM3aA/NH
+         ZKhQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=cx/gp/Zf/QVveVxqbkMsGI/KUlqkSV+vcSUZPyo3kCI=;
-        b=3fyUStSRFWy91LReTBUx+lDKQGG94hpUSUZJg6oREcAEn+N9IpAIBVdmm+RuMoNlAO
-         46zY5GK9m73NIV0O4JyrCtrWH+wPJYMHRsuaxAv9QbZdsipRiSFOQ4knGYyPzi8N/5FI
-         gwmzWZXOtFGom0Gd/z+nm8p/C1JfCp5rfwKjDuUl8q+JWEMt3bhC8PQRsXoBSWdrzHyY
-         4AWMEuei30i67+VEtrYzt09thE9WHzFgSJxz9wu79xqzxEEl9DdyGo/RBjRAyMTYpfB0
-         5FGg25zgEwsASx6V39vyNjWhM7xQ51B8TUz7BzEDw8gpMVsqaIEE4c3ANMkuVkwJ9mbb
-         v9mA==
-X-Gm-Message-State: AOAM533K832LwGzdEZtIMxPBJ/gS7hJF4hOWIEgtGTV5gZ0XmBM2uqSC
-        BrZgGbadShYKxNdJQmcCQTg=
-X-Google-Smtp-Source: ABdhPJwEGnIUPcLW1uipz+weCaHwWbqgYbvBQB1MMtjgwcETbCj7tNXCCG1TdwRsKBlMGw8R5PfJ+g==
-X-Received: by 2002:a05:600c:1d20:b0:397:5a8b:a30a with SMTP id l32-20020a05600c1d2000b003975a8ba30amr8922975wms.89.1654264598832;
-        Fri, 03 Jun 2022 06:56:38 -0700 (PDT)
+        bh=I3/ArNj3Gx6ysweu6QmWCkRaXZNp/b8pZqhl3nfQBWw=;
+        b=SlhuY4DtW+I2cYEUD3XD20nPNQBZTrCO5K6Z+80BTdeGzZCByHN9y97P8p3dI7Lr8i
+         0McXwb07kXL21VpML3XMpHybjyZM9T82Zt2qxsoAO5snTGyE/1Yv91TqW3Q5Sj7eXE+C
+         dDBg5925Co2jodpUuK/EZg8t3GCVBlU8hmiZjxqXaGBXpl00i/lFzj/9w093y3PtSrKL
+         Z3IjqFZA3s+uqAM3txywHq+Trn/kZW5kR5H6N4n3OTPwrqSVGgtrx4ymfm/gtONeYcZ6
+         nyM6FEOTc5bHZZHU17DnKViA3AaYTWgCh7YaV3YsDJcE3NqV7d9sqhFnE2g0nzBmQaKR
+         w9yA==
+X-Gm-Message-State: AOAM5314bMKawy8GZrhTrBpg0flgBbIGYgl8WnpjzRWY6ApTM2pN8Cq5
+        4c1SmIDjAndFa7kG0CjuMaE=
+X-Google-Smtp-Source: ABdhPJymrL5pMssSod52/digpr5OcG2Is93Lvg1T53T3bk0ng83WgaxLscbYytTDi8SHmV0gTydOSA==
+X-Received: by 2002:a1c:f604:0:b0:399:c7a6:44c1 with SMTP id w4-20020a1cf604000000b00399c7a644c1mr9018967wmc.54.1654264602021;
+        Fri, 03 Jun 2022 06:56:42 -0700 (PDT)
 Received: from localhost (92.40.203.126.threembb.co.uk. [92.40.203.126])
-        by smtp.gmail.com with ESMTPSA id h11-20020a5d688b000000b0020e63ab5d78sm7334245wru.26.2022.06.03.06.56.38
+        by smtp.gmail.com with ESMTPSA id l13-20020a5d560d000000b0020fe35aec4bsm7606516wrv.70.2022.06.03.06.56.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Jun 2022 06:56:38 -0700 (PDT)
+        Fri, 03 Jun 2022 06:56:41 -0700 (PDT)
 From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
@@ -55,9 +55,9 @@ To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
 Cc:     lars@metafoo.de, rafael@kernel.org, linux-gpio@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 01/10] regmap-irq: Add get_irq_reg to support unusual register layouts
-Date:   Fri,  3 Jun 2022 14:57:05 +0100
-Message-Id: <20220603135714.12007-2-aidanmacdonald.0x0@gmail.com>
+Subject: [PATCH 03/10] dt-bindings: iio: adc: axp209: Add AXP192 compatible
+Date:   Fri,  3 Jun 2022 14:57:07 +0100
+Message-Id: <20220603135714.12007-4-aidanmacdonald.0x0@gmail.com>
 In-Reply-To: <20220603135714.12007-1-aidanmacdonald.0x0@gmail.com>
 References: <20220603135714.12007-1-aidanmacdonald.0x0@gmail.com>
 MIME-Version: 1.0
@@ -66,140 +66,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a new callback, get_irq_reg, for regmap IRQ chips, to support devices
-with unusual register layouts. This is required in the rare cases where
-the offset of an IRQ register is not constant with respect to the base
-register. This is probably best illustrated with an example:
-
-            mask    status
-    IRQ0    0x40    0x44
-    IRQ1    0x41    0x45
-    IRQ2    0x42    0x46
-    IRQ3    0x43    0x47
-    IRQ4    0x4a    0x4d
-
-If we set mask_base = 0x40 and status_base = 0x44, the offsets of each
-register relative to the base are:
-
-            mask    status
-    IRQ0    0       0
-    IRQ1    1       1
-    IRQ2    2       2
-    IRQ3    3       3
-    IRQ4    10      9
-
-The existing mapping mechanisms can't include IRQ4 in the same irqchip
-as IRQ0-3 because the offset of IRQ4's register depends on which type
-of register we're asking for, ie. which base register is used.
-
-The get_irq_reg callback allows drivers to specify an arbitrary mapping
-of (base register, register index) pairs to register addresses, instead
-of the default linear mapping "base_register + register_index". This
-allows unusual layouts, like the one above, to be handled using a single
-regmap IRQ chip.
-
-The drawback is that when get_irq_reg is used, it's impossible to use
-bulk reads for status registers even if some of them are contiguous,
-because the mapping is opaque to regmap-irq. This should be acceptable
-for the case of a few infrequently-polled status registers.
+The AXP192 is identical to the AXP20x, except for two additional
+GPIO ADC channels.
 
 Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 ---
- drivers/base/regmap/regmap-irq.c | 19 +++++++++----------
- include/linux/regmap.h           |  5 +++++
- 2 files changed, 14 insertions(+), 10 deletions(-)
+ .../bindings/iio/adc/x-powers,axp209-adc.yaml  | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/drivers/base/regmap/regmap-irq.c b/drivers/base/regmap/regmap-irq.c
-index 400c7412a7dc..e50437b18284 100644
---- a/drivers/base/regmap/regmap-irq.c
-+++ b/drivers/base/regmap/regmap-irq.c
-@@ -55,7 +55,9 @@ static int sub_irq_reg(struct regmap_irq_chip_data *data,
- 	unsigned int offset;
- 	int reg = 0;
+diff --git a/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml b/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml
+index d6d3d8590171..1a68e650ac7d 100644
+--- a/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml
+@@ -14,6 +14,23 @@ description: |
+   Device is a child of an axp209 multifunction device
+   ADC channels and their indexes per variant:
  
--	if (!chip->sub_reg_offsets || !chip->not_fixed_stride) {
-+	if (chip->get_irq_reg) {
-+		reg = chip->get_irq_reg(base_reg, i);
-+	} else if (!chip->sub_reg_offsets || !chip->not_fixed_stride) {
- 		/* Assume linear mapping */
- 		reg = base_reg + (i * map->reg_stride * data->irq_reg_stride);
- 	} else {
-@@ -97,7 +99,6 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
- 	struct regmap *map = d->map;
- 	int i, j, ret;
- 	u32 reg;
--	u32 unmask_offset;
- 	u32 val;
- 
- 	if (d->chip->runtime_pm) {
-@@ -141,11 +142,11 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
- 				dev_err(d->map->dev,
- 					"Failed to sync unmasks in %x\n",
- 					reg);
--			unmask_offset = d->chip->unmask_base -
--							d->chip->mask_base;
++  AXP192
++  ------
++   0 | acin_v
++   1 | acin_i
++   2 | vbus_v
++   3 | vbus_i
++   4 | pmic_temp
++   5 | gpio0_v
++   6 | gpio1_v
++   7 | gpio2_v
++   8 | gpio3_v
++   9 | ipsout_v
++  10 | batt_v
++  11 | batt_chrg_i
++  12 | batt_dischrg_i
++  13 | ts_v
 +
- 			/* clear mask with unmask_base register */
-+			reg = sub_irq_reg(d, d->chip->unmask_base, i);
- 			ret = regmap_irq_update_bits(d,
--					reg + unmask_offset,
-+					reg,
- 					d->mask_buf_def[i],
- 					d->mask_buf[i]);
- 		} else {
-@@ -480,7 +481,7 @@ static irqreturn_t regmap_irq_thread(int irq, void *d)
- 
- 		}
- 	} else if (!map->use_single_read && map->reg_stride == 1 &&
--		   data->irq_reg_stride == 1) {
-+		   data->irq_reg_stride == 1 && !chip->get_irq_reg) {
- 
- 		u8 *buf8 = data->status_reg_buf;
- 		u16 *buf16 = data->status_reg_buf;
-@@ -632,7 +633,6 @@ int regmap_add_irq_chip_fwnode(struct fwnode_handle *fwnode,
- 	int ret = -ENOMEM;
- 	int num_type_reg;
- 	u32 reg;
--	u32 unmask_offset;
- 
- 	if (chip->num_regs <= 0)
- 		return -EINVAL;
-@@ -773,10 +773,9 @@ int regmap_add_irq_chip_fwnode(struct fwnode_handle *fwnode,
- 			ret = regmap_irq_update_bits(d, reg,
- 					 d->mask_buf[i], ~d->mask_buf[i]);
- 		else if (d->chip->unmask_base) {
--			unmask_offset = d->chip->unmask_base -
--					d->chip->mask_base;
-+			reg = sub_irq_reg(d, d->chip->unmask_base, i);
- 			ret = regmap_irq_update_bits(d,
--					reg + unmask_offset,
-+					reg,
- 					d->mask_buf[i],
- 					d->mask_buf[i]);
- 		} else
-diff --git a/include/linux/regmap.h b/include/linux/regmap.h
-index 8952fa3d0d59..4828021ab9e8 100644
---- a/include/linux/regmap.h
-+++ b/include/linux/regmap.h
-@@ -1495,6 +1495,10 @@ struct regmap_irq_sub_irq_map {
-  *		     after handling the interrupts in regmap_irq_handler().
-  * @set_type_virt:   Driver specific callback to extend regmap_irq_set_type()
-  *		     and configure virt regs.
-+ * @get_irq_reg:     Callback to map a register index in range [0, num_regs[
-+ *		     to a register, relative to a specific base register. This
-+ *		     is mainly useful for devices where the register offsets
-+ *		     change depending on the base register.
-  * @irq_drv_data:    Driver specific IRQ data which is passed as parameter when
-  *		     driver specific pre/post interrupt handler is called.
-  *
-@@ -1545,6 +1549,7 @@ struct regmap_irq_chip {
- 	int (*handle_post_irq)(void *irq_drv_data);
- 	int (*set_type_virt)(unsigned int **buf, unsigned int type,
- 			     unsigned long hwirq, int reg);
-+	int (*get_irq_reg)(unsigned int base_reg, int i);
- 	void *irq_drv_data;
- };
- 
+   AXP209
+   ------
+    0 | acin_v
+@@ -50,6 +67,7 @@ description: |
+ properties:
+   compatible:
+     oneOf:
++      - const: x-powers,axp192-adc
+       - const: x-powers,axp209-adc
+       - const: x-powers,axp221-adc
+       - const: x-powers,axp813-adc
 -- 
 2.35.1
 
