@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD246CCA47D
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Jun 2022 13:57:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 009CFC43334
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Jun 2022 13:57:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242568AbiFCN5N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Jun 2022 09:57:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49380 "EHLO
+        id S244964AbiFCN5T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Jun 2022 09:57:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49392 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244950AbiFCN5G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2022 09:57:06 -0400
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3677ECED;
-        Fri,  3 Jun 2022 06:56:55 -0700 (PDT)
-Received: by mail-wr1-x42c.google.com with SMTP id t6so10526200wra.4;
-        Fri, 03 Jun 2022 06:56:55 -0700 (PDT)
+        with ESMTP id S244938AbiFCN5F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2022 09:57:05 -0400
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52853C74;
+        Fri,  3 Jun 2022 06:56:50 -0700 (PDT)
+Received: by mail-wr1-x42a.google.com with SMTP id a15so1982572wrh.2;
+        Fri, 03 Jun 2022 06:56:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=MkqoJ8hk3ZkkFUbeKR2f5faZoPCUA3E3sl1P1aOekGM=;
-        b=f1q3m22RfXrrtz7Lq4VAEg+CO+dn9HC9/a/omXPAgUx3OTGzdG9PSmmH2JzIyHAJRM
-         DqLkT5AD/P9/RmPIsRnguNR/AOQ9Tthe+j6YdyfHdaEdlXXfcmVAmzmpmxrh9W82xDGY
-         adyZZeVLhAu3gtXptxoUVdGfPa+5ohblnzoVQvU8hKywvFn8Pg41PYU/ZFArlLeZrqrh
-         clQJkEEhgxYDWeEiTjrSTbl+7P+Qmi4BRkaCKxnzGNLDpoEE8Jzk1ENv5gwTRw5j3Ig9
-         2RazMHCvxxSR4OO3e2sxGxAbvo+0wgAz/WFEFySDMh9EAzAoxE+h2gvusAgQ/mPNFC5E
-         NTtw==
+        bh=inWPNPjxnNomGMq+92gUJjnM7XkTlrAYR32sAnZRtIM=;
+        b=YukkIXIyUcvv8+OXGPSdSh12Z1yVORXbp9emvoYxk0BR6gpApu1tMiSAXyo8yZl+1G
+         3WqWxdmmTriQd5VObSKkPEPrBsJLknspDygxi5Ofc9yBpBfvcULH/vTIbSS3JcPfFuXa
+         RQ2b4QSbw2V++mXYfFKV+srK0tiy2g1wh6UsIceW355tsXUjIYWhQZeKQjIbacOAIa4+
+         r3hTXG5xHePmrM9k0r1bT6xTE1AiiUsNTi00tn3+L0skBOGAB7BPG3O0yXB7aIGp+IFu
+         iM5zXNPhVDWt8MaGAL+5eUCsGr0UYhfyc0gBEqJBm7DrPzpT+0N7Ni4VwxkulxM7OZnS
+         m+Bg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=MkqoJ8hk3ZkkFUbeKR2f5faZoPCUA3E3sl1P1aOekGM=;
-        b=qVuOXmGn3mcuItMpushEibXWG54NIdeIgmaR2/4cmftd/2fyDMC+nno3Lhvpo2a/+l
-         sXXTNfreCeo44p/vgOMohp/RFsarPjAXXF2w6hnpVKx8xKPQMITyfFGv6v8GPE9D/h9f
-         BB5s5G9NObIVDYXyeODF434Y99FHdbjTBzwmJd7T17Na5sApWn3d4f811VX4+qlDC0DO
-         BnaZ3pfWBc0fOOU/8BYreEvh8GRO1FMKuMtl+YyoQQHJeAqkUYyB5r9c2gyeDgwBSPRs
-         +BRXGmKTgsRSUM7hKIFycxkZGcAlYBXXyW/BDjxi2tvef6AuS8AmqET6RU82yZCmI5Ju
-         dKag==
-X-Gm-Message-State: AOAM5310vGJJA2LmXQyWPCkZqbDrm75vCtf7G5Mhxnj5Ierv7Kw1PgL8
-        aUEq/tRzV+acf9ofnXUN5jo=
-X-Google-Smtp-Source: ABdhPJxsfxzgPT9RhXS+5iTnXrpjvXlAKWMOy/KAmITnobBJkAcaoflcV6HKFTu7lK0A9uGYF2NBoQ==
-X-Received: by 2002:a5d:4b10:0:b0:213:5e0:2c6c with SMTP id v16-20020a5d4b10000000b0021305e02c6cmr7344082wrq.126.1654264613968;
-        Fri, 03 Jun 2022 06:56:53 -0700 (PDT)
+        bh=inWPNPjxnNomGMq+92gUJjnM7XkTlrAYR32sAnZRtIM=;
+        b=qijVENrDO7WfYU5Cw67OTtb1ZZj5dHs7lE9I+TPiupcAeCsEYLXDlckVd4XV+8XCn8
+         Oqiak/iqMn/vANlJ/6/SrsUOvRH+qJFK3VnnqVxdEld2qQq2T9Fo/EdF8cN1nFZDpNwB
+         omttY4pMKiAmVQHvgn9FkSKhf4IoafPpLTTewmZ1bmrUEMKswFVD395caIRvC4PkfNEV
+         x84k0Ttz9WvJaunIO1aDMaANyZEmdWmGabFhXIqhAhzE9vivcrZz4RmFrle60GzZ3xLv
+         tcGITkEcsXd+iKoxK5OLxGsrQhDhmtzb2gq8NvsmNknT5noK8U09PhZ4aEgkDGDnZtNx
+         m8zg==
+X-Gm-Message-State: AOAM531JjyI1a1Hy3ZQXTOvvvMZSaZnRlek52ORj62E94fwdCSDpDk0z
+        qodZg6gY6L4ie7v/+ji0SuY=
+X-Google-Smtp-Source: ABdhPJxDT0DRR5nIwuTW0XN7Uzo/AlwW45t8FQSXTJ3mNK783guzhH48X2ndUU9ZXSW/0C/EWQlf6g==
+X-Received: by 2002:a5d:648e:0:b0:210:18f6:f954 with SMTP id o14-20020a5d648e000000b0021018f6f954mr8460930wri.323.1654264608873;
+        Fri, 03 Jun 2022 06:56:48 -0700 (PDT)
 Received: from localhost (92.40.203.126.threembb.co.uk. [92.40.203.126])
-        by smtp.gmail.com with ESMTPSA id bg16-20020a05600c3c9000b0039763d41a48sm9597710wmb.25.2022.06.03.06.56.53
+        by smtp.gmail.com with ESMTPSA id u14-20020a056000038e00b00213b54d8894sm1475437wrf.17.2022.06.03.06.56.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Jun 2022 06:56:53 -0700 (PDT)
+        Fri, 03 Jun 2022 06:56:48 -0700 (PDT)
 From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
@@ -55,9 +55,9 @@ To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
 Cc:     lars@metafoo.de, rafael@kernel.org, linux-gpio@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 10/10] pinctrl: Add AXP192 pin control driver
-Date:   Fri,  3 Jun 2022 14:57:14 +0100
-Message-Id: <20220603135714.12007-11-aidanmacdonald.0x0@gmail.com>
+Subject: [PATCH 07/10] regulator: axp20x: Add support for AXP192
+Date:   Fri,  3 Jun 2022 14:57:11 +0100
+Message-Id: <20220603135714.12007-8-aidanmacdonald.0x0@gmail.com>
 In-Reply-To: <20220603135714.12007-1-aidanmacdonald.0x0@gmail.com>
 References: <20220603135714.12007-1-aidanmacdonald.0x0@gmail.com>
 MIME-Version: 1.0
@@ -66,655 +66,185 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The AXP192 PMIC's GPIO registers are much different from the GPIO
-registers of the AXP20x and AXP813 PMICs supported by the existing
-pinctrl-axp209 driver. It makes more sense to add a new driver for
-the AXP192, rather than add support in the existing axp20x driver.
-
-The pinctrl-axp192 driver is considerably more flexible in terms of
-register layout and should be able to support other X-Powers PMICs.
-Interrupts and pull down resistor configuration are supported too.
+Add support for the AXP192 PMIC.
 
 Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 ---
- drivers/pinctrl/Kconfig          |  14 +
- drivers/pinctrl/Makefile         |   1 +
- drivers/pinctrl/pinctrl-axp192.c | 589 +++++++++++++++++++++++++++++++
- 3 files changed, 604 insertions(+)
- create mode 100644 drivers/pinctrl/pinctrl-axp192.c
+ drivers/regulator/axp20x-regulator.c | 101 ++++++++++++++++++++++++---
+ 1 file changed, 92 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/pinctrl/Kconfig b/drivers/pinctrl/Kconfig
-index f52960d2dfbe..a71e35de333d 100644
---- a/drivers/pinctrl/Kconfig
-+++ b/drivers/pinctrl/Kconfig
-@@ -113,6 +113,20 @@ config PINCTRL_AT91PIO4
- 	  Say Y here to enable the at91 pinctrl/gpio driver for Atmel PIO4
- 	  controller available on sama5d2 SoC.
+diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
+index d260c442b788..1edf2bbf1c16 100644
+--- a/drivers/regulator/axp20x-regulator.c
++++ b/drivers/regulator/axp20x-regulator.c
+@@ -27,6 +27,29 @@
+ #include <linux/regulator/machine.h>
+ #include <linux/regulator/of_regulator.h>
  
-+config PINCTRL_AXP192
-+	tristate "X-Powers AXP192 PMIC pinctrl and GPIO Support"
-+	depends on MFD_AXP20X
-+	depends on OF
-+	select PINMUX
-+	select GENERIC_PINCONF
-+	select GPIOLIB
-+	help
-+	  AXP PMICs provides multiple GPIOs that can be muxed for different
-+	  functions. This driver bundles a pinctrl driver to select the function
-+	  muxing and a GPIO driver to handle the GPIO when the GPIO function is
-+	  selected.
-+	  Say Y to enable pinctrl and GPIO support for the AXP192 PMIC.
++#define AXP192_GPIO0_FUNC_MASK		GENMASK(2, 0)
 +
- config PINCTRL_AXP209
- 	tristate "X-Powers AXP209 PMIC pinctrl and GPIO Support"
- 	depends on MFD_AXP20X
-diff --git a/drivers/pinctrl/Makefile b/drivers/pinctrl/Makefile
-index e76f5cdc64b0..9d2b6420c5dd 100644
---- a/drivers/pinctrl/Makefile
-+++ b/drivers/pinctrl/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_PINCTRL_ARTPEC6)	+= pinctrl-artpec6.o
- obj-$(CONFIG_PINCTRL_AS3722)	+= pinctrl-as3722.o
- obj-$(CONFIG_PINCTRL_AT91)	+= pinctrl-at91.o
- obj-$(CONFIG_PINCTRL_AT91PIO4)	+= pinctrl-at91-pio4.o
-+obj-$(CONFIG_PINCTRL_AXP192)	+= pinctrl-axp192.o
- obj-$(CONFIG_PINCTRL_AXP209)	+= pinctrl-axp209.o
- obj-$(CONFIG_PINCTRL_BM1880)	+= pinctrl-bm1880.o
- obj-$(CONFIG_PINCTRL_DA850_PUPD) += pinctrl-da850-pupd.o
-diff --git a/drivers/pinctrl/pinctrl-axp192.c b/drivers/pinctrl/pinctrl-axp192.c
-new file mode 100644
-index 000000000000..0ff2d0b84978
---- /dev/null
-+++ b/drivers/pinctrl/pinctrl-axp192.c
-@@ -0,0 +1,589 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * AXP192 pinctrl and GPIO driver
-+ *
-+ * Copyright (C) 2022 Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
-+ */
++#define AXP192_IO_ENABLED		0x02
++#define AXP192_IO_DISABLED		0x06
 +
-+#include <linux/bitops.h>
-+#include <linux/device.h>
-+#include <linux/gpio/driver.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/axp20x.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/pinctrl/pinconf-generic.h>
-+#include <linux/pinctrl/pinconf.h>
-+#include <linux/pinctrl/pinctrl.h>
-+#include <linux/pinctrl/pinmux.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
++#define AXP192_WORKMODE_DCDC1_MASK	BIT_MASK(3)
++#define AXP192_WORKMODE_DCDC2_MASK	BIT_MASK(2)
++#define AXP192_WORKMODE_DCDC3_MASK	BIT_MASK(1)
 +
-+enum {
-+	AXP192_FUNC_OUTPUT = 0,
-+	AXP192_FUNC_INPUT,
-+	AXP192_FUNC_LDO,
-+	AXP192_FUNC_PWM,
-+	AXP192_FUNC_ADC,
-+	AXP192_FUNC_LOW_OUTPUT,
-+	AXP192_FUNC_FLOATING,
-+	AXP192_FUNC_EXT_CHG_CTL,
-+	AXP192_FUNC_LDO_STATUS,
-+	AXP192_FUNCS_NB,
++#define AXP192_DCDC1_V_OUT_MASK		GENMASK(6, 0)
++#define AXP192_DCDC2_V_OUT_MASK		GENMASK(5, 0)
++#define AXP192_DCDC3_V_OUT_MASK		GENMASK(6, 0)
++#define AXP192_LDO2_V_OUT_MASK		GENMASK(7, 4)
++#define AXP192_LDO3_V_OUT_MASK		GENMASK(3, 0)
++#define AXP192_LDO_IO0_V_OUT_MASK	GENMASK(7, 4)
++
++#define AXP192_PWR_OUT_EXTEN_MASK	BIT_MASK(6)
++#define AXP192_PWR_OUT_DCDC2_MASK	BIT_MASK(4)
++#define AXP192_PWR_OUT_LDO3_MASK	BIT_MASK(3)
++#define AXP192_PWR_OUT_LDO2_MASK	BIT_MASK(2)
++#define AXP192_PWR_OUT_DCDC3_MASK	BIT_MASK(1)
++#define AXP192_PWR_OUT_DCDC1_MASK	BIT_MASK(0)
++
+ #define AXP20X_GPIO0_FUNC_MASK		GENMASK(3, 0)
+ #define AXP20X_GPIO1_FUNC_MASK		GENMASK(3, 0)
+ 
+@@ -375,25 +398,32 @@ static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
+ 
+ 	switch (axp20x->variant) {
+ 	case AXP209_ID:
+-		if (id == AXP20X_DCDC2) {
++		if (id == AXP20X_LDO3) {
+ 			slew_rates = axp209_dcdc2_ldo3_slew_rates;
+ 			rate_count = ARRAY_SIZE(axp209_dcdc2_ldo3_slew_rates);
+ 			reg = AXP20X_DCDC2_LDO3_V_RAMP;
+-			mask = AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE_MASK |
+-			       AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN_MASK;
++			mask = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE_MASK |
++			       AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN_MASK;
+ 			enable = (ramp > 0) ?
+-				 AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN : 0;
++				 AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN : 0;
+ 			break;
+ 		}
+ 
+-		if (id == AXP20X_LDO3) {
++		fallthrough;
++
++	case AXP192_ID:
++		/*
++		 * AXP192 and AXP209 share the same DCDC2 ramp configuration
++		 */
++		if ((axp20x->variant == AXP209_ID && id == AXP20X_DCDC2) ||
++		    (axp20x->variant == AXP192_ID && id == AXP20X_DCDC2)) {
+ 			slew_rates = axp209_dcdc2_ldo3_slew_rates;
+ 			rate_count = ARRAY_SIZE(axp209_dcdc2_ldo3_slew_rates);
+ 			reg = AXP20X_DCDC2_LDO3_V_RAMP;
+-			mask = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE_MASK |
+-			       AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN_MASK;
++			mask = AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE_MASK |
++			       AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN_MASK;
+ 			enable = (ramp > 0) ?
+-				 AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN : 0;
++				 AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN : 0;
+ 			break;
+ 		}
+ 
+@@ -401,6 +431,7 @@ static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
+ 			break;
+ 
+ 		fallthrough;
++
+ 	default:
+ 		/* Not supported for this regulator */
+ 		return -ENOTSUPP;
+@@ -415,7 +446,8 @@ static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
+ 			if (ramp > slew_rates[i])
+ 				break;
+ 
+-			if (id == AXP20X_DCDC2)
++			if ((axp20x->variant == AXP209_ID && id == AXP20X_DCDC2) ||
++			    (axp20x->variant == AXP192_ID && id == AXP192_DCDC2))
+ 				cfg = AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE(i);
+ 			else
+ 				cfg = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE(i);
+@@ -511,6 +543,29 @@ static const struct regulator_ops axp20x_ops_sw = {
+ 	.is_enabled		= regulator_is_enabled_regmap,
+ };
+ 
++static const struct regulator_desc axp192_regulators[] = {
++	AXP_DESC(AXP192, DCDC1, "dcdc1", "vin1", 700, 3500, 25,
++		 AXP192_DCDC1_V_OUT, AXP192_DCDC1_V_OUT_MASK,
++		 AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_DCDC1_MASK),
++	AXP_DESC(AXP192, DCDC2, "dcdc2", "vin2", 700, 2275, 25,
++		 AXP192_DCDC2_V_OUT, AXP192_DCDC2_V_OUT_MASK,
++		 AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_DCDC2_MASK),
++	AXP_DESC(AXP192, DCDC3, "dcdc3", "vin3", 700, 3500, 25,
++		 AXP192_DCDC3_V_OUT, AXP192_DCDC3_V_OUT_MASK,
++		 AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_DCDC3_MASK),
++	AXP_DESC_FIXED(AXP192, LDO1, "ldo1", "acin", 1250),
++	AXP_DESC(AXP192, LDO2, "ldo2", "ldoin", 1800, 3300, 100,
++		 AXP192_LDO2_3_V_OUT, AXP192_LDO2_V_OUT_MASK,
++		 AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_LDO2_MASK),
++	AXP_DESC(AXP192, LDO3, "ldo3", "ldoin", 1800, 3300, 100,
++		 AXP192_LDO2_3_V_OUT, AXP192_LDO3_V_OUT_MASK,
++		 AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_LDO3_MASK),
++	AXP_DESC_IO(AXP192, LDO_IO0, "ldo_io0", "ips", 700, 3300, 100,
++		    AXP192_LDO_IO0_V_OUT, AXP192_LDO_IO0_V_OUT_MASK,
++		    AXP192_GPIO0_CTRL, AXP192_GPIO0_FUNC_MASK,
++		    AXP192_IO_ENABLED, AXP192_IO_DISABLED),
 +};
 +
-+struct axp192_pctl_function {
-+	const char		*name;
-+	/* Mux value written to the control register to select the function (-1 if unsupported) */
-+	const u8		*muxvals;
-+	const char * const	*groups;
-+	unsigned int		ngroups;
-+};
-+
-+struct axp192_pctl_reg_info {
-+	u8 reg;
-+	u8 mask;
-+};
-+
-+struct axp192_pctl_desc {
-+	unsigned int				npins;
-+	const struct pinctrl_pin_desc		*pins;
-+	/* Description of the function control register for each pin */
-+	const struct axp192_pctl_reg_info	*ctrl_regs;
-+	/* Description of the output signal register for each pin */
-+	const struct axp192_pctl_reg_info	*out_regs;
-+	/* Description of the input signal register for each pin */
-+	const struct axp192_pctl_reg_info	*in_regs;
-+	/* Description of the pull down resistor config register for each pin */
-+	const struct axp192_pctl_reg_info	*pull_down_regs;
-+
-+	unsigned int				nfunctions;
-+	const struct axp192_pctl_function	*functions;
-+};
-+
-+static const struct pinctrl_pin_desc axp192_pins[] = {
-+	PINCTRL_PIN(0, "GPIO0"),
-+	PINCTRL_PIN(1, "GPIO1"),
-+	PINCTRL_PIN(2, "GPIO2"),
-+	PINCTRL_PIN(3, "GPIO3"),
-+	PINCTRL_PIN(4, "GPIO4"),
-+	PINCTRL_PIN(5, "N_RSTO"),
-+};
-+
-+static const char * const axp192_io_groups[] = { "GPIO0", "GPIO1", "GPIO2",
-+						 "GPIO3", "GPIO4", "N_RSTO" };
-+static const char * const axp192_ldo_groups[] = { "GPIO0" };
-+static const char * const axp192_pwm_groups[] = { "GPIO1", "GPIO2" };
-+static const char * const axp192_adc_groups[] = { "GPIO0", "GPIO1", "GPIO2", "GPIO3" };
-+static const char * const axp192_extended_io_groups[] = { "GPIO0", "GPIO1", "GPIO2" };
-+static const char * const axp192_ext_chg_ctl_groups[] = { "GPIO3", "GPIO4" };
-+static const char * const axp192_ldo_status_groups[] = { "N_RSTO" };
-+
-+static const u8 axp192_output_muxvals[]		= {  0,  0,  0,  1,  1,  2 };
-+static const u8 axp192_input_muxvals[]		= {  1,  1,  1,  2,  2,  3 };
-+static const u8 axp192_ldo_muxvals[]		= {  2, -1, -1, -1, -1, -1 };
-+static const u8 axp192_pwm_muxvals[]		= { -1,  2,  2, -1, -1, -1 };
-+static const u8 axp192_adc_muxvals[]		= {  4,  4,  4,  3, -1, -1 };
-+static const u8 axp192_low_output_muxvals[]	= {  5,  5,  5, -1, -1, -1 };
-+static const u8 axp192_floating_muxvals[]	= {  6,  6,  6, -1, -1, -1 };
-+static const u8 axp192_ext_chg_ctl_muxvals[]	= { -1, -1, -1,  0,  0, -1 };
-+static const u8 axp192_ldo_status_muxvals[]	= { -1, -1, -1, -1, -1,  0 };
-+
-+static const struct axp192_pctl_function axp192_functions[AXP192_FUNCS_NB] = {
-+	[AXP192_FUNC_OUTPUT] = {
-+		.name = "output",
-+		.muxvals = axp192_output_muxvals,
-+		.groups = axp192_io_groups,
-+		.ngroups = ARRAY_SIZE(axp192_io_groups),
-+	},
-+	[AXP192_FUNC_INPUT] = {
-+		.name = "input",
-+		.muxvals = axp192_input_muxvals,
-+		.groups = axp192_io_groups,
-+		.ngroups = ARRAY_SIZE(axp192_io_groups),
-+	},
-+	[AXP192_FUNC_LDO] = {
-+		.name = "ldo",
-+		.muxvals = axp192_ldo_muxvals,
-+		.groups = axp192_ldo_groups,
-+		.ngroups = ARRAY_SIZE(axp192_ldo_groups),
-+	},
-+	[AXP192_FUNC_PWM] = {
-+		.name = "pwm",
-+		.muxvals = axp192_pwm_muxvals,
-+		.groups = axp192_pwm_groups,
-+		.ngroups = ARRAY_SIZE(axp192_pwm_groups),
-+	},
-+	[AXP192_FUNC_ADC] = {
-+		.name = "adc",
-+		.muxvals = axp192_adc_muxvals,
-+		.groups = axp192_adc_groups,
-+		.ngroups = ARRAY_SIZE(axp192_adc_groups),
-+	},
-+	[AXP192_FUNC_LOW_OUTPUT] = {
-+		.name = "low_output",
-+		.muxvals = axp192_low_output_muxvals,
-+		.groups = axp192_extended_io_groups,
-+		.ngroups = ARRAY_SIZE(axp192_extended_io_groups),
-+	},
-+	[AXP192_FUNC_FLOATING] = {
-+		.name = "floating",
-+		.muxvals = axp192_floating_muxvals,
-+		.groups = axp192_extended_io_groups,
-+		.ngroups = ARRAY_SIZE(axp192_extended_io_groups),
-+	},
-+	[AXP192_FUNC_EXT_CHG_CTL] = {
-+		.name = "ext_chg_ctl",
-+		.muxvals = axp192_ext_chg_ctl_muxvals,
-+		.groups = axp192_ext_chg_ctl_groups,
-+		.ngroups = ARRAY_SIZE(axp192_ext_chg_ctl_groups),
-+	},
-+	[AXP192_FUNC_LDO_STATUS] = {
-+		.name = "ldo_status",
-+		.muxvals = axp192_ldo_status_muxvals,
-+		.groups = axp192_ldo_groups,
-+		.ngroups = ARRAY_SIZE(axp192_ldo_status_groups),
-+	},
-+};
-+
-+static const struct axp192_pctl_reg_info axp192_pin_ctrl_regs[] = {
-+	{ .reg = AXP192_GPIO0_CTRL,   .mask = 0x07 },
-+	{ .reg = AXP192_GPIO1_CTRL,   .mask = 0x07 },
-+	{ .reg = AXP192_GPIO2_CTRL,   .mask = 0x07 },
-+	{ .reg = AXP192_GPIO4_3_CTRL, .mask = 0x03 },
-+	{ .reg = AXP192_GPIO4_3_CTRL, .mask = 0x0c },
-+	{ .reg = AXP192_N_RSTO_CTRL,  .mask = 0xc0 },
-+};
-+
-+static const struct axp192_pctl_reg_info axp192_pin_in_regs[] = {
-+	{ .reg = AXP192_GPIO2_0_STATE, .mask = BIT(4) },
-+	{ .reg = AXP192_GPIO2_0_STATE, .mask = BIT(5) },
-+	{ .reg = AXP192_GPIO2_0_STATE, .mask = BIT(6) },
-+	{ .reg = AXP192_GPIO4_3_STATE, .mask = BIT(4) },
-+	{ .reg = AXP192_GPIO4_3_STATE, .mask = BIT(5) },
-+	{ .reg = AXP192_N_RSTO_CTRL,   .mask = BIT(4) },
-+};
-+
-+static const struct axp192_pctl_reg_info axp192_pin_out_regs[] = {
-+	{ .reg = AXP192_GPIO2_0_STATE, .mask = BIT(0) },
-+	{ .reg = AXP192_GPIO2_0_STATE, .mask = BIT(1) },
-+	{ .reg = AXP192_GPIO2_0_STATE, .mask = BIT(2) },
-+	{ .reg = AXP192_GPIO4_3_STATE, .mask = BIT(0) },
-+	{ .reg = AXP192_GPIO4_3_STATE, .mask = BIT(1) },
-+	{ .reg = AXP192_N_RSTO_CTRL,   .mask = BIT(5) },
-+};
-+
-+static const struct axp192_pctl_reg_info axp192_pull_down_regs[] = {
-+	{ .reg = AXP192_GPIO2_0_PULL, .mask = BIT(0) },
-+	{ .reg = AXP192_GPIO2_0_PULL, .mask = BIT(1) },
-+	{ .reg = AXP192_GPIO2_0_PULL, .mask = BIT(2) },
-+	{ .reg = 0, .mask = 0 /* unsupported */ },
-+	{ .reg = 0, .mask = 0 /* unsupported */ },
-+	{ .reg = 0, .mask = 0 /* unsupported */ },
-+};
-+
-+static const struct axp192_pctl_desc axp192_data = {
-+	.npins = ARRAY_SIZE(axp192_pins),
-+	.pins = axp192_pins,
-+	.ctrl_regs = axp192_pin_ctrl_regs,
-+	.out_regs = axp192_pin_out_regs,
-+	.in_regs = axp192_pin_in_regs,
-+	.pull_down_regs = axp192_pull_down_regs,
-+
-+	.nfunctions = ARRAY_SIZE(axp192_functions),
-+	.functions = axp192_functions,
-+};
-+
-+
-+struct axp192_pctl {
-+	struct gpio_chip		chip;
-+	struct regmap			*regmap;
-+	struct pinctrl_dev		*pctl_dev;
-+	struct device			*dev;
-+	const struct axp192_pctl_desc	*desc;
-+	int				*irqs;
-+};
-+
-+static int axp192_gpio_get(struct gpio_chip *chip, unsigned int offset)
-+{
-+	struct axp192_pctl *pctl = gpiochip_get_data(chip);
-+	const struct axp192_pctl_reg_info *reginfo = &pctl->desc->in_regs[offset];
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(pctl->regmap, reginfo->reg, &val);
-+	if (ret)
-+		return ret;
-+
-+	return !!(val & reginfo->mask);
-+}
-+
-+static int axp192_gpio_get_direction(struct gpio_chip *chip, unsigned int offset)
-+{
-+	struct axp192_pctl *pctl = gpiochip_get_data(chip);
-+	const struct axp192_pctl_reg_info *reginfo = &pctl->desc->ctrl_regs[offset];
-+	const u8 *input_muxvals = pctl->desc->functions[AXP192_FUNC_INPUT].muxvals;
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(pctl->regmap, reginfo->reg, &val);
-+	if (ret)
-+		return ret;
-+
-+	if ((val & reginfo->mask) == (input_muxvals[offset] << (ffs(reginfo->mask) - 1)))
-+		return GPIO_LINE_DIRECTION_IN;
-+	else
-+		return GPIO_LINE_DIRECTION_OUT;
-+}
-+
-+static void axp192_gpio_set(struct gpio_chip *chip, unsigned int offset, int value)
-+{
-+	struct axp192_pctl *pctl = gpiochip_get_data(chip);
-+	const struct axp192_pctl_reg_info *reginfo = &pctl->desc->out_regs[offset];
-+
-+	regmap_update_bits(pctl->regmap, reginfo->reg, reginfo->mask, value ? reginfo->mask : 0);
-+}
-+
-+static int axp192_gpio_direction_input(struct gpio_chip *chip, unsigned int offset)
-+{
-+	return pinctrl_gpio_direction_input(chip->base + offset);
-+}
-+
-+static int axp192_gpio_direction_output(struct gpio_chip *chip, unsigned int offset, int value)
-+{
-+	chip->set(chip, offset, value);
-+	return 0;
-+}
-+
-+static int axp192_gpio_to_irq(struct gpio_chip *chip, unsigned int offset)
-+{
-+	struct axp192_pctl *pctl = gpiochip_get_data(chip);
-+
-+	return pctl->irqs[offset];
-+}
-+
-+static int axp192_pinconf_get_pull_down(struct pinctrl_dev *pctldev, unsigned int pin)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+	const struct axp192_pctl_reg_info *reginfo = &pctl->desc->pull_down_regs[pin];
-+	unsigned int val;
-+	int ret;
-+
-+	if (!reginfo->mask)
-+		return -EOPNOTSUPP;
-+
-+	ret = regmap_read(pctl->regmap, reginfo->reg, &val);
-+	if (ret)
-+		return ret;
-+
-+	return !!(val & reginfo->mask);
-+}
-+
-+static int axp192_pinconf_set_pull_down(struct pinctrl_dev *pctldev, unsigned int pin, int value)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+	const struct axp192_pctl_reg_info *reginfo = &pctl->desc->pull_down_regs[pin];
-+
-+	if (!reginfo->mask)
-+		return -EOPNOTSUPP;
-+
-+	return regmap_update_bits(pctl->regmap, reginfo->reg, reginfo->mask,
-+				  value ? reginfo->mask : 0);
-+}
-+
-+static int axp192_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin, unsigned long *config)
-+{
-+	enum pin_config_param param = pinconf_to_config_param(*config);
-+	unsigned int arg = 1;
-+	int ret;
-+
-+	switch (param) {
-+	case PIN_CONFIG_BIAS_DISABLE:
-+		ret = axp192_pinconf_get_pull_down(pctldev, pin);
-+		if (ret < 0)
-+			return ret;
-+		else if (ret != 0)
+ static const struct linear_range axp20x_ldo4_ranges[] = {
+ 	REGULATOR_LINEAR_RANGE(1250000,
+ 			       AXP20X_LDO4_V_OUT_1250mV_START,
+@@ -1008,6 +1063,12 @@ static int axp20x_set_dcdc_freq(struct platform_device *pdev, u32 dcdcfreq)
+ 	u32 min, max, def, step;
+ 
+ 	switch (axp20x->variant) {
++	case AXP192_ID:
++		min = 900;
++		max = 2025;
++		def = 1500;
++		step = 75;
++		break;
+ 	case AXP202_ID:
+ 	case AXP209_ID:
+ 		min = 750;
+@@ -1100,6 +1161,24 @@ static int axp20x_set_dcdc_workmode(struct regulator_dev *rdev, int id, u32 work
+ 	unsigned int mask;
+ 
+ 	switch (axp20x->variant) {
++	case AXP192_ID:
++		switch (id) {
++		case AXP192_DCDC1:
++			mask = AXP192_WORKMODE_DCDC1_MASK;
++			break;
++		case AXP192_DCDC2:
++			mask = AXP192_WORKMODE_DCDC2_MASK;
++			break;
++		case AXP192_DCDC3:
++			mask = AXP192_WORKMODE_DCDC3_MASK;
++			break;
++		default:
 +			return -EINVAL;
++		}
++
++		workmode <<= ffs(mask) - 1;
 +		break;
 +
-+	case PIN_CONFIG_BIAS_PULL_DOWN:
-+		ret = axp192_pinconf_get_pull_down(pctldev, pin);
-+		if (ret < 0)
-+			return ret;
-+		else if (ret == 0)
-+			return -EINVAL;
+ 	case AXP202_ID:
+ 	case AXP209_ID:
+ 		if ((id != AXP20X_DCDC2) && (id != AXP20X_DCDC3))
+@@ -1220,6 +1299,10 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
+ 	bool drivevbus = false;
+ 
+ 	switch (axp20x->variant) {
++	case AXP192_ID:
++		regulators = axp192_regulators;
++		nregulators = AXP192_REG_ID_MAX;
 +		break;
-+
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	*config = pinconf_to_config_packed(param, arg);
-+	return 0;
-+}
-+
-+static int axp192_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
-+			      unsigned long *configs, unsigned int num_configs)
-+{
-+	int ret;
-+	unsigned int cfg;
-+
-+	for (cfg = 0; cfg < num_configs; ++cfg) {
-+		switch (pinconf_to_config_param(configs[cfg])) {
-+		case PIN_CONFIG_BIAS_DISABLE:
-+		case PIN_CONFIG_BIAS_PULL_DOWN:
-+			continue;
-+		default:
-+			return -EOPNOTSUPP;
-+		}
-+	}
-+
-+	for (cfg = 0; cfg < num_configs; ++cfg) {
-+		switch (pinconf_to_config_param(configs[cfg])) {
-+		case PIN_CONFIG_BIAS_DISABLE:
-+			ret = axp192_pinconf_set_pull_down(pctldev, pin, 0);
-+			if (ret)
-+				return ret;
-+			break;
-+
-+		case PIN_CONFIG_BIAS_PULL_DOWN:
-+			ret = axp192_pinconf_set_pull_down(pctldev, pin, 1);
-+			if (ret)
-+				return ret;
-+			break;
-+
-+		default:
-+			/* unreachable */
-+			break;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct pinconf_ops axp192_conf_ops = {
-+	.is_generic = true,
-+	.pin_config_get = axp192_pinconf_get,
-+	.pin_config_set = axp192_pinconf_set,
-+	.pin_config_group_get = axp192_pinconf_get,
-+	.pin_config_group_set = axp192_pinconf_set,
-+};
-+
-+static int axp192_pmx_set(struct pinctrl_dev *pctldev, unsigned int offset, u8 config)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+	const struct axp192_pctl_reg_info *reginfo = &pctl->desc->ctrl_regs[offset];
-+	unsigned int regval = config << (ffs(reginfo->mask) - 1);
-+
-+	return regmap_update_bits(pctl->regmap, reginfo->reg, reginfo->mask, regval);
-+}
-+
-+static int axp192_pmx_func_cnt(struct pinctrl_dev *pctldev)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+
-+	return pctl->desc->nfunctions;
-+}
-+
-+static const char *axp192_pmx_func_name(struct pinctrl_dev *pctldev, unsigned int selector)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+
-+	return pctl->desc->functions[selector].name;
-+}
-+
-+static int axp192_pmx_func_groups(struct pinctrl_dev *pctldev, unsigned int selector,
-+				  const char * const **groups, unsigned int *num_groups)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+
-+	*groups = pctl->desc->functions[selector].groups;
-+	*num_groups = pctl->desc->functions[selector].ngroups;
-+
-+	return 0;
-+}
-+
-+static int axp192_pmx_set_mux(struct pinctrl_dev *pctldev,
-+			      unsigned int function, unsigned int group)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+	const u8 *muxvals = pctl->desc->functions[function].muxvals;
-+
-+	if (muxvals[group] == (u8)-1)
-+		return -EINVAL;
-+
-+	/*
-+	 * Switching to LDO or PWM function will enable LDO/PWM output, so it's
-+	 * better to ignore these requests and let the regulator or PWM drivers
-+	 * handle muxing to avoid interfering with them.
-+	 */
-+	if (function == AXP192_FUNC_LDO || function == AXP192_FUNC_PWM)
-+		return 0;
-+
-+	return axp192_pmx_set(pctldev, group, muxvals[group]);
-+}
-+
-+static int axp192_pmx_gpio_set_direction(struct pinctrl_dev *pctldev,
-+					 struct pinctrl_gpio_range *range,
-+					 unsigned int offset, bool input)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+	const u8 *muxvals = input ? pctl->desc->functions[AXP192_FUNC_INPUT].muxvals
-+				  : pctl->desc->functions[AXP192_FUNC_OUTPUT].muxvals;
-+
-+	return axp192_pmx_set(pctldev, offset, muxvals[offset]);
-+}
-+
-+static const struct pinmux_ops axp192_pmx_ops = {
-+	.get_functions_count	= axp192_pmx_func_cnt,
-+	.get_function_name	= axp192_pmx_func_name,
-+	.get_function_groups	= axp192_pmx_func_groups,
-+	.set_mux		= axp192_pmx_set_mux,
-+	.gpio_set_direction	= axp192_pmx_gpio_set_direction,
-+	.strict			= true,
-+};
-+
-+static int axp192_groups_cnt(struct pinctrl_dev *pctldev)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+
-+	return pctl->desc->npins;
-+}
-+
-+static const char *axp192_group_name(struct pinctrl_dev *pctldev, unsigned int selector)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+
-+	return pctl->desc->pins[selector].name;
-+}
-+
-+static int axp192_group_pins(struct pinctrl_dev *pctldev, unsigned int selector,
-+			     const unsigned int **pins, unsigned int *num_pins)
-+{
-+	struct axp192_pctl *pctl = pinctrl_dev_get_drvdata(pctldev);
-+
-+	*pins = &pctl->desc->pins[selector].number;
-+	*num_pins = 1;
-+
-+	return 0;
-+}
-+
-+static const struct pinctrl_ops axp192_pctrl_ops = {
-+	.dt_node_to_map		= pinconf_generic_dt_node_to_map_group,
-+	.dt_free_map		= pinconf_generic_dt_free_map,
-+	.get_groups_count	= axp192_groups_cnt,
-+	.get_group_name		= axp192_group_name,
-+	.get_group_pins		= axp192_group_pins,
-+};
-+
-+static int axp192_pctl_probe(struct platform_device *pdev)
-+{
-+	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
-+	struct axp192_pctl *pctl;
-+	struct pinctrl_desc *pctrl_desc;
-+	int ret, i;
-+
-+	if (!of_device_is_available(pdev->dev.of_node))
-+		return -ENODEV;
-+
-+	if (!axp20x) {
-+		dev_err(&pdev->dev, "Parent drvdata not set\n");
-+		return -EINVAL;
-+	}
-+
-+	pctl = devm_kzalloc(&pdev->dev, sizeof(*pctl), GFP_KERNEL);
-+	if (!pctl)
-+		return -ENOMEM;
-+
-+	pctl->desc = of_device_get_match_data(&pdev->dev);
-+	pctl->regmap = axp20x->regmap;
-+	pctl->dev = &pdev->dev;
-+
-+	pctl->chip.base			= -1;
-+	pctl->chip.can_sleep		= true;
-+	pctl->chip.request		= gpiochip_generic_request;
-+	pctl->chip.free			= gpiochip_generic_free;
-+	pctl->chip.parent		= &pdev->dev;
-+	pctl->chip.label		= dev_name(&pdev->dev);
-+	pctl->chip.owner		= THIS_MODULE;
-+	pctl->chip.get			= axp192_gpio_get;
-+	pctl->chip.get_direction	= axp192_gpio_get_direction;
-+	pctl->chip.set			= axp192_gpio_set;
-+	pctl->chip.direction_input	= axp192_gpio_direction_input;
-+	pctl->chip.direction_output	= axp192_gpio_direction_output;
-+	pctl->chip.to_irq		= axp192_gpio_to_irq;
-+	pctl->chip.ngpio		= pctl->desc->npins;
-+
-+	pctl->irqs = devm_kcalloc(&pdev->dev, pctl->desc->npins, sizeof(int), GFP_KERNEL);
-+	if (!pctl->irqs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < pctl->desc->npins; ++i) {
-+		ret = platform_get_irq_byname_optional(pdev, pctl->desc->pins[i].name);
-+		if (ret > 0)
-+			pctl->irqs[i] = regmap_irq_get_virq(axp20x->regmap_irqc, ret);
-+	}
-+
-+	platform_set_drvdata(pdev, pctl);
-+
-+	pctrl_desc = devm_kzalloc(&pdev->dev, sizeof(*pctrl_desc), GFP_KERNEL);
-+	if (!pctrl_desc)
-+		return -ENOMEM;
-+
-+	pctrl_desc->name = dev_name(&pdev->dev);
-+	pctrl_desc->owner = THIS_MODULE;
-+	pctrl_desc->pins = pctl->desc->pins;
-+	pctrl_desc->npins = pctl->desc->npins;
-+	pctrl_desc->pctlops = &axp192_pctrl_ops;
-+	pctrl_desc->pmxops = &axp192_pmx_ops;
-+	pctrl_desc->confops = &axp192_conf_ops;
-+
-+	pctl->pctl_dev = devm_pinctrl_register(&pdev->dev, pctrl_desc, pctl);
-+	if (IS_ERR(pctl->pctl_dev)) {
-+		dev_err(&pdev->dev, "couldn't register pinctrl driver\n");
-+		return PTR_ERR(pctl->pctl_dev);
-+	}
-+
-+	ret = devm_gpiochip_add_data(&pdev->dev, &pctl->chip, pctl);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to register GPIO chip\n");
-+		return ret;
-+	}
-+
-+	ret = gpiochip_add_pin_range(&pctl->chip, dev_name(&pdev->dev),
-+				     pctl->desc->pins->number,
-+				     pctl->desc->pins->number,
-+				     pctl->desc->npins);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to add pin range\n");
-+		return ret;
-+	}
-+
-+	dev_info(&pdev->dev, "AXP192 pinctrl and GPIO driver loaded\n");
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id axp192_pctl_match[] = {
-+	{ .compatible = "x-powers,axp192-gpio", .data = &axp192_data, },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, axp192_pctl_match);
-+
-+static struct platform_driver axp192_pctl_driver = {
-+	.probe		= axp192_pctl_probe,
-+	.driver = {
-+		.name		= "axp192-gpio",
-+		.of_match_table	= axp192_pctl_match,
-+	},
-+};
-+
-+module_platform_driver(axp192_pctl_driver);
-+
-+MODULE_AUTHOR("Aidan MacDonald <aidanmacdonald.0x0@gmail.com>");
-+MODULE_DESCRIPTION("AXP192 PMIC pinctrl and GPIO driver");
-+MODULE_LICENSE("GPL");
+ 	case AXP202_ID:
+ 	case AXP209_ID:
+ 		regulators = axp20x_regulators;
 -- 
 2.35.1
 
