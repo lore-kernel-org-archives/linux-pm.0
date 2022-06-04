@@ -2,66 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3912C43334
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Jun 2022 14:18:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DCD4CCA47C
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Jun 2022 21:40:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236413AbiFDOSt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Jun 2022 10:18:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47694 "EHLO
+        id S241261AbiFDVkM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Jun 2022 17:40:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234230AbiFDOSs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Jun 2022 10:18:48 -0400
-Received: from smtpbg.qq.com (smtpbg138.qq.com [106.55.201.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B68B33E2E;
-        Sat,  4 Jun 2022 07:18:40 -0700 (PDT)
-X-QQ-mid: bizesmtp75t1654352314tmfkru4m
-Received: from localhost.localdomain ( [111.9.5.115])
-        by bizesmtp.qq.com (ESMTP) with 
-        id ; Sat, 04 Jun 2022 22:18:12 +0800 (CST)
-X-QQ-SSF: 01000000002000B0G000B00A0000000
-X-QQ-FEAT: DHpJGCbtM4kIY9nwcT20Q/K9Wh+hsT2RYwlebOMto+kzSjHyloBtsaDGiFUVq
-        IAT5hJtYvTTvW2iDvebLmrYtr9EU61gNulAEePAqVFjUFSnNBeiDuTtgiDUZsLxaTfKJDXh
-        PSxWyqfSnqgW5TAJVvCpV8d6xJA/ha2HKV3Xx8LqGW04ZcnAWn3nLiidvn+UUKWvROwLhar
-        ldY616YK83c/+yNLd1TZsf3I1NO6qBFECFP4hoVA+chUacbiufZUwuc3X180dbvK6ACBxgj
-        LqBsNDsC42QbYEoqbFT9lZ62upUkLIRYvaAEdRE07htpS4F8wxjFlsXlbHVkzm8LCQzbbAI
-        aJ3cqHjUQNJpeFOjb0=
-X-QQ-GoodBg: 0
-From:   Xiang wangx <wangxiang@cdjrlc.com>
-To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Xiang wangx <wangxiang@cdjrlc.com>
-Subject: [PATCH] power: supply: bq24257: Fix syntax errors in comments
-Date:   Sat,  4 Jun 2022 22:18:11 +0800
-Message-Id: <20220604141811.14276-1-wangxiang@cdjrlc.com>
-X-Mailer: git-send-email 2.36.1
+        with ESMTP id S232340AbiFDVkK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Jun 2022 17:40:10 -0400
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 728EA22292;
+        Sat,  4 Jun 2022 14:40:07 -0700 (PDT)
+Received: from pendragon.ideasonboard.com (117.145-247-81.adsl-dyn.isp.belgacom.be [81.247.145.117])
+        by perceval.ideasonboard.com (Postfix) with ESMTPSA id 8416F6D4;
+        Sat,  4 Jun 2022 23:40:04 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+        s=mail; t=1654378804;
+        bh=u2g4RQI6otMc6+/Eb8lBzry0VC0TwPROt30ekEuQdK4=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Z4zYNyqFWG8xiseIfzX0ccj7usIKSimNwggl78cF6emCiSFrR8t2I+s37+Rae2ieT
+         b3y11nYKrP1N7TRJyjbVXWIzM73nPHQdU8L/EWqsQO+es3ur3ZPnLcZxsgNb7Mg7GP
+         gx5SMKxY6VICwQc1FuOQ9+x/+d54gu8L42iyplGw=
+Date:   Sun, 5 Jun 2022 00:39:59 +0300
+From:   Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To:     "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+Cc:     djakov@kernel.org, shawnguo@kernel.org, s.hauer@pengutronix.de,
+        festevam@gmail.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, abel.vesa@nxp.com,
+        abailon@baylibre.com, l.stach@pengutronix.de, marex@denx.de,
+        paul.elder@ideasonboard.com, Markus.Niebel@ew.tq-group.com,
+        aford173@gmail.com, kernel@pengutronix.de,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-imx@nxp.com, Peng Fan <peng.fan@nxp.com>
+Subject: Re: [PATCH 1/8] dt-bindings: soc: imx: add interconnect property for
+ i.MX8MP media blk ctrl
+Message-ID: <YpvRL4d2Sh9hvVMl@pendragon.ideasonboard.com>
+References: <20220601094537.3390127-1-peng.fan@oss.nxp.com>
+ <20220601094537.3390127-2-peng.fan@oss.nxp.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybgspam:qybgspam10
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20220601094537.3390127-2-peng.fan@oss.nxp.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Delete the redundant word 'is'.
+Hi Peng,
 
-Signed-off-by: Xiang wangx <wangxiang@cdjrlc.com>
----
- drivers/power/supply/bq24257_charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thank you for the patch.
 
-diff --git a/drivers/power/supply/bq24257_charger.c b/drivers/power/supply/bq24257_charger.c
-index 96cb3290bcaa..ecba9ab86faf 100644
---- a/drivers/power/supply/bq24257_charger.c
-+++ b/drivers/power/supply/bq24257_charger.c
-@@ -287,7 +287,7 @@ static int bq24257_set_input_current_limit(struct bq24257_device *bq,
- {
- 	/*
- 	 * Address the case where the user manually sets an input current limit
--	 * while the charger auto-detection mechanism is is active. In this
-+	 * while the charger auto-detection mechanism is active. In this
- 	 * case we want to abort and go straight to the user-specified value.
- 	 */
- 	if (bq->iilimit_autoset_enable)
+On Wed, Jun 01, 2022 at 05:45:30PM +0800, Peng Fan (OSS) wrote:
+> From: Peng Fan <peng.fan@nxp.com>
+> 
+> Add interconnect property for i.MX8MP mediamix blk ctrl
+> 
+> Signed-off-by: Peng Fan <peng.fan@nxp.com>
+> ---
+>  .../soc/imx/fsl,imx8mp-media-blk-ctrl.yaml         | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-media-blk-ctrl.yaml b/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-media-blk-ctrl.yaml
+> index 21d3ee486295..706bef39b87e 100644
+> --- a/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-media-blk-ctrl.yaml
+> +++ b/Documentation/devicetree/bindings/soc/imx/fsl,imx8mp-media-blk-ctrl.yaml
+> @@ -64,6 +64,20 @@ properties:
+>        - const: isp
+>        - const: phy
+>  
+> +  interconnects:
+> +    maxItems: 8
+> +
+> +  interconnect-names:
+> +    items:
+> +      - const: lcdif-rd
+> +      - const: lcdif-wr
+> +      - const: isi0
+> +      - const: isi1
+> +      - const: isi2
+
+If I understand correctly, these are for the 1x RD and 2x WR channels of
+the ISI. Would it make sense to name thim accordingly, maybe isi-rd,
+isi-wr0 and isi-wr1 ? I'm not sure about the order though.
+
+> +      - const: isp0
+> +      - const: isp1
+> +      - const: dwe
+> +
+>  required:
+>    - compatible
+>    - reg
+
 -- 
-2.36.1
+Regards,
 
+Laurent Pinchart
