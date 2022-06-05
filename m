@@ -2,71 +2,75 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1000C43334
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Jun 2022 22:05:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3913C433EF
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Jun 2022 22:26:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348243AbiFEWFc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Jun 2022 18:05:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36662 "EHLO
+        id S1348314AbiFEW0M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Jun 2022 18:26:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41168 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348227AbiFEWFc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jun 2022 18:05:32 -0400
-Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D0353B3DD;
-        Sun,  5 Jun 2022 15:05:27 -0700 (PDT)
-Received: by mail-qk1-f174.google.com with SMTP id x65so9785990qke.2;
-        Sun, 05 Jun 2022 15:05:26 -0700 (PDT)
+        with ESMTP id S1348226AbiFEW0L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jun 2022 18:26:11 -0400
+Received: from mail-pl1-f170.google.com (mail-pl1-f170.google.com [209.85.214.170])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 449974A3D2;
+        Sun,  5 Jun 2022 15:26:06 -0700 (PDT)
+Received: by mail-pl1-f170.google.com with SMTP id w3so10750265plp.13;
+        Sun, 05 Jun 2022 15:26:06 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=Rg3RgKIBXamNR9v7mxieWFauvb14cauJ3M376uS4CVo=;
-        b=ZmT/6OKhxCSWhGu1sCjxi+52ZLup2fs24jz4gbNHFX19VVO1aEBNEz8aOszOIfDLQZ
-         41/8IhNgZMdmbNWGme+2ZE26nGyAMAvsWghsFx5CqFp3pFJzP/6qvl42DBxb9yvzQ8Zo
-         Om8mlld0xN+C9j6FEzDeXge/cziEQDwqvO1rn+DvTYHMisbawkmPfUUveHcZ2L+yu6MO
-         O6qSRaxVg39JyYqi3/7uFluFwQ5aFUhZVNcE02XflxAyBhziI3+Xw0WJL2Tye19yRQsN
-         Kv2WIn/MfJnuW6flsRagbX4NOR1/voxFqplitgge5XPt7JzW0mRoiAOFI9bA6abvXBNx
-         L0pg==
-X-Gm-Message-State: AOAM5302xzhmiZpy2t3EG5WLBdpgSuRsuflN7G8NWYTccyHii5TY40Ev
-        oMsykG9svcpfNg+ia6am4A==
-X-Google-Smtp-Source: ABdhPJxw4Q7xRoj+FRRLau1BUn28VPlMUykk9chhacog0H3umTnuHtNBiI15cyz0mNtGuZOr7R7nUw==
-X-Received: by 2002:a05:620a:c52:b0:6a6:6b8f:eac2 with SMTP id u18-20020a05620a0c5200b006a66b8feac2mr13950454qki.643.1654466726041;
-        Sun, 05 Jun 2022 15:05:26 -0700 (PDT)
-Received: from robh.at.kernel.org ([2607:fb90:1bd0:10c3:c77a:8738:16cb:8d08])
-        by smtp.gmail.com with ESMTPSA id bl8-20020a05622a244800b00304e3c85b3dsm4320647qtb.93.2022.06.05.15.05.21
+        bh=A0xX55WDVN2TCBKlHQmNwVNo2vSS6BCodfPPsBHk1V8=;
+        b=pOHSlMeoXObLSs14T8eS2ESAikuV1yRl6rcOcp7FZ3Tf9zECFwyFjrOLBq2yUFzuvO
+         +3KWEDffqi1cE4BqHp08DPdMA5ASUOQlcjl5Xw4v7L89jYEk6BWJxfxBVnySkIzlCF0u
+         +tFz7b+aBLjGYp3WmWuYErTK0CsqgxnOn5OgULJYBeMUwi/iBd/6xg9sl2S6+whxKVIj
+         deYaahREVrqLB0z6X6BHhRh0S9qGGW4j4gQZ6JI9oKVcZU77Z0RTSbi6znOVuXhR7Ikb
+         Fd/REpgf88cXDhCg4cApMaU6ELfK1UoajQj20RWh6fxvcEzxYdyUtW7TwsNV0St+ljsb
+         pDZA==
+X-Gm-Message-State: AOAM530AhXiHh5DGR7LL4hFU9M+SyqagoIreHKCn93IZokLIR68ytHXM
+        MgHxGOM7FtvtNHxpAmjXWQ==
+X-Google-Smtp-Source: ABdhPJw4V7dBUOt5lYHG6MqKgO39dhWg60CiTCaUsqPrNWOOr+u0cpP6Sp4aX1nJL4oUxR4SRX6E+g==
+X-Received: by 2002:a17:90a:e642:b0:1e3:524e:4cb with SMTP id ep2-20020a17090ae64200b001e3524e04cbmr23034096pjb.114.1654467965532;
+        Sun, 05 Jun 2022 15:26:05 -0700 (PDT)
+Received: from robh.at.kernel.org ([2607:fb90:27d2:a39a:a9b9:e8bc:8bee:41d7])
+        by smtp.gmail.com with ESMTPSA id t19-20020a170902e1d300b00163d76696e1sm9050269pla.102.2022.06.05.15.26.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 05 Jun 2022 15:05:25 -0700 (PDT)
-Received: (nullmailer pid 3580163 invoked by uid 1000);
-        Sun, 05 Jun 2022 21:48:26 -0000
-Date:   Sun, 5 Jun 2022 16:48:26 -0500
+        Sun, 05 Jun 2022 15:26:05 -0700 (PDT)
+Received: (nullmailer pid 3638748 invoked by uid 1000);
+        Sun, 05 Jun 2022 22:26:03 -0000
+Date:   Sun, 5 Jun 2022 17:26:03 -0500
 From:   Rob Herring <robh@kernel.org>
 To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org,
-        Dmitry Osipenko <digetx@gmail.com>,
-        David Heidelberg <david@ixit.cz>,
+Cc:     Dmitry Osipenko <digetx@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        David Heidelberg <david@ixit.cz>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
         linux-pm@vger.kernel.org
-Subject: Re: [PATCH 1/4] dt-bindings: power: supply: bq24190: use regulator
- schema for child node
-Message-ID: <20220605214826.GA3580104-robh@kernel.org>
+Subject: Re: [PATCH 3/4] dt-bindings: power: supply: qcom,pm8941: document
+ usb-charge-current-limit
+Message-ID: <20220605222603.GA3638715-robh@kernel.org>
 References: <20220601071911.6435-1-krzysztof.kozlowski@linaro.org>
+ <20220601071911.6435-3-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220601071911.6435-1-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220601071911.6435-3-krzysztof.kozlowski@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 01 Jun 2022 09:19:08 +0200, Krzysztof Kozlowski wrote:
-> The 'usb-otg-vbus' child node is a regulator so reference the regulator
-> schema for proper evaluation.
+On Wed, 01 Jun 2022 09:19:10 +0200, Krzysztof Kozlowski wrote:
+> Document already used (in DTS and by driver) 'usb-charge-current-limit'
+> property:
+> 
+>   arch/arm/boot/dts/qcom-msm8974pro-fairphone-fp2.dtb:
+>     charger@1000: 'usb-charge-current-limit' does not match any of the regexes: 'pinctrl-[0-9]+'
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
->  Documentation/devicetree/bindings/power/supply/bq24190.yaml | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  .../bindings/power/supply/qcom,pm8941-charger.yaml         | 7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
 
 Acked-by: Rob Herring <robh@kernel.org>
