@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAC4ACCA48A
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 15:52:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AD46CCA489
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 15:52:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344408AbiFGPwj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1344413AbiFGPwj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 7 Jun 2022 11:52:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49282 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344368AbiFGPwe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 11:52:34 -0400
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 457F743EF9;
+        with ESMTP id S1344372AbiFGPwh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 11:52:37 -0400
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA5885002B;
         Tue,  7 Jun 2022 08:52:33 -0700 (PDT)
-Received: by mail-ed1-x52b.google.com with SMTP id er5so23553305edb.12;
+Received: by mail-ej1-x636.google.com with SMTP id bg6so16257921ejb.0;
         Tue, 07 Jun 2022 08:52:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=I3/ArNj3Gx6ysweu6QmWCkRaXZNp/b8pZqhl3nfQBWw=;
-        b=UsMhWaiO2fkpM4Yapfx5SEztkIqvpQigF3auKVZ0gEXeCdCQZw9y8MnYynSqc7TQU3
-         0rcp1/xbcNRJtM7bIx516KBZ33Ae9fQ/U6fO+zI3EJ40oQx87siSg0LL/JeYjrhitvdJ
-         HtjaIeDp2+qgIXWL6MBduefBczoFO/PZsC7uS+URPzwxHGDXP1g8kPQ4DtZeVCCar0Z1
-         XiJHkEQRCAMyuhfnASmU+7ShokiGsu2TjJjU+ZQ9JvXjsM3oRMegGKOf22nBdTkM+uJf
-         GUPE/NT6rxw86Iydrt5p9x+cGPWSLHbxaWSfj0BcConM/tQUWt01dQ9mDkh/k73afp4w
-         p4VQ==
+        bh=5wUI1Rc8KiEurG0wbCSq8IZqjw2W0EgDdU1++1cCCWM=;
+        b=Emf/lwDUGI2N6DQorjI6he/SYFGTJlkZOMtKuP4sXkPq4PvFfv/8cukdYUMt7ff+RA
+         skLv9O9QtGh6S20hfzOcc93A4i6uWoAvBPfuFacpLIHQU8J+TwbF1nhU+haXf6Rv9zcJ
+         wiIOZU79BNUeFDOhVx7zGby20lsHT7IGf1UuaTtodok6fLR5Lyo3VNxjsgE3pVoEhjqg
+         3KmPYA3hTetp+bUfnKckQKk58R7zBeLE0X1JgSef9VmuoP+nCjKocsDvLLJKT/TyD2R7
+         5ha20m5gCtNblcURx662Nvz9n49Xf3Cd68gbUihcEW9Yi97dM1wUzpoh1pDwO3UaiMEA
+         C82g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=I3/ArNj3Gx6ysweu6QmWCkRaXZNp/b8pZqhl3nfQBWw=;
-        b=x7M6CKgVq+qoiTwaSS4G/T7eTpXFanounInv8fQFMQQyaa3Nz3QxhYESl09BRkPo3R
-         jGI1Oi543jhePeG6G9vYhw+78d8Q8Gh4GRC4apLzs/ZSdYTUpJzjovAkFjBD0j56mDci
-         yH4EOQB00Lq2+4oFDdnj4VGLqQu+ltXpcjYjnS3EzWoL1F0Oz0wM7Pc83RVzbnNJ/iPd
-         k5dbJGeHZUynGW/8DdQOJssY5xeqDTbwb3BBzFopgmwgeM50EBGLB52UH6yrE6qvvjFw
-         loaTGdeOreKUoGeKHpb4FKQQ7eJq0gIe24G3K/X/rXLywgsPYO2QW6sGAPEX6qWPpEn7
-         NgJQ==
-X-Gm-Message-State: AOAM532V188+3J2OzGnMU/nTZdumYhK58gPwYGlzlCF9okliPhrPczpy
-        RVwVOGup9VJ1o6/dx4XISrY=
-X-Google-Smtp-Source: ABdhPJzEggWR5iwv+1zMa4+J5JWYp+qT+YOij72pwmnzUeUi2YugZUts1AB1bnVuJvlIHVxOExvAVA==
-X-Received: by 2002:a05:6402:51ce:b0:42f:41c6:4d70 with SMTP id r14-20020a05640251ce00b0042f41c64d70mr25640623edd.335.1654617151752;
-        Tue, 07 Jun 2022 08:52:31 -0700 (PDT)
+        bh=5wUI1Rc8KiEurG0wbCSq8IZqjw2W0EgDdU1++1cCCWM=;
+        b=fkWNKg4Dgn+1u/0Bow4Naw9Gcd2s/zzYwpdF1hwicGVlEuBr8tfjQjOshmxO+ir5dx
+         RcxFuglULv9FjJx3yQqYKvry+9lRNmjagfobA/3oJFrTwZi0nIllt154Y0ImDwZzC1wz
+         xOdArzHdP8NpWbbZcvSFD+5QF/V+uECf/Z2TVzadqakQgg8hOt9FInQqWFnj7JhqXaON
+         fbj+LhiZBSyc8FxoDRY1wH/84wE2UJKjzlfzsKFG9ChgSfkLDuZ3k5RZT4EztSI+RpHe
+         WtfhnVB8Cb3960vvWPOvRYXz0iTWcH4+f+MaPfahzwQdJhCcVKyo8o9cwRAG59IvTPws
+         GY8Q==
+X-Gm-Message-State: AOAM532oKLFdC297EW8Fj62PQGwCxM1D4LfiremhNRSUMJm7Zb2A0wy6
+        irTNQa08TFf5IGG3H3YagNE=
+X-Google-Smtp-Source: ABdhPJxfI6iulmnsTbvkiGuT2Q5vXR0VYA/C/3Kjix3Hy+kVBu5q8LoDGYnUmD8O3088m7Ow7LVeGA==
+X-Received: by 2002:a17:907:a0ca:b0:6f8:5bef:b9c with SMTP id hw10-20020a170907a0ca00b006f85bef0b9cmr27508744ejc.630.1654617146660;
+        Tue, 07 Jun 2022 08:52:26 -0700 (PDT)
 Received: from localhost (92.40.203.36.threembb.co.uk. [92.40.203.36])
-        by smtp.gmail.com with ESMTPSA id r7-20020aa7d147000000b0042dd792b3e8sm10659503edo.50.2022.06.07.08.52.30
+        by smtp.gmail.com with ESMTPSA id n9-20020a170906700900b006fe8ac6bc69sm7982284ejj.140.2022.06.07.08.52.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Jun 2022 08:52:31 -0700 (PDT)
+        Tue, 07 Jun 2022 08:52:26 -0700 (PDT)
 From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
@@ -56,9 +56,9 @@ Cc:     lars@metafoo.de, rafael@kernel.org, quic_gurus@quicinc.com,
         linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 04/17] dt-bindings: iio: adc: axp209: Add AXP192 compatible
-Date:   Tue,  7 Jun 2022 16:53:11 +0100
-Message-Id: <20220607155324.118102-5-aidanmacdonald.0x0@gmail.com>
+Subject: [PATCH v2 01/17] regmap-irq: Use sub_irq_reg() to calculate unmask register address
+Date:   Tue,  7 Jun 2022 16:53:08 +0100
+Message-Id: <20220607155324.118102-2-aidanmacdonald.0x0@gmail.com>
 In-Reply-To: <20220607155324.118102-1-aidanmacdonald.0x0@gmail.com>
 References: <20220607155324.118102-1-aidanmacdonald.0x0@gmail.com>
 MIME-Version: 1.0
@@ -67,50 +67,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The AXP192 is identical to the AXP20x, except for two additional
-GPIO ADC channels.
+Call sub_irq_reg() instead of calculating the offset of the register
+to avoid relying on the fact that sub_irq_reg() is a linear function.
+This prepares for allowing drivers to override the default sub_irq_reg
+implementation if the default behavior is unsuitable.
 
 Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 ---
- .../bindings/iio/adc/x-powers,axp209-adc.yaml  | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/base/regmap/regmap-irq.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml b/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml
-index d6d3d8590171..1a68e650ac7d 100644
---- a/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/x-powers,axp209-adc.yaml
-@@ -14,6 +14,23 @@ description: |
-   Device is a child of an axp209 multifunction device
-   ADC channels and their indexes per variant:
+diff --git a/drivers/base/regmap/regmap-irq.c b/drivers/base/regmap/regmap-irq.c
+index 400c7412a7dc..4a2e1f6aa94d 100644
+--- a/drivers/base/regmap/regmap-irq.c
++++ b/drivers/base/regmap/regmap-irq.c
+@@ -97,7 +97,6 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
+ 	struct regmap *map = d->map;
+ 	int i, j, ret;
+ 	u32 reg;
+-	u32 unmask_offset;
+ 	u32 val;
  
-+  AXP192
-+  ------
-+   0 | acin_v
-+   1 | acin_i
-+   2 | vbus_v
-+   3 | vbus_i
-+   4 | pmic_temp
-+   5 | gpio0_v
-+   6 | gpio1_v
-+   7 | gpio2_v
-+   8 | gpio3_v
-+   9 | ipsout_v
-+  10 | batt_v
-+  11 | batt_chrg_i
-+  12 | batt_dischrg_i
-+  13 | ts_v
+ 	if (d->chip->runtime_pm) {
+@@ -141,11 +140,11 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
+ 				dev_err(d->map->dev,
+ 					"Failed to sync unmasks in %x\n",
+ 					reg);
+-			unmask_offset = d->chip->unmask_base -
+-							d->chip->mask_base;
 +
-   AXP209
-   ------
-    0 | acin_v
-@@ -50,6 +67,7 @@ description: |
- properties:
-   compatible:
-     oneOf:
-+      - const: x-powers,axp192-adc
-       - const: x-powers,axp209-adc
-       - const: x-powers,axp221-adc
-       - const: x-powers,axp813-adc
+ 			/* clear mask with unmask_base register */
++			reg = sub_irq_reg(d, d->chip->unmask_base, i);
+ 			ret = regmap_irq_update_bits(d,
+-					reg + unmask_offset,
++					reg,
+ 					d->mask_buf_def[i],
+ 					d->mask_buf[i]);
+ 		} else {
+@@ -632,7 +631,6 @@ int regmap_add_irq_chip_fwnode(struct fwnode_handle *fwnode,
+ 	int ret = -ENOMEM;
+ 	int num_type_reg;
+ 	u32 reg;
+-	u32 unmask_offset;
+ 
+ 	if (chip->num_regs <= 0)
+ 		return -EINVAL;
+@@ -773,10 +771,9 @@ int regmap_add_irq_chip_fwnode(struct fwnode_handle *fwnode,
+ 			ret = regmap_irq_update_bits(d, reg,
+ 					 d->mask_buf[i], ~d->mask_buf[i]);
+ 		else if (d->chip->unmask_base) {
+-			unmask_offset = d->chip->unmask_base -
+-					d->chip->mask_base;
++			reg = sub_irq_reg(d, d->chip->unmask_base, i);
+ 			ret = regmap_irq_update_bits(d,
+-					reg + unmask_offset,
++					reg,
+ 					d->mask_buf[i],
+ 					d->mask_buf[i]);
+ 		} else
 -- 
 2.35.1
 
