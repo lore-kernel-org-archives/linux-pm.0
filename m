@@ -2,160 +2,182 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3946FC43334
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 15:53:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F823CCA47C
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 18:03:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344545AbiFGPxc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jun 2022 11:53:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50236 "EHLO
+        id S1349437AbiFGSDC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jun 2022 14:03:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32880 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344543AbiFGPxH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 11:53:07 -0400
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1600724F16;
-        Tue,  7 Jun 2022 08:52:54 -0700 (PDT)
-Received: by mail-ej1-x630.google.com with SMTP id me5so35547277ejb.2;
-        Tue, 07 Jun 2022 08:52:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=sfO6Sx6ARHHT4F4vWizG3z7rq9SAuQ0dqpmQH5iYmfk=;
-        b=ZXIucOCpLDog7eaVEeLBZZfs8ZRcpYc4UcUgMmAUC4I7b9IZK1KAU09g+e5xBQYmoV
-         dX9bE/VVKG4eiyDTG+Yc/QdKfnxyc8rtIsc+SUJJA3Twq3IVT7MvEPL4icNsl1ekvyYw
-         K0tJlBVdvmHc8Pv7naj6AVty0XV4TbIB6H2hvwG3Cdf62w8M8TPnnFFXi5qsqggavgWZ
-         5aHbNVGVB6FbCLOY0RVafwPf3ARKy94pPLTqa8qNylvAJbPOSOeE/NcwOF8jvbO4LP1k
-         D5KC94iKckJ4hlmEyoUkjWMSqMWm2ziH0fzg6JeMqJUZW/sT4NUouhnl9diAAM9V0QHi
-         +51g==
+        with ESMTP id S1351524AbiFGSCH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 14:02:07 -0400
+Received: from mail-yw1-f181.google.com (mail-yw1-f181.google.com [209.85.128.181])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61047153525;
+        Tue,  7 Jun 2022 10:44:49 -0700 (PDT)
+Received: by mail-yw1-f181.google.com with SMTP id 00721157ae682-2ec42eae76bso184011477b3.10;
+        Tue, 07 Jun 2022 10:44:49 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=sfO6Sx6ARHHT4F4vWizG3z7rq9SAuQ0dqpmQH5iYmfk=;
-        b=SkVh/DIBCGzyqgAqpUOjnYLJVP5kMh4m9Z6mNvmJoNVUxhA5bR7kRIdJHkktrHgMM8
-         yRJXZKXj8fbE1114iXkyoRchHo9qQ0I8DOFqNGYyJIXdg3NyZe5nUr2w/zTz1Jq7k+5H
-         2uSSq9nhQ+t/ncC0fC1MwKWflTBHGYkZOMXNk+MmUA5MM2zdm/Jd2XKhaH3kmjPVRaEi
-         l6iXLMj+SIO79VQj71u7XvbxCMGFXRFtThwVjPoPgccClNjrMxk6UEmuC88JysDzklUU
-         ScZut1AyBV341chKuLweKz1Z3zlqYcT5weBqqRlCkhmnA8smp7fVv1I09N/MxsymrNUx
-         HuPQ==
-X-Gm-Message-State: AOAM530AkVN7sJyh8hLF04s5M+ePNf5koXuaE6RcY/bPIthpaiDZqoQT
-        VRQL/9ldHu+P3BEEXvghrSk=
-X-Google-Smtp-Source: ABdhPJzS3Eqzx6iXBXaosSFh4oZhOQ7A6RRAlAhs7gjxfyp9TKEV2uv5wJAc76sVs4S+D5oq4dR3Xg==
-X-Received: by 2002:a17:906:94c9:b0:711:e7c8:ba15 with SMTP id d9-20020a17090694c900b00711e7c8ba15mr2194615ejy.414.1654617172464;
-        Tue, 07 Jun 2022 08:52:52 -0700 (PDT)
-Received: from localhost (92.40.203.36.threembb.co.uk. [92.40.203.36])
-        by smtp.gmail.com with ESMTPSA id a14-20020a170906368e00b006fec5cef701sm7820402ejc.197.2022.06.07.08.52.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Jun 2022 08:52:51 -0700 (PDT)
-From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
-To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
-        lee.jones@linaro.org, sre@kernel.org, broonie@kernel.org,
-        gregkh@linuxfoundation.org, lgirdwood@gmail.com
-Cc:     lars@metafoo.de, rafael@kernel.org, quic_gurus@quicinc.com,
-        linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2 16/17] power: axp20x_battery: Support battery status without fuel gauge
-Date:   Tue,  7 Jun 2022 16:53:23 +0100
-Message-Id: <20220607155324.118102-17-aidanmacdonald.0x0@gmail.com>
-In-Reply-To: <20220607155324.118102-1-aidanmacdonald.0x0@gmail.com>
-References: <20220607155324.118102-1-aidanmacdonald.0x0@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=W+PiNQ7Ke1EDMoHaTdFM09JbhwxFO++lctg5sJwbwR4=;
+        b=3vMAA1UaS1/xeAOJAkfgny+2HK4QsPFfmlUIq8LDajMksuObgQ1s+tvWBohiUWfymJ
+         F2ByZVwtnWug5x8vuU9cTVE6ZJeL3sNQAeMsTXQvw6fg/7WitgBAm28Jtk8uMRp2MbnY
+         wgsluHA6tbwr/Qy/DORBjlLAEal/KpW3j3lRM9Dj7UUZsLOmisDufwAiNoOcAQNkHnUM
+         97pz9jPEI0XXl2bJs1pRWqVqA1srd9FNxTuxuwJS3Aw58LCtZK29kP5RxH1HmdXGkWE/
+         KZTnT4t34t6uak/fhsk1xESuRGOMgMnQocm9H8o97YSw6OMXal5tKkXK8il9YitHJZ5o
+         OHyw==
+X-Gm-Message-State: AOAM533n/7Mh5e6S+eXveoxQ9WyedSF786VmoQMzIenOSnyO84KTEzWE
+        2AcdHJHDkviKjLcrdbEEk/kMWjb8HCUnOhCGOgo=
+X-Google-Smtp-Source: ABdhPJwzutUKNflb7PpXgywg1Uv/bvtdxWRNOeG6nVPsQilGXkeQttAkd8clvXym4gpzSPRzewnvcZZ1/ttEcYpnDSk=
+X-Received: by 2002:a05:690c:28b:b0:30c:bcc2:240d with SMTP id
+ bf11-20020a05690c028b00b0030cbcc2240dmr34156080ywb.19.1654623888166; Tue, 07
+ Jun 2022 10:44:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220606165640.634811-1-dmitry.osipenko@collabora.com>
+In-Reply-To: <20220606165640.634811-1-dmitry.osipenko@collabora.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 7 Jun 2022 19:44:37 +0200
+Message-ID: <CAJZ5v0icfqdOiPottyc=h6VyagynkbV7-0EqrC+5PZMKV5s6Lg@mail.gmail.com>
+Subject: Re: [PATCH v1] kernel/reboot: Fix powering off using a non-syscall
+ code paths
+To:     Dmitry Osipenko <dmitry.osipenko@collabora.com>
+Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a "has_fg" flag to indicate that the chip has a fuel gauge.
-Report battery full status on chips with no fuel gauge using the
-battery voltage.
+On Mon, Jun 6, 2022 at 6:57 PM Dmitry Osipenko
+<dmitry.osipenko@collabora.com> wrote:
+>
+> There are other methods of powering off machine than the reboot syscall.
+> Previously we missed to coved those methods and it created power-off
+> regression for some machines, like the PowerPC e500. Fix this problem
+> by moving the legacy sys-off handler registration to the latest phase
+> of power-off process and making the kernel_can_power_off() to check the
+> legacy pm_power_off presence.
+>
+> Tested-by: Michael Ellerman <mpe@ellerman.id.au> # ppce500
+> Reported-by: Michael Ellerman <mpe@ellerman.id.au> # ppce500
+> Fixes: da007f171fc9 ("kernel/reboot: Change registration order of legacy power-off handler")
+> Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
+> ---
+>  kernel/reboot.c | 46 ++++++++++++++++++++++++++--------------------
+>  1 file changed, 26 insertions(+), 20 deletions(-)
+>
+> diff --git a/kernel/reboot.c b/kernel/reboot.c
+> index 3b19b123efec..b5a71d1ff603 100644
+> --- a/kernel/reboot.c
+> +++ b/kernel/reboot.c
+> @@ -320,6 +320,7 @@ static struct sys_off_handler platform_sys_off_handler;
+>  static struct sys_off_handler *alloc_sys_off_handler(int priority)
+>  {
+>         struct sys_off_handler *handler;
+> +       gfp_t flags;
+>
+>         /*
+>          * Platforms like m68k can't allocate sys_off handler dynamically
+> @@ -330,7 +331,12 @@ static struct sys_off_handler *alloc_sys_off_handler(int priority)
+>                 if (handler->cb_data)
+>                         return ERR_PTR(-EBUSY);
+>         } else {
+> -               handler = kzalloc(sizeof(*handler), GFP_KERNEL);
+> +               if (system_state > SYSTEM_RUNNING)
+> +                       flags = GFP_ATOMIC;
+> +               else
+> +                       flags = GFP_KERNEL;
+> +
+> +               handler = kzalloc(sizeof(*handler), flags);
+>                 if (!handler)
+>                         return ERR_PTR(-ENOMEM);
+>         }
+> @@ -440,7 +446,7 @@ void unregister_sys_off_handler(struct sys_off_handler *handler)
+>  {
+>         int err;
+>
+> -       if (!handler)
+> +       if (IS_ERR_OR_NULL(handler))
+>                 return;
+>
+>         if (handler->blocking)
+> @@ -615,7 +621,23 @@ static void do_kernel_power_off_prepare(void)
+>   */
+>  void do_kernel_power_off(void)
+>  {
+> +       struct sys_off_handler *sys_off = NULL;
+> +
+> +       /*
+> +        * Register sys-off handlers for legacy PM callback. This allows
+> +        * legacy PM callbacks temporary co-exist with the new sys-off API.
+> +        *
+> +        * TODO: Remove legacy handlers once all legacy PM users will be
+> +        *       switched to the sys-off based APIs.
+> +        */
+> +       if (pm_power_off)
+> +               sys_off = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
+> +                                                  SYS_OFF_PRIO_DEFAULT,
+> +                                                  legacy_pm_power_off, NULL);
+> +
+>         atomic_notifier_call_chain(&power_off_handler_list, 0, NULL);
+> +
+> +       unregister_sys_off_handler(sys_off);
+>  }
+>
+>  /**
+> @@ -626,7 +648,8 @@ void do_kernel_power_off(void)
+>   */
+>  bool kernel_can_power_off(void)
+>  {
+> -       return !atomic_notifier_call_chain_is_empty(&power_off_handler_list);
+> +       return !atomic_notifier_call_chain_is_empty(&power_off_handler_list) ||
+> +               pm_power_off;
+>  }
+>  EXPORT_SYMBOL_GPL(kernel_can_power_off);
+>
+> @@ -661,7 +684,6 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+>                 void __user *, arg)
+>  {
+>         struct pid_namespace *pid_ns = task_active_pid_ns(current);
+> -       struct sys_off_handler *sys_off = NULL;
+>         char buffer[256];
+>         int ret = 0;
+>
+> @@ -686,21 +708,6 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+>         if (ret)
+>                 return ret;
+>
+> -       /*
+> -        * Register sys-off handlers for legacy PM callback. This allows
+> -        * legacy PM callbacks temporary co-exist with the new sys-off API.
+> -        *
+> -        * TODO: Remove legacy handlers once all legacy PM users will be
+> -        *       switched to the sys-off based APIs.
+> -        */
+> -       if (pm_power_off) {
+> -               sys_off = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
+> -                                                  SYS_OFF_PRIO_DEFAULT,
+> -                                                  legacy_pm_power_off, NULL);
+> -               if (IS_ERR(sys_off))
+> -                       return PTR_ERR(sys_off);
+> -       }
+> -
+>         /* Instead of trying to make the power_off code look like
+>          * halt when pm_power_off is not set do it the easy way.
+>          */
+> @@ -758,7 +765,6 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+>                 break;
+>         }
+>         mutex_unlock(&system_transition_mutex);
+> -       unregister_sys_off_handler(sys_off);
+>         return ret;
+>  }
+>
+> --
 
-Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
----
- drivers/power/supply/axp20x_battery.c | 34 ++++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index 87fb958f2224..e9547e2d7c48 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -62,6 +62,7 @@ struct axp_data {
- 	int	ccc_scale;
- 	int	ccc_offset;
- 	const int *ccc_table;
-+	bool	has_fg;
- 	bool	has_fg_valid;
- 	int	(*get_max_voltage)(struct axp20x_batt_ps *batt, int *val);
- 	int	(*set_max_voltage)(struct axp20x_batt_ps *batt, int val);
-@@ -190,7 +191,7 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 				   union power_supply_propval *val)
- {
- 	struct axp20x_batt_ps *axp20x_batt = power_supply_get_drvdata(psy);
--	int ret = 0, reg, val1;
-+	int ret = 0, reg, val1, val2;
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_PRESENT:
-@@ -224,6 +225,34 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 			return 0;
- 		}
- 
-+		/*
-+		 * If the chip does not have a fuel gauge, we check battery full status
-+		 * using voltage instead.
-+		 */
-+		if (!axp20x_batt->data->has_fg) {
-+			ret = axp20x_batt->data->get_max_voltage(axp20x_batt, &val1);
-+			if (ret)
-+				return ret;
-+
-+			ret = iio_read_channel_processed(axp20x_batt->batt_v, &val2);
-+			if (ret)
-+				return ret;
-+
-+			/* IIO subsystem reports voltage in mV but we need uV */
-+			val2 *= 1000;
-+
-+			/*
-+			 * According to the AXP192 datasheet, charging will restart if
-+			 * the battery voltage drops below V_rch = V_tgt - 0.1 V, so we
-+			 * report the battery is full if its voltage is at least V_rch.
-+			 */
-+			if (val2 >= val1 - 100000)
-+				val->intval = POWER_SUPPLY_STATUS_FULL;
-+			else
-+				val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+			break;
-+		}
-+
- 		ret = regmap_read(axp20x_batt->regmap, AXP20X_FG_RES, &val1);
- 		if (ret)
- 			return ret;
-@@ -546,6 +575,7 @@ static const struct power_supply_desc axp20x_batt_ps_desc = {
- static const struct axp_data axp209_data = {
- 	.ccc_scale = 100000,
- 	.ccc_offset = 300000,
-+	.has_fg = true,
- 	.get_max_voltage = axp20x_battery_get_max_voltage,
- 	.set_max_voltage = axp20x_battery_set_max_voltage,
- };
-@@ -553,6 +583,7 @@ static const struct axp_data axp209_data = {
- static const struct axp_data axp221_data = {
- 	.ccc_scale = 150000,
- 	.ccc_offset = 300000,
-+	.has_fg = true,
- 	.has_fg_valid = true,
- 	.get_max_voltage = axp22x_battery_get_max_voltage,
- 	.set_max_voltage = axp22x_battery_set_max_voltage,
-@@ -561,6 +592,7 @@ static const struct axp_data axp221_data = {
- static const struct axp_data axp813_data = {
- 	.ccc_scale = 200000,
- 	.ccc_offset = 200000,
-+	.has_fg = true,
- 	.has_fg_valid = true,
- 	.get_max_voltage = axp813_battery_get_max_voltage,
- 	.set_max_voltage = axp20x_battery_set_max_voltage,
--- 
-2.35.1
-
+Applied (with a couple of edits in the changelog), thanks!
