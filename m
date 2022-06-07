@@ -2,107 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52ED7CCA483
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A05ACCCA488
 	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 01:08:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229684AbiFHBDY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jun 2022 21:03:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56642 "EHLO
+        id S236569AbiFHBDi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jun 2022 21:03:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1453996AbiFGXQP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 19:16:15 -0400
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 918D83BF6F0;
-        Tue,  7 Jun 2022 14:08:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1654636138; x=1686172138;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=uaj2zVTRdbat138k5S+d3ScjGk5l9kGngqRsS56dZKs=;
-  b=OUa9P3Mkx4wSzDO2h7nDmqBqfwn/+H9lCeLrErRcLvt1+ZKs+qrFOeEo
-   jXfOAHgt9n2Dj2ywZDydyUfGm/ozWlVt+NI5LLXYn8cPCExVSjhQzOHpu
-   CsEdSDm2tYaL2i/4XP51EIWN8/VWG4A6FQA5AryBLI2kj1JEcQy/smeD2
-   LyFk+rUwUiJqAl49BedX7/MKAc4MdXBAk8QV0pJOg/PHzGFl1WvntZPZW
-   BerwY3/bcGeiGw2ohz55NsFTusVp17/OBd3cwchNphb7ocEqBzGQSvgB+
-   lAp4l3P+I2/Zp7BnCChdmeBADPdo0NZHQrXNip5jstXYasWcDNQ8BxApa
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10371"; a="257191733"
-X-IronPort-AV: E=Sophos;i="5.91,284,1647327600"; 
-   d="scan'208";a="257191733"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jun 2022 14:08:54 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,284,1647327600"; 
-   d="scan'208";a="723522760"
-Received: from linux.intel.com ([10.54.29.200])
-  by fmsmga001.fm.intel.com with ESMTP; 07 Jun 2022 14:08:54 -0700
-Received: from rjingar-desk5.amr.corp.intel.com (unknown [10.209.92.238])
-        by linux.intel.com (Postfix) with ESMTP id A6FA8580A8B;
-        Tue,  7 Jun 2022 14:08:53 -0700 (PDT)
-From:   Rajvi Jingar <rajvi.jingar@linux.intel.com>
-To:     rafael.j.wysocki@intel.com, bhelgaas@google.com
-Cc:     rajvi.jingar@linux.intel.com, david.e.box@linux.intel.com,
-        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v6 1/2] PCI/PM: refactor pci_pm_suspend_noirq()
-Date:   Tue,  7 Jun 2022 14:08:51 -0700
-Message-Id: <20220607210852.475863-1-rajvi.jingar@linux.intel.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S1584664AbiFGXs3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 19:48:29 -0400
+Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B25048989D;
+        Tue,  7 Jun 2022 15:25:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+        s=20170329; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:
+        Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
+        Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+        In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+        List-Post:List-Owner:List-Archive;
+        bh=0YiMkBagw10WMJGuNob9S5dY4o5Fq5z46VhZ483pA3A=; b=sCSF0zEDHJ1FuAcGsEAIZaTXYd
+        fNmlETUv1/cYtfUE3DNw/KfFCn2nGzCNmDNdQQ9HlYu2CtB6I1TGW9jCVycqcuLYGKpW05N/4jw+l
+        upDe9ygg/ws6o5RUvqaxgw+q1JTYJk1FAV40lw4+6DXhPlKwwVBwiaUOFrGzfnBrChJipc//5Egia
+        tnVA0Wx3TYkzrT4rqu1M6hmTwPBYzvS2A0Cy0rSBu7uRwAAYHLckPQLY7sSG2ZqBhIwS0HJoXwUwE
+        esPvo7cdxnKvslmhZI+QDa8WNx7ka15Pz2C3NBMm82ud+evXBSGsuouRH4qoXcQjsyQLtVwrvhr0t
+        JYAPPybQ==;
+Received: from [179.110.79.194] (helo=localhost)
+        by fanzine2.igalia.com with esmtpsa 
+        (Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+        id 1nyhdV-00DgtH-7s; Wed, 08 Jun 2022 00:25:18 +0200
+From:   "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+To:     linux-acpi@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        rafael.j.wysocki@intel.com, kernel@gpiccoli.net,
+        kernel-dev@igalia.com,
+        "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+        Len Brown <lenb@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Subject: [PATCH] ACPI: processor/idle: Annotate more functions to live in cpuidle section
+Date:   Tue,  7 Jun 2022 19:24:58 -0300
+Message-Id: <20220607222458.1864805-1-gpiccoli@igalia.com>
+X-Mailer: git-send-email 2.36.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The state of the device is saved during pci_pm_suspend_noirq(), if it
-has not already been saved, regardless of the skip_bus_pm flag value. So
-skip_bus_pm check is removed before saving the device state.
+Commit 6727ad9e206c ("nmi_backtrace: generate one-line reports for idle cpus")
+introduced a new text section called cpuidle; with that, we have a mechanism
+to add idling functions in such section and skip them from nmi_backtrace
+output, since they're useless and potentially flooding for such report.
 
-Signed-off-by: Rajvi Jingar <rajvi.jingar@linux.intel.com>
-Suggested-by: David E. Box <david.e.box@linux.intel.com>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- v1 -> v2: add comments to the changes
- v2 -> v3: move changelog after "---" marker
- v3 -> v4: add "---" marker after changelog
- v4 -> v5: no change
- v5 -> v6: no change
----
- drivers/pci/pci-driver.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+Happens that inlining might cause some real idle functions to end-up
+outside of such section; this is currently the case of ACPI processor_idle
+driver; the functions acpi_idle_enter_* do inline acpi_idle_do_entry(),
+hence they stay out of the cpuidle section.
+Fix that by marking such functions to also live in the cpuidle section.
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 49238ddd39ee..1f64de3e5280 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -867,20 +867,14 @@ static int pci_pm_suspend_noirq(struct device *dev)
- 		}
- 	}
+Fixes: 6727ad9e206c ("nmi_backtrace: generate one-line reports for idle cpus")
+Cc: Len Brown <lenb@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
+---
+
+Hi folks, this was tested on top of v5.19-rc1, with sysrq-l.
+
+An alternative for this approach would be to mark acpi_idle_do_entry()
+as noinline, but I'd risk to say that's a bit worse performance-wise.
+Let me know your preference, I can rework the patch if you prefer =)
+
+Thanks in advance for reviews,
+
+
+Guilherme
+
+
+ drivers/acpi/processor_idle.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 6a5572a1a80c..13200969ccf3 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -607,7 +607,7 @@ static DEFINE_RAW_SPINLOCK(c3_lock);
+  * @cx: Target state context
+  * @index: index of target state
+  */
+-static int acpi_idle_enter_bm(struct cpuidle_driver *drv,
++static int __cpuidle acpi_idle_enter_bm(struct cpuidle_driver *drv,
+ 			       struct acpi_processor *pr,
+ 			       struct acpi_processor_cx *cx,
+ 			       int index)
+@@ -664,7 +664,7 @@ static int acpi_idle_enter_bm(struct cpuidle_driver *drv,
+ 	return index;
+ }
  
--	if (pci_dev->skip_bus_pm) {
-+	if (!pci_dev->state_saved) {
-+		pci_save_state(pci_dev);
- 		/*
--		 * Either the device is a bridge with a child in D0 below it, or
--		 * the function is running for the second time in a row without
--		 * going through full resume, which is possible only during
--		 * suspend-to-idle in a spurious wakeup case.  The device should
--		 * be in D0 at this point, but if it is a bridge, it may be
--		 * necessary to save its state.
-+		 * If the device is a bridge with a child in D0 below it, it needs to
-+		 * stay in D0, so check skip_bus_pm to avoid putting it into a
-+		 * low-power state in that case.
- 		 */
--		if (!pci_dev->state_saved)
--			pci_save_state(pci_dev);
--	} else if (!pci_dev->state_saved) {
--		pci_save_state(pci_dev);
--		if (pci_power_manageable(pci_dev))
-+		if (!pci_dev->skip_bus_pm && pci_power_manageable(pci_dev))
- 			pci_prepare_to_sleep(pci_dev);
- 	}
+-static int acpi_idle_enter(struct cpuidle_device *dev,
++static int __cpuidle acpi_idle_enter(struct cpuidle_device *dev,
+ 			   struct cpuidle_driver *drv, int index)
+ {
+ 	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
+@@ -693,7 +693,7 @@ static int acpi_idle_enter(struct cpuidle_device *dev,
+ 	return index;
+ }
  
+-static int acpi_idle_enter_s2idle(struct cpuidle_device *dev,
++static int __cpuidle acpi_idle_enter_s2idle(struct cpuidle_device *dev,
+ 				  struct cpuidle_driver *drv, int index)
+ {
+ 	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
 -- 
-2.25.1
+2.36.0
 
