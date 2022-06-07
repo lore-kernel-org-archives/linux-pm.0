@@ -2,124 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7792CCA47C
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 14:06:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC248CCA481
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 14:11:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235425AbiFGOGf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jun 2022 10:06:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45654 "EHLO
+        id S245224AbiFGOLu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jun 2022 10:11:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59176 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245080AbiFGOGc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 10:06:32 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EBD77A456;
-        Tue,  7 Jun 2022 07:06:31 -0700 (PDT)
-X-UUID: a9a47d3a242d4318be3c2b9eb43b7a7e-20220607
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.5,REQID:b1113a88-ed15-414b-947b-840f974a7474,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:2a19b09,CLOUDID:417ef5e4-2ba2-4dc1-b6c5-11feb6c769e0,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil
-        ,QS:0,BEC:nil
-X-UUID: a9a47d3a242d4318be3c2b9eb43b7a7e-20220607
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
-        (envelope-from <johnson.wang@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 770820792; Tue, 07 Jun 2022 22:06:10 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs11n1.mediatek.inc (172.21.101.185) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Tue, 7 Jun 2022 22:06:06 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 7 Jun 2022 22:06:06 +0800
-From:   Johnson Wang <johnson.wang@mediatek.com>
-To:     <cw00.choi@samsung.com>, <krzk+dt@kernel.org>,
-        <robh+dt@kernel.org>, <kyungmin.park@samsung.com>
-CC:     <khilman@kernel.org>, <djakov@kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>, <jia-wei.chang@mediatek.com>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        Johnson Wang <johnson.wang@mediatek.com>
-Subject: [PATCH v7 0/2] Introduce MediaTek CCI devfreq driver
-Date:   Tue, 7 Jun 2022 22:05:54 +0800
-Message-ID: <20220607140556.6278-1-johnson.wang@mediatek.com>
-X-Mailer: git-send-email 2.18.0
+        with ESMTP id S245197AbiFGOLq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 10:11:46 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F18DA501E;
+        Tue,  7 Jun 2022 07:11:45 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E81C26157B;
+        Tue,  7 Jun 2022 14:11:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31A53C385A5;
+        Tue,  7 Jun 2022 14:11:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1654611104;
+        bh=letTzTlIdmYyCQr3t4i/4sQ++BrVupVi397GE8M9uvI=;
+        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+        b=ZmrXJqh5VhK6LBrkWuZLcZPb6LB/aKqB7VgbxKHQ5EKdRZGn1B/UtUl37J/VZlncM
+         XaKVqUs9/CrLhurHZmfQE4ZHromAzF5QHFhfcePHGAZt6gJN4oXn1Jgu9OhytNBGsZ
+         Dpp8c39jiY4Y6vji5iZNzY0BkjvDT9oCjsHIgHSItTWWl1ZaFW8x1MWtKzh54+Jsmx
+         MgLY2ScRWCz28NxqLMnfdu2v0uWPvoMrX/y8LVhRzTo8e9BmO+8kP0GacNDIRYfLCx
+         +YjXzNg0JjEvKZfsqCZP5oIjyElXDN9wiUZpKQTLYg3m4X5qyHVoxoSHYehWp506BX
+         a+HtETwbE/zkg==
+From:   Mark Brown <broonie@kernel.org>
+To:     linux-doc@vger.kernel.org, corbet@lwn.net, mchehab@kernel.org
+Cc:     linux@roeck-us.net, linux-cachefs@redhat.com,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dave.hansen@linux.intel.com, linux-samsung-soc@vger.kernel.org,
+        geert@linux-m68k.org, ulf.hansson@linaro.org, hpa@zytor.com,
+        alsa-devel@alsa-project.org, linux-m68k@lists.linux-m68k.org,
+        krzysztof.kozlowski+dt@linaro.org,
+        bcm-kernel-feedback-list@broadcom.com, kvm@vger.kernel.org,
+        mingo@redhat.com, mchehab+huawei@kernel.org, jdelvare@suse.com,
+        robh+dt@kernel.org, linux-gpio@vger.kernel.org, rafael@kernel.org,
+        linux-mmc@vger.kernel.org, federico.vaga@vaga.pv.it, bp@alien8.de,
+        linux-phy@lists.infradead.org, mmayer@broadcom.com,
+        keyrings@vger.kernel.org, x86@kernel.org,
+        linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        alim.akhtar@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org,
+        jarkko@kernel.org, tglx@linutronix.de, linus.walleij@linaro.org
+In-Reply-To: <cover.1654529011.git.mchehab@kernel.org>
+References: <cover.1654529011.git.mchehab@kernel.org>
+Subject: Re: (subset) [PATCH 00/23] Update Documentation/ cross-references
+Message-Id: <165461109692.1597191.11390741473240531333.b4-ty@kernel.org>
+Date:   Tue, 07 Jun 2022 15:11:36 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Cache Coherent Interconnect (CCI) is the management of cache
-coherency by hardware. CCI DEVFREQ is DVFS driver for power saving by
-scaling clock frequency and supply voltage of CCI. CCI uses the same
-input clock source and power rail as LITTLE CPUs on Mediatek SoCs.
+On Mon, 6 Jun 2022 16:25:22 +0100, Mauro Carvalho Chehab wrote:
+> There were a number of DT binding conversions and other docs change that
+> were not updated. Address them, in order to keep the cross-references on
+> a sane state.
+> 
+> Patch series is against v5.19-rc1 (and applies cleanly on the top of
+> today's -next).
+> 
+> [...]
 
-This series depends on:
-Chanwoo's repo: kernel/git/chanwoo/linux.git
-branch: devfreq-testing
-[1]: PM / devfreq: Export devfreq_get_freq_range symbol within devfreq
-[2]: PM / devfreq: Add cpu based scaling support to passive governor
-[3]: PM / devfreq: passive: Reduce duplicate code when passive_devfreq case
-[4]: PM / devfreq: passive: Update frequency when start governor
+Applied to
 
-Changes in v7:
-- remove the 'ret' printing from dev_err_probe().
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-Changes in v6:
-- Remove unnecessary "goto" statement.
+Thanks!
 
-Changes in v5:
-- Modify some binding description.
-- Remove pre_voltage member.
-- Not to enable/disable intermediate clock.
-- Not to "put" resources that using devm_ variants.
+[22/23] ASoC: wm8731: update wlf,wm8731.yaml reference
+        commit: 69c8027c5ff43d68449fda4510a8cce70e8578b0
 
-Resend v4:
-- CC interconnect maintainer.
-- Change sign-off sequence in commit message.
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Changes in v4:
-- Add a maintainer in the binding document.
-- Modify clock description.
-- Add binding document into MAINTAINERS.
-- Replace format specifier %d with %ld.
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-Changes in v3:
-- Move binding document to 'interconnect' and rename it.
-- Add COMPILE_TEST dependence symbol.
-- Remove need_voltage_tracking variable.
-- Move mtk_ccifreq_voltage_tracking() code into mtk_ccifreq_set_voltage().
-- Add an interation limit in the while() loop.
-- Replace 'cci_dev' with 'dev'
-- Replace old_* with pre_*
-- Remove of_match_ptr()
-- Use module_platform_driver()
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-Changes in v2:
-- Take MT8183 as example in binding document.
-- Use dev_err() instead of pr_err().
-- Use 'goto' statement to handle error case.
-- Clean up driver code.
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
-Johnson Wang (2):
-  dt-bindings: interconnect: Add MediaTek CCI dt-bindings
-  PM / devfreq: mediatek: Introduce MediaTek CCI devfreq driver
-
- .../bindings/interconnect/mediatek,cci.yaml   | 140 ++++++
- MAINTAINERS                                   |   1 +
- drivers/devfreq/Kconfig                       |  10 +
- drivers/devfreq/Makefile                      |   1 +
- drivers/devfreq/mtk-cci-devfreq.c             | 474 ++++++++++++++++++
- 5 files changed, 626 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
- create mode 100644 drivers/devfreq/mtk-cci-devfreq.c
-
--- 
-2.18.0
-
+Thanks,
+Mark
