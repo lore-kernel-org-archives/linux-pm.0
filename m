@@ -2,105 +2,221 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA7E7C43334
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 08:44:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6A9BCCA47C
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jun 2022 10:41:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236626AbiFGIoB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jun 2022 04:44:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51814 "EHLO
+        id S241257AbiFGKlo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jun 2022 06:41:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56388 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238389AbiFGIn5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 04:43:57 -0400
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 146FBD2469
-        for <linux-pm@vger.kernel.org>; Tue,  7 Jun 2022 01:43:54 -0700 (PDT)
-Received: by mail-pj1-x1036.google.com with SMTP id o6-20020a17090a0a0600b001e2c6566046so20243384pjo.0
-        for <linux-pm@vger.kernel.org>; Tue, 07 Jun 2022 01:43:54 -0700 (PDT)
+        with ESMTP id S240758AbiFGKln (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 06:41:43 -0400
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5DF7EC3DB
+        for <linux-pm@vger.kernel.org>; Tue,  7 Jun 2022 03:41:40 -0700 (PDT)
+Received: by mail-wm1-x32a.google.com with SMTP id e5so2256405wma.0
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jun 2022 03:41:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=nWZrrCkmODQO2L81wBptIQ/FtOI3FJ3gTRz0UShB7Jk=;
-        b=eEf7h7znNG6Yj2uM2z78B+GTzNOp6+yxOEb/GEOn6YkJi5bZX54EU4z1RFLeM1aKab
-         DJ/JDC8Z8HD33X7EJf0QZnlHM0oUQhWwewoq1nkT7iPfuuCURakz/jeYx+ylSSSxFVb2
-         YTBvtKGyd0y59ocgBtXjgjs/Guq1gcmaPwWnTlUGncER6B8qfnJ+vZ5wThw083Ayzdi0
-         H7S3cHlq84AEWdVoxrwq+Qf+gyXmiypjykOP81sAM0WRekz7ads66CRHP0+C6GpKFlEJ
-         Wuc1q6vCX2zaLSvR0DxzHMEfbZQyOFz8dMKP050uvChyQiRwN6IEibPf0eTRTAFbbfzr
-         xMyw==
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=qw8JacEfJNF9P2iNLjQzkAXW/8/vZkXuOjt3GnWBvjw=;
+        b=hyDSvJIfh0LYoaLEeqkmPROm1N2u7R8cMpaut6DZYA8pNoxIG7jthQ5F82HOCMq2rG
+         fYjscsLiZQgKk+uyZcbEemQ19fmtnvUYc1F4ZnC8f0xbYYmnoXgHcdlVqTkkiGAZFBqw
+         9s6rtFDUlnRG2c31zUx4ljO2jYpPUAnFu2CD7zbQdqqR7D+ujyFr+ex7gPKhkrnSR44Y
+         KTeHSqWku7fvSZxcJb7rgNvOQP8DFieQ2czxXmC8Grj3rVCEqXal1Ce2ctYVkpSgaPKD
+         4Q++EwprNd3zbAp7TC5+zWZnPLhJLp5WeJfaaKmzs3WBKvfUaGGXdb6qII//hNYJ6OuU
+         10vg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=nWZrrCkmODQO2L81wBptIQ/FtOI3FJ3gTRz0UShB7Jk=;
-        b=zV2LiXPNhWI1kofuaNKZCADv0kO/SN3Bc3Y4eSiqIzX3ToQXIkKOU6ZfoI/iNCGo0U
-         kXkq9MaXBPUwlFv4ANwpQj+UkAMwQjKjgOsyTHLVinK9JM0JnsFyQzSmYclEZ5SNRu7D
-         pFaU6mboATV7kuv8KJNNFg+V7YbR+bxrV5pr+FDrfMQM0pTIHuJHT17WeQZ5A2haTHpe
-         SVTqgG+BnavODVkdp39oBeZ0HFUE0eTf7EvEpQOhsY78R3tuFjKiNAYAluBqJvRHH2tX
-         39DmtfxThp2WqjQfYxRmglFKYiv8Tu5u7dIBesJMmwhqA3i/fhdahbAxCXEumSE8UbGr
-         JUXg==
-X-Gm-Message-State: AOAM530g/i+t0NstX+hdq3qLLduKXqAkovm097Akuno3vcdjS9W/zgwW
-        h0QDI5DY3EkuGkC4f4agwyqE7/lXj9JZqg==
-X-Google-Smtp-Source: ABdhPJy2w9iMG3l1xy59r+1E/HWZi6vXpWRinRgoPn7ZlS022LmUN9BqNIjwVEqVFDIj62EinYv/0Q==
-X-Received: by 2002:a17:903:1108:b0:15f:bce:19f8 with SMTP id n8-20020a170903110800b0015f0bce19f8mr28174271plh.7.1654591433595;
-        Tue, 07 Jun 2022 01:43:53 -0700 (PDT)
-Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id 19-20020a170902e9d300b0015e8d4eb1b6sm11873231plk.0.2022.06.07.01.43.52
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=qw8JacEfJNF9P2iNLjQzkAXW/8/vZkXuOjt3GnWBvjw=;
+        b=Y8zNH3NNIgyyLwV0gKRjQfL1bVuREMvO1veAksREk5wqdcamKl8DLdb5or1cvkdMJX
+         a8+ul6ya4K9k+9HFVIdLZk+LcZFAIZlpu2EYbFzGsBgCAPKecZuEPiL7uHsQEr8i69lB
+         tBwXyAaNq4m5OtwhXjoHAVuGS6dlPTI/bCEQFJveY7qoPpWe9V96yugJzhim1qjleCl/
+         rkARpnIAQWa5NeKPIHr+qEJPJa4jsp+rv8IIb4v2lwAs5nnABrkWzpY7au0uu7xTBiOe
+         ZHXYEPUFWxOE4mz8RhtNUtkD9ShqaBFGw6iAP3cmIGBQz4WcrscRXaohcISKGy6wVTXH
+         0Tdw==
+X-Gm-Message-State: AOAM532AzmB+3xV1jlHp2NhjlvE7fS6qeLmAmk//R2jFn8/lXEeSWWiG
+        X11PSfoNTDlWT8erUZwdhacM9A==
+X-Google-Smtp-Source: ABdhPJz0rzj4eqfRw2wspCI3jipVGst2fbnr65Qmu05TDb5e0ptD3uTC6nEhOxZyIE8KFnMOZnH58g==
+X-Received: by 2002:a05:600c:3c8f:b0:39b:808c:b5cb with SMTP id bg15-20020a05600c3c8f00b0039b808cb5cbmr28760884wmb.11.1654598498995;
+        Tue, 07 Jun 2022 03:41:38 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id n22-20020a05600c3b9600b00397342e3830sm27940708wms.0.2022.06.07.03.41.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Jun 2022 01:43:53 -0700 (PDT)
-Date:   Tue, 7 Jun 2022 14:13:51 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Dmitry Osipenko <dmitry.osipenko@collabora.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/31] cpufreq: tegra20: Migrate to
- dev_pm_opp_set_config()
-Message-ID: <20220607084351.i4s5veww6irmaf3t@vireshk-i7>
-References: <cover.1653564321.git.viresh.kumar@linaro.org>
- <4b38ceed657bfcf87ff9ab0dd69dd1f2f5658b24.1653564321.git.viresh.kumar@linaro.org>
- <793e49ea-aeb0-a47a-9fe8-742a6397bb35@collabora.com>
- <5c0e697e-abca-bcf0-cf68-d9c240d82527@collabora.com>
- <20220530075256.lpw6bhupejy2dnqi@vireshk-i7>
+        Tue, 07 Jun 2022 03:41:38 -0700 (PDT)
+Date:   Tue, 7 Jun 2022 11:41:36 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     lee.jones@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de,
+        ChiYuan Huang <cy_huang@richtek.com>, alice_chen@richtek.com,
+        chiaen_wu@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [RESEND 14/14] video: backlight: mt6370: Add Mediatek MT6370
+ support
+Message-ID: <20220607104136.cfnpwo6ajqiuafbf@maple.lan>
+References: <20220531111900.19422-1-peterwu.pub@gmail.com>
+ <20220531111900.19422-15-peterwu.pub@gmail.com>
+ <20220601094623.jnwh2fgsqepy72tc@maple.lan>
+ <CABtFH5+-o=cML_VCSY9frJwEU_TnZt0+myJebi8J7BpP+BOqOw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20220530075256.lpw6bhupejy2dnqi@vireshk-i7>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CABtFH5+-o=cML_VCSY9frJwEU_TnZt0+myJebi8J7BpP+BOqOw@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 30-05-22, 13:22, Viresh Kumar wrote:
-> On 29-05-22, 19:59, Dmitry Osipenko wrote:
-> > > Please keep the PTR_ERR_OR_ZERO.
+On Fri, Jun 03, 2022 at 03:14:56AM +0800, ChiaEn Wu wrote:
+> Daniel Thompson <daniel.thompson@linaro.org> 於 2022年6月1日 週三 下午5:46寫道：
+> >
+> > On Tue, May 31, 2022 at 07:19:00PM +0800, ChiaEn Wu wrote:
+> > > +#define MT6370_DT_PROP_DECL(_name, _type, _reg, _mask, _max, _inv)   \
+> > > +{                                                                    \
+> > > +     .name = "mediatek,bled-" #_name,                                \
+> >
+> > I'd rather have the whole DT property in the macro (because it helps
+> > with grepability).
 > 
-> Ahh, sorry about that. Fixed.
+> Do you mean the _name parameter must be the full name of the DT
+> property and do not use "#" to concat like following example?
 > 
-> > > tegra20-cpufreq tegra20-cpufreq: failed to set OPP config: -1042688000
-> > 
-> > With that fixed, now there is another error:
-> > 
-> > [    1.761945] cpu cpu0: _of_add_opp_table_v2: no supported OPPs
-> > [    1.761960] cpu cpu0: OPP table can't be empty
-> 
-> So we failed to find any OPPs which work with the hardware version of
-> updated with dev_pm_opp_set_config(). I tried to follow the path and
-> see if there is something wrong here. Failed to find that :(
-> 
-> > I see this on Tegra30, but not on Tegra20. Apparently OPP table
-> > refcounting is broken on Tegra30 by this patchset. To make it clear,
-> > there are no error without these OPP patches applied. I may take a
-> > closer look if will be needed, just ping me.
-> 
-> Yes, it would be very helpful as I don't have the necessary hardware.
+> // in declare
+>             .name = _name,
+> // in use
+>             MT6370_DT_PROP_DECL(mediatek,bled-pwm-enable, ......)
 
-Hey, any updates on this ? I am looking to resend the series soon, would be nice
-to fix this before that.
+Yes, I would prefer this form, although, as discussed below, I don't really
+like MT6370_DT_PROP_DECL().
 
--- 
-viresh
+
+> > > +     .type = MT6370_PARSE_TYPE_##_type,                              \
+> > > +     .reg = _reg,                                                    \
+> > > +     .mask = _mask,                                                  \
+> > > +     .max_val = _max,                                                \
+> > > +     .invert = _inv,                                                 \
+> > > +}
+> > > +
+> > > +static int mt6370_init_backlight_properties(struct mt6370_priv *priv,
+> > > +                                         struct backlight_properties *props)
+> > > +{
+> > > +     struct device *dev = priv->dev;
+> > > +     u8 prop_val;
+> > > +     u32 brightness;
+> > > +     unsigned int mask, val;
+> > > +     static const struct {
+> > > +             char *name;
+> > > +             enum mt6370_prop_type type;
+> > > +             unsigned int reg;
+> > > +             unsigned int mask;
+> > > +             u8 max_val;
+> > > +             bool invert;
+> > > +     } vendor_opt_props[] = {
+> > > +             MT6370_DT_PROP_DECL(pwm-enable, BOOL, MT6370_REG_BL_PWM,
+> > > +                                 MT6370_BL_PWM_EN_MASK, 1, false),
+> > > +             MT6370_DT_PROP_DECL(pwm-hys-enable, BOOL, MT6370_REG_BL_PWM,
+> > > +                                 MT6370_BL_PWM_HYS_EN_MASK, 1, false),
+> > > +             MT6370_DT_PROP_DECL(pwm-hys-sel, U8, MT6370_REG_BL_PWM,
+> > > +                                 MT6370_BL_PWM_HYS_SEL_MASK, 3, false),
+> > > +             MT6370_DT_PROP_DECL(ovp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
+> > > +                                 MT6370_BL_OVP_SEL_MASK, 3, false),
+> > > +             MT6370_DT_PROP_DECL(ovp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
+> > > +                                 MT6370_BL_OVP_EN_MASK, 1, true),
+> > > +             MT6370_DT_PROP_DECL(ocp-level-sel, U8, MT6370_REG_BL_BSTCTRL,
+> > > +                                 MT6370_BL_OC_SEL_MASK, 3, false),
+> > > +             MT6370_DT_PROP_DECL(ocp-shutdown, BOOL, MT6370_REG_BL_BSTCTRL,
+> > > +                                 MT6370_BL_OC_EN_MASK, 1, true),
+> > > +     }, *prop_now;
+> > > +     int i, ret;
+> > > +
+> > > +     /* vendor optional properties */
+> > > +     for (i = 0; i < ARRAY_SIZE(vendor_opt_props); i++) {
+> > > +             prop_now = vendor_opt_props + i;
+> > > +
+> > > +             switch (prop_now->type) {
+> > > +             case MT6370_PARSE_TYPE_BOOL:
+> > > +                     if (device_property_read_bool(dev, prop_now->name))
+> > > +                             val = 1;
+> > > +                     else
+> > > +                             val = 0;
+> > > +                     break;
+> > > +             case MT6370_PARSE_TYPE_U8:
+> > > +                     ret = device_property_read_u8(dev, prop_now->name,
+> > > +                                                   &prop_val);
+> > > +                     /* Property not exist, keep value in default */
+> > > +                     if (ret)
+> > > +                             continue;
+> > > +
+> > > +                     val = min_t(u8, prop_val, prop_now->max_val);
+> > > +                     break;
+> > > +             default:
+> > > +                     return -EINVAL;
+> > > +             }
+> > > +
+> > > +             if (prop_now->invert)
+> > > +                     val = prop_now->max_val - val;
+> > > +
+> > > +             val <<= ffs(prop_now->mask) - 1;
+> > > +
+> > > +             ret = regmap_update_bits(priv->regmap, prop_now->reg,
+> > > +                                      prop_now->mask, val);
+> > > +             if (ret)
+> > > +                     return ret;
+> > > +     }
+> >
+> > Is it really worth all this tricky code for 7 properties?
+> >
+> > The code would be much easier to read and maintain if it were coded
+> > directly. For example, the inverted boolean code is hard to read and
+> > can be written directly as:
+> >
+> >
+> >         val = device_property_read_bool(dev, "mediatek,bled-ovp_shutdown");
+> >         ret = regmap_update_bits(priv->regmap, MT6370_REG_BL_BST_CTRL,
+> >                                  MT6370_BL_OVP_EN_MASK,
+> >                                  MT6370_BL_OVP_EN_MASK * !val);
+> >         if (ret)
+> >                 return ret;
+> >
+> > The direct coded approach will probably also pay off if you switch
+> > the bindings over to microvolts/microamps since it becomes much more
+> > natural to call out to a lookup function to convert it into a register
+> > value.
+> >
+> 
+> The purpose of my code is trying to avoid the repeat code in this
+> function. And for loop can help to decrease the lines of code
+> effectively, that's why I use these code to parse the DT properties.
+
+I'm not really convinced that is uses fewer lines of code. It
+certainly would if there were a very large number of properties
+but here there is only seven.
+
+However I guess what I'm really complaining about is how hard it is to
+read the for loop. We have to study the macros, keep track six different
+arguments per property and review the complex logic of the for loop
+(which for example handles inverted u8's that don't actually exist).
+
+To be clear, it's not that loops aren't useful for reducing boilerplate
+code. They can be. However trying to handle booleans and integers in the
+*same* loop ends up needlessly hard to read.
+
+Also, I think that if/when you adopt microamps/microvolts then the
+hard-to-read problem will get even worse unless you get loops to do only
+one thing!
+
+
+Daniel.
