@@ -2,53 +2,52 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCFC4CCA485
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 09:16:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1BA0CCA488
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 09:16:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234698AbiFHJQC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 05:16:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56028 "EHLO
+        id S234733AbiFHJQD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 05:16:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56032 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235331AbiFHJOy (ORCPT
+        with ESMTP id S235332AbiFHJOy (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 05:14:54 -0400
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CC3211CA3B;
-        Wed,  8 Jun 2022 01:37:52 -0700 (PDT)
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A77D11099F;
+        Wed,  8 Jun 2022 01:37:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
   t=1654677473; x=1686213473;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=Kev+P78paN9tbrXLIiqlQVD/P4abR7ZSSL4PUqdVGDY=;
-  b=ZB2Z0owi2Q7u4CUOVujJe5yHP57QixwNPn2y0iswkLtNYpkUxfAYj5SD
-   aVjcdefuRbZseEdKsx/w6n3hX6cRoF3rJV8APWTjD4zfOH1qpk33XydF/
-   CEaiDv9IbFPmTTJ2yu4mltTy26dUF26AoTj90tC9Op8jY7FXQdrL24US8
-   Dedi6MLQ02iQ0nwCyw+bwUk2rq/pHttQQmzWC5ATn9nlD4zGCG7vwuzoY
-   V91dF4oRwfjlB7wiUP3T2LBrJtJv5a8/1wTf96WAJVX0Dvc4VYFWcqWA6
-   yHY7gkGcmmdbC4rB3XBQnxXmVe3do1OwAVJ9ydh1zeB5j3koBkPYazW7U
-   g==;
+  bh=SxzqUFLbDjsgliBmUQUwC7ztm+S2UVv9h6KqdGI813I=;
+  b=VpVZJ0s3EK7cux8Hphg6viwkAaZJ1b2gwE08cts0JPe6M4x7zoWWqoZk
+   c+304LxXSr+Zvyq1QslYsfG7nfMdgOLQDnbZDSXhAGp+lUaQP7QOrdNxB
+   WrkDT1vsueUR0V4lXb9VATA21kezoEZWbHFZPWWn+VJEVO7rfr9v/v/YB
+   kBLPrrkZFDwNshc01YnQZPUxNvvDnWy1n6tr0DC7NeLZYQClYWdB4pWo/
+   DClSwIJXYLz8t3Zx+aAj93/+sBcNzXqnkvZYi2Gtlry9ljX2F6jCutxY1
+   eseRwiu9v4D3eM5TtA/G1eAQn+HOG2p9jbIACxszWnmpg0dZRWSznmlfr
+   A==;
 X-IronPort-AV: E=Sophos;i="5.91,285,1647327600"; 
-   d="scan'208";a="167235520"
+   d="scan'208";a="99077620"
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa5.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 08 Jun 2022 01:37:53 -0700
+  by esa6.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 08 Jun 2022 01:37:52 -0700
 Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.17; Wed, 8 Jun 2022 01:37:43 -0700
+ 15.1.2375.17; Wed, 8 Jun 2022 01:37:50 -0700
 Received: from localhost.localdomain (10.10.115.15) by
  chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
- 15.1.2375.17 via Frontend Transport; Wed, 8 Jun 2022 01:37:40 -0700
+ 15.1.2375.17 via Frontend Transport; Wed, 8 Jun 2022 01:37:47 -0700
 From:   Claudiu Beznea <claudiu.beznea@microchip.com>
 To:     <nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
         <p.zabel@pengutronix.de>, <sre@kernel.org>, <robh+dt@kernel.org>,
         <krzysztof.kozlowski+dt@linaro.org>
 CC:     <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Rob Herring <robh@kernel.org>
-Subject: [PATCH v4 3/9] dt-bindings: reset: atmel,at91sam9260-reset: add sama7g5 bindings
-Date:   Wed, 8 Jun 2022 11:39:36 +0300
-Message-ID: <20220608083942.1584087-4-claudiu.beznea@microchip.com>
+        Claudiu Beznea <claudiu.beznea@microchip.com>
+Subject: [PATCH v4 5/9] power: reset: at91-reset: document structures and enums
+Date:   Wed, 8 Jun 2022 11:39:38 +0300
+Message-ID: <20220608083942.1584087-6-claudiu.beznea@microchip.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20220608083942.1584087-1-claudiu.beznea@microchip.com>
 References: <20220608083942.1584087-1-claudiu.beznea@microchip.com>
@@ -59,71 +58,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add documentation for SAMA7G5 reset controller. Compared with previous
-versions of reset controllers this one contains support for resetting
-in SoC devices (e.g. USB PHYs).
+Document structures and enums.
 
 Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../reset/atmel,at91sam9260-reset.yaml        | 23 +++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
+ drivers/power/reset/at91-reset.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml b/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
-index 34c40b875e20..98465d26949e 100644
---- a/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
-+++ b/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
-@@ -10,7 +10,8 @@ maintainers:
-   - Claudiu Beznea <claudiu.beznea@microchip.com>
+diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+index 64def79d557a..e62798750b6b 100644
+--- a/drivers/power/reset/at91-reset.c
++++ b/drivers/power/reset/at91-reset.c
+@@ -39,6 +39,17 @@
+ #define AT91_RSTC_URSTIEN	BIT(4)		/* User Reset Interrupt Enable */
+ #define AT91_RSTC_ERSTL		GENMASK(11, 8)	/* External Reset Length */
  
- description: |
--  The system reset controller can be used to reset the CPU.
-+  The system reset controller can be used to reset the CPU. In case of
-+  SAMA7G5 it can also reset some devices (e.g. USB PHYs).
++/**
++ * enum reset_type - reset types
++ * @RESET_TYPE_GENERAL:		first power-up reset
++ * @RESET_TYPE_WAKEUP:		return from backup mode
++ * @RESET_TYPE_WATCHDOG:	watchdog fault
++ * @RESET_TYPE_SOFTWARE:	processor reset required by software
++ * @RESET_TYPE_USER:		NRST pin detected low
++ * @RESET_TYPE_CPU_FAIL:	CPU clock failure detection
++ * @RESET_TYPE_XTAL_FAIL:	32KHz crystal failure dectection fault
++ * @RESET_TYPE_ULP2:		ULP2 reset
++ */
+ enum reset_type {
+ 	RESET_TYPE_GENERAL	= 0,
+ 	RESET_TYPE_WAKEUP	= 1,
+@@ -50,6 +61,15 @@ enum reset_type {
+ 	RESET_TYPE_ULP2		= 8,
+ };
  
- properties:
-   compatible:
-@@ -21,21 +22,39 @@ properties:
-               - atmel,at91sam9g45-rstc
-               - atmel,sama5d3-rstc
-               - microchip,sam9x60-rstc
-+              - microchip,sama7g5-rstc
-       - items:
-           - const: atmel,sama5d3-rstc
-           - const: atmel,at91sam9g45-rstc
- 
-   reg:
--    maxItems: 1
-+    minItems: 1
-+    items:
-+      - description: base registers for system reset control
-+      - description: registers for device specific reset control
- 
-   clocks:
-     maxItems: 1
- 
-+  "#reset-cells":
-+    const: 1
-+
- required:
-   - compatible
-   - reg
-   - clocks
- 
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - microchip,sama7g5-rstc
-+    then:
-+      required:
-+        - "#reset-cells"
-+
- additionalProperties: false
- 
- examples:
++/**
++ * struct at91_reset - AT91 reset specific data structure
++ * @rstc_base:		base address for system reset
++ * @ramc_base:		array with base addresses of RAM controllers
++ * @sclk:		slow clock
++ * @nb:			reset notifier block
++ * @args:		SoC specific system reset arguments
++ * @ramc_lpr:		SDRAM Controller Low Power Register
++ */
+ struct at91_reset {
+ 	void __iomem *rstc_base;
+ 	void __iomem *ramc_base[2];
 -- 
 2.33.0
 
