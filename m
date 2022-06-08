@@ -2,202 +2,279 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC00FC43334
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 02:17:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20211CCA482
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 03:47:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358849AbiFHCRM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jun 2022 22:17:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57720 "EHLO
+        id S231245AbiFHDrC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jun 2022 23:47:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37012 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1446262AbiFHCOL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 22:14:11 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0BC315EA57;
-        Tue,  7 Jun 2022 14:22:22 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 05D6560C3E;
-        Tue,  7 Jun 2022 21:22:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D701C385A2;
-        Tue,  7 Jun 2022 21:22:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1654636925;
-        bh=Qpqpjs4zC/NE8w1f2Kkh52Va2IoAJuZ40cSz1THeD0w=;
-        h=From:To:Cc:Subject:Date:From;
-        b=o1ag9DgNNkcfo+LOrhqqS2l97tokLEEYopFUjf2SX+zXSVuQh4hEuAw/kHJs+ouju
-         QsuU35wV5hauIOZ8QlDTV4I01+WxobWSgbgUyPKqml8xEeMA+Sf2o0F/Fi4rBqu5Nn
-         vQ/xvMJ6x6D2gLrYtegmMkCM/jNH3FZBNcJ9+TDttJalwHnU8ov4ktpyu5rHA76hEk
-         SPCCRki0bb9nWU57gCdvu8D+EQ+3CUoKDEOrMgi9q6gCgg7QDPJE7j1DhdgM/Bpk/R
-         tekMC7v2vNUGZ7agDH0X3HI3vrW29tpRWv/I1XVje5etwKlmZgfjb6bpYRJ5Wi+/Y+
-         4j0RHiuQS+iJw==
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc:     Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        linux1394-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2] firewire: ohci: Convert to generic power management
-Date:   Tue,  7 Jun 2022 16:21:57 -0500
-Message-Id: <20220607212157.343033-1-helgaas@kernel.org>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S234639AbiFHDpL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2022 23:45:11 -0400
+Received: from mail-yb1-xb2e.google.com (mail-yb1-xb2e.google.com [IPv6:2607:f8b0:4864:20::b2e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 011EB22CBC9
+        for <linux-pm@vger.kernel.org>; Tue,  7 Jun 2022 17:55:43 -0700 (PDT)
+Received: by mail-yb1-xb2e.google.com with SMTP id w2so33927230ybi.7
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jun 2022 17:55:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=0eDnZ7I6mO5HIGKZ+f0UxkdVyF2auRBoobbCKlqgPAQ=;
+        b=JRO2H/wErVGZXWcbW+zNZ+nvh17H9KRevHibogV1hEKUtKNV+dHJedZUCcmsLRFsbr
+         GiORDL1v/+yoLQGYD2iqfRuGZ9U7QtizhqJI3wyOzjcbWw7nc3V/pPExvNPUW2BfUFmh
+         AGI3jVlmHwn1urkMrfPgLZun0si5RfPJ3OcK8P1tHu6tn0+7VzGJiRNsraCSC/oByMin
+         0S3hNucR2Nz1YSV4sS+c0ltRQRrlCvopskDBlBE6Uoo2zLOC6uWuDgdJvH7yYH3PtBm/
+         6v9ZuHGAPJE5S91uErDhqXltzDX0iZKPF0O2ILrt1wXCb3DnWFa0oK29hKP99H9jDk45
+         96vQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=0eDnZ7I6mO5HIGKZ+f0UxkdVyF2auRBoobbCKlqgPAQ=;
+        b=IPB9bEXC1J0SWTZd71Xnai51m3SoKLU6d07W8gkliavDe7xguqY6pMCryXLgZ0ZOeT
+         CQJ1CLRuJHFyHRQS2gctvA1pqUCJJTaOsTUfNl0tcEoqX8UpHTYgQ05ZZIZFavhw1GbS
+         Kt+I5egztN1CPwqZaEPA5aV4cy8vSwan1fC8PL8y2Arm59HLy0WYdHaGOP4AmHNu4yf9
+         9f+DEii1mVMvc/qRpAyrgCs8ROomPhFTVtnMbWh9bxutqOK43TWpmgpd9WfplIhGV+e8
+         hSMIFYsjyIYq8wkU4BL8bxsEqfYjzEKElw2/KLsnPefCfsSCeTxQ5ABxw5xlic9U3aVR
+         glPw==
+X-Gm-Message-State: AOAM533QR2k4Wa7wFXPG2qooRhDP3rhDD0fOnj5u8rfwlW/Fk7iXaUrN
+        iG0qpmT3uL2jqArx7JEJOreXEMpzgEyhPahFn6FR6g==
+X-Google-Smtp-Source: ABdhPJxpHy6/BJUWcDUdY5g10qH+All8zVtFTrAjp9C2q7jQcgGq/aMyju7q5MQTaob+8+AA8TcKSUB4ul1s7iBVhoM=
+X-Received: by 2002:a25:fe0d:0:b0:64d:915f:e73e with SMTP id
+ k13-20020a25fe0d000000b0064d915fe73emr33071960ybe.447.1654649742822; Tue, 07
+ Jun 2022 17:55:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220601070707.3946847-1-saravanak@google.com> <CAMuHMdXkX-SXtBuTRGJOUnpw9goSP6RFr_PTt_3w_yWgBpWsqg@mail.gmail.com>
+In-Reply-To: <CAMuHMdXkX-SXtBuTRGJOUnpw9goSP6RFr_PTt_3w_yWgBpWsqg@mail.gmail.com>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Tue, 7 Jun 2022 17:55:06 -0700
+Message-ID: <CAGETcx9f0UBhpp6dM+KJwtYpLx19wwsq6_ygi3En7FrXobOSpA@mail.gmail.com>
+Subject: Re: [PATCH v2 0/9] deferred_probe_timeout logic clean up
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        David Ahern <dsahern@kernel.org>,
+        Android Kernel Team <kernel-team@android.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux IOMMU <iommu@lists.linux-foundation.org>,
+        netdev <netdev@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+-Hideaki -- their email keeps bouncing.
 
-Convert firewire-ohci from legacy PCI power management to the generic power
-management framework.
+On Tue, Jun 7, 2022 at 11:13 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+> Hi Saravana,
+>
+> On Wed, Jun 1, 2022 at 12:46 PM Saravana Kannan <saravanak@google.com> wrote:
+> > This series is based on linux-next + these 2 small patches applies on top:
+> > https://lore.kernel.org/lkml/20220526034609.480766-1-saravanak@google.com/
+> >
+> > A lot of the deferred_probe_timeout logic is redundant with
+> > fw_devlink=on.  Also, enabling deferred_probe_timeout by default breaks
+> > a few cases.
+> >
+> > This series tries to delete the redundant logic, simplify the frameworks
+> > that use driver_deferred_probe_check_state(), enable
+> > deferred_probe_timeout=10 by default, and fixes the nfsroot failure
+> > case.
+> >
+> > The overall idea of this series is to replace the global behavior of
+> > driver_deferred_probe_check_state() where all devices give up waiting on
+> > supplier at the same time with a more granular behavior:
+> >
+> > 1. Devices with all their suppliers successfully probed by late_initcall
+> >    probe as usual and avoid unnecessary deferred probe attempts.
+> >
+> > 2. At or after late_initcall, in cases where boot would break because of
+> >    fw_devlink=on being strict about the ordering, we
+> >
+> >    a. Temporarily relax the enforcement to probe any unprobed devices
+> >       that can probe successfully in the current state of the system.
+> >       For example, when we boot with a NFS rootfs and no network device
+> >       has probed.
+> >    b. Go back to enforcing the ordering for any devices that haven't
+> >       probed.
+> >
+> > 3. After deferred probe timeout expires, we permanently give up waiting
+> >    on supplier devices without drivers. At this point, whatever devices
+> >    can probe without some of their optional suppliers end up probing.
+> >
+> > In the case where module support is disabled, it's fairly
+> > straightforward and all device probes are completed before the initcalls
+> > are done.
+> >
+> > Patches 1 to 3 are fairly straightforward and can probably be applied
+> > right away.
+> >
+> > Patches 4 to 6 are for fixing the NFS rootfs issue and setting the
+> > default deferred_probe_timeout back to 10 seconds when modules are
+> > enabled.
+> >
+> > Patches 7 to 9 are further clean up of the deferred_probe_timeout logic
+> > so that no framework has to know/care about deferred_probe_timeout.
+> >
+> > Yoshihiro/Geert,
+> >
+> > If you can test this patch series and confirm that the NFS root case
+> > works, I'd really appreciate that.
+>
+> Thanks, I gave this a try on various boards I have access to.
+> The results were quite positive. E.g. the compile error I saw on v1
+> (implicit declation of fw_devlink_unblock_may_probe(), which is no longer
+>  used in v2) is gone.
 
-Previously firewire-ohci used legacy PCI power management, and
-pci_suspend() and pci_resume() were responsible for both device-specific
-things and generic PCI things like saving and restoring config space and
-managing power state:
+Thanks a lot for testing these.
 
-  pci_suspend
-    software_reset                         <-- device-specific
-    pci_save_state                         <-- generic PCI
-    pci_set_power_state                    <-- generic PCI
-    pmac_ohci_off                          <-- device-specific
+> However, I'm seeing a weird error when userspace (Debian9 nfsroot) is
+> starting:
+>
+>     [  OK  ] Started D-Bus System Message Bus.
+>     Unable to handle kernel NULL pointer dereference at virtual
+> address 0000000000000000
+>     Unable to handle kernel NULL pointer dereference at virtual
+> address 0000000000000000
+>     Mem abort info:
+>       ESR = 0x0000000096000004
+>     Mem abort info:
+>       ESR = 0x0000000096000004
+>       EC = 0x25: DABT (current EL), IL = 32 bits
+>       SET = 0, FnV = 0
+>       EC = 0x25: DABT (current EL), IL = 32 bits
+>       EA = 0, S1PTW = 0
+>       FSC = 0x04: level 0 translation fault
+>       SET = 0, FnV = 0
+>     Data abort info:
+>       ISV = 0, ISS = 0x00000004
+>       EA = 0, S1PTW = 0
+>       FSC = 0x04: level 0 translation fault
+>       CM = 0, WnR = 0
+>     user pgtable: 4k pages, 48-bit VAs, pgdp=000000004ec45000
+>     [0000000000000000] pgd=0000000000000000, p4d=0000000000000000
+>     Data abort info:
+>     Internal error: Oops: 96000004 [#1] PREEMPT SMP
+>     CPU: 0 PID: 374 Comm: v4l_id Tainted: G        W
+> 5.19.0-rc1-arm64-renesas-00799-gc13c3e49e8bd #1660
+>       ISV = 0, ISS = 0x00000004
+>     Hardware name: Renesas Ebisu-4D board based on r8a77990 (DT)
+>     pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+>       CM = 0, WnR = 0
+>     pc : subdev_open+0x8c/0x128
+>     lr : subdev_open+0x78/0x128
+>     sp : ffff80000aadba60
+>     x29: ffff80000aadba60 x28: 0000000000000000 x27: ffff80000aadbc58
+>     x26: 0000000000020000 x25: ffff00000b3aaf00 x24: 0000000000000000
+>     x23: ffff00000c331c00 x22: ffff000009aa61b8 x21: ffff000009aa6000
+>     x20: ffff000008bae3e8 x19: ffff00000c3fe200 x18: 0000000000000000
+>     x17: ffff800076945000 x16: ffff800008004000 x15: 00008cc6bf550c7c
+>     x14: 000000000000038f x13: 000000000000001a x12: ffff00007fba8618
+>     x11: 0000000000000001 x10: 0000000000000000 x9 : ffff800009253954
+>     x8 : ffff00000b3aaf00 x7 : 0000000000000004 x6 : 000000000000001a
+>     x5 : 0000000000000000 x4 : 0000000000000000 x3 : 0000000000000001
+>     x2 : 0000000100000001 x1 : 0000000000000000 x0 : 0000000000000000
+>     Call trace:
+>      subdev_open+0x8c/0x128
+>      v4l2_open+0xa4/0x120
+>      chrdev_open+0x78/0x178
+>      do_dentry_open+0xfc/0x398
+>      vfs_open+0x28/0x30
+>      path_openat+0x584/0x9c8
+>      do_filp_open+0x80/0x108
+>      do_sys_openat2+0x20c/0x2d8
+>     user pgtable: 4k pages, 48-bit VAs, pgdp=000000004ec53000
+>      do_sys_open+0x54/0xa0
+>      __arm64_sys_openat+0x20/0x28
+>      invoke_syscall+0x40/0xf8
+>      el0_svc_common.constprop.0+0xf0/0x110
+>      do_el0_svc+0x20/0x78
+>      el0_svc+0x48/0xd0
+>      el0t_64_sync_handler+0xb0/0xb8
+>      el0t_64_sync+0x148/0x14c
+>     Code: f9405280 f9400400 b40000e0 f9400280 (f9400000)
+>     ---[ end trace 0000000000000000 ]---
+>
+> This only happens on the Ebisu-4D board (r8a77990-ebisu.dts).
+> I do not see this on the Salvator-X(S) boards.
 
-  pci_resume
-    pmac_ohci_on                           <-- device-specific
-    pci_set_power_state(PCI_D0)            <-- generic PCI
-    pci_restore_state                      <-- generic PCI
-    pci_enable_device                      <-- generic PCI
-    ohci_enable                            <-- device-specific
+Ok. I don't know much about either of these boards. Are they supposed
+to be very similar?
 
-Convert to generic power management where the PCI bus PM methods do the
-generic PCI things, and the driver needs only the device-specific part,
-i.e.,
+> Bisection shows this starts to happen with "[PATCH v2 7/9] driver core:
+> Set fw_devlink.strict=1 by default".
 
-  suspend_devices_and_enter
-    dpm_suspend_start(PMSG_SUSPEND)
-      pci_pm_suspend                       # PCI bus .suspend() method
-        pci_suspend                        # driver->pm->suspend
-          software_reset                   <-- device-specific
-          pmac_ohci_off                    <-- device-specific
-    suspend_enter
-      dpm_suspend_noirq(PMSG_SUSPEND)
-        pci_pm_suspend_noirq               # PCI bus .suspend_noirq() method
-          pci_save_state                   <-- generic PCI
-          pci_prepare_to_sleep             <-- generic PCI
-            pci_set_power_state
-    ...
-    dpm_resume_end(PMSG_RESUME)
-      pci_pm_resume                        # PCI bus .resume() method
-        pci_restore_standard_config
-          pci_set_power_state(PCI_D0)      <-- generic PCI
-          pci_restore_state                <-- generic PCI
-        pci_resume                         # driver->pm->resume
-          pmac_ohci_on                     <-- device-specific
-          ohci_enable                      <-- device-specific
+So in the series, by this point, the previous patches would have
+deferred probe timeout set to 10s (it can get extended on new driver
+additions of course) and once the timer expires suppliers without
+drivers will no longer block any consumers. The only difference
+fw_devlink.strict=1 should cause is iommus and dmas dependency being
+treated as mandatory till the timeout expires.
 
-[bhelgaas: commit log]
-Link: https://lore.kernel.org/r/20200720150715.624520-1-vaibhavgupta40@gmail.com
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/firewire/ohci.c | 35 ++++++++---------------------------
- 1 file changed, 8 insertions(+), 27 deletions(-)
+In this instance, do you have iommu drivers and dma drivers compiled
+in or loaded as modules or not available at all? In all these case,
+the list of devices that would end up probing eventually should be the
+same with or without fw_devlink.strict=1. The only difference would be
+some reordering of probes.
 
-diff --git a/drivers/firewire/ohci.c b/drivers/firewire/ohci.c
-index 17c9d825188b..aee705132330 100644
---- a/drivers/firewire/ohci.c
-+++ b/drivers/firewire/ohci.c
-@@ -3165,8 +3165,7 @@ static int ohci_set_iso_channels(struct fw_iso_context *base, u64 *channels)
- 	return ret;
- }
- 
--#ifdef CONFIG_PM
--static void ohci_resume_iso_dma(struct fw_ohci *ohci)
-+static void __maybe_unused ohci_resume_iso_dma(struct fw_ohci *ohci)
- {
- 	int i;
- 	struct iso_context *ctx;
-@@ -3183,7 +3182,6 @@ static void ohci_resume_iso_dma(struct fw_ohci *ohci)
- 			ohci_start_iso(&ctx->base, 0, ctx->sync, ctx->tags);
- 	}
- }
--#endif
- 
- static int queue_iso_transmit(struct iso_context *ctx,
- 			      struct fw_iso_packet *packet,
-@@ -3789,39 +3787,24 @@ static void pci_remove(struct pci_dev *dev)
- 	dev_notice(&dev->dev, "removed fw-ohci device\n");
- }
- 
--#ifdef CONFIG_PM
--static int pci_suspend(struct pci_dev *dev, pm_message_t state)
-+static int __maybe_unused pci_suspend(struct device *devp)
- {
-+	struct pci_dev *dev = to_pci_dev(devp);
- 	struct fw_ohci *ohci = pci_get_drvdata(dev);
--	int err;
- 
- 	software_reset(ohci);
--	err = pci_save_state(dev);
--	if (err) {
--		ohci_err(ohci, "pci_save_state failed\n");
--		return err;
--	}
--	err = pci_set_power_state(dev, pci_choose_state(dev, state));
--	if (err)
--		ohci_err(ohci, "pci_set_power_state failed with %d\n", err);
- 	pmac_ohci_off(dev);
- 
- 	return 0;
- }
- 
--static int pci_resume(struct pci_dev *dev)
-+static int __maybe_unused pci_resume(struct device *devp)
- {
-+	struct pci_dev *dev = to_pci_dev(devp);
- 	struct fw_ohci *ohci = pci_get_drvdata(dev);
- 	int err;
- 
- 	pmac_ohci_on(dev);
--	pci_set_power_state(dev, PCI_D0);
--	pci_restore_state(dev);
--	err = pci_enable_device(dev);
--	if (err) {
--		ohci_err(ohci, "pci_enable_device failed\n");
--		return err;
--	}
- 
- 	/* Some systems don't setup GUID register on resume from ram  */
- 	if (!reg_read(ohci, OHCI1394_GUIDLo) &&
-@@ -3838,7 +3821,6 @@ static int pci_resume(struct pci_dev *dev)
- 
- 	return 0;
- }
--#endif
- 
- static const struct pci_device_id pci_table[] = {
- 	{ PCI_DEVICE_CLASS(PCI_CLASS_SERIAL_FIREWIRE_OHCI, ~0) },
-@@ -3847,15 +3829,14 @@ static const struct pci_device_id pci_table[] = {
- 
- MODULE_DEVICE_TABLE(pci, pci_table);
- 
-+static SIMPLE_DEV_PM_OPS(pci_pm_ops, pci_suspend, pci_resume);
-+
- static struct pci_driver fw_ohci_pci_driver = {
- 	.name		= ohci_driver_name,
- 	.id_table	= pci_table,
- 	.probe		= pci_probe,
- 	.remove		= pci_remove,
--#ifdef CONFIG_PM
--	.resume		= pci_resume,
--	.suspend	= pci_suspend,
--#endif
-+	.driver.pm	= &pci_pm_ops,
- };
- 
- static int __init fw_ohci_init(void)
--- 
-2.25.1
+So this looks to me like improper error handling/assumption in the
+driver for this subdev device. I'm guessing one of the suppliers to
+this subdev has a direct/indirect dependency on iommus and this subdev
+driver is assuming that the supplier would have probed by the time
+it's probed.
 
+>
+> Adding more debug info:
+>
+>     subdev_open:54: file v4l-subdev1
+>     Unable to handle kernel NULL pointer dereference at virtual
+> address 0000000000000000
+>     subdev_open:54: file v4l-subdev2
+>     Unable to handle kernel NULL pointer dereference at virtual
+> address 0000000000000000
+>
+> Matching the subdev using sysfs gives:
+>
+>     /sys/devices/platform/soc/e6500000.i2c/i2c-0/0-0070/video4linux/v4l-subdev1
+>     /sys/devices/platform/soc/e6500000.i2c/i2c-0/0-0070/video4linux/v4l-subdev2
+>
+> The i2c device is the adi,adv7482 at address 0x70.
+
+I'm guessing the fix would be somewhere in this driver, but I haven't
+dug into it. Any guesses on which of its suppliers might have a
+direct/indirect dependency on an iommu/dma? You could also enable the
+debug log in fw_devlink_relax_link() and see if it relaxes any link
+where the supplier is an iommu/dma device. That might give us some
+hints.
+
+-Saravana
+
+> But now I'm lost...
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
