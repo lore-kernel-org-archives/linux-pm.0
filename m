@@ -2,150 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28A2FC43334
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 17:11:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0237CCA485
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 17:18:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229446AbiFHRLx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 13:11:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39954 "EHLO
+        id S230470AbiFHRSM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 13:18:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48008 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229980AbiFHRKs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 13:10:48 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6289C3FBBCE;
-        Wed,  8 Jun 2022 09:56:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1654707412; x=1686243412;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references;
-  bh=F4L0RjTrL9ocDlqPulFosaCzsuwH2sWkXHYM3jpPmOo=;
-  b=lNsUY7D7F5So1YpLz2U6+df9bddJRo3ZYnp2D+u8SGKDhfwApqfGG+LP
-   qIRzBbf/hMmj0zO+EhUDwLtBZXiYd0DAKbtF0CorJYn2Ge/jacOHYlBS6
-   j5j5UicSD65zk1tnEDGaaeHGZzB+AuSb1/Av2BUoRB3N9O6F+9C0giY+v
-   9ncZvKXbjCreZccwPKQeDBP/aJkn3ym82DLoW2xE8m4DZ4FEbENMysgLi
-   CIL+UljYFN54ZRwX/7+WaBdXrI04+fxZu6GAjbJGNrLSCGkuDYuGTqf+L
-   uPJZ/0DJZmiTs/lxx69UPKiS8nscA275NRJLLcPVHlpnIPvr3HNUaXiDf
-   Q==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10372"; a="265768316"
-X-IronPort-AV: E=Sophos;i="5.91,286,1647327600"; 
-   d="scan'208";a="265768316"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jun 2022 09:56:51 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,286,1647327600"; 
-   d="scan'208";a="585001329"
-Received: from chang-linux-3.sc.intel.com ([172.25.66.173])
-  by fmsmga007.fm.intel.com with ESMTP; 08 Jun 2022 09:56:51 -0700
-From:   "Chang S. Bae" <chang.seok.bae@intel.com>
-To:     linux-kernel@vger.kernel.org, x86@kernel.org,
-        linux-pm@vger.kernel.org
-Cc:     tglx@linutronix.de, dave.hansen@linux.intel.com,
-        peterz@infradead.org, bp@alien8.de, rafael@kernel.org, riel@fb.com,
-        bigeasy@linutronix.de, hch@lst.de, fenghua.yu@intel.com,
-        rui.zhang@intel.com, artem.bityutskiy@linux.intel.com,
-        jacob.jun.pan@linux.intel.com, lenb@kernel.org,
-        chang.seok.bae@intel.com
-Subject: [PATCH v5 1/2] x86/fpu: Add a helper to prepare AMX state for low-power CPU idle
-Date:   Wed,  8 Jun 2022 09:47:47 -0700
-Message-Id: <20220608164748.11864-2-chang.seok.bae@intel.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20220608164748.11864-1-chang.seok.bae@intel.com>
-References: <20220608164748.11864-1-chang.seok.bae@intel.com>
+        with ESMTP id S229798AbiFHRRW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 13:17:22 -0400
+Received: from relay11.mail.gandi.net (relay11.mail.gandi.net [217.70.178.231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D039417CED;
+        Wed,  8 Jun 2022 10:04:58 -0700 (PDT)
+Received: (Authenticated sender: alexandre.belloni@bootlin.com)
+        by mail.gandi.net (Postfix) with ESMTPSA id E30C6100003;
+        Wed,  8 Jun 2022 17:04:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+        t=1654707897;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=XAPYcyRqiKyOI9m5kT9zO45hbfPySQ29+pZokJ8GgDw=;
+        b=I8yKmz2hHWLep0Zm5s3+d/Vj81S34rhDfyDBXkszTb+quiLESF4Ai5D+Wk1RjaRdtAB5ir
+        y2Q5uq1G3t/dRZsw4W2W9zgbNcXqKJGMpGN2Udy0Z/ip8s2LSdf+Syw/+0Pn8Zg5br7fYb
+        3q7AZR2KNMGe+q6tcgHYhuppsgGivaEwh3KvHQPZAkfUi73ZEq3Wcx9yqjoBdNyoE6j8XK
+        zR78TSR7CozcaE0LNqel83G93LVmdnrqtw8N89WMqlA7GuaAwClgM4hNb6u31fZyZX3Trf
+        in20qXIMX5En380N3GrdTa+bsL+g1AZNuj9Rume7qH85kaFJKBodfdMPP9EWdg==
+Date:   Wed, 8 Jun 2022 19:04:55 +0200
+From:   Alexandre Belloni <alexandre.belloni@bootlin.com>
+To:     Abel Vesa <abel.vesa@nxp.com>
+Cc:     Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        devicetree@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
+Subject: Re: [PATCH v2 07/10] dt-bindings: rtc: Add fsl,scu-rtc yaml file
+Message-ID: <YqDWt0w8/9bwz5OL@mail.local>
+References: <20220608164928.2706697-1-abel.vesa@nxp.com>
+ <20220608164928.2706697-8-abel.vesa@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220608164928.2706697-8-abel.vesa@nxp.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When a CPU enters an idle state, a non-initialized AMX register state may
-be the cause of preventing a deeper low-power state. Other extended
-register states whether initialized or not do not impact the CPU idle
-state.
+On 08/06/2022 19:49:25+0300, Abel Vesa wrote:
+> In order to replace the fsl,scu txt file from bindings/arm/freescale,
+> we need to split it between the right subsystems. This patch documents
+> separately the 'rtc' child node of the SCU main node.
+> 
+> Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
+> ---
+>  .../devicetree/bindings/rtc/fsl,scu-rtc.yaml  | 22 +++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml b/Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml
+> new file mode 100644
+> index 000000000000..bd8c3cf365ff
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml
+> @@ -0,0 +1,22 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/rtc/fsl,scu-rtc.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: i.MX SCU Client Device Node - RTC bindings based on SCU Message Protocol
+> +
+> +maintainers:
+> +  - Alexandre Belloni <alexandre.belloni@bootlin.com>
 
-The new helper can ensure the AMX state is initialized before the CPU is
-idle, and it will be used by the intel idle driver.
+Isn't NXP going to maintain their binding?
 
-Check the AMX_TILE feature bit before using XGETBV1 as a chain of
-dependencies was established via cpuid_deps[]: AMX->XFD->XGETBV1.
+> +
+> +description: i.MX SCU Client Device Node
+> +  Client nodes are maintained as children of the relevant IMX-SCU device node.
+> +
+> +properties:
+> +  compatible:
+> +    const: fsl,imx8qxp-sc-rtc
+> +
+> +required:
+> +  - compatible
+> +
+> +additionalProperties: false
+> -- 
+> 2.34.3
+> 
 
-Signed-off-by: Chang S. Bae <chang.seok.bae@intel.com>
-Cc: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Rik van Riel <riel@fb.com>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
----
-Changes from v4:
-* Switch to check the AMX_TILE flag instead XGETBV1 (Dave Hansen).
-* Massage the changelog.
-
-Changes from v3:
-* Call out AMX state in changelog (Thomas Glexiner).
-
-Changes from v2:
-* Check the feature flag instead of fpu_state_size_dynamic() (Dave Hansen).
-
-Changes from v1:
-* Check the dynamic state flag first, to avoid #UD with XGETBV(1).
----
- arch/x86/include/asm/fpu/api.h       |  2 ++
- arch/x86/include/asm/special_insns.h |  9 +++++++++
- arch/x86/kernel/fpu/core.c           | 14 ++++++++++++++
- 3 files changed, 25 insertions(+)
-
-diff --git a/arch/x86/include/asm/fpu/api.h b/arch/x86/include/asm/fpu/api.h
-index 6b0f31fb53f7..503a577814b2 100644
---- a/arch/x86/include/asm/fpu/api.h
-+++ b/arch/x86/include/asm/fpu/api.h
-@@ -164,4 +164,6 @@ static inline bool fpstate_is_confidential(struct fpu_guest *gfpu)
- /* prctl */
- extern long fpu_xstate_prctl(int option, unsigned long arg2);
- 
-+extern void fpu_idle_fpregs(void);
-+
- #endif /* _ASM_X86_FPU_API_H */
-diff --git a/arch/x86/include/asm/special_insns.h b/arch/x86/include/asm/special_insns.h
-index 45b18eb94fa1..35f709f619fb 100644
---- a/arch/x86/include/asm/special_insns.h
-+++ b/arch/x86/include/asm/special_insns.h
-@@ -295,6 +295,15 @@ static inline int enqcmds(void __iomem *dst, const void *src)
- 	return 0;
- }
- 
-+static inline void tile_release(void)
-+{
-+	/*
-+	 * Instruction opcode for TILERELEASE; supported in binutils
-+	 * version >= 2.36.
-+	 */
-+	asm volatile(".byte 0xc4, 0xe2, 0x78, 0x49, 0xc0");
-+}
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_X86_SPECIAL_INSNS_H */
-diff --git a/arch/x86/kernel/fpu/core.c b/arch/x86/kernel/fpu/core.c
-index 0531d6a06df5..3b28c5b25e12 100644
---- a/arch/x86/kernel/fpu/core.c
-+++ b/arch/x86/kernel/fpu/core.c
-@@ -851,3 +851,17 @@ int fpu__exception_code(struct fpu *fpu, int trap_nr)
- 	 */
- 	return 0;
- }
-+
-+/*
-+ * Initialize register state that may prevent from entering low-power idle.
-+ * This function will be invoked from the cpuidle driver only when needed.
-+ */
-+void fpu_idle_fpregs(void)
-+{
-+	/* Note: AMX_TILE being enabled implies XGETBV1 support */
-+	if (cpu_feature_enabled(X86_FEATURE_AMX_TILE) &&
-+	    (xfeatures_in_use() & XFEATURE_MASK_XTILE)) {
-+		tile_release();
-+		fpregs_deactivate(&current->thread.fpu);
-+	}
-+}
 -- 
-2.17.1
-
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
