@@ -2,226 +2,157 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1110BCCA47B
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 14:24:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3B98CCA496
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 14:47:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241286AbiFHOY1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 10:24:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36116 "EHLO
+        id S242890AbiFHOrq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 10:47:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56842 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241217AbiFHOY0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 10:24:26 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03E004617E;
-        Wed,  8 Jun 2022 07:24:24 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7345961A97;
-        Wed,  8 Jun 2022 14:24:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DCEAC34116;
-        Wed,  8 Jun 2022 14:24:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1654698263;
-        bh=lfp5MteEMqeLmLkwvI2zA+stynTrMoOeGm+VdRjMKTs=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=aLyPcHIYueMqC4wvgXch1zV6fD4XJaRffBi+pbVw+kDKsnkr2/Zv49N/E7JSWAqXV
-         qpLkUCptxy39RQ9Wi2/YPOKnwj1yLfypQmGVZd+0CzTPV85Wjg8YxiCtcZPW60xcK5
-         ORjpVu1mlqaVKLT80OdMq3ebKgdKZSGrqcnAF3ZCw2T/L9eDKitrmGqGRqjeN1OvB7
-         /3wILjBffvDBZSBLIjzhUwlfFNZK5kS0eRi/z6mCktfemcZF6GZMqE+u09d1qpwGCB
-         RfSvr8jdo+Gy7mQ0FCiQop0wUW7BH7luCgBRA1TLG0wHF+rT+V5T7Q9OizsyfSBQkt
-         lgKZyiMOUJTSw==
-Date:   Wed, 8 Jun 2022 09:24:19 -0500
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc:     Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        linux1394-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v2] firewire: ohci: Convert to generic power management
-Message-ID: <20220608142419.GA396923@bhelgaas>
+        with ESMTP id S242164AbiFHOq6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 10:46:58 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B06DD12754;
+        Wed,  8 Jun 2022 07:46:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
+        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To;
+        bh=cRgbn3QvpupGZaeUDgwKs7FEGzBWq3dUbK0A/YX8NGM=; b=ia4syF8cgg/6m5v3rZXIu02WY+
+        Q3HePbOq+lusahEVPAuv+ncctlM4B9LyQ4IDnvEM36XkiL3pQJQOuJOs9y3ihqwJctvWOB66u3JYJ
+        Qlt03iuvX/XofwOn8uNcW04i6nCJxlVEF9rLtDq+x0rD/Bc0A8t60ry8e0E2SVYvpfWb+XQCvkuTI
+        tNiz4zf5Ag+DBhIJ7WsXCnJ+D0Uq+V1s+5EQfEWdabNYdzP3AqCW24rU9LjP4pHcIEaJ/PfULfT6D
+        4hFRz16hmpY73XFLbpgY1hKdTTQepj9C9EdlQCPakl0mKOu1mjEe+GnDEVBUwMaBhtc9PVxMw7FCv
+        arFlzdAQ==;
+Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nywwy-0066BQ-Uj; Wed, 08 Jun 2022 14:46:25 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 9B817302D97;
+        Wed,  8 Jun 2022 16:46:22 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
+        id 4EAD120C0F9B6; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144516.297980240@infradead.org>
+User-Agent: quilt/0.66
+Date:   Wed, 08 Jun 2022 16:27:29 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     peterz@infradead.org
+Cc:     rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
+        vgupta@kernel.org, linux@armlinux.org.uk,
+        ulli.kroll@googlemail.com, linus.walleij@linaro.org,
+        shawnguo@kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+        kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com,
+        tony@atomide.com, khilman@kernel.org, catalin.marinas@arm.com,
+        will@kernel.org, guoren@kernel.org, bcain@quicinc.com,
+        chenhuacai@kernel.org, kernel@xen0n.name, geert@linux-m68k.org,
+        sammy@sammy.net, monstr@monstr.eu, tsbogend@alpha.franken.de,
+        dinguyen@kernel.org, jonas@southpole.se,
+        stefan.kristiansson@saunalahti.fi, shorne@gmail.com,
+        James.Bottomley@HansenPartnership.com, deller@gmx.de,
+        mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+        paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, hca@linux.ibm.com, gor@linux.ibm.com,
+        agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
+        svens@linux.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org,
+        davem@davemloft.net, richard@nod.at,
+        anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
+        acme@kernel.org, mark.rutland@arm.com,
+        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+        namhyung@kernel.org, jgross@suse.com, srivatsa@csail.mit.edu,
+        amakhalov@vmware.com, pv-drivers@vmware.com,
+        boris.ostrovsky@oracle.com, chris@zankel.net, jcmvbkbc@gmail.com,
+        rafael@kernel.org, lenb@kernel.org, pavel@ucw.cz,
+        gregkh@linuxfoundation.org, mturquette@baylibre.com,
+        sboyd@kernel.org, daniel.lezcano@linaro.org, lpieralisi@kernel.org,
+        sudeep.holla@arm.com, agross@kernel.org,
+        bjorn.andersson@linaro.org, anup@brainfault.org,
+        thierry.reding@gmail.com, jonathanh@nvidia.com,
+        jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
+        yury.norov@gmail.com, andriy.shevchenko@linux.intel.com,
+        linux@rasmusvillemoes.dk, rostedt@goodmis.org, pmladek@suse.com,
+        senozhatsky@chromium.org, john.ogness@linutronix.de,
+        paulmck@kernel.org, frederic@kernel.org, quic_neeraju@quicinc.com,
+        josh@joshtriplett.org, mathieu.desnoyers@efficios.com,
+        jiangshanlai@gmail.com, joel@joelfernandes.org,
+        juri.lelli@redhat.com, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, vschneid@redhat.com, jpoimboe@kernel.org,
+        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-snps-arc@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
+        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+        linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        xen-devel@lists.xenproject.org, linux-xtensa@linux-xtensa.org,
+        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-arch@vger.kernel.org,
+        rcu@vger.kernel.org
+Subject: [PATCH 06/36] cpuidle,riscv: Push RCU-idle into driver
+References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220607212157.343033-1-helgaas@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jun 07, 2022 at 04:21:57PM -0500, Bjorn Helgaas wrote:
-> From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-> 
-> Convert firewire-ohci from legacy PCI power management to the generic power
-> management framework.
-> 
-> Previously firewire-ohci used legacy PCI power management, and
-> pci_suspend() and pci_resume() were responsible for both device-specific
-> things and generic PCI things like saving and restoring config space and
-> managing power state:
-> 
->   pci_suspend
->     software_reset                         <-- device-specific
->     pci_save_state                         <-- generic PCI
->     pci_set_power_state                    <-- generic PCI
->     pmac_ohci_off                          <-- device-specific
-> 
->   pci_resume
->     pmac_ohci_on                           <-- device-specific
->     pci_set_power_state(PCI_D0)            <-- generic PCI
->     pci_restore_state                      <-- generic PCI
->     pci_enable_device                      <-- generic PCI
->     ohci_enable                            <-- device-specific
-> 
-> Convert to generic power management where the PCI bus PM methods do the
-> generic PCI things, and the driver needs only the device-specific part,
-> i.e.,
-> 
->   suspend_devices_and_enter
->     dpm_suspend_start(PMSG_SUSPEND)
->       pci_pm_suspend                       # PCI bus .suspend() method
->         pci_suspend                        # driver->pm->suspend
->           software_reset                   <-- device-specific
->           pmac_ohci_off                    <-- device-specific
->     suspend_enter
->       dpm_suspend_noirq(PMSG_SUSPEND)
->         pci_pm_suspend_noirq               # PCI bus .suspend_noirq() method
->           pci_save_state                   <-- generic PCI
->           pci_prepare_to_sleep             <-- generic PCI
->             pci_set_power_state
->     ...
->     dpm_resume_end(PMSG_RESUME)
->       pci_pm_resume                        # PCI bus .resume() method
->         pci_restore_standard_config
->           pci_set_power_state(PCI_D0)      <-- generic PCI
->           pci_restore_state                <-- generic PCI
->         pci_resume                         # driver->pm->resume
->           pmac_ohci_on                     <-- device-specific
->           ohci_enable                      <-- device-specific
+Doing RCU-idle outside the driver, only to then temporarily enable it
+again, at least twice, before going idle is daft.
 
-I want to point out that this changes the ordering of pmac_ohci_off()
-with respect to pci_save_state() and pci_set_power_state().
-Previously we did those as:
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+---
+ drivers/cpuidle/cpuidle-riscv-sbi.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-  pci_save_state
-  pci_set_power_state
-  pmac_ohci_off
+--- a/drivers/cpuidle/cpuidle-riscv-sbi.c
++++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
+@@ -116,12 +116,12 @@ static int __sbi_enter_domain_idle_state
+ 		return -1;
+ 
+ 	/* Do runtime PM to manage a hierarchical CPU toplogy. */
+-	rcu_irq_enter_irqson();
+ 	if (s2idle)
+ 		dev_pm_genpd_suspend(pd_dev);
+ 	else
+ 		pm_runtime_put_sync_suspend(pd_dev);
+-	rcu_irq_exit_irqson();
++
++	rcu_idle_enter();
+ 
+ 	if (sbi_is_domain_state_available())
+ 		state = sbi_get_domain_state();
+@@ -130,12 +130,12 @@ static int __sbi_enter_domain_idle_state
+ 
+ 	ret = sbi_suspend(state) ? -1 : idx;
+ 
+-	rcu_irq_enter_irqson();
++	rcu_idle_exit();
++
+ 	if (s2idle)
+ 		dev_pm_genpd_resume(pd_dev);
+ 	else
+ 		pm_runtime_get_sync(pd_dev);
+-	rcu_irq_exit_irqson();
+ 
+ 	cpu_pm_exit();
+ 
+@@ -246,6 +246,7 @@ static int sbi_dt_cpu_init_topology(stru
+ 	 * of a shared state for the domain, assumes the domain states are all
+ 	 * deeper states.
+ 	 */
++	drv->states[state_count - 1].flags |= CPUIDLE_FLAG_RCU_IDLE;
+ 	drv->states[state_count - 1].enter = sbi_enter_domain_idle_state;
+ 	drv->states[state_count - 1].enter_s2idle =
+ 					sbi_enter_s2idle_domain_idle_state;
 
-and after this patch it would be:
 
-  pmac_ohci_off
-  pci_save_state
-  pci_set_power_state
-
-The ordering of pmac_ohci_on() in the resume path is similarly
-changed.
-
-I don't know what pmac_ohci_off() and pmac_ohci_on() do, so I don't
-know whether this is an issue.  In general, drivers don't need to do
-anything after their device is put in D3hot, but maybe firewire-ohci
-is unique in this way.
-
-> [bhelgaas: commit log]
-> Link: https://lore.kernel.org/r/20200720150715.624520-1-vaibhavgupta40@gmail.com
-> Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  drivers/firewire/ohci.c | 35 ++++++++---------------------------
->  1 file changed, 8 insertions(+), 27 deletions(-)
-> 
-> diff --git a/drivers/firewire/ohci.c b/drivers/firewire/ohci.c
-> index 17c9d825188b..aee705132330 100644
-> --- a/drivers/firewire/ohci.c
-> +++ b/drivers/firewire/ohci.c
-> @@ -3165,8 +3165,7 @@ static int ohci_set_iso_channels(struct fw_iso_context *base, u64 *channels)
->  	return ret;
->  }
->  
-> -#ifdef CONFIG_PM
-> -static void ohci_resume_iso_dma(struct fw_ohci *ohci)
-> +static void __maybe_unused ohci_resume_iso_dma(struct fw_ohci *ohci)
->  {
->  	int i;
->  	struct iso_context *ctx;
-> @@ -3183,7 +3182,6 @@ static void ohci_resume_iso_dma(struct fw_ohci *ohci)
->  			ohci_start_iso(&ctx->base, 0, ctx->sync, ctx->tags);
->  	}
->  }
-> -#endif
->  
->  static int queue_iso_transmit(struct iso_context *ctx,
->  			      struct fw_iso_packet *packet,
-> @@ -3789,39 +3787,24 @@ static void pci_remove(struct pci_dev *dev)
->  	dev_notice(&dev->dev, "removed fw-ohci device\n");
->  }
->  
-> -#ifdef CONFIG_PM
-> -static int pci_suspend(struct pci_dev *dev, pm_message_t state)
-> +static int __maybe_unused pci_suspend(struct device *devp)
->  {
-> +	struct pci_dev *dev = to_pci_dev(devp);
->  	struct fw_ohci *ohci = pci_get_drvdata(dev);
-> -	int err;
->  
->  	software_reset(ohci);
-> -	err = pci_save_state(dev);
-> -	if (err) {
-> -		ohci_err(ohci, "pci_save_state failed\n");
-> -		return err;
-> -	}
-> -	err = pci_set_power_state(dev, pci_choose_state(dev, state));
-> -	if (err)
-> -		ohci_err(ohci, "pci_set_power_state failed with %d\n", err);
->  	pmac_ohci_off(dev);
->  
->  	return 0;
->  }
->  
-> -static int pci_resume(struct pci_dev *dev)
-> +static int __maybe_unused pci_resume(struct device *devp)
->  {
-> +	struct pci_dev *dev = to_pci_dev(devp);
->  	struct fw_ohci *ohci = pci_get_drvdata(dev);
->  	int err;
->  
->  	pmac_ohci_on(dev);
-> -	pci_set_power_state(dev, PCI_D0);
-> -	pci_restore_state(dev);
-> -	err = pci_enable_device(dev);
-> -	if (err) {
-> -		ohci_err(ohci, "pci_enable_device failed\n");
-> -		return err;
-> -	}
->  
->  	/* Some systems don't setup GUID register on resume from ram  */
->  	if (!reg_read(ohci, OHCI1394_GUIDLo) &&
-> @@ -3838,7 +3821,6 @@ static int pci_resume(struct pci_dev *dev)
->  
->  	return 0;
->  }
-> -#endif
->  
->  static const struct pci_device_id pci_table[] = {
->  	{ PCI_DEVICE_CLASS(PCI_CLASS_SERIAL_FIREWIRE_OHCI, ~0) },
-> @@ -3847,15 +3829,14 @@ static const struct pci_device_id pci_table[] = {
->  
->  MODULE_DEVICE_TABLE(pci, pci_table);
->  
-> +static SIMPLE_DEV_PM_OPS(pci_pm_ops, pci_suspend, pci_resume);
-> +
->  static struct pci_driver fw_ohci_pci_driver = {
->  	.name		= ohci_driver_name,
->  	.id_table	= pci_table,
->  	.probe		= pci_probe,
->  	.remove		= pci_remove,
-> -#ifdef CONFIG_PM
-> -	.resume		= pci_resume,
-> -	.suspend	= pci_suspend,
-> -#endif
-> +	.driver.pm	= &pci_pm_ops,
->  };
->  
->  static int __init fw_ohci_init(void)
-> -- 
-> 2.25.1
-> 
