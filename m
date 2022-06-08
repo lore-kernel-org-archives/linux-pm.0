@@ -2,111 +2,77 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0237CCA485
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 17:18:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AEEECCA481
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 18:10:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230470AbiFHRSM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 13:18:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48008 "EHLO
+        id S233972AbiFHSKD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 14:10:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39250 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229798AbiFHRRW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 13:17:22 -0400
-Received: from relay11.mail.gandi.net (relay11.mail.gandi.net [217.70.178.231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D039417CED;
-        Wed,  8 Jun 2022 10:04:58 -0700 (PDT)
-Received: (Authenticated sender: alexandre.belloni@bootlin.com)
-        by mail.gandi.net (Postfix) with ESMTPSA id E30C6100003;
-        Wed,  8 Jun 2022 17:04:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-        t=1654707897;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=XAPYcyRqiKyOI9m5kT9zO45hbfPySQ29+pZokJ8GgDw=;
-        b=I8yKmz2hHWLep0Zm5s3+d/Vj81S34rhDfyDBXkszTb+quiLESF4Ai5D+Wk1RjaRdtAB5ir
-        y2Q5uq1G3t/dRZsw4W2W9zgbNcXqKJGMpGN2Udy0Z/ip8s2LSdf+Syw/+0Pn8Zg5br7fYb
-        3q7AZR2KNMGe+q6tcgHYhuppsgGivaEwh3KvHQPZAkfUi73ZEq3Wcx9yqjoBdNyoE6j8XK
-        zR78TSR7CozcaE0LNqel83G93LVmdnrqtw8N89WMqlA7GuaAwClgM4hNb6u31fZyZX3Trf
-        in20qXIMX5En380N3GrdTa+bsL+g1AZNuj9Rume7qH85kaFJKBodfdMPP9EWdg==
-Date:   Wed, 8 Jun 2022 19:04:55 +0200
-From:   Alexandre Belloni <alexandre.belloni@bootlin.com>
-To:     Abel Vesa <abel.vesa@nxp.com>
-Cc:     Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        devicetree@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
-Subject: Re: [PATCH v2 07/10] dt-bindings: rtc: Add fsl,scu-rtc yaml file
-Message-ID: <YqDWt0w8/9bwz5OL@mail.local>
-References: <20220608164928.2706697-1-abel.vesa@nxp.com>
- <20220608164928.2706697-8-abel.vesa@nxp.com>
+        with ESMTP id S231421AbiFHSKC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 14:10:02 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC2252CCBB;
+        Wed,  8 Jun 2022 11:10:00 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 553CD61BA9;
+        Wed,  8 Jun 2022 18:10:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16BE1C3411D;
+        Wed,  8 Jun 2022 18:09:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1654711799;
+        bh=SL+p50vdC56GXV52nZanm0Gl56oWFXJJxn/dx2xsIP8=;
+        h=Date:From:To:Subject:In-Reply-To:From;
+        b=DKJ+y+SAcKGHeFyigdlJMfYWDlfjebdHXpy1/81X4/AeXrkFRcNEmKeRLCBVGxZqg
+         N5ULAbSIJSrXgrmLPIIHJLeDQZVLZSPbZ6DSc1Z2H2oRLg3JWNSRhPJ0iCtpPtrYWT
+         NuRr5fmDLWKlwJ63P8toNPjmir6LO/nxm1Mj2wp8cszo1lW9B59GPU4VQHsb6CCe46
+         HSUz+5Ux833qbNPrmy8jAmyM+Nwu/QvGvHxfsqmkv/MDlJeT2J1/edq9l4Wg2BUS26
+         Rf0rSd2YnAOgxZNmNFZip9o3L8hF/yUGyuO9Gtss+MWaaE6SrzbktqIpZlbbRS+y2G
+         CvHV8a7G1MfuQ==
+Date:   Wed, 8 Jun 2022 13:09:56 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 0/2] video: fbdev: Convert from PCI to generic power
+ management
+Message-ID: <20220608180956.GA407517@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220608164928.2706697-8-abel.vesa@nxp.com>
+In-Reply-To: <YqDNuhopLfpHkTS7@phenom.ffwll.local>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 08/06/2022 19:49:25+0300, Abel Vesa wrote:
-> In order to replace the fsl,scu txt file from bindings/arm/freescale,
-> we need to split it between the right subsystems. This patch documents
-> separately the 'rtc' child node of the SCU main node.
+On Wed, Jun 08, 2022 at 06:26:34PM +0200, Daniel Vetter wrote:
+> On Tue, Jun 07, 2022 at 06:11:10PM -0500, Bjorn Helgaas wrote:
+> > From: Bjorn Helgaas <bhelgaas@google.com>
+> > 
+> > PCI-specific power management (pci_driver.suspend and pci_driver.resume) is
+> > deprecated.  If drivers implement power management, they should use the
+> > generic power management framework, not the PCI-specific hooks.
+> > 
+> > No fbdev drivers actually implement PCI power management, but there are a
+> > cirrusfb has some commented-out references to it and skeletonfb has
+> > examples of it.  Remove these.
 > 
-> Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
-> ---
->  .../devicetree/bindings/rtc/fsl,scu-rtc.yaml  | 22 +++++++++++++++++++
->  1 file changed, 22 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml
+> Is this holding up some cleanup on your side and so would be easier to
+> merge these through the pci tree? If so
 > 
-> diff --git a/Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml b/Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml
-> new file mode 100644
-> index 000000000000..bd8c3cf365ff
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/rtc/fsl,scu-rtc.yaml
-> @@ -0,0 +1,22 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/rtc/fsl,scu-rtc.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: i.MX SCU Client Device Node - RTC bindings based on SCU Message Protocol
-> +
-> +maintainers:
-> +  - Alexandre Belloni <alexandre.belloni@bootlin.com>
-
-Isn't NXP going to maintain their binding?
-
-> +
-> +description: i.MX SCU Client Device Node
-> +  Client nodes are maintained as children of the relevant IMX-SCU device node.
-> +
-> +properties:
-> +  compatible:
-> +    const: fsl,imx8qxp-sc-rtc
-> +
-> +required:
-> +  - compatible
-> +
-> +additionalProperties: false
-> -- 
-> 2.34.3
+> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 > 
+> for merging through your tree. Otherwise I guess Helge will get around to
+> pile them up for 5.20 (or 6.0) eventually.
 
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+No particular rush and nothing depending on these.
+
+I added your ack to my local branch and if nothing happens for a
+while, I'll merge them via my tree.
+
+Bjorn
