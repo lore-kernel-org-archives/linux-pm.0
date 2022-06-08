@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E1BC2BC89
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 14:48:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB97CC3526F
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 14:48:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243112AbiFHOsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 10:48:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56488 "EHLO
+        id S243137AbiFHOsM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 10:48:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58270 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242004AbiFHOqv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 10:46:51 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 878E120181;
-        Wed,  8 Jun 2022 07:46:40 -0700 (PDT)
+        with ESMTP id S242425AbiFHOrK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 10:47:10 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 150BE42A1E;
+        Wed,  8 Jun 2022 07:46:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=rveYe0whW8HL+t/HGSaazkf4IJzq2XAc7vdeRKjh+gA=; b=cpKCmyhyv7OuEJMBrNQU4CnHNj
-        GnUCgs7XSOxkFha/sPdTsxeTS+e9qjtwJrPFHfUSepmSzQvRHqWJ38pWwyP7CmKl7WsF5ifJzwn8I
-        KgcYBvLkrDSlv9M2MdiJ1ToWAySQoRg4+zQfyu6Q6UOoUhyP16vlSGNMW8FRmKgzk6H/TOalA6UnM
-        2dQx2jKA7llK73O+p7WvYuYBEr0UYXjBd0MyFHzz2ajO12weAftc5aMVdLFZY5KBowFC3EUic0nAb
-        Ua8Il7Isw4DFhFw47bHPIFnvHlD9Gmhxxc/vlsT8NNGa/EFOaC4CUBfTzrFKLdx4VhHOvfmU/Hr+j
-        qShSPhlg==;
+        bh=HzY3jBvKRSGcnvMJEPYny4/0n/oTUbqDiv/WYyIgET0=; b=MGGRvqyXkFG18Addzz24MaA9vS
+        KmKQ42ydJ+KU3tAZnF66vsw9m2PhxgnUWtQITetZSoUstRo9chWzM+pJToCvulnxBdLidR3LPZU9g
+        MCsdS+XO5E6NmCZ7IJG/1MVQEavZDiwD4mzz26MJYQoWsqwHPNvRUi+aXX4DF0kV9Z0/v4ltjK50+
+        mh1yS8lRn4S5pqQ50oj37jOYJn8NGaaqrAwwQzXnxG1wSkmLsddHvJaUrs6wmpz682hMPMgvjIwA5
+        egpS5lzCOnI3oME6jAwmxjbpFe/dD5lggiDQn5ZT4ZAMGklNowzkgdj6nkeWrbtFrCB+auOjUHR7l
+        b3VJCIpA==;
 Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nywx2-00ChXE-Jq; Wed, 08 Jun 2022 14:46:28 +0000
+        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nywx6-0066Dk-FR; Wed, 08 Jun 2022 14:46:33 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A0926302EA2;
-        Wed,  8 Jun 2022 16:46:23 +0200 (CEST)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 0C594302F56;
+        Wed,  8 Jun 2022 16:46:24 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 90A2620C10ED8; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
-Message-ID: <20220608144517.313931267@infradead.org>
+        id C77CE20C119BA; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144518.136731332@infradead.org>
 User-Agent: quilt/0.66
-Date:   Wed, 08 Jun 2022 16:27:45 +0200
+Date:   Wed, 08 Jun 2022 16:27:58 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     peterz@infradead.org
 Cc:     rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
@@ -98,7 +98,7 @@ Cc:     rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
         linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-arch@vger.kernel.org,
         rcu@vger.kernel.org
-Subject: [PATCH 22/36] arm,smp: Remove trace_.*_rcuidle() usage
+Subject: [PATCH 35/36] cpuidle,powerdomain: Remove trace_.*_rcuidle()
 References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -106,50 +106,149 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-None of these functions should ever be ran with RCU disabled anymore.
-
-Specifically, do_handle_IPI() is only called from handle_IPI() which
-explicitly does irq_enter()/irq_exit() which ensures RCU is watching.
-
-The problem with smp_cross_call() was, per commit 7c64cc0531fa ("arm: Use
-_rcuidle for smp_cross_call() tracepoints"), that
-cpuidle_enter_state_coupled() already had RCU disabled, but that's
-long been fixed by commit 1098582a0f6c ("sched,idle,rcu: Push rcu_idle
-deeper into the idle path").
+OMAP was the one and only user.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/arm/kernel/smp.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/arm/mach-omap2/powerdomain.c |   10 +++++-----
+ drivers/base/power/runtime.c      |   24 ++++++++++++------------
+ 2 files changed, 17 insertions(+), 17 deletions(-)
 
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@ -639,7 +639,7 @@ static void do_handle_IPI(int ipinr)
- 	unsigned int cpu = smp_processor_id();
+--- a/arch/arm/mach-omap2/powerdomain.c
++++ b/arch/arm/mach-omap2/powerdomain.c
+@@ -187,9 +187,9 @@ static int _pwrdm_state_switch(struct po
+ 			trace_state = (PWRDM_TRACE_STATES_FLAG |
+ 				       ((next & OMAP_POWERSTATE_MASK) << 8) |
+ 				       ((prev & OMAP_POWERSTATE_MASK) << 0));
+-			trace_power_domain_target_rcuidle(pwrdm->name,
+-							  trace_state,
+-							  raw_smp_processor_id());
++			trace_power_domain_target(pwrdm->name,
++						  trace_state,
++						  raw_smp_processor_id());
+ 		}
+ 		break;
+ 	default:
+@@ -541,8 +541,8 @@ int pwrdm_set_next_pwrst(struct powerdom
  
- 	if ((unsigned)ipinr < NR_IPI)
--		trace_ipi_entry_rcuidle(ipi_types[ipinr]);
-+		trace_ipi_entry(ipi_types[ipinr]);
+ 	if (arch_pwrdm && arch_pwrdm->pwrdm_set_next_pwrst) {
+ 		/* Trace the pwrdm desired target state */
+-		trace_power_domain_target_rcuidle(pwrdm->name, pwrst,
+-						  raw_smp_processor_id());
++		trace_power_domain_target(pwrdm->name, pwrst,
++					  raw_smp_processor_id());
+ 		/* Program the pwrdm desired target state */
+ 		ret = arch_pwrdm->pwrdm_set_next_pwrst(pwrdm, pwrst);
+ 	}
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -442,7 +442,7 @@ static int rpm_idle(struct device *dev,
+ 	int (*callback)(struct device *);
+ 	int retval;
  
- 	switch (ipinr) {
- 	case IPI_WAKEUP:
-@@ -686,7 +686,7 @@ static void do_handle_IPI(int ipinr)
+-	trace_rpm_idle_rcuidle(dev, rpmflags);
++	trace_rpm_idle(dev, rpmflags);
+ 	retval = rpm_check_suspend_allowed(dev);
+ 	if (retval < 0)
+ 		;	/* Conditions are wrong. */
+@@ -481,7 +481,7 @@ static int rpm_idle(struct device *dev,
+ 			dev->power.request_pending = true;
+ 			queue_work(pm_wq, &dev->power.work);
+ 		}
+-		trace_rpm_return_int_rcuidle(dev, _THIS_IP_, 0);
++		trace_rpm_return_int(dev, _THIS_IP_, 0);
+ 		return 0;
  	}
  
- 	if ((unsigned)ipinr < NR_IPI)
--		trace_ipi_exit_rcuidle(ipi_types[ipinr]);
-+		trace_ipi_exit(ipi_types[ipinr]);
+@@ -493,7 +493,7 @@ static int rpm_idle(struct device *dev,
+ 	wake_up_all(&dev->power.wait_queue);
+ 
+  out:
+-	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
++	trace_rpm_return_int(dev, _THIS_IP_, retval);
+ 	return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
  }
  
- /* Legacy version, should go away once all irqchips have been converted */
-@@ -709,7 +709,7 @@ static irqreturn_t ipi_handler(int irq,
+@@ -557,7 +557,7 @@ static int rpm_suspend(struct device *de
+ 	struct device *parent = NULL;
+ 	int retval;
  
- static void smp_cross_call(const struct cpumask *target, unsigned int ipinr)
- {
--	trace_ipi_raise_rcuidle(target, ipi_types[ipinr]);
-+	trace_ipi_raise(target, ipi_types[ipinr]);
- 	__ipi_send_mask(ipi_desc[ipinr], target);
+-	trace_rpm_suspend_rcuidle(dev, rpmflags);
++	trace_rpm_suspend(dev, rpmflags);
+ 
+  repeat:
+ 	retval = rpm_check_suspend_allowed(dev);
+@@ -708,7 +708,7 @@ static int rpm_suspend(struct device *de
+ 	}
+ 
+  out:
+-	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
++	trace_rpm_return_int(dev, _THIS_IP_, retval);
+ 
+ 	return retval;
+ 
+@@ -760,7 +760,7 @@ static int rpm_resume(struct device *dev
+ 	struct device *parent = NULL;
+ 	int retval = 0;
+ 
+-	trace_rpm_resume_rcuidle(dev, rpmflags);
++	trace_rpm_resume(dev, rpmflags);
+ 
+  repeat:
+ 	if (dev->power.runtime_error) {
+@@ -925,7 +925,7 @@ static int rpm_resume(struct device *dev
+ 		spin_lock_irq(&dev->power.lock);
+ 	}
+ 
+-	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
++	trace_rpm_return_int(dev, _THIS_IP_, retval);
+ 
+ 	return retval;
  }
+@@ -1081,7 +1081,7 @@ int __pm_runtime_idle(struct device *dev
+ 		if (retval < 0) {
+ 			return retval;
+ 		} else if (retval > 0) {
+-			trace_rpm_usage_rcuidle(dev, rpmflags);
++			trace_rpm_usage(dev, rpmflags);
+ 			return 0;
+ 		}
+ 	}
+@@ -1119,7 +1119,7 @@ int __pm_runtime_suspend(struct device *
+ 		if (retval < 0) {
+ 			return retval;
+ 		} else if (retval > 0) {
+-			trace_rpm_usage_rcuidle(dev, rpmflags);
++			trace_rpm_usage(dev, rpmflags);
+ 			return 0;
+ 		}
+ 	}
+@@ -1202,7 +1202,7 @@ int pm_runtime_get_if_active(struct devi
+ 	} else {
+ 		retval = atomic_inc_not_zero(&dev->power.usage_count);
+ 	}
+-	trace_rpm_usage_rcuidle(dev, 0);
++	trace_rpm_usage(dev, 0);
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ 
+ 	return retval;
+@@ -1566,7 +1566,7 @@ void pm_runtime_allow(struct device *dev
+ 	if (ret == 0)
+ 		rpm_idle(dev, RPM_AUTO | RPM_ASYNC);
+ 	else if (ret > 0)
+-		trace_rpm_usage_rcuidle(dev, RPM_AUTO | RPM_ASYNC);
++		trace_rpm_usage(dev, RPM_AUTO | RPM_ASYNC);
+ 
+  out:
+ 	spin_unlock_irq(&dev->power.lock);
+@@ -1635,7 +1635,7 @@ static void update_autosuspend(struct de
+ 			atomic_inc(&dev->power.usage_count);
+ 			rpm_resume(dev, 0);
+ 		} else {
+-			trace_rpm_usage_rcuidle(dev, 0);
++			trace_rpm_usage(dev, 0);
+ 		}
+ 	}
  
 
 
