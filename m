@@ -2,255 +2,230 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BB8AC43334
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 10:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE935C43334
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 10:23:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235671AbiFHKBZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 06:01:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56184 "EHLO
+        id S236632AbiFHKXB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 06:23:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235725AbiFHKBF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 06:01:05 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 348EE56227
-        for <linux-pm@vger.kernel.org>; Wed,  8 Jun 2022 02:36:52 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id a15so32309688lfb.9
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jun 2022 02:36:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=SNSMelJob+01Kx7dFiWLtxUuIDJxTQ+L6IvyTQgdghc=;
-        b=o/GqrY/XZZ4f8+imiYFWgtBVnI/TwGDyqzmWsDacPxkg0HxboiUgErcBdZ6Bl3N7DY
-         LYXQePkVhJZ+3tmc97rvb3+jO0t0EJK28H/8aybBUruUwsJX8CnxdGQCvblBeHrEW84T
-         ObR3Kh1QnTcTVYvVJgJMpceIrhLuTAqT5hOQAGjlzba1MVWe0kA9Sm9toNMSGGlAL6nq
-         af88UDFvVBONvSN3ZRDKNvTgX1DuGEor2KnRl6rdNiQbfSipfXMmUutwQSP8YNFq5Hqu
-         EVnixXytYVTIgNBcfsVUQ4pzKrrVigLFqd4tfw08Xjg5xXysn7/lQkrU6jF/Z4YCsmTN
-         rmoA==
+        with ESMTP id S236476AbiFHKWs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 06:22:48 -0400
+Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A7FA1D30D1;
+        Wed,  8 Jun 2022 03:11:34 -0700 (PDT)
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-2ef5380669cso203561677b3.9;
+        Wed, 08 Jun 2022 03:11:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=SNSMelJob+01Kx7dFiWLtxUuIDJxTQ+L6IvyTQgdghc=;
-        b=BXmyRJc2SgYSv41JCGBTJE28y6Ln0DM2vL5v+xgh8YddtjpCGwdsgr8zKnjsQPjpbS
-         pMAr1NhI3lREkICC4ZwdXDQ+ZsRf3yFDbR3m5Ok1ozQe4Wq5BEV3mnJ8zSz1Mv9ZJN0m
-         SqbqpOQO780HpDUApdwIgBJ43JiU5jr8Lj+IxOuuTVG3/q02F3rzqnTuSFXdny4nioGP
-         rfW9K8wokzdwizHvMrLtTtVlRNAy48YquajHFEFiTyaHvY7zjmVamb/MvX5S8fEW5gRN
-         jcxA38atQ9qHNCsrN1BCc/A3W6jjz1GOJ5IjI1W0e4iS2qE2YbJyRTIVeMXi2bkHBgdL
-         fy8w==
-X-Gm-Message-State: AOAM533KJKcoJfOmFJlzYoCOnTD/4gQC57i5GFksmfSwT7W4CTZHsMez
-        GVGC37l625xn//f85+vvAeIs7rLfZHXMsOm8c+onGA==
-X-Google-Smtp-Source: ABdhPJwB0MZ/CDb9gBdADpk4GnZSb+bdi5rW+LV9zVIjqzr1/kAEbI4f76Ik0lFFzSt6KKqdtGfjNjNbOw+8D4Nj5DQ=
-X-Received: by 2002:ac2:47f1:0:b0:479:7517:d41 with SMTP id
- b17-20020ac247f1000000b0047975170d41mr2979879lfp.254.1654681010468; Wed, 08
- Jun 2022 02:36:50 -0700 (PDT)
+        bh=ZYWirrqs8JIjAPK13ryUJnxtd3dCk+qeVPdqOOf69cA=;
+        b=oyEsXC4UqWQ2Wu+tsfKoRPVrrp6rztZRZ+6Bo/WlBCR8JBLhJhEgVaBB+LQmVzHi0j
+         VXLc9ArN8tLUNovaaPklBwhELeayH+09FN2U/TzQ++7+MZMmodPkONzR5h23x3GvzTO4
+         Htt1u7yVP1eUDroWFmuyW2d5hg5sEayFPS1w/7ZOAvoyqKbVmG5a8Mr3M+0TPv/pEsUk
+         IMqv1hSSEDCRSesfpxhY6YYVLV+2LYSfHg8Akxkzun1Zy/4jJnnQOZaSQQPSB6mjHdoV
+         IlFdL1QQTFAi652tAqYtaaHK5Joj0Q64DBSeZT+A3LB02SlQkZgtSuKOJoz8si2FzreW
+         vGxw==
+X-Gm-Message-State: AOAM531Wx/HeJqZANcn+dVPiTrCq7FEhq/SUqGPiUr1mvqQR7gQD2lzT
+        Gyx/fqeN38AY9w1ZkXeyq3bI+j2m98p/3CjIUXk=
+X-Google-Smtp-Source: ABdhPJyY3yg/lUDbJa9jBFK3lftQ7MB3mk9lvArj1zK1sIRuyYn/uNirEBfql1JOdyR97DXwp/UUnh5+/T5wENqfDd8=
+X-Received: by 2002:a81:1b97:0:b0:2db:640f:49d8 with SMTP id
+ b145-20020a811b97000000b002db640f49d8mr35793043ywb.326.1654683087271; Wed, 08
+ Jun 2022 03:11:27 -0700 (PDT)
 MIME-Version: 1.0
-References: <1652275016-13423-1-git-send-email-quic_mkshah@quicinc.com>
- <1652275016-13423-7-git-send-email-quic_mkshah@quicinc.com> <CAPDyKFqCdc206GX3s3PqExrp==mfJQ6m-u0F_ij_tLXbcv8G6Q@mail.gmail.com>
-In-Reply-To: <CAPDyKFqCdc206GX3s3PqExrp==mfJQ6m-u0F_ij_tLXbcv8G6Q@mail.gmail.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Wed, 8 Jun 2022 11:36:14 +0200
-Message-ID: <CAPDyKFoQ4ugMsy+ZRvg9AzPwQa3LC73sYMw7gNfYqe+pCfncUw@mail.gmail.com>
-Subject: Re: [PATCH v2 6/6] soc: qcom: rpmh-rsc: Write CONTROL_TCS with next
- timer wakeup
-To:     Maulik Shah <quic_mkshah@quicinc.com>
-Cc:     bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        rafael@kernel.org, daniel.lezcano@linaro.org,
-        quic_lsrao@quicinc.com, quic_rjendra@quicinc.com
+References: <cover.1654680790.git.lukas@wunner.de> <78ad73b93adb59edfa2d68e44a9fcfea65e98131.1654680790.git.lukas@wunner.de>
+In-Reply-To: <78ad73b93adb59edfa2d68e44a9fcfea65e98131.1654680790.git.lukas@wunner.de>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 8 Jun 2022 12:11:15 +0200
+Message-ID: <CAJZ5v0h62BasPSKYctUcqb3gt0xbHEDeh=j5D8Y1yrsF0ro-zA@mail.gmail.com>
+Subject: Re: [PATCH net v2 1/1] net: phy: Don't trigger state machine while in suspend
+To:     Lukas Wunner <lukas@wunner.de>
+Cc:     "David S. Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Eric Dumazet <edumazet@google.com>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        netdev <netdev@vger.kernel.org>,
+        Steve Glendinning <steve.glendinning@shawell.net>,
+        UNGLinuxDriver@microchip.com, Oliver Neukum <oneukum@suse.com>,
+        Andre Edich <andre.edich@microchip.com>,
+        Oleksij Rempel <linux@rempel-privat.de>,
+        Martyn Welch <martyn.welch@collabora.com>,
+        Gabriel Hojda <ghojda@yo2urs.ro>,
+        Christoph Fritz <chf.fritz@googlemail.com>,
+        Lino Sanfilippo <LinoSanfilippo@gmx.de>,
+        Philipp Rosenberger <p.rosenberger@kunbus.com>,
+        Ferry Toth <fntoth@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 20 May 2022 at 11:39, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On Wed, Jun 8, 2022 at 11:57 AM Lukas Wunner <lukas@wunner.de> wrote:
 >
-> On Wed, 11 May 2022 at 15:17, Maulik Shah <quic_mkshah@quicinc.com> wrote:
-> >
-> > The next wakeup timer value needs to be set in always on domain timer
-> > as the arch timer interrupt can not wakeup the SoC if after the deepest
-> > CPUidle states the SoC also enters deepest low power state.
-> >
-> > To wakeup the SoC in such scenarios the earliest wakeup time is set in
-> > CONTROL_TCS and the firmware takes care of setting up its own timer in
-> > always on domain with next wakeup time. The timer wakes up the RSC and
-> > sets resources back to wake state.
-> >
-> > Signed-off-by: Maulik Shah <quic_mkshah@quicinc.com>
+> Upon system sleep, mdio_bus_phy_suspend() stops the phy_state_machine(),
+> but subsequent interrupts may retrigger it:
 >
-> I didn't forget to review this, but please allow me a few more days to
-> think a little bit more about this.
-
-Apologize for the delay, this looks good to me!
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
-
+> They may have been left enabled to facilitate wakeup and are not
+> quiesced until the ->suspend_noirq() phase.  Unwanted interrupts may
+> hence occur between mdio_bus_phy_suspend() and dpm_suspend_noirq(),
+> as well as between dpm_resume_noirq() and mdio_bus_phy_resume().
 >
-> > ---
-> >  drivers/soc/qcom/rpmh-internal.h |  3 ++
-> >  drivers/soc/qcom/rpmh-rsc.c      | 61 ++++++++++++++++++++++++++++++++++++++++
-> >  drivers/soc/qcom/rpmh.c          |  4 ++-
-> >  3 files changed, 67 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-> > index 7866bb1..39f5358 100644
-> > --- a/drivers/soc/qcom/rpmh-internal.h
-> > +++ b/drivers/soc/qcom/rpmh-internal.h
-> > @@ -112,6 +112,7 @@ struct rpmh_ctrlr {
-> >   * @tcs_wait:           Wait queue used to wait for @tcs_in_use to free up a
-> >   *                      slot
-> >   * @client:             Handle to the DRV's client.
-> > + * @dev:                RSC device.
-> >   */
-> >  struct rsc_drv {
-> >         const char *name;
-> > @@ -127,12 +128,14 @@ struct rsc_drv {
-> >         spinlock_t lock;
-> >         wait_queue_head_t tcs_wait;
-> >         struct rpmh_ctrlr client;
-> > +       struct device *dev;
-> >  };
-> >
-> >  int rpmh_rsc_send_data(struct rsc_drv *drv, const struct tcs_request *msg);
-> >  int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv,
-> >                              const struct tcs_request *msg);
-> >  void rpmh_rsc_invalidate(struct rsc_drv *drv);
-> > +void rpmh_rsc_write_next_wakeup(struct rsc_drv *drv);
-> >
-> >  void rpmh_tx_done(const struct tcs_request *msg, int r);
-> >  int rpmh_flush(struct rpmh_ctrlr *ctrlr);
-> > diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-> > index 8e01697..25b838b 100644
-> > --- a/drivers/soc/qcom/rpmh-rsc.c
-> > +++ b/drivers/soc/qcom/rpmh-rsc.c
-> > @@ -12,6 +12,7 @@
-> >  #include <linux/io.h>
-> >  #include <linux/iopoll.h>
-> >  #include <linux/kernel.h>
-> > +#include <linux/ktime.h>
-> >  #include <linux/list.h>
-> >  #include <linux/module.h>
-> >  #include <linux/notifier.h>
-> > @@ -25,6 +26,7 @@
-> >  #include <linux/spinlock.h>
-> >  #include <linux/wait.h>
-> >
-> > +#include <clocksource/arm_arch_timer.h>
-> >  #include <soc/qcom/cmd-db.h>
-> >  #include <soc/qcom/tcs.h>
-> >  #include <dt-bindings/soc/qcom,rpmh-rsc.h>
-> > @@ -49,6 +51,14 @@
-> >  #define DRV_NCPT_MASK                  0x1F
-> >  #define DRV_NCPT_SHIFT                 27
-> >
-> > +/* Offsets for CONTROL TCS Registers */
-> > +#define RSC_DRV_CTL_TCS_DATA_HI                0x38
-> > +#define RSC_DRV_CTL_TCS_DATA_HI_MASK   0xFFFFFF
-> > +#define RSC_DRV_CTL_TCS_DATA_HI_VALID  BIT(31)
-> > +#define RSC_DRV_CTL_TCS_DATA_LO                0x40
-> > +#define RSC_DRV_CTL_TCS_DATA_LO_MASK   0xFFFFFFFF
-> > +#define RSC_DRV_CTL_TCS_DATA_SIZE      32
-> > +
-> >  /* Offsets for common TCS Registers, one bit per TCS */
-> >  #define RSC_DRV_IRQ_ENABLE             0x00
-> >  #define RSC_DRV_IRQ_STATUS             0x04
-> > @@ -142,6 +152,14 @@
-> >   *  +---------------------------------------------------+
-> >   */
-> >
-> > +#define USECS_TO_CYCLES(time_usecs)                    \
-> > +       xloops_to_cycles((time_usecs) * 0x10C7UL)
-> > +
-> > +static inline unsigned long xloops_to_cycles(unsigned long xloops)
-> > +{
-> > +       return (xloops * loops_per_jiffy * HZ) >> 32;
-> > +}
-> > +
-> >  static inline void __iomem *
-> >  tcs_reg_addr(const struct rsc_drv *drv, int reg, int tcs_id)
-> >  {
-> > @@ -757,6 +775,48 @@ static bool rpmh_rsc_ctrlr_is_busy(struct rsc_drv *drv)
-> >  }
-> >
-> >  /**
-> > + * rpmh_rsc_write_next_wakeup() - Write next wakeup in CONTROL_TCS.
-> > + * @drv: The controller
-> > + *
-> > + * Writes maximum wakeup cycles when called from suspend.
-> > + * Writes earliest hrtimer wakeup when called from idle.
-> > + */
-> > +void rpmh_rsc_write_next_wakeup(struct rsc_drv *drv)
-> > +{
-> > +       ktime_t now, wakeup;
-> > +       u64 wakeup_us, wakeup_cycles = ~0;
-> > +       u32 lo, hi;
-> > +
-> > +       if (!drv->tcs[CONTROL_TCS].num_tcs || !drv->genpd_nb.notifier_call)
-> > +               return;
-> > +
-> > +       /* Set highest time when system (timekeeping) is suspended */
-> > +       if (system_state == SYSTEM_SUSPEND)
-> > +               goto exit;
-> > +
-> > +       /* Find the earliest hrtimer wakeup from online cpus */
-> > +       wakeup = dev_pm_genpd_get_next_hrtimer(drv->dev);
-> > +
-> > +       /* Find the relative wakeup in kernel time scale */
-> > +       now = ktime_get();
-> > +       wakeup = ktime_sub(wakeup, now);
-> > +       wakeup_us = ktime_to_us(wakeup);
-> > +
-> > +       /* Convert the wakeup to arch timer scale */
-> > +       wakeup_cycles = USECS_TO_CYCLES(wakeup_us);
-> > +       wakeup_cycles += arch_timer_read_counter();
-> > +
-> > +exit:
-> > +       lo = wakeup_cycles & RSC_DRV_CTL_TCS_DATA_LO_MASK;
-> > +       hi = wakeup_cycles >> RSC_DRV_CTL_TCS_DATA_SIZE;
-> > +       hi &= RSC_DRV_CTL_TCS_DATA_HI_MASK;
-> > +       hi |= RSC_DRV_CTL_TCS_DATA_HI_VALID;
-> > +
-> > +       writel_relaxed(lo, drv->base + RSC_DRV_CTL_TCS_DATA_LO);
-> > +       writel_relaxed(hi, drv->base + RSC_DRV_CTL_TCS_DATA_HI);
-> > +}
-> > +
-> > +/**
-> >   * rpmh_rsc_cpu_pm_callback() - Check if any of the AMCs are busy.
-> >   * @nfb:    Pointer to the notifier block in struct rsc_drv.
-> >   * @action: CPU_PM_ENTER, CPU_PM_ENTER_FAILED, or CPU_PM_EXIT.
-> > @@ -1035,6 +1095,7 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
-> >         INIT_LIST_HEAD(&drv->client.batch_cache);
-> >
-> >         dev_set_drvdata(&pdev->dev, drv);
-> > +       drv->dev = &pdev->dev;
-> >
-> >         ret = devm_of_platform_populate(&pdev->dev);
-> >         if (ret && pdev->dev.pm_domain) {
-> > diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
-> > index 01765ee..3a53ed9 100644
-> > --- a/drivers/soc/qcom/rpmh.c
-> > +++ b/drivers/soc/qcom/rpmh.c
-> > @@ -450,7 +450,7 @@ int rpmh_flush(struct rpmh_ctrlr *ctrlr)
-> >
-> >         if (!ctrlr->dirty) {
-> >                 pr_debug("Skipping flush, TCS has latest data.\n");
-> > -               goto exit;
-> > +               goto write_next_wakeup;
-> >         }
-> >
-> >         /* Invalidate the TCSes first to avoid stale data */
-> > @@ -479,6 +479,8 @@ int rpmh_flush(struct rpmh_ctrlr *ctrlr)
-> >
-> >         ctrlr->dirty = false;
-> >
-> > +write_next_wakeup:
-> > +       rpmh_rsc_write_next_wakeup(ctrlr_to_drv(ctrlr));
-> >  exit:
-> >         spin_unlock(&ctrlr->cache_lock);
-> >         return ret;
-> > --
-> > 2.7.4
-> >
+> Retriggering the phy_state_machine() through an interrupt is not only
+> undesirable for the reason given in mdio_bus_phy_suspend() (freezing it
+> midway with phydev->lock held), but also because the PHY may be
+> inaccessible after it's suspended:  Accesses to USB-attached PHYs are
+> blocked once usb_suspend_both() clears the can_submit flag and PHYs on
+> PCI network cards may become inaccessible upon suspend as well.
+>
+> Amend phy_interrupt() to avoid triggering the state machine if the PHY
+> is suspended.  Signal wakeup instead if the attached net_device or its
+> parent has been configured as a wakeup source.  (Those conditions are
+> identical to mdio_bus_phy_may_suspend().)  Postpone handling of the
+> interrupt until the PHY has resumed.
+>
+> Before stopping the phy_state_machine() in mdio_bus_phy_suspend(),
+> wait for a concurrent phy_interrupt() to run to completion.  That is
+> necessary because phy_interrupt() may have checked the PHY's suspend
+> status before the system sleep transition commenced and it may thus
+> retrigger the state machine after it was stopped.
+>
+> Likewise, after re-enabling interrupt handling in mdio_bus_phy_resume(),
+> wait for a concurrent phy_interrupt() to complete to ensure that
+> interrupts which it postponed are properly rerun.
+>
+> Link: https://lore.kernel.org/netdev/a5315a8a-32c2-962f-f696-de9a26d30091@samsung.com/
+> Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+
+Looks reasonable to me.
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+> ---
+>  drivers/net/phy/phy.c        | 23 +++++++++++++++++++++++
+>  drivers/net/phy/phy_device.c | 23 +++++++++++++++++++++++
+>  include/linux/phy.h          |  6 ++++++
+>  3 files changed, 52 insertions(+)
+>
+> diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+> index ef62f357b76d..8d3ee3a6495b 100644
+> --- a/drivers/net/phy/phy.c
+> +++ b/drivers/net/phy/phy.c
+> @@ -31,6 +31,7 @@
+>  #include <linux/io.h>
+>  #include <linux/uaccess.h>
+>  #include <linux/atomic.h>
+> +#include <linux/suspend.h>
+>  #include <net/netlink.h>
+>  #include <net/genetlink.h>
+>  #include <net/sock.h>
+> @@ -976,6 +977,28 @@ static irqreturn_t phy_interrupt(int irq, void *phy_dat)
+>         struct phy_driver *drv = phydev->drv;
+>         irqreturn_t ret;
+>
+> +       /* Wakeup interrupts may occur during a system sleep transition.
+> +        * Postpone handling until the PHY has resumed.
+> +        */
+> +       if (IS_ENABLED(CONFIG_PM_SLEEP) && phydev->irq_suspended) {
+> +               struct net_device *netdev = phydev->attached_dev;
+> +
+> +               if (netdev) {
+> +                       struct device *parent = netdev->dev.parent;
+> +
+> +                       if (netdev->wol_enabled)
+> +                               pm_system_wakeup();
+> +                       else if (device_may_wakeup(&netdev->dev))
+> +                               pm_wakeup_dev_event(&netdev->dev, 0, true);
+> +                       else if (parent && device_may_wakeup(parent))
+> +                               pm_wakeup_dev_event(parent, 0, true);
+> +               }
+> +
+> +               phydev->irq_rerun = 1;
+> +               disable_irq_nosync(irq);
+> +               return IRQ_HANDLED;
+> +       }
+> +
+>         mutex_lock(&phydev->lock);
+>         ret = drv->handle_interrupt(phydev);
+>         mutex_unlock(&phydev->lock);
+> diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+> index 431a8719c635..46acddd865a7 100644
+> --- a/drivers/net/phy/phy_device.c
+> +++ b/drivers/net/phy/phy_device.c
+> @@ -278,6 +278,15 @@ static __maybe_unused int mdio_bus_phy_suspend(struct device *dev)
+>         if (phydev->mac_managed_pm)
+>                 return 0;
+>
+> +       /* Wakeup interrupts may occur during the system sleep transition when
+> +        * the PHY is inaccessible. Set flag to postpone handling until the PHY
+> +        * has resumed. Wait for concurrent interrupt handler to complete.
+> +        */
+> +       if (phy_interrupt_is_valid(phydev)) {
+> +               phydev->irq_suspended = 1;
+> +               synchronize_irq(phydev->irq);
+> +       }
+> +
+>         /* We must stop the state machine manually, otherwise it stops out of
+>          * control, possibly with the phydev->lock held. Upon resume, netdev
+>          * may call phy routines that try to grab the same lock, and that may
+> @@ -315,6 +324,20 @@ static __maybe_unused int mdio_bus_phy_resume(struct device *dev)
+>         if (ret < 0)
+>                 return ret;
+>  no_resume:
+> +       if (phy_interrupt_is_valid(phydev)) {
+> +               phydev->irq_suspended = 0;
+> +               synchronize_irq(phydev->irq);
+> +
+> +               /* Rerun interrupts which were postponed by phy_interrupt()
+> +                * because they occurred during the system sleep transition.
+> +                */
+> +               if (phydev->irq_rerun) {
+> +                       phydev->irq_rerun = 0;
+> +                       enable_irq(phydev->irq);
+> +                       irq_wake_thread(phydev->irq, phydev);
+> +               }
+> +       }
+> +
+>         if (phydev->attached_dev && phydev->adjust_link)
+>                 phy_start_machine(phydev);
+>
+> diff --git a/include/linux/phy.h b/include/linux/phy.h
+> index 508f1149665b..b09f7d36cff2 100644
+> --- a/include/linux/phy.h
+> +++ b/include/linux/phy.h
+> @@ -572,6 +572,10 @@ struct macsec_ops;
+>   * @mdix_ctrl: User setting of crossover
+>   * @pma_extable: Cached value of PMA/PMD Extended Abilities Register
+>   * @interrupts: Flag interrupts have been enabled
+> + * @irq_suspended: Flag indicating PHY is suspended and therefore interrupt
+> + *                 handling shall be postponed until PHY has resumed
+> + * @irq_rerun: Flag indicating interrupts occurred while PHY was suspended,
+> + *             requiring a rerun of the interrupt handler after resume
+>   * @interface: enum phy_interface_t value
+>   * @skb: Netlink message for cable diagnostics
+>   * @nest: Netlink nest used for cable diagnostics
+> @@ -626,6 +630,8 @@ struct phy_device {
+>
+>         /* Interrupts are enabled */
+>         unsigned interrupts:1;
+> +       unsigned irq_suspended:1;
+> +       unsigned irq_rerun:1;
+>
+>         enum phy_state state;
+>
+> --
+> 2.35.2
+>
