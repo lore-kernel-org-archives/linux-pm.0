@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ADCBCCA48A
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 09:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BDA0CCA487
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 09:16:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234622AbiFHJQA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 05:16:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54892 "EHLO
+        id S234690AbiFHJQC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 05:16:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55892 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235349AbiFHJOy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 05:14:54 -0400
+        with ESMTP id S235283AbiFHJOu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 05:14:50 -0400
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 731121DB1C6;
-        Wed,  8 Jun 2022 01:37:58 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAD63220DE;
+        Wed,  8 Jun 2022 01:37:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1654677478; x=1686213478;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=AaQ9f9g39ZnVQCAOTVUvHNMiLRXd/oxG4jPCA+dLL8o=;
-  b=v8gFDyKy6gRT4aDCJ6MqJ41za3Xyyc7mFz9Uhi/kWpgXAA2FV7fRnnk0
-   6E3VoFs7p1uXpnvvJ6DVqO0yKyII0HyxbT/499iQZVcxTZ+zifKbw64jY
-   o3S7jcP0NkWSXKr9HNegO8PyJi+if+QOm235lcTOloZc3bMWIR5hY90vW
-   MiEvpy7Ov18SDEr7fWtt0IM43ZUXYkSYwRzqvytiwj88hbKln5mOggdQz
-   VbT6R/4EzONF7mtmzRsiCTEN++qU6c3CMeRGz05Wb+RpOjr6vDWh25Du8
-   h4SBOp3hjC6pdzxehBCf0uINjMS7KOErUzI9iHRKNKD3DoefcXk4Licy+
-   g==;
+  t=1654677454; x=1686213454;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=BvEE6ndX/nlzSeNvhGE7/o04VQG0dcejZC4rUxuRjOA=;
+  b=qFo4NR2CnDTJUnPhxX6GTIpallqzVAV3kSpyaMujwQq1IvW5SUDunHsZ
+   ZrN0D+1rau9GDxU/m2/nu+D9Ntu+q7fwasNPZZUGM0FFefa0VEXkCwl/o
+   VJ5UK+yOGx2cGZvwdATvanU5f4P/KhwEb7lxhBJbwcabVkMJPA0wmFOaQ
+   uYaB6PK+o9zW9YFQ2UU5r2GlOeEa+UOhT8JDKgAHXyoQOwg/pW4Awgd5p
+   X3ToA6+W0DNDKalD0RQitM38NN/q/18uCY87Gcyzt9jM6E99xeUg0w2Pq
+   EUaNBGIi+O5+OL4r476GSSdsf03JZMowaLwGX3xw3OWnuBvtUw9QdUooM
+   Q==;
 X-IronPort-AV: E=Sophos;i="5.91,285,1647327600"; 
-   d="scan'208";a="159357023"
+   d="scan'208";a="162387197"
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 08 Jun 2022 01:37:57 -0700
+  by esa2.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 08 Jun 2022 01:37:33 -0700
 Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
+ chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.17; Wed, 8 Jun 2022 01:37:57 -0700
+ 15.1.2375.17; Wed, 8 Jun 2022 01:37:33 -0700
 Received: from localhost.localdomain (10.10.115.15) by
  chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
- 15.1.2375.17 via Frontend Transport; Wed, 8 Jun 2022 01:37:53 -0700
+ 15.1.2375.17 via Frontend Transport; Wed, 8 Jun 2022 01:37:30 -0700
 From:   Claudiu Beznea <claudiu.beznea@microchip.com>
 To:     <nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
         <p.zabel@pengutronix.de>, <sre@kernel.org>, <robh+dt@kernel.org>,
@@ -45,12 +45,10 @@ To:     <nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
 CC:     <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: [PATCH v4 7/9] power: reset: at91-reset: add reset_controller_dev support
-Date:   Wed, 8 Jun 2022 11:39:40 +0300
-Message-ID: <20220608083942.1584087-8-claudiu.beznea@microchip.com>
+Subject: [PATCH v4 0/9] power: reset: at91-reset: add support for sama7g5
+Date:   Wed, 8 Jun 2022 11:39:33 +0300
+Message-ID: <20220608083942.1584087-1-claudiu.beznea@microchip.com>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20220608083942.1584087-1-claudiu.beznea@microchip.com>
-References: <20220608083942.1584087-1-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -58,186 +56,73 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SAMA7G5 reset controller has 5 extra lines that goes to different devices
-(3 lines to USB PHYs, 1 line to DDR controller, 1 line to DDR PHY
-controller). These reset lines could be requested by different controller
-drivers (e.g. USB PHY driver) and these controllers' drivers could
-assert/deassert these lines when necessary. Thus add support for
-reset_controller_dev which brings this functionality.
+Hi,
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/power/reset/at91-reset.c | 106 +++++++++++++++++++++++++++++--
- 1 file changed, 102 insertions(+), 4 deletions(-)
+The series adds reset controller support for SAMA7G5 SoCs. Compared with
+previous version the reset controller embedded on SAMA7G5 is able to
+reset individual on SoC devices (e.g. USB PHY controllers).
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 1b2aca3f490d..e25d8d38a2f8 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -17,10 +17,13 @@
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
- #include <linux/reboot.h>
-+#include <linux/reset-controller.h>
- 
- #include <soc/at91/at91sam9_ddrsdr.h>
- #include <soc/at91/at91sam9_sdramc.h>
- 
-+#include <dt-bindings/reset/sama7g5-reset.h>
-+
- #define AT91_RSTC_CR	0x00		/* Reset Controller Control Register */
- #define AT91_RSTC_PROCRST	BIT(0)		/* Processor Reset */
- #define AT91_RSTC_PERRST	BIT(2)		/* Peripheral Reset */
-@@ -65,7 +68,10 @@ enum reset_type {
-  * struct at91_reset - AT91 reset specific data structure
-  * @rstc_base:		base address for system reset
-  * @ramc_base:		array with base addresses of RAM controllers
-+ * @dev_base:		base address for devices reset
-  * @sclk:		slow clock
-+ * @rcdev:		reset controller device
-+ * @lock:		lock for devices reset register access
-  * @nb:			reset notifier block
-  * @args:		SoC specific system reset arguments
-  * @ramc_lpr:		SDRAM Controller Low Power Register
-@@ -73,12 +79,17 @@ enum reset_type {
- struct at91_reset {
- 	void __iomem *rstc_base;
- 	void __iomem *ramc_base[2];
-+	void __iomem *dev_base;
- 	struct clk *sclk;
-+	struct reset_controller_dev rcdev;
-+	spinlock_t lock;
- 	struct notifier_block nb;
- 	u32 args;
- 	u32 ramc_lpr;
- };
- 
-+#define to_at91_reset(r)	container_of(r, struct at91_reset, rcdev)
-+
- /**
-  * struct at91_reset_data - AT91 reset data
-  * @reset_args:		SoC specific system reset arguments
-@@ -216,6 +227,87 @@ static const struct of_device_id at91_reset_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, at91_reset_of_match);
- 
-+static int at91_reset_update(struct reset_controller_dev *rcdev,
-+			     unsigned long id, bool assert)
-+{
-+	struct at91_reset *reset = to_at91_reset(rcdev);
-+	unsigned long flags;
-+	u32 val;
-+
-+	spin_lock_irqsave(&reset->lock, flags);
-+	val = readl_relaxed(reset->dev_base);
-+	if (assert)
-+		val |= BIT(id);
-+	else
-+		val &= ~BIT(id);
-+	writel_relaxed(val, reset->dev_base);
-+	spin_unlock_irqrestore(&reset->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int at91_reset_assert(struct reset_controller_dev *rcdev,
-+			     unsigned long id)
-+{
-+	return at91_reset_update(rcdev, id, true);
-+}
-+
-+static int at91_reset_deassert(struct reset_controller_dev *rcdev,
-+			       unsigned long id)
-+{
-+	return at91_reset_update(rcdev, id, false);
-+}
-+
-+static int at91_reset_dev_status(struct reset_controller_dev *rcdev,
-+				 unsigned long id)
-+{
-+	struct at91_reset *reset = to_at91_reset(rcdev);
-+	u32 val;
-+
-+	val = readl_relaxed(reset->dev_base);
-+
-+	return !!(val & BIT(id));
-+}
-+
-+static const struct reset_control_ops at91_reset_ops = {
-+	.assert = at91_reset_assert,
-+	.deassert = at91_reset_deassert,
-+	.status = at91_reset_dev_status,
-+};
-+
-+static int at91_reset_of_xlate(struct reset_controller_dev *rcdev,
-+			       const struct of_phandle_args *reset_spec)
-+{
-+	if (reset_spec->args[0] < SAMA7G5_RESET_USB_PHY1 ||
-+	    reset_spec->args[0] > SAMA7G5_RESET_USB_PHY3)
-+		return -EINVAL;
-+
-+	return reset_spec->args[0];
-+}
-+
-+static int at91_rcdev_init(struct at91_reset *reset,
-+			   const struct at91_reset_data *data,
-+			   struct platform_device *pdev)
-+{
-+	if (!data->n_device_reset)
-+		return 0;
-+
-+	reset->dev_base = devm_of_iomap(&pdev->dev, pdev->dev.of_node, 1,
-+					NULL);
-+	if (IS_ERR(reset->dev_base))
-+		return -ENODEV;
-+
-+	spin_lock_init(&reset->lock);
-+	reset->rcdev.ops = &at91_reset_ops;
-+	reset->rcdev.owner = THIS_MODULE;
-+	reset->rcdev.of_node = pdev->dev.of_node;
-+	reset->rcdev.nr_resets = data->n_device_reset;
-+	reset->rcdev.of_reset_n_cells = 1;
-+	reset->rcdev.of_xlate = at91_reset_of_xlate;
-+
-+	return devm_reset_controller_register(&pdev->dev, &reset->rcdev);
-+}
-+
- static int __init at91_reset_probe(struct platform_device *pdev)
- {
- 	const struct of_device_id *match;
-@@ -269,6 +361,10 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, reset);
- 
-+	ret = at91_rcdev_init(reset, data, pdev);
-+	if (ret)
-+		goto disable_clk;
-+
- 	if (of_device_is_compatible(pdev->dev.of_node, "microchip,sam9x60-rstc")) {
- 		u32 val = readl(reset->rstc_base + AT91_RSTC_MR);
- 
-@@ -277,14 +373,16 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = register_restart_handler(&reset->nb);
--	if (ret) {
--		clk_disable_unprepare(reset->sclk);
--		return ret;
--	}
-+	if (ret)
-+		goto disable_clk;
- 
- 	at91_reset_status(pdev, reset->rstc_base);
- 
- 	return 0;
-+
-+disable_clk:
-+	clk_disable_unprepare(reset->sclk);
-+	return ret;
- }
- 
- static int __exit at91_reset_remove(struct platform_device *pdev)
+Among with this I took the change and converted reset controller
+bindings to YAML (patch 2/9) and adapt reset controller nodes in
+device tree files to comply with DT specifications (patch 1/9).
+
+Thank you,
+Claudiu Beznea
+
+Changes in v4:
+- removed patch 10/10 from v3 as it has been taken though at91 tree
+
+Changes in v3:
+- use spin_lock_irqsave()/spin_unlock_irqrestore() and lock only
+  on update path
+- collected tags
+
+Changes in v2:
+- added patches 5/10 and 10/10
+- in patch 2/10 use my microchip email address
+- in patch 4/10 added "SAMA7G5_" in front of macros to cope with file
+  naming and used (GPL-2.0-only OR BSD-2-Clause)
+- in patch 6/10 documented the structure's members
+- in patch 7/10:
+	- protect access to reset->dev_base with spin lock
+	- check for valid values of reset_spec->args[0] in
+	  at91_reset_of_xlate()
+	- s/if (IS_ERR(reset->rstc_base))/if (IS_ERR(reset->dev_base))
+	- include dt-bindings/reset/sama7g5-reset.h
+	- document new added structure's members
+- collected tags
+
+Claudiu Beznea (9):
+  ARM: dts: at91: use generic name for reset controller
+  dt-bindings: reset: convert Atmel/Microchip reset controller to YAML
+  dt-bindings: reset: atmel,at91sam9260-reset: add sama7g5 bindings
+  dt-bindings: reset: add sama7g5 definitions
+  power: reset: at91-reset: document structures and enums
+  power: reset: at91-reset: add at91_reset_data
+  power: reset: at91-reset: add reset_controller_dev support
+  power: reset: at91-reset: add support for SAMA7G5
+  ARM: dts: at91: sama7g5: add reset-controller node
+
+ .../devicetree/bindings/arm/atmel-sysregs.txt |  15 --
+ .../reset/atmel,at91sam9260-reset.yaml        |  68 +++++++
+ arch/arm/boot/dts/at91sam9260.dtsi            |   2 +-
+ arch/arm/boot/dts/at91sam9261.dtsi            |   2 +-
+ arch/arm/boot/dts/at91sam9263.dtsi            |   2 +-
+ arch/arm/boot/dts/at91sam9g45.dtsi            |   2 +-
+ arch/arm/boot/dts/at91sam9n12.dtsi            |   2 +-
+ arch/arm/boot/dts/at91sam9rl.dtsi             |   2 +-
+ arch/arm/boot/dts/at91sam9x5.dtsi             |   2 +-
+ arch/arm/boot/dts/sam9x60.dtsi                |   2 +-
+ arch/arm/boot/dts/sama5d2.dtsi                |   2 +-
+ arch/arm/boot/dts/sama5d3.dtsi                |   2 +-
+ arch/arm/boot/dts/sama5d4.dtsi                |   2 +-
+ arch/arm/boot/dts/sama7g5.dtsi                |   7 +
+ drivers/power/reset/at91-reset.c              | 173 ++++++++++++++++--
+ include/dt-bindings/reset/sama7g5-reset.h     |  10 +
+ 16 files changed, 256 insertions(+), 39 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
+ create mode 100644 include/dt-bindings/reset/sama7g5-reset.h
+
 -- 
 2.33.0
 
