@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D23EC43334
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 14:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7B23C43334
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 14:20:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243826AbiFIOUv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jun 2022 10:20:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45442 "EHLO
+        id S233997AbiFIOUw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jun 2022 10:20:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45908 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244977AbiFIOUf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 10:20:35 -0400
+        with ESMTP id S245207AbiFIOUk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 10:20:40 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 630B1274B60;
-        Thu,  9 Jun 2022 07:20:34 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FCA8268544;
+        Thu,  9 Jun 2022 07:20:38 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id 7992ebb7b3e162f8; Thu, 9 Jun 2022 16:20:32 +0200
+ id fee5e5920b2b0229; Thu, 9 Jun 2022 16:20:36 +0200
 Received: from kreacher.localnet (unknown [213.134.186.232])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 64B7B66C7CA;
-        Thu,  9 Jun 2022 16:20:31 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 6994266C7CA;
+        Thu,  9 Jun 2022 16:20:35 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -31,14 +31,13 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         Hans de Goede <hdegoede@redhat.com>,
         Sakari Ailus <sakari.ailus@linux.intel.com>,
-        Vinod Koul <vkoul@kernel.org>,
-        Bard Liao <yung-chuan.liao@linux.intel.com>,
-        Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
-        Sanyog Kale <sanyog.r.kale@intel.com>,
-        alsa-devel@alsa-project.org
-Subject: [PATCH v1 14/16] soundwire: Use acpi_dev_for_each_child()
-Date:   Thu, 09 Jun 2022 16:16:03 +0200
-Message-ID: <5296779.Sb9uPGUboI@kreacher>
+        Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+        Mark Gross <markgross@kernel.org>,
+        ibm-acpi-devel@lists.sourceforge.net,
+        platform-driver-x86@vger.kernel.org
+Subject: [PATCH v1 12/16] platform/x86/thinkpad_acpi: Use acpi_dev_for_each_child()
+Date:   Thu, 09 Jun 2022 16:09:45 +0200
+Message-ID: <44750652.fMDQidcC6G@kreacher>
 In-Reply-To: <1843211.tdWV9SEqCh@kreacher>
 References: <1843211.tdWV9SEqCh@kreacher>
 MIME-Version: 1.0
@@ -47,9 +46,9 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.186.232
 X-CLIENT-HOSTNAME: 213.134.186.232
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddtledgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrddukeeirddvfedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekiedrvdefvddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepuddvpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghnughrihihrdhshhgvvhgthhgvnhhkoheslhhinhhugidr
- ihhnthgvlhdrtghomhdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohephhguvghgohgvuggvsehrvgguhhgrthdrtghomhdprhgtphhtthhopehsrghkrghrihdrrghilhhusheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehvkhhouhhlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopeihuhhnghdqtghhuhgrnhdrlhhirghosehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohepphhivghrrhgvqdhlohhuihhsrdgsohhsshgrrhhtsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohepshgrnhihohhgrdhrrdhkrghlvgesihhnthgvlhdrtghomhdprhgtphhtthhopegrlhhsrgdquggvvhgvlhesrghlshgrqdhprhhojhgvtghtrdhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddtledgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrddukeeirddvfedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekiedrvdefvddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepuddupdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghnughrihihrdhshhgvvhgthhgvnhhkoheslhhinhhugidr
+ ihhnthgvlhdrtghomhdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohephhguvghgohgvuggvsehrvgguhhgrthdrtghomhdprhgtphhtthhopehsrghkrghrihdrrghilhhusheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehhmhhhsehhmhhhrdgvnhhgrdgsrhdprhgtphhtthhopehmrghrkhhgrhhoshhssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehisghmqdgrtghpihdquggvvhgvlheslhhishhtshdrshhouhhrtggvfhhorhhgvgdrnhgvthdprhgtphhtthhopehplhgrthhfohhrmhdqughrihhvvghrqdigkeeisehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=11 Fuz1=11 Fuz2=11
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -67,149 +66,88 @@ list pointed to it safely, but it is often missing).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/soundwire/slave.c |  115 ++++++++++++++++++++++++++--------------------
- 1 file changed, 67 insertions(+), 48 deletions(-)
+ drivers/platform/x86/thinkpad_acpi.c |   54 +++++++++++++++++++----------------
+ 1 file changed, 30 insertions(+), 24 deletions(-)
 
-Index: linux-pm/drivers/soundwire/slave.c
+Index: linux-pm/drivers/platform/x86/thinkpad_acpi.c
 ===================================================================
---- linux-pm.orig/drivers/soundwire/slave.c
-+++ linux-pm/drivers/soundwire/slave.c
-@@ -127,6 +127,71 @@ static bool find_slave(struct sdw_bus *b
- 	return true;
- }
+--- linux-pm.orig/drivers/platform/x86/thinkpad_acpi.c
++++ linux-pm/drivers/platform/x86/thinkpad_acpi.c
+@@ -6841,6 +6841,31 @@ static const struct backlight_ops ibm_ba
  
-+struct sdw_acpi_child_walk_data {
-+	struct sdw_bus *bus;
-+	struct acpi_device *adev;
-+	struct sdw_slave_id id;
-+	bool ignore_unique_id;
-+};
-+
-+static int sdw_acpi_check_duplicate(struct acpi_device *adev, void *data)
+ /* --------------------------------------------------------------------- */
+ 
++static int __init tpacpi_evaluate_bcl(struct acpi_device *adev, void *not_used)
 +{
-+	struct sdw_acpi_child_walk_data *cwd = data;
-+	struct sdw_bus *bus = cwd->bus;
-+	struct sdw_slave_id id;
++	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
++	union acpi_object *obj;
++	acpi_status status;
++	int rc;
 +
-+	if (adev == cwd->adev)
++	status = acpi_evaluate_object(adev->handle, "_BCL", NULL, &buffer);
++	if (ACPI_FAILURE(status))
 +		return 0;
 +
-+	if (!find_slave(bus, adev, &id))
-+		return 0;
-+
-+	if (cwd->id.sdw_version != id.sdw_version || cwd->id.mfg_id != id.mfg_id ||
-+	    cwd->id.part_id != id.part_id || cwd->id.class_id != id.class_id)
-+		return 0;
-+
-+	if (cwd->id.unique_id != id.unique_id) {
-+		dev_dbg(bus->dev,
-+			"Valid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
-+			cwd->id.unique_id, id.unique_id, cwd->id.mfg_id,
-+			cwd->id.part_id);
-+		cwd->ignore_unique_id = false;
-+		return 0;
++	obj = buffer.pointer;
++	if (!obj || obj->type != ACPI_TYPE_PACKAGE) {
++		acpi_handle_info(adev->handle,
++				 "Unknown _BCL data, please report this to %s\n",
++				 TPACPI_MAIL);
++		rc = 0;
++	} else {
++		rc = obj->package.count;
 +	}
++	kfree(obj);
 +
-+	dev_err(bus->dev,
-+		"Invalid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
-+		cwd->id.unique_id, id.unique_id, cwd->id.mfg_id, cwd->id.part_id);
-+	return -ENODEV;
-+}
-+
-+static int sdw_acpi_find_one(struct acpi_device *adev, void *data)
-+{
-+	struct sdw_bus *bus = data;
-+	struct sdw_acpi_child_walk_data cwd = {
-+		.bus = bus,
-+		.adev = adev,
-+		.ignore_unique_id = true,
-+	};
-+	int ret;
-+
-+	if (!find_slave(bus, adev, &cwd.id))
-+		return 0;
-+
-+	/* Brute-force O(N^2) search for duplicates. */
-+	ret = acpi_dev_for_each_child(ACPI_COMPANION(bus->dev),
-+				      sdw_acpi_check_duplicate, &cwd);
-+	if (ret)
-+		return ret;
-+
-+	if (cwd.ignore_unique_id)
-+		cwd.id.unique_id = SDW_IGNORED_UNIQUE_ID;
-+
-+	/* Ignore errors and continue. */
-+	sdw_slave_add(bus, &cwd.id, acpi_fwnode_handle(adev));
-+	return 0;
++	return rc;
 +}
 +
  /*
-  * sdw_acpi_find_slaves() - Find Slave devices in Master ACPI node
-  * @bus: SDW bus instance
-@@ -135,8 +200,7 @@ static bool find_slave(struct sdw_bus *b
-  */
- int sdw_acpi_find_slaves(struct sdw_bus *bus)
+  * Call _BCL method of video device.  On some ThinkPads this will
+  * switch the firmware to the ACPI brightness control mode.
+@@ -6848,37 +6873,18 @@ static const struct backlight_ops ibm_ba
+ 
+ static int __init tpacpi_query_bcl_levels(acpi_handle handle)
  {
--	struct acpi_device *adev, *parent;
--	struct acpi_device *adev2, *parent2;
-+	struct acpi_device *parent;
+-	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+-	union acpi_object *obj;
+-	struct acpi_device *device, *child;
++	struct acpi_device *device;
+ 	int rc;
  
- 	parent = ACPI_COMPANION(bus->dev);
- 	if (!parent) {
-@@ -144,52 +208,7 @@ int sdw_acpi_find_slaves(struct sdw_bus
- 		return -ENODEV;
- 	}
+ 	device = acpi_fetch_acpi_dev(handle);
+ 	if (!device)
+ 		return 0;
  
--	list_for_each_entry(adev, &parent->children, node) {
--		struct sdw_slave_id id;
--		struct sdw_slave_id id2;
--		bool ignore_unique_id = true;
--
--		if (!find_slave(bus, adev, &id))
+-	rc = 0;
+-	list_for_each_entry(child, &device->children, node) {
+-		acpi_status status = acpi_evaluate_object(child->handle, "_BCL",
+-							  NULL, &buffer);
+-		if (ACPI_FAILURE(status)) {
+-			buffer.length = ACPI_ALLOCATE_BUFFER;
 -			continue;
--
--		/* brute-force O(N^2) search for duplicates */
--		parent2 = parent;
--		list_for_each_entry(adev2, &parent2->children, node) {
--
--			if (adev == adev2)
--				continue;
--
--			if (!find_slave(bus, adev2, &id2))
--				continue;
--
--			if (id.sdw_version != id2.sdw_version ||
--			    id.mfg_id != id2.mfg_id ||
--			    id.part_id != id2.part_id ||
--			    id.class_id != id2.class_id)
--				continue;
--
--			if (id.unique_id != id2.unique_id) {
--				dev_dbg(bus->dev,
--					"Valid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
--					id.unique_id, id2.unique_id, id.mfg_id, id.part_id);
--				ignore_unique_id = false;
--			} else {
--				dev_err(bus->dev,
--					"Invalid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
--					id.unique_id, id2.unique_id, id.mfg_id, id.part_id);
--				return -ENODEV;
--			}
 -		}
 -
--		if (ignore_unique_id)
--			id.unique_id = SDW_IGNORED_UNIQUE_ID;
--
--		/*
--		 * don't error check for sdw_slave_add as we want to continue
--		 * adding Slaves
--		 */
--		sdw_slave_add(bus, &id, acpi_fwnode_handle(adev));
+-		obj = (union acpi_object *)buffer.pointer;
+-		if (!obj || (obj->type != ACPI_TYPE_PACKAGE)) {
+-			pr_err("Unknown _BCL data, please report this to %s\n",
+-				TPACPI_MAIL);
+-			rc = 0;
+-		} else {
+-			rc = obj->package.count;
+-		}
+-		break;
 -	}
-+	acpi_dev_for_each_child(parent, sdw_acpi_find_one, bus);
++	rc = acpi_dev_for_each_child(device, tpacpi_evaluate_bcl, NULL);
++	if (rc > 0)
++		return rc;
  
- 	return 0;
+-	kfree(buffer.pointer);
+-	return rc;
++	return 0;
  }
+ 
+ 
 
 
 
