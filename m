@@ -2,152 +2,201 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F25DC43334
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jun 2022 23:43:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDAD0C43334
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 00:10:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234574AbiFHXmD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 19:42:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44798 "EHLO
+        id S235487AbiFIAKX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 20:10:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235383AbiFHXl6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 19:41:58 -0400
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1AED1BE64A
-        for <linux-pm@vger.kernel.org>; Wed,  8 Jun 2022 16:41:36 -0700 (PDT)
-Received: by mail-pg1-x52e.google.com with SMTP id y187so20341944pgd.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jun 2022 16:41:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=bptLTT3dH/tatgoIl0nwGfi61ndG5D6r8YsV+A9Z0lU=;
-        b=WxhEX+tzqrpIaxEZb/76W0ltul+ymUQA5ZLWyhVXv9EMoxU16+wjkHros2mz4MMM+/
-         gIOGR1H2It7Z3Zzj1AsRJJV9eqqlbC7FpLa/yXx9SRqfW1DkBdCGumLnJclczAkgVpif
-         00vJOFMKhARxDQ5BUGzq5PddnBh4lOozJmh1KcjOKK70kucU61PSl7WWn6YBolJg0oGF
-         P+OrQWnlkCap35j59L8LkRpSPlFRmw22ZsbjCG0xNLwTFKy0e53PJYEUXchx8NEtv2y/
-         TOryNDYr6mGwxSJ/gnKM8AkKrbh+Yq0h7qE/oE6gfxZ4nUIS7d4nF0EJHXvfmUnsv2nw
-         I21A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=bptLTT3dH/tatgoIl0nwGfi61ndG5D6r8YsV+A9Z0lU=;
-        b=3+XTGgJgRTcpQzTcbnt6EwIXl/30QLHh7nUOBdVdC7vNAzUpBbG4PzSbTNm8Doj4qT
-         RUewSeUlFm5yoDYVT+KiLqZTVg9rpjjMZoJh3uD3qabzKXmZcUs95+Xq/qGLINWA77j9
-         nZg0xTiYMs2WGKpyl9SVS+W2rvtgUGW8yZh8nJ0GCMFhWQe2qPsFrQH6G1rABD49o+MF
-         OfMbMY4ychseG5B9aeJBd4tS3lUHplPvzzE72x+u6F0mKOxCiM+kr0ZKl3wt/K+it4U1
-         OiU/Qk5vExmrF3LcPsZ46XZ+od/2I/orxx1kHiHW7oaXcn+T1cqJoCj28V5bOd9VwNEr
-         /VcA==
-X-Gm-Message-State: AOAM530Hzb9vIn9hNImfjUiQf1Ft5ZHymYAy8eSWYalmgXG571oxyuRC
-        E/AQYvxcah3Eq/X/4lmWvSPtfg==
-X-Google-Smtp-Source: ABdhPJwPFajNfRSbI+LiO3mDoDFLUi8R9nR7Cvfd2I0+259/gOvhjLEOB/y1R9jIxL/JCGma+zHmFw==
-X-Received: by 2002:a05:6a00:3491:b0:51c:1d3b:b0b0 with SMTP id cp17-20020a056a00349100b0051c1d3bb0b0mr17364707pfb.68.1654731696467;
-        Wed, 08 Jun 2022 16:41:36 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id 20-20020a17090a005400b001ea5d9ae7d9sm57623pjb.40.2022.06.08.16.41.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jun 2022 16:41:36 -0700 (PDT)
-Message-ID: <62a133b0.1c69fb81.4a8ea.0201@mx.google.com>
-Date:   Wed, 08 Jun 2022 16:41:36 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        with ESMTP id S235264AbiFIAKV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 20:10:21 -0400
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6598A34662;
+        Wed,  8 Jun 2022 17:10:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1654733411; x=1686269411;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=Y9+IS1gO54BIHDcDJFlgsbwaELjLugQXja76ti6srj8=;
+  b=LA+OvDS5+v+si6XCRWBzBMdU2kTnX2bL6S2jJBB6fkm5LFEv5B1h9IbU
+   gMOLNnn1xhBVcyJZksq2abKHmu1eVItcfmagOAaE8/6ahCTveZNAwIFDU
+   SEDf/cyIW8zJhfG9CZ5nz5QSOGuOfSYPvsT280Msi/iwGhklAvtzDp4Qo
+   D3c/TUDcPpr5gX+6xEqhn3PoAxz5X3WJpiyyDSnjsxuej7c5lPlOcCpHX
+   C4jTMPFjQtxru836y15WLT0rW/J7dX+m0km/msa1df8mm7GvYHZxUjWMC
+   cxKKsoT8bLa/rGK5n7REOZ6+fIK/363IhZxG9/QnlCy+VYC9Oc0JBzOxu
+   g==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10372"; a="341185153"
+X-IronPort-AV: E=Sophos;i="5.91,287,1647327600"; 
+   d="scan'208";a="341185153"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jun 2022 17:10:10 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.91,287,1647327600"; 
+   d="scan'208";a="670854669"
+Received: from linux.intel.com ([10.54.29.200])
+  by FMSMGA003.fm.intel.com with ESMTP; 08 Jun 2022 17:10:09 -0700
+Received: from rjingar-desk5.amr.corp.intel.com (unknown [10.251.26.11])
+        by linux.intel.com (Postfix) with ESMTP id 3EB53580BBE;
+        Wed,  8 Jun 2022 17:10:09 -0700 (PDT)
+From:   Rajvi Jingar <rajvi.jingar@linux.intel.com>
+To:     rafael.j.wysocki@intel.com, bhelgaas@google.com
+Cc:     rajvi.jingar@linux.intel.com, david.e.box@linux.intel.com,
+        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v7 2/2] PCI/PM: Disable PTM on all devices
+Date:   Wed,  8 Jun 2022 17:10:07 -0700
+Message-Id: <20220609001007.533242-2-rajvi.jingar@linux.intel.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220609001007.533242-1-rajvi.jingar@linux.intel.com>
+References: <20220609001007.533242-1-rajvi.jingar@linux.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: build
-X-Kernelci-Kernel: v5.19-rc1-4-g28e0b92ca611b
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 1 warning (v5.19-rc1-4-g28e0b92ca611b)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.19-rc1-4-g28e=
-0b92ca611b)
+On receiving a PTM Request from a downstream device, if PTM is disabled
+on the root port, as per PCIe specification, such request would cause
+an Unsupported Request error. So disable PTM for any downstream devices.
+PTM state needs to be saved before disabling it to be restored later.
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-19-rc1-4-g28e0b92ca611b/
+Set ptm_enabled from 'struct pci_dev' to 0 in pci_ptm_disable() and
+it is used in pci_save_state() before saving PTM state to avoid
+double save.
 
-Tree: pm
-Branch: testing
-Git Describe: v5.19-rc1-4-g28e0b92ca611b
-Git Commit: 28e0b92ca611bf10dda3570b0d43a0c5b62afda0
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
-
-Warnings Detected:
-
-arc:
-
-arm64:
-
-arm:
-
-i386:
-
-mips:
-    32r2el_defconfig (gcc-10): 1 warning
-
-riscv:
-
-x86_64:
-
-
-Warnings summary:
-
-    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
-e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
-ted "0,0"
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
-ion mismatches
-
-Warnings:
-    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
-): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
-0,0"
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
- section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
-on mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
-ection mismatches
-
+Fixes: a697f072f5da ("PCI: Disable PTM during suspend to save power")
+Signed-off-by: Rajvi Jingar <rajvi.jingar@linux.intel.com>
+Suggested-by: David E. Box <david.e.box@linux.intel.com>
 ---
-For more info write to <info@kernelci.org>
+ v1 -> v2: add Fixes tag in commit message
+ v2 -> v3: move changelog after "---" marker
+ v3 -> v4: add "---" marker after changelog
+ v4 -> v5: move pci_disable_ptm() out of the pci_dev->state_saved check.
+	   disable PTM for all devices, not just root ports.
+ v5 -> v6: move pci_disable_ptm() to pci_pm_suspend()
+	   set pci_dev->ptm_enabled to 0 in pci_ptm_disable() and it is
+	   used in pci_save_state() before saving PTM state to avoid
+	   double save.
+ v6 -> v7: add #ifdef CONFIG_PCIE_PTM in pci_save_state() before saving
+	   PTM state
+---
+ drivers/pci/pci-driver.c | 21 ++++++++++++++++++++-
+ drivers/pci/pci.c        | 28 +++++++++++++---------------
+ drivers/pci/pcie/ptm.c   |  1 +
+ 3 files changed, 34 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 1f64de3e5280..db4d7835d7ae 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -803,14 +803,33 @@ static int pci_pm_suspend(struct device *dev)
+ 		pci_dev_adjust_pme(pci_dev);
+ 	}
+ 
++	/*
++	 * If a PTM Requester is put in a low-power state, a PTM Responder
++	 * upstream from it may also be put in a low-power state. Putting a
++	 * Port in D1, D2, or D3hot does not prohibit it from sending or
++	 * responding to PTM Requests. We want to disable PTM on Responders
++	 * when they are in a low-power state. Per 6.21.3, a PTM Requester
++	 * must not be enabled when the upstream PTM Responder is disabled.
++	 * Therefore, we must disable all PTM on all downstream PTM
++	 * Requesters before disabling it on the PTM Responder, e.g., a Root
++	 * Port.
++	 *
++	 * Also, to restore the PTM state, it needs to be saved before
++	 * disabling it for all devices.
++	 */
++	pci_save_ptm_state(pci_dev);
++	pci_disable_ptm(pci_dev);
++
+ 	if (pm->suspend) {
+ 		pci_power_t prev = pci_dev->current_state;
+ 		int error;
+ 
+ 		error = pm->suspend(dev);
+ 		suspend_report_result(dev, pm->suspend, error);
+-		if (error)
++		if (error) {
++			pci_restore_ptm_state(pci_dev);
+ 			return error;
++		}
+ 
+ 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
+ 		    && pci_dev->current_state != PCI_UNKNOWN) {
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index cfaf40a540a8..3e9dcb1bbffa 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1669,7 +1669,15 @@ int pci_save_state(struct pci_dev *dev)
+ 	pci_save_ltr_state(dev);
+ 	pci_save_dpc_state(dev);
+ 	pci_save_aer_state(dev);
+-	pci_save_ptm_state(dev);
++#ifdef CONFIG_PCIE_PTM
++	/*
++	 * PCI PM core disables PTM during suspend and saves PTM state before
++	 * that to be able to restore the ptm state restored later. So PCI core
++	 * needs this check to avoid double save.
++	 */
++	if (dev->ptm_enabled)
++		pci_save_ptm_state(dev);
++#endif
+ 	return pci_save_vc_state(dev);
+ }
+ EXPORT_SYMBOL(pci_save_state);
+@@ -2710,24 +2718,12 @@ int pci_prepare_to_sleep(struct pci_dev *dev)
+ 	if (target_state == PCI_POWER_ERROR)
+ 		return -EIO;
+ 
+-	/*
+-	 * There are systems (for example, Intel mobile chips since Coffee
+-	 * Lake) where the power drawn while suspended can be significantly
+-	 * reduced by disabling PTM on PCIe root ports as this allows the
+-	 * port to enter a lower-power PM state and the SoC to reach a
+-	 * lower-power idle state as a whole.
+-	 */
+-	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT)
+-		pci_disable_ptm(dev);
+-
+ 	pci_enable_wake(dev, target_state, wakeup);
+ 
+ 	error = pci_set_power_state(dev, target_state);
+ 
+-	if (error) {
++	if (error)
+ 		pci_enable_wake(dev, target_state, false);
+-		pci_restore_ptm_state(dev);
+-	}
+ 
+ 	return error;
+ }
+@@ -2775,8 +2771,10 @@ int pci_finish_runtime_suspend(struct pci_dev *dev)
+ 	 * port to enter a lower-power PM state and the SoC to reach a
+ 	 * lower-power idle state as a whole.
+ 	 */
+-	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT)
++	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT) {
++		pci_save_ptm_state(dev);
+ 		pci_disable_ptm(dev);
++	}
+ 
+ 	__pci_enable_wake(dev, target_state, pci_dev_run_wake(dev));
+ 
+diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
+index 368a254e3124..746e29779c27 100644
+--- a/drivers/pci/pcie/ptm.c
++++ b/drivers/pci/pcie/ptm.c
+@@ -44,6 +44,7 @@ void pci_disable_ptm(struct pci_dev *dev)
+ 	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, &ctrl);
+ 	ctrl &= ~(PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT);
+ 	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, ctrl);
++	dev->ptm_enabled = 0;
+ }
+ 
+ void pci_save_ptm_state(struct pci_dev *dev)
+-- 
+2.25.1
+
