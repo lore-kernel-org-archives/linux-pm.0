@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A399BCCA47B
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 14:21:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10590CCA483
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 14:21:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245213AbiFIOU5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jun 2022 10:20:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46338 "EHLO
+        id S244976AbiFIOU7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jun 2022 10:20:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245410AbiFIOUp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 10:20:45 -0400
+        with ESMTP id S245497AbiFIOUs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 10:20:48 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B5092A141F;
-        Thu,  9 Jun 2022 07:20:43 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E423C2AD5F1;
+        Thu,  9 Jun 2022 07:20:46 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id de8c5f8182d4514d; Thu, 9 Jun 2022 16:20:41 +0200
+ id 62a5a1690f92c961; Thu, 9 Jun 2022 16:20:45 +0200
 Received: from kreacher.localnet (unknown [213.134.186.232])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 0982666C7CA;
-        Thu,  9 Jun 2022 16:20:40 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 57C8566C7D8;
+        Thu,  9 Jun 2022 16:20:44 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -31,9 +31,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         Hans de Goede <hdegoede@redhat.com>,
         Sakari Ailus <sakari.ailus@linux.intel.com>
-Subject: [PATCH v1 09/16] ACPI: video: Use acpi_dev_for_each_child()
-Date:   Thu, 09 Jun 2022 16:03:37 +0200
-Message-ID: <22695031.6Emhk5qWAg@kreacher>
+Subject: [PATCH v1 07/16] ACPI: property: Use acpi_dev_for_each_child() for child lookup
+Date:   Thu, 09 Jun 2022 15:59:27 +0200
+Message-ID: <1752295.VLH7GnMWUR@kreacher>
 In-Reply-To: <1843211.tdWV9SEqCh@kreacher>
 References: <1843211.tdWV9SEqCh@kreacher>
 MIME-Version: 1.0
@@ -42,7 +42,7 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.186.232
 X-CLIENT-HOSTNAME: 213.134.186.232
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddtledgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrddukeeirddvfedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekiedrvdefvddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnhgurhhihidrshhhvghvtghhvghnkhhosehlihhnuhigrdhi
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddtledgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrddukeeirddvfedvnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekiedrvdefvddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnhgurhhihidrshhhvghvtghhvghnkhhosehlihhnuhigrdhi
  nhhtvghlrdgtohhmpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehhuggvghhovgguvgesrhgvughhrghtrdgtohhmpdhrtghpthhtohepshgrkhgrrhhirdgrihhluhhssehlihhnuhigrdhinhhtvghlrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
@@ -51,9 +51,9 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Instead of walking the list of children of an ACPI device directly,
-use acpi_dev_for_each_child() to carry out an action for all of
-the given ACPI device's children.
+Instead of using the list of children of an ACPI device directly,
+use acpi_dev_for_each_child() to find the next child of a given
+ACPI device.
 
 This will help to eliminate the children list head from struct
 acpi_device as it is redundant and it is used in questionable ways
@@ -62,90 +62,81 @@ list pointed to it safely, but it is often missing).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/acpi_video.c |   42 +++++++++++++++++-------------------------
- 1 file changed, 17 insertions(+), 25 deletions(-)
+ drivers/acpi/property.c |   47 +++++++++++++++++++++++++----------------------
+ 1 file changed, 25 insertions(+), 22 deletions(-)
 
-Index: linux-pm/drivers/acpi/acpi_video.c
+Index: linux-pm/drivers/acpi/property.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/acpi_video.c
-+++ linux-pm/drivers/acpi/acpi_video.c
-@@ -1149,24 +1149,25 @@ acpi_video_get_device_type(struct acpi_v
- 	return 0;
+--- linux-pm.orig/drivers/acpi/property.c
++++ linux-pm/drivers/acpi/property.c
+@@ -1012,6 +1012,22 @@ static int acpi_node_prop_read(const str
+ 				   propname, proptype, val, nval);
  }
  
--static int
--acpi_video_bus_get_one_device(struct acpi_device *device,
--			      struct acpi_video_bus *video)
-+static int acpi_video_bus_get_one_device(struct acpi_device *device, void *arg)
- {
--	unsigned long long device_id;
--	int status, device_type;
--	struct acpi_video_device *data;
-+	struct acpi_video_bus *video = arg;
- 	struct acpi_video_device_attrib *attribute;
-+	struct acpi_video_device *data;
-+	unsigned long long device_id;
-+	acpi_status status;
-+	int device_type;
- 
--	status =
--	    acpi_evaluate_integer(device->handle, "_ADR", NULL, &device_id);
--	/* Some device omits _ADR, we skip them instead of fail */
-+	status = acpi_evaluate_integer(device->handle, "_ADR", NULL, &device_id);
-+	/* Skip devices without _ADR instead of failing. */
- 	if (ACPI_FAILURE(status))
--		return 0;
-+		goto exit;
- 
- 	data = kzalloc(sizeof(struct acpi_video_device), GFP_KERNEL);
--	if (!data)
-+	if (!data) {
-+		dev_dbg(&device->dev, "Cannot attach\n");
- 		return -ENOMEM;
++static int stop_on_next(struct acpi_device *adev, void *data)
++{
++	struct acpi_device **ret_p = data;
++
++	if (!*ret_p) {
++		*ret_p = adev;
++		return 1;
 +	}
- 
- 	strcpy(acpi_device_name(device), ACPI_VIDEO_DEVICE_NAME);
- 	strcpy(acpi_device_class(device), ACPI_VIDEO_CLASS);
-@@ -1226,7 +1227,9 @@ acpi_video_bus_get_one_device(struct acp
- 	list_add_tail(&data->entry, &video->video_device_list);
- 	mutex_unlock(&video->device_list_lock);
- 
--	return status;
-+exit:
-+	video->child_count++;
++
++	/* Skip until the "previous" object is found. */
++	if (*ret_p == adev)
++		*ret_p = NULL;
++
 +	return 0;
- }
- 
- /*
-@@ -1538,9 +1541,6 @@ static int
- acpi_video_bus_get_devices(struct acpi_video_bus *video,
- 			   struct acpi_device *device)
++}
++
+ /**
+  * acpi_get_next_subnode - Return the next child node handle for a fwnode
+  * @fwnode: Firmware node to find the next child node for.
+@@ -1020,35 +1036,22 @@ static int acpi_node_prop_read(const str
+ struct fwnode_handle *acpi_get_next_subnode(const struct fwnode_handle *fwnode,
+ 					    struct fwnode_handle *child)
  {
--	int status = 0;
--	struct acpi_device *dev;
--
- 	/*
- 	 * There are systems where video module known to work fine regardless
- 	 * of broken _DOD and ignoring returned value here doesn't cause
-@@ -1548,16 +1548,8 @@ acpi_video_bus_get_devices(struct acpi_v
- 	 */
- 	acpi_video_device_enumerate(video);
+-	const struct acpi_device *adev = to_acpi_device_node(fwnode);
+-	const struct list_head *head;
+-	struct list_head *next;
++	struct acpi_device *adev = to_acpi_device_node(fwnode);
  
--	list_for_each_entry(dev, &device->children, node) {
+ 	if ((!child || is_acpi_device_node(child)) && adev) {
+-		struct acpi_device *child_adev;
++		struct acpi_device *child_adev = to_acpi_device_node(child);
++
++		acpi_dev_for_each_child(adev, stop_on_next, &child_adev);
++		if (child_adev)
++			return acpi_fwnode_handle(child_adev);
+ 
+-		head = &adev->children;
+-		if (list_empty(head))
+-			goto nondev;
 -
--		status = acpi_video_bus_get_one_device(dev, video);
--		if (status) {
--			dev_err(&dev->dev, "Can't attach device\n");
--			break;
+-		if (child) {
+-			adev = to_acpi_device_node(child);
+-			next = adev->node.next;
+-			if (next == head) {
+-				child = NULL;
+-				goto nondev;
+-			}
+-			child_adev = list_entry(next, struct acpi_device, node);
+-		} else {
+-			child_adev = list_first_entry(head, struct acpi_device,
+-						      node);
 -		}
--		video->child_count++;
--	}
--	return status;
-+	return acpi_dev_for_each_child(device, acpi_video_bus_get_one_device,
-+				       video);
- }
+-		return acpi_fwnode_handle(child_adev);
++		child = NULL;
+ 	}
  
- /* acpi_video interface */
+- nondev:
+ 	if (!child || is_acpi_data_node(child)) {
+ 		const struct acpi_data_node *data = to_acpi_data_node(fwnode);
++		const struct list_head *head;
++		struct list_head *next;
+ 		struct acpi_data_node *dn;
+ 
+ 		/*
 
 
 
