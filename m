@@ -2,108 +2,134 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8117DCCA47E
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 00:10:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58F38C43334
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 03:16:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235152AbiFIAKY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jun 2022 20:10:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43574 "EHLO
+        id S231346AbiFIDQ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jun 2022 23:16:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54414 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235529AbiFIAKV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 20:10:21 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 137EC3467E;
-        Wed,  8 Jun 2022 17:10:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1654733418; x=1686269418;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=a4P2Gcxk73HDhExF9ALEg8W8RNzRGhGylrPCFfw/tP0=;
-  b=UIl32lTyCoFNcJe0tLk+4DKWd/ztfwZQ+R/BjywYk0TNiVR0W8TPC91P
-   uMhcywBHm91c5ssR2GcD7FTy5FOiLeyNq5aXgJP5DwRJf0u1Az3oTWKHA
-   DZn/bj03az8Nb0FvmJfUHesRgD2HYBGeb+R6SZN3nUdAc7pYoYwxaKKeX
-   BmapWkfS1JMUgEo5AP0f4KqKolgUFWZZ6KrpTZ4leVlBJ+dNSJMCaaFTm
-   DuEAQDlE9+mtk3iihqY20os0QD7GD4aH9iH7BkhICuI08DYUZT5UsxjT4
-   JEBsSJjpyG3vT7ejS8jmOdrPNNhhE0bAqJFue8PeJX1BxNV7/MUca4y8Y
-   Q==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10372"; a="260229122"
-X-IronPort-AV: E=Sophos;i="5.91,287,1647327600"; 
-   d="scan'208";a="260229122"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jun 2022 17:10:08 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,287,1647327600"; 
-   d="scan'208";a="580316768"
-Received: from linux.intel.com ([10.54.29.200])
-  by orsmga007.jf.intel.com with ESMTP; 08 Jun 2022 17:10:08 -0700
-Received: from rjingar-desk5.amr.corp.intel.com (unknown [10.251.26.11])
-        by linux.intel.com (Postfix) with ESMTP id 62BB3580BE1;
-        Wed,  8 Jun 2022 17:10:08 -0700 (PDT)
-From:   Rajvi Jingar <rajvi.jingar@linux.intel.com>
-To:     rafael.j.wysocki@intel.com, bhelgaas@google.com
-Cc:     rajvi.jingar@linux.intel.com, david.e.box@linux.intel.com,
-        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v7 1/2] PCI/PM: refactor pci_pm_suspend_noirq()
-Date:   Wed,  8 Jun 2022 17:10:06 -0700
-Message-Id: <20220609001007.533242-1-rajvi.jingar@linux.intel.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S230414AbiFIDQ2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2022 23:16:28 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71375DF01;
+        Wed,  8 Jun 2022 20:16:25 -0700 (PDT)
+X-UUID: 370127a0762649d2af567f1e7da564b4-20220609
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.5,REQID:2c86a623-041b-4cd2-9cdc-4672b020aecc,OB:0,LO
+        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:5
+X-CID-META: VersionHash:2a19b09,CLOUDID:5893b97e-c8dc-403a-96e8-6237210dceee,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
+        ,QS:0,BEC:nil
+X-UUID: 370127a0762649d2af567f1e7da564b4-20220609
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+        (envelope-from <chunfeng.yun@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1193237865; Thu, 09 Jun 2022 11:16:20 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Thu, 9 Jun 2022 11:16:19 +0800
+Received: from mhfsdcap04 (10.17.3.154) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 9 Jun 2022 11:16:19 +0800
+Message-ID: <086c0102b772bd86c23c4fdcb5b145854d76042d.camel@mediatek.com>
+Subject: Re: [PATCH] PM: runtime: Extend support for wakeirq for
+ force_suspend|resume
+From:   Chunfeng Yun <chunfeng.yun@mediatek.com>
+To:     Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        <linux-pm@vger.kernel.org>
+CC:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Tony Lindgren <tony@atomide.com>,
+        Axe Yang <axe.yang@mediatek.com>,
+        Chaotian Jing <chaotian.jing@mediatek.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        <linux-kernel@vger.kernel.org>
+Date:   Thu, 9 Jun 2022 11:16:17 +0800
+In-Reply-To: <20220608153120.303070-1-ulf.hansson@linaro.org>
+References: <20220608153120.303070-1-ulf.hansson@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The state of the device is saved during pci_pm_suspend_noirq(), if it
-has not already been saved, regardless of the skip_bus_pm flag value. So
-skip_bus_pm check is removed before saving the device state.
+On Wed, 2022-06-08 at 17:31 +0200, Ulf Hansson wrote:
+> A driver that makes use of pm_runtime_force_suspend|resume() to
+> support
+> system suspend/resume, currently needs to manage the wakeirq support
+> itself. To avoid the boilerplate code in the driver's system
+> suspend/resume
+> callbacks in particular, let's extend
+> pm_runtime_force_suspend|resume() to
+> deal with the wakeirq.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Note that, the reason behind this patch came up while discussing an
+> MMC patch
+> for a Mediatek MMC host driver [1].
+> 
+> Kind regards
+> Ulf Hansson
+> 
+> [1]
+> https://lkml.org/lkml/2022/6/8/813
+> 
+> ---
+>  drivers/base/power/runtime.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/base/power/runtime.c
+> b/drivers/base/power/runtime.c
+> index 676dc72d912d..445a724cbded 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1876,10 +1876,13 @@ int pm_runtime_force_suspend(struct device
+> *dev)
+>  
+>  	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+>  
+> +	dev_pm_enable_wake_irq_check(dev, true);
+>  	ret = callback ? callback(dev) : 0;
+>  	if (ret)
+>  		goto err;
+>  
+> +	dev_pm_enable_wake_irq_complete(dev);
+> +
+>  	/*
+>  	 * If the device can stay in suspend after the system-wide
+> transition
+>  	 * to the working state that will follow, drop the children
+> counter of
+> @@ -1896,6 +1899,7 @@ int pm_runtime_force_suspend(struct device
+> *dev)
+>  	return 0;
+>  
+>  err:
+> +	dev_pm_disable_wake_irq_check(dev, true);
+>  	pm_runtime_enable(dev);
+>  	return ret;
+>  }
+> @@ -1929,9 +1933,11 @@ int pm_runtime_force_resume(struct device
+> *dev)
+>  
+>  	callback = RPM_GET_CALLBACK(dev, runtime_resume);
+>  
+> +	dev_pm_disable_wake_irq_check(dev, false);
+>  	ret = callback ? callback(dev) : 0;
+>  	if (ret) {
+>  		pm_runtime_set_suspended(dev);
+> +		dev_pm_enable_wake_irq_check(dev, false);
+>  		goto out;
+>  	}
+>  
+Reviewed-by Chunfeng Yun <chunfeng.yun@mediatek.com>
 
-Signed-off-by: Rajvi Jingar <rajvi.jingar@linux.intel.com>
-Suggested-by: David E. Box <david.e.box@linux.intel.com>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- v1 -> v2: add comments to the changes
- v2 -> v3: move changelog after "---" marker
- v3 -> v4: add "---" marker after changelog
- v4 -> v5: no change
- v5 -> v6: no change
- v6 -> v7: no change
----
- drivers/pci/pci-driver.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 49238ddd39ee..1f64de3e5280 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -867,20 +867,14 @@ static int pci_pm_suspend_noirq(struct device *dev)
- 		}
- 	}
- 
--	if (pci_dev->skip_bus_pm) {
-+	if (!pci_dev->state_saved) {
-+		pci_save_state(pci_dev);
- 		/*
--		 * Either the device is a bridge with a child in D0 below it, or
--		 * the function is running for the second time in a row without
--		 * going through full resume, which is possible only during
--		 * suspend-to-idle in a spurious wakeup case.  The device should
--		 * be in D0 at this point, but if it is a bridge, it may be
--		 * necessary to save its state.
-+		 * If the device is a bridge with a child in D0 below it, it needs to
-+		 * stay in D0, so check skip_bus_pm to avoid putting it into a
-+		 * low-power state in that case.
- 		 */
--		if (!pci_dev->state_saved)
--			pci_save_state(pci_dev);
--	} else if (!pci_dev->state_saved) {
--		pci_save_state(pci_dev);
--		if (pci_power_manageable(pci_dev))
-+		if (!pci_dev->skip_bus_pm && pci_power_manageable(pci_dev))
- 			pci_prepare_to_sleep(pci_dev);
- 	}
- 
--- 
-2.25.1
 
