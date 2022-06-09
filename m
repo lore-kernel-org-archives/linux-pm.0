@@ -2,103 +2,75 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CF72C433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 20:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77864C43334
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jun 2022 20:24:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230017AbiFIUMe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jun 2022 16:12:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38068 "EHLO
+        id S230359AbiFIUYl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jun 2022 16:24:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59892 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229950AbiFIUMd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 16:12:33 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5D486572
-        for <linux-pm@vger.kernel.org>; Thu,  9 Jun 2022 13:12:29 -0700 (PDT)
-Received: from mercury (unknown [185.209.196.172])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 39FBB66016B2;
-        Thu,  9 Jun 2022 21:12:28 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1654805548;
-        bh=NEfH3aslWx+vIaNWqQUxPJWpn9fGaHRKGUX+5i8F894=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=CHb/iXAh2g1hETG+qehQZp0R1d4xNvei1XBe9q+C5utzNF3I60V1nE52ZVOnOZfUY
-         BSQLim2LmxrWtF4hYpPApDQNZoQTHhzSO0U1W1Wft6rSvlYe9W3+xvGGQ7R25A+JWR
-         zYnkPBAYQjboV+T56vWVPbqSMc4LuUSbT3auUzIiKEyUW3X+r+3oDogystobqIV12b
-         3UGeXO3a3Z6r2PFpKTNUhxGV1T6K+BfB/hFOfnFXI319blaoOidq5mqnV4gj7zpuj7
-         jrXXEScBQrqli5/y7ltAcoCCs3v8r6mElSHiLsXv63m20trog5hRfOj/jyRlD4rUQR
-         IfxBcKA8hhWwA==
-Received: by mercury (Postfix, from userid 1000)
-        id DAB7D10605B9; Thu,  9 Jun 2022 22:12:25 +0200 (CEST)
-Date:   Thu, 9 Jun 2022 22:12:25 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Marcus Cooper <codekipper@gmail.com>, linux-pm@vger.kernel.org,
-        Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [PATCH 1/2] power: supply: ab8500: Respect
- charge_restart_voltage_uv
-Message-ID: <20220609201225.n5j3blaripvil7gh@mercury.elektranox.org>
-References: <20220415203638.361074-1-linus.walleij@linaro.org>
- <CACRpkdayC3ptQJnAKHGhCtGonYr7M_UythAKRYQsZibrZ9kmNw@mail.gmail.com>
+        with ESMTP id S229573AbiFIUYk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 16:24:40 -0400
+Received: from mail-io1-f53.google.com (mail-io1-f53.google.com [209.85.166.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 144D11C0CA2;
+        Thu,  9 Jun 2022 13:24:40 -0700 (PDT)
+Received: by mail-io1-f53.google.com with SMTP id p128so3871320iof.1;
+        Thu, 09 Jun 2022 13:24:40 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=xXFr+AGOM+7XdmBTM49rg6ip3rbHfpbk63C2J+FEopY=;
+        b=OMY0OxD6eyLDVE/C/i8wkEVlyBzMJO1UOKatVK2As5y+lWDJKks5AnDEAekih2SaC0
+         7HhtXsBd497tMPnl7ggETOuZ2uVb2bIWYMT94wcxzYy8tOybriDbYrLBt8wgZWpkkIRe
+         TJCJ5xr9sAxnP626rDZVHOsL6W90L4+YqPD48ygVAAUMWBkVOPoRxcAZOzIDCICNUEfr
+         zQyM6/CVIkYcUF0R+AMJsAuAVylT7CaaYdPKg5fD8Lxg0HDFW0Czfnwm/XPSnFAUnVrV
+         HBicLQB2uWStpPZ7hyklbeMwF9wf2Z/E4kTq1Fj15nVlcV6eRaQ5aZ0uqk4WrYRpuFaG
+         hDwQ==
+X-Gm-Message-State: AOAM531zw8jh07rKW8zUDQCCptlPcqwB9rSguPtHf9Awdo08tTHNVNpm
+        d/4/j8MqQgEwsIEwBcXcWlbIwr5RrA==
+X-Google-Smtp-Source: ABdhPJxq/rQJljnv1MaCNKFPZNueJys2d4PzmSQjoOyDCSFWpcBaNO9rTPljW4vKGraz1b43ikqmTg==
+X-Received: by 2002:a05:6638:370d:b0:32e:db90:f2e2 with SMTP id k13-20020a056638370d00b0032edb90f2e2mr21514924jav.84.1654806279265;
+        Thu, 09 Jun 2022 13:24:39 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.251])
+        by smtp.gmail.com with ESMTPSA id y38-20020a029529000000b0032e583132e4sm9933595jah.123.2022.06.09.13.24.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Jun 2022 13:24:38 -0700 (PDT)
+Received: (nullmailer pid 42587 invoked by uid 1000);
+        Thu, 09 Jun 2022 20:24:35 -0000
+Date:   Thu, 9 Jun 2022 14:24:35 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+Cc:     quic_gurus@quicinc.com, brgl@bgdev.pl, linux-gpio@vger.kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, linux-pm@vger.kernel.org,
+        sre@kernel.org, linux-iio@vger.kernel.org,
+        linus.walleij@linaro.org, lgirdwood@gmail.com, robh+dt@kernel.org,
+        broonie@kernel.org, rafael@kernel.org, lars@metafoo.de,
+        linux-kernel@vger.kernel.org, lee.jones@linaro.org,
+        gregkh@linuxfoundation.org, wens@csie.org, jic23@kernel.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 06/17] dt-bindings: gpio: Add AXP192 GPIO bindings
+Message-ID: <20220609202435.GA42506-robh@kernel.org>
+References: <20220607155324.118102-1-aidanmacdonald.0x0@gmail.com>
+ <20220607155324.118102-7-aidanmacdonald.0x0@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2ln6tw6dm42ln5aq"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CACRpkdayC3ptQJnAKHGhCtGonYr7M_UythAKRYQsZibrZ9kmNw@mail.gmail.com>
+In-Reply-To: <20220607155324.118102-7-aidanmacdonald.0x0@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Tue, 07 Jun 2022 16:53:13 +0100, Aidan MacDonald wrote:
+> The AXP192 PMIC is different enough from the PMICs supported by
+> the AXP20x GPIO driver to warrant a separate driver. The AXP192
+> driver also supports interrupts and pinconf settings.
+> 
+> Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+> ---
+>  .../bindings/gpio/x-powers,axp192-gpio.yaml   | 57 +++++++++++++++++++
+>  1 file changed, 57 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/gpio/x-powers,axp192-gpio.yaml
+> 
 
---2ln6tw6dm42ln5aq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Fri, May 20, 2022 at 11:36:29PM +0200, Linus Walleij wrote:
-> On Fri, Apr 15, 2022 at 10:38 PM Linus Walleij <linus.walleij@linaro.org>=
- wrote:
->=20
-> > The battery info contains a voltage indicating when the voltage
-> > is so low that it is time to restart the CC/CV charging.
-> > Make the AB8500 respect and prioritize this setting over the
-> > hardcoded 95% threshold.
-> >
-> > Break out the check into its own function and add some safeguards
-> > so we do not run into unpredictable side effects.
-> >
-> > Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
->=20
-> Sebastian could you merge this patch (and patch 2/2) now that I
-> convinced Matti it's safe?
-
-Yes, I queued both patches to power-supply's for-next branch now.
-
--- Sebastian
-
---2ln6tw6dm42ln5aq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmKiVCkACgkQ2O7X88g7
-+pp9fg/+JXcG6Qxyk0apkJrgMzg6Xm+gKwhmc69fAvT9NhbH7e6aEKvsZpXI6/n5
-Kl4Vlzzdxc4mWMQ8PhKjUY3dZy9nwhwNrvSOOdYeh0ofEv962a0HbJamHkpsIE6V
-SOtKZPnqXIr6p4QiAiVjCerAQvwbZwTVz7CoacUDPXvmjTditqVVkGumD3Xjz4fL
-HzKLpp0wS+/XLJv9jUEjgIRJPubFMqdXXLXSnFJY+nD/9TRf6g3NSFg2kzEszpP2
-IP+BEa7zT2eq1nUBJ5hPm9mgx08Q0KNQOB2J+X2iyxm3A5e44Q0626h+unyzPKHE
-qkZpLY680wxeGw4fw/hAf/+nwRlKYggm4wFXW9Srb18reVoC53Kp5CttNOMcMoSH
-f6gXqfMZ7bxym25CJ52IzZW+MSPc80Bm9obbgkkjBWL2GpZeO0BwLFHge18wLBKf
-CbdHQbKYUVu/7zssaihjQaHERP+IhKgTSBIwYMESqbcZh5wYIZfXWD6my2fvDy9H
-ZxejpAmsr6RbuSENRc0KczE4PmxN2n9NYXsvvwdnvj7kLWsMjyvEHse1tGoo5FCz
-U8iP+JG7zs2YAkoWJMPP6HnuENrxpNHTEWOiiL7BHCHyAGrdX3kGlHlo34Mx8rw0
-9jEKJJmX9rDrXxYECFEUXAKFa+cO1y2qrxfcu+J/UnYfKEC5Kj8=
-=FLeG
------END PGP SIGNATURE-----
-
---2ln6tw6dm42ln5aq--
+Reviewed-by: Rob Herring <robh@kernel.org>
