@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DC76C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jun 2022 01:31:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5282C43334
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jun 2022 01:31:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241354AbiFJBbV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jun 2022 21:31:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58460 "EHLO
+        id S231586AbiFJBbX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jun 2022 21:31:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58622 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231586AbiFJBbU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 21:31:20 -0400
-Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com [IPv6:2607:f8b0:4864:20::112a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 737832DCB04;
-        Thu,  9 Jun 2022 18:31:18 -0700 (PDT)
-Received: by mail-yw1-x112a.google.com with SMTP id 00721157ae682-30fdbe7467cso223460067b3.1;
-        Thu, 09 Jun 2022 18:31:18 -0700 (PDT)
+        with ESMTP id S242631AbiFJBbW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2022 21:31:22 -0400
+Received: from mail-yb1-xb35.google.com (mail-yb1-xb35.google.com [IPv6:2607:f8b0:4864:20::b35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E21B32DE7DF;
+        Thu,  9 Jun 2022 18:31:21 -0700 (PDT)
+Received: by mail-yb1-xb35.google.com with SMTP id y188so15176682ybe.11;
+        Thu, 09 Jun 2022 18:31:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=mime-version:from:date:message-id:subject:to:cc;
-        bh=QtM5I079oW92Wgwg2Tl/xBD0OwEKunidPrcwXyQHhz0=;
-        b=pTG4LteeKP1/PBqRYc/0OrHp/+6z9/Focvu1XE6w++W31L5ENHzIYzxZQkcUt5LLoT
-         K6hrplmC5oEgFNunnzhHPmWQkwCSaKccOf7gsYJwbGTo2IylbU5s7UUzPlpvMsOJ32fF
-         vjUK1oGKX+mYGWM/BCgkRyPIDIpSV4dxZymgRkoxwiQYgOkmBnXTSD8XUdV5zWros6D9
-         MxFNHA+V4sC2kP3gleCevNcBrqc54h2NKyMbVFKmsd35Fp+AHOrlP9nAMnIQx0qN3Pkf
-         VtM4E1xDzGd+j3+vKLsRyqYRPdKAtLqAEkm1/ve2bysIuZgh4r3imqciikBfnOP/bCfp
-         pDbg==
+        bh=ElqxuDCNQXRCZG67xnOLz5NHyRlQc3DQ9LW5Dv5Hebk=;
+        b=iMzRXrgSodgWp0762d490bUYJpIWUGUsCVl7vfzAvJkeRMYZCSgOjD6G85NoIpoQw0
+         qaTCFblqm2xa7C24UfXJRwWkfyECUVOApGiSiYftPhL+7EEZUYPDlssZGWto84lKHnGy
+         W9l64RI0Z801FRJ2bnoeEZYg6YbjKUABly23dsTQTVFGJaljqYhPlytpr9QoVQQESvgd
+         I9tSLKZC4h3MKu0T3TnTd0bFZvkdFhzwFYGf6x1DlUSks9FNR3rRfM+14a8Z2VWmNBHU
+         wqGzUpq9/HmcS9Lu3cLHISEEAr9+ZGcBX/M/xrCfrNIeGmDSpJn/ig+B9kK0QZVSaBmR
+         Ubyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=QtM5I079oW92Wgwg2Tl/xBD0OwEKunidPrcwXyQHhz0=;
-        b=2NSDWBDjKTXPSP9uUGqu1Jl1HcK+AakP5AZYVJF7lMbNEMS6GN8zS0Vv1e8y7JfkAL
-         meskmj1sT4T4KpM86J1jZH1YDB7/g79xBmAy3dwYpVx20YrjYwSSXQZ+bAYl6yLeYIx/
-         x7penNrQS4M3rdXvdZqKk90oSQLfP+6mrKtO/Zc+uDzpHmod6udzRYS/G1UnguNQml6m
-         lhkZfFzxlgoBkvjsUXSlMllob2yScf94OZ0lPj6vw0/YQEVCwT7uz6bS0aQLw1RHvKxO
-         axaBxD0cohaCbttL3AFh1vGD356wb9bHfRbzQ1XRt0SpERHq3lmt6YprUBStW3aInrWt
-         gzRA==
-X-Gm-Message-State: AOAM533Qt1blrkYjjltgjdTGn9XOH0inH5THD4d7wGJ5+hUSnepFAL8f
-        hN6RhpfYu6FdnrDXoMGYijD0uplHXi4fNjG8VBs=
-X-Google-Smtp-Source: ABdhPJxEWipJhuX68SSstCa/rK40Potsjddrc5tBFBanGDfrouOVkBLxjgT9g6KVhGT6uRMMsFd4eDipt4s9SswVaAM=
-X-Received: by 2002:a81:4104:0:b0:2f1:b59f:22a2 with SMTP id
- o4-20020a814104000000b002f1b59f22a2mr47507275ywa.328.1654824677609; Thu, 09
- Jun 2022 18:31:17 -0700 (PDT)
+        bh=ElqxuDCNQXRCZG67xnOLz5NHyRlQc3DQ9LW5Dv5Hebk=;
+        b=EuP0hXbTTN5JFaSiqRwsO9WSN0lCw0se0DS4eE3h+BeCgL9HznI6IchAOjmn544Gdj
+         tGHjNPRbVuM2vNXr8i/Juf07rkdN0fnjOXzTPZ5rKGAQodfjIMmw9haKtRgDr3jloDlc
+         xbLE0ObX7NfR3UU5kU4ycDffF+KRUbxSkc62ywylgItt6QI1T4x/rhMRXPy48RMo47Ir
+         DO8OthKHYQTAfxKhfsUuINl8rdRuVXbG03Vz+RmNznfo3fyVVGP4s7tFfe2HG+EvWNpy
+         qdSgT8zEb2m3ih+6lFHcjz74Mk0JbYWvgaL6DgFtj7n2Fbj/bJKtNDR313nrbtiGeZiH
+         rOhQ==
+X-Gm-Message-State: AOAM532GbGqodbr5fc+fnWjXtZVO8SOQ/9QNmh87CLe7kQpLSYOkNyz1
+        j5/dyIdyoROB0htH9xTXBoVJYQUByRGo/L+xtV4=
+X-Google-Smtp-Source: ABdhPJxw0bWcPAFN3JvEWRyHkkJ9uMk0vNG3VXVIPDi5hPrsPr8C0inUhy0ywjoRwCJ018yHsiW2e59XxePNuJk0jw0=
+X-Received: by 2002:a05:6902:114b:b0:663:95f6:93d0 with SMTP id
+ p11-20020a056902114b00b0066395f693d0mr24845804ybu.537.1654824681051; Thu, 09
+ Jun 2022 18:31:21 -0700 (PDT)
 MIME-Version: 1.0
 From:   =?UTF-8?B?6YOt5Yqb6LGq?= <lhjeff911@gmail.com>
-Date:   Fri, 10 Jun 2022 09:32:13 +0800
-Message-ID: <CAGcXWkz6UhpG9Eire3NkXSr436UHDWVh10_ScWQtHLoJavdezg@mail.gmail.com>
-Subject: [PATCH v9 0/2] Add thermal control driver for Sunplus SoC
+Date:   Fri, 10 Jun 2022 09:32:17 +0800
+Message-ID: <CAGcXWkzSrEPPT2m=2trWN-BV-ix9TcHCvZYya5i54ei=EWGTZw@mail.gmail.com>
+Subject: [PATCH v9 2/2] dt-bindings:thermal: Add Sunplus schema
 To:     krzk@kernel.org, rafael@kernel.org,
         Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org,
         rui.zhang@intel.com, robh+dt@kernel.org, linux-pm@vger.kernel.org,
@@ -58,29 +58,81 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is a patch series for thermal driver for Sunplus SoC.
+Add bindings for Sunplus thermal driver
 
-Sunplus SP7021 is an ARM Cortex A7 (4 cores) based SoC. It integrates
-many peripherals (ex: UART, I2C, SPI, SDIO, eMMC, USB, SD card and
-etc.) into a single chip. It is designed for industrial control.
+Signed-off-by: Li-hao Kuo <lhjeff911@gmail.com>
+---
+Changes in v9:
+ - Change the setting of compatible
+ - Mosdify the setting of remove funciton.
 
-Refer to:
-https://sunplus-tibbo.atlassian.net/wiki/spaces/doc/overview
-https://tibbo.com/store/plus1.html
-
-Li-hao Kuo (2):
-  thermal: Add thermal driver for Sunplus
-  dt-bindings:thermal: Add Sunplus schema
-
- .../bindings/thermal/sunplus,thermal.yaml          |  43 +++++++
- MAINTAINERS                                        |   7 ++
- drivers/thermal/Kconfig                            |  10 ++
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/sunplus_thermal.c                  | 139 +++++++++++++++++++++
- 5 files changed, 200 insertions(+)
+ .../bindings/thermal/sunplus,thermal.yaml          | 43 ++++++++++++++++++++++
+ MAINTAINERS                                        |  1 +
+ 2 files changed, 44 insertions(+)
  create mode 100644
 Documentation/devicetree/bindings/thermal/sunplus,thermal.yaml
- create mode 100644 drivers/thermal/sunplus_thermal.c
 
+diff --git a/Documentation/devicetree/bindings/thermal/sunplus,thermal.yaml
+b/Documentation/devicetree/bindings/thermal/sunplus,thermal.yaml
+new file mode 100644
+index 0000000..52094da
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/sunplus,thermal.yaml
+@@ -0,0 +1,43 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++# Copyright (C) Sunplus Co., Ltd.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/sunplus,thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Sunplus Thermal controller
++
++maintainers:
++  - Li-hao Kuo <lhjeff911@gmail.com>
++
++properties:
++  compatible:
++    enum:
++      - sunplus,sp7021-thermal
++
++  reg:
++    maxItems: 1
++
++  nvmem-cells:
++    maxItems: 1
++
++  nvmem-cell-names:
++    const: calib
++
++required:
++  - compatible
++  - reg
++  - nvmem-cells
++  - nvmem-cell-names
++
++additionalProperties: false
++
++examples:
++  - |
++    thermal@9c000280 {
++        compatible = "sunplus,sp7021-thermal";
++        reg = <0x9c000280 0xc>;
++        nvmem-cells = <&calib>;
++        nvmem-cell-names = "calib";
++    };
++...
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 23bde07..a8c44eb 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -19107,6 +19107,7 @@ SUNPLUS THERMAL DRIVER
+ M: Li-hao Kuo <lhjeff911@gmail.com>
+ L: linux-pm@vger.kernel.org
+ S: Maintained
++F: Documentation/devicetree/bindings/thermal/sunplus_thermal.yaml
+ F: drivers/thermal/sunplus_thermal.c
+
+ SUNPLUS UART DRIVER
 -- 
 2.7.4
