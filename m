@@ -2,104 +2,154 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE721CCA47B
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jun 2022 08:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 357A7CCA47B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jun 2022 09:24:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347710AbiFJI0s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Jun 2022 04:26:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37648 "EHLO
+        id S1347510AbiFJJY3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Jun 2022 05:24:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33410 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347681AbiFJI0h (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2022 04:26:37 -0400
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A53717C17F
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2022 01:22:34 -0700 (PDT)
-Received: by mail-pj1-x102b.google.com with SMTP id e9so12902261pju.5
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2022 01:22:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=3CtnHIzyhGEYhzx3WNgUS+gaxi+Uj76buOwhyxDW9JA=;
-        b=P+icoPLQ8Nk+Gmp8FoNBjVlU1AFx37XNMv9ixnzv9UeVE6iuCIsRY6I1D1wzejPsVd
-         IhKlmYVqH7LgrgIqcvUlSSlV84NKzulcBXdxxK0r3OX9mQhcc7HQr5Ip/IjMQKQiijfn
-         GPYGNvBp4sT1+cCpTOgcdc29yGw8TYXHNgKldrOv4PoxSLJTTfLYzRVzYIKYh6UdIvZe
-         YYSne0wQ8MdBiVavj6nUDLym7VZBhGOUC60J1lP7rXVrXb8K+ExNSAG0lDvM3PqoLVh2
-         O/FmFuFtYp/TOonqdBt+3t3HGTDlNbHnDdOL7MmF4b7YimLZbgwR1QNIngCaK6XY364s
-         E7uQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=3CtnHIzyhGEYhzx3WNgUS+gaxi+Uj76buOwhyxDW9JA=;
-        b=ckCY7H+BXpiAzFUcyM6gU6u52r++6KyLuclF8x1o2cq+ryK0aKCpgUEGFv9sNsmVKy
-         xWgJ1/UzKndBST3wNCK1HFeNHBwmwsDfxqlauBcazBuxmAK8wdCWfbRuqyNActcbUybs
-         +3mGyArbLgnq8cT5gBatOi+NpnKtDP3c4PxTCEdkaZ9X4jk04bxl5IO5L66kqxjuuHi6
-         h2ZsedBZ86Xc8CKwymV2I3dj+fuaIa78Bnz9w8gUFRYtzizx1swowhjxnuVoMa3frBry
-         WEjrcnsPCdTjaT2DJ3sCSXmvWCX84w7JM+yGRgYAIS1tXiqoQTrATz11+MD42gpUJqTR
-         B83Q==
-X-Gm-Message-State: AOAM532OjiJXSRem1Urid6IrB2uSGiadeH1WZX6RH6jC/XIfTPIrsvxd
-        5W9Sezlcu6kG+Q7BMjwEWCbfSQ==
-X-Google-Smtp-Source: ABdhPJzfwsXTu9tAeQ+ghYeLVfc5S9wlWaBhaOGYpPwAKkcSzkaa8cG2JwnafTcUroGpeaE9qHkq+Q==
-X-Received: by 2002:a17:90b:3a8b:b0:1e8:3056:10fc with SMTP id om11-20020a17090b3a8b00b001e8305610fcmr7694914pjb.145.1654849354195;
-        Fri, 10 Jun 2022 01:22:34 -0700 (PDT)
-Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id o21-20020a170903211500b0015e8d4eb26esm17970929ple.184.2022.06.10.01.22.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jun 2022 01:22:33 -0700 (PDT)
-Date:   Fri, 10 Jun 2022 13:52:31 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Stephen Boyd <sboyd@kernel.org>, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Avri Altman <avri.altman@wdc.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Taniya Das <tdas@codeaurora.org>,
-        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: Re: [RFC PATCH v2 4/6] PM: opp: allow control of multiple clocks
-Message-ID: <20220610082231.nyywda5j6c5tr7tv@vireshk-i7>
-References: <20220411154347.491396-5-krzysztof.kozlowski@linaro.org>
- <20220425072710.v6gwo4gu3aouezg4@vireshk-i7>
- <dea39b1f-0091-2690-7f07-108d07ef9f3c@linaro.org>
- <20220510044053.ykn6ygnbeokhzrsa@vireshk-i7>
- <1e533194-7047-8342-b426-f607fddbfaa3@linaro.org>
- <20220511050643.hd5tcrojb3wkbg7t@vireshk-i7>
- <20220518235708.1A04CC385A9@smtp.kernel.org>
- <65a4c28d-6702-3a9f-f837-1ea69a428777@linaro.org>
- <20220531103029.ntoypaafnd6447ag@vireshk-i7>
- <7a66f2e2-1a2a-a262-138c-f535499984ae@linaro.org>
+        with ESMTP id S1349624AbiFJJYH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2022 05:24:07 -0400
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E122F5D09;
+        Fri, 10 Jun 2022 02:22:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1654852946; x=1686388946;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=A1UOhBsoX4XTwLtfATiuFGNOKwRcSL1nGhQuo3Bu3q4=;
+  b=RA5EOwtTRAkXQSdqYZWjoUqj7dM6CbDZ5xWHUHjJyFbLtGdjZMO2gBC/
+   61gFOstdU27bGVRdt186usxP0dVqnvpjcfPcd5brkmR4RVLCgq1PY/C5A
+   TY87szT1b4Zt53OA6gmpivA9vg1eKHdnNyJtFf1wfYuYUjsa2YnNgxWum
+   mfhchjqAK3bUNNr3kOskwdMoeoGc79VSjqABQ5aYMAmyyZRHdLuuGnaHr
+   Op3CXq1qsna4G+SUCPqvbZ+gvrALpGhFcVjDi6568uNHpbU1dteAurxVs
+   4iTszyt5GwcD7nObP9foRqf1QeK+ZSdAnfslr3H2DORMpgu1rB8jm4q2Q
+   A==;
+X-IronPort-AV: E=Sophos;i="5.91,288,1647327600"; 
+   d="scan'208";a="177391100"
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 10 Jun 2022 02:22:25 -0700
+Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.17; Fri, 10 Jun 2022 02:22:25 -0700
+Received: from localhost.localdomain (10.10.115.15) by
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
+ 15.1.2375.17 via Frontend Transport; Fri, 10 Jun 2022 02:22:21 -0700
+From:   Claudiu Beznea <claudiu.beznea@microchip.com>
+To:     <nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
+        <p.zabel@pengutronix.de>, <sre@kernel.org>, <robh+dt@kernel.org>,
+        <krzysztof.kozlowski+dt@linaro.org>
+CC:     <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v5 2/9] dt-bindings: reset: convert Atmel/Microchip reset controller to YAML
+Date:   Fri, 10 Jun 2022 12:24:07 +0300
+Message-ID: <20220610092414.1816571-3-claudiu.beznea@microchip.com>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20220610092414.1816571-1-claudiu.beznea@microchip.com>
+References: <20220610092414.1816571-1-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7a66f2e2-1a2a-a262-138c-f535499984ae@linaro.org>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 01-06-22, 13:23, Krzysztof Kozlowski wrote:
-> In general this looks reasonable and matches how the UFS gears should be
-> modeled. It does not match how UFS drivers implemented the clock
-> scaling, but that's the internal problem of UFS drivers. They scale the
-> clocks only max or min, even though there are multiple gears in between.
-> The new approach looks therefore appropriate.
+Convert Atmel/Microchip reset controller to YAML.
 
-Hi,
+Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ .../devicetree/bindings/arm/atmel-sysregs.txt | 15 ------
+ .../reset/atmel,at91sam9260-reset.yaml        | 49 +++++++++++++++++++
+ 2 files changed, 49 insertions(+), 15 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
 
-I have finally finished working on this and sent the last patchset and
-cc'd you. You can also directly use opp/linux-next branch for the
-same, which will land in linux-next as well.
-
-Thanks.
-
+diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+index 16eef600d599..ab1b352344ae 100644
+--- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
++++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+@@ -25,21 +25,6 @@ System Timer (ST) required properties:
+ Its subnodes can be:
+ - watchdog: compatible should be "atmel,at91rm9200-wdt"
+ 
+-RSTC Reset Controller required properties:
+-- compatible: Should be "atmel,<chip>-rstc".
+-  <chip> can be "at91sam9260", "at91sam9g45", "sama5d3" or "samx7"
+-  it also can be "microchip,sam9x60-rstc"
+-- reg: Should contain registers location and length
+-- clocks: phandle to input clock.
+-
+-Example:
+-
+-	rstc@fffffd00 {
+-		compatible = "atmel,at91sam9260-rstc";
+-		reg = <0xfffffd00 0x10>;
+-		clocks = <&clk32k>;
+-	};
+-
+ RAMC SDRAM/DDR Controller required properties:
+ - compatible: Should be "atmel,at91rm9200-sdramc", "syscon"
+ 			"atmel,at91sam9260-sdramc",
+diff --git a/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml b/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
+new file mode 100644
+index 000000000000..34c40b875e20
+--- /dev/null
++++ b/Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
+@@ -0,0 +1,49 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/reset/atmel,at91sam9260-reset.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Atmel/Microchip System Reset Controller
++
++maintainers:
++  - Claudiu Beznea <claudiu.beznea@microchip.com>
++
++description: |
++  The system reset controller can be used to reset the CPU.
++
++properties:
++  compatible:
++    oneOf:
++      - items:
++          - enum:
++              - atmel,at91sam9260-rstc
++              - atmel,at91sam9g45-rstc
++              - atmel,sama5d3-rstc
++              - microchip,sam9x60-rstc
++      - items:
++          - const: atmel,sama5d3-rstc
++          - const: atmel,at91sam9g45-rstc
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/at91.h>
++
++    reset-controller@fffffd00 {
++        compatible = "atmel,at91sam9260-rstc";
++        reg = <0xfffffd00 0x10>;
++        clocks = <&pmc PMC_TYPE_CORE PMC_SLOW>;
++    };
 -- 
-viresh
+2.34.1
+
