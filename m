@@ -2,149 +2,120 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFDA3CCA47D
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 19:57:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64152CCA47B
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 20:06:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233671AbiFMT5F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 15:57:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34218 "EHLO
+        id S245118AbiFMUGQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 16:06:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44506 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346056AbiFMT4U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 15:56:20 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21A25A5015;
-        Mon, 13 Jun 2022 11:27:54 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        with ESMTP id S1344627AbiFMUF4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 16:05:56 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50DC7BCE95;
+        Mon, 13 Jun 2022 11:40:49 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
+ id c96cbc3b82aed3ce; Mon, 13 Jun 2022 20:40:47 +0200
+Received: from kreacher.localnet (unknown [213.134.187.64])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 5A83F61295;
-        Mon, 13 Jun 2022 18:27:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7195FC34114;
-        Mon, 13 Jun 2022 18:27:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1655144873;
-        bh=4acUEF/GtiroxdkX0QUJJTf/NNYdtRPoMippfdF+Tbs=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=aEcS3c5PuXqEnaTpZNKg40R3God3d+LK8yPhQQejAGjRW1qBwC32okVmksKg2N2+z
-         yofbKTOOIypSFItFnYzAA1W79a9xS2NBzZLYopWs2Nr4x8FhfqjGrfTXjFKP5hPHPc
-         SAD1t6ahlh9v5DCGkHYm629+mfQETe8iketrGHBBTGoxehe9P2+H/DRZdJsGBGxJ9b
-         /DIXDBa6qIdjJ8jkJ6iNWbzHMGV3fBBub3ItPHhQEAhcnE3kcwKfWRFPCFSvozpIck
-         /Ot+ri4rcFjzH0npaiOlzwZ0zY/ajcIScCJTpHOwdu69UtJeEtA2PpBlOMUrJU66gw
-         SCYoOfOmuqNHQ==
-Message-ID: <d933f30b-4d53-eb97-d029-1c321ba84b62@kernel.org>
-Date:   Mon, 13 Jun 2022 21:27:45 +0300
+        by v370.home.net.pl (Postfix) with ESMTPSA id 2CFBC66C81D;
+        Mon, 13 Jun 2022 20:40:46 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Sakari Ailus <sakari.ailus@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+        linux-usb@vger.kernel.org
+Subject: [PATCH v2 05/16] USB: ACPI: Replace usb_acpi_find_port() with acpi_find_child_by_adr()
+Date:   Mon, 13 Jun 2022 20:39:37 +0200
+Message-ID: <23334378.ouqheUzb2q@kreacher>
+In-Reply-To: <2653857.mvXUDI8C0e@kreacher>
+References: <1843211.tdWV9SEqCh@kreacher> <2653857.mvXUDI8C0e@kreacher>
 MIME-Version: 1.0
-Subject: Re: [PATCH 2/8] interconnect: add device managed bulk API
-Content-Language: en-US
-To:     "Peng Fan (OSS)" <peng.fan@oss.nxp.com>, shawnguo@kernel.org,
-        s.hauer@pengutronix.de, festevam@gmail.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, abel.vesa@nxp.com,
-        abailon@baylibre.com, l.stach@pengutronix.de,
-        laurent.pinchart@ideasonboard.com, marex@denx.de,
-        paul.elder@ideasonboard.com, Markus.Niebel@ew.tq-group.com,
-        aford173@gmail.com
-Cc:     kernel@pengutronix.de, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-imx@nxp.com,
-        Peng Fan <peng.fan@nxp.com>
-References: <20220601094156.3388454-1-peng.fan@oss.nxp.com>
- <20220601094156.3388454-3-peng.fan@oss.nxp.com>
-From:   Georgi Djakov <djakov@kernel.org>
-In-Reply-To: <20220601094156.3388454-3-peng.fan@oss.nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.187.64
+X-CLIENT-HOSTNAME: 213.134.187.64
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddujedguddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudekjedrieegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekjedrieegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopedutddprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnhgurhhihidrshhhvghvtghhvghnkhhosehlihhnuhigrdhi
+ nhhtvghlrdgtohhmpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehhuggvghhovgguvgesrhgvughhrghtrdgtohhmpdhrtghpthhtohepshgrkhgrrhhirdgrihhluhhssehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohepghhrvghgkhhhsehlihhnuhigfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtohephhgvihhkkhhirdhkrhhoghgvrhhusheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehlihhnuhigqdhushgssehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Peng,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks for the patches!
+Instead of walking the list of children of an ACPI device directly
+in order to find the child matching a given bus address, use
+acpi_find_child_by_adr() for this purpose.
 
-On 1.06.22 12:41, Peng Fan (OSS) wrote:
-> From: Peng Fan <peng.fan@nxp.com>
-> 
-> Add device managed bulk API to simplify driver.
-> 
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> ---
->   drivers/interconnect/bulk.c  | 34 ++++++++++++++++++++++++++++++++++
->   include/linux/interconnect.h |  6 ++++++
->   2 files changed, 40 insertions(+)
-> 
-> diff --git a/drivers/interconnect/bulk.c b/drivers/interconnect/bulk.c
-> index 448cc536aa79..4918844bfe0d 100644
-> --- a/drivers/interconnect/bulk.c
-> +++ b/drivers/interconnect/bulk.c
-> @@ -115,3 +115,37 @@ void icc_bulk_disable(int num_paths, const struct icc_bulk_data *paths)
->   		icc_disable(paths[num_paths].path);
->   }
->   EXPORT_SYMBOL_GPL(icc_bulk_disable);
-> +
-> +struct icc_bulk_devres {
-> +	struct icc_bulk_data *paths;
-> +	int num_paths;
-> +};
-> +
-> +static void devm_icc_bulk_release(struct device *dev, void *res)
-> +{
-> +	struct icc_bulk_devres *devres = res;
-> +
-> +	icc_bulk_put(devres->num_paths, devres->paths);
-> +}
-> +
-> +int devm_of_icc_bulk_get(struct device *dev, int num_paths, struct icc_bulk_data *paths)
+Also notice that if acpi_find_child_by_adr() doesn't find a matching
+child, acpi_find_child_device() will not find it too, so directly
+replace usb_acpi_find_port() in usb_acpi_get_companion_for_port() with
+acpi_find_child_by_adr() and drop it entirely.
 
-Adding a kerneldoc would be nice.
+Apart from simplifying the code, this will help to eliminate the
+children list head from struct acpi_device as it is redundant and it
+is used in questionable ways in some places (in particular, locking is
+needed for walking the list pointed to it safely, but it is often
+missing).
 
-> +{
-> +	struct icc_bulk_devres *devres;
-> +	int ret;
-> +
-> +	devres = devres_alloc(devm_icc_bulk_release, sizeof(*devres), GFP_KERNEL);
-> +	if (!devres)
-> +		return -ENOMEM;
-> +
-> +	ret = of_icc_bulk_get(dev, num_paths, paths);
-> +	if (!ret) {
-> +		devres->paths = paths;
-> +		devres->num_paths = num_paths;
-> +		devres_add(dev, devres);
-> +	} else {
-> +		devres_free(devres);
-> +	}
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(devm_of_icc_bulk_get);
-> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-> index f685777b875e..1a5fdf049edd 100644
-> --- a/include/linux/interconnect.h
-> +++ b/include/linux/interconnect.h
-> @@ -44,6 +44,7 @@ struct icc_path *icc_get(struct device *dev, const int src_id,
->   			 const int dst_id);
->   struct icc_path *of_icc_get(struct device *dev, const char *name);
->   struct icc_path *devm_of_icc_get(struct device *dev, const char *name);
-> +int devm_of_icc_bulk_get(struct device *dev, int num_paths, struct icc_bulk_data *paths);
->   struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
->   void icc_put(struct icc_path *path);
->   int icc_enable(struct icc_path *path);
-> @@ -116,6 +117,11 @@ static inline int of_icc_bulk_get(struct device *dev, int num_paths, struct icc_
->   	return 0;
->   }
->   
-> +int devm_of_icc_bulk_get(struct device *dev, int num_paths, struct icc_bulk_data *paths)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Please make this static inline. The rest looks good!
+v1 -> v2:
+   * Drop usb_acpi_find_port() (Heikki, Andy).
+   * Change the subject accordingly.
 
-Thanks,
-Georgi
+---
+ drivers/usb/core/usb-acpi.c |   18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
 
-> +{
-> +	return 0;
-> +}
-> +
->   static inline void icc_bulk_put(int num_paths, struct icc_bulk_data *paths)
->   {
->   }
+Index: linux-pm/drivers/usb/core/usb-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/usb/core/usb-acpi.c
++++ linux-pm/drivers/usb/core/usb-acpi.c
+@@ -124,22 +124,6 @@ out:
+  */
+ #define USB_ACPI_LOCATION_VALID (1 << 31)
+ 
+-static struct acpi_device *usb_acpi_find_port(struct acpi_device *parent,
+-					      int raw)
+-{
+-	struct acpi_device *adev;
+-
+-	if (!parent)
+-		return NULL;
+-
+-	list_for_each_entry(adev, &parent->children, node) {
+-		if (acpi_device_adr(adev) == raw)
+-			return adev;
+-	}
+-
+-	return acpi_find_child_device(parent, raw, false);
+-}
+-
+ static struct acpi_device *
+ usb_acpi_get_companion_for_port(struct usb_port *port_dev)
+ {
+@@ -170,7 +154,7 @@ usb_acpi_get_companion_for_port(struct u
+ 		port1 = port_dev->portnum;
+ 	}
+ 
+-	return usb_acpi_find_port(adev, port1);
++	return acpi_find_child_by_adr(adev, port1);
+ }
+ 
+ static struct acpi_device *
+
+
 
