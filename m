@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19DC3C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 20:06:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B90FC43334
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 20:06:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349712AbiFMUGg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 16:06:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44614 "EHLO
+        id S1349981AbiFMUGi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 16:06:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43348 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346463AbiFMUGG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 16:06:06 -0400
+        with ESMTP id S1347537AbiFMUGH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 16:06:07 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16CADBCEB5;
-        Mon, 13 Jun 2022 11:40:53 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 776EABDA1A;
+        Mon, 13 Jun 2022 11:41:04 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id e7c7bd5c0a89f666; Mon, 13 Jun 2022 20:40:52 +0200
+ id 98948afc32f47701; Mon, 13 Jun 2022 20:41:02 +0200
 Received: from kreacher.localnet (unknown [213.134.187.64])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 238C466C81D;
-        Mon, 13 Jun 2022 20:40:51 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 18F9866C81D;
+        Mon, 13 Jun 2022 20:41:02 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -30,15 +30,10 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         Hans de Goede <hdegoede@redhat.com>,
-        Sakari Ailus <sakari.ailus@linux.intel.com>,
-        Vinod Koul <vkoul@kernel.org>,
-        Bard Liao <yung-chuan.liao@linux.intel.com>,
-        Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
-        Sanyog Kale <sanyog.r.kale@intel.com>,
-        alsa-devel@alsa-project.org
-Subject: [PATCH v2 14/16] soundwire: Use acpi_dev_for_each_child()
-Date:   Mon, 13 Jun 2022 20:35:26 +0200
-Message-ID: <9017824.rMLUfLXkoz@kreacher>
+        Sakari Ailus <sakari.ailus@linux.intel.com>
+Subject: [PATCH v2 07/16] ACPI: property: Use acpi_dev_for_each_child() for child lookup
+Date:   Mon, 13 Jun 2022 20:16:30 +0200
+Message-ID: <1916226.PYKUYFuaPT@kreacher>
 In-Reply-To: <2653857.mvXUDI8C0e@kreacher>
 References: <1843211.tdWV9SEqCh@kreacher> <2653857.mvXUDI8C0e@kreacher>
 MIME-Version: 1.0
@@ -47,18 +42,18 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.187.64
 X-CLIENT-HOSTNAME: 213.134.187.64
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddujedguddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudekjedrieegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekjedrieegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeduvddprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnhgurhhihidrshhhvghvtghhvghnkhhosehlihhnuhigrdhi
- nhhtvghlrdgtohhmpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehhuggvghhovgguvgesrhgvughhrghtrdgtohhmpdhrtghpthhtohepshgrkhgrrhhirdgrihhluhhssehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohepvhhkohhulheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohephihunhhgqdgthhhurghnrdhlihgroheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehpihgvrhhrvgdqlhhouhhishdrsghoshhsrghrtheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehsrghnhihoghdrrhdrkhgrlhgvsehinhhtvghlrdgtohhmpdhrtghpthhtoheprghlshgrqdguvghvvghlsegrlhhsrgdqphhrohhjvggtthdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=12 Fuz1=12 Fuz2=12
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddujedguddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudekjedrieegnecuvehluhhsthgvrhfuihiivgepvdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekjedrieegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghnughrihihrdhshhgvvhgthhgvnhhkoheslhhinhhugidrihhn
+ thgvlhdrtghomhdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohephhguvghgohgvuggvsehrvgguhhgrthdrtghomhdprhgtphhtthhopehsrghkrghrihdrrghilhhusheslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Instead of walking the list of children of an ACPI device directly,
-use acpi_dev_for_each_child() to carry out an action for all of
-the given ACPI device's children.
+Instead of using the list of children of an ACPI device directly,
+use acpi_dev_for_each_child() to find the next child of a given
+ACPI device.
 
 This will help to eliminate the children list head from struct
 acpi_device as it is redundant and it is used in questionable ways
@@ -66,160 +61,88 @@ in some places (in particular, locking is needed for walking the
 list pointed to it safely, but it is often missing).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Tested-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
 
 v1 -> v2:
-   * Make sure errors are not lost (Pierre-Louis).
-   * Add R-by and T-by from Pierre-Louis.
+   * Add R-by from Andy.
 
 ---
- drivers/soundwire/slave.c |  117 ++++++++++++++++++++++++++--------------------
- 1 file changed, 67 insertions(+), 50 deletions(-)
+ drivers/acpi/property.c |   47 +++++++++++++++++++++++++----------------------
+ 1 file changed, 25 insertions(+), 22 deletions(-)
 
-Index: linux-pm/drivers/soundwire/slave.c
+Index: linux-pm/drivers/acpi/property.c
 ===================================================================
---- linux-pm.orig/drivers/soundwire/slave.c
-+++ linux-pm/drivers/soundwire/slave.c
-@@ -127,6 +127,71 @@ static bool find_slave(struct sdw_bus *b
- 	return true;
+--- linux-pm.orig/drivers/acpi/property.c
++++ linux-pm/drivers/acpi/property.c
+@@ -1012,6 +1012,22 @@ static int acpi_node_prop_read(const str
+ 				   propname, proptype, val, nval);
  }
  
-+struct sdw_acpi_child_walk_data {
-+	struct sdw_bus *bus;
-+	struct acpi_device *adev;
-+	struct sdw_slave_id id;
-+	bool ignore_unique_id;
-+};
-+
-+static int sdw_acpi_check_duplicate(struct acpi_device *adev, void *data)
++static int stop_on_next(struct acpi_device *adev, void *data)
 +{
-+	struct sdw_acpi_child_walk_data *cwd = data;
-+	struct sdw_bus *bus = cwd->bus;
-+	struct sdw_slave_id id;
++	struct acpi_device **ret_p = data;
 +
-+	if (adev == cwd->adev)
-+		return 0;
-+
-+	if (!find_slave(bus, adev, &id))
-+		return 0;
-+
-+	if (cwd->id.sdw_version != id.sdw_version || cwd->id.mfg_id != id.mfg_id ||
-+	    cwd->id.part_id != id.part_id || cwd->id.class_id != id.class_id)
-+		return 0;
-+
-+	if (cwd->id.unique_id != id.unique_id) {
-+		dev_dbg(bus->dev,
-+			"Valid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
-+			cwd->id.unique_id, id.unique_id, cwd->id.mfg_id,
-+			cwd->id.part_id);
-+		cwd->ignore_unique_id = false;
-+		return 0;
++	if (!*ret_p) {
++		*ret_p = adev;
++		return 1;
 +	}
 +
-+	dev_err(bus->dev,
-+		"Invalid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
-+		cwd->id.unique_id, id.unique_id, cwd->id.mfg_id, cwd->id.part_id);
-+	return -ENODEV;
-+}
++	/* Skip until the "previous" object is found. */
++	if (*ret_p == adev)
++		*ret_p = NULL;
 +
-+static int sdw_acpi_find_one(struct acpi_device *adev, void *data)
-+{
-+	struct sdw_bus *bus = data;
-+	struct sdw_acpi_child_walk_data cwd = {
-+		.bus = bus,
-+		.adev = adev,
-+		.ignore_unique_id = true,
-+	};
-+	int ret;
-+
-+	if (!find_slave(bus, adev, &cwd.id))
-+		return 0;
-+
-+	/* Brute-force O(N^2) search for duplicates. */
-+	ret = acpi_dev_for_each_child(ACPI_COMPANION(bus->dev),
-+				      sdw_acpi_check_duplicate, &cwd);
-+	if (ret)
-+		return ret;
-+
-+	if (cwd.ignore_unique_id)
-+		cwd.id.unique_id = SDW_IGNORED_UNIQUE_ID;
-+
-+	/* Ignore errors and continue. */
-+	sdw_slave_add(bus, &cwd.id, acpi_fwnode_handle(adev));
 +	return 0;
 +}
 +
- /*
-  * sdw_acpi_find_slaves() - Find Slave devices in Master ACPI node
-  * @bus: SDW bus instance
-@@ -135,8 +200,7 @@ static bool find_slave(struct sdw_bus *b
-  */
- int sdw_acpi_find_slaves(struct sdw_bus *bus)
+ /**
+  * acpi_get_next_subnode - Return the next child node handle for a fwnode
+  * @fwnode: Firmware node to find the next child node for.
+@@ -1020,35 +1036,22 @@ static int acpi_node_prop_read(const str
+ struct fwnode_handle *acpi_get_next_subnode(const struct fwnode_handle *fwnode,
+ 					    struct fwnode_handle *child)
  {
--	struct acpi_device *adev, *parent;
--	struct acpi_device *adev2, *parent2;
-+	struct acpi_device *parent;
+-	const struct acpi_device *adev = to_acpi_device_node(fwnode);
+-	const struct list_head *head;
+-	struct list_head *next;
++	struct acpi_device *adev = to_acpi_device_node(fwnode);
  
- 	parent = ACPI_COMPANION(bus->dev);
- 	if (!parent) {
-@@ -144,54 +208,7 @@ int sdw_acpi_find_slaves(struct sdw_bus
- 		return -ENODEV;
+ 	if ((!child || is_acpi_device_node(child)) && adev) {
+-		struct acpi_device *child_adev;
++		struct acpi_device *child_adev = to_acpi_device_node(child);
++
++		acpi_dev_for_each_child(adev, stop_on_next, &child_adev);
++		if (child_adev)
++			return acpi_fwnode_handle(child_adev);
+ 
+-		head = &adev->children;
+-		if (list_empty(head))
+-			goto nondev;
+-
+-		if (child) {
+-			adev = to_acpi_device_node(child);
+-			next = adev->node.next;
+-			if (next == head) {
+-				child = NULL;
+-				goto nondev;
+-			}
+-			child_adev = list_entry(next, struct acpi_device, node);
+-		} else {
+-			child_adev = list_first_entry(head, struct acpi_device,
+-						      node);
+-		}
+-		return acpi_fwnode_handle(child_adev);
++		child = NULL;
  	}
  
--	list_for_each_entry(adev, &parent->children, node) {
--		struct sdw_slave_id id;
--		struct sdw_slave_id id2;
--		bool ignore_unique_id = true;
--
--		if (!find_slave(bus, adev, &id))
--			continue;
--
--		/* brute-force O(N^2) search for duplicates */
--		parent2 = parent;
--		list_for_each_entry(adev2, &parent2->children, node) {
--
--			if (adev == adev2)
--				continue;
--
--			if (!find_slave(bus, adev2, &id2))
--				continue;
--
--			if (id.sdw_version != id2.sdw_version ||
--			    id.mfg_id != id2.mfg_id ||
--			    id.part_id != id2.part_id ||
--			    id.class_id != id2.class_id)
--				continue;
--
--			if (id.unique_id != id2.unique_id) {
--				dev_dbg(bus->dev,
--					"Valid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
--					id.unique_id, id2.unique_id, id.mfg_id, id.part_id);
--				ignore_unique_id = false;
--			} else {
--				dev_err(bus->dev,
--					"Invalid unique IDs 0x%x 0x%x for Slave mfg_id 0x%04x, part_id 0x%04x\n",
--					id.unique_id, id2.unique_id, id.mfg_id, id.part_id);
--				return -ENODEV;
--			}
--		}
--
--		if (ignore_unique_id)
--			id.unique_id = SDW_IGNORED_UNIQUE_ID;
--
--		/*
--		 * don't error check for sdw_slave_add as we want to continue
--		 * adding Slaves
--		 */
--		sdw_slave_add(bus, &id, acpi_fwnode_handle(adev));
--	}
--
--	return 0;
-+	return acpi_dev_for_each_child(parent, sdw_acpi_find_one, bus);
- }
+- nondev:
+ 	if (!child || is_acpi_data_node(child)) {
+ 		const struct acpi_data_node *data = to_acpi_data_node(fwnode);
++		const struct list_head *head;
++		struct list_head *next;
+ 		struct acpi_data_node *dn;
  
- #endif
+ 		/*
 
 
 
