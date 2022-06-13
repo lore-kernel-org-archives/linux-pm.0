@@ -2,138 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BB98C43334
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 17:25:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB37C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 17:27:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241022AbiFMRZU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 13:25:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35638 "EHLO
+        id S238365AbiFMR1p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 13:27:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38232 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240438AbiFMRZI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 13:25:08 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 691CB129C05;
-        Mon, 13 Jun 2022 05:43:48 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4104215A1;
-        Mon, 13 Jun 2022 05:43:48 -0700 (PDT)
-Received: from e123648.arm.com (unknown [10.57.35.216])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 26B143F73B;
-        Mon, 13 Jun 2022 05:43:46 -0700 (PDT)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
-        lukasz.luba@arm.com, viresh.kumar@linaro.org, rafael@kernel.org,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, mingo@redhat.com
-Subject: [PATCH v2 4/4] thermal: devfreq_cooling: Extend the devfreq_cooling_device with ops
-Date:   Mon, 13 Jun 2022 13:43:27 +0100
-Message-Id: <20220613124327.30766-5-lukasz.luba@arm.com>
+        with ESMTP id S232375AbiFMR1X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 13:27:23 -0400
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44D9549242;
+        Mon, 13 Jun 2022 05:43:23 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id s1so6966666wra.9;
+        Mon, 13 Jun 2022 05:43:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id;
+        bh=gWZ2iuIrN0ujnQkPHV+TXRlSbNOjanWQAKWTOlhoEcw=;
+        b=m77Tk6N3ACPMUA59bi65hTpTPrRkAmreeEkyPDG3GSgXJ4ZskPgxVFTCgLrtL3XMIN
+         ptdPRIejAHUs/msgd9kwUcXEjXH9h7iZTcPwQxmlBnAUS7pH5Fm0NyuuqMXMP7CiLvVO
+         A9X9U3iJN+KG2ON0S31rL3jMCzil1eJebmUdSlTO0cApaAKzK6aiS/YCtN5nqUvbdiWe
+         gIf7Zmiz6VM37j6dsu/XmcwtVHHpYInnIywvwAg1s0q6KNVE7YG/xv2O93IgV/yg+P7Q
+         s2pNHc1o5iLoQm+lbRaHYNVnObrF+/BXhSd9zlqbOuRTur8kUpI7PWlWdET9InW86Eqd
+         fw+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=gWZ2iuIrN0ujnQkPHV+TXRlSbNOjanWQAKWTOlhoEcw=;
+        b=5UXfS2fjCGSQkFlZKZMLo7c5axWa4m3Kt3jmYQXnhZE0ixUw/JXD/7+twL8O1TLAJN
+         fysoJ3KT6V4UlbZf/Guyheg0iyQ0QiS4Mt7heHEUw42PNDNNa2SrbwsiYMsFONH1jTTw
+         jCeAOjVXDp8RQeHeTySsRgLehHkBBcsBfy5IFQb+gi1ZWrm3i2SAR3BeRsCJXEx/Pl0p
+         RKbgtvHTK+oCOKrL0cn2sdZFbVNRQq6tSOZZUyeeG2PYuYKaYno/nQnAf/X3/pUgzgXu
+         r/77B0XdUgSXATWzNqMGiCvHR2BKKKmOB0/YTVFpjSWCnV4+I83C0sZtqBTe/K5fQ04x
+         PSnw==
+X-Gm-Message-State: AOAM530OEGRwbAcENhZcw5qSn79f/IVpN5gEzMcpo7Isd7uiWQu9DIm3
+        xygdv/9i86k6axmXGHGjHpg=
+X-Google-Smtp-Source: ABdhPJxmRpI3gbTnGIrNNYzB/skcfriE8YOSY4phl7jCU0+HLVMzMpV8RT5xLa1lCuYOs16Wh9CFCA==
+X-Received: by 2002:a5d:6c62:0:b0:218:3e13:4b17 with SMTP id r2-20020a5d6c62000000b002183e134b17mr38913538wrz.673.1655124201670;
+        Mon, 13 Jun 2022 05:43:21 -0700 (PDT)
+Received: from felia.fritz.box (200116b8260df50011e978c0f780de03.dip.versatel-1u1.de. [2001:16b8:260d:f500:11e9:78c0:f780:de03])
+        by smtp.gmail.com with ESMTPSA id y3-20020adfd083000000b002103cfd2fbasm8383940wrh.65.2022.06.13.05.43.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jun 2022 05:43:21 -0700 (PDT)
+From:   Lukas Bulwahn <lukas.bulwahn@gmail.com>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Subject: [PATCH] MAINTAINERS: add include/dt-bindings/thermal to THERMAL
+Date:   Mon, 13 Jun 2022 14:43:09 +0200
+Message-Id: <20220613124309.28790-1-lukas.bulwahn@gmail.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20220613124327.30766-1-lukasz.luba@arm.com>
-References: <20220613124327.30766-1-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove unneeded global variable devfreq_cooling_ops which is used only
-as a copy pattern. Instead, extend the struct devfreq_cooling_device with
-the needed ops structure. This also simplifies the allocation/free code
-during the setup/cleanup.
+Maintainers of the directory Documentation/devicetree/bindings/thermal
+are also the maintainers of the corresponding directory
+include/dt-bindings/thermal.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Add the file entry for include/dt-bindings/thermal to the appropriate
+section in MAINTAINERS.
+
+Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 ---
- drivers/thermal/devfreq_cooling.c | 27 +++++++++------------------
- 1 file changed, 9 insertions(+), 18 deletions(-)
+Rafael, Daniel, please pick this MAINTAINERS addition to your section.
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 8c76f9655e57..67b618b1afc8 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -28,6 +28,7 @@
-  * struct devfreq_cooling_device - Devfreq cooling device
-  *		devfreq_cooling_device registered.
-  * @cdev:	Pointer to associated thermal cooling device.
-+ * @cooling_ops: devfreq callbacks to thermal cooling device ops
-  * @devfreq:	Pointer to associated devfreq device.
-  * @cooling_state:	Current cooling state.
-  * @freq_table:	Pointer to a table with the frequencies sorted in descending
-@@ -48,6 +49,7 @@
-  */
- struct devfreq_cooling_device {
- 	struct thermal_cooling_device *cdev;
-+	struct thermal_cooling_device_ops cooling_ops;
- 	struct devfreq *devfreq;
- 	unsigned long cooling_state;
- 	u32 *freq_table;
-@@ -290,12 +292,6 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- 	return 0;
- }
- 
--static struct thermal_cooling_device_ops devfreq_cooling_ops = {
--	.get_max_state = devfreq_cooling_get_max_state,
--	.get_cur_state = devfreq_cooling_get_cur_state,
--	.set_cur_state = devfreq_cooling_set_cur_state,
--};
--
- /**
-  * devfreq_cooling_gen_tables() - Generate frequency table.
-  * @dfc:	Pointer to devfreq cooling device.
-@@ -363,18 +359,18 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 	char *name;
- 	int err, num_opps;
- 
--	ops = kmemdup(&devfreq_cooling_ops, sizeof(*ops), GFP_KERNEL);
--	if (!ops)
--		return ERR_PTR(-ENOMEM);
- 
- 	dfc = kzalloc(sizeof(*dfc), GFP_KERNEL);
--	if (!dfc) {
--		err = -ENOMEM;
--		goto free_ops;
--	}
-+	if (!dfc)
-+		return ERR_PTR(-ENOMEM);
- 
- 	dfc->devfreq = df;
- 
-+	ops = &dfc->cooling_ops;
-+	ops->get_max_state = devfreq_cooling_get_max_state;
-+	ops->get_cur_state = devfreq_cooling_get_cur_state;
-+	ops->set_cur_state = devfreq_cooling_set_cur_state;
-+
- 	em = em_pd_get(dev);
- 	if (em && !em_is_artificial(em)) {
- 		dfc->em_pd = em;
-@@ -437,8 +433,6 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 	kfree(dfc->freq_table);
- free_dfc:
- 	kfree(dfc);
--free_ops:
--	kfree(ops);
- 
- 	return ERR_PTR(err);
- }
-@@ -520,13 +514,11 @@ EXPORT_SYMBOL_GPL(devfreq_cooling_em_register);
- void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
- 	struct devfreq_cooling_device *dfc;
--	const struct thermal_cooling_device_ops *ops;
- 	struct device *dev;
- 
- 	if (IS_ERR_OR_NULL(cdev))
- 		return;
- 
--	ops = cdev->ops;
- 	dfc = cdev->devdata;
- 	dev = dfc->devfreq->dev.parent;
- 
-@@ -537,6 +529,5 @@ void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 
- 	kfree(dfc->freq_table);
- 	kfree(dfc);
--	kfree(ops);
- }
- EXPORT_SYMBOL_GPL(devfreq_cooling_unregister);
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ec2e764a22ee..4fd2c1080aa5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -19858,6 +19858,7 @@ F:	Documentation/ABI/testing/sysfs-class-thermal
+ F:	Documentation/devicetree/bindings/thermal/
+ F:	Documentation/driver-api/thermal/
+ F:	drivers/thermal/
++F:	include/dt-bindings/thermal/
+ F:	include/linux/cpu_cooling.h
+ F:	include/linux/thermal.h
+ F:	include/uapi/linux/thermal.h
 -- 
 2.17.1
 
