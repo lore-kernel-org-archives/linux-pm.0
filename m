@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78D6ACCA498
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 12:56:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E6D2CCA48A
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 12:56:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355959AbiFMM4G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 08:56:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43878 "EHLO
+        id S1356222AbiFMM4J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 08:56:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357752AbiFMMyo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 08:54:44 -0400
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com [IPv6:2607:f8b0:4864:20::541])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D01A6668C;
-        Mon, 13 Jun 2022 04:13:16 -0700 (PDT)
-Received: by mail-pg1-x541.google.com with SMTP id g186so5263190pgc.1;
-        Mon, 13 Jun 2022 04:13:16 -0700 (PDT)
+        with ESMTP id S1357005AbiFMMyK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 08:54:10 -0400
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 463056352C;
+        Mon, 13 Jun 2022 04:13:00 -0700 (PDT)
+Received: by mail-pf1-x435.google.com with SMTP id i64so5443650pfc.8;
+        Mon, 13 Jun 2022 04:13:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=hf4jIbSC0d5YY8s9rqomM6DgVm8XNv+YrOYwUOgBoNA=;
-        b=LXWqlDW2i8o2CD+D6fikYhundWq6bCB6giHGiPurlzrtGHlwsplK3mx8a1NdxqTICD
-         wQUiqLRKDT8VJLctE8Qyo1+yYsGZFNdBFubmnLWippbPRgB6MF9yVDZQoRuKJIdueXwO
-         FM0jRPYl1fOnL/6rWLdXogGSFa2a5FpcWfZvQwec1lfsdVIoykmgXW9fd6LWHSAckdDP
-         uxwPG0WS7/ESWkyuaAWgiASgRQQTdn9KLVQX1N8MvZI5kykft1vw8fvoOyjrwfEHNHKq
-         p+yMOHkQEeFAkgJboqBBrgVM9NFCYLmM+itqsX9KU3HC5HJKe4SKoCUiaIXnJh74LlB5
-         p/uQ==
+        bh=H0uTDh6aYM5COnk2LVf+hv3AKvxMR4j6qZouxZ1ZW08=;
+        b=oMtXDMaL+3K41xX3wOjL+4cJPZPdia8pK0tBsbVNhsHMmgvlY2yDecUqMCbiNaC+Hn
+         8cE8h6SDOvEYWn/WwmLZ7sMRWZcuF9sdzlzyVE8GzzvRuSA1/RBlFOfELSjinK69NNdo
+         0RDq6mLN6SnRWd2YXZ3BS8V15ynLULjLSzLfjj62me3lSsdxEdTxpcK9sLqdtAL18ikn
+         10+cvHGXBMsVmzKBDU7JNlm+oBJ2PwkYMBbXwe4ddFKqZ4oTzjFc8C/lw0j/6fCvtch2
+         /PH0f1TQoGivWlVyZKddDusoDyGdaC3bO0lueeCM1l2VrOtE2glqpbHGcaZb9gaPcN3s
+         3QSg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=hf4jIbSC0d5YY8s9rqomM6DgVm8XNv+YrOYwUOgBoNA=;
-        b=NmwbDYhl3VGN2ebjU71r6d69RRr9cIfeejRJz9ljtFxe0LRcJYyvWpX6ndRG4lZOFQ
-         01vrftUsjYJQz68lfwVGFg1MlfdD8eMK1/KQPuBvUR3hpOvCDaLUtjM4iF5L6VkXEaNh
-         igbzEmI98k/PvwYF/YtRvq9kQISOGoGhjCWWacbB8o1esThgCww2yFY6xlju2zxDmhCP
-         05Tb/tRtuHxRfHkf8Fs6R7gh89jYILAxM1sjhEX9sI8ILkZujq158R4cqB80xw7jQPP0
-         +fxLiPcZATTAK0x7VqfF3+GYtwTw358hP109Oq0nW05wm7lLKd8Rd3zU0gRDoH72/A3K
-         0/vw==
-X-Gm-Message-State: AOAM533zOyYifau3evdfQzm6/0Yafz0v/kAy+f7vfg9dKJV/ok0Cc0Tk
-        /IvC37P5SlFPch0qUICBmZ8=
-X-Google-Smtp-Source: ABdhPJy91L1cAhQPwaeU8vYLmrVlKb6COYEVKqbPaII+8J9gUc3Xz+wkNkvJMcJwWCAFDLtI1fb5tQ==
-X-Received: by 2002:a05:6a00:18a9:b0:51b:f63b:6f7c with SMTP id x41-20020a056a0018a900b0051bf63b6f7cmr47127824pfh.49.1655118796098;
-        Mon, 13 Jun 2022 04:13:16 -0700 (PDT)
+        bh=H0uTDh6aYM5COnk2LVf+hv3AKvxMR4j6qZouxZ1ZW08=;
+        b=n+zqPlV+/loHgiVLzFGLKtjV4Y/JH2j1u2lYfJT1GGZD5vY36piSl24QnpyyL91SPK
+         i5Q81++x41p4YNOLFyn9GVhDsqLMWqpcIZljwITlaGsXFic4zRODqQi6bU+WDn8CBIzd
+         FbbY7YCCIySwPSZnHTdnXNesEMikeLUuSyfjrb2xq4dfJbtQEsVaxiYwjTG5obOWgwvY
+         WvyLSd4AdzWbdVmageYo8/f4p/sWM1GJNVO525JTwbcSgjOvWHNde/U7rysRv+kWXHtN
+         NFKYTahoea0ITMvxRklokcyiCvy6FMQaMbtMbolYF0y2X9uXtbNzwe+Tjk7XLXvMDCNC
+         M5NQ==
+X-Gm-Message-State: AOAM530AFg2T0iz1UoR8ii3eDMJlO6tMywZEcaGcCmQ7kPaVUROzizyD
+        2zRvGFoTNt/SS6z8t7vC9BM=
+X-Google-Smtp-Source: ABdhPJzUET+kWcvRpxcgqFcYe7H7yEtugI2dhw2yXyAzpnbUyW0Jye1NyMKd3NCLfMtc5qXAlEC96g==
+X-Received: by 2002:a63:2f84:0:b0:408:9c77:7a7e with SMTP id v126-20020a632f84000000b004089c777a7emr68350pgv.191.1655118778405;
+        Mon, 13 Jun 2022 04:12:58 -0700 (PDT)
 Received: from RD-3580-24288.rt.l (42-72-115-109.emome-ip.hinet.net. [42.72.115.109])
-        by smtp.gmail.com with ESMTPSA id g17-20020a056a000b9100b0051b4e53c487sm5199989pfj.45.2022.06.13.04.13.11
+        by smtp.gmail.com with ESMTPSA id g17-20020a056a000b9100b0051b4e53c487sm5199989pfj.45.2022.06.13.04.12.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jun 2022 04:13:15 -0700 (PDT)
+        Mon, 13 Jun 2022 04:12:58 -0700 (PDT)
 From:   ChiaEn Wu <peterwu.pub@gmail.com>
 To:     jic23@kernel.org, lars@metafoo.de, matthias.bgg@gmail.com,
         lee.jones@linaro.org, daniel.thompson@linaro.org,
@@ -57,10 +57,10 @@ Cc:     linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com, ChiaEn Wu <chiaen_wu@richtek.com>
-Subject: [PATCH v2 07/15] Documentation: ABI: testing: mt6370: Add ADC sysfs guideline
-Date:   Mon, 13 Jun 2022 19:11:38 +0800
-Message-Id: <20220613111146.25221-8-peterwu.pub@gmail.com>
+        szunichen@gmail.com, ChiYuan Huang <cy_huang@richtek.com>
+Subject: [PATCH v2 03/15] dt-bindings: leds: mt6370: Add Mediatek mt6370 current sink type LED indicator
+Date:   Mon, 13 Jun 2022 19:11:34 +0800
+Message-Id: <20220613111146.25221-4-peterwu.pub@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220613111146.25221-1-peterwu.pub@gmail.com>
 References: <20220613111146.25221-1-peterwu.pub@gmail.com>
@@ -70,58 +70,70 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: ChiaEn Wu <chiaen_wu@richtek.com>
+From: ChiYuan Huang <cy_huang@richtek.com>
 
-Add ABI documentation for mt6370 non-standard ADC sysfs interfaces.
+Add Mediatek mt6370 current sink type LED indicator binding documentation.
 
-Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 ---
- .../ABI/testing/sysfs-bus-iio-adc-mt6370      | 36 +++++++++++++++++++
- 1 file changed, 36 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370
+ .../leds/mediatek,mt6370-indicator.yaml       | 48 +++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370 b/Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370
+diff --git a/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
 new file mode 100644
-index 000000000000..039b3381176a
+index 000000000000..42b96c8047a3
 --- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-bus-iio-adc-mt6370
-@@ -0,0 +1,36 @@
-+What:		/sys/bus/iio/devices/iio:deviceX/in_voltage0_raw
-+KernelVersion:	5.18
-+Contact:	chiaen_wu@richtek.com
-+Description:
-+		Indicated MT6370 VBUS ADC with lower accuracy(+-75mA)
-+		higher measure range(1~22V)
-+		Calculating with scale returns voltage in uV
++++ b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+@@ -0,0 +1,48 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/mediatek,mt6370-indicator.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+What:		/sys/bus/iio/devices/iio:deviceX/in_voltage1_raw
-+KernelVersion:	5.18
-+Contact:	chiaen_wu@richtek.com
-+Description:
-+		Indicated MT6370 VBUS ADC with higher accuracy(+-30mA)
-+		lower measure range(1~9.76V)
-+		Calculating with scale offset returns voltage in uV
++title: LED driver for MT6370 PMIC from MediaTek Integrated.
 +
-+What:		/sys/bus/iio/devices/iio:deviceX/in_voltage4_raw
-+KernelVersion:	5.18
-+Contact:	chiaen_wu@richtek.com
-+Description:
-+		Indicated MT6370 TS_BAT ADC
-+		Calculating with scale returns voltage in uV
++maintainers:
++  - Alice Chen <alice_chen@richtek.com>
 +
-+What:		/sys/bus/iio/devices/iio:deviceX/in_voltage7_raw
-+KernelVersion:	5.18
-+Contact:	chiaen_wu@richtek.com
-+Description:
-+		Indicated MT6370 CHG_VDDP ADC
-+		Calculating with scale returns voltage in mV
++description: |
++  This module is part of the MT6370 MFD device.
++  Add MT6370 LED driver include 4-channel RGB LED support Register/PWM/Breath Mode
 +
-+What:		/sys/bus/iio/devices/iio:deviceX/in_temp8_raw
-+KernelVersion:	5.18
-+Contact:	chiaen_wu@richtek.com
-+Description:
-+		Indicated MT6370 IC junction temperature
-+		Calculating with scale and offset returns temperature in degree
++properties:
++  compatible:
++    const: mediatek,mt6370-indicator
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++patternProperties:
++  "^(multi-)?led@[0-3]$":
++    $ref: common.yaml#
++    type: object
++
++    properties:
++      reg:
++        description: |
++          Index of the LED.
++        enum:
++          - 0 # LED output ISINK1
++          - 1 # LED output ISINK2
++          - 2 # LED output ISINK3
++          - 3 # LED output ISINK4
++
++    unevaluatedProperties: false
++
++required:
++  - compatible
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties: false
 -- 
 2.25.1
 
