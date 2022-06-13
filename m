@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AB50CCA483
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F94DCCA482
 	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 18:05:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243039AbiFMSDI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S243233AbiFMSDI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 13 Jun 2022 14:03:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43988 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39370 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242039AbiFMSCY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 14:02:24 -0400
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52449D43;
-        Mon, 13 Jun 2022 06:45:14 -0700 (PDT)
-Received: by mail-wr1-x42d.google.com with SMTP id a15so7218824wrh.2;
-        Mon, 13 Jun 2022 06:45:14 -0700 (PDT)
+        with ESMTP id S244051AbiFMSCZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 14:02:25 -0400
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C9C2D89;
+        Mon, 13 Jun 2022 06:45:17 -0700 (PDT)
+Received: by mail-wm1-x333.google.com with SMTP id z9so2995744wmf.3;
+        Mon, 13 Jun 2022 06:45:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Eyb0gzzBMaZAiHZGYYnJBj5umG33L2ZCgocNe/btits=;
-        b=POBeCUtP2bRjkE8xG8FepF04OX9JLidQUypChR17MOEDStRDopytquh3SHns8KSgZt
-         66N29qRsjzwrb8DLhGpCcqoGgxA10SMXOLA3cVpe41qGm+mRkEETZ8YpHr83QtRfe+I3
-         /8W4NynY9JWXkbQsA4Ag2v/UcgTSt/iSRpoju81g29x8uxiQQvt9N4tKt73HWhC6oKYN
-         GgvbuUKBYSNo2SAjOUSCyP2Jm9/7KvtZe4SoOAeS0OADqhtfplAEvF8H/bJU9nFChTh8
-         Q0KOK4G+iCNqOvct/Y18ttSII1J0HVgjOTwmfWH5JLvf3TmBKxG6jZbls+Z411DtHIs5
-         Fa+g==
+        bh=wyraSSKv1jqCeF4xZjEyVevZ1Z/RuxxufoUeosKgARw=;
+        b=J87NyDPNSiU1rQKYzpcOjhK4eIXKQc6HaI8Zo+0rj+kofa3hwUYB15zd0OVwwl0zLI
+         NKXBDCSmRlGZ8V2x2/6co0IlmdEA+FaDXzwMTT5Od52UJd/NBeafBVra/pGTwjy5LStU
+         mw1wiQhrTfSnrEHCrALkAL72ws9o3SLhX4mt5aX/eR/pnNGm38oQ31x8+FhkFy0n4VBl
+         VOAyOixqd8lbFTI0BDgZ+tSltUMYf09AABWK47q5LKYa2FuVhYplKEazj3Q4Kclai727
+         XIFdig5c2iRtn7PgyUIbsZNFi6Rkop/4ZFMpeJylc6X8hQzmzUbeRPaDiBR/hHe2lf3h
+         TAHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Eyb0gzzBMaZAiHZGYYnJBj5umG33L2ZCgocNe/btits=;
-        b=XuuKW3zPtNzSRs+Sbge2Vxns2XuRhpPksn8KgJCF4OxVffdWsEJDAyOVuZVt1sk0Mj
-         EzrALy5fx0VZdqC6XRQV/H3kViweznzLG7FlLhzEchdCo53X86Zh3dTtHnhzCHbWIvaE
-         CfeeruKiD/MjA7LONWFWFMunr90H4s4ZbXGsq7Dv1FMD/8d1Yq9PULPWpuwto53bnin0
-         PiH8bHte4n69+SgZ28dy27GSXBuVl4a2RgKPmmITF/Yl+kwwj8cOlvQVEaJUKlfjS5Nx
-         18CgbMNP39wEX0I4TkDRxE4w99MadPoY9UdLeOE3148LGLg63ws1AFSjTn7mM5zMCavd
-         qQEQ==
-X-Gm-Message-State: AOAM531LP94icO9rTGVLJW1tzWBOeh9Wc5VHK9e+CZ1oMoRY1OnVtryJ
-        eQzmVPMZVC1ia9EyycBmGb8=
-X-Google-Smtp-Source: ABdhPJz2pbmpIApaOG7ch0omubRyWUhWs8eyCgKuj08tEh4cWJp66mZgAsiwdGQ8m6S31d5lgoaKGA==
-X-Received: by 2002:adf:ffc7:0:b0:210:2bba:f431 with SMTP id x7-20020adfffc7000000b002102bbaf431mr58377219wrs.495.1655127912771;
-        Mon, 13 Jun 2022 06:45:12 -0700 (PDT)
+        bh=wyraSSKv1jqCeF4xZjEyVevZ1Z/RuxxufoUeosKgARw=;
+        b=w0OlXg0pZyTFko1ZdN4M/r+iKbv+Cqltrykwff30YTl1UavXFUeKUGkbLmSB9nDyV2
+         sjMGpeJnTBziUnRcY/cNENwIUk2XjP+uV7yqpHkzXmQ8WtxfqOMrHiq5mmKiSrhjLoIg
+         Y8UNo9NDeSgtKG8w0i7QsCBj+wyadw/wOJh16tOvRInxsRsxzXY9XWuwgH9IfthGuEUy
+         Mh7CAg8Eiq9NX4ds6ZRoK7sVy2THWncLKm9s5FjvoMBe19HQkoNbiAlqSTE/VecfnOMj
+         kh9xYmRXM0Oq9xNjlwIRtgotQ32Bg5MOegZQ7PbREqcczWnyFzKVgc2A7fSPwT95PjTj
+         ddpA==
+X-Gm-Message-State: AOAM533x0KMm5VLB5N/kICoPApdxC4xedSsCGTQ/ykTAQpSkGu2pQcKT
+        u7c6tLSbtCr/si3t/37lZjc=
+X-Google-Smtp-Source: ABdhPJx7Jm4v2NF4tcGT0yyIRXFuX+doT8y0QitWBmRUlV/6XJPlqijbB2tYMkQHcKA9eg2MQxBaGw==
+X-Received: by 2002:a05:600c:35d2:b0:39c:8490:abbf with SMTP id r18-20020a05600c35d200b0039c8490abbfmr13106105wmq.86.1655127915690;
+        Mon, 13 Jun 2022 06:45:15 -0700 (PDT)
 Received: from localhost.localdomain (93-42-70-190.ip85.fastwebnet.it. [93.42.70.190])
-        by smtp.googlemail.com with ESMTPSA id i1-20020a5d5221000000b002103aebe8absm8647510wra.93.2022.06.13.06.45.11
+        by smtp.googlemail.com with ESMTPSA id i1-20020a5d5221000000b002103aebe8absm8647510wra.93.2022.06.13.06.45.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jun 2022 06:45:12 -0700 (PDT)
+        Mon, 13 Jun 2022 06:45:15 -0700 (PDT)
 From:   Christian 'Ansuel' Marangi <ansuelsmth@gmail.com>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -55,9 +55,9 @@ To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Saravana Kannan <skannan@codeaurora.org>,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     Christian 'Ansuel' Marangi <ansuelsmth@gmail.com>
-Subject: [PATCH v2 2/5] PM / devfreq: Fix kernel warning with cpufreq passive register fail
-Date:   Mon, 13 Jun 2022 15:42:10 +0200
-Message-Id: <20220613134213.8904-3-ansuelsmth@gmail.com>
+Subject: [PATCH v2 5/5] PM / devfreq: Mute warning on governor PROBE_DEFER
+Date:   Mon, 13 Jun 2022 15:42:13 +0200
+Message-Id: <20220613134213.8904-6-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220613134213.8904-1-ansuelsmth@gmail.com>
 References: <20220613134213.8904-1-ansuelsmth@gmail.com>
@@ -67,35 +67,30 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When the cpufreq passive register path from the passive governor fails,
-the cpufreq_passive_unregister is called and a kernel WARNING is always
-reported.
-This is caused by the fact that the devfreq driver already call the
-governor unregister with the GOV_STOP, for this reason the second
-cpufreq_passive_unregister always return error and a WARN is printed
-from the WARN_ON function.
-Remove the unregister call from the error handling of the cpufreq register
-notifier as it's fundamentally wrong and already handled by the devfreq
-core code.
+Don't print warning when a governor PROBE_DEFER as it's not a real
+GOV_START fail.
 
 Fixes: a03dacb0316f ("PM / devfreq: Add cpu based scaling support to passive governor")
 Signed-off-by: Christian 'Ansuel' Marangi <ansuelsmth@gmail.com>
 ---
- drivers/devfreq/governor_passive.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/devfreq/devfreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index 6252f109f8d1..b1d3a1e7e3f4 100644
---- a/drivers/devfreq/governor_passive.c
-+++ b/drivers/devfreq/governor_passive.c
-@@ -325,7 +325,6 @@ static int cpufreq_passive_register_notifier(struct devfreq *devfreq)
- err_put_policy:
- 	cpufreq_cpu_put(policy);
- err:
--	WARN_ON(cpufreq_passive_unregister_notifier(devfreq));
- 
- 	return ret;
- }
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 2e2b3b414d67..df6972bb0ce8 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -931,8 +931,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_START,
+ 						NULL);
+ 	if (err) {
+-		dev_err(dev, "%s: Unable to start governor for the device\n",
+-			__func__);
++		dev_err_probe(dev, -EPROBE_DEFER, "%s: Unable to start governor for the device\n",
++			      __func__);
+ 		goto err_init;
+ 	}
+ 	create_sysfs_files(devfreq, devfreq->governor);
 -- 
 2.36.1
 
