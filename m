@@ -2,172 +2,197 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C887FCCA47C
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 12:38:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69E73C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 12:56:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351223AbiFMMiB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 08:38:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54816 "EHLO
+        id S1355028AbiFMMzy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 08:55:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351815AbiFMMhT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 08:37:19 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60CE328718;
-        Mon, 13 Jun 2022 04:08:02 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id AC69D60A56;
-        Mon, 13 Jun 2022 11:08:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88E6AC34114;
-        Mon, 13 Jun 2022 11:07:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1655118480;
-        bh=gf9Yqi/C9uh2Bzvtgr/DICpMgnGQrrhsQEQ5c54oFwU=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=XR5S4ObtY05l1IJdMOdtUbHqGEUE3WrGg0l/BaIkH7uVWdpDNRvElMwFYdxzjRWJa
-         1/KbHKR3vVUYOArkMjLFkuql5ObbGPY6HT/76S8PfCAkWmWyb1WdN/1au/O+7ARxjj
-         FmlN2Y/LRCz2YTFHs+FWlq8q3RqyPzFr9wRCfNiI=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org, John Stultz <jstultz@google.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Naresh Kamboju <naresh.kamboju@linaro.org>,
-        Basil Eljuse <Basil.Eljuse@arm.com>,
-        Ferry Toth <fntoth@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
-        Anders Roxell <anders.roxell@linaro.org>,
-        linux-pm@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>,
-        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Saravana Kannan <saravanak@google.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.10 073/172] driver core: Fix wait_for_device_probe() & deferred_probe_timeout interaction
-Date:   Mon, 13 Jun 2022 12:10:33 +0200
-Message-Id: <20220613094907.960256636@linuxfoundation.org>
-X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20220613094850.166931805@linuxfoundation.org>
-References: <20220613094850.166931805@linuxfoundation.org>
-User-Agent: quilt/0.66
+        with ESMTP id S1357434AbiFMMyX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 08:54:23 -0400
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D15166543E;
+        Mon, 13 Jun 2022 04:13:08 -0700 (PDT)
+Received: by mail-pj1-x102b.google.com with SMTP id mh16-20020a17090b4ad000b001e8313301f1so7796201pjb.1;
+        Mon, 13 Jun 2022 04:13:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=PNKL5EoQe9yNQuWSwGWw4HpwNtWpyytf5bVWi/2uSYA=;
+        b=irUn2d6BF9k7/P7W7MnusQ2y6EAb7Yx6AVX6GzE3wbyM8y6CUrUTih/qiJ1axCO4AN
+         B2t588m6wRAAs2572apEbLnl8l7NhOGqetTjQevrbCL2OI1fwdz3qLC3pbGxUC7Wzj+z
+         hXx4vu06puhWg8Fepra01DMfBkXJvctaTbfCj6uJzYnX81nUXuhrzz8L9SG0plqiJUjx
+         CbyZovfivyzHblzLa+MKTC5klfKuLd9PmZNbujf2eJRhcNzpnIWKJuVjJ0H8YhcRqFNi
+         ufGgVrB5qORousrYENy/DpjK4bGU7S7YySVXIlNac2qOkBMPtz1ZI3xQ34OlX66VkMLE
+         qhVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=PNKL5EoQe9yNQuWSwGWw4HpwNtWpyytf5bVWi/2uSYA=;
+        b=UoVFXqKKA+QCh1HWVDovgyVzh4xNL3lFpJkObJs/6c+kg/TodqdzQ1i0uMVyQ69OMf
+         YHG56FXc/ZXQ17daKMik1EpKXuZfax4yz4ziL8H4KCk1SuIOBZ31j4voi4PQxkJIi4dS
+         ss1l5Ee5Fu1iP/hjWlBDyAgyQUKBg+eF5CnR5qP+jg9EcbaxvHCgH1Hc+zxbkrhLtLez
+         maXmiafrLSFtxEJ6azPgTO/6TVdGEqOIXhWPxyjblZdV9YxeH7W5xkfbkW1cYrNDyHHQ
+         ZO/7PLcQXhrR5vGK8Ln8ux7bT3zuFkZLWjVswE8C7EaNrtVi+OhY3TXQ4i2WVyd3GmH7
+         Jc5A==
+X-Gm-Message-State: AOAM533bJZlTAzLkRoER6CGDq/toq8lAt22rkJISo1tATpUl6072ZnB1
+        xZqZr1SyHutl5Lo7K86OShQ=
+X-Google-Smtp-Source: ABdhPJwA0uTKm6Harp/uy6rve75bJedJD8dBySejgYRVOmkwylT9noUd8UmThrqE7/9jk0JuIyuc6A==
+X-Received: by 2002:a17:902:8d98:b0:168:a310:3ea6 with SMTP id v24-20020a1709028d9800b00168a3103ea6mr23326338plo.9.1655118787075;
+        Mon, 13 Jun 2022 04:13:07 -0700 (PDT)
+Received: from RD-3580-24288.rt.l (42-72-115-109.emome-ip.hinet.net. [42.72.115.109])
+        by smtp.gmail.com with ESMTPSA id g17-20020a056a000b9100b0051b4e53c487sm5199989pfj.45.2022.06.13.04.13.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jun 2022 04:13:06 -0700 (PDT)
+From:   ChiaEn Wu <peterwu.pub@gmail.com>
+To:     jic23@kernel.org, lars@metafoo.de, matthias.bgg@gmail.com,
+        lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org
+Cc:     linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com, ChiYuan Huang <cy_huang@richtek.com>
+Subject: [PATCH v2 05/15] dt-bindings: backlight: Add Mediatek MT6370 backlight
+Date:   Mon, 13 Jun 2022 19:11:36 +0800
+Message-Id: <20220613111146.25221-6-peterwu.pub@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220613111146.25221-1-peterwu.pub@gmail.com>
+References: <20220613111146.25221-1-peterwu.pub@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Saravana Kannan <saravanak@google.com>
+From: ChiYuan Huang <cy_huang@richtek.com>
 
-[ Upstream commit 5ee76c256e928455212ab759c51d198fedbe7523 ]
+Add mt6370 backlight binding documentation.
 
-Mounting NFS rootfs was timing out when deferred_probe_timeout was
-non-zero [1].  This was because ip_auto_config() initcall times out
-waiting for the network interfaces to show up when
-deferred_probe_timeout was non-zero. While ip_auto_config() calls
-wait_for_device_probe() to make sure any currently running deferred
-probe work or asynchronous probe finishes, that wasn't sufficient to
-account for devices being deferred until deferred_probe_timeout.
-
-Commit 35a672363ab3 ("driver core: Ensure wait_for_device_probe() waits
-until the deferred_probe_timeout fires") tried to fix that by making
-sure wait_for_device_probe() waits for deferred_probe_timeout to expire
-before returning.
-
-However, if wait_for_device_probe() is called from the kernel_init()
-context:
-
-- Before deferred_probe_initcall() [2], it causes the boot process to
-  hang due to a deadlock.
-
-- After deferred_probe_initcall() [3], it blocks kernel_init() from
-  continuing till deferred_probe_timeout expires and beats the point of
-  deferred_probe_timeout that's trying to wait for userspace to load
-  modules.
-
-Neither of this is good. So revert the changes to
-wait_for_device_probe().
-
-[1] - https://lore.kernel.org/lkml/TYAPR01MB45443DF63B9EF29054F7C41FD8C60@TYAPR01MB4544.jpnprd01.prod.outlook.com/
-[2] - https://lore.kernel.org/lkml/YowHNo4sBjr9ijZr@dev-arch.thelio-3990X/
-[3] - https://lore.kernel.org/lkml/Yo3WvGnNk3LvLb7R@linutronix.de/
-
-Fixes: 35a672363ab3 ("driver core: Ensure wait_for_device_probe() waits until the deferred_probe_timeout fires")
-Cc: John Stultz <jstultz@google.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Naresh Kamboju <naresh.kamboju@linaro.org>
-Cc: Basil Eljuse <Basil.Eljuse@arm.com>
-Cc: Ferry Toth <fntoth@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Anders Roxell <anders.roxell@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Reported-by: Nathan Chancellor <nathan@kernel.org>
-Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: John Stultz <jstultz@google.com>
-Signed-off-by: Saravana Kannan <saravanak@google.com>
-Link: https://lore.kernel.org/r/20220526034609.480766-2-saravanak@google.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Reviewed-by: Rafael J. Wysocki <rafael@kernel.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 ---
- drivers/base/dd.c | 5 -----
- 1 file changed, 5 deletions(-)
+ .../backlight/mediatek,mt6370-backlight.yaml  | 107 ++++++++++++++++++
+ 1 file changed, 107 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/mediatek,mt6370-backlight.yaml
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 4f4e8aedbd2c..f9d9f1ad9215 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -250,7 +250,6 @@ DEFINE_SHOW_ATTRIBUTE(deferred_devs);
- 
- int driver_deferred_probe_timeout;
- EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
--static DECLARE_WAIT_QUEUE_HEAD(probe_timeout_waitqueue);
- 
- static int __init deferred_probe_timeout_setup(char *str)
- {
-@@ -302,7 +301,6 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
- 	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe)
- 		dev_info(p->device, "deferred probe pending\n");
- 	mutex_unlock(&deferred_probe_mutex);
--	wake_up_all(&probe_timeout_waitqueue);
- }
- static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);
- 
-@@ -706,9 +704,6 @@ int driver_probe_done(void)
-  */
- void wait_for_device_probe(void)
- {
--	/* wait for probe timeout */
--	wait_event(probe_timeout_waitqueue, !driver_deferred_probe_timeout);
--
- 	/* wait for the deferred probe workqueue to finish */
- 	flush_work(&deferred_probe_work);
- 
+diff --git a/Documentation/devicetree/bindings/leds/backlight/mediatek,mt6370-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/mediatek,mt6370-backlight.yaml
+new file mode 100644
+index 000000000000..25a05e607e83
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/mediatek,mt6370-backlight.yaml
+@@ -0,0 +1,107 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/mediatek,mt6370-backlight.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Mediatek MT6370 Backlight
++
++maintainers:
++  - ChiaEn Wu <chiaen_wu@richtek.com>
++
++description: |
++  This module is part of the MT6370 MFD device.
++  The MT6370 Backlight WLED driver supports up to a 29V output voltage for
++  4 channels of 8 series WLEDs. Each channel supports up to 30mA of current
++  capability with 2048 current steps (11 bits) in exponential or linear
++  mapping curves.
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: mediatek,mt6370-backlight
++
++  default-brightness:
++    minimum: 0
++    maximum: 2048
++
++  max-brightness:
++    minimum: 0
++    maximum: 2048
++
++  enable-gpios:
++    description: External backlight 'enable' pin
++    maxItems: 1
++
++  mediatek,bled-pwm-enable:
++    description: |
++      Enable external PWM input for backlight dimming
++    type: boolean
++
++  mediatek,bled-pwm-hys-enable:
++    description: |
++      Enable the backlight input-hysteresis for PWM mode
++    type: boolean
++
++  mediatek,bled-pwm-hys-input-bit:
++    $ref: /schemas/types.yaml#/definitions/uint8
++    enum: [0, 1, 2, 3]
++    description: |
++      The selection of the upper and lower bounds threshold of backlight
++      PWM resolution. If we choose selection 3 (6 bits), the variation of PWM
++      resolution needs over than 64 steps (2^6).
++      value mapping:
++        - 0: 1
++        - 1: 2
++        - 2: 4
++        - 3: 6
++
++  mediatek,bled-ovp-shutdown:
++    description: |
++      Enable the backlight shutdown when OVP level triggered
++    type: boolean
++
++  mediatek,bled-ovp-microvolt:
++    enum: [0, 1, 2, 3]
++    description: |
++      Backlight OVP level selection.
++      value mapping:
++        - 0: 17000000
++        - 1: 21000000
++        - 2: 25000000
++        - 3: 29000000
++
++  mediatek,bled-ocp-shutdown:
++    description: |
++      Enable the backlight shutdown when OCP level triggerred.
++    type: boolean
++
++  mediatek,bled-ocp-microamp:
++    enum: [0, 1, 2, 3]
++    description: |
++      Backlight OC level selection.
++      value mapping:
++        - 0: 900000
++        - 1: 1200000
++        - 2: 1500000
++        - 3: 1800000
++
++  mediatek,bled-channel-use:
++    $ref: /schemas/types.yaml#/definitions/uint8
++    description: |
++      Backlight LED channel to be used.
++      Each bit mapping to:
++        - 0: CH4
++        - 1: CH3
++        - 2: CH2
++        - 3: CH1
++    minimum: 1
++    maximum: 15
++
++required:
++  - compatible
++  - mediatek,bled-channel-use
++
++additionalProperties: false
 -- 
-2.35.1
-
-
+2.25.1
 
