@@ -2,90 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB37C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 17:27:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49212C43334
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 17:27:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238365AbiFMR1p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 13:27:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38232 "EHLO
+        id S238445AbiFMR1q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 13:27:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37860 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232375AbiFMR1X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 13:27:23 -0400
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44D9549242;
-        Mon, 13 Jun 2022 05:43:23 -0700 (PDT)
-Received: by mail-wr1-x42c.google.com with SMTP id s1so6966666wra.9;
-        Mon, 13 Jun 2022 05:43:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id;
-        bh=gWZ2iuIrN0ujnQkPHV+TXRlSbNOjanWQAKWTOlhoEcw=;
-        b=m77Tk6N3ACPMUA59bi65hTpTPrRkAmreeEkyPDG3GSgXJ4ZskPgxVFTCgLrtL3XMIN
-         ptdPRIejAHUs/msgd9kwUcXEjXH9h7iZTcPwQxmlBnAUS7pH5Fm0NyuuqMXMP7CiLvVO
-         A9X9U3iJN+KG2ON0S31rL3jMCzil1eJebmUdSlTO0cApaAKzK6aiS/YCtN5nqUvbdiWe
-         gIf7Zmiz6VM37j6dsu/XmcwtVHHpYInnIywvwAg1s0q6KNVE7YG/xv2O93IgV/yg+P7Q
-         s2pNHc1o5iLoQm+lbRaHYNVnObrF+/BXhSd9zlqbOuRTur8kUpI7PWlWdET9InW86Eqd
-         fw+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=gWZ2iuIrN0ujnQkPHV+TXRlSbNOjanWQAKWTOlhoEcw=;
-        b=5UXfS2fjCGSQkFlZKZMLo7c5axWa4m3Kt3jmYQXnhZE0ixUw/JXD/7+twL8O1TLAJN
-         fysoJ3KT6V4UlbZf/Guyheg0iyQ0QiS4Mt7heHEUw42PNDNNa2SrbwsiYMsFONH1jTTw
-         jCeAOjVXDp8RQeHeTySsRgLehHkBBcsBfy5IFQb+gi1ZWrm3i2SAR3BeRsCJXEx/Pl0p
-         RKbgtvHTK+oCOKrL0cn2sdZFbVNRQq6tSOZZUyeeG2PYuYKaYno/nQnAf/X3/pUgzgXu
-         r/77B0XdUgSXATWzNqMGiCvHR2BKKKmOB0/YTVFpjSWCnV4+I83C0sZtqBTe/K5fQ04x
-         PSnw==
-X-Gm-Message-State: AOAM530OEGRwbAcENhZcw5qSn79f/IVpN5gEzMcpo7Isd7uiWQu9DIm3
-        xygdv/9i86k6axmXGHGjHpg=
-X-Google-Smtp-Source: ABdhPJxmRpI3gbTnGIrNNYzB/skcfriE8YOSY4phl7jCU0+HLVMzMpV8RT5xLa1lCuYOs16Wh9CFCA==
-X-Received: by 2002:a5d:6c62:0:b0:218:3e13:4b17 with SMTP id r2-20020a5d6c62000000b002183e134b17mr38913538wrz.673.1655124201670;
-        Mon, 13 Jun 2022 05:43:21 -0700 (PDT)
-Received: from felia.fritz.box (200116b8260df50011e978c0f780de03.dip.versatel-1u1.de. [2001:16b8:260d:f500:11e9:78c0:f780:de03])
-        by smtp.gmail.com with ESMTPSA id y3-20020adfd083000000b002103cfd2fbasm8383940wrh.65.2022.06.13.05.43.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jun 2022 05:43:21 -0700 (PDT)
-From:   Lukas Bulwahn <lukas.bulwahn@gmail.com>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Subject: [PATCH] MAINTAINERS: add include/dt-bindings/thermal to THERMAL
-Date:   Mon, 13 Jun 2022 14:43:09 +0200
-Message-Id: <20220613124309.28790-1-lukas.bulwahn@gmail.com>
+        with ESMTP id S234721AbiFMR1Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 13:27:25 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 63CEB60075;
+        Mon, 13 Jun 2022 05:43:41 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4329D1042;
+        Mon, 13 Jun 2022 05:43:41 -0700 (PDT)
+Received: from e123648.arm.com (unknown [10.57.35.216])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 26DB63F73B;
+        Mon, 13 Jun 2022 05:43:39 -0700 (PDT)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
+        lukasz.luba@arm.com, viresh.kumar@linaro.org, rafael@kernel.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, mingo@redhat.com
+Subject: [PATCH v2 1/4] thermal: cpufreq_cooling: Use private callback ops for each cooling device
+Date:   Mon, 13 Jun 2022 13:43:24 +0100
+Message-Id: <20220613124327.30766-2-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20220613124327.30766-1-lukasz.luba@arm.com>
+References: <20220613124327.30766-1-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Maintainers of the directory Documentation/devicetree/bindings/thermal
-are also the maintainers of the corresponding directory
-include/dt-bindings/thermal.
+It is very unlikely that one CPU cluster would have the EM and some other
+won't have it (because EM registration failed or DT lacks needed entry).
+Although, we should avoid modifying global variable with callbacks anyway.
+Redesign this and add safety for such situation.
 
-Add the file entry for include/dt-bindings/thermal to the appropriate
-section in MAINTAINERS.
-
-Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
-Rafael, Daniel, please pick this MAINTAINERS addition to your section.
+ drivers/thermal/cpufreq_cooling.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ec2e764a22ee..4fd2c1080aa5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -19858,6 +19858,7 @@ F:	Documentation/ABI/testing/sysfs-class-thermal
- F:	Documentation/devicetree/bindings/thermal/
- F:	Documentation/driver-api/thermal/
- F:	drivers/thermal/
-+F:	include/dt-bindings/thermal/
- F:	include/linux/cpu_cooling.h
- F:	include/linux/thermal.h
- F:	include/uapi/linux/thermal.h
+diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
+index b8151d95a806..ad8b86f5281b 100644
+--- a/drivers/thermal/cpufreq_cooling.c
++++ b/drivers/thermal/cpufreq_cooling.c
+@@ -59,6 +59,7 @@ struct time_in_idle {
+  * @cdev: thermal_cooling_device pointer to keep track of the
+  *	registered cooling device.
+  * @policy: cpufreq policy.
++ * @cooling_ops: cpufreq callbacks to thermal cooling device ops
+  * @idle_time: idle time stats
+  * @qos_req: PM QoS contraint to apply
+  *
+@@ -71,6 +72,7 @@ struct cpufreq_cooling_device {
+ 	unsigned int max_level;
+ 	struct em_perf_domain *em;
+ 	struct cpufreq_policy *policy;
++	struct thermal_cooling_device_ops cooling_ops;
+ #ifndef CONFIG_SMP
+ 	struct time_in_idle *idle_time;
+ #endif
+@@ -485,14 +487,6 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+ 	return ret;
+ }
+ 
+-/* Bind cpufreq callbacks to thermal cooling device ops */
+-
+-static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+-	.get_max_state		= cpufreq_get_max_state,
+-	.get_cur_state		= cpufreq_get_cur_state,
+-	.set_cur_state		= cpufreq_set_cur_state,
+-};
+-
+ /**
+  * __cpufreq_cooling_register - helper function to create cpufreq cooling device
+  * @np: a valid struct device_node to the cooling device device tree node
+@@ -554,7 +548,10 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	/* max_level is an index, not a counter */
+ 	cpufreq_cdev->max_level = i - 1;
+ 
+-	cooling_ops = &cpufreq_cooling_ops;
++	cooling_ops = &cpufreq_cdev->cooling_ops;
++	cooling_ops->get_max_state = cpufreq_get_max_state;
++	cooling_ops->get_cur_state = cpufreq_get_cur_state;
++	cooling_ops->set_cur_state = cpufreq_set_cur_state;
+ 
+ #ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+ 	if (em_is_sane(cpufreq_cdev, em)) {
 -- 
 2.17.1
 
