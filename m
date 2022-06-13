@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EDD1CCA47D
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 20:06:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53E89CCA47B
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 20:07:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242614AbiFMUGq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 16:06:46 -0400
+        id S1349028AbiFMUHQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 16:07:16 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44440 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242025AbiFMUGK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 16:06:10 -0400
+        with ESMTP id S239982AbiFMUGi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 16:06:38 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47316BDA2F;
-        Mon, 13 Jun 2022 11:41:09 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71992BCEBB;
+        Mon, 13 Jun 2022 11:40:55 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id a63d8ca3eeb43c70; Mon, 13 Jun 2022 20:41:07 +0200
+ id 1e9a0e90a79fd5e7; Mon, 13 Jun 2022 20:40:53 +0200
 Received: from kreacher.localnet (unknown [213.134.187.64])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id BB96A66C81F;
-        Mon, 13 Jun 2022 20:41:06 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id E0DF266C81D;
+        Mon, 13 Jun 2022 20:40:52 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -31,10 +31,10 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         Hans de Goede <hdegoede@redhat.com>,
         Sakari Ailus <sakari.ailus@linux.intel.com>,
-        linux-usb@vger.kernel.org
-Subject: [PATCH v2 03/16] ACPI: glue: Introduce acpi_find_child_by_adr()
-Date:   Mon, 13 Jun 2022 20:10:03 +0200
-Message-ID: <13055097.uLZWGnKmhe@kreacher>
+        Lee Jones <lee.jones@linaro.org>
+Subject: [PATCH v2 13/16] mfd: core: Use acpi_dev_for_each_child()
+Date:   Mon, 13 Jun 2022 20:31:08 +0200
+Message-ID: <2726954.BEx9A2HvPv@kreacher>
 In-Reply-To: <2653857.mvXUDI8C0e@kreacher>
 References: <1843211.tdWV9SEqCh@kreacher> <2653857.mvXUDI8C0e@kreacher>
 MIME-Version: 1.0
@@ -43,8 +43,8 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.187.64
 X-CLIENT-HOSTNAME: 213.134.187.64
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddujedguddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudekjedrieegnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekjedrieegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghnughrihihrdhshhgvvhgthhgvnhhkoheslhhinhhugidrihhn
- thgvlhdrtghomhdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohephhguvghgohgvuggvsehrvgguhhgrthdrtghomhdprhgtphhtthhopehsrghkrghrihdrrghilhhusheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehlihhnuhigqdhushgssehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddujedguddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudekjedrieegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekjedrieegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghnughrihihrdhshhgvvhgthhgvnhhkoheslhhinhhugidrihhn
+ thgvlhdrtghomhdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohephhguvghgohgvuggvsehrvgguhhgrthdrtghomhdprhgtphhtthhopehsrghkrghrihdrrghilhhusheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehlvggvrdhjohhnvghssehlihhnrghrohdrohhrgh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -52,12 +52,14 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Rearrange the ACPI device lookup code used internally by
-acpi_find_child_device() so it can avoid extra checks after finding
-one object with a matching _ADR and use it for defining
-acpi_find_child_by_adr() that will allow the callers to find a given
-ACPI device's child matching a given bus address without doing any
-other checks in check_one_child().
+Instead of walking the list of children of an ACPI device directly,
+use acpi_dev_for_each_child() to carry out an action for all of
+the given ACPI device's children.
+
+This will help to eliminate the children list head from struct
+acpi_device as it is redundant and it is used in questionable ways
+in some places (in particular, locking is needed for walking the
+list pointed to it safely, but it is often missing).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
@@ -67,90 +69,65 @@ v1 -> v2:
    * Add R-by from Andy.
 
 ---
- drivers/acpi/glue.c     |   28 ++++++++++++++++++++++++----
- include/acpi/acpi_bus.h |    2 ++
- 2 files changed, 26 insertions(+), 4 deletions(-)
+ drivers/mfd/mfd-core.c |   31 ++++++++++++++++++++++++-------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
 
-Index: linux-pm/include/acpi/acpi_bus.h
+Index: linux-pm/drivers/mfd/mfd-core.c
 ===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -622,6 +622,8 @@ static inline int acpi_dma_configure(str
- }
- struct acpi_device *acpi_find_child_device(struct acpi_device *parent,
- 					   u64 address, bool check_children);
-+struct acpi_device *acpi_find_child_by_adr(struct acpi_device *adev,
-+					   acpi_bus_address adr);
- int acpi_is_root_bridge(acpi_handle);
- struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle);
+--- linux-pm.orig/drivers/mfd/mfd-core.c
++++ linux-pm/drivers/mfd/mfd-core.c
+@@ -60,12 +60,29 @@ int mfd_cell_disable(struct platform_dev
+ EXPORT_SYMBOL(mfd_cell_disable);
  
-Index: linux-pm/drivers/acpi/glue.c
-===================================================================
---- linux-pm.orig/drivers/acpi/glue.c
-+++ linux-pm/drivers/acpi/glue.c
-@@ -119,6 +119,7 @@ struct find_child_walk_data {
- 	struct acpi_device *adev;
- 	u64 address;
- 	int score;
-+	bool check_sta;
- 	bool check_children;
- };
- 
-@@ -131,9 +132,13 @@ static int check_one_child(struct acpi_d
- 		return 0;
- 
- 	if (!wd->adev) {
--		/* This is the first matching object.  Save it and continue. */
-+		/*
-+		 * This is the first matching object, so save it.  If it is not
-+		 * necessary to look for any other matching objects, stop the
-+		 * search.
-+		 */
- 		wd->adev = adev;
--		return 0;
-+		return !(wd->check_sta || wd->check_children);
- 	}
- 
- 	/*
-@@ -169,12 +174,14 @@ static int check_one_child(struct acpi_d
- 	return 0;
- }
- 
--struct acpi_device *acpi_find_child_device(struct acpi_device *parent,
--					   u64 address, bool check_children)
-+static struct acpi_device *acpi_find_child(struct acpi_device *parent,
-+					   u64 address, bool check_children,
-+					   bool check_sta)
- {
- 	struct find_child_walk_data wd = {
- 		.address = address,
- 		.check_children = check_children,
-+		.check_sta = check_sta,
- 		.adev = NULL,
- 		.score = 0,
- 	};
-@@ -184,8 +191,21 @@ struct acpi_device *acpi_find_child_devi
- 
- 	return wd.adev;
- }
+ #if IS_ENABLED(CONFIG_ACPI)
++struct match_ids_walk_data {
++	struct acpi_device_id *ids;
++	struct acpi_device *adev;
++};
 +
-+struct acpi_device *acpi_find_child_device(struct acpi_device *parent,
-+					   u64 address, bool check_children)
++static int match_device_ids(struct acpi_device *adev, void *data)
 +{
-+	return acpi_find_child(parent, address, check_children, true);
-+}
- EXPORT_SYMBOL_GPL(acpi_find_child_device);
- 
-+struct acpi_device *acpi_find_child_by_adr(struct acpi_device *adev,
-+					   acpi_bus_address adr)
-+{
-+	return acpi_find_child(adev, adr, false, false);
-+}
-+EXPORT_SYMBOL_GPL(acpi_find_child_by_adr);
++	struct match_ids_walk_data *wd = data;
 +
- static void acpi_physnode_link_name(char *buf, unsigned int node_id)
++	if (!acpi_match_device_ids(adev, wd->ids)) {
++		wd->adev = adev;
++		return 1;
++	}
++
++	return 0;
++}
++
+ static void mfd_acpi_add_device(const struct mfd_cell *cell,
+ 				struct platform_device *pdev)
  {
- 	if (node_id > 0)
+ 	const struct mfd_cell_acpi_match *match = cell->acpi_match;
+-	struct acpi_device *parent, *child;
+ 	struct acpi_device *adev = NULL;
++	struct acpi_device *parent;
+ 
+ 	parent = ACPI_COMPANION(pdev->dev.parent);
+ 	if (!parent)
+@@ -83,14 +100,14 @@ static void mfd_acpi_add_device(const st
+ 	if (match) {
+ 		if (match->pnpid) {
+ 			struct acpi_device_id ids[2] = {};
++			struct match_ids_walk_data wd = {
++				.adev = NULL,
++				.ids = ids,
++			};
+ 
+ 			strlcpy(ids[0].id, match->pnpid, sizeof(ids[0].id));
+-			list_for_each_entry(child, &parent->children, node) {
+-				if (!acpi_match_device_ids(child, ids)) {
+-					adev = child;
+-					break;
+-				}
+-			}
++			acpi_dev_for_each_child(parent, match_device_ids, &wd);
++			adev = wd.adev;
+ 		} else {
+ 			adev = acpi_find_child_device(parent, match->adr, false);
+ 		}
 
 
 
