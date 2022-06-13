@@ -2,163 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B0A8CCA47D
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 17:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E96BCCA480
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jun 2022 17:50:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233958AbiFMR1r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jun 2022 13:27:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36886 "EHLO
+        id S234843AbiFMRuf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jun 2022 13:50:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239055AbiFMR10 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 13:27:26 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0C4C9113FB3;
-        Mon, 13 Jun 2022 05:43:46 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E4BE41480;
-        Mon, 13 Jun 2022 05:43:45 -0700 (PDT)
-Received: from e123648.arm.com (unknown [10.57.35.216])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C9F333F73B;
-        Mon, 13 Jun 2022 05:43:43 -0700 (PDT)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
-        lukasz.luba@arm.com, viresh.kumar@linaro.org, rafael@kernel.org,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, mingo@redhat.com
-Subject: [PATCH v2 3/4] thermal: cpufreq_cooling: Update outdated comments
-Date:   Mon, 13 Jun 2022 13:43:26 +0100
-Message-Id: <20220613124327.30766-4-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20220613124327.30766-1-lukasz.luba@arm.com>
-References: <20220613124327.30766-1-lukasz.luba@arm.com>
+        with ESMTP id S233958AbiFMRuM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2022 13:50:12 -0400
+Received: from mail-io1-f41.google.com (mail-io1-f41.google.com [209.85.166.41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 728CB3CFE7;
+        Mon, 13 Jun 2022 06:33:27 -0700 (PDT)
+Received: by mail-io1-f41.google.com with SMTP id q11so6047703iod.8;
+        Mon, 13 Jun 2022 06:33:27 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=vdZfN90YQu4hf8Uqw177MbmjixkJ2AAcNrLx6oY9MCU=;
+        b=0vEUpAa5zAKQ89i46hqzZ+3hHeTnn+DY1/X0kJqYTFueZ/FwBOmrWDjFsa9Z9odXwA
+         XIjIzf/6hM5JcDlSSzkHeMObN075lc2pXL6MO4JLhob4Y18jDKdvfTMrMv1IxFRWemqi
+         IekeaKiCXsLUYOKPMWwtBHZjYPlOQvFTiyS51PcrCX7Y2C+stDxntVkUIN7XsOBy43dA
+         u0xReuMw2mjoYysPsGqAcxIds4wIewSkd74UcCePomD/b6c7wQVujeaosljM/+6Uqey0
+         Vz3gXVjv0A4PGzhbEY+B87oYpb5ay9ATjp/elrD4yzI4Z4jFyKQQZLIpI8E7aucJg0pz
+         Ii2w==
+X-Gm-Message-State: AOAM532oZpiFlDl4z/q02iRfmE4Sw1UP9tpECriUzZLcRbTTDmksN14b
+        oYoyJUfpE5+LEyTXxGcKpg==
+X-Google-Smtp-Source: ABdhPJwxl/8h496O951i+ofEnsI3E+yQOwKm/ujxZmtouDcCZ56WJ1Frq7wX9lahXWnDMzS3ZoRpNQ==
+X-Received: by 2002:a6b:bf46:0:b0:669:c998:6b48 with SMTP id p67-20020a6bbf46000000b00669c9986b48mr6141923iof.67.1655127206555;
+        Mon, 13 Jun 2022 06:33:26 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.251])
+        by smtp.gmail.com with ESMTPSA id l16-20020a056e020e5000b002d1a16ef24dsm3870641ilk.82.2022.06.13.06.33.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jun 2022 06:33:26 -0700 (PDT)
+Received: (nullmailer pid 3564137 invoked by uid 1000);
+        Mon, 13 Jun 2022 13:33:17 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     ChiaEn Wu <peterwu.pub@gmail.com>
+Cc:     pavel@ucw.cz, robh+dt@kernel.org, linux-pm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, krzysztof.kozlowski+dt@linaro.org,
+        linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, szunichen@gmail.com,
+        lars@metafoo.de, matthias.bgg@gmail.com,
+        daniel.thompson@linaro.org, lee.jones@linaro.org,
+        ChiYuan Huang <cy_huang@richtek.com>,
+        linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        jingoohan1@gmail.com, devicetree@vger.kernel.org, jic23@kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-iio@vger.kernel.org
+In-Reply-To: <20220613111146.25221-7-peterwu.pub@gmail.com>
+References: <20220613111146.25221-1-peterwu.pub@gmail.com> <20220613111146.25221-7-peterwu.pub@gmail.com>
+Subject: Re: [PATCH v2 06/15] dt-bindings: mfd: Add Mediatek MT6370
+Date:   Mon, 13 Jun 2022 07:33:17 -0600
+Message-Id: <1655127197.567546.3564136.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The code has moved and left some comments stale. Update them where
-there is a need.
+On Mon, 13 Jun 2022 19:11:37 +0800, ChiaEn Wu wrote:
+> From: ChiYuan Huang <cy_huang@richtek.com>
+> 
+> Add Mediatek MT6370 binding documentation.
+> 
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> ---
+>  .../bindings/mfd/mediatek,mt6370.yaml         | 279 ++++++++++++++++++
+>  .../dt-bindings/iio/adc/mediatek,mt6370_adc.h |  18 ++
+>  2 files changed, 297 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+>  create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/thermal/cpufreq_cooling.c | 44 +++++++++++++------------------
- 1 file changed, 18 insertions(+), 26 deletions(-)
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
-index 492a67e267e8..50f8b90abba6 100644
---- a/drivers/thermal/cpufreq_cooling.c
-+++ b/drivers/thermal/cpufreq_cooling.c
-@@ -206,7 +206,7 @@ static u32 get_dynamic_power(struct cpufreq_cooling_device *cpufreq_cdev,
-  * complex code may be needed if experiments show that it's not
-  * accurate enough.
-  *
-- * Return: 0 on success, -E* if getting the static power failed.
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 				       u32 *power)
-@@ -249,9 +249,8 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
-  * milliwatts assuming 100% load.  Store the calculated power in
-  * @power.
-  *
-- * Return: 0 on success, -EINVAL if the cooling device state could not
-- * be converted into a frequency or other -E* if there was an error
-- * when calculating the static power.
-+ * Return: 0 on success, -EINVAL if the cooling device state is bigger
-+ * than maximum allowed.
-  */
- static int cpufreq_state2power(struct thermal_cooling_device *cdev,
- 			       unsigned long state, u32 *power)
-@@ -281,15 +280,11 @@ static int cpufreq_state2power(struct thermal_cooling_device *cdev,
-  * Calculate a cooling device state for the cpus described by @cdev
-  * that would allow them to consume at most @power mW and store it in
-  * @state.  Note that this calculation depends on external factors
-- * such as the cpu load or the current static power.  Calling this
-- * function with the same power as input can yield different cooling
-- * device states depending on those external factors.
-- *
-- * Return: 0 on success, -ENODEV if no cpus are online or -EINVAL if
-- * the calculated frequency could not be converted to a valid state.
-- * The latter should not happen unless the frequencies available to
-- * cpufreq have changed since the initialization of the cpu cooling
-- * device.
-+ * such as the CPUs load.  Calling this function with the same power
-+ * as input can yield different cooling device states depending on those
-+ * external factors.
-+ *
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 			       u32 power, unsigned long *state)
-@@ -401,7 +396,7 @@ static unsigned int get_state_freq(struct cpufreq_cooling_device *cpufreq_cdev,
-  * Callback for the thermal cooling device to return the cpufreq
-  * max cooling state.
-  *
-- * Return: 0 on success, an error code otherwise.
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
-@@ -420,7 +415,7 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
-  * Callback for the thermal cooling device to return the cpufreq
-  * current cooling state.
-  *
-- * Return: 0 on success, an error code otherwise.
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
-@@ -479,7 +474,7 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
-  * @em: Energy Model of the cpufreq policy
-  *
-  * This interface function registers the cpufreq cooling device with the name
-- * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
-+ * "cpufreq-%s". This API can support multiple instances of cpufreq
-  * cooling devices. It also gives the opportunity to link the cooling device
-  * with a device tree node, in order to bind it via the thermal DT code.
-  *
-@@ -590,8 +585,8 @@ __cpufreq_cooling_register(struct device_node *np,
-  * @policy: cpufreq policy
-  *
-  * This interface function registers the cpufreq cooling device with the name
-- * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
-- * cooling devices.
-+ * "cpufreq-%s". This API can support multiple instances of cpufreq cooling
-+ * devices.
-  *
-  * Return: a valid struct thermal_cooling_device pointer on success,
-  * on failure, it returns a corresponding ERR_PTR().
-@@ -608,17 +603,14 @@ EXPORT_SYMBOL_GPL(cpufreq_cooling_register);
-  * @policy: cpufreq policy
-  *
-  * This interface function registers the cpufreq cooling device with the name
-- * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
-- * cooling devices. Using this API, the cpufreq cooling device will be
-- * linked to the device tree node provided.
-+ * "cpufreq-%s". This API can support multiple instances of cpufreq cooling
-+ * devices. Using this API, the cpufreq cooling device will be linked to the
-+ * device tree node provided.
-  *
-  * Using this function, the cooling device will implement the power
-- * extensions by using a simple cpu power model.  The cpus must have
-+ * extensions by using the Energy Model (if present).  The cpus must have
-  * registered their OPPs using the OPP library.
-  *
-- * It also takes into account, if property present in policy CPU node, the
-- * static power consumed by the cpu.
-- *
-  * Return: a valid struct thermal_cooling_device pointer on success,
-  * and NULL on failure.
-  */
-@@ -654,7 +646,7 @@ EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
-  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
-  * @cdev: thermal cooling device pointer.
-  *
-- * This interface function unregisters the "thermal-cpufreq-%x" cooling device.
-+ * This interface function unregisters the "cpufreq-%x" cooling device.
-  */
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
--- 
-2.17.1
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+./Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml: Unable to find schema file matching $id: http://devicetree.org/schemas/leds/backlight/mediatek,mt6370-backlight.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: backlight: False schema does not allow {'compatible': ['mediatek,mt6370-backlight'], 'mediatek,bled-channel-use': b'\x0f'}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: charger: False schema does not allow {'compatible': ['mediatek,mt6370-charger'], 'interrupts': [[48], [68], [6]], 'interrupt-names': ['attach_i', 'uvp_d_evt', 'mivr'], 'io-channels': [[1, 5]], 'usb-otg-vbus-regulator': {'regulator-name': ['mt6370-usb-otg-vbus'], 'regulator-min-microvolt': [[4350000]], 'regulator-max-microvolt': [[5800000]], 'regulator-min-microamp': [[500000]], 'regulator-max-microamp': [[3000000]], 'phandle': [[2]]}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: tcpc: False schema does not allow {'compatible': ['mediatek,mt6370-tcpc'], 'interrupts-extended': [[4294967295, 4, 8]], 'connector': {'compatible': ['usb-c-connector'], 'label': ['USB-C'], 'vbus-supply': [[2]], 'data-role': ['dual'], 'power-role': ['dual'], 'try-power-role': ['sink'], 'source-pdos': [[570527844]], 'sink-pdos': [[570527944]], 'op-sink-microwatt': [[10000000]], 'ports': {'#address-cells': [[1]], '#size-cells': [[0]], 'port@0': {'reg': [[0]], 'endpoint': {'remote-endpoint': [[4294967295]]}}, 'port@1': {'reg': [[1]], 'endpoint': {'remote-endpoint': [[4294967295]]}}, 'port@2': {'reg': [[2]], 'endpoint': {'remote-endpoint': [[4294967295]]}}}}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: indicator: False schema does not allow {'compatible': ['mediatek,mt6370-indicator'], '#address-cells': [[1]], '#size-cells': [[0]], 'multi-led@0': {'reg': [[0]], 'function': ['indicator'], 'color': [[9]], 'led-max-microamp': [[24000]], '#address-cells': [[1]], '#size-cells': [[0]], 'led@0': {'reg': [[0]], 'color': [[1]]}, 'led@1': {'reg': [[1]], 'color': [[2]]}, 'led@2': {'reg': [[2]], 'color': [[3]]}}, 'led@3': {'reg': [[3]], 'function': ['indicator'], 'color': [[0]], 'led-max-microamp': [[6000]]}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: flashlight: False schema does not allow {'compatible': ['mediatek,mt6370-flashlight'], '#address-cells': [[1]], '#size-cells': [[0]], 'led@0': {'reg': [[0]], 'led-sources': [[0]], 'function': ['flash'], 'color': [[0]], 'function-enumerator': [[1]], 'led-max-microamp': [[200000]], 'flash-max-microamp': [[500000]], 'flash-max-timeout-us': [[1248000]]}, 'led@1': {'reg': [[1]], 'led-sources': [[1]], 'function': ['flash'], 'color': [[0]], 'function-enumerator': [[2]], 'led-max-microamp': [[200000]], 'flash-max-microamp': [[500000]], 'flash-max-timeout-us': [[1248000]]}}
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: backlight: mediatek,bled-channel-use: b'\x0f' is not of type 'object', 'array', 'boolean', 'null'
+	From schema: /usr/local/lib/python3.10/dist-packages/dtschema/schemas/dt-core.yaml
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/backlight: failed to match any schema with compatible: ['mediatek,mt6370-backlight']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/charger: failed to match any schema with compatible: ['mediatek,mt6370-charger']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/indicator: failed to match any schema with compatible: ['mediatek,mt6370-indicator']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/flashlight: failed to match any schema with compatible: ['mediatek,mt6370-flashlight']
+Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb:0:0: /example-0/i2c/pmic@34/tcpc: failed to match any schema with compatible: ['mediatek,mt6370-tcpc']
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
