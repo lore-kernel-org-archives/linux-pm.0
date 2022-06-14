@@ -2,95 +2,186 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35B02CCA47A
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jun 2022 21:32:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9722CCA480
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jun 2022 22:12:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354124AbiFNVcE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jun 2022 17:32:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57134 "EHLO
+        id S1350861AbiFNWMm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jun 2022 18:12:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37802 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234419AbiFNVcC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jun 2022 17:32:02 -0400
-Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com [209.85.160.177])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 644DB51307;
-        Tue, 14 Jun 2022 14:32:01 -0700 (PDT)
-Received: by mail-qt1-f177.google.com with SMTP id t21so7067488qtw.11;
-        Tue, 14 Jun 2022 14:32:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6PZK9Icgxpkd1Nlbn2edlrCQm5XYsFqwIxCzqxft+Dc=;
-        b=HsoFlgBaBSt48mzfWUmD7Krn9XrCGrGRT/NBErNu5KiOpI66E+vK66V4nM7q4GZE9M
-         RLEI9Qtov9c9dKOV+FhixAOZIOTDaLksWig/4VkVWAu67GJPQW6TUZMVIyQCN6Z2oJG3
-         +MMEUzTyQL6mEfdWeQEZpdOHGQKiE6zBbFYSYIKDdOctJeYDDkq+045wPSJdA2gB4pmp
-         N8w5mLuHx4xQL9iRQvrpbZxI951DMKzVamkPXVrofx7CPcUFOmlj6TUzU0Y+BFmLTKz8
-         JFCv8mcFiQ4uncky6aueEiZD75NPyqYwAIUqsoxLl7MoIP5cXDwxBVabQGNkjgwU3yQy
-         vSvQ==
-X-Gm-Message-State: AOAM530Ipk0yKZ3LhiDy+im7cGnk9uzrPFpPFvo7mXmBiX+oQ5JreQuw
-        zxpgN6vhqjNxDGnWkIdaAKtYuC/+XcGn/g==
-X-Google-Smtp-Source: ABdhPJwnMTi47HKefj6U3ZHJcYdIa5S9AO6X0wc6UpDswbVEgZZpj4tkDcN26HpPINgFlT7Uj/dRTQ==
-X-Received: by 2002:ac8:5cc9:0:b0:304:e03b:5964 with SMTP id s9-20020ac85cc9000000b00304e03b5964mr5913229qta.433.1655242320289;
-        Tue, 14 Jun 2022 14:32:00 -0700 (PDT)
-Received: from mail-yw1-f171.google.com (mail-yw1-f171.google.com. [209.85.128.171])
-        by smtp.gmail.com with ESMTPSA id j1-20020a05620a410100b006a65c58db99sm10963831qko.64.2022.06.14.14.31.59
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 14 Jun 2022 14:32:00 -0700 (PDT)
-Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-30fa61b1a83so43802617b3.0;
-        Tue, 14 Jun 2022 14:31:59 -0700 (PDT)
-X-Received: by 2002:a0d:f801:0:b0:30f:f716:2950 with SMTP id
- i1-20020a0df801000000b0030ff7162950mr8241270ywf.358.1655242319521; Tue, 14
- Jun 2022 14:31:59 -0700 (PDT)
+        with ESMTP id S1356516AbiFNWMj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jun 2022 18:12:39 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9C4327B0E;
+        Tue, 14 Jun 2022 15:12:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=ieYeEcrodnP9d8uMI6KazQ9YDccjAyjy/+PGF5Ov/Sc=; b=OliYmJSibamFQ0oRl2XkG2+oLG
+        eUVxb3PF2WQS3d9O+63gY5P/Th5g3W0k/p07zjSFtfSstgpe5sY3UKPuYKK8U3d61xav16z47xA5h
+        tkNVX1vBm9t+GM0XpJtkUArdAr+6C0D6QPwa3LyJL5W3wePUH4pa4u9UPo+aiZ0VxHDbCXoe4qfJ4
+        E8Y2M6s9A8SopwISJUuliIWAcL2CXospZ4jCBSi0ba1Zs/HL4wyLHhGRHBuILPFIW3paG1eAzYhHw
+        AXd8m8CPomKQfchnKb7uAGftq4wK1SsdTGzKQsjqacjeCk0RsPVRrEJUUy3okfnQk1gM5l81agP/h
+        arzWLEHQ==;
+Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=worktop.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1o1Elc-000Y9e-Ny; Tue, 14 Jun 2022 22:12:08 +0000
+Received: by worktop.programming.kicks-ass.net (Postfix, from userid 1000)
+        id ED8F2981518; Wed, 15 Jun 2022 00:12:06 +0200 (CEST)
+Date:   Wed, 15 Jun 2022 00:12:06 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Tony Lindgren <tony@atomide.com>
+Cc:     rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
+        vgupta@kernel.org, linux@armlinux.org.uk,
+        ulli.kroll@googlemail.com, linus.walleij@linaro.org,
+        shawnguo@kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+        kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com,
+        khilman@kernel.org, catalin.marinas@arm.com, will@kernel.org,
+        guoren@kernel.org, bcain@quicinc.com, chenhuacai@kernel.org,
+        kernel@xen0n.name, geert@linux-m68k.org, sammy@sammy.net,
+        monstr@monstr.eu, tsbogend@alpha.franken.de, dinguyen@kernel.org,
+        jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
+        shorne@gmail.com, James.Bottomley@hansenpartnership.com,
+        deller@gmx.de, mpe@ellerman.id.au, benh@kernel.crashing.org,
+        paulus@samba.org, paul.walmsley@sifive.com, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, hca@linux.ibm.com, gor@linux.ibm.com,
+        agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
+        svens@linux.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org,
+        davem@davemloft.net, richard@nod.at,
+        anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
+        acme@kernel.org, mark.rutland@arm.com,
+        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+        namhyung@kernel.org, jgross@suse.com, srivatsa@csail.mit.edu,
+        amakhalov@vmware.com, pv-drivers@vmware.com,
+        boris.ostrovsky@oracle.com, chris@zankel.net, jcmvbkbc@gmail.com,
+        rafael@kernel.org, lenb@kernel.org, pavel@ucw.cz,
+        gregkh@linuxfoundation.org, mturquette@baylibre.com,
+        sboyd@kernel.org, daniel.lezcano@linaro.org, lpieralisi@kernel.org,
+        sudeep.holla@arm.com, agross@kernel.org,
+        bjorn.andersson@linaro.org, anup@brainfault.org,
+        thierry.reding@gmail.com, jonathanh@nvidia.com,
+        jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
+        yury.norov@gmail.com, andriy.shevchenko@linux.intel.com,
+        linux@rasmusvillemoes.dk, rostedt@goodmis.org, pmladek@suse.com,
+        senozhatsky@chromium.org, john.ogness@linutronix.de,
+        paulmck@kernel.org, frederic@kernel.org, quic_neeraju@quicinc.com,
+        josh@joshtriplett.org, mathieu.desnoyers@efficios.com,
+        jiangshanlai@gmail.com, joel@joelfernandes.org,
+        juri.lelli@redhat.com, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, vschneid@redhat.com, jpoimboe@kernel.org,
+        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-snps-arc@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
+        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+        linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        xen-devel@lists.xenproject.org, linux-xtensa@linux-xtensa.org,
+        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-arch@vger.kernel.org,
+        rcu@vger.kernel.org
+Subject: Re: [PATCH 34.5/36] cpuidle,omap4: Push RCU-idle into
+ omap4_enter_lowpower()
+Message-ID: <YqkHto+zgAPs4kQI@worktop.programming.kicks-ass.net>
+References: <20220608142723.103523089@infradead.org>
+ <20220608144518.073801916@infradead.org>
+ <Yqcv6crSNKuSWoTu@atomide.com>
 MIME-Version: 1.0
-References: <20220610201701.7946-1-wsa+renesas@sang-engineering.com>
- <20220610201701.7946-2-wsa+renesas@sang-engineering.com> <CAMuHMdW3uxQHk6SBX5MqnZsYqwY8p+0wmD6gHwS3ESUrkmpWkQ@mail.gmail.com>
- <YqjtBQdzexzCRrmq@shikoro>
-In-Reply-To: <YqjtBQdzexzCRrmq@shikoro>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 14 Jun 2022 23:31:48 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdUTR8+8TbM_AaMXk96adHvdp_Oof8v48_zCY+R5FsOLnQ@mail.gmail.com>
-Message-ID: <CAMuHMdUTR8+8TbM_AaMXk96adHvdp_Oof8v48_zCY+R5FsOLnQ@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] dt-bindings: thermal: rcar-gen3-thermal: Add
- r8a779f0 support
-To:     Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc:     Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Yqcv6crSNKuSWoTu@atomide.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Wolfram,
+On Mon, Jun 13, 2022 at 03:39:05PM +0300, Tony Lindgren wrote:
+> OMAP4 uses full SoC suspend modes as idle states, as such it needs the
+> whole power-domain and clock-domain code from the idle path.
+> 
+> All that code is not suitable to run with RCU disabled, as such push
+> RCU-idle deeper still.
+> 
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+> 
+> Peter here's one more for your series, looks like this is needed to avoid
+> warnings similar to what you did for omap3.
 
-On Tue, Jun 14, 2022 at 10:18 PM Wolfram Sang
-<wsa+renesas@sang-engineering.com> wrote:
-> > What about splitting this in two separate checks at the top level:
-> >   - one for regs (R-Car V3U vs. the world), and
-> >   - a second for interrupts (R-Car V3U+S4-8 vs. the world)?
->
-> This task seems too much for my YAML-foo :( I couldn't get it to work.
-> Can we leave it as-is for now?
+Thanks Tony!
 
-You just need an allOf with two if statements, cfr. e.g.
-Documentation/devicetree/bindings/media/renesas,vin.yaml?
+I've had a brief look at omap2_pm_idle() and do I understand it right
+that something like the below patch would reduce it to a simple 'WFI'?
 
-Gr{oetje,eeting}s,
+What do I do with the rest of that code, because I don't think this
+thing has a cpuidle driver to take over, effectively turning it into
+dead code.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--- a/arch/arm/mach-omap2/pm24xx.c
++++ b/arch/arm/mach-omap2/pm24xx.c
+@@ -126,10 +126,20 @@ static int omap2_allow_mpu_retention(voi
+ 	return 1;
+ }
+ 
+-static void omap2_enter_mpu_retention(void)
++static void omap2_do_wfi(void)
+ {
+ 	const int zero = 0;
+ 
++	/* WFI */
++	asm("mcr p15, 0, %0, c7, c0, 4" : : "r" (zero) : "memory", "cc");
++}
++
++#if 0
++/*
++ * possible cpuidle implementation between WFI and full_retention above
++ */
++static void omap2_enter_mpu_retention(void)
++{
+ 	/* The peripherals seem not to be able to wake up the MPU when
+ 	 * it is in retention mode. */
+ 	if (omap2_allow_mpu_retention()) {
+@@ -146,8 +157,7 @@ static void omap2_enter_mpu_retention(vo
+ 		pwrdm_set_next_pwrst(mpu_pwrdm, PWRDM_POWER_ON);
+ 	}
+ 
+-	/* WFI */
+-	asm("mcr p15, 0, %0, c7, c0, 4" : : "r" (zero) : "memory", "cc");
++	omap2_do_wfi();
+ 
+ 	pwrdm_set_next_pwrst(mpu_pwrdm, PWRDM_POWER_ON);
+ }
+@@ -161,6 +171,7 @@ static int omap2_can_sleep(void)
+ 
+ 	return 1;
+ }
++#endif
+ 
+ static void omap2_pm_idle(void)
+ {
+@@ -169,6 +180,7 @@ static void omap2_pm_idle(void)
+ 	if (omap_irq_pending())
+ 		return;
+ 
++#if 0
+ 	error = cpu_cluster_pm_enter();
+ 	if (error || !omap2_can_sleep()) {
+ 		omap2_enter_mpu_retention();
+@@ -179,6 +191,9 @@ static void omap2_pm_idle(void)
+ 
+ out_cpu_cluster_pm:
+ 	cpu_cluster_pm_exit();
++#else
++	omap2_do_wfi();
++#endif
+ }
+ 
+ static void __init prcm_setup_regs(void)
