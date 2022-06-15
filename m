@@ -2,175 +2,177 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B602C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jun 2022 09:57:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9E95C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jun 2022 10:01:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243446AbiFOJ5V convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jun 2022 05:57:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39772 "EHLO
+        id S231861AbiFOKBR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jun 2022 06:01:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45120 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240825AbiFOJ5V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2022 05:57:21 -0400
-Received: from de-smtp-delivery-113.mimecast.com (de-smtp-delivery-113.mimecast.com [194.104.109.113])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D6CDA4A907
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2022 02:57:19 -0700 (PDT)
-Received: from CHE01-ZR0-obe.outbound.protection.outlook.com
- (mail-zr0che01lp2108.outbound.protection.outlook.com [104.47.22.108]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- de-mta-29-fUnjSoLMM0SUPAfwXtujYw-2; Wed, 15 Jun 2022 11:57:16 +0200
-X-MC-Unique: fUnjSoLMM0SUPAfwXtujYw-2
-Received: from ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:2e::8) by
- GVAP278MB0296.CHEP278.PROD.OUTLOOK.COM (2603:10a6:710:37::12) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5353.13; Wed, 15 Jun 2022 09:57:14 +0000
-Received: from ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
- ([fe80::2879:acb:62c8:4987]) by ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
- ([fe80::2879:acb:62c8:4987%8]) with mapi id 15.20.5353.013; Wed, 15 Jun 2022
- 09:57:14 +0000
-From:   Francesco Dolcini <francesco.dolcini@toradex.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Marco Felsch <m.felsch@pengutronix.de>,
-        Anson Huang <Anson.Huang@nxp.com>
-CC:     Francesco Dolcini <francesco.dolcini@toradex.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v1 3/9] dt-bindings: thermal: imx: Add trips point
-Date:   Wed, 15 Jun 2022 11:47:58 +0200
-Message-ID: <20220615094804.388280-4-francesco.dolcini@toradex.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220615094804.388280-1-francesco.dolcini@toradex.com>
-References: <20220615094804.388280-1-francesco.dolcini@toradex.com>
-X-ClientProxiedBy: MR1P264CA0156.FRAP264.PROD.OUTLOOK.COM
- (2603:10a6:501:54::17) To ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
- (2603:10a6:910:2e::8)
+        with ESMTP id S229519AbiFOKBQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2022 06:01:16 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C39563B023;
+        Wed, 15 Jun 2022 03:01:15 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id v14so14649266wra.5;
+        Wed, 15 Jun 2022 03:01:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:from:to:cc:subject:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=+o+NJBHdLQtZQM+UxtBaEFTjpeaUrX4loLW3tV0gO1s=;
+        b=QVeMBRfG3BUToGU1v1XZ7CJ9QLI63+40lCKkSLmLQXfgGTHxyMFt0n7AjX+Pz3N9Wx
+         knxlRQIuqPkudGPlE/XLxxZhB3bi25I2J5P+4dJQzflaD7kiUK3N2R17+TT6B7RGaJSw
+         mMLMOSSviRGDemiKOknuGtP6El5Egxsx1ievkQlfC+/twjNRd96r9BDHhHsCUpdGyM4P
+         1U7iMfi+0HIu8YXy5ouyZ2oH/tL2d8d52ey4CFoBaYHC2EX5p5cCik32mN8d6HlhJx1U
+         XNdgVYmsvHYog0ib8Djdms/nLQ9NFPqvNrtOaT390NEiKeMPJEqN227Vjs0IKnCr6SCV
+         42Zw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:from:to:cc:subject:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=+o+NJBHdLQtZQM+UxtBaEFTjpeaUrX4loLW3tV0gO1s=;
+        b=jziw+Bw1/3Mu9HTU6XLNOF7h6mF8h4owHDuSdrszGunt9ZwTGU8665wORSuRTuqUOc
+         SxBLvP6RKFj9IEl5T2fjE1a4B0xiLPQvZJqNjrqe8lfjQ1WFyxur2WJMqH0+3OkVvv4J
+         zNwjWHCcs/Qhnt1Oz6hSnRmcIvNrpDZXxZ0zVSwkZ8DQg8rCdw8q8lLyyHRsynqglt0k
+         PjKBfxHTQ55WSS5y7HKqhdHDMdIdJZ1N5VeF4vDRtTB5SVW4+ZhwBCQoEttn25DJRFWU
+         UBlOVRej5+5dv+G5gT8Hh/bOaH0g0Dh7BBYUZkOaQ1a2mKxq/lmaZ1Y++tkLV3jf9A6B
+         OQZg==
+X-Gm-Message-State: AJIora/g7E/8/ppXR34Gm3DA+uRVlm17HMTssoVNDwIJS+GIfjGYVKzO
+        uYaHUMSeJqY6Fuk29AdnbDkhZBIks5o=
+X-Google-Smtp-Source: AGRyM1tQN1gJfHu+PZG/moVgWglZwZbQYl52t6+KVwB4qjaP/q9GL6bkGYVnT877dLBWWwECh55HwA==
+X-Received: by 2002:a05:6000:244:b0:210:cc02:889a with SMTP id m4-20020a056000024400b00210cc02889amr9398786wrz.141.1655287273944;
+        Wed, 15 Jun 2022 03:01:13 -0700 (PDT)
+Received: from Ansuel-xps. (93-42-70-190.ip85.fastwebnet.it. [93.42.70.190])
+        by smtp.gmail.com with ESMTPSA id j20-20020adfa554000000b002100316b126sm14655002wrb.6.2022.06.15.03.01.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 15 Jun 2022 03:01:12 -0700 (PDT)
+Message-ID: <62a9ade8.1c69fb81.76bfd.ae0b@mx.google.com>
+X-Google-Original-Message-ID: <YqmioratM4EzT582@Ansuel-xps.>
+Date:   Wed, 15 Jun 2022 11:13:06 +0200
+From:   Ansuel Smith <ansuelsmth@gmail.com>
+To:     Chanwoo Choi <cwchoi00@gmail.com>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        Saravana Kannan <skannan@codeaurora.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/4] PM / devfreq: Fix cpufreq passive unregister
+ erroring on PROBE_DEFER
+References: <20220614230950.426-1-ansuelsmth@gmail.com>
+ <20220614230950.426-2-ansuelsmth@gmail.com>
+ <17cb21c6-317a-3f70-8c4d-4d8fe20604d4@gmail.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: da4a8508-5bd6-4a15-79c8-08da4eb56c9b
-X-MS-TrafficTypeDiagnostic: GVAP278MB0296:EE_
-X-Microsoft-Antispam-PRVS: <GVAP278MB0296B27444C7198BCFB5C994E2AD9@GVAP278MB0296.CHEP278.PROD.OUTLOOK.COM>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0
-X-Microsoft-Antispam-Message-Info: MyH69wnItQVk/OzJdLAttOae1hVil9OPlDfKk91fvFz+kh4j8CDZZC9ewj/fr/2wuxSgaXNvu8ygFvIoigcZwkUrNnqzzf21gaAQTdnsSgYVCEDsJqusHIiScLwy6c7HyJhDH7YC8to026/507Tt4KKCqws02cfRT5O+lZwAwY+jlk/BfkHnHqAIEeHn+r6jXtbiPAGfr3baVVTWgJq/4LIpdHcvJbTEwAjI7DJQjHvZmJ0VsrZF+anIILiMhRfaZ+smps+PY9YyW9EovfjtNNOt5w5TI+/RqZgfHUTNTg5UQSDdBNPt/On6msgIHuaP9ZJIPv5CunQvjpfZ/xgCCkyVoG6H5HPdcRZO8c3ckEzl43wp2xQdfzEnkVySYYiW4yLg0RKG1aXM+/DlY2AadI5Y71uwz+Kb7IF04iCQ3TZadpvDi7b1cYNrxZ0ks+XgUbjdeliu/wxJ9uUr4TBt5SQsQ2W0mridjshoQvFqVnGWCu/kAXkDWXEpjp13MEbqlLNHHZV9QdDVPMOwzl8bbQZJf3a3D2R7prRuwbPPFlP9U+h7SdFim8yvLf3gOGGC7isVcslM+wKglZxY1/0LFILZMtPrj3PhrYOl0c7iGyR1RbOP2EpBqNASjKXRf02m3VjgjNWLhFF17EsHBlqEZeIcn9kGQhP8BsPOVpw3u+xajhfHt6z3GpeRQkbQ7p+BvMxSdS0bkVN5BKz6zSGSdQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230016)(4636009)(346002)(396003)(39850400004)(136003)(366004)(508600001)(44832011)(5660300002)(83380400001)(8936002)(7416002)(38100700002)(2906002)(6512007)(66946007)(26005)(6486002)(6666004)(186003)(86362001)(36756003)(52116002)(66556008)(6506007)(66476007)(2616005)(316002)(8676002)(4326008)(41300700001)(1076003)(38350700002)(54906003)(110136005);DIR:OUT;SFP:1102
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?3xsPZKBUA2saNyzvD8l4/glZiSyYVvlHP06NCG+HVx0Oq0zijTd4CFvRbgAU?=
- =?us-ascii?Q?UMWbw6v+8un4EebEv6M4VoTBAlwHrX2sMlfYYj0jtBGyOk9WWCSjgNMTgmTs?=
- =?us-ascii?Q?YFmnfEViB5ZMmd0hQezRF2El5DBvMQiUyQir1p/uZ8Eq3rqCUEQQQDRmGkpi?=
- =?us-ascii?Q?lHpx1wB5lvghLY3q71nNw7QyVzOLUysDVMyUGyNd9aI++N1IEwdtb4038Boa?=
- =?us-ascii?Q?9AQHX8V+ZKi/FQ7kSnwlie1T6TgnPxDoiPqkBmY/lgk1O2o43/3/xSrta3bj?=
- =?us-ascii?Q?3cTP7QXMux/OT3cis+1w5RZWN6OUHZIFGDc1i7TNcfQ8fM8Drdjic+MXBP5V?=
- =?us-ascii?Q?stDCJVLeda6GVDuW2YrEqx1SDolwwCe8cwPyDEBQOJBD/nXbj0TtLnLQVOmS?=
- =?us-ascii?Q?2lFzjC6VHDXqyS+lig1QSGGcM0o5w9aDMJXkBXtmaaeSwsltc9CFE610KdRg?=
- =?us-ascii?Q?9cyHRym9b7FJK4chKaFOHiqlgE/txMlSQYgGIW4cYJDjNw75BGp+kX7w5jN4?=
- =?us-ascii?Q?lKcADdaaW+6UfHFKcGNmboE8uNxCbbNO4ld+52cly8Sgcm9xuZI01VcvA+Mn?=
- =?us-ascii?Q?KbH5QoVJDHvl4W5Ve5YKykLN2Z6WNWb6AwfDyeFNP4pLCazWvseRSoV4fexC?=
- =?us-ascii?Q?kk3OCMVT3WjUhTmX1Qgjxz4M5WHWXXoOoveojRQ7EgL0PcnrSZrluB6x+r97?=
- =?us-ascii?Q?sevUZKFX9wsbc6ozpRPpsn0cUFNaNDS3l7JMybx5WNy0cd7+qxO6E+vJCiou?=
- =?us-ascii?Q?6wAae75gqPjlNopnE00WMTC47w15Z9Dfc3cWobRADY7fK7cvSkidexuwy/j1?=
- =?us-ascii?Q?67tOL9r+R8XKUo4ZI1n8MX1DUC4NJJeB3GSc3ZaPn414upOHvBcGtkKrOtyF?=
- =?us-ascii?Q?Wo1xyNranuSc1ogmqXJCsi9/vUg2TOmC3XhNh+1EuHMVhk58/B97JUcuxfgg?=
- =?us-ascii?Q?Al2DB3tjCShWN8UdsU3qOoXfaOqYsK8DjZo9Dp0FOvpD2e/mp811x+J8YfHp?=
- =?us-ascii?Q?5ewgI8PoATpWjjJAqppXCdv+GtyJTdOrSWVf7YrWvbET8nLYbPPNnQ9F/2+d?=
- =?us-ascii?Q?uYZK9UEfv/ECCHrQBZZed/hf99KV+pf03IwNz/Ln9Ijfbw2K2CsLFBM4Dioh?=
- =?us-ascii?Q?cSAXrSW3zLU/NhX6+p8LxdE5Y59QOlbfRiqoVzz81eXKVHo9WYILSTRIp9Tu?=
- =?us-ascii?Q?l1Rko2VJZXPAxk6i1wEONHr0Cn6auXsqPvCU6ZxkSQlknt9VLHW3xMwV2B5s?=
- =?us-ascii?Q?SmVZgmvsIt3izkTd3PUyrIx/zZoZzc2wI7KkuVKoT1GVhTuyvs/d0ZniGkPp?=
- =?us-ascii?Q?55oUBJMGOn8+A1Ss/f1XujrkeCikviqgpPF2bBYXlMl9tl3egVM5BEXei8sq?=
- =?us-ascii?Q?vSBYfPNDe861Rc7S9vJ14OsgOluSxQouZoL+0No9kn85WVj65JnIVq2bwJj2?=
- =?us-ascii?Q?nUkxSkwa/Thbey3Du4Sqkk4n8qqdQLJX/uLkIFp+3aBqdpAvsodxnqvCTnPE?=
- =?us-ascii?Q?e1whZPLhT7JZkE4lRjqzL6tOY6fm8EfDHmk2iYbRKuPMWYlx7G8xs8Fgg0fH?=
- =?us-ascii?Q?auXCyeWa+EidUdI4+qMOwn/DoKz2L29UPA/2b/XcQ11ze9fVmEHF/xJJpCQC?=
- =?us-ascii?Q?G8DY1nPPU0Yj+F3T8EWaRzCGXY6OK0/vrcGau/zwhLWspe8RoNHa5M0gGPu3?=
- =?us-ascii?Q?t27N/3aqcf5TiVkk5+LpwFiCF5pXZoUysgaASbjfx0DSqkzKFz4xU1gBn9D+?=
- =?us-ascii?Q?CqLiJ8PLcQ27Iv4yxzuvixTwXbYt76Q=3D?=
-X-OriginatorOrg: toradex.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: da4a8508-5bd6-4a15-79c8-08da4eb56c9b
-X-MS-Exchange-CrossTenant-AuthSource: ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jun 2022 09:57:14.5136
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: d9995866-0d9b-4251-8315-093f062abab4
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: iRVjKEraaAvOa3nYwsWjzHmYNyhaI4170Qp4K0ugffzDFj/MEUb12xziPBrPjnoD/mtjQGBx6s9/Smf0MV1WPq/5HqvjHo7oUYnZrHhZsxo=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVAP278MB0296
-Authentication-Results: relay.mimecast.com;
-        auth=pass smtp.auth=CDE13A77 smtp.mailfrom=francesco.dolcini@toradex.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: toradex.com
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=WINDOWS-1252
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17cb21c6-317a-3f70-8c4d-4d8fe20604d4@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add trips point to i.MX Thermal bindings for each temperature grade
-(automotive, commercial, extended-commercial and industrial) to enable
-specifying a different trip point than the hard-coded value.
+On Wed, Jun 15, 2022 at 03:48:03PM +0900, Chanwoo Choi wrote:
+> On 22. 6. 15. 08:09, Christian 'Ansuel' Marangi wrote:
+> > With the passive governor, the cpu based scaling can PROBE_DEFER due to
+> > the fact that CPU policy are not ready.
+> > The cpufreq passive unregister notifier is called both from the
+> > GOV_START errors and for the GOV_STOP and assume the notifier is
+> > successfully registred every time. With GOV_START failing it's wrong to
+> > loop over each possible CPU since the register path has failed for
+> > some CPU policy not ready. Change the logic and unregister the notifer
+> > based on the current allocated parent_cpu_data list to correctly handle
+> > errors and the governor unregister path.
+> > 
+> > Fixes: a03dacb0316f ("PM / devfreq: Add cpu based scaling support to passive governor")
+> > Signed-off-by: Christian 'Ansuel' Marangi <ansuelsmth@gmail.com>
+> > ---
+> >  drivers/devfreq/governor_passive.c | 39 +++++++++++++-----------------
+> >  1 file changed, 17 insertions(+), 22 deletions(-)
+> > 
+> > diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+> > index 72c67979ebe1..95de336f20d5 100644
+> > --- a/drivers/devfreq/governor_passive.c
+> > +++ b/drivers/devfreq/governor_passive.c
+> > @@ -34,6 +34,20 @@ get_parent_cpu_data(struct devfreq_passive_data *p_data,
+> >  	return NULL;
+> >  }
+> >  
+> > +static void delete_parent_cpu_data(struct devfreq_passive_data *p_data)
+> > +{
+> > +	struct devfreq_cpu_data *parent_cpu_data, *tmp;
+> > +
+> 
+> Need to add the validation checking of argument as following:
+> 
+> 	if (!p_data)
+> 		return;
+>
 
-Signed-off-by: Francesco Dolcini <francesco.dolcini@toradex.com>
----
- .../bindings/thermal/imx-thermal.yaml         | 27 +++++++++++++++++++
- 1 file changed, 27 insertions(+)
+Considering this is called only by cpufreq_passive_unregister_notifier
+and cpufreq_passive_unregister_notifier is called only by devfreq_passive_event_handler
+where the check is already done, isn't that redundant.
+We should never reach delete_parent_cpu_data with no p_data.
+(Unless you want to use that function somewhere else)
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
-index 16b57f57d103..e6349e40d6c6 100644
---- a/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
-@@ -54,6 +54,18 @@ properties:
-   clocks:
-     maxItems: 1
- 
-+patternProperties:
-+  "^(automotive|commercial|extended-commercial|industrial)-thermal$":
-+    type: object
-+    description:
-+      Thermal characteristics for each available temperature grade, this allows
-+      to override the passive and critical trip points.
-+    properties:
-+      trips:
-+        $ref: "thermal-zones.yaml#/$defs/trips-base"
-+
-+      additionalProperties: false
-+
- required:
-   - compatible
-   - interrupts
-@@ -98,5 +110,20 @@ examples:
-              nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
-              nvmem-cell-names = "calib", "temp_grade";
-              clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
-+
-+             industrial-thermal {
-+                 trips {
-+                     temp_trip_passive_industrial: trip-point0 {
-+                         temperature = <95000>;
-+                         hysteresis = <0>;
-+                         type = "passive";
-+                     };
-+                     temp_trip_crit_industrial: trip-point1 {
-+                         temperature = <100000>;
-+                         hysteresis = <0>;
-+                         type = "critical";
-+                     };
-+                 };
-+             };
-         };
-     };
+> > +	list_for_each_entry_safe(parent_cpu_data, tmp, &p_data->cpu_data_list, node) {
+> > +		list_del(&parent_cpu_data->node);
+> > +
+> > +		if (parent_cpu_data->opp_table)
+> > +			dev_pm_opp_put_opp_table(parent_cpu_data->opp_table);
+> > +
+> > +		kfree(parent_cpu_data);
+> > +	}
+> > +}
+> > +
+> >  static unsigned long get_target_freq_by_required_opp(struct device *p_dev,
+> >  						struct opp_table *p_opp_table,
+> >  						struct opp_table *opp_table,
+> > @@ -222,8 +236,7 @@ static int cpufreq_passive_unregister_notifier(struct devfreq *devfreq)
+> >  {
+> >  	struct devfreq_passive_data *p_data
+> >  			= (struct devfreq_passive_data *)devfreq->data;
+> > -	struct devfreq_cpu_data *parent_cpu_data;
+> > -	int cpu, ret = 0;
+> > +	int ret;
+> >  
+> >  	if (p_data->nb.notifier_call) {
+> >  		ret = cpufreq_unregister_notifier(&p_data->nb,
+> > @@ -232,27 +245,9 @@ static int cpufreq_passive_unregister_notifier(struct devfreq *devfreq)
+> >  			return ret;
+> >  	}
+> >  
+> > -	for_each_possible_cpu(cpu) {
+> > -		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> > -		if (!policy) {
+> > -			ret = -EINVAL;
+> > -			continue;
+> > -		}
+> > -
+> > -		parent_cpu_data = get_parent_cpu_data(p_data, policy);
+> > -		if (!parent_cpu_data) {
+> > -			cpufreq_cpu_put(policy);
+> > -			continue;
+> > -		}
+> > -
+> > -		list_del(&parent_cpu_data->node);
+> > -		if (parent_cpu_data->opp_table)
+> > -			dev_pm_opp_put_opp_table(parent_cpu_data->opp_table);
+> > -		kfree(parent_cpu_data);
+> > -		cpufreq_cpu_put(policy);
+> > -	}
+> > +	delete_parent_cpu_data(p_data);
+> >  
+> > -	return ret;
+> > +	return 0;
+> >  }
+> >  
+> >  static int cpufreq_passive_register_notifier(struct devfreq *devfreq)
+> 
+> 
+> -- 
+> Best Regards,
+> Samsung Electronics
+> Chanwoo Choi
+
 -- 
-2.25.1
-
-
+	Ansuel
