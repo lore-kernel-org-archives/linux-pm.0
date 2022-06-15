@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 605F0CCA48E
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jun 2022 11:01:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 372B3CCA480
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jun 2022 11:02:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352852AbiFOLBG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jun 2022 07:01:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52194 "EHLO
+        id S1345762AbiFOLCh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jun 2022 07:02:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52046 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347672AbiFOLAD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2022 07:00:03 -0400
-Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2047.outbound.protection.outlook.com [40.107.20.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABA0B522F5;
-        Wed, 15 Jun 2022 04:00:01 -0700 (PDT)
+        with ESMTP id S1347124AbiFOK7q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2022 06:59:46 -0400
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2065.outbound.protection.outlook.com [40.107.21.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C333E51E6C;
+        Wed, 15 Jun 2022 03:59:45 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Tt0IwG4KwZ0zLI34k9uinlZtwtec06F2FxAjQAgB4kcX6ruMb+nW0VOlXCfaJ11LtCRw+FwLD75YkJaCE/NwxUJgygZO+z56eKaOETH0km16E+TbFZdA5wHt0lWgLpC/CiT+QnZud09JfuEhOsqxAjqv/9aK6DYGTpFgA6QJcR2NeBBvaRUqRU8pbXTS9cYtuGUznx8gGCy3fX14LYMIrLgPn1TxeA77WzgiXd0aqnZHAuD9CEAMFCz5OQhP7QAuPoZ44UyTKCuBIPI8GLhyfnlvYyBkcyc2c4FfLjJlGjZjLRcEoM9A5Y8svEqV8U7VTAcJ8N7aftiuSwcYsH1gcg==
+ b=Yhi5rL2IYv1iTWfRM1uAA5snfSB7iNCstg7hcaO3gw+6WTUSAPZctDbE/fQPYlDO7bHFdaS1Vv7JjxmxtP8Qlz4ELU05tEQWJy8+nloNW2ZN9/j0E9JwIsF1UCicw4K7qqc2NnKFQsz7E/nk3huMT+TZDsQDl5E66cvdjqZMP4ihF8NvlKURHMR1m2wIeZ1seBp67Te+3K53d4W4eM2sm79TwZnBwaEYeJbsrej2nC7HiukTpHE5XkwNsB7HmSmc9Tt4PE8B78Qi9mc0DM0gulh+3qmR4Yzpton7iD/IEaQfTuACJgwCWblkWKlesgUezCAdhSr9S2n+mLwzT/nVAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wrdB9n3POpIwIPwGyD8EKUnxHkHBkwAVIdKqp3F8G7s=;
- b=mmm7Nl34lwMbv5bVF8ZXPx8Wdtop2cwMruzjyRaPmYJOKHjgDqz0NBZ/hOVd/PJsEy01XQRUYL1Gc7k2MBOuXjN7u/m46Es9JXKnae4IFGXieWDBhfJyyPbfgha6TI6KKDBtIqwHclFk+ZMUBmM+xUN3u/skZ5aK9HU+5PjzFEJXRzcct8xR6/tnxlpQugLs+E1sXEA8mMNtx7Kph95FvE09ttvrwgx48aUC8lnrlCvyXr6mZgfwExQ1I3t3x3lwGB4DIjeCDFWSPuHb++zJJh+NOomV46c59L4cXAGevMmTGAaQtjJYmpSVdUaWmQDGPlagrg07RxvSx8GiRVEA6w==
+ bh=r8LE+x3TttH7qT+Takh6K2M/5SNH7ZTo25mc68bUfwU=;
+ b=nu0lYCyJ6s1UgUbaRLeGSKg7aSiKOARXq8ZWeBjswgVmoAEmc5W4blw79d3S+VVSkj/14n51MgKcYolS3kzCeagFV4mA8WjFFYKLXFR9iTFBFwjWLNIQSvNic2yJpKgopP/QGSw1VdUuf/dQiLryIgDI2FbUGRu9ZPWK73gKc3Q8WcRTJ57X8LDGRvHDrq3SAlPkuhWmBOkZ7QwbGkgAUtAVbzqsGbFWxnXL2zymtIv/DcXyZv+MxWy4LDuaxs2T+lZOzBe49MLOvFuNausUBpBrOPD1vLO8wyV7Yf4x/g8nrDgi8l/B+jOS4GpOcS4YRF27SmWI1kTAwYdSlnIKjw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=wrdB9n3POpIwIPwGyD8EKUnxHkHBkwAVIdKqp3F8G7s=;
- b=YSTSmK4OjZL/A27JGpIg4MaKm+9O+P7jEXcM81BrIN6vQM5qLy1qDRP7BBB/8FvcsII0WPYoPlWBnozFYhhbn9iR3yqKG3vbtgHL0JadiT77UaqI9iifHRNO9umNLKbJzxWk2LKRXy/vixaj9bKNoYqXxvQClG2GJOG3rtHCmM4=
+ bh=r8LE+x3TttH7qT+Takh6K2M/5SNH7ZTo25mc68bUfwU=;
+ b=RzZQecIne7dRW7c8QJVoBYn/cYE421apr5vq3gGEHyjTC1KDkmxL+7ukpwaAoApCzGiXqIuazxDnsXO7OaZLg/DZ0ft1NvbgvkTUuviGGdJfJ9QruvLYT7mKgRAhZsffFNyJuXhbW/Cwko5c3wEROVVNmfo2KpskdiVD/9ArO3k=
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from VI1PR04MB5005.eurprd04.prod.outlook.com (2603:10a6:803:57::30)
- by DB3PR0402MB3948.eurprd04.prod.outlook.com (2603:10a6:8:d::19) with
+ by AM0PR0402MB3939.eurprd04.prod.outlook.com (2603:10a6:208:11::11) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5332.17; Wed, 15 Jun
- 2022 10:59:59 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5332.23; Wed, 15 Jun
+ 2022 10:59:42 +0000
 Received: from VI1PR04MB5005.eurprd04.prod.outlook.com
  ([fe80::7505:2581:368f:5619]) by VI1PR04MB5005.eurprd04.prod.outlook.com
  ([fe80::7505:2581:368f:5619%5]) with mapi id 15.20.5332.022; Wed, 15 Jun 2022
- 10:59:59 +0000
+ 10:59:42 +0000
 From:   Viorel Suman <viorel.suman@nxp.com>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -75,9 +75,9 @@ To:     Rob Herring <robh+dt@kernel.org>,
         linux-watchdog@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
 Cc:     LnxNXP@nxp.com
-Subject: [PATCH v4 14/14] dt-bindings: arm: freescale: Remove fsl,scu txt file
-Date:   Wed, 15 Jun 2022 13:58:34 +0300
-Message-Id: <20220615105834.743045-15-viorel.suman@nxp.com>
+Subject: [PATCH v4 09/14] dt-bindings: watchdog: Add fsl,scu-wdt yaml file
+Date:   Wed, 15 Jun 2022 13:58:29 +0300
+Message-Id: <20220615105834.743045-10-viorel.suman@nxp.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220615105834.743045-1-viorel.suman@nxp.com>
 References: <20220615105834.743045-1-viorel.suman@nxp.com>
@@ -88,350 +88,116 @@ X-ClientProxiedBy: AM0PR02CA0159.eurprd02.prod.outlook.com
  (2603:10a6:803:57::30)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 1cd0c3b7-f625-407b-d66c-08da4ebe303b
-X-MS-TrafficTypeDiagnostic: DB3PR0402MB3948:EE_
+X-MS-Office365-Filtering-Correlation-Id: 88450a3f-3ea4-4edc-88ca-08da4ebe269f
+X-MS-TrafficTypeDiagnostic: AM0PR0402MB3939:EE_
 X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
-X-Microsoft-Antispam-PRVS: <DB3PR0402MB3948ADA3EB9B02953A321C4892AD9@DB3PR0402MB3948.eurprd04.prod.outlook.com>
+X-Microsoft-Antispam-PRVS: <AM0PR0402MB393976B14B03AD90EDCE0E2392AD9@AM0PR0402MB3939.eurprd04.prod.outlook.com>
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: fGdxhrw+BTvHOSlIGryi5k65V0rEilBjPcTJvJTJHbqOkwakGbtlgN4l99WlegOp3628MiP+Vock4wxtZnitR1yn7w7xXEzpDXJp4WML6MijPCe3mTo6lGOephJtK6Qk5ZQYMcPb50LChI0ZmrJ1mFLzZ6F8wRYlh/QBNFi0UUmGe1IMthuBhrTuZokMgx/9x++51aB99kd34kHDwJ18vAf4D/Ml1I1qy7R+MWWoE2q2f2DS/hYMOS2HFdOSn6k/ZvyWGYQDpGCzpeIKp5h7n0n3wx7o8tiovm/n+0KeFS85K0UWfr2MuEOVNOf0st18nRopehQHnEL6lfjwmuAcEFG+Ldj4h2xxcpanu44Rhvp9nqH8lFD5imFoPnmGfq4pMjgfPZd2lonuhMsLHAzU8UeNbB3xC1+8ssUyUeMHapLs8tiwVS4TUfuRUfp0/aKUp2fLtrQDjuRIwNtKTXBwvPpp+iuTZyh9B5fGEaYELTsJAa9AagpF+wtzgHcx7pXzoBmQMI0y43SlQE1UJV9LaiGGeI0n6ehEFiEam+Fo8pYfkmVfyp8EmvlsRbNcqC4aUL4vbMOEIgOGXDkwDw7odPl31GPUxuceBhr3aJXATRxICmq1Pbecbm82jvR0BZBNQiUJfn2kwfiX9BncKJJIatLHZw34NmTS0K3red8ttl8R/k+bdsOWJcOxs0sLQ3pP+APE9dZeIuCeacI5UlRMkg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB5005.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(366004)(26005)(52116002)(6512007)(44832011)(7416002)(2616005)(4326008)(6486002)(6666004)(508600001)(186003)(83380400001)(1076003)(8676002)(6506007)(7406005)(2906002)(38100700002)(38350700002)(66476007)(316002)(66556008)(86362001)(36756003)(66946007)(921005)(8936002)(110136005)(5660300002);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: Ej3ODDRFxWEUiZeNUNmfT5PCubnpXyrnaKfYVLAorAHtoxB9J4j63cAeOqluzhv6YJHqGQZhRzhq66kCFjGBIEpXv2gHBZ3/qOJR+dRfjZwB5XdKue8a4g59A95XoDXnLXjqfbEsBj8Qb6dmX59mUq5KnGKk/sZ8qY5jjM3B7qhLn2aNYi6fH8jkf85rNUOgnU8lj4d13hilmZMgI9Qpuutos+JWVFWBV+HLG0vFYUiKrn55EDHBRG33qozzaY2URydbkHwftQ7YfxVJUEZzN78j3eNnIC89Zg4aYFoSLCOZDgaILB2Oo7R/PPRdcaQ5opMX4BwrA/RKmeXXuWB0QRg5TLKTAfuq3s2v8/w+XtRdc62Ocbx+kVcWpmpN5VPEyByRw19VubpKa1TpD+W1yx2pTq8NZRHj+8mMiAiHT1mCKbXHOOCM45Y9wUwLi6JqSKQKg2nit2POyxPGjSTVxSZ26zxhvObD79zc1nU6T/gPJl8c1UIe75aIjeDmjlRKJFm4OpaxKnWoauxH2ELvr2XSXcDzMn0vE6pOb10tvloE3bTDS0x4md98jRv0opGsSA05zPgZO+xgRuxzr7sQNWhThQ2yriZ/Mt+bXzdDWXE1cRMKHh014E0+HkPrO0axE6SJXrkXZVnu23XfrV9Pj2rT+hjQo3O57mWK82VrrXOOd6pFITpFlFWQIFl4BztFJzLfwjNnabp73xMlkSCt+yBb+qM0kzSM2/cDiqD3Fr8nDyjvbfuYUn0CJdYg/dGQ4blwWl6qf0Akpt7549bFG2q5/ewVzN1K/CA3Qt+GzChgGW0QTrxkzsQIKkpOsniWsIWQO8t26fpRf3hJ+wWBMI5oWimEEwKNr+m/ZXjkEUk=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB5005.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(366004)(4326008)(66556008)(66476007)(66946007)(8676002)(316002)(1076003)(2616005)(8936002)(26005)(6486002)(38100700002)(966005)(6512007)(508600001)(6666004)(38350700002)(6506007)(52116002)(86362001)(5660300002)(83380400001)(110136005)(921005)(2906002)(7406005)(7416002)(186003)(44832011)(36756003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?iso-8859-1?Q?V6q3t1JFTBrw0ba3+tlYNf2GNJ43LaGorRPLhgl/5VraAh7j8LJbA2GdiC?=
- =?iso-8859-1?Q?yDvynrxybJRGuSnO1LAgD/4v/BdjWe1+AhCebjrHW2mVGhsLnhkrNF3i14?=
- =?iso-8859-1?Q?Q9gv8tEO44Olg2c1LFazAzCd/hpTq66gtiEg6WwYjU0aBr9H9QArfRaAtW?=
- =?iso-8859-1?Q?RiJGyGktqmb9sJuDD4y9rAOkQfcHoJYCTG6kXgOuyf5Bnf4Hws8Jq0oU5v?=
- =?iso-8859-1?Q?QKXujY7Fe4+dI020HFqjNSJ4Jqhoj9NS1yfcknKBFDnAw1BFMAyRz+5eNo?=
- =?iso-8859-1?Q?/SH5fyfxeEPOPktkQKRFt/1Gl6S0yNTGLpZSh7Bthu4RsZ7H51n0+ShB2q?=
- =?iso-8859-1?Q?i5jc+ACsphsOEMOkgBS4zip6ipAMlhnBkNkb8IQil4oOxa6kzJ/Otd6Crr?=
- =?iso-8859-1?Q?XKK2vi6ZfAnCXJnZKMhY5etnUx/OBalSpmIJitSKUNElA2YxjKUnFYeixa?=
- =?iso-8859-1?Q?FrXTi/M27+Ozu2BMtZO495zBy/oVDG/ua4vMWDNTW9e/mQgPtRkLF1S6na?=
- =?iso-8859-1?Q?I5m6xfTc0MDV5iVplxApWbHO/skw7QBjJMh58gcfylVWRWOD0TpbWnMelt?=
- =?iso-8859-1?Q?CYMUcBG0syStOsr/qhY1POzGUs7rJePtqT3+wa7/EMxEiR9AQGxFIDe3Ml?=
- =?iso-8859-1?Q?PAWihhB90mpPQq2No5fy9m+aa/KSnfy/USd7J8h+e0vZkOICdNp7Rp6s+Z?=
- =?iso-8859-1?Q?pXpaRKOG1VmebYPJQ+FSjG1ucYdgBXk07kmybSH3hrM6n26fvhcYU0q6yv?=
- =?iso-8859-1?Q?24JJP7Rablo5EQiEtXZ+2sFbEA84+KGmk0t9QvMdgd1QMa2boU5GjXa9i9?=
- =?iso-8859-1?Q?b3XHdbk//mPcpOdpwFOHw6/9+MCgjXX8C6BEn5j4QFAizkVyYOh1/00RBv?=
- =?iso-8859-1?Q?11mCPfE+8/47PjFofiHu3snbSfc8dtPizZXFq7ZF7okoeLoF6McW3VjQ8n?=
- =?iso-8859-1?Q?9L+ir38X6K01cBSbB3ChZ+jzr+z6hk+HpxwCAA/j+wJalu5xSsOe2sZmKv?=
- =?iso-8859-1?Q?zaUkW/UoQpeuYo6g0Vd4EoIl8MisDp7iK2LX6s/Af8vMCwjVNdb6nAey5J?=
- =?iso-8859-1?Q?YAP1ses35tCSqj+pJEu6qB07YhTnjiVZULJCRKY/LuE1qbYgJfXFKVvPUE?=
- =?iso-8859-1?Q?y2WgUfHDMATBEjFVsx3XM5IMOc+Sk24oxQVbBozXfy3uGnqGXnncG/Kpfo?=
- =?iso-8859-1?Q?02aXBkJoRkh/K9zClA6g+qHniST/Xa6SlFNsaNOnrYEmDmG+tLwwBzBjzj?=
- =?iso-8859-1?Q?ajSbkf64ieWdTz1TuhyIONSmVirrciil+ofLzWyXqSZUMMq7WomtciWuKp?=
- =?iso-8859-1?Q?mHJRfjygJBnCC9c84lsbduLNqQxtKa4vH6OjSpkjjdAHMiN/2scNJpne5m?=
- =?iso-8859-1?Q?ZT4RxgtshpFyTWlWok2Xg/b9Onnv0RJ46BGHSU7MIV6fLa2DpyreIF2ICd?=
- =?iso-8859-1?Q?eJALrC3X5zmTq4g6dUVevl3khpwnnAKc39QFCeHxVshCFdqn5RjqBJAhSF?=
- =?iso-8859-1?Q?bzA1zA41CVPkfwPtjvBhcToP/Guo0f1GIIe3kAZg7g1OhJOtdk3iwNA6JY?=
- =?iso-8859-1?Q?/o8AiObD6AHkoVg6sRql+oFKgJGPVMg9h6u/4vGHelydSDya4J+1hPmfY+?=
- =?iso-8859-1?Q?C2C5KSJMJr1OmnPp7A1X+k8zoWYDCNerPpD/SUDK1ndKYOwyCHt4x+DDwZ?=
- =?iso-8859-1?Q?Ls56dAVpBWapebx4RUefsWytk/XJlS/skubGiEMi2HUoqEVxl0N/D1amqj?=
- =?iso-8859-1?Q?SOY2TYOV385ZfzTkGlk392iHBWPGeLiO9ECVCk9qV0+Y9DlauRA2bELOc9?=
- =?iso-8859-1?Q?sOlza0uxnQ=3D=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?iso-8859-1?Q?/LZLbZdOHGg3D8s8iTsN1zVQrd+8CzBGwExjupvesYIj6YaR7aWZ/0v08X?=
+ =?iso-8859-1?Q?zP68cFZfoZAL9SsgpAQzN7EmfrfFuiZduVCTEuIn4f8nBqLy4gML/zdCT7?=
+ =?iso-8859-1?Q?RgPsCDcHsBp2byIo4yfUr7c9AF981E4FWRAs5GZ2DeW9QXJpCA8RLvIzzj?=
+ =?iso-8859-1?Q?AXS0c5NIj7SEtuPlTdSAPZcBdaYaUQP3O9dK+MB/Q2C2Pyihw1VjPbjpfK?=
+ =?iso-8859-1?Q?q6Yu0BIcUd63AZVJmqUsw6Rtbr9MdC9iyQ/GY4YiSWoN16Y4ixh4fVHVXK?=
+ =?iso-8859-1?Q?YveLuWvL6YXMnwfL8Pzs5Sd2Zzo0d4Sffffbci4gu2OaNEuQRtRZweY5y7?=
+ =?iso-8859-1?Q?GT9cOJKNkZJ1KI9knWoLKEzFae8a2MR4qaWXkL01EJzgiFRb62TxWAUFNc?=
+ =?iso-8859-1?Q?DKuC2dIA76F6KYH1cKiZOZo2+9p2qBlCXNpUMPA+J/LhLJ9kHQOlCCIcjJ?=
+ =?iso-8859-1?Q?0lBYXaA/NcmaJHfX2wUWFEzMwuOSTsgwlSEr/KHz50PcjmK64RKLUx7G06?=
+ =?iso-8859-1?Q?QdvXeKnZ0oEXOUtbhwal2lBKn8tM3dKPTEpOtl2SBtV3DLuWRAx9sw7XnQ?=
+ =?iso-8859-1?Q?A3H9fHSpIpmQ4MsZ0OxU7bEPp0Wzj3g9Ku8maFp5DGCFc5q4l8zqhGbcUq?=
+ =?iso-8859-1?Q?MSWE7Y6+YwXhRYnrpQIcw+tcNI2A91DdKqTH8MRgXUUwXydFAHyLG3SLhu?=
+ =?iso-8859-1?Q?N4GpFuChqTEhp8nIkmyV41QLgvObd6insKL+6qMbGwd6YgoF1d9cQx4spJ?=
+ =?iso-8859-1?Q?Sfm8iyuLVaeFg+odyErCFgwtQ5AHnOEwigR4xwZWN6IFOZyH8SBrLLXZPw?=
+ =?iso-8859-1?Q?tOa8kCA9I+bCXGlXXQQyl8+4uDXkrTmfp1isvGgKrDt8vpgfUVCgnQLPBB?=
+ =?iso-8859-1?Q?q/r07VwiU1ojVooQ3LSgQ9iiQYtsT3FzMTa30gn+ismhKOkJ3QIPtLjqYm?=
+ =?iso-8859-1?Q?7m1J2+pbRYT/kj1Rn7x+Ee4Df0Lk3jYIgdsGHjfFsJcfP9cBlmESiRykUq?=
+ =?iso-8859-1?Q?SejSK++FnN53oog4sQdd/MReAyLWAsWAq0x/0nh/7EN8w+/DRzTOvt2b7u?=
+ =?iso-8859-1?Q?PN3J6Mgkohoq/WFdl0mMBfjHuU/wETYGmeBlsgWI/yk9SI0wAR9QZQL/Ua?=
+ =?iso-8859-1?Q?88O9vgAY/+6ZUsbSA0tzljru4NkjEzWDzqNscYOL5YdFquM9tKT8zgBdxm?=
+ =?iso-8859-1?Q?cBJe9kE/UrTgMltHfVzyvzEfGFoUp+h6Xauzp0V7khZ/2l/lKahGYjgaln?=
+ =?iso-8859-1?Q?A7S0gcRQMwXRWd1pymVngtscyhcPqNVuZrIstwO+EBWLF/lpJ+fNHukPaU?=
+ =?iso-8859-1?Q?b64otJph4Z30zkNiqUc8bqfkdnMeiHjLvTDKiTpd7SM4EHgHPVFOcwin6A?=
+ =?iso-8859-1?Q?/If7cLAqNgjDh39J1vn+xlAL25t+jrESEloQUmtXjzinzmR1BA1J9cwKV1?=
+ =?iso-8859-1?Q?icf5esaSdENQhOIZnyK8EEpqcEyEsZ3BGIjlK5J9HrnTf6hcTYsHrXW83F?=
+ =?iso-8859-1?Q?XtOdI1JllqHdKPb43Te3395U3dSG9ZZZjLf8/NC+bEmhQwzaBFhJA0Ss59?=
+ =?iso-8859-1?Q?TKV+/D3R3rKZlcN59Jqhkc3npcXEuBtODPiMAQmHJ6Lf/cKGsCxh0xXRd9?=
+ =?iso-8859-1?Q?z7Eh5ey0r0Zcy3L4uoUXUhfehXaMg3ADV0AbV6m7BjDLH6a7PLJ4ac8sA0?=
+ =?iso-8859-1?Q?2zFSCvA7Mj4ZormIpjGrYlWq7bQVbzhgGw1R+9HLT4vho0H0IKOqzxydQI?=
+ =?iso-8859-1?Q?LEyc14XLfLsSwDg0v/YqNqEgU7+aknfFMN4y5xgPx5ayCj7TTsMxX9Ibdp?=
+ =?iso-8859-1?Q?DhKulRlXKA=3D=3D?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1cd0c3b7-f625-407b-d66c-08da4ebe303b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 88450a3f-3ea4-4edc-88ca-08da4ebe269f
 X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB5005.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jun 2022 10:59:58.9608
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jun 2022 10:59:42.6807
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 8oSsbviMnI5Y3znyiCaSJenh+58If+2aN9Iq1ft07nYTlm+r6kFYxYdMuBx9cqtthPK91ZJifti5QtKE5zmkrQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB3PR0402MB3948
+X-MS-Exchange-CrossTenant-UserPrincipalName: kiTjIAZxlmpkSb13MFakOBbsu0MGlehFVgYnc+rmrrR88UMwzzmxgQkycTTAZucRMVlW0myvOdQhmlBdyaZmLA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR0402MB3939
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Abel Vesa <abel.vesa@nxp.com>
 
-Now that all the child nodes have been properly documented in the
-yaml files, within their proper subystems, we can drop the fsl,scu.txt.
+In order to replace the fsl,scu txt file from bindings/arm/freescale,
+we need to split it between the right subsystems. This patch documents
+separately the 'watchdog' child node of the SCU main node.
 
 Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
+Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
 ---
- .../bindings/arm/freescale/fsl,scu.txt        | 271 ------------------
- 1 file changed, 271 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+ .../bindings/watchdog/fsl,scu-wdt.yaml        | 35 +++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/watchdog/fsl,scu-wdt.yaml
 
-diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-deleted file mode 100644
-index a87ec15e28d2..000000000000
---- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-+++ /dev/null
-@@ -1,271 +0,0 @@
--NXP i.MX System Controller Firmware (SCFW)
----------------------------------------------------------------------
--
--The System Controller Firmware (SCFW) is a low-level system function
--which runs on a dedicated Cortex-M core to provide power, clock, and
--resource management. It exists on some i.MX8 processors. e.g. i.MX8QM
--(QM, QP), and i.MX8QX (QXP, DX).
--
--The AP communicates with the SC using a multi-ported MU module found
--in the LSIO subsystem. The current definition of this MU module provides
--5 remote AP connections to the SC to support up to 5 execution environments
--(TZ, HV, standard Linux, etc.). The SC side of this MU module interfaces
--with the LSIO DSC IP bus. The SC firmware will communicate with this MU
--using the MSI bus.
--
--System Controller Device Node:
--============================================================
--
--The scu node with the following properties shall be under the /firmware/ node.
--
--Required properties:
---------------------
--- compatible:	should be "fsl,imx-scu".
--- mbox-names:	should include "tx0", "tx1", "tx2", "tx3",
--			       "rx0", "rx1", "rx2", "rx3";
--		include "gip3" if want to support general MU interrupt.
--- mboxes:	List of phandle of 4 MU channels for tx, 4 MU channels for
--		rx, and 1 optional MU channel for general interrupt.
--		All MU channels must be in the same MU instance.
--		Cross instances are not allowed. The MU instance can only
--		be one of LSIO MU0~M4 for imx8qxp and imx8qm. Users need
--		to make sure use the one which is not conflict with other
--		execution environments. e.g. ATF.
--		Note:
--		Channel 0 must be "tx0" or "rx0".
--		Channel 1 must be "tx1" or "rx1".
--		Channel 2 must be "tx2" or "rx2".
--		Channel 3 must be "tx3" or "rx3".
--		General interrupt rx channel must be "gip3".
--		e.g.
--		mboxes = <&lsio_mu1 0 0
--			  &lsio_mu1 0 1
--			  &lsio_mu1 0 2
--			  &lsio_mu1 0 3
--			  &lsio_mu1 1 0
--			  &lsio_mu1 1 1
--			  &lsio_mu1 1 2
--			  &lsio_mu1 1 3
--			  &lsio_mu1 3 3>;
--		See Documentation/devicetree/bindings/mailbox/fsl,mu.yaml
--		for detailed mailbox binding.
--
--Note: Each mu which supports general interrupt should have an alias correctly
--numbered in "aliases" node.
--e.g.
--aliases {
--	mu1 = &lsio_mu1;
--};
--
--i.MX SCU Client Device Node:
--============================================================
--
--Client nodes are maintained as children of the relevant IMX-SCU device node.
--
--Power domain bindings based on SCU Message Protocol
--------------------------------------------------------------
--
--This binding for the SCU power domain providers uses the generic power
--domain binding[2].
--
--Required properties:
--- compatible:		Should be one of:
--			  "fsl,imx8qm-scu-pd",
--			  "fsl,imx8qxp-scu-pd"
--			followed by "fsl,scu-pd"
--
--- #power-domain-cells:	Must be 1. Contains the Resource ID used by
--			SCU commands.
--			See detailed Resource ID list from:
--			include/dt-bindings/firmware/imx/rsrc.h
--
--Clock bindings based on SCU Message Protocol
--------------------------------------------------------------
--
--This binding uses the common clock binding[1].
--
--Required properties:
--- compatible:		Should be one of:
--			  "fsl,imx8dxl-clk"
--			  "fsl,imx8qm-clk"
--			  "fsl,imx8qxp-clk"
--			followed by "fsl,scu-clk"
--- #clock-cells:		Should be 2.
--			Contains the Resource and Clock ID value.
--- clocks:		List of clock specifiers, must contain an entry for
--			each required entry in clock-names
--- clock-names:		Should include entries "xtal_32KHz", "xtal_24MHz"
--
--The clock consumer should specify the desired clock by having the clock
--ID in its "clocks" phandle cell.
--
--See the full list of clock IDs from:
--include/dt-bindings/clock/imx8qxp-clock.h
--
--Pinctrl bindings based on SCU Message Protocol
--------------------------------------------------------------
--
--This binding uses the i.MX common pinctrl binding[3].
--
--Required properties:
--- compatible:		Should be one of:
--			"fsl,imx8qm-iomuxc",
--			"fsl,imx8qxp-iomuxc",
--			"fsl,imx8dxl-iomuxc".
--
--Required properties for Pinctrl sub nodes:
--- fsl,pins:		Each entry consists of 3 integers which represents
--			the mux and config setting for one pin. The first 2
--			integers <pin_id mux_mode> are specified using a
--			PIN_FUNC_ID macro, which can be found in
--			<dt-bindings/pinctrl/pads-imx8qm.h>,
--			<dt-bindings/pinctrl/pads-imx8qxp.h>,
--			<dt-bindings/pinctrl/pads-imx8dxl.h>.
--			The last integer CONFIG is the pad setting value like
--			pull-up on this pin.
--
--			Please refer to i.MX8QXP Reference Manual for detailed
--			CONFIG settings.
--
--[1] Documentation/devicetree/bindings/clock/clock-bindings.txt
--[2] Documentation/devicetree/bindings/power/power-domain.yaml
--[3] Documentation/devicetree/bindings/pinctrl/fsl,imx-pinctrl.txt
--
--RTC bindings based on SCU Message Protocol
--------------------------------------------------------------
--
--Required properties:
--- compatible: should be "fsl,imx8qxp-sc-rtc";
--
--OCOTP bindings based on SCU Message Protocol
--------------------------------------------------------------
--Required properties:
--- compatible:		Should be one of:
--			"fsl,imx8qm-scu-ocotp",
--			"fsl,imx8qxp-scu-ocotp".
--- #address-cells:	Must be 1. Contains byte index
--- #size-cells:		Must be 1. Contains byte length
--
--Optional Child nodes:
--
--- Data cells of ocotp:
--  Detailed bindings are described in bindings/nvmem/nvmem.txt
--
--Watchdog bindings based on SCU Message Protocol
--------------------------------------------------------------
--
--Required properties:
--- compatible: should be:
--              "fsl,imx8qxp-sc-wdt"
--              followed by "fsl,imx-sc-wdt";
--Optional properties:
--- timeout-sec: contains the watchdog timeout in seconds.
--
--SCU key bindings based on SCU Message Protocol
--------------------------------------------------------------
--
--Required properties:
--- compatible: should be:
--              "fsl,imx8qxp-sc-key"
--              followed by "fsl,imx-sc-key";
--- linux,keycodes: See Documentation/devicetree/bindings/input/input.yaml
--
--Thermal bindings based on SCU Message Protocol
--------------------------------------------------------------
--
--Required properties:
--- compatible:			Should be :
--				  "fsl,imx8qxp-sc-thermal"
--				followed by "fsl,imx-sc-thermal";
--
--- #thermal-sensor-cells:	See Documentation/devicetree/bindings/thermal/thermal-sensor.yaml
--				for a description.
--
--Example (imx8qxp):
---------------
--aliases {
--	mu1 = &lsio_mu1;
--};
--
--lsio_mu1: mailbox@5d1c0000 {
--	...
--	#mbox-cells = <2>;
--};
--
--firmware {
--	scu {
--		compatible = "fsl,imx-scu";
--		mbox-names = "tx0", "tx1", "tx2", "tx3",
--			     "rx0", "rx1", "rx2", "rx3",
--			     "gip3";
--		mboxes = <&lsio_mu1 0 0
--			  &lsio_mu1 0 1
--			  &lsio_mu1 0 2
--			  &lsio_mu1 0 3
--			  &lsio_mu1 1 0
--			  &lsio_mu1 1 1
--			  &lsio_mu1 1 2
--			  &lsio_mu1 1 3
--			  &lsio_mu1 3 3>;
--
--		clk: clk {
--			compatible = "fsl,imx8qxp-clk", "fsl,scu-clk";
--			#clock-cells = <2>;
--		};
--
--		iomuxc {
--			compatible = "fsl,imx8qxp-iomuxc";
--
--			pinctrl_lpuart0: lpuart0grp {
--				fsl,pins = <
--					SC_P_UART0_RX_ADMA_UART0_RX	0x06000020
--					SC_P_UART0_TX_ADMA_UART0_TX	0x06000020
--				>;
--			};
--			...
--		};
--
--		ocotp: imx8qx-ocotp {
--			compatible = "fsl,imx8qxp-scu-ocotp";
--			#address-cells = <1>;
--			#size-cells = <1>;
--
--			fec_mac0: mac@2c4 {
--				reg = <0x2c4 8>;
--			};
--		};
--
--		pd: imx8qx-pd {
--			compatible = "fsl,imx8qxp-scu-pd", "fsl,scu-pd";
--			#power-domain-cells = <1>;
--		};
--
--		rtc: rtc {
--			compatible = "fsl,imx8qxp-sc-rtc";
--		};
--
--		scu_key: scu-key {
--			compatible = "fsl,imx8qxp-sc-key", "fsl,imx-sc-key";
--			linux,keycodes = <KEY_POWER>;
--		};
--
--		watchdog {
--			compatible = "fsl,imx8qxp-sc-wdt", "fsl,imx-sc-wdt";
--			timeout-sec = <60>;
--		};
--
--		tsens: thermal-sensor {
--			compatible = "fsl,imx8qxp-sc-thermal", "fsl,imx-sc-thermal";
--			#thermal-sensor-cells = <1>;
--		};
--	};
--};
--
--serial@5a060000 {
--	...
--	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_lpuart0>;
--	clocks = <&uart0_clk IMX_SC_R_UART_0 IMX_SC_PM_CLK_PER>;
--	clock-names = "ipg";
--	power-domains = <&pd IMX_SC_R_UART_0>;
--};
+diff --git a/Documentation/devicetree/bindings/watchdog/fsl,scu-wdt.yaml b/Documentation/devicetree/bindings/watchdog/fsl,scu-wdt.yaml
+new file mode 100644
+index 000000000000..c5d3063a4130
+--- /dev/null
++++ b/Documentation/devicetree/bindings/watchdog/fsl,scu-wdt.yaml
+@@ -0,0 +1,35 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/watchdog/fsl,scu-wdt.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: i.MX SCU Client Device Node - Watchdog bindings based on SCU Message Protocol
++
++maintainers:
++  - Dong Aisheng <aisheng.dong@nxp.com>
++
++description: i.MX SCU Client Device Node
++  Client nodes are maintained as children of the relevant IMX-SCU device node.
++
++allOf:
++  - $ref: /schemas/watchdog/watchdog.yaml
++properties:
++  compatible:
++    items:
++      - const: fsl,imx8qxp-sc-wdt
++      - const: fsl,imx-sc-wdt
++
++  timeout-sec: true
++
++required:
++  - compatible
++
++additionalProperties: false
++
++examples:
++  - |
++    watchdog {
++             compatible = "fsl,imx8qxp-sc-wdt", "fsl,imx-sc-wdt";
++             timeout-sec = <60>;
++    };
 -- 
 2.25.1
 
