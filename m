@@ -2,33 +2,33 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E546CCA47C
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jun 2022 07:14:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADC6ACCA479
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jun 2022 07:14:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1380542AbiFQHOc convert rfc822-to-8bit (ORCPT
+        id S1380543AbiFQHOd convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jun 2022 03:14:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54368 "EHLO
+        Fri, 17 Jun 2022 03:14:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54478 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1380372AbiFQHOY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2022 03:14:24 -0400
+        with ESMTP id S1380555AbiFQHOX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2022 03:14:23 -0400
 Received: from de-smtp-delivery-113.mimecast.com (de-smtp-delivery-113.mimecast.com [194.104.109.113])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0D58D64D0E
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5392764D33
         for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2022 00:14:22 -0700 (PDT)
 Received: from CHE01-ZR0-obe.outbound.protection.outlook.com
- (mail-zr0che01lp2109.outbound.protection.outlook.com [104.47.22.109]) by
+ (mail-zr0che01lp2104.outbound.protection.outlook.com [104.47.22.104]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- de-mta-19-qacQIvEIOVe0vOo7h3zn4Q-1; Fri, 17 Jun 2022 09:14:18 +0200
-X-MC-Unique: qacQIvEIOVe0vOo7h3zn4Q-1
+ de-mta-13-3GkfPEIeOEKpj6nYUFmeog-2; Fri, 17 Jun 2022 09:14:17 +0200
+X-MC-Unique: 3GkfPEIeOEKpj6nYUFmeog-2
 Received: from ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:2e::8) by
  ZR0P278MB0347.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:33::10) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5353.14; Fri, 17 Jun 2022 07:14:15 +0000
+ 15.20.5353.14; Fri, 17 Jun 2022 07:14:16 +0000
 Received: from ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
  ([fe80::2879:acb:62c8:4987]) by ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
  ([fe80::2879:acb:62c8:4987%8]) with mapi id 15.20.5353.016; Fri, 17 Jun 2022
- 07:14:15 +0000
+ 07:14:16 +0000
 From:   Francesco Dolcini <francesco.dolcini@toradex.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -46,66 +46,65 @@ CC:     Francesco Dolcini <francesco.dolcini@toradex.com>,
         Fabio Estevam <festevam@gmail.com>,
         NXP Linux Team <linux-imx@nxp.com>,
         linux-arm-kernel@lists.infradead.org
-Subject: [RESEND PATCH v2 5/9] ARM: dts: imx[67]: Add trips points
-Date:   Fri, 17 Jun 2022 09:14:07 +0200
-Message-ID: <20220617071411.187542-6-francesco.dolcini@toradex.com>
+Subject: [RESEND PATCH v2 9/9] ARM: dts: imx6qdl-colibri: Set CPU critical trip point
+Date:   Fri, 17 Jun 2022 09:14:11 +0200
+Message-ID: <20220617071411.187542-10-francesco.dolcini@toradex.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220617071411.187542-1-francesco.dolcini@toradex.com>
 References: <20220617071411.187542-1-francesco.dolcini@toradex.com>
-X-ClientProxiedBy: MR1P264CA0164.FRAP264.PROD.OUTLOOK.COM
- (2603:10a6:501:55::15) To ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
- (2603:10a6:910:2e::8)
+X-ClientProxiedBy: MR2P264CA0179.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501::18)
+ To ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:2e::8)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: c2e8494d-a88f-4636-1264-08da5030fbd8
+X-MS-Office365-Filtering-Correlation-Id: 249b8380-29b7-452d-5fd6-08da5030fbe6
 X-MS-TrafficTypeDiagnostic: ZR0P278MB0347:EE_
-X-Microsoft-Antispam-PRVS: <ZR0P278MB03478304F1906BCD513CC904E2AF9@ZR0P278MB0347.CHEP278.PROD.OUTLOOK.COM>
+X-Microsoft-Antispam-PRVS: <ZR0P278MB0347234C3995322D7CD9998BE2AF9@ZR0P278MB0347.CHEP278.PROD.OUTLOOK.COM>
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0
-X-Microsoft-Antispam-Message-Info: JtenFEof1ai9LyMADGPuNWXLe3Bm/VBDk2oVtj+1Zp/JeOLeTjDoYdu7jzF9IdFM61jaM8geKtwr1LqdAqvzUhDUr3pCIHM/Sr09K56aAw70vVbNMa1qCZ09hfNMkWPthxgJvWS3YRljf8RpTX5Z3LQmF4vpJHC9eDGrsPDWN17AA1vx2KqDoGtiuYgS11zYfrgkfy4+QlP821JcGiZ3UYYmgUWevf78gKY3GztVjgj+ye5uPakBnNb1Zch3sDDZWit0/qPIQQkV+Rhey/IZwrKywPnk08yYLrDLjTaQ/LSFvNu0zdhYHibjcRHnZ1jU8YSMC53ht9US8HGPp9PmX+kykC4Ha3dbcsjenDjAo7COs1Hu1pHd8Y0eirreSFFuk07sZj85M1c1xqaiXye7/H4HxnIBQh3JJFdzDOnyEc3AL20M5VK+voLcp/4VcMBDZfCFEh2lrWCqEzTqEJvU80koVJVw82KugH0b+udoiAzHPY/vCLmNHG9Lj6bMKwnbskFHBMZg8egrOXaJAA77O3QPu8XFtxfFdEJ49YrQmA0YTrNehy9m34Repl8mGNjRM0u7Mfnmu2RUrQ6h6xS/iOfOyNfyNAEI9jxHgj+jEIR4ehxgWTa8PKJ/IJjZjt67U47OnZ8M0+RjGTnJKbtd8egs/yyBL2HptDmkUlD2Jhz8b8Xsq+kwnZfz3vX4kcjU01aeDHkxr5eNhfvzKHrGzw==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230016)(4636009)(136003)(366004)(39840400004)(346002)(396003)(66556008)(2906002)(36756003)(66946007)(8936002)(4326008)(8676002)(5660300002)(86362001)(6512007)(52116002)(44832011)(38350700002)(6506007)(6486002)(38100700002)(41300700001)(2616005)(7416002)(186003)(66476007)(508600001)(6666004)(110136005)(1076003)(83380400001)(316002)(54906003)(26005);DIR:OUT;SFP:1102
+X-Microsoft-Antispam-Message-Info: Zq8t3IAnX//xpP1sdnezoxxzn7M1j5WnSdQ2PVkV3yUvawrseyLdXyeQC4VqsNQ9MpvXAxg9JdSI104XbdNRuHuhWFKU5MP2AaY4w3l3yt6cP2xmoc5Y2ngBr1vKk+AjAn2v6BbIqS0v5uNU/9ybA2cRJs2PVB+MhJcV3zEUruXSEnuXBSNqRvIO67+EmgV68Lni341hcx003H0PVrB9SxSFcasj3oZdFiQjsd7qzEBO+HBGzvPDGul1g6HgVFjP/e85renDYjMgkGLRXqHDMDkFbO1qqlgrp90oOx8qkaG4LCOG52riQa/j3Ys/mOVwSbK22TQqIpjBhevmEuHPE9d2uSR9i/K7iYZGddr5qMpig8uDWC2CL5LD4YNSKpjXoBrVF1J8ggmyW5wv1LulBrPoImDn4EWPPe4kJlyBR2Hcoy/z/BtfTbENQb9RQTusecof9fIJ615QgrQiFa3ne7OKbxOuA2Brw/WBHNXPQffZIM5doGJEKgGKtPh5wim6w5HPDhWSvxkeIxaCofN+QldST+FC7qH5dltBE/61v13SiTsKGh5Q6W4NuO6KVq4eqW20izHpddcHcDrKa/OWSiiIZQyUHPyTLeFCjGcQDwyHjdS2y55WRCkUfq1ZRe8J+oIzzwrlP2LzWuljgAiQzxYe+rhqW/Ctd4T4g+Bk7evam24mbB34+f8lxU8pggihQrAueEvqJHWalFCpuUoj2P9icFZunqrNOGT0wYLsF04=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230016)(4636009)(136003)(366004)(39840400004)(346002)(396003)(66556008)(2906002)(36756003)(66946007)(8936002)(4326008)(8676002)(5660300002)(86362001)(6512007)(52116002)(44832011)(38350700002)(4744005)(6506007)(6486002)(38100700002)(41300700001)(2616005)(7416002)(186003)(66476007)(508600001)(6666004)(110136005)(1076003)(316002)(54906003)(26005)(32563001);DIR:OUT;SFP:1102
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?IvA+lzDXXSvB5wpwhJm2xjRqQNlHUlNiC7DLtVeQpfkyPSIwNHJ4pfWrGfeq?=
- =?us-ascii?Q?6kXveFp1/z9Ch15lR+ETyNZqaS0l0cIP4GhMhJAm6kVjdZ8pb/TEMqvPz150?=
- =?us-ascii?Q?ZWcIGGyZUd0ck6s1lJUTR88vC99ioheCL2MH+vth9/xwELEtU+qa2ApCV/uk?=
- =?us-ascii?Q?CGFsxK93rEMtoQ4rWWxZ93aQZ69G83liSdr9aEUzVnbt81Z+tgeHBHQuW8j1?=
- =?us-ascii?Q?DeCRzY1KutN9bSr+T/f64J5qLBVdHcdAmtZqT+DcoJHQRNosDtH1TZNbiDWI?=
- =?us-ascii?Q?3N09dauNR0fMUn3MjPG24qgMUhZFWa2FuVz723IGyuq3aZ+k/bnSVRl2iHQ1?=
- =?us-ascii?Q?mmPpA8zc/XoMpRAWy8CBSdPk7zjb79YqjJU1ZOPtD0pEJPNc9rkMZcvns620?=
- =?us-ascii?Q?TsXtwzPjB6RbWh+5SipCN/CUotCw4yQB0acMn/Yya+BC+EUcO4n5H57VlYOq?=
- =?us-ascii?Q?zZ9Jv3hfBP3LubjLzSJBt8qHS8dO2PZrYNnfXpSBM//HTRIlq0uBPwj4RzYC?=
- =?us-ascii?Q?wVojRQn4PGwQkrKgQGDpWP3MN5pMTy1fB4ykjtrbl11dFdQtcB+Y2gLWzP5n?=
- =?us-ascii?Q?mlGTOalnUYvS1Ku76G6owOEFW5lEGsl8c5YVsrXuLNQaaH0Lni2wXJpvACv9?=
- =?us-ascii?Q?gZjgTHwQoNtWFcWgZlX4KMzrudSaVzt/YxaJ23XOQ1UtrF4crNEtVFhmTKHq?=
- =?us-ascii?Q?U1hCP1VO1GphFg652tKlxdtm5cGae5MlT/Og6uvVEUOgcOxPlAd1zD2jcQx2?=
- =?us-ascii?Q?JBtpRU3kROA6Up/gOGzuqJM6l+G3HrVVMOnMXunJ1PvDfKF/RhDf/rspFh+L?=
- =?us-ascii?Q?sffK6sFKZhI5DXsQm26mXt/pwl2tulsazGz0wkca/jrI5a1lXAbXDOr3ugQN?=
- =?us-ascii?Q?50gIbUb/Fw/rcJMaclG0fvoZB50ixK4bR4oX7AJfy5Lg5uuDpSyEGeZB6Jis?=
- =?us-ascii?Q?qNZxfhO1d9UFZlZOvVKlBN/0ZxvIsf4z04RQKzAI96+z+VqKLuU6qeLxyLVj?=
- =?us-ascii?Q?Hn6S1A7nyF4QJI/6k7vitegnd4mB9UMyEO593+47Jq3VaE9mYQQoBrNfagsh?=
- =?us-ascii?Q?XUkobCm9WGLWhk49uaXTqlWslPWOlhyRBe1P9EdFntMq6MO7NFV2oaxDHM2E?=
- =?us-ascii?Q?oxSZZeIGs3w4c83tXKTHEluMor437E215Y+YGMvENqvfKufsczoPzHyTUV/3?=
- =?us-ascii?Q?RM//x+JStQozz3ta9VKStoyJQYW8oPmPdLoT5yZpncAgIN+SrmT3rM2kVv+f?=
- =?us-ascii?Q?TwaD+LgY3Ivk+DmyTts7HL78LwwrCRVy1jIP9uBjOqXNCmNBeLHZ3dumL1rM?=
- =?us-ascii?Q?tXNaH0NRFPR+opT7H5t/nLVZ9qA5bo+slTOp29/ygtKtgSQ+hXgRAnw7SfhZ?=
- =?us-ascii?Q?A0jtLljQIAIg1JNqifRV0LBTzOFV1CkOK9hLvCrN3SHBNBP06yllc6zKnenC?=
- =?us-ascii?Q?SZ+V6Fv96yCl6MftM2xPc6GB+rflQ2J9u3j/qWcIFZRgclKVqZrnE5Dx4GFD?=
- =?us-ascii?Q?rLK0O0eOZ/QAUo4uG5d/UBY24hucZEyH1i4qC/1VbFSfkAb+CwZ64ExntAm/?=
- =?us-ascii?Q?MgNzgobSC6YK5fkLWPTE06k9Xv4ltvQ4+XObs+tHsoe/V1qLJ9K4Ng5oDF59?=
- =?us-ascii?Q?yYbWZIAPtRfurO7ZNd4DLv1951N4kgUXOoOyiu3ZEIJuk6wBtgBiTQL9/MXy?=
- =?us-ascii?Q?PWQpSO9I8nSD4I8OYtjhKMDFwG3XrrFkpj1x7v8vQZlnlBiWyypU1BkxG28w?=
- =?us-ascii?Q?FkZ0ImOTeE7zhtnAxfQW+aspIOlAxXs=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?ENE6wqM1pDkTRAEyWRcLmnFUVOMx+Xaw09I9fi7kTErAJ79yn5iilDUZhmiq?=
+ =?us-ascii?Q?DQjAA8KDq5X3Y4zFXHf6S005i8YdRC/FG7+UQhWB868byv0tQsyY9SLaq/8q?=
+ =?us-ascii?Q?Nf3oHHS7KsJ20r3DhJ05i3hoOKvuzHFx0XtYWBT2BxUFumUhLRU8gW5O6WZh?=
+ =?us-ascii?Q?UBmOZpLLOpWcZtQOtRX+yNCfu+f/gMyL7qTp3cJT9azY27qzaslXf0g1ewb1?=
+ =?us-ascii?Q?mye/1czPoIzRH7+zZU85wOvCb0AiwbYRoSrLvog5fy/ECxEIzI9AQvmJsUnq?=
+ =?us-ascii?Q?7IgHmHwunMTXHuUhvNlHfaO7jGaWdV6nxfuz6bXBHp3RdSP3ljZ3kbsBbkxI?=
+ =?us-ascii?Q?TU4vEsVkQ/B1vOZweGWoCuQhh3vBk+YDy6l/mCVpgfbwHXK8xHvWowMj3Z1W?=
+ =?us-ascii?Q?o11IxEat7leO7nagDnqGlZ/qFc4keRgwtC9j2ZUvXGLOs71goE1fFb9hEYL+?=
+ =?us-ascii?Q?m1xhBukFrqZVC+sneDUZWibASFGUaZvky/4Ra89OYt5wi12H2lMZuIstIBam?=
+ =?us-ascii?Q?qkxUi7zqiJAO45kF9CZ9ylAOLvgu1eUEtNda1GShf8FLT7sYKZY20E/mvrMq?=
+ =?us-ascii?Q?xsE57UXErmJ8Njnl63disxBynyube41lBa6Yko4wXXGde0pwjhdy5xOk8oNj?=
+ =?us-ascii?Q?aTm7D4RPZlPOPs9uiELah7GAv1xm9CUd11Y8F9WqQexPmGLbHXm2XZ3sfG8x?=
+ =?us-ascii?Q?G00IBGiYrr30DKqzNOS+DgG9GiGE+Dj7rjonO4xR3az2VhRke4cmDhTNXt8g?=
+ =?us-ascii?Q?6UBDRa1rmCJdHXoEmStj+Kk5DjiBEcdZlESFK8/3d/ED+GDmPkopWX5LWoIP?=
+ =?us-ascii?Q?8iTzEFtsprdjz9sFDDKz/VIR8iuSyvAJEXM0QiEp8o6zMhkpUlAmSYV+kfF7?=
+ =?us-ascii?Q?lE4o69WrKVVgEK8lOtRZWs/d4Ud5AEq+NUc3+4yZI6vShpE8q1v+CAX1epd9?=
+ =?us-ascii?Q?p9Kr+OIhnZ5SS4BqPiH+hXAtEEKTNyQCEQXJNsgRMnniA+XAoLhhkH8j/CJO?=
+ =?us-ascii?Q?WztcruqQNEaSV/8RVyghYJEDvq5UDKlrCtp0HXQ5Tw0Tdp8+AGWRns9uI+rr?=
+ =?us-ascii?Q?h7O+RjCahrzXAkSLQoZSaCjwg51BoDjmfwbxVnLoX00yVF6GRCi7i8xGpQ6d?=
+ =?us-ascii?Q?2Q5vwcKfyMOftzVGjdCQiQcFlLJmmJvr5CQElGVMigrzWAoM34pm35iCp1Uz?=
+ =?us-ascii?Q?EExJdRewZMyLeCsF/9L5bkEdJ4j4l3a05vXvrLFCi22vXRpPhWdCs0dLzSpV?=
+ =?us-ascii?Q?Gm9EpqyJ/A467F7v9ca9De0TgLsAVQj89JVnlK4gNJtiROvvZ3DnqfyQ8q7y?=
+ =?us-ascii?Q?Q0tslsFzDjx7HlwSfgQO6jO/F95nhUczA08SOX1gPf5ktKTa4lXrzv8/1FsZ?=
+ =?us-ascii?Q?Abzx5Y9fmlabxVuBwhlFVlGfNsv9F/1QHSuE8n3irIMcFBYZuxkIDjoB6rsV?=
+ =?us-ascii?Q?o52J+BDQFcXoB8QcPQxFjfiEMq6kNuiQ3hUiHB1q6tb1mSj53ySFw1qGvbMS?=
+ =?us-ascii?Q?vocqqwpWy7+MKYbOA4k41J48Lq5fIvf+CswoEolCdbiTRznjizFgYX13a9Ds?=
+ =?us-ascii?Q?Ivu24d/4RKKv+qr46Jv3mksUCl9iEeBEU8SyutPva4OSztuUUcPE4ipv9yir?=
+ =?us-ascii?Q?+e7DunsFhELw4fUEwNsDqWcOex8OzHkREPCcU11DCItb0GP8xotAb3Q3Au3L?=
+ =?us-ascii?Q?H2Tg7OJCDYPpcV1FJcyTHeJ1M5JVk91sr0jq5zc8bO0mbDxzahVSAydsk2uo?=
+ =?us-ascii?Q?e0lBRND4aXfgXgu5XriQRzmNfRIwz6Y=3D?=
 X-OriginatorOrg: toradex.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c2e8494d-a88f-4636-1264-08da5030fbd8
+X-MS-Exchange-CrossTenant-Network-Message-Id: 249b8380-29b7-452d-5fd6-08da5030fbe6
 X-MS-Exchange-CrossTenant-AuthSource: ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jun 2022 07:14:14.1490
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jun 2022 07:14:14.2115
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: d9995866-0d9b-4251-8315-093f062abab4
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: fohAwixt2sg4Pd2WxCTqDEC7D87ajleBwU4nIFYIrFlpVt7coeqgA8M7QZ9OEDrfEp9vtuWDHnOQsMLnIkJKcKvHLIrMrMv/rme4ixXrxUo=
+X-MS-Exchange-CrossTenant-UserPrincipalName: EtVhXgbWM6+pxs8T8VVZTeL98pseiMwV6KqeCWSkweuRoGf0d4zrOxniKUEkkeSGQqt7Wy2RT88KB/mxssDqTdaizcaddfn1QpER3+NrqrE=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: ZR0P278MB0347
 Authentication-Results: relay.mimecast.com;
         auth=pass smtp.auth=CDE13A77 smtp.mailfrom=francesco.dolcini@toradex.com
@@ -117,168 +116,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add thermal trip point to the i.MX[67]* dtsi for each available
-temperature grade.
+Set CPU thermal critical trip point to the system designed value,
+95 degrees for commercial grade modules, 105 for industrial and extended
+commercial grade.
 
 Signed-off-by: Francesco Dolcini <francesco.dolcini@toradex.com>
 ---
 v2: no changes
 ---
- arch/arm/boot/dts/imx-thermal.dtsi | 61 ++++++++++++++++++++++++++++++
- arch/arm/boot/dts/imx6qdl.dtsi     |  2 +
- arch/arm/boot/dts/imx6sl.dtsi      |  2 +
- arch/arm/boot/dts/imx6sll.dtsi     |  2 +
- arch/arm/boot/dts/imx6sx.dtsi      |  2 +
- arch/arm/boot/dts/imx6ul.dtsi      |  2 +
- arch/arm/boot/dts/imx7s.dtsi       |  2 +
- 7 files changed, 73 insertions(+)
- create mode 100644 arch/arm/boot/dts/imx-thermal.dtsi
+ arch/arm/boot/dts/imx6qdl-colibri.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/arch/arm/boot/dts/imx-thermal.dtsi b/arch/arm/boot/dts/imx-thermal.dtsi
-new file mode 100644
-index 000000000000..2303f1a99d84
---- /dev/null
-+++ b/arch/arm/boot/dts/imx-thermal.dtsi
-@@ -0,0 +1,61 @@
-+// SPDX-License-Identifier: GPL-2.0+ OR MIT
-+//
-+// Copyright 2022 Toradex
-+
-+automotive-thermal {
-+	trips {
-+		temp_trip_passive_automotive: trip-point0 {
-+			temperature = <115000>;
-+			hysteresis = <0>;
-+			type = "passive";
-+		};
-+		temp_trip_crit_automotive: trip-point1 {
-+			temperature = <120000>;
-+			hysteresis = <0>;
-+			type = "critical";
-+		};
-+	};
-+};
-+commercial-thermal {
-+	trips {
-+		temp_trip_passive_commercial: trip-point0 {
-+			temperature = <85000>;
-+			hysteresis = <0>;
-+			type = "passive";
-+		};
-+		temp_trip_crit_commercial: trip-point1 {
-+			temperature = <90000>;
-+			hysteresis = <0>;
-+			type = "critical";
-+		};
-+	};
-+};
-+extended-commercial-thermal {
-+	trips {
-+		temp_trip_passive_ecommercial: trip-point0 {
-+			temperature = <95000>;
-+			hysteresis = <0>;
-+			type = "passive";
-+		};
-+		temp_trip_crit_ecommercial: trip-point1 {
-+			temperature = <100000>;
-+			hysteresis = <0>;
-+			type = "critical";
-+		};
-+	};
-+};
-+industrial-thermal {
-+	trips {
-+		temp_trip_passive_industrial: trip-point0 {
-+			temperature = <95000>;
-+			hysteresis = <0>;
-+			type = "passive";
-+		};
-+		temp_trip_crit_industrial: trip-point1 {
-+			temperature = <100000>;
-+			hysteresis = <0>;
-+			type = "critical";
-+		};
-+	};
+diff --git a/arch/arm/boot/dts/imx6qdl-colibri.dtsi b/arch/arm/boot/dts/imx6qdl-colibri.dtsi
+index c383e0e4110c..fb7bdf65a0bd 100644
+--- a/arch/arm/boot/dts/imx6qdl-colibri.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-colibri.dtsi
+@@ -642,6 +642,18 @@ &ssi1 {
+ 	status = "okay";
+ };
+ 
++&temp_trip_crit_commercial {
++	temperature = <95000>;
 +};
 +
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index d27beb47f9a3..0a492d9750dd 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -800,6 +800,8 @@ tempmon: tempmon {
- 					nvmem-cell-names = "calib", "temp_grade";
- 					clocks = <&clks IMX6QDL_CLK_PLL3_USB_OTG>;
- 					#thermal-sensor-cells = <0>;
++&temp_trip_crit_ecommercial {
++	temperature = <105000>;
++};
 +
-+					#include "imx-thermal.dtsi"
- 				};
- 			};
- 
-diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-index 06a515121dfc..3719225126d0 100644
---- a/arch/arm/boot/dts/imx6sl.dtsi
-+++ b/arch/arm/boot/dts/imx6sl.dtsi
-@@ -628,6 +628,8 @@ tempmon: tempmon {
- 					nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
- 					nvmem-cell-names = "calib", "temp_grade";
- 					clocks = <&clks IMX6SL_CLK_PLL3_USB_OTG>;
++&temp_trip_crit_industrial {
++	temperature = <105000>;
++};
 +
-+					#include "imx-thermal.dtsi"
- 				};
- 			};
- 
-diff --git a/arch/arm/boot/dts/imx6sll.dtsi b/arch/arm/boot/dts/imx6sll.dtsi
-index d4a000c3dde7..3192dae452fd 100644
---- a/arch/arm/boot/dts/imx6sll.dtsi
-+++ b/arch/arm/boot/dts/imx6sll.dtsi
-@@ -530,6 +530,8 @@ tempmon: temperature-sensor {
- 					nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
- 					nvmem-cell-names = "calib", "temp_grade";
- 					clocks = <&clks IMX6SLL_CLK_PLL3_USB_OTG>;
-+
-+					#include "imx-thermal.dtsi"
- 				};
- 			};
- 
-diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-index fc6334336b3d..d88c89696554 100644
---- a/arch/arm/boot/dts/imx6sx.dtsi
-+++ b/arch/arm/boot/dts/imx6sx.dtsi
-@@ -718,6 +718,8 @@ tempmon: tempmon {
- 					nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
- 					nvmem-cell-names = "calib", "temp_grade";
- 					clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
-+
-+					#include "imx-thermal.dtsi"
- 				};
- 			};
- 
-diff --git a/arch/arm/boot/dts/imx6ul.dtsi b/arch/arm/boot/dts/imx6ul.dtsi
-index afeec01f6522..70d503c74e73 100644
---- a/arch/arm/boot/dts/imx6ul.dtsi
-+++ b/arch/arm/boot/dts/imx6ul.dtsi
-@@ -639,6 +639,8 @@ tempmon: tempmon {
- 					nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
- 					nvmem-cell-names = "calib", "temp_grade";
- 					clocks = <&clks IMX6UL_CLK_PLL3_USB_OTG>;
-+
-+					#include "imx-thermal.dtsi"
- 				};
- 			};
- 
-diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
-index 008e3da460f1..887b3618d20e 100644
---- a/arch/arm/boot/dts/imx7s.dtsi
-+++ b/arch/arm/boot/dts/imx7s.dtsi
-@@ -604,6 +604,8 @@ tempmon: tempmon {
- 					nvmem-cells = <&tempmon_calib>,	<&fuse_grade>;
- 					nvmem-cell-names = "calib", "temp_grade";
- 					clocks = <&clks IMX7D_PLL_SYS_MAIN_CLK>;
-+
-+					#include "imx-thermal.dtsi"
- 				};
- 			};
- 
+ /* Colibri UART_A */
+ &uart1 {
+ 	fsl,dte-mode;
 -- 
 2.25.1
 
