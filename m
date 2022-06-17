@@ -2,80 +2,202 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A929C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jun 2022 08:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07E14C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jun 2022 08:40:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1380589AbiFQIV3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jun 2022 04:21:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59270 "EHLO
+        id S1380352AbiFQIkd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Jun 2022 04:40:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1380869AbiFQIV2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2022 04:21:28 -0400
-Received: from mail-yw1-x112f.google.com (mail-yw1-x112f.google.com [IPv6:2607:f8b0:4864:20::112f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F82C6833D
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2022 01:21:27 -0700 (PDT)
-Received: by mail-yw1-x112f.google.com with SMTP id 00721157ae682-31772f8495fso34726307b3.4
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2022 01:21:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Sfn7GMrusVnaVZ3R59dUL5lKSrN5bZ+aPyDb3SYy6nM=;
-        b=xpland5NonWvppS+w7gJFI9W7rP/TaaG4Z3EhQeHlMBk+FMpRtmvFnokQHJ3UApVUz
-         7ZkfB4IpCrAd/WP059is0f47OQQ9d1YYzUspRU394cYx03b7VdIFPTcxEWxKe7XS4adm
-         eQC43Lv9ukXbv/rZ+JcMawNS8OvHoJCHXnhd37wE9ram+1NaLXSQDg/zAF0pzIXyvyBh
-         9M8YoCeNL2FY7Lx/OWtpz5+7AwX9uAuaMPUmETEjNv/NECTeSPHlvEHU+FTzSxR1WnG4
-         OGvKYXPL4CM1HAatZR/6VtYap0t2Ae/UoSzS7iI12tdzmFxOYPW/UU7c+HtYBV5Q8aVA
-         Y4Wg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Sfn7GMrusVnaVZ3R59dUL5lKSrN5bZ+aPyDb3SYy6nM=;
-        b=PIQxqv9fiU8tZ2JW2FJqnrE5cC744FclTYlD+OS+AV1W5vgPvkrfaqMm//cOuXYoYn
-         tu6BBE819AWhK5pSdDa5rtnqDPZ1PVq0TkRlwC0Veskfe8q+RWGFCLlu9qIzuF4Fyxo7
-         aHBcQmg5UpqrvALPXtu7O5h3Apve8sUMP4/VEoruhSR3NYz4J+2ZZpJvIIjrJBI7DmnS
-         krFT6rHnuzInQ/fYT8HqZDV7Mx0UFtOryZ9+vnNT5hIc3Po/7ks5/aP0b8MTsngfqQAY
-         sEzYf/OlzroPuUatCFysf3pz/NYzCmlZqTsrWH2UoKlSk2NpWhBKdaERKIR+6nGcwHNR
-         B4Xg==
-X-Gm-Message-State: AJIora/pvzMNu3V/DoHCKg1N58DgsiBGvK9BJ1UxBxasbNh/Ys7wkRSj
-        b47Qlp75h8kx+A1il3mEAzdD3iDwCc5AEM60XlB2hg==
-X-Google-Smtp-Source: AGRyM1sLkV5vvPJkuODtT8b8Cam/CTWy9/tfaxzWQs1cuZEi1nu1f5CbgphfMcu2FEdvDvLEJDmwTwnEpMzHJLacvHI=
-X-Received: by 2002:a0d:e246:0:b0:30c:5e77:7104 with SMTP id
- l67-20020a0de246000000b0030c5e777104mr10565981ywe.448.1655454086826; Fri, 17
- Jun 2022 01:21:26 -0700 (PDT)
-MIME-Version: 1.0
-References: <CAGETcx8z4dn1j05Za6nfDeC3v4r1yo30Nqu=1K2BEsvLcqqybQ@mail.gmail.com>
-In-Reply-To: <CAGETcx8z4dn1j05Za6nfDeC3v4r1yo30Nqu=1K2BEsvLcqqybQ@mail.gmail.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Fri, 17 Jun 2022 10:21:15 +0200
-Message-ID: <CACRpkdaXJh_Qc-DuD7SFsZPM9GBMUgnoufcFKsy3BPUYFHMHWQ@mail.gmail.com>
-Subject: Re: Default async probing for DT based systems
-To:     Saravana Kannan <saravanak@google.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Kevin Hilman <khilman@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Marc Zyngier <maz@kernel.org>, Will Deacon <will@kernel.org>,
+        with ESMTP id S1345195AbiFQIkd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2022 04:40:33 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05D1B674D2
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2022 01:40:31 -0700 (PDT)
+Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <mfe@pengutronix.de>)
+        id 1o27Wd-0001WX-FV; Fri, 17 Jun 2022 10:40:19 +0200
+Received: from mfe by ptx.hi.pengutronix.de with local (Exim 4.92)
+        (envelope-from <mfe@pengutronix.de>)
+        id 1o27Wb-0000uc-7i; Fri, 17 Jun 2022 10:40:17 +0200
+Date:   Fri, 17 Jun 2022 10:40:17 +0200
+From:   Marco Felsch <m.felsch@pengutronix.de>
+To:     Francesco Dolcini <francesco.dolcini@toradex.com>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-        Android Kernel Team <kernel-team@android.com>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Anson Huang <Anson.Huang@nxp.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [RESEND PATCH v2 4/9] imx: thermal: Configure trip point from DT
+Message-ID: <20220617084017.54psumosr6p3a6qt@pengutronix.de>
+References: <20220617071411.187542-1-francesco.dolcini@toradex.com>
+ <20220617071411.187542-5-francesco.dolcini@toradex.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220617071411.187542-5-francesco.dolcini@toradex.com>
+User-Agent: NeoMutt/20180716
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
+X-SA-Exim-Mail-From: mfe@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 16, 2022 at 5:25 AM Saravana Kannan <saravanak@google.com> wrote:
+Hi Francesco,
 
-> Since fw_devlink=on is the default behavior and fw_devlink understands
-> approximately 24 DT bindings,
+thanks for your patch.
 
-How can I see which these are, in the kernel tree?
+On 22-06-17, Francesco Dolcini wrote:
+> Allow over-writing critical and passive trip point for each
+> temperature grade from the device tree, by default the pre-existing
+> hard-coded trip points are used.
+> 
+> This change enables configuring the system thermal characteristics into
+> the system-specific device tree instead of relying on global hard-coded
+> temperature thresholds that does not take into account the specific
+> system thermal design.
+> 
+> Signed-off-by: Francesco Dolcini <francesco.dolcini@toradex.com>
+> ---
+> v2:
+>  - return immediately if no thermal node present in the dts
+>  - use dev_info instead of dev_dbg if there is an invalid trip
+>  - additional comment in case passive trip point is higher than critical
+> ---
+>  drivers/thermal/imx_thermal.c | 58 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 58 insertions(+)
+> 
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index 16663373b682..a964baf802fc 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -17,6 +17,8 @@
+>  #include <linux/nvmem-consumer.h>
+>  #include <linux/pm_runtime.h>
+>  
+> +#include "thermal_core.h"
+> +
+>  #define REG_SET		0x4
+>  #define REG_CLR		0x8
+>  #define REG_TOG		0xc
+> @@ -479,36 +481,92 @@ static int imx_init_calib(struct platform_device *pdev, u32 ocotp_ana1)
+>  	return 0;
+>  }
+>  
+> +static void imx_init_temp_from_of(struct platform_device *pdev, const char *name)
+> +{
+> +	struct imx_thermal_data *data = platform_get_drvdata(pdev);
+> +	struct device_node *thermal, *trips, *trip_point;
+> +
+> +	thermal = of_get_child_by_name(pdev->dev.of_node, name);
+> +	if (!thermal)
+> +		return;
+> +
+> +	trips = of_get_child_by_name(thermal, "trips");
+> +
+> +	for_each_child_of_node(trips, trip_point) {
+> +		struct thermal_trip t;
+> +
+> +		if (thermal_of_populate_trip(trip_point, &t))
+> +			continue;
+> +
+> +		switch (t.type) {
+> +		case THERMAL_TRIP_PASSIVE:
+> +			data->temp_passive = t.temperature;
+> +			break;
+> +		case THERMAL_TRIP_CRITICAL:
 
-Yours,
-Linus Walleij
+Should we check also the temp_critical and temp_passive not exceeding
+the temp_max? Sry. that it came not earlier in my mind. So system damage
+is avoided.
+
+Apart of this note, the patch is lgtm.
+
+Regards,
+  Marco
+
+> +			data->temp_critical = t.temperature;
+> +			break;
+> +		default:
+> +			dev_info(&pdev->dev, "Ignoring trip type %d\n", t.type);
+> +			break;
+> +		}
+> +	};
+> +
+> +	of_node_put(trips);
+> +	of_node_put(thermal);
+> +
+> +	if (data->temp_passive >= data->temp_critical) {
+> +		dev_warn(&pdev->dev,
+> +			 "passive trip point must be lower than critical, fixing it up\n");
+> +		/*
+> +		 * In case of misconfiguration set passive temperature to
+> +		 * 5°C less than critical, this seems like a reasonable
+> +		 * default and the same is done when no thermal trips are
+> +		 * available in the device tree.
+> +		 */
+> +		data->temp_passive = data->temp_critical - (1000 * 5);
+> +	}
+> +}
+> +
+>  static void imx_init_temp_grade(struct platform_device *pdev, u32 ocotp_mem0)
+>  {
+>  	struct imx_thermal_data *data = platform_get_drvdata(pdev);
+> +	const char *thermal_node_name;
+>  
+>  	/* The maximum die temp is specified by the Temperature Grade */
+>  	switch ((ocotp_mem0 >> 6) & 0x3) {
+>  	case 0: /* Commercial (0 to 95 °C) */
+> +		thermal_node_name = "commercial-thermal";
+>  		data->temp_grade = "Commercial";
+>  		data->temp_max = 95000;
+>  		break;
+>  	case 1: /* Extended Commercial (-20 °C to 105 °C) */
+> +		thermal_node_name = "extended-commercial-thermal";
+>  		data->temp_grade = "Extended Commercial";
+>  		data->temp_max = 105000;
+>  		break;
+>  	case 2: /* Industrial (-40 °C to 105 °C) */
+> +		thermal_node_name = "industrial-thermal";
+>  		data->temp_grade = "Industrial";
+>  		data->temp_max = 105000;
+>  		break;
+>  	case 3: /* Automotive (-40 °C to 125 °C) */
+> +		thermal_node_name = "automotive-thermal";
+>  		data->temp_grade = "Automotive";
+>  		data->temp_max = 125000;
+>  		break;
+>  	}
+>  
+>  	/*
+> +	 * Set defaults trips
+> +	 *
+>  	 * Set the critical trip point at 5 °C under max
+>  	 * Set the passive trip point at 10 °C under max (changeable via sysfs)
+>  	 */
+>  	data->temp_critical = data->temp_max - (1000 * 5);
+>  	data->temp_passive = data->temp_max - (1000 * 10);
+> +
+> +	/* Override critical/passive temperature from devicetree */
+> +	imx_init_temp_from_of(pdev, thermal_node_name);
+>  }
+>  
+>  static int imx_init_from_tempmon_data(struct platform_device *pdev)
+> -- 
+> 2.25.1
+> 
+> 
