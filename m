@@ -2,155 +2,229 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BB28C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jun 2022 07:14:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9243C43334
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jun 2022 07:31:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1380531AbiFQHOh convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jun 2022 03:14:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54476 "EHLO
+        id S1380430AbiFQHbc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Jun 2022 03:31:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44176 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1380557AbiFQHOX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2022 03:14:23 -0400
-Received: from de-smtp-delivery-113.mimecast.com (de-smtp-delivery-113.mimecast.com [194.104.109.113])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 3884E64D34
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2022 00:14:21 -0700 (PDT)
-Received: from CHE01-ZR0-obe.outbound.protection.outlook.com
- (mail-zr0che01lp2112.outbound.protection.outlook.com [104.47.22.112]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- de-mta-11-kr8K9Y_-OVy8Xr5IL6v1ZA-3; Fri, 17 Jun 2022 09:14:19 +0200
-X-MC-Unique: kr8K9Y_-OVy8Xr5IL6v1ZA-3
-Received: from ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:2e::8) by
- GVAP278MB0438.CHEP278.PROD.OUTLOOK.COM (2603:10a6:710:3e::6) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5353.15; Fri, 17 Jun 2022 07:14:15 +0000
-Received: from ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
- ([fe80::2879:acb:62c8:4987]) by ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
- ([fe80::2879:acb:62c8:4987%8]) with mapi id 15.20.5353.016; Fri, 17 Jun 2022
- 07:14:15 +0000
-From:   Francesco Dolcini <francesco.dolcini@toradex.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        with ESMTP id S229701AbiFQHba (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2022 03:31:30 -0400
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2052.outbound.protection.outlook.com [40.107.22.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0716F38DAF;
+        Fri, 17 Jun 2022 00:31:28 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=c3T+is12jX7fUPVPgFMxtFt7YkJCIvtsblKAW90k+GGDZwYJrnEF5PGNdckM+CxcXwke/z8AY0xWNGFf7O4Ywyzv2pvllqW5WD8jCQXKmLaJVdpAAUl7i7tRiZYRsqawg959XnJul9cZxtTZbwnxmd1WI74U8hBGZfP0K3oF0pl/s8TuzRPEyvwmbkIzvFu7wA3uekxYBSBt3Sv3c68emnzukaAxVWB1eJv73ASJGVipkdhksjkWyEdoQQdzUBgjjuy92uZF7akR5dERTSiwi0McQdwOmsbTE9soS7BVkBAMP45elqL2RnI681U/1e5FzaTmOaUO86J7RqCyBksybQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FipGIhzkH66PHHhaVUDlifw3iCGB2ONtfsxn1fzsFfw=;
+ b=ntF0cLEH+U3LGPWUYa/coUs3jOx+pJCWLUHOznMCg+WG6tiwikm/xTbr9xAMilrsBwEu/9rfm0+9jXGo+7CmE3FHdNJdLloG1UV/dns1uRBGQgejDU1vxzhahLy49ggelQ/CK6I3waefv9kSha+xBwfyzfyvgUe1Z2NRgurIFtLMrVVARe0V/p02no1Agh+gKI/Pe6q1N8K6jnqCMbhZC61DMp7HkZGuNJe/YoZ/ahx3Yn9qovvLDSZN1HGLZDbjlOpGu9YmF8F5K8r3T8tPrR8JlofSmpulRPHA/zkhTnNfoN5CM9ByLX3o1Beu3uLS83y4MIKcC6+fkfkopUnrdA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FipGIhzkH66PHHhaVUDlifw3iCGB2ONtfsxn1fzsFfw=;
+ b=rrO9cy6b/0ieiXEu6/afd3B/GTq7Wiq1OYQYMEfEuaBcGHM/cOOf7rwKTlVRioQbVBL7soeDfnsFk3tBfXHSNZscgTOM7pl5Yuda1HphqHkUXHiJ+FtVCdsgcYahw+7qMYk7ccSThvueTWX7Ju6r6rnwVVoSyNOqKawMVy2gNZY=
+Received: from DB9PR04MB8412.eurprd04.prod.outlook.com (2603:10a6:10:24d::9)
+ by AM0PR04MB6001.eurprd04.prod.outlook.com (2603:10a6:208:11b::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5353.16; Fri, 17 Jun
+ 2022 07:31:25 +0000
+Received: from DB9PR04MB8412.eurprd04.prod.outlook.com
+ ([fe80::9dbf:79da:79b6:97b6]) by DB9PR04MB8412.eurprd04.prod.outlook.com
+ ([fe80::9dbf:79da:79b6:97b6%5]) with mapi id 15.20.5353.016; Fri, 17 Jun 2022
+ 07:31:25 +0000
+From:   Jacky Bai <ping.bai@nxp.com>
+To:     Francesco Dolcini <francesco.dolcini@toradex.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Shawn Guo <shawnguo@kernel.org>,
         Marco Felsch <m.felsch@pengutronix.de>,
         Anson Huang <Anson.Huang@nxp.com>
-CC:     Francesco Dolcini <francesco.dolcini@toradex.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org,
+CC:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
         Sascha Hauer <s.hauer@pengutronix.de>,
         Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-arm-kernel@lists.infradead.org
-Subject: [RESEND PATCH v2 8/9] ARM: dts: imx6ull-colibri: Set CPU critical trip point
-Date:   Fri, 17 Jun 2022 09:14:10 +0200
-Message-ID: <20220617071411.187542-9-francesco.dolcini@toradex.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220617071411.187542-1-francesco.dolcini@toradex.com>
+        dl-linux-imx <linux-imx@nxp.com>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [RESEND PATCH v2 0/9] imx: thermal: Allow trip point
+ configuration from DT
+Thread-Topic: [RESEND PATCH v2 0/9] imx: thermal: Allow trip point
+ configuration from DT
+Thread-Index: AQHYghncxdtsw65aHEeNmV298Qzo4a1TMnpw
+Date:   Fri, 17 Jun 2022 07:31:25 +0000
+Message-ID: <DB9PR04MB84123FC6272AF3C2DAE306D687AF9@DB9PR04MB8412.eurprd04.prod.outlook.com>
 References: <20220617071411.187542-1-francesco.dolcini@toradex.com>
-X-ClientProxiedBy: MR2P264CA0136.FRAP264.PROD.OUTLOOK.COM
- (2603:10a6:500:30::28) To ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
- (2603:10a6:910:2e::8)
+In-Reply-To: <20220617071411.187542-1-francesco.dolcini@toradex.com>
+Accept-Language: zh-CN, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: d77c79cd-3535-438e-77c4-08da50336285
+x-ms-traffictypediagnostic: AM0PR04MB6001:EE_
+x-microsoft-antispam-prvs: <AM0PR04MB6001C2872E738A75A3ECF97887AF9@AM0PR04MB6001.eurprd04.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: 9QSy9yIbkRm4rFk7zmcqmd/9H1ZCKGOhO7glUPqwQmXYxaaRBdHtmuz44kBvCf1EPUMZEPnbQQd41ZLpPSrgbYTCVtCMdiAtFl644BgIgtGbRQVpoenck7IpGgzC2hQA+6oYA1/D9nu16uFCXPNK2umkJM+2PIx4Gho8xpEkvlEx7LZKmV8Mf21bmvjwLaYyBsw8aKldzH0ryUcfgvHtA8rclWoi/iOgklSjdK/9/VByemlR4Rok9tD9YhPSSwOLJ8PbQPyj/BgJHx2EIHMDM+zx6nuKH3dYwIyxg8NGxcGFkXG6e5SOzt3TfUaTKtv0nWsFuJ0H6u9trtri7zbOjAAMxOjBdzy64kX5SmCtV8BdbwCTOWeZfdxLjwME64p0y3pLz3Vio3ik2sVsezIHXTbeJgBwQmEq2rEcAvpxtga7Zeb/k6RNWiJ7ZCecgEjIXzpvRWsLt9W0q47X8o0hUDo1xox456aRZbhFEZW690gI7qTpbjz+yIiOEbevCwsQDgJrFAOvSS6vFRhkQVXGBNaOOuWC6OMnDGLXrc4kJ6ourzxgYGQxVrqGoquCn9EYAld5j89M5i2wEyr3paKfhK0J7f0iXeyHk9GUyCY6I4bmSwkGDvgFLSSG/MsQP42N4dGSvze2Xr7pSoe8Mct/hMbGY+eexhZcuQQ3IJkmzUQhQxQ9aD+3VVYhVKkLBK7gvHBfDmDNnP4YCs0R4TBNDw==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR04MB8412.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(366004)(6636002)(8936002)(33656002)(316002)(54906003)(508600001)(6506007)(26005)(2906002)(7696005)(110136005)(8676002)(52536014)(4326008)(66946007)(83380400001)(76116006)(66476007)(66446008)(64756008)(66556008)(45080400002)(71200400001)(5660300002)(38100700002)(86362001)(38070700005)(7416002)(9686003)(966005)(186003)(122000001)(55016003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?Pw3gsVuv5naqjL3Dh20kNQDmQcBId2YiCorpeKdervFYHgIuTXNEbFWhQ7FV?=
+ =?us-ascii?Q?bvNpWzcqJV+ein2sBvYDJDqH+puJ3P5mQawjRaQ3WahjAm4zA4r4CY05KD2c?=
+ =?us-ascii?Q?FweGsIUHtjKqDxOnaPWr624YWtgmccRzpRW2hZCZ51GdEPYly+/jHWifqPW4?=
+ =?us-ascii?Q?QJb/svQhpiPzFnSLEFw5+XoC7CSfkS+2enmUocYX/J/Qw0yTnYoALI+3poVp?=
+ =?us-ascii?Q?BwKNdkhfpfk5kPB6xfTi51n1SjyARYYxMtWuWjygmw8LVSZciOxwPqdWtQv9?=
+ =?us-ascii?Q?Fat39PS/rwK6FJytArAGeQ//SDe7sh8RKIJNSQIpT9X5fBUzDKmKQogDW++s?=
+ =?us-ascii?Q?g0hk6kKjDdy6pofav1cGLWs9gBVlOMe9YtbGtK/GP7vSY4vNZVP2LNLREE3E?=
+ =?us-ascii?Q?MrgYnrB2wA57/npZC4LKFNjbS6lHcW5FQFwNrvw0+tDGongI6zsxDlOsKFzS?=
+ =?us-ascii?Q?mHoFIxZ35DiQR1n+cUhC3iWcBHRYAPhDBEN2JWJ6nBR0GXVS3SFuKJAG55Sm?=
+ =?us-ascii?Q?uxwWnEn94kl6M6oPbqeXdb7C57YgS36gMbuKC5/XJkLClmx6ANArqWUzHJT9?=
+ =?us-ascii?Q?LzHzlTkh7aI+VazEEsc0IvyOSh4nzFibm4yGdzsPwJQU5ivxXP74hVKQ7qsf?=
+ =?us-ascii?Q?eS5CTWPJTuoAFEFomn/eCv7w96eJCuuhQ7YFEVsAGgsXLfRDwFqS0je8dXOt?=
+ =?us-ascii?Q?mZ8nYIS2YKH3TkKdszC9rGyFX/QLyPBWFbWhYmnzqFwZcNaaM8XhIE7kPSZ6?=
+ =?us-ascii?Q?SqveA1ub5aR1BUEdQ3bf3yOO1hJ/lpIUDxR5yeo/pNzNcagMVb3skchxoSr4?=
+ =?us-ascii?Q?4qf0o7qfJj4f0SAHEnM1//Uv3922Z5CSwGRiUyF+MUT0NgrP9u1D4yIT26Pt?=
+ =?us-ascii?Q?iSc/iaQ2kBUSYK5fncB4ykyyCb0GwWac2usXVu6tbOk5HGe+HIIrBCgQM+UO?=
+ =?us-ascii?Q?0hDmG0TMf32OAySmR5KI36NEykikLKqmozl9THdhg7+vWBcxxisgLHdYreo9?=
+ =?us-ascii?Q?bZN+a0SpeTlcIu4B9ZBRUK7ANx7Lqm3DreEMQmJQaWjPN9m/qUXJ437eHuoV?=
+ =?us-ascii?Q?K4MWoi1W3tNvAmB9MkuUYaLVvRhcdsp/vES5LWfc7kSauKZl0vqElDfrTHs6?=
+ =?us-ascii?Q?vkfDPaN4Wt5ytvMrwr5xY5EZtAcfGI9yVPJyZo4eq/Lwfesb33N2ejyZykV6?=
+ =?us-ascii?Q?T5yXzcvRMHRXUmLlBdlDMQN9DeiTk/oDdR3XT4MJz80t+WgNA6AIRS3ydcT6?=
+ =?us-ascii?Q?5Tad3IHiZSqe1CBknBRiu1vcAK4UxhzPYv+4T9pzByvLGmbd1jamfD7FJSYZ?=
+ =?us-ascii?Q?NHPkyaPiPebYK1XxKws3AGylTyqCN+ScROrS2hat+cImjgyo7tFZOjoLSpXv?=
+ =?us-ascii?Q?igAe9DOGHql36SZoq8AQ5LmakdUBtu9Hln5iLbCHcTv+EFh6AfB3X8d3eoRt?=
+ =?us-ascii?Q?2Qr1bvPbCEhopbnzxBjCzZXtCc/UHDaXU/M7d/va3eTiQDIygc019ApQk/VI?=
+ =?us-ascii?Q?8OAXvxfTIW3/apzXqSUlTcixaFrMHXS8zGZHQa5GgSzKMez22UvVDZoo/oDI?=
+ =?us-ascii?Q?eoL4N7b1522EgaxJA+LCT9Rx8CwrYOR123kYZUgCIa7EcKv5yMWYitec8ww3?=
+ =?us-ascii?Q?kT7JHmVYt4/KLhXEFmj7+IF0PktguKG9TpcdplTn5gBv7AnEFj8ooCJOVAa1?=
+ =?us-ascii?Q?QOb9txKpJpUu4JQY6eoRo5oM6VhNhx/UN0nWlByTeVaPf98B?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: f642753b-293b-4bfa-0e50-08da5030fbc0
-X-MS-TrafficTypeDiagnostic: GVAP278MB0438:EE_
-X-Microsoft-Antispam-PRVS: <GVAP278MB04389E823D99D82819740085E2AF9@GVAP278MB0438.CHEP278.PROD.OUTLOOK.COM>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0
-X-Microsoft-Antispam-Message-Info: 66j8AAIcqEpxJ0f7CdWdipkebCd8dD60CMTUg37/6K39xYhXLlIQYFloNrO5PV0/v/zoYhOKbWh1/MC75hRL9nYNsMNVbtpggvycKYartGZud63jR/HAo85njPIzERTUNSt/BBnrBd3lXciEF6jKWNdmppG0ieiTJTMJ0TVsjG6WCdpXXWdosG6UQNctrvDTDZDlEehkFv2a+y35p6XVR+02YfL1rf7yCZvMSjUNg2Tlwrxa4AgXanFb85m1cVPx5RWTKDzg63wkvijArqa+r+288BCVpzVBUjRti5bcKXpPVYmYcy5j4DXDDLxJVnbFvxB3uJKhScy0Z3qq94HB7r/Hq/8bCdPfnMiq2YytBUiHRDLfOc2pi+ZDvzlz0K6wkjB+WYPm9BTMjVnobZo2dB6+xN9qyiDz9AaEX0eiYig43viFinlYTk5pcQlYz+V/ItvCQM0K6F8UTGYfUSQIXhDVbJAIXNzeCGK+TKcmfn4Ht6i7quAvE2Wx7u4BntK7zXBBsuRXf59rhUsivzjOdySjjAzJqSUE/TWFiyTxX0fn4mdSgvC/1dWmedAhJxq47elzpNXZSLZiPf9JEJrelypMq9i5DCkZlZBmmK+JlqiNLAvp0e/JFO+x44IdFXH2IySbRB1ih9xhhWhoad4Myx5Sqav4JN/sP+8RKWr1f3mH/NOEmKZXtL9rKW93K7UqlpzWD++22ZxsEymBHayn7DBtNBDBHaezdHstpF0ga1w=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230016)(4636009)(396003)(366004)(136003)(39850400004)(346002)(52116002)(38100700002)(38350700002)(6506007)(2906002)(8676002)(8936002)(6666004)(6486002)(316002)(66946007)(86362001)(7416002)(508600001)(5660300002)(4744005)(44832011)(83380400001)(110136005)(41300700001)(2616005)(26005)(6512007)(36756003)(66556008)(54906003)(4326008)(66476007)(186003)(1076003)(32563001);DIR:OUT;SFP:1102
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?scI5x1UqLnLE6NkVod/HCB52nKxfs3+4OH0jHsKpg8qbAby77mrAaZeRIQD1?=
- =?us-ascii?Q?6zHJZvaemUAxnFfwZqk6t+lSHsO/pmoVwyTu6tKP8bLVMJyWvKggQwZWGBjY?=
- =?us-ascii?Q?wi7iez8L44ZlLMwh5Jl5Pn8JGpGXSL6x0SV0nwSaXGjm6YXXEbdpNk0vlnoO?=
- =?us-ascii?Q?sGT4svQ0ChTqlUAH2F5NbH+/HZhGDvBEbw1xR4/2EkTxHeyJ1NrTitanaX3B?=
- =?us-ascii?Q?MfE3u/en4jeRrQwBbKNNHeTUKk5ePawEew22MwRxf7qPWhqOzzZoBGpo8JLu?=
- =?us-ascii?Q?ukbNBgcHA0B6eergY5d6dval7TMWibuultEaqJsfSiBMdh5UFZ3Yc9NLbijU?=
- =?us-ascii?Q?ZSghYdVK5q/yXq9ocWoT/pjSn6DnKR07A0MTb1F66zi5SJAav5el8aRnlUbj?=
- =?us-ascii?Q?M8N1cAXNzzK8fPxNW/AUYf+U8qAXCpjhGzrjAG9FtDo3EdcsKPY/nIWpKnHe?=
- =?us-ascii?Q?fiFZVkJWC1rsAmcM/WsvAbAv3WtAPqs2528Xi6Mr/rYawZn35CmgYuhW3coR?=
- =?us-ascii?Q?Z6pXDU/ahsi3tNU4Hk56jOPr54YV2zSArs8SPfqSD72yP6SCKTonUNkL66q/?=
- =?us-ascii?Q?GGrQPpWks00Lc5s/dtxaYNz8ocqvjVVx8IgZuN1LFQG0JFWep9o5avUNTPG6?=
- =?us-ascii?Q?3NtO9278Hr3ydnVuYFAmXsxSoORluQqDkihjY3s4bSAqPWaktSd7fbM0qNSq?=
- =?us-ascii?Q?ZN5Qzgwp66n2gPh3WsubYEFpLNwJbcSTjzXHf5mt5kUgRfZmcGjzKpB48yT6?=
- =?us-ascii?Q?0bdoAqUOhC1dGfsHjDKLEcB7TFjTnnakEyvDgHcpRECt2q9Rp+UIcRkZf7pG?=
- =?us-ascii?Q?muYjo6EB8jRSF3aoFezUbQoLi5/iHAdfUTNv8s7zhNiGLZMrz1RbWN+2uAur?=
- =?us-ascii?Q?FpXMMv3SBE4+q8F/c5YOBXkRZ/mfJ5in/HXsGX7lmHdYts//kNrrt/dJKhL7?=
- =?us-ascii?Q?3i6TKMsu4CNXosKGPosV3DJz9BEaU0e6WuLeFtTJ5vTVtY8PY7sE3oDNkOTY?=
- =?us-ascii?Q?EQFEgRYgwo9oB27y1Hal6K2o443LhVlsZRxXJH60Fiu/puNs92pHkxZz9fcg?=
- =?us-ascii?Q?Axv1n59qbRwi9wR0IcmFpFcxcl/6B6Vav9ItYpB7SbIyDbuDTDbTAy/2U8pt?=
- =?us-ascii?Q?8PGUPeCauGZGUEdHwyPDAVV6+t9MCDTHKUYgcMZwRF/+xedHMA82RJOJVowG?=
- =?us-ascii?Q?Rft29rck+z9SCyKQdC0+KvkrijT8QBZKa5cjg3eUq/YTMfNoj46uN9hqE3yk?=
- =?us-ascii?Q?zqBwtlw2hKlb4dHAWJdplifCRAPXnisrl7VUsg4GdaQYv6qX0Kz/a+AcRW1R?=
- =?us-ascii?Q?yknWZWzVxGlawoL1sO04bUzBVeCUF0lonhbsx4lcPOqVesLmYLfMCfWvmKjR?=
- =?us-ascii?Q?zpxzSQQbrl48BpNhLUSd5d0G5uzU8mTN6X4zW60cZwj4Jh08A3NgOtSB+Pav?=
- =?us-ascii?Q?49Tyf//Jr/wCzPxDE6XawCRjS308mwfR+Rh4VFF6vD3ZJDr5TT+TyGFCCebK?=
- =?us-ascii?Q?Js5if3MKEOaUojZQppsrTqVLx7NUjc7rN7rckxeI6vTuqZRn0l1SiB27nBvV?=
- =?us-ascii?Q?HiKOSvv7P9JCkWt3awRFIHdjjpcO6+ogrQKUCoth2NBkFbrmB8h+ISJ80H2O?=
- =?us-ascii?Q?56KXSxFOySoeVPQpL+C1ne8xt478ZKRw+3/CywNjiCvG7uPw1bzgpOjUuNAf?=
- =?us-ascii?Q?ZH65IynW/OAcc7unZsVmd+b/t/pIVOKqzhxB/RobsRXKXvaCRxrKVqrY8u5W?=
- =?us-ascii?Q?OUMopeD8cUZENtr1vSfbXe6+lzSmgJE=3D?=
-X-OriginatorOrg: toradex.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f642753b-293b-4bfa-0e50-08da5030fbc0
-X-MS-Exchange-CrossTenant-AuthSource: ZRAP278MB0495.CHEP278.PROD.OUTLOOK.COM
+X-OriginatorOrg: nxp.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jun 2022 07:14:13.9605
+X-MS-Exchange-CrossTenant-AuthSource: DB9PR04MB8412.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d77c79cd-3535-438e-77c4-08da50336285
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Jun 2022 07:31:25.2658
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: d9995866-0d9b-4251-8315-093f062abab4
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: GS7W8aZpdEb2oCMYq0bQHkAXbWr2Eng6ysFnRKcj10E+8A+8KVa99uuLeffR0elwO6EL3R+ZLKPHF2bjUwOH0m8srKTs/YjFiFSJnrBe4Gk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVAP278MB0438
-Authentication-Results: relay.mimecast.com;
-        auth=pass smtp.auth=CDE13A77 smtp.mailfrom=francesco.dolcini@toradex.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: toradex.com
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=WINDOWS-1252
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: QDhPCQvMR5LvhSNl+c96zGiUX14fFbgizEIx6cg7xk3K5mIc9ZpI11sZN3BzW4Kmt4K/vmjYOCi9yOKh+T1lFg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB6001
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Set CPU thermal critical trip point to the system designed value,
-95 degrees for commercial grade modules, 105 for industrial and extended
-commercial grade.
+> Subject: [RESEND PATCH v2 0/9] imx: thermal: Allow trip point configurati=
+on
+> from DT
+>=20
+> This series allows to specify the imx thermal drivers trip point from the=
+ device
+> tree, without this change the threshold are hard-coded and this might not=
+ be
+> correct given the thermal design of the final system.
+>=20
 
-Signed-off-by: Francesco Dolcini <francesco.dolcini@toradex.com>
----
-v2: no changes
----
- arch/arm/boot/dts/imx6ull-colibri.dtsi | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+The threshold is set dynamically based on the part market temp grade. I am =
+little confused why need to specify it in DT?
+I saw in 'PATCH 5/9', you provide a threshold table based temp grade, why n=
+ot use the threshold from ' imx_init_temp_grade'?
 
-diff --git a/arch/arm/boot/dts/imx6ull-colibri.dtsi b/arch/arm/boot/dts/imx6ull-colibri.dtsi
-index 15621e03fa4d..6d8e1ef0315b 100644
---- a/arch/arm/boot/dts/imx6ull-colibri.dtsi
-+++ b/arch/arm/boot/dts/imx6ull-colibri.dtsi
-@@ -250,6 +250,18 @@ &snvs_pwrkey {
- 	status = "disabled";
- };
- 
-+&temp_trip_crit_commercial {
-+	temperature = <95000>;
-+};
-+
-+&temp_trip_crit_ecommercial {
-+	temperature = <105000>;
-+};
-+
-+&temp_trip_crit_industrial {
-+	temperature = <105000>;
-+};
-+
- /* Colibri UART_A */
- &uart1 {
- 	pinctrl-names = "default";
--- 
-2.25.1
+BR
+Jacky Bai
+
+> This change is backward compatible with the existing device tree, and eve=
+n
+> with this change in by default the thresholds are the same as before.
+>=20
+> Toradex board are also updated to use a system-specific thresholds.
+>=20
+> Discussion on the current design is here:
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Flore.=
+ke
+> rnel.org%2Fall%2F4ba1d7d2-3e8c-ba60-37fd-9598f415c076%40linaro.org%2
+> F&amp;data=3D05%7C01%7Cping.bai%40nxp.com%7C3bd9173c93184270acee
+> 08da5030fdfb%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C6379
+> 10468593014918%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAi
+> LCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&
+> amp;sdata=3DL0T4514vcK0Nl1Vv9EVNdhDJMpBGqIRP68GFKVeBvwg%3D&amp
+> ;reserved=3D0
+>=20
+> One side note, after this change the dtbs checker starts complaining with=
+ this
+> message
+>=20
+> ```
+> linux/arch/arm/boot/dts/imx6dl-alti6p.dtb: tempmon:
+> '#thermal-sensor-cells' does not match any of the regexes:
+> '^(automotive|commercial|extended-commercial|industrial)-thermal$',
+> 'pinctrl-[0-9]+'
+> 	From schema:
+> linux/Documentation/devicetree/bindings/thermal/imx-thermal.yaml
+> ```
+>=20
+> to my understanding this is just a side effect, '#thermal-sensor-cells' i=
+s not
+> changed in any way by this series. I can fix that, I wonder if I should r=
+emove
+> the property from the imx dtsi files or add it to the binding yaml defini=
+tion, not
+> sure about it.
+> Anybody can advise?
+>=20
+> Changes in v2:
+>  - fix build error without CONFIG_THERMAL_OF
+>  - more verbose error reporting in case the dts is not correct
+>  - additional comment on the threshold fixup in case the passive threshol=
+d is
+>    higher than critical
+>  - while parsing the dts thermal, return immediately if the node is not t=
+here
+>=20
+>=20
+> Francesco Dolcini (9):
+>   dt-bindings: thermal: Define trips node in $defs
+>   thermal: thermal: Export OF trip helper function
+>   dt-bindings: thermal: imx: Add trips point
+>   imx: thermal: Configure trip point from DT
+>   ARM: dts: imx[67]: Add trips points
+>   ARM: dts: imx6qdl-apalis: Set CPU critical trip point
+>   ARM: dts: imx7-colibri: Set CPU critical trip point
+>   ARM: dts: imx6ull-colibri: Set CPU critical trip point
+>   ARM: dts: imx6qdl-colibri: Set CPU critical trip point
+>=20
+>  .../bindings/thermal/imx-thermal.yaml         |  27 ++++
+>  .../bindings/thermal/thermal-zones.yaml       | 130 +++++++++---------
+>  arch/arm/boot/dts/imx-thermal.dtsi            |  61 ++++++++
+>  arch/arm/boot/dts/imx6qdl-apalis.dtsi         |  12 ++
+>  arch/arm/boot/dts/imx6qdl-colibri.dtsi        |  12 ++
+>  arch/arm/boot/dts/imx6qdl.dtsi                |   2 +
+>  arch/arm/boot/dts/imx6sl.dtsi                 |   2 +
+>  arch/arm/boot/dts/imx6sll.dtsi                |   2 +
+>  arch/arm/boot/dts/imx6sx.dtsi                 |   2 +
+>  arch/arm/boot/dts/imx6ul.dtsi                 |   2 +
+>  arch/arm/boot/dts/imx6ull-colibri.dtsi        |  12 ++
+>  arch/arm/boot/dts/imx7-colibri.dtsi           |  12 ++
+>  arch/arm/boot/dts/imx7s.dtsi                  |   2 +
+>  drivers/thermal/imx_thermal.c                 |  58 ++++++++
+>  drivers/thermal/thermal_core.h                |   7 +
+>  drivers/thermal/thermal_of.c                  |   5 +-
+>  16 files changed, 283 insertions(+), 65 deletions(-)  create mode 100644
+> arch/arm/boot/dts/imx-thermal.dtsi
+>=20
+> --
+> 2.25.1
 
