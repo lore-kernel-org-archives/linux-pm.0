@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 607D3CCA481
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Jun 2022 21:40:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26840CCA480
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Jun 2022 21:40:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235573AbiFRVkh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Jun 2022 17:40:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43856 "EHLO
+        id S235093AbiFRVkk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Jun 2022 17:40:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43812 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235650AbiFRVkV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Jun 2022 17:40:21 -0400
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E53CDEE10;
-        Sat, 18 Jun 2022 14:40:14 -0700 (PDT)
-Received: by mail-ej1-x62a.google.com with SMTP id hj18so13987150ejb.0;
-        Sat, 18 Jun 2022 14:40:14 -0700 (PDT)
+        with ESMTP id S234340AbiFRVkO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Jun 2022 17:40:14 -0400
+Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48152EE3D;
+        Sat, 18 Jun 2022 14:40:06 -0700 (PDT)
+Received: by mail-ej1-x632.google.com with SMTP id h23so14556547ejj.12;
+        Sat, 18 Jun 2022 14:40:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ICL0c0x7JA7wnpSBszOQ6Yn0R6i5pAULi57Tw1maK9s=;
-        b=AcCll0DXTsqIQ7OUB0Mpm3PYSLNKZUHfmVc1RDDgkZyt/goNecf0iphGS4Fkx3pevG
-         G2g3WqforVJgheeyEw+18Iw090n7TBolToKN6wnUwy88B3SG/D5N7e5ednpWez5ndD+5
-         1RqtP+R1LodTnoHtnlXstFiomMU5mytwosphYHH0THxam0l5KXk07S1h6ptN7E5NkmZt
-         Cuj11JJA93McNZbvRlhNHS/kcX2m+TMdPPVZVAMcz2Oj+HWFs+5z22VWSisJlgXMUeVK
-         T6DJQxVoYaElT/4bMR5bn28b4HPrj7EkdjyzMc8QiMyjLhEByXdtTedZ+V5O7kN4Eybs
-         pQrw==
+        bh=csfinoXwhwV39+rQKVo44DThlemiAKwiSzcYqKt0Ovc=;
+        b=aJo5Bl/ie3tuaOFVibH5sKFG/O5P/8lQVlgZ+Sd6dpJXp2krwsYcXX2sCXbzdXFSBK
+         bmH4aUDGYyKkmrAGGIDbNQT7TEaTAXBICChPeUcWul3DwABhOm4LSuD0KNlDYk3+4vm6
+         2eve/K91LTIZvQOv6zxyR/Ksf5Vm6KoDp3aNI31CvzHLDhhkmDVcE8ClUnW0X01/oKti
+         niEx7Cup2DJJqs5JPzHWNH2w2sylxhEzZn/BBLuAtMuG9SIAi3KDGORqlQrFXjpW/67V
+         Eq1PKGiMeCWfi/ejdk9sn+wzhdJfbk+88ZA0TS/6fFN/M+67xE/C+gxIHigF80ZOWK6Z
+         PrNw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ICL0c0x7JA7wnpSBszOQ6Yn0R6i5pAULi57Tw1maK9s=;
-        b=rJZseTlfiaEDD6u4ydJkK118pH0qPrbS+hqYIKf63TEg5nWOQmQAQtgoatUVx7wuk+
-         93538Cy0e+WbZIVEkaGcUbwZPwt/CTabhnJuJYwJS+kuT6sIEqk0cvX9YSltrbrJkBSR
-         btmQpiSg27vFi8RlWerbv1fJyjSuGM/0xsYsMkn6VNPnMtVtqy6WPGL/wMGNfqL6+f3J
-         /Na7eB33jqlPiOV2ihvj6VgaASQxNRJ/IfaG//g3ensZwtq8YLDgorpwjLGh6dmbNF3h
-         OCAAnFHSx8rIoR4uLMEXidHNabxQMhImEG8oBq6G6TBP37q3QEU8ghVWjWqwMc2Id0/i
-         gefg==
-X-Gm-Message-State: AJIora9KTxbmV3hT1ix++B/61fBlaCWOQJix+K4/E5sRpBnxkpGBFs6F
-        zxhvqY/OeZHxUgFACi2oUA0=
-X-Google-Smtp-Source: AGRyM1u72XuZH/cBRb4Se7yesdvVgYIC2JRfxukEgUPmDxRidh+XG3aGnmxsbJ1C6mVsP03JMfNN/g==
-X-Received: by 2002:a17:907:9005:b0:718:391:45e with SMTP id ay5-20020a170907900500b007180391045emr14981295ejc.616.1655588413344;
-        Sat, 18 Jun 2022 14:40:13 -0700 (PDT)
+        bh=csfinoXwhwV39+rQKVo44DThlemiAKwiSzcYqKt0Ovc=;
+        b=Opn9KNuMvfFdRHrtQIcXg5QEjdJva4e/SS2ws8VWzpjCSa5keyYLeOYBBfqrDnA4Id
+         HEOAWfYQkSE5iLWo5QXvrbnqg2MfdBp/ey8iDHkFPfPZ9fuC1xtOSk7bl2Ufi9Pd9B/j
+         cKYY5WjZH1tMmevm6FRebEtRnwMPIM8nq/0wqXzXI7nhA0eZmE36F2tcJ1VPblosjbig
+         Imzd28a71MboXWslCQCaet3621JEEwSr+4w61kbg/HquvXSbU8d4dQAp7DeJTY2X3Sk3
+         4EyfVwWLh2U/b6i9fsZrcws+tXHFQ5ciAe/7dKFALL+xwrRvRp7pNGZnPBzqhXQUfdc9
+         rVNg==
+X-Gm-Message-State: AJIora90m6QhGrAbUKyWahUbOcdCGWeMn8EbT0t3YMcXsAD26TaNKH61
+        4HVtcKGO7sS8vIhCZLIAvEY=
+X-Google-Smtp-Source: AGRyM1skwJQsiHcbnYIJY++VnC97/Oftmq7KGsDV82CMhJPd0WshQrAe/k3xh3W82WXMTS2o1ezDWw==
+X-Received: by 2002:a17:906:77d1:b0:712:57a7:e897 with SMTP id m17-20020a17090677d100b0071257a7e897mr14391500ejn.431.1655588405450;
+        Sat, 18 Jun 2022 14:40:05 -0700 (PDT)
 Received: from localhost (92.40.169.177.threembb.co.uk. [92.40.169.177])
-        by smtp.gmail.com with ESMTPSA id s19-20020a056402521300b0042617ba637bsm6823652edd.5.2022.06.18.14.40.12
+        by smtp.gmail.com with ESMTPSA id e27-20020a170906315b00b0071d3b6ed4eesm2644223eje.160.2022.06.18.14.40.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Jun 2022 14:40:12 -0700 (PDT)
+        Sat, 18 Jun 2022 14:40:05 -0700 (PDT)
 From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
@@ -57,9 +57,9 @@ Cc:     lars@metafoo.de, rafael@kernel.org, quic_gurus@quicinc.com,
         michael@walle.cc, linux-gpio@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v3 11/16] iio: adc: axp20x_adc: Add support for AXP192
-Date:   Sat, 18 Jun 2022 22:40:04 +0100
-Message-Id: <20220618214009.2178567-12-aidanmacdonald.0x0@gmail.com>
+Subject: [PATCH v3 06/16] dt-bindings: gpio: Add AXP192 GPIO bindings
+Date:   Sat, 18 Jun 2022 22:39:59 +0100
+Message-Id: <20220618214009.2178567-7-aidanmacdonald.0x0@gmail.com>
 In-Reply-To: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com>
 References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com>
 MIME-Version: 1.0
@@ -68,463 +68,90 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The AXP192 is identical to the AXP20x, except for the addition of
-two more GPIO ADC channels.
+The AXP192 PMIC is different enough from the PMICs supported by
+the AXP20x GPIO driver to warrant a separate driver. The AXP192
+driver also supports interrupts and pinconf settings.
 
 Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 ---
- drivers/iio/adc/axp20x_adc.c | 298 +++++++++++++++++++++++++++++++++--
- 1 file changed, 289 insertions(+), 9 deletions(-)
+ .../bindings/gpio/x-powers,axp192-gpio.yaml   | 68 +++++++++++++++++++
+ 1 file changed, 68 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/gpio/x-powers,axp192-gpio.yaml
 
-diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-index 041511280e1e..929aa14f9cf3 100644
---- a/drivers/iio/adc/axp20x_adc.c
-+++ b/drivers/iio/adc/axp20x_adc.c
-@@ -22,11 +22,19 @@
- #include <linux/iio/machine.h>
- #include <linux/mfd/axp20x.h>
- 
-+#define AXP192_ADC_EN1_MASK			GENMASK(7, 0)
-+#define AXP192_ADC_EN2_MASK			(GENMASK(3, 0) | BIT(7))
+diff --git a/Documentation/devicetree/bindings/gpio/x-powers,axp192-gpio.yaml b/Documentation/devicetree/bindings/gpio/x-powers,axp192-gpio.yaml
+new file mode 100644
+index 000000000000..1e368cac9d3a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/gpio/x-powers,axp192-gpio.yaml
+@@ -0,0 +1,68 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/gpio/x-powers,axp192-gpio.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
- #define AXP20X_ADC_EN1_MASK			GENMASK(7, 0)
- #define AXP20X_ADC_EN2_MASK			(GENMASK(3, 2) | BIT(7))
- 
- #define AXP22X_ADC_EN1_MASK			(GENMASK(7, 5) | BIT(0))
- 
-+#define AXP192_GPIO30_IN_RANGE_GPIO0		BIT(0)
-+#define AXP192_GPIO30_IN_RANGE_GPIO1		BIT(1)
-+#define AXP192_GPIO30_IN_RANGE_GPIO2		BIT(2)
-+#define AXP192_GPIO30_IN_RANGE_GPIO3		BIT(3)
++title: X-Powers AXP192 GPIO Device Tree Bindings
 +
- #define AXP20X_GPIO10_IN_RANGE_GPIO0		BIT(0)
- #define AXP20X_GPIO10_IN_RANGE_GPIO1		BIT(1)
- 
-@@ -71,6 +79,25 @@ struct axp20x_adc_iio {
- 	const struct axp_data	*data;
- };
- 
-+enum axp192_adc_channel_v {
-+	AXP192_ACIN_V = 0,
-+	AXP192_VBUS_V,
-+	AXP192_TS_IN,
-+	AXP192_GPIO0_V,
-+	AXP192_GPIO1_V,
-+	AXP192_GPIO2_V,
-+	AXP192_GPIO3_V,
-+	AXP192_IPSOUT_V,
-+	AXP192_BATT_V,
-+};
++maintainers:
++  - Chen-Yu Tsai <wens@csie.org>
 +
-+enum axp192_adc_channel_i {
-+	AXP192_ACIN_I = 0,
-+	AXP192_VBUS_I,
-+	AXP192_BATT_CHRG_I,
-+	AXP192_BATT_DISCHRG_I,
-+};
++properties:
++  compatible:
++    const: x-powers,axp192-gpio
 +
- enum axp20x_adc_channel_v {
- 	AXP20X_ACIN_V = 0,
- 	AXP20X_VBUS_V,
-@@ -158,6 +185,43 @@ static struct iio_map axp22x_maps[] = {
-  * The only exception is for the battery. batt_v will be in_voltage6_raw and
-  * charge current in_current6_raw and discharge current will be in_current7_raw.
-  */
-+static const struct iio_chan_spec axp192_adc_channels[] = {
-+	AXP20X_ADC_CHANNEL(AXP192_ACIN_V, "acin_v", IIO_VOLTAGE,
-+			   AXP20X_ACIN_V_ADC_H),
-+	AXP20X_ADC_CHANNEL(AXP192_ACIN_I, "acin_i", IIO_CURRENT,
-+			   AXP20X_ACIN_I_ADC_H),
-+	AXP20X_ADC_CHANNEL(AXP192_VBUS_V, "vbus_v", IIO_VOLTAGE,
-+			   AXP20X_VBUS_V_ADC_H),
-+	AXP20X_ADC_CHANNEL(AXP192_VBUS_I, "vbus_i", IIO_CURRENT,
-+			   AXP20X_VBUS_I_ADC_H),
-+	{
-+		.type = IIO_TEMP,
-+		.address = AXP20X_TEMP_ADC_H,
-+		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
-+				      BIT(IIO_CHAN_INFO_SCALE) |
-+				      BIT(IIO_CHAN_INFO_OFFSET),
-+		.datasheet_name = "pmic_temp",
-+	},
-+	AXP20X_ADC_CHANNEL_OFFSET(AXP192_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
-+				  AXP20X_GPIO0_V_ADC_H),
-+	AXP20X_ADC_CHANNEL_OFFSET(AXP192_GPIO1_V, "gpio1_v", IIO_VOLTAGE,
-+				  AXP20X_GPIO1_V_ADC_H),
-+	AXP20X_ADC_CHANNEL_OFFSET(AXP192_GPIO2_V, "gpio2_v", IIO_VOLTAGE,
-+				  AXP192_GPIO2_V_ADC_H),
-+	AXP20X_ADC_CHANNEL_OFFSET(AXP192_GPIO3_V, "gpio3_v", IIO_VOLTAGE,
-+				  AXP192_GPIO3_V_ADC_H),
-+	AXP20X_ADC_CHANNEL(AXP192_IPSOUT_V, "ipsout_v", IIO_VOLTAGE,
-+			   AXP20X_IPSOUT_V_HIGH_H),
-+	AXP20X_ADC_CHANNEL(AXP192_BATT_V, "batt_v", IIO_VOLTAGE,
-+			   AXP20X_BATT_V_H),
-+	AXP20X_ADC_CHANNEL(AXP192_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-+			   AXP20X_BATT_CHRG_I_H),
-+	AXP20X_ADC_CHANNEL(AXP192_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
-+			   AXP20X_BATT_DISCHRG_I_H),
-+	AXP20X_ADC_CHANNEL(AXP192_TS_IN, "ts_v", IIO_VOLTAGE,
-+			   AXP20X_TS_IN_H),
-+};
++  gpio-controller: true
 +
- static const struct iio_chan_spec axp20x_adc_channels[] = {
- 	AXP20X_ADC_CHANNEL(AXP20X_ACIN_V, "acin_v", IIO_VOLTAGE,
- 			   AXP20X_ACIN_V_ADC_H),
-@@ -231,6 +295,27 @@ static const struct iio_chan_spec axp813_adc_channels[] = {
- 			   AXP288_TS_ADC_H),
- };
- 
-+static int axp192_adc_raw(struct iio_dev *indio_dev,
-+			  struct iio_chan_spec const *chan, int *val)
-+{
-+	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-+	int ret, size;
++  "#gpio-cells":
++    const: 2
++    description: >
++      The first cell is the pin number and the second is the GPIO flags.
 +
-+	if (chan->type == IIO_CURRENT &&
-+	    (chan->channel == AXP192_BATT_CHRG_I ||
-+	     chan->channel == AXP192_BATT_DISCHRG_I))
-+		size = 13;
-+	else
-+		size = 12;
++  gpio-ranges:
++    maxItems: 1
 +
-+	ret = axp20x_read_variable_width(info->regmap, chan->address, size);
-+	if (ret < 0)
-+		return ret;
++patternProperties:
++  "-pins$":
++    $ref: /schemas/pinctrl/pinmux-node.yaml#
 +
-+	*val = ret;
-+	return IIO_VAL_INT;
-+}
++    properties:
++      pins:
++        items:
++          enum:
++            - GPIO0
++            - GPIO1
++            - GPIO2
++            - GPIO3
++            - GPIO4
++            - N_RSTO
 +
- static int axp20x_adc_raw(struct iio_dev *indio_dev,
- 			  struct iio_chan_spec const *chan, int *val)
- {
-@@ -283,6 +368,44 @@ static int axp813_adc_raw(struct iio_dev *indio_dev,
- 	return IIO_VAL_INT;
- }
- 
-+static int axp192_adc_scale_voltage(int channel, int *val, int *val2)
-+{
-+	switch (channel) {
-+	case AXP192_ACIN_V:
-+	case AXP192_VBUS_V:
-+		*val = 1;
-+		*val2 = 700000;
-+		return IIO_VAL_INT_PLUS_MICRO;
++      function:
++        enum:
++          - output
++          - input
++          - ldo
++          - pwm
++          - adc
++          - low_output
++          - floating
++          - ext_chg_ctl
++          - ldo_status
 +
-+	case AXP192_GPIO0_V:
-+	case AXP192_GPIO1_V:
-+	case AXP192_GPIO2_V:
-+	case AXP192_GPIO3_V:
-+		*val = 0;
-+		*val2 = 500000;
-+		return IIO_VAL_INT_PLUS_MICRO;
++required:
++  - compatible
++  - "#gpio-cells"
++  - gpio-controller
++  - gpio-ranges
 +
-+	case AXP192_BATT_V:
-+		*val = 1;
-+		*val2 = 100000;
-+		return IIO_VAL_INT_PLUS_MICRO;
++additionalProperties: false
 +
-+	case AXP192_IPSOUT_V:
-+		*val = 1;
-+		*val2 = 400000;
-+		return IIO_VAL_INT_PLUS_MICRO;
-+
-+	case AXP192_TS_IN:
-+		/* 0.8 mV per LSB */
-+		*val = 0;
-+		*val2 = 800000;
-+		return IIO_VAL_INT_PLUS_MICRO;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
- {
- 	switch (channel) {
-@@ -386,6 +509,29 @@ static int axp20x_adc_scale_current(int channel, int *val, int *val2)
- 	}
- }
- 
-+static int axp192_adc_scale(struct iio_chan_spec const *chan, int *val,
-+			    int *val2)
-+{
-+	switch (chan->type) {
-+	case IIO_VOLTAGE:
-+		return axp192_adc_scale_voltage(chan->channel, val, val2);
-+
-+	case IIO_CURRENT:
-+		/*
-+		 * AXP192 current channels are identical to the AXP20x,
-+		 * therefore we can re-use the scaling function.
-+		 */
-+		return axp20x_adc_scale_current(chan->channel, val, val2);
-+
-+	case IIO_TEMP:
-+		*val = 100;
-+		return IIO_VAL_INT;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_adc_scale(struct iio_chan_spec const *chan, int *val,
- 			    int *val2)
- {
-@@ -445,6 +591,42 @@ static int axp813_adc_scale(struct iio_chan_spec const *chan, int *val,
- 	}
- }
- 
-+static int axp192_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
-+				     int *val)
-+{
-+	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-+	unsigned int regval;
-+	int ret;
-+
-+	ret = regmap_read(info->regmap, AXP192_GPIO30_IN_RANGE, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (channel) {
-+	case AXP192_GPIO0_V:
-+		regval = FIELD_GET(AXP192_GPIO30_IN_RANGE_GPIO0, regval);
-+		break;
-+
-+	case AXP192_GPIO1_V:
-+		regval = FIELD_GET(AXP192_GPIO30_IN_RANGE_GPIO1, regval);
-+		break;
-+
-+	case AXP192_GPIO2_V:
-+		regval = FIELD_GET(AXP192_GPIO30_IN_RANGE_GPIO2, regval);
-+		break;
-+
-+	case AXP192_GPIO3_V:
-+		regval = FIELD_GET(AXP192_GPIO30_IN_RANGE_GPIO3, regval);
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	*val = regval ? 700000 : 0;
-+	return IIO_VAL_INT;
-+}
-+
- static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
- 				     int *val)
- {
-@@ -473,6 +655,22 @@ static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
- 	return IIO_VAL_INT;
- }
- 
-+static int axp192_adc_offset(struct iio_dev *indio_dev,
-+			     struct iio_chan_spec const *chan, int *val)
-+{
-+	switch (chan->type) {
-+	case IIO_VOLTAGE:
-+		return axp192_adc_offset_voltage(indio_dev, chan->channel, val);
-+
-+	case IIO_TEMP:
-+		*val = -1447;
-+		return IIO_VAL_INT;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_adc_offset(struct iio_dev *indio_dev,
- 			     struct iio_chan_spec const *chan, int *val)
- {
-@@ -489,6 +687,25 @@ static int axp20x_adc_offset(struct iio_dev *indio_dev,
- 	}
- }
- 
-+static int axp192_read_raw(struct iio_dev *indio_dev,
-+			   struct iio_chan_spec const *chan, int *val,
-+			   int *val2, long mask)
-+{
-+	switch (mask) {
-+	case IIO_CHAN_INFO_OFFSET:
-+		return axp192_adc_offset(indio_dev, chan, val);
-+
-+	case IIO_CHAN_INFO_SCALE:
-+		return axp192_adc_scale(chan, val, val2);
-+
-+	case IIO_CHAN_INFO_RAW:
-+		return axp192_adc_raw(indio_dev, chan, val);
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_read_raw(struct iio_dev *indio_dev,
- 			   struct iio_chan_spec const *chan, int *val,
- 			   int *val2, long mask)
-@@ -549,6 +766,53 @@ static int axp813_read_raw(struct iio_dev *indio_dev,
- 	}
- }
- 
-+static int axp192_write_raw(struct iio_dev *indio_dev,
-+			    struct iio_chan_spec const *chan, int val, int val2,
-+			    long mask)
-+{
-+	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-+	unsigned int regmask, regval;
-+
-+	/*
-+	 * The AXP192 PMIC allows the user to choose between 0V and 0.7V offsets
-+	 * for (independently) GPIO0-3 when in ADC mode.
-+	 */
-+	if (mask != IIO_CHAN_INFO_OFFSET)
-+		return -EINVAL;
-+
-+	if (val != 0 && val != 700000)
-+		return -EINVAL;
-+
-+	regval = val ? 1 : 0;
-+
-+	switch (chan->channel) {
-+	case AXP192_GPIO0_V:
-+		regmask = AXP192_GPIO30_IN_RANGE_GPIO0;
-+		regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO0, regval);
-+		break;
-+
-+	case AXP192_GPIO1_V:
-+		regmask = AXP192_GPIO30_IN_RANGE_GPIO1;
-+		regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO1, regval);
-+		break;
-+
-+	case AXP192_GPIO2_V:
-+		regmask = AXP192_GPIO30_IN_RANGE_GPIO2;
-+		regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO2, regval);
-+		break;
-+
-+	case AXP192_GPIO3_V:
-+		regmask = AXP192_GPIO30_IN_RANGE_GPIO3;
-+		regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO3, regval);
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return regmap_update_bits(info->regmap, AXP192_GPIO30_IN_RANGE, regmask, regval);
-+}
-+
- static int axp20x_write_raw(struct iio_dev *indio_dev,
- 			    struct iio_chan_spec const *chan, int val, int val2,
- 			    long mask)
-@@ -586,6 +850,11 @@ static int axp20x_write_raw(struct iio_dev *indio_dev,
- 	return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE, regmask, regval);
- }
- 
-+static const struct iio_info axp192_adc_iio_info = {
-+	.read_raw = axp192_read_raw,
-+	.write_raw = axp192_write_raw,
-+};
-+
- static const struct iio_info axp20x_adc_iio_info = {
- 	.read_raw = axp20x_read_raw,
- 	.write_raw = axp20x_write_raw,
-@@ -625,19 +894,29 @@ struct axp_data {
- 	int				num_channels;
- 	struct iio_chan_spec const	*channels;
- 	unsigned long			adc_en1_mask;
-+	unsigned long			adc_en2_mask;
- 	int				(*adc_rate)(struct axp20x_adc_iio *info,
- 						    int rate);
--	bool				adc_en2;
- 	struct iio_map			*maps;
- };
- 
-+static const struct axp_data axp192_data = {
-+	.iio_info = &axp192_adc_iio_info,
-+	.num_channels = ARRAY_SIZE(axp192_adc_channels),
-+	.channels = axp192_adc_channels,
-+	.adc_en1_mask = AXP192_ADC_EN1_MASK,
-+	.adc_en2_mask = AXP192_ADC_EN2_MASK,
-+	.adc_rate = axp20x_adc_rate,
-+	.maps = axp20x_maps,
-+};
-+
- static const struct axp_data axp20x_data = {
- 	.iio_info = &axp20x_adc_iio_info,
- 	.num_channels = ARRAY_SIZE(axp20x_adc_channels),
- 	.channels = axp20x_adc_channels,
- 	.adc_en1_mask = AXP20X_ADC_EN1_MASK,
-+	.adc_en2_mask = AXP20X_ADC_EN2_MASK,
- 	.adc_rate = axp20x_adc_rate,
--	.adc_en2 = true,
- 	.maps = axp20x_maps,
- };
- 
-@@ -647,7 +926,6 @@ static const struct axp_data axp22x_data = {
- 	.channels = axp22x_adc_channels,
- 	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
- 	.adc_rate = axp22x_adc_rate,
--	.adc_en2 = false,
- 	.maps = axp22x_maps,
- };
- 
-@@ -657,11 +935,11 @@ static const struct axp_data axp813_data = {
- 	.channels = axp813_adc_channels,
- 	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
- 	.adc_rate = axp813_adc_rate,
--	.adc_en2 = false,
- 	.maps = axp22x_maps,
- };
- 
- static const struct of_device_id axp20x_adc_of_match[] = {
-+	{ .compatible = "x-powers,axp192-adc", .data = (void *)&axp192_data, },
- 	{ .compatible = "x-powers,axp209-adc", .data = (void *)&axp20x_data, },
- 	{ .compatible = "x-powers,axp221-adc", .data = (void *)&axp22x_data, },
- 	{ .compatible = "x-powers,axp813-adc", .data = (void *)&axp813_data, },
-@@ -670,6 +948,7 @@ static const struct of_device_id axp20x_adc_of_match[] = {
- MODULE_DEVICE_TABLE(of, axp20x_adc_of_match);
- 
- static const struct platform_device_id axp20x_adc_id_match[] = {
-+	{ .name = "axp192-adc", .driver_data = (kernel_ulong_t)&axp192_data, },
- 	{ .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
- 	{ .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
- 	{ .name = "axp813-adc", .driver_data = (kernel_ulong_t)&axp813_data, },
-@@ -715,10 +994,11 @@ static int axp20x_probe(struct platform_device *pdev)
- 	/* Enable the ADCs on IP */
- 	regmap_write(info->regmap, AXP20X_ADC_EN1, info->data->adc_en1_mask);
- 
--	if (info->data->adc_en2)
--		/* Enable GPIO0/1 and internal temperature ADCs */
-+	if (info->data->adc_en2_mask)
-+		/* Enable GPIO and internal temperature ADCs */
- 		regmap_update_bits(info->regmap, AXP20X_ADC_EN2,
--				   AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
-+				   info->data->adc_en2_mask,
-+				   info->data->adc_en2_mask);
- 
- 	/* Configure ADCs rate */
- 	info->data->adc_rate(info, 100);
-@@ -743,7 +1023,7 @@ static int axp20x_probe(struct platform_device *pdev)
- fail_map:
- 	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
- 
--	if (info->data->adc_en2)
-+	if (info->data->adc_en2_mask)
- 		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
- 
- 	return ret;
-@@ -759,7 +1039,7 @@ static int axp20x_remove(struct platform_device *pdev)
- 
- 	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
- 
--	if (info->data->adc_en2)
-+	if (info->data->adc_en2_mask)
- 		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
- 
- 	return 0;
++examples:
++  - |
++    pinctrl0: gpio@0 {
++        compatible = "x-powers,axp192-gpio";
++        gpio-controller;
++        #gpio-cells = <2>;
++        gpio-ranges = <&pinctrl0 0 0 6>;
++    };
 -- 
 2.35.1
 
