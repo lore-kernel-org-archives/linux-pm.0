@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4D7BCCA483
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Jun 2022 21:40:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CA24CCA473
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Jun 2022 21:40:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236574AbiFRVka (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Jun 2022 17:40:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44000 "EHLO
+        id S235169AbiFRVke (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Jun 2022 17:40:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44214 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235432AbiFRVkS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Jun 2022 17:40:18 -0400
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4ACDF101F3;
-        Sat, 18 Jun 2022 14:40:12 -0700 (PDT)
-Received: by mail-ej1-x630.google.com with SMTP id me5so14614983ejb.2;
-        Sat, 18 Jun 2022 14:40:12 -0700 (PDT)
+        with ESMTP id S235804AbiFRVkY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Jun 2022 17:40:24 -0400
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0476F586;
+        Sat, 18 Jun 2022 14:40:16 -0700 (PDT)
+Received: by mail-ed1-x52a.google.com with SMTP id eq6so3006102edb.6;
+        Sat, 18 Jun 2022 14:40:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=iblggP5OiZqP+FqgfuEd0tW9JbHj3v1KPpGeBiW9/qc=;
-        b=qOa7MW+v9K2mHIdT4jcQ6MA1kODbcLVFRmepCgSmpLJIGpqXJRW3nLD5dF4/4RwnHT
-         rbYXFfgc6vFTrBV7Xh5Fj9qjR9Y08YBaQtRDHCjUcPlEu3NZ8/xlhC8AYM53RePaP4rE
-         P+CFMgvfOayGASVOl2JaJojBZjyjefOZHynzWrxYgcPe5oHrnuqLFFRH6M/CcG0KqNuf
-         ZuhkeiCeNT+noOxYzz00Rrd8zU+3J9oCtDgR2g7dSVecY+Ei6le5rqi7yd2UBI54SPuj
-         A1/jbfs1o/E9JGGq+V+5TTDMUccPFLQqPIPeW7M6xBTotcr4n5+07VraXQBYLyAPJHwZ
-         TYpw==
+        bh=XuT29ehbyN/ATcCnZiRuVu0ODVzbMYGZM8OoTh+ph94=;
+        b=TC63OzcCQY3vjDErZ0IN8bOx/RTPgwxX+i0pPhd8y0NXjpGxPhEOPQzRuXVlEQD3G0
+         HCHmrcWnIWifViBjmj/VHI5+FRJ2y3udUkZszTrcrgUyZe7DooOKDQz7nbqY5DWGwQuF
+         CUBdJxxJdnRBUAylIFpAs4+vdogY8VMvhbyupyaU/zithSZWBAJn2qBdR705vy3FWgKv
+         VHGjkpvqR4mr4+Pq1D4e6BktWXej2rTAxrQbZ7iBPHU9pnXkRrsP529HJlUoujBVuxOA
+         2v2muBo1ffsayRL7PrXNE6foBK1y9Z5tO4rMbePv6zpMAnp2bSLXDVc4keBNaZgWGY/p
+         jjCQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=iblggP5OiZqP+FqgfuEd0tW9JbHj3v1KPpGeBiW9/qc=;
-        b=dsJElocxcfPZzYGi/e9XQhHXOFLpWLqleUDKjLNLYkd8PIOPIw8oRtgtPSj3SHBWNC
-         eBUFrYNsCCYeKPmmyfSlXRTVVwcSpzZWgEznxymwEab6IrQwtJpSo35HQC4b+pNeOnhK
-         arFmgzxbESNLY/RVtmK9jHBhJGCX5P5iVGFJRNZbvBK7i2M4jj6WU0SmS80C+cpYD48b
-         8Kme2O5ICiC0Tynf2PR/TcaQ75w/ZNLxzm3wdIYsM86gNzeJ4P9Irjb2ozBz3taMwq+f
-         EaUbETnhj3EcHu7XFnWtYxISM+T7Wcxe746/jk/Ugb2kuNMs561WLEC7+lBTVrt88twu
-         I1+A==
-X-Gm-Message-State: AJIora95BQciYjTZWTW9qK9Fm9m9zatYyVnCZ+l8U34RkUuF9wSuanWT
-        weWjfthQAZw4xbY2Fr1S/hI=
-X-Google-Smtp-Source: AGRyM1tjCFOq6tAc4ZKvqq141Fr6B4V+MiZhNKJQmv1ViQCkB8bcVyiB9uhLQrfrSvIUDia2vwxSMA==
-X-Received: by 2002:a17:907:3f97:b0:711:d61d:df9 with SMTP id hr23-20020a1709073f9700b00711d61d0df9mr14967091ejc.644.1655588411636;
-        Sat, 18 Jun 2022 14:40:11 -0700 (PDT)
+        bh=XuT29ehbyN/ATcCnZiRuVu0ODVzbMYGZM8OoTh+ph94=;
+        b=EBd1ckSoo5GEmgtz4xlXpLEcfuLzN+DaOVFhmzKf1WQ1g22BGU7h75hdoEGVTNS6EG
+         FVlTtjXOpc2l7O70zZLHkwBARLtabwdBNbKPuux/cduRjHXMoPDml8tkUu97P3uW43YY
+         jpI5Zl+fx2h+em0aXAXHiY3m9mrnHcdljcdMtH0jyeIzO5XlnP2pAM9EYO9TIiFlBLJu
+         vSDaIOBjJHh9H3u/2LjJeC+WQvEDQtN12DCISACsZuaTrDbLPvsw1fsDbeyQDVqLQUZZ
+         mZWCIuNFKObMYSqt8zCScdoA6aQej0hcSq9RW5a94GdJwkZPzG71A62NmoF3Gv6Xr8TX
+         Dh8Q==
+X-Gm-Message-State: AJIora8ToQ3rP8vsqE8DZ0pEdMQeNib1ehzJj0hBlMbnW98C68aNpoB+
+        +v+O8LVQ/cmB0IEFWZIa6aa9v6AM1J8=
+X-Google-Smtp-Source: AGRyM1v2VunXky1vK+cV7MtTgRSFTyFU/5ufjTsqWt0YIO5NiQPjz46exDF5qHzY+63Z1oYD6zifPQ==
+X-Received: by 2002:a05:6402:1d97:b0:42d:ccd1:2fa4 with SMTP id dk23-20020a0564021d9700b0042dccd12fa4mr20230419edb.325.1655588414917;
+        Sat, 18 Jun 2022 14:40:14 -0700 (PDT)
 Received: from localhost (92.40.169.177.threembb.co.uk. [92.40.169.177])
-        by smtp.gmail.com with ESMTPSA id y4-20020aa7ccc4000000b004316f94ec4esm6459638edt.66.2022.06.18.14.40.10
+        by smtp.gmail.com with ESMTPSA id ot21-20020a170906ccd500b006f3ef214e0esm3776351ejb.116.2022.06.18.14.40.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Jun 2022 14:40:11 -0700 (PDT)
+        Sat, 18 Jun 2022 14:40:14 -0700 (PDT)
 From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 To:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
@@ -57,9 +57,9 @@ Cc:     lars@metafoo.de, rafael@kernel.org, quic_gurus@quicinc.com,
         michael@walle.cc, linux-gpio@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v3 10/16] iio: adc: axp20x_adc: Minor code cleanups
-Date:   Sat, 18 Jun 2022 22:40:03 +0100
-Message-Id: <20220618214009.2178567-11-aidanmacdonald.0x0@gmail.com>
+Subject: [PATCH v3 12/16] power: supply: axp20x_usb_power: Add support for AXP192
+Date:   Sat, 18 Jun 2022 22:40:05 +0100
+Message-Id: <20220618214009.2178567-13-aidanmacdonald.0x0@gmail.com>
 In-Reply-To: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com>
 References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com>
 MIME-Version: 1.0
@@ -68,187 +68,170 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The code may be clearer if parameters are not re-purposed to hold
-temporary results like register values, so introduce local variables
-as necessary to avoid that. Also, use the common FIELD_PREP macro
-instead of a hand-rolled version.
+The AXP192 is mostly the same as the AXP202 but has a different
+current limit.
 
-Suggested-by: Jonathan Cameron <jic23@kernel.org>
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 ---
- drivers/iio/adc/axp20x_adc.c | 61 +++++++++++++++++++-----------------
- 1 file changed, 33 insertions(+), 28 deletions(-)
+ drivers/power/supply/axp20x_usb_power.c | 80 +++++++++++++++++++++----
+ 1 file changed, 69 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-index 53bf7d4899d2..041511280e1e 100644
---- a/drivers/iio/adc/axp20x_adc.c
-+++ b/drivers/iio/adc/axp20x_adc.c
-@@ -15,6 +15,7 @@
- #include <linux/property.h>
- #include <linux/regmap.h>
- #include <linux/thermal.h>
-+#include <linux/bitfield.h>
+diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
+index a1e6d1d44808..03145374ae72 100644
+--- a/drivers/power/supply/axp20x_usb_power.c
++++ b/drivers/power/supply/axp20x_usb_power.c
+@@ -48,6 +48,9 @@
+ #define AXP813_VBUS_CLIMIT_2000mA	2
+ #define AXP813_VBUS_CLIMIT_2500mA	3
  
- #include <linux/iio/iio.h>
- #include <linux/iio/driver.h>
-@@ -22,20 +23,20 @@
- #include <linux/mfd/axp20x.h>
- 
- #define AXP20X_ADC_EN1_MASK			GENMASK(7, 0)
--
- #define AXP20X_ADC_EN2_MASK			(GENMASK(3, 2) | BIT(7))
++#define AXP192_VBUS_CLIMIT_EN		BIT(1)
++#define AXP192_VBUS_CLIMIT_100mA	BIT(0)
 +
- #define AXP22X_ADC_EN1_MASK			(GENMASK(7, 5) | BIT(0))
+ #define AXP20X_ADC_EN1_VBUS_CURR	BIT(2)
+ #define AXP20X_ADC_EN1_VBUS_VOLT	BIT(3)
  
- #define AXP20X_GPIO10_IN_RANGE_GPIO0		BIT(0)
- #define AXP20X_GPIO10_IN_RANGE_GPIO1		BIT(1)
--#define AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(x)	((x) & BIT(0))
--#define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
- 
- #define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
--#define AXP813_V_I_ADC_RATE_MASK		GENMASK(5, 4)
--#define AXP813_ADC_RATE_MASK			(AXP20X_ADC_RATE_MASK | AXP813_V_I_ADC_RATE_MASK)
- #define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC_RATE_MASK)
-+
- #define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_ADC_RATE_MASK)
-+
-+#define AXP813_V_I_ADC_RATE_MASK		GENMASK(5, 4)
-+#define AXP813_ADC_RATE_MASK			(AXP20X_ADC_RATE_MASK | AXP813_V_I_ADC_RATE_MASK)
- #define AXP813_TS_GPIO0_ADC_RATE_HZ(x)		AXP20X_ADC_RATE_HZ(x)
- #define AXP813_V_I_ADC_RATE_HZ(x)		((ilog2((x) / 100) << 4) & AXP813_V_I_ADC_RATE_MASK)
- #define AXP813_ADC_RATE_HZ(x)			(AXP20X_ADC_RATE_HZ(x) | AXP813_V_I_ADC_RATE_HZ(x))
-@@ -234,7 +235,7 @@ static int axp20x_adc_raw(struct iio_dev *indio_dev,
- 			  struct iio_chan_spec const *chan, int *val)
- {
- 	struct axp20x_adc_iio *info = iio_priv(indio_dev);
--	int size = 12;
-+	int ret, size;
- 
- 	/*
- 	 * N.B.:  Unlike the Chinese datasheets tell, the charging current is
-@@ -246,10 +247,11 @@ static int axp20x_adc_raw(struct iio_dev *indio_dev,
- 	else
- 		size = 12;
- 
--	*val = axp20x_read_variable_width(info->regmap, chan->address, size);
--	if (*val < 0)
--		return *val;
-+	ret = axp20x_read_variable_width(info->regmap, chan->address, size);
-+	if (ret < 0)
-+		return ret;
- 
-+	*val = ret;
- 	return IIO_VAL_INT;
+@@ -121,6 +124,24 @@ static void axp20x_usb_power_poll_vbus(struct work_struct *work)
+ 		mod_delayed_work(system_power_efficient_wq, &power->vbus_detect, DEBOUNCE_TIME);
  }
  
-@@ -257,11 +259,13 @@ static int axp22x_adc_raw(struct iio_dev *indio_dev,
- 			  struct iio_chan_spec const *chan, int *val)
- {
- 	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-+	int ret;
- 
--	*val = axp20x_read_variable_width(info->regmap, chan->address, 12);
--	if (*val < 0)
--		return *val;
-+	ret = axp20x_read_variable_width(info->regmap, chan->address, 12);
-+	if (ret < 0)
++static int axp192_get_current_max(struct axp20x_usb_power *power, int *val)
++{
++	unsigned int v;
++	int ret = regmap_read(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, &v);
++
++	if (ret)
 +		return ret;
- 
-+	*val = ret;
- 	return IIO_VAL_INT;
- }
- 
-@@ -269,11 +273,13 @@ static int axp813_adc_raw(struct iio_dev *indio_dev,
- 			  struct iio_chan_spec const *chan, int *val)
++
++	if (!(v & AXP192_VBUS_CLIMIT_EN))
++		*val = -1;
++	else if (v & AXP192_VBUS_CLIMIT_100mA)
++		*val = 100000;
++	else
++		*val = 500000;
++
++	return 0;
++}
++
+ static int axp20x_get_current_max(struct axp20x_usb_power *power, int *val)
  {
- 	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-+	int ret;
- 
--	*val = axp20x_read_variable_width(info->regmap, chan->address, 12);
--	if (*val < 0)
--		return *val;
-+	ret = axp20x_read_variable_width(info->regmap, chan->address, 12);
-+	if (ret < 0)
-+		return ret;
- 
-+	*val = ret;
- 	return IIO_VAL_INT;
- }
- 
-@@ -443,27 +449,27 @@ static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
- 				     int *val)
+ 	unsigned int v;
+@@ -179,7 +200,7 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 	enum power_supply_property psp, union power_supply_propval *val)
  {
- 	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-+	unsigned int regval;
+ 	struct axp20x_usb_power *power = power_supply_get_drvdata(psy);
+-	unsigned int input, v;
++	unsigned int input, v, reg;
  	int ret;
  
--	ret = regmap_read(info->regmap, AXP20X_GPIO10_IN_RANGE, val);
-+	ret = regmap_read(info->regmap, AXP20X_GPIO10_IN_RANGE, &regval);
- 	if (ret < 0)
+ 	switch (psp) {
+@@ -215,6 +236,8 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CURRENT_MAX:
+ 		if (power->axp20x_id == AXP813_ID)
+ 			return axp813_get_current_max(power, &val->intval);
++		else if (power->axp20x_id == AXP192_ID)
++			return axp192_get_current_max(power, &val->intval);
+ 		return axp20x_get_current_max(power, &val->intval);
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+ 		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
+@@ -256,16 +279,20 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 
+ 		val->intval = POWER_SUPPLY_HEALTH_GOOD;
+ 
+-		if (power->axp20x_id == AXP202_ID) {
+-			ret = regmap_read(power->regmap,
+-					  AXP20X_USB_OTG_STATUS, &v);
+-			if (ret)
+-				return ret;
++		if (power->axp20x_id == AXP192_ID)
++			reg = AXP192_USB_OTG_STATUS;
++		else if (power->axp20x_id == AXP202_ID)
++			reg = AXP20X_USB_OTG_STATUS;
++		else
++			/* Other chips do not have an OTG status register */
++			break;
+ 
+-			if (!(v & AXP20X_USB_STATUS_VBUS_VALID))
+-				val->intval =
+-					POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
+-		}
++		ret = regmap_read(power->regmap, reg, &v);
++		if (ret)
++			return ret;
++
++		if (!(v & AXP20X_USB_STATUS_VBUS_VALID))
++			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
+ 		break;
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 		val->intval = !!(input & AXP20X_PWR_STATUS_VBUS_PRESENT);
+@@ -316,6 +343,24 @@ static int axp20x_usb_power_set_voltage_min(struct axp20x_usb_power *power,
+ 	return -EINVAL;
+ }
+ 
++static int axp192_usb_power_set_current_max(struct axp20x_usb_power *power,
++					    int intval)
++{
++	int val = AXP192_VBUS_CLIMIT_EN;
++	const int mask = AXP192_VBUS_CLIMIT_EN | AXP192_VBUS_CLIMIT_100mA;
++
++	switch (intval) {
++	case 100000:
++		val |= AXP192_VBUS_CLIMIT_100mA;
++		fallthrough;
++	case 500000:
++		return regmap_update_bits(power->regmap,
++					  AXP20X_VBUS_IPSOUT_MGMT, mask, val);
++	default:
++		return -EINVAL;
++	}
++}
++
+ static int axp813_usb_power_set_current_max(struct axp20x_usb_power *power,
+ 					    int intval)
+ {
+@@ -383,6 +428,9 @@ static int axp20x_usb_power_set_property(struct power_supply *psy,
+ 		if (power->axp20x_id == AXP813_ID)
+ 			return axp813_usb_power_set_current_max(power,
+ 								val->intval);
++		else if (power->axp20x_id == AXP192_ID)
++			return axp192_usb_power_set_current_max(power,
++								val->intval);
+ 		return axp20x_usb_power_set_current_max(power, val->intval);
+ 
+ 	default:
+@@ -468,6 +516,13 @@ struct axp_data {
+ 	enum axp20x_variants		axp20x_id;
+ };
+ 
++static const struct axp_data axp192_data = {
++	.power_desc	= &axp20x_usb_power_desc,
++	.irq_names	= axp20x_irq_names,
++	.num_irq_names	= ARRAY_SIZE(axp20x_irq_names),
++	.axp20x_id	= AXP192_ID,
++};
++
+ static const struct axp_data axp202_data = {
+ 	.power_desc	= &axp20x_usb_power_desc,
+ 	.irq_names	= axp20x_irq_names,
+@@ -600,7 +655,7 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 	if (ret)
  		return ret;
  
- 	switch (channel) {
- 	case AXP20X_GPIO0_V:
--		*val &= AXP20X_GPIO10_IN_RANGE_GPIO0;
-+		regval = FIELD_GET(AXP20X_GPIO10_IN_RANGE_GPIO0, regval);
- 		break;
+-	if (power->axp20x_id == AXP202_ID) {
++	if (power->axp20x_id == AXP192_ID || power->axp20x_id == AXP202_ID) {
+ 		/* Enable vbus valid checking */
+ 		ret = regmap_update_bits(power->regmap, AXP20X_VBUS_MON,
+ 					 AXP20X_VBUS_MON_VBUS_VALID,
+@@ -659,6 +714,9 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
  
- 	case AXP20X_GPIO1_V:
--		*val &= AXP20X_GPIO10_IN_RANGE_GPIO1;
-+		regval = FIELD_GET(AXP20X_GPIO10_IN_RANGE_GPIO1, regval);
- 		break;
- 
- 	default:
- 		return -EINVAL;
- 	}
- 
--	*val = *val ? 700000 : 0;
--
-+	*val = regval ? 700000 : 0;
- 	return IIO_VAL_INT;
- }
- 
-@@ -548,7 +554,7 @@ static int axp20x_write_raw(struct iio_dev *indio_dev,
- 			    long mask)
- {
- 	struct axp20x_adc_iio *info = iio_priv(indio_dev);
--	unsigned int reg, regval;
-+	unsigned int regmask, regval;
- 
- 	/*
- 	 * The AXP20X PMIC allows the user to choose between 0V and 0.7V offsets
-@@ -560,25 +566,24 @@ static int axp20x_write_raw(struct iio_dev *indio_dev,
- 	if (val != 0 && val != 700000)
- 		return -EINVAL;
- 
--	val = val ? 1 : 0;
-+	regval = val ? 1 : 0;
- 
- 	switch (chan->channel) {
- 	case AXP20X_GPIO0_V:
--		reg = AXP20X_GPIO10_IN_RANGE_GPIO0;
--		regval = AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(val);
-+		regmask = AXP20X_GPIO10_IN_RANGE_GPIO0;
-+		regval = FIELD_PREP(AXP20X_GPIO10_IN_RANGE_GPIO0, regval);
- 		break;
- 
- 	case AXP20X_GPIO1_V:
--		reg = AXP20X_GPIO10_IN_RANGE_GPIO1;
--		regval = AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(val);
-+		regmask = AXP20X_GPIO10_IN_RANGE_GPIO1;
-+		regval = FIELD_PREP(AXP20X_GPIO10_IN_RANGE_GPIO1, regval);
- 		break;
- 
- 	default:
- 		return -EINVAL;
- 	}
- 
--	return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE, reg,
--				  regval);
-+	return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE, regmask, regval);
- }
- 
- static const struct iio_info axp20x_adc_iio_info = {
+ static const struct of_device_id axp20x_usb_power_match[] = {
+ 	{
++		.compatible = "x-powers,axp192-usb-power-supply",
++		.data = &axp192_data,
++	}, {
+ 		.compatible = "x-powers,axp202-usb-power-supply",
+ 		.data = &axp202_data,
+ 	}, {
 -- 
 2.35.1
 
