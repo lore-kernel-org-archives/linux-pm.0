@@ -2,55 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D4DBCCA47E
-	for <linux-pm@archiver.kernel.org>; Sun, 19 Jun 2022 10:56:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE6B3C43334
+	for <linux-pm@archiver.kernel.org>; Sun, 19 Jun 2022 11:03:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233282AbiFSK4W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 19 Jun 2022 06:56:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34464 "EHLO
+        id S233799AbiFSLDc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 19 Jun 2022 07:03:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38884 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231238AbiFSK4V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2022 06:56:21 -0400
-Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 527A69594;
-        Sun, 19 Jun 2022 03:56:19 -0700 (PDT)
-Received: by mail-ed1-x529.google.com with SMTP id fd6so8724204edb.5;
-        Sun, 19 Jun 2022 03:56:19 -0700 (PDT)
+        with ESMTP id S229887AbiFSLDb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2022 07:03:31 -0400
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6079ABCB1;
+        Sun, 19 Jun 2022 04:03:30 -0700 (PDT)
+Received: by mail-ed1-x535.google.com with SMTP id p8so1241008edc.2;
+        Sun, 19 Jun 2022 04:03:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=m0ywi20rvMwf+A69ukm4ilfE8YyNyi5FpOBHrhUncaw=;
-        b=GgDe22l8dWchMEZivxKCfNnrK3RMHQzpIOUH/cLZX99uGyOuj9FedzgCkDKtnzCAgL
-         PPIpPLnjvAjJjF5tXNw70id9LeCLdDuJgovbQ9c8/FhEdFgda4ca+CjuqXFgaMlQLVEc
-         t8zW3pdf8llLHbVepVISWOJrgYY8/LWQa69pyu3Z0ja78Khz7AtV4te8thHdld7xfa9U
-         DOxG0WyksvGVrqDWi7LP55yTbAXi0oTEuc79yCfT9Nmnu2EZe3cdXMWN/DcbGplCWmWS
-         LVpmYK6NJdiM27S23BwdzKpMrwNmgCBWSUaCxaOxFKwIJztxgw6kSBuyZCmHE3/C4JOu
-         oaLw==
+        bh=iH9YiWKluS7r8EhqqGQoDhsnGXyBo36qoUVwRM2zGLY=;
+        b=J/Oxt9NqCQB7vE32FfxF+FWLksuzaDWZGsC9Hl6TA6d2ea3DmRLwTxMTeXgxR+CF0z
+         1VPObYA6cT2qN4lcylruVWmeLYRMpi2aG8kad48SGI3O9g1k63ZG3xSO5aMJIugDwz/g
+         gDrPEIZ7LStQGAhKxBv39ut9rGwXXJwW/4ug6lpq+ujaQ1rvy4cpbc41bzB5kkuoS7JK
+         Wt+/dsaZncwhVR/60kXgPaXqtn6OWq47Titxn+ElHUOuATWK+2YYgHZ2/vWBLIJy6grH
+         rwrteYOVcCJVnJcXPWyyMe0PiCI9BFqUzZCZxN5NLuVlABzF51WFUb9Nc7a0dqK1o0bV
+         CJkA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=m0ywi20rvMwf+A69ukm4ilfE8YyNyi5FpOBHrhUncaw=;
-        b=JcnavkxbAHHFac7EMECKvcDAWIwdL2ImbzlOQgpFanBezI7vMKaazhK3aEBNk5QllS
-         vgebwnGFHkL/ErteJ8IwrZIYY3BCNxRb5bvc49v7JsiENIiIRNjk8sQPEhRwOjDa3qCP
-         n4CkXCQLpBDXBq6zoa2wnW6PScZCUVPNlQ7In9q61Zy8FfS8xokoRknn0EZTYugdu0iw
-         QwhAsH0jG/g+h5yoYV2b1+fTzpoohwy3LGfKl5HzkwI0sM5o0TdboD/bpcRB1hw0zy5I
-         l1R1PullBafkBhQvrWcActxoy6KaImdb3//hgOieqx1i/NJ5gkBo4+IS2iFnQBa0broy
-         /QWw==
-X-Gm-Message-State: AJIora8IveTRoxvlAPgRznP52Y922Svzx+rvndMOXXRVpveYg+CHD1da
-        RjQyMQkk250ZPr7boH4i8ATsln1Yrtt69hrDFRY=
-X-Google-Smtp-Source: AGRyM1vCcmOfOZAgJE26JBD8dmE46Cj5ydNVR6OxyHO+aHgXjsRm1kFNmffTCwGvPKiUW6RcSC4gi6npztthWeg2oB8=
-X-Received: by 2002:a05:6402:11d2:b0:42d:e68a:eae0 with SMTP id
- j18-20020a05640211d200b0042de68aeae0mr23095268edw.111.1655636177910; Sun, 19
- Jun 2022 03:56:17 -0700 (PDT)
+        bh=iH9YiWKluS7r8EhqqGQoDhsnGXyBo36qoUVwRM2zGLY=;
+        b=iiHhjQZzwbuRuTe8z/OKhneXjRCrdV/DcyD2z9DHLy/ML8Mv7KNWpdKWUSZCNyLMG1
+         AIeSkt0ZLJbpIUvPz9V5rjRjcjrYWp1Ccuq4vQIeloezpY6tU3R57WWiy73XgGXjxcgX
+         S+uBRwq62bdDYcn1lOn91hkdj5YDoioLIhTxcwvg5Z706m95IW7BWYkiAl4A6pyzk0hZ
+         XQIGMGHXbcaExfKfGldSK4ojcaA7yaCRBEyYbOOPmDxIwKkZRa8MNFaiYPegrA6aUmgC
+         CKKhl4O1gu1vUguPjpquedFbuCxqNC5LCixHgrWlEZFKvfOiLf8f/Q7tpK6JZdFWkze4
+         RpAg==
+X-Gm-Message-State: AJIora+n6FqFLFQFNoE7N6NwwI+1UXjOt0KD3MqRfyUHzRBiRorBKbPm
+        ExCSijXLkVONNzYXRm+4wXBXtPVUUmWkram3bjU=
+X-Google-Smtp-Source: AGRyM1ufQsqNszSusF3NpIULBftOTax3t39ZyIOxU0KfXQnbLw7OZBm5dwhDi7V2fIRBaf7QNMQMXl1Pcze53OuSmxQ=
+X-Received: by 2002:a05:6402:f8d:b0:435:6df2:68a with SMTP id
+ eh13-20020a0564020f8d00b004356df2068amr8621835edb.209.1655636608887; Sun, 19
+ Jun 2022 04:03:28 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com> <20220618214009.2178567-12-aidanmacdonald.0x0@gmail.com>
-In-Reply-To: <20220618214009.2178567-12-aidanmacdonald.0x0@gmail.com>
+References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com> <20220618214009.2178567-13-aidanmacdonald.0x0@gmail.com>
+In-Reply-To: <20220618214009.2178567-13-aidanmacdonald.0x0@gmail.com>
 From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Sun, 19 Jun 2022 12:55:41 +0200
-Message-ID: <CAHp75VcMRAijXYGwVx8OPzMeafjT4Xa8rx_pRqRTs66Puw8qMA@mail.gmail.com>
-Subject: Re: [PATCH v3 11/16] iio: adc: axp20x_adc: Add support for AXP192
+Date:   Sun, 19 Jun 2022 13:02:52 +0200
+Message-ID: <CAHp75VfgeCExmPto-9-Yfe1W=KfUdv=h+PK9vajp+aQ17vCGPg@mail.gmail.com>
+Subject: Re: [PATCH v3 12/16] power: supply: axp20x_usb_power: Add support for AXP192
 To:     Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
 Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Bartosz Golaszewski <brgl@bgdev.pl>,
@@ -80,59 +80,53 @@ X-Mailing-List: linux-pm@vger.kernel.org
 On Sat, Jun 18, 2022 at 11:40 PM Aidan MacDonald
 <aidanmacdonald.0x0@gmail.com> wrote:
 >
-> The AXP192 is identical to the AXP20x, except for the addition of
-> two more GPIO ADC channels.
+> The AXP192 is mostly the same as the AXP202 but has a different
+> current limit.
 
 ...
 
-> +static int axp192_write_raw(struct iio_dev *indio_dev,
-> +                           struct iio_chan_spec const *chan, int val, int val2,
-> +                           long mask)
+> +       int ret = regmap_read(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, &v);
+> +
+> +       if (ret)
+> +               return ret;
+
+Please, split assignment, so it will be like
+
+  int ret;
+
+  ret = ...
+  if (ret)
+
+...
+
+> +static int axp192_usb_power_set_current_max(struct axp20x_usb_power *power,
+> +                                           int intval)
 > +{
-> +       struct axp20x_adc_iio *info = iio_priv(indio_dev);
-> +       unsigned int regmask, regval;
+> +       int val = AXP192_VBUS_CLIMIT_EN;
+> +       const int mask = AXP192_VBUS_CLIMIT_EN | AXP192_VBUS_CLIMIT_100mA;
 > +
-> +       /*
-> +        * The AXP192 PMIC allows the user to choose between 0V and 0.7V offsets
-> +        * for (independently) GPIO0-3 when in ADC mode.
-> +        */
-> +       if (mask != IIO_CHAN_INFO_OFFSET)
-> +               return -EINVAL;
-> +
-> +       if (val != 0 && val != 700000)
-> +               return -EINVAL;
+> +       switch (intval) {
+> +       case 100000:
+> +               val |= AXP192_VBUS_CLIMIT_100mA;
 
-> +       regval = val ? 1 : 0;
-> +
+> +               fallthrough;
 
-As per comment against the previous patch use !!val directly?
+It's harder to part and error prone, can't you simply call a
+regmap_update_bits with different arguments?
 
-> +       switch (chan->channel) {
-> +       case AXP192_GPIO0_V:
-> +               regmask = AXP192_GPIO30_IN_RANGE_GPIO0;
-> +               regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO0, regval);
-> +               break;
-> +
-> +       case AXP192_GPIO1_V:
-> +               regmask = AXP192_GPIO30_IN_RANGE_GPIO1;
-> +               regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO1, regval);
-> +               break;
-> +
-> +       case AXP192_GPIO2_V:
-> +               regmask = AXP192_GPIO30_IN_RANGE_GPIO2;
-> +               regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO2, regval);
-> +               break;
-> +
-> +       case AXP192_GPIO3_V:
-> +               regmask = AXP192_GPIO30_IN_RANGE_GPIO3;
-> +               regval = FIELD_PREP(AXP192_GPIO30_IN_RANGE_GPIO3, regval);
-> +               break;
-> +
+With this suggestion consider the defaults like these:
+
+      const int mask = AXP192_VBUS_CLIMIT_EN | AXP192_VBUS_CLIMIT_100mA;
+      int val = mask;
+
+Then use  val & ~AXP192_VBUS_CLIMIT_100mA in the below case.
+
+> +       case 500000:
+> +               return regmap_update_bits(power->regmap,
+> +                                         AXP20X_VBUS_IPSOUT_MGMT, mask, val);
 > +       default:
 > +               return -EINVAL;
 > +       }
-> +
-> +       return regmap_update_bits(info->regmap, AXP192_GPIO30_IN_RANGE, regmask, regval);
 > +}
 
 -- 
