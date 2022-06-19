@@ -2,133 +2,78 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE6B3C43334
-	for <linux-pm@archiver.kernel.org>; Sun, 19 Jun 2022 11:03:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 202B9CCA480
+	for <linux-pm@archiver.kernel.org>; Sun, 19 Jun 2022 11:04:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233799AbiFSLDc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 19 Jun 2022 07:03:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38884 "EHLO
+        id S235879AbiFSLED (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 19 Jun 2022 07:04:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39286 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229887AbiFSLDb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2022 07:03:31 -0400
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6079ABCB1;
-        Sun, 19 Jun 2022 04:03:30 -0700 (PDT)
-Received: by mail-ed1-x535.google.com with SMTP id p8so1241008edc.2;
-        Sun, 19 Jun 2022 04:03:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=iH9YiWKluS7r8EhqqGQoDhsnGXyBo36qoUVwRM2zGLY=;
-        b=J/Oxt9NqCQB7vE32FfxF+FWLksuzaDWZGsC9Hl6TA6d2ea3DmRLwTxMTeXgxR+CF0z
-         1VPObYA6cT2qN4lcylruVWmeLYRMpi2aG8kad48SGI3O9g1k63ZG3xSO5aMJIugDwz/g
-         gDrPEIZ7LStQGAhKxBv39ut9rGwXXJwW/4ug6lpq+ujaQ1rvy4cpbc41bzB5kkuoS7JK
-         Wt+/dsaZncwhVR/60kXgPaXqtn6OWq47Titxn+ElHUOuATWK+2YYgHZ2/vWBLIJy6grH
-         rwrteYOVcCJVnJcXPWyyMe0PiCI9BFqUzZCZxN5NLuVlABzF51WFUb9Nc7a0dqK1o0bV
-         CJkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=iH9YiWKluS7r8EhqqGQoDhsnGXyBo36qoUVwRM2zGLY=;
-        b=iiHhjQZzwbuRuTe8z/OKhneXjRCrdV/DcyD2z9DHLy/ML8Mv7KNWpdKWUSZCNyLMG1
-         AIeSkt0ZLJbpIUvPz9V5rjRjcjrYWp1Ccuq4vQIeloezpY6tU3R57WWiy73XgGXjxcgX
-         S+uBRwq62bdDYcn1lOn91hkdj5YDoioLIhTxcwvg5Z706m95IW7BWYkiAl4A6pyzk0hZ
-         XQIGMGHXbcaExfKfGldSK4ojcaA7yaCRBEyYbOOPmDxIwKkZRa8MNFaiYPegrA6aUmgC
-         CKKhl4O1gu1vUguPjpquedFbuCxqNC5LCixHgrWlEZFKvfOiLf8f/Q7tpK6JZdFWkze4
-         RpAg==
-X-Gm-Message-State: AJIora+n6FqFLFQFNoE7N6NwwI+1UXjOt0KD3MqRfyUHzRBiRorBKbPm
-        ExCSijXLkVONNzYXRm+4wXBXtPVUUmWkram3bjU=
-X-Google-Smtp-Source: AGRyM1ufQsqNszSusF3NpIULBftOTax3t39ZyIOxU0KfXQnbLw7OZBm5dwhDi7V2fIRBaf7QNMQMXl1Pcze53OuSmxQ=
-X-Received: by 2002:a05:6402:f8d:b0:435:6df2:68a with SMTP id
- eh13-20020a0564020f8d00b004356df2068amr8621835edb.209.1655636608887; Sun, 19
- Jun 2022 04:03:28 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com> <20220618214009.2178567-13-aidanmacdonald.0x0@gmail.com>
-In-Reply-To: <20220618214009.2178567-13-aidanmacdonald.0x0@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Sun, 19 Jun 2022 13:02:52 +0200
-Message-ID: <CAHp75VfgeCExmPto-9-Yfe1W=KfUdv=h+PK9vajp+aQ17vCGPg@mail.gmail.com>
-Subject: Re: [PATCH v3 12/16] power: supply: axp20x_usb_power: Add support for AXP192
+        with ESMTP id S229887AbiFSLEC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2022 07:04:02 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AE57BCBE;
+        Sun, 19 Jun 2022 04:04:02 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id D4C80B80D04;
+        Sun, 19 Jun 2022 11:04:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24563C3411D;
+        Sun, 19 Jun 2022 11:03:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1655636639;
+        bh=NyJ9oyPNTS80bztKxBL5sptjF53mN0YaU+jzJib7WFk=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=K70C/KAJIrkBixxWyU16KDS7uQRP01BsI/4Nc9NLVKR8pjAx1E8Zjgu3/FOheifBX
+         4XSRYcoy1mDX98KBQcBVIhiLoFE7J/Al0VNLFKiKf8X5IdNdPUP/3IsX5333W3R6hs
+         Ihqkpn8t2I4hArbOjD9HOJRKcy2qJvFE8Lv/P6fmfzWpPdZ/4ikbX0uRgG931flREp
+         WMUkUQssbuv3S3G1OiZq0jg9oPvwMGrQ7+p+GUXZP4SXVKPlVr2enI09fExQNTexMn
+         Wk3PnDFWCpM5bE4o+v7dkfR2S8Z5xUjQ3cY0PIjT9ZWgR1lI6OSdizT6oGi7ocUI7y
+         OuS/cKzzgjSig==
+Date:   Sun, 19 Jun 2022 12:13:15 +0100
+From:   Jonathan Cameron <jic23@kernel.org>
 To:     Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
-Cc:     Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, quic_gurus@quicinc.com,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Michael Walle <michael@walle.cc>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Cc:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, wens@csie.org,
+        lee.jones@linaro.org, sre@kernel.org, broonie@kernel.org,
+        gregkh@linuxfoundation.org, lgirdwood@gmail.com, lars@metafoo.de,
+        rafael@kernel.org, quic_gurus@quicinc.com,
+        sebastian.reichel@collabora.com, andy.shevchenko@gmail.com,
+        michael@walle.cc, linux-gpio@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 11/16] iio: adc: axp20x_adc: Add support for AXP192
+Message-ID: <20220619121315.203a709b@jic23-huawei>
+In-Reply-To: <20220618214009.2178567-12-aidanmacdonald.0x0@gmail.com>
+References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com>
+        <20220618214009.2178567-12-aidanmacdonald.0x0@gmail.com>
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Jun 18, 2022 at 11:40 PM Aidan MacDonald
-<aidanmacdonald.0x0@gmail.com> wrote:
->
-> The AXP192 is mostly the same as the AXP202 but has a different
-> current limit.
+On Sat, 18 Jun 2022 22:40:04 +0100
+Aidan MacDonald <aidanmacdonald.0x0@gmail.com> wrote:
 
-...
+> The AXP192 is identical to the AXP20x, except for the addition of
+> two more GPIO ADC channels.
+> 
+> Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+Hi Aidan,
 
-> +       int ret = regmap_read(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, &v);
-> +
-> +       if (ret)
-> +               return ret;
+Looking at this again, I'd have a slight preference for doing the switch to
+adc_en2_mask as a precursor patch.
 
-Please, split assignment, so it will be like
+Still, not a big thing (and I should have raised it earlier!) so up to you.
+Either way
 
-  int ret;
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-  ret = ...
-  if (ret)
+Thanks,
 
-...
+Jonathan
 
-> +static int axp192_usb_power_set_current_max(struct axp20x_usb_power *power,
-> +                                           int intval)
-> +{
-> +       int val = AXP192_VBUS_CLIMIT_EN;
-> +       const int mask = AXP192_VBUS_CLIMIT_EN | AXP192_VBUS_CLIMIT_100mA;
-> +
-> +       switch (intval) {
-> +       case 100000:
-> +               val |= AXP192_VBUS_CLIMIT_100mA;
-
-> +               fallthrough;
-
-It's harder to part and error prone, can't you simply call a
-regmap_update_bits with different arguments?
-
-With this suggestion consider the defaults like these:
-
-      const int mask = AXP192_VBUS_CLIMIT_EN | AXP192_VBUS_CLIMIT_100mA;
-      int val = mask;
-
-Then use  val & ~AXP192_VBUS_CLIMIT_100mA in the below case.
-
-> +       case 500000:
-> +               return regmap_update_bits(power->regmap,
-> +                                         AXP20X_VBUS_IPSOUT_MGMT, mask, val);
-> +       default:
-> +               return -EINVAL;
-> +       }
-> +}
-
--- 
-With Best Regards,
-Andy Shevchenko
