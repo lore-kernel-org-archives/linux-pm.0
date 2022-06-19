@@ -2,38 +2,57 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCFE1CCA481
-	for <linux-pm@archiver.kernel.org>; Sun, 19 Jun 2022 11:08:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6E79C43334
+	for <linux-pm@archiver.kernel.org>; Sun, 19 Jun 2022 11:12:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235605AbiFSLIj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 19 Jun 2022 07:08:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42178 "EHLO
+        id S236187AbiFSLMv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 19 Jun 2022 07:12:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236085AbiFSLIb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2022 07:08:31 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33308DEC8;
-        Sun, 19 Jun 2022 04:08:30 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id BE0F961028;
-        Sun, 19 Jun 2022 11:08:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7D8FC34114;
-        Sun, 19 Jun 2022 11:08:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1655636909;
-        bh=ppU4IV4ruC5TwuyCf8TpWzcaTFcnjt9ppKTnTsjRMu8=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=X0yjXgKI7640P/jvlI67KMiZbIdwPKxxuhLqam+dauwFP5qsVrfFylVkcARd/P8mH
-         GBk8xwpKWk/72SekB0+nuCloj1DqazltHMkF+DE/DPZ1YlrSb4aLbQZGHqeaenztJP
-         AeRL3fhFnkvmXr7k88xI8noeQk/3uWwMVjVf+Sp9OnuPOp3LKWVhLUWsGEb9X55IA9
-         b+nKgwCzTSGohlm8yM3hneIHYM7UT2r2mQBQBhOFYXVA3JeXZBH3RmopjovaasTxNq
-         H+2KsdtKU7VqAaCF+V6z5tIWUGmfZot5037cDbgFQ1TiFivBuRbsv4v3EMB9wWJBjO
-         7djr7qmjcno2g==
-Date:   Sun, 19 Jun 2022 12:17:43 +0100
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+        with ESMTP id S236076AbiFSLMu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2022 07:12:50 -0400
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09447BF2;
+        Sun, 19 Jun 2022 04:12:48 -0700 (PDT)
+Received: by mail-ed1-x52b.google.com with SMTP id z11so5354404edp.9;
+        Sun, 19 Jun 2022 04:12:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=065h+KQsfVelWa30bCNnk4G+lWtioBc+KPUalxR/LAM=;
+        b=OMoN9genkSzO9y8Nb05x9N8A7WJYU9SdAsX6JW1jpqFcnUoJVilI9dQXdooNEuh96E
+         VCOwg1huVghpDAajPoxForq9L/CwVkY+76VLQGbxEwqk7lkQd1B++elmRU8vkuZhST4t
+         BcYa0gv3VkumqkjqNd8lUzIlABUsqGlKjLJwnpMmngExeawBpirNtf+ZXYmmoiyg9h8I
+         baUUEY83mjf4i58n0l4aOXtEZOX6dsvJmkpg8uOcLRcc7a20WbNGLW2BJ4meT/SbZdWe
+         OHKiZcqJ4Nw5VWPtY1qnaAKTV2rjBf5fKx0xY0w8NWc5MmZEA+xqQxi2U/7BSAKpKTL4
+         M0KQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=065h+KQsfVelWa30bCNnk4G+lWtioBc+KPUalxR/LAM=;
+        b=7o/7hWTDZTouKuaX8kTmF+5KNhU1gQmgA05AR+NrtJcfQlFlttCUp+mCt6UrDDQdSn
+         g2AR4N9MXhjprqqTataUpNC54rEsSPMMxTAkmhPxn7/yBSLZdkMpdr18BL347/0Y1MIK
+         7pTMsyOVeKiBct+SRgnebjKO5IYV0jHcA5a5NDMI7JJrTBRyHAEKgCuAH/NvOOeoJvoU
+         m2j4wSDTOCBsRKe6uhRC51GFCoKIVnBGLxftdUhaRvs+LbbFTDxPPMy028K18yengw5d
+         HB0oGwySC0TZ6krphOojBFJYLBJwD6kc20GcE4XhX353UhlHg/NuSQAKs685+vEgE0t+
+         7BXg==
+X-Gm-Message-State: AJIora94zwY5wFIHvJfaHgLbd+z+UAVbL7nUhPDSw7Vt5zI0pk4udc6S
+        erQql/0Shqjm6ykOo8lC4YU/i8Hf7YwjaOxPJHI=
+X-Google-Smtp-Source: AGRyM1saLcudqsFi+QL9+2JCvTmt70ofdrGj+8I24+9oRFl8UZipNSZ5l0QcqeD8924ga8iLWxJEAoF46ErZLkcnGWc=
+X-Received: by 2002:aa7:d29a:0:b0:435:705f:1319 with SMTP id
+ w26-20020aa7d29a000000b00435705f1319mr7575701edq.54.1655637166579; Sun, 19
+ Jun 2022 04:12:46 -0700 (PDT)
+MIME-Version: 1.0
+References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com>
+ <CAHp75VfrzQFq4u0vMtPM7LRYNcQQC-padQ1yyFijbpWx8_LwBQ@mail.gmail.com> <20220619121743.2b259153@jic23-huawei>
+In-Reply-To: <20220619121743.2b259153@jic23-huawei>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Sun, 19 Jun 2022 13:12:09 +0200
+Message-ID: <CAHp75VcG-rkyJ6Sy_ya5Asrzp1hBAofY1qvK+o4iue=FmNGXxA@mail.gmail.com>
+Subject: Re: [PATCH v3 00/16] Add support for AXP192 PMIC
+To:     Jonathan Cameron <jic23@kernel.org>
 Cc:     Aidan MacDonald <aidanmacdonald.0x0@gmail.com>,
         "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
         "brgl@bgdev.pl" <brgl@bgdev.pl>,
@@ -56,138 +75,39 @@ Cc:     Aidan MacDonald <aidanmacdonald.0x0@gmail.com>,
         "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
         "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>,
         "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v3 00/16] Add support for AXP192 PMIC
-Message-ID: <20220619121743.2b259153@jic23-huawei>
-In-Reply-To: <CAHp75VfrzQFq4u0vMtPM7LRYNcQQC-padQ1yyFijbpWx8_LwBQ@mail.gmail.com>
-References: <20220618214009.2178567-1-aidanmacdonald.0x0@gmail.com>
-        <CAHp75VfrzQFq4u0vMtPM7LRYNcQQC-padQ1yyFijbpWx8_LwBQ@mail.gmail.com>
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 19 Jun 2022 00:43:07 +0200
-Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
+On Sun, Jun 19, 2022 at 1:08 PM Jonathan Cameron <jic23@kernel.org> wrote:
+> On Sun, 19 Jun 2022 00:43:07 +0200
+> Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
+> > On Saturday, June 18, 2022, Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+> > wrote:
+> >
+> > > Changes in v3:
+> > >
+> > > * Update pinctrl driver to address Andy Shevchenko's review comments
+> > >   from v1, and fix a few other
+> >
+> > I believe I gave more comments than just against pin control driver. Even
+> > though, some comments are still not addressed in the series, including pin
+> > control. Am I mistaken?
+>
+> Hi Andy,
+>
+> Maybe, it's a question of clarity/misunderstanding? You had some 'global' comments
+> at the end of the pinctrl review. Perhaps not clear enough you meant
+> they should apply to the rest of the patch series (and more generally to
+> the driver being modified I think).
 
-> On Saturday, June 18, 2022, Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
-> wrote:
-> 
-> > Changes in v3:
-> >
-> > * Update pinctrl driver to address Andy Shevchenko's review comments
-> >   from v1, and fix a few other  
-> 
-> 
-> I believe I gave more comments than just against pin control driver. Even
-> though, some comments are still not addressed in the series, including pin
-> control. Am I mistaken?
+Yeah, I think that is.
+I don't remember if we have somewhere a documentation on how to
+respond to the review comments, in which the point of addressing
+comment everywhere in the series, and not only in the place(s) where
+it was given.
 
-Hi Andy,
-
-Maybe, it's a question of clarity/misunderstanding? You had some 'global' comments
-at the end of the pinctrl review. Perhaps not clear enough you meant
-they should apply to the rest of the patch series (and more generally to
-the driver being modified I think).
-
-Just guessing!
-
-Jonathan
-
-> 
-> 
-> > * Add gpio-ranges property and example snippet to gpio DT bindings.
-> > * Update commit message of patch 01/16 to point out that all register
-> >   addresses are obtained using sub_irq_reg().
-> > * Document ccc_table in axp20x_battery. Also update commit message to
-> >   note a small fix that is part of that patch.
-> > * Drop axp20x_adc consolidation patch in favor of using separate adc_raw
-> >   functions. It's a minor code size optimization that may not be worth
-> >   the effort due to implementation complexity.
-> > * Use the FIELD_GET macro in axp20x_adc to further clarify intent.
-> > * Fix a typo in the regulator driver where an AXP20X regulator ID was
-> >   mistakenly used instead of an AXP192 regulator ID. Also carry over
-> >   an Acked-by: tag from v1. Hope that's okay.
-> > * Accumulate Acked-by: tags from v1 on DT patches.
-> > * Accumulate Acked-by: tags from v2.
-> >
-> > Note that regmap maintainer Mark Brown has said the first two patches to
-> > regmap-irq aren't suitable for inclusion into the kernel in their current
-> > state. I'm including them for v3 so the series remains testable.
-> >
-> > Changes in v2:
-> >
-> > * Do a little cleanup of axp20x_adc suggested by Jonathan Cameron
-> > * Consolidate ADC read functions in axp20x_adc
-> > * Drop the axp192's read_label callback in axp20x_adc
-> > * Clean up the axp192-gpio dt bindings
-> > * Rewrite a problematic bit of code in axp20x_usb_power reported
-> >   by kernel test robot
-> > * Support AXP192 in axp20x_battery
-> > * Split up regmap-irq changes to two separate patches
-> >
-> > Cover letter from v1:
-> >
-> > Hi all,
-> >
-> > This patch series adds support for the X-Powers AXP192 PMIC to the
-> > AXP20x driver framework.
-> >
-> > The first patch is a small change to regmap-irq to support the AXP192's
-> > unusual IRQ register layout. It isn't possible to include all of the
-> > IRQ registers in one regmap-irq chip without this.
-> >
-> > The rest of the changes are pretty straightforward, I think the only
-> > notable parts are the axp20x_adc driver where there seems to be some
-> > opportunities for code reuse (the axp192 is nearly a duplicate of the
-> > axp20x) and the addition of a new pinctrl driver for the axp192, since
-> > the axp20x pinctrl driver was not very easy to adapt.
-> >
-> > Aidan MacDonald (16):
-> >   regmap-irq: Use sub_irq_reg() to calculate unmask register address
-> >   regmap-irq: Add get_irq_reg to support unusual register layouts
-> >   dt-bindings: mfd: add bindings for AXP192 MFD device
-> >   dt-bindings: iio: adc: axp209: Add AXP192 compatible
-> >   dt-bindings: power: supply: axp20x: Add AXP192 compatible
-> >   dt-bindings: gpio: Add AXP192 GPIO bindings
-> >   dt-bindings: power: axp20x-battery: Add AXP192 compatible
-> >   mfd: axp20x: Add support for AXP192
-> >   regulator: axp20x: Add support for AXP192
-> >   iio: adc: axp20x_adc: Minor code cleanups
-> >   iio: adc: axp20x_adc: Add support for AXP192
-> >   power: supply: axp20x_usb_power: Add support for AXP192
-> >   pinctrl: Add AXP192 pin control driver
-> >   power: axp20x_battery: Add constant charge current table
-> >   power: axp20x_battery: Support battery status without fuel gauge
-> >   power: axp20x_battery: Add support for AXP192
-> >
-> >  .../bindings/gpio/x-powers,axp192-gpio.yaml   |  68 +++
-> >  .../bindings/iio/adc/x-powers,axp209-adc.yaml |  18 +
-> >  .../bindings/mfd/x-powers,axp152.yaml         |   1 +
-> >  .../x-powers,axp20x-battery-power-supply.yaml |   1 +
-> >  .../x-powers,axp20x-usb-power-supply.yaml     |   1 +
-> >  drivers/base/regmap/regmap-irq.c              |  19 +-
-> >  drivers/iio/adc/axp20x_adc.c                  | 359 +++++++++--
-> >  drivers/mfd/axp20x-i2c.c                      |   2 +
-> >  drivers/mfd/axp20x.c                          | 153 +++++
-> >  drivers/pinctrl/Kconfig                       |  14 +
-> >  drivers/pinctrl/Makefile                      |   1 +
-> >  drivers/pinctrl/pinctrl-axp192.c              | 562 ++++++++++++++++++
-> >  drivers/power/supply/axp20x_battery.c         | 143 ++++-
-> >  drivers/power/supply/axp20x_usb_power.c       |  80 ++-
-> >  drivers/regulator/axp20x-regulator.c          | 101 +++-
-> >  include/linux/mfd/axp20x.h                    |  84 +++
-> >  include/linux/regmap.h                        |   5 +
-> >  17 files changed, 1529 insertions(+), 83 deletions(-)
-> >  create mode 100644 Documentation/devicetree/
-> > bindings/gpio/x-powers,axp192-gpio.yaml
-> >  create mode 100644 drivers/pinctrl/pinctrl-axp192.c
-> >
-> > --
-> > 2.35.1
-> >
-> >  
-> 
-
+-- 
+With Best Regards,
+Andy Shevchenko
