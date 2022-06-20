@@ -2,264 +2,234 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1751CCA480
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jun 2022 16:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9583C43334
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jun 2022 16:44:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242488AbiFTQck (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Jun 2022 12:32:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51652 "EHLO
+        id S243338AbiFTQoj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Jun 2022 12:44:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58716 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231756AbiFTQcg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2022 12:32:36 -0400
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2081.outbound.protection.outlook.com [40.107.237.81])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C6DA18E20;
-        Mon, 20 Jun 2022 09:32:33 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=flDV1AZMbTkp6MKF8iQpeXO3a/m/mfi1wdHLezwwcWI4NKqRFf0WA2kkU11AT0iG+rUhJjgygw8H1lalN2D0W4g02IaahccCAH1loIptZVDEj2krLSMtTFscWleNj4+eW8DOrukQIuOSRIumMvAuPk6EoMju7tbCzwIkAx7FOZAWrbLsnKocj1n75xOOHH3UB5/DxDzKiLjT/2Wkr2yTW8xshUCt7mV55S0QCgnZny37F0BUSR20rtpK4LcvrQv1Jo5DIgXNcbfSDBapuB4iM8Xem1toLa+rQj4bbxIzjr4WExIgPli7IsqJxoH4b6x0rEZBNcxQ7qGOrG48ChrrVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HMGPrFRXbanDkx2BKEi7lAJrTNSHqApNKWkgZde3FOM=;
- b=Kc0Y7nOw0lpnfarQQjGPHPRe3AuXCs3qnmy4KNdrHABSHbD18QoQ5FRZj113g4Aurk2CV9wIOwEAD8l5+5paQBct6lqGvDoCozsqpB9hL15h6R5qKcNLOzHmubXGZvSuDrZrMTiHQXSQA+9dGAJIS6W5LimqjpqRu2q3g7E4jKiA0IEWUr1R5bqsoCv49kAGQ1kquRKyh2H7ghICcYE+jfDCQGVGVY3tlpkc2tNWWPVIpOra4IS4Zzi6mZSCDvyYbP2WGl0vZ+qjxMG6g8qgJvfKDkLF8w+IEO6uLN57zuaGIeInxnOD7TuGFSuz4IO1iXKguXngFmMsQd847SBu7g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HMGPrFRXbanDkx2BKEi7lAJrTNSHqApNKWkgZde3FOM=;
- b=Y5bGmzQkaPpw6GnuJ2LblyodSScaL7n6C+i9x6aBHUUZuwq0MPHK7SWaZ/TotIyh2RIlxVnnxXu+Blc+uMRWm0fEQ5ehgjhY40ErM9btWp8700Uhu5WtQTW/IpeQ7OGMTusKR8BVP7af0qssmX6id/srXSCS/lL2507k+Le50HE=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from MN0PR12MB6101.namprd12.prod.outlook.com (2603:10b6:208:3cb::10)
- by DM6PR12MB3338.namprd12.prod.outlook.com (2603:10b6:5:11f::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5353.19; Mon, 20 Jun
- 2022 16:32:23 +0000
-Received: from MN0PR12MB6101.namprd12.prod.outlook.com
- ([fe80::1143:10a5:987a:7598]) by MN0PR12MB6101.namprd12.prod.outlook.com
- ([fe80::1143:10a5:987a:7598%5]) with mapi id 15.20.5353.016; Mon, 20 Jun 2022
- 16:32:23 +0000
-Message-ID: <88344644-44e1-0089-657a-2e34316ea4b4@amd.com>
-Date:   Mon, 20 Jun 2022 11:32:18 -0500
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH 1/2] x86: notify hypervisor about guest entering s2idle
- state
-Content-Language: en-US
-To:     Grzegorz Jaszczyk <jaz@semihalf.com>,
-        Sean Christopherson <seanjc@google.com>
-Cc:     linux-kernel@vger.kernel.org, Dmytro Maluka <dmy@semihalf.com>,
-        Zide Chen <zide.chen@intel.corp-partner.google.com>,
-        Peter Fang <peter.fang@intel.corp-partner.google.com>,
-        Tomasz Nowicki <tn@semihalf.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Vitaly Kuznetsov <vkuznets@redhat.com>,
-        Wanpeng Li <wanpengli@tencent.com>,
-        Jim Mattson <jmattson@google.com>,
-        Joerg Roedel <joro@8bytes.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Ashish Kalra <ashish.kalra@amd.com>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Sachi King <nakato@nakato.io>,
-        Arnaldo Carvalho de Melo <acme@redhat.com>,
-        David Dunn <daviddunn@google.com>,
-        Wei Wang <wei.w.wang@intel.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        "open list:ACPI" <linux-acpi@vger.kernel.org>,
-        "open list:HIBERNATION (aka Software Suspend, aka swsusp)" 
-        <linux-pm@vger.kernel.org>, Dominik Behr <dbehr@google.com>,
-        Dmitry Torokhov <dtor@google.com>
-References: <20220609110337.1238762-1-jaz@semihalf.com>
- <20220609110337.1238762-2-jaz@semihalf.com> <YqIJ8HtdqnoVzfQD@google.com>
- <CAH76GKNRDXAyGYvs2ji5Phu=5YPW8+SV8-6TLjizBRzTCnEROg@mail.gmail.com>
- <YqNVYz4+yVbWnmNv@google.com>
- <CAH76GKNSfaHwpy46r1WWTVgnsuijqcHe=H5nvUTUUs1UbdZvkQ@mail.gmail.com>
- <Yqtez/J540yD7VdD@google.com> <2201fe5f-5bd8-baaf-aad5-eaaea2f1e20e@amd.com>
- <CAH76GKP=2wu4+eqLCFu1F5a4rHhReUT_7N89K8xbO-gSqEQ-3w@mail.gmail.com>
-From:   "Limonciello, Mario" <mario.limonciello@amd.com>
-In-Reply-To: <CAH76GKP=2wu4+eqLCFu1F5a4rHhReUT_7N89K8xbO-gSqEQ-3w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: BL1PR13CA0347.namprd13.prod.outlook.com
- (2603:10b6:208:2c6::22) To MN0PR12MB6101.namprd12.prod.outlook.com
- (2603:10b6:208:3cb::10)
+        with ESMTP id S241122AbiFTQo3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2022 12:44:29 -0400
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC8AA13D28
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2022 09:44:26 -0700 (PDT)
+Received: by mail-ej1-x62d.google.com with SMTP id n20so15480652ejz.10
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2022 09:44:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=zOvxPYyfFpXuLlQu08wcT2FJT3L01kNfiiQIBNw39Hs=;
+        b=LPl5Ty5Pxvqg1BSKntIkfTv2Vm4j7b0GOdectZe5G6pjr8YSBtae98r1Y0CLMQmpqG
+         Y6yfZ+ref1sWs8GXbLtdWVbb7Y9q2lwRjFYy/7FxysjuCv9gUrsyGZQ3KYIZX2mRH00O
+         btqRvlgtxqsXhshfdDKkQ1ZHM0asNYcu6O+BhQYGPs90IqYR0Ao8w2Lzr/OVHWGUOtU4
+         30unwZRJO8CB9VyRPemhjPqOu/IUZ5hXJWtD4NIh5up5krnYgANO2MX8Eh7IwDYBUSd5
+         kzcvrUvbeGMzEt81BYorI899zXHKATBUF1BZDLDl/YoOvXlCUxM4zQ2kxjzU8dI+CREO
+         r+yA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=zOvxPYyfFpXuLlQu08wcT2FJT3L01kNfiiQIBNw39Hs=;
+        b=QxuDzUwdBZ3cOt86g0kh4I3gkuRnr9NEkxOPDi60SZjE5pbLXs+M0HTkhu1f/z8sVz
+         8w9py7NRkxjU8CVG06cR6TXN1zit/mkPpRNBnDT+obyIpYwQjkRfx/WbcJ0ct4//CfXm
+         tcdaRqE3sdUFjXmX5QhEc/a3LwaksUspzR/whxHBz6C4axEJ0gNBJHjqrBqklCRHUi7E
+         XVD+KXaZBwE3+bWZ5tMTAsLX79qelRJQr0k/wtG3C6d7x4kRN0QWoMlt9rMc4ptNYiBK
+         zNp/IrAsRlzqdl6qKwHZdNb+5ldcfT7kbjMElpYXn6D0qpoj5DYHunXozISyZH4UG8i6
+         D9zg==
+X-Gm-Message-State: AJIora+vC53dPoaN7zCuy6hok/bUt8NLk/paI8WHUINJrbG2Gbf4WDMJ
+        BixqUxRVJYkybIWGqTc7n7ivpw==
+X-Google-Smtp-Source: AGRyM1uEPgpX46LVFCkiINaElVOJSQ5K9oX9/OGgzP4xN+TVlIGYPiSReyQkDJdHkA0JtO22GW4d7Q==
+X-Received: by 2002:a17:906:7786:b0:712:3c92:4335 with SMTP id s6-20020a170906778600b007123c924335mr21395593ejm.610.1655743465334;
+        Mon, 20 Jun 2022 09:44:25 -0700 (PDT)
+Received: from [192.168.0.210] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id w13-20020a170906480d00b00704b196e59bsm6237746ejq.185.2022.06.20.09.44.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 20 Jun 2022 09:44:24 -0700 (PDT)
+Message-ID: <66ba39e3-5462-59c7-3831-20ba3ceed43b@linaro.org>
+Date:   Mon, 20 Jun 2022 18:44:23 +0200
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 98c7583e-0b88-4b7d-2321-08da52da73e1
-X-MS-TrafficTypeDiagnostic: DM6PR12MB3338:EE_
-X-Microsoft-Antispam-PRVS: <DM6PR12MB3338B6AFF569D432180E6FD3E2B09@DM6PR12MB3338.namprd12.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: BNrU3dHLtS7l+mNtlwm6KyehnRUE/7mK6s5z3kpSkBcFE3Gh0mTMxLvRspqIld/49A1pXtZmn2hXes3W75I9nL0aGLIJBnGcaB1rYydat5G6KAYjUAfUBQQydtmZCO3J/LC0trm5Y8nWJ4qvEMiVZtGT+x8PquouoiL9i/3ADOucV62Rh4KauawA4okmGSjxJeeL24yF93CjWAI06GrWO/m1Ua8b0dXyvplZxLKySwSE7G4yyE7lLANbP/dx+q7cjZnzlTlR8zUpmN+3DieoVAHW47JnDrhoDSrV/GzdT8u6owE8ZRmTw1x7eh9hiYXaYm36ie3C5TAoNzZuNH3GQLK/BdLupkdgtywapRS1o165D1waVKbJ13f6kMzxedGdKqWGbQlHStxBNMjA4szGyawFvI86fngYYzNaijKuKuCn0O/4F+QNh/OQmXE7WPViL6T+iujyOP+bZb7YVIM01brmSUVsIsJ5ZWV5gpB6ubxIfC5fCaV21nB9/5s3JtRAXc3WpQShBPvOPdGRANdwa1YQ5V8+/XoQPaTDemq+a1jbj0lUhP+CJfeY0Ddjy2aH501XPOdZsXQbtiwZ0OB73vq2Hnb/KumwGqp6fcFtBv4QpL/AC5Kwj/jK4agC2lfPzPJqUto+4H1mPXXP51GjIqcLdQAlJ7IUXogksgA/UKYbZVVL8uIC3Yj4o5InUiGiRI04trvVvq5gd8W29WLmODsBu1+9Hzsl7ZFE1RvXY4E=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN0PR12MB6101.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(136003)(396003)(366004)(39860400002)(376002)(346002)(26005)(66946007)(5660300002)(7406005)(53546011)(110136005)(45080400002)(2616005)(41300700001)(4326008)(478600001)(6506007)(6512007)(6666004)(6486002)(8936002)(7416002)(31696002)(8676002)(186003)(86362001)(2906002)(36756003)(66476007)(54906003)(83380400001)(66556008)(316002)(38100700002)(31686004)(43740500002)(45980500001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?d05pUG1MSENiazhWYm96NHNab0RGbFFLRTRFV3VBSDYySUtibTBMTER3WHlZ?=
- =?utf-8?B?ZEErTmJyNm9LVmxIYUthYjVBT09oRzBOVmo3dStTNGxGalkwRzljTUZMS2sw?=
- =?utf-8?B?TVplU2kvc20vZkx2UDVYSFkzTDlmQ2tYN05qdmFVWVBLb2pwMTlCTHJKYVJu?=
- =?utf-8?B?a0xBNVFLQjMyV2NMdFpubmdJTmxkYkVJZ3NvZEJJYTh5M0U2Zml0Tmllek9I?=
- =?utf-8?B?SUxKOVJHeXlpRElraUh5bjFsSmcrMG5rVCtjY2pXKysxZkFQS0FmZVFIQjBJ?=
- =?utf-8?B?V1Q3TjZGNVpsWXNSU1FoVktyUzQ1UjM1MWh1S0VXcjJWWWhmYThDS0tIQ3lh?=
- =?utf-8?B?TzZzRjYzNGI5UXI2ODdkK1k0SU0vVzN4VVdyVUxkaUFoZEFQelY4eTV5eHdq?=
- =?utf-8?B?eUc1a2VGUVExTjUzSkdNYzVyQUV3VnpZMG5GWTRPWE5Dd25XcHRxV2FmOFdw?=
- =?utf-8?B?MENMYWFLODQ0THpKMFVqVmVsZkFUdlEwZWxnNUR1QjI5UldQYi9qaWFYWHRv?=
- =?utf-8?B?dVlIU3dpTTNVZC9lbWxLWFdSV2NvWjBzWTFHSzlsUW94WFhJeDRtZHdIcFBi?=
- =?utf-8?B?RjA5R2M0SXE0YTNnMDBxY0wzcGpDTTFPOG1Na05tQVpnajh3RW9GeHArTmJ6?=
- =?utf-8?B?bmJxWXVwdjc5ZkFsYU5nSnZpMUpaUHYydmtGQ2VkMlVXVFk5SndCTndxUm5y?=
- =?utf-8?B?YkRKZHBMRWxERFliNjNuZWh1cUFNeFVwWGNQbnI3WVJWMEpRSGhqNmlpSHRM?=
- =?utf-8?B?bkhaUUpDQXgvRzIzbXZxOU0vWWF4OFZnMWR3TFg5enZ4ckxreHdnYnBlRkhV?=
- =?utf-8?B?QWNDVlNFUkJBbW5UbHMxSXJjMUpBOEgzLzhBY2xPOC94SWF0Z01NNVJQa1Ev?=
- =?utf-8?B?TC9vOWh6aktGc1piQUM4bFkxVDByZnl5SGpsRWJzVzRqUm9rZE1sU0sxR1M2?=
- =?utf-8?B?Q2M4bmNiV2lkdzY0S09ZUERDWCtDMzlOMU5rd0hrYUVmSkxBQXhjWDVTUDVB?=
- =?utf-8?B?bk5RVU5HT3VVNU10S0M4L0YwQXdWc2owTDFob2RrUGo5bUlMa1NsbUEvblVy?=
- =?utf-8?B?L0RESXVacE9tZnRXQWtDOHFxSnZJZk9nQ0YrVEI3dndhQ2tuMWNmTnVyRmZD?=
- =?utf-8?B?Mk9kRHIxRWFsK3orYnFxcWZKUWlwM0ZzWS9HSGRsa0dFa0Y2MzJoY1dBNS81?=
- =?utf-8?B?YjJTVFNvRzd6ZVdLckZpTEdLdktKeVRySWhKM2FzbWZMZU04WFdVanNOT3V4?=
- =?utf-8?B?MVRERzRqeFNzaHArUlJuV2pMMElpbGdJQlRJWWNnU1VOb3BoVTFjM1c2ZnJ5?=
- =?utf-8?B?dERLSzgwNitiK3YreUZCSmNESEtkU3dtaHVWR25lRDhwcWlGMExKWDF1MVcw?=
- =?utf-8?B?aERwZk1uaERqaXEvVmZHNFRZRWNjQm0vWnVHcWNmMHRRaGtzZUJZcm9ZQ2Jm?=
- =?utf-8?B?UENzdXVnT2lpaWt6RDVWd2pQZDNtV0lQTWcra1UxUWQ3RzVZekJheFhGY0g3?=
- =?utf-8?B?Z3NDNXpxamR6SzhBNDEyRGlGc2k1dy96WGRrRHQxeTJNTVFheDJVeTFpY3BP?=
- =?utf-8?B?MjQrTjU3eFVDN2JnNlV5bDJmQXBLa2lySlM4QWdPMzVYb3R5TmNOczhVUGZt?=
- =?utf-8?B?S1dOUFloUkN0V1NqRFgrWHZYSGp5aENneWtpNzZScTBHVlZ3S2RLSkhDR3NV?=
- =?utf-8?B?cUFTTjFYTkd1ZDdXdkpnWE1mSGlleGprM3ptMUtlRkxaSEJYV01CbGh4QWlm?=
- =?utf-8?B?ai9Sa3h3YVd2bmlZamZaQVVyRkI4djRCOVlpM1VNQnpVN2cvQk1SemI5Ymt2?=
- =?utf-8?B?Rk8ySytHK01kQ3pjWEVaejBzRzBnY0wreW5uMit1anRaVXRUcWp6TmVYZUZx?=
- =?utf-8?B?N1krMDhrWEc4MDJxNFR3b21LUTdBTklnY3FMQ3F5b1hVV0JkS1ZWMVdsTjk1?=
- =?utf-8?B?Y3lxRkNlek5CZVFTbHlZNyt5bEdsbnRBS2dMek5wMjMwUkcrT3FFK01pSjZ3?=
- =?utf-8?B?SzZ3V09UcHAxUW5yb29zMk1PcHU0UjlzRDQzVkZ6ZHBaVjJFU2hDTHNEY2Zl?=
- =?utf-8?B?SGlJYTdpQUltQXVGQ1NLL3o4Q1JCdG43OFdMazdSYklINk1va29ZNmkxZUNt?=
- =?utf-8?B?TzY1WGluaDdMNmtkZW5BRVV5dGMvLzhicW9zekxYZUh2QXpNemxicURuWFc3?=
- =?utf-8?B?L1BoL29aRkxncGJLeHBiRDR4M1lQRzNPV3lKQkJrdCt2SDB5WUE4MXgySnB3?=
- =?utf-8?B?a1M3WC9ZcElsT1RHTnRtV3Y3dW5TbXNEbVZxMFFxN3Y3aEdSWHE1YzlzbEVK?=
- =?utf-8?B?NnEzM3A3L2wyQWVQVDRBRXhqYW5uNlI2WUUrRlNreHprN2tOZnJUZz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 98c7583e-0b88-4b7d-2321-08da52da73e1
-X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB6101.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jun 2022 16:32:22.9016
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: CRSh7IjPlGdaJwODceRT6a3se1oy4o1PzB4lpD0GeaF/PQWUneGtFi4CTjYE0HXiejyPHWszBJP9neHYndfGXQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB3338
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH v2 1/9] dt-bindings: thermal: Define trips node in $defs
+Content-Language: en-US
+To:     Francesco Dolcini <francesco.dolcini@toradex.com>,
+        l.stach@pengutronix.de, Marco Felsch <m.felsch@pengutronix.de>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Anson Huang <Anson.Huang@nxp.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        linux-arm-kernel@lists.infradead.org
+References: <20220617070847.186876-1-francesco.dolcini@toradex.com>
+ <20220617070847.186876-2-francesco.dolcini@toradex.com>
+ <b3311560-bbba-7fd9-7cda-65cfbd33458f@linaro.org>
+ <20220620154810.GB23829@francesco-nb.int.toradex.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220620154810.GB23829@francesco-nb.int.toradex.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 6/20/2022 10:43, Grzegorz Jaszczyk wrote:
-> czw., 16 cze 2022 o 18:58 Limonciello, Mario
-> <mario.limonciello@amd.com> napisał(a):
->>
->> On 6/16/2022 11:48, Sean Christopherson wrote:
->>> On Wed, Jun 15, 2022, Grzegorz Jaszczyk wrote:
->>>> pt., 10 cze 2022 o 16:30 Sean Christopherson <seanjc@google.com> napisał(a):
->>>>> MMIO or PIO for the actual exit, there's nothing special about hypercalls.  As for
->>>>> enumerating to the guest that it should do something, why not add a new ACPI_LPS0_*
->>>>> function?  E.g. something like
->>>>>
->>>>> static void s2idle_hypervisor_notify(void)
->>>>> {
->>>>>           if (lps0_dsm_func_mask > 0)
->>>>>                   acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT_HYPERVISOR_NOTIFY
->>>>>                                           lps0_dsm_func_mask, lps0_dsm_guid);
->>>>> }
->>>>
->>>> Great, thank you for your suggestion! I will try this approach and
->>>> come back. Since this will be the main change in the next version,
->>>> will it be ok for you to add Suggested-by: Sean Christopherson
->>>> <seanjc@google.com> tag?
+On 20/06/2022 17:48, Francesco Dolcini wrote:
+> Hello Krzysztof,
+> thanks for your comment, let me try to provide you some additional
+> background to better understand this change.
+> 
+> On Fri, Jun 17, 2022 at 06:02:39PM -0700, Krzysztof Kozlowski wrote:
+>> On 17/06/2022 00:08, Francesco Dolcini wrote:
+>>> Move `trips` definition to `#/$defs/trips-base` and just reference it
+>>> from the trips node. This allows to easily re-use this binding from
+>>> another binding file.
 >>>
->>> If you want, but there's certainly no need to do so.  But I assume you or someone
->>> at Intel will need to get formal approval for adding another ACPI LPS0 function?
->>> I.e. isn't there work to be done outside of the kernel before any patches can be
->>> merged?
+>>> No functional changes expected.
 >>
->> There are 3 different LPS0 GUIDs in use.  An Intel one, an AMD (legacy)
->> one, and a Microsoft one.  They all have their own specs, and so if this
->> was to be added I think all 3 need to be updated.
+>> If you want to re-use trips, they should be rather moved to separate
+>> YAML file...
 > 
-> Yes this will not be easy to achieve I think.
+> Fine, this should not be a big deal to achieve. Let's agree on the rest
+> first, however.
 > 
->>
->> As this is Linux specific hypervisor behavior, I don't know you would be
->> able to convince Microsoft to update theirs' either.
->>
->> How about using s2idle_devops?  There is a prepare() call and a
->> restore() call that is set for each handler.  The only consumer of this
->> ATM I'm aware of is the amd-pmc driver, but it's done like a
->> notification chain so that a bunch of drivers can hook in if they need to.
->>
->> Then you can have this notification path and the associated ACPI device
->> it calls out to be it's own driver.
+>> but anyway this should not be done per-driver bindings, but
+>> in more general way. Either the problem - using one DTS for different
+>> temperature grades - looks generic or is wrong at the core. In the first
+>> option, the generic bindings should be fixed. In the second case - using
+>> same DTS for different HW is not correct approach and why only thermal
+>> should be specific? I can imagine that cooling devices might have
+>> different settings, regulator voltages for DVFS could be a bit different...
 > 
-> Thank you for your suggestion, just to be sure that I've understand
-> your idea correctly:
-> 1) it will require to extend acpi_s2idle_dev_ops about something like
-> hypervisor_notify() call, since existing prepare() is called from end
-> of acpi_s2idle_prepare_late so it is too early as it was described in
-> one of previous message (between acpi_s2idle_prepare_late and place
-> where we use hypercall there are several places where the suspend
-> could be canceled, otherwise we could probably try to trap on other
-> acpi_sleep_run_lps0_dsm occurrence from acpi_s2idle_prepare_late).
+> Let me try to explain the problem I am trying to solve here.
 > 
-
-The idea for prepare() was it would be the absolute last thing before 
-the s2idle loop was run.  You're sure that's too early?  It's basically 
-the same thing as having a last stage new _DSM call.
-
-What about adding a new abort() extension to acpi_s2idle_dev_ops?  Then 
-you could catch the cancelled suspend case still and take corrective 
-action (if that action is different than what restore() would do).
-
-> 2) using newly introduced acpi_s2idle_dev_ops hypervisor_notify() call
-> will allow to register handler from Intel x86/intel/pmc/core.c driver
-> and/or AMD x86/amd-pmc.c driver. Therefore we will need to get only
-> Intel and/or AMD approval about extending the ACPI LPS0 _DSM method,
-> correct?
->
-
-Right now the only thing that hooks prepare()/restore() is the amd-pmc 
-driver (unless Intel's PMC had a change I didn't catch yet).
-
-I don't think you should be changing any existing drivers but rather 
-introduce another platform driver for this specific case.
-
-So it would be something like this:
-
-acpi_s2idle_prepare_late
--> prepare()
---> AMD: amd_pmc handler for prepare()
---> Intel: intel_pmc handler for prepare() (conceptual)
---> HYPE0001 device: new driver's prepare() routine
-
-So the platform driver would match the HYPE0001 device to load, and it 
-wouldn't do anything other than provide a prepare()/restore() handler 
-for your case.
-
-You don't need to change any existing specs.  If anything a new spec to 
-go with this new ACPI device would be made.  Someone would need to 
-reserve the ID and such for it, but I think you can mock it up in advance.
-
-> I wonder if this will be affordable so just re-thinking loudly if
-> there is no other mechanism that could be suggested and used upstream
-> so we could notify hypervisor/vmm about guest entering s2idle state?
-> Especially that such _DSM function will be introduced only to trap on
-> some fake MMIO/PIO access and will be useful only for guest ACPI
-> tables?
+> Currently the imx-thermal driver harcode the critical trip threshold,
+> this trip point is read-only as it is considered a system property that
+> should not be changed and it is set to a value that is less than the
+> actual SoC maximum temperature. NO thermal_of driver used.
 > 
+> Because of that there are systems that cannot work on some valid
+> temperature range.
+> 
+> We are currently looking at a solution that would be backward compatible
+> with old device tree.
+> 
+> I proposed the following:
+> 1- just increase the threshold to the actual max value allowed according
+>    to the SoC thermal grade. 
+> 
+>    As easy as 
+> 
+> -	data->temp_critical = data->temp_max - (1000 * 5);
+> +	data->temp_critical = data->temp_max;
+>    
+>    in drivers/thermal/imx_thermal.c 
+> 
+>    https://lore.kernel.org/all/20220420091300.179753-1-francesco.dolcini@toradex.com/
+> 
+>    It was not considered good enough by Lucas since this is a overall
+>    system design question, therefore should be configurable.
+> 
+> 2- make the critical trip write-able from userspace/sysfs.
+> 
+>    Daniel is against this since critical trip point is a system
+>    property, not something the user should be allowed to change.
+> 
+> 3- kernel parameter: https://lore.kernel.org/all/20220516190001.147919-1-francesco.dolcini@toradex.com/
+> 
+>    Initially proposed by Daniel, but Marco did not like the idea.
+> 
+> 4- New device tree property, fsl,tempmon-critical-offset, ditched also
+>    by Marco
+> 
+> 5- The current solution in this patch, with the existing trip points
+>    that are hardcoded in the code exposed in the device tree as trips.
 
-Do you need to worry about Microsoft guests using Modern Standby too or 
-is that out of the scope of your problem set?  I think you'll be a lot 
-more limited in how this can behave and where you can modify things if so.
+Thanks for the explanation, I see the problem.
 
+> 
+> Ideally one could just implement the imx6/7 thermal sensor reading and
+> just make use of the thermal_of driver, however that would break
+> compatibility with a lot of existing system ... to me this is just a
+> no-go.
+
+This I did not understand...  What is not implemented in thermal sensor
+which would solve the issue? And why it cannot be implemented in
+backwards compatible way?
+Your change is also not backwards friendly, which means existing boards
+(old DTS) will not receive the update.
+
+> Adding only one set of thermal trip point in the dts (no thermal-grade
+> specific set) could work in some specific scenario, however it does not
+> work for me since I have the same dts files using different temperature
+> grade SoC. I would need to update this in the firmware before starting
+> Linux.
+
+Usually the bootloader loads the overlay and this is recommended
+approach to runtime tweaking DTB for some variant.
+
+> 
+> Krzysztof, what do you think? I would not mind to get back to one of
+> the more simpler approach I proposed.
+
+As I said, I see the problem, but I am not sure that solution is
+correct. I can also rephrase the solution to a such one: "I want to
+support iMX6 and iMX7 with one DTS, so I will embed all properties from
+both DTS into one DTS and then during boot I will read soc-id register
+and choose some subset of the properties"
+
+No way...
+
+I also brought in previous reply trouble with regulator voltages or some
+other electric-properties. I don't want several duplicated properties
+per different variants of the same SoC.
+
+1. If the devices are fully compatible, use one DTS. If you can squeeze
+different variants into the same DTS without any duplication so that
+entire DTS is used 100% by both variants - sure no, problem, less code.
+
+2. If the devices are in general compatible but have discoverable
+differences, use one DTS, discover the differences and apply them
+dynamically via driver (e.g. read the temperature offset from some
+nvmem/OTP).
+
+3. If the devices are partially the same but have differences, you can
+use overlays for that differences. This is quite flexible and clean
+solution as it also clearly documents the hardware in DTS and its overlays.
+
+4. In all other options devices are different, so I expect different DTS.
+
+We had similar cases already in the past - some SoC versions could work
+on higher frequencies with higher voltages
+(arch/arm/boot/dts/exynos4412-prime.dtsi). These variants identified as
+exactly the same SoC as the earlier/slower one. You cannot use one DTS
+for them. We have chosen different DTS.
+
+For Samsung other case, same SoC comes in different bins with slightly
+different voltages for CPU/memory. Same frequencies but different
+voltages. This might be the closest to your problem. This was detectable
+runtime, so we had one DTS and we adjusted the voltages based on static
+tables in the driver (exynos5422-asv.c).
+
+> Lucas, are you really that against the simple working solution I
+> proposed initially [1]? I feel like I am running in circles ...
+
+Yes, because it is not generic and skips other similar cases, like
+regulator voltages or battery properties. I can easily imagine that next
+week someone comes with duplicated opp tables, then duplicated voltages,
+then duplicated CPU nodes and finally we have one DTS for imx6 and imx7
+but everything is in multiple variants. :)
+Also I am against because DTS describes one hardware, not multiple
+different variants.
+
+Best regards,
+Krzysztof
