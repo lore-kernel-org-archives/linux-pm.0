@@ -2,190 +2,158 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EF9FC433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jun 2022 09:38:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7CF6CCA47E
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jun 2022 12:03:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349134AbiFUJil (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Jun 2022 05:38:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50442 "EHLO
+        id S1350387AbiFUMDs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Jun 2022 08:03:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44892 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348826AbiFUJij (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2022 05:38:39 -0400
-Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2088.outbound.protection.outlook.com [40.107.20.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E7582B8;
-        Tue, 21 Jun 2022 02:38:37 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=aZVrWbIkuAwJQYLMZvV2Yc2AFUjJlQ1UsHITOVkb9KfPGcminh8kDWPYo/eHpAheFwFoAahcbv3+16CutbPpoHfDTjG9SxM2lv1HFIqXCE+FwXADLlAy++QS30ZJ17Yos7OY6kKmu8sVnvsTYCgvQsI7ri5JFvwRtYktRiCRIz2mZ8LLR0DcVWsEELgHy0X2PZT/Yakixy2LVsz6ZEwZseJLwFnP0M0+LdcA1lZiBENsIUsozvTbpG3yi88GBU/TY3N9NLY9z5YoKfu1mCyCF/J6mWMBkwtCkZUj9cy5B8tkm+oZvLvavtakqjm2hoBsMq0AaHg4buZByRxCTBW5rw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=keg1zAO9UQIM9UKhCwtHA+R918NfqpsdRUcaCbZu/pw=;
- b=XnJRLJlE2H0P9mlVX5xGVslg0WV0vs8mlVkPQRbfiLKiLOskqXAxaRhgxrkQP/aSkTsJgr9B/o0PrdErH5A7N+fGMhWKbSw0y7zJahhnDF1VE9NL0DEuMmFiT39yCSJRvYQw3iW7ofEhgcgSzJdKw0FKSou6m9vtOa6H8Jc+TQT1Yv1TR8JPvyk8ax5xaqn7jBKuSMSEnjqppL9c06LAv6FyNg6X3DxM6nMDc+4PLj4OkcOhLnKZbAtqLgrmpUMWA8dyVMLiaNtaccn41RfGgLBegD+xwvLebg9Loj6vY9uApMdLkJIKlTc5J32F5rRA+bvtEmO3mOBapdWf0N3KUQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=suse.com; dmarc=pass action=none header.from=suse.com;
- dkim=pass header.d=suse.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=keg1zAO9UQIM9UKhCwtHA+R918NfqpsdRUcaCbZu/pw=;
- b=vkl8ueKA8YrAZw2XiueB4k7Afnyk/3SRWegFqnmYPK8o3Ro/8PGR+MpkUMT2yzaG3iTYu+Stniuw4NnsaSKOisSj0TUAyDMfAaoMNdCQ7emPvCe1/JWXp/2+OYHpMVS3CE2k/M374igYqhX/viEqyL1MeqaGOSb+pfq2VbuYVwgh/CsgOrAjhjSbDuvN/h5J2OgIPi6aa3r12KA+Ujwi99j9xqjdcWD3QyDCKdvUxDbQNcQ+vKc7aETJO6THH688EL2BACPGrUHy078j5/8bE8u/uABd/9dVpiLpRNKAJm5XH3dez1/vyOloiVNR7x1KXz1COmOEUURmIBFO1PyCcQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=suse.com;
-Received: from VI1PR0401MB2526.eurprd04.prod.outlook.com
- (2603:10a6:800:58::16) by VE1PR04MB7454.eurprd04.prod.outlook.com
- (2603:10a6:800:1a8::7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5353.18; Tue, 21 Jun
- 2022 09:38:35 +0000
-Received: from VI1PR0401MB2526.eurprd04.prod.outlook.com
- ([fe80::21d5:a855:6e65:cf5d]) by VI1PR0401MB2526.eurprd04.prod.outlook.com
- ([fe80::21d5:a855:6e65:cf5d%12]) with mapi id 15.20.5353.022; Tue, 21 Jun
- 2022 09:38:35 +0000
-Message-ID: <5caa944f-c841-6f74-8e43-a278b2b93b06@suse.com>
-Date:   Tue, 21 Jun 2022 11:38:33 +0200
+        with ESMTP id S1350389AbiFUMDq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2022 08:03:46 -0400
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 426EA2B1BE
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jun 2022 05:03:43 -0700 (PDT)
+Received: by mail-ed1-x534.google.com with SMTP id e40so6491229eda.2
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jun 2022 05:03:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=20hOXgHS4fSMKzf2+VEVhuMt/xTY7rwW+BkuR688jQI=;
+        b=G0fDoM6iYkilX2J2us0oDAnu2OXLTFoGwQGcIQ61gW+KroUP3F34RD4BJ1IlsFeOKi
+         8f8+8bvCxI+BjoQhqGDC8Bmih/uM2UMNh0HfP5LHcTP5thFbXw57Wl/JjRk3EIaphPgC
+         /r9iH8r0MZLQ/ZiseG3jh/J+adm1eZ8inUGHNLerNsDK1bRyGyI9t7y5tTAvDDVdeB1B
+         xwLgffZMmNEJhBSsXCtiJaQ53o6MWqYnFwBx1ozBtod/JlyyMz+pR8DZEdtPNbe/8IO5
+         pZskEbg504lpOOtekPsnMcsUaoBfJ2WNfNfE5rDxevNShYsJWXp++OGVY0izxGKuJIRl
+         k4pQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=20hOXgHS4fSMKzf2+VEVhuMt/xTY7rwW+BkuR688jQI=;
+        b=z6jAiWwiKP2vmYZIwpSqeMCwzHlVzePO8ipHwffEuTQBMV2xvvZ3LR+6GmngAGiJce
+         YWtZ8IJBlrnMu/NVnNWTX4+xpdSd1g7dTA1agZtU/xEcAvxdtEZo9LQfqH1DGJbTsdXL
+         tFCwCjun3Pn/7jRLgZ1S7MZbZ2O4lBHVwP+C9iRG97qCKwOLXxdp1SaOdeMcFvgoT4Io
+         vCJ6MlFcWWs0eoFFyhFjipVakt/AIokuJo12OAnHXaBOe3iqr/2xOt/naXW4bjSXmdve
+         UnxThXdxU6FaydTw/D6fZG7vv6L0B3KJzfihvkQgaJailBhJyV1yMm0eC2oXUfXXoVk6
+         GsjQ==
+X-Gm-Message-State: AJIora/BwuM1CxELDIdho1aADHMKCRddyO4VGM6xtiN5/JdQdyVGpw/t
+        0mH9iV8fQyEC5573ovijjSYucw==
+X-Google-Smtp-Source: AGRyM1vuqpi73lfGfP1AhQV/V6GZDUbkiFuWxRqJMB+M0pVkbVaH3yMP1muhb8X6319Kpo4FNFG3DQ==
+X-Received: by 2002:a05:6402:3689:b0:435:95b0:edf2 with SMTP id ej9-20020a056402368900b0043595b0edf2mr3480378edb.279.1655813021696;
+        Tue, 21 Jun 2022 05:03:41 -0700 (PDT)
+Received: from [192.168.0.220] (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id n12-20020a170906840c00b00706c50870a0sm7470520ejx.194.2022.06.21.05.03.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 21 Jun 2022 05:03:41 -0700 (PDT)
+Message-ID: <3e02909d-131a-7899-f02b-fa0afcbef1d9@linaro.org>
+Date:   Tue, 21 Jun 2022 14:03:39 +0200
+MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
-Subject: Re: PM runtime_error handling missing in many drivers?
+Subject: Re: [PATCH v2 03/15] dt-bindings: leds: mt6370: Add Mediatek mt6370
+ current sink type LED indicator
 Content-Language: en-US
-To:     Vincent Whitchurch <vincent.whitchurch@axis.com>,
-        rafael.j.wysocki@intel.com, jic23@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org
-References: <20220620144231.GA23345@axis.com>
-From:   Oliver Neukum <oneukum@suse.com>
-In-Reply-To: <20220620144231.GA23345@axis.com>
+To:     szuni chen <szunichen@gmail.com>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        ChiYuan Huang <cy_huang@richtek.com>
+References: <20220613111146.25221-1-peterwu.pub@gmail.com>
+ <20220613111146.25221-4-peterwu.pub@gmail.com>
+ <91e9e3af-8208-7535-1864-08744f934593@linaro.org>
+ <CA+hk2fZbh0=8gurGS95XpXrYyF3NbwFbFMcygcrW_q10m0zinA@mail.gmail.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <CA+hk2fZbh0=8gurGS95XpXrYyF3NbwFbFMcygcrW_q10m0zinA@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: FR3P281CA0013.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:1d::18) To VI1PR0401MB2526.eurprd04.prod.outlook.com
- (2603:10a6:800:58::16)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 9d234e70-9f93-460b-225d-08da5369cff0
-X-MS-TrafficTypeDiagnostic: VE1PR04MB7454:EE_
-X-Microsoft-Antispam-PRVS: <VE1PR04MB745498F0F8E982189C2FE6C0C7B39@VE1PR04MB7454.eurprd04.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: o3n1Sc/i13iV6vgKacmIsVaX5TYqjz8DycNoVlkDfWcZOlD38bB2VBZo+UW6g4iwroRtBU01GmI32q0CQB9J5xkV/y1S7e4bZbo5NvUI5SvGZQchGx0sp2rB9QRjHvQqnkrzbTJNdPj6nkwbILniITUaYV95Fw6x0FTtaOhS5nyyKNJyhDL6XCd+isE/fdaxapiZ1AIeKGw+3eMINFhbuqnBiOOIwvyzWfIPxCtMLdEMCCFv8xXrySavtOXv91Nbt9MQyJvp1yzXXw7yGrlWe9Du4e6bC4qd2Q0ls6LyADO2xhXR5pftliMqnfso25nW0EWfRrMzayqINz/BzLoFC6E3Nsrx9E0R8L1rvJ22fhOP1fvoN2e+U12VsIsUH+jvMDkNXh4REoBuQOKLM6M3PoM/ANBLKcslhP+MBlqn3FR32c+oHMDW6vFy/CtVwI4eBTlJ5lDlONApMF6XbqQGgF4T4QEEE6Beer2l2lzXJrLL1ZR9hRCvLCxkdgY6uaASCujftOjwX+qvbE4WDlNT/oEitNVcYctBc89YOeMmGjCmh37rswNxRWGLorRnIHAzyJWi3ANZYy1mu5UeOWdu+Qtjyo6pEwCKCyhzS47MUbDjT2EcSaav1/IeCJoc586TRXaQLtwFU8nDS/tQ2jIVfjD0O8J9/r55b4KDWB1YGLMVJNucv8k+9lntnrq8jdubYZHlsGG6PPoW64oFfV3sjRxw7r3pd4gppsNxN8yK0sg=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR0401MB2526.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(376002)(396003)(366004)(346002)(136003)(39860400002)(8936002)(53546011)(478600001)(86362001)(6512007)(83380400001)(6506007)(66476007)(6486002)(38100700002)(66556008)(2906002)(316002)(36756003)(4326008)(8676002)(66946007)(31696002)(186003)(5660300002)(41300700001)(31686004)(2616005)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?MnY5dWFFSHNQT1kvRzJTZ1FMcHFVQ1lSUlFEcU1uQ0xRcTF0ZVFkc095U3JZ?=
- =?utf-8?B?QkZMVTV4a1lUZmQ1ZjlYWTVqbnozZjFjbU1jN2V4ejJVWDBrN0ltOFNsMk40?=
- =?utf-8?B?UlpPUlRHYjl5d0E3Q0xTS3I1a096NU5lLzBzRTQ0S2cyR2t0azdHU0RrWkpX?=
- =?utf-8?B?Uml5VTFEbmdBTThvYnJzcnpSV3JmcXhlY0hGSHNVZ0ZWZVZYeEtETjFVSjZn?=
- =?utf-8?B?UkFLTzNIREFINjMyc2VGY293cWFGWXlFdXg1TDdNOGprbEpYTmJ4UXRwL3Q5?=
- =?utf-8?B?ZXZPSUlpUDVScDZqaUtLR0pJQk5pK0kzRTNCNHJ4M2d0RHB6RURYRmdiT0xy?=
- =?utf-8?B?TEtTd0dRVjRqR2NUcG5yaVRzMS9URHUzSFZEZ0VxYThQR3RUa3VxK050R0pj?=
- =?utf-8?B?VUswdW1uVjJzTmRyWWMvK3NGOWlKZEpvdE5KazVaR0RTcmZhaTJOckRyYit5?=
- =?utf-8?B?aWpESkpuZ1NIN2ExVVMwRklnOElFVi92aTI1TlZNNFh4VXlYVFpNbHZkb2xP?=
- =?utf-8?B?VkVCMVhMaFplWFlENVpldkd1VGlCU28yMHkvSENvRXRRcGt2UnlCV09TblBC?=
- =?utf-8?B?YjQrN1phMHp0cWRNZU9TTjNvSTJBd1N6YkIrZVE1VVp0bnJIeVFoVndTZFRT?=
- =?utf-8?B?WWRSRWVvU0c2T3QyVzNCM0RuNE5paG1oQjRMWFJrcWU1MmdrVEJJd1dWR3Ju?=
- =?utf-8?B?Ykw2RmRBTjRYZUN6bkFMc20zNVQzQWZ4VjFCaFZ4bk1zWWttb1FFS1F4OEhO?=
- =?utf-8?B?ckpLOU5zNUJjbmFRMjA1N3JpT1lFaittWWpWK2RxTTY0akZNTjY5Y05WVDRM?=
- =?utf-8?B?V0wvdEs3eHVSbmZLZVo3b0RQSHhJbW1jTytSblBJclVVQXR0am1oRkxZbCto?=
- =?utf-8?B?Y3B0SDYySVJ3b0NYZktIV292RFhiaWhoSHFla1hRMVFNMVF4cldKS1BlSlVl?=
- =?utf-8?B?QU5QMngwNVV2eVNRRjRPaHF5K1hva3E2SDhFY0J0Q3pFMHhPaitXbnFndFdy?=
- =?utf-8?B?amRKaUtrblhkV2NPVGJ6bnRwZnl4TmIrbSs5b3dMSTFvZEUxcEhOZ2FlUGpG?=
- =?utf-8?B?Vlh6SE96djYrbFNrMklzYi9heERJTEFkdFFIUVZTa1l5WUc1MkxPVzd2RjNn?=
- =?utf-8?B?c2U4ZkJFMWxCaW9NZm5UeE11TVd2U0lGQU9qVHVveGxBK0pNbG5ML0pIb2Rr?=
- =?utf-8?B?ZW9vWUlRcXN3YWF6YUlrWGUwcmk3SXRrNEVvTk02ckFjNEtuMjBNWnF3cStB?=
- =?utf-8?B?YUxEVjRlVmNBWkZNbGxNZFVBamFhL0xHZWROK2ZiVnc0VWNTbGRmQnZ3YWF2?=
- =?utf-8?B?ZHJHcjAwNHp2dmE4amcvNHhCdWhLVTNLbTVvUUNrdFptbW15UGtXdk5ESVM3?=
- =?utf-8?B?NjZRcmNlT1RBVFFiS3VNYmpZUFBBTmxZVnhUbldUaXBYVUt6SXlTSUN1YzJr?=
- =?utf-8?B?d0dkK3NZQkhoVTFJcWN6aURPY0UxVGhCemVYN28rRmdDamhpZlhGMkwxUThh?=
- =?utf-8?B?Nmxpbm9uLzFGWW9DajEzSVhjLzMybi9OZWRBeHVIMldJeUF3K205OWZDV1U0?=
- =?utf-8?B?MlpnZ3VOMFhHUlFtT3A5UnpZMlJaek5zejhmczNZM3hCTkU2UWU0QmUwQ1Bx?=
- =?utf-8?B?UDJ1NWtwTjlud0doVDNON0JWNnpER2tuTEk5dXQxQTZjQ21pZ3UxSnpBSlBy?=
- =?utf-8?B?SEljbHkvbVpCN0Znei85aTRWb21MdFp2OW1TVlFzMWVQc05XZE94dTZGZXJz?=
- =?utf-8?B?NnpkVmhJdjBWdXNEQi96cjBSTDR5Q1NoTnVjRDE0aW9JZ2hmN3RwT25KOUxq?=
- =?utf-8?B?c2x4NGxjQ3JxSWpDTTVrdk5COGVrUXp0MitkMVdBcmp3Qzc0S3U3enRLZXhC?=
- =?utf-8?B?QktxQVppK1FlQ3FxQU41MVFVdnlXMHNSNmdNVlpGck52eEJXSmVCbzMwVGt2?=
- =?utf-8?B?U3A0U1hvT0w1bXE4UDZhUGZMRitYVmU2bEpNdWNZZ1Z6WHh3amQwa1Q3dkFx?=
- =?utf-8?B?NlpXWVdWczdNdFY5cFFYMkg2RFJMa0pvbXR6UmVpTVlTc1BwdVd2R3RGOWlF?=
- =?utf-8?B?bC9nSlJzZjkzWGhwanRlMTVzN1BjeFV6cmxiMEk3UVFKcXQrNEo2OWtXbVlV?=
- =?utf-8?B?QXRBczFrUWc0c1doUSt6K2ZnN00xMTVNc3hSandLaytiOVE4YndidWtsc2lx?=
- =?utf-8?B?WXFoVitnekRTSklnMUxCMVgyUy9rNTd1UndtYkxQUUJOS1l1cGtBSzkySlBG?=
- =?utf-8?B?QnhJSks5ZFlaRFhTTlVxRStER29QYUZ3RnRCbzllTkNVa1JDUy9ybER5bGpG?=
- =?utf-8?B?SjdERTZpRnRrNGhmOGJtVGRFS2dSYTN4R2ZPaUlyRUxoTDlqUWFaVlRJSm9p?=
- =?utf-8?Q?zYLfN7mw6Y7W6MR3MJg9vyfRI1tU4yPTzQWNofWxxQYAJ?=
-X-MS-Exchange-AntiSpam-MessageData-1: 15pw6wToXESthw==
-X-OriginatorOrg: suse.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9d234e70-9f93-460b-225d-08da5369cff0
-X-MS-Exchange-CrossTenant-AuthSource: VI1PR0401MB2526.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jun 2022 09:38:35.3357
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: f7a17af6-1c5c-4a36-aa8b-f5be247aa4ba
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9e2QM2Pj16VhJ4iEbWr1UT8xyUo1xfY7RXvt7mdcuCSQjj2afZt+iG+hbzKfPFVYGY3QoHfMQkm7B/l3TGbHSQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB7454
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 20.06.22 16:42, Vincent Whitchurch wrote:
-
-Hi,
-
-> Many drivers do something like the following to resume their hardware
-> before performing some hardware access when user space ask for it:
+On 20/06/2022 05:07, szuni chen wrote:
+> Dear Krzysztof,
 > 
-> 	ret = pm_runtime_resume_and_get(dev);
-> 	if (ret)
-> 		return ret;
+> Thank you for the valuable command.
 > 
-> But if the ->runtime_resume() callback fails, then the
-> power.runtime_error is set and any further attempts to use
-> pm_runtime_resume_and_get() will fail, as documented in
-> Documentation/power/runtime_pm.rst.
-
-Whether this is properly documented is debatable.
-4. Runtime PM Device Helper Functions (as a chapter)
-does _not_ document it.
-
-
-> [110778.050000][   T27] rpm_resume: 0-0009 flags-4 cnt-1  dep-0  auto-1 p-0 irq-0 child-0
-> [110778.050000][   T27] rpm_return_int: rpm_resume+0x24d/0x11d0:0-0009 ret=-22
+> Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org> 於 2022年6月17日 週五 清晨5:09寫道：
+>>
+>> On 13/06/2022 04:11, ChiaEn Wu wrote:
+>>> From: ChiYuan Huang <cy_huang@richtek.com>
+>>>
+>>> Add Mediatek mt6370 current sink type LED indicator binding documentation.
+>>>
+>>> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+>>> ---
+>>>  .../leds/mediatek,mt6370-indicator.yaml       | 48 +++++++++++++++++++
+>>>  1 file changed, 48 insertions(+)
+>>>  create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+>>> new file mode 100644
+>>> index 000000000000..42b96c8047a3
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+>>> @@ -0,0 +1,48 @@
+>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>>> +%YAML 1.2
+>>> +---
+>>> +$id: http://devicetree.org/schemas/leds/mediatek,mt6370-indicator.yaml#
+>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>>> +
+>>> +title: LED driver for MT6370 PMIC from MediaTek Integrated.
+>>> +
+>>> +maintainers:
+>>> +  - Alice Chen <alice_chen@richtek.com>
+>>> +
+>>> +description: |
+>>> +  This module is part of the MT6370 MFD device.
+>>> +  Add MT6370 LED driver include 4-channel RGB LED support Register/PWM/Breath Mode
+>>> +
+>>> +properties:
+>>> +  compatible:
+>>> +    const: mediatek,mt6370-indicator
+>>> +
+>>> +  "#address-cells":
+>>> +    const: 1
+>>> +
+>>> +  "#size-cells":
+>>> +    const: 0
+>>> +
+>>> +patternProperties:
+>>> +  "^(multi-)?led@[0-3]$":
+>>
+>> If this is multi-led, then you should reference
+>> /schemas/leds/leds-pwm-multicolor.yaml
+>>
+>> See other examples using it.
 > 
-> The following patch fixes the issue on vcnl4000, but is this the right in the
+> In my opinion, leds-pwm-multicolor.yaml is used for external pwm
+> signals, and needs to assign an external pwm property.
+> But our pwm leds use an internal clock to generate the pwm signal. Is
+> leds-class-multicolor.yaml more appropriate?
 
+Yeah, I meant the latter but pasted wrong file.
+/schemas/leds/leds-class-multicolor.yaml#
 
-> fix?  And, unless I'm missing something, there are dozens of drivers
-> with the same problem.
-
-Yes. The point of pm_runtime_resume_and_get() is to remove the need
-for handling errors when the resume fails. So I fail to see why a
-permanent record of a failure makes sense for this API.
-
-> diff --git a/drivers/iio/light/vcnl4000.c b/drivers/iio/light/vcnl4000.c
-> index e02e92bc2928..082b8969fe2f 100644
-> --- a/drivers/iio/light/vcnl4000.c
-> +++ b/drivers/iio/light/vcnl4000.c
-> @@ -414,6 +414,8 @@ static int vcnl4000_set_pm_runtime_state(struct vcnl4000_data *data, bool on)
->  
->  	if (on) {
->  		ret = pm_runtime_resume_and_get(dev);
-> +		if (ret)
-> +			pm_runtime_set_suspended(dev);
->  	} else {
->  		pm_runtime_mark_last_busy(dev);
->  		ret = pm_runtime_put_autosuspend(dev);
-
-If you need to add this to every driver, you can just as well add it to
-pm_runtime_resume_and_get() to avoid the duplication.
-
-But I am afraid we need to ask a deeper question. Is there a point
-in recording failures to resume? The error code is reported back.
-If a driver wishes to act upon it, it can. The core really only
-uses the result to block new PM operations.
-But nobody requests a resume unless it is necessary. Thus I fail
-to see the point of checking this flag in resume as opposed to
-suspend. If we fail, we fail, why not retry? It seems to me that the
-record should be used only during runtime suspend.
-
-And as an immediate band aid, some errors like ENOMEM should
-never be recorded.
-
-	Regards
-		Oliver
+Best regards,
+Krzysztof
