@@ -2,111 +2,127 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CD5C43334
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 07:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2407C43334
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 08:04:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231143AbiFWH6L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Jun 2022 03:58:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43112 "EHLO
+        id S230519AbiFWIEz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Jun 2022 04:04:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49204 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231149AbiFWH55 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 03:57:57 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB2FFB65;
-        Thu, 23 Jun 2022 00:57:53 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 5818261B89;
-        Thu, 23 Jun 2022 07:57:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50537C3411B;
-        Thu, 23 Jun 2022 07:57:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1655971072;
-        bh=BlYOfMCq2JsqV69qlOn0Brwdjr5CZEK7g18REB4tZ78=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=HvZSrzOaMjyZDkaKdl+Yc2aCSDzpBxZwh9l13VmXLUjYzGr8LOq+s//BrBfacTfO+
-         E9adw6U4drivCqV9abdby5yszvqf0ncujSREJR7X1SjizLZ+2WS5nrV86ZtzL4LYS+
-         n9DtUrIgjyzv1Wu7uDcQrSCOmFi048kWG87icZ7M=
-Date:   Thu, 23 Jun 2022 09:57:49 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Jinzhou Su <Jinzhou.Su@amd.com>
-Cc:     rjw@rjwysocki.net, linux-pm@vger.kernel.org, ray.huang@amd.com,
-        alexander.deucher@amd.com, xiaojian.du@amd.com, perry.yuan@amd.com,
-        li.meng@amd.com, richardqi.liang@amd.com, stable@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: amd-pstate: Add resume and suspend callback for
- amd-pstate
-Message-ID: <YrQc/T+mARRVbIHl@kroah.com>
-References: <20220623031509.555269-1-Jinzhou.Su@amd.com>
+        with ESMTP id S229926AbiFWIEx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 04:04:53 -0400
+Received: from mail-yb1-xb2b.google.com (mail-yb1-xb2b.google.com [IPv6:2607:f8b0:4864:20::b2b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA74D443F4
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2022 01:04:52 -0700 (PDT)
+Received: by mail-yb1-xb2b.google.com with SMTP id e4so21793866ybq.7
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2022 01:04:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=aJdGY8if0kKaADIOnNz/K5T0O1hT/jUoomceGsgv8qg=;
+        b=VTQtFvKLR234TeEsJG9hJ1cv/fTlg/g75r8DUnXK6ZHcXDiNZlsJYB9CHo/M+MtXXm
+         kHxKIuNF0rtlBZTftpqriI4HPVkNAF8Kgf2nEavzZoQhhOEgRbl56Yidg8QEwndgSNmo
+         guDcAYV+JbY07aCqXNXOm0MAQ374EyPk3ywDSm8OW4cMFCwWkHtQXObbRqfIV1Au2qL/
+         2xJX/OVUmoI0Ru+JwXOHrC9gjW8I3BqdmxJTIj+bkS/ZKg4cBj3SDMQZSf2iggQyehVV
+         s0m81yWPr2B/Nu8wqEz2Z07cBjk9Ng0bbJAp4gpara4efxy5PPr9RgZdjjBJiDIEtWTH
+         KYew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=aJdGY8if0kKaADIOnNz/K5T0O1hT/jUoomceGsgv8qg=;
+        b=yjfsn8AW3imaY/2/X1TLSuXSHZcN0sSDWZ1rmE5W1p09av4IyLgqLyuSPYBP5m7HrB
+         b7MwuPktzBPp/HSKzoDgRGVARgPAs/HuSp9EPjxgQNoW1F2nLwQv7yZMhlexlEymuTwf
+         6HVGwgcbFqwY3X8jaTvcLwszaEPB9bSqIyq/g+TDtTVAhq+R+NAQxL8oVfa2Jo5CsftX
+         pnuibos7PPl9KYK8tXZJFEzVxl4Uml7Ttd4+8fTFpb5yl/W8MbONI1V5Oi1Mh6wuW29S
+         Jl8XgQhdVLH3QNLhpatW4KhwIa9iVGuC2il3PqN79Ed1CEZls2IAkisbWyd9GKnzQpI+
+         AhrQ==
+X-Gm-Message-State: AJIora+deYmX5IPQMHUUVT2veqof+g/7i3jT3TniCLsRorkW350yDT+3
+        hHGTXwF2nETBPHT8nkP9sbos41sFEkdeEWzeei7XeA==
+X-Google-Smtp-Source: AGRyM1vSa06Bo2VNf1pFNqSEQ2ygrs7ov2BN88IdRJyYwpujxiov2K55jHdtpFFoYamFYqbsbeU9U6O7j7pmqWeF7uU=
+X-Received: by 2002:a25:d8c8:0:b0:669:5f5b:7d75 with SMTP id
+ p191-20020a25d8c8000000b006695f5b7d75mr8205442ybg.80.1655971491674; Thu, 23
+ Jun 2022 01:04:51 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220623031509.555269-1-Jinzhou.Su@amd.com>
+References: <20220622215912.550419-1-saravanak@google.com> <20220622215912.550419-2-saravanak@google.com>
+ <20220623065031.GX1615@pengutronix.de>
+In-Reply-To: <20220623065031.GX1615@pengutronix.de>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Thu, 23 Jun 2022 01:04:14 -0700
+Message-ID: <CAGETcx_TaR+_Z9bf-Gsx3pXC9QwSUT85TTwALj5KjaOY1oNK8g@mail.gmail.com>
+Subject: Re: [PATCH v1 1/2] driver core: fw_devlink: Allow firmware to mark
+ devices as best effort
+To:     Sascha Hauer <sha@pengutronix.de>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Frank Rowand <frowand.list@gmail.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Daniel Scally <djrscally@gmail.com>,
+        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+        Sakari Ailus <sakari.ailus@linux.intel.com>,
+        Len Brown <lenb@kernel.org>, Peng Fan <peng.fan@nxp.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        David Ahern <dsahern@kernel.org>, kernel-team@android.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+        linux-gpio@vger.kernel.org, kernel@pengutronix.de,
+        devicetree@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 23, 2022 at 11:15:09AM +0800, Jinzhou Su wrote:
-> When system resumes from S3, the CPPC enable register will be
-> cleared and reset to 0. So sets this bit to enable CPPC
-> interface by writing 1 to this register.
-> 
-> Signed-off-by: Jinzhou Su <Jinzhou.Su@amd.com>
-> ---
->  drivers/cpufreq/amd-pstate.c | 24 ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 7be38bc6a673..9ac75c1cde9c 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -566,6 +566,28 @@ static int amd_pstate_cpu_exit(struct cpufreq_policy *policy)
->  	return 0;
->  }
->  
-> +static int amd_pstate_cpu_resume(struct cpufreq_policy *policy)
-> +{
-> +	int ret;
-> +
-> +	ret = amd_pstate_enable(true);
-> +	if (ret)
-> +		pr_err("failed to enable amd-pstate during resume, return %d\n", ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static int amd_pstate_cpu_suspend(struct cpufreq_policy *policy)
-> +{
-> +	int ret;
-> +
-> +	ret = amd_pstate_enable(false);
-> +	if (ret)
-> +		pr_err("failed to disable amd-pstate during suspend, return %d\n", ret);
-> +
-> +	return ret;
-> +}
-> +
->  /* Sysfs attributes */
->  
->  /*
-> @@ -636,6 +658,8 @@ static struct cpufreq_driver amd_pstate_driver = {
->  	.target		= amd_pstate_target,
->  	.init		= amd_pstate_cpu_init,
->  	.exit		= amd_pstate_cpu_exit,
-> +	.suspend	= amd_pstate_cpu_suspend,
-> +	.resume		= amd_pstate_cpu_resume,
->  	.set_boost	= amd_pstate_set_boost,
->  	.name		= "amd-pstate",
->  	.attr           = amd_pstate_attr,
-> -- 
-> 2.32.0
-> 
+On Wed, Jun 22, 2022 at 11:50 PM Sascha Hauer <sha@pengutronix.de> wrote:
+>
+> On Wed, Jun 22, 2022 at 02:59:10PM -0700, Saravana Kannan wrote:
+> > When firmware sets the FWNODE_FLAG_BEST_EFFORT flag for a fwnode,
+> > fw_devlink will do a best effort ordering for that device where it'll
+> > only enforce the probe/suspend/resume ordering of that device with
+> > suppliers that have drivers. The driver of that device can then decide
+> > if it wants to defer probe or probe without the suppliers.
+> >
+> > This will be useful for avoid probe delays of the console device that
+> > were caused by commit 71066545b48e ("driver core: Set
+> > fw_devlink.strict=1 by default").
+> >
+> > Fixes: 71066545b48e ("driver core: Set fw_devlink.strict=1 by default")
+> > Reported-by: Sascha Hauer <sha@pengutronix.de>
+> > Reported-by: Peng Fan <peng.fan@nxp.com>
+> > Signed-off-by: Saravana Kannan <saravanak@google.com>
+> > ---
+> >  drivers/base/core.c    | 3 ++-
+> >  include/linux/fwnode.h | 4 ++++
+> >  2 files changed, 6 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/base/core.c b/drivers/base/core.c
+> > index 839f64485a55..61edd18b7bf3 100644
+> > --- a/drivers/base/core.c
+> > +++ b/drivers/base/core.c
+> > @@ -968,7 +968,8 @@ static void device_links_missing_supplier(struct device *dev)
+> >
+> >  static bool dev_is_best_effort(struct device *dev)
+> >  {
+> > -     return fw_devlink_best_effort && dev->can_match;
+> > +     return (fw_devlink_best_effort && dev->can_match) ||
+> > +             dev->fwnode->flags & FWNODE_FLAG_BEST_EFFORT;
+>
+> Check for dev->fwnode first. I am running in a NULL pointer exception
+> here for a device that doesn't have a fwnode.
 
-<formletter>
+Oops. Fixed and sent out a v2.
 
-This is not the correct way to submit patches for inclusion in the
-stable kernel tree.  Please read:
-    https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
-for how to do this properly.
-
-</formletter>
+-Saravana
