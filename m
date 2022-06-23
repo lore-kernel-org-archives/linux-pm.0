@@ -2,124 +2,75 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 273B3C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 08:09:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B61EC433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 08:10:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229573AbiFWIJU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Jun 2022 04:09:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51888 "EHLO
+        id S230044AbiFWIKp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Jun 2022 04:10:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54836 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230172AbiFWIIV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 04:08:21 -0400
-Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2F10252AA
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2022 01:08:13 -0700 (PDT)
-Received: by mail-yb1-xb49.google.com with SMTP id u128-20020a25dd86000000b0066073927e92so16725582ybg.13
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2022 01:08:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=s9ND+o/2c+yLLqaQvSasSfGJRux3sdgC6yXqcCSmvC4=;
-        b=ZChn5ahWF9VYjMaZyt75gRGdRRm9LYwWwkstPyFagKQEAyvitoOq9K9PtewRoCDhSM
-         tAkvp8C+6vLvaAyusyWYI21A6zVjKa5/J8gAEms2VIQwhv3yjw+3NCR2DEx9uxGeN2QJ
-         rS/zNPMzlbhn4YaJRa/lxLtaxH9A7m6NK3ZdXGOgoyyBfWLvx+PDntcmTJFeXZvqRilJ
-         IYZVG4M+dhM5VQEV4SPScrfViR40Ehpl3D5iBw+7OCCiUX0dCoDDiuZRzruyfOzLI4Ou
-         MQ3GXEQicXFecGuaW/OqF2wd1VI2EawxBbtZm4yAP8J1jKc/GtvpSLqNqDM4p5NK5zZS
-         759w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=s9ND+o/2c+yLLqaQvSasSfGJRux3sdgC6yXqcCSmvC4=;
-        b=Xd+NZkHOVEuomLBEvNdAnJjB+b/igQ4GLyWljb7M+hkO2GZjauUxDOXTerrMZkyafz
-         +Tln4LnId3z3djNimbN2daW8rBC71xzCkGTh/rsUSEagWddn2ytQuunABhwMe6C55nnb
-         Pbv+sEhadrzfeMEqmcCNTJozsMfRA6sJmdXLuMxMh9MHermPUtzG6J/Fh/LJyk3zSks2
-         fro5IOfIXqsBxSnBX8J0wv+OmjTd96T0X0n4mwCDPdJX4zf+X5Z1zxPVyZn0USERRUrk
-         DguOR8Bl4zKE4YE5VjVSLLVrsnLFtSLOgtPw6KtQkL5OiGbGJIma6XmWGk2xtqvciVqs
-         Vmvg==
-X-Gm-Message-State: AJIora+r/Go83AGkOzV08uHUxCXZzkW72Ol4hIuUXYoHbSCtZtccdcM3
-        gCcY7vxd0PmrrIbx7ZjkMOmOK628cAEVnu8=
-X-Google-Smtp-Source: AGRyM1sE5BByBONr09uTGuYvikqMrbKKy57XSWWEHEYrg9GZbQPbgu/DImBH3QXHzvbDpX1ROMvYGcf5ilhwWN4=
-X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:8b2d:9894:73a4:8e1f])
- (user=saravanak job=sendgmr) by 2002:a81:7007:0:b0:317:912a:32a3 with SMTP id
- l7-20020a817007000000b00317912a32a3mr9395945ywc.194.1655971692862; Thu, 23
- Jun 2022 01:08:12 -0700 (PDT)
-Date:   Thu, 23 Jun 2022 01:03:43 -0700
-In-Reply-To: <20220623080344.783549-1-saravanak@google.com>
-Message-Id: <20220623080344.783549-3-saravanak@google.com>
-Mime-Version: 1.0
-References: <20220623080344.783549-1-saravanak@google.com>
-X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
-Subject: [PATCH v2 2/2] of: base: Avoid console probe delay when fw_devlink.strict=1
-From:   Saravana Kannan <saravanak@google.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Frank Rowand <frowand.list@gmail.com>,
+        with ESMTP id S230171AbiFWIKo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 04:10:44 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 849154756E;
+        Thu, 23 Jun 2022 01:10:43 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 43E03B82208;
+        Thu, 23 Jun 2022 08:10:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6ECCEC3411B;
+        Thu, 23 Jun 2022 08:10:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1655971841;
+        bh=R3uCGcBzcPhEjKLhoHYVr0mcT7inFO/vUdrx4pb+wmY=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=bpb8gFH2ZoatfRw2fHmWNw0l08XRetd1naHwiFW0SnH5+PLXNAt3WbYdpzFN7PyLR
+         pzD04MEf/DFEbSUQ1MGQzaIK5f4MrFoqE9zicARpfwAD9aZ4rxKfmKsi3x89f8HGxq
+         JwJEQK6tF7+7Rdml1BXBR2pQd/sIjPDso0xC/6kiD22LCbL/Yv5lrcj1iY7vAmZCXi
+         aH0h4rk1zSQtdHP1ker7Mr+lTM2iRnrRi2N6aFCsSvQgHRVDQ5a3rd3EsdVD+zVxtL
+         bYZv6hI4Vyh1F4EXWR/DBVc9ntWgGJWLS9WUrgJdUJ6D0F8Q1pBQEpwuvHg3GLbfkN
+         tJ2T/s4H7XF4A==
+Date:   Thu, 23 Jun 2022 13:40:37 +0530
+From:   Vinod Koul <vkoul@kernel.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Daniel Scally <djrscally@gmail.com>,
-        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
         Sakari Ailus <sakari.ailus@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
-        Saravana Kannan <saravanak@google.com>
-Cc:     sascha hauer <sha@pengutronix.de>, peng fan <peng.fan@nxp.com>,
-        kevin hilman <khilman@kernel.org>,
-        ulf hansson <ulf.hansson@linaro.org>,
-        len brown <len.brown@intel.com>, pavel machek <pavel@ucw.cz>,
-        joerg roedel <joro@8bytes.org>, will deacon <will@kernel.org>,
-        andrew lunn <andrew@lunn.ch>,
-        heiner kallweit <hkallweit1@gmail.com>,
-        russell king <linux@armlinux.org.uk>,
-        "david s. miller" <davem@davemloft.net>,
-        eric dumazet <edumazet@google.com>,
-        jakub kicinski <kuba@kernel.org>,
-        paolo abeni <pabeni@redhat.com>,
-        linus walleij <linus.walleij@linaro.org>,
-        hideaki yoshifuji <yoshfuji@linux-ipv6.org>,
-        david ahern <dsahern@kernel.org>, kernel-team@android.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
-        linux-gpio@vger.kernel.org, kernel@pengutronix.de,
-        devicetree@vger.kernel.org, linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        Bard Liao <yung-chuan.liao@linux.intel.com>,
+        Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
+        Sanyog Kale <sanyog.r.kale@intel.com>,
+        alsa-devel@alsa-project.org
+Subject: Re: [PATCH v2 14/16] soundwire: Use acpi_dev_for_each_child()
+Message-ID: <YrQf/W/Kmo954hAm@matsya>
+References: <1843211.tdWV9SEqCh@kreacher>
+ <2653857.mvXUDI8C0e@kreacher>
+ <9017824.rMLUfLXkoz@kreacher>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9017824.rMLUfLXkoz@kreacher>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Commit 71066545b48e ("driver core: Set fw_devlink.strict=1 by default")
-enabled iommus and dmas dependency enforcement by default. On some
-systems, this caused the console device's probe to get delayed until the
-deferred_probe_timeout expires.
+On 13-06-22, 20:35, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Instead of walking the list of children of an ACPI device directly,
+> use acpi_dev_for_each_child() to carry out an action for all of
+> the given ACPI device's children.
+> 
+> This will help to eliminate the children list head from struct
+> acpi_device as it is redundant and it is used in questionable ways
+> in some places (in particular, locking is needed for walking the
+> list pointed to it safely, but it is often missing).
 
-We need consoles to work as soon as possible, so mark the console device
-node with FWNODE_FLAG_BEST_EFFORT so that fw_delink knows not to delay
-the probe of the console device for suppliers without drivers. The
-driver can then make the decision on where it can probe without those
-suppliers or defer its probe.
+Applied, thanks
 
-Fixes: 71066545b48e ("driver core: Set fw_devlink.strict=1 by default")
-Reported-by: Sascha Hauer <sha@pengutronix.de>
-Reported-by: Peng Fan <peng.fan@nxp.com>
-Signed-off-by: Saravana Kannan <saravanak@google.com>
-Tested-by: Peng Fan <peng.fan@nxp.com>
----
- drivers/of/base.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index d4f98c8469ed..a19cd0c73644 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -1919,6 +1919,8 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
- 			of_property_read_string(of_aliases, "stdout", &name);
- 		if (name)
- 			of_stdout = of_find_node_opts_by_path(name, &of_stdout_options);
-+		if (of_stdout)
-+			of_stdout->fwnode.flags |= FWNODE_FLAG_BEST_EFFORT;
- 	}
- 
- 	if (!of_aliases)
 -- 
-2.37.0.rc0.161.g10f37bed90-goog
-
+~Vinod
