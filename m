@@ -2,167 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41144C43334
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 01:28:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A106C43334
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 02:37:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235713AbiFWB2Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Jun 2022 21:28:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49564 "EHLO
+        id S1358338AbiFWChH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Jun 2022 22:37:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42176 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244720AbiFWB2K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2022 21:28:10 -0400
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 669BA18355;
-        Wed, 22 Jun 2022 18:28:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1655947684; x=1687483684;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=JDaY/H6l4S7fw8l9x6LMQMp2crDdKIldldQwzF5WU4k=;
-  b=Z+yp+tsw+uYnBzJgP11EIsldalP1h1x/PyOJ11I2ZrYhBenXCUz0Ecwi
-   6+sR5/kUosdxDfoBmHVH+//NTq7CB4X4gW4ScjNvKsgQRnL/uKwipzTgt
-   gVydfBv4Qf2ty026MhEM3ulzqm01RKcOU0r79yIF3W21aPcVPYGi2/Ku7
-   jrZ2fyGHcdEn/ITHZLnPLhR1AQq29fRgm0gWteZTJTSWUInB3vszk5QnC
-   rKro6pHU+bXtQ5oGDR4oLjj60z0phj0Xsab4frNZNQL+/SEzVkjEP4Atc
-   UfEPJpGfA0TrltsBLcJ+gFEtDHXRczArlOaIPUguGUptouGpeB6lGtaAb
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10386"; a="342277008"
-X-IronPort-AV: E=Sophos;i="5.92,215,1650956400"; 
-   d="scan'208";a="342277008"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2022 18:28:01 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,215,1650956400"; 
-   d="scan'208";a="914958346"
-Received: from lkp-server01.sh.intel.com (HELO 68b931ab7ac1) ([10.239.97.150])
-  by fmsmga005.fm.intel.com with ESMTP; 22 Jun 2022 18:28:00 -0700
-Received: from kbuild by 68b931ab7ac1 with local (Exim 4.95)
-        (envelope-from <lkp@intel.com>)
-        id 1o4BdX-0000Hj-IM;
-        Thu, 23 Jun 2022 01:27:59 +0000
-Date:   Thu, 23 Jun 2022 09:17:37 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 22f7e9edec50b73e533b1f73bd4b2e10a0910d3f
-Message-ID: <62b3bf31.e3RKhPmmPlJYpvAW%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S229615AbiFWChC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2022 22:37:02 -0400
+Received: from mail-yw1-x1129.google.com (mail-yw1-x1129.google.com [IPv6:2607:f8b0:4864:20::1129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA0943C722
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2022 19:37:01 -0700 (PDT)
+Received: by mail-yw1-x1129.google.com with SMTP id 00721157ae682-317741c86fdso179197177b3.2
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2022 19:37:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=49Nk7hmUdiJCNEYE0l0yCJRDHLf0jxWA0g/35538DuA=;
+        b=aGy21QAm2ckk1RncPP4GRr5ft+rJupnCr6OT/Le1/gXU/A9f6Fk/UaMnFtGMpAjRPC
+         7wwBIH+TFzD39mTpiazmfjeXUmlQ3UU9gZcNik0JvaaSeoYeGqJqUscvkHXqOFVcMa/R
+         SuB7JET94Z5HUQ9MShoToSmLuuoKSHVqvbBlOOIFg/fHYUewTUv80g5mgSDKZx10uHd+
+         qBb/Z0LvSv2ZbksXBn+fLEy1JQwEVzZq2CeQuOzjntgynlq7qSPTqha3lZMvGlHRl97b
+         pjpaedi+ISyzZimuCTzg0/3RdM+bfRpsyRaIlvpZWkywzNQwa7pmPkUQbpSKsuz3eRsH
+         N0NQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=49Nk7hmUdiJCNEYE0l0yCJRDHLf0jxWA0g/35538DuA=;
+        b=kY120iyvkJC3Sw4WY17UFpOJFuBbGgKNT34HCtLwIBoLaoxnmUE3fcllpybHDUjtqN
+         OPVgocjUtuyhtMonlgL0Xcuj/nvIriwUVe3pQ3oSRNizfTzX7cLNQO1+wXSPL1MPGuH/
+         Dfbd+6jlr7syYpy/pmAXDVoaR83f9NbDsHtbY6PCIYL+x4r75oCCNLDWah/7SGQcFll/
+         P9Vc18wihVvcQKBqvSE6mTIScATM+6+xt39ZeFQcZkq5FqRaUWVA9wqMhPfV+z/RLYIC
+         Foth1op51ED9SnpfwtoKMjBg2iAQmRmul3zaRB+LRzCkhvH5F2gLRHJy9LpifczxTbdY
+         9e9g==
+X-Gm-Message-State: AJIora8BQhmOeIs1YMhbOwEJoG1C49CYFO1uqx9ra3id4NzujgDE/xd2
+        hll46MB/U5ehngRQywtrj53mydXLiCyc3un+doX81w==
+X-Google-Smtp-Source: AGRyM1uForsh5uwbmA0/mI09ZlD3rwatBHRJYURxs0u4OU+1zZPa3scdhxXMEMbqrJC6Nd6N/RQLqd9C8noLcEuIb08=
+X-Received: by 2002:a81:4896:0:b0:317:f767:95f8 with SMTP id
+ v144-20020a814896000000b00317f76795f8mr8455343ywa.218.1655951820855; Wed, 22
+ Jun 2022 19:37:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+References: <CGME20220616032522eucas1p19a6c8718f01fa61c2fee795fb8945a92@eucas1p1.samsung.com>
+ <CAGETcx8z4dn1j05Za6nfDeC3v4r1yo30Nqu=1K2BEsvLcqqybQ@mail.gmail.com>
+ <d5796286-ec24-511a-5910-5673f8ea8b10@samsung.com> <CAGETcx8e0QDbaqHGm1O8y6zwrBCwRitsRFXeUPt0w6uFx9k6+g@mail.gmail.com>
+In-Reply-To: <CAGETcx8e0QDbaqHGm1O8y6zwrBCwRitsRFXeUPt0w6uFx9k6+g@mail.gmail.com>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Wed, 22 Jun 2022 19:36:24 -0700
+Message-ID: <CAGETcx-MHwex8tHLB1d71MAP01-3OPDZSNCUBb3iT+BtrugJmQ@mail.gmail.com>
+Subject: Re: Default async probing for DT based systems
+To:     Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Kevin Hilman <khilman@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Marc Zyngier <maz@kernel.org>, Will Deacon <will@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+        Android Kernel Team <kernel-team@android.com>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 22f7e9edec50b73e533b1f73bd4b2e10a0910d3f  Merge branch 'pm-sleep' into linux-next
+On Fri, Jun 17, 2022 at 11:04 AM Saravana Kannan <saravanak@google.com> wrote:
+>
+> On Fri, Jun 17, 2022 at 2:04 AM Marek Szyprowski
+> <m.szyprowski@samsung.com> wrote:
+> >
+> > Hi Saravana,
+> >
+> > On 16.06.2022 05:24, Saravana Kannan wrote:
+> > > Hi,
+> > >
+> > > TL;DR: I want to improve boot times by enabling async probing by
+> > > default for DT based systems. Can you give it a shot please?
+> >
+> > Yes, I've gave it a try on my test systems. It looks that there are a
+> > few issues. The first one, the most obvious to notice, is related to
+> > __request_module() calls from various drivers and frameworks. Here are
+> > some examples:
+> >
+> > ------------[ cut here ]------------
+> > WARNING: CPU: 3 PID: 73 at kernel/kmod.c:136 __request_module+0x230/0x600
+> > Modules linked in:
+> > CPU: 3 PID: 73 Comm: kworker/u12:5 Not tainted 5.19.0-rc2-next-20220615+
+> > #5203
+> > Hardware name: ARM Juno development board (r1) (DT)
+> > Workqueue: events_unbound async_run_entry_fn
+> > pstate: 00000005 (nzcv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+> > UDC core: g_ether: couldn't find an available UDC
+> > pc : __request_module+0x230/0x600
+> > lr : __request_module+0x228/0x600
+>
+> Ah, I think I know what these might be. Going by memory,
+> __request_module() from asyc thread context has some issues for module
+> loading. So I think a check was added like this. And I think the check
+> is triggering when it shouldn't (this isn't module context here).
 
-elapsed time: 729m
+My memory was right and this is indeed the spurious warning that was
+meant to cover a potential deadlock in a module load path. I was
+trying to disable this warning till we hit the point in the boot flow
+where request_module() can actually succeed. But I got stuck trying to
+figure it out.
 
-configs tested: 88
-configs skipped: 2
+It looks like the usermode helper that's used for module loading
+triggered by request_module() is enabled in populate_rootfs() that
+runs well before most of the initcalls are done. I was under the
+impression that init with pid 0 would be the first userspace thread
+that can start. But I don't see anything obvious that prevents the
+usermode helper from running and loading a module before init process
+has been exec'ed after we set system_state to SYSTEM_RUNNING.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Can someone clarify when is the earliest request_module() can succeed?
 
-gcc tested configs:
-arm64                            allyesconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                          randconfig-c001
-m68k                          atari_defconfig
-sh                             espt_defconfig
-arc                    vdk_hs38_smp_defconfig
-s390                          debug_defconfig
-m68k                        mvme16x_defconfig
-arm                            xcep_defconfig
-arc                              alldefconfig
-sh                           se7343_defconfig
-parisc                generic-32bit_defconfig
-arm                        oxnas_v6_defconfig
-um                               alldefconfig
-sh                          urquell_defconfig
-sh                         microdev_defconfig
-sparc                               defconfig
-powerpc                      pasemi_defconfig
-sh                             sh03_defconfig
-openrisc                         alldefconfig
-arm                           u8500_defconfig
-arm                       aspeed_g5_defconfig
-xtensa                              defconfig
-ia64                             allmodconfig
-riscv                             allnoconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-arc                              allyesconfig
-alpha                            allyesconfig
-powerpc                           allnoconfig
-mips                             allyesconfig
-powerpc                          allmodconfig
-sh                               allmodconfig
-i386                              debian-10.3
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                             allyesconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                          randconfig-a001
-i386                          randconfig-a003
-i386                          randconfig-a005
-x86_64                        randconfig-a011
-x86_64                        randconfig-a013
-x86_64                        randconfig-a015
-i386                          randconfig-a014
-i386                          randconfig-a012
-i386                          randconfig-a016
-arc                  randconfig-r043-20220622
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                           rhel-8.3-syz
-x86_64                         rhel-8.3-kunit
-
-clang tested configs:
-powerpc                 mpc8315_rdb_defconfig
-arm                          ixp4xx_defconfig
-riscv                    nommu_virt_defconfig
-mips                           ip28_defconfig
-arm                         hackkit_defconfig
-riscv                             allnoconfig
-powerpc                 xes_mpc85xx_defconfig
-i386                             allyesconfig
-mips                        qi_lb60_defconfig
-x86_64                        randconfig-k001
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a013
-i386                          randconfig-a015
-i386                          randconfig-a011
-hexagon              randconfig-r041-20220622
-hexagon              randconfig-r045-20220622
-riscv                randconfig-r042-20220622
-s390                 randconfig-r044-20220622
-hexagon              randconfig-r041-20220623
-hexagon              randconfig-r045-20220623
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Thanks,
+Saravana
