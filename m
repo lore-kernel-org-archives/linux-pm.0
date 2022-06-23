@@ -2,82 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F1DC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 19:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71FDECCA480
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 19:44:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231905AbiFWTll (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Jun 2022 15:41:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37632 "EHLO
+        id S231964AbiFWTot (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Jun 2022 15:44:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38630 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229732AbiFWTlI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 15:41:08 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED2BE4F1F8;
-        Thu, 23 Jun 2022 12:32:16 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A6210B82506;
-        Thu, 23 Jun 2022 19:32:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 648C9C341C8;
-        Thu, 23 Jun 2022 19:32:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1656012734;
-        bh=ZdmigUbppH2BlsyCjxD6GHpDlci7DR7Vnz7cHYwiTk8=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=I5DIS2LTmt+/GgHw5VG62eMk7RrpspOglhZJN8Rff9zK7AK66U8Js9+9gZBse5qX+
-         ExyUuAXgAQg49+vIIrIwAKDeByUlsFauqHSh/Oux5Rhh1UqZnukl/A8+3Q9UuES3ja
-         kD7RQlMtFbOlZY+51dMILfmT1aWzUb4rmaFwcFvXH4Az6vcwWwIQ83e+TmYFVQkSoF
-         Xibf7HcTozTVLvmDJzwW7iz3ghBcxs6BMnKuV4kBE8fuTAP5+fTSgNucf3Dybs383O
-         OQWW6UH5aLdMjb6DKXMtkzWgGvXwBNnufCCnnBh42azusSUhdeiQRdpq35yfdoBoe7
-         ry2A126MNxngQ==
-From:   Will Deacon <will@kernel.org>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Michael Walle <michael@walle.cc>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc:     kernel-team@android.com, Will Deacon <will@kernel.org>,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH 0/2] arm64: remove generic ARM cpuidle support
-Date:   Thu, 23 Jun 2022 20:31:42 +0100
-Message-Id: <165599037407.2971163.13182128360037725255.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20220529181329.2345722-1-michael@walle.cc>
-References: <20220529181329.2345722-1-michael@walle.cc>
+        with ESMTP id S231548AbiFWToY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 15:44:24 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CA7AA4;
+        Thu, 23 Jun 2022 12:37:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
+        :In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
+        Sender:Reply-To:Content-ID:Content-Description;
+        bh=9CGM3MAz5VIB06lBzNjGngOQOoE0/I7wEi8Zke9gm+w=; b=eQsA4dsC7zy0gZGxnWzQsATNue
+        4RNWA+fhmA3erPfzk5dxeMQCaD5Lf11f9oQOKkk8CzdloSz0KwOEP+HRM4wMgGPP8ofcZCZ2qDmwT
+        xfiupW9UG4h8v6ZC3HM8LRHIplQ2b0UahGQFsyNwJUOONvAmQaW+GT7DlYixlYzdJoIae9dvTqpeU
+        gy/FAvkyHsCJjzMv7Un5R+xfx0R5N1LCz8GpdTxJ5A4fM7tBl8UkLYkl8Zu3L9BNeakPSWLUWDFoM
+        lRie2OS7t8onKtNzBXKfM4zQiHwHss/qcyL+N+8jD2XviMbsj2Yz1eEDOSE48nGWdf9/GLVllbreJ
+        XSnwtsig==;
+Received: from [2601:1c0:6280:3f0::aa0b]
+        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1o4SWU-00Bssw-NX; Thu, 23 Jun 2022 19:30:38 +0000
+Message-ID: <bcc5b395-7fd8-f1a0-1b9f-62c9948287af@infradead.org>
+Date:   Thu, 23 Jun 2022 12:29:27 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH v3 12/14] leds: mt6370: Add Mediatek MT6370 current sink
+ type LED Indicator support
+Content-Language: en-US
+To:     ChiaEn Wu <peterwu.pub@gmail.com>, lee.jones@linaro.org,
+        daniel.thompson@linaro.org, jingoohan1@gmail.com, pavel@ucw.cz,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        matthias.bgg@gmail.com, sre@kernel.org, chunfeng.yun@mediatek.com,
+        gregkh@linuxfoundation.org, jic23@kernel.org, lars@metafoo.de,
+        lgirdwood@gmail.com, broonie@kernel.org, linux@roeck-us.net,
+        heikki.krogerus@linux.intel.com, deller@gmx.de
+Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
+        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        szunichen@gmail.com
+References: <20220623115631.22209-1-peterwu.pub@gmail.com>
+ <20220623115631.22209-13-peterwu.pub@gmail.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20220623115631.22209-13-peterwu.pub@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 29 May 2022 20:13:27 +0200, Michael Walle wrote:
-> Playing with an own PSCI implementation, I've noticed that the cpuidle-arm
-> driver doesn't work on arm64. It doesn't probe because since commit
-> 788961462f34 ("ARM: psci: cpuidle: Enable PSCI CPUidle driver") the
-> arm_cpuidle_init() can only return -EOPNOTSUPP, because the commit removed
-> the cpu_idle_init and cpu_suspend ops.
-> 
-> It left me puzzled for quite some time. It seems that the cpuidle-psci is
-> the preferred one and this has been the case for quite some time. The
-> mentioned commit first appeared in v5.4.
-> 
-> [...]
 
-Applied to arm64 (for-next/cpuidle), thanks!
 
-[1/2] cpuidle: cpuidle-arm: remove arm64 support
-      https://git.kernel.org/arm64/c/51280acad855
-[2/2] arm64: cpuidle: remove generic cpuidle support
-      https://git.kernel.org/arm64/c/471f80db9ef1
+On 6/23/22 04:56, ChiaEn Wu wrote:
+> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> index a49979f..a8c58c3 100644
+> --- a/drivers/leds/Kconfig
+> +++ b/drivers/leds/Kconfig
+> @@ -244,6 +244,17 @@ config LEDS_MT6323
+>  	  This option enables support for on-chip LED drivers found on
+>  	  Mediatek MT6323 PMIC.
+>  
+> +config LEDS_MT6370_RGB
+> +	tristate "LED Support for Mediatek MT6370 PMIC"
+> +	depends on LEDS_CLASS
+> +	depends on MFD_MT6370
+> +	select LINEAR_RANGE
+> +	help
+> +	  Say Y here to enable support for MT6370_RGB LED device.
+> +	  In MT6370, there are four channel current-sink LED drivers that
+> +	  support hardware pattern for const current, PWM, and breath mode.
 
-Cheers,
+Spell out "constant" (if that is what "const" means here). ?
+
+> +	  Isink4 channel can also be used as a CHG_VIN power good indicator.
+
 -- 
-Will
-
-https://fixes.arm64.dev
-https://next.arm64.dev
-https://will.arm64.dev
+~Randy
