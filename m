@@ -2,155 +2,97 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A049C43334
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 18:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F28A6C43334
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jun 2022 18:56:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232448AbiFWSgK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Jun 2022 14:36:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51682 "EHLO
+        id S231335AbiFWS4V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Jun 2022 14:56:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234861AbiFWSgA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 14:36:00 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95280D7E13
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2022 10:36:55 -0700 (PDT)
-Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=[127.0.0.1])
-        by metis.ext.pengutronix.de with esmtp (Exim 4.92)
-        (envelope-from <a.fatoum@pengutronix.de>)
-        id 1o4QkO-00079c-Ee; Thu, 23 Jun 2022 19:36:04 +0200
-Message-ID: <ec4168b6-36f1-0183-b1ed-6a33d9fa1bbc@pengutronix.de>
-Date:   Thu, 23 Jun 2022 19:35:53 +0200
+        with ESMTP id S230063AbiFWSzz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2022 14:55:55 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EB951037CC;
+        Thu, 23 Jun 2022 11:00:57 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id v14so29037073wra.5;
+        Thu, 23 Jun 2022 11:00:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=dRJQoHw1UG1x5dNKh7G6ADZfil6pTNVqaifRMO6ggF0=;
+        b=MLfROjT9/wqnuFpNELvplnXAfdW9jH48Eqh1salfv/Iekdf/56jqn/sNuyZRUiEz10
+         LOcxnnmDfEqCQ5Un9E78BJU/fWmqt5NBklAScqUPcry29uRuvK/keaXyz2Ow/qdOk2iV
+         A9oYQFcNBZWZNTxTamiLRbqZ79v6n4ZM+3JkdRjUm95FXoEKfU1rvz5O3+emNoF1KwPk
+         bvUWyACqMfwaBX/P1MvNDnUpBY2MDdGZ4E31GS4iQDWIZlRo1xPsjWcEUSoNIB+IVqv0
+         7fVsBU9TCuMwQA49LZMGOWZqLYkTEMabyIML70inShUXE3twRqxjpWjWXHZ5YOVsmYtZ
+         LevA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=dRJQoHw1UG1x5dNKh7G6ADZfil6pTNVqaifRMO6ggF0=;
+        b=llWtAVIj7hQv67rCdnFS5oCvyP1c0pU1R9mZ2DtzheE3FfJeiAXVrbn8iA49Mvcv/3
+         O//AcrEusc3bZoqkJeH8npxRAB2JfHG2QIlIG7IRsXCnzDeOQGNFoH9YtbFFUVBG7nxj
+         w1U7+SQo/l5AD5gXRF32h9rUaQI9CWAt1jsdDXnvpBrCFSQAigLS3QDrr3hRozjhF8W6
+         hXZPh5cIEtR7spyS5stn1OmNQZQTd8FJ92PbzWqn31NxU1YJGdx0ikUQsy+ROHGYckn0
+         8x29TQ+aG3WjExGcEpbO3dtEcNn7X2qBqxIA3ckZAheSGxWfmkeueZtKWAyTPPlgVEvC
+         pjmw==
+X-Gm-Message-State: AJIora8//T6m6iiyk8FfXjPkfobyvRdXi47l/BSQaB8JobuMdaaVwdok
+        k8s+xWUb7I6roKxfKKDr8qI=
+X-Google-Smtp-Source: AGRyM1toobZl5B1XzSCHMlvHvQl5Nai3QbUhmgtQcRWFRH+ixEaJocohOwMe9KH9e6aUg3VghL2QrQ==
+X-Received: by 2002:adf:fb12:0:b0:20c:79b2:a200 with SMTP id c18-20020adffb12000000b0020c79b2a200mr9789991wrr.617.1656007255590;
+        Thu, 23 Jun 2022 11:00:55 -0700 (PDT)
+Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
+        by smtp.gmail.com with ESMTPSA id f11-20020a05600c4e8b00b0039c4945c753sm4678551wmq.39.2022.06.23.11.00.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Jun 2022 11:00:55 -0700 (PDT)
+From:   Colin Ian King <colin.i.king@gmail.com>
+To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] PM / devfreq: imx-bus: use NULL to pass a null pointer rather than zero
+Date:   Thu, 23 Jun 2022 19:00:54 +0100
+Message-Id: <20220623180054.79687-1-colin.i.king@gmail.com>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH v2 2/2] of: base: Avoid console probe delay when
- fw_devlink.strict=1
-Content-Language: en-US
-To:     Saravana Kannan <saravanak@google.com>,
-        sascha hauer <sha@pengutronix.de>
-Cc:     andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>,
-        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        linus walleij <linus.walleij@linaro.org>,
-        ulf hansson <ulf.hansson@linaro.org>,
-        eric dumazet <edumazet@google.com>,
-        pavel machek <pavel@ucw.cz>, will deacon <will@kernel.org>,
-        kevin hilman <khilman@kernel.org>,
-        Frank Rowand <frowand.list@gmail.com>,
-        joerg roedel <joro@8bytes.org>,
-        russell king <linux@armlinux.org.uk>,
-        linux-acpi@vger.kernel.org, jakub kicinski <kuba@kernel.org>,
-        paolo abeni <pabeni@redhat.com>, kernel-team@android.com,
-        Len Brown <lenb@kernel.org>, len brown <len.brown@intel.com>,
-        kernel@pengutronix.de, linux-pm@vger.kernel.org,
-        linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        hideaki yoshifuji <yoshfuji@linux-ipv6.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        david ahern <dsahern@kernel.org>, linux-kernel@vger.kernel.org,
-        Daniel Scally <djrscally@gmail.com>,
-        iommu@lists.linux-foundation.org,
-        Sakari Ailus <sakari.ailus@linux.intel.com>,
-        netdev@vger.kernel.org, "david s. miller" <davem@davemloft.net>,
-        devicetree@vger.kernel.org, heiner kallweit <hkallweit1@gmail.com>
-References: <20220623080344.783549-1-saravanak@google.com>
- <20220623080344.783549-3-saravanak@google.com>
- <20220623100421.GY1615@pengutronix.de>
- <CAGETcx_eVkYtVX9=TOKnhpP2_ZpJwRDoBye3i7ND2u5Q-eQfPg@mail.gmail.com>
-From:   Ahmad Fatoum <a.fatoum@pengutronix.de>
-In-Reply-To: <CAGETcx_eVkYtVX9=TOKnhpP2_ZpJwRDoBye3i7ND2u5Q-eQfPg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello Saravana,
+The 3rd argument to the function of_get_property is a pointer and it is
+being passed using 0. Use NULL instead.
 
-On 23.06.22 19:26, Saravana Kannan wrote:
-> On Thu, Jun 23, 2022 at 3:05 AM sascha hauer <sha@pengutronix.de> wrote:
->>
->> On Thu, Jun 23, 2022 at 01:03:43AM -0700, Saravana Kannan wrote:
->>> Commit 71066545b48e ("driver core: Set fw_devlink.strict=1 by default")
->>> enabled iommus and dmas dependency enforcement by default. On some
->>> systems, this caused the console device's probe to get delayed until the
->>> deferred_probe_timeout expires.
->>>
->>> We need consoles to work as soon as possible, so mark the console device
->>> node with FWNODE_FLAG_BEST_EFFORT so that fw_delink knows not to delay
->>> the probe of the console device for suppliers without drivers. The
->>> driver can then make the decision on where it can probe without those
->>> suppliers or defer its probe.
->>>
->>> Fixes: 71066545b48e ("driver core: Set fw_devlink.strict=1 by default")
->>> Reported-by: Sascha Hauer <sha@pengutronix.de>
->>> Reported-by: Peng Fan <peng.fan@nxp.com>
->>> Signed-off-by: Saravana Kannan <saravanak@google.com>
->>> Tested-by: Peng Fan <peng.fan@nxp.com>
->>> ---
->>>  drivers/of/base.c | 2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff --git a/drivers/of/base.c b/drivers/of/base.c
->>> index d4f98c8469ed..a19cd0c73644 100644
->>> --- a/drivers/of/base.c
->>> +++ b/drivers/of/base.c
->>> @@ -1919,6 +1919,8 @@ void of_alias_scan(void * (*dt_alloc)(u64 size, u64 align))
->>>                       of_property_read_string(of_aliases, "stdout", &name);
->>>               if (name)
->>>                       of_stdout = of_find_node_opts_by_path(name, &of_stdout_options);
->>> +             if (of_stdout)
->>> +                     of_stdout->fwnode.flags |= FWNODE_FLAG_BEST_EFFORT;
->>
->> The device given in the stdout-path property doesn't necessarily have to
->> be consistent with the console= parameter. The former is usually
->> statically set in the device trees contained in the kernel while the
->> latter is dynamically set by the bootloader. So if you change the
->> console uart in the bootloader then you'll still run into this trap.
->>
->> It's problematic to consult only the device tree for dependencies. I
->> found several examples of drivers in the tree for which dma support
->> is optional. They use it if they can, but continue without it when
->> not available. "hwlock" is another property which consider several
->> drivers as optional. Also consider SoCs in early upstreaming phases
->> when the device tree is merged with "dmas" or "hwlock" properties,
->> but the corresponding drivers are not yet upstreamed. It's not nice
->> to defer probing of all these devices for a long time.
->>
->> I wonder if it wouldn't be a better approach to just probe all devices
->> and record the device(node) they are waiting on. Then you know that you
->> don't need to probe them again until the device they are waiting for
->> is available.
-> 
-> That actually breaks things in a worse sense. There are cases where
-> the consumer driver is built in and the optional supplier driver is
-> loaded at boot. Without fw_devlink and the deferred probe timeout, we
-> end up probing the consumer with limited functionality. With the
-> current setup, sure we delay some probes a bit but at least everything
-> works with the right functionality. And you can reduce or remove the
-> delay if you want to optimize it.
+Cleans up sparse warning:
+warning: Using plain integer as NULL pointer
 
-I have a system that doesn't use stdout-path and has the bootloader
-set console= either to ttynull when secure booting or to an UART
-when booting normally. How would I optimize the kernel to avoid
-my UART being loaded after DMA controller probe without touching
-the bootloader?
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+---
+ drivers/devfreq/imx-bus.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Cheers,
-Ahmad
-
-> 
-> -Saravana
-> 
-> 
-
-
+diff --git a/drivers/devfreq/imx-bus.c b/drivers/devfreq/imx-bus.c
+index f3f6e25053ed..f87067fc574d 100644
+--- a/drivers/devfreq/imx-bus.c
++++ b/drivers/devfreq/imx-bus.c
+@@ -59,7 +59,7 @@ static int imx_bus_init_icc(struct device *dev)
+ 	struct imx_bus *priv = dev_get_drvdata(dev);
+ 	const char *icc_driver_name;
+ 
+-	if (!of_get_property(dev->of_node, "#interconnect-cells", 0))
++	if (!of_get_property(dev->of_node, "#interconnect-cells", NULL))
+ 		return 0;
+ 	if (!IS_ENABLED(CONFIG_INTERCONNECT_IMX)) {
+ 		dev_warn(dev, "imx interconnect drivers disabled\n");
 -- 
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+2.35.3
+
