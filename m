@@ -2,74 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E97B2CCA481
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Jun 2022 11:44:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D289CCA481
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Jun 2022 12:00:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231405AbiFXLo7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Jun 2022 07:44:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36688 "EHLO
+        id S231527AbiFXMAO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Jun 2022 08:00:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231598AbiFXLo4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jun 2022 07:44:56 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 484337B36C;
-        Fri, 24 Jun 2022 04:44:56 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 1671FB82863;
-        Fri, 24 Jun 2022 11:44:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47759C34114;
-        Fri, 24 Jun 2022 11:44:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1656071093;
-        bh=SXL5zN2nwEilLgVy+817nWe3mGqIkwJPf3KT5KtK610=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=QqleerCUtjShMpTKt40R3Xw5bJcBgWctuyJJpVXDDC8yUC+px+coDFuFGOhsDclBm
-         dg838WtwC4BaQ3bpEalZRbi71buK3vIaBJx8ZVhWnGCY1l7wOcJedOmOBaxgTuvbE9
-         l08jW1kWCHcm0hwgtV4GmlCbpSkA1mpGB+nGFXvo=
-Date:   Fri, 24 Jun 2022 13:33:52 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
-        sre@kernel.org, chunfeng.yun@mediatek.com, jic23@kernel.org,
-        lars@metafoo.de, lgirdwood@gmail.com, broonie@kernel.org,
-        linux@roeck-us.net, heikki.krogerus@linux.intel.com, deller@gmx.de,
-        chiaen_wu@richtek.com, alice_chen@richtek.com,
-        cy_huang@richtek.com, dri-devel@lists.freedesktop.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com
-Subject: Re: [PATCH v3 08/14] usb: typec: tcpci_mt6370: Add Mediatek MT6370
- tcpci driver
-Message-ID: <YrWhIMGjUeRkpHkB@kroah.com>
-References: <20220623115631.22209-1-peterwu.pub@gmail.com>
- <20220623115631.22209-9-peterwu.pub@gmail.com>
+        with ESMTP id S231421AbiFXMAN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jun 2022 08:00:13 -0400
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2047.outbound.protection.outlook.com [40.107.94.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30BD36F7A3;
+        Fri, 24 Jun 2022 05:00:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=jDDcRZ6eizcMwCoDDpPOskdeBhZMBpXRa9TbwOXyHA0idyQx8bzsfCUrK0LNcCsVEdmC0okuZL50uWepDPDPAvhSdFbYjHePsucb440r2/SbThsIrCfjQ0fQ0LWqYXxhFJcnWaddu2nUUqkuV3HRggJ2MrdeBSQLVvOiYS+Mgomjkt5TDy0RVAWCWhHOeVqsrJrzKxA9RDmtzhpuYEfOEcvGk5dGRDFDH5bo3dNu8pSv+xSN6FBiOVhrQaSB6rhlUDPO494f+335txUvc61GPH7TuMDh1R7tORHhbWlEVQhOqL03rC0IEsOiZXAcx2YxSzYqVYSG70c2SDh/MbUd3Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=VRtZPd9wsZ/Ox8tuYJn4oLK0HiH3a6yfv8EaNw+9Rwo=;
+ b=c3c9nakIu5cB+xgawo3tXkYXYubtemaLkXySKmCwM4w1Zm9QOM7/jWXnh5dfG0qIlrNCf7N8fAvv9q+ipQh2cf7XC2YVvJGKMagTUWQUXXqp0e3SIecbWBMjTgkhSk/GV5CPfltLNMyjrP3KFAeQyy0ap+2jcVAudysYUnU3T30brJMQb8c4Qr7oUxlmAcjpIbcQbopX+FKpjond1VZhuUMgh+X96jdML/oWXX1fc4MnIWOzfYhIUYaUnKRKRvXsDZfXRZdn7K2ZaIT2N9geZhykRy/4eX7HUe4HlINZtGh1B+NAvb7QIt1pa3ypQyDJKYQb2ir0L1T8TnNOH+XF2g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=VRtZPd9wsZ/Ox8tuYJn4oLK0HiH3a6yfv8EaNw+9Rwo=;
+ b=DhCneliBuPXLJOqeBet7HWiZwXeWUy7dhYLV9+AMppR2Y+apRPADR/XukXdshnxeRsJzSmyvGBzgKpaOaiDwHp5kgDjwnvPz86u5a+gs8fgsV04oZAhepzZMQTYUAzr+wHM+Igm+gh0ZDMHb12HraUd/z2kNbsDw/NlwMYdac+Q=
+Received: from DM6PR02CA0046.namprd02.prod.outlook.com (2603:10b6:5:177::23)
+ by MN2PR12MB4301.namprd12.prod.outlook.com (2603:10b6:208:1d4::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5373.16; Fri, 24 Jun
+ 2022 12:00:10 +0000
+Received: from DM6NAM11FT049.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:5:177:cafe::d9) by DM6PR02CA0046.outlook.office365.com
+ (2603:10b6:5:177::23) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5373.16 via Frontend
+ Transport; Fri, 24 Jun 2022 12:00:09 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ DM6NAM11FT049.mail.protection.outlook.com (10.13.172.188) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.5373.15 via Frontend Transport; Fri, 24 Jun 2022 12:00:09 +0000
+Received: from pyuan-desktop.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.28; Fri, 24 Jun
+ 2022 07:00:04 -0500
+From:   Perry Yuan <Perry.Yuan@amd.com>
+To:     <Ray.Huang@amd.com>, <Mario.Limonciello@amd.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <lenb@kernel.org>, Huang Rui <ray.huang@amd.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC:     <Nathan.Fontenot@amd.com>, <Jinzhou.Su@amd.com>,
+        <Xinmei.Huang@amd.com>, <Xiaojian.Du@amd.com>, <Li.Meng@amd.com>,
+        <linux-pm@vger.kernel.org>, "Perry Yuan" <Perry.Yuan@amd.com>
+Subject: [PATCH] ACPI: bus: Fix osc_sb_cppc_not_supported check
+Date:   Fri, 24 Jun 2022 07:59:40 -0400
+Message-ID: <20220624115940.272422-1-Perry.Yuan@amd.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220623115631.22209-9-peterwu.pub@gmail.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: fa57c60c-41d5-48ea-e2c3-08da55d91651
+X-MS-TrafficTypeDiagnostic: MN2PR12MB4301:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: VxQBE16Y9oZtRQd84qX2uhaUYln6fEtLcDb/G6fr8vYLJqFIHF4UmLgumvwnqsD+gRn+/XZN2F0rBbSKbNQndC+cu5EGFrY/+GTMJ8/yZy9vm0AwrbHsu3FDpOBOJXxEqYw4zq7jjcSCL5ZTQ1Z3SPzVUNs4YypC5ILJ7F1050q6mNqTAvAwof+CpjtKSvG/g1p4Tdq9ZWP1M3PLNumSJuHSaXRwVzaqeRy0LokZouIx/yiqY4nzLZUNPoAbw+AeRDXybYZMx9AOUVR9HdGxrfuilKF1+b5p0+HQg1UoCQBNDz5WF0GQGH923ZkuykhuWNt5N3IbMDfQBc9L0Z+TCXDfkgGs0dYVI9E4vOLC3bhMzqLGPX107FiltimlMrrtO+Pt7/ak7fCQXnb+WFB2fFtCLmfTX2O6eGixqZOGy8R02nDv850ay64l3rymOym6JKg8Pv1sTMSN5ZkMjRIjtgfWoH8xK+HY6XIDPxrudWEwRtkTNQiGWalJXOnAAcQOcs4xKFPsuUP30CFVnQP3ZbqPM09G6R2MWkC/n/tgK9DEpv95vI4cLAxu88y7bJWdqAzDD1xvh2FVffoAot3zIwI+e+PlMVp+dyzGXQkVWLv2D1VoXU8l6BCSngT0w0UUdRoJTDH4a+PnzTVOlPKPR51aB89YpA7k3glKwIaDF2jWTis/hKuKGbaY+DQo23PJfor+tKor71ERCwAm9luGT9ve9bbDqGBnmXQlOZZ8iMlGqFDDR/7H+Pt+gaQqCdqp+piwAfenfhF26/AjcoSKhVjuC2szvLEHQnUITNMxzdzzzDKvlW4lChJMLZxexkTPGtQGgUlNiFy9eEjaJjO2Kw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230016)(4636009)(376002)(39860400002)(396003)(346002)(136003)(40470700004)(46966006)(36840700001)(47076005)(336012)(356005)(4744005)(83380400001)(40480700001)(36860700001)(81166007)(426003)(316002)(40460700003)(110136005)(8936002)(54906003)(41300700001)(82310400005)(2906002)(70206006)(8676002)(70586007)(1076003)(2616005)(478600001)(7696005)(16526019)(82740400003)(36756003)(6666004)(5660300002)(186003)(86362001)(4326008)(26005)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jun 2022 12:00:09.6138
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: fa57c60c-41d5-48ea-e2c3-08da55d91651
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT049.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4301
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 23, 2022 at 07:56:25PM +0800, ChiaEn Wu wrote:
-> --- /dev/null
-> +++ b/drivers/usb/typec/tcpm/tcpci_mt6370.c
-> @@ -0,0 +1,212 @@
-> +// SPDX-License-Identifier: GPL-2.0+
+The patch fixs the osc_sb_cppc_not_supported variable checking
+Otherwise the cppc acpi driver will be failed to register causing AMD
+pstate driver failed to load when calling acpi_cpc_valid()
 
-Are you sure you mean "+" here?
+Fixes: c42fa24b447("ACPI: bus: Avoid using CPPC if not supported by firmware")
+Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
+---
+ drivers/acpi/bus.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I have to ask, sorry.
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 4d7c51a33b01..9731e4a1e338 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -359,7 +359,7 @@ static void acpi_bus_osc_negotiate_platform_control(void)
+ 	}
+ 
+ #ifdef CONFIG_ACPI_CPPC_LIB
+-	osc_sb_cppc_not_supported = !(capbuf_ret[OSC_SUPPORT_DWORD] &
++	osc_sb_cppc_not_supported = !(capbuf_ret[OSC_SUPPORT_DWORD] &&
+ 			(OSC_SB_CPC_SUPPORT | OSC_SB_CPCV2_SUPPORT));
+ #endif
+ 
+-- 
+2.25.1
 
-And no copyright line?  Your company is ok with that, nice!  :)
-
-thanks,
-
-greg k-h
