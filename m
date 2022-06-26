@@ -2,152 +2,140 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E96C43334
-	for <linux-pm@archiver.kernel.org>; Sat, 25 Jun 2022 21:20:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19481CCA479
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Jun 2022 03:20:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233268AbiFYVUX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 25 Jun 2022 17:20:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49696 "EHLO
+        id S233877AbiFZDUC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 25 Jun 2022 23:20:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230116AbiFYVUX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jun 2022 17:20:23 -0400
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D425514024
-        for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2022 14:20:21 -0700 (PDT)
-Received: by mail-pl1-x632.google.com with SMTP id q18so4967915pld.13
-        for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2022 14:20:21 -0700 (PDT)
+        with ESMTP id S233799AbiFZDUC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jun 2022 23:20:02 -0400
+Received: from mail-ot1-x334.google.com (mail-ot1-x334.google.com [IPv6:2607:f8b0:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2440713D34
+        for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2022 20:20:00 -0700 (PDT)
+Received: by mail-ot1-x334.google.com with SMTP id 7-20020a9d0107000000b00616935dd045so4927521otu.6
+        for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2022 20:20:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=avhifSXVipzXEO0Tuo5+QTyJrG88QVVq66bQeQR3zHc=;
-        b=dsuOEaGRAozEPdUQfSpyOD37385iTNh4DSWkOkCaVRby80cO5qyfNKav+6IUMG9vO3
-         V96lo7+pAdE2xUlDzt4VahwChfEVweXCqsi7X1f68ZMXnJNpKBMNgnfLfuyp87Z7iwPs
-         C0aU7+WSqqJxzxgGbAoaeBQYOqvUjJluD7S2Kc2+l2BuUx6v5tEmEojh5KdNfX+S2s1/
-         qlt+Uh/rkMyWJFXmGTrddPbAmn5ymIZlT3TLuo30Kulejej3atzul1gChd6SQfFqDLGU
-         1olRTG4z5czsjKgqyQ/P8J+f33HpXFObiK1oAr7zw9iPGARGZEGVCbWtCPR0kpGWjCwS
-         8eHw==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=w/mYeMPmd0Fk8nQabOaGxE7uHrcY17tT/p63c/0m/K8=;
+        b=y4TkfpoCC1kczoEYXJb+AciMyXrERHIx7++CgsHxTlOA/OI+ST+BTCmIH1CpjVAG35
+         YTtbNUjvO0QbvJrexaeD3eA/1t3Meb/Ify9txPu1IgrYdCYKgoNHiSrfxEKX6BtbmKUS
+         9jUeqlnMe15Rnp9aWAOrn5hCbeCVl0ZTUoq46r4iENpKoy8kazmApT91Rmmf/90X/857
+         h5uB6h3HeYkWicLpluc0eoBNulVXrYyK1rwlWqTISEHu6YDZBsZ3N4d55cOZD4Zjigg/
+         hSRAmRltMtv4sEt4NZDS31dxJzC0qYQdEaSVCyGeKf6SWgHIm6fA2Ufr1K1Cgo2SWclC
+         2ZSA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=avhifSXVipzXEO0Tuo5+QTyJrG88QVVq66bQeQR3zHc=;
-        b=C2k9AoGSeLHc43MXHvYWmVniW3V18WrDez+/869iqiw0F/4vS7jPrboWNMkMpFxsgR
-         fZ9kll9UqRggh5A36boATyiijEyIAlwrjzaIUyamsgNexLG5CEDKM1mMpqqR1yAUEBpV
-         4qyRRsOhLHMmNBOmTL/3rn7RSu9kfWSGnxgJ+6rUfNXcxu2mFj+r119NrPFf9JBPXsZ4
-         Qv3y54iBayakLRFYMtUw9TItg397uhDC7R1NjdKHTG68Ej1408eWIKYv9LfGsVA3d6ii
-         f4UEeiX/lfnEafhwx22tc1W+k/sN8VnqJXQMxanCGZNMnOPo8OeBWhrTSKcihiF3yV9H
-         QATg==
-X-Gm-Message-State: AJIora8QW59JIzAB8kwsxcgffZmNIudiBzQU23bmSiVTO2Dg/QK9FIXT
-        RiYQXm54jU7Yt5wuE3GUq7tqIg==
-X-Google-Smtp-Source: AGRyM1v/iZzUaRcQJYpcYIzPGunleMJkZYGhGv6NEhECDyGgObbGdDqtAuhEntEK9q+uXGYPq54OkQ==
-X-Received: by 2002:a17:90b:240e:b0:1e0:775b:f8fc with SMTP id nr14-20020a17090b240e00b001e0775bf8fcmr6525432pjb.132.1656192021357;
-        Sat, 25 Jun 2022 14:20:21 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id b5-20020a170902d40500b0016a13bd845csm4127485ple.165.2022.06.25.14.20.20
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=w/mYeMPmd0Fk8nQabOaGxE7uHrcY17tT/p63c/0m/K8=;
+        b=1zAYhFVYrnKQjtn/59v85Bh8w+ebscZ9ZSYnw2BmhB9iL/i5DR7GxxN8YHllupFIUQ
+         si6JX7/rFBHEUkemE+Tdwg/GyMewBEFlgGidi3Wk9hXGX4Sro2toebTaupKu24dUoBzL
+         L8w/aUvVKpp+QWISI76G5PvM9RklGw7v6aPsMk6mdQNpNWwyA0t5Url9Lt9g4O6401wq
+         dbLM4W5xnM2wlrkYwnjvx1NKBsfllu5O5eG/TvJDJXLAHDDuSdcFHgTcFMK0+SPuVOnz
+         oPiZzmNBW5mNg/HZmtFVieEIpgj1mSZNzNRjTOeUATPZt/UYIKvdANKqaK+DIqPVyKjN
+         3rKQ==
+X-Gm-Message-State: AJIora/Ta3sRLP4UI2ZkvHOco/XOist1gWkulyWACL8+OYMgJeWy2mJ8
+        JZuHPzKjfKtgbVbktV/EXpYbDg==
+X-Google-Smtp-Source: AGRyM1ueYuHJYGTGsRDe7GO1mvPAOg2cTr58tcPwudtIXoIbwJopBM7c20rw5dd4IUzHo/kBe21jmA==
+X-Received: by 2002:a05:6830:1f26:b0:60c:2662:ef9a with SMTP id e6-20020a0568301f2600b0060c2662ef9amr3133660oth.37.1656213599397;
+        Sat, 25 Jun 2022 20:19:59 -0700 (PDT)
+Received: from builder.lan (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id 4-20020a544184000000b0032f75714af1sm3422554oiy.18.2022.06.25.20.19.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 25 Jun 2022 14:20:20 -0700 (PDT)
-Message-ID: <62b77c14.1c69fb81.d6bcd.5c54@mx.google.com>
-Date:   Sat, 25 Jun 2022 14:20:20 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        Sat, 25 Jun 2022 20:19:58 -0700 (PDT)
+Date:   Sat, 25 Jun 2022 22:19:56 -0500
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Rajendra Nayak <quic_rjendra@quicinc.com>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 1/4] dt-bindings: interconnect: qcom,sdm845-cpu-bwmon:
+ add BWMON device
+Message-ID: <YrfQXM7N/dn9odKL@builder.lan>
+References: <20220601101140.170504-1-krzysztof.kozlowski@linaro.org>
+ <20220601101140.170504-2-krzysztof.kozlowski@linaro.org>
+ <Yp5tjUICIEUptKSx@ripper>
+ <3e4e504c-5a38-43cd-ea8d-afbbb72eacad@linaro.org>
+ <dbfe1e7c-19dc-2d20-700a-c26f0bf721e5@quicinc.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: build
-X-Kernelci-Kernel: pm-5.19-rc4-25-g616372937415
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 1 warning (pm-5.19-rc4-25-g616372937415)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dbfe1e7c-19dc-2d20-700a-c26f0bf721e5@quicinc.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (pm-5.19-rc4-25-g=
-616372937415)
+On Wed 22 Jun 06:58 CDT 2022, Rajendra Nayak wrote:
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/pm-=
-5.19-rc4-25-g616372937415/
+> 
+> 
+> On 6/7/2022 12:20 PM, Krzysztof Kozlowski wrote:
+> > On 06/06/2022 23:11, Bjorn Andersson wrote:
+> > > On Wed 01 Jun 03:11 PDT 2022, Krzysztof Kozlowski wrote:
+> > > 
+> > > > Add bindings for the Qualcomm Bandwidth Monitor device providing
+> > > > performance data on interconnects.  The bindings describe only BWMON
+> > > > version 4, e.g. the instance on SDM845 between CPU and Last Level Cache
+> > > > Controller.
+> > > > 
+> > > > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > > > Reviewed-by: Rob Herring <robh@kernel.org>
+> > > > Acked-by: Georgi Djakov <djakov@kernel.org>
+> > > > ---
+> > > >   .../interconnect/qcom,sdm845-cpu-bwmon.yaml   | 97 +++++++++++++++++++
+> > > >   1 file changed, 97 insertions(+)
+> > > >   create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845-cpu-bwmon.yaml
+> > > > 
+> > > > diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdm845-cpu-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sdm845-cpu-bwmon.yaml
+> > > > new file mode 100644
+> > > > index 000000000000..8c82e06ee432
+> > > > --- /dev/null
+> > > > +++ b/Documentation/devicetree/bindings/interconnect/qcom,sdm845-cpu-bwmon.yaml
+> > > > @@ -0,0 +1,97 @@
+> > > > +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+> > > > +%YAML 1.2
+> > > > +---
+> > > > +$id: http://devicetree.org/schemas/interconnect/qcom,sdm845-cpu-bwmon.yaml#
+> > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > > +
+> > > > +title: Qualcomm Interconnect Bandwidth Monitor
+> > > > +
+> > > > +maintainers:
+> > > > +  - Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > > > +
+> > > > +description:
+> > > > +  Bandwidth Monitor measures current throughput on buses between various NoC
+> > > > +  fabrics and provides information when it crosses configured thresholds.
+> > > > +
+> > > > +properties:
+> > > > +  compatible:
+> > > > +    enum:
+> > > > +      - qcom,sdm845-cpu-bwmon       # BWMON v4
+> > > 
+> > > It seems the thing that's called bwmon v4 is compatible with a number of
+> > > different platforms, should we add a generic compatible to the binding
+> > > as well, to avoid having to update the implementation for each SoC?
+> > > 
+> > > (I.e. "qcom,sdm845-cpu-bwmon", "qcom,bwmon-v4")
+> 
+> it seems pretty useful to have the "qcom,bwmon-v4" and "qcom,bwmon-v5"
+> compatibles, I tried these patches on a sc7280 device which has a bwmon4
+> between the cpu and caches (and also has a bwmon5 between the caches and DDR)
+> and the driver works with zero changes.
+> 
 
-Tree: pm
-Branch: testing
-Git Describe: pm-5.19-rc4-25-g616372937415
-Git Commit: 616372937415f1ba2165bfbb0831d318572d9eae
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+But does the '4' and '5' has a relation to the hardware? Or is just the
+4th and 5th register layout supported by the downstream driver?
 
-Warnings Detected:
-
-arc:
-
-arm64:
-
-arm:
-
-i386:
-
-mips:
-    32r2el_defconfig (gcc-10): 1 warning
-
-riscv:
-
-x86_64:
-
-
-Warnings summary:
-
-    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
-e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
-ted "0,0"
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
-ion mismatches
-
-Warnings:
-    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
-): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
-0,0"
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
- section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
-on mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
-ection mismatches
-
----
-For more info write to <info@kernelci.org>
+Regards,
+Bjorn
