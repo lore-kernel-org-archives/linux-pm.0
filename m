@@ -2,151 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 571F0CCA479
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Jun 2022 08:42:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC755C43334
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Jun 2022 09:10:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343984AbiF1Il7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Jun 2022 04:41:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36066 "EHLO
+        id S238451AbiF1JKb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Jun 2022 05:10:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37880 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343975AbiF1Il5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2022 04:41:57 -0400
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 240752CE02
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jun 2022 01:41:56 -0700 (PDT)
-Received: by mail-wr1-x432.google.com with SMTP id n1so16548150wrg.12
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jun 2022 01:41:56 -0700 (PDT)
+        with ESMTP id S1343725AbiF1JKa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2022 05:10:30 -0400
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FD5210FC4
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jun 2022 02:10:29 -0700 (PDT)
+Received: by mail-wr1-x429.google.com with SMTP id e28so11524052wra.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jun 2022 02:10:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=v5dmV6m+y35m/OOgFUolVoYy95Ck77s85Hp4iBdnIEo=;
-        b=F59o5KjsPbQpgausMMqrm8CVGniwLPIxLhXpdIPg9kElTHzRRtcS6rV+FaKbuAUzQL
-         oam7mbVakexhVRbbFdHeg077hpaHbcaLLVqdf0tjINnn2Mn08k7UONIG8ZoYayHqk1cW
-         LG5tsALv7W0EizWuYg4Ud3aiFLXf1vYFUiy/WOd6pV3qw+O8SKpOMQPw7xV15t5506mi
-         oSa/dXScRlfrJRpbx3DP0BrlWUqXj2WXz4RNasGblvmzDZVoT1MXJK0XXT89FMNdJ6gA
-         OV0kleLs3VQn34z57rAFaUzh3vhWavHUp0NxOTsAgXvPwKbeJHrXNnaRD+5UO8ZaA5Lf
-         M15w==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=wbgN1CKL41QDae7eKkqr8BaTjawclCJDoaPr1MzFLwM=;
+        b=pOa5VprVzlXvuF7+FKxWG4/Uoqsz2AJ7EkRgukj2nJwxDesbw1fbQADxKm15sUsT7t
+         v1vX+r6h0258bMbm1sF5zL1rzzWrlabChUGHYDz8r+cDhwLehTcSHWUTeQwIqfjtIeiH
+         bBog9uFVAPw6fSLRV2fot7tuSY/Qi0XgkqH1eb4ARc+hjlKy8oBR/iosz4sW/vG8Eh08
+         myF3PYp21xqPDNj0qI3anxuiVt3xq6u71FHL3GXzY98kiPqk8l4xE/z1ATBKiw9yI17W
+         /7evqPeVzUU1qJDdcePkdsuo9u4iaMYpJsCusP6CLxAvW6CzfTc9wPJDuoLEcPoTpQji
+         GX4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=v5dmV6m+y35m/OOgFUolVoYy95Ck77s85Hp4iBdnIEo=;
-        b=5yvN/yTG+tZ/zvjL0p4QLPh/zMqF16ncTInS+5kikYgEbgs9oUFkYMYYCY9lJLctQq
-         6QoypR/pX+Vl/PMkcIou5oa+ni2D6LLR23TyuC6wnkQedMorzXmna1H3FxNS/Wb50L6o
-         8EcJghNChuX7iq8mlVpCO4QsGkyr99C1IkUL75x/jTQyZXqD7vAnuFxEqH94IQSQ2UnD
-         wj/h7h0aDd7kyiBlofYZXFQGOjydlMsX4I9SWBshfqSsRYbLaIb9oKJgobaMNW14g4yF
-         vLTiatjwc+1LZN3BnIKbPrlye8aT1kPXwkf4IpBhqxDvPxBnDjNowUUmI7i9YLrvccDq
-         LhAg==
-X-Gm-Message-State: AJIora8STtnth2zllJa0G0qSE0cSaVYGpd46aann7NYvQgshTAqG6YM2
-        hPTyXS/msjBPmvGLn11hWxyO84U7VaEWWA==
-X-Google-Smtp-Source: AGRyM1smplhxwMTCxe8Jj9olr4VhTZF3JaobTkBOwjRs6XkCBFxFYEnEhd6dCwGrqiCtb/fwuwK2fQ==
-X-Received: by 2002:a5d:5887:0:b0:21b:ca70:f60d with SMTP id n7-20020a5d5887000000b0021bca70f60dmr11370211wrf.32.1656405714610;
-        Tue, 28 Jun 2022 01:41:54 -0700 (PDT)
-Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id z4-20020adfd0c4000000b0021bbf6687b1sm11098476wrh.81.2022.06.28.01.41.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 28 Jun 2022 01:41:54 -0700 (PDT)
-Message-ID: <7841a809-e180-70d2-df9b-b30b411647ce@linaro.org>
-Date:   Tue, 28 Jun 2022 10:41:52 +0200
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=wbgN1CKL41QDae7eKkqr8BaTjawclCJDoaPr1MzFLwM=;
+        b=KUIFII4CWqnsZsuem/mtnVjucoXrCShyfSyC3ZsnYJJ4OkllsBbLyNk11UnBJk+dQX
+         PmuI7Dp3H5PjxIesLYbhtvq+zvjvASWpV/nmVrtTdnGOFDjw+hZmVZ48eNKLBGILKiUi
+         RcpSFVzulYPHcAwvdD8coAse7vSDzKr7cNRaHedavD1u9Uzwxsb5Aw1hILO1jYrKcTcH
+         f5qxmP0mCrGbzsOqp/0RHFNZ4cCdCS3OXiaJKza9xMoME0Ak0F+p0QFJnOKdmh5DlAjL
+         selKPni+E1e/YFSuWn30MGFHYIlukmMN/N4wMTE8Gmi7Exrl4vAjgycXFIxGmiUaKPWF
+         98fw==
+X-Gm-Message-State: AJIora+60a9PQj6/f+3fLPoltwHUBa2fDv95r2pGKhAF88CWNJQyiH7h
+        IeismW5LwUjPfs9pK+zPL10fpg==
+X-Google-Smtp-Source: AGRyM1v7gHQR+wVeyct8aWcBwub8IuK3R4svyt1Ip8itwvHfAfKR3WQQPvslk2AhBmSp5Bgh0RsEZg==
+X-Received: by 2002:a5d:6c64:0:b0:216:5680:b41e with SMTP id r4-20020a5d6c64000000b002165680b41emr16279405wrz.216.1656407428287;
+        Tue, 28 Jun 2022 02:10:28 -0700 (PDT)
+Received: from localhost.localdomain (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id d11-20020a5d4f8b000000b0020c7ec0fdf4sm15205819wru.117.2022.06.28.02.09.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 28 Jun 2022 02:09:09 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     linux-kernel@vger.kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, krzysztof.kozlowski@linaro.org,
+        bjorn.andersson@linaro.org, agross@kernel.org,
+        linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>,
+        rafael@kernel.org, ilia.lin@kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Cc:     robh@kernel.org
+Subject: Re: [PATCH] dt-bindings: cpufreq: qcom-cpufreq-nvmem: fix board compatible in example
+Date:   Tue, 28 Jun 2022 11:09:07 +0200
+Message-Id: <165640734233.20304.15218544381740726576.b4-ty@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220627143340.477120-1-krzysztof.kozlowski@linaro.org>
+References: <20220627143340.477120-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH 2/3] thermal/drivers/tegra: Remove get_trend function
-Content-Language: en-US
-To:     rafael@kernel.org
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>
-References: <20220616202537.303655-1-daniel.lezcano@linaro.org>
- <20220616202537.303655-2-daniel.lezcano@linaro.org>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20220616202537.303655-2-daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-Thierry, Dmitry,
-
-are fine with this patch?
-
-Thanks
-
-   -- Daniel
-
-On 16/06/2022 22:25, Daniel Lezcano wrote:
-> The get_trend function does already what the generic framework does.
+On Mon, 27 Jun 2022 16:33:40 +0200, Krzysztof Kozlowski wrote:
+> In the example, alone compatible "qcom,qcs404" is not correct.  Add
+> proper board compatibles for QCS404 Evaluation Board.
 > 
-> Remove it.
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->   drivers/thermal/tegra/soctherm.c | 32 --------------------------------
->   1 file changed, 32 deletions(-)
-> 
-> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-> index 210325f92559..825eab526619 100644
-> --- a/drivers/thermal/tegra/soctherm.c
-> +++ b/drivers/thermal/tegra/soctherm.c
-> @@ -633,37 +633,6 @@ static int tegra_thermctl_set_trip_temp(void *data, int trip, int temp)
->   	return 0;
->   }
->   
-> -static int tegra_thermctl_get_trend(void *data, int trip,
-> -				    enum thermal_trend *trend)
-> -{
-> -	struct tegra_thermctl_zone *zone = data;
-> -	struct thermal_zone_device *tz = zone->tz;
-> -	int trip_temp, temp, last_temp, ret;
-> -
-> -	if (!tz)
-> -		return -EINVAL;
-> -
-> -	ret = tz->ops->get_trip_temp(zone->tz, trip, &trip_temp);
-> -	if (ret)
-> -		return ret;
-> -
-> -	temp = READ_ONCE(tz->temperature);
-> -	last_temp = READ_ONCE(tz->last_temperature);
-> -
-> -	if (temp > trip_temp) {
-> -		if (temp >= last_temp)
-> -			*trend = THERMAL_TREND_RAISING;
-> -		else
-> -			*trend = THERMAL_TREND_STABLE;
-> -	} else if (temp < trip_temp) {
-> -		*trend = THERMAL_TREND_DROPPING;
-> -	} else {
-> -		*trend = THERMAL_TREND_STABLE;
-> -	}
-> -
-> -	return 0;
-> -}
-> -
->   static void thermal_irq_enable(struct tegra_thermctl_zone *zn)
->   {
->   	u32 r;
-> @@ -716,7 +685,6 @@ static int tegra_thermctl_set_trips(void *data, int lo, int hi)
->   static const struct thermal_zone_of_device_ops tegra_of_thermal_ops = {
->   	.get_temp = tegra_thermctl_get_temp,
->   	.set_trip_temp = tegra_thermctl_set_trip_temp,
-> -	.get_trend = tegra_thermctl_get_trend,
->   	.set_trips = tegra_thermctl_set_trips,
->   };
->   
 
+Applied, thanks!
 
+[1/1] dt-bindings: cpufreq: qcom-cpufreq-nvmem: fix board compatible in example
+      https://git.kernel.org/krzk/linux-dt/c/062529700fdb843eee921961eb3cbc6a51419491
+
+Best regards,
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
