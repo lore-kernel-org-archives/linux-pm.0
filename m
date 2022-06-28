@@ -2,200 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E62FCCA483
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Jun 2022 09:47:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA255C43334
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Jun 2022 10:04:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344451AbiF1JrV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Jun 2022 05:47:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39828 "EHLO
+        id S1344591AbiF1KE2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Jun 2022 06:04:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242407AbiF1JrD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2022 05:47:03 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A422225E82;
-        Tue, 28 Jun 2022 02:46:36 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        with ESMTP id S1344679AbiF1KEL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2022 06:04:11 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D4AED2B1B8;
+        Tue, 28 Jun 2022 03:04:06 -0700 (PDT)
+Received: from [192.168.2.145] (109-252-118-164.nat.spd-mgts.ru [109.252.118.164])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E0964B81D9C;
-        Tue, 28 Jun 2022 09:46:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75818C341ED;
-        Tue, 28 Jun 2022 09:46:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1656409590;
-        bh=Pidffgv8+vxANZk99fiHBEcr5xE1kNKPmd0X8nIl4XY=;
-        h=From:To:Cc:Subject:Date:From;
-        b=nOcRjaFPNFScFiXdKrB2F8YYb6CPmWyMpALhxvrj3cjnCrtSSHb1z+KLKVayVCVda
-         at8owWAD3BEqBPRjixrG39Cx0vu51KH26s0QaNFZI9hpYtmuwntZ1PeuqYcGsbBstt
-         DKInp9Myza28C9F5Mmo31eFMfV2Kc8JOzfbNFZAWJWtVGt7np+qwiL1lcryxy7sUjC
-         p5W0pHxXEX4FAr9kK8uZ/zcRkHryiIBDQ6IWmOMBxVam4kkykvl0yMbVuAELhJW4+a
-         pqC+XiDPQEOcY9he59MFVJViMVrlXI42knJl/YF5d6vbYHlcclC/nS3jS9OJ46JdOK
-         Y7rUWeaKNq8tA==
-Received: from mchehab by mail.kernel.org with local (Exim 4.95)
-        (envelope-from <mchehab@kernel.org>)
-        id 1o67nf-005HEj-Ip;
-        Tue, 28 Jun 2022 10:46:27 +0100
-From:   Mauro Carvalho Chehab <mchehab@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Alexander Potapenko <glider@google.com>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Andrey Grodzovsky <andrey.grodzovsky@amd.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Airlie <airlied@linux.ie>,
-        Dmitry Vyukov <dvyukov@google.com>,
-        Eric Dumazet <edumazet@google.com>,
-        Felipe Balbi <balbi@kernel.org>,
-        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Johannes Berg <johannes@sipsolutions.net>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Marco Elver <elver@google.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Sumit Semwal <sumit.semwal@linaro.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        kasan-dev@googlegroups.com, linaro-mm-sig@lists.linaro.org,
-        linux-cachefs@redhat.com, linux-fsdevel@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-mm@kvack.org,
-        linux-pm@vger.kernel.org, linux-sgx@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-        netdev@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 00/22] Fix kernel-doc warnings at linux-next
-Date:   Tue, 28 Jun 2022 10:46:04 +0100
-Message-Id: <cover.1656409369.git.mchehab@kernel.org>
-X-Mailer: git-send-email 2.36.1
+        (Authenticated sender: dmitry.osipenko)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id ABBF566018AF;
+        Tue, 28 Jun 2022 11:04:04 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1656410645;
+        bh=uRRR4e7RSIOXYCVcdSS5IPUDASv9iE0gIMNRnAP/73M=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=ecZ1sTtwXEpq9nOapEj65/Kxs7CcDEsYhrqGa8qJDOzyTiTWx9fo6OPDJjoMa1kDU
+         N2SW0qA53cTEtUO7lafakDBRzYVtcys7L3hljzcuNr4bkHKxrZEasct8pdf4qk+1pH
+         avLu4TtCZhx+WN6tcS04s+rrioVQIveAR6jUiNllrwPt33fWL1qhSetofwCiPCb1hw
+         suRXkJVP2JceQjjUSUz+fGLwjAskfFabP64MXd2XAptmic/f+sCp65mh/NR1aggLMT
+         64xx0/kNeia5eXFWDrodjIrAGiqaqR7BJfwuNeYS9o6duf09fp+fkJzk8lAZ2jDL4w
+         jhN19++GIUy6A==
+Message-ID: <d2a8c329-4469-f68a-5b4b-789a93725ea4@collabora.com>
+Date:   Tue, 28 Jun 2022 13:04:01 +0300
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH 5/5] OPP: Remove custom OPP helper support
+Content-Language: en-US
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Dmitry Osipenko <digetx@gmail.com>
+Cc:     Keerthy <j-keerthy@ti.com>, Dave Gerlach <d-gerlach@ti.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        linux-kernel@vger.kernel.org,
+        "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+References: <cover.1653991004.git.viresh.kumar@linaro.org>
+ <2e6ee73dbc8a231377547a8e9497561cadb38166.1653991004.git.viresh.kumar@linaro.org>
+ <565ff879-11e4-1ae4-08d8-1237a875ef12@gmail.com>
+ <20220627060636.rfpok75zydgcwwo6@vireshk-i7>
+ <4a8114f7-4ee6-a9ad-f5be-ceaf64be8a0e@gmail.com>
+ <20220627064155.jo7iqz5h33l7a4vn@vireshk-i7>
+ <d18a1f18-d78c-2db8-9b19-196dc88978c2@gmail.com>
+ <20220627071937.uneeudaqzo2aa2me@vireshk-i7>
+From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
+In-Reply-To: <20220627071937.uneeudaqzo2aa2me@vireshk-i7>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As we're currently discussing about making kernel-doc issues fatal when
-CONFIG_WERROR is enable, let's fix all 60 kernel-doc warnings 
-inside linux-next:
+On 6/27/22 10:19, Viresh Kumar wrote:
+> On 27-06-22, 10:09, Dmitry Osipenko wrote:
+>> Yes, I missed that multi-clock OPP patch, thanks.
+>>
+>> Seems _opp_compare_key() won't work properly for the multi-clocks since
+>> Tegra doesn't have bandwidth nor level for the 3d OPPs. Why does it need
+>> to check opp_table->clk_count == 1? Shouldn't it be opp_table->clk_count
+>>> 0?
+> 
+> The problem is that when we have multiple clocks, we can't assume any
+> of them as primary. Its the combination of the clock frequencies that
+> make them unique. Otherwise, what will happen if we have same
+> frequency of the first clock in two OPPs, but different frequency of
+> the second clock.
+> 
+> Because of this, we won't also support multiple clocks in all freq
+> finder APIs, like dev_pm_opp_find_freq_exact(). We can't do that from
+> just one frequency.
+> 
+> Ideally, the drivers should now be calling dev_pm_opp_set_opp() to set
+> the OPP now.
+> 
+> For your case, I think you can just add levels (like index) in the OPP
+> table. So we can uniquely identify each OPP.
+> 
 
-	arch/x86/include/uapi/asm/sgx.h:19: warning: Enum value 'SGX_PAGE_MEASURE' not described in enum 'sgx_page_flags'
-	arch/x86/include/uapi/asm/sgx.h:97: warning: Function parameter or member 'rdi' not described in 'sgx_enclave_user_handler_t'
-	arch/x86/include/uapi/asm/sgx.h:97: warning: Function parameter or member 'rsi' not described in 'sgx_enclave_user_handler_t'
-	arch/x86/include/uapi/asm/sgx.h:97: warning: Function parameter or member 'rdx' not described in 'sgx_enclave_user_handler_t'
-	arch/x86/include/uapi/asm/sgx.h:97: warning: Function parameter or member 'rsp' not described in 'sgx_enclave_user_handler_t'
-	arch/x86/include/uapi/asm/sgx.h:97: warning: Function parameter or member 'r8' not described in 'sgx_enclave_user_handler_t'
-	arch/x86/include/uapi/asm/sgx.h:97: warning: Function parameter or member 'r9' not described in 'sgx_enclave_user_handler_t'
-	arch/x86/include/uapi/asm/sgx.h:124: warning: Function parameter or member 'reserved' not described in 'sgx_enclave_run'
-	drivers/devfreq/devfreq.c:707: warning: Function parameter or member 'val' not described in 'qos_min_notifier_call'
-	drivers/devfreq/devfreq.c:707: warning: Function parameter or member 'ptr' not described in 'qos_min_notifier_call'
-	drivers/devfreq/devfreq.c:717: warning: Function parameter or member 'val' not described in 'qos_max_notifier_call'
-	drivers/devfreq/devfreq.c:717: warning: Function parameter or member 'ptr' not described in 'qos_max_notifier_call'
-	drivers/gpu/drm/amd/amdgpu/amdgpu_device.c:5095: warning: expecting prototype for amdgpu_device_gpu_recover_imp(). Prototype was for amdgpu_device_gpu_recover() instead
-	drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.h:544: warning: Function parameter or member 'dmub_outbox_params' not described in 'amdgpu_display_manager'
-	drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.h:544: warning: Function parameter or member 'num_of_edps' not described in 'amdgpu_display_manager'
-	drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.h:544: warning: Function parameter or member 'disable_hpd_irq' not described in 'amdgpu_display_manager'
-	drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.h:544: warning: Function parameter or member 'dmub_aux_transfer_done' not described in 'amdgpu_display_manager'
-	drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.h:544: warning: Function parameter or member 'delayed_hpd_wq' not described in 'amdgpu_display_manager'
-	drivers/gpu/drm/amd/include/amd_shared.h:224: warning: Enum value 'PP_GFX_DCS_MASK' not described in enum 'PP_FEATURE_MASK'
-	drivers/gpu/drm/scheduler/sched_main.c:999: warning: Function parameter or member 'dev' not described in 'drm_sched_init'
-	drivers/usb/dwc3/core.h:1328: warning: Function parameter or member 'async_callbacks' not described in 'dwc3'
-	drivers/usb/dwc3/gadget.c:675: warning: Function parameter or member 'mult' not described in 'dwc3_gadget_calc_tx_fifo_size'
-	fs/attr.c:36: warning: Function parameter or member 'ia_vfsuid' not described in 'chown_ok'
-	fs/attr.c:36: warning: Excess function parameter 'uid' description in 'chown_ok'
-	fs/attr.c:63: warning: Function parameter or member 'ia_vfsgid' not described in 'chgrp_ok'
-	fs/attr.c:63: warning: Excess function parameter 'gid' description in 'chgrp_ok'
-	fs/namei.c:649: warning: Function parameter or member 'mnt' not described in 'path_connected'
-	fs/namei.c:649: warning: Function parameter or member 'dentry' not described in 'path_connected'
-	fs/namei.c:1089: warning: Function parameter or member 'inode' not described in 'may_follow_link'
-	include/drm/gpu_scheduler.h:463: warning: Function parameter or member 'dev' not described in 'drm_gpu_scheduler'
-	include/linux/dcache.h:309: warning: expecting prototype for dget, dget_dlock(). Prototype was for dget_dlock() instead
-	include/linux/fscache.h:270: warning: Function parameter or member 'cookie' not described in 'fscache_use_cookie'
-	include/linux/fscache.h:270: warning: Excess function parameter 'object' description in 'fscache_use_cookie'
-	include/linux/fscache.h:287: warning: Function parameter or member 'cookie' not described in 'fscache_unuse_cookie'
-	include/linux/fscache.h:287: warning: Excess function parameter 'object' description in 'fscache_unuse_cookie'
-	include/linux/genalloc.h:54: warning: Function parameter or member 'start_addr' not described in 'genpool_algo_t'
-	include/linux/kfence.h:221: warning: Function parameter or member 'slab' not described in '__kfence_obj_info'
-	include/linux/regulator/driver.h:434: warning: Function parameter or member 'n_ramp_values' not described in 'regulator_desc'
-	include/linux/textsearch.h:51: warning: Function parameter or member 'list' not described in 'ts_ops'
-	include/linux/usb/typec_altmode.h:132: warning: Function parameter or member 'altmode' not described in 'typec_altmode_get_orientation'
-	include/net/cfg80211.h:391: warning: Function parameter or member 'bw' not described in 'ieee80211_eht_mcs_nss_supp'
-	include/net/cfg80211.h:437: warning: Function parameter or member 'eht_cap' not described in 'ieee80211_sband_iftype_data'
-	include/net/cfg80211.h:507: warning: Function parameter or member 's1g' not described in 'ieee80211_sta_s1g_cap'
-	include/net/cfg80211.h:1390: warning: Function parameter or member 'counter_offset_beacon' not described in 'cfg80211_color_change_settings'
-	include/net/cfg80211.h:1390: warning: Function parameter or member 'counter_offset_presp' not described in 'cfg80211_color_change_settings'
-	include/net/cfg80211.h:1430: warning: Enum value 'STATION_PARAM_APPLY_STA_TXPOWER' not described in enum 'station_parameters_apply_mask'
-	include/net/cfg80211.h:2195: warning: Function parameter or member 'dot11MeshConnectedToAuthServer' not described in 'mesh_config'
-	include/net/cfg80211.h:2341: warning: Function parameter or member 'short_ssid' not described in 'cfg80211_scan_6ghz_params'
-	include/net/cfg80211.h:3328: warning: Function parameter or member 'kck_len' not described in 'cfg80211_gtk_rekey_data'
-	include/net/cfg80211.h:3698: warning: Function parameter or member 'ftm' not described in 'cfg80211_pmsr_result'
-	include/net/cfg80211.h:3828: warning: Function parameter or member 'global_mcast_stypes' not described in 'mgmt_frame_regs'
-	include/net/cfg80211.h:4977: warning: Function parameter or member 'ftm' not described in 'cfg80211_pmsr_capabilities'
-	include/net/cfg80211.h:5742: warning: Function parameter or member 'u' not described in 'wireless_dev'
-	include/net/cfg80211.h:5742: warning: Function parameter or member 'links' not described in 'wireless_dev'
-	include/net/cfg80211.h:5742: warning: Function parameter or member 'valid_links' not described in 'wireless_dev'
-	include/net/cfg80211.h:6076: warning: Function parameter or member 'is_amsdu' not described in 'ieee80211_data_to_8023_exthdr'
-	include/net/cfg80211.h:6949: warning: Function parameter or member 'sig_dbm' not described in 'cfg80211_notify_new_peer_candidate'
-	include/net/mac80211.h:6250: warning: Function parameter or member 'vif' not described in 'ieee80211_channel_switch_disconnect'
-	mm/memory.c:1729: warning: Function parameter or member 'mt' not described in 'unmap_vmas'
-	net/mac80211/sta_info.h:569: warning: Function parameter or member 'cur_max_bandwidth' not described in 'link_sta_info'
-
-Mauro Carvalho Chehab (22):
-  net: cfg80211: fix kernel-doc warnings all over the file
-  net: mac80211: add a missing comma at kernel-doc markup
-  net: mac80211: sta_info: fix a missing kernel-doc struct element
-  x86/sgx: fix kernel-doc markups
-  fscache: fix kernel-doc documentation
-  fs: attr: update vfs uid/gid parameters at kernel-doc
-  fs: namei: address some kernel-doc issues
-  devfreq: shut up kernel-doc warnings
-  drm: amdgpu: amdgpu_dm: fix kernel-doc markups
-  drm: amdgpu: amdgpu_device.c: fix a kernel-doc markup
-  drm: amd: amd_shared.h: Add missing doc for PP_GFX_DCS_MASK
-  drm: gpu_scheduler: fix a kernel-doc warning
-  drm: scheduler: add a missing kernel-doc parameter
-  kfence: fix a kernel-doc parameter
-  mm: document maple tree pointer at unmap_vmas() at memory.c
-  genalloc: add a description for start_addr parameter
-  textsearch: document list inside struct ts_ops
-  regulator: fix a kernel-doc warning
-  dcache: fix a kernel-doc warning
-  usb: typec_altmode: add a missing "@" at a kernel-doc parameter
-  usb: dwc3: document async_callbacks field
-  usb: dwc3: gadget: fix a kernel-doc warning
-
- arch/x86/include/uapi/asm/sgx.h               | 10 +++++--
- drivers/devfreq/devfreq.c                     |  4 +++
- drivers/gpu/drm/amd/amdgpu/amdgpu_device.c    |  2 +-
- .../gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.h |  7 +++++
- drivers/gpu/drm/amd/include/amd_shared.h      |  1 +
- drivers/gpu/drm/scheduler/sched_main.c        |  1 +
- drivers/usb/dwc3/core.h                       |  2 ++
- drivers/usb/dwc3/gadget.c                     |  1 +
- fs/attr.c                                     |  4 +--
- fs/namei.c                                    |  3 ++
- include/drm/gpu_scheduler.h                   |  1 +
- include/linux/dcache.h                        |  2 +-
- include/linux/fscache.h                       |  4 +--
- include/linux/genalloc.h                      |  1 +
- include/linux/kfence.h                        |  1 +
- include/linux/regulator/driver.h              |  1 +
- include/linux/textsearch.h                    |  1 +
- include/linux/usb/typec_altmode.h             |  2 +-
- include/net/cfg80211.h                        | 28 ++++++++++++++-----
- include/net/mac80211.h                        |  2 +-
- mm/memory.c                                   |  2 ++
- net/mac80211/sta_info.h                       |  2 ++
- 22 files changed, 65 insertions(+), 17 deletions(-)
+What about to bump the "by-level" sorting priority, making it above the
+"by-rate" sorting and then always use the first clock for the "by-rate"
+sorting? Then the multi-clock will work for Tegra without breaking dtbs
+and those for whom this sorting option won't be appropriate will have to
+add levels to the DT.
 
 -- 
-2.36.1
-
-
+Best regards,
+Dmitry
