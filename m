@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63204CCA480
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 13:03:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAB6DCCA481
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 13:03:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233582AbiF2NDO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jun 2022 09:03:14 -0400
+        id S233635AbiF2NDQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jun 2022 09:03:16 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233514AbiF2NDM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 09:03:12 -0400
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD16B1B0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 06:03:10 -0700 (PDT)
-Received: by mail-wm1-x32b.google.com with SMTP id o16-20020a05600c379000b003a02eaea815so1123551wmr.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 06:03:10 -0700 (PDT)
+        with ESMTP id S233640AbiF2NDO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 09:03:14 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F0A2E017
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 06:03:13 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id o16-20020a05600c379000b003a02eaea815so1123605wmr.0
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 06:03:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=0QzToYbJcDYbEYqG15J7NdQlssf7ghwObRQowDdojUI=;
-        b=XKjGu06d/OfgUQZKCT46+udJiU3tUD8WeF1k0pFSual2dx0cm4mXRGnpHhVDuYgO3w
-         zhf0k9lc0Az56ikgGmTxdJoIye7j5XyKi8T42EyyQd3Wte9phvNnAPnTwtOHMsgsyKhK
-         CdO8mX0xzK7Ri+w/doy52BNYp50c3xkprBoxqNoAnXV1Yat6ZNODTedYfVUqcKWTaPpk
-         fhH5h1Fn+viJJ95yW5AaU60wA0piPUZykoFQNMme0EAhf3Pwf4pH8chk8uG7vzc8h5Mo
-         b+hPHvJX4nud9QmnPUulB7WMHVSP6M2v+JXYCXF2/5dI/CRPOf3s4I+WR+HTx69sJLrK
-         Shxw==
+        bh=07gCvC2bDldwfU3PIuJqaF8MAJ6sayZEsNcAcstdbkA=;
+        b=w55VpGFTkA3/pkKMVTCgcz7crZHIYE9dBkkVarqWRGB8AXnw2GccaKIiDHd6GX8veJ
+         gwGZmeCvRuNG/rsdfyL3AhJBAfE9TNBOK12Nwosmjak6M5/XQxR0l1wFYVNFl4QOrBZV
+         FM9Pvb1nxR6HruJDjABnirpbaXmC4dBlv56A8Xba7W6VLn7GOXb7fIRuArmZ5k2o1ybB
+         sAxNhQXf3nT2s/2FJo/IzPWVyLWxDEZQW1KaRYY/XZx5q2GXrw83j180Ia0/hYXuDiRR
+         aurEvt6YBfpnHhglxgO4ey+9QIe7uzCp3Kwzq/YBcR0S/Q5HEmSK7K5GxSQ9WIFpF28D
+         Q8IQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=0QzToYbJcDYbEYqG15J7NdQlssf7ghwObRQowDdojUI=;
-        b=KVxqDbj8k9tQOGcX/3Z+oSbU4Qx6en161b6nfCwbpDqSv7apwHw/GW42VHRvuxPZ64
-         fgyqREScKbeXXbFCwLhz/MGyixxGa/pTLv9aXDzB8E+9/+WllDheSxWP2OKG+VSOkERP
-         X2kMzdNRW3wNbKf4KdBFprilb0qB5kgAIGMvF/4vNmGKVL++1pT03qVc7aZJnPJersDa
-         cmBBQl/mAeGKDNWduZc+PcYkRSkeCoJrm/E8RNqWE6UfdlO3HyzCEtpH0wTOzwxxJ5kh
-         fDGP4FtJoSZrKBzNkSZq9m+BhNk19kRPCz4Q57R3TavUmRoJDHAxJWqepwtpfsXrUj0I
-         5PJg==
-X-Gm-Message-State: AJIora+amZ4iIDKgvGjbmeDp+cMOE46LxmSGn/Y6yJAxVjDOLwem6yTg
-        MBEDHnmTs+QAmwUM41F3wTXlvA==
-X-Google-Smtp-Source: AGRyM1uDVYzhjflUeMr9IY0fibJYlCW7mwWt8uD26apminQjZz5gjm9JffDTY735uObRDSBuOKDv7w==
-X-Received: by 2002:a05:600c:4e8b:b0:3a0:5826:3321 with SMTP id f11-20020a05600c4e8b00b003a058263321mr3649147wmq.108.1656507789238;
-        Wed, 29 Jun 2022 06:03:09 -0700 (PDT)
+        bh=07gCvC2bDldwfU3PIuJqaF8MAJ6sayZEsNcAcstdbkA=;
+        b=rsK9YMjKGoj7f6nYq0yeKJ+QQKrEiwJYFtExSny3OiF7/SCcMdl4//qxYR+ymmvppJ
+         VLJcvtdbink7QuixoszpgnYtW2hm3+gq1oqT9mJDmzAX0WrcH5+CFAkaUxxe9BH3jbQZ
+         xGxtGtXNcxBhAsg7Q7QnlsAbdT2yeIHziFxcgXb5XG1AIETD0d+M0EtiJP0MzNuH5rkM
+         5b4iKqr3hyz3c1vXnYSG5sY+3aof/vWfFmJ/taRPrVZISYxjaf4mKKVFbwLcN2BHwrDL
+         rUFGcJ2S91zTRCJODuTfCwItlIN+aS8BoVC4jQBueN1ySmVWfLQrgNbnbRfzyPwJxBrP
+         FAIw==
+X-Gm-Message-State: AJIora8NxBcu5gm6fznvEklL7TDWd+3nSGXNa+qB5QI9TUc80sJQpNIC
+        ZW1D/QYh4s2OW27VLmii+pTnzw==
+X-Google-Smtp-Source: AGRyM1tdK7Di+7eAr0stiNBdznQa5qJ+GaDNLzwwt+Lt8qEteCU+2sPLEP11PbsG/WI49JQ3RYwrtA==
+X-Received: by 2002:a05:600c:35ce:b0:39c:7dc2:aec0 with SMTP id r14-20020a05600c35ce00b0039c7dc2aec0mr3621071wmq.33.1656507791387;
+        Wed, 29 Jun 2022 06:03:11 -0700 (PDT)
 Received: from sagittarius-a.chello.ie (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
-        by smtp.gmail.com with ESMTPSA id g1-20020adffc81000000b00213ba3384aesm17056979wrr.35.2022.06.29.06.03.08
+        by smtp.gmail.com with ESMTPSA id g1-20020adffc81000000b00213ba3384aesm17056979wrr.35.2022.06.29.06.03.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jun 2022 06:03:08 -0700 (PDT)
+        Wed, 29 Jun 2022 06:03:10 -0700 (PDT)
 From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 To:     ilia.lin@kernel.org, agross@kernel.org, bjorn.andersson@linaro.org,
         rafael@kernel.org, viresh.kumar@linaro.org, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-Subject: [RESEND PATCH 3/5] cpufreq: blocklist Qualcomm msm8939 in cpufreq-dt-platdev
-Date:   Wed, 29 Jun 2022 14:03:01 +0100
-Message-Id: <20220629130303.3288306-4-bryan.odonoghue@linaro.org>
+Subject: [RESEND PATCH 5/5] cpufreq: qcom-cpufreq-nvmem: Add msm8939 as cpr_genpd
+Date:   Wed, 29 Jun 2022 14:03:03 +0100
+Message-Id: <20220629130303.3288306-6-bryan.odonoghue@linaro.org>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220629130303.3288306-1-bryan.odonoghue@linaro.org>
 References: <20220629130303.3288306-1-bryan.odonoghue@linaro.org>
@@ -65,25 +65,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-msm8939 uses qcom-cpufreq-nvmem. Block it on the generic cpufreq-dt list.
+Add in msm8939 as a CPR genpd cpufreq SoC.
 
 Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 ---
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ drivers/cpufreq/qcom-cpufreq-nvmem.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 96de1536e1cbf..71d5b0df4a75d 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -136,6 +136,7 @@ static const struct of_device_id blocklist[] __initconst = {
- 	{ .compatible = "nvidia,tegra210", },
+diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+index 355c8b99e974a..63cbb6b57e64b 100644
+--- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
++++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+@@ -453,6 +453,7 @@ static struct platform_driver qcom_cpufreq_driver = {
  
- 	{ .compatible = "qcom,apq8096", },
-+	{ .compatible = "qcom,msm8939", },
- 	{ .compatible = "qcom,msm8996", },
- 	{ .compatible = "qcom,qcs404", },
- 	{ .compatible = "qcom,sa8155p" },
+ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
+ 	{ .compatible = "qcom,apq8096", .data = &match_data_kryo },
++	{ .compatible = "qcom,msm8939", .data = &match_data_cpr_genpd },
+ 	{ .compatible = "qcom,msm8996", .data = &match_data_kryo },
+ 	{ .compatible = "qcom,qcs404", .data = &match_data_cpr_genpd },
+ 	{ .compatible = "qcom,ipq8064", .data = &match_data_krait },
 -- 
 2.36.1
 
