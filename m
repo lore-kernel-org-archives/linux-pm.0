@@ -2,131 +2,357 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 511F1C433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Jul 2022 14:46:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0173DC433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 07:41:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229896AbiGDOq1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Jul 2022 10:46:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44694 "EHLO
+        id S232246AbiF2Hly (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jun 2022 03:41:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233644AbiGDOqY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2022 10:46:24 -0400
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D17C9EE13
-        for <linux-pm@vger.kernel.org>; Mon,  4 Jul 2022 07:46:21 -0700 (PDT)
-Received: by mail-ej1-x631.google.com with SMTP id fw3so17105643ejc.10
-        for <linux-pm@vger.kernel.org>; Mon, 04 Jul 2022 07:46:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=M+qVlZDYaAoCOVBpeXTz8LxMK35K+S3D3doABPbbA6U=;
-        b=O+YOPzG3QC5vCWWZEKLqaxGKZYtynjFnz6aQS6ibqsWEEVI11WzP+tP8h79MvxyvEI
-         VQtFQjNwpI05jrdPqDiyxAQHNM3HU7V8eANnSthLH3fjHpazQEeiDqN2azM+oOMZ8r20
-         bPXVCzPILpA7aqpUJZRdnrfD2lV/0VHDvK4CrObBHe79Zh2zhBt+2YqG94wstcDMwAqa
-         FSWz/w+dyw54CtjOx1Ox1XnBKF3CIQAfYSmrBxfJPLLOs+k2F0rZd7gG44L+8T8UEJQC
-         fUc38jfZwXld6BQy8XYnBSJWc44bEPnxhJlix/vdLigKWD5MmkdAPjKkZnGomLknYe+m
-         6BPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=M+qVlZDYaAoCOVBpeXTz8LxMK35K+S3D3doABPbbA6U=;
-        b=wM6y3dVUT5hbM1GW1zU1hqbYkYIbSX0hRpD5sTMYVii/yK2pg03pTY/rOz5yxWn9O6
-         RppW865ugDu5rbg9EIX8V1Z9Hlq0hNJ+XPil6LPssZYzJ2XZlrD/7+LP/Vdw5sY5LIHi
-         15jCY9ZnfHUF8ReJgtuOkI9mpxFczoc6cZ6lfR8MBMXV1hsmK3XJN/lhUWwDagwEsImw
-         9VEJdHMWdWzAldYrpnzEuDYfxbcwGtphF6yN2obHKjeX+cVJUuL/MDiBlCvT01WgDPHX
-         S0nqYd1kFamR3HoNhWl7ykRaua6NCUSMzsx1diIS587T44RhyYI9vqWQZZc7A3s0Ax5/
-         YK2Q==
-X-Gm-Message-State: AJIora89G8l8pp5ziQhAT6wG7gU5e+e1eck6nWXmqinDu5yMO+xLkT8I
-        DGEu4II4DbDhPwGA5US5UmMQ
-X-Google-Smtp-Source: AGRyM1t89RbesStqt7Tieom5AmKNJLEeLrY0+FlIzuKMV7VyOhtKEjj91xD5EazoVDBn2kcBfXPj4Q==
-X-Received: by 2002:a17:906:6a11:b0:726:97b8:51e9 with SMTP id qw17-20020a1709066a1100b0072697b851e9mr29599521ejc.115.1656945980259;
-        Mon, 04 Jul 2022 07:46:20 -0700 (PDT)
-Received: from google.com (64.227.90.34.bc.googleusercontent.com. [34.90.227.64])
-        by smtp.gmail.com with ESMTPSA id pv1-20020a170907208100b00726abf9cd8esm9904462ejb.125.2022.07.04.07.46.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Jul 2022 07:46:19 -0700 (PDT)
-Date:   Mon, 4 Jul 2022 14:46:15 +0000
-From:   Wedson Almeida Filho <wedsonaf@google.com>
-To:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc:     Greg KH <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        arnd@arndb.de, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH] char: misc: make misc_open() and misc_register() killable
-Message-ID: <YsL9Ny3Vx9Q2uvpJ@google.com>
-References: <000000000000d9ff3a05bb37069e@google.com>
- <72e74af9-f1b6-e383-a2c3-6ee8a0aea5e0@I-love.SAKURA.ne.jp>
- <YsKW6VvWqvcMRBSl@kroah.com>
- <100f445e-9fa8-4f37-76aa-8359f0008c59@I-love.SAKURA.ne.jp>
- <YsLIepAXeBKT0AF/@kroah.com>
- <01a93294-e323-b9ca-7e95-a33d4b89dc47@I-love.SAKURA.ne.jp>
- <YsLkJ1LMMnM9Mo0K@google.com>
- <19598d43-de61-c663-25e8-17b6f5d5ef80@I-love.SAKURA.ne.jp>
- <YsLx5JckMbx/4V4/@google.com>
- <951dd1a9-2b48-fb0c-9ee2-aac2b8170c2c@I-love.SAKURA.ne.jp>
+        with ESMTP id S229820AbiF2Hlv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 03:41:51 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31F1236B42;
+        Wed, 29 Jun 2022 00:41:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1656488510; x=1688024510;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=hRLWAheTUgpMqJ+CTyhb8q72eqCf5jXCD+qdlPmQdX8=;
+  b=V7EsYYr9EIij1ip70+OQMY/gzrh5wyGiKcYp8AWCHb25bOJrQa8ldVVA
+   WjfiGM9RSi7+O2v6aTzjnGFtciC06e+wwz660J8d1fRqDhDUuFa+GCisT
+   rKUaoFvcqeLu972MEnNCCaodyFq5KFw65hrEObpxXK1USTMOqGTNjghk1
+   M6eAb7r6RhwTd49jKSf+itMDaZ5Gu/jHoVMqNBN++BYhLvCzxTurIoN9M
+   /3H0k+pz3CbrRrMwvdgEhSQ7BUW5H6fpDqV6CtG6BHjQGM7QYyLOK833q
+   sD1PkwJUKQH1n3D/+a5t4ubmQSAULxHZs8gKZv4cjGcBr80q05Z6ghIMA
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10392"; a="307444900"
+X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
+   d="scan'208";a="307444900"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2022 00:41:33 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
+   d="scan'208";a="733074160"
+Received: from kuha.fi.intel.com ([10.237.72.185])
+  by fmsmga001.fm.intel.com with SMTP; 29 Jun 2022 00:40:24 -0700
+Received: by kuha.fi.intel.com (sSMTP sendmail emulation); Wed, 29 Jun 2022 10:40:23 +0300
+Date:   Wed, 29 Jun 2022 10:40:23 +0300
+From:   Heikki Krogerus <heikki.krogerus@linux.intel.com>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Wolfram Sang <wsa@kernel.org>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <uwe@kleine-koenig.org>,
+        Sekhar Nori <nsekhar@ti.com>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Russell King <linux@armlinux.org.uk>,
+        Scott Wood <oss@buserror.net>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Robin van der Gracht <robin@protonic.nl>,
+        Miguel Ojeda <ojeda@kernel.org>,
+        Corey Minyard <minyard@acm.org>,
+        Peter Huewe <peterhuewe@gmx.de>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Luca Ceresoli <luca@lucaceresoli.net>,
+        Tudor Ambarus <tudor.ambarus@microchip.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S. Miller" <davem@davemloft.net>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Andrzej Hajda <andrzej.hajda@intel.com>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Robert Foss <robert.foss@linaro.org>,
+        Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+        Jonas Karlman <jonas@kwiboo.se>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Benson Leung <bleung@chromium.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        Phong LE <ple@baylibre.com>,
+        Adrien Grassein <adrien.grassein@gmail.com>,
+        Peter Senna Tschudin <peter.senna@gmail.com>,
+        Martin Donnelly <martin.donnelly@ge.com>,
+        Martyn Welch <martyn.welch@collabora.co.uk>,
+        Douglas Anderson <dianders@chromium.org>,
+        Stefan Mavrodiev <stefan@olimex.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Florian Fainelli <f.fainelli@gmail.com>, Broad@vger.kernel.org
+Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
+Message-ID: <YrwB5xPKZmHlXzrC@kuha.fi.intel.com>
+References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
+ <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <951dd1a9-2b48-fb0c-9ee2-aac2b8170c2c@I-love.SAKURA.ne.jp>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jul 04, 2022 at 11:07:54PM +0900, Tetsuo Handa wrote:
-> On 2022/07/04 22:57, Wedson Almeida Filho wrote:
-> > On Mon, Jul 04, 2022 at 10:48:32PM +0900, Tetsuo Handa wrote:
-> >> On 2022/07/04 21:59, Wedson Almeida Filho wrote:
-> >>>> @@ -139,6 +139,10 @@ static int misc_open(struct inode *inode, struct file *file)
-> >>>>  
-> >>>>  	err = 0;
-> >>>>  	replace_fops(file, new_fops);
-> >>>> +	if (iter->unlocked_open && file->f_op->open) {
-> >>>> +		mutex_unlock(&misc_mtx);
-> >>>> +		return file->f_op->open(inode, file);
-> >>>> +	}
-> >>>
-> >>> One of the invariants of miscdev is that once misc_deregister() returns,
-> >>> no new calls to f_op->open() are made. (Although, of course, you can
-> >>> still have open files but that's a whole different problem.)
-> >>
-> >> The point of this change is that file->f_op after mutex_unlock(&misc_mtx) is
-> >>  from new_fops which is guaranteed to hold a ref on "struct file_operations"
-> >> via new_fops = fops_get("struct miscdevice"->fops).
-> >> That is, a module ref remains valid even after mutex_unlock(&misc_mtx).
-> >>
-> >> And as with major_names_lock case quoted below, this change assumes that
-> >> misc_deregister() is called from module's __exit function, and fops_get()
-> >> is preventing the module owning new_fops from calling __exit function.
-> > 
-> > Your assumption is not sound. misc_deregister() can be (and is)
-> > legitimately called from other places, for example, a driver's remove()
-> > callback. In fact, when I grep for misc_deregister(), the second
-> > instance is such a case.
-> 
-> OK, the frequency of calling misc_deregister() can be much higher than
-> unregister_blkdev(), which means that misc_mtx is more prone to trigger
-> hung task warnings. I'm more inclined to avoid sleeping with misc_mtx held.
+On Tue, Jun 28, 2022 at 04:03:12PM +0200, Uwe Kleine-König wrote:
+> diff --git a/drivers/usb/typec/hd3ss3220.c b/drivers/usb/typec/hd3ss3220.c
+> index cd47c3597e19..2a58185fb14c 100644
+> --- a/drivers/usb/typec/hd3ss3220.c
+> +++ b/drivers/usb/typec/hd3ss3220.c
+> @@ -245,14 +245,12 @@ static int hd3ss3220_probe(struct i2c_client *client,
+>  	return ret;
+>  }
+>  
+> -static int hd3ss3220_remove(struct i2c_client *client)
+> +static void hd3ss3220_remove(struct i2c_client *client)
+>  {
+>  	struct hd3ss3220 *hd3ss3220 = i2c_get_clientdata(client);
+>  
+>  	typec_unregister_port(hd3ss3220->port);
+>  	usb_role_switch_put(hd3ss3220->role_sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct of_device_id dev_ids[] = {
+> diff --git a/drivers/usb/typec/mux/fsa4480.c b/drivers/usb/typec/mux/fsa4480.c
+> index 6184f5367190..d6495e533e58 100644
+> --- a/drivers/usb/typec/mux/fsa4480.c
+> +++ b/drivers/usb/typec/mux/fsa4480.c
+> @@ -181,14 +181,12 @@ static int fsa4480_probe(struct i2c_client *client)
+>  	return 0;
+>  }
+>  
+> -static int fsa4480_remove(struct i2c_client *client)
+> +static void fsa4480_remove(struct i2c_client *client)
+>  {
+>  	struct fsa4480 *fsa = i2c_get_clientdata(client);
+>  
+>  	typec_mux_unregister(fsa->mux);
+>  	typec_switch_unregister(fsa->sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id fsa4480_table[] = {
+> diff --git a/drivers/usb/typec/mux/pi3usb30532.c b/drivers/usb/typec/mux/pi3usb30532.c
+> index 6ce9f282594e..1cd388b55c30 100644
+> --- a/drivers/usb/typec/mux/pi3usb30532.c
+> +++ b/drivers/usb/typec/mux/pi3usb30532.c
+> @@ -160,13 +160,12 @@ static int pi3usb30532_probe(struct i2c_client *client)
+>  	return 0;
+>  }
+>  
+> -static int pi3usb30532_remove(struct i2c_client *client)
+> +static void pi3usb30532_remove(struct i2c_client *client)
+>  {
+>  	struct pi3usb30532 *pi = i2c_get_clientdata(client);
+>  
+>  	typec_mux_unregister(pi->mux);
+>  	typec_switch_unregister(pi->sw);
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id pi3usb30532_table[] = {
+> diff --git a/drivers/usb/typec/rt1719.c b/drivers/usb/typec/rt1719.c
+> index f1b698edd7eb..ea8b700b0ceb 100644
+> --- a/drivers/usb/typec/rt1719.c
+> +++ b/drivers/usb/typec/rt1719.c
+> @@ -930,14 +930,12 @@ static int rt1719_probe(struct i2c_client *i2c)
+>  	return ret;
+>  }
+>  
+> -static int rt1719_remove(struct i2c_client *i2c)
+> +static void rt1719_remove(struct i2c_client *i2c)
+>  {
+>  	struct rt1719_data *data = i2c_get_clientdata(i2c);
+>  
+>  	typec_unregister_port(data->port);
+>  	usb_role_switch_put(data->role_sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct of_device_id __maybe_unused rt1719_device_table[] = {
+> diff --git a/drivers/usb/typec/stusb160x.c b/drivers/usb/typec/stusb160x.c
+> index e7745d1c2a5c..8638f1d39896 100644
+> --- a/drivers/usb/typec/stusb160x.c
+> +++ b/drivers/usb/typec/stusb160x.c
+> @@ -801,7 +801,7 @@ static int stusb160x_probe(struct i2c_client *client)
+>  	return ret;
+>  }
+>  
+> -static int stusb160x_remove(struct i2c_client *client)
+> +static void stusb160x_remove(struct i2c_client *client)
+>  {
+>  	struct stusb160x *chip = i2c_get_clientdata(client);
+>  
+> @@ -823,8 +823,6 @@ static int stusb160x_remove(struct i2c_client *client)
+>  
+>  	if (chip->main_supply)
+>  		regulator_disable(chip->main_supply);
+> -
+> -	return 0;
+>  }
+>  
+>  static int __maybe_unused stusb160x_suspend(struct device *dev)
+> diff --git a/drivers/usb/typec/tcpm/fusb302.c b/drivers/usb/typec/tcpm/fusb302.c
+> index 96c55eaf3f80..5e9348f28d50 100644
+> --- a/drivers/usb/typec/tcpm/fusb302.c
+> +++ b/drivers/usb/typec/tcpm/fusb302.c
+> @@ -1771,7 +1771,7 @@ static int fusb302_probe(struct i2c_client *client,
+>  	return ret;
+>  }
+>  
+> -static int fusb302_remove(struct i2c_client *client)
+> +static void fusb302_remove(struct i2c_client *client)
+>  {
+>  	struct fusb302_chip *chip = i2c_get_clientdata(client);
+>  
+> @@ -1783,8 +1783,6 @@ static int fusb302_remove(struct i2c_client *client)
+>  	fwnode_handle_put(chip->tcpc_dev.fwnode);
+>  	destroy_workqueue(chip->wq);
+>  	fusb302_debugfs_exit(chip);
+> -
+> -	return 0;
+>  }
+>  
+>  static int fusb302_pm_suspend(struct device *dev)
+> diff --git a/drivers/usb/typec/tcpm/tcpci.c b/drivers/usb/typec/tcpm/tcpci.c
+> index f33e08eb7670..c48fca60bb06 100644
+> --- a/drivers/usb/typec/tcpm/tcpci.c
+> +++ b/drivers/usb/typec/tcpm/tcpci.c
+> @@ -869,7 +869,7 @@ static int tcpci_probe(struct i2c_client *client,
+>  	return 0;
+>  }
+>  
+> -static int tcpci_remove(struct i2c_client *client)
+> +static void tcpci_remove(struct i2c_client *client)
+>  {
+>  	struct tcpci_chip *chip = i2c_get_clientdata(client);
+>  	int err;
+> @@ -880,8 +880,6 @@ static int tcpci_remove(struct i2c_client *client)
+>  		dev_warn(&client->dev, "Failed to disable irqs (%pe)\n", ERR_PTR(err));
+>  
+>  	tcpci_unregister_port(chip->tcpci);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id tcpci_id[] = {
+> diff --git a/drivers/usb/typec/tcpm/tcpci_maxim.c b/drivers/usb/typec/tcpm/tcpci_maxim.c
+> index df2505570f07..a11be5754128 100644
+> --- a/drivers/usb/typec/tcpm/tcpci_maxim.c
+> +++ b/drivers/usb/typec/tcpm/tcpci_maxim.c
+> @@ -493,14 +493,12 @@ static int max_tcpci_probe(struct i2c_client *client, const struct i2c_device_id
+>  	return ret;
+>  }
+>  
+> -static int max_tcpci_remove(struct i2c_client *client)
+> +static void max_tcpci_remove(struct i2c_client *client)
+>  {
+>  	struct max_tcpci_chip *chip = i2c_get_clientdata(client);
+>  
+>  	if (!IS_ERR_OR_NULL(chip->tcpci))
+>  		tcpci_unregister_port(chip->tcpci);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id max_tcpci_id[] = {
+> diff --git a/drivers/usb/typec/tcpm/tcpci_rt1711h.c b/drivers/usb/typec/tcpm/tcpci_rt1711h.c
+> index b56a0880a044..9ad4924b4ba7 100644
+> --- a/drivers/usb/typec/tcpm/tcpci_rt1711h.c
+> +++ b/drivers/usb/typec/tcpm/tcpci_rt1711h.c
+> @@ -263,12 +263,11 @@ static int rt1711h_probe(struct i2c_client *client,
+>  	return 0;
+>  }
+>  
+> -static int rt1711h_remove(struct i2c_client *client)
+> +static void rt1711h_remove(struct i2c_client *client)
+>  {
+>  	struct rt1711h_chip *chip = i2c_get_clientdata(client);
+>  
+>  	tcpci_unregister_port(chip->tcpci);
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id rt1711h_id[] = {
+> diff --git a/drivers/usb/typec/tipd/core.c b/drivers/usb/typec/tipd/core.c
+> index dfbba5ae9487..b637e8b378b3 100644
+> --- a/drivers/usb/typec/tipd/core.c
+> +++ b/drivers/usb/typec/tipd/core.c
+> @@ -857,15 +857,13 @@ static int tps6598x_probe(struct i2c_client *client)
+>  	return ret;
+>  }
+>  
+> -static int tps6598x_remove(struct i2c_client *client)
+> +static void tps6598x_remove(struct i2c_client *client)
+>  {
+>  	struct tps6598x *tps = i2c_get_clientdata(client);
+>  
+>  	tps6598x_disconnect(tps, 0);
+>  	typec_unregister_port(tps->port);
+>  	usb_role_switch_put(tps->role_sw);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct of_device_id tps6598x_of_match[] = {
+> diff --git a/drivers/usb/typec/ucsi/ucsi_ccg.c b/drivers/usb/typec/ucsi/ucsi_ccg.c
+> index 6db7c8ddd51c..920b7e743f56 100644
+> --- a/drivers/usb/typec/ucsi/ucsi_ccg.c
+> +++ b/drivers/usb/typec/ucsi/ucsi_ccg.c
+> @@ -1398,7 +1398,7 @@ static int ucsi_ccg_probe(struct i2c_client *client,
+>  	return status;
+>  }
+>  
+> -static int ucsi_ccg_remove(struct i2c_client *client)
+> +static void ucsi_ccg_remove(struct i2c_client *client)
+>  {
+>  	struct ucsi_ccg *uc = i2c_get_clientdata(client);
+>  
+> @@ -1408,8 +1408,6 @@ static int ucsi_ccg_remove(struct i2c_client *client)
+>  	ucsi_unregister(uc->ucsi);
+>  	ucsi_destroy(uc->ucsi);
+>  	free_irq(uc->irq, uc);
+> -
+> -	return 0;
+>  }
+>  
+>  static const struct i2c_device_id ucsi_ccg_device_id[] = {
+> diff --git a/drivers/usb/typec/wusb3801.c b/drivers/usb/typec/wusb3801.c
+> index e63509f8b01e..3cc7a15ecbd3 100644
+> --- a/drivers/usb/typec/wusb3801.c
+> +++ b/drivers/usb/typec/wusb3801.c
+> @@ -399,7 +399,7 @@ static int wusb3801_probe(struct i2c_client *client)
+>  	return ret;
+>  }
+>  
+> -static int wusb3801_remove(struct i2c_client *client)
+> +static void wusb3801_remove(struct i2c_client *client)
+>  {
+>  	struct wusb3801 *wusb3801 = i2c_get_clientdata(client);
+>  
+> @@ -411,8 +411,6 @@ static int wusb3801_remove(struct i2c_client *client)
+>  
+>  	if (wusb3801->vbus_on)
+>  		regulator_disable(wusb3801->vbus_supply);
+> -
+> -	return 0;
+>  }
 
-Tetsuo, I'm sorry if I'm not making myself clear. I'm arguing that your
-patch is buggy and therefore should not be accepted.
+Reviewed-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 
-Here's one example of an issue that your patch would introduce. In
-binder init, we have the following error path:
-
-err_init_binder_device_failed:
-        hlist_for_each_entry_safe(device, tmp, &binder_devices, hlist) {
-                misc_deregister(&device->miscdev);
-                hlist_del(&device->hlist);
-                kfree(device);
-        }
-
-Note that open() for binder touches the `device` pointer. If open() can
-be called _after_ misc_deregister(), then there is a race condition
-where open() is touching `device` while this error path is freeing it.
-
-Right now it isn't a bug because misc_deregister() guarantees that after
-it returns, open() won't be called anymore. Your patch breaks this
-guarantee.
+-- 
+heikki
