@@ -2,41 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DFC8C43334
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 15:34:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05887C43334
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 15:35:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231285AbiF2PeK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jun 2022 11:34:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47202 "EHLO
+        id S231533AbiF2Pfi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jun 2022 11:35:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47716 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230179AbiF2PeH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 11:34:07 -0400
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB77E22B07
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 08:34:06 -0700 (PDT)
+        with ESMTP id S230447AbiF2Pfh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 11:35:37 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2CAF2FE72
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 08:35:36 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id 24407CE248C
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 15:34:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 1DD86C34114
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 15:34:03 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 4D93D615ED
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 15:35:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A70E0C341CF
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 15:35:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1656516843;
-        bh=NxeirAMr+Us7OlXqknOjqeiyLuB94tdaBst8LW5JIgg=;
+        s=k20201202; t=1656516935;
+        bh=POa7GCwwzCmGisR1EErVzwkb+qc/SIJ5GVb8RQuurLI=;
         h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=fBLvNmIdaVMRIR2JsrM72AwM/Lv7GVEBLGQfK+JsCGvnIj6HiqGu8VmVNj+Y6qm49
-         MRSQTW/ZBAmNEyIVK3MxJpp6NnSeWKCgp876mPtuU79xVwmncXbM9x0jOU7nc2o5S6
-         ahoFELhXGQcAz/VmUxs4vs0hoKtS2/KR4/pDAIGIEOkiJtEqrBZQ9vC0c3F82lVDX/
-         6YQY0ewG/cA1o4LqXAeS1HLuR7jYKXST5aKFY0IYLRxOk7Lsm6jWIrVyC91H1iNmGo
-         I460cQBkBSomyo4NTBsGtz4VVhFKe0L9+72LLRhFUXSNenvfBxBrK+t9SX3wx/ZXII
-         L2t7ERhXtiOwg==
+        b=DD7r050NoHgDvWT+Pi7Df9GK6ueD8wl5Upvx9lcdYPv8PPbawGjH82E2N9qugDNoB
+         o7HJYDFN1hWo9WCn+XFDSLuoyGGvcwF4waSS3qJIv53q6CKgm1Sb7nnYaZan54JQ6U
+         I/l/bzcQdjELK2bAn3j5NKm3lOnOcjqbQAqpZvs+/MLOElH5VBPjJYCXtq8dwO/GX+
+         b4/S97ljJm5BKpDrkkKg0O1qPomgG15V41tVUbySvW/4r+3CkDMbdboLsEYbSwMV2x
+         OHfVoyFNlXd+en/n7s5aW1E0mcGFyCDJ8xBuEPt+qim6OkKDx/EwMmJGen1kwAj00O
+         /jvyB3XH73aYw==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 0B959C05FF5; Wed, 29 Jun 2022 15:34:03 +0000 (UTC)
+        id 92A04C05FD6; Wed, 29 Jun 2022 15:35:35 +0000 (UTC)
 From:   bugzilla-daemon@kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [Bug 216189] amd-pstate stops working after S3 suspend
-Date:   Wed, 29 Jun 2022 15:34:02 +0000
+Subject: [Bug 215938] amd-pstate ignoring scaling_max_freq after waking from
+ suspend
+Date:   Wed, 29 Jun 2022 15:35:35 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -51,10 +52,10 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-216189-137361-ShicoHlMw0@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-216189-137361@https.bugzilla.kernel.org/>
-References: <bug-216189-137361@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-215938-137361-bU1wKaGkKL@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-215938-137361@https.bugzilla.kernel.org/>
+References: <bug-215938-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -64,10 +65,16 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D216189
+https://bugzilla.kernel.org/show_bug.cgi?id=3D215938
 
---- Comment #1 from a@annel.in ---
-May be duplicate of https://bugzilla.kernel.org/show_bug.cgi?id=3D215938
+a@annel.in changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |a@annel.in
+
+--- Comment #16 from a@annel.in ---
+*** Bug 216189 has been marked as a duplicate of this bug. ***
 
 --=20
 You may reply to this email to add a comment.
