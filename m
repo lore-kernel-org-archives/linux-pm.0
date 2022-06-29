@@ -2,138 +2,139 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64DE9CCA481
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 07:37:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 540F6C43334
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 07:53:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232132AbiF2HhT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jun 2022 03:37:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51940 "EHLO
+        id S232536AbiF2HxV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jun 2022 03:53:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37652 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232118AbiF2HhQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 03:37:16 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id AC3533630E
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 00:37:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1656488233;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=1h0smKgkaQYyMckjg1gEO+92UXCJgyf7f6YfzsCAFg4=;
-        b=A9r6z16eLePDP7bGnj4DQvo7y3G6bSPDfVUon8h8UU1fWVxsHhqlS7X5ho2Kg8bsJ94eAB
-        ZpiagtHmU1cR+Mbl+pQ9uTE8c3wDDfX5ZBou6CQVNZ5jJ68lAXx9uYydmYJ32oQ+BT7P8w
-        R0bVtv950eOUgOiUhg0nh9TLSJUseeI=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-197-5pAIeYb1NbyByCHsRHF1Tg-1; Wed, 29 Jun 2022 03:37:12 -0400
-X-MC-Unique: 5pAIeYb1NbyByCHsRHF1Tg-1
-Received: by mail-wr1-f70.google.com with SMTP id y18-20020adfdf12000000b0021b94ba4c37so2159786wrl.11
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 00:37:12 -0700 (PDT)
+        with ESMTP id S231256AbiF2HxH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 03:53:07 -0400
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7F5F3BBC3
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 00:52:55 -0700 (PDT)
+Received: by mail-ed1-x534.google.com with SMTP id c65so21018379edf.4
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 00:52:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=teySt0pfe1Fl6EJ0ZuEY5uNGoMIrDwOQRCk/lxEIa6o=;
+        b=K64DhEKw+AgSltwOxeQ0c8C2FCcOksM+do+eTV2cix59m6OCYKyc+vihLA6PvjPt5w
+         ykY1AAZVLxLoAZaR5ANvBE7mLZIjHIRqZnAsj4yrdwi+4qGGDUOF0ITL7XXWIAtVIZHN
+         G2NzNZEGMlHSvs50P0UP6jQNtgYxAtlOMV2babYIvwCUWqWMGa/nmhqDQgpm7Pm9zfgv
+         JMRZg5pCWXmqINVYZNiZ+MJPj521yLOf+3LWNrE4TTLoNblS50LpH3uQq22PqOEiiGBd
+         OcwkZBk4Z8XweCXaFuXSPj5c+aEaDZwTYN2Wi9VwCq0cTJZFTR/kcQaAy9UAFvbTTsWJ
+         u24g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
+        h=x-gm-message-state:from:to:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=1h0smKgkaQYyMckjg1gEO+92UXCJgyf7f6YfzsCAFg4=;
-        b=bP1SD4CMIySPE1M3IGwR6f6rnhmIMKFIP9jlKbdftAyNZ+MKO4ChCr3BpnOWZI7iMX
-         /5CaOa3zjwM/zsbjtmiBnDx0f3k23hSaPOkahTCxTEzZL/FIeWyi9GvOwU+3RpBqVPgv
-         zSI6WS3uZovfETTIp5+uE6RlR9qO8ytVro4nomphJxaLL7mN2rrFnooTIbyAutLnqzWg
-         fn6R2Kn0Z39IeEkIMcMQsCcoACZaZ4VLdQotDVsPZS19VW8mQ/ljph70bWHTAjXQ/Uf1
-         8lXlbeh3N6CiF3fiEJ0FhoCQwrz20AW8eXl4/gwKiFuWtqVteQ/1VffupZDRUEu0T3kS
-         M9iw==
-X-Gm-Message-State: AJIora9aqyc566KP3KuQX2HLyWAiOonQHvtJ4yiXE/jHZmvv+QOAsf3r
-        o8oYrXmxKzYNSwkS3XOR6euOG6r+G5HZkPFL+tBWURYZvKVZO8fHDmf12593pfOpPJtTc10EEXb
-        tyrI40rNqGP78VoSfvg8=
-X-Received: by 2002:a05:6000:1448:b0:21b:b7db:c40b with SMTP id v8-20020a056000144800b0021bb7dbc40bmr1650294wrx.279.1656488231078;
-        Wed, 29 Jun 2022 00:37:11 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1vfq7mqFRSJqFJPQOP6rs25Ch1nA7fBeueZwuaRaLaWENw0ay54yTOP4QHXmGLo1NEA4L9c5g==
-X-Received: by 2002:a05:6000:1448:b0:21b:b7db:c40b with SMTP id v8-20020a056000144800b0021bb7dbc40bmr1650238wrx.279.1656488230741;
-        Wed, 29 Jun 2022 00:37:10 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id j10-20020a5d448a000000b0021b8c99860asm15832366wrq.115.2022.06.29.00.37.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Jun 2022 00:37:10 -0700 (PDT)
-Message-ID: <7654a74e-a410-a8a5-c228-d006dbbc200f@redhat.com>
-Date:   Wed, 29 Jun 2022 09:37:08 +0200
+        bh=teySt0pfe1Fl6EJ0ZuEY5uNGoMIrDwOQRCk/lxEIa6o=;
+        b=qh/NFjdgXXVH6YkhhJ6M3t/5UkuWArFTnJDggxZ7MXoMaQqdG++tGHQEsGiToeulfd
+         JhcUeY9bMUVAPdQ0oIroxQ9WRXM4HPs8YBIIztgzG/V0WTPwveVVwvlvcWVML0t/KPqs
+         HW+iGuv7ATNJwCfvgJy2TXaOPAkeKaRbNcZ4thrGkVOL/bbUXZbIARFDairXG+dLzft1
+         25S9dM8KbMz8JNvpJjeZw9uEkm0JrjZjYhWmQTAJV0RxSG3lxfct0er+Rtz773ClC/il
+         OsCccZLaeYPc5Vso24Kg2AiCnzivkTP7sLf+hMbDIUvHo6SJSEbYrMpl6mAQngr0+TcC
+         wikA==
+X-Gm-Message-State: AJIora+exR4ttdU6sewpqyn3TAgM6VEwex8qOvQeNo7JGE6OMBGlaXTH
+        1QCbi5LhYlsspKZwESJzXvM7BA==
+X-Google-Smtp-Source: AGRyM1ve+eWHy1pLQJ5e60zFGg+uYODIvAuCqfuQnHIBJbRUTWOoZhbqbgueEeoU9X5EA5kdTqKv8g==
+X-Received: by 2002:aa7:cb83:0:b0:435:9170:8e3b with SMTP id r3-20020aa7cb83000000b0043591708e3bmr2539172edt.144.1656489174232;
+        Wed, 29 Jun 2022 00:52:54 -0700 (PDT)
+Received: from localhost.localdomain (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id t2-20020a056402020200b00437db6acaeesm432173edv.95.2022.06.29.00.52.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jun 2022 00:52:53 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v5 0/4] soc/arm64: qcom: Add initial version of bwmon
+Date:   Wed, 29 Jun 2022 09:52:46 +0200
+Message-Id: <20220629075250.17610-1-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
-Content-Language: en-US
-To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Jeremy Kerr <jk@codeconstruct.com.au>
-Cc:     linux-fbdev@vger.kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-iio@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        platform-driver-x86@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-i2c@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-rtc@vger.kernel.org, chrome-platform@lists.linux.dev,
-        linux-staging@lists.linux.dev, kasan-dev@googlegroups.com,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        linux-serial@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-pwm@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org,
-        acpi4asus-user@lists.sourceforge.net, linux-gpio@vger.kernel.org,
-        linux-mediatek@lists.infradead.org,
-        linux-rpi-kernel@lists.infradead.org,
-        openipmi-developer@lists.sourceforge.net,
-        linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org,
-        Support Opensource <support.opensource@diasemi.com>,
-        netdev@vger.kernel.org, Wolfram Sang <wsa@kernel.org>,
-        linux-crypto@vger.kernel.org,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        patches@opensource.cirrus.com, linux-integrity@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
- <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
- <60cc6796236f23c028a9ae76dbe00d1917df82a5.camel@codeconstruct.com.au>
- <20220629072304.qazmloqdi5h5kdre@pengutronix.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220629072304.qazmloqdi5h5kdre@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 6/29/22 09:23, Uwe Kleine-König wrote:
-> Hello,
-> 
-> [I dropped nearly all individuals from the Cc: list because various
-> bounces reported to be unhappy about the long (logical) line.]
->
+Hi,
 
-Yes, it also bounced for me when I tried to reply earlier today.
+Changes since v4
+================
+1. Patch #1 (binding): Use qcom,msm8998-cpu-bwmon fallback compatible, only one
+   interconnect. Rename to qcom,msm8998-cpu-bwmon.yaml. This reflects
+   discussion with Bjorn, about the proper fallback compatible. Driver was
+   tested only on SDM845, so only that one compatible is actually implemented.
+   Keep the reviews/acks as the change is not significant.
+2. Patch #4 (DTS): Use qcom,msm8998-cpu-bwmon fallback compatible, only one
+   interconnect, use the LLCC bandwidth in OPP.
 
-> diff --git a/drivers/gpu/drm/solomon/ssd130x-i2c.c b/drivers/gpu/drm/solomon/ssd130x-i2c.c
-> index 1e0fcec7be47..ddfa0bb5d9c9 100644
-> --- a/drivers/gpu/drm/solomon/ssd130x-i2c.c
-> +++ b/drivers/gpu/drm/solomon/ssd130x-i2c.c
-> @@ -39,13 +39,11 @@ static int ssd130x_i2c_probe(struct i2c_client *client)
->  	return 0;
->  }
->  
-> -static int ssd130x_i2c_remove(struct i2c_client *client)
-> +static void ssd130x_i2c_remove(struct i2c_client *client)
->  {
->  	struct ssd130x_device *ssd130x = i2c_get_clientdata(client);
->  
->  	ssd130x_remove(ssd130x);
-> -
-> -	return 0;
->  }
->  
->  static void ssd130x_i2c_shutdown(struct i2c_client *client)
+remove unused irq_enable (kbuild robot);
+Changes since v3
+================
+1. Patch #2 (bwmon): remove unused irq_enable (kbuild robot);
+   split bwmon_clear() into clearing counters and interrupts, so bwmon_start()
+   does not clear the counters twice.
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com> 
--- 
+Changes since v2
+================
+1. Spent a lot of time on benchmarking and learning the BWMON behavior.
+2. Drop PM/OPP patch - applied.
+3. Patch #1: drop opp-avg-kBps.
+4. Patch #2: Add several comments explaining pieces of code and BWMON, extend
+   commit msg with measurements, extend help message, add new #defines to document
+   some magic values, reorder bwmon clear/disable/enable operations to match
+   downstream source and document this with comments, fix unit count from 1 MB
+   to 65 kB.
+5. Patch #4: drop opp-avg-kBps.
+6. Add accumulated Rb tags.
+
+Changes since v1
+================
+1. Add defconfig change.
+2. Fix missing semicolon in MODULE_AUTHOR.
+3. Add original downstream (msm-4.9 tree) copyrights to the driver.
+
+Description
+===========
+BWMON is a data bandwidth monitor providing throughput/bandwidth over certain
+interconnect links in a SoC.  It might be used to gather current bus usage and
+vote for interconnect bandwidth, thus adjusting the bus speed based on actual
+usage.
+
+The work is built on top of Thara Gopinath's patches with several cleanups,
+changes and simplifications.
+
 Best regards,
+Krzysztof
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+Krzysztof Kozlowski (4):
+  dt-bindings: interconnect: qcom,msm8998-cpu-bwmon: add BWMON device
+  soc: qcom: icc-bwmon: Add bandwidth monitoring driver
+  arm64: defconfig: enable Qualcomm Bandwidth Monitor
+  arm64: dts: qcom: sdm845: Add CPU BWMON
+
+ .../interconnect/qcom,msm8998-cpu-bwmon.yaml  |  80 ++++
+ MAINTAINERS                                   |   7 +
+ arch/arm64/boot/dts/qcom/sdm845.dtsi          |  38 ++
+ arch/arm64/configs/defconfig                  |   1 +
+ drivers/soc/qcom/Kconfig                      |  15 +
+ drivers/soc/qcom/Makefile                     |   1 +
+ drivers/soc/qcom/icc-bwmon.c                  | 421 ++++++++++++++++++
+ 7 files changed, 563 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,msm8998-cpu-bwmon.yaml
+ create mode 100644 drivers/soc/qcom/icc-bwmon.c
+
+-- 
+2.34.1
 
