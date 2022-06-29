@@ -2,76 +2,121 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76375CCA480
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 03:45:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B32ACCA481
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 03:45:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229895AbiF2Dpm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Jun 2022 23:45:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37986 "EHLO
+        id S230083AbiF2Dpn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Jun 2022 23:45:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229608AbiF2Dpk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2022 23:45:40 -0400
+        with ESMTP id S230003AbiF2Dpn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2022 23:45:43 -0400
 Received: from mailgw.kylinos.cn (unknown [124.126.103.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8BD51838C;
-        Tue, 28 Jun 2022 20:45:39 -0700 (PDT)
-X-UUID: 62d1a1c3ad8744719647c2d7e9496a8b-20220629
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A8D418343;
+        Tue, 28 Jun 2022 20:45:41 -0700 (PDT)
+X-UUID: 78fabd2e204b48a492c26a37b27e5e8d-20220629
 X-GW-Reason: 13103
 X-Policy-Incident: 5pS25Lu25Lq66LaF6L+HNeS6uumcgOimgeWuoeaguA==
-X-Content-Feature: ica/max.line-size 71
+X-Content-Feature: ica/max.line-size 73
+        audit/email.address 1
         dict/adv 1
-        dict/notice 2
-        dict/time 2
+        dict/contack 1
+        dict/job 1
+        dict/notice 1
+        dict/operate 1
+        dict/time 1
         meta/cnt.alert 1
-X-CPASD-INFO: 7cc0b75fc07a42879c24f8fe93ef2c33@gLOdUI9pY5aPUHmtg3WDcVmUYmSWZIa
-        0e22FmGCTX1OVgnxsTWBnX1OEgnBQYl5dZFZ3dG9RYmBgYlB_i4Jyj1RiXmCCVHSTgHmdg2KQZw==
-X-CLOUD-ID: 7cc0b75fc07a42879c24f8fe93ef2c33
-X-CPASD-SUMMARY: SIP:-1,APTIP:-2.0,KEY:0.0,FROMBLOCK:1,OB:2.0,URL:-5,TVAL:186.
-        0,ESV:0.0,ECOM:-5.0,ML:0.0,FD:0.0,CUTS:65.0,IP:-2.0,MAL:-5.0,PHF:-5.0,PHC:-5.
-        0,SPF:4.0,EDMS:-5,IPLABEL:4480.0,FROMTO:0,AD:0,FFOB:2.0,CFOB:2.0,SPC:0,SIG:-5
-        ,AUF:7,DUF:134,ACD:2,DCD:2,SL:0,EISP:0,AG:0,CFC:0.347,CFSR:0.105,UAT:0,RAF:0,
-        IMG:-5.0,DFA:0,DTA:0,IBL:-2.0,ADI:-5,SBL:0,REDM:0,REIP:0,ESB:0,ATTNUM:0,EAF:0
-        ,CID:-5.0,VERSION:2.3.17
-X-CPASD-ID: 62d1a1c3ad8744719647c2d7e9496a8b-20220629
+X-CPASD-INFO: 79a2431c46c548daab49de3fa2ab5c91@gImbUmFlX5NgVqWBg3uvm4GTZGmUkVO
+        1o2yBlGOTZVGVgnxsTWBnX1OEgnBQYl5dZFZ3dG9RYmBgYlB_i4Jyj1RiXmCCVHSTgHlzgWRiYw==
+X-CLOUD-ID: 79a2431c46c548daab49de3fa2ab5c91
+X-CPASD-SUMMARY: SIP:-1,APTIP:-2.0,KEY:0.0,FROMBLOCK:1,OB:2.0,URL:-5,TVAL:182.
+        0,ESV:0.0,ECOM:-5.0,ML:0.0,FD:0.0,CUTS:195.0,IP:-2.0,MAL:-5.0,PHF:-5.0,PHC:-5
+        .0,SPF:4.0,EDMS:-5,IPLABEL:4480.0,FROMTO:0,AD:0,FFOB:2.0,CFOB:2.0,SPC:0,SIG:-
+        5,AUF:6,DUF:133,ACD:2,DCD:2,SL:0,EISP:0,AG:0,CFC:0.512,CFSR:0.049,UAT:0,RAF:0
+        ,IMG:-5.0,DFA:0,DTA:0,IBL:-2.0,ADI:-5,SBL:0,REDM:0,REIP:0,ESB:0,ATTNUM:0,EAF:
+        0,CID:-5.0,VERSION:2.3.17
+X-CPASD-ID: 78fabd2e204b48a492c26a37b27e5e8d-20220629
 X-CPASD-BLOCK: 1000
 X-CPASD-STAGE: 1
-X-UUID: 62d1a1c3ad8744719647c2d7e9496a8b-20220629
+X-UUID: 78fabd2e204b48a492c26a37b27e5e8d-20220629
 X-User: xiongxin@kylinos.cn
 Received: from localhost.localdomain [(116.128.244.169)] by mailgw
         (envelope-from <xiongxin@kylinos.cn>)
         (Generic MTA)
-        with ESMTP id 1566450409; Wed, 29 Jun 2022 09:12:14 +0800
+        with ESMTP id 596082055; Wed, 29 Jun 2022 09:12:15 +0800
 From:   xiongxin <xiongxin@kylinos.cn>
 To:     rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz,
         xiongxin@kylinos.cn, luriwen@kylinos.cn
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH -next 0/2] PM: suspend: Optimized suspend is fail returned by wakeup
-Date:   Wed, 29 Jun 2022 09:11:44 +0800
-Message-Id: <20220629011146.299521-1-xiongxin@kylinos.cn>
+Subject: [PATCH -next 2/2] PM: suspend: advanced pm_wakeup_clear() for normal suspend/hibernate
+Date:   Wed, 29 Jun 2022 09:11:46 +0800
+Message-Id: <20220629011146.299521-3-xiongxin@kylinos.cn>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220629011146.299521-1-xiongxin@kylinos.cn>
+References: <20220629011146.299521-1-xiongxin@kylinos.cn>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When the suspend process is executed from the /sys/power/state entry,
-the pm_wakeup_clear() signal is cleared in advance, and the wakeup
-signal can be captured to fail the suspend process when the suspend
-process is notified by the notifier;
+pm_wakeup_clear() will clear the wakeup source, which can ensure that it
+is not disturbed by useless wakeup signals when doing suspend/hibernate;
 
-Expanding the scope of the pm_suspend_target_state variable also allows
-the device driver to know that the system has entered the suspend
-process earlier.
+At the beginning of the suspend/hibernate process, the notifier
+mechanism is used to notify other device drivers. This action is
+time-consuming (second-level time-consuming). If the process fails due
+to the received wakeup signal during the execution of these functions,
+it can better improve the experience of failing suspend/hibernate
+returns;
 
-xiongxin (2):
-  PM: suspend: expand the assignment scope of the
-    pm_suspend_target_state
-  PM: suspend: advanced pm_wakeup_clear() for normal suspend/hibernate
+Therefore, it is recommended here that for the suspend/hibernate process
+normally called from /sys/power/state, the pm_wakeup_clear() function
+should be brought before the notifier call; for the freeze_process()
+function called from other places, the original logic is kept;
 
- kernel/power/process.c |  5 ++++-
- kernel/power/suspend.c | 13 +++++++++++++
- 2 files changed, 17 insertions(+), 1 deletion(-)
+The pm_suspend_target_state variable is used here to identify whether the
+suspend process is going normally.
 
+Signed-off-by: xiongxin <xiongxin@kylinos.cn>
+---
+ kernel/power/process.c | 5 ++++-
+ kernel/power/suspend.c | 6 ++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 3068601e585a..3fde0240b3d1 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -131,7 +131,10 @@ int freeze_processes(void)
+ 	if (!pm_freezing)
+ 		atomic_inc(&system_freezing_cnt);
+ 
+-	pm_wakeup_clear(0);
++	if (pm_suspend_target_state != PM_SUSPEND_ON)
++		pm_wakeup_clear(1);
++	else
++		pm_wakeup_clear(0);
+ 	pr_info("Freezing user space processes ... ");
+ 	pm_freezing = true;
+ 	error = try_to_freeze_tasks(true);
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index c754b084ec03..f4259f6c1cc2 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -569,6 +569,12 @@ static int enter_state(suspend_state_t state)
+ 	 * performed from the /sys/power/state entry.
+ 	 */
+ 	pm_suspend_target_state = state;
++	/*
++	 * Put pm_wakeup_clear() before the notifier notification chain to
++	 * optimize in the suspend process, the wakeup signal can interrupt
++	 * the suspend in advance and fail to return.
++	 */
++	pm_wakeup_clear(0);
+ 
+ 	if (sync_on_suspend_enabled) {
+ 		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
 -- 
 2.25.1
 
