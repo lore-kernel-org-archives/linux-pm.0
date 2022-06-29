@@ -2,162 +2,93 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F330AC433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 04:04:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17861C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 04:17:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229547AbiF2EEv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jun 2022 00:04:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55252 "EHLO
+        id S231281AbiF2ERH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jun 2022 00:17:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36478 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229489AbiF2EEu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 00:04:50 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58F9E2ED56;
-        Tue, 28 Jun 2022 21:04:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1656475489; x=1688011489;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=cQ9/dgTUHz+6F1S0ByxMyzLZK/xRRhC6qkIAcWuWLXM=;
-  b=Jd9wHcxULgI+zawLFxOjAkKD+gjnkHYvJS1k7xvUzWaZEC5EXeRWIRUW
-   B4hh0IqSBsVjTrqPzTJW4OhDmKEfwsocoIgZjBPALVPzTr4gUNNoesn1A
-   U+uBN+3HBl4CmA1rN0R38tqgXMp0crAT1GDVfRjiT6QE778Ba0KKyIL0n
-   2Dq2PGY1ZAzR67Kk++QULZoSOYLaoQ5Sx4AMKx5vmKY8lSUrglUjJV7b5
-   eo0CaDcO8GDXUCHqZMjCeRzGkXE+uH1Fqt09k09g2jLICnJYqhnNIFgOB
-   xObdGzEV9asky0JM1q5mq9tpLdUO38msLPM+NmtEf5w3KXfcCTKPwhNIF
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10392"; a="264954998"
-X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
-   d="scan'208";a="264954998"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jun 2022 21:04:48 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
-   d="scan'208";a="693399191"
-Received: from lkp-server01.sh.intel.com (HELO 68b931ab7ac1) ([10.239.97.150])
-  by fmsmga002.fm.intel.com with ESMTP; 28 Jun 2022 21:04:46 -0700
-Received: from kbuild by 68b931ab7ac1 with local (Exim 4.95)
-        (envelope-from <lkp@intel.com>)
-        id 1o6OwY-000AtE-Ao;
-        Wed, 29 Jun 2022 04:04:46 +0000
-Date:   Wed, 29 Jun 2022 12:04:06 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD REGRESSION
- 4035647418c1b31bcc12e6cfafc01f61f0c649ea
-Message-ID: <62bbcf36.pFBdqnxFoqglQFOC%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S229815AbiF2ERG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 00:17:06 -0400
+X-Greylist: delayed 1798 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 28 Jun 2022 21:17:02 PDT
+Received: from mg.sunplus.com (mswedge1.sunplus.com [60.248.182.113])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id ADA4E20BE8;
+        Tue, 28 Jun 2022 21:17:02 -0700 (PDT)
+X-MailGates: (compute_score:DELIVER,40,3)
+Received: from 172.17.9.202
+        by mg01.sunplus.com with MailGates ESMTP Server V5.0(2567:0:AUTH_RELAY)
+        (envelope-from <lh.Kuo@sunplus.com>); Wed, 29 Jun 2022 11:31:10 +0800 (CST)
+Received: from sphcmbx01.sunplus.com.tw (172.17.9.202) by
+ sphcmbx01.sunplus.com.tw (172.17.9.202) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.32; Wed, 29 Jun 2022 11:31:09 +0800
+Received: from sphcmbx01.sunplus.com.tw ([fe80::bdb5:968f:d409:32d1]) by
+ sphcmbx01.sunplus.com.tw ([fe80::bdb5:968f:d409:32d1%14]) with mapi id
+ 15.00.1497.033; Wed, 29 Jun 2022 11:31:09 +0800
+From:   =?utf-8?B?TGggS3VvIOmDreWKm+ixqg==?= <lh.Kuo@sunplus.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        =?utf-8?B?6YOt5Yqb6LGq?= <lhjeff911@gmail.com>,
+        "rafael@kernel.org" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "amitk@kernel.org" <amitk@kernel.org>,
+        "rui.zhang@intel.com" <rui.zhang@intel.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v9 1/2] thermal: Add thermal driver for Sunplus
+Thread-Topic: [PATCH v9 1/2] thermal: Add thermal driver for Sunplus
+Thread-Index: AQHYfGnSmcz0ONeaZ065CGG9qHLjyK1Hct0AgAB4UYCAHe07gA==
+Date:   Wed, 29 Jun 2022 03:31:08 +0000
+Message-ID: <1eeaba5aeacc4f9e951e8845f15d5c64@sphcmbx01.sunplus.com.tw>
+References: <CAGcXWkzJwOPXfE6ESAtwBbe7W-UkApKosKUy=UBRh0kmi-Bc2Q@mail.gmail.com>
+ <395072af-3349-cead-fe07-62d3d758d635@infradead.org>
+ <e68724b0-4a9f-f564-c833-befd6c3515fb@linaro.org>
+In-Reply-To: <e68724b0-4a9f-f564-c833-befd6c3515fb@linaro.org>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [172.25.108.51]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 4035647418c1b31bcc12e6cfafc01f61f0c649ea  Merge branch 'acpi-bus' into linux-next
-
-Error/Warning reports:
-
-https://lore.kernel.org/linux-acpi/202206281146.iWj1cpqY-lkp@intel.com
-
-Error/Warning: (recently discovered and may have been fixed)
-
-drivers/bus/hisi_lpc.c:488:41: error: 'struct acpi_device' has no member named 'children'
-drivers/bus/hisi_lpc.c:488:53: error: 'struct acpi_device' has no member named 'node'; did you mean 'fwnode'?
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- arm64-allyesconfig
-|   |-- drivers-bus-hisi_lpc.c:error:struct-acpi_device-has-no-member-named-children
-|   `-- drivers-bus-hisi_lpc.c:error:struct-acpi_device-has-no-member-named-node
-`-- ia64-allmodconfig
-    |-- drivers-bus-hisi_lpc.c:error:struct-acpi_device-has-no-member-named-children
-    `-- drivers-bus-hisi_lpc.c:error:struct-acpi_device-has-no-member-named-node
-
-elapsed time: 722m
-
-configs tested: 70
-configs skipped: 2
-
-gcc tested configs:
-arm64                            allyesconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                 randconfig-c001-20220627
-powerpc                      ppc40x_defconfig
-arm                        realview_defconfig
-arm                            pleb_defconfig
-parisc64                            defconfig
-arm                          pxa910_defconfig
-ia64                         bigsur_defconfig
-arm                       aspeed_g5_defconfig
-sh                   sh7770_generic_defconfig
-arc                            hsdk_defconfig
-arm                         cm_x300_defconfig
-riscv                            allyesconfig
-ia64                             allmodconfig
-x86_64               randconfig-k001-20220627
-arc                              allyesconfig
-alpha                            allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-powerpc                           allnoconfig
-mips                             allyesconfig
-powerpc                          allmodconfig
-sh                               allmodconfig
-i386                                defconfig
-i386                             allyesconfig
-x86_64               randconfig-a012-20220627
-x86_64               randconfig-a016-20220627
-x86_64               randconfig-a011-20220627
-x86_64               randconfig-a013-20220627
-x86_64               randconfig-a014-20220627
-x86_64               randconfig-a015-20220627
-i386                 randconfig-a014-20220627
-i386                 randconfig-a011-20220627
-i386                 randconfig-a012-20220627
-i386                 randconfig-a015-20220627
-i386                 randconfig-a016-20220627
-i386                 randconfig-a013-20220627
-arc                  randconfig-r043-20220627
-s390                 randconfig-r044-20220627
-riscv                randconfig-r042-20220627
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-x86_64                         rhel-8.3-kunit
-x86_64                    rhel-8.3-kselftests
-x86_64                           rhel-8.3-syz
-x86_64                          rhel-8.3-func
-
-clang tested configs:
-arm                      pxa255-idp_defconfig
-arm                            dove_defconfig
-x86_64               randconfig-a004-20220627
-x86_64               randconfig-a006-20220627
-x86_64               randconfig-a001-20220627
-x86_64               randconfig-a005-20220627
-x86_64               randconfig-a002-20220627
-x86_64               randconfig-a003-20220627
-i386                 randconfig-a002-20220627
-i386                 randconfig-a004-20220627
-i386                 randconfig-a003-20220627
-i386                 randconfig-a001-20220627
-i386                 randconfig-a005-20220627
-i386                 randconfig-a006-20220627
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-hexagon              randconfig-r041-20220627
-hexagon              randconfig-r045-20220627
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+SSdtIHNvcnJ5IGZvciB0aGUgd3JvbmcgaW5kZW50YXRpb24gcHJvYmxlbSwgaXQgd2FzIGNhdXNl
+ZCBieSBhIHdyb25nIHNldHRpbmcgaW4gdGhlIG1haWwgc2VydmVyLkkgd2lsbCBmaXggaXQgaW4g
+dGhlIG5leHQgcGF0Y2guDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9t
+OiBLcnp5c3p0b2YgS296bG93c2tpIDxrcnp5c3p0b2Yua296bG93c2tpQGxpbmFyby5vcmc+DQo+
+IFNlbnQ6IEZyaWRheSwgSnVuZSAxMCwgMjAyMiA2OjMwIFBNDQo+IFRvOiBSYW5keSBEdW5sYXAg
+PHJkdW5sYXBAaW5mcmFkZWFkLm9yZz47IOmDreWKm+ixqiA8bGhqZWZmOTExQGdtYWlsLmNvbT47
+IHJhZmFlbEBrZXJuZWwub3JnOw0KPiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGlu
+YXJvLm9yZz47IGFtaXRrQGtlcm5lbC5vcmc7IHJ1aS56aGFuZ0BpbnRlbC5jb207DQo+IHJvYmgr
+ZHRAa2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBkZXZpY2V0cmVlQHZnZXIu
+a2VybmVsLm9yZzsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBDYzogTGggS3Vv
+IOmDreWKm+ixqiA8bGguS3VvQHN1bnBsdXMuY29tPjsgV2VsbHMgTHUg5ZGC6Iqz6aiwIDx3ZWxs
+cy5sdUBzdW5wbHVzLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2OSAxLzJdIHRoZXJtYWw6
+IEFkZCB0aGVybWFsIGRyaXZlciBmb3IgU3VucGx1cw0KPiANCj4gT24gMTAvMDYvMjAyMiAwNTox
+OSwgUmFuZHkgRHVubGFwIHdyb3RlOg0KPiA+IEhpLS0NCj4gPg0KPiA+IE9uIDYvOS8yMiAxODoz
+Miwg6YOt5Yqb6LGqIHdyb3RlOg0KPiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL0tj
+b25maWcgYi9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyBpbmRleA0KPiA+PiAwZTVjYzk0Li5jODVl
+NjY4IDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZw0KPiA+PiArKysg
+Yi9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZw0KPiA+PiBAQCAtNTA0LDQgKzUwNCwxNCBAQCBjb25m
+aWcgS0hBREFTX01DVV9GQU5fVEhFUk1BTA0KPiA+PiAgICAgSWYgeW91IHNheSB5ZXMgaGVyZSB5
+b3UgZ2V0IHN1cHBvcnQgZm9yIHRoZSBGQU4gY29udHJvbGxlZA0KPiA+PiAgICAgYnkgdGhlIE1p
+Y3JvY29udHJvbGxlciBmb3VuZCBvbiB0aGUgS2hhZGFzIFZJTSBib2FyZHMuDQo+ID4+DQo+ID4+
+ICtjb25maWcgU1VOUExVU19USEVSTUFMDQo+ID4+ICsgdHJpc3RhdGUgIlN1bnBsdXMgdGhlcm1h
+bCBkcml2ZXJzIg0KPiA+PiArIGRlcGVuZHMgb24gU09DX1NQNzAyMSB8fCBDT01QSUxFX1RFU1Qg
+IGhlbHANCj4gPj4gKyAgIFRoaXMgZW5hYmxlIHRoZSBTdW5wbHVzIFNQNzAyMSB0aGVybWFsIGRy
+aXZlciwgd2hpY2ggc3VwcG9ydHMgdGhlIHByaW1pdGl2ZQ0KPiA+PiArICAgdGVtcGVyYXR1cmUg
+c2Vuc29yIGVtYmVkZGVkIGluIFN1bnBsdXMgU1A3MDIxIFNvQy4NCj4gPj4gKw0KPiA+PiArICAg
+SWYgeW91IGhhdmUgYSBTdW5wbHVzIFNQNzAyMSBwbGF0Zm9ybSBzYXkgWSBoZXJlIGFuZCBlbmFi
+bGUgdGhpcyBvcHRpb24NCj4gPj4gKyAgIHRvIGhhdmUgc3VwcG9ydCBmb3IgdGhlcm1hbCBtYW5h
+Z2VtZW50DQo+ID4NCj4gPiBFbmQgdGhlIHNlbnRlbmNlIGFib3ZlIHdpdGggYSBwZXJpb2QgKCcu
+JykuDQo+ID4NCj4gPiBBbmQgdGhlIGluZGVudGF0aW9uIGhlcmUgaXMgYWxsIG1lc3NlZCB1cC4N
+Cj4gPiBTZWUgRG9jdW1lbnRhdGlvbi9wcm9jZXNzL2NvZGluZy1zdHlsZS5yc3Q6DQo+ID4NCj4g
+DQo+IEl0J3Mgbm90IG9ubHkgdGhpcyBvbmUuIEVudGlyZSBmaWxlIGhhcyB3cm9uZyBpbmRlbnRh
+dGlvbi4NCj4gDQo+IEJlc3QgcmVnYXJkcywNCj4gS3J6eXN6dG9mDQo=
