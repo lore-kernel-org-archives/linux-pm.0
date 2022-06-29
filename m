@@ -2,182 +2,162 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32C7BC3F2D4
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 16:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06F48C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jun 2022 16:46:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231942AbiF2Qqx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jun 2022 12:46:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55598 "EHLO
+        id S230186AbiF2Qqz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jun 2022 12:46:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55834 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231624AbiF2QqS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 12:46:18 -0400
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2073.outbound.protection.outlook.com [40.107.22.73])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C1B839824;
+        with ESMTP id S231740AbiF2QqX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 12:46:23 -0400
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 836803D4AC
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 09:45:44 -0700 (PDT)
+Received: by mail-pf1-x42a.google.com with SMTP id n12so15713231pfq.0
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 09:45:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=qbgxVjSNUSEJIFEXApWGFpryJbcZ7S92Ar7niRetWos=;
+        b=WhYjJT92akcESAMtpaWOEXR2nHKOZ0Ua8GyjcCpUZQrEwfuSw78fIcD+qRY4IgncNd
+         K9tNJdGaTyiKiZ3x0sGnchq2J8J16eeVpm2+UMX3TVWVRuHQBaJVymE1jkw/WMC55IWM
+         gwDzB+r6YA3mPhWPgaMBGMzP2XwPp5dezwWAW/Gks4UdtPEnIAdDbR7+XlGAcN7i6kCd
+         cGOxIOO0EkLlA8EYwlIoOOpVwj4srdGjZjsrnQMLodlzQD/WPQPKRJpBIwqGfojsUUGo
+         Bn3gfUM+l4bGBQFDBai1o7zxWwZmKAaLN+M6ZcLoSeo5qvkYytx5OJ1phZZgNTwqyZlQ
+         9rLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=qbgxVjSNUSEJIFEXApWGFpryJbcZ7S92Ar7niRetWos=;
+        b=JbP4UtQRRp9RaTtplfpYyY8lznmzzJ/bFI7wOQxEModVdrikB7zLdA5ZmJpDezu56s
+         2Cjiq6pjcgLyegWlR6tDTGsyXeAy9w3f+M7n9Yje3XsAIMvNZgxPSWi1qGgNDJ3dDAwe
+         NUyrwqt0cjD7WZEbraq+Xxh55LpcE15nNWmhncP2TIt0ek8uTO6tsDQ4ConqjV+40Qm6
+         VUwLpUuPt7bMKL7sErGGbqof9olABWNl7v/ibUQQUBPOTjL7FL6Zb8+31QVA/0yTDzcF
+         kGZBIwnggsZP/Tj2kD+zMPg5nnp+oWfqRdoFkbsC9gTApcauqhKU6Ky7Sy9GLtK5dIvF
+         iUZA==
+X-Gm-Message-State: AJIora8pQJZMtQ0B2OXjT4+J6jxxNyUH+88Zo+kZgQ74PMQW/CBFsjs8
+        +jjtC3hoybYjRw7M7k3DmjAtng==
+X-Google-Smtp-Source: AGRyM1tsOTTZfaihphwrShkEzOlhxP9AjbYsK9KGeh9PRRSXMZtS7+zglWXcwxPoDNLT0t4lCNWZBQ==
+X-Received: by 2002:a05:6a00:23ca:b0:525:28b4:9e3b with SMTP id g10-20020a056a0023ca00b0052528b49e3bmr9741580pfc.43.1656521141110;
+        Wed, 29 Jun 2022 09:45:41 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id c19-20020a62e813000000b005252adb89b3sm11759222pfi.32.2022.06.29.09.45.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Wed, 29 Jun 2022 09:45:40 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=KDOyLzgQZy/m8s7a/sP9zLK5RtOHE6RwFQEnSjkYI2FIlb0EQD6Vj2PQeviIyTJzJFS9h4wEBl58d/2e1x1IDA2IG0Z4rfTETvk5vMqXooSS5EMUcFINsT3qJ6ArFKc6vtb2bLJtNVo2kbAR04VdivXGcyW2VQ+VrHcdY9Jyfg6WFXoKahRNOZb3qdqn62VBHT7xCcepN2oR4nnaq1DWsSZjSkA2g0kw5CYA7slRLFuadgq6EdAcEJ6eK/PQLV0LSumNaFge86kAQIggcCokxLOLappdQK8bIxLvcW6qVJ8GE5NCr4h66oROLhrj2Kjxk5FFRk8p58AjusXvCadHqQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HI4oejGXuCy2Y2FQ+M8kieCzFeO0K5hroMLoeq7AZ0c=;
- b=mkiugjqes+BC0MSYAHH7TRoHI2Lvn0RHQhHMkWQhasHtxBGG1QZSkR/sLt+2UwbFERZwYuPmNX6O+wgtS1QC76PUn9kGfcwjCLFbE6+wShXtuMjO77sUSQvspTyvvI/E79QozV0dzWEFK0ofodI4rJkzVn+5s+VomQDUdru4gPHOJp7rBdRYBONc6VHqWGHUL/s2gepdoqIYXaJ3lGy9NWtR9oWSGlcfBaR6kUaH9JE4VdA6k2IsXBxIdpZJhepZDuQ2Tiselrdh5KY4Mh3CvY0kRVs6AI8/m/v/CYJtZQz/fcG4RgyT9YSijJZHI1mkKkRw+LiIkp+WmB3mcHgZcA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector2-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HI4oejGXuCy2Y2FQ+M8kieCzFeO0K5hroMLoeq7AZ0c=;
- b=G1VISrc65kibab516VjmTGRDHY/JwLBw3npKFR9mhaB3ZcYwhkBln748i4DRUgSZGUlVei+veO3ZToPEVxO5/o1Uc6vE3TV8oxdTuFvamMrj3i0Vndc6KFQLpW0Ad2dEtLH1Zy46c/ysNqrBohqDsr63Mui8PAyWfIkJWCjeKlc=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from VI1PR04MB5005.eurprd04.prod.outlook.com (2603:10a6:803:57::30)
- by VI1PR04MB5840.eurprd04.prod.outlook.com (2603:10a6:803:e1::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5373.18; Wed, 29 Jun
- 2022 16:45:28 +0000
-Received: from VI1PR04MB5005.eurprd04.prod.outlook.com
- ([fe80::6546:3ee1:5e6c:278f]) by VI1PR04MB5005.eurprd04.prod.outlook.com
- ([fe80::6546:3ee1:5e6c:278f%5]) with mapi id 15.20.5373.018; Wed, 29 Jun 2022
- 16:45:28 +0000
-From:   "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Fabio Estevam <festevam@gmail.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Stefan Agner <stefan@agner.ch>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Abel Vesa <abelvesa@kernel.org>,
-        Viorel Suman <viorel.suman@nxp.com>,
-        Oliver Graute <oliver.graute@kococonnector.com>,
-        Liu Ying <victor.liu@nxp.com>,
-        Mirela Rabulea <mirela.rabulea@nxp.com>,
-        Peng Fan <peng.fan@nxp.com>, Ming Qian <ming.qian@nxp.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v6 11/14] arm64: dts: freescale: imx8: Fix power controller name
-Date:   Wed, 29 Jun 2022 19:44:11 +0300
-Message-Id: <20220629164414.301813-12-viorel.suman@oss.nxp.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220629164414.301813-1-viorel.suman@oss.nxp.com>
-References: <20220629164414.301813-1-viorel.suman@oss.nxp.com>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: AM9P195CA0028.EURP195.PROD.OUTLOOK.COM
- (2603:10a6:20b:21f::33) To VI1PR04MB5005.eurprd04.prod.outlook.com
- (2603:10a6:803:57::30)
+Message-ID: <62bc81b4.1c69fb81.6e58d.04ba@mx.google.com>
+Date:   Wed, 29 Jun 2022 09:45:40 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: ab149ee2-3e58-407b-74ee-08da59eec5ca
-X-MS-TrafficTypeDiagnostic: VI1PR04MB5840:EE_
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: w4pT2s2FCLz3LzKAnm7p4vVwiCCDUEbG3A4mjlU39H6CM7c8whtoVBnh/YmxHgVHGn2C/Ucz7ke3vIxPNuhXaoMsYnXtAwpGT+ePj4CGLSQcXw8GkByl6rnBNuJxLMxdkfhi4BPt1g3IFB3ZQOfltJ8lye9q8f6v50tdqZIpyHmSkE6ij75OxMQUj0tgknWgnWIf+YKuUN+ny+xRFofgZhDn+EJ6qM9iopqNY1h7ytfoJGlCom8iWwuQp+lcfjShOgH+G8H7GIBvGYfaELx71wBREmjKWOF132kdvYWpAmyLwQSWcQ5NHrAidVSSvQqAgHZIHJuGgCJic+W+bO3JwZv59oFk2hynXKaNfgwAs3sRlU3pFH2UgZeZA7BbLkaU98qgSaZHtME/Wc5/JAY8FY4wq9bBGJ2MTocIwL3g+srwYx4ypOGEc9Pfb7XmSgFSIpBONbcrChSgWLxtLmbnolwKC4NOakFMJFjqt5vviWA3Lz8+iPhIvBFzU2s/PRe1tchyGIUwRA2ODc0GL8Ct5o9alxFolGhOVZo9zw19aYvoCLzvPML7i3/36hgH7sMf3Sepb7UEXHqnm3n/OJXohiCP3XlZ8gA6CRdylQiZYhTR0ads1SjamhxTzViQwW3/OlRZcOaivpUN7+0U7BE/Bs8If0uvqBIyvNi4vPwjryTva2lVZjjNU5PwkzRqR69K2NqKVEJesggsqUNc/a7J7CxkG8Yf1VBykq+EY9hsJouQddSzwmdWLb+ITM3QDjGAcj8z/XHh3tytUcQF5WPkCdXdLE4aApnn+D9rDt1yzi1iwJojN4my1kk3Tye0Uxdg
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB5005.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(366004)(396003)(376002)(346002)(39860400002)(136003)(66946007)(6506007)(26005)(316002)(6512007)(66476007)(5660300002)(66556008)(6486002)(8676002)(8936002)(52116002)(921005)(38350700002)(41300700001)(186003)(2616005)(7416002)(478600001)(86362001)(110136005)(6666004)(83380400001)(1076003)(38100700002)(7406005)(2906002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?iso-8859-1?Q?LO1dk5XbAT4xAxbgEOO+bwIvd28+xI8DxIqDKMRJjhCjmu0w0vSWWi2HKP?=
- =?iso-8859-1?Q?QiiQpwPMZGZLCLXQgFZOKiNWuuZ31EvZ90R8jt9BfDOS9YCO6TyuV7VIPJ?=
- =?iso-8859-1?Q?rbWaKG2VnfBa6u/nOdju1+YeqdxvjIIWw3kXweigqV7AvxCVlc/iyTogsb?=
- =?iso-8859-1?Q?8/P8h6RYisLc8oEfxzcxFvE9iVtaLmBtYMRgE0oT5Y5RuZsftfK7FesK5p?=
- =?iso-8859-1?Q?laQWBlsPhvj7E0M+I8LlOVLYUhtq1Rqui8ZPOn3uUcHL2syelPAs1ZOhdZ?=
- =?iso-8859-1?Q?KFioY6FPMxI6KgIj1NUp3Qn1PgV3Rl0wGv/FH17osRVQlqEHbiAuN7XNBD?=
- =?iso-8859-1?Q?y2qQeRfj+z4Z9GF73tHntFi9GLexKXpCqnUY5f6E9YektuLaZIAvR6zQvM?=
- =?iso-8859-1?Q?8nITiy4tOgpkWouVDZKvl4MyXfvA3CiH9ZbrIY+Vvmem9NdRmJpwqrgOLP?=
- =?iso-8859-1?Q?CLFs9/GrV+1Y4RJgr5Ll+qQn9BgXOzFHtfrBGsoqO/HBNg1doMslUQjwi/?=
- =?iso-8859-1?Q?761mJ6Ugfcx18kFYIZi3SWqq4MR6WY6hny4HBtakYnR33XZywb0RMMC2pc?=
- =?iso-8859-1?Q?bQgzAPUVv64mBXa3cl/MEwr2wZFkzpRzvkfL7u+4Fm72Hw0AITV9jsyyfF?=
- =?iso-8859-1?Q?1nbbHDWMUS3J/pTttDBEdrVmHjdYZt6lEZUBdEpl7SSyDmJJglHdjt4nLi?=
- =?iso-8859-1?Q?teBRE8iowkBPWfdmSDQTrBabCGCnt10hrvG0SRPjXfIdz1uRFAhwsTJ1PO?=
- =?iso-8859-1?Q?84YH2cvJrSSpQbQXjVDxZlrquj1//2/fsoIMM3+eaV0dUSxmlX6z1sgTEY?=
- =?iso-8859-1?Q?pXB2GLt0Os3V9N+sCKs/bq1pecWb5SoH7zE/6bOS1PIllxMxknmbZk82lM?=
- =?iso-8859-1?Q?szIPQ3146I7UHdqarYOEC1VNGvMjqg+btJYUA692evBeKDLU2u5qZ/xV94?=
- =?iso-8859-1?Q?SzUEnXdVLCaLjUD7QLJiSzE8qJReGfMemfXbrec6KJibpHdgqWvPY+oQjQ?=
- =?iso-8859-1?Q?boy628Ot9YfKwJVgMPG3SNL6AX4yQajLC+DqDgXZG6FFi9/rwsWsJ6ddQF?=
- =?iso-8859-1?Q?eBlWi7I3cJHDBh1ad9T2iJ6kcco7FUkfu7hAoC0uPUWau8cfAKl6waDT0Y?=
- =?iso-8859-1?Q?w6bnGNomw2FiVktCn8KvAOipY3Pl28x3Ju2sabXhY1m+b4koJeGqD9tBes?=
- =?iso-8859-1?Q?bwS2Vszr991XvT8af1mjF7LsD8sY4ZQBtGAEsBPbvLZubvN+istxR2mgUY?=
- =?iso-8859-1?Q?dX1N44l8v7HXEe7q9arf1RQCB+i9pvRfQd/Qao0hUK50lonWwMpZjEhtX8?=
- =?iso-8859-1?Q?oj1pVIcWv1L8Vd1m0UKvDezwngZC8wbe6AIL7P6/ZsMOKjMiFTfIf/qsg6?=
- =?iso-8859-1?Q?c+HE8ZOKOxTfus5jDxJAplYNWAZu1mDMzU2f6kpky5119tplNxOW5IKWri?=
- =?iso-8859-1?Q?Ct4BtmQQsofu8n0SWZGWsByjjjdqlWY8SX3kepSwED5xcwDMHJzqPXPFC9?=
- =?iso-8859-1?Q?DNYTHLy6f0f5qFPOb/oRkwPLaK2XCGSFIiC5byP6xMT0lP65M7RMNGhV/N?=
- =?iso-8859-1?Q?E/G2kEFGCRWZymvtyaQGArdDwMtFTs+WdTIqdGz5B6lGAqFHc+c60028kQ?=
- =?iso-8859-1?Q?pQoc5XPWBtFT2j1jXG7QPiSxZmhDjKIvZ4?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ab149ee2-3e58-407b-74ee-08da59eec5ca
-X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB5005.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jun 2022 16:45:28.3220
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 8q+V2g+j8VR+U7V6VZV2yvQ0IxRohT28cWvLeZEBah5h7iG8242dTQKJwm4Wpg55hmPQCeiqPRzFpUYwn+eqdw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5840
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: test
+X-Kernelci-Kernel: v5.19-rc4-35-g06cab9aecb43
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing sleep: 4 runs, 2 regressions (v5.19-rc4-35-g06cab9aecb43)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Abel Vesa <abel.vesa@nxp.com>
+pm/testing sleep: 4 runs, 2 regressions (v5.19-rc4-35-g06cab9aecb43)
 
-The proper name is power-controller, not imx8qx-pd.
+Regressions Summary
+-------------------
 
-Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
----
- arch/arm64/boot/dts/freescale/imx8qm.dtsi  | 2 +-
- arch/arm64/boot/dts/freescale/imx8qxp.dtsi | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+platform          | arch | lab           | compiler | defconfig          | =
+regressions
+------------------+------+---------------+----------+--------------------+-=
+-----------
+rk3288-veyron-jaq | arm  | lab-collabora | gcc-10   | multi_v7_defconfig | =
+1          =
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8qm.dtsi b/arch/arm64/boot/dts/freescale/imx8qm.dtsi
-index 4f767012f1f5..5ad1c9a5933c 100644
---- a/arch/arm64/boot/dts/freescale/imx8qm.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8qm.dtsi
-@@ -190,7 +190,7 @@ scu {
- 			  &lsio_mu1 1 0
- 			  &lsio_mu1 3 3>;
- 
--		pd: imx8qx-pd {
-+		pd: power-controller {
- 			compatible = "fsl,imx8qm-scu-pd", "fsl,scu-pd";
- 			#power-domain-cells = <1>;
- 		};
-diff --git a/arch/arm64/boot/dts/freescale/imx8qxp.dtsi b/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-index 878c2aa663f1..4f8cd7339112 100644
---- a/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-@@ -210,7 +210,7 @@ scu {
- 			  &lsio_mu1 1 0
- 			  &lsio_mu1 3 3>;
- 
--		pd: imx8qx-pd {
-+		pd: power-controller {
- 			compatible = "fsl,imx8qxp-scu-pd", "fsl,scu-pd";
- 			#power-domain-cells = <1>;
- 		};
--- 
-2.25.1
+tegra124-nyan-big | arm  | lab-collabora | gcc-10   | multi_v7_defconfig | =
+1          =
 
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.19-rc=
+4-35-g06cab9aecb43/plan/sleep/
+
+  Test:     sleep
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.19-rc4-35-g06cab9aecb43
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      06cab9aecb43a2bac09c7f2fa90df13f29130313 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform          | arch | lab           | compiler | defconfig          | =
+regressions
+------------------+------+---------------+----------+--------------------+-=
+-----------
+rk3288-veyron-jaq | arm  | lab-collabora | gcc-10   | multi_v7_defconfig | =
+1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/62bc78a03d63e88d17a39bf8
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-10 (arm-linux-gnueabihf-gcc (Debian 10.2.1-6) 10.2.1 202=
+10110)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.19-rc4-35-g06cab=
+9aecb43/arm/multi_v7_defconfig/gcc-10/lab-collabora/sleep-rk3288-veyron-jaq=
+.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.19-rc4-35-g06cab=
+9aecb43/arm/multi_v7_defconfig/gcc-10/lab-collabora/sleep-rk3288-veyron-jaq=
+.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/bullseye/20=
+220624.0/armhf/rootfs.cpio.gz =
+
+
+
+  * sleep.login: https://kernelci.org/test/case/id/62bc78a03d63e88d17a39bf9
+        failing since 22 days (last pass: v5.18-rc6-123-g84d13b694ebbe, fir=
+st fail: v5.19-rc1-2-g6a8964e282382) =
+
+ =
+
+
+
+platform          | arch | lab           | compiler | defconfig          | =
+regressions
+------------------+------+---------------+----------+--------------------+-=
+-----------
+tegra124-nyan-big | arm  | lab-collabora | gcc-10   | multi_v7_defconfig | =
+1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/62bc7c6d81cb7ba607a39bdd
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-10 (arm-linux-gnueabihf-gcc (Debian 10.2.1-6) 10.2.1 202=
+10110)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.19-rc4-35-g06cab=
+9aecb43/arm/multi_v7_defconfig/gcc-10/lab-collabora/sleep-tegra124-nyan-big=
+.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.19-rc4-35-g06cab=
+9aecb43/arm/multi_v7_defconfig/gcc-10/lab-collabora/sleep-tegra124-nyan-big=
+.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/bullseye/20=
+220624.0/armhf/rootfs.cpio.gz =
+
+
+
+  * sleep.login: https://kernelci.org/test/case/id/62bc7c6d81cb7ba607a39bde
+        failing since 22 days (last pass: v5.18-rc6-123-g84d13b694ebbe, fir=
+st fail: v5.19-rc1-2-g6a8964e282382) =
+
+ =20
