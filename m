@@ -2,138 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C638C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 13:38:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C77C7CCA481
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 13:44:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232771AbiF3Nh7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Jun 2022 09:37:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40554 "EHLO
+        id S235176AbiF3Noc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Jun 2022 09:44:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234515AbiF3Nh6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 09:37:58 -0400
-Received: from mail-yw1-f169.google.com (mail-yw1-f169.google.com [209.85.128.169])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A4B22ED49;
-        Thu, 30 Jun 2022 06:37:57 -0700 (PDT)
-Received: by mail-yw1-f169.google.com with SMTP id 00721157ae682-31c1d580e4bso47124517b3.3;
-        Thu, 30 Jun 2022 06:37:57 -0700 (PDT)
+        with ESMTP id S233512AbiF3Noa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 09:44:30 -0400
+Received: from mail-il1-f176.google.com (mail-il1-f176.google.com [209.85.166.176])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB696C33;
+        Thu, 30 Jun 2022 06:44:29 -0700 (PDT)
+Received: by mail-il1-f176.google.com with SMTP id i17so12372131ils.12;
+        Thu, 30 Jun 2022 06:44:29 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=7NtscKgnr/TPZ4pSkCV8fTHou2/3bzArnwcRicRt7Lk=;
-        b=TTtjPq3NiWyruZey2USm5L96m3yb8fEggtfTS03G87FoHrAipXCourgJoM2EUby8Jc
-         nRCbgJ8B+Jlme7F67JL3NTEHu5tpsULeP9PUqc3kKK2911oiY5hqtGbRc7mhDNuJN7/3
-         PfQYROXIB5cMvQuFt5z1Z1e0/kKK24WS2a1pb+wmo4OPkGzSlk4WBS9sZHLrs0/1qBI3
-         ovbc2sEBJMKAE3fHmob0TsgcBxZjCb5RhkxFrESQjcjZkj+kPXehRYnEdpbW+0dmZ7k0
-         pCzBofEhYcUlkuCP6zja600u+d8r+A5Hf7AELmFeRHygATVRKaiEB+7dFiJbf44KmU9F
-         r4QA==
-X-Gm-Message-State: AJIora++0yr3rZLHNKJVgTzQDoyt6StKPBeTogdlmlHHhqaxkFxg5dDy
-        RGMX6RAbSDDjMuGIlrgTeEIvvDTeFFJ8OrOuyCA=
-X-Google-Smtp-Source: AGRyM1t57QTon5503C9GLG8fWbNKXBFL/wnqjXCZ3GgK4VAKR/+nr5BpBmCGjgXwk93gtEili3G9bekl2vLWYkeo/1E=
-X-Received: by 2002:a0d:e804:0:b0:317:9c5f:97a4 with SMTP id
- r4-20020a0de804000000b003179c5f97a4mr10661578ywe.19.1656596276849; Thu, 30
- Jun 2022 06:37:56 -0700 (PDT)
-MIME-Version: 1.0
-References: <03056170-6501-3f4d-0331-37866d12330e@gmail.com>
-In-Reply-To: <03056170-6501-3f4d-0331-37866d12330e@gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 30 Jun 2022 15:37:45 +0200
-Message-ID: <CAJZ5v0iu_ZZGK-FpO-yWHs67bKzJ6K5i9gj7-GvC0U6Ap9uoKA@mail.gmail.com>
-Subject: Re: [GIT PULL] devfreq fixes for 5.19-rc5
-To:     Chanwoo Choi <cwchoi00@gmail.com>
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=F61ursUhOghCCvcGADpml8N5+9VOTyitVooeCIOjB9Y=;
+        b=eHW+NJmgjk83Z9zFdAYVt1x1jUCcY6B4XFDgChxjKkFOnwf3ueoNF6wbLJnOLK3398
+         B8Q8tfeHmsYoIxaUCwI0AjyisozXdQUr/bQ34krdJqD1jbdUASx32WFi0lDacbrqhEDk
+         ME8Vr1iViAyZLzNb1Mg8S2YRTh2xQXKd0TbRsXRnCFozFC4tEoK+fsq9AdImu2kA+kdl
+         rc6UdMZGmM/hWaZl7v+0bUMM//da+HeAaNnaEQKnzHVqK2HCEaejFrprjnd6gAp0PEJk
+         FYPhgc8wusDneoF2WhaQEF2TCa0ckRs5D3PlI4pSZHGp/CrN1GPTpky91XngLwbVgTnb
+         NrHw==
+X-Gm-Message-State: AJIora+YD97Ryq3fMVaepAGXTOQ8TcFYFpbhzeoJcO2y9sMplmEr/04b
+        f38+TCrGNHKoOuQEIjfc3jZVpJSmMQ==
+X-Google-Smtp-Source: AGRyM1va0OfMAzdwHvSEGOAV99yEfmyc7T6+WfNApUwyVgB/zFT14suu4BOYVa6g66ClrDPB/QTk+w==
+X-Received: by 2002:a05:6e02:1ba4:b0:2da:dcc1:488a with SMTP id n4-20020a056e021ba400b002dadcc1488amr910311ili.78.1656596669116;
+        Thu, 30 Jun 2022 06:44:29 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.248])
+        by smtp.gmail.com with ESMTPSA id e42-20020a02862d000000b003316536ebc1sm4069472jai.73.2022.06.30.06.44.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Jun 2022 06:44:28 -0700 (PDT)
+Received: (nullmailer pid 2569455 invoked by uid 1000);
+        Thu, 30 Jun 2022 13:44:25 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
 Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        "open list:DEVICE FREQUENCY (DEVFREQ)" <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Chanwoo Choi <chanwoo@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
+        Mirela Rabulea <mirela.rabulea@nxp.com>,
+        devicetree@vger.kernel.org, Stefan Agner <stefan@agner.ch>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
+        Ming Qian <ming.qian@nxp.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Fabio Estevam <festevam@gmail.com>,
+        Oliver Graute <oliver.graute@kococonnector.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Michael Turquette <mturquette@baylibre.com>,
+        Shawn Guo <shawnguo@kernel.org>, Peng Fan <peng.fan@nxp.com>,
+        linux-watchdog@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-gpio@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>,
+        Liu Ying <victor.liu@nxp.com>, linux-kernel@vger.kernel.org,
+        Viorel Suman <viorel.suman@nxp.com>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+In-Reply-To: <20220629164414.301813-3-viorel.suman@oss.nxp.com>
+References: <20220629164414.301813-1-viorel.suman@oss.nxp.com> <20220629164414.301813-3-viorel.suman@oss.nxp.com>
+Subject: Re: [PATCH v6 02/14] dt-bindings: pinctrl: imx: Add fsl,scu-iomux yaml file
+Date:   Thu, 30 Jun 2022 07:44:25 -0600
+Message-Id: <1656596665.734742.2569454.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 29, 2022 at 11:32 PM Chanwoo Choi <cwchoi00@gmail.com> wrote:
->
-> Dear Rafael,
->
-> This is devfreq-fixes pull request for v5.19-rc5. I add detailed description of
-> this pull request on the following tag. Please pull devfreq with
-> following updates.
->
-> Best Regards,
-> Chanwoo Choi
->
->
-> The following changes since commit 03c765b0e3b4cb5063276b086c76f7a612856a9a:
->
->   Linux 5.19-rc4 (2022-06-26 14:22:10 -0700)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git tags/devfreq-fixes-for-5.19-rc5
->
-> for you to fetch changes up to f08fe6fcbe13f83558ecccc4acaf5af3dce71a1f:
->
->   PM / devfreq: passive: revert an editing accident in SPDX-License line (2022-06-30 05:11:17 +0900)
->
-> ----------------------------------------------------------------
->
-> Update devfreq for 5.19-rc5
->
-> Detailed description for this pull request:
-> 1. Fix devfreq passive governor issue when cpufreq policy are not ready
-> during kernel booting because some cpus turn on after kernel booting or others.
->
->   - Re-initialize the vairables of struct devfreq_passive_data when PROBE_DEFER
->   happen when cpufreq_get_returns NULL
->
->   - Use dev_err_probe to mute warning when PROBE_DEFER
->
->   - Fix cpufreq passive unregister erroring on PROBE_DEFER
->   by using the allocated parent_cpu_data list to free resouce
->   instead of for_each_possible_cpu.
->
->   - Remove duplicate cpufreq passive unregister and warning when PROBE_DEFER
->
->   - Use HZ_PER_KZH macro in units.h
->
->   - Fix wrong indentation in SPDX-License line
->
-> 2. Fix reference count leak of exynos-ppmu.c by using of_node_put()
->
-> 3. Rework freq_table to be local to devfreq struct
->   - struct devfreq_dev_profile includes freq_table array to store
->   the supported frequencies. If devfreq driver doesn't initialize
->   the freq_table, devfreq core allocate the memory and initialize
->   the freq_table.
->
->   On a devfreq PROBE_DEFER, the freq_table in the driver profile struct,
->   is never reset and may be leaved in an undefined state. To fix this
->   and correctly handle PROBE_DEFER, use a local freq_table and
->   max_state in the devfreq struct.
->
-> ----------------------------------------------------------------
-> Christian Marangi (5):
->       PM / devfreq: Fix kernel panic with cpu based scaling to passive gov
->       PM / devfreq: Mute warning on governor PROBE_DEFER
->       PM / devfreq: Fix cpufreq passive unregister erroring on PROBE_DEFER
->       PM / devfreq: Rework freq_table to be local to devfreq struct
->       PM / devfreq: Fix kernel warning with cpufreq passive register fail
->
-> Lukas Bulwahn (1):
->       PM / devfreq: passive: revert an editing accident in SPDX-License line
->
-> Miaoqian Lin (1):
->       PM / devfreq: exynos-ppmu: Fix refcount leak in of_get_devfreq_events
->
-> Yicong Yang (1):
->       PM / devfreq: passive: Use HZ_PER_KHZ macro in units.h
->
->  drivers/devfreq/devfreq.c           | 76 ++++++++++++++++++-------------------
->  drivers/devfreq/event/exynos-ppmu.c |  8 +++-
->  drivers/devfreq/governor_passive.c  | 62 +++++++++++++-----------------
->  include/linux/devfreq.h             |  5 +++
->  4 files changed, 75 insertions(+), 76 deletions(-)
+On Wed, 29 Jun 2022 19:44:02 +0300, Viorel Suman (OSS) wrote:
+> From: Abel Vesa <abel.vesa@nxp.com>
+> 
+> In order to replace the fsl,scu txt file from bindings/arm/freescale,
+> we need to split it between the right subsystems. This patch documents
+> separately the 'iomux/pinctrl' child node of the SCU main node.
+> 
+> Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
+> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+> ---
+>  .../bindings/pinctrl/fsl,scu-pinctrl.yaml     | 68 +++++++++++++++++++
+>  1 file changed, 68 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/pinctrl/fsl,scu-pinctrl.yaml
+> 
 
-Pulled and pushed out, thanks!
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
+
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8ulp-pinctrl.example.dtb: pinctrl@298c0000: lpuart5grp:fsl,pins:0: [312, 2288, 4, 3, 3, 316, 2284, 4, 3, 3] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8ulp-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mn-pinctrl.example.dtb: pinctrl@30330000: uart2grp:fsl,pins:0: [572, 1188, 1276, 0, 0, 320, 576, 1192, 0, 0, 0, 320] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mn-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx93-pinctrl.example.dtb: pinctrl@443c0000: uart3grp:fsl,pins:0: [72, 504, 1052, 1, 0, 73, 76, 508, 1048, 1, 0, 73] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx93-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mm-pinctrl.example.dtb: pinctrl@30330000: uart2grp:fsl,pins:0: [572, 1188, 1276, 0, 0, 320, 576, 1192, 0, 0, 0, 320] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mm-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.example.dtb: pinctrl@30330000: uart5grp:fsl,pins:0: [352, 976, 1812, 1, 0, 126, 356, 980, 0, 1, 0, 118] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.example.dtb: pinctrl@302c0000: gpio1-grp:fsl,pins:0: [8, 56, 0, 0, 0, 89, 12, 60, 0, 0, 0, 89] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx7d-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mq-pinctrl.example.dtb: pinctrl@30330000: uart1grp:fsl,pins:0: [564, 1180, 1268, 0, 0, 73, 568, 1184, 1268, 0, 0, 73] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mq-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imxrt1050.example.dtb: iomuxc@401f8000: lpuart1grp:fsl,pins:0: [236, 732, 0, 2, 0, 241, 240, 736, 0, 2, 0, 241] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imxrt1050.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mp-pinctrl.example.dtb: pinctrl@30330000: uart2grp:fsl,pins:0: [552, 1160, 1520, 0, 6, 73, 552, 1160, 0, 0, 0, 73] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imx8mp-pinctrl.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imxrt1170.example.dtb: iomuxc@400e8000: lpuart1grp:fsl,pins:0: [364, 944, 1568, 0, 0, 241, 368, 948, 1564, 0, 0, 241] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/pinctrl/fsl,imxrt1170.yaml
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
+
