@@ -2,578 +2,127 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C6D5CCA481
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 13:06:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56958C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 13:27:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235262AbiF3NGB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Jun 2022 09:06:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43770 "EHLO
+        id S235206AbiF3N10 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Jun 2022 09:27:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60942 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235224AbiF3NFw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 09:05:52 -0400
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64D5A22BCE
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2022 06:05:49 -0700 (PDT)
-Received: by mail-ej1-x62c.google.com with SMTP id ay16so38904764ejb.6
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2022 06:05:49 -0700 (PDT)
+        with ESMTP id S235195AbiF3N1Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 09:27:25 -0400
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE12733E35
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2022 06:27:24 -0700 (PDT)
+Received: by mail-wm1-x32c.google.com with SMTP id l2-20020a05600c4f0200b0039c55c50482so1729043wmq.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2022 06:27:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=UYXTguj+2IXsoWnHstvx8AgCriOwEmSaiMW0SeNQSdI=;
-        b=mjREXY5+KyieVTb5+TWQwlLpb8Q37VHxhp5j3tDDF176wzj27SALylnJJETV2CJso9
-         KcATj4XbN21B1rwJdq6KCDAH6J75WPXGOTEr+YyyChKhA9nk98H8Eprj3H6QEwBkHh0G
-         3S+Oj2OBIipHcN4KPW56eYGebiD0eYn9VozEipiNkc5xb9tdfY6Yqw3Zq5rewl0xYQIw
-         MYoVSMIMW+zzGEUkEkS5huBF1iA36uaLh+U7YQ2pq8DQPcHYxKVmBjO9VDylG1G/63Z4
-         YMh3Wmy5qdwvynSSCE2y4IZ24anCg1CXpXXoRLfSV3WoOTe2n6kYNSvRD76+KfEM2LR/
-         J0Gw==
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=3uL7S2W5wN/+jflQoV3bAbJ3bLJFCX03amVujxIJvq8=;
+        b=Sf992KZuXqlhIEbSl5nytEW8JG+Gggb/JBkLjKDkc7HEXX3mVbyfncyj6CD1e98zM9
+         0qM9OWjWT98QLgm1X9PbtzVnhLUril+7ZvbD4aVXzDjRhqFO2I+1G6JTrZm185BbEDju
+         /LN5+Y2pNqNXMOcqVceMhZQ0g7iHwjbwm4ovi3D0i5eQMvi1SLqBIYST0+XmXknh7XgX
+         mVEht5mx0PhKef/JNl+C9P5l963AeTY3fV2QRNspiyCewDXbJvWqVFDJm6wUPxsVVCfi
+         /lqZDM1LIQdmg8cpGHCV4PwWzE8dJZ6YH3uQfv82Y9hID4fDkWlDU8rpGr3i0q/VFGKU
+         I5rg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=UYXTguj+2IXsoWnHstvx8AgCriOwEmSaiMW0SeNQSdI=;
-        b=budDlnaXggh6rfT0D+qt738+yc5JHZnntuwDXJqgLM/Rk69f2VFKQUKYszUWxeHHia
-         +vqSZ79qEE8i1UnuXv7SmxHswQQZBo+P6BrUeOy6YsJ7iktb3ai/vxXBBnegf3xVIfX5
-         NXhLnJ1s8ZpsJI7CSu6o+F4aOtAfkLJ1PprLV2w0gbZaRDYk7hJ9LtRbbeAtvrQuFeWP
-         zkESsMnCbcsJDlgAa6HQqxT9il48YENCNytguKJfBzl2Zouxq7m0wApGxbtHtmRQmaV+
-         1rFXcMwArYd0VbZKjq/sZSpblHpWkcey9b4DEy1B1f5rnyH5P+e2cjuqvdPb/dKA2dOR
-         wp4A==
-X-Gm-Message-State: AJIora9cH8eFOUsldGaTzi/aFwUWOmNtQ/bY/EEEG3VU5JZOm8wwwpCl
-        B7eibiK41taWtTfmdmOqyabbjw==
-X-Google-Smtp-Source: AGRyM1tYWeEv72/7CG9oSY2cfvKQcCG3jtoqtzhj1kCzqGxk5aYhSm5N+Xx4lgLt+EUVaIluX2K57A==
-X-Received: by 2002:a17:907:d89:b0:726:9d87:e4c0 with SMTP id go9-20020a1709070d8900b007269d87e4c0mr8734924ejc.216.1656594347680;
-        Thu, 30 Jun 2022 06:05:47 -0700 (PDT)
-Received: from localhost.localdomain (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id f15-20020a1709062c4f00b007081282cbd8sm9124967ejh.76.2022.06.30.06.05.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jun 2022 06:05:47 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc:     Rajendra Nayak <quic_rjendra@quicinc.com>,
-        Thara Gopinath <thara.gopinath@gmail.com>
-Subject: [PATCH v7 2/4] soc: qcom: icc-bwmon: Add bandwidth monitoring driver
-Date:   Thu, 30 Jun 2022 15:05:39 +0200
-Message-Id: <20220630130541.563001-3-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220630130541.563001-1-krzysztof.kozlowski@linaro.org>
-References: <20220630130541.563001-1-krzysztof.kozlowski@linaro.org>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=3uL7S2W5wN/+jflQoV3bAbJ3bLJFCX03amVujxIJvq8=;
+        b=ai72uUs63A7Q5GdAWCzsQQNBKeqBTkSJs5zjHd3njCLju++bFKdt7u6r1TYM89usH6
+         sY2Gq+kQHt0K1XJyBxIhnt62lxGy3dv4Pq7NtR2EbO8crazj9sg5mJdmAKbUiI7BkDGJ
+         nekydkglIWjQWU27RQDKXEvgoReHv+FrOtKVSHhWdBZ74syf+xK5ZuTqTObx35EKdEo6
+         fDLNymUuFr3jwMEdjXQPxZYZW8rhDR/pvBdw4iymX/59VDH50LcrNBF6jzCMd1npGo9U
+         kjqs0l8s2BerOhf71x4VDFM3KvbNbuj8tNgIZYL6+Sg9rc90q0k/5YThj3KoYWD/8Ei1
+         qtTA==
+X-Gm-Message-State: AJIora9CiqoEKj81xMXn0ophJvxa6E4qoxt9QvfLWSvq1GXYyOHs0JU0
+        GV8y8AtCfZYf6mO6GwFfC7Q8XQ==
+X-Google-Smtp-Source: AGRyM1vSCfsiFnrzxnn7W5JSa663yVGfHgulBXFGfZ6n0K7cwsry5Z7ZfRhLnbIP8qtFYvXWSvgoIA==
+X-Received: by 2002:a05:600c:3659:b0:3a0:3915:8700 with SMTP id y25-20020a05600c365900b003a039158700mr9687564wmq.127.1656595643117;
+        Thu, 30 Jun 2022 06:27:23 -0700 (PDT)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id h3-20020adfe983000000b0021b97ffa2a9sm20114787wrm.46.2022.06.30.06.27.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 30 Jun 2022 06:27:22 -0700 (PDT)
+Message-ID: <986d197e-f40c-8fd8-449f-3f62b8366e60@linaro.org>
+Date:   Thu, 30 Jun 2022 15:27:21 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH 3/3] thermal/drivers/u8500: Remove the get_trend function
+Content-Language: en-US
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, rafael@kernel.org
+References: <20220616202537.303655-1-daniel.lezcano@linaro.org>
+ <20220616202537.303655-3-daniel.lezcano@linaro.org>
+ <f4b13249-abe8-080f-4d36-24ef67d4fb62@linaro.org>
+ <CACRpkdZBUVGP6whu-ojW9KKapeuYKQbXWn1MEpJ33KFav+8zqQ@mail.gmail.com>
+ <0a6c992d-ea88-c3fe-1837-8be4e912d266@linaro.org>
+ <CAKfTPtBVBDsy3oc1vaSSLwYcz6y2VdT4d-NZzt=QRW+eUMm9tA@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <CAKfTPtBVBDsy3oc1vaSSLwYcz6y2VdT4d-NZzt=QRW+eUMm9tA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Bandwidth monitoring (BWMON) sits between various subsytems like CPU,
-GPU, Last Level caches and memory subsystem.  The BWMON can be
-configured to monitor the data throuhput between memory and other
-subsytems.  The throughput is measured within specified sampling window
-and is used to vote for corresponding interconnect bandwidth.
 
-Current implementation brings support for BWMON v4, used for example on
-SDM845 to measure bandwidth between CPU (gladiator_noc) and Last Level
-Cache (memnoc).  Usage of this BWMON allows to remove fixed bandwidth
-votes from cpufreq (CPU nodes) thus achieve high memory throughput even
-with lower CPU frequencies.
+Hi Vincent,
 
-The driver was tested on SDM845.
+On 30/06/2022 14:32, Vincent Guittot wrote:
+> On Thu, 30 Jun 2022 at 12:16, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 28/06/2022 14:50, Linus Walleij wrote:
+>>> On Tue, Jun 28, 2022 at 10:40 AM Daniel Lezcano
+>>> <daniel.lezcano@linaro.org> wrote:
+>>>
+>>>> Adding Linus who is missing in the recipient list.
+>>>>
+>>>>
+>>>> On 16/06/2022 22:25, Daniel Lezcano wrote:
+>>>>> The get_trend function relies on the interrupt to set the raising or
+>>>>> dropping trend. However the interpolated temperature is already giving
+>>>>> the temperature information to the thermal framework which is able to
+>>>>> deduce the trend.
+>>>>>
+>>>>> Remove the trend code.
+>>>>>
+>>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>
+>>> I certainly trust you with this :)
+>>> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+>>>
+>>> The code was originally written by Hongbo Zhang, but co-developed
+>>> and tested by Vincent Guittot I think, so paging
+>>> him as well.
+>>
+>> Ok, thanks
+>>
+>> If Vincent has no concern with this change, I'll queue up the series
+> 
+> I don't have any particular concerns. I'm just curious, are you
+> planning to remove the get_trend completely from the thermal framework
+> ?
 
-Co-developed-by: Thara Gopinath <thara.gopinath@gmail.com>
-Signed-off-by: Thara Gopinath <thara.gopinath@gmail.com>
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- MAINTAINERS                  |   7 +
- drivers/soc/qcom/Kconfig     |  15 ++
- drivers/soc/qcom/Makefile    |   1 +
- drivers/soc/qcom/icc-bwmon.c | 421 +++++++++++++++++++++++++++++++++++
- 4 files changed, 444 insertions(+)
- create mode 100644 drivers/soc/qcom/icc-bwmon.c
+Well, actually the get_trend() ops was added for ACPI and because the 
+ops was there, some drivers provided their own implementation and it 
+appears they are unnecessary. It is this pointless code I want to remove.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6157e706ed02..d6e4d2954868 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -16376,6 +16376,13 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/i2c/i2c-qcom-cci.txt
- F:	drivers/i2c/busses/i2c-qcom-cci.c
- 
-+QUALCOMM INTERCONNECT BWMON DRIVER
-+M:	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-+L:	linux-arm-msm@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/interconnect/qcom,msm8998-llcc-bwmon.yaml
-+F:	drivers/soc/qcom/icc-bwmon.c
-+
- QUALCOMM IOMMU
- M:	Rob Clark <robdclark@gmail.com>
- L:	iommu@lists.linux-foundation.org
-diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
-index e718b8735444..2c8091535bf7 100644
---- a/drivers/soc/qcom/Kconfig
-+++ b/drivers/soc/qcom/Kconfig
-@@ -228,4 +228,19 @@ config QCOM_APR
- 	  application processor and QDSP6. APR is
- 	  used by audio driver to configure QDSP6
- 	  ASM, ADM and AFE modules.
-+
-+config QCOM_ICC_BWMON
-+	tristate "QCOM Interconnect Bandwidth Monitor driver"
-+	depends on ARCH_QCOM || COMPILE_TEST
-+	select PM_OPP
-+	help
-+	  Sets up driver monitoring bandwidth on various interconnects and
-+	  based on that voting for interconnect bandwidth, adjusting their
-+	  speed to current demand.
-+	  Current implementation brings support for BWMON v4, used for example
-+	  on SDM845 to measure bandwidth between CPU (gladiator_noc) and Last
-+	  Level Cache (memnoc).  Usage of this BWMON allows to remove some of
-+	  the fixed bandwidth votes from cpufreq (CPU nodes) thus achieve high
-+	  memory throughput even with lower CPU frequencies.
-+
- endmenu
-diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-index 70d5de69fd7b..d66604aff2b0 100644
---- a/drivers/soc/qcom/Makefile
-+++ b/drivers/soc/qcom/Makefile
-@@ -28,3 +28,4 @@ obj-$(CONFIG_QCOM_LLCC) += llcc-qcom.o
- obj-$(CONFIG_QCOM_RPMHPD) += rpmhpd.o
- obj-$(CONFIG_QCOM_RPMPD) += rpmpd.o
- obj-$(CONFIG_QCOM_KRYO_L2_ACCESSORS) +=	kryo-l2-accessors.o
-+obj-$(CONFIG_QCOM_ICC_BWMON)	+= icc-bwmon.o
-diff --git a/drivers/soc/qcom/icc-bwmon.c b/drivers/soc/qcom/icc-bwmon.c
-new file mode 100644
-index 000000000000..6f1ddd0cd749
---- /dev/null
-+++ b/drivers/soc/qcom/icc-bwmon.c
-@@ -0,0 +1,421 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) 2014-2018, The Linux Foundation. All rights reserved.
-+ * Copyright (C) 2021-2022 Linaro Ltd
-+ * Author: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, based on
-+ *         previous work of Thara Gopinath and msm-4.9 downstream sources.
-+ */
-+#include <linux/interconnect.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/sizes.h>
-+
-+/*
-+ * The BWMON samples data throughput within 'sample_ms' time. With three
-+ * configurable thresholds (Low, Medium and High) gives four windows (called
-+ * zones) of current bandwidth:
-+ *
-+ * Zone 0: byte count < THRES_LO
-+ * Zone 1: THRES_LO < byte count < THRES_MED
-+ * Zone 2: THRES_MED < byte count < THRES_HIGH
-+ * Zone 3: THRES_HIGH < byte count
-+ *
-+ * Zones 0 and 2 are not used by this driver.
-+ */
-+
-+/* Internal sampling clock frequency */
-+#define HW_TIMER_HZ				19200000
-+
-+#define BWMON_GLOBAL_IRQ_STATUS			0x0
-+#define BWMON_GLOBAL_IRQ_CLEAR			0x8
-+#define BWMON_GLOBAL_IRQ_ENABLE			0xc
-+#define BWMON_GLOBAL_IRQ_ENABLE_ENABLE		BIT(0)
-+
-+#define BWMON_IRQ_STATUS			0x100
-+#define BWMON_IRQ_STATUS_ZONE_SHIFT		4
-+#define BWMON_IRQ_CLEAR				0x108
-+#define BWMON_IRQ_ENABLE			0x10c
-+#define BWMON_IRQ_ENABLE_ZONE1_SHIFT		5
-+#define BWMON_IRQ_ENABLE_ZONE2_SHIFT		6
-+#define BWMON_IRQ_ENABLE_ZONE3_SHIFT		7
-+#define BWMON_IRQ_ENABLE_MASK			(BIT(BWMON_IRQ_ENABLE_ZONE1_SHIFT) | \
-+						 BIT(BWMON_IRQ_ENABLE_ZONE3_SHIFT))
-+
-+#define BWMON_ENABLE				0x2a0
-+#define BWMON_ENABLE_ENABLE			BIT(0)
-+
-+#define BWMON_CLEAR				0x2a4
-+#define BWMON_CLEAR_CLEAR			BIT(0)
-+
-+#define BWMON_SAMPLE_WINDOW			0x2a8
-+#define BWMON_THRESHOLD_HIGH			0x2ac
-+#define BWMON_THRESHOLD_MED			0x2b0
-+#define BWMON_THRESHOLD_LOW			0x2b4
-+
-+#define BWMON_ZONE_ACTIONS			0x2b8
-+/*
-+ * Actions to perform on some zone 'z' when current zone hits the threshold:
-+ * Increment counter of zone 'z'
-+ */
-+#define BWMON_ZONE_ACTIONS_INCREMENT(z)		(0x2 << ((z) * 2))
-+/* Clear counter of zone 'z' */
-+#define BWMON_ZONE_ACTIONS_CLEAR(z)		(0x1 << ((z) * 2))
-+
-+/* Zone 0 threshold hit: Clear zone count */
-+#define BWMON_ZONE_ACTIONS_ZONE0		(BWMON_ZONE_ACTIONS_CLEAR(0))
-+
-+/* Zone 1 threshold hit: Increment zone count & clear lower zones */
-+#define BWMON_ZONE_ACTIONS_ZONE1		(BWMON_ZONE_ACTIONS_INCREMENT(1) | \
-+						 BWMON_ZONE_ACTIONS_CLEAR(0))
-+
-+/* Zone 2 threshold hit: Increment zone count & clear lower zones */
-+#define BWMON_ZONE_ACTIONS_ZONE2		(BWMON_ZONE_ACTIONS_INCREMENT(2) | \
-+						 BWMON_ZONE_ACTIONS_CLEAR(1) | \
-+						 BWMON_ZONE_ACTIONS_CLEAR(0))
-+
-+/* Zone 3 threshold hit: Increment zone count & clear lower zones */
-+#define BWMON_ZONE_ACTIONS_ZONE3		(BWMON_ZONE_ACTIONS_INCREMENT(3) | \
-+						 BWMON_ZONE_ACTIONS_CLEAR(2) | \
-+						 BWMON_ZONE_ACTIONS_CLEAR(1) | \
-+						 BWMON_ZONE_ACTIONS_CLEAR(0))
-+/* Value for BWMON_ZONE_ACTIONS */
-+#define BWMON_ZONE_ACTIONS_DEFAULT		(BWMON_ZONE_ACTIONS_ZONE0 | \
-+						 BWMON_ZONE_ACTIONS_ZONE1 << 8 | \
-+						 BWMON_ZONE_ACTIONS_ZONE2 << 16 | \
-+						 BWMON_ZONE_ACTIONS_ZONE3 << 24)
-+
-+/*
-+ * There is no clear documentation/explanation of BWMON_THRESHOLD_COUNT
-+ * register. Based on observations, this is number of times one threshold has to
-+ * be reached, to trigger interrupt in given zone.
-+ *
-+ * 0xff are maximum values meant to ignore the zones 0 and 2.
-+ */
-+#define BWMON_THRESHOLD_COUNT			0x2bc
-+#define BWMON_THRESHOLD_COUNT_ZONE1_SHIFT	8
-+#define BWMON_THRESHOLD_COUNT_ZONE2_SHIFT	16
-+#define BWMON_THRESHOLD_COUNT_ZONE3_SHIFT	24
-+#define BWMON_THRESHOLD_COUNT_ZONE0_DEFAULT	0xff
-+#define BWMON_THRESHOLD_COUNT_ZONE2_DEFAULT	0xff
-+
-+/* BWMONv4 count registers use count unit of 64 kB */
-+#define BWMON_COUNT_UNIT_KB			64
-+#define BWMON_ZONE_COUNT			0x2d8
-+#define BWMON_ZONE_MAX(zone)			(0x2e0 + 4 * (zone))
-+
-+struct icc_bwmon_data {
-+	unsigned int sample_ms;
-+	unsigned int default_highbw_kbps;
-+	unsigned int default_medbw_kbps;
-+	unsigned int default_lowbw_kbps;
-+	u8 zone1_thres_count;
-+	u8 zone3_thres_count;
-+};
-+
-+struct icc_bwmon {
-+	struct device *dev;
-+	void __iomem *base;
-+	int irq;
-+
-+	unsigned int default_lowbw_kbps;
-+	unsigned int sample_ms;
-+	unsigned int max_bw_kbps;
-+	unsigned int min_bw_kbps;
-+	unsigned int target_kbps;
-+	unsigned int current_kbps;
-+};
-+
-+static void bwmon_clear_counters(struct icc_bwmon *bwmon)
-+{
-+	/*
-+	 * Clear counters. The order and barriers are
-+	 * important. Quoting downstream Qualcomm msm-4.9 tree:
-+	 *
-+	 * The counter clear and IRQ clear bits are not in the same 4KB
-+	 * region. So, we need to make sure the counter clear is completed
-+	 * before we try to clear the IRQ or do any other counter operations.
-+	 */
-+	writel(BWMON_CLEAR_CLEAR, bwmon->base + BWMON_CLEAR);
-+}
-+
-+static void bwmon_clear_irq(struct icc_bwmon *bwmon)
-+{
-+	/*
-+	 * Clear zone and global interrupts. The order and barriers are
-+	 * important. Quoting downstream Qualcomm msm-4.9 tree:
-+	 *
-+	 * Synchronize the local interrupt clear in mon_irq_clear()
-+	 * with the global interrupt clear here. Otherwise, the CPU
-+	 * may reorder the two writes and clear the global interrupt
-+	 * before the local interrupt, causing the global interrupt
-+	 * to be retriggered by the local interrupt still being high.
-+	 *
-+	 * Similarly, because the global registers are in a different
-+	 * region than the local registers, we need to ensure any register
-+	 * writes to enable the monitor after this call are ordered with the
-+	 * clearing here so that local writes don't happen before the
-+	 * interrupt is cleared.
-+	 */
-+	writel(BWMON_IRQ_ENABLE_MASK, bwmon->base + BWMON_IRQ_CLEAR);
-+	writel(BIT(0), bwmon->base + BWMON_GLOBAL_IRQ_CLEAR);
-+}
-+
-+static void bwmon_disable(struct icc_bwmon *bwmon)
-+{
-+	/* Disable interrupts. Strict ordering, see bwmon_clear_irq(). */
-+	writel(0x0, bwmon->base + BWMON_GLOBAL_IRQ_ENABLE);
-+	writel(0x0, bwmon->base + BWMON_IRQ_ENABLE);
-+
-+	/*
-+	 * Disable bwmon. Must happen before bwmon_clear_irq() to avoid spurious
-+	 * IRQ.
-+	 */
-+	writel(0x0, bwmon->base + BWMON_ENABLE);
-+}
-+
-+static void bwmon_enable(struct icc_bwmon *bwmon, unsigned int irq_enable)
-+{
-+	/* Enable interrupts */
-+	writel(BWMON_GLOBAL_IRQ_ENABLE_ENABLE,
-+	       bwmon->base + BWMON_GLOBAL_IRQ_ENABLE);
-+	writel(irq_enable, bwmon->base + BWMON_IRQ_ENABLE);
-+
-+	/* Enable bwmon */
-+	writel(BWMON_ENABLE_ENABLE, bwmon->base + BWMON_ENABLE);
-+}
-+
-+static unsigned int bwmon_kbps_to_count(unsigned int kbps)
-+{
-+	return kbps / BWMON_COUNT_UNIT_KB;
-+}
-+
-+static void bwmon_set_threshold(struct icc_bwmon *bwmon, unsigned int reg,
-+				unsigned int kbps)
-+{
-+	unsigned int thres;
-+
-+	thres = mult_frac(bwmon_kbps_to_count(kbps), bwmon->sample_ms,
-+			  MSEC_PER_SEC);
-+	writel_relaxed(thres, bwmon->base + reg);
-+}
-+
-+static void bwmon_start(struct icc_bwmon *bwmon,
-+			const struct icc_bwmon_data *data)
-+{
-+	unsigned int thres_count;
-+	int window;
-+
-+	bwmon_clear_counters(bwmon);
-+
-+	window = mult_frac(bwmon->sample_ms, HW_TIMER_HZ, MSEC_PER_SEC);
-+	/* Maximum sampling window: 0xfffff */
-+	writel_relaxed(window, bwmon->base + BWMON_SAMPLE_WINDOW);
-+
-+	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_HIGH,
-+			    data->default_highbw_kbps);
-+	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_MED,
-+			    data->default_medbw_kbps);
-+	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_LOW,
-+			    data->default_lowbw_kbps);
-+
-+	thres_count = data->zone3_thres_count << BWMON_THRESHOLD_COUNT_ZONE3_SHIFT |
-+		      BWMON_THRESHOLD_COUNT_ZONE2_DEFAULT << BWMON_THRESHOLD_COUNT_ZONE2_SHIFT |
-+		      data->zone1_thres_count << BWMON_THRESHOLD_COUNT_ZONE1_SHIFT |
-+		      BWMON_THRESHOLD_COUNT_ZONE0_DEFAULT;
-+	writel_relaxed(thres_count, bwmon->base + BWMON_THRESHOLD_COUNT);
-+	writel_relaxed(BWMON_ZONE_ACTIONS_DEFAULT,
-+		       bwmon->base + BWMON_ZONE_ACTIONS);
-+	/* Write barriers in bwmon_clear_irq() */
-+
-+	bwmon_clear_irq(bwmon);
-+	bwmon_enable(bwmon, BWMON_IRQ_ENABLE_MASK);
-+}
-+
-+static irqreturn_t bwmon_intr(int irq, void *dev_id)
-+{
-+	struct icc_bwmon *bwmon = dev_id;
-+	unsigned int status, max;
-+	int zone;
-+
-+	status = readl(bwmon->base + BWMON_IRQ_STATUS);
-+	status &= BWMON_IRQ_ENABLE_MASK;
-+	if (!status) {
-+		/*
-+		 * Only zone 1 and zone 3 interrupts are enabled but zone 2
-+		 * threshold could be hit and trigger interrupt even if not
-+		 * enabled.
-+		 * Such spurious interrupt might come with valuable max count or
-+		 * not, so solution would be to always check all
-+		 * BWMON_ZONE_MAX() registers to find the highest value.
-+		 * Such case is currently ignored.
-+		 */
-+		return IRQ_NONE;
-+	}
-+
-+	bwmon_disable(bwmon);
-+
-+	zone = get_bitmask_order(status >> BWMON_IRQ_STATUS_ZONE_SHIFT) - 1;
-+	/*
-+	 * Zone max bytes count register returns count units within sampling
-+	 * window.  Downstream kernel for BWMONv4 (called BWMON type 2 in
-+	 * downstream) always increments the max bytes count by one.
-+	 */
-+	max = readl(bwmon->base + BWMON_ZONE_MAX(zone)) + 1;
-+	max *= BWMON_COUNT_UNIT_KB;
-+	bwmon->target_kbps = mult_frac(max, MSEC_PER_SEC, bwmon->sample_ms);
-+
-+	return IRQ_WAKE_THREAD;
-+}
-+
-+static irqreturn_t bwmon_intr_thread(int irq, void *dev_id)
-+{
-+	struct icc_bwmon *bwmon = dev_id;
-+	unsigned int irq_enable = 0;
-+	struct dev_pm_opp *opp, *target_opp;
-+	unsigned int bw_kbps, up_kbps, down_kbps;
-+
-+	bw_kbps = bwmon->target_kbps;
-+
-+	target_opp = dev_pm_opp_find_bw_ceil(bwmon->dev, &bw_kbps, 0);
-+	if (IS_ERR(target_opp) && PTR_ERR(target_opp) == -ERANGE)
-+		target_opp = dev_pm_opp_find_bw_floor(bwmon->dev, &bw_kbps, 0);
-+
-+	bwmon->target_kbps = bw_kbps;
-+
-+	bw_kbps--;
-+	opp = dev_pm_opp_find_bw_floor(bwmon->dev, &bw_kbps, 0);
-+	if (IS_ERR(opp) && PTR_ERR(opp) == -ERANGE)
-+		down_kbps = bwmon->target_kbps;
-+	else
-+		down_kbps = bw_kbps;
-+
-+	up_kbps = bwmon->target_kbps + 1;
-+
-+	if (bwmon->target_kbps >= bwmon->max_bw_kbps)
-+		irq_enable = BIT(BWMON_IRQ_ENABLE_ZONE1_SHIFT);
-+	else if (bwmon->target_kbps <= bwmon->min_bw_kbps)
-+		irq_enable = BIT(BWMON_IRQ_ENABLE_ZONE3_SHIFT);
-+	else
-+		irq_enable = BWMON_IRQ_ENABLE_MASK;
-+
-+	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_HIGH, up_kbps);
-+	bwmon_set_threshold(bwmon, BWMON_THRESHOLD_MED, down_kbps);
-+	/* Write barriers in bwmon_clear_counters() */
-+	bwmon_clear_counters(bwmon);
-+	bwmon_clear_irq(bwmon);
-+	bwmon_enable(bwmon, irq_enable);
-+
-+	if (bwmon->target_kbps == bwmon->current_kbps)
-+		goto out;
-+
-+	dev_pm_opp_set_opp(bwmon->dev, target_opp);
-+	bwmon->current_kbps = bwmon->target_kbps;
-+
-+out:
-+	dev_pm_opp_put(target_opp);
-+	if (!IS_ERR(opp))
-+		dev_pm_opp_put(opp);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int bwmon_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct dev_pm_opp *opp;
-+	struct icc_bwmon *bwmon;
-+	const struct icc_bwmon_data *data;
-+	int ret;
-+
-+	bwmon = devm_kzalloc(dev, sizeof(*bwmon), GFP_KERNEL);
-+	if (!bwmon)
-+		return -ENOMEM;
-+
-+	data = of_device_get_match_data(dev);
-+
-+	bwmon->base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(bwmon->base)) {
-+		dev_err(dev, "failed to map bwmon registers\n");
-+		return PTR_ERR(bwmon->base);
-+	}
-+
-+	bwmon->irq = platform_get_irq(pdev, 0);
-+	if (bwmon->irq < 0) {
-+		dev_err(dev, "failed to acquire bwmon IRQ\n");
-+		return bwmon->irq;
-+	}
-+
-+	ret = devm_pm_opp_of_add_table(dev);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to add OPP table\n");
-+
-+	bwmon->max_bw_kbps = UINT_MAX;
-+	opp = dev_pm_opp_find_bw_floor(dev, &bwmon->max_bw_kbps, 0);
-+	if (IS_ERR(opp))
-+		return dev_err_probe(dev, ret, "failed to find max peak bandwidth\n");
-+
-+	bwmon->min_bw_kbps = 0;
-+	opp = dev_pm_opp_find_bw_ceil(dev, &bwmon->min_bw_kbps, 0);
-+	if (IS_ERR(opp))
-+		return dev_err_probe(dev, ret, "failed to find min peak bandwidth\n");
-+
-+	bwmon->sample_ms = data->sample_ms;
-+	bwmon->default_lowbw_kbps = data->default_lowbw_kbps;
-+	bwmon->dev = dev;
-+
-+	bwmon_disable(bwmon);
-+	ret = devm_request_threaded_irq(dev, bwmon->irq, bwmon_intr,
-+					bwmon_intr_thread,
-+					IRQF_ONESHOT, dev_name(dev), bwmon);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to request IRQ\n");
-+
-+	platform_set_drvdata(pdev, bwmon);
-+	bwmon_start(bwmon, data);
-+
-+	return 0;
-+}
-+
-+static int bwmon_remove(struct platform_device *pdev)
-+{
-+	struct icc_bwmon *bwmon = platform_get_drvdata(pdev);
-+
-+	bwmon_disable(bwmon);
-+
-+	return 0;
-+}
-+
-+/* BWMON v4 */
-+static const struct icc_bwmon_data msm8998_bwmon_data = {
-+	.sample_ms = 4,
-+	.default_highbw_kbps = 4800 * 1024, /* 4.8 GBps */
-+	.default_medbw_kbps = 512 * 1024, /* 512 MBps */
-+	.default_lowbw_kbps = 0,
-+	.zone1_thres_count = 16,
-+	.zone3_thres_count = 1,
-+};
-+
-+static const struct of_device_id bwmon_of_match[] = {
-+	{ .compatible = "qcom,msm8998-llcc-bwmon", .data = &msm8998_bwmon_data },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, bwmon_of_match);
-+
-+static struct platform_driver bwmon_driver = {
-+	.probe = bwmon_probe,
-+	.remove = bwmon_remove,
-+	.driver = {
-+		.name = "qcom-bwmon",
-+		.of_match_table = bwmon_of_match,
-+	},
-+};
-+module_platform_driver(bwmon_driver);
-+
-+MODULE_AUTHOR("Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>");
-+MODULE_DESCRIPTION("QCOM BWMON driver");
-+MODULE_LICENSE("GPL");
+Only the get_trend() ops will remain for the ACPI. Hopefully we can 
+remove the ops in the future.
+
+
 -- 
-2.34.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
