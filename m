@@ -2,93 +2,113 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90641C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 00:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D970EC43334
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 01:58:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231237AbiF3Auc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jun 2022 20:50:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40344 "EHLO
+        id S230073AbiF3B6N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jun 2022 21:58:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229780AbiF3Auc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 20:50:32 -0400
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 534A43FDAB
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 17:50:31 -0700 (PDT)
-Received: by mail-pf1-x429.google.com with SMTP id 65so16586825pfw.11
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 17:50:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=ec4XEkBPA35XnLcPG87goxGDH+EEGY22aWvX/z3PefI=;
-        b=NFWCuFGRbcAjPzdLWOr/NQp3XWuDNO6BMyHySS+trahq6mX9UFO7j+zQOkjuhlioWl
-         xSYxRMQtRJOqPe6f8aUpkpL4C7uRkzlXaGc1roT4R/8VsrW+toIgTh/7JqCViwZCe/Eo
-         bM3/bnNdqFYGfV+tPNcVNd3eWRc0Rn5hwxOdK1VlUJRRIZ3O9GRQV5RBdLfmhk10TlJk
-         2ATBJG6SR6FP3U4213Q+Xm15I5KrUa3o0Fr+ZWYv1hYrq+etlRvLYAfJW1P6ul5x863m
-         GIRBOHuiCVrxZTYkdgcV7H2J/2nN8WZlUCw9A7RUKMGArEVcHcudATd8abMaGeTV4LBH
-         kHxg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=ec4XEkBPA35XnLcPG87goxGDH+EEGY22aWvX/z3PefI=;
-        b=ylfCXYCpuvafhfLdJz9O5seV5ct0MLUjdYFkMDRE85vSR82KTVFqYECE+xN/zfIrZA
-         vXM4xAODm9hPl43AbQdvPL91S0v18hN2QDPK1RlRHdvzMyBUVvFcN6G6CQ5cmqCGDxbs
-         yMA1E1ex61t8x28D0Jxwz4QvGlQgOWZ3zO2OTjfLRVcFDgLXqcueigSHkEMd1pgsQPQz
-         G63mVEyv9vIimway3HGWvK5JN+/xL+wffs57rn7wLDf2BhmVbj3ns2EnbFrcDzm1F1P8
-         1cXfd4SYw0VGRq8oEr1tOPGDq/JhcnlM9jwoFlizQcORnW7eHtFkqJq5kFMRbq2TWfHW
-         pqcg==
-X-Gm-Message-State: AJIora/3IZcFT2kmE1eY/TPtMjBu8LXWtM5Jb3IqdOTotZxM3OvjgoiV
-        MVG21xtuhUr0PkP2IieFI81hAw==
-X-Google-Smtp-Source: AGRyM1vwxJL4Embx1Cw1olp7yFM3sPbrYAoDKdwqAqD4m7eulhQl7MEsYnny1f0udvYVdgE3PBRHgA==
-X-Received: by 2002:a65:6bd4:0:b0:405:2d64:532c with SMTP id e20-20020a656bd4000000b004052d64532cmr5361306pgw.179.1656550230789;
-        Wed, 29 Jun 2022 17:50:30 -0700 (PDT)
-Received: from localhost ([122.172.201.58])
-        by smtp.gmail.com with ESMTPSA id 4-20020aa79244000000b005252a06750esm4541969pfp.182.2022.06.29.17.50.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jun 2022 17:50:30 -0700 (PDT)
-Date:   Thu, 30 Jun 2022 06:20:28 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Dmitry Osipenko <dmitry.osipenko@collabora.com>
-Cc:     Jon Hunter <jonathanh@nvidia.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-kernel@vger.kernel.org,
-        "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
-Subject: Re: [PATCH 5/8] OPP: Allow multiple clocks for a device
-Message-ID: <20220630005028.fddtcbkoksbygwc5@vireshk-i7>
-References: <cover.1654849214.git.viresh.kumar@linaro.org>
- <8b29fa207024dc295639f9ba52c28e45782e3baa.1654849214.git.viresh.kumar@linaro.org>
- <55623c12-dda3-613f-5bc9-80b3b6fec5f9@nvidia.com>
- <20220622141511.yzg5itkdwirpavfj@vireshk-i7>
- <40e616eb-22f9-19c2-8d77-20cd3c7c518b@nvidia.com>
- <c6f100e4-8a35-ebf0-f833-06ff0d8a2fb6@collabora.com>
+        with ESMTP id S229489AbiF3B6M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2022 21:58:12 -0400
+Received: from ZXSHCAS1.zhaoxin.com (ZXSHCAS1.zhaoxin.com [210.0.225.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D80C248;
+        Wed, 29 Jun 2022 18:58:06 -0700 (PDT)
+Received: from zxbjmbx1.zhaoxin.com (10.29.252.163) by ZXSHCAS1.zhaoxin.com
+ (10.28.252.161) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.27; Thu, 30 Jun
+ 2022 09:58:03 +0800
+Received: from [10.32.56.37] (10.32.56.37) by zxbjmbx1.zhaoxin.com
+ (10.29.252.163) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.27; Thu, 30 Jun
+ 2022 09:58:01 +0800
+Subject: Re: [PATCH V2] cpufreq: Add Zhaoxin/Centaur turbo boost control
+ interface support
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+CC:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        <CobeChen@zhaoxin.com>, <TimGuo@zhaoxin.com>,
+        <LindaChai@zhaoxin.com>, <LeoLiu@zhaoxin.com>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <c4f669a8-0da6-862a-0450-ddf178272bdd@zhaoxin.com>
+ <CAJZ5v0iGQz0GprbHSL6JVmHv8y-kDsyW4TouN6JwJZtp46DokQ@mail.gmail.com>
+From:   Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>
+Message-ID: <2d961645-75e4-de10-47d5-b3351c54fa0b@zhaoxin.com>
+Date:   Thu, 30 Jun 2022 09:58:00 +0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c6f100e4-8a35-ebf0-f833-06ff0d8a2fb6@collabora.com>
+In-Reply-To: <CAJZ5v0iGQz0GprbHSL6JVmHv8y-kDsyW4TouN6JwJZtp46DokQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.32.56.37]
+X-ClientProxiedBy: ZXSHCAS1.zhaoxin.com (10.28.252.161) To
+ zxbjmbx1.zhaoxin.com (10.29.252.163)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 29-06-22, 21:33, Dmitry Osipenko wrote:
-> Today I noticed that tegra30-devfreq driver now fails to probe because
-> dev_pm_opp_find_freq_ceil() fails with -ERANGE. This patch is guilty for
-> that. Could you please take a look?
 
-I remember this corner case now [1] and it was easy to miss this. So
-you want the OPP core to still parse the DT to read opp-hz, but don't
-want dev_pm_opp_set_opp() to update the clock rate for it.
 
-What was the reason for this again ?
+On 30/6/2022 02:16, Rafael J. Wysocki wrote:
+> On Thu, Jun 23, 2022 at 3:21 AM Tony W Wang-oc <TonyWWang-oc@zhaoxin.com> wrote:
+>>
+>> Recent Zhaoxin/Centaur CPUs support X86_FEATURE_IDA and the turbo boost
+>> can be dynamically enabled or disabled through MSR 0x1a0[38] in the same
+>> way as Intel. So add turbo boost control support for these CPUs too.
+>>
+>> Signed-off-by: Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>
+>> ---
+>>    drivers/cpufreq/acpi-cpufreq.c | 4 ++++
+>>    1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+>> index 3d514b8..1bb2b90 100644
+>> --- a/drivers/cpufreq/acpi-cpufreq.c
+>> +++ b/drivers/cpufreq/acpi-cpufreq.c
+>> @@ -78,6 +78,8 @@ static bool boost_state(unsigned int cpu)
+>>
+>>          switch (boot_cpu_data.x86_vendor) {
+>>          case X86_VENDOR_INTEL:
+>> +       case X86_VENDOR_CENTAUR:
+>> +       case X86_VENDOR_ZHAOXIN:
+>>                  rdmsr_on_cpu(cpu, MSR_IA32_MISC_ENABLE, &lo, &hi);
+>>                  msr = lo | ((u64)hi << 32);
+>>                  return !(msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE);
+>> @@ -97,6 +99,8 @@ static int boost_set_msr(bool enable)
+>>
+>>          switch (boot_cpu_data.x86_vendor) {
+>>          case X86_VENDOR_INTEL:
+>> +       case X86_VENDOR_CENTAUR:
+>> +       case X86_VENDOR_ZHAOXIN:
+>>                  msr_addr = MSR_IA32_MISC_ENABLE;
+>>                  msr_mask = MSR_IA32_MISC_ENABLE_TURBO_DISABLE;
+>>                  break;
+>> --
+> 
+> Applied as 5.20 material.
+> 
 
-I have a couple of solutions in mind, but one may be other than second
-and so want to know the real issue at hand first.
+Thanks a lot.
+
+> However, I had to manually fix up the formatting of the patch.
+> 
+
+Sorry for inconvenient.
+
+> Can you please configure your e-mail client so that this is not
+> necessary in the future?
+> 
+
+Was using the Thunderbird client to send patch, and will use git 
+send-email in the future.
+
+> Thanks!
+> .
+> 
 
 -- 
-viresh
-
-[1] https://lore.kernel.org/lkml/71451eb2-46b2-1ea0-efcc-0811568159a4@gmail.com/
+Sincerely
+TonyWWang-oc
