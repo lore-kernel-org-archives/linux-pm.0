@@ -2,78 +2,262 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62FAAC43334
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 07:59:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1FA4CCA47E
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 07:59:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233341AbiF3H7A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Jun 2022 03:59:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51564 "EHLO
+        id S233463AbiF3H7J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Jun 2022 03:59:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52104 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233434AbiF3H6v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 03:58:51 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C842C41306;
-        Thu, 30 Jun 2022 00:58:50 -0700 (PDT)
-Received: from dimapc.. (109-252-118-164.nat.spd-mgts.ru [109.252.118.164])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: dmitry.osipenko)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 6CE3C66017F5;
-        Thu, 30 Jun 2022 08:58:48 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1656575929;
-        bh=7ycOl0tf4G0sSnkM0jeUXBwerp1p2XzwKGi4RzRqJcc=;
-        h=From:To:Cc:Subject:Date:From;
-        b=eUlcV6ImEVCpigysQR9fXFnu70De58qNsrrPtXqNOz0ykpk3Q2m+8aUHilk1fHLq3
-         L1JRbkW3VeVQdGNX4CykiTBf7AYHLQGo15WHv2W6iAvZGETCfjjzyxklCLRx/m7vvG
-         GFkbuEo0wifOz+A4NXr60gOPuJPgFOT7UpobDOc58iNG5oEJfEOGuEZnzSsKFXtUMN
-         cHYN5YINR5HAbIti5MU2DRLvBn7wc7sYmeEQxha+mde8njJCeOoQtf+O5BveL8YZRv
-         aACXGjxNSx2HbzvtFrP50dwBiApVzrxEc9QGtOy34zS02zi77ntAF2iTrnnT6oCgnm
-         RW8rPGO1FKpww==
-From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1] PM / devfreq: tegra30: Add error message for devm_devfreq_add_device()
-Date:   Thu, 30 Jun 2022 10:57:51 +0300
-Message-Id: <20220630075751.1360786-1-dmitry.osipenko@collabora.com>
-X-Mailer: git-send-email 2.36.1
+        with ESMTP id S231262AbiF3H6y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 03:58:54 -0400
+Received: from mail-yb1-xb2d.google.com (mail-yb1-xb2d.google.com [IPv6:2607:f8b0:4864:20::b2d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D40A1BE94;
+        Thu, 30 Jun 2022 00:58:53 -0700 (PDT)
+Received: by mail-yb1-xb2d.google.com with SMTP id o19so25792487ybg.2;
+        Thu, 30 Jun 2022 00:58:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=cfxRQmWn6E5iGhcVqpo6ukaIRHZyh8KWaltMzz1QUAk=;
+        b=MIprXsiaD6r0sdwwxHZnvGH3llQmDlTN9/9PqQ5GhKYSTAl2kQsYfNk6ZtPxPXDWd5
+         1qS6z1rrKB9KoT95soWkompRONzWM3eCUpfPh+1BdElNd6FWyvSSVpfz8rm86XtzcSbk
+         v14u5uDlxPNZS81cEl5PAnodvQ/w+az6B3gCB3oOOxmXJcBeBWIKrwB2xJVLYGuG2hFQ
+         QML1J/+XWO0aLae2BgtORqEZCr6kaioqZy7Pu95UatncwWYMpGvC3/amPgaIHBJw3LaV
+         JpHXMChuWGklJUHcdqqaN1ZQNbCLiDeDg03hidIz3iv9w0woRlChOdNYaA+6S6dkOz5C
+         CEqg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=cfxRQmWn6E5iGhcVqpo6ukaIRHZyh8KWaltMzz1QUAk=;
+        b=y5pJEdPLlyu8n0A5vnPO+1aSds9SbhKAWhgSoBrIiRhGTqX1n+hnm2rNuH8Ji2xS0b
+         RB+iOWN9WdH2k5gf950vTnunp8heR+sIawI+X65eViQ2reWbTOcgNpbFocC2lmatHXOp
+         Ee8RgSMGvttR69R7nZF9JkOGPqjperZ7Ggxrxl88DpY0vQHwSS431jzzShpB+wjWwkDH
+         fLosELU98JaoSuEpPQDWR5E0wX6au5P2J9caBbJCC+TGkULqPMxn+aWO/8W9lgibbzvO
+         GBiYTpFHoWnd9ktkq67+/32+qCBs1RxL3mknpk/vlF43fDQb1x5vo3vzr2ZbdlbSYYpY
+         lSYA==
+X-Gm-Message-State: AJIora+GXs+0nWvz/Rr7RjVRb6aCUAECZPxkSknRkYdYpQAWa7qP2O+Z
+        aV8O8t35hG4KRc3SZVdoxyH5B3zLCm+Mcuhsx1w=
+X-Google-Smtp-Source: AGRyM1uCRBwK4qEpvEe/oIY+2LOYXQuJFVwmbnYdYbTn+6Nb2y028jRiAxdCOSTtMueV28MbjKD6VW6kwM9l8yoPRhU=
+X-Received: by 2002:a05:6902:1549:b0:66d:5f76:27ba with SMTP id
+ r9-20020a056902154900b0066d5f7627bamr7696874ybu.385.1656575932662; Thu, 30
+ Jun 2022 00:58:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220629143046.213584-1-aidanmacdonald.0x0@gmail.com> <20220629143046.213584-8-aidanmacdonald.0x0@gmail.com>
+In-Reply-To: <20220629143046.213584-8-aidanmacdonald.0x0@gmail.com>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Thu, 30 Jun 2022 09:58:12 +0200
+Message-ID: <CAHp75VeHeiqAM_2+91dMz2fDUqYiod8HnZobobe6FXgoYiJj6Q@mail.gmail.com>
+Subject: Re: [PATCH v4 07/15] regulator: axp20x: Add support for AXP192
+To:     Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>, quic_gurus@quicinc.com,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Michael Walle <michael@walle.cc>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's difficult to notice that driver failed to probe by looking at KMSG
-when devm_devfreq_add_device() fails. Add explicit error message for this
-case.
+On Wed, Jun 29, 2022 at 4:29 PM Aidan MacDonald
+<aidanmacdonald.0x0@gmail.com> wrote:
+>
+> Add support for the AXP192 PMIC.
 
-Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
----
- drivers/devfreq/tegra30-devfreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 30382bdfc655..f0d414b881e3 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -926,8 +926,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 
- 	devfreq = devm_devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
- 					  "tegra_actmon", NULL);
--	if (IS_ERR(devfreq))
-+	if (IS_ERR(devfreq)) {
-+		dev_err(&pdev->dev, "Failed to add device: %pe\n", devfreq);
- 		return PTR_ERR(devfreq);
-+	}
- 
- 	return 0;
- }
+> Acked-by: Mark Brown <broonie@kernel.org>
+> Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+> ---
+>  drivers/regulator/axp20x-regulator.c | 100 ++++++++++++++++++++++++---
+>  1 file changed, 91 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
+> index d260c442b788..ee79a9ed0249 100644
+> --- a/drivers/regulator/axp20x-regulator.c
+> +++ b/drivers/regulator/axp20x-regulator.c
+> @@ -27,6 +27,29 @@
+>  #include <linux/regulator/machine.h>
+>  #include <linux/regulator/of_regulator.h>
+>
+> +#define AXP192_GPIO0_FUNC_MASK         GENMASK(2, 0)
+> +
+> +#define AXP192_IO_ENABLED              0x02
+> +#define AXP192_IO_DISABLED             0x06
+> +
+> +#define AXP192_WORKMODE_DCDC1_MASK     BIT_MASK(3)
+> +#define AXP192_WORKMODE_DCDC2_MASK     BIT_MASK(2)
+> +#define AXP192_WORKMODE_DCDC3_MASK     BIT_MASK(1)
+> +
+> +#define AXP192_DCDC1_V_OUT_MASK                GENMASK(6, 0)
+> +#define AXP192_DCDC2_V_OUT_MASK                GENMASK(5, 0)
+> +#define AXP192_DCDC3_V_OUT_MASK                GENMASK(6, 0)
+> +#define AXP192_LDO2_V_OUT_MASK         GENMASK(7, 4)
+> +#define AXP192_LDO3_V_OUT_MASK         GENMASK(3, 0)
+> +#define AXP192_LDO_IO0_V_OUT_MASK      GENMASK(7, 4)
+> +
+> +#define AXP192_PWR_OUT_EXTEN_MASK      BIT_MASK(6)
+> +#define AXP192_PWR_OUT_DCDC2_MASK      BIT_MASK(4)
+> +#define AXP192_PWR_OUT_LDO3_MASK       BIT_MASK(3)
+> +#define AXP192_PWR_OUT_LDO2_MASK       BIT_MASK(2)
+> +#define AXP192_PWR_OUT_DCDC3_MASK      BIT_MASK(1)
+> +#define AXP192_PWR_OUT_DCDC1_MASK      BIT_MASK(0)
+> +
+>  #define AXP20X_GPIO0_FUNC_MASK         GENMASK(3, 0)
+>  #define AXP20X_GPIO1_FUNC_MASK         GENMASK(3, 0)
+>
+> @@ -375,25 +398,32 @@ static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
+>
+>         switch (axp20x->variant) {
+>         case AXP209_ID:
+> -               if (id == AXP20X_DCDC2) {
+> +               if (id == AXP20X_LDO3) {
+>                         slew_rates = axp209_dcdc2_ldo3_slew_rates;
+>                         rate_count = ARRAY_SIZE(axp209_dcdc2_ldo3_slew_rates);
+>                         reg = AXP20X_DCDC2_LDO3_V_RAMP;
+> -                       mask = AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE_MASK |
+> -                              AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN_MASK;
+> +                       mask = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE_MASK |
+> +                              AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN_MASK;
+>                         enable = (ramp > 0) ?
+> -                                AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN : 0;
+> +                                AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN : 0;
+>                         break;
+>                 }
+>
+> -               if (id == AXP20X_LDO3) {
+> +               fallthrough;
+> +
+> +       case AXP192_ID:
+> +               /*
+> +                * AXP192 and AXP209 share the same DCDC2 ramp configuration
+> +                */
+> +               if ((axp20x->variant == AXP209_ID && id == AXP20X_DCDC2) ||
+> +                   (axp20x->variant == AXP192_ID && id == AXP192_DCDC2)) {
+>                         slew_rates = axp209_dcdc2_ldo3_slew_rates;
+>                         rate_count = ARRAY_SIZE(axp209_dcdc2_ldo3_slew_rates);
+>                         reg = AXP20X_DCDC2_LDO3_V_RAMP;
+> -                       mask = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE_MASK |
+> -                              AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN_MASK;
+> +                       mask = AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE_MASK |
+> +                              AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN_MASK;
+>                         enable = (ramp > 0) ?
+> -                                AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN : 0;
+> +                                AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN : 0;
+>                         break;
+>                 }
+>
+> @@ -415,7 +445,8 @@ static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
+>                         if (ramp > slew_rates[i])
+>                                 break;
+>
+> -                       if (id == AXP20X_DCDC2)
+> +                       if ((axp20x->variant == AXP209_ID && id == AXP20X_DCDC2) ||
+> +                           (axp20x->variant == AXP192_ID && id == AXP192_DCDC2))
+>                                 cfg = AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE(i);
+>                         else
+>                                 cfg = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE(i);
+> @@ -511,6 +542,29 @@ static const struct regulator_ops axp20x_ops_sw = {
+>         .is_enabled             = regulator_is_enabled_regmap,
+>  };
+>
+> +static const struct regulator_desc axp192_regulators[] = {
+> +       AXP_DESC(AXP192, DCDC1, "dcdc1", "vin1", 700, 3500, 25,
+> +                AXP192_DCDC1_V_OUT, AXP192_DCDC1_V_OUT_MASK,
+> +                AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_DCDC1_MASK),
+> +       AXP_DESC(AXP192, DCDC2, "dcdc2", "vin2", 700, 2275, 25,
+> +                AXP192_DCDC2_V_OUT, AXP192_DCDC2_V_OUT_MASK,
+> +                AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_DCDC2_MASK),
+> +       AXP_DESC(AXP192, DCDC3, "dcdc3", "vin3", 700, 3500, 25,
+> +                AXP192_DCDC3_V_OUT, AXP192_DCDC3_V_OUT_MASK,
+> +                AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_DCDC3_MASK),
+> +       AXP_DESC_FIXED(AXP192, LDO1, "ldo1", "acin", 1250),
+> +       AXP_DESC(AXP192, LDO2, "ldo2", "ldoin", 1800, 3300, 100,
+> +                AXP192_LDO2_3_V_OUT, AXP192_LDO2_V_OUT_MASK,
+> +                AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_LDO2_MASK),
+> +       AXP_DESC(AXP192, LDO3, "ldo3", "ldoin", 1800, 3300, 100,
+> +                AXP192_LDO2_3_V_OUT, AXP192_LDO3_V_OUT_MASK,
+> +                AXP192_PWR_OUT_CTRL, AXP192_PWR_OUT_LDO3_MASK),
+> +       AXP_DESC_IO(AXP192, LDO_IO0, "ldo_io0", "ips", 700, 3300, 100,
+> +                   AXP192_LDO_IO0_V_OUT, AXP192_LDO_IO0_V_OUT_MASK,
+> +                   AXP192_GPIO0_CTRL, AXP192_GPIO0_FUNC_MASK,
+> +                   AXP192_IO_ENABLED, AXP192_IO_DISABLED),
+> +};
+> +
+>  static const struct linear_range axp20x_ldo4_ranges[] = {
+>         REGULATOR_LINEAR_RANGE(1250000,
+>                                AXP20X_LDO4_V_OUT_1250mV_START,
+> @@ -1008,6 +1062,12 @@ static int axp20x_set_dcdc_freq(struct platform_device *pdev, u32 dcdcfreq)
+>         u32 min, max, def, step;
+>
+>         switch (axp20x->variant) {
+> +       case AXP192_ID:
+> +               min = 900;
+> +               max = 2025;
+> +               def = 1500;
+> +               step = 75;
+> +               break;
+>         case AXP202_ID:
+>         case AXP209_ID:
+>                 min = 750;
+> @@ -1100,6 +1160,24 @@ static int axp20x_set_dcdc_workmode(struct regulator_dev *rdev, int id, u32 work
+>         unsigned int mask;
+>
+>         switch (axp20x->variant) {
+> +       case AXP192_ID:
+> +               switch (id) {
+> +               case AXP192_DCDC1:
+> +                       mask = AXP192_WORKMODE_DCDC1_MASK;
+> +                       break;
+> +               case AXP192_DCDC2:
+> +                       mask = AXP192_WORKMODE_DCDC2_MASK;
+> +                       break;
+> +               case AXP192_DCDC3:
+> +                       mask = AXP192_WORKMODE_DCDC3_MASK;
+> +                       break;
+> +               default:
+> +                       return -EINVAL;
+> +               }
+> +
+> +               workmode <<= ffs(mask) - 1;
+> +               break;
+> +
+>         case AXP202_ID:
+>         case AXP209_ID:
+>                 if ((id != AXP20X_DCDC2) && (id != AXP20X_DCDC3))
+> @@ -1220,6 +1298,10 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
+>         bool drivevbus = false;
+>
+>         switch (axp20x->variant) {
+> +       case AXP192_ID:
+> +               regulators = axp192_regulators;
+> +               nregulators = AXP192_REG_ID_MAX;
+> +               break;
+>         case AXP202_ID:
+>         case AXP209_ID:
+>                 regulators = axp20x_regulators;
+> --
+> 2.35.1
+>
+
+
 -- 
-2.36.1
-
+With Best Regards,
+Andy Shevchenko
