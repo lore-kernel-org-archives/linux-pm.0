@@ -2,52 +2,63 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEC98C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 05:51:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C647AC43334
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Jun 2022 05:58:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231990AbiF3FvM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Jun 2022 01:51:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37280 "EHLO
+        id S230092AbiF3F6P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Jun 2022 01:58:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42842 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230135AbiF3FvM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 01:51:12 -0400
-Received: from mailgw.kylinos.cn (unknown [124.126.103.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB4C228E3C;
-        Wed, 29 Jun 2022 22:51:10 -0700 (PDT)
-X-UUID: 36ac529d667f431184cbaed831aea1c2-20220630
-X-GW-Reason: 13103
-X-Policy-Incident: 5pS25Lu25Lq66LaF6L+HNeS6uumcgOimgeWuoeaguA==
-X-Content-Feature: ica/max.line-size 71
-        dict/adv 1
-        dict/contack 1
-        dict/notice 2
-        dict/time 2
-        meta/cnt.alert 1
-X-CPASD-INFO: 185bdac36a0b4b8ea920b9b216776b2e@eohvgpGTkWNigXKug6WDn4FqYmCSZYK
-        Bc3BXZ2SSXoWVgnxsTWBnX1OEgnBQYl5dZFZ3dG9RYmBgYlB_i4Jyj1RgXmCCVHSTgHNyVZKSkQ==
-X-CLOUD-ID: 185bdac36a0b4b8ea920b9b216776b2e
-X-CPASD-SUMMARY: SIP:-1,APTIP:-2.0,KEY:0.0,FROMBLOCK:1,OB:0.0,URL:-5,TVAL:187.
-        0,ESV:0.0,ECOM:-5.0,ML:0.0,FD:0.0,CUTS:87.0,IP:-2.0,MAL:-5.0,PHF:-5.0,PHC:-5.
-        0,SPF:4.0,EDMS:-5,IPLABEL:4480.0,FROMTO:0,AD:0,FFOB:0.0,CFOB:0.0,SPC:0,SIG:-5
-        ,AUF:9,DUF:235,ACD:3,DCD:3,SL:0,EISP:0,AG:0,CFC:0.448,CFSR:0.072,UAT:0,RAF:0,
-        IMG:-5.0,DFA:0,DTA:0,IBL:-2.0,ADI:-5,SBL:0,REDM:0,REIP:0,ESB:0,ATTNUM:0,EAF:0
-        ,CID:-5.0,VERSION:2.3.17
-X-CPASD-ID: 36ac529d667f431184cbaed831aea1c2-20220630
-X-CPASD-BLOCK: 1000
-X-CPASD-STAGE: 1
-X-UUID: 36ac529d667f431184cbaed831aea1c2-20220630
-X-User: xiongxin@kylinos.cn
-Received: from localhost.localdomain [(116.128.244.169)] by mailgw
-        (envelope-from <xiongxin@kylinos.cn>)
-        (Generic MTA)
-        with ESMTP id 1347455063; Thu, 30 Jun 2022 08:57:51 +0800
-From:   xiongxin <xiongxin@kylinos.cn>
-To:     rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz,
-        xiongxin@kylinos.cn, luriwen@kylinos.cn
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 -next 0/2] PM: suspend: Optimized suspend is fail returned by wakeup
-Date:   Thu, 30 Jun 2022 08:57:16 +0800
-Message-Id: <20220630005718.309178-1-xiongxin@kylinos.cn>
+        with ESMTP id S229575AbiF3F6N (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 01:58:13 -0400
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC49511A
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 22:58:09 -0700 (PDT)
+Received: by mail-pg1-x52c.google.com with SMTP id g4so10591376pgc.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2022 22:58:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=vST4GG3gAOIX2GEs1KQ/Cp0t/5GyuwSLCsdFHqp/yEQ=;
+        b=oRv0MgQaZPxDcDTTxS8/zcCC1jV3zZblrcj54mJjDUW28h1hFBuHTADCFNECibmfvA
+         KXinMKVdFRhzb6wYoLTOHIdtgCaL53LSzgX5+gj1tvOJpuJYZO5BquZbcDhxpTHJ3nX8
+         0o586YGgM1B6e4uUZOt0tF1vO0isLPW3+yp5p2GLjoFHeROFplT9/2fwxgZwkxvGbEoY
+         k+dDGZ1dUISp3MlbUWX7AmDF67TK8bAoUwT0lnr0kK0plfPhanlAOfkPSfoYLRUZlEh6
+         AcnMpsiwAkJyJevyN9VYuPvPSUsFlyR1df752q9KC3/7p6XXbt59rm+m8Njvyl2enrvu
+         Ixxg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=vST4GG3gAOIX2GEs1KQ/Cp0t/5GyuwSLCsdFHqp/yEQ=;
+        b=yO6e4YZHYVDALYO6wyuJ2xDjCfeZnYEdjScuahB5ZV+5mAUsn8rD38exM3fAayqC+e
+         snVq1f6OXe3nNwm5qTj3pKzZFUQ8mrrnKP5UjV1s/7jWx0jBxvwFy+Ynt1eHs2raxazF
+         JKLYS3zabvXBD7YKukcmW4wfy5Dyuoq2hiEHiAdrL5osM4MoQOV+vu+9nx9l4MfQ8m6l
+         qy1vQ0VOAapJ8JjHyVOGkNcB3xetqeunEF1OfH0WBN9IpX4Y8nR/Q8/hduvn9WvVBuRa
+         GPiVhQtVeaD/EKx6mLZ03r+LsHMq/Jak/pIN9Fj7TsDSD2tf1+nx2zsl6H/fXzf1TIYS
+         jojg==
+X-Gm-Message-State: AJIora8baiNO1mtFwrQe6Q4g3gzRXush6mhKXicjggereV5YoAmZusQ0
+        n9AvTd+cUrhnF2kzvFofO/Bu9A==
+X-Google-Smtp-Source: AGRyM1sT4QampM8pQEesiircQrg5ViYkwV77T3kk74oPP5EDbwljqIJwY+axYBSwAZ0GacVc1Pgmbw==
+X-Received: by 2002:a05:6a00:17a7:b0:525:4306:72ad with SMTP id s39-20020a056a0017a700b00525430672admr13028386pfg.42.1656568689180;
+        Wed, 29 Jun 2022 22:58:09 -0700 (PDT)
+Received: from leo-build-box.lan ([154.3.32.171])
+        by smtp.gmail.com with ESMTPSA id b14-20020a17090a550e00b001e31f4cc977sm3309288pji.56.2022.06.29.22.58.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jun 2022 22:58:08 -0700 (PDT)
+From:   Leo Yan <leo.yan@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH v2 0/5] interconnect: qcom: icc-rpm: Support bucket
+Date:   Thu, 30 Jun 2022 13:57:17 +0800
+Message-Id: <20220630055723.704605-1-leo.yan@linaro.org>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -55,35 +66,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes in v2:
-* fix a build test ERROR reported by kernel test robot.
-* Increase the initial value of the pm_suspend_target_state variable to
-  prevent the situation where it was not assigned before the call from
-  freeze_process().
+This patch set is to support bucket in icc-rpm driver, so it implements
+the similar mechanism in the icc-rpmh driver.
 
-Cover letter from v1:
+We can use interconnect path tag to indicate the bandwidth voting is for
+which buckets, and there have three kinds of buckets: AWC, WAKE and
+SLEEP, finally the wake and sleep bucket values are used to set the
+corresponding clock (active and sleep clocks).  So far, we keep the AWC
+bucket but doesn't really use it.
 
-When the suspend process is executed from the /sys/power/state entry,
-the pm_wakeup_clear() signal is cleared in advance, and the wakeup
-signal can be captured to fail the suspend process when the suspend
-process is notified by the notifier;
+Patches 01, 02, 03 enable interconnect path tag and update the DT
+binding document; patches 04 and 05 support bucket and use bucket values
+to set the bandwidth and clock rates.
 
-Expanding the scope of the pm_suspend_target_state variable also allows
-the device driver to know that the system has entered the suspend
-process earlier.
+Changes from v1:
+- Added description for property "#interconnect-cells" (Rob Herring);
+- Added Dimtry's reviewed tags for patches 02 and 03 (Dmitry Baryshkov);
+- Rebased on the latest mainline kernel and resolved conflict.
 
-xiongxin (2):
-  PM: suspend: expand the assignment scope of the
-    pm_suspend_target_state
-  PM: suspend: advanced pm_wakeup_clear() for normal suspend/hibernate
 
- kernel/power/process.c |  5 ++++-
- kernel/power/suspend.c | 15 ++++++++++++++-
- 2 files changed, 18 insertions(+), 2 deletions(-)
+Leo Yan (5):
+  dt-bindings: interconnect: Update property for icc-rpm path tag
+  interconnect: qcom: Move qcom_icc_xlate_extended() to a common file
+  interconnect: qcom: icc-rpm: Change to use qcom_icc_xlate_extended()
+  interconnect: qcom: icc-rpm: Support multiple buckets
+  interconnect: qcom: icc-rpm: Set bandwidth and clock for bucket values
+
+ .../bindings/interconnect/qcom,rpm.yaml       |   6 +-
+ drivers/interconnect/qcom/Makefile            |   3 +
+ drivers/interconnect/qcom/icc-common.c        |  34 +++++
+ drivers/interconnect/qcom/icc-common.h        |  13 ++
+ drivers/interconnect/qcom/icc-rpm.c           | 134 ++++++++++++++++--
+ drivers/interconnect/qcom/icc-rpm.h           |   6 +
+ drivers/interconnect/qcom/icc-rpmh.c          |  26 +---
+ drivers/interconnect/qcom/icc-rpmh.h          |   1 -
+ drivers/interconnect/qcom/sm8450.c            |   1 +
+ 9 files changed, 182 insertions(+), 42 deletions(-)
+ create mode 100644 drivers/interconnect/qcom/icc-common.c
+ create mode 100644 drivers/interconnect/qcom/icc-common.h
 
 -- 
 2.25.1
 
-
-No virus found
-		Checked by Hillstone Network AntiVirus
