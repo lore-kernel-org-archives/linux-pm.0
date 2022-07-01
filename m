@@ -2,42 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02DA5CCA482
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Jul 2022 02:33:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D976AC43334
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Jul 2022 02:33:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233550AbiGACdl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Jun 2022 22:33:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60226 "EHLO
+        id S233643AbiGACdm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Jun 2022 22:33:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232774AbiGACdh (ORCPT
+        with ESMTP id S233592AbiGACdh (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2022 22:33:37 -0400
-Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2046.outbound.protection.outlook.com [40.107.243.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D38231915;
-        Thu, 30 Jun 2022 19:33:34 -0700 (PDT)
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2040.outbound.protection.outlook.com [40.107.236.40])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D9CF5A2C9;
+        Thu, 30 Jun 2022 19:33:35 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=VubtvMxUNDW9B5SOG96p21t1SSlDXUIJ0oNklUI6rUuZYMoAz+NQ0PILk4Gcy8msnw70NHWwpidFZhMggvofHtoF9bZxrXKzUoCulO7OnvmA74LmhWzdIy+HTtgKyDIsYqsjjW2gBOEAtmNoZzA8OK/5Qy9P3GY9Cq5yipA0LU0lj6nr09IrxgvF5w739cKh9X+ikhIT4j6npa62cMsmK+g1ypZLrfOoyedq6jO5H+QV6HBiqDN3b+4hvZl/dmU91D1rSIVQrWspy1nJgD//v+VzfieisJCGxTGB0pTsbJa/TEhih4DCIg1623vwugvwOF3sSxUGsyu/Al3ffnVhnA==
+ b=nnqahVUxdpclKM1SxUeRmpbMQ5myrQk4GLG9WKIwKhH3mOf3e2CpVnqQa/yjqM/QInUKebSofxQmk5yFT6nVcP5rTl27UOh1gzB5RiQbk5LvsaTKw/+EsX3QnlAjeRtCQpyIcsR9X+SMxFMH3ZKwPOtHfp75U3tXeNsuRX35TP0skVa/cJjLjwl51BVvg71UDyJNPY2byPIu5bIIRGYj/zDwclh705kGAp0/0DiepVUxl7rWc05fJc9AWbBMMhGv7A1dJFBvfEMvKOcCe6HfcPFxd6qHClt54i/dI/Jp429thO/3bwJxetJCr4Y9E6VvT8SB0ce5493Z0W/s2e4rKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=pQ2jCG+/BGFUJOgmgaScen+SAE8p6B0K9/Uu236103c=;
- b=bGScZTKZ1X/905OMRFtVBxpW08EWF0pJYeoQLllg/b3gEytVG+JVhwFqUNNuq1n+qCYIep2lk2E2xr3Ko3FKrP8iqT1CnypmVHJhth7o0oD57P1FB1fjQJ9rz1EvTXNoKQJjNhvh/jCPAkEWK9vyOpn+jnICZrmDEkLH/5RrZsYQkdTasDzS3hcZHJjMWJ+aEqa7KIIDGFDxPWBN9eYjzp19FjQRWdzoECD9KrnO9BbLfhK3amC0cl5tikZOTlgUQxduN6EQ7hBYPpOspR+VF9la6U44lMhrOBF1baoTsCDzHUWTPvgdK4RBr7f/rdvn+FiYbFsunGGPT5z8tDUQLQ==
+ bh=Z7BA+QwEWsmaSiyolpawy2xY7V05UZModCAa+1IAD4k=;
+ b=e3mZ41qJ4t/OrrMf0qbd/nDBTVlo3eI5NltmdECcBQOG6BgjcY2iUnG41zW2U52h45qpGi5jmJDzIAiDfQf2xwra9r6q4pMLrmEFonS/cjX/LE3Qky56DGUGtSBqdMS+jJ8+0NB2MIq4w/f2zZ+Kwne64W7oah7J1gUXeRND8x3epbThfSnQOliUYsmh/iSYRqrZt9e0oTvPo/yO3/AxfjDv2xUhJduUtuOHvZkE4utxJgeo9fspEN8kOcg2fHv5gywomeUuHgBHWjMY/6rdrsQU2d1qOLy1T5LdiYR4gfVp717Z/crMaB39Vjrw+Z7NaR2JkujoWOl66VKIb0HrUw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=pQ2jCG+/BGFUJOgmgaScen+SAE8p6B0K9/Uu236103c=;
- b=fzkNMna/Dkxn7kKTwedutf002ITjQotIIXTlILOxz4KMH9NUyZQ+PKuzThET1uybgYvh9ZT3G6At8XWQ6Z5KmQBLbp1oAeSI/rWgTEX81EibIyRajbEmHEcJjilPmqtQVC+AzKNhF+rLhPtaGyp1P59PP+hecZRAMFYPJZkt8mQ=
-Received: from BN9PR03CA0963.namprd03.prod.outlook.com (2603:10b6:408:109::8)
- by DM4PR12MB6638.namprd12.prod.outlook.com (2603:10b6:8:b5::5) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5395.14; Fri, 1 Jul 2022 02:33:30 +0000
+ bh=Z7BA+QwEWsmaSiyolpawy2xY7V05UZModCAa+1IAD4k=;
+ b=HVCP2xAWetqB/3RtnR+8Yn8AQTCZ98u0fWNFqILkUU99FXVDYtO60lB//h4uHU/Rq3H1DEtb7nm1zxWTtbpoNwaZOX+DCKuYVyAeANnEKQt/hFKbLtr99SWGnEPvsd7yIjrXB21EXTjdkq3KW9o4Ra3tLS87x+Ec32gMoGx+tr4=
+Received: from BN9PR03CA0980.namprd03.prod.outlook.com (2603:10b6:408:109::25)
+ by MWHPR12MB1680.namprd12.prod.outlook.com (2603:10b6:301:10::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5395.15; Fri, 1 Jul
+ 2022 02:33:33 +0000
 Received: from BN8NAM11FT020.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:109:cafe::b1) by BN9PR03CA0963.outlook.office365.com
- (2603:10b6:408:109::8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5395.14 via Frontend
- Transport; Fri, 1 Jul 2022 02:33:30 +0000
+ (2603:10b6:408:109:cafe::37) by BN9PR03CA0980.outlook.office365.com
+ (2603:10b6:408:109::25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5395.15 via Frontend
+ Transport; Fri, 1 Jul 2022 02:33:32 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -47,20 +48,21 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  BN8NAM11FT020.mail.protection.outlook.com (10.13.176.223) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5395.14 via Frontend Transport; Fri, 1 Jul 2022 02:33:30 +0000
+ 15.20.5395.14 via Frontend Transport; Fri, 1 Jul 2022 02:33:32 +0000
 Received: from AUS-LX-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.28; Thu, 30 Jun
- 2022 21:33:29 -0500
+ 2022 21:33:31 -0500
 From:   Mario Limonciello <mario.limonciello@amd.com>
-To:     <mario.limonciello@amd.com>,
+To:     <mario.limonciello@amd.com>, <linux-kernel@vger.kernel.org>
+CC:     <linux-pm@vger.kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Len Brown" <lenb@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 03/10] ACPI: LPIT: Use new `pm_suspend_preferred_s2idle`
-Date:   Thu, 30 Jun 2022 21:33:21 -0500
-Message-ID: <20220701023328.2783-3-mario.limonciello@amd.com>
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH v3 06/10] thermal: intel: pch: Use `pm_suspend_preferred_s2idle`
+Date:   Thu, 30 Jun 2022 21:33:24 -0500
+Message-ID: <20220701023328.2783-6-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220701023328.2783-1-mario.limonciello@amd.com>
 References: <20220701023328.2783-1-mario.limonciello@amd.com>
@@ -72,23 +74,23 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 31dccc51-a4b2-4a59-32f0-08da5b0a162e
-X-MS-TrafficTypeDiagnostic: DM4PR12MB6638:EE_
+X-MS-Office365-Filtering-Correlation-Id: dede7a7c-6020-4552-f88c-08da5b0a177b
+X-MS-TrafficTypeDiagnostic: MWHPR12MB1680:EE_
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: IDxk2yuwL7PsxVLJL+cnLOpa91cPfiSD4M4+o4+3CxfDqipmkOGew2BydYgCZ2WoHRAp2RXNXQfiFWMnZe2/MQ4m+h1CYby7ez5mCD6UejKC/5qk2CFtOysM4+v+JQjYvu5E6OVhrtmxIVcwTcQIcDYbjjW0KbKLAUYh4ypb0t8gSTghDsL3qbQdrV7q4TcykMEpvazhEbkc/ySoKdHwQZgkOaYhzTG2lcfHqajq0/YRK/052DA8O6+3fAmibpwK6Y8Vaba7itR+5peZeFXhbvUD9mU2TCtKTGLfcArZQT+vMwu9GA4/P7fEiCkd1r3UK+a/TYNtUJXuwepUehv4EWeUJav6p0l7nO/00djLb36cVPzRH4LvUMEHjC/8wou3qbjgGSI9xqMcFloHlUxQIfS+vuyiJiwmF2VBYUXRxOc/OBhA1RYR4CO1VqNxsHLX6xkWZcSiaARDAnTySALkmopx/fdDQKl94/nG4KrRXsf3DqK6I86zb03F26fdMXFtvYAd2HdFywUtHRtyVvCMk1+5I9AiHuAqzAyEZgFCk0aDj42yWYcLfY6GDbrD8+6WbaiaR42q+XeNlYwgVLmHVDM0CcbAo+NjeQvTT2e15P6VL7x8GC7KSoLRb4zEx9GB/Vad5SJObVo/Sa5chelNBaayJ2c7tBfCg73aGenHhjtlBzDxUTI/rOIGe9iC5bVstvOkP0ZVNkOqrpcEzVeSjrGbL9GsOjZIACaxcIMDlpWdGyqEAgM9w6yZNX7w5kATGtz3Vy0YP4G8Czq28mzTnPANKHgDmiFiEiaemUU0yJwN4r4MpZmnTNfOaAG4JMcL24HmznaSlYj6VgzQ9LuWixADRPD8RBT8qzOJtuNZuHsMR8qbuBbkum9nU424ka28
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230016)(4636009)(136003)(346002)(376002)(396003)(39860400002)(40470700004)(36840700001)(46966006)(36756003)(110136005)(54906003)(316002)(2616005)(26005)(86362001)(82310400005)(7696005)(1076003)(82740400003)(356005)(186003)(16526019)(81166007)(4326008)(70206006)(8676002)(70586007)(478600001)(8936002)(44832011)(426003)(47076005)(336012)(36860700001)(40480700001)(2906002)(41300700001)(83380400001)(5660300002)(40460700003)(6666004)(81973001)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: OiDn8axc6gkwf/vtO16PrRgH40BHqTuycXBbv8ylwXozqiuy3w4/wiiUhAoBGWDe7qcGSGeV1TEcILEpzn94G75fK5jxxdKns0cvVUHoz3r0B/EV6DQak25TLTV4NNZGN4v/3l6BiOnJv7nTxtsWwnCp9LNIAO//8YTYrCePfsLgXYeUw/u+o3PyWyuXD9hCQBCBJvotGCkLQN2QNskYBdiSdSwL88/6pe6vZahBDmeJnOtfkuVdQG1gsKPxnbt7JIhQkGZax3Y30qkEyiXLcP9e/3IhY/7e+TBelEkSKfTE+lkh4fWhdi2nVsfPjHRe/PKVIwud7D12iZNbJux2DNvlS1iVuWv7GkSZZXShzpBu2QOv3LwML00QupVxjGcG18SaDr4hlreHuKU1gFce71O3pEREdP9FpX37Yo1W1kQ6ypl9jp1ZQf3uSJigB+U+OCWzMzHRDJkdTExkn/P1iUVfAxgNX26hen7xditFIyiHSIUL7La13rrpj8/TteZCT7w7Cc4mWyAg8iXQ0LQU1jcuKBV0xWMZkI8P3M6wdECKL7yeMys1CdOMxSLpydIBMSiyFioFt1G/3DFxTyjmuwrU0OeGaqH53W++yk6C98v19Ccj1as3dcETiUlfLI5/gTaqYYqWq1S8x/ucVH78XGcRGZtwIJt88WU6T1tYe2zmOnELlOxeupxGC2ITuMOZpNp5y6vhhgye/MYYHnQH4n+Qoy3P0K+qrr0nxP/D55NUlJlPdIE4+4kolqLclTYlC8xIcEVs3hzPG49Cjs+yL2G0jKu1O1cJJNLAtO57lPzxWFPtuWpCBt7bFRTcAAsqrOGYXdeNLsc/SwDaSxnhAVBm35ml4Bvq7G4wZ2uNF35B7DKvp1qlhkUVljbGH8Lk
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230016)(4636009)(396003)(346002)(376002)(39860400002)(136003)(40470700004)(46966006)(36840700001)(7696005)(426003)(44832011)(1076003)(81166007)(6666004)(356005)(2906002)(40460700003)(2616005)(41300700001)(36860700001)(16526019)(47076005)(186003)(82310400005)(336012)(40480700001)(4744005)(82740400003)(86362001)(8676002)(110136005)(5660300002)(4326008)(8936002)(70586007)(70206006)(36756003)(316002)(478600001)(54906003)(26005)(83380400001)(81973001)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jul 2022 02:33:30.5648
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jul 2022 02:33:32.7522
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 31dccc51-a4b2-4a59-32f0-08da5b0a162e
+X-MS-Exchange-CrossTenant-Network-Message-Id: dede7a7c-6020-4552-f88c-08da5b0a177b
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT020.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6638
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR12MB1680
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -97,39 +99,27 @@ Drop the direct check from the FADT and use the helper instead.
 
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- drivers/acpi/acpi_lpit.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/thermal/intel/intel_pch_thermal.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/acpi/acpi_lpit.c b/drivers/acpi/acpi_lpit.c
-index 48e5059d67ca..31c49107c579 100644
---- a/drivers/acpi/acpi_lpit.c
-+++ b/drivers/acpi/acpi_lpit.c
-@@ -6,6 +6,7 @@
-  * Copyright (C) 2017 Intel Corporation. All rights reserved.
-  */
+diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
+index c1fa2b29b153..3124c4b1da76 100644
+--- a/drivers/thermal/intel/intel_pch_thermal.c
++++ b/drivers/thermal/intel/intel_pch_thermal.c
+@@ -208,12 +208,8 @@ static int pch_wpt_suspend(struct pch_thermal_device *ptd)
+ 	}
  
-+#include <linux/suspend.h>
- #include <linux/cpu.h>
- #include <linux/acpi.h>
- #include <asm/msr.h>
-@@ -109,7 +110,7 @@ static void lpit_update_residency(struct lpit_residency_info *info,
- 		if (!info->iomem_addr)
- 			return;
+ 	/* Do not check temperature if it is not a S0ix capable platform */
+-#ifdef CONFIG_ACPI
+-	if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
++	if (!pm_suspend_preferred_s2idle())
+ 		return 0;
+-#else
+-	return 0;
+-#endif
  
--		if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
-+		if (!pm_suspend_preferred_s2idle())
- 			return;
- 
- 		/* Silently fail, if cpuidle attribute group is not present */
-@@ -117,7 +118,7 @@ static void lpit_update_residency(struct lpit_residency_info *info,
- 					&dev_attr_low_power_idle_system_residency_us.attr,
- 					"cpuidle");
- 	} else if (info->gaddr.space_id == ACPI_ADR_SPACE_FIXED_HARDWARE) {
--		if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
-+		if (!pm_suspend_preferred_s2idle())
- 			return;
- 
- 		/* Silently fail, if cpuidle attribute group is not present */
+ 	/* Do not check temperature if it is not s2idle */
+ 	if (pm_suspend_via_firmware())
 -- 
 2.34.1
 
