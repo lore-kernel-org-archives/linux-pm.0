@@ -2,62 +2,66 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 174B3C43334
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Jul 2022 08:21:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1F3ECCA479
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Jul 2022 08:21:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234917AbiGAIVB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Jul 2022 04:21:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48598 "EHLO
+        id S236020AbiGAIVD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Jul 2022 04:21:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48742 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236169AbiGAIUw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2022 04:20:52 -0400
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4C8C70AF9
-        for <linux-pm@vger.kernel.org>; Fri,  1 Jul 2022 01:20:50 -0700 (PDT)
-Received: by mail-pl1-x632.google.com with SMTP id c4so1700108plc.8
-        for <linux-pm@vger.kernel.org>; Fri, 01 Jul 2022 01:20:50 -0700 (PDT)
+        with ESMTP id S236175AbiGAIVB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2022 04:21:01 -0400
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 728BC70E4C
+        for <linux-pm@vger.kernel.org>; Fri,  1 Jul 2022 01:20:56 -0700 (PDT)
+Received: by mail-pj1-x102c.google.com with SMTP id g7so1938020pjj.2
+        for <linux-pm@vger.kernel.org>; Fri, 01 Jul 2022 01:20:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Rd2Uisd5Y4W/VJAGdhobqO4GQLVcYGgmZc11srtGLLA=;
-        b=WkpdupNLmmTJbNdi75+tw8qqz16nkcR7kXI60KBWPn45KSRjpCbo+EstSlYMyePbJC
-         ZwK73GCR5WxIhjrHsulCMclv5IUWnMR1/esv5YEq8U8vSS3B+Yho6OhZZydHoEqqDXzq
-         8fIoGc2smB/PRHLugv8g9P/vBm63HXswfopg7ZULXlVRjwdXMNSvUMi/1d7YYVjHcU3k
-         pzhzYZxnYzNNbQ1u2G6PFtJrH9uM6l0hZuoyszwa/VaQ7RphpMapjZcXMX+P8rm6SGe3
-         LY2yhxFOoy3tNidO1Ojh3x5a02mTQwmx1ig1UApWe60yKvfmGm22H44WyM1NnwcXh5uD
-         cbhw==
+        bh=cgbOoygWZaIIuor1RyiZGwebLyI7PYxrQBZVGVTI33I=;
+        b=obCdm4rJzIAby9ExFqqvOXIVGWgQpZy95pRUIC38dC0eIr+MePjuGhl1A0Zzh7axhV
+         oBTLRLs1niE+fF8sOtY4QAoyO5VqRj4FZiAT4ciUZy89txYOpFTijV/C8PXTfU3HfjBh
+         l/A2STUX1L+mLvU2uMHF5BI4sqqxkKPFGsm6AtheWMfuRp1xCzdvxgUG9Q9xcntIlAa9
+         3cLH720S30gUMnG57CrFy2k9ohBVVKyh7eHcCQ0amnV0ErJt5H3RfocVMUm0iG68H4qz
+         oYjM28jiKUptzVA7+M27RYNIWBIAcLj3CtdfPEc5KNkLMZj6C6JBlREteUNoz2tdZWXI
+         VI6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Rd2Uisd5Y4W/VJAGdhobqO4GQLVcYGgmZc11srtGLLA=;
-        b=e6weqckUQZnLcOCVmoVFURtGvjmZi36b6igrHuEjdI//eN64jPrbxmglSj87l4QSvD
-         MQhD5zDRPSbmz4Xd79ocyYff/dzC2WFF8NFf0Gftoi0jAMp/QD/MbTo/Y0EBlkN8vXPo
-         OLdSwkIv/+Nab3Hj8DAT5eNgNwEz2oVt16Iw5BTQ+suS9vS6s9K9yRp6sr9QzaNFY3jX
-         /PKbb3oD9I82NnrtLDKQLd9ye62zalCf3fhv1sKWHcSpaGeACfpq49IJxUKMLqLkbwjl
-         Lde/6zGwVTwtllSc9Qy8A/p3G3WVvuoIzdIIMmB7xmbJyrWn65IxwE2mONV7F6vH7vzB
-         Zflg==
-X-Gm-Message-State: AJIora/4UU1/2q1ndwzJvFRs1TF89NbffIQPV1rEVLIv9SbrHfawBAdj
-        nCvKibs4alzArIVh0jRUk8SJXKhk6yIADA==
-X-Google-Smtp-Source: AGRyM1uPQeSi/N29UBRniR+zsVejTf6T7LB6AVWdO2jFxrIu8vQA6gQ2aLgxKWsu4uYIdoGIIWwu0Q==
-X-Received: by 2002:a17:902:ec85:b0:16a:1d00:4ef6 with SMTP id x5-20020a170902ec8500b0016a1d004ef6mr19294082plg.62.1656663650372;
-        Fri, 01 Jul 2022 01:20:50 -0700 (PDT)
+        bh=cgbOoygWZaIIuor1RyiZGwebLyI7PYxrQBZVGVTI33I=;
+        b=PGVtPJjREghUTwXnRkncWk73UaqZyxsuKui7aPa9OeqHYGM8D4U+3ChGO6WUxI7W/d
+         T0OgOaaSx0Wb4C5T4zjTQFudEnfkBDtW1mj/srq8PiCfOcu35zJzBsuEXzw54hgFQFD7
+         sTXznykKCQRbOAnKBbEOaJeAdcJ0aYm0mOINAHkcZ8NAXPJeDv6AdH7S2v2LYzn5rCYT
+         D6vLGnFi8sbD5soP/zlQx59gtOZvYgz8q6Rjd3MpA/UPNemgb2QcVr6RrO3EIDDIwkA+
+         7loCJVwdgcrqKbLBFVgy6rXnNes5/BPKeCwcXzSC5a8MGxu0dorr3BU1r2HiRoYmE+2A
+         lPjA==
+X-Gm-Message-State: AJIora+1LyB3g4u9FFlnYi1CNDfLZZ/ECi6rGsVia8HRLvC4bzJsUzRP
+        WDm/dUzXJ2k156wC6LFinmD86A==
+X-Google-Smtp-Source: AGRyM1tqcjCws6zg/SRdbpK7iJxqkiNnbiwu1OmSnN8KGWw1G6+vGEDusVUxK4VpgHd/fEzFYQ04bA==
+X-Received: by 2002:a17:90b:4b48:b0:1ec:fc87:691c with SMTP id mi8-20020a17090b4b4800b001ecfc87691cmr17043869pjb.120.1656663655997;
+        Fri, 01 Jul 2022 01:20:55 -0700 (PDT)
 Received: from localhost ([122.172.201.58])
-        by smtp.gmail.com with ESMTPSA id w2-20020a1709029a8200b001634d581adfsm14765758plp.157.2022.07.01.01.20.49
+        by smtp.gmail.com with ESMTPSA id a3-20020a1709027e4300b0016b8b35d725sm7861957pln.95.2022.07.01.01.20.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 Jul 2022 01:20:50 -0700 (PDT)
+        Fri, 01 Jul 2022 01:20:55 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>
+Cc:     linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Dmitry Osipenko <dmitry.osipenko@collabora.com>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH V2 02/30] OPP: Add dev_pm_opp_set_config() and friends
-Date:   Fri,  1 Jul 2022 13:49:57 +0530
-Message-Id: <1ac36a9ad618ed182d7584bb04d1e834720a3fea.1656660185.git.viresh.kumar@linaro.org>
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V2 04/30] cpufreq: imx: Migrate to dev_pm_opp_set_config()
+Date:   Fri,  1 Jul 2022 13:49:59 +0530
+Message-Id: <d5a3279dac9503cb0457dd9b20c57de774ec1dfa.1656660185.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 In-Reply-To: <cover.1656660185.git.viresh.kumar@linaro.org>
 References: <cover.1656660185.git.viresh.kumar@linaro.org>
@@ -67,370 +71,73 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The OPP core already have few configuration specific APIs and it is
-getting complex or messy for both the OPP core and its users.
+The OPP core now provides a unified API for setting all configuration
+types, i.e. dev_pm_opp_set_config().
 
-Lets introduce a new set of API which will be used for all kind of
-different configurations, and shall eventually replace all the existing
-ones.
+Lets start using it.
 
-The new API, returns a unique token instead of a pointer to the OPP
-table, which allows the OPP core to drop the resources selectively later
-on.
-
-Tested-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c     | 214 ++++++++++++++++++++++++++++++++++++++++-
- drivers/opp/opp.h      |  21 ++++
- include/linux/pm_opp.h |  45 +++++++++
- 3 files changed, 279 insertions(+), 1 deletion(-)
+ drivers/cpufreq/imx-cpufreq-dt.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index e166bfe5fc90..c77ea05ee2cd 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -13,11 +13,12 @@
- #include <linux/clk.h>
- #include <linux/errno.h>
- #include <linux/err.h>
--#include <linux/slab.h>
- #include <linux/device.h>
- #include <linux/export.h>
- #include <linux/pm_domain.h>
- #include <linux/regulator/consumer.h>
-+#include <linux/slab.h>
-+#include <linux/xarray.h>
+diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
+index 3fe9125156b4..8104fed4ff7c 100644
+--- a/drivers/cpufreq/imx-cpufreq-dt.c
++++ b/drivers/cpufreq/imx-cpufreq-dt.c
+@@ -31,8 +31,8 @@
  
- #include "opp.h"
+ /* cpufreq-dt device registered by imx-cpufreq-dt */
+ static struct platform_device *cpufreq_dt_pdev;
+-static struct opp_table *cpufreq_opp_table;
+ static struct device *cpu_dev;
++static int cpufreq_opp_token;
  
-@@ -36,6 +37,9 @@ DEFINE_MUTEX(opp_table_lock);
- /* Flag indicating that opp_tables list is being updated at the moment */
- static bool opp_tables_busy;
+ enum IMX7ULP_CPUFREQ_CLKS {
+ 	ARM,
+@@ -86,6 +86,10 @@ static int imx_cpufreq_dt_probe(struct platform_device *pdev)
+ 	u32 cell_value, supported_hw[2];
+ 	int speed_grade, mkt_segment;
+ 	int ret;
++	struct dev_pm_opp_config config = {
++		.supported_hw = supported_hw,
++		.supported_hw_count = ARRAY_SIZE(supported_hw),
++	};
  
-+/* OPP ID allocator */
-+static DEFINE_XARRAY_ALLOC1(opp_configs);
-+
- static bool _find_opp_dev(const struct device *dev, struct opp_table *opp_table)
+ 	cpu_dev = get_cpu_device(0);
+ 
+@@ -153,17 +157,17 @@ static int imx_cpufreq_dt_probe(struct platform_device *pdev)
+ 	dev_info(&pdev->dev, "cpu speed grade %d mkt segment %d supported-hw %#x %#x\n",
+ 			speed_grade, mkt_segment, supported_hw[0], supported_hw[1]);
+ 
+-	cpufreq_opp_table = dev_pm_opp_set_supported_hw(cpu_dev, supported_hw, 2);
+-	if (IS_ERR(cpufreq_opp_table)) {
+-		ret = PTR_ERR(cpufreq_opp_table);
+-		dev_err(&pdev->dev, "Failed to set supported opp: %d\n", ret);
++	cpufreq_opp_token = dev_pm_opp_set_config(cpu_dev, &config);
++	if (cpufreq_opp_token < 0) {
++		ret = cpufreq_opp_token;
++		dev_err(&pdev->dev, "Failed to set Opp config: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+ 	cpufreq_dt_pdev = platform_device_register_data(
+ 			&pdev->dev, "cpufreq-dt", -1, NULL, 0);
+ 	if (IS_ERR(cpufreq_dt_pdev)) {
+-		dev_pm_opp_put_supported_hw(cpufreq_opp_table);
++		dev_pm_opp_clear_config(cpufreq_opp_token);
+ 		ret = PTR_ERR(cpufreq_dt_pdev);
+ 		dev_err(&pdev->dev, "Failed to register cpufreq-dt: %d\n", ret);
+ 		return ret;
+@@ -176,7 +180,7 @@ static int imx_cpufreq_dt_remove(struct platform_device *pdev)
  {
- 	struct opp_device *opp_dev;
-@@ -2618,6 +2622,214 @@ int devm_pm_opp_attach_genpd(struct device *dev, const char * const *names,
- }
- EXPORT_SYMBOL_GPL(devm_pm_opp_attach_genpd);
+ 	platform_device_unregister(cpufreq_dt_pdev);
+ 	if (!of_machine_is_compatible("fsl,imx7ulp"))
+-		dev_pm_opp_put_supported_hw(cpufreq_opp_table);
++		dev_pm_opp_clear_config(cpufreq_opp_token);
+ 	else
+ 		clk_bulk_put(ARRAY_SIZE(imx7ulp_clks), imx7ulp_clks);
  
-+static void _opp_clear_config(struct opp_config_data *data)
-+{
-+	if (data->flags & OPP_CONFIG_GENPD)
-+		dev_pm_opp_detach_genpd(data->opp_table);
-+	if (data->flags & OPP_CONFIG_REGULATOR)
-+		dev_pm_opp_put_regulators(data->opp_table);
-+	if (data->flags & OPP_CONFIG_SUPPORTED_HW)
-+		dev_pm_opp_put_supported_hw(data->opp_table);
-+	if (data->flags & OPP_CONFIG_REGULATOR_HELPER)
-+		dev_pm_opp_unregister_set_opp_helper(data->opp_table);
-+	if (data->flags & OPP_CONFIG_PROP_NAME)
-+		dev_pm_opp_put_prop_name(data->opp_table);
-+	if (data->flags & OPP_CONFIG_CLK)
-+		dev_pm_opp_put_clkname(data->opp_table);
-+
-+	dev_pm_opp_put_opp_table(data->opp_table);
-+	kfree(data);
-+}
-+
-+/**
-+ * dev_pm_opp_set_config() - Set OPP configuration for the device.
-+ * @dev: Device for which configuration is being set.
-+ * @config: OPP configuration.
-+ *
-+ * This allows all device OPP configurations to be performed at once.
-+ *
-+ * This must be called before any OPPs are initialized for the device. This may
-+ * be called multiple times for the same OPP table, for example once for each
-+ * CPU that share the same table. This must be balanced by the same number of
-+ * calls to dev_pm_opp_clear_config() in order to free the OPP table properly.
-+ *
-+ * This returns a token to the caller, which must be passed to
-+ * dev_pm_opp_clear_config() to free the resources later. The value of the
-+ * returned token will be >= 1 for success and negative for errors. The minimum
-+ * value of 1 is chosen here to make it easy for callers to manage the resource.
-+ */
-+int dev_pm_opp_set_config(struct device *dev, struct dev_pm_opp_config *config)
-+{
-+	struct opp_table *opp_table, *err;
-+	struct opp_config_data *data;
-+	unsigned int id;
-+	int ret;
-+
-+	data = kmalloc(sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	opp_table = _add_opp_table(dev, false);
-+	if (IS_ERR(opp_table)) {
-+		kfree(data);
-+		return PTR_ERR(opp_table);
-+	}
-+
-+	data->opp_table = opp_table;
-+	data->flags = 0;
-+
-+	/* This should be called before OPPs are initialized */
-+	if (WARN_ON(!list_empty(&opp_table->opp_list))) {
-+		ret = -EBUSY;
-+		goto err;
-+	}
-+
-+	/* Configure clocks */
-+	if (config->clk_names) {
-+		/* We support only one clock name for now */
-+		if (config->clk_count != 1) {
-+			ret = -EINVAL;
-+			goto err;
-+		}
-+
-+		err = dev_pm_opp_set_clkname(dev, config->clk_names[0]);
-+		if (IS_ERR(err)) {
-+			ret = PTR_ERR(err);
-+			goto err;
-+		}
-+
-+		data->flags |= OPP_CONFIG_CLK;
-+	}
-+
-+	/* Configure property names */
-+	if (config->prop_name) {
-+		err = dev_pm_opp_set_prop_name(dev, config->prop_name);
-+		if (IS_ERR(err)) {
-+			ret = PTR_ERR(err);
-+			goto err;
-+		}
-+
-+		data->flags |= OPP_CONFIG_PROP_NAME;
-+	}
-+
-+	/* Configure opp helper */
-+	if (config->set_opp) {
-+		err = dev_pm_opp_register_set_opp_helper(dev, config->set_opp);
-+		if (IS_ERR(err)) {
-+			ret = PTR_ERR(err);
-+			goto err;
-+		}
-+
-+		data->flags |= OPP_CONFIG_REGULATOR_HELPER;
-+	}
-+
-+	/* Configure supported hardware */
-+	if (config->supported_hw) {
-+		err = dev_pm_opp_set_supported_hw(dev, config->supported_hw,
-+						  config->supported_hw_count);
-+		if (IS_ERR(err)) {
-+			ret = PTR_ERR(err);
-+			goto err;
-+		}
-+
-+		data->flags |= OPP_CONFIG_SUPPORTED_HW;
-+	}
-+
-+	/* Configure supplies */
-+	if (config->regulator_names) {
-+		err = dev_pm_opp_set_regulators(dev, config->regulator_names,
-+						config->regulator_count);
-+		if (IS_ERR(err)) {
-+			ret = PTR_ERR(err);
-+			goto err;
-+		}
-+
-+		data->flags |= OPP_CONFIG_REGULATOR;
-+	}
-+
-+	/* Attach genpds */
-+	if (config->genpd_names) {
-+		err = dev_pm_opp_attach_genpd(dev, config->genpd_names,
-+					      config->virt_devs);
-+		if (IS_ERR(err)) {
-+			ret = PTR_ERR(err);
-+			goto err;
-+		}
-+
-+		data->flags |= OPP_CONFIG_GENPD;
-+	}
-+
-+	ret = xa_alloc(&opp_configs, &id, data, XA_LIMIT(1, INT_MAX),
-+		       GFP_KERNEL);
-+	if (ret)
-+		goto err;
-+
-+	return id;
-+
-+err:
-+	_opp_clear_config(data);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_set_config);
-+
-+/**
-+ * dev_pm_opp_clear_config() - Releases resources blocked for OPP configuration.
-+ * @opp_table: OPP table returned from dev_pm_opp_set_config().
-+ *
-+ * This allows all device OPP configurations to be cleared at once. This must be
-+ * called once for each call made to dev_pm_opp_set_config(), in order to free
-+ * the OPPs properly.
-+ *
-+ * Currently the first call itself ends up freeing all the OPP configurations,
-+ * while the later ones only drop the OPP table reference. This works well for
-+ * now as we would never want to use an half initialized OPP table and want to
-+ * remove the configurations together.
-+ */
-+void dev_pm_opp_clear_config(int token)
-+{
-+	struct opp_config_data *data;
-+
-+	/*
-+	 * This lets the callers call this unconditionally and keep their code
-+	 * simple.
-+	 */
-+	if (unlikely(token <= 0))
-+		return;
-+
-+	data = xa_erase(&opp_configs, token);
-+	if (WARN_ON(!data))
-+		return;
-+
-+	_opp_clear_config(data);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_clear_config);
-+
-+static void devm_pm_opp_config_release(void *token)
-+{
-+	dev_pm_opp_clear_config((unsigned long)token);
-+}
-+
-+/**
-+ * devm_pm_opp_set_config() - Set OPP configuration for the device.
-+ * @dev: Device for which configuration is being set.
-+ * @config: OPP configuration.
-+ *
-+ * This allows all device OPP configurations to be performed at once.
-+ * This is a resource-managed variant of dev_pm_opp_set_config().
-+ *
-+ * Return: 0 on success and errorno otherwise.
-+ */
-+int devm_pm_opp_set_config(struct device *dev, struct dev_pm_opp_config *config)
-+{
-+	int token = dev_pm_opp_set_config(dev, config);
-+	if (token < 0)
-+		return token;
-+
-+	return devm_add_action_or_reset(dev, devm_pm_opp_config_release,
-+					(void *) ((unsigned long) token));
-+}
-+EXPORT_SYMBOL_GPL(devm_pm_opp_set_config);
-+
- /**
-  * dev_pm_opp_xlate_required_opp() - Find required OPP for @src_table OPP.
-  * @src_table: OPP table which has @dst_table as one of its required OPP table.
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 9e1cfcb0ea98..d652f0cc84f1 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -28,6 +28,27 @@ extern struct mutex opp_table_lock;
- 
- extern struct list_head opp_tables, lazy_opp_tables;
- 
-+/* OPP Config flags */
-+#define OPP_CONFIG_CLK			BIT(0)
-+#define OPP_CONFIG_REGULATOR		BIT(1)
-+#define OPP_CONFIG_REGULATOR_HELPER	BIT(2)
-+#define OPP_CONFIG_PROP_NAME		BIT(3)
-+#define OPP_CONFIG_SUPPORTED_HW		BIT(4)
-+#define OPP_CONFIG_GENPD		BIT(5)
-+
-+/**
-+ * struct opp_config_data - data for set config operations
-+ * @opp_table: OPP table
-+ * @flags: OPP config flags
-+ *
-+ * This structure stores the OPP config information for each OPP table
-+ * configuration by the callers.
-+ */
-+struct opp_config_data {
-+	struct opp_table *opp_table;
-+	unsigned int flags;
-+};
-+
- /*
-  * Internal data structure organization with the OPP layer library is as
-  * follows:
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 6708b4ec244d..467bed35130e 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -90,6 +90,35 @@ struct dev_pm_set_opp_data {
- 	struct device *dev;
- };
- 
-+/**
-+ * struct dev_pm_opp_config - Device OPP configuration values
-+ * @clk_names: Clk name.
-+ * @clk_count: Number of clocks, max 1 for now.
-+ * @prop_name: Name to postfix to properties.
-+ * @set_opp: Custom set OPP helper.
-+ * @supported_hw: Array of hierarchy of versions to match.
-+ * @supported_hw_count: Number of elements in the array.
-+ * @regulator_names: Array of pointers to the names of the regulator.
-+ * @regulator_count: Number of regulators.
-+ * @genpd_names: Null terminated array of pointers containing names of genpd to
-+ *		 attach.
-+ * @virt_devs: Pointer to return the array of virtual devices.
-+ *
-+ * This structure contains platform specific OPP configurations for the device.
-+ */
-+struct dev_pm_opp_config {
-+	const char * const *clk_names;
-+	unsigned int clk_count;
-+	const char *prop_name;
-+	int (*set_opp)(struct dev_pm_set_opp_data *data);
-+	unsigned int *supported_hw;
-+	unsigned int supported_hw_count;
-+	const char * const *regulator_names;
-+	unsigned int regulator_count;
-+	const char * const *genpd_names;
-+	struct device ***virt_devs;
-+};
-+
- #if defined(CONFIG_PM_OPP)
- 
- struct opp_table *dev_pm_opp_get_opp_table(struct device *dev);
-@@ -154,6 +183,10 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq);
- int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
- int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb);
- 
-+int dev_pm_opp_set_config(struct device *dev, struct dev_pm_opp_config *config);
-+int devm_pm_opp_set_config(struct device *dev, struct dev_pm_opp_config *config);
-+void dev_pm_opp_clear_config(int token);
-+
- struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
- void dev_pm_opp_put_supported_hw(struct opp_table *opp_table);
- int devm_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
-@@ -419,6 +452,18 @@ static inline int devm_pm_opp_attach_genpd(struct device *dev,
- 	return -EOPNOTSUPP;
- }
- 
-+static inline int dev_pm_opp_set_config(struct device *dev, struct dev_pm_opp_config *config)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline int devm_pm_opp_set_config(struct device *dev, struct dev_pm_opp_config *config)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static inline void dev_pm_opp_clear_config(int token) {}
-+
- static inline struct dev_pm_opp *dev_pm_opp_xlate_required_opp(struct opp_table *src_table,
- 				struct opp_table *dst_table, struct dev_pm_opp *src_opp)
- {
 -- 
 2.31.1.272.g89b43f80a514
 
