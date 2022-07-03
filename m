@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78A8FC433EF
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Jul 2022 18:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1A4FC43334
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Jul 2022 18:31:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232659AbiGCSbi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S232735AbiGCSbi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sun, 3 Jul 2022 14:31:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49162 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49286 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232634AbiGCSbd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Jul 2022 14:31:33 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDB1938A1
-        for <linux-pm@vger.kernel.org>; Sun,  3 Jul 2022 11:31:31 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id k129so4221948wme.0
-        for <linux-pm@vger.kernel.org>; Sun, 03 Jul 2022 11:31:31 -0700 (PDT)
+        with ESMTP id S232721AbiGCSbh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Jul 2022 14:31:37 -0400
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E322C38BE
+        for <linux-pm@vger.kernel.org>; Sun,  3 Jul 2022 11:31:33 -0700 (PDT)
+Received: by mail-wm1-x331.google.com with SMTP id u12-20020a05600c210c00b003a02b16d2b8so4456375wml.2
+        for <linux-pm@vger.kernel.org>; Sun, 03 Jul 2022 11:31:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=A2z3qfhbQ3zSDbb76Qqm6EAs5xwOzGA7CqbEOdCxb6g=;
-        b=XhQSb87XVVI3luZ32GWskOiupZ5bhwPz1YAQE1fY5hOjVny3ZZB1mQzM8xqwA0WF1y
-         xMTEgCUd9wKgfrskPUemcvxiDbjBMl20XafSGYnRkaGdW0RHnqngtJcmKp+PKjb8Wj6n
-         523eScii7Q0p3lIUlL7j+fS5Hn6e7lVa+9+d1tDWfs6sYDpvnrhJxO2I3Uh7uFygTSxt
-         cOSHNOJmdYwgyI7X+uhvUVlLc5Ti5bznfVzKFMu9sec8a8OEzwA3ra4rfsJMA7A0CcMk
-         reD/hlq2YxY8pGJKTh5n9MY/6/JiK6N+B8LO1CqfBx8mlfOJ3bR0iDZ8FMSQBMK5Abn3
-         scCA==
+        bh=raVjxKqEErh+B2L67+xqA5bMSQyms2haK6UW0czdPBo=;
+        b=x3xuFSbyzWpkII3FF3+X2kRzXrRCTeSq/nism1nI8JQx0uo+wtA3nTCC91UoBd33Cz
+         oESvVBEalCTWXvJsvUsy8YIcNeO8V2QRoqHwN058K5JIfNRH8Ozk5+iXqDVb93KRcdB5
+         ONmG/PNKOTOwuolb6R1CDOy5A2f1jSXGWMdI2w+UmZGA6fl0BOaIHiDGkyxzWIZmWc5r
+         a9m/nPJfRphMYoQNn/Olo8Agt0KsNpHux/PtiBNV1EC+BC7Qv0LCavgELgZhnf3ZRQyQ
+         UY9v4vns82XB/SIizXJ4NJIB9KBv3E5yIgU3vCGAejprMKThk1aeQL+/qQlCzPH9FhpA
+         ozWw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=A2z3qfhbQ3zSDbb76Qqm6EAs5xwOzGA7CqbEOdCxb6g=;
-        b=DK4aWfBEZw5baZZmNQLAHWkcdPPPAuze5/2pgyrFKXOfVgqeD9ubg8cOhzC6aPPWFj
-         oaq787zHnSS1jB7AIeOpzH4MwXF5wnh0xzIW7MqRC4WMJYerAmI7yyk/nE3fS5MwCuFD
-         GUnnuwa+GLcq7M36x0mwamRi171tMIZpmblHu1pT0ADHNrjaf765BLedFnZXhvy1DQtM
-         DNLMJjhuAagE8nxyZjpU08SBRBi9WOQJ704Lb0MMeKonLtpMPd9uZxKgirzRYeVWBePi
-         huh6gaxrrm6yxo1Lqx67JZzKuGZh8QlyofefrfWf6F4ELz5ryFKBTXaQaKeIhsMBIV7j
-         fm1g==
-X-Gm-Message-State: AJIora+OfszlKFdAK+qrCCNQD+zK502eFmfoQsmmsvfjqcWhVYcV8ZSZ
-        dYZ0xCFY1LH2Nl2/r5qxjFifCg==
-X-Google-Smtp-Source: AGRyM1tuvMijgjcSMj9tFddYyj2ScVNEALBCowAqot6wGPssoHDtk7EBqcmWdK5tMba5E15kDXmXJQ==
-X-Received: by 2002:a05:600c:1c93:b0:3a0:579e:9f44 with SMTP id k19-20020a05600c1c9300b003a0579e9f44mr27474122wms.82.1656873090393;
-        Sun, 03 Jul 2022 11:31:30 -0700 (PDT)
+        bh=raVjxKqEErh+B2L67+xqA5bMSQyms2haK6UW0czdPBo=;
+        b=4mkAFvtwbeLjrtS7RXp8ChQK43NqW4I2U0eggM+3KW4qN7qwM/Q7B3i+CmNSZ7rDXN
+         rbl66WrbEoqyrzsdRBDM0n/98cS3hCiXI4NAhbl7hRj5dYFJDJ2ErvERs68hK4ThwvmS
+         Amp6iJkMyNonPcFuf9JnIlIXV3I8hdWHyLb60/t6QQ1isObEe+TBOWnVvHLeJjtGlAH+
+         evQD5WmHhVc0eL7Ysfi9/86rwrrNjL41qO7k563TZt5HMUeiTbUgu+jCNRwXufRd70nz
+         zmgjMLRqnNjia6NWRMIsW+fGcK4Bv9Yh87zcu6JpQCCotLLpYLcW3tuWbdrpQdozYGtR
+         cp2w==
+X-Gm-Message-State: AJIora/FO50y9iTTknIF+BvqSXpdcr6bHEo4ysr1HiIVgDGqcGplUwJE
+        +mN3S9cyeIfi3aWi+fMYyX1jhQ==
+X-Google-Smtp-Source: AGRyM1tUz5gLMmIs7wbe3dm4z8qkP4CmQflxr31boSetvZ6qf5tAb2zcGYWDFJ2Gd1PNCfkyjdJItA==
+X-Received: by 2002:a05:600c:3847:b0:3a1:db24:b7c9 with SMTP id s7-20020a05600c384700b003a1db24b7c9mr1786489wmr.24.1656873092493;
+        Sun, 03 Jul 2022 11:31:32 -0700 (PDT)
 Received: from localhost.localdomain (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id x10-20020a5d54ca000000b0021b85664636sm27504258wrv.16.2022.07.03.11.31.29
+        by smtp.gmail.com with ESMTPSA id x10-20020a5d54ca000000b0021b85664636sm27504258wrv.16.2022.07.03.11.31.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 03 Jul 2022 11:31:30 -0700 (PDT)
+        Sun, 03 Jul 2022 11:31:32 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         khilman@baylibre.com, abailon@baylibre.com,
         Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v3 04/12] thermal/of: Move thermal_trip structure to thermal.h
-Date:   Sun,  3 Jul 2022 20:30:51 +0200
-Message-Id: <20220703183059.4133659-5-daniel.lezcano@linexp.org>
+Subject: [PATCH v3 06/12] thermal/core: Move thermal_set_delay_jiffies to static
+Date:   Sun,  3 Jul 2022 20:30:53 +0200
+Message-Id: <20220703183059.4133659-7-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220703183059.4133659-1-daniel.lezcano@linexp.org>
 References: <20220703183059.4133659-1-daniel.lezcano@linexp.org>
@@ -65,66 +65,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The structure thermal_trip is now generic and will be usable by the
-different sensor drivers in place of their own structure.
-
-Move its definition to thermal.h to make it accessible.
+The function 'thermal_set_delay_jiffies' is only used in
+thermal_core.c but it is defined and implemented in a separate
+file. Move the function to thermal_core.c and make it static.
 
 Cc: Alexandre Bailon <abailon@baylibre.com>
 Cc: Kevin Hilman <khilman@baylibre.com>
 Cc; Eduardo Valentin <eduval@amazon.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
 ---
- drivers/thermal/thermal_core.h | 12 ------------
- include/linux/thermal.h        | 12 ++++++++++++
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/thermal/thermal_core.c    | 7 +++++++
+ drivers/thermal/thermal_core.h    | 1 -
+ drivers/thermal/thermal_helpers.c | 7 -------
+ 3 files changed, 7 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index e22e7d939c54..a8b1628937c6 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1159,6 +1159,13 @@ static void bind_tz(struct thermal_zone_device *tz)
+ 	mutex_unlock(&thermal_list_lock);
+ }
+ 
++static void thermal_set_delay_jiffies(unsigned long *delay_jiffies, int delay_ms)
++{
++	*delay_jiffies = msecs_to_jiffies(delay_ms);
++	if (delay_ms > 1000)
++		*delay_jiffies = round_jiffies(*delay_jiffies);
++}
++
+ /**
+  * thermal_zone_device_register() - register a new thermal zone device
+  * @type:	the thermal zone device type
 diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index ff10cdda056c..60844e2d59bb 100644
+index 60844e2d59bb..c991bb290512 100644
 --- a/drivers/thermal/thermal_core.h
 +++ b/drivers/thermal/thermal_core.h
-@@ -68,18 +68,6 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
- void thermal_cdev_update(struct thermal_cooling_device *);
- void __thermal_cdev_update(struct thermal_cooling_device *cdev);
+@@ -112,7 +112,6 @@ int thermal_build_list_of_policies(char *buf);
  
--/**
-- * struct thermal_trip - representation of a point in temperature domain
-- * @temperature: temperature value in miliCelsius
-- * @hysteresis: relative hysteresis in miliCelsius
-- * @type: trip point type
-- */
--struct thermal_trip {
--	int temperature;
--	int hysteresis;
--	enum thermal_trip_type type;
--};
+ /* Helpers */
+ void thermal_zone_set_trips(struct thermal_zone_device *tz);
+-void thermal_set_delay_jiffies(unsigned long *delay_jiffies, int delay_ms);
+ 
+ /* sysfs I/F */
+ int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index f4c1e87ef040..60bfda1a1db7 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -174,13 +174,6 @@ void thermal_zone_set_trips(struct thermal_zone_device *tz)
+ 	mutex_unlock(&tz->lock);
+ }
+ 
+-void thermal_set_delay_jiffies(unsigned long *delay_jiffies, int delay_ms)
+-{
+-	*delay_jiffies = msecs_to_jiffies(delay_ms);
+-	if (delay_ms > 1000)
+-		*delay_jiffies = round_jiffies(*delay_jiffies);
+-}
 -
- int get_tz_trend(struct thermal_zone_device *tz, int trip);
- 
- struct thermal_instance *
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 365733b428d8..6289b0bb1c97 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -80,6 +80,18 @@ struct thermal_zone_device_ops {
- 	void (*critical)(struct thermal_zone_device *);
- };
- 
-+/**
-+ * struct thermal_trip - representation of a point in temperature domain
-+ * @temperature: temperature value in miliCelsius
-+ * @hysteresis: relative hysteresis in miliCelsius
-+ * @type: trip point type
-+ */
-+struct thermal_trip {
-+	int temperature;
-+	int hysteresis;
-+	enum thermal_trip_type type;
-+};
-+
- struct thermal_cooling_device_ops {
- 	int (*get_max_state) (struct thermal_cooling_device *, unsigned long *);
- 	int (*get_cur_state) (struct thermal_cooling_device *, unsigned long *);
+ static void thermal_cdev_set_cur_state(struct thermal_cooling_device *cdev,
+ 				       int target)
+ {
 -- 
 2.25.1
 
