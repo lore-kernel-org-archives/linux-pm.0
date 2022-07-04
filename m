@@ -2,205 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34A14C433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Jul 2022 09:34:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5909BC433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Jul 2022 09:56:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233958AbiGDJeY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Jul 2022 05:34:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55354 "EHLO
+        id S232744AbiGDJ4P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Jul 2022 05:56:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233869AbiGDJb7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2022 05:31:59 -0400
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FC67CE0A
-        for <linux-pm@vger.kernel.org>; Mon,  4 Jul 2022 02:30:54 -0700 (PDT)
-Received: by mail-pf1-x429.google.com with SMTP id f85so4626429pfa.3
-        for <linux-pm@vger.kernel.org>; Mon, 04 Jul 2022 02:30:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=mOcKN2QE8NoS+NlXFqyzvr6uXu60h5tTF9oQlF/WJLc=;
-        b=KILEUB0HZOxwkq5/XBeqjn/uei8YrkNrsJVZViPmOdE2EraFxs3gPVlS9vaVFq0XsV
-         xyilJcHWtyG1L6ky2NJLYlqtWCz5pz9rwz8N2XqcIN6xzN5JMbDz4j45LRocgI6xjf5Q
-         xPiPdfHH1DUNY6GGxTSz6SlQLuWWdgw7Md/KsLQ0v8utLsy0q+ZMkq+BbxntG8pZ+hSa
-         cd4cbVLrBZTXVniEh8tK7lRVrIPmjEqGB6bKca0jeduHPKZ/X1OTqn8CgHgtA4WWReS6
-         e1pUIl2I5ma9I2/6Mjx5WNsCc0XSG+gYr4I/GyOYsEdOj4FRn9hJR7qiqRpmf2nf2Db2
-         gegg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=mOcKN2QE8NoS+NlXFqyzvr6uXu60h5tTF9oQlF/WJLc=;
-        b=3CwRVP73QzUjp+W+xyUedf5EK6JaKw1DHEcKiSf+efhRqdHyM5p7ktwj5GulExuiDE
-         NaA1QM1BOOuLAghNhsq02pgCoFaOws1pJYhFxaeXqG1ATNpDJn5fPXMVwzil0cKDn6Eg
-         61b3IlqyPdvAHTnxBPDMosWgmfW9a0Ue9mR85/TwtN3+pOcubN07QSnn9OxONAqr+xdT
-         HdPtE3LJ4/Lc9ncbvcs7YRN3aVNc9pBCW1h7To+2VbuWMa/jMZByuNZpFgkUARYQLDKC
-         PCrNyFqAvIoTKDfMmJWbaJcDq1ZWswIXYZlJsh3Rnjj3UlzPSEfvwLKOdkhRxPX6yll3
-         Wvlw==
-X-Gm-Message-State: AJIora8DbFt/F1AkyOfVRLhZ1MTKpaiehi9Var7x3PHu4eP6NJ0n/c3P
-        FwbZE1RBoPzKOH+0f73VLkOGpw==
-X-Google-Smtp-Source: AGRyM1vbOAdyX1y53+MovHgyFoSWwnefAVPm2My0x0WH3rIth0QFaye33BFc8w+KNPH6F45CqTuocg==
-X-Received: by 2002:a63:69c9:0:b0:411:994d:1e12 with SMTP id e192-20020a6369c9000000b00411994d1e12mr20645259pgc.383.1656927053749;
-        Mon, 04 Jul 2022 02:30:53 -0700 (PDT)
-Received: from leo-build-box.lan ([154.3.32.171])
-        by smtp.gmail.com with ESMTPSA id ms16-20020a17090b235000b001ef81bac701sm2926177pjb.42.2022.07.04.02.30.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Jul 2022 02:30:53 -0700 (PDT)
-From:   Leo Yan <leo.yan@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-Cc:     Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v3 5/5] interconnect: qcom: icc-rpm: Set bandwidth and clock for bucket values
-Date:   Mon,  4 Jul 2022 17:30:29 +0800
-Message-Id: <20220704093029.1126609-6-leo.yan@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220704093029.1126609-1-leo.yan@linaro.org>
-References: <20220704093029.1126609-1-leo.yan@linaro.org>
+        with ESMTP id S233959AbiGDJ4N (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2022 05:56:13 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CA909DEC9;
+        Mon,  4 Jul 2022 02:56:12 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DFB4A23A;
+        Mon,  4 Jul 2022 02:56:12 -0700 (PDT)
+Received: from [10.57.41.108] (unknown [10.57.41.108])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3F2E63F792;
+        Mon,  4 Jul 2022 02:56:08 -0700 (PDT)
+Message-ID: <a9ab7982-b235-ef5f-2c1b-ecbc421552d1@arm.com>
+Date:   Mon, 4 Jul 2022 11:55:44 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH 0/4] cpufreq: qcom-hw: LMH irq/hotplug interractions
+Content-Language: en-US
+To:     linux-kernel@vger.kernel.org
+Cc:     Ionela.Voinescu@arm.com, Dietmar.Eggemann@arm.com,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
+References: <20220615144321.262773-1-pierre.gondois@arm.com>
+From:   Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <20220615144321.262773-1-pierre.gondois@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This commit uses buckets for support bandwidth and clock rates.  It
-introduces a new function qcom_icc_bus_aggregate() to calculate the
-aggregate average and peak bandwidths for every bucket, and also it
-calculates the maximum aggregate values across all buckets.
+Hello,
+I saw that:
+https://lore.kernel.org/all/20220617064421.l4vshytmqtittzee@vireshk-i7/
 
-The maximum aggregate values are used to calculate the final bandwidth
-requests.  And we can set the clock rate per bucket, we use SLEEP bucket
-as default bucket if a platform doesn't enable the interconnect path
-tags in DT binding; otherwise, we use WAKE bucket to set active clock
-and use SLEEP bucket for other clocks.  So far we don't use AMC bucket.
+was applied, so this patch-set would need to be rebased. Please let me
+know if you think it requires modifications before it gets rebased,
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/interconnect/qcom/icc-rpm.c | 80 ++++++++++++++++++++++++-----
- 1 file changed, 67 insertions(+), 13 deletions(-)
+Regards,
+Pierre
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index b025fc6b97c9..4b932eb807c7 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -302,18 +302,62 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
- 	return 0;
- }
- 
-+/**
-+ * qcom_icc_bus_aggregate - aggregate bandwidth by traversing all nodes
-+ * @provider: generic interconnect provider
-+ * @agg_avg: an array for aggregated average bandwidth of buckets
-+ * @agg_peak: an array for aggregated peak bandwidth of buckets
-+ * @max_agg_avg: pointer to max value of aggregated average bandwidth
-+ * @max_agg_peak: pointer to max value of aggregated peak bandwidth
-+ */
-+static void qcom_icc_bus_aggregate(struct icc_provider *provider,
-+				   u64 *agg_avg, u64 *agg_peak,
-+				   u64 *max_agg_avg, u64 *max_agg_peak)
-+{
-+	struct icc_node *node;
-+	struct qcom_icc_node *qn;
-+	int i;
-+
-+	/* Initialise aggregate values */
-+	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+		agg_avg[i] = 0;
-+		agg_peak[i] = 0;
-+	}
-+
-+	*max_agg_avg = 0;
-+	*max_agg_peak = 0;
-+
-+	/*
-+	 * Iterate nodes on the interconnect and aggregate bandwidth
-+	 * requests for every bucket.
-+	 */
-+	list_for_each_entry(node, &provider->nodes, node_list) {
-+		qn = node->data;
-+		for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+			agg_avg[i] += qn->sum_avg[i];
-+			agg_peak[i] = max_t(u64, agg_peak[i], qn->max_peak[i]);
-+		}
-+	}
-+
-+	/* Find maximum values across all buckets */
-+	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+		*max_agg_avg = max_t(u64, *max_agg_avg, agg_avg[i]);
-+		*max_agg_peak = max_t(u64, *max_agg_peak, agg_peak[i]);
-+	}
-+}
-+
- static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- {
- 	struct qcom_icc_provider *qp;
- 	struct qcom_icc_node *src_qn = NULL, *dst_qn = NULL;
- 	struct icc_provider *provider;
--	struct icc_node *n;
- 	u64 sum_bw;
- 	u64 max_peak_bw;
- 	u64 rate;
--	u32 agg_avg = 0;
--	u32 agg_peak = 0;
-+	u64 agg_avg[QCOM_ICC_NUM_BUCKETS], agg_peak[QCOM_ICC_NUM_BUCKETS];
-+	u64 max_agg_avg, max_agg_peak;
- 	int ret, i;
-+	int bucket;
- 
- 	src_qn = src->data;
- 	if (dst)
-@@ -321,12 +365,11 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- 	provider = src->provider;
- 	qp = to_qcom_provider(provider);
- 
--	list_for_each_entry(n, &provider->nodes, node_list)
--		provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
--				    &agg_avg, &agg_peak);
-+	qcom_icc_bus_aggregate(provider, agg_avg, agg_peak, &max_agg_avg,
-+			       &max_agg_peak);
- 
--	sum_bw = icc_units_to_bps(agg_avg);
--	max_peak_bw = icc_units_to_bps(agg_peak);
-+	sum_bw = icc_units_to_bps(max_agg_avg);
-+	max_peak_bw = icc_units_to_bps(max_agg_peak);
- 
- 	ret = __qcom_icc_set(src, src_qn, sum_bw);
- 	if (ret)
-@@ -337,12 +380,23 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- 			return ret;
- 	}
- 
--	rate = max(sum_bw, max_peak_bw);
--
--	do_div(rate, src_qn->buswidth);
--	rate = min_t(u64, rate, LONG_MAX);
--
- 	for (i = 0; i < qp->num_clks; i++) {
-+		/*
-+		 * Use WAKE bucket for active clock, otherwise, use SLEEP bucket
-+		 * for other clocks.  If a platform doesn't set interconnect
-+		 * path tags, by default use sleep bucket for all clocks.
-+		 *
-+		 * Note, AMC bucket is not supported yet.
-+		 */
-+		if (!strcmp(qp->bus_clks[i].id, "bus_a"))
-+			bucket = QCOM_ICC_BUCKET_WAKE;
-+		else
-+			bucket = QCOM_ICC_BUCKET_SLEEP;
-+
-+		rate = icc_units_to_bps(max(agg_avg[bucket], agg_peak[bucket]));
-+		do_div(rate, src_qn->buswidth);
-+		rate = min_t(u64, rate, LONG_MAX);
-+
- 		if (qp->bus_clk_rate[i] == rate)
- 			continue;
- 
--- 
-2.25.1
-
+On 6/15/22 16:43, Pierre Gondois wrote:
+> This patch-set provides fixes for the qcom-cpufreq-hw driver regarding
+> LMH irqs configurations and (un)plugging CPUs.
+> commit ffd6cc92ab9c ("arm64: dts: qcom: sm8250: add description of dcvsh interrupts")
+> enables DCVS (Dynamic Clock and Voltage Scaling) for sm8250 chips
+> (so rb5 included). As no LMH (Limits Management Hardware) interrupts
+> were seen, the firmware used for testing should not be able support
+> them.
+> 
+> The patch-set was tested on a rb5 with an old firmware version:
+> UEFI Ver    : 5.0.210817.BOOT.XF.3.2-00354-SM8250-1
+> Build Info  : 64b Aug 17 2021 23:35:39
+> 
+> This patch-set should still contain relevant modifications regarding
+> LMH interrupts and CPU hotplug. Still, it would be good to test
+> it on a platform which actually uses LMH interrupts.
+> 
+> LMH irqs can be identified with:
+>    cat /proc/interrupts | grep "dcvsh\-irq"
+> and their configuration can be seen at:
+>    /proc/irqs/XXX/*
+> 
+> Pierre Gondois (4):
+>    cpufreq: qcom-hw: Reset cancel_throttle when policy is re-enabled
+>    cpufreq: qcom-hw: Disable LMH irq when disabling policy
+>    cpufreq: qcom-hw: Remove deprecated irq_set_affinity_hint() call
+>    cpufreq: Change order of online() CB and policy->cpus modification
+> 
+>   drivers/cpufreq/cpufreq.c         |  6 +++---
+>   drivers/cpufreq/qcom-cpufreq-hw.c | 16 ++++++++++++----
+>   2 files changed, 15 insertions(+), 7 deletions(-)
+> 
