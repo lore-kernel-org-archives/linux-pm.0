@@ -2,223 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1250CCCA482
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Jul 2022 21:06:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E85EAC43334
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Jul 2022 21:14:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231817AbiGDVGD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Jul 2022 17:06:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56460 "EHLO
+        id S229989AbiGDVOU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Jul 2022 17:14:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59606 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229649AbiGDVGA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2022 17:06:00 -0400
-Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com [IPv6:2607:f8b0:4864:20::b32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B38B5F65;
-        Mon,  4 Jul 2022 14:06:00 -0700 (PDT)
-Received: by mail-yb1-xb32.google.com with SMTP id c143so10096657ybf.3;
-        Mon, 04 Jul 2022 14:06:00 -0700 (PDT)
+        with ESMTP id S229554AbiGDVOT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2022 17:14:19 -0400
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C62A62FA
+        for <linux-pm@vger.kernel.org>; Mon,  4 Jul 2022 14:14:18 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id v14so14937861wra.5
+        for <linux-pm@vger.kernel.org>; Mon, 04 Jul 2022 14:14:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=VjZ3yzk/koQQf8zjxBLs4QwpOzuOIkcuZx3e6uOiaGo=;
-        b=XAO9XvLkJnavV0BlpGD+ClNY1uK6ZfLyjbo4n/ZLW8wmrgbwYg5bneBkPszuL0qItE
-         XJI/Um1JbtICgrAWB2CbGTIQL3XiiI2CrvIzS3z6cX+0fWMEmTP/m05hoU/XeDh0JO+1
-         eeHvwD6DxA036OjtJ1Awdqd8jOkI2onMTEJcqz2T5m6m+nRgsY0HzmkAIs+HuG9M0gvY
-         OFUCInVfTCYeAF0Lc4c62oICHpgKN8SFXHnHvcx1YtkZYz9O+ZylSp/45sY17OaSjN0m
-         IlghfWm5NOnrrvHQ0++R9QZOLHNJ+fo0gumeOMXqd+yZ0GZJC1bXUW/tMLgcUZq+m6/s
-         0PeQ==
+        d=linexp-org.20210112.gappssmtp.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=SQNaogcvrfpgtg7UQ9S2wlJiM9wxHzq7S9766wbvx3o=;
+        b=idWwdlKr/Jg63bwItDlgtWaz85etsChjYVlARgFoAdboxl7Ku5k4GD4bkLf9ioeACE
+         BpDt9lQU/bNZ4RCIEg23oUttSqFm/LNn1Sp7GSaYxYQHQhqaC8i/zOhRGpVUueQoEZHz
+         y1mydagupxaiqJyrKkqHRWEteedLM888WJNOwmGytqe1cLe4spQZmUuCuzAPacRIH35b
+         cx2ayqXuvvhvES85ElcKb80rAU4h64LUZ5bNB1fjJt/jjK+yQWfbkD30OLCS8Uy6P+2z
+         G5zn1dYGAPgA9OIdYs4Gfxx+2lbsww51UTMoEfNbJhn0yHXAt+tgQI3wadHLfPBIph21
+         bSrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=VjZ3yzk/koQQf8zjxBLs4QwpOzuOIkcuZx3e6uOiaGo=;
-        b=N5+0oGNFdCrouwn55H5TQZco0epv8j2DIDF6Ovs/qCofD3eWe1onXSExjQp/A1oeRC
-         C7Upbw2zD1hWAZbWPRMb7zPje0TBWUNgGeer8WH2MhpSqOZTkKaa+oBmhKmjOYrk61g+
-         CsnwHX9S9gXQ23p48L2G9D9llEDcdP4BJTyk29rtMAHSH1zCpqbISFnIx2hfI4bb6dlv
-         IwO3x33/E3mKNN4MgFkumUY2/cwRjJJSokVnyLzv3aA+blZ7QfyKQ4Ip43xgGWg6YQKe
-         DnCSsXlYVLhMB6I9sOBOnFYq64ZsSPZ5YZaKcxGPBRWB1ul6Kvln7Cs/z2GiiR5V+jLQ
-         fGEA==
-X-Gm-Message-State: AJIora96yadK5hcSo7t/jOmVAjPMfPNOE31fnYPMcQjJ1769rPH1KcbY
-        Ud+55mWK0AUeKXG2Ia1VBYIUDl2LoQ8nRnMToBimEDhrVZoIog==
-X-Google-Smtp-Source: AGRyM1sv4WckZUH06N23fcQXnL/x2rHJiYiT8ToR3cUqaWbGObXlg//Fkee64+CFjVKfldQI9mTw3vJ9ryFFyL1X6HM=
-X-Received: by 2002:a5b:68a:0:b0:66e:472a:83f4 with SMTP id
- j10-20020a5b068a000000b0066e472a83f4mr8717309ybq.570.1656968759476; Mon, 04
- Jul 2022 14:05:59 -0700 (PDT)
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=SQNaogcvrfpgtg7UQ9S2wlJiM9wxHzq7S9766wbvx3o=;
+        b=JBhPUQVga4VjxXs+fS0nquJTu2ZQ1VU/U5xoHNuP/WBMi967FbN+neWhVkOT7Y0WbK
+         cYvV9gz7ILHyzDwzJZPBbZELjupdiIm/FKzwe7Zq+BHT1qRliqdeSRv24kNRNQw7j4qh
+         3kAnfaQw5dkmqdHVx6hLS3kyG9udkVF1cn/3O6Cy848mxodBQ6hFhyUF4TDsBR/qqn1r
+         w/pKLGcPRlFRNOtINSk/eyv6QUc2jQdSzCdW9LYaoKj8n5IcjUfeEwj/TL+vUgvLEe4K
+         m76UE/LSEBgEfR1bB+DLdyVetxrXmyEdbfjrhB9Z+lcWn7OHVIOgH8MmCbctVs9ZAPlk
+         pglA==
+X-Gm-Message-State: AJIora9Xr+B6Hvu5FY0ez5Le4n/0SDh+Sq7tw4CyxmJzuvRklnD2g5k+
+        Gm29RwGUZDDBXuc+WrXvBLopEg==
+X-Google-Smtp-Source: AGRyM1vX5Oj5Ayx0OoJOY7mYDM2kf9xO+rHv+GaB0ejii7Qw0OtV9yhRWQfvqX4a9L8hkTJtRSw6uQ==
+X-Received: by 2002:a5d:468a:0:b0:21d:6dc8:9e60 with SMTP id u10-20020a5d468a000000b0021d6dc89e60mr4105543wrq.595.1656969257078;
+        Mon, 04 Jul 2022 14:14:17 -0700 (PDT)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.gmail.com with ESMTPSA id y5-20020a056000108500b002167efdd549sm2885381wrw.38.2022.07.04.14.14.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 04 Jul 2022 14:14:16 -0700 (PDT)
+Message-ID: <e2d81210-a969-fe9d-a4fb-1826c991fbce@linexp.org>
+Date:   Mon, 4 Jul 2022 23:14:15 +0200
 MIME-Version: 1.0
-References: <20220704053901.728-1-peterwu.pub@gmail.com> <20220704053901.728-13-peterwu.pub@gmail.com>
-In-Reply-To: <20220704053901.728-13-peterwu.pub@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Mon, 4 Jul 2022 23:05:22 +0200
-Message-ID: <CAHp75Vciq4M4kVrabNV9vTLLcd1vR=bMe8JLEdAF9MkRTpcB5g@mail.gmail.com>
-Subject: Re: [PATCH v4 12/13] leds: flashlight: mt6370: Add Mediatek MT6370
- flashlight support
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
-        Helge Deller <deller@gmx.de>,
-        ChiaEn Wu <chiaen_wu@richtek.com>,
-        Alice Chen <alice_chen@richtek.com>,
-        cy_huang <cy_huang@richtek.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        USB <linux-usb@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        szuni chen <szunichen@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH v3 05/12] thermal/core: Remove unneeded EXPORT_SYMBOLS
+Content-Language: en-US
+To:     Lukasz Luba <lukasz.luba@arm.com>, daniel.lezcano@linaro.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        khilman@baylibre.com, abailon@baylibre.com,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Todd Kjos <tkjos@google.com>,
+        Wei Wang <wvw@google.com>, rafael@kernel.org
+References: <20220703183059.4133659-1-daniel.lezcano@linexp.org>
+ <20220703183059.4133659-6-daniel.lezcano@linexp.org>
+ <ad8dd950-9260-16b3-2134-72984e2ba261@arm.com>
+From:   Daniel Lezcano <daniel.lezcano@linexp.org>
+In-Reply-To: <ad8dd950-9260-16b3-2134-72984e2ba261@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jul 4, 2022 at 7:43 AM ChiaEn Wu <peterwu.pub@gmail.com> wrote:
+On 04/07/2022 09:35, Lukasz Luba wrote:
+> Hi Daniel,
+> 
+> (+Todd and Wei on CC)
+> 
+> 
+> On 7/3/22 19:30, Daniel Lezcano wrote:
 
-> Add Mediatek MT6370 flashlight support.
+[ ... ]
 
-...
+>>   }
+>> -EXPORT_SYMBOL(get_tz_trend);
 
-> +         This driver can also be built as a module. If so the module
+[ ... ]
 
-If so,
+>>   }
+>> -EXPORT_SYMBOL(thermal_cdev_update);
+> 
+> I wouldn't remove that export. I can see in my Pixel6 modules dir, that
+> it's called in 7 places.
+> 
+> I assume that in Android world this is common use.
 
-> +         will be called "leds-mt6370-flash.ko".
+It is not possible to do changes taking into consideration out of tree 
+code. Moreover there is logically no good reason to use the 
+thermal_cdev_update() function from outside of the thermal core code.
 
-No ".ko" part.
-
-...
-
-> +#define MT6370_ITORCH_MINUA            25000
-> +#define MT6370_ITORCH_STEPUA           12500
-> +#define MT6370_ITORCH_MAXUA            400000
-> +#define MT6370_ITORCH_DOUBLE_MAXUA     800000
-> +#define MT6370_ISTRB_MINUA             50000
-> +#define MT6370_ISTRB_STEPUA            12500
-> +#define MT6370_ISTRB_MAXUA             1500000
-> +#define MT6370_ISTRB_DOUBLE_MAXUA      3000000
-> +#define MT6370_STRBTO_MINUS            64000
-> +#define MT6370_STRBTO_STEPUS           32000
-> +#define MT6370_STRBTO_MAXUS            2432000
-
-Make units suffix visible, i.e. _US, _uA, etc.
-
-...
-
-> +       if (curr)
-> +               val |= MT6370_TORCHEN_MASK;
-> +
-> +
-
-One blank line is enough.
-
-...
-
-> +       /*
-> +        * Due to the current spike when turning on flash,
-> +        * let brightness to be kept by framework.
-
-brightness be
-the framework
-
-> +        * This empty function is used to
-> +        * prevent led_classdev_flash register ops check failure.
-> +        */
-
-...
-
-> +       } else {
-> +               ret = regmap_update_bits(priv->regmap,
-> +                                        MT6370_REG_FLEDISTRB(led->led_no),
-> +                                        MT6370_ISTROBE_MASK, val);
-
-> +               if (ret)
-> +                       return ret;
-
-Dup of the below.
-
-> +       }
-> +       return ret;
-
-...
-
-> +       /*
-> +        * If the flash need to be on,
-> +        * config the flash current ramping up to the setting value
-> +        * Else, always recover back to the minimum one
-
-Missed periods.
-
-> +        */
-
-...
-
-> +       /*
-> +        * For the flash turn on/off, HW ramping up/down time is 5ms/500us
-> +        * respectively.
-> +        */
-> +       if (!prev && curr)
-> +               usleep_range(5000, 6000);
-> +       else if (prev && !curr)
-> +               udelay(500);
-
-Comment doesn't explain why this is suddenly a busy loop operation?
-
-
-> +static int mt6370_led_register(struct device *parent, struct mt6370_led *led,
-> +                               struct led_init_data *init_data)
-> +{
-> +       struct v4l2_flash_config v4l2_config = {0};
-> +       int ret;
-> +
-> +       ret = devm_led_classdev_flash_register_ext(parent, &led->flash,
-> +                                                  init_data);
-> +       if (ret) {
-> +               dev_err(parent, "Couldn't register flash %d\n", led->led_no);
-> +               return ret;
-> +       }
-> +
-> +       mt6370_init_v4l2_flash_config(led, &v4l2_config);
-> +       led->v4l2_flash = v4l2_flash_init(parent, init_data->fwnode,
-> +                                         &led->flash, &v4l2_flash_ops,
-> +                                         &v4l2_config);
-> +       if (IS_ERR(led->v4l2_flash)) {
-> +               dev_err(parent, "Failed to register %d v4l2 sd\n", led->led_no);
-> +               return PTR_ERR(led->v4l2_flash);
-> +       }
-> +
-> +       return 0;
-> +}
-
-...
-
-> +       } else
-> +               val = clamp_align(val, MT6370_STRBTO_MINUS, MT6370_STRBTO_MAXUS,
-> +                                 MT6370_STRBTO_STEPUS);
-
-Missed {}
-
-> +
-> +
-
-One blank line is enough.
-
--- 
-With Best Regards,
-Andy Shevchenko
