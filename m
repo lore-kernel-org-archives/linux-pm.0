@@ -2,194 +2,124 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9B59C43334
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Jul 2022 09:32:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9FBBCCA47F
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Jul 2022 09:33:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233709AbiGDJcc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Jul 2022 05:32:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56498 "EHLO
+        id S233510AbiGDJdD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Jul 2022 05:33:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233785AbiGDJb5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2022 05:31:57 -0400
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A9E2DFBF
-        for <linux-pm@vger.kernel.org>; Mon,  4 Jul 2022 02:30:51 -0700 (PDT)
-Received: by mail-pf1-x432.google.com with SMTP id k9so8450544pfg.5
-        for <linux-pm@vger.kernel.org>; Mon, 04 Jul 2022 02:30:51 -0700 (PDT)
+        with ESMTP id S233948AbiGDJcv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2022 05:32:51 -0400
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A8BFE0C7;
+        Mon,  4 Jul 2022 02:31:41 -0700 (PDT)
+Received: by mail-pj1-x1036.google.com with SMTP id g16-20020a17090a7d1000b001ea9f820449so13070622pjl.5;
+        Mon, 04 Jul 2022 02:31:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=YZw35i4tD7dQYkHhZWLzGB0BrtXzLncPfNzT7OZ+gHQ=;
-        b=zJLfFWR50xifb017AbS4VLlMX9D5KIZO7zGbryzvst11rcydT9/znH6sJj5AqXVOb5
-         /nIgm3nUcfeWghxNPrldN9qyh7+8xfKW5d+PooJ/QDD2dkBHp55fMHlKVlaOSyiDoicN
-         MtyUT3a2vrIwZYhdD/JpcKYfrLtg0G7P4QmNdaK3tD4JSje1eoGdU8Hj3hi6YPqWgyWi
-         vxglTCiwSuzKdvvX2A5w/5eBhx3u8J8SNNkrd1/IE9WxR9h+UTbDb8Ez3uFcTvMKtqcm
-         6u8Zk4kk4NMYRr/WlJeQN5eb8BhX1sZNu8japfKHad5YmwogJ+UurSBF2v+fOZQrH1/c
-         T5fQ==
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=xIA0tkEJFCPwLmR+R6eKHNKrvI9a6bVM4TsihGfrld0=;
+        b=f8MhiLRjvn4JhQhz9F64yCgS5B6jrH8tJwT1awj7AGv9RShuJdBVz84vc1kQVsx0Lv
+         eNwaezjyn3nuI01xLjtA8+y0NZAqsqTswX489ZxWe/DK4qA3KOAt8JChBJylkfu6iBcj
+         ORlmB+OW6RB+2+Vau8HlQetnTopYsjVTFjp0f9KRNoR/+YI371o5iIsodX7EUGlhLxKP
+         kIepqqS2tlY+l7PfLRiLbmuc06ZAkcN8W3clHbhEfFPx2LGi5BU/JurrZIflfzIJK1dI
+         KLvXaDm+sy2U5Xe0lntfK9VA1zVFQuJyC2Hbzq2cctn7nouM2bwK0yqcoPWSdeZyN5vE
+         +/GQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=YZw35i4tD7dQYkHhZWLzGB0BrtXzLncPfNzT7OZ+gHQ=;
-        b=qSBFF07h7PUyZ08oLDi39bzwY1GSJerzj+w8HryuxK+qqfezqNu+eYJvwT9wYOd1xv
-         O79Rh9jOmGLP2Q1inz54nXxHyXtkojkJbzjIHEh7+djkdTGjhtE+rOMAREfdetrSRbIE
-         gllHMKcimm5O5Hew95/pTu3SdrZ9QBDV0A9P7XKD13S1ih33bYKMOGcJIOj49HBNFnGu
-         C4nYEAIYYLHz0iycN3X3hAzJD2+6/+/HoIRB5ardTLwHscsSVK7djvgbK+5IvSCISZ/q
-         O2JquAB4eg/YHCfQ/OB4GJC/4tlxr9nbfir8PSwcJ6WdYbXr42GcgXtDZI5XKvmKLhr/
-         0Eyg==
-X-Gm-Message-State: AJIora9C/7zO5KvWxOxm+uVT+WdjhI1fEqegFqUg78U3ZIwQ7D3se3tW
-        W4QAJ02MdofklJqcRGrF0NfjlQ==
-X-Google-Smtp-Source: AGRyM1scHocx0l8bITgGQYxRUu6bQxD8HFtyLboo6Uj6MK+WxTdK+yuP2/xv+Dhbg8EdtoH4ZbTfKA==
-X-Received: by 2002:a63:481a:0:b0:411:7951:cbcd with SMTP id v26-20020a63481a000000b004117951cbcdmr24429313pga.66.1656927050901;
-        Mon, 04 Jul 2022 02:30:50 -0700 (PDT)
-Received: from leo-build-box.lan ([154.3.32.171])
-        by smtp.gmail.com with ESMTPSA id ms16-20020a17090b235000b001ef81bac701sm2926177pjb.42.2022.07.04.02.30.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Jul 2022 02:30:50 -0700 (PDT)
-From:   Leo Yan <leo.yan@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=xIA0tkEJFCPwLmR+R6eKHNKrvI9a6bVM4TsihGfrld0=;
+        b=POMPhCymPAxgLj2H6m7adApMVcTrUWLx1gC5wWoSYnMk8y7f37BYaMomk10afoT4mg
+         VvWRteExDmC6YL2pHc9YTYlaPZSrBAL8Ku456f5j2U16C6v1q8vs8h9SlOcF7eVCo9VQ
+         otonsIoxN6lV0Is0xQpYoRAgzcMFjlmZAEdkzcnLW9sTtjAqoRWvP+VTSDUSsFjt6H5w
+         khuhWdTW2ScsDwWGtolr2cIEP9YeCMPxo2aUSYmcZ1G3x1QlwP64PPRVowc+XgCXg6UN
+         x1CYrcPKhqcPx5VaAsFPeL6fc3BQZb/7/nS0yUyEEilfHfkywXsIF8r8zIsqo2GQvS9l
+         d61Q==
+X-Gm-Message-State: AJIora+ywkXY3rglOW+A0MWGoerBEpEer7QEG6ser+wAjZxjmjxxKPfg
+        fz3MvTmVktNpFh+dIjt/DF/1kEYY97iCmWGriEw=
+X-Google-Smtp-Source: AGRyM1snqrRpQbd96zgAVBmjrPX1x2o3afFwTRTiOLpzM13U4eENpimphE3z0PHrUTRqdjm3Nu9HaCkQlEPGsPeCLlE=
+X-Received: by 2002:a17:903:110c:b0:168:fa61:1440 with SMTP id
+ n12-20020a170903110c00b00168fa611440mr34740455plh.149.1656927100855; Mon, 04
+ Jul 2022 02:31:40 -0700 (PDT)
+MIME-Version: 1.0
+References: <20220704053901.728-1-peterwu.pub@gmail.com> <20220704053901.728-9-peterwu.pub@gmail.com>
+ <YsKXcnys2Wa8Zz0p@kroah.com>
+In-Reply-To: <YsKXcnys2Wa8Zz0p@kroah.com>
+From:   szuni chen <szunichen@gmail.com>
+Date:   Mon, 4 Jul 2022 17:31:29 +0800
+Message-ID: <CA+hk2fYA3phYAoh+BFr0ddy9MR8Ro1WCoqBpa1UK2StwMtLyfQ@mail.gmail.com>
+Subject: Re: [PATCH v4 08/13] usb: typec: tcpci_mt6370: Add Mediatek MT6370
+ tcpci driver
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     ChiaEn Wu <peterwu.pub@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-Cc:     Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v3 4/5] interconnect: qcom: icc-rpm: Support multiple buckets
-Date:   Mon,  4 Jul 2022 17:30:28 +0800
-Message-Id: <20220704093029.1126609-5-leo.yan@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220704093029.1126609-1-leo.yan@linaro.org>
-References: <20220704093029.1126609-1-leo.yan@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>,
+        Helge Deller <deller@gmx.de>, chiaen_wu@richtek.com,
+        alice_chen@richtek.com, ChiYuan Huang <cy_huang@richtek.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        USB <linux-usb@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The current interconnect rpm driver uses a single aggregate bandwidth to
-calculate the clock rates for both active and sleep clocks; therefore,
-it has no chance to separate bandwidth requests for these two kinds of
-clocks.
+Greg KH <gregkh@linuxfoundation.org> =E6=96=BC 2022=E5=B9=B47=E6=9C=884=E6=
+=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=883:32=E5=AF=AB=E9=81=93=EF=BC=9A
+>
+> On Mon, Jul 04, 2022 at 01:38:56PM +0800, ChiaEn Wu wrote:
+> > From: ChiYuan Huang <cy_huang@richtek.com>
+> >
+> > Add chip level mt6370 tcpci driver.
+>
+> What does this mean?  Please provide more information about the hardware
+> being supported here so we know how to review this.
 
-This patch studies the implementation from interconnect rpmh driver to
-support multiple buckets.  The rpmh driver provides three buckets for
-AMC, WAKE, and SLEEP; this driver only needs to use WAKE and SLEEP
-buckets, but we keep the same way with rpmh driver, this can allow us to
-reuse the DT binding and avoid to define duplicated data structures.
+Dear Greg,
 
-This patch introduces two callbacks: qcom_icc_pre_bw_aggregate() is used
-to clean up bucket values before aggregate bandwidth requests, and
-qcom_icc_bw_aggregate() is to aggregate bandwidth for buckets.
+MediaTek MT6370 is a highly-integrated smart power management IC,
+which includes a single cell Li-Ion/Li-Polymer switching battery charger,
+a USB Type-C & Power Delivery (PD) controller, dual flash LED current sourc=
+es,
+a RGB LED driver, a backlight WLED driver, a display bias driver and a
+general LDO for portable devices.
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/interconnect/qcom/icc-rpm.c | 51 ++++++++++++++++++++++++++++-
- drivers/interconnect/qcom/icc-rpm.h |  6 ++++
- 2 files changed, 56 insertions(+), 1 deletion(-)
+This driver is used for the Type-C & Power Delivery controller in
+MediaTek MT6370 IC.
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 8c9d5cc7276c..b025fc6b97c9 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -254,6 +254,54 @@ static int __qcom_icc_set(struct icc_node *n, struct qcom_icc_node *qn,
- 	return 0;
- }
- 
-+/**
-+ * qcom_icc_rpm_pre_bw_aggregate - cleans up values before re-aggregate requests
-+ * @node: icc node to operate on
-+ */
-+static void qcom_icc_pre_bw_aggregate(struct icc_node *node)
-+{
-+	struct qcom_icc_node *qn;
-+	size_t i;
-+
-+	qn = node->data;
-+	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+		qn->sum_avg[i] = 0;
-+		qn->max_peak[i] = 0;
-+	}
-+}
-+
-+/**
-+ * qcom_icc_bw_aggregate - aggregate bw for buckets indicated by tag
-+ * @node: node to aggregate
-+ * @tag: tag to indicate which buckets to aggregate
-+ * @avg_bw: new bw to sum aggregate
-+ * @peak_bw: new bw to max aggregate
-+ * @agg_avg: existing aggregate avg bw val
-+ * @agg_peak: existing aggregate peak bw val
-+ */
-+static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
-+				 u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
-+{
-+	size_t i;
-+	struct qcom_icc_node *qn;
-+
-+	qn = node->data;
-+
-+	if (!tag)
-+		tag = QCOM_ICC_TAG_ALWAYS;
-+
-+	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+		if (tag & BIT(i)) {
-+			qn->sum_avg[i] += avg_bw;
-+			qn->max_peak[i] = max_t(u32, qn->max_peak[i], peak_bw);
-+		}
-+	}
-+
-+	*agg_avg += avg_bw;
-+	*agg_peak = max_t(u32, *agg_peak, peak_bw);
-+	return 0;
-+}
-+
- static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- {
- 	struct qcom_icc_provider *qp;
-@@ -414,7 +462,8 @@ int qnoc_probe(struct platform_device *pdev)
- 	INIT_LIST_HEAD(&provider->nodes);
- 	provider->dev = dev;
- 	provider->set = qcom_icc_set;
--	provider->aggregate = icc_std_aggregate;
-+	provider->pre_aggregate = qcom_icc_pre_bw_aggregate;
-+	provider->aggregate = qcom_icc_bw_aggregate;
- 	provider->xlate_extended = qcom_icc_xlate_extended;
- 	provider->data = data;
- 
-diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index ebee9009301e..a49af844ab13 100644
---- a/drivers/interconnect/qcom/icc-rpm.h
-+++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -6,6 +6,8 @@
- #ifndef __DRIVERS_INTERCONNECT_QCOM_ICC_RPM_H
- #define __DRIVERS_INTERCONNECT_QCOM_ICC_RPM_H
- 
-+#include <dt-bindings/interconnect/qcom,icc.h>
-+
- #define RPM_BUS_MASTER_REQ	0x73616d62
- #define RPM_BUS_SLAVE_REQ	0x766c7362
- 
-@@ -65,6 +67,8 @@ struct qcom_icc_qos {
-  * @links: an array of nodes where we can go next while traversing
-  * @num_links: the total number of @links
-  * @buswidth: width of the interconnect between a node and the bus (bytes)
-+ * @sum_avg: current sum aggregate value of all avg bw requests
-+ * @max_peak: current max aggregate value of all peak bw requests
-  * @mas_rpm_id:	RPM id for devices that are bus masters
-  * @slv_rpm_id:	RPM id for devices that are bus slaves
-  * @qos: NoC QoS setting parameters
-@@ -75,6 +79,8 @@ struct qcom_icc_node {
- 	const u16 *links;
- 	u16 num_links;
- 	u16 buswidth;
-+	u64 sum_avg[QCOM_ICC_NUM_BUCKETS];
-+	u64 max_peak[QCOM_ICC_NUM_BUCKETS];
- 	int mas_rpm_id;
- 	int slv_rpm_id;
- 	struct qcom_icc_qos qos;
--- 
-2.25.1
+If we change the commit message to
 
+"Add MediaTek MT6370 tcpci driver.
+MediaTek MT6370 is a multi-functional IC that includes USB Type-C.
+It works with Type-C Port Controller Manager to provide USB PD and USB
+Type-C functionalities."
+
+does this meet your requirements?
+Or =E2=80=9CAdd tcpci driver for Mediatek MT6370 IC=E2=80=9D is enough?
+
+Sincerely,
+Alice Chen
