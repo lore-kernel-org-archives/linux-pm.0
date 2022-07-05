@@ -2,168 +2,75 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B2E3C433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 19:41:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36D06C433EF
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 19:55:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231161AbiGETlt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Jul 2022 15:41:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41266 "EHLO
+        id S230245AbiGETzg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Jul 2022 15:55:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51008 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230078AbiGETls (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 15:41:48 -0400
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE7071C10E;
-        Tue,  5 Jul 2022 12:41:47 -0700 (PDT)
-Received: by mail-ej1-x62d.google.com with SMTP id f26so510980ejl.4;
-        Tue, 05 Jul 2022 12:41:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=uaCa1pHvEpowovin1FoM/a/4D+WGXtSWycYEfFOoJn8=;
-        b=E48zrzVo+gN6mpL47FsShaJe4OOP8N0urz7fU3N5XDnh1/1eee50P/6qK0R9qBZpOm
-         TDgf4z9e4retyFZOOfUabP3h+tziDdJWJ2A83eb0X/D29VNDiY8tbPRjZCbeOMhhUltf
-         IG7ABvHDdejjOKocoDXZ6uiHzC+P0XEFZAkmxzRg/OnnVFG6p4O3Q/xqCMCe841McsTX
-         WtiBUpctbW36a8rAWqM+VKnnBwfv+ZA7AInVrLOnsamFe97I1TI2vTJa38O2CE2S9a+D
-         wOvI36b/OhvHguk+Ku925sOESa78BJxccZw8D6M7NX8goy6W8Y7TFcvJ1iD+2THk3xIw
-         EfpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=uaCa1pHvEpowovin1FoM/a/4D+WGXtSWycYEfFOoJn8=;
-        b=37gFVLeEmSni6uWrpZdLXFD/QMTFhQ8ACjt4KMrGtAR4s9F36miDXP/KTXKJpVKxco
-         MBqf8mlHd3I7NOg4kgOMjbdG0wssebtjXmVYHobIScek+4iq8tF49c3C5Cd3xywxFP9x
-         Fa4dWy0mjFj0XRLJmNXiXXHkLXs2x7LTbwbqugOvd8XF67XmD+PIGNint05G6+WJQwIO
-         hhCZKkjS7qFefcwLz7DiX4Y7O6cYVsKpy8lvh+8C8SOkMy97Nhu0SWvll+Q4a4ndpoJ1
-         aOfrFNP/XGV3f/vswTueU3eYwoH8fptqBS8Z4fgt5hUpq63+8gKqLVM+VuFWms3bkEhP
-         LlTg==
-X-Gm-Message-State: AJIora/bR5KCPVZLYYuZ/es8yAualZ20JO2cLquYm4FzbH2RqR8f6RIf
-        J04N1uDuxJa7saPg1x3eTeI=
-X-Google-Smtp-Source: AGRyM1tP31/iJRcdSA/OIBkPjZrBAQZpMldBKfJr0e8X3l3cfnm6ZyKMwkJzx3sb7RMZzdMNmluOPA==
-X-Received: by 2002:a17:906:6a14:b0:72a:b32c:e839 with SMTP id qw20-20020a1709066a1400b0072ab32ce839mr16896534ejc.468.1657050106412;
-        Tue, 05 Jul 2022 12:41:46 -0700 (PDT)
-Received: from kista.localnet (213-161-3-76.dynamic.telemach.net. [213.161.3.76])
-        by smtp.gmail.com with ESMTPSA id r1-20020a17090638c100b007219c20dcd8sm16204874ejd.196.2022.07.05.12.41.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Jul 2022 12:41:45 -0700 (PDT)
-From:   Jernej =?utf-8?B?xaBrcmFiZWM=?= <jernej.skrabec@gmail.com>
-To:     linux-sunxi@lists.linux.dev, qianfanguijin@163.com
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        qianfan Zhao <qianfanguijin@163.com>
-Subject: Re: [PATCH v5 0/3] ARM: sun8i-r40: CPU improve
-Date:   Tue, 05 Jul 2022 21:41:44 +0200
-Message-ID: <1753004.3VsfAaAtOV@kista>
-In-Reply-To: <20220517013607.2252-1-qianfanguijin@163.com>
-References: <20220517013607.2252-1-qianfanguijin@163.com>
+        with ESMTP id S229756AbiGETzf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 15:55:35 -0400
+Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DE5711A35
+        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 12:55:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
+        from:to:cc:subject:date:message-id:mime-version:content-type
+        :content-transfer-encoding; s=k1; bh=OysgCQ7vE3ol1bxYAexhfbPj0E+
+        wUGULttD/BT0D6rY=; b=BW9RCuvlx2YFfzSIQtytwF8186wIFAcAdMdWVvKWX5j
+        vgKs5mRwsYhar5OP0zTZf5OjmQbbTDJCf56k7KBoYwISIHqFvekZz+V+GHcV7kDR
+        r8ZT71/Spb9OGdI8Gmijqeo2zxOfnAo5mtOmjCB3oL8cjHQMHgl7KW5WmFTlK8ZU
+        =
+Received: (qmail 1425490 invoked from network); 5 Jul 2022 21:55:28 +0200
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 5 Jul 2022 21:55:28 +0200
+X-UD-Smtp-Session: l3s3148p1@vNb1OxTjkg5ZD+96
+From:   Wolfram Sang <wsa+renesas@sang-engineering.com>
+To:     linux-renesas-soc@vger.kernel.org
+Cc:     Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2] thermal: rcar_gen3_thermal: Add r8a779f0 support
+Date:   Tue,  5 Jul 2022 21:55:20 +0200
+Message-Id: <20220705195520.2581-1-wsa+renesas@sang-engineering.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dne torek, 17. maj 2022 ob 03:36:04 CEST je qianfanguijin@163.com napisal(a):
-> From: qianfan Zhao <qianfanguijin@163.com>
-> 
-> Change history:
-> ===============
-> v5(2022-05-17):
-> - Move opp tables to sun8i-r40-cpu-opp.dtsi
-> - cpufreq supports 720M, 912M, 1G, 1.1G, 1.2G
-> - Add cooling supports
-> 
-> v4(2022-05-16):
-> - Invert two patches.
-> - Drop the cpufreqs that exceeds 1G in opp tables.
-> 
-> v3:
-> - remove "allwinner-r40" compatible from allowlist.
-> - split dts in two part.
-> 
-> Test:
-> =====
-> 
-> cpufreq was tested by tools: https://github.com/ssvb/cpuburn-arm
-> 
-> 1. cpufreq-ljt-stress-test
-> 
-> - root@ubuntu:~/cpuburn-arm-master# ./cpufreq-ljt-stress-test
-> - CPU stress test, which is doing JPEG decoding by libjpeg-turbo
-> - at different cpufreq operating points.
-> -
-> - Testing CPU 0
-> -  1200 MHz ............................................................ OK
-> -  1104 MHz ............................................................ OK
-> -  1008 MHz ............................................................ OK
-> -   912 MHz ............................................................ OK
-> -   720 MHz ............................................................ OK
-> -
-> - Testing CPU 1
-> -  1200 MHz ............................................................ OK
-> -  1104 MHz ............................................................ OK
-> -  1008 MHz ............................................................ OK
-> -   912 MHz ............................................................ OK
-> -   720 MHz ............................................................ OK
-> -
-> - Testing CPU 2
-> -  1200 MHz ............................................................ OK
-> -  1104 MHz ............................................................ OK
-> -  1008 MHz ............................................................ OK
-> -   912 MHz ............................................................ OK
-> -   720 MHz ............................................................ OK
-> -
-> - Testing CPU 3
-> -  1200 MHz ............................................................ OK
-> -  1104 MHz ............................................................ OK
-> -  1008 MHz ............................................................ OK
-> -   912 MHz ............................................................ OK
-> -   720 MHz ............................................................ OK
-> 
-> Overall result : PASSED
-> 
-> 2. cpu freq slow down when cpuburn-a7.out running
-> 
-> - temperature: 79213, online: 0-3, freq: 1200000
-> - temperature: 79213, online: 0-3, freq: 1200000
-> - temperature: 80230, online: 0-3, freq: 1104000
-> - temperature: 78874, online: 0-3, freq: 1200000
-> - temperature: 80004, online: 0-3, freq: 1104000
-> - temperature: 79213, online: 0-3, freq: 1200000
-> - temperature: 78196, online: 0-3, freq: 1200000
-> - temperature: 79891, online: 0-3, freq: 1200000
-> - temperature: 78422, online: 0-3, freq: 1200000
-> - temperature: 80343, online: 0-3, freq: 1104000
-> - temperature: 80343, online: 0-3, freq: 1104000
-> 
-> 
-> qianfan Zhao (3):
->   ARM: dts: sun8i-r40: Add "cpu-supply" node for sun8i-r40 based board
->   ARM: dts: sun8i-r40: add opp table for cpu
->   ARM: dts: sun8i-r40: Add thermal trip points/cooling maps
+Add support for R-Car S4.
 
-Fixed opp table name and applied. Thanks!
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Reviewed-by: Niklas Söderlund <niklas.soderlund@ragnatech.se>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Change since V1: added tags from Niklas and Geert (Thanks!)
 
-Best regards,
-Jernej
+ drivers/thermal/rcar_gen3_thermal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-> 
->  .../boot/dts/sun8i-r40-bananapi-m2-ultra.dts  |  5 ++
->  arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi      | 52 +++++++++++++++++++
->  arch/arm/boot/dts/sun8i-r40-feta40i.dtsi      |  5 ++
->  arch/arm/boot/dts/sun8i-r40.dtsi              | 36 +++++++++++++
->  arch/arm/boot/dts/sun8i-t3-cqa3t-bv3.dts      |  5 ++
->  .../boot/dts/sun8i-v40-bananapi-m2-berry.dts  |  5 ++
->  6 files changed, 108 insertions(+)
->  create mode 100644 arch/arm/boot/dts/sun8i-r40-cpu-opp.dtsi
-> 
-> --
-> 2.25.1
-
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index e2020c6308cc..cda7c52f2319 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -399,6 +399,10 @@ static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
+ 		.compatible = "renesas,r8a779a0-thermal",
+ 		.data = &rcar_gen3_ths_tj_1,
+ 	},
++	{
++		.compatible = "renesas,r8a779f0-thermal",
++		.data = &rcar_gen3_ths_tj_1,
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
+-- 
+2.35.1
 
