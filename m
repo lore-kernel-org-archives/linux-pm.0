@@ -2,110 +2,158 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 906CCC433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 17:17:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB15AC433EF
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 17:17:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231317AbiGERRE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Jul 2022 13:17:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39072 "EHLO
+        id S230170AbiGERR5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Jul 2022 13:17:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231390AbiGERRD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 13:17:03 -0400
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0DD41EEEE
-        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 10:17:00 -0700 (PDT)
-Received: by mail-pj1-x1034.google.com with SMTP id o15so8331467pjh.1
-        for <linux-pm@vger.kernel.org>; Tue, 05 Jul 2022 10:17:00 -0700 (PDT)
+        with ESMTP id S229754AbiGERR5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 13:17:57 -0400
+Received: from mail-vk1-xa2f.google.com (mail-vk1-xa2f.google.com [IPv6:2607:f8b0:4864:20::a2f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 786E91EED0
+        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 10:17:56 -0700 (PDT)
+Received: by mail-vk1-xa2f.google.com with SMTP id s9so379140vkn.9
+        for <linux-pm@vger.kernel.org>; Tue, 05 Jul 2022 10:17:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=blAv5bNRDxMQMrS0AACBNjdGlLvJX/SAvF1rEGuKF74=;
-        b=AGx18rMcbp3dbF9psnpNSEtcdc9eRh8u0rb5xSOzE+z6FdcO7YJ0n7cRUuYgSvkipF
-         NwYdtnIXdzBSsr2goKB2mnkw3W0xQdP7JnIEeX24+jZNviiKCNdORnVuBEuRMHhW1U0r
-         8pAArYvRSCZqGIfBwZzkaI3m3xBJjs811aK6E=
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=DibX9iQEUFrXxkIm9PYaQ+YczA5+PDT4pu/k9a93CZ4=;
+        b=nK5H+j5ZR39sYeXQoPrCBk/xTcXYb0lrGz/hZhHBtPek2kaE+xuCcYjTmZZBb5J4IZ
+         VFXFAj0a3LAS8jtJhbS4PtkPhPg1CjfV00iuEL+oI3k5WQYaDFov2C6t9uju9W509TwD
+         /5RBMO3qIpkp6DxPnVoIw5VeFwEi5JWiEJotw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=blAv5bNRDxMQMrS0AACBNjdGlLvJX/SAvF1rEGuKF74=;
-        b=ud4ut2stt/R9C6B/TWY+s3kyLh4kQiOQ6oH3UvStdS9VLwk/31vbnKtZLgvDTA43c+
-         1i0Y/NIy9c36PRJ0Bj3uVChsEn0GaH/yyPqpj4RtQojM6xyHtBGFioThEcdMhb/bvfNM
-         cuGhamOA1XH5lnX1EhUCCEOgU0Mn1OBcZf1kF2JyXDQ1TJUpZ6JJgwcYSg0s28fdNVFh
-         nDl4cpLfXebOgHJh186PxXrIK30JoSe3NrMol4+NLfAVGFv8NCHzN7nI/NzAxfYRbVoS
-         gNTAF1HAQyrAzS8hsd4aOVjTLvJ1YDtpUNrL53JD9Vm+RfgAwmB3LajFmdRv3fCTwjO0
-         UVuA==
-X-Gm-Message-State: AJIora+UkSHX/CpA7vWnWph1YMx8C2V1Nuo5nc19CkRvMORQTdHV3R2h
-        LByTgcVhE9iT3LhgLwpFsqwj9A==
-X-Google-Smtp-Source: AGRyM1vOsmzdhrBc9QLvJCCkypT+YyW8d5stgSoMcetKE/ubV4xKYE1JgNPv5dGhIwSEXz3dP7+2Sw==
-X-Received: by 2002:a17:902:b488:b0:16a:7013:69f0 with SMTP id y8-20020a170902b48800b0016a701369f0mr43725754plr.118.1657041420084;
-        Tue, 05 Jul 2022 10:17:00 -0700 (PDT)
-Received: from hsinyi-z840.tpe.corp.google.com ([2401:fa00:1:10:2dd7:54e9:d5d6:cad6])
-        by smtp.gmail.com with ESMTPSA id k11-20020a6555cb000000b0040d87299ca3sm22452843pgs.54.2022.07.05.10.16.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Jul 2022 10:16:59 -0700 (PDT)
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=DibX9iQEUFrXxkIm9PYaQ+YczA5+PDT4pu/k9a93CZ4=;
+        b=fRDDhhs6U6UZ2+E7kFMiSxpt/huN+z1RrJMQ0l+mgnXsmFv0TYTm/vliHlO2nFEgnL
+         AGExS6Zlw92/mNo19DJWkDwLP74FWKqBYr2/PcbcK6jM0umQvTs028Y/z37/WWSHgozj
+         lG0DYp7KKLnqvaVlosUbbWvu+q6GQNZVWmsV70D1bjNv/NS509aCQQi8pvdBzTy6EnkN
+         UKxHawk5QtLyxukdDqzsth1anSaPFSl8xuk3Fz6DIHvdLHMjikX9YPI/mRBYnXJI4Cx8
+         046VOYnSXEfie2D1dtX2PdguGU6gI3WDN65lQ52/wvthokYDDJxndFMHRHOd7+lYJOGA
+         gh7g==
+X-Gm-Message-State: AJIora/S5w3l/sjw78vBVykI01az2+rg97ajWSGTcTzCcCEFsySKbWqS
+        E8N7xfm7ahhvVm/9KhCizJJaLd8auU39WAD+H/X5TQ==
+X-Google-Smtp-Source: AGRyM1vjE+XIl428JT5ISAnbg0EIoYJ+7JSRqA2pTtZa1SnDBKe7Cz1aIqj0GttScxh4Hat1teS3mBNopwWOIyHsf50=
+X-Received: by 2002:a05:6122:152b:b0:36c:2e3f:599b with SMTP id
+ g11-20020a056122152b00b0036c2e3f599bmr21318514vkq.5.1657041475532; Tue, 05
+ Jul 2022 10:17:55 -0700 (PDT)
+MIME-Version: 1.0
+References: <20220705094946.827697-1-hsinyi@chromium.org> <YsQUrXfugKT1IV75@kroah.com>
+ <CAJMQK-jA-GWw=v1PGAfYBKq5KWyYXGbYk30jVx26b1HWiw5yTQ@mail.gmail.com>
+ <YsQluCvLLRXSo3Oc@kroah.com> <CAJMQK-gtfCL3smM6EAm2bLsSWvuk1QzviCQ6de4k8wiphEKQHg@mail.gmail.com>
+ <YsRmQVrcAuguv03U@kroah.com>
+In-Reply-To: <YsRmQVrcAuguv03U@kroah.com>
 From:   Hsin-Yi Wang <hsinyi@chromium.org>
+Date:   Wed, 6 Jul 2022 01:27:07 +0800
+Message-ID: <CAJMQK-gYjdWg8wXHMjzRSBvAPHO9aT08tqiviJ8O3jjYe8PV3g@mail.gmail.com>
+Subject: Re: [PATCH] PM: domains: Ensure genpd_debugfs_dir exists before remove
 To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Thierry Strudel <tstrudel@google.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>,
-        Pin-yen Lin <treapking@chromium.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2] PM: domains: Ensure genpd_debugfs_dir exists before remove
-Date:   Wed,  6 Jul 2022 01:16:49 +0800
-Message-Id: <20220705171649.969194-1-hsinyi@chromium.org>
-X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Pin-yen Lin <treapking@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Both genpd_debug_add() and genpd_debug_remove() may be called
-indirectly by other drivers while genpd_debugfs_dir is not yet
-set. For example, drivers can call pm_genpd_init() in probe or
-pm_genpd_init() in probe fail/cleanup path:
+On Wed, Jul 6, 2022 at 12:26 AM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Tue, Jul 05, 2022 at 11:58:52PM +0800, Hsin-Yi Wang wrote:
+> > On Tue, Jul 5, 2022 at 7:51 PM Greg Kroah-Hartman
+> > <gregkh@linuxfoundation.org> wrote:
+> > >
+> > > On Tue, Jul 05, 2022 at 07:06:41PM +0800, Hsin-Yi Wang wrote:
+> > > > On Tue, Jul 5, 2022 at 6:38 PM Greg Kroah-Hartman
+> > > > <gregkh@linuxfoundation.org> wrote:
+> > > > >
+> > > > > On Tue, Jul 05, 2022 at 05:49:47PM +0800, Hsin-Yi Wang wrote:
+> > > > > > genpd_debug_remove() may be indirectly called from others while
+> > > > > > genpd_debugfs_dir is not yet set. Make sure genpd_debugfs_dir exists
+> > > > > > before remove the sub components, otherwise components under
+> > > > > > /sys/kernel/debug may be accidentally removed.
+> > > > > >
+> > > > > > Fixes: 718072ceb211 ("PM: domains: create debugfs nodes when adding power domains")
+> > > > > > Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
+> > > > > > ---
+> > > > > > An example:
+> > > > > > scpsys_probe() in drivers/soc/mediatek/mtk-pm-domains.c indirectly calls
+> > > > > > genpd_debug_remove() on probe fail, causing /sys/kernel/debug/usb to be
+> > > > > > removed.
+> > > > > > ---
+> > > > > >  drivers/base/power/domain.c | 3 +++
+> > > > > >  1 file changed, 3 insertions(+)
+> > > > > >
+> > > > > > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > > > > > index 3e86772d5fac5..5a2e0232862e0 100644
+> > > > > > --- a/drivers/base/power/domain.c
+> > > > > > +++ b/drivers/base/power/domain.c
+> > > > > > @@ -222,6 +222,9 @@ static void genpd_debug_remove(struct generic_pm_domain *genpd)
+> > > > > >  {
+> > > > > >       struct dentry *d;
+> > > > > >
+> > > > > > +     if (!genpd_debugfs_dir)
+> > > > > > +             return;
+> > > > > > +
+> > > > > >       d = debugfs_lookup(genpd->name, genpd_debugfs_dir);
+> > > > > >       debugfs_remove(d);
+> > > > >
+> > > > > Why not just change this to be:
+> > > > >         debugfs_remove(debugfs_lookup(genpd->name, debugfs_lookup("pm_genpd", NULL)));
+> > > > If pm_genpd hasn't been created yet,  debugfs_lookup("pm_genpd", NULL)
+> > > > will return null.
+> > >
+> > > And how is this codepath being called if pm_genpd is not created yet?
+> > > Surely you are not relying on the presence of a debugfs file to
+> > > determine that?
+> > >
+> >
+> > Caller didn't directly call genpd_debug_remove(). The flow is as follows:
+> >
+> > Normally, scpsys will create pm domain by:
+> > scpsys_probe()
+> >    --> scpsys_add_one_domain()
+> >      --> pm_genpd_init()
+> >        --> genpd_debug_add()
+> >
+> >
+> > If something fails, it will do the cleanup:
+> > scpsys_probe()
+> >   --> scpsys_domain_cleanup()
+> >      --> scpsys_remove_one_domain()
+> >        --> pm_genpd_remove()
+> >           --> genpd_remove()
+> >             --> genpd_debug_remove()
+> >
+> > genpd_debug_add() checks if genpd_debugfs_dir is init by a
+> > late_initcall genpd_debug_init(). If it's NULL, it will return
+> > directly without creating anything. Later when genpd_debug_init() is
+> > called, it will call genpd_debug_add() again.
+> >
+> > pm_genpd_remove() still needs to be called on the cleanup path to free
+> > other stuff, but if genpd_debug_init() hasn't happened,
+> > genpd_debug_remove() should be a no-op, or genpd_remove() shouldn't
+> > call it. (We can move the check there, but adding in
+> > genpd_debug_remove() is more similar to what genpd_debug_add()
+> > currently is.)
+>
+> Thanks for the details.  You might want to include this in the changelog
+> text.  I'm ok with the change now if that information is in there, I
+> missed that there are paths to create devices before debugfs is
+> initialized.
+>
+Done. Added in v2. Thanks for the review.
 
-pm_genpd_init()
- --> genpd_debug_add()
-
-pm_genpd_remove()
- --> genpd_remove()
-   --> genpd_debug_remove()
-
-At this time, genpd_debug_init() may not yet be called.
-
-genpd_debug_add() checks that if genpd_debugfs_dir is NULL, it
-will return directly. Make sure this is also checked
-in pm_genpd_remove(), otherwise components under debugfs root
-which has the same name as other components under pm_genpd may
-be accidentally removed, since NULL represents debugfs root.
-
-Fixes: 718072ceb211 ("PM: domains: create debugfs nodes when adding power domains")
-Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
----
-v1->v2: Add more context in commit message
----
- drivers/base/power/domain.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 3e86772d5fac5..5a2e0232862e0 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -222,6 +222,9 @@ static void genpd_debug_remove(struct generic_pm_domain *genpd)
- {
- 	struct dentry *d;
- 
-+	if (!genpd_debugfs_dir)
-+		return;
-+
- 	d = debugfs_lookup(genpd->name, genpd_debugfs_dir);
- 	debugfs_remove(d);
- }
--- 
-2.37.0.rc0.161.g10f37bed90-goog
-
+> thanks,
+>
+> greg k-h
