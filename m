@@ -2,90 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01630C43334
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 09:30:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5341CCA47C
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 09:52:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230205AbiGEJaD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Jul 2022 05:30:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53146 "EHLO
+        id S232087AbiGEJwA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Jul 2022 05:52:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39834 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231665AbiGEJ3b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 05:29:31 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E433DEB8
-        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 02:29:02 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 66031B816A6
-        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 09:29:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 25F91C341D0
-        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 09:28:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1657013339;
-        bh=dDsk/0iHsfwB6mPPSmyk3ZpsD8SvIvj4N+YQNC3tzZ4=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=qs7PHiZdWFPXkzB2SG/io/3KGqgFhom4zsufvIANfRorKqhSK8RwHkZ4bDVAnpxzO
-         iMHsJAGywvq8qEh3/3p57SGeRVLXVOnlolWhUizFE3RWpQmEh4Ca5zD/ww5ROx7O5C
-         8Vvi/O9SNCXMl1rrugXPqvWGp7iD7YExMSlSaRhWzmenLYEleNAujka+37Y+fsJrh7
-         GQD7yPMYZSA9Jx2Xw9HxSjCejDQIp2y3NeAvGsZ0oMmV0Fu50flYzSnyUp1QsjO9Fe
-         x3OJxf6UBRdBozEnbikncKSiu6ZPZUmyDCLspYfZlK7Nq5gzmHOIDSyFP+6rcEyOso
-         QUNGhaBGhZrYg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 08E95CC13B1; Tue,  5 Jul 2022 09:28:59 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215938] amd-pstate ignoring scaling_max_freq after waking from
- suspend
-Date:   Tue, 05 Jul 2022 09:28:57 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: perry_yuan@outlook.com
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: CODE_FIX
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-215938-137361-UZoih0iMk2@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215938-137361@https.bugzilla.kernel.org/>
-References: <bug-215938-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S232591AbiGEJvM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 05:51:12 -0400
+Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D54CE13F6F
+        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 02:49:53 -0700 (PDT)
+Received: by mail-lj1-x234.google.com with SMTP id j13so637234ljo.7
+        for <linux-pm@vger.kernel.org>; Tue, 05 Jul 2022 02:49:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :references:from:in-reply-to:content-transfer-encoding;
+        bh=shv90DwYEPdUFHu8Cga4VYHWdDzItCMFq4BFSIFK8MQ=;
+        b=EXpa8/uKwzMzew+mn994GeiCVEwmKgmDVTf6C4LdMJ+ZQk8cTCli0GnR60hardY+1E
+         2hGVWntRvgBDlPyAcsp6OQmj7N/e6M4Hgxcw2fGTKTC+Bp/oiCKS5qzJnItCTn061LOY
+         SQBUqDi0P6GjkiiiFsahsD72ZRMFwmTOclakEWI5oU4astCcgkNAWbgv8BUbiASLsHdq
+         v0F9vGkr5cQkHGf0Co0+dum4XqEwgsLrwyR2DiFv49zAN+Nj0zl4f0Bd0iPx0+VGi8n5
+         el0lQ3Jms5CrugPf8sk6t+R+imFv9o7yHunVrhaDThCfvdIZmdhrQCd3g3oho3cSS0Ox
+         KXOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=shv90DwYEPdUFHu8Cga4VYHWdDzItCMFq4BFSIFK8MQ=;
+        b=XfnnJrgBDSkACWywky72socIN6cR/zq2Ub7F6bMyR8epNp7DZNYN+Jea2j7sRP6UHQ
+         /aXgjRvvDKrhLJu03AU3lOtMtjkRCkVkEjg6bxbgp00V2XJUcUmVg/OXVBssG9/XzekZ
+         bRyZtEXWUwOJyfO7/Kugvdi4oPTJATcXgPl5pE13/LlGrti9YvXLP8Jir7EQYorNGnAA
+         0A1xcWNuayynhlETXRC6ijQ2IXWEsXy2DDZ2rm2Alf9cjuiDl6xwIyAtJhTXFt5szrG4
+         oX1Tprhts7nCl1uV3fIX7NsgNGNkaDuF0Jcik3v33eqn4D6w1p17C8sLWeRlA6XzcHTJ
+         4pBA==
+X-Gm-Message-State: AJIora/ydYvgIsvyLIMUHwtTZREUVuMIDEiQxvImTRFPV4R//vm/ECs2
+        /u6JB5mf++fi/kaIacan2Pf7bA==
+X-Google-Smtp-Source: AGRyM1uoZPMckUe4fDIWlkcjaMJ+OIVVYuinLeVA7VFD6UQOGHcf0Ahl4PkuVPIUrYneNnB79zWC3g==
+X-Received: by 2002:a2e:a54a:0:b0:25a:7010:4aee with SMTP id e10-20020a2ea54a000000b0025a70104aeemr19678705ljn.245.1657014592229;
+        Tue, 05 Jul 2022 02:49:52 -0700 (PDT)
+Received: from [192.168.1.52] ([84.20.121.239])
+        by smtp.gmail.com with ESMTPSA id k6-20020ac257c6000000b0047f665e2df8sm5591179lfo.257.2022.07.05.02.49.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 05 Jul 2022 02:49:51 -0700 (PDT)
+Message-ID: <42f8f46f-e5e3-8e77-22e1-07fdbfb6d96a@linaro.org>
+Date:   Tue, 5 Jul 2022 11:49:49 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v4 1/5] dt-bindings: interconnect: Update property for
+ icc-rpm path tag
+Content-Language: en-US
+To:     Leo Yan <leo.yan@linaro.org>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20220705072336.742703-1-leo.yan@linaro.org>
+ <20220705072336.742703-2-leo.yan@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220705072336.742703-2-leo.yan@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215938
+On 05/07/2022 09:23, Leo Yan wrote:
+> To support path tag in icc-rpm driver, the "#interconnect-cells"
+> property is updated as enumerate values: 1 or 2.  Setting to 1 means
+> it is compatible with old DT binding that interconnect path only
+> contains node id; if set to 2 for "#interconnect-cells" property, then
+> the second specifier is used as a tag (e.g. vote for which buckets).
+> 
+> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> ---
 
---- Comment #19 from perry_yuan@outlook.com ---
-(In reply to Alex Maras from comment #18)
-> Thanks Perry - tested and working as expected. I'm now able to set the CPU
-> freq with amd-pstate, suspend, resume and see that the cpu frequency limi=
-ts
-> are now respected correctly, and changing both the governor and the
-> frequency limits works as expected.=20
->=20
-> I've set this to resolved with a code fix.
 
-HI Alex.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Good to hear that.=20
-Thanks for your confirm.=20
 
-Perry.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+Best regards,
+Krzysztof
