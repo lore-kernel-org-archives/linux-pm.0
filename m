@@ -2,168 +2,144 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47E14CCA473
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 10:22:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAF4CCCA480
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 10:24:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231935AbiGFKWG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jul 2022 06:22:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32792 "EHLO
+        id S232545AbiGFKYf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jul 2022 06:24:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39954 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233192AbiGFKVs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 06:21:48 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2481825EB0;
-        Wed,  6 Jul 2022 03:21:32 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id CF17BB81BD1;
-        Wed,  6 Jul 2022 10:21:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1243CC3411C;
-        Wed,  6 Jul 2022 10:21:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1657102889;
-        bh=cGtpdU/SvI9xWtgOfWGAOSHnE9hhzh3DtdPifSULvu8=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=ZzXFpr164ZpZdDLWgqJSQGOIXk8aL7ehM+hG1bHHmRygRA0O529gdfBnST8R08laV
-         P52OT6yw7hFJ70bosoM1vNXT67K1g7KyE7YNPf5pqaejjB41hFIfeobnhdgQTdvXrn
-         vILe1feFkfMYCNpfhm7/5825V4IHHlzd7vijf1tM=
-Date:   Wed, 6 Jul 2022 12:21:26 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Varad Gautam <varadgautam@google.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
-        stable@vger.kernel.org
-Subject: Re: [PATCH] thermal: sysfs: Perform bounds check when storing
- thermal states
-Message-ID: <YsViJpAnkqW1QTwW@kroah.com>
-References: <20220705150002.2016207-1-varadgautam@google.com>
- <YsRkPUcrMj+JU0Om@kroah.com>
- <CAOLDJOJ_v75WqGt2mZa0h-GgF+NThFBY5DvasH+9LLVgLrrvog@mail.gmail.com>
- <YsUvgWmrk+ZfUy3t@kroah.com>
- <CAOLDJOJug5jYpaSjY1tAYWNo0QRM4NB+wM2Vd2=Lf_O7TRjVCg@mail.gmail.com>
- <6eed01c90fafe681cccba2f227d65f2e9bfb8348.camel@intel.com>
- <YsVUB76c2b0EkRBb@kroah.com>
- <CAOLDJOJLvSUMqF37H13aiH59Pm4_t6esRxy7Ej3Grhr4fmSGQA@mail.gmail.com>
+        with ESMTP id S232386AbiGFKYf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 06:24:35 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A4E023BFC;
+        Wed,  6 Jul 2022 03:24:34 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id z12so11778001wrq.7;
+        Wed, 06 Jul 2022 03:24:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=references:from:to:cc:subject:date:in-reply-to:message-id
+         :mime-version;
+        bh=gAAFLxTVBbke7idk+TJqhtAe46jVc+eusFaZ2+NGDNc=;
+        b=T01qQGVCFpQvsrYLXbIulhJcGg0HUmQARvvOBgipM53C+Kp8/JIW6EVZQb5v0UNLwb
+         ml0P7sxKFGboDz7Kyc82mBHUJNEO0yRFzMpFmbK4JRLCoyqkfBGu/dlbT2ajCZH8/rag
+         fEVKcZ2ywOjzx+JWnLYUwVSpbUU4PWhsNQzBTji78zfstk9Yu3qAhwlP6Kf0vvPvkd2b
+         PP2nxprfreGNNm0gX45OMoKjagQ6gYAa1hM2XRfJomg8WJjQmTsdOWUbhDH+1SGW2013
+         GeHT4vlC7fliPHYqfW+hPr4R0eArQu9KrGpNAZm9xnx+v/SIAhMOH/Wjyabf+lLJm7iW
+         gzkA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:references:from:to:cc:subject:date:in-reply-to
+         :message-id:mime-version;
+        bh=gAAFLxTVBbke7idk+TJqhtAe46jVc+eusFaZ2+NGDNc=;
+        b=kk9CrQ79OGzuPlAzaQ37UxR0TJLH4d+7ndJqi7cuBEEFOpGi57TVrGV2KSP8UeGT5k
+         mXzntGrptd7iz+IVGwdglKH9ZXmoBRD8Q/ytqaELjRMtdnKLjw8ZKKMhgc3lX/DyRq0K
+         q/rJMgfec5NrUowTy3TfBZQo+19OHZs50KbtHJshivTmNd+yXvug3VAKQ7n58GzfoKlf
+         Ph14ZjTM/P2/ZNGWO0BjI9mJdG9aSB+5Rni9r+1YY0Ws66bgECfv27QXNWjNQjJHI/6i
+         Qxu+HfYYoyVy0rIYlwNNSuPaS7N9BjpX5U6JG6GcLUWnwUBWlDRO7i8XZk3EQOED9Kya
+         WKtA==
+X-Gm-Message-State: AJIora9m8dwFSvgPlgsEk+USgQ6Z198joG6WXwVFwqBKiaDYBSP+o6+0
+        S+WC1izObcHnMBmG/6E/myc=
+X-Google-Smtp-Source: AGRyM1vU3MJHoH322VL/VZ3kLVOdxQZ29efLU3+xNpoRRoRaYcb0Iv3nb/x5LHrg9UdFMQ7tbtgPbw==
+X-Received: by 2002:adf:d1ea:0:b0:21b:a6cb:fcf6 with SMTP id g10-20020adfd1ea000000b0021ba6cbfcf6mr36825810wrd.477.1657103072945;
+        Wed, 06 Jul 2022 03:24:32 -0700 (PDT)
+Received: from localhost (92.40.202.163.threembb.co.uk. [92.40.202.163])
+        by smtp.gmail.com with ESMTPSA id bq25-20020a5d5a19000000b0021d6d74a0ecsm6931272wrb.96.2022.07.06.03.24.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 06 Jul 2022 03:24:32 -0700 (PDT)
+References: <20220629143046.213584-1-aidanmacdonald.0x0@gmail.com>
+ <20220629143046.213584-7-aidanmacdonald.0x0@gmail.com>
+ <YsQwHiVdooN2TWbh@google.com> <MiQPswErEouy9b8OQ6k5WeQxH3ENw94W@localhost>
+ <YsRM0O3MQmBO5WXK@google.com>
+From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
+        sre@kernel.org, lgirdwood@gmail.com, broonie@kernel.org,
+        lars@metafoo.de, quic_gurus@quicinc.com,
+        sebastian.reichel@collabora.com, andy.shevchenko@gmail.com,
+        michael@walle.cc, rdunlap@infradead.org,
+        linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 06/15] mfd: axp20x: Add support for AXP192
+Date:   Tue, 05 Jul 2022 20:42:43 +0100
+In-reply-to: <YsRM0O3MQmBO5WXK@google.com>
+Message-ID: <VHU3uih5i4iLk4b8WSSqo4p8Dc5tMaDN@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAOLDJOJLvSUMqF37H13aiH59Pm4_t6esRxy7Ej3Grhr4fmSGQA@mail.gmail.com>
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jul 06, 2022 at 12:01:19PM +0200, Varad Gautam wrote:
-> On Wed, Jul 6, 2022 at 11:21 AM Greg KH <gregkh@linuxfoundation.org> wrote:
-> >
-> > On Wed, Jul 06, 2022 at 04:51:59PM +0800, Zhang Rui wrote:
-> > > On Wed, 2022-07-06 at 09:16 +0200, Varad Gautam wrote:
-> > > > On Wed, Jul 6, 2022 at 8:45 AM Greg KH <gregkh@linuxfoundation.org>
-> > > > wrote:
-> > > > >
-> > > > > On Tue, Jul 05, 2022 at 11:02:50PM +0200, Varad Gautam wrote:
-> > > > > > On Tue, Jul 5, 2022 at 6:18 PM Greg KH <
-> > > > > > gregkh@linuxfoundation.org> wrote:
-> > > > > > >
-> > > > > > > On Tue, Jul 05, 2022 at 03:00:02PM +0000, Varad Gautam wrote:
-> > > > > > > > Check that a user-provided thermal state is within the
-> > > > > > > > maximum
-> > > > > > > > thermal states supported by a given driver before attempting
-> > > > > > > > to
-> > > > > > > > apply it. This prevents a subsequent OOB access in
-> > > > > > > > thermal_cooling_device_stats_update() while performing
-> > > > > > > > state-transition accounting on drivers that do not have this
-> > > > > > > > check
-> > > > > > > > in their set_cur_state() handle.
-> > > > > > > >
-> > > > > > > > Signed-off-by: Varad Gautam <varadgautam@google.com>
-> > > > > > > > Cc: stable@vger.kernel.org
-> > > > > > > > ---
-> > > > > > > >  drivers/thermal/thermal_sysfs.c | 12 +++++++++++-
-> > > > > > > >  1 file changed, 11 insertions(+), 1 deletion(-)
-> > > > > > > >
-> > > > > > > > diff --git a/drivers/thermal/thermal_sysfs.c
-> > > > > > > > b/drivers/thermal/thermal_sysfs.c
-> > > > > > > > index 1c4aac8464a7..0c6b0223b133 100644
-> > > > > > > > --- a/drivers/thermal/thermal_sysfs.c
-> > > > > > > > +++ b/drivers/thermal/thermal_sysfs.c
-> > > > > > > > @@ -607,7 +607,7 @@ cur_state_store(struct device *dev,
-> > > > > > > > struct device_attribute *attr,
-> > > > > > > >               const char *buf, size_t count)
-> > > > > > > >  {
-> > > > > > > >       struct thermal_cooling_device *cdev =
-> > > > > > > > to_cooling_device(dev);
-> > > > > > > > -     unsigned long state;
-> > > > > > > > +     unsigned long state, max_state;
-> > > > > > > >       int result;
-> > > > > > > >
-> > > > > > > >       if (sscanf(buf, "%ld\n", &state) != 1)
-> > > > > > > > @@ -618,10 +618,20 @@ cur_state_store(struct device *dev,
-> > > > > > > > struct device_attribute *attr,
-> > > > > > > >
-> > > > > > > >       mutex_lock(&cdev->lock);
-> > > > > > > >
-> > > > > > > > +     result = cdev->ops->get_max_state(cdev, &max_state);
-> > > > > > > > +     if (result)
-> > > > > > > > +             goto unlock;
-> > > > > > > > +
-> > > > > > > > +     if (state > max_state) {
-> > > > > > > > +             result = -EINVAL;
-> > > > > > > > +             goto unlock;
-> > > > > > > > +     }
-> > > > > > > > +
-> > > > > > > >       result = cdev->ops->set_cur_state(cdev, state);
-> > > > > > >
-> > > > > > > Why doesn't set_cur_state() check the max state before setting
-> > > > > > > it?  Why
-> > > > > > > are the callers forced to always check it before?  That feels
-> > > > > > > wrong...
-> > > > > > >
-> > > > > >
-> > > > > > The problem lies in thermal_cooling_device_stats_update(), not
-> > > > > > set_cur_state().
-> > > > > >
-> > > > > > If ->set_cur_state() doesn't error out on invalid state,
-> > > > > > thermal_cooling_device_stats_update() does a:
-> > > > > >
-> > > > > > stats->trans_table[stats->state * stats->max_states +
-> > > > > > new_state]++;
-> > > > > >
-> > > > > > stats->trans_table reserves space depending on max_states, but
-> > > > > > we'd end up
-> > > > > > reading/writing outside it. cur_state_store() can prevent this
-> > > > > > regardless of
-> > > > > > the driver's ->set_cur_state() implementation.
-> > > > >
-> > > > > Why wouldn't cur_state_store() check for an out-of-bounds condition
-> > > > > by
-> > > > > calling get_max_state() and then return an error if it is invalid,
-> > > > > preventing thermal_cooling_device_stats_update() from ever being
-> > > > > called?
-> > > > >
-> > > >
-> > > > That's what this patch does, it adds the out-of-bounds check.
-> > >
-> > > No, I think Greg' question is
-> > > why cdev->ops->set_cur_state() return 0 when setting a cooling state
-> > > that exceeds the maximum cooling state?
-> >
-> > Yes, that is what I am asking, it should not allow a state to be
-> > exceeded.
-> >
-> 
-> Indeed, it is upto the driver to return !0 from cdev->ops->set_cur_state()
-> when setting state > max - and it is a driver bug for not doing so.
-> 
-> But a buggy driver should not lead to cur_state_store() performing an OOB
-> access.
 
-Agreed, which is why the code that does the access should check before
-it does so.  Right now you are relying on the sysfs code to do so, which
-seems very wrong.
+Lee Jones <lee.jones@linaro.org> writes:
 
-thanks,
+> On Tue, 05 Jul 2022, Aidan MacDonald wrote:
+>
+>> 
+>> Lee Jones <lee.jones@linaro.org> writes:
+>> 
+>> > On Wed, 29 Jun 2022, Aidan MacDonald wrote:
+>> >
+>> >> The AXP192 PMIC is similar to the AXP202/AXP209, but with different
+>> >> regulators, additional GPIOs, and a different IRQ register layout.
+>> >> 
+>> >> Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+>> >> Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+>> >> ---
+>> >>  drivers/mfd/axp20x-i2c.c   |   2 +
+>> >>  drivers/mfd/axp20x.c       | 152 +++++++++++++++++++++++++++++++++++++
+>> >>  include/linux/mfd/axp20x.h |  84 ++++++++++++++++++++
+>> >>  3 files changed, 238 insertions(+)
+>> >> [...]
+>> >> +static const struct regmap_irq_chip axp192_regmap_irq_chip = {
+>> >> +	.name			= "axp192_irq_chip",
+>> >> +	.status_base		= AXP192_IRQ1_STATE,
+>> >> +	.ack_base		= AXP192_IRQ1_STATE,
+>> >> +	.unmask_base		= AXP192_IRQ1_EN,
+>> >> +	.init_ack_masked	= true,
+>> >> +	.irqs			= axp192_regmap_irqs,
+>> >> +	.num_irqs		= ARRAY_SIZE(axp192_regmap_irqs),
+>> >> +	.num_regs		= 5,
+>> >> +	.get_irq_reg		= axp192_get_irq_reg,
+>> >
+>> > Fix me:
+>> >
+>> > drivers/mfd/axp20x.c:634:35: error: initialization of 'unsigned int (*)(struct regmap_irq_chip_data *, unsigned int,  int)' from incompatible pointer type 'int (*)(unsigned int,  int)' [-Werror=incompatible-pointer-types]
+>> >   634 |         .get_irq_reg            = axp192_get_irq_reg,
+>> >       |                                   ^~~~~~~~~~~~~~~~~~
+>> > drivers/mfd/axp20x.c:634:35: note: (near initialization for 'axp192_regmap_irq_chip.get_irq_reg')
+>> >
+>> 
+>> This doesn't need fixing. You are missing the prerequisite patches.
+>> 
+>> -- snip --
+>> Changes in v4:
+>> * Drop regmap-irq patches and rebase on top of the regmap-irq
+>>   refactoring series[1], which implements the same functionality.
+>> 
+>> [1]: https://lore.kernel.org/lkml/20220623211420.918875-1-aidanmacdonald.0x0@gmail.com/
+>> -- snip --
+>
+>> Perhaps I wasn't clear enough that it was a dependency, sorry for
+>> any confusion.
+>
+> Any idea why the regmap-irq patches weren't in -next?
 
-greg k-h
+Uh, sorry, I didn't pay attention and assumed this was the same error
+the kernel test robot was reporting against mfd-next (missing field).
+But the field does exist; this error is a type mismatch:
+
+  initialization of 'unsigned int (*)(struct regmap_irq_chip_data *,
+                                      unsigned int,  int)'
+  from incompatible pointer type 'int (*)(unsigned int,  int)'
+
+So the regmap-irq patches were in -next, the problem is you were
+using the old patch from v3.
+
+FYI, I just sent a v5 which drops the GPIO driver, so please use
+the patches from that version. Thanks.
+
+Regards,
+Aidan
