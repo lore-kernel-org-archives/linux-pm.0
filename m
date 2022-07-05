@@ -2,99 +2,142 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AA37C433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 09:52:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F4C9CCA47B
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Jul 2022 10:09:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232181AbiGEJwF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Jul 2022 05:52:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38986 "EHLO
+        id S231346AbiGEKJB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Jul 2022 06:09:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32926 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232367AbiGEJvP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 05:51:15 -0400
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD04813F81
-        for <linux-pm@vger.kernel.org>; Tue,  5 Jul 2022 02:49:59 -0700 (PDT)
-Received: by mail-pj1-x1029.google.com with SMTP id o3-20020a17090a744300b001ef8f7f3dddso3526964pjk.3
-        for <linux-pm@vger.kernel.org>; Tue, 05 Jul 2022 02:49:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dNuDujWN9W1g88kKFQJS4fnKwCoQVZmV8mz8Iq8FU/s=;
-        b=BhBQ9g2q9M0kZORA2LG2XIzUp7lCMhxIe5kQhvGIfqCVFNtnBWDtCYi/aSXCzPCe+u
-         h7jocr2l1u+4Q9JnBf5J1ZCcBrmAQLy5ZgF4zxXobx7Ao8I6L3VqPN06HBr5kSTu020e
-         Z0j+PaSP/GSURTlhhrzZfoMoYnUuzneOYqxu0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dNuDujWN9W1g88kKFQJS4fnKwCoQVZmV8mz8Iq8FU/s=;
-        b=jlwoZFSc/y2BjN05BH+69lkGYvmUHPeJYZOO6D0J3AnEK2j2UJ/GxeoFmuPsK45xRc
-         a7pZkSl1dscQ2WKfNEkhW2jCzZk8btW5VXMMnwBckGlPR2VqtZwUMOJi/qq82jwbZhuV
-         Cr8w2/X5AMeRIrgAYjjMctw/t6FJxltDiaN6qNG42l/KswFun0/+/rW9vigJWzWLoGmH
-         akqXTVs2lYJKBLEdV12WZqEH/0oTjuRqeQwbqK6poUD700VS+Nk/5gZfSrM18A9CiAZ/
-         2aDA44Al6v/2GawmHsNCLfUklnF/Jzkwz81O7+ptVVEGKgBLT/1o+kCJlMeLAm6UYmzv
-         qk1w==
-X-Gm-Message-State: AJIora/BMpWcHuiKdQbx10TP4O+UG5hgtLA7c+CEEI47LG4Elc1rDYcQ
-        0K+dzLspNnUjIwoPC0XfGgTXeduoEOIjmw==
-X-Google-Smtp-Source: AGRyM1srUa7NyStt9XxdcLUu8TEjpzpM9KcuxS4p7FiTh2jnPnLRDGAc5YssLWz/O7Tg/YLTswEFOA==
-X-Received: by 2002:a17:903:41c4:b0:16a:1fda:579f with SMTP id u4-20020a17090341c400b0016a1fda579fmr40995717ple.169.1657014599029;
-        Tue, 05 Jul 2022 02:49:59 -0700 (PDT)
-Received: from hsinyi-z840.tpe.corp.google.com ([2401:fa00:1:10:c921:5fa9:6620:638])
-        by smtp.gmail.com with ESMTPSA id j8-20020a17090a060800b001ed1444df67sm12002232pjj.6.2022.07.05.02.49.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Jul 2022 02:49:58 -0700 (PDT)
-From:   Hsin-Yi Wang <hsinyi@chromium.org>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>
-Cc:     Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Thierry Strudel <tstrudel@google.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Pin-yen Lin <treapking@chromium.org>
-Subject: [PATCH] PM: domains: Ensure genpd_debugfs_dir exists before remove
-Date:   Tue,  5 Jul 2022 17:49:47 +0800
-Message-Id: <20220705094946.827697-1-hsinyi@chromium.org>
-X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
+        with ESMTP id S229885AbiGEKI6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2022 06:08:58 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9546613F56;
+        Tue,  5 Jul 2022 03:08:56 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 4BB4A1F91F;
+        Tue,  5 Jul 2022 10:08:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1657015735; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=qvMJ4J1/LuqJ2bm7BlZIoOLJOYmWh+4Rpvkk33SZGOA=;
+        b=eByb4sSPqg6rRuVWR7Uyol2qkXUh2FlAJZJl6kQB2+c8EEhcdaxtq/jkX0dVzdvL/5s6D3
+        /efNTsY/bdasP3pVQxu6qP4nvHO+zcS4O9fblGgs1NR89rSYgTvYETM292rGHy3CrhOSj+
+        qGcOFU+GGl+mKHAF54mbZA9ZrTUJOaY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1657015735;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=qvMJ4J1/LuqJ2bm7BlZIoOLJOYmWh+4Rpvkk33SZGOA=;
+        b=jKWTp5GMggeoLloojImrUvPvKkYL+8GQzQSR8Qi8VzqCYEK46zUKh7GMjl/cO3qvfPDiP7
+        DHXFfHIde+vxx5CQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2E2AF1339A;
+        Tue,  5 Jul 2022 10:08:54 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id VBGsCbYNxGK1BQAAMHmgww
+        (envelope-from <jdelvare@suse.de>); Tue, 05 Jul 2022 10:08:54 +0000
+Date:   Tue, 5 Jul 2022 12:08:52 +0200
+From:   Jean Delvare <jdelvare@suse.de>
+To:     Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Wolfram Sang <wsa@kernel.org>, Guenter Roeck <groeck@chromium.org>,
+        linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org,
+        openipmi-developer@lists.sourceforge.net,
+        linux-integrity@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-crypto@vger.kernel.org, linux-gpio@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, chrome-platform@lists.linux.dev,
+        linux-rpi-kernel@lists.infradead.org, linux-input@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+        patches@opensource.cirrus.com, alsa-devel@alsa-project.org,
+        linux-omap@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, devicetree@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, kasan-dev@googlegroups.com,
+        linux-mediatek@lists.infradead.org
+Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
+Message-ID: <20220705120852.049dc235@endymion.delvare>
+In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
+References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
+        <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
+Organization: SUSE Linux
+X-Mailer: Claws Mail 3.18.0 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-genpd_debug_remove() may be indirectly called from others while
-genpd_debugfs_dir is not yet set. Make sure genpd_debugfs_dir exists
-before remove the sub components, otherwise components under
-/sys/kernel/debug may be accidentally removed.
+On Tue, 28 Jun 2022 16:03:12 +0200, Uwe Kleine-K=C3=B6nig wrote:
+> From: Uwe Kleine-K=C3=B6nig <uwe@kleine-koenig.org>
+>=20
+> The value returned by an i2c driver's remove function is mostly ignored.
+> (Only an error message is printed if the value is non-zero that the
+> error is ignored.)
+>=20
+> So change the prototype of the remove function to return no value. This
+> way driver authors are not tempted to assume that passing an error to
+> the upper layer is a good idea. All drivers are adapted accordingly.
+> There is no intended change of behaviour, all callbacks were prepared to
+> return 0 before.
+>=20
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+> ---
 
-Fixes: 718072ceb211 ("PM: domains: create debugfs nodes when adding power domains")
-Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
----
-An example:
-scpsys_probe() in drivers/soc/mediatek/mtk-pm-domains.c indirectly calls
-genpd_debug_remove() on probe fail, causing /sys/kernel/debug/usb to be
-removed.
----
- drivers/base/power/domain.c | 3 +++
- 1 file changed, 3 insertions(+)
+That's a huge change for a relatively small benefit, but if this is
+approved by the I2C core maintainer then fine with me. For:
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 3e86772d5fac5..5a2e0232862e0 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -222,6 +222,9 @@ static void genpd_debug_remove(struct generic_pm_domain *genpd)
- {
- 	struct dentry *d;
- 
-+	if (!genpd_debugfs_dir)
-+		return;
-+
- 	d = debugfs_lookup(genpd->name, genpd_debugfs_dir);
- 	debugfs_remove(d);
- }
--- 
-2.37.0.rc0.161.g10f37bed90-goog
+>  drivers/hwmon/adc128d818.c                                | 4 +---
+>  drivers/hwmon/adt7470.c                                   | 3 +--
+>  drivers/hwmon/asb100.c                                    | 6 ++----
+>  drivers/hwmon/asc7621.c                                   | 4 +---
+>  drivers/hwmon/dme1737.c                                   | 4 +---
+>  drivers/hwmon/f75375s.c                                   | 5 ++---
+>  drivers/hwmon/fschmd.c                                    | 6 ++----
+>  drivers/hwmon/ftsteutates.c                               | 3 +--
+>  drivers/hwmon/ina209.c                                    | 4 +---
+>  drivers/hwmon/ina3221.c                                   | 4 +---
+>  drivers/hwmon/jc42.c                                      | 3 +--
+>  drivers/hwmon/mcp3021.c                                   | 4 +---
+>  drivers/hwmon/occ/p8_i2c.c                                | 4 +---
+>  drivers/hwmon/pcf8591.c                                   | 3 +--
+>  drivers/hwmon/smm665.c                                    | 3 +--
+>  drivers/hwmon/tps23861.c                                  | 4 +---
+>  drivers/hwmon/w83781d.c                                   | 4 +---
+>  drivers/hwmon/w83791d.c                                   | 6 ++----
+>  drivers/hwmon/w83792d.c                                   | 6 ++----
+>  drivers/hwmon/w83793.c                                    | 6 ++----
+>  drivers/hwmon/w83795.c                                    | 4 +---
+>  drivers/hwmon/w83l785ts.c                                 | 6 ++----
+>  drivers/i2c/i2c-core-base.c                               | 6 +-----
+>  drivers/i2c/i2c-slave-eeprom.c                            | 4 +---
+>  drivers/i2c/i2c-slave-testunit.c                          | 3 +--
+>  drivers/i2c/i2c-smbus.c                                   | 3 +--
+>  drivers/i2c/muxes/i2c-mux-ltc4306.c                       | 4 +---
+>  drivers/i2c/muxes/i2c-mux-pca9541.c                       | 3 +--
+>  drivers/i2c/muxes/i2c-mux-pca954x.c                       | 3 +--
 
+Reviewed-by: Jean Delvare <jdelvare@suse.de>
+
+--=20
+Jean Delvare
+SUSE L3 Support
