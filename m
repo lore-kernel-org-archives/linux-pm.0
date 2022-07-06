@@ -2,143 +2,173 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43DF1CCA482
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 09:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA20CCA473
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 10:01:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232832AbiGFJzP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jul 2022 05:55:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35484 "EHLO
+        id S232077AbiGFKBg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jul 2022 06:01:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232034AbiGFJyN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 05:54:13 -0400
-Received: from mail-oa1-f52.google.com (mail-oa1-f52.google.com [209.85.160.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CA6725281;
-        Wed,  6 Jul 2022 02:54:10 -0700 (PDT)
-Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-10bf634bc50so11683649fac.3;
-        Wed, 06 Jul 2022 02:54:10 -0700 (PDT)
+        with ESMTP id S230420AbiGFKBd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 06:01:33 -0400
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 866BD24F00
+        for <linux-pm@vger.kernel.org>; Wed,  6 Jul 2022 03:01:31 -0700 (PDT)
+Received: by mail-pl1-x62c.google.com with SMTP id y18so5239105plb.2
+        for <linux-pm@vger.kernel.org>; Wed, 06 Jul 2022 03:01:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=izBSDhEo5LkaKfHP1dONDKBae8Gt8mJVPobNlAoGfDM=;
+        b=MlcF3wqO/V85e/FqvG2aKl03wiSIMQfXYBvfKy2OGFsF7Hq0mu82AfoCPBm8llGBTi
+         4JMDyKlzabIHgWrhoKInoq421y2c1Fy+ra3rx6oynfgzzzqzKSXoAOIlwV+blu87b7TZ
+         Mc67S/8G/Oqyk4Yarl2CubxK1nBLs4lAAte3QXQ54vehyNTVD8VpE39mr2OtOvLwKkCf
+         ld3D8IE4H08vVLiRaDxZCkNz/wRYxAoZrLaECNgWa3VQCWJQbOE/gHbhpZCQCUf2Zc2x
+         2cJxnn/piI3hVeWPvn0No/DgH8UqaieLhSfEnTVVN8VLArdT41QJg+BwwbXhttkk5ZR5
+         gwOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=o8jOPstF035V3JBIGTjyEra8xnCZ4RAIho4NrHeIzoU=;
-        b=ifKui5S5rFjVMq/DNxGGiZYtnihyrIPz+XgGy+287htk2qPkSPTBDT6zU/bqaW0IAj
-         eEIcUuZm8zNyVqggg0vPkfq5SvWboTygMYut/vI30ZWm7OI6knykq5A50cyUN7yxHwbt
-         x3OJkAQz3rS3Y9MtqJ6NwJrgnwi7+6R6OQArw7NoCvrdzt2fl1u+Op6Sk71Eo0mnk7Kf
-         K4jGzZJ9jl69cTwc5fCZkxMTOGQj3eJLQiDqOz0u70kr/hzsHNPD58iNGRUJ3Qra3PtG
-         IF6KKSoTvxIaCco+8PSMr8pK01Kl4c2wWlCyc/+gJQOyWRzB04t4vTh7uCb3o8arKg4q
-         uq5Q==
-X-Gm-Message-State: AJIora8bNvFpKnAMxBIwdfj9hdkzH+LUCtZi660XXnMILcmdqPyTufKv
-        uEDKcQWoKlpivWccpTeeGBiDcGrSKa967ox8
-X-Google-Smtp-Source: AGRyM1uAKY8ZoN6KGv4/toshO1qHFCf+QFQjTKFAVF+YPn4y9ij2Yrnm8jj6CEE8H4m9dwU7r8nybw==
-X-Received: by 2002:a05:6870:b3a7:b0:10c:224c:a0b6 with SMTP id w39-20020a056870b3a700b0010c224ca0b6mr2265078oap.248.1657101249503;
-        Wed, 06 Jul 2022 02:54:09 -0700 (PDT)
-Received: from mail-oo1-f46.google.com (mail-oo1-f46.google.com. [209.85.161.46])
-        by smtp.gmail.com with ESMTPSA id r81-20020acaf354000000b003359fb6609asm8613210oih.22.2022.07.06.02.54.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 06 Jul 2022 02:54:09 -0700 (PDT)
-Received: by mail-oo1-f46.google.com with SMTP id m26-20020a4abc9a000000b00425cd321033so2843821oop.10;
-        Wed, 06 Jul 2022 02:54:09 -0700 (PDT)
-X-Received: by 2002:a05:6902:50e:b0:66e:7f55:7a66 with SMTP id
- x14-20020a056902050e00b0066e7f557a66mr6648581ybs.365.1657100796735; Wed, 06
- Jul 2022 02:46:36 -0700 (PDT)
+        bh=izBSDhEo5LkaKfHP1dONDKBae8Gt8mJVPobNlAoGfDM=;
+        b=gHaBuKmH69sggBBHDdvpkGYqNK6Y7yv8N2eVrRJk7uP1CnbKCMs0tMwE4470AB9yeS
+         bR8Rjsrt9UUmNLCTt4oW9TSB96RnePFA/bhStakcnd4uxkb4q3JZTqbPePgoC8BzVlDt
+         H2eOwqberVTKeYp759S3pLl8tpkCjLXPAkAuiGTJfHiKxpSaTtNO9DU98XYY6mzcL4Pa
+         LQ+pAtI8hvgtYGufKEtBC/MlJQfRaR9VCteSCdZX7mfzZJZ+HdGgcIr7oRj5c7D+bw7i
+         3fni76xsADyjOMs+AIkxYpe646DFir/7h7GTgAw+GyeTn7VpDGZRmOZ9UMrM6/rL4H1J
+         7lJA==
+X-Gm-Message-State: AJIora94VlWTOdzqXMBPahm6kkkrxkgv4qOvT6yWOyN7PAvdGEuWW+tw
+        wEme/DPP+4NTbTh4gLZg7PIDKk0acKxEo8YbjaBM5w==
+X-Google-Smtp-Source: AGRyM1v3ziWKPv53EFicedDG8HWTa+LjL5AiWoFupEyKusVCvS/6LLjFV+/tJzX/UcthosxH8pT/GY30l6NARdYD9xs=
+X-Received: by 2002:a17:90b:38c2:b0:1ed:474a:a668 with SMTP id
+ nn2-20020a17090b38c200b001ed474aa668mr47273440pjb.201.1657101690952; Wed, 06
+ Jul 2022 03:01:30 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220608142723.103523089@infradead.org> <20220608144517.124597382@infradead.org>
-In-Reply-To: <20220608144517.124597382@infradead.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 6 Jul 2022 11:46:25 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdW4pT+YQfLzLTegFu1M3v9-9vaFDFAama7mc82=x6R__w@mail.gmail.com>
-Message-ID: <CAMuHMdW4pT+YQfLzLTegFu1M3v9-9vaFDFAama7mc82=x6R__w@mail.gmail.com>
-Subject: Re: [PATCH 19/36] objtool/idle: Validate __cpuidle code as noinstr
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Richard Henderson <rth@twiddle.net>,
-        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-        Matt Turner <mattst88@gmail.com>,
-        Vineet Gupta <vgupta@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Hans Ulli Kroll <ulli.kroll@googlemail.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Sascha Hauer <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>, tony@atomide.com,
-        khilman@kernel.org, catalin.marinas@arm.com, will@kernel.org,
-        guoren@kernel.org, bcain@quicinc.com, chenhuacai@kernel.org,
-        kernel@xen0n.name, sammy@sammy.net, monstr@monstr.eu,
-        tsbogend@alpha.franken.de, dinguyen@kernel.org, jonas@southpole.se,
-        stefan.kristiansson@saunalahti.fi, shorne@gmail.com,
-        James.Bottomley@hansenpartnership.com, deller@gmx.de,
-        mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
-        paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, hca@linux.ibm.com, gor@linux.ibm.com,
-        agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
-        svens@linux.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org,
-        davem@davemloft.net, richard@nod.at,
-        anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
-        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
-        dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
-        acme@kernel.org, mark.rutland@arm.com,
-        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-        namhyung@kernel.org, jgross@suse.com, srivatsa@csail.mit.edu,
-        amakhalov@vmware.com, pv-drivers@vmware.com,
-        boris.ostrovsky@oracle.com, chris@zankel.net, jcmvbkbc@gmail.com,
-        rafael@kernel.org, lenb@kernel.org, pavel@ucw.cz,
-        gregkh@linuxfoundation.org, mturquette@baylibre.com,
-        sboyd@kernel.org, daniel.lezcano@linaro.org, lpieralisi@kernel.org,
-        sudeep.holla@arm.com, agross@kernel.org,
-        bjorn.andersson@linaro.org, anup@brainfault.org,
-        thierry.reding@gmail.com, jonathanh@nvidia.com,
-        jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
-        yury.norov@gmail.com, andriy.shevchenko@linux.intel.com,
-        linux@rasmusvillemoes.dk, rostedt@goodmis.org, pmladek@suse.com,
-        senozhatsky@chromium.org, john.ogness@linutronix.de,
-        paulmck@kernel.org, frederic@kernel.org, quic_neeraju@quicinc.com,
-        josh@joshtriplett.org, mathieu.desnoyers@efficios.com,
-        jiangshanlai@gmail.com, joel@joelfernandes.org,
-        juri.lelli@redhat.com, vincent.guittot@linaro.org,
-        dietmar.eggemann@arm.com, bsegall@google.com, mgorman@suse.de,
-        bristot@redhat.com, vschneid@redhat.com, jpoimboe@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-snps-arc@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
-        linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
-        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        xen-devel@lists.xenproject.org, linux-xtensa@linux-xtensa.org,
-        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-arch@vger.kernel.org,
-        rcu@vger.kernel.org
+References: <20220705150002.2016207-1-varadgautam@google.com>
+ <YsRkPUcrMj+JU0Om@kroah.com> <CAOLDJOJ_v75WqGt2mZa0h-GgF+NThFBY5DvasH+9LLVgLrrvog@mail.gmail.com>
+ <YsUvgWmrk+ZfUy3t@kroah.com> <CAOLDJOJug5jYpaSjY1tAYWNo0QRM4NB+wM2Vd2=Lf_O7TRjVCg@mail.gmail.com>
+ <6eed01c90fafe681cccba2f227d65f2e9bfb8348.camel@intel.com> <YsVUB76c2b0EkRBb@kroah.com>
+In-Reply-To: <YsVUB76c2b0EkRBb@kroah.com>
+From:   Varad Gautam <varadgautam@google.com>
+Date:   Wed, 6 Jul 2022 12:01:19 +0200
+Message-ID: <CAOLDJOJLvSUMqF37H13aiH59Pm4_t6esRxy7Ej3Grhr4fmSGQA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: sysfs: Perform bounds check when storing thermal states
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        stable@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 8, 2022 at 4:46 PM Peter Zijlstra <peterz@infradead.org> wrote:
-> Idle code is very like entry code in that RCU isn't available. As
-> such, add a little validation.
+On Wed, Jul 6, 2022 at 11:21 AM Greg KH <gregkh@linuxfoundation.org> wrote:
 >
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> On Wed, Jul 06, 2022 at 04:51:59PM +0800, Zhang Rui wrote:
+> > On Wed, 2022-07-06 at 09:16 +0200, Varad Gautam wrote:
+> > > On Wed, Jul 6, 2022 at 8:45 AM Greg KH <gregkh@linuxfoundation.org>
+> > > wrote:
+> > > >
+> > > > On Tue, Jul 05, 2022 at 11:02:50PM +0200, Varad Gautam wrote:
+> > > > > On Tue, Jul 5, 2022 at 6:18 PM Greg KH <
+> > > > > gregkh@linuxfoundation.org> wrote:
+> > > > > >
+> > > > > > On Tue, Jul 05, 2022 at 03:00:02PM +0000, Varad Gautam wrote:
+> > > > > > > Check that a user-provided thermal state is within the
+> > > > > > > maximum
+> > > > > > > thermal states supported by a given driver before attempting
+> > > > > > > to
+> > > > > > > apply it. This prevents a subsequent OOB access in
+> > > > > > > thermal_cooling_device_stats_update() while performing
+> > > > > > > state-transition accounting on drivers that do not have this
+> > > > > > > check
+> > > > > > > in their set_cur_state() handle.
+> > > > > > >
+> > > > > > > Signed-off-by: Varad Gautam <varadgautam@google.com>
+> > > > > > > Cc: stable@vger.kernel.org
+> > > > > > > ---
+> > > > > > >  drivers/thermal/thermal_sysfs.c | 12 +++++++++++-
+> > > > > > >  1 file changed, 11 insertions(+), 1 deletion(-)
+> > > > > > >
+> > > > > > > diff --git a/drivers/thermal/thermal_sysfs.c
+> > > > > > > b/drivers/thermal/thermal_sysfs.c
+> > > > > > > index 1c4aac8464a7..0c6b0223b133 100644
+> > > > > > > --- a/drivers/thermal/thermal_sysfs.c
+> > > > > > > +++ b/drivers/thermal/thermal_sysfs.c
+> > > > > > > @@ -607,7 +607,7 @@ cur_state_store(struct device *dev,
+> > > > > > > struct device_attribute *attr,
+> > > > > > >               const char *buf, size_t count)
+> > > > > > >  {
+> > > > > > >       struct thermal_cooling_device *cdev =
+> > > > > > > to_cooling_device(dev);
+> > > > > > > -     unsigned long state;
+> > > > > > > +     unsigned long state, max_state;
+> > > > > > >       int result;
+> > > > > > >
+> > > > > > >       if (sscanf(buf, "%ld\n", &state) != 1)
+> > > > > > > @@ -618,10 +618,20 @@ cur_state_store(struct device *dev,
+> > > > > > > struct device_attribute *attr,
+> > > > > > >
+> > > > > > >       mutex_lock(&cdev->lock);
+> > > > > > >
+> > > > > > > +     result = cdev->ops->get_max_state(cdev, &max_state);
+> > > > > > > +     if (result)
+> > > > > > > +             goto unlock;
+> > > > > > > +
+> > > > > > > +     if (state > max_state) {
+> > > > > > > +             result = -EINVAL;
+> > > > > > > +             goto unlock;
+> > > > > > > +     }
+> > > > > > > +
+> > > > > > >       result = cdev->ops->set_cur_state(cdev, state);
+> > > > > >
+> > > > > > Why doesn't set_cur_state() check the max state before setting
+> > > > > > it?  Why
+> > > > > > are the callers forced to always check it before?  That feels
+> > > > > > wrong...
+> > > > > >
+> > > > >
+> > > > > The problem lies in thermal_cooling_device_stats_update(), not
+> > > > > set_cur_state().
+> > > > >
+> > > > > If ->set_cur_state() doesn't error out on invalid state,
+> > > > > thermal_cooling_device_stats_update() does a:
+> > > > >
+> > > > > stats->trans_table[stats->state * stats->max_states +
+> > > > > new_state]++;
+> > > > >
+> > > > > stats->trans_table reserves space depending on max_states, but
+> > > > > we'd end up
+> > > > > reading/writing outside it. cur_state_store() can prevent this
+> > > > > regardless of
+> > > > > the driver's ->set_cur_state() implementation.
+> > > >
+> > > > Why wouldn't cur_state_store() check for an out-of-bounds condition
+> > > > by
+> > > > calling get_max_state() and then return an error if it is invalid,
+> > > > preventing thermal_cooling_device_stats_update() from ever being
+> > > > called?
+> > > >
+> > >
+> > > That's what this patch does, it adds the out-of-bounds check.
+> >
+> > No, I think Greg' question is
+> > why cdev->ops->set_cur_state() return 0 when setting a cooling state
+> > that exceeds the maximum cooling state?
+>
+> Yes, that is what I am asking, it should not allow a state to be
+> exceeded.
+>
 
->  arch/m68k/kernel/vmlinux-nommu.lds   |    1 -
->  arch/m68k/kernel/vmlinux-std.lds     |    1 -
->  arch/m68k/kernel/vmlinux-sun3.lds    |    1 -
+Indeed, it is upto the driver to return !0 from cdev->ops->set_cur_state()
+when setting state > max - and it is a driver bug for not doing so.
 
-FWIW
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+But a buggy driver should not lead to cur_state_store() performing an OOB
+access.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> thanks,
+>
+> greg k-h
