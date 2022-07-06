@@ -2,144 +2,190 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAF4CCCA480
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 10:24:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9EA0C43334
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 10:27:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232545AbiGFKYf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jul 2022 06:24:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39954 "EHLO
+        id S232097AbiGFK1K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jul 2022 06:27:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42068 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232386AbiGFKYf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 06:24:35 -0400
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A4E023BFC;
-        Wed,  6 Jul 2022 03:24:34 -0700 (PDT)
-Received: by mail-wr1-x42e.google.com with SMTP id z12so11778001wrq.7;
-        Wed, 06 Jul 2022 03:24:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=references:from:to:cc:subject:date:in-reply-to:message-id
-         :mime-version;
-        bh=gAAFLxTVBbke7idk+TJqhtAe46jVc+eusFaZ2+NGDNc=;
-        b=T01qQGVCFpQvsrYLXbIulhJcGg0HUmQARvvOBgipM53C+Kp8/JIW6EVZQb5v0UNLwb
-         ml0P7sxKFGboDz7Kyc82mBHUJNEO0yRFzMpFmbK4JRLCoyqkfBGu/dlbT2ajCZH8/rag
-         fEVKcZ2ywOjzx+JWnLYUwVSpbUU4PWhsNQzBTji78zfstk9Yu3qAhwlP6Kf0vvPvkd2b
-         PP2nxprfreGNNm0gX45OMoKjagQ6gYAa1hM2XRfJomg8WJjQmTsdOWUbhDH+1SGW2013
-         GeHT4vlC7fliPHYqfW+hPr4R0eArQu9KrGpNAZm9xnx+v/SIAhMOH/Wjyabf+lLJm7iW
-         gzkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:references:from:to:cc:subject:date:in-reply-to
-         :message-id:mime-version;
-        bh=gAAFLxTVBbke7idk+TJqhtAe46jVc+eusFaZ2+NGDNc=;
-        b=kk9CrQ79OGzuPlAzaQ37UxR0TJLH4d+7ndJqi7cuBEEFOpGi57TVrGV2KSP8UeGT5k
-         mXzntGrptd7iz+IVGwdglKH9ZXmoBRD8Q/ytqaELjRMtdnKLjw8ZKKMhgc3lX/DyRq0K
-         q/rJMgfec5NrUowTy3TfBZQo+19OHZs50KbtHJshivTmNd+yXvug3VAKQ7n58GzfoKlf
-         Ph14ZjTM/P2/ZNGWO0BjI9mJdG9aSB+5Rni9r+1YY0Ws66bgECfv27QXNWjNQjJHI/6i
-         Qxu+HfYYoyVy0rIYlwNNSuPaS7N9BjpX5U6JG6GcLUWnwUBWlDRO7i8XZk3EQOED9Kya
-         WKtA==
-X-Gm-Message-State: AJIora9m8dwFSvgPlgsEk+USgQ6Z198joG6WXwVFwqBKiaDYBSP+o6+0
-        S+WC1izObcHnMBmG/6E/myc=
-X-Google-Smtp-Source: AGRyM1vU3MJHoH322VL/VZ3kLVOdxQZ29efLU3+xNpoRRoRaYcb0Iv3nb/x5LHrg9UdFMQ7tbtgPbw==
-X-Received: by 2002:adf:d1ea:0:b0:21b:a6cb:fcf6 with SMTP id g10-20020adfd1ea000000b0021ba6cbfcf6mr36825810wrd.477.1657103072945;
-        Wed, 06 Jul 2022 03:24:32 -0700 (PDT)
-Received: from localhost (92.40.202.163.threembb.co.uk. [92.40.202.163])
-        by smtp.gmail.com with ESMTPSA id bq25-20020a5d5a19000000b0021d6d74a0ecsm6931272wrb.96.2022.07.06.03.24.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Jul 2022 03:24:32 -0700 (PDT)
-References: <20220629143046.213584-1-aidanmacdonald.0x0@gmail.com>
- <20220629143046.213584-7-aidanmacdonald.0x0@gmail.com>
- <YsQwHiVdooN2TWbh@google.com> <MiQPswErEouy9b8OQ6k5WeQxH3ENw94W@localhost>
- <YsRM0O3MQmBO5WXK@google.com>
-From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     linus.walleij@linaro.org, brgl@bgdev.pl, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, wens@csie.org, jic23@kernel.org,
-        sre@kernel.org, lgirdwood@gmail.com, broonie@kernel.org,
-        lars@metafoo.de, quic_gurus@quicinc.com,
-        sebastian.reichel@collabora.com, andy.shevchenko@gmail.com,
-        michael@walle.cc, rdunlap@infradead.org,
-        linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v4 06/15] mfd: axp20x: Add support for AXP192
-Date:   Tue, 05 Jul 2022 20:42:43 +0100
-In-reply-to: <YsRM0O3MQmBO5WXK@google.com>
-Message-ID: <VHU3uih5i4iLk4b8WSSqo4p8Dc5tMaDN@localhost>
+        with ESMTP id S232280AbiGFK1J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 06:27:09 -0400
+Received: from www262.sakura.ne.jp (www262.sakura.ne.jp [202.181.97.72])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEDDC2654D
+        for <linux-pm@vger.kernel.org>; Wed,  6 Jul 2022 03:27:08 -0700 (PDT)
+Received: from fsav311.sakura.ne.jp (fsav311.sakura.ne.jp [153.120.85.142])
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 266AQT3u067488;
+        Wed, 6 Jul 2022 19:26:29 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Received: from www262.sakura.ne.jp (202.181.97.72)
+ by fsav311.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav311.sakura.ne.jp);
+ Wed, 06 Jul 2022 19:26:29 +0900 (JST)
+X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav311.sakura.ne.jp)
+Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
+        (authenticated bits=0)
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 266AQSCK067485
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
+        Wed, 6 Jul 2022 19:26:28 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Message-ID: <a6d98824-56c8-6d92-bb1b-eb065b57cb81@I-love.SAKURA.ne.jp>
+Date:   Wed, 6 Jul 2022 19:26:28 +0900
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH] char: misc: make misc_open() and misc_register() killable
+Content-Language: en-US
+To:     Greg KH <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Wedson Almeida Filho <wedsonaf@google.com>,
+        Dmitry Vyukov <dvyukov@google.com>,
+        Arjan van de Ven <arjan@linux.intel.com>
+References: <YsKW6VvWqvcMRBSl@kroah.com>
+ <100f445e-9fa8-4f37-76aa-8359f0008c59@I-love.SAKURA.ne.jp>
+ <YsLIepAXeBKT0AF/@kroah.com>
+ <01a93294-e323-b9ca-7e95-a33d4b89dc47@I-love.SAKURA.ne.jp>
+ <YsL5pUuydMWJ9dSQ@kroah.com>
+ <617f64e3-74c8-f98b-3430-bd476867e483@I-love.SAKURA.ne.jp>
+ <5665ccb2-b92b-9e1f-8bb5-a950986450ec@I-love.SAKURA.ne.jp>
+ <YsRHwy6+5gask+KT@kroah.com>
+ <064bbe2a-c18e-203e-9e01-b32fe9baa390@I-love.SAKURA.ne.jp>
+ <7ddb25ff-60e5-75be-8080-2a7465cca68c@I-love.SAKURA.ne.jp>
+ <YsUtBERm94k/iZTy@kroah.com>
+From:   Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+In-Reply-To: <YsUtBERm94k/iZTy@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 2022/07/06 15:34, Greg KH wrote:
+> On Wed, Jul 06, 2022 at 03:21:15PM +0900, Tetsuo Handa wrote:
+>> How should we fix this problem?
+> 
+> We can decrease the timeout in usb_stor_msg_common().  I imagine that if
+> that timeout is ever hit in this sequence, then all will recover, right?
+> Try decreasing it to a sane number and see what happens.
 
-Lee Jones <lee.jones@linaro.org> writes:
+Yes, all recovers with below diff.
 
-> On Tue, 05 Jul 2022, Aidan MacDonald wrote:
->
->> 
->> Lee Jones <lee.jones@linaro.org> writes:
->> 
->> > On Wed, 29 Jun 2022, Aidan MacDonald wrote:
->> >
->> >> The AXP192 PMIC is similar to the AXP202/AXP209, but with different
->> >> regulators, additional GPIOs, and a different IRQ register layout.
->> >> 
->> >> Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
->> >> Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
->> >> ---
->> >>  drivers/mfd/axp20x-i2c.c   |   2 +
->> >>  drivers/mfd/axp20x.c       | 152 +++++++++++++++++++++++++++++++++++++
->> >>  include/linux/mfd/axp20x.h |  84 ++++++++++++++++++++
->> >>  3 files changed, 238 insertions(+)
->> >> [...]
->> >> +static const struct regmap_irq_chip axp192_regmap_irq_chip = {
->> >> +	.name			= "axp192_irq_chip",
->> >> +	.status_base		= AXP192_IRQ1_STATE,
->> >> +	.ack_base		= AXP192_IRQ1_STATE,
->> >> +	.unmask_base		= AXP192_IRQ1_EN,
->> >> +	.init_ack_masked	= true,
->> >> +	.irqs			= axp192_regmap_irqs,
->> >> +	.num_irqs		= ARRAY_SIZE(axp192_regmap_irqs),
->> >> +	.num_regs		= 5,
->> >> +	.get_irq_reg		= axp192_get_irq_reg,
->> >
->> > Fix me:
->> >
->> > drivers/mfd/axp20x.c:634:35: error: initialization of 'unsigned int (*)(struct regmap_irq_chip_data *, unsigned int,  int)' from incompatible pointer type 'int (*)(unsigned int,  int)' [-Werror=incompatible-pointer-types]
->> >   634 |         .get_irq_reg            = axp192_get_irq_reg,
->> >       |                                   ^~~~~~~~~~~~~~~~~~
->> > drivers/mfd/axp20x.c:634:35: note: (near initialization for 'axp192_regmap_irq_chip.get_irq_reg')
->> >
->> 
->> This doesn't need fixing. You are missing the prerequisite patches.
->> 
->> -- snip --
->> Changes in v4:
->> * Drop regmap-irq patches and rebase on top of the regmap-irq
->>   refactoring series[1], which implements the same functionality.
->> 
->> [1]: https://lore.kernel.org/lkml/20220623211420.918875-1-aidanmacdonald.0x0@gmail.com/
->> -- snip --
->
->> Perhaps I wasn't clear enough that it was a dependency, sorry for
->> any confusion.
->
-> Any idea why the regmap-irq patches weren't in -next?
+------------------------------------------------------------
+diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
+index 1928b3918242..d2a192306e0c 100644
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -164,7 +164,7 @@ static int usb_stor_msg_common(struct us_data *us, int timeout)
+  
+ 	/* wait for the completion of the URB */
+ 	timeleft = wait_for_completion_interruptible_timeout(
+-			&urb_done, timeout ? : MAX_SCHEDULE_TIMEOUT);
++			&urb_done, timeout ? : 5 * HZ);
+  
+ 	clear_bit(US_FLIDX_URB_ACTIVE, &us->dflags);
+ 
+------------------------------------------------------------
 
-Uh, sorry, I didn't pay attention and assumed this was the same error
-the kernel test robot was reporting against mfd-next (missing field).
-But the field does exist; this error is a type mismatch:
+But
 
-  initialization of 'unsigned int (*)(struct regmap_irq_chip_data *,
-                                      unsigned int,  int)'
-  from incompatible pointer type 'int (*)(unsigned int,  int)'
+>> Anyway,
+>>
+>>         /*
+>>          * Resuming.  We may need to wait for the image device to
+>>          * appear.
+>>          */
+>>         wait_for_device_probe();
+>>
+>> in snapshot_open() will sleep forever if some device became unresponsive.
+>>
 
-So the regmap-irq patches were in -next, the problem is you were
-using the old patch from v3.
+wait_for_device_probe() in snapshot_open() was added by commit c751085943362143
+("PM/Hibernate: Wait for SCSI devices scan to complete during resume"), and
+that commit did not take into account possibility of unresponsive hardware.
 
-FYI, I just sent a v5 which drops the GPIO driver, so please use
-the patches from that version. Thanks.
+   "In addition, if the resume from hibernation is userland-driven, it's
+    better to wait for all device probes in the kernel to complete before
+    attempting to open the resume device."
 
-Regards,
-Aidan
+It is trivial to make e.g. atomic_read(&probe_count) == 10, which means that
+acceptable timeout for usb_stor_msg_common() may be no longer acceptable timeout
+for wait_for_device_probe(). Unlike flush_workqueue(), wait_for_device_probe()
+can wait forever if new probe requests keep coming in while waiting for existing
+probe requests to complete. Therefore, I think we should introduce timeout on
+wait_for_device_probe() side as well.
+
+I would like to propose below changes in 3 patches as fixes for this problem.
+Since there are 13 wait_for_device_probe() callers, maybe we want both killable
+and uninterruptible versions and pass timeout as an argument...
+
+------------------------------------------------------------
+ drivers/base/dd.c               |    3 ++-
+ drivers/char/misc.c             |    9 ++++++---
+ drivers/usb/storage/transport.c |    2 +-
+ 3 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 3fc3b5940bb3..67e08b381ee2 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -723,7 +723,8 @@ void wait_for_device_probe(void)
+ 	flush_work(&deferred_probe_work);
+ 
+ 	/* wait for the known devices to complete their probing */
+-	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
++	wait_event_killable_timeout(probe_waitqueue,
++				    atomic_read(&probe_count) == 0, 60 * HZ);
+ 	async_synchronize_full();
+ }
+ EXPORT_SYMBOL_GPL(wait_for_device_probe);
+diff --git a/drivers/char/misc.c b/drivers/char/misc.c
+index ca5141ed5ef3..6430c534a1cb 100644
+--- a/drivers/char/misc.c
++++ b/drivers/char/misc.c
+@@ -104,7 +104,8 @@ static int misc_open(struct inode *inode, struct file *file)
+ 	int err = -ENODEV;
+ 	const struct file_operations *new_fops = NULL;
+ 
+-	mutex_lock(&misc_mtx);
++	if (mutex_lock_killable(&misc_mtx))
++		return -EINTR;
+ 
+ 	list_for_each_entry(c, &misc_list, list) {
+ 		if (c->minor == minor) {
+@@ -116,7 +117,8 @@ static int misc_open(struct inode *inode, struct file *file)
+ 	if (!new_fops) {
+ 		mutex_unlock(&misc_mtx);
+ 		request_module("char-major-%d-%d", MISC_MAJOR, minor);
+-		mutex_lock(&misc_mtx);
++		if (mutex_lock_killable(&misc_mtx))
++			return -EINTR;
+ 
+ 		list_for_each_entry(c, &misc_list, list) {
+ 			if (c->minor == minor) {
+@@ -178,7 +180,8 @@ int misc_register(struct miscdevice *misc)
+ 
+ 	INIT_LIST_HEAD(&misc->list);
+ 
+-	mutex_lock(&misc_mtx);
++	if (mutex_lock_killable(&misc_mtx))
++		return -EINTR;
+ 
+ 	if (is_dynamic) {
+ 		int i = find_first_zero_bit(misc_minors, DYNAMIC_MINORS);
+diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
+index 1928b3918242..d2a192306e0c 100644
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -164,7 +164,7 @@ static int usb_stor_msg_common(struct us_data *us, int timeout)
+  
+ 	/* wait for the completion of the URB */
+ 	timeleft = wait_for_completion_interruptible_timeout(
+-			&urb_done, timeout ? : MAX_SCHEDULE_TIMEOUT);
++			&urb_done, timeout ? : 60 * HZ);
+  
+ 	clear_bit(US_FLIDX_URB_ACTIVE, &us->dflags);
+ 
+------------------------------------------------------------
+
