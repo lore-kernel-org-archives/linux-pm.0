@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CECDC433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 15:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64426CCA481
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 15:35:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234009AbiGFPd6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jul 2022 11:33:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46168 "EHLO
+        id S234069AbiGFPfN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jul 2022 11:35:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44544 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234006AbiGFPc4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 11:32:56 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE24026570;
-        Wed,  6 Jul 2022 08:32:21 -0700 (PDT)
+        with ESMTP id S233927AbiGFPe3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 11:34:29 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C3A2286DF;
+        Wed,  6 Jul 2022 08:33:06 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 50DC0B81D8E;
-        Wed,  6 Jul 2022 15:32:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11BA0C341C8;
-        Wed,  6 Jul 2022 15:32:17 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id ADF6861FF2;
+        Wed,  6 Jul 2022 15:33:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 376AEC341CB;
+        Wed,  6 Jul 2022 15:33:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1657121539;
-        bh=2tvJ+fipO4VZmFYhZ9As3c1NcfOg4s2bZwVEwvLpA6Y=;
+        s=k20201202; t=1657121585;
+        bh=h1wfxGz2vBToOZrZjVl2LDtbJkmq2Kug3U3SqP0uKRM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ilCDhFZJt/Q2Snut441k9GZxbZLf1viePwZlKYh6rDdu+yszJiL7xw0At1WNvDbAA
-         HrvS88ooELOd8Sa2nqE4EkifAw0Fu66toDzsAA09meJh3zLlOqTy3zxQevE2Z6ZTbr
-         +KEzSXNnS4UcphPcwlQyz4HvQS/EeNd+OpuCZ5cBTs0ErLNuWoWTBqL5oLLZAhV0dP
-         gYAKZwVgGB18UqKVN/TjVkgvFn7dn67lzWmDaQXwQDtrkTfQUsPdmrk16Avn5cfNjm
-         obuI6oqM14pxaRm2Tj5ralRSx7Fg4RgeWwqTRMPxYvt/0o6E3gVRUFlfz30pc1S3q3
-         J9Bh6BAoJ9RVA==
+        b=QQCSvZiTdgDdMMmKHndM3u/UTA54/J7yWLliFHNXX7d2JkYoiz4A3Ljv4JiQJ3clW
+         qSEMuwKP6qV18FcnmdFTU5NG5KwhhVItAQnLYiXfkKQEula1JdnLWSIZaFKv0hyO+X
+         +OaCHOaBx2orVcmtABAUBUvcU+wTacBhEx5HYa9wjysqMjYyf/oPP6ujhMfq2flehC
+         sS3rBIZKODY4RhKA4iDlVqj/Ks1xkiy1oG+v32XIuF77qa0R74QvWmcPRxoFAk0UBt
+         ivyz8L9IWc0jtf0cODYT4Nwra3H2Eiec+yrtzCeO9HpKdCyGNmDhuOcxTJ9D/aQRPk
+         9Xd+Gc7xUH+sA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Liang He <windhl@126.com>, Viresh Kumar <viresh.kumar@linaro.org>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
         mpe@ellerman.id.au, linux-pm@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 5.15 09/18] cpufreq: pmac32-cpufreq: Fix refcount leak bug
-Date:   Wed,  6 Jul 2022 11:31:44 -0400
-Message-Id: <20220706153153.1598076-9-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 05/11] cpufreq: pmac32-cpufreq: Fix refcount leak bug
+Date:   Wed,  6 Jul 2022 11:32:50 -0400
+Message-Id: <20220706153256.1598411-5-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220706153153.1598076-1-sashal@kernel.org>
-References: <20220706153153.1598076-1-sashal@kernel.org>
+In-Reply-To: <20220706153256.1598411-1-sashal@kernel.org>
+References: <20220706153256.1598411-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -67,10 +67,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+)
 
 diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index 4f20c6a9108d..8e41fe9ee870 100644
+index 73621bc11976..3704476bb83a 100644
 --- a/drivers/cpufreq/pmac32-cpufreq.c
 +++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -470,6 +470,10 @@ static int pmac_cpufreq_init_MacRISC3(struct device_node *cpunode)
+@@ -471,6 +471,10 @@ static int pmac_cpufreq_init_MacRISC3(struct device_node *cpunode)
  	if (slew_done_gpio_np)
  		slew_done_gpio = read_gpio(slew_done_gpio_np);
  
