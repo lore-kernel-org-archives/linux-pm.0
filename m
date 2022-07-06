@@ -2,85 +2,202 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C204C43334
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 15:38:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B8C9C43334
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jul 2022 15:48:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234432AbiGFPiU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jul 2022 11:38:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58984 "EHLO
+        id S234099AbiGFPsP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jul 2022 11:48:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234692AbiGFPho (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 11:37:44 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 997582714C;
-        Wed,  6 Jul 2022 08:34:15 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 48545B81ADA;
-        Wed,  6 Jul 2022 15:34:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 194A1C341C8;
-        Wed,  6 Jul 2022 15:34:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1657121653;
-        bh=BN3QKHWBFOVmDNAdkhEZg41UokDP2Y1qURVWKR6ME3Y=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=hG+qz9x2+NafUyuuOm9V8JTXDpjKiVFhCczobHnEl1IWIYsUzspB27G2PkuYfSTGo
-         TPD7Af/1XhC98QNSlWLRlsFowSwm6eAbiuqcYaUsTsfUqOhy16KuOmOh6dqr2XyFT8
-         yCAH5MhLmnzBfYBr4QXEHh3jCEAvRYclC3fNmSPU31drhLk0KJYSM+yZCfy8CkleGU
-         OOfh0+ebquYquUjZC2KBMFHd8n1T+lu+eEKckOQpq3VE8NGToOaVjs0sknQsAKtI3P
-         7Uvi8CO9rCDBhDTxko6Nl1NbbdLIDN5UvD4WU5QgeJad5HMcR3nP4oIugT9qo3cQK6
-         KNKjYbqhhQtNw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Liang He <windhl@126.com>, Viresh Kumar <viresh.kumar@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        mpe@ellerman.id.au, linux-pm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 4.9 3/5] cpufreq: pmac32-cpufreq: Fix refcount leak bug
-Date:   Wed,  6 Jul 2022 11:34:05 -0400
-Message-Id: <20220706153407.1598915-3-sashal@kernel.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220706153407.1598915-1-sashal@kernel.org>
-References: <20220706153407.1598915-1-sashal@kernel.org>
+        with ESMTP id S234895AbiGFPr5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2022 11:47:57 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A982E29CAE
+        for <linux-pm@vger.kernel.org>; Wed,  6 Jul 2022 08:40:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1657122047;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Kw+hePrwDbzDiEREmLImOf93xliKHYFU7TLXwcjNYt0=;
+        b=g/SbmgoTsBp3R8D1/IvIET50znZBZGDzOHuxH0/yzovW+cODHeV7XajabAwegRS5A6Nhhh
+        MU0PO6F3IzIIHPFy9iAOThD1/Kg4c1kg745JbMPZgufhkgz9IdU1cBowoNuwsSvbU0vvyB
+        aLqN7Jy83xg0BLlcYIWpHnoqZOYX63M=
+Received: from mail-il1-f200.google.com (mail-il1-f200.google.com
+ [209.85.166.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-50-sNsw-pi7OyW6K2wycl62pw-1; Wed, 06 Jul 2022 11:40:46 -0400
+X-MC-Unique: sNsw-pi7OyW6K2wycl62pw-1
+Received: by mail-il1-f200.google.com with SMTP id h28-20020a056e021d9c00b002dc15a95f9cso4462557ila.2
+        for <linux-pm@vger.kernel.org>; Wed, 06 Jul 2022 08:40:46 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:organization:mime-version:content-transfer-encoding;
+        bh=Kw+hePrwDbzDiEREmLImOf93xliKHYFU7TLXwcjNYt0=;
+        b=tiiu/YqE+eVb+LxGaryIuMq+cGxjksVtzdGK/dsia2wsRnWrGFnbR4Mwktohr50dfm
+         O83SYQh4yZMYdBD7FA4kxiNLsE46o4QBr64lddXuloYYHt3w2FE9ngUz9ixHFekCNsAD
+         7smmv/2nF3h/Pb2dIY6tX6eeZ327aTVNnS/dfn+OKnECcrHP9wls8sQ+YRVRnFXsSgJY
+         Qg/K+Jx8EORMNsMBHW6vBlEKMGQTNhJq4Oj7fLlLa4gqyxB1fs/WFgaO5PGAO3H/hPaz
+         n7PZKT+Mi2ZUofjy3Y4DXYIhFsAoDXkQzJH1jdPy40t7HNirjjD0z5y7ZUVnTPc3pdZZ
+         6rAg==
+X-Gm-Message-State: AJIora8D+ACy9m9eDt+4DkANYo4Mf8JJVlDcFDfSMfOZk2e/HgUYxbeq
+        5IznwvjC1ZywfzPrVzomlX+eLmM9ZkhexJjn4XmbJMgUoyAdjbI7WvEXZvLVBHUpXOEYa/WFoCN
+        YCxlCHNDLqLRxltS/BBs=
+X-Received: by 2002:a05:6e02:1b8d:b0:2dc:32dc:a03d with SMTP id h13-20020a056e021b8d00b002dc32dca03dmr2819810ili.261.1657122045315;
+        Wed, 06 Jul 2022 08:40:45 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1tJknWA5fe5K/3hOcpi9Lvkw/Sr30glLgGICdmPgj3KJLKzuRHboplxHCnha46TsS2+ft6XbQ==
+X-Received: by 2002:a05:6e02:1b8d:b0:2dc:32dc:a03d with SMTP id h13-20020a056e021b8d00b002dc32dca03dmr2819788ili.261.1657122044997;
+        Wed, 06 Jul 2022 08:40:44 -0700 (PDT)
+Received: from redhat.com ([38.15.36.239])
+        by smtp.gmail.com with ESMTPSA id a17-20020a056e0208b100b002d955fab9dbsm14702119ilt.23.2022.07.06.08.40.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 06 Jul 2022 08:40:44 -0700 (PDT)
+Date:   Wed, 6 Jul 2022 09:39:59 -0600
+From:   Alex Williamson <alex.williamson@redhat.com>
+To:     Abhishek Sahu <abhsahu@nvidia.com>
+Cc:     Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Jason Gunthorpe <jgg@nvidia.com>,
+        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH v4 2/6] vfio: Add a new device feature for the power
+ management
+Message-ID: <20220706093959.3bd2cbbb.alex.williamson@redhat.com>
+In-Reply-To: <20220701110814.7310-3-abhsahu@nvidia.com>
+References: <20220701110814.7310-1-abhsahu@nvidia.com>
+        <20220701110814.7310-3-abhsahu@nvidia.com>
+Organization: Red Hat
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Liang He <windhl@126.com>
+On Fri, 1 Jul 2022 16:38:10 +0530
+Abhishek Sahu <abhsahu@nvidia.com> wrote:
 
-[ Upstream commit ccd7567d4b6cf187fdfa55f003a9e461ee629e36 ]
+> This patch adds the new feature VFIO_DEVICE_FEATURE_POWER_MANAGEMENT
+> for the power management in the header file. The implementation for the
+> same will be added in the subsequent patches.
+> 
+> With the standard registers, all power states cannot be achieved. The
+> platform-based power management needs to be involved to go into the
+> lowest power state. For all the platform-based power management, this
+> device feature can be used.
+> 
+> This device feature uses flags to specify the different operations. In
+> the future, if any more power management functionality is needed then
+> a new flag can be added to it. It supports both GET and SET operations.
+> 
+> Signed-off-by: Abhishek Sahu <abhsahu@nvidia.com>
+> ---
+>  include/uapi/linux/vfio.h | 55 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+> 
+> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> index 733a1cddde30..7e00de5c21ea 100644
+> --- a/include/uapi/linux/vfio.h
+> +++ b/include/uapi/linux/vfio.h
+> @@ -986,6 +986,61 @@ enum vfio_device_mig_state {
+>  	VFIO_DEVICE_STATE_RUNNING_P2P = 5,
+>  };
+>  
+> +/*
+> + * Perform power management-related operations for the VFIO device.
+> + *
+> + * The low power feature uses platform-based power management to move the
+> + * device into the low power state.  This low power state is device-specific.
+> + *
+> + * This device feature uses flags to specify the different operations.
+> + * It supports both the GET and SET operations.
+> + *
+> + * - VFIO_PM_LOW_POWER_ENTER flag moves the VFIO device into the low power
+> + *   state with platform-based power management.  This low power state will be
+> + *   internal to the VFIO driver and the user will not come to know which power
+> + *   state is chosen.  Once the user has moved the VFIO device into the low
+> + *   power state, then the user should not do any device access without moving
+> + *   the device out of the low power state.
 
-In pmac_cpufreq_init_MacRISC3(), we need to add corresponding
-of_node_put() for the three node pointers whose refcount have
-been incremented by of_find_node_by_name().
+Except we're wrapping device accesses to make this possible.  This
+should probably describe how any discrete access will wake the device
+but ongoing access through mmaps will generate user faults.
 
-Signed-off-by: Liang He <windhl@126.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpufreq/pmac32-cpufreq.c | 4 ++++
- 1 file changed, 4 insertions(+)
+> + *
+> + * - VFIO_PM_LOW_POWER_EXIT flag moves the VFIO device out of the low power
+> + *    state.  This flag should only be set if the user has previously put the
+> + *    device into low power state with the VFIO_PM_LOW_POWER_ENTER flag.
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index 641f8021855a..62e86f7ca04a 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -473,6 +473,10 @@ static int pmac_cpufreq_init_MacRISC3(struct device_node *cpunode)
- 	if (slew_done_gpio_np)
- 		slew_done_gpio = read_gpio(slew_done_gpio_np);
- 
-+	of_node_put(volt_gpio_np);
-+	of_node_put(freq_gpio_np);
-+	of_node_put(slew_done_gpio_np);
-+
- 	/* If we use the frequency GPIOs, calculate the min/max speeds based
- 	 * on the bus frequencies
- 	 */
--- 
-2.35.1
+Indenting.
+
+> + *
+> + * - VFIO_PM_LOW_POWER_ENTER and VFIO_PM_LOW_POWER_EXIT are mutually exclusive.
+> + *
+> + * - VFIO_PM_LOW_POWER_REENTERY_DISABLE flag is only valid with
+> + *   VFIO_PM_LOW_POWER_ENTER.  If there is any access for the VFIO device on
+> + *   the host side, then the device will be moved out of the low power state
+> + *   without the user's guest driver involvement.  Some devices require the
+> + *   user's guest driver involvement for each low-power entry.  If this flag is
+> + *   set, then the re-entry to the low power state will be disabled, and the
+> + *   host kernel will not move the device again into the low power state.
+> + *   The VFIO driver internally maintains a list of devices for which low
+> + *   power re-entry is disabled by default and for those devices, the
+> + *   re-entry will be disabled even if the user has not set this flag
+> + *   explicitly.
+
+Wrong polarity.  The kernel should not maintain the policy.  By default
+every wakeup, whether from host kernel accesses or via user accesses
+that do a pm-get should signal a wakeup to userspace.  Userspace needs
+to opt-out of that wakeup to let the kernel automatically re-enter low
+power and userspace needs to maintain the policy for which devices it
+wants that to occur.
+
+> + *
+> + * For the IOCTL call with VFIO_DEVICE_FEATURE_GET:
+> + *
+> + * - VFIO_PM_LOW_POWER_ENTER will be set if the user has put the device into
+> + *   the low power state, otherwise, VFIO_PM_LOW_POWER_EXIT will be set.
+> + *
+> + * - If the device is in a normal power state currently, then
+> + *   VFIO_PM_LOW_POWER_REENTERY_DISABLE will be set for the devices where low
+> + *   power re-entry is disabled by default.  If the device is in the low power
+> + *   state currently, then VFIO_PM_LOW_POWER_REENTERY_DISABLE will be set
+> + *   according to the current transition.
+
+Very confusing semantics.
+
+What if the feature SET ioctl took an eventfd and that eventfd was one
+time use.  Calling the ioctl would setup the eventfd to notify the user
+on wakeup and call pm-put.  Any access to the device via host, ioctl,
+or region would be wrapped in pm-get/put and the pm-resume handler
+would perform the matching pm-get to balance the feature SET and signal
+the eventfd.  If the user opts-out by not providing a wakeup eventfd,
+then the pm-resume handler does not perform a pm-get.  Possibly we
+could even allow mmap access if a wake-up eventfd is provided.  The
+feature GET ioctl would be used to exit low power behavior and would be
+a no-op if the wakeup eventfd had already been signaled.  Thanks,
+
+Alex
+
+> + */
+> +struct vfio_device_feature_power_management {
+> +	__u32	flags;
+> +#define VFIO_PM_LOW_POWER_ENTER			(1 << 0)
+> +#define VFIO_PM_LOW_POWER_EXIT			(1 << 1)
+> +#define VFIO_PM_LOW_POWER_REENTERY_DISABLE	(1 << 2)
+> +	__u32	reserved;
+> +};
+> +
+> +#define VFIO_DEVICE_FEATURE_POWER_MANAGEMENT	3
+> +
+>  /* -------- API for Type1 VFIO IOMMU -------- */
+>  
+>  /**
 
