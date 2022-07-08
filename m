@@ -2,159 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D084C43334
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jul 2022 16:49:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6847CC43334
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jul 2022 18:32:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238907AbiGHQta (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Jul 2022 12:49:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33882 "EHLO
+        id S239573AbiGHSce (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Jul 2022 14:32:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55190 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238827AbiGHQt2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2022 12:49:28 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D6B8B1F2FE
-        for <linux-pm@vger.kernel.org>; Fri,  8 Jul 2022 09:49:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1657298966;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=MXdSVBidbMpMzS1rCTcLXDUZBptLZ/DAXk7Nw972YV8=;
-        b=U3DNT1xoFNAanbqCVoP/KlbBTVnfii2D5PjRiGDGGDmRUU9YIModarzqMtpC2npsHvVBeB
-        h4PMs0ojQbDcPfdA/k8bzzTxZhCNVhDdOt2wsaptEIdfKbEyCW5IxmfQBdyfV2wHiItKE5
-        zoqzlTbnoYktHOhLt3vSnv5CvK6f5Ug=
-Received: from mail-io1-f69.google.com (mail-io1-f69.google.com
- [209.85.166.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-616-OVGMu_1rN3GY-XookCD8vA-1; Fri, 08 Jul 2022 12:49:25 -0400
-X-MC-Unique: OVGMu_1rN3GY-XookCD8vA-1
-Received: by mail-io1-f69.google.com with SMTP id b5-20020a05660214c500b0067530b15cc1so11550971iow.9
-        for <linux-pm@vger.kernel.org>; Fri, 08 Jul 2022 09:49:25 -0700 (PDT)
+        with ESMTP id S239600AbiGHSc0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2022 14:32:26 -0400
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B75D1292
+        for <linux-pm@vger.kernel.org>; Fri,  8 Jul 2022 11:32:22 -0700 (PDT)
+Received: by mail-wr1-x42a.google.com with SMTP id q9so31620067wrd.8
+        for <linux-pm@vger.kernel.org>; Fri, 08 Jul 2022 11:32:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=VMSNl4aXxj8gUfbW/Yo0+vXzMXAM2NkamvbFD7ALP70=;
+        b=QHKbQCi/uyJY2HVCVLW0HGvS0E2aoaeSgr3x3Imt2YLi0y71h2t1zN9uGcEY6VnjdG
+         QRSRdvZwq8nmLBsPi6uTOtC6haZK7y9mu3ADhY2Rp0ZBQ8hDTuQGhNUNlVbCB2C9rZsb
+         xr0+YP1HxS8YFwYaJpXDHyYlDjC2u+pwidK6yowECHeeBsaK4/q5H4gO1F8ntpgycIhc
+         9cY5GyS3nyzEbTXqvgwI5hYzShhK4fgv6Zoqg9kheySsTj4dW5pUs4b82x5Dfbblol5i
+         7Uhpfv2PI/ddAfSV/lHDAxpBOtJeDtgGcjzdpCpvjhsZRUa99jJ09OjYvlru0xOZ3CNb
+         j63A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
-         :references:organization:mime-version:content-transfer-encoding;
-        bh=MXdSVBidbMpMzS1rCTcLXDUZBptLZ/DAXk7Nw972YV8=;
-        b=nMGT9oznR3FhEQJqwCEADVZnTMtHVph/Vq5BnFVhbmxN2n3xE7noHnumm4kAGyPmWf
-         07QUEX+cxvFunQDqSMmaNF0tAbamFJW3K6OIk/2hpGg1VPJ/ORftBpbaYhNmc9rB3JRn
-         nVEiHjTkxDBBJY3A5N8DX7+scoeIoe4PeSeTXyW0beKqav0ASmYALB4xqzmJ0p9MKjb9
-         Hb2VBl5ffjZxK3/pqeuFXc+kGTD3zQyxrHGdBY7x6QAUJfsfRoYqlDpTw8f6M88WOSqY
-         3FSDBusbsKLA3RPKBuIu1jtnR5lrpJLO1/LxGikc6oV4tDoHdpaHGJAgTMXjbyJYyYFV
-         qlrA==
-X-Gm-Message-State: AJIora8VuQlytBzBlszZVWr7FYgLAqHnKWrb9jn8pl89y5VsGUNBHrT+
-        oM9bSXznCSeeOlsobAJNmaYrDOhJ51+ni8JFsCy/BtU50iFKzESES2PlSaiIsA1i4rSxa3+tEIN
-        sds5XEETmavN5u2saTNw=
-X-Received: by 2002:a92:c26d:0:b0:2dc:3f21:28fc with SMTP id h13-20020a92c26d000000b002dc3f2128fcmr2604944ild.242.1657298964673;
-        Fri, 08 Jul 2022 09:49:24 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1uS6H6Li4tWgDd7BtY0/IOmJRn2qf6PDT+ecBYl4qPbI9EMIbJHJK356anTA6ev91NnCZxKXw==
-X-Received: by 2002:a92:c26d:0:b0:2dc:3f21:28fc with SMTP id h13-20020a92c26d000000b002dc3f2128fcmr2604930ild.242.1657298964407;
-        Fri, 08 Jul 2022 09:49:24 -0700 (PDT)
-Received: from redhat.com ([38.15.36.239])
-        by smtp.gmail.com with ESMTPSA id g42-20020a02852d000000b0033f1e23ab20sm1794025jai.125.2022.07.08.09.49.06
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=VMSNl4aXxj8gUfbW/Yo0+vXzMXAM2NkamvbFD7ALP70=;
+        b=wHDGAhJ97Lcd7/PsbVJ06GN/H30Ir/6KZfzTA1fxC9CLVAO/rCA7a4m87LP39jFxoc
+         eU+kiEAysFA4VnC3krmq4NH29V2RSS1YzAAJT0wXKyeozTBa9Gj9emCLendvKpSrZE8Z
+         EbFOksIQEgMuPb6wczV+F7LwOZFJeoz0Br2OB5rjb8kIWPe01w3Ru5mIdxUzjANs/MD6
+         XC1xU6NsCv8ZulpaMGF+VChivt/TAXWmae/ZbrN3kHSVeVSwCFa8nmo8w6VLIKhaWt9P
+         zbWTl0RuHqrfYwNW+Aqmr0INrjTj0NsA86RB0fqAcNnOQMTPcu1LLHXDg4s552CvrTKS
+         /boA==
+X-Gm-Message-State: AJIora8Au+32PXsa1+BFh1VoO+Om1c5Tg162apVz5z3W5EKV7IFmQXOW
+        2sHXZNEXGy7BBXq6FwY7GH49rQ==
+X-Google-Smtp-Source: AGRyM1s8AwjUtL3ElAHbWB460RMjH7JJIOmM/uztVchYIW0xv+5N83lC5cUU2eIyDvrX0ZpkEj/SFg==
+X-Received: by 2002:adf:e90d:0:b0:21d:6a18:918a with SMTP id f13-20020adfe90d000000b0021d6a18918amr4547628wrm.266.1657305141220;
+        Fri, 08 Jul 2022 11:32:21 -0700 (PDT)
+Received: from localhost.localdomain (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.gmail.com with ESMTPSA id t9-20020adfeb89000000b0021d887f9468sm4292073wrn.25.2022.07.08.11.32.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 08 Jul 2022 09:49:24 -0700 (PDT)
-Date:   Fri, 8 Jul 2022 10:49:00 -0600
-From:   Alex Williamson <alex.williamson@redhat.com>
-To:     Abhishek Sahu <abhsahu@nvidia.com>
-Cc:     Cornelia Huck <cohuck@redhat.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Jason Gunthorpe <jgg@nvidia.com>,
-        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
-        Kevin Tian <kevin.tian@intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Max Gurtovoy <mgurtovoy@nvidia.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH v4 3/6] vfio: Increment the runtime PM usage count
- during IOCTL call
-Message-ID: <20220708104900.1780b8d7.alex.williamson@redhat.com>
-In-Reply-To: <47aa6b7d-e529-b79a-54eb-5f5a7fe639d6@nvidia.com>
-References: <20220701110814.7310-1-abhsahu@nvidia.com>
-        <20220701110814.7310-4-abhsahu@nvidia.com>
-        <20220706094007.12c33d63.alex.williamson@redhat.com>
-        <47aa6b7d-e529-b79a-54eb-5f5a7fe639d6@nvidia.com>
-Organization: Red Hat
+        Fri, 08 Jul 2022 11:32:20 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org
+Cc:     quic_manafm@quicinc.com, rui.zhang@intel.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Amit Kucheria <amitk@kernel.org>
+Subject: [PATCH v2 2/3] thermal/core: Passing a parameter instead of calling the function again
+Date:   Fri,  8 Jul 2022 20:32:08 +0200
+Message-Id: <20220708183210.1334839-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220708183210.1334839-1-daniel.lezcano@linaro.org>
+References: <20220708183210.1334839-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 8 Jul 2022 15:13:16 +0530
-Abhishek Sahu <abhsahu@nvidia.com> wrote:
+As the trip temperature is already available when calling the
+function, pass it as a parameter instead of having the function
+calling the ops again to retrieve the same data.
 
-> On 7/6/2022 9:10 PM, Alex Williamson wrote:
-> > On Fri, 1 Jul 2022 16:38:11 +0530
-> > Abhishek Sahu <abhsahu@nvidia.com> wrote:
-> >   
-> >> The vfio-pci based driver will have runtime power management
-> >> support where the user can put the device into the low power state
-> >> and then PCI devices can go into the D3cold state. If the device is
-> >> in the low power state and the user issues any IOCTL, then the
-> >> device should be moved out of the low power state first. Once
-> >> the IOCTL is serviced, then it can go into the low power state again.
-> >> The runtime PM framework manages this with help of usage count.
-> >>
-> >> One option was to add the runtime PM related API's inside vfio-pci
-> >> driver but some IOCTL (like VFIO_DEVICE_FEATURE) can follow a
-> >> different path and more IOCTL can be added in the future. Also, the
-> >> runtime PM will be added for vfio-pci based drivers variant currently,
-> >> but the other VFIO based drivers can use the same in the
-> >> future. So, this patch adds the runtime calls runtime-related API in
-> >> the top-level IOCTL function itself.
-> >>
-> >> For the VFIO drivers which do not have runtime power management
-> >> support currently, the runtime PM API's won't be invoked. Only for
-> >> vfio-pci based drivers currently, the runtime PM API's will be invoked
-> >> to increment and decrement the usage count.  
-> > 
-> > Variant drivers can easily opt-out of runtime pm support by performing
-> > a gratuitous pm-get in their device-open function.
-> >    
-> 
->  Do I need to add this line in the commit message?
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/thermal_core.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Maybe I misinterpreted, but my initial read was that there was some
-sort of opt-in, which there is by providing pm-runtime support in the
-driver, which vfio-pci-core does for all vfio-pci variant drivers.  But
-there's also an opt-out, where a vfio-pci variant driver might not want
-to support pm-runtime support and could accomplish that by bumping the
-pm reference count on device-open such that the user cannot trigger a
-pm-suspend.
-
-> >> Taking this usage count incremented while servicing IOCTL will make
-> >> sure that the user won't put the device into low power state when any
-> >> other IOCTL is being serviced in parallel. Let's consider the
-> >> following scenario:
-> >>
-> >>  1. Some other IOCTL is called.
-> >>  2. The user has opened another device instance and called the power
-> >>     management IOCTL for the low power entry.
-> >>  3. The power management IOCTL moves the device into the low power state.
-> >>  4. The other IOCTL finishes.
-> >>
-> >> If we don't keep the usage count incremented then the device
-> >> access will happen between step 3 and 4 while the device has already
-> >> gone into the low power state.
-> >>
-> >> The runtime PM API's should not be invoked for
-> >> VFIO_DEVICE_FEATURE_POWER_MANAGEMENT since this IOCTL itself performs
-> >> the runtime power management entry and exit for the VFIO device.  
-> > 
-> > I think the one-shot interface I proposed in the previous patch avoids
-> > the need for special handling for these feature ioctls.  Thanks,
-> >   
-> 
->  Okay. So, for low power exit case (means feature GET ioctl in the
->  updated case) also, we will trigger eventfd. Correct?
-
-If all ioctls are wrapped in pm-get/put, then the pm feature exit ioctl
-would wakeup and signal the eventfd via the pm-get.  I'm not sure if
-it's worthwhile to try to surprise this eventfd.  Do you foresee any
-issues?  Thanks,
-
-Alex
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d9f771b15ed8..f66036b3daae 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -340,12 +340,8 @@ void thermal_zone_device_critical(struct thermal_zone_device *tz)
+ EXPORT_SYMBOL(thermal_zone_device_critical);
+ 
+ static void handle_critical_trips(struct thermal_zone_device *tz,
+-				  int trip, enum thermal_trip_type trip_type)
++				  int trip, int trip_temp, enum thermal_trip_type trip_type)
+ {
+-	int trip_temp;
+-
+-	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+-
+ 	/* If we have not crossed the trip_temp, we do not care. */
+ 	if (trip_temp <= 0 || tz->temperature < trip_temp)
+ 		return;
+@@ -394,7 +390,7 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ 	handle_thermal_trip_crossed(tz, trip, trip_temp, hyst, type);
+ 
+ 	if (type == THERMAL_TRIP_CRITICAL || type == THERMAL_TRIP_HOT)
+-		handle_critical_trips(tz, trip, type);
++		handle_critical_trips(tz, trip, trip_temp, type);
+ 	else
+ 		handle_non_critical_trips(tz, trip);
+ 	/*
+-- 
+2.25.1
 
