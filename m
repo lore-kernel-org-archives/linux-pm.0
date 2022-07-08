@@ -2,129 +2,143 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7040CCCA481
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jul 2022 12:36:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CE8BC433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jul 2022 13:14:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238260AbiGHMgO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Jul 2022 08:36:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57552 "EHLO
+        id S238029AbiGHNOW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Jul 2022 09:14:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54676 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238246AbiGHMgM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2022 08:36:12 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 237417C1A6;
-        Fri,  8 Jul 2022 05:36:12 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        with ESMTP id S237879AbiGHNOW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2022 09:14:22 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id BB879E17
+        for <linux-pm@vger.kernel.org>; Fri,  8 Jul 2022 06:14:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1657286059;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=o5XQMgCfmhZL4LYvSLEJtLzGT9HVAJkUynKxpB5ttVE=;
+        b=a2fVFg+l8QKNmYyLXC2dXHMZaJhrTJGCilZxQ5/c7tFeQ4r/MsY2WCSrhxK8iyeA8OV4Rx
+        IU4yzllPP18VkYwRfg3JZu6bme52o3eV2TczWs6xRX9uLEtKbUQecPI9opHm23qB48kyBU
+        eydMH67HhYvWR1Nk34+wzr7Giev34gU=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-447-qk53IZJcOgulgx2KvvxJmw-1; Fri, 08 Jul 2022 09:14:16 -0400
+X-MC-Unique: qk53IZJcOgulgx2KvvxJmw-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B2D856271D;
-        Fri,  8 Jul 2022 12:36:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3DE9C341CB;
-        Fri,  8 Jul 2022 12:36:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1657283771;
-        bh=hq0+B/dAKE6KAtx/w8/pzHOgIoBA3D5lqFzL4AAZuD0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=oszWAku0C+PsBkcHAWimhkDNHJmcX4DGcNbiIuPC97mm+hQp3UNk68L+XMeRTGwyi
-         iRpcSXZKS/mWe/Q7AIGIujWDCIHszuz369g9mKkKm5lpdFtXwj4zD8oDnBvv59RRxa
-         h9EZsRzRFunJJa1pT+K1aIImOmqlGe3VmpTmnbthscUIY52de6/UAmcJ7g0H5+0Qcu
-         cgOhf5uWTsaaTskZUL1wOECszcwH1v4us+aJju3wULm3dkUgC85zccKr3gpnrA/JzG
-         i5Cce56flAuxGHq3aWpM0iKuGqjWZRk+qkHMf765TQurQHKnlY8I5GZPy8BFAnQS+v
-         4xvVp0DSbOyMg==
-Date:   Fri, 8 Jul 2022 20:35:59 +0800
-From:   Shawn Guo <shawnguo@kernel.org>
-To:     "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Fabio Estevam <festevam@gmail.com>,
-        Stefan Agner <stefan@agner.ch>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Abel Vesa <abelvesa@kernel.org>,
-        Viorel Suman <viorel.suman@nxp.com>,
-        Oliver Graute <oliver.graute@kococonnector.com>,
-        Peng Fan <peng.fan@nxp.com>, Liu Ying <victor.liu@nxp.com>,
-        Shijie Qin <shijie.qin@nxp.com>, Ming Qian <ming.qian@nxp.com>,
-        Mirela Rabulea <mirela.rabulea@nxp.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v8 00/15] dt-bindings: arm: freescale: Switch fsl,scu
- from txt to yaml
-Message-ID: <20220708083952.GV819983@dragon>
-References: <20220707125022.1156498-1-viorel.suman@oss.nxp.com>
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 2D9331035340;
+        Fri,  8 Jul 2022 13:14:16 +0000 (UTC)
+Received: from shalem.redhat.com (unknown [10.39.193.188])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 988F81121314;
+        Fri,  8 Jul 2022 13:14:14 +0000 (UTC)
+From:   Hans de Goede <hdegoede@redhat.com>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Dmitry Osipenko <dmitry.osipenko@collabora.com>,
+        Mark Gross <markgross@kernel.org>,
+        Andy Shevchenko <andy@kernel.org>,
+        Ard Biesheuvel <ardb@kernel.org>
+Cc:     Hans de Goede <hdegoede@redhat.com>, linux-acpi@vger.kernel.org,
+        linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+        x86@kernel.org, linux-efi@vger.kernel.org
+Subject: [PATCH 1/2] platform/x86: x86-android-tablets: Fix Lenovo Yoga Tablet 2 830/1050 poweroff again
+Date:   Fri,  8 Jul 2022 15:14:11 +0200
+Message-Id: <20220708131412.81078-2-hdegoede@redhat.com>
+In-Reply-To: <20220708131412.81078-1-hdegoede@redhat.com>
+References: <20220708131412.81078-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220707125022.1156498-1-viorel.suman@oss.nxp.com>
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.78 on 10.11.54.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jul 07, 2022 at 03:50:07PM +0300, Viorel Suman (OSS) wrote:
-> From: Viorel Suman <viorel.suman@nxp.com>
-> 
-> Changes since v7: https://lore.kernel.org/lkml/20220704161541.943696-1-viorel.suman@oss.nxp.com/
->   * added missing Reviewed-By: 
->   * Defined "mboxes" and "mbox-names" sections in scu-key.yaml as schema.
-> 
-> Changes since v6: https://lore.kernel.org/lkml/20220629164414.301813-1-viorel.suman@oss.nxp.com/
->   * The series updated so that each patch making the conversion removes
->     the piece being converted, then finally the patch adding fsl,scu.yaml
->     removes the last pieces, as suggested by Krzysztof Kozlowski.
->   * Updated ocotp and system-controller node names in the existing DTS
->     files
-> 
-> Changes since v5: https://lore.kernel.org/lkml/20220616164303.790379-1-viorel.suman@nxp.com/
->   * Updated according to Krzysztof Kozlowski comments
-> 
-> Changes since v4: https://lore.kernel.org/lkml/20220615105834.743045-1-viorel.suman@nxp.com/
->   * Missing SoB added
-> 
-> Changes since v3: https://lore.kernel.org/lkml/20220609143423.2839186-1-abel.vesa@nxp.com/
->   * Examples included
->   * Included Abel's patches fixing thermal zone, keys and power controller names.
-> 
-> Abel Vesa (12):
->   dt-bindings: clk: imx: Add fsl,scu-clk yaml file
->   dt-bindings: pinctrl: imx: Add fsl,scu-iomux yaml file
->   dt-bindings: input: Add fsl,scu-key yaml file
->   dt-bindings: nvmem: Add fsl,scu-ocotp yaml file
->   dt-bindings: power: Add fsl,scu-pd yaml file
->   dt-bindings: rtc: Add fsl,scu-rtc yaml file
->   dt-bindings: thermal: Add fsl,scu-thermal yaml file
->   dt-bindings: watchdog: Add fsl,scu-wdt yaml file
->   dt-bindings: firmware: Add fsl,scu yaml file
->   arm64: dts: freescale: imx8: Fix power controller name
->   arm64: dts: freescale: imx8qxp: Add fallback compatible for clock
->     controller
->   arm64: dts: freescale: imx8qxp: Fix the keys node name
-> 
-> Viorel Suman (3):
->   arm64: dts: freescale: imx8qxp: Remove unnecessary clock related
->     entries
->   arm64: dts: freescale: imx8qxp: Fix the ocotp node name
->   arm64: dts: freescale: imx8: Fix the system-controller node name
+Commit 98f30d0ecf79 ("ACPI: power: Switch to sys-off handler API")
+switched the ACPI sleep code from directly setting the old global
+pm_power_off handler to using the new register_sys_off_handler()
+mechanism with a priority of SYS_OFF_PRIO_FIRMWARE.
 
-I'm preparing material for the next merge window, so just picked the
-series up.  If there is more outstanding review comments coming up,
-let's address them with follow-up changes.
+This is a problem in special cases where the old global pm_power_off
+handler later gets overwritten, such as the Lenovo Tab2 poweroff bugfix
+in x86-android-tablets. The old global pm_power_off handler gets run
+with a priority of SYS_OFF_PRIO_DEFAULT which is lower then
+SYS_OFF_PRIO_FIRMWARE, causing the troublesome ACPI poweroff (which
+freezes the system) to run first.
 
-Shawn
+Switch the registering of lenovo_yoga_tab2_830_1050_power_off over to
+register_sys_off_handler() with a priority of SYS_OFF_PRIO_FIRMWARE + 1
+so that it will run before acpi_power_off() to fix this.
+
+Fixes: 98f30d0ecf79 ("ACPI: power: Switch to sys-off handler API")
+Cc: Dmitry Osipenko <dmitry.osipenko@collabora.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/platform/x86/x86-android-tablets.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/platform/x86/x86-android-tablets.c b/drivers/platform/x86/x86-android-tablets.c
+index f446be72e539..480375977435 100644
+--- a/drivers/platform/x86/x86-android-tablets.c
++++ b/drivers/platform/x86/x86-android-tablets.c
+@@ -27,8 +27,8 @@
+ #include <linux/pinctrl/machine.h>
+ #include <linux/platform_data/lp855x.h>
+ #include <linux/platform_device.h>
+-#include <linux/pm.h>
+ #include <linux/power/bq24190_charger.h>
++#include <linux/reboot.h>
+ #include <linux/rmi.h>
+ #include <linux/serdev.h>
+ #include <linux/spi/spi.h>
+@@ -889,6 +889,7 @@ static const struct pinctrl_map lenovo_yoga_tab2_830_1050_codec_pinctrl_map =
+ 			  "INT33FC:02", "pmu_clk2_grp", "pmu_clk");
+ 
+ static struct pinctrl *lenovo_yoga_tab2_830_1050_codec_pinctrl;
++static struct sys_off_handler *lenovo_yoga_tab2_830_1050_sys_off_handler;
+ 
+ static int __init lenovo_yoga_tab2_830_1050_init_codec(void)
+ {
+@@ -933,9 +934,11 @@ static int __init lenovo_yoga_tab2_830_1050_init_codec(void)
+  * followed by a normal 3 second press to recover. Avoid this by doing an EFI
+  * poweroff instead.
+  */
+-static void lenovo_yoga_tab2_830_1050_power_off(void)
++static int lenovo_yoga_tab2_830_1050_power_off(struct sys_off_data *data)
+ {
+ 	efi.reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);
++
++	return NOTIFY_DONE;
+ }
+ 
+ static int __init lenovo_yoga_tab2_830_1050_init(void)
+@@ -950,13 +953,19 @@ static int __init lenovo_yoga_tab2_830_1050_init(void)
+ 	if (ret)
+ 		return ret;
+ 
+-	pm_power_off = lenovo_yoga_tab2_830_1050_power_off;
++	/* SYS_OFF_PRIO_FIRMWARE + 1 so that it runs before acpi_power_off */
++	lenovo_yoga_tab2_830_1050_sys_off_handler =
++		register_sys_off_handler(SYS_OFF_MODE_POWER_OFF, SYS_OFF_PRIO_FIRMWARE + 1,
++					 lenovo_yoga_tab2_830_1050_power_off, NULL);
++	if (IS_ERR(lenovo_yoga_tab2_830_1050_sys_off_handler))
++		return PTR_ERR(lenovo_yoga_tab2_830_1050_sys_off_handler);
++
+ 	return 0;
+ }
+ 
+ static void lenovo_yoga_tab2_830_1050_exit(void)
+ {
+-	pm_power_off = NULL; /* Just turn poweroff into halt on module unload */
++	unregister_sys_off_handler(lenovo_yoga_tab2_830_1050_sys_off_handler);
+ 
+ 	if (lenovo_yoga_tab2_830_1050_codec_pinctrl) {
+ 		pinctrl_put(lenovo_yoga_tab2_830_1050_codec_pinctrl);
+-- 
+2.36.0
+
