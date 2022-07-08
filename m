@@ -2,113 +2,270 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB2DEC43334
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jul 2022 13:38:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29531C43334
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jul 2022 15:45:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238363AbiGHNiN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Jul 2022 09:38:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44196 "EHLO
+        id S238562AbiGHPpg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Jul 2022 11:45:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60340 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238180AbiGHNiN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2022 09:38:13 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73ABC2B263;
-        Fri,  8 Jul 2022 06:38:12 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id DD5B9627C7;
-        Fri,  8 Jul 2022 13:38:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BDDDBC341C0;
-        Fri,  8 Jul 2022 13:38:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1657287491;
-        bh=wK8QI0KUUCmliRxXY/niLWlbOMMhz5LkuejgEQenrck=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=JVqCQDj+8dtEox91DR71hKsaQLCPHqCNS01zsg2jz+W1Wop9LCEOtQ7NylzWY4QSS
-         aZN2mWaSrTsj+BNqMmnmpJrtcCc0K9jmevFgFV1X8BcXDX+wL0fd+7/679Vo1CtbZE
-         SE/2UC9C0ogyl2RWR4RAyjruluzzHKqjgHNAxDiQ=
-Date:   Fri, 8 Jul 2022 15:37:33 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc:     Oliver Neukum <oneukum@suse.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Wedson Almeida Filho <wedsonaf@google.com>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Dmitry Vyukov <dvyukov@google.com>,
-        Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH] char: misc: make misc_open() and misc_register() killable
-Message-ID: <YsgzHc54onQ1DeFc@kroah.com>
-References: <YsL5pUuydMWJ9dSQ@kroah.com>
- <617f64e3-74c8-f98b-3430-bd476867e483@I-love.SAKURA.ne.jp>
- <5665ccb2-b92b-9e1f-8bb5-a950986450ec@I-love.SAKURA.ne.jp>
- <YsRHwy6+5gask+KT@kroah.com>
- <064bbe2a-c18e-203e-9e01-b32fe9baa390@I-love.SAKURA.ne.jp>
- <7ddb25ff-60e5-75be-8080-2a7465cca68c@I-love.SAKURA.ne.jp>
- <YsUtBERm94k/iZTy@kroah.com>
- <a6d98824-56c8-6d92-bb1b-eb065b57cb81@I-love.SAKURA.ne.jp>
- <815866b5-842e-4829-5ed8-26a5f1e856a4@suse.com>
- <22c61a75-8140-c62d-ffe0-efd6e9fa38ee@I-love.SAKURA.ne.jp>
+        with ESMTP id S238098AbiGHPpf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2022 11:45:35 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E226B67593
+        for <linux-pm@vger.kernel.org>; Fri,  8 Jul 2022 08:45:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1657295133;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=ApubLHj79sO6KJBa02heFvOEGJZIzBsIBJa7auv83sw=;
+        b=GjBGODOeCtAfClQLzCWmewr45Wuz+rhNrEoKY2m1ZJJvl5viP0yXH6cxthopS6by65UiNh
+        KRy2wMXJM/tWwY+CKNkqEKoTIWngrgHjGFKPgB6nZP6zBqI6pJnWGdmq+Y64TbiZNbCOHR
+        Yui7D8U6TvKY/hjWsSJnoylNGHRhj4k=
+Received: from mail-io1-f71.google.com (mail-io1-f71.google.com
+ [209.85.166.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-597-AhwyUMSLO_6GY1c9EuYuLw-1; Fri, 08 Jul 2022 11:45:31 -0400
+X-MC-Unique: AhwyUMSLO_6GY1c9EuYuLw-1
+Received: by mail-io1-f71.google.com with SMTP id 26-20020a5d9c5a000000b0067ad5baad59so969968iof.14
+        for <linux-pm@vger.kernel.org>; Fri, 08 Jul 2022 08:45:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:organization:mime-version:content-transfer-encoding;
+        bh=ApubLHj79sO6KJBa02heFvOEGJZIzBsIBJa7auv83sw=;
+        b=rh5P8qKUuUTcCkDxTlP2eVwVY9PFwba6ILBBuAYY4dOJDiAMQujvABHmrbsJOQx0Xb
+         5ccc01JHM26tJy9eSumIKk5M4lucLYoQRnnGJjvRsH/qcjorWkoj7jvTUajJHSv1aSiU
+         wTEKJAdsP4I8XIDDu3TRKX0EQ1WWMayehbMHqof2EJOKGEu46bXOfahZGe2t+rcDEljd
+         +QRPgH2sUOi0iVGTTYGVzkh1xpLh8RB15ZSJ54iSxql95xoYwnf9qO4oqk5u0rotSEE4
+         kuGOtF9COhUSG2Pt9TYHN0U7WJydYDS+2/4/9RmrbPg1KFztfEJD/yuTMqj77hg0SwZu
+         O7Qw==
+X-Gm-Message-State: AJIora/KofyJ3q7FV97tIBTuZELQVHJGR7ZGBv//B1cucfvEAsh9dkRE
+        fVMlQRBLw0iLF2mQbDCpjH5T6NlBJQNgeUA3iqYxMWhMqr7DL77RZJv66hzXWEFc4zH+tlQ3sWO
+        XReY0OMIHQs9A3WK0dAk=
+X-Received: by 2002:a05:6e02:13ea:b0:2dc:3737:5e5e with SMTP id w10-20020a056e0213ea00b002dc37375e5emr2597048ilj.207.1657295130945;
+        Fri, 08 Jul 2022 08:45:30 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1uAggma+eBI7WZgGP+IskGEnDGQVgf5MaA5g2UzqNlQebJGcK3vKJgPCRUM63ulS16MDDLEow==
+X-Received: by 2002:a05:6e02:13ea:b0:2dc:3737:5e5e with SMTP id w10-20020a056e0213ea00b002dc37375e5emr2597020ilj.207.1657295130568;
+        Fri, 08 Jul 2022 08:45:30 -0700 (PDT)
+Received: from redhat.com ([38.15.36.239])
+        by smtp.gmail.com with ESMTPSA id j12-20020a6b794c000000b0067275a52928sm19295198iop.9.2022.07.08.08.45.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 08 Jul 2022 08:45:30 -0700 (PDT)
+Date:   Fri, 8 Jul 2022 09:45:08 -0600
+From:   Alex Williamson <alex.williamson@redhat.com>
+To:     Abhishek Sahu <abhsahu@nvidia.com>
+Cc:     Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Jason Gunthorpe <jgg@nvidia.com>,
+        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH v4 1/6] vfio/pci: Mask INTx during runtime suspend
+Message-ID: <20220708094508.49ba647f.alex.williamson@redhat.com>
+In-Reply-To: <3b143762-d6ce-ac70-59ae-a0c2e66ffc1b@nvidia.com>
+References: <20220701110814.7310-1-abhsahu@nvidia.com>
+        <20220701110814.7310-2-abhsahu@nvidia.com>
+        <20220706093945.30d65ce6.alex.williamson@redhat.com>
+        <3b143762-d6ce-ac70-59ae-a0c2e66ffc1b@nvidia.com>
+Organization: Red Hat
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <22c61a75-8140-c62d-ffe0-efd6e9fa38ee@I-love.SAKURA.ne.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jul 07, 2022 at 02:06:38PM +0900, Tetsuo Handa wrote:
-> Let's summarize current location:
-> 
-> (1) Greg wants me to fix snapshot_open() not to sleep for too long, instead of
->     making misc_open() killable.
-> 
-> (2) I found snapshot_open() calls wait_for_device_probe() which might sleep
->     long enough to consider as hung up due to:
-> 
->       (a) One of existing probe request got stuck due to unresponsive hardware.
-> 
->       (b) New probe requests come in before existing probe requests complete.
-> 
-> (3) Because of (2), it is difficult to guarantee snapshot_open() not to sleep for
->     too long.
-> 
-> (4) Because of (3), calling file->f_op->open(inode, file) with misc_mtx held can
->     block mutex_lock(&misc_mtx) too long. This is the phenomenon syzbot is reporting.
-> 
-> Initial mitigation was to replace mutex_lock(&misc_mtx) with mutex_lock_killable(&misc_mtx)
-> so that /dev/raw-gadget users can terminate upon SIGKILL and khungtaskd will not complain
-> about misc_mtx.
-> 
-> Next mitigation was not to call file->f_op->open() with misc_mtx held.
-> Wedson worried that this approach breaks modules which call misc_deregister(), but
-> I think we can use this approach for modules which do not need to call misc_deregister()
-> given that this approach is opt-in basis.
-> 
-> I also think that we can bring wait_for_device_probe() in snapshot_open() to before
-> lock_system_sleep(), for system_transition_mutex will not be required for waiting for
-> the image device to appear. If we can accept the "not to call file->f_op->open() with
-> misc_mtx held" mitigation, wait_for_device_probe() in snapshot_open() can be called
-> without locks.
-> 
-> Finding universally safe timeout value is beyond what I can do for this report.
-> Regarding this report, I think we can lower the risk of regression if we apply
-> timeout for atomic_read(&probe_count) == 0 from only snapshot_open().
-> Can we make below changes?
-> 
-> ------------------------------------------------------------
-> 
->  drivers/base/dd.c             |   14 ++++++++++++++
->  drivers/char/misc.c           |    4 ++++
->  include/linux/device/driver.h |    1 +
->  include/linux/miscdevice.h    |    1 +
->  kernel/power/user.c           |   31 ++++++++++++++++++-------------
->  5 files changed, 38 insertions(+), 13 deletions(-)
+On Fri, 8 Jul 2022 14:51:30 +0530
+Abhishek Sahu <abhsahu@nvidia.com> wrote:
 
-Can you make this a patch series, it's hard to tease out what the
-different things are attempting to do here :(
+> On 7/6/2022 9:09 PM, Alex Williamson wrote:
+> > On Fri, 1 Jul 2022 16:38:09 +0530
+> > Abhishek Sahu <abhsahu@nvidia.com> wrote:
+> >  =20
+> >> This patch adds INTx handling during runtime suspend/resume.
+> >> All the suspend/resume related code for the user to put the device
+> >> into the low power state will be added in subsequent patches.
+> >>
+> >> The INTx are shared among devices. Whenever any INTx interrupt comes =
+=20
+> >=20
+> > "The INTx lines may be shared..."
+> >  =20
+> >> for the VFIO devices, then vfio_intx_handler() will be called for each
+> >> device. Inside vfio_intx_handler(), it calls pci_check_and_mask_intx()=
+ =20
+> >=20
+> > "...device sharing the interrupt."
+> >  =20
+> >> and checks if the interrupt has been generated for the current device.
+> >> Now, if the device is already in the D3cold state, then the config spa=
+ce
+> >> can not be read. Attempt to read config space in D3cold state can
+> >> cause system unresponsiveness in a few systems. To prevent this, mask
+> >> INTx in runtime suspend callback and unmask the same in runtime resume
+> >> callback. If INTx has been already masked, then no handling is needed
+> >> in runtime suspend/resume callbacks. 'pm_intx_masked' tracks this, and
+> >> vfio_pci_intx_mask() has been updated to return true if INTx has been
+> >> masked inside this function.
+> >>
+> >> For the runtime suspend which is triggered for the no user of VFIO
+> >> device, the is_intx() will return false and these callbacks won't do
+> >> anything.
+> >>
+> >> The MSI/MSI-X are not shared so similar handling should not be
+> >> needed for MSI/MSI-X. vfio_msihandler() triggers eventfd_signal()
+> >> without doing any device-specific config access. When the user performs
+> >> any config access or IOCTL after receiving the eventfd notification,
+> >> then the device will be moved to the D0 state first before
+> >> servicing any request.
+> >>
+> >> Signed-off-by: Abhishek Sahu <abhsahu@nvidia.com>
+> >> ---
+> >>  drivers/vfio/pci/vfio_pci_core.c  | 37 +++++++++++++++++++++++++++----
+> >>  drivers/vfio/pci/vfio_pci_intrs.c |  6 ++++-
+> >>  include/linux/vfio_pci_core.h     |  3 ++-
+> >>  3 files changed, 40 insertions(+), 6 deletions(-)
+> >>
+> >> diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_=
+pci_core.c
+> >> index a0d69ddaf90d..5948d930449b 100644
+> >> --- a/drivers/vfio/pci/vfio_pci_core.c
+> >> +++ b/drivers/vfio/pci/vfio_pci_core.c
+> >> @@ -259,16 +259,45 @@ int vfio_pci_set_power_state(struct vfio_pci_cor=
+e_device *vdev, pci_power_t stat
+> >>  	return ret;
+> >>  }
+> >> =20
+> >> +#ifdef CONFIG_PM
+> >> +static int vfio_pci_core_runtime_suspend(struct device *dev)
+> >> +{
+> >> +	struct vfio_pci_core_device *vdev =3D dev_get_drvdata(dev);
+> >> +
+> >> +	/*
+> >> +	 * If INTx is enabled, then mask INTx before going into the runtime
+> >> +	 * suspended state and unmask the same in the runtime resume.
+> >> +	 * If INTx has already been masked by the user, then
+> >> +	 * vfio_pci_intx_mask() will return false and in that case, INTx
+> >> +	 * should not be unmasked in the runtime resume.
+> >> +	 */
+> >> +	vdev->pm_intx_masked =3D (is_intx(vdev) && vfio_pci_intx_mask(vdev));
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static int vfio_pci_core_runtime_resume(struct device *dev)
+> >> +{
+> >> +	struct vfio_pci_core_device *vdev =3D dev_get_drvdata(dev);
+> >> +
+> >> +	if (vdev->pm_intx_masked)
+> >> +		vfio_pci_intx_unmask(vdev);
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +#endif /* CONFIG_PM */
+> >> +
+> >>  /*
+> >> - * The dev_pm_ops needs to be provided to make pci-driver runtime PM =
+working,
+> >> - * so use structure without any callbacks.
+> >> - *
+> >>   * The pci-driver core runtime PM routines always save the device sta=
+te
+> >>   * before going into suspended state. If the device is going into low=
+ power
+> >>   * state with only with runtime PM ops, then no explicit handling is =
+needed
+> >>   * for the devices which have NoSoftRst-.
+> >>   */
+> >> -static const struct dev_pm_ops vfio_pci_core_pm_ops =3D { };
+> >> +static const struct dev_pm_ops vfio_pci_core_pm_ops =3D {
+> >> +	SET_RUNTIME_PM_OPS(vfio_pci_core_runtime_suspend,
+> >> +			   vfio_pci_core_runtime_resume,
+> >> +			   NULL)
+> >> +};
+> >> =20
+> >>  int vfio_pci_core_enable(struct vfio_pci_core_device *vdev)
+> >>  {
+> >> diff --git a/drivers/vfio/pci/vfio_pci_intrs.c b/drivers/vfio/pci/vfio=
+_pci_intrs.c
+> >> index 6069a11fb51a..1a37db99df48 100644
+> >> --- a/drivers/vfio/pci/vfio_pci_intrs.c
+> >> +++ b/drivers/vfio/pci/vfio_pci_intrs.c
+> >> @@ -33,10 +33,12 @@ static void vfio_send_intx_eventfd(void *opaque, v=
+oid *unused)
+> >>  		eventfd_signal(vdev->ctx[0].trigger, 1);
+> >>  }
+> >> =20
+> >> -void vfio_pci_intx_mask(struct vfio_pci_core_device *vdev)
+> >> +/* Returns true if INTx has been masked by this function. */
+> >> +bool vfio_pci_intx_mask(struct vfio_pci_core_device *vdev)
+> >>  {
+> >>  	struct pci_dev *pdev =3D vdev->pdev;
+> >>  	unsigned long flags;
+> >> +	bool intx_masked =3D false;
+> >> =20
+> >>  	spin_lock_irqsave(&vdev->irqlock, flags);
+> >> =20
+> >> @@ -60,9 +62,11 @@ void vfio_pci_intx_mask(struct vfio_pci_core_device=
+ *vdev)
+> >>  			disable_irq_nosync(pdev->irq);
+> >> =20
+> >>  		vdev->ctx[0].masked =3D true;
+> >> +		intx_masked =3D true;
+> >>  	}
+> >> =20
+> >>  	spin_unlock_irqrestore(&vdev->irqlock, flags);
+> >> +	return intx_masked;
+> >>  } =20
+> >=20
+> >=20
+> > There's certainly another path through this function that masks the
+> > interrupt, which makes the definition of this return value a bit
+> > confusing. =20
+>=20
+>  For our case we should not hit that path. But we can return the
+>  intx_masked true from that path as well to align return value.
+>=20
+> > Wouldn't it be simpler not to overload the masked flag on
+> > the interrupt context like this and instead set a new flag on the vdev
+> > under irqlock to indicate the device is unable to generate interrupts.
+> > The irq handler would add a test of this flag before any tests that
+> > would access the device.  Thanks,
+> >=20
+> > Alex
+> >   =20
+>=20
+>  We will set this flag inside runtime_suspend callback but the
+>  device can be in non-D3cold state (For example, if user has
+>  disabled d3cold explicitly by sysfs, the D3cold is not supported in
+>  the platform, etc.). Also, in D3cold supported case, the device will
+>  be in D0 till the PCI core moves the device into D3cold. In this case,
+>  there is possibility that the device can generate an interrupt.
+>  If we add check in the IRQ handler, then we won=E2=80=99t check and clear
+>  the IRQ status, but the interrupt line will still be asserted
+>  which can cause interrupt flooding.
+>=20
+>  This was the reason for disabling interrupt itself instead of
+>  checking flag in the IRQ handler.
 
-thanks,
+Ok, maybe this is largely a clarification of the return value of
+vfio_pci_intx_mask().  I think what you're looking for is whether the
+context mask was changed, rather than whether the interrupt is masked,
+which I think avoids the confusion regarding whether the first branch
+should return true or false.  So the variable should be something like
+"masked_changed" and the comment changed to "Returns true if the INTx
+vfio_pci_irq_ctx.masked value is changed".
 
-greg k-h
+Testing is_intx() outside of the irqlock is potentially racy, so do we
+need to add the pm-get/put wrappers on ioctls first to avoid the
+possibility that pm-suspend can race a SET_IRQS ioctl?  Thanks,
+
+Alex
+
