@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28AF3CCA47F
-	for <linux-pm@archiver.kernel.org>; Sat,  9 Jul 2022 22:33:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB181C433EF
+	for <linux-pm@archiver.kernel.org>; Sat,  9 Jul 2022 22:33:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229813AbiGIWda (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 9 Jul 2022 18:33:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59720 "EHLO
+        id S229563AbiGIWdc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 9 Jul 2022 18:33:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60256 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229745AbiGIWdK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 9 Jul 2022 18:33:10 -0400
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B0C22AC45
-        for <linux-pm@vger.kernel.org>; Sat,  9 Jul 2022 15:32:59 -0700 (PDT)
-Received: by mail-wr1-x429.google.com with SMTP id z12so2596566wrq.7
-        for <linux-pm@vger.kernel.org>; Sat, 09 Jul 2022 15:32:59 -0700 (PDT)
+        with ESMTP id S229716AbiGIWdM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 9 Jul 2022 18:33:12 -0400
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 520172B196
+        for <linux-pm@vger.kernel.org>; Sat,  9 Jul 2022 15:33:01 -0700 (PDT)
+Received: by mail-wr1-x42b.google.com with SMTP id z12so2596626wrq.7
+        for <linux-pm@vger.kernel.org>; Sat, 09 Jul 2022 15:33:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=icoUiwKgc5ZfQQb9kyqtM6xsdul/av8PcZiURdbMJFs=;
-        b=RcvOqEck88xAzhO8wdgxIvjttBHQPuMGZUg/RETkEveNw4cdaCfgGf/7RjGuDNZ0WG
-         +ujPPcMSAzKcgAxazIq6k17Eu71ZnNwHHN2ILAEqxyJrfii6iB6Qty+XiONR77p4may6
-         f6ZrzYBOOvmN2vkW2SLXMXYYAGJgcth2KyQO/oq+JEkn7mkD6lt9TYtVum8Jq+BhPlJh
-         S8lpuVVHl40EUBTBkBA3XJ86/7LRFkSJk2Bwq/CNO3lnntpW1Rq6dEwfam+7YIDRqnHK
-         Jk4dtuOHRy1DIdUmh/yj4Zmb/VrZopuKAmTArPy3M0hTsY5Qw7bCEqTQ+eZlRKbRmMYE
-         YKJg==
+        bh=SD0RKMK5Q3Q8sjw2sPd6eKcyMSLlIgckhKohOzGFpgA=;
+        b=ZIEO3IlRH+KuDYcW/Ly7aWJaqzvxd7fr87WmVORkAzuJrzb8VlXQFc9y8lxe0Owago
+         l6h9PXfHbnkJeQ5GJY/VOYE0Z+Zaf/55a/0LpHoiNruO8Ozj9pcvAeE7FhEVLMUxdnY4
+         PST+FyaLCcSdf4wt2lCAQPbdSW1Af+j2HKhx6unTWSj8KD5jzSmryYTI+3iNG4L5yHmo
+         E2zwey00IJt1LMCOwMMUJUxNTuBKamMZo1Dj73scyIVGt7S2f7VYoC8vYnLpfCf3mkNo
+         HmC6fgGex/sK9LbfplxQAOxwSCKDrb4CqkzD3I9Fo6QnZvQFLwp76WSC8suZFFTB98AC
+         QVUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=icoUiwKgc5ZfQQb9kyqtM6xsdul/av8PcZiURdbMJFs=;
-        b=LEbMUDZyxxMq/YteTHQwAXRcvoSV+knBIaWnQWiK78U0DfMamV9FfC0G90dM3KAC2v
-         9XX8Oc1SX5TjM4e8jSUlfBHZ20VsoIwJEHwkbBYZc1fmAItDkd8WWj9goXwfD//exW5r
-         LErWahzFi+hHROlorYrTwHKBK/Ru3oNRYiHnmmUWg7YmLnSinnYtipSmhVe34/SAPaJs
-         5Q5VWXTxQb+H5C+IIF1CE9JvAofAjq1T7fdwkMELG096LcQPvLtu/YleuEviF12XeClO
-         YZIcK6ALezHIg4N9ZdEpigBGjb72Q1jazWBFj85DB5huNZvoQbCJwiZbjVganNvokl2H
-         f9Sg==
-X-Gm-Message-State: AJIora96w90Y19vjrZrWPI6Mm4fivBxykzRGDmwt1Wtl00Ev+WaqKQyE
-        8OFAD/KQCJEWeBvySJQce4aP1g==
-X-Google-Smtp-Source: AGRyM1sGkxRlyHa+gpai0tumMnF8pEalUeKlv4qXaDBxC3YJsKbtt5dGaIUI842HEHohfM6d/rw2vQ==
-X-Received: by 2002:a5d:4aca:0:b0:21d:6793:1c11 with SMTP id y10-20020a5d4aca000000b0021d67931c11mr9560106wrs.202.1657405977407;
-        Sat, 09 Jul 2022 15:32:57 -0700 (PDT)
+        bh=SD0RKMK5Q3Q8sjw2sPd6eKcyMSLlIgckhKohOzGFpgA=;
+        b=U6dr04rzWAMmE+OZfWB/O5S5izVKgzKb2BEAgC6Ovg/7cBmS5l0IDqWUHKPSGSZtj/
+         SOVjpacFxw7+gTOAQEri6m+tzU3szquqKQ/yJevWvqBlupTxUpoOAppElIXodmFyHBg2
+         3dtFcd+KZE6Z3LJw0XznqoGJL6Wyde9tYepVedqrCBeYFuXA+4fqbR3Yr3nvKzkU2cDw
+         elcNtfMNCoCrFvf5XjE7fm1gvhdudHZWLeKVz7kcPniVA6NI/79vg0Sf19d2GnfFEtNp
+         CA65w0Ggy2d9BZyCKdI42e4mSRARwGtfxwL1EuJtdxd9ocxSVwQtNelBPRFOheQCck2u
+         5J5w==
+X-Gm-Message-State: AJIora+c8L2RKBVMFWRDF5csJ+yIA3HJpY+6RFLdvki3PlYIeAnF5yed
+        Jbl59HBafu+O4dAmFSF8TMQ4oQ==
+X-Google-Smtp-Source: AGRyM1vJiqJOq6HGvrFV4Tks9HUdABrK9yN85JtvQWBxd2IQheikTmMizAs21z53u8Eac7clIJj/Sw==
+X-Received: by 2002:a05:6000:1549:b0:21b:c7fb:9dd0 with SMTP id 9-20020a056000154900b0021bc7fb9dd0mr9117346wry.446.1657405979536;
+        Sat, 09 Jul 2022 15:32:59 -0700 (PDT)
 Received: from localhost.localdomain (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id w15-20020a1cf60f000000b003a2c7bf0497sm2525342wmc.16.2022.07.09.15.32.56
+        by smtp.gmail.com with ESMTPSA id w15-20020a1cf60f000000b003a2c7bf0497sm2525342wmc.16.2022.07.09.15.32.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 Jul 2022 15:32:57 -0700 (PDT)
+        Sat, 09 Jul 2022 15:32:59 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, khilman@baylibre.com,
         abailon@baylibre.com, lukasz.luba@arm.com,
         Amit Kucheria <amitk@kernel.org>
-Subject: [PATCH v4 10/12] thermal/of: Store the trips in the thermal zone
-Date:   Sun, 10 Jul 2022 00:32:27 +0200
-Message-Id: <20220709223229.1619339-11-daniel.lezcano@linexp.org>
+Subject: [PATCH v4 12/12] thermal/of: Initialize trip points separately
+Date:   Sun, 10 Jul 2022 00:32:29 +0200
+Message-Id: <20220709223229.1619339-13-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220709223229.1619339-1-daniel.lezcano@linexp.org>
 References: <20220709223229.1619339-1-daniel.lezcano@linexp.org>
@@ -65,37 +65,231 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As the thermal zone contains the trip point, we can store them
-directly when registering the thermal zone. That will allow another
-step forward to remove the duplicate thermal zone structure we find in
-the thermal_of code.
+Self contain the trip initialization from the device tree in a single
+function for the sake of making the code flow more clear.
 
 Cc: Alexandre Bailon <abailon@baylibre.com>
 Cc: Kevin Hilman <khilman@baylibre.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
 ---
- drivers/thermal/thermal_of.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/thermal/thermal_of.c | 101 ++++++++++++++++++++++-------------
+ 1 file changed, 65 insertions(+), 36 deletions(-)
 
 diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 19243c57b3f4..e187461dd396 100644
+index 601552c55d0b..40fd7260b2ad 100644
 --- a/drivers/thermal/thermal_of.c
 +++ b/drivers/thermal/thermal_of.c
-@@ -1119,11 +1119,9 @@ int __init of_parse_thermal_zones(void)
- 		tzp->slope = tz->slope;
- 		tzp->offset = tz->offset;
+@@ -118,7 +118,7 @@ static int of_thermal_set_trips(struct thermal_zone_device *tz,
+  */
+ int of_thermal_get_ntrips(struct thermal_zone_device *tz)
+ {
+-	return tz->ntrips;
++	return tz->num_trips;
+ }
+ EXPORT_SYMBOL_GPL(of_thermal_get_ntrips);
  
--		zone = thermal_zone_device_register(child->name, tz->ntrips,
--						    mask, tz,
--						    ops, tzp,
--						    tz->passive_delay,
--						    tz->polling_delay);
-+		zone = thermal_zone_device_register_with_trips(child->name, tz->trips, tz->ntrips,
-+							       mask, tz, ops, tzp, tz->passive_delay,
-+							       tz->polling_delay);
- 		if (IS_ERR(zone)) {
- 			pr_err("Failed to build %pOFn zone %ld\n", child,
- 			       PTR_ERR(zone));
+@@ -134,7 +134,7 @@ EXPORT_SYMBOL_GPL(of_thermal_get_ntrips);
+  */
+ bool of_thermal_is_trip_valid(struct thermal_zone_device *tz, int trip)
+ {
+-	if (trip >= tz->ntrips || trip < 0)
++	if (trip >= tz->num_trips || trip < 0)
+ 		return false;
+ 
+ 	return true;
+@@ -269,7 +269,7 @@ static int of_thermal_unbind(struct thermal_zone_device *thermal,
+ static int of_thermal_get_trip_type(struct thermal_zone_device *tz, int trip,
+ 				    enum thermal_trip_type *type)
+ {
+-	if (trip >= tz->ntrips || trip < 0)
++	if (trip >= tz->num_trips || trip < 0)
+ 		return -EDOM;
+ 
+ 	*type = tz->trips[trip].type;
+@@ -280,7 +280,7 @@ static int of_thermal_get_trip_type(struct thermal_zone_device *tz, int trip,
+ static int of_thermal_get_trip_temp(struct thermal_zone_device *tz, int trip,
+ 				    int *temp)
+ {
+-	if (trip >= tz->ntrips || trip < 0)
++	if (trip >= tz->num_trips || trip < 0)
+ 		return -EDOM;
+ 
+ 	*temp = tz->trips[trip].temperature;
+@@ -293,7 +293,7 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
+ {
+ 	struct __thermal_zone *data = tz->devdata;
+ 
+-	if (trip >= tz->ntrips || trip < 0)
++	if (trip >= tz->num_trips || trip < 0)
+ 		return -EDOM;
+ 
+ 	if (data->ops && data->ops->set_trip_temp) {
+@@ -313,7 +313,7 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
+ static int of_thermal_get_trip_hyst(struct thermal_zone_device *tz, int trip,
+ 				    int *hyst)
+ {
+-	if (trip >= tz->ntrips || trip < 0)
++	if (trip >= tz->num_trips || trip < 0)
+ 		return -EDOM;
+ 
+ 	*hyst = tz->trips[trip].hysteresis;
+@@ -324,7 +324,7 @@ static int of_thermal_get_trip_hyst(struct thermal_zone_device *tz, int trip,
+ static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
+ 				    int hyst)
+ {
+-	if (trip >= tz->ntrips || trip < 0)
++	if (trip >= tz->num_trips || trip < 0)
+ 		return -EDOM;
+ 
+ 	/* thermal framework should take care of data->mask & (1 << trip) */
+@@ -338,7 +338,7 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
+ {
+ 	int i;
+ 
+-	for (i = 0; i < tz->ntrips; i++)
++	for (i = 0; i < tz->num_trips; i++)
+ 		if (tz->trips[i].type == THERMAL_TRIP_CRITICAL) {
+ 			*temp = tz->trips[i].temperature;
+ 			return 0;
+@@ -693,7 +693,8 @@ static int of_find_trip_id(struct device_node *np, struct device_node *trip)
+  *
+  * Return: 0 on success, proper error code otherwise
+  */
+-static int thermal_of_populate_bind_params(struct device_node *np,
++static int thermal_of_populate_bind_params(struct device_node *tz_np,
++					   struct device_node *np,
+ 					   struct __thermal_bind_params *__tbp)
+ {
+ 	struct of_phandle_args cooling_spec;
+@@ -715,7 +716,7 @@ static int thermal_of_populate_bind_params(struct device_node *np,
+ 		return -ENODEV;
+ 	}
+ 
+-	trip_id = of_find_trip_id(np, trip);
++	trip_id = of_find_trip_id(tz_np, trip);
+ 	if (trip_id < 0) {
+ 		ret = trip_id;
+ 		goto end;
+@@ -849,6 +850,53 @@ static int thermal_of_populate_trip(struct device_node *np,
+ 	return 0;
+ }
+ 
++static struct thermal_trip *thermal_of_trips_init(struct device_node *np, int *ntrips)
++{
++	struct thermal_trip *tt;
++	struct device_node *trips, *trip;
++	int ret, count;
++
++	trips = of_get_child_by_name(np, "trips");
++	if (!trips) {
++		pr_err("Failed to find 'trips' node\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	count = of_get_child_count(trips);
++	if (!count) {
++		pr_err("No trip point defined\n");
++		ret = -EINVAL;
++		goto out_of_node_put;
++	}
++
++	tt = kzalloc(sizeof(*tt) * count, GFP_KERNEL);
++	if (!tt) {
++		ret = -ENOMEM;
++		goto out_of_node_put;
++	}
++
++	*ntrips = count;
++
++	count = 0;
++	for_each_child_of_node(trips, trip) {
++		ret = thermal_of_populate_trip(trip, &tt[count++]);
++		if (ret)
++			goto out_kfree;
++	}
++
++	of_node_put(trips);
++	
++	return tt;
++	
++out_kfree:
++	kfree(tt);
++	*ntrips = 0;
++out_of_node_put:
++	of_node_put(trips);
++
++	return ERR_PTR(ret);
++}
++
+ /**
+  * thermal_of_build_thermal_zone - parse and fill one thermal zone data
+  * @np: DT node containing a thermal zone node
+@@ -867,7 +915,6 @@ static struct __thermal_zone
+ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ {
+ 	struct device_node *child = NULL, *gchild;
+-	struct device_node *trips;
+ 	struct __thermal_zone *tz;
+ 	int ret, i;
+ 	u32 prop, coef[2];
+@@ -909,28 +956,10 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 		tz->offset = 0;
+ 	}
+ 
+-	/* trips */
+-	trips = of_get_child_by_name(np, "trips");
+-
+-	/* No trips provided */
+-	if (!trips)
++	tz->trips = thermal_of_trips_init(np, &tz->ntrips);
++	if (IS_ERR(tz->trips)) {
++		ret = PTR_ERR(tz->trips);
+ 		goto finish;
+-
+-	tz->ntrips = of_get_child_count(trips);
+-	if (tz->ntrips == 0) /* must have at least one child */
+-		goto finish;
+-
+-	tz->trips = kcalloc(tz->ntrips, sizeof(*tz->trips), GFP_KERNEL);
+-	if (!tz->trips) {
+-		ret = -ENOMEM;
+-		goto free_tz;
+-	}
+-
+-	i = 0;
+-	for_each_child_of_node(trips, gchild) {
+-		ret = thermal_of_populate_trip(gchild, &tz->trips[i++]);
+-		if (ret)
+-			goto free_trips;
+ 	}
+ 
+ 	/* cooling-maps */
+@@ -952,13 +981,14 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 
+ 	i = 0;
+ 	for_each_child_of_node(child, gchild) {
+-		ret = thermal_of_populate_bind_params(gchild, &tz->tbps[i++]);
+-		if (ret)
++		ret = thermal_of_populate_bind_params(np, gchild, &tz->tbps[i++]);
++		if (ret) {
++			of_node_put(gchild);
+ 			goto free_tbps;
++		}
+ 	}
+ 
+ finish:
+-	of_node_put(trips);
+ 	of_node_put(child);
+ 
+ 	return tz;
+@@ -977,7 +1007,6 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 	kfree(tz->tbps);
+ free_trips:
+ 	kfree(tz->trips);
+-	of_node_put(trips);
+ 	of_node_put(gchild);
+ free_tz:
+ 	kfree(tz);
 -- 
 2.25.1
 
