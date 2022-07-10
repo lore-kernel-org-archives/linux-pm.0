@@ -2,63 +2,59 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D406C43334
-	for <linux-pm@archiver.kernel.org>; Sun, 10 Jul 2022 21:24:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E551EC433EF
+	for <linux-pm@archiver.kernel.org>; Sun, 10 Jul 2022 21:24:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229510AbiGJVYy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 10 Jul 2022 17:24:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45920 "EHLO
+        id S229639AbiGJVYz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 10 Jul 2022 17:24:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45946 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229594AbiGJVYp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 10 Jul 2022 17:24:45 -0400
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DC0D1054E
-        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:24:41 -0700 (PDT)
-Received: by mail-wm1-x336.google.com with SMTP id ay25so2063565wmb.1
-        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:24:41 -0700 (PDT)
+        with ESMTP id S229601AbiGJVYq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 10 Jul 2022 17:24:46 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3C9E11141
+        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:24:43 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id r14so4781760wrg.1
+        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:24:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=PQqkCzGs0TNscL3Fp51/xfhe1kt8vg2MHxpQZiBNFPs=;
-        b=4aJZt2aQ31ms4fI64NW66+/kEAOAtdLX3E9HzQVb1yM90MfiW3C/yVvHPEqGA+VA8Y
-         VDNjVVwCkNDR9PJ++2YyQyAR8kgPrlSiM7fW1fnHz61BdP2sEE3ZHuzaR9Ijh3sDmhyH
-         XZWPNovQs/YInhp4N7AChczwTTawfe/MCmdWkGUhugxS3CJZlAgyRKqt0cwQq5YwUvtV
-         dwduRJ5Uuz9SAbCr6M664XpWqnJnGA/Kl697gxXhfn5KF9cEe5iSOaR4BFHrX8No6SzS
-         waB2UA8u5IdKO5Nsg+EdvVp2PRdB2yhW3d+otTRlS6yVebsAyCRij3BS0YAigualSreJ
-         pXQw==
+        bh=Xk6A/pNWCl/Nzs7Qg1vyN7A/ewbkmH3NrwD0SYWTSzQ=;
+        b=bY0fExwP3MURnYRBx4omWr6dHDeloNf3GtuXmB5SJTGKaGli9DPxOPVtnSXfYy/IZj
+         euH+0zIKdnC7syngU7AO3tFLPLy4YJ7YE3aSQJW879SKowor/hPmNwimCZyTBGh5Fokw
+         pN9r62L2aLDdSE5mQlVIK31j3WZHW3y+JADNgy7szDmqsrXMtZDNu9XGKvArcYSW2SHK
+         ZHv1RnXiGJEiqlVDqMmrkZgXzjw4/kKAAaHxZEN+0umle7/d+QLJLXzJVYqYnmYmZfa0
+         KetYEco7njc8yITUk7gDVNEXgnqAMDxUMyamEjaaT7qUP84VbJM1RZM3jkM/Ssdx3lA0
+         VlZg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=PQqkCzGs0TNscL3Fp51/xfhe1kt8vg2MHxpQZiBNFPs=;
-        b=nPWF4QqNyYDIBS2bJKgH9A/KViO2Y6ylkwdIe7Ps8UdCySzWMBD9f2FxzMRSfBBdgj
-         hXmpSTVyUIY9zIscFhNamPVT0WOfPHkTSDjQSH/yXnBUx/zY/PagRTfaYvZg1UY6bri0
-         bQw5ZRRMr3RNje0EKDSnK9yEWNaWRPBu/IJCbRhein11Hzyr6g4bUnJjecoLznb0AqmX
-         6mf+zb4IxtEE37dXfqNXLL04AxOT2dFFvBFMOyKkf9MwIYJNK68QNqzYe8gt5QCvwf86
-         6abprE+183l2EzPNlBD0tyazCIWyEA/TYou6knHgKQobgY0Z8thKh+32NqWw4tLkASRK
-         r1uQ==
-X-Gm-Message-State: AJIora8NFxEllQLX0fZkDTDAt+9xwLySTdVeOq8K5cRWnV+GkGCBAXjr
-        F39vs7OFX2raUmm5cK2r9x4O2w==
-X-Google-Smtp-Source: AGRyM1vehfk2uVwMBSPqXeTnml3BqmcbapAlnZRFWFrq89E2gid0IDjS6WDq8q4pULjlwDqg4AtKiQ==
-X-Received: by 2002:a1c:ed14:0:b0:3a2:b91b:dce4 with SMTP id l20-20020a1ced14000000b003a2b91bdce4mr12459265wmh.22.1657488280129;
-        Sun, 10 Jul 2022 14:24:40 -0700 (PDT)
+        bh=Xk6A/pNWCl/Nzs7Qg1vyN7A/ewbkmH3NrwD0SYWTSzQ=;
+        b=GvCDNYCjSV4Rs0TCNGyRADhrzkbr3ZFL2ywbTYB7Q8okQiNJS2kqOHvAC/31Ut9u67
+         BlTGvsWCoWj4BHau+pHjkL+mSkrim5aJONqtyVg6pFoqIWqe9PKh9LCM4YQrROxWpCnR
+         4YPB6RPQpsDkUhOw59NCppxNNL7o+nAbkHOrXLQwy/QUryyjzt7xlicmf7bvVfDV4OjH
+         6XlZIVJOxERipodhyXWkuVG00IywjA7E3aZPQluRBwsHI1gsBxRULszaEgPhl0oFirZa
+         Fy/hFEeyYHcMInqPA9sMax6woWbMT8pQOiQzODw1bo+0PSdNzTLlkUqp1S/7ZWeEk+KK
+         Txqw==
+X-Gm-Message-State: AJIora+ValI8JMrgMp06BlvCDnUrpydKRXaphcLkVeELNSw1F34pbOeX
+        vbHsjc4Im0W2VLf872sAOoS9tvOkOLRihw==
+X-Google-Smtp-Source: AGRyM1vKS9doHkKgEmjxJC9SU75lHuuqhQ6vkhBSE+BJuwsds520dkzYONMvXdKg3SpePQIjpLJppQ==
+X-Received: by 2002:a05:6000:1446:b0:21d:27ea:5a01 with SMTP id v6-20020a056000144600b0021d27ea5a01mr13953400wrx.314.1657488282307;
+        Sun, 10 Jul 2022 14:24:42 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:c7c0:6823:f3ce:2447])
-        by smtp.gmail.com with ESMTPSA id m19-20020a05600c3b1300b003a2dd0d21f0sm7142759wms.13.2022.07.10.14.24.39
+        by smtp.gmail.com with ESMTPSA id m19-20020a05600c3b1300b003a2dd0d21f0sm7142759wms.13.2022.07.10.14.24.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 10 Jul 2022 14:24:39 -0700 (PDT)
+        Sun, 10 Jul 2022 14:24:42 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, khilman@baylibre.com, abailon@baylibre.com,
         amitk@kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        linux-arm-kernel@lists.infradead.org (moderated list:ARM/UNIPHIER
-        ARCHITECTURE)
-Subject: [PATCH v1 04/33] thermal/drivers/uniphier: Switch to new of API
-Date:   Sun, 10 Jul 2022 23:23:54 +0200
-Message-Id: <20220710212423.681301-5-daniel.lezcano@linexp.org>
+        linux-pm@vger.kernel.org, Talel Shenhar <talel@amazon.com>
+Subject: [PATCH v1 06/33] thermal/drivers/mmio: Switch to new of API
+Date:   Sun, 10 Jul 2022 23:23:56 +0200
+Message-Id: <20220710212423.681301-7-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220710212423.681301-1-daniel.lezcano@linexp.org>
 References: <20220710212423.681301-1-daniel.lezcano@linexp.org>
@@ -75,45 +71,60 @@ Use this new API.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
 ---
- drivers/thermal/uniphier_thermal.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/thermal/thermal_mmio.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
-index 4cae5561a2a3..2405e72fb5f9 100644
---- a/drivers/thermal/uniphier_thermal.c
-+++ b/drivers/thermal/uniphier_thermal.c
-@@ -187,9 +187,9 @@ static void uniphier_tm_disable_sensor(struct uniphier_tm_dev *tdev)
- 	usleep_range(1000, 2000);	/* The spec note says at least 1ms */
+diff --git a/drivers/thermal/thermal_mmio.c b/drivers/thermal/thermal_mmio.c
+index 360b0dfdc3b0..fecf537bb470 100644
+--- a/drivers/thermal/thermal_mmio.c
++++ b/drivers/thermal/thermal_mmio.c
+@@ -20,11 +20,10 @@ static u32 thermal_mmio_readb(void __iomem *mmio_base)
+ 	return readb(mmio_base);
  }
  
--static int uniphier_tm_get_temp(void *data, int *out_temp)
-+static int uniphier_tm_get_temp(struct thermal_zone_device *tz, int *out_temp)
+-static int thermal_mmio_get_temperature(void *private, int *temp)
++static int thermal_mmio_get_temperature(struct thermal_zone_device *tz, int *temp)
  {
--	struct uniphier_tm_dev *tdev = data;
-+	struct uniphier_tm_dev *tdev = tz->devdata;
- 	struct regmap *map = tdev->regmap;
- 	int ret;
- 	u32 temp;
-@@ -204,7 +204,7 @@ static int uniphier_tm_get_temp(void *data, int *out_temp)
+ 	int t;
+-	struct thermal_mmio *sensor =
+-		(struct thermal_mmio *)private;
++	struct thermal_mmio *sensor = tz->devdata;
+ 
+ 	t = sensor->read_mmio(sensor->mmio_base) & sensor->mask;
+ 	t *= sensor->factor;
+@@ -34,7 +33,7 @@ static int thermal_mmio_get_temperature(void *private, int *temp)
  	return 0;
  }
  
--static const struct thermal_zone_of_device_ops uniphier_of_thermal_ops = {
-+static struct thermal_zone_device_ops uniphier_of_thermal_ops = {
- 	.get_temp = uniphier_tm_get_temp,
+-static const struct thermal_zone_of_device_ops thermal_mmio_ops = {
++static struct thermal_zone_device_ops thermal_mmio_ops = {
+ 	.get_temp = thermal_mmio_get_temperature,
  };
  
-@@ -289,8 +289,8 @@ static int uniphier_tm_probe(struct platform_device *pdev)
+@@ -68,10 +67,10 @@ static int thermal_mmio_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
- 	platform_set_drvdata(pdev, tdev);
+-	thermal_zone = devm_thermal_zone_of_sensor_register(&pdev->dev,
+-							    0,
+-							    sensor,
+-							    &thermal_mmio_ops);
++	thermal_zone = devm_thermal_of_zone_register(&pdev->dev,
++						     0,
++						     sensor,
++						     &thermal_mmio_ops);
+ 	if (IS_ERR(thermal_zone)) {
+ 		dev_err(&pdev->dev,
+ 			"failed to register sensor (%ld)\n",
+@@ -79,7 +78,7 @@ static int thermal_mmio_probe(struct platform_device *pdev)
+ 		return PTR_ERR(thermal_zone);
+ 	}
  
--	tdev->tz_dev = devm_thermal_zone_of_sensor_register(dev, 0, tdev,
--						&uniphier_of_thermal_ops);
-+	tdev->tz_dev = devm_thermal_of_zone_register(dev, 0, tdev,
-+						     &uniphier_of_thermal_ops);
- 	if (IS_ERR(tdev->tz_dev)) {
- 		dev_err(dev, "failed to register sensor device\n");
- 		return PTR_ERR(tdev->tz_dev);
+-	thermal_mmio_get_temperature(sensor, &temperature);
++	thermal_mmio_get_temperature(thermal_zone, &temperature);
+ 	dev_info(&pdev->dev,
+ 		 "thermal mmio sensor %s registered, current temperature: %d\n",
+ 		 pdev->name, temperature);
 -- 
 2.25.1
 
