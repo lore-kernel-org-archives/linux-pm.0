@@ -2,68 +2,59 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3AF2C43334
-	for <linux-pm@archiver.kernel.org>; Sun, 10 Jul 2022 21:25:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92434C43334
+	for <linux-pm@archiver.kernel.org>; Sun, 10 Jul 2022 21:26:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229770AbiGJVZt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 10 Jul 2022 17:25:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47286 "EHLO
+        id S229621AbiGJVZ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 10 Jul 2022 17:25:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46882 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229676AbiGJVZV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 10 Jul 2022 17:25:21 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA9DB1582E
-        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:25:03 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id v16so4734671wrd.13
-        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:25:03 -0700 (PDT)
+        with ESMTP id S229677AbiGJVZY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 10 Jul 2022 17:25:24 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3945FEE1D
+        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:25:09 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id r14so4782485wrg.1
+        for <linux-pm@vger.kernel.org>; Sun, 10 Jul 2022 14:25:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ZdZqryGNMWnNyZeLlzRFuZV+IRU5vvwot+uqXNMaBz0=;
-        b=8VaLIjdOhEoVsAbT2Fb30QXZPvqhkTqOiH/7Yw89gQXa2vBo5MldCLFNshwnSo/oyU
-         ElVRrJCOiOA8pw28W5jtxJPAR29EWzXKxNQtta3+jmBRKGLZraM+g9mIRwg+Rda/1k53
-         HGFka7VM97xC5qjLi6En3eoCAjZXd7nSejVNXUh3feC50vjzTQk4xFSS7RZRXdPLpjhO
-         wd3+9gGlUti5JQoICH1s9DMwwh+BLJ9TgUqgcst1TKU1tPcF4dTSwZ0dHjwcWvKsVnpN
-         s7DqFvik7QtpGwJiKEUFoNyM56pad1UbIHZx9XUjz3UiuPlQUSvAHeXNPPvgEA6Ylvnv
-         BlQQ==
+        bh=e9euVydakO8zgEHn2aQPblIk4q+hgF12Z+XIqfPeASw=;
+        b=hnXTbPJRCGIFkI6ivd1ihUzIfiSxwyFh+Qi3UQcfdfFvQpPNY6PBiEz1p9kbtxYCT9
+         4PQE2w7kVW63GcS2Ng4qQRoxADhNJqhDs35xfqYTtZatSlE5CzZ13xnX9soEuJEvIR3K
+         Phn8FVlUrQ95LsCzpUlDqq/icxQlA8uHZv2GeGshRwAMUVaq1eBrg7zchpTlzSguXbsn
+         I+Q/7QISjRtsn/mZjzxAqN1I4eiMdh7ppEWXpGqteA6DUtpjRz8LXwib8BvLIyLd01A6
+         gCdyadMNr0SGdYrlE9pp6aA2vlHbAvhnxoqXZ19V9xhJIJ+0ntlNtGE/oQx45ZQZhiGI
+         ZH/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ZdZqryGNMWnNyZeLlzRFuZV+IRU5vvwot+uqXNMaBz0=;
-        b=gEepKNdI/UQXhgiVDp+SwNI28/fMcjbSXOXvrABHHbxWe0TdUe7nkx91peIiwKjm+0
-         rsk1I7N6SNxJ+aUkpkLiQVzHVjMceEvEpk/gNpWpn4c/gn0Gqz90jSFPXPn9YowDfp0n
-         LWUIB8hpBXLRfVCFshqvrASvSj3q3gn6VIh/5T6+RmnUkI3wYYyDnWP/icGNIIv7KgyM
-         a3IFP1Mzo2K6USHk6VCY6FHgTHr84iFn+7wv2fL48RzIHVOCHQNEa7ITL5CdI8neAaFc
-         0ve4V6ERoVUnCKxOtJpV63VaEN0zs/4XpK+JZC0saxgPsxOdgoF6z7FfCxWzNQGa4xH3
-         TR8w==
-X-Gm-Message-State: AJIora+yf76dhF2sVTI2QlfJziqxHsAm93vZyUPpPxtIOtTlPSAFCWIu
-        u7jMJXxfIEAPqKLrRNTFSoSMiA==
-X-Google-Smtp-Source: AGRyM1trqFFqRWuC5BLpUAz8LI9O0XAgo8gykf7SBfBfpcZpdqcmj8kby/aaNgwsArwywzm9oD/vrA==
-X-Received: by 2002:a5d:5903:0:b0:21d:6dd5:d9c3 with SMTP id v3-20020a5d5903000000b0021d6dd5d9c3mr13835071wrd.85.1657488297073;
-        Sun, 10 Jul 2022 14:24:57 -0700 (PDT)
+        bh=e9euVydakO8zgEHn2aQPblIk4q+hgF12Z+XIqfPeASw=;
+        b=wMwclGm0fAv9uYu266ax2QJwEr2yWygUbyUJuyoXmFJ4DFea1eFC2P2oqpXdzlqP9x
+         tYb2EQnALM7O1L8raeKcEiG+FVhc5XJmCwQfUrbSqkFUgRgizf3sAz0bcy9JUpTUkna2
+         FBC+mANRepZEr2hQktyEX0XfazUUcFEIVuR5Eqkaf9MWqln1wqoDynX64I660//L91NE
+         J+b8++E42obTXAurrwn2wdJLvHqlhahzymS4AKWIM1oIpvR6r8mpZOPCc5m0viTMN/3M
+         S3sgoGsWdqaVaHH2rdac+x0lJgsJtrReuhm5H2sBfTgdCX5Q46meOjJfZ1QUDcZJSeXP
+         NTEw==
+X-Gm-Message-State: AJIora88Ur6B8cl9y2DwwlYsyDe2DBe6WkbC9iJs+BOGOy83KdymBd4M
+        uSim1qZ4daTaZiFXFtEM86QQI4lB3hawzg==
+X-Google-Smtp-Source: AGRyM1vYpjOdERDPOQIs55QnVDI/7J8smEkbfJJ22XmivSSjHSSL2YJPvTD7VSmZE0/R1jc9gNPtog==
+X-Received: by 2002:a5d:6d0b:0:b0:21d:9f54:efa2 with SMTP id e11-20020a5d6d0b000000b0021d9f54efa2mr4860041wrq.607.1657488308788;
+        Sun, 10 Jul 2022 14:25:08 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:c7c0:6823:f3ce:2447])
-        by smtp.gmail.com with ESMTPSA id m19-20020a05600c3b1300b003a2dd0d21f0sm7142759wms.13.2022.07.10.14.24.55
+        by smtp.gmail.com with ESMTPSA id m19-20020a05600c3b1300b003a2dd0d21f0sm7142759wms.13.2022.07.10.14.25.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 10 Jul 2022 14:24:56 -0700 (PDT)
+        Sun, 10 Jul 2022 14:25:08 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, khilman@baylibre.com, abailon@baylibre.com,
         amitk@kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        Markus Mayer <mmayer@broadcom.com>,
-        Stefan Wahren <stefan.wahren@i2se.com>,
-        Zheng Yongjun <zhengyongjun3@huawei.com>,
-        linux-rpi-kernel@lists.infradead.org (moderated list:BROADCOM
-        BCM2711/BCM2835 ARM ARCHITECTURE),
-        linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM
-        BCM2711/BCM2835 ARM ARCHITECTURE)
-Subject: [PATCH v1 10/33] thermal/drivers/broadcom: Switch to new of API
-Date:   Sun, 10 Jul 2022 23:24:00 +0200
-Message-Id: <20220710212423.681301-11-daniel.lezcano@linexp.org>
+        linux-pm@vger.kernel.org
+Subject: [PATCH v1 19/33] thermal/drivers/qoriq: Switch to new of API
+Date:   Sun, 10 Jul 2022 23:24:09 +0200
+Message-Id: <20220710212423.681301-20-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220710212423.681301-1-daniel.lezcano@linexp.org>
 References: <20220710212423.681301-1-daniel.lezcano@linexp.org>
@@ -80,278 +71,47 @@ Use this new API.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
 ---
- drivers/thermal/broadcom/bcm2711_thermal.c | 14 +++---
- drivers/thermal/broadcom/brcmstb_thermal.c | 20 ++++-----
- drivers/thermal/broadcom/ns-thermal.c      | 50 +++++++++-------------
- drivers/thermal/broadcom/sr-thermal.c      | 16 +++----
- 4 files changed, 46 insertions(+), 54 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/broadcom/bcm2711_thermal.c b/drivers/thermal/broadcom/bcm2711_thermal.c
-index e9bef5c3414b..64d75593e760 100644
---- a/drivers/thermal/broadcom/bcm2711_thermal.c
-+++ b/drivers/thermal/broadcom/bcm2711_thermal.c
-@@ -31,11 +31,11 @@ struct bcm2711_thermal_priv {
- 	struct thermal_zone_device *thermal;
- };
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 73049f9bea25..86c8cdabcbbe 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -82,9 +82,9 @@ static struct qoriq_tmu_data *qoriq_sensor_to_data(struct qoriq_sensor *s)
+ 	return container_of(s, struct qoriq_tmu_data, sensor[s->id]);
+ }
  
--static int bcm2711_get_temp(void *data, int *temp)
-+static int bcm2711_get_temp(struct thermal_zone_device *tz, int *temp)
+-static int tmu_get_temp(void *p, int *temp)
++static int tmu_get_temp(struct thermal_zone_device *tz, int *temp)
  {
--	struct bcm2711_thermal_priv *priv = data;
--	int slope = thermal_zone_get_slope(priv->thermal);
--	int offset = thermal_zone_get_offset(priv->thermal);
-+	struct bcm2711_thermal_priv *priv = tz->devdata;
-+	int slope = thermal_zone_get_slope(tz);
-+	int offset = thermal_zone_get_offset(tz);
+-	struct qoriq_sensor *qsensor = p;
++	struct qoriq_sensor *qsensor = tz->devdata;
+ 	struct qoriq_tmu_data *qdata = qoriq_sensor_to_data(qsensor);
  	u32 val;
- 	int ret;
- 
-@@ -54,7 +54,7 @@ static int bcm2711_get_temp(void *data, int *temp)
+ 	/*
+@@ -122,7 +122,7 @@ static int tmu_get_temp(void *p, int *temp)
  	return 0;
  }
  
--static const struct thermal_zone_of_device_ops bcm2711_thermal_of_ops = {
-+static struct thermal_zone_device_ops bcm2711_thermal_of_ops = {
- 	.get_temp	= bcm2711_get_temp,
+-static const struct thermal_zone_of_device_ops tmu_tz_ops = {
++static struct thermal_zone_device_ops tmu_tz_ops = {
+ 	.get_temp = tmu_get_temp,
  };
  
-@@ -88,8 +88,8 @@ static int bcm2711_thermal_probe(struct platform_device *pdev)
- 	}
- 	priv->regmap = regmap;
+@@ -146,9 +146,9 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
  
--	thermal = devm_thermal_zone_of_sensor_register(dev, 0, priv,
--						       &bcm2711_thermal_of_ops);
-+	thermal = devm_thermal_of_zone_register(dev, 0, priv,
-+						&bcm2711_thermal_of_ops);
- 	if (IS_ERR(thermal)) {
- 		ret = PTR_ERR(thermal);
- 		dev_err(dev, "could not register sensor: %d\n", ret);
-diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
-index 0cedb8b4f00a..c459d14df3b5 100644
---- a/drivers/thermal/broadcom/brcmstb_thermal.c
-+++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-@@ -105,7 +105,7 @@ static struct avs_tmon_trip avs_tmon_trips[] = {
- struct brcmstb_thermal_params {
- 	unsigned int offset;
- 	unsigned int mult;
--	const struct thermal_zone_of_device_ops *of_ops;
-+	struct thermal_zone_device_ops *of_ops;
- };
+ 		sensor->id = id;
  
- struct brcmstb_thermal_priv {
-@@ -150,9 +150,9 @@ static inline u32 avs_tmon_temp_to_code(struct brcmstb_thermal_priv *priv,
- 		return (u32)((offset - temp) / mult);
- }
- 
--static int brcmstb_get_temp(void *data, int *temp)
-+static int brcmstb_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct brcmstb_thermal_priv *priv = data;
-+	struct brcmstb_thermal_priv *priv = tz->devdata;
- 	u32 val;
- 	long t;
- 
-@@ -260,9 +260,9 @@ static irqreturn_t brcmstb_tmon_irq_thread(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--static int brcmstb_set_trips(void *data, int low, int high)
-+static int brcmstb_set_trips(struct thermal_zone_device *tz, int low, int high)
- {
--	struct brcmstb_thermal_priv *priv = data;
-+	struct brcmstb_thermal_priv *priv = tz->devdata;
- 
- 	dev_dbg(priv->dev, "set trips %d <--> %d\n", low, high);
- 
-@@ -288,7 +288,7 @@ static int brcmstb_set_trips(void *data, int low, int high)
- 	return 0;
- }
- 
--static const struct thermal_zone_of_device_ops brcmstb_16nm_of_ops = {
-+static struct thermal_zone_device_ops brcmstb_16nm_of_ops = {
- 	.get_temp	= brcmstb_get_temp,
- };
- 
-@@ -298,7 +298,7 @@ static const struct brcmstb_thermal_params brcmstb_16nm_params = {
- 	.of_ops	= &brcmstb_16nm_of_ops,
- };
- 
--static const struct thermal_zone_of_device_ops brcmstb_28nm_of_ops = {
-+static struct thermal_zone_device_ops brcmstb_28nm_of_ops = {
- 	.get_temp	= brcmstb_get_temp,
- 	.set_trips	= brcmstb_set_trips,
- };
-@@ -318,7 +318,7 @@ MODULE_DEVICE_TABLE(of, brcmstb_thermal_id_table);
- 
- static int brcmstb_thermal_probe(struct platform_device *pdev)
- {
--	const struct thermal_zone_of_device_ops *of_ops;
-+	struct thermal_zone_device_ops *of_ops;
- 	struct thermal_zone_device *thermal;
- 	struct brcmstb_thermal_priv *priv;
- 	struct resource *res;
-@@ -341,8 +341,8 @@ static int brcmstb_thermal_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, priv);
- 	of_ops = priv->temp_params->of_ops;
- 
--	thermal = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv,
--						       of_ops);
-+	thermal = devm_thermal_of_zone_register(&pdev->dev, 0, priv,
-+						of_ops);
- 	if (IS_ERR(thermal)) {
- 		ret = PTR_ERR(thermal);
- 		dev_err(&pdev->dev, "could not register sensor: %d\n", ret);
-diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
-index c9468ba9d449..b9c3f2306bf5 100644
---- a/drivers/thermal/broadcom/ns-thermal.c
-+++ b/drivers/thermal/broadcom/ns-thermal.c
-@@ -14,19 +14,14 @@
- #define PVTMON_CONTROL0_SEL_TEST_MODE			0x0000000e
- #define PVTMON_STATUS					0x08
- 
--struct ns_thermal {
--	struct thermal_zone_device *tz;
--	void __iomem *pvtmon;
--};
--
--static int ns_thermal_get_temp(void *data, int *temp)
-+static int ns_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct ns_thermal *ns_thermal = data;
--	int offset = thermal_zone_get_offset(ns_thermal->tz);
--	int slope = thermal_zone_get_slope(ns_thermal->tz);
-+	void __iomem *pvtmon = tz->devdata;
-+	int offset = thermal_zone_get_offset(tz);
-+	int slope = thermal_zone_get_slope(tz);
- 	u32 val;
- 
--	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
-+	val = readl(pvtmon + PVTMON_CONTROL0);
- 	if ((val & PVTMON_CONTROL0_SEL_MASK) != PVTMON_CONTROL0_SEL_TEMP_MONITOR) {
- 		/* Clear current mode selection */
- 		val &= ~PVTMON_CONTROL0_SEL_MASK;
-@@ -34,50 +29,47 @@ static int ns_thermal_get_temp(void *data, int *temp)
- 		/* Set temp monitor mode (it's the default actually) */
- 		val |= PVTMON_CONTROL0_SEL_TEMP_MONITOR;
- 
--		writel(val, ns_thermal->pvtmon + PVTMON_CONTROL0);
-+		writel(val, pvtmon + PVTMON_CONTROL0);
- 	}
- 
--	val = readl(ns_thermal->pvtmon + PVTMON_STATUS);
-+	val = readl(pvtmon + PVTMON_STATUS);
- 	*temp = slope * val + offset;
- 
- 	return 0;
- }
- 
--static const struct thermal_zone_of_device_ops ns_thermal_ops = {
-+static struct thermal_zone_device_ops ns_thermal_ops = {
- 	.get_temp = ns_thermal_get_temp,
- };
- 
- static int ns_thermal_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
--	struct ns_thermal *ns_thermal;
--
--	ns_thermal = devm_kzalloc(dev, sizeof(*ns_thermal), GFP_KERNEL);
--	if (!ns_thermal)
--		return -ENOMEM;
-+	struct thermal_zone_device *tz;
-+	void __iomem *pvtmon;
- 
--	ns_thermal->pvtmon = of_iomap(dev_of_node(dev), 0);
--	if (WARN_ON(!ns_thermal->pvtmon))
-+	pvtmon = of_iomap(dev_of_node(dev), 0);
-+	if (WARN_ON(!pvtmon))
- 		return -ENOENT;
- 
--	ns_thermal->tz = devm_thermal_zone_of_sensor_register(dev, 0,
--							      ns_thermal,
--							      &ns_thermal_ops);
--	if (IS_ERR(ns_thermal->tz)) {
--		iounmap(ns_thermal->pvtmon);
--		return PTR_ERR(ns_thermal->tz);
-+	tz = devm_thermal_of_zone_register(dev, 0,
-+					   pvtmon,
-+					   &ns_thermal_ops);
-+	if (IS_ERR(tz)) {
-+		iounmap(pvtmon);
-+		return PTR_ERR(tz);
- 	}
- 
--	platform_set_drvdata(pdev, ns_thermal);
-+	platform_set_drvdata(pdev, pvtmon);
- 
- 	return 0;
- }
- 
- static int ns_thermal_remove(struct platform_device *pdev)
- {
--	struct ns_thermal *ns_thermal = platform_get_drvdata(pdev);
-+	void __iomem *pvtmon = platform_get_drvdata(pdev);
- 
--	iounmap(ns_thermal->pvtmon);
-+	iounmap(pvtmon);
- 
- 	return 0;
- }
-diff --git a/drivers/thermal/broadcom/sr-thermal.c b/drivers/thermal/broadcom/sr-thermal.c
-index 85ab9edd580c..7c58eff407b3 100644
---- a/drivers/thermal/broadcom/sr-thermal.c
-+++ b/drivers/thermal/broadcom/sr-thermal.c
-@@ -19,7 +19,6 @@
- #define SR_TMON_MAX_LIST        6
- 
- struct sr_tmon {
--	struct thermal_zone_device *tz;
- 	unsigned int crit_temp;
- 	unsigned int tmon_id;
- 	struct sr_thermal *priv;
-@@ -31,9 +30,9 @@ struct sr_thermal {
- 	struct sr_tmon tmon[SR_TMON_MAX_LIST];
- };
- 
--static int sr_get_temp(void *data, int *temp)
-+static int sr_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct sr_tmon *tmon = data;
-+	struct sr_tmon *tmon = tz->devdata;
- 	struct sr_thermal *sr_thermal = tmon->priv;
- 
- 	*temp = readl(sr_thermal->regs + SR_TMON_TEMP_BASE(tmon->tmon_id));
-@@ -41,13 +40,14 @@ static int sr_get_temp(void *data, int *temp)
- 	return 0;
- }
- 
--static const struct thermal_zone_of_device_ops sr_tz_ops = {
-+static struct thermal_zone_device_ops sr_tz_ops = {
- 	.get_temp = sr_get_temp,
- };
- 
- static int sr_thermal_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-+	struct thermal_zone_device *tz;
- 	struct sr_thermal *sr_thermal;
- 	struct sr_tmon *tmon;
- 	struct resource *res;
-@@ -84,10 +84,10 @@ static int sr_thermal_probe(struct platform_device *pdev)
- 		writel(0, sr_thermal->regs + SR_TMON_TEMP_BASE(i));
- 		tmon->tmon_id = i;
- 		tmon->priv = sr_thermal;
--		tmon->tz = devm_thermal_zone_of_sensor_register(dev, i, tmon,
--								&sr_tz_ops);
--		if (IS_ERR(tmon->tz))
--			return PTR_ERR(tmon->tz);
-+		tz = devm_thermal_of_zone_register(dev, i, tmon,
-+						   &sr_tz_ops);
-+		if (IS_ERR(tz))
-+			return PTR_ERR(tz);
- 
- 		dev_dbg(dev, "thermal sensor %d registered\n", i);
- 	}
+-		tzd = devm_thermal_zone_of_sensor_register(dev, id,
+-							   sensor,
+-							   &tmu_tz_ops);
++		tzd = devm_thermal_of_zone_register(dev, id,
++						    sensor,
++						    &tmu_tz_ops);
+ 		ret = PTR_ERR_OR_ZERO(tzd);
+ 		if (ret) {
+ 			if (ret == -ENODEV)
 -- 
 2.25.1
 
