@@ -2,140 +2,84 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E787AC43334
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jul 2022 07:02:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5389C43334
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jul 2022 07:12:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232197AbiGLHCG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Jul 2022 03:02:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43992 "EHLO
+        id S232295AbiGLHMD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Jul 2022 03:12:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51452 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229670AbiGLHCF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jul 2022 03:02:05 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B306B8CC87
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jul 2022 00:02:03 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id z25so12417366lfr.2
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jul 2022 00:02:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=rR4EvPz2QTL/uIlV/7u9u2k3BsIB6Cd/Y2fmLLbm+6Q=;
-        b=uv2LG7gzP10xj/mheaKVtOSrTN+X0UgE93fZG1uQNEpadxp50LH8Wy6Nb+ABdxSpFm
-         B4ik9P6lWDr3pkePBdZ5WVfIHNQJB1iZdsDBFbuKkGmwpvwVYB1mQ7TlzJreqpP/7y6q
-         Hpa3hqo05U29UPqt2oLIG4BsnlwCiJiPZtr/u1WI29lQpVbeGTgyyM5hVCiVpjX1yiZs
-         Q4NIrluD9usVxYsfHc9sGHN0SS1C7ElIyyy8ySmBekz5t4ckAnHO5F/8Nn3J06LO3FYz
-         ugCpqa4Ff8QbFTsnd1J0VBqMGRmvUbnYwJfz4hjJIstdQHANHF9OQPUcaRxCV7AWMPTc
-         eaKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=rR4EvPz2QTL/uIlV/7u9u2k3BsIB6Cd/Y2fmLLbm+6Q=;
-        b=K8vSK+MDpu/l+JRUlOPJku7rXBG4aCyN7lxrHGNjDOw/e35QYeqBuMM9IXZqG2/q7V
-         Iqv+6Y31gf4warzGyEMfWPGwOsGOiSTdVJgiYi1LfSt8YwApxdDRGffH/W/mEDa37HCR
-         soU63yVgatPBgXEIWeqQiYB8fAjqtgGt1T8CuIx9t6/QddunBVyebTRPzNL1kFUr9290
-         AljBUxckx5YpJUWLbEAOEXeHKWm7g6IO2wtC9Sh1rmOq9kNgntt0UjmeFt5heZ8nG8y0
-         V5sLUayr3wlhj3Us2ESZemaBGG0YKORvweNHSDtkhwxBq8XMGR9wsJ3ergWXMkij3d75
-         NPAQ==
-X-Gm-Message-State: AJIora//I6W+MKBLtlZqLkf5O95iko/qvzRqf/OzQi/94YXV1E+1tlmw
-        ih+5BEyTfOz1nk1YeNQ7UUuOsA==
-X-Google-Smtp-Source: AGRyM1v8I7FEdMPilvPTeX/T5acQuHUvYJJlCGQqXlGNHZ8ieSAEOmPjfUgENxvwkU4d+kyg3znBVA==
-X-Received: by 2002:a19:520f:0:b0:489:dc56:df68 with SMTP id m15-20020a19520f000000b00489dc56df68mr6534018lfb.295.1657609322071;
-        Tue, 12 Jul 2022 00:02:02 -0700 (PDT)
-Received: from [10.0.0.8] (fwa5cab-55.bb.online.no. [88.92.171.55])
-        by smtp.gmail.com with ESMTPSA id u10-20020a05651220ca00b00489da32ec80sm1387629lfr.238.2022.07.12.00.01.59
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 12 Jul 2022 00:02:01 -0700 (PDT)
-Message-ID: <69e8195e-8d2b-3df0-0783-269f9aef1a83@linaro.org>
-Date:   Tue, 12 Jul 2022 09:01:58 +0200
+        with ESMTP id S229747AbiGLHMC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jul 2022 03:12:02 -0400
+Received: from muru.com (muru.com [72.249.23.125])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 284E52AE2D;
+        Tue, 12 Jul 2022 00:12:02 -0700 (PDT)
+Received: from localhost (localhost [127.0.0.1])
+        by muru.com (Postfix) with ESMTPS id 9CD0880B5;
+        Tue, 12 Jul 2022 07:06:20 +0000 (UTC)
+Date:   Tue, 12 Jul 2022 10:12:00 +0300
+From:   Tony Lindgren <tony@atomide.com>
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     Rob Herring <robh@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        David Ahern <dsahern@kernel.org>,
+        Android Kernel Team <kernel-team@android.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Linux IOMMU <iommu@lists.linux-foundation.org>,
+        netdev <netdev@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        Alexander Stein <alexander.stein@ew.tq-group.com>
+Subject: Re: [PATCH v2 1/9] PM: domains: Delete usage of
+ driver_deferred_probe_check_state()
+Message-ID: <Ys0ewNYFB25RWNju@atomide.com>
+References: <CAGETcx9aFBzMcuOiTAEy5SJyWw3UfajZ8DVQfW2DGmzzDabZVg@mail.gmail.com>
+ <Yrlz/P6Un2fACG98@atomide.com>
+ <CAGETcx8c+P0r6ARmhv+ERaz9zAGBOVJQu3bSDXELBycEGfkYQw@mail.gmail.com>
+ <CAL_JsqJd3J6k6pRar7CkHVaaPbY7jqvzAePd8rVDisRV-dLLtg@mail.gmail.com>
+ <CAGETcx9ZmeTyP1sJCFZ9pBbMyXeifQFohFvWN3aBPx0sSOJ2VA@mail.gmail.com>
+ <Yr6HQOtS4ctUYm9m@atomide.com>
+ <Yr6QUzdoFWv/eAI6@atomide.com>
+ <CAGETcx-0bStPx8sF3BtcJFiu74NwiB0btTQ+xx_B=8B37TEb8w@mail.gmail.com>
+ <CAGETcx-Yp2JKgCNfaGD0SzZg9F2Xnu8A3zXmV5=WX1hY7uR=0g@mail.gmail.com>
+ <Yr7wA8d4J7xtjwsH@atomide.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH v1 2/3] dt-binding: power: power-domain: add
- power-supply-needs-irq
-Content-Language: en-US
-To:     Martin Kepplinger <martin.kepplinger@puri.sm>, rafael@kernel.org,
-        khilman@kernel.org, ulf.hansson@linaro.org, robh@kernel.org,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, festevam@gmail.com,
-        pavel@ucw.cz
-Cc:     kernel@puri.sm, linux-imx@nxp.com, broonie@kernel.org,
-        l.stach@pengutronix.de, aford173@gmail.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-References: <20220711094549.3445566-1-martin.kepplinger@puri.sm>
- <20220711094549.3445566-2-martin.kepplinger@puri.sm>
- <c68e4ae9-c435-c74e-91cd-b153be6de92f@linaro.org>
- <f2142a9816095eca504c464a6221a96a0cbd6b54.camel@puri.sm>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <f2142a9816095eca504c464a6221a96a0cbd6b54.camel@puri.sm>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Yr7wA8d4J7xtjwsH@atomide.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11/07/2022 15:17, Martin Kepplinger wrote:
-> Am Montag, dem 11.07.2022 um 12:38 +0200 schrieb Krzysztof Kozlowski:
->> On 11/07/2022 11:45, Martin Kepplinger wrote:
->>> Add the power-supply-needs-irq board description property for power
->>> domains.
->>
->> Where is a board description here? I think you just meant
->> "power-supply-needs-irq property"?
->>>
->>> Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
->>> ---
->>>  .../devicetree/bindings/power/power-domain.yaml        | 10
->>> ++++++++++
->>>  1 file changed, 10 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/power-
->>> domain.yaml b/Documentation/devicetree/bindings/power/power-
->>> domain.yaml
->>> index 889091b9814f..e82c2f7ccb97 100644
->>> --- a/Documentation/devicetree/bindings/power/power-domain.yaml
->>> +++ b/Documentation/devicetree/bindings/power/power-domain.yaml
->>> @@ -70,6 +70,16 @@ properties:
->>>        by the given provider should be subdomains of the domain
->>> specified
->>>        by this binding.
->>>  
->>> +  power-supply: true
->>
->> This is a new property not described in the commit msg.
-> 
-> true, I think it's missing and could be added as a separate patch.
-> 
->>
->>> +
->>> +  power-supply-needs-irq:
->>> +    type: boolean
->>> +    description:
->>> +      A power-supply can link for example to a regulator
->>> controlled via
->>> +      i2c or otherwise needing interrupts enabled to be able to
->>> enable and
->>> +      disable. 
->>
->> Not really a property of power domain. How the regulator supply works
->> is
->> entirely up to regulator. Otherwise such property should appear for
->> every device.
-> 
-> you're right. The power-domain driver could read the power-supply
-> regulator node directly. Still, I think then a new regulator property
-> is needed instead, or is it?
+* Tony Lindgren <tony@atomide.com> [220701 16:00]:
+> Also, looks like both with the initcall change for prm, and the patch
+> below, there seems to be also another problem where my test devices no
+> longer properly idle somehow compared to reverting the your two patches
+> in next.
 
-In case of regulator, I am not so sure it needs a dedicated property of
-DT. If it is I2C regulator - the parent node is I2C bus and regulator
-device is some child of I2C controller (could be via a MFD device), so
-no need for dedicated property.
+Sorry looks like was a wrong conclusion. While trying to track down this
+issue, I cannot reproduce it. So I don't see issues idling with either
+the initcall change or your test patch.
 
-If it uses interrupts, then:
-1. The presence of interrupts is already known - "interrupts" property.
-2. The actual use of interrupts is DT independent and only driver knows it.
+Not sure what caused my earlier tests to fail though. Maybe a config
+change to enable more debugging, or possibly some kind of warm reset vs
+cold reset type issue.
 
-Best regards,
-Krzysztof
+Regards,
+
+Tony
