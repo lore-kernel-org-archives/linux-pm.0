@@ -2,105 +2,183 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EB42C43334
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Jul 2022 11:23:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C87E9C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Jul 2022 11:44:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230027AbiGMLXu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Jul 2022 07:23:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47304 "EHLO
+        id S236313AbiGMLoP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Jul 2022 07:44:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235297AbiGMLXt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2022 07:23:49 -0400
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3592D13D0C
-        for <linux-pm@vger.kernel.org>; Wed, 13 Jul 2022 04:23:47 -0700 (PDT)
-Received: by mail-pj1-x102b.google.com with SMTP id v4-20020a17090abb8400b001ef966652a3so3088501pjr.4
-        for <linux-pm@vger.kernel.org>; Wed, 13 Jul 2022 04:23:47 -0700 (PDT)
+        with ESMTP id S235560AbiGMLoI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2022 07:44:08 -0400
+Received: from mail-il1-x133.google.com (mail-il1-x133.google.com [IPv6:2607:f8b0:4864:20::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 752039B9C4
+        for <linux-pm@vger.kernel.org>; Wed, 13 Jul 2022 04:44:06 -0700 (PDT)
+Received: by mail-il1-x133.google.com with SMTP id v2so6504505ilo.7
+        for <linux-pm@vger.kernel.org>; Wed, 13 Jul 2022 04:44:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=mBv65ePymP8BrvBqJEccHdic2EPa2EXBPtUssXzhwOg=;
-        b=WJAHzNZPHYaBkOnHpUQsHsNvlMG0D7+q0blC0hb3ey7VLNCE6BhnhWgLR5TKOl4CVy
-         KlBzLf6ICrSJyRZiQ3Jfb13yrTfH4mY8+LQhzMKRdp9948RtdB8bjg0dYdKTNlridZpL
-         x1XKBhSYeYAFLvts3J4JXpPcQeGtNvuJu3ZocsMTzZklY/vRr6OEBwF0luD3QTpjxDI1
-         0gd2HF+OXqxmKU0e5YvHukDOUKKZl1Dslaut8KNfBnWoyLRGEtci8Oe6f7nMFXSL+xhH
-         Gx78N5kAO/ESczBNpyuKdpcUP2QQ+fCpS/ntuX+IWdzTHPCFi1FJlBufX8AEVTn4LR5L
-         gqqw==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=WLxVrcxXgnjSp9TpDd96NJc4CQ3HVsum5LRxx9e4Msg=;
+        b=a/Irga5qRYBiUtyQmAMOpxXtWi1EPIKLXCDrBA3camn2ekBHIsynPa/aSlm/UZS5zf
+         sVoHN0hMzic02URy0gNQaV241sPaVpvAREknOM91WcRQfKbHeL+MOvyV1qGyxfBG+s6o
+         pciYha+QzZpU17oBk6ugjbu+zMss9Xa1c95Aud3D0bvIgudp6eV0hzY1mieJ2yVHh2JG
+         1M9K7hbgH9o+8ThQwefKesPTI0Poc+mEWvNUe1lGIDgacy0q0OGB99/rsWnALOvZWvRM
+         y0GCT1QFuQuFKRpUxPRkGOnGavflqZhDmLzi9psyQ6pPm63FrBJaC5F36WtlotE+AGAt
+         7tfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=mBv65ePymP8BrvBqJEccHdic2EPa2EXBPtUssXzhwOg=;
-        b=OVyJTA6xlTfWjx6DlcLrc+KcidHVA26B70iEGROsCiEE61HBc7fkGfc31V7zPwbUSn
-         rNFR3XhKhQQBJcrVVIPzobaoHh8QB1sTLvM7eFWiFywpSsrI71nO2DWUWsFiUySvPEC2
-         LzMav0sfk6Ot35yIfekYKOnddbcTWp6uoJ56McF+UFOIv5pu51fVsCB63sZoVYpGKLGU
-         B5P8oR5UYyOsJkbuIGcJY9+eCJ+hjmCONvxVb9nGnA2UORstj4OpfAKOXlQwT4sc8+To
-         i+Fi/0LlRapt9DsJksg6oTNw9u5ibe6lEXOka2smjQ8PBtA2Z4Rb0yAxHpsmZ7WqH67U
-         ymTw==
-X-Gm-Message-State: AJIora+U9fcQ7V17Zijh2EoxG6l0I5cCEbZn/abaRQ+ipj67zVqUtSNo
-        nz4qYffc+cmpkUAZ5hpJo0GdYw==
-X-Google-Smtp-Source: AGRyM1vma2fRTzKqlFqr8JzUoIhx2aJdRjOGe9vLEj93pDZb3OCTdhl1QJ6TIZS+hluNNhT9C8eGSA==
-X-Received: by 2002:a17:90b:4a08:b0:1ef:f36b:18e1 with SMTP id kk8-20020a17090b4a0800b001eff36b18e1mr9731642pjb.246.1657711426680;
-        Wed, 13 Jul 2022 04:23:46 -0700 (PDT)
-Received: from localhost ([122.171.18.80])
-        by smtp.gmail.com with ESMTPSA id 200-20020a6219d1000000b00528d7d27211sm8754024pfz.178.2022.07.13.04.23.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Jul 2022 04:23:46 -0700 (PDT)
-Date:   Wed, 13 Jul 2022 16:53:44 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-Cc:     rafael@kernel.org, lgirdwood@gmail.com, broonie@kernel.org,
-        matthias.bgg@gmail.com, rex-bc.chen@mediatek.com,
-        jia-wei.chang@mediatek.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-Subject: Re: [PATCH] cpufreq: mediatek: Handle sram regulator probe deferral
-Message-ID: <20220713112344.ye4xgjlqbhyvb46h@vireshk-i7>
-References: <20220713111536.115097-1-angelogioacchino.delregno@collabora.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=WLxVrcxXgnjSp9TpDd96NJc4CQ3HVsum5LRxx9e4Msg=;
+        b=g/4r9ZWlSfxEqDrnjq7bG70U3mFLpnVZ+Gso9CXnC1XeAOkGo3bynApZq9p2URkKEA
+         cLUJzw9q8fA+Vth+lI6K/o0YEOIMQBc9kxJKlQSwaSe5S65bBBxzMQjsM3vPyBAiwE3l
+         x0JmAiFYfxp0BSK2jIjTvfNplaIfxPlU6lM+scrpQfUyXYq1M8nA/QorjTFJwL9W/WkU
+         iX99oM31AwBUxUvudhDklhxSEeMNainvkMBW0psJ9jhOmLTRb0v5jkJG/xWAAypGze1O
+         m9ZhYzvoTdSoW81b9Stq+FPnELX3wqn8opI6A9WzLsDSvzFZRP5Zs3qb3RkrqM1+N6Dg
+         fb6g==
+X-Gm-Message-State: AJIora9xMn8HZlj41u3z601BMZA669DhLYgloju8pkLmsBlwQpH8oDXp
+        wyfntyiBc4VP/Gh0c9oEVxdm7aCswp6Koa8QpYPqQQ==
+X-Google-Smtp-Source: AGRyM1t85lDfdQ4Z5QbtPLSh4NEnsvoB0PJTYo8PE4j/gwAn6XzTV7Z5ZQI87aDgZkp32lmm4e+pg/BUr27cfrC09aw=
+X-Received: by 2002:a92:cd82:0:b0:2dc:9263:720f with SMTP id
+ r2-20020a92cd82000000b002dc9263720fmr1582299ilb.226.1657712645797; Wed, 13
+ Jul 2022 04:44:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220713111536.115097-1-angelogioacchino.delregno@collabora.com>
+References: <20220609150851.23084-1-max.oss.09@gmail.com> <CACRpkdZ0=8poNcFaCYSmMyg1GBfkHLAr3QvvzFKweLPr3UM2vg@mail.gmail.com>
+ <CAEHkU3Wya0nRhaBDisAQBm5kf=2YcdJYzz2jKiL___mZQzL_Sw@mail.gmail.com>
+In-Reply-To: <CAEHkU3Wya0nRhaBDisAQBm5kf=2YcdJYzz2jKiL___mZQzL_Sw@mail.gmail.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Wed, 13 Jul 2022 13:43:28 +0200
+Message-ID: <CAPDyKFrEYCx3L94gz27Pk_=HdwA4GNGE9Lvz+HGUW0P7Qt-mBw@mail.gmail.com>
+Subject: Re: [PATCH v1 0/5] power: domain: Add driver for a PM domain provider
+ which controls
+To:     Max Krummenacher <max.oss.09@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>
+Cc:     Max Krummenacher <max.krummenacher@toradex.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Francesco Dolcini <francesco.dolcini@toradex.com>,
+        Mark Brown <broonie@kernel.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Andrejs Cainikovs <andrejs.cainikovs@toradex.com>,
+        Biju Das <biju.das.jz@bp.renesas.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Fabio Estevam <festevam@gmail.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Marcel Ziswiler <marcel.ziswiler@toradex.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Rob Herring <robh+dt@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>, Vinod Koul <vkoul@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 13-07-22, 13:15, AngeloGioacchino Del Regno wrote:
-> If the regulator_get_optional() call for the SRAM regulator returns
-> a probe deferral, we must bail out and retry probing later: failing
-> to do this will produce unstabilities on platforms requiring the
-> handling for this regulator.
-> 
-> Fixes: ffa7bdf7f344 ("cpufreq: mediatek: Make sram regulator optional")
-> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-> ---
->  drivers/cpufreq/mediatek-cpufreq.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-> index 3a2be4552020..7f2680bc9a0f 100644
-> --- a/drivers/cpufreq/mediatek-cpufreq.c
-> +++ b/drivers/cpufreq/mediatek-cpufreq.c
-> @@ -439,9 +439,13 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
->  
->  	/* Both presence and absence of sram regulator are valid cases. */
->  	info->sram_reg = regulator_get_optional(cpu_dev, "sram");
-> -	if (IS_ERR(info->sram_reg))
-> +	if (IS_ERR(info->sram_reg)) {
-> +		ret = PTR_ERR(info->sram_reg);
-> +		if (ret == -EPROBE_DEFER)
-> +			goto out_free_resources;
-> +
->  		info->sram_reg = NULL;
-> -	else {
-> +	} else {
->  		ret = regulator_enable(info->sram_reg);
->  		if (ret) {
->  			dev_warn(cpu_dev, "cpu%d: failed to enable vsram\n", cpu);
+On Thu, 23 Jun 2022 at 18:14, Max Krummenacher <max.oss.09@gmail.com> wrote:
+>
+> Hi all
+>
+> On Thu, Jun 16, 2022 at 2:51 PM Linus Walleij <linus.walleij@linaro.org> wrote:
+> >
+> > On Thu, Jun 9, 2022 at 5:10 PM Max Krummenacher <max.oss.09@gmail.com> wrote:
+> >
+> > > This series adds a PM domain provider driver which enables/disables
+> > > a regulator to control its power state.
+> >
+> > Actually, we did this on the U8500 in 2011.
+> >
+> > IIRC this led to problems because we had to invent "atomic regulators"
+> > because regulators use kernel abstractions that assume slowpath
+> > (process context) and power domains does not, i.e. they execute in
+> > fastpath, such as an interrupt handler.
 
-Applied. Thanks.
+This isn't entirely correct. The callbacks of a genpd, *may* execute
+in atomic context, but that depends on whether the GENPD_FLAG_IRQ_SAFE
+is set for it or not.
 
--- 
-viresh
+Similar to what we have for runtime PM callbacks, with pm_runtime_irq_safe().
+
+> >
+> > The atomic regulator was a subset of regulator that only handled
+> > regulators that would result in something like an atomic register write.
+> >
+> > In the end it was not worth trying to upstream this approach, and
+> > as I remember it, Ulf Hansson intended to let the power domains poke
+> > these registers directly, which was easier. (It's on Ulfs TODO list to
+> > actually implement this, hehe.)
+
+Yep, unfortunately I never got to the point. However, poking the
+registers directly from the genpd provider's on/off callbacks has
+never been my plan.
+
+Instead I would rather expect us to call into a Ux500 specific
+interface for the prcmu FW. Simply because it's not really a regulator
+and must not be modelled like it. Instead it is a voltage/frequency
+domain that is managed behind a FW interface.
+
+> >
+> > Yours,
+> > Linus Walleij
+>
+> Thanks for all the feedback.
+>
+> The approach taken with the patchset seems to be architecturally wrong
+> and as Linus pointed out has additionally the flaw that the regulator
+> would need to be controllable in atomic context which depending on
+> the regulator driver / configuration may not be fulfilled.
+
+See above. Perhaps GENPD_FLAG_IRQ_SAFE and pm_runtime_irq_safe() can
+help with this?
+
+Note that, power domains can be modelled with child/parents too, which
+perhaps can help around this too.
+
+>
+> So our plan is to explicitly handle a (shared) regulator in every
+> driver involved, adding that regulator capability for drivers not
+> already having one.
+
+Please don't! I have recently rejected a similar approach for Tegra
+platforms, which now have been converted into using the power domain
+approach.
+
+If it's a powerail that is shared between controllers (devices), used
+to keep their registers values for example, that should be modelled as
+a power domain. Moreover for power domains, we can support
+voltage/frequency (performance) scaling, which isn't really applicable
+to a plain regulator.
+
+However, if the actual powerrail fits well to be modelled as
+regulator, please go ahead. Although, in this case, the regulator must
+only be controlled behind a genpd provider's on/off callback, so you
+still need the power domain approach, rather than using the regulator
+in each driver and for each device.
+
+>
+>
+> The question which remains is on how one would model functionality
+> which by itself does not need a driver but would need regulator
+> support to switch its supply on in run state and off in suspend
+> states and poweroff, like for example a simple level shifter.
+
+Not sure I understand the question properly, but perhaps by adopting
+my proposal above this problem becomes easier to solve?
+
+> Any suggestions on this topic? Thanks.
+>
+> Cheers
+> Max
+
+Kind regards
+Uffe
