@@ -2,79 +2,109 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F660C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jul 2022 20:45:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C29AAC43334
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jul 2022 23:16:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240538AbiGNUpN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Jul 2022 16:45:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56434 "EHLO
+        id S240952AbiGNXQR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Jul 2022 19:16:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40094 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232549AbiGNUpK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jul 2022 16:45:10 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 201FE4D16D
-        for <linux-pm@vger.kernel.org>; Thu, 14 Jul 2022 13:45:10 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B173B60C23
-        for <linux-pm@vger.kernel.org>; Thu, 14 Jul 2022 20:45:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 1210AC34115
-        for <linux-pm@vger.kernel.org>; Thu, 14 Jul 2022 20:45:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1657831509;
-        bh=eVPRRwvmbeNCprMJeh0iTeO9aqNVxhavLhm3ZGMOLFU=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=dUFYH/fSJmuOSUjsFhr5ZuAT/el88sLv3EwRiICSRVfAOQEDmjUYk+bXw4R374wxH
-         SVNvFhdRb2lzbC1X3cYDVfvmspGo6G532FZ1EsHlJFi+YX0K/lahlDw/OQxRJIZ50f
-         nO4JM/Igqww80wHSL43hPUYPw8zM9bI1ajpZcwkdW9mGxKSrVfJXe/06nnhBATJLRe
-         qmSsS53DJBUs+3gpXQn8EQJIrj0fyr5UmaTzX76bAYD8ci/0ADClsqVUE10+kJ2aZB
-         x3zfQUCR8oI9iAj+srV/Ev4tOxNTCqWsN3VbEarAIikYt9EIIJTChMt81klPoK01Hc
-         Z34YNJG0gpjFA==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id E48F2CC13AD; Thu, 14 Jul 2022 20:45:08 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 216248] [Regression] amd-pstate stops working after [ACPI:
- CPPC: Check _OSC for flexible address space]
-Date:   Thu, 14 Jul 2022 20:45:08 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: arek.rusi@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cf_regression
-Message-ID: <bug-216248-137361-ckFUmAGjzn@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-216248-137361@https.bugzilla.kernel.org/>
-References: <bug-216248-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S240929AbiGNXQN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jul 2022 19:16:13 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9299372EEC;
+        Thu, 14 Jul 2022 16:16:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1657840572; x=1689376572;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=AJL06bd9lQh2AmUSTEF0Un/ArSUeAQHW+QlFFAbUKbo=;
+  b=k6cf54BXfmyUyXnLvxzvQIMmUCAA9P7qep2Nzj0eosegfx7L8TlZjyZK
+   TvRmWDFMr332dgM6yF+yh3P3bqUa9SvIiqi77RqQM8kBlTcfkx+dbwa85
+   wNOonP9KmMqpcZxGtop2W0ZCCdTyYgdncC81W4rK1WXOpdnhnjVBi6laa
+   xb6nfTX8Ft0CqHl7f/m78vlgc42bhDrOQX4jiJ6YeYPRaO1hV/JollrVj
+   C/L1gf8Sq5v1rwVXbT1lmt0JVNZq8HalMbcn4vahKHVgLq8LwsV2hySEQ
+   idGtPmBY3DD/z63sgHkV61k6TWtE0pPhu+YocudLxtX5diydMb9dj7+Wi
+   g==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10408"; a="268676967"
+X-IronPort-AV: E=Sophos;i="5.92,272,1650956400"; 
+   d="scan'208";a="268676967"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jul 2022 16:16:11 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,272,1650956400"; 
+   d="scan'208";a="738449838"
+Received: from linux.intel.com ([10.54.29.200])
+  by fmsmga001.fm.intel.com with ESMTP; 14 Jul 2022 16:16:11 -0700
+Received: from rjingar-desk5.amr.corp.intel.com (vicentes-mobl.amr.corp.intel.com [10.209.132.117])
+        by linux.intel.com (Postfix) with ESMTP id 20D9958092F;
+        Thu, 14 Jul 2022 16:16:11 -0700 (PDT)
+From:   Rajvi Jingar <rajvi.jingar@linux.intel.com>
+To:     rafael.j.wysocki@intel.com, bhelgaas@google.com
+Cc:     rajvi.jingar@linux.intel.com, david.e.box@linux.intel.com,
+        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v2 2/2] PCI/PTM: fix to maintain pci_dev->ptm_enabled
+Date:   Thu, 14 Jul 2022 16:16:09 -0700
+Message-Id: <20220714231609.3962051-2-rajvi.jingar@linux.intel.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220714231609.3962051-1-rajvi.jingar@linux.intel.com>
+References: <20220714231609.3962051-1-rajvi.jingar@linux.intel.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D216248
+pci_dev->ptm_enabled needs to be maintained to reflect the current PTM
+state of the device. In pci_ptm_disable(), clear ptm_enabled from
+'struct pci_dev' on disabling PTM state for the device.
+In pci_restore_ptm_state(), set dev->ptm_enabled based on the restored
+PTM state of the device.
 
-Arek Ru=C5=9Bniak (arek.rusi@gmail.com) changed:
+Also, perform ptm_enabled check in pci_ptm_disable() to avoid config
+space access in case if PTM is already disabled for the device.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-         Regression|No                          |Yes
+Signed-off-by: Rajvi Jingar <rajvi.jingar@linux.intel.com>
+---
+ v1->v2:
+   - add ptm_enabled check in pci_ptm_disable().
+   - set the dev->ptm_enabled value in pci_restore_ptm_state().
+---
+ drivers/pci/pcie/ptm.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
---=20
-You may reply to this email to add a comment.
+diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
+index 368a254e3124..8dc7d2285a0d 100644
+--- a/drivers/pci/pcie/ptm.c
++++ b/drivers/pci/pcie/ptm.c
+@@ -34,6 +34,9 @@ void pci_disable_ptm(struct pci_dev *dev)
+ 	int ptm;
+ 	u16 ctrl;
+ 
++	if (!dev->ptm_enabled)
++		return;
++
+ 	if (!pci_is_pcie(dev))
+ 		return;
+ 
+@@ -44,6 +47,7 @@ void pci_disable_ptm(struct pci_dev *dev)
+ 	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, &ctrl);
+ 	ctrl &= ~(PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT);
+ 	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, ctrl);
++	dev->ptm_enabled = 0;
+ }
+ 
+ void pci_save_ptm_state(struct pci_dev *dev)
+@@ -83,6 +87,7 @@ void pci_restore_ptm_state(struct pci_dev *dev)
+ 
+ 	cap = (u16 *)&save_state->cap.data[0];
+ 	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, *cap);
++	dev->ptm_enabled = !!(*cap & PCI_PTM_CTRL_ENABLE);
+ }
+ 
+ void pci_ptm_init(struct pci_dev *dev)
+-- 
+2.25.1
 
-You are receiving this mail because:
-You are the assignee for the bug.=
