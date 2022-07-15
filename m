@@ -2,97 +2,113 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCAC5C43334
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 19:48:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8E9AC43334
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 20:37:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230181AbiGOTss (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jul 2022 15:48:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49730 "EHLO
+        id S231243AbiGOUhF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jul 2022 16:37:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52770 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229648AbiGOTsr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 15:48:47 -0400
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51A5C624C;
-        Fri, 15 Jul 2022 12:48:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1657914524; x=1689450524;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=MilUhzh+T5K7OKYmpSSzhAgM8qxY12ZE5AeVvwctYIg=;
-  b=ENLwp5TQ06MUqVsAaPm700pEs0mdqrZQRSSeOYviXkBea3L1EvJuaUA4
-   O2NB9xVtQg2Uy1Ge6rzaLSe6e3OEjx0+rIBTeQYmVtLuVtyu+ZYz0o/Xl
-   w5BJ4tCDrSGmp0Q7aEHLXJKZAFVSOnGVu+wj/xOIu/VxKt/SlYZ436HxY
-   o9xZ/rD9gsq2G2XtO+AcBtDzLBTYEdiZ3Q/RTB1jOTctZ4DDsBlvoWmSH
-   lTMVnURUMmd75z6VomrkmRW4JWOujgL4Qb8VjKxNWyW5l/UjbZjlk3Klc
-   bSXHw4QUpcoG3VtBNHZhpgFZyeVLuUPz9EeifumapwjwZaqhmtO/QlbY5
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10409"; a="266298361"
-X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; 
-   d="scan'208";a="266298361"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2022 12:48:44 -0700
-X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; 
-   d="scan'208";a="664319203"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2022 12:48:42 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1oCRIl-001JDk-2o;
-        Fri, 15 Jul 2022 22:48:39 +0300
-Date:   Fri, 15 Jul 2022 22:48:39 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-Cc:     rafael@kernel.org, srinivas.pandruvada@linux.intel.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] powercap: RAPL: Add Power Limit4 support for Alder
- Lake-N and Raptor Lake-P
-Message-ID: <YtHEl73BL1BRyl9r@smile.fi.intel.com>
-References: <20220715165228.28044-1-sumeet.r.pawnikar@intel.com>
+        with ESMTP id S230474AbiGOUhF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 16:37:05 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8443C7D1F2
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 13:37:03 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oCS3Z-0004tT-Ad; Fri, 15 Jul 2022 22:37:01 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oCS3Y-001BFp-Ke; Fri, 15 Jul 2022 22:37:00 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1oCS3X-005PyV-Tq; Fri, 15 Jul 2022 22:36:59 +0200
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Georgi Djakov <djakov@kernel.org>
+Cc:     kernel@pengutronix.de, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 7/8] interconnect: Make icc_provider_del() return void
+Date:   Fri, 15 Jul 2022 22:36:51 +0200
+Message-Id: <20220715203652.89912-8-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20220715203652.89912-1-u.kleine-koenig@pengutronix.de>
+References: <20220715203652.89912-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220715165228.28044-1-sumeet.r.pawnikar@intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2130; h=from:subject; bh=n7ouJxzj7vqUld5FBMHrGeB81LM5WBQ347j0wY3D8po=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBi0c+prNCY2MkDBjsDbX9CO0306kJbYFPVvfGSc0hD cE/xWRyJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYtHPqQAKCRDB/BR4rcrsCVSfCA CAimBeZMb/So+BHgyWnIp6cAcWPOgbjLmfK20qFBx6OjUobP0sOcc3NL2Qx+oPM+GoAqpPOaonHeuP E03Ci7dgi0EewCsI6UbASjvaoWlei9Izfu4QzPKr4dZCL65H/afgRxsb9e780mD4HacGCoBrN4I8dg 3RgQhNj6JQBGgFq/UpEmAmCwV33L6/khHbfwjIZmo5yA1NImy68ECiwi6RcYr7FMrcsvDURlfI8uiC +LzLwSFNoGhWFxkyb17TMzq3eN9JqeRmQdRhFkax3CaTIfi56hF5s4blWQ+SkQnGiYeC+NR/Vc9lIt TW13nUPqPo2ApNvBMFFSUF1MPQqydi
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jul 15, 2022 at 10:22:28PM +0530, Sumeet Pawnikar wrote:
-> Add Alder Lake-N and Raptor Lake-P to the list of processor models
-> for which Power Limit4 is supported by the Intel RAPL driver.
-> 
-> Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-> Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+All users ignore the return value of icc_provider_del(). Consequently
+make it not return an error code.
 
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/interconnect/core.c           | 10 +++-------
+ include/linux/interconnect-provider.h |  2 +-
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-You may not convert people's review into a tag without their consent.
-But taking into account this is trivial patch, it's fine. Just follow
-the rules next time.
-
-Also, where is v1? What are the differences to it?
-
-> ---
->  drivers/powercap/intel_rapl_msr.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
-> index 9d23984d8931..bc6adda58883 100644
-> --- a/drivers/powercap/intel_rapl_msr.c
-> +++ b/drivers/powercap/intel_rapl_msr.c
-> @@ -140,7 +140,9 @@ static const struct x86_cpu_id pl4_support_ids[] = {
->  	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_TIGERLAKE_L, X86_FEATURE_ANY },
->  	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_ALDERLAKE, X86_FEATURE_ANY },
->  	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_ALDERLAKE_L, X86_FEATURE_ANY },
-> +	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_ALDERLAKE_N, X86_FEATURE_ANY },
->  	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_RAPTORLAKE, X86_FEATURE_ANY },
-> +	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_RAPTORLAKE_P, X86_FEATURE_ANY },
->  	{}
->  };
-
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 808f6e7a8048..25debded65a8 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -1057,29 +1057,25 @@ EXPORT_SYMBOL_GPL(icc_provider_add);
+ /**
+  * icc_provider_del() - delete previously added interconnect provider
+  * @provider: the interconnect provider that will be removed from topology
+- *
+- * Return: 0 on success, or an error code otherwise
+  */
+-int icc_provider_del(struct icc_provider *provider)
++void icc_provider_del(struct icc_provider *provider)
+ {
+ 	mutex_lock(&icc_lock);
+ 	if (provider->users) {
+ 		pr_warn("interconnect provider still has %d users\n",
+ 			provider->users);
+ 		mutex_unlock(&icc_lock);
+-		return -EBUSY;
++		return;
+ 	}
+ 
+ 	if (!list_empty(&provider->nodes)) {
+ 		pr_warn("interconnect provider still has nodes\n");
+ 		mutex_unlock(&icc_lock);
+-		return -EBUSY;
++		return;
+ 	}
+ 
+ 	list_del(&provider->provider_list);
+ 	mutex_unlock(&icc_lock);
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL_GPL(icc_provider_del);
+ 
+diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
+index 6bd01f7159c6..191f083d1f3b 100644
+--- a/include/linux/interconnect-provider.h
++++ b/include/linux/interconnect-provider.h
+@@ -123,7 +123,7 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider);
+ void icc_node_del(struct icc_node *node);
+ int icc_nodes_remove(struct icc_provider *provider);
+ int icc_provider_add(struct icc_provider *provider);
+-int icc_provider_del(struct icc_provider *provider);
++void icc_provider_del(struct icc_provider *provider);
+ struct icc_node_data *of_icc_get_from_provider(struct of_phandle_args *spec);
+ void icc_sync_state(struct device *dev);
+ 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.36.1
 
