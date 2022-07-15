@@ -2,124 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DC34C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 15:19:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CDFAC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 15:20:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235266AbiGOPTl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jul 2022 11:19:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57160 "EHLO
+        id S229612AbiGOPUZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jul 2022 11:20:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57438 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235313AbiGOPTO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 11:19:14 -0400
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C81C26C0;
-        Fri, 15 Jul 2022 08:19:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1657898350; x=1689434350;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=GzvdUNK0/elu+0B9zVMsBMPuRFb0YyLLTorGkbmlvI8=;
-  b=UgZbeJ3BBMavgSIrlXgy0//SpMC5YfN0sZ0jsNiB71ihAYiQ4fE0fNg6
-   dhCKbepJoAeS6H6GRuwDYjq2AqxrcPzB+mn6axHton/Nzj1JrKgY7XANm
-   nRsHDIa/a7EoXsppjQPZJoXY74AytxetSuhgCN0M7FTdt4eePzJ5GbBkJ
-   +4iyokd6tlQZdhV4H7VU40sTbfrW5WvzAqOuEXdZHlbMYLddEJFAUq8X5
-   GeGDNSvjDBXeTHnUs+W8pxF5G87O5OGWHO/PqTQ/RGUGRLQ7rdofr6Nsl
-   ZKzRzf5BAh8WtmcB+cch9gK8ChPj4YwqgIVISeA/EsVDlRa2PeTNgw4bW
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10408"; a="372133247"
-X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; 
-   d="scan'208";a="372133247"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2022 08:18:56 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; 
-   d="scan'208";a="723110016"
-Received: from lkp-server02.sh.intel.com (HELO ff137eb26ff1) ([10.239.97.151])
-  by orsmga004.jf.intel.com with ESMTP; 15 Jul 2022 08:18:55 -0700
-Received: from kbuild by ff137eb26ff1 with local (Exim 4.95)
-        (envelope-from <lkp@intel.com>)
-        id 1oCN5i-0000HJ-IN;
-        Fri, 15 Jul 2022 15:18:54 +0000
-Date:   Fri, 15 Jul 2022 19:01:49 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- bab5a415e184710d01c37547f706a0e85873bb74
-Message-ID: <62d1491d.sEAKmtLmVIxvS4zB%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S235426AbiGOPUU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 11:20:20 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36B3C27FF3
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 08:20:19 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id E47E2B82B3F
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 15:20:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8D7B9C341CA
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 15:20:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1657898416;
+        bh=q9g67ujdA1v6UzI34htdZTT2fsSIkcchhFQ1w8dcUtk=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=MfLUbA2zYH1cfdoI+dvOm/5ijZg22aMJw8qRIAWDgYuAF/2Bcl3TlIRPT4KzIlAeC
+         voB/BWNvYCfW2zd9uPpjuLEXd3F9BQTqqmZjTGmXLVDTGeNqqVb2hCFyWzyqcIYAX8
+         HvL4hJEO3R5aGcBXWRSIa5Q787OhaKob61SWLSQgGNBLgUF6zcCU51STDGRNLnipbj
+         9gQiPHyqrBggfL5KSk757q9FfcdZQjFg1ceKrr8ZHBicxZE1JMFZxHtp7Y9TZZM1fV
+         I8AXersnLRX/D5ZJ99w4g8+vWWP3dzYl63rvVEVwbTeYcjnTShyba6j/PIezcqc5yC
+         DT9YSDNY29Qsw==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+        id 766E1C05FD6; Fri, 15 Jul 2022 15:20:16 +0000 (UTC)
+From:   bugzilla-daemon@kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [Bug 216248] [Regression] amd-pstate stops working after [ACPI:
+ CPPC: Check _OSC for flexible address space]
+Date:   Fri, 15 Jul 2022 15:20:16 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: mario.limonciello@amd.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-216248-137361-H9j6UeuqfH@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-216248-137361@https.bugzilla.kernel.org/>
+References: <bug-216248-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: bab5a415e184710d01c37547f706a0e85873bb74  Merge branch 'pm-domains' into bleeding-edge
+https://bugzilla.kernel.org/show_bug.cgi?id=3D216248
 
-elapsed time: 896m
+--- Comment #14 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
+> [    0.688308] ACPI CPPC: CPPC v2 _OSC not acked
 
-configs tested: 48
-configs skipped: 3
+OK good, this confirms that your system had _OSC not advertising.
+> [    0.688392] ACPI CPPC: Flexible address space capability not supported
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+That does confirm that your assertion of the bisect was the cause.
 
-gcc tested configs:
-m68k                       m5275evb_defconfig
-arm                        oxnas_v6_defconfig
-alpha                            allyesconfig
-m68k                             allmodconfig
-arc                              allyesconfig
-m68k                             allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-mips                             allyesconfig
-sh                               allmodconfig
-i386                                defconfig
-i386                             allyesconfig
-i386                          randconfig-a001
-i386                          randconfig-a003
-i386                          randconfig-a005
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a006
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a015
-i386                          randconfig-a014
-i386                          randconfig-a012
-i386                          randconfig-a016
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                           rhel-8.3-syz
+I'm attaching a patch that I think can help the problem.
 
-clang tested configs:
-powerpc                 mpc8560_ads_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a004
-i386                          randconfig-a006
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-x86_64                        randconfig-a005
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a013
-i386                          randconfig-a011
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220714
-hexagon              randconfig-r041-20220714
+--=20
+You may reply to this email to add a comment.
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+You are receiving this mail because:
+You are the assignee for the bug.=
