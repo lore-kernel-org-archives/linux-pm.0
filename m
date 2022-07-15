@@ -2,76 +2,124 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA2FAC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 14:56:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DC34C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 15:19:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231464AbiGOO4u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jul 2022 10:56:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40614 "EHLO
+        id S235266AbiGOPTl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jul 2022 11:19:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57160 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231236AbiGOO4t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 10:56:49 -0400
-Received: from m-r2.th.seeweb.it (m-r2.th.seeweb.it [5.144.164.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4F8F474F8
-        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 07:56:47 -0700 (PDT)
-Received: from [192.168.1.101] (abxj77.neoplus.adsl.tpnet.pl [83.9.3.77])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id C3F9E3F604;
-        Fri, 15 Jul 2022 16:56:42 +0200 (CEST)
-Message-ID: <09ff7e3a-7dd5-db35-3795-89151afb5363@somainline.org>
-Date:   Fri, 15 Jul 2022 16:56:41 +0200
+        with ESMTP id S235313AbiGOPTO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 11:19:14 -0400
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C81C26C0;
+        Fri, 15 Jul 2022 08:19:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1657898350; x=1689434350;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=GzvdUNK0/elu+0B9zVMsBMPuRFb0YyLLTorGkbmlvI8=;
+  b=UgZbeJ3BBMavgSIrlXgy0//SpMC5YfN0sZ0jsNiB71ihAYiQ4fE0fNg6
+   dhCKbepJoAeS6H6GRuwDYjq2AqxrcPzB+mn6axHton/Nzj1JrKgY7XANm
+   nRsHDIa/a7EoXsppjQPZJoXY74AytxetSuhgCN0M7FTdt4eePzJ5GbBkJ
+   +4iyokd6tlQZdhV4H7VU40sTbfrW5WvzAqOuEXdZHlbMYLddEJFAUq8X5
+   GeGDNSvjDBXeTHnUs+W8pxF5G87O5OGWHO/PqTQ/RGUGRLQ7rdofr6Nsl
+   ZKzRzf5BAh8WtmcB+cch9gK8ChPj4YwqgIVISeA/EsVDlRa2PeTNgw4bW
+   g==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10408"; a="372133247"
+X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; 
+   d="scan'208";a="372133247"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2022 08:18:56 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; 
+   d="scan'208";a="723110016"
+Received: from lkp-server02.sh.intel.com (HELO ff137eb26ff1) ([10.239.97.151])
+  by orsmga004.jf.intel.com with ESMTP; 15 Jul 2022 08:18:55 -0700
+Received: from kbuild by ff137eb26ff1 with local (Exim 4.95)
+        (envelope-from <lkp@intel.com>)
+        id 1oCN5i-0000HJ-IN;
+        Fri, 15 Jul 2022 15:18:54 +0000
+Date:   Fri, 15 Jul 2022 19:01:49 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ bab5a415e184710d01c37547f706a0e85873bb74
+Message-ID: <62d1491d.sEAKmtLmVIxvS4zB%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH 3/3] thermal: qcom: tsens: Implement re-initialization
- workaround quirk
-Content-Language: en-US
-To:     Bhupesh Sharma <bhupesh.sharma@linaro.org>,
-        linux-pm@vger.kernel.org
-Cc:     bhupesh.linux@gmail.com, linux-kernel@vger.kernel.org,
-        bjorn.andersson@linaro.org, Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        linux-arm-msm@vger.kernel.org
-References: <20220701145815.2037993-1-bhupesh.sharma@linaro.org>
- <20220701145815.2037993-4-bhupesh.sharma@linaro.org>
-From:   Konrad Dybcio <konrad.dybcio@somainline.org>
-In-Reply-To: <20220701145815.2037993-4-bhupesh.sharma@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: bab5a415e184710d01c37547f706a0e85873bb74  Merge branch 'pm-domains' into bleeding-edge
 
+elapsed time: 896m
 
-On 1.07.2022 16:58, Bhupesh Sharma wrote:
-> Since for some QCoM tsens controllers, its suggested to
-> monitor the controller health periodically and in case an
-> issue is detected, to re-initialize the tsens controller
-> via trustzone, add the support for the same in the
-> qcom tsens driver.
-> 
-> Note that Once the tsens controller is reset using scm call,
-> all SROT and TM region registers will enter the reset mode.
-> 
-> While all the SROT registers will be re-programmed and
-> re-enabled in trustzone prior to the scm call exit, the TM
-> region registers will not re-initialized in trustzone and thus
-> need to be handled by the tsens driver.
-> 
-> Cc: Amit Kucheria <amitk@kernel.org>
-> Cc: Thara Gopinath <thara.gopinath@gmail.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-arm-msm@vger.kernel.org
-> Signed-off-by: Bhupesh Sharma <bhupesh.sharma@linaro.org>
-> Reported-by: kernel test robot <lkp@intel.com>
-> ---
-Hi, I think this should be also checked and applied on init. This
-seems required for at least SM6375, as the controller starts (or
-well, doesn't start...) in an unknown state and the driver does
-not like it, as the TSENS_EN indicates it is disabled.
-Downstream runs this right at probe..
+configs tested: 48
+configs skipped: 3
 
-Konrad
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+m68k                       m5275evb_defconfig
+arm                        oxnas_v6_defconfig
+alpha                            allyesconfig
+m68k                             allmodconfig
+arc                              allyesconfig
+m68k                             allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+mips                             allyesconfig
+sh                               allmodconfig
+i386                                defconfig
+i386                             allyesconfig
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a006
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+x86_64                        randconfig-a015
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a016
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                          rhel-8.3-func
+x86_64                         rhel-8.3-kunit
+x86_64                           rhel-8.3-syz
+
+clang tested configs:
+powerpc                 mpc8560_ads_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220714
+hexagon              randconfig-r041-20220714
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
