@@ -2,115 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACF5DCCA485
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 13:43:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8C2CC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 14:25:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234650AbiGONnE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jul 2022 09:43:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45120 "EHLO
+        id S232893AbiGOOZ4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jul 2022 10:25:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49332 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232707AbiGONnC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 09:43:02 -0400
-Received: from mail-io1-f52.google.com (mail-io1-f52.google.com [209.85.166.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82F8F7E006;
-        Fri, 15 Jul 2022 06:43:01 -0700 (PDT)
-Received: by mail-io1-f52.google.com with SMTP id z132so3906892iof.0;
-        Fri, 15 Jul 2022 06:43:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
-         :message-id;
-        bh=03wcnwqW6SswNVSW3NYFh+nPKkFyDcywCPMc3nrTTzo=;
-        b=TdH2JtsYB6QRHzBN/92KFqwdGYKhHjdyXCuZM2aotId2+++XH3D5mX4a+RmDrIHJRF
-         U4WJ9tIylHXl9VKUOX+NGL0TfB5FLrH9wpgzuy5jCNZP3Bp1MvzEIyGmLVFCqex+W12A
-         uUfauLWZrk6jRc/cI9hyxAyiHbFvvnWXIUSlZ2tWlV/osLK4UY2HQ8WDYbbXKS1RXVzk
-         n9QIzRg0xTloij76/vYsdCDaR38UuSPuRM2MVjLNdufq4oovPcj8Zb1+4HM8a5lorraU
-         Vg8TpjKC53Hv9mK2T4PgQmtUAKxEGVQiH/a2spjezQg9AWtDY4PZHNiK4mpFgvQQ7FTu
-         8jZA==
-X-Gm-Message-State: AJIora/9WOi3jRjfzDpdyk4s5MK2mprVAmOXui7m4wYtI7++wX9Ubv8G
-        yMtc6M7C56PWWWEK8sF3MQ==
-X-Google-Smtp-Source: AGRyM1uzHWN8yj4iBWno2bNl4tSBHdD45HjKJL19BAJUQTQyoHWpBthV9k3/tF7H+HVOqQ0U4hzPtA==
-X-Received: by 2002:a02:ac0a:0:b0:33f:713a:9589 with SMTP id a10-20020a02ac0a000000b0033f713a9589mr7633647jao.289.1657892580691;
-        Fri, 15 Jul 2022 06:43:00 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.248])
-        by smtp.gmail.com with ESMTPSA id g7-20020a92dd87000000b002dc789a3dddsm1703976iln.5.2022.07.15.06.42.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Jul 2022 06:43:00 -0700 (PDT)
-Received: (nullmailer pid 520291 invoked by uid 1000);
-        Fri, 15 Jul 2022 13:42:55 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     ChiaEn Wu <peterwu.pub@gmail.com>
-Cc:     linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        lee.jones@linaro.org, heikki.krogerus@linux.intel.com,
-        broonie@kernel.org, cy_huang@richtek.com, deller@gmx.de,
-        linux@roeck-us.net,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        szunichen@gmail.com, matthias.bgg@gmail.com,
-        dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org,
-        linux-fbdev@vger.kernel.org, jingoohan1@gmail.com,
-        chunfeng.yun@mediatek.com, lgirdwood@gmail.com,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        jic23@kernel.org, pavel@ucw.cz, gregkh@linuxfoundation.org,
-        robh+dt@kernel.org, lars@metafoo.de, alice_chen@richtek.com,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        sre@kernel.org, chiaen_wu@richtek.com,
-        linux-mediatek@lists.infradead.org, linux-usb@vger.kernel.org,
-        krzysztof.kozlowski+dt@linaro.org
-In-Reply-To: <20220715112607.591-7-peterwu.pub@gmail.com>
-References: <20220715112607.591-1-peterwu.pub@gmail.com> <20220715112607.591-7-peterwu.pub@gmail.com>
-Subject: Re: [PATCH v5 06/13] dt-bindings: mfd: Add MediaTek MT6370
-Date:   Fri, 15 Jul 2022 07:42:55 -0600
-Message-Id: <1657892575.865405.520290.nullmailer@robh.at.kernel.org>
+        with ESMTP id S229846AbiGOOZy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 10:25:54 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05A865D0C9;
+        Fri, 15 Jul 2022 07:25:54 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id B7E1134DD1;
+        Fri, 15 Jul 2022 14:25:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1657895152; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=Tle2lhJhQp2g1mDXUt7ZR3944PM4JXbq65HXWxNQb9s=;
+        b=Q72RTBuD7k4s6+lQaBTvP7XBaVckub1f8rXxhmEYqk15ECh+YhcXULfMBDLX5wgm3sUevt
+        Sy7CZREhmcgK5mvyF/r2pt77ayU0bXXrwGbDnpImxAQ+rgRtXXPu8V7PVQ1DGDimwk99Ch
+        U5mq93BlCh5EhiuDrT92+X1e6paGPnE=
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2F88F13754;
+        Fri, 15 Jul 2022 14:25:52 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id wkAkCvB40WK+QQAAMHmgww
+        (envelope-from <jgross@suse.com>); Fri, 15 Jul 2022 14:25:52 +0000
+From:   Juergen Gross <jgross@suse.com>
+To:     xen-devel@lists.xenproject.org, x86@kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     brchuckz@netscape.net, jbeulich@suse.com,
+        Juergen Gross <jgross@suse.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        "# 5 . 17" <stable@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Andy Lutomirski <luto@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Subject: [PATCH 0/3] x86: make pat and mtrr independent from each other
+Date:   Fri, 15 Jul 2022 16:25:46 +0200
+Message-Id: <20220715142549.25223-1-jgross@suse.com>
+X-Mailer: git-send-email 2.35.3
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 15 Jul 2022 19:26:00 +0800, ChiaEn Wu wrote:
-> From: ChiYuan Huang <cy_huang@richtek.com>
-> 
-> Add MediaTek MT6370 binding documentation.
-> 
-> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
->  .../devicetree/bindings/mfd/mediatek,mt6370.yaml   | 280 +++++++++++++++++++++
->  include/dt-bindings/iio/adc/mediatek,mt6370_adc.h  |  18 ++
->  2 files changed, 298 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
->  create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h
-> 
+Today PAT can't be used without MTRR being available, unless MTRR is at
+least configured via CONFIG_MTRR and the system is running as Xen PV
+guest. In this case PAT is automatically available via the hypervisor,
+but the PAT MSR can't be modified by the kernel and MTRR is disabled.
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+As an additional complexity the availability of PAT can't be queried
+via pat_enabled() in the Xen PV case, as the lack of MTRR will set PAT
+to be disabled. This leads to some drivers believing that not all cache
+modes are available, resulting in failures or degraded functionality.
 
-yamllint warnings/errors:
+The same applies to a kernel built with no MTRR support: it won't
+allow to use the PAT MSR, even if there is no technical reason for
+that, other than setting up PAT on all cpus the same way (which is a
+requirement of the processor's cache management) is relying on some
+MTRR specific code.
 
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: indicator:multi-led@0:led@0: Unevaluated properties are not allowed ('reg' was unexpected)
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: indicator:multi-led@0:led@1: Unevaluated properties are not allowed ('reg' was unexpected)
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: pmic@34: indicator:multi-led@0:led@2: Unevaluated properties are not allowed ('reg' was unexpected)
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: indicator: multi-led@0:led@0: Unevaluated properties are not allowed ('reg' was unexpected)
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: indicator: multi-led@0:led@1: Unevaluated properties are not allowed ('reg' was unexpected)
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/mfd/mediatek,mt6370.example.dtb: indicator: multi-led@0:led@2: Unevaluated properties are not allowed ('reg' was unexpected)
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+Fix all of that by:
 
-doc reference errors (make refcheckdocs):
+- moving the function needed by PAT from MTRR specific code one level
+  up
+- adding a PAT indirection layer supporting the 3 cases "no or disabled
+  PAT", "PAT under kernel control", and "PAT under Xen control"
+- removing the dependency of PAT on MTRR
 
-See https://patchwork.ozlabs.org/patch/
+Juergen Gross (3):
+  x86: move some code out of arch/x86/kernel/cpu/mtrr
+  x86: add wrapper functions for mtrr functions handling also pat
+  x86: decouple pat and mtrr handling
 
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
+ arch/x86/include/asm/memtype.h     |  13 ++-
+ arch/x86/include/asm/mtrr.h        |  27 ++++--
+ arch/x86/include/asm/processor.h   |  10 +++
+ arch/x86/kernel/cpu/common.c       | 123 +++++++++++++++++++++++++++-
+ arch/x86/kernel/cpu/mtrr/generic.c |  90 ++------------------
+ arch/x86/kernel/cpu/mtrr/mtrr.c    |  58 ++++---------
+ arch/x86/kernel/cpu/mtrr/mtrr.h    |   1 -
+ arch/x86/kernel/setup.c            |  12 +--
+ arch/x86/kernel/smpboot.c          |   8 +-
+ arch/x86/mm/pat/memtype.c          | 127 +++++++++++++++++++++--------
+ arch/x86/power/cpu.c               |   2 +-
+ arch/x86/xen/enlighten_pv.c        |   4 +
+ 12 files changed, 289 insertions(+), 186 deletions(-)
 
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
+-- 
+2.35.3
 
