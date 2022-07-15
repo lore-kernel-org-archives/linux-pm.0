@@ -2,231 +2,375 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35632CCA47F
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 21:09:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94893C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jul 2022 22:14:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231400AbiGOVJf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jul 2022 17:09:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51366 "EHLO
+        id S232848AbiGOWN6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jul 2022 18:13:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230259AbiGOVJ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 17:09:27 -0400
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40F5D71BCC
-        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 14:09:20 -0700 (PDT)
-Received: by mail-wr1-x42e.google.com with SMTP id bu1so8324140wrb.9
-        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 14:09:20 -0700 (PDT)
+        with ESMTP id S232172AbiGOWNi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2022 18:13:38 -0400
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40C3417AAB
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 15:08:52 -0700 (PDT)
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-31bf3656517so59157297b3.12
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jul 2022 15:08:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=b68+VkE2RUgPNZUt8j2qwSumBu0/WI+4XHwjD20XVZo=;
-        b=FjGKwMEwxuikEabAjOrG8kyXP5sCFAElt6LXQ/g1c6oZ6zNsjV+6obW4uNc+90rEZf
-         L16OdBfikT6D18o3oE855q83+tYoR33TeQ9JRU/W0wbDs1iColkFnINh1dLaxAijLOzC
-         oKsJWze8zV/pyOy4IcyJBy2DdrPT37VorByHE8o+UOedT4wPHMoI9R5FYZZGveYYRPLq
-         3YQ6sPKUUn3srPli+bQCcHsfeCS2kCJ2R+dAQLeYC8AO2Y2vituKXFURpiyoq+J013IP
-         2FGkLkemUoZR+YuGFAJW/EPf5vB6LwKtWkISnIXlkBIu0yvUl4QwGKTFjXRiLWZEIoD8
-         kKrQ==
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=izcD1HnHb6lJxMaZm59KAnOWoNAatpAmAKZnItVmAVs=;
+        b=ApKlwkDvFAtogzg5Em18xQHqDMazDxjj8wvfsl2QZ/FA85GqR2OHyB6bNXvnTqi/+a
+         nS5RDQln03OGLmxvD4R87jiBQoJqC/G1LUOr7J/BuD5QWpwRAhDhAlNXe/PPdCLfOeG9
+         ylk9j3M3Mc3fTEYVoAfyxKooSc+WoZsMas0XqG6q3rpiFMpuiynljbowF7PdC3Q8T7Nm
+         9jLCLyQXrNzX+kQbSrv8c32kD346RW13sSH14J+II30usTKOTRNt3c5LLOZA1ug2Sqi9
+         N8YbkELAKL0fCLJbuqOm6P1utw4OcsBjUjrbB+WM0tCDIUlW6mXrDJUEy2qgBOyIYyiX
+         GjQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=b68+VkE2RUgPNZUt8j2qwSumBu0/WI+4XHwjD20XVZo=;
-        b=v58P8h41URfzgt8jkg6fNyB+qiabWaFSghmA9lx+nayObdAvb4qHNQTiu2IvtNtCib
-         YEvGz366vbZyOIqOOT6chikbkFoQ65BEP48IQIxM4jIgKxWICxxyga3RU4Yvqr8/ssdi
-         SRjr8vBo10gcG+FXvn7gnB+PGeKFemLjaXUnLWMADdK8CZWJ1xDjeS0Nv7oFMwFfEQH2
-         vujFqFs55cHqGzDte5QZ8r0KPx6KE7/Tg0C9n3YTqvzYgsiLgsGNBEbI7OrOfUPUeD6r
-         ZV535N30OcepWqDln06vE3y0QaHRlWuhLzzww8TcqvDCA4mML5EPVHCTiKxXJ1k9yhQj
-         yF2w==
-X-Gm-Message-State: AJIora9J9TEtlD5Mv2z6qbm0NyCwdasj3AsX1c29fC+hPyojNPEhU6ol
-        FAj5kY63ElOWyw5fdsR26rPKDA==
-X-Google-Smtp-Source: AGRyM1tTnLLXg5Xz3OFlTZ3Yn6BtoVIeItxO67MGpHo9HqZW3eEf4b9QWOzvydnBIRb9BkG4r+0L7g==
-X-Received: by 2002:a05:6000:1789:b0:21d:7699:3322 with SMTP id e9-20020a056000178900b0021d76993322mr13817279wrg.121.1657919358726;
-        Fri, 15 Jul 2022 14:09:18 -0700 (PDT)
-Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:a223:f4b3:40c9:43fa])
-        by smtp.gmail.com with ESMTPSA id b14-20020a5d40ce000000b0021a56cda047sm4567752wrq.60.2022.07.15.14.09.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Jul 2022 14:09:18 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org
-Cc:     quic_manafm@quicinc.com, rui.zhang@intel.com, amitk@kernel.org,
-        lukasz.luba@arm.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v3 3/4] thermal/core: Build ascending ordered indexes for the trip points
-Date:   Fri, 15 Jul 2022 23:09:10 +0200
-Message-Id: <20220715210911.714479-3-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220715210911.714479-1-daniel.lezcano@linaro.org>
-References: <20220715210911.714479-1-daniel.lezcano@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=izcD1HnHb6lJxMaZm59KAnOWoNAatpAmAKZnItVmAVs=;
+        b=x/tb3oBEi0d5qNVClL+u6744dQ0pfJZUaD7ejObGPhQx951mI6b9jhXsnggdGZgbw2
+         TxqtxitaPNdINpJx5jW4h9MimQ64XKcXzUTa660Z7LW6TsTQSM/2kgpM8R5M0i6XX/2+
+         u2kdJgqBGbToPL7Hq7HWV4AqhHaTHdI2hKwcKPCrKwM4L+1gI3hjT01dLiL+kzsyoGU7
+         DK5pfKqWPcOQ6crSI0kqxmmnk9olwsjNM+Y7UfhuMGEdWPPNiE5Vhd+e3V0j+9SIqnSv
+         RYGdReL7MWMu9ERuSgUBg82HjGHr5Q29r/mNkxYn6HXiUu2YBcE3aEwCQpwoyveepjBo
+         wKpQ==
+X-Gm-Message-State: AJIora/GGsI7gU2zOZhb3NUCc03kI8oKt4emlxARQGh2XODBw4shh1pv
+        uiwE5Qoqk/h0OXbIoEZ95jTfOp6zlmStwMBVhH79cg==
+X-Google-Smtp-Source: AGRyM1s6lD3+S3MaeEqIv8ER+1Q/n5NS5AlYeg7rFAFlRdDaCxlbMW3MnyaB8Y3RCXdl1QCA2dgnEiqF7RumJd4RBXc=
+X-Received: by 2002:a0d:eb83:0:b0:31c:8741:a033 with SMTP id
+ u125-20020a0deb83000000b0031c8741a033mr18690024ywe.455.1657922924688; Fri, 15
+ Jul 2022 15:08:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220601070707.3946847-1-saravanak@google.com>
+ <6079032.MhkbZ0Pkbq@steina-w> <CAGETcx8-kx7RGTPhdyEHfFoxCyaojn5BnAr_f1==b=qeWZ6itQ@mail.gmail.com>
+ <1822575.tdWV9SEqCh@steina-w>
+In-Reply-To: <1822575.tdWV9SEqCh@steina-w>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Fri, 15 Jul 2022 15:08:08 -0700
+Message-ID: <CAGETcx_SNicqGG62y+n-jPH-peW4j6SB=bekTOs3KqEq8z0wSQ@mail.gmail.com>
+Subject: Re: Re: Re: Re: [PATCH v2 1/9] PM: domains: Delete usage of driver_deferred_probe_check_state()
+To:     Alexander Stein <alexander.stein@ew.tq-group.com>
+Cc:     l.stach@pengutronix.de, Tony Lindgren <tony@atomide.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        David Ahern <dsahern@kernel.org>, kernel-team@android.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+        linux-gpio@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-By convention the trips points are declared in the ascending
-temperature order. However, no specification for the device tree, ACPI
-or documentation tells the trip points must be ordered this way.
+On Wed, Jul 13, 2022 at 11:41 PM Alexander Stein
+<alexander.stein@ew.tq-group.com> wrote:
+>
+> Am Mittwoch, 13. Juli 2022, 02:45:06 CEST schrieb Saravana Kannan:
+> > On Wed, Jul 6, 2022 at 6:02 AM Alexander Stein
+> > <alexander.stein@ew.tq-group.com> wrote:
+> >
+> >
+> > Thanks for testing all my patches and helping me debug this.
+> >
+> > Btw, can you try to keep the subject the same please? Looks like
+> > somewhere in your path [EXT] is added sometimes. lore.kernel.org keeps
+> > the thread together, but my email client (gmail) gets confused.
+>
+> Sorry about that. Unfortunately [EXT] is inserted automatically and it is
+> tedious and error-prone to remove it manually...
+>
+> > > Am Dienstag, 5. Juli 2022, 03:24:33 CEST schrieb Saravana Kannan:
+> > > > On Mon, Jul 4, 2022 at 12:07 AM Alexander Stein
+> > > >
+> > > > <alexander.stein@ew.tq-group.com> wrote:
+> > > > > Am Freitag, 1. Juli 2022, 09:02:22 CEST schrieb Saravana Kannan:
+> > > > > > On Thu, Jun 30, 2022 at 11:02 PM Alexander Stein
+> > > > > >
+> > > > > > <alexander.stein@ew.tq-group.com> wrote:
+> > > > > > > Hi Saravana,
+> > > > > > >
+> > > > > > > Am Freitag, 1. Juli 2022, 02:37:14 CEST schrieb Saravana Kannan:
+> > > > > > > > On Thu, Jun 23, 2022 at 5:08 AM Alexander Stein
+> > > > > > > >
+> > > > > > > > <alexander.stein@ew.tq-group.com> wrote:
+> > > > > > > > > Hi,
+> > > > > > > > >
+> > > > > > > > > Am Dienstag, 21. Juni 2022, 09:28:43 CEST schrieb Tony
+> Lindgren:
+> > > > > > > > > > Hi,
+> > > > > > > > > >
+> > > > > > > > > > * Saravana Kannan <saravanak@google.com> [700101 02:00]:
+> > > > > > > > > > > Now that fw_devlink=on by default and fw_devlink supports
+> > > > > > > > > > > "power-domains" property, the execution will never get to
+> > > > > > > > > > > the
+> > > > > > > > > > > point
+> > > > > > > > > > > where driver_deferred_probe_check_state() is called before
+> > > > > > > > > > > the
+> > > > > > > > > > > supplier
+> > > > > > > > > > > has probed successfully or before deferred probe timeout
+> > > > > > > > > > > has
+> > > > > > > > > > > expired.
+> > > > > > > > > > >
+> > > > > > > > > > > So, delete the call and replace it with -ENODEV.
+> > > > > > > > > >
+> > > > > > > > > > Looks like this causes omaps to not boot in Linux next. With
+> > > > > > > > > > this
+> > > > > > > > > > simple-pm-bus fails to probe initially as the power-domain
+> > > > > > > > > > is
+> > > > > > > > > > not
+> > > > > > > > > > yet available. On platform_probe() genpd_get_from_provider()
+> > > > > > > > > > returns
+> > > > > > > > > > -ENOENT.
+> > > > > > > > > >
+> > > > > > > > > > Seems like other stuff is potentially broken too, any ideas
+> > > > > > > > > > on
+> > > > > > > > > > how to fix this?
+> > > > > > > > >
+> > > > > > > > > I think I'm hit by this as well, although I do not get a
+> > > > > > > > > lockup.
+> > > > > > > > > In my case I'm using
+> > > > > > > > > arch/arm64/boot/dts/freescale/imx8mq-tqma8mq-mba8mx.dts and
+> > > > > > > > > probing of
+> > > > > > > > > 38320000.blk-ctrl fails as the power-domain is not (yet)
+> > > > > > > > > registed.
+> > > > > > > >
+> > > > > > > > Ok, took a look.
+> > > > > > > >
+> > > > > > > > The problem is that there are two drivers for the same device
+> > > > > > > > and
+> > > > > > > > they
+> > > > > > > > both initialize this device.
+> > > > > > > >
+> > > > > > > >     gpc: gpc@303a0000 {
+> > > > > > > >
+> > > > > > > >         compatible = "fsl,imx8mq-gpc";
+> > > > > > > >
+> > > > > > > >     }
+> > > > > > > >
+> > > > > > > > $ git grep -l "fsl,imx7d-gpc" -- drivers/
+> > > > > > > > drivers/irqchip/irq-imx-gpcv2.c
+> > > > > > > > drivers/soc/imx/gpcv2.c
+> > > > > > > >
+> > > > > > > > IMHO, this is a bad/broken design.
+> > > > > > > >
+> > > > > > > > So what's happening is that fw_devlink will block the probe of
+> > > > > > > > 38320000.blk-ctrl until 303a0000.gpc is initialized. And it
+> > > > > > > > stops
+> > > > > > > > blocking the probe of 38320000.blk-ctrl as soon as the first
+> > > > > > > > driver
+> > > > > > > > initializes the device. In this case, it's the irqchip driver.
+> > > > > > > >
+> > > > > > > > I'd recommend combining these drivers into one. Something like
+> > > > > > > > the
+> > > > > > > > patch I'm attaching (sorry for the attachment, copy-paste is
+> > > > > > > > mangling
+> > > > > > > > the tabs). Can you give it a shot please?
+> > > > > > >
+> > > > > > > I tried this patch and it delayed the driver initialization (those
+> > > > > > > of
+> > > > > > > UART
+> > > > > > > as
+> > > > > >
+> > > > > > > well BTW). Unfortunately the driver fails the same way:
+> > > > > > Thanks for testing the patch!
+> > > > > >
+> > > > > > > > [    1.125253] imx8m-blk-ctrl 38320000.blk-ctrl: error -ENODEV:
+> > > > > > > > failed
+> > > > > > > > to
+> > > > > > >
+> > > > > > > attach power domain "bus"
+> > > > > > >
+> > > > > > > More than that it even introduced some more errors:
+> > > > > > > > [    0.008160] irq: no irq domain found for gpc@303a0000 !
+> > > > > >
+> > > > > > So the idea behind my change was that as long as the irqchip isn't
+> > > > > > the
+> > > > > > root of the irqdomain (might be using the terms incorrectly) like
+> > > > > > the
+> > > > > > gic, you can make it a platform driver. And I was trying to hack up
+> > > > > > a
+> > > > > > patch that's the equivalent of platform_irqchip_probe() (which just
+> > > > > > ends up eventually calling the callback you use in
+> > > > > > IRQCHIP_DECLARE().
+> > > > > > I probably made some mistake in the quick hack that I'm sure if
+> > > > > > fixable.
+> > > > > >
+> > > > > > > > [    0.013251] Failed to map interrupt for
+> > > > > > > > /soc@0/bus@30400000/timer@306a0000
+> > > > > >
+> > > > > > However, this timer driver also uses TIMER_OF_DECLARE() which can't
+> > > > > > handle failure to get the IRQ (because it's can't -EPROBE_DEFER).
+> > > > > > So,
+> > > > > > this means, the timer driver inturn needs to be converted to a
+> > > > > > platform driver if it's supposed to work with the IRQCHIP_DECLARE()
+> > > > > > being converted to a platform driver.
+> > > > > >
+> > > > > > But that's a can of worms not worth opening. But then I remembered
+> > > > > > this simpler workaround will work and it is pretty much a variant of
+> > > > > > the workaround that's already in the gpc's irqchip driver to allow
+> > > > > > two
+> > > > > > drivers to probe the same device (people really should stop doing
+> > > > > > that).
+> > > > > >
+> > > > > > Can you drop my previous hack patch and try this instead please? I'm
+> > > > > > 99% sure this will work.
+> > > > > >
+> > > > > > diff --git a/drivers/irqchip/irq-imx-gpcv2.c
+> > > > > > b/drivers/irqchip/irq-imx-gpcv2.c index b9c22f764b4d..8a0e82067924
+> > > > > > 100644
+> > > > > > --- a/drivers/irqchip/irq-imx-gpcv2.c
+> > > > > > +++ b/drivers/irqchip/irq-imx-gpcv2.c
+> > > > > > @@ -283,6 +283,7 @@ static int __init imx_gpcv2_irqchip_init(struct
+> > > > > > device_node *node,
+> > > > > >
+> > > > > >          * later the GPC power domain driver will not be skipped.
+> > > > > >          */
+> > > > > >
+> > > > > >         of_node_clear_flag(node, OF_POPULATED);
+> > > > > >
+> > > > > > +       fwnode_dev_initialized(domain->fwnode, false);
+> > > > > >
+> > > > > >         return 0;
+> > > > > >
+> > > > > >  }
+> > > > >
+> > > > > Just to be sure here, I tried this patch on top of next-20220701 but
+> > > > > unfortunately this doesn't fix the original problem either. The timer
+> > > > > errors are gone though.
+> > > >
+> > > > To clarify, you had the timer issue only with my "combine drivers"
+> > > > patch,
+> > > > right?
+> > >
+> > > That's correct.
+> > >
+> > > > > The probe of imx8m-blk-ctrl got slightly delayed (from 0.74 to 0.90s
+> > > > > printk
+> > > > > time) but results in the identical error message.
+> > > >
+> > > > My guess is that the probe attempt of blk-ctrl is delayed now till gpc
+> > > > probes (because of the device links getting created with the
+> > > > fwnode_dev_initialized() fix), but by the time gpc probe finishes, the
+> > > > power domains aren't registered yet because of the additional level of
+> > > > device addition and probing.
+> > > >
+> > > > Can you try the attached patch please?
+> > >
+> > > Sure, it needed some small fixes though. But the error still is present.
+> > >
+> > > > And if that doesn't fix the issues, then enable the debug logs in the
+> > > > following functions please and share the logs from boot till the
+> > > > failure? If you can enable CONFIG_PRINTK_CALLER, that'd help too.
+> > > > device_link_add()
+> > > > fwnode_link_add()
+> > > > fw_devlink_relax_cycle()
+> > >
+> > > I switched fw_devlink_relax_cycle() for fw_devlink_relax_link() as the
+> > > former has no debug output here.
+> > >
+> > > For the record I added the following line to my kernel command line:
+> > > > dyndbg="func device_link_add +p; func fwnode_link_add +p; func
+> > >
+> > > fw_devlink_relax_link +p"
+> > >
+> > > I attached the dmesg until the probe error to this mail. But I noticed the
+> > >
+> > > following lines which seem interesting:
+> > > > [    1.466620][    T8] imx-pgc imx-pgc-domain.5: Linked as a consumer to
+> > > > regulator.8
+> > > > [    1.466743][    T8] imx-pgc imx-pgc-domain.5: imx_pgc_domain_probe:
+> > > > Probe>
+> > > succeeded
+> > >
+> > > > [    1.474733][    T8] imx-pgc imx-pgc-domain.6: Linked as a consumer to
+> > >
+> > > regulator.9
+> > >
+> > > > [    1.474774][    T8] imx-pgc imx-pgc-domain.6: imx_pgc_domain_probe:
+> > > > Probe>
+> > > succeeded
+> >
+> > I'm guessing this happens after the probe error.
+> >
+> > Ok, I looked at the dmesg logs and this pretty much confirms my
+> > thought on why the probe ordering wasn't maintained.
+> >
+> > The power domains lack a compatible property, so the blk-ctrl is
+> > linked as a consumer of the gpc instead:
+> > [    0.343905][    T1] blk-ctrl@38320000 Linked as a fwnode consumer
+> > to gpc@303a0000
+> > [    0.343943][    T1] blk-ctrl@38320000 Linked as a fwnode consumer
+> > to clock-controller@30380000
+> > This ^^ is the device tree parsing figuring out the dependencies
+> > between the DT nodes.
+> >
+> > [    0.368462][    T1] platform 38320000.blk-ctrl: Linked as a
+> > consumer to 30380000.clock-controller
+> > [    0.368542][    T1] platform 38320000.blk-ctrl: Linked as a
+> > consumer to 303a0000.gpc
+> > This ^^ is converting the DT node dependencies into device links.
+> >
+> > So, the only real options are:
+> > 1. Fix DT and add a compatible string to the DT nodes.
+> > 2. Move the initcall level of the regulator driver so the powerdomain
+> > probe doesn't get deferred. Not ideal that we are playing initcall
+> > chicken to handle the feature meant to remove the need for initcall
+> > chicken. But I see these "device, but won't have a compatible
+> > property" as exceptions and feel it's okay to have to play with
+> > initcall levels to handle those.
+> > 3. Provide a helper function that driver that do this (creating
+> > devices for child DT nodes without compatible property) can use to
+> > move/copy their consumer device links to the child devices they add.
+> > And then fix up the gpc driver so that it copies the gpc -- blk-ctrl
+> > device link to the proper power domain.
+> > 4. I have another idea for how I could fix that at a driver core
+> > level, but I'm not sure it'll work yet and its definitely not
+> > something I want to try and get in for 5.19 -- too late for that IMHO.
+> >
+> > Want to give (2) a shot so that I can still try to keep the cleanup
+> > series that caused this problem (that's the long term goal) while I
+> > give (3) and (4) a shot for 5.20?
+>
+> Sure, I can give (2) a shot. Which initcall needs to be modified? You have a
+> diff snippet?
 
-In the other hand, we need those to be ordered to browse them at the
-thermal events. But if we assume they are ordered and change the code
-based on this assumption, any platform with shuffled trip points
-description will be broken (if they exist).
+All initcall for all the regulator drivers that feed this gpc power domain.
 
-Instead of taking the risk of breaking the existing platforms, use an
-array of temperature ordered trip identifiers and make it available
-for the code needing to browse the trip points in an ordered way.
+> BTW: this potentially affects all imx8m and imx7d as they have the same gpc
+> binding.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/thermal_core.c | 62 +++++++++++++++++++++++++++-------
- include/linux/thermal.h        |  2 ++
- 2 files changed, 52 insertions(+), 12 deletions(-)
+Good point. That's why I was asking for your help :) -- you have more
+context on these hardware.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index f66036b3daae..f02f38b66445 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -355,7 +355,8 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- }
- 
- static void handle_thermal_trip_crossed(struct thermal_zone_device *tz, int trip,
--					int trip_temp, int trip_hyst, enum thermal_trip_type trip_type)
-+					int trip_temp, int trip_hyst,
-+					enum thermal_trip_type trip_type)
- {
- 	if (tz->last_temperature == THERMAL_TEMP_INVALID)
- 		return;
-@@ -1165,6 +1166,46 @@ static void bind_tz(struct thermal_zone_device *tz)
- 	mutex_unlock(&thermal_list_lock);
- }
- 
-+static void sort_trips_indexes(struct thermal_zone_device *tz)
-+{
-+	int i, j;
-+
-+	for (i = 0; i < tz->trips; i++)
-+		tz->trips_indexes[i] = i;
-+ 
-+	for (i = 0; i < tz->trips; i++) {
-+		for (j = i + 1; j < tz->trips; j++) {
-+			int t1, t2;
-+
-+			tz->ops->get_trip_temp(tz, tz->trips_indexes[i], &t1);
-+			tz->ops->get_trip_temp(tz, tz->trips_indexes[j], &t2);
-+
-+			if (t1 > t2)
-+				swap(tz->trips_indexes[i], tz->trips_indexes[j]);
-+		}
-+ 	}
-+}
-+
-+static int thermal_zone_device_trip_init(struct thermal_zone_device *tz)
-+{
-+	enum thermal_trip_type trip_type;
-+	int trip_temp, i;
-+	
-+	tz->trips_indexes = kzalloc(tz->trips * sizeof(int), GFP_KERNEL);
-+	if (!tz->trips_indexes)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < tz->trips; i++) {
-+		if (tz->ops->get_trip_type(tz, i, &trip_type) ||
-+		    tz->ops->get_trip_temp(tz, i, &trip_temp) || !trip_temp)
-+			set_bit(i, &tz->trips_disabled);
-+	}
-+
-+	sort_trips_indexes(tz);
-+
-+	return 0;
-+}
-+
- /**
-  * thermal_zone_device_register() - register a new thermal zone device
-  * @type:	the thermal zone device type
-@@ -1196,11 +1237,8 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 			     int polling_delay)
- {
- 	struct thermal_zone_device *tz;
--	enum thermal_trip_type trip_type;
--	int trip_temp;
- 	int id;
- 	int result;
--	int count;
- 	struct thermal_governor *governor;
- 
- 	if (!type || strlen(type) == 0) {
-@@ -1272,12 +1310,9 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	if (result)
- 		goto release_device;
- 
--	for (count = 0; count < trips; count++) {
--		if (tz->ops->get_trip_type(tz, count, &trip_type) ||
--		    tz->ops->get_trip_temp(tz, count, &trip_temp) ||
--		    !trip_temp)
--			set_bit(count, &tz->trips_disabled);
--	}
-+	result = thermal_zone_device_trip_init(tz);
-+	if (result)
-+		goto unregister;
- 
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
-@@ -1290,7 +1325,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	result = thermal_set_governor(tz, governor);
- 	if (result) {
- 		mutex_unlock(&thermal_governor_lock);
--		goto unregister;
-+		goto kfree_indexes;
- 	}
- 
- 	mutex_unlock(&thermal_governor_lock);
-@@ -1298,7 +1333,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	if (!tz->tzp || !tz->tzp->no_hwmon) {
- 		result = thermal_add_hwmon_sysfs(tz);
- 		if (result)
--			goto unregister;
-+			goto kfree_indexes;
- 	}
- 
- 	mutex_lock(&thermal_list_lock);
-@@ -1319,6 +1354,8 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 
- 	return tz;
- 
-+kfree_indexes:
-+	kfree(tz->trips_indexes);
- unregister:
- 	device_del(&tz->device);
- release_device:
-@@ -1387,6 +1424,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	thermal_remove_hwmon_sysfs(tz);
- 	ida_simple_remove(&thermal_tz_ida, tz->id);
- 	ida_destroy(&tz->ida);
-+	kfree(tz->trips_indexes);
- 	mutex_destroy(&tz->lock);
- 	device_unregister(&tz->device);
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 231bac2768fb..4c3b72536772 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -112,6 +112,7 @@ struct thermal_cooling_device {
-  * @mode:		current mode of this thermal zone
-  * @devdata:	private pointer for device private data
-  * @trips:	number of trip points the thermal zone supports
-+ * @trips_indexes:	an array of sorted trip points indexes
-  * @trips_disabled;	bitmap for disabled trips
-  * @passive_delay_jiffies: number of jiffies to wait between polls when
-  *			performing passive cooling.
-@@ -152,6 +153,7 @@ struct thermal_zone_device {
- 	enum thermal_device_mode mode;
- 	void *devdata;
- 	int trips;
-+	int *trips_indexes;
- 	unsigned long trips_disabled;	/* bitmap for disabled trips */
- 	unsigned long passive_delay_jiffies;
- 	unsigned long polling_delay_jiffies;
--- 
-2.25.1
+> Can't say much about (1). I added Lucas Stach to recipients, he did a lot on
+> this gpc driver.
+> @Lucas: Do you have some input why the gpc power domains do not have a
+> compatible? Is it reasonable to add them?
 
+It's generally frowned upon to update the kernel in a way that it
+breaks backwards compatibility with an older DT binary. That's why I
+didn't ask about (1).
+
+It's fairly trivial to get it to work if we (who is "we" here?) agree
+it's okay to add the compatible property and break DT backwards
+compatibility in this case.
+
+-Saravana
