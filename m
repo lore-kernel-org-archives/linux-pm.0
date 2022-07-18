@@ -2,46 +2,47 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9227C43334
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jul 2022 12:14:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14019CCA47F
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jul 2022 12:14:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234958AbiGRMO3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Jul 2022 08:14:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34918 "EHLO
+        id S234951AbiGRMOa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Jul 2022 08:14:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234941AbiGRMO0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2022 08:14:26 -0400
+        with ESMTP id S234967AbiGRMO2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2022 08:14:28 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E6D51A055
-        for <linux-pm@vger.kernel.org>; Mon, 18 Jul 2022 05:14:25 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A5A823171
+        for <linux-pm@vger.kernel.org>; Mon, 18 Jul 2022 05:14:27 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1oDPdg-0005dC-GV; Mon, 18 Jul 2022 14:14:16 +0200
+        id 1oDPdh-0005d9-6f; Mon, 18 Jul 2022 14:14:17 +0200
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1oDPdf-001i4A-P6; Mon, 18 Jul 2022 14:14:15 +0200
+        id 1oDPde-001i3t-V6; Mon, 18 Jul 2022 14:14:14 +0200
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1oDPde-005xVY-Q5; Mon, 18 Jul 2022 14:14:14 +0200
+        id 1oDPdd-005xVJ-Tg; Mon, 18 Jul 2022 14:14:13 +0200
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>
-Cc:     kernel@pengutronix.de, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 5/8] interconnect: osm-l3: Ignore return value of icc_provider_del() in .remove()
-Date:   Mon, 18 Jul 2022 14:14:06 +0200
-Message-Id: <20220718121409.171773-6-u.kleine-koenig@pengutronix.de>
+To:     Georgi Djakov <djakov@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc:     kernel@pengutronix.de, Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Subject: [PATCH v2 0/8] interconnect: Prepare making platform remove callbacks return void
+Date:   Mon, 18 Jul 2022 14:14:01 +0200
+Message-Id: <20220718121409.171773-1-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20220718121409.171773-1-u.kleine-koenig@pengutronix.de>
-References: <20220718121409.171773-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1130; h=from:subject; bh=HNuht24ycHig2U9tMEFymwQoUB3pBJxXewoNYOtG2i4=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBi1U6CqwBQWbkBuGbcKJe2ciTj5GsxJmJWl1vIGWO6 0ao3iieJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYtVOggAKCRDB/BR4rcrsCU33B/ 0UDJZXAQgV+SdM7dUPKAeT+QmPOUJdV0NeyIbrOFXhvvwkzo5isAirPpV/03H+kKssoFmXqYwRESoY 0hFgRIMBEamTQpJItuRNirQ7BdZyghxRO5SqZKsJM8/xBScqe7lf28Q8GkOB4kDNDhZzu7Yb2wD+mM nNoqIsB+mGtNQBL1c80MHFSd+HzaYr+qmpNA+c7Qr9dtnywyT4M0cY5ey/kYiwhJF8HH/TWNavhv5D f7e7vcUiWRo/GKUo9MrdgrLlT6jShDfpDGQfOnIhxm7/5xTbCoGutOIJ8zIWpaxDz0Xi6TbMHC9CKu WyiQHNi+ZiORazHMg/H1r+w7ygLUZn
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2079; h=from:subject; bh=A1o6I6OVHVljeru//hO3heJNwTEoskPv4jVq/tRtPrU=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBi1U5yX+wocJskVFzESoSjYSC+vn/AZDq7N/GEq/7P iSSPhf2JATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYtVOcgAKCRDB/BR4rcrsCUibB/ 47wzVcYBIAkJNgLQcmiGSY2Q/hmyILxPtnC8l3I6ItMfwGWDNsSGrU85nv3M+eyZwJmM6m5OY69WKd Fa7l2eVvJqtGd67ruxhY62HcsWi4vIfRgPxBXGpbCEYO8ciL6F39a283INNAj5Ji5vdR61fP1bPWHK Fdb1XoLU1+RZiabYBX9CVHqw9iTlcigkzF5sSXVx/4HbECAwxn4+H83YHh0v8Kp+RQer7uuWm9cYh6 Pu03j5zzEzG9lNwaWokGEWqQ2/NNxzALHxANDZzVVavN/FpBGOjqeLNd7xBy3bjGUToV71XC1Mw3so mS6a+jj9zfFlaHrhT/3p5UxJT65Vnz
 X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -52,36 +53,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-icc_provider_del() already emits an error message on failure. In this
-case letting .remove() return the corresponding error code results in
-another error message and the device is removed anyhow. (See
-platform_remove().)
+Hello,
 
-So ignore the return value of icc_provider_del() and return 0
-unconditionally.
+today remove callbacks of platform devices return an int. This is unfortunate
+because the device core ignores the return value and so the platform code only
+emits a warning (and still removes the device).
 
-This is a preparation for making platform remove callbacks return void.
+My longterm quest is to make these remove callbacks return void instead.
+This series is a preparation for that, with the goal to make the remove
+callbacks obviously always return 0. This way when the prototype of
+these functions is changed to return void, the change is straight
+forward and easy to review.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/interconnect/qcom/osm-l3.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Changes since (implict) v1:
 
-diff --git a/drivers/interconnect/qcom/osm-l3.c b/drivers/interconnect/qcom/osm-l3.c
-index 4198656f4e59..ddbdf0943f94 100644
---- a/drivers/interconnect/qcom/osm-l3.c
-+++ b/drivers/interconnect/qcom/osm-l3.c
-@@ -217,7 +217,9 @@ static int qcom_osm_l3_remove(struct platform_device *pdev)
- 	struct qcom_osm_l3_icc_provider *qp = platform_get_drvdata(pdev);
- 
- 	icc_nodes_remove(&qp->provider);
--	return icc_provider_del(&qp->provider);
-+	icc_provider_del(&qp->provider);
-+
-+	return 0;
- }
- 
- static int qcom_osm_l3_probe(struct platform_device *pdev)
+ - Also make the icc_provider_del() stub for the CONFIG_INTERCONNECT=n
+   case void. Found by Georgi Djakov
+
+Best regards
+Uwe
+
+Uwe Kleine-König (8):
+  interconnect: imx: Ignore return value of icc_provider_del() in
+    .remove()
+  interconnect: icc-rpm: Ignore return value of icc_provider_del() in
+    .remove()
+  interconnect: icc-rpmh: Ignore return value of icc_provider_del() in
+    .remove()
+  interconnect: msm8974: Ignore return value of icc_provider_del() in
+    .remove()
+  interconnect: osm-l3: Ignore return value of icc_provider_del() in
+    .remove()
+  interconnect: sm8450: Ignore return value of icc_provider_del() in
+    .remove()
+  interconnect: Make icc_provider_del() return void
+  interconnect: imx: Make imx_icc_unregister() return void
+
+ drivers/interconnect/core.c           | 10 +++-------
+ drivers/interconnect/imx/imx.c        |  4 ++--
+ drivers/interconnect/imx/imx.h        |  2 +-
+ drivers/interconnect/imx/imx8mm.c     |  4 +++-
+ drivers/interconnect/imx/imx8mn.c     |  4 +++-
+ drivers/interconnect/imx/imx8mq.c     |  4 +++-
+ drivers/interconnect/qcom/icc-rpm.c   |  4 +++-
+ drivers/interconnect/qcom/icc-rpmh.c  |  4 +++-
+ drivers/interconnect/qcom/msm8974.c   |  4 +++-
+ drivers/interconnect/qcom/osm-l3.c    |  4 +++-
+ drivers/interconnect/qcom/sm8450.c    |  4 +++-
+ include/linux/interconnect-provider.h |  5 ++---
+ 12 files changed, 32 insertions(+), 21 deletions(-)
+
+
+base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
 -- 
 2.36.1
 
