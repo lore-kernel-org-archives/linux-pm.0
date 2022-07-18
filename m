@@ -2,135 +2,116 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC0BBC433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jul 2022 18:37:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A96E7CCA479
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jul 2022 19:48:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235040AbiGRShs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Jul 2022 14:37:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39570 "EHLO
+        id S236336AbiGRTsx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Jul 2022 15:48:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230451AbiGRShr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2022 14:37:47 -0400
-Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com [209.85.219.174])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E94B32A712;
-        Mon, 18 Jul 2022 11:37:43 -0700 (PDT)
-Received: by mail-yb1-f174.google.com with SMTP id f73so22309120yba.10;
-        Mon, 18 Jul 2022 11:37:43 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=R5Gzu2vC6YOr2f4JuwNPRc950PV/uVKpReIL6pHTttU=;
-        b=oHgeiWPPUd5/mwmyWrTHhxvIF1GMzmLwZGTWch216FYe46v/HhqHp5+cyrWtGV9XEo
-         9KtG1zmTSmV99Y5O3bOkzhzNHnkfea0lAWvA8lJv1AdBnA+kCTMGtjU8nbOnZG0XaoVd
-         0nW842aKirG4nv3dr7LDPggUvJvQpttc5pP5DQDbHXvaQnXaNpAQWYBo/5xDK2sN5oX9
-         efhTCtaP5ZSC83Z7USXpPDW+PFAuf+lpZ6W6fSL/W/zoYSEkf/t3qKt4Mxaw3yxiThW5
-         BFvkrqsXtAJV7PbJ2cpVdfkITKAXuLUxiiKj84WoGxDC3aiV83gKskn3JKMnyUkE2Wf9
-         FleQ==
-X-Gm-Message-State: AJIora8fx05IvHZufBzZtGJ5kuxEGnGzjSzzGHSlpjyaFjwxIn8Pxh6X
-        sShLaFPg27FbhqTtWHihYG0yDHNhj4kST9MEjik=
-X-Google-Smtp-Source: AGRyM1u/BuO6tkSEtKjTAdGp8lJNlFRpnj2d/scZEiAkOIihRmKpiYBuDnZ+pTHJTzuP3pwjddMj+J8MeQOsfRKSkcw=
-X-Received: by 2002:a25:828f:0:b0:670:22f9:f7eb with SMTP id
- r15-20020a25828f000000b0067022f9f7ebmr10809841ybk.137.1658169463155; Mon, 18
- Jul 2022 11:37:43 -0700 (PDT)
+        with ESMTP id S236338AbiGRTsq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2022 15:48:46 -0400
+Received: from alexa-out-sd-01.qualcomm.com (alexa-out-sd-01.qualcomm.com [199.106.114.38])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A582732446;
+        Mon, 18 Jul 2022 12:48:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
+  t=1658173720; x=1689709720;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=+QLW32BMrwF3EtzLa3vht6erk15xYFiOHNVwg4JneaM=;
+  b=O02kKZFspdraUEg72DjXtGalIb86bOehL7KObUs2Rt0SR8gnfoF3q/Y6
+   hW9NaMp+wXw8ikVWt6EDIKBouZ95WLw65WZdD6chR9FQreFM/goaNEwph
+   Wuf/fauI7CpJe1qD4GvXP7PUUqUgTxkDcz4J8j9i5FmHSpqO72B6cA4I9
+   M=;
+Received: from unknown (HELO ironmsg02-sd.qualcomm.com) ([10.53.140.142])
+  by alexa-out-sd-01.qualcomm.com with ESMTP; 18 Jul 2022 12:48:40 -0700
+X-QCInternal: smtphost
+Received: from nasanex01c.na.qualcomm.com ([10.47.97.222])
+  by ironmsg02-sd.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jul 2022 12:48:39 -0700
+Received: from nalasex01a.na.qualcomm.com (10.47.209.196) by
+ nasanex01c.na.qualcomm.com (10.47.97.222) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.22; Mon, 18 Jul 2022 12:48:39 -0700
+Received: from [10.110.0.218] (10.80.80.8) by nalasex01a.na.qualcomm.com
+ (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.22; Mon, 18 Jul
+ 2022 12:48:38 -0700
+Message-ID: <e341619e-bac3-710f-8f77-1addfffa9a16@quicinc.com>
+Date:   Mon, 18 Jul 2022 12:48:38 -0700
 MIME-Version: 1.0
-References: <06ba1e63-16a5-5659-e062-3c7e12f7e5cd@gmail.com>
-In-Reply-To: <06ba1e63-16a5-5659-e062-3c7e12f7e5cd@gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 18 Jul 2022 20:37:27 +0200
-Message-ID: <CAJZ5v0hbwy2YA-Kpz884=Jf+v9t0yWrCBV4rV_Lz6x2wYUjn4w@mail.gmail.com>
-Subject: Re: [GIT PULL] devfreq next for 5.20
-To:     Chanwoo Choi <cwchoi00@gmail.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        "open list:DEVICE FREQUENCY (DEVFREQ)" <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Chanwoo Choi <chanwoo@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v3 2/2] power: reset: qcom-pon: add support for
+ qcom,pmk8350-pon compatible string
+Content-Language: en-US
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+CC:     <corbet@lwn.net>, <robh+dt@kernel.org>, <agross@kernel.org>,
+        <bjorn.andersson@linaro.org>, <krzysztof.kozlowski+dt@linaro.org>,
+        <vkoul@kernel.org>, <linux-doc@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20220713193350.29796-1-quic_amelende@quicinc.com>
+ <20220713193350.29796-3-quic_amelende@quicinc.com>
+ <20220716215803.r3ldaswyhehfpcip@mercury.elektranox.org>
+From:   Anjelique Melendez <quic_amelende@quicinc.com>
+In-Reply-To: <20220716215803.r3ldaswyhehfpcip@mercury.elektranox.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jul 15, 2022 at 8:03 PM Chanwoo Choi <cwchoi00@gmail.com> wrote:
->
-> Dear Rafael,
->
-> This is devfreq-next pull request for v5.20-rc1. I add detailed description of
-> this pull request on the following tag. Please pull devfreq with
-> following updates.
->
-> Best Regards,
-> Chanwoo Choi
->
->
-> The following changes since commit 32346491ddf24599decca06190ebca03ff9de7f8:
->
->   Linux 5.19-rc6 (2022-07-10 14:40:51 -0700)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git tags/devfreq-next-for-5.20
->
-> for you to fetch changes up to 53f853d55e312a639eaa910154248ce06eb754ac:
->
->   PM / devfreq: tegra30: Add error message for devm_devfreq_add_device() (2022-07-15 11:40:08 +0900)
-> ----------------------------------------------------------------
->
-> Update devfreq next for v5.20
->
-> Detailed description for this pull request:
-> 1. Add new Mediatek CCI (Cache Coherent Interconnect) devfreq driver
-> - Add new MediaTek Cache Coherent Interconnect (CCI) devfreq drviver
->   which supports the dynamic voltage and clock scaling.
->   This driver uses the passive devfreq governor to get target frequencies
->   and adjust voltages because it depends on MediaTek cpu frequency
->   driver. In MT8183 and MT8186, the MediaTek CCI is supplied
->   by the same regulators with the little core CPUs.
->
-> 2. Update the devfreq drivers
-> - Convert the Samsung Exynos SoC Bus bindings to DT schema of exynos-bus.c
->
-> - Remove kernel-doc warnings by adding the description for unused
->   fucntio parameters on devfreq core.
->
-> - Use NULL to pass a null pointer rather than zero according to function
->   propotype on imx-bus.c
->
-> - Print error message instead of error interger value on tegra30-devfreq.c
->
-> ----------------------------------------------------------------
-> Colin Ian King (1):
->       PM / devfreq: imx-bus: use NULL to pass a null pointer rather than zero
->
-> Dmitry Osipenko (1):
->       PM / devfreq: tegra30: Add error message for devm_devfreq_add_device()
->
-> Johnson Wang (2):
->       dt-bindings: interconnect: Add MediaTek CCI dt-bindings
->       PM / devfreq: mediatek: Introduce MediaTek CCI devfreq driver
->
-> Krzysztof Kozlowski (1):
->       dt-bindings: interconnect: samsung,exynos-bus: convert to dtschema
->
-> Mauro Carvalho Chehab (1):
->       PM / devfreq: shut up kernel-doc warnings
->
->  .../devicetree/bindings/devfreq/exynos-bus.txt     | 488 ---------------------
->  .../bindings/interconnect/mediatek,cci.yaml        | 141 ++++++
->  .../bindings/interconnect/samsung,exynos-bus.yaml  | 290 ++++++++++++
->  MAINTAINERS                                        |   3 +-
->  drivers/devfreq/Kconfig                            |  10 +
->  drivers/devfreq/Makefile                           |   1 +
->  drivers/devfreq/devfreq.c                          |   4 +
->  drivers/devfreq/imx-bus.c                          |   2 +-
->  drivers/devfreq/mtk-cci-devfreq.c                  | 440 +++++++++++++++++++
->  drivers/devfreq/tegra30-devfreq.c                  |   4 +-
->  10 files changed, 892 insertions(+), 491 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->  create mode 100644 Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
->  create mode 100644 Documentation/devicetree/bindings/interconnect/samsung,exynos-bus.yaml
->  create mode 100644 drivers/devfreq/mtk-cci-devfreq.c
 
-Pulled, thanks!
+
+On 7/16/2022 2:58 PM, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Wed, Jul 13, 2022 at 12:33:51PM -0700, Anjelique Melendez wrote:
+>> Add support for the new "qcom,pmk8350-pon" comptaible string.
+>>
+>> Signed-off-by: Anjelique Melendez <quic_amelende@quicinc.com>
+>> ---
+>>  drivers/power/reset/qcom-pon.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/drivers/power/reset/qcom-pon.c b/drivers/power/reset/qcom-pon.c
+>> index 4a688741a88a..16bc01738be9 100644
+>> --- a/drivers/power/reset/qcom-pon.c
+>> +++ b/drivers/power/reset/qcom-pon.c
+>> @@ -82,6 +82,7 @@ static const struct of_device_id pm8916_pon_id_table[] = {
+>>  	{ .compatible = "qcom,pm8916-pon", .data = (void *)GEN1_REASON_SHIFT },
+>>  	{ .compatible = "qcom,pms405-pon", .data = (void *)GEN1_REASON_SHIFT },
+>>  	{ .compatible = "qcom,pm8998-pon", .data = (void *)GEN2_REASON_SHIFT },
+>> +	{ .compatible = "qcom,pmk8350-pon", .data = (void *)GEN2_REASON_SHIFT },
+>>  	{ }
+>>  };
+>>  MODULE_DEVICE_TABLE(of, pm8916_pon_id_table);
+> 
+> No handling of the second register? Why is it needed in DT in the
+> first place?
+> 
+> -- Sebastian
+
+Hi Sebastian,
+
+The handling of the second register takes place in drivers/input/misc/pm8941-pwrkey.c.
+The patch that handles this change can be found at:
+https://lore.kernel.org/linux-arm-msm/20220422191239.6271-4-quic_amelende@quicinc.com/.
+This patch has been applied.
+
+Krzystof and I discuss the need for a new compatible string here:
+https://lore.kernel.org/all/99a5d9ac-9c20-b441-44af-26772a0e989d@linaro.org/.
+
+In short, the gen1/gen2/gen3 children pon devices will use the "reg" address(es) defined
+from their parent. Currently, "qcom,pm8998-pon" is too generic as it is being used for
+both gen1/gen2 and gen3 children. So we must add the new "qcom,pmk8350-pon" compatible
+string to be used for gen3 children so that the second register can be defined. 
+
+Thanks,
+Anjelique
+
+
