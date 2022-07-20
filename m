@@ -2,196 +2,95 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FFDDC43334
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jul 2022 19:02:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF2A5CCA488
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jul 2022 19:28:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232045AbiGTTCN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jul 2022 15:02:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45210 "EHLO
+        id S231416AbiGTT2S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jul 2022 15:28:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232094AbiGTTCJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jul 2022 15:02:09 -0400
-Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9737F70E6A
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jul 2022 12:02:07 -0700 (PDT)
-Received: by mail-yb1-xb36.google.com with SMTP id 64so33695044ybt.12
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jul 2022 12:02:07 -0700 (PDT)
+        with ESMTP id S230011AbiGTT2Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jul 2022 15:28:16 -0400
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7390D491C5
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jul 2022 12:28:15 -0700 (PDT)
+Received: by mail-lf1-x12f.google.com with SMTP id a9so31911713lfk.11
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jul 2022 12:28:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=ZrLA67cwNZVETS1ZHuCD/RT+6Ux5ZfCBf4rowrb0zk0=;
-        b=YT3DmTiyfkNmNptMHmutH4aCptYOfYRcFG5iGz+vPj1xh91hftwgRZVbF/wRHhgFCW
-         1yP86FQRWdyvxo3CPjgvnAYFhKYsg4xRdhZAvb8fEmhoefgT03SVJLFYubN1htgW4In8
-         t6tNVr6ozTt06SPfaEt4t0hjTV1L36J3WR01kFU5ZNbxj6GCZ743km1XpjzuQHn+RR1i
-         jytsYhkdsZViX0r1R/6noErQEJfi5bpHwxr3gD8SgyAPCv7vWZfI56uCK7HWM7r7/PFy
-         SmvPNalQP0Ie215MNTJOK1vcSRgDWta0erJ4se7iwmpkVwf7aKNEFOMppZgPMGsnyAwV
-         GblA==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=rSBQ7JAB+vjeRoqorLkGeTA/zEJLIaKb2x2azJOWcTw=;
+        b=gfI/K/TNFcBfDJGFoOa5ZIwPpi22P63+Yy4snJWbZUnIqcaTs7PWMYawLV0u42j1gg
+         6SAizAsdZ07oIO5WR+BjaVwcExwiIyPNjA/hwprpMgM9mds+BkSC3tDsyy//VfgxVWnQ
+         sXO/JP8fRjr9Eh1v4UDc4RIiIdUJqI1FUoVRQtnfhDBiS5kqDtmY7HRbAh65EfwAb6ms
+         pOq49Bd9jeYpEaCPU2fgkEcN7wXwOE48eQ1j6Z8SGztZPB697BnDGbTGkxv8eyPYGEuc
+         skdiQD5vFfEEDG4NeifksEDcp+3iopKyoYhWJT6MZ0ZNJHdEZtX2GBvyCLNWptIorrk2
+         hzEA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ZrLA67cwNZVETS1ZHuCD/RT+6Ux5ZfCBf4rowrb0zk0=;
-        b=ljA/9aJ4YnCfdsuW6g1T0/WSPInVMmjWqnJgsaz8Momg9S1tooleQM4dIFZrlI87cd
-         e4FgtskeRhleiZpyTrZSWweeo5s0QHfokiRxypKjeLfghJENZ1R2hz4AohLc+DTJHJGA
-         +pLbcrSNPQvzkEALZgqwDJtVCzM/y+BpUXYzu+pBq1iFiwLXqtrZHq9pIGf21kIn4OEs
-         5ptveTPTAJ9xZUo9cgpFrab0pLKmN2IT3NmvBWrKJKtGTW4S/7u+HC8uu/f5lokKqSNh
-         /2H+2l//e+l5kV31/hbVX/arHte/JcZCvRRGeMmXG5IOapHna+wX7Hx4FGk/ml8HBwHb
-         eO9A==
-X-Gm-Message-State: AJIora/RJK8MyrkmwImoemfCwBKMPUr6HIyhS9DlfV7z7PavlOUjpABj
-        +BWOyBVv/LIUlX9jCZbKlGb+xlVF/FInap/E/KLoJg==
-X-Google-Smtp-Source: AGRyM1uk+awIxg+8Ie0mI4x1EeK/QSvobPmBqLZR8RQ7K+Gyc23VhWoJ9xFtopJENev37KrbfMD18GZF9BwnX6/O8DQ=
-X-Received: by 2002:a25:aaa9:0:b0:66e:c6ba:15dd with SMTP id
- t38-20020a25aaa9000000b0066ec6ba15ddmr37815606ybi.242.1658343726294; Wed, 20
- Jul 2022 12:02:06 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=rSBQ7JAB+vjeRoqorLkGeTA/zEJLIaKb2x2azJOWcTw=;
+        b=l/Tk+mt9nQH27UZo9KtpRY68DNU9kFGyGV7gqHZuQh0geAkaR8wp0aupk+7255jAB9
+         hjvMQJtN0FZ/aWErnbma1jZJyCfauoL3XZG3aiy5wONgF1SJOsxcRz+SZRWER7TkUp0O
+         TgwsdDCBJ70tKSzMf1AbTIrGLbOlqw8zMuKBGB3zdknQkmOWMucmdt4ogxLntHk71aWn
+         ExxHRQ0nx83moFOJL2cANWIqoLMEMzQ4c+1UTKKfVrKaVZcrlLXhx+v5E/S+9KYrSbZo
+         OlHJimDtWQGCtrlABWwatXkl/1JWEoVg6ozQb670BBHY1Axtl4JxBr0NJBb9Y7HF2BOf
+         d2jA==
+X-Gm-Message-State: AJIora/pHF/BMfJMVuw7TgkY5RnyU4iBdwAVZIQsWH9JlUz0L5b+NLi8
+        EtGNfGV28aPOyI8Mlak9f/Zzdg==
+X-Google-Smtp-Source: AGRyM1t5JUB4BiPdMRrJAR4SN7NgCflQcP4z/9qo1349hofBeiS3KfqTb2LYhIPLfW1uoOIY6y6T1w==
+X-Received: by 2002:a05:6512:3c96:b0:489:e6c1:a5a7 with SMTP id h22-20020a0565123c9600b00489e6c1a5a7mr22357322lfv.38.1658345293788;
+        Wed, 20 Jul 2022 12:28:13 -0700 (PDT)
+Received: from krzk-bin.. (89-162-31-138.fiber.signal.no. [89.162.31.138])
+        by smtp.gmail.com with ESMTPSA id h32-20020a0565123ca000b0047fac0f34absm3985771lfv.196.2022.07.20.12.28.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 20 Jul 2022 12:28:13 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Rajendra Nayak <quic_rjendra@quicinc.com>
+Subject: [PATCH 01/10] dt-bindings: interconnect: qcom,msm8998-bwmon: add support for SDM845 LLCC BWMON
+Date:   Wed, 20 Jul 2022 21:27:58 +0200
+Message-Id: <20220720192807.130098-2-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220720192807.130098-1-krzysztof.kozlowski@linaro.org>
+References: <20220720192807.130098-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-References: <20220601070707.3946847-1-saravanak@google.com>
- <20220601070707.3946847-7-saravanak@google.com> <CAMuHMdVVgB7KZq7-u-pAC-cZvVLWkv5wM4HC_jW7WK_tz52+cg@mail.gmail.com>
-In-Reply-To: <CAMuHMdVVgB7KZq7-u-pAC-cZvVLWkv5wM4HC_jW7WK_tz52+cg@mail.gmail.com>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Wed, 20 Jul 2022 12:01:30 -0700
-Message-ID: <CAGETcx-5-241=CxaPsGTTHhCSAZuGb742J9Xrhbj56+2yG6OhQ@mail.gmail.com>
-Subject: Re: [PATCH v2 6/9] Revert "driver core: Set default
- deferred_probe_timeout back to 0."
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-        David Ahern <dsahern@kernel.org>,
-        Android Kernel Team <kernel-team@android.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Linux IOMMU <iommu@lists.linux-foundation.org>,
-        netdev <netdev@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jul 20, 2022 at 10:31 AM Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
->
-> Hi Saravana,
->
-> On Wed, Jun 1, 2022 at 9:45 AM Saravana Kannan <saravanak@google.com> wrote:
-> > This reverts commit 11f7e7ef553b6b93ac1aa74a3c2011b9cc8aeb61.
-> >
-> > Let's take another shot at getting deferred_probe_timeout=10 to work.
-> >
-> > Signed-off-by: Saravana Kannan <saravanak@google.com>
->
-> Thanks for your patch, which is now commit f516d01b9df2782b
-> ("Revert "driver core: Set default deferred_probe_timeout
-> back to 0."") in driver-core/driver-core-next.
->
-> Wolfram found an issue on a Renesas board where disabling the IOMMU
-> driver (CONFIG_IPMMU_VMSA=n) causes the system to fail to boot,
-> and bisected this to a merge of driver-core/driver-core-next.
-> After some trials, I managed to reproduce the issue, and bisected it
-> further to commit f516d01b9df2782b.
->
-> The affected config has:
->     CONFIG_MODULES=y
->     CONFIG_RCAR_DMAC=y
->     CONFIG_IPMMU_VMSA=n
->
-> In arch/arm64/boot/dts/renesas/r8a77951-salvator-xs.dtb,
-> e6e88000.serial links to a dmac, and the dmac links to an iommu,
-> for which no driver is available.
+Add compatible for SDM845 Bandwidth Monitor instance measuring traffic
+between LLCC and memory.  It comes with different register layout:
+called v5.
 
-Thanks for digging into this and giving more details.
+Cc: Rajendra Nayak <quic_rjendra@quicinc.com>
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ .../devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml     | 1 +
+ 1 file changed, 1 insertion(+)
 
-Is e6e88000.serial being blocked the reason for the boot failure?
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+index c2e697f6e6cf..32e2892d736b 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+@@ -27,6 +27,7 @@ properties:
+               - qcom,sdm845-bwmon
+           - const: qcom,msm8998-bwmon
+       - const: qcom,msm8998-bwmon       # BWMON v4
++      - const: qcom,sdm845-llcc-bwmon   # BWMON v5
+ 
+   interconnects:
+     maxItems: 1
+-- 
+2.34.1
 
-If so, can you give this a shot?
-https://lore.kernel.org/lkml/20220701012647.2007122-1-saravanak@google.com/
-
-> Playing with deferred_probe_timeout values doesn't help.
-
-This part is strange though. If you set deferred_probe_timeout=1,
-fw_devlink will stop blocking all probes 1 second after
-late_initcall()s finish. So, similar to the ip autoconfig issue, is
-the issue caused by something that needs to be finished before we hit
-late_initcall() but is getting blocked?
-
-> However, the above options do not seem to be sufficient to trigger
-> the issue, as I had other configs with those three options that do
-> boot fine.
->
-> After bisecting configs, I found the culprit: CONFIG_IP_PNP.
-> As Wolfram was using an initramfs, CONFIG_IP_PNP was not needed.
-> If CONFIG_IP_PNP=n, booting fails.
-> If CONFIG_IP_PNP=y, booting succeeds.
-> In fact, just disabling late_initcall(ip_auto_config) makes it fail,
-> too.
-> Reducing ip_auto_config(), it turns out the call to
-> wait_for_init_devices_probe() is what is needed to unblock booting.
->
-> So I guess wait_for_init_devices_probe() needs to be called (where?)
-> if CONFIG_IP_PNP=n, too?
-
-That function just unblocks all devices and allows them to try and
-probe and then waits for all possible probes to finish before
-returning. They problem with call it randomly/every time is that it
-breaks functionality where an optional supplier will probe after a few
-modules are loaded in the future.
-
-I guess one possible issue with the timeout not helping is that once
-the timeout expires, things are still being probed and nothing is
-being blocked till they finish probing.
-
-I'm trying to have the default config (in terms of fw_devlink,
-deferred probe behavior, timeouts, etc) be the same between a fully
-static kernel (but CONFIG_MODULES still enabled) and a fully modular
-kernel (like GKI). But it might end up being an untenable problem.
-
-I'll wait to see what specifically is the issue in this case and then
-I'll go from there.
-
--Saravana
-
-> > --- a/drivers/base/dd.c
-> > +++ b/drivers/base/dd.c
-> > @@ -256,7 +256,12 @@ static int deferred_devs_show(struct seq_file *s, void *data)
-> >  }
-> >  DEFINE_SHOW_ATTRIBUTE(deferred_devs);
-> >
-> > +#ifdef CONFIG_MODULES
-> > +int driver_deferred_probe_timeout = 10;
-> > +#else
-> >  int driver_deferred_probe_timeout;
-> > +#endif
-> > +
-> >  EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
-> >
-> >  static int __init deferred_probe_timeout_setup(char *str)
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
->
-> --
-> To unsubscribe from this group and stop receiving emails from it, send an email to kernel-team+unsubscribe@android.com.
->
