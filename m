@@ -2,149 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0A06C43334
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jul 2022 21:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B28AC433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jul 2022 21:29:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233828AbiGUVQO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jul 2022 17:16:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36516 "EHLO
+        id S229729AbiGUV33 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jul 2022 17:29:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233728AbiGUVQE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jul 2022 17:16:04 -0400
-Received: from luna (cpc152649-stkp13-2-0-cust121.10-2.cable.virginm.net [86.15.83.122])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF6A15C347
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jul 2022 14:15:56 -0700 (PDT)
-Received: from ben by luna with local (Exim 4.96)
-        (envelope-from <ben@luna.fluff.org>)
-        id 1oEdIP-001std-11;
-        Thu, 21 Jul 2022 22:01:21 +0100
-From:   Ben Dooks <ben-linux@fluff.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     linux-pm@vger.kernel.org, sre@kernel.org,
-        Ben Dooks <ben-linux@fluff.org>
-Subject: [PATCH] power: supply: bq27xxx: fix NULL vs 0 warnings
-Date:   Thu, 21 Jul 2022 22:01:20 +0100
-Message-Id: <20220721210120.449340-1-ben-linux@fluff.org>
-X-Mailer: git-send-email 2.35.1
+        with ESMTP id S229552AbiGUV32 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jul 2022 17:29:28 -0400
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B98E92864
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jul 2022 14:29:27 -0700 (PDT)
+Received: by mail-wr1-x436.google.com with SMTP id m17so3754555wrw.7
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jul 2022 14:29:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linexp-org.20210112.gappssmtp.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=6oH1cbsgdhss1AP+uXvA73Emr1xdn7+57VPz7hhNcGA=;
+        b=s0GBanfP7lbAXVi3iLcl7ktDLDo0k3btMRsYXHocefuYBAC1t/SO9a+e5mmhcfkopx
+         ZT1czPzKmKfckcSKlAPR1GQcZJFDcnLgU8Lpglpjp3O9t4WnhqqIxPUKjWFT5Wo0xy3o
+         1HOVVDZxyObl4fZ1swmtK+1p7fY+O+1+BvIqXxhIGDQPlVPk7wLpcvV43HM/k3CLSq/C
+         Jz7RgIyRrqglFU7Wo39wk5hYv0pcOHbaQ7aTV7seA9lPjn9fBQPVFgJPMOZSsPhl5ke4
+         IpdX7ymgEAUWlShczDJvA75JQSQctEVPvjvqZ212EvFA3nIN2pBaRfzp2FhrEx7AM6YO
+         9AfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=6oH1cbsgdhss1AP+uXvA73Emr1xdn7+57VPz7hhNcGA=;
+        b=K340YViZ/dV84Ze83mazNLdMSbMQYiGXK226jBbQp5+XgEg4nlnB99RrObfzl4Gyeh
+         j3nvAuus0G1doLI1Q/3skp03uGfV8hVoGVr9ccoKmuVkuBfWTGcSWhmzPqzrPuzKRKPb
+         DJLasc0WAQHST6KEpBbuLQM7bv/OlBPrm3Ja+oQH14sUAQ6BTHep6LHUcRPwI7K7L6Br
+         LOh7tS5AYkH6jezhaYApbDo8O1UxGomFxxU3/6225RyzmGs4sQZtecT5V8Mhc+FfMzAM
+         pR8TrI0twc5YM4oM2jf0W7ORhX5LKJpCsyT/hA31ugiPVqmC8rgFrPg/sDVEV+sWGyf4
+         3MFA==
+X-Gm-Message-State: AJIora9CqvwZ2mEWYxPsyZPg45nJBwnrRiqfkmG22slqSeRxWgMNKz7S
+        bNNA11A0k5beafGSeKRYjAoUvw==
+X-Google-Smtp-Source: AGRyM1ubN1oF93oWLpytkvZB9NDpE35SXL8MNDkxJ6e+iQD1oXNc+GcrMRpSYNM5N9If6MlDZIBayA==
+X-Received: by 2002:adf:e283:0:b0:21e:26fe:14f3 with SMTP id v3-20020adfe283000000b0021e26fe14f3mr275882wri.98.1658438965814;
+        Thu, 21 Jul 2022 14:29:25 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:a2a9:428c:224b:c919? ([2a05:6e02:1041:c10:a2a9:428c:224b:c919])
+        by smtp.gmail.com with ESMTPSA id x10-20020adfec0a000000b0021d6c7a9f50sm3021298wrn.41.2022.07.21.14.29.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 21 Jul 2022 14:29:25 -0700 (PDT)
+Message-ID: <5e9f6d35-08ff-4949-67b0-a2feaab79814@linexp.org>
+Date:   Thu, 21 Jul 2022 23:29:23 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH v5 11/12] thermal/of: Use thermal trips stored in the
+ thermal zone
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Amit Kucheria <amitk@kernel.org>
+References: <20220710123512.1714714-1-daniel.lezcano@linexp.org>
+ <20220710123512.1714714-13-daniel.lezcano@linexp.org>
+ <CAJZ5v0hTQBXbKNurR0p8_MWmcW-EtezUg1oSNLVEYEAdzpeyBA@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linexp.org>
+In-Reply-To: <CAJZ5v0hTQBXbKNurR0p8_MWmcW-EtezUg1oSNLVEYEAdzpeyBA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver has a lot of sparse warnings for using 0 as a NULL
-pointer when NULL would be appropriate. Change the 0 values
-to NULL to fix the warnings, some of which are shown here:
+On 19/07/2022 20:26, Rafael J. Wysocki wrote:
+> On Sun, Jul 10, 2022 at 2:35 PM Daniel Lezcano
+> <daniel.lezcano@linexp.org> wrote:
+>> Now that we have the thermal trip stored in the thermal zone in a
+>> generic way, we can rely on them and remove one indirection we found
+>> in the thermal_of code and do one more step forward the removal of the
+>> duplicated structures.
+>>
+>> Cc: Alexandre Bailon <abailon@baylibre.com>
+>> Cc: Kevin Hilman <khilman@baylibre.com>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
+>> ---
+>>   drivers/thermal/thermal_of.c | 53 +++++++++++-------------------------
+>>   1 file changed, 16 insertions(+), 37 deletions(-)
+>>
+>> diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+>> index e187461dd396..601552c55d0b 100644
+>> --- a/drivers/thermal/thermal_of.c
+>> +++ b/drivers/thermal/thermal_of.c
+>> @@ -118,12 +118,7 @@ static int of_thermal_set_trips(struct thermal_zone_device *tz,
+>>    */
+>>   int of_thermal_get_ntrips(struct thermal_zone_device *tz)
+>>   {
+>> -       struct __thermal_zone *data = tz->devdata;
+>> -
+>> -       if (!data || IS_ERR(data))
+>> -               return -ENODEV;
+>> -
+>> -       return data->ntrips;
+>> +       return tz->ntrips;
+> Hasn't this been renamed to num_trips?
 
-drivers/power/supply/bq27xxx_battery.c:984:23: warning: Using plain integer as NULL pointer
-drivers/power/supply/bq27xxx_battery.c:985:23: warning: Using plain integer as NULL pointer
-drivers/power/supply/bq27xxx_battery.c:986:23: warning: Using plain integer as NULL pointer
-drivers/power/supply/bq27xxx_battery.c:987:23: warning: Using plain integer as NULL pointer
-drivers/power/supply/bq27xxx_battery.c:988:23: warning: Using plain integer as NULL pointer
+Right, it is changed in patch 12/12
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
----
- drivers/power/supply/bq27xxx_battery.c | 54 +++++++++++++-------------
- 1 file changed, 27 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 35e6a394c0df..dccc2683455a 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -868,11 +868,11 @@ enum bq27xxx_dm_reg_id {
- 	BQ27XXX_DM_TERMINATE_VOLTAGE,
- };
- 
--#define bq27000_dm_regs 0
--#define bq27010_dm_regs 0
--#define bq2750x_dm_regs 0
--#define bq2751x_dm_regs 0
--#define bq2752x_dm_regs 0
-+#define bq27000_dm_regs NULL
-+#define bq27010_dm_regs NULL
-+#define bq2750x_dm_regs NULL
-+#define bq2751x_dm_regs NULL
-+#define bq2752x_dm_regs NULL
- 
- #if 0 /* not yet tested */
- static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
-@@ -881,24 +881,24 @@ static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
- 	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
- };
- #else
--#define bq27500_dm_regs 0
-+#define bq27500_dm_regs NULL
- #endif
- 
- /* todo create data memory definitions from datasheets and test on chips */
--#define bq27510g1_dm_regs 0
--#define bq27510g2_dm_regs 0
--#define bq27510g3_dm_regs 0
--#define bq27520g1_dm_regs 0
--#define bq27520g2_dm_regs 0
--#define bq27520g3_dm_regs 0
--#define bq27520g4_dm_regs 0
--#define bq27521_dm_regs 0
--#define bq27530_dm_regs 0
--#define bq27531_dm_regs 0
--#define bq27541_dm_regs 0
--#define bq27542_dm_regs 0
--#define bq27546_dm_regs 0
--#define bq27742_dm_regs 0
-+#define bq27510g1_dm_regs NULL
-+#define bq27510g2_dm_regs NULL
-+#define bq27510g3_dm_regs NULL
-+#define bq27520g1_dm_regs NULL
-+#define bq27520g2_dm_regs NULL
-+#define bq27520g3_dm_regs NULL
-+#define bq27520g4_dm_regs NULL
-+#define bq27521_dm_regs NULL
-+#define bq27530_dm_regs NULL
-+#define bq27531_dm_regs NULL
-+#define bq27541_dm_regs NULL
-+#define bq27542_dm_regs NULL
-+#define bq27546_dm_regs NULL
-+#define bq27742_dm_regs NULL
- 
- #if 0 /* not yet tested */
- static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
-@@ -907,7 +907,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
- 	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
- };
- #else
--#define bq27545_dm_regs 0
-+#define bq27545_dm_regs NULL
- #endif
- 
- static struct bq27xxx_dm_reg bq27411_dm_regs[] = {
-@@ -937,7 +937,7 @@ static struct bq27xxx_dm_reg bq27426_dm_regs[] = {
- #if 0 /* not yet tested */
- #define bq27441_dm_regs bq27421_dm_regs
- #else
--#define bq27441_dm_regs 0
-+#define bq27441_dm_regs NULL
- #endif
- 
- #if 0 /* not yet tested */
-@@ -947,13 +947,13 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
- 	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
- };
- #else
--#define bq27621_dm_regs 0
-+#define bq27621_dm_regs NULL
- #endif
- 
--#define bq27z561_dm_regs 0
--#define bq28z610_dm_regs 0
--#define bq34z100_dm_regs 0
--#define bq78z100_dm_regs 0
-+#define bq27z561_dm_regs NULL
-+#define bq28z610_dm_regs NULL
-+#define bq34z100_dm_regs NULL
-+#define bq78z100_dm_regs NULL
- 
- #define BQ27XXX_O_ZERO		BIT(0)
- #define BQ27XXX_O_OTDC		BIT(1) /* has OTC/OTD overtemperature flags */
--- 
-2.35.1
 
