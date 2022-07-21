@@ -2,100 +2,67 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9759C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jul 2022 04:37:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DA84C43334
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jul 2022 06:32:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231965AbiGUEhu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jul 2022 00:37:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34894 "EHLO
+        id S230469AbiGUGcc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jul 2022 02:32:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50834 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231803AbiGUEhh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jul 2022 00:37:37 -0400
-Received: from comms.puri.sm (comms.puri.sm [159.203.221.185])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 199487AB2F;
-        Wed, 20 Jul 2022 21:37:15 -0700 (PDT)
-Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 59FF4DFFA0;
-        Wed, 20 Jul 2022 21:36:43 -0700 (PDT)
-Received: from comms.puri.sm ([127.0.0.1])
-        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id UzK8WlnFj0S6; Wed, 20 Jul 2022 21:36:42 -0700 (PDT)
-From:   Martin Kepplinger <martin.kepplinger@puri.sm>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=puri.sm; s=comms;
-        t=1658378202; bh=ZFOL7yrrCkugJn9Il2E109WmveIIj3yyKsNUvMgVJ00=;
-        h=From:To:Cc:Subject:Date:From;
-        b=ss1B0T8D/3eORrO1Ag26DhqWwnbHiNjI0bf4aN488AHkWj1xkaiLmT2YytfJMeubL
-         RZ7Z4aiLqxGbNXAE5CDyeyUIGcyX0K7l0xUW5VQPZNV5HE0eX8AyYml/1nZF5BH4cf
-         jpcJomFhayN6ifhCYRuQyzqDy0qvnLkBThvJopwDOw6ARdJ1t+fRxQpT8RRt2fkNHP
-         c78ViuMjkRAflZKDV3p5iJ9ybcRGKzEQoBcZVI4nYxCXl0hhXxqVwUG4DKW9NitRay
-         +7kYuHmXqFvnroSaeVkZanLZw9JI6CxI8zYhMCBJIA9bfGiW0QBWFsC6jo1YxijyAP
-         tGwshl5C0WYQA==
-To:     rafael@kernel.org, khilman@kernel.org, ulf.hansson@linaro.org,
-        robh@kernel.org, krzysztof.kozlowski@linaro.org,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, festevam@gmail.com,
-        pavel@ucw.cz
-Cc:     kernel@puri.sm, linux-imx@nxp.com, broonie@kernel.org,
-        l.stach@pengutronix.de, aford173@gmail.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        Martin Kepplinger <martin.kepplinger@puri.sm>
-Subject: [PATCH v5 0/3] power: domain: handle power supplies that need interrupts
-Date:   Thu, 21 Jul 2022 06:36:05 +0200
-Message-Id: <20220721043608.1527686-1-martin.kepplinger@puri.sm>
+        with ESMTP id S229745AbiGUGca (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jul 2022 02:32:30 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AFC9BC31;
+        Wed, 20 Jul 2022 23:32:30 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id F288761D3B;
+        Thu, 21 Jul 2022 06:32:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4533C3411E;
+        Thu, 21 Jul 2022 06:32:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1658385149;
+        bh=IZ4SwAa6ua+WUWdHHIwzyOEKRHQHmxbchOdJNXwyJTU=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=HV6hxcT0IdNYJG6PkgD1AgTC9gt6OfrMaozgwv6v5Ua8gfUc4y2KF0zwY7cakrlrf
+         mMQz5iNL8wubg/y1Zv7sZSwW6fgsKOkG1ENLiAn+9Kb8mUI/yhe+GGAe5ttMk9RBYe
+         9HYpepMBetEUyeMnHq64d/5N9ICfWm128tA5fjgrpJanrxEEqEbDeWIh2LS7SgGrUr
+         H+69txgezlPrpl0Sr7gShfAn9xW4DH5LwGRtG+eaW+endr5/kRHKu1aufgltam2c0v
+         BGJgoRwzMIyEmQET5rpWZ1XNrKnKNQDKK7uVOek9r01WUEf28BKmoWD2659D/yBY9U
+         KBviV9QDAgTJw==
+Message-ID: <c7d1f98c-a294-1112-26c6-4cdab0185e3d@kernel.org>
+Date:   Thu, 21 Jul 2022 08:32:23 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v10 1/2] thermal: Add thermal driver for Sunplus
+Content-Language: en-US
+To:     Li-hao Kuo <lhjeff911@gmail.com>, rafael@kernel.org,
+        daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
+        robh+dt@kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     lh.kuo@sunplus.com
+References: <cover.1654660009.git.lhjeff911@gmail.com>
+ <b114b6f8ea51054561a61dc4982715bb73633ec5.1654660009.git.lhjeff911@gmail.com>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+In-Reply-To: <b114b6f8ea51054561a61dc4982715bb73633ec5.1654660009.git.lhjeff911@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-hi Ulf, Lucas and all interested,
+On 12/07/2022 09:30, Li-hao Kuo wrote:
+> Add thermal driver for Sunplus.
+> 
+> Signed-off-by: Li-hao Kuo <lhjeff911@gmail.com>
+> ---
+> Changes in v10:
+>  - Change the setting of compatible
+>  - Mosdify the setting of remove funciton.
 
-This (after a cleanup patch) makes available a new genpd flag
-GENPD_FLAG_IRQ_ON in a relatively generic way: genpd providers can set
-it when irqs are needed to manage power on/off. Since the main goal
-here has been to fix systemd suspend/resume, adjusting these callbacks
-is all that's being done when this flag gets set.
+This driver was never compiled :(
 
-And since I'm working on imx8mq, the 3rd patch makes gpcv2 set this new
-flag when a power domain has a power-supply descirbed in DT.
-For i.MX8M* platforms, this should be ok. For other platforms this might
-be useful too but needs to be tested.
-
-
-revision history
-----------------
-v5: (thank you Lucas)
-* simplify gpcv2 code: just set GENPD_FLAG_IRQ_ON when a power-supply is present
-
-v4: (thank you Ulf and Lucas)
-* split up genpd core and gpcv2 changes
-* set callbacks inside of pm_genpd_init()
-* make flag name and description a bit more generic
-* print an error in __genpd_dev_pm_attach() if there a "mismatch"
-https://lore.kernel.org/linux-arm-kernel/20220720043444.1289952-1-martin.kepplinger@puri.sm/T/#t
-
-v3: (thank you Ulf)
-* move DT parsing to gpcv2 and create a genpd flag that gets set
-https://lore.kernel.org/linux-arm-kernel/20220718210302.674897-1-martin.kepplinger@puri.sm/
-
-v2: (thank you Krzysztof)
-* rewrite: find possible regulators' interrupts property in parents
-  instead of inventing a new property.
-https://lore.kernel.org/linux-arm-kernel/20220712121832.3659769-1-martin.kepplinger@puri.sm/
-
-v1: (initial idea)
-https://lore.kernel.org/linux-arm-kernel/20220711094549.3445566-1-martin.kepplinger@puri.sm/T/#t
-
-Martin Kepplinger (3):
-  PM: domain: fix indentation and use BIT macro for flags
-  power: domain: handle genpd correctly when needing interrupts
-  soc: imx: gpcv2: fix suspend/resume by setting GENPD_FLAG_IRQ_ON
-
- drivers/base/power/domain.c | 13 +++++++++++++
- drivers/soc/imx/gpcv2.c     |  3 +++
- include/linux/pm_domain.h   | 20 +++++++++++++-------
- 3 files changed, 29 insertions(+), 7 deletions(-)
-
--- 
-2.30.2
-
+Best regards,
+Krzysztof
