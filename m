@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FAF1C43334
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Jul 2022 21:29:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C76CFC433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 25 Jul 2022 21:29:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229878AbiGYV3X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S236431AbiGYV3X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 25 Jul 2022 17:29:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48122 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237081AbiGYV23 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jul 2022 17:28:29 -0400
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9C7824975
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jul 2022 14:27:45 -0700 (PDT)
-Received: by mail-wr1-x42e.google.com with SMTP id u5so17717366wrm.4
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jul 2022 14:27:45 -0700 (PDT)
+        with ESMTP id S237381AbiGYV2w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jul 2022 17:28:52 -0400
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69174252AF
+        for <linux-pm@vger.kernel.org>; Mon, 25 Jul 2022 14:27:55 -0700 (PDT)
+Received: by mail-wm1-x335.google.com with SMTP id b21-20020a05600c4e1500b003a32bc8612fso7097889wmq.3
+        for <linux-pm@vger.kernel.org>; Mon, 25 Jul 2022 14:27:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=CsU6ca+7WX/xVGECcsjSjS8CnQ/NXZV7RYxDyAjfgbo=;
-        b=tjmiNYVqtsTChO02vhbkBNOAETx1giolsKbKa9UIaimnQiiS1T6pdHQp0b5G/IunYK
-         xYlWtgk/sixvp/pvh3PSYS8QQDTV3rxGukQvo1qpLvjT6b/h2SXdvKOTlRIKn9RF/GQ8
-         lIRDVIO5fM64Dlk9BI3eBeyCvtIE37+5ozjxGRB/54yGknNnvclr/jdlBVkugB2xfw5u
-         qq0oRa2ucA2+e9wifU4KUR3apoWjg4BcuV/GF437Rs7imkr+Fhl69Sdx41NbAf3LdBlk
-         bZkmCwyY3L5Tgay0v5/P0MB+3iyDYpx9SXhXIqD7xRpzWAm+tF9fEnMP9dtYGVNp0MC+
-         iNQg==
+        bh=fQwrODMneSzL3hNZushZmArM7t54Sdd+4j1p+OO3JS8=;
+        b=wAqIxUamNgGfpXlAtv5dRL3vUzGyBJmyD2ekYHrdDe8vQTZ/ycyXgh882FiO+8X5xh
+         9rfkhRLXg0mb7GqSGcNY1W7GdCLS8uNloydV6P0oUp0sjyxtYJTlAYkEHNKQIuAsB+He
+         8lF3OcbuLRLQHqPRgZ7gADkIOAPHmuDuPARzJSylftVm7ZM1IgS74UB+Un5KRHhZ3v0V
+         cB1xOICwt+Vvwy1ZXGUBw2fxXy0xr/qT+m2pc3f5nhPtT3suqe2PVfOtCng/j7YSTtqs
+         Y28PjSzufx88vVPjnchNtaso0n2S5pcXwxlyjwrwX4K3n1123qPqLkUmTYrmGMfBqmJG
+         bgQw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=CsU6ca+7WX/xVGECcsjSjS8CnQ/NXZV7RYxDyAjfgbo=;
-        b=XQuPzTccx+IBJQMUI38duLEE/XQpKdbwOOs4mdIhzVAeZtcIg2D9IAH1AQYn6YVg3n
-         +GUjcvXz4JtFs8bylTlys4TV7+g5HnlEy/L3YjtQ2VdtJjQHgsSs/dGLR1E4q45rdgE6
-         Q4lvf0n0YRJROvaPSCpeVyBFU2W5zgLhR9ma5e7qQ1ywsT7Fd0z2qXsXN2nVkn22ojdX
-         9HvBCDvBPX+LPMJ7cLLFhgo+zaOS2D2weTVQvP8wBFnO9rOg6f0nTyW6GWP+cs4r7l/e
-         0Jh3SOv4jsgOfuGVKBJtxP32bgd42dFDYLhFB/HiNy/isYoCo4p4xx6QEde0X1ybNabq
-         Po8A==
-X-Gm-Message-State: AJIora8T9G9NrxlDH6Jf/KJhLiJHA6p1029s0q4BkjDk5VgKqxp+BeN2
-        Ys4slQODEg2UMzhrvIrUUMw3g7ymuCqMew==
-X-Google-Smtp-Source: AGRyM1teSkYLdenuX2lRH71M/Hp1fJAVMWkEgZoTwY5yNri+eBJzdSNalR/lu2zwYWU5jGhKft4GGA==
-X-Received: by 2002:adf:f747:0:b0:21e:8e2a:7cbc with SMTP id z7-20020adff747000000b0021e8e2a7cbcmr3190615wrp.342.1658784462157;
-        Mon, 25 Jul 2022 14:27:42 -0700 (PDT)
+        bh=fQwrODMneSzL3hNZushZmArM7t54Sdd+4j1p+OO3JS8=;
+        b=F5Izu9rDEVp/ninxSQD/rPYGd2yo0FS6WQrLlDoDK0UPGFjmw7etbmfg1XeJvRAvpk
+         bpEQdJjWa+DO7jnWnc2g73iN/9+wzmy0stQc3vK9Ev6qJVrQC5O239PBoxy8IzYEi/Am
+         lFOpALdJDWhgRqq1UsrWslM1zR6FFg36BvXj3dm1UXwrJp8lQrgHcZV9ikm1GHeGee7F
+         FKZHMiLkcZhxoJJ0/GHWzDo2d40DqJXP1KHInAJ73cJzc7Aitts+IjnRdqQdhpITvur+
+         XnumPJEhuNfVLP+anV57sIxct4eV3xkfUZbD4B3mzaeDNpllwXNthEIHjey76yXMzuP4
+         yAsw==
+X-Gm-Message-State: AJIora8QEL4EA9PcDY0CPs0FkutQWtQcAWUXBUTWd7bbYUiCNmGj3iZC
+        fhVwCTHutPnzeM4g6UO0IsRQNw==
+X-Google-Smtp-Source: AGRyM1tbvETSoIRv7uuZ9n4quQqOkazqYwKqHrQODDUEp+EUyJvLC5o19BvGxgtpTnCBj1LhJX76jg==
+X-Received: by 2002:a05:600c:1552:b0:3a3:2e4c:bd0a with SMTP id f18-20020a05600c155200b003a32e4cbd0amr18447864wmg.82.1658784472932;
+        Mon, 25 Jul 2022 14:27:52 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:1780:8e54:dd38:6668])
-        by smtp.gmail.com with ESMTPSA id r17-20020a5d52d1000000b0021d68a504cbsm12668772wrv.94.2022.07.25.14.27.40
+        by smtp.gmail.com with ESMTPSA id r17-20020a5d52d1000000b0021d68a504cbsm12668772wrv.94.2022.07.25.14.27.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Jul 2022 14:27:41 -0700 (PDT)
+        Mon, 25 Jul 2022 14:27:52 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
@@ -61,10 +61,12 @@ Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
         glaroque@baylibre.com, miquel.raynal@bootlin.com,
         shawnguo@kernel.org, niklas.soderlund@ragnatech.se,
         matthias.bgg@gmail.com, j-keerthy@ti.com,
-        Amit Kucheria <amitk@kernel.org>
-Subject: [PATCH v2 19/32] thermal/drivers/qoriq: Switch to new of API
-Date:   Mon, 25 Jul 2022 23:26:24 +0200
-Message-Id: <20220725212637.2818207-20-daniel.lezcano@linexp.org>
+        Eduardo Valentin <edubezval@gmail.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        linux-omap@vger.kernel.org (open list:TI BANDGAP AND THERMAL DRIVER)
+Subject: [PATCH v2 24/32] thermal/drivers/ti-soc: Switch to new of API
+Date:   Mon, 25 Jul 2022 23:26:29 +0200
+Message-Id: <20220725212637.2818207-25-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220725212637.2818207-1-daniel.lezcano@linexp.org>
 References: <20220725212637.2818207-1-daniel.lezcano@linexp.org>
@@ -83,47 +85,67 @@ API to register the thermal zone with these generic ops.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
 ---
- drivers/thermal/qoriq_thermal.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ .../thermal/ti-soc-thermal/ti-thermal-common.c   | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 73049f9bea25..d111e218f362 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -82,9 +82,9 @@ static struct qoriq_tmu_data *qoriq_sensor_to_data(struct qoriq_sensor *s)
- 	return container_of(s, struct qoriq_tmu_data, sensor[s->id]);
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index 703039d8b937..8a9055bd376e 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -65,10 +65,10 @@ static inline int ti_thermal_hotspot_temperature(int t, int s, int c)
+ 
+ /* thermal zone ops */
+ /* Get temperature callback function for thermal zone */
+-static inline int __ti_thermal_get_temp(void *devdata, int *temp)
++static inline int __ti_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+ 	struct thermal_zone_device *pcb_tz = NULL;
+-	struct ti_thermal_data *data = devdata;
++	struct ti_thermal_data *data = tz->devdata;
+ 	struct ti_bandgap *bgp;
+ 	const struct ti_temp_sensor *s;
+ 	int ret, tmp, slope, constant;
+@@ -85,8 +85,8 @@ static inline int __ti_thermal_get_temp(void *devdata, int *temp)
+ 		return ret;
+ 
+ 	/* Default constants */
+-	slope = thermal_zone_get_slope(data->ti_thermal);
+-	constant = thermal_zone_get_offset(data->ti_thermal);
++	slope = thermal_zone_get_slope(tz);
++	constant = thermal_zone_get_offset(tz);
+ 
+ 	pcb_tz = data->pcb_tz;
+ 	/* In case pcb zone is available, use the extrapolation rule with it */
+@@ -107,9 +107,9 @@ static inline int __ti_thermal_get_temp(void *devdata, int *temp)
+ 	return ret;
  }
  
--static int tmu_get_temp(void *p, int *temp)
-+static int tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+-static int __ti_thermal_get_trend(void *p, int trip, enum thermal_trend *trend)
++static int __ti_thermal_get_trend(struct thermal_zone_device *tz, int trip, enum thermal_trend *trend)
  {
--	struct qoriq_sensor *qsensor = p;
-+	struct qoriq_sensor *qsensor = tz->devdata;
- 	struct qoriq_tmu_data *qdata = qoriq_sensor_to_data(qsensor);
- 	u32 val;
- 	/*
-@@ -122,7 +122,7 @@ static int tmu_get_temp(void *p, int *temp)
+-	struct ti_thermal_data *data = p;
++	struct ti_thermal_data *data = tz->devdata;
+ 	struct ti_bandgap *bgp;
+ 	int id, tr, ret = 0;
+ 
+@@ -130,7 +130,7 @@ static int __ti_thermal_get_trend(void *p, int trip, enum thermal_trend *trend)
  	return 0;
  }
  
--static const struct thermal_zone_of_device_ops tmu_tz_ops = {
-+static const struct thermal_zone_device_ops tmu_tz_ops = {
- 	.get_temp = tmu_get_temp,
+-static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
++static const struct thermal_zone_device_ops ti_of_thermal_ops = {
+ 	.get_temp = __ti_thermal_get_temp,
+ 	.get_trend = __ti_thermal_get_trend,
  };
+@@ -170,7 +170,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
+ 		return -EINVAL;
  
-@@ -146,9 +146,9 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 
- 		sensor->id = id;
- 
--		tzd = devm_thermal_zone_of_sensor_register(dev, id,
--							   sensor,
--							   &tmu_tz_ops);
-+		tzd = devm_thermal_of_zone_register(dev, id,
-+						    sensor,
-+						    &tmu_tz_ops);
- 		ret = PTR_ERR_OR_ZERO(tzd);
- 		if (ret) {
- 			if (ret == -ENODEV)
+ 	/* in case this is specified by DT */
+-	data->ti_thermal = devm_thermal_zone_of_sensor_register(bgp->dev, id,
++	data->ti_thermal = devm_thermal_of_zone_register(bgp->dev, id,
+ 					data, &ti_of_thermal_ops);
+ 	if (IS_ERR(data->ti_thermal)) {
+ 		dev_err(bgp->dev, "thermal zone device is NULL\n");
 -- 
 2.25.1
 
