@@ -2,113 +2,142 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09DF3C43334
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jul 2022 08:26:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93671C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jul 2022 08:33:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237458AbiGZI0t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jul 2022 04:26:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43492 "EHLO
+        id S229749AbiGZIdO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jul 2022 04:33:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232010AbiGZI0s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2022 04:26:48 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 18E091A82E;
-        Tue, 26 Jul 2022 01:26:47 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 759441FB;
-        Tue, 26 Jul 2022 01:26:47 -0700 (PDT)
-Received: from [10.57.13.197] (unknown [10.57.13.197])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A0FA33F73B;
-        Tue, 26 Jul 2022 01:26:45 -0700 (PDT)
-Message-ID: <dade430a-0856-0936-96bd-5010480c48c9@arm.com>
-Date:   Tue, 26 Jul 2022 09:26:44 +0100
+        with ESMTP id S237458AbiGZIdM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2022 04:33:12 -0400
+Received: from comms.puri.sm (comms.puri.sm [159.203.221.185])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A72362DA9A;
+        Tue, 26 Jul 2022 01:33:11 -0700 (PDT)
+Received: from localhost (localhost [127.0.0.1])
+        by comms.puri.sm (Postfix) with ESMTP id 50486DFD55;
+        Tue, 26 Jul 2022 01:33:11 -0700 (PDT)
+Received: from comms.puri.sm ([127.0.0.1])
+        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id L9ens6mJboms; Tue, 26 Jul 2022 01:33:10 -0700 (PDT)
+From:   Martin Kepplinger <martin.kepplinger@puri.sm>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=puri.sm; s=comms;
+        t=1658824390; bh=CtZHJaWb605GvXh6ITYJsJOpwsFY2AdI1ZfEZejnCUY=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=TYee2IzqBrFb+coRiZ+mLMST3G8YOOjBKdivuBC+tOe+iE5P1jHPzlC9B5PYjVnPr
+         84kVNjFtIaiNBMzpu95e29+0lz7Uj7Sfh2Awaqm477V41HaSe4Bn1Qd6xbRMg7mNGk
+         7Lfr+WFZ29JoN98BiJQw7jZT7jS0IpH9ZTRlLaVzGO254/jZoLSPNJGPsyjcSyVoNj
+         MmhgDU/+r27L0MAXGVpgtQDD9ET0KnElWu+mXGMI7JFZZPZExqMjuUwQKFjuvZ9UWO
+         jgvX7XJU9fLx+kN15K8nk5QEepqPo4jH9CTnjkN1IGYMK0V7e9c2bR/ckRh9gZJJfs
+         /F2YGAD6WK7xw==
+To:     rafael@kernel.org, khilman@kernel.org, ulf.hansson@linaro.org,
+        robh@kernel.org, krzysztof.kozlowski@linaro.org,
+        shawnguo@kernel.org, s.hauer@pengutronix.de, festevam@gmail.com,
+        pavel@ucw.cz
+Cc:     kernel@puri.sm, linux-imx@nxp.com, broonie@kernel.org,
+        l.stach@pengutronix.de, aford173@gmail.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Martin Kepplinger <martin.kepplinger@puri.sm>
+Subject: [PATCH v6 1/2] power: domain: handle genpd correctly when needing interrupts
+Date:   Tue, 26 Jul 2022 10:32:56 +0200
+Message-Id: <20220726083257.1730630-2-martin.kepplinger@puri.sm>
+In-Reply-To: <20220726083257.1730630-1-martin.kepplinger@puri.sm>
+References: <20220726083257.1730630-1-martin.kepplinger@puri.sm>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH] cpufreq: schedutil: Move max CPU capacity to sugov_policy
-Content-Language: en-US
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
-References: <20220711124229.16516-1-lukasz.luba@arm.com>
- <1198724e-d94f-0b7c-9c4a-90595f8426d2@arm.com>
- <CAJZ5v0gh78z3tw6simaZ5S6dmGvDc-OE6t02N8vQYk-2eoFQgA@mail.gmail.com>
- <deddd9cc-f517-cff9-e304-e1f09c6784b7@arm.com>
- <CAJZ5v0jYzJo2BU-qKkaJog6pYx7SkpgmWGd6vTTkc2T=gx8abw@mail.gmail.com>
- <837b387a-b29d-2122-efb0-881b24dd2725@arm.com>
-In-Reply-To: <837b387a-b29d-2122-efb0-881b24dd2725@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
+If for example the power-domains' power-supply node (regulator) needs
+interrupts to work, the current setup with noirq callbacks cannot
+work; for example a pmic regulator on i2c, when suspending, usually already
+times out during suspend_noirq:
 
-On 7/25/22 09:07, Lukasz Luba wrote:
-> Hi Rafael,
-> 
-> On 7/15/22 18:29, Rafael J. Wysocki wrote:
->> On Fri, Jul 15, 2022 at 1:47 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
->>>
->>>
->>>
->>> On 7/15/22 12:44, Rafael J. Wysocki wrote:
->>>> On Fri, Jul 15, 2022 at 10:47 AM Lukasz Luba <lukasz.luba@arm.com> 
->>>> wrote:
->>>>>
->>>>> Hi Rafael,
->>>>>
->>>>> gentle ping.
->>>>>
->>>>> On 7/11/22 13:42, Lukasz Luba wrote:
->>>>>> There is no need to keep the max CPU capacity in the per_cpu 
->>>>>> instance.
->>>>>> Furthermore, there is no need to check and update that variable
->>>>>> (sg_cpu->max) everytime in the frequency change request, which is 
->>>>>> part
->>>>>> of hot path. Instead use struct sugov_policy to store that 
->>>>>> information.
->>>>>> Initialize the max CPU capacity during the setup and start callback.
->>>>>> We can do that since all CPUs in the same frequency domain have 
->>>>>> the same
->>>>>> max capacity (capacity setup and thermal pressure are based on that).
->>>>>>
->>>>>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
->>>>>> ---
->>>>>>     kernel/sched/cpufreq_schedutil.c | 30 
->>>>>> +++++++++++++++---------------
->>>>>>     1 file changed, 15 insertions(+), 15 deletions(-)
->>>>>
->>>>> The patch got Ack from Viresh.
->>>>> Could you take it?
->>>>
->>>> Yes, it's there in my queue.  Same for the EM changes.
->>>
->>> Thank you Rafael!
->>
->> Well, the patch doesn't apply on top of 5.19-rc6, because
->> sugov_get_util() is somewhat different.
->>
->> Please rebase it and resend.
-> 
-> My apologies for the delay, I was on holidays.
-> 
-> I'll do that today and resend it.
-> 
+[   41.024193] buck4: failed to disable: -ETIMEDOUT
 
-I have found the reason why it doesn't apply
-on your tree. I have used next-20220711
-to base this work on. It contains Peter's
-branch sched/core, where there is this Dietmar's patch:
+So fix system suspend and resume for these power-domains by using the
+"outer" suspend/resume callbacks instead. Tested on the imx8mq-librem5 board,
+but by looking at the dts, this will fix imx8mq-evk and possibly many other
+boards too.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/commit/?h=sched/core&id=bb4479994945e9170534389a7762eb56149320ac
+This is designed so that genpd providers just say "this genpd needs
+interrupts" (by setting the flag) - without implying an implementation.
 
-That causes the issue. I thing it might collide when I re-base my patch
-on top of 5.19-rc6 and you apply it into pm tree...
+Initially system suspend problems had been discussed at
+https://lore.kernel.org/linux-arm-kernel/20211002005954.1367653-8-l.stach@pengutronix.de/
+which led to discussing the pmic that contains the regulators which
+serve as power-domain power-supplies:
+https://lore.kernel.org/linux-pm/573166b75e524517782471c2b7f96e03fd93d175.camel@puri.sm/T/
 
-What do you think about this?
+Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
+---
+ drivers/base/power/domain.c | 13 +++++++++++--
+ include/linux/pm_domain.h   |  5 +++++
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 5a2e0232862e..58376752a4de 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -130,6 +130,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+ #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+ #define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
+ #define genpd_is_rpm_always_on(genpd)	(genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
++#define genpd_irq_on(genpd)		(genpd->flags & GENPD_FLAG_IRQ_ON)
+ 
+ static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
+ 		const struct generic_pm_domain *genpd)
+@@ -2065,8 +2066,15 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 	genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
+ 	genpd->domain.ops.runtime_resume = genpd_runtime_resume;
+ 	genpd->domain.ops.prepare = genpd_prepare;
+-	genpd->domain.ops.suspend_noirq = genpd_suspend_noirq;
+-	genpd->domain.ops.resume_noirq = genpd_resume_noirq;
++
++	if (genpd_irq_on(genpd)) {
++		genpd->domain.ops.suspend = genpd_suspend_noirq;
++		genpd->domain.ops.resume = genpd_resume_noirq;
++	} else {
++		genpd->domain.ops.suspend_noirq = genpd_suspend_noirq;
++		genpd->domain.ops.resume_noirq = genpd_resume_noirq;
++	}
++
+ 	genpd->domain.ops.freeze_noirq = genpd_freeze_noirq;
+ 	genpd->domain.ops.thaw_noirq = genpd_thaw_noirq;
+ 	genpd->domain.ops.poweroff_noirq = genpd_poweroff_noirq;
+@@ -2769,6 +2777,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
+ 			goto err;
+ 		dev_gpd_data(dev)->default_pstate = pstate;
+ 	}
++
+ 	return 1;
+ 
+ err:
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index ebc351698090..9cdedbc21158 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -60,6 +60,10 @@
+  * GENPD_FLAG_MIN_RESIDENCY:	Enable the genpd governor to consider its
+  *				components' next wakeup when determining the
+  *				optimal idle state.
++ *
++ * GENPD_FLAG_IRQ_ON:		genpd needs irqs to be able to manage power
++ *				on/off. Use the outer suspend/resume callbacks
++ *				instead of noirq for example.
+  */
+ #define GENPD_FLAG_PM_CLK	 (1U << 0)
+ #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
+@@ -68,6 +72,7 @@
+ #define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
+ #define GENPD_FLAG_RPM_ALWAYS_ON (1U << 5)
+ #define GENPD_FLAG_MIN_RESIDENCY (1U << 6)
++#define GENPD_FLAG_IRQ_ON	 (1U << 7)
+ 
+ enum gpd_status {
+ 	GENPD_STATE_ON = 0,	/* PM domain is on */
+-- 
+2.30.2
+
