@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6167BC19F28
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jul 2022 13:55:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FDE0C00144
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jul 2022 13:55:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229994AbiGZNzY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jul 2022 09:55:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37796 "EHLO
+        id S239139AbiGZNzb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jul 2022 09:55:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37998 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230204AbiGZNzV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2022 09:55:21 -0400
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61A6C7666
-        for <linux-pm@vger.kernel.org>; Tue, 26 Jul 2022 06:55:20 -0700 (PDT)
-Received: by mail-wr1-x429.google.com with SMTP id h9so20306026wrm.0
-        for <linux-pm@vger.kernel.org>; Tue, 26 Jul 2022 06:55:20 -0700 (PDT)
+        with ESMTP id S239109AbiGZNza (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2022 09:55:30 -0400
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A5F265D8
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jul 2022 06:55:22 -0700 (PDT)
+Received: by mail-wm1-x32e.google.com with SMTP id v67-20020a1cac46000000b003a1888b9d36so11409578wme.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jul 2022 06:55:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=4UyB6UT6ks0HkEwyd3qTKWT7a722IA4Qy0x6ECfS6JA=;
-        b=fnElU9WVkp/hVhjv7YThd5aslfssg97RW5Tc1Htc8AR/9ztHH0xlHj+E1ANhlATIin
-         NpCigtCYkQPtAt4+998IITLVdULV+9ilkjQuyB4FpACY69+gQUDL+lk1KY0Hz5J08+/i
-         EGLxVbqfCUgGEZPemzqKYJrQnXKYjSqzX/IaA+l5DSyONvBo9iMEgdrUP0hv7aEMNuDp
-         gNkUWDOt0MNHSQhzapmSD0z5p3VdS+nnLAnMW3FEz8Qz/DmsCYXtwjCYZHOSKeYn2RXg
-         G7rHqkqafxEz0fBrB5x8+lUwJTD54xUirg6le322OaUZyQoPvPGiucsZPUp1b2luQ2DN
-         +MfA==
+        bh=PEiCDnBJfTCfMI+4Z4Tn0LD6y0rCD8YgBNUzFMu5IG0=;
+        b=di6BHhJlUr1Fz9NcNrcQdMrllU2Mzy4WJgA/Nx0NTuHq+Tfo8jAYyp5VXc41LogQ4v
+         46kWrppePbk58eHwpVIan6uqw2xPlQaRUcrMsVm60tdj5CzR9t4/+Z838F7X1y4Be/Uy
+         2G+dfXV1GHEU7DZ54gjXMSq6RQQUoIvFB0HBQ0IWvA7lS8yhEkU+FzWfMou29SUB7BXn
+         jnnIzWP95B7dsGddbqtQpB0SGo3EI/qwUnjAl5J275YhlDjEQY3nA1golwg7TfOYm9ea
+         SOaXt4gyzuTtrp54VBKp+QMRRwCNVJ9mGH8VMCCttJDhwjz0K9zO3pwPhehEoyqQCLs1
+         dJYw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=4UyB6UT6ks0HkEwyd3qTKWT7a722IA4Qy0x6ECfS6JA=;
-        b=bsGXYUibMKa+z9RXk7f7nUiRVIVA13R/SkwXfZcbHdLfN14Gu0prQi7CRoIn2UlxkK
-         h4gdxkkSUcanqeGuInKrkFHDYXEczOah9V2TG1RtykkdkzGaxZ77hJ52x3YNxj4ESmSM
-         C0ul5oNhEq0u4cI+mFoWzg5kzMXpHi5B/v9XCzwvcqj6IcC9JVLZRenN3v6Wnf8NdicG
-         X7LP+dZTguq1PApravHr45xEMIvv9RwcPEjEbAjeF5sC2bje0FuxLP16l4RSaKXzB8cK
-         0vbYfa36py7rG2gGlRTQr8rwycGXrkV5Up88ckJ7wEeytBM8cUK1qJriTssxtuKsMNpv
-         NLbA==
-X-Gm-Message-State: AJIora9Kp/Bbx/pIsB02cQYq9o2+FnKQpjH7iwxTfw+Eyt5O1C7LtrcY
-        vvQiPLIswZpaZFuhszl37uYOMw==
-X-Google-Smtp-Source: AGRyM1tNOSDyHTzrF4a7MTg/xELPN/dHSfVWdPLkjj7I/TNbUJeJJG9NgzCR6U44gB8fwRp4KDsO2A==
-X-Received: by 2002:adf:f492:0:b0:21d:89d5:9443 with SMTP id l18-20020adff492000000b0021d89d59443mr10608607wro.201.1658843718871;
-        Tue, 26 Jul 2022 06:55:18 -0700 (PDT)
+        bh=PEiCDnBJfTCfMI+4Z4Tn0LD6y0rCD8YgBNUzFMu5IG0=;
+        b=Oc4sHZ+rJ1KARRsBdsji3PWIINgqR0VBI9UIc/zvzMA9BrYhvlEC5XnPkR+Tmt/iZw
+         Act3v1HBMULfE0SeZ91gOa8BMeeMhWY9BzUdxDSyOHkyKLBlSAyEhzD+jBzghlTARkwE
+         lZvkZFLNk+E2oJUQz+Tvd+NmvQXnUBotwACf/PyT7ItOQn/hRaS5vYii6SLUfF2kGppg
+         /evN+PdkcrW81nsD3dUHN8W8FM1E70YlVYE8yZmX3qv2RcW9VCcWIXvdvHwKl3vcsbUd
+         +ztaMbQcRmfVtMPM63qoVn/j1gnwWXCFClnIGbLb+JmnvqmrLSaNhM7m+YUh4sqgNUax
+         fwcg==
+X-Gm-Message-State: AJIora9M/+liqioMy0eEd9+gR7BCj9Zm6z9FJRvp/tGUl6WLKtt3jOKT
+        Iq5Yq2rruTzTUVGMmRGupbEgYg==
+X-Google-Smtp-Source: AGRyM1utn7izSjqVcFH7meNIqwZCnjvN+6wA5QnozUx5tevBFho8o4sg8GAvG0e0CgbACzK+dIrZdQ==
+X-Received: by 2002:a7b:ce13:0:b0:3a3:102c:23d3 with SMTP id m19-20020a7bce13000000b003a3102c23d3mr12040080wmc.67.1658843720995;
+        Tue, 26 Jul 2022 06:55:20 -0700 (PDT)
 Received: from Balsam-ThinkPad-T480.baylibre (laubervilliers-658-1-213-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id d13-20020adf9c8d000000b0021e4c3b2967sm15244670wre.65.2022.07.26.06.55.17
+        by smtp.gmail.com with ESMTPSA id d13-20020adf9c8d000000b0021e4c3b2967sm15244670wre.65.2022.07.26.06.55.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Jul 2022 06:55:18 -0700 (PDT)
+        Tue, 26 Jul 2022 06:55:20 -0700 (PDT)
 From:   Balsam CHIHI <bchihi@baylibre.com>
 To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
         amitk@kernel.org
@@ -57,9 +57,9 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-mediatek@lists.infradead.org, james.lo@mediatek.com,
         fan.chen@mediatek.com, louis.yu@mediatek.com,
         rex-bc.chen@mediatek.com, abailon@baylibre.com
-Subject: [PATCH v8 2/6] dt-bindings: thermal: Add binding document for LVTS thermal controllers
-Date:   Tue, 26 Jul 2022 15:55:02 +0200
-Message-Id: <20220726135506.485108-3-bchihi@baylibre.com>
+Subject: [PATCH v8 4/6] thermal: mediatek: Add thermal zone settings for mt8195
+Date:   Tue, 26 Jul 2022 15:55:04 +0200
+Message-Id: <20220726135506.485108-5-bchihi@baylibre.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220726135506.485108-1-bchihi@baylibre.com>
 References: <20220726135506.485108-1-bchihi@baylibre.com>
@@ -69,177 +69,321 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds dt-binding documents for mt8192 and mt8195 thermal controllers.
+Add thermal zone settings for mt8195
 
+Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+Signed-off-by: Ben Tseng <ben.tseng@mediatek.com>
 Signed-off-by: Alexandre Bailon <abailon@baylibre.com>
 Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
 ---
- .../thermal/mediatek,mt8192-lvts.yaml         | 73 ++++++++++++++++++
- .../thermal/mediatek,mt8195-lvts.yaml         | 75 +++++++++++++++++++
- 2 files changed, 148 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/mediatek,mt8192-lvts.yaml
- create mode 100644 Documentation/devicetree/bindings/thermal/mediatek,mt8195-lvts.yaml
+ drivers/thermal/mediatek/Kconfig         |  12 ++
+ drivers/thermal/mediatek/Makefile        |   1 +
+ drivers/thermal/mediatek/lvts_mt8195.c   | 253 +++++++++++++++++++++++
+ drivers/thermal/mediatek/soc_temp_lvts.h |   1 +
+ 4 files changed, 267 insertions(+)
+ create mode 100644 drivers/thermal/mediatek/lvts_mt8195.c
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek,mt8192-lvts.yaml b/Documentation/devicetree/bindings/thermal/mediatek,mt8192-lvts.yaml
+diff --git a/drivers/thermal/mediatek/Kconfig b/drivers/thermal/mediatek/Kconfig
+index 7fc04237dd50..df3b4a033fc2 100644
+--- a/drivers/thermal/mediatek/Kconfig
++++ b/drivers/thermal/mediatek/Kconfig
+@@ -47,4 +47,16 @@ config LVTS_MT8192
+ 		configures LVTS thermal controllers to collect temperatures
+ 		via ASIF.
+ 
++config LVTS_MT8195
++	tristate "LVTS driver for MediaTek MT8195 SoC"
++	depends on HAS_IOMEM
++	depends on NVMEM
++	depends on RESET_TI_SYSCON
++	depends on MTK_SOC_THERMAL_LVTS
++	help
++		Enable this option if you want to get SoC temperature
++		information for MT8195. This driver
++		configures LVTS thermal controllers to collect temperatures
++		via ASIF.
++
+ endif
+diff --git a/drivers/thermal/mediatek/Makefile b/drivers/thermal/mediatek/Makefile
+index 5ff1197e80ab..dada1bf13110 100644
+--- a/drivers/thermal/mediatek/Makefile
++++ b/drivers/thermal/mediatek/Makefile
+@@ -1,3 +1,4 @@
+ obj-$(CONFIG_MTK_SOC_THERMAL)		+= soc_temp.o
+ obj-$(CONFIG_MTK_SOC_THERMAL_LVTS)	+= soc_temp_lvts.o
+ obj-$(CONFIG_LVTS_MT8192)			+= lvts_mt8192.o
++obj-$(CONFIG_LVTS_MT8195)			+= lvts_mt8195.o
+diff --git a/drivers/thermal/mediatek/lvts_mt8195.c b/drivers/thermal/mediatek/lvts_mt8195.c
 new file mode 100644
-index 000000000000..8c5a02eb97c5
+index 000000000000..df69e2e79115
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/mediatek,mt8192-lvts.yaml
-@@ -0,0 +1,73 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/mediatek,mt8192-lvts.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/drivers/thermal/mediatek/lvts_mt8195.c
+@@ -0,0 +1,253 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2022 MediaTek Inc.
++ */
 +
-+title: MediaTek SoC LVTS thermal controller
++#include <linux/of_irq.h>
++#include <linux/platform_device.h>
++#include "soc_temp_lvts.h"
 +
-+maintainers:
-+  - Yu-Chia Chang <ethan.chang@mediatek.com>
-+  - Ben Tseng <ben.tseng@mediatek.com>
++enum mt8195_lvts_mcu_sensor_enum {
++	MT8195_TS1_0,		// cpu_big1
++	MT8195_TS1_1,		// cpu_big2
++	MT8195_TS2_0,		// cpu_big3
++	MT8195_TS2_1,		// cpu_big4
++	MT8195_TS3_0,		// cpu_little1
++	MT8195_TS3_1,		// cpu_little2
++	MT8195_TS3_2,		// cpu_little3
++	MT8195_TS3_3,		// cpu_little4
++	MT8195_NUM_TS_MCU
++};
 +
-+properties:
-+  compatible:
-+    enum:
-+      - mediatek,mt8192-lvts-ap
-+      - mediatek,mt8192-lvts-mcu
++enum mt8195_lvts_ap_sensor_enum {
++	MT8195_TS4_0,		// vpu1
++	MT8195_TS4_1,		// vpu2
++	MT8195_TS5_0,		// gpu1
++	MT8195_TS5_1,		// gpu2
++	MT8195_TS6_0,		// vdec
++	MT8195_TS6_1,		// img
++	MT8195_TS6_2,		// infra
++	MT8195_TS7_0,		// cam1
++	MT8195_TS7_1,		// cam2
++	MT8195_NUM_TS_AP
++};
 +
-+  "#thermal-sensor-cells":
-+    const: 1
++static void mt8195_mcu_efuse_to_cal_data(struct lvts_data *lvts_data)
++{
++	struct lvts_sensor_cal_data *cal_data = &lvts_data->cal_data;
 +
-+  reg:
-+    maxItems: 2
++	cal_data->golden_temp = GET_CAL_DATA_BITMASK(0, lvts_data, 31, 24);
 +
-+  interrupts:
-+    maxItems: 1
++	cal_data->count_r[MT8195_TS1_0] = GET_CAL_DATA_BITMASK(1, lvts_data, 23, 0);
++	cal_data->count_r[MT8195_TS1_1] = (GET_CAL_DATA_BITMASK(2, lvts_data, 15, 0) << 8) +
++		GET_CAL_DATA_BITMASK(1, lvts_data, 31, 24);
++	cal_data->count_r[MT8195_TS2_0] = GET_CAL_DATA_BITMASK(3, lvts_data, 31, 8);
++	cal_data->count_r[MT8195_TS2_1] = GET_CAL_DATA_BITMASK(4, lvts_data, 23, 0);
++	cal_data->count_r[MT8195_TS3_0] = (GET_CAL_DATA_BITMASK(6, lvts_data, 7, 0) << 16) +
++		GET_CAL_DATA_BITMASK(5, lvts_data, 31, 16);
++	cal_data->count_r[MT8195_TS3_1] = GET_CAL_DATA_BITMASK(6, lvts_data, 31, 8);
++	cal_data->count_r[MT8195_TS3_2] = GET_CAL_DATA_BITMASK(7, lvts_data, 23, 0);
++	cal_data->count_r[MT8195_TS3_3] = (GET_CAL_DATA_BITMASK(8, lvts_data, 15, 0) << 8) +
++		GET_CAL_DATA_BITMASK(7, lvts_data, 31, 24);
 +
-+  clocks:
-+    maxItems: 1
++	cal_data->count_rc[MT8195_TS1_0] = (GET_CAL_DATA_BITMASK(3, lvts_data, 7, 0) << 16) +
++		GET_CAL_DATA_BITMASK(2, lvts_data, 31, 16);
++	cal_data->count_rc[MT8195_TS2_0] = (GET_CAL_DATA_BITMASK(5, lvts_data, 15, 0) << 8) +
++		GET_CAL_DATA_BITMASK(4, lvts_data, 31, 24);
++	cal_data->count_rc[MT8195_TS3_0] = (GET_CAL_DATA_BITMASK(9, lvts_data, 7, 0) << 16) +
++		GET_CAL_DATA_BITMASK(8, lvts_data, 31, 16);
++}
 +
-+  resets:
-+    items:
-+      - description: SW reset HW AP/MCU domain for clean temporary data when HW initialization and resume.
++static void mt8195_ap_efuse_to_cal_data(struct lvts_data *lvts_data)
++{
++	struct lvts_sensor_cal_data *cal_data = &lvts_data->cal_data;
 +
-+  nvmem-cells:
-+    items:
-+      - description: LVTS calibration data for thermal sensors
++	cal_data->golden_temp = GET_CAL_DATA_BITMASK(0, lvts_data, 31, 24);
 +
-+  nvmem-cell-names:
-+    items:
-+      - const: lvts_calib_data
++	cal_data->count_r[MT8195_TS4_0] = GET_CAL_DATA_BITMASK(9, lvts_data, 31, 8);
++	cal_data->count_r[MT8195_TS4_1] = GET_CAL_DATA_BITMASK(10, lvts_data, 23, 0);
++	cal_data->count_r[MT8195_TS5_0] = (GET_CAL_DATA_BITMASK(12, lvts_data, 7, 0) << 16) +
++		GET_CAL_DATA_BITMASK(11, lvts_data, 31, 16);
++	cal_data->count_r[MT8195_TS5_1] = GET_CAL_DATA_BITMASK(12, lvts_data, 31, 8);
++	cal_data->count_r[MT8195_TS6_0] = (GET_CAL_DATA_BITMASK(14, lvts_data, 15, 0) << 8) +
++		GET_CAL_DATA_BITMASK(13, lvts_data, 31, 24);
++	cal_data->count_r[MT8195_TS6_1] = (GET_CAL_DATA_BITMASK(15, lvts_data, 7, 0) << 16) +
++		GET_CAL_DATA_BITMASK(14, lvts_data, 31, 16);
++	cal_data->count_r[MT8195_TS6_2] = GET_CAL_DATA_BITMASK(15, lvts_data, 31, 8);
++	cal_data->count_r[MT8195_TS7_0] = (GET_CAL_DATA_BITMASK(17, lvts_data, 15, 0) << 8) +
++		GET_CAL_DATA_BITMASK(16, lvts_data, 31, 24);
++	cal_data->count_r[MT8195_TS7_1] = (GET_CAL_DATA_BITMASK(18, lvts_data, 7, 0) << 16) +
++		GET_CAL_DATA_BITMASK(17, lvts_data, 31, 16);
 +
-+required:
-+  - compatible
-+  - '#thermal-sensor-cells'
-+  - reg
-+  - interrupts
-+  - clocks
-+  - resets
-+  - nvmem-cells
-+  - nvmem-cell-names
++	cal_data->count_rc[MT8195_TS4_0] = (GET_CAL_DATA_BITMASK(11, lvts_data, 15, 0) << 8) +
++						GET_CAL_DATA_BITMASK(10, lvts_data, 31, 24);
++	cal_data->count_rc[MT8195_TS5_0] = GET_CAL_DATA_BITMASK(13, lvts_data, 23, 0);
++	cal_data->count_rc[MT8195_TS6_0] = GET_CAL_DATA_BITMASK(16, lvts_data, 23, 0);
++	cal_data->count_rc[MT8195_TS7_0] = GET_CAL_DATA_BITMASK(18, lvts_data, 31, 8);
++}
 +
-+additionalProperties: false
++static struct lvts_speed_settings tc_speed_mt8195 = {
++	.period_unit = PERIOD_UNIT,
++	.group_interval_delay = GROUP_INTERVAL_DELAY,
++	.filter_interval_delay = FILTER_INTERVAL_DELAY,
++	.sensor_interval_delay = SENSOR_INTERVAL_DELAY,
++};
 +
-+examples:
-+  - |
-+    #include <dt-bindings/thermal/thermal.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/mt8192-clk.h>
-+    #include <dt-bindings/reset/mt8192-resets.h>
++static const struct lvts_tc_settings mt8195_tc_mcu_settings[] = {
++	[0] = {
++		.dev_id = 0x81,
++		.addr_offset = 0x0,
++		.num_sensor = 2,
++		.sensor_map = {MT8195_TS1_0, MT8195_TS1_1},
++		.tc_speed = &tc_speed_mt8195,
++		.hw_filter = LVTS_FILTER_2_OF_4,
++		.dominator_sensing_point = SENSING_POINT1,
++		.hw_reboot_trip_point = HW_REBOOT_TRIP_POINT,
++		.irq_bit = BIT(3),
++	},
++	[1] = {
++		.dev_id = 0x82,
++		.addr_offset = 0x100,
++		.num_sensor = 2,
++		.sensor_map = {MT8195_TS2_0, MT8195_TS2_1},
++		.tc_speed = &tc_speed_mt8195,
++		.hw_filter = LVTS_FILTER_2_OF_4,
++		.dominator_sensing_point = SENSING_POINT0,
++		.hw_reboot_trip_point = HW_REBOOT_TRIP_POINT,
++		.irq_bit = BIT(4),
++	},
++	[2] = {
++		.dev_id = 0x83,
++		.addr_offset = 0x200,
++		.num_sensor = 4,
++		.sensor_map = {MT8195_TS3_0, MT8195_TS3_1, MT8195_TS3_2, MT8195_TS3_3},
++		.tc_speed = &tc_speed_mt8195,
++		.hw_filter = LVTS_FILTER_2_OF_4,
++		.dominator_sensing_point = SENSING_POINT0,
++		.hw_reboot_trip_point = HW_REBOOT_TRIP_POINT,
++		.irq_bit = BIT(5),
++	}
++};
 +
-+      lvtsmcu: thermal-sensor@11278000 {
-+        compatible = "mediatek,mt8192-lvts-mcu";
-+        #thermal-sensor-cells = <1>;
-+        reg = <0 0x11278000 0 0x400>;
-+        interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH 0>;
-+        clocks = <&infracfg_ao CLK_INFRA_THERM>;
-+        resets = <&infracfg_ao MT8192_INFRA_RST4_THERM_CTRL_MCU_SWRST>;
-+        nvmem-cells = <&lvts_efuse_data>;
-+        nvmem-cell-names = "lvts_calib_data";
-+      };
++static const struct lvts_tc_settings mt8195_tc_ap_settings[] = {
++	[0] = {
++		.dev_id = 0x84,
++		.addr_offset = 0x0,
++		.num_sensor = 2,
++		.sensor_map = {MT8195_TS4_0, MT8195_TS4_1},
++		.tc_speed = &tc_speed_mt8195,
++		.hw_filter = LVTS_FILTER_2_OF_4,
++		.dominator_sensing_point = SENSING_POINT0,
++		.hw_reboot_trip_point = HW_REBOOT_TRIP_POINT,
++		.irq_bit = BIT(3),
++	},
++	[1] = {
++		.dev_id = 0x85,
++		.addr_offset = 0x100,
++		.num_sensor = 2,
++		.sensor_map = {MT8195_TS5_0, MT8195_TS5_1},
++		.tc_speed = &tc_speed_mt8195,
++		.hw_filter = LVTS_FILTER_2_OF_4,
++		.dominator_sensing_point = SENSING_POINT1,
++		.hw_reboot_trip_point = HW_REBOOT_TRIP_POINT,
++		.irq_bit = BIT(4),
++	},
++	[2] = {
++		.dev_id = 0x86,
++		.addr_offset = 0x200,
++		.num_sensor = 3,
++		.sensor_map = {MT8195_TS6_0, MT8195_TS6_1, MT8195_TS6_2},
++		.tc_speed = &tc_speed_mt8195,
++		.hw_filter = LVTS_FILTER_2_OF_4,
++		.dominator_sensing_point = SENSING_POINT1,
++		.hw_reboot_trip_point = HW_REBOOT_TRIP_POINT,
++		.irq_bit = BIT(5),
++	},
++	[3] = {
++		.dev_id = 0x87,
++		.addr_offset = 0x300,
++		.num_sensor = 2,
++		.sensor_map = {MT8195_TS7_0, MT8195_TS7_1},
++		.tc_speed = &tc_speed_mt8195,
++		.hw_filter = LVTS_FILTER_2_OF_4,
++		.dominator_sensing_point = SENSING_POINT0,
++		.hw_reboot_trip_point = HW_REBOOT_TRIP_POINT,
++		.irq_bit = BIT(6),
++	}
++};
 +
-+...
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek,mt8195-lvts.yaml b/Documentation/devicetree/bindings/thermal/mediatek,mt8195-lvts.yaml
-new file mode 100644
-index 000000000000..6b0b53a33272
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/mediatek,mt8195-lvts.yaml
-@@ -0,0 +1,75 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/mediatek,mt8195-lvts.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++static const struct lvts_data mt8195_lvts_mcu_data = {
++	.num_tc = (ARRAY_SIZE(mt8195_tc_mcu_settings)),
++	.tc = mt8195_tc_mcu_settings,
++	.num_sensor = MT8195_NUM_TS_MCU,
++	.ops = {
++		.efuse_to_cal_data = mt8195_mcu_efuse_to_cal_data,
++		.device_enable_and_init = lvts_device_enable_and_init_v4,
++		.device_enable_auto_rck = lvts_device_enable_auto_rck_v4,
++		.device_read_count_rc_n = lvts_device_read_count_rc_n_v4,
++		.set_cal_data = lvts_set_calibration_data_v4,
++		.init_controller = lvts_init_controller_v4,
++	},
++	.feature_bitmap = FEATURE_DEVICE_AUTO_RCK,
++	.num_efuse_addr = NUM_EFUSE_ADDR,
++	.num_efuse_block = NUM_EFUSE_BLOCK_MT8195,
++	.cal_data = {
++		.default_golden_temp = DEFAULT_GOLDEN_TEMP,
++		.default_count_r = DEFAULT_CUONT_R,
++		.default_count_rc = DEFAULT_CUONT_RC,
++	},
++	.coeff = {
++		.a = COEFF_A,
++		.b = COEFF_B,
++	},
++};
 +
-+title: MediaTek SoC LVTS thermal controller
++static const struct lvts_data mt8195_lvts_ap_data = {
++	.num_tc = (ARRAY_SIZE(mt8195_tc_ap_settings)),
++	.tc = mt8195_tc_ap_settings,
++	.num_sensor = MT8195_NUM_TS_AP,
++	.ops = {
++		.efuse_to_cal_data = mt8195_ap_efuse_to_cal_data,
++		.device_enable_and_init = lvts_device_enable_and_init_v4,
++		.device_enable_auto_rck = lvts_device_enable_auto_rck_v4,
++		.device_read_count_rc_n = lvts_device_read_count_rc_n_v4,
++		.set_cal_data = lvts_set_calibration_data_v4,
++		.init_controller = lvts_init_controller_v4,
++	},
++	.feature_bitmap = FEATURE_DEVICE_AUTO_RCK,
++	.num_efuse_addr = NUM_EFUSE_ADDR,
++	.num_efuse_block = NUM_EFUSE_BLOCK_MT8195,
++	.cal_data = {
++		.default_golden_temp = DEFAULT_GOLDEN_TEMP,
++		.default_count_r = DEFAULT_CUONT_R,
++		.default_count_rc = DEFAULT_CUONT_RC,
++	},
++	.coeff = {
++		.a = COEFF_A,
++		.b = COEFF_B,
++	},
++};
 +
-+maintainers:
-+  - Yu-Chia Chang <ethan.chang@mediatek.com>
-+  - Ben Tseng <ben.tseng@mediatek.com>
++static const struct of_device_id lvts_of_match[] = {
++	{ .compatible = "mediatek,mt8195-lvts-mcu", .data = &mt8195_lvts_mcu_data, },
++	{ .compatible = "mediatek,mt8195-lvts-ap", .data = &mt8195_lvts_ap_data, },
++	{},
++};
++MODULE_DEVICE_TABLE(of, lvts_of_match);
 +
-+properties:
-+  compatible:
-+    enum:
-+      - mediatek,mt8195-lvts-ap
-+      - mediatek,mt8195-lvts-mcu
++static struct platform_driver soc_temp_lvts = {
++	.probe = lvts_probe,
++	.remove = lvts_remove,
++	.suspend = lvts_suspend,
++	.resume = lvts_resume,
++	.driver = {
++		.name = "mtk-soc-temp-lvts-mt8195",
++		.of_match_table = lvts_of_match,
++	},
++};
++module_platform_driver(soc_temp_lvts);
 +
-+  "#thermal-sensor-cells":
-+    const: 1
-+
-+  reg:
-+    maxItems: 2
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    items:
-+      - description: SW reset HW AP/MCU domain for clean temporary data when HW initialization and resume.
-+
-+  nvmem-cells:
-+    items:
-+      - description: LVTS calibration data 1 for thermal sensors
-+      - description: LVTS calibration data 2 for thermal sensors
-+
-+  nvmem-cell-names:
-+    items:
-+      - const: lvts_calib_data1
-+      - const: lvts_calib_data2
-+
-+required:
-+  - compatible
-+  - '#thermal-sensor-cells'
-+  - reg
-+  - interrupts
-+  - clocks
-+  - resets
-+  - nvmem-cells
-+  - nvmem-cell-names
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/thermal/thermal.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/mt8195-clk.h>
-+    #include <dt-bindings/reset/mt8195-resets.h>
-+
-+      lvtsmcu: thermal-sensor@11278000 {
-+        compatible = "mediatek,mt8195-lvts-mcu";
-+        #thermal-sensor-cells = <1>;
-+        reg = <0 0x11278000 0 0x400>;
-+        interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH 0>;
-+        clocks = <&infracfg_ao CLK_INFRA_AO_THERM>;
-+        resets = <&infracfg_ao MT8195_INFRA_RST4_THERM_CTRL_MCU_SWRST>;
-+        nvmem-cells = <&lvts_efuse_data1 &lvts_efuse_data2>;
-+        nvmem-cell-names = "lvts_calib_data1", "lvts_calib_data2";
-+      };
-+
-+...
++MODULE_AUTHOR("Yu-Chia Chang <ethan.chang@mediatek.com>");
++MODULE_AUTHOR("Michael Kao <michael.kao@mediatek.com>");
++MODULE_DESCRIPTION("MediaTek soc temperature driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/thermal/mediatek/soc_temp_lvts.h b/drivers/thermal/mediatek/soc_temp_lvts.h
+index 6f8b6e3af98c..c4acb7e26e5e 100644
+--- a/drivers/thermal/mediatek/soc_temp_lvts.h
++++ b/drivers/thermal/mediatek/soc_temp_lvts.h
+@@ -16,6 +16,7 @@
+ #define FEATURE_DEVICE_AUTO_RCK	BIT(0)
+ #define NUM_EFUSE_ADDR			22
+ #define NUM_EFUSE_BLOCK_MT8192	1
++#define NUM_EFUSE_BLOCK_MT8195	2
+ #define DEFAULT_GOLDEN_TEMP		50
+ #define DEFAULT_CUONT_R			35000
+ #define DEFAULT_CUONT_RC		2750
 -- 
 2.34.1
 
