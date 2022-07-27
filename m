@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B5EBC19F21
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C78EC19F2B
 	for <linux-pm@archiver.kernel.org>; Wed, 27 Jul 2022 21:06:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236948AbiG0VGH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Jul 2022 17:06:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55914 "EHLO
+        id S237427AbiG0VGG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Jul 2022 17:06:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55898 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236171AbiG0VFh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2022 17:05:37 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0336361734
+        with ESMTP id S236948AbiG0VFg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2022 17:05:36 -0400
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 049C860519
         for <linux-pm@vger.kernel.org>; Wed, 27 Jul 2022 14:04:21 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id j29-20020a05600c1c1d00b003a2fdafdefbso103158wms.2
-        for <linux-pm@vger.kernel.org>; Wed, 27 Jul 2022 14:04:21 -0700 (PDT)
+Received: by mail-wm1-x32e.google.com with SMTP id w8-20020a05600c014800b003a32e89bc4eso92672wmm.5
+        for <linux-pm@vger.kernel.org>; Wed, 27 Jul 2022 14:04:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Y6LxKgZwFvrUFcWeNV79IxBK5DkuqAc3CHWOKwe+2Kg=;
-        b=tt0p3JZs0R0yuNowL53kk0xbk0w405mj53mkIbORzj2xLwYuMy5+VEq6l9jlKCQvXj
-         ZEKIkHGI10P2Jf0+DSTbKfMySQBy/7G9+Tn2rEG4b2E9WKaf3JFs6/+WV7KBU3EefAUX
-         xJfuesqeCOzQmC9zupbLuq3df+h6ht4lYG/3pxGDvZsgHm7CRJzivXrF1Qe9nRK6cfix
-         GyB3dkST/SYpKQ0LhF0iigtX3WmKlE9Lo4nSwhHVaxTtRlLuQAVKndYESRkC5FSS4BwB
-         Q2QlAVMGc3L6ZXyMT+peyoiru5LJYuFr1fdIT5A0c4jlGprvw0A6M7ErbETVj+eASBa2
-         SlYQ==
+        bh=hWFZXwysMvsN10lXDK6sChpf4X2qhnFs4AeSH8mvwTs=;
+        b=fKlk36kNOIXutyiEJaCv7Gy8Y8SXPlCpXEpYT3v5hsMHepohYOURnllehr0xqrdsih
+         078Fcvs34wsDW8L5O5Pd7eWtz38QHUh1HtvR4zooK/5hbc97+Wmqbny72ol7qEj20n3v
+         GJV9ONI+/SmPBwYp1ysGn6xl2li8XJ7rlA9/L3pzQVAH9NdJeieQevx7mwXWpqjgeSoa
+         y3rBAk4q3yoQrnxQHvFy1QFxG2EKnxE9CDr+o4Pfk15EcgVvqz2DQxJyuis6Eot8avz/
+         0qyxFLygD/WvXkzaPZoOgQu6Nur+1H3zTbzuIy0Cw3V0q/rP5rk2p5z1Bc3boCtnkvAC
+         qrHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Y6LxKgZwFvrUFcWeNV79IxBK5DkuqAc3CHWOKwe+2Kg=;
-        b=7wqgNhqaMpYNnJpP2BsbK2DTgiL0h2CV8EaM8qmmcOYJFWdIP6JX2X5FT4oTh/JoUe
-         aoaZZMgW7UFgCmj61TuGqa6ajcpyg7TIS0nHYqqJ964chvbdZccnovr2QPacp6vxofV3
-         D0++RO4bsxT7UX7UJYpVOPHrniDk9UZQcMiVvBXtBmq6Yfl7Iguw1bki3imYq4N+Gy8q
-         oef3VwRrGrrp9EXId/x4bRdyHSQRZNpTZCT1bZP2+5BLohYgXpgz48f29mum6iugr2+H
-         xsCtnMZHQaEKmVOXMELaBdoUPQatSd69IJzmJgFqogyKB1rMJdsm9LjSsM/WnoDhV5cS
-         Rd1w==
-X-Gm-Message-State: AJIora+fj/KqIDMw/JebfMigAGX/WbESrg5N3uUMoi0YL9fnoPi+5NPO
-        lVrIdL0eXs6lcyrol4attyYoeA==
-X-Google-Smtp-Source: AGRyM1vYhT9FJiimBpV4z6Y36atVM/ld+uOXwYfSFzmmX1rYJ38mj3c4jANmt5gaMqBEQXyqJ0EAFA==
-X-Received: by 2002:a05:600c:3229:b0:3a3:7d7b:c621 with SMTP id r41-20020a05600c322900b003a37d7bc621mr2953587wmp.108.1658955860081;
-        Wed, 27 Jul 2022 14:04:20 -0700 (PDT)
+        bh=hWFZXwysMvsN10lXDK6sChpf4X2qhnFs4AeSH8mvwTs=;
+        b=dYD6uj7/PdqU/v++1kJrVmYwrMOXfq3N+uf9rx5cRZBrnsj2wYy0cMvhga+ISkymPU
+         6FI9A/kJR1jQteWoozI49RhGFh00mnsnRJPg38QouaKK/E9h0+RHo/UsGzvSVJgjUN4J
+         ezDmhWZNTNODNM7qUk9y6t1mVhFnYJ9QIKirlmHYVosiGcYMMaPbIEwa+pm4ANfnpL19
+         iaZnIUE/gkkLeHF5B9+YqsxndWyWESnBDfKWcRN6Pt/hntAn9shhHKekxPxp6InlYl7Y
+         qtzVyziXdv5mwHaw/rRQg3aje15UbhjiePJT8chJJxu8WDUkWYcRb7e2PYLIdWE9tYEM
+         2Skg==
+X-Gm-Message-State: AJIora8F5pbtEq2skd58t6rrrXG7dfkrcSqLi+HYu07hwshIXzgQGPXM
+        9Z9eKL0kWngrARDkXzI/juVWQg==
+X-Google-Smtp-Source: AGRyM1uvQcL47CIAsOneuLf1vtRWhov+nEkxHt6C1rGUbebVn2iW0PNibO5XgN8bydxhr3hGx4Gw1g==
+X-Received: by 2002:a05:600c:1c26:b0:3a3:2251:c3cb with SMTP id j38-20020a05600c1c2600b003a32251c3cbmr4353158wms.126.1658955854767;
+        Wed, 27 Jul 2022 14:04:14 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:65a8:ebd8:4098:d9d0])
-        by smtp.gmail.com with ESMTPSA id h6-20020a05600c350600b003a38606385esm37908wmq.3.2022.07.27.14.04.18
+        by smtp.gmail.com with ESMTPSA id h6-20020a05600c350600b003a38606385esm37908wmq.3.2022.07.27.14.04.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Jul 2022 14:04:19 -0700 (PDT)
+        Wed, 27 Jul 2022 14:04:14 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
@@ -61,10 +61,18 @@ Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
         glaroque@baylibre.com, miquel.raynal@bootlin.com,
         shawnguo@kernel.org, niklas.soderlund@ragnatech.se,
         matthias.bgg@gmail.com, j-keerthy@ti.com,
-        Liam Girdwood <lgirdwood@gmail.com>
-Subject: [PATCH v3 29/32] regulator/drivers/max8976: Switch to new of thermal API
-Date:   Wed, 27 Jul 2022 23:02:50 +0200
-Message-Id: <20220727210253.3794069-30-daniel.lezcano@linexp.org>
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        linux-iio@vger.kernel.org (open list:IIO SUBSYSTEM AND DRIVERS),
+        linux-arm-kernel@lists.infradead.org (moderated list:ARM/Allwinner
+        sunXi SoC support),
+        linux-sunxi@lists.linux.dev (open list:ARM/Allwinner sunXi SoC support)
+Subject: [PATCH v3 27/32] iio/drivers/sun4i_gpadc: Switch to new of thermal API
+Date:   Wed, 27 Jul 2022 23:02:48 +0200
+Message-Id: <20220727210253.3794069-28-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220727210253.3794069-1-daniel.lezcano@linexp.org>
 References: <20220727210253.3794069-1-daniel.lezcano@linexp.org>
@@ -82,47 +90,48 @@ Convert the ops to the thermal_zone_device_ops format and use the new
 API to register the thermal zone with these generic ops.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
-Acked-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/regulator/max8973-regulator.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/iio/adc/sun4i-gpadc-iio.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/regulator/max8973-regulator.c b/drivers/regulator/max8973-regulator.c
-index cb7e50003f70..61211c462b1a 100644
---- a/drivers/regulator/max8973-regulator.c
-+++ b/drivers/regulator/max8973-regulator.c
-@@ -447,9 +447,9 @@ static int max8973_init_dcdc(struct max8973_chip *max,
- 	return ret;
+diff --git a/drivers/iio/adc/sun4i-gpadc-iio.c b/drivers/iio/adc/sun4i-gpadc-iio.c
+index 2d393a4dfff6..13d1e937357c 100644
+--- a/drivers/iio/adc/sun4i-gpadc-iio.c
++++ b/drivers/iio/adc/sun4i-gpadc-iio.c
+@@ -412,9 +412,9 @@ static int sun4i_gpadc_runtime_resume(struct device *dev)
+ 	return 0;
  }
  
--static int max8973_thermal_read_temp(void *data, int *temp)
-+static int max8973_thermal_read_temp(struct thermal_zone_device *tz, int *temp)
+-static int sun4i_gpadc_get_temp(void *data, int *temp)
++static int sun4i_gpadc_get_temp(struct thermal_zone_device *tz, int *temp)
  {
--	struct max8973_chip *mchip = data;
-+	struct max8973_chip *mchip = tz->devdata;
- 	unsigned int val;
- 	int ret;
+-	struct sun4i_gpadc_iio *info = data;
++	struct sun4i_gpadc_iio *info = tz->devdata;
+ 	int val, scale, offset;
  
-@@ -478,7 +478,7 @@ static irqreturn_t max8973_thermal_irq(int irq, void *data)
- 	return IRQ_HANDLED;
+ 	if (sun4i_gpadc_temp_read(info->indio_dev, &val))
+@@ -428,7 +428,7 @@ static int sun4i_gpadc_get_temp(void *data, int *temp)
+ 	return 0;
  }
  
--static const struct thermal_zone_of_device_ops max77621_tz_ops = {
-+static const struct thermal_zone_device_ops max77621_tz_ops = {
- 	.get_temp = max8973_thermal_read_temp,
+-static const struct thermal_zone_of_device_ops sun4i_ts_tz_ops = {
++static const struct thermal_zone_device_ops sun4i_ts_tz_ops = {
+ 	.get_temp = &sun4i_gpadc_get_temp,
  };
  
-@@ -492,8 +492,8 @@ static int max8973_thermal_init(struct max8973_chip *mchip)
- 	if (mchip->id != MAX77621)
- 		return 0;
+@@ -637,9 +637,9 @@ static int sun4i_gpadc_probe(struct platform_device *pdev)
+ 	pm_runtime_enable(&pdev->dev);
  
--	tzd = devm_thermal_zone_of_sensor_register(mchip->dev, 0, mchip,
--						   &max77621_tz_ops);
-+	tzd = devm_thermal_of_zone_register(mchip->dev, 0, mchip,
-+					    &max77621_tz_ops);
- 	if (IS_ERR(tzd)) {
- 		ret = PTR_ERR(tzd);
- 		dev_err(mchip->dev, "Failed to register thermal sensor: %d\n",
+ 	if (IS_ENABLED(CONFIG_THERMAL_OF)) {
+-		info->tzd = thermal_zone_of_sensor_register(info->sensor_device,
+-							    0, info,
+-							    &sun4i_ts_tz_ops);
++		info->tzd = thermal_of_zone_register(info->sensor_device,
++						     0, info,
++						     &sun4i_ts_tz_ops);
+ 		/*
+ 		 * Do not fail driver probing when failing to register in
+ 		 * thermal because no thermal DT node is found.
 -- 
 2.25.1
 
