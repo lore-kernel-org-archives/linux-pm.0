@@ -2,294 +2,428 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E70F3C04A68
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Jul 2022 21:03:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36CEDC19F29
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jul 2022 21:04:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235972AbiG0VD4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Jul 2022 17:03:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55108 "EHLO
+        id S235652AbiG0VEB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Jul 2022 17:04:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55562 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235081AbiG0VDg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2022 17:03:36 -0400
-Received: from mail-qt1-x830.google.com (mail-qt1-x830.google.com [IPv6:2607:f8b0:4864:20::830])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D29825F11F
-        for <linux-pm@vger.kernel.org>; Wed, 27 Jul 2022 14:03:34 -0700 (PDT)
-Received: by mail-qt1-x830.google.com with SMTP id e5so13534402qts.1
-        for <linux-pm@vger.kernel.org>; Wed, 27 Jul 2022 14:03:34 -0700 (PDT)
+        with ESMTP id S235608AbiG0VDl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2022 17:03:41 -0400
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB3235F9B2
+        for <linux-pm@vger.kernel.org>; Wed, 27 Jul 2022 14:03:36 -0700 (PDT)
+Received: by mail-wm1-x32b.google.com with SMTP id b6so10788413wmq.5
+        for <linux-pm@vger.kernel.org>; Wed, 27 Jul 2022 14:03:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=02o7NHW7mE5ebu0126PDF2CYbdsizz2BnBbhL8NdEqg=;
-        b=Tm2ZkaNh2LR6bPvZ/cqewJKmeCHAy5+psrDGVPYvpqM1X450IkzgAQ+XgzexDjQngg
-         owNTSwca5MOqOoHb4lk+9Th+hVRlXLHRIgCAYVv8KycZMByz2S8zkWkFi1+FZEVZ+Jb4
-         TQUGMXOaCbIjRZQLG0qzPS1GfWehs/4tRmqRYKNE0pAm1YEZsdXZRxDUp0z5RQhHBm4k
-         FwmXaS+6l81Iv9hgWSigRXeRdvEGdB2sdr4iwhNY8TSt8SeWucPdIzebN2z4hSnvo5FB
-         dJt/PEIriVoq5XsJSc9Yah+M3MfBmlXSqhjxhi8jKcdNmtyY+jQJSW/l5/qd3626Skbx
-         TgzQ==
+        d=linexp-org.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=ApxyJvlL0EgkjxePD3esAQ9IvkzW++CVryyDi4r5gNo=;
+        b=u1HFa30/fbBfE+mAjYagGBgfQZOxFF7IENiaciWG598YpacjTl+75LhCk79SBm4Wd+
+         WxaxWLtiMtBEt613YKfb3iHmw73uoCwhg63oEvKGsqWjRithrpycloxfDi1yKeR8+DhN
+         grE6jF3SuURgK1Evk1BQHgXEXaiX0+62TjRr+uv+b+fnQFc8BcCTJFxXCDsquSrMyApt
+         igEku0BU8KzinHobqhI34HOEB4Vgke468zxdIkeYe4CP6oBADrt3njtk4mgR1S0p+PxO
+         99pIwvNV9ojYy/gPcPKoKZu9fbgK7OcHFaLHzX5Ys7t7jJ+QjyyqlZNzhlkVkg/Jh5wZ
+         JKjA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=02o7NHW7mE5ebu0126PDF2CYbdsizz2BnBbhL8NdEqg=;
-        b=yZe9gPHXjQ/RNh0qOQTI20OgQciQdQzxfWkknVBVqQqda22JNs6+T/Zcte8odpctCO
-         fkVBwczH/WCco7I4c6GHLw1QH8zzKnKOU2p8whksN3XJLI4ZkmYG4N5qWV0eU/rx8+MG
-         w5DyX+Zn79vcs/7DmRFnAzFxeKIun3HOVewa+7TJFYT8F1JV8DM0oCFUpYwgt+lTUv4i
-         CtVw/kPwxIZo7QXztkWDjFT1FOlc5+vK4feLdWuBvVXpsyeS6FO+xY+FPScwC8YdgtpJ
-         rXJzZVWeEoGkusLscCgLDsBg4HBrP/yZnuJRV3yN31SyiIf4dZWDUAUWI0vgaeBHvADP
-         JvVw==
-X-Gm-Message-State: AJIora+2slAJvUFLRCkpKvSNpf2TxcYXhugGT/mCvBipoDFLpiQeuSwW
-        rVakNe1GEklNlEMzohYebb8zNQEqPkfz0mUuH8spqA==
-X-Google-Smtp-Source: AGRyM1toxKRjD6CwT+S5sm6k8X5Fs43XibMUl+5urClP3yJx9YQkvHqRjaGN40aHuz4UkCE3yXHhVDj1TrSr/t66jZU=
-X-Received: by 2002:a05:622a:178a:b0:31e:f9ff:c685 with SMTP id
- s10-20020a05622a178a00b0031ef9ffc685mr20800708qtk.62.1658955813662; Wed, 27
- Jul 2022 14:03:33 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=ApxyJvlL0EgkjxePD3esAQ9IvkzW++CVryyDi4r5gNo=;
+        b=NU7r8OTe5qnYxxWx1sW5LOfGD+MD0XipuvwxWxC0UKetUyYWkqqHO7D7LhqCJmq//8
+         mPT2jr2ZtojWd3H7NwywvXifFI5yB2hOCT7nMcxAc0gDsM5csPgaOuAN1bS+VkH31/yQ
+         m16hHaqXWc7XfKelxe4HmfzW/VdjtSOvNB5cJM7Br2tEYeJG1M1TkHHgldI5DOwSgXZB
+         bVAoENsH1c7ComlfKV3KHzUseYHl/ZgDQ3RILZfKUwJVWmkZKnCChBPFW83nIzgd4ix/
+         +Tx9HWsx8119B9oBvF7ZZz635DjFiH4X+OU194Gotgpb5rnTuJSsPGBWuVrtTJbvX2io
+         yuKQ==
+X-Gm-Message-State: AJIora/5lDFBP184Rt4S1xUinPzamvyLbwnlH2pEbX411as4zgqnVp1z
+        xk+B022RNXAEh61yIYTbQajdCg==
+X-Google-Smtp-Source: AGRyM1sWedvKI2wWhcRQqNObS6XJ5bAFyqaYvURp+M84RZQN5nUiM3KnantzHUwlQN3ctxdhrU6cYQ==
+X-Received: by 2002:a05:600c:3ba3:b0:3a3:227b:f754 with SMTP id n35-20020a05600c3ba300b003a3227bf754mr4233209wms.64.1658955815297;
+        Wed, 27 Jul 2022 14:03:35 -0700 (PDT)
+Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:65a8:ebd8:4098:d9d0])
+        by smtp.gmail.com with ESMTPSA id h6-20020a05600c350600b003a38606385esm37908wmq.3.2022.07.27.14.03.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 27 Jul 2022 14:03:34 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linexp.org>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org
+Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, khilman@baylibre.com,
+        abailon@baylibre.com, lukasz.luba@arm.com, broonie@kernel.org,
+        damien.lemoal@opensource.wdc.com, heiko@sntech.de,
+        hayashi.kunihiko@socionext.com, mhiramat@kernel.org,
+        talel@amazon.com, thierry.reding@gmail.com, digetx@gmail.com,
+        jonathanh@nvidia.com, anarsoul@gmail.com, tiny.windzz@gmail.com,
+        baolin.wang7@gmail.com, f.fainelli@gmail.com,
+        bjorn.andersson@linaro.org, mcoquelin.stm32@gmail.com,
+        glaroque@baylibre.com, miquel.raynal@bootlin.com,
+        shawnguo@kernel.org, niklas.soderlund@ragnatech.se,
+        matthias.bgg@gmail.com, j-keerthy@ti.com,
+        Amit Kucheria <amitk@kernel.org>,
+        Nicolas Saenz Julienne <nsaenz@kernel.org>,
+        Broadcom internal kernel review list 
+        <bcm-kernel-feedback-list@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Markus Mayer <mmayer@broadcom.com>,
+        Stefan Wahren <stefan.wahren@i2se.com>,
+        Zheng Yongjun <zhengyongjun3@huawei.com>,
+        linux-rpi-kernel@lists.infradead.org (moderated list:BROADCOM
+        BCM2711/BCM2835 ARM ARCHITECTURE),
+        linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM
+        BCM2711/BCM2835 ARM ARCHITECTURE)
+Subject: [PATCH v3 10/32] thermal/drivers/broadcom: Switch to new of API
+Date:   Wed, 27 Jul 2022 23:02:31 +0200
+Message-Id: <20220727210253.3794069-11-daniel.lezcano@linexp.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220727210253.3794069-1-daniel.lezcano@linexp.org>
+References: <20220727210253.3794069-1-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
-References: <20220727200901.1142557-1-dmitry.baryshkov@linaro.org>
- <bec61bd7-f547-5254-50a5-6f16c221051e@linaro.org> <CAA8EJpoa-E1=t1JAWNPzueY95Y_DEsJZqzW3PajcjSrNDVoAVg@mail.gmail.com>
- <efdaa411-8f3b-6a1b-643a-7ed1597c661c@linaro.org> <CAA8EJpof10zsFmgqXZK7QVjTS-J7hGDdZGjBaegpo6eQp_0TPw@mail.gmail.com>
- <ce2a90f9-0ba8-3152-5f85-679d1ebd16b5@linaro.org>
-In-Reply-To: <ce2a90f9-0ba8-3152-5f85-679d1ebd16b5@linaro.org>
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date:   Thu, 28 Jul 2022 00:03:22 +0300
-Message-ID: <CAA8EJprC9Oq8Os97mtjB5x4USsVe02O2P_d5WvsR0JY5jECrMA@mail.gmail.com>
-Subject: Re: [PATCH] firmware/psci: Add debugfs support to ease debugging
-To:     Bhupesh Sharma <bhupesh.sharma@linaro.org>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 27 Jul 2022 at 23:59, Bhupesh Sharma <bhupesh.sharma@linaro.org> wrote:
->
->
->
-> On 7/28/22 2:26 AM, Dmitry Baryshkov wrote:
-> > On Wed, 27 Jul 2022 at 23:55, Bhupesh Sharma <bhupesh.sharma@linaro.org> wrote:
-> >>
-> >>
-> >>
-> >> On 7/28/22 2:23 AM, Dmitry Baryshkov wrote:
-> >>> On Wed, 27 Jul 2022 at 23:15, Bhupesh Sharma <bhupesh.sharma@linaro.org> wrote:
-> >>>>
-> >>>> Hi Dmitry,
-> >>>>
-> >>>> On 7/28/22 1:39 AM, Dmitry Baryshkov wrote:
-> >>>>> To ease debugging of PSCI supported features, add debugfs file called
-> >>>>> 'psci' describing PSCI and SMC CC versions, enabled features and
-> >>>>> options.
-> >>>>>
-> >>>>> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-> >>>>> ---
-> >>>>>     drivers/firmware/psci/psci.c | 112 ++++++++++++++++++++++++++++++++++-
-> >>>>>     include/uapi/linux/psci.h    |   9 +++
-> >>>>>     2 files changed, 120 insertions(+), 1 deletion(-)
-> >>>>>
-> >>>>> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> >>>>> index b907768eea01..6595cc964635 100644
-> >>>>> --- a/drivers/firmware/psci/psci.c
-> >>>>> +++ b/drivers/firmware/psci/psci.c
-> >>>>> @@ -9,6 +9,7 @@
-> >>>>>     #include <linux/acpi.h>
-> >>>>>     #include <linux/arm-smccc.h>
-> >>>>>     #include <linux/cpuidle.h>
-> >>>>> +#include <linux/debugfs.h>
-> >>>>>     #include <linux/errno.h>
-> >>>>>     #include <linux/linkage.h>
-> >>>>>     #include <linux/of.h>
-> >>>>> @@ -324,12 +325,121 @@ static void psci_sys_poweroff(void)
-> >>>>>         invoke_psci_fn(PSCI_0_2_FN_SYSTEM_OFF, 0, 0, 0);
-> >>>>>     }
-> >>>>>
-> >>>>> -static int __init psci_features(u32 psci_func_id)
-> >>>>> +static int psci_features(u32 psci_func_id)
-> >>>>
-> >>>> This change doesn't seem related to the patch $SUBJECT.
-> >>>> Also is it really needed? If yes, probably this should be a separate patch.
-> >>>
-> >>> It is related and I don't think it should be moved to a separate
-> >>> patch. Removing the __init annotation from psci_features() is
-> >>> necessary to allow using psci_features() from psci_debufs_read(),
-> >>> which is definitely not an __init code. Otherwise reading from
-> >>> debugfs/psci would cause null pointer exceptions.
-> >>
-> >> Ok, and what is the behavior with CONFIG_DEBUG_FS = n?
-> >> Does your patch work well in that case?
-> >
-> > Yes. Any particular reasons for the question?
->
-> Your debugfs changes in this patch are protected with CONFIG_DEBUG_FS,
-> while the  __init code change is not.
+The thermal OF code has a new API allowing to migrate the OF
+initialization to a simpler approach. The ops are no longer device
+tree specific and are the generic ones provided by the core code.
 
-Yes. I'm _removing_ the __init. Making the function available after
-kernel frees the __init memory. I'd have understood your questions if
-I were making an opposite change, marking the function with __init.
-But in this case I doubt it makes any difference.
+Convert the ops to the thermal_zone_device_ops format and use the new
+API to register the thermal zone with these generic ops.
 
-> So, IMO its not really needed if CONFIG_DEBUG_FS is set to =n (hence
-> probably needs to be a separate patch).
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
+Tested-by: Florian Fainelli <f.fainelli@gmail.com>
+Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
+---
+ drivers/thermal/broadcom/bcm2711_thermal.c | 14 +++---
+ drivers/thermal/broadcom/bcm2835_thermal.c | 14 +++---
+ drivers/thermal/broadcom/brcmstb_thermal.c | 20 ++++-----
+ drivers/thermal/broadcom/ns-thermal.c      | 50 +++++++++-------------
+ drivers/thermal/broadcom/sr-thermal.c      | 16 +++----
+ 5 files changed, 53 insertions(+), 61 deletions(-)
 
-An overhead is pretty minimal. And all the troubles to make __init
-annotation depend on CONFIG_DEBUG_FS overweight this overhead.
-
->
-> Thanks.
->
-> >>>>>     {
-> >>>>>         return invoke_psci_fn(PSCI_1_0_FN_PSCI_FEATURES,
-> >>>>>                               psci_func_id, 0, 0);
-> >>>>>     }
-> >>>>>
-> >>>>> +#ifdef CONFIG_DEBUG_FS
-> >>>>> +
-> >>>>> +#define PSCI_ID(ver, _name) \
-> >>>>> +     { .fn = PSCI_##ver##_FN_##_name, .name = #_name, }
-> >>>>> +#define PSCI_ID_NATIVE(ver, _name) \
-> >>>>> +     { .fn = PSCI_FN_NATIVE(ver, _name), .name = #_name, }
-> >>>>> +
-> >>>>> +/* A table of all optional functions */
-> >>>>> +static const struct {
-> >>>>> +     u32 fn;
-> >>>>> +     const char *name;
-> >>>>> +} psci_fn_ids[] = {
-> >>>>> +     PSCI_ID_NATIVE(0_2, MIGRATE),
-> >>>>> +     PSCI_ID(0_2, MIGRATE_INFO_TYPE),
-> >>>>> +     PSCI_ID_NATIVE(0_2, MIGRATE_INFO_UP_CPU),
-> >>>>> +     PSCI_ID(1_0, CPU_FREEZE),
-> >>>>> +     PSCI_ID_NATIVE(1_0, CPU_DEFAULT_SUSPEND),
-> >>>>> +     PSCI_ID_NATIVE(1_0, NODE_HW_STATE),
-> >>>>> +     PSCI_ID_NATIVE(1_0, SYSTEM_SUSPEND),
-> >>>>> +     PSCI_ID(1_0, SET_SUSPEND_MODE),
-> >>>>> +     PSCI_ID_NATIVE(1_0, STAT_RESIDENCY),
-> >>>>> +     PSCI_ID_NATIVE(1_0, STAT_COUNT),
-> >>>>> +     PSCI_ID_NATIVE(1_1, SYSTEM_RESET2),
-> >>>>> +};
-> >>>>> +
-> >>>>> +static int psci_debugfs_read(struct seq_file *s, void *data)
-> >>>>> +{
-> >>>>> +     int feature, type, i;
-> >>>>> +     u32 ver;
-> >>>>> +
-> >>>>> +     ver = psci_ops.get_version();
-> >>>>> +     seq_printf(s, "PSCIv%d.%d\n",
-> >>>>> +                PSCI_VERSION_MAJOR(ver),
-> >>>>> +                PSCI_VERSION_MINOR(ver));
-> >>>>> +
-> >>>>> +     /* PSCI_FEATURES is available only starting from 1.0 */
-> >>>>> +     if (PSCI_VERSION_MAJOR(ver) < 1)
-> >>>>> +             return 0;
-> >>>>> +
-> >>>>> +     feature = psci_features(ARM_SMCCC_VERSION_FUNC_ID);
-> >>>>> +     if (feature != PSCI_RET_NOT_SUPPORTED) {
-> >>>>> +             ver = invoke_psci_fn(ARM_SMCCC_VERSION_FUNC_ID, 0, 0, 0);
-> >>>>> +             seq_printf(s, "SMC Calling Convention v%d.%d\n",
-> >>>>> +                        PSCI_VERSION_MAJOR(ver),
-> >>>>> +                        PSCI_VERSION_MINOR(ver));
-> >>>>> +     } else {
-> >>>>> +             seq_printf(s, "SMC Calling Convention v1.0 is assumed\n");
-> >>>>> +     }
-> >>>>> +
-> >>>>> +     feature = psci_features(PSCI_FN_NATIVE(0_2, CPU_SUSPEND));
-> >>>>> +     if (feature < 0) {
-> >>>>> +             seq_printf(s, "PSCI_FEATURES(CPU_SUSPEND) error (%d)\n", feature);
-> >>>>> +     } else {
-> >>>>> +             seq_printf(s, "OSI is %ssupported\n",
-> >>>>> +                        (feature & BIT(0)) ? "" : "not ");
-> >>>>> +             seq_printf(s, "%s StateID format is used\n",
-> >>>>> +                        (feature & BIT(1)) ? "Extended" : "Original");
-> >>>>> +     }
-> >>>>> +
-> >>>>> +     type = psci_ops.migrate_info_type();
-> >>>>> +     if (type == PSCI_0_2_TOS_UP_MIGRATE ||
-> >>>>> +         type == PSCI_0_2_TOS_UP_NO_MIGRATE) {
-> >>>>> +             unsigned long cpuid;
-> >>>>> +
-> >>>>> +             seq_printf(s, "Trusted OS %smigrate capable\n",
-> >>>>> +                        type == PSCI_0_2_TOS_UP_NO_MIGRATE ? "not " : "");
-> >>>>> +             cpuid = psci_migrate_info_up_cpu();
-> >>>>> +             seq_printf(s, "Trusted OS resident on physical CPU 0x%lx (#%d)\n", cpuid, resident_cpu);
-> >>>>> +     } else if (type == PSCI_0_2_TOS_MP) {
-> >>>>> +             seq_printf(s, "Trusted OS migration not required\n");
-> >>>>> +     } else {
-> >>>>> +             if (type != PSCI_RET_NOT_SUPPORTED)
-> >>>>> +                     seq_printf(s, "MIGRATE_INFO_TYPE returned unknown type (%d)\n", type);
-> >>>>> +     }
-> >>>>> +
-> >>>>> +     for (i = 0; i < ARRAY_SIZE(psci_fn_ids); i++) {
-> >>>>> +             feature = psci_features(psci_fn_ids[i].fn);
-> >>>>> +             if (feature == PSCI_RET_NOT_SUPPORTED)
-> >>>>> +                     continue;
-> >>>>> +             if (feature < 0)
-> >>>>> +                     seq_printf(s, "PSCI_FEATURES(%s) error (%d)\n", psci_fn_ids[i].name, feature);
-> >>>>> +             else
-> >>>>> +                     seq_printf(s, "%s is supported\n", psci_fn_ids[i].name);
-> >>>>> +     }
-> >>>>> +
-> >>>>> +     return 0;
-> >>>>> +}
-> >>>>> +
-> >>>>> +static int psci_debugfs_open(struct inode *inode, struct file *f)
-> >>>>> +{
-> >>>>> +     return single_open(f, psci_debugfs_read, NULL);
-> >>>>> +}
-> >>>>> +
-> >>>>> +static const struct file_operations psci_debugfs_ops = {
-> >>>>> +     .owner = THIS_MODULE,
-> >>>>> +     .open = psci_debugfs_open,
-> >>>>> +     .release = single_release,
-> >>>>> +     .read = seq_read,
-> >>>>> +     .llseek = seq_lseek
-> >>>>> +};
-> >>>>> +
-> >>>>> +static int __init psci_debugfs_init(void)
-> >>>>> +{
-> >>>>> +     return PTR_ERR_OR_ZERO(debugfs_create_file("psci", S_IRUGO, NULL, NULL,
-> >>>>> +                                                &psci_debugfs_ops));
-> >>>>> +}
-> >>>>> +late_initcall(psci_debugfs_init)
-> >>>>> +#endif
-> >>>>> +
-> >>>>>     #ifdef CONFIG_CPU_IDLE
-> >>>>>     static int psci_suspend_finisher(unsigned long state)
-> >>>>>     {
-> >>>>> diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-> >>>>> index 2bf93c0d6354..f6f0bad5858b 100644
-> >>>>> --- a/include/uapi/linux/psci.h
-> >>>>> +++ b/include/uapi/linux/psci.h
-> >>>>> @@ -48,11 +48,20 @@
-> >>>>>     #define PSCI_0_2_FN64_MIGRATE_INFO_UP_CPU   PSCI_0_2_FN64(7)
-> >>>>>
-> >>>>>     #define PSCI_1_0_FN_PSCI_FEATURES           PSCI_0_2_FN(10)
-> >>>>> +#define PSCI_1_0_FN_CPU_FREEZE                       PSCI_0_2_FN(11)
-> >>>>> +#define PSCI_1_0_FN_CPU_DEFAULT_SUSPEND              PSCI_0_2_FN(12)
-> >>>>> +#define PSCI_1_0_FN_NODE_HW_STATE            PSCI_0_2_FN(13)
-> >>>>>     #define PSCI_1_0_FN_SYSTEM_SUSPEND          PSCI_0_2_FN(14)
-> >>>>>     #define PSCI_1_0_FN_SET_SUSPEND_MODE                PSCI_0_2_FN(15)
-> >>>>> +#define PSCI_1_0_FN_STAT_RESIDENCY           PSCI_0_2_FN(16)
-> >>>>> +#define PSCI_1_0_FN_STAT_COUNT                       PSCI_0_2_FN(17)
-> >>>>>     #define PSCI_1_1_FN_SYSTEM_RESET2           PSCI_0_2_FN(18)
-> >>>>>
-> >>>>> +#define PSCI_1_0_FN64_CPU_DEFAULT_SUSPEND    PSCI_0_2_FN64(12)
-> >>>>> +#define PSCI_1_0_FN64_NODE_HW_STATE          PSCI_0_2_FN64(13)
-> >>>>>     #define PSCI_1_0_FN64_SYSTEM_SUSPEND                PSCI_0_2_FN64(14)
-> >>>>> +#define PSCI_1_0_FN64_STAT_RESIDENCY         PSCI_0_2_FN64(16)
-> >>>>> +#define PSCI_1_0_FN64_STAT_COUNT             PSCI_0_2_FN64(17)
-> >>>>>     #define PSCI_1_1_FN64_SYSTEM_RESET2         PSCI_0_2_FN64(18)
-> >>>>>
-> >>>>>     /* PSCI v0.2 power state encoding for CPU_SUSPEND function */
-> >>>
-> >>>
-> >>>
-> >
-> >
-> >
-
-
-
+diff --git a/drivers/thermal/broadcom/bcm2711_thermal.c b/drivers/thermal/broadcom/bcm2711_thermal.c
+index e9bef5c3414b..1f8651d15160 100644
+--- a/drivers/thermal/broadcom/bcm2711_thermal.c
++++ b/drivers/thermal/broadcom/bcm2711_thermal.c
+@@ -31,11 +31,11 @@ struct bcm2711_thermal_priv {
+ 	struct thermal_zone_device *thermal;
+ };
+ 
+-static int bcm2711_get_temp(void *data, int *temp)
++static int bcm2711_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+-	struct bcm2711_thermal_priv *priv = data;
+-	int slope = thermal_zone_get_slope(priv->thermal);
+-	int offset = thermal_zone_get_offset(priv->thermal);
++	struct bcm2711_thermal_priv *priv = tz->devdata;
++	int slope = thermal_zone_get_slope(tz);
++	int offset = thermal_zone_get_offset(tz);
+ 	u32 val;
+ 	int ret;
+ 
+@@ -54,7 +54,7 @@ static int bcm2711_get_temp(void *data, int *temp)
+ 	return 0;
+ }
+ 
+-static const struct thermal_zone_of_device_ops bcm2711_thermal_of_ops = {
++static const struct thermal_zone_device_ops bcm2711_thermal_of_ops = {
+ 	.get_temp	= bcm2711_get_temp,
+ };
+ 
+@@ -88,8 +88,8 @@ static int bcm2711_thermal_probe(struct platform_device *pdev)
+ 	}
+ 	priv->regmap = regmap;
+ 
+-	thermal = devm_thermal_zone_of_sensor_register(dev, 0, priv,
+-						       &bcm2711_thermal_of_ops);
++	thermal = devm_thermal_of_zone_register(dev, 0, priv,
++						&bcm2711_thermal_of_ops);
+ 	if (IS_ERR(thermal)) {
+ 		ret = PTR_ERR(thermal);
+ 		dev_err(dev, "could not register sensor: %d\n", ret);
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index c8e4344d5a3d..2c67841a1115 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -88,9 +88,9 @@ static int bcm2835_thermal_temp2adc(int temp, int offset, int slope)
+ 	return temp;
+ }
+ 
+-static int bcm2835_thermal_get_temp(void *d, int *temp)
++static int bcm2835_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+-	struct bcm2835_thermal_data *data = d;
++	struct bcm2835_thermal_data *data = tz->devdata;
+ 	u32 val = readl(data->regs + BCM2835_TS_TSENSSTAT);
+ 
+ 	if (!(val & BCM2835_TS_TSENSSTAT_VALID))
+@@ -135,7 +135,7 @@ static void bcm2835_thermal_debugfs(struct platform_device *pdev)
+ 	debugfs_create_regset32("regset", 0444, data->debugfsdir, regset);
+ }
+ 
+-static const struct thermal_zone_of_device_ops bcm2835_thermal_ops = {
++static const struct thermal_zone_device_ops bcm2835_thermal_ops = {
+ 	.get_temp = bcm2835_thermal_get_temp,
+ };
+ 
+@@ -206,8 +206,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 			 data->clk, rate);
+ 
+ 	/* register of thermal sensor and get info from DT */
+-	tz = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+-					     &bcm2835_thermal_ops);
++	tz = devm_thermal_of_zone_register(&pdev->dev, 0, data,
++					   &bcm2835_thermal_ops);
+ 	if (IS_ERR(tz)) {
+ 		err = PTR_ERR(tz);
+ 		dev_err(&pdev->dev,
+@@ -277,7 +277,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ err_tz:
+-	thermal_zone_of_sensor_unregister(&pdev->dev, tz);
++	thermal_of_zone_unregister(tz);
+ err_clk:
+ 	clk_disable_unprepare(data->clk);
+ 
+@@ -290,7 +290,7 @@ static int bcm2835_thermal_remove(struct platform_device *pdev)
+ 	struct thermal_zone_device *tz = data->tz;
+ 
+ 	debugfs_remove_recursive(data->debugfsdir);
+-	thermal_zone_of_sensor_unregister(&pdev->dev, tz);
++	thermal_of_zone_unregister(tz);
+ 	clk_disable_unprepare(data->clk);
+ 
+ 	return 0;
+diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
+index 0cedb8b4f00a..c79c6cfdd74d 100644
+--- a/drivers/thermal/broadcom/brcmstb_thermal.c
++++ b/drivers/thermal/broadcom/brcmstb_thermal.c
+@@ -105,7 +105,7 @@ static struct avs_tmon_trip avs_tmon_trips[] = {
+ struct brcmstb_thermal_params {
+ 	unsigned int offset;
+ 	unsigned int mult;
+-	const struct thermal_zone_of_device_ops *of_ops;
++	const struct thermal_zone_device_ops *of_ops;
+ };
+ 
+ struct brcmstb_thermal_priv {
+@@ -150,9 +150,9 @@ static inline u32 avs_tmon_temp_to_code(struct brcmstb_thermal_priv *priv,
+ 		return (u32)((offset - temp) / mult);
+ }
+ 
+-static int brcmstb_get_temp(void *data, int *temp)
++static int brcmstb_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+-	struct brcmstb_thermal_priv *priv = data;
++	struct brcmstb_thermal_priv *priv = tz->devdata;
+ 	u32 val;
+ 	long t;
+ 
+@@ -260,9 +260,9 @@ static irqreturn_t brcmstb_tmon_irq_thread(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static int brcmstb_set_trips(void *data, int low, int high)
++static int brcmstb_set_trips(struct thermal_zone_device *tz, int low, int high)
+ {
+-	struct brcmstb_thermal_priv *priv = data;
++	struct brcmstb_thermal_priv *priv = tz->devdata;
+ 
+ 	dev_dbg(priv->dev, "set trips %d <--> %d\n", low, high);
+ 
+@@ -288,7 +288,7 @@ static int brcmstb_set_trips(void *data, int low, int high)
+ 	return 0;
+ }
+ 
+-static const struct thermal_zone_of_device_ops brcmstb_16nm_of_ops = {
++static const struct thermal_zone_device_ops brcmstb_16nm_of_ops = {
+ 	.get_temp	= brcmstb_get_temp,
+ };
+ 
+@@ -298,7 +298,7 @@ static const struct brcmstb_thermal_params brcmstb_16nm_params = {
+ 	.of_ops	= &brcmstb_16nm_of_ops,
+ };
+ 
+-static const struct thermal_zone_of_device_ops brcmstb_28nm_of_ops = {
++static const struct thermal_zone_device_ops brcmstb_28nm_of_ops = {
+ 	.get_temp	= brcmstb_get_temp,
+ 	.set_trips	= brcmstb_set_trips,
+ };
+@@ -318,7 +318,7 @@ MODULE_DEVICE_TABLE(of, brcmstb_thermal_id_table);
+ 
+ static int brcmstb_thermal_probe(struct platform_device *pdev)
+ {
+-	const struct thermal_zone_of_device_ops *of_ops;
++	const struct thermal_zone_device_ops *of_ops;
+ 	struct thermal_zone_device *thermal;
+ 	struct brcmstb_thermal_priv *priv;
+ 	struct resource *res;
+@@ -341,8 +341,8 @@ static int brcmstb_thermal_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, priv);
+ 	of_ops = priv->temp_params->of_ops;
+ 
+-	thermal = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv,
+-						       of_ops);
++	thermal = devm_thermal_of_zone_register(&pdev->dev, 0, priv,
++						of_ops);
+ 	if (IS_ERR(thermal)) {
+ 		ret = PTR_ERR(thermal);
+ 		dev_err(&pdev->dev, "could not register sensor: %d\n", ret);
+diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
+index c9468ba9d449..07a8a3f49bd0 100644
+--- a/drivers/thermal/broadcom/ns-thermal.c
++++ b/drivers/thermal/broadcom/ns-thermal.c
+@@ -14,19 +14,14 @@
+ #define PVTMON_CONTROL0_SEL_TEST_MODE			0x0000000e
+ #define PVTMON_STATUS					0x08
+ 
+-struct ns_thermal {
+-	struct thermal_zone_device *tz;
+-	void __iomem *pvtmon;
+-};
+-
+-static int ns_thermal_get_temp(void *data, int *temp)
++static int ns_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+-	struct ns_thermal *ns_thermal = data;
+-	int offset = thermal_zone_get_offset(ns_thermal->tz);
+-	int slope = thermal_zone_get_slope(ns_thermal->tz);
++	void __iomem *pvtmon = tz->devdata;
++	int offset = thermal_zone_get_offset(tz);
++	int slope = thermal_zone_get_slope(tz);
+ 	u32 val;
+ 
+-	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
++	val = readl(pvtmon + PVTMON_CONTROL0);
+ 	if ((val & PVTMON_CONTROL0_SEL_MASK) != PVTMON_CONTROL0_SEL_TEMP_MONITOR) {
+ 		/* Clear current mode selection */
+ 		val &= ~PVTMON_CONTROL0_SEL_MASK;
+@@ -34,50 +29,47 @@ static int ns_thermal_get_temp(void *data, int *temp)
+ 		/* Set temp monitor mode (it's the default actually) */
+ 		val |= PVTMON_CONTROL0_SEL_TEMP_MONITOR;
+ 
+-		writel(val, ns_thermal->pvtmon + PVTMON_CONTROL0);
++		writel(val, pvtmon + PVTMON_CONTROL0);
+ 	}
+ 
+-	val = readl(ns_thermal->pvtmon + PVTMON_STATUS);
++	val = readl(pvtmon + PVTMON_STATUS);
+ 	*temp = slope * val + offset;
+ 
+ 	return 0;
+ }
+ 
+-static const struct thermal_zone_of_device_ops ns_thermal_ops = {
++static const struct thermal_zone_device_ops ns_thermal_ops = {
+ 	.get_temp = ns_thermal_get_temp,
+ };
+ 
+ static int ns_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct ns_thermal *ns_thermal;
+-
+-	ns_thermal = devm_kzalloc(dev, sizeof(*ns_thermal), GFP_KERNEL);
+-	if (!ns_thermal)
+-		return -ENOMEM;
++	struct thermal_zone_device *tz;
++	void __iomem *pvtmon;
+ 
+-	ns_thermal->pvtmon = of_iomap(dev_of_node(dev), 0);
+-	if (WARN_ON(!ns_thermal->pvtmon))
++	pvtmon = of_iomap(dev_of_node(dev), 0);
++	if (WARN_ON(!pvtmon))
+ 		return -ENOENT;
+ 
+-	ns_thermal->tz = devm_thermal_zone_of_sensor_register(dev, 0,
+-							      ns_thermal,
+-							      &ns_thermal_ops);
+-	if (IS_ERR(ns_thermal->tz)) {
+-		iounmap(ns_thermal->pvtmon);
+-		return PTR_ERR(ns_thermal->tz);
++	tz = devm_thermal_of_zone_register(dev, 0,
++					   pvtmon,
++					   &ns_thermal_ops);
++	if (IS_ERR(tz)) {
++		iounmap(pvtmon);
++		return PTR_ERR(tz);
+ 	}
+ 
+-	platform_set_drvdata(pdev, ns_thermal);
++	platform_set_drvdata(pdev, pvtmon);
+ 
+ 	return 0;
+ }
+ 
+ static int ns_thermal_remove(struct platform_device *pdev)
+ {
+-	struct ns_thermal *ns_thermal = platform_get_drvdata(pdev);
++	void __iomem *pvtmon = platform_get_drvdata(pdev);
+ 
+-	iounmap(ns_thermal->pvtmon);
++	iounmap(pvtmon);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/thermal/broadcom/sr-thermal.c b/drivers/thermal/broadcom/sr-thermal.c
+index 85ab9edd580c..2b93502543ff 100644
+--- a/drivers/thermal/broadcom/sr-thermal.c
++++ b/drivers/thermal/broadcom/sr-thermal.c
+@@ -19,7 +19,6 @@
+ #define SR_TMON_MAX_LIST        6
+ 
+ struct sr_tmon {
+-	struct thermal_zone_device *tz;
+ 	unsigned int crit_temp;
+ 	unsigned int tmon_id;
+ 	struct sr_thermal *priv;
+@@ -31,9 +30,9 @@ struct sr_thermal {
+ 	struct sr_tmon tmon[SR_TMON_MAX_LIST];
+ };
+ 
+-static int sr_get_temp(void *data, int *temp)
++static int sr_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+-	struct sr_tmon *tmon = data;
++	struct sr_tmon *tmon = tz->devdata;
+ 	struct sr_thermal *sr_thermal = tmon->priv;
+ 
+ 	*temp = readl(sr_thermal->regs + SR_TMON_TEMP_BASE(tmon->tmon_id));
+@@ -41,13 +40,14 @@ static int sr_get_temp(void *data, int *temp)
+ 	return 0;
+ }
+ 
+-static const struct thermal_zone_of_device_ops sr_tz_ops = {
++static const struct thermal_zone_device_ops sr_tz_ops = {
+ 	.get_temp = sr_get_temp,
+ };
+ 
+ static int sr_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
++	struct thermal_zone_device *tz;
+ 	struct sr_thermal *sr_thermal;
+ 	struct sr_tmon *tmon;
+ 	struct resource *res;
+@@ -84,10 +84,10 @@ static int sr_thermal_probe(struct platform_device *pdev)
+ 		writel(0, sr_thermal->regs + SR_TMON_TEMP_BASE(i));
+ 		tmon->tmon_id = i;
+ 		tmon->priv = sr_thermal;
+-		tmon->tz = devm_thermal_zone_of_sensor_register(dev, i, tmon,
+-								&sr_tz_ops);
+-		if (IS_ERR(tmon->tz))
+-			return PTR_ERR(tmon->tz);
++		tz = devm_thermal_of_zone_register(dev, i, tmon,
++						   &sr_tz_ops);
++		if (IS_ERR(tz))
++			return PTR_ERR(tz);
+ 
+ 		dev_dbg(dev, "thermal sensor %d registered\n", i);
+ 	}
 -- 
-With best wishes
-Dmitry
+2.25.1
+
