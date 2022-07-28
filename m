@@ -2,56 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0324C19F2C
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 15:42:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37389C19F2B
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 15:42:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232060AbiG1PmH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Jul 2022 11:42:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54800 "EHLO
+        id S232099AbiG1PmI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Jul 2022 11:42:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54812 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231965AbiG1PmG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 11:42:06 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC97D69F26
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 08:42:04 -0700 (PDT)
-Date:   Thu, 28 Jul 2022 15:42:02 -0000
+        with ESMTP id S229949AbiG1PmH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 11:42:07 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F916675B7
+        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 08:42:06 -0700 (PDT)
+Date:   Thu, 28 Jul 2022 15:42:03 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1659022923;
+        s=2020; t=1659022925;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=iPrsEICSuUSQ1FqJcfxN2BtxSd2U4YCPEleD51MuSA4=;
-        b=V2uE/W9V1O96vGOQi3JhpFYwmpdCTEYSEtzqSWFGeWuKVzs9qkNecMbmYxjWuKM0dNtXUL
-        HuTeUBGzWJVi8GLXkgJaQbzBY8sYbUSTKylrkjpIkw8MPZGIi1pW8Arbb90cET1cidJjnX
-        jsV//Mgm0tWe5N5UnS+OlEQFSGIMSpUV04XevzJPXyFsafTabjOD23wU3s/mcSojCPEbEI
-        eLSqidbDCzi5bxJu0ASJP0BNlOlHBCMajuzhXboAaB6fNAXPNytCJq2tkJMAQGTw6W91Ee
-        pk8wL1OPGs0L2vyUGVdP/tUeoET+aWQBi9/mZHfZqyenweHD0wc+iNr4HsX/Ow==
+        bh=Xks27Dnp58BMs2V8Nyxlu0vIIWDNUlTkVog3vDhZhBU=;
+        b=mY4Wh17pt1Y3pe/KWGtKz6m64LdCcnkJRDJQnU18Eg05uBjaXHwLjmp3rjlxhIR9FtkfQl
+        xyHBuT6i9/uL+20yPdvw037mEDjBUPrDJSraF0J0YtThFMU0wrvycFfWkV2JZxmDUn9bTh
+        weX/5Q+mWeZgsg7CoUugx85nwKu2GR9zuFYMr1RpkEh8cBKV8CsNYCKJg9k8LeY/rjEK7S
+        /UHCKHlxP+PgRsR1ilZMQz/DL83tMn9uXRhwMyLM28gC7Tbu3kAYFGWHBwiChhVeYJ34MX
+        VdbuN9OLfK1Dhcgn1YEwv5NhJFaNuiO174XxLgaThS4m/E8ug2GLv2pvbGd6+g==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1659022923;
+        s=2020e; t=1659022925;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=iPrsEICSuUSQ1FqJcfxN2BtxSd2U4YCPEleD51MuSA4=;
-        b=JeX0iWkTfws1RCINgMHAr2gII6ouHUxRdca2hrH5V6Ng/k7nDQzywNXN3w6owDub+JP2kg
-        RXHGzXQhdC1+5IBA==
+        bh=Xks27Dnp58BMs2V8Nyxlu0vIIWDNUlTkVog3vDhZhBU=;
+        b=IxogYHEnsXIHuu4UJzy5/ZSH7x2FZuTQ7usAYr/8i6NrVhyTektWyo9ptWD7FAHMaCjSJJ
+        LTsUAnVz0yF6/4Cg==
 From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] drivers/thermal/cpufreq_cooling: Update
- outdated comments
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] drivers/thermal/cpufreq_cooling: Use private
+ callback ops for each cooling device
+Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220613124327.30766-4-lukasz.luba@arm.com>
-References: <20220613124327.30766-4-lukasz.luba@arm.com>
+In-Reply-To: <20220613124327.30766-2-lukasz.luba@arm.com>
+References: <20220613124327.30766-2-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Message-ID: <165902292216.15455.11562519755936909394.tip-bot2@tip-bot2>
+Message-ID: <165902292398.15455.9515377508059027850.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -62,138 +62,72 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     9784d2fbb858ec0dd8d0032293aa06fa736d6ea2
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//9784d2fbb858ec0dd8d0032293aa06fa736d6ea2
+Commit-ID:     3cbf6a8ab70b21de75bc389d384911392cf7f616
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//3cbf6a8ab70b21de75bc389d384911392cf7f616
 Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Mon, 13 Jun 2022 13:43:26 +01:00
+AuthorDate:    Mon, 13 Jun 2022 13:43:24 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 28 Jul 2022 17:29:42 +02:00
+CommitterDate: Thu, 28 Jul 2022 17:29:41 +02:00
 
-drivers/thermal/cpufreq_cooling: Update outdated comments
+drivers/thermal/cpufreq_cooling: Use private callback ops for each cooling device
 
-The code has moved and left some comments stale. Update them where
-there is a need.
+It is very unlikely that one CPU cluster would have the EM and some other
+won't have it (because EM registration failed or DT lacks needed entry).
+Although, we should avoid modifying global variable with callbacks anyway.
+Redesign this and add safety for such situation.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-Link: https://lore.kernel.org/r/20220613124327.30766-4-lukasz.luba@arm.com
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Link: https://lore.kernel.org/r/20220613124327.30766-2-lukasz.luba@arm.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/cpufreq_cooling.c | 44 ++++++++++++------------------
- 1 file changed, 18 insertions(+), 26 deletions(-)
+ drivers/thermal/cpufreq_cooling.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
-index 492a67e..50f8b90 100644
+index b8151d9..ad8b86f 100644
 --- a/drivers/thermal/cpufreq_cooling.c
 +++ b/drivers/thermal/cpufreq_cooling.c
-@@ -206,7 +206,7 @@ static u32 get_dynamic_power(struct cpufreq_cooling_device *cpufreq_cdev,
-  * complex code may be needed if experiments show that it's not
-  * accurate enough.
+@@ -59,6 +59,7 @@ struct time_in_idle {
+  * @cdev: thermal_cooling_device pointer to keep track of the
+  *	registered cooling device.
+  * @policy: cpufreq policy.
++ * @cooling_ops: cpufreq callbacks to thermal cooling device ops
+  * @idle_time: idle time stats
+  * @qos_req: PM QoS contraint to apply
   *
-- * Return: 0 on success, -E* if getting the static power failed.
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 				       u32 *power)
-@@ -249,9 +249,8 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
-  * milliwatts assuming 100% load.  Store the calculated power in
-  * @power.
-  *
-- * Return: 0 on success, -EINVAL if the cooling device state could not
-- * be converted into a frequency or other -E* if there was an error
-- * when calculating the static power.
-+ * Return: 0 on success, -EINVAL if the cooling device state is bigger
-+ * than maximum allowed.
-  */
- static int cpufreq_state2power(struct thermal_cooling_device *cdev,
- 			       unsigned long state, u32 *power)
-@@ -281,15 +280,11 @@ static int cpufreq_state2power(struct thermal_cooling_device *cdev,
-  * Calculate a cooling device state for the cpus described by @cdev
-  * that would allow them to consume at most @power mW and store it in
-  * @state.  Note that this calculation depends on external factors
-- * such as the cpu load or the current static power.  Calling this
-- * function with the same power as input can yield different cooling
-- * device states depending on those external factors.
-- *
-- * Return: 0 on success, -ENODEV if no cpus are online or -EINVAL if
-- * the calculated frequency could not be converted to a valid state.
-- * The latter should not happen unless the frequencies available to
-- * cpufreq have changed since the initialization of the cpu cooling
-- * device.
-+ * such as the CPUs load.  Calling this function with the same power
-+ * as input can yield different cooling device states depending on those
-+ * external factors.
-+ *
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 			       u32 power, unsigned long *state)
-@@ -401,7 +396,7 @@ static unsigned int get_state_freq(struct cpufreq_cooling_device *cpufreq_cdev,
-  * Callback for the thermal cooling device to return the cpufreq
-  * max cooling state.
-  *
-- * Return: 0 on success, an error code otherwise.
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
-@@ -420,7 +415,7 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
-  * Callback for the thermal cooling device to return the cpufreq
-  * current cooling state.
-  *
-- * Return: 0 on success, an error code otherwise.
-+ * Return: 0 on success, this function doesn't fail.
-  */
- static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
-@@ -479,7 +474,7 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
-  * @em: Energy Model of the cpufreq policy
-  *
-  * This interface function registers the cpufreq cooling device with the name
-- * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
-+ * "cpufreq-%s". This API can support multiple instances of cpufreq
-  * cooling devices. It also gives the opportunity to link the cooling device
-  * with a device tree node, in order to bind it via the thermal DT code.
-  *
-@@ -590,8 +585,8 @@ free_cdev:
-  * @policy: cpufreq policy
-  *
-  * This interface function registers the cpufreq cooling device with the name
-- * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
-- * cooling devices.
-+ * "cpufreq-%s". This API can support multiple instances of cpufreq cooling
-+ * devices.
-  *
-  * Return: a valid struct thermal_cooling_device pointer on success,
-  * on failure, it returns a corresponding ERR_PTR().
-@@ -608,17 +603,14 @@ EXPORT_SYMBOL_GPL(cpufreq_cooling_register);
-  * @policy: cpufreq policy
-  *
-  * This interface function registers the cpufreq cooling device with the name
-- * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
-- * cooling devices. Using this API, the cpufreq cooling device will be
-- * linked to the device tree node provided.
-+ * "cpufreq-%s". This API can support multiple instances of cpufreq cooling
-+ * devices. Using this API, the cpufreq cooling device will be linked to the
-+ * device tree node provided.
-  *
-  * Using this function, the cooling device will implement the power
-- * extensions by using a simple cpu power model.  The cpus must have
-+ * extensions by using the Energy Model (if present).  The cpus must have
-  * registered their OPPs using the OPP library.
-  *
-- * It also takes into account, if property present in policy CPU node, the
-- * static power consumed by the cpu.
-- *
-  * Return: a valid struct thermal_cooling_device pointer on success,
-  * and NULL on failure.
-  */
-@@ -654,7 +646,7 @@ EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
-  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
-  * @cdev: thermal cooling device pointer.
-  *
-- * This interface function unregisters the "thermal-cpufreq-%x" cooling device.
-+ * This interface function unregisters the "cpufreq-%x" cooling device.
-  */
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
+@@ -71,6 +72,7 @@ struct cpufreq_cooling_device {
+ 	unsigned int max_level;
+ 	struct em_perf_domain *em;
+ 	struct cpufreq_policy *policy;
++	struct thermal_cooling_device_ops cooling_ops;
+ #ifndef CONFIG_SMP
+ 	struct time_in_idle *idle_time;
+ #endif
+@@ -485,14 +487,6 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+ 	return ret;
+ }
+ 
+-/* Bind cpufreq callbacks to thermal cooling device ops */
+-
+-static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+-	.get_max_state		= cpufreq_get_max_state,
+-	.get_cur_state		= cpufreq_get_cur_state,
+-	.set_cur_state		= cpufreq_set_cur_state,
+-};
+-
+ /**
+  * __cpufreq_cooling_register - helper function to create cpufreq cooling device
+  * @np: a valid struct device_node to the cooling device device tree node
+@@ -554,7 +548,10 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	/* max_level is an index, not a counter */
+ 	cpufreq_cdev->max_level = i - 1;
+ 
+-	cooling_ops = &cpufreq_cooling_ops;
++	cooling_ops = &cpufreq_cdev->cooling_ops;
++	cooling_ops->get_max_state = cpufreq_get_max_state;
++	cooling_ops->get_cur_state = cpufreq_get_cur_state;
++	cooling_ops->set_cur_state = cpufreq_set_cur_state;
+ 
+ #ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+ 	if (em_is_sane(cpufreq_cdev, em)) {
