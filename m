@@ -2,56 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 805E3C04A68
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 15:41:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E24C6C19F29
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 15:41:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231755AbiG1Pls (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Jul 2022 11:41:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54472 "EHLO
+        id S231570AbiG1Plt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Jul 2022 11:41:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230140AbiG1Plr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 11:41:47 -0400
+        with ESMTP id S231895AbiG1Pls (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 11:41:48 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6544568DD8
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 08:41:46 -0700 (PDT)
-Date:   Thu, 28 Jul 2022 15:41:43 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F86368DF0
+        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 08:41:47 -0700 (PDT)
+Date:   Thu, 28 Jul 2022 15:41:44 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1659022905;
+        s=2020; t=1659022906;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=hHY+HKaH/AM2gVWYUEs7hxctf6bgNaAbpucHlyUO2Ro=;
-        b=1PYQGQiYO0/9atSz7wQGx6rq/AJX6OmhKXrN4ryjg8HxgPtYMjNGMMx3uu4PMd25m9qGFQ
-        F8RWZceQM7z5DLSq0lGuntk7AggWeO7zfv5QyXah0DNBUcy45MCSwVXRvd/WwQxpSN5Zpk
-        FQVZWSKVg4rE68p7M2eX46Undim5yp4UawDzt+p80u6gIOi/8jKuCfTdEnSUw6maklvy6T
-        OS0HAkItqL9xWc8OGDCByXG5YtcDXjxLjLk3gLLYhlVHd/GT+pThuHRGty3YmUSs36FrdB
-        qfQvJIAnChpHYNm2XvU37Ov1OefGnVXSRpN3wpwtaHZGn4PiVuIEiAitI7y7LQ==
+        bh=D9Z0nBO4feTdDES5we4nSo79baCg7t2QErLjV3s8Y5A=;
+        b=akpTeIpJuNHSKWeU5P3pRsNLPBhN6DnEhp3GHc74qJbut+GxpMzWeq2ADFoH/0o10HGSpP
+        vDoTNijh3hyAyv1iIZVZpiTRu+IE153+nfopvddqBVdFjmOcbC7L4uF1dz8Hfjx79DSax8
+        Ysax24Wxa1j2tFB4zot/3YYLOFMlI6v6iXFlmkd40RzLcdG/7gWN8EqqB2825te6EdFKOr
+        LvJ6USRuuHEwTk2HvDBuzA2SA+J2AUdavReMkJPaUY5KVrC7aifzxugUk8ewNe9X596vPm
+        c79lZsWrs5AmOxomcooeYsPzIs3ujilkEJvdpVQeLHZen12+0t0+8T1J6Vmr3g==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1659022905;
+        s=2020e; t=1659022906;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=hHY+HKaH/AM2gVWYUEs7hxctf6bgNaAbpucHlyUO2Ro=;
-        b=P2O2U+kMoFN2iH10aJwdiIgxbdTeoBRKnKUIPH0f778TGdi5GK7ImuIFOk8io696P2Qs5t
-        8t6Ij2r4t7SmtTDg==
+        bh=D9Z0nBO4feTdDES5we4nSo79baCg7t2QErLjV3s8Y5A=;
+        b=1tZ7gY7vZyXtQiawwaTnDqgOePWouxHOwgb/0QrYRDBO4YtjDsm6Y6JtWtCh9g9HwdDbBs
+        kVDAPadqx+vra7Cw==
 From:   "thermal-bot for Dmitry Baryshkov" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/qcom/spmi-adc-tm5: Register
+Subject: [thermal: thermal/next] thermal/drivers/qcom/temp-alarm: Register
  thermal zones as hwmon sensors
 Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         Bhupesh Sharma <bhupesh.sharma@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220719054940.755907-2-dmitry.baryshkov@linaro.org>
-References: <20220719054940.755907-2-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20220719054940.755907-1-dmitry.baryshkov@linaro.org>
+References: <20220719054940.755907-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-Message-ID: <165902290396.15455.5533342393994258286.tip-bot2@tip-bot2>
+Message-ID: <165902290488.15455.7645927052363659067.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -62,46 +62,46 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     ee35f721477a96cd7a5ee8b0d24507ff4e67fa65
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ee35f721477a96cd7a5ee8b0d24507ff4e67fa65
+Commit-ID:     fb55b0129787ec98eace23ddccd429188d318574
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//fb55b0129787ec98eace23ddccd429188d318574
 Author:        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-AuthorDate:    Tue, 19 Jul 2022 08:49:40 +03:00
+AuthorDate:    Tue, 19 Jul 2022 08:49:39 +03:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 28 Jul 2022 17:29:51 +02:00
+CommitterDate: Thu, 28 Jul 2022 17:29:50 +02:00
 
-thermal/drivers/qcom/spmi-adc-tm5: Register thermal zones as hwmon sensors
+thermal/drivers/qcom/temp-alarm: Register thermal zones as hwmon sensors
 
 Register thermal zones as hwmon sensors to let userspace read
 temperatures using standard hwmon interface.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 Reviewed-by: Bhupesh Sharma <bhupesh.sharma@linaro.org>
-Link: https://lore.kernel.org/r/20220719054940.755907-2-dmitry.baryshkov@linaro.org
+Link: https://lore.kernel.org/r/20220719054940.755907-1-dmitry.baryshkov@linaro.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/qcom/qcom-spmi-adc-tm5.c | 5 +++++
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 5 +++++
  1 file changed, 5 insertions(+)
 
-diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-index d9c9c97..073943c 100644
---- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-+++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-@@ -20,6 +20,8 @@
+diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+index 7419e19..770f82c 100644
+--- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+@@ -16,6 +16,7 @@
  #include <linux/thermal.h>
- #include <asm-generic/unaligned.h>
  
+ #include "../thermal_core.h"
 +#include "../thermal_hwmon.h"
-+
- /*
-  * Thermal monitoring block consists of 8 (ADC_TM5_NUM_CHANNELS) channels. Each
-  * channel is programmed to use one of ADC channels for voltage comparison.
-@@ -687,6 +689,9 @@ static int adc_tm5_register_tzd(struct adc_tm5_chip *adc_tm)
- 			return PTR_ERR(tzd);
- 		}
- 		adc_tm->channels[i].tzd = tzd;
-+		if (devm_thermal_add_hwmon_sysfs(tzd))
-+			dev_warn(adc_tm->dev,
-+				 "Failed to add hwmon sysfs attributes\n");
+ 
+ #define QPNP_TM_REG_DIG_MAJOR		0x01
+ #define QPNP_TM_REG_TYPE		0x04
+@@ -458,6 +459,10 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 		return ret;
  	}
  
- 	return 0;
++	if (devm_thermal_add_hwmon_sysfs(chip->tz_dev))
++		dev_warn(&pdev->dev,
++			 "Failed to add hwmon sysfs attributes\n");
++
+ 	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
+ 					IRQF_ONESHOT, node->name, chip);
+ 	if (ret < 0)
