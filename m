@@ -2,74 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88434C04A68
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 17:32:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBAF7C04A68
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 18:51:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232355AbiG1Rce (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Jul 2022 13:32:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41940 "EHLO
+        id S231130AbiG1Svu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Jul 2022 14:51:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229447AbiG1Rcd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 13:32:33 -0400
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30AB36FA1D;
-        Thu, 28 Jul 2022 10:32:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1659029553; x=1690565553;
-  h=from:to:cc:subject:date:message-id;
-  bh=nxECpsQv3k/IAi03chUuVK2iod+aGpSLArSaR5fV8dk=;
-  b=nuqvCvgxq/Mb1zlt5oZqTW74jgHfM5fC4DhMQxICEbTXg0sb56X4p5d1
-   xfM4VAkXAZEP6V0KLqfXkhEJvQI28zgUUnr5+qayLuB9VNU4pkwX5IMIP
-   JT2oylNsym6Bij/W1swBMZWFpPmmO9vfjChca7rq1SD/sP8wezx2nGTui
-   i4FvEb70hJZm7+WYbU+mThYNligw6UVRDtWvVDH9Y3v9GR/XcVhm5UXs7
-   LEHnYxUtNVP1Ig+MLbmjpfOUeh78EoQKQckmxEwI2LqtRCcaXqTNPNbV1
-   YC+MhcxxzcnmP8vddVD35uNX2JfqQW5yFq7PbgjKpd3TeVCla65fA8a13
-   Q==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10422"; a="374875950"
-X-IronPort-AV: E=Sophos;i="5.93,198,1654585200"; 
-   d="scan'208";a="374875950"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jul 2022 10:32:33 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,198,1654585200"; 
-   d="scan'208";a="659830926"
-Received: from srpawnik-desktop.iind.intel.com ([10.223.107.152])
-  by fmsmga008.fm.intel.com with ESMTP; 28 Jul 2022 10:32:31 -0700
-From:   Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        linux-pm@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, sumeet.r.pawnikar@intel.com
-Subject: [PATCH] thermal: intel: Add TCC cooling support for Alder Lake-N and Raptor Lake-P
-Date:   Thu, 28 Jul 2022 23:24:56 +0530
-Message-Id: <20220728175456.2796-1-sumeet.r.pawnikar@intel.com>
-X-Mailer: git-send-email 2.17.1
+        with ESMTP id S230143AbiG1Svt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 14:51:49 -0400
+Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06955743DE;
+        Thu, 28 Jul 2022 11:51:49 -0700 (PDT)
+Received: by mail-pl1-f173.google.com with SMTP id v18so2550834plo.8;
+        Thu, 28 Jul 2022 11:51:49 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc;
+        bh=q3oeKEjtvlvPNkG5zR+PlPN6rycCHhc3ruuEWMjNKTM=;
+        b=CzUYBxvVoyoNmASe97+ikLDvmq4XqM5Wm1I7GnXiCbP9gKZ8JvZ9/vfvhOTWXiYKcp
+         DwuOElQs5ly2nXdosL7wtnX3f08LIqQxIIqkNXhVWely2wTJFrDd0c4bvwNsjwE0DArU
+         aip+V0aJJa4s2hngdoSLj0StEGjMy+spFrnRjbZxauJsMwkQ+3Lt/+oja34xfw7CQ3LN
+         fSDe4q7qdf7mK25L9ijt2I9kFf6GisqSQSlDYHvVAi+88TcVZPanXpf9EDfGP4YREkxT
+         Qlw9S2w3Pw1mh2MoCDZ5gxXcfO/ahVfECx9TwCm5weS01BQNJWI5P0YXvS40/zDIviS8
+         0H7Q==
+X-Gm-Message-State: ACgBeo30pQdJ3HzWkDKpq4T8WFzCPheLxu811nvRObviVu95mx85YOt2
+        NK+4oGzLMvoR/wkDay0k4gJTveWCYTCSCuNpnCVK+Fel6G4=
+X-Google-Smtp-Source: AA6agR6sJHmBT9spTWeHSOkRH0SmOntZuWBc/osfJJG5ZsaBAI1+JvPSysWa3L2LqUWIUTWUoEwaWUnpfpaiL+m45NE=
+X-Received: by 2002:a17:903:2282:b0:16c:500f:b78e with SMTP id
+ b2-20020a170903228200b0016c500fb78emr204415plh.49.1659034308454; Thu, 28 Jul
+ 2022 11:51:48 -0700 (PDT)
+MIME-Version: 1.0
+From:   Len Brown <lenb@kernel.org>
+Date:   Thu, 28 Jul 2022 14:51:36 -0400
+Message-ID: <CAJvTdK=yehzeVG42K=W_chyJ2YPRh18m729S1trWk=yKVDzRQw@mail.gmail.com>
+Subject: [GIT PULL] turbostat update to 2022.07.28
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add Alder Lake-N and Raptor Lake-P to the list of processor models
-supported by the Intel TCC cooling driver.
+Hi Linus,
 
-Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
----
- drivers/thermal/intel/intel_tcc_cooling.c | 2 ++
- 1 file changed, 2 insertions(+)
+Please pull these turbostat patches.
+(only updating the utility here, no kernel changes)
 
-diff --git a/drivers/thermal/intel/intel_tcc_cooling.c b/drivers/thermal/intel/intel_tcc_cooling.c
-index a9596e7562ea..95adac427b6f 100644
---- a/drivers/thermal/intel/intel_tcc_cooling.c
-+++ b/drivers/thermal/intel/intel_tcc_cooling.c
-@@ -81,7 +81,9 @@ static const struct x86_cpu_id tcc_ids[] __initconst = {
- 	X86_MATCH_INTEL_FAM6_MODEL(COMETLAKE, NULL),
- 	X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE, NULL),
- 	X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE_L, NULL),
-+	X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE_N, NULL),
- 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE, NULL),
-+	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_P, NULL),
- 	{}
- };
- 
--- 
-2.17.1
+thanks!
+Len Brown, Intel Open Source Technology Center
 
+The following changes since commit e0dccc3b76fb35bb257b4118367a883073d7390e:
+
+  Linux 5.19-rc8 (2022-07-24 13:26:27 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
+
+for you to fetch changes up to 3afe697b74bc6c59f0b9a9c89d5b163db56fd4b1:
+
+  tools/power turbostat: version 2022.07.28 (2022-07-28 14:38:55 -0400)
+
+----------------------------------------------------------------
+Artem Bityutskiy (4):
+      tools/power turbostat: separate SPR from ICX
+      tools/power turbostat: cleanup 'automatic_cstate_conversion_probe()'
+      tools/power turbostat: fix SPR PC6 limits
+      tools/power turbostat: do not decode ACC for ICX and SPR
+
+Chen Yu (1):
+      tools/power turbostat: print the kernel boot commandline
+
+Colin Ian King (2):
+      tools/power turbostat: replace strncmp with single character compare
+      tools/power turbostat: Fix file pointer leak
+
+George D Sworo (1):
+      tools/power turbostat: Support RAPTORLAKE P
+
+Jiang Jian (1):
+      tools/power turbosstat: fix comment
+
+Len Brown (6):
+      tools/power turbostat: Show uncore frequency
+      tools/power turbostat: update turbostat.8
+      tools/power turbostat: dump CPUID.7.EDX.Hybrid
+      tools/power turbostat: simplify dump_turbo_ratio_limits()
+      tools/power turbostat: dump secondary Turbo-Ratio-Limit
+      tools/power turbostat: version 2022.07.28
+
+Zhang Rui (2):
+      tools/power turbostat: Introduce support for RaptorLake
+      tools/power turbostat: add support for ALDERLAKE_N
+
+ arch/x86/include/asm/msr-index.h      |   1 +
+ tools/power/x86/turbostat/turbostat.8 | 200 +++++++++++++++++-----------
+ tools/power/x86/turbostat/turbostat.c | 240 +++++++++++++++++++++++++---------
+ 3 files changed, 302 insertions(+), 139 deletions(-)
