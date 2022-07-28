@@ -2,155 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA088C19F29
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 09:20:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24269C04A68
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 09:35:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235125AbiG1JUg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Jul 2022 05:20:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58606 "EHLO
+        id S235163AbiG1JfP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Jul 2022 05:35:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41846 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234730AbiG1JUg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 05:20:36 -0400
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AEF7849B42
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:20:34 -0700 (PDT)
-Received: by mail-lf1-x12b.google.com with SMTP id t22so1996132lfg.1
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:20:34 -0700 (PDT)
+        with ESMTP id S235547AbiG1JfO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 05:35:14 -0400
+Received: from mail-qk1-x732.google.com (mail-qk1-x732.google.com [IPv6:2607:f8b0:4864:20::732])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD626BF57
+        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:35:12 -0700 (PDT)
+Received: by mail-qk1-x732.google.com with SMTP id e16so1047023qka.5
+        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:35:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=ywBOOR3hRZ95Faea8Y6GMt4e6+qAIbLT8FcbUkq7ZHE=;
-        b=FLMFlnMeKZxsVr2c45CmvBS+qrnhsIuZ0il6XWUWSJOHskOe3htKisNWoRGcqQJ6Bc
-         IwKoYwCJgIag0uNUSvZRp9i60AKPHNAVzP1lduRtVgkklONHYiYRv/3jIzwJE0mFx74d
-         2ZpSqbV6dQzFqj8auMplx9uRoDOc95fnky0nB56ssFA3bfjG/ppdIPore4Rifm9+MfCt
-         JM0Nqo6IXJ/X36tB7PJXO4bclIdjzw4jGnRBQxLpIO6YJ6UvnH1XG/2qn4p9+0RkexuM
-         5NDGhoJSc7lbi1btPg+xk8t6eJ0NqkOsznAqqpFx7Lbc3gyUiIwyM/38FQZKqN9ZEQo0
-         MeOQ==
+        bh=mEujygdF9HiNBZrDC/mPTjbQJRIpLwuClvEFyJRFbX0=;
+        b=B+NFenYCmKOGwyipO0AWS0JL4S/XXDSFPzTrfLfbNU56v2IjkGscmW4HMoMie1dS3T
+         o5aUOWWg4SFppm50Z8/dgligjSYUeFHpX55MSbmV93vAy6w0MQviM4UakHBE9hK0/hB1
+         ODI/intBFqskp9CbVCiB7caqxn0ApAN1RC8wpZHQt81XB/aYPe0ZEbwqEuRXTK6ulCKg
+         CkkHZujT+b86slvjFeMY5SrJiKs2hZ7SOIl2SJGri8OXWmvab8IAwxkgSEpPpMbkMC5c
+         KdxnL2delyLucdDSk3rFbhH4a0onbnScYTKRSGJUa0HXyHvniC7lYIdgkagzg1UN/gtA
+         tv/w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=ywBOOR3hRZ95Faea8Y6GMt4e6+qAIbLT8FcbUkq7ZHE=;
-        b=OxlP12xBT/HPuiydcxhIa7bn5J9FOlpnFi0HgE0nNZy328KTeqj2zxI63PQloTdj8J
-         NeQUoDYW3NKj9xRT/kr2NJPvJvo+niVssSAaD5JyJmvWKj9wuboa+qKhumoOsQ6OcYdD
-         F2EUKhGDhQkTkPBpiGNkLUBSZ4iqKwlGdguBb+ogXA5AGT6SYdyzimrZCfsYutaZw1/I
-         xO7Smw34ESv3nv2FpRctdf6o8xAzt7MR7gQ3pMeEbU/d8fHWxk5198NXL/tXpfcKPp2V
-         jhNglFeft/tbC/CKiq1ORSMyJaX44m0S2AsBcyPpKzIVu00DUHWYHNFeimCF4Hs26RcC
-         mDJg==
-X-Gm-Message-State: AJIora9P/Vq8fznMZG/VkZ6tH+YlT9lLlQs8w7qSiFcK0DiCDVjqfWGK
-        nFTGN2blEx6kZNiciv63VdKYgUEO66jb1AUtUqvYZDiXPbM=
-X-Google-Smtp-Source: AGRyM1v4zQOyf52XZG8OieodKUUIY6pg6LY/9dvoTrTj2RYsX1V1xy0G18hqalRKNzt7C6arApkKcjQdf5akPoM6wQk=
-X-Received: by 2002:a05:6512:32c5:b0:48a:af79:601e with SMTP id
- f5-20020a05651232c500b0048aaf79601emr3638569lfg.373.1659000033025; Thu, 28
- Jul 2022 02:20:33 -0700 (PDT)
+        bh=mEujygdF9HiNBZrDC/mPTjbQJRIpLwuClvEFyJRFbX0=;
+        b=Ewc/XkGoRPV8WMBSuryoj4q++KB8rt6c13rhxT2TwR4f5KNlyQDbdGbn1anyMEw19R
+         LYFzKW+srWYEeQwm1YGFfwo6BYuicSq4NeRMcqz5hMJosHrMbe18bx7V+wkWarEZ+u9I
+         LLmGH5l7Mnc4eCpOiL809xuV8hkHjIIkv1CKCByQBQHfr8L9pA3fxAYjpfStQgk/Qptk
+         mcX8NHnClnGG/F5UPpmFxg8mhPJ8Jt3ozjoI2A/O6d+hsnKD5OUitaoVH2cTrs0IhsSY
+         SB3+ehJ1mgaLU0vKkMGRH2aDxfh/pKfzeqV8Fcl9EKHH4rT6ephMxq5c3xUuvk3YVjVF
+         MegA==
+X-Gm-Message-State: AJIora92jqMHB1yX4+B4vYX3tfpxgZRQrINkjNr+K4h2EQbHw4uK8B+e
+        7nxCqBfIK6PP2jmHIxbR+EvlDXdJElgyvfKTXUwbEQ==
+X-Google-Smtp-Source: AGRyM1tOVppTMhS5GfKC9W+WkJoKDSn+YflerKIstoCUYJPQLbdjfAeAVY1r2pn+UfCGjCgS4kyL32kqPB0OE754vzM=
+X-Received: by 2002:ae9:f311:0:b0:6b6:30a9:1bb1 with SMTP id
+ p17-20020ae9f311000000b006b630a91bb1mr19223162qkg.30.1659000911771; Thu, 28
+ Jul 2022 02:35:11 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220726083257.1730630-1-martin.kepplinger@puri.sm>
- <20220726083257.1730630-2-martin.kepplinger@puri.sm> <CAPDyKFrLLw=y9+t3f_bOH2mw2NVDGJxKE5=+XHY7C6SUzLzUDg@mail.gmail.com>
- <CAJZ5v0hG4+z=ypDudiSnhG1SUxfLv+EFsUGOjQEqUi0EKH3+Rw@mail.gmail.com>
-In-Reply-To: <CAJZ5v0hG4+z=ypDudiSnhG1SUxfLv+EFsUGOjQEqUi0EKH3+Rw@mail.gmail.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 28 Jul 2022 11:19:56 +0200
-Message-ID: <CAPDyKFpNTW4vJYpHmSed_VZ6irex_OCO-NFBkK=Hnfm7rP4NAQ@mail.gmail.com>
-Subject: Re: [PATCH v6 1/2] power: domain: handle genpd correctly when needing interrupts
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Martin Kepplinger <martin.kepplinger@puri.sm>,
-        Kevin Hilman <khilman@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, kernel@puri.sm,
-        dl-linux-imx <linux-imx@nxp.com>,
-        Mark Brown <broonie@kernel.org>,
-        Lucas Stach <l.stach@pengutronix.de>, aford173@gmail.com,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>
+References: <20220727182034.983727-1-dmitry.baryshkov@linaro.org> <20220728085809.sct3swhs7xuls27t@bogus>
+In-Reply-To: <20220728085809.sct3swhs7xuls27t@bogus>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date:   Thu, 28 Jul 2022 12:35:00 +0300
+Message-ID: <CAA8EJpqd2K1YB2U9fixi4qxpC4n645O+8GwLj5DsXCqcFJoiMA@mail.gmail.com>
+Subject: Re: [PATCH] PSCI: Print a warning if PSCI doesn't accept PC mode
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Mark Rutland <mark.rutland@arm.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 26 Jul 2022 at 20:33, Rafael J. Wysocki <rafael@kernel.org> wrote:
+On Thu, 28 Jul 2022 at 11:58, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> On Tue, Jul 26, 2022 at 5:07 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On Wed, Jul 27, 2022 at 09:20:34PM +0300, Dmitry Baryshkov wrote:
+> > The function psci_pd_try_set_osi_mode() will print an error if enabling
+> > OSI mode fails. To ease debugging PSCI issues print corresponding
+> > message if switching to PC mode fails too.
 > >
-> > On Tue, 26 Jul 2022 at 10:33, Martin Kepplinger
-> > <martin.kepplinger@puri.sm> wrote:
-> > >
-> > > If for example the power-domains' power-supply node (regulator) needs
-> > > interrupts to work, the current setup with noirq callbacks cannot
-> > > work; for example a pmic regulator on i2c, when suspending, usually already
-> > > times out during suspend_noirq:
-> > >
-> > > [   41.024193] buck4: failed to disable: -ETIMEDOUT
-> > >
-> > > So fix system suspend and resume for these power-domains by using the
-> > > "outer" suspend/resume callbacks instead. Tested on the imx8mq-librem5 board,
-> > > but by looking at the dts, this will fix imx8mq-evk and possibly many other
-> > > boards too.
-> > >
-> > > This is designed so that genpd providers just say "this genpd needs
-> > > interrupts" (by setting the flag) - without implying an implementation.
-> > >
-> > > Initially system suspend problems had been discussed at
-> > > https://lore.kernel.org/linux-arm-kernel/20211002005954.1367653-8-l.stach@pengutronix.de/
-> > > which led to discussing the pmic that contains the regulators which
-> > > serve as power-domain power-supplies:
-> > > https://lore.kernel.org/linux-pm/573166b75e524517782471c2b7f96e03fd93d175.camel@puri.sm/T/
-> > >
-> > > Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
-> > > ---
-> > >  drivers/base/power/domain.c | 13 +++++++++++--
-> > >  include/linux/pm_domain.h   |  5 +++++
-> > >  2 files changed, 16 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > > index 5a2e0232862e..58376752a4de 100644
-> > > --- a/drivers/base/power/domain.c
-> > > +++ b/drivers/base/power/domain.c
-> > > @@ -130,6 +130,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
-> > >  #define genpd_is_active_wakeup(genpd)  (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
-> > >  #define genpd_is_cpu_domain(genpd)     (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
-> > >  #define genpd_is_rpm_always_on(genpd)  (genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
-> > > +#define genpd_irq_on(genpd)            (genpd->flags & GENPD_FLAG_IRQ_ON)
-> > >
-> > >  static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
-> > >                 const struct generic_pm_domain *genpd)
-> > > @@ -2065,8 +2066,15 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
-> > >         genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
-> > >         genpd->domain.ops.runtime_resume = genpd_runtime_resume;
-> > >         genpd->domain.ops.prepare = genpd_prepare;
-> > > -       genpd->domain.ops.suspend_noirq = genpd_suspend_noirq;
-> > > -       genpd->domain.ops.resume_noirq = genpd_resume_noirq;
-> > > +
-> > > +       if (genpd_irq_on(genpd)) {
-> > > +               genpd->domain.ops.suspend = genpd_suspend_noirq;
-> > > +               genpd->domain.ops.resume = genpd_resume_noirq;
-> > > +       } else {
-> > > +               genpd->domain.ops.suspend_noirq = genpd_suspend_noirq;
-> > > +               genpd->domain.ops.resume_noirq = genpd_resume_noirq;
+>
+> Are you seeing that even setting to PC mode failing on msm8996. The platform
+> must boot in PC mode, so even if it fails we ignore so not sure if the logging
+> is of much help here IMO.
+
+It helped me to understand that it is not only setting OSI, who fails
+with the 'not_supported' status, but setting PC mode also fails. Which
+later led me to checking which functions are provided at all, etc.
+
+>
+> > Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> > ---
+> >  drivers/firmware/psci/psci.c | 4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
 > >
-> > As we discussed previously, I am thinking that it may be better to
-> > move to using genpd->domain.ops.suspend_late and
-> > genpd->domain.ops.resume_early instead.
+> > diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> > index cfb448eabdaa..b907768eea01 100644
+> > --- a/drivers/firmware/psci/psci.c
+> > +++ b/drivers/firmware/psci/psci.c
+> > @@ -597,7 +597,9 @@ static int __init psci_1_0_init(struct device_node *np)
+> >               pr_info("OSI mode supported.\n");
+> >
+> >               /* Default to PC mode. */
+> > -             psci_set_osi_mode(false);
+> > +             err = psci_set_osi_mode(false);
+> > +             if (err)
+> > +                     pr_info("setting PC mode failed with %d\n", err);
 >
-> Should I take this as a change request?
+> Since we don't care about error value here, does it make sense to add the
+> log in psci_set_osi_mode() that covers both PC and OSI case whenever it is
+> called ?
 
-Yes.
+Yes, this sounds like a logical idea. I'll do this in v2.
 
->
-> > Beside this, I think the $subject patch looks good to me.
->
-> Or not?
-
-The patch needs to be updated before I give it my blessing, but the
-only changes that are needed are the minor things I pointed out above.
-Sorry if it was not clear enough.
-
-Kind regards
-Uffe
+-- 
+With best wishes
+Dmitry
