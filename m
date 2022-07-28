@@ -2,124 +2,95 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6483AC19F29
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 09:16:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF8BBC3F6B0
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Jul 2022 09:20:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234854AbiG1JQL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Jul 2022 05:16:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54828 "EHLO
+        id S235034AbiG1JU1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Jul 2022 05:20:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58162 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234498AbiG1JQH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 05:16:07 -0400
-Received: from mail-qt1-x831.google.com (mail-qt1-x831.google.com [IPv6:2607:f8b0:4864:20::831])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CEE612D1D
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:16:06 -0700 (PDT)
-Received: by mail-qt1-x831.google.com with SMTP id l14so701731qtv.4
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:16:06 -0700 (PDT)
+        with ESMTP id S234989AbiG1JU1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2022 05:20:27 -0400
+Received: from mail-qk1-x72b.google.com (mail-qk1-x72b.google.com [IPv6:2607:f8b0:4864:20::72b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8268911168
+        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:20:25 -0700 (PDT)
+Received: by mail-qk1-x72b.google.com with SMTP id c3so1043911qko.1
+        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2022 02:20:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=hX4PTZfbTDTzhGaheJdjVlXek0iUFl4cndal0FNDY3I=;
-        b=yj5ZkPzeLcVY7uKoP67SxzUA+eeDKUsOhdM/5w94M6AVULJIiJz1H7wlrP8kNI3pOf
-         /pK346n51OIzXPBZWHSWHQ1GXVcFypsm3yGDIjKUw41S30C8ZnYgge0suUepF0AIy5Re
-         1yD4pCP4mhbsI6/JL35cxcbPHUAmDLcKizUPobdh4q5riOBdF2QxDKLEvlb5fP9mPT5i
-         IJ0wwzm3lM+HrkTjqvREP5LJAsbGyhm1vMCYDNVMnaaILAVAioJZM8ZeUhElbC58kNKq
-         e4NuZBTCvIg/tI+U7I9Ln/HkvZujAHPvFEQepUbsRo8kdwOMHzcc6Zjkzs5F48QnUXrA
-         p1Zw==
+        bh=Hu67rO0amNyo4xJGexiCiUUvUEtMbOIXHax2RkMiT3E=;
+        b=lb2CJHC46Wr5Ifu/1CaQCCxgOJcORTVQE+F/tTCoAYYzp1Jefl87tg7S8ffboyDFz1
+         iA+HE9g5ELioBL1JqRe5CZfZO0uC4oepSfsG1PkU/dLTpPuMcfvP3HxOZDpgAD6F6JN2
+         vwGA3qKvF0yPiu3ZZExSXm20IMnYFzaqfoHgmHXjy6F3xIhhnrSG8qcpT5mKEO477nu7
+         e04hSWirZb86AU4nqKEzDafJEbyqEDZPjCoSo8aw6mAt3rKSv8ZVm7Mc+Ddq0Ygsz9h0
+         P1FA2ExDn4FJ3fJ9tW7fRofC+iYBTq0qHdA+te/pnOvXQnNz3klzMTyce6DRUORANqDD
+         9HuQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=hX4PTZfbTDTzhGaheJdjVlXek0iUFl4cndal0FNDY3I=;
-        b=xjEoVMciyFDbj2lcyubTJ5ZDlAPSLX8/owNmEKp0L8vDBkcgExdv/N5VlFNlbSYGQB
-         zQiTA0JsQkll7PwsZPyQy7BhoRQVbCfzZA9z4amKn8PCHXj8Gq75Vi65BTY7d6UM+lrm
-         Qecwp9FWFp0FtMc46L/JvgbzcS6JUR5UotYTQNtzVjeopT6w0vHa0b3+RdjdjNLsdlC2
-         CXkr6tzQ7BN3nIU6J6R4knwP448pBuD0hYO8S9Egelwo/+CrXoSt76AWhXJ6Yk9gPoE4
-         hVSm9etbUE+MhNiyk86NuyIB1D4qepMWOE4chHC9LskY74+uyEUD1BQvepthcKerXLAp
-         uJbA==
-X-Gm-Message-State: AJIora81WaFd4RtRAzZCZ+qsOSL0UGGlNgLQSM1c9FaFnsT8Sz0G+LzK
-        9xAKNe0M4NmjIyUfBnKiRxx365Y+C06uRN3GCHYfXw==
-X-Google-Smtp-Source: AGRyM1vm0kUV6dysNE7OEyfOc25hck4p5+rpV736Zm51d+2L/vefKpLt1y5ssWVQm9zQd4YSnEUzNsjNhvoHpDX7M4Y=
-X-Received: by 2002:a05:622a:178a:b0:31e:f9ff:c685 with SMTP id
- s10-20020a05622a178a00b0031ef9ffc685mr22423284qtk.62.1658999765547; Thu, 28
- Jul 2022 02:16:05 -0700 (PDT)
+        bh=Hu67rO0amNyo4xJGexiCiUUvUEtMbOIXHax2RkMiT3E=;
+        b=d3BoeJSx135E8Be1b7olgqmJyVu5rNQrv9yf7bvCN/oqJkot/Iysjg0z2T2iqcry2h
+         7HM884jjfyRIt3pk+po02e3wtxNxu0EyRae7gDTCMlRRP1pA3a//dt/7Q64Y7mt+vFIJ
+         MEC/R8RsqxW/OzCspyrAmfgfhlgX2vFm8HahXUNFY9XQg272tGoa6SgUYHrTYaLqgI+M
+         ke/7cpo5EwmTOlNFaUfTps9BV2F77LYIZlJb5O8AzX2Nj6KdHJw6IgTVSEl7N71uVoXm
+         11zQOYN/aF9V0oFHkm7zFb5nBQaXwLOTLzWe4et6aTNhrv+Zo03qpIhIhSCzuzLz9J5R
+         PDlA==
+X-Gm-Message-State: AJIora8IpYuRnz9O/4BTlYSJtYUtwpOtKJ8CfJeDwJ/83I8rS85y9/vJ
+        HoDVFhuNVGas31K5l2QCW1xakQRJKkjjJcOg43mHzQ==
+X-Google-Smtp-Source: AGRyM1tmNKjdA1E4Lc3OT5NPu4+Pg4LIfBktyNUYU4dkcm0BCvnxsLe0R797+GT5VMDDAuxsyHaIR1G0hEkNmDR8ss4=
+X-Received: by 2002:a05:620a:2408:b0:6b6:2df3:d18b with SMTP id
+ d8-20020a05620a240800b006b62df3d18bmr18695863qkn.203.1659000024621; Thu, 28
+ Jul 2022 02:20:24 -0700 (PDT)
 MIME-Version: 1.0
-References: <CAA8EJpr2S-81+q-vjmk5i+T-JwaadkRpjCr_oGi7fMf7o3iH3A@mail.gmail.com>
- <20220727111410.bglx2u26456ray2u@bogus> <CAA8EJprNPJfGjkq2=hexbZn-=t2wKG6ZjSm5Mcbo4JuPQ-sc-A@mail.gmail.com>
- <20220728084012.jjbmycplye3zuaok@bogus>
-In-Reply-To: <20220728084012.jjbmycplye3zuaok@bogus>
+References: <20220727200901.1142557-1-dmitry.baryshkov@linaro.org> <20220728090806.nnighsbx2lcgugon@bogus>
+In-Reply-To: <20220728090806.nnighsbx2lcgugon@bogus>
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date:   Thu, 28 Jul 2022 12:15:54 +0300
-Message-ID: <CAA8EJprxFxwoQPCSCNY13GDhmw+SCy-pCK0aQv=QqkgZE_FE1g@mail.gmail.com>
-Subject: Re: PSCI domains without OSI support
+Date:   Thu, 28 Jul 2022 12:20:13 +0300
+Message-ID: <CAA8EJpr2=y-wT_HV4H5BTm7RPsc=--6C054WHJDpQzehU=Z+VA@mail.gmail.com>
+Subject: Re: [PATCH] firmware/psci: Add debugfs support to ease debugging
 To:     Sudeep Holla <sudeep.holla@arm.com>
-Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-arm-msm@vger.kernel.org,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Vinod Koul <vinod.koul@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>
+Cc:     Mark Rutland <mark.rutland@arm.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 28 Jul 2022 at 11:40, Sudeep Holla <sudeep.holla@arm.com> wrote:
+On Thu, 28 Jul 2022 at 12:08, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> On Wed, Jul 27, 2022 at 04:24:22PM +0300, Dmitry Baryshkov wrote:
-> > On Wed, 27 Jul 2022 at 14:14, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > >
-> > > On Wed, Jul 27, 2022 at 12:09:27PM +0300, Dmitry Baryshkov wrote:
+> On Wed, Jul 27, 2022 at 11:09:01PM +0300, Dmitry Baryshkov wrote:
+> > To ease debugging of PSCI supported features, add debugfs file called
+> > 'psci' describing PSCI and SMC CC versions
 >
-> > > > - Allow DTS forcing the PSCI power domains even if OSI enablement fails?
-> > >
-> > > Meaning DTS flag for this ? If OSI enable fails, why would you want to
-> > > still proceed. It is non-compliant and must be fixed if the firmware
-> > > supports OSI and expects OSPM to use the same.
-> >
-> > I'm not sure at this moment. PSCI firmware reports that OSI mode is
-> > supported, but then when psci_pd_try_set_osi_mode() tries to switch
-> > into OSI mode, it gets NOT_SUPPORTED.
->
-> Yikes, fix the damn broken firmware. That is utter non-sense. I don't
-> understand why would the firmware authors enable some feature before it
-> is ready.
->
-> > Just for the sake of completeness, I added a print to the psci.c to
-> > dump the result of the psci_set_osi_mode(false). It also returns
-> > NOT_SUPPORTED!
+> These 2 are for sure in the boot log. Having them is debugfs accessible
+> via file system add not much value as we would hit issues quite early in
+> the boot for most of the things related to PSCI.
+
+Yes, it was just to have all the information in a single place.
+
+> > enabled features and options.
 > >
 >
-> Well it is simply broken then. Not tested firmware, so please don't
-> attempt to use OSI if it is so fundamentally broken. I find it hard to
-> accept the argument that well it works just that the query API is failing.
-> But what is the guarantee that it is tested well enough. We will end up
-> adding more quirks after adding one to enable it.
->
-> > My logical assumption would be that the firmware reports support for
-> > OS_INITIATED, but then just fails to properly support
-> > SET_SUSPEND_MODE.
->
-> I knew this argument was coming as I wrote above, sorry I don't buy that.
-> It is probably one of the early platforms supporting PSCI and not well tested
-> for conformance. So I am inclined to just say we can't support it.
+> We have psci_checker.c which does some minimal testing of PSCI. I prefer
+> to add things to that rather than a debugfs as it is run during boot. IMO
+> it is usual useful to debug things that cause boot issue most of the time.
+> I am not against this so I will leave it to the maintainers.
 
-I have quoted the commit message from the vendor kernel (and the
-debugfs entries) in other messages in this thread. It definitely seems
-like the platform breaks strict standard conformance by supporting
-CPU_SUSPEND, but not the SET_SUSPEND_MODE. Vendor kernel still used
-the CPU_SUSPEND with a domain-like approach, expecting to find the
-PSCI already being running in the OSI mode. So I'd ask for the ability
-to add a flag to DT telling the PSCI_DOMAINS code that the platform is
-already running in the OSI mode despite set_osi_mode() returning
-NOT_SUPPORTED.
+In my case I was not debugging the boot issues (which of course would
+have required a different approach), but I was trying to understand
+runtime capabilities, thus debugfs fits pretty well.
 
-I would not say that this firmware was not tested to work with the
-domains approach. The whole bunch of phones/tables were shipped with
-this issue being present and the vendor kernel using a tree-wide
-approach to cpu/cluster/system states.
+Another point for the debugfs entry: most of the people run the kernel
+with the psci_checker being turned off, but with debugfs being
+enabled. If we are trying to narrow down firmware capabilities of the
+random device, it is much easier to ask them to cat the dbeugfs file
+rather than to rebuild the kernel.
 
-
---
+-- 
 With best wishes
 Dmitry
