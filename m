@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00302C19F2C
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Aug 2022 21:25:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD00EC3F6B0
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Aug 2022 21:25:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235304AbiHAVZb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 Aug 2022 17:25:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50324 "EHLO
+        id S234855AbiHAVZd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 Aug 2022 17:25:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234201AbiHAVYj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2022 17:24:39 -0400
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA6F445F6C
-        for <linux-pm@vger.kernel.org>; Mon,  1 Aug 2022 14:23:57 -0700 (PDT)
-Received: by mail-wm1-x332.google.com with SMTP id c22so6363548wmr.2
-        for <linux-pm@vger.kernel.org>; Mon, 01 Aug 2022 14:23:57 -0700 (PDT)
+        with ESMTP id S235076AbiHAVYl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2022 17:24:41 -0400
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 851C947BB9
+        for <linux-pm@vger.kernel.org>; Mon,  1 Aug 2022 14:23:59 -0700 (PDT)
+Received: by mail-wm1-x334.google.com with SMTP id m41-20020a05600c3b2900b003a4e094256eso177658wms.0
+        for <linux-pm@vger.kernel.org>; Mon, 01 Aug 2022 14:23:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=yKzLkry3f0ucVVy+WiLh8Z5rguSF04AWiaZnad/6qXc=;
-        b=RlYDEyOLTn9hR8GbxO4HfvwR9tD7RcncP0fiMcrDNJkB8b/be5R5Q07lEiKeNY+WfB
-         vE/qEnkAC9wjTwWpEpXrkxaSby9VY6vYkkRKeJ8Obq8XGtBjBK6RYFqhfVa0ifoIv/16
-         z8DQFAcxhOG2ygmhtiTR2iJmjteQ3sDty8iN36ibOQXP8CSiS/ABVYwBwJQ9k05Y5biU
-         4BVXtJEtww4TE1suSCe34YTOUwA2WXmFISzwlUT/LeI0MhiDg1SokSmp9sA7/INMbGuF
-         wtwUJNQcVArg3OZt7mddWwjUcs9tiQ3k2xiIMUSvjQAEhIoqgGECN2IWqe7S5vYVtCEb
-         981A==
+        bh=dtIC8RNPtrIhefVP3qkzn/ojto5ZENqxzOLIoU7Obsk=;
+        b=jTCkN/FsnFc9VrryWqPs923cW+htGj25/cCktKLVZG2LwE0du2AgJv/DKBW1kGzcTA
+         8gwoZQt7/SG5UqzG7VcF4/RMUbN8z8zLfsZLYs+7Z8FAYYrCg12FXv87yyryTnCeieti
+         lFtWEU2t6NfpKMPxYxQ6uQzLfhNnjAq/f8gnaMjYmPZEmVO+IH+o4UZhtUSS9Fq1878Q
+         1FO+WIjvI3StRSZRT2yggoq/ktKGtomz3zc/Y6cVrG31J6MTM7h/fEESEdTaDavvCybX
+         QBkffEXUtGOg0ieTV/+lAH4m64eGe8g+RQ+lLk8a1XngX2euevL0frNQAernct2U238d
+         UC/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=yKzLkry3f0ucVVy+WiLh8Z5rguSF04AWiaZnad/6qXc=;
-        b=KiP2V0OwOoAuCyKJlMoNRbnm+0ThUPhYVGu5+0Fmp0brGm4i+Vx5/+aoqvE6alBVqy
-         Nj44Vkrt0j9qQWwBfyu/J/Xd7YrwM1UQziSUSSA6cZlzcrNVr+pxxkoXuXHHv/N04ioh
-         ZAQ8wEvZYYj+IS13/wslgfvCmf/6QIJgG7fCLzLLdSTu9eEHbATo+i5zWPEyzrotPUae
-         lO0LBgrAR5x6epwWvy559EaaXhNnyhOdNgv/WL9D/t1vxklzOtdHUKZmB6bJ7pBywBPL
-         UDSMIQUNBls3rb9nzO6oUOqLZNML5HRN2U1GOhNhBbXlL9BrXR2Toym9uttKtNnK+c6w
-         KgvQ==
-X-Gm-Message-State: AJIora8AdObdGzsdsgtnluVDDif6c6ed01hZm+9jYcqc8qP3n6KKTUTw
-        BQNSAeo8K4ZOVk30d3QXUFRMRw==
-X-Google-Smtp-Source: AGRyM1uBO0z3YmmsItFxs+mmNdKH1izLC12TaBCM1cFOtGjIF8dX75vQylw4vI9TakgW0ERKat5Dcw==
-X-Received: by 2002:a1c:7213:0:b0:3a3:155a:dd5d with SMTP id n19-20020a1c7213000000b003a3155add5dmr11708431wmc.178.1659389035073;
-        Mon, 01 Aug 2022 14:23:55 -0700 (PDT)
+        bh=dtIC8RNPtrIhefVP3qkzn/ojto5ZENqxzOLIoU7Obsk=;
+        b=zF2BTP+ocr/4bGZyeq6I0Hxa6mXxEFEbaPjW8SGXAw1t90JOJgzLrLeA4CHmmZeuL0
+         RNFq48+EgqU3vjFWJ8CPkP6LcBdYtPhKXiwcPGe6sTODvI4iQ1O/jnPLoFv0jLpZAf18
+         TGAZLMOk4Yygl7HsGtzAnJ4mc8Eu5bhfT+tTLw21JR8ydORgr32dkoxurOLbOfuK5Awg
+         ix0UtRprbFsgAG4PGknwmB04AoutG8BCStS2fhAALZN+FDurUvnBRsEAHOA25PzmuiHE
+         ODlR6GiY6LPwHoCMQqtDZ1UAPh4su2CEY+sXua2PcDF+6iiA/latcV+TR69+mip/zdmM
+         ZfLA==
+X-Gm-Message-State: AJIora/VSYPcZyPN/qJF/qlUtsW6+FBoDS6X0CFQxAjk68XsPj77ix+W
+        sIbZKev4glN942EuWAzF2iJC2SWr05vRWg==
+X-Google-Smtp-Source: AGRyM1tEHlqXHn1llUypH6gHVdeS9yeDRdpgOfRH5spOgnM4JZAMrjAyTqf5MulvhNGAatdy6tkiGw==
+X-Received: by 2002:a05:600c:190b:b0:3a3:45c5:9f43 with SMTP id j11-20020a05600c190b00b003a345c59f43mr11954478wmq.130.1659389039083;
+        Mon, 01 Aug 2022 14:23:59 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:d00:ceb8:9c09:1302])
-        by smtp.gmail.com with ESMTPSA id c7-20020adffb07000000b0021e501519d3sm12995285wrr.67.2022.08.01.14.23.53
+        by smtp.gmail.com with ESMTPSA id c7-20020adffb07000000b0021e501519d3sm12995285wrr.67.2022.08.01.14.23.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Aug 2022 14:23:54 -0700 (PDT)
+        Mon, 01 Aug 2022 14:23:58 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
@@ -62,9 +62,9 @@ Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
         shawnguo@kernel.org, niklas.soderlund@ragnatech.se,
         matthias.bgg@gmail.com, j-keerthy@ti.com,
         Amit Kucheria <amitk@kernel.org>
-Subject: [PATCH v4 21/32] thermal/drivers/banggap: Switch to new of API
-Date:   Mon,  1 Aug 2022 23:22:33 +0200
-Message-Id: <20220801212244.1124867-22-daniel.lezcano@linexp.org>
+Subject: [PATCH v4 23/32] thermal/drivers/hisilicon: Switch to new of API
+Date:   Mon,  1 Aug 2022 23:22:35 +0200
+Message-Id: <20220801212244.1124867-24-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220801212244.1124867-1-daniel.lezcano@linexp.org>
 References: <20220801212244.1124867-1-daniel.lezcano@linexp.org>
@@ -83,86 +83,56 @@ API to register the thermal zone with these generic ops.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
 ---
- drivers/thermal/k3_bandgap.c       | 12 ++++++------
- drivers/thermal/k3_j72xx_bandgap.c | 12 +++++-------
- 2 files changed, 11 insertions(+), 13 deletions(-)
+ drivers/thermal/hisi_thermal.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
-index 5d0b3ffc6f46..22c9bcb899c3 100644
---- a/drivers/thermal/k3_bandgap.c
-+++ b/drivers/thermal/k3_bandgap.c
-@@ -139,9 +139,9 @@ static int k3_bgp_read_temp(struct k3_thermal_data *devdata,
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index b29ab09040d5..cc5da71b6f55 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -442,9 +442,9 @@ static int hi3660_thermal_probe(struct hisi_thermal_data *data)
  	return 0;
  }
  
--static int k3_thermal_get_temp(void *devdata, int *temp)
-+static int k3_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
+-static int hisi_thermal_get_temp(void *__data, int *temp)
++static int hisi_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
  {
--	struct k3_thermal_data *data = devdata;
-+	struct k3_thermal_data *data = tz->devdata;
- 	int ret = 0;
+-	struct hisi_thermal_sensor *sensor = __data;
++	struct hisi_thermal_sensor *sensor = tz->devdata;
+ 	struct hisi_thermal_data *data = sensor->data;
  
- 	ret = k3_bgp_read_temp(data, temp);
-@@ -151,7 +151,7 @@ static int k3_thermal_get_temp(void *devdata, int *temp)
- 	return ret;
+ 	*temp = data->ops->get_temp(sensor);
+@@ -455,7 +455,7 @@ static int hisi_thermal_get_temp(void *__data, int *temp)
+ 	return 0;
  }
  
--static const struct thermal_zone_of_device_ops k3_of_thermal_ops = {
-+static const struct thermal_zone_device_ops k3_of_thermal_ops = {
- 	.get_temp = k3_thermal_get_temp,
+-static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
++static const struct thermal_zone_device_ops hisi_of_thermal_ops = {
+ 	.get_temp = hisi_thermal_get_temp,
  };
  
-@@ -213,9 +213,9 @@ static int k3_bandgap_probe(struct platform_device *pdev)
- 		writel(val, data[id].bgp->base + data[id].ctrl_offset);
+@@ -467,7 +467,7 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
  
- 		data[id].tzd =
--		devm_thermal_zone_of_sensor_register(dev, id,
--						     &data[id],
--						     &k3_of_thermal_ops);
-+		devm_thermal_of_zone_register(dev, id,
-+					      &data[id],
-+					      &k3_of_thermal_ops);
- 		if (IS_ERR(data[id].tzd)) {
- 			dev_err(dev, "thermal zone device is NULL\n");
- 			ret = PTR_ERR(data[id].tzd);
-diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
-index 115a44eb4fbf..16b6bcf1bf4f 100644
---- a/drivers/thermal/k3_j72xx_bandgap.c
-+++ b/drivers/thermal/k3_j72xx_bandgap.c
-@@ -247,9 +247,9 @@ static inline int k3_bgp_read_temp(struct k3_thermal_data *devdata,
- }
+ 	data->ops->irq_handler(sensor);
  
- /* Get temperature callback function for thermal zone */
--static int k3_thermal_get_temp(void *devdata, int *temp)
-+static int k3_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct k3_thermal_data *data = devdata;
-+	struct k3_thermal_data *data = tz->devdata;
- 	int ret = 0;
+-	hisi_thermal_get_temp(sensor, &temp);
++	temp = data->ops->get_temp(sensor);
  
- 	ret = k3_bgp_read_temp(data, temp);
-@@ -259,7 +259,7 @@ static int k3_thermal_get_temp(void *devdata, int *temp)
- 	return ret;
- }
+ 	if (temp >= sensor->thres_temp) {
+ 		dev_crit(&data->pdev->dev,
+@@ -492,9 +492,9 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 	int ret, i;
+ 	const struct thermal_trip *trip;
  
--static const struct thermal_zone_of_device_ops k3_of_thermal_ops = {
-+static const struct thermal_zone_device_ops k3_of_thermal_ops = {
- 	.get_temp = k3_thermal_get_temp,
- };
- 
-@@ -474,10 +474,8 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
- 		writel(val, data[id].bgp->cfg2_base + data[id].ctrl_offset);
- 
- 		bgp->ts_data[id] = &data[id];
--		ti_thermal =
--		devm_thermal_zone_of_sensor_register(bgp->dev, id,
--						     &data[id],
--						     &k3_of_thermal_ops);
-+		ti_thermal = devm_thermal_of_zone_register(bgp->dev, id, &data[id],
-+							   &k3_of_thermal_ops);
- 		if (IS_ERR(ti_thermal)) {
- 			dev_err(bgp->dev, "thermal zone device is NULL\n");
- 			ret = PTR_ERR(ti_thermal);
+-	sensor->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+-							   sensor->id, sensor,
+-							   &hisi_of_thermal_ops);
++	sensor->tzd = devm_thermal_of_zone_register(&pdev->dev,
++						    sensor->id, sensor,
++						    &hisi_of_thermal_ops);
+ 	if (IS_ERR(sensor->tzd)) {
+ 		ret = PTR_ERR(sensor->tzd);
+ 		sensor->tzd = NULL;
 -- 
 2.25.1
 
