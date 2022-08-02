@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23491C00140
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Aug 2022 11:59:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67EC2C00140
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Aug 2022 12:03:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233683AbiHBL7H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Aug 2022 07:59:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49144 "EHLO
+        id S236605AbiHBMDv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Aug 2022 08:03:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231208AbiHBL7H (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2022 07:59:07 -0400
-Received: from smtpbg.qq.com (unknown [43.155.67.158])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9EB404AD7A;
-        Tue,  2 Aug 2022 04:59:02 -0700 (PDT)
-X-QQ-mid: bizesmtp84t1659441538tj0c0ae5
+        with ESMTP id S231208AbiHBMDu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2022 08:03:50 -0400
+Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E46ED4D81B;
+        Tue,  2 Aug 2022 05:03:45 -0700 (PDT)
+X-QQ-mid: bizesmtp69t1659441819tszfgaor
 Received: from kali.lan ( [125.69.43.47])
         by bizesmtp.qq.com (ESMTP) with 
-        id ; Tue, 02 Aug 2022 19:58:57 +0800 (CST)
+        id ; Tue, 02 Aug 2022 20:03:38 +0800 (CST)
 X-QQ-SSF: 01000000002000F0U000B00A0000020
-X-QQ-FEAT: 9HtJsxgr54datqEXUeQB6lWqj7M8XmxfamxeBZhaFjmaYazurIKwFMpHR8BQ+
-        a1YbvD5GH+b9KyiatH5e4jU1IRvNfMlt3OVyuzs/BU2kpvXlMnzwvb6pvosrYgdv3OzpwiX
-        A5wrPYcftWZLUl99QAl4p4q3HwGWUlO9xalFnn8qaq+r/kpKtl3UDPj63n1iSmPP75rOXSd
-        oSNr3Tk9P46u3Y4xX5MxcTQemfxzeoCXc5Z1q9gJKGSwL5+uLkx34zei8ZsYupRmFF5FmFQ
-        2zsOyB1CcDfg9UQR41xR0CYnAoOn1C8k5mWrgCSpsGj6W7bCSiA/KNUyQXAyBcvttK4qrwv
-        ScFfWBePjfqHhD/QM9VvlYK0CLUCtJk/+Xns/408PQg1mVHaTcn4T9ENRmUSg==
+X-QQ-FEAT: eSZ1CZgv+JB/NPavNiyOS9PrnEIDZJ+gNfOFq1XFzWcVjnkVyoB9uNOb+NuB/
+        rwxzC9FmdsI6xTCxvBjKMhPYaRGa+pYBqkCGvj5MOtJaY5IuQP44WHqsPif67Q5BPeWITTu
+        GBvSQeimG2dp5kmkuDuhaQKyOv2hP2dKHQN/cSY46H7LrRtlyADDWX1bcgHOKi5HAgNnB/X
+        QNJBdxscsZM2MUwgxqVDyn4iciI3TWMUbbYQvuwJ5lJ9pNfqk9TATSkitAoXQl6U6tCB9XP
+        wchpIpmxLmSZtdht98QeN3KAx1g/jy0mggVp3dBiKlY1I9dl7l7v2XOKMqiNtGR6xTfz6jo
+        8rVD/VQba3FFuoKubXc5KhUXlaShhaGq5/Y0s5ZXkJaSbTAvc0qg7uFfdAJB2N4X4EPYRnl
 X-QQ-GoodBg: 0
 From:   Jason Wang <wangborong@cdjrlc.com>
 To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Jason Wang <wangborong@cdjrlc.com>
-Subject: [PATCH] power: supply: core: Fix comment typo
-Date:   Wed,  3 Aug 2022 03:58:51 +0800
-Message-Id: <20220802195851.4672-1-wangborong@cdjrlc.com>
+Cc:     linus.walleij@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Jason Wang <wangborong@cdjrlc.com>
+Subject: [PATCH] power: supply: ab8500: Fix comment typo
+Date:   Wed,  3 Aug 2022 04:03:36 +0800
+Message-Id: <20220802200336.5467-1-wangborong@cdjrlc.com>
 X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -46,22 +46,22 @@ The double `the' is duplicated in the comment, remove one.
 
 Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
 ---
- drivers/power/supply/power_supply_sysfs.c | 2 +-
+ drivers/power/supply/ab8500_charger.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 4239591e1522..5369abaceb5c 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -442,7 +442,7 @@ static int add_prop_uevent(struct device *dev, struct kobj_uevent_env *env,
- 	if (ret == -ENODEV || ret == -ENODATA) {
- 		/*
- 		 * When a battery is absent, we expect -ENODEV. Don't abort;
--		 * send the uevent with at least the the PRESENT=0 property
-+		 * send the uevent with at least the PRESENT=0 property
- 		 */
- 		return 0;
- 	}
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index c19c50442761..914ce902b672 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -1941,7 +1941,7 @@ static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
+  * Due to a asic bug it is necessary to lower the input current to the vbus
+  * charger when charging with at some specific levels. This issue is only valid
+  * for below a certain battery voltage. This function makes sure that the
+- * the allowed current limit isn't exceeded.
++ * allowed current limit isn't exceeded.
+  */
+ static void ab8500_charger_check_vbat_work(struct work_struct *work)
+ {
 -- 
 2.35.1
 
