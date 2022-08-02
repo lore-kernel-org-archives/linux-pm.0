@@ -2,146 +2,178 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 470D3C00140
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Aug 2022 13:33:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3B6AC19F28
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Aug 2022 14:05:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233142AbiHBNdX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Aug 2022 09:33:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35966 "EHLO
+        id S236960AbiHBOE7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Aug 2022 10:04:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232569AbiHBNdW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2022 09:33:22 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32B8A17A8C;
-        Tue,  2 Aug 2022 06:33:21 -0700 (PDT)
-X-UUID: bd5af5aef97c4ce797f25be4b413af80-20220802
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.8,REQID:8bf43c17-354f-4ee3-a470-c1b6138fc2f2,OB:0,LO
-        B:0,IP:0,URL:5,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:5
-X-CID-META: VersionHash:0f94e32,CLOUDID:133c0f25-a982-4824-82d2-9da3b6056c2a,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil
-        ,QS:nil,BEC:nil,COL:0
-X-UUID: bd5af5aef97c4ce797f25be4b413af80-20220802
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
-        (envelope-from <peter.wang@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 267675943; Tue, 02 Aug 2022 21:33:15 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Tue, 2 Aug 2022 21:33:14 +0800
-Received: from [172.21.84.99] (172.21.84.99) by mtkmbs11n2.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.2.792.15 via Frontend
- Transport; Tue, 2 Aug 2022 21:33:14 +0800
-Subject: Re: [PATCH v1] PM-runtime: Check supplier_preactivated before release
- supplier
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-CC:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-References: <20220613120755.14306-1-peter.wang@mediatek.com>
- <b55d5691-0b2d-56bb-26ff-dcac56770611@mediatek.com>
- <CAJZ5v0gTpv2gt_Gm9rUd+8Jmp4=ij2=J20o7qO0sC-hm=w3=_A@mail.gmail.com>
- <12028598.O9o76ZdvQC@kreacher>
- <90b5f619-2dd6-817b-fe2d-f895be0b5b98@mediatek.com>
- <CAJZ5v0h8xNCV+1YwRA5wob6Vnvz8JFikv3pYMR_mUrXxzfc=tQ@mail.gmail.com>
- <f6ebfd39-a27a-8b1c-6a61-f9a63236961d@mediatek.com>
- <CAJZ5v0gChpusk6JuTG+Zhd_qGR1N+s97Avn4ybdp7Ggpv_uRaQ@mail.gmail.com>
- <7c3ec17e-296f-ab15-6055-fd59a7d8f036@mediatek.com>
- <5c9a3908-a2c6-76d7-db6d-d762503d640a@mediatek.com>
- <CAJZ5v0gSY7sJ2zsUsBeNFpT8XnL5yHd0inxh1+pXa9s1b9M50A@mail.gmail.com>
-From:   Peter Wang <peter.wang@mediatek.com>
-Message-ID: <80a67ef6-ea29-5b96-9596-6fbbb34c4961@mediatek.com>
-Date:   Tue, 2 Aug 2022 21:33:14 +0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        with ESMTP id S236936AbiHBOE6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2022 10:04:58 -0400
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2040.outbound.protection.outlook.com [40.107.243.40])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58B9225E8E;
+        Tue,  2 Aug 2022 07:04:56 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=XEm4fpcctZiQBfV4HkeiuXN3ZxqiXb2JdIpLhpB2DCRoDjX+we/9yHnemN/mX5Tlp2fTZU9ZT9ireL3sLwHZ/lIDvDWu+9nXSPdkff4ISn/sDAEoRt8DehAiZJ19YhVU2KzsHAnAnVInFFBKDalYEgNAJVfviEYM9jnWoFEFX/S5F4d/Fu5BzqWjvLQN3ayrQ+pqrHURaoxZZTmuLmGlipvU2jbY2QIifp0dbmEmc1ck7dOuS4CBxiqUZZM3GhwpjYVPZrjDxzBIC5Rvl3heyxIYBWisWczA/Lls+zVXJkg5bN0MOBjIwoz3cT83cb7EJ4zTkcgCFKo7BceUhOnXbg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=HK1ea1sqVmLzxJD3LilnFaXaIT+Z6vHVe1v7zGvohSk=;
+ b=PJBkjZSwhZ0ekU5JZLK2NLXjAsBH/4KmpguVxiYyXfBxp+o5hx2SpO7fGX8eFv7IPLRuEq+MzmHx0g7Oo0pDEBVs3+9dF/loy1O7f6QWB2WwV4SR9Vehr+g2TSOj3Yiptxj3NzZzCN9inUQbchxiAiiy8cqB5DrCO4gNRHlZuYQdUIj5MCxoXiWLjXQPcgCUdGQE7QGVPb/cAkDHo71fjie+p+v3gAWiPfH5aK1r6IXWPakP4YqCBgiuG2LbohaxFWyhzR/b95jnXF6+W7QvJidxoAsJXhX88Ntf1Ln1F98eGZCLeRU9VeJ358QdPZMZ7UML51GAWpPzdZ/zXAgvsg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HK1ea1sqVmLzxJD3LilnFaXaIT+Z6vHVe1v7zGvohSk=;
+ b=bx4iUhoE6QFamVDcwpxoCf9l2dQT2BXncz0sFFzEsJ2GjftIgKCXbGU0D6iL5pQHUac/f/3ZIw7o+yGDrSipkFvpa2wT0sR0XcQ2j3fFmHhhur3gqkInKTDFOLbqfpGpz95OVDMCIvj3IeG67+TuYjUfJ9frJIAc34CmyzW61YCpFVqRih4z89DxRGS50dlmg124J0C0gp2V010iOIIMTLdnsslUXiuoFWUIkJoH7iZA1q/fENu0UaBlI+tDb4CgMaqXVIBHy90zl+5yIFn5UAZV4MG1MqJl+W2Qupj1qEdQSSp22xPrwhPB188Uc6GWsmljmub5cLsJg/INnOCfOg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from MN2PR12MB4192.namprd12.prod.outlook.com (2603:10b6:208:1d5::15)
+ by BN9PR12MB5241.namprd12.prod.outlook.com (2603:10b6:408:11e::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5482.11; Tue, 2 Aug
+ 2022 14:04:54 +0000
+Received: from MN2PR12MB4192.namprd12.prod.outlook.com
+ ([fe80::4cce:310f:93:5d58]) by MN2PR12MB4192.namprd12.prod.outlook.com
+ ([fe80::4cce:310f:93:5d58%8]) with mapi id 15.20.5482.016; Tue, 2 Aug 2022
+ 14:04:54 +0000
+Date:   Tue, 2 Aug 2022 11:04:52 -0300
+From:   Jason Gunthorpe <jgg@nvidia.com>
+To:     Alex Williamson <alex.williamson@redhat.com>
+Cc:     Abhishek Sahu <abhsahu@nvidia.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH v5 1/5] vfio: Add the device features for the low power
+ entry and exit
+Message-ID: <YukvBBClrbCbIitm@nvidia.com>
+References: <20220719121523.21396-1-abhsahu@nvidia.com>
+ <20220719121523.21396-2-abhsahu@nvidia.com>
+ <20220721163445.49d15daf.alex.williamson@redhat.com>
+ <aaef2e78-1ed2-fe8b-d167-8ea2dcbe45b6@nvidia.com>
+ <20220725160928.43a17560.alex.williamson@redhat.com>
+ <bd7bca18-ae07-c04a-23d3-bf71245da0cc@nvidia.com>
+ <20220726172356.GH4438@nvidia.com>
+ <f903e2b9-f85b-a4c8-4706-f463919723a3@nvidia.com>
+ <20220801124253.11c24d91.alex.williamson@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220801124253.11c24d91.alex.williamson@redhat.com>
+X-ClientProxiedBy: BLAPR03CA0135.namprd03.prod.outlook.com
+ (2603:10b6:208:32e::20) To MN2PR12MB4192.namprd12.prod.outlook.com
+ (2603:10b6:208:1d5::15)
 MIME-Version: 1.0
-In-Reply-To: <CAJZ5v0gSY7sJ2zsUsBeNFpT8XnL5yHd0inxh1+pXa9s1b9M50A@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: e6e2ef5a-5660-437b-e75e-08da748ff986
+X-MS-TrafficTypeDiagnostic: BN9PR12MB5241:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: XbkyERU3LXWvQLxtadEqKmKbaOvUqAUe9broBLbOcpk/bUP+T+ZGhi5tleGC3+RSe3YokZ78GAJO90fIk2TVoVpPAFHw1LrpVkxE+z4Auh2rE6czBOwc/10efSpcr96k4pW2tWFjzk4U1t0ipCUwB1j9A0X5KsGk7lyepkdhKSi1TmgvXavn0c8psEWmyQ5rhYcjGvpZHEg2HnMPyxyWj+DB51IFVHhDZkT+9IspbKwtaRnzEvk1aTtVpe89bNMKOqKn7/HmF7KVq5Z/zo5LaCut0Rcht/qrFoHqzEkrVKRM18xHFhLG7R/qUc28HPKR5tkDDe8pUv11bkJJNEPrxvRPE9auPb+MUIzqFAl80uuig8bPd6y4jSEa/MPwQKq4MiNzlld5bDLbrUVT/iapphE4L6nBFsi0BLBwB9AGoxU8ZUSRZv2pF9tbOQJR52rzjmW/AOBNl0Z92MSEtp/38DCi8vry65FwxuReC2Vx1DJlH/pyIkHbJmqmEfYI7oI5U/9PE7FIIVE+7Chu4v0xryvjHhc/HYNZuP0gCqE4J5Nn8a+EfWmiJFMFHONQW0rH5RkM64HYWejxlE0whafirl8WHrDZoLZScf6vPvvS/Wj5oDO6yaZGtxwGCwFMH2JXjhhuJtHvsn+Dl5D4ADlB44CD1HI02uDjL2EzA4/3FWHbIJEWZPCSf0/aC63LZdZMf8YZCm8Bsqc7XmqhHA6FklhcmPN7rYGI+ENo2hfl9+/2PIDHl5ZAuFOH8PcxMCGF
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN2PR12MB4192.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(346002)(136003)(39860400002)(376002)(396003)(366004)(26005)(186003)(86362001)(6512007)(478600001)(38100700002)(6486002)(2616005)(8936002)(6506007)(53546011)(2906002)(41300700001)(83380400001)(7416002)(5660300002)(6916009)(36756003)(316002)(8676002)(66946007)(66556008)(54906003)(66476007)(4326008);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?jTEMBaYpDGIyLrWBLyFYGLAqpM1gTAkIenUvW7yP+iIzMxHB3zuzxBqqbBV1?=
+ =?us-ascii?Q?Ic71Ny+WRreJa+bteGMvz85COzUkBAjJRjTw7ssyo78tgMUjIqRmVn8FJixK?=
+ =?us-ascii?Q?EQfqboCMa2P0i4hDX3InSrjNyhea0jhanwC4/W5Dg/3k9QjLWb/sJQQWfbUi?=
+ =?us-ascii?Q?bFCpaNCf9FsUgUGl+320H/R+sIcgq/4wxSVsYlbX+IZnbfOfIXPVdzEdASW7?=
+ =?us-ascii?Q?YPv97JqTpXj9JaTkhxgbW+/nJt80WqTLHRxoE6orcFbXhup9KIjF7cEINEZW?=
+ =?us-ascii?Q?eH/5D3DUSrl9aCBGbBb5s0pkOQwqTBwSCF+5s78/NG3mxI5s3Bql/guayaNb?=
+ =?us-ascii?Q?/2t6bvwoCQR54GUXpvft77OW6xPhz9OZUKc4oEJVFAdbeDT4pNKfIVp+E+7N?=
+ =?us-ascii?Q?jUs8v9TZMGMu7DnuZzsLee+7EkZjFACrAedqcpxm0n3TvBymGXztf/vPysWP?=
+ =?us-ascii?Q?9wIOb6Wvtv3qm1atlKGiLLgoyDRw1QnaEQ457FV7GKvQ0YyYNp4JWYRFjIzn?=
+ =?us-ascii?Q?ZCU6KBzMswQqEEOo/zl9dMKxLMlivInn64MbVFdqqDVZhJxvIqmp9EjNUKwf?=
+ =?us-ascii?Q?TMX8gATE7yOcB5GScMPe6fO7ZMCT3nXp28v9Hk0/OsMELeNHXUnUUwewdy88?=
+ =?us-ascii?Q?c3BsDXRK8+rnGWrcWftxq+puim9ECTZe882QeyB6RNYkcsL4vTaa9LiCB12a?=
+ =?us-ascii?Q?H8bDhqXG0Ew5a8iJ4SdmdeG2DxTrwG6FnQmmGoYXdW2ALalQhADISFKG352q?=
+ =?us-ascii?Q?0vRdJ2A/zujKjgt90x0pKf7qlHMrmj1kMiWgv7Zya496M9mKXVIJepTHuUZo?=
+ =?us-ascii?Q?rognCfArbAN2sYRRszRCuKt1w3zL9M9EihM5kM1upm+5RXtLwK9hgWhWv5lB?=
+ =?us-ascii?Q?5oJh4kqkyu5lOO3C/ytgwZJOt3/upPFFZ+ef+xyMwOuFTj0pZ+FSOlnROodB?=
+ =?us-ascii?Q?4+Pf9K31XIzE9bGfGrbw5hrNVqtRlKIlsZUnsfUigeNs+EzEFXuEXIvn4ApQ?=
+ =?us-ascii?Q?9Ho74Qe4HgmtTeOTclpthj0C7wt0L8canb3JKJKIjuRM1GHNCsGa+saESVfY?=
+ =?us-ascii?Q?smBX/amQcnbYJl3rMaKSIFPGTvXw6R49eXtB04y4FaukhKrsP1H0c/pmgx6E?=
+ =?us-ascii?Q?2h3RKEYJnUDTpB+9zrV5TxQpH3i8Uy/GRk5FYmerath6AwZp/iC0F0jSnHSY?=
+ =?us-ascii?Q?DhZj6Wws7M+Z4b7aa8x9VqbX6lj3XPzxyUe4IgkZivQLXkUBsy8dL3X9OULY?=
+ =?us-ascii?Q?qBF/6b457E/bCA7M8Gw+GGHYgwXjI9NrwhGrc24o9AMmWByxiZpNw5+NeWpC?=
+ =?us-ascii?Q?pJuIbCAzgKaADC+ehvhANnn2N9n9ngti/5BTZ/OvzcrSHZ7uM3n7/aikZdQ/?=
+ =?us-ascii?Q?6FyDuFw5dTEQNaed5kEE4F5SDrsTWsBTJqxzDRybHM2eixLDn4pXo2dTcdLg?=
+ =?us-ascii?Q?yNrvmGAwWvsaweLEmyxpWJKFfOaFjrkObuwqQN0MtrKJHmQN2O/wjfy+VZvI?=
+ =?us-ascii?Q?O4JTNbhbEkDrAXKdqHYU7KujKjzCABThtJtcrwPEwdzFhzPdPFCM0o/X4X7a?=
+ =?us-ascii?Q?1QxKnfP3no7Og1Lon5hLR6P5f69++I0malRxFFDn?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e6e2ef5a-5660-437b-e75e-08da748ff986
+X-MS-Exchange-CrossTenant-AuthSource: MN2PR12MB4192.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Aug 2022 14:04:54.4047
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: HPSszQCQq6vugtetvNzwvqNO5NdN4mG2Ns7q23CJhZ+IunSGRBGI0QYK129OaAb9
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN9PR12MB5241
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Mon, Aug 01, 2022 at 12:42:53PM -0600, Alex Williamson wrote:
+> On Wed, 27 Jul 2022 11:37:02 +0530
+> Abhishek Sahu <abhsahu@nvidia.com> wrote:
+> 
+> > On 7/26/2022 10:53 PM, Jason Gunthorpe wrote:
+> > > On Tue, Jul 26, 2022 at 06:17:18PM +0530, Abhishek Sahu wrote:  
+> > >>  Thanks Alex for your thorough review of uAPI.
+> > >>  I have incorporated all the suggestions.
+> > >>  Following is the updated uAPI.
+> > >>  
+> > >>  /*
+> > >>   * Upon VFIO_DEVICE_FEATURE_SET, allow the device to be moved into a low power
+> > >>   * state with the platform-based power management.  Device use of lower power
+> > >>   * states depends on factors managed by the runtime power management core,
+> > >>   * including system level support and coordinating support among dependent
+> > >>   * devices.  Enabling device low power entry does not guarantee lower power
+> > >>   * usage by the device, nor is a mechanism provided through this feature to
+> > >>   * know the current power state of the device.  If any device access happens
+> > >>   * (either from the host or through the vfio uAPI) when the device is in the
+> > >>   * low power state, then the host will move the device out of the low power
+> > >>   * state as necessary prior to the access.  Once the access is completed, the
+> > >>   * device may re-enter the low power state.  For single shot low power support
+> > >>   * with wake-up notification, see
+> > >>   * VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY_WITH_WAKEUP below.  Access to mmap'd
+> > >>   * device regions is disabled on LOW_POWER_ENTRY and may only be resumed after
+> > >>   * calling LOW_POWER_EXIT.
+> > >>   */
+> > >>  #define VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY 3
+> > >>  
+> > >>  /*
+> > >>   * This device feature has the same behavior as
+> > >>   * VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY with the exception that the user
+> > >>   * provides an eventfd for wake-up notification.  
+> > > 
+> > > It feels like this should be one entry point instead of two.
+> > > 
+> > > A flag "automatic re-sleep" and an optional eventfd (-1 means not
+> > > provided) seems to capture both of these behaviors in a bit clearer
+> > > and extendable way.
+> 
+> I think the mutual exclusion between re-entrant mode and one-shot is
+> quite a bit more subtle in the version below, so I don't particularly
+> find this cleaner.  Potentially we could have variant drivers support
+> one w/o the other in the previously proposed model as well.  It's
+> interesting to see this suggestion since since we seem to have a theme
+> of making features single purpose elsewhere.  Thanks,
 
-On 8/2/22 7:01 PM, Rafael J. Wysocki wrote:
-> On Tue, Aug 2, 2022 at 5:19 AM Peter Wang <peter.wang@mediatek.com> wrote:
->>
->>> Hi Rafael,
->>>
->>> Yes, it is very clear!
->>> I miss this important key point that usage_count is always >
->>> rpm_active 1.
->>> I think this patch could work.
->>>
->>> Thanks.
->>> Peter
->>>
->>>
->>>
->>>
->> Hi Rafael,
->>
->> After test with commit ("887371066039011144b4a94af97d9328df6869a2 PM:
->> runtime: Fix supplier device management during consumer probe") past weeks,
->> The supplier still suspend when consumer is active "after"
->> pm_runtime_put_suppliers.
->> Do you have any idea about that?
-> Well, this means that the consumer probe doesn't bump up the
-> supplier's PM-runtime usage counter as appropriate.
->
-> You need to tell me more about what happens during the consumer probe.
-> Which driver is this?
+It is still quite single purpose, just
+VFIO_DEVICE_LOW_POWER_REENTERY_DISABLE is some minor customization of
+that single purpose.
 
-Hi Rafael,
+Either the flag is set or not, it isn't subtle..
 
-I have the same idea with you. But I still don't know how it could happen.
-
-It is upstream ufs driver in scsi system. Here is call flow
-do_scan_async (process 1)
-     do_scsi_scan_host
-         scsi_scan_host_selected
-             scsi_scan_channel
-                 __scsi_scan_target
-                     scsi_probe_and_add_lun
-                         scsi_alloc_sdev
-                             slave_alloc     -> setup link
-                         scsi_add_lun
-                             slave_configure    -> enable rpm
-                             scsi_sysfs_add_sdev
-                                 scsi_autopm_get_device    <- get runtime pm
-                                 device_add                <- invoke 
-sd_probe in process 2
-                                 scsi_autopm_put_device    <- put 
-runtime pm, point 1
-
-driver_probe_device (process 2)
-     __driver_probe_device
-         pm_runtime_get_suppliers
-             really_probe
-                 sd_probe
-                     scsi_autopm_get_device                <- get 
-runtime pm, point 2
-                     pm_runtime_set_autosuspend_delay    <- set rpm 
-delay to 2s
-                     scsi_autopm_put_device                <- put 
-runtime pm
-         pm_runtime_put_suppliers                        <- 
-(link->rpm_active = 1)
-
-After process 1 call scsi_autopm_put_device(point 1) let consumer enter 
-suspend,
-process 2 call scsi_autopm_get_device(point 2) may have chance resume 
-consumer but not
-bump up the supplier's PM-runtime usage counter as appropriate.
-
-Thanks.
-Peter
-
-
-
-
-
+Jason
