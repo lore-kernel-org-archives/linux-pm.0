@@ -2,91 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3F42C19F2A
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Aug 2022 17:30:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C95DC19F2B
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Aug 2022 20:54:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238206AbiHCRa5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Aug 2022 13:30:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40048 "EHLO
+        id S237566AbiHCUyz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Aug 2022 16:54:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238162AbiHCRa4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Aug 2022 13:30:56 -0400
-Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FA4325EC;
-        Wed,  3 Aug 2022 10:30:56 -0700 (PDT)
-Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-31f445bd486so178247607b3.13;
-        Wed, 03 Aug 2022 10:30:56 -0700 (PDT)
+        with ESMTP id S236574AbiHCUyy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Aug 2022 16:54:54 -0400
+Received: from mail-oa1-x31.google.com (mail-oa1-x31.google.com [IPv6:2001:4860:4864:20::31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70FE1E7D
+        for <linux-pm@vger.kernel.org>; Wed,  3 Aug 2022 13:54:53 -0700 (PDT)
+Received: by mail-oa1-x31.google.com with SMTP id 586e51a60fabf-10ea9ef5838so16697854fac.3
+        for <linux-pm@vger.kernel.org>; Wed, 03 Aug 2022 13:54:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=qCvjB0XOGwom3VuKpUHiorVjWdQfyMRzQDadmEnUHfo=;
+        b=iH2cHiyXqK9lCPc7UF2E5siG7sE1VBvgiD6bj0XQ2XOZEaHWJVTEvWFzAA+rrjMZ7J
+         83IqAOQGL8q5iEALOWpLAFFRpwoS2W0T5hAzgenMRyTvAkanoMjyTA1vMnKZDjkRagYa
+         mZErqeI7eut841LPwAGXKQTDKHa/GLL+Sd9GY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=WBeF1S+AVOd3VzbsyVxd4ccPoTYFwU9F03mP/z22PLU=;
-        b=w9skiEMXIHQ81SL+xIStyCjehKHLdiauzCqYMv+QNmagKOEQ7CgbARqdqF8bRiY4aG
-         RheY9vNOGJQ4yzq1ixbiO40FdN0HdUzdPqJhwGAj0gRHVzyC28uzst4WGTBS97zVcbmh
-         ttLTevAR7dph/pUeQeVJgY5xPu3nsPMkpBaDT3nk3Rl0vmPWH9GHjzc/0UwLfuaVxccd
-         458RcyYZ4D1SB/bpuWmDDNpUU2GsVGCqw7MORcItjQh80NaGAr4H7Ld7dcHIctT9kWck
-         yyw9FKmS4kNRWB2bBU+tqjeQt/1XgrfRwu5v56W6AeAe7murAP38TRiRmxSHEXkIV8+G
-         JykQ==
-X-Gm-Message-State: ACgBeo1hZ5XHfzvb6cXFSSLjUMnMOkrrU/h7yhUrDGupcfqhbkT0M0OF
-        QPjYuf4fCl0fWgKrbfKr5vtPrvqguMJ8hdy5rDk=
-X-Google-Smtp-Source: AA6agR7q/E/CJqX7dlIHMLTWPoza3UNEO+B1zjDcw9UgOSdDI5vLwI6sgfgNw+5i9EWA8M4Jicn6dvapmTIp6HLDSGI=
-X-Received: by 2002:a0d:d694:0:b0:325:1881:6a52 with SMTP id
- y142-20020a0dd694000000b0032518816a52mr13318774ywd.149.1659547855256; Wed, 03
- Aug 2022 10:30:55 -0700 (PDT)
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=qCvjB0XOGwom3VuKpUHiorVjWdQfyMRzQDadmEnUHfo=;
+        b=guZnag00iTWbvBfJQFzTbDgMO9W50eiHdXTOLRoKYMnSfWc3vGaCftYKANCxbCWR8J
+         lNaDaCgMdDL+7DbntHsUAZFHpzzAI1qOb43lEBa5beHQPQZi0G6OodvNFV66r+1bPgnC
+         KBR3WSEEcsdTufsu6PrjfgtccUL6yeLB+Tddr0HX0WyS8UsAMOhVF+jKogGtiosqsT+h
+         Wd/o5HIlGZJoFdSVgCJTSFQPvLvPyOE6V0FwKiqHD7+35qo51KsjP1Zf5HpHPm6nG/CS
+         J+yJnM2Qj4LAXi+Vl9+DCSnrok4fOq1HaljZXvLJw/pf5p8kYete2X2neYIHgStztWJ3
+         AUMQ==
+X-Gm-Message-State: ACgBeo0PM0qqyoj5AeKtVwkPWxu0hT5CsdgZ0/WWRdPXugS5+o4+lLjj
+        5DPXf5sRO5mO/jluMtFtcrv37gvaFI3xMQ==
+X-Google-Smtp-Source: AA6agR4yWswS1PIt5Cw8PK37pkYRHI3Oh0NGYnhjkrB4XR/N+xtg/6qyrKydU4AzwA2uIQ2dT2eXeQ==
+X-Received: by 2002:a05:6870:c0c5:b0:10d:5f5c:9ab1 with SMTP id e5-20020a056870c0c500b0010d5f5c9ab1mr2834735oad.156.1659560092752;
+        Wed, 03 Aug 2022 13:54:52 -0700 (PDT)
+Received: from mail-oo1-f54.google.com (mail-oo1-f54.google.com. [209.85.161.54])
+        by smtp.gmail.com with ESMTPSA id kw12-20020a056870ac0c00b0010be134ac60sm4637417oab.19.2022.08.03.13.54.52
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 03 Aug 2022 13:54:52 -0700 (PDT)
+Received: by mail-oo1-f54.google.com with SMTP id j8-20020a4ac548000000b00435a8dd31a2so3197313ooq.5
+        for <linux-pm@vger.kernel.org>; Wed, 03 Aug 2022 13:54:52 -0700 (PDT)
+X-Received: by 2002:a05:6830:290a:b0:618:b519:53f5 with SMTP id
+ z10-20020a056830290a00b00618b51953f5mr9795854otu.237.1659559753343; Wed, 03
+ Aug 2022 13:49:13 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220725173755.2993805-1-f.fainelli@gmail.com>
- <CAJZ5v0hL46vdr=f8YiAPnRmmehZs51n+tkgoY7PMTVyJD0cpEA@mail.gmail.com> <1c129750-4ac0-e4aa-f3b1-80ca1d35e23c@linaro.org>
-In-Reply-To: <1c129750-4ac0-e4aa-f3b1-80ca1d35e23c@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 3 Aug 2022 19:30:44 +0200
-Message-ID: <CAJZ5v0jOzpZSHPdTp2Qzh-oQP7aa=LtgXr2k6W3DevBV0Zw5uA@mail.gmail.com>
-Subject: Re: [PATCH] tools/thermal: Fix possible path truncations
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Markus Mayer <mmayer@broadcom.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>
+References: <20220504232102.469959-1-evgreen@chromium.org> <20220504161439.4.I32591db064b6cdc91850d777f363c9d05c985b39@changeid>
+ <Yumskea9UJ9n0uPz@sol.localdomain>
+In-Reply-To: <Yumskea9UJ9n0uPz@sol.localdomain>
+From:   Evan Green <evgreen@chromium.org>
+Date:   Wed, 3 Aug 2022 13:48:37 -0700
+X-Gmail-Original-Message-ID: <CAE=gft4jTQY1N5X=Yyg6g6-e0EBPHKhnQxcX02NZU0mZxaTvwA@mail.gmail.com>
+Message-ID: <CAE=gft4jTQY1N5X=Yyg6g6-e0EBPHKhnQxcX02NZU0mZxaTvwA@mail.gmail.com>
+Subject: Re: [PATCH 04/10] security: keys: trusted: Allow storage of PCR
+ values in creation data
+To:     Eric Biggers <ebiggers@kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Matthew Garrett <mgarrett@aurora.tech>,
+        Daniil Lunev <dlunev@google.com>, zohar@linux.ibm.com,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        linux-integrity@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Gwendal Grignou <gwendal@chromium.org>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Matthew Garrett <matthewgarrett@google.com>,
+        Matthew Garrett <mjg59@google.com>,
+        David Howells <dhowells@redhat.com>,
+        James Morris <jmorris@namei.org>,
+        "Serge E. Hallyn" <serge@hallyn.com>, keyrings@vger.kernel.org,
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        linux-security-module@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 3, 2022 at 7:19 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+On Tue, Aug 2, 2022 at 4:00 PM Eric Biggers <ebiggers@kernel.org> wrote:
 >
-> On 03/08/2022 19:07, Rafael J. Wysocki wrote:
-> > On Mon, Jul 25, 2022 at 7:38 PM Florian Fainelli <f.fainelli@gmail.com> wrote:
-> >>
-> >> A build with -D_FORTIFY_SOURCE=2 enabled will produce the following warnings:
-> >>
-> >> sysfs.c:63:30: warning: '%s' directive output may be truncated writing up to 255 bytes into a region of size between 0 and 255 [-Wformat-truncation=]
-> >>    snprintf(filepath, 256, "%s/%s", path, filename);
-> >>                                ^~
-> >> Bump up the buffer to PATH_MAX which is the limit and account for all of
-> >> the possible NUL and separators that could lead to exceeding the
-> >> allocated buffer sizes.
-> >>
-> >> Fixes: 94f69966faf8 ("tools/thermal: Introduce tmon, a tool for thermal subsystem")
-> >> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> On Wed, May 04, 2022 at 04:20:56PM -0700, Evan Green wrote:
+> > diff --git a/security/keys/trusted-keys/trusted_tpm1.c b/security/keys/trusted-keys/trusted_tpm1.c
+> > index aa108bea6739b3..2975827c01bec0 100644
+> > --- a/security/keys/trusted-keys/trusted_tpm1.c
+> > +++ b/security/keys/trusted-keys/trusted_tpm1.c
+> > @@ -713,6 +713,7 @@ enum {
+> >       Opt_hash,
+> >       Opt_policydigest,
+> >       Opt_policyhandle,
+> > +     Opt_creationpcrs,
+> >  };
 > >
-> > Daniel, are you going to pick up this one or should I?
+> >  static const match_table_t key_tokens = {
+> > @@ -725,6 +726,7 @@ static const match_table_t key_tokens = {
+> >       {Opt_hash, "hash=%s"},
+> >       {Opt_policydigest, "policydigest=%s"},
+> >       {Opt_policyhandle, "policyhandle=%s"},
+> > +     {Opt_creationpcrs, "creationpcrs=%s"},
+> >       {Opt_err, NULL}
+> >  };
+> >
+> > @@ -858,6 +860,13 @@ static int getoptions(char *c, struct trusted_key_payload *pay,
+> >                               return -EINVAL;
+> >                       opt->policyhandle = handle;
+> >                       break;
+> > +             case Opt_creationpcrs:
+> > +                     if (!tpm2)
+> > +                             return -EINVAL;
+> > +                     res = kstrtoint(args[0].from, 16, &opt->creation_pcrs);
+> > +                     if (res < 0)
+> > +                             return -EINVAL;
+> > +                     break;
 >
-> Yes, you can pick it
+> I thought that TPM1 is deprecated.  Are you sure you need more TPM1 features?
 
-Done.
+It seems that trusted_tpm1.c is not just TPM1 functions, but also
+common functions that call TPM2 primitives. A few of these functions
+(like this getoptions()) seem to even error out if !tpm_is_tpm2(chip).
 
-> > There is also a tmon patch from Florian that seems to be pending.
-> > Should I take care of it?
->
-> I'm not sure which patch you are referring but if it is the pthread
-> compilation issue, it should be already applied for v5.20-rc1 from the
-> thermal pull request
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/diff/tools/thermal/tmon/tmon.h?id=c1dbe9a1c86da098a29dcdca1a67b65e2de7ec3a
-
-Yes, it was this one.
-
-OK, we're good.
+-Evan
