@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 625A2C25B07
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50EE7C25B06
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Aug 2022 22:52:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232616AbiHDWwB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Aug 2022 18:52:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42470 "EHLO
+        id S239777AbiHDWv7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Aug 2022 18:51:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42448 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236063AbiHDWv6 (ORCPT
+        with ESMTP id S232616AbiHDWv6 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2022 18:51:58 -0400
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 630AB3A4A6
-        for <linux-pm@vger.kernel.org>; Thu,  4 Aug 2022 15:51:56 -0700 (PDT)
-Received: by mail-wm1-x32f.google.com with SMTP id h34-20020a05600c49a200b003a5165eae0fso522332wmp.4
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2022 15:51:56 -0700 (PDT)
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E1F832060
+        for <linux-pm@vger.kernel.org>; Thu,  4 Aug 2022 15:51:52 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id l4so1306482wrm.13
+        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2022 15:51:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=Qj/girp3QZIjTVT0mlN9J9xZSF+SZjyq2BVb0HmFUYI=;
-        b=gDrKK+ABb++UEN5IohDsJzyGk+rDGu+3S5fXSEpKqR8svo0vm9z9XqRCMQDd1DQ/li
-         NvevuLYuXv0pKqtTfpGmLagFbHrDED0K77NPeSqhiSZNZUaJPOuugLvc3iKTDtGDul6M
-         pmRXtBfeJTa6OlV0eiZEum+kxEJ8rgk2XIXU9owLnTUiWI9cqzUSWJljhGs5eFLnL4BR
-         NLcmd1wWvc/iOn6OpEa7yUWvkKSc+T16K7d19Nab+25GgCGLd7kI1xmoZqoX5MX/udhs
-         BNxbA6wMuql7rovDGUx64AmeIokgGX09MKj6pJRgxhPmaGgAO32WLgRM2ypPLUum3d8v
-         E+3A==
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc;
+        bh=pznRh7mSZnRSGOsJjKLdAY7waBRS/asCiUcfzryOWi0=;
+        b=0ebtnK/y24MmBsXTmBaxlpeTrQb9Xeuc98Q4ZuIFGK0LAQNxjJeDYG8k7e/RRLF6pC
+         E7r2FianE7MBL3q9LwyTsDnRtDqkrfI563ODr6oiy9AlouokuCH9J3vlTPc4poO/1oia
+         amJTk6uY4+kunwOCRELBa5s9GdiQrXDu3l2zmvVqXMwKRe+fA8pSS41Vj1v394J5u9jz
+         7GHTZxRxX54ltsTHaZwtu3cfXEz8gFqJKM7hJypVyJnyNmH7spGSHtx8W/wcyJK/nrLM
+         uyMPIs5E7HqjcY8uU8TQPO8eCk2iIaYzyFYghNfzDaHXyYOCk5KtlElMHWYw0luAnLsS
+         bg2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=Qj/girp3QZIjTVT0mlN9J9xZSF+SZjyq2BVb0HmFUYI=;
-        b=Xjp7k+v3eqc5Iwz+7F+mS01i5CoL8Gu+e2pBrfLgy5rW+F5aMaf1Y33mXJXaSzXuLW
-         6mn2ysiIFgAtlgF1LIpvNYBPsPOlvKiMCnHyGo5SQ/84SKGz5lQ9ZvIHwScV/CgilUoP
-         4Dn/JPev8HERFIIP7OVLbNWol9hpKBttNElPO5mQHlkCs+PytnlFl6tEF+5RyVzl6l13
-         8of59hluCVthOW6U2geGrXPOCgf5DMcVIPy2a4ULue+mGU/VynHkrgiP7Xdq4jEOxCIS
-         glaOsVu0BHiQlcAlR9shJruVKIeKPyXciW/TeijtPnkDU9dC7g6XentCxQNr8/+2gQhO
-         rvSA==
-X-Gm-Message-State: ACgBeo2VBDVfcWDEeWydziyuJO7DvtedY+FCc2gJYNr7/9MCp2V7X4YO
-        XJDhxoeY64xPbNQzjnbf02h1vw==
-X-Google-Smtp-Source: AA6agR4yzg6P2Wq5LquxIwEqYsgiFcBCZCqmZPNRBaz0QKzziuNvGijBJqPtBb0vVxxt3kOwTBbQ0w==
-X-Received: by 2002:a05:600c:3553:b0:3a3:2b65:299e with SMTP id i19-20020a05600c355300b003a32b65299emr7295841wmq.145.1659653514941;
-        Thu, 04 Aug 2022 15:51:54 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc;
+        bh=pznRh7mSZnRSGOsJjKLdAY7waBRS/asCiUcfzryOWi0=;
+        b=pkdC5teRmsor49JVgZ7UvOUN3HHNkT05in8bZucMJpl7Sp6hvF9eyq6ialoMaLijCk
+         VEgPyonkHm5irNa0BRVWsyudV+qpsc6G7aGVrLmbjil8kuJdTKA19bpTymd5m5W1t1LU
+         nC38A0KJtNlbsitwqvSMmkXAmoxfWMHF2JCZX7nuTKYYOx83GwhDww6WZLu+dx9Fh7Fl
+         S7jI6N//B1L5O9g0HDNlHGuUT4OZQTffkCDQ1nON/Lwg2Nq5vR92QBMvbnfu7wGnhr6g
+         LDpxZ4ryN7sAYZtBgZ99peNBl06DQfFqoN+h5YioF/wg16Yun1zWg5FPUe0HjQeaPAAA
+         Tn8A==
+X-Gm-Message-State: ACgBeo3fDmFRHh9N3Rxg98vTJ74GZxjQUn7VZ/NABNlT7j3oi5wNp39n
+        niQwPSpeeaVV7RorOWFMRVmpIQ==
+X-Google-Smtp-Source: AA6agR6xlUrCJZRalcLrOlbeA+kMgLim+vxdzaOp3Np77E5iu6trJdNx7e2SaIRCrcLZLbpJxZAV0Q==
+X-Received: by 2002:a5d:548d:0:b0:21e:e704:94e4 with SMTP id h13-20020a5d548d000000b0021ee70494e4mr2470875wrv.87.1659653510622;
+        Thu, 04 Aug 2022 15:51:50 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:31aa:ed2c:3f7:19d])
-        by smtp.gmail.com with ESMTPSA id a16-20020a056000051000b0021f87e8945asm2495906wrf.12.2022.08.04.15.51.53
+        by smtp.gmail.com with ESMTPSA id a16-20020a056000051000b0021f87e8945asm2495906wrf.12.2022.08.04.15.51.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Aug 2022 15:51:54 -0700 (PDT)
+        Thu, 04 Aug 2022 15:51:50 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
@@ -60,93 +60,148 @@ Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
         bjorn.andersson@linaro.org, mcoquelin.stm32@gmail.com,
         glaroque@baylibre.com, miquel.raynal@bootlin.com,
         shawnguo@kernel.org, niklas.soderlund@ragnatech.se,
-        matthias.bgg@gmail.com, j-keerthy@ti.com,
-        Amit Kucheria <amitk@kernel.org>
-Subject: [PATCH v5 02/33] thermal/of: Make new code and old code co-exist
-Date:   Fri,  5 Aug 2022 00:43:18 +0200
-Message-Id: <20220804224349.1926752-3-daniel.lezcano@linexp.org>
+        matthias.bgg@gmail.com, j-keerthy@ti.com
+Subject: [PATCH v5 00/33] New thermal OF code
+Date:   Fri,  5 Aug 2022 00:43:16 +0200
+Message-Id: <20220804224349.1926752-1-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220804224349.1926752-1-daniel.lezcano@linexp.org>
-References: <20220804224349.1926752-1-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This transient change allows to use old and new OF together until all
-the drivers are converted to use the new OF API.
+The following changes are depending on:
 
-This will go away when the old OF code will be removed.
+ - 20220722200007.1839356-1-daniel.lezcano@linexp.org
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
----
- drivers/thermal/thermal_core.c |  6 ------
- drivers/thermal/thermal_of.c   | 13 +++++++++++--
- 2 files changed, 11 insertions(+), 8 deletions(-)
+which are present in the thermal/linux-next branch:
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index f50098d33152..b4c68410c158 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1491,10 +1491,6 @@ static int __init thermal_init(void)
- 	if (result)
- 		goto unregister_governors;
- 
--	result = of_parse_thermal_zones();
--	if (result)
--		goto unregister_class;
--
- 	result = register_pm_notifier(&thermal_pm_nb);
- 	if (result)
- 		pr_warn("Thermal: Can not register suspend notifier, return %d\n",
-@@ -1502,8 +1498,6 @@ static int __init thermal_init(void)
- 
- 	return 0;
- 
--unregister_class:
--	class_unregister(&thermal_class);
- unregister_governors:
- 	thermal_unregister_governors();
- error:
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index d4fd06b576aa..07bde07ddc04 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -485,6 +485,15 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- {
- 	struct device_node *np, *child, *sensor_np;
- 	struct thermal_zone_device *tzd = ERR_PTR(-ENODEV);
-+	static int old_tz_initialized;
-+	int ret;
-+
-+	if (!old_tz_initialized) {
-+		ret = of_parse_thermal_zones();
-+		if (ret)
-+			return ERR_PTR(ret);
-+		old_tz_initialized = 1;
-+	}
- 
- 	np = of_find_node_by_name(NULL, "thermal-zones");
- 	if (!np)
-@@ -1004,7 +1013,7 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
- 	return ERR_PTR(ret);
- }
- 
--static __init void of_thermal_free_zone(struct __thermal_zone *tz)
-+static void of_thermal_free_zone(struct __thermal_zone *tz)
- {
- 	struct __thermal_bind_params *tbp;
- 	int i, j;
-@@ -1517,7 +1526,7 @@ EXPORT_SYMBOL_GPL(devm_thermal_of_zone_unregister);
-  * Return: 0 on success, proper error code otherwise
-  *
-  */
--int __init of_parse_thermal_zones(void)
-+int of_parse_thermal_zones(void)
- {
- 	struct device_node *np, *child;
- 	struct __thermal_zone *tz;
+https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git/log/?h=thermal/linux-next
+
+The series introduces a new thermal OF code. The patch description gives
+a detailed explanation of the changes. Basically we write new OF parsing
+functions, we migrate all the users of the old thermal OF API to the new
+one and then we finish by removing the old OF code.
+
+That is the second step to rework the thermal OF code. More patches will
+come after that to remove the duplication of the trip definitions in the
+different drivers which will result in more code duplication removed and
+consolidation of the core thermal framework.
+
+Thanks for those who tested the series on their platform and
+investigated the regression with the disabled by default thermal zones.
+
+Changelog:
+ v5:
+   - Fixed st, exynos_tmu and adc iio sun4i compilation issue when
+     THERMAL_EMULATION or THERMAL_OF are not set
+   - Add the pmbus_core.c API conversion which was missing
+   - Collected more tags
+ v4:
+   - Fixed a compilation error when THERMAL_OF=n
+   - Collected more tags
+ v3:
+   - Rebased on the right branch as reported by Niklas Söderlund
+   - Collected more tags
+ v2:
+   - Changed the code in the register thermal zone function to prevent
+     the 'const' annotation being removed in the different drivers
+   - Collected the tags and adding Cc for more context
+   - Changed the first line patch description to comply to the 'input'
+     subsystem format
+   - Give a more detailed description in the changelog for the drivers
+   - Remove pointless calls to unregister as the devm version is used
+     instead
+   - Moved dummy functions from one patch to another to prevent git
+     bisecting issue when THERMAL_OF=n
+   - Fixed thermal zone disabled by default
+
+
+Daniel Lezcano (33):
+  thermal/of: Rework the thermal device tree initialization
+  thermal/of: Make new code and old code co-exist
+  thermal/drivers/rockchip: Switch to new of API
+  thermal/drivers/uniphier: Switch to new of API
+  thermal/drivers/generic-adc: Switch to new of API
+  thermal/drivers/mmio: Switch to new of API
+  thermal/drivers/tegra: Switch to new of API
+  thermal/drivers/sun8i: Switch to new of API
+  thermal/drivers/sprd: Switch to new of API
+  thermal/drivers/broadcom: Switch to new of API
+  thermal/drivers/qcom: Switch to new of API
+  thermal/drivers/st: Switch to new of API
+  thermal/drivers/amlogic: Switch to new of API
+  thermal/drivers/armada: Switch to new of API
+  thermal/drivers/db8500: Switch to new of API
+  thermal/drivers/imx: Switch to new of API
+  thermal/drivers/rcar: Switch to new of API
+  thermal/drivers/rzg2l: Switch to new of API
+  thermal/drivers/qoriq: Switch to new of API
+  thermal/drivers/mtk: Switch to new of API
+  thermal/drivers/banggap: Switch to new of API
+  thermal/drivers/maxim: Switch to new of API
+  thermal/drivers/hisilicon: Switch to new of API
+  thermal/drivers/ti-soc: Switch to new of API
+  ata/drivers/ahci_imx: Switch to new of thermal API
+  hwmon/drivers/pm_bus: Switch to new of thermal API
+  hwmon/drivers/core: Switch to new of thermal API
+  iio/drivers/sun4i_gpadc: Switch to new of thermal API
+  Input: sun4i-ts - switch to new of thermal API
+  regulator/drivers/max8976: Switch to new of thermal API
+  thermal/drivers/samsung: Switch to new of thermal API
+  thermal/core: Move set_trip_temp ops to the sysfs code
+  thermal/of: Remove old OF code
+
+ drivers/ata/ahci_imx.c                        |   15 +-
+ drivers/hwmon/hwmon.c                         |   14 +-
+ drivers/hwmon/pmbus/pmbus_core.c              |   10 +-
+ drivers/hwmon/scpi-hwmon.c                    |   14 +-
+ drivers/iio/adc/sun4i-gpadc-iio.c             |   14 +-
+ drivers/input/touchscreen/sun4i-ts.c          |   10 +-
+ drivers/regulator/max8973-regulator.c         |   10 +-
+ drivers/thermal/amlogic_thermal.c             |   16 +-
+ drivers/thermal/armada_thermal.c              |   12 +-
+ drivers/thermal/broadcom/bcm2711_thermal.c    |   14 +-
+ drivers/thermal/broadcom/bcm2835_thermal.c    |   14 +-
+ drivers/thermal/broadcom/brcmstb_thermal.c    |   20 +-
+ drivers/thermal/broadcom/ns-thermal.c         |   50 +-
+ drivers/thermal/broadcom/sr-thermal.c         |   16 +-
+ drivers/thermal/db8500_thermal.c              |    8 +-
+ drivers/thermal/hisi_thermal.c                |   14 +-
+ drivers/thermal/imx8mm_thermal.c              |   14 +-
+ drivers/thermal/imx_sc_thermal.c              |   14 +-
+ drivers/thermal/k3_bandgap.c                  |   12 +-
+ drivers/thermal/k3_j72xx_bandgap.c            |   12 +-
+ drivers/thermal/max77620_thermal.c            |    8 +-
+ drivers/thermal/mtk_thermal.c                 |   10 +-
+ drivers/thermal/qcom/qcom-spmi-adc-tm5.c      |   19 +-
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c   |   12 +-
+ drivers/thermal/qcom/tsens.c                  |   16 +-
+ drivers/thermal/qoriq_thermal.c               |   12 +-
+ drivers/thermal/rcar_gen3_thermal.c           |   16 +-
+ drivers/thermal/rcar_thermal.c                |   13 +-
+ drivers/thermal/rockchip_thermal.c            |   14 +-
+ drivers/thermal/rzg2l_thermal.c               |   10 +-
+ drivers/thermal/samsung/exynos_tmu.c          |   24 +-
+ drivers/thermal/sprd_thermal.c                |   18 +-
+ drivers/thermal/st/stm_thermal.c              |   18 +-
+ drivers/thermal/sun8i_thermal.c               |   14 +-
+ drivers/thermal/tegra/soctherm.c              |   21 +-
+ drivers/thermal/tegra/tegra-bpmp-thermal.c    |   19 +-
+ drivers/thermal/tegra/tegra30-tsensor.c       |   12 +-
+ drivers/thermal/thermal-generic-adc.c         |   10 +-
+ drivers/thermal/thermal_core.c                |    6 -
+ drivers/thermal/thermal_core.h                |    2 -
+ drivers/thermal/thermal_mmio.c                |   17 +-
+ drivers/thermal/thermal_of.c                  | 1140 ++++++-----------
+ drivers/thermal/thermal_sysfs.c               |    5 +-
+ .../ti-soc-thermal/ti-thermal-common.c        |   16 +-
+ drivers/thermal/uniphier_thermal.c            |   10 +-
+ include/linux/thermal.h                       |   85 +-
+ 46 files changed, 708 insertions(+), 1142 deletions(-)
+
 -- 
 2.25.1
 
