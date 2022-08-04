@@ -2,128 +2,151 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB3E7C25B06
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Aug 2022 21:56:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 625A2C25B07
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Aug 2022 22:52:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237103AbiHDV4Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Aug 2022 17:56:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35938 "EHLO
+        id S232616AbiHDWwB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Aug 2022 18:52:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234184AbiHDV4P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2022 17:56:15 -0400
-Received: from mail-oa1-x34.google.com (mail-oa1-x34.google.com [IPv6:2001:4860:4864:20::34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C549E15827
-        for <linux-pm@vger.kernel.org>; Thu,  4 Aug 2022 14:56:13 -0700 (PDT)
-Received: by mail-oa1-x34.google.com with SMTP id 586e51a60fabf-10edfa2d57dso1104185fac.0
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2022 14:56:13 -0700 (PDT)
+        with ESMTP id S236063AbiHDWv6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2022 18:51:58 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 630AB3A4A6
+        for <linux-pm@vger.kernel.org>; Thu,  4 Aug 2022 15:51:56 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id h34-20020a05600c49a200b003a5165eae0fso522332wmp.4
+        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2022 15:51:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc;
-        bh=A3KaqbTDvr6yI86EPzA1l0NOPWv07KWx997g85QsDx4=;
-        b=V06sSFt2ksPjM8k6wnSbaG2QkPaVwvcAPAKnSzq34sTv9ksxh2OqhTuqg8SpivF9Y0
-         BeAYJPw9WS7SWCrlAS2ZuZhlUV0Va814LRQgaD8u4FmAed6qJn5lA7YVe7jiuQtzViV2
-         U2pdwnl+QBpBXtgGdP1BnbBo3Ok4S5SQTNkLc=
+        d=linexp-org.20210112.gappssmtp.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc;
+        bh=Qj/girp3QZIjTVT0mlN9J9xZSF+SZjyq2BVb0HmFUYI=;
+        b=gDrKK+ABb++UEN5IohDsJzyGk+rDGu+3S5fXSEpKqR8svo0vm9z9XqRCMQDd1DQ/li
+         NvevuLYuXv0pKqtTfpGmLagFbHrDED0K77NPeSqhiSZNZUaJPOuugLvc3iKTDtGDul6M
+         pmRXtBfeJTa6OlV0eiZEum+kxEJ8rgk2XIXU9owLnTUiWI9cqzUSWJljhGs5eFLnL4BR
+         NLcmd1wWvc/iOn6OpEa7yUWvkKSc+T16K7d19Nab+25GgCGLd7kI1xmoZqoX5MX/udhs
+         BNxbA6wMuql7rovDGUx64AmeIokgGX09MKj6pJRgxhPmaGgAO32WLgRM2ypPLUum3d8v
+         E+3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=A3KaqbTDvr6yI86EPzA1l0NOPWv07KWx997g85QsDx4=;
-        b=4QEiH3gRbvK3PmykkW09DjX1fN58qknn0OPEBSPzxd12eiY5F58B4p1mqBsE6SVzXv
-         dT9w0h2H/sbZlfnDLyYzXBJ5hPLCyuL9TYTCnrBvwpZ5tkirETcLQrbUU/dvg/Oo8Zi0
-         LpXn/gme2aIKGTXDF2MUKWbLwaZ8mt1ok++Tbk9Pjl0h3aVHxUr2IK3SY4aK/kZWKd5e
-         Bcs+y9Za7ea1TmJnvCOzShErCt62U2rDhXwT7P+P/XNj9TtcSniYDh0JBTMJccNwaIf8
-         PY8UH8U25QWfs3fk+6HazChZSPh4vnOdjaDoxp6ipZCIBZcA1n+8Zf74xWH7dkFBUkbZ
-         Ckfg==
-X-Gm-Message-State: ACgBeo2YpUpSSIA/SW/SpWCneAmqaTgQMSkzxE2FstogKP2CxNqyvgZx
-        CZV/nZOAHkKpU4eCefHxyCfp7i8QTV7Z3A==
-X-Google-Smtp-Source: AA6agR7NWe/wGTX9lNTs50epxcc2LL6a8cfpAqXiKQTKPJpx7foWNot8qBjhsU0oZmc+dIJNYkj/pA==
-X-Received: by 2002:a05:6870:9613:b0:10d:cc11:62ec with SMTP id d19-20020a056870961300b0010dcc1162ecmr5316319oaq.9.1659650172920;
-        Thu, 04 Aug 2022 14:56:12 -0700 (PDT)
-Received: from mail-oa1-f42.google.com (mail-oa1-f42.google.com. [209.85.160.42])
-        by smtp.gmail.com with ESMTPSA id 185-20020a4a0dc2000000b004359da266b4sm367552oob.14.2022.08.04.14.56.11
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 04 Aug 2022 14:56:12 -0700 (PDT)
-Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-10ea7d8fbf7so1030578fac.7
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2022 14:56:11 -0700 (PDT)
-X-Received: by 2002:a05:6870:b4a1:b0:10e:50b8:50aa with SMTP id
- y33-20020a056870b4a100b0010e50b850aamr1952047oap.174.1659650171298; Thu, 04
- Aug 2022 14:56:11 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
+        bh=Qj/girp3QZIjTVT0mlN9J9xZSF+SZjyq2BVb0HmFUYI=;
+        b=Xjp7k+v3eqc5Iwz+7F+mS01i5CoL8Gu+e2pBrfLgy5rW+F5aMaf1Y33mXJXaSzXuLW
+         6mn2ysiIFgAtlgF1LIpvNYBPsPOlvKiMCnHyGo5SQ/84SKGz5lQ9ZvIHwScV/CgilUoP
+         4Dn/JPev8HERFIIP7OVLbNWol9hpKBttNElPO5mQHlkCs+PytnlFl6tEF+5RyVzl6l13
+         8of59hluCVthOW6U2geGrXPOCgf5DMcVIPy2a4ULue+mGU/VynHkrgiP7Xdq4jEOxCIS
+         glaOsVu0BHiQlcAlR9shJruVKIeKPyXciW/TeijtPnkDU9dC7g6XentCxQNr8/+2gQhO
+         rvSA==
+X-Gm-Message-State: ACgBeo2VBDVfcWDEeWydziyuJO7DvtedY+FCc2gJYNr7/9MCp2V7X4YO
+        XJDhxoeY64xPbNQzjnbf02h1vw==
+X-Google-Smtp-Source: AA6agR4yzg6P2Wq5LquxIwEqYsgiFcBCZCqmZPNRBaz0QKzziuNvGijBJqPtBb0vVxxt3kOwTBbQ0w==
+X-Received: by 2002:a05:600c:3553:b0:3a3:2b65:299e with SMTP id i19-20020a05600c355300b003a32b65299emr7295841wmq.145.1659653514941;
+        Thu, 04 Aug 2022 15:51:54 -0700 (PDT)
+Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:31aa:ed2c:3f7:19d])
+        by smtp.gmail.com with ESMTPSA id a16-20020a056000051000b0021f87e8945asm2495906wrf.12.2022.08.04.15.51.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 04 Aug 2022 15:51:54 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linexp.org>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org
+Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, khilman@baylibre.com,
+        abailon@baylibre.com, lukasz.luba@arm.com, broonie@kernel.org,
+        damien.lemoal@opensource.wdc.com, heiko@sntech.de,
+        hayashi.kunihiko@socionext.com, mhiramat@kernel.org,
+        talel@amazon.com, thierry.reding@gmail.com, digetx@gmail.com,
+        jonathanh@nvidia.com, anarsoul@gmail.com, tiny.windzz@gmail.com,
+        baolin.wang7@gmail.com, f.fainelli@gmail.com,
+        bjorn.andersson@linaro.org, mcoquelin.stm32@gmail.com,
+        glaroque@baylibre.com, miquel.raynal@bootlin.com,
+        shawnguo@kernel.org, niklas.soderlund@ragnatech.se,
+        matthias.bgg@gmail.com, j-keerthy@ti.com,
+        Amit Kucheria <amitk@kernel.org>
+Subject: [PATCH v5 02/33] thermal/of: Make new code and old code co-exist
+Date:   Fri,  5 Aug 2022 00:43:18 +0200
+Message-Id: <20220804224349.1926752-3-daniel.lezcano@linexp.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220804224349.1926752-1-daniel.lezcano@linexp.org>
+References: <20220804224349.1926752-1-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
-References: <20220504232102.469959-1-evgreen@chromium.org> <20220506160807.GA1060@bug>
- <CAE=gft6m75T0UC2DBhfFhuSMW6TK7aatD_04sQ18WosgGVsATw@mail.gmail.com>
- <CAJZ5v0gxq=EA_WWUiCR_w8o87iTHDR7OC5wi=GRBaAQS2ofd5w@mail.gmail.com>
- <CAE=gft6V6RLc-d4AOuRUVU2u1jMGghDRSrFqiCqMCLxemui8Pw@mail.gmail.com>
- <CAE=gft5OYAgosqmwNkk=Cwoooeg93Njmnzfz=gwCaLB0Ts+=sw@mail.gmail.com>
- <CAE=gft6sPkhNcz7+fJuDzQo2f8fM_0Wv_OWC9W2LyvXd6M6zeQ@mail.gmail.com>
- <CAHSSk05JEcZfS2tc22F+m76T3vZt-mZ7zUQaGRgSanKaFc5xBg@mail.gmail.com> <YusZ8gD/LjiAXadR@kernel.org>
-In-Reply-To: <YusZ8gD/LjiAXadR@kernel.org>
-From:   Evan Green <evgreen@chromium.org>
-Date:   Thu, 4 Aug 2022 14:55:35 -0700
-X-Gmail-Original-Message-ID: <CAE=gft6LaNZLTK72n_Z7an0VA1FxxFFgGk6rmUF_Jvf=JinG3A@mail.gmail.com>
-Message-ID: <CAE=gft6LaNZLTK72n_Z7an0VA1FxxFFgGk6rmUF_Jvf=JinG3A@mail.gmail.com>
-Subject: Re: [PATCH 00/10] Encrypted Hibernation
-To:     Jarkko Sakkinen <jarkko@kernel.org>
-Cc:     Matthew Garrett <mgarrett@aurora.tech>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Daniil Lunev <dlunev@google.com>, zohar@linux.ibm.com,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        linux-integrity@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Gwendal Grignou <gwendal@chromium.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        David Howells <dhowells@redhat.com>,
-        Hao Wu <hao.wu@rubrik.com>, James Morris <jmorris@namei.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Len Brown <len.brown@intel.com>,
-        Peter Huewe <peterhuewe@gmx.de>,
-        "Serge E. Hallyn" <serge@hallyn.com>, axelj <axelj@axis.com>,
-        keyrings@vger.kernel.org,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        linux-security-module@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 3, 2022 at 5:59 PM Jarkko Sakkinen <jarkko@kernel.org> wrote:
->
-> On Tue, Aug 02, 2022 at 11:36:43AM -0700, Matthew Garrett wrote:
-> > On Mon, Aug 1, 2022 at 3:33 PM Evan Green <evgreen@chromium.org> wrote:
-> >
-> > > One more bump here, as we'd really love to get encrypted hibernation
-> > > to a form upstream would accept if at all possible. We were
-> > > considering landing this in our Chrome OS tree for now, then coming
-> > > back in a couple months with a "we've been baking this ourselves and
-> > > it's going so great, oooh yeah". I'm not sure if upstream would find
-> > > that compelling or not. But in any case, some guidance towards making
-> > > this more upstream friendly would be well appreciated.
-> > >
-> > > One thing I realized in attempting to pick this myself is that the
-> > > trusted key blob format has moved to ASN.1. So I should really move
-> > > the creation ticket to the new ASN.1 format (if I can figure out the
-> > > right OID for that piece), which would allow me to drop a lot of the
-> > > ugly stuff in tpm2_unpack_blob(). Maybe if I get no other comments
-> > > I'll work on that and resend.
-> >
-> > I've been revamping my TPM-backed verified hibernation implementation
-> > based on this work, so I'd definitely be enthusiastic about it being
-> > mergeable.
->
-> BTW, is it tested with QEMU + swtpm?
+This transient change allows to use old and new OF together until all
+the drivers are converted to use the new OF API.
 
-For myself, so far I've been testing on a recent Intel Chromebook. The
-H1 (aka cr50) security chip on modern chromebooks implements a subset
-[1] of TPM2.0, and is exposed through the standard TPM APIs in the
-kernel. I can make sure to test on Qemu as well, is there anything in
-particular I should look out for?
+This will go away when the old OF code will be removed.
 
--Evan
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
+---
+ drivers/thermal/thermal_core.c |  6 ------
+ drivers/thermal/thermal_of.c   | 13 +++++++++++--
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-[1] https://chromium-review.googlesource.com/c/chromiumos/third_party/tpm2/+/3373466
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index f50098d33152..b4c68410c158 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1491,10 +1491,6 @@ static int __init thermal_init(void)
+ 	if (result)
+ 		goto unregister_governors;
+ 
+-	result = of_parse_thermal_zones();
+-	if (result)
+-		goto unregister_class;
+-
+ 	result = register_pm_notifier(&thermal_pm_nb);
+ 	if (result)
+ 		pr_warn("Thermal: Can not register suspend notifier, return %d\n",
+@@ -1502,8 +1498,6 @@ static int __init thermal_init(void)
+ 
+ 	return 0;
+ 
+-unregister_class:
+-	class_unregister(&thermal_class);
+ unregister_governors:
+ 	thermal_unregister_governors();
+ error:
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index d4fd06b576aa..07bde07ddc04 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -485,6 +485,15 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
+ {
+ 	struct device_node *np, *child, *sensor_np;
+ 	struct thermal_zone_device *tzd = ERR_PTR(-ENODEV);
++	static int old_tz_initialized;
++	int ret;
++
++	if (!old_tz_initialized) {
++		ret = of_parse_thermal_zones();
++		if (ret)
++			return ERR_PTR(ret);
++		old_tz_initialized = 1;
++	}
+ 
+ 	np = of_find_node_by_name(NULL, "thermal-zones");
+ 	if (!np)
+@@ -1004,7 +1013,7 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 	return ERR_PTR(ret);
+ }
+ 
+-static __init void of_thermal_free_zone(struct __thermal_zone *tz)
++static void of_thermal_free_zone(struct __thermal_zone *tz)
+ {
+ 	struct __thermal_bind_params *tbp;
+ 	int i, j;
+@@ -1517,7 +1526,7 @@ EXPORT_SYMBOL_GPL(devm_thermal_of_zone_unregister);
+  * Return: 0 on success, proper error code otherwise
+  *
+  */
+-int __init of_parse_thermal_zones(void)
++int of_parse_thermal_zones(void)
+ {
+ 	struct device_node *np, *child;
+ 	struct __thermal_zone *tz;
+-- 
+2.25.1
 
->
-> BR, Jarkko
