@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC5D0C19F2D
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Aug 2022 13:10:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 534F2C25B06
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Aug 2022 13:10:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239769AbiHDNKG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Aug 2022 09:10:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47204 "EHLO
+        id S239772AbiHDNKI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Aug 2022 09:10:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239772AbiHDNKE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2022 09:10:04 -0400
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E1F8167FB
-        for <linux-pm@vger.kernel.org>; Thu,  4 Aug 2022 06:09:59 -0700 (PDT)
-Received: by mail-wm1-x333.google.com with SMTP id l19so3532213wms.1
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2022 06:09:59 -0700 (PDT)
+        with ESMTP id S239775AbiHDNKF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2022 09:10:05 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 073131CB0E
+        for <linux-pm@vger.kernel.org>; Thu,  4 Aug 2022 06:10:02 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id j1so16847740wrw.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2022 06:10:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=qQK3oz9qbEyhSdrl3bVOwNcv3E2dhXu4IVGnclR+410=;
-        b=vr2V+/907iDdlnruy3oQToaR/XfzjPvf1I8r6njjhSb5We2JXBTFSpXjdhgdhuNfIQ
-         N6tVvfvbwormefx89zs9dso8FCwkmNIrVtuB7VcJE6msdYBZU77/6XDdKGeMSR24Ojfy
-         b68X2iJtRHY0/FXzxwb7gVrvSm8ZGqAstptPsUlBWVnKCyufHMMDHVYFqfnRyc3CiNa6
-         yNleYhuM22fRPZf+6wl8eCBgKF+TOF7sLztPbBzwmMoYU1BjTLALh2RAIrl5ylhBiasi
-         RHaK1gwfDFm3QBWJDHVlAi72fFMinOga3boV8oOh8/AaLcZ0X/2+S4dQH5Voj5HM652n
-         jwiw==
+        bh=ts9wGXUYExk6gtCsSPDiHLEprUWAxTPstjlSxz/66wI=;
+        b=bMwcYGHsBIEMrbYzlqomUHZufeEAWm8D1KStc+1SHQNZmazstd2ArhFBuu/ztF9QHj
+         H3kz2IfvpwimKU818GmMAmRDWXueM8lHfGBtN229jA0npnntym3dU8IPoUYQ0OUaPDIv
+         mVVe0jJJcyN69Bwh+Sttsael1VYjQz04wd2lsfayRx+JLK5hbMcYlpE0DR6yI4xN3OZj
+         Pkc/MRvr3Xcyj31H3scdaxgzPpEUZUMrQcmKrt8OOD8kIgwsmD8seSjCea6FPTQxdZBs
+         d3YquQOuxz/SyCOgKlC8WNv+6YltIlnRVg/qmXLQZTYXGBbwVS0K64jNV8ggb5OJzw0G
+         elAQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=qQK3oz9qbEyhSdrl3bVOwNcv3E2dhXu4IVGnclR+410=;
-        b=Qzs92rALXnSpBCCh9P0WPPCO5McYZ8n3oqS4DBLowFRa5KIeMUjFydZkyQiqKxqM6w
-         4P1mp/gVU0mutzEiYTBNxsDBXb98+JGX/5kgV32AKpw0RIMglb69xxzIDOyJhHiIK2mB
-         ELknsUscGF55DlfliCzeaOPoxTwsNjUmj861VvG47sTdwjUr+qblKSYfZ6Rczbdjo/+W
-         sld1HYORvPx2wj6eG8crhQFNX7iH8qjSQIJw1EWIZrhwBumCAXtFFkdSR/vupSIekcTi
-         UEzy67BuRfZB9Ho0i4ytnWML0YoSW0kRIB2m63ZVEvfG99Cu/JRsla8J5rIQE1kiTZzR
-         zAnA==
-X-Gm-Message-State: ACgBeo3XPtiYWtyHhybxQc+32oOXRJgItyBrzXyV8U90/kAaT0yNVoSH
-        w9elOBE+BnrKhAxJaf+V7DubTw==
-X-Google-Smtp-Source: AA6agR6o7r2+kCKEC0XaLuFu+G6WZijNXigrC6QeFtwmE/pCSyLppgMu1drtiApXCtiavm4n36GGGQ==
-X-Received: by 2002:a05:600c:503:b0:3a3:29ec:cd0 with SMTP id i3-20020a05600c050300b003a329ec0cd0mr6067777wmc.63.1659618597960;
-        Thu, 04 Aug 2022 06:09:57 -0700 (PDT)
+        bh=ts9wGXUYExk6gtCsSPDiHLEprUWAxTPstjlSxz/66wI=;
+        b=mQ0a5v/3zXui/ty22Lx51CTaJe+Zu58c9T7L8i8M47D2HGZYqkxKApmHSwaLNtLc/W
+         WT6Xn+1bVt7iCfnrD6mQjJyswP6zEhuYOavEF9YbkikZggGZ+3OEGpWB2h0l316+ycZN
+         3XE7/DmjkUIykpo8y2lWKXCdCbj8utaq/CDBZTi2ftB1yfKrXV1uj0pL5iVeD1fazXRa
+         myEHMvsaVBGsHR2IBGDdAUtKF/2Qo/S8C+s444zjTMGKmh+KxhInumV9CxUVmk+tGzX1
+         X4ZecSaImYn0fvYKS6DAaDp1u/qAD1QBVs/LfQ4aReF9vjlAn0EBOmBmDDyg+2XVkC8F
+         uDIQ==
+X-Gm-Message-State: ACgBeo3JwHQvlaiLDZeLfPes+MIKnqC3A4eJPpWHeGzF/B7t0riOY2yU
+        /a+InwVWO1xGrH1s+KzFQaIzEQ==
+X-Google-Smtp-Source: AA6agR4hBf9nrcJv9jI+ROSaWAYZZoaanOEqB2H5H2YmKYmGpgitvUOLLcF93mI+x3J0h5O+UNCjhQ==
+X-Received: by 2002:adf:d090:0:b0:220:7188:ac8b with SMTP id y16-20020adfd090000000b002207188ac8bmr1413517wrh.389.1659618601454;
+        Thu, 04 Aug 2022 06:10:01 -0700 (PDT)
 Received: from Balsam-ThinkPad-T480.. (235.163.185.81.rev.sfr.net. [81.185.163.235])
-        by smtp.gmail.com with ESMTPSA id o15-20020adfcf0f000000b0021d6a520ce9sm1156817wrj.47.2022.08.04.06.09.56
+        by smtp.gmail.com with ESMTPSA id o15-20020adfcf0f000000b0021d6a520ce9sm1156817wrj.47.2022.08.04.06.09.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Aug 2022 06:09:57 -0700 (PDT)
+        Thu, 04 Aug 2022 06:10:00 -0700 (PDT)
 From:   bchihi@baylibre.com
 To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
         amitk@kernel.org
@@ -57,9 +57,9 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-mediatek@lists.infradead.org, james.lo@mediatek.com,
         fan.chen@mediatek.com, louis.yu@mediatek.com,
         rex-bc.chen@mediatek.com, abailon@baylibre.com
-Subject: [PATCH v8.1, 1/7] thermal: mediatek: Relocate driver to mediatek folder
-Date:   Thu,  4 Aug 2022 15:09:06 +0200
-Message-Id: <20220804130912.676043-2-bchihi@baylibre.com>
+Subject: [PATCH v8.1, 3/7] arm64: dts: mt8192: Add thermal zone
+Date:   Thu,  4 Aug 2022 15:09:08 +0200
+Message-Id: <20220804130912.676043-4-bchihi@baylibre.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220804130912.676043-1-bchihi@baylibre.com>
 References: <20220804130912.676043-1-bchihi@baylibre.com>
@@ -69,116 +69,157 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Michael Kao <michael.kao@mediatek.com>
+From: Balsam CHIHI <bchihi@baylibre.com>
 
-Add MediaTek proprietary folder to upstream more thermal zone and cooler
-drivers, relocate the original thermal controller driver to it, and rename it
-as "mtxxxx_thermal.c" to show its purpose more clearly.
+This adds the thermal zone for the mt8192.
 
-Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-Signed-off-by: Ben Tseng <ben.tseng@mediatek.com>
 Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
 ---
- drivers/thermal/Kconfig                       | 14 ++++-------
- drivers/thermal/Makefile                      |  2 +-
- drivers/thermal/mediatek/Kconfig              | 23 +++++++++++++++++++
- drivers/thermal/mediatek/Makefile             |  1 +
- .../mtxxxx_thermal.c}                         |  2 +-
- 5 files changed, 30 insertions(+), 12 deletions(-)
- create mode 100644 drivers/thermal/mediatek/Kconfig
- create mode 100644 drivers/thermal/mediatek/Makefile
- rename drivers/thermal/{mtk_thermal.c => mediatek/mtxxxx_thermal.c} (99%)
+ arch/arm64/boot/dts/mediatek/mt8192.dtsi | 113 ++++++++++++++++++++++-
+ 1 file changed, 112 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 0e5cc948373c..ecba8d6e313b 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -412,16 +412,10 @@ config DA9062_THERMAL
- 	  zone.
- 	  Compatible with the DA9062 and DA9061 PMICs.
+diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+index cbae5a5ee4a0..3320b5c14ee3 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: (GPL-2.0 OR MIT)
+ /*
+- * Copyright (C) 2020 MediaTek Inc.
++ * Copyright (C) 2022 MediaTek Inc.
+  * Author: Seiya Wang <seiya.wang@mediatek.com>
+  */
  
--config MTK_THERMAL
--	tristate "Temperature sensor driver for mediatek SoCs"
--	depends on ARCH_MEDIATEK || COMPILE_TEST
--	depends on HAS_IOMEM
--	depends on NVMEM || NVMEM=n
--	depends on RESET_CONTROLLER
--	default y
--	help
--	  Enable this option if you want to have support for thermal management
--	  controller present in Mediatek SoCs
-+menu "Mediatek thermal drivers"
-+depends on ARCH_MEDIATEK || COMPILE_TEST
-+source "drivers/thermal/mediatek/Kconfig"
-+endmenu
+@@ -12,6 +12,7 @@
+ #include <dt-bindings/pinctrl/mt8192-pinfunc.h>
+ #include <dt-bindings/phy/phy.h>
+ #include <dt-bindings/power/mt8192-power.h>
++#include <dt-bindings/reset/mt8192-resets.h>
  
- config AMLOGIC_THERMAL
- 	tristate "Amlogic Thermal Support"
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index def8e1a0399c..f7daeb8056c4 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -55,7 +55,7 @@ obj-y				+= st/
- obj-$(CONFIG_QCOM_TSENS)	+= qcom/
- obj-y				+= tegra/
- obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
--obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
-+obj-y				+= mediatek/
- obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
- obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
- obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
-diff --git a/drivers/thermal/mediatek/Kconfig b/drivers/thermal/mediatek/Kconfig
-new file mode 100644
-index 000000000000..592c849b9fed
---- /dev/null
-+++ b/drivers/thermal/mediatek/Kconfig
-@@ -0,0 +1,23 @@
-+config MTK_THERMAL
-+	tristate "MediaTek thermal drivers"
-+	depends on THERMAL_OF
-+	help
-+	  This is the option for MediaTek thermal software
-+	  solutions. Please enable corresponding options to
-+	  get temperature information from thermal sensors or
-+	  turn on throttle mechaisms for thermal mitigation.
+ / {
+ 	compatible = "mediatek,mt8192";
+@@ -599,6 +600,28 @@ spi0: spi@1100a000 {
+ 			status = "disabled";
+ 		};
+ 
++		lvts_ap: thermal-sensor@1100b000 {
++			compatible = "mediatek,mt8192-lvts-ap";
++			#thermal-sensor-cells = <1>;
++			reg = <0 0x1100b000 0 0x1000>;
++			interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH 0>;
++			clocks = <&infracfg CLK_INFRA_THERM>;
++			resets = <&infracfg MT8192_INFRA_RST0_THERM_CTRL_SWRST>;
++			nvmem-cells = <&lvts_e_data1>;
++			nvmem-cell-names = "lvts_calib_data1";
++		};
 +
-+if MTK_THERMAL
++		lvts_mcu: thermal-sensor@11278000 {
++			compatible = "mediatek,mt8192-lvts-mcu";
++			#thermal-sensor-cells = <1>;
++			reg = <0 0x11278000 0 0x1000>;
++			interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH 0>;
++			clocks = <&infracfg CLK_INFRA_THERM>;
++			resets = <&infracfg MT8192_INFRA_RST4_THERM_CTRL_MCU_SWRST>;
++			nvmem-cells = <&lvts_e_data1>;
++			nvmem-cell-names = "lvts_calib_data1";
++		};
 +
-+config MTK_SOC_THERMAL
-+	tristate "Temperature sensor driver for MediaTek SoCs"
-+	depends on HAS_IOMEM
-+	depends on NVMEM
-+	depends on RESET_CONTROLLER
-+	help
-+	  Enable this option if you want to get SoC temperature
-+	  information for MediaTek platforms. This driver
-+	  configures thermal controllers to collect temperature
-+	  via AUXADC interface.
+ 		spi1: spi@11010000 {
+ 			compatible = "mediatek,mt8192-spi",
+ 				     "mediatek,mt6765-spi";
+@@ -1457,4 +1480,92 @@ larb2: larb@1f002000 {
+ 			power-domains = <&spm MT8192_POWER_DOMAIN_MDP>;
+ 		};
+ 	};
 +
-+endif
-diff --git a/drivers/thermal/mediatek/Makefile b/drivers/thermal/mediatek/Makefile
-new file mode 100644
-index 000000000000..c2b9a166fbef
---- /dev/null
-+++ b/drivers/thermal/mediatek/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_MTK_SOC_THERMAL)		+= mtxxxx_thermal.o
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mediatek/mtxxxx_thermal.c
-similarity index 99%
-rename from drivers/thermal/mtk_thermal.c
-rename to drivers/thermal/mediatek/mtxxxx_thermal.c
-index ede94eadddda..60924f8f98e9 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mediatek/mtxxxx_thermal.c
-@@ -23,7 +23,7 @@
- #include <linux/reset.h>
- #include <linux/types.h>
- 
--#include "thermal_hwmon.h"
-+#include "../thermal_hwmon.h"
- 
- /* AUXADC Registers */
- #define AUXADC_CON1_SET_V	0x008
++	thermal_zones: thermal-zones {
++		cpu-big1-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 0>;
++		};
++		cpu-big2-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 1>;
++		};
++		cpu-big3-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 2>;
++		};
++		cpu-big4-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 3>;
++		};
++		cpu-little1-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 4>;
++		};
++		cpu-little2-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 5>;
++		};
++		cpu-little3-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 6>;
++		};
++		cpu-little4-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_mcu 7>;
++		};
++		vpu1-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 0>;
++		};
++		vpu2-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 1>;
++		};
++		gpu1-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 2>;
++		};
++		gpu2-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 3>;
++		};
++		vdec-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 4>;
++		};
++		img-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 5>;
++		};
++		infra-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 6>;
++		};
++		cam1-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 7>;
++		};
++		cam2-thermal {
++			polling-delay = <0>;
++			polling-delay-passive = <0>;
++			thermal-sensors = <&lvts_ap 8>;
++		};
++	};
+ };
 -- 
 2.34.1
 
