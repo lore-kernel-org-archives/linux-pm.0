@@ -2,144 +2,184 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 527A9C19F2A
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Aug 2022 05:47:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BAC9C19F2A
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Aug 2022 05:47:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238433AbiHDFr0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Aug 2022 01:47:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46176 "EHLO
+        id S239058AbiHDFrj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Aug 2022 01:47:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46180 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238952AbiHDFrN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2022 01:47:13 -0400
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D927E606B5
-        for <linux-pm@vger.kernel.org>; Wed,  3 Aug 2022 22:47:07 -0700 (PDT)
-Received: by mail-pl1-x62f.google.com with SMTP id iw1so18396178plb.6
-        for <linux-pm@vger.kernel.org>; Wed, 03 Aug 2022 22:47:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=aeM1+URF6K22PChBXxuUTBq3ki6hGotwl2mOvNpT7uo=;
-        b=XYE6lG1nVAsFoknyPfH93n27W+v8EsVFCNwYv8Bris8KOHhoifD31YhysdYaONc/oh
-         tDf8L2Dm8B2jTpDGhBF+ppBueSKe7XT7vTcFfB6vmg76SvQrDJ5Tu4HatfuX8XhuTpJx
-         PVhbknJbUUW9/ZZoaoOZhK9Cwym2+40+qmJZ3TivSBPvT3EB+3J8CyNRQUofYOhXj1Vh
-         AWCG49tmLTLtOIVmQmJMn4+ZHLFXlWCtnbn62t/B5n+BpY2eQ+6kl87KiIOGpwl3O5J5
-         Is2kDvPSe4Pe20dfxErwmPiGe+JzT6uIYvvmFHJ4b7WHA4diVl4OYSExXFLMXcvakRmU
-         Qnpw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=aeM1+URF6K22PChBXxuUTBq3ki6hGotwl2mOvNpT7uo=;
-        b=MaE+CNZX3YA2UgA9CR2Oo6Aii0lv5nzBfKhokRcEUm0mHVuRFcOXG5/J9HCvt5xLHz
-         4/eMB2hYrfOXfu9ZNL1JHv0f96NnsQ1pAi3gFFLVIwl7Nsk/rIIKlCfmE4gvyAfe00/H
-         FPH6dQHkgWAh5dL9BB6TMojMYJMz2bW9uye98nD8iOSXvTbH0bqrFPscJ/TOkjC/uP7C
-         3PQWZ31FubRhaeJEVvcdpxeMvnaoi+Del/ZOK5IdoRG62ISHmSSoJT+VMltubSvjcb/B
-         KOSYv2unhmcZChHOHPGrwp81XgQPAbAqUiddLKC7ikjP9TvbtP5WJxTygPWXOMPkEnEv
-         aOrw==
-X-Gm-Message-State: ACgBeo2OJPxsbm/RxfTprP/PAAzKPqE1YnYMLT+qFUm4MZC89ddT3FS4
-        +LkJYt4p9u/0Uh8TboSf57reP0watttyYQ==
-X-Google-Smtp-Source: AA6agR5s8VBh5e7rB5YF0kTtEjuQ25Uoxkc6uXEOuyIA4DILe2m54E0oTf/r4dlZ+Qaa8GmTvb3grA==
-X-Received: by 2002:a17:903:2291:b0:16e:cf55:5c72 with SMTP id b17-20020a170903229100b0016ecf555c72mr361690plh.121.1659592026831;
-        Wed, 03 Aug 2022 22:47:06 -0700 (PDT)
-Received: from localhost.localdomain ([2401:4900:1c5e:ddbf:1bd6:4443:9e5b:2aa2])
-        by smtp.gmail.com with ESMTPSA id q25-20020aa78439000000b0052dcd14e3desm5375636pfn.183.2022.08.03.22.47.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Aug 2022 22:47:06 -0700 (PDT)
-From:   Bhupesh Sharma <bhupesh.sharma@linaro.org>
-To:     linux-pm@vger.kernel.org
-Cc:     bhupesh.sharma@linaro.org, bhupesh.linux@gmail.com,
-        linux-kernel@vger.kernel.org, bjorn.andersson@linaro.org,
-        konrad.dybcio@somainline.org, linux-arm-msm@vger.kernel.org,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org, rafael@kernel.org,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>
-Subject: [PATCH v3 4/4] thermal: qcom: tsens: Add reinit quirk support for tsens v2 controllers
-Date:   Thu,  4 Aug 2022 11:16:38 +0530
-Message-Id: <20220804054638.3197294-5-bhupesh.sharma@linaro.org>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20220804054638.3197294-1-bhupesh.sharma@linaro.org>
-References: <20220804054638.3197294-1-bhupesh.sharma@linaro.org>
+        with ESMTP id S238988AbiHDFrX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2022 01:47:23 -0400
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2063.outbound.protection.outlook.com [40.107.220.63])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95FE5606A1;
+        Wed,  3 Aug 2022 22:47:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=JX5mClMI+bR1izV1zm5lq+CysMmK3zA0CciGvEck6SrrbcJo/tsaJ9PHcTnPtSY0A1UZsZooxraw78Zn21nbfkAgXPRVtILkEr/jt2/CLTfbmwUV0IK49aH7OLi3k/p+WyomBjp+ntzvSDIF9FpnFsV2QbD6QK4zQtd0byUoBuPdZE+jL9cGByOWK7DW96AYa6kiH8kn90M4gDjnj4cqM825L2F2tNtotV5SMHE8QkJBJt+dCRheptWCHfEW/PVjs5eVjoxMaDLS4e50icSUtH1+cnKWS/dA3L51YGQpj3YqfC05mP6H4WDyq/JLKvu8kkTDTwmi3y2D0LzC4/s8gQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=deokd5XzMEHlnuOZQW21t//HUwofZo1wcheqUx+YY+I=;
+ b=VMK61LgtYWO706G/FJhcc9gibn6w2tOR2VYEroqmdCWXU7VEH1FJSMB6RoV90A6nadlnhjKkKQEXAxOiGi4l3H1C9BO+UJpAZuuAbBNfi/o2GkK+MuKSt3FQvn+aXD1Z/VNOEr4RWQrVFIUeye2lqw3OO85RffeQTufIZ+qouiFILxZ8CSA7zND2ROL9hi2pmcnnH9R1N95k4/55yrWOHHd5HdMicC50R5xUTNkRYyB0aDiI4OSy0Eo+4xl/HxqUNmBF1T65O+ZAj5HZu9CxtqOt5i9t/ycNGNdEigmD8XBxayyOst0Jcd0WSgbDrkEtLp2SN8VxhsPYSAIZXYDDJQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=linuxfoundation.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=deokd5XzMEHlnuOZQW21t//HUwofZo1wcheqUx+YY+I=;
+ b=enutVI+EGR5jVcGxmWg92TQ1usow1ol5wl1x1ACcv8cf6f5rq+Lo4r77mMV8zVkdP0NHdkDCOI/V4gQQFpVLE3X3s0xpHk1LHakRAQBpl+RxqeDwQhhWyhA+5tssyoQtRS0FAzmhDdecgWWvuYbJmEX/Tkh9DxgAZHl5J0dXvXM=
+Received: from DS7PR03CA0281.namprd03.prod.outlook.com (2603:10b6:5:3ad::16)
+ by DM6PR12MB4809.namprd12.prod.outlook.com (2603:10b6:5:1f9::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5482.14; Thu, 4 Aug
+ 2022 05:47:08 +0000
+Received: from DM6NAM11FT059.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:5:3ad:cafe::8e) by DS7PR03CA0281.outlook.office365.com
+ (2603:10b6:5:3ad::16) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5482.16 via Frontend
+ Transport; Thu, 4 Aug 2022 05:47:08 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ DM6NAM11FT059.mail.protection.outlook.com (10.13.172.92) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.5504.14 via Frontend Transport; Thu, 4 Aug 2022 05:47:07 +0000
+Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.28; Thu, 4 Aug
+ 2022 00:47:00 -0500
+From:   Meng Li <li.meng@amd.com>
+To:     Shuah Khan <skhan@linuxfoundation.org>,
+        Huang Rui <ray.huang@amd.com>, <linux-pm@vger.kernel.org>
+CC:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Nathan Fontenot <nathan.fontenot@amd.com>,
+        Deepak Sharma <deepak.sharma@amd.com>,
+        "Alex Deucher" <alexander.deucher@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Jinzhou Su <Jinzhou.Su@amd.com>,
+        Perry Yuan <Perry.Yuan@amd.com>,
+        Xiaojian Du <Xiaojian.Du@amd.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Borislav Petkov <bp@alien8.de>, <linux-kernel@vger.kernel.org>,
+        Meng Li <li.meng@amd.com>
+Subject: [PATCH V2 0/4] Add tbench/gitsource new test cases for amd-pstate-ut
+Date:   Thu, 4 Aug 2022 13:44:10 +0800
+Message-ID: <20220804054414.1510764-1-li.meng@amd.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 304135ed-2c05-47b2-e8f7-08da75dcc4b4
+X-MS-TrafficTypeDiagnostic: DM6PR12MB4809:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: UXxlI/85PAOVlwm9S1ee8PivfIEEwcjE8+DU9L0zF2EcDLZFTGG6hloi3Zzh0ojb+oAjFyW4xVJ70kKLaMD7/6FkSBkjLieTX88LIFbqDoSb8E9TCryBUz0Z6+FiOMcz6/foUMBG0qWCEX+7ks6XG3KCGxHMV5gUz/nlQLdbuZSvTygR9tVRNwZuVvWXaVd5A+hDoPVLAHK7aRM4QO/+hOiPf1DsY+wMEVwKLb7x5BUBDbc5cKb9ecwTE8QkAEgGoJx7tEGXZzNnVSD6c6AflkrOE88dEcXGX8FyGTX9X4hUiPq1DL4R7W0+1+uFPGFXPkX3L1Nkeo7RQVJZHm4PplX8XZgtRVrpaR+rMiwa69jbVLB7A/vrfOs2DXxKAaQl3XW2dBiApt2ypLzIBu0xRgnibxCJbNLswTtWA/ENbnt00NXvpdDCzFrEO1Xj6cUU4pDp+q5DcqvsyMrL/Opc9+u7nlq8lBJM/Z1M50Ojp6Fss6S5X2XH2i1MKAryhKrwfH7JNjDX0wCZNmfB0zXXskmr0O8rD+LDKbYlkvvhFujze13uOCRthJ9Tgc4msi3VkfhZSJItltgGynuXMTnqGCVdR0luhdgmqzXR7JlMRfAdujjfOs3d53c/L0Vi0H6SRfTYgjFUZix9R/yigd+cDGxieTF/CNx0yYKWMtou8LzvEWNJ2gmYDh+rxxgHZECbnzO7Zzx4ZxlnOt0PqffYwY2wkcb85PIowx/sJS9o5R6uJzxR+/E7OHB8/TDqP64p/yDI4VTIDR3EOlYgAlDNy1hvW+XP12tEETTe2Sy2BZww5HpECe6jXC/fIKA58/V5bLU26ZWCWmdaAvasOxfy7nxwPda7hM0hHBlmjeWafy1ID+TLvqBp8BKWNNGpm1SlgZm7sGHK5G8njSp+S8nBDU8qDjl0/hjnkR2FYlAFJZA=
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230016)(4636009)(396003)(39860400002)(376002)(136003)(346002)(36840700001)(46966006)(40470700004)(36756003)(8676002)(4326008)(83380400001)(8936002)(5660300002)(70586007)(36860700001)(86362001)(2906002)(40460700003)(186003)(2616005)(336012)(426003)(70206006)(81166007)(316002)(47076005)(40480700001)(110136005)(54906003)(1076003)(16526019)(966005)(82740400003)(82310400005)(478600001)(41300700001)(356005)(26005)(6666004)(7696005)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Aug 2022 05:47:07.8854
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 304135ed-2c05-47b2-e8f7-08da75dcc4b4
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT059.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4809
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some Qualcomm tsens v2 controllers like those present on
-sm8150 SoC might require re-initialization via trustzone
-[via scm call(s)] when it enters a 'bad state' causing
-sensor temperatures/interrupts status to be in an
-'invalid' state.
+Hi all:
 
-Add hooks for the same in the qcom tsens driver.
+The new patches are modified on the basis of the previous patch
+https://lore.kernel.org/lkml/20220526034725.1708916-1-li.meng@amd.com/.
 
-Devices requiring the same can pass the relevant
-compatible string in dt and the driver hook can
-be used accordingly.
+First, we modify amd-pstate-ut.sh to basic.sh as a basic test, mainly for
+AMD P-State kernel drivers. The purpose of this modification is to facilitate
+the subsequent addition of gitsource, tbench and other tests.
+You can test specific functions by specifying test cases.
+Default test all cases, include basic, tbench and gitsource etc.
 
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Amit Kucheria <amitk@kernel.org>
-Cc: Thara Gopinath <thara.gopinath@gmail.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org
-Signed-off-by: Bhupesh Sharma <bhupesh.sharma@linaro.org>
----
- drivers/thermal/qcom/tsens-v2.c | 12 ++++++++++++
- drivers/thermal/qcom/tsens.c    |  3 +++
- drivers/thermal/qcom/tsens.h    |  2 +-
- 3 files changed, 16 insertions(+), 1 deletion(-)
+Secondly, add tbench.sh trigger the tbench testing and monitor the cpu
+information.
+1) Download and install tbench codes.
+2) Run tbench benchmark on specific governors, ondemand or schedutil.
+3) Run tbench benchmark comparative test on acpi-cpufreq kernel driver.
+4) Get desire performance, frequency, load by perf.
+5) Get power consumption and throughput by amd_pstate_trace.py.
+6) Analyse test results and save it in file selftest.tbench.csv. 
+7) Plot png images about performance, energy and performance per watt
+for each test.
 
-diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index f521e4479cc5..431f17f99d34 100644
---- a/drivers/thermal/qcom/tsens-v2.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -104,6 +104,18 @@ struct tsens_plat_data data_tsens_v2 = {
- 	.fields	= tsens_v2_regfields,
- };
- 
-+/*
-+ * For some tsens v2 controllers, its suggested to monitor the
-+ * controller health periodically and in case an issue is detected
-+ * to reinit tsens controller via trustzone.
-+ */
-+struct tsens_plat_data data_tsens_v2_reinit = {
-+	.ops		= &ops_generic_v2,
-+	.feat		= &tsens_v2_feat,
-+	.needs_reinit_wa = true,
-+	.fields	= tsens_v2_regfields,
-+};
-+
- /* Kept around for backward compatibility with old msm8996.dtsi */
- struct tsens_plat_data data_8996 = {
- 	.num_sensors	= 13,
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index c2d085fb5447..928b6a44fda8 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -1145,6 +1145,9 @@ static const struct of_device_id tsens_table[] = {
- 	}, {
- 		.compatible = "qcom,msm8996-tsens",
- 		.data = &data_8996,
-+	}, {
-+		.compatible = "qcom,sm8150-tsens",
-+		.data = &data_tsens_v2_reinit,
- 	}, {
- 		.compatible = "qcom,tsens-v1",
- 		.data = &data_tsens_v1,
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 900d2a74d25e..03cc3a790972 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -607,6 +607,6 @@ extern struct tsens_plat_data data_8916, data_8939, data_8974, data_9607;
- extern struct tsens_plat_data data_tsens_v1, data_8976;
- 
- /* TSENS v2 targets */
--extern struct tsens_plat_data data_8996, data_tsens_v2;
-+extern struct tsens_plat_data data_8996, data_tsens_v2_reinit, data_tsens_v2;
- 
- #endif /* __QCOM_TSENS_H__ */
+Third, add gitsource.sh trigger the gitsource testing and monitor the cpu
+information.
+1) Download and tar gitsource codes.
+2) Run gitsource benchmark on specific governors, ondemand or schedutil.
+3) Run tbench benchmark comparative test on acpi-cpufreq kernel driver.
+4) Get desire performance, frequency, load by perf.
+5) Get power consumption and throughput by amd_pstate_trace.py.
+6) Get run time by /usr/bin/time.
+7) Analyse test results and save it in file selftest.gitsource.csv. 
+8) Plot png images about time, energy and performance per watt
+for each test.
+
+Finally, modify rst document to introduce test steps and results etc.
+
+See patch series in below git repo:
+V1:https://lore.kernel.org/lkml/20220706073622.672135-1-li.meng@amd.com/
+
+Changes from V1->V2:
+- selftests: amd-pstate:
+- - delete main.sh and merge funtions into run.sh
+- selftests: amd-pstate:
+- - modify ppw to performance per watt for tbench.
+- - add comments for performance per watt for tbench.
+- - add comparative test on acpi-cpufreq for tbench.
+- - calculate drop between amd-pstate and acpi-cpufreq etc.
+- - plot images about perfrmance,energy and ppw for tbench.
+- selftests: amd-pstate:
+- - modify ppw to performance per watt for gitsource.
+- - add comments for performance per watt for gitsource.
+- - add comparative test on acpi-cpufreq for gitsource.
+- - calculate drop between amd-pstate and acpi-cpufreq etc.
+- - plot images about perfrmance,energy and ppw for gitsource.
+- Documentation: amd-pstate:
+- - modify rst doc, introduce comparative test etc.
+
+Thanks, 
+Jasmine 
+
+Meng Li (4):
+  selftests: amd-pstate: Modify amd-pstate-ut.sh to basic.sh.
+  selftests: amd-pstate: Trigger tbench benchmark and test cpus
+  selftests: amd-pstate: Trigger gitsource benchmark and test cpus
+  Documentation: amd-pstate: Add tbench and gitsource test introduction
+
+ Documentation/admin-guide/pm/amd-pstate.rst   | 192 +++++++++-
+ tools/testing/selftests/amd-pstate/Makefile   |  11 +-
+ .../selftests/amd-pstate/amd-pstate-ut.sh     |  55 ---
+ tools/testing/selftests/amd-pstate/basic.sh   |  38 ++
+ .../testing/selftests/amd-pstate/gitsource.sh | 345 +++++++++++++++++
+ tools/testing/selftests/amd-pstate/run.sh     | 358 ++++++++++++++++++
+ tools/testing/selftests/amd-pstate/tbench.sh  | 358 ++++++++++++++++++
+ 7 files changed, 1282 insertions(+), 75 deletions(-)
+ delete mode 100755 tools/testing/selftests/amd-pstate/amd-pstate-ut.sh
+ create mode 100755 tools/testing/selftests/amd-pstate/basic.sh
+ create mode 100755 tools/testing/selftests/amd-pstate/gitsource.sh
+ create mode 100755 tools/testing/selftests/amd-pstate/run.sh
+ create mode 100755 tools/testing/selftests/amd-pstate/tbench.sh
+
 -- 
-2.35.3
+2.25.1
 
