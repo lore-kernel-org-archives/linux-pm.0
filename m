@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 031EFC25B0D
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Aug 2022 19:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 862FEC25B0C
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Aug 2022 19:10:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230425AbiHGTK2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Aug 2022 15:10:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47682 "EHLO
+        id S231274AbiHGTKf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Aug 2022 15:10:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229468AbiHGTK1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2022 15:10:27 -0400
+        with ESMTP id S231137AbiHGTKe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2022 15:10:34 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECC49E9;
-        Sun,  7 Aug 2022 12:10:26 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 382341AA;
+        Sun,  7 Aug 2022 12:10:33 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 623126106B;
-        Sun,  7 Aug 2022 19:10:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B46BAC43140;
-        Sun,  7 Aug 2022 19:10:22 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C06A56104E;
+        Sun,  7 Aug 2022 19:10:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26B4EC4314E;
+        Sun,  7 Aug 2022 19:10:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1659899425;
-        bh=QTLLlefCz5Z9OfH0nMDPg+o3+GK31K/bzh/ApDlfM6w=;
+        s=k20201202; t=1659899432;
+        bh=pirJ+ql1B1CAfCYbpYqMg2PeXk7Wv/vK7QJQDYfM07U=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=DneIk8fBikzhBbedqT34anNO+pffCZtTbxi28swwo7b3iatEUjqed+WyhmDv1ivXr
-         wi5t2+o84pC0bNnKnuouoqMOBXO/kuV0O6p9IZs2Z6bxHkXq1Y7q4UMwLDKLjNe0QO
-         zk+8RAoQk/FqGwZTehmqjAqDw6JdoN3OCoFSggo4mfkIUYv7qmkF+Vr74JiNnm3LEs
-         pEa3zv1rnV6Y24ZvaDYDq/vMgBuCBetTNGqQ3rzNSFMz/yGg8FN+RJPrwBmXxcfW7L
-         cKN/n9oyzhPSbTdl4Ee492M5of0xHGhSnYBeFfv5WYZq4Sn8KvAWU/2uhAN4UWN0eR
-         xJ7ZjE8EcBaAA==
+        b=bKANGeHJ/BQaudLikd0mgSFPdkZMOXJLB9rvQkJA30VlfoplirGPD/1xOiKDdygab
+         JPmVgHS1tfydP6RLNs/kagndyPAaaX/TJLHPCjzhBJ11H9Mq7lxwRme5IC7C1e7HgX
+         Tb37uEuhVAnBR7RAI5OAOmjfzff1MsRqhpzbzifJtKDGIbcg8ywFgzB+mc/2qRO7hN
+         Ew65e48ukZA/7pKQWSdR/V8sycydNc1fxbrJZKmp3q6iR8bJ0jLGevXOp3YV9Nnl5/
+         Zbad1ydI++/6f2FSom6jCzAvMShEY9CxZV0hwClr4KGTSjvvy7FCxYjfV0gQdw/AQd
+         nM7mTS2Y54fxg==
 From:   Jonathan Cameron <jic23@kernel.org>
 To:     linux-iio@vger.kernel.org,
         "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org
@@ -39,11 +39,10 @@ Cc:     Paul Cercueil <paul@crapouillou.net>,
         Rui Miguel Silva <rui.silva@linaro.org>,
         Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@tdk.com>,
         Linus Walleij <linus.walleij@linaro.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Subject: [PATCH 1/5] PM: core: Add EXPORT_NS_GPL_DEV_PM_OPS to avoid drivers rolling own.
-Date:   Sun,  7 Aug 2022 20:20:34 +0100
-Message-Id: <20220807192038.1039771-2-jic23@kernel.org>
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH 3/5] iio: gyro: fxas210002c: Move exports to IIO_FXAS210002C namespace.
+Date:   Sun,  7 Aug 2022 20:20:36 +0100
+Message-Id: <20220807192038.1039771-4-jic23@kernel.org>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <20220807192038.1039771-1-jic23@kernel.org>
 References: <20220807192038.1039771-1-jic23@kernel.org>
@@ -55,36 +54,120 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-A driver wishing to export a struct dev_pm_ops with both suspend and
-runtime ops provided could use _EXPORT_DEV_PM_OPS() directly but
-that macro is not intended for use in drivers and requires non
-intuitive aspect such as passing "_gpl" as one parameter and the
-namespace as a string.  As such just provide a macro to cover
-the GPL and NS case in a fashion that is in line with similar macros.
+Includes using EXPORT_NS_GPL_DEV_PM_OPS() and the simplifications that
+brings by allowing the compiler to remove unused struct dev_pm_ops
+and callbacks without needing explicit __maybe_unused markings.
 
 Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc: Paul Cercueil <paul@crapouillou.net>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Rui Miguel Silva <rui.silva@linaro.org>
 ---
- include/linux/pm.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/iio/gyro/fxas21002c_core.c | 21 +++++++++------------
+ drivers/iio/gyro/fxas21002c_i2c.c  |  3 ++-
+ drivers/iio/gyro/fxas21002c_spi.c  |  3 ++-
+ 3 files changed, 13 insertions(+), 14 deletions(-)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 871c9c49ec9d..18856e0d23ac 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -407,6 +407,11 @@ static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
- #define EXPORT_NS_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, ns)	\
- 	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, "_gpl", #ns)
+diff --git a/drivers/iio/gyro/fxas21002c_core.c b/drivers/iio/gyro/fxas21002c_core.c
+index a36d71d9e3ea..9aee9096363f 100644
+--- a/drivers/iio/gyro/fxas21002c_core.c
++++ b/drivers/iio/gyro/fxas21002c_core.c
+@@ -998,7 +998,7 @@ int fxas21002c_core_probe(struct device *dev, struct regmap *regmap, int irq,
  
-+#define EXPORT_NS_GPL_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
-+			   runtime_resume_fn, idle_fn, ns) \
-+	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
-+			   runtime_resume_fn, idle_fn, "_gpl", #ns)
-+
- /* Deprecated. Use DEFINE_SIMPLE_DEV_PM_OPS() instead. */
- #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
- const struct dev_pm_ops __maybe_unused name = { \
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(fxas21002c_core_probe);
++EXPORT_SYMBOL_NS_GPL(fxas21002c_core_probe, IIO_FXAS21002C);
+ 
+ void fxas21002c_core_remove(struct device *dev)
+ {
+@@ -1009,9 +1009,9 @@ void fxas21002c_core_remove(struct device *dev)
+ 	pm_runtime_disable(dev);
+ 	pm_runtime_set_suspended(dev);
+ }
+-EXPORT_SYMBOL_GPL(fxas21002c_core_remove);
++EXPORT_SYMBOL_NS_GPL(fxas21002c_core_remove, IIO_FXAS21002C);
+ 
+-static int __maybe_unused fxas21002c_suspend(struct device *dev)
++static int fxas21002c_suspend(struct device *dev)
+ {
+ 	struct fxas21002c_data *data = iio_priv(dev_get_drvdata(dev));
+ 
+@@ -1021,7 +1021,7 @@ static int __maybe_unused fxas21002c_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int __maybe_unused fxas21002c_resume(struct device *dev)
++static int fxas21002c_resume(struct device *dev)
+ {
+ 	struct fxas21002c_data *data = iio_priv(dev_get_drvdata(dev));
+ 	int ret;
+@@ -1033,26 +1033,23 @@ static int __maybe_unused fxas21002c_resume(struct device *dev)
+ 	return fxas21002c_mode_set(data, data->prev_mode);
+ }
+ 
+-static int __maybe_unused fxas21002c_runtime_suspend(struct device *dev)
++static int fxas21002c_runtime_suspend(struct device *dev)
+ {
+ 	struct fxas21002c_data *data = iio_priv(dev_get_drvdata(dev));
+ 
+ 	return fxas21002c_mode_set(data, FXAS21002C_MODE_READY);
+ }
+ 
+-static int __maybe_unused fxas21002c_runtime_resume(struct device *dev)
++static int fxas21002c_runtime_resume(struct device *dev)
+ {
+ 	struct fxas21002c_data *data = iio_priv(dev_get_drvdata(dev));
+ 
+ 	return fxas21002c_mode_set(data, FXAS21002C_MODE_ACTIVE);
+ }
+ 
+-const struct dev_pm_ops fxas21002c_pm_ops = {
+-	SET_SYSTEM_SLEEP_PM_OPS(fxas21002c_suspend, fxas21002c_resume)
+-	SET_RUNTIME_PM_OPS(fxas21002c_runtime_suspend,
+-			   fxas21002c_runtime_resume, NULL)
+-};
+-EXPORT_SYMBOL_GPL(fxas21002c_pm_ops);
++EXPORT_NS_GPL_DEV_PM_OPS(fxas21002c_pm_ops, fxas21002c_suspend,
++			 fxas21002c_resume, fxas21002c_runtime_suspend,
++			 fxas21002c_runtime_resume, NULL, IIO_FXAS21002C);
+ 
+ MODULE_AUTHOR("Rui Miguel Silva <rui.silva@linaro.org>");
+ MODULE_LICENSE("GPL v2");
+diff --git a/drivers/iio/gyro/fxas21002c_i2c.c b/drivers/iio/gyro/fxas21002c_i2c.c
+index a7807fd97483..241401a9dfea 100644
+--- a/drivers/iio/gyro/fxas21002c_i2c.c
++++ b/drivers/iio/gyro/fxas21002c_i2c.c
+@@ -55,7 +55,7 @@ MODULE_DEVICE_TABLE(of, fxas21002c_i2c_of_match);
+ static struct i2c_driver fxas21002c_i2c_driver = {
+ 	.driver = {
+ 		.name = "fxas21002c_i2c",
+-		.pm = &fxas21002c_pm_ops,
++		.pm = pm_ptr(&fxas21002c_pm_ops),
+ 		.of_match_table = fxas21002c_i2c_of_match,
+ 	},
+ 	.probe_new	= fxas21002c_i2c_probe,
+@@ -67,3 +67,4 @@ module_i2c_driver(fxas21002c_i2c_driver);
+ MODULE_AUTHOR("Rui Miguel Silva <rui.silva@linaro.org>");
+ MODULE_LICENSE("GPL v2");
+ MODULE_DESCRIPTION("FXAS21002C I2C Gyro driver");
++MODULE_IMPORT_NS(IIO_FXAS21002C);
+diff --git a/drivers/iio/gyro/fxas21002c_spi.c b/drivers/iio/gyro/fxas21002c_spi.c
+index c3ac169facf9..4f633826547c 100644
+--- a/drivers/iio/gyro/fxas21002c_spi.c
++++ b/drivers/iio/gyro/fxas21002c_spi.c
+@@ -54,7 +54,7 @@ MODULE_DEVICE_TABLE(of, fxas21002c_spi_of_match);
+ static struct spi_driver fxas21002c_spi_driver = {
+ 	.driver = {
+ 		.name = "fxas21002c_spi",
+-		.pm = &fxas21002c_pm_ops,
++		.pm = pm_ptr(&fxas21002c_pm_ops),
+ 		.of_match_table = fxas21002c_spi_of_match,
+ 	},
+ 	.probe		= fxas21002c_spi_probe,
+@@ -66,3 +66,4 @@ module_spi_driver(fxas21002c_spi_driver);
+ MODULE_AUTHOR("Rui Miguel Silva <rui.silva@linaro.org>");
+ MODULE_LICENSE("GPL v2");
+ MODULE_DESCRIPTION("FXAS21002C SPI Gyro driver");
++MODULE_IMPORT_NS(IIO_FXAS21002C);
 -- 
 2.37.1
 
