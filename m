@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0049C2BB41
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 01:57:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6212C25B0C
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 01:58:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243614AbiHHB5O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Aug 2022 21:57:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52142 "EHLO
+        id S243856AbiHHB6k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Aug 2022 21:58:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52302 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243670AbiHHBzq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2022 21:55:46 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75F331C110;
-        Sun,  7 Aug 2022 18:39:12 -0700 (PDT)
+        with ESMTP id S244091AbiHHB4z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2022 21:56:55 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79364626F;
+        Sun,  7 Aug 2022 18:40:19 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 2C408B80E0F;
-        Mon,  8 Aug 2022 01:39:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C56BAC433D7;
-        Mon,  8 Aug 2022 01:39:08 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 25B05B80DDF;
+        Mon,  8 Aug 2022 01:40:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA633C433D6;
+        Mon,  8 Aug 2022 01:40:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1659922749;
-        bh=fsWJpVlbdSP6aK71pA9OxUeNSHt9OvDhrKF+Ylw6rhM=;
+        s=k20201202; t=1659922816;
+        bh=xnZLMMWFFHl1IT12UIBhDAc2y68nT2QeA5UidjFrj8c=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=gKMMJXEbdsYpmOH5qlQL1yc8d+QrbZCZeLcVC6B/iFltM/zI7CRl5a4WrfP7a0330
-         p0/xnCUxE1t00V/XOogdb0YUgUXzsKgw/oXN1s9qvXSyNrTgWWDaZXd4F0vAj3vnHi
-         rnFqyrTFeMy13mVc6Jv6pEDLozEoQbk/xFvXspukGjGGGW1eHV1BbMI8imlb8zakwY
-         XyX+FD/BDtwIX3D8JyUmEIZ4XGsoVNOlbzWu67KJFeC+3I4yFUaFmUhXb5ik45kAnj
-         aBpnUIXHUOyxOOWEbeZW/Z/77vbfRqC3ORdnvJ+zHZ246N8t/LdLXXZ7x4YcoDDYEa
-         8877yM1xw+anA==
+        b=u//+sQYh1zKaNZLnBTQHtwaaoOU/rcIKJgStAnKgbaxUeuGXir7OYt6chau9YDH9U
+         q0yv4Scnzhi+I5Zg3ypWCKfYcP3gCCpLyqxswzZFYr/9m6fM7kWF8FXXkFrKW+8GJn
+         bsHjn/Qim/facxaVTPwL9cLrSjFaU+9kzbGKSz9sHlAlqWqGPz2nVjwv0AXBOt+rRl
+         Qvu+1XTf10tdfQnieqDwsOLJCbLJb/Bcc1nIUYwdsakzitJxPc6ARnNBCX4zvE77gx
+         6wnigbL4NTJG+vYJD8F0a8S5uOMf89+XgjoDZHiJRN9wRZ/BY107Q0TQlYOhrNqPb1
+         zlvV+x3AYuE2g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         syzbot <syzbot+358c9ab4c93da7b7238c@syzkaller.appspotmail.com>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 22/23] PM: hibernate: defer device probing when resuming from hibernation
-Date:   Sun,  7 Aug 2022 21:38:29 -0400
-Message-Id: <20220808013832.316381-22-sashal@kernel.org>
+        pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.9 7/8] PM: hibernate: defer device probing when resuming from hibernation
+Date:   Sun,  7 Aug 2022 21:40:02 -0400
+Message-Id: <20220808014005.317064-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220808013832.316381-1-sashal@kernel.org>
-References: <20220808013832.316381-1-sashal@kernel.org>
+In-Reply-To: <20220808014005.317064-1-sashal@kernel.org>
+References: <20220808014005.317064-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -106,10 +106,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 77438954cc2b..672d4e28fa8a 100644
+index bc6dde1f1567..a84f9e549ad5 100644
 --- a/kernel/power/user.c
 +++ b/kernel/power/user.c
-@@ -26,6 +26,7 @@
+@@ -29,6 +29,7 @@
  
  #include "power.h"
  
@@ -117,7 +117,7 @@ index 77438954cc2b..672d4e28fa8a 100644
  
  #define SNAPSHOT_MINOR	231
  
-@@ -79,7 +80,7 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+@@ -82,7 +83,7 @@ static int snapshot_open(struct inode *inode, struct file *filp)
  		 * Resuming.  We may need to wait for the image device to
  		 * appear.
  		 */
@@ -126,7 +126,7 @@ index 77438954cc2b..672d4e28fa8a 100644
  
  		data->swap = -1;
  		data->mode = O_WRONLY;
-@@ -171,6 +172,11 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
+@@ -174,6 +175,11 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
  	ssize_t res;
  	loff_t pg_offp = *offp & ~PAGE_MASK;
  
@@ -138,7 +138,7 @@ index 77438954cc2b..672d4e28fa8a 100644
  	lock_system_sleep();
  
  	data = filp->private_data;
-@@ -206,6 +212,11 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+@@ -209,6 +215,11 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
  	loff_t size;
  	sector_t offset;
  
