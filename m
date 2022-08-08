@@ -2,35 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 199E8C00140
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 19:04:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E071C00140
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 19:05:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244070AbiHHTEN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Aug 2022 15:04:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55634 "EHLO
+        id S244147AbiHHTFu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Aug 2022 15:05:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233008AbiHHTEM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2022 15:04:12 -0400
-X-Greylist: delayed 447 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 08 Aug 2022 12:04:11 PDT
-Received: from 230605.vhostingservices.com (230605.vhostingservices.com [195.201.115.235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 640C4A473
-        for <linux-pm@vger.kernel.org>; Mon,  8 Aug 2022 12:04:11 -0700 (PDT)
-Received: by 230605.vhostingservices.com (Postfix, from userid 10004)
-        id 4F04966637; Mon,  8 Aug 2022 20:56:43 +0200 (CEST)
-To:     linux-pm@vger.kernel.org
-Subject: =?us-ascii?Q?EIN_SCHNELLER_UND_EFFEKTIVER_WEG, _UM_REICH_ZU_W?=
- =?us-ascii?Q?ERDEN_<Modulo_di_contatto_jobstyle.it>?=
-Date:   Mon, 8 Aug 2022 18:56:43 +0000
-From:   CharlesSwell <info@jobstyle.it>
-Message-ID: <wJ9hYYUJoysE9fmHkdIFf7BMpVGFjbcwqHCSDQGbhc@jobstyle.it>
-X-Mailer: PHPMailer 6.5.3 (https://github.com/PHPMailer/PHPMailer)
+        with ESMTP id S236838AbiHHTFu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2022 15:05:50 -0400
+Received: from ssl.serverraum.org (ssl.serverraum.org [176.9.125.105])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFDEDE1F;
+        Mon,  8 Aug 2022 12:05:48 -0700 (PDT)
+Received: from ssl.serverraum.org (web.serverraum.org [172.16.0.2])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ssl.serverraum.org (Postfix) with ESMTPSA id E81532224F;
+        Mon,  8 Aug 2022 21:05:46 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2016061301;
+        t=1659985547;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=9jzDzcair3ObU6jjVtN9JrVQdO9IqV9O9cxNAy1EWsQ=;
+        b=EA5Zde1jaGtDz4kuSUT8cQ7hayTtawRfJC+kw5Nm3lOaXM6equOhzHZc5rVKC4CKybY+eS
+        hZ+zPyNt3cXtnYcviOgoBhOw0SbeIBj0NKra2GhgMzo3nfB3a8h69MLn9s2Qy3FtkDM2uS
+        PaoxeQ+wnyaMR+zj0GPy/3gtcDrIms8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-PPP-Message-ID: <165998500323.3129780.185932443130406987@230605.vhostingservices.com>
-X-PPP-Vhost: jobstyle.it
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date:   Mon, 08 Aug 2022 21:05:46 +0200
+From:   Michael Walle <michael@walle.cc>
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org,
+        dan.carpenter@oracle.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 2/4] thermal/of: Return -ENODEV instead of -EINVAL if
+ registration fails
+In-Reply-To: <f8008f05-4e4d-e21f-2e40-e234930ee86e@roeck-us.net>
+References: <20220808180915.446053-1-daniel.lezcano@linaro.org>
+ <20220808180915.446053-2-daniel.lezcano@linaro.org>
+ <f8008f05-4e4d-e21f-2e40-e234930ee86e@roeck-us.net>
+User-Agent: Roundcube Webmail/1.4.13
+Message-ID: <d676c6533e11ac357a8aaca4ba216b6d@walle.cc>
+X-Sender: michael@walle.cc
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-EIN SCHNELLER UND EFFEKTIVER WEG, UM REICH ZU WERDEN https://telegra.ph/Deutschland-hat-eine-neue-Einnahmequelle-von-715945-Euro-pro-Woche-08-07 Messaggio:
+Am 2022-08-08 20:35, schrieb Guenter Roeck:
+> On 8/8/22 11:09, Daniel Lezcano wrote:
+>> The previous version of the OF code was returning -ENODEV if no
+>> thermal zones description was found or if the lookup of the sensor in
+>> the thermal zones was not found.
+>> 
+>> The backend drivers are expecting this return value as an information
+>> about skipping the sensor initialization and considered as normal.
+>> 
+>> Fix the return value by replacing -EINVAL by -ENODEV
+>> 
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>   drivers/thermal/thermal_of.c | 4 ++--
+>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/drivers/thermal/thermal_of.c 
+>> b/drivers/thermal/thermal_of.c
+>> index 368eb58e97cf..4210c18ef7b2 100644
+>> --- a/drivers/thermal/thermal_of.c
+>> +++ b/drivers/thermal/thermal_of.c
+>> @@ -329,7 +329,7 @@ static struct device_node 
+>> *of_thermal_zone_find(struct device_node *sensor, int
+>>   	np = of_find_node_by_name(NULL, "thermal-zones");
+>>   	if (!np) {
+>>   		pr_err("Unable to find thermal zones description\n");
+> 
+> I really don't like that error message: People will see it (and 
+> complain)
+> whenever a sensor registers and there is no thermal zone, even though 
+> that
+> is perfectly normal (see description above).
 
+I can second that, and there actually two error messages:
+
+[    6.156983] thermal_sys: Unable to find thermal zones description
+[    6.163125] thermal_sys: Failed to find thermal zone for hwmon id=0
+
+On the sl28 board with the qoriq_thermal driver:
+[    1.917940] thermal_sys: Failed to find thermal zone for tmu id=2
+[    1.929231] thermal_sys: Failed to find thermal zone for tmu id=3
+[    1.940519] thermal_sys: Failed to find thermal zone for tmu id=4
+[    1.951814] thermal_sys: Failed to find thermal zone for tmu id=5
+[    1.963109] thermal_sys: Failed to find thermal zone for tmu id=6
+[    1.974399] thermal_sys: Failed to find thermal zone for tmu id=7
+[    1.985690] thermal_sys: Failed to find thermal zone for tmu id=8
+[    1.996980] thermal_sys: Failed to find thermal zone for tmu id=9
+[    2.008274] thermal_sys: Failed to find thermal zone for tmu id=10
+[    2.019656] thermal_sys: Failed to find thermal zone for tmu id=11
+[    2.031037] thermal_sys: Failed to find thermal zone for tmu id=12
+[    2.048942] thermal_sys: Failed to find thermal zone for tmu id=13
+[    2.060320] thermal_sys: Failed to find thermal zone for tmu id=14
+[    2.071700] thermal_sys: Failed to find thermal zone for tmu id=15
+
+Btw. the driver seems to always register 16 sensors regardless how
+many the actual hardware has (or rather: are described in the DT).
+
+-michael
