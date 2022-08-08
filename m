@@ -2,112 +2,121 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E071C00140
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 19:05:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE3EC00140
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 19:37:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244147AbiHHTFu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Aug 2022 15:05:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57030 "EHLO
+        id S238106AbiHHThR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Aug 2022 15:37:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236838AbiHHTFu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2022 15:05:50 -0400
-Received: from ssl.serverraum.org (ssl.serverraum.org [176.9.125.105])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFDEDE1F;
-        Mon,  8 Aug 2022 12:05:48 -0700 (PDT)
-Received: from ssl.serverraum.org (web.serverraum.org [172.16.0.2])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ssl.serverraum.org (Postfix) with ESMTPSA id E81532224F;
-        Mon,  8 Aug 2022 21:05:46 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2016061301;
-        t=1659985547;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=9jzDzcair3ObU6jjVtN9JrVQdO9IqV9O9cxNAy1EWsQ=;
-        b=EA5Zde1jaGtDz4kuSUT8cQ7hayTtawRfJC+kw5Nm3lOaXM6equOhzHZc5rVKC4CKybY+eS
-        hZ+zPyNt3cXtnYcviOgoBhOw0SbeIBj0NKra2GhgMzo3nfB3a8h69MLn9s2Qy3FtkDM2uS
-        PaoxeQ+wnyaMR+zj0GPy/3gtcDrIms8=
+        with ESMTP id S229448AbiHHThR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2022 15:37:17 -0400
+X-Greylist: delayed 156 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 08 Aug 2022 12:37:15 PDT
+Received: from smtprelay02.ispgateway.de (smtprelay02.ispgateway.de [80.67.18.14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D98913DEF;
+        Mon,  8 Aug 2022 12:37:15 -0700 (PDT)
+Received: from [109.90.180.58] (helo=[192.168.1.27])
+        by smtprelay02.ispgateway.de with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        (Exim 4.94.2)
+        (envelope-from <peter@piie.net>)
+        id 1oL8WY-0006MF-26; Mon, 08 Aug 2022 21:34:50 +0200
+Message-ID: <fdaba367-c657-0d85-7244-918b99569337@piie.net>
+Date:   Mon, 8 Aug 2022 21:34:32 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date:   Mon, 08 Aug 2022 21:05:46 +0200
-From:   Michael Walle <michael@walle.cc>
-To:     Guenter Roeck <linux@roeck-us.net>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org,
-        dan.carpenter@oracle.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/4] thermal/of: Return -ENODEV instead of -EINVAL if
- registration fails
-In-Reply-To: <f8008f05-4e4d-e21f-2e40-e234930ee86e@roeck-us.net>
-References: <20220808180915.446053-1-daniel.lezcano@linaro.org>
- <20220808180915.446053-2-daniel.lezcano@linaro.org>
- <f8008f05-4e4d-e21f-2e40-e234930ee86e@roeck-us.net>
-User-Agent: Roundcube Webmail/1.4.13
-Message-ID: <d676c6533e11ac357a8aaca4ba216b6d@walle.cc>
-X-Sender: michael@walle.cc
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v1 23/26] thermal/drivers/acerhdf: Use generic
+ thermal_zone_get_trip() function
+Content-Language: en-US
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org
+Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>,
+        Mark Gross <markgross@kernel.org>,
+        "open list:ACER ASPIRE ONE TEMPERATURE AND FAN DRIVER" 
+        <platform-driver-x86@vger.kernel.org>
+References: <20220805145729.2491611-1-daniel.lezcano@linaro.org>
+ <20220805145729.2491611-24-daniel.lezcano@linaro.org>
+From:   =?UTF-8?Q?Peter_K=c3=a4stle?= <peter@piie.net>
+In-Reply-To: <20220805145729.2491611-24-daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Df-Sender: cGV0ZXJAcGlpZS5uZXQ=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Am 2022-08-08 20:35, schrieb Guenter Roeck:
-> On 8/8/22 11:09, Daniel Lezcano wrote:
->> The previous version of the OF code was returning -ENODEV if no
->> thermal zones description was found or if the lookup of the sensor in
->> the thermal zones was not found.
->> 
->> The backend drivers are expecting this return value as an information
->> about skipping the sensor initialization and considered as normal.
->> 
->> Fix the return value by replacing -EINVAL by -ENODEV
->> 
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>   drivers/thermal/thermal_of.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->> 
->> diff --git a/drivers/thermal/thermal_of.c 
->> b/drivers/thermal/thermal_of.c
->> index 368eb58e97cf..4210c18ef7b2 100644
->> --- a/drivers/thermal/thermal_of.c
->> +++ b/drivers/thermal/thermal_of.c
->> @@ -329,7 +329,7 @@ static struct device_node 
->> *of_thermal_zone_find(struct device_node *sensor, int
->>   	np = of_find_node_by_name(NULL, "thermal-zones");
->>   	if (!np) {
->>   		pr_err("Unable to find thermal zones description\n");
+Hello,
+
+some comments.  Please merge if those are considered.  Thanks.
+
+
+On 05.08.22 16:57, Daniel Lezcano wrote:
+> The thermal framework gives the possibility to register the trip
+> points with the thermal zone. When that is done, no get_trip_* ops are
+> needed and they can be removed.
 > 
-> I really don't like that error message: People will see it (and 
-> complain)
-> whenever a sensor registers and there is no thermal zone, even though 
-> that
-> is perfectly normal (see description above).
+> Convert ops content logic into generic trip points and register them with the
+> thermal zone.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-I can second that, and there actually two error messages:
+Acked-by: Peter Kästle <peter@piie.net>
 
-[    6.156983] thermal_sys: Unable to find thermal zones description
-[    6.163125] thermal_sys: Failed to find thermal zone for hwmon id=0
+> ---
+>   drivers/platform/x86/acerhdf.c | 73 ++++++++++++----------------------
+>   1 file changed, 26 insertions(+), 47 deletions(-)
+> 
+> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+> index 3463629f8764..cf757f3a1e6b 100644
+> --- a/drivers/platform/x86/acerhdf.c
+> +++ b/drivers/platform/x86/acerhdf.c
 
-On the sl28 board with the qoriq_thermal driver:
-[    1.917940] thermal_sys: Failed to find thermal zone for tmu id=2
-[    1.929231] thermal_sys: Failed to find thermal zone for tmu id=3
-[    1.940519] thermal_sys: Failed to find thermal zone for tmu id=4
-[    1.951814] thermal_sys: Failed to find thermal zone for tmu id=5
-[    1.963109] thermal_sys: Failed to find thermal zone for tmu id=6
-[    1.974399] thermal_sys: Failed to find thermal zone for tmu id=7
-[    1.985690] thermal_sys: Failed to find thermal zone for tmu id=8
-[    1.996980] thermal_sys: Failed to find thermal zone for tmu id=9
-[    2.008274] thermal_sys: Failed to find thermal zone for tmu id=10
-[    2.019656] thermal_sys: Failed to find thermal zone for tmu id=11
-[    2.031037] thermal_sys: Failed to find thermal zone for tmu id=12
-[    2.048942] thermal_sys: Failed to find thermal zone for tmu id=13
-[    2.060320] thermal_sys: Failed to find thermal zone for tmu id=14
-[    2.071700] thermal_sys: Failed to find thermal zone for tmu id=15
+[...]
 
-Btw. the driver seems to always register 16 sensors regardless how
-many the actual hardware has (or rather: are described in the DT).
+> @@ -137,6 +139,15 @@ struct ctrl_settings {
+>   	int mcmd_enable;
+>   };
+>   
+> +static struct thermal_trip trips[] = {
+> +	[0] = { .temperature = ACERHDF_DEFAULT_TEMP_FANON,
+> +		.hysteresis = ACERHDF_DEFAULT_TEMP_FANON - ACERHDF_DEFAULT_TEMP_FANOFF,
+> +		.type = THERMAL_TRIP_ACTIVE },
+> +
+> +	[1] = { .temperature = ACERHDF_TEMP_CRIT,
+> +		.type = THERMAL_TRIP_CRITICAL }
+> +};
+> +
+>   static struct ctrl_settings ctrl_cfg __read_mostly;
+>   
+>   /* Register addresses and values for different BIOS versions */
+> @@ -326,6 +337,15 @@ static void acerhdf_check_param(struct thermal_zone_device *thermal)
+>   		fanon = ACERHDF_MAX_FANON;
+>   	}
+>   
+> +	if (fanon < fanoff) {
+> +		pr_err("fanoff temperature (%d) is above fanon temperature (%d), clamping to %d\n",
+> +		       fanoff, fanon, fanon);
+> +		fanoff = fanon;
+> +	};
+> +	
 
--michael
+Tab whitespace, please remove.
+
+> +	trips[0].temperature = fanon;
+> +	trips[0].hysteresis  = fanon - fanoff;
+> +	
+
+Tab whitespace, please remove
+
+>   	if (kernelmode && prev_interval != interval) {
+>   		if (interval > ACERHDF_MAX_INTERVAL) {
+>   			pr_err("interval too high, set to %d\n",
+
+I don't know the current behavior of the thermal layer well enough.
+Is it ensured, that those new trips[0].temperature / trips[0].hysteresis 
+values are taken into account?
+
+
+-- 
+best regards,
+--peter;
