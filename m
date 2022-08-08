@@ -2,84 +2,67 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6584C25B0E
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 18:52:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EB7EC00140
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Aug 2022 19:03:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244015AbiHHSwI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Aug 2022 14:52:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46512 "EHLO
+        id S239759AbiHHTDE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Aug 2022 15:03:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54126 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232574AbiHHSwG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2022 14:52:06 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E080E2BE8;
-        Mon,  8 Aug 2022 11:52:05 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        with ESMTP id S238332AbiHHTDD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2022 15:03:03 -0400
+Received: from ssl.serverraum.org (ssl.serverraum.org [IPv6:2a01:4f8:151:8464::1:2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 954461151;
+        Mon,  8 Aug 2022 12:03:02 -0700 (PDT)
+Received: from ssl.serverraum.org (web.serverraum.org [172.16.0.2])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 72D846123A;
-        Mon,  8 Aug 2022 18:52:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDFE7C433D6;
-        Mon,  8 Aug 2022 18:52:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1659984724;
-        bh=509Vlh0aaasSIvnKS+Wl7RWhla5F0k13Qa/Ysf/hWIQ=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=QxKtOC/ccHzrXIeZMLSlvQph5yP51eHmcmjuHBs9Rm+3R7M7hKtWEqkr0g9jsCtF2
-         1IdikxPNDR5kSThNTeqGfE3dSPLwwBvL0HaG84/TVtuBsIY7BguX/mSC7/qX3XrGOo
-         AYClkonIzyrgrJO3OHqxafNecB1zeyCdz9qS6VH34b0Vub0dOtQyxDWH4yvLvrHglW
-         ZCP5NXAn/WfqBAqUa3+dTpIRmLBfJcugxLcOt5WDgG5uPMBobus3cmPDdF6fcIsj4W
-         B0zrapECVlc01kIbz57H55MXRkQJ31ffWOSIg1yXJ68vL0J8Hqgc4FGpHr6dvEGO4H
-         CgKm9GuZUy5gg==
-Date:   Mon, 8 Aug 2022 11:52:02 -0700
-From:   Jakub Kicinski <kuba@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Pavel Machek <pavel@ucw.cz>,
-        Tim Harvey <tharvey@gateworks.com>,
-        Robert Jones <rjones@gateworks.com>,
-        Lee Jones <lee@kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Ricardo Rivera-Matos <r-rivera-matos@ti.com>,
-        linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org,
-        netdev@vger.kernel.org, linux-pm@vger.kernel.org,
-        alsa-devel@alsa-project.org
-Subject: Re: [PATCH 0/5] iio/hwmon/mfd/leds/net/power/ASoC: dt-bindings: few
- stale maintainers cleanup
-Message-ID: <20220808115202.3175eb1f@kernel.org>
-In-Reply-To: <20220808104712.54315-1-krzysztof.kozlowski@linaro.org>
-References: <20220808104712.54315-1-krzysztof.kozlowski@linaro.org>
+        by ssl.serverraum.org (Postfix) with ESMTPSA id 216A72224F;
+        Mon,  8 Aug 2022 21:03:00 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2016061301;
+        t=1659985380;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=cjApsE527+vjxy7MifBLDB/wEE1m9NLBNYusyTH6zIM=;
+        b=YY5Cqyqi2EXeYlfcC9qpn/yJNyvMbXG3M2UtWZJSeo25KELerGFutoO+3mf3N9CtQFu8Qm
+        G8StE/1G12VyjBwrLSY/LEvnRJYkaMMx9d9kwsVQ5xb1zzqbrvqpDx9btq0TShItZ33jID
+        WHEAZutf0MGGyXpnbNjjerL7fw/BCz8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
 Content-Transfer-Encoding: 7bit
+Date:   Mon, 08 Aug 2022 21:03:00 +0200
+From:   Michael Walle <michael@walle.cc>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rafael@kernel.org, dan.carpenter@oracle.com, linux@roeck-us.net,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 2/4] thermal/of: Return -ENODEV instead of -EINVAL if
+ registration fails
+In-Reply-To: <20220808180915.446053-2-daniel.lezcano@linaro.org>
+References: <20220808180915.446053-1-daniel.lezcano@linaro.org>
+ <20220808180915.446053-2-daniel.lezcano@linaro.org>
+User-Agent: Roundcube Webmail/1.4.13
+Message-ID: <0b684e5cb8b97227cf2f5e2c2dc6d039@walle.cc>
+X-Sender: michael@walle.cc
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon,  8 Aug 2022 13:47:07 +0300 Krzysztof Kozlowski wrote:
-> Several of the bindings here had only one
-> maintainer and history does not always point to a new one (although I did not
-> perform extensive digging). I added subsystem maintainer, because dtschema
-> requires such entry. This is not the best choice as simply subsystem maintainer
-> might not have the actual device (or its datasheets or any interest in it).
+Am 2022-08-08 20:09, schrieb Daniel Lezcano:
+> The previous version of the OF code was returning -ENODEV if no
+> thermal zones description was found or if the lookup of the sensor in
+> the thermal zones was not found.
 > 
-> However dtschema requires a maintainer. Maybe we could add some
-> "orphaned" entry in such case?
+> The backend drivers are expecting this return value as an information
+> about skipping the sensor initialization and considered as normal.
+> 
+> Fix the return value by replacing -EINVAL by -ENODEV
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Integrating it with MAINTAINERS would be another option worth exploring
-although slightly tangential.
+Tested-by: Michael Walle <michael@walle.cc>
 
-How do you want this merged? It's all over the place subsystem-wise.
