@@ -2,265 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69DCFC32764
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Aug 2022 22:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A579C19F2D
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Aug 2022 23:47:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230177AbiHIWGN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Aug 2022 18:06:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50712 "EHLO
+        id S229618AbiHIXrE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Aug 2022 19:47:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32768 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230032AbiHIWFm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Aug 2022 18:05:42 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7F4E713F8B
-        for <linux-pm@vger.kernel.org>; Tue,  9 Aug 2022 15:05:34 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id p12-20020a7bcc8c000000b003a5360f218fso119946wma.3
-        for <linux-pm@vger.kernel.org>; Tue, 09 Aug 2022 15:05:34 -0700 (PDT)
+        with ESMTP id S229436AbiHIXrD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Aug 2022 19:47:03 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 459FE7FE40
+        for <linux-pm@vger.kernel.org>; Tue,  9 Aug 2022 16:47:02 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id dc19so24811116ejb.12
+        for <linux-pm@vger.kernel.org>; Tue, 09 Aug 2022 16:47:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=89E/CxlN8Tp3lczCV5jVp3NK0Ss9lUiOGh8dJwP7JXg=;
-        b=tQaWHRdToEGk9WyjVRDEXaOnmacVEHhEh9WTJBVy4a9+NSpbr3U00Bqsd3yAkmoj4V
-         irOjiq2E8FpsIhKj0MpKRSzda70bUfDcYjfnKWq6k4UIlpZ5jgBboSIPRdR5RVgQFen+
-         /iUjSrK6LSWDrbL/dYy562SG7MQYDt/k9+qUnOyOC6E3xvZ4DQZamws1IdA7FF8sOktK
-         TBjZlXQUnW4iefsiY8VMKEeHWk3pX5XttoYNvn6LO5w5u6sxWATq0vM7X78x0qPdt5+Z
-         9uiqfoN+R3LC6al9mZ+IbecJ5ooYK3Fa+9nciGy/4RjcrUIpLjccuzJtSX/5+EfiElAP
-         dHnA==
+        d=chromium.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=3C0nL9povX4hQb5HK7IIK66f7+cBcvjDa1h6azqprzg=;
+        b=RaBuDZpu6zzBIxvgMXoxN51Vk+ZxAdblsbYK9vaYmdwZRXvHp6paWHsWzp/Xkt+nUD
+         VuDn2VWLSueA7FAOECxIm1zF74oHzMCwP+7bkKBP+9pKZgXCHpZYLQIp9PqhQXDs54vQ
+         OjIMhXKpqlAuvVo52Ixl5NrhLGXt/o51CaBcE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=89E/CxlN8Tp3lczCV5jVp3NK0Ss9lUiOGh8dJwP7JXg=;
-        b=BCzWWbOJK8U+kVJyZlsg0g+YmcEGGuH2/iLcZUdjWaGrCFbXrBylUAr5dulzO9KmZh
-         6oANjHnvSAXksHyRp5BSDdV+Ixj7sybYKuavrqddKafL8UOM4hWIEQT/Q0BAEyiYMeCL
-         OdqSHoy+JJFXrxuERzfsv7kua/pvDZgpswA37LW27G/fdONaThrWEqueSzSIHxvZzRzM
-         RwquAfiOrLvtZAOdF5eI0mYSfVZj6En+xuAc109FjB6z8959AqyFmjJxRbG5VNKsCiWO
-         CZVlZuNdEiJWiuPmctPLAe4vCDkgwFQDYdFJ0PUXOLkG3Yv3FL0fifYg3o1R843c1db2
-         AZ6A==
-X-Gm-Message-State: ACgBeo1qNTGkzw07C2nVbA3UAuZnUgBVJq/sTfDeu3zDQVBh943mf+21
-        Nq2Aami4bZnbSzGBxWSpaPldioLwOVtrGw==
-X-Google-Smtp-Source: AA6agR5H3wiH8mgnBiSDgOR3YUyQt9nGqs0bbssfxeVDisk8h603TP07ShOGbwrr1Fh33JtOTXe7Lg==
-X-Received: by 2002:a05:600c:3d93:b0:3a3:3a93:fb16 with SMTP id bi19-20020a05600c3d9300b003a33a93fb16mr290789wmb.190.1660082733455;
-        Tue, 09 Aug 2022 15:05:33 -0700 (PDT)
-Received: from localhost.localdomain (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id m21-20020a05600c3b1500b003a317ee3036sm293583wms.2.2022.08.09.15.05.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Aug 2022 15:05:32 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org
-Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>
-Subject: [PATCH v2 26/26] thermal/drivers/intel: Use generic thermal_zone_get_trip() function
-Date:   Wed, 10 Aug 2022 00:04:36 +0200
-Message-Id: <20220809220436.711020-27-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220809220436.711020-1-daniel.lezcano@linaro.org>
-References: <20220809220436.711020-1-daniel.lezcano@linaro.org>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=3C0nL9povX4hQb5HK7IIK66f7+cBcvjDa1h6azqprzg=;
+        b=DARKXbHw4s9E1Hqh24f0vsnQgwvQESfLv8blWIkHJrCZQkLR3uMFidc9E7Fpd44Oc8
+         kbWMv0F9vg14nyHxR3YuhRFWKh+ixXX8CVy2JBnlpYc3uT98mjjCci9z0SltyzwToKEC
+         vS0NtDojy6lQkx1TTpfidzcoLA2PqLPeGuwZwPuJXiM1y7sxOBpSfs94vVxOYCQHQzd4
+         AAuX3OKMTEjN5GkGhmc55zXdhXUkNqGxUsA5iKJbPWb68q8wUoyASV8fERD0m46oaAcs
+         z0rfbKhkBvg3627VOnMmJPKTynO1bzVptVU7PEgQSLn3/Xq6qsyKlxA0EPxyBu1X/yNy
+         Kc2w==
+X-Gm-Message-State: ACgBeo16AGJqe30V0IFyLrZOYFocdrV6sQgB/6ed7IaglrQX1XOjCNTg
+        +ocs+CGyU7GdhZMJBqjaqR2b6Xtou7h5AQQf
+X-Google-Smtp-Source: AA6agR6JNmr5M6lXner73NBKGn8R6IQcyAozXBVn9Qp0zRQLJ6FbCNJ3l2tlt7ztEFec5S0iWWw6jg==
+X-Received: by 2002:a17:907:b590:b0:730:9e0f:e9a3 with SMTP id qx16-20020a170907b59000b007309e0fe9a3mr18499881ejc.112.1660088820608;
+        Tue, 09 Aug 2022 16:47:00 -0700 (PDT)
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com. [209.85.221.43])
+        by smtp.gmail.com with ESMTPSA id cq21-20020a056402221500b0043ba7df7a42sm6676718edb.26.2022.08.09.16.46.58
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 09 Aug 2022 16:46:59 -0700 (PDT)
+Received: by mail-wr1-f43.google.com with SMTP id h13so15961932wrf.6
+        for <linux-pm@vger.kernel.org>; Tue, 09 Aug 2022 16:46:58 -0700 (PDT)
+X-Received: by 2002:a5d:6da8:0:b0:221:7db8:de0a with SMTP id
+ u8-20020a5d6da8000000b002217db8de0amr11266715wrs.405.1660088818467; Tue, 09
+ Aug 2022 16:46:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220727185012.3255200-1-saravanak@google.com> <YuI6shUi6iJdMSfB@kroah.com>
+In-Reply-To: <YuI6shUi6iJdMSfB@kroah.com>
+From:   Doug Anderson <dianders@chromium.org>
+Date:   Tue, 9 Aug 2022 16:46:46 -0700
+X-Gmail-Original-Message-ID: <CAD=FV=W1P=4vzyTYQ+yVC=fH-7i=hjCAk7FV8jcGcGY+xa62pA@mail.gmail.com>
+Message-ID: <CAD=FV=W1P=4vzyTYQ+yVC=fH-7i=hjCAk7FV8jcGcGY+xa62pA@mail.gmail.com>
+Subject: Re: [PATCH v1 0/3] Bring back driver_deferred_probe_check_state() for now
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Saravana Kannan <saravanak@google.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Naresh Kamboju <naresh.kamboju@linaro.org>,
+        kernel-team@android.com, LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        netdev <netdev@vger.kernel.org>,
+        Stephen Boyd <swboyd@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal framework gives the possibility to register the trip
-points with the thermal zone. When that is done, no get_trip_* ops are
-needed and they can be removed.
+Hi,
 
-Convert ops content logic into generic trip points and register them with the
-thermal zone.
+On Thu, Jul 28, 2022 at 12:29 AM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Wed, Jul 27, 2022 at 11:50:08AM -0700, Saravana Kannan wrote:
+> > More fixes/changes are needed before driver_deferred_probe_check_state()
+> > can be deleted. So, bring it back for now.
+> >
+> > Greg,
+> >
+> > Can we get this into 5.19? If not, it might not be worth picking up this
+> > series. I could just do the other/more fixes in time for 5.20.
+>
+> Wow, no, it is _WAY_ too late for 5.19 to make a change like this,
+> sorry.
+>
+> What is so broken that we need to revert these now?  I could do so for
+> 5.20-rc1, and then backport to 5.19.y if that release is really broken,
+> but this feels odd so late in the cycle.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/intel/x86_pkg_temp_thermal.c | 120 ++++++++++---------
- 1 file changed, 66 insertions(+), 54 deletions(-)
+I spent a bunch of time bisecting mainline today on my
+sc7180-trogdor-lazor board. When building the top of Linus's tree
+today the display doesn't come up. I can make it come up by turning
+fw_devlink off (after fixing a regulator bug that I just posted a fix
+for).
 
-diff --git a/drivers/thermal/intel/x86_pkg_temp_thermal.c b/drivers/thermal/intel/x86_pkg_temp_thermal.c
-index 4d8edc61a78b..c28a98c82f97 100644
---- a/drivers/thermal/intel/x86_pkg_temp_thermal.c
-+++ b/drivers/thermal/intel/x86_pkg_temp_thermal.c
-@@ -53,6 +53,7 @@ struct zone_device {
- 	u32				msr_pkg_therm_high;
- 	struct delayed_work		work;
- 	struct thermal_zone_device	*tzone;
-+	struct thermal_trip		*trips;
- 	struct cpumask			cpumask;
- };
- 
-@@ -138,40 +139,6 @@ static int sys_get_curr_temp(struct thermal_zone_device *tzd, int *temp)
- 	return -EINVAL;
- }
- 
--static int sys_get_trip_temp(struct thermal_zone_device *tzd,
--			     int trip, int *temp)
--{
--	struct zone_device *zonedev = tzd->devdata;
--	unsigned long thres_reg_value;
--	u32 mask, shift, eax, edx;
--	int ret;
--
--	if (trip >= MAX_NUMBER_OF_TRIPS)
--		return -EINVAL;
--
--	if (trip) {
--		mask = THERM_MASK_THRESHOLD1;
--		shift = THERM_SHIFT_THRESHOLD1;
--	} else {
--		mask = THERM_MASK_THRESHOLD0;
--		shift = THERM_SHIFT_THRESHOLD0;
--	}
--
--	ret = rdmsr_on_cpu(zonedev->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
--			   &eax, &edx);
--	if (ret < 0)
--		return ret;
--
--	thres_reg_value = (eax & mask) >> shift;
--	if (thres_reg_value)
--		*temp = zonedev->tj_max - thres_reg_value * 1000;
--	else
--		*temp = THERMAL_TEMP_INVALID;
--	pr_debug("sys_get_trip_temp %d\n", *temp);
--
--	return 0;
--}
--
- static int
- sys_set_trip_temp(struct thermal_zone_device *tzd, int trip, int temp)
- {
-@@ -212,18 +179,9 @@ sys_set_trip_temp(struct thermal_zone_device *tzd, int trip, int temp)
- 			l, h);
- }
- 
--static int sys_get_trip_type(struct thermal_zone_device *thermal, int trip,
--			     enum thermal_trip_type *type)
--{
--	*type = THERMAL_TRIP_PASSIVE;
--	return 0;
--}
--
- /* Thermal zone callback registry */
- static struct thermal_zone_device_ops tzone_ops = {
- 	.get_temp = sys_get_curr_temp,
--	.get_trip_temp = sys_get_trip_temp,
--	.get_trip_type = sys_get_trip_type,
- 	.set_trip_temp = sys_set_trip_temp,
- };
- 
-@@ -328,6 +286,48 @@ static int pkg_thermal_notify(u64 msr_val)
- 	return 0;
- }
- 
-+static struct thermal_trip *pkg_temp_thermal_trips_init(int cpu, int tj_max, int num_trips)
-+{
-+	struct thermal_trip *trips;
-+	unsigned long thres_reg_value;
-+	u32 mask, shift, eax, edx;
-+	int ret, i;
-+
-+	trips = kzalloc(sizeof(*trips) * num_trips, GFP_KERNEL);
-+	if (!trips)
-+		return ERR_PTR(-ENOMEM);
-+	
-+	for (i = 0; i < num_trips; i++) {
-+
-+		if (i) {
-+			mask = THERM_MASK_THRESHOLD1;
-+			shift = THERM_SHIFT_THRESHOLD1;
-+		} else {
-+			mask = THERM_MASK_THRESHOLD0;
-+			shift = THERM_SHIFT_THRESHOLD0;
-+		}
-+
-+		ret = rdmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
-+				   &eax, &edx);
-+		if (ret < 0) {
-+			kfree(trips);
-+			return ERR_PTR(ret);
-+		}
-+
-+		thres_reg_value = (eax & mask) >> shift;
-+
-+		trips[i].temperature = thres_reg_value ?
-+			tj_max - thres_reg_value * 1000 : THERMAL_TEMP_INVALID;
-+
-+		trips[i].type = THERMAL_TRIP_PASSIVE;
-+		
-+		pr_debug("%s: cpu=%d, trip=%d, temp=%d\n",
-+			 __func__, cpu, i, trips[i].temperature);
-+	}
-+
-+	return trips;
-+}
-+
- static int pkg_temp_thermal_device_add(unsigned int cpu)
- {
- 	int id = topology_logical_die_id(cpu);
-@@ -353,24 +353,27 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
- 	if (!zonedev)
- 		return -ENOMEM;
- 
-+	zonedev->trips = pkg_temp_thermal_trips_init(cpu, tj_max, thres_count);
-+	if (IS_ERR(zonedev->trips)) {
-+		err = PTR_ERR(zonedev->trips);
-+		goto out_kfree_zonedev;
-+	}
-+	
- 	INIT_DELAYED_WORK(&zonedev->work, pkg_temp_thermal_threshold_work_fn);
- 	zonedev->cpu = cpu;
- 	zonedev->tj_max = tj_max;
--	zonedev->tzone = thermal_zone_device_register("x86_pkg_temp",
--			thres_count,
-+	zonedev->tzone = thermal_zone_device_register_with_trips("x86_pkg_temp",
-+			zonedev->trips, thres_count,
- 			(thres_count == MAX_NUMBER_OF_TRIPS) ? 0x03 : 0x01,
- 			zonedev, &tzone_ops, &pkg_temp_tz_params, 0, 0);
- 	if (IS_ERR(zonedev->tzone)) {
- 		err = PTR_ERR(zonedev->tzone);
--		kfree(zonedev);
--		return err;
-+		goto out_kfree_trips;
- 	}
- 	err = thermal_zone_device_enable(zonedev->tzone);
--	if (err) {
--		thermal_zone_device_unregister(zonedev->tzone);
--		kfree(zonedev);
--		return err;
--	}
-+	if (err)
-+		goto out_unregister_tz;
-+
- 	/* Store MSR value for package thermal interrupt, to restore at exit */
- 	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, zonedev->msr_pkg_therm_low,
- 	      zonedev->msr_pkg_therm_high);
-@@ -379,7 +382,14 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
- 	raw_spin_lock_irq(&pkg_temp_lock);
- 	zones[id] = zonedev;
- 	raw_spin_unlock_irq(&pkg_temp_lock);
--	return 0;
-+
-+out_unregister_tz:	
-+	thermal_zone_device_unregister(zonedev->tzone);
-+out_kfree_trips:
-+	kfree(zonedev->trips);
-+out_kfree_zonedev:
-+	kfree(zonedev);
-+	return err;
- }
- 
- static int pkg_thermal_cpu_offline(unsigned int cpu)
-@@ -463,8 +473,10 @@ static int pkg_thermal_cpu_offline(unsigned int cpu)
- 	raw_spin_unlock_irq(&pkg_temp_lock);
- 
- 	/* Final cleanup if this is the last cpu */
--	if (lastcpu)
-+	if (lastcpu) {
-+		kfree(zonedev->trips);
- 		kfree(zonedev);
-+	}
- 	return 0;
- }
- 
--- 
-2.34.1
+I found that the first bad commit was commit 5a46079a9645 ("PM:
+domains: Delete usage of driver_deferred_probe_check_state()")
 
+...but only when applied to mainline. When I cherry-pick that back to
+v5.19-rc1 (and pick another bugfix needed to boot my board against
+v5.19-rc1) then it works OK. After yet more bisecting, I found that on
+trogdor there's a bad interaction with the commit e511a760 ("arm64:
+dts: qcom: sm7180: remove assigned-clock-rate property for mdp clk").
+That commit is perfectly legit but I guess it somehow changed how
+fw_devlink was interpreting things?
+
+Sure enough, picking this revert series fixes things on Linus's tree.
+Any chance we can still get the revert in for v5.20-rc1? ;-)
+
+
+-Doug
