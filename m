@@ -2,59 +2,97 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69C36C2BB41
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Aug 2022 16:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2795C25B07
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Aug 2022 16:30:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232685AbiHJQY0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Aug 2022 12:24:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52088 "EHLO
+        id S232845AbiHJQaX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Aug 2022 12:30:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232739AbiHJQYE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2022 12:24:04 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE47B80F4B;
-        Wed, 10 Aug 2022 09:24:02 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id 456585852890d397; Wed, 10 Aug 2022 18:24:01 +0200
-Received: from kreacher.localnet (unknown [213.134.187.55])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 88E6366CF1C;
-        Wed, 10 Aug 2022 18:24:00 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
+        with ESMTP id S232411AbiHJQaW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2022 12:30:22 -0400
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 960FA1DA7B;
+        Wed, 10 Aug 2022 09:30:21 -0700 (PDT)
+Received: by mail-pj1-x1036.google.com with SMTP id 15-20020a17090a098f00b001f305b453feso2710008pjo.1;
+        Wed, 10 Aug 2022 09:30:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :sender:from:to:cc;
+        bh=vufaLke+Y9C89yfo1scfSCBU7Vp0KeQxf8BAAfrZOJE=;
+        b=OylVwTohrej7zPKGOwHnYwuXSw9/G5QWILPZzXbeuMut1OO+Hjrto4A6wGNsY5FMgV
+         a0V449p9II9Fh4YjOh2s7FWvhiscr/GF70/T2Xs9rVQou/HMzD+mp9jYnNMXbUOwlj2j
+         +rYwwbSHxMQchGn/XSLAN+v8WWNBHgvSd+3h0ynpSLm5hESx8Rg3LlBsUPrFfuaSY7v2
+         hmWLUthAI3QdJGj82tMB4yEU798bEslMyHowCSWk2UwTmGdes8r2JFQwqYo22kkSyVFl
+         GUlfr6wvAcYK1ntbo+zEHtc9exNAD9ZL/ZgeVGTTaA4A6Wagit/savUGUtuMi0oskROD
+         A9uw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :sender:x-gm-message-state:from:to:cc;
+        bh=vufaLke+Y9C89yfo1scfSCBU7Vp0KeQxf8BAAfrZOJE=;
+        b=DV3B9vwyv4El2aXpYnSwSIJwfVMcvHRlMpofzi7mKZyqDY3HVaRZTmjkS6TfZKH5Uy
+         jslFHaSDv1Tva4xpZzjdaxuyiyuWakn3XEC00FNKwFHeHkjCgpHWr3VZwZrW1YDv5mv5
+         Vb1Ug1jkrsMPec3F9QAzacGsConfSpW1JjYynMDktjFDdnBT1dMP4DIL6W3SGZB4xnRJ
+         jcOl/FO5oDTrdznyGjiC9y3/qu/JESfZ9X5oys55kgBzn/UArod+HCGEfEuJ3VP7Xdif
+         MzB7Fl+HJfgddrn24Jm+renI+9IG/FChmCeR4glbIO7qp0ua8ojwcx8TJOWIrhWD5TmX
+         QJrg==
+X-Gm-Message-State: ACgBeo3WRzp0+nugWqzeAixvTh6OPKh+8o80ljaXjHWuez2e4ZLV5LNo
+        5951p95Y0oilXUK8iwC05uG3qFWjqH0=
+X-Google-Smtp-Source: AA6agR5+mp0MTJWz54wqhnOlm+q8JR+cdwomVm/VefBywcbOpwIrEeKHB9YaC21NCg+b8Kjt4E2fKA==
+X-Received: by 2002:a17:902:d2c8:b0:16e:ea4e:36e0 with SMTP id n8-20020a170902d2c800b0016eea4e36e0mr29257389plc.37.1660149021086;
+        Wed, 10 Aug 2022 09:30:21 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id l11-20020a17090b078b00b001f4d4a1b494sm1873037pjz.7.2022.08.10.09.30.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 Aug 2022 09:30:20 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <ce384ba2-2801-b820-3e96-cfd5636c3c71@roeck-us.net>
+Date:   Wed, 10 Aug 2022 09:30:19 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v1 1/5] ACPI: Rename acpi_bus_get/put_acpi_device()
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: [PATCH v1 0/5] ACPI: Device enumeration rearrangements and parent field elimination
-Date:   Wed, 10 Aug 2022 18:11:58 +0200
-Message-ID: <12036348.O9o76ZdvQC@kreacher>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.187.55
-X-CLIENT-HOSTNAME: 213.134.187.55
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrvdegvddgleejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppedvudefrddufeegrddukeejrdehheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddukeejrdehhedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnhgurhhihidrshhhvghvtghhvghnkhhosehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghl
- rdhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>
+References: <12036348.O9o76ZdvQC@kreacher> <4763162.31r3eYUQgx@kreacher>
+From:   Guenter Roeck <linux@roeck-us.net>
+In-Reply-To: <4763162.31r3eYUQgx@kreacher>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+On 8/10/22 09:14, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Because acpi_bus_get_acpi_device() is completely analogous to
+> acpi_fetch_acpi_dev(), rename it to acpi_get_acpi_dev() and
+> add a kerneldoc comment to it.
+> 
+> Accordingly, rename acpi_bus_put_acpi_device() to acpi_put_acpi_dev()
+> and update all of the users of these two functions.
+> 
+> While at it, move the acpi_fetch_acpi_dev() header next to the
+> acpi_get_acpi_dev() header in the header file holding them.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>   drivers/acpi/bus.c               |    6 +++---
+>   drivers/acpi/device_pm.c         |    4 ++--
+>   drivers/acpi/irq.c               |    4 ++--
+>   drivers/acpi/scan.c              |   21 ++++++++++++++++-----
+>   drivers/hwmon/acpi_power_meter.c |    2 +-
 
-There are still opportunities to clean up the ACPI support code and
-this series is part of the effort in that direction.
+For hwmon:
 
-It makes changes without functional impact (AFAICS) to the core ACPI
-code related to devices and to some of its users.
-
-Please refer to the patch changelogs for details.
-
-Thanks!
-
-
-
+Acked-by: Guenter Roeck <linux@roeck-us.net>
