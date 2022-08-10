@@ -2,26 +2,26 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65972C3F6B0
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Aug 2022 14:09:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35E22C25B07
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Aug 2022 14:31:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229782AbiHJOJC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Aug 2022 10:09:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46674 "EHLO
+        id S231838AbiHJOb0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Aug 2022 10:31:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41164 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233120AbiHJOIX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2022 10:08:23 -0400
+        with ESMTP id S232271AbiHJOa5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2022 10:30:57 -0400
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 202086F554;
-        Wed, 10 Aug 2022 07:08:20 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9C18422282;
+        Wed, 10 Aug 2022 07:30:56 -0700 (PDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 977861FB;
-        Wed, 10 Aug 2022 07:08:20 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 201DF23A;
+        Wed, 10 Aug 2022 07:30:57 -0700 (PDT)
 Received: from [192.168.122.164] (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6D2B13F67D;
-        Wed, 10 Aug 2022 07:08:19 -0700 (PDT)
-Message-ID: <6f565c2d-e7cb-f5a2-0b38-995c9cd2deec@arm.com>
-Date:   Wed, 10 Aug 2022 09:08:14 -0500
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F0C813F67D;
+        Wed, 10 Aug 2022 07:30:55 -0700 (PDT)
+Message-ID: <4da7cd19-4b98-9360-922f-d625c4ec55e0@arm.com>
+Date:   Wed, 10 Aug 2022 09:30:51 -0500
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.8.0
@@ -84,10 +84,15 @@ On 8/10/22 07:29, Lukasz Luba wrote:
 >     Do also more recent MHU have such issues, so we could block
 >     them by default (like in your code)?
 
-Well, the mailbox nature of PCC pretty much assures its "slow", relative 
-the alternative of providing an actual register.  If a platform provides 
-direct access to say MHU registers, then of course they won't actually 
-be in a PCC region and the FIE will remain on.
+I posted that other email before being awake and conflated MHU with AMU 
+(which could potentially expose the values directly). But the CPPC code 
+isn't aware of whether a MHU or some other mailbox is in use. Either 
+way, its hard to imagine a general mailbox with a doorbell/wait for 
+completion handshake will ever be fast enough to consider running at the 
+granularity this code is running at. If there were a case like that, the 
+kernel would have to benchmark it at runtime to differentiate it from 
+something that is talking over a slow link to a slowly responding mgmt 
+processor.
 
 
 > 
@@ -96,15 +101,6 @@ be in a PCC region and the FIE will remain on.
 >     check code which disables it.
 >     We have probably introduce this overhead for older platforms with
 >     this commit:
-
-The problem here is that these ACPI kernels are being shipped as single 
-images in distro's which expect them to run on a wide range of platforms 
-(including x86/amd in this case), and preform optimally on all of them.
-
-So the 'n' option basically is saying that the latest FIE code doesn't 
-provide a befit anywhere?
-
-
 > 
 > commit 4c38f2df71c8e33c0b64865992d693f5022eeaad
 > Author: Viresh Kumar <viresh.kumar@linaro.org>
