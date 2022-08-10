@@ -2,120 +2,151 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A525C19F2A
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Aug 2022 15:32:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB99AC3F6B0
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Aug 2022 16:24:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230359AbiHJPcI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Aug 2022 11:32:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54368 "EHLO
+        id S231557AbiHJQYW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Aug 2022 12:24:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229924AbiHJPcH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2022 11:32:07 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id EB455658C;
-        Wed, 10 Aug 2022 08:32:04 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6E00A1424;
-        Wed, 10 Aug 2022 08:32:05 -0700 (PDT)
-Received: from [10.57.42.77] (unknown [10.57.42.77])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 73B813F67D;
-        Wed, 10 Aug 2022 08:32:02 -0700 (PDT)
-Message-ID: <2d0fc5d7-d484-f64c-fe50-18d18ad95fa2@arm.com>
-Date:   Wed, 10 Aug 2022 17:32:04 +0200
+        with ESMTP id S232637AbiHJQX7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2022 12:23:59 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1EE8792E7;
+        Wed, 10 Aug 2022 09:23:56 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
+ id 2d7ae212334240e6; Wed, 10 Aug 2022 18:23:55 +0200
+Received: from kreacher.localnet (unknown [213.134.187.55])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id BD40B66CF1C;
+        Wed, 10 Aug 2022 18:23:54 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: [PATCH v1 4/5] ACPI: scan: Eliminate __acpi_device_add()
+Date:   Wed, 10 Aug 2022 18:17:23 +0200
+Message-ID: <13078324.uLZWGnKmhe@kreacher>
+In-Reply-To: <12036348.O9o76ZdvQC@kreacher>
+References: <12036348.O9o76ZdvQC@kreacher>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH v2 1/1] ACPI: CPPC: Disable FIE if registers in PCC
- regions
-Content-Language: en-US
-To:     Lukasz Luba <lukasz.luba@arm.com>,
-        Jeremy Linton <jeremy.linton@arm.com>
-Cc:     rafael@kernel.org, lenb@kernel.org, viresh.kumar@linaro.org,
-        robert.moore@intel.com, devel@acpica.org,
-        linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, vschneid@redhat.com,
-        Ionela Voinescu <ionela.voinescu@arm.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>
-References: <20220728221043.4161903-1-jeremy.linton@arm.com>
- <20220728221043.4161903-2-jeremy.linton@arm.com>
- <3a5e7abd-9361-11ba-978d-8e8bae00ea31@arm.com>
- <4da7cd19-4b98-9360-922f-d625c4ec55e0@arm.com>
- <a7248e0c-f8cc-a7f1-f241-75faa7219961@arm.com>
-From:   Pierre Gondois <pierre.gondois@arm.com>
-In-Reply-To: <a7248e0c-f8cc-a7f1-f241-75faa7219961@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.187.55
+X-CLIENT-HOSTNAME: 213.134.187.55
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrvdegvddgleejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrddukeejrdehheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddukeejrdehhedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepgedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnhgurhhihidrshhhvghvtghhvghnkhhosehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhn
+ vghlrdhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Instead of having acpi_device_add() defined as a wrapper around
+__acpi_device_add(), export acpi_tie_acpi_dev() so it can be called
+directly by acpi_add_power_resource(), fold acpi_device_add() into the
+latter and rename __acpi_device_add() to acpi_device_add().
+
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/internal.h |    1 +
+ drivers/acpi/power.c    |    6 +++++-
+ drivers/acpi/scan.c     |   17 +++--------------
+ 3 files changed, 9 insertions(+), 15 deletions(-)
+
+Index: linux-pm/drivers/acpi/internal.h
+===================================================================
+--- linux-pm.orig/drivers/acpi/internal.h
++++ linux-pm/drivers/acpi/internal.h
+@@ -104,6 +104,7 @@ struct acpi_device_bus_id {
+ 
+ void acpi_init_device_object(struct acpi_device *device, acpi_handle handle,
+ 			     int type, void (*release)(struct device *));
++int acpi_tie_acpi_dev(struct acpi_device *adev);
+ int acpi_device_add(struct acpi_device *device);
+ int acpi_device_setup_files(struct acpi_device *dev);
+ void acpi_device_remove_files(struct acpi_device *dev);
+Index: linux-pm/drivers/acpi/scan.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/scan.c
++++ linux-pm/drivers/acpi/scan.c
+@@ -643,7 +643,7 @@ static int acpi_device_set_name(struct a
+ 	return 0;
+ }
+ 
+-static int acpi_tie_acpi_dev(struct acpi_device *adev)
++int acpi_tie_acpi_dev(struct acpi_device *adev)
+ {
+ 	acpi_handle handle = adev->handle;
+ 	acpi_status status;
+@@ -673,7 +673,7 @@ static void acpi_store_pld_crc(struct ac
+ 	ACPI_FREE(pld);
+ }
+ 
+-static int __acpi_device_add(struct acpi_device *device)
++int acpi_device_add(struct acpi_device *device)
+ {
+ 	struct acpi_device_bus_id *acpi_device_bus_id;
+ 	int result;
+@@ -755,17 +755,6 @@ err_unlock:
+ 	return result;
+ }
+ 
+-int acpi_device_add(struct acpi_device *adev)
+-{
+-	int ret;
+-
+-	ret = acpi_tie_acpi_dev(adev);
+-	if (ret)
+-		return ret;
+-
+-	return __acpi_device_add(adev);
+-}
+-
+ /* --------------------------------------------------------------------------
+                                  Device Enumeration
+    -------------------------------------------------------------------------- */
+@@ -1866,7 +1855,7 @@ static int acpi_add_single_object(struct
+ 		mutex_unlock(&acpi_dep_list_lock);
+ 
+ 	if (!result)
+-		result = __acpi_device_add(device);
++		result = acpi_device_add(device);
+ 
+ 	if (result) {
+ 		acpi_device_release(&device->dev);
+Index: linux-pm/drivers/acpi/power.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -952,6 +952,7 @@ struct acpi_device *acpi_add_power_resou
+ 	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
+ 	strcpy(acpi_device_class(device), ACPI_POWER_CLASS);
+ 	device->power.state = ACPI_STATE_UNKNOWN;
++	device->flags.match_driver = true;
+ 
+ 	/* Evaluate the object to get the system level and resource order. */
+ 	status = acpi_evaluate_object(handle, NULL, NULL, &buffer);
+@@ -968,7 +969,10 @@ struct acpi_device *acpi_add_power_resou
+ 
+ 	pr_info("%s [%s]\n", acpi_device_name(device), acpi_device_bid(device));
+ 
+-	device->flags.match_driver = true;
++	result = acpi_tie_acpi_dev(device);
++	if (result)
++		goto err;
++
+ 	result = acpi_device_add(device);
+ 	if (result)
+ 		goto err;
 
 
-On 8/10/22 16:37, Lukasz Luba wrote:
-> 
-> 
-> On 8/10/22 15:30, Jeremy Linton wrote:
->> Hi,
->>
->> On 8/10/22 07:29, Lukasz Luba wrote:
->>> Hi Jeremy,
->>>
->>> +CC Valentin since he might be interested in this finding
->>> +CC Ionela, Dietmar
->>>
->>> I have a few comments for this patch.
->>>
->>>
->>> On 7/28/22 23:10, Jeremy Linton wrote:
->>>> PCC regions utilize a mailbox to set/retrieve register values used by
->>>> the CPPC code. This is fine as long as the operations are
->>>> infrequent. With the FIE code enabled though the overhead can range
->>>> from 2-11% of system CPU overhead (ex: as measured by top) on Arm
->>>> based machines.
->>>>
->>>> So, before enabling FIE assure none of the registers used by
->>>> cppc_get_perf_ctrs() are in the PCC region. Furthermore lets also
->>>> enable a module parameter which can also disable it at boot or module
->>>> reload.
->>>>
->>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->>>> ---
->>>>    drivers/acpi/cppc_acpi.c       | 41 ++++++++++++++++++++++++++++++++++
->>>>    drivers/cpufreq/cppc_cpufreq.c | 19 ++++++++++++----
->>>>    include/acpi/cppc_acpi.h       |  5 +++++
->>>>    3 files changed, 61 insertions(+), 4 deletions(-)
->>>
->>>
->>> 1. You assume that all platforms would have this big overhead when
->>>      they have the PCC regions for this purpose.
->>>      Do we know which version of HW mailbox have been implemented
->>>      and used that have this 2-11% overhead in a platform?
->>>      Do also more recent MHU have such issues, so we could block
->>>      them by default (like in your code)?
->>
->> I posted that other email before being awake and conflated MHU with AMU
->> (which could potentially expose the values directly). But the CPPC code
->> isn't aware of whether a MHU or some other mailbox is in use. Either
->> way, its hard to imagine a general mailbox with a doorbell/wait for
->> completion handshake will ever be fast enough to consider running at the
->> granularity this code is running at. If there were a case like that, the
->> kernel would have to benchmark it at runtime to differentiate it from
->> something that is talking over a slow link to a slowly responding mgmt
->> processor.
-> 
-> Exactly, I'm afraid the same, that we would never get such fast
-> mailbox-based platform. Newer platforms would just use AMU, so
-> completely different code and no one would even bother to test if
-> their HW mailbox is fast-enough for this FIE purpose ;)
 
-To add some platform information, the following platforms are using
-CPPC through PCC channels (so mailboxes):
-- Cavium ThunderX2
-- Ampere eMAG
-- Ampere Altra
-
-Fwiw, I can confirm the cppc_fie kthread can represent a significant load,
-with a utilization between 2% and 30%.
-
-Regards,
-Pierre
