@@ -2,131 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BAA3C25B0C
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Aug 2022 07:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E19E1C19F2D
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Aug 2022 10:55:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234043AbiHKHyj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Aug 2022 03:54:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60462 "EHLO
+        id S234457AbiHKKz1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Aug 2022 06:55:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58854 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233884AbiHKHyi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2022 03:54:38 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F200513E2E;
-        Thu, 11 Aug 2022 00:54:36 -0700 (PDT)
-X-UUID: c537b5c587bb409a98dcb065de503d5c-20220811
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:Date:CC:To:From:Subject:Message-ID; bh=Pl+MDAa1cNSlme5ohVZ4QGF7+/nE1dHPujEfDH6bqDU=;
-        b=JLRMdhdZ20fugIkHP1XpgLOxkA7POauHg5M/uAFqidO+2BZGke2xLp4VGEYAxgd1HlHmPaT4GsBihbZp3y3nDRC1+w3v0+fIq3yzEmL5jZuS5ux5q/ERqoxBwwpXEmytfSW9sag2IT7Fw8juTDD1LBkzFTxBWoy9nbDZLbt2/A8=;
-X-CID-UNFAMILIAR: 1
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.9,REQID:253d8c81-3ec1-4b2a-9e4c-5e265f4190c3,OB:0,LO
-        B:10,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:100,FILE:0,BULK:0,RULE:Relea
-        se_Ham,ACTION:release,TS:95
-X-CID-INFO: VERSION:1.1.9,REQID:253d8c81-3ec1-4b2a-9e4c-5e265f4190c3,OB:0,LOB:
-        10,IP:0,URL:0,TC:0,Content:-5,EDM:0,RT:0,SF:100,FILE:0,BULK:0,RULE:Spam_GS
-        981B3D,ACTION:quarantine,TS:95
-X-CID-META: VersionHash:3d8acc9,CLOUDID:2d0384ae-9535-44a6-aa9b-7f62b79b6ff6,C
-        OID:f096d32b22bb,Recheck:0,SF:28|16|19|48,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:1,File:nil,Bulk:40,QS:nil,BEC:nil,COL:0
-X-UUID: c537b5c587bb409a98dcb065de503d5c-20220811
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
-        (envelope-from <kuyo.chang@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 809153656; Thu, 11 Aug 2022 15:54:30 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Thu, 11 Aug 2022 15:54:28 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 11 Aug 2022 15:54:28 +0800
-Message-ID: <3bcf5d974b98acccde89e8d5567d3ddcdfb44800.camel@mediatek.com>
-Subject: [Race condition] Race condition at cpuidle_enter_s2idle &
- __cfi_slowpath_diag
-From:   Kuyo Chang <kuyo.chang@mediatek.com>
-To:     Sami Tolvanen <samitolvanen@google.com>,
-        Kees Cook <keescook@chromium.org>,
-        Nathan Chancellor <nathan@kernel.org>,
-        "Nick Desaulniers" <ndesaulniers@google.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        "Peter Zijlstra" <peterz@infradead.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        "Vincent Guittot" <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        "Ben Segall" <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
-        "Daniel Bristot de Oliveira" <bristot@redhat.com>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        Josh Triplett <josh@joshtriplett.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-        Lai Jiangshan <jiangshanlai@gmail.com>,
-        Joel Fernandes <joel@joelfernandes.org>, <rcu@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Daniel Lezcano" <daniel.lezcano@linaro.org>
-CC:     <kuyo.chang@mediatek.com>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <wsd_upstream@mediatek.com>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>, <rcu@vger.kernel.org>,
-        <llvm@lists.linux.dev>
-Date:   Thu, 11 Aug 2022 15:54:28 +0800
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S234432AbiHKKz0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2022 06:55:26 -0400
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0580E4F191
+        for <linux-pm@vger.kernel.org>; Thu, 11 Aug 2022 03:55:25 -0700 (PDT)
+Received: by mail-wr1-x434.google.com with SMTP id q30so20877569wra.11
+        for <linux-pm@vger.kernel.org>; Thu, 11 Aug 2022 03:55:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc;
+        bh=ExWCBl9fGhDCvIPcALkvbkYwWxvYBhGNNpEf1C/2uYM=;
+        b=MjCrpIJwRF3mtM8eZrwAkvOwP1K2yUavT0ot02kC7xWyEhWIwwEuN09UkT4uOVGkmP
+         a2jH3WW7Fdn8pqLkX3o8cZsFNACShqPDC0WbBxTau00kHhOr0xzqIjpoYW5fIVzcGZFr
+         jwN3h062jn8nP8xZlqS9on6EwQ0I2SqUFlVrgyKLxyWnym8o5/xaLzfgb64lI1iVPCII
+         Lu8Od7qDn8rw+ZKe4SKFk57RatY4xYCSI630ZHxBMwUQfTmCpZqnE6TVNQG1lqa5SDto
+         ywwAlvvrekK7TRoKpVHSXZ9MWC5NWH6kPl858eJYqsWTk2zrLlCcOFHekAd8+OeVQAwi
+         RIeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc;
+        bh=ExWCBl9fGhDCvIPcALkvbkYwWxvYBhGNNpEf1C/2uYM=;
+        b=EIxZ+7Hpn1OIO/fnJ5In1EvVrSP6R+DcBnaeK+LSan8fHJHpJA2fIYY5jumwrBxeKP
+         mfl0Utlm7/iYSd3oe1NvmtM4XIMvXOvHGjCg+i9ScWiQ5Qpand8pm0DLAaEoNv75rU3y
+         tBbeqWIVZiXxWb509j1epAuRgjnu8NUTFDLBcnBbx+pOcI2oNi+Cm+USOtme8ChQESie
+         p5vxxhT7uvOqnf2hWQ7z6/iNqjrfTtgVIjD9UgM6mIHhAGZ9VQ0hVX80k/McvlXPQHpd
+         BdCvQLCBuNKJehbgQwGpF5PBv1wvrWH30MlaanaZyWYj306894EDZcyN+wNznY3tHVa1
+         AYxw==
+X-Gm-Message-State: ACgBeo1EvWGX3ZodMt9aPXXRkoage+kC8PTKJCLZndz/Y9U/WlGup6QP
+        4572rytnAtouLynLPQtJYH8AUQ==
+X-Google-Smtp-Source: AA6agR47HAxdt2d6bM0ytPKlu0xhF0jZ7swMy/rEsF1Fkq2mVzRpN2f4mlNPs/ALYeLNgRFmBWU31w==
+X-Received: by 2002:a5d:6da8:0:b0:221:7db8:de0a with SMTP id u8-20020a5d6da8000000b002217db8de0amr15358016wrs.405.1660215323573;
+        Thu, 11 Aug 2022 03:55:23 -0700 (PDT)
+Received: from [192.168.0.162] (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
+        by smtp.gmail.com with ESMTPSA id h7-20020a05600c2ca700b003a4f08495b7sm5973089wmc.34.2022.08.11.03.55.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 11 Aug 2022 03:55:23 -0700 (PDT)
+Message-ID: <03ba7601-12dd-befc-eab1-14c3e9931519@linaro.org>
+Date:   Thu, 11 Aug 2022 11:55:21 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH] thermal: qcom: tsens-v0_1: Fix MSM8939 fourth sensor
+ hw_id
+Content-Language: en-US
+To:     Vincent Knecht <vincent.knecht@mailoo.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Shawn Guo <shawn.guo@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        mchen@squareup.com
+References: <20220811105014.7194-1-vincent.knecht@mailoo.org>
+From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+In-Reply-To: <20220811105014.7194-1-vincent.knecht@mailoo.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Sami,
+On 11/08/2022 11:50, Vincent Knecht wrote:
+> Reading temperature from this sensor fails with 'Invalid argument'.
+> 
+> Looking at old vendor dts [1], its hw_id should be 3 instead of 4.
+> Change this hw_id accordingly.
+> 
+> [1] https://github.com/msm8916-mainline/android_kernel_qcom_msm8916/blob/master/arch/arm/boot/dts/qcom/msm8939-common.dtsi#L511
+> 
+> Fixes: 332bc8ebab2c ("thermal: qcom: tsens-v0_1: Add support for MSM8939")
+> Signed-off-by: Vincent Knecht <vincent.knecht@mailoo.org>
+> ---
+> Fixes reading GPU temperature on msm8939 idol3 with current WIP dtsi
+> ---
+>   drivers/thermal/qcom/tsens-v0_1.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
+> index f136cb350238..327f37202c69 100644
+> --- a/drivers/thermal/qcom/tsens-v0_1.c
+> +++ b/drivers/thermal/qcom/tsens-v0_1.c
+> @@ -604,7 +604,7 @@ static const struct tsens_ops ops_8939 = {
+>   struct tsens_plat_data data_8939 = {
+>   	.num_sensors	= 10,
+>   	.ops		= &ops_8939,
+> -	.hw_ids		= (unsigned int []){ 0, 1, 2, 4, 5, 6, 7, 8, 9, 10 },
+> +	.hw_ids		= (unsigned int []){ 0, 1, 2, 3, 5, 6, 7, 8, 9, 10 },
+>   
+>   	.feat		= &tsens_v0_1_feat,
+>   	.fields	= tsens_v0_1_regfields,
 
-During doing s2idle(Suspend-To-Idle) flow, I found a task will put into
-runqueue by __cfi_slowpath_diag.
-The code trace about fail case as below:
+ACK we have this change in our shipping 4.19 kernel
 
-call_cpuidle_s2idle
-->if (current_clr_polling_and_test()) //check resched flag
-	return -EBUSY;
-->cpuidle_enter_s2idle
-->enter_s2idle_proper
-->target_state->enter_s2idle(dev, drv, index);
-
-Meanwhile the log shows the __cfi_slowpath_diag function will wake up a
-task to CPU, below is the backtrace
-__cfi_slowpath_diag
-find_check_fn
-rcu_irq_enter
-rcu_nmi_enter
-rcu_cleanup_after_idle
-invoke_rcu_core
-raise_softirq(RCU_SOFTIRQ)
-raise_softirq_irqoff
-    if (!in_interrupt() && should_wake_ksoftirqd())
-        wakeup_softirqd();
-//wake up flow
-wake_up_process
-try_to_wake_up
-ttwu_queue
-ttwu_do_activate
-ttwu_do_wakeup
-check_preempt_curr
-resched_curr
-set_tsk_need_resched(curr);
- 
-
-So It will violate the initial check at call_cpuidle_s2idle(Now it
-exists a task at rq  and need reched, so it should not enter
-cpuidle_enter_s2idle )
-if (current_clr_polling_and_test())
-	return -EBUSY;
-
-I look the racing may be related to the following patch
-
-57cd6d1 cfi: Fix __cfi_slowpath_diag RCU usage with cpuidle
-https://android.googlesource.com/kernel/common/+/57cd6d1
-
-Do you have any suggestion for this issue?
-Thank you.
-
+Reviewed-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
