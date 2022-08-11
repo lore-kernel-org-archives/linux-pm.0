@@ -2,85 +2,66 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44FB1C19F2A
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Aug 2022 11:12:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A236C19F2A
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Aug 2022 12:05:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234713AbiHKLMO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Aug 2022 07:12:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43984 "EHLO
+        id S235157AbiHKMFQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Aug 2022 08:05:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41126 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234269AbiHKLMN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2022 07:12:13 -0400
-X-Greylist: delayed 1266 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 11 Aug 2022 04:12:12 PDT
-Received: from msg-1.mailo.com (msg-1.mailo.com [213.182.54.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B0AA8F946;
-        Thu, 11 Aug 2022 04:12:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=mailoo.org; s=mailo;
-        t=1660215046; bh=7lbOrkLQlaL+wxUcC+lxwAVImAth8xZxU/409rDiSVs=;
-        h=X-EA-Auth:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-         MIME-Version:Content-Transfer-Encoding;
-        b=Em+tth42/Zjv6d3r4OMWZ2mbxuwo0T7ltvUQRrkYFncsgdVhcaYxIHrvZzfIteyXH
-         pFEypFyx/WPG68MtBM5gJPK+uXVk9jx2meXmpzw8pScRLTIc79nFG5dTQzLGH4Wpx5
-         WSNqhHTbglOuKQHNITpW4KEvajiL/HdCQ2Hlt5nw=
-Received: by b-6.in.mailobj.net [192.168.90.16] with ESMTP
-        via [213.182.55.207]
-        Thu, 11 Aug 2022 12:50:46 +0200 (CEST)
-X-EA-Auth: ys8Oz4QKJY8y4I9vMX0BnGYNqpB4Bgz5fVr4ItE8ABwGrI0ruDmLcwR66klTEEftfDfxaz+BzKHoX6ladLXvrQ8lDecHG0zGh7EJlGriM38=
-From:   Vincent Knecht <vincent.knecht@mailoo.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Shawn Guo <shawn.guo@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     bryan.odonoghue@linaro.org, ~postmarketos/upstreaming@lists.sr.ht,
-        phone-devel@vger.kernel.org,
-        Vincent Knecht <vincent.knecht@mailoo.org>
-Subject: [PATCH] thermal: qcom: tsens-v0_1: Fix MSM8939 fourth sensor hw_id
-Date:   Thu, 11 Aug 2022 12:50:14 +0200
-Message-Id: <20220811105014.7194-1-vincent.knecht@mailoo.org>
-X-Mailer: git-send-email 2.37.1
+        with ESMTP id S235155AbiHKMFG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2022 08:05:06 -0400
+Received: from bg5.exmail.qq.com (bg4.exmail.qq.com [43.154.54.12])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 086B8956A5;
+        Thu, 11 Aug 2022 05:05:04 -0700 (PDT)
+X-QQ-mid: bizesmtp80t1660219498tncr2goc
+Received: from localhost.localdomain ( [182.148.14.53])
+        by bizesmtp.qq.com (ESMTP) with 
+        id ; Thu, 11 Aug 2022 20:04:57 +0800 (CST)
+X-QQ-SSF: 01000000002000G0V000B00A0000020
+X-QQ-FEAT: SGbEDZt3ZyZazrvh3yNR+bQlXu0qsiC+vMqnfAp9KATZkDdVTX2QhF3RKgWfR
+        I/nbnTFHwK7WZ1x+spHtaXyd7k7m+RwMNV2TeoOw0+25cnugyDRZfj3mSji48PeijRnMRV+
+        yiTPpjiYPooy0VzGAwypQKe3Mxmg3tia0mFM6FuJwvhTZQMoIXhseM0FdonTnQt2HH2YvtH
+        cFEnThKEAPSxcFnRThWjV0/NYW/Q/0/KqZKdh6Vu1EhftZDvUvkxFNLj4XUNHxbSsSqJonT
+        kqpPV1v7B4w3qEkDo3BfPF9qDnpCtIA7vwyqNtTEMLXwK46RvHj2gRifJTEgs6ZZx4CsFNW
+        vTxwA60H+KZEynFEsV6kvoa+3LTQ68eA2pg8/RFjdh6gH3h0/hRQwFcu8hApk5UkEnmSfv/
+X-QQ-GoodBg: 0
+From:   Jason Wang <wangborong@cdjrlc.com>
+To:     daniel.lezcano@linaro.org
+Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Jason Wang <wangborong@cdjrlc.com>
+Subject: [PATCH] cpuidle/coupled: Fix comment typo
+Date:   Thu, 11 Aug 2022 20:04:50 +0800
+Message-Id: <20220811120450.13886-1-wangborong@cdjrlc.com>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Reading temperature from this sensor fails with 'Invalid argument'.
+The double `are' is duplicated in the comment, remove one.
 
-Looking at old vendor dts [1], its hw_id should be 3 instead of 4.
-Change this hw_id accordingly.
-
-[1] https://github.com/msm8916-mainline/android_kernel_qcom_msm8916/blob/master/arch/arm/boot/dts/qcom/msm8939-common.dtsi#L511
-
-Fixes: 332bc8ebab2c ("thermal: qcom: tsens-v0_1: Add support for MSM8939")
-Signed-off-by: Vincent Knecht <vincent.knecht@mailoo.org>
+Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
 ---
-Fixes reading GPU temperature on msm8939 idol3 with current WIP dtsi
----
- drivers/thermal/qcom/tsens-v0_1.c | 2 +-
+ drivers/cpuidle/coupled.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index f136cb350238..327f37202c69 100644
---- a/drivers/thermal/qcom/tsens-v0_1.c
-+++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -604,7 +604,7 @@ static const struct tsens_ops ops_8939 = {
- struct tsens_plat_data data_8939 = {
- 	.num_sensors	= 10,
- 	.ops		= &ops_8939,
--	.hw_ids		= (unsigned int []){ 0, 1, 2, 4, 5, 6, 7, 8, 9, 10 },
-+	.hw_ids		= (unsigned int []){ 0, 1, 2, 3, 5, 6, 7, 8, 9, 10 },
- 
- 	.feat		= &tsens_v0_1_feat,
- 	.fields	= tsens_v0_1_regfields,
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index 74068742cef3..9acde71558d5 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -54,7 +54,7 @@
+  * variable is not locked.  It is only written from the cpu that
+  * it stores (or by the on/offlining cpu if that cpu is offline),
+  * and only read after all the cpus are ready for the coupled idle
+- * state are are no longer updating it.
++ * state are no longer updating it.
+  *
+  * Three atomic counters are used.  alive_count tracks the number
+  * of cpus in the coupled set that are currently or soon will be
 -- 
-2.37.1
-
-
+2.36.1
 
