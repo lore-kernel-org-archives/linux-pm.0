@@ -2,61 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 508FDC282E7
-	for <linux-pm@archiver.kernel.org>; Sat, 13 Aug 2022 15:37:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E24C3F6B0
+	for <linux-pm@archiver.kernel.org>; Sat, 13 Aug 2022 16:03:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239796AbiHMPhb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 13 Aug 2022 11:37:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50652 "EHLO
+        id S239977AbiHMQDu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 13 Aug 2022 12:03:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48538 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239621AbiHMPh3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 Aug 2022 11:37:29 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67B6D22BD1;
-        Sat, 13 Aug 2022 08:37:28 -0700 (PDT)
+        with ESMTP id S239968AbiHMQDt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 Aug 2022 12:03:49 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D269BE2D;
+        Sat, 13 Aug 2022 09:03:48 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 14A7EB80688;
-        Sat, 13 Aug 2022 15:37:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 928BEC433D6;
-        Sat, 13 Aug 2022 15:37:18 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 1AA3F60F08;
+        Sat, 13 Aug 2022 16:03:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46418C433D7;
+        Sat, 13 Aug 2022 16:03:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1660405045;
-        bh=YKS5k8HQOL4Skk22H+cxjJPrMUDWvdWUTz36jDqZAJY=;
+        s=k20201202; t=1660406627;
+        bh=QQwdY6p7w1wMhEXqTepk2n31Fjq2crRd2b0/8WnaKBs=;
         h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=cXROFHWGoInf1pK354gp5Gb9NyimQMtBez5XiY9JTc+SxkCr6CWCJe+n2oZqHfzlH
-         wfzhWVtq6NHlL5/TjcUp4bmN36+oYBF5bh041xeTET3yfGzrenYrA0fDV7khptS650
-         zb5W4MOzma2Xk26UWd8/VQLvRxwsrTO8C2J5P992bopRmg1EIpDz8gOorUsKv3Ii7F
-         Qy+gg6gmNcisR4OqIC402ov2Evvymt2UYJXnySgcq0igmFxGrnoADcSwhpGGeuT+wA
-         JccQ8kCw2Jy7xQMfLherw5k43kwBXycb4aj4+Rft3sWzV5XyMZrS3FQxr8QZW/NcNO
-         qDKiTP1zMFlUw==
-Date:   Sat, 13 Aug 2022 16:47:48 +0100
+        b=R5kpBqqgt35ep/hRe67kTfHD2AATAoDyu36Z/UZx4QVp0T3z6KPxD/74Wn/HSdfOh
+         6I5mNNkToJrTbZJSNljmmWS9i2K0FOQrksLKb0yOOTA3+4orspT0PVYcPyGt5B3vea
+         HJDjp/J1XP5Fbm6xg72olhVwC0F2HlOtSEroj9uUFUNg2B1asqBwO+HVZ02EKCQYu4
+         cXdGt3p8wqWGoiiBHAozcY4wb1+BImzlQz6JRCJrt2O4UPH66Q7I1bEWAoVG1LK5UE
+         UCuIDkbCN8FinijBAu3XJyCTEUZqlEl7LpumYBjgiwnJDxWoqx69+8a3xcYQXtMyEv
+         WKVsKmiKcr9Cw==
+Date:   Sat, 13 Aug 2022 17:14:14 +0100
 From:   Jonathan Cameron <jic23@kernel.org>
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     ChiaEn Wu <peterwu.pub@gmail.com>, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
-        sre@kernel.org, chunfeng.yun@mediatek.com,
-        gregkh@linuxfoundation.org, lars@metafoo.de, lgirdwood@gmail.com,
-        broonie@kernel.org, linux@roeck-us.net,
-        heikki.krogerus@linux.intel.com, deller@gmx.de,
-        andy.shevchenko@gmail.com, chiaen_wu@richtek.com,
-        alice_chen@richtek.com, cy_huang@richtek.com,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        szunichen@gmail.com,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Lee Jones <lee@kernel.org>
-Subject: Re: [PATCH v7 06/13] dt-bindings: mfd: Add MediaTek MT6370
-Message-ID: <20220813164748.0c5564c2@jic23-huawei>
-In-Reply-To: <YvJdpq0MWNPQZw5c@google.com>
-References: <20220805070610.3516-1-peterwu.pub@gmail.com>
-        <20220805070610.3516-7-peterwu.pub@gmail.com>
-        <YvJdpq0MWNPQZw5c@google.com>
+To:     Paul Cercueil <paul@crapouillou.net>
+Cc:     linux-iio@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+        Sean Nyekjaer <sean@geanix.com>,
+        Rui Miguel Silva <rui.silva@linaro.org>,
+        Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@tdk.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [PATCH 1/5] PM: core: Add EXPORT_NS_GPL_DEV_PM_OPS to avoid
+ drivers rolling own.
+Message-ID: <20220813171414.17f32f21@jic23-huawei>
+In-Reply-To: <PLNAGR.UBLC121G9UCD2@crapouillou.net>
+References: <20220807192038.1039771-1-jic23@kernel.org>
+        <20220807192038.1039771-2-jic23@kernel.org>
+        <PLNAGR.UBLC121G9UCD2@crapouillou.net>
 X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -65,39 +57,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 9 Aug 2022 14:14:14 +0100
-Lee Jones <lee.jones@linaro.org> wrote:
+On Mon, 08 Aug 2022 13:22:37 +0200
+Paul Cercueil <paul@crapouillou.net> wrote:
 
-> On Fri, 05 Aug 2022, ChiaEn Wu wrote:
+> Hi Jonathan,
 > 
-> > From: ChiYuan Huang <cy_huang@richtek.com>
-> > 
-> > Add MediaTek MT6370 binding documentation.
-> > 
-> > Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
-> > ---
-> >  .../devicetree/bindings/mfd/mediatek,mt6370.yaml   | 280 +++++++++++++++++++++
-> >  include/dt-bindings/iio/adc/mediatek,mt6370_adc.h  |  18 ++
-> >  2 files changed, 298 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/mediatek,mt6370.yaml
-> >  create mode 100644 include/dt-bindings/iio/adc/mediatek,mt6370_adc.h  
-> 
-> Applied, thanks.
-> 
-Hi Lee,
+> If you can wait a day or two - I would like to submit my own version of 
+> EXPORT_NS_GPL_DEV_PM_OPS, which should be more versatile than your 
+> version.
+Thanks. Yours approach is indeed preferable, I'll respin this on top of your
+patch.
 
-The iio: adc: patch is dependent on this (due to the binding header) -
-so either you should pick that up as well, or it'll get delayed until what
-you've picked up is available upstream - or I guess some hackery to allow them
-to go via different trees and flip to the header only once all the prior steps
-are in place.
-
-Note I'd messed up sending an Ack on the ADC patch which I've now fixed.
-
-Thanks,
+Its a bit enough change I'll probably not take any of the
+existing tags forwards to v2.
 
 Jonathan
-
+ 
+> 
+> Cheers,
+> -Paul
+> 
+> 
+> Le dim., ao_t 7 2022 at 20:20:34 +0100, Jonathan Cameron 
+> <jic23@kernel.org> a _crit :
+> > From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > 
+> > A driver wishing to export a struct dev_pm_ops with both suspend and
+> > runtime ops provided could use _EXPORT_DEV_PM_OPS() directly but
+> > that macro is not intended for use in drivers and requires non
+> > intuitive aspect such as passing "_gpl" as one parameter and the
+> > namespace as a string.  As such just provide a macro to cover
+> > the GPL and NS case in a fashion that is in line with similar macros.
+> > 
+> > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > Cc: Paul Cercueil <paul@crapouillou.net>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  include/linux/pm.h | 5 +++++
+> >  1 file changed, 5 insertions(+)
+> > 
+> > diff --git a/include/linux/pm.h b/include/linux/pm.h
+> > index 871c9c49ec9d..18856e0d23ac 100644
+> > --- a/include/linux/pm.h
+> > +++ b/include/linux/pm.h
+> > @@ -407,6 +407,11 @@ static __maybe_unused 
+> > _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
+> >  #define EXPORT_NS_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, 
+> > ns)	\
+> >  	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, 
+> > "_gpl", #ns)
+> > 
+> > +#define EXPORT_NS_GPL_DEV_PM_OPS(name, suspend_fn, resume_fn, 
+> > runtime_suspend_fn, \
+> > +			   runtime_resume_fn, idle_fn, ns) \
+> > +	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, 
+> > \
+> > +			   runtime_resume_fn, idle_fn, "_gpl", #ns)
+> > +
+> >  /* Deprecated. Use DEFINE_SIMPLE_DEV_PM_OPS() instead. */
+> >  #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> >  const struct dev_pm_ops __maybe_unused name = { \
+> > --
+> > 2.37.1
+> >   
+> 
+> 
 
