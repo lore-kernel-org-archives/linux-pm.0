@@ -2,110 +2,193 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2DD9C00140
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Aug 2022 18:53:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A93DBC19F2D
+	for <linux-pm@archiver.kernel.org>; Sat, 13 Aug 2022 14:38:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238935AbiHLSxY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Aug 2022 14:53:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54780 "EHLO
+        id S239708AbiHMOig (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 13 Aug 2022 10:38:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32768 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236937AbiHLSxX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Aug 2022 14:53:23 -0400
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C2712CDCD
-        for <linux-pm@vger.kernel.org>; Fri, 12 Aug 2022 11:53:21 -0700 (PDT)
-Received: by mail-lf1-x135.google.com with SMTP id z6so2465542lfu.9
-        for <linux-pm@vger.kernel.org>; Fri, 12 Aug 2022 11:53:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc;
-        bh=H2hFHauRZ+2L1/8Jn5Q0JcmOqrApxd8gqlCGFKCdAM4=;
-        b=PBfBUmCCqcFOkJncUdtapjWauTPUiKTDxV8oZ1lYEW8xc3KN7Gru9WcRttJJrZKU1v
-         puewIC/RAT4riMzrbYZNMmChbVUy0NVo4m3lT43eIzZTcMVjUMT0/X5alIayZosShy4a
-         A2DBnUKi2Oa3ha/9X7/FiezFCFP3q9i/vcYoE/Mi3Y4AdJPYaYItnAvzdaooEn9rDIZN
-         7pAj20HghfJsz2LY4CVKj1QhkKHqoUmLnisWbFU4dQIds7kZm8k1S6Yg29dGSpwT2wDf
-         ivyfgtn7IX0vPdhw51VB0i1Mn8hENHdS9HJxKH7sP6kJG94PPgGibl4u+FRAAJc+Wg71
-         YtFw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc;
-        bh=H2hFHauRZ+2L1/8Jn5Q0JcmOqrApxd8gqlCGFKCdAM4=;
-        b=BEvb0fuS+SwJ15/7kllhoZamdAToUaAsgJErW5XraQFao9B45bjBI6X4xsZBbj9Xys
-         Csspeei9K2fkgw6aol5EEf3fSQOaqYnVrr3nG7QCViQGS/V+d727ZJ8n0hpW1zCXWn9M
-         xb8rOsLow8mQtdoUbvJHKFMwwQwCCvA9KhxFYpHm5AzVT/svqsAKzqAqSXUuuxpymXJv
-         tw8wPAhrwX63l72VBpqhiFVCkhWfXbARp5IzCy2nxmj9P8uXLjjS7NjGiPmyrban46YZ
-         igY8t3ooPNaD8jkQcW+6AWyHouuvhN2PVA1KY7FL5mRN2n2wF+sGnt7+Q959cwSg40hd
-         O5fQ==
-X-Gm-Message-State: ACgBeo3NAszWstvsxcL+HIZ3mTPUvbfsBMfgGE1GU9N64Rfa292+D4Iy
-        yzcWTsndbp2KQM1xXMaowNx7DsBfGpqPnZTs
-X-Google-Smtp-Source: AA6agR6ZIpyoLa852PCDDPN1ueyFqhPzbfJsN8zaQTOoB7GiCdBw7o8HRvVEUWrz3UjuDNBYcfEFlw==
-X-Received: by 2002:ac2:4d18:0:b0:48b:4a2d:a378 with SMTP id r24-20020ac24d18000000b0048b4a2da378mr1611866lfi.304.1660330399661;
-        Fri, 12 Aug 2022 11:53:19 -0700 (PDT)
-Received: from [192.168.1.39] ([83.146.140.105])
-        by smtp.gmail.com with ESMTPSA id u9-20020ac251c9000000b0048b003c4bf7sm298508lfm.169.2022.08.12.11.53.17
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 12 Aug 2022 11:53:19 -0700 (PDT)
-Message-ID: <f2a664be-71e9-7a26-2f0c-5f654d9cb3cb@linaro.org>
-Date:   Fri, 12 Aug 2022 21:53:15 +0300
+        with ESMTP id S239707AbiHMOif (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 Aug 2022 10:38:35 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAA744D169;
+        Sat, 13 Aug 2022 07:38:34 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 5667760E33;
+        Sat, 13 Aug 2022 14:38:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57D9BC433C1;
+        Sat, 13 Aug 2022 14:38:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1660401513;
+        bh=EKm6UMNGX8mdhZmpYHDE+bTq5uWnRM26kpuIGfSdk1s=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=E7PN2ylnRtG29W+A9eWyW65QPAKIE6pYRm8JWX9VLxcx8GMQ1lLfrYrAqOSXYboOR
+         WBOk7somqC0Oc0/KyBoqJnwGhLC02Pf9bqwgyh5ekhMmCTkFVZ/Swh2I4caHw/k/EI
+         cWU4/GPC801JVtt9gAaCihJBfLziiK7Uo7YzlQ3ylmIFv3axiJ7f6D3Jk+5CNkdlwU
+         AYbs/u4PNhss1B8xUyWkGt8Ns2XUMzsIjISHUOpbcXiXp9rDPpEZFWdUnWZTcusmCE
+         WEa1IIuYcvGn3yN/s3p5Ck+tpHB8PRJ3M442R+vk0l+1Qr0muMX+MEN6T8evcS3z2L
+         RFaTid8vhauDQ==
+Date:   Sat, 13 Aug 2022 15:49:02 +0100
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Paul Cercueil <paul@crapouillou.net>
+Cc:     Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        linux-pm <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v2 01/30] pm: Improve EXPORT_*_DEV_PM_OPS macros
+Message-ID: <20220813154902.32f86ee2@jic23-huawei>
+In-Reply-To: <20220808174107.38676-2-paul@crapouillou.net>
+References: <20220808174107.38676-1-paul@crapouillou.net>
+        <20220808174107.38676-2-paul@crapouillou.net>
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.12.0
-Subject: Re: [PATCH 1/2] dt-bindings: power: supply: Add Richtek RT9471
- battery charger
-Content-Language: en-US
-To:     ChiYuan Huang <u0084500@gmail.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        =?UTF-8?B?5ri45a2Q6aao?= <alina_yu@richtek.com>,
-        cy_huang <cy_huang@richtek.com>, alinayu829@gmail.com,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-References: <1660225318-4063-1-git-send-email-u0084500@gmail.com>
- <1660225318-4063-2-git-send-email-u0084500@gmail.com>
- <3cae9d60-4012-1dfd-abd9-4d0b9379e6bb@linaro.org>
- <CADiBU3_depGDZtiyizU3MB939A3oH1uTWzTMyruUy0z=u6BZkQ@mail.gmail.com>
- <40261b95-637a-1304-2e06-8c8ff7fc377b@linaro.org>
- <CADiBU38+9sR1r20=YWt-9s2+u7maHH+1VudCnV1-0+F4jYKdQQ@mail.gmail.com>
- <CADiBU3_Jt6n6tm=oVvjk5vsoEAneH7t-37S6skepA6v6bVVYUw@mail.gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <CADiBU3_Jt6n6tm=oVvjk5vsoEAneH7t-37S6skepA6v6bVVYUw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12/08/2022 19:05, ChiYuan Huang wrote:
->> It's the same usage like as TI charger.
->>>>
->>>> For charger driver, does it mean legacy IRQ handler is more preferred?
->>>
->>> Who is the consumer of these interrupts? Can you show the DTS with the
->>> interrupt consumer?
->>>
-> Sorry, I forget to reply this question.
-> Some battery driver may need to know the 'full', 'recharge' , 'ieoc' status.
-> The usage will  be like as below
+On Mon,  8 Aug 2022 19:40:38 +0200
+Paul Cercueil <paul@crapouillou.net> wrote:
+
+> Update the _EXPORT_DEV_PM_OPS() internal macro. It was not used anywhere
+> outside pm.h and pm_runtime.h, so it is safe to update it.
 > 
-> battery {
->   interrupts-extended = <&rt9471_chg 2 0>, <&rt9471_chg 3 0>, &(rt9471_chg 5 0>;
->   interrupt-names = "chg-done", "chg-recharge", "chg-ieoc";
+> Before, this macro would take a few parameters to be used as sleep and
+> runtime callbacks. This made it unsuitable to use with different
+> callbacks, for instance the "noirq" ones.
+> 
+> It is now semantically different: instead of creating a conditionally
+> exported dev_pm_ops structure, it only contains part of the definition.
+> 
+> This macro should however never be used directly (hence the trailing
+> underscore). Instead, the following four macros are provided:
+> - EXPORT_DEV_PM_OPS(name)
+> - EXPORT_GPL_DEV_PM_OPS(name)
+> - EXPORT_NS_DEV_PM_OPS(name, ns)
+> - EXPORT_NS_GPL_DEV_PM_OPS(name, ns)
+> 
+> For instance, it is now possible to conditionally export noirq
+> suspend/resume PM functions like this:
+> 
+> EXPORT_GPL_DEV_PM_OPS(foo_pm_ops) = {
+>     NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
 > };
 > 
-> Some gauge HW needs this information to enhance the battery capacity accuracy.
+> The existing helper macros EXPORT_*_SIMPLE_DEV_PM_OPS() and
+> EXPORT_*_RUNTIME_DEV_PM_OPS() have been updated to use these new macros.
+> 
+> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Looks good to me and much nicer than me making the situation worse
+as I did in the proposal to have a macro that took even more callbacks
+as it's parameters.
 
-Other supply stack pieces do it via supplies (supplied to/from in
-include/linux/power_supply.h) and reporting power_supply_changed().
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-With such explanation, your device is an interrupt source, but it is not
-an interrupt controller. If your device is interrupt controller, it
-means someone routes the interrupt line to your device. Physical line.
+> ---
+> Cc: Jonathan Cameron <jic23@kernel.org>
+> Cc: Rafael J. Wysocki <rafael@kernel.org>
+> Cc: linux-pm <linux-pm@vger.kernel.org>
+> 
+>  include/linux/pm.h         | 37 +++++++++++++++++++++++--------------
+>  include/linux/pm_runtime.h | 20 ++++++++++++--------
+>  2 files changed, 35 insertions(+), 22 deletions(-)
+> 
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 871c9c49ec9d..93cd34f00822 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -375,19 +375,20 @@ const struct dev_pm_ops name = { \
+>  }
+>  
+>  #ifdef CONFIG_PM
+> -#define _EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
+> -			   runtime_resume_fn, idle_fn, sec, ns)		\
+> -	_DEFINE_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
+> -			   runtime_resume_fn, idle_fn); \
+> -	__EXPORT_SYMBOL(name, sec, ns)
+> +#define _EXPORT_DEV_PM_OPS(name, sec, ns)				\
+> +	const struct dev_pm_ops name;					\
+> +	__EXPORT_SYMBOL(name, sec, ns);					\
+> +	const struct dev_pm_ops name
+>  #else
+> -#define _EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
+> -			   runtime_resume_fn, idle_fn, sec, ns) \
+> -static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
+> -					 resume_fn, runtime_suspend_fn, \
+> -					 runtime_resume_fn, idle_fn)
+> +#define _EXPORT_DEV_PM_OPS(name, sec, ns)				\
+> +	static __maybe_unused const struct dev_pm_ops __static_##name
+>  #endif
+>  
+> +#define EXPORT_DEV_PM_OPS(name) _EXPORT_DEV_PM_OPS(name, "", "")
+> +#define EXPORT_GPL_DEV_PM_OPS(name) _EXPORT_DEV_PM_OPS(name, "_gpl", "")
+> +#define EXPORT_NS_DEV_PM_OPS(name, ns) _EXPORT_DEV_PM_OPS(name, "", #ns)
+> +#define EXPORT_NS_GPL_DEV_PM_OPS(name, ns) _EXPORT_DEV_PM_OPS(name, "_gpl", #ns)
+> +
+>  /*
+>   * Use this if you want to use the same suspend and resume callbacks for suspend
+>   * to RAM and hibernation.
+> @@ -399,13 +400,21 @@ static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
+>  	_DEFINE_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL)
+>  
+>  #define EXPORT_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> -	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, "", "")
+> +	EXPORT_DEV_PM_OPS(name) = { \
+> +		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	}
+>  #define EXPORT_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> -	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, "_gpl", "")
+> +	EXPORT_GPL_DEV_PM_OPS(name) = { \
+> +		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	}
+>  #define EXPORT_NS_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, ns)	\
+> -	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, "", #ns)
+> +	EXPORT_NS_DEV_PM_OPS(name, ns) = { \
+> +		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	}
+>  #define EXPORT_NS_GPL_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn, ns)	\
+> -	_EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, NULL, NULL, NULL, "_gpl", #ns)
+> +	EXPORT_NS_GPL_DEV_PM_OPS(name, ns) = { \
+> +		SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	}
+>  
+>  /* Deprecated. Use DEFINE_SIMPLE_DEV_PM_OPS() instead. */
+>  #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index 9e4d056967c6..ba2077d9e366 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -40,17 +40,21 @@
+>  			   resume_fn, idle_fn)
+>  
+>  #define EXPORT_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
+> -	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
+> -			   suspend_fn, resume_fn, idle_fn, "", "")
+> +	EXPORT_DEV_PM_OPS(name) = { \
+> +		RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+> +	}
+>  #define EXPORT_GPL_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
+> -	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
+> -			   suspend_fn, resume_fn, idle_fn, "_gpl", "")
+> +	EXPORT_GPL_DEV_PM_OPS(name) = { \
+> +		RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+> +	}
+>  #define EXPORT_NS_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn, ns) \
+> -	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
+> -			   suspend_fn, resume_fn, idle_fn, "", #ns)
+> +	EXPORT_NS_DEV_PM_OPS(name, ns) = { \
+> +		RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+> +	}
+>  #define EXPORT_NS_GPL_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn, ns) \
+> -	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
+> -			   suspend_fn, resume_fn, idle_fn, "_gpl", #ns)
+> +	EXPORT_NS_GPL_DEV_PM_OPS(name, ns) = { \
+> +		RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+> +	}
+>  
+>  #ifdef CONFIG_PM
+>  extern struct workqueue_struct *pm_wq;
 
-Best regards,
-Krzysztof
