@@ -2,145 +2,141 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC623C25B08
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Aug 2022 19:29:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E0E2C3F6B0
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Aug 2022 20:23:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245668AbiHOT3M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Aug 2022 15:29:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37654 "EHLO
+        id S1347126AbiHOUXc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Aug 2022 16:23:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345186AbiHOT1y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2022 15:27:54 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 079495C9C0
-        for <linux-pm@vger.kernel.org>; Mon, 15 Aug 2022 11:43:44 -0700 (PDT)
-Date:   Mon, 15 Aug 2022 18:43:34 -0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1660589016;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=f74qhKcPnLkUsJ7GW1atuoiKWwt3kDgJ1kdJE0xigmw=;
-        b=JIr+x4iov31JsaRTeJIikNKUbKGqTvsGkFXgzHlcDTFUG5wDdFjYaZRp1AGK1yFiywP++C
-        EX2TAeMpzyrsU6k8C/Q5k9UgfRjwqgvGYafacMW5iH8B54soPIN+DSUkkSyFK/RUPcrRbk
-        BK3lUUA1ERlQYn6nlga5m5BClEbEXV6SbcjyZYqywMJU+X0Zev0W/hxnbXZUEdNVY9NdLD
-        WLprFR3j6ef9yqoBzhID6k17uuNQcwky/f9S8j5hwJC+gNg1RkKtyX2/J+UFnXv7HHXy60
-        wR1pnk6DOw2c7wy3emr8vcPJ30Dkm4bwfQGECv81VMcDBcCh0jqFXDsWDN9zxA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1660589016;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=f74qhKcPnLkUsJ7GW1atuoiKWwt3kDgJ1kdJE0xigmw=;
-        b=QnTQCS+8yfkRbgpIUeb/HsWRSewhl14g1cB+3FF7mshr8QoJKCw0RP+Hc7YImPoucPiuZ2
-        72/8QNOR/1Wfw1Bg==
-From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
-Sender: tip-bot2@linutronix.de
-Reply-to: linux-pm@vger.kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/fixes] dt-bindings: thermal: Fix missing required property
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh@kernel.org>, rui.zhang@intel.com,
-        amitk@kernel.org
-In-Reply-To: <20220809085629.509116-3-daniel.lezcano@linaro.org>
-References: <20220809085629.509116-3-daniel.lezcano@linaro.org>
+        with ESMTP id S1347303AbiHOUWO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2022 16:22:14 -0400
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97D0133A2F
+        for <linux-pm@vger.kernel.org>; Mon, 15 Aug 2022 12:02:17 -0700 (PDT)
+Received: by mail-wr1-x434.google.com with SMTP id j1so10102646wrw.1
+        for <linux-pm@vger.kernel.org>; Mon, 15 Aug 2022 12:02:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc;
+        bh=mu6VIMQHZgu7hW6pnoLsBEY5Z10dgE369agK010Rc84=;
+        b=YdFKfQNGHVM61QkiB3IPZDX0xemD9MegWIARaiXMcyMrJUIRQQ34gClP1mCfoYeOqr
+         IhjSyQkSZmScv6UvwboH2nUBjj0NW0MEeHwszC4o3K6B1PgApa3tD8cmPntGMzY5/zCJ
+         wWBwQ/gpYf2AhwA0ZbOPJ4c0uk1ziO0r/vkMCNIZslb+ChTJQBKjHYzgABsK00Hb5IcO
+         50nuuN9gqMSIIcFTledr7Gbw9+NDDdPiVmpMQs6ePBMXBxlK+lw3v3pnNTcsXXL1dTvq
+         +nhSQ8YrSzhxfi0qQ2lV9PMYbUx2Y6sequrRQmTd++xzIU23CmYNuDAySzrWnpxUjxmj
+         TGgA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc;
+        bh=mu6VIMQHZgu7hW6pnoLsBEY5Z10dgE369agK010Rc84=;
+        b=koZlKWSn70NvLdN6e19QrrdWr0Lzre94BCYirnmhXVg2a80hFA2yOhwbI/7T1jI1vW
+         vCMwcOw7yju/roUSjMX9W6pQWYt3ChDqyo2K+bQaG8TmEZPpLQrj1LQdpdXe9MISp3Te
+         eKdHkfPTSBzEzzvcOHpWSriMcWlGziyqh5m+bp9yKG1A2Dl+G8kbloqrLTq1WI058qfT
+         5FcB7FQZLbjhLlAE8ZPRGgP3fEfnUftA9sh5QEFij8NjTFcLRT72L9xl/2nBBJZOky25
+         qMSkeElmUMoQzbgMMYk5zX9cqtkC2zvXC0H5Hg3VYnkuuhkUpmi4Rajde8jh7aWgEhoW
+         MNdA==
+X-Gm-Message-State: ACgBeo0jenleGd2aR6bAteMeRhWm6UepDiyI1TxlC70MelLEoT+tZ2kj
+        V5jJfqpxXOgdtGssacht7IY1cg==
+X-Google-Smtp-Source: AA6agR4oN0w6cTpWbsmWpZL8bo4Si3qBVlLe6HqOhimCRoyeTxAPSdKHiWRpfMnic7xMqQTrI8coeg==
+X-Received: by 2002:a5d:5965:0:b0:224:f75e:2646 with SMTP id e37-20020a5d5965000000b00224f75e2646mr5769089wri.173.1660590136081;
+        Mon, 15 Aug 2022 12:02:16 -0700 (PDT)
+Received: from [192.168.2.1] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id z7-20020a05600c0a0700b003a5c2abc412sm11580846wmp.44.2022.08.15.12.02.07
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 15 Aug 2022 12:02:15 -0700 (PDT)
+Message-ID: <2ab74b1a-7087-cbfc-3f05-92e0eef30ca9@linaro.org>
+Date:   Mon, 15 Aug 2022 21:02:05 +0200
 MIME-Version: 1.0
-Message-ID: <166058901445.401.3386107829903243146.tip-bot2@tip-bot2>
-Robot-ID: <tip-bot2@linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v3 00/32] New thermal OF code
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Daniel Lezcano <daniel.lezcano@linexp.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Mark Brown <broonie@kernel.org>,
+        damien.lemoal@opensource.wdc.com, Heiko Stuebner <heiko@sntech.de>,
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        mhiramat@kernel.org, Talel Shenhar <talel@amazon.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Dmitry Osipenko <digetx@gmail.com>,
+        Jon Hunter <jonathanh@nvidia.com>, anarsoul@gmail.com,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        glaroque@baylibre.com, Miquel Raynal <miquel.raynal@bootlin.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund@ragnatech.se>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Keerthy <j-keerthy@ti.com>
+References: <20220727210253.3794069-1-daniel.lezcano@linexp.org>
+ <35457e1c-fe6b-2212-9624-70369f04ef0d@linaro.org>
+ <CAJZ5v0g5gtQGyLM2C+D5-Y-T_7+GHp4=Ptt7Reh6xgL-D77asQ@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <CAJZ5v0g5gtQGyLM2C+D5-Y-T_7+GHp4=Ptt7Reh6xgL-D77asQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following commit has been merged into the thermal/fixes branch of thermal:
 
-Commit-ID:     8c596324232d22e19f8df59ba03410b9b5b0f3d7
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8c596324232d22e19f8df59ba03410b9b5b0f3d7
-Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Tue, 09 Aug 2022 10:56:28 +02:00
-Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Mon, 15 Aug 2022 20:38:40 +02:00
+Hi Rafael,
 
-dt-bindings: thermal: Fix missing required property
+On 28/07/2022 16:37, Rafael J. Wysocki wrote:
+> Hi Daniel,
+> 
+> On Wed, Jul 27, 2022 at 11:46 PM Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>>
+>>
+>> Hi Rafael,
+>>
+>> we are close to release v5.19.
+>>
+>> I want to send a PR this week but it would be nice if this series could
+>> be part of it, so the trip point rework we discussed earlier (it is a
+>> long series) could be merged more easily for v5.21-rc1 as it will depend
+>> on these changes.
+>>
+>> This series was tested on different platforms, rk3399, broadcom and
+>> rcar. The external drivers as ata, touchscreen, regulator, hwmon were
+>> acked/reviewed and some other thermal drivers reviewed also. Some others
+>> remain without feedback because the maintainer is unresponsive or the
+>> driver is orphaned, falling under the thermal framework maintenance
+>> umbrella. All the drivers changes are the same.
+>>
+>> I do believe it does a nice cleanup and consolidation of the OF thermal
+>> code and realign it with the core thermal framework.
+>>
+>> Is it ok to merge the series?
+> 
+> I would prefer to put it into linux-next for a few days.
+> 
+> Why don't you send 2 pull requests, one with all of the other material
+> you have for 5.20 and another one with this series (it may be on top
+> of the first one)?
+> 
+> I will be able to defer pushing the second one till the second half of
+> the merge window.
 
-When the thermal zone description was converted to yaml schema, the
-required 'trips' property was forgotten.
+I setup a branch with the patches and the fixes.
 
-The initial text bindings was describing:
+https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git/log/?h=thermal/v6.0-rc1-2
 
-"
-[ ... ]
+Is there still time for a PR ?
 
-* Thermal zone nodes
 
-The thermal zone node is the node containing all the required info
-for describing a thermal zone, including its cooling device bindings. The
-thermal zone node must contain, apart from its own properties, one sub-node
-containing trip nodes and one sub-node containing all the zone cooling maps.
 
-Required properties:
-- polling-delay:        The maximum number of milliseconds to wait between polls
-  Type: unsigned        when checking this thermal zone.
-  Size: one cell
-
-- polling-delay-passive: The maximum number of milliseconds to wait
-  Type: unsigned        between polls when performing passive cooling.
-  Size: one cell
-
-- thermal-sensors:      A list of thermal sensor phandles and sensor specifier
-  Type: list of         used while monitoring the thermal zone.
-  phandles + sensor
-  specifier
-
-- trips:                A sub-node which is a container of only trip point nodes
-  Type: sub-node        required to describe the thermal zone.
-
-Optional property:
-- cooling-maps:         A sub-node which is a container of only cooling device
-  Type: sub-node        map nodes, used to describe the relation between trips
-                        and cooling devices.
-  [ ... ]
-
-"
-
-Now the schema describes:
-
-"
-    [ ... ]
-
-    required:
-      - polling-delay
-      - polling-delay-passive
-      - thermal-sensors
-
-    [ ... ]
-"
-
-Add the missing 'trips' property in the required properties.
-
-Fixed: 1202a442a31fd ("dt-bindings: thermal: Add yaml bindings for thermal zones")
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Rob Herring <robh@kernel.org>
-Link: https://lore.kernel.org/r/20220809085629.509116-3-daniel.lezcano@linaro.org
----
- Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-index 2d34f3c..8d2c6d7 100644
---- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-+++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-@@ -214,6 +214,7 @@ patternProperties:
-       - polling-delay
-       - polling-delay-passive
-       - thermal-sensors
-+      - trips
- 
-     additionalProperties: false
- 
