@@ -2,108 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8F17C2BB41
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Aug 2022 09:11:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8C85C32771
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Aug 2022 09:30:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232285AbiHPJLJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Aug 2022 05:11:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47780 "EHLO
+        id S233489AbiHPJaR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Aug 2022 05:30:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57844 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233501AbiHPJKa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2022 05:10:30 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7202CDABB8
-        for <linux-pm@vger.kernel.org>; Tue, 16 Aug 2022 00:27:18 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id x25so9807066ljm.5
-        for <linux-pm@vger.kernel.org>; Tue, 16 Aug 2022 00:27:18 -0700 (PDT)
+        with ESMTP id S231515AbiHPJ3r (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2022 05:29:47 -0400
+Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8132C108F3A
+        for <linux-pm@vger.kernel.org>; Tue, 16 Aug 2022 00:49:38 -0700 (PDT)
+Received: by mail-lj1-x233.google.com with SMTP id z20so9863777ljq.3
+        for <linux-pm@vger.kernel.org>; Tue, 16 Aug 2022 00:49:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc;
-        bh=jgkKAq27nalp4xFLW3mk73yjlH+iPel54g7OBjDZ1oI=;
-        b=Mq7r6vRNCChXlYPF+zT+4Ept2VrTSrrP38C87uSqO8mXR/YVOX0bc2McxNSYlkkJTO
-         e+yH0rOVHqI0INUR/tSCYNXQU+p5/vwbT6u6aPRBaxQ6rMZpSy5k/VWsBL9Xp6vvIR8X
-         0PA3lUFcXPoMfb260xJiszNnXlRH9NvLF1m2hpHFs9gT4V8lV0SsJpmw9BR4vZ1gHH1j
-         c9kr3Vsajkbe22PtuANvdRgPeaUZ8sSt9fVW+ovyMLUS7440oFkcHs1atjIug+i2nGDx
-         WK6smRGXOaT1y5GxG6ZvcY5C348l7BHW39G0lV6+iqdC754xonpL8n7jbkfhynuZP2bv
-         sBig==
+        bh=9Cr9AYG8AdsKwmXI4Qiz3tAwEHTOmPCZfY7GjgrZfEs=;
+        b=oQyawWMFN77LukqlOAKyMex0kW4mXtBVf4SIAf6rAB7V0xmXWtCZOfHXXlLgWFsAVR
+         YDkC+KEIwnN9q9+bzpoq3V21fN2gdvKcuDy6aAjGPlmQ2i4QKzFoq05wDBx+5UqPzPrE
+         VPuwCGTck8vD3ttKoVixcVbeB8BSzv4pkNP/ip95kqcCaH/jDWsFFPjCvKYwGZyI1xF0
+         geLMrXjBaK4DVrx+1qc8aeR5uVtUGjT5BmV6OwdBgVLlrGiUysGSi69Sn1A7nnHvYGrG
+         C3ptSZdyGeQ7QguT21ObbkLZKWzhhgTUOCI7/RZVK7mnINn6hPj4ufnZBZdgonpnaPjF
+         WY6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc;
-        bh=jgkKAq27nalp4xFLW3mk73yjlH+iPel54g7OBjDZ1oI=;
-        b=JnYs8tixul8zOzTvBY3zHo0ZqCuktLGH1VL/3KkrgsGEllMUet5B67n9s2kE1pLfrf
-         GW4f7U04ca9ehbHuRPtM0MclNh8lSXArZcAcXQVUZGl42qx3BWCixpMXDpCsNbw7jk3d
-         bV7+A10zK+Ah1idHCURYaR1xYbVuaCfsL+8D5/xBQYX8ToNQeQtbpL91MEhSKtNkPdKX
-         Mi5s7InDZEHSedn7usuAEUJjMMNpUa4tokNPgX5eI2B875wl4W2flXuloA7j8JHv/aeJ
-         lVSmAnTd5J0RJ6sU7v0odf2jZOSsjVcOA6WhUxKhnCOXKxjzR7eP73U1m6sUTGQIC4pY
-         QXTw==
-X-Gm-Message-State: ACgBeo3zh4n2+KMlxZKCdeoAr/vi5wCneaHSdWABs+ZCESK2je9l66mp
-        gVQbpKC73VzgreG4WWWEiC/ulA==
-X-Google-Smtp-Source: AA6agR4jEHWzEqPmD1v9ED+1vw84vjsvdHwzpp1nZoCUPf9WX8jWoeSl8sl+A2IWC5wW16bz/hCrFg==
-X-Received: by 2002:a2e:a311:0:b0:25f:d95a:9c66 with SMTP id l17-20020a2ea311000000b0025fd95a9c66mr6273478lje.208.1660634836806;
-        Tue, 16 Aug 2022 00:27:16 -0700 (PDT)
+        bh=9Cr9AYG8AdsKwmXI4Qiz3tAwEHTOmPCZfY7GjgrZfEs=;
+        b=soLYLEVOoKb4pfGEx+D2frgOCzTLEkrNHAy3Twp61/DjZ/bmCdUWqfTBJoIh3cnFov
+         f8H8rGiOCCUI87EIQFjrM6ufVYSNNxN2pGXetUUO4Hhzo/HjCjWjeN1mEdUkfzJnpgbv
+         /hrniCcnIvPq4Leju8/1KEQf5RMQMDWzAtt4tvCarB1sl+PS2Ea1h8JQ8voPDRO+taqB
+         jLgFaNPaW5ayqP7eSBC4RuanGzuuFMWQX2PRA6hsAcs4FCBvq/QgJgtVR2D6mkn1qhhc
+         aL5hgL1VFIXJbPm8T2l7xHr/oOcEim8ACf/9fBaBpRzIisNQXEkaiXn8WA278CUgkwqw
+         1Z8g==
+X-Gm-Message-State: ACgBeo2xz5CmgHX0g2cacL7oVMstaoQodi9Rbytgrw14jROECLvLDugq
+        jKQ2nrtaAtlIkG3UA81QvD++bw==
+X-Google-Smtp-Source: AA6agR4ZuIL6YhljvhwjG1WDPl7O3ub8LcT4CuceR2nnMLcn4XRci7/OmpyrLVADMM9r7D/ehodRsA==
+X-Received: by 2002:a2e:b010:0:b0:25e:65b3:b24d with SMTP id y16-20020a2eb010000000b0025e65b3b24dmr6269239ljk.292.1660636176946;
+        Tue, 16 Aug 2022 00:49:36 -0700 (PDT)
 Received: from ?IPV6:2001:14bb:ae:539c:1782:dd68:b0c1:c1a4? (d15l54g8c71znbtrbzt-4.rev.dnainternet.fi. [2001:14bb:ae:539c:1782:dd68:b0c1:c1a4])
-        by smtp.gmail.com with ESMTPSA id q22-20020a056512211600b00491dda41e4bsm794337lfr.172.2022.08.16.00.27.15
+        by smtp.gmail.com with ESMTPSA id l6-20020a19c206000000b0048a9f1933f2sm1301493lfc.247.2022.08.16.00.49.34
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 16 Aug 2022 00:27:16 -0700 (PDT)
-Message-ID: <343268e1-0c11-ae5f-c99a-62617e23f396@linaro.org>
-Date:   Tue, 16 Aug 2022 10:27:14 +0300
+        Tue, 16 Aug 2022 00:49:36 -0700 (PDT)
+Message-ID: <41fd15ba-b261-c3cb-2762-076aa5e984b2@linaro.org>
+Date:   Tue, 16 Aug 2022 10:49:34 +0300
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.12.0
-Subject: Re: [PATCH 1/2] dt-bindings: power: supply: Add Richtek RT9471
- battery charger
+Subject: Re: [PATCH 3/7] dt-bindings: mmc: sdhci-msm: Document the SM6115
+ compatible
 Content-Language: en-US
-To:     ChiYuan Huang <u0084500@gmail.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
+To:     Adam Skladowski <a39.skl@gmail.com>
+Cc:     phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Vinod Koul <vkoul@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        =?UTF-8?B?5ri45a2Q6aao?= <alina_yu@richtek.com>,
-        cy_huang <cy_huang@richtek.com>, alinayu829@gmail.com,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-References: <1660225318-4063-1-git-send-email-u0084500@gmail.com>
- <1660225318-4063-2-git-send-email-u0084500@gmail.com>
- <3cae9d60-4012-1dfd-abd9-4d0b9379e6bb@linaro.org>
- <CADiBU3_depGDZtiyizU3MB939A3oH1uTWzTMyruUy0z=u6BZkQ@mail.gmail.com>
- <40261b95-637a-1304-2e06-8c8ff7fc377b@linaro.org>
- <CADiBU38+9sR1r20=YWt-9s2+u7maHH+1VudCnV1-0+F4jYKdQQ@mail.gmail.com>
- <CADiBU3_Jt6n6tm=oVvjk5vsoEAneH7t-37S6skepA6v6bVVYUw@mail.gmail.com>
- <f2a664be-71e9-7a26-2f0c-5f654d9cb3cb@linaro.org>
- <CADiBU3-bKGhW2Yy13svNUykqW+WN3VS6LftWMU0rMeCc+fMySg@mail.gmail.com>
+        Will Deacon <will@kernel.org>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Joerg Roedel <joro@8bytes.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Sai Prakash Ranjan <quic_saipraka@quicinc.com>,
+        Loic Poulain <loic.poulain@linaro.org>,
+        Emma Anholt <emma@anholt.net>,
+        Rob Clark <robdclark@chromium.org>,
+        Bhupesh Sharma <bhupesh.sharma@linaro.org>,
+        linux-arm-msm@vger.kernel.org, dmaengine@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev,
+        linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org,
+        Stephen Boyd <swboyd@chromium.org>,
+        Sibi Sankar <sibis@codeaurora.org>
+References: <20220815100952.23795-1-a39.skl@gmail.com>
+ <20220815100952.23795-4-a39.skl@gmail.com>
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <CADiBU3-bKGhW2Yy13svNUykqW+WN3VS6LftWMU0rMeCc+fMySg@mail.gmail.com>
+In-Reply-To: <20220815100952.23795-4-a39.skl@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 13/08/2022 17:52, ChiYuan Huang wrote:
->>> Some gauge HW needs this information to enhance the battery capacity accuracy.
->>
->> Other supply stack pieces do it via supplies (supplied to/from in
->> include/linux/power_supply.h) and reporting power_supply_changed().
->>
->> With such explanation, your device is an interrupt source, but it is not
->> an interrupt controller. If your device is interrupt controller, it
->> means someone routes the interrupt line to your device. Physical line.
->>
-> Yap, sure. And so on, just use the SW power supply chain to do this
-> kind of event notification.
-> To remove it, it doesn't affect the internal interrupt request inside
-> the driver.
-> Just cannot be used for the outer driver to request the events directly.
+On 15/08/2022 13:09, Adam Skladowski wrote:
+> Document the compatible for SDHCI on SM6115.
 > 
-> If so, I think 'interrupt-controller' and even '#interrupt-cells' need
-> to be removed.
-> OK?
+> Signed-off-by: Adam Skladowski <a39.skl@gmail.com>
 
-Yes, both should be removed. Your device is not an interrupt controller...
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
 
 Best regards,
 Krzysztof
