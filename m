@@ -2,116 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCCEBC32773
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Aug 2022 22:17:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43432C32793
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Aug 2022 07:17:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240381AbiHSWRC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Aug 2022 18:17:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35324 "EHLO
+        id S245293AbiHTHRP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 20 Aug 2022 03:17:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58160 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240176AbiHSWQe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2022 18:16:34 -0400
-Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD640F2424
-        for <linux-pm@vger.kernel.org>; Fri, 19 Aug 2022 15:16:31 -0700 (PDT)
-Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-334d894afd8so97428297b3.19
-        for <linux-pm@vger.kernel.org>; Fri, 19 Aug 2022 15:16:31 -0700 (PDT)
+        with ESMTP id S243618AbiHTHRO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 20 Aug 2022 03:17:14 -0400
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CEDEC6526;
+        Sat, 20 Aug 2022 00:17:13 -0700 (PDT)
+Received: by mail-pl1-x631.google.com with SMTP id g8so1924970plq.11;
+        Sat, 20 Aug 2022 00:17:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
-         :date:from:to:cc;
-        bh=H3YEiHHCZDHfvJiU4fCYVtnbVB8iHyjPM7ELjaj28Ew=;
-        b=X1U73b0XniNLU7Z952Uoe4oLLlOQuH9fMoxIo3YE8wTvISBipZU3kbSsA/PpZc74b9
-         GKGrN3RRsS65zQ/iiGgHDkFgLoHu+HT15JxvGOx9hJ2PV56mfIi6fXTua6T4tCzBZCDs
-         pidzBZcxXFnAUE6H041z//D5yM40NWB78f6EufBqHmtQf2Fy2jYoy7SMHxtXqD8J18Jl
-         tglJU4xpK/iRl2mW5tY+0pgOj4nH9Bx5lesRwnijThCj0o6tZ7h84PrI8aDfHNjuuotw
-         33+iubcVMVmM0KnScNcfs0uK//EhpI5sVYu65TPan5KCq2k7mlKkYFPNxSojzIFEnPuE
-         wSnQ==
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc;
+        bh=tiWN3Tg8ccjmVvqr90gf5NMhps8BOid12A7i1GTF99Q=;
+        b=lRxVSoTELfA+v7Mi/OGz5h1My6Juy9x9ab0DzifkNU+5Suvk10dk3DSbNaPrjWh5Vf
+         LtQtX67i5bhzumqvfAk9R/3XDYE4Zw/QH56B2nayo1kQW/YrN0zjYrVz4jQrn+pVUN50
+         jlsnGHDHLqi8/wxD1nmw5RNjHZhqZi3VFzqjV8oihTVC7m+n8WTlck1KVXOy6+Flikxq
+         DpT6W3mj/+x8QWppk1kab/y4q8RCDapPbJcysUIx8kdpKlzRXRZNFWCA8yvc3zzrWA+V
+         jvLDrPdkkAlF3trr/foRUR5naK/FGMivJ8pmMa95YX3PZ6wp98jFHu4UC6TyJ5LnlOou
+         lAtQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
-         :date:x-gm-message-state:from:to:cc;
-        bh=H3YEiHHCZDHfvJiU4fCYVtnbVB8iHyjPM7ELjaj28Ew=;
-        b=7sJgwYK6TFVRyx50FBhzEETqUXmTaBjCvJn9r6DjfQD/rTnAe03K7iK5S00WjRMuIX
-         LAyVIQd46RRZEOv7y1dhnkClCMbhSHNXBt5AZtgL33gigvWWaHGCZMsxiFEoyvYYlWR1
-         DTQ96OAcB33mjAvOymgeUgjQXh2wrkmOlWavbOjx5JSEZSONejrS92KTMrt+bokbOTgL
-         CeR707IPAF1liqk6WPfTMcGtVrckHlFrN1jaqKtP/qOe2zpznhwZ89+8cxj9PPfjEOr3
-         +lkMTFzuKHN+KZSYrcBK85kludT/o35XkbD9oLeUhU8L2KwCqko2z4AV4kN13PAfGfkR
-         F/yQ==
-X-Gm-Message-State: ACgBeo09/7zKZS4epSOsE3z74nuhPrMkedj4/MysYMUohr5UMIYBRKG+
-        BO2cjLOC7jtxY/wSD2eNkY6tkbCfvwElsMI=
-X-Google-Smtp-Source: AA6agR6s7O9ks9P+6MMRLsKupYiohHddIyehPE2rdJmt/AJwJ41rH2q/2hZo31rpF1++hMgFEDboETrWBMyKu5U=
-X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:f93e:7b61:ce3d:5b06])
- (user=saravanak job=sendgmr) by 2002:a81:5744:0:b0:333:7505:5bca with SMTP id
- l65-20020a815744000000b0033375055bcamr9459605ywb.315.1660947391375; Fri, 19
- Aug 2022 15:16:31 -0700 (PDT)
-Date:   Fri, 19 Aug 2022 15:16:14 -0700
-In-Reply-To: <20220819221616.2107893-1-saravanak@google.com>
-Message-Id: <20220819221616.2107893-5-saravanak@google.com>
-Mime-Version: 1.0
-References: <20220819221616.2107893-1-saravanak@google.com>
-X-Mailer: git-send-email 2.37.1.595.g718a3a8f04-goog
-Subject: [PATCH v2 4/4] Revert "iommu/of: Delete usage of driver_deferred_probe_check_state()"
-From:   Saravana Kannan <saravanak@google.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Saravana Kannan <saravanak@google.com>
-Cc:     Peng Fan <peng.fan@nxp.com>, Luca Weiss <luca.weiss@fairphone.com>,
-        Doug Anderson <dianders@chromium.org>,
-        Colin Foster <colin.foster@in-advantage.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Alexander Stein <alexander.stein@ew.tq-group.com>,
-        Naresh Kamboju <naresh.kamboju@linaro.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Jean-Philippe Brucker <jpb@kernel.org>,
-        kernel-team@android.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, iommu@lists.linux.dev,
-        netdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc;
+        bh=tiWN3Tg8ccjmVvqr90gf5NMhps8BOid12A7i1GTF99Q=;
+        b=RZe4S7pkxrrJXH/y0pBMuJFG6fcRgBPCAD6gmWf85SklOGZlcl9e1XL8dYBY5UxiDJ
+         B3F2S12EPiymsBZ94qe9OY6x4/qZanXpkAqos6Se8bchY7mZdX3yhjsmOPx+JCXC/1By
+         vlqCm9AEi6GhmD1xqaFs5dyukjDuvLh9Vin/gtSgjJtjakjSs38o2qZfMTIxsAH5bJqX
+         NGzY6FwfAX1PCK27kak5JdndTaWpk68umwC+9qnvNVrAzQBHeN+HnmBvRrmua00JvPp9
+         FdlLFk55bUZpNLfutBojs+wO0jQpv4wJb43AP9xsRJ4SJQShccCRxIST/1ip7R9ghtZT
+         DNPg==
+X-Gm-Message-State: ACgBeo2RTzgA+Xsgcg7AqN7jvmDjWNT8FVA8jBKlPI5ZVV5NuhKGGe9t
+        uk76FsbFBXQoSwFhjQoD/Mr/oZxSavWwtzMLZu4=
+X-Google-Smtp-Source: AA6agR4759y9SRpgFsZRrkU8UKb9i8Maz87PVIpulGijhE+rZRTZKrky3ehLbyAaqtqCNeKOi0rWKA==
+X-Received: by 2002:a17:90b:380f:b0:1f5:55ef:a53a with SMTP id mq15-20020a17090b380f00b001f555efa53amr12110165pjb.14.1660979832641;
+        Sat, 20 Aug 2022 00:17:12 -0700 (PDT)
+Received: from mithil.localdomain ([103.19.226.223])
+        by smtp.gmail.com with ESMTPSA id j15-20020a17090a694f00b001faf273e4afsm1459019pjm.35.2022.08.20.00.17.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 20 Aug 2022 00:17:11 -0700 (PDT)
+From:   Mithil Bavishi <bavishimithil@gmail.com>
+To:     linux-input@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc:     dmitry.torokhov@gmail.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, lee@kernel.org, sre@kernel.org,
+        tony@atomide.com, linux@armlinux.org.uk, bavishimithil@gmail.com,
+        contact@paulk.fr
+Subject: [PATCH 00/10] Add TWL6030 power off and powerbutton support
+Date:   Sat, 20 Aug 2022 12:46:50 +0530
+Message-Id: <20220820071659.1215-1-bavishimithil@gmail.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This reverts commit b09796d528bbf06e3e10a4a8f78038719da7ebc6.
+Hello!
 
-An issue was reported[1] on the original commit. I'll need to address that
-before I can delete the use of driver_deferred_probe_check_state().  So,
-bring it back for now.
+This patchset is based off on an earlier series of patches submitted
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1110053.html
+It adds support for power off to the TWL6030 chipset, adds power button
+support to the TWL6030 chipset, moves power driver to the correct
+location, clean up in code from the original patch.
 
-[1] - https://lore.kernel.org/lkml/4799738.LvFx2qVVIh@steina-w/
+Thanks, Mithil
 
-Fixes: b09796d528bb ("iommu/of: Delete usage of driver_deferred_probe_check_state()")
-Reported-by: Jean-Philippe Brucker <jpb@kernel.org>
-Signed-off-by: Saravana Kannan <saravanak@google.com>
----
- drivers/iommu/of_iommu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Mithil Bavishi (6):
+  power: reset: Move TWL4030 power driver from mfd
+  dt-bindings: power: reset: Move twl4030-power from mfd to power/reset
+  dt-bindings: input: twl-pwrbutton: Add support for twl6030-pwrbutton
+  dt-bindings: power: reset: Add bindings for twl6030-power
+  input: misc: Rename twl4030_pwrbutton to twl_pwrbutton
+  dt-bindings: input: Rename twl4030-pwrbutton to twl-pwrbutton
 
-diff --git a/drivers/iommu/of_iommu.c b/drivers/iommu/of_iommu.c
-index 41f4eb005219..5696314ae69e 100644
---- a/drivers/iommu/of_iommu.c
-+++ b/drivers/iommu/of_iommu.c
-@@ -40,7 +40,7 @@ static int of_iommu_xlate(struct device *dev,
- 	 * a proper probe-ordering dependency mechanism in future.
- 	 */
- 	if (!ops)
--		return -ENODEV;
-+		return driver_deferred_probe_check_state(dev);
- 
- 	if (!try_module_get(ops->owner))
- 		return -ENODEV;
+Paul Kocialkowski (4):
+  power: reset: Add TWL6030 power driver, with minimal support for power
+    off
+  ARM: OMAP2+: Only select TWL4030_POWER for OMAP3
+  ARM: OMAP2+: Select TWL6030_POWER for OMAP4
+  input: misc: Add TWL6030 power button support to twl-pwrbutton
+
+ ...wl4030-pwrbutton.txt => twl-pwrbutton.txt} |  5 +-
+ .../{mfd => power/reset}/twl4030-power.txt    |  0
+ .../bindings/power/reset/twl6030-power.txt    | 31 +++++++
+ arch/arm/boot/dts/twl6030.dtsi                |  5 +
+ arch/arm/configs/omap2plus_defconfig          |  2 +-
+ arch/arm/mach-omap2/Kconfig                   |  3 +-
+ drivers/input/misc/Kconfig                    |  8 +-
+ drivers/input/misc/Makefile                   |  2 +-
+ .../{twl4030-pwrbutton.c => twl-pwrbutton.c}  | 75 ++++++++++-----
+ drivers/mfd/Kconfig                           | 13 ---
+ drivers/mfd/Makefile                          |  1 -
+ drivers/power/reset/Kconfig                   | 22 +++++
+ drivers/power/reset/Makefile                  |  2 +
+ drivers/{mfd => power/reset}/twl4030-power.c  |  0
+ drivers/power/reset/twl6030-power.c           | 93 +++++++++++++++++++
+ include/linux/mfd/twl.h                       |  1 +
+ 16 files changed, 217 insertions(+), 46 deletions(-)
+ rename Documentation/devicetree/bindings/input/{twl4030-pwrbutton.txt => twl-pwrbutton.txt} (72%)
+ rename Documentation/devicetree/bindings/{mfd => power/reset}/twl4030-power.txt (100%)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/twl6030-power.txt
+ rename drivers/input/misc/{twl4030-pwrbutton.c => twl-pwrbutton.c} (55%)
+ rename drivers/{mfd => power/reset}/twl4030-power.c (100%)
+ create mode 100644 drivers/power/reset/twl6030-power.c
+
 -- 
-2.37.1.595.g718a3a8f04-goog
+2.25.1
 
