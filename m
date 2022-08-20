@@ -2,78 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E272FC3F6B0
-	for <linux-pm@archiver.kernel.org>; Sat, 20 Aug 2022 10:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCE3BC25B08
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Aug 2022 11:52:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345192AbiHTKaU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 20 Aug 2022 06:30:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39176 "EHLO
+        id S1345843AbiHTLwL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 20 Aug 2022 07:52:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345152AbiHTKaT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 20 Aug 2022 06:30:19 -0400
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8AD68A571F;
-        Sat, 20 Aug 2022 03:30:18 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id E4695CE0187;
-        Sat, 20 Aug 2022 10:30:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DEF3FC433D6;
-        Sat, 20 Aug 2022 10:30:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1660991415;
-        bh=5Sem2MQf+IZyyC+DHcRKkeVWonfrn1+/FxE8deI3vSk=;
-        h=From:To:Cc:Subject:Date:From;
-        b=hKibc8kvdqgNmlTp9kiYFyYjoqFM+L8jEsJGJhvwqG7vrMIgI2qL/0S5yuxYUd6EW
-         Q8dlCXC92YU9ZTtV33FrCbLqdJfUUuZzcIPCCArWCoKFSUB1qIEvOlulG5GUIKvTOA
-         bCy/VhB83GoZzO+0EKAxElV7S8elnVqa9CiTuIE+Uo30kA6MYUoXRVZOz42SS+os0S
-         cJKWKxorl62ZSjJjotc5hVfZae89Lwh6fL/ZdzUsUQgjTHZ4jthSKSHlWeTXhwUZAN
-         pYRYJMmX/fX+RWcfG2ImisOxzxun6kTMcGDZC457RaYqe4s1jtiaSeFbKn6Jr162t7
-         fkL9QeItCIDkw==
-Received: by pali.im (Postfix)
-        id C7E995D0; Sat, 20 Aug 2022 12:30:11 +0200 (CEST)
-From:   =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        =?UTF-8?q?Marek=20Beh=C3=BAn?= <kabel@kernel.org>
-Subject: [PATCH 1/3] dt-bindings: reset: syscon-reboot: Add priority property
-Date:   Sat, 20 Aug 2022 12:29:23 +0200
-Message-Id: <20220820102925.29476-1-pali@kernel.org>
-X-Mailer: git-send-email 2.20.1
+        with ESMTP id S1345327AbiHTLwL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 20 Aug 2022 07:52:11 -0400
+Received: from mail-yw1-f169.google.com (mail-yw1-f169.google.com [209.85.128.169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B5889E136;
+        Sat, 20 Aug 2022 04:52:10 -0700 (PDT)
+Received: by mail-yw1-f169.google.com with SMTP id 00721157ae682-3375488624aso153371847b3.3;
+        Sat, 20 Aug 2022 04:52:10 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=RZrX4TsmyKYIZeKVsYzl/dXGPxXgZPHqV4cddoyqRO0=;
+        b=pwc04a5FVqjPOLPl6SiZ7b0z2LWHxvoDi5OpuXrWCagG1YT73sp3r/RouZyF4X3jNV
+         n9mn2lKxeeurTdRDNynO9yCLvfJYG8A4O3NihZrFhbGGr2BClfDtbsiGAUSn2NX/QdU6
+         Yu2YtVPpIQAGK72cmLijMMIaqAqJ9i7F862cDodYbTqiDed+DBJUBJYVt1VTEgWxItx9
+         ke79XlS+dUb6SB0+E2kLSdvwDWuXzEqZY39znPu9DIapCi0s/0Yf+RAdfWwHZmWFWtrH
+         c9yAj798LwHm403uXkkGmSGCs6Xk1KHr4fHK53l9XR96k2pKULsowcFedKVHbRA3ue6w
+         ofCw==
+X-Gm-Message-State: ACgBeo1eCJLhAgehHLIam8dM1lqeZJFr8x+sfosjJXcoawbSWQioe0tf
+        sr3GHHddgbF9ChdwEMeQOanSzrpfkNyL3TSkRfE664Wr
+X-Google-Smtp-Source: AA6agR7nqoBR/gw5q60Ast2lmIvmYz0AuT2Uxm2lMmepCX1F8NqJDPp5jnO5ykO3U6vwPYLsHFg9cnvO/VSQS1+7TLU=
+X-Received: by 2002:a25:cbcf:0:b0:695:2d3b:366 with SMTP id
+ b198-20020a25cbcf000000b006952d3b0366mr6051546ybg.365.1660996329583; Sat, 20
+ Aug 2022 04:52:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <dbd20ef2-f109-0675-6fbe-8d08da5cc5a3@linaro.org>
+In-Reply-To: <dbd20ef2-f109-0675-6fbe-8d08da5cc5a3@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Sat, 20 Aug 2022 13:51:58 +0200
+Message-ID: <CAJZ5v0jPm5+zu9ju=RAit01LC6Nc=wRK6T3y8HY-9rgKeXJ5nw@mail.gmail.com>
+Subject: Re: [GIT PULL] thermal fixes for v6.0-rc1
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM mailing list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This new optional priority property allows to specify custom priority level
-of reset device. Default level was always 192.
+On Wed, Aug 17, 2022 at 1:39 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> The following changes since commit 568035b01cfb107af8d2e4bd2fb9aea22cf5b868:
+>
+>    Linux 6.0-rc1 (2022-08-14 15:50:18 -0700)
+>
+> are available in the Git repository at:
+>
+>
+> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
+> tags/thermal-v6.0-rc2
+>
+> for you to fetch changes up to 8c596324232d22e19f8df59ba03410b9b5b0f3d7:
+>
+>    dt-bindings: thermal: Fix missing required property (2022-08-15
+> 20:38:40 +0200)
+>
+> ----------------------------------------------------------------
+> - Fix missing required property for thermal zone description (Daniel
+>    Lezcano)
+>
+> - Add missing export symbol for
+>    thermal_zone_device_register_with_trips() (Daniel Lezcano)
+>
+> ----------------------------------------------------------------
+> Daniel Lezcano (2):
+>        thermal/core: Add missing EXPORT_SYMBOL_GPL
+>        dt-bindings: thermal: Fix missing required property
+>
+>   Documentation/devicetree/bindings/thermal/thermal-zones.yaml | 1 +
+>   drivers/thermal/thermal_core.c                               | 1 +
+>   2 files changed, 2 insertions(+)
+>
+>
+> --
 
-Signed-off-by: Pali Rohár <pali@kernel.org>
----
- .../devicetree/bindings/power/reset/syscon-reboot.yaml        | 4 ++++
- 1 file changed, 4 insertions(+)
+Pulled, thanks!
 
-diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
-index da2509724812..d905133aab27 100644
---- a/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
-+++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
-@@ -42,6 +42,10 @@ properties:
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description: The reset value written to the reboot register (32 bit access).
- 
-+  priority:
-+    $ref: /schemas/types.yaml#/definitions/sint32
-+    description: Priority level of this syscon reset device. Default 192.
-+
- required:
-   - compatible
-   - offset
--- 
-2.20.1
-
+I will be pushing this for -rc3, though.
