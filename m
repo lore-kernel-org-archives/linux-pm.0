@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCAF1C32789
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 11:48:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89B9DC32772
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 11:48:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234707AbiHVLsJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Aug 2022 07:48:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46668 "EHLO
+        id S234715AbiHVLsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Aug 2022 07:48:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46692 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233161AbiHVLsI (ORCPT
+        with ESMTP id S234702AbiHVLsI (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 07:48:08 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35D4933E2C;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3FBC356C4;
         Mon, 22 Aug 2022 04:48:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Subject:Cc:To:From:Date:Message-ID:
-        Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=hXhJWg1Kf/eJHKjFUc6fSpQt5aZQ2cmWgAltRhWjAwg=; b=cV0bemuEzkavOBvOciKQKHNr9i
-        xOdjIKceJXw5Z1uFOEvRag4nqokiZmhiGsy12Unuwpi+KPyjdRCiBajDVlwR4Tp8fx4ODQFpVEAPf
-        3DOKveN2MIeWnzMucgmKU+QjJJwTOtoTxr/vH7Sm26Omj0p7WTIPNBqWiCC0aOzolT8zNPvbdgg8R
-        wNVBGRRCCeo6c6MIjHuAnsrIQ6b04ba1kQoNexuGTgFHBldNtY9RrTJs5BjD9k8qEwaQxA3vzUOMi
-        NVrVn5rO6wwum8r/f2sZ/TLwyp4Dw637jL19TPFB7o8RJhNRddmLn9E/q0esZnbTLp0puFZlrjyx/
-        0h3qhLbw==;
+        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
+        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To;
+        bh=FP0rqVkS7XNyZ+T6mnt4iA8cRfE4EBcdmhTN5+Ff0gY=; b=gzsc6ulLBX1hjaG4BJGuxvIhO2
+        WYG1VCFXQlW5cz1JcFGViaRfar5joFuy161FvJ+qi3PB8kddpM4crTRXG4XWj5BF2pdrk7Gu7brUf
+        zL8+dTFkrm6cYyMTqGJItsoUaZIqq9EZT1C/IlEXogkbt8/LgnxZWvXauspJDbVCU/wJp7SKQEddN
+        /S93Ps1tbHnwvLlCxKG3JG2Blr7T3haSD9yAvgv1i2hYiOnORqt1CdfrHnz47r7887EWgjVcESDrz
+        AhEx+XT6rucODBiA+qQVTEDkpOfgTSNITLlzwL+8rXPunZq4To7lwui9uNwPiO11tIGgkvc7+q3/I
+        FmkmeQQg==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1oQ5uL-0054jo-2e; Mon, 22 Aug 2022 11:47:53 +0000
+        id 1oQ5uL-0054jp-2d; Mon, 22 Aug 2022 11:47:53 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id BB129300771;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id BEEFE300880;
         Mon, 22 Aug 2022 13:47:50 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 8550220187A67; Mon, 22 Aug 2022 13:47:50 +0200 (CEST)
-Message-ID: <20220822111816.760285417@infradead.org>
+        id 976A320187A69; Mon, 22 Aug 2022 13:47:50 +0200 (CEST)
+Message-ID: <20220822114648.922711674@infradead.org>
 User-Agent: quilt/0.66
-Date:   Mon, 22 Aug 2022 13:18:16 +0200
+Date:   Mon, 22 Aug 2022 13:18:20 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
@@ -45,59 +45,49 @@ To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         bigeasy@linutronix.de, Will Deacon <will@kernel.org>
 Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 0/6] Freezer Rewrite
+Subject: [PATCH v3 4/6] sched/completion: Add wait_for_completion_state()
+References: <20220822111816.760285417@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+Allows waiting with a custom @state.
 
-With Eric picking up the ptrace patches adding JOBCTL_STOPPED / JOBCTL_TRACED
-and them having landed in Linus' tree, here a respin of the Freezer rewrite
-that relies on it.
-
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/acpi/x86/s2idle.c         |   12 +
- drivers/android/binder.c          |    4 
- drivers/media/pci/pt3/pt3.c       |    4 
- drivers/scsi/scsi_transport_spi.c |    7 -
- fs/cifs/inode.c                   |    4 
- fs/cifs/transport.c               |    5 
- fs/coredump.c                     |    5 
- fs/nfs/file.c                     |    3 
- fs/nfs/inode.c                    |   12 -
- fs/nfs/nfs3proc.c                 |    3 
- fs/nfs/nfs4proc.c                 |   14 +-
- fs/nfs/nfs4state.c                |    3 
- fs/nfs/pnfs.c                     |    4 
- fs/xfs/xfs_trans_ail.c            |    8 -
- include/linux/completion.h        |    1 
- include/linux/freezer.h           |  245 +-------------------------------------
- include/linux/sched.h             |   41 +++---
- include/linux/sunrpc/sched.h      |    7 -
- include/linux/suspend.h           |    8 -
- include/linux/umh.h               |    9 -
- include/linux/wait.h              |   40 +++++-
- init/do_mounts_initrd.c           |   10 -
- kernel/cgroup/legacy_freezer.c    |   23 +--
- kernel/exit.c                     |    4 
- kernel/fork.c                     |    5 
- kernel/freezer.c                  |  133 ++++++++++++++------
- kernel/futex/waitwake.c           |    8 -
- kernel/hung_task.c                |    4 
- kernel/power/hibernate.c          |   35 +++--
- kernel/power/main.c               |   18 +-
- kernel/power/process.c            |   10 -
- kernel/power/suspend.c            |   12 +
- kernel/power/user.c               |   24 ++-
- kernel/ptrace.c                   |    2 
- kernel/sched/completion.c         |    9 +
- kernel/sched/core.c               |    6 
- kernel/signal.c                   |   14 +-
- kernel/time/hrtimer.c             |    4 
- kernel/umh.c                      |   18 +-
- mm/khugepaged.c                   |    4 
- net/sunrpc/sched.c                |   12 -
- net/unix/af_unix.c                |    8 -
- 42 files changed, 341 insertions(+), 461 deletions(-)
+ include/linux/completion.h |    1 +
+ kernel/sched/completion.c  |    9 +++++++++
+ 2 files changed, 10 insertions(+)
+
+--- a/include/linux/completion.h
++++ b/include/linux/completion.h
+@@ -103,6 +103,7 @@ extern void wait_for_completion(struct c
+ extern void wait_for_completion_io(struct completion *);
+ extern int wait_for_completion_interruptible(struct completion *x);
+ extern int wait_for_completion_killable(struct completion *x);
++extern int wait_for_completion_state(struct completion *x, unsigned int state);
+ extern unsigned long wait_for_completion_timeout(struct completion *x,
+ 						   unsigned long timeout);
+ extern unsigned long wait_for_completion_io_timeout(struct completion *x,
+--- a/kernel/sched/completion.c
++++ b/kernel/sched/completion.c
+@@ -247,6 +247,15 @@ int __sched wait_for_completion_killable
+ }
+ EXPORT_SYMBOL(wait_for_completion_killable);
+ 
++int __sched wait_for_completion_state(struct completion *x, unsigned int state)
++{
++	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, state);
++	if (t == -ERESTARTSYS)
++		return t;
++	return 0;
++}
++EXPORT_SYMBOL(wait_for_completion_state);
++
+ /**
+  * wait_for_completion_killable_timeout: - waits for completion of a task (w/(to,killable))
+  * @x:  holds the state of this particular completion
+
 
