@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABE10C28D13
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCAF1C32789
 	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 11:48:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234703AbiHVLsJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S234707AbiHVLsJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 22 Aug 2022 07:48:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46670 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46668 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234701AbiHVLsI (ORCPT
+        with ESMTP id S233161AbiHVLsI (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 07:48:08 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4022F33E2F;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35D4933E2C;
         Mon, 22 Aug 2022 04:48:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
-        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
-        Content-ID:Content-Description:In-Reply-To;
-        bh=+VGhKqt+LL5MmFcK09GygvpYyZGnPDq4Xy6ZFB/l0dY=; b=ZC2O3cCP2i/xTTJ1nmtqA6MLmV
-        8H25wm0MUedCed0XVlGlHVa0R7Sh8hbJfqXbNqtfKyDs/yeD0k6oR05NnDtw+QiuP04k9kSQh0SSA
-        XcKTTFEBJLGwJ+A0tvYuRVocJJ1kMtBuIatEAqnEFRYgIkGrNlrDDIC6g5b6R9wIV/wcnEbBrK8HU
-        iQ3YB4GuH2w/yCeJ/XZCN4FvNizLj6E2cY8fcwxIqfgeRJADBJh3y35RSEQzLpcdxve1VN1dVKHdD
-        1Sr5JAhlwZ879X66lv18N9oPYV6W4MLJB1GjNM/FdePSEwsCsGYWCW7IEwlb6EPqYbWOqVkgLLvml
-        NjvkKrfw==;
+        d=infradead.org; s=desiato.20200630; h=Subject:Cc:To:From:Date:Message-ID:
+        Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=hXhJWg1Kf/eJHKjFUc6fSpQt5aZQ2cmWgAltRhWjAwg=; b=cV0bemuEzkavOBvOciKQKHNr9i
+        xOdjIKceJXw5Z1uFOEvRag4nqokiZmhiGsy12Unuwpi+KPyjdRCiBajDVlwR4Tp8fx4ODQFpVEAPf
+        3DOKveN2MIeWnzMucgmKU+QjJJwTOtoTxr/vH7Sm26Omj0p7WTIPNBqWiCC0aOzolT8zNPvbdgg8R
+        wNVBGRRCCeo6c6MIjHuAnsrIQ6b04ba1kQoNexuGTgFHBldNtY9RrTJs5BjD9k8qEwaQxA3vzUOMi
+        NVrVn5rO6wwum8r/f2sZ/TLwyp4Dw637jL19TPFB7o8RJhNRddmLn9E/q0esZnbTLp0puFZlrjyx/
+        0h3qhLbw==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1oQ5uL-0054ju-TF; Mon, 22 Aug 2022 11:47:54 +0000
+        id 1oQ5uL-0054jo-2e; Mon, 22 Aug 2022 11:47:53 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id C1903300A6D;
-        Mon, 22 Aug 2022 13:47:51 +0200 (CEST)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id BB129300771;
+        Mon, 22 Aug 2022 13:47:50 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 9C26220187A71; Mon, 22 Aug 2022 13:47:50 +0200 (CEST)
-Message-ID: <20220822114648.989212021@infradead.org>
+        id 8550220187A67; Mon, 22 Aug 2022 13:47:50 +0200 (CEST)
+Message-ID: <20220822111816.760285417@infradead.org>
 User-Agent: quilt/0.66
-Date:   Mon, 22 Aug 2022 13:18:21 +0200
+Date:   Mon, 22 Aug 2022 13:18:16 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
@@ -45,57 +45,59 @@ To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         bigeasy@linutronix.de, Will Deacon <will@kernel.org>
 Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 5/6] sched/wait: Add wait_event_state()
-References: <20220822111816.760285417@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH v3 0/6] Freezer Rewrite
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Allows waiting with a custom @state.
+Hi all,
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+With Eric picking up the ptrace patches adding JOBCTL_STOPPED / JOBCTL_TRACED
+and them having landed in Linus' tree, here a respin of the Freezer rewrite
+that relies on it.
+
 ---
- include/linux/wait.h |   28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
-
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -931,6 +931,34 @@ extern int do_wait_intr_irq(wait_queue_h
- 	__ret;									\
- })
- 
-+#define __wait_event_state(wq, condition, state)				\
-+	___wait_event(wq, condition, state, 0, 0, schedule())
-+
-+/**
-+ * wait_event_state - sleep until a condition gets true
-+ * @wq_head: the waitqueue to wait on
-+ * @condition: a C expression for the event to wait for
-+ * @state: state to sleep in
-+ *
-+ * The process is put to sleep (@state) until the @condition evaluates to true
-+ * or a signal is received.  The @condition is checked each time the waitqueue
-+ * @wq_head is woken up.
-+ *
-+ * wake_up() has to be called after changing any variable that could
-+ * change the result of the wait condition.
-+ *
-+ * The function will return -ERESTARTSYS if it was interrupted by a
-+ * signal and 0 if @condition evaluated to true.
-+ */
-+#define wait_event_state(wq_head, condition, state)				\
-+({										\
-+	int __ret = 0;								\
-+	might_sleep();								\
-+	if (!(condition))							\
-+		__ret = __wait_event_state(wq_head, condition, state);		\
-+	__ret;									\
-+})
-+
- #define __wait_event_killable_timeout(wq_head, condition, timeout)		\
- 	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
- 		      TASK_KILLABLE, 0, timeout,				\
-
+ drivers/acpi/x86/s2idle.c         |   12 +
+ drivers/android/binder.c          |    4 
+ drivers/media/pci/pt3/pt3.c       |    4 
+ drivers/scsi/scsi_transport_spi.c |    7 -
+ fs/cifs/inode.c                   |    4 
+ fs/cifs/transport.c               |    5 
+ fs/coredump.c                     |    5 
+ fs/nfs/file.c                     |    3 
+ fs/nfs/inode.c                    |   12 -
+ fs/nfs/nfs3proc.c                 |    3 
+ fs/nfs/nfs4proc.c                 |   14 +-
+ fs/nfs/nfs4state.c                |    3 
+ fs/nfs/pnfs.c                     |    4 
+ fs/xfs/xfs_trans_ail.c            |    8 -
+ include/linux/completion.h        |    1 
+ include/linux/freezer.h           |  245 +-------------------------------------
+ include/linux/sched.h             |   41 +++---
+ include/linux/sunrpc/sched.h      |    7 -
+ include/linux/suspend.h           |    8 -
+ include/linux/umh.h               |    9 -
+ include/linux/wait.h              |   40 +++++-
+ init/do_mounts_initrd.c           |   10 -
+ kernel/cgroup/legacy_freezer.c    |   23 +--
+ kernel/exit.c                     |    4 
+ kernel/fork.c                     |    5 
+ kernel/freezer.c                  |  133 ++++++++++++++------
+ kernel/futex/waitwake.c           |    8 -
+ kernel/hung_task.c                |    4 
+ kernel/power/hibernate.c          |   35 +++--
+ kernel/power/main.c               |   18 +-
+ kernel/power/process.c            |   10 -
+ kernel/power/suspend.c            |   12 +
+ kernel/power/user.c               |   24 ++-
+ kernel/ptrace.c                   |    2 
+ kernel/sched/completion.c         |    9 +
+ kernel/sched/core.c               |    6 
+ kernel/signal.c                   |   14 +-
+ kernel/time/hrtimer.c             |    4 
+ kernel/umh.c                      |   18 +-
+ mm/khugepaged.c                   |    4 
+ net/sunrpc/sched.c                |   12 -
+ net/unix/af_unix.c                |    8 -
+ 42 files changed, 341 insertions(+), 461 deletions(-)
 
