@@ -2,121 +2,79 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD080C28D13
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 05:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D3C3C28D13
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 07:08:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230161AbiHVFjZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Aug 2022 01:39:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37626 "EHLO
+        id S232795AbiHVHIg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Aug 2022 03:08:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59758 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230024AbiHVFjZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 01:39:25 -0400
-Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C54B193E9
-        for <linux-pm@vger.kernel.org>; Sun, 21 Aug 2022 22:39:24 -0700 (PDT)
-Received: by mail-pf1-x435.google.com with SMTP id y141so9312627pfb.7
-        for <linux-pm@vger.kernel.org>; Sun, 21 Aug 2022 22:39:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc;
-        bh=fligshsn2XCImgFvItWx33xcWI/jlzXUqMfl1TLpXkY=;
-        b=kyK168j0SDg4TCdKpYFY9ds/wfu26Qx5h0uxF7Tz4ODrxraYdt0fhSgf3bpQEbl6E0
-         h3h/XCh2ulNEbwyXYCmyuVLXsSzWhYALJRx6+HMTcqWjqM1fHxchYiu0yH599AxLJMUQ
-         QppWaGe/kbUvJYScx9HcMzvauWUxvaR7WAem63IWYGvVR8kwDGsrOx97y0Tljauq555M
-         gwJTQ0cmLMSfiOBqqGVJ4lw8RSeCkJ77lN53/M+Oh0pwH42IiF6qp+4S1VJQo7uFeDeG
-         kCYQdL+bktgu8nNy96bzK32Uf/YzgldL0KPfZyVyxhvixvQYNuEjAZ+hHJh62oAbAH4h
-         Apog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
-        bh=fligshsn2XCImgFvItWx33xcWI/jlzXUqMfl1TLpXkY=;
-        b=nIUKod7Fz38z+XeFCf6qKT+1JyYjCMrs100gncArHywGdCQjtMuLJ+Vlsf3pBLigau
-         um0cg+Ix3MMnrc2BfXLd6m0HJt8cY9BNePFB4TBx/sMCXmpkMewBgbHSa92NfuE6lSFV
-         CMq3vjljzQ9SmR3uMEgGjI/DlSFZ7E7CxOcpRzI9hAgp5Hk3P/iDoH45Yot2JwljY9rF
-         5TGCCpaSGpWZm5hD/o3kvDsNY76fH2VwtcICvu3pmyDMbhLvQQo3Vbs58nQzg5KYab4T
-         X/dzRlM+yM8ydn41JHNfyeABc9t3rGLaqwCTTAdhNuBzJ1r+2PnbtxeeI/tY9HqElY0X
-         jf+Q==
-X-Gm-Message-State: ACgBeo1IvNSqJn8Mt3E6bbA0EqPPas03elXsR34XndRjH6HchQHpLOMW
-        8mCwnvaZB7QmbAD4P1z/eI4VHO9M2oMIbg==
-X-Google-Smtp-Source: AA6agR7wpVz/H/dVAHBGqp/+Y7gmgKKQiR0X+dh00ghdkKCBLp3HNqrDQ0NEFG8pbfeMWkF/ulPMEA==
-X-Received: by 2002:a63:5348:0:b0:422:68d6:ea3c with SMTP id t8-20020a635348000000b0042268d6ea3cmr16046079pgl.73.1661146764058;
-        Sun, 21 Aug 2022 22:39:24 -0700 (PDT)
-Received: from localhost ([122.171.18.80])
-        by smtp.gmail.com with ESMTPSA id b1-20020aa78ec1000000b0053692028ec1sm1689223pfr.34.2022.08.21.22.39.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 21 Aug 2022 22:39:23 -0700 (PDT)
-Date:   Mon, 22 Aug 2022 11:09:20 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Chris Hyser <chris.hyser@oracle.com>
-Cc:     linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: cppc_cpufreq: prevent crash on reading
- freqdomain_cpus
-Message-ID: <20220822053920.y6us5rsi6u5cdapi@vireshk-i7>
-References: <1660935837-7481-1-git-send-email-chris.hyser@oracle.com>
- <1660935837-7481-2-git-send-email-chris.hyser@oracle.com>
+        with ESMTP id S229496AbiHVHIg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 03:08:36 -0400
+Received: from muru.com (muru.com [72.249.23.125])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9765F6579;
+        Mon, 22 Aug 2022 00:08:34 -0700 (PDT)
+Received: from localhost (localhost [127.0.0.1])
+        by muru.com (Postfix) with ESMTPS id 1A65680F9;
+        Mon, 22 Aug 2022 07:01:29 +0000 (UTC)
+Date:   Mon, 22 Aug 2022 10:08:32 +0300
+From:   Tony Lindgren <tony@atomide.com>
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Peng Fan <peng.fan@nxp.com>,
+        Luca Weiss <luca.weiss@fairphone.com>,
+        Doug Anderson <dianders@chromium.org>,
+        Colin Foster <colin.foster@in-advantage.com>,
+        Alexander Stein <alexander.stein@ew.tq-group.com>,
+        Naresh Kamboju <naresh.kamboju@linaro.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Jean-Philippe Brucker <jpb@kernel.org>,
+        kernel-team@android.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, iommu@lists.linux.dev,
+        netdev@vger.kernel.org
+Subject: Re: [PATCH v2 0/4] Bring back driver_deferred_probe_check_state()
+ for now
+Message-ID: <YwMrcH6oix8b/O1v@atomide.com>
+References: <20220819221616.2107893-1-saravanak@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1660935837-7481-2-git-send-email-chris.hyser@oracle.com>
+In-Reply-To: <20220819221616.2107893-1-saravanak@google.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 19-08-22, 15:03, Chris Hyser wrote:
-> From: chris hyser <chris.hyser@oracle.com>
+* Saravana Kannan <saravanak@google.com> [220819 22:09]:
+> A bunch of issues have been reported in the original series[1] that removed
+> driver_deferred_probe_check_state(). While most of the issues have been
+> fixed in a new series that improved fw_devlink [2], there are still a few
+> unresolved issues I need to address.
 > 
-> While running stress-ng --sysfs on an ARM system following a cpu offline,
-> we encountered the following NULL pointer dereference in the cppc_cpufreq
-> scaling driver:
+> So let's bring back driver_deferred_probe_check_state() until the other
+> issues are resolved.
 > 
-> [ 1003.576816] Call trace:
-> [ 1003.579255]  _find_next_bit+0x20/0xc8
-> [ 1003.582909]  cpufreq_show_cpus+0x78/0xf4
-> [ 1003.586830]  show_freqdomain_cpus+0x20/0x30 [cppc_cpufreq]
-> [ 1003.592318]  show+0x4c/0x78
-> [ 1003.595104]  sysfs_kf_seq_show+0x9
+> Greg,
 > 
-> This is the exact issue described in commit e25303676e18 ("cpufreq:
-> acpi_cpufreq: prevent crash on reading freqdomain_cpus") with the fix
-> described there also solving this issue. I tracked the root cause to the
-> following: a scaling driver which provides a struct freq_attr sysfs
-> attributes array passed via struct cpufreq_driver during driver
-> registration, has .init() and .exit() functions and does _not_ provide
-> .online()/.offline() routines. cpufreq core creates the attributes, but
-> does not remove them even though .exit() frees the underlying memory. The
-> core functions and most drivers have corresponding NULL data pointer
-> checks.
-> 
-> Signed-off-by: Chris Hyser <chris.hyser@oracle.com>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 24eaf0e..4210353 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -876,6 +876,9 @@ static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
->  {
->  	struct cppc_cpudata *cpu_data = policy->driver_data;
->  
-> +	if (unlikely(!cpu_data))
-> +		return -ENODEV;
-> +
->  	return cpufreq_show_cpus(cpu_data->shared_cpu_map, buf);
->  }
->  cpufreq_freq_attr_ro(freqdomain_cpus);
+> Can we get this into 6.0-rcX please?
 
-What kernel version are you testing this on ?
+Yes please.
 
-We merged a patch sometime back:
+I just tested these against v6.0-rc2 and it fixes the deferred probe boot
+issues I've been seeing. The patches already have my Tested-by for the
+relevant patches, so as far as I'm concerned these are good to go.
 
-commit d4627a287e25 ("cpufreq: Abort show()/store() for half-initialized policies")
+Thanks,
 
-which I believe should have fixed this issue. I will be surprise if it
-doesn't.
-
--- 
-viresh
+Tony
