@@ -2,93 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EDC7C3F6B0
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 18:04:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F24E0C32792
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 19:29:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236802AbiHVSEG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Aug 2022 14:04:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54774 "EHLO
+        id S238776AbiHVT34 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Aug 2022 15:29:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236423AbiHVSD6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 14:03:58 -0400
-Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 594D02CC82;
-        Mon, 22 Aug 2022 11:03:58 -0700 (PDT)
-Received: by mail-oi1-f181.google.com with SMTP id p187so5835615oia.9;
-        Mon, 22 Aug 2022 11:03:58 -0700 (PDT)
+        with ESMTP id S238761AbiHVT3k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 15:29:40 -0400
+Received: from mail-ot1-x329.google.com (mail-ot1-x329.google.com [IPv6:2607:f8b0:4864:20::329])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 312604F65F;
+        Mon, 22 Aug 2022 12:24:09 -0700 (PDT)
+Received: by mail-ot1-x329.google.com with SMTP id o15-20020a9d718f000000b00638c1348012so8381090otj.2;
+        Mon, 22 Aug 2022 12:24:09 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
-        bh=esNtcNx3BW0ZYDyHJtcCsZAGZC+vRBsZkbC1+V6YdwA=;
-        b=TFjqIKk5GQjCmIwT98BjnxzTsJa2jL2miPnyMvgOZRiDk2Dw/tUwvn7MyDxY0DOoX8
-         E3LV34Db7jotsincJl31rTfsWJSdeTNBI8/0M32o3h3CacTnc8BsOfWTSWPguxJ6Y2kM
-         HiEDUuU/ma3Dqlgu2L2lLKlhwwmxOZxNeet1b5O8n5WFBt22UvcBm38IPXTLlRNvH+R3
-         KrQd2tB8SR6cDf4+cg1f6z2PW8ARmezgVfV+eEcAfjCEFGCnlG3eeLIk30Bnznc3GXyT
-         dKiWLd7gNn85Tjoy9VNvLT/7FaHaFSA10vfREt+yHGyts0TADSexb8acPa8m0lD+xhov
-         aSvw==
-X-Gm-Message-State: ACgBeo3t+nhBBRLbKDwbdterKT3eRJIDwfui3SxijovMCD7FR/2lymba
-        vEzHxeNAJvO5bF5AT7eA5Q==
-X-Google-Smtp-Source: AA6agR60bjoaWedKbnY/NS+tnW/H2Gz998DSgaZ40yNsNvcB/kC7hRFGHbUXBQym/1J5IOcu17Q8VQ==
-X-Received: by 2002:a05:6808:308e:b0:343:4b22:1a1e with SMTP id bl14-20020a056808308e00b003434b221a1emr9769893oib.102.1661191437571;
-        Mon, 22 Aug 2022 11:03:57 -0700 (PDT)
+        bh=8zy7YCWL5YZTEH0yzkezpqZ96keenfHSDIKWTIiVfgw=;
+        b=ADXtPQ0Zl0lz8VdHyI2ow6pdVOSGSxaLMhEEKIUHXfX/uqASKhc9MY9DnCeM2tKFhY
+         Rr6iIJoNMuYM6R9yfC6LiZZ6iC02g2IffcsHEVfdvgwPoXCt1ZOUAbAPS5tOtUZvn+Gw
+         MlMTq4rxS65TbwVhnQ0s6GfRVipID4s0R+xiWM3R2a5ndnSv1WGttVETSDfG0JoiBvz0
+         QOqk1i/QmGokI2MC/x+lBcy0jFjBHe7LVX2UxtgvRJ8Xk/Stj3rTNYfuGvLB7mET2/9U
+         insjQFJuuY4KLWoARUAxayNKclTz6EO2pfJOo1Pp+L7CSXIr2q1LjCZI46XN6GOO+vFa
+         dwZQ==
+X-Gm-Message-State: ACgBeo1CtAkDzrshnQhYQvkVdtmUvCTWFt4eXCU28y1goQ7JVRan8tkz
+        uJnoUaycwIjFc7I4zx76AQ==
+X-Google-Smtp-Source: AA6agR4Yhy+q1icNwprzoYLj6JYDzQtQ1J/JCtznjaPHD+6F092GBaDf5PsttXwKM4eRbJgkp/cPdg==
+X-Received: by 2002:a05:6830:90c:b0:637:18c0:b750 with SMTP id v12-20020a056830090c00b0063718c0b750mr7936744ott.385.1661196188346;
+        Mon, 22 Aug 2022 12:23:08 -0700 (PDT)
 Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id j4-20020a9d7384000000b0063711d42df5sm1656299otk.30.2022.08.22.11.03.56
+        by smtp.gmail.com with ESMTPSA id m3-20020a0568301e6300b00636d6571ff7sm3059517otr.70.2022.08.22.12.23.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Aug 2022 11:03:57 -0700 (PDT)
-Received: (nullmailer pid 74561 invoked by uid 1000);
-        Mon, 22 Aug 2022 18:03:55 -0000
-Date:   Mon, 22 Aug 2022 13:03:55 -0500
+        Mon, 22 Aug 2022 12:23:07 -0700 (PDT)
+Received: (nullmailer pid 296993 invoked by uid 1000);
+        Mon, 22 Aug 2022 19:23:06 -0000
+Date:   Mon, 22 Aug 2022 14:23:06 -0500
 From:   Rob Herring <robh@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
-        Georgi Djakov <djakov@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-kernel@vger.kernel.org,
-        Johnson Wang <johnson.wang@mediatek.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Andy Gross <agross@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Jia-Wei Chang <jia-wei.chang@mediatek.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-arm-kernel@lists.infradead.org,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Peng Fan <peng.fan@nxp.com>,
-        linux-mediatek@lists.infradead.org, Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v2] dt-bindings: interconnect: restrict opp-table to
- objects
-Message-ID: <20220822180355.GA74500-robh@kernel.org>
-References: <20220818061653.9524-1-krzysztof.kozlowski@linaro.org>
+To:     Mithil Bavishi <bavishimithil@gmail.com>
+Cc:     tony@atomide.com, dmitry.torokhov@gmail.com,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-omap@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        lee@kernel.org, linux-input@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, robh+dt@kernel.org,
+        sre@kernel.org, linux-pm@vger.kernel.org, contact@paulk.fr,
+        linux@armlinux.org.uk
+Subject: Re: [PATCH 02/10] dt-bindings: power: reset: Move twl4030-power from
+ mfd to power/reset
+Message-ID: <20220822192306.GA296915-robh@kernel.org>
+References: <20220820071659.1215-1-bavishimithil@gmail.com>
+ <20220820071659.1215-3-bavishimithil@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220818061653.9524-1-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220820071659.1215-3-bavishimithil@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 18 Aug 2022 09:16:53 +0300, Krzysztof Kozlowski wrote:
-> Simple 'opp-table:true' accepts a boolean property as opp-table, so
-> restrict it to object to properly enforce real OPP table nodes.
+On Sat, 20 Aug 2022 12:46:52 +0530, Mithil Bavishi wrote:
+> Move the documentation for twl4030-power from mfd to power/reset
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> 
+> Signed-off-by: Mithil Bavishi <bavishimithil@gmail.com>
 > ---
-> 
-> Changes since v1:
-> 1. Correct typo in msg.
-> ---
->  .../devicetree/bindings/interconnect/fsl,imx8m-noc.yaml        | 3 ++-
->  .../devicetree/bindings/interconnect/mediatek,cci.yaml         | 3 ++-
->  .../devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml   | 3 ++-
->  3 files changed, 6 insertions(+), 3 deletions(-)
+>  .../devicetree/bindings/{mfd => power/reset}/twl4030-power.txt    | 0
+>  1 file changed, 0 insertions(+), 0 deletions(-)
+>  rename Documentation/devicetree/bindings/{mfd => power/reset}/twl4030-power.txt (100%)
 > 
 
-Applied, thanks!
+Acked-by: Rob Herring <robh@kernel.org>
