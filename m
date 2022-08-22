@@ -2,73 +2,109 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A51BAC48BEA
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 19:32:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAE33C32792
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Aug 2022 19:34:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238622AbiHVTcA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Aug 2022 15:32:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38940 "EHLO
+        id S236948AbiHVTe1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Aug 2022 15:34:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43414 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238936AbiHVTal (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 15:30:41 -0400
-Received: from mail-oi1-f175.google.com (mail-oi1-f175.google.com [209.85.167.175])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AE0F58DEA;
-        Mon, 22 Aug 2022 12:25:14 -0700 (PDT)
-Received: by mail-oi1-f175.google.com with SMTP id j5so13391442oih.6;
-        Mon, 22 Aug 2022 12:25:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
-        bh=YBa4Wpb/1K3mz75p1OPVR3AVlx1stGTKnEAnSXaWGEc=;
-        b=oh3Gr+wltQLYWZ2DTpp6Pw/80Kl/hy0zj3+tZmEkfdNV3Y8TJH4L6J5gydzZXiWKGv
-         Dzj3ARzn9X2h+VTF7YHD8IjjLs6fjKSjNuoXhuEeVSF1/yu1g/hFKM4uDXd4jlG3aNL1
-         U1turCNCoF9re9KKYw59a2AM3xlm7hiOdxogcO1S6Pxg61+Cp6PNJir58nc99DG3YCAM
-         vb7dVoXLxTz6PRSZWEdZIe++S71CVMJDMa2vRSsTcHesz04rrYnXAdWxnGvaa3uWfpFF
-         VOCxBvI2nDKivsbI2myEl9Yibf/u6eMkdjOlEdX7xu5j0Pb8CyISmTs8FOZSmTCaQIve
-         7FZQ==
-X-Gm-Message-State: ACgBeo20fcZKJa1BJt0fmM+hhWC403rh2Nd9pJ8WJLfCpRQz99610DSA
-        Y6+6gKoFGkdLjZAGvZHimg==
-X-Google-Smtp-Source: AA6agR4yidOvnPilwMylDNgezwAjLFjDT0pd8MDJ4gX+NgTAQQYnJjX9woySWud8W/j1lDm5RISF1A==
-X-Received: by 2002:a05:6808:1b0c:b0:345:2df:b297 with SMTP id bx12-20020a0568081b0c00b0034502dfb297mr12004875oib.236.1661196313793;
-        Mon, 22 Aug 2022 12:25:13 -0700 (PDT)
-Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id y12-20020a544d8c000000b00342d207e68bsm2691610oix.37.2022.08.22.12.25.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Aug 2022 12:25:12 -0700 (PDT)
-Received: (nullmailer pid 308105 invoked by uid 1000);
-        Mon, 22 Aug 2022 19:25:11 -0000
-Date:   Mon, 22 Aug 2022 14:25:11 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Mithil Bavishi <bavishimithil@gmail.com>
-Cc:     dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
-        linux-pm@vger.kernel.org, contact@paulk.fr, sre@kernel.org,
-        lee@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
-        robh+dt@kernel.org, tony@atomide.com, linux@armlinux.org.uk,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 04/10] dt-bindings: input: twl-pwrbutton: Add support for
- twl6030-pwrbutton
-Message-ID: <20220822192511.GA308017-robh@kernel.org>
-References: <20220820071659.1215-1-bavishimithil@gmail.com>
- <20220820071659.1215-5-bavishimithil@gmail.com>
+        with ESMTP id S237455AbiHVTeX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2022 15:34:23 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDDDADAD;
+        Mon, 22 Aug 2022 12:34:22 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id C3C5EB818B8;
+        Mon, 22 Aug 2022 19:34:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AB1AC433D7;
+        Mon, 22 Aug 2022 19:34:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1661196859;
+        bh=zgjk7hxjYBSH2/TkdSD1wgIOQi7oZA1Ywc+Z1t41FHQ=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=c9d3uADeMkfhYhKYIlIRBUA7KrnbYlwFNkcFrJWP8mZnzwTPIHyVSO615oV2JmTNV
+         zCl4wKaLm/IaWATF4c6MrY4Bj4xPNov30v0aUu5HXmzt/K2F3y2s40zlTgmtkRIoX3
+         LE0LGU42EbYi5WnEH2gVZqeJHVu5sQ+Et8M7Griz7TPqbPyniNj7Duu1rHaq1Nt3T7
+         stzCxMvRfJRaZE3R0jXhfkeQlrTtbWIwmtkvlZgFOmb0sr2rpZZFXdzMVlfVj1eSup
+         ahl2fJgnSJTQqgCo5RzZ+7QArMld+rmh2y9AsvwhCkTCb7eONfQLTx18K+gp2BPX0n
+         qr66o2gH2uLqA==
+Date:   Mon, 22 Aug 2022 19:59:50 +0100
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Linus Walleij <linus.walleij@linaro.org>
+Cc:     linux-iio@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+        Paul Cercueil <paul@crapouillou.net>,
+        Sean Nyekjaer <sean@geanix.com>,
+        Rui Miguel Silva <rui.silva@linaro.org>,
+        Jean-Baptiste Maneyrol <jean-baptiste.maneyrol@tdk.com>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: Re: [PATCH 0/5] PM: Introduce EXPORT_NS_GPL_DEV_PM_OPS() and use
+ cases in IIO.
+Message-ID: <20220822195950.1b1249c2@jic23-huawei>
+In-Reply-To: <CACRpkdb6qxO38kS1=cEja-KZSR5RcV-oWX36ikxggsLm8Y5ixw@mail.gmail.com>
+References: <20220807192038.1039771-1-jic23@kernel.org>
+        <CACRpkdb6qxO38kS1=cEja-KZSR5RcV-oWX36ikxggsLm8Y5ixw@mail.gmail.com>
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220820071659.1215-5-bavishimithil@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 20 Aug 2022 12:46:54 +0530, Mithil Bavishi wrote:
-> Adds documentation for the compatible string for twl6030 powerbutton
-> support.
-> 
-> Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
-> Signed-off-by: Mithil Bavishi <bavishimithil@gmail.com>
-> ---
->  Documentation/devicetree/bindings/input/twl4030-pwrbutton.txt | 1 +
->  1 file changed, 1 insertion(+)
-> 
+On Mon, 22 Aug 2022 11:04:18 +0200
+Linus Walleij <linus.walleij@linaro.org> wrote:
 
-Acked-by: Rob Herring <robh@kernel.org>
+> On Sun, Aug 7, 2022 at 9:10 PM Jonathan Cameron <jic23@kernel.org> wrote:
+> 
+> > From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> >
+> > Perhaps the most complex case we can have is a core driver module (usually
+> > with accompanying per bus modules) that exports, in a namespace,
+> > a struct dev_pm_ops. The driver has different handling for runtime and
+> > sleep suspend / resume so (almost) all callbacks are provided.
+> > The pm.h helper macro _EXPORT_DEV_PM_OPS() could be used here but the
+> > handling of the last two parameters is unusual and very different from
+> > the macros intended for driver usage. First parameter needs to be "_gpl"
+> > and second needs to be the namespace specified as a string.  Other NS
+> > macros take it without quotes.
+> >
+> > As such, this series proposes introducing a suitable macro and then provides
+> > a number of IIO driver conversions. Where relevant the exports from the
+> > driver are moved into the new namespace.
+> >
+> > If accepted we can either take the whole lot through the PM tree and hope
+> > there is nothing much else overlapping with this driver code in this cycle,
+> > or ideally we could use an immutable branch and pull this into both the
+> > IIO and PM trees.
+> >
+> > Jonathan Cameron (5):
+> >   PM: core: Add EXPORT_NS_GPL_DEV_PM_OPS to avoid drivers rolling own.
+> >   iio: accel: fxls8962af: Use new EXPORT_NS_GPL_DEV_PM_OPS()
+> >   iio: gyro: fxas210002c: Move exports to IIO_FXAS210002C namespace.
+> >   iio: imu: inv_icm42600: Move exports to IIO_ICM42600 namespace
+> >   iio: imu: inv_mpu: Move exports to IIO_MPU6050 namespace  
+> 
+> I like what you done here.
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+
+Unfortunately change of plan because the EXPORT_NS_GPL_DEV_PM_OPS isn't
+general enough to cover some cases elsewhere.
+https://lore.kernel.org/all/20220808174107.38676-2-paul@crapouillou.net/
+
+I'll switch this series over to being based on that which will be
+a large enough change that I'll probably not pick up any tags given on
+this version.
+
+Thanks
+
+Jonathan
+
+
+> 
+> Yours,
+> Linus Walleij
+
