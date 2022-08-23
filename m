@@ -2,57 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA2BCC32789
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E2BC32789
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244470AbiHWQWM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Aug 2022 12:22:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39196 "EHLO
+        id S244588AbiHWQW0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Aug 2022 12:22:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39458 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244476AbiHWQVx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:21:53 -0400
+        with ESMTP id S244592AbiHWQV4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:21:56 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EA0616D2D1
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:47 -0700 (PDT)
-Date:   Tue, 23 Aug 2022 12:42:44 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93B8016D2D9
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:49 -0700 (PDT)
+Date:   Tue, 23 Aug 2022 12:42:47 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661258566;
+        s=2020; t=1661258568;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=4CZtoTEX34bv34DtTlhoEYE/uS10o3lIhpvvbC7wZEg=;
-        b=qSe6sAbj3vDNiAHCa3pW5Sh4CXvxz+1MNBBywYfDw/kXZmmUaw8JkgcOQdqDOGJj7HwmuX
-        xrWJdsQEMAE0ghCEJpdgdBPegR2bKzrX6S1WURwGDR3qiIwWdpmAIAKUVb4c2Bi1lc5ELi
-        jbIh9LdfXjC8MIJsDWhGmUEq4VKKTDxd8azgbMrpN+kbttrY/exZ6ckbowWU8YplI4iyt9
-        tqxvGN3+R5n/3q8/1OK1Ck1Wa8b+coUW5zPecqFjYuhX0BRE1/UZgCjZGfUj+HFUoHU6qG
-        JR3/BSa1D5rf46SX3jP2+wmYiiOINQLCfFfKDNAflX61wqTF6aaV5Ag0s2vlqQ==
+        bh=vEBkXQ2ZrJSES4Vr4n914qT8sXW0Vy95mccjkcKwPJM=;
+        b=SFAUOxoucXZ73HhVOmloE/ovClTDXHIhpQDNTKERZ1b7E0FDNsd1t0YuCX0vxL1UWpWtwo
+        qXOswOqkskuO2Z+oY0ff+W/JVBWEWOxLzxJEU+V3r/yE5ATyIQmX2dueV82b+dpndjpDLV
+        S8towrAB2bWHod/Kr/vPEZs7oQBelTwHxOHpCpHCoMP6KraTB9fDy3JZrkysRRCllFwkMg
+        khK4bh+w5IUjh4eNN0XA3W1f8SJ15L7K/dAbbOiawjWRRR5GxI+MNAECncWG0Bl7nsTBRj
+        azOGADTPLIFlI+d4Mj3/ZTsiCart7rGSMGo+wwN4pH8vHs+osu+0S96vchFwoA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661258566;
+        s=2020e; t=1661258568;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=4CZtoTEX34bv34DtTlhoEYE/uS10o3lIhpvvbC7wZEg=;
-        b=J53Qcaz6Nyk837T7B8J4tVYol0WktoTwMWDVn96LBvzVzMpZa6+gCBDGUHVEFnswIvce05
-        mjk5q8baA1MJycBw==
-From:   "thermal-bot for Jiapeng Chong" <tip-bot2@linutronix.de>
+        bh=vEBkXQ2ZrJSES4Vr4n914qT8sXW0Vy95mccjkcKwPJM=;
+        b=bJdWvRPHfxLLIj261Db95cgsKYIPxPom9ztTq3YSbkbudz+CEtAoZBdxdSQguItGB/rp3C
+        FO+XrFER1DGLNNDg==
+From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/qcom/spmi-adc-tm5: Remove
- unnecessary print function dev_err()
-Cc:     Abaci Robot <abaci@linux.alibaba.com>,
-        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
+Subject: [thermal: thermal/next] thermal/core: Move set_trip_temp ops to the
+ sysfs code
+Cc:     Daniel Lezcano <daniel.lezcano@linexp.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220809034346.128607-1-jiapeng.chong@linux.alibaba.com>
-References: <20220809034346.128607-1-jiapeng.chong@linux.alibaba.com>
+In-Reply-To: <20220804224349.1926752-33-daniel.lezcano@linexp.org>
+References: <20220804224349.1926752-33-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
-Message-ID: <166125856489.401.13603202925739175296.tip-bot2@tip-bot2>
+Message-ID: <166125856707.401.5121100895048506026.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -63,43 +61,89 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     e920209847c396ca243259160b7d10d0dae17b35
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e920209847c396ca243259160b7d10d0dae17b35
-Author:        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-AuthorDate:    Tue, 09 Aug 2022 11:43:46 +08:00
+Commit-ID:     9326167058e8a5b93179f19fc0368f5324a1f628
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//9326167058e8a5b93179f19fc0368f5324a1f628
+Author:        Daniel Lezcano <daniel.lezcano@linexp.org>
+AuthorDate:    Fri, 05 Aug 2022 00:43:48 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Wed, 17 Aug 2022 14:09:39 +02:00
 
-thermal/drivers/qcom/spmi-adc-tm5: Remove unnecessary print function dev_err()
+thermal/core: Move set_trip_temp ops to the sysfs code
 
-The print function dev_err() is redundant because platform_get_irq()
-already prints an error.
+Given the trip points can be set in the thermal zone structure, there
+is no need of a specific OF function to do that. Move the code in the
+place where it is generic, in the sysfs set_trip_temp storing
+function.
 
-./drivers/thermal/qcom/qcom-spmi-adc-tm5.c:1029:2-9: line 1029 is redundant because platform_get_irq() already prints an error.
-
-Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=1846
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Link: https://lore.kernel.org/r/20220809034346.128607-1-jiapeng.chong@linux.alibaba.com
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
+Link: https://lore.kernel.org/r/20220804224349.1926752-33-daniel.lezcano@linexp.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/qcom/qcom-spmi-adc-tm5.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/thermal/thermal_of.c    | 23 -----------------------
+ drivers/thermal/thermal_sysfs.c |  5 ++++-
+ 2 files changed, 4 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-index add6f40..af68adf 100644
---- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-+++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-@@ -1025,10 +1025,8 @@ static int adc_tm5_probe(struct platform_device *pdev)
- 	adc_tm->base = reg;
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index a17087c..1dd6b71 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -288,28 +288,6 @@ static int of_thermal_get_trip_temp(struct thermal_zone_device *tz, int trip,
+ 	return 0;
+ }
  
- 	irq = platform_get_irq(pdev, 0);
--	if (irq < 0) {
--		dev_err(dev, "get_irq failed: %d\n", irq);
-+	if (irq < 0)
- 		return irq;
+-static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
+-				    int temp)
+-{
+-	struct __thermal_zone *data = tz->devdata;
+-
+-	if (trip >= tz->num_trips || trip < 0)
+-		return -EDOM;
+-
+-	if (data->ops && data->ops->set_trip_temp) {
+-		int ret;
+-
+-		ret = data->ops->set_trip_temp(data->sensor_data, trip, temp);
+-		if (ret)
+-			return ret;
 -	}
+-
+-	/* thermal framework should take care of data->mask & (1 << trip) */
+-	tz->trips[trip].temperature = temp;
+-
+-	return 0;
+-}
+-
+ static int of_thermal_get_trip_hyst(struct thermal_zone_device *tz, int trip,
+ 				    int *hyst)
+ {
+@@ -350,7 +328,6 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
+ static struct thermal_zone_device_ops of_thermal_ops = {
+ 	.get_trip_type = of_thermal_get_trip_type,
+ 	.get_trip_temp = of_thermal_get_trip_temp,
+-	.set_trip_temp = of_thermal_set_trip_temp,
+ 	.get_trip_hyst = of_thermal_get_trip_hyst,
+ 	.set_trip_hyst = of_thermal_set_trip_hyst,
+ 	.get_crit_temp = of_thermal_get_crit_temp,
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 3a8d6e7..0f82010 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -115,7 +115,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ 	int temperature, hyst = 0;
+ 	enum thermal_trip_type type;
  
- 	ret = adc_tm5_get_dt_data(adc_tm, node);
- 	if (ret) {
+-	if (!tz->ops->set_trip_temp)
++	if (!tz->ops->set_trip_temp && !tz->trips)
+ 		return -EPERM;
+ 
+ 	if (sscanf(attr->attr.name, "trip_point_%d_temp", &trip) != 1)
+@@ -128,6 +128,9 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ 	if (ret)
+ 		return ret;
+ 
++	if (tz->trips)
++		tz->trips[trip].temperature = temperature;
++
+ 	if (tz->ops->get_trip_hyst) {
+ 		ret = tz->ops->get_trip_hyst(tz, trip, &hyst);
+ 		if (ret)
