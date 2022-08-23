@@ -2,154 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17E8EC3F6B0
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 15:37:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50F9FC32772
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242021AbiHWPhI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Aug 2022 11:37:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33360 "EHLO
+        id S244636AbiHWQWA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Aug 2022 12:22:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36596 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241442AbiHWPgk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 11:36:40 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22108BFE9E;
-        Tue, 23 Aug 2022 04:26:55 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id ECC83B81CE9;
-        Tue, 23 Aug 2022 11:25:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA8A2C433C1;
-        Tue, 23 Aug 2022 11:25:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1661253932;
-        bh=RHJfmfbErHaYXPty7Vle5Iu9cuS5MQAgVtFca0ryUqk=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=eJYYTySjiuQgiWdmHsEUf3gaqYRsV1W/Z9PLIP8bbagZnqtvifScrNxoueFvwcm3T
-         Yk1364u/0oUQTr/Hkj+z2Aw8PNbHS1Jg8lcSrwW47OgtNGbdVbQrShTlaHi6QTbXbk
-         EoqAhS4GC2KAhNC5E53bP4fCo7p4uCcB1QQ/uwdU=
-Date:   Tue, 23 Aug 2022 13:25:27 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Saravana Kannan <saravanak@google.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Laurentiu Tudor <laurentiu.tudor@nxp.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@aj.id.au>,
-        Nicolas Saenz Julienne <nsaenz@kernel.org>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Al Cooper <alcooperx@gmail.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Vladimir Zapolskiy <vz@mleia.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Tobias Klauser <tklauser@distanz.ch>,
-        Russell King <linux@armlinux.org.uk>,
-        Vineet Gupta <vgupta@kernel.org>,
-        Richard Genoud <richard.genoud@gmail.com>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Alexander Shiyan <shc_work@mail.ru>,
-        Baruch Siach <baruch@tkos.co.il>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Karol Gugala <kgugala@antmicro.com>,
-        Mateusz Holenko <mholenko@antmicro.com>,
-        Gabriel Somlo <gsomlo@gmail.com>,
-        Neil Armstrong <narmstrong@baylibre.com>,
-        Kevin Hilman <khilman@baylibre.com>,
-        Jerome Brunet <jbrunet@baylibre.com>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-        Taichi Sugaya <sugaya.taichi@socionext.com>,
-        Takao Orito <orito.takao@socionext.com>,
-        Liviu Dudau <liviu.dudau@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Pali Rohar <pali@kernel.org>,
-        Andreas Farber <afaerber@suse.de>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Laxman Dewangan <ldewangan@nvidia.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Patrice Chotard <patrice.chotard@foss.st.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Hammer Hsieh <hammerh0314@gmail.com>,
-        Peter Korsgaard <jacmet@sunsite.dk>,
-        Timur Tabi <timur@kernel.org>,
-        Michal Simek <michal.simek@xilinx.com>,
-        Rob Herring <robh@kernel.org>,
-        sascha hauer <sha@pengutronix.de>, peng fan <peng.fan@nxp.com>,
-        kevin hilman <khilman@kernel.org>,
-        ulf hansson <ulf.hansson@linaro.org>,
-        len brown <len.brown@intel.com>, pavel machek <pavel@ucw.cz>,
-        joerg roedel <joro@8bytes.org>, will deacon <will@kernel.org>,
-        andrew lunn <andrew@lunn.ch>,
-        heiner kallweit <hkallweit1@gmail.com>,
-        eric dumazet <edumazet@google.com>,
-        jakub kicinski <kuba@kernel.org>,
-        paolo abeni <pabeni@redhat.com>,
-        linus walleij <linus.walleij@linaro.org>,
-        hideaki yoshifuji <yoshfuji@linux-ipv6.org>,
-        david ahern <dsahern@kernel.org>, kernel-team@android.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-aspeed@lists.ozlabs.org,
-        linux-rpi-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-tegra@vger.kernel.org,
-        linux-snps-arc@lists.infradead.org,
-        linux-amlogic@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        linux-actions@lists.infradead.org,
-        linux-unisoc@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        sparclinux@vger.kernel.org
-Subject: Re: [PATCH v2 0/2] Fix console probe delay when stdout-path isn't set
-Message-ID: <YwS5J3effuHQJRZ5@kroah.com>
-References: <20220701012647.2007122-1-saravanak@google.com>
+        with ESMTP id S244646AbiHWQV2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:21:28 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D50B16D2EF
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:56 -0700 (PDT)
+Date:   Tue, 23 Aug 2022 12:42:53 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1661258574;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=PoF/cR7ABZcWeyTVHIAuuAp57p3Nyyg3ln02aGy0E9k=;
+        b=ncI/zuKk9ua1ZvS1yDJRZWkwJ2vSk2wTkqOVf1QvjhHK06YzhkzWdWc05WhybL2sFtBl2B
+        JdZWttjRLWWWEZscsvtGZ5PN52Knw+wL1224SSj3gD5LJVOCVP2enJ0kGHnT0rw4XbfuG4
+        2Q1gEH90r37QMwxPEfUQwSN6eY4UWxzzf2+2LFhSsCe+OV5Rhk8hPJZHgQnAHiF4JKsG5d
+        jhJT/upa78ap6UrTFNIcaOd7kb/DcmFwIOamzkkKbAdNVWSnYTmDeo49LiK+6AlHA7ySmf
+        DaXEo35j+CqMokgHO6zwGnyiETcjCR6BaXHFjeM/vUfjs0xGz0GN+331HY+ahw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1661258574;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=PoF/cR7ABZcWeyTVHIAuuAp57p3Nyyg3ln02aGy0E9k=;
+        b=fIvFqdm50WQCqgBfOGrmYfJilVMxgz54yYIRpFhoBcQEXFiztUT4sgM1B2dSS+X4CSou0M
+        JCCnwQibTrMcgvCg==
+From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-pm@vger.kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [thermal: thermal/next] hwmon: pm_bus: core: Switch to new of thermal API
+Cc:     Daniel Lezcano <daniel.lezcano@linexp.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20220804224349.1926752-27-daniel.lezcano@linexp.org>
+References: <20220804224349.1926752-27-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220701012647.2007122-1-saravanak@google.com>
+Message-ID: <166125857355.401.10260856921117198578.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2@linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 30, 2022 at 06:26:38PM -0700, Saravana Kannan wrote:
-> These patches are on top of driver-core-next.
-> 
-> Even if stdout-path isn't set in DT, this patch should take console
-> probe times back to how they were before the deferred_probe_timeout
-> clean up series[1].
+The following commit has been merged into the thermal/next branch of thermal:
 
-Now dropped from my queue due to lack of a response to other reviewer's
-questions.
+Commit-ID:     613ed3f67609291c9b757d62f1f6734e40cb60d8
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//613ed3f67609291c9b757d62f1f6734e40cb60d8
+Author:        Daniel Lezcano <daniel.lezcano@linexp.org>
+AuthorDate:    Fri, 05 Aug 2022 00:43:42 +02:00
+Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
+CommitterDate: Wed, 17 Aug 2022 14:09:38 +02:00
 
-thanks,
+hwmon: pm_bus: core: Switch to new of thermal API
 
-greg k-h
+The thermal OF code has a new API allowing to migrate the OF
+initialization to a simpler approach. The ops are no longer device
+tree specific and are the generic ones provided by the core code.
+
+Convert the ops to the thermal_zone_device_ops format and use the new
+API to register the thermal zone with these generic ops.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
+Link: https://lore.kernel.org/r/20220804224349.1926752-27-daniel.lezcano@linexp.org
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/hwmon/pmbus/pmbus_core.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/hwmon/pmbus/pmbus_core.c b/drivers/hwmon/pmbus/pmbus_core.c
+index f10bac8..5541d26 100644
+--- a/drivers/hwmon/pmbus/pmbus_core.c
++++ b/drivers/hwmon/pmbus/pmbus_core.c
+@@ -1270,9 +1270,9 @@ struct pmbus_thermal_data {
+ 	struct pmbus_sensor *sensor;
+ };
+ 
+-static int pmbus_thermal_get_temp(void *data, int *temp)
++static int pmbus_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+-	struct pmbus_thermal_data *tdata = data;
++	struct pmbus_thermal_data *tdata = tz->devdata;
+ 	struct pmbus_sensor *sensor = tdata->sensor;
+ 	struct pmbus_data *pmbus_data = tdata->pmbus_data;
+ 	struct i2c_client *client = to_i2c_client(pmbus_data->dev);
+@@ -1296,7 +1296,7 @@ static int pmbus_thermal_get_temp(void *data, int *temp)
+ 	return ret;
+ }
+ 
+-static const struct thermal_zone_of_device_ops pmbus_thermal_ops = {
++static const struct thermal_zone_device_ops pmbus_thermal_ops = {
+ 	.get_temp = pmbus_thermal_get_temp,
+ };
+ 
+@@ -1314,8 +1314,8 @@ static int pmbus_thermal_add_sensor(struct pmbus_data *pmbus_data,
+ 	tdata->sensor = sensor;
+ 	tdata->pmbus_data = pmbus_data;
+ 
+-	tzd = devm_thermal_zone_of_sensor_register(dev, index, tdata,
+-						   &pmbus_thermal_ops);
++	tzd = devm_thermal_of_zone_register(dev, index, tdata,
++					    &pmbus_thermal_ops);
+ 	/*
+ 	 * If CONFIG_THERMAL_OF is disabled, this returns -ENODEV,
+ 	 * so ignore that error but forward any other error.
