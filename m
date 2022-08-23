@@ -2,57 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7DFEC32772
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4BB0C32789
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244639AbiHWQWa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Aug 2022 12:22:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41344 "EHLO
+        id S244646AbiHWQWb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Aug 2022 12:22:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41346 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244650AbiHWQWC (ORCPT
+        with ESMTP id S244679AbiHWQWC (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:22:02 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 091D7333D74
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:40 -0700 (PDT)
-Date:   Tue, 23 Aug 2022 12:42:37 -0000
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB78F275B80
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:42 -0700 (PDT)
+Date:   Tue, 23 Aug 2022 12:42:39 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661258558;
+        s=2020; t=1661258560;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=3KK1L5CoiujgW7FRP+H5PVkW4nCiNtLxCeiyyDWKDys=;
-        b=SWMJjgj5+mFzDegSTD1FglHw5lBscWwGXKfhqpo1e3xfN7NDRx1vhtDpkDpV3eR1bshQS0
-        1LjhHoHHgS+izgaG/9FGlR6w8SM6y4yvVs9i9Di/QZwoIPRj5uvgpIBEbY84VCYXtl9VPY
-        nSzf69DGNoR99a6k0sxTRAl1TbqC6jMMt6ZQyo5Td9X2ov6ZyRmlEqBr9Qpqrf8PzLWtw5
-        T9cwH8PPRbUEpbOIUpkE0/e6e/hrf56Z6UPfRm3NCsA0uTYlxVKJ8OzRkHHayCCOCmuzcm
-        hDt+wlhlUDtuuXrSgUaVCOU/FFfoB32quAJH2TXBXE+kF4mLUuxNpnLkaCspMw==
+        bh=SwlENea/t/mLJA2Zswq086k1bORiPm4WzOY7HLes/KM=;
+        b=n/c6IqUbsthuQfpkXY2FNFdjieSVwypzpzEVQf3Hp8p6gFC0BQq6yU1jv9J+SAgYg+68K7
+        6/RStWi3GsF8l7Qx5w86g+cz1qHw+pMJkeA+SLLcoS+rNFMQz9loVgoAooFPNIiqJPbfIq
+        JGPYqqaM2z+i0/fyFLMmW315FXZl//+0oC+OxgC+EQp8Ys7r6G1V+oDepnp70p63JE+5oo
+        YXV3YtxKifzpda5tUDIQQdubcNvfd1DsWnLn9QiHUV1La7t1BMGCnLJRToMdt14vbN/O1X
+        6Ian3CppXnA1XRC2I/Ly89e3PgOrzptHKxysmtD49c9/q0Puf4P5v8qlSDa44Q==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661258558;
+        s=2020e; t=1661258560;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=3KK1L5CoiujgW7FRP+H5PVkW4nCiNtLxCeiyyDWKDys=;
-        b=wYRbiIeybR0otTLBSuMw0V4TFVt/01YquUep7zQeajjHatr9IJ5HIdBZiyyAjA2iIKA/fn
-        pxc5evZgJz2GaLDQ==
+        bh=SwlENea/t/mLJA2Zswq086k1bORiPm4WzOY7HLes/KM=;
+        b=cKcw3xjhIjzz2n7+Ukt6m3ZxRAn3RNDHp1Fjk8fo558X8QtosX5YP9XcD9C+pTO2sFZbk1
+        XCqTv1NC3iQOLzDA==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] Revert "mlxsw: core: Add the hottest thermal
- zone detection"
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Vadim Pasternak <vadimp@nvidia.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Ido Schimmel <idosch@nvidia.com>, rui.zhang@intel.com,
+Subject: [thermal: thermal/next] thermal/core: Move the mutex inside the
+ thermal_zone_device_update() function
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
         amitk@kernel.org
-In-Reply-To: <20220817153040.2464245-1-daniel.lezcano@linaro.org>
-References: <20220817153040.2464245-1-daniel.lezcano@linaro.org>
+In-Reply-To: <20220805153834.2510142-5-daniel.lezcano@linaro.org>
+References: <20220805153834.2510142-5-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <166125855725.401.3474590525627956835.tip-bot2@tip-bot2>
+Message-ID: <166125855959.401.11652268728471574501.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -63,207 +60,298 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     06f36055121769b9eb9b7d28c7499d1cc8269dc3
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//06f36055121769b9eb9b7d28c7499d1cc8269dc3
+Commit-ID:     a930da9bf583b2add01fb0e086913664dadaffd0
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//a930da9bf583b2add01fb0e086913664dadaffd0
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Wed, 17 Aug 2022 17:30:40 +02:00
+AuthorDate:    Fri, 05 Aug 2022 17:38:34 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Wed, 17 Aug 2022 20:32:27 +02:00
+CommitterDate: Wed, 17 Aug 2022 14:09:39 +02:00
 
-Revert "mlxsw: core: Add the hottest thermal zone detection"
+thermal/core: Move the mutex inside the thermal_zone_device_update() function
 
-This reverts commit 2dc2f760052da4925482ecdcdc5c94d4a599153c and
-commit 6f73862fabd93213de157d9cc6ef76084311c628.
+All the different calls inside the thermal_zone_device_update()
+function take the mutex.
 
-As discussed in the thread:
+The previous changes move the mutex out of the different functions,
+like the throttling ops. Now that the mutexes are all at the same
+level in the call stack for the thermal_zone_device_update() function,
+they can be moved inside this one.
 
-https://lore.kernel.org/all/f3c62ebe-7d59-c537-a010-bff366c8aeba@linaro.org/
+That has the benefit of:
 
-the feature provided by commits 2dc2f760052da and 6f73862fabd93 is
-actually already handled by the thermal framework via the cooling
-device state aggregation, thus all this code is pointless.
+1. Simplify the code by not having a plethora of places where the lock is taken
 
-The revert conflicts with the following changes:
- - 7f4957be0d5b8: thermal: Use mode helpers in drivers
- - 6a79507cfe94c: mlxsw: core: Extend thermal module with per QSFP module thermal zones
-
-These conflicts were fixed and the resulting changes are in this patch.
-
-Both reverts are in the same change as requested by Ido Schimmel:
-
-https://lore.kernel.org/all/Yvz7+RUsmVco3Xpj@shredder/
+2. Probably closes more race windows because releasing the lock from
+one line to another can give the opportunity to the thermal zone to change
+its state in the meantime. For example, the thermal zone can be
+enabled right after checking it is disabled.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Tested-by: Vadim Pasternak <vadimp@nvidia.com>
-Acked-by: Jakub Kicinski <kuba@kernel.org>
-Reviewed-by: Ido Schimmel <idosch@nvidia.com>
-Link: https://lore.kernel.org/r/20220817153040.2464245-1-daniel.lezcano@linaro.org
+Link: https://lore.kernel.org/r/20220805153834.2510142-5-daniel.lezcano@linaro.org
 ---
- drivers/net/ethernet/mellanox/mlxsw/core_thermal.c | 77 +-------------
- 1 file changed, 2 insertions(+), 75 deletions(-)
+ drivers/thermal/thermal_core.c    | 32 ++++---------
+ drivers/thermal/thermal_core.h    |  2 +-
+ drivers/thermal/thermal_helpers.c | 73 +++++++++++++++++-------------
+ drivers/thermal/thermal_sysfs.c   |  6 +-
+ 4 files changed, 61 insertions(+), 52 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-index 3548fe1..987fe5c 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-@@ -21,7 +21,6 @@
- #define MLXSW_THERMAL_ASIC_TEMP_HOT	105000	/* 105C */
- #define MLXSW_THERMAL_HYSTERESIS_TEMP	5000	/* 5C */
- #define MLXSW_THERMAL_MODULE_TEMP_SHIFT	(MLXSW_THERMAL_HYSTERESIS_TEMP * 2)
--#define MLXSW_THERMAL_TEMP_SCORE_MAX	GENMASK(31, 0)
- #define MLXSW_THERMAL_MAX_STATE	10
- #define MLXSW_THERMAL_MIN_STATE	2
- #define MLXSW_THERMAL_MAX_DUTY	255
-@@ -101,8 +100,6 @@ struct mlxsw_thermal {
- 	struct thermal_cooling_device *cdevs[MLXSW_MFCR_PWMS_MAX];
- 	u8 cooling_levels[MLXSW_THERMAL_MAX_STATE + 1];
- 	struct mlxsw_thermal_trip trips[MLXSW_THERMAL_NUM_TRIPS];
--	unsigned int tz_highest_score;
--	struct thermal_zone_device *tz_highest_dev;
- 	struct mlxsw_thermal_area line_cards[];
- };
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index fcac28d..4812170 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -297,24 +297,18 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
  
-@@ -193,34 +190,6 @@ mlxsw_thermal_module_trips_update(struct device *dev, struct mlxsw_core *core,
- 	return 0;
- }
- 
--static void mlxsw_thermal_tz_score_update(struct mlxsw_thermal *thermal,
--					  struct thermal_zone_device *tzdev,
--					  struct mlxsw_thermal_trip *trips,
--					  int temp)
--{
--	struct mlxsw_thermal_trip *trip = trips;
--	unsigned int score, delta, i, shift = 1;
--
--	/* Calculate thermal zone score, if temperature is above the hot
--	 * threshold score is set to MLXSW_THERMAL_TEMP_SCORE_MAX.
--	 */
--	score = MLXSW_THERMAL_TEMP_SCORE_MAX;
--	for (i = MLXSW_THERMAL_TEMP_TRIP_NORM; i < MLXSW_THERMAL_NUM_TRIPS;
--	     i++, trip++) {
--		if (temp < trip->temp) {
--			delta = DIV_ROUND_CLOSEST(temp, trip->temp - temp);
--			score = delta * shift;
--			break;
--		}
--		shift *= 256;
--	}
--
--	if (score > thermal->tz_highest_score) {
--		thermal->tz_highest_score = score;
--		thermal->tz_highest_dev = tzdev;
--	}
--}
--
- static int mlxsw_thermal_bind(struct thermal_zone_device *tzdev,
- 			      struct thermal_cooling_device *cdev)
+ static void monitor_thermal_zone(struct thermal_zone_device *tz)
  {
-@@ -286,9 +255,6 @@ static int mlxsw_thermal_get_temp(struct thermal_zone_device *tzdev,
- 		return err;
+-	mutex_lock(&tz->lock);
+-
+ 	if (tz->mode != THERMAL_DEVICE_ENABLED)
+ 		thermal_zone_device_set_polling(tz, 0);
+ 	else if (tz->passive)
+ 		thermal_zone_device_set_polling(tz, tz->passive_delay_jiffies);
+ 	else if (tz->polling_delay_jiffies)
+ 		thermal_zone_device_set_polling(tz, tz->polling_delay_jiffies);
+-
+-	mutex_unlock(&tz->lock);
+ }
+ 
+ static void handle_non_critical_trips(struct thermal_zone_device *tz, int trip)
+ {
+-	mutex_lock(&tz->lock);
+ 	tz->governor ? tz->governor->throttle(tz, trip) :
+ 		       def_governor->throttle(tz, trip);
+-	mutex_unlock(&tz->lock);
+ }
+ 
+ void thermal_zone_device_critical(struct thermal_zone_device *tz)
+@@ -382,7 +376,7 @@ static void update_temperature(struct thermal_zone_device *tz)
+ {
+ 	int temp, ret;
+ 
+-	ret = thermal_zone_get_temp(tz, &temp);
++	ret = __thermal_zone_get_temp(tz, &temp);
+ 	if (ret) {
+ 		if (ret != -EAGAIN)
+ 			dev_warn(&tz->device,
+@@ -391,10 +385,8 @@ static void update_temperature(struct thermal_zone_device *tz)
+ 		return;
  	}
- 	mlxsw_reg_mtmp_unpack(mtmp_pl, &temp, NULL, NULL, NULL, NULL);
--	if (temp > 0)
--		mlxsw_thermal_tz_score_update(thermal, tzdev, thermal->trips,
--					      temp);
  
- 	*p_temp = temp;
- 	return 0;
-@@ -349,21 +315,6 @@ static int mlxsw_thermal_set_trip_hyst(struct thermal_zone_device *tzdev,
- 	return 0;
+-	mutex_lock(&tz->lock);
+ 	tz->last_temperature = tz->temperature;
+ 	tz->temperature = temp;
+-	mutex_unlock(&tz->lock);
+ 
+ 	trace_thermal_temperature(tz);
+ 
+@@ -457,15 +449,9 @@ EXPORT_SYMBOL_GPL(thermal_zone_device_disable);
+ 
+ int thermal_zone_device_is_enabled(struct thermal_zone_device *tz)
+ {
+-	enum thermal_device_mode mode;
+-
+-	mutex_lock(&tz->lock);
+-
+-	mode = tz->mode;
++	lockdep_assert_held(&tz->lock);
+ 
+-	mutex_unlock(&tz->lock);
+-
+-	return mode == THERMAL_DEVICE_ENABLED;
++	return tz->mode == THERMAL_DEVICE_ENABLED;
  }
  
--static int mlxsw_thermal_trend_get(struct thermal_zone_device *tzdev,
--				   int trip, enum thermal_trend *trend)
--{
--	struct mlxsw_thermal *thermal = tzdev->devdata;
--
--	if (trip < 0 || trip >= MLXSW_THERMAL_NUM_TRIPS)
--		return -EINVAL;
--
--	if (tzdev == thermal->tz_highest_dev)
--		return 1;
--
--	*trend = THERMAL_TREND_STABLE;
--	return 0;
--}
--
- static struct thermal_zone_params mlxsw_thermal_params = {
- 	.no_hwmon = true,
- };
-@@ -377,7 +328,6 @@ static struct thermal_zone_device_ops mlxsw_thermal_ops = {
- 	.set_trip_temp	= mlxsw_thermal_set_trip_temp,
- 	.get_trip_hyst	= mlxsw_thermal_get_trip_hyst,
- 	.set_trip_hyst	= mlxsw_thermal_set_trip_hyst,
--	.get_trend	= mlxsw_thermal_trend_get,
- };
+ void thermal_zone_device_update(struct thermal_zone_device *tz,
+@@ -473,9 +459,6 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ {
+ 	int count;
  
- static int mlxsw_thermal_module_bind(struct thermal_zone_device *tzdev,
-@@ -463,7 +413,6 @@ static int mlxsw_thermal_module_temp_get(struct thermal_zone_device *tzdev,
- 	int temp, crit_temp, emerg_temp;
- 	struct device *dev;
- 	u16 sensor_index;
--	int err;
+-	if (!thermal_zone_device_is_enabled(tz))
+-		return;
+-
+ 	if (atomic_read(&in_suspend))
+ 		return;
  
- 	dev = thermal->bus_info->dev;
- 	sensor_index = MLXSW_REG_MTMP_MODULE_INDEX_MIN + tz->module;
-@@ -479,10 +428,8 @@ static int mlxsw_thermal_module_temp_get(struct thermal_zone_device *tzdev,
- 		return 0;
+@@ -483,9 +466,14 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ 		      "'get_temp' ops set\n", __func__))
+ 		return;
  
- 	/* Update trip points. */
--	err = mlxsw_thermal_module_trips_update(dev, thermal->core, tz,
--						crit_temp, emerg_temp);
--	if (!err && temp > 0)
--		mlxsw_thermal_tz_score_update(thermal, tzdev, tz->trips, temp);
-+	mlxsw_thermal_module_trips_update(dev, thermal->core, tz,
-+					  crit_temp, emerg_temp);
++	mutex_lock(&tz->lock);
++
++	if (!thermal_zone_device_is_enabled(tz))
++		goto out;
++
+ 	update_temperature(tz);
  
- 	return 0;
+-	thermal_zone_set_trips(tz);
++	__thermal_zone_set_trips(tz);
+ 
+ 	tz->notify_event = event;
+ 
+@@ -493,6 +481,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ 		handle_thermal_trip(tz, count);
+ 
+ 	monitor_thermal_zone(tz);
++out:
++	mutex_unlock(&tz->lock);
  }
-@@ -546,22 +493,6 @@ mlxsw_thermal_module_trip_hyst_set(struct thermal_zone_device *tzdev, int trip,
- 	return 0;
+ EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+ 
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 2241d2d..1571917 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -112,6 +112,8 @@ int thermal_build_list_of_policies(char *buf);
+ 
+ /* Helpers */
+ void thermal_zone_set_trips(struct thermal_zone_device *tz);
++void __thermal_zone_set_trips(struct thermal_zone_device *tz);
++int __thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+ 
+ /* sysfs I/F */
+ int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index 690890f..c65cdce 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -64,27 +64,17 @@ get_thermal_instance(struct thermal_zone_device *tz,
+ }
+ EXPORT_SYMBOL(get_thermal_instance);
+ 
+-/**
+- * thermal_zone_get_temp() - returns the temperature of a thermal zone
+- * @tz: a valid pointer to a struct thermal_zone_device
+- * @temp: a valid pointer to where to store the resulting temperature.
+- *
+- * When a valid thermal zone reference is passed, it will fetch its
+- * temperature and fill @temp.
+- *
+- * Return: On success returns 0, an error code otherwise
+- */
+-int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
++int __thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+ 	int ret = -EINVAL;
+ 	int count;
+ 	int crit_temp = INT_MAX;
+ 	enum thermal_trip_type type;
+ 
+-	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
+-		goto exit;
++	lockdep_assert_held(&tz->lock);
+ 
+-	mutex_lock(&tz->lock);
++	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
++		return -EINVAL;
+ 
+ 	ret = tz->ops->get_temp(tz, temp);
+ 
+@@ -107,35 +97,42 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 			*temp = tz->emul_temperature;
+ 	}
+ 
+-	mutex_unlock(&tz->lock);
+-exit:
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+ 
+ /**
+- * thermal_zone_set_trips - Computes the next trip points for the driver
+- * @tz: a pointer to a thermal zone device structure
++ * thermal_zone_get_temp() - returns the temperature of a thermal zone
++ * @tz: a valid pointer to a struct thermal_zone_device
++ * @temp: a valid pointer to where to store the resulting temperature.
+  *
+- * The function computes the next temperature boundaries by browsing
+- * the trip points. The result is the closer low and high trip points
+- * to the current temperature. These values are passed to the backend
+- * driver to let it set its own notification mechanism (usually an
+- * interrupt).
++ * When a valid thermal zone reference is passed, it will fetch its
++ * temperature and fill @temp.
+  *
+- * It does not return a value
++ * Return: On success returns 0, an error code otherwise
+  */
+-void thermal_zone_set_trips(struct thermal_zone_device *tz)
++int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
++{
++	int ret;
++
++	mutex_lock(&tz->lock);
++	ret = __thermal_zone_get_temp(tz, temp);
++	mutex_unlock(&tz->lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
++
++void __thermal_zone_set_trips(struct thermal_zone_device *tz)
+ {
+ 	int low = -INT_MAX;
+ 	int high = INT_MAX;
+ 	int trip_temp, hysteresis;
+ 	int i, ret;
+ 
+-	mutex_lock(&tz->lock);
++	lockdep_assert_held(&tz->lock);
+ 
+ 	if (!tz->ops->set_trips || !tz->ops->get_trip_hyst)
+-		goto exit;
++		return;
+ 
+ 	for (i = 0; i < tz->num_trips; i++) {
+ 		int trip_low;
+@@ -154,7 +151,7 @@ void thermal_zone_set_trips(struct thermal_zone_device *tz)
+ 
+ 	/* No need to change trip points */
+ 	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
+-		goto exit;
++		return;
+ 
+ 	tz->prev_low_trip = low;
+ 	tz->prev_high_trip = high;
+@@ -169,8 +166,24 @@ void thermal_zone_set_trips(struct thermal_zone_device *tz)
+ 	ret = tz->ops->set_trips(tz, low, high);
+ 	if (ret)
+ 		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
++}
+ 
+-exit:
++/**
++ * thermal_zone_set_trips - Computes the next trip points for the driver
++ * @tz: a pointer to a thermal zone device structure
++ *
++ * The function computes the next temperature boundaries by browsing
++ * the trip points. The result is the closer low and high trip points
++ * to the current temperature. These values are passed to the backend
++ * driver to let it set its own notification mechanism (usually an
++ * interrupt).
++ *
++ * It does not return a value
++ */
++void thermal_zone_set_trips(struct thermal_zone_device *tz)
++{
++	mutex_lock(&tz->lock);
++	__thermal_zone_set_trips(tz);
+ 	mutex_unlock(&tz->lock);
  }
  
--static int mlxsw_thermal_module_trend_get(struct thermal_zone_device *tzdev,
--					  int trip, enum thermal_trend *trend)
--{
--	struct mlxsw_thermal_module *tz = tzdev->devdata;
--	struct mlxsw_thermal *thermal = tz->parent;
--
--	if (trip < 0 || trip >= MLXSW_THERMAL_NUM_TRIPS)
--		return -EINVAL;
--
--	if (tzdev == thermal->tz_highest_dev)
--		return 1;
--
--	*trend = THERMAL_TREND_STABLE;
--	return 0;
--}
--
- static struct thermal_zone_device_ops mlxsw_thermal_module_ops = {
- 	.bind		= mlxsw_thermal_module_bind,
- 	.unbind		= mlxsw_thermal_module_unbind,
-@@ -571,7 +502,6 @@ static struct thermal_zone_device_ops mlxsw_thermal_module_ops = {
- 	.set_trip_temp	= mlxsw_thermal_module_trip_temp_set,
- 	.get_trip_hyst	= mlxsw_thermal_module_trip_hyst_get,
- 	.set_trip_hyst	= mlxsw_thermal_module_trip_hyst_set,
--	.get_trend	= mlxsw_thermal_module_trend_get,
- };
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 0f82010..78c5841 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -49,7 +49,11 @@ static ssize_t
+ mode_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	int enabled = thermal_zone_device_is_enabled(tz);
++	int enabled;
++
++	mutex_lock(&tz->lock);
++	enabled = thermal_zone_device_is_enabled(tz);
++	mutex_unlock(&tz->lock);
  
- static int mlxsw_thermal_gearbox_temp_get(struct thermal_zone_device *tzdev,
-@@ -592,8 +522,6 @@ static int mlxsw_thermal_gearbox_temp_get(struct thermal_zone_device *tzdev,
- 		return err;
- 
- 	mlxsw_reg_mtmp_unpack(mtmp_pl, &temp, NULL, NULL, NULL, NULL);
--	if (temp > 0)
--		mlxsw_thermal_tz_score_update(thermal, tzdev, tz->trips, temp);
- 
- 	*p_temp = temp;
- 	return 0;
-@@ -608,7 +536,6 @@ static struct thermal_zone_device_ops mlxsw_thermal_gearbox_ops = {
- 	.set_trip_temp	= mlxsw_thermal_module_trip_temp_set,
- 	.get_trip_hyst	= mlxsw_thermal_module_trip_hyst_get,
- 	.set_trip_hyst	= mlxsw_thermal_module_trip_hyst_set,
--	.get_trend	= mlxsw_thermal_module_trend_get,
- };
- 
- static int mlxsw_thermal_get_max_state(struct thermal_cooling_device *cdev,
+ 	return sprintf(buf, "%s\n", enabled ? "enabled" : "disabled");
+ }
