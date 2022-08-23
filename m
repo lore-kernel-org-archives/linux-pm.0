@@ -2,48 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED38C32772
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1416C32789
 	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235568AbiHWQWE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Aug 2022 12:22:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35864 "EHLO
+        id S244211AbiHWQWF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Aug 2022 12:22:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38256 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244354AbiHWQVc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:21:32 -0400
+        with ESMTP id S239399AbiHWQVe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:21:34 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6105C333D75
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:41 -0700 (PDT)
-Date:   Tue, 23 Aug 2022 12:42:38 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49D45333D7A
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:43 -0700 (PDT)
+Date:   Tue, 23 Aug 2022 12:42:40 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661258559;
+        s=2020; t=1661258561;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=a7F3P8c969ignjPXRDCGiGRv2IqAV+C+1sVbc0uk4+Q=;
-        b=dCot5nB/bBwibhOeGjhMSJTjFp0Le1mrpXVgy7uiEQA01EBI6ylnHgFUm4CzJ6KpGMjmn+
-        N/k1PlOhttdr5Npfk0EswEZugjNAM9z3P++pjMfXbHoM6sZengflJeicQv8jWJHZ1FdtZI
-        m6o5Yh0tcvuOGJ9UXMjF/84gwpm7QoS9CY5j0MSwSd7uLVBME5RworWNdKqEHihClpTLoR
-        RoPJOaLio9McoavXNcPY4/hS7SDFdhqwdawUnair3YaeV9xVbpeU6CpdoEgpR3WE79QC9q
-        PjiDruyOUQINgi+/xwj8n4qPAebxRJEQ1ihx40wXfcodFpq2hLTnm2dVuSJpqA==
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=pIX8FtSeuGoqLSDrhmYYZlFHssUz7RqSKU3G1q2u1GY=;
+        b=GMT1A1jMrdIjl94ipWQ8oQw0KmIkvPOdhRb2rYdJ7lulnwgJTI2TdQ7e34apgNAB0oew94
+        s+cjWMyAuMa29LPfozyHZkdLjG397E3+dzX19jq5UqS1m/GPQTJActT/+HkEGY6G249JAP
+        mt8dbR4zf74yhCuz8PYPPbk0Txau7Dcexiuz5Kz//GqIXgzVUiAZ4eUOua/zg+T8DSqBIS
+        hU22LksyhPz2tVXhP2gkDglOo/4Gqyb2r0VrWPPaGp4gRxf+8VCJ1/7mtYnFcLeQoxJOby
+        fFp05EktgeoWVCiBOrrgunEPn5I13lfDTbC/FSAeocDG2mPXafLmqz/z38EWZw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661258559;
+        s=2020e; t=1661258561;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=a7F3P8c969ignjPXRDCGiGRv2IqAV+C+1sVbc0uk4+Q=;
-        b=P696XdjTqdq8kEXMiPPd5YE13rifDoV0wI3VoFlKEbAxq8A0FDLHNPMiJbr6ujPsBMUFRl
-        JBwu08hHTr22GPBw==
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=pIX8FtSeuGoqLSDrhmYYZlFHssUz7RqSKU3G1q2u1GY=;
+        b=er7PsOJ0c6qSJSkNB4Lu6TSS5fNFNrf7JtoOe4XP4+0Bp9YpLP4E0s53YjnkayfVt0GbfR
+        ouKgvAaXLPI0joBg==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core: Fix lockdep_assert() warning
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        rui.zhang@intel.com, amitk@kernel.org
+Subject: [thermal: thermal/next] thermal/core: Move the thermal zone lock out
+ of the governors
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
+        amitk@kernel.org
+In-Reply-To: <20220805153834.2510142-4-daniel.lezcano@linaro.org>
+References: <20220805153834.2510142-4-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <166125855850.401.12486120367006542290.tip-bot2@tip-bot2>
+Message-ID: <166125856064.401.5950148854184715977.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -54,42 +60,159 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     2f9d142c93c293b2526d63e4e75716945edf0cd2
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//2f9d142c93c293b2526d63e4e75716945edf0cd2
+Commit-ID:     670a5e356cb6dfc61b87b599eba483af6a3a99ad
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//670a5e356cb6dfc61b87b599eba483af6a3a99ad
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Fri, 12 Aug 2022 15:07:43 +02:00
+AuthorDate:    Fri, 05 Aug 2022 17:38:33 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Wed, 17 Aug 2022 14:09:39 +02:00
 
-thermal/core: Fix lockdep_assert() warning
+thermal/core: Move the thermal zone lock out of the governors
 
-The function thermal_zone_device_is_enabled() must be called with the
-thermal zone lock held. In the resume path, it is called without.
+All the governors throttling ops are taking/releasing the lock at the
+beginning and the end of the function.
 
-As the thermal_zone_device_is_enabled() is also checked in
-thermal_zone_device_update(), do the check in resume() function is
-pointless, except for saving an extra initialization which does not
-hurt if it is done in all the cases.
+We can move the mutex to the throttling call site instead.
 
-Fixes: ca48ad71717dd ("thermal/core: Move the mutex inside the thermal_zone_device_update() function")
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Link: https://lore.kernel.org/r/20220805153834.2510142-4-daniel.lezcano@linaro.org
 ---
- drivers/thermal/thermal_core.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/thermal/gov_bang_bang.c       |  4 +---
+ drivers/thermal/gov_fair_share.c      |  4 +---
+ drivers/thermal/gov_power_allocator.c | 16 ++++++----------
+ drivers/thermal/gov_step_wise.c       |  4 +---
+ drivers/thermal/thermal_core.c        |  2 ++
+ 5 files changed, 11 insertions(+), 19 deletions(-)
 
+diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
+index f0bff2e..a08bbe3 100644
+--- a/drivers/thermal/gov_bang_bang.c
++++ b/drivers/thermal/gov_bang_bang.c
+@@ -96,15 +96,13 @@ static int bang_bang_control(struct thermal_zone_device *tz, int trip)
+ {
+ 	struct thermal_instance *instance;
+ 
+-	mutex_lock(&tz->lock);
++	lockdep_assert_held(&tz->lock);
+ 
+ 	thermal_zone_trip_update(tz, trip);
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
+ 		thermal_cdev_update(instance->cdev);
+ 
+-	mutex_unlock(&tz->lock);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/thermal/gov_fair_share.c b/drivers/thermal/gov_fair_share.c
+index 5d5ddd6..a4ee466 100644
+--- a/drivers/thermal/gov_fair_share.c
++++ b/drivers/thermal/gov_fair_share.c
+@@ -82,7 +82,7 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
+ 	int total_instance = 0;
+ 	int cur_trip_level = get_trip_level(tz);
+ 
+-	mutex_lock(&tz->lock);
++	lockdep_assert_held(&tz->lock);
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+ 		if (instance->trip != trip)
+@@ -112,8 +112,6 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
+ 		mutex_unlock(&cdev->lock);
+ 	}
+ 
+-	mutex_unlock(&tz->lock);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index d3aca23..2d1aeab 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -697,19 +697,19 @@ static void power_allocator_unbind(struct thermal_zone_device *tz)
+ 
+ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
+ {
+-	int ret = 0;
++	int ret;
+ 	int switch_on_temp, control_temp;
+ 	struct power_allocator_params *params = tz->governor_data;
+ 	bool update;
+ 
+-	mutex_lock(&tz->lock);
++	lockdep_assert_held(&tz->lock);
+ 
+ 	/*
+ 	 * We get called for every trip point but we only need to do
+ 	 * our calculations once
+ 	 */
+ 	if (trip != params->trip_max_desired_temperature)
+-		goto out;
++		return 0;
+ 
+ 	ret = tz->ops->get_trip_temp(tz, params->trip_switch_on,
+ 				     &switch_on_temp);
+@@ -718,7 +718,7 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
+ 		tz->passive = 0;
+ 		reset_pid_controller(params);
+ 		allow_maximum_power(tz, update);
+-		goto out;
++		return 0;
+ 	}
+ 
+ 	tz->passive = 1;
+@@ -729,14 +729,10 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
+ 		dev_warn(&tz->device,
+ 			 "Failed to get the maximum desired temperature: %d\n",
+ 			 ret);
+-		goto out;
++		return ret;
+ 	}
+ 
+-	ret = allocate_power(tz, control_temp);
+-
+-	mutex_unlock(&tz->lock);
+-out:
+-	return ret;
++	return allocate_power(tz, control_temp);
+ }
+ 
+ static struct thermal_governor thermal_gov_power_allocator = {
+diff --git a/drivers/thermal/gov_step_wise.c b/drivers/thermal/gov_step_wise.c
+index 597a0eb..cdd3354 100644
+--- a/drivers/thermal/gov_step_wise.c
++++ b/drivers/thermal/gov_step_wise.c
+@@ -160,15 +160,13 @@ static int step_wise_throttle(struct thermal_zone_device *tz, int trip)
+ {
+ 	struct thermal_instance *instance;
+ 
+-	mutex_lock(&tz->lock);
++	lockdep_assert_held(&tz->lock);
+ 
+ 	thermal_zone_trip_update(tz, trip);
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
+ 		thermal_cdev_update(instance->cdev);
+ 
+-	mutex_unlock(&tz->lock);
+-
+ 	return 0;
+ }
+ 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4812170..99c0c19 100644
+index 5408e92..fcac28d 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1438,9 +1438,6 @@ static int thermal_pm_notify(struct notifier_block *nb,
- 	case PM_POST_SUSPEND:
- 		atomic_set(&in_suspend, 0);
- 		list_for_each_entry(tz, &thermal_tz_list, node) {
--			if (!thermal_zone_device_is_enabled(tz))
--				continue;
--
- 			thermal_zone_device_init(tz);
- 			thermal_zone_device_update(tz,
- 						   THERMAL_EVENT_UNSPECIFIED);
+@@ -311,8 +311,10 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
+ 
+ static void handle_non_critical_trips(struct thermal_zone_device *tz, int trip)
+ {
++	mutex_lock(&tz->lock);
+ 	tz->governor ? tz->governor->throttle(tz, trip) :
+ 		       def_governor->throttle(tz, trip);
++	mutex_unlock(&tz->lock);
+ }
+ 
+ void thermal_zone_device_critical(struct thermal_zone_device *tz)
