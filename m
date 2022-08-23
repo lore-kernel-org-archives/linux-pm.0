@@ -2,55 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CD48C32789
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75473C32774
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243943AbiHWQWo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Aug 2022 12:22:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40984 "EHLO
+        id S244718AbiHWQWq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Aug 2022 12:22:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242872AbiHWQW0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:22:26 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 927AF275BA9
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:43:11 -0700 (PDT)
-Date:   Tue, 23 Aug 2022 12:43:08 -0000
+        with ESMTP id S243824AbiHWQW1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:22:27 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 896839F0E7
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:43:13 -0700 (PDT)
+Date:   Tue, 23 Aug 2022 12:43:10 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661258589;
+        s=2020; t=1661258591;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=EiGEcSOEFp0U6AU1EZOeSVCxcun/ED8z0a9DROvzrPs=;
-        b=fjWG+uVj0MS+x9RNjMbqpqH8FG4PBArXJs26adNTqu+evarRnqzzpq0kkbaj4LHf6s++oI
-        mutQxE7X/xA61oqUHEwSH1EqDeydpgXPPZcbRE+PMIJqfY2WMNh1jx47I18hTX/XHMWTc8
-        ynt3lJ+OkvlYuB+dhMF2Ya29Ckt0Q84W5wJXGXwlzMnMwLP2prjyenn2FFQG2F2MR5mJ6I
-        pbmC5ltd0jZuLwuvYzLVrXMPT5MYlyV3oYwxYR6bmfiwATmLzvxQQ6JbPOCzgA1CDfnxqa
-        gvM+JunRwocRcZOXSBTcDJL6Mkxns0vZF6MXJbthGlwY2MWLkNagDP+fr3qIMA==
+        bh=OTlO5H+z1kTX92IS1WWaRF7VE+/lmEmATqdZ1RMrVIU=;
+        b=Gd0KEFwGr+ZhibaxyTj7Z2VPq5MLSRU6DIAVFq9iBPz1yJEOsRlzRu/yCdXTPqwn+72qWQ
+        gLYAEgRVlRtHBTmzTbHkdI0nZKEbGPeu0u09NTURUdvCO5NJhR67l34/Yjb5oYpqysXSjD
+        pJKmpvOiBcsXyAXc8eCsfaOZ8tDvOsOG9r110dvv+wXazRT7JFCfJmQ8BaLG/T8Y+daQ5o
+        fNIs9UDyYDMtvXRShYv4Q4wUjw4DSMBulsdcaxXRyK3TK+tW4+hlSxLtxVKAJzVIyfPIfm
+        BkWMKl5Wn4dFWmwNKw9OWEP79IMoLJw4oTgkRKXa5MItO77C1gMRr73w8LIqAg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661258589;
+        s=2020e; t=1661258591;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=EiGEcSOEFp0U6AU1EZOeSVCxcun/ED8z0a9DROvzrPs=;
-        b=oFithhKOxVd97TnRCZOeOXdWloNKBN/Iepvg16rV0ILc7AldnlIdBK5YIw2Y46KSKga26s
-        VGzZgpdPVFWp+DDw==
+        bh=OTlO5H+z1kTX92IS1WWaRF7VE+/lmEmATqdZ1RMrVIU=;
+        b=TPa2Ss3H9imowwRNRa41pHJaWgaowIP7HycUgonEFgAv6MgGxuSRv2sRIPvSgB/CxfkZkO
+        3jL6Su2Jv3keXWDw==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/qcom: Switch to new of API
+Subject: [thermal: thermal/next] thermal/drivers/sprd: Switch to new of API
 Cc:     Daniel Lezcano <daniel.lezcano@linexp.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220804224349.1926752-12-daniel.lezcano@linexp.org>
-References: <20220804224349.1926752-12-daniel.lezcano@linexp.org>
+In-Reply-To: <20220804224349.1926752-10-daniel.lezcano@linexp.org>
+References: <20220804224349.1926752-10-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
-Message-ID: <166125858857.401.10215079252799174884.tip-bot2@tip-bot2>
+Message-ID: <166125859054.401.13497850415503854828.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,14 +60,14 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     ca1b9a9eb3fdbb9aa39d0c174391af694ae77671
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ca1b9a9eb3fdbb9aa39d0c174391af694ae77671
+Commit-ID:     7f689a2ef4f6422b200682f80be225c1f61218f7
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7f689a2ef4f6422b200682f80be225c1f61218f7
 Author:        Daniel Lezcano <daniel.lezcano@linexp.org>
-AuthorDate:    Fri, 05 Aug 2022 00:43:27 +02:00
+AuthorDate:    Fri, 05 Aug 2022 00:43:25 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Wed, 17 Aug 2022 14:09:38 +02:00
 
-thermal/drivers/qcom: Switch to new of API
+thermal/drivers/sprd: Switch to new of API
 
 The thermal OF code has a new API allowing to migrate the OF
 initialization to a simpler approach. The ops are no longer device
@@ -78,161 +77,60 @@ Convert the ops to the thermal_zone_device_ops format and use the new
 API to register the thermal zone with these generic ops.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Link: https://lore.kernel.org/r/20220804224349.1926752-12-daniel.lezcano@linexp.org
+Link: https://lore.kernel.org/r/20220804224349.1926752-10-daniel.lezcano@linexp.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/qcom/qcom-spmi-adc-tm5.c    | 19 +++++++++----------
- drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 12 ++++++------
- drivers/thermal/qcom/tsens.c                | 16 ++++++++--------
- 3 files changed, 23 insertions(+), 24 deletions(-)
+ drivers/thermal/sprd_thermal.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-index 073943c..add6f40 100644
---- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-+++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-@@ -357,9 +357,9 @@ static irqreturn_t adc_tm5_gen2_isr(int irq, void *data)
- 	return IRQ_HANDLED;
+diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
+index fff80fc..ac88451 100644
+--- a/drivers/thermal/sprd_thermal.c
++++ b/drivers/thermal/sprd_thermal.c
+@@ -204,9 +204,9 @@ static int sprd_thm_temp_to_rawdata(int temp, struct sprd_thermal_sensor *sen)
+ 	return clamp(val, val, (u32)(SPRD_THM_RAW_DATA_HIGH - 1));
  }
  
--static int adc_tm5_get_temp(void *data, int *temp)
-+static int adc_tm5_get_temp(struct thermal_zone_device *tz, int *temp)
+-static int sprd_thm_read_temp(void *devdata, int *temp)
++static int sprd_thm_read_temp(struct thermal_zone_device *tz, int *temp)
  {
--	struct adc_tm5_channel *channel = data;
-+	struct adc_tm5_channel *channel = tz->devdata;
- 	int ret;
+-	struct sprd_thermal_sensor *sen = devdata;
++	struct sprd_thermal_sensor *sen = tz->devdata;
+ 	u32 data;
  
- 	if (!channel || !channel->iio)
-@@ -639,9 +639,9 @@ config_fail:
- 	return ret;
- }
- 
--static int adc_tm5_set_trips(void *data, int low, int high)
-+static int adc_tm5_set_trips(struct thermal_zone_device *tz, int low, int high)
- {
--	struct adc_tm5_channel *channel = data;
-+	struct adc_tm5_channel *channel = tz->devdata;
- 	struct adc_tm5_chip *chip;
- 	int ret;
- 
-@@ -660,7 +660,7 @@ static int adc_tm5_set_trips(void *data, int low, int high)
- 	return ret;
- }
- 
--static struct thermal_zone_of_device_ops adc_tm5_thermal_ops = {
-+static const struct thermal_zone_device_ops adc_tm5_thermal_ops = {
- 	.get_temp = adc_tm5_get_temp,
- 	.set_trips = adc_tm5_set_trips,
- };
-@@ -672,11 +672,10 @@ static int adc_tm5_register_tzd(struct adc_tm5_chip *adc_tm)
- 
- 	for (i = 0; i < adc_tm->nchannels; i++) {
- 		adc_tm->channels[i].chip = adc_tm;
--
--		tzd = devm_thermal_zone_of_sensor_register(adc_tm->dev,
--							   adc_tm->channels[i].channel,
--							   &adc_tm->channels[i],
--							   &adc_tm5_thermal_ops);
-+		tzd = devm_thermal_of_zone_register(adc_tm->dev,
-+						    adc_tm->channels[i].channel,
-+						    &adc_tm->channels[i],
-+						    &adc_tm5_thermal_ops);
- 		if (IS_ERR(tzd)) {
- 			if (PTR_ERR(tzd) == -ENODEV) {
- 				dev_warn(adc_tm->dev, "thermal sensor on channel %d is not used\n",
-diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-index 770f82c..be785ab 100644
---- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-@@ -186,9 +186,9 @@ static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
+ 	data = readl(sen->data->base + SPRD_THM_TEMP(sen->id)) &
+@@ -217,7 +217,7 @@ static int sprd_thm_read_temp(void *devdata, int *temp)
  	return 0;
  }
  
--static int qpnp_tm_get_temp(void *data, int *temp)
-+static int qpnp_tm_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct qpnp_tm_chip *chip = data;
-+	struct qpnp_tm_chip *chip = tz->devdata;
- 	int ret, mili_celsius;
- 
- 	if (!temp)
-@@ -263,9 +263,9 @@ skip:
- 	return qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
- }
- 
--static int qpnp_tm_set_trip_temp(void *data, int trip, int temp)
-+static int qpnp_tm_set_trip_temp(struct thermal_zone_device *tz, int trip, int temp)
- {
--	struct qpnp_tm_chip *chip = data;
-+	struct qpnp_tm_chip *chip = tz->devdata;
- 	const struct thermal_trip *trip_points;
- 	int ret;
- 
-@@ -283,7 +283,7 @@ static int qpnp_tm_set_trip_temp(void *data, int trip, int temp)
- 	return ret;
- }
- 
--static const struct thermal_zone_of_device_ops qpnp_tm_sensor_ops = {
-+static const struct thermal_zone_device_ops qpnp_tm_sensor_ops = {
- 	.get_temp = qpnp_tm_get_temp,
- 	.set_trip_temp = qpnp_tm_set_trip_temp,
+-static const struct thermal_zone_of_device_ops sprd_thm_ops = {
++static const struct thermal_zone_device_ops sprd_thm_ops = {
+ 	.get_temp = sprd_thm_read_temp,
  };
-@@ -446,7 +446,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 	 * read the trip points. get_temp() returns the default temperature
- 	 * before the hardware initialization is completed.
- 	 */
--	chip->tz_dev = devm_thermal_zone_of_sensor_register(
-+	chip->tz_dev = devm_thermal_of_zone_register(
- 		&pdev->dev, 0, chip, &qpnp_tm_sensor_ops);
- 	if (IS_ERR(chip->tz_dev)) {
- 		dev_err(&pdev->dev, "failed to register sensor\n");
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index e49f58e..b1b1000 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -532,9 +532,9 @@ static irqreturn_t tsens_irq_thread(int irq, void *data)
- 	return IRQ_HANDLED;
- }
  
--static int tsens_set_trips(void *_sensor, int low, int high)
-+static int tsens_set_trips(struct thermal_zone_device *tz, int low, int high)
- {
--	struct tsens_sensor *s = _sensor;
-+	struct tsens_sensor *s = tz->devdata;
- 	struct tsens_priv *priv = s->priv;
- 	struct device *dev = priv->dev;
- 	struct tsens_irq_data d;
-@@ -925,9 +925,9 @@ err_put_device:
- 	return ret;
- }
+@@ -408,10 +408,10 @@ static int sprd_thm_probe(struct platform_device *pdev)
  
--static int tsens_get_temp(void *data, int *temp)
-+static int tsens_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct tsens_sensor *s = data;
-+	struct tsens_sensor *s = tz->devdata;
- 	struct tsens_priv *priv = s->priv;
+ 		sprd_thm_sensor_init(thm, sen);
  
- 	return priv->ops->get_temp(s, temp);
-@@ -991,7 +991,7 @@ static const struct of_device_id tsens_table[] = {
- };
- MODULE_DEVICE_TABLE(of, tsens_table);
+-		sen->tzd = devm_thermal_zone_of_sensor_register(sen->dev,
+-								sen->id,
+-								sen,
+-								&sprd_thm_ops);
++		sen->tzd = devm_thermal_of_zone_register(sen->dev,
++							 sen->id,
++							 sen,
++							 &sprd_thm_ops);
+ 		if (IS_ERR(sen->tzd)) {
+ 			dev_err(&pdev->dev, "register thermal zone failed %d\n",
+ 				sen->id);
+@@ -523,8 +523,8 @@ static int sprd_thm_remove(struct platform_device *pdev)
  
--static const struct thermal_zone_of_device_ops tsens_of_ops = {
-+static const struct thermal_zone_device_ops tsens_of_ops = {
- 	.get_temp = tsens_get_temp,
- 	.set_trips = tsens_set_trips,
- };
-@@ -1044,9 +1044,9 @@ static int tsens_register(struct tsens_priv *priv)
+ 	for (i = 0; i < thm->nr_sensors; i++) {
+ 		sprd_thm_toggle_sensor(thm->sensor[i], false);
+-		devm_thermal_zone_of_sensor_unregister(&pdev->dev,
+-						       thm->sensor[i]->tzd);
++		devm_thermal_of_zone_unregister(&pdev->dev,
++						thm->sensor[i]->tzd);
+ 	}
  
- 	for (i = 0;  i < priv->num_sensors; i++) {
- 		priv->sensor[i].priv = priv;
--		tzd = devm_thermal_zone_of_sensor_register(priv->dev, priv->sensor[i].hw_id,
--							   &priv->sensor[i],
--							   &tsens_of_ops);
-+		tzd = devm_thermal_of_zone_register(priv->dev, priv->sensor[i].hw_id,
-+						    &priv->sensor[i],
-+						    &tsens_of_ops);
- 		if (IS_ERR(tzd))
- 			continue;
- 		priv->sensor[i].tzd = tzd;
+ 	clk_disable_unprepare(thm->clk);
