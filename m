@@ -2,72 +2,74 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 597AAC32789
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2186C32772
 	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244492AbiHWQWi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S244398AbiHWQWi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 23 Aug 2022 12:22:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37584 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41876 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244398AbiHWQWK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:22:10 -0400
+        with ESMTP id S239989AbiHWQWR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:22:17 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AD8C9DF8E
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:43:03 -0700 (PDT)
-Date:   Tue, 23 Aug 2022 12:43:00 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A975216D2FE
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:43:05 -0700 (PDT)
+Date:   Tue, 23 Aug 2022 12:43:02 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661258581;
+        s=2020; t=1661258583;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OiyyrbShmBw+IHpQiRmx5b1NlzQUEIy2NQP7GuHR5U8=;
-        b=2gRTYkFHy5g7F9aN4IzW50TmOOEaKpxTkXiJgKPRZ7ppnq0wCYaTVwKRg2Wh08oTLUnUK3
-        87K4xcxlQ8gKHrYISFVy0j4jcdyeaNNuq5TEKJAOmdGEzN09l+tHQVHvPltHTbz5g/MG78
-        8th4V+nysmI6/+S7muhE7kbhVkM7YYb+t8nG7wTQTMIXA0eVRW5BHWKW20TpPRuIWY6zAy
-        uHCW+gMHMn2Qrqsgoh8Fdca2ylWBzIEK7WOuO3sjmzg6guBBm3vrxmKppiNCGRh71PU4VK
-        +fCi//z+851Go9tBtnKL3b6+Y2yUCbEeyE7U7XsecYMLuaANxN6RKDxm4rG1iw==
+        bh=Cttd387qSUjSGsdiPZnUrVGkZmvBx76p5qfPyiDa0iI=;
+        b=DT41Dv0FpRX9raZVU/lIIH0KBYvnOAUWkCcl5WgLXQgzi54xeEMTKQusToUaAMLzhXIJnL
+        kWIjedkW2AbdCgCddrYpmC7WFOxpUt24+63HiOwifopFw4bWEQ3saZFvjMzIO2ckoHBx8Q
+        /q/WISEQlf6db2eCDyYAihLT3L429AWce2Y8SKSQGcJAvr/ZVlDjwl3KQY00DvIZFTOXiB
+        QsmY8qcMwpsQrezDojiKUYRoODIuQwtzMtqdhTaZFOhxpULGTO07zYDy82QeosH+2iVLQu
+        RTekIpBIp2ANRxutAe3675Dm3q5IIard2ResVWSC4YqP3W0DsYuALoVRczizBQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661258581;
+        s=2020e; t=1661258583;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OiyyrbShmBw+IHpQiRmx5b1NlzQUEIy2NQP7GuHR5U8=;
-        b=vz5jkDV/0aAw605NG8kSjXhKHQ+7ZkT+HKCLz+sgoAWf1xt0n7bY6Z7KgJZNnYNJLRkKnM
-        XfoYQG/lskAU/EBA==
+        bh=Cttd387qSUjSGsdiPZnUrVGkZmvBx76p5qfPyiDa0iI=;
+        b=L4FKc/19JMqlfP9rku/8qRBGy4D/omMqqon+EI0gx0Ev2M0vY/MEySHeKyMCOICNgwXoz9
+        W0yauJ8MkuGxhWCA==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/qoriq: Switch to new of API
+Subject: [thermal: thermal/next] thermal/drivers/rcar: Switch to new of API
 Cc:     Daniel Lezcano <daniel.lezcano@linexp.org>,
+        niklas.soderlund+renesas@ragnatech.se,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220804224349.1926752-20-daniel.lezcano@linexp.org>
-References: <20220804224349.1926752-20-daniel.lezcano@linexp.org>
+In-Reply-To: <20220804224349.1926752-18-daniel.lezcano@linexp.org>
+References: <20220804224349.1926752-18-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
-Message-ID: <166125858057.401.4503062938284781631.tip-bot2@tip-bot2>
+Message-ID: <166125858255.401.12112479491655913093.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     3e7494b41c41959cd68a3f652e286c1fb7c626fc
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//3e7494b41c41959cd68a3f652e286c1fb7c626fc
+Commit-ID:     2ebd4f2f2ecfde86ce490f02b28b3282d93aa405
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//2ebd4f2f2ecfde86ce490f02b28b3282d93aa405
 Author:        Daniel Lezcano <daniel.lezcano@linexp.org>
-AuthorDate:    Fri, 05 Aug 2022 00:43:35 +02:00
+AuthorDate:    Fri, 05 Aug 2022 00:43:33 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Wed, 17 Aug 2022 14:09:38 +02:00
 
-thermal/drivers/qoriq: Switch to new of API
+thermal/drivers/rcar: Switch to new of API
 
 The thermal OF code has a new API allowing to migrate the OF
 initialization to a simpler approach. The ops are no longer device
@@ -77,47 +79,117 @@ Convert the ops to the thermal_zone_device_ops format and use the new
 API to register the thermal zone with these generic ops.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
-Link: https://lore.kernel.org/r/20220804224349.1926752-20-daniel.lezcano@linexp.org
+Tested-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
+Link: https://lore.kernel.org/r/20220804224349.1926752-18-daniel.lezcano@line=
+xp.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/qoriq_thermal.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 16 ++++++++--------
+ drivers/thermal/rcar_thermal.c      | 13 +++----------
+ 2 files changed, 11 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 73049f9..d111e21 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -82,9 +82,9 @@ static struct qoriq_tmu_data *qoriq_sensor_to_data(struct qoriq_sensor *s)
- 	return container_of(s, struct qoriq_tmu_data, sensor[s->id]);
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_=
+thermal.c
+index cda7c52..4c1c6f8 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -164,9 +164,9 @@ static int rcar_gen3_thermal_round(int temp)
+ 	return result * RCAR3_THERMAL_GRAN;
  }
- 
--static int tmu_get_temp(void *p, int *temp)
-+static int tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+=20
+-static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
++static int rcar_gen3_thermal_get_temp(struct thermal_zone_device *tz, int *t=
+emp)
  {
--	struct qoriq_sensor *qsensor = p;
-+	struct qoriq_sensor *qsensor = tz->devdata;
- 	struct qoriq_tmu_data *qdata = qoriq_sensor_to_data(qsensor);
- 	u32 val;
- 	/*
-@@ -122,7 +122,7 @@ static int tmu_get_temp(void *p, int *temp)
+-	struct rcar_gen3_thermal_tsc *tsc =3D devdata;
++	struct rcar_gen3_thermal_tsc *tsc =3D tz->devdata;
+ 	int mcelsius, val;
+ 	int reg;
+=20
+@@ -203,9 +203,9 @@ static int rcar_gen3_thermal_mcelsius_to_temp(struct rcar=
+_gen3_thermal_tsc *tsc,
+ 	return INT_FIXPT(val);
+ }
+=20
+-static int rcar_gen3_thermal_set_trips(void *devdata, int low, int high)
++static int rcar_gen3_thermal_set_trips(struct thermal_zone_device *tz, int l=
+ow, int high)
+ {
+-	struct rcar_gen3_thermal_tsc *tsc =3D devdata;
++	struct rcar_gen3_thermal_tsc *tsc =3D tz->devdata;
+ 	u32 irqmsk =3D 0;
+=20
+ 	if (low !=3D -INT_MAX) {
+@@ -225,7 +225,7 @@ static int rcar_gen3_thermal_set_trips(void *devdata, int=
+ low, int high)
  	return 0;
  }
- 
--static const struct thermal_zone_of_device_ops tmu_tz_ops = {
-+static const struct thermal_zone_device_ops tmu_tz_ops = {
- 	.get_temp = tmu_get_temp,
+=20
+-static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops =3D {
++static struct thermal_zone_device_ops rcar_gen3_tz_of_ops =3D {
+ 	.get_temp	=3D rcar_gen3_thermal_get_temp,
+ 	.set_trips	=3D rcar_gen3_thermal_set_trips,
  };
- 
-@@ -146,9 +146,9 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 
- 		sensor->id = id;
- 
--		tzd = devm_thermal_zone_of_sensor_register(dev, id,
--							   sensor,
--							   &tmu_tz_ops);
-+		tzd = devm_thermal_of_zone_register(dev, id,
-+						    sensor,
-+						    &tmu_tz_ops);
- 		ret = PTR_ERR_OR_ZERO(tzd);
- 		if (ret) {
- 			if (ret == -ENODEV)
+@@ -508,8 +508,8 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+ 	for (i =3D 0; i < priv->num_tscs; i++) {
+ 		struct rcar_gen3_thermal_tsc *tsc =3D priv->tscs[i];
+=20
+-		zone =3D devm_thermal_zone_of_sensor_register(dev, i, tsc,
+-							    &rcar_gen3_tz_of_ops);
++		zone =3D devm_thermal_of_zone_register(dev, i, tsc,
++						     &rcar_gen3_tz_of_ops);
+ 		if (IS_ERR(zone)) {
+ 			dev_err(dev, "Sensor %u: Can't register thermal zone\n", i);
+ 			ret =3D PTR_ERR(zone);
+@@ -560,7 +560,7 @@ static int __maybe_unused rcar_gen3_thermal_resume(struct=
+ device *dev)
+=20
+ 		priv->thermal_init(tsc);
+ 		if (zone->ops->set_trips)
+-			rcar_gen3_thermal_set_trips(tsc, zone->prev_low_trip,
++			rcar_gen3_thermal_set_trips(zone, zone->prev_low_trip,
+ 						    zone->prev_high_trip);
+ 	}
+=20
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 1d729ed..4df42d7 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -271,13 +271,6 @@ static int rcar_thermal_get_current_temp(struct rcar_the=
+rmal_priv *priv,
+ 	return 0;
+ }
+=20
+-static int rcar_thermal_of_get_temp(void *data, int *temp)
+-{
+-	struct rcar_thermal_priv *priv =3D data;
+-
+-	return rcar_thermal_get_current_temp(priv, temp);
+-}
+-
+ static int rcar_thermal_get_temp(struct thermal_zone_device *zone, int *temp)
+ {
+ 	struct rcar_thermal_priv *priv =3D rcar_zone_to_priv(zone);
+@@ -323,8 +316,8 @@ static int rcar_thermal_get_trip_temp(struct thermal_zone=
+_device *zone,
+ 	return 0;
+ }
+=20
+-static const struct thermal_zone_of_device_ops rcar_thermal_zone_of_ops =3D {
+-	.get_temp	=3D rcar_thermal_of_get_temp,
++static struct thermal_zone_device_ops rcar_thermal_zone_of_ops =3D {
++	.get_temp	=3D rcar_thermal_get_temp,
+ };
+=20
+ static struct thermal_zone_device_ops rcar_thermal_zone_ops =3D {
+@@ -534,7 +527,7 @@ static int rcar_thermal_probe(struct platform_device *pde=
+v)
+ 			goto error_unregister;
+=20
+ 		if (chip->use_of_thermal) {
+-			priv->zone =3D devm_thermal_zone_of_sensor_register(
++			priv->zone =3D devm_thermal_of_zone_register(
+ 						dev, i, priv,
+ 						&rcar_thermal_zone_of_ops);
+ 		} else {
