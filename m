@@ -2,55 +2,57 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5937CC32774
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7DFEC32772
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Aug 2022 16:22:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244606AbiHWQW0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Aug 2022 12:22:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40978 "EHLO
+        id S244639AbiHWQWa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Aug 2022 12:22:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41344 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244596AbiHWQV5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:21:57 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA48716D2DD
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:50 -0700 (PDT)
-Date:   Tue, 23 Aug 2022 12:42:48 -0000
+        with ESMTP id S244650AbiHWQWC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2022 12:22:02 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 091D7333D74
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2022 05:42:40 -0700 (PDT)
+Date:   Tue, 23 Aug 2022 12:42:37 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661258569;
+        s=2020; t=1661258558;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ldOfovtTQW7wKpXVp3AHSJyTTGUXDg7fHyZssKArpfY=;
-        b=PNIUDRGDERaEICAIV/MjZ3UgcwQXFrHpA1aH0buiJrHi9EzQwSD9yL5wjwdqGCEutOZ3oG
-        P9RXOid5WqYGt6eNeP5ISrO5FiSyspLYfCKfBbUqCC7/0kaUjAP2op0qe96v8ZZbz6ke9C
-        dsSeK5873ke8rmmNNZWh3edYs0rlnMn7qN4/jxbmPqaQch5nkZ5AJC1D4rbgIh+zDbu6nD
-        /Zsgl5TjuHBnEtWnKboQk6IPmlB6RoQtiTdnHZj2655WMjNYFrkuka3sg8K0zeO7wojX9X
-        stGLy7KpHv/UO/VLiBRG5C2RH+lw14vVS777wQZ5/MfCKQ5LhAV59CRxjcjfiw==
+        bh=3KK1L5CoiujgW7FRP+H5PVkW4nCiNtLxCeiyyDWKDys=;
+        b=SWMJjgj5+mFzDegSTD1FglHw5lBscWwGXKfhqpo1e3xfN7NDRx1vhtDpkDpV3eR1bshQS0
+        1LjhHoHHgS+izgaG/9FGlR6w8SM6y4yvVs9i9Di/QZwoIPRj5uvgpIBEbY84VCYXtl9VPY
+        nSzf69DGNoR99a6k0sxTRAl1TbqC6jMMt6ZQyo5Td9X2ov6ZyRmlEqBr9Qpqrf8PzLWtw5
+        T9cwH8PPRbUEpbOIUpkE0/e6e/hrf56Z6UPfRm3NCsA0uTYlxVKJ8OzRkHHayCCOCmuzcm
+        hDt+wlhlUDtuuXrSgUaVCOU/FFfoB32quAJH2TXBXE+kF4mLUuxNpnLkaCspMw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661258569;
+        s=2020e; t=1661258558;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ldOfovtTQW7wKpXVp3AHSJyTTGUXDg7fHyZssKArpfY=;
-        b=dk590bktl/id0U0xktVGiq9x105lKfZkd70MU2MUjttuzz/qbgUQzFxbbW2oCTYTPd9TTa
-        bz1RMTaX8WuLdEAA==
+        bh=3KK1L5CoiujgW7FRP+H5PVkW4nCiNtLxCeiyyDWKDys=;
+        b=wYRbiIeybR0otTLBSuMw0V4TFVt/01YquUep7zQeajjHatr9IJ5HIdBZiyyAjA2iIKA/fn
+        pxc5evZgJz2GaLDQ==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/samsung: Switch to new of thermal API
-Cc:     Daniel Lezcano <daniel.lezcano@linexp.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220804224349.1926752-32-daniel.lezcano@linexp.org>
-References: <20220804224349.1926752-32-daniel.lezcano@linexp.org>
+Subject: [thermal: thermal/next] Revert "mlxsw: core: Add the hottest thermal
+ zone detection"
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Vadim Pasternak <vadimp@nvidia.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Ido Schimmel <idosch@nvidia.com>, rui.zhang@intel.com,
+        amitk@kernel.org
+In-Reply-To: <20220817153040.2464245-1-daniel.lezcano@linaro.org>
+References: <20220817153040.2464245-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <166125856815.401.12316713098186456437.tip-bot2@tip-bot2>
+Message-ID: <166125855725.401.3474590525627956835.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,118 +63,207 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     7ea98f70c73ea37d379a76a69fa71653382a1724
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7ea98f70c73ea37d379a76a69fa71653382a1724
-Author:        Daniel Lezcano <daniel.lezcano@linexp.org>
-AuthorDate:    Fri, 05 Aug 2022 00:43:47 +02:00
+Commit-ID:     06f36055121769b9eb9b7d28c7499d1cc8269dc3
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//06f36055121769b9eb9b7d28c7499d1cc8269dc3
+Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
+AuthorDate:    Wed, 17 Aug 2022 17:30:40 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Wed, 17 Aug 2022 14:09:39 +02:00
+CommitterDate: Wed, 17 Aug 2022 20:32:27 +02:00
 
-thermal/drivers/samsung: Switch to new of thermal API
+Revert "mlxsw: core: Add the hottest thermal zone detection"
 
-The thermal OF code has a new API allowing to migrate the OF
-initialization to a simpler approach. The ops are no longer device
-tree specific and are the generic ones provided by the core code.
+This reverts commit 2dc2f760052da4925482ecdcdc5c94d4a599153c and
+commit 6f73862fabd93213de157d9cc6ef76084311c628.
 
-Convert the ops to the thermal_zone_device_ops format and use the new
-API to register the thermal zone with these generic ops.
+As discussed in the thread:
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Link: https://lore.kernel.org/r/20220804224349.1926752-32-daniel.lezcano@linexp.org
+https://lore.kernel.org/all/f3c62ebe-7d59-c537-a010-bff366c8aeba@linaro.org/
+
+the feature provided by commits 2dc2f760052da and 6f73862fabd93 is
+actually already handled by the thermal framework via the cooling
+device state aggregation, thus all this code is pointless.
+
+The revert conflicts with the following changes:
+ - 7f4957be0d5b8: thermal: Use mode helpers in drivers
+ - 6a79507cfe94c: mlxsw: core: Extend thermal module with per QSFP module thermal zones
+
+These conflicts were fixed and the resulting changes are in this patch.
+
+Both reverts are in the same change as requested by Ido Schimmel:
+
+https://lore.kernel.org/all/Yvz7+RUsmVco3Xpj@shredder/
+
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Tested-by: Vadim Pasternak <vadimp@nvidia.com>
+Acked-by: Jakub Kicinski <kuba@kernel.org>
+Reviewed-by: Ido Schimmel <idosch@nvidia.com>
+Link: https://lore.kernel.org/r/20220817153040.2464245-1-daniel.lezcano@linaro.org
 ---
- drivers/thermal/samsung/exynos_tmu.c | 24 ++++++++++--------------
- 1 file changed, 10 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/mellanox/mlxsw/core_thermal.c | 77 +-------------
+ 1 file changed, 2 insertions(+), 75 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index f4ab4c5..51874d0 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -650,9 +650,9 @@ static void exynos7_tmu_control(struct platform_device *pdev, bool on)
- 	writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
- }
- 
--static int exynos_get_temp(void *p, int *temp)
-+static int exynos_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	struct exynos_tmu_data *data = p;
-+	struct exynos_tmu_data *data = tz->devdata;
- 	int value, ret = 0;
- 
- 	if (!data || !data->tmu_read)
-@@ -728,9 +728,9 @@ static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
- 	writel(val, data->base + emul_con);
- }
- 
--static int exynos_tmu_set_emulation(void *drv_data, int temp)
-+static int exynos_tmu_set_emulation(struct thermal_zone_device *tz, int temp)
- {
--	struct exynos_tmu_data *data = drv_data;
-+	struct exynos_tmu_data *data = tz->devdata;
- 	int ret = -EINVAL;
- 
- 	if (data->soc == SOC_ARCH_EXYNOS4210)
-@@ -750,7 +750,7 @@ out:
- }
- #else
- #define exynos4412_tmu_set_emulation NULL
--static int exynos_tmu_set_emulation(void *drv_data, int temp)
-+static int exynos_tmu_set_emulation(struct thermal_zone_device *tz, int temp)
- 	{ return -EINVAL; }
- #endif /* CONFIG_THERMAL_EMULATION */
- 
-@@ -997,7 +997,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 	return 0;
- }
- 
--static const struct thermal_zone_of_device_ops exynos_sensor_ops = {
-+static const struct thermal_zone_device_ops exynos_sensor_ops = {
- 	.get_temp = exynos_get_temp,
- 	.set_emul_temp = exynos_tmu_set_emulation,
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
+index 3548fe1..987fe5c 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
+@@ -21,7 +21,6 @@
+ #define MLXSW_THERMAL_ASIC_TEMP_HOT	105000	/* 105C */
+ #define MLXSW_THERMAL_HYSTERESIS_TEMP	5000	/* 5C */
+ #define MLXSW_THERMAL_MODULE_TEMP_SHIFT	(MLXSW_THERMAL_HYSTERESIS_TEMP * 2)
+-#define MLXSW_THERMAL_TEMP_SCORE_MAX	GENMASK(31, 0)
+ #define MLXSW_THERMAL_MAX_STATE	10
+ #define MLXSW_THERMAL_MIN_STATE	2
+ #define MLXSW_THERMAL_MAX_DUTY	255
+@@ -101,8 +100,6 @@ struct mlxsw_thermal {
+ 	struct thermal_cooling_device *cdevs[MLXSW_MFCR_PWMS_MAX];
+ 	u8 cooling_levels[MLXSW_THERMAL_MAX_STATE + 1];
+ 	struct mlxsw_thermal_trip trips[MLXSW_THERMAL_NUM_TRIPS];
+-	unsigned int tz_highest_score;
+-	struct thermal_zone_device *tz_highest_dev;
+ 	struct mlxsw_thermal_area line_cards[];
  };
-@@ -1091,8 +1091,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	 * data->tzd must be registered before calling exynos_tmu_initialize(),
- 	 * requesting irq and calling exynos_tmu_control().
- 	 */
--	data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
--						    &exynos_sensor_ops);
-+	data->tzd = devm_thermal_of_zone_register(&pdev->dev, 0, data,
-+						  &exynos_sensor_ops);
- 	if (IS_ERR(data->tzd)) {
- 		ret = PTR_ERR(data->tzd);
- 		if (ret != -EPROBE_DEFER)
-@@ -1104,21 +1104,19 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	ret = exynos_tmu_initialize(pdev);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to initialize TMU\n");
--		goto err_thermal;
-+		goto err_sclk;
- 	}
  
- 	ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
- 		IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
--		goto err_thermal;
-+		goto err_sclk;
- 	}
- 
- 	exynos_tmu_control(pdev, true);
+@@ -193,34 +190,6 @@ mlxsw_thermal_module_trips_update(struct device *dev, struct mlxsw_core *core,
  	return 0;
+ }
  
--err_thermal:
--	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
- err_sclk:
- 	clk_disable_unprepare(data->sclk);
- err_clk:
-@@ -1136,9 +1134,7 @@ err_sensor:
- static int exynos_tmu_remove(struct platform_device *pdev)
+-static void mlxsw_thermal_tz_score_update(struct mlxsw_thermal *thermal,
+-					  struct thermal_zone_device *tzdev,
+-					  struct mlxsw_thermal_trip *trips,
+-					  int temp)
+-{
+-	struct mlxsw_thermal_trip *trip = trips;
+-	unsigned int score, delta, i, shift = 1;
+-
+-	/* Calculate thermal zone score, if temperature is above the hot
+-	 * threshold score is set to MLXSW_THERMAL_TEMP_SCORE_MAX.
+-	 */
+-	score = MLXSW_THERMAL_TEMP_SCORE_MAX;
+-	for (i = MLXSW_THERMAL_TEMP_TRIP_NORM; i < MLXSW_THERMAL_NUM_TRIPS;
+-	     i++, trip++) {
+-		if (temp < trip->temp) {
+-			delta = DIV_ROUND_CLOSEST(temp, trip->temp - temp);
+-			score = delta * shift;
+-			break;
+-		}
+-		shift *= 256;
+-	}
+-
+-	if (score > thermal->tz_highest_score) {
+-		thermal->tz_highest_score = score;
+-		thermal->tz_highest_dev = tzdev;
+-	}
+-}
+-
+ static int mlxsw_thermal_bind(struct thermal_zone_device *tzdev,
+ 			      struct thermal_cooling_device *cdev)
  {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--	struct thermal_zone_device *tzd = data->tzd;
+@@ -286,9 +255,6 @@ static int mlxsw_thermal_get_temp(struct thermal_zone_device *tzdev,
+ 		return err;
+ 	}
+ 	mlxsw_reg_mtmp_unpack(mtmp_pl, &temp, NULL, NULL, NULL, NULL);
+-	if (temp > 0)
+-		mlxsw_thermal_tz_score_update(thermal, tzdev, thermal->trips,
+-					      temp);
  
--	thermal_zone_of_sensor_unregister(&pdev->dev, tzd);
- 	exynos_tmu_control(pdev, false);
+ 	*p_temp = temp;
+ 	return 0;
+@@ -349,21 +315,6 @@ static int mlxsw_thermal_set_trip_hyst(struct thermal_zone_device *tzdev,
+ 	return 0;
+ }
  
- 	clk_disable_unprepare(data->sclk);
+-static int mlxsw_thermal_trend_get(struct thermal_zone_device *tzdev,
+-				   int trip, enum thermal_trend *trend)
+-{
+-	struct mlxsw_thermal *thermal = tzdev->devdata;
+-
+-	if (trip < 0 || trip >= MLXSW_THERMAL_NUM_TRIPS)
+-		return -EINVAL;
+-
+-	if (tzdev == thermal->tz_highest_dev)
+-		return 1;
+-
+-	*trend = THERMAL_TREND_STABLE;
+-	return 0;
+-}
+-
+ static struct thermal_zone_params mlxsw_thermal_params = {
+ 	.no_hwmon = true,
+ };
+@@ -377,7 +328,6 @@ static struct thermal_zone_device_ops mlxsw_thermal_ops = {
+ 	.set_trip_temp	= mlxsw_thermal_set_trip_temp,
+ 	.get_trip_hyst	= mlxsw_thermal_get_trip_hyst,
+ 	.set_trip_hyst	= mlxsw_thermal_set_trip_hyst,
+-	.get_trend	= mlxsw_thermal_trend_get,
+ };
+ 
+ static int mlxsw_thermal_module_bind(struct thermal_zone_device *tzdev,
+@@ -463,7 +413,6 @@ static int mlxsw_thermal_module_temp_get(struct thermal_zone_device *tzdev,
+ 	int temp, crit_temp, emerg_temp;
+ 	struct device *dev;
+ 	u16 sensor_index;
+-	int err;
+ 
+ 	dev = thermal->bus_info->dev;
+ 	sensor_index = MLXSW_REG_MTMP_MODULE_INDEX_MIN + tz->module;
+@@ -479,10 +428,8 @@ static int mlxsw_thermal_module_temp_get(struct thermal_zone_device *tzdev,
+ 		return 0;
+ 
+ 	/* Update trip points. */
+-	err = mlxsw_thermal_module_trips_update(dev, thermal->core, tz,
+-						crit_temp, emerg_temp);
+-	if (!err && temp > 0)
+-		mlxsw_thermal_tz_score_update(thermal, tzdev, tz->trips, temp);
++	mlxsw_thermal_module_trips_update(dev, thermal->core, tz,
++					  crit_temp, emerg_temp);
+ 
+ 	return 0;
+ }
+@@ -546,22 +493,6 @@ mlxsw_thermal_module_trip_hyst_set(struct thermal_zone_device *tzdev, int trip,
+ 	return 0;
+ }
+ 
+-static int mlxsw_thermal_module_trend_get(struct thermal_zone_device *tzdev,
+-					  int trip, enum thermal_trend *trend)
+-{
+-	struct mlxsw_thermal_module *tz = tzdev->devdata;
+-	struct mlxsw_thermal *thermal = tz->parent;
+-
+-	if (trip < 0 || trip >= MLXSW_THERMAL_NUM_TRIPS)
+-		return -EINVAL;
+-
+-	if (tzdev == thermal->tz_highest_dev)
+-		return 1;
+-
+-	*trend = THERMAL_TREND_STABLE;
+-	return 0;
+-}
+-
+ static struct thermal_zone_device_ops mlxsw_thermal_module_ops = {
+ 	.bind		= mlxsw_thermal_module_bind,
+ 	.unbind		= mlxsw_thermal_module_unbind,
+@@ -571,7 +502,6 @@ static struct thermal_zone_device_ops mlxsw_thermal_module_ops = {
+ 	.set_trip_temp	= mlxsw_thermal_module_trip_temp_set,
+ 	.get_trip_hyst	= mlxsw_thermal_module_trip_hyst_get,
+ 	.set_trip_hyst	= mlxsw_thermal_module_trip_hyst_set,
+-	.get_trend	= mlxsw_thermal_module_trend_get,
+ };
+ 
+ static int mlxsw_thermal_gearbox_temp_get(struct thermal_zone_device *tzdev,
+@@ -592,8 +522,6 @@ static int mlxsw_thermal_gearbox_temp_get(struct thermal_zone_device *tzdev,
+ 		return err;
+ 
+ 	mlxsw_reg_mtmp_unpack(mtmp_pl, &temp, NULL, NULL, NULL, NULL);
+-	if (temp > 0)
+-		mlxsw_thermal_tz_score_update(thermal, tzdev, tz->trips, temp);
+ 
+ 	*p_temp = temp;
+ 	return 0;
+@@ -608,7 +536,6 @@ static struct thermal_zone_device_ops mlxsw_thermal_gearbox_ops = {
+ 	.set_trip_temp	= mlxsw_thermal_module_trip_temp_set,
+ 	.get_trip_hyst	= mlxsw_thermal_module_trip_hyst_get,
+ 	.set_trip_hyst	= mlxsw_thermal_module_trip_hyst_set,
+-	.get_trend	= mlxsw_thermal_module_trend_get,
+ };
+ 
+ static int mlxsw_thermal_get_max_state(struct thermal_cooling_device *cdev,
