@@ -2,213 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B4EBECAAD5
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Aug 2022 12:17:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D616ECAAD5
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Aug 2022 12:26:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229651AbiH2MRx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Aug 2022 08:17:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48220 "EHLO
+        id S232013AbiH2M0y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Aug 2022 08:26:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44904 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231171AbiH2MRg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Aug 2022 08:17:36 -0400
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2046.outbound.protection.outlook.com [40.107.94.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E934797D51;
-        Mon, 29 Aug 2022 05:00:51 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=b5F/5vzaSUBJZP3lF7WQ/wJ+EwJjYGzQlgS6BQ+mPFpU3kZUrT7yW2hFz4lzj4ULqc1pV+7fOkTntoldli1P7mRT87IZJFNJ7hxkc9ij1UUm6tXHUjMbu+QnIcPEX2T3hqSVYoD9rkTE8I3Pux0yP8P49RuuO4ALAGAiIs16qjhe3aM3yuXBFOhjgIs5yeiSpYiwUwA1BD4JGzx5F7hrks4mx9Ps1cHVKjVoFegojV4fsl5OVvzx1DGIXx078a2Ti8kDVEvR1Gq5hpWGZ8YRwy03HH0+dxC/P5wNsTpxLG/Cpgu/Q3wkBx/107QCYkra/JI28/+U5eSLVMkYNZ+uzA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GS+0AX+1mjY+BsvJVY/oyr/YmF59D85FHAMSBSUwoQA=;
- b=cqoWdP6MrbgiEceQtRdVFM+t/yLmta5Rc+xWGjB/31VMUtU8+petaOV5NacyyhIEmmxFR6ztWYQ2zJLNKAk1cx+kcxmhQQxvkEZZ57sRSneYlE4hiukrBSgfVQAwh4Ukft3GmXlhWiKjnk4WYpWzWsXECnimB6dcvURnj9RNKmAtTBRMb4SndIegAxcB0s53r1yTwHgf+ar6H9vdal8KU8sOTLsDOKA4BTxzJV8hsNxpTqBWnrtTR+uqrh9zc4757wfoOAW+Awo0Amo1WSTAfeBkUNv90mlZc3iI8WhwRsIuJVj3v7/ksTl2jyMQCCi6JYqvFj8xrC1W+ICVyDO2dg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 12.22.5.236) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GS+0AX+1mjY+BsvJVY/oyr/YmF59D85FHAMSBSUwoQA=;
- b=OtWa3k8vy8pc9gfmo9cHVGjnrdVzft8z4uHduvRV0MpbaJbBYMKTx5cHlOVbGezCSi4W6CEgglh3p0YhqXzss0Mq2WJ7yBHflA/OJ0rZ3SA8fFii165J4G/lJyA4vN/44Oc0RTFz2GVyBqzAEcXi6hQc42sYAicwJ9+/KYRhEu0FG9uqxEYty33+k035rwsQk4WgBXsfcK3RGu+uAcwJ5lBHMiinNoed2p4HZtZA1s+XbTFm1gohtMQL0Hhr2y/UEZV6bR46/XMNHes2WmqrAXItcYNodUfPGCSmpfAyTUPRyE+wWBuujaqekCJqVwtZHxbyFVKkH6XVzzRD2Y4h1Q==
-Received: from MW4PR02CA0019.namprd02.prod.outlook.com (2603:10b6:303:16d::23)
- by BYAPR12MB2613.namprd12.prod.outlook.com (2603:10b6:a03:69::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5566.19; Mon, 29 Aug
- 2022 11:49:07 +0000
-Received: from CO1NAM11FT026.eop-nam11.prod.protection.outlook.com
- (2603:10b6:303:16d:cafe::a9) by MW4PR02CA0019.outlook.office365.com
- (2603:10b6:303:16d::23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5566.15 via Frontend
- Transport; Mon, 29 Aug 2022 11:49:07 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 12.22.5.236)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 12.22.5.236 as permitted sender) receiver=protection.outlook.com;
- client-ip=12.22.5.236; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (12.22.5.236) by
- CO1NAM11FT026.mail.protection.outlook.com (10.13.175.67) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.20.5566.15 via Frontend Transport; Mon, 29 Aug 2022 11:49:07 +0000
-Received: from rnnvmail204.nvidia.com (10.129.68.6) by DRHQMAIL109.nvidia.com
- (10.27.9.19) with Microsoft SMTP Server (TLS) id 15.0.1497.38; Mon, 29 Aug
- 2022 11:49:06 +0000
-Received: from rnnvmail204.nvidia.com (10.129.68.6) by rnnvmail204.nvidia.com
- (10.129.68.6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.29; Mon, 29 Aug
- 2022 04:49:05 -0700
-Received: from nvidia-abhsahu-1.nvidia.com (10.127.8.11) by mail.nvidia.com
- (10.129.68.6) with Microsoft SMTP Server id 15.2.986.29 via Frontend
- Transport; Mon, 29 Aug 2022 04:49:01 -0700
-From:   Abhishek Sahu <abhsahu@nvidia.com>
-To:     Alex Williamson <alex.williamson@redhat.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Jason Gunthorpe <jgg@nvidia.com>,
-        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
-        Kevin Tian <kevin.tian@intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-CC:     Max Gurtovoy <mgurtovoy@nvidia.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
-        Abhishek Sahu <abhsahu@nvidia.com>
-Subject: [PATCH v7 1/5] vfio: Add the device features for the low power entry and exit
-Date:   Mon, 29 Aug 2022 17:18:46 +0530
-Message-ID: <20220829114850.4341-2-abhsahu@nvidia.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20220829114850.4341-1-abhsahu@nvidia.com>
-References: <20220829114850.4341-1-abhsahu@nvidia.com>
-X-NVConfidentiality: public
+        with ESMTP id S229810AbiH2M00 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Aug 2022 08:26:26 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8968C30F55;
+        Mon, 29 Aug 2022 05:10:23 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id AE09BB80F93;
+        Mon, 29 Aug 2022 12:10:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 5EA1FC433D6;
+        Mon, 29 Aug 2022 12:10:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1661775017;
+        bh=fK7S2U9FH3Mh1H4KPhuYrCAu21172KjX+5QYn8bZxhw=;
+        h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+        b=TBIvehqlXAnaUEIBMGrGtucuAxZHCjYUbH9gZTzp39B5ATUAioe8WO3EhAjb3uXxe
+         dMkxYY6hb+WC6eHZyS/cPa8r2CKTI01EB9MGyg1IsF1/oZT7KJghqNmyKNC9XH8ves
+         Cj3pIf4EmX/G+vS/jKdpHZhOleUGsARHnbS9xEcHQZhYvclYHJsMAatPyh4hKIzTRv
+         ajwmDjfIKqrpsF4i7DFIPFPAdyZsb0nMzw3IdNk/hNCLbimS7UVtlTLrinQs2UaKDw
+         YTwmujROS5OWbAtqbFtveKef90uGKF6IuQSib+pIDDHdy0cvO/DcGODQekO/LzgUrc
+         qkbrfSs4DNb4A==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 4809AE924D7;
+        Mon, 29 Aug 2022 12:10:17 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 627e0062-9520-4432-7454-08da89b47ac4
-X-MS-TrafficTypeDiagnostic: BYAPR12MB2613:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: e8AH5/rcP8SKIufgF3FaWGhyCTfKrvU7PGjTL7G4GScnfU6A5X5yJM4+z3htfi7uj2PWQNbnQDbqUmnbdcs2sviQRxq9nHP1Ju7wYnXSA1JVBQ2rfEB3sG4087bJR5/eqITAL+jh6xEyv+UztkLkcdWWUzE8SGvntUs1wnO7+SOJgqoSkX5wk5VbugLbSC825ycDAgcmYEdX6UliQa2m88oPtVGos3kSJ0x4Kzhzmlj0GnmhEQNnmm2O8D3MVgECtWGVllCV/VlafWV1eCC0uxGOaB3VgxfjB0TEPJM9/X3+iVW/HrK6GZkCX5tU4qGN6+leBHIvvVc6QI394R8CDMvVzEEySO627QVgpuqgjQK0f4Unw+ig1tiB2zjOqrz4Osy3B6nY2vA1JHi4vbJ+Ap8hMMf90oPAjUPyoYsHYSI/JoQxrVL6tJ974WpeTbNrF2CfwmMhaI1UAwikodTzrN6eLZC+nVLw/iEEmn5qXV9GEwrfdrWIweAVOvKnMR5t+IGqxT0m0I9PqBwMVph0UyuKt+4cTqxgfd2wxZZYTeN32BWfnwhYNTRsXlCDoXiUbY2XYWWmy8/n9Rl3qvQU1MbjGFYezGaM4kj2PjifTNWEtqR9YSck11yESK7Mau/xyxolSCNkYyN8s/eQuKwyHi43KlszDbLelqlKkAbLiSCkcUkZOk7X7cLUXrmdK3K3CDnERCHFlmZFVJyiLreaLQiA0414OEF1T4Qeo/7IlcHrwnupEw075rK185MyBK/NDXQA5szqdNJVIJJqXFqYqbnHh0+Miccq4DLbsRZl8PWrh8GdE7gZPkzdzGJp3W4L
-X-Forefront-Antispam-Report: CIP:12.22.5.236;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:InfoNoRecords;CAT:NONE;SFS:(13230016)(4636009)(136003)(39860400002)(376002)(396003)(346002)(36840700001)(40470700004)(46966006)(4326008)(70206006)(110136005)(316002)(70586007)(54906003)(82310400005)(8676002)(40460700003)(40480700001)(36860700001)(7416002)(8936002)(5660300002)(2906002)(81166007)(356005)(82740400003)(36756003)(6666004)(7696005)(26005)(86362001)(107886003)(478600001)(41300700001)(1076003)(2616005)(186003)(426003)(83380400001)(336012)(47076005)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Aug 2022 11:49:07.2066
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 627e0062-9520-4432-7454-08da89b47ac4
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[12.22.5.236];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT026.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR12MB2613
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH net-next] genetlink: start to validate reserved header bytes
+From:   patchwork-bot+netdevbpf@kernel.org
+Message-Id: <166177501728.22813.10790787483082655487.git-patchwork-notify@kernel.org>
+Date:   Mon, 29 Aug 2022 12:10:17 +0000
+References: <20220825001830.1911524-1-kuba@kernel.org>
+In-Reply-To: <20220825001830.1911524-1-kuba@kernel.org>
+To:     Jakub Kicinski <kuba@kernel.org>
+Cc:     davem@davemloft.net, netdev@vger.kernel.org, edumazet@google.com,
+        pabeni@redhat.com, jiri@resnulli.us, johannes@sipsolutions.net,
+        linux-block@vger.kernel.org, osmocom-net-gprs@lists.osmocom.org,
+        linux-wpan@vger.kernel.org, wireguard@lists.zx2c4.com,
+        linux-wireless@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-pm@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-cifs@vger.kernel.org, cluster-devel@redhat.com,
+        mptcp@lists.linux.dev, lvs-devel@vger.kernel.org,
+        netfilter-devel@vger.kernel.org,
+        linux-security-module@vger.kernel.org, dev@openvswitch.org,
+        linux-s390@vger.kernel.org, tipc-discussion@lists.sourceforge.net
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds the following new device features for the low
-power entry and exit in the header file. The implementation for the
-same will be added in the subsequent patches.
+Hello:
 
-- VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY
-- VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY_WITH_WAKEUP
-- VFIO_DEVICE_FEATURE_LOW_POWER_EXIT
+This patch was applied to netdev/net-next.git (master)
+by David S. Miller <davem@davemloft.net>:
 
-For vfio-pci based devices, with the standard PCI PM registers,
-all power states cannot be achieved. The platform-based power management
-needs to be involved to go into the lowest power state. For doing low
-power entry and exit with platform-based power management,
-these device features can be used.
+On Wed, 24 Aug 2022 17:18:30 -0700 you wrote:
+> We had historically not checked that genlmsghdr.reserved
+> is 0 on input which prevents us from using those precious
+> bytes in the future.
+> 
+> One use case would be to extend the cmd field, which is
+> currently just 8 bits wide and 256 is not a lot of commands
+> for some core families.
+> 
+> [...]
 
-The entry device feature has two variants. These two variants are mainly
-to support the different behaviour for the low power entry.
-If there is any access for the VFIO device on the host side, then the
-device will be moved out of the low power state without the user's
-guest driver involvement. Some devices (for example NVIDIA VGA or
-3D controller) require the user's guest driver involvement for
-each low-power entry. In the first variant, the host can return the
-device to low power automatically. The device will continue to
-attempt to reach low power until the low power exit feature is called.
-In the second variant, if the device exits low power due to an access,
-the host kernel will signal the user via the provided eventfd and will
-not return the device to low power without a subsequent call to one of
-the low power entry features. A call to the low power exit feature is
-optional if the user provided eventfd is signaled.
+Here is the summary with links:
+  - [net-next] genetlink: start to validate reserved header bytes
+    https://git.kernel.org/netdev/net-next/c/9c5d03d36251
 
-These device features only support VFIO_DEVICE_FEATURE_SET and
-VFIO_DEVICE_FEATURE_PROBE operations.
-
-Signed-off-by: Abhishek Sahu <abhsahu@nvidia.com>
----
- include/uapi/linux/vfio.h | 56 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
-
-diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-index 733a1cddde30..76a173f973de 100644
---- a/include/uapi/linux/vfio.h
-+++ b/include/uapi/linux/vfio.h
-@@ -986,6 +986,62 @@ enum vfio_device_mig_state {
- 	VFIO_DEVICE_STATE_RUNNING_P2P = 5,
- };
- 
-+/*
-+ * Upon VFIO_DEVICE_FEATURE_SET, allow the device to be moved into a low power
-+ * state with the platform-based power management.  Device use of lower power
-+ * states depends on factors managed by the runtime power management core,
-+ * including system level support and coordinating support among dependent
-+ * devices.  Enabling device low power entry does not guarantee lower power
-+ * usage by the device, nor is a mechanism provided through this feature to
-+ * know the current power state of the device.  If any device access happens
-+ * (either from the host or through the vfio uAPI) when the device is in the
-+ * low power state, then the host will move the device out of the low power
-+ * state as necessary prior to the access.  Once the access is completed, the
-+ * device may re-enter the low power state.  For single shot low power support
-+ * with wake-up notification, see
-+ * VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY_WITH_WAKEUP below.  Access to mmap'd
-+ * device regions is disabled on LOW_POWER_ENTRY and may only be resumed after
-+ * calling LOW_POWER_EXIT.
-+ */
-+#define VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY 3
-+
-+/*
-+ * This device feature has the same behavior as
-+ * VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY with the exception that the user
-+ * provides an eventfd for wake-up notification.  When the device moves out of
-+ * the low power state for the wake-up, the host will not allow the device to
-+ * re-enter a low power state without a subsequent user call to one of the low
-+ * power entry device feature IOCTLs.  Access to mmap'd device regions is
-+ * disabled on LOW_POWER_ENTRY_WITH_WAKEUP and may only be resumed after the
-+ * low power exit.  The low power exit can happen either through LOW_POWER_EXIT
-+ * or through any other access (where the wake-up notification has been
-+ * generated).  The access to mmap'd device regions will not trigger low power
-+ * exit.
-+ *
-+ * The notification through the provided eventfd will be generated only when
-+ * the device has entered and is resumed from a low power state after
-+ * calling this device feature IOCTL.  A device that has not entered low power
-+ * state, as managed through the runtime power management core, will not
-+ * generate a notification through the provided eventfd on access.  Calling the
-+ * LOW_POWER_EXIT feature is optional in the case where notification has been
-+ * signaled on the provided eventfd that a resume from low power has occurred.
-+ */
-+struct vfio_device_low_power_entry_with_wakeup {
-+	__s32 wakeup_eventfd;
-+	__u32 reserved;
-+};
-+
-+#define VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY_WITH_WAKEUP 4
-+
-+/*
-+ * Upon VFIO_DEVICE_FEATURE_SET, disallow use of device low power states as
-+ * previously enabled via VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY or
-+ * VFIO_DEVICE_FEATURE_LOW_POWER_ENTRY_WITH_WAKEUP device features.
-+ * This device feature IOCTL may itself generate a wakeup eventfd notification
-+ * in the latter case if the device had previously entered a low power state.
-+ */
-+#define VFIO_DEVICE_FEATURE_LOW_POWER_EXIT 5
-+
- /* -------- API for Type1 VFIO IOMMU -------- */
- 
- /**
+You are awesome, thank you!
 -- 
-2.17.1
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
