@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8817BECAAD4
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Aug 2022 08:19:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EB3CC3DA6B
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Aug 2022 08:20:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231510AbiHaIT5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Aug 2022 04:19:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37946 "EHLO
+        id S229908AbiHaIT6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Aug 2022 04:19:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231522AbiHaITd (ORCPT
+        with ESMTP id S231523AbiHaITd (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2022 04:19:33 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01FBBC6948;
-        Wed, 31 Aug 2022 01:18:21 -0700 (PDT)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE306C8889;
+        Wed, 31 Aug 2022 01:18:30 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B0178619D3;
+        by ams.source.kernel.org (Postfix) with ESMTPS id E1A09B81F15;
         Wed, 31 Aug 2022 08:18:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA0E7C4314C;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DD68C433D6;
         Wed, 31 Aug 2022 08:18:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1661933883;
-        bh=t182bdU7U0dEHPhdYXFdbvLZ9arqgWMZzee1Mf+ZirY=;
+        s=k20201202; t=1661933882;
+        bh=xyFTl9ErRj77KZSCzkjC/ob/fuCmtgD6a+3LQbWto7A=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=FK1nXZVTrGm1EJO2IK5DxpJKwqEuVfBoVZ4LtAS9+jBfXLP/aZ3cBibyrisl7CBD+
-         NWQ71Op2uLE2/Ej7tX/EPxvRVDC4Su08jkU73t1RSbGQPDlAf5wH+6e1HjbncRtF3U
-         CoeiqE3il5Uk8gjobr6VpARNlAUezqbn42nPe04gGn53B8CxwlV/A1N+hTXlVn5gWU
-         bV8IHeOcNVa71vBsahw3bXvbDatCMa1vDWo4eUN7KFJ5m+PyEeNRhZkXk41Z6dKn3y
-         HhcJpMEXoimGN/KaOUplM3p+KLZNjdmDVK8mvAE379vQNm3plj0rn2pn2+zlfBdjrb
-         OTknHu4lW7imA==
+        b=Ay5bfd7LGGe8NQPLlBqSLhJ/QcXkrb9ovh2q2UjSlrlkbG9p0oWIijI+BdlmxbZ6i
+         vvfvgsFre8UzMPBcjiYKmbdoRpV9D4PWIPLicSS6dhxh0hEeu2jLbFSTcWA/Cl7m3K
+         5Hez9Bb1F9pRgOAsx4YTt6EoJf/2w2WiwN9VZ3bhG4uN7exzRG7vmWkxCy0mkqFGXh
+         eDiHpnO593CMMbHkQ39txUpdLcO1URUBYnQg6ws4zFQabukw8NQvERJZu+NwWqHM0M
+         vPzHHP2r84QepfGuxT0Dz+fpKfgL6ZWBpfCYhfUg4Hr3CpkHDmv+pbSQK/cFqSDlgp
+         G0CDEv2SIt93Q==
 Received: by pali.im (Postfix)
-        id 8936112A0; Wed, 31 Aug 2022 10:18:00 +0200 (CEST)
+        id B89B7855; Wed, 31 Aug 2022 10:17:59 +0200 (CEST)
 From:   =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -40,13 +40,12 @@ To:     Rob Herring <robh+dt@kernel.org>,
 Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
         =?UTF-8?q?Marek=20Beh=C3=BAn?= <kabel@kernel.org>
-Subject: [PATCH v3 3/3] powerpc: dts: turris1x.dts: Set lower priority for CPLD syscon-reboot
-Date:   Wed, 31 Aug 2022 10:17:15 +0200
-Message-Id: <20220831081715.14673-3-pali@kernel.org>
+Subject: [PATCH v3 1/3] dt-bindings: reset: syscon-reboot: Add priority property
+Date:   Wed, 31 Aug 2022 10:17:13 +0200
+Message-Id: <20220831081715.14673-1-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20220831081715.14673-1-pali@kernel.org>
+In-Reply-To: <20220820102925.29476-1-pali@kernel.org>
 References: <20220820102925.29476-1-pali@kernel.org>
- <20220831081715.14673-1-pali@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -54,56 +53,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Due to CPLD firmware bugs, set CPLD syscon-reboot priority level to 64
-(between rstcr and watchdog) to ensure that rstcr's global-utilities reset
-method which is preferred stay as default one, and to ensure that CPLD
-syscon-reboot is more preferred than watchdog reset method.
+This new optional priority property allows to specify custom priority level
+of reset device. Prior this change priority level was hardcoded to 192 and
+not possible to specify or change. Specifying other value is needed for
+some boards. Default level when not specified stays at 192 as before.
 
-Fixes: 0531a4abd1c6 ("powerpc: dts: turris1x.dts: Add CPLD reboot node")
 Signed-off-by: Pali Rohár <pali@kernel.org>
----
- arch/powerpc/boot/dts/turris1x.dts | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
-index 69c38ed8a3a5..c189293d5a1e 100644
---- a/arch/powerpc/boot/dts/turris1x.dts
-+++ b/arch/powerpc/boot/dts/turris1x.dts
-@@ -353,11 +353,34 @@
- 			};
+---
+Changes in v3:
+* Add explanation into commit message
+
+Changes in v2:
+* Change sint32 to int32
+* Add default
+---
+ .../devicetree/bindings/power/reset/syscon-reboot.yaml       | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
+index da2509724812..4c8b0d0a0111 100644
+--- a/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
++++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
+@@ -42,6 +42,11 @@ properties:
+     $ref: /schemas/types.yaml#/definitions/uint32
+     description: The reset value written to the reboot register (32 bit access).
  
- 			reboot@d {
-+				/*
-+				 * CPLD firmware which manages system reset and
-+				 * watchdog registers has bugs. It does not
-+				 * autoclear system reset register after change
-+				 * and watchdog ignores reset line on immediate
-+				 * succeeding reset cycle triggered by watchdog.
-+				 * These bugs have to be workarounded in U-Boot
-+				 * bootloader. So use system reset via syscon as
-+				 * a last resort because older U-Boot versions
-+				 * do not have workaround for watchdog.
-+				 *
-+				 * Reset method via rstcr's global-utilities
-+				 * (the preferred one) has priority level 128,
-+				 * watchdog has priority level 0 and default
-+				 * syscon-reboot priority level is 192.
-+				 *
-+				 * So define syscon-reboot with custom priority
-+				 * level 64 (between rstcr and watchdog) because
-+				 * rstcr should stay as default preferred reset
-+				 * method and reset via watchdog is more broken
-+				 * than system reset via syscon.
-+				 */
- 				compatible = "syscon-reboot";
- 				reg = <0x0d 0x01>;
- 				offset = <0x0d>;
- 				mask = <0x01>;
- 				value = <0x01>;
-+				priority = <64>;
- 			};
- 
- 			led-controller@13 {
++  priority:
++    $ref: /schemas/types.yaml#/definitions/int32
++    description: Priority level of this syscon reset device.
++    default: 192
++
+ required:
+   - compatible
+   - offset
 -- 
 2.20.1
 
