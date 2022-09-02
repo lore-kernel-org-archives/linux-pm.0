@@ -2,195 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FF17C6FA8D
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Sep 2022 18:00:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F53ECAAD5
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Sep 2022 18:43:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235966AbiIBSAw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Sep 2022 14:00:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52028 "EHLO
+        id S230011AbiIBSnK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Sep 2022 14:43:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49442 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236047AbiIBSAu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2022 14:00:50 -0400
-Received: from vorpal.se (vorpal.se [IPv6:2a01:7e00::f03c:91ff:fe73:398e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 803C9E831B;
-        Fri,  2 Sep 2022 11:00:49 -0700 (PDT)
-Received: by vorpal.se (Postfix) with ESMTPSA id AC7A7147F4;
-        Fri,  2 Sep 2022 18:00:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=vorpal.se; s=2019;
-        t=1662141648; bh=ccHXtgR0Sig4hq5GeRCXK8FfWB+KXPN//Jm+lMKW/qc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=T3MbLiEaPU1tJQGbLSp4jfiDuXmuqOob8G0abyDuTWcyh6vEWx46X9C60K59LJfoP
-         vs+DKOYMvxWjxPvy4sJNiuZFDlCtRQm4MmlaItW5J2RlFBCMwizQEP5o/S1yLiJWCE
-         UyYj7DFe7cgaMfZkRNsX3Xn8ImusS0nMUJKl43SJuL0ka8grXsocxULVf+S02d+Fpg
-         Nq+fPPoM22/y7gTeev6kLbya1b6HEtubxfb0Sw+zu0VXQbCzrzrJq0FcPZa76DZEjI
-         AT4GbP5sUpxrImSQoanbUmC0WGOS0R4v7gd1n6xTCrzq/O1QavakgAI56QYkE9ORP8
-         xFP7INjkiaI4A==
-From:   Arvid Norlander <lkml@vorpal.se>
-To:     platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Azael Avalos <coproscefalo@gmail.com>,
-        Arvid Norlander <lkml@vorpal.se>
-Subject: [PATCH v2 2/3] platform/x86: Battery charge mode in toshiba_acpi (sysfs)
-Date:   Fri,  2 Sep 2022 20:00:36 +0200
-Message-Id: <20220902180037.1728546-3-lkml@vorpal.se>
-X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20220902180037.1728546-1-lkml@vorpal.se>
-References: <20220902180037.1728546-1-lkml@vorpal.se>
+        with ESMTP id S229968AbiIBSnJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2022 14:43:09 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79BB81144C4
+        for <linux-pm@vger.kernel.org>; Fri,  2 Sep 2022 11:43:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1662144186;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=2ohTeF4+cvF8PKkr4lYOWbH1b2UayUkG4FJ3FZMJwY0=;
+        b=L2TSwXM77c7FKmq1huyxY6eOoV8zZXw4z8d0wwZfCZktNUG6q81DYa59MGdzFbaqUdj1Bb
+        41wZJXxphclCn0vSTf6pCqg2iRxr0rV3EU5BqEAzezZVF00AmQJvSVEsT0jYwMjawR6neF
+        mhtU1O8JIMCNbSMuwsqD0ZIifuJO4ug=
+Received: from mail-io1-f70.google.com (mail-io1-f70.google.com
+ [209.85.166.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-411-sU-huRZoNfWJC1UNRsDkLQ-1; Fri, 02 Sep 2022 14:43:05 -0400
+X-MC-Unique: sU-huRZoNfWJC1UNRsDkLQ-1
+Received: by mail-io1-f70.google.com with SMTP id bh11-20020a056602370b00b00688c8a2b56cso1825976iob.13
+        for <linux-pm@vger.kernel.org>; Fri, 02 Sep 2022 11:43:05 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:organization:references
+         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-message-state
+         :from:to:cc:subject:date;
+        bh=2ohTeF4+cvF8PKkr4lYOWbH1b2UayUkG4FJ3FZMJwY0=;
+        b=b6lvTpSFi6Is75uwbBg9cN7EtmQCRzWL/S/ch69lMKYu4zJVCwsKzmm0GgC6yQwHLK
+         Zaq/HzMphThBw2zL8vDc8nxyBJop/YG4L2DKFbEKJK+HozT0vWj8uRW6vPm6/S869ZP+
+         mBk57ZYrU1x3qRHuBnr88mkJ5LRBGS9PSKzdZGNYmeOw9iVp7RXJEFvvr/JVDws1/GcO
+         VA8E9tDvkyqtLAfoK5EqgJ/X7OBwyAScqKd2L4iVWlCisrgHX6zqNTWabBPrMhagZ5vG
+         s2SMG+dHivsNHc7zlM6NIWgCuMh4sCtTQDC23uqGb8yduuu6jCOy4jJ8AWuoxZQMxPxD
+         wRfQ==
+X-Gm-Message-State: ACgBeo3l8xU7aVdSY2iKcmbqMqjY3FEuNiVF+O4jr8ZW4UJ/j79eiRKW
+        oLMH7zHdnZsaGX+dO0xX2TxMjk+EhJs/p4Bt9KC9jSkN1x4ON+R/jdYb9Zg8tKpuwx3oBIJ/NH1
+        s8HQowRAPO3woEfRYUR4=
+X-Received: by 2002:a5d:8b47:0:b0:689:a436:81d2 with SMTP id c7-20020a5d8b47000000b00689a43681d2mr17433537iot.138.1662144185065;
+        Fri, 02 Sep 2022 11:43:05 -0700 (PDT)
+X-Google-Smtp-Source: AA6agR5c8tYFnpO88dkPGbcmTL6O4ouPV+XYGlcQvH3lOAZzQUG+Sde454M/r0vL2MBGLi157knPaQ==
+X-Received: by 2002:a5d:8b47:0:b0:689:a436:81d2 with SMTP id c7-20020a5d8b47000000b00689a43681d2mr17433520iot.138.1662144184825;
+        Fri, 02 Sep 2022 11:43:04 -0700 (PDT)
+Received: from redhat.com ([38.15.36.239])
+        by smtp.gmail.com with ESMTPSA id x6-20020a056602160600b0067b7a057ee8sm1126680iow.25.2022.09.02.11.43.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 02 Sep 2022 11:43:04 -0700 (PDT)
+Date:   Fri, 2 Sep 2022 12:42:34 -0600
+From:   Alex Williamson <alex.williamson@redhat.com>
+To:     Abhishek Sahu <abhsahu@nvidia.com>
+Cc:     Cornelia Huck <cohuck@redhat.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Jason Gunthorpe <jgg@nvidia.com>,
+        Shameer Kolothum <shameerali.kolothum.thodi@huawei.com>,
+        Kevin Tian <kevin.tian@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH v7 0/5] vfio/pci: power management changes
+Message-ID: <20220902124234.472737cd.alex.williamson@redhat.com>
+In-Reply-To: <20220829114850.4341-1-abhsahu@nvidia.com>
+References: <20220829114850.4341-1-abhsahu@nvidia.com>
+Organization: Red Hat
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This commit adds the ACPI battery hook which in turns adds the sysfs
-entries.
+On Mon, 29 Aug 2022 17:18:45 +0530
+Abhishek Sahu <abhsahu@nvidia.com> wrote:
 
-Because the Toshiba laptops only support two modes (eco or normal), which
-in testing correspond to 80% and 100% we simply round to the nearest
-possible level when set.
+> This is part 2 for the vfio-pci driver power management support.
+> Part 1 of this patch series was related to adding D3cold support
+> when there is no user of the VFIO device and has already merged in the
+> mainline kernel. If we enable the runtime power management for
+> vfio-pci device in the guest OS, then the device is being runtime
+> suspended (for linux guest OS) and the PCI device will be put into
+> D3hot state (in function vfio_pm_config_write()). If the D3cold
+> state can be used instead of D3hot, then it will help in saving
+> maximum power. The D3cold state can't be possible with native
+> PCI PM. It requires interaction with platform firmware which is
+> system-specific. To go into low power states (Including D3cold),
+> the runtime PM framework can be used which internally interacts
+> with PCI and platform firmware and puts the device into the
+> lowest possible D-States.
+> 
+> This patch series adds the support to engage runtime power management
+> initiated by the user. Since D3cold state can't be achieved by writing
+> PCI standard PM config registers, so new device features have been
+> added in DEVICE_FEATURE IOCTL for low power entry and exit related
+> handling. For the PCI device, this low power state will be D3cold
+> (if the platform supports the D3cold state). The hypervisors can implement
+> virtual ACPI methods to make the integration with guest OS.
+> For example, in guest Linux OS if PCI device ACPI node has
+> _PR3 and _PR0 power resources with _ON/_OFF method, then guest
+> Linux OS makes the _OFF call during D3cold transition and
+> then _ON during D0 transition. The hypervisor can tap these virtual
+> ACPI calls and then do the low power related IOCTL.
+> 
+> The entry device feature has two variants. These two variants are mainly
+> to support the different behaviour for the low power entry.
+> If there is any access for the VFIO device on the host side, then the
+> device will be moved out of the low power state without the user's
+> guest driver involvement. Some devices (for example NVIDIA VGA or
+> 3D controller) require the user's guest driver involvement for
+> each low-power entry. In the first variant, the host can move the
+> device into low power without any guest driver involvement while
+> in the second variant, the host will send a notification to user
+> through eventfd and then user guest driver needs to move the device
+> into low power. The hypervisor can implement the virtual PME
+> support to notify the guest OS. Please refer
+> https://lore.kernel.org/lkml/20220701110814.7310-7-abhsahu@nvidia.com/
+> where initially this virtual PME was implemented in the vfio-pci driver
+> itself, but later-on, it has been decided that hypervisor can implement
+> this.
+> 
+> * Changes in v7
 
-It is possible that Toshiba laptops other than the Z830 has different set
-points for the charging. If so, a quirk table could be introduced in the
-future for this. For now, assume that all laptops that support this feature
-work the same way.
+Applied to vfio next branch for v6.1.  Thanks,
 
-Tested on a Toshiba Satellite Z830.
-
-Signed-off-by: Arvid Norlander <lkml@vorpal.se>
----
- drivers/platform/x86/toshiba_acpi.c | 97 +++++++++++++++++++++++++++++
- 1 file changed, 97 insertions(+)
-
-diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
-index c927d5d0f8cd..fc953d6bcb93 100644
---- a/drivers/platform/x86/toshiba_acpi.c
-+++ b/drivers/platform/x86/toshiba_acpi.c
-@@ -44,6 +44,7 @@
- #include <linux/rfkill.h>
- #include <linux/iio/iio.h>
- #include <linux/toshiba.h>
-+#include <acpi/battery.h>
- #include <acpi/video.h>
- 
- MODULE_AUTHOR("John Belmonte");
-@@ -2981,6 +2982,92 @@ static int toshiba_acpi_setup_backlight(struct toshiba_acpi_dev *dev)
- 	return 0;
- }
- 
-+
-+/* ACPI battery hooking */
-+static ssize_t charge_control_end_threshold_show(struct device *device,
-+						 struct device_attribute *attr,
-+						 char *buf)
-+{
-+	u32 state;
-+	int status;
-+
-+	if (toshiba_acpi == NULL) {
-+		pr_err("Toshiba ACPI object invalid\n");
-+		return -ENODEV;
-+	}
-+
-+	status = toshiba_battery_charge_mode_get(toshiba_acpi, &state);
-+
-+	if (status != 0)
-+		return status;
-+
-+	if (state == 1)
-+		return sprintf(buf, "80\n");
-+	else
-+		return sprintf(buf, "100\n");
-+}
-+
-+static ssize_t charge_control_end_threshold_store(struct device *dev,
-+						  struct device_attribute *attr,
-+						  const char *buf,
-+						  size_t count)
-+{
-+	u32 value;
-+	int rval;
-+
-+	if (toshiba_acpi == NULL) {
-+		pr_err("Toshiba ACPI object invalid\n");
-+		return -ENODEV;
-+	}
-+
-+	rval = kstrtou32(buf, 10, &value);
-+	if (rval)
-+		return rval;
-+
-+	if (value < 1 || value > 100)
-+		return -EINVAL;
-+	rval = toshiba_battery_charge_mode_set(toshiba_acpi,
-+					       (value < 90) ? 1 : 0);
-+	if (rval < 0)
-+		return rval;
-+	else
-+		return count;
-+}
-+
-+static DEVICE_ATTR_RW(charge_control_end_threshold);
-+
-+static struct attribute *toshiba_acpi_battery_attrs[] = {
-+	&dev_attr_charge_control_end_threshold.attr,
-+	NULL,
-+};
-+
-+ATTRIBUTE_GROUPS(toshiba_acpi_battery);
-+
-+static int toshiba_acpi_battery_add(struct power_supply *battery)
-+{
-+	if (toshiba_acpi == NULL) {
-+		pr_err("Init order issue\n");
-+		return -ENODEV;
-+	}
-+	if (!toshiba_acpi->battery_charge_mode_supported)
-+		return -ENODEV;
-+	if (device_add_groups(&battery->dev, toshiba_acpi_battery_groups))
-+		return -ENODEV;
-+	return 0;
-+}
-+
-+static int toshiba_acpi_battery_remove(struct power_supply *battery)
-+{
-+	device_remove_groups(&battery->dev, toshiba_acpi_battery_groups);
-+	return 0;
-+}
-+
-+static struct acpi_battery_hook battery_hook = {
-+	.add_battery = toshiba_acpi_battery_add,
-+	.remove_battery = toshiba_acpi_battery_remove,
-+	.name = "Toshiba Battery Extension",
-+};
-+
- static void print_supported_features(struct toshiba_acpi_dev *dev)
- {
- 	pr_info("Supported laptop features:");
-@@ -3063,6 +3150,9 @@ static int toshiba_acpi_remove(struct acpi_device *acpi_dev)
- 		rfkill_destroy(dev->wwan_rfk);
- 	}
- 
-+	if (dev->battery_charge_mode_supported)
-+		battery_hook_unregister(&battery_hook);
-+
- 	if (toshiba_acpi)
- 		toshiba_acpi = NULL;
- 
-@@ -3246,6 +3336,13 @@ static int toshiba_acpi_add(struct acpi_device *acpi_dev)
- 
- 	toshiba_acpi = dev;
- 
-+	/*
-+	 * As the battery hook relies on the static variable toshiba_acpi being
-+	 * set, this must be done after toshiba_acpi is assigned.
-+	 */
-+	if (dev->battery_charge_mode_supported)
-+		battery_hook_register(&battery_hook);
-+
- 	return 0;
- 
- error:
--- 
-2.37.3
+Alex
 
