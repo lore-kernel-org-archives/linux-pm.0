@@ -2,210 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B3E3C6FA89
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Sep 2022 15:26:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33F90ECAAD5
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Sep 2022 17:24:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236876AbiIBP0T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Sep 2022 11:26:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54598 "EHLO
+        id S230151AbiIBRYI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Sep 2022 13:24:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39062 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235495AbiIBPZf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2022 11:25:35 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE80F11174;
-        Fri,  2 Sep 2022 07:58:49 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id D74F4B82AA5;
-        Fri,  2 Sep 2022 14:58:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A7EDC433D6;
-        Fri,  2 Sep 2022 14:58:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1662130726;
-        bh=uzY06CopRRaEJRGHbkvXaWAGjIg0UAO24abGF6DIl4g=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Pnq6ep8pp4OnVahvn2SuBrvUKdu7qRlJtn2lPDXpVUkrqIu/OppfnQDKis2Ci2wQY
-         /RtTjMx/JsAQoEjDNG2kJbYpk5k/pAf+TdYKW/1kwW81V954x4+TP7XQr7cs5Q4P4x
-         8YSJQhJu380iTCuhq5HT9vYh6u98lfbtzURTtxNfTziD6mpXoDDBkrShLAmam/IGYe
-         zin1BYydt9+FeLYmx+9RpB3iMCvAuDfqdY23PDOGEWMWhjwxtJMgtq/52ZFMG1Vcg5
-         ylWZeN6zB+YWP3Qp+6n5GQ+vpjEDmtVJF9Ww9rU3NQrYDJGpz93IxmZJ/8GLr5MmLc
-         +U2T05gVNmeRA==
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        with ESMTP id S235976AbiIBRYH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2022 13:24:07 -0400
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47E721151A2;
+        Fri,  2 Sep 2022 10:24:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1662139446; x=1693675446;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=DSWKIZICL0ryGmE0f8bau1LNf2o5POsf7uXeN32Zn08=;
+  b=MJJemxq9gj+p5FLZoWNDp3SYFUWB7o18CrzSeMsn95blFaCCD713RgKf
+   WvmVD756gjnn13Mvf58ZkyrD2mTpIq8+6aJPQsL8rOENKzu96DKyQg7SE
+   IC4C/QOEvdDl8jmSkdu6np4OjPbpt2/33ideKrOzbaiPakLC6XwblVlJa
+   J/DestAZpXYK7quu1ShCvPJ4TGMEFkxFSaJliVZBQ74tE6lBtqLhGjHMV
+   MaPB0fbIx1tq/ZVNd4UG5+345dkvYF+VtPtLEeX0P3cPgazB3QiGpKiDw
+   KvW5xWxp/Nqc3/91mPOPIj3B4q7FFCJfwEg0QATxLMgJN9cFspFEottry
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10458"; a="294771178"
+X-IronPort-AV: E=Sophos;i="5.93,283,1654585200"; 
+   d="scan'208";a="294771178"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2022 10:24:06 -0700
+X-IronPort-AV: E=Sophos;i="5.93,283,1654585200"; 
+   d="scan'208";a="674435558"
+Received: from cthornbr-mobl.amr.corp.intel.com (HELO [10.251.3.254]) ([10.251.3.254])
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2022 10:24:05 -0700
+Message-ID: <b5618f97-deb6-c38e-2c2c-dbe1e4e1e496@linux.intel.com>
+Date:   Fri, 2 Sep 2022 10:24:05 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Firefox/91.0 Thunderbird/91.11.0
+Subject: Re: [PATCH 1/4] PCI/PTM: Preserve PTM Root Select
+Content-Language: en-US
+To:     Bjorn Helgaas <helgaas@kernel.org>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
         Rajvi Jingar <rajvi.jingar@linux.intel.com>,
         "Rafael J . Wysocki" <rafael@kernel.org>
 Cc:     Koba Ko <koba.ko@canonical.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         "David E . Box" <david.e.box@linux.intel.com>,
-        Sathyanarayanan Kuppuswamy 
-        <sathyanarayanan.kuppuswamy@linux.intel.com>,
         linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 4/4] PCI/PTM: Cache PTM Capability offset
-Date:   Fri,  2 Sep 2022 09:58:35 -0500
-Message-Id: <20220902145835.344302-5-helgaas@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220902145835.344302-1-helgaas@kernel.org>
 References: <20220902145835.344302-1-helgaas@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ <20220902145835.344302-2-helgaas@kernel.org>
+From:   Sathyanarayanan Kuppuswamy 
+        <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <20220902145835.344302-2-helgaas@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bjorn Helgaas <bhelgaas@google.com>
 
-Cache the PTM Capability offset in struct pci_dev so we don't have to
-search for it every time we enable/disable/save/restore.  No functional
-change intended.
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/pci/pcie/ptm.c | 46 ++++++++++++++++--------------------------
- include/linux/pci.h    |  1 +
- 2 files changed, 18 insertions(+), 29 deletions(-)
+On 9/2/22 7:58 AM, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> When disabling PTM, there's no need to clear the Root Select bit.  We
+> disable PTM during suspend, and we want to re-enable it during resume.
+> Clearing Root Select here makes re-enabling more complicated.
 
-diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
-index 3115601a85ef..8f38ba7b386c 100644
---- a/drivers/pci/pcie/ptm.c
-+++ b/drivers/pci/pcie/ptm.c
-@@ -31,14 +31,10 @@ static void pci_ptm_info(struct pci_dev *dev)
- 
- void pci_disable_ptm(struct pci_dev *dev)
- {
--	int ptm;
-+	u16 ptm = dev->ptm_cap;
- 	u16 ctrl;
- 
--	if (!pci_is_pcie(dev))
--		return;
--
--	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
--	if (!ptm)
-+	if (!ptm || !dev->ptm_enabled)
- 		return;
- 
- 	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, &ctrl);
-@@ -48,14 +44,10 @@ void pci_disable_ptm(struct pci_dev *dev)
- 
- void pci_save_ptm_state(struct pci_dev *dev)
- {
--	int ptm;
-+	u16 ptm = dev->ptm_cap;
- 	struct pci_cap_saved_state *save_state;
- 	u16 *cap;
- 
--	if (!pci_is_pcie(dev))
--		return;
--
--	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
- 	if (!ptm)
- 		return;
- 
-@@ -69,16 +61,15 @@ void pci_save_ptm_state(struct pci_dev *dev)
- 
- void pci_restore_ptm_state(struct pci_dev *dev)
- {
-+	u16 ptm = dev->ptm_cap;
- 	struct pci_cap_saved_state *save_state;
--	int ptm;
- 	u16 *cap;
- 
--	if (!pci_is_pcie(dev))
-+	if (!ptm)
- 		return;
- 
- 	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
--	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
--	if (!save_state || !ptm)
-+	if (!save_state)
- 		return;
- 
- 	cap = (u16 *)&save_state->cap.data[0];
-@@ -95,10 +86,10 @@ void pci_restore_ptm_state(struct pci_dev *dev)
- 
- void pci_ptm_init(struct pci_dev *dev)
- {
--	int pos;
-+	struct pci_dev *ups;
-+	u16 ptm;
- 	u32 cap, ctrl;
- 	u8 local_clock;
--	struct pci_dev *ups;
- 
- 	if (!pci_is_pcie(dev))
- 		return;
-@@ -125,13 +116,14 @@ void pci_ptm_init(struct pci_dev *dev)
- 		return;
- 	}
- 
--	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
--	if (!pos)
-+	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
-+	dev->ptm_cap = ptm;
-+	if (!ptm)
- 		return;
- 
- 	pci_add_ext_cap_save_buffer(dev, PCI_EXT_CAP_ID_PTM, sizeof(u16));
- 
--	pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
-+	pci_read_config_dword(dev, ptm + PCI_PTM_CAP, &cap);
- 	local_clock = (cap & PCI_PTM_GRANULARITY_MASK) >> 8;
- 
- 	/*
-@@ -156,7 +148,7 @@ void pci_ptm_init(struct pci_dev *dev)
- 	}
- 
- 	ctrl |= dev->ptm_granularity << 8;
--	pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
-+	pci_write_config_dword(dev, ptm + PCI_PTM_CTRL, ctrl);
- 	dev->ptm_enabled = 1;
- 
- 	pci_ptm_info(dev);
-@@ -164,18 +156,14 @@ void pci_ptm_init(struct pci_dev *dev)
- 
- int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
- {
--	int pos;
-+	u16 ptm = dev->ptm_cap;
- 	u32 cap, ctrl;
- 	struct pci_dev *ups;
- 
--	if (!pci_is_pcie(dev))
-+	if (!ptm)
- 		return -EINVAL;
- 
--	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
--	if (!pos)
--		return -EINVAL;
--
--	pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
-+	pci_read_config_dword(dev, ptm + PCI_PTM_CAP, &cap);
- 	if (!(cap & PCI_PTM_CAP_REQ))
- 		return -EINVAL;
- 
-@@ -200,7 +188,7 @@ int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
- 
- 	ctrl = PCI_PTM_CTRL_ENABLE;
- 	ctrl |= dev->ptm_granularity << 8;
--	pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
-+	pci_write_config_dword(dev, ptm + PCI_PTM_CTRL, ctrl);
- 	dev->ptm_enabled = 1;
- 
- 	pci_ptm_info(dev);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 060af91bafcd..f6c162d06bff 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -475,6 +475,7 @@ struct pci_dev {
- 	unsigned int	broken_cmd_compl:1;	/* No compl for some cmds */
- #endif
- #ifdef CONFIG_PCIE_PTM
-+	u16		ptm_cap;		/* PTM Capability offset */
- 	unsigned int	ptm_root:1;
- 	unsigned int	ptm_enabled:1;
- 	u8		ptm_granularity;
+Currently, it looks like we disable PCI_PTM_CTRL_ROOT in pci_disable_ptm(),
+but not enable it in pci_enable_ptm(). Do you know this did not trigger an
+issue?
+
+Also, you mentioned that it is complicated to enable it, can you add some
+details?
+
+
+> 
+> Per PCIe r6.0, sec 7.9.15.3, "When set, if the PTM Enable bit is also Set,
+> this Time Source is the PTM Root," so if PTM Enable is cleared, the value
+> of Root Select should be irrelevant.
+> 
+> Preserve Root Select to simplify re-enabling PTM.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: David E. Box <david.e.box@linux.intel.com>
+> ---
+>  drivers/pci/pcie/ptm.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
+> index 368a254e3124..b6a417247ce3 100644
+> --- a/drivers/pci/pcie/ptm.c
+> +++ b/drivers/pci/pcie/ptm.c
+> @@ -42,7 +42,7 @@ void pci_disable_ptm(struct pci_dev *dev)
+>  		return;
+>  
+>  	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, &ctrl);
+> -	ctrl &= ~(PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT);
+> +	ctrl &= ~PCI_PTM_CTRL_ENABLE;
+>  	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, ctrl);
+>  }
+>  
+
 -- 
-2.25.1
-
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
