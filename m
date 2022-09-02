@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85597C54EE9
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Sep 2022 23:35:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52796ECAAA1
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Sep 2022 23:35:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229640AbiIBXfu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Sep 2022 19:35:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41276 "EHLO
+        id S230024AbiIBXf5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Sep 2022 19:35:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229609AbiIBXft (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2022 19:35:49 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E10B5DEA7D;
-        Fri,  2 Sep 2022 16:35:47 -0700 (PDT)
+        with ESMTP id S229742AbiIBXfx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2022 19:35:53 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECF02DF4C4;
+        Fri,  2 Sep 2022 16:35:51 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7D1C161FCA;
-        Fri,  2 Sep 2022 23:35:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AF38C433D6;
-        Fri,  2 Sep 2022 23:35:46 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 357D461FCC;
+        Fri,  2 Sep 2022 23:35:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B40EC433C1;
+        Fri,  2 Sep 2022 23:35:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1662161746;
-        bh=FmnAhEe5uZ9f3ApuhBxfFu90IRni8tTV6tD+FWbuSa8=;
-        h=From:To:Cc:Subject:Date:From;
-        b=kBxHCiXFgnQoiKbZQA31DL25+Hs1UV9ewHYNNxsUqx+m95UU5zl+bDsRt3dv7KVJw
-         RrBWsLqg6tL4O7EEopzjJakahh8CxxuW0EXVI32+o1abjnkE7LqWWLyraouDnBlqzY
-         ZgKzmYvrvlZruyHoSTyHvRr+MgJSL7oWCjgppUV0gGu86tIz5B/D4dMqnhOlZQVpmw
-         T2wNxoo2C1tii3G1y1rLdsytX9hd1jKXuEv3XyVBK0aaR5aAlhE1RL76eC0iIXkw2j
-         LhZF6vNMr/c10OoAwWEhYvcac6K8RLCxziiZOcLQ+2XVHdhV9djwNH7t0T09NyWi3e
-         OCyFSUAAeaAZw==
+        s=k20201202; t=1662161750;
+        bh=+tv4zJBnBQ0b/SGi+DyVyUKXcJhST7fJ2n0JsNgjNls=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=keoxqNIFb+voGD+du+d+lR8fPs6T37tWH5gTTC+flpPuFDRXoghju5zJdy0Et7j2b
+         m31+VKI1QDi//fwzEeclBtCYwo1s12zemZ4BlpEVaB1xtpHALHN4FyFGNdvp0TT+KD
+         2O+o26mYUeLBUFcapKnwBkPalsgkkOSFFzr5Im3CKCDOqpw2E2FOqY+MVkENhrpL04
+         PspuMWHr5HgV/WVqAkI40nNQ5h1pRs+CLi0J9luxtt7TYAqQokDk2oOpDNmc5778cz
+         nbuX1F/N4umiq3maunuoj32A/KyZX+U8aD5sCFWOu3A0o59mPIYcBzu02Z+eG3Pb6w
+         9GMDEiUik0LYg==
 From:   Bjorn Helgaas <helgaas@kernel.org>
 To:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
         Rajvi Jingar <rajvi.jingar@linux.intel.com>,
@@ -42,10 +42,12 @@ Cc:     Koba Ko <koba.ko@canonical.com>,
         <sathyanarayanan.kuppuswamy@linux.intel.com>,
         linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 0/3] PCI/PM: Always disable PTM for all devices during suspend
-Date:   Fri,  2 Sep 2022 18:35:40 -0500
-Message-Id: <20220902233543.390890-1-helgaas@kernel.org>
+Subject: [PATCH v2 2/3] PCI/PTM: Implement pci_enable_ptm() for Root Ports, Switch Upstream Ports
+Date:   Fri,  2 Sep 2022 18:35:42 -0500
+Message-Id: <20220902233543.390890-3-helgaas@kernel.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220902233543.390890-1-helgaas@kernel.org>
+References: <20220902233543.390890-1-helgaas@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -54,32 +56,74 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Bjorn Helgaas <bhelgaas@google.com>
 
-We currently disable PTM for Root Ports during suspend.  Leaving PTM
-enabled for downstream devices causes UR errors if they send PTM Requests.
-The intent of this series is to:
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/pci/pcie/ptm.c | 34 +++++++++++++++++++++++++++-------
+ 1 file changed, 27 insertions(+), 7 deletions(-)
 
-  - Unconditionally disable PTM during suspend (even if the driver saves
-    its own state) by moving the disable from pci_prepare_to_sleep() to
-    pci_pm_suspend().
-
-  - Disable PTM for all devices by removing the Root Port condition and
-    doing it early in the suspend paths.
-
-  - Explicitly re-enable PTM during resume, which requires new support in
-    pci_enable_ptm() for Root Ports and Switch Upstream Ports.
-
-
-Bjorn Helgaas (3):
-  PCI/PTM: Preserve PTM Root Select
-  PCI/PTM: Implement pci_enable_ptm() for Root Ports, Switch Upstream
-    Ports
-  PCI/PM: Always disable PTM for all devices during suspend
-
- drivers/pci/pci-driver.c | 14 ++++++++++++++
- drivers/pci/pci.c        | 20 --------------------
- drivers/pci/pcie/ptm.c   | 36 ++++++++++++++++++++++++++++--------
- 3 files changed, 42 insertions(+), 28 deletions(-)
-
+diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
+index b6a417247ce3..ad283818f37b 100644
+--- a/drivers/pci/pcie/ptm.c
++++ b/drivers/pci/pcie/ptm.c
+@@ -167,11 +167,11 @@ int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
+ 	if (!pos)
+ 		return -EINVAL;
+ 
+-	pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
+-	if (!(cap & PCI_PTM_CAP_REQ))
+-		return -EINVAL;
+-
+ 	/*
++	 * Root Ports and Switch Upstream Ports have been configured
++	 * by pci_ptm_init(), so preserve their PCI_PTM_CTRL_ROOT and
++	 * granularity.
++	 *
+ 	 * For a PCIe Endpoint, PTM is only useful if the endpoint can
+ 	 * issue PTM requests to upstream devices that have PTM enabled.
+ 	 *
+@@ -179,19 +179,39 @@ int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
+ 	 * device, so there must be some implementation-specific way to
+ 	 * associate the endpoint with a time source.
+ 	 */
+-	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ENDPOINT) {
++	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT ||
++	    pci_pcie_type(dev) == PCI_EXP_TYPE_UPSTREAM) {
++		if (pci_pcie_type(dev) == PCI_EXP_TYPE_UPSTREAM) {
++			ups = pci_upstream_bridge(dev);
++			if (!ups || !ups->ptm_enabled)
++				return -EINVAL;
++		}
++
++		pci_read_config_dword(dev, pos + PCI_PTM_CTRL, &ctrl);
++		ctrl |= PCI_PTM_CTRL_ENABLE;
++	} else if (pci_pcie_type(dev) == PCI_EXP_TYPE_ENDPOINT) {
++		pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
++		if (!(cap & PCI_PTM_CAP_REQ))
++			return -EINVAL;
++
+ 		ups = pci_upstream_bridge(dev);
+ 		if (!ups || !ups->ptm_enabled)
+ 			return -EINVAL;
+ 
+ 		dev->ptm_granularity = ups->ptm_granularity;
++		ctrl = PCI_PTM_CTRL_ENABLE;
++		ctrl |= dev->ptm_granularity << 8;
+ 	} else if (pci_pcie_type(dev) == PCI_EXP_TYPE_RC_END) {
++		pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
++		if (!(cap & PCI_PTM_CAP_REQ))
++			return -EINVAL;
++
+ 		dev->ptm_granularity = 0;
++		ctrl = PCI_PTM_CTRL_ENABLE;
++		ctrl |= dev->ptm_granularity << 8;
+ 	} else
+ 		return -EINVAL;
+ 
+-	ctrl = PCI_PTM_CTRL_ENABLE;
+-	ctrl |= dev->ptm_granularity << 8;
+ 	pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
+ 	dev->ptm_enabled = 1;
+ 
 -- 
 2.25.1
 
