@@ -2,119 +2,71 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B99AECAAA1
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 13:11:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AD79ECAAA1
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 15:12:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234132AbiIFNLW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Sep 2022 09:11:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48030 "EHLO
+        id S234315AbiIFPMy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Sep 2022 11:12:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58384 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240145AbiIFNLT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 09:11:19 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 831C3659F8;
-        Tue,  6 Sep 2022 06:11:11 -0700 (PDT)
-Received: from [192.168.2.145] (109-252-119-13.nat.spd-mgts.ru [109.252.119.13])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: dmitry.osipenko)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id B80DF660037F;
-        Tue,  6 Sep 2022 14:11:06 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1662469869;
-        bh=5QO1SLp5eg80ObSSt8FLqmBTFoFhiD0BogISlBa9BUQ=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=mOY7c50kE5+Xmrb35k079cHSMFkYyUhYJe+5NjUUjK8ZUXDK2Cj5ao5UFUt6ANYUq
-         MbENZTEK+MC3hZgppOROxiXeWrvpQjkxT6YjcoMgmWubysUlbKG77vCqaEkWRDRal9
-         XXpS0HpF4+46bmoLB10JvyBEUVX9ZdQGSREbTyPXFsZn6YfaEG5VzCQDo8FnzKShL+
-         XBdK7rg58ksb9EzHK9Ozg4bd0EY8Yc3pKrEVM3aopMr0XqtFVapzbd8WRV3eV8G+7D
-         kXDLzfz9Muog+VR73hD4bNVxPc1EBMTiMUwEjla1rHk5Sro9Q91O0seQeTlmhd+iQq
-         3CWCI7wojCwxQ==
-Message-ID: <efe46a7d-89b7-2465-e593-8383d1546c16@collabora.com>
-Date:   Tue, 6 Sep 2022 16:11:03 +0300
+        with ESMTP id S230382AbiIFPM3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 11:12:29 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E0B274E60E;
+        Tue,  6 Sep 2022 07:25:51 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 92FE71AED;
+        Tue,  6 Sep 2022 07:24:39 -0700 (PDT)
+Received: from e120937-lin.home (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 20D413F7B4;
+        Tue,  6 Sep 2022 07:24:31 -0700 (PDT)
+From:   Cristian Marussi <cristian.marussi@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
+Cc:     sudeep.holla@arm.com, james.quinlan@broadcom.com,
+        Jonathan.Cameron@Huawei.com, f.fainelli@gmail.com,
+        etienne.carriere@linaro.org, vincent.guittot@linaro.org,
+        daniel.lezcano@linaro.org, tarek.el-sherbiny@arm.com,
+        adrian.slatineanu@arm.com, souvik.chakravarty@arm.com,
+        wleavitt@marvell.com, wbartczak@marvell.com,
+        dan.carpenter@oracle.com, lukasz.luba@arm.com
+Subject: [PATCH v2 3/3] powercap: arm_scmi: Fix a NULL vs IS_ERR() bug
+Date:   Tue,  6 Sep 2022 15:23:37 +0100
+Message-Id: <20220906142337.1697569-4-cristian.marussi@arm.com>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220906142337.1697569-1-cristian.marussi@arm.com>
+References: <20220906142337.1697569-1-cristian.marussi@arm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.12.0
-Subject: Re: [PATCH v5 07/33] thermal/drivers/tegra: Switch to new of API
-Content-Language: en-US
-To:     Daniel Lezcano <daniel.lezcano@linexp.org>,
-        daniel.lezcano@linaro.org, rafael@kernel.org
-Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, khilman@baylibre.com,
-        abailon@baylibre.com, lukasz.luba@arm.com, broonie@kernel.org,
-        damien.lemoal@opensource.wdc.com, heiko@sntech.de,
-        hayashi.kunihiko@socionext.com, mhiramat@kernel.org,
-        talel@amazon.com, thierry.reding@gmail.com, digetx@gmail.com,
-        jonathanh@nvidia.com, anarsoul@gmail.com, tiny.windzz@gmail.com,
-        baolin.wang7@gmail.com, f.fainelli@gmail.com,
-        bjorn.andersson@linaro.org, mcoquelin.stm32@gmail.com,
-        glaroque@baylibre.com, miquel.raynal@bootlin.com,
-        shawnguo@kernel.org, niklas.soderlund@ragnatech.se,
-        matthias.bgg@gmail.com, j-keerthy@ti.com,
-        Amit Kucheria <amitk@kernel.org>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>
-References: <20220804224349.1926752-1-daniel.lezcano@linexp.org>
- <20220804224349.1926752-8-daniel.lezcano@linexp.org>
-From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
-In-Reply-To: <20220804224349.1926752-8-daniel.lezcano@linexp.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 8/5/22 01:43, Daniel Lezcano wrote:
-> diff --git a/drivers/thermal/tegra/tegra30-tsensor.c b/drivers/thermal/tegra/tegra30-tsensor.c
-> index 05886684f429..c34501287e96 100644
-> --- a/drivers/thermal/tegra/tegra30-tsensor.c
-> +++ b/drivers/thermal/tegra/tegra30-tsensor.c
-> @@ -159,9 +159,9 @@ static void devm_tegra_tsensor_hw_disable(void *data)
->  	tegra_tsensor_hw_disable(ts);
->  }
->  
-> -static int tegra_tsensor_get_temp(void *data, int *temp)
-> +static int tegra_tsensor_get_temp(struct thermal_zone_device *tz, int *temp)
->  {
-> -	const struct tegra_tsensor_channel *tsc = data;
-> +	const struct tegra_tsensor_channel *tsc = tz->devdata;
->  	const struct tegra_tsensor *ts = tsc->ts;
->  	int err, c1, c2, c3, c4, counter;
->  	u32 val;
-> @@ -217,9 +217,9 @@ static int tegra_tsensor_temp_to_counter(const struct tegra_tsensor *ts, int tem
->  	return DIV_ROUND_CLOSEST(c2 * 1000000 - ts->calib.b, ts->calib.a);
->  }
->  
-> -static int tegra_tsensor_set_trips(void *data, int low, int high)
-> +static int tegra_tsensor_set_trips(struct thermal_zone_device *tz, int low, int high)
->  {
-> -	const struct tegra_tsensor_channel *tsc = data;
-> +	const struct tegra_tsensor_channel *tsc = tz->devdata;
->  	const struct tegra_tsensor *ts = tsc->ts;
->  	u32 val;
->  
-> @@ -240,7 +240,7 @@ static int tegra_tsensor_set_trips(void *data, int low, int high)
->  	return 0;
->  }
->  
-> -static const struct thermal_zone_of_device_ops ops = {
-> +static const struct thermal_zone_device_ops ops = {
->  	.get_temp = tegra_tsensor_get_temp,
->  	.set_trips = tegra_tsensor_set_trips,
->  };
-> @@ -516,7 +516,7 @@ static int tegra_tsensor_register_channel(struct tegra_tsensor *ts,
->  	tsc->id = id;
->  	tsc->regs = ts->regs + 0x40 * (hw_id + 1);
->  
-> -	tsc->tzd = devm_thermal_zone_of_sensor_register(ts->dev, id, tsc, &ops);
-> +	tsc->tzd = devm_thermal_of_zone_register(ts->dev, id, tsc, &ops);
->  	if (IS_ERR(tsc->tzd)) {
->  		if (PTR_ERR(tsc->tzd) != -ENODEV)
->  			return dev_err_probe(ts->dev, PTR_ERR(tsc->tzd),
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-Tested-by: Dmitry Osipenko <dmitry.osipenko@collabora.com> # Nexus7
+The powercap_register_control_type() return error pointers.  It never
+returns NULL.
 
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/powercap/arm_scmi_powercap.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+index 76200c004cad..05d0e516176a 100644
+--- a/drivers/powercap/arm_scmi_powercap.c
++++ b/drivers/powercap/arm_scmi_powercap.c
+@@ -485,8 +485,8 @@ static int __init scmi_powercap_init(void)
+ 	int ret;
+ 
+ 	scmi_top_pcntrl = powercap_register_control_type(NULL, "arm-scmi", NULL);
+-	if (!scmi_top_pcntrl)
+-		return -ENODEV;
++	if (IS_ERR(scmi_top_pcntrl))
++		return PTR_ERR(scmi_top_pcntrl);
+ 
+ 	ret = scmi_register(&scmi_powercap_driver);
+ 	if (ret)
 -- 
-Best regards,
-Dmitry
+2.32.0
+
