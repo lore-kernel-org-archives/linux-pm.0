@@ -2,76 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73FBCECAAD5
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 15:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5B04C6FA8C
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 15:55:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232664AbiIFPlf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Sep 2022 11:41:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47642 "EHLO
+        id S234331AbiIFPzv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Sep 2022 11:55:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239140AbiIFPiv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 11:38:51 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B9F06C7432;
-        Tue,  6 Sep 2022 07:48:53 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 29BCC1AC1;
-        Tue,  6 Sep 2022 07:24:37 -0700 (PDT)
-Received: from e120937-lin.home (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A6E023F7B4;
-        Tue,  6 Sep 2022 07:24:28 -0700 (PDT)
-From:   Cristian Marussi <cristian.marussi@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org
-Cc:     sudeep.holla@arm.com, james.quinlan@broadcom.com,
-        Jonathan.Cameron@Huawei.com, f.fainelli@gmail.com,
-        etienne.carriere@linaro.org, vincent.guittot@linaro.org,
-        daniel.lezcano@linaro.org, tarek.el-sherbiny@arm.com,
-        adrian.slatineanu@arm.com, souvik.chakravarty@arm.com,
-        wleavitt@marvell.com, wbartczak@marvell.com,
-        dan.carpenter@oracle.com, lukasz.luba@arm.com
-Subject: [PATCH v2 2/3] powercap: arm_scmi: Fix signedness bug in probe
-Date:   Tue,  6 Sep 2022 15:23:36 +0100
-Message-Id: <20220906142337.1697569-3-cristian.marussi@arm.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220906142337.1697569-1-cristian.marussi@arm.com>
-References: <20220906142337.1697569-1-cristian.marussi@arm.com>
+        with ESMTP id S234517AbiIFPz3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 11:55:29 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A77E78E457;
+        Tue,  6 Sep 2022 08:13:36 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id AACF6B81915;
+        Tue,  6 Sep 2022 15:13:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F006DC43470;
+        Tue,  6 Sep 2022 15:13:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1662477213;
+        bh=6ixbFK5dgdMaMZNuwVyiFXnCv9UWW2o+MX03FBO4Qsc=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=GJtuD/4inzykbohpjLekuGttk04rVbGcZHY3Tyw6Y16SsUF3FSPVjS/Q8FcKoBIHC
+         ZXlYUwiemE5wPjpAXY0/5yEw8FWoRtu6S3VJ1oC8of2BO/QXkQejU58ArloQjPUCQs
+         ggGPcakrSem1zh0n7fODo2aieFhCo+agA3mwWkDz6yABqbuL0xzZwSn79F5U8cGtdl
+         gTdz0OH563dgBeClebTp0g6aVYImdSo0mNYl+buuVLOwFtbH5bhJhjczJlhK/jLDy+
+         p4uR2wHuUXF40+naQ68NTLLcZTvVd3d6LoCYiXLyKtrZ5AUTncilm0hYWMGYoKoS6m
+         JSwgV1lQjEf3g==
+Date:   Tue, 6 Sep 2022 16:13:07 +0100
+From:   Lee Jones <lee@kernel.org>
+To:     Mithil Bavishi <bavishimithil@gmail.com>
+Cc:     linux-input@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        dmitry.torokhov@gmail.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, sre@kernel.org,
+        tony@atomide.com, linux@armlinux.org.uk, contact@paulk.fr
+Subject: Re: [PATCH 01/10] power: reset: Move TWL4030 power driver from mfd
+Message-ID: <Yxdjg/MKlc5Tc/3Z@google.com>
+References: <20220820071659.1215-1-bavishimithil@gmail.com>
+ <20220820071659.1215-2-bavishimithil@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220820071659.1215-2-bavishimithil@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+On Sat, 20 Aug 2022, Mithil Bavishi wrote:
 
-The "pr->num_zones" variable is an unsigned int so it can't be less than
-zero.
+> The power/reset folder seems like a more appropriate place for
+> twl4030-power.c
+> 
+> Signed-off-by: Mithil Bavishi <bavishimithil@gmail.com>
+> ---
+>  drivers/mfd/Kconfig                          | 13 -------------
+>  drivers/mfd/Makefile                         |  1 -
+>  drivers/power/reset/Kconfig                  | 12 ++++++++++++
+>  drivers/power/reset/Makefile                 |  1 +
+>  drivers/{mfd => power/reset}/twl4030-power.c |  0
+>  5 files changed, 13 insertions(+), 14 deletions(-)
+>  rename drivers/{mfd => power/reset}/twl4030-power.c (100%)
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/powercap/arm_scmi_powercap.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+Acked-by: Lee Jones <lee@kernel.org>
 
-diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-index a91438867f8c..76200c004cad 100644
---- a/drivers/powercap/arm_scmi_powercap.c
-+++ b/drivers/powercap/arm_scmi_powercap.c
-@@ -389,11 +389,12 @@ static int scmi_powercap_probe(struct scmi_device *sdev)
- 	if (!pr)
- 		return -ENOMEM;
- 
--	pr->num_zones = powercap_ops->num_domains_get(ph);
--	if (pr->num_zones < 0) {
-+	ret = powercap_ops->num_domains_get(ph);
-+	if (ret < 0) {
- 		dev_err(dev, "number of powercap domains not found\n");
--		return pr->num_zones;
-+		return ret;
- 	}
-+	pr->num_zones = ret;
- 
- 	pr->spzones = devm_kcalloc(dev, pr->num_zones,
- 				   sizeof(*pr->spzones), GFP_KERNEL);
 -- 
-2.32.0
-
+Lee Jones [李琼斯]
