@@ -2,202 +2,230 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CF02C54EE9
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 22:24:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9019BC38145
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 23:18:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230085AbiIFWYt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Sep 2022 18:24:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49704 "EHLO
+        id S230054AbiIFXSe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Sep 2022 19:18:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230083AbiIFWYa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 18:24:30 -0400
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41EA4AEDA9;
-        Tue,  6 Sep 2022 15:24:15 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id E87D8CE18A3;
-        Tue,  6 Sep 2022 22:24:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10D77C43149;
-        Tue,  6 Sep 2022 22:24:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1662503052;
-        bh=RqustZvweOUGMZRzXAxz1L58dl8uzoXmJZ6vgqdeZw0=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=WVzSCHFQefHgDDstD/MthGIhvD0pGHpJ+v3D2GtaJxL/NlaD0nIbblnfoctu7hbr6
-         QsFxSOS724ILyn1x6fALh2JzRt2SXKig/m8zF1D1Sx+ON/sefyroJkWXH6pWBGUzmO
-         Wuw9Ag22NPPAIZ1VXf5J0puU3BdLtM47iOrN6g/xOIaNgz96UegXZ49S+jmTKTxCKS
-         ausPxIZMnThbUldg0CLzLki/pwFQQQlKN8d6NFkypHEfDc2KbKqYrkIwLgRdyHU2xh
-         k88FISCnglQ7o6l59yluzs6ayy+NDGAMnmW7UobDyEZUHglQH3IVsRCrS4HHe1TA7+
-         WeqLHF3GL9mFQ==
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        with ESMTP id S229502AbiIFXSc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 19:18:32 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6169280EB7;
+        Tue,  6 Sep 2022 16:18:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1662506311; x=1694042311;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=T5jQoJwMfhrAtxLtijB7as6MbNd9wJMzK7jsC0Yzl3U=;
+  b=jmBEkP3kn927guXbAXt0+gc33V13FGMrXkITWVY0iaV2HPb7SkTcaVa3
+   KWvoDyASoctip/B/otBZPAl0RNV6IhbX9f7xblVuEftKcOIIcimkfhucs
+   I7/VbbmyK6MbGdbtmaMgaVJ3Azj1ABe5s4U23sfy/lX1z5+Fq4i9SMGVn
+   ZM5bSSHerOjW3u5q9hNBa+uY5PqsVPVryvQVC2KhkwZMts3l3AhD7PFqS
+   rGVYpBzKQSQKITZJedR1oZa4SlcqJdSta4av2yV90lHazGj6YJ9Q4exXp
+   gQmvvN/8KSZeNkWoNsJBR0naqmdnjJtb20gDrsw5eYBw++l7bgHGKa4OY
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10462"; a="277127267"
+X-IronPort-AV: E=Sophos;i="5.93,294,1654585200"; 
+   d="scan'208";a="277127267"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2022 16:18:31 -0700
+X-IronPort-AV: E=Sophos;i="5.93,294,1654585200"; 
+   d="scan'208";a="703390337"
+Received: from sanekar-mobl.amr.corp.intel.com (HELO [10.212.226.92]) ([10.212.226.92])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2022 16:18:23 -0700
+Message-ID: <def1ed94-273a-11eb-68c3-b0b681f921ca@linux.intel.com>
+Date:   Tue, 6 Sep 2022 16:18:23 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Firefox/91.0 Thunderbird/91.11.0
+Subject: Re: [PATCH v3 02/10] PCI/PTM: Cache PTM Capability offset
+Content-Language: en-US
+To:     Bjorn Helgaas <helgaas@kernel.org>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
         Rajvi Jingar <rajvi.jingar@linux.intel.com>,
         "Rafael J . Wysocki" <rafael@kernel.org>
 Cc:     Koba Ko <koba.ko@canonical.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         "David E . Box" <david.e.box@linux.intel.com>,
-        Sathyanarayanan Kuppuswamy 
-        <sathyanarayanan.kuppuswamy@linux.intel.com>,
         linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v3 09/10] PCI/PTM: Reorder functions in logical order
-Date:   Tue,  6 Sep 2022 17:23:50 -0500
-Message-Id: <20220906222351.64760-10-helgaas@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220906222351.64760-1-helgaas@kernel.org>
 References: <20220906222351.64760-1-helgaas@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ <20220906222351.64760-3-helgaas@kernel.org>
+From:   Sathyanarayanan Kuppuswamy 
+        <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <20220906222351.64760-3-helgaas@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+Hi,
 
-pci_enable_ptm() and pci_disable_ptm() were separated.
-pci_save_ptm_state() and pci_restore_ptm_state() dangled at the top.  Move
-them to logical places.
+On 9/6/22 3:23 PM, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> Cache the PTM Capability offset instead of searching for it every time we
+> enable/disable PTM or save/restore PTM state.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  drivers/pci/pcie/ptm.c | 41 +++++++++++++++++------------------------
+>  include/linux/pci.h    |  1 +
+>  2 files changed, 18 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
+> index b6a417247ce3..6ac7ff48be57 100644
+> --- a/drivers/pci/pcie/ptm.c
+> +++ b/drivers/pci/pcie/ptm.c
+> @@ -31,13 +31,9 @@ static void pci_ptm_info(struct pci_dev *dev)
+>  
+>  void pci_disable_ptm(struct pci_dev *dev)
+>  {
+> -	int ptm;
+> +	int ptm = dev->ptm_cap;
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/pci/pcie/ptm.c | 108 ++++++++++++++++++++---------------------
- 1 file changed, 54 insertions(+), 54 deletions(-)
+I think you don't need to store it. Directly use dev->ptm?
 
-diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
-index d65f5af9700d..6c09e00a7b51 100644
---- a/drivers/pci/pcie/ptm.c
-+++ b/drivers/pci/pcie/ptm.c
-@@ -9,60 +9,6 @@
- #include <linux/pci.h>
- #include "../pci.h"
- 
--static void __pci_disable_ptm(struct pci_dev *dev)
--{
--	int ptm = dev->ptm_cap;
--	u16 ctrl;
--
--	if (!ptm)
--		return;
--
--	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, &ctrl);
--	ctrl &= ~PCI_PTM_CTRL_ENABLE;
--	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, ctrl);
--}
--
--void pci_disable_ptm(struct pci_dev *dev)
--{
--	__pci_disable_ptm(dev);
--	dev->ptm_enabled = 0;
--}
--EXPORT_SYMBOL(pci_disable_ptm);
--
--void pci_save_ptm_state(struct pci_dev *dev)
--{
--	int ptm = dev->ptm_cap;
--	struct pci_cap_saved_state *save_state;
--	u16 *cap;
--
--	if (!ptm)
--		return;
--
--	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
--	if (!save_state)
--		return;
--
--	cap = (u16 *)&save_state->cap.data[0];
--	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, cap);
--}
--
--void pci_restore_ptm_state(struct pci_dev *dev)
--{
--	int ptm = dev->ptm_cap;
--	struct pci_cap_saved_state *save_state;
--	u16 *cap;
--
--	if (!ptm)
--		return;
--
--	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
--	if (!save_state)
--		return;
--
--	cap = (u16 *)&save_state->cap.data[0];
--	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, *cap);
--}
--
- /*
-  * If the next upstream device supports PTM, return it; otherwise return
-  * NULL.  PTM Messages are local, so both link partners must support it.
-@@ -132,6 +78,40 @@ void pci_ptm_init(struct pci_dev *dev)
- 		pci_enable_ptm(dev, NULL);
- }
- 
-+void pci_save_ptm_state(struct pci_dev *dev)
-+{
-+	int ptm = dev->ptm_cap;
-+	struct pci_cap_saved_state *save_state;
-+	u16 *cap;
-+
-+	if (!ptm)
-+		return;
-+
-+	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
-+	if (!save_state)
-+		return;
-+
-+	cap = (u16 *)&save_state->cap.data[0];
-+	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, cap);
-+}
-+
-+void pci_restore_ptm_state(struct pci_dev *dev)
-+{
-+	int ptm = dev->ptm_cap;
-+	struct pci_cap_saved_state *save_state;
-+	u16 *cap;
-+
-+	if (!ptm)
-+		return;
-+
-+	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
-+	if (!save_state)
-+		return;
-+
-+	cap = (u16 *)&save_state->cap.data[0];
-+	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, *cap);
-+}
-+
- static int __pci_enable_ptm(struct pci_dev *dev)
- {
- 	int ptm = dev->ptm_cap;
-@@ -193,6 +173,26 @@ int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
- }
- EXPORT_SYMBOL(pci_enable_ptm);
- 
-+static void __pci_disable_ptm(struct pci_dev *dev)
-+{
-+	int ptm = dev->ptm_cap;
-+	u16 ctrl;
-+
-+	if (!ptm)
-+		return;
-+
-+	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, &ctrl);
-+	ctrl &= ~PCI_PTM_CTRL_ENABLE;
-+	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, ctrl);
-+}
-+
-+void pci_disable_ptm(struct pci_dev *dev)
-+{
-+	__pci_disable_ptm(dev);
-+	dev->ptm_enabled = 0;
-+}
-+EXPORT_SYMBOL(pci_disable_ptm);
-+
- /*
-  * Disable PTM, but leave dev->ptm_enabled so we silently re-enable it on
-  * resume.
+>  	u16 ctrl;
+>  
+> -	if (!pci_is_pcie(dev))
+> -		return;
+> -
+> -	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
+>  	if (!ptm)
+>  		return;
+>  
+> @@ -48,14 +44,10 @@ void pci_disable_ptm(struct pci_dev *dev)
+>  
+>  void pci_save_ptm_state(struct pci_dev *dev)
+>  {
+> -	int ptm;
+> +	int ptm = dev->ptm_cap;
+
+Same as above.
+
+>  	struct pci_cap_saved_state *save_state;
+>  	u16 *cap;
+>  
+> -	if (!pci_is_pcie(dev))
+> -		return;
+> -
+> -	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
+>  	if (!ptm)
+>  		return;
+>  
+> @@ -69,16 +61,15 @@ void pci_save_ptm_state(struct pci_dev *dev)
+>  
+>  void pci_restore_ptm_state(struct pci_dev *dev)
+>  {
+> +	int ptm = dev->ptm_cap;
+
+It can be u16?
+
+>  	struct pci_cap_saved_state *save_state;
+> -	int ptm;
+>  	u16 *cap;
+>  
+> -	if (!pci_is_pcie(dev))
+> +	if (!ptm)
+>  		return;
+>  
+>  	save_state = pci_find_saved_ext_cap(dev, PCI_EXT_CAP_ID_PTM);
+> -	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
+> -	if (!save_state || !ptm)
+> +	if (!save_state)
+>  		return;
+>  
+>  	cap = (u16 *)&save_state->cap.data[0];
+> @@ -87,7 +78,7 @@ void pci_restore_ptm_state(struct pci_dev *dev)
+>  
+>  void pci_ptm_init(struct pci_dev *dev)
+>  {
+> -	int pos;
+> +	int ptm;
+
+Why rename? Also ptm can be u16
+
+>  	u32 cap, ctrl;
+>  	u8 local_clock;
+>  	struct pci_dev *ups;
+> @@ -117,13 +108,14 @@ void pci_ptm_init(struct pci_dev *dev)
+>  		return;
+>  	}
+>  
+> -	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
+> -	if (!pos)
+> +	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
+> +	if (!ptm)
+>  		return;
+>  
+> +	dev->ptm_cap = ptm;
+>  	pci_add_ext_cap_save_buffer(dev, PCI_EXT_CAP_ID_PTM, sizeof(u16));
+>  
+> -	pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
+> +	pci_read_config_dword(dev, ptm + PCI_PTM_CAP, &cap);
+>  	local_clock = (cap & PCI_PTM_GRANULARITY_MASK) >> 8;
+>  
+>  	/*
+> @@ -148,7 +140,7 @@ void pci_ptm_init(struct pci_dev *dev)
+>  	}
+>  
+>  	ctrl |= dev->ptm_granularity << 8;
+> -	pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
+> +	pci_write_config_dword(dev, ptm + PCI_PTM_CTRL, ctrl);
+>  	dev->ptm_enabled = 1;
+>  
+>  	pci_ptm_info(dev);
+> @@ -156,18 +148,19 @@ void pci_ptm_init(struct pci_dev *dev)
+>  
+>  int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
+>  {
+> -	int pos;
+> +	int ptm;
+>  	u32 cap, ctrl;
+>  	struct pci_dev *ups;
+>  
+>  	if (!pci_is_pcie(dev))
+>  		return -EINVAL;
+>  
+> -	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
+> -	if (!pos)
+> +	ptm = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
+> +	if (!ptm)
+>  		return -EINVAL;
+>  
+> -	pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
+> +	dev->ptm_cap = ptm;
+> +	pci_read_config_dword(dev, ptm + PCI_PTM_CAP, &cap);
+>  	if (!(cap & PCI_PTM_CAP_REQ))
+>  		return -EINVAL;
+>  
+> @@ -192,7 +185,7 @@ int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
+>  
+>  	ctrl = PCI_PTM_CTRL_ENABLE;
+>  	ctrl |= dev->ptm_granularity << 8;
+> -	pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
+> +	pci_write_config_dword(dev, ptm + PCI_PTM_CTRL, ctrl);
+>  	dev->ptm_enabled = 1;
+>  
+>  	pci_ptm_info(dev);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 060af91bafcd..54be939023a3 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -475,6 +475,7 @@ struct pci_dev {
+>  	unsigned int	broken_cmd_compl:1;	/* No compl for some cmds */
+>  #endif
+>  #ifdef CONFIG_PCIE_PTM
+> +	u16		ptm_cap;		/* PTM Capability */
+>  	unsigned int	ptm_root:1;
+>  	unsigned int	ptm_enabled:1;
+>  	u8		ptm_granularity;
+
 -- 
-2.25.1
-
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
