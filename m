@@ -2,52 +2,52 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55256C38145
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 08:39:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 785EBC6FA8E
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 08:39:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239380AbiIFIjb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Sep 2022 04:39:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37868 "EHLO
+        id S239392AbiIFIjd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Sep 2022 04:39:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37956 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239494AbiIFIiw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 04:38:52 -0400
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A1DC7969E;
-        Tue,  6 Sep 2022 01:36:51 -0700 (PDT)
-Received: by mail-pf1-x430.google.com with SMTP id 123so1251145pfy.2;
-        Tue, 06 Sep 2022 01:36:51 -0700 (PDT)
+        with ESMTP id S239409AbiIFIif (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 04:38:35 -0400
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CE5679628;
+        Tue,  6 Sep 2022 01:36:29 -0700 (PDT)
+Received: by mail-pl1-x631.google.com with SMTP id x1so6246702plv.5;
+        Tue, 06 Sep 2022 01:36:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=BLldUmawu01GzUZglxj6MBSK7Wi8J1495Ow2vHiQCbA=;
-        b=iMG0S4zofl/DfVRmN8zUOquTtKl6J8uMm50G+Ub1HZrWIY0EA+ivHPMlCqT2OrglC9
-         D4tFhZfIq+6PQudEACeyJG9ewydxsZMq1gH2Cu/n/CFrV8Gixo1PTXTXsh9hdAchHSvR
-         RBXMTwli/wkm765TGK16OG8+0re3CpYkDwul96NHyCLIh753F4iwInM1N/by6yrmI5YC
-         ALDhRvtggX2RETZEBNJqOrdBhDUU9hMdWrltrODDT0Xhs8V2F8/0o8og5cbBdztNGtYH
-         TZEpiUTQvu1WzlN5Yie6G+46wcuS8gQAa2fzCOMcyAkgcaucZ/SCV1jn7Ip0PE+Gy8rc
-         dSAA==
+        bh=XZRFVxasDVXXPTfv/lGT5hPcHgNLG3wH8AQQYSGVOn0=;
+        b=jmsIl8Ok40mS0SBKL0wE1rjGntjq6OgvfEjRCRIduxXBXKXXW7onrfKPDzdBLMtqht
+         LLJXufRoIq+Gp/mJ6ExPpzBKSiQkDCL7PjG2ou+a6SXgyXEh/uxMnNZ4T0HBjyGVJGWp
+         cWVFnnVrAmNZ5VB1OP3e/zVaF225LNBFv1YRFEyMkS0VuqXoX+XjnzEBe3jYnQcZ3MbV
+         xf/9WM+MC6fVQqOpcUswQlObDKfVHJddBTEZ9JmQxlo4uV5HowtdzSOB+9YutvfVpLr8
+         4JC6Ye01m4ZDNqFLoZh+mvwh1PZtVMp1x4gm7Y7Blgp8TBG/mWepJDVFCLa9GKW95bRS
+         8Whw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date;
-        bh=BLldUmawu01GzUZglxj6MBSK7Wi8J1495Ow2vHiQCbA=;
-        b=uiASZa3o37QfWRI5e9WZSFIM62k2B4D471CzSkrzKkvUdoEIefIBhbKMBEBlzjKyht
-         2IaxLccvhGe0GQ/0wONcyLuHm4O83zMZnjz/oEgxMAoax6dPhOrtbv8ZI2O5I0GykUb3
-         7E2yL737yplULj0jKdF7pAPbT7HRgsj0QtKs+8nfQZgyM3z6cdxFuURg35H+O7a3DVgG
-         Fpaw/Kk6FVPOq5D7WBEpFs5lYcYgmRv3Jr8bdAgUimhksPMSn2JewfHxJoIGmUTM+wGS
-         T63HJpnaMHj7s4ZOjLHW6CgOv6p/DZ6Cj6dC2xK/YkC1qN0/Gu2cJjFL9XzEKwz3wXnK
-         r+1Q==
-X-Gm-Message-State: ACgBeo3Egwr2JA6Yq/DWPnZ97fIFEvqeHgSpt8cHCHuYBRXl+rhycGeV
-        AR27jAQWvbBKD9OQTJ/XsxusQrNQE9UX1A==
-X-Google-Smtp-Source: AA6agR6YBXOXWI2PPAafdZxRc+Vmw5GkwSeGIJwkLd7ubrEomLInuRV12ZMwVC2kJ7ZkegqiyI/hzw==
-X-Received: by 2002:a05:6a00:1691:b0:53b:3f2c:3257 with SMTP id k17-20020a056a00169100b0053b3f2c3257mr21270799pfc.21.1662453409662;
-        Tue, 06 Sep 2022 01:36:49 -0700 (PDT)
+        bh=XZRFVxasDVXXPTfv/lGT5hPcHgNLG3wH8AQQYSGVOn0=;
+        b=YBrKKrqt0XgLPp6ZmuhrZBK6WdTOuvp9U7Qd4e5ytl/bBBVeLIHqORd9CxIv3pSDaA
+         +Z3+Mdb0qHezLQDOWsCoSbROejgqqUWijmEXjS1xZHwmQv7i+2q5FKTu97OX1nZST+kl
+         1oUMPS0L7EThMj1jY4ht/SOSmxChG3vokw099a+KvqEpLuZOM6EGWA0tXDZHg4XiNJXN
+         5H7+NOnzZTH4RWRCkTNR1he5v5L/XsniwT1cIxiGEEUzkrJUKovffpmzWZuLKrukQCK3
+         JWtjWHdqA2ajicNgSbMhztvwm30vWOe5QRxrGNaM8bYp7q653HKnGMlGhnGpW8c7qP7g
+         c2TQ==
+X-Gm-Message-State: ACgBeo1DR/ngnRz/ptIaBhVoSYP09zrCTMqc8c8DRrOIYz5CPhRt3/Bj
+        sEGFofifIv1r6Uc/7qeiFhw=
+X-Google-Smtp-Source: AA6agR47cJ+WKK2hQU5pd9MSXs2XnpV6BcgHwm3VK/FZ7lc5KFZrxlJaEA3eimgrUCM2ObUIEEZY0Q==
+X-Received: by 2002:a17:90b:3810:b0:1fd:d001:ed41 with SMTP id mq16-20020a17090b381000b001fdd001ed41mr23271322pjb.209.1662453386749;
+        Tue, 06 Sep 2022 01:36:26 -0700 (PDT)
 Received: from RD-3580-24288.rt.l (42-73-80-193.emome-ip.hinet.net. [42.73.80.193])
-        by smtp.gmail.com with ESMTPSA id w12-20020aa79a0c000000b005363bc65bafsm9474506pfj.57.2022.09.06.01.36.43
+        by smtp.gmail.com with ESMTPSA id w12-20020aa79a0c000000b005363bc65bafsm9474506pfj.57.2022.09.06.01.36.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Sep 2022 01:36:49 -0700 (PDT)
+        Tue, 06 Sep 2022 01:36:26 -0700 (PDT)
 From:   ChiaEn Wu <peterwu.pub@gmail.com>
 To:     pavel@ucw.cz, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, matthias.bgg@gmail.com,
@@ -58,10 +58,11 @@ Cc:     chiaen_wu@richtek.com, alice_chen@richtek.com,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-iio@vger.kernel.org,
-        szunichen@gmail.com
-Subject: [PATCH v10 4/8] lib: add linear range index macro
-Date:   Tue,  6 Sep 2022 16:34:00 +0800
-Message-Id: <16d18d1b789f83dd6f6dcebcd28ac8a2b9ca01de.1662476695.git.chiaen_wu@richtek.com>
+        szunichen@gmail.com,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v10 2/8] dt-bindings: leds: mt6370: Add MediaTek MT6370 current sink type LED indicator
+Date:   Tue,  6 Sep 2022 16:33:58 +0800
+Message-Id: <4a1c995e94af808ec460e924edc7ac39b58985cc.1662476695.git.chiaen_wu@richtek.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1662476695.git.chiaen_wu@richtek.com>
 References: <cover.1662476695.git.chiaen_wu@richtek.com>
@@ -71,38 +72,105 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: ChiaEn Wu <chiaen_wu@richtek.com>
+From: ChiYuan Huang <cy_huang@richtek.com>
 
-Add linear_range_idx macro for declaring the linear_range struct simply.
+Add MediaTek MT6370 current sink type LED indicator binding documentation.
 
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 Signed-off-by: ChiaEn Wu <chiaen_wu@richtek.com>
 ---
- include/linux/linear_range.h | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ .../bindings/leds/mediatek,mt6370-indicator.yaml   | 81 ++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
 
-diff --git a/include/linux/linear_range.h b/include/linux/linear_range.h
-index fd3d0b3..2e4f4c3 100644
---- a/include/linux/linear_range.h
-+++ b/include/linux/linear_range.h
-@@ -26,6 +26,17 @@ struct linear_range {
- 	unsigned int step;
- };
- 
-+#define LINEAR_RANGE(_min, _min_sel, _max_sel, _step)		\
-+	{							\
-+		.min = _min,					\
-+		.min_sel = _min_sel,				\
-+		.max_sel = _max_sel,				\
-+		.step = _step,					\
-+	}
+diff --git a/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+new file mode 100644
+index 0000000..204b103
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/mediatek,mt6370-indicator.yaml
+@@ -0,0 +1,81 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/mediatek,mt6370-indicator.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+#define LINEAR_RANGE_IDX(_idx, _min, _min_sel, _max_sel, _step)	\
-+	[_idx] = LINEAR_RANGE(_min, _min_sel, _max_sel, _step)
++title: LED driver for MT6370 PMIC from MediaTek Integrated.
 +
- unsigned int linear_range_values_in_range(const struct linear_range *r);
- unsigned int linear_range_values_in_range_array(const struct linear_range *r,
- 						int ranges);
++maintainers:
++  - Alice Chen <alice_chen@richtek.com>
++
++description: |
++  This module is part of the MT6370 MFD device.
++  Add MT6370 LED driver include 4-channel RGB LED support Register/PWM/Breath Mode
++
++allOf:
++  - $ref: leds-class-multicolor.yaml#
++
++properties:
++  compatible:
++    const: mediatek,mt6370-indicator
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++patternProperties:
++  "^multi-led@[0-3]$":
++    type: object
++
++    properties:
++      reg:
++        enum: [0, 1, 2, 3]
++
++      "#address-cells":
++        const: 1
++
++      "#size-cells":
++        const: 0
++
++    patternProperties:
++      "^led@[0-2]$":
++        type: object
++        $ref: common.yaml#
++        unevaluatedProperties: false
++
++        properties:
++          reg:
++            enum: [0, 1, 2]
++
++        required:
++          - reg
++          - color
++
++    required:
++      - reg
++      - color
++      - "#address-cells"
++      - "#size-cells"
++
++  "^led@[0-3]$":
++    type: object
++    $ref: common.yaml#
++    unevaluatedProperties: false
++
++    properties:
++      reg:
++        enum: [0, 1, 2, 3]
++
++    required:
++      - reg
++      - color
++
++required:
++  - compatible
++  - "#address-cells"
++  - "#size-cells"
++
++additionalProperties: false
 -- 
 2.7.4
 
