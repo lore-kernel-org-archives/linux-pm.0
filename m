@@ -2,69 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB1D5ECAAD5
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 17:02:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23EBDECAAA1
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Sep 2022 17:02:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234298AbiIFRCb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Sep 2022 13:02:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35470 "EHLO
+        id S239439AbiIFRCc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Sep 2022 13:02:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239289AbiIFRBX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 13:01:23 -0400
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A887804A4
-        for <linux-pm@vger.kernel.org>; Tue,  6 Sep 2022 09:48:09 -0700 (PDT)
-Received: by mail-wr1-x436.google.com with SMTP id az27so16352031wrb.6
-        for <linux-pm@vger.kernel.org>; Tue, 06 Sep 2022 09:48:09 -0700 (PDT)
+        with ESMTP id S239292AbiIFRBY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2022 13:01:24 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C29FD95AE2
+        for <linux-pm@vger.kernel.org>; Tue,  6 Sep 2022 09:48:10 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id t7so11326264wrm.10
+        for <linux-pm@vger.kernel.org>; Tue, 06 Sep 2022 09:48:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=RuOkdBUevpNwOF5uxKYPUxVuiSYnY/XeiYrwbyLTKVs=;
-        b=MXGgRNozmSiTJDrSQGhOqLAYkNyQdEf+MvlRK6wDRULEIyGehPAVkS2pWBu+v4KVI3
-         r2M7fKLCgA/0xSUzN5utm3rPHu5wwsD9VFO7d9ohljX8r1o/U6zdh+tYT+SR7qJ6TDm8
-         zp0ACWwSlMW3Fc3pW3a5J24CTo+HA931m30KwrcblwOorqVJEIOKr8xRB+A7go5R541Q
-         fKEWSZMwfEzKoRvfx97BbXgfC6Q0yJi07gQ68/cDhBRVSAZBq+rTbN0A7traz+VSWHDo
-         qDOs7p4UwIHAMmExnVHZ1TgMnBm0WFF7u6hC0SEfI4GlvsDfLqhzMu1iON8FHYHzdJZm
-         smDg==
+        bh=v9HOYNemLB65v2s3X2Chh/1DsPPvYHZYg0+K/15aDgQ=;
+        b=KBk40v1OT946i4B+d+vkBk8cyimrj8gg6lHkT8hIOqFVzup+L566ZgcfQ4sFes+FND
+         3IupKc/pLXicihX1oQtR0nl+/cJRxFhpQVlPsJIlNqL9EbCF2LTfTPUAJLevuKDFhnt5
+         b4squC4IrhDisgAUsnWtYXC4AA9S/wLw3+HSJhu3DOPeDfoCrm3uy8Et5S3hGQHDv+LZ
+         I6pUcuypMDWt8n6CVtt4z64pRCqXkOUsax+8gRXWR3o4p0rdv7qPoTkrtQwN1BZXlO8G
+         9jfPt94QTNArPqcuhkhwb4fEMo6BHLFq3Ec7qNJdws74PO8KergoXU3cXkquudV2PePM
+         cSbw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date;
-        bh=RuOkdBUevpNwOF5uxKYPUxVuiSYnY/XeiYrwbyLTKVs=;
-        b=UyXI888ds0kANnjDAwZ6g6BPu2XtAK4XasnUw9Xhv4+E9B17lN8XPVBIYr4p4J4VBs
-         Vg3blGD/TmYLfKxTxALDBrYDqyFU7N5lVYkydh2GAzxlGH4pPxU+As/HSfizQ3dPjToY
-         Qxyw2micgojqstp+PBVOrbV2jHnWGfblFxT1+ys1kG+x4SoBys7V0RmQ/4O5oEn7MNHF
-         p3LB05qq9Jxku362SfuLDD7ErB2PPJk1onihU+bCOKIueRlO7aTH04vOUiViA8WPD2FE
-         E8B80TKipGQJjvx9c97iDscU7C5CmXsE03n7Bd//HePXqgoXmK9l3+6xGoWvsb5ojxOT
-         xs8A==
-X-Gm-Message-State: ACgBeo2d8yKV69rDMRHE0dfxKSGoUjPnbk3goV74mlK0Coz7mM3rGX17
-        rb0tuIOSOy7LCOWI+0aqTaoqIw==
-X-Google-Smtp-Source: AA6agR6XIRcEoeyLaSxHMBLKwQF0QhLuHuR3B1cYfC3PJXE0abDpIDYcpQwEP9X88VuDatj0oVwNxg==
-X-Received: by 2002:a5d:5887:0:b0:220:81c9:8ab7 with SMTP id n7-20020a5d5887000000b0022081c98ab7mr27763590wrf.702.1662482887974;
-        Tue, 06 Sep 2022 09:48:07 -0700 (PDT)
+        bh=v9HOYNemLB65v2s3X2Chh/1DsPPvYHZYg0+K/15aDgQ=;
+        b=z6s8slqGET53ZNm9jGXKtH0em+tnDylSy+rg0DUwu1ZzVTkqLOlpByGLJBIrKTtd/l
+         E9eGKw6Lv5C6e92ME0FHngyp64Ipj5Y8EiM07DPlxWhfi3Y1nEjZ3T3CLBBBe8w2X2Xn
+         9k9fH67OrSbaBNy7GZtrLHxAZthiaXXAiV8+QnpqwGmTqf8teBkX0Ni0jaT9aTKcxbMY
+         xtxs1JwW8EY5nkuuy2adyk9WVw/AIh3qEy4nbydFwceVQbBjT5U93ZQZjS51lMeAWXTa
+         mldN6tUkCDQ/cWHq5UFz1Eo7347pZPGTQuROCDhqG5Zc3mTPKbj8buxKZWQncNRWXpBx
+         /3Mw==
+X-Gm-Message-State: ACgBeo3n1r43W/gBhl7bX5j/x0VNFK4MC+sXhyMEBYV3tUAgLeSjdixp
+        dQiPo0laOWP21ElVFSedTe7SEg==
+X-Google-Smtp-Source: AA6agR53hPoulIcRoB7W/3CjESueW5s+EE+CW6YumiyGq+fG3CkgKrQkayB+sRAxzfiUb6wYk7+KjA==
+X-Received: by 2002:a05:6000:1a87:b0:222:2c85:2f5b with SMTP id f7-20020a0560001a8700b002222c852f5bmr28683893wry.654.1662482890291;
+        Tue, 06 Sep 2022 09:48:10 -0700 (PDT)
 Received: from localhost.localdomain (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id e27-20020adf9bdb000000b0021f0ff1bc6csm7426600wrc.41.2022.09.06.09.48.06
+        by smtp.gmail.com with ESMTPSA id e27-20020adf9bdb000000b0021f0ff1bc6csm7426600wrc.41.2022.09.06.09.48.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Sep 2022 09:48:07 -0700 (PDT)
+        Tue, 06 Sep 2022 09:48:09 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Amit Kucheria <amitk@kernel.org>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>, Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        linux-rpi-kernel@lists.infradead.org (moderated list:BROADCOM
-        BCM2711/BCM2835 ARM ARCHITECTURE),
-        linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM
-        BCM2711/BCM2835 ARM ARCHITECTURE)
-Subject: [PATCH v3 24/30] thermal/drivers/broadcom: Use generic thermal_zone_get_trip() function
-Date:   Tue,  6 Sep 2022 18:47:14 +0200
-Message-Id: <20220906164720.330701-25-daniel.lezcano@linaro.org>
+        linux-omap@vger.kernel.org (open list:TI BANDGAP AND THERMAL DRIVER)
+Subject: [PATCH v3 26/30] thermal/drivers/ti: Remove unused macros ti_thermal_get_trip_value() / ti_thermal_trip_is_valid()
+Date:   Tue,  6 Sep 2022 18:47:16 +0200
+Message-Id: <20220906164720.330701-27-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220906164720.330701-1-daniel.lezcano@linaro.org>
 References: <20220906164720.330701-1-daniel.lezcano@linaro.org>
@@ -74,58 +67,44 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal framework gives the possibility to register the trip
-points with the thermal zone. When that is done, no get_trip_* ops are
-needed and they can be removed.
+The macros:
 
-Convert ops content logic into generic trip points and register them with the
-thermal zone.
+ti_thermal_get_trip_value()
+ ti_thermal_trip_is_valid()
+
+are unused. Remove them.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/broadcom/bcm2835_thermal.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/thermal/ti-soc-thermal/ti-thermal.h | 15 ---------------
+ 1 file changed, 15 deletions(-)
 
-diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-index 2c67841a1115..5485e59d03a9 100644
---- a/drivers/thermal/broadcom/bcm2835_thermal.c
-+++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-@@ -18,6 +18,7 @@
- #include <linux/platform_device.h>
- #include <linux/thermal.h>
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal.h b/drivers/thermal/ti-soc-thermal/ti-thermal.h
+index c388ecf31834..4fd2c20182d7 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal.h
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal.h
+@@ -38,21 +38,6 @@
+ /* Update rates */
+ #define FAST_TEMP_MONITORING_RATE				250
  
-+#include "../thermal_core.h"
- #include "../thermal_hwmon.h"
- 
- #define BCM2835_TS_TSENSCTL			0x00
-@@ -224,7 +225,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 	 */
- 	val = readl(data->regs + BCM2835_TS_TSENSCTL);
- 	if (!(val & BCM2835_TS_TSENSCTL_RSTB)) {
--		int trip_temp, offset, slope;
-+		struct thermal_trip trip;
-+		int offset, slope;
- 
- 		slope = thermal_zone_get_slope(tz);
- 		offset = thermal_zone_get_offset(tz);
-@@ -232,7 +234,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 		 * For now we deal only with critical, otherwise
- 		 * would need to iterate
- 		 */
--		err = tz->ops->get_trip_temp(tz, 0, &trip_temp);
-+		err = thermal_zone_get_trip(tz, 0, &trip);
- 		if (err < 0) {
- 			dev_err(&pdev->dev,
- 				"Not able to read trip_temp: %d\n",
-@@ -249,7 +251,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 		val |= (0xFE << BCM2835_TS_TSENSCTL_RSTDELAY_SHIFT);
- 
- 		/*  trip_adc value from info */
--		val |= bcm2835_thermal_temp2adc(trip_temp,
-+		val |= bcm2835_thermal_temp2adc(trip.temperature,
- 						offset,
- 						slope)
- 			<< BCM2835_TS_TSENSCTL_THOLD_SHIFT;
+-/* helper macros */
+-/**
+- * ti_thermal_get_trip_value - returns trip temperature based on index
+- * @i:	trip index
+- */
+-#define ti_thermal_get_trip_value(i)					\
+-	(OMAP_TRIP_HOT + ((i) * OMAP_TRIP_STEP))
+-
+-/**
+- * ti_thermal_is_valid_trip - check for trip index
+- * @i:	trip index
+- */
+-#define ti_thermal_is_valid_trip(trip)				\
+-	((trip) >= 0 && (trip) < OMAP_TRIP_NUMBER)
+-
+ #ifdef CONFIG_TI_THERMAL
+ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id, char *domain);
+ int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id);
 -- 
 2.34.1
 
