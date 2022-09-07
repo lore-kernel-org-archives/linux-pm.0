@@ -2,62 +2,288 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B1CAC6FA86
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Sep 2022 16:45:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF5B8C38145
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Sep 2022 17:03:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229760AbiIGQpP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Sep 2022 12:45:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53108 "EHLO
+        id S229705AbiIGRDz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Sep 2022 13:03:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229804AbiIGQpH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2022 12:45:07 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52CD927CE9;
-        Wed,  7 Sep 2022 09:44:49 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 65A73619E9;
-        Wed,  7 Sep 2022 16:44:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 756ECC433D6;
-        Wed,  7 Sep 2022 16:44:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1662569087;
-        bh=YA4emI2WlIyJgBHuczQnrAYy5P3DUtcl4VWIIUWK+7w=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=tGtSPNHZYAfghhJCEFLUeRyDmk9LIfy9iJ7licoebP5rlWtpUJfg3nWQp60tqgX+G
-         7BMLwyutaFgKMhI4FsHQk5YytRSOlbTWhRkoFMsjl0z7HiaA+xuOv9oUTyn5MTx8pV
-         1pMHe7vyI8aNqQW3/Jx+ByviLqt4Jf2drVGWoptHpKfQxDNwowmEh44S4ZZ/HxDIad
-         LGZquUmYCrnylbryi9P4ErYKfHHcrC1MFX4B/pmH62GDK8pZtd0Csb53ZSwymgHiiy
-         xU2bgxrHhhhF/UBMWVCiR/EEGIvhnHguJvpBAx8Ed5EIRZjtyomXUZ1VvtEyVCa7TO
-         d4leeHmYD8F3w==
-Date:   Wed, 7 Sep 2022 11:44:45 -0500
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Rajvi Jingar <rajvi.jingar@linux.intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Koba Ko <koba.ko@canonical.com>,
-        "David E . Box" <david.e.box@linux.intel.com>,
-        Sathyanarayanan Kuppuswamy 
-        <sathyanarayanan.kuppuswamy@linux.intel.com>,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v3 07/10] PCI/PTM: Add suspend/resume
-Message-ID: <20220907164445.GA121443@bhelgaas>
+        with ESMTP id S229800AbiIGRDy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2022 13:03:54 -0400
+Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com [IPv6:2001:4860:4864:20::35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74766B8F02
+        for <linux-pm@vger.kernel.org>; Wed,  7 Sep 2022 10:03:53 -0700 (PDT)
+Received: by mail-oa1-x35.google.com with SMTP id 586e51a60fabf-127ba06d03fso14015286fac.3
+        for <linux-pm@vger.kernel.org>; Wed, 07 Sep 2022 10:03:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date;
+        bh=wsH3q90wxx3Xx6OXO6OMT3se+Z7F0kym24QrbfBKhlM=;
+        b=DFqXovpQHjSoy4gHgwBVnJLZ89TaBFOkTY9V7kC9xie2NDfamyJO18cRoCGh6KIY5F
+         eJQLktqqHgtvDxFx9YHIXV1a7HJyoZL0iv2blmamlIT3r55w5x0/MlZj58bvfWVmG7sr
+         3/sCKRCXWZMEvOD6AmkNKaw3WUCiGIqRliZZ8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=wsH3q90wxx3Xx6OXO6OMT3se+Z7F0kym24QrbfBKhlM=;
+        b=l/BgLblHQEWlmf1lMlZxNe9gYwcGIvb8pCQn0SWvHFaHVUXTnJXpYbOhIK0qQjkRlH
+         reuirH/wuorJoyBGtuG4Y41iG45mpI343+akOsLVUQXN1rqu8sOF821IEa2Thco2rvr5
+         Y4rVeZOx7aRiRFsMwbeSk7S+i+UEB7ofLOuBCtXnou3maQ0rfDbd/vFa9o3Imaf8bMYN
+         5YPeEcz9ZCT+Z8PGLxzsLhO0wKs636VjMoI0j1EYktyBOEM61+ELGvzQpvu2UfBi+BZg
+         UmUm1DA1PLxHDsisMon5KEBSEqqs5f8ofkw6ftJx1rdG9aPQ7IR/sJNOtXoCe+k61CGK
+         eEIw==
+X-Gm-Message-State: ACgBeo2w1ix7INVrtMAlLmuhGkuLnPJ0eAwcmzv56G62aeOpxZUPpdWm
+        /sbA8nABBU9YvSmW7yqxlHpsCO5WGqAT0Q==
+X-Google-Smtp-Source: AA6agR4it2ezpR3wrmTbM4shLzbkZdS+t3M1QLKexSuH8zkRbKSMrEORWHhEL3sI/AJ82Z0KAY9YfA==
+X-Received: by 2002:aca:1210:0:b0:345:540a:8d06 with SMTP id 16-20020aca1210000000b00345540a8d06mr1918468ois.99.1662570232552;
+        Wed, 07 Sep 2022 10:03:52 -0700 (PDT)
+Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com. [209.85.210.54])
+        by smtp.gmail.com with ESMTPSA id 34-20020a9d0c25000000b006370abdc976sm7145145otr.58.2022.09.07.10.03.51
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 07 Sep 2022 10:03:52 -0700 (PDT)
+Received: by mail-ot1-f54.google.com with SMTP id h9-20020a9d5549000000b0063727299bb4so10679986oti.9
+        for <linux-pm@vger.kernel.org>; Wed, 07 Sep 2022 10:03:51 -0700 (PDT)
+X-Received: by 2002:a05:6830:58:b0:637:1974:140a with SMTP id
+ d24-20020a056830005800b006371974140amr1823656otp.362.1662570231101; Wed, 07
+ Sep 2022 10:03:51 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YxgshzycVe5HGymH@black.fi.intel.com>
+References: <20220823222526.1524851-1-evgreen@chromium.org>
+ <20220823152108.v2.2.I9ded8c8caad27403e9284dfc78ad6cbd845bc98d@changeid> <Ywg3r5bJs+5QAll0@kernel.org>
+In-Reply-To: <Ywg3r5bJs+5QAll0@kernel.org>
+From:   Evan Green <evgreen@chromium.org>
+Date:   Wed, 7 Sep 2022 10:03:15 -0700
+X-Gmail-Original-Message-ID: <CAE=gft7qCcpL002Cdo==r=vaDzjwMvEp=scbeKzJVG2ZZms+jQ@mail.gmail.com>
+Message-ID: <CAE=gft7qCcpL002Cdo==r=vaDzjwMvEp=scbeKzJVG2ZZms+jQ@mail.gmail.com>
+Subject: Re: [PATCH v2 02/10] tpm: Allow PCR 23 to be restricted to
+ kernel-only use
+To:     Jarkko Sakkinen <jarkko@kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Gwendal Grignou <gwendal@chromium.org>,
+        Eric Biggers <ebiggers@kernel.org>,
+        Matthew Garrett <mgarrett@aurora.tech>, zohar@linux.ibm.com,
+        linux-integrity@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+        apronin@chromium.org, Daniil Lunev <dlunev@google.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        Matthew Garrett <matthewgarrett@google.com>,
+        Matthew Garrett <mjg59@google.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>, Peter Huewe <peterhuewe@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Sep 07, 2022 at 08:30:47AM +0300, Mika Westerberg wrote:
-> On Tue, Sep 06, 2022 at 05:23:48PM -0500, Bjorn Helgaas wrote:
-> > From: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> I think it is good to explain here why this patch is needed. Even if
-> just one sentence.
+On Thu, Aug 25, 2022 at 8:02 PM Jarkko Sakkinen <jarkko@kernel.org> wrote:
+>
+> On Tue, Aug 23, 2022 at 03:25:18PM -0700, Evan Green wrote:
+> > From: Matthew Garrett <matthewgarrett@google.com>
+> >
+> > Under certain circumstances it might be desirable to enable the creation
+> > of TPM-backed secrets that are only accessible to the kernel. In an
+> > ideal world this could be achieved by using TPM localities, but these
+> > don't appear to be available on consumer systems. An alternative is to
+> > simply block userland from modifying one of the resettable PCRs, leaving
+> > it available to the kernel. If the kernel ensures that no userland can
+> > access the TPM while it is carrying out work, it can reset PCR 23,
+> > extend it to an arbitrary value, create or load a secret, and then reset
+> > the PCR again. Even if userland somehow obtains the sealed material, it
+> > will be unable to unseal it since PCR 23 will never be in the
+> > appropriate state.
+> >
+> > From: Matthew Garrett <mjg59@google.com>
+> > Signed-off-by: Matthew Garrett <mjg59@google.com>
+> >
+> > Signed-off-by: Evan Green <evgreen@chromium.org>
+>
+> Same issues as the other patch.
+>
+> > ---
+> > Matthew's original version of this patch is at:
+> > https://patchwork.kernel.org/patch/12096491/
+>
+> Suggestion: find a lore URL instead for Matthew's patch,
+> and then add "Link: <lore URL>" to your commit before
+> sob's. It's a useful reference also in the commit log.
+>
+> >
+> > Changes in v2:
+> >  - Fixed sparse warnings
+> >
+> >  drivers/char/tpm/Kconfig          | 10 +++++++++
+> >  drivers/char/tpm/tpm-dev-common.c |  8 +++++++
+> >  drivers/char/tpm/tpm.h            | 21 +++++++++++++++++++
+> >  drivers/char/tpm/tpm1-cmd.c       | 35 +++++++++++++++++++++++++++++++
+> >  drivers/char/tpm/tpm2-cmd.c       | 22 +++++++++++++++++++
+> >  drivers/char/tpm/tpm2-space.c     |  2 +-
+> >  6 files changed, 97 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
+> > index 927088b2c3d3f2..4483b61a428b11 100644
+> > --- a/drivers/char/tpm/Kconfig
+> > +++ b/drivers/char/tpm/Kconfig
+> > @@ -211,4 +211,14 @@ config TCG_FTPM_TEE
+> >         This driver proxies for firmware TPM running in TEE.
+> >
+> >  source "drivers/char/tpm/st33zp24/Kconfig"
+> > +
+> > +config TCG_TPM_RESTRICT_PCR
+> > +     bool "Restrict userland access to PCR 23"
+> > +     depends on TCG_TPM
+> > +     help
+> > +       If set, block userland from extending or resetting PCR 23. This
+> > +       allows it to be restricted to in-kernel use, preventing userland
+> > +       from being able to make use of data sealed to the TPM by the kernel.
+> > +       This is required for secure hibernation support, but should be left
+> > +       disabled if any userland may require access to PCR23.
+> >  endif # TCG_TPM
+> > diff --git a/drivers/char/tpm/tpm-dev-common.c b/drivers/char/tpm/tpm-dev-common.c
+> > index dc4c0a0a512903..7a4e618c7d1942 100644
+> > --- a/drivers/char/tpm/tpm-dev-common.c
+> > +++ b/drivers/char/tpm/tpm-dev-common.c
+> > @@ -198,6 +198,14 @@ ssize_t tpm_common_write(struct file *file, const char __user *buf,
+> >       priv->response_read = false;
+> >       *off = 0;
+> >
+> > +     if (priv->chip->flags & TPM_CHIP_FLAG_TPM2)
+> > +             ret = tpm2_cmd_restricted(priv->chip, priv->data_buffer, size);
+> > +     else
+> > +             ret = tpm1_cmd_restricted(priv->chip, priv->data_buffer, size);
+> > +
+> > +     if (ret)
+> > +             goto out;
+> > +
+> >       /*
+> >        * If in nonblocking mode schedule an async job to send
+> >        * the command return the size.
+> > diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+> > index a80b341d38eb8c..077c3ca0a127ba 100644
+> > --- a/drivers/char/tpm/tpm.h
+> > +++ b/drivers/char/tpm/tpm.h
+> > @@ -229,6 +229,8 @@ void tpm2_shutdown(struct tpm_chip *chip, u16 shutdown_type);
+> >  unsigned long tpm2_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal);
+> >  int tpm2_probe(struct tpm_chip *chip);
+> >  int tpm2_get_cc_attrs_tbl(struct tpm_chip *chip);
+> > +int tpm_find_and_validate_cc(struct tpm_chip *chip, struct tpm_space *space,
+> > +                          const void *buf, size_t bufsiz);
+> >  int tpm2_find_cc(struct tpm_chip *chip, u32 cc);
+> >  int tpm2_init_space(struct tpm_space *space, unsigned int buf_size);
+> >  void tpm2_del_space(struct tpm_chip *chip, struct tpm_space *space);
+> > @@ -244,4 +246,23 @@ void tpm_bios_log_setup(struct tpm_chip *chip);
+> >  void tpm_bios_log_teardown(struct tpm_chip *chip);
+> >  int tpm_dev_common_init(void);
+> >  void tpm_dev_common_exit(void);
+> > +
+> > +#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
+> > +#define TPM_RESTRICTED_PCR 23
+> > +
+> > +int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
+> > +int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
+> > +#else
+> > +static inline int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
+> > +                                   size_t size)
+> > +{
+> > +     return 0;
+> > +}
+> > +
+> > +static inline int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
+> > +                                   size_t size)
+> > +{
+> > +     return 0;
+> > +}
+> > +#endif
+> >  #endif
+> > diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
+> > index 8ec743dec26544..318e75ae42fb85 100644
+> > --- a/drivers/char/tpm/tpm1-cmd.c
+> > +++ b/drivers/char/tpm/tpm1-cmd.c
+> > @@ -845,3 +845,38 @@ int tpm1_get_pcr_allocation(struct tpm_chip *chip)
+> >
+> >       return 0;
+> >  }
+> > +
+> > +#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
+> > +int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
+> > +{
+> > +     struct tpm_header *header = (struct tpm_header *)buffer;
+> > +     char len, offset;
+> > +     __be32 *pcr;
+> > +     int pos;
+> > +
+> > +     switch (be32_to_cpu(header->ordinal)) {
+> > +     case TPM_ORD_PCR_EXTEND:
+> > +             if (size < (TPM_HEADER_SIZE + sizeof(u32)))
+> > +                     return -EINVAL;
+> > +             pcr = (__be32 *)&buffer[TPM_HEADER_SIZE];
+> > +             if (be32_to_cpu(*pcr) == TPM_RESTRICTED_PCR)
+> > +                     return -EPERM;
+> > +             break;
+> > +     case TPM_ORD_PCR_RESET:
+> > +             if (size < (TPM_HEADER_SIZE + 1))
+> > +                     return -EINVAL;
+> > +             len = buffer[TPM_HEADER_SIZE];
+> > +             if (size < (TPM_HEADER_SIZE + 1 + len))
+> > +                     return -EINVAL;
+> > +             offset = TPM_RESTRICTED_PCR/3;
+> > +             if (len < offset)
+> > +                     break;
+> > +             pos = TPM_HEADER_SIZE + 1 + offset;
+> > +             if (buffer[pos] & (1 << (TPM_RESTRICTED_PCR - 2 * offset)))
+> > +                     return -EPERM;
+> > +             break;
+> > +     }
+> > +
+> > +     return 0;
+> > +}
+> > +#endif
+> > diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
+> > index 69126a6770386e..dbf7f5552c6782 100644
+> > --- a/drivers/char/tpm/tpm2-cmd.c
+> > +++ b/drivers/char/tpm/tpm2-cmd.c
+> > @@ -821,3 +821,25 @@ int tpm2_find_cc(struct tpm_chip *chip, u32 cc)
+> >
+> >       return -1;
+> >  }
+> > +
+> > +#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
+> > +int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
+> > +{
+> > +     int cc = tpm_find_and_validate_cc(chip, NULL, buffer, size);
+> > +     __be32 *handle;
+> > +
+> > +     switch (cc) {
+> > +     case TPM2_CC_PCR_EXTEND:
+> > +     case TPM2_CC_PCR_RESET:
+> > +             if (size < (TPM_HEADER_SIZE + sizeof(u32)))
+> > +                     return -EINVAL;
+> > +
+> > +             handle = (__be32 *)&buffer[TPM_HEADER_SIZE];
+> > +             if (be32_to_cpu(*handle) == TPM_RESTRICTED_PCR)
+> > +                     return -EPERM;
+> > +             break;
+> > +     }
+> > +
+> > +     return 0;
+> > +}
+> > +#endif
+> > diff --git a/drivers/char/tpm/tpm2-space.c b/drivers/char/tpm/tpm2-space.c
+> > index ffb35f0154c16c..6f51cd92c6400f 100644
+> > --- a/drivers/char/tpm/tpm2-space.c
+> > +++ b/drivers/char/tpm/tpm2-space.c
+> > @@ -262,7 +262,7 @@ static int tpm2_map_command(struct tpm_chip *chip, u32 cc, u8 *cmd)
+> >       return 0;
+> >  }
+> >
+> > -static int tpm_find_and_validate_cc(struct tpm_chip *chip,
+> > +int tpm_find_and_validate_cc(struct tpm_chip *chip,
+> >                                   struct tpm_space *space,
+> >                                   const void *cmd, size_t len)
+>
+> Split the export to a separate commit.
 
-Absolutely, sorry I missed this!  I see I also forgot the SoB.
+Will do all these, thanks for taking a look.
