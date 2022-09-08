@@ -2,279 +2,184 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F02DBC54EE9
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Sep 2022 09:07:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DDB6C38145
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Sep 2022 14:00:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231628AbiIHJHb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Sep 2022 05:07:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41050 "EHLO
+        id S232378AbiIHOAO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Sep 2022 10:00:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60134 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231697AbiIHJH3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2022 05:07:29 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1729BF7572
-        for <linux-pm@vger.kernel.org>; Thu,  8 Sep 2022 02:07:26 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id n17-20020a05600c501100b003a84bf9b68bso1271505wmr.3
-        for <linux-pm@vger.kernel.org>; Thu, 08 Sep 2022 02:07:26 -0700 (PDT)
+        with ESMTP id S232281AbiIHN7w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2022 09:59:52 -0400
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F534FF086
+        for <linux-pm@vger.kernel.org>; Thu,  8 Sep 2022 06:59:08 -0700 (PDT)
+Received: by mail-wm1-x336.google.com with SMTP id m17-20020a7bce11000000b003a5bedec07bso1792566wmc.0
+        for <linux-pm@vger.kernel.org>; Thu, 08 Sep 2022 06:59:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date;
-        bh=T2/9xebxzNWMrR2+6F0PLx9EMI9J8CEGmCncRuSsyL8=;
-        b=eO7It27k7B/0FNHemvQD+MMLVEn3cKOZgQC9kmQyiqoHCf6+wwQlVXpKES5hVLwTI5
-         s4i8Gwlmh6k1epjJ5OnNXpsvMPvbjcTyZZnooQcis2wC/kvWtpCOIn9qGCkCQYFn73mz
-         DA0ox9F/MgiiYRUnWyOVxLv4OwAVBdreWrj4RtdwYYadmAFfCcPElUKDmm5bf157mxwL
-         dOSXO7KknF7upphS4/Lgm7NDjUBfEKnWYuSiul7c1/Ke0xnOdA5y8xQlEg/wUQDyKJbB
-         0P4Dfy2KjKql4iUcjcwT6zL/m3YWhMhhgMl7Yy1t5B3WIeE2SKnGAL7vf7PL1PiyWZjo
-         yu4w==
+        d=bytedance-com.20210112.gappssmtp.com; s=20210112;
+        h=mime-version:user-agent:message-id:in-reply-to:date:references
+         :subject:cc:to:from:from:to:cc:subject:date;
+        bh=M7E92wCvpAtXrboLofbMwI8QDT7eWvJxh9Ed8UPR9FE=;
+        b=rRHfSMHKzdPj0NBj/1WqdWtWFmpy0W4vezr8XGDbiuBih4zftWjVCgKCGalK0y7VyK
+         MO/6ZmTPvjYRqe+0u9ejiyUOQOQejMDa2H7LDA6vl8VIC6Ru3MocSx10fxu1riNDC+n4
+         Gi2dPhiF/dQMMlH7sLxvkA7fYoRaSfimqGC4u3xDBFajX57v9FXt9N70BlS9GyxMhbeb
+         /H7KJ53cZNPCooK9X4r8iH6pR0S4QVuP9f2ojyB3GMMmeq69LrEPqhnPnHagrSynhXq8
+         rvQK36kj1istg+2eDx319GK80QKmv2J0vw1pFmFPoC7elFZxnMjZhMfQiDJqx22tnMuB
+         h79A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date;
-        bh=T2/9xebxzNWMrR2+6F0PLx9EMI9J8CEGmCncRuSsyL8=;
-        b=WAIhAzsw/p1qGa9rhVybUrS5aDHZngzG7Dm7BjmHzUsAz9eQu4j+dx7zcbIG7EdtLE
-         lbYAzipf2risRZQW3zslG6sULdsNeimW+UICt0gLlYNF7WGiwQnhNfN/PpJMoWgPKMvy
-         8+ROgrQ5gfRJMOk5G5ldApRBcTlIKfX8+r79be0DnLa6ZMaOK0nvKjeQrpGsnVv2al0h
-         z0Mo+6MUZq4SekZHZ4aXP5fartd1XfktMbOzNfr+ousiRK0OvjkEJBYSDWXvJjqfirC3
-         Q9xnRFNL3kD+C4Si4qo6JZeogJRqj/R+r8NkBWWdaPWs3OTN9PFP9y5jALrJLGtV0KEn
-         5p6A==
-X-Gm-Message-State: ACgBeo1B9oiI9SrWU0NLCvMg8of2E5f9d+7Ztc05OjsmwshGaiDsfu+/
-        ylKwalb3ZvcC8x/+7TzlcrHKZQ==
-X-Google-Smtp-Source: AA6agR5gqEKVSm7XgipK5ek0XMItcGd6Kv+VsWlDrzmuKyixgBo9ogpjC0Vx0PWoSmd1owvmCI7cBQ==
-X-Received: by 2002:a7b:cd91:0:b0:3a8:5262:6aa9 with SMTP id y17-20020a7bcd91000000b003a852626aa9mr1466610wmj.143.1662628044375;
-        Thu, 08 Sep 2022 02:07:24 -0700 (PDT)
-Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id bz9-20020a056000090900b0022584c82c80sm21014654wrb.19.2022.09.08.02.07.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 08 Sep 2022 02:07:23 -0700 (PDT)
-Message-ID: <a5fd6f3e-4795-5953-5fdf-8857051b5e87@linaro.org>
-Date:   Thu, 8 Sep 2022 11:07:22 +0200
+        h=mime-version:user-agent:message-id:in-reply-to:date:references
+         :subject:cc:to:from:x-gm-message-state:from:to:cc:subject:date;
+        bh=M7E92wCvpAtXrboLofbMwI8QDT7eWvJxh9Ed8UPR9FE=;
+        b=dSVZ2zz0ROxR4ALRAg4ijdUKyX/Wx8PORlhL/XZjZGwTa4fUnX1a7/fEtIPywi8GJz
+         YuHP2S0OZp8KziX0lkulj5Ae3sy2NR1/LNrOolJs+hMoeiuFlT/PZJtll/3qGaEXiHUx
+         mN1kTDzCMjukq2SHn3RUjz593pjdLsmrPd8nWKW9syukGdAww3no/lz7MqLrl8V1qaC5
+         U4FlKcv/rtw1NJyyNrTmM0lRjA/U3SVTD0Mi1d9rnVtVNDrt0eVimFekni1I/kM78ERz
+         FPdP/4qaBIk6HfqszYbSxXxuu8Km2kcbocDBlYJUWAYhktIzLNl0wwf9s4xm87Wvycz0
+         3xZg==
+X-Gm-Message-State: ACgBeo25sR1k27xvYgYpbuv6Of5shwsS4lsJUIyhXDmLkhA6V1X0HjjH
+        BzmS4ei4dPA4clT+WXwMyOnO0A==
+X-Google-Smtp-Source: AA6agR5Y1ue2R4SpA013wGrxxP837wnkH1/ZIs48DYRN0QAmnqT3NJV5vcMPuyb7/Gk+sbz2YUi6gw==
+X-Received: by 2002:a05:600c:3217:b0:3a6:8235:4f6f with SMTP id r23-20020a05600c321700b003a682354f6fmr2328042wmp.96.1662645547031;
+        Thu, 08 Sep 2022 06:59:07 -0700 (PDT)
+Received: from localhost ([95.148.15.66])
+        by smtp.gmail.com with ESMTPSA id g13-20020a05600c4ecd00b003a4c6e67f01sm3196979wmq.6.2022.09.08.06.59.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 08 Sep 2022 06:59:06 -0700 (PDT)
+From:   Punit Agrawal <punit.agrawal@bytedance.com>
+To:     Jeremy Linton <jeremy.linton@arm.com>
+Cc:     linux-acpi@vger.kernel.org, rafael@kernel.org, lenb@kernel.org,
+        viresh.kumar@linaro.org, robert.moore@intel.com,
+        punit.agrawal@bytedance.com, lukasz.luba@arm.com,
+        ionela.voinescu@arm.com, pierre.gondois@arm.com,
+        linux-kernel@vger.kernel.org, devel@acpica.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] ACPI: CPPC: Disable FIE if registers in PCC regions
+References: <20220819162547.141333-1-jeremy.linton@arm.com>
+        <20220819162547.141333-2-jeremy.linton@arm.com>
+Date:   Thu, 08 Sep 2022 14:59:05 +0100
+In-Reply-To: <20220819162547.141333-2-jeremy.linton@arm.com> (Jeremy Linton's
+        message of "Fri, 19 Aug 2022 11:25:46 -0500")
+Message-ID: <87pmg6arx2.fsf@stealth>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH v3 4/4] thermal: mediatek: add another get_temp ops for
- thermal sensors
-Content-Language: en-US
-To:     Amjad Ouled-Ameur <aouledameur@baylibre.com>,
-        matthias.bgg@gmail.com
-Cc:     rafael@kernel.org, fparent@baylibre.com, amitk@kernel.org,
-        devicetree@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-        robh+dt@kernel.org, rui.zhang@intel.com,
-        Michael Kao <michael.kao@mediatek.com>,
-        Hsin-Yi Wang <hsinyi@chromium.org>
-References: <20220901133950.115122-1-aouledameur@baylibre.com>
- <20220901133950.115122-5-aouledameur@baylibre.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20220901133950.115122-5-aouledameur@baylibre.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Jeremy,
 
-Hi Amjad,
+I missed the previous version (holidays) but hopefully still in time for
+this one. A query / comment below.
 
-On 01/09/2022 15:39, Amjad Ouled-Ameur wrote:
-> Provide thermal zone to read thermal sensor in the SoC. We can read all the
-> thermal sensors value in the SoC by the node /sys/class/thermal/
-> 
-> In mtk_thermal_bank_temperature, return -EAGAIN instead of -EACCESS
-> on the first read of sensor that often are bogus values.
-> This can avoid following warning on boot:
-> 
->    thermal thermal_zone6: failed to read out thermal zone (-13)
-> 
-> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-> Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
-> Signed-off-by: Amjad Ouled-Ameur <aouledameur@baylibre.com>
+Jeremy Linton <jeremy.linton@arm.com> writes:
+
+> PCC regions utilize a mailbox to set/retrieve register values used by
+> the CPPC code. This is fine as long as the operations are
+> infrequent. With the FIE code enabled though the overhead can range
+> from 2-11% of system CPU overhead (ex: as measured by top) on Arm
+> based machines.
+>
+> So, before enabling FIE assure none of the registers used by
+> cppc_get_perf_ctrs() are in the PCC region. Furthermore lets also
+> enable a module parameter which can also disable it at boot or module
+> reload.
+>
+> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
 > ---
-> Changes in V3:
-> - Use proper types.
-> - Use devm_kmalloc() instead of kmalloc().
-> - Fix tabs and spaces.
-> 
->   drivers/thermal/mtk_thermal.c | 100 ++++++++++++++++++++++++++--------
->   1 file changed, 76 insertions(+), 24 deletions(-)
-> 
-> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-> index 088c388da241..5901787c57f5 100644
-> --- a/drivers/thermal/mtk_thermal.c
-> +++ b/drivers/thermal/mtk_thermal.c
-> @@ -259,6 +259,11 @@ enum mtk_thermal_version {
->   
->   struct mtk_thermal;
->   
-> +struct mtk_thermal_zone {
-> +	struct mtk_thermal *mt;
-> +	int id;
-> +};
-> +
->   struct thermal_bank_cfg {
->   	unsigned int num_sensors;
->   	const int *sensors;
-> @@ -709,6 +714,32 @@ static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
->   		mutex_unlock(&mt->lock);
->   }
->   
-> +static int _get_sensor_temp(struct mtk_thermal *mt, int id)
+>  drivers/acpi/cppc_acpi.c       | 41 ++++++++++++++++++++++++++++++++++
+>  drivers/cpufreq/cppc_cpufreq.c | 31 +++++++++++++++++++++----
+>  include/acpi/cppc_acpi.h       |  5 +++++
+>  3 files changed, 73 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 1e15a9f25ae9..c840bf606b30 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1240,6 +1240,47 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+>  }
+>  EXPORT_SYMBOL_GPL(cppc_get_perf_caps);
+>  
+> +/**
+> + * cppc_perf_ctrs_in_pcc - Check if any perf counters are in a PCC region.
+> + *
+> + * CPPC has flexibility about how counters describing CPU perf are delivered.
+> + * One of the choices is PCC regions, which can have a high access latency. This
+> + * routine allows callers of cppc_get_perf_ctrs() to know this ahead of time.
+> + *
+> + * Return: true if any of the counters are in PCC regions, false otherwise
+> + */
+> +bool cppc_perf_ctrs_in_pcc(void)
 > +{
-> +	u32 raw;
-> +	int temp;
+> +	int cpu;
 > +
-> +	const struct mtk_thermal_data *conf = mt->conf;
+> +	for_each_present_cpu(cpu) {
+> +		struct cpc_register_resource *ref_perf_reg;
+> +		struct cpc_desc *cpc_desc;
 > +
-> +	raw = readl(mt->thermal_base + conf->msr[id]);
+> +		cpc_desc = per_cpu(cpc_desc_ptr, cpu);
 > +
-> +	if (mt->conf->version == MTK_THERMAL_V1)
-> +		temp = raw_to_mcelsius_v1(mt, id, raw);
-> +	else
-> +		temp = raw_to_mcelsius_v2(mt, id, raw);
-
-Can you set a callback at init time instead of checking the version at 
-each get_sensor_temp() ?
-
-> +	/*
-> +	 * The first read of a sensor often contains very high bogus
-> +	 * temperature value. Filter these out so that the system does
-> +	 * not immediately shut down.
-> +	 */
+> +		if (CPC_IN_PCC(&cpc_desc->cpc_regs[DELIVERED_CTR]) ||
+> +		    CPC_IN_PCC(&cpc_desc->cpc_regs[REFERENCE_CTR]) ||
+> +		    CPC_IN_PCC(&cpc_desc->cpc_regs[CTR_WRAP_TIME]))
+> +			return true;
 > +
-> +	if (temp > 200000)
-> +		return -EAGAIN;
-> +	else
-> +		return temp;
+> +
+> +		ref_perf_reg = &cpc_desc->cpc_regs[REFERENCE_PERF];
+> +
+> +		/*
+> +		 * If reference perf register is not supported then we should
+> +		 * use the nominal perf value
+> +		 */
+> +		if (!CPC_SUPPORTED(ref_perf_reg))
+> +			ref_perf_reg = &cpc_desc->cpc_regs[NOMINAL_PERF];
+> +
+> +		if (CPC_IN_PCC(ref_perf_reg))
+> +			return true;
+> +	}
+> +	return false;
 > +}
+> +EXPORT_SYMBOL_GPL(cppc_perf_ctrs_in_pcc);
 > +
->   /**
->    * mtk_thermal_bank_temperature - get the temperature of a bank
->    * @bank:	The bank
-> @@ -721,26 +752,9 @@ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
->   	struct mtk_thermal *mt = bank->mt;
->   	const struct mtk_thermal_data *conf = mt->conf;
->   	int i, temp = INT_MIN, max = INT_MIN;
-> -	u32 raw;
->   
->   	for (i = 0; i < conf->bank_data[bank->id].num_sensors; i++) {
-> -		raw = readl(mt->thermal_base + conf->msr[i]);
-> -
-> -		if (mt->conf->version == MTK_THERMAL_V1) {
-> -			temp = raw_to_mcelsius_v1(
-> -				mt, conf->bank_data[bank->id].sensors[i], raw);
-> -		} else {
-> -			temp = raw_to_mcelsius_v2(
-> -				mt, conf->bank_data[bank->id].sensors[i], raw);
-> -		}
-> -
-> -		/*
-> -		 * The first read of a sensor often contains very high bogus
-> -		 * temperature value. Filter these out so that the system does
-> -		 * not immediately shut down.
-> -		 */
-> -		if (temp > 200000)
-> -			temp = 0;
-> +		temp = _get_sensor_temp(mt, i);
->   
->   		if (temp > max)
->   			max = temp;
-> @@ -751,7 +765,8 @@ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
->   
->   static int mtk_read_temp(void *data, int *temperature)
->   {
-> -	struct mtk_thermal *mt = data;
-> +	struct mtk_thermal_zone *tz = data;
-> +	struct mtk_thermal *mt = tz->mt;
->   	int i;
->   	int tempmax = INT_MIN;
->   
-> @@ -770,10 +785,28 @@ static int mtk_read_temp(void *data, int *temperature)
->   	return 0;
->   }
->   
-> +static int mtk_read_sensor_temp(void *data, int *temperature)
-> +{
-> +	struct mtk_thermal_zone *tz = data;
-> +	struct mtk_thermal *mt = tz->mt;
-> +	int id = tz->id - 1;
+>  /**
+>   * cppc_get_perf_ctrs - Read a CPU's performance feedback counters.
+>   * @cpunum: CPU from which to read counters.
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 24eaf0ec344d..32fcb0bf74a4 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -63,7 +63,15 @@ static struct cppc_workaround_oem_info wa_info[] = {
+>  
+>  static struct cpufreq_driver cppc_cpufreq_driver;
+>  
+> +static enum {
+> +	FIE_UNSET = -1,
+> +	FIE_ENABLED,
+> +	FIE_DISABLED
+> +} fie_disabled = FIE_UNSET;
 > +
-> +	if (id < 0)
-> +		return -EACCES;
-> +
-> +	*temperature = _get_sensor_temp(mt, id);
-> +
-> +	return 0;
-> +}
-> +
->   static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
->   	.get_temp = mtk_read_temp,
->   };
-> 
-> +static const struct thermal_zone_of_device_ops mtk_thermal_sensor_ops = {
-> +	.get_temp = mtk_read_sensor_temp,
-> +};
+>  #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
+> +module_param(fie_disabled, int, 0444);
+> +MODULE_PARM_DESC(fie_disabled, "Disable Frequency Invariance Engine (FIE)");
+>  
+>  /* Frequency invariance support */
+>  struct cppc_freq_invariance {
+> @@ -158,7 +166,7 @@ static void cppc_cpufreq_cpu_fie_init(struct cpufreq_policy *policy)
+>  	struct cppc_freq_invariance *cppc_fi;
+>  	int cpu, ret;
+>  
+> -	if (cppc_cpufreq_driver.get == hisi_cppc_cpufreq_get_rate)
+> +	if (fie_disabled)
+>  		return;
 
-Please respin against linux-next, the thermal_zone_of_device_ops 
-structure does no longer exist. The conversion is trivial, here is a 
-example:
+With this change, if FIE is enabled, the rest of the function will run
+even if the hisi workaround is enabled. Not sure if that is an
+intentional change. The same applies to similar other changes in the
+patch as well.
 
-https://lore.kernel.org/all/20220804224349.1926752-21-daniel.lezcano@linexp.org/
+The rest of the changes look ok.
 
+[...]
 
->   static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
->   				  u32 apmixed_phys_base, u32 auxadc_phys_base,
->   				  int ctrl_id)
-> @@ -1072,6 +1105,7 @@ static int mtk_thermal_probe(struct platform_device *pdev)
->   	u64 auxadc_phys_base, apmixed_phys_base;
->   	struct thermal_zone_device *tzdev;
->   	void __iomem *apmixed_base, *auxadc_base;
-> +	struct mtk_thermal_zone *tz;
->   
->   	mt = devm_kzalloc(&pdev->dev, sizeof(*mt), GFP_KERNEL);
->   	if (!mt)
-> @@ -1161,11 +1195,29 @@ static int mtk_thermal_probe(struct platform_device *pdev)
->   
->   	platform_set_drvdata(pdev, mt);
->   
-> -	tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, mt,
-> -						     &mtk_thermal_ops);
-> -	if (IS_ERR(tzdev)) {
-> -		ret = PTR_ERR(tzdev);
-> -		goto err_disable_clk_peri_therm;
-> +	for (i = 0; i < mt->conf->num_sensors + 1; i++) {
-> +		tz = devm_kmalloc(&pdev->dev, sizeof(*tz), GFP_KERNEL);
-> +		if (!tz)
-> +			return -ENOMEM;
-> +
-> +		tz->mt = mt;
-> +		tz->id = i;
-> +
-> +		tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, i, tz, (i == 0) ?
-> +							     &mtk_thermal_ops :
-> +							     &mtk_thermal_sensor_ops);
-> +
-> +		if (IS_ERR(tzdev)) {
-> +			if (PTR_ERR(tzdev) == -ENODEV) {
-> +				dev_warn(&pdev->dev,
-> +					 "sensor %d not registered in thermal zone in dt\n", i);
-> +				continue;
-> +			}
-> +			if (PTR_ERR(tzdev) == -EACCES) {
-> +				ret = PTR_ERR(tzdev);
-> +				goto err_disable_clk_peri_therm;
-> +			}
-> +		}
->   	}
->   
->   	ret = devm_thermal_add_hwmon_sysfs(tzdev);
-
-
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
