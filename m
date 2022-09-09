@@ -2,111 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AB08ECAAD5
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 19:51:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 151C3ECAAD3
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 20:25:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230259AbiIITvK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Sep 2022 15:51:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42634 "EHLO
+        id S229544AbiIIUZN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Sep 2022 16:25:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229710AbiIITvJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 15:51:09 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80FD12E6B9;
-        Fri,  9 Sep 2022 12:51:08 -0700 (PDT)
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 289IJ1NY018025;
-        Fri, 9 Sep 2022 19:40:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding :
- content-type; s=qcppdkim1;
- bh=wHW1vNz16ltIDMS+8hT4yCgVJQqCNH1NVloPPsitZoE=;
- b=D0ZOzjw6MsK0FF4bC4oAi2TFPsNcj/9Cv01k0ryLfkE34BJaAC9qtWoQRdJzs56JH4yG
- FcWCjtJFHA6LMWhhWdKlGtrkTnuNvWxX5SERreZxM+RP7CAUMu8U1VDUj2QFNSQK9YYs
- 6L+PHxMLGa8dkzmIhwbkSq0aP8MMHjqANoTNhvYrZQhmxZl3Es0A0nBgbX+93qpaKfCC
- MQYKMe+TLA5vQLzRkzZ8NaEszScAm08ki7NU2x9qA6nzj+c0eXk6oG7Whoq/DYw812Nv
- OhH/SgGv58+oPvUxWGBISuwNhR1sODozS3purx7y70eOQQ8ibireAhR5BxyeDftC6+SB ig== 
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3jfujq42ne-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 09 Sep 2022 19:40:16 +0000
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-        by NALASPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 289JeFb1019667
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 9 Sep 2022 19:40:15 GMT
-Received: from hu-amelende-lv.qualcomm.com (10.49.16.6) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.29; Fri, 9 Sep 2022 12:40:14 -0700
-From:   Anjelique Melendez <quic_amelende@quicinc.com>
-To:     <corbet@lwn.net>, <sre@kernel.org>, <robh+dt@kernel.org>,
-        <agross@kernel.org>, <andersson@kernel.org>,
-        <quic_collinsd@quicinc.com>
-CC:     <krzysztof.kozlowski+dt@linaro.org>, <vkoul@kernel.org>,
-        <linux-doc@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        Anjelique Melendez <quic_amelende@quicinc.com>
-Subject: [PATCH v5 0/2] add support for PON GEN3 device
-Date:   Fri, 9 Sep 2022 12:39:16 -0700
-Message-ID: <20220909193915.20057-1-quic_amelende@quicinc.com>
-X-Mailer: git-send-email 2.35.1
+        with ESMTP id S229792AbiIIUZM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 16:25:12 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E61EA96777;
+        Fri,  9 Sep 2022 13:25:10 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7D400620BA;
+        Fri,  9 Sep 2022 20:25:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D7C2C433D6;
+        Fri,  9 Sep 2022 20:25:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1662755109;
+        bh=zXin2k6immi9tRPLVqcDbBOQa3ynjPMF/61sq6IxOfs=;
+        h=From:To:Cc:Subject:Date:From;
+        b=THWl6dZUIK4gf+Qcoy1C86uQh+oNBTxuoyebdvnf1ttaIdKiqlM3SJsz3qdoYfsjy
+         380DhO6arhGh5i0oIweM8c2dJuFoLlAydHYaa1louu9iUNC/50Q7Wp1kI3Su16YWT8
+         RSiZNFz6xV4/vqjqBLZhXbhBESqEn8mz21rW9YCLcSSiiyHU2sGh8p8P/OsOt13l7W
+         IzX9enk3iqI13+Q4O+yRGjHH3bMhAIkjpcncf4Tm4MCb7ItXmqUyx5VBTDp7VVSPus
+         Zd6R4JuVrwqR/aJC5VmFKSwPS/At/NyQgfF6tjDLEAbw3wleY3n9Ja7J7abOAkpfUL
+         D+wfrbAKReo/A==
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Rajvi Jingar <rajvi.jingar@linux.intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Cc:     Koba Ko <koba.ko@canonical.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        "David E . Box" <david.e.box@linux.intel.com>,
+        Sathyanarayanan Kuppuswamy 
+        <sathyanarayanan.kuppuswamy@linux.intel.com>,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v4 0/9] PCI/PM: Always disable PTM for all devices during suspend
+Date:   Fri,  9 Sep 2022 15:24:56 -0500
+Message-Id: <20220909202505.314195-1-helgaas@kernel.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.49.16.6]
-X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: Lt0PEa-5rPL6KHM2R1y1Ic2evwV-iM0u
-X-Proofpoint-GUID: Lt0PEa-5rPL6KHM2R1y1Ic2evwV-iM0u
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-09-09_09,2022-09-09_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 clxscore=1011
- priorityscore=1501 lowpriorityscore=0 malwarescore=0 impostorscore=0
- suspectscore=0 mlxlogscore=999 adultscore=0 spamscore=0 phishscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2207270000 definitions=main-2209090069
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes from v4:
-  - Updated commit message for patch 1/2
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-Changes from v3:
-  - Addressed Krysztof's comments on patch 1/2
-    - Added missing minItems/maxItems
-    - Merged if statments with same constraints together
-    - Removed description from "reg-names"
-    
-Changes from v2:
-  - Added new "qcom,pmk8350-pon" compatible string as per Krysztof's
-    advice
-  - Updated dt logic to use comptaible strings to decide constraints
-    as per Krysztof's comment
-  - Added new patch (v3 2/2) to support new compatible string
+We currently disable PTM for Root Ports during suspend.  Leaving PTM
+enabled for downstream devices causes UR errors if they send PTM Requests
+to upstream devices that have PTM disabled.
 
-Changes from v1:
-  - Updated path which was missing Documentation/devicetree prefix
-  - Updated CC list
+The intent of this series is to:
 
-New patch series to separate this patch from applied patches.
-Comments from original patch can be found
-https://lore.kernel.org/linux-arm-msm/27515993-18f3-8891-4835-9b6a8d7f86b0@quicinc.com/
+  - Unconditionally disable PTM during suspend (even if the driver saves
+    its own state) by moving the disable from pci_prepare_to_sleep() to
+    pci_pm_suspend().
 
-David Collins (1):
-  dt-bindings: power: reset: qcom-pon: Add new compatible
-    "qcom,pmk8350-pon"
+  - Disable PTM for all devices by removing the Root Port condition and
+    doing it early in the suspend paths.
 
-Anjelique Melendez (1):
-  power: reset: qcom-pon: add support for qcom,pmk8350-pon compatible string
+  - Explicitly re-enable PTM during resume.
 
- Documentation/devicetree/bindings/power/reset/qcom,pon.yaml | 50 +++++++++++++++++++++++++++---
- drivers/power/reset/qcom-pon.c | 1 +
- 2 file changed, 47 insertions(+), 4 deletions(-)
+Changes between v3 and v4:
+  - Use u16 for ptm_cap
+  - Add kernel-doc for pci_enable_ptm() and pci_disable_ptm() (exported
+    functions)
+  - Drop "Preserve PTM Root Select" (unnecessary since enabling PTM sets
+    Root Select when needed)
+  - Squash these three patches into one because they make more sense that
+    way:
+	PCI/PTM: Add suspend/resume
+	PCI/PTM: Add pci_enable_ptm() wrapper
+	PCI/PTM: Add pci_disable_ptm() wrapper
+  - Add "PCI/PTM: Preserve RsvdP bits in PTM Control register"
+  - Add "PCI/PTM: Consolidate PTM interface declarations"
+
+Bjorn Helgaas (9):
+  PCI/PTM: Cache PTM Capability offset
+  PCI/PTM: Add pci_upstream_ptm() helper
+  PCI/PTM: Separate configuration and enable
+  PCI/PTM: Add pci_suspend_ptm() and pci_resume_ptm()
+  PCI/PTM: Move pci_ptm_info() body into its only caller
+  PCI/PTM: Preserve RsvdP bits in PTM Control register
+  PCI/PTM: Reorder functions in logical order
+  PCI/PTM: Consolidate PTM interface declarations
+  PCI/PM: Always disable PTM for all devices during suspend
+
+ drivers/pci/pci-driver.c |  11 ++
+ drivers/pci/pci.c        |  28 +--
+ drivers/pci/pci.h        |  14 +-
+ drivers/pci/pcie/ptm.c   | 384 +++++++++++++++++++++------------------
+ include/linux/pci.h      |   3 +
+ 5 files changed, 234 insertions(+), 206 deletions(-)
+
 -- 
-2.35.1
+2.25.1
 
