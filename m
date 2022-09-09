@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB036ECAAD5
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 20:25:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 505DDECAAD3
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 20:25:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232177AbiIIUZh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Sep 2022 16:25:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51632 "EHLO
+        id S232199AbiIIUZn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Sep 2022 16:25:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52286 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232065AbiIIUZ0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 16:25:26 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CFE0B5E58;
-        Fri,  9 Sep 2022 13:25:22 -0700 (PDT)
+        with ESMTP id S232068AbiIIUZg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 16:25:36 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 319B6AE200;
+        Fri,  9 Sep 2022 13:25:26 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 28E51620D8;
-        Fri,  9 Sep 2022 20:25:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55DD4C433D6;
-        Fri,  9 Sep 2022 20:25:21 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C4E5A620D8;
+        Fri,  9 Sep 2022 20:25:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D480C433C1;
+        Fri,  9 Sep 2022 20:25:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1662755121;
-        bh=gCTTUyJFlkhMjMmtwMVdlaO1Gacl19G9VgV01rTVCXA=;
+        s=k20201202; t=1662755125;
+        bh=JSJGA5atq3nPQq9JjZZ/q5dZdJDWU3SoTtXD+OyjCMU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=t7M0P30jMkBdmRH4hy74hPm+jIw/qPzmn5wLoc0x0DP0XXvxTCB9FTv0ZREty8DsB
-         5dRQUv4ngfX4cnwx7FdEiLiu3/9gfJEabW8fKuPq0fmFkEEqPHc64ggN1bzDkltdQu
-         Jf6N+/zSfusH9Ke5efmwYwoBN6/k9ZPGxNtaI6P/kGbVfMrBSE6vE2qeiS9i8VeG0Y
-         m//uHdAsQv0Ue+TBm/r1I+ap/hjmQA52hNdOqDSRu99X13IDplWATkgus62oWRR38u
-         Hidolb639QpBSSwwetsrfJulcMUybLClHRAcXgi1LZXuGqXJtU1uA/w7m7diLs5po0
-         cyTi7Lt5xAd9A==
+        b=O1KtGlekeFUVBujxKCihl0ApDbZQ/6bzZ9gDpwxt68bCilYdYmE6T8x2wI/0Hcrzu
+         8ZLYQQWK+6wnAclNC6b6IRUseUgQO7jTi2yaW9PxopD4laH0Zgi+/dbJvvNXamkcGW
+         Nu+WgxNgm3hBpXET2CRk6lbuErdwnGSOzJ8pOwefrV2XGvsUq7UFpt38NXec9jzDdx
+         hpPmO9yP7cv1fDIm0i6yIQrVRSuKURwRbY/KPFlArLw65CMQ8YXLId2CxGIDRNmXjt
+         Vtgqq+ZZUzbr4oPJE8LKH97ezC6CO64YcGDjAhPR2vbU+Av4iNLWL8CIzG6xoelHlB
+         UWqXyRwQVOSAA==
 From:   Bjorn Helgaas <helgaas@kernel.org>
 To:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
         Rajvi Jingar <rajvi.jingar@linux.intel.com>,
@@ -42,9 +42,9 @@ Cc:     Koba Ko <koba.ko@canonical.com>,
         <sathyanarayanan.kuppuswamy@linux.intel.com>,
         linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v4 6/9] PCI/PTM: Preserve RsvdP bits in PTM Control register
-Date:   Fri,  9 Sep 2022 15:25:02 -0500
-Message-Id: <20220909202505.314195-7-helgaas@kernel.org>
+Subject: [PATCH v4 8/9] PCI/PTM: Consolidate PTM interface declarations
+Date:   Fri,  9 Sep 2022 15:25:04 -0500
+Message-Id: <20220909202505.314195-9-helgaas@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220909202505.314195-1-helgaas@kernel.org>
 References: <20220909202505.314195-1-helgaas@kernel.org>
@@ -56,101 +56,45 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Bjorn Helgaas <bhelgaas@google.com>
 
-Even though only the low 16 bits of PTM Control are currently defined, the
-register is 32 bits wide and the unused bits are RsvdP ("Reserved and
-Preserved"), so software must preserve the values of those bits when
-writing the register.
-
-Update PTM Control reads and writes to use 32-bit accesses and preserve the
-reserved bits on writes.
+Consolidate all the PTM-related declarations in drivers/pci/pci.h.  No
+functional change intended.
 
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/pcie/ptm.c | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
+ drivers/pci/pci.h | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
-index fc296b352fe2..5b8598b222b0 100644
---- a/drivers/pci/pcie/ptm.c
-+++ b/drivers/pci/pcie/ptm.c
-@@ -12,14 +12,14 @@
- static void __pci_disable_ptm(struct pci_dev *dev)
- {
- 	u16 ptm = dev->ptm_cap;
--	u16 ctrl;
-+	u32 ctrl;
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index ce4a277e3f41..5cca2e58cce8 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -505,11 +505,13 @@ static inline int pci_iov_bus_range(struct pci_bus *bus)
+ #endif /* CONFIG_PCI_IOV */
  
- 	if (!ptm)
- 		return;
+ #ifdef CONFIG_PCIE_PTM
++void pci_ptm_init(struct pci_dev *dev);
+ void pci_save_ptm_state(struct pci_dev *dev);
+ void pci_restore_ptm_state(struct pci_dev *dev);
+ void pci_suspend_ptm(struct pci_dev *dev);
+ void pci_resume_ptm(struct pci_dev *dev);
+ #else
++static inline void pci_ptm_init(struct pci_dev *dev) { }
+ static inline void pci_save_ptm_state(struct pci_dev *dev) { }
+ static inline void pci_restore_ptm_state(struct pci_dev *dev) { }
+ static inline void pci_suspend_ptm(struct pci_dev *dev) { }
+@@ -577,12 +579,6 @@ static inline void pcie_set_ecrc_checking(struct pci_dev *dev) { }
+ static inline void pcie_ecrc_get_policy(char *str) { }
+ #endif
  
--	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, &ctrl);
-+	pci_read_config_dword(dev, ptm + PCI_PTM_CTRL, &ctrl);
- 	ctrl &= ~(PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT);
--	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, ctrl);
-+	pci_write_config_dword(dev, ptm + PCI_PTM_CTRL, ctrl);
- }
- 
- /**
-@@ -41,7 +41,7 @@ void pci_save_ptm_state(struct pci_dev *dev)
- {
- 	u16 ptm = dev->ptm_cap;
- 	struct pci_cap_saved_state *save_state;
--	u16 *cap;
-+	u32 *cap;
- 
- 	if (!ptm)
- 		return;
-@@ -50,15 +50,15 @@ void pci_save_ptm_state(struct pci_dev *dev)
- 	if (!save_state)
- 		return;
- 
--	cap = (u16 *)&save_state->cap.data[0];
--	pci_read_config_word(dev, ptm + PCI_PTM_CTRL, cap);
-+	cap = (u32 *)&save_state->cap.data[0];
-+	pci_read_config_dword(dev, ptm + PCI_PTM_CTRL, cap);
- }
- 
- void pci_restore_ptm_state(struct pci_dev *dev)
- {
- 	u16 ptm = dev->ptm_cap;
- 	struct pci_cap_saved_state *save_state;
--	u16 *cap;
-+	u32 *cap;
- 
- 	if (!ptm)
- 		return;
-@@ -67,8 +67,8 @@ void pci_restore_ptm_state(struct pci_dev *dev)
- 	if (!save_state)
- 		return;
- 
--	cap = (u16 *)&save_state->cap.data[0];
--	pci_write_config_word(dev, ptm + PCI_PTM_CTRL, *cap);
-+	cap = (u32 *)&save_state->cap.data[0];
-+	pci_write_config_dword(dev, ptm + PCI_PTM_CTRL, *cap);
- }
- 
- /*
-@@ -112,7 +112,7 @@ void pci_ptm_init(struct pci_dev *dev)
- 		return;
- 
- 	dev->ptm_cap = ptm;
--	pci_add_ext_cap_save_buffer(dev, PCI_EXT_CAP_ID_PTM, sizeof(u16));
-+	pci_add_ext_cap_save_buffer(dev, PCI_EXT_CAP_ID_PTM, sizeof(u32));
- 
- 	pci_read_config_dword(dev, ptm + PCI_PTM_CAP, &cap);
- 	dev->ptm_granularity = (cap & PCI_PTM_GRANULARITY_MASK) >> 8;
-@@ -170,7 +170,10 @@ static int __pci_enable_ptm(struct pci_dev *dev)
- 			return -EINVAL;
- 	}
- 
--	ctrl = PCI_PTM_CTRL_ENABLE;
-+	pci_read_config_dword(dev, ptm + PCI_PTM_CTRL, &ctrl);
-+
-+	ctrl |= PCI_PTM_CTRL_ENABLE;
-+	ctrl &= ~PCI_PTM_GRANULARITY_MASK;
- 	ctrl |= dev->ptm_granularity << 8;
- 	if (dev->ptm_root)
- 		ctrl |= PCI_PTM_CTRL_ROOT;
+-#ifdef CONFIG_PCIE_PTM
+-void pci_ptm_init(struct pci_dev *dev);
+-#else
+-static inline void pci_ptm_init(struct pci_dev *dev) { }
+-#endif
+-
+ struct pci_dev_reset_methods {
+ 	u16 vendor;
+ 	u16 device;
 -- 
 2.25.1
 
