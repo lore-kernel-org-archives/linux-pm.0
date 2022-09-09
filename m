@@ -2,112 +2,168 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 887DEECAAA1
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 19:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E8FCC6FA8A
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 19:45:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230466AbiIITYM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Sep 2022 15:24:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36458 "EHLO
+        id S231363AbiIITpk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Sep 2022 15:45:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57070 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230436AbiIITYL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 15:24:11 -0400
-Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B89791449C7
-        for <linux-pm@vger.kernel.org>; Fri,  9 Sep 2022 12:24:08 -0700 (PDT)
-Received: by mail-lj1-x234.google.com with SMTP id s10so2406200ljp.5
-        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2022 12:24:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ragnatech-se.20210112.gappssmtp.com; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date;
-        bh=FullVTAt4NLdIeDKelIlCFqGink5lLzTlWXTWIoGShU=;
-        b=gY7m5pkzHy9mVSPHdaIRzFpSD5O8vMgSFKnzkWSWOvdqJ91rm8AxYSjgqnXlB0PMQV
-         uEuwbcIjgM8TeBsRJOpLXjP14xJzR8FEkO46TBZFDbS4lc1Yc9mZEotUGvHRooVMu2BS
-         qJMHKXbr32g9pP5VOvmB3s3g8GtEyZRToMURsHxjrz4EQl3pl3mOjmaxt2qvAH0Y45Ty
-         SLCqVKciLk/dvdnbF75ie9iIu5SmthPlKkxeEW4vwGhRfNdZEwFnYUcM4oy59BqJAayl
-         4Fb1aGtMMq8WZzsTFmpTedDZteouaXVGsS35EmKWN6+Z1qCEtmr4zEJdKI4L3qkhOm4W
-         sywA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date;
-        bh=FullVTAt4NLdIeDKelIlCFqGink5lLzTlWXTWIoGShU=;
-        b=EHeZE4TR+6wu8iibvuA1z/CJRNTIo10V/0ALZ7cpU5nLlRgHxYSlo58TSs9xeg+pcl
-         nf3tGiHRpauVVlZDzqYXXfBuQ47NmwTl8z39RQy9KO0gAX9+LGQhXU1gQypBYg+nXkZQ
-         dDfskg3HdQ8CrfEU8curjysCb8ug4ef14VdNKy3zuXNBZv1xilTHtsVJtt5PaccU7KzX
-         tJl5djuDcKaKq6KRyWFE/nDw7CJyxk/77YreEnaHoX1SBj6umcwT0K3AOAkxuo6JMgfP
-         QqBCeItED4iXz1kpTtbR5umjoCteDaQryZvV4/TVlYHU+kBtsL1rMpCC81Nz4hvo2BTz
-         5dBg==
-X-Gm-Message-State: ACgBeo2UtcLny4RY88bZRnscgtXv+BPM4adphaRSbYH7dgSkvLDr2Tum
-        +QlgoLmbkYVwZpnKcz7gooreEQ==
-X-Google-Smtp-Source: AA6agR7Xty6bEZNFwVc9o5UlVTQNSYuLoZRzQM8sveYXmZcNyTkmFx7ajfrc9c6uuG8EUv5awnTy4w==
-X-Received: by 2002:a2e:92c4:0:b0:25d:9d30:5d61 with SMTP id k4-20020a2e92c4000000b0025d9d305d61mr4726427ljh.202.1662751446993;
-        Fri, 09 Sep 2022 12:24:06 -0700 (PDT)
-Received: from localhost (h-46-59-89-207.A463.priv.bahnhof.se. [46.59.89.207])
-        by smtp.gmail.com with ESMTPSA id e22-20020ac24e16000000b004926689d410sm28982lfr.171.2022.09.09.12.24.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Sep 2022 12:24:06 -0700 (PDT)
-Date:   Fri, 9 Sep 2022 21:24:05 +0200
-From:   Niklas =?iso-8859-1?Q?S=F6derlund?= 
-        <niklas.soderlund@ragnatech.se>
-To:     Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Prabhakar <prabhakar.csengg@gmail.com>
-Subject: Re: [PATCH] thermal: rcar_thermal: Constify static
- thermal_zone_device_ops
-Message-ID: <YxuS1ZjrPzTvMQWg@oden.dyn.berto.se>
-References: <20220909182838.11154-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
+        with ESMTP id S231995AbiIITpQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 15:45:16 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D53C036842;
+        Fri,  9 Sep 2022 12:42:06 -0700 (PDT)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 289JZP56011876;
+        Fri, 9 Sep 2022 19:41:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : mime-version : content-transfer-encoding :
+ content-type; s=qcppdkim1;
+ bh=pZZkm6nFnBhWHVX4NFaTFlgGc9eWj348TIm/31RpPsU=;
+ b=Q+NvGl2aSoUo49tfJPFp8pe/sEecNOiSLcHpFXXCzhERS2unlVT+A5+Id5CTeKsw3S7U
+ maOegQL2idp+PfnPgEqU0ob7JaG3GnijmR9DavKKvcYYHoigY/ytT7oB5pkrD0l3sqmP
+ bP8K8VPHXwHFmexhQQC5RN+Z7xiMZADtqFOEfbpPVbjnOsKijORDzwCjZWAe8fdUFz2y
+ pyJvKLSrztiiUH3OHnqpGiy4YdNqYVjW55njKSH3LblgcXrNpJwYMFpQYe0wAXoDNcCL
+ R32ZUSea+VqHNV2iUkHRTlXdrdDrUNcDejXFOJ40LlaFgYVG76ZBWMDIYwRpDhKhcRNy bw== 
+Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3jg33ka0ej-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 09 Sep 2022 19:41:03 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 289Jf2Tk019173
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 9 Sep 2022 19:41:03 GMT
+Received: from hu-amelende-lv.qualcomm.com (10.49.16.6) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.29; Fri, 9 Sep 2022 12:41:02 -0700
+From:   Anjelique Melendez <quic_amelende@quicinc.com>
+To:     <corbet@lwn.net>, <sre@kernel.org>, <robh+dt@kernel.org>,
+        <agross@kernel.org>, <andersson@kernel.org>
+CC:     <krzysztof.kozlowski+dt@linaro.org>, <vkoul@kernel.org>,
+        <linux-doc@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        David Collins <quic_collinsd@quicinc.com>,
+        Anjelique Melendez <quic_amelende@quicinc.com>
+Subject: [PATCH v5 1/2] dt-bindings: power: reset: qcom-pon: Add new compatible "qcom,pmk8350-pon"
+Date:   Fri, 9 Sep 2022 12:40:37 -0700
+Message-ID: <20220909194038.20515-1-quic_amelende@quicinc.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220909182838.11154-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
+Content-Type: text/plain
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: i51QK-ikW3pghoWTFxbCLdWdc22WmtAG
+X-Proofpoint-ORIG-GUID: i51QK-ikW3pghoWTFxbCLdWdc22WmtAG
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-09_09,2022-09-09_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ phishscore=0 priorityscore=1501 adultscore=0 spamscore=0 suspectscore=0
+ mlxlogscore=999 malwarescore=0 clxscore=1015 mlxscore=0 impostorscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2207270000 definitions=main-2209090069
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Lad,
+From: David Collins <quic_collinsd@quicinc.com>
 
-Thanks for your work.
+Add a new compatible string "qcom,pmk8350-pon" for GEN3 PMIC PON
+peripherals and update "reg" property.
+Also, Add an optional "reg-names" property to differentiate between
+GEN1/GEN2 and GEN3 peripherals. GEN1/GEN2 peripherals only need one
+register address to be specified (e.g. "pon") whereas GEN3 peripherals
+can have two register addresses specified ("hlos", "pbs").
 
-On 2022-09-09 19:28:38 +0100, Lad Prabhakar wrote:
-> The only usage of rcar_thermal_zone_of_ops is to pass its address to
-> devm_thermal_of_zone_register(), which takes a pointer to const struct
-> thermal_zone_device_ops. Make it const to allow the compiler to put
-> it in read-only memory.
-> 
-> Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Signed-off-by: David Collins <quic_collinsd@quicinc.com>
+Signed-off-by: Anjelique Melendez <quic_amelende@quicinc.com>
+---
+ bindings/power/reset/qcom,pon.yaml | 50 +++++++++++++++++++++++++++---
+ 1 file changed, 46 insertions(+), 4 deletions(-)
 
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-
-> ---
->  drivers/thermal/rcar_thermal.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 4df42d70d867..61c2b8855cb8 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -316,7 +316,7 @@ static int rcar_thermal_get_trip_temp(struct thermal_zone_device *zone,
->  	return 0;
->  }
->  
-> -static struct thermal_zone_device_ops rcar_thermal_zone_of_ops = {
-> +static const struct thermal_zone_device_ops rcar_thermal_zone_of_ops = {
->  	.get_temp	= rcar_thermal_get_temp,
->  };
->  
-> -- 
-> 2.25.1
-> 
-
+diff --git a/bindings/power/reset/qcom,pon.yaml b/bindings/power/reset/qcom,pon.yaml
+index 353f155d..d7b6b875 100644
+--- a/bindings/power/reset/qcom,pon.yaml
++++ b/bindings/power/reset/qcom,pon.yaml
+@@ -15,18 +15,27 @@ description: |
+ 
+   This DT node has pwrkey and resin as sub nodes.
+ 
+-allOf:
+-  - $ref: reboot-mode.yaml#
+-
+ properties:
+   compatible:
+     enum:
+       - qcom,pm8916-pon
+       - qcom,pms405-pon
+       - qcom,pm8998-pon
++      - qcom,pmk8350-pon
+ 
+   reg:
+-    maxItems: 1
++    description: |
++      Specifies the SPMI base address for the PON (power-on) peripheral.  For
++      PMICs that have the PON peripheral (GEN3) split into PON_HLOS and PON_PBS
++      (e.g. PMK8350), this can hold addresses of both PON_HLOS and PON_PBS
++      peripherals.  In that case, the PON_PBS address needs to be specified to
++      facilitate software debouncing on some PMIC.
++    minItems: 1
++    maxItems: 2
++
++  reg-names:
++    minItems: 1
++    maxItems: 2
+ 
+   pwrkey:
+     type: object
+@@ -42,6 +51,39 @@ required:
+ 
+ unevaluatedProperties: false
+ 
++allOf:
++  - $ref: reboot-mode.yaml#
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,pm8916-pon
++              - qcom,pms405-pon
++              - qcom,pm8998-pon
++    then:
++      properties:
++        reg:
++          maxItems: 1
++        reg-names:
++          items:
++            - const: pon
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: qcom,pmk8350-pon
++    then:
++      properties:
++        reg:
++          minItems: 1
++          maxItems: 2
++        reg-names:
++          minItems: 1
++          items:
++            - const: hlos
++            - const: pbs
++
+ examples:
+   - |
+    #include <dt-bindings/interrupt-controller/irq.h>
 -- 
-Kind Regards,
-Niklas Söderlund
+2.35.1
+
