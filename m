@@ -2,193 +2,143 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D0DECAAD3
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 07:41:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DE3BECAAA1
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Sep 2022 07:42:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231425AbiIIHl3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Sep 2022 03:41:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57712 "EHLO
+        id S231539AbiIIHmg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Sep 2022 03:42:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58250 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231855AbiIIHkn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 03:40:43 -0400
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5747312F717
-        for <linux-pm@vger.kernel.org>; Fri,  9 Sep 2022 00:36:38 -0700 (PDT)
-Received: by mail-wr1-x42f.google.com with SMTP id t7so1262539wrm.10
-        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2022 00:36:38 -0700 (PDT)
+        with ESMTP id S231387AbiIIHmJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2022 03:42:09 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05E6B12B369
+        for <linux-pm@vger.kernel.org>; Fri,  9 Sep 2022 00:38:51 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id t7so1266530wrm.10
+        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2022 00:38:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=TIKToDSVoS98U+OfuzA/OpKFRRhoyJfUdRqfuJXGZxo=;
-        b=0OqO+R8YyUauyDxb8d2Y2H8s21Wmrz4gGkIao52O1E4alslAxF6ok1Hgv6nmHBg+CX
-         Jmjdtfn2s3m17qqGDWTLsoH5GsYMlzlt4j6NQ8wVSp1H9Tsai8d7ElHiyrSKf9EYX9U9
-         vyTCZD4sVgc6d78otHeilCDR95kSUgtLuhYUWlhYlLQwgTThmYdo9ESbReAC3ldycIXl
-         7D/oLVplNTq3cmg4fILOq4lmOEHQPMG8TPGWam8lU0GelOeXMhP0uDvhjTHEJwj6hNhX
-         xEffPACrjayzZUNXOUK16CR9ttZjmEEJ/sSiNdl4lvyMFHXdDBtMeO4vnu6+XcA5sBAF
-         SUyQ==
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date;
+        bh=WAXuAdMYCi1g4B3dZtIrUPbn2Rjq0LvUklClvaIr8b8=;
+        b=hixeKMNDSjZK3KfMycWsysM82K7TRLETak/YdjVEpPzYcAiTEyk1am1Y6ucG8fceex
+         gOBbgIHZEWeBRdgDLIHXwL/X4Bl2ustyrVlJlTITV9SlwE6ZstmXh/kthIVTS1Hbo6Ty
+         4LOP/ZaSecGllpo7+qyebW78n6H7y/TICy3iRg5GW/WwK/8Fv/2mNWFX3zxZYwolR+OQ
+         +GfGCLfmC1vuUWsIIvGsq8HPALZUPSB9sR7qLw4yZHU0Jx0FWdVZcDQoahIOb6A9giT+
+         KDtlJQdeSPKs98fcE/Y9nj/GIKcWMT9HMZn7fsw0bzoCfE9lN9M4UuiDtHMoxgTcM6O9
+         mq7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=TIKToDSVoS98U+OfuzA/OpKFRRhoyJfUdRqfuJXGZxo=;
-        b=C0KcBaYvzi8V16oeId4P2ccItoVAlkMuc6esvnlKoN38iAQJntyhsCfjQLFYThXYWJ
-         Ldn2/kQ085AXvYpiWyh9nSsNh1XiqWrDcA4t8bHdIfW5g5Ya5tFZGGcW5uc0O0KTKzTp
-         4gO2MyHntfADi+am/sZ4+lKp72jroMwReBRgKUtk0mzlh/UiZEKXNJe21iOo/yWGfdrw
-         vVUctD2w85Bn5m3lgpIX+nZ9rf/LxR++L78vf8dFFxePDwhmuplc4ibyHr9zqkVGyIZo
-         pueETFfuJj1HPm76nFaHrl5+F83O1hdG0wF72D+8ITW/QjBj8BKRA4obISSguQ6p4TBR
-         5GYA==
-X-Gm-Message-State: ACgBeo2InFCNFjP79t7pY2yoYKhSsI1IZTKp7gV2+gAG33m5VvXmjatK
-        qgP1soVIvDa1zZEO/EJL5wh3fw==
-X-Google-Smtp-Source: AA6agR6m91f7v8OxIb5b1lxvAT+iobxBDxnNlnacdZaFiRiGeYPP0IiD8y4M8bpp9Mjktp8aVUbZog==
-X-Received: by 2002:a5d:64c2:0:b0:228:cb3e:1ce with SMTP id f2-20020a5d64c2000000b00228cb3e01cemr7169690wri.392.1662708986541;
-        Fri, 09 Sep 2022 00:36:26 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date;
+        bh=WAXuAdMYCi1g4B3dZtIrUPbn2Rjq0LvUklClvaIr8b8=;
+        b=R1HjgVM1tzpjO1CaoBosSbgFBQD6HEIcxrfg8PMSd4JvjHODQOigrTZUCsXYma/Jh2
+         QOcB3lB2XQ7jChAOhloaKj0ZoTI+vNQPIXgvOQNhnsUtepui7QOAYmkrCqZZtRin/BME
+         dUrhZ8KvutS84aIBdN/4SGudWN7VKgXnN/5HknGJ9+dDMaPUW/5RB0bnhLEpn/YHFAVP
+         vUFGv++93VIe0WWKL0Zkghz/1wrgypzrYQDDADNMGP1icNMUVTTOPsR4C3gNnu6Vt6vN
+         Ger4jrC0oAylHnQzN5Fh92z4Is8RsOdu7LsOcwnSq0H5XZIFaJoy5v7JP/x35C+zSQ2X
+         RmWw==
+X-Gm-Message-State: ACgBeo3PsbybdXJxUr0GEHv6SniaY4Lfo1GfzeCcdACbLoS/l7bgIoTu
+        OelACoh7HlCfu6h42piUoW2ncQ==
+X-Google-Smtp-Source: AA6agR75OF2EH+cFAiCFUtN0kMdkH9+f5B4FNPLDQ7a3iVi2EQXbEUCBkPoYSszQ+aDBYO//mF1y4w==
+X-Received: by 2002:a5d:494d:0:b0:228:d840:99f5 with SMTP id r13-20020a5d494d000000b00228d84099f5mr7203566wrs.458.1662709053950;
+        Fri, 09 Sep 2022 00:37:33 -0700 (PDT)
 Received: from amjad-ThinkPad-T490.baylibre (laubervilliers-658-1-213-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.googlemail.com with ESMTPSA id j5-20020a05600c1c0500b003a682354f63sm5345901wms.11.2022.09.09.00.36.25
+        by smtp.googlemail.com with ESMTPSA id h7-20020a05600c414700b003a83ca67f73sm1252976wmm.3.2022.09.09.00.37.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Sep 2022 00:36:25 -0700 (PDT)
+        Fri, 09 Sep 2022 00:37:33 -0700 (PDT)
 From:   Amjad Ouled-Ameur <aouledameur@baylibre.com>
 To:     matthias.bgg@gmail.com
-Cc:     Fabien Parent <fparent@baylibre.com>, rafael@kernel.org,
-        amitk@kernel.org, daniel.lezcano@linaro.org,
+Cc:     Markus Schneider-Pargmann <msp@baylibre.com>, rafael@kernel.org,
+        fparent@baylibre.com, amitk@kernel.org, daniel.lezcano@linaro.org,
         devicetree@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
         robh+dt@kernel.org, rui.zhang@intel.com,
-        Markus Schneider-Pargmann <msp@baylibre.com>,
         Amjad Ouled-Ameur <aouledameur@baylibre.com>
-Subject: [PATCH v4 3/4] thermal: mediatek: add support for MT8365 SoC
-Date:   Fri,  9 Sep 2022 09:36:08 +0200
-Message-Id: <20220909073609.32337-4-aouledameur@baylibre.com>
+Subject: [PATCH v4 2/4] thermal: mediatek: control buffer enablement tweaks
+Date:   Fri,  9 Sep 2022 09:37:26 +0200
+Message-Id: <20220909073726.32423-1-aouledameur@baylibre.com>
 X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20220909073609.32337-1-aouledameur@baylibre.com>
-References: <20220909073609.32337-1-aouledameur@baylibre.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Fabien Parent <fparent@baylibre.com>
+From: Markus Schneider-Pargmann <msp@baylibre.com>
 
-MT8365 is similar to the other SoCs supported by the driver. It has only
-one bank and 3 actual sensors that can be multiplexed. There is another
-one sensor that does not have usable data.
+Add logic in order to be able to turn on the control buffer on MT8365.
+This change now allows to have control buffer support for MTK_THERMAL_V1,
+and it allows to define the register offset, and mask used to enable it.
 
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 Signed-off-by: Fabien Parent <fparent@baylibre.com>
 Signed-off-by: Amjad Ouled-Ameur <aouledameur@baylibre.com>
 ---
- drivers/thermal/mtk_thermal.c | 68 +++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+ drivers/thermal/mtk_thermal.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index d8ddceb75372..3a5df1440822 100644
+index 8440692e3890..d8ddceb75372 100644
 --- a/drivers/thermal/mtk_thermal.c
 +++ b/drivers/thermal/mtk_thermal.c
-@@ -31,6 +31,7 @@
- #define AUXADC_CON2_V		0x010
- #define AUXADC_DATA(channel)	(0x14 + (channel) * 4)
- 
-+#define APMIXED_SYS_TS_CON0	0x600
- #define APMIXED_SYS_TS_CON1	0x604
- 
- /* Thermal Controller Registers */
-@@ -245,6 +246,17 @@ enum mtk_thermal_version {
- /* The calibration coefficient of sensor  */
- #define MT8183_CALIBRATION	153
- 
-+/* MT8365 */
-+#define MT8365_TEMP_AUXADC_CHANNEL 11
-+#define MT8365_CALIBRATION 164
-+#define MT8365_NUM_CONTROLLER 1
-+#define MT8365_NUM_BANKS 1
-+#define MT8365_NUM_SENSORS 3
-+#define MT8365_NUM_SENSORS_PER_ZONE 3
-+#define MT8365_TS1 0
-+#define MT8365_TS2 1
-+#define MT8365_TS3 2
-+
- struct mtk_thermal;
- 
- struct thermal_bank_cfg {
-@@ -389,6 +401,24 @@ static const int mt7622_mux_values[MT7622_NUM_SENSORS] = { 0, };
- static const int mt7622_vts_index[MT7622_NUM_SENSORS] = { VTS1 };
- static const int mt7622_tc_offset[MT7622_NUM_CONTROLLER] = { 0x0, };
- 
-+/* MT8365 thermal sensor data */
-+static const int mt8365_bank_data[MT8365_NUM_SENSORS] = {
-+	MT8365_TS1, MT8365_TS2, MT8365_TS3
-+};
-+
-+static const int mt8365_msr[MT8365_NUM_SENSORS_PER_ZONE] = {
-+	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2
-+};
-+
-+static const int mt8365_adcpnp[MT8365_NUM_SENSORS_PER_ZONE] = {
-+	TEMP_ADCPNP0, TEMP_ADCPNP1, TEMP_ADCPNP2
-+};
-+
-+static const int mt8365_mux_values[MT8365_NUM_SENSORS] = { 0, 1, 2 };
-+static const int mt8365_tc_offset[MT8365_NUM_CONTROLLER] = { 0 };
-+
-+static const int mt8365_vts_index[MT8365_NUM_SENSORS] = { VTS1, VTS2, VTS3 };
-+
- /*
-  * The MT8173 thermal controller has four banks. Each bank can read up to
-  * four temperature sensors simultaneously. The MT8173 has a total of 5
-@@ -463,6 +493,40 @@ static const struct mtk_thermal_data mt2701_thermal_data = {
- 	.version = MTK_THERMAL_V1,
+@@ -271,6 +271,9 @@ struct mtk_thermal_data {
+ 	bool need_switch_bank;
+ 	struct thermal_bank_cfg bank_data[MAX_NUM_ZONES];
+ 	enum mtk_thermal_version version;
++	u32 apmixed_buffer_ctl_reg;
++	u32 apmixed_buffer_ctl_mask;
++	u32 apmixed_buffer_ctl_set;
  };
  
-+/*
-+ * The MT8365 thermal controller has one bank, which can read up to
-+ * four temperature sensors simultaneously. The MT8365 has a total of 3
-+ * temperature sensors.
-+ *
-+ * The thermal core only gets the maximum temperature of this one bank,
-+ * so the bank concept wouldn't be necessary here. However, the SVS (Smart
-+ * Voltage Scaling) unit makes its decisions based on the same bank
-+ * data.
-+ */
-+static const struct mtk_thermal_data mt8365_thermal_data = {
-+	.auxadc_channel = MT8365_TEMP_AUXADC_CHANNEL,
-+	.num_banks = MT8365_NUM_BANKS,
-+	.num_sensors = MT8365_NUM_SENSORS,
-+	.vts_index = mt8365_vts_index,
-+	.cali_val = MT8365_CALIBRATION,
-+	.num_controller = MT8365_NUM_CONTROLLER,
-+	.controller_offset = mt8365_tc_offset,
-+	.need_switch_bank = false,
-+	.bank_data = {
-+		{
-+			.num_sensors = MT8365_NUM_SENSORS,
-+			.sensors = mt8365_bank_data
-+		},
-+	},
-+	.msr = mt8365_msr,
-+	.adcpnp = mt8365_adcpnp,
-+	.sensor_mux_values = mt8365_mux_values,
-+	.version = MTK_THERMAL_V1,
-+	.apmixed_buffer_ctl_reg = APMIXED_SYS_TS_CON0,
-+	.apmixed_buffer_ctl_mask = (u32) ~GENMASK(29, 28),
-+	.apmixed_buffer_ctl_set = 0,
-+};
-+
- /*
-  * The MT2712 thermal controller has one bank, which can read up to
-  * four temperature sensors simultaneously. The MT2712 has a total of 4
-@@ -964,6 +1028,10 @@ static const struct of_device_id mtk_thermal_of_match[] = {
- 	{
- 		.compatible = "mediatek,mt8183-thermal",
- 		.data = (void *)&mt8183_thermal_data,
-+	},
-+	{
-+		.compatible = "mediatek,mt8365-thermal",
-+		.data = (void *)&mt8365_thermal_data,
- 	}, {
- 	},
+ struct mtk_thermal {
+@@ -514,6 +517,9 @@ static const struct mtk_thermal_data mt7622_thermal_data = {
+ 	.adcpnp = mt7622_adcpnp,
+ 	.sensor_mux_values = mt7622_mux_values,
+ 	.version = MTK_THERMAL_V2,
++	.apmixed_buffer_ctl_reg = APMIXED_SYS_TS_CON1,
++	.apmixed_buffer_ctl_mask = GENMASK(31, 6) | BIT(3),
++	.apmixed_buffer_ctl_set = BIT(0),
  };
+ 
+ /*
+@@ -963,14 +969,18 @@ static const struct of_device_id mtk_thermal_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, mtk_thermal_of_match);
+ 
+-static void mtk_thermal_turn_on_buffer(void __iomem *apmixed_base)
++static void mtk_thermal_turn_on_buffer(struct mtk_thermal *mt,
++				       void __iomem *apmixed_base)
+ {
+-	int tmp;
++	u32 tmp;
++
++	if (!mt->conf->apmixed_buffer_ctl_reg)
++		return;
+ 
+-	tmp = readl(apmixed_base + APMIXED_SYS_TS_CON1);
+-	tmp &= ~(0x37);
+-	tmp |= 0x1;
+-	writel(tmp, apmixed_base + APMIXED_SYS_TS_CON1);
++	tmp = readl(apmixed_base + mt->conf->apmixed_buffer_ctl_reg);
++	tmp &= mt->conf->apmixed_buffer_ctl_mask;
++	tmp |= mt->conf->apmixed_buffer_ctl_set;
++	writel(tmp, apmixed_base + mt->conf->apmixed_buffer_ctl_reg);
+ 	udelay(200);
+ }
+ 
+@@ -1070,8 +1080,9 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 		goto err_disable_clk_auxadc;
+ 	}
+ 
++	mtk_thermal_turn_on_buffer(mt, apmixed_base);
++
+ 	if (mt->conf->version == MTK_THERMAL_V2) {
+-		mtk_thermal_turn_on_buffer(apmixed_base);
+ 		mtk_thermal_release_periodic_ts(mt, auxadc_base);
+ 	}
+ 
 -- 
 2.37.3
 
