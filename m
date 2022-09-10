@@ -2,174 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19A57C6FA82
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Sep 2022 12:47:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B266C6FA82
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Sep 2022 13:12:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229703AbiIJMrQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Sep 2022 08:47:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38568 "EHLO
+        id S229536AbiIJNM0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Sep 2022 09:12:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43292 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229586AbiIJMrO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2022 08:47:14 -0400
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 044A3578BE
-        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 05:47:11 -0700 (PDT)
-Received: by mail-lf1-x132.google.com with SMTP id m15so7230161lfl.9
-        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 05:47:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=Xnrwle//1aq5NGhF/qMEZvbwwoMwpjLog3bunzgx6rM=;
-        b=BVd/bJ7kuaUOUaXMcU3dQZTD6lIj6NGmKFCMIH5ED55WCea78YSjfASq9DfQcf6d1q
-         /6JbDNWgopU84NuCLP0JLoEhzqTc9IMaD6z8XeVB2FxNvh27Djbo3U8/ymNglT8fV+44
-         OQ+u9ZXS4ojSAuB0FuBdDY3HW6yodwsxcCuA6E2iaIZBgxO9cIuE7urMT8JD5pTB8vsj
-         ZOFJtDQNTfWJBTpdNu9X607Xn8DaNfASia4uRZIz5Tlk8VgN19TWQFL6dgUfVGiNjFhi
-         yUEOmGPLsFNGLPN2m9MPMwLrsMvJcMTKZ4JkxuAxLCwxXiX9myaZf8WozF3qFApWIKY1
-         iIdg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=Xnrwle//1aq5NGhF/qMEZvbwwoMwpjLog3bunzgx6rM=;
-        b=t7sW5bbjxhxt6oRq66Sd+uq1bZNhAbClL6iBtjM+cVPRmXP4Daq+W2vVE4WF1bSkQv
-         IMrAs6RlCZeV4K+iHEc75OmUFLStS09gveESPN/gK6g9GtlCb+j2OdA+12xrNcQynorj
-         kfpZpaKnp/uicUD6NYBzmOm/wtUTzDjlx59/SFToMEVKsJhelQ9IBUaE8SUnsvLSgyQr
-         P3rN++Q26YMQ/w0CT884TEWotkZjk4vZ4Tkv1BsczLQIPSFuElvFwWBhwr/zU8wVv0s5
-         hVIxH/Ry5AvlCwQH6CEkqzdkMxZwCplNtEJhNsWscy76ieFdHme5+E/kABT6EE2RwVRr
-         BUjA==
-X-Gm-Message-State: ACgBeo0PcRqOwCScrOu6DRykI2yQVnRPGsO2ZiSlOr5rJUCvoFwuxRPc
-        hrNAnMtH0UvgzMhajfIFj0WAyA==
-X-Google-Smtp-Source: AA6agR6s148d4YerVeBrqBSEgZ0fxuXqADDlmf/69Y+9zvQwmWUbnDleLVGwNxVrSGTTZpEEJ4sVrw==
-X-Received: by 2002:a05:6512:31cc:b0:494:6815:a81b with SMTP id j12-20020a05651231cc00b004946815a81bmr6365824lfe.511.1662814029971;
-        Sat, 10 Sep 2022 05:47:09 -0700 (PDT)
-Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id k14-20020a2e920e000000b002677a3ad1d9sm327463ljg.76.2022.09.10.05.47.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 10 Sep 2022 05:47:09 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: [RFC PATCH 09/10] arm64: dts: qcom: msm8916: specify per-sensor calibration cells
-Date:   Sat, 10 Sep 2022 15:47:00 +0300
-Message-Id: <20220910124701.4060321-10-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220910124701.4060321-1-dmitry.baryshkov@linaro.org>
-References: <20220910124701.4060321-1-dmitry.baryshkov@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S229502AbiIJNMZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2022 09:12:25 -0400
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28A5F58509
+        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 06:12:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1662815545; x=1694351545;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references;
+  bh=24n3hcGa+f1fm1sS02iKmdfDXYW1deAmkOa7viGUnxc=;
+  b=Y8MoelHliyRc/fr9vHbXhO9Zuo8eJfivhcB7PihfiphmPqUqGEm0+0/y
+   VleriRki/eizWauH8NjQFo1cnymKrCaRpzQKBri9SV/IbGV0CeGbkxqVS
+   l4/HTLP1UgYMFWGCgkdmdHocivJBWFqKyYNFTb7YKDq3Vne6yLCNIa4i6
+   6+mTI89MQu5ZpDFHZLNXINbR1JIGAE8dU+RyN011X6ae6LJ7SUlTOYOo/
+   PrNWcdTDvVm1eUq7aZDQHtTwvHuW0cJxTuERfYprcRVPAF8VFfsRAOnZM
+   sDZcKisOP9mEXIggt+xJNP+q6i/sAPuWM/E0tekl0s0wdMUJVdp2Gwx4D
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10466"; a="298440981"
+X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
+   d="scan'208";a="298440981"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2022 06:12:24 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
+   d="scan'208";a="677511852"
+Received: from power-sh.sh.intel.com ([10.239.183.122])
+  by fmsmga008.fm.intel.com with ESMTP; 10 Sep 2022 06:12:23 -0700
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     rjw@rjwysocki.net
+Cc:     linux-pm@vger.kernel.org, rui.zhang@intel.com
+Subject: [PATCH 2/2] tools/power turbostat: Add support for MeteorLake platforms
+Date:   Sat, 10 Sep 2022 21:15:42 +0800
+Message-Id: <20220910131542.22708-2-rui.zhang@intel.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20220910131542.22708-1-rui.zhang@intel.com>
+References: <20220910131542.22708-1-rui.zhang@intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Specify pre-parsed per-sensor calibration nvmem cells in the tsens
-device node rather than parsing the whole data blob in the driver.
+Add turbostat support for MeteorLake platforms, which behave the same
+as RaptorLake platforms.
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 70 ++++++++++++++++++++++++---
- 1 file changed, 64 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 48bc2e09128d..d2cce8f75fb6 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -442,11 +442,57 @@ qfprom: qfprom@5c000 {
- 			reg = <0x0005c000 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
--			tsens_caldata: caldata@d0 {
--				reg = <0xd0 0x8>;
-+			tsens_base1: base1@d0 {
-+				reg = <0xd0 0x1>;
-+				bits = <0 7>;
- 			};
--			tsens_calsel: calsel@ec {
--				reg = <0xec 0x4>;
-+			tsens_s0_p1: s0_p1@d0 {
-+				reg = <0xd0 0x2>;
-+				bits = <7 5>;
-+			};
-+			tsens_s0_p2: s0_p2@d1 {
-+				reg = <0xd1 0x2>;
-+				bits = <4 5>;
-+			};
-+			tsens_s1_p1: s1_p1@d2 {
-+				reg = <0xd2 0x1>;
-+				bits = <1 5>;
-+			};
-+			tsens_s1_p2: s1_p2@d2 {
-+				reg = <0xd2 0x2>;
-+				bits = <6 5>;
-+			};
-+			tsens_s2_p1: s2_p1@d3 {
-+				reg = <0xd3 0x1>;
-+				bits = <3 5>;
-+			};
-+			tsens_s2_p2: s2_p2@d4 {
-+				reg = <0xd4 0x1>;
-+				bits = <0 5>;
-+			};
-+			tsens_s3_p1: s3_p1@d4 {
-+				reg = <0xd4 0x2>;
-+				bits = <5 5>;
-+			};
-+			tsens_s3_p2: s3_p2@d5 {
-+				reg = <0xd5 0x1>;
-+				bits = <2 5>;
-+			};
-+			tsens_s4_p1: s4_p1@d5 {
-+				reg = <0xd5 0x2>;
-+				bits = <7 5>;
-+			};
-+			tsens_s4_p2: s4_p2@d6 {
-+				reg = <0xd6 0x2>;
-+				bits = <4 5>;
-+			};
-+			tsens_base2: base2@d7 {
-+				reg = <0xd7 0x1>;
-+				bits = <1 7>;
-+			};
-+			tsens_mode: mode@ec {
-+				reg = <0xef 0x1>;
-+				bits = <5 3>;
- 			};
- 		};
+Note:
+This patch depends on commit 5515d21c6817
+("x86/cpu: Add CPU model numbers for Meteor Lake") in the x86/urgent
+branch of tip tree.
+
+Note:
+This patch is made on top of patch
+"tools/power turbostat: add support for RPL-S" at
+https://patchwork.kernel.org/project/linux-pm/patch/20220831064957.1773-1-rui.zhang@intel.com/
+to avoid conflict.
+
+---
+ tools/power/x86/turbostat/turbostat.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index df040d87edd8..597cc2dbc456 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -5448,6 +5448,8 @@ unsigned int intel_model_duplicates(unsigned int model)
+ 	case INTEL_FAM6_RAPTORLAKE:
+ 	case INTEL_FAM6_RAPTORLAKE_P:
+ 	case INTEL_FAM6_RAPTORLAKE_S:
++	case INTEL_FAM6_METEORLAKE:
++	case INTEL_FAM6_METEORLAKE_L:
+ 		return INTEL_FAM6_CANNONLAKE_L;
  
-@@ -473,8 +519,20 @@ tsens: thermal-sensor@4a9000 {
- 			compatible = "qcom,msm8916-tsens", "qcom,tsens-v0_1";
- 			reg = <0x004a9000 0x1000>, /* TM */
- 			      <0x004a8000 0x1000>; /* SROT */
--			nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
--			nvmem-cell-names = "calib", "calib_sel";
-+			nvmem-cells = <&tsens_mode>,
-+				      <&tsens_base1>, <&tsens_base2>,
-+				      <&tsens_s0_p1>, <&tsens_s0_p2>,
-+				      <&tsens_s1_p1>, <&tsens_s1_p2>,
-+				      <&tsens_s2_p1>, <&tsens_s2_p2>,
-+				      <&tsens_s3_p1>, <&tsens_s3_p2>,
-+				      <&tsens_s4_p1>, <&tsens_s4_p2>;
-+			nvmem-cell-names = "mode",
-+					   "base1", "base2",
-+					   "s0_p1", "s0_p2",
-+					   "s1_p1", "s1_p2",
-+					   "s2_p1", "s2_p2",
-+					   "s3_p1", "s3_p2",
-+					   "s4_p1", "s4_p2";
- 			#qcom,sensors = <5>;
- 			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
- 			interrupt-names = "uplow";
+ 	case INTEL_FAM6_ATOM_TREMONT_L:
 -- 
-2.35.1
+2.25.1
 
