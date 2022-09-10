@@ -2,84 +2,75 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4B1CECAAD3
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Sep 2022 13:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E1B8C6FA82
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Sep 2022 14:23:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229502AbiIJNM0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Sep 2022 09:12:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43288 "EHLO
+        id S229514AbiIJOXh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Sep 2022 10:23:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229492AbiIJNMZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2022 09:12:25 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F59858508
-        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 06:12:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1662815544; x=1694351544;
-  h=from:to:cc:subject:date:message-id;
-  bh=kltSkXJe8/01dzPZs1i1NflFPzhJRR4s4qcTRstRxug=;
-  b=m0hANpXEv88UlmtyIFdKYy2PLQUoQN2FJUhubtQc3hE5f9HKs6dWO8x9
-   8sppcTd8QCIGS7WXIngtVhbD5qmr8KTSsu6MQpODCVUahvfQwH52QZTSD
-   Rle5wVLV+OjG5SY5qcvKAxVBj3Ozry26vR/MIy76TW8d3CDcGCd+PGYX8
-   OXGCe/jSwoCYpj3ebDul9HzgPLR8Z4UOA+72v66K6mCVIGdMhzVrCwSus
-   5BnVUfuYd82qi51yCbddEYbIaO58UxuNXhi/+AG2BGXDQx0YHyg2C5Qgp
-   pXi4fhkT1JgmA5nPI+bE5JDyCUFwOOIzd7MP2+iuX7TglHTgQwX66IGHg
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10466"; a="298440980"
-X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
-   d="scan'208";a="298440980"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2022 06:12:23 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
-   d="scan'208";a="677511843"
-Received: from power-sh.sh.intel.com ([10.239.183.122])
-  by fmsmga008.fm.intel.com with ESMTP; 10 Sep 2022 06:12:22 -0700
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     rjw@rjwysocki.net
-Cc:     linux-pm@vger.kernel.org, rui.zhang@intel.com
-Subject: [PATCH 1/2] powercap: intel_rapl: Add support for MeteorLake platforms
-Date:   Sat, 10 Sep 2022 21:15:41 +0800
-Message-Id: <20220910131542.22708-1-rui.zhang@intel.com>
-X-Mailer: git-send-email 2.17.1
+        with ESMTP id S229491AbiIJOXg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2022 10:23:36 -0400
+Received: from smtp.smtpout.orange.fr (smtp03.smtpout.orange.fr [80.12.242.125])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0E4C852DEC
+        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 07:23:33 -0700 (PDT)
+Received: from pop-os.home ([90.11.190.129])
+        by smtp.orange.fr with ESMTPA
+        id X1H3opcNk9RnzX1H3odu7c; Sat, 10 Sep 2022 16:16:01 +0200
+X-ME-Helo: pop-os.home
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sat, 10 Sep 2022 16:16:01 +0200
+X-ME-IP: 90.11.190.129
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Heiko Stuebner <heiko@sntech.de>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-rockchip@lists.infradead.org
+Subject: [PATCH] PM / devfreq: rockchip-dfi: Fix an error message
+Date:   Sat, 10 Sep 2022 16:15:56 +0200
+Message-Id: <47627a29a443aedf3b36a4f72b3e1ad89933a0ea.1662819332.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add intel_rapl support for the MeteorLake platforms, which behave the
-same as RaptorLake platforms.
+There is a typo in the message. The clock name should be 'pclk_ddr_mon'.
+Fix it.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+While at it, switch to dev_err_probe() which is less verbose, filters
+-EPROBE_DEFER, and log the error code in a human readable way.
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
-
-Note:
-This patch depends on commit 5515d21c6817
-("x86/cpu: Add CPU model numbers for Meteor Lake") in the x86/urgent
-branch of tip tree.
-
-Note:
-This patch is made on top of commit 0d7a23b5f8e1
-("powercap: intel_rapl: Add support for RAPTORLAKE_S") in the
-linux-next branch of pm tree to avoid conflict.
-
+This looks like a cut'n'paste typo from drivers/devfreq/rk3399_dmc.c
 ---
- drivers/powercap/intel_rapl_common.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/devfreq/event/rockchip-dfi.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 6812c1ca3100..949eb90f5733 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -1111,6 +1111,8 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE,		&rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_P,        &rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_S,	&rapl_defaults_core),
-+	X86_MATCH_INTEL_FAM6_MODEL(METEORLAKE,		&rapl_defaults_core),
-+	X86_MATCH_INTEL_FAM6_MODEL(METEORLAKE_L,	&rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X,	&rapl_defaults_spr_server),
- 	X86_MATCH_INTEL_FAM6_MODEL(LAKEFIELD,		&rapl_defaults_core),
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 9a88faaf8b27..39ac069cabc7 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -189,10 +189,9 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+ 		return PTR_ERR(data->regs);
  
+ 	data->clk = devm_clk_get(dev, "pclk_ddr_mon");
+-	if (IS_ERR(data->clk)) {
+-		dev_err(dev, "Cannot get the clk dmc_clk\n");
+-		return PTR_ERR(data->clk);
+-	}
++	if (IS_ERR(data->clk))
++		return dev_err_probe(dev, PTR_ERR(data->clk),
++				     "Cannot get the clk pclk_ddr_mon\n");
+ 
+ 	/* try to find the optional reference to the pmu syscon */
+ 	node = of_parse_phandle(np, "rockchip,pmu", 0);
 -- 
-2.25.1
+2.34.1
 
