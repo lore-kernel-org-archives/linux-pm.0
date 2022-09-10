@@ -2,56 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B266C6FA82
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4B1CECAAD3
 	for <linux-pm@archiver.kernel.org>; Sat, 10 Sep 2022 13:12:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229536AbiIJNM0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229502AbiIJNM0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sat, 10 Sep 2022 09:12:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43292 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229502AbiIJNMZ (ORCPT
+        with ESMTP id S229492AbiIJNMZ (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2022 09:12:25 -0400
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28A5F58509
-        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 06:12:25 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F59858508
+        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 06:12:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1662815545; x=1694351545;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references;
-  bh=24n3hcGa+f1fm1sS02iKmdfDXYW1deAmkOa7viGUnxc=;
-  b=Y8MoelHliyRc/fr9vHbXhO9Zuo8eJfivhcB7PihfiphmPqUqGEm0+0/y
-   VleriRki/eizWauH8NjQFo1cnymKrCaRpzQKBri9SV/IbGV0CeGbkxqVS
-   l4/HTLP1UgYMFWGCgkdmdHocivJBWFqKyYNFTb7YKDq3Vne6yLCNIa4i6
-   6+mTI89MQu5ZpDFHZLNXINbR1JIGAE8dU+RyN011X6ae6LJ7SUlTOYOo/
-   PrNWcdTDvVm1eUq7aZDQHtTwvHuW0cJxTuERfYprcRVPAF8VFfsRAOnZM
-   sDZcKisOP9mEXIggt+xJNP+q6i/sAPuWM/E0tekl0s0wdMUJVdp2Gwx4D
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10466"; a="298440981"
+  t=1662815544; x=1694351544;
+  h=from:to:cc:subject:date:message-id;
+  bh=kltSkXJe8/01dzPZs1i1NflFPzhJRR4s4qcTRstRxug=;
+  b=m0hANpXEv88UlmtyIFdKYy2PLQUoQN2FJUhubtQc3hE5f9HKs6dWO8x9
+   8sppcTd8QCIGS7WXIngtVhbD5qmr8KTSsu6MQpODCVUahvfQwH52QZTSD
+   Rle5wVLV+OjG5SY5qcvKAxVBj3Ozry26vR/MIy76TW8d3CDcGCd+PGYX8
+   OXGCe/jSwoCYpj3ebDul9HzgPLR8Z4UOA+72v66K6mCVIGdMhzVrCwSus
+   5BnVUfuYd82qi51yCbddEYbIaO58UxuNXhi/+AG2BGXDQx0YHyg2C5Qgp
+   pXi4fhkT1JgmA5nPI+bE5JDyCUFwOOIzd7MP2+iuX7TglHTgQwX66IGHg
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10466"; a="298440980"
 X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
-   d="scan'208";a="298440981"
+   d="scan'208";a="298440980"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2022 06:12:24 -0700
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Sep 2022 06:12:23 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.93,305,1654585200"; 
-   d="scan'208";a="677511852"
+   d="scan'208";a="677511843"
 Received: from power-sh.sh.intel.com ([10.239.183.122])
-  by fmsmga008.fm.intel.com with ESMTP; 10 Sep 2022 06:12:23 -0700
+  by fmsmga008.fm.intel.com with ESMTP; 10 Sep 2022 06:12:22 -0700
 From:   Zhang Rui <rui.zhang@intel.com>
 To:     rjw@rjwysocki.net
 Cc:     linux-pm@vger.kernel.org, rui.zhang@intel.com
-Subject: [PATCH 2/2] tools/power turbostat: Add support for MeteorLake platforms
-Date:   Sat, 10 Sep 2022 21:15:42 +0800
-Message-Id: <20220910131542.22708-2-rui.zhang@intel.com>
+Subject: [PATCH 1/2] powercap: intel_rapl: Add support for MeteorLake platforms
+Date:   Sat, 10 Sep 2022 21:15:41 +0800
+Message-Id: <20220910131542.22708-1-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20220910131542.22708-1-rui.zhang@intel.com>
-References: <20220910131542.22708-1-rui.zhang@intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add turbostat support for MeteorLake platforms, which behave the same
-as RaptorLake platforms.
+Add intel_rapl support for the MeteorLake platforms, which behave the
+same as RaptorLake platforms.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
@@ -62,28 +59,27 @@ This patch depends on commit 5515d21c6817
 branch of tip tree.
 
 Note:
-This patch is made on top of patch
-"tools/power turbostat: add support for RPL-S" at
-https://patchwork.kernel.org/project/linux-pm/patch/20220831064957.1773-1-rui.zhang@intel.com/
-to avoid conflict.
+This patch is made on top of commit 0d7a23b5f8e1
+("powercap: intel_rapl: Add support for RAPTORLAKE_S") in the
+linux-next branch of pm tree to avoid conflict.
 
 ---
- tools/power/x86/turbostat/turbostat.c | 2 ++
+ drivers/powercap/intel_rapl_common.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index df040d87edd8..597cc2dbc456 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -5448,6 +5448,8 @@ unsigned int intel_model_duplicates(unsigned int model)
- 	case INTEL_FAM6_RAPTORLAKE:
- 	case INTEL_FAM6_RAPTORLAKE_P:
- 	case INTEL_FAM6_RAPTORLAKE_S:
-+	case INTEL_FAM6_METEORLAKE:
-+	case INTEL_FAM6_METEORLAKE_L:
- 		return INTEL_FAM6_CANNONLAKE_L;
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index 6812c1ca3100..949eb90f5733 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -1111,6 +1111,8 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE,		&rapl_defaults_core),
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_P,        &rapl_defaults_core),
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_S,	&rapl_defaults_core),
++	X86_MATCH_INTEL_FAM6_MODEL(METEORLAKE,		&rapl_defaults_core),
++	X86_MATCH_INTEL_FAM6_MODEL(METEORLAKE_L,	&rapl_defaults_core),
+ 	X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X,	&rapl_defaults_spr_server),
+ 	X86_MATCH_INTEL_FAM6_MODEL(LAKEFIELD,		&rapl_defaults_core),
  
- 	case INTEL_FAM6_ATOM_TREMONT_L:
 -- 
 2.25.1
 
