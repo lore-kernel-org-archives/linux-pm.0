@@ -2,52 +2,52 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D68FC6FA86
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Sep 2022 12:47:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FF03C6FA8E
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Sep 2022 12:47:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229677AbiIJMrN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Sep 2022 08:47:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38436 "EHLO
+        id S229545AbiIJMrO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Sep 2022 08:47:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38568 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229679AbiIJMrK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2022 08:47:10 -0400
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64970578AE
-        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 05:47:09 -0700 (PDT)
-Received: by mail-lf1-x130.google.com with SMTP id bq23so7249304lfb.7
-        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 05:47:09 -0700 (PDT)
+        with ESMTP id S229696AbiIJMrN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2022 08:47:13 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E4BD57574
+        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 05:47:11 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id f11so7247909lfa.6
+        for <linux-pm@vger.kernel.org>; Sat, 10 Sep 2022 05:47:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=iQQMZWiQo60j4E8YQUdNFlg6xHQjLMTSCPZx/5k4hto=;
-        b=MGW6RT+7ZRjAWILA/5uFm4gR97jAJj0QfVSM8Zo/X0c9zGgFZCTx/Zsv19yB8Q8BLz
-         /xNboDe78nfP2PZnKz3o5QBwopctGDbppuXNNK4qXqmPrhYUgMXcgcnMb3CplkpTw5H3
-         dxgXhw3i82MJOdpsRpoMJQPP9godsawwJUborzILUCsjvjLRYF4K3mSmaJykvSmP1/jx
-         X4W6BLp74fl1Ql1bz4g9T2dmtmuVI8SE5Am9Yz/iKpsNZPL4NYakGoVbdH/ILSuBmYhB
-         U5vAdxI5Eotb3HZb43AUnkXcvFtMEMuoit/viVxgZZFpJCFEt1xrY46dsA/g4V5Hbmn0
-         C0rA==
+        bh=CBVMWjg01odLYqTkWvaBQIvsO7JRHWZ4Q+bzbARqZjo=;
+        b=frJGUv3H/KocJebgVhP0B5uTRInGVYGXF0XUjTSoNgABiFDjPKODBl1BnzSAa44JKq
+         vIc2F4A7XdGjWemoiHB4rqwppYJU2iJB3FPdL2qK6kXpdWkSp4LuimGnKKl/DzFu2Smg
+         K3uMaRoZsuMv5g2TwbB2Sj+cfjA92GiFQDm7NKxpuXIYHdLvJAeDjqnwohlUD+qgUgkQ
+         HnKLtUhGnFWPjxbM9RqmiWadQeZJqaIu6koZui6NwaeZfG9wAkE193wIXHlzsEjhQO/5
+         W/iFqD4Ohp/ilNl932eOncpvExqnA1TfCGLmMfcMxhSXo+RD103Fpa+DMuSDlIwMLvbS
+         S5Cw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date;
-        bh=iQQMZWiQo60j4E8YQUdNFlg6xHQjLMTSCPZx/5k4hto=;
-        b=yjdjm7rci2r3/As6xRuAv6Ay3C/g5VbAUugp/jJr4mE1sN3zy2m+J71UkWGxBxsCmM
-         +u/9D+yqu4vM+qotUu7gXRGSXoHDkhopTvV2fXcv3AjvEdZkKWDpGqyPeipjD/51Mmh0
-         zzYKvtOp8S4CaPPBQYUdWnTUgv5hVId8Bua/IwtlHuCtqdogRfRVL93Es9Y9KV+HNBbW
-         e5Ug1vPY8HaWLmD3fkHI7lZs8V7fJZTCR48vwlulHXn2BQpiH4UrSbqYgkH73HK80/GW
-         KWEdnExqll0DO9+lF8eQ9msTiUk+2leR1t54CUWcVT/3oajYH1NnMtzzJSdCYj71AAFe
-         l9+g==
-X-Gm-Message-State: ACgBeo2GqY2JshxPWvPFxUOsEmphIQuCv0DaWUqJFn7ZvVA/iVkt7WBs
-        uqsj3vblyaDeU038gz0WYD4j9w==
-X-Google-Smtp-Source: AA6agR4BnPZ6R3AXFRgr/POumn5pPb4h25fzYSApp5BkcRMA+nkRVqSRAdRsKR0Ddr5um+h5VLeR4g==
-X-Received: by 2002:a05:6512:114e:b0:498:76c2:658a with SMTP id m14-20020a056512114e00b0049876c2658amr4424699lfg.672.1662814027719;
-        Sat, 10 Sep 2022 05:47:07 -0700 (PDT)
+        bh=CBVMWjg01odLYqTkWvaBQIvsO7JRHWZ4Q+bzbARqZjo=;
+        b=Mom4nB+7ymaMjXAatDoRBRdbNrDZaCZA1c9CILLoDfzYEGLz9IS4KZxkRbJTW2HW57
+         5VJWcJmMzYVnv+Tyu/z+zP7dvVClBqxFEVyqCryPa5zccrBzDXcKF0Kfy/XqmTrXOuVY
+         nuKKWHdpPCeFGCuFbIjmpNcxwqTE6T1EBEcNY2bqRIYyRPyovvbZsxTrVOHFoSMBmBzS
+         qE+nALHQgtpjesk8hl2117+rk3Hs+HDDOcg/bjWYvB6Ach/nZzSPl7quLSAosCHNgCWr
+         zhofWQrmN6KQY/ahViUgPQMKqbleDMlWVxWl3EB2ibcp76c836qkfYUN5OH2NHtxDCc6
+         HrLw==
+X-Gm-Message-State: ACgBeo1EjP9LINhx9OKsPo88CLmups3wzvfEPOBYHsosp/rC9qJ9wN69
+        zHyVKy8NW1g8wSJ3mCmG3Lj29A==
+X-Google-Smtp-Source: AA6agR7i3DwpVyjMRmVwgRdsv3EZYAqGZgRalNrU00BpemCxDJxS6p7YczlQBCOa/dUJhs7tBi4rJA==
+X-Received: by 2002:ac2:418a:0:b0:48b:aa2:1d9f with SMTP id z10-20020ac2418a000000b0048b0aa21d9fmr6337116lfh.195.1662814029211;
+        Sat, 10 Sep 2022 05:47:09 -0700 (PDT)
 Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id k14-20020a2e920e000000b002677a3ad1d9sm327463ljg.76.2022.09.10.05.47.06
+        by smtp.gmail.com with ESMTPSA id k14-20020a2e920e000000b002677a3ad1d9sm327463ljg.76.2022.09.10.05.47.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 10 Sep 2022 05:47:07 -0700 (PDT)
+        Sat, 10 Sep 2022 05:47:08 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -63,9 +63,9 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-Subject: [RFC PATCH 06/10] thermal/drivers/tsens: use generic calibration routine for msm8976
-Date:   Sat, 10 Sep 2022 15:46:57 +0300
-Message-Id: <20220910124701.4060321-7-dmitry.baryshkov@linaro.org>
+Subject: [RFC PATCH 08/10] thermal/drivers/tsens: drop single-cell code for msm8976
+Date:   Sat, 10 Sep 2022 15:46:59 +0300
+Message-Id: <20220910124701.4060321-9-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220910124701.4060321-1-dmitry.baryshkov@linaro.org>
 References: <20220910124701.4060321-1-dmitry.baryshkov@linaro.org>
@@ -75,61 +75,159 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-According to msm-3.10, msm8976 uses the same routine for processing
-calibration data as other platforms. Drop the msm8976-specific
-compute_intercept_slope_8976() and use compute_intercept_slope().
+There is no dtsi file for msm8976 in the kernel sources. Drop the
+compatibility with unofficial dtsi and remove support for handling the
+single-cell calibration data on msm8976.
 
 Cc: Konrad Dybcio <konrad.dybcio@somainline.org>
 Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/thermal/qcom/tsens-v1.c | 26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ drivers/thermal/qcom/tsens-v1.c | 124 +-------------------------------
+ 1 file changed, 1 insertion(+), 123 deletions(-)
 
 diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
-index e6ef3bacfc39..11363a318ae8 100644
+index 2a4440a34735..b6c2da3371e4 100644
 --- a/drivers/thermal/qcom/tsens-v1.c
 +++ b/drivers/thermal/qcom/tsens-v1.c
-@@ -137,30 +137,6 @@
- #define CAL_SEL_MASK	7
- #define CAL_SEL_SHIFT	0
+@@ -21,63 +21,6 @@
+ #define TM_HIGH_LOW_INT_STATUS_OFF		0x0088
+ #define TM_HIGH_LOW_Sn_INT_THRESHOLD_OFF	0x0090
  
--static void compute_intercept_slope_8976(struct tsens_priv *priv,
--			      u32 *p1, u32 *p2, u32 mode)
--{
--	int i;
+-/* eeprom layout data for msm8956/76 (v1) */
+-#define MSM8976_BASE0_MASK	0xff
+-#define MSM8976_BASE1_MASK	0xff
+-#define MSM8976_BASE1_SHIFT	8
 -
--	priv->sensor[0].slope = 3313;
--	priv->sensor[1].slope = 3275;
--	priv->sensor[2].slope = 3320;
--	priv->sensor[3].slope = 3246;
--	priv->sensor[4].slope = 3279;
--	priv->sensor[5].slope = 3257;
--	priv->sensor[6].slope = 3234;
--	priv->sensor[7].slope = 3269;
--	priv->sensor[8].slope = 3255;
--	priv->sensor[9].slope = 3239;
--	priv->sensor[10].slope = 3286;
+-#define MSM8976_S0_P1_MASK	0x3f00
+-#define MSM8976_S1_P1_MASK	0x3f00000
+-#define MSM8976_S2_P1_MASK	0x3f
+-#define MSM8976_S3_P1_MASK	0x3f000
+-#define MSM8976_S4_P1_MASK	0x3f00
+-#define MSM8976_S5_P1_MASK	0x3f00000
+-#define MSM8976_S6_P1_MASK	0x3f
+-#define MSM8976_S7_P1_MASK	0x3f000
+-#define MSM8976_S8_P1_MASK	0x1f8
+-#define MSM8976_S9_P1_MASK	0x1f8000
+-#define MSM8976_S10_P1_MASK	0xf8000000
+-#define MSM8976_S10_P1_MASK_1	0x1
 -
--	for (i = 0; i < priv->num_sensors; i++) {
--		priv->sensor[i].offset = (p1[i] * SLOPE_FACTOR) -
--				(CAL_DEGC_PT1 *
--				priv->sensor[i].slope);
--	}
--}
+-#define MSM8976_S0_P2_MASK	0xfc000
+-#define MSM8976_S1_P2_MASK	0xfc000000
+-#define MSM8976_S2_P2_MASK	0xfc0
+-#define MSM8976_S3_P2_MASK	0xfc0000
+-#define MSM8976_S4_P2_MASK	0xfc000
+-#define MSM8976_S5_P2_MASK	0xfc000000
+-#define MSM8976_S6_P2_MASK	0xfc0
+-#define MSM8976_S7_P2_MASK	0xfc0000
+-#define MSM8976_S8_P2_MASK	0x7e00
+-#define MSM8976_S9_P2_MASK	0x7e00000
+-#define MSM8976_S10_P2_MASK	0x7e
 -
- static int calibrate_v1(struct tsens_priv *priv)
+-#define MSM8976_S0_P1_SHIFT	8
+-#define MSM8976_S1_P1_SHIFT	20
+-#define MSM8976_S2_P1_SHIFT	0
+-#define MSM8976_S3_P1_SHIFT	12
+-#define MSM8976_S4_P1_SHIFT	8
+-#define MSM8976_S5_P1_SHIFT	20
+-#define MSM8976_S6_P1_SHIFT	0
+-#define MSM8976_S7_P1_SHIFT	12
+-#define MSM8976_S8_P1_SHIFT	3
+-#define MSM8976_S9_P1_SHIFT	15
+-#define MSM8976_S10_P1_SHIFT	27
+-#define MSM8976_S10_P1_SHIFT_1	0
+-
+-#define MSM8976_S0_P2_SHIFT	14
+-#define MSM8976_S1_P2_SHIFT	26
+-#define MSM8976_S2_P2_SHIFT	6
+-#define MSM8976_S3_P2_SHIFT	18
+-#define MSM8976_S4_P2_SHIFT	14
+-#define MSM8976_S5_P2_SHIFT	26
+-#define MSM8976_S6_P2_SHIFT	6
+-#define MSM8976_S7_P2_SHIFT	18
+-#define MSM8976_S8_P2_SHIFT	9
+-#define MSM8976_S9_P2_SHIFT	21
+-#define MSM8976_S10_P2_SHIFT	1
+-
+-#define MSM8976_CAL_SEL_MASK	0x3
+-
+ /* eeprom layout data for qcs404/405 (v1) */
+ #define BASE0_MASK	0x000007f8
+ #define BASE1_MASK	0x0007f800
+@@ -209,72 +152,7 @@ static int calibrate_v1(struct tsens_priv *priv)
+ 
+ static int calibrate_8976(struct tsens_priv *priv)
  {
- 	u32 base0 = 0, base1 = 0;
-@@ -290,7 +266,7 @@ static int calibrate_8976(struct tsens_priv *priv)
- 		break;
- 	}
+-	int base0 = 0, base1 = 0, i;
+-	u32 p1[11], p2[11];
+-	int mode = 0, tmp = 0;
+-	u32 *qfprom_cdata;
+-	int ret;
+-
+-	ret = tsens_calibrate_nvmem(priv, 2);
+-	if (!ret)
+-		return 0;
+-
+-	qfprom_cdata = (u32 *)qfprom_read(priv->dev, "calib");
+-	if (IS_ERR(qfprom_cdata))
+-		return PTR_ERR(qfprom_cdata);
+-
+-	mode = (qfprom_cdata[4] & MSM8976_CAL_SEL_MASK);
+-	dev_dbg(priv->dev, "calibration mode is %d\n", mode);
+-
+-	switch (mode) {
+-	case TWO_PT_CALIB:
+-		base1 = (qfprom_cdata[2] & MSM8976_BASE1_MASK) >> MSM8976_BASE1_SHIFT;
+-		p2[0] = (qfprom_cdata[0] & MSM8976_S0_P2_MASK) >> MSM8976_S0_P2_SHIFT;
+-		p2[1] = (qfprom_cdata[0] & MSM8976_S1_P2_MASK) >> MSM8976_S1_P2_SHIFT;
+-		p2[2] = (qfprom_cdata[1] & MSM8976_S2_P2_MASK) >> MSM8976_S2_P2_SHIFT;
+-		p2[3] = (qfprom_cdata[1] & MSM8976_S3_P2_MASK) >> MSM8976_S3_P2_SHIFT;
+-		p2[4] = (qfprom_cdata[2] & MSM8976_S4_P2_MASK) >> MSM8976_S4_P2_SHIFT;
+-		p2[5] = (qfprom_cdata[2] & MSM8976_S5_P2_MASK) >> MSM8976_S5_P2_SHIFT;
+-		p2[6] = (qfprom_cdata[3] & MSM8976_S6_P2_MASK) >> MSM8976_S6_P2_SHIFT;
+-		p2[7] = (qfprom_cdata[3] & MSM8976_S7_P2_MASK) >> MSM8976_S7_P2_SHIFT;
+-		p2[8] = (qfprom_cdata[4] & MSM8976_S8_P2_MASK) >> MSM8976_S8_P2_SHIFT;
+-		p2[9] = (qfprom_cdata[4] & MSM8976_S9_P2_MASK) >> MSM8976_S9_P2_SHIFT;
+-		p2[10] = (qfprom_cdata[5] & MSM8976_S10_P2_MASK) >> MSM8976_S10_P2_SHIFT;
+-
+-		for (i = 0; i < priv->num_sensors; i++)
+-			p2[i] = ((base1 + p2[i]) << 2);
+-		fallthrough;
+-	case ONE_PT_CALIB2:
+-		base0 = qfprom_cdata[0] & MSM8976_BASE0_MASK;
+-		p1[0] = (qfprom_cdata[0] & MSM8976_S0_P1_MASK) >> MSM8976_S0_P1_SHIFT;
+-		p1[1] = (qfprom_cdata[0] & MSM8976_S1_P1_MASK) >> MSM8976_S1_P1_SHIFT;
+-		p1[2] = (qfprom_cdata[1] & MSM8976_S2_P1_MASK) >> MSM8976_S2_P1_SHIFT;
+-		p1[3] = (qfprom_cdata[1] & MSM8976_S3_P1_MASK) >> MSM8976_S3_P1_SHIFT;
+-		p1[4] = (qfprom_cdata[2] & MSM8976_S4_P1_MASK) >> MSM8976_S4_P1_SHIFT;
+-		p1[5] = (qfprom_cdata[2] & MSM8976_S5_P1_MASK) >> MSM8976_S5_P1_SHIFT;
+-		p1[6] = (qfprom_cdata[3] & MSM8976_S6_P1_MASK) >> MSM8976_S6_P1_SHIFT;
+-		p1[7] = (qfprom_cdata[3] & MSM8976_S7_P1_MASK) >> MSM8976_S7_P1_SHIFT;
+-		p1[8] = (qfprom_cdata[4] & MSM8976_S8_P1_MASK) >> MSM8976_S8_P1_SHIFT;
+-		p1[9] = (qfprom_cdata[4] & MSM8976_S9_P1_MASK) >> MSM8976_S9_P1_SHIFT;
+-		p1[10] = (qfprom_cdata[4] & MSM8976_S10_P1_MASK) >> MSM8976_S10_P1_SHIFT;
+-		tmp = (qfprom_cdata[5] & MSM8976_S10_P1_MASK_1) << MSM8976_S10_P1_SHIFT_1;
+-		p1[10] |= tmp;
+-
+-		for (i = 0; i < priv->num_sensors; i++)
+-			p1[i] = (((base0) + p1[i]) << 2);
+-		break;
+-	default:
+-		for (i = 0; i < priv->num_sensors; i++) {
+-			p1[i] = 500;
+-			p2[i] = 780;
+-		}
+-		break;
+-	}
+-
+-	compute_intercept_slope(priv, p1, p2, mode);
+-	kfree(qfprom_cdata);
+-
+-	return 0;
++	return tsens_calibrate_nvmem(priv, 2);
+ }
  
--	compute_intercept_slope_8976(priv, p1, p2, mode);
-+	compute_intercept_slope(priv, p1, p2, mode);
- 	kfree(qfprom_cdata);
- 
- 	return 0;
+ /* v1.x: msm8956,8976,qcs404,405 */
 -- 
 2.35.1
 
