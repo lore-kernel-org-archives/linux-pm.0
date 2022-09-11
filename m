@@ -2,209 +2,205 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 830B9C6FA86
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:28:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC834ECAAD5
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:28:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229790AbiILK2p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Sep 2022 06:28:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49906 "EHLO
+        id S230204AbiILK2q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Sep 2022 06:28:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230208AbiILK2l (ORCPT
+        with ESMTP id S230205AbiILK2l (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 06:28:41 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8EB537181;
-        Mon, 12 Sep 2022 03:28:39 -0700 (PDT)
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECADE38685;
+        Mon, 12 Sep 2022 03:28:38 -0700 (PDT)
 Received: from mercury (unknown [185.122.133.20])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id DA9956601FE7;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id B7D3A6601FE1;
         Mon, 12 Sep 2022 11:28:37 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1662978518;
-        bh=sB+KgqZBMTpSJAOGyKS/B+RMCSEw/yF4dzXEpEYM6Zw=;
+        s=mail; t=1662978517;
+        bh=csuEsJifKVJyLRd1XpzpXHyhSvlWfN/+RiTgurHozt0=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=lZl3WPS0y3lhw7JNnEzM3yC9un8yRsA8BNqOyc00iOdaIdtWJDrJqI4a3ikyQtIli
-         pJul80D+6cdC6KRuia6R4P1WIfAyt7EhJz6n1lG9rmGY53Xp1bXWP+4so6yawI65qg
-         2grb7NBI5oOu4cVH2hqh1S9nuLqp4hrfMqHa9etAexqeRiFSE8niJCGuILtZFSZaff
-         ryp5mfEbh4Ss38u5WliQugyNIsOzmMoxqWfkgkJF507gRQ5ch9PaOlDPUli1jik0CJ
-         zUly1Q4+zuJ8WHVvg3Z38cxPMuwI+aaGSuGULTo9a8pK+BYrdUJRWOTFfl/uCSOENJ
-         l8/vMMFCQWChA==
+        b=gBQhSNbb14ZZXY4urBm4VWUdYii3jxLQAQJ5yFtGvzYDFZL8uL7jOMdrlu3XgrKMf
+         mRQCuSzsMS336AoTuLFGe++JTaZE87uC7WbKBUX5onGz41MBar3jXPxxBq6zCecxrg
+         /hDzErS0Go6RWGHL/oioHn3hbMyGg1eCCz6V1M24D30fJndp1vbCtwGw3nUh1NABQE
+         601C+ALp/MHqa6QgUa2piHoLVVvrTAXI9kaIkl/lEwGYkbjDUORjDk2T5E7/Q5/B91
+         CVhjoPK96/v/Ulbcs8IR+S2snWNmVOxzB/RsEBIewQ75xSwXJAIusK8Lb8+92ONevi
+         QGkoeCBsTim+A==
 Received: by mercury (Postfix, from userid 1000)
-        id 903171063362; Sun, 11 Sep 2022 15:05:30 +0200 (CEST)
-Date:   Sun, 11 Sep 2022 15:05:30 +0200
+        id A83E8106335A; Sun, 11 Sep 2022 14:27:38 +0200 (CEST)
+Date:   Sun, 11 Sep 2022 14:27:38 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Ben Dooks <ben-linux@fluff.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] power: supply: bq27xxx: fix NULL vs 0 warnings
-Message-ID: <20220911130530.l7thynmpso6amn4e@mercury.elektranox.org>
-References: <20220721210120.449340-1-ben-linux@fluff.org>
+To:     Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: power: reset: restart-handler: add common
+ schema
+Message-ID: <20220911122738.jjve6fs63fj733ug@mercury.elektranox.org>
+References: <20220907123630.57383-1-krzysztof.kozlowski@linaro.org>
+ <20220907163218.aja4pazw3sbxnoop@pali>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="cuom7xjehcjca6ul"
+        protocol="application/pgp-signature"; boundary="jm67xm5kqtnotww6"
 Content-Disposition: inline
-In-Reply-To: <20220721210120.449340-1-ben-linux@fluff.org>
+In-Reply-To: <20220907163218.aja4pazw3sbxnoop@pali>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---cuom7xjehcjca6ul
-Content-Type: text/plain; charset=us-ascii
+--jm67xm5kqtnotww6
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Jul 21, 2022 at 10:01:20PM +0100, Ben Dooks wrote:
-> The driver has a lot of sparse warnings for using 0 as a NULL
-> pointer when NULL would be appropriate. Change the 0 values
-> to NULL to fix the warnings, some of which are shown here:
+On Wed, Sep 07, 2022 at 06:32:18PM +0200, Pali Roh=E1r wrote:
+> On Wednesday 07 September 2022 14:36:30 Krzysztof Kozlowski wrote:
+> > Add common schema for restart and shutdown handlers, so they all use
+> > same meaning of "priority" field.  The Linux drivers already have this
+> > property and some systems want to customize it per-board in DTS.
+> >=20
+> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> >=20
+> > ---
+> >=20
+> > See also:
+> > https://lore.kernel.org/all/8fe93da3-f768-16ae-7025-1cfa97a42b27@linaro=
+=2Eorg/
+> > https://lore.kernel.org/all/20220831081715.14673-1-pali@kernel.org/
+> > ---
+> >  .../bindings/power/reset/gpio-restart.yaml    | 13 ++------
+> >  .../bindings/power/reset/restart-handler.yaml | 30 +++++++++++++++++++
+> >  2 files changed, 33 insertions(+), 10 deletions(-)
+> >  create mode 100644 Documentation/devicetree/bindings/power/reset/resta=
+rt-handler.yaml
+> >=20
+> > diff --git a/Documentation/devicetree/bindings/power/reset/gpio-restart=
+=2Eyaml b/Documentation/devicetree/bindings/power/reset/gpio-restart.yaml
+> > index a72d5c721516..d3d18e0f5db3 100644
+> > --- a/Documentation/devicetree/bindings/power/reset/gpio-restart.yaml
+> > +++ b/Documentation/devicetree/bindings/power/reset/gpio-restart.yaml
+> > @@ -25,6 +25,9 @@ description: >
+> >    inactive-delay, the GPIO is driven active again.  After a delay spec=
+ified by wait-delay, the
+> >    restart handler completes allowing other restart handlers to be atte=
+mpted.
+> > =20
+> > +allOf:
+> > +  - $ref: restart-handler.yaml#
+> > +
+> >  properties:
+> >    compatible:
+> >      const: gpio-restart
+> > @@ -41,16 +44,6 @@ properties:
+> >        in its inactive state.
+> > =20
+> >    priority:
+> > -    $ref: /schemas/types.yaml#/definitions/uint32
+> > -    description: |
+> > -      A priority ranging from 0 to 255 (default 129) according to the =
+following guidelines:
+> > -
+> > -        0:   Restart handler of last resort, with limited restart capa=
+bilities.
+> > -        128: Default restart handler; use if no other restart handler =
+is expected to be available,
+> > -             and/or if restart functionality is sufficient to restart =
+the entire system.
+> > -        255: Highest priority restart handler, will preempt all other =
+restart handlers.
+> > -    minimum: 0
+> > -    maximum: 255
+> >      default: 129
+> > =20
+> >    active-delay:
+> > diff --git a/Documentation/devicetree/bindings/power/reset/restart-hand=
+ler.yaml b/Documentation/devicetree/bindings/power/reset/restart-handler.ya=
+ml
+> > new file mode 100644
+> > index 000000000000..f5d22ca0cd45
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/reset/restart-handler.yaml
+> > @@ -0,0 +1,30 @@
+> > +# SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/power/reset/restart-handler.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: Restart and shutdown handler generic binding
+> > +
+> > +maintainers:
+> > +  - Sebastian Reichel <sre@kernel.org>
+> > +
+> > +description:
+> > +  Restart and shutdown handler device is responsible for powering off =
+the
+> > +  system, e.g. my cutting off the power.  System might have several re=
+start
+> > +  handlers, which usually are tried from most precise to last resort.
+> > +
+> > +properties:
+> > +  priority:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
 >=20
-> drivers/power/supply/bq27xxx_battery.c:984:23: warning: Using plain integ=
-er as NULL pointer
-> drivers/power/supply/bq27xxx_battery.c:985:23: warning: Using plain integ=
-er as NULL pointer
-> drivers/power/supply/bq27xxx_battery.c:986:23: warning: Using plain integ=
-er as NULL pointer
-> drivers/power/supply/bq27xxx_battery.c:987:23: warning: Using plain integ=
-er as NULL pointer
-> drivers/power/supply/bq27xxx_battery.c:988:23: warning: Using plain integ=
-er as NULL pointer
+> IIRC priority is signed integer number, not unsigned.
 >=20
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> ---
+> > +    description: |
+> > +      A priority ranging from 0 to 255 according to the following guid=
+elines::
+> > +        0:   Restart handler of last resort, with limited restart capa=
+bilities.
+> > +        128: Typical, default restart handler; use if no other restart=
+ handler
+> > +             is expected to be available, and/or if restart functional=
+ity is
+> > +             sufficient to restart the entire system.
+> > +        255: Highest priority restart handler, will preempt all other =
+restart handlers.
+> > +    minimum: 0
+> > +    maximum: 255
+>=20
+> And IIRC also other values (above 255 or below 0) are allowed for tuning
+> two "highest" or two "last resort" handlers.
+>=20
+> This needs to be checked / tested to ensure that new schema is not incorr=
+ect.
 
-Thanks, queued.
+priority is blindly copied into the priority field of struct
+notifier_block, which is of type int. But that is an implementation
+detail. I think the proposal from Krzysztof looks good. But let's
+wait a bit to give Rob a chance to review.
 
 -- Sebastian
 
->  drivers/power/supply/bq27xxx_battery.c | 54 +++++++++++++-------------
->  1 file changed, 27 insertions(+), 27 deletions(-)
->=20
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
-y/bq27xxx_battery.c
-> index 35e6a394c0df..dccc2683455a 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -868,11 +868,11 @@ enum bq27xxx_dm_reg_id {
->  	BQ27XXX_DM_TERMINATE_VOLTAGE,
->  };
-> =20
-> -#define bq27000_dm_regs 0
-> -#define bq27010_dm_regs 0
-> -#define bq2750x_dm_regs 0
-> -#define bq2751x_dm_regs 0
-> -#define bq2752x_dm_regs 0
-> +#define bq27000_dm_regs NULL
-> +#define bq27010_dm_regs NULL
-> +#define bq2750x_dm_regs NULL
-> +#define bq2751x_dm_regs NULL
-> +#define bq2752x_dm_regs NULL
-> =20
->  #if 0 /* not yet tested */
->  static struct bq27xxx_dm_reg bq27500_dm_regs[] =3D {
-> @@ -881,24 +881,24 @@ static struct bq27xxx_dm_reg bq27500_dm_regs[] =3D {
->  	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 80, 48, 2, 1000, 32767 },
->  };
->  #else
-> -#define bq27500_dm_regs 0
-> +#define bq27500_dm_regs NULL
->  #endif
-> =20
->  /* todo create data memory definitions from datasheets and test on chips=
- */
-> -#define bq27510g1_dm_regs 0
-> -#define bq27510g2_dm_regs 0
-> -#define bq27510g3_dm_regs 0
-> -#define bq27520g1_dm_regs 0
-> -#define bq27520g2_dm_regs 0
-> -#define bq27520g3_dm_regs 0
-> -#define bq27520g4_dm_regs 0
-> -#define bq27521_dm_regs 0
-> -#define bq27530_dm_regs 0
-> -#define bq27531_dm_regs 0
-> -#define bq27541_dm_regs 0
-> -#define bq27542_dm_regs 0
-> -#define bq27546_dm_regs 0
-> -#define bq27742_dm_regs 0
-> +#define bq27510g1_dm_regs NULL
-> +#define bq27510g2_dm_regs NULL
-> +#define bq27510g3_dm_regs NULL
-> +#define bq27520g1_dm_regs NULL
-> +#define bq27520g2_dm_regs NULL
-> +#define bq27520g3_dm_regs NULL
-> +#define bq27520g4_dm_regs NULL
-> +#define bq27521_dm_regs NULL
-> +#define bq27530_dm_regs NULL
-> +#define bq27531_dm_regs NULL
-> +#define bq27541_dm_regs NULL
-> +#define bq27542_dm_regs NULL
-> +#define bq27546_dm_regs NULL
-> +#define bq27742_dm_regs NULL
-> =20
->  #if 0 /* not yet tested */
->  static struct bq27xxx_dm_reg bq27545_dm_regs[] =3D {
-> @@ -907,7 +907,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] =3D {
->  	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 80, 67, 2, 2800,  3700 },
->  };
->  #else
-> -#define bq27545_dm_regs 0
-> +#define bq27545_dm_regs NULL
->  #endif
-> =20
->  static struct bq27xxx_dm_reg bq27411_dm_regs[] =3D {
-> @@ -937,7 +937,7 @@ static struct bq27xxx_dm_reg bq27426_dm_regs[] =3D {
->  #if 0 /* not yet tested */
->  #define bq27441_dm_regs bq27421_dm_regs
->  #else
-> -#define bq27441_dm_regs 0
-> +#define bq27441_dm_regs NULL
->  #endif
-> =20
->  #if 0 /* not yet tested */
-> @@ -947,13 +947,13 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] =3D {
->  	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 82, 9, 2, 2500,  3700 },
->  };
->  #else
-> -#define bq27621_dm_regs 0
-> +#define bq27621_dm_regs NULL
->  #endif
-> =20
-> -#define bq27z561_dm_regs 0
-> -#define bq28z610_dm_regs 0
-> -#define bq34z100_dm_regs 0
-> -#define bq78z100_dm_regs 0
-> +#define bq27z561_dm_regs NULL
-> +#define bq28z610_dm_regs NULL
-> +#define bq34z100_dm_regs NULL
-> +#define bq78z100_dm_regs NULL
-> =20
->  #define BQ27XXX_O_ZERO		BIT(0)
->  #define BQ27XXX_O_OTDC		BIT(1) /* has OTC/OTD overtemperature flags */
-> --=20
-> 2.35.1
->=20
-
---cuom7xjehcjca6ul
+--jm67xm5kqtnotww6
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd3RkACgkQ2O7X88g7
-+prvGA/+I9d48BFPKAOHGfx1VJdTf3+vBdnOSsKaocmf3bkxLDgfQejLiJYtQOae
-angVxOVfO/4ps+kFs/TJX2RoEZPBESueob4DjV6O/58PewlVA4vE9M+dOQNMlczx
-6LdFCSmd+GjExb53o9uz1wafQZKzV9+5gWfT4Bnl5KuhI8bsVbIXCm8heryE4YA3
-TohAI8H73VEzjHxL/mnpb+YBLOK06EeiBBmgG/0y2DGRrpboQUMZmas2vsOVRPHc
-G2jVr01XcdKo293xc0M8viNZG+y1aYHYLyi+H3/zk41DA/J+IWcad9VI150Xcsrl
-kioYpt6KGAF6lJj2CZ0IyFsO/3Q9wUf+sEK5wwY3V9+YnCSeFtpeacZRj/4aiZNs
-RJ0s3+78rLyhYhD8Wxm5U6VHc8lE2Q6p9irZ4owzpFNjR+Yre6HuLhzbAJ8rSYND
-WiU+mgjdvTYjepnrvXqXfZqIj47wzfixlH1squQW53gYSPnPAcUw+LPJ+bp4KoGe
-9bPVKGFDzGfiCirQjcz8vRkBzmYEyyY2rkNSe1953ytR8u58hhx9pQmOly7ZMNP5
-z9dUNP4ISg40/GGV1GTcnsjlZPKaG3PruXCqq1G3rtr8XT17Y/eGjtFoJKZiZzoS
-7bB6pTC0FCtJbkVcMNmjKE49BO7wKRfqR80+IhmJcf8jgSag5Aw=
-=cn+N
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd1DoACgkQ2O7X88g7
++pqS+A//YH8tttmtMUPbKLQ3SdPDIFr6POfYz3R6gLWk4aUpJfjKkrXVEFhkYS5N
+rM3quasa6z53XqmP6Ix5bQYpmsWjml+5AJdDp+k+a8wvFJKuZPkNx0XfvY5+BVtZ
+c+qPiSY+DETFcrbUw22O/faMLYn5YtsW3TR70y2vrlrW4avEkfXGEI6U4wAjDmfs
+xyTVhQSXVmQaWo1WEwfjm9W7INBsNdCZDNMwYP/4nBqbRIrXt9ncAmsVbyvyzDHt
+/p7wD5EUmY+SLOdvE0jUAUoZx+Ml/KhrgpvLaDZeW59PqZAdbirPvtA6njhGYVbU
+tjyRyARMJP5KehBhJOnpYwdfj4ZpKAx+pHLi1lCkepxQv+OuuhivL7K9+a+gp3Ly
+rVKj799tbeWIS+P/JWbX7eN+xCa9HMweHsppvKjkSH8fslXcrSlLTa1wjJQLrdHk
+VnhAFOs5EcIYJwSe7LECw/CwI8gtbVpaeNsqADH/Farh2B+Rf3g1gdFC5ieYX8Mq
+VfTcQMR+z1RW/+/T7j1HIZHzVcEI3IO58aP8o+8QZ3lobCxF2byejZgio/kVjt4T
+UxaGzggheWK8xy7yQjqQlDZXoruRiLr0oxodJF+C2jM+3nyG9eRSAt4+IoaM0vb2
+qNqk+xBfGmZlDKENUnQMqKqs+Efl961/ynOtCHy+0R4yLEiaBJo=
+=Iw6r
 -----END PGP SIGNATURE-----
 
---cuom7xjehcjca6ul--
+--jm67xm5kqtnotww6--
