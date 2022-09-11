@@ -2,101 +2,120 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF622C6FA83
-	for <linux-pm@archiver.kernel.org>; Sun, 11 Sep 2022 10:37:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EF04ECAAD3
+	for <linux-pm@archiver.kernel.org>; Sun, 11 Sep 2022 12:44:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230164AbiIKKh6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 11 Sep 2022 06:37:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47152 "EHLO
+        id S230103AbiIKMn7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 11 Sep 2022 08:43:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48780 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230149AbiIKKh5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Sep 2022 06:37:57 -0400
+        with ESMTP id S230090AbiIKMn6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Sep 2022 08:43:58 -0400
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96321C2A
-        for <linux-pm@vger.kernel.org>; Sun, 11 Sep 2022 03:37:55 -0700 (PDT)
-Received: from mercury (unknown [77.241.232.4])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E04F63340D
+        for <linux-pm@vger.kernel.org>; Sun, 11 Sep 2022 05:43:57 -0700 (PDT)
+Received: from mercury (unknown [77.241.232.19])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id A9ECC6601F07;
-        Sun, 11 Sep 2022 11:37:53 +0100 (BST)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 4F45A66015B2;
+        Sun, 11 Sep 2022 13:43:56 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1662892673;
-        bh=LHY5dd3fLZeanI3jeehHYlqdTMk21IhwnLjhcb9N3s0=;
+        s=mail; t=1662900236;
+        bh=ozj89aYMP7UzyKgrx94MCKLrztITpbzzMT/JnSNJAuQ=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=ZcPfyAm+P0QS8fiL7Sq6D1IrlrnLq8crJBBUQlP9kOVHgHr+hdM+f/TFVMOqxSjFk
-         TUAvY8n/bo78ghQ64foctV/bkfdrihW7e7UBJkcc+82z3y0Oq2qqCdn5QsGyIdDqLG
-         b1LUg9k00sV5jNBBmR4BkAqV9CICDtEzyI+UHEp/+yA8UiFoAIgxOPSX3fG+HYK0p2
-         aOwsWtX3pfFWEmIiKA3uqKUFEsTfQeqUmpkmwe5EFS8GiDTiekeDAjM19Gu4PRipNw
-         B+63qwg7RYsrL7Jurgy2+LT2+d1KlpdznfDGtodtsWesu4SUpzfRXosyr2t2n62ktU
-         3feASG6Qf3Zrg==
+        b=SHNSiZSA1Q2EIaGkOVK3hWo3gErCODlgc0zAQx4pMPP/bovAOzlEVEX138L8diPAt
+         fDzHDOBdOpp+XxDxb3KwqvNcGPiVPg/Sn8k4+REKhLRAnyot1wErpb+mfrpHpsFVBk
+         T4SRVMIDcCEns2Hzwo6Y/XMX2dn3HXKzUgtjybDkNtDnTuMftE4Imt003SsfJntdlt
+         2ZGNTJnJYDN6Hs65VwRVAiyb7d29Pw/WhEeIgNz+pNESLPmTBUDPYuB4LIkcXtTtU6
+         UhHDcLV3O5v1Zkf/oVGwX4QQZcc4PjRTB44g/5lxn74/+dUG38Muf94tnOG5fAM624
+         Gz6tVOp4Y8yIA==
 Received: by mercury (Postfix, from userid 1000)
-        id 395F61063348; Sun, 11 Sep 2022 10:58:11 +0200 (CEST)
-Date:   Sun, 11 Sep 2022 10:58:11 +0200
+        id 4959F1063360; Sun, 11 Sep 2022 14:43:52 +0200 (CEST)
+Date:   Sun, 11 Sep 2022 14:43:52 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     linux-pm@vger.kernel.org,
-        Matti Vaittineen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [PATCH] power: supply: Explain maintenance charging
-Message-ID: <20220911085811.cz6xkcpxgbn34ygs@mercury.elektranox.org>
-References: <20220719114131.62470-1-linus.walleij@linaro.org>
- <CACRpkdbYeCqJd1pqtEMb7oTFvYU+D5kJpE9OKnL7XGL8Ywiftg@mail.gmail.com>
+To:     Marek Vasut <marex@denx.de>
+Cc:     Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v2] power: supply: bq25890: Add support for setting IINLIM
+Message-ID: <20220911124352.xpdzp2vdmoroqlsm@mercury.elektranox.org>
+References: <20220801025727.778218-1-marex@denx.de>
+ <b8235890-7878-c982-caf2-1c7a69859f69@redhat.com>
+ <31ab3c4d-9d5e-4e09-cbeb-a764fb467264@denx.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="r3eict4lcxtpxn7w"
+        protocol="application/pgp-signature"; boundary="v7v4gjh7y4vagqlt"
 Content-Disposition: inline
-In-Reply-To: <CACRpkdbYeCqJd1pqtEMb7oTFvYU+D5kJpE9OKnL7XGL8Ywiftg@mail.gmail.com>
+In-Reply-To: <31ab3c4d-9d5e-4e09-cbeb-a764fb467264@denx.de>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---r3eict4lcxtpxn7w
+--v7v4gjh7y4vagqlt
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+Hi,
 
-On Sat, Sep 10, 2022 at 09:01:38PM +0200, Linus Walleij wrote:
-> On Tue, Jul 19, 2022 at 1:43 PM Linus Walleij <linus.walleij@linaro.org> =
-wrote:
+On Tue, Aug 23, 2022 at 05:59:33PM +0200, Marek Vasut wrote:
+> On 8/1/22 09:15, Hans de Goede wrote:
+> > On 8/1/22 04:57, Marek Vasut wrote:
+> > > Let user set input current limit via sysfs. This is useful in case th=
+ere
+> > > are multiple chargers connected to the device, each of which with its=
+ own
+> > > arbitrary maximum current which it can provide, some of which may pro=
+vide
+> > > more than the default 500mA. In that case, userspace can listen for p=
+lug
+> > > events generated by each charger and adjust the current limit accordi=
+ngly,
+> > > e.g. to permit battery to charge faster.
+> > >=20
+> > > Note that the IINLIM is reset every time the bq25890 is disconnected =
+=66rom
+> > > a charger, so the userspace must adjust the limit repeatly on every p=
+lug
+> > > event.
+> > >=20
+> > > Signed-off-by: Marek Vasut <marex@denx.de>
+> >=20
+> > Thanks, patch looks good to me:
+> >=20
+> > Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 >=20
-> > In order for everyone to understand clearly why we want to use
-> > maintenance charging for batteries, expand the description with two
-> > diagrams and some text.
-> >
-> > Cc: Matti Vaittineen <matti.vaittinen@fi.rohmeurope.com>
-> > Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
->=20
-> Sebastian, could you apply this patch?
->=20
-> I think I sent it in the merge window, so easily missed.
+> Can this be applied now ?
 
-Yes, merged now. FWIW I did not miss it, but I was busy the last
-weeks and did not yet collect power-supply patches.
+Thanks, queued to power-supply's for-next branch.
+
+Please make sure you are sending patches based on recent for-next
+branch next time. Your patch was from before eab25b4f93aa ("power:
+supply: bq25890: On the bq25892 set the IINLIM based on external
+charger detection") which was added in 5.18 :(
 
 -- Sebastian
 
---r3eict4lcxtpxn7w
+--v7v4gjh7y4vagqlt
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMdox8ACgkQ2O7X88g7
-+ppKtg//Vlq79Lq+TUauocLgSQfXNuf55lf0e6k9ofPShyhLSDvHaC++No8191EL
-znarJTWYDsGliuZ8F7qNBWnK/wZZjBkLd5+2YmIAveX12FHBk9fs9j277EOpPDCL
-GwIcCRNXa0nIra8bkaOwG65qiHAaCtgrzHArrXZJvFWUhoeAk0wOZgkm/e9RUKNy
-DMBGzK1Zv7/83HCRNk0KRyt933I4hne1Eq29fcDOZcxQhdLUEDQ1vcLeNFshHJQa
-FZrq1aIvVVXU+OiM0H5DnTF+atF+7mjPnU5EoeZ2CewUVloO+qhbLNYRKvTfn3g3
-5qpucsC72aaeuOmojSfHQ6+vtUzEko/ACljBB+IRREs9oOLdoFaWS7yE6cWtsgOi
-gfNIyjI0h1WjR+YPqk7hNS1Ht5DnKGnZ4tWJZuymrvpAp0Hipnda1Lsfe5r7TThs
-NyE7ayzfIiojUYE8N4ntMfH4BvNg9bCKkvFNv7nbPcCKrEn2mmmHzAR3SRgPSU8z
-vYcIPvC57rrXwypOus1R/AqjfpQk0WsQmaQsOeziXEAriQMDnMjhJYTveqOjw6c1
-rGT6BK0lPWb3vwTEOIUE3YuTxwB6YJys4jZXvZH9IrByuhVoQPIUdD24wd0JCe96
-48L9G7kjqJDjnHSCjCUzVQZgu+fPwTF0FyImK8a9oKCIS8LR2VI=
-=qVv3
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd2AcACgkQ2O7X88g7
++ppg1g/9Gf3mdcWO1XbJOGNzNf+fGsu73a77CgN5MKuXOoNESb1YJXIn1wDdayBK
+nVVRm36bp5mxy+yXQsSf3GZA63rNKY00dPp1lbaSx7YgJb/ptUfziaSvyqtYnGWO
+7HAPBrmaLs9ymKaegSc6jXmMkjkK3Ow1XinhOKrFu7/7fi3t8y7qUG+tBa9qIcXR
+k7fyT6yzyg4edioIjHmt2LWUq/vC0CQsB0/Alv0TPK9dNwkRvxgualJmrn1wfKJa
+t54qPGtVJFNIs9J1lX7vXvEEXaNtGYMloO117OVMzu20/pHTwkmlAtEt6USThD0d
+zdxyCn2jjKcKHsIc65wi/5tjmEsdMexFGM6Qb1zTqtS23rshA6P+H6B4oYjQ38rL
+fAgqCTPav+Tqo8c+RuN1MngSrlraSGp7WUrldz9eRrdADLwFFdkNvWv0lEIlMIyO
+gFYmdPtwT+Hww9DReX/oQSj92SZsZICOdsqv3xx5TP3yH2GGoCeAweQSy0NIJQWz
+Nl+iHY0unOtmy+ze+MDXwV0vNmNw2ZlGgdglikd9VXC746zRSVAmd+eGFice67G9
+QTwHUg9yFOQsRILlVDXR+N9nw1NfScjv4zPvdc3VFiHImkUEaEEeFUjw0gJPf7Pr
+c5xzlgV//SYWlghlnFkjiv+zeBjKbIFS/wm5JvfX+4VlUSszVyA=
+=FAam
 -----END PGP SIGNATURE-----
 
---r3eict4lcxtpxn7w--
+--v7v4gjh7y4vagqlt--
