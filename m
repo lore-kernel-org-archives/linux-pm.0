@@ -2,129 +2,148 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A19C6FA97
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:28:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A681CC6FA8B
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:28:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229502AbiILK2r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Sep 2022 06:28:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49896 "EHLO
+        id S230248AbiILK2s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Sep 2022 06:28:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230162AbiILK2m (ORCPT
+        with ESMTP id S230215AbiILK2m (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 06:28:42 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AB40386A2;
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67D5826109;
         Mon, 12 Sep 2022 03:28:41 -0700 (PDT)
 Received: from mercury (unknown [185.122.133.20])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id DF34E6601FE8;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id EB7A86601FE9;
         Mon, 12 Sep 2022 11:28:37 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1662978518;
-        bh=uNMLlgZMTYcC5mzrst0fDY2xiMV9lFyKj19odG4H/ko=;
+        bh=4bnJgtENLYVGMbLnU95Hnc7KD/qta8A0ZG+UAGno1fo=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=e4YH8PA2z+L5Ko4pHG9kgmhpitFfNDSbDDISQ80oKXc99bYtm5NF2jCieDrRAPQvD
-         oPk1JD/+oGt+Y17TMDGyUKlP+cyplznLl+X4QAsXzR1UAMyw+ZX3EuhJtLQ3kxXAr0
-         NST/dL16r9meU7jEGAX/jeXivDKdDLI+iW/vZ9kpu0A5LMIMxlUVZ/j5ylCsh4gnuH
-         shsHxDQoE2g7j4qE9PXLj0gz2i9+WmPZbWmV/zkvoqW5dWOOwsAK72AuyjFiZvtEnR
-         2kPCunh+CpnxJlcDTov/Mox/MyshlvaY/ghHqIFZt/FT0W08iKj0jpYF7net1DzTnl
-         k1X/zSz+2ce+w==
+        b=Ao4gwTK2kNZuiRxan7s17KMBYW+P96RPHV53/VrRpSjQyT18zShF0CgAeeFxvBAbD
+         e/dAkO4g3addAMlfezVZzdTTE1mJdqCgt1D1/wmOfb+r5Puyyms/QAT6uZKLP8H6fi
+         K+Js+r9rsDyRw1IVsCN0nmu4p3v7SjXYlhcBWKot8M/eQIvvJFizssUTjz2VBJz9z+
+         h4G5EqhuoS9BZ+Qy7NKWYN94XYNRk1VLd4QFo9r0tz6OOvRApSQ/nBK3WYzspxbau8
+         0K7UtSl2gzBdfHhenNaySSv8Svewroeo4sDAlwfMg+I/IwGXmy1md2Sn+9KmGI1qC7
+         vGwlZng9BzVvQ==
 Received: by mercury (Postfix, from userid 1000)
-        id 9885D1063356; Sun, 11 Sep 2022 14:18:43 +0200 (CEST)
-Date:   Sun, 11 Sep 2022 14:18:43 +0200
+        id 908E71063361; Sun, 11 Sep 2022 15:04:23 +0200 (CEST)
+Date:   Sun, 11 Sep 2022 15:04:23 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Anjelique Melendez <quic_amelende@quicinc.com>
-Cc:     corbet@lwn.net, robh+dt@kernel.org, agross@kernel.org,
-        andersson@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        vkoul@kernel.org, linux-doc@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        quic_collinsd@quicinc.com
-Subject: Re: [RESEND PATCH v5 0/2] add support for PON GEN3 device
-Message-ID: <20220911121843.k4appu2fszeeilkc@mercury.elektranox.org>
-References: <20220909204207.15820-1-quic_amelende@quicinc.com>
+To:     Ben Dooks <ben-linux@fluff.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] power: supply: bq27xxx: fix __be16 warnings
+Message-ID: <20220911130423.bvcvn2n3rubson5l@mercury.elektranox.org>
+References: <20220721210735.451138-1-ben-linux@fluff.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="igpyojxumu3a3dio"
+        protocol="application/pgp-signature"; boundary="ioq7dfpalwmuipdh"
 Content-Disposition: inline
-In-Reply-To: <20220909204207.15820-1-quic_amelende@quicinc.com>
+In-Reply-To: <20220721210735.451138-1-ben-linux@fluff.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---igpyojxumu3a3dio
+--ioq7dfpalwmuipdh
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Sep 09, 2022 at 01:42:07PM -0700, Anjelique Melendez wrote:
->  Resent with fixed path for dt-bindings.
+On Thu, Jul 21, 2022 at 10:07:35PM +0100, Ben Dooks wrote:
+> The bq27xxx_dm_reg_ptr() should return a __be16 as the result
+> is being passed to be16_to_cpup() to convert to the proper
+> cpu endian value. Move to using __be16 as appropriate to fix
+> the following sparse warnings:
 >=20
-> Changes from v4:
->   - Updated commit message for patch 1/2
+> drivers/power/supply/bq27xxx_battery.c:1293:26: warning: incorrect type i=
+n argument 1 (different base types)
+> drivers/power/supply/bq27xxx_battery.c:1293:26:    expected restricted __=
+be16 const [usertype] *p
+> drivers/power/supply/bq27xxx_battery.c:1293:26:    got unsigned short [us=
+ertype] *prev
+> drivers/power/supply/bq27xxx_battery.c:1304:17: warning: incorrect type i=
+n argument 1 (different base types)
+> drivers/power/supply/bq27xxx_battery.c:1304:17:    expected restricted __=
+be16 const [usertype] *p
+> drivers/power/supply/bq27xxx_battery.c:1304:17:    got unsigned short [us=
+ertype] *prev
+> drivers/power/supply/bq27xxx_battery.c:1316:15: warning: incorrect type i=
+n assignment (different base types)
+> drivers/power/supply/bq27xxx_battery.c:1316:15:    expected unsigned shor=
+t [usertype]
+> drivers/power/supply/bq27xxx_battery.c:1316:15:    got restricted __be16 =
+[usertype]
 >=20
-> Changes from v3:
->   - Addressed Krysztof's comments on patch 1/2
->     - Added missing minItems/maxItems
->     - Merged if statments with same constraints together
->     - Removed description from "reg-names"
->    =20
-> Changes from v2:
->   - Added new "qcom,pmk8350-pon" compatible string as per Krysztof's
->     advice
->   - Updated dt logic to use comptaible strings to decide constraints
->     as per Krysztof's comment
->   - Added new patch (v3 2/2) to support new compatible string
->=20
-> Changes from v1:
->   - Updated path which was missing Documentation/devicetree prefix
->   - Updated CC list
->=20
-> New patch series to separate this patch from applied patches.
-> Comments from original patch can be found
-> https://lore.kernel.org/linux-arm-msm/27515993-18f3-8891-4835-9b6a8d7f86b=
-0@quicinc.com/
->=20
-> David Collins (1):
->   dt-bindings: power: reset: qcom-pon: Add new compatible
->     "qcom,pmk8350-pon"
->=20
-> Anjelique Melendez (1):
->   power: reset: qcom-pon: add support for qcom,pmk8350-pon compatible str=
-ing
->=20
->  Documentation/devicetree/bindings/power/reset/qcom,pon.yaml | 50 +++++++=
-++++++++++++++++++++---
->  drivers/power/reset/qcom-pon.c | 1 +
->  2 file changed, 47 insertions(+), 4 deletions(-)
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> ---
 
-Thanks, I queued both patches.
+Thanks, queued.
 
 -- Sebastian
 
---igpyojxumu3a3dio
+>  drivers/power/supply/bq27xxx_battery.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
+y/bq27xxx_battery.c
+> index dccc2683455a..8bf048fbd36a 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -1044,12 +1044,12 @@ struct bq27xxx_dm_buf {
+>  	.block =3D (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
+>  }
+> =20
+> -static inline u16 *bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
+> +static inline __be16 *bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
+>  				      struct bq27xxx_dm_reg *reg)
+>  {
+>  	if (buf->class =3D=3D reg->subclass_id &&
+>  	    buf->block =3D=3D reg->offset / BQ27XXX_DM_SZ)
+> -		return (u16 *) (buf->data + reg->offset % BQ27XXX_DM_SZ);
+> +		return (__be16 *) (buf->data + reg->offset % BQ27XXX_DM_SZ);
+> =20
+>  	return NULL;
+>  }
+> @@ -1275,7 +1275,7 @@ static void bq27xxx_battery_update_dm_block(struct =
+bq27xxx_device_info *di,
+>  {
+>  	struct bq27xxx_dm_reg *reg =3D &di->dm_regs[reg_id];
+>  	const char *str =3D bq27xxx_dm_reg_name[reg_id];
+> -	u16 *prev =3D bq27xxx_dm_reg_ptr(buf, reg);
+> +	__be16 *prev =3D bq27xxx_dm_reg_ptr(buf, reg);
+> =20
+>  	if (prev =3D=3D NULL) {
+>  		dev_warn(di->dev, "buffer does not match %s dm spec\n", str);
+> --=20
+> 2.35.1
+>=20
+
+--ioq7dfpalwmuipdh
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd0iIACgkQ2O7X88g7
-+prrIw//duIMpV+No1Iwxa9UAzrbknmcZBWNwAm6tm23uRklakcfkj5dzCLtd8lG
-kQf9RROKa08Yp8mhuOhOe2NAR9gp0stXj7rywJRKmLJhJjqaAsXYKqAO/rqdMS4b
-lnDSbtQxJBHReLVT7oezDaKMtuqDBdpJ5FM4Q+SUt8/dJSTVog6Hyai1AwfZtItR
-ndK0IpISd5Kj7wbqdhMK2yP8VFUsH5JdRKgMBCb0UQN9wKKLrgFJOiE9JzhfmKDn
-M+xJ31QRj3/rxNS02p2BtFid0+VgSwAwcsvWsdWFhGkk0kFlo0mgqtnTI1pYX4PY
-ymKQ/8tMjBqKs5GK7FxKFxvHGlqOEW+wAH8L21M4jZSP8vuXhbieYHneRIu3VQJs
-D9LNyM/SVHb9BQ4ICAWZZevFmM6IqxNP7t3qghazu5GlB6GoGEdTtWot6Xcvf0WV
-e5ubn+0bSQ4sorRA+Pw1RYBpB9ivqIYgg3ZCZq8e4SF4G79pzu1c6oqJQUwi1And
-FiDKGyx2Pp8nej+MEGuBOIsL3bVIvc369IiKJ+tJUiIbRlTTRn0o8fmk6sq/dqNk
-SSI2+paNsjzsO/N+Pc8uvmaxMQfSFYHbFSCWnDkbiQOIiHXWURULs+wFHQ+7yhFI
-dX0ubIXKYNAQ9xn3xpS6h05Xrb5ZAiRH4qG4S2ZJd7KLlfxqXfI=
-=4XS6
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd3NYACgkQ2O7X88g7
++prXHBAAmjhhIWLgMyOvNGcUBmJfQyqx6YCSYZTwmhIiYmIWXyUEJKOecVI6OJq9
+qrynfPc3eH7FOJAsDUT1sOf2bE7+m0Lc8M0dCKIbYtxm+F8vfpqIGDdllC/PnNOM
+9KWQq7Ox7AhXzlGFNHICgXMX9rt6roh3BIvEIw6wEV0DDHWv+39961ahN/14j6Mg
+KedSpA8HfAIlENr9lwW2LGx1g2yhjk4lHntBkvDuHcF83gcgJPoN76GbvK3ehC7S
+5Q6X4I3ATWnhWpa+KI+UF9D+8+AZjXzsZlfNW0IaZsAf5yHPx+AaMfasyph0DNrc
+hM3LkxFitrGTTMPTFAZRyshGuC1BO2jezoJTyUYEHXtj1a7qd0E7kI0sPJ8W5J9s
+CBdPKn2VNkqiGjGvyaaksC7hbZCuO8FEepBUTZn96ghanut6IlOD+gCnRksVxUZa
+aOy1lpWMBW1f4bElxKTYjHgw9rkDxNHtgHlDk2SQfW0tqIsbqo6ed1AY95gQeeNm
+GWDNmVDM0G5Q0jiUnR1l/LeqGCZfxWo9MYAllFjeOXSbJHeWPYVmfMpHPNkmCqkd
+5ThQVz1cS29SamQAAUD9sJf97UxKYf0tJEQPjuuqs0JBEat0O0EHRmoG0G1EtPxx
+e3paNK5iQhmR8OHYqRp3WmKDgE3txi1LewQYOKuYjz79CXSuXng=
+=LNav
 -----END PGP SIGNATURE-----
 
---igpyojxumu3a3dio--
+--ioq7dfpalwmuipdh--
