@@ -2,71 +2,85 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BFC0ECAAA1
-	for <linux-pm@archiver.kernel.org>; Sun, 11 Sep 2022 08:15:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8215CECAAA1
+	for <linux-pm@archiver.kernel.org>; Sun, 11 Sep 2022 10:35:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229437AbiIKIPO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 11 Sep 2022 04:15:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48836 "EHLO
+        id S230186AbiIKKfZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 11 Sep 2022 06:35:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44504 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229732AbiIKIPN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Sep 2022 04:15:13 -0400
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 197E11902A
-        for <linux-pm@vger.kernel.org>; Sun, 11 Sep 2022 01:15:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1662884112; x=1694420112;
-  h=message-id:subject:from:to:date:in-reply-to:references:
-   mime-version:content-transfer-encoding;
-  bh=Zbv0jlucEbxajaB+DcUHeAN2D0pgDBbPtK4CTjqh6IM=;
-  b=D0aCrUzVwQiBjMo41MtT2oPdTNAYxxeSsfyE3oEOvkrkngiSci2fPntZ
-   DNmfIi/n5H09FUbsjMTJlHob5hbb6X3CU39Zb9WnbPHyMU/iO9/JxUxLu
-   Xnhr97SP+1RF2eVlou9VntJxXXJuSovXxmsbGzkE5/H62CtpUSANAAlSs
-   7m7T19RVjEhlIk9yBaSBtHGHjzQXJCGuMiJubMQOc040kvM5NoR3PTRhc
-   xZZDIR8xUmjwhsjCUvXIWyQDznFkOz/RcH8wAYp7yIB2BWbT6tQYSHyeJ
-   09/qvm/zwWMYmcQzTO9FTTjMKkSangQa212DzAu5OIlm8EWpDPvz5hTE4
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10466"; a="323929360"
-X-IronPort-AV: E=Sophos;i="5.93,307,1654585200"; 
-   d="scan'208";a="323929360"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2022 01:15:11 -0700
-X-IronPort-AV: E=Sophos;i="5.93,307,1654585200"; 
-   d="scan'208";a="646073738"
-Received: from mohdrosm-mobl.gar.corp.intel.com ([10.214.175.112])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2022 01:15:08 -0700
-Message-ID: <87b82371d2a209dda3d63f57a3cc259783577616.camel@intel.com>
-Subject: Re: Is Tigerlake Missing From intel_idle?
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     Xhivat Hoxhiq <xhivo97@gmail.com>, linux-pm@vger.kernel.org
-Date:   Sun, 11 Sep 2022 16:15:03 +0800
-In-Reply-To: <CAGtpHi=f1+HCL+4kbfYGCC+qrLZasrpdT4peMF6t8-h-5h8KWA@mail.gmail.com>
-References: <CAGtpHi=f1+HCL+4kbfYGCC+qrLZasrpdT4peMF6t8-h-5h8KWA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.5-0ubuntu1 
+        with ESMTP id S230159AbiIKKfS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Sep 2022 06:35:18 -0400
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF4AD1403C
+        for <linux-pm@vger.kernel.org>; Sun, 11 Sep 2022 03:35:17 -0700 (PDT)
+Received: by mail-ed1-x52a.google.com with SMTP id b35so8910001edf.0
+        for <linux-pm@vger.kernel.org>; Sun, 11 Sep 2022 03:35:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :from:to:cc:subject:date;
+        bh=q3834ATZM4uW4E7+m37Jcaz9Vq5t/5NQIEJwA7O+k6o=;
+        b=XvBH1YOQqIJRGxyVtPX6Xm+v6zpD+aOfSya3dqGzrRCBg4ZLiFocTjzGRPwT6b/2dM
+         z8ZP92vNuxCenE9IK28/vTB9tNXB6tO1MpPfpsnYUznLWyH+hZDQdKMbbMSQw74bTstY
+         v6XHskf4vginFjZJS18qQBtTBaME392J8ppkFxAuG3BsiSXvw/Gtyk6N0mppsEVq2uwH
+         mJk5KqbLUih8OU5iODf4sssjKPCkkCEmK6xFsdbvo7hyMqh2XiHe/VX9xOHT+MI3Z6te
+         Ty9LhMXUpFGY585zGqtcmpVRaEU9tgmwRaSTOaqdDTTjmm1F6elnwsQPGkRLLMJ4ODni
+         T0uQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=q3834ATZM4uW4E7+m37Jcaz9Vq5t/5NQIEJwA7O+k6o=;
+        b=NbzXOl3LcpiZALs4kPIafgM0kBZA2Atj+rgbBWnkgu6/UjRCDvoc9zpngQdZGbIqyW
+         ixMU7S6YpcXY5ViKEjjhlqTX9w62x84hL2rptW1DgBlcio6KKMlq/J7x25X8isC/II8q
+         lN9hcauv1YJdbQipQSEjmjNnsyt3h9HOzDTBYV/VXd/s5JKOqNsn3m46XuZnJ177mVqD
+         RdELIrDdOcrbsQhNsEgm8Ye2sJL96HDcN0McEI33NKc4Pt9JfqVm/FC5YiP7vIlnxcau
+         +6BCZExOIVm5oRAJsSDnMNclGgDhJsL07dIE52pgT4cmVjFR6Yxhtyvp0E8BpTEGcCcs
+         MHzA==
+X-Gm-Message-State: ACgBeo1au9lCHNCoDqQ6zj1RzxX9Wajm2tMH04y6IJdj14OlQ8fzCHZX
+        J1Yc9x5JEn/xGk3ltbN2p3G4yWMD5dB/YvtR7FGazjkZCxI=
+X-Google-Smtp-Source: AA6agR5kiwVnqu9KYElwqnZI8CfqSaCYPBvf6ZVBZejwDC8VjlQxPYwBEH9+3D7y1dM5coQjSs4N1o13nhW8mCtUmPo=
+X-Received: by 2002:a05:6402:148e:b0:44e:aa8c:abc5 with SMTP id
+ e14-20020a056402148e00b0044eaa8cabc5mr18271631edv.145.1662892516205; Sun, 11
+ Sep 2022 03:35:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+References: <CAGtpHi=f1+HCL+4kbfYGCC+qrLZasrpdT4peMF6t8-h-5h8KWA@mail.gmail.com>
+ <87b82371d2a209dda3d63f57a3cc259783577616.camel@intel.com>
+In-Reply-To: <87b82371d2a209dda3d63f57a3cc259783577616.camel@intel.com>
+From:   Xhivat Hoxhiq <xhivo97@gmail.com>
+Date:   Sun, 11 Sep 2022 12:35:00 +0200
+Message-ID: <CAGtpHi=bj9W3J-OcUW8UNDoXXVY3rMazktEwoEcagZ6BZXDzTQ@mail.gmail.com>
+Subject: Re: Is Tigerlake Missing From intel_idle?
+To:     Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 2022-09-11 at 09:57 +0200, Xhivat Hoxhiq wrote:
-> Hi!
-> 
-> I noticed that there is no mention of Tigerlake in the intel_idle
-> driver.
-> Is that by design or is it actually missing?
+Hi Rui,
 
-intel_idle driver works with the cstate provided via _CST ACPI control
-method on any platform by default.
+Thanks for the reply!
 
-I recalled that I did some measurement for TGL, but didn't find any
-power/performance improvement using the measured latency numbers.
+> intel_idle driver works with the cstate provided via _CST ACPI control
+> method on any platform by default.
 
-May I know why you need a customized table?
+I see. Does this mean that C-States are entirely up to the vendor?
 
-thanks,
-rui
+> I recalled that I did some measurement for TGL, but didn't find any
+> power/performance improvement using the measured latency numbers.
 
+In terms of laptops, how device dependent is this? Would a customized table
+provide more consistent results over many different machines?
 
+> May I know why you need a customized table?
+
+To squeeze as much battery life as I can! I'll be honest, I am very new to this
+so I assumed the missing table for TGL was an issue. I wasn't aware _CST ACPI
+control is a thing. Would you say it's a wasted effort to have a customized
+table for TGL? Every other platform seems to have them.
+
+Any other pros/cons to having a customized cstate table?
+
+Cheers,
+Xhivo
