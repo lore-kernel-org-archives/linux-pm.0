@@ -2,216 +2,209 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97160ECAAA1
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 830B9C6FA86
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:28:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229610AbiILK2p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229790AbiILK2p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 12 Sep 2022 06:28:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49896 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230204AbiILK2l (ORCPT
+        with ESMTP id S230208AbiILK2l (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 06:28:41 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 268D839B9C;
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8EB537181;
         Mon, 12 Sep 2022 03:28:39 -0700 (PDT)
 Received: from mercury (unknown [185.122.133.20])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id D03A56601FE5;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id DA9956601FE7;
         Mon, 12 Sep 2022 11:28:37 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1662978518;
-        bh=vPsKRiYy0nZnB40FtC/crO35pXfpHPIoWvK2ZW3Jbsw=;
+        bh=sB+KgqZBMTpSJAOGyKS/B+RMCSEw/yF4dzXEpEYM6Zw=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=FXqVLwWVbHwQQeuQJIi9DuAWEpEnNDq28CNYm8wZWWSLQDOltzyqxGVKh6JzWWlwU
-         fS8dqwhOu8qFcxGcEykIbCUlHghoG/RZzOkcrwgzcQ0A7MtMJqcrstT0jAKMijGe0C
-         oqKq3h6ZGul0XgUGg42Irpi/RznJ+tVWD1caXDcnjuUz/ilJKl3llBn9K1AVA3PCSj
-         EYS92HSgk2fc584x0mssl/p6Y7BCZNa9KtnkZ92pjC9cQcyveQZc3aZSaAOmWLs3mJ
-         WLnPGWPiNah62pMZ2r9v/7bODGw0MpIUXRcjCC/jsLCNMLlX5b2wuEYgzNWjexmcbU
-         rdfTwAEFFPNkw==
+        b=lZl3WPS0y3lhw7JNnEzM3yC9un8yRsA8BNqOyc00iOdaIdtWJDrJqI4a3ikyQtIli
+         pJul80D+6cdC6KRuia6R4P1WIfAyt7EhJz6n1lG9rmGY53Xp1bXWP+4so6yawI65qg
+         2grb7NBI5oOu4cVH2hqh1S9nuLqp4hrfMqHa9etAexqeRiFSE8niJCGuILtZFSZaff
+         ryp5mfEbh4Ss38u5WliQugyNIsOzmMoxqWfkgkJF507gRQ5ch9PaOlDPUli1jik0CJ
+         zUly1Q4+zuJ8WHVvg3Z38cxPMuwI+aaGSuGULTo9a8pK+BYrdUJRWOTFfl/uCSOENJ
+         l8/vMMFCQWChA==
 Received: by mercury (Postfix, from userid 1000)
-        id CFDCD106335C; Sun, 11 Sep 2022 14:33:46 +0200 (CEST)
-Date:   Sun, 11 Sep 2022 14:33:46 +0200
+        id 903171063362; Sun, 11 Sep 2022 15:05:30 +0200 (CEST)
+Date:   Sun, 11 Sep 2022 15:05:30 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     "Jason A. Donenfeld" <Jason@zx2c4.com>
-Cc:     linux-pm@vger.kernel.org, stable@vger.kernel.org,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH RESEND] power: supply: avoid nullptr deref in
- __power_supply_is_system_supplied
-Message-ID: <20220911123346.a7xbzdlbb7r5p6ih@mercury.elektranox.org>
-References: <CAJZ5v0js78b3qZXoxgXEwG7g0a7n_ALnEYjjzBGaQW7q4_ceCA@mail.gmail.com>
- <20220905172428.105564-1-Jason@zx2c4.com>
+To:     Ben Dooks <ben-linux@fluff.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] power: supply: bq27xxx: fix NULL vs 0 warnings
+Message-ID: <20220911130530.l7thynmpso6amn4e@mercury.elektranox.org>
+References: <20220721210120.449340-1-ben-linux@fluff.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ua5n5ln7ikkh4lj7"
+        protocol="application/pgp-signature"; boundary="cuom7xjehcjca6ul"
 Content-Disposition: inline
-In-Reply-To: <20220905172428.105564-1-Jason@zx2c4.com>
+In-Reply-To: <20220721210120.449340-1-ben-linux@fluff.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---ua5n5ln7ikkh4lj7
-Content-Type: text/plain; charset=utf-8
+--cuom7xjehcjca6ul
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Sep 05, 2022 at 07:24:28PM +0200, Jason A. Donenfeld wrote:
-> Fix the following OOPS:
+On Thu, Jul 21, 2022 at 10:01:20PM +0100, Ben Dooks wrote:
+> The driver has a lot of sparse warnings for using 0 as a NULL
+> pointer when NULL would be appropriate. Change the 0 values
+> to NULL to fix the warnings, some of which are shown here:
 >=20
-> BUG: kernel NULL pointer dereference, address: 0000000000000000
-> PGD 0 P4D 0
-> Oops: 0010 [#1] PREEMPT SMP
-> CPU: 14 PID: 1156 Comm: upowerd Tainted: G S   U             6.0.0-rc1+ #=
-366
-> Hardware name: LENOVO 20Y5CTO1WW/20Y5CTO1WW, BIOS N40ET36W (1.18 ) 07/19/=
-2022
-> RIP: 0010:0x0
-> Code: Unable to access opcode bytes at RIP 0xffffffffffffffd6.
-> RSP: 0018:ffff88815350bd08 EFLAGS: 00010212
-> RAX: ffff88810207d620 RBX: ffff88815350bd7c RCX: 000000000000394e
-> RDX: ffff88815350bd10 RSI: 0000000000000004 RDI: ffff888111722c00
-> RBP: ffff88815350bd68 R08: ffff8881187a8af8 R09: ffff8881187a8af8
-> R10: 0000000000000000 R11: 000000000000005f R12: ffffffff8162d0b0
-> R13: ffff88810159a038 R14: ffffffff823b3768 R15: ffff88810159a000
-> FS:  00007fd1f0958140(0000) GS:ffff88901f780000(0000) knlGS:0000000000000=
-000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> CR2: ffffffffffffffd6 CR3: 0000000152c7a004 CR4: 0000000000770ee0
-> PKRU: 55555554
-> Call Trace:
->  <TASK>
->  __power_supply_is_system_supplied+0x26/0x40
->  class_for_each_device+0xa5/0xd0
->  ? acpi_battery_get_state+0x4e/0x1f0
->  power_supply_is_system_supplied+0x26/0x40
->  acpi_battery_get_property+0x301/0x310
->  power_supply_show_property+0xa5/0x1d0
->  dev_attr_show+0x10/0x30
->  sysfs_kf_seq_show+0x78/0xc0
->  seq_read_iter+0xfd/0x3e0
->  vfs_read+0x1cb/0x290
->  ksys_read+0x4e/0xc0
->  do_syscall_64+0x2b/0x50
->  entry_SYSCALL_64_after_hwframe+0x46/0xb0
-> RIP: 0033:0x7fd1f0bed70c
-> Code: ec 28 48 89 54 24 18 48 89 74 24 10 89 7c 24 08 e8 39 a4 f8 ff 41 8=
-9 c0 48 8b 54 24 18 48 8b 74 24 10 8b 7c 24 08 31 c0 0f 05 <48> 3d 00 f0 ff=
- ff 77 34 44 89 c7 48 89 44 24 08 e8 8f a4 f8 ff 48
-> RSP: 002b:00007ffc8d3f27e0 EFLAGS: 00000246 ORIG_RAX: 0000000000000000
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007fd1f0bed70c
-> RDX: 0000000000001000 RSI: 000055957d534850 RDI: 000000000000000c
-> RBP: 000055957d50b1d0 R08: 0000000000000000 R09: 0000000000001000
-> R10: 000000000000006f R11: 0000000000000246 R12: 00007ffc8d3f2910
-> R13: 0000000000000000 R14: 0000000000000000 R15: 000000000000000c
->  </TASK>
+> drivers/power/supply/bq27xxx_battery.c:984:23: warning: Using plain integ=
+er as NULL pointer
+> drivers/power/supply/bq27xxx_battery.c:985:23: warning: Using plain integ=
+er as NULL pointer
+> drivers/power/supply/bq27xxx_battery.c:986:23: warning: Using plain integ=
+er as NULL pointer
+> drivers/power/supply/bq27xxx_battery.c:987:23: warning: Using plain integ=
+er as NULL pointer
+> drivers/power/supply/bq27xxx_battery.c:988:23: warning: Using plain integ=
+er as NULL pointer
 >=20
-> CR2: 0000000000000000
-> ---[ end trace 0000000000000000 ]---
-> RIP: 0010:0x0
-> Code: Unable to access opcode bytes at RIP 0xffffffffffffffd6.
-> RSP: 0018:ffff88815350bd08 EFLAGS: 00010212
-> RAX: ffff88810207d620 RBX: ffff88815350bd7c RCX: 000000000000394e
-> RDX: ffff88815350bd10 RSI: 0000000000000004 RDI: ffff888111722c00
-> RBP: ffff88815350bd68 R08: ffff8881187a8af8 R09: ffff8881187a8af8
-> R10: 0000000000000000 R11: 000000000000005f R12: ffffffff8162d0b0
-> R13: ffff88810159a038 R14: ffffffff823b3768 R15: ffff88810159a000
-> FS:  00007fd1f0958140(0000) GS:ffff88901f780000(0000) knlGS:0000000000000=
-000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> CR2: ffffffffffffffd6 CR3: 0000000152c7a004 CR4: 0000000000770ee0
->=20
-> The disassembly of the top function in the stack trace is:
->=20
-> .text:0000000000000000 __power_supply_is_system_supplied proc near
-> .text:0000000000000000                                         ; DATA XRE=
-F: power_supply_is_system_supplied+12=E2=86=93o
-> .text:0000000000000000
-> .text:0000000000000000 var_8           =3D qword ptr -8
-> .text:0000000000000000
-> .text:0000000000000000                 sub     rsp, 8
-> .text:0000000000000004                 mov     rdi, [rdi+78h]
-> .text:0000000000000008                 inc     dword ptr [rsi]
-> .text:000000000000000A                 mov     [rsp+8+var_8], 0
-> .text:0000000000000012                 mov     rax, [rdi]
-> .text:0000000000000015                 cmp     dword ptr [rax+8], 1
-> .text:0000000000000019                 jz      short loc_2A
-> .text:000000000000001B                 mov     rdx, rsp
-> .text:000000000000001E                 mov     esi, 4
-> .text:0000000000000023                 call    qword ptr [rax+30h]
-> .text:0000000000000026                 test    eax, eax
-> .text:0000000000000028                 jz      short loc_31
-> .text:000000000000002A
-> .text:000000000000002A loc_2A:                                 ; CODE XRE=
-F: __power_supply_is_system_supplied+19=E2=86=91j
-> .text:000000000000002A                 xor     eax, eax
-> .text:000000000000002C                 add     rsp, 8
-> .text:0000000000000030                 retn
-> .text:0000000000000031 ; ------------------------------------------------=
----------------------------
-> .text:0000000000000031
-> .text:0000000000000031 loc_31:                                 ; CODE XRE=
-F: __power_supply_is_system_supplied+28=E2=86=91j
-> .text:0000000000000031                 mov     eax, dword ptr [rsp+8+var_=
-8]
-> .text:0000000000000034                 add     rsp, 8
-> .text:0000000000000038                 retn
-> .text:0000000000000038 __power_supply_is_system_supplied endp
->=20
-> So presumably `call    qword ptr [rax+30h]` is jumping to NULL.
->=20
-> Cc: stable@vger.kernel.org
-> Acked-by: Rafael J. Wysocki <rafael@kernel.org>
-> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 > ---
->  drivers/power/supply/power_supply_core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index 4b5fb172fa99..aa4c97f11588 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -349,7 +349,7 @@ static int __power_supply_is_system_supplied(struct d=
-evice *dev, void *data)
->  	unsigned int *count =3D data;
-> =20
->  	(*count)++;
-> -	if (psy->desc->type !=3D POWER_SUPPLY_TYPE_BATTERY)
-> +	if (psy->desc->type !=3D POWER_SUPPLY_TYPE_BATTERY && psy->desc->get_pr=
-operty)
->  		if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_ONLINE,
->  					&ret))
->  			return ret.intval;
 
-Thanks, queued into power-supply's fixes branch. But I'm curioous
-how you triggered this. Which power-supply driver does not add
-a get_property function?
+Thanks, queued.
 
 -- Sebastian
 
---ua5n5ln7ikkh4lj7
+>  drivers/power/supply/bq27xxx_battery.c | 54 +++++++++++++-------------
+>  1 file changed, 27 insertions(+), 27 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
+y/bq27xxx_battery.c
+> index 35e6a394c0df..dccc2683455a 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -868,11 +868,11 @@ enum bq27xxx_dm_reg_id {
+>  	BQ27XXX_DM_TERMINATE_VOLTAGE,
+>  };
+> =20
+> -#define bq27000_dm_regs 0
+> -#define bq27010_dm_regs 0
+> -#define bq2750x_dm_regs 0
+> -#define bq2751x_dm_regs 0
+> -#define bq2752x_dm_regs 0
+> +#define bq27000_dm_regs NULL
+> +#define bq27010_dm_regs NULL
+> +#define bq2750x_dm_regs NULL
+> +#define bq2751x_dm_regs NULL
+> +#define bq2752x_dm_regs NULL
+> =20
+>  #if 0 /* not yet tested */
+>  static struct bq27xxx_dm_reg bq27500_dm_regs[] =3D {
+> @@ -881,24 +881,24 @@ static struct bq27xxx_dm_reg bq27500_dm_regs[] =3D {
+>  	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 80, 48, 2, 1000, 32767 },
+>  };
+>  #else
+> -#define bq27500_dm_regs 0
+> +#define bq27500_dm_regs NULL
+>  #endif
+> =20
+>  /* todo create data memory definitions from datasheets and test on chips=
+ */
+> -#define bq27510g1_dm_regs 0
+> -#define bq27510g2_dm_regs 0
+> -#define bq27510g3_dm_regs 0
+> -#define bq27520g1_dm_regs 0
+> -#define bq27520g2_dm_regs 0
+> -#define bq27520g3_dm_regs 0
+> -#define bq27520g4_dm_regs 0
+> -#define bq27521_dm_regs 0
+> -#define bq27530_dm_regs 0
+> -#define bq27531_dm_regs 0
+> -#define bq27541_dm_regs 0
+> -#define bq27542_dm_regs 0
+> -#define bq27546_dm_regs 0
+> -#define bq27742_dm_regs 0
+> +#define bq27510g1_dm_regs NULL
+> +#define bq27510g2_dm_regs NULL
+> +#define bq27510g3_dm_regs NULL
+> +#define bq27520g1_dm_regs NULL
+> +#define bq27520g2_dm_regs NULL
+> +#define bq27520g3_dm_regs NULL
+> +#define bq27520g4_dm_regs NULL
+> +#define bq27521_dm_regs NULL
+> +#define bq27530_dm_regs NULL
+> +#define bq27531_dm_regs NULL
+> +#define bq27541_dm_regs NULL
+> +#define bq27542_dm_regs NULL
+> +#define bq27546_dm_regs NULL
+> +#define bq27742_dm_regs NULL
+> =20
+>  #if 0 /* not yet tested */
+>  static struct bq27xxx_dm_reg bq27545_dm_regs[] =3D {
+> @@ -907,7 +907,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] =3D {
+>  	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 80, 67, 2, 2800,  3700 },
+>  };
+>  #else
+> -#define bq27545_dm_regs 0
+> +#define bq27545_dm_regs NULL
+>  #endif
+> =20
+>  static struct bq27xxx_dm_reg bq27411_dm_regs[] =3D {
+> @@ -937,7 +937,7 @@ static struct bq27xxx_dm_reg bq27426_dm_regs[] =3D {
+>  #if 0 /* not yet tested */
+>  #define bq27441_dm_regs bq27421_dm_regs
+>  #else
+> -#define bq27441_dm_regs 0
+> +#define bq27441_dm_regs NULL
+>  #endif
+> =20
+>  #if 0 /* not yet tested */
+> @@ -947,13 +947,13 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] =3D {
+>  	[BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 82, 9, 2, 2500,  3700 },
+>  };
+>  #else
+> -#define bq27621_dm_regs 0
+> +#define bq27621_dm_regs NULL
+>  #endif
+> =20
+> -#define bq27z561_dm_regs 0
+> -#define bq28z610_dm_regs 0
+> -#define bq34z100_dm_regs 0
+> -#define bq78z100_dm_regs 0
+> +#define bq27z561_dm_regs NULL
+> +#define bq28z610_dm_regs NULL
+> +#define bq34z100_dm_regs NULL
+> +#define bq78z100_dm_regs NULL
+> =20
+>  #define BQ27XXX_O_ZERO		BIT(0)
+>  #define BQ27XXX_O_OTDC		BIT(1) /* has OTC/OTD overtemperature flags */
+> --=20
+> 2.35.1
+>=20
+
+--cuom7xjehcjca6ul
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd1aoACgkQ2O7X88g7
-+poYOQ//VFZgMEe52+39lTF9TA1HeaUgfTP+vySwmdUOg0qpAafRF6ww3AXMMRHj
-K7+JV/8iC4lwErytIG65xorFxdA8Ou4h5b2mybZkYs7aQT9iAes5WQITu1jTfsi3
-Bv0DfBAg/Ar7e98n/S/keSmNsd81D/GhI7btl4Ou0vzhq+rrDxjeUPP8Ozlcw0BF
-nINc7qZjKA00BqYIo8uKWRPmq2fqQQO94LN61b521netLa/K0BxQnp9NgW7r598W
-QSZ1S0FdS41t53Tgph8DWeZWvTT4wu3JHjR5Its8UdRMf6WgGIRvofMBR6XaXzHd
-2Po0kFT3sLO5VMuXLfGjN3HIrsPkHH1evNewFYe3aZqzPw1oIbteqOdNAiU5jRwI
-AJV85eHjxX+1lgruApv0FyTPEtAxkYGkzmA72Q2DTs5hVlmJgseVY7tlOCLaFQDz
-pDKxCbxpsnPqEpY5XZmMXyDqoP2omwcm0usrASSwfr5MWio1k4WxiMOH6gVGvN4A
-P6AhhCgOoNtXITSXH6Hz09SQuX1mgK3eDgayZwq2kmz3wxilMCenowdPjtXOLxMu
-cDZJhWZ3Nm7fZdw2kalv6Q6ggvV+Zs7Ygv19pLpHJdM4l0yWZdXh2zOugVFTWge0
-8kD0vD//6s6MUealORrl2Q7fsysT2R45f9A3uTidaQMQER6uBr8=
-=e/gD
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd3RkACgkQ2O7X88g7
++prvGA/+I9d48BFPKAOHGfx1VJdTf3+vBdnOSsKaocmf3bkxLDgfQejLiJYtQOae
+angVxOVfO/4ps+kFs/TJX2RoEZPBESueob4DjV6O/58PewlVA4vE9M+dOQNMlczx
+6LdFCSmd+GjExb53o9uz1wafQZKzV9+5gWfT4Bnl5KuhI8bsVbIXCm8heryE4YA3
+TohAI8H73VEzjHxL/mnpb+YBLOK06EeiBBmgG/0y2DGRrpboQUMZmas2vsOVRPHc
+G2jVr01XcdKo293xc0M8viNZG+y1aYHYLyi+H3/zk41DA/J+IWcad9VI150Xcsrl
+kioYpt6KGAF6lJj2CZ0IyFsO/3Q9wUf+sEK5wwY3V9+YnCSeFtpeacZRj/4aiZNs
+RJ0s3+78rLyhYhD8Wxm5U6VHc8lE2Q6p9irZ4owzpFNjR+Yre6HuLhzbAJ8rSYND
+WiU+mgjdvTYjepnrvXqXfZqIj47wzfixlH1squQW53gYSPnPAcUw+LPJ+bp4KoGe
+9bPVKGFDzGfiCirQjcz8vRkBzmYEyyY2rkNSe1953ytR8u58hhx9pQmOly7ZMNP5
+z9dUNP4ISg40/GGV1GTcnsjlZPKaG3PruXCqq1G3rtr8XT17Y/eGjtFoJKZiZzoS
+7bB6pTC0FCtJbkVcMNmjKE49BO7wKRfqR80+IhmJcf8jgSag5Aw=
+=cn+N
 -----END PGP SIGNATURE-----
 
---ua5n5ln7ikkh4lj7--
+--cuom7xjehcjca6ul--
