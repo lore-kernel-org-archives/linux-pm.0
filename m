@@ -2,76 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6837C6FA82
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 18:22:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE58BC6FA89
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 19:08:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230035AbiILSWs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Sep 2022 14:22:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47372 "EHLO
+        id S230054AbiILTIt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Sep 2022 15:08:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57778 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229533AbiILSWr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 14:22:47 -0400
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E5FDCD3;
-        Mon, 12 Sep 2022 11:22:45 -0700 (PDT)
-Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: marex@denx.de)
-        by phobos.denx.de (Postfix) with ESMTPSA id CDDBB8455E;
-        Mon, 12 Sep 2022 20:22:41 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-        s=phobos-20191101; t=1663006962;
-        bh=C3UfO7sgLj7nw8J5opt1/M7XAxeFtflzXuG6MeZHKvg=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=rD2CYMJlwQJvspgz4M1VNWmPZNvDx6FvyBOmJofeOo1jG4AcgMMp3VIyzDThWl0lx
-         RcMys5VBvO+fwVqZ0zYW6eK6N2UsZw+MnCylsJsi4FRfdwJkzZzbm/LkdoWsmaANGx
-         YC1pQR4qWxoOSCRTkUKfZEvwMQmVC9DXF2gO2yN5Dw/jdsAj5pip6R/I63wfwJl+dz
-         3v2Z7oTeX4X1WSt9DdH+e9QQ33+1ewD1a9dZ/29zD8fLYBk9UVAOsXkNgm/3i6/bol
-         +Hz2medwoewwUmliLrhKu7DpJ9wXq4TP67sDdeD364iB8J96AssjnZsSoxsrlaguLk
-         sU9dQIzb/UIlw==
-Message-ID: <bde49ca9-6515-63c1-2161-66ab0443fc33@denx.de>
-Date:   Mon, 12 Sep 2022 20:11:59 +0200
+        with ESMTP id S230160AbiILTIs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 15:08:48 -0400
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B012542AEA
+        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2022 12:08:46 -0700 (PDT)
+Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-333a4a5d495so112716677b3.10
+        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2022 12:08:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date;
+        bh=PBuxdMIJGedDZd05zs/f/jp8HdD4J0iF/zmnT1wLkM8=;
+        b=PyqBbUve7IYKpQ6eXW4wKk9nSq88BRzddnMBlWWuiACKDVm9VowwZeYqUV0i8VNs0F
+         BXXZVU8QXfNUWTYmwURUzXLXJDwg3NdS9NvM+tUlEbS4Qtxog6NTJfy+suhgmC8rbaXU
+         p3y0dqzyZIdvDqZCUUkb0NZRitK5wwiaYsOaVuE/ygAE46iIi4Mu2bCKNlNPrJZruaNG
+         Z7wavJMndgsIYtA+h6eU8hYfHhfpoqfP1qetmCD+SuQ5LO1ljrWEHwD+t028JlYNpwcT
+         gFX2DLWgWIPbIuHjspJ+l7a2gq8EFe65RvhNre/5rNqaBzlO1SyqpAPyQzmv1NRd5nNB
+         56YQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=PBuxdMIJGedDZd05zs/f/jp8HdD4J0iF/zmnT1wLkM8=;
+        b=qsMNI7Q0nReZGKJ4b1FalbHESelkmbdr6PMsgGkd/6rUsQ/NRZEjecICl5SkO2TPJZ
+         ufORiKZvhAUPBew2sdX7j/cTBv4bm8oFIU/GhtNZJzvOVALE9fJbzD1hhyo/CYdv0U3S
+         J/vmhKtTfW2O/+d/R8CrQMhgUKyjxYwPLEdqWGwco2tC8+45/OQlF3FiXyLdCA1KgNOM
+         Xk0nyBpPLpUSpADZa0i1TX2AbDWi0F3/MpOFLOHPC+TuvFjMyI+hozOPSWWxEcD6hB/Q
+         +66CBu0fgNBUeQ2yATAMeW+GHx5H7mV4a3xe/Fhj6N88plQ+nfnpsUuuwJYZ4HIAeftt
+         aySQ==
+X-Gm-Message-State: ACgBeo3idpz2RS1ojWewLqPSE+R7lqiMEZc9GJeuUZdom3CdmNGYCKL7
+        FRghp3ZcqZYgZ69hcVjpikYArdkyLXM5RUzSbM22KQ==
+X-Google-Smtp-Source: AA6agR7WT+jTNvariBjRh8IzBKOFyY8T7XsX4dwLbBG3JRqM+O0AgFncsTP9h73X8XTUz/PkgpZvL0c4PgFs6vFTGFg=
+X-Received: by 2002:a81:6954:0:b0:344:e73e:5fde with SMTP id
+ e81-20020a816954000000b00344e73e5fdemr23603847ywc.37.1663009725802; Mon, 12
+ Sep 2022 12:08:45 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.1
-Subject: Re: [PATCH -next] power: supply: bq25890: Fix enum conversion in
- bq25890_power_supply_set_property()
-Content-Language: en-US
-To:     Nathan Chancellor <nathan@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Tom Rix <trix@redhat.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, llvm@lists.linux.dev,
-        patches@lists.linux.dev
-References: <20220912141553.1743568-1-nathan@kernel.org>
-From:   Marek Vasut <marex@denx.de>
-In-Reply-To: <20220912141553.1743568-1-nathan@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
-X-Virus-Status: Clean
+References: <20220911184232.3198957-1-bhupesh.sharma@linaro.org>
+ <CAA8EJpoM5nW=pVJB4zy4Jh9Q3gE4KOju2QVy_WtmUokKMyXtuw@mail.gmail.com>
+ <75a5789e-9100-b398-1df2-50d49823831c@linaro.org> <2f658a69-a49c-67be-26b9-421095cde2b7@linaro.org>
+In-Reply-To: <2f658a69-a49c-67be-26b9-421095cde2b7@linaro.org>
+From:   Bhupesh Sharma <bhupesh.sharma@linaro.org>
+Date:   Tue, 13 Sep 2022 00:38:34 +0530
+Message-ID: <CAH=2NtyBCbrK-K4WEYeDg3UJ976q7818mvDwR2j3HCUNi6vAnA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] thermal: Introduce CONFIG_QCOM_THERMAL in Makefile
+ and qcom/Kconfig
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        bhupesh.linux@gmail.com, andersson@kernel.org,
+        linux-arm-msm@vger.kernel.org, daniel.lezcano@linaro.org,
+        rafael@kernel.org, Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 9/12/22 16:15, Nathan Chancellor wrote:
-> Clang warns:
-> 
->    drivers/power/supply/bq25890_charger.c:625:40: error: implicit conversion from enumeration type 'enum bq25890_fields' to different enumeration type 'enum bq25890_table_ids' [-Werror,-Wenum-conversion]
->                    lval = bq25890_find_idx(val->intval, F_IINLIM);
->                           ~~~~~~~~~~~~~~~~              ^~~~~~~~
->    1 error generated.
-> 
-> Use the proper value from the right enumerated type, TBL_IINLIM, so
-> there is no more implcit conversion. The numerical values of F_IINLIM
-> and TBL_IINLIM happen to be the same so there is no change in behavior.
-> 
-> Fixes: 4a4748f28b0b ("power: supply: bq25890: Add support for setting IINLIM")
-> Link: https://github.com/ClangBuiltLinux/linux/issues/1707
-> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+On Mon, 12 Sept 2022 at 23:44, Dmitry Baryshkov
+<dmitry.baryshkov@linaro.org> wrote:
+>
+> On 12/09/2022 20:11, Bhupesh Sharma wrote:
+> >
+> >
+> > On 9/12/22 1:08 AM, Dmitry Baryshkov wrote:
+> >> On Sun, 11 Sept 2022 at 21:42, Bhupesh Sharma
+> >> <bhupesh.sharma@linaro.org> wrote:
+> >>>
+> >>> Introduce CONFIG_QCOM_THERMAL to allow better control
+> >>> over selection of various Qualcomm Thermal drivers
+> >>> available inside qcom/ directory.
+> >>>
+> >>> This is a preparatory change to allow new drivers to
+> >>> be added inside qcom/ directory in a more structured
+> >>> fashion.
+> >>>
+> >>> Cc: Bjorn Andersson <andersson@kernel.org>
+> >>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>> Cc: Amit Kucheria <amitk@kernel.org>
+> >>> Cc: Thara Gopinath <thara.gopinath@gmail.com>
+> >>> Signed-off-by: Bhupesh Sharma <bhupesh.sharma@linaro.org>
+> >>> ---
+> >>>   drivers/thermal/Makefile     |  2 +-
+> >>>   drivers/thermal/qcom/Kconfig | 12 ++++++++++++
+> >>>   2 files changed, 13 insertions(+), 1 deletion(-)
+> >>>
+> >>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> >>> index def8e1a0399c..a12b647be0d1 100644
+> >>> --- a/drivers/thermal/Makefile
+> >>> +++ b/drivers/thermal/Makefile
+> >>> @@ -52,7 +52,7 @@ obj-$(CONFIG_DA9062_THERMAL)  += da9062-thermal.o
+> >>>   obj-y                          += intel/
+> >>>   obj-$(CONFIG_TI_SOC_THERMAL)   += ti-soc-thermal/
+> >>>   obj-y                          += st/
+> >>> -obj-$(CONFIG_QCOM_TSENS)       += qcom/
+> >>> +obj-$(CONFIG_QCOM_THERMAL)     += qcom/
+> >>
+> >> Following other platforms around qcom, I think just `obj-y += qcom/`
+> >> would work well enough.
+> >
+> > I have no strong opinion on using `obj-y += qcom/` here, but I would
+> > still like us to define a CONFIG_QCOM_THERMAL like flag in the
+> > qcom/Kconfig, similar to the ST platforms which use similar selection
+> > mechanism via 'CONFIG_ST_THERMAL'.
+>
+> `QCOM_THERMAL' is fine for me.
 
-Reviewed-by: Marek Vasut <marex@denx.de>
+Sure, let me send v2 accordingly.
 
-Thanks
+Thanks,
+Bhupesh
