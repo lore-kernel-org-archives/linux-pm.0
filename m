@@ -2,97 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B082AECAAA1
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:28:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80429C6FA83
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 10:45:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230252AbiILK2t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Sep 2022 06:28:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49906 "EHLO
+        id S229543AbiILKpu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Sep 2022 06:45:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230218AbiILK2m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 06:28:42 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85180371A1;
-        Mon, 12 Sep 2022 03:28:41 -0700 (PDT)
-Received: from mercury (unknown [185.122.133.20])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        with ESMTP id S229510AbiILKpu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 06:45:50 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34E6131343;
+        Mon, 12 Sep 2022 03:45:49 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id D55AD6601FE6;
-        Mon, 12 Sep 2022 11:28:37 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1662978518;
-        bh=ReP/C2j0Kn0XYRx1xFBqc3HIG8waizhK8qxy6tw9V4E=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=DBPkqjZ3g0PgsqyAPXghkf+34aBMhr4Uobp2ML+IbGuUZoCHGTwjg/4tfqbOXs1Xc
-         8Rn01F/UUoqwN0O96o1E0yO2EgivpxtKM/M1U2PayHqYcBczks5tXmYXmb4vmbZkrT
-         aRH8PilYIQIgOtzHCHwR8bGYbtNUUgImO5hFOLc0rkG9whJPFWKMetont1Y3d7Kxu6
-         kYCLWOtbjQ0GKQqiun3Ec20m+ALvtERtkxu/JaXo5cP0fsWGZvvJzVGoxnh3kHaKT2
-         4uUoAVwtgQbXwLK81fCkYwhMfq8YV2/63CeFzwyjOet/Z908+JlHiaytr+YzRYyPuZ
-         pqa13IsJCHjIw==
-Received: by mercury (Postfix, from userid 1000)
-        id 294851063357; Sun, 11 Sep 2022 14:19:25 +0200 (CEST)
-Date:   Sun, 11 Sep 2022 14:19:25 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Wei Yongjun <weiyongjun1@huawei.com>
-Cc:     Michael Hennerich <Michael.Hennerich@analog.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next 0/2] power: supply: adp5061: some fixes from device
- mockup test
-Message-ID: <20220911121925.k36y2wjh6nn6b6l4@mercury.elektranox.org>
-References: <20220827073224.713803-1-weiyongjun1@huawei.com>
+        by ams.source.kernel.org (Postfix) with ESMTPS id CFB3BB80C6E;
+        Mon, 12 Sep 2022 10:45:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1B74C433D6;
+        Mon, 12 Sep 2022 10:45:45 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+        dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="WhI4t8//"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+        t=1662979544;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=+3jz39/jak5Ui0pcc0KV1+Nyj2qNdWQKuMuXzkcF0AY=;
+        b=WhI4t8//mpoQSwZTIptLboJ0/fFAX+euuiRy9UcaIdwzIRXI+j83JP2o64iZeu8b3u2xQS
+        lpjrbgwZI4dy0cByQvNfKEXG/gqjV6UpV6e4e0SiGAO56Hg7H92iqzGU/NT9IxkLDV/G4h
+        yh4NwDSPbUxHZEoH4jrqufpJAUELUpM=
+Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 7413db67 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+        Mon, 12 Sep 2022 10:45:43 +0000 (UTC)
+Date:   Mon, 12 Sep 2022 11:45:38 +0100
+From:   "Jason A. Donenfeld" <Jason@zx2c4.com>
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc:     linux-pm@vger.kernel.org, stable@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH RESEND] power: supply: avoid nullptr deref in
+ __power_supply_is_system_supplied
+Message-ID: <Yx8N0hGNcbVPnJxW@zx2c4.com>
+References: <CAJZ5v0js78b3qZXoxgXEwG7g0a7n_ALnEYjjzBGaQW7q4_ceCA@mail.gmail.com>
+ <20220905172428.105564-1-Jason@zx2c4.com>
+ <20220911123346.a7xbzdlbb7r5p6ih@mercury.elektranox.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="iosvc4cs6envf56f"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20220827073224.713803-1-weiyongjun1@huawei.com>
+In-Reply-To: <20220911123346.a7xbzdlbb7r5p6ih@mercury.elektranox.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Sebastian,
 
---iosvc4cs6envf56f
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Sep 11, 2022 at 02:33:46PM +0200, Sebastian Reichel wrote:
+> > -	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
+> > +	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY && psy->desc->get_property)
+> >  		if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_ONLINE,
+> >  					&ret))
+> >  			return ret.intval;
+> 
+> Thanks, queued into power-supply's fixes branch. But I'm curioous
+> how you triggered this. Which power-supply driver does not add
+> a get_property function?
 
-Hi,
+AFAIK, I'm just using the normal ACPI one. Really nothing fancy.
+Thinkpad X1 Extreme Gen 4.
 
-On Sat, Aug 27, 2022 at 07:32:22AM +0000, Wei Yongjun wrote:
-> This series fixes some issues found by device mockup unittest, not
-> sure how about the real device.
->=20
-> Wei Yongjun (2):
->   power: supply: adp5061: fix out-of-bounds read in
->     adp5061_get_chg_type()
->   power: supply: adp5061: show unknown capacity_level as text
->=20
->  drivers/power/supply/adp5061.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+Maybe get_property was being set and unset during some kind of
+initialization/deinitialization that was happening in response to some
+other event? Not sure, except that I managed to trigger it twice before
+patching my kernel so my laptop would keep working.
 
-Thanks, I queued both patches into power-supply's for-next branch.
+My machine went through three changes I know about between the threshold
+of "not crashing" and "crashing":
+- Upgraded to 5.19 and then 6.0-rc1.
+- I used my laptop on batteries for a prolonged period of time for the
+  first time in a while.
+- I updated KDE, whose power management UI elements may or may not make
+  frequent calls to this subsystem to update some visual representation.
 
--- Sebastian
+I don't have any data to back up this claim at all, but something that
+at least _sounds_ plausible is that an updated KDE thing was hammering
+on this read() method, while a decreasing battery state caused some
+aspect of the subsystem to reinitialize the power management object,
+making ->get_property() temporarily NULL. But just a guess!
 
---iosvc4cs6envf56f
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMd0kwACgkQ2O7X88g7
-+poDRhAAjhd/bP/kPwVIJCeOlSR7y8AOduEO0CzpyuGKUeMTDW59VIxjbu05+kJP
-mLeaZLqFISNGJGelMwUToJ/Klz4YTJo6x4ZrSCXUhi8TJ+GWZRziymzadZFYoHwk
-n7BNdgp24GwDhH3OrZggMB+Iki91mBd+f5/aaHnRZprzcQnx3Rooe61LH1m4+S8h
-vyROvZMv34X1cXDdPfr/tV357OV2Y/AMe8Ua7HaaE7DJcniizbJFWXyppm8uVujh
-/mYaA5u0BgrJLgZTTAqZTO66aKCO6oynIy8kq9x/4tgS8ISsv5Ci7PS7RTalD9Fj
-K54eFBzI9eImzLw95b6KCm+h9rja/rwXYKRpH58TT8HEXp+XLegqk8706XORbyJM
-EvyIkaRBsLIgpjV1MiQ78gqh99VmT4AWOZYixn9Eq3gdQ4ol9y5Td4+0DpuawgOf
-xfAxiW9xPIUUc1X3BG/90PM3g9zaf1KFUuh4V0pTedE6P63v33zQJ62k2JNCUpCW
-QKs+gqcLGdy2taewGCnd3uLurUW/AuUBPWiLMblJwR/U95cMacDty5l/IsEKTwwt
-dumezz6QYKB7Z/BQ7adlLEUHpyWrelWkrCQf1EXBo15oZSlmrWujfnWRu/FGlf2M
-fjtZ9F4b3+bCTHF7PkhnubRYURMN74HPmzslNumy7AkmikzV6+I=
-=em5t
------END PGP SIGNATURE-----
-
---iosvc4cs6envf56f--
+Jason
