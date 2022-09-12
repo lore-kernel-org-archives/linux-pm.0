@@ -2,213 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1219C6FA83
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 14:44:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BC8BC6FA83
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 15:38:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229635AbiILOoY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Sep 2022 10:44:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52146 "EHLO
+        id S230448AbiILPij (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Sep 2022 11:38:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37356 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229544AbiILOoQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 10:44:16 -0400
-Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B74437F8B
-        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2022 07:44:12 -0700 (PDT)
-Received: by mail-pg1-x52d.google.com with SMTP id c24so8481549pgg.11
-        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2022 07:44:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=semihalf.com; s=google;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date;
-        bh=sukhJYoCgew7uoZYP/s1sBJhXsmmbRwwbMiHWcpxCak=;
-        b=hq7HUPwF2uqkoez9+BCSmqUdhwINWlBe4+cCDRS8h8xUs38ncizG1c+KxCaOJplpbQ
-         Rp4RxQhvwkZ0GzFcSQrVkj7Pz61BMy0jFgvLV+8Pag5VDLbXYFGY/yBOIOZv56sWbifI
-         Hm8zxbxX0Iy3aEkx+X49AoosQlokWYultOhdLAwxeK1U26Iq2P4vWOIHbBZ8TTskTvwt
-         QYfykZ2jvz1Exmz8gA+IStgOD4sAIHjPdCXVfG4hkzciCTa0s1OKTr5v8SLTiApu75HV
-         sYlauglGjpmwBXQx9IBOyzPuZrQjifJlE3u7Lc+6dkwzIUko6mCs+ep6QEcJHhuGiFAN
-         N5pg==
+        with ESMTP id S230386AbiILPiY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 11:38:24 -0400
+Received: from mail-ot1-f48.google.com (mail-ot1-f48.google.com [209.85.210.48])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D954A38693;
+        Mon, 12 Sep 2022 08:38:17 -0700 (PDT)
+Received: by mail-ot1-f48.google.com with SMTP id p15-20020a056830130f00b006544f5228e3so6137872otq.2;
+        Mon, 12 Sep 2022 08:38:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=sukhJYoCgew7uoZYP/s1sBJhXsmmbRwwbMiHWcpxCak=;
-        b=kCkFihTm4ijaV5x2bkvjkLv6NnjLb3VnVYfiIxzCuX1heVGVNvByFpqLAIGr6JIiV2
-         jlZ1SRc/HTC53nFzfrAUG/s/ypBYZYAjDGJ4Rf0NdEzr/wdkNxCH1Zye/QC3B9hp9Mx2
-         2arhNbTuzmSE4Km8KyuNluqG9OWhpJY6YIHdqPwDIaM6cRfuItMawDZPzd7YHAUlXKQG
-         cym/sak5ibEDhBkGKz5lQ2r9v8yffLZGf4nJ/Jun5XMnU8sOqvoBvXLcR4s8wVtwVdj4
-         8c2Hw5OYBR9IR38Z0oFVEb6yfS2I/s+yiLRhkCvM4ncVqsrbUZdBJlqLUdae+WVOO5+a
-         5x/w==
-X-Gm-Message-State: ACgBeo1895EEkxw6AFkDtQbce6Y5gdfAednoe6wIE6Q72u1s73/q4tcr
-        v+NWhUWRoREpp9UFRyaHZonvi6JTXV9b19mULTXItg==
-X-Google-Smtp-Source: AA6agR7O6vDovGN26sVycLXUycIV5F7LTGHgOYYaxmyct5XRK9tv/Z6ndqSmcU2nA+P8JaEQXq6wd8nolTZXNjmGx40=
-X-Received: by 2002:a63:201c:0:b0:434:8bd6:87e1 with SMTP id
- g28-20020a63201c000000b004348bd687e1mr24208310pgg.394.1662993851476; Mon, 12
- Sep 2022 07:44:11 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220707125329.378277-1-jaz@semihalf.com> <20220707125329.378277-2-jaz@semihalf.com>
- <CAJZ5v0gdCN3P52ko44LQMqWJvDArHxZ7p4aSiQamML7aG_kRAA@mail.gmail.com>
- <CAH76GKO9sxnuLM--x6sg7m3bC_NgvLA94N6jHA-+5gW741-ByQ@mail.gmail.com> <CAH76GKMw2rAnQOSFqReG1sEC=sdncWOJHNXn-Rp2Gx1oUZR3ZQ@mail.gmail.com>
-In-Reply-To: <CAH76GKMw2rAnQOSFqReG1sEC=sdncWOJHNXn-Rp2Gx1oUZR3ZQ@mail.gmail.com>
-From:   Grzegorz Jaszczyk <jaz@semihalf.com>
-Date:   Mon, 12 Sep 2022 16:44:00 +0200
-Message-ID: <CAH76GKMtMi-Bp9h_49t5TBwF1cT0AQE=4H+4E+a4SK+cJ4JJ6A@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/2] suspend: extend S2Idle ops by new notify handler
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Dmytro Maluka <dmy@semihalf.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Sean Christopherson <seanjc@google.com>,
-        Dominik Behr <dbehr@google.com>, upstream@semihalf.com,
-        Zide Chen <zide.chen@intel.corp-partner.google.com>,
-        Len Brown <lenb@kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Mark Gross <markgross@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Sachi King <nakato@nakato.io>,
-        "open list:ACPI" <linux-acpi@vger.kernel.org>,
-        "open list:X86 PLATFORM DRIVERS" 
-        <platform-driver-x86@vger.kernel.org>,
-        "open list:HIBERNATION (aka Software Suspend, aka swsusp)" 
-        <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        h=message-id:date:subject:references:in-reply-to:cc:to:from
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=a25yavm4T3/wy75F/lXl3Zv2sYUZapqJNpfJrj3sw9M=;
+        b=NIlmTwCdmCuBzJ/pL2V1vmkf0e+xiwJrYuBBh9kpTvfavz0YPA8e3EcWW0VVN/qJ+r
+         sqEOc6HY//2G7Gke8ZBoO7RwKA/S6OHK0xhdwcdUIton3IuRRBoDHk8TofRIS+JvYZRj
+         kaefILYYStYOHlAx5CGvQJX1GZkxUuu7YpYyBGdBKRna/9++kbF20WyxaS34kn2pss9e
+         e2ZSqQis30ClHl85mV2Ci065s77OmwqYLbHqxLqIjYBmzYC9r0Ha7n2tW4EQR8D58rDI
+         XZ1OFV1rVNkmV3XpO4ZEvDKKvLylipSu8LvCYYEZDJsUE4XAvnVwuV9LrBJETu3Xm9rS
+         vRfw==
+X-Gm-Message-State: ACgBeo2T2SaBWJly2VRCFIJ69bGH0Mj3EldYxQ8+feRvLxK+m+GYuTaX
+        HS7QJ65ZDnQJFXXqcCsLCw==
+X-Google-Smtp-Source: AA6agR40YLfHysBKsNn0RPEoPnwyWujca3ESVSwkwCC/stqY2qeM4q+R36/DqLyx+1UAXTU09JpIwQ==
+X-Received: by 2002:a05:6830:2644:b0:638:9e31:89d2 with SMTP id f4-20020a056830264400b006389e3189d2mr10907859otu.117.1662997096476;
+        Mon, 12 Sep 2022 08:38:16 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id b9-20020a4aba09000000b0044b125e5dabsm4217474oop.35.2022.09.12.08.38.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Sep 2022 08:38:16 -0700 (PDT)
+Received: (nullmailer pid 1345585 invoked by uid 1000);
+        Mon, 12 Sep 2022 15:38:15 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Bhupesh Sharma <bhupesh.sharma@linaro.org>
+Cc:     daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, andersson@kernel.org, agross@kernel.org,
+        bhupesh.linux@gmail.com, rafael@kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20220912085049.3517140-4-bhupesh.sharma@linaro.org>
+References: <20220912085049.3517140-1-bhupesh.sharma@linaro.org> <20220912085049.3517140-4-bhupesh.sharma@linaro.org>
+Subject: Re: [PATCH 3/4] dt-bindings: thermal: Add qcom,qmi-tmd-device and qcom,tmd-device yaml bindings
+Date:   Mon, 12 Sep 2022 10:38:15 -0500
+Message-Id: <1662997095.474707.1345584.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
+On Mon, 12 Sep 2022 14:20:48 +0530, Bhupesh Sharma wrote:
+> Add qcom,qmi-tmd-device and qcom,tmd-device yaml bindings.
+> 
+> Qualcomm QMI based TMD cooling device(s) are used for various
+> mitigations for remote subsystem(s) including remote processor
+> mitigation, rail voltage restriction etc.
+> 
+> Each child node represents one remote subsystem and each child
+> of this subsystem in-turn represents separate TMD cooling device.
+> 
+> Cc: daniel.lezcano@linaro.org
+> Cc: rafael@kernel.org
+> Cc: andersson@kernel.org
+> Cc: robh@kernel.org
+> Signed-off-by: Bhupesh Sharma <bhupesh.sharma@linaro.org>
+> ---
+>  .../bindings/thermal/qcom,qmi-tmd-device.yaml |  78 +++++++++++
+>  .../bindings/thermal/qcom,tmd-device.yaml     | 122 ++++++++++++++++++
+>  include/dt-bindings/thermal/qcom,tmd.h        |  14 ++
+>  3 files changed, 214 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/qcom,qmi-tmd-device.yaml
+>  create mode 100644 Documentation/devicetree/bindings/thermal/qcom,tmd-device.yaml
+>  create mode 100644 include/dt-bindings/thermal/qcom,tmd.h
+> 
 
-Gentle ping
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-Best regards,
-Grzegorz
+yamllint warnings/errors:
 
-pon., 22 sie 2022 o 11:26 Grzegorz Jaszczyk <jaz@semihalf.com> napisa=C5=82=
-(a):
->
-> Hi Rafael,
->
-> Could you please kindly comment on the above?
->
-> Thank you in advance,
-> Grzegorz
->
-> =C5=9Br., 20 lip 2022 o 15:15 Grzegorz Jaszczyk <jaz@semihalf.com> napisa=
-=C5=82(a):
-> >
-> > wt., 19 lip 2022 o 20:09 Rafael J. Wysocki <rafael@kernel.org> napisa=
-=C5=82(a):
-> > >
-> > > On Thu, Jul 7, 2022 at 2:56 PM Grzegorz Jaszczyk <jaz@semihalf.com> w=
-rote:
-> > > >
-> > > > Currently the LPS0 prepare_late callback is aimed to run as the ver=
-y
-> > > > last thing before entering the S2Idle state from LPS0 perspective,
-> > > > nevertheless between this call and the system actually entering the
-> > > > S2Idle state there are several places where the suspension process =
-could
-> > > > be canceled.
-> > >
-> > > And why is this a problem?
-> > >
-> > > The cancellation will occur only if there is a wakeup signal that
-> > > would otherwise cause one of the CPUs to exit the idle state.  Such a
-> > > wakeup signal can appear after calling the new notifier as well, so
-> > > why does it make a difference?
-> >
-> > It could also occur due to suspend_test. Additionally with new
-> > notifier we could get notification when the system wakes up from
-> > s2idle_loop and immediately goes to sleep again (due to e.g.
-> > acpi_s2idle_wake condition not being met) - in this case relying on
-> > prepare_late callback is not possible since it is not called in this
-> > path.
-> >
-> > >
-> > > > In order to notify VMM about guest entering suspend, extend the S2I=
-dle
-> > > > ops by new notify callback, which will be really invoked as a very =
-last
-> > > > thing before guest actually enters S2Idle state.
-> > >
-> > > It is not guaranteed that "suspend" (defined as all CPUs entering idl=
-e
-> > > states) will be actually entered even after this "last step".
-> >
-> > Since this whole patchset is aimed at notifying the host about a guest
-> > entering s2idle state, reaching this step can be considered as a
-> > suspend "entry point" for VM IMO. It is because we are talking about
-> > the vCPU not the real CPU. Therefore it seems to me, that even if some
-> > other vCPUs could still get some wakeup signal they will not be able
-> > to kick (through s2idle_wake->swake_up_one(&s2idle_wait_head);) the
-> > original vCPU which entered s2idle_loop, triggered the new notifier
-> > and is halted due to handling vCPU exit (and was about to trigger
-> > swait_event_exclusive). So it will prevent the VM's resume process
-> > from being started.
-> >
-> > >
-> > > > Additionally extend the acpi_s2idle_dev_ops by notify() callback so
-> > > > any driver can hook into it and allow to implement its own notifica=
-tion.
-> > > >
-> > > > Taking advantage of e.g. existing acpi_s2idle_dev_ops's prepare/res=
-tore
-> > > > hooks is not an option since it will not allow to prevent race
-> > > > conditions:
-> > > > - VM0 enters s2idle
-> > > > - host notes about VM0 is in s2idle
-> > > > - host continues with system suspension but in the meantime VM0 exi=
-ts
-> > > > s2idle and sends notification but it is already too late (VM could =
-not
-> > > > even send notification on time).
-> > >
-> > > Too late for what?
-> >
-> > Too late to cancel the host suspend process, which thinks that the VM
-> > is in s2idle state while it isn't.
-> >
-> > >
-> > > > Introducing notify() as a very last step before the system enters S=
-2Idle
-> > > > together with an assumption that the VMM has control over guest
-> > > > resumption allows preventing mentioned races.
-> > >
-> > > How does it do that?
-> >
-> > At the moment when VM triggers this new notifier we trap on MMIO
-> > access and the VMM handles vCPU exit (so the vCPU is "halted").
-> > Therefore the VMM could control when it finishes such handling and
-> > releases the vCPU again.
-> >
-> > Maybe adding some more context will be helpful. This patchset was
-> > aimed for two different scenarios actually:
-> > 1) Host is about to enter the suspend state and needs first to suspend
-> > VM with all pass-through devices. In this case the host waits for
-> > s2idle notification from the guest and when it receives it, it
-> > continues with its own suspend process.
-> > 2) Guest could be a "privileged" one (in terms of VMM) and when the
-> > guest enters s2idle state it notifies the host, which in turn triggers
-> > the suspend process of the host.
-> >
-> > >
-> > > It looks like you want suspend-to-idle to behave like S3 and it won't=
-.
-> >
-> > In a way, yes, we compensate for the lack of something like PM1_CNT to
-> > trap on for detecting that the guest is suspending.
-> > We could instead force the guest to use S3 but IMO it is undesirable,
-> > since it generally does make a difference which suspend mode is used
-> > in the guest, s2idle or S3, e.g some drivers check which suspend type
-> > is used and based on that behaves differently during suspend. One of
-> > the example is:
-> > https://elixir.bootlin.com/linux/v5.18.12/source/drivers/gpu/drm/amd/am=
-dgpu/amdgpu_drv.c#L2323
-> > https://elixir.bootlin.com/linux/v5.18.12/source/drivers/gpu/drm/amd/am=
-dgpu/amdgpu_acpi.c#L1069
-> > https://elixir.bootlin.com/linux/v5.18.12/source/drivers/gpu/drm/amd/am=
-dgpu/amdgpu_gfx.c#L583
-> >
-> > Thank you,
-> > Grzegorz
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/remoteproc/qcom,adsp.example.dtb: adsp: 'qcom,instance-id' is a required property
+	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/thermal/qcom,tmd-device.yaml
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/remoteproc/qcom,adsp.example.dtb: adsp: 'clock-names', 'clocks', 'compatible', 'cx-supply', 'interrupt-names', 'interrupts-extended', 'memory-region', 'qcom,smem-state-names', 'qcom,smem-states', 'smd-edge' do not match any of the regexes: '^tmd-device[0-9]?$', 'pinctrl-[0-9]+'
+	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/thermal/qcom,tmd-device.yaml
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
+
