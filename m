@@ -2,109 +2,133 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8F2EC6FA89
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 17:59:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1159FC6FA82
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Sep 2022 18:14:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229735AbiILR7G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Sep 2022 13:59:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42394 "EHLO
+        id S229781AbiILSOP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Sep 2022 14:14:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36188 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229520AbiILR7E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 13:59:04 -0400
-Received: from mail-qv1-f46.google.com (mail-qv1-f46.google.com [209.85.219.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9BE42CDD9;
-        Mon, 12 Sep 2022 10:59:03 -0700 (PDT)
-Received: by mail-qv1-f46.google.com with SMTP id g4so7332091qvo.3;
-        Mon, 12 Sep 2022 10:59:03 -0700 (PDT)
+        with ESMTP id S229565AbiILSOO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2022 14:14:14 -0400
+Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5870A419B9
+        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2022 11:14:12 -0700 (PDT)
+Received: by mail-lf1-x130.google.com with SMTP id a8so16143856lff.13
+        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2022 11:14:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date;
+        bh=pphKVd2FpUZgthqe9J2k6pHmxdMAUCIqGEtgJJp9FHk=;
+        b=MnO4fO2yLp8hCzWCwoN7+8I58BSrXzRDQtX2oBr5plpQqW3iCcpJER5OzI32hb/Po3
+         Pfk1xc4f1fyM5i2YiwsZfbZfChnvmtg0FOjhvAyhxL7j6jU7QNnVZSFCqYdHuWxD6W5I
+         ByeZ71lZN7P7d3aW4/kMuNhdiQ1eCjzqI0FA40iQUECBVxpXomjqZdBgPfSsTjoT7Zsn
+         jLtXai7D1pGYD25MRXnuTREMMtBJDpyx+xZt2lh07d6PmygFOXTYvdwzurS0zyumFT0i
+         A0sagUXCDQxjQa7lxDT+SVm6l4mvf53SecGCdYl4jiyl45EWo+qulv1l8zhsa05LTADu
+         HbZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date;
-        bh=ht1im4tB/1eWEdoLllDj54jgaAy+Gxz1qnZPXQgNIzU=;
-        b=Dt3H+mlxYZHpbPBK8odBCgz7iysVydGNc/lKmnGaCGv6H8/5FU+SvUR0TGA/W8OY5x
-         Rhl1Mpz2CqCGSwUrD2utGR74dBQC3uxsMpCRbqpekmDOFQ10PNUZD/mJLMi21sKucoI5
-         vdtkb67oExC/9UD0DpcPeG5qgwX9xgybJ3+RohvSQQpEOs19orogp0j+XIWK0V5vdWMO
-         WPhX25ZotJhcW+KjEml0CQmvBsSgQy8VObUStrJ2uBGA5zTpXS4nRq8QYHdMv9AUBfYt
-         jRJ8nqYl3Kmk6nWvoXv5W4ED0uyOgQh/2b+IrMcRkMGuA5gjQXqXImjPiHbGPlGiCAKM
-         I/yw==
-X-Gm-Message-State: ACgBeo1+rpCfONveuzSGNGUzqJVlYaJX3fQodJzNT4nnjso0sBCzBN1O
-        UaolkX/zP1Uqu6eVN2nonPWqhwsWCaBeOA5+
-X-Google-Smtp-Source: AA6agR4PqCjY0PJzn64LtAoYi+cB3s8uDQ5uTJL4EU/hiO/dmXkoG48dqnZjVCFbQv+7A6tQOPHyrQ==
-X-Received: by 2002:a05:6214:c82:b0:4ac:93e7:62dc with SMTP id r2-20020a0562140c8200b004ac93e762dcmr12233253qvr.53.1663005542956;
-        Mon, 12 Sep 2022 10:59:02 -0700 (PDT)
-Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com. [209.85.219.173])
-        by smtp.gmail.com with ESMTPSA id g21-20020a05620a13d500b006b9264191b5sm4169929qkl.32.2022.09.12.10.59.01
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=pphKVd2FpUZgthqe9J2k6pHmxdMAUCIqGEtgJJp9FHk=;
+        b=Rw/8j3S8O5Q7PEwZz617+iPAOcdMS9MrYwNpTAMVqjEd/4X0YDubGrIU2sjnugLahD
+         tGQjiaubH+2STh3YsbjTs8ARTthkU/aMiIhhZX0OveUdcQX1Pmwod299rsneSof6907M
+         xrGdXLgLzp5w8jqBJIoDqojlsQarSt2ImPEnbOgnjRIujN/6PciABNGAea2Sx+80ohRN
+         tJxjF5QbVYI0GH/aUoGpz6dEcK56QScPXdqzRzy7dKS15vFFetxOfpI1M0TlCWjaTMrZ
+         1CUT5Ma+EOuJXeiO/HWSbFJKbNUeWUUR9wxNh4BLk5prVjHozhnOJeFCWM/EMiTbDkVg
+         AvIQ==
+X-Gm-Message-State: ACgBeo3lUBG6vObSfDOmT9TqOcBee19Zdp1YSzCkTKwroWbVu2Mibd2p
+        gTfvyxquMIAuD2B2R8A72hKwTg==
+X-Google-Smtp-Source: AA6agR5CudFSUa17zwUnzqBC9l/1i9sEoxDOfEdCr8sclosfn/oqi/m5pbihf9dVim/I0WqX2R/6Gw==
+X-Received: by 2002:a05:6512:3c88:b0:499:c78:5bb1 with SMTP id h8-20020a0565123c8800b004990c785bb1mr4872822lfv.503.1663006450720;
+        Mon, 12 Sep 2022 11:14:10 -0700 (PDT)
+Received: from [192.168.1.211] ([37.153.55.125])
+        by smtp.gmail.com with ESMTPSA id y26-20020a05651c221a00b0026ad1da0dc3sm1205812ljq.122.2022.09.12.11.14.10
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Sep 2022 10:59:01 -0700 (PDT)
-Received: by mail-yb1-f173.google.com with SMTP id 130so13985552ybz.9;
-        Mon, 12 Sep 2022 10:59:01 -0700 (PDT)
-X-Received: by 2002:a25:69c6:0:b0:6af:6f10:9d50 with SMTP id
- e189-20020a2569c6000000b006af6f109d50mr2491654ybc.543.1663005541054; Mon, 12
- Sep 2022 10:59:01 -0700 (PDT)
+        Mon, 12 Sep 2022 11:14:10 -0700 (PDT)
+Message-ID: <2f658a69-a49c-67be-26b9-421095cde2b7@linaro.org>
+Date:   Mon, 12 Sep 2022 21:14:09 +0300
 MIME-Version: 1.0
-References: <DU0PR04MB94173B45A2CFEE3BF1BD313A88409@DU0PR04MB9417.eurprd04.prod.outlook.com>
- <CAPDyKFrzJikk6rJr9xwV6W-whvdLe5tTUE+xO_EoRtm+9DAbNA@mail.gmail.com>
- <20220908173840.rqy335cdeg5a2ww5@bogus> <CAPDyKFqYDNXxfKHd8PYy8T3di2s206nCiHY7cEf+_EHVrY1YbQ@mail.gmail.com>
- <20220909154254.xy4jvj6ybpuynghc@bogus> <CAMuHMdXvTWvZHjE-7CKOxCKjuPF++xQQRGedHeL2Zy-wsnHviw@mail.gmail.com>
-In-Reply-To: <CAMuHMdXvTWvZHjE-7CKOxCKjuPF++xQQRGedHeL2Zy-wsnHviw@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 12 Sep 2022 18:58:49 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdX2rJq0DJo9D_RSMoAj9GPc-Zts5+UNCFQGF3+EYVSXgQ@mail.gmail.com>
-Message-ID: <CAMuHMdX2rJq0DJo9D_RSMoAj9GPc-Zts5+UNCFQGF3+EYVSXgQ@mail.gmail.com>
-Subject: Re: Question: why call clk_prepare in pm_clk_acquire
-To:     Sudeep Holla <sudeep.holla@arm.com>
-Cc:     Ulf Hansson <ulf.hansson@linaro.org>, Peng Fan <peng.fan@nxp.com>,
-        "ben.dooks@codethink.co.uk" <ben.dooks@codethink.co.uk>,
-        "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
-        "dmitry.baryshkov@linaro.org" <dmitry.baryshkov@linaro.org>,
-        "jonathanh@nvidia.com" <jonathanh@nvidia.com>,
-        "npitre@baylibre.com" <npitre@baylibre.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Dien Pham <dien.pham.ry@renesas.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.1
+Subject: Re: [PATCH 1/2] thermal: Introduce CONFIG_QCOM_THERMAL in Makefile
+ and qcom/Kconfig
+Content-Language: en-GB
+To:     Bhupesh Sharma <bhupesh.sharma@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        bhupesh.linux@gmail.com, andersson@kernel.org,
+        linux-arm-msm@vger.kernel.org, daniel.lezcano@linaro.org,
+        rafael@kernel.org, Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>
+References: <20220911184232.3198957-1-bhupesh.sharma@linaro.org>
+ <CAA8EJpoM5nW=pVJB4zy4Jh9Q3gE4KOju2QVy_WtmUokKMyXtuw@mail.gmail.com>
+ <75a5789e-9100-b398-1df2-50d49823831c@linaro.org>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+In-Reply-To: <75a5789e-9100-b398-1df2-50d49823831c@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Sudeep,
+On 12/09/2022 20:11, Bhupesh Sharma wrote:
+> 
+> 
+> On 9/12/22 1:08 AM, Dmitry Baryshkov wrote:
+>> On Sun, 11 Sept 2022 at 21:42, Bhupesh Sharma 
+>> <bhupesh.sharma@linaro.org> wrote:
+>>>
+>>> Introduce CONFIG_QCOM_THERMAL to allow better control
+>>> over selection of various Qualcomm Thermal drivers
+>>> available inside qcom/ directory.
+>>>
+>>> This is a preparatory change to allow new drivers to
+>>> be added inside qcom/ directory in a more structured
+>>> fashion.
+>>>
+>>> Cc: Bjorn Andersson <andersson@kernel.org>
+>>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> Cc: Amit Kucheria <amitk@kernel.org>
+>>> Cc: Thara Gopinath <thara.gopinath@gmail.com>
+>>> Signed-off-by: Bhupesh Sharma <bhupesh.sharma@linaro.org>
+>>> ---
+>>>   drivers/thermal/Makefile     |  2 +-
+>>>   drivers/thermal/qcom/Kconfig | 12 ++++++++++++
+>>>   2 files changed, 13 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+>>> index def8e1a0399c..a12b647be0d1 100644
+>>> --- a/drivers/thermal/Makefile
+>>> +++ b/drivers/thermal/Makefile
+>>> @@ -52,7 +52,7 @@ obj-$(CONFIG_DA9062_THERMAL)  += da9062-thermal.o
+>>>   obj-y                          += intel/
+>>>   obj-$(CONFIG_TI_SOC_THERMAL)   += ti-soc-thermal/
+>>>   obj-y                          += st/
+>>> -obj-$(CONFIG_QCOM_TSENS)       += qcom/
+>>> +obj-$(CONFIG_QCOM_THERMAL)     += qcom/
+>>
+>> Following other platforms around qcom, I think just `obj-y += qcom/`
+>> would work well enough.
+> 
+> I have no strong opinion on using `obj-y += qcom/` here, but I would
+> still like us to define a CONFIG_QCOM_THERMAL like flag in the 
+> qcom/Kconfig, similar to the ST platforms which use similar selection 
+> mechanism via 'CONFIG_ST_THERMAL'.
 
-CC Dien Pham
+`QCOM_THERMAL' is fine for me.
 
-On Mon, Sep 12, 2022 at 6:49 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Fri, Sep 9, 2022 at 4:51 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > On Fri, Sep 09, 2022 at 01:12:03PM +0200, Ulf Hansson wrote:
-> > > On Thu, 8 Sept 2022 at 19:38, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > > > On Thu, Sep 08, 2022 at 04:37:13PM +0200, Ulf Hansson wrote:
-> > > > > On Thu, 8 Sept 2022 at 09:33, Peng Fan <peng.fan@nxp.com> wrote:
-> > > > > > We are facing an issue clk_set_rate fail with commit a3b884cef873 ("firmware:
-> > > > > > arm_scmi: Add clock management to the SCMI power domain") ,
-> > > > >
-> > > > > Hmm, I wonder about the main reason behind that commit. Can we revert
-> > > > > it or is there some platform/driver that is really relying on it?
-> > > > >
-> > > >
-> > > > IIUC, at the time of the commit, it was needed on some Renesas platform.
-> > > > Not sure if it is still used or not.
-> > >
-> > > Okay! Maybe Nico remembers more, as he authored the patch...
-> > >
-> >
-> > May be, or even check with Renesas team who tested his patch.
->
-> I'm not aware of Renesas platforms using SCMI...
+> 
+> Thanks.
+> 
+>>>   obj-y                          += tegra/
+>>>   obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+>>>   obj-$(CONFIG_MTK_THERMAL)      += mtk_thermal.o
+>>
 
-Upon closer look, Diep Pham did report a build issue in the SCMI code, so
-perhaps Diep knows more...
+-- 
+With best wishes
+Dmitry
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
