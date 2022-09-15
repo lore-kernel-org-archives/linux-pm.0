@@ -2,158 +2,348 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB8BCC6FA91
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Sep 2022 21:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C1B4C6FA8B
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Sep 2022 23:19:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229748AbiIOVx5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Sep 2022 17:53:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47740 "EHLO
+        id S229536AbiIOXTo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Sep 2022 19:19:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229719AbiIOVx4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2022 17:53:56 -0400
-Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com [IPv6:2607:f8b0:4864:20::b29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 992965A80D
-        for <linux-pm@vger.kernel.org>; Thu, 15 Sep 2022 14:53:54 -0700 (PDT)
-Received: by mail-yb1-xb29.google.com with SMTP id 130so29749243ybw.8
-        for <linux-pm@vger.kernel.org>; Thu, 15 Sep 2022 14:53:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date;
-        bh=FAlU1of09I0TtyPSb8nI7+Yal20j3EXvCGA6NT/FrL0=;
-        b=AfZuTRV4qIib4IuXwKzLoeTAFrkWZLTtUup0MlnvCitSehSg3jqtHQFO8bmynaDW3l
-         9GEG16w44KjstI3RmBcGoVuKiR1Umv+v8jVNwwgW5m85uHecEJFYEKuqAktqTja54hQr
-         DoviuF6txy/jMcjz1BoV4vjCdv5KHPL9p1zqsMsaas2a3ypaEy5xKqpDuD3W8i3qzwFQ
-         yZ0mBvZHT7e0aCmUvDBZG365TEJqMQ+CjzJ4nfhiz+IAfUVLzX7atl1EsjIasYz5Gi9P
-         nKDX8hmbcJ7gLB55aJm/1YEXE0qgVJuUTsw3uFTRzDCBiJ3iI4VhnAJn7ergLRYqFFNT
-         XWTA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date;
-        bh=FAlU1of09I0TtyPSb8nI7+Yal20j3EXvCGA6NT/FrL0=;
-        b=cXBtF9uTp3MYn9lLWSzog9fawiKUfGVfqFICuCunRayPIjYLlCvvHTj6HU+jEsStM1
-         Z1cbelxutTQ52FfiJ4Nr3oLuVRL6JXl+PlT/a7gykpDflPtY1JEqFIFA8ScOnkA9ZEtv
-         l7OaxNiCOp/D4jfvZqPP4W8xiTlDsFjSuW6OaJsYCBHPGWO2tGT67LOpB83+Hy2JYHhd
-         eptW1QoBdKyAfKEaPHXIS5yZ9qGuw4zSplORBI/XMLg9SAX8PkanHft+o1oVGcBmMZ2l
-         KRRXSbYxF23bj1k5BEtDMjcWU5/gV2Mhco9PzgLe1OEb2AR5w2PXMIKKHNofUkUjPi/X
-         bSfw==
-X-Gm-Message-State: ACrzQf1vU5UN7DUc66qbNMValSZE4/qTmW2tuM2+kqxBOP1lRZW5e4Vi
-        AA+P40xi5FN3YI0t/jgi/celi5trDzcDmJIHnzrVyg==
-X-Google-Smtp-Source: AMsMyM534IJbImH3Ol9YVPB8Abj280Fxq/iOUwHG+8Y4m+vJtUvPGRsqe9ay35n6VGrjMivGXmM9cvjyJRZPO4MAtDM=
-X-Received: by 2002:a25:3182:0:b0:676:e9d3:3d16 with SMTP id
- x124-20020a253182000000b00676e9d33d16mr1736404ybx.275.1663278833798; Thu, 15
- Sep 2022 14:53:53 -0700 (PDT)
+        with ESMTP id S229523AbiIOXTn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2022 19:19:43 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F103313CEF;
+        Thu, 15 Sep 2022 16:19:38 -0700 (PDT)
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28FN7pWv031659;
+        Thu, 15 Sep 2022 23:19:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding : content-type; s=qcppdkim1;
+ bh=0XqWGGNtOpzaGJJZ2x/1ajWL0fKKy7rV0hHgpGt9a5A=;
+ b=fydg7iEH4KcgMQYaxdDBW8uEhcjQZOisw1HF4YYv94Y9G5FCSpTMs5IJR0/XhsO5d3Q0
+ Qum7Sa7enAITeyywaUlrFm7cUrIDVIXMEc14Ftd+ttmHCsSEGj5x8lDXeG1rTerUgmJ4
+ GbPvTY1gAHnTu5rqezymzOrcn0wVtVQiCXVP60/lDlbOUpty2FaRvzExdheP6O3En5OR
+ XY8FtFa+2tv4ps4l+/jDVZs6YHNe894iGVvIn94sovhUrFAX+9bNY4sslwg5ed9hAUds
+ vqg6+W2P7rpOGoMegovDbp/59SdhAJNA8mtjQa62yaS2Q49jGqgyyHPd389p1qkZMJL6 HQ== 
+Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3jm950rvk6-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 15 Sep 2022 23:19:32 +0000
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+        by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 28FNJVrI021796
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 15 Sep 2022 23:19:31 GMT
+Received: from hu-collinsd-lv.qualcomm.com (10.49.16.6) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.29; Thu, 15 Sep 2022 16:19:31 -0700
+From:   David Collins <quic_collinsd@quicinc.com>
+To:     Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>
+CC:     David Collins <quic_collinsd@quicinc.com>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] thermal: qcom-spmi-temp-alarm: add support for GEN2 rev 2 PMIC peripherals
+Date:   Thu, 15 Sep 2022 16:18:49 -0700
+Message-ID: <4483f5d922ae3a00f6e77ce56c4889039bd6022d.1663282895.git.quic_collinsd@quicinc.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <cover.1663282895.git.quic_collinsd@quicinc.com>
+References: <cover.1663282895.git.quic_collinsd@quicinc.com>
 MIME-Version: 1.0
-References: <20220810030500.2793882-1-bjorn.andersson@linaro.org>
- <20220810030500.2793882-3-bjorn.andersson@linaro.org> <20220913104545.2u6mcyy3bg4dp6ly@mercury.elektranox.org>
- <20220915212545.q6vxcnrffwr3buq2@builder.lan>
-In-Reply-To: <20220915212545.q6vxcnrffwr3buq2@builder.lan>
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date:   Fri, 16 Sep 2022 00:53:42 +0300
-Message-ID: <CAA8EJpoNyc1_eM7mi3D3s4voqLZFHvJtiBd_TOB4dmxcSpwdWg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] power: supply: Add Lenovo Yoga C630 EC driver
-To:     Bjorn Andersson <andersson@kernel.org>
-Cc:     Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Lee Jones <lee@kernel.org>, dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: YRfJqtJRMAABWHZ6hWpjln1EBIhmhouN
+X-Proofpoint-ORIG-GUID: YRfJqtJRMAABWHZ6hWpjln1EBIhmhouN
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-15_10,2022-09-14_04,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 suspectscore=0
+ impostorscore=0 malwarescore=0 adultscore=0 mlxscore=0 mlxlogscore=999
+ priorityscore=1501 spamscore=0 lowpriorityscore=0 bulkscore=0 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
+ definitions=main-2209150148
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 16 Sept 2022 at 00:25, Bjorn Andersson <andersson@kernel.org> wrote:
->
-> On Tue, Sep 13, 2022 at 12:45:45PM +0200, Sebastian Reichel wrote:
-> > Hi,
-> >
-> > [+Cc Lee Jones, DRI devel]
-> >
-> > On Tue, Aug 09, 2022 at 10:05:00PM -0500, Bjorn Andersson wrote:
-> > > The Qualcomm Snapdragon-based Lenovo Yoga C630 has some sort of EC
-> > > providing AC-adapter and battery status, as well as USB Type-C altmode
-> > > notifications for Displayport operation.
-> > >
-> > > The Yoga C630 ships with Windows, where these operations primarily are
-> > > implemented in ACPI, but due to various issues with the hardware
-> > > representation therein it's not possible to run Linux on this
-> > > information. As such this is a best-effort re-implementation of these
-> > > operations, based on the register map expressed in ACPI and a fair
-> > > amount of trial and error.
-> > >
-> > > Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> > > ---
-> > > [...]
-> > > +   val = yoga_c630_ec_read8(ec, LENOVO_EC_BAT_ATTRIBUTES);
-> > > +   if (val < 0)
-> > > +           goto out_unlock;
-> > > +   ec->unit_ma = val & LENOVO_EC_BAT_ATTR_UNIT_IS_MA;
-> > > +   if (!ec->unit_ma)
-> > > +           ec->scale = 1000;
-> > > +   else
-> > > +           ec->scale = 1;
-> >
-> > Since I'm not sure how much of information was gained by reverse
-> > engineering: Is this really milliamps vs microamps and not milliamps
-> > vs milliwatt? SBS batteries usually report either mA or mW.
-> >
->
-> Unfortunately I don't know the answer to this.
->
-> > > [...]
-> > > +   case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-> > > +           val->strval = "05072018";
-> > > +           break;
-> >
-> > why is this hardcoded? :)
-> >
->
-> I don't know, but as Daniel suggests, it would make sense to just drop
-> it.
->
-> > > [...]
-> > > +   device_for_each_child_node(dev, fwnode) {
-> > > +           ret = fwnode_property_read_u32(fwnode, "reg", &port);
-> > > +           if (ret < 0)
-> > > +                   continue;
-> > > +
-> > > +           /* Got multiple ports, but altmode is only possible on port 1 */
-> > > +           if (port != 1)
-> > > +                   continue;
-> > > +
-> > > +           ec->bridge.funcs = &yoga_c630_ec_bridge_funcs;
-> > > +           ec->bridge.of_node = to_of_node(fwnode);
-> > > +           ec->bridge.ops = DRM_BRIDGE_OP_HPD;
-> > > +           ec->bridge.type = DRM_MODE_CONNECTOR_USB;
-> > > +
-> > > +           ret = devm_drm_bridge_add(dev, &ec->bridge);
-> > > +           if (ret) {
-> > > +                   dev_err(dev, "failed to register drm bridge\n");
-> > > +                   fwnode_handle_put(fwnode);
-> > > +                   return ret;
-> > > +           }
-> >
-> > I wonder if DRM people want to see this in drivers/gpu/drm/bridge.
-> > Maybe it's better to make this a MFD driver?
-> >
->
-> I did consider it, but it adds a whole bunch of boiler plate code
-> without a lot of benefit.
->
-> There are a few other cases where I think it would make sense to have
-> drm bridges outside of drivers/gpu/drm, such as
-> drivers/usb/typec/altmodes/ and drivers/platform/chrome/...
+Add support for TEMP_ALARM GEN2 PMIC peripherals with digital
+major revision 2.  This revision utilizes individual registers
+to set the threshold temperature for over-temperature stages 1,
+2, and 3 instead of a single register to specify a set of
+thresholds.
 
-What about a solution which might sound simpler than MFD: from your
-driver's probe() register a platform device which represents a drm
-bridge. Add drm_bridge driver for it into drivers/gpu/drm/bridges/.
+Signed-off-by: David Collins <quic_collinsd@quicinc.com>
+---
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 164 +++++++++++++++++++-
+ 1 file changed, 157 insertions(+), 7 deletions(-)
 
-
-
+diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+index 91556118a7b8..5565b0eaf42a 100644
+--- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+- * Copyright (c) 2011-2015, 2017, 2020, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2011-2015, 2017, 2020-2021, The Linux Foundation.
++ * All rights reserved.
+  */
+ 
+ #include <linux/bitops.h>
+@@ -25,6 +26,10 @@
+ #define QPNP_TM_REG_STATUS		0x08
+ #define QPNP_TM_REG_SHUTDOWN_CTRL1	0x40
+ #define QPNP_TM_REG_ALARM_CTRL		0x46
++/* TEMP_DAC_* registers are only present for TEMP_GEN2 v2.0 */
++#define QPNP_TM_REG_TEMP_DAC_STG1	0x47
++#define QPNP_TM_REG_TEMP_DAC_STG2	0x48
++#define QPNP_TM_REG_TEMP_DAC_STG3	0x49
+ 
+ #define QPNP_TM_TYPE			0x09
+ #define QPNP_TM_SUBTYPE_GEN1		0x08
+@@ -66,6 +71,25 @@ static const long temp_map_gen2_v1[THRESH_COUNT][STAGE_COUNT] = {
+ 
+ #define TEMP_STAGE_HYSTERESIS		2000
+ 
++/*
++ * For TEMP_GEN2 v2.0, TEMP_DAC_STG1/2/3 registers are used to set the threshold
++ * for each stage independently.
++ * TEMP_DAC_STG* = 0 --> 80 C
++ * Each 8 step increase in TEMP_DAC_STG* value corresponds to 5 C (5000 mC).
++ */
++#define TEMP_DAC_MIN			80000
++#define TEMP_DAC_SCALE_NUM		8
++#define TEMP_DAC_SCALE_DEN		5000
++
++#define TEMP_DAC_TEMP_TO_REG(temp) \
++	(((temp) - TEMP_DAC_MIN) * TEMP_DAC_SCALE_NUM / TEMP_DAC_SCALE_DEN)
++#define TEMP_DAC_REG_TO_TEMP(reg) \
++	(TEMP_DAC_MIN + (reg) * TEMP_DAC_SCALE_DEN / TEMP_DAC_SCALE_NUM)
++
++static const long temp_dac_max[STAGE_COUNT] = {
++	119375, 159375, 159375
++};
++
+ /* Temperature in Milli Celsius reported during stage 0 if no ADC is present */
+ #define DEFAULT_TEMP			37000
+ 
+@@ -86,6 +110,9 @@ struct qpnp_tm_chip {
+ 
+ 	struct iio_channel		*adc;
+ 	const long			(*temp_map)[THRESH_COUNT][STAGE_COUNT];
++
++	bool				has_temp_dac;
++	long				temp_dac_map[STAGE_COUNT];
+ };
+ 
+ /* This array maps from GEN2 alarm state to GEN1 alarm stage */
+@@ -119,6 +146,13 @@ static int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 data)
+  */
+ static long qpnp_tm_decode_temp(struct qpnp_tm_chip *chip, unsigned int stage)
+ {
++	if (chip->has_temp_dac) {
++		if (stage == 0 || stage > STAGE_COUNT)
++			return 0;
++
++		return chip->temp_dac_map[stage - 1];
++	}
++
+ 	if (!chip->temp_map || chip->thresh >= THRESH_COUNT || stage == 0 ||
+ 	    stage > STAGE_COUNT)
+ 		return 0;
+@@ -220,6 +254,34 @@ static int qpnp_tm_get_temp(void *data, int *temp)
+ 	return 0;
+ }
+ 
++static int qpnp_tm_set_temp_dac_thresh(struct qpnp_tm_chip *chip, int trip,
++				       int temp)
++{
++	int ret, temp_cfg;
++	u8 reg;
++
++	if (trip < 0 || trip >= STAGE_COUNT) {
++		dev_err(chip->dev, "invalid TEMP_DAC trip = %d\n", trip);
++		return -EINVAL;
++	} else if (temp < TEMP_DAC_MIN || temp > temp_dac_max[trip]) {
++		dev_err(chip->dev, "invalid TEMP_DAC temp = %d\n", temp);
++		return -EINVAL;
++	}
++
++	reg = TEMP_DAC_TEMP_TO_REG(temp);
++	temp_cfg = TEMP_DAC_REG_TO_TEMP(reg);
++
++	ret = qpnp_tm_write(chip, QPNP_TM_REG_TEMP_DAC_STG1 + trip, reg);
++	if (ret < 0) {
++		dev_err(chip->dev, "TEMP_DAC_STG write failed, ret=%d\n", ret);
++		return ret;
++	}
++
++	chip->temp_dac_map[trip] = temp_cfg;
++
++	return 0;
++}
++
+ static int qpnp_tm_update_critical_trip_temp(struct qpnp_tm_chip *chip,
+ 					     int temp)
+ {
+@@ -307,6 +369,23 @@ static const struct thermal_zone_of_device_ops qpnp_tm_sensor_ops = {
+ 	.set_trip_temp = qpnp_tm_set_trip_temp,
+ };
+ 
++static int qpnp_tm_set_temp_dac_trip_temp(void *data, int trip, int temp)
++{
++	struct qpnp_tm_chip *chip = data;
++	int ret;
++
++	mutex_lock(&chip->lock);
++	ret = qpnp_tm_set_temp_dac_thresh(chip, trip, temp);
++	mutex_unlock(&chip->lock);
++
++	return ret;
++}
++
++static const struct thermal_zone_of_device_ops qpnp_tm_sensor_temp_dac_ops = {
++	.get_temp = qpnp_tm_get_temp,
++	.set_trip_temp = qpnp_tm_set_temp_dac_trip_temp,
++};
++
+ static irqreturn_t qpnp_tm_isr(int irq, void *data)
+ {
+ 	struct qpnp_tm_chip *chip = data;
+@@ -339,6 +418,60 @@ static int qpnp_tm_get_critical_trip_temp(struct qpnp_tm_chip *chip)
+ 	return THERMAL_TEMP_INVALID;
+ }
+ 
++/* Configure TEMP_DAC registers based on DT thermal_zone trips */
++static int qpnp_tm_temp_dac_update_trip_temps(struct qpnp_tm_chip *chip)
++{
++	const struct thermal_trip *trips;
++	int ret, ntrips, i;
++
++	ntrips = of_thermal_get_ntrips(chip->tz_dev);
++	/* Keep hardware defaults if no DT trips are defined. */
++	if (ntrips <= 0)
++		return 0;
++
++	trips = of_thermal_get_trip_points(chip->tz_dev);
++	if (!trips)
++		return -EINVAL;
++
++	for (i = 0; i < ntrips; i++) {
++		if (of_thermal_is_trip_valid(chip->tz_dev, i)) {
++			ret = qpnp_tm_set_temp_dac_thresh(chip, i,
++							  trips[i].temperature);
++			if (ret < 0)
++				return ret;
++		}
++	}
++
++	/* Verify that trips are strictly increasing. */
++	for (i = 1; i < STAGE_COUNT; i++) {
++		if (chip->temp_dac_map[i] <= chip->temp_dac_map[i - 1]) {
++			dev_err(chip->dev, "Threshold %d=%ld <= threshold %d=%ld\n",
++				i, chip->temp_dac_map[i], i - 1,
++				chip->temp_dac_map[i - 1]);
++			return -EINVAL;
++		}
++	}
++
++	return 0;
++}
++
++/* Read the hardware default TEMP_DAC stage threshold temperatures */
++static int qpnp_tm_temp_dac_init(struct qpnp_tm_chip *chip)
++{
++	int ret, i;
++	u8 reg = 0;
++
++	for (i = 0; i < STAGE_COUNT; i++) {
++		ret = qpnp_tm_read(chip, QPNP_TM_REG_TEMP_DAC_STG1 + i, &reg);
++		if (ret < 0)
++			return ret;
++
++		chip->temp_dac_map[i] = TEMP_DAC_REG_TO_TEMP(reg);
++	}
++
++	return 0;
++}
++
+ /*
+  * This function initializes the internal temp value based on only the
+  * current thermal stage and threshold. Setup threshold control and
+@@ -371,10 +504,16 @@ static int qpnp_tm_init(struct qpnp_tm_chip *chip)
+ 	if (stage)
+ 		chip->temp = qpnp_tm_decode_temp(chip, stage);
+ 
+-	crit_temp = qpnp_tm_get_critical_trip_temp(chip);
+-	ret = qpnp_tm_update_critical_trip_temp(chip, crit_temp);
+-	if (ret < 0)
+-		goto out;
++	if (chip->has_temp_dac) {
++		ret = qpnp_tm_temp_dac_update_trip_temps(chip);
++		if (ret < 0)
++			goto out;
++	} else {
++		crit_temp = qpnp_tm_get_critical_trip_temp(chip);
++		ret = qpnp_tm_update_critical_trip_temp(chip, crit_temp);
++		if (ret < 0)
++			goto out;
++	}
+ 
+ 	/* Enable the thermal alarm PMIC module in always-on mode. */
+ 	reg = ALARM_CTRL_FORCE_ENABLE;
+@@ -391,6 +530,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ {
+ 	struct qpnp_tm_chip *chip;
+ 	struct device_node *node;
++	const struct thermal_zone_of_device_ops *ops;
+ 	u8 type, subtype, dig_major, dig_minor;
+ 	u32 res;
+ 	int ret, irq;
+@@ -462,19 +602,29 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	ops = &qpnp_tm_sensor_ops;
+ 	chip->subtype = subtype;
+-	if (subtype == QPNP_TM_SUBTYPE_GEN2 && dig_major >= 1)
++	if (subtype == QPNP_TM_SUBTYPE_GEN2 && dig_major >= 2)
++		chip->has_temp_dac = true;
++	else if (subtype == QPNP_TM_SUBTYPE_GEN2 && dig_major >= 1)
+ 		chip->temp_map = &temp_map_gen2_v1;
+ 	else
+ 		chip->temp_map = &temp_map_gen1;
+ 
++	if (chip->has_temp_dac) {
++		ops = &qpnp_tm_sensor_temp_dac_ops;
++		ret = qpnp_tm_temp_dac_init(chip);
++		if (ret < 0)
++			return ret;
++	}
++
+ 	/*
+ 	 * Register the sensor before initializing the hardware to be able to
+ 	 * read the trip points. get_temp() returns the default temperature
+ 	 * before the hardware initialization is completed.
+ 	 */
+ 	chip->tz_dev = devm_thermal_zone_of_sensor_register(
+-		&pdev->dev, 0, chip, &qpnp_tm_sensor_ops);
++		&pdev->dev, 0, chip, ops);
+ 	if (IS_ERR(chip->tz_dev)) {
+ 		dev_err(&pdev->dev, "failed to register sensor\n");
+ 		return PTR_ERR(chip->tz_dev);
 -- 
-With best wishes
-Dmitry
+2.25.1
+
