@@ -2,160 +2,137 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93D09ECAAD8
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9746C6FA8B
 	for <linux-pm@archiver.kernel.org>; Sat, 17 Sep 2022 01:19:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229794AbiIQBTl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Sep 2022 21:19:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50758 "EHLO
+        id S229836AbiIQBTm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Sep 2022 21:19:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229450AbiIQBTk (ORCPT
+        with ESMTP id S229639AbiIQBTk (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2022 21:19:40 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00ACBE0F5;
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFA626366;
         Fri, 16 Sep 2022 18:19:36 -0700 (PDT)
 Received: from mercury (dyndsl-095-033-170-064.ewe-ip-backbone.de [95.33.170.64])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id D35F7660204C;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id D8A12660204D;
         Sat, 17 Sep 2022 02:19:34 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1663377574;
-        bh=IsuXn3QptS+dxxrin6TxULXzoMk1Gf4+cQTcLgbCwmw=;
+        s=mail; t=1663377575;
+        bh=yqaC0PvBVidOF8Av25zyiT7pjFZ/iTKywbyjXrnbYvg=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=bpdI9QuGAegny+PcB1Lyr+xDl3mlldCBg20Q1qjxiqgRleQnsj8g4ABqRNU3+bMsA
-         N6y138Rg9o6kSKT+Cflq3SN9EEZwt/HjzZ6wrby5eahIpZOUF34/Cpb90i9KTxhprK
-         9YlExzv3QIrbA45DpgmdH/zLE84awO5MYZjUkBG8b9EvaLeRAqRz79wzcMVWWEyNEk
-         WRQb8uS1vr+oYpJKmxhoNexQsHNXxHSfzEvyxud9KqzWKsS00gEZxEOACXNTjXXryP
-         Ruv/T1IlB1BPrU3hRtQQl4c+zN02gpBCmlyYxFr7MGo0eM7fcf3D41OWOttTD6qGK6
-         DFtere756kpSQ==
+        b=MilfT3BTIhIq+zYmQ7U5eYGdXz86psnvJ/+uIX/QS7q2U/khLo6D7H68u/szJ8StO
+         DJsGwhtDAHfBKojS/RgtPavCSIfGAzlukHnl3NIeww7wj6ejeRe34MaGXpFRnXoAtg
+         x0btlbQOOnAuwLd/Tm8OnAMdUZbEwleIcTVMmnS1wu+EQXiCL/M+wzNIRxwwgtffXg
+         neGyXPF1dAd+PcuM7qt96EoEvE3Ul77kHWLhiCMWHwLlC1Htn+jGqI+TYuCXT0R2uO
+         lYeLO8P6OTCbtF4uWkmRhv7vJTJRZku+yVG5wWB/yMdGlGOlXbHqZVP/d0v9OKgN+E
+         Qv+XGozy63+TQ==
 Received: by mercury (Postfix, from userid 1000)
-        id 752CE1060849; Fri, 16 Sep 2022 20:08:23 +0200 (CEST)
-Date:   Fri, 16 Sep 2022 20:08:23 +0200
+        id B24CA106084B; Sat, 17 Sep 2022 00:25:21 +0200 (CEST)
+Date:   Sat, 17 Sep 2022 00:25:21 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     cy_huang <u0084500@gmail.com>
-Cc:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        mazziesaccount@gmail.com, alina_yu@richtek.com,
-        cy_huang@richtek.com, alinayu829@gmail.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 3/3] Documentation: power: rt9471: Document exported
- sysfs entries
-Message-ID: <20220916180823.p672rojsrjbpy4ft@mercury.elektranox.org>
-References: <1663173015-7934-1-git-send-email-u0084500@gmail.com>
- <1663173015-7934-4-git-send-email-u0084500@gmail.com>
+To:     Brian Norris <briannorris@chromium.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] power: supply: core: Ignore -EIO for uevent
+Message-ID: <20220916222521.hxkgml5pslc6ln5v@mercury.elektranox.org>
+References: <20220824165459.1.I059ae712dd6d324897162ee9f37c22849aa22745@changeid>
+ <20220825140243.tgotqpymswduzlyy@mercury.elektranox.org>
+ <YwgdraBXTWk1DhCE@google.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="g5wty46coo2wjhpl"
+        protocol="application/pgp-signature"; boundary="6hlcum573u663t4h"
 Content-Disposition: inline
-In-Reply-To: <1663173015-7934-4-git-send-email-u0084500@gmail.com>
+In-Reply-To: <YwgdraBXTWk1DhCE@google.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---g5wty46coo2wjhpl
+--6hlcum573u663t4h
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Sep 15, 2022 at 12:30:15AM +0800, cy_huang wrote:
-> From: ChiYuan Huang <cy_huang@richtek.com>
+On Thu, Aug 25, 2022 at 06:11:09PM -0700, Brian Norris wrote:
+> Hi Sebastian,
 >=20
-> Document the settings exported by rt9471 charger driver through sysfs ent=
-ries:
-> - sysoff_enable
-> - port_detect_enable
+> Thanks for the response.
 >=20
-> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> ---
-> Since v5:
-> - Recover all the change in sysfs-class-power.
-> - New a sysfs-class-power-rt9471 file.
-> - Remove 'charge_term_enable' sysfs entry, directly integrate it in
->   'charge_term_current' power supply property control.
+> On Thu, Aug 25, 2022 at 04:02:43PM +0200, Sebastian Reichel wrote:
+> > > For uevents, we enumerate all properties. Some battery implementations
+> > > don't implement all standard properties, and may return -EIO for
+> > > properties that aren't recognized. This means we never report uevents
+> > > for such batteries.
+> > >=20
+> > > It's better to ignore these errors and skip the property, as we do wi=
+th
+> > > ENODATA and ENODEV.
+> > >=20
+> > > Example battery implementation: Acer Chromebook Tab 10 (a.k.a. Google
+> > > Gru-Scarlet) has a virtual "SBS" battery implementation in its Embedd=
+ed
+> > > Controller on top of an otherwise non-SBS battery.
+> > >=20
+> > > Signed-off-by: Brian Norris <briannorris@chromium.org>
+> > > ---
+> >=20
+> > -EIO means input/output error. If a driver is reporting that for an
+> > unimplemented feature it's a bug that should be fixed in the driver.
+> > Handling it here means userspace ABI changes for temporary issues.
 >=20
-> ---
->  Documentation/ABI/testing/sysfs-class-power-rt9471 | 29 ++++++++++++++++=
-++++++
->  1 file changed, 29 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-class-power-rt9471
+> I suppose I can agree with your last sentence.
 >=20
-> diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documen=
-tation/ABI/testing/sysfs-class-power-rt9471
-> new file mode 100644
-> index 00000000..ad5b049
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
-> @@ -0,0 +1,29 @@
-> +What:		/sys/class/power_supply/rt9471-*/sysoff_enable
-> +Date:		Oct 2022
-> +KernelVersion:	6.1
-> +Contact:	ChiYuan Huang <cy_huang@richtek.com>
-> +Description:
-> +		This entry allows enabling the sysoff mode of rt9471 charger devices.
-> +		If enabled and the input is removed, the internal battery FET is turned
-> +		off to reduce the leakage from the BAT pin. See device datasheet for d=
-etails.
-> +		It's commonly used when the product enter shipping stage.
-> +
-> +		Access: Read, Write
-> +		Valid values:
-> +		- 1: enabled
-> +		- 0: disabled
+> But the first part is much easier said than done. This is sbs-battery.c,
+> on top of i2c-cros-ec-tunnel.c, talking to an EC (whose firmware is
+> pretty much unchangeable at this point), which implements a subset of
+> commands.
+>=20
+> The intention is that i2c-cros-ec-tunnel.c will see something like a NAK
+> / "invalid argument" response, and it converts that to ENXIO.
+> Unforunately, for reasons I have yet to figure out, it's very common for
+> retries (|i2c_retry_count|) to eventually yield an unexpected response
+> size, which i2c_smbus_xfer_emulated() treats as EIO; so this layer is
+> seeing EIO.
+>=20
+> Anyway, I might be able to coax the i2c/sbs-battery driver to return
+> ENXIO instead. Would you consider that to be a better case to handle
+> here? "No such device or address" seems like an appropriate description
+> of a permanent error, and not a temporary IO error.
+>=20
+> Brian
 
-I still fail to see why this needs to be controllable at runtime.
-This looks like a hardware property. Are there any known products,
-which need this disabled?
-
-> +What:		/sys/class/power_supply/rt9471-*/port_detect_enable
-> +Date:		Oct 2022
-> +KernelVersion:	6.1
-> +Contact:	ChiYuan Huang <cy_huang@richtek.com>
-> +Description:
-> +		This entry allows enabling the USB BC12 port detect function of rt9471=
- charger
-> +		devices. If enabled and VBUS is inserted, device will start to do the =
-BC12
-> +		port detect and report the usb port type when port detect is done. See
-> +		datasheet for details. Normally controlled when TypeC/USBPD port integ=
-rated.
-> +
-> +		Access: Read, Write
-> +		Valid values:
-> +		- 1: enabled
-> +		- 0: disabled
-
-So basically this depends on the hardware integration (e.g. it
-should be disabled when power source is a DC barrel jack instead
-of USB) and is not supposed to change at all during runtime? Then
-the information wether it needs to be enabled should be derived
-=66rom the device tree.
+The device is obviously not fully implementing the SBS standard,
+so I think the best is to create a new compatible value. Then the
+driver can register a different set of properties based on that
+and you never run into any error at all and userspace knows what
+to expect.
 
 -- Sebastian
 
---g5wty46coo2wjhpl
+--6hlcum573u663t4h
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMku4wACgkQ2O7X88g7
-+ppIIQ//UtV9sEuUQW1evu3Xg9UgdWAbELRCg6IJI5rkE/6z8dy1y0u6jTz93BzP
-G/AV4jY8Lk1agbW0SpwXONH//7DHqv7b2EQvOB+SmY2IlDIBxFQYYBkI5oXJ9HO4
-gvBX6xWN/khnQEUuA075AlzUKzL0l9MSTjHbx1bHbuq3jHoAj6Oo+jduofD8OAfI
-hGFyq2icRuJoUGeUREoTc0vIApTjSyWANLwBM1P1sQ0ivJG3R6acPUJQgznQo+W+
-2CKfCZ+QWCyjTAisfTvfPdM+F0mxgpaF2QHHnwa6gP9F5yycxYPEciYq/sNTdL43
-v2aX6A34enMOpMr4BCpieS/bXoPTqxiA1sHE60ZYQNUV4azFkyFw9SMATSAzKYnE
-N9yMthiUuV4TWFTQKdCSPYsf79foJqeDi2UZaSnc92mcTtqMLgT5Lgmairjp/xpw
-QxNDVxRzd9gLeeYU4HTYCpLwxxvilWtXa4pUyR1W+NT+Aaa9o+IMrXSIfOEB2wBU
-YTBrCaH3XVu4l85W5tA3VuSH0KUTkq5kNfNaX8cbZY844aZCcX6NAh1BLm7S3r5i
-msA1hioHCD1OBxh0e7Jt6yL8AIMuJm14Gc7LPa2rRzS9X9slKhFsD8+/VKGdDh+v
-Lztv+jlo/yE6cE+T9mGW6aJddY6zLwldGCQ+THIFHcGRWbLoivw=
-=kE+V
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMk984ACgkQ2O7X88g7
++ppzhQ/7B69yz3FJDXabgb6fD3Y2/g+yKs4mzqimNNyzOojCOGsktIuFqbKBa/G7
+DTDwEswL0agxSen2YoMcXkByDgafI/XaVPcwAKfsM1uSK5iwO0NXoNz56kNsIixS
+OKuU3Jcl4aAkXOU0QGab8QQ71nAJO5qfVSf3mQU7Dmrcid2QbH2d4Pv5iGsyivzG
+9GJ9k7bMtQVLrRXsQ35RG3Fwm4nuDnKemfwlH0yGSEr9WZiQXwtj5USCqrA4JGES
+doNfr9MKXRjFh+CTEcxlF1i0L6B3/HSNFqSiFu5hUK8DmcvWu8DqcH+XpMfw+AA0
+EV1e1iq1T+cSLcvV4W2tav8NS1k0IVhVoAHvCMEeo4XPOwN6E/g0DwDdTkYjVLKE
+RZGBqYU8BqmZPxU0a8uBhA5jSV7EreOo+ow06p2JsgNI1VE/ar7fWDme5e+RFIkn
+1mW9TvWp2J5dC7B5/AmJnKvxzda/OrljuHbiyVwRYt6XnE6Nwh/2xN/a6WzRv5HV
+bsWrXewij3V/W+F6D9LvmHaK0rVLHqwjhMHn0DkXWc3aPBDF1gU0cTEagIjlZWXB
+cM9KWwFRqme6qVfDAuZ1A2R5ANqVG8HdsY9o0YZP1BcPiwFGjbIk4dt2lGpLin/T
+T8qXD34cju0GySAypjwxBhsuIZRD0zHjvw6G2Zgo5IbDX36sdTM=
+=abHX
 -----END PGP SIGNATURE-----
 
---g5wty46coo2wjhpl--
+--6hlcum573u663t4h--
