@@ -2,137 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9746C6FA8B
-	for <linux-pm@archiver.kernel.org>; Sat, 17 Sep 2022 01:19:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CA79C6FA90
+	for <linux-pm@archiver.kernel.org>; Sat, 17 Sep 2022 01:19:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229836AbiIQBTm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Sep 2022 21:19:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50762 "EHLO
+        id S229844AbiIQBTn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Sep 2022 21:19:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50760 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229639AbiIQBTk (ORCPT
+        with ESMTP id S229766AbiIQBTk (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2022 21:19:40 -0400
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFA626366;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFCEB11A05;
         Fri, 16 Sep 2022 18:19:36 -0700 (PDT)
 Received: from mercury (dyndsl-095-033-170-064.ewe-ip-backbone.de [95.33.170.64])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id D8A12660204D;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id DB262660204E;
         Sat, 17 Sep 2022 02:19:34 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1663377575;
-        bh=yqaC0PvBVidOF8Av25zyiT7pjFZ/iTKywbyjXrnbYvg=;
+        bh=7ulxphpAxSCT98j4ooUK7PzyLXch2k+kjO357sfOvVk=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=MilfT3BTIhIq+zYmQ7U5eYGdXz86psnvJ/+uIX/QS7q2U/khLo6D7H68u/szJ8StO
-         DJsGwhtDAHfBKojS/RgtPavCSIfGAzlukHnl3NIeww7wj6ejeRe34MaGXpFRnXoAtg
-         x0btlbQOOnAuwLd/Tm8OnAMdUZbEwleIcTVMmnS1wu+EQXiCL/M+wzNIRxwwgtffXg
-         neGyXPF1dAd+PcuM7qt96EoEvE3Ul77kHWLhiCMWHwLlC1Htn+jGqI+TYuCXT0R2uO
-         lYeLO8P6OTCbtF4uWkmRhv7vJTJRZku+yVG5wWB/yMdGlGOlXbHqZVP/d0v9OKgN+E
-         Qv+XGozy63+TQ==
+        b=FrJhp6BlrL4sp10ZGaHYG8L11/HZhni5MnRegbRZeamtZdvqT0ipAf8riAFYixGKB
+         akpBgyx8dfz7+neFmwxI/ZPUuSj8pmiIqB3f3jg/OjuFfRXDp85PfCaEA6d16Fi/X9
+         e8mn6nKFtoaTUWTO+2Beq2Chc4hBF48tSlPF467KggAj/Wssu2jU3l9h9y1ukK2oaj
+         6ytrbENVkPq4nHQxYkDUSGqS+uezd73w9ahDKZ45gvUdcUKC/KpGojLiO/k34HEWmi
+         9Hpf+mPnqb6dab0+GwMS9v4ItYTRTOOvzC7ttFCGZoA9qmYybj0QhpgPoAtyKt9oI4
+         zekgpBaxifKTQ==
 Received: by mercury (Postfix, from userid 1000)
-        id B24CA106084B; Sat, 17 Sep 2022 00:25:21 +0200 (CEST)
-Date:   Sat, 17 Sep 2022 00:25:21 +0200
+        id 89EE7106084A; Fri, 16 Sep 2022 20:10:50 +0200 (CEST)
+Date:   Fri, 16 Sep 2022 20:10:50 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Brian Norris <briannorris@chromium.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] power: supply: core: Ignore -EIO for uevent
-Message-ID: <20220916222521.hxkgml5pslc6ln5v@mercury.elektranox.org>
-References: <20220824165459.1.I059ae712dd6d324897162ee9f37c22849aa22745@changeid>
- <20220825140243.tgotqpymswduzlyy@mercury.elektranox.org>
- <YwgdraBXTWk1DhCE@google.com>
+To:     cy_huang <u0084500@gmail.com>
+Cc:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        mazziesaccount@gmail.com, alina_yu@richtek.com,
+        cy_huang@richtek.com, alinayu829@gmail.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5 2/3] power: supply: rt9471: Add Richtek RT9471 charger
+ driver
+Message-ID: <20220916181050.7cwu36euz4hvfkem@mercury.elektranox.org>
+References: <1663173015-7934-1-git-send-email-u0084500@gmail.com>
+ <1663173015-7934-3-git-send-email-u0084500@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6hlcum573u663t4h"
+        protocol="application/pgp-signature"; boundary="h6nwvvqw4xktx7ws"
 Content-Disposition: inline
-In-Reply-To: <YwgdraBXTWk1DhCE@google.com>
+In-Reply-To: <1663173015-7934-3-git-send-email-u0084500@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---6hlcum573u663t4h
+--h6nwvvqw4xktx7ws
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Aug 25, 2022 at 06:11:09PM -0700, Brian Norris wrote:
-> Hi Sebastian,
+On Thu, Sep 15, 2022 at 12:30:14AM +0800, cy_huang wrote:
+> From: ChiYuan Huang <cy_huang@richtek.com>
 >=20
-> Thanks for the response.
+> Add support for the RT9471 3A 1-Cell Li+ battery charger.
 >=20
-> On Thu, Aug 25, 2022 at 04:02:43PM +0200, Sebastian Reichel wrote:
-> > > For uevents, we enumerate all properties. Some battery implementations
-> > > don't implement all standard properties, and may return -EIO for
-> > > properties that aren't recognized. This means we never report uevents
-> > > for such batteries.
-> > >=20
-> > > It's better to ignore these errors and skip the property, as we do wi=
-th
-> > > ENODATA and ENODEV.
-> > >=20
-> > > Example battery implementation: Acer Chromebook Tab 10 (a.k.a. Google
-> > > Gru-Scarlet) has a virtual "SBS" battery implementation in its Embedd=
-ed
-> > > Controller on top of an otherwise non-SBS battery.
-> > >=20
-> > > Signed-off-by: Brian Norris <briannorris@chromium.org>
-> > > ---
-> >=20
-> > -EIO means input/output error. If a driver is reporting that for an
-> > unimplemented feature it's a bug that should be fixed in the driver.
-> > Handling it here means userspace ABI changes for temporary issues.
+> The RT9471 is a highly-integrated 3A switch mode battery charger with
+> low impedance power path to better optimize the charging efficiency.
 >=20
-> I suppose I can agree with your last sentence.
->=20
-> But the first part is much easier said than done. This is sbs-battery.c,
-> on top of i2c-cros-ec-tunnel.c, talking to an EC (whose firmware is
-> pretty much unchangeable at this point), which implements a subset of
-> commands.
->=20
-> The intention is that i2c-cros-ec-tunnel.c will see something like a NAK
-> / "invalid argument" response, and it converts that to ENXIO.
-> Unforunately, for reasons I have yet to figure out, it's very common for
-> retries (|i2c_retry_count|) to eventually yield an unexpected response
-> size, which i2c_smbus_xfer_emulated() treats as EIO; so this layer is
-> seeing EIO.
->=20
-> Anyway, I might be able to coax the i2c/sbs-battery driver to return
-> ENXIO instead. Would you consider that to be a better case to handle
-> here? "No such device or address" seems like an appropriate description
-> of a permanent error, and not a temporary IO error.
->=20
-> Brian
+> Co-developed-by: Alina Yu <alina_yu@richtek.com>
+> Signed-off-by: Alina Yu <alina_yu@richtek.com>
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+> ---
+> [...]
+> +static DEVICE_ATTR_RW(sysoff_enable);
+> +static DEVICE_ATTR_RW(port_detect_enable);
+> +
+> +static struct attribute *rt9471_sysfs_entries[] =3D {
+> +	&dev_attr_sysoff_enable.attr,
+> +	&dev_attr_port_detect_enable.attr,
+> +	NULL
+> +};
+> +
+> +static const struct attribute_group rt9471_attr_group =3D {
+> +	.attrs	=3D rt9471_sysfs_entries,
+> +};
+> +
+> +static const struct attribute_group *rt9471_attr_groups[] =3D {
+> +	&rt9471_attr_group,
+> +	NULL
+> +};
 
-The device is obviously not fully implementing the SBS standard,
-so I think the best is to create a new compatible value. Then the
-driver can register a different set of properties based on that
-and you never run into any error at all and userspace knows what
-to expect.
+Iff these custom properties are required (see response to the last
+patch), then 'ATTRIBUTE_GROUPS()' can be used to simplify this part
+a bit.
 
 -- Sebastian
 
---6hlcum573u663t4h
+--h6nwvvqw4xktx7ws
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMk984ACgkQ2O7X88g7
-+ppzhQ/7B69yz3FJDXabgb6fD3Y2/g+yKs4mzqimNNyzOojCOGsktIuFqbKBa/G7
-DTDwEswL0agxSen2YoMcXkByDgafI/XaVPcwAKfsM1uSK5iwO0NXoNz56kNsIixS
-OKuU3Jcl4aAkXOU0QGab8QQ71nAJO5qfVSf3mQU7Dmrcid2QbH2d4Pv5iGsyivzG
-9GJ9k7bMtQVLrRXsQ35RG3Fwm4nuDnKemfwlH0yGSEr9WZiQXwtj5USCqrA4JGES
-doNfr9MKXRjFh+CTEcxlF1i0L6B3/HSNFqSiFu5hUK8DmcvWu8DqcH+XpMfw+AA0
-EV1e1iq1T+cSLcvV4W2tav8NS1k0IVhVoAHvCMEeo4XPOwN6E/g0DwDdTkYjVLKE
-RZGBqYU8BqmZPxU0a8uBhA5jSV7EreOo+ow06p2JsgNI1VE/ar7fWDme5e+RFIkn
-1mW9TvWp2J5dC7B5/AmJnKvxzda/OrljuHbiyVwRYt6XnE6Nwh/2xN/a6WzRv5HV
-bsWrXewij3V/W+F6D9LvmHaK0rVLHqwjhMHn0DkXWc3aPBDF1gU0cTEagIjlZWXB
-cM9KWwFRqme6qVfDAuZ1A2R5ANqVG8HdsY9o0YZP1BcPiwFGjbIk4dt2lGpLin/T
-T8qXD34cju0GySAypjwxBhsuIZRD0zHjvw6G2Zgo5IbDX36sdTM=
-=abHX
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMkvCoACgkQ2O7X88g7
++prijg/+JRFp7kmC5ANGIe8K/TUE4HXk+7SLzOb9A/FBYMgh7WCvJZjzsnI4aYIN
+lbCpQqf6N1YQ9SL1IjgUHR3y/qO5a0aJe+gA5K351bwjbjMgTiAiS0DK/U+NAomM
+o/vHlyEb+NB8GHCb7uTS4WP6eftd6QLnARNpMVEaxOZWtI06/HjM6Rub2JkdGVFd
+ZNHMq+t9dZ1h70XyVsKlpD1zj+Lo6pK7MiuH0ztskmzb7m9O/vsrlPzSECDG0H7+
+MtuAOyQxmVicQKiuKOeTaL91rW19dUxvE6vTRebiCuJmMWLx2E4qWp3lxWHL+8K4
+dDijLDb9SmsEb4p1cSmDoXTqcBytR95zoOsWtdCevaxagaRVA+E9FuxwJMrMmDYc
+OcO2Jc7TR8QJ5prqzjJA5wuMexbRertPU2hwnPa1QHv8wbFibiTGSZuirjy5/AH7
+PZWvbbqzD3sT5IBOW8Fuyr10ksGB2SW/Cj38C9tEQAxYsQhnNUEnisY6nLyN+Hfh
+AlIS8IZdC48rfZWmIlMUfuxs+cURHRg4fd5dV89oowbkfmfqNWvLyq5lLSAGUJDR
+YDph1h39EAMAUPGR/kC9L/1lNvLrnuuVqe4/gBKLrJuV+1P2Iq5BxlkTcsuE2Mb+
+e0py58YXrS1ZRnyCmZfuToe/jt4QCwZK7CPOLY2wbqsA+8p+A1c=
+=4g7T
 -----END PGP SIGNATURE-----
 
---6hlcum573u663t4h--
+--h6nwvvqw4xktx7ws--
