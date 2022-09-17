@@ -2,122 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CA79C6FA90
-	for <linux-pm@archiver.kernel.org>; Sat, 17 Sep 2022 01:19:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1664BECAAD3
+	for <linux-pm@archiver.kernel.org>; Sat, 17 Sep 2022 11:42:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229844AbiIQBTn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Sep 2022 21:19:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50760 "EHLO
+        id S229583AbiIQLmX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 17 Sep 2022 07:42:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229766AbiIQBTk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2022 21:19:40 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EFCEB11A05;
-        Fri, 16 Sep 2022 18:19:36 -0700 (PDT)
-Received: from mercury (dyndsl-095-033-170-064.ewe-ip-backbone.de [95.33.170.64])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id DB262660204E;
-        Sat, 17 Sep 2022 02:19:34 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1663377575;
-        bh=7ulxphpAxSCT98j4ooUK7PzyLXch2k+kjO357sfOvVk=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=FrJhp6BlrL4sp10ZGaHYG8L11/HZhni5MnRegbRZeamtZdvqT0ipAf8riAFYixGKB
-         akpBgyx8dfz7+neFmwxI/ZPUuSj8pmiIqB3f3jg/OjuFfRXDp85PfCaEA6d16Fi/X9
-         e8mn6nKFtoaTUWTO+2Beq2Chc4hBF48tSlPF467KggAj/Wssu2jU3l9h9y1ukK2oaj
-         6ytrbENVkPq4nHQxYkDUSGqS+uezd73w9ahDKZ45gvUdcUKC/KpGojLiO/k34HEWmi
-         9Hpf+mPnqb6dab0+GwMS9v4ItYTRTOOvzC7ttFCGZoA9qmYybj0QhpgPoAtyKt9oI4
-         zekgpBaxifKTQ==
-Received: by mercury (Postfix, from userid 1000)
-        id 89EE7106084A; Fri, 16 Sep 2022 20:10:50 +0200 (CEST)
-Date:   Fri, 16 Sep 2022 20:10:50 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     cy_huang <u0084500@gmail.com>
-Cc:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        mazziesaccount@gmail.com, alina_yu@richtek.com,
-        cy_huang@richtek.com, alinayu829@gmail.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 2/3] power: supply: rt9471: Add Richtek RT9471 charger
- driver
-Message-ID: <20220916181050.7cwu36euz4hvfkem@mercury.elektranox.org>
-References: <1663173015-7934-1-git-send-email-u0084500@gmail.com>
- <1663173015-7934-3-git-send-email-u0084500@gmail.com>
+        with ESMTP id S229484AbiIQLmV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Sep 2022 07:42:21 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC8532FFEC
+        for <linux-pm@vger.kernel.org>; Sat, 17 Sep 2022 04:42:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1663414938;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=SzetDHPEuYHOyKUUGQoVLG/7B0wMNg9j9zSS25jq5MM=;
+        b=QVva219ELGYTWlE8WGRxOhArZZPkk/7IVZjTMaMAeq04Eft3F5H+Pjxqfob4A9LslUELQt
+        HAP4V2p0zYFJVO+lWiexTiiwDJoCy6JL3R3KDU1zJHVhdW4yfwaqyIHvhar19IHUnkaCvi
+        nlWkniaXylF55E58fl5lXhDcc0M2kmo=
+Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
+ [209.85.208.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-664-9hkdRFboPWe2zCHF5019sg-1; Sat, 17 Sep 2022 07:42:16 -0400
+X-MC-Unique: 9hkdRFboPWe2zCHF5019sg-1
+Received: by mail-ed1-f71.google.com with SMTP id b17-20020a056402351100b00453b19d9bd0so332853edd.4
+        for <linux-pm@vger.kernel.org>; Sat, 17 Sep 2022 04:42:15 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=SzetDHPEuYHOyKUUGQoVLG/7B0wMNg9j9zSS25jq5MM=;
+        b=F5lSbhByEhCu53zmzZJiztyF1FllD5GzVtOp7nGWv9Pqcfe8X2JJ1A/lOaJ5ig16+u
+         I18DduwxmrYC5rSXvGHagpa5Mzu2DzGXaTxrx0YzSFJnfulKa9Ta6wR5WvjvC+MdoVLh
+         mkoW82sLsgFv9YrwiueqE4YMQ+024xyEzbXl1tgFQ2rS0FDl3lwTmoTFhDskPwa7PH3c
+         tviKYtitmDXtvQzywO0nr4L/79J9dlfZSKk1J7awy8dtraqLOjPv26PLG+CInDjTMesH
+         2CAliqNW/C5TsOBjwzBv9xLAQ6nDcrBD0m49f4LMZewxIkzdJquqFjz+U2bgdQvkMqdi
+         FZZw==
+X-Gm-Message-State: ACrzQf2m+JcTDXNbb3iuZL37DmTI3rOb/W9NvHCHHLUQJG6yBmdN9q6F
+        //Sdac2L05bRg1u/3fQTn1UpwfvTJjbD+R+GphEuUK0MrZNhyBNUlZaQOu7xsfVtgjMQi3IXj+/
+        CQbWeXuv/9fCmTVba8XE=
+X-Received: by 2002:a17:907:2d9e:b0:775:3737:ac45 with SMTP id gt30-20020a1709072d9e00b007753737ac45mr6450409ejc.714.1663414935044;
+        Sat, 17 Sep 2022 04:42:15 -0700 (PDT)
+X-Google-Smtp-Source: AMsMyM7oMErWER0UZu2Kpobfn3BHnBemLLcyN70BPZAUhIqgFsMLf6ExJ1mlCXDdXOp6xGiEBjxAdQ==
+X-Received: by 2002:a17:907:2d9e:b0:775:3737:ac45 with SMTP id gt30-20020a1709072d9e00b007753737ac45mr6450390ejc.714.1663414934818;
+        Sat, 17 Sep 2022 04:42:14 -0700 (PDT)
+Received: from ?IPV6:2001:1c00:c1e:bf00:d69d:5353:dba5:ee81? (2001-1c00-0c1e-bf00-d69d-5353-dba5-ee81.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:d69d:5353:dba5:ee81])
+        by smtp.gmail.com with ESMTPSA id 1-20020a170906218100b00730b61d8a5esm12095627eju.61.2022.09.17.04.42.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 17 Sep 2022 04:42:14 -0700 (PDT)
+Message-ID: <5097a283-6111-bedc-13c6-61a581f8b72c@redhat.com>
+Date:   Sat, 17 Sep 2022 13:42:13 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="h6nwvvqw4xktx7ws"
-Content-Disposition: inline
-In-Reply-To: <1663173015-7934-3-git-send-email-u0084500@gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.1
+Subject: Re: [PATCH 0/3] Check enumeration before MSR save/restore
+Content-Language: en-US
+To:     Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Andrew Cooper <Andrew.Cooper3@citrix.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Daniel Sneddon <daniel.sneddon@linux.intel.com>,
+        antonio.gomez.iglesias@linux.intel.com
+References: <cover.1663025154.git.pawan.kumar.gupta@linux.intel.com>
+ <20220913005053.vk7qmhr6tqqynags@desk>
+From:   Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <20220913005053.vk7qmhr6tqqynags@desk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
---h6nwvvqw4xktx7ws
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
 Hi,
 
-On Thu, Sep 15, 2022 at 12:30:14AM +0800, cy_huang wrote:
-> From: ChiYuan Huang <cy_huang@richtek.com>
->=20
-> Add support for the RT9471 3A 1-Cell Li+ battery charger.
->=20
-> The RT9471 is a highly-integrated 3A switch mode battery charger with
-> low impedance power path to better optimize the charging efficiency.
->=20
-> Co-developed-by: Alina Yu <alina_yu@richtek.com>
-> Signed-off-by: Alina Yu <alina_yu@richtek.com>
-> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> ---
-> [...]
-> +static DEVICE_ATTR_RW(sysoff_enable);
-> +static DEVICE_ATTR_RW(port_detect_enable);
-> +
-> +static struct attribute *rt9471_sysfs_entries[] =3D {
-> +	&dev_attr_sysoff_enable.attr,
-> +	&dev_attr_port_detect_enable.attr,
-> +	NULL
-> +};
-> +
-> +static const struct attribute_group rt9471_attr_group =3D {
-> +	.attrs	=3D rt9471_sysfs_entries,
-> +};
-> +
-> +static const struct attribute_group *rt9471_attr_groups[] =3D {
-> +	&rt9471_attr_group,
-> +	NULL
-> +};
+On 9/13/22 02:50, Pawan Gupta wrote:
+> On Mon, Sep 12, 2022 at 04:38:44PM -0700, Pawan Gupta wrote:
+>> Hi,
+>>
+>> This patchset is to fix the "unchecked MSR access error" [1] during S3
+>> resume. Patch 1/3 adds a feature bit for MSR_IA32_TSX_CTRL.
+>>
+>> Patch 2/3 adds a feature bit for MSR_AMD64_LS_CFG.
+>>
+>> Patch 3/3 adds check for feature bit before adding any speculation
+>> control MSR to the list of MSRs to save/restore.
+>>
+>> [1] https://lore.kernel.org/lkml/20220906201743.436091-1-hdegoede@redhat.com/
+> 
+> Added the correct email-id of Hans de Goede <hdegoede@redhat.com>.
 
-Iff these custom properties are required (see response to the last
-patch), then 'ATTRIBUTE_GROUPS()' can be used to simplify this part
-a bit.
+I have tested this series and I can confirm that it fixes the exception
+which I was seeing on a Packard Bell Dot SC with an Atom N2600 CPU:
 
--- Sebastian
+Tested-by: Hans de Goede <hdegoede@redhat.com>
 
---h6nwvvqw4xktx7ws
-Content-Type: application/pgp-signature; name="signature.asc"
+Regards,
 
------BEGIN PGP SIGNATURE-----
+Hans
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmMkvCoACgkQ2O7X88g7
-+prijg/+JRFp7kmC5ANGIe8K/TUE4HXk+7SLzOb9A/FBYMgh7WCvJZjzsnI4aYIN
-lbCpQqf6N1YQ9SL1IjgUHR3y/qO5a0aJe+gA5K351bwjbjMgTiAiS0DK/U+NAomM
-o/vHlyEb+NB8GHCb7uTS4WP6eftd6QLnARNpMVEaxOZWtI06/HjM6Rub2JkdGVFd
-ZNHMq+t9dZ1h70XyVsKlpD1zj+Lo6pK7MiuH0ztskmzb7m9O/vsrlPzSECDG0H7+
-MtuAOyQxmVicQKiuKOeTaL91rW19dUxvE6vTRebiCuJmMWLx2E4qWp3lxWHL+8K4
-dDijLDb9SmsEb4p1cSmDoXTqcBytR95zoOsWtdCevaxagaRVA+E9FuxwJMrMmDYc
-OcO2Jc7TR8QJ5prqzjJA5wuMexbRertPU2hwnPa1QHv8wbFibiTGSZuirjy5/AH7
-PZWvbbqzD3sT5IBOW8Fuyr10ksGB2SW/Cj38C9tEQAxYsQhnNUEnisY6nLyN+Hfh
-AlIS8IZdC48rfZWmIlMUfuxs+cURHRg4fd5dV89oowbkfmfqNWvLyq5lLSAGUJDR
-YDph1h39EAMAUPGR/kC9L/1lNvLrnuuVqe4/gBKLrJuV+1P2Iq5BxlkTcsuE2Mb+
-e0py58YXrS1ZRnyCmZfuToe/jt4QCwZK7CPOLY2wbqsA+8p+A1c=
-=4g7T
------END PGP SIGNATURE-----
-
---h6nwvvqw4xktx7ws--
