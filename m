@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1245C6FD1B
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Sep 2022 10:21:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09FB7C6FA91
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Sep 2022 10:21:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231545AbiISKUw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Sep 2022 06:20:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52106 "EHLO
+        id S231556AbiISKU4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Sep 2022 06:20:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51200 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231150AbiISKSz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2022 06:18:55 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E162248D7;
-        Mon, 19 Sep 2022 03:18:00 -0700 (PDT)
+        with ESMTP id S230492AbiISKSY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2022 06:18:24 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EA552315E;
+        Mon, 19 Sep 2022 03:17:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Subject:Cc:To:From:Date:Message-ID:
-        Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=D+MsKiHRvmSvqyjrleqvhdKjdXvjkJhvT05d1tF3TYc=; b=UQsvU8nlB76xZeTRu6KbAZ5g4A
-        v21ezpBG4aDzfKkxxCb9GpmlADJppCf+KVyodO/TEoyudKbqBLCyLdtwrbFAxb0aJ5fwHbEPQQ1N5
-        EmuvzVJrRo7TykFnlJ+oN15NWd2VLfXjixEytfV45kWCvhMnssNkUfZVmK3eHsT83TmhrkAy+1rWL
-        dSaGj0mA5cA9DiUGq8Uf3dsk4uEicB4ZuKl7D0T57Yf0eK8IdpHZoEAhNRMLiW4K3HehEHlB8w53i
-        worbn3yXyIb3FqjM/nTkOkRImrnF50v+k8ux+BswwsADI0NLv4ntoM+CNvwAF6XnPH12b3dM+N70J
-        YkBwTAqw==;
+        d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To;
+        bh=E91useHlyUUQoMsCvOSeJGEyanvxTuAtV3Y/d5ylPRM=; b=hGt/xJ2SQRXoXSrBCbxX3cFd8f
+        52HmfdiOntPDCU+hb1dkcsUWs1PzLBY2j/KzLbtzGuUNUOlYNPVcRxNjCMNI5Mq4XICjpVk9r4hpE
+        sSIsz45MXZm83EbAluQ7KjR828woKYnLyNCOZvsU8Vqgt6rfl5vlkY1XkGM+Vz/KtViumtIMSbGTI
+        WF2th3sTSJxy+Nfah7YTGb1Gn9ajQ3fJuoC6fJvhSqopNBK+/+yMX9y2koHhYw0/wu0pWx9jslbcL
+        8Z90brg5YcoQiGBXmwoEPvStLEQX1f852nePfFmBYgNhfOMc2MSitQxznYyWh9kw2qJjIetYbDajg
+        r/+okNeA==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1oaDpA-00E28k-Qz; Mon, 19 Sep 2022 10:17:17 +0000
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1oaDqA-004bEF-S9; Mon, 19 Sep 2022 10:17:26 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id F300C30068D;
-        Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A0CC2302F81;
+        Mon, 19 Sep 2022 12:16:25 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id BF8DF2BA49033; Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
-Message-ID: <20220919095939.761690562@infradead.org>
+        id A6ECA2BAC75A5; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
+Message-ID: <20220919101523.177759249@infradead.org>
 User-Agent: quilt/0.66
-Date:   Mon, 19 Sep 2022 11:59:39 +0200
+Date:   Mon, 19 Sep 2022 12:00:21 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     peterz@infradead.org
 Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
@@ -99,170 +99,178 @@ Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
         linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-arch@vger.kernel.org, kasan-dev@googlegroups.com
-Subject: [PATCH v2 00/44] cpuidle,rcu: Clean up the mess
+Subject: [PATCH v2 42/44] entry,kasan,x86: Disallow overriding mem*() functions
+References: <20220919095939.761690562@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All!
+KASAN cannot just hijack the mem*() functions, it needs to emit
+__asan_mem*() variants if it wants instrumentation (other sanitizers
+already do this).
 
-At long last, a respin of the cpuidle vs rcu cleanup patches.
+vmlinux.o: warning: objtool: sync_regs+0x24: call to memcpy() leaves .noinstr.text section
+vmlinux.o: warning: objtool: vc_switch_off_ist+0xbe: call to memcpy() leaves .noinstr.text section
+vmlinux.o: warning: objtool: fixup_bad_iret+0x36: call to memset() leaves .noinstr.text section
+vmlinux.o: warning: objtool: __sev_get_ghcb+0xa0: call to memcpy() leaves .noinstr.text section
+vmlinux.o: warning: objtool: __sev_put_ghcb+0x35: call to memcpy() leaves .noinstr.text section
 
-v1: https://lkml.kernel.org/r/20220608142723.103523089@infradead.org
+Remove the weak aliases to ensure nobody hijacks these functions and
+add them to the noinstr section.
 
-These here patches clean up the mess that is cpuidle vs rcuidle.
-
-At the end of the ride there's only on RCU_NONIDLE user left:
-
-  arch/arm64/kernel/suspend.c:            RCU_NONIDLE(__cpu_suspend_exit());
-
-and 'one' trace_*_rcuidle() user:
-
-  kernel/trace/trace_preemptirq.c:                        trace_irq_enable_rcuidle(CALLER_ADDR0, CALLER_ADDR1);
-  kernel/trace/trace_preemptirq.c:                        trace_irq_disable_rcuidle(CALLER_ADDR0, CALLER_ADDR1);
-  kernel/trace/trace_preemptirq.c:                        trace_irq_enable_rcuidle(CALLER_ADDR0, caller_addr);
-  kernel/trace/trace_preemptirq.c:                        trace_irq_disable_rcuidle(CALLER_ADDR0, caller_addr);
-  kernel/trace/trace_preemptirq.c:                trace_preempt_enable_rcuidle(a0, a1);
-  kernel/trace/trace_preemptirq.c:                trace_preempt_disable_rcuidle(a0, a1);
-
-However this last is all in deprecated code that should be unused for GENERIC_ENTRY.
-
-I've touched a lot of code that I can't test and I might've broken something by
-accident. In particular the whole ARM cpuidle stuff was quite involved.
-
-Please all; have a look where you haven't already.
-
-
-New since v1:
-
- - rebase on top of Frederic's rcu-context-tracking rename fest
- - more omap goodness as per the last discusion (thanks Tony!)
- - removed one more RCU_NONIDLE() from arm64/risc-v perf code
- - ubsan/kasan fixes
- - intel_idle module-param for testing
- - a bunch of extra __always_inline, because compilers are silly.
-
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/alpha/kernel/process.c               |  1 -
- arch/alpha/kernel/vmlinux.lds.S           |  1 -
- arch/arc/kernel/process.c                 |  3 ++
- arch/arc/kernel/vmlinux.lds.S             |  1 -
- arch/arm/include/asm/vmlinux.lds.h        |  1 -
- arch/arm/kernel/process.c                 |  1 -
- arch/arm/kernel/smp.c                     |  6 +--
- arch/arm/mach-gemini/board-dt.c           |  3 +-
- arch/arm/mach-imx/cpuidle-imx6q.c         |  4 +-
- arch/arm/mach-imx/cpuidle-imx6sx.c        |  5 ++-
- arch/arm/mach-omap2/common.h              |  6 ++-
- arch/arm/mach-omap2/cpuidle34xx.c         | 16 +++++++-
- arch/arm/mach-omap2/cpuidle44xx.c         | 29 +++++++-------
- arch/arm/mach-omap2/omap-mpuss-lowpower.c | 12 +++++-
- arch/arm/mach-omap2/pm.h                  |  2 +-
- arch/arm/mach-omap2/pm24xx.c              | 51 +-----------------------
- arch/arm/mach-omap2/pm34xx.c              | 14 +++++--
- arch/arm/mach-omap2/pm44xx.c              |  2 +-
- arch/arm/mach-omap2/powerdomain.c         | 10 ++---
- arch/arm64/kernel/idle.c                  |  1 -
- arch/arm64/kernel/smp.c                   |  4 +-
- arch/arm64/kernel/vmlinux.lds.S           |  1 -
- arch/csky/kernel/process.c                |  1 -
- arch/csky/kernel/smp.c                    |  2 +-
- arch/csky/kernel/vmlinux.lds.S            |  1 -
- arch/hexagon/kernel/process.c             |  1 -
- arch/hexagon/kernel/vmlinux.lds.S         |  1 -
- arch/ia64/kernel/process.c                |  1 +
- arch/ia64/kernel/vmlinux.lds.S            |  1 -
- arch/loongarch/kernel/idle.c              |  1 +
- arch/loongarch/kernel/vmlinux.lds.S       |  1 -
- arch/m68k/kernel/vmlinux-nommu.lds        |  1 -
- arch/m68k/kernel/vmlinux-std.lds          |  1 -
- arch/m68k/kernel/vmlinux-sun3.lds         |  1 -
- arch/microblaze/kernel/process.c          |  1 -
- arch/microblaze/kernel/vmlinux.lds.S      |  1 -
- arch/mips/kernel/idle.c                   |  8 ++--
- arch/mips/kernel/vmlinux.lds.S            |  1 -
- arch/nios2/kernel/process.c               |  1 -
- arch/nios2/kernel/vmlinux.lds.S           |  1 -
- arch/openrisc/kernel/process.c            |  1 +
- arch/openrisc/kernel/vmlinux.lds.S        |  1 -
- arch/parisc/kernel/process.c              |  2 -
- arch/parisc/kernel/vmlinux.lds.S          |  1 -
- arch/powerpc/kernel/idle.c                |  5 +--
- arch/powerpc/kernel/vmlinux.lds.S         |  1 -
- arch/riscv/kernel/process.c               |  1 -
- arch/riscv/kernel/vmlinux-xip.lds.S       |  1 -
- arch/riscv/kernel/vmlinux.lds.S           |  1 -
- arch/s390/kernel/idle.c                   |  1 -
- arch/s390/kernel/vmlinux.lds.S            |  1 -
- arch/sh/kernel/idle.c                     |  1 +
- arch/sh/kernel/vmlinux.lds.S              |  1 -
- arch/sparc/kernel/leon_pmc.c              |  4 ++
- arch/sparc/kernel/process_32.c            |  1 -
- arch/sparc/kernel/process_64.c            |  3 +-
- arch/sparc/kernel/vmlinux.lds.S           |  1 -
- arch/um/kernel/dyn.lds.S                  |  1 -
- arch/um/kernel/process.c                  |  1 -
- arch/um/kernel/uml.lds.S                  |  1 -
- arch/x86/boot/compressed/vmlinux.lds.S    |  1 +
- arch/x86/coco/tdx/tdcall.S                | 15 +------
- arch/x86/coco/tdx/tdx.c                   | 25 ++++--------
- arch/x86/events/amd/brs.c                 | 13 +++----
- arch/x86/include/asm/fpu/xcr.h            |  4 +-
- arch/x86/include/asm/irqflags.h           | 11 ++----
- arch/x86/include/asm/mwait.h              | 14 +++----
- arch/x86/include/asm/nospec-branch.h      |  2 +-
- arch/x86/include/asm/paravirt.h           |  6 ++-
- arch/x86/include/asm/perf_event.h         |  2 +-
- arch/x86/include/asm/shared/io.h          |  4 +-
- arch/x86/include/asm/shared/tdx.h         |  1 -
- arch/x86/include/asm/special_insns.h      |  8 ++--
- arch/x86/include/asm/xen/hypercall.h      |  2 +-
- arch/x86/kernel/cpu/bugs.c                |  2 +-
- arch/x86/kernel/fpu/core.c                |  4 +-
- arch/x86/kernel/paravirt.c                | 14 ++++++-
- arch/x86/kernel/process.c                 | 65 +++++++++++++++----------------
- arch/x86/kernel/vmlinux.lds.S             |  1 -
- arch/x86/lib/memcpy_64.S                  |  5 +--
- arch/x86/lib/memmove_64.S                 |  4 +-
- arch/x86/lib/memset_64.S                  |  4 +-
- arch/x86/xen/enlighten_pv.c               |  2 +-
- arch/x86/xen/irq.c                        |  2 +-
- arch/xtensa/kernel/process.c              |  1 +
- arch/xtensa/kernel/vmlinux.lds.S          |  1 -
- drivers/acpi/processor_idle.c             | 36 ++++++++++-------
- drivers/base/power/runtime.c              | 24 ++++++------
- drivers/clk/clk.c                         |  8 ++--
- drivers/cpuidle/cpuidle-arm.c             |  1 +
- drivers/cpuidle/cpuidle-big_little.c      |  8 +++-
- drivers/cpuidle/cpuidle-mvebu-v7.c        |  7 ++++
- drivers/cpuidle/cpuidle-psci.c            | 10 +++--
- drivers/cpuidle/cpuidle-qcom-spm.c        |  1 +
- drivers/cpuidle/cpuidle-riscv-sbi.c       | 10 +++--
- drivers/cpuidle/cpuidle-tegra.c           | 21 +++++++---
- drivers/cpuidle/cpuidle.c                 | 21 +++++-----
- drivers/cpuidle/dt_idle_states.c          |  2 +-
- drivers/cpuidle/poll_state.c              | 10 ++++-
- drivers/idle/intel_idle.c                 | 19 +++++----
- drivers/perf/arm_pmu.c                    | 11 +-----
- drivers/perf/riscv_pmu_sbi.c              |  8 +---
- include/asm-generic/vmlinux.lds.h         |  9 ++---
- include/linux/compiler_types.h            |  8 +++-
- include/linux/cpu.h                       |  3 --
- include/linux/cpuidle.h                   | 34 ++++++++++++++++
- include/linux/cpumask.h                   |  4 +-
- include/linux/percpu-defs.h               |  2 +-
- include/linux/sched/idle.h                | 40 ++++++++++++++-----
- include/linux/thread_info.h               | 18 ++++++++-
- include/linux/tracepoint.h                | 13 ++++++-
- kernel/cpu_pm.c                           |  9 -----
- kernel/printk/printk.c                    |  2 +-
- kernel/sched/idle.c                       | 47 +++++++---------------
- kernel/time/tick-broadcast-hrtimer.c      | 29 ++++++--------
- kernel/time/tick-broadcast.c              |  6 ++-
- kernel/trace/trace.c                      |  3 ++
- lib/ubsan.c                               |  5 ++-
- mm/kasan/kasan.h                          |  4 ++
- mm/kasan/shadow.c                         | 38 ++++++++++++++++++
- tools/objtool/check.c                     | 17 ++++++++
- 121 files changed, 511 insertions(+), 420 deletions(-)
+ arch/x86/lib/memcpy_64.S  |    5 ++---
+ arch/x86/lib/memmove_64.S |    4 +++-
+ arch/x86/lib/memset_64.S  |    4 +++-
+ mm/kasan/kasan.h          |    4 ++++
+ mm/kasan/shadow.c         |   38 ++++++++++++++++++++++++++++++++++++++
+ tools/objtool/check.c     |    3 +++
+ 6 files changed, 53 insertions(+), 5 deletions(-)
+
+--- a/arch/x86/lib/memcpy_64.S
++++ b/arch/x86/lib/memcpy_64.S
+@@ -7,7 +7,7 @@
+ #include <asm/alternative.h>
+ #include <asm/export.h>
+ 
+-.pushsection .noinstr.text, "ax"
++.section .noinstr.text, "ax"
+ 
+ /*
+  * We build a jump to memcpy_orig by default which gets NOPped out on
+@@ -42,7 +42,7 @@ SYM_FUNC_START(__memcpy)
+ SYM_FUNC_END(__memcpy)
+ EXPORT_SYMBOL(__memcpy)
+ 
+-SYM_FUNC_ALIAS_WEAK(memcpy, __memcpy)
++SYM_FUNC_ALIAS(memcpy, __memcpy)
+ EXPORT_SYMBOL(memcpy)
+ 
+ /*
+@@ -183,4 +183,3 @@ SYM_FUNC_START_LOCAL(memcpy_orig)
+ 	RET
+ SYM_FUNC_END(memcpy_orig)
+ 
+-.popsection
+--- a/arch/x86/lib/memmove_64.S
++++ b/arch/x86/lib/memmove_64.S
+@@ -13,6 +13,8 @@
+ 
+ #undef memmove
+ 
++.section .noinstr.text, "ax"
++
+ /*
+  * Implement memmove(). This can handle overlap between src and dst.
+  *
+@@ -213,5 +215,5 @@ SYM_FUNC_START(__memmove)
+ SYM_FUNC_END(__memmove)
+ EXPORT_SYMBOL(__memmove)
+ 
+-SYM_FUNC_ALIAS_WEAK(memmove, __memmove)
++SYM_FUNC_ALIAS(memmove, __memmove)
+ EXPORT_SYMBOL(memmove)
+--- a/arch/x86/lib/memset_64.S
++++ b/arch/x86/lib/memset_64.S
+@@ -6,6 +6,8 @@
+ #include <asm/alternative.h>
+ #include <asm/export.h>
+ 
++.section .noinstr.text, "ax"
++
+ /*
+  * ISO C memset - set a memory block to a byte value. This function uses fast
+  * string to get better performance than the original function. The code is
+@@ -43,7 +45,7 @@ SYM_FUNC_START(__memset)
+ SYM_FUNC_END(__memset)
+ EXPORT_SYMBOL(__memset)
+ 
+-SYM_FUNC_ALIAS_WEAK(memset, __memset)
++SYM_FUNC_ALIAS(memset, __memset)
+ EXPORT_SYMBOL(memset)
+ 
+ /*
+--- a/mm/kasan/kasan.h
++++ b/mm/kasan/kasan.h
+@@ -551,6 +551,10 @@ void __asan_set_shadow_f3(const void *ad
+ void __asan_set_shadow_f5(const void *addr, size_t size);
+ void __asan_set_shadow_f8(const void *addr, size_t size);
+ 
++void *__asan_memset(void *addr, int c, size_t len);
++void *__asan_memmove(void *dest, const void *src, size_t len);
++void *__asan_memcpy(void *dest, const void *src, size_t len);
++
+ void __hwasan_load1_noabort(unsigned long addr);
+ void __hwasan_store1_noabort(unsigned long addr);
+ void __hwasan_load2_noabort(unsigned long addr);
+--- a/mm/kasan/shadow.c
++++ b/mm/kasan/shadow.c
+@@ -38,6 +38,12 @@ bool __kasan_check_write(const volatile
+ }
+ EXPORT_SYMBOL(__kasan_check_write);
+ 
++#ifndef CONFIG_GENERIC_ENTRY
++/*
++ * CONFIG_GENERIC_ENTRY relies on compiler emitted mem*() calls to not be
++ * instrumented. KASAN enabled toolchains should emit __asan_mem*() functions
++ * for the sites they want to instrument.
++ */
+ #undef memset
+ void *memset(void *addr, int c, size_t len)
+ {
+@@ -68,6 +74,38 @@ void *memcpy(void *dest, const void *src
+ 
+ 	return __memcpy(dest, src, len);
+ }
++#endif
++
++void *__asan_memset(void *addr, int c, size_t len)
++{
++	if (!kasan_check_range((unsigned long)addr, len, true, _RET_IP_))
++		return NULL;
++
++	return __memset(addr, c, len);
++}
++EXPORT_SYMBOL(__asan_memset);
++
++#ifdef __HAVE_ARCH_MEMMOVE
++void *__asan_memmove(void *dest, const void *src, size_t len)
++{
++	if (!kasan_check_range((unsigned long)src, len, false, _RET_IP_) ||
++	    !kasan_check_range((unsigned long)dest, len, true, _RET_IP_))
++		return NULL;
++
++	return __memmove(dest, src, len);
++}
++EXPORT_SYMBOL(__asan_memmove);
++#endif
++
++void *__asan_memcpy(void *dest, const void *src, size_t len)
++{
++	if (!kasan_check_range((unsigned long)src, len, false, _RET_IP_) ||
++	    !kasan_check_range((unsigned long)dest, len, true, _RET_IP_))
++		return NULL;
++
++	return __memcpy(dest, src, len);
++}
++EXPORT_SYMBOL(__asan_memcpy);
+ 
+ void kasan_poison(const void *addr, size_t size, u8 value, bool init)
+ {
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -956,6 +956,9 @@ static const char *uaccess_safe_builtin[
+ 	"__asan_store16_noabort",
+ 	"__kasan_check_read",
+ 	"__kasan_check_write",
++	"__asan_memset",
++	"__asan_memmove",
++	"__asan_memcpy",
+ 	/* KASAN in-line */
+ 	"__asan_report_load_n_noabort",
+ 	"__asan_report_load1_noabort",
+
 
