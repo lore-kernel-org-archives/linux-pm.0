@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25C30ECAA36
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39840ECAA38
 	for <linux-pm@archiver.kernel.org>; Mon, 19 Sep 2022 10:17:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230396AbiISKRk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Sep 2022 06:17:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49316 "EHLO
+        id S229762AbiISKR3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Sep 2022 06:17:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229553AbiISKRF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2022 06:17:05 -0400
+        with ESMTP id S229714AbiISKRG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2022 06:17:06 -0400
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55D7D220D3;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 556271EAF3;
         Mon, 19 Sep 2022 03:17:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=WVCZz4VCnGePSihfWXfUVWek2uxL69eYF/NrdeQus6U=; b=ivBskP0aWQgi9l0mKK9jTzFXqc
-        ZaruQT1GQRrgEFzxRyDZun0oUQSETW6STOVGluWDi3qyaP4sssJsMWlDUZ3GA9Pz0X87ahb90byEQ
-        bhOXfPvW2zvD6yBkUDxk8BE+7zJhSnLWDPFkAW6QGLcPYNbWGozjqGe7xhepdJzb53dFBO7ECLGwt
-        QO1KrbQvccpeuYnZb9ZuwYEgH2WsFobCaskTraK3wrmMGpyKyUxInAVIxF2jY4xcbgzeGmq/omTnx
-        ORL3apzPH+JFJPdVDrr6iVZccffw6jLJlq1Lm1Hgq/35itx04lz+am6dEV+G+6PLGd2kSPpHIcEpd
-        Ptxwcg6w==;
+        bh=oZwbrkDz2YxQ2tCMIP+SsyU178fWwXoNNNkzTKP67NE=; b=KweB4P8d5D7zkwnL4EDlpnZYcN
+        a9E5xKCTRFYcTufTdlClTGA3iDArhS2rXRQxTKlrXXlrj0UpFCMBatcGTn5dPeA+O4C2MMnypMOxO
+        5v2si5huymLU8WeP2fVE7BDJzihOP+9J3kc2xjZv42l6rH6S36237oq0Fd+r9PUqoyjp+xxFFpIHO
+        +0LT+KJAgXQRKmewdBNUpCB6GardBaz99pO4SDUmqaat0xpyL/RD1zXk0smpZADkhrnDQ8EGTDY6w
+        VPHghONnzwfMVAWRBRjATrTLZKECEJxso7CGz23vtaOidDm2gFnFt6vHX8G+IsOsJbZb9RAt1bDBu
+        aILnL3hQ==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1oaDpH-004aiJ-81; Mon, 19 Sep 2022 10:16:31 +0000
+        id 1oaDpF-004ahs-VQ; Mon, 19 Sep 2022 10:16:30 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id DD4D7302EAA;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id AD9D3302D68;
         Mon, 19 Sep 2022 12:16:24 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 002B62BA49041; Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
-Message-ID: <20220919101521.072508494@infradead.org>
+        id D7B952BA4903A; Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
+Message-ID: <20220919101520.669962810@infradead.org>
 User-Agent: quilt/0.66
-Date:   Mon, 19 Sep 2022 11:59:50 +0200
+Date:   Mon, 19 Sep 2022 11:59:44 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     peterz@infradead.org
 Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
@@ -99,7 +99,7 @@ Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
         linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-arch@vger.kernel.org, kasan-dev@googlegroups.com
-Subject: [PATCH v2 11/44] cpuidle,omap4: Push RCU-idle into driver
+Subject: [PATCH v2 05/44] cpuidle,riscv: Push RCU-idle into driver
 References: <20220919095939.761690562@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -108,118 +108,52 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 Doing RCU-idle outside the driver, only to then temporarily enable it
-again, some *four* times, before going idle is daft.
+again, at least twice, before going idle is daft.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Tony Lindgren <tony@atomide.com>
-Tested-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/cpuidle44xx.c |   29 ++++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 11 deletions(-)
+ drivers/cpuidle/cpuidle-riscv-sbi.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
---- a/arch/arm/mach-omap2/cpuidle44xx.c
-+++ b/arch/arm/mach-omap2/cpuidle44xx.c
-@@ -105,7 +105,9 @@ static int omap_enter_idle_smp(struct cp
- 	}
- 	raw_spin_unlock_irqrestore(&mpu_lock, flag);
+--- a/drivers/cpuidle/cpuidle-riscv-sbi.c
++++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
+@@ -116,12 +116,12 @@ static int __sbi_enter_domain_idle_state
+ 		return -1;
  
+ 	/* Do runtime PM to manage a hierarchical CPU toplogy. */
+-	ct_irq_enter_irqson();
+ 	if (s2idle)
+ 		dev_pm_genpd_suspend(pd_dev);
+ 	else
+ 		pm_runtime_put_sync_suspend(pd_dev);
+-	ct_irq_exit_irqson();
++
 +	ct_idle_enter();
- 	omap4_enter_lowpower(dev->cpu, cx->cpu_state);
+ 
+ 	if (sbi_is_domain_state_available())
+ 		state = sbi_get_domain_state();
+@@ -130,12 +130,12 @@ static int __sbi_enter_domain_idle_state
+ 
+ 	ret = sbi_suspend(state) ? -1 : idx;
+ 
+-	ct_irq_enter_irqson();
 +	ct_idle_exit();
++
+ 	if (s2idle)
+ 		dev_pm_genpd_resume(pd_dev);
+ 	else
+ 		pm_runtime_get_sync(pd_dev);
+-	ct_irq_exit_irqson();
  
- 	raw_spin_lock_irqsave(&mpu_lock, flag);
- 	if (cx->mpu_state_vote == num_online_cpus())
-@@ -151,10 +153,10 @@ static int omap_enter_idle_coupled(struc
- 				 (cx->mpu_logic_state == PWRDM_POWER_OFF);
- 
- 	/* Enter broadcast mode for periodic timers */
--	RCU_NONIDLE(tick_broadcast_enable());
-+	tick_broadcast_enable();
- 
- 	/* Enter broadcast mode for one-shot timers */
--	RCU_NONIDLE(tick_broadcast_enter());
-+	tick_broadcast_enter();
- 
- 	/*
- 	 * Call idle CPU PM enter notifier chain so that
-@@ -166,7 +168,7 @@ static int omap_enter_idle_coupled(struc
- 
- 	if (dev->cpu == 0) {
- 		pwrdm_set_logic_retst(mpu_pd, cx->mpu_logic_state);
--		RCU_NONIDLE(omap_set_pwrdm_state(mpu_pd, cx->mpu_state));
-+		omap_set_pwrdm_state(mpu_pd, cx->mpu_state);
- 
- 		/*
- 		 * Call idle CPU cluster PM enter notifier chain
-@@ -178,14 +180,16 @@ static int omap_enter_idle_coupled(struc
- 				index = 0;
- 				cx = state_ptr + index;
- 				pwrdm_set_logic_retst(mpu_pd, cx->mpu_logic_state);
--				RCU_NONIDLE(omap_set_pwrdm_state(mpu_pd, cx->mpu_state));
-+				omap_set_pwrdm_state(mpu_pd, cx->mpu_state);
- 				mpuss_can_lose_context = 0;
- 			}
- 		}
- 	}
- 
-+	ct_idle_enter();
- 	omap4_enter_lowpower(dev->cpu, cx->cpu_state);
- 	cpu_done[dev->cpu] = true;
-+	ct_idle_exit();
- 
- 	/* Wakeup CPU1 only if it is not offlined */
- 	if (dev->cpu == 0 && cpumask_test_cpu(1, cpu_online_mask)) {
-@@ -194,9 +198,9 @@ static int omap_enter_idle_coupled(struc
- 		    mpuss_can_lose_context)
- 			gic_dist_disable();
- 
--		RCU_NONIDLE(clkdm_deny_idle(cpu_clkdm[1]));
--		RCU_NONIDLE(omap_set_pwrdm_state(cpu_pd[1], PWRDM_POWER_ON));
--		RCU_NONIDLE(clkdm_allow_idle(cpu_clkdm[1]));
-+		clkdm_deny_idle(cpu_clkdm[1]);
-+		omap_set_pwrdm_state(cpu_pd[1], PWRDM_POWER_ON);
-+		clkdm_allow_idle(cpu_clkdm[1]);
- 
- 		if (IS_PM44XX_ERRATUM(PM_OMAP4_ROM_SMP_BOOT_ERRATUM_GICD) &&
- 		    mpuss_can_lose_context) {
-@@ -222,7 +226,7 @@ static int omap_enter_idle_coupled(struc
  	cpu_pm_exit();
  
- cpu_pm_out:
--	RCU_NONIDLE(tick_broadcast_exit());
-+	tick_broadcast_exit();
- 
- fail:
- 	cpuidle_coupled_parallel_barrier(dev, &abort_barrier);
-@@ -247,7 +251,8 @@ static struct cpuidle_driver omap4_idle_
- 			/* C2 - CPU0 OFF + CPU1 OFF + MPU CSWR */
- 			.exit_latency = 328 + 440,
- 			.target_residency = 960,
--			.flags = CPUIDLE_FLAG_COUPLED,
-+			.flags = CPUIDLE_FLAG_COUPLED |
-+				 CPUIDLE_FLAG_RCU_IDLE,
- 			.enter = omap_enter_idle_coupled,
- 			.name = "C2",
- 			.desc = "CPUx OFF, MPUSS CSWR",
-@@ -256,7 +261,8 @@ static struct cpuidle_driver omap4_idle_
- 			/* C3 - CPU0 OFF + CPU1 OFF + MPU OSWR */
- 			.exit_latency = 460 + 518,
- 			.target_residency = 1100,
--			.flags = CPUIDLE_FLAG_COUPLED,
-+			.flags = CPUIDLE_FLAG_COUPLED |
-+				 CPUIDLE_FLAG_RCU_IDLE,
- 			.enter = omap_enter_idle_coupled,
- 			.name = "C3",
- 			.desc = "CPUx OFF, MPUSS OSWR",
-@@ -282,7 +288,8 @@ static struct cpuidle_driver omap5_idle_
- 			/* C2 - CPU0 RET + CPU1 RET + MPU CSWR */
- 			.exit_latency = 48 + 60,
- 			.target_residency = 100,
--			.flags = CPUIDLE_FLAG_TIMER_STOP,
-+			.flags = CPUIDLE_FLAG_TIMER_STOP |
-+				 CPUIDLE_FLAG_RCU_IDLE,
- 			.enter = omap_enter_idle_smp,
- 			.name = "C2",
- 			.desc = "CPUx CSWR, MPUSS CSWR",
+@@ -246,6 +246,7 @@ static int sbi_dt_cpu_init_topology(stru
+ 	 * of a shared state for the domain, assumes the domain states are all
+ 	 * deeper states.
+ 	 */
++	drv->states[state_count - 1].flags |= CPUIDLE_FLAG_RCU_IDLE;
+ 	drv->states[state_count - 1].enter = sbi_enter_domain_idle_state;
+ 	drv->states[state_count - 1].enter_s2idle =
+ 					sbi_enter_s2idle_domain_idle_state;
 
 
