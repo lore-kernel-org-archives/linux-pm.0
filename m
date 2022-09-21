@@ -2,65 +2,71 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34714ECAAD8
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Sep 2022 15:01:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C426EECAAD8
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Sep 2022 15:22:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229709AbiIUPBp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Sep 2022 11:01:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58862 "EHLO
+        id S229953AbiIUPWZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Sep 2022 11:22:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56824 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229976AbiIUPBi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Sep 2022 11:01:38 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED684CE32;
-        Wed, 21 Sep 2022 08:01:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=ZgLg+iakMwAKwuSgDkBgwsil74YzMrT0fyk7bQYAOaQ=; b=XrLeRhY5JtnJeibn5eLYKGs/k/
-        kaDfxLHdPX29zp0ITprBqKREL4QTASMn/eztBwMmgH3pJrLLHaTTg5veLBCdAB/Lzv0U3v3nLgxfZ
-        Mdru50MXu7B0BShJdbdJ6c6PKgJAynmhiktQVKO/+49RQZFiAZE3ZCI6gMckzvTty/ny6FYGQvKGG
-        f7xNUKvRi8OtAZYugKWykDuQrrXc0obnnX2m02tTbx+rMxujO1jN8do4wGhS5qlNOPyOaQGV+458+
-        Hm79BtCllUhozaE4sE6I10vAX7EJyyvnzGpUxGKNirxuO8VxjoXtMcvTN0SlPW+rc+w8Hh6KIHOBl
-        3ntoLTUg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1ob1DK-00EhIH-98; Wed, 21 Sep 2022 15:00:38 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id E6CF6300202;
-        Wed, 21 Sep 2022 17:00:35 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id C70682BB5A386; Wed, 21 Sep 2022 17:00:35 +0200 (CEST)
-Date:   Wed, 21 Sep 2022 17:00:35 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     K Prateek Nayak <kprateek.nayak@amd.com>
-Cc:     linux-kernel@vger.kernel.org, rafael@kernel.org, lenb@kernel.org,
-        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
-        dave.hansen@linux.intel.com, bp@alien8.de, tglx@linutronix.de,
-        andi@lisas.de, puwen@hygon.cn, mario.limonciello@amd.com,
-        rui.zhang@intel.com, gpiccoli@igalia.com,
-        daniel.lezcano@linaro.org, ananth.narayan@amd.com,
-        gautham.shenoy@amd.com, Calvin Ong <calvin.ong@amd.com>,
-        stable@vger.kernel.org, regressions@lists.linux.dev
-Subject: Re: [PATCH] ACPI: processor_idle: Skip dummy wait for processors
- based on the Zen microarchitecture
-Message-ID: <YysnE8rcZAOOj28A@hirez.programming.kicks-ass.net>
-References: <20220921063638.2489-1-kprateek.nayak@amd.com>
+        with ESMTP id S229974AbiIUPWY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Sep 2022 11:22:24 -0400
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE5DF8E0F2
+        for <linux-pm@vger.kernel.org>; Wed, 21 Sep 2022 08:22:22 -0700 (PDT)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.56])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MXhqN6ytpzMn81;
+        Wed, 21 Sep 2022 23:17:36 +0800 (CST)
+Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Wed, 21 Sep 2022 23:22:18 +0800
+Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
+ (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Wed, 21 Sep
+ 2022 23:22:18 +0800
+From:   Yang Yingliang <yangyingliang@huawei.com>
+To:     <linux-pm@vger.kernel.org>, <linux-mediatek@lists.infradead.org>
+CC:     <sre@kernel.org>, <chiaen_wu@richtek.com>
+Subject: [PATCH -next] power: supply: mt6370: Fix return value check in mt6370_chg_probe()
+Date:   Wed, 21 Sep 2022 23:29:15 +0800
+Message-ID: <20220921152915.1506767-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220921063638.2489-1-kprateek.nayak@amd.com>
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpemm500007.china.huawei.com (7.185.36.183)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Sep 21, 2022 at 12:06:38PM +0530, K Prateek Nayak wrote:
-> Processors based on the Zen microarchitecture support IOPORT based deeper
-> C-states. 
+If create_singlethread_workqueue() fails, it returns a null pointer,
+replace IS_ERR() check with NULL pointer check.
 
-I've just gotta ask; why the heck are you using IO port based idle
-states in 2022 ?!?! You have have MWAIT, right?
+Fixes: 233cb8a47d65 ("power: supply: mt6370: Add MediaTek MT6370 charger driver")
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/power/supply/mt6370-charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/mt6370-charger.c b/drivers/power/supply/mt6370-charger.c
+index 716cba259a7a..f27dae5043f5 100644
+--- a/drivers/power/supply/mt6370-charger.c
++++ b/drivers/power/supply/mt6370-charger.c
+@@ -911,8 +911,8 @@ static int mt6370_chg_probe(struct platform_device *pdev)
+ 	priv->attach = MT6370_ATTACH_STAT_DETACH;
+ 
+ 	priv->wq = create_singlethread_workqueue(dev_name(priv->dev));
+-	if (IS_ERR(priv->wq))
+-		return dev_err_probe(dev, PTR_ERR(priv->wq),
++	if (!priv->wq)
++		return dev_err_probe(dev, -ENOMEM,
+ 				     "Failed to create workqueue\n");
+ 
+ 	ret = devm_add_action_or_reset(dev, mt6370_chg_destroy_wq, priv->wq);
+-- 
+2.25.1
+
