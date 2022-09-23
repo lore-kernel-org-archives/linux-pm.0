@@ -2,121 +2,70 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BA87C6FA82
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Sep 2022 14:26:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E900DECAAD8
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Sep 2022 14:43:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232614AbiIWO0z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Sep 2022 10:26:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34256 "EHLO
+        id S232003AbiIWOn2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Sep 2022 10:43:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34812 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232622AbiIWO0V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2022 10:26:21 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40A2CFA0C9;
-        Fri, 23 Sep 2022 07:26:16 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id DC2B9B80B4C;
-        Fri, 23 Sep 2022 14:26:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16133C433C1;
-        Fri, 23 Sep 2022 14:26:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1663943173;
-        bh=ObX6HvLa+ySlFwmEmsOrRGpPJYrz/yfFRnE1KqoIX0Q=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=USLuatUTEmyIgU2Aq8Log9JG+qRZjgZycPj46CoYsjOhO4Te9M5o1aWKI7BRmtvdM
-         LyiAxh1zM59V+a30u/L29IL83ASv7/MpyUBJ1dUkVUoCow7vY0l9DwpQLnl7OQgIs4
-         hH9ZIj7n3hqXQ18xEzrBjkvdSqrS1V6blwsmBdncB5zO4ilhg7qkvQvi5Wp8o1B/pH
-         gGGjEaDgeqLprAybZHo222IH1RDwVCfG8pfbPKCyNCPlEBXwhvaZmYcF9Zu2whk5P/
-         EOUP+dFAym2QbbsPwtrVan5NXxW2KedOrHlQsk/LP1GOo3OHsZT8B72oIIbVPOyl/0
-         cH+Vj2uh2VlJw==
-Date:   Fri, 23 Sep 2022 09:26:11 -0500
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Krishna Chaitanya Chundru <quic_krichai@quicinc.com>
-Cc:     linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, mka@chromium.org,
-        quic_vbadigan@quicinc.com, quic_hemantk@quicinc.com,
-        quic_nitegupt@quicinc.com, quic_skananth@quicinc.com,
-        quic_ramkri@quicinc.com, manivannan.sadhasivam@linaro.org,
-        swboyd@chromium.org, dmitry.baryshkov@linaro.org,
-        svarbanov@mm-sol.com, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@somainline.org, lpieralisi@kernel.org,
-        robh@kernel.org, kw@linux.com, bhelgaas@google.com,
-        linux-phy@lists.infradead.org, vkoul@kernel.org, kishon@ti.com,
-        mturquette@baylibre.com, linux-clk@vger.kernel.org,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v7 1/5] PCI: qcom: Add system suspend and resume support
-Message-ID: <20220923142611.GA1389970@bhelgaas>
+        with ESMTP id S232398AbiIWOnW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2022 10:43:22 -0400
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 006F8140F03;
+        Fri, 23 Sep 2022 07:43:21 -0700 (PDT)
+Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.55])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MYvsS2wQGzMpPd;
+        Fri, 23 Sep 2022 22:38:36 +0800 (CST)
+Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
+ dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Fri, 23 Sep 2022 22:43:19 +0800
+Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
+ (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Fri, 23 Sep
+ 2022 22:43:19 +0800
+From:   Yang Yingliang <yangyingliang@huawei.com>
+To:     <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>
+CC:     <viresh.kumar@linaro.org>, <sumitg@nvidia.com>,
+        <yangyingliang@huawei.com>
+Subject: [PATCH -next] cpufreq: tegra194: change tegra239_cpufreq_soc to static
+Date:   Fri, 23 Sep 2022 22:50:16 +0800
+Message-ID: <20220923145016.109173-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <95e4e9d9-3f39-6cf4-0739-967c7e568697@quicinc.com>
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ dggpemm500007.china.huawei.com (7.185.36.183)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Sep 23, 2022 at 07:29:31AM +0530, Krishna Chaitanya Chundru wrote:
-> 
-> On 9/23/2022 12:12 AM, Bjorn Helgaas wrote:
-> > On Thu, Sep 22, 2022 at 09:09:28PM +0530, Krishna Chaitanya Chundru wrote:
-> > > On 9/21/2022 10:26 PM, Bjorn Helgaas wrote:
-> > > > On Wed, Sep 21, 2022 at 03:23:35PM +0530, Krishna Chaitanya Chundru wrote:
-> > > > > On 9/20/2022 11:46 PM, Bjorn Helgaas wrote:
-> > > > > > On Tue, Sep 20, 2022 at 03:52:23PM +0530, Krishna chaitanya chundru wrote:
+tegra239_cpufreq_soc is only used in tegra194-cpufreq.c now, change it
+to static.
 
-> > > > > > > In qcom platform PCIe resources( clocks, phy etc..) can
-> > > > > > > released when the link is in L1ss to reduce the power
-> > > > > > > consumption. So if the link is in L1ss, release the PCIe
-> > > > > > > resources. And when the system resumes, enable the PCIe
-> > > > > > > resources if they released in the suspend path.
-> > > > > > What's the connection with L1.x?  Links enter L1.x based on
-> > > > > > activity and timing.  That doesn't seem like a reliable
-> > > > > > indicator to turn PHYs off and disable clocks.
-> > > > >
-> > > > > This is a Qcom PHY-specific feature (retaining the link state in
-> > > > > L1.x with clocks turned off).  It is possible only with the link
-> > > > > being in l1.x. PHY can't retain the link state in L0 with the
-> > > > > clocks turned off and we need to re-train the link if it's in L2
-> > > > > or L3. So we can support this feature only with L1.x.  That is
-> > > > > the reason we are taking l1.x as the trigger to turn off clocks
-> > > > > (in only suspend path).
-> > > >
-> > > > This doesn't address my question.  L1.x is an ASPM feature, which
-> > > > means hardware may enter or leave L1.x autonomously at any time
-> > > > without software intervention.  Therefore, I don't think reading the
-> > > > current state is a reliable way to decide anything.
-> > >
-> > > After the link enters the L1.x it will come out only if there is
-> > > some activity on the link.  AS system is suspended and NVMe driver
-> > > is also suspended( queues will  freeze in suspend) who else can
-> > > initiate any data.
-> >
-> > I don't think we can assume that nothing will happen to cause exit
-> > from L1.x.  For instance, PCIe Messages for INTx signaling, LTR, OBFF,
-> > PTM, etc., may be sent even though we think the device is idle and
-> > there should be no link activity.
->
-> I don't think after the link enters into L1.x there will some
-> activity on the link as you mentioned, except for PCIe messages like
-> INTx/MSI/MSIX. These messages also will not come because the client
-> drivers like NVMe will keep their device in the lowest power mode.
-> 
-> The link will come out of L1.x only when there is config or memory
-> access or some messages to trigger the interrupts from the devices.
-> We are already making sure this access will not be there in S3.  If
-> the link is in L0 or L0s what you said is expected but not in L1.x
+Fixes: 676886010707 ("cpufreq: tegra194: Add support for Tegra239")
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/cpufreq/tegra194-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Forgive me for being skeptical, but we just spent a few months
-untangling the fact that some switches send PTM request messages even
-when they're in a non-D0 state.  We expected that devices in D3hot
-would not send such messages because "why would they?"  But it turns
-out the spec allows that, and they actually *do*.
+diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/tegra194-cpufreq.c
+index cfc1b225f811..c2004cae3f02 100644
+--- a/drivers/cpufreq/tegra194-cpufreq.c
++++ b/drivers/cpufreq/tegra194-cpufreq.c
+@@ -161,7 +161,7 @@ static const struct tegra_cpufreq_soc tegra234_cpufreq_soc = {
+ 	.num_clusters = 3,
+ };
+ 
+-const struct tegra_cpufreq_soc tegra239_cpufreq_soc = {
++static const struct tegra_cpufreq_soc tegra239_cpufreq_soc = {
+ 	.ops = &tegra234_cpufreq_ops,
+ 	.actmon_cntr_base = 0x4000,
+ 	.maxcpus_per_cluster = 8,
+-- 
+2.25.1
 
-I don't think it's robust interoperable design for a PCI controller
-driver like qcom to assume anything about PCI devices unless it's
-required by the spec.
-
-Bjorn
