@@ -2,200 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96FCAECAAD8
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Sep 2022 14:49:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C12AC6FA8B
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Sep 2022 15:20:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232322AbiIWOtu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Sep 2022 10:49:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42468 "EHLO
+        id S231562AbiIWPUj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Sep 2022 11:20:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232245AbiIWOtl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2022 10:49:41 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E67C7220E3;
-        Fri, 23 Sep 2022 07:49:38 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CE9A6113E;
-        Fri, 23 Sep 2022 07:49:44 -0700 (PDT)
-Received: from [10.57.3.23] (unknown [10.57.3.23])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2CBAE3F73B;
-        Fri, 23 Sep 2022 07:49:37 -0700 (PDT)
-Message-ID: <564e6fc6-4734-a60e-d578-a15247a32c5f@arm.com>
-Date:   Fri, 23 Sep 2022 15:49:35 +0100
+        with ESMTP id S231601AbiIWPUa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2022 11:20:30 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 442AFE6A00;
+        Fri, 23 Sep 2022 08:20:29 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id ED4B8B838C3;
+        Fri, 23 Sep 2022 15:20:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6B72C43142;
+        Fri, 23 Sep 2022 15:20:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1663946426;
+        bh=zo7rFZiPS4WyTBZk4VHnI8cDdMwygNZyE43ol0e2o2A=;
+        h=From:To:Cc:Subject:Date:From;
+        b=h5A9XThDA/5s0nOAX9forsdLayrzgXUza7l79K6258CeVyLTGUt6X96ZBEPlttNp5
+         ElY629wCutz4/DSMBngmRLN37ymIDXCrKV/Z2J6jov2aGTDZS4bkyZbVrUsPgnnbig
+         yqDUPOVPVI82nAtprBZMueiVWOHOBWkCOsQi3r/9/PBuhqMgwsKjbhOa0KFz5Ia5ga
+         FesASNFIjqev89LM8TbV6f0uz9NdHPJ6XfW7MlY5FZbM7WXYQZK/8HegplFfsL3tOO
+         9djqqHdCD9lVmJpKW6oZAbuByK69CJ3xUbSxMjXmvykRA9FiAOhnIFGmLKDGuYyXRw
+         uNUmczkVos0qg==
+From:   Nathan Chancellor <nathan@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Tom Rix <trix@redhat.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, llvm@lists.linux.dev,
+        Nathan Chancellor <nathan@kernel.org>,
+        "kernelci.org bot" <bot@kernelci.org>,
+        "Sudip Mukherjee (Codethink)" <sudipm.mukherjee@gmail.com>
+Subject: [PATCH -next] thermal/intel/int340x: Initialized ret in error path in int340x_thermal_zone_add()
+Date:   Fri, 23 Sep 2022 08:20:09 -0700
+Message-Id: <20220923152009.1721739-1-nathan@kernel.org>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH v4 05/30] thermal/core/governors: Use
- thermal_zone_get_trip() instead of ops functions
-Content-Language: en-US
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rui.zhang@intel.com, Amit Kucheria <amitk@kernel.org>,
-        rafael@kernel.org
-References: <20220921094244.606948-1-daniel.lezcano@linaro.org>
- <20220921094244.606948-6-daniel.lezcano@linaro.org>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20220921094244.606948-6-daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+Clang warns:
 
+  drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c:222:6: error: variable 'ret' is used uninitialized whenever 'if' condition is true [-Werror,-Wsometimes-uninitialized]
+          if (!int34x_thermal_zone->ops)
+              ^~~~~~~~~~~~~~~~~~~~~~~~~
+  drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c:279:17: note: uninitialized use occurs here
+          return ERR_PTR(ret);
+                        ^~~
+  drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c:222:2: note: remove the 'if' if its condition is always false
+          if (!int34x_thermal_zone->ops)
+          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c:211:9: note: initialize the variable 'ret' to silence this warning
+          int ret;
+                ^
+                  = 0
+  1 error generated.
 
-On 9/21/22 10:42, Daniel Lezcano wrote:
-> The governors are using the ops->get_trip_* functions, Replace these
-> calls with thermal_zone_get_trip().
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->   drivers/thermal/gov_bang_bang.c       | 23 +++++-------
->   drivers/thermal/gov_fair_share.c      | 18 ++++------
->   drivers/thermal/gov_power_allocator.c | 51 ++++++++++++---------------
->   drivers/thermal/gov_step_wise.c       | 22 ++++++------
->   4 files changed, 47 insertions(+), 67 deletions(-)
-> 
+If kmemdup() fails, -ENOMEM should be returned.
 
-[snip]
+Fixes: f6f6f9a01374 ("thermal/intel/int340x: Replace parameter to simplify")
+Link: https://github.com/ClangBuiltLinux/linux/issues/1717
+Reported-by: "kernelci.org bot" <bot@kernelci.org>
+Reported-by: "Sudip Mukherjee (Codethink)" <sudipm.mukherjee@gmail.com>
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-> index 2d1aeaba38a8..2ef86ced4c7c 100644
-> --- a/drivers/thermal/gov_power_allocator.c
-> +++ b/drivers/thermal/gov_power_allocator.c
-> @@ -125,16 +125,15 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
->   				   u32 sustainable_power, int trip_switch_on,
->   				   int control_temp)
->   {
-> +	struct thermal_trip trip;
-> +	u32 temperature_threshold = control_temp;
->   	int ret;
-> -	int switch_on_temp;
-> -	u32 temperature_threshold;
->   	s32 k_i;
->   
-> -	ret = tz->ops->get_trip_temp(tz, trip_switch_on, &switch_on_temp);
-> -	if (ret)
-> -		switch_on_temp = 0;
-> +	ret = thermal_zone_get_trip(tz, trip_switch_on, &trip);
-> +	if (!ret)
-> +		temperature_threshold -= trip.temperature;
->   
-> -	temperature_threshold = control_temp - switch_on_temp;
->   	/*
->   	 * estimate_pid_constants() tries to find appropriate default
->   	 * values for thermal zones that don't provide them. If a
-> @@ -520,10 +519,10 @@ static void get_governor_trips(struct thermal_zone_device *tz,
->   	last_passive = INVALID_TRIP;
->   
->   	for (i = 0; i < tz->num_trips; i++) {
-> -		enum thermal_trip_type type;
-> +		struct thermal_trip trip;
->   		int ret;
->   
-> -		ret = tz->ops->get_trip_type(tz, i, &type);
-> +		ret = thermal_zone_get_trip(tz, i, &trip);
->   		if (ret) {
->   			dev_warn(&tz->device,
->   				 "Failed to get trip point %d type: %d\n", i,
-> @@ -531,14 +530,14 @@ static void get_governor_trips(struct thermal_zone_device *tz,
->   			continue;
->   		}
->   
-> -		if (type == THERMAL_TRIP_PASSIVE) {
-> +		if (trip.type == THERMAL_TRIP_PASSIVE) {
->   			if (!found_first_passive) {
->   				params->trip_switch_on = i;
->   				found_first_passive = true;
->   			} else  {
->   				last_passive = i;
->   			}
-> -		} else if (type == THERMAL_TRIP_ACTIVE) {
-> +		} else if (trip.type == THERMAL_TRIP_ACTIVE) {
->   			last_active = i;
->   		} else {
->   			break;
-> @@ -633,7 +632,7 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
->   {
->   	int ret;
->   	struct power_allocator_params *params;
-> -	int control_temp;
-> +	struct thermal_trip trip;
->   
->   	ret = check_power_actors(tz);
->   	if (ret)
-> @@ -659,13 +658,12 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
->   	get_governor_trips(tz, params);
->   
->   	if (tz->num_trips > 0) {
-> -		ret = tz->ops->get_trip_temp(tz,
-> -					params->trip_max_desired_temperature,
-> -					&control_temp);
-> +		ret = thermal_zone_get_trip(tz, params->trip_max_desired_temperature,
-> +					    &trip);
->   		if (!ret)
->   			estimate_pid_constants(tz, tz->tzp->sustainable_power,
->   					       params->trip_switch_on,
-> -					       control_temp);
-> +					       trip.temperature);
->   	}
->   
->   	reset_pid_controller(params);
-> @@ -695,11 +693,11 @@ static void power_allocator_unbind(struct thermal_zone_device *tz)
->   	tz->governor_data = NULL;
->   }
->   
-> -static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
-> +static int power_allocator_throttle(struct thermal_zone_device *tz, int trip_id)
->   {
-> -	int ret;
-> -	int switch_on_temp, control_temp;
->   	struct power_allocator_params *params = tz->governor_data;
-> +	struct thermal_trip trip;
-> +	int ret;
->   	bool update;
->   
->   	lockdep_assert_held(&tz->lock);
-> @@ -708,13 +706,12 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
->   	 * We get called for every trip point but we only need to do
->   	 * our calculations once
->   	 */
-> -	if (trip != params->trip_max_desired_temperature)
-> +	if (trip_id != params->trip_max_desired_temperature)
->   		return 0;
->   
-> -	ret = tz->ops->get_trip_temp(tz, params->trip_switch_on,
-> -				     &switch_on_temp);
-> -	if (!ret && (tz->temperature < switch_on_temp)) {
-> -		update = (tz->last_temperature >= switch_on_temp);
-> +	ret = thermal_zone_get_trip(tz, params->trip_switch_on, &trip);
-> +	if (!ret && (tz->temperature < trip.temperature)) {
-> +		update = (tz->last_temperature >= trip.temperature);
->   		tz->passive = 0;
->   		reset_pid_controller(params);
->   		allow_maximum_power(tz, update);
-> @@ -723,16 +720,14 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
->   
->   	tz->passive = 1;
->   
-> -	ret = tz->ops->get_trip_temp(tz, params->trip_max_desired_temperature,
-> -				&control_temp);
-> +	ret = thermal_zone_get_trip(tz, params->trip_max_desired_temperature, &trip);
->   	if (ret) {
-> -		dev_warn(&tz->device,
-> -			 "Failed to get the maximum desired temperature: %d\n",
-> +		dev_warn(&tz->device, "Failed to get the maximum desired temperature: %d\n",
->   			 ret);
->   		return ret;
->   	}
->   
-> -	return allocate_power(tz, control_temp);
-> +	return allocate_power(tz, trip.temperature);
->   }
->   
->   static struct thermal_governor thermal_gov_power_allocator = {
+diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+index ea05be8c2834..228f44260b27 100644
+--- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
++++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+@@ -219,8 +219,10 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
+ 
+ 	int34x_thermal_zone->ops = kmemdup(&int340x_thermal_zone_ops,
+ 					   sizeof(int340x_thermal_zone_ops), GFP_KERNEL);
+-	if (!int34x_thermal_zone->ops)
++	if (!int34x_thermal_zone->ops) {
++		ret = -ENOMEM;
+ 		goto err_ops_alloc;
++	}
+ 
+ 	if (get_temp)
+ 		int34x_thermal_zone->ops->get_temp = get_temp;
 
-this part of IPA LGTM
+base-commit: 2b109cffe6836f0bb464639cdcc59fc537e3ba41
+-- 
+2.37.3
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
