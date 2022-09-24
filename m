@@ -2,270 +2,79 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D343C04A95
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Sep 2022 22:29:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F9ABC04A95
+	for <linux-pm@archiver.kernel.org>; Sat, 24 Sep 2022 01:03:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232347AbiIWW3z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Sep 2022 18:29:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36802 "EHLO
+        id S232658AbiIXBDj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Sep 2022 21:03:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232473AbiIWW3x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2022 18:29:53 -0400
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0B2E165AF
-        for <linux-pm@vger.kernel.org>; Fri, 23 Sep 2022 15:29:42 -0700 (PDT)
-Received: by mail-ej1-x631.google.com with SMTP id a26so3446117ejc.4
-        for <linux-pm@vger.kernel.org>; Fri, 23 Sep 2022 15:29:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date;
-        bh=oD2UyGyhLaodAMVLZEM0pp92bLbq6IPWrm+arkJI44c=;
-        b=KLocQXZ9DAdhHIGaOzUHK3AoWBRuJqZ6NDAlqDCSh0w1AeBIA0VvwphQmlYYNBWYQR
-         HBvqEgSCK7w+ZHX+RZxD2EQiRjL2H7fhfuVKyTqmKZVDHAHCO499/Ro5Ryz4ubIyjxSK
-         RzPiwmWQdKYQlYqmVnnrEb1gc27Oue3Qo/Z6U=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=oD2UyGyhLaodAMVLZEM0pp92bLbq6IPWrm+arkJI44c=;
-        b=FiXq5lzJmwKT7d8jxxasUqhiKjXtiuBboBuUtUfxmCewaqMVCuflevnun4KXzZqyqe
-         0xmEq9NxDhZR7KebSLaORVKzQP/h2tzoHuS+ep6+Mq3rQrBZisDblkp9uEY1f7imWE29
-         6fJDT4OB0FKHHeLcx22spAgHs8aOdoNbWqWqFJoe3hi6XjB3ou75mWNH9k0czeffuCvP
-         NyLLAqJXhjuQHDIiVDnIWgsHHRb7SxyoYggZvBVRREPElChE9VGpsL0hyqxgKyB67X9d
-         LJU14g4xjocsGsiSQLKCJz/03Drzon0P6ne2xD7Q/abjPUKsAouinvN7Wasp1Rn14Ug0
-         fk5A==
-X-Gm-Message-State: ACrzQf0pDFD2mRRmiPlIUEkBETZMNOpyLd3285ZMR+cvywWx+7u0T7Mc
-        AoUo1lHQYCfsqLbmodwrb9xUSj0XicZqAUQ8jLQ=
-X-Google-Smtp-Source: AMsMyM794ZpRRZtd8lPkxoYiMQ9y7hhzStE5rJNP+rurJCuSSC/EEQ49jYwXhmqtRozZZE63Uu62UA==
-X-Received: by 2002:a17:907:7d8d:b0:781:fd6b:4545 with SMTP id oz13-20020a1709077d8d00b00781fd6b4545mr9289034ejc.117.1663972180885;
-        Fri, 23 Sep 2022 15:29:40 -0700 (PDT)
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com. [209.85.218.43])
-        by smtp.gmail.com with ESMTPSA id h39-20020a0564020ea700b00456c6b4b777sm1640512eda.69.2022.09.23.15.29.40
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 23 Sep 2022 15:29:40 -0700 (PDT)
-Received: by mail-ej1-f43.google.com with SMTP id lh5so3376896ejb.10
-        for <linux-pm@vger.kernel.org>; Fri, 23 Sep 2022 15:29:40 -0700 (PDT)
-X-Received: by 2002:a5d:5c08:0:b0:228:e139:43f3 with SMTP id
- cc8-20020a5d5c08000000b00228e13943f3mr6607580wrb.396.1663971834264; Fri, 23
- Sep 2022 15:23:54 -0700 (PDT)
+        with ESMTP id S232906AbiIXBD3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2022 21:03:29 -0400
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 790AF124C15;
+        Fri, 23 Sep 2022 18:03:27 -0700 (PDT)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MZ9dp3KhhzWgp2;
+        Sat, 24 Sep 2022 08:59:26 +0800 (CST)
+Received: from kwepemm600008.china.huawei.com (7.193.23.88) by
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Sat, 24 Sep 2022 09:03:25 +0800
+Received: from [10.174.176.230] (10.174.176.230) by
+ kwepemm600008.china.huawei.com (7.193.23.88) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Sat, 24 Sep 2022 09:03:25 +0800
+Message-ID: <6427434e-9740-c329-5efc-86d800d57c1e@huawei.com>
+Date:   Sat, 24 Sep 2022 09:03:24 +0800
 MIME-Version: 1.0
-References: <20220823222526.1524851-1-evgreen@chromium.org>
- <20220823152108.v2.5.I6cdb522cb5ea28fcd1e35b4cd92cbd067f99269a@changeid> <202209201605.505F96D@keescook>
-In-Reply-To: <202209201605.505F96D@keescook>
-From:   Evan Green <evgreen@chromium.org>
-Date:   Fri, 23 Sep 2022 15:23:17 -0700
-X-Gmail-Original-Message-ID: <CAE=gft6wO0Hv+dgQG_xcPdQTCQxtBeJNo94hqivdO8rxvXjbbg@mail.gmail.com>
-Message-ID: <CAE=gft6wO0Hv+dgQG_xcPdQTCQxtBeJNo94hqivdO8rxvXjbbg@mail.gmail.com>
-Subject: Re: [PATCH v2 05/10] security: keys: trusted: Verify creation data
-To:     Kees Cook <keescook@chromium.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Gwendal Grignou <gwendal@chromium.org>,
-        Eric Biggers <ebiggers@kernel.org>,
-        Matthew Garrett <mgarrett@aurora.tech>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Mimi Zohar <zohar@linux.ibm.com>,
-        linux-integrity@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-        apronin@chromium.org, Daniil Lunev <dlunev@google.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        David Howells <dhowells@redhat.com>,
-        Hao Wu <hao.wu@rubrik.com>, James Morris <jmorris@namei.org>,
-        Matthew Garrett <matthewgarrett@google.com>,
-        Paul Moore <paul@paul-moore.com>,
-        "Serge E. Hallyn" <serge@hallyn.com>, axelj <axelj@axis.com>,
-        keyrings@vger.kernel.org, linux-security-module@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.1.0
+Subject: Re: [PATCH -next] interconnect: qcom: icc-rpm: Remove redundant
+ dev_err call
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        <agross@kernel.org>, <andersson@kernel.org>,
+        <konrad.dybcio@somainline.org>, <djakov@kernel.org>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>
+References: <20220923100529.17107-1-shangxiaojing@huawei.com>
+ <984929bf-8dfd-d6d4-2e23-f7d9a1f87a18@linaro.org>
+From:   shangxiaojing <shangxiaojing@huawei.com>
+In-Reply-To: <984929bf-8dfd-d6d4-2e23-f7d9a1f87a18@linaro.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.174.176.230]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ kwepemm600008.china.huawei.com (7.193.23.88)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 20, 2022 at 4:07 PM Kees Cook <keescook@chromium.org> wrote:
->
-> On Tue, Aug 23, 2022 at 03:25:21PM -0700, Evan Green wrote:
-> > If a loaded key contains creation data, ask the TPM to verify that
-> > creation data. This allows users like encrypted hibernate to know that
-> > the loaded and parsed creation data has not been tampered with.
-> >
-> > Partially-sourced-from: Matthew Garrett <mjg59@google.com>
-> > Signed-off-by: Evan Green <evgreen@chromium.org>
-> >
-> > ---
-> > Source material for this change is at:
-> > https://patchwork.kernel.org/project/linux-pm/patch/20210220013255.1083=
-202-9-matthewgarrett@google.com/
-> >
-> > Changes in v2:
-> >  - Adjust hash len by 2 due to new ASN.1 storage, and add underflow
-> >    check.
-> >
-> >  include/linux/tpm.h                       |  1 +
-> >  security/keys/trusted-keys/trusted_tpm2.c | 77 ++++++++++++++++++++++-
-> >  2 files changed, 77 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/include/linux/tpm.h b/include/linux/tpm.h
-> > index 8320cbac6f4009..438f8bc0a50582 100644
-> > --- a/include/linux/tpm.h
-> > +++ b/include/linux/tpm.h
-> > @@ -224,6 +224,7 @@ enum tpm2_command_codes {
-> >       TPM2_CC_SELF_TEST               =3D 0x0143,
-> >       TPM2_CC_STARTUP                 =3D 0x0144,
-> >       TPM2_CC_SHUTDOWN                =3D 0x0145,
-> > +     TPM2_CC_CERTIFYCREATION         =3D 0x014A,
-> >       TPM2_CC_NV_READ                 =3D 0x014E,
-> >       TPM2_CC_CREATE                  =3D 0x0153,
-> >       TPM2_CC_LOAD                    =3D 0x0157,
-> > diff --git a/security/keys/trusted-keys/trusted_tpm2.c b/security/keys/=
-trusted-keys/trusted_tpm2.c
-> > index 1d1470b880ca01..f81c6578c7f783 100644
-> > --- a/security/keys/trusted-keys/trusted_tpm2.c
-> > +++ b/security/keys/trusted-keys/trusted_tpm2.c
-> > @@ -691,6 +691,74 @@ static int tpm2_unseal_cmd(struct tpm_chip *chip,
-> >       return rc;
-> >  }
-> >
-> > +/**
-> > + * tpm2_certify_creation() - execute a TPM2_CertifyCreation command
-> > + *
-> > + * @chip: TPM chip to use
-> > + * @payload: the key data in clear and encrypted form
-> > + * @blob_handle: the loaded TPM handle of the key
-> > + *
-> > + * Return: 0 on success
-> > + *         -EINVAL on tpm error status
-> > + *         < 0 error from tpm_send or tpm_buf_init
-> > + */
-> > +static int tpm2_certify_creation(struct tpm_chip *chip,
-> > +                              struct trusted_key_payload *payload,
-> > +                              u32 blob_handle)
-> > +{
-> > +     struct tpm_header *head;
-> > +     struct tpm_buf buf;
-> > +     int rc;
-> > +
-> > +     rc =3D tpm_buf_init(&buf, TPM2_ST_SESSIONS, TPM2_CC_CERTIFYCREATI=
-ON);
-> > +     if (rc)
-> > +             return rc;
-> > +
-> > +     /* Use TPM_RH_NULL for signHandle */
-> > +     tpm_buf_append_u32(&buf, 0x40000007);
-> > +
-> > +     /* Object handle */
-> > +     tpm_buf_append_u32(&buf, blob_handle);
-> > +
-> > +     /* Auth */
-> > +     tpm_buf_append_u32(&buf, 9);
-> > +     tpm_buf_append_u32(&buf, TPM2_RS_PW);
-> > +     tpm_buf_append_u16(&buf, 0);
-> > +     tpm_buf_append_u8(&buf, 0);
-> > +     tpm_buf_append_u16(&buf, 0);
-> > +
-> > +     /* Qualifying data */
-> > +     tpm_buf_append_u16(&buf, 0);
-> > +
-> > +     /* Creation data hash */
-> > +     if (payload->creation_hash_len < 2) {
-> > +             rc =3D -EINVAL;
-> > +             goto out;
-> > +     }
-> > +
-> > +     tpm_buf_append_u16(&buf, payload->creation_hash_len - 2);
-> > +     tpm_buf_append(&buf, payload->creation_hash + 2,
-> > +                    payload->creation_hash_len - 2);
-> > +
-> > +     /* signature scheme */
-> > +     tpm_buf_append_u16(&buf, TPM_ALG_NULL);
-> > +
-> > +     /* creation ticket */
-> > +     tpm_buf_append(&buf, payload->tk, payload->tk_len);
-> > +
-> > +     rc =3D tpm_transmit_cmd(chip, &buf, 6, "certifying creation data"=
-);
-> > +     if (rc)
-> > +             goto out;
-> > +
-> > +     head =3D (struct tpm_header *)buf.data;
-> > +
-> > +     if (head->return_code !=3D 0)
-> > +             rc =3D -EINVAL;
->
-> Do you have a reference to this TPM command spec? I have a dim memory of
-> some of these commands having success/failure listed separately from
-> other things in the reply. Is that true here? (i.e. is the return_code
-> only about "yes I replied" and there is a missing "but the answer is no"
-> check?)
 
-Here's the link to the volumes:
-https://trustedcomputinggroup.org/resource/tpm-library-specification/
+On 2022/9/24 3:20, Krzysztof Kozlowski wrote:
+> On 23/09/2022 12:05, Shang XiaoJing wrote:
+>> devm_ioremap_resource() prints error message in itself. Remove the
+>> dev_err call to avoid redundant error message.
+>>
+>> Signed-off-by: Shang XiaoJing <shangxiaojing@huawei.com>
+>> ---
+>>   drivers/interconnect/qcom/icc-rpm.c | 4 +---
+>>   1 file changed, 1 insertion(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+>> index 39e43b957599..b808805557f1 100644
+>> --- a/drivers/interconnect/qcom/icc-rpm.c
+>> +++ b/drivers/interconnect/qcom/icc-rpm.c
+>> @@ -478,10 +478,8 @@ int qnoc_probe(struct platform_device *pdev)
+>>   
+>>   		mmio = devm_ioremap_resource(dev, res);
+>>   
+> Drop this empty line as well, please.
 
-The description for TPM2_CertifyCreation in part 3 says this:
-```
-This command is used to prove the association between an object and
-its creation data. The TPM will
-validate that the ticket was produced by the TPM and that the ticket
-validates the association between a
-loaded public area and the provided hash of the creation data (creationHash=
-).
-NOTE 1 See 18.1 for description of how the signing scheme is selected.
-The TPM will create a test ticket using the Name associated with
-objectHandle and creationHash as:
-HMAC(proof, (TPM_ST_CREATION || objectHandle=E2=86=92Name || creationHash))=
- (4)
-This ticket is then compared to creation ticket. If the tickets are
-not the same, the TPM shall return
-TPM_RC_TICKET.
-If the ticket is valid, then the TPM will create a TPMS_ATTEST
-structure and place creationHash of the
-command in the creationHash field of the structure. The Name
-associated with objectHandle will be
-included in the attestation data that is then signed using the key
-associated with signHandle.
-```
-
-So my aim there was to check responseCode in the response, and as long
-as it's success and not RC_TICKET I should be ok. Though I see now
-from other examples I should have used
-(be32_to_cpu(header->return_code) !=3D TPM2_RC_SUCCESS). I will change
-that.
+thanks for the review, will fix in v2.
 
 
->
-> > +out:
-> > +     tpm_buf_destroy(&buf);
-> > +     return rc;
-> > +}
-> > +
-> >  /**
-> >   * tpm2_unseal_trusted() - unseal the payload of a trusted key
-> >   *
-> > @@ -716,8 +784,15 @@ int tpm2_unseal_trusted(struct tpm_chip *chip,
-> >               goto out;
-> >
-> >       rc =3D tpm2_unseal_cmd(chip, payload, options, blob_handle);
-> > -     tpm2_flush_context(chip, blob_handle);
-> > +     if (rc)
-> > +             goto flush;
-> > +
-> > +     if (payload->creation_len)
-> > +             rc =3D tpm2_certify_creation(chip, payload, blob_handle);
-> >
-> > +
-> > +flush:
-> > +     tpm2_flush_context(chip, blob_handle);
-> >  out:
-> >       tpm_put_ops(chip);
-> >
-> > --
-> > 2.31.0
-> >
->
-> Otherwise looks good to me. :)
->
-> --
-> Kees Cook
+Thanks,
+
+Shang XiaoJing
+
