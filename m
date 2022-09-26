@@ -2,122 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1013C32771
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Sep 2022 13:46:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8E3FC6FA86
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Sep 2022 13:55:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235745AbiIZNqh convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Sep 2022 09:46:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49834 "EHLO
+        id S230198AbiIZNzE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Sep 2022 09:55:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59972 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235777AbiIZNqI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2022 09:46:08 -0400
-Received: from mail-qv1-f46.google.com (mail-qv1-f46.google.com [209.85.219.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B26411F0CD4;
-        Mon, 26 Sep 2022 05:03:23 -0700 (PDT)
-Received: by mail-qv1-f46.google.com with SMTP id m9so4137712qvv.7;
-        Mon, 26 Sep 2022 05:03:23 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=SaeGFfTOoYPPNMnDMlSqLUlQsRoQlvLTy6YqET7HCeQ=;
-        b=tVZ+dHO+9vi/KXX/yMNb4hivLzik4c+Zdh+NgF3XV4PR8vtiMrya4u1A1SFhrnOm0P
-         rl0hzunKSTcp7yyfZeKEm50QfVlN66m5OMLpvQ9cDQv/WKvZ4iVkTV64FKXqULezmX5T
-         I2aY4h7579ZQ1nSFnMYvltHw/9wKHXao8TkLe87bfRlISk23b5NCgq+EZIiYv42ad5vE
-         /x3v2z3C/BAjmv1RtmTjeZFWJpg5ss4kH1ioc8UPCH0luuMB1WStrEKBREtTJVrXrSXx
-         FxXXwOF2gBhUX0z7TO6RzThF6I/wNDArRtcsiN87lIDn+NtcTaxTd4VeP65lbfBL6gAV
-         Hb8w==
-X-Gm-Message-State: ACrzQf1yJ3lnsdH0hni5i7cMOV0ZAVSPDsI5CgR8505eS2c9aJwpFk85
-        sXS7rCGlrfQdv1Syg9Z6REJSDoniumUZSVS32qerVwbT
-X-Google-Smtp-Source: AMsMyM7/fFwX9VyxYZBF5kTQMWkB4s/aTj3Dt6xogSwXwU4bik1xBNV8nUoQtyRHkI1PG6IPewSYERRcxTWdQvM04Y8=
-X-Received: by 2002:a05:6214:d8d:b0:4ad:5d9d:bda8 with SMTP id
- e13-20020a0562140d8d00b004ad5d9dbda8mr16614066qve.85.1664193664353; Mon, 26
- Sep 2022 05:01:04 -0700 (PDT)
+        with ESMTP id S235122AbiIZNyd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2022 09:54:33 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 786A580519;
+        Mon, 26 Sep 2022 05:10:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=jOpbznQq1TexzS0cQB6vYt4+4yFj1cmjMb21VcAwnhk=; b=o/sYytLUDM+Vd1vccnhn2XqfHV
+        f6OSdgpiDrbeBWn8ZBEegKKdGzSsdwYXq/KS4EW87EJEVH6wuwN43+curv1WaQ0azzbam0Dr2VfVN
+        YhAtSfbpdw1CQ+SzSUULHaUQuwDS6IC3C/y5016A986PdHReO8D/CxioWTwqR0J+zBlHQOq+2YfNG
+        ck+0O9CPWYGxjYlABBytMWWeBPmD05YWVZsD4PtSA0be5/ZOwBQ4mtwpz6viZn/g8qM3vlUx6NN9y
+        2vG+hDLF/JkAntNvRO8SbIoPSZfGrysx+j61m5RbpTw1aNkY9W6K+5HfeovazTCiUrD8XZIu6Hivg
+        kAonF4JA==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1ocmu1-00AQi8-8Q; Mon, 26 Sep 2022 12:08:01 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A6FEE3015B5;
+        Mon, 26 Sep 2022 14:07:56 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 8FC5429A13691; Mon, 26 Sep 2022 14:07:56 +0200 (CEST)
+Date:   Mon, 26 Sep 2022 14:07:56 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     K Prateek Nayak <kprateek.nayak@amd.com>
+Cc:     linux-kernel@vger.kernel.org, rafael@kernel.org, lenb@kernel.org,
+        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+        dave.hansen@linux.intel.com, bp@alien8.de, tglx@linutronix.de,
+        andi@lisas.de, puwen@hygon.cn, mario.limonciello@amd.com,
+        rui.zhang@intel.com, gpiccoli@igalia.com,
+        daniel.lezcano@linaro.org, ananth.narayan@amd.com,
+        gautham.shenoy@amd.com, Calvin Ong <calvin.ong@amd.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        stable@vger.kernel.org
+Subject: Re: [PATCH v2] x86,acpi: Limit "Dummy wait" workaround to older AMD
+ and Intel processors
+Message-ID: <YzGWHMIsD7RBhEP+@hirez.programming.kicks-ass.net>
+References: <20220923153801.9167-1-kprateek.nayak@amd.com>
 MIME-Version: 1.0
-References: <20220808174107.38676-1-paul@crapouillou.net> <20220808174107.38676-2-paul@crapouillou.net>
- <CAJZ5v0h3hf06xQsJGOfOyGbD470jyxkPNuaHP+E-pvXbS6Egxg@mail.gmail.com>
- <HF07HR.3A0DTIDT17IF1@crapouillou.net> <20220925155239.7a37c19a@jic23-huawei>
-In-Reply-To: <20220925155239.7a37c19a@jic23-huawei>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 26 Sep 2022 14:00:52 +0200
-Message-ID: <CAJZ5v0igQL_766obp2csNCg7b0g3g2+gkuqZXjUNL7Jj9Da7zQ@mail.gmail.com>
-Subject: Re: [PATCH v2 01/30] pm: Improve EXPORT_*_DEV_PM_OPS macros
-To:     Jonathan Cameron <jic23@kernel.org>
-Cc:     Paul Cercueil <paul@crapouillou.net>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-pm <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220923153801.9167-1-kprateek.nayak@amd.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Sep 25, 2022 at 4:52 PM Jonathan Cameron <jic23@kernel.org> wrote:
->
-> On Thu, 25 Aug 2022 23:42:53 +0100
-> Paul Cercueil <paul@crapouillou.net> wrote:
->
-> > Hi Rafael,
-> >
-> > Le mar., août 23 2022 at 19:47:57 +0200, Rafael J. Wysocki
-> > <rafael@kernel.org> a écrit :
-> > > On Mon, Aug 8, 2022 at 7:41 PM Paul Cercueil <paul@crapouillou.net>
-> > > wrote:
-> > >>
-> > >>  Update the _EXPORT_DEV_PM_OPS() internal macro. It was not used
-> > >> anywhere
-> > >>  outside pm.h and pm_runtime.h, so it is safe to update it.
-> > >>
-> > >>  Before, this macro would take a few parameters to be used as sleep
-> > >> and
-> > >>  runtime callbacks. This made it unsuitable to use with different
-> > >>  callbacks, for instance the "noirq" ones.
-> > >>
-> > >>  It is now semantically different: instead of creating a
-> > >> conditionally
-> > >>  exported dev_pm_ops structure, it only contains part of the
-> > >> definition.
-> > >>
-> > >>  This macro should however never be used directly (hence the trailing
-> > >>  underscore). Instead, the following four macros are provided:
-> > >>  - EXPORT_DEV_PM_OPS(name)
-> > >>  - EXPORT_GPL_DEV_PM_OPS(name)
-> > >>  - EXPORT_NS_DEV_PM_OPS(name, ns)
-> > >>  - EXPORT_NS_GPL_DEV_PM_OPS(name, ns)
-> > >>
-> > >>  For instance, it is now possible to conditionally export noirq
-> > >>  suspend/resume PM functions like this:
-> > >>
-> > >>  EXPORT_GPL_DEV_PM_OPS(foo_pm_ops) = {
-> > >>      NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-> > >>  };
-> > >>
-> > >>  The existing helper macros EXPORT_*_SIMPLE_DEV_PM_OPS() and
-> > >>  EXPORT_*_RUNTIME_DEV_PM_OPS() have been updated to use these new
-> > >> macros.
-> > >>
-> > >>  Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> > >
-> > > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > or please let me know if you need me to pick up this one.
-> >
-> > Could you pick this one up then, and make a branch for Jonathan?
->
-> Hi Paul, Rafael,
->
-> What happened to this in the end?  I can't immediately find it on
-> any of the pm git tree branches.
->
-> At this stage in the cycle it would be great if this patch at least
-> makes the merge window, so we can make use of it next cycle.
+On Fri, Sep 23, 2022 at 09:08:01PM +0530, K Prateek Nayak wrote:
+> diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+> index ef4775c6db01..fcd3617ed315 100644
+> --- a/arch/x86/include/asm/cpufeatures.h
+> +++ b/arch/x86/include/asm/cpufeatures.h
+> @@ -460,5 +460,6 @@
+>  #define X86_BUG_MMIO_UNKNOWN		X86_BUG(26) /* CPU is too old and its MMIO Stale Data status is unknown */
+>  #define X86_BUG_RETBLEED		X86_BUG(27) /* CPU is affected by RETBleed */
+>  #define X86_BUG_EIBRS_PBRSB		X86_BUG(28) /* EIBRS is vulnerable to Post Barrier RSB Predictions */
+> +#define X86_BUG_STPCLK			X86_BUG(29) /* STPCLK# signal does not get asserted in time during IOPORT based C-state entry */
+>  
+>  #endif /* _ASM_X86_CPUFEATURES_H */
+> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+> index 48276c0e479d..8cb5887a53a3 100644
+> --- a/arch/x86/kernel/cpu/amd.c
+> +++ b/arch/x86/kernel/cpu/amd.c
+> @@ -988,6 +988,18 @@ static void init_amd(struct cpuinfo_x86 *c)
+>  	if (!cpu_has(c, X86_FEATURE_XENPV))
+>  		set_cpu_bug(c, X86_BUG_SYSRET_SS_ATTRS);
+>  
+> +	/*
+> +	 * CPUs based on the Zen microarchitecture (Fam 17h onward) can
+> +	 * guarantee that STPCLK# signal is asserted in time after the
+> +	 * P_LVL2 read to freeze execution after an IOPORT based C-state
+> +	 * entry. Among the older AMD processors, there has been at least
+> +	 * one report of an AMD Athlon processor on a VIA chipset
+> +	 * (circa 2006) having this issue. Mark all these older AMD
+> +	 * processor families as being affected.
+> +	 */
+> +	if (c->x86 < 0x17)
+> +		set_cpu_bug(c, X86_BUG_STPCLK);
+> +
+>  	/*
+>  	 * Turn on the Instructions Retired free counter on machines not
+>  	 * susceptible to erratum #1054 "Instructions Retired Performance
+> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+> index 2d7ea5480ec3..96fe1320c238 100644
+> --- a/arch/x86/kernel/cpu/intel.c
+> +++ b/arch/x86/kernel/cpu/intel.c
+> @@ -696,6 +696,18 @@ static void init_intel(struct cpuinfo_x86 *c)
+>  		((c->x86_model == INTEL_FAM6_ATOM_GOLDMONT)))
+>  		set_cpu_bug(c, X86_BUG_MONITOR);
+>  
+> +	/*
+> +	 * Intel chipsets prior to Nehalem used the ACPI processor_idle
+> +	 * driver for C-state management. Some of these processors that
+> +	 * used IOPORT based C-states could not guarantee that STPCLK#
+> +	 * signal gets asserted in time after P_LVL2 read to freeze
+> +	 * execution properly. Since a clear cut-off point is not known
+> +	 * as to when this bug was solved, mark all the chipsets as
+> +	 * being affected. Only the ones that use IOPORT based C-state
+> +	 * transitions via the acpi_idle driver will be impacted.
+> +	 */
+> +	set_cpu_bug(c, X86_BUG_STPCLK);
+> +
+>  #ifdef CONFIG_X86_64
+>  	if (c->x86 == 15)
+>  		c->x86_cache_alignment = c->x86_clflush_size * 2;
 
-I thought that this would go in along with the other patches in the series.
+Quiz time:
 
-I can apply it directly, though, if needed.
+  #define X86_VENDOR_INTEL       0
+  #define X86_VENDOR_CYRIX       1
+  #define X86_VENDOR_AMD         2
+  #define X86_VENDOR_UMC         3
+  #define X86_VENDOR_CENTAUR     5
+  #define X86_VENDOR_TRANSMETA   7
+  #define X86_VENDOR_NSC         8
+  #define X86_VENDOR_HYGON       9
+  #define X86_VENDOR_ZHAOXIN     10
+  #define X86_VENDOR_VORTEX      11
+  #define X86_VENDOR_NUM         12
+  #define X86_VENDOR_UNKNOWN     0xff
 
-Thanks!
+For how many of the above have you changed behaviour?
+
+Not to mention that this is the gazillion-th time AMD has failed to
+change HYGON in lock-step. That's Zen too -- deal with it.
