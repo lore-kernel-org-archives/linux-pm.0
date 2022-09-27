@@ -2,87 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A84E3C07E9D
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Sep 2022 23:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8022BC07E9D
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Sep 2022 01:40:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229789AbiIZXCn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Sep 2022 19:02:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34016 "EHLO
+        id S229447AbiI0BkN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Sep 2022 21:40:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48180 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229615AbiIZXCl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2022 19:02:41 -0400
-Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1629A720A;
-        Mon, 26 Sep 2022 16:02:39 -0700 (PDT)
-Received: by mail-ot1-f54.google.com with SMTP id br15-20020a056830390f00b0061c9d73b8bdso5388421otb.6;
-        Mon, 26 Sep 2022 16:02:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
-        bh=TmS5+X4pLYVYH89RFG+N2VbfzYq4t5hSiusvv4Jlq5I=;
-        b=QR7l/2MmHkaT0SUzKijCLrD9ngRyW/htGUD1Kg5lZGTZFkYoSP2GA83+nxcHeWgHYF
-         SMVCVsTtqC232kJGq6aAwBzKsUQ6U8UVxs+XpdCtvFF9OQeu1d4szJG5zZtXXDmUlmGv
-         j0vsgqZPU2jZX8wsYbxXDwRsNqH2rK8xodHPS/JKJ2po0FyR2QSM9/t+zfLKHL9h1iQl
-         /8YtD5LEJTE6ZNg/C10o5K2LUAZHKWR+NpuNz06wUemdh2CYLminvddi+U5DQdOdOhXE
-         PKn87KOzC5kAjh1Z4NMSnGFiJ0mLLE7AuSOy9AQHLGvomVfFQlHwp5JOfAGQMNi+F/Ub
-         rBsg==
-X-Gm-Message-State: ACrzQf3BnBFD3cfDz4ay+2uHEvTQwliyuii1GLjamhkeji3kQ5QSPNea
-        vjm/leSDuQrxs5UcV0LkIA==
-X-Google-Smtp-Source: AMsMyM64gmuEGrnM1z+5TQNLgzvx4Cn9fhx9QC2j1LdnTPhHdfqmycio7t54+hj8gvjrM9lGXLXWAg==
-X-Received: by 2002:a05:6830:13d0:b0:655:cad8:e57 with SMTP id e16-20020a05683013d000b00655cad80e57mr11115841otq.156.1664233358887;
-        Mon, 26 Sep 2022 16:02:38 -0700 (PDT)
-Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id k67-20020a9d19c9000000b006396521c804sm8382105otk.55.2022.09.26.16.02.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Sep 2022 16:02:38 -0700 (PDT)
-Received: (nullmailer pid 3128731 invoked by uid 1000);
-        Mon, 26 Sep 2022 23:02:37 -0000
-Date:   Mon, 26 Sep 2022 18:02:37 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org,
+        with ESMTP id S229488AbiI0BkM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2022 21:40:12 -0400
+Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8BF58B2A;
+        Mon, 26 Sep 2022 18:40:09 -0700 (PDT)
+Received: from localhost.localdomain (unknown [10.180.13.64])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxT+BqVDJjmYUiAA--.64486S3;
+        Tue, 27 Sep 2022 09:40:00 +0800 (CST)
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
-Subject: Re: [PATCH v2] dt-bindings: power: reset: restart-handler: add
- common schema
-Message-ID: <20220926230237.GA3128685-robh@kernel.org>
-References: <20220923203603.515714-1-krzysztof.kozlowski@linaro.org>
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     zhanghongchen <zhanghongchen@loongson.cn>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>
+Subject: [PATCH v3 2/3] dt-bindings: thermal: add loongson2 thermal binding
+Date:   Tue, 27 Sep 2022 09:39:50 +0800
+Message-Id: <20220927013951.12833-2-zhuyinbo@loongson.cn>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20220927013951.12833-1-zhuyinbo@loongson.cn>
+References: <20220927013951.12833-1-zhuyinbo@loongson.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220923203603.515714-1-krzysztof.kozlowski@linaro.org>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8CxT+BqVDJjmYUiAA--.64486S3
+X-Coremail-Antispam: 1UD129KBjvJXoW7Ar4xGFyrZw15GFWktF15CFg_yoW8Cr17pF
+        43Cw1UGr4vgF17Za9xGFy8Ars0yasYya9rXrs7Gw1rKr95Ga4Sq3y3KF1UX3yxCr1DKFy7
+        uFyv9rWUC3WDG3DanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDU0xBIdaVrnRJUUUPC14x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+        rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_Jr4l82xGYIkIc2
+        x26xkF7I0E14v26r4j6ryUM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2z4x0
+        Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j6F4UJw
+        A2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4UJVWx
+        Jr1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2I
+        x0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8
+        JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2
+        ka0xkIwI1lc2xSY4AK6svPMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4U
+        MI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67
+        AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0
+        cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z2
+        80aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI
+        43ZEXa7VUjeWlDUUUUU==
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 23 Sep 2022 22:36:03 +0200, Krzysztof Kozlowski wrote:
-> Add common schema for restart and shutdown handlers, so they all use
-> same meaning of "priority" field.  The Linux drivers already have this
-> property and some systems want to customize it per-board in DTS.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> 
-> ---
-> 
-> Changes since v1:
-> 1. Use double ':'
-> 
-> v1 was marked as changes-requested in Rob's patchwork, but I think there
-> was not actual consensus on any other changes to make.
-> 
-> v1:
-> https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20220907123630.57383-1-krzysztof.kozlowski@linaro.org/
-> 
-> See also:
-> https://lore.kernel.org/all/8fe93da3-f768-16ae-7025-1cfa97a42b27@linaro.org/
-> https://lore.kernel.org/all/20220831081715.14673-1-pali@kernel.org/
-> ---
->  .../bindings/power/reset/gpio-restart.yaml    | 13 ++------
->  .../bindings/power/reset/restart-handler.yaml | 30 +++++++++++++++++++
->  2 files changed, 33 insertions(+), 10 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/restart-handler.yaml
-> 
+Add the loongson2 thermal binding with DT schema format using
+json-schema.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+---
+Change in v3:
+		1. Remove the sensor id.
+		2. Remove the interrupt-parent in thermal required property.
+		3. Update the thermal binding file name.
+		4. Fixup the commit log information.
+
+ .../thermal/loongson,loongson2-thermal.yaml   | 42 +++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/loongson,loongson2-thermal.yaml
+
+diff --git a/Documentation/devicetree/bindings/thermal/loongson,loongson2-thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,loongson2-thermal.yaml
+new file mode 100644
+index 000000000000..65a10a7390a7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/loongson,loongson2-thermal.yaml
+@@ -0,0 +1,42 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/loongson2-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Thermal sensors on loongson2 SoCs
++
++maintainers:
++  - zhanghongchen <zhanghongchen@loongson.cn>
++  - Yinbo Zhu <zhuyinbo@loongson.cn>
++
++properties:
++  compatible:
++    const: loongson,loongson2-thermal
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  "#thermal-sensor-cells":
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - '#thermal-sensor-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    thermal: thermal-sensor@1fe01500 {
++        compatible = "loongson,loongson2-thermal";
++        reg = <0 0x1fe01500 0 0x30>;
++        interrupt-parent = <&liointc0>;
++        interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
++        #thermal-sensor-cells = <1>;
++    };
+-- 
+2.31.1
+
