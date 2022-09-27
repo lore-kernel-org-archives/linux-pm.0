@@ -2,77 +2,121 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68EF2C6FA83
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Sep 2022 15:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73D90C07E9D
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Sep 2022 15:54:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230337AbiI0PYR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Sep 2022 11:24:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50890 "EHLO
+        id S231739AbiI0PyI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Sep 2022 11:54:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35278 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229890AbiI0PYQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2022 11:24:16 -0400
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DDBB1616CD
-        for <linux-pm@vger.kernel.org>; Tue, 27 Sep 2022 08:24:16 -0700 (PDT)
-Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.55])
-        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4McNcn4S7VzpTgj;
-        Tue, 27 Sep 2022 23:21:13 +0800 (CST)
-Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
- dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Tue, 27 Sep 2022 23:24:08 +0800
-Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
- (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Tue, 27 Sep
- 2022 23:24:08 +0800
-From:   Yang Yingliang <yangyingliang@huawei.com>
-To:     <linux-pm@vger.kernel.org>
-CC:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
-        <yangyingliang@huawei.com>
-Subject: [PATCH -next 1/4] cpufreq: dt: Switch to use dev_err_probe() helper
-Date:   Tue, 27 Sep 2022 23:40:18 +0800
-Message-ID: <20220927154021.816570-2-yangyingliang@huawei.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220927154021.816570-1-yangyingliang@huawei.com>
-References: <20220927154021.816570-1-yangyingliang@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.175.103.91]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- dggpemm500007.china.huawei.com (7.185.36.183)
-X-CFilter-Loop: Reflected
+        with ESMTP id S229472AbiI0Pxh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2022 11:53:37 -0400
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A06A2FF3E2;
+        Tue, 27 Sep 2022 08:53:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1664294010; x=1695830010;
+  h=from:to:cc:subject:date:message-id;
+  bh=/nxN0okOGZiwmsrSNCONXjNxH/jms7oatin6pcoG7eQ=;
+  b=AuatI+AVhdos4uijr/bpWNBa1xYcJ3JC5Kck/YKM2BBmkOfcvFnJm9fK
+   kkqIpqDuKhYntpFPvtOZloAnLTougV8SKcY+Y9H/X35JUTemTfOGDukDh
+   W4GKSQhQdS2XY+vHJxZqI6M6zs01FWuhCGl+1AYoyoPJX6YiTwp/NuaeF
+   rVyk6GaloYNE/nybBoAZbGbJZFxby8C4Sq9RfzeffdI4peHUchvtKvMtN
+   QFbt7oiAqzvZA+VY/IvvgHA8vA4LZBkXcXwkL84ViEXGa3oVrSrY4JLHc
+   dn5ZOw0M1I6wpyR31m2Mzoyz/ThdG9IWqudykCMB9hLTTqE4pW1Nt9pHR
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10483"; a="365395800"
+X-IronPort-AV: E=Sophos;i="5.93,349,1654585200"; 
+   d="scan'208";a="365395800"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Sep 2022 08:53:29 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10483"; a="950335547"
+X-IronPort-AV: E=Sophos;i="5.93,349,1654585200"; 
+   d="scan'208";a="950335547"
+Received: from srpawnik.iind.intel.com ([10.99.123.68])
+  by fmsmga005.fm.intel.com with ESMTP; 27 Sep 2022 08:53:27 -0700
+From:   Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+To:     rafael@kernel.org, srinivas.pandruvada@linux.intel.com,
+        rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     andriy.shevchenko@linux.intel.com, sumeet.r.pawnikar@intel.com
+Subject: [PATCH] thermal: Increase maximum number of trip points
+Date:   Tue, 27 Sep 2022 21:17:09 +0530
+Message-Id: <20220927154709.5479-1-sumeet.r.pawnikar@intel.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In the probe path, dev_err() can be replaced with dev_err_probe()
-which will check if error code is -EPROBE_DEFER and prints the
-error name. It also sets the defer probe reason which can be
-checked later through debugfs. It's more simple in error path.
+On one of the Chrome system, if we define more than 12 trip points,
+probe for thermal sensor fails with
+"int3403 thermal: probe of INTC1046:03 failed with error -22"
+and throws an error as
+"thermal_sys: Error: Incorrect number of thermal trips".
 
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+The thermal_zone_device_register() interface needs maximum
+number of trip points supported in a zone as an argument.
+This number can't exceed THERMAL_MAX_TRIPS, which is currently
+set to 12. To address this issue, THERMAL_MAX_TRIPS value
+has to be increased.
+
+This interface also has an argument to specify a mask of trips
+which are writable. This mask is defined as an int.
+This mask sets the ceiling for increasing maximum number of
+supported trips. With the current implementation, maximum number
+of trips can be supported is 31.
+
+Also, THERMAL_MAX_TRIPS macro is used in one place only.
+So, remove THERMAL_MAX_TRIPS macro and compare num_trips
+directly with using a macro BITS_PER_TYPE(int)-1.
+
+Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
 ---
- drivers/cpufreq/cpufreq-dt.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/thermal/thermal_core.c | 15 ++++++++++++++-
+ include/linux/thermal.h        |  2 --
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index d69d13a26414..4aec4b2a5225 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -222,10 +222,8 @@ static int dt_cpufreq_early_init(struct device *dev, int cpu)
- 	if (reg_name[0]) {
- 		priv->opp_token = dev_pm_opp_set_regulators(cpu_dev, reg_name);
- 		if (priv->opp_token < 0) {
--			ret = priv->opp_token;
--			if (ret != -EPROBE_DEFER)
--				dev_err(cpu_dev, "failed to set regulators: %d\n",
--					ret);
-+			ret = dev_err_probe(cpu_dev, priv->opp_token,
-+					    "failed to set regulators\n");
- 			goto free_cpumask;
- 		}
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 50d50cec7774..589dd82fe10c 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1212,7 +1212,20 @@ thermal_zone_device_register_with_trips(const char *type, struct thermal_trip *t
+ 		return ERR_PTR(-EINVAL);
  	}
+ 
+-	if (num_trips > THERMAL_MAX_TRIPS || num_trips < 0 || mask >> num_trips) {
++	/*
++	 * Max trip count can't exceed 31 as the "mask >> num_trips" condition.
++	 * For example, shifting by 32 will result in compiler warning:
++	 * warning: right shift count >= width of type [-Wshift-count- overflow]
++	 *
++	 * Also "mask >> num_trips" will always be true with 32 bit shift.
++	 * E.g. mask = 0x80000000 for trip id 31 to be RW. Then
++	 * mask >> 32 = 0x80000000
++	 * This will result in failure for the below condition.
++	 *
++	 * Check will be true when the bit 31 of the mask is set.
++	 * 32 bit shift will cause overflow of 4 byte integer.
++	 */
++	if (num_trips > (BITS_PER_TYPE(int) - 1) || num_trips < 0 || mask >> num_trips) {
+ 		pr_err("Incorrect number of thermal trips\n");
+ 		return ERR_PTR(-EINVAL);
+ 	}
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 1386c713885d..c05f5c78a0f2 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -17,8 +17,6 @@
+ #include <linux/workqueue.h>
+ #include <uapi/linux/thermal.h>
+ 
+-#define THERMAL_MAX_TRIPS	12
+-
+ /* invalid cooling state */
+ #define THERMAL_CSTATE_INVALID -1UL
+ 
 -- 
-2.25.1
+2.17.1
 
