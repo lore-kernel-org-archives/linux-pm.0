@@ -2,62 +2,59 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2108BC6FA92
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Sep 2022 14:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DEECC6FA8E
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Sep 2022 14:34:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232520AbiI0Od6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Sep 2022 10:33:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51158 "EHLO
+        id S232711AbiI0Od7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Sep 2022 10:33:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231513AbiI0OdK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2022 10:33:10 -0400
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2EDCE6A2C
-        for <linux-pm@vger.kernel.org>; Tue, 27 Sep 2022 07:33:07 -0700 (PDT)
-Received: by mail-wm1-x32c.google.com with SMTP id t4so6659840wmj.5
-        for <linux-pm@vger.kernel.org>; Tue, 27 Sep 2022 07:33:07 -0700 (PDT)
+        with ESMTP id S232578AbiI0OdM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2022 10:33:12 -0400
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 778925C944
+        for <linux-pm@vger.kernel.org>; Tue, 27 Sep 2022 07:33:10 -0700 (PDT)
+Received: by mail-wr1-x42d.google.com with SMTP id s14so15396321wro.0
+        for <linux-pm@vger.kernel.org>; Tue, 27 Sep 2022 07:33:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=XsxTgl9OJhYT/B2dXFDz/rl/9WpF5J4y9HKMzylFxc4=;
-        b=G0uQrIPEvhe+LHZJTgCfBJsZ8XmcJC+gKJgug/+isHhTyZ7z67OQ9tGXfZsPBR8v/A
-         nJSF0KlD1pk5l2mO1dKdDYoULqKqxlC8lPNYJ2gqEzgFU/2SozRC3KlgCIMjCWZBJxyk
-         Dyxj+PVdYTv4DiEySoZqSn2kMmE1XdU1jmWffMX0ZZMVMUZpIOkKM0W1/oxlhJRk+e/R
-         6+KDMk+cHvc3ZE30FUR0MxLVHvl2FImx5rt7cHo8vJ3xfskqp5gEH3Iuk8M0F3UMVms8
-         WUK860XOv1q5yvUBa+6y7fC/O02uAlGKEq054a902DseECXhmjQlg+Hxj8qBOWhKzrMy
-         jJOw==
+        bh=F16FcP49uIGOwU3Sf8ns9eXu8wz72Lx9ob6lOEA95bs=;
+        b=LFuOvlKG90LD6P79v8aSbVSzwMi/qE+qT5I6LDFo0rHPIdPbtk/sxvHOgANi7AFokH
+         rh3T9Qddxc3z785OAeMRn1QcnS8K5rJAWqOnw9OHzSG7QHxWHh8A8gfRI/4DI93e8JRS
+         47K5wuV7e0P5+FdrYF3ZfZA1v4PrV36ien3Y0dYrYkH+v9U2Se1N3L69qmId4xn4tcoo
+         Fgi5H3+p1LLHV2PEDdVQ6C9WnfXjjRzFSTcGdj/eE8dsrzoXLyKaoKD7Hn6w1M0nP5eZ
+         TfFx5YIW4SDs8AmQF2tnMIC2oIEpl971Cg90OUI+c/JDxpluqx0Mjg6gXGa7lVtt6noR
+         X8Bg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date;
-        bh=XsxTgl9OJhYT/B2dXFDz/rl/9WpF5J4y9HKMzylFxc4=;
-        b=DfTwb7PppdatkcwulC2sCDTd45IwPyGkF95AAbmXTUsJ0KmuXZLldRU8kxM5RCvzUp
-         Kmqs9gkrLLDXITFfP0+yJ89QUKBfW3aRv56NwTW6ySELDMxCZAVY6ACTCM+i/Y+Qmxu+
-         ArS+SP+ug8fAQpATfWgK/KTGaeA3AW8X2SUbFyTbTRHFRz9Fy8sixzOsUJnJ2BpgdCTv
-         ZRIUB0vYo9d65agj3O9j7MNDCOAGOsBgpAt4zthuHHUkUA/tPvvilSEqkZT6DN+mi8lm
-         YtwBnjI2VyTr6mMXCZIznlobH8ahFBFhcIPkOiquj+LHoA5049Qx7BQecRXrc0TjqDPd
-         xcjA==
-X-Gm-Message-State: ACrzQf0VzgG2Ju4/A0FZ84EVJ95ic9QOWg28TOfqcbQClvRNsell2Mn5
-        CNHSyVJtx5tCJDLHtcSTR2B8TQ==
-X-Google-Smtp-Source: AMsMyM4rZial6XqFQ7CPea8ozsw+ZhYiET1jrFdyhtdxO745t9qc9x4yTGaTOoGP3enBHjtpYhh3OQ==
-X-Received: by 2002:a05:600c:310b:b0:3b4:c1ce:cd83 with SMTP id g11-20020a05600c310b00b003b4c1cecd83mr2901066wmo.91.1664289185977;
-        Tue, 27 Sep 2022 07:33:05 -0700 (PDT)
+        bh=F16FcP49uIGOwU3Sf8ns9eXu8wz72Lx9ob6lOEA95bs=;
+        b=prxYTBjLxFIqB1q4fGLTvQ/WqNO6FjWe9+q04BgpzLuvVYIQVab4Ic4WxkKc9FFvAH
+         +qBulo4z+mhihU06l+aoPe0d0OeFEgqXx1Eo4VOyYhaX5dcR4ZF5AQCzciSXt4NKhe2X
+         g+Dm5xQaCklajXaY7QakdJ3rBKfJiqtPFMknj4pv7cjiOf96e6G4c0cE/waN5mk/L1GU
+         LpcOE0mWK/OfP7u6kyiKCgrtkl2gCxQxgZQMGeSHWkg01QdtZWc9pOJOWcd6SDhAbp/M
+         UDgwGMpD0cNIH1NCYI3RraYIOdklGjUtVbote0BoQXQVmEYAFxJJd3lnmOUR1sLPXsg1
+         KubQ==
+X-Gm-Message-State: ACrzQf2Em5MdPPcXXAOccGEiGZHzGyNL2+mfFjPXwoa45X50udQ3k1wV
+        STzmMoKY7N6/HlAI4yWCqTQ0Pw==
+X-Google-Smtp-Source: AMsMyM4js2Oa/GfoXq436lDee0C+68Qy6ZnBixlUVLNv71+CxYJwbxbVUyNdnJynCw5FyS+wTwckGg==
+X-Received: by 2002:a05:6000:118f:b0:22c:bebb:1a42 with SMTP id g15-20020a056000118f00b0022cbebb1a42mr2026375wrx.540.1664289188651;
+        Tue, 27 Sep 2022 07:33:08 -0700 (PDT)
 Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id l6-20020a05600c4f0600b003b4924493bfsm17518371wmq.9.2022.09.27.07.33.04
+        by smtp.gmail.com with ESMTPSA id l6-20020a05600c4f0600b003b4924493bfsm17518371wmq.9.2022.09.27.07.33.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Sep 2022 07:33:05 -0700 (PDT)
+        Tue, 27 Sep 2022 07:33:08 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rui.zhang@intel.com, Amit Kucheria <amitk@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        linux-tegra@vger.kernel.org (open list:TEGRA ARCHITECTURE SUPPORT)
-Subject: [PATCH v6 10/29] thermal/drivers/tegra: Use generic thermal_zone_get_trip() function
-Date:   Tue, 27 Sep 2022 16:32:20 +0200
-Message-Id: <20220927143239.376737-11-daniel.lezcano@linaro.org>
+        rui.zhang@intel.com, Amit Kucheria <amitk@kernel.org>
+Subject: [PATCH v6 12/29] thermal/drivers/hisi: Use generic thermal_zone_get_trip() function
+Date:   Tue, 27 Sep 2022 16:32:22 +0200
+Message-Id: <20220927143239.376737-13-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220927143239.376737-1-daniel.lezcano@linaro.org>
 References: <20220927143239.376737-1-daniel.lezcano@linaro.org>
@@ -67,130 +64,48 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Replace a single call to thermal_zone_get_trip() to get a trip point
-instead of calling the different ops->get_trip*
+The thermal framework gives the possibility to register the trip
+points with the thermal zone. When that is done, no get_trip_* ops are
+needed and they can be removed.
+
+Convert ops content logic into generic trip points and register them with the
+thermal zone.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/tegra/soctherm.c        | 33 +++++++++++--------------
- drivers/thermal/tegra/tegra30-tsensor.c | 17 ++++++-------
- 2 files changed, 22 insertions(+), 28 deletions(-)
+ drivers/thermal/hisi_thermal.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index 1efe470f31e9..96b541458ccd 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -582,23 +582,23 @@ static int tsensor_group_thermtrip_get(struct tegra_soctherm *ts, int id)
- 	return temp;
- }
- 
--static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip, int temp)
-+static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip_id, int temp)
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index d6974db7aaf7..45226cab466e 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -482,7 +482,7 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 					struct hisi_thermal_sensor *sensor)
  {
- 	struct tegra_thermctl_zone *zone = tz->devdata;
- 	struct tegra_soctherm *ts = zone->ts;
+ 	int ret, i;
+-	const struct thermal_trip *trip;
 +	struct thermal_trip trip;
- 	const struct tegra_tsensor_group *sg = zone->sg;
- 	struct device *dev = zone->dev;
--	enum thermal_trip_type type;
- 	int ret;
  
- 	if (!tz)
- 		return -EINVAL;
- 
--	ret = tz->ops->get_trip_type(tz, trip, &type);
-+	ret = thermal_zone_get_trip(tz, trip_id, &trip);
- 	if (ret)
+ 	sensor->tzd = devm_thermal_of_zone_register(&pdev->dev,
+ 						    sensor->id, sensor,
+@@ -495,11 +495,12 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
  		return ret;
+ 	}
  
--	if (type == THERMAL_TRIP_CRITICAL) {
-+	if (trip.type == THERMAL_TRIP_CRITICAL) {
- 		/*
- 		 * If thermtrips property is set in DT,
- 		 * doesn't need to program critical type trip to HW,
-@@ -609,7 +609,7 @@ static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip
- 		else
- 			return 0;
+-	trip = of_thermal_get_trip_points(sensor->tzd);
++	for (i = 0; i < thermal_zone_get_num_trips(sensor->tzd); i++) {
  
--	} else if (type == THERMAL_TRIP_HOT) {
-+	} else if (trip.type == THERMAL_TRIP_HOT) {
- 		int i;
- 
- 		for (i = 0; i < THROTTLE_SIZE; i++) {
-@@ -620,7 +620,7 @@ static int tegra_thermctl_set_trip_temp(struct thermal_zone_device *tz, int trip
- 				continue;
- 
- 			cdev = ts->throt_cfgs[i].cdev;
--			if (get_thermal_instance(tz, cdev, trip))
-+			if (get_thermal_instance(tz, cdev, trip_id))
- 				stc = find_throttle_cfg_by_name(ts, cdev->type);
- 			else
- 				continue;
-@@ -687,25 +687,20 @@ static const struct thermal_zone_device_ops tegra_of_thermal_ops = {
- 	.set_trips = tegra_thermctl_set_trips,
- };
- 
--static int get_hot_temp(struct thermal_zone_device *tz, int *trip, int *temp)
-+static int get_hot_temp(struct thermal_zone_device *tz, int *trip_id, int *temp)
- {
--	int ntrips, i, ret;
--	enum thermal_trip_type type;
-+	int i, ret;
-+	struct thermal_trip trip;
- 
--	ntrips = of_thermal_get_ntrips(tz);
--	if (ntrips <= 0)
--		return -EINVAL;
-+	for (i = 0; i < thermal_zone_get_num_trips(tz); i++) {
- 
--	for (i = 0; i < ntrips; i++) {
--		ret = tz->ops->get_trip_type(tz, i, &type);
-+		ret = thermal_zone_get_trip(tz, i, &trip);
- 		if (ret)
- 			return -EINVAL;
--		if (type == THERMAL_TRIP_HOT) {
--			ret = tz->ops->get_trip_temp(tz, i, temp);
--			if (!ret)
--				*trip = i;
- 
--			return ret;
-+		if (trip.type == THERMAL_TRIP_HOT) {
-+			*trip_id = i;
-+			return 0;	
+-	for (i = 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
+-		if (trip[i].type == THERMAL_TRIP_PASSIVE) {
+-			sensor->thres_temp = trip[i].temperature;
++		thermal_zone_get_trip(sensor->tzd, i, &trip);
++
++		if (trip.type == THERMAL_TRIP_PASSIVE) {
++			sensor->thres_temp = trip.temperature;
+ 			break;
  		}
  	}
- 
-diff --git a/drivers/thermal/tegra/tegra30-tsensor.c b/drivers/thermal/tegra/tegra30-tsensor.c
-index c34501287e96..cbaad2245f1d 100644
---- a/drivers/thermal/tegra/tegra30-tsensor.c
-+++ b/drivers/thermal/tegra/tegra30-tsensor.c
-@@ -316,18 +316,17 @@ static void tegra_tsensor_get_hw_channel_trips(struct thermal_zone_device *tzd,
- 	*hot_trip  = 85000;
- 	*crit_trip = 90000;
- 
--	for (i = 0; i < tzd->num_trips; i++) {
--		enum thermal_trip_type type;
--		int trip_temp;
-+	for (i = 0; i < thermal_zone_get_num_trips(tzd); i++) {
- 
--		tzd->ops->get_trip_temp(tzd, i, &trip_temp);
--		tzd->ops->get_trip_type(tzd, i, &type);
-+		struct thermal_trip trip;
- 
--		if (type == THERMAL_TRIP_HOT)
--			*hot_trip = trip_temp;
-+		thermal_zone_get_trip(tzd, i, &trip);
-+		
-+		if (trip.type == THERMAL_TRIP_HOT)
-+			*hot_trip = trip.temperature;
- 
--		if (type == THERMAL_TRIP_CRITICAL)
--			*crit_trip = trip_temp;
-+		if (trip.type == THERMAL_TRIP_CRITICAL)
-+			*crit_trip = trip.temperature;
- 	}
- 
- 	/* clamp hardware trips to the calibration limits */
 -- 
 2.34.1
 
