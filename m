@@ -2,90 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BA62C32771
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Sep 2022 01:41:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04121C07E9D
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Sep 2022 03:15:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229699AbiI0BlU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Sep 2022 21:41:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51982 "EHLO
+        id S231246AbiI0DPz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Sep 2022 23:15:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56552 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229684AbiI0BlU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2022 21:41:20 -0400
-Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A616D7C765;
-        Mon, 26 Sep 2022 18:41:17 -0700 (PDT)
-Received: from localhost.localdomain (unknown [10.180.13.64])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxT+BqVDJjmYUiAA--.64486S2;
-        Tue, 27 Sep 2022 09:40:00 +0800 (CST)
-From:   Yinbo Zhu <zhuyinbo@loongson.cn>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     zhanghongchen <zhanghongchen@loongson.cn>,
-        Yinbo Zhu <zhuyinbo@loongson.cn>
-Subject: [PATCH v3 1/3] MAINTAINERS: add maintainer for thermal driver for loongson2 SoCs
-Date:   Tue, 27 Sep 2022 09:39:49 +0800
-Message-Id: <20220927013951.12833-1-zhuyinbo@loongson.cn>
-X-Mailer: git-send-email 2.20.1
+        with ESMTP id S231437AbiI0DP0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2022 23:15:26 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 367FCABF2C
+        for <linux-pm@vger.kernel.org>; Mon, 26 Sep 2022 20:13:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1664248416; x=1695784416;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=qJRT4VttEnMR5KT/3nW/PwoWRIQ0ayIBXSWGZYvyzck=;
+  b=UpDrbxNHf5+Zvuh6UoIHgPDzUR14aRyIdiUjlz20xrZ4UDOaozadITo1
+   rf+XE6NGCtbkLG7R2v/lITqyEQNtvjE00CWBhYhB7o8PidatrwJ3wD4k9
+   A+zkdQ2qMTNwfkDuizmnkGXzXYpW0v1g6JpFGY0+D1wchk0lSd6rsQvX6
+   jc+npJsgJ/KYv0h9GozOOtmrB3M5NAMEsi1DK+qpl0veTYXwbaxAZO3Vo
+   SA4bhvJOoneyK0iyp7JiBDZqrbPETQIdQLoKjIDWupEiGsc+tjL4Dc/3x
+   Ft3m2C90h1NxGTKhiguz1IQTpYTyudh+6VgG/Xi/RqL/5E20OsGKRxiww
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10482"; a="284323027"
+X-IronPort-AV: E=Sophos;i="5.93,348,1654585200"; 
+   d="scan'208";a="284323027"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Sep 2022 20:13:35 -0700
+X-IronPort-AV: E=McAfee;i="6500,9779,10482"; a="746876135"
+X-IronPort-AV: E=Sophos;i="5.93,348,1654585200"; 
+   d="scan'208";a="746876135"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
+  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Sep 2022 20:13:35 -0700
+Message-ID: <09403867fc1f0f89b06b5dbdb269fccf8ba22f99.camel@linux.intel.com>
+Subject: Re: New error in 5.15: ACPI BIOS Error (bug): Could not resolve
+ symbol [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Paul Menzel <pmenzel@molgen.mpg.de>, Len Brown <lenb@kernel.org>
+Cc:     linux-pm@vger.kernel.org, Dell.Client.Kernel@dell.com
+Date:   Mon, 26 Sep 2022 20:13:35 -0700
+In-Reply-To: <520d0a5b-cbae-554c-4905-5a68cc5f5ca6@molgen.mpg.de>
+References: <520d0a5b-cbae-554c-4905-5a68cc5f5ca6@molgen.mpg.de>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.4 (3.38.4-1.fc33) 
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8CxT+BqVDJjmYUiAA--.64486S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7Xw1kZry7Cw47Ary8KrW3ZFb_yoWDXrX_CF
-        1Iqw4xZa18AF1ak3ykZFyxJ343Z397t3W5A3Zrt397A34Dta43AFyDAwnxuw18Cr45uFyf
-        GaykGr1I9r12qjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUIcSsGvfJTRUUUbVkFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-        6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-        A2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j
-        6F4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r
-        4UJVWxJr1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2Wl
-        Yx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbV
-        WUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7Cj
-        xVA2Y2ka0xkIwI1lc2xSY4AK6svPMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r
-        1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CE
-        b7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0x
-        vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAI
-        cVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2Kf
-        nxnUUI43ZEXa7VUbXdbUUUUUU==
-X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add zhanghongchen and myself as maintainer of the loongson2 SoC
-series thermal driver.
+Hi,
+On Thu, 2022-09-22 at 18:57 +0200, Paul Menzel wrote:
+> Dear Linux folks,
+> 
+> 
+> Moving from Linux 5.10.113 to 5.15.69 on
+> 
+>      [    0.000000] DMI: Dell Inc. Precision Tower 3620/0MWYPT, BIOS 
+> 2.22.0 07/13/2022
+>      […]
+>      [    1.521806] smpboot: CPU0: Intel(R) Core(TM) i7-7700 CPU @ 
+> 3.60GHz (family: 0x6, model: 0x9e, stepping: 0x9)
+> 
+> Linux logs the errors below:
+> 
+These errors are coming from interpreter. Please try the latest
+upstream kernel, to see if there is some version incompatibility.
 
-Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
----
-Change in v3:
-		1. Update the binding file name.
+Thanks,
+Srinivas
 
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+> ```
+> $ dmesg --level=err
+> [    2.782085] ACPI BIOS Error (bug): Could not resolve symbol 
+> [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+> [    2.792412] ACPI Error: Aborting method \_PR.CPU1._CPC due to 
+> previous error (AE_NOT_FOUND) (20210730/psparse-529)
+> [    2.807882] ACPI BIOS Error (bug): Could not resolve symbol 
+> [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+> [    2.818223] ACPI Error: Aborting method \_PR.CPU2._CPC due to 
+> previous error (AE_NOT_FOUND) (20210730/psparse-529)
+> [    2.833675] ACPI BIOS Error (bug): Could not resolve symbol 
+> [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+> [    2.844003] ACPI Error: Aborting method \_PR.CPU3._CPC due to 
+> previous error (AE_NOT_FOUND) (20210730/psparse-529)
+> [    2.859452] ACPI BIOS Error (bug): Could not resolve symbol 
+> [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+> [    2.869776] ACPI Error: Aborting method \_PR.CPU4._CPC due to 
+> previous error (AE_NOT_FOUND) (20210730/psparse-529)
+> [    2.885227] ACPI BIOS Error (bug): Could not resolve symbol 
+> [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+> [    2.895552] ACPI Error: Aborting method \_PR.CPU5._CPC due to 
+> previous error (AE_NOT_FOUND) (20210730/psparse-529)
+> [    2.911018] ACPI BIOS Error (bug): Could not resolve symbol 
+> [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+> [    2.921343] ACPI Error: Aborting method \_PR.CPU6._CPC due to 
+> previous error (AE_NOT_FOUND) (20210730/psparse-529)
+> [    2.936810] ACPI BIOS Error (bug): Could not resolve symbol 
+> [\_PR.CPU0._CPC], AE_NOT_FOUND (20210730/psargs-330)
+> [    2.947136] ACPI Error: Aborting method \_PR.CPU7._CPC due to 
+> previous error (AE_NOT_FOUND) (20210730/psparse-529)
+> ```
+> 
+> Any idea, where that comes from? We only build intel_pstate, but it
+> was 
+> also selected in Linux 5.10.113.
+> 
+>      $ grep PSTATE /boot/config-{5.10.113,5.15.69}*
+>      /boot/config-5.10.113.mx64.434:CONFIG_X86_INTEL_PSTATE=y
+>      /boot/config-5.15.69.mx64.436:CONFIG_X86_INTEL_PSTATE=y
+> 
+> 
+> Kind regards,
+> 
+> Paul
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 589517372408..fe7890508f3c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11899,6 +11899,14 @@ F:	drivers/*/*loongarch*
- F:	Documentation/loongarch/
- F:	Documentation/translations/zh_CN/loongarch/
- 
-+LOONGSON2 SOC SERIES THERMAL DRIVER
-+M:	zhanghongchen <zhanghongchen@loongson.cn>
-+M:	Yinbo Zhu <zhuyinbo@loongson.cn>
-+L:	linux-pm@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/thermal/loongson,loongson2-thermal.yaml
-+F:	drivers/thermal/loongson2_thermal.c
-+
- LSILOGIC MPT FUSION DRIVERS (FC/SAS/SPI)
- M:	Sathya Prakash <sathya.prakash@broadcom.com>
- M:	Sreekanth Reddy <sreekanth.reddy@broadcom.com>
--- 
-2.31.1
 
