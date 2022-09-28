@@ -2,23 +2,63 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EC0FC6FA90
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Sep 2022 08:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD9E8C32771
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Sep 2022 08:38:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233247AbiI1Ihi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Sep 2022 04:37:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51182 "EHLO
+        id S232810AbiI1Iim (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Sep 2022 04:38:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51074 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233302AbiI1IhZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2022 04:37:25 -0400
-Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 2B8BDA284E;
-        Wed, 28 Sep 2022 01:37:14 -0700 (PDT)
-Received: from localhost.localdomain (unknown [10.180.13.64])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8CxbWuwBzRjdjMjAA--.18971S3;
-        Wed, 28 Sep 2022 16:37:10 +0800 (CST)
-From:   Yinbo Zhu <zhuyinbo@loongson.cn>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        with ESMTP id S233365AbiI1IiC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2022 04:38:02 -0400
+Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFE9BA3D46
+        for <linux-pm@vger.kernel.org>; Wed, 28 Sep 2022 01:37:53 -0700 (PDT)
+Received: by mail-lj1-x22d.google.com with SMTP id g20so13539262ljg.7
+        for <linux-pm@vger.kernel.org>; Wed, 28 Sep 2022 01:37:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date;
+        bh=62Eoklyt/D9YICCu7HqYVZqvNE1CJufCEW7h9Tv64so=;
+        b=vkpzReO0KQzEk/YOvT5M1oXJQW9u+9JQ+eEqmpGzLdU2fmYY+yW3eHLRVtQMjhDRdn
+         V6wt3ZR5FeGO+6TimfqDyyuKw0pIqrDhFXggf4SMgwqPoVLvAJVGVKX8KF5mLY5+FpUz
+         bP5f4IsKnBn8XTa2aPh3FdR8tE5RmllT7rS7iSc4akCTGzZIaDpjZ/JjucVv3J6pheIF
+         ELVJWnwzQAnVIbV5fr01Z0oldpNikPywadH+gPBOTP0Hr+F/ZY0gAWhSOyA1wduNa7tR
+         1sQsy74ff9fm6FhRG+a2pIZop1XVDZq0RFyn2Xpo56mhyrfbIBf/Ig/M3PioDg2G9hHj
+         sv4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=62Eoklyt/D9YICCu7HqYVZqvNE1CJufCEW7h9Tv64so=;
+        b=QKLtl7t+eKsjUfC7Tvx9WnBWHIrIZs5aRv1x7SyunMy8NbB49+4J2gVr+Uwu4FL0Z7
+         rA8U3WuolvpjqpJ0cI4IFZeQPvAxIveHPoy4Xp3sypNuYbB0cAB0ZUTG+96USiqdwF34
+         JEYahTvrRSsHRaeZPXqhxz/9SfFjynEQL452XzqbnlkW+A4uQhiqJPkh6uxdof0FVWgk
+         8BDSRdkDQh3UL0xiL2t4n0hXbe6xuSfWSgGhSRiELa23qtpA0PzBOiGbP+9fVVqaqgax
+         2RwGQfdtrt7N1v8BtJ5FyVMoRQWmHhKw6CvWohxH4dTl/+0Uj0k9w5Di0JJnlxh5JqLY
+         axwg==
+X-Gm-Message-State: ACrzQf1K2+ri5qa+KJktOTrFybtOhQ1rTF0DB9scYr5RpNnyEMbppwl0
+        nkwCQIPVLxXTZs7ZDuTYKVK6eA==
+X-Google-Smtp-Source: AMsMyM7KmT+Blx4/udVJvmQmTtAk3QqtyL9qew6LvYoEkmqaGbUMoY64pgryHZ1fIouAZZ1S64YKKA==
+X-Received: by 2002:a2e:bc11:0:b0:26c:565:12f6 with SMTP id b17-20020a2ebc11000000b0026c056512f6mr10948162ljf.91.1664354271840;
+        Wed, 28 Sep 2022 01:37:51 -0700 (PDT)
+Received: from [192.168.0.21] (78-11-189-27.static.ip.netia.com.pl. [78.11.189.27])
+        by smtp.gmail.com with ESMTPSA id 23-20020a2e0917000000b0026c35c4720esm375585ljj.24.2022.09.28.01.37.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 28 Sep 2022 01:37:50 -0700 (PDT)
+Message-ID: <066b55cf-4a28-89a2-56ab-572590c97c30@linaro.org>
+Date:   Wed, 28 Sep 2022 10:37:49 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.0
+Subject: Re: [PATCH v5 2/3] dt-bindings: thermal: add loongson2k thermal
+ binding
+Content-Language: en-US
+To:     Yinbo Zhu <zhuyinbo@loongson.cn>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
@@ -27,100 +67,33 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     zhanghongchen <zhanghongchen@loongson.cn>,
-        Liu Peibao <liupeibao@loongson.cn>,
-        Yinbo Zhu <zhuyinbo@loongson.cn>
-Subject: [PATCH v5 2/3] dt-bindings: thermal: add loongson2k thermal binding
-Date:   Wed, 28 Sep 2022 16:37:01 +0800
-Message-Id: <20220928083702.17309-2-zhuyinbo@loongson.cn>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20220928083702.17309-1-zhuyinbo@loongson.cn>
+        Liu Peibao <liupeibao@loongson.cn>
 References: <20220928083702.17309-1-zhuyinbo@loongson.cn>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8CxbWuwBzRjdjMjAA--.18971S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7ur43WF18Kry7uryrCF1DGFg_yoW8AryUpF
-        43Cr1DCr4v9F17Z39xJFy8Cws8trnYyF9rXrs7K3W5tr95Ga4Sq3y3KryDZ34fCr1jgFW7
-        uFWI9r4jk3WDG3DanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDU0xBIdaVrnRJUUUPm14x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-        rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_Jr4l82xGYIkIc2
-        x26xkF7I0E14v26r4j6ryUM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2z4x0
-        Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j6F4UJw
-        A2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s1l
-        e2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI
-        8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwAC
-        jcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0x
-        kIwI1lc2xSY4AK6svPMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I
-        3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxV
-        WUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8I
-        cVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aV
-        AFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZE
-        Xa7VUjLL07UUUUU==
-X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+ <20220928083702.17309-2-zhuyinbo@loongson.cn>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220928083702.17309-2-zhuyinbo@loongson.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the loongson2k thermal binding with DT schema format using
-json-schema.
+On 28/09/2022 10:37, Yinbo Zhu wrote:
+> Add the loongson2k thermal binding with DT schema format using
+> json-schema.
+> 
+> Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
 
-Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
----
-Change in v5:
-		1. Keep use same quotes "'" in all places. 
+Please add Acked-by/Reviewed-by tags when posting new versions. However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for acks received on the version they apply.
 
- .../thermal/loongson,ls2k-thermal.yaml        | 43 +++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+https://elixir.bootlin.com/linux/v5.17/source/Documentation/process/submitting-patches.rst#L540
 
-diff --git a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
-new file mode 100644
-index 000000000000..3fb841797771
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
-@@ -0,0 +1,43 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/loongson,ls2k-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Thermal sensors on loongson2k SoCs
-+
-+maintainers:
-+  - zhanghongchen <zhanghongchen@loongson.cn>
-+  - Yinbo Zhu <zhuyinbo@loongson.cn>
-+
-+properties:
-+  compatible:
-+    const: loongson,ls2k-thermal
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  '#thermal-sensor-cells':
-+    const: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - '#thermal-sensor-cells'
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    thermal: thermal-sensor@1fe01500 {
-+        compatible = "loongson,ls2k-thermal";
-+        reg = <0 0x1fe01500 0 0x30>;
-+        interrupt-parent = <&liointc0>;
-+        interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
-+        #thermal-sensor-cells = <1>;
-+    };
--- 
-2.31.1
+If a tag was not added on purpose, please state why and what changed.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+Best regards,
+Krzysztof
 
