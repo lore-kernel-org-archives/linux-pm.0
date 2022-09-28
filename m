@@ -2,100 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54DC7C04A95
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Sep 2022 11:07:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FD21C54EE9
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Sep 2022 12:38:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233711AbiI1LH6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Sep 2022 07:07:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41382 "EHLO
+        id S234051AbiI1Miq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Sep 2022 08:38:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60722 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233404AbiI1LHi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2022 07:07:38 -0400
-X-Greylist: delayed 1799 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 28 Sep 2022 04:04:54 PDT
-Received: from the.earth.li (the.earth.li [IPv6:2a00:1098:86:4d:c0ff:ee:15:900d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C446857E5
-        for <linux-pm@vger.kernel.org>; Wed, 28 Sep 2022 04:04:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=earth.li;
-        s=the; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:
-        Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
-        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-        :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-        List-Post:List-Owner:List-Archive;
-        bh=K8E0FzdNDrn2vBMjfp3h2KajM+B36hLnkhE+pnW7Lb8=; b=tCA2PesD4/l8yPuyvQFPWi3nUi
-        WDiKR+zssEkSliDYZ2hVjvPR+Szf1TApxTmnbwAMxTf915JhbObbstSRCUc3Lic1QeEwgzYvP6EUh
-        E+HrV3DixfeX4F/TNF1TquUoGGA7VNn4gpom38VrTloH1m/goBh/WB+YNyX0rzeKf4R7ZOmEuRTQq
-        lxlpOgRJ9U+4WI4L3QATPubbUcrIrhQwb8gpqlPOzRG+HOU3PdSCpGjYJYaw9s2blFvl7wHvDk+oK
-        d2JJV692QJh++TV62L7H/y3y9vcbNIISAmJth+4tutxt0bYuboCfAsbkpf0eT1Ca0q8XXzh87UJ/D
-        yV6o44QQ==;
-Received: from noodles by the.earth.li with local (Exim 4.94.2)
-        (envelope-from <noodles@earth.li>)
-        id 1odTaO-00Gcuf-D2; Wed, 28 Sep 2022 10:42:36 +0100
-Date:   Wed, 28 Sep 2022 10:42:36 +0100
-From:   Jonathan McDowell <noodles@earth.li>
-To:     Evan Green <evgreen@chromium.org>
-Cc:     Jarkko Sakkinen <jarkko@kernel.org>,
-        Mimi Zohar <zohar@linux.ibm.com>,
-        Matthew Garrett <mgarrett@aurora.tech>,
-        Ken Goldman <kgold@linux.ibm.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Daniil Lunev <dlunev@google.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        linux-integrity@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Gwendal Grignou <gwendal@chromium.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: TPM: hibernate with IMA PCR 10
-Message-ID: <YzQXDPtDisogYNzo@earth.li>
-References: <CAHSSk06+CNQLKS8p_jh8JH7acn6=Ck8W3W2DM75rV3paZQ+MbA@mail.gmail.com>
- <Yw7L+X2cHf9qprxl@kernel.org>
- <CAE=gft68it0VtFfddCiSQYfz2+Fmoc+6ZK-ounDrjuRJ8nsOLw@mail.gmail.com>
- <96360ec16b21d8b37461a5de083ff794f3604300.camel@linux.ibm.com>
- <Yxl8tbJERqrmsgpU@kernel.org>
- <96cfd1f3f084f6d145bd22e0989dc046fe15b66a.camel@linux.ibm.com>
- <YylDYU+KTX/KJpqU@kernel.org>
- <2bc656bf67af52e0b9a68e91c5b574e0ab4ffa8e.camel@linux.ibm.com>
- <Yy21B4EGumiI9XsU@kernel.org>
- <CAE=gft7CnUVPqKpCHKPSpa3z-NR9pimhUJbz+qTkVV0E6WeoPw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAE=gft7CnUVPqKpCHKPSpa3z-NR9pimhUJbz+qTkVV0E6WeoPw@mail.gmail.com>
+        with ESMTP id S233790AbiI1Mip (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2022 08:38:45 -0400
+Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94BC5265B;
+        Wed, 28 Sep 2022 05:38:44 -0700 (PDT)
+Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-1280590722dso17093321fac.1;
+        Wed, 28 Sep 2022 05:38:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=message-id:date:subject:references:in-reply-to:cc:to:from
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=izGymghuYlLW90ZqTUFVA6hxBsKrpDP7tl21fb5fyRU=;
+        b=WYStW8AlNj+qfl4X7l8NHjbai0KGgiVTbN2/8sFl4khNxNaUK5GuZfa45zgWwmyg08
+         TPKBeqKdh56xUmPps/xnM5qhijWwExTYcLAEmS1v2yyAissvoHOU61wCsVn9JzN1h8eo
+         bApwrFxXdb1AqFNvOkEULX6iUgw0wh5Cb12lcVXZGQdqPnLScpJcQbYg6w7hf0DJqmFk
+         FOs/cS+zF+7maBl/CVnSi0dH7d5Ldta6+k70fw7YcfLWbVBVCJMh24y3lggUT/fYUMiS
+         JL/vu/FlXr4qvLv8qlgqQ2D3dWxwjdV1Iiw99SWtWc3KXJSlRAryZiwm4e9+ymAb2E3w
+         DEKg==
+X-Gm-Message-State: ACrzQf3vo+S7T4C6nXwZCHbuy5WmV3XMQHJ+ZrmhyYDRMJTFlssu6arL
+        XxFLnFYsalI2swpgGvwB1A==
+X-Google-Smtp-Source: AMsMyM7qqzHW98WUHbsO2svepBG1a/Wd3CJ2lhpiV2OIPCcqaXGou3x3POtLT84CMLdn84MUJOdD2Q==
+X-Received: by 2002:a05:6870:ea84:b0:10d:fabe:9202 with SMTP id s4-20020a056870ea8400b0010dfabe9202mr5132680oap.294.1664368723383;
+        Wed, 28 Sep 2022 05:38:43 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id z89-20020a9d24e2000000b00636eeba9209sm2007154ota.52.2022.09.28.05.38.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Sep 2022 05:38:42 -0700 (PDT)
+Received: (nullmailer pid 4136677 invoked by uid 1000);
+        Wed, 28 Sep 2022 12:38:41 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Yinbo Zhu <zhuyinbo@loongson.cn>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        devicetree@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        zhanghongchen <zhanghongchen@loongson.cn>,
+        Liu Peibao <liupeibao@loongson.cn>, linux-pm@vger.kernel.org,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20220928083702.17309-2-zhuyinbo@loongson.cn>
+References: <20220928083702.17309-1-zhuyinbo@loongson.cn> <20220928083702.17309-2-zhuyinbo@loongson.cn>
+Subject: Re: [PATCH v5 2/3] dt-bindings: thermal: add loongson2k thermal binding
+Date:   Wed, 28 Sep 2022 07:38:41 -0500
+Message-Id: <1664368721.036656.4136676.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 27, 2022 at 09:03:21AM -0700, Evan Green wrote:
-> On Fri, Sep 23, 2022 at 6:30 AM Jarkko Sakkinen <jarkko@kernel.org> wrote:
-> >
-> > On Wed, Sep 21, 2022 at 04:15:20PM -0400, Mimi Zohar wrote:
-> >
-> > > Enabling hibernate or IMA shouldn't be an either-or decision, if at all
-> > > possible.  The main concern is that attestation servers be able to
-> > > detect hibernation and possibly the loss of measurement
-> > > history.  Luckily, although the PCRs are reset, the TPM
-> > > pcrUpdateCounter is not.
-> > >
-> > > I would appreciate including a "hibernate" marker, similar to the
-> > > "boot_aggregate".
-> >
-> > Yeah, I guess that would not do harm.
+On Wed, 28 Sep 2022 16:37:01 +0800, Yinbo Zhu wrote:
+> Add the loongson2k thermal binding with DT schema format using
+> json-schema.
 > 
-> I think I understand it. It's pretty much exactly a boot_aggregate
-> marker that we want, correct?
+> Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+> ---
+> Change in v5:
+> 		1. Keep use same quotes "'" in all places.
 > 
-> Should it have its own name, or is it sufficient to simply infer that
-> a boot_aggregate marker that isn't the first item in the list must
-> come from hibernate resume?
+>  .../thermal/loongson,ls2k-thermal.yaml        | 43 +++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+> 
 
-I think it should have its own name, because a subsequent boot_aggregate
-is inserted when we kexec into a new kernel.
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
+yamllint warnings/errors:
 
-J.
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.example.dtb: thermal-sensor@1fe01500: reg: [[0, 534779136], [0, 48]] is too long
+	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
 
--- 
-"Why? - because it's f***ing there!" -- Edmund Hilary
-This .sig brought to you by the letter I and the number 30
-Product of the Republic of HuggieTag
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
+
