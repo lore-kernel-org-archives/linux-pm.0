@@ -2,203 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21FB4C4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  3 Oct 2022 09:34:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EFF2C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  3 Oct 2022 09:49:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229702AbiJCJeh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 3 Oct 2022 05:34:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49412 "EHLO
+        id S231367AbiJCJtP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 3 Oct 2022 05:49:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231592AbiJCJdh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Oct 2022 05:33:37 -0400
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E350E550A0
-        for <linux-pm@vger.kernel.org>; Mon,  3 Oct 2022 02:28:15 -0700 (PDT)
-Received: by mail-wm1-x333.google.com with SMTP id t4so6599649wmj.5
-        for <linux-pm@vger.kernel.org>; Mon, 03 Oct 2022 02:28:15 -0700 (PDT)
+        with ESMTP id S229505AbiJCJs7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Oct 2022 05:48:59 -0400
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 254622CE26;
+        Mon,  3 Oct 2022 02:48:21 -0700 (PDT)
+Received: by mail-pl1-x631.google.com with SMTP id x6so3944006pll.11;
+        Mon, 03 Oct 2022 02:48:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=qkEQMAFlFrUq6t0pAagx8mtMZ2aPJX8cpHX423TQAwM=;
-        b=BQBPt4Csl920gWWshzeQRSQcZ4ut7GiX/VdaMG+iPHC+9eduWglzEihwbw5xY1w71i
-         nRODaK1TaqLlKbbEWFdeOOwOh8uX4PkuWJdf8j7jPvEGh+bvmyKlEMss0x7zL4qArPtx
-         iTVpBYcXCFbdMcOakVa9O6xxTRaDDzzN5B+qbVPyeAt+Bbhv01twAEuhgIE/rVp5ATf0
-         2n3g+a9ZwwJ4jHwDWRMfTEwEiPF6tpTJncBrAlNKy7bGpNQQ6T0N8s2MDqm+Zcpsk99/
-         4OOvEsvGa13yvfNebczFEyMEGhc2vspip2FGQ/YHtiLkj9xHaaL4szkMYT2q/G+Z5T0M
-         wRCg==
+        d=gmail.com; s=20210112;
+        h=message-id:date:subject:cc:to:from:from:to:cc:subject:date;
+        bh=Y0csu8Dh/y4589KJtXmHOk06d4pIvjQiH0RxPVlSXS0=;
+        b=C0ZLpnAUMjDAvpF53HGHYtljhaEg216nQEUaFvqQK5cc7SuBDVOp2OngZyX2r7xKJX
+         Y8EL16V8pQC6p5r2oqJvPXEegg5lUUjEnXuTD8CR7S4fw04DXNT8IQUGB3vCSvJe0GxO
+         T4gay8GmdJAp1lfzTGOJKzoZ6CMVkV1+q2xgz/SPKyibSTL9/gTU4DS0/URQ1dxnXL7m
+         cHM1BTvyNl5ms4URm5apqzRzdM14h3t9OW2uk3WfqDm4UDzKzvrgZjodNZCF5ONPvzEA
+         pW1I6qDEXhTuZiM5D12s3t9YLRdDZKDrRWDEulL54a+MMTiK2ZaffsJb3CWMsJADdeHV
+         I/YQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+        h=message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date;
-        bh=qkEQMAFlFrUq6t0pAagx8mtMZ2aPJX8cpHX423TQAwM=;
-        b=u1qcbX6L4iJh0xmREuLJ1yxjiu5qloIx57enUxfu7qyuatgqoYu0HOH5wcOFFFekga
-         tTS+ZceFMCzX7Dup9Sra/EnFg8f8wZIso1bpEr09U70H1XCsbUHFF1TM14FjEcSuvv16
-         Y6zfcj3dclljHWyhElyySp4C34i0EzbIXdrT19QHCmhFXApqdvD2jDlfPZjqtvRh7Clx
-         jBl7tVRp1tJMEYSYRIUXbXg3BwlVQpXHBj6WdWfuCfYdWVUncbWoOCzTgFXG+kNTH/zS
-         VwmKB57cyqd93rnyjbH3UZ/Li7sPRGw8fDw8SkVIKtuokueLyK7qdowhdL5pPrg9XaNp
-         APaw==
-X-Gm-Message-State: ACrzQf1xqp+JxqSzNL+5mxvtIhVQiVwHNnSC0sL82+SB9DAEEwoDdjXJ
-        bG42lyJAeqzbJMwz0E9d6EN06w==
-X-Google-Smtp-Source: AMsMyM6NBk0c4Z3M568SmNbRi2UW7WHjYMkCgFQJZ2lnlZv/3bZElK7E94evp7NB+489bDv1mNMeQw==
-X-Received: by 2002:a05:600c:2d14:b0:3b4:86fe:bcec with SMTP id x20-20020a05600c2d1400b003b486febcecmr6074798wmf.16.1664789264590;
-        Mon, 03 Oct 2022 02:27:44 -0700 (PDT)
-Received: from mai.. ([2a05:6e02:1041:c10:f3a:9f5e:1605:a75a])
-        by smtp.gmail.com with ESMTPSA id ay3-20020a5d6f03000000b0022cc157bf26sm9707520wrb.85.2022.10.03.02.27.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Oct 2022 02:27:43 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rui.zhang@intel.com, Raju Rangoju <rajur@chelsio.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Peter Kaestle <peter@piie.net>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Mark Gross <markgross@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Nicolas Saenz Julienne <nsaenz@kernel.org>,
-        Broadcom Kernel Team <bcm-kernel-feedback-list@broadcom.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Keerthy <j-keerthy@ti.com>,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Antoine Tenart <atenart@kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Dmitry Osipenko <digetx@gmail.com>, netdev@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-rpi-kernel@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-omap@vger.kernel.org
-Subject: [PATCH v8 27/29] thermal/drivers/cxgb4: Use generic thermal_zone_get_trip() function
-Date:   Mon,  3 Oct 2022 11:26:00 +0200
-Message-Id: <20221003092602.1323944-28-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20221003092602.1323944-1-daniel.lezcano@linaro.org>
-References: <20221003092602.1323944-1-daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        bh=Y0csu8Dh/y4589KJtXmHOk06d4pIvjQiH0RxPVlSXS0=;
+        b=O5x0CgYRkRxgd1VY8ZF4KlnwWWm/h+zeiano4UuoIR6589n3TrnxyrhTlpLxcz2PCB
+         ocAGubHlLOwkRKGTI+PqxmetICGwzpUhsMjhm+iWu2jJboUtX5kAxYiO8c1SGlcyLAW8
+         3akzV1imLFEZMZo1JToYJ31PkMDQTqZpeep+sOnGDHo7/JGkRoFFu2ei10qjgjrVYv7Q
+         b0PNoOm0onooMo0z72lWAZNTpBLF/M7EUJk33g8b2OCToXaT949j2C4HU1XiKE28qZy6
+         OmnDjaUKD5HnN+uZYkK4keqlmnYgjowCGENg/Be2vv983bCusXNCg0m7EyZpdiCMSP8X
+         kZFg==
+X-Gm-Message-State: ACrzQf3Ogpofy5+ir+LQSDbA/moSMjkWpoYKjT6hfCIREDFW5G2YvU0i
+        NrjhePIlPLd1EYWcXA4V8I5essdFPuE=
+X-Google-Smtp-Source: AMsMyM4w85/tqOMNPczMZ1+Qs9hjJ9qld1W5ckbcd35t+bg/WN06ZNFonnzNsu+vwylzYPDoZ3cICA==
+X-Received: by 2002:a17:90b:3889:b0:200:8255:f0e5 with SMTP id mu9-20020a17090b388900b002008255f0e5mr11478144pjb.51.1664790499938;
+        Mon, 03 Oct 2022 02:48:19 -0700 (PDT)
+Received: from localhost.localdomain ([2402:7500:587:da00:1dbc:8208:4596:9e9c])
+        by smtp.gmail.com with ESMTPSA id t23-20020a6564d7000000b0043014f9a4c9sm6142230pgv.93.2022.10.03.02.48.17
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 03 Oct 2022 02:48:19 -0700 (PDT)
+From:   cy_huang <u0084500@gmail.com>
+To:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        sre@kernel.org
+Cc:     cy_huang@richtek.com, allen_chiang@richtek.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] Add Richtek RT9759 smart cap divider charger support
+Date:   Mon,  3 Oct 2022 17:48:10 +0800
+Message-Id: <1664790493-16386-1-git-send-email-u0084500@gmail.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal framework gives the possibility to register the trip
-points with the thermal zone. When that is done, no get_trip_* ops are
-needed and they can be removed.
+From: ChiYuan Huang <cy_huang@richtek.com>
 
-Convert ops content logic into generic trip points and register them with the
-thermal zone.
+This patch set is to add Richtek RT9759 smart cap divider charger.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Jakub Kicinski <kuba@kernel.org>
----
- drivers/net/ethernet/chelsio/cxgb4/cxgb4.h    |  2 -
- .../ethernet/chelsio/cxgb4/cxgb4_thermal.c    | 41 ++++---------------
- 2 files changed, 8 insertions(+), 35 deletions(-)
+The RT9759 is a high efficiency and high charge current charger.
+The efficiency is up to 97.8% when VBAT=4.2V, IBAT=2.5A, and the maximum
+charge current is up to 8A. The device integrates smart cap divider topology
+with a dual-phase charge pump core and 9 channel high speed ADCs to monitor
+the charging process.
 
-diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h b/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h
-index 5657ac8cfca0..fca9533bc011 100644
---- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h
-+++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h
-@@ -1079,8 +1079,6 @@ struct mbox_list {
- #if IS_ENABLED(CONFIG_THERMAL)
- struct ch_thermal {
- 	struct thermal_zone_device *tzdev;
--	int trip_temp;
--	int trip_type;
- };
- #endif
- 
-diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c
-index 9a6d65243334..1d49cfe3e2ab 100644
---- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c
-+++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_thermal.c
-@@ -29,36 +29,12 @@ static int cxgb4_thermal_get_temp(struct thermal_zone_device *tzdev,
- 	return 0;
- }
- 
--static int cxgb4_thermal_get_trip_type(struct thermal_zone_device *tzdev,
--				       int trip, enum thermal_trip_type *type)
--{
--	struct adapter *adap = tzdev->devdata;
--
--	if (!adap->ch_thermal.trip_temp)
--		return -EINVAL;
--
--	*type = adap->ch_thermal.trip_type;
--	return 0;
--}
--
--static int cxgb4_thermal_get_trip_temp(struct thermal_zone_device *tzdev,
--				       int trip, int *temp)
--{
--	struct adapter *adap = tzdev->devdata;
--
--	if (!adap->ch_thermal.trip_temp)
--		return -EINVAL;
--
--	*temp = adap->ch_thermal.trip_temp;
--	return 0;
--}
--
- static struct thermal_zone_device_ops cxgb4_thermal_ops = {
- 	.get_temp = cxgb4_thermal_get_temp,
--	.get_trip_type = cxgb4_thermal_get_trip_type,
--	.get_trip_temp = cxgb4_thermal_get_trip_temp,
- };
- 
-+static struct thermal_trip trip = { .type = THERMAL_TRIP_CRITICAL } ;
-+
- int cxgb4_thermal_init(struct adapter *adap)
- {
- 	struct ch_thermal *ch_thermal = &adap->ch_thermal;
-@@ -79,15 +55,14 @@ int cxgb4_thermal_init(struct adapter *adap)
- 	if (ret < 0) {
- 		num_trip = 0; /* could not get trip temperature */
- 	} else {
--		ch_thermal->trip_temp = val * 1000;
--		ch_thermal->trip_type = THERMAL_TRIP_CRITICAL;
-+		trip.temperature = val * 1000;
- 	}
--
-+	
- 	snprintf(ch_tz_name, sizeof(ch_tz_name), "cxgb4_%s", adap->name);
--	ch_thermal->tzdev = thermal_zone_device_register(ch_tz_name, num_trip,
--							 0, adap,
--							 &cxgb4_thermal_ops,
--							 NULL, 0, 0);
-+	ch_thermal->tzdev = thermal_zone_device_register_with_trips(ch_tz_name, &trip, num_trip,
-+								    0, adap,
-+								    &cxgb4_thermal_ops,
-+								    NULL, 0, 0);
- 	if (IS_ERR(ch_thermal->tzdev)) {
- 		ret = PTR_ERR(ch_thermal->tzdev);
- 		dev_err(adap->pdev_dev, "Failed to register thermal zone\n");
+ChiYuan Huang (3):
+  dt-bindings: power: supply: Add Richtek RT9759 smart cap divider
+    charger
+  power: supply: rt9471: Add Richtek RT9759 smart cap divider charger
+  Documentation: power: rt9759: Document exported sysfs entries
+
+ Documentation/ABI/testing/sysfs-class-power-rt9759 |  37 ++
+ .../bindings/power/supply/richtek,rt9759.yaml      |  61 ++
+ drivers/power/supply/Kconfig                       |  15 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/rt9759.c                      | 611 +++++++++++++++++++++
+ 5 files changed, 725 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-power-rt9759
+ create mode 100644 Documentation/devicetree/bindings/power/supply/richtek,rt9759.yaml
+ create mode 100644 drivers/power/supply/rt9759.c
+
 -- 
-2.34.1
+2.7.4
 
