@@ -2,52 +2,52 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73AB4C4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  3 Oct 2022 09:30:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EF58C433F5
+	for <linux-pm@archiver.kernel.org>; Mon,  3 Oct 2022 09:31:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230392AbiJCJaq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 3 Oct 2022 05:30:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57070 "EHLO
+        id S230029AbiJCJbJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 3 Oct 2022 05:31:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231596AbiJCJ30 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Oct 2022 05:29:26 -0400
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C58774C60D
-        for <linux-pm@vger.kernel.org>; Mon,  3 Oct 2022 02:27:34 -0700 (PDT)
-Received: by mail-wm1-x32e.google.com with SMTP id 130-20020a1c0288000000b003b494ffc00bso8138807wmc.0
-        for <linux-pm@vger.kernel.org>; Mon, 03 Oct 2022 02:27:34 -0700 (PDT)
+        with ESMTP id S231383AbiJCJ31 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Oct 2022 05:29:27 -0400
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65612520AC
+        for <linux-pm@vger.kernel.org>; Mon,  3 Oct 2022 02:27:35 -0700 (PDT)
+Received: by mail-wr1-x430.google.com with SMTP id j16so3847510wrh.5
+        for <linux-pm@vger.kernel.org>; Mon, 03 Oct 2022 02:27:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=KY22MjtoUlIwWIKxWwfuHh0wn9QBG3Vjtz/Dduvf6bU=;
-        b=MBR6ICFKe+bl+7FRTDTi1pMSJNfC6nvWkInuXTT4JyAomFJPJVBJJkxfVAfrsHbwRl
-         1T2koRRcYrNPgbQUvuFGZUYbc4Cg+AlmEGzCAzNcorg37i4/MEbSQKGLEwkKZ6jTVc4V
-         8JqeBEwvkIPuEMpQu2JNM0wcpI2M6kB8Gu0trgvgXGXJmMqLupuvws3YqCur0UeofD0S
-         rksWdtR5952Vw4eQmAaD3TIJn4LftUwyQZFm86MpmG7VsSMbBG0KJlK8bqfCF9PlQP3Z
-         XNE9lMPFyt1l/70K3zswWSEtMamUhu9BhFM37qs6Wps0jnlNsuVpX9CD1wf53hssHTbJ
-         60rQ==
+        bh=kNTESOeVOVH9BHNMsa7BlHA2jeppHM3L2UNE800z/X4=;
+        b=mTS7FWSm+ebOGzVGiKOyvEJV6zMJ9cvF4eXaXoZXtUOB9ha9TJ8jH7r0yLSeCHuXZC
+         I+aMmCxKpSOTWTz2OXXsUniC43Tg9xFb7Uw/TmXGs3BXpvwyvcrLtAVNHHY6pLef/57k
+         FOe/5mW+GlS+UVYQxoJEjBNKuecuge8bmmQpWyoafHLwBS73edT79MCYQreMFQIv0Knp
+         NhQpdhGJ8Qklbzs8ewx7w49NqRrfRaDPei87dXrXpMIO+GlrVBuEt4nfvwwcml5OKhdM
+         sP7T42NsJ7PJxxXzfdXJmoMSQ3/FH1GGO9tux0y7Vf3d7THc81jUDsjM++RyEhKtOaTD
+         dcZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date;
-        bh=KY22MjtoUlIwWIKxWwfuHh0wn9QBG3Vjtz/Dduvf6bU=;
-        b=cin0kOOidy0gStVyEzIkBM44wrJTkDzTvkQ5UhHgd6LjKL5hO8qK1We+VQ+IexMxMR
-         zoeT/2qZ6TU0I5ODK0xqta+DxjwAKOiYIgNuN0H5vHTS19kkIt1q7gVT7SzxpmoWqKJ8
-         ppvzMMHN6fcflixFlJT5Ske/DrzZbVZQ7HkAIgQg/M4y/CXaZ/MFDrjiz2GRfzxQz+06
-         NSdPF+o6fwlMmikoKBfP6cArvJ+3Ye03SMaoFesvRMuAAIqtE7z7iOVvPsseOzmxIvS8
-         x5nvXcLXHULMwuugxeoHaEfmkvZinuSTGlO4CncD9FfCOBLHFMgtLh58FKwn4oDrEA4z
-         TJQg==
-X-Gm-Message-State: ACrzQf3Td2PoPH/mxJnUl3d3YtTmEn6V0tMlnrBRhTl3n7/FXe37xU0r
-        ZXKwbwdFN7wNymxu54cvFuS8DA==
-X-Google-Smtp-Source: AMsMyM4WzX42SGBH96J5yFVO8dsU/Bxg/s/4fszh5Y0eQeyIxXHKeLghmfuTfrPEEYYfIUOUze1ajw==
-X-Received: by 2002:a05:600c:3ac9:b0:3b4:bed4:d69 with SMTP id d9-20020a05600c3ac900b003b4bed40d69mr6421993wms.131.1664789234207;
-        Mon, 03 Oct 2022 02:27:14 -0700 (PDT)
+        bh=kNTESOeVOVH9BHNMsa7BlHA2jeppHM3L2UNE800z/X4=;
+        b=qwEDxBl9wLRvnGo1LKUV9XGYrJ9sjhzx0QZXScEWjIyESTlrhCkiTc0oDegnuCpFm7
+         4EvETXwnX82e3ojXqPxmddnpEgTEPy3ihtheJ1dV29rfPCrSPY0/d84Cwye00g1IQWWV
+         9B24SkVudPoBjG9MvhHP3k6J4VaLnafIhXayYa2gpxYeWtCTjQazrfStu4FVai3R3v4N
+         XegtWwQAV/3XUu3hTqvwUU1FijIDXxeEVobSnwfdphqrbcNaWx9h2zTPNBBc8hWf1/p8
+         ehtuSX3lPAdHoutwQI9j8TU0zLcfqlAx0oGK6ggUhsV5LFDpw5jPQe6wasYCZnKR8BJ9
+         4mxg==
+X-Gm-Message-State: ACrzQf06H9BKbKbxD6bdtZbet6IC7LfIizw0EQvlz9MkmatK5ECpATCl
+        j4HKHCqpbVHBZlQ3y6P339YkfUuUN4qD8wvl
+X-Google-Smtp-Source: AMsMyM7j4El3FUtYdPHygm3fFMJzN5yVgHWWVzJ8tHo9gT9lkjmGRQzHRP4IBUzDTgJZenhyxqoQqA==
+X-Received: by 2002:adf:ce8b:0:b0:22c:dea6:6ea with SMTP id r11-20020adfce8b000000b0022cdea606eamr9723047wrn.387.1664789254719;
+        Mon, 03 Oct 2022 02:27:34 -0700 (PDT)
 Received: from mai.. ([2a05:6e02:1041:c10:f3a:9f5e:1605:a75a])
-        by smtp.gmail.com with ESMTPSA id ay3-20020a5d6f03000000b0022cc157bf26sm9707520wrb.85.2022.10.03.02.27.11
+        by smtp.gmail.com with ESMTPSA id ay3-20020a5d6f03000000b0022cc157bf26sm9707520wrb.85.2022.10.03.02.27.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Oct 2022 02:27:13 -0700 (PDT)
+        Mon, 03 Oct 2022 02:27:33 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -94,10 +94,11 @@ Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
         linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-omap@vger.kernel.org
-Subject: [PATCH v8 18/29] thermal/of: Remove of_thermal_set_trip_hyst()
-Date:   Mon,  3 Oct 2022 11:25:51 +0200
-Message-Id: <20221003092602.1323944-19-daniel.lezcano@linaro.org>
+        linux-omap@vger.kernel.org,
+        Adam Ward <DLG-Adam.Ward.opensource@dm.renesas.com>
+Subject: [PATCH v8 24/29] thermal/drivers/da9062: Use generic thermal_zone_get_trip() function
+Date:   Mon,  3 Oct 2022 11:25:57 +0200
+Message-Id: <20221003092602.1323944-25-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20221003092602.1323944-1-daniel.lezcano@linaro.org>
 References: <20221003092602.1323944-1-daniel.lezcano@linaro.org>
@@ -107,48 +108,96 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal core is providing the generic thermal_zone_set_trip()
-function which does exactly what the OF ops function is doing.
+The thermal framework gives the possibility to register the trip
+points with the thermal zone. When that is done, no get_trip_* ops are
+needed and they can be removed.
 
-It is pointless to define our own version, just remove the ops and the
-thermal_zone_set_trip() will take care of it.
+Convert ops content logic into generic trip points and register them with the
+thermal zone.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Adam Ward <DLG-Adam.Ward.opensource@dm.renesas.com>
 ---
- drivers/thermal/thermal_of.c | 13 -------------
- 1 file changed, 13 deletions(-)
+ drivers/thermal/da9062-thermal.c | 52 +++++---------------------------
+ 1 file changed, 8 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 4e54d62720dc..494e9c319541 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -19,18 +19,6 @@
+diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
+index 180edec34e07..1e163e90d6b6 100644
+--- a/drivers/thermal/da9062-thermal.c
++++ b/drivers/thermal/da9062-thermal.c
+@@ -120,44 +120,6 @@ static irqreturn_t da9062_thermal_irq_handler(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
  
- #include "thermal_core.h"
- 
--static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
--				    int hyst)
+-static int da9062_thermal_get_trip_type(struct thermal_zone_device *z,
+-					int trip,
+-					enum thermal_trip_type *type)
 -{
--	if (trip >= tz->num_trips || trip < 0)
--		return -EDOM;
+-	struct da9062_thermal *thermal = z->devdata;
 -
--	/* thermal framework should take care of data->mask & (1 << trip) */
--	tz->trips[trip].hysteresis = hyst;
+-	switch (trip) {
+-	case 0:
+-		*type = THERMAL_TRIP_HOT;
+-		break;
+-	default:
+-		dev_err(thermal->dev,
+-			"Driver does not support more than 1 trip-wire\n");
+-		return -EINVAL;
+-	}
 -
 -	return 0;
 -}
 -
- static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
- 				    int *temp)
+-static int da9062_thermal_get_trip_temp(struct thermal_zone_device *z,
+-					int trip,
+-					int *temp)
+-{
+-	struct da9062_thermal *thermal = z->devdata;
+-
+-	switch (trip) {
+-	case 0:
+-		*temp = DA9062_MILLI_CELSIUS(125);
+-		break;
+-	default:
+-		dev_err(thermal->dev,
+-			"Driver does not support more than 1 trip-wire\n");
+-		return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-
+ static int da9062_thermal_get_temp(struct thermal_zone_device *z,
+ 				   int *temp)
  {
-@@ -541,7 +529,6 @@ struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor,
- 		goto out_kfree_trips;
- 	}
+@@ -172,8 +134,10 @@ static int da9062_thermal_get_temp(struct thermal_zone_device *z,
  
--	of_ops->set_trip_hyst = of_ops->set_trip_hyst ? : of_thermal_set_trip_hyst;
- 	of_ops->get_crit_temp = of_ops->get_crit_temp ? : of_thermal_get_crit_temp;
- 	of_ops->bind = thermal_of_bind;
- 	of_ops->unbind = thermal_of_unbind;
+ static struct thermal_zone_device_ops da9062_thermal_ops = {
+ 	.get_temp	= da9062_thermal_get_temp,
+-	.get_trip_type	= da9062_thermal_get_trip_type,
+-	.get_trip_temp	= da9062_thermal_get_trip_temp,
++};
++
++static struct thermal_trip trips[] = {
++	{ .temperature = DA9062_MILLI_CELSIUS(125), .type = THERMAL_TRIP_HOT },
+ };
+ 
+ static const struct da9062_thermal_config da9062_config = {
+@@ -228,10 +192,10 @@ static int da9062_thermal_probe(struct platform_device *pdev)
+ 	INIT_DELAYED_WORK(&thermal->work, da9062_thermal_poll_on);
+ 	mutex_init(&thermal->lock);
+ 
+-	thermal->zone = thermal_zone_device_register(thermal->config->name,
+-					1, 0, thermal,
+-					&da9062_thermal_ops, NULL, pp_tmp,
+-					0);
++	thermal->zone = thermal_zone_device_register_with_trips(thermal->config->name,
++								trips, ARRAY_SIZE(trips), 0, thermal,
++								&da9062_thermal_ops, NULL, pp_tmp,
++								0);
+ 	if (IS_ERR(thermal->zone)) {
+ 		dev_err(&pdev->dev, "Cannot register thermal zone device\n");
+ 		ret = PTR_ERR(thermal->zone);
 -- 
 2.34.1
 
