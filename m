@@ -2,95 +2,128 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 693D2C433FE
-	for <linux-pm@archiver.kernel.org>; Sun,  9 Oct 2022 02:33:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E071C433FE
+	for <linux-pm@archiver.kernel.org>; Sun,  9 Oct 2022 07:11:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229883AbiJICdf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 8 Oct 2022 22:33:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34348 "EHLO
+        id S229923AbiJIHLa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 9 Oct 2022 03:11:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41316 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229865AbiJICdc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Oct 2022 22:33:32 -0400
-Received: from mail-io1-xd33.google.com (mail-io1-xd33.google.com [IPv6:2607:f8b0:4864:20::d33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AED14367AE;
-        Sat,  8 Oct 2022 19:33:31 -0700 (PDT)
-Received: by mail-io1-xd33.google.com with SMTP id y4so1695461iof.3;
-        Sat, 08 Oct 2022 19:33:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=eKgMiGJ4xMxKYE+sQjNHKzDaMNVrm+oHUpyMXCSQTDs=;
-        b=NYxjOsB+i0Q2ncUgRrwdIlyCeHGXDiDQMmC2QhU/GxeAdvqZz4Jqs83TVFyc/xxPHF
-         xoxeAcjCNNk9cT36I2UsTNFh1MpzMgFw2RqsKQP1t9QKQfWaF0oQFKYuULT+bPNb1ULK
-         olXhHsfMph/NoI5REHcWMZwWXYzwhSec67GlMSVFje4mN5bn1i/18t/EQl2LTQPy5372
-         Dcs3UhVWPx01WuR08asoh6m4cksqAs92QVS7BkG9wHbGdNS9kcSRc31yPGsMdTjFkINi
-         pyG1PqaxlVn2HM/r2L5klq1kOrBxlJvCN1+E29HNVzNNUff5699oF8Z/C7MNgI+vRbyN
-         lmUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=eKgMiGJ4xMxKYE+sQjNHKzDaMNVrm+oHUpyMXCSQTDs=;
-        b=u5lO+knmXDvYyNdHFrFQhUCgmi0mrQY3naYW6H6lg/gKesn3SN7llBhxGXbABN2WdA
-         qC8miME9oBHzoQhTakrbO1Qi5ybPSbzsG1eO+iWwZ3cnxxxAgfMaPaXbiEGAmhmfojBU
-         u5KYxrtBPNT/ZXiE+D3VfUk5qYzJmhaneCBNIhR7ek2YVMjcM7GPz46qoZvAvk14ULLS
-         TYPVuL0MaNTlC4xO8S3pFmOwO8fJtud/aWL++R+mJCVMZ8bp7AYnMlq4tI0bqYf7zBjo
-         7ccjmK3ALlv2VhKoPYb9bmmvHpwAyZfRKSpuQu2YDeeC5vjNNzVq8vWciZVayphD3Ljg
-         VvWA==
-X-Gm-Message-State: ACrzQf0dP2vIxzN55AW2nsu6NYubxeFwtazdGbPWFKwlxMZYwAHFJOhj
-        3CdRePqtNfUufFYrvy2Mw2M=
-X-Google-Smtp-Source: AMsMyM5GzbjwHI/Y3eo0drTr+O2Tna+hX32qEn8v3GHuwVNW5h74J0HM80QYq2XPcO73lKQxp6N5LQ==
-X-Received: by 2002:a05:6602:98:b0:6a2:1723:bee1 with SMTP id h24-20020a056602009800b006a21723bee1mr5195402iob.58.1665282810832;
-        Sat, 08 Oct 2022 19:33:30 -0700 (PDT)
-Received: from ?IPV6:2604:2d80:4d87:cd00:9f51:32d7:1177:67d? ([2604:2d80:4d87:cd00:9f51:32d7:1177:67d])
-        by smtp.gmail.com with ESMTPSA id v14-20020a92ab0e000000b002faa9fe86bfsm2449714ilh.56.2022.10.08.19.33.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 08 Oct 2022 19:33:30 -0700 (PDT)
-Message-ID: <f488fa30-a307-96f6-fe85-271cdc48faa3@gmail.com>
-Date:   Sat, 8 Oct 2022 21:33:28 -0500
+        with ESMTP id S229602AbiJIHL3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Oct 2022 03:11:29 -0400
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2073.outbound.protection.outlook.com [40.107.220.73])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B24795BE;
+        Sun,  9 Oct 2022 00:11:27 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=cfhP7yDvo9/ffbUp0rcEhLtIbIaNkpY6JiJLDggZR3zRE73ujv2KSEXWyDZ4VN4Bk5PfLTuNJCQ7srVH/6/Wi8aP+2JzYUXFhaw/C8NLW7RxD/KpcFNsqrrFs5FnwNdjPMdIQL4ztsXEUesfR2R6BP4xRI90Kv1lrtobCLISLK4pYvNt36uOchSAIcg/xaJa1eB6jTRW5R5SMxaI2zhBBT3KoD5xpqS5xQ20fPj0RBYhGbVpXrv4fTZYsE9sxvJXQ97LP+orjvUVz8ns6nIZgpR/JSyQMWEMPo53/bBKDqVuJoKjdgAhIjKwbjB++nzFHml09BHOs3QOcl5AFvFkTA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=cvLV8b2WBCHL4JYNEZv5XZDmOonX3mlPcA7RHdrvDA8=;
+ b=MIK8PRD/CMAI+ucNIVJM8I271EHm/39xG5B0CznkHZCHMfek2j8IfRzUf/qxLajPK0org0l796kTCi2/TTPWCwK72Jto0QMXvHCFcH7kOUGpE4DlClR/nlq+V+nNYHSHKEoLUdkGvNQ7l6OMY7ownnmgicIIkoFg0/1eWR+pGZJu1sfGHklD/7UH9eg9QMF0NWPJwUeph+8Vm08C+5LITWdaNAMjXfqFQ4gMdWmBGriNx2DzCKcJ3ZG1cCAhUcppfKdXit/vkgDTGyrc3f/A9mAp05teU0/aJDOz99EB0y9L3z7nNtXkGBQbrdsMn2TGZfMXGk54n4atL8Hhsl+zcQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=cvLV8b2WBCHL4JYNEZv5XZDmOonX3mlPcA7RHdrvDA8=;
+ b=y7OgjtfVwqygq2uggPz2XP/XdGTtDKKOmiXLoilgmvJylwU1z2L9FBr81Z4Efi9G/nH0VQNpD+Np3yIBTV3haM5owFAkaC0iMtxqn9t6hJmjP3H0ckxmR/f/i7IOWK4TEyi1vE2ihwjILxXufW5ctoKxsoUfiawoFamARnkMujM=
+Received: from DM6PR03CA0100.namprd03.prod.outlook.com (2603:10b6:5:333::33)
+ by SA0PR12MB4464.namprd12.prod.outlook.com (2603:10b6:806:9f::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5709.15; Sun, 9 Oct
+ 2022 07:11:25 +0000
+Received: from DM6NAM11FT018.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:5:333:cafe::cf) by DM6PR03CA0100.outlook.office365.com
+ (2603:10b6:5:333::33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5709.15 via Frontend
+ Transport; Sun, 9 Oct 2022 07:11:25 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ DM6NAM11FT018.mail.protection.outlook.com (10.13.172.110) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.5709.10 via Frontend Transport; Sun, 9 Oct 2022 07:11:25 +0000
+Received: from pyuan-Cloudripper.amd.com (10.180.168.240) by
+ SATLEXMB04.amd.com (10.181.40.145) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.28; Sun, 9 Oct 2022 02:11:11 -0500
+From:   Perry Yuan <Perry.Yuan@amd.com>
+To:     <rafael.j.wysocki@intel.com>, <ray.huang@amd.com>,
+        <viresh.kumar@linaro.org>
+CC:     <Deepak.Sharma@amd.com>, <Mario.Limonciello@amd.com>,
+        <Nathan.Fontenot@amd.com>, <Alexander.Deucher@amd.com>,
+        <Shimmer.Huang@amd.com>, <Xiaojian.Du@amd.com>, <Li.Meng@amd.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Perry Yuan <Perry.Yuan@amd.com>
+Subject: [PATCH v2 2/9] cpufreq: amd_pstate: add module parameter to load amd pstate EPP driver
+Date:   Sun, 9 Oct 2022 15:10:26 +0800
+Message-ID: <20221009071033.21170-3-Perry.Yuan@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20221009071033.21170-1-Perry.Yuan@amd.com>
+References: <20221009071033.21170-1-Perry.Yuan@amd.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.1.2
-Subject: Re: [PATCH v6 1/2] power: supply: add Qualcomm PMI8998 SMB2 Charger
- driver
-Content-Language: en-US
-To:     Caleb Connolly <caleb.connolly@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        Sebastian Reichel <sre@kernel.org>
-Cc:     Bjorn Andersson <andersson@kernel.org>,
-        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Tom Rix <trix@redhat.com>, linux-kernel@vger.kernel.org,
-        llvm@lists.linux.dev
-References: <20221008183753.249514-1-caleb.connolly@linaro.org>
- <20221008183753.249514-2-caleb.connolly@linaro.org>
-From:   Joel Selvaraj <joelselvaraj.oss@gmail.com>
-In-Reply-To: <20221008183753.249514-2-caleb.connolly@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM6NAM11FT018:EE_|SA0PR12MB4464:EE_
+X-MS-Office365-Filtering-Correlation-Id: 72f7b351-bbb5-464c-73ca-08daa9c57a7b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: andjh9TUSt47Qc6VO4kbKA9/AP6dp5t/Aitw3FVB10SXl2xnZtR1wzWdPm9XfZLOlgQ50SBSALKopBeQm8+vPiI0HhLXWsP6BNGnwbZONYijggWODIRCWkUPYICw2cpxoUoxeYtyBDXSA9yPHAUobMiSCMe1CsqQFaCniY3y/Sj5tqV7acT7DSL/w2qaIOoyn/DnJN+++VSzW2wHdasphW7h2rO+kM2Uo8QTghOmz4TCv9H0aUeIDi3lvSFOQMPkiUsjyyzYC3hl9SG2S3++65yRfDdlXEHbN83VYwT5F90O3mDx4N3zKiW9V83Fgj4OAOq69zufxmFNGiQZRwtZJG5TeKJsrLpndnJNE+snYrmLioga8SG2Mb2itl9l+yNMWvb5Z6P9sJo1rBE+5lQCK7WR8uYyGUmQzohKX8ldKlYwWKZDMqmJRKmHSIA73Ahx41sXKYLP6j6dqKvCTsiRQem5zike10n7l1uc6VSBpIc3Alk5uoRqTORsiUgzyyncSas0ioVI8PKKfE7wSrKGk4kbVZWcsz7Gd/BbFoK7XjIqqHJLK1ZiLmiQ6nxTJl0IlihDcJFxwDBvFH8urVmGW5nwTG47EHDcS1+zZlxfTzvm355f/7jn0JLkK755jyJkQIMqkeONOYAoana3Vdk8Zrloa/0Qv8esZJbw4+qBbz2WqpGoju81ULro3S74/27QkLnJ9iTSzy73FjIUgMiCW9sOfzaHsmuDuf4ijNvFpG4Lee6SiddyeF8c4E9y+ggxiU4Pte+ybm62xaZx9kKB8DSD0LasDlLPhdQsFKDs41bOTVg3/bTtnBllIkiiSkD6uQHCFk/G4uhrBLH5XF1AGw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230022)(4636009)(39860400002)(136003)(376002)(346002)(396003)(451199015)(36840700001)(46966006)(40470700004)(7696005)(2616005)(356005)(316002)(2906002)(26005)(36756003)(36860700001)(82740400003)(8936002)(41300700001)(81166007)(86362001)(70206006)(6666004)(70586007)(82310400005)(40480700001)(4326008)(54906003)(478600001)(5660300002)(8676002)(110136005)(40460700003)(83380400001)(47076005)(426003)(16526019)(1076003)(186003)(336012)(36900700001)(2101003);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2022 07:11:25.4283
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 72f7b351-bbb5-464c-73ca-08daa9c57a7b
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT018.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR12MB4464
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+The amd_pstate mode parameter will allow user to select which amd pstate
+working mode as booting mode, amd_pstate instance or amd_pstate_epp instance.
 
-On 08/10/22 13:37, Caleb Connolly wrote:
-> Add a driver for the SMB2 charger block found in the Qualcomm PMI8998
-> and PM660.
-> This driver adds initial support for detecting USB cables and managing
-> basic battery charging.
-> 
-> Signed-off-by: Caleb Connolly <caleb.connolly@linaro.org>
+1) amd_pstate instance is depending on the target operation mode.
+2) amd_pstate_epp instance is depending on the set_policy operation mode.It
+   is also called active mode that AMD SMU has EPP algorithm to control the
+   CPU runtime frequency according to the EPP set value and workload.
 
-I can confirm that this driver works as expected on boot and when
-suspended/resumed. Tested in my Xiaomi Poco F1 running postmarketOS.
+Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
+---
+ drivers/cpufreq/amd-pstate.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Tested-by: Joel Selvaraj <joelselvaraj.oss@gmail.com>
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index f52b8f2fe529..14a275c22aff 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -63,6 +63,10 @@ module_param(shared_mem, bool, 0444);
+ MODULE_PARM_DESC(shared_mem,
+ 		 "enable amd-pstate on processors with shared memory solution (false = disabled (default), true = enabled)");
+ 
++static bool epp_enabled = false;
++module_param(epp_enabled, bool, 0444);
++MODULE_PARM_DESC(epp_enabled, "Enable energy performance preference (EPP) control");
++
+ static struct cpufreq_driver amd_pstate_driver;
+ 
+ /**
+-- 
+2.34.1
 
-Regards
-Joel Selvaraj
