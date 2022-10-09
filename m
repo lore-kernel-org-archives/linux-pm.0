@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EA0EC43219
-	for <linux-pm@archiver.kernel.org>; Sun,  9 Oct 2022 21:03:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BD37C43219
+	for <linux-pm@archiver.kernel.org>; Sun,  9 Oct 2022 21:04:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231470AbiJIVDa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 9 Oct 2022 17:03:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47992 "EHLO
+        id S230520AbiJIVEJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 9 Oct 2022 17:04:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33426 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231406AbiJIVDG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Oct 2022 17:03:06 -0400
+        with ESMTP id S231464AbiJIVDM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Oct 2022 17:03:12 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A03EF37FA4;
-        Sun,  9 Oct 2022 13:57:23 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F9FB38684;
+        Sun,  9 Oct 2022 13:57:33 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id E514860C79;
-        Sun,  9 Oct 2022 20:55:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 609D4C4347C;
-        Sun,  9 Oct 2022 20:55:15 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 702B860CEE;
+        Sun,  9 Oct 2022 20:55:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E48A1C433B5;
+        Sun,  9 Oct 2022 20:55:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1665348916;
-        bh=9S9Jzqh/QQ0jJHUzmYwU6n8cgbVBAGr8mD+X8spS9Kk=;
+        s=k20201202; t=1665348903;
+        bh=QsAUGu98aFCufOBe4iBWZ+qBocl7d9WXykBVUjlzfZ0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=kSPVGbG34ojK0Bk01dkkvpFHZ8W2VVI0mQXaroNi4OHp5El+9ZIeqZqQgphzSbV0P
-         FgWoYN6+jfZ9Dl/htEJz0b+jdhHAGQ5FNna3Eo+GBh2FSFHrPXSUiqbOTgYHjpO+jD
-         K79g0UtHpiN+m6RLgm7H1MbJBFTL/wnjXPZrZlUTmFzchT/Ls5ah9e2o4Ax5Cjt46G
-         CwaNGM06773xTQc853kxFE7I13mQL2q1ZKNYPvP/4jUeE5OiQlZvJC8lrnOvMI42cV
-         cqRBjWWm2L5ccmyhN0PJwOs8CGtjrenuk+BYMEsjBBplOyBwv5bUeblw3hQ3xOYwht
-         t66bhmTtOxwQw==
+        b=imd1y7fhOkGAcI1EehKGJ/EvSjydtMIVPFKzqJRcDbiqV0Jv0UnbxNQ/vhOiFC0oR
+         65ehpGjSxeDzTz7i8AGjKbhq5mwtp977eb/7yEfl3L5Keb9C/GGmv7Dja1dHwe0lv8
+         bPF1PPod5Goy0gPeYgA4lfr+GIv0Bx7rdV38agEUTTcZrvB7/KneXhW1RAxM3iIVfY
+         qWG4+unJiV43mcJ9Ke2ihP8D37Qd7cIrGecKRhsiqbshkOCIRCj8uahpe84q3bs2yB
+         ggbHbVnb3PwDh3glyHhhkwZmVljVG6X7JEl0YeyhpgTFVBeneYZiXxm3+8fuIwpmoP
+         8X+a3RWwEgN+w==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
@@ -38,12 +38,12 @@ Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
         daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 4/4] thermal: intel_powerclamp: Use get_cpu() instead of smp_processor_id() to avoid crash
-Date:   Sun,  9 Oct 2022 16:55:08 -0400
-Message-Id: <20221009205508.1204042-4-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 4/6] thermal: intel_powerclamp: Use get_cpu() instead of smp_processor_id() to avoid crash
+Date:   Sun,  9 Oct 2022 16:54:53 -0400
+Message-Id: <20221009205456.1203807-4-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221009205508.1204042-1-sashal@kernel.org>
-References: <20221009205508.1204042-1-sashal@kernel.org>
+In-Reply-To: <20221009205456.1203807-1-sashal@kernel.org>
+References: <20221009205456.1203807-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -88,10 +88,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index afada655f861..492bb3ec6546 100644
+index c3293fa2bb1b..7ff59f86a543 100644
 --- a/drivers/thermal/intel_powerclamp.c
 +++ b/drivers/thermal/intel_powerclamp.c
-@@ -519,8 +519,10 @@ static int start_power_clamp(void)
+@@ -550,8 +550,10 @@ static int start_power_clamp(void)
  
  	/* prefer BSP */
  	control_cpu = 0;
