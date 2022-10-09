@@ -2,92 +2,93 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD7B9C433FE
-	for <linux-pm@archiver.kernel.org>; Sun,  9 Oct 2022 21:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2021C433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Oct 2022 00:02:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231487AbiJIVNP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 9 Oct 2022 17:13:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36834 "EHLO
+        id S231214AbiJJACK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 9 Oct 2022 20:02:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231477AbiJIVMz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Oct 2022 17:12:55 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C5043CBD4;
-        Sun,  9 Oct 2022 14:07:37 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 335D860CEF;
-        Sun,  9 Oct 2022 20:54:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9FB0C433D7;
-        Sun,  9 Oct 2022 20:54:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1665348889;
-        bh=D10J9yBbVDhCPyPeEabyHA9i/KE6B7sbMw0ny/UqgeY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jSndVzl5kTGl8vTyLoCjnxk/NT1szxB6pgluItBMYZIJTkDS6/odOilEAH1DOY0VY
-         RJcqBW5lzWUfcb8TuZlvQE7+O79k0KGWXLdgm6dfdULtE0eIbX3vOvEq3kNAJ9WJip
-         bB5Fi8pSIki0hqxG6FmU1f18JHn3gDP0qtaqfcwRLGh9HrCrtApqnlP3rPAoPRTTqe
-         fSPrLaYZU54TPptRUAURj9p/5B3A9RldIDolZdwYWnuHPm8yW3N+oEbp5l68U2hpQc
-         aUkW/FU3ciBHK9+yUC+Jsiwj3S6XD+EHY5Js5/kio64jux0fO9FVeerkHW8s3AS9Mr
-         nyQoO2x+HmbEg==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Chao Qin <chao.qin@intel.com>, Zhang Rui <rui.zhang@intel.com>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 3/6] powercap: intel_rapl: fix UBSAN shift-out-of-bounds issue
-Date:   Sun,  9 Oct 2022 16:54:39 -0400
-Message-Id: <20221009205443.1203725-3-sashal@kernel.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221009205443.1203725-1-sashal@kernel.org>
-References: <20221009205443.1203725-1-sashal@kernel.org>
+        with ESMTP id S231343AbiJJABn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Oct 2022 20:01:43 -0400
+X-Greylist: delayed 549 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sun, 09 Oct 2022 16:34:11 PDT
+Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E68AE76447
+        for <linux-pm@vger.kernel.org>; Sun,  9 Oct 2022 16:34:11 -0700 (PDT)
+Received: from remote.user (localhost [127.0.0.1])
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 4MlyQQ3NfqzF0;
+        Mon, 10 Oct 2022 01:08:30 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+        t=1665356910; bh=1tjCaCOga1RdUh1bzpKBR1njpbuOFx6+MHcyJ0A1WeA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Y3rOWAEE/z4Kqjp2gnYRaHD5tVgxqUrHTphdoZkJFNc+R07Bi2oKB+ipNZ1KAjQMu
+         gsU7PFbIF76J0Z/6+JsUOHNKNN0biZEcGc8WZcqoXTqumdGN+O0MS2qOLvb3QaNaqH
+         u2Rm8Dhnk+ALBWXyZ6cQOhIE4LvgGL/p1n9yKUkIEFEf++UTR7nq1Sf5tUwdXv9hIf
+         dKA6jqvpe6YK+eJyKiAbHRB/65xAwj50AzWIfiK1lsIEP1lan/6S3nYbv6Ny54PnK3
+         R1310YFMxKEvjLzdQbHI0cf6nqDIYRL61nLhE5cFrTIsmjJAR4AF44SbxFLz7tc3PY
+         mRRUikcomKqLQ==
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.103.7 at mail
+Date:   Mon, 10 Oct 2022 01:08:29 +0200
+From:   =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To:     Marek Vasut <marex@denx.de>
+Cc:     linux-pm@vger.kernel.org,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH 1/2] power: supply: bq25890: Add CC voltage to ADC
+ properties
+Message-ID: <Y0NUbeUae01t+UGa@qmqm.qmqm.pl>
+References: <20221009191839.102686-1-marex@denx.de>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20221009191839.102686-1-marex@denx.de>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Chao Qin <chao.qin@intel.com>
+On Sun, Oct 09, 2022 at 09:18:38PM +0200, Marek Vasut wrote:
+> The POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE , representing register
+> REG0E field BATV is an ADC conversion of Battery Voltage (VBAT). Mark
+> the property as ADC one.
 
-[ Upstream commit 2d93540014387d1c73b9ccc4d7895320df66d01b ]
+In this case I believe the property is representing wrong value: it
+should be REG06 - the programmed voltage limit, and _MAX should reflect
+maximum setting possible. Though I think there is no proper property
+for the VSYS value that is currently occupying VOLTAGE_NOW - this
+might be better modelled as a separate regulator maybe?
 
-When value < time_unit, the parameter of ilog2() will be zero and
-the return value is -1. u64(-1) is too large for shift exponent
-and then will trigger shift-out-of-bounds:
+But, for the time being this look ok.
 
-shift exponent 18446744073709551615 is too large for 32-bit type 'int'
-Call Trace:
- rapl_compute_time_window_core
- rapl_write_data_raw
- set_time_window
- store_constraint_time_window_us
+> Fixes: 21d90eda433f ("power: bq25890: fix ADC mode configuration")
+> Signed-off-by: Marek Vasut <marex@denx.de>
+> ---
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Cc: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+> Cc: Sebastian Reichel <sebastian.reichel@collabora.com>
+> To: linux-pm@vger.kernel.org
+> ---
+>  drivers/power/supply/bq25890_charger.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+> index 6020b58c641d2..34dbd498f0f51 100644
+> --- a/drivers/power/supply/bq25890_charger.c
+> +++ b/drivers/power/supply/bq25890_charger.c
+> @@ -432,6 +432,7 @@ static bool bq25890_is_adc_property(enum power_supply_property psp)
+>  {
+>  	switch (psp) {
+>  	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>  	case POWER_SUPPLY_PROP_CURRENT_NOW:
+>  	case POWER_SUPPLY_PROP_TEMP:
+>  		return true;
+> -- 
+> 2.35.1
+> 
 
-Signed-off-by: Chao Qin <chao.qin@intel.com>
-Acked-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/powercap/intel_rapl.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 8cbfcce57a06..ae6721333c0f 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1068,6 +1068,9 @@ static u64 rapl_compute_time_window_core(struct rapl_package *rp, u64 value,
- 		y = value & 0x1f;
- 		value = (1 << y) * (4 + f) * rp->time_unit / 4;
- 	} else {
-+		if (value < rp->time_unit)
-+			return 0;
-+
- 		do_div(value, rp->time_unit);
- 		y = ilog2(value);
- 		f = div64_u64(4 * (value - (1 << y)), 1 << y);
 -- 
-2.35.1
-
+Micha³ Miros³aw
