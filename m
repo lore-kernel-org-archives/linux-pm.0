@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B0C8C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19F24C4167D
 	for <linux-pm@archiver.kernel.org>; Tue, 11 Oct 2022 23:18:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229683AbiJKXSV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Oct 2022 19:18:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38908 "EHLO
+        id S229641AbiJKXSU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Oct 2022 19:18:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38896 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229662AbiJKXSS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2022 19:18:18 -0400
+        with ESMTP id S229671AbiJKXSR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2022 19:18:17 -0400
 Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DA8F5FAD7;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B51A25D0;
         Tue, 11 Oct 2022 16:18:16 -0700 (PDT)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI4CN086187;
-        Tue, 11 Oct 2022 18:18:04 -0500
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNHvla086163;
+        Tue, 11 Oct 2022 18:17:57 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1665530284;
-        bh=6o1KqrZ+fXEMS7aaZARPQ/NnoBxO34uPUaUPmbI+thE=;
+        s=ti-com-17Q1; t=1665530277;
+        bh=eC0aHb+aZRyM8fNayBdzRLZlJy26hLJ0809gZrd7XoE=;
         h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=BwpJsVD1lZ6mO65P1Pvpa5krJOoy0K0Z1pqoyJvYH4M4cJo09CUocCWwFpaMfm/5l
-         fSkSecXQMDhnNG5ODNSVYyRciyMIWsH30Ko700SpBvETIF9xqYKnFQllLSPv7TdGgc
-         GA4XeZuEpQfjdnLjWd/vxeummEOXZGst16nolTmM=
-Received: from DFLE101.ent.ti.com (dfle101.ent.ti.com [10.64.6.22])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNI4Eq096425
+        b=Tga55FyEs9VNJ0OeIbXZRDN32ZU/3DPDndInmFPTynPbOi+9KLr3/T2kAsfRpHa2B
+         QCxIKGY1zvkmXXeWVd+JH3e9eU7j7QrYsrUovjjb3bizCfJd5L0lGDhgH4EyRjsVfR
+         8fiKBDTW/AGHoo47wh5CH3Jl8pThT5UvPhPSMQOA=
+Received: from DFLE100.ent.ti.com (dfle100.ent.ti.com [10.64.6.21])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNHv9k081663
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 11 Oct 2022 18:18:04 -0500
-Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE101.ent.ti.com
- (10.64.6.22) with Microsoft SMTP Server (version=TLS1_2,
+        Tue, 11 Oct 2022 18:17:57 -0500
+Received: from DFLE111.ent.ti.com (10.64.6.32) by DFLE100.ent.ti.com
+ (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 11
- Oct 2022 18:18:03 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
+ Oct 2022 18:17:57 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE111.ent.ti.com
+ (10.64.6.32) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
- Frontend Transport; Tue, 11 Oct 2022 18:18:03 -0500
-Received: from localhost (ileaxei01-snat2.itg.ti.com [10.180.69.6])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI3e2022106;
-        Tue, 11 Oct 2022 18:18:03 -0500
+ Frontend Transport; Tue, 11 Oct 2022 18:17:57 -0500
+Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNHvhe021888;
+        Tue, 11 Oct 2022 18:17:57 -0500
 From:   Bryan Brattlof <bb@ti.com>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
@@ -53,14 +53,14 @@ CC:     "Rafael J. Wysocki" <rafael@kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         Bryan Brattlof <bb@ti.com>
-Subject: [PATCH 07/11] arm64: dts: ti: k3-am64-main: add VTM node
-Date:   Tue, 11 Oct 2022 18:17:23 -0500
-Message-ID: <20221011231727.8090-8-bb@ti.com>
+Subject: [PATCH 01/11] thermal: k3_j72xx_bandgap: simplify k3_thermal_get_temp() function
+Date:   Tue, 11 Oct 2022 18:17:17 -0500
+Message-ID: <20221011231727.8090-2-bb@ti.com>
 X-Mailer: git-send-email 2.38.0
 In-Reply-To: <20221011231727.8090-1-bb@ti.com>
 References: <20221011231727.8090-1-bb@ti.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3254; h=from:subject; bh=HE07q6h/VkPG0znQw7MNm8QBZyEJDwtYuYDWFc4WF+Y=; b=owNCWmg5MUFZJlNZN0wH+AAAZX////7/fmVp+/67D0Zdn99/x7+/4e+3///Tf/97191v8/ywARsw HajQaBoaaAaGmgZBoaYmgADQABoGmg0AGgA00GhpoANDRpoNDRgg0aMhow0IgaAANAA0NMgaAABkPU yGmhkGJkaNAGTQDIAPUAaDR6JjU0HqAYRoBoGgAHJp6Q00NDTINGgDEGQGIGg0aNA0aNDRkyAAaAAy AMQNNAAAaA0xAGAhkAAFiHMMHK2AeZF2IiSM6tJ/g4eH35fdMcsqgEw0C+gmlZ4AyuGzwB+TsMjnsD CxkdOl4ZhpgXwjuzfwGQWaBZh1ga5OTUB02504PJDijVsekUCVZSpgrVgfQ9lUmgmYpLxsRzQyNcB5 OCkpx/CE5qLQ4ub6LLR6SJHQrN1Ifn0RP3owYkQT1xQeY0GPixgg8cNG4Ef1mT6pAFG5RLduO5H0pE aVEJCghA6RQWs074zDQCTgIouzf/K3QTzRA3SmUx0TiB+ZWO7ST+7fRzvfeFEuKjxpQYL8vAqCAdUF 8toyFL5JahTKmdovtVNsCpn79Tp4CiNrCHsu/ec1SN5aUYMK9AvELlzqnuSRoc45AhCsWxQApXUs/k BivqibNybpGFMAThdi9srFqxPFAftK5+MYDrAiDDSObYLUKA1CLcVYcak8ZtYEcL/F3JFOFCQN0wH+ AA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1018; h=from:subject; bh=nybN46Oj7CyEzxnatV6GbN3i3ebMEiKJTdwL6AscGrY=; b=owNCWmg5MUFZJlNZeGrtwAAAa3///v///v966P7SZPTrfu463e3u6v/8/1uLSp29jv90q/8wARsY IeoGR6mQNNAAAGjQNDTQBoAAAPUAyNAAABoGgB6gD1AAPFMZTahsj1Q6DQNABoBpppoaaDQGmg9JmU DagNGQAPUGj1Mg0DI9RtT1NAaaAMgAeo9QaG1AAgNpGmmQ9IMmgNAGQYmQ0DQaMmg0BkxNDJhMmEYJ oxAaBoDQyaBoaABoZNAABEHNh+8SGTgqAwLmSBk6qeoo2t4uFs3NSB+YlIgDpic3oTn/tFx1JPsNUp fI3ERToBz7AEHJoTtalhvW3YrL495OHwLDr00OIXFAhdP8Kr5Fr/Og3WB479+O3vAHEd2Kg1nbVlCf haY8QcNtmlqNmQAxgWJu2DdicGkQASShe9F9tCayEZ1RvHz2rCz204bsqoR2RKsoR7Hc73zjXLkN54 HhKt2WxbUlkQhMcZEwdfpnqC4TMrXfZYOJOgvwdamnMQyVuJ9vLLdRRpHyPI1mCPoL/n1HK81MWipv 0VKzIcDlIRnZ3ZLFluBm2RN26bJismtTpLpnzn2iBtXP88wJD3XxgVXCopQsDmkCNrGRQTdAtUCoxc NNKmoQjy9rMe0GOPksT2AACVfagGsFpqYiXO0RE5AXXNtggGiMGaBX/i7kinChIPDV24A=
 X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -69,96 +69,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The am64x supports a single VTM module which is located in the main
-domain with two associated temperature monitors located at different hot
-spots on the die.
+The k3_thermal_get_temp() function can be simplified to return only
+the result of k3_bgp_read_temp() without needing the 'ret' variable
 
 Signed-off-by: Bryan Brattlof <bb@ti.com>
 ---
- arch/arm64/boot/dts/ti/k3-am64-main.dtsi    |  8 +++++
- arch/arm64/boot/dts/ti/k3-am64-thermal.dtsi | 33 +++++++++++++++++++++
- arch/arm64/boot/dts/ti/k3-am64.dtsi         |  4 +++
- 3 files changed, 45 insertions(+)
- create mode 100644 arch/arm64/boot/dts/ti/k3-am64-thermal.dtsi
+ drivers/thermal/k3_j72xx_bandgap.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/ti/k3-am64-main.dtsi b/arch/arm64/boot/dts/ti/k3-am64-main.dtsi
-index ada00575f0f2e..4cd687cc44d9e 100644
---- a/arch/arm64/boot/dts/ti/k3-am64-main.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am64-main.dtsi
-@@ -1308,4 +1308,12 @@ main_mcan1: can@20711000 {
- 		interrupt-names = "int0", "int1";
- 		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
- 	};
-+
-+	vtm0: temperature-sensor@b00000 {
-+		compatible = "ti,j7200-vtm";
-+		reg = <0x00 0xb00000 0x00 0x400>,
-+		      <0x00 0xb01000 0x00 0x400>;
-+		power-domains = <&k3_pds 95 TI_SCI_PD_EXCLUSIVE>;
-+		#thermal-sensor-cells = <1>;
-+	};
- };
-diff --git a/arch/arm64/boot/dts/ti/k3-am64-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-am64-thermal.dtsi
-new file mode 100644
-index 0000000000000..1819a6948b19d
---- /dev/null
-+++ b/arch/arm64/boot/dts/ti/k3-am64-thermal.dtsi
-@@ -0,0 +1,33 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+thermal_zones: thermal-zones {
-+	main0_thermal: main0-thermal {
-+		polling-delay-passive = <250>;	/* milliSeconds */
-+		polling-delay = <500>;		/* milliSeconds */
-+		thermal-sensors = <&vtm0 0>;
-+
-+		trips {
-+			main0_crit: main0-crit {
-+				temperature = <105000>;	/* milliCelsius */
-+				hysteresis = <2000>;	/* milliCelsius */
-+				type = "critical";
-+			};
-+		};
-+	};
-+
-+	main1_thermal: main1-thermal {
-+		polling-delay-passive = <250>;	/* milliSeconds */
-+		polling-delay = <500>;		/* milliSeconds */
-+		thermal-sensors = <&vtm0 1>;
-+
-+		trips {
-+			main1_crit: main1-crit {
-+				temperature = <105000>;	/* milliCelsius */
-+				hysteresis = <2000>;	/* milliCelsius */
-+				type = "critical";
-+			};
-+		};
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/ti/k3-am64.dtsi b/arch/arm64/boot/dts/ti/k3-am64.dtsi
-index 016dd8511ca6f..4ebee0be648e0 100644
---- a/arch/arm64/boot/dts/ti/k3-am64.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-am64.dtsi
-@@ -69,6 +69,7 @@ cbass_main: bus@f4000 {
- 			 <0x00 0x00420000 0x00 0x00420000 0x00 0x00001000>, /* ESM0 */
- 			 <0x00 0x00600000 0x00 0x00600000 0x00 0x00001100>, /* GPIO */
- 			 <0x00 0x00a40000 0x00 0x00a40000 0x00 0x00000800>, /* Timesync router */
-+			 <0x00 0x00b00000 0x00 0x00b00000 0x00 0x00002400>, /* VTM */
- 			 <0x00 0x01000000 0x00 0x01000000 0x00 0x02330400>, /* First peripheral window */
- 			 <0x00 0x08000000 0x00 0x08000000 0x00 0x00200000>, /* Main CPSW */
- 			 <0x00 0x0d000000 0x00 0x0d000000 0x00 0x00800000>, /* PCIE_CORE */
-@@ -104,6 +105,9 @@ cbass_mcu: bus@4000000 {
- 			ranges = <0x00 0x04000000 0x00 0x04000000 0x00 0x01ff1400>; /* Peripheral window */
- 		};
- 	};
-+
-+	#include "k3-am64-thermal.dtsi"
-+
- };
+diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
+index c073b1023bbe7..a9f99a190cb61 100644
+--- a/drivers/thermal/k3_j72xx_bandgap.c
++++ b/drivers/thermal/k3_j72xx_bandgap.c
+@@ -249,14 +249,7 @@ static inline int k3_bgp_read_temp(struct k3_thermal_data *devdata,
+ /* Get temperature callback function for thermal zone */
+ static int k3_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+-	struct k3_thermal_data *data = tz->devdata;
+-	int ret = 0;
+-
+-	ret = k3_bgp_read_temp(data, temp);
+-	if (ret)
+-		return ret;
+-
+-	return ret;
++	return k3_bgp_read_temp(tz->devdata, temp);
+ }
  
- /* Now include the peripherals for each bus segments */
+ static const struct thermal_zone_device_ops k3_of_thermal_ops = {
 -- 
 2.38.0
 
