@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F0E5C4167E
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Oct 2022 23:18:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E9B4C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Oct 2022 23:18:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229693AbiJKXSW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Oct 2022 19:18:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38936 "EHLO
+        id S229700AbiJKXS0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Oct 2022 19:18:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39066 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229682AbiJKXST (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2022 19:18:19 -0400
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA5C1606A5;
-        Tue, 11 Oct 2022 16:18:16 -0700 (PDT)
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI1Xi086173;
-        Tue, 11 Oct 2022 18:18:01 -0500
+        with ESMTP id S229701AbiJKXSX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2022 19:18:23 -0400
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFD975F22F;
+        Tue, 11 Oct 2022 16:18:20 -0700 (PDT)
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI57D087596;
+        Tue, 11 Oct 2022 18:18:05 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1665530281;
-        bh=V43nL9p2UXliVj8OWhyDT5EBScWJAlDR6URDW1S2FuU=;
+        s=ti-com-17Q1; t=1665530285;
+        bh=jUNAK1LH+Kz9Qe/YJaSDQ69ikOIfmhp6b86sLuEeeYo=;
         h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=bFyUefptAE15OpqqDUVolVxhlYQrGV7i2Rj2FGiRRcKnNzZNCsI9kdt5VbgfFw+gB
-         5rzkyIWfsUXHxvuLhd9tVga2518LSV0+Jn2rAmW02G2BOH0eI6uZSxGNAzG32Fy0ao
-         kQXeJC+SHGxxyl5h4pF+pFK/oKkB3dmwKoilcDBs=
-Received: from DLEE112.ent.ti.com (dlee112.ent.ti.com [157.170.170.23])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNI18M029446
+        b=TZKHMIKR1veBP6XMoABLoPIXMjjlRnm2z3N+r1KazZGVUz9KqVcaJp6H5SsUC28qD
+         e/J3KRIK7iHNV/dYBfg2QuZgwakLhaQJBGuJzBKKvMV9jCQnUiEMG/baTlMujMegw4
+         vamLCJV8isWoRKAvrBzoR/z/iYz/84AeMVlTIIsQ=
+Received: from DFLE105.ent.ti.com (dfle105.ent.ti.com [10.64.6.26])
+        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNI5aB130202
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 11 Oct 2022 18:18:01 -0500
-Received: from DLEE108.ent.ti.com (157.170.170.38) by DLEE112.ent.ti.com
- (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
+        Tue, 11 Oct 2022 18:18:05 -0500
+Received: from DFLE113.ent.ti.com (10.64.6.34) by DFLE105.ent.ti.com
+ (10.64.6.26) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 11
- Oct 2022 18:18:00 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE108.ent.ti.com
- (157.170.170.38) with Microsoft SMTP Server (version=TLS1_2,
+ Oct 2022 18:18:04 -0500
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE113.ent.ti.com
+ (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
- Frontend Transport; Tue, 11 Oct 2022 18:18:00 -0500
-Received: from localhost (ileaxei01-snat2.itg.ti.com [10.180.69.6])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI01g021930;
-        Tue, 11 Oct 2022 18:18:00 -0500
+ Frontend Transport; Tue, 11 Oct 2022 18:18:04 -0500
+Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI4iY019294;
+        Tue, 11 Oct 2022 18:18:04 -0500
 From:   Bryan Brattlof <bb@ti.com>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
@@ -53,14 +53,14 @@ CC:     "Rafael J. Wysocki" <rafael@kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         Bryan Brattlof <bb@ti.com>
-Subject: [PATCH 04/11] thermal: k3_j72xx_bandgap: map fuse_base only for erratum workaround
-Date:   Tue, 11 Oct 2022 18:17:20 -0500
-Message-ID: <20221011231727.8090-5-bb@ti.com>
+Subject: [PATCH 08/11] arm64: dts: ti: k3-am62-wakeup: add VTM node
+Date:   Tue, 11 Oct 2022 18:17:24 -0500
+Message-ID: <20221011231727.8090-9-bb@ti.com>
 X-Mailer: git-send-email 2.38.0
 In-Reply-To: <20221011231727.8090-1-bb@ti.com>
 References: <20221011231727.8090-1-bb@ti.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2554; h=from:subject; bh=cOO7JFWo8MUylBuZzGjwW1oumWVy8SSUhUCR4NTdink=; b=owNCWmg5MUFZJlNZr31NEgAAaX///v5df237vP/LfznzPfd/adz3Wy952+uT/3+76/3f72+wARrN hD1ADQAAZBoBoAAaGho0ADQBoDI0aAaA9QNDQGg0AaDQAZMjIYRppvVPNUOhoZBpkA0NDRoNGgNGmE aeoGjQDTQNNA9QMg0xMjQNqDTRoaaaDRoDQDI0GmgDIA4MUNNNGgeoNMRoGg9QZDEZADQAZAAAxNGJ oaA0BoBoMmhoAaZNNAAAAAALQfPrwkgDqiIEossClECe7gmIQyXd6JChFvEKbRg28WkWL9Ar20u3Fx AWZIwrEgVMqOLo4WRPGKBUwaFUbQCqCvmRxw/HkfMnS8x0itdOS5SaOLImsBpt+C4PhUoGkBe2zcUm GmNpzO1w09mrQHKkMxVhJKtffPqh2z/4uFTr0Ddkw7iXUsoce5LeBlAoSpDglqwUij2Aq0SQ5YDxdB aE/USOyOI00TKtgdUXChmvofVA7vL2RXLAc7cJcqhfnxIhzbB2ZuPpx+TEc0BAPMCgy1GB0lVvzX6L DLURSyHwS5FcpAAWskCb31zzqVLn104efkilKq0YhMSOpk7peJ1JhYxbXK1IGHBivEu6k2L6HRFbAp 8pTU8tHAyNHBIrFoFawdDz4NCH6GXPX4BqYeMyvOARhRDCVowGYEcAe2ToghD/i7kinChIV76miQA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3321; h=from:subject; bh=3SwwZw3B+jRGmn68A/SGYmeFVf6idBvVtZYlVu4q7IU=; b=owNCWmg5MUFZJlNZebrKHwAAZP///7//3237yf/75J1pf/um3X3n62+7fvfffz9evZVa//UwARsx o5D1DQHqaAADRoA0aAA0DQGmgAaA0AGgGgABkNA0aaPSA0ND1MgepptQzKbREAaaNBkGQBkaANNDQA yBoNAABkAyeiYgMRpoxMg9QbUNMmgANGJpoAaAyMO1Gag000YgGgaNMRiaANDIZNADIA0yaAABo0DI yBk000DI0ANAGgAMgB5QUKtxdIC83fkCJeHs0RiQZjvtcgWPGiE1jFthB/Mc8O4r6JoS+E3bePoCfl 45WrYtnv36SSG4BjLYLtpAXESypn5mBx6gPR4EflICyWhpY3loiOzc3Tw2fQKySaWQT147CtO6IwNH ESGcAalYUTNqV1yH+rTppkTEenOKzG/WIaQx0qq8uFUJyRYSPxVTQBwi1G738+o7jZQP3UFTYl3Jow UakM0rZEittPpg0B9YlSOlVW+mKg5VrFjgg3EEEIaShMBnA45rOY9+GUhcoNEKheEhStEo4UdETCMD riC26qDSB+eniZT0WYev2rOmDJceDWIs+B12oomZOqf6pFy84BwALxZ48CRmeXHz/A6EW+JmmVG3Lg Ta5vjOlslaHoH5zxIH1Lzn8GENZUwRL7CfoVBHY6fOwA50I9yc9oAGzJM06HQyQDv+LuSKcKEg83WU Pg==
 X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -69,75 +69,102 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some of TI's J721E SoCs require a software trimming procedure for the
-temperature monitors to function properly. To determine if a particular
-J721E is not affected by this erratum, both bits in the WKUP_SPARE_FUSE0
-region must be set. Other SoCs, not affected by this erratum, will not
-need this region.
-
-Map the 'fuse_base' region only when the erratum fix is needed.
+The am62x supports a single Voltage and Thermal Management (VTM) module
+located in the wakeup domain with two associated temperature monitors
+located in hot spots of the die.
 
 Signed-off-by: Bryan Brattlof <bb@ti.com>
 ---
- drivers/thermal/k3_j72xx_bandgap.c | 34 +++++++++++++++++++-----------
- 1 file changed, 22 insertions(+), 12 deletions(-)
+ arch/arm64/boot/dts/ti/k3-am62-thermal.dtsi | 33 +++++++++++++++++++++
+ arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi  |  8 +++++
+ arch/arm64/boot/dts/ti/k3-am62.dtsi         |  7 ++++-
+ 3 files changed, 47 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am62-thermal.dtsi
 
-diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
-index 99df62295a11f..fdba116f7fe7b 100644
---- a/drivers/thermal/k3_j72xx_bandgap.c
-+++ b/drivers/thermal/k3_j72xx_bandgap.c
-@@ -386,15 +386,32 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
- 	if (IS_ERR(bgp->cfg2_base))
- 		return PTR_ERR(bgp->cfg2_base);
- 
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
--	fuse_base = devm_ioremap_resource(dev, res);
--	if (IS_ERR(fuse_base))
--		return PTR_ERR(fuse_base);
--
- 	driver_data = of_device_get_match_data(dev);
- 	if (driver_data)
- 		workaround_needed = driver_data->has_errata_i2128;
- 
-+	/*
-+	 * Some of TI's J721E SoCs require a software trimming procedure
-+	 * for the temperature monitors to function properly. To determine
-+	 * if this particular SoC is NOT affected, both bits in the
-+	 * WKUP_SPARE_FUSE0[31:30] will be set (0xC0000000) indicating
-+	 * when software trimming should NOT be applied.
-+	 *
-+	 * https://www.ti.com/lit/er/sprz455c/sprz455c.pdf
-+	 */
-+	if (workaround_needed) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
-+		fuse_base = devm_ioremap_resource(dev, res);
-+		if (IS_ERR(fuse_base))
-+			return PTR_ERR(fuse_base);
+diff --git a/arch/arm64/boot/dts/ti/k3-am62-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-am62-thermal.dtsi
+new file mode 100644
+index 0000000000000..1819a6948b19d
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am62-thermal.dtsi
+@@ -0,0 +1,33 @@
++// SPDX-License-Identifier: GPL-2.0
 +
-+		if ((readl(fuse_base) & 0xc0000000) == 0xc0000000)
-+			workaround_needed = false;
-+	}
++#include <dt-bindings/thermal/thermal.h>
 +
-+	dev_dbg(bgp->dev, "Work around %sneeded\n",
-+		workaround_needed ? "" : "not ");
++thermal_zones: thermal-zones {
++	main0_thermal: main0-thermal {
++		polling-delay-passive = <250>;	/* milliSeconds */
++		polling-delay = <500>;		/* milliSeconds */
++		thermal-sensors = <&vtm0 0>;
 +
- 	pm_runtime_enable(dev);
- 	ret = pm_runtime_get_sync(dev);
- 	if (ret < 0) {
-@@ -427,13 +444,6 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
- 		goto err_free_ref_table;
- 	}
++		trips {
++			main0_crit: main0-crit {
++				temperature = <105000>;	/* milliCelsius */
++				hysteresis = <2000>;	/* milliCelsius */
++				type = "critical";
++			};
++		};
++	};
++
++	main1_thermal: main1-thermal {
++		polling-delay-passive = <250>;	/* milliSeconds */
++		polling-delay = <500>;		/* milliSeconds */
++		thermal-sensors = <&vtm0 1>;
++
++		trips {
++			main1_crit: main1-crit {
++				temperature = <105000>;	/* milliCelsius */
++				hysteresis = <2000>;	/* milliCelsius */
++				type = "critical";
++			};
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi
+index 4090134676cf6..3954a73a33f35 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62-wakeup.dtsi
+@@ -38,4 +38,12 @@ wkup_i2c0: i2c@2b200000 {
+ 		clocks = <&k3_clks 107 4>;
+ 		clock-names = "fck";
+ 	};
++
++	vtm0: temperature-sensor@b00000 {
++		compatible = "ti,j7200-vtm";
++		reg = <0x00 0xb00000 0x00 0x400>,
++		      <0x00 0xb01000 0x00 0x400>;
++		power-domains = <&k3_pds 95 TI_SCI_PD_EXCLUSIVE>;
++		#thermal-sensor-cells = <1>;
++	};
+ };
+diff --git a/arch/arm64/boot/dts/ti/k3-am62.dtsi b/arch/arm64/boot/dts/ti/k3-am62.dtsi
+index 37fcbe7a3c336..1795f3ee534e0 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am62.dtsi
+@@ -80,6 +80,7 @@ cbass_main: bus@f0000 {
+ 			 <0x00 0x04000000 0x00 0x04000000 0x00 0x01ff1400>,
  
--	/* Workaround not needed if bit30/bit31 is set even for J721e */
--	if (workaround_needed && (readl(fuse_base + 0x0) & 0xc0000000) == 0xc0000000)
--		workaround_needed = false;
--
--	dev_dbg(bgp->dev, "Work around %sneeded\n",
--		workaround_needed ? "" : "not ");
--
- 	if (!workaround_needed)
- 		init_table(5, ref_table, golden_factors);
- 	else
+ 			 /* Wakeup Domain Range */
++			 <0x00 0x00b00000 0x00 0x00b00000 0x00 0x00002400>, /* VTM */
+ 			 <0x00 0x2b000000 0x00 0x2b000000 0x00 0x00300400>,
+ 			 <0x00 0x43000000 0x00 0x43000000 0x00 0x00020000>;
+ 
+@@ -94,10 +95,14 @@ cbass_wakeup: bus@2b000000 {
+ 			compatible = "simple-bus";
+ 			#address-cells = <2>;
+ 			#size-cells = <2>;
+-			ranges = <0x00 0x2b000000 0x00 0x2b000000 0x00 0x00300400>, /* Peripheral Window */
++			ranges = <0x00 0x00b00000 0x00 0x00b00000 0x00 0x00002400>, /* VTM */
++				 <0x00 0x2b000000 0x00 0x2b000000 0x00 0x00300400>, /* Peripheral Window */
+ 				 <0x00 0x43000000 0x00 0x43000000 0x00 0x00020000>;
+ 		};
+ 	};
++
++	#include "k3-am62-thermal.dtsi"
++
+ };
+ 
+ /* Now include the peripherals for each bus segments */
 -- 
 2.38.0
 
