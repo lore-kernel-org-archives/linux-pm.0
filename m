@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D6E7C4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Oct 2022 23:19:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9074C4321E
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Oct 2022 23:19:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229866AbiJKXTO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Oct 2022 19:19:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40112 "EHLO
+        id S229875AbiJKXTQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Oct 2022 19:19:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229814AbiJKXTB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2022 19:19:01 -0400
+        with ESMTP id S229520AbiJKXTD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2022 19:19:03 -0400
 Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C975EA59BC;
-        Tue, 11 Oct 2022 16:18:37 -0700 (PDT)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNIQXS005747;
-        Tue, 11 Oct 2022 18:18:26 -0500
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01940A2ABA;
+        Tue, 11 Oct 2022 16:18:27 -0700 (PDT)
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI8dd005708;
+        Tue, 11 Oct 2022 18:18:08 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1665530306;
-        bh=P1m/db96NUv+Yg/RID1mWoELUsUOMqR0M54jnmoWElo=;
+        s=ti-com-17Q1; t=1665530288;
+        bh=yWGhxBED/EYOztiXTHh4AcivwZfhpPNPRo8BTRUenMk=;
         h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=SSllpkkg9qtDYsVDOiXA6GfVVSytL2EUL7et14uyz3yhecLShYhnOjaGoGm8HyFyD
-         Hc9Pz9SQHteerFajeRgzLQkwxqRn1xAS0OYUVjWelmxnWLCSicbWeRuRyJhrx3cf10
-         dG3CsuMhLJpKyMb76tEf/M4COfuIjtrQVM3YhTB4=
-Received: from DLEE112.ent.ti.com (dlee112.ent.ti.com [157.170.170.23])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNIQEa096544
+        b=eAV+C1po8q3Q4Qjyof97fUv5itM+sghueiDX1vmdP0JbWOP2XG1w48AK4nNVLPpyc
+         RVQpwQ/Rr+q7GInghakfu3FLSGKZty8DnNlEXQdy6XmuaibLiZ+rynxB62JLVqc92g
+         tZiVa/qlTzYXFB15C/Ogg69gaJIcuY9JzpnvJq6k=
+Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNI8Lb081780
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 11 Oct 2022 18:18:26 -0500
-Received: from DLEE108.ent.ti.com (157.170.170.38) by DLEE112.ent.ti.com
- (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
+        Tue, 11 Oct 2022 18:18:08 -0500
+Received: from DLEE114.ent.ti.com (157.170.170.25) by DLEE113.ent.ti.com
+ (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 11
- Oct 2022 18:18:01 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE108.ent.ti.com
- (157.170.170.38) with Microsoft SMTP Server (version=TLS1_2,
+ Oct 2022 18:18:07 -0500
+Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
- Frontend Transport; Tue, 11 Oct 2022 18:18:01 -0500
+ Frontend Transport; Tue, 11 Oct 2022 18:18:07 -0500
 Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI1aA088414;
-        Tue, 11 Oct 2022 18:18:01 -0500
+        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI7nG088568;
+        Tue, 11 Oct 2022 18:18:07 -0500
 From:   Bryan Brattlof <bb@ti.com>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
@@ -53,14 +53,14 @@ CC:     "Rafael J. Wysocki" <rafael@kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         Bryan Brattlof <bb@ti.com>
-Subject: [PATCH 05/11] dt-bindings: thermal: k3-j72xx: elaborate on binding descriptions
-Date:   Tue, 11 Oct 2022 18:17:21 -0500
-Message-ID: <20221011231727.8090-6-bb@ti.com>
+Subject: [PATCH 11/11] arm64: dts: ti: k3-j7200-mcu-wakeup: add VTM node
+Date:   Tue, 11 Oct 2022 18:17:27 -0500
+Message-ID: <20221011231727.8090-12-bb@ti.com>
 X-Mailer: git-send-email 2.38.0
 In-Reply-To: <20221011231727.8090-1-bb@ti.com>
 References: <20221011231727.8090-1-bb@ti.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2264; h=from:subject; bh=xzPQXHc0OCTrwaaHBhCklOdKZFKQQ617QSSHOw26KN4=; b=owNCWmg5MUFZJlNZosh7uAAAY//////N9nvz/L2TNv09fJP+bx5/bue7O/u/8m//5/5v/PSwARs2 g7UAaAAAAGgDQABoAAAaZGgGjIAADQ0DTQaBk0aABo9IGRtT1GxT2VEDJk0aGgGIaGho0BkMgGQZGh poNGgADJpowBBhMQaBkBoYgaMg0yaNABg7U0yBpoGhhNAAANGgYmgAyAAA0AGT1B6EeowTI0ZGg0AB kDI0NNDQ09IMGDDw472vWL+jYN/aEBFU7IPcNoBHiI3ogAyRAVlsgEVJQ+pW/Z6IUi1AEnsL+4aL5y 86SWZFReGhzf47Hc9QMrE6IM4Ch0a+vvfYDubVZGDCLUQ3enGCs0GkX6R43SQSBMKXImP41BL76wHs efRJEwKf+Tta7yDzGDTktDchj2IkOHbTpLbfcrXYfFbd4p0dNop1LguDyOhlzcaw8bNFLITelbPMZ9 vIV/ftUnDy6/J5fgh7P0vgLxodev4WXB0ggrfL261MvYThRxniUDHlJ7JTHhDlTh/4DCPDstU4Titx pJsJStc+jUHF89wyJl0b7CZehfVKkpB8FNlsfxIgqzPTilGyTH6+p7tSyXxiKIEij8SW3sBFfixBbk DFDKPJ3HWgAIQSzV7bBmmx/XhCqef7GOaSPYLOqCwjLUJCpGJDkrDCCWAH/F3JFOFCQosh7uA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3059; h=from:subject; bh=1sRLapOsPYA037+Zk0rINvpjpnn0VqHMNprDoz4GFMU=; b=owNCWmg5MUFZJlNZRQKgwwAAZ/////9v4/v13F//15LL/8eP323/ZW67zt/7bb/cx5b+7u+wARsY kPKDQBoAAbUAAaBoDIANMgAAAAADRoABoeoA0aNHqaBkD00Rp6gNP1MkMoDQD1ABoA0D1ABoNBoDQA DT1GjQDQAeoAaGQAG0mjR6hkbUGR5QeoNDJ6gNDk09Roeoek0GmmhiBoGjJoYho0NABoDIaANNNAZN DQGhiGmgaNADQaYQDRkDI0AAEQNW9I3kIC6B6Rc6UORz6unmX299wUKLDa+izDWTwnpQiEoMTwIfs5 JgoikEkFEPOStCessk1KIejx00vbGnl3oZIOKn2sTod90PNQgJyXXm+C9tyw+UaYJ6lCi0GFYn+I0K AkAJGg7bWHEYD6SZcCVwlGCiNwwyvlIqPFJVrwUiPCRBhpfUtSgYkPCZFnma3+wQhjKBOJeSwRZGdv ZuVyHvxZ8rW3jpe9Z+gVRs6OqN4i5UBbfKrxAKAYxZp39MSo2UCcbztErydU4I6RXl2HYMdYEHAo39 SmhA1AHzNOEJjZS4rUmkRJDqiHVpF49ssUuJ8UwhnNziEWkmVgDdUf+4Hy6QFU6PRXhEtwYVLUs0jE If5UwSBPRS+bFxDPxTS5aO6lhAy7U0Xhp2BQBy2LP9V0UExAwD7GjVsmHn/i7kinChIIoFQYY=
 X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -69,61 +69,102 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Elaborate on the function of this device node as well as some of the
-properties that this node uses.
+The j7200 supports a single Voltage and Thermal Management (VTM) device
+located in the wakeup domain with three associated temperature monitors
+located in various hot spots on the die.
 
 Signed-off-by: Bryan Brattlof <bb@ti.com>
 ---
- .../bindings/thermal/ti,j72xx-thermal.yaml    | 27 ++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ .../boot/dts/ti/k3-j7200-mcu-wakeup.dtsi      |  8 ++++
+ arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi  | 47 +++++++++++++++++++
+ arch/arm64/boot/dts/ti/k3-j7200.dtsi          |  3 ++
+ 3 files changed, 58 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
 
-diff --git a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
-index c74f124ebfc00..0b6a6fa07a532 100644
---- a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
-@@ -9,6 +9,24 @@ title: Texas Instruments J72XX VTM (DTS) binding
- maintainers:
-   - Keerthy <j-keerthy@ti.com>
+diff --git a/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
+index ff13bbeed30c9..34d3e9bbd181c 100644
+--- a/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
+@@ -375,4 +375,12 @@ mcu_r5fss0_core1: r5f@41400000 {
+ 			ti,loczrama = <1>;
+ 		};
+ 	};
++
++	vtm0: temperature-sensor@42040000 {
++		compatible = "ti,j7200-vtm";
++		reg = <0x00 0x42040000 0x00 0x350>,
++		      <0x00 0x42050000 0x00 0x350>;
++		power-domains = <&k3_pds 154 TI_SCI_PD_EXCLUSIVE>;
++		#thermal-sensor-cells = <1>;
++	};
+ };
+diff --git a/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
+new file mode 100644
+index 0000000000000..0bf52c93c3f9a
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
+@@ -0,0 +1,47 @@
++// SPDX-License-Identifier: GPL-2.0
++
++#include <dt-bindings/thermal/thermal.h>
++
++thermal_zones: thermal-zones {
++	mcu_thermal: mcu-thermal {
++		polling-delay-passive = <250>;	/* milliSeconds */
++		polling-delay = <500>;		/* milliSeconds */
++		thermal-sensors = <&vtm0 0>;
++
++		trips {
++			wkup_crit: wkup-crit {
++				temperature = <125000>;	/* milliCelsius */
++				hysteresis = <2000>;	/* milliCelsius */
++				type = "critical";
++			};
++		};
++	};
++
++	mpu_thermal: mpu-thermal {
++		polling-delay-passive = <250>;	/* milliSeconds */
++		polling-delay = <500>;		/* milliSeconds */
++		thermal-sensors = <&vtm0 1>;
++
++		trips {
++			mpu_crit: mpu-crit {
++				temperature = <125000>;	/* milliCelsius */
++				hysteresis = <2000>;	/* milliCelsius */
++				type = "critical";
++			};
++		};
++	};
++
++	main_thermal: main-thermal {
++		polling-delay-passive = <250>;	/* milliSeconds */
++		polling-delay = <500>;		/* milliSeconds */
++		thermal-sensors = <&vtm0 2>;
++
++		trips {
++			c7x_crit: c7x-crit {
++				temperature = <125000>;	/* milliCelsius */
++				hysteresis = <2000>;	/* milliCelsius */
++				type = "critical";
++			};
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-j7200.dtsi b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
+index b6da0454cc5bd..9368a6e3d4a62 100644
+--- a/arch/arm64/boot/dts/ti/k3-j7200.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
+@@ -168,6 +168,9 @@ cbass_mcu_wakeup: bus@28380000 {
+ 				 <0x07 0x00000000 0x07 0x00000000 0x01 0x00000000>; /* FSS OSPI1 data region 3 */
+ 		};
+ 	};
++
++	#include "k3-j7200-thermal.dtsi"
++
+ };
  
-+description: |
-+  The TI K3 family of SoCs typically have a Voltage & Thermal
-+  Management (VTM) device to control up to 8 temperature diode
-+  sensors to measure silicon junction temperatures from different
-+  hotspots of the chip as well as provide temperature, interrupt
-+  and alerting information.
-+
-+  The VTM device will periodically enable these temperature sensors
-+  to make a temperature measurement and store the reported data
-+  allowing the sensors to stay in a reset state when not in use
-+  to maximize the sensor's life.
-+
-+  This VTM driver will then use the following polynomial equation to
-+  calculate the temperature from the value stored in the VTM device.
-+
-+  Temp = (-9.2627e-12) * x^4 + (6.0373e-08) * x^3 + \
-+         (-1.7058e-04) * x^2 + (3.2512e-01) * x   + (-4.9003e+01)
-+
- properties:
-   compatible:
-     enum:
-@@ -19,9 +37,16 @@ properties:
-     items:
-       - description: VTM cfg1 register space
-       - description: VTM cfg2 register space
--      - description: VTM efuse register space
-+      - description: |
-+          A software trimming method must be applied to some Jacinto
-+          devices to function properly. This eFuse region provides
-+          the information needed for these SoCs to report
-+          temperatures accurately.
- 
-   power-domains:
-+    description: |
-+      Should contain the phandle to a power management (PM) domain
-+      node and the device-id of this device.
-     maxItems: 1
- 
-   "#thermal-sensor-cells":
+ /* Now include the peripherals for each bus segments */
 -- 
 2.38.0
 
