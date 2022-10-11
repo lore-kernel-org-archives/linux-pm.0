@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E5AEC43217
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1FC8C4321E
 	for <linux-pm@archiver.kernel.org>; Tue, 11 Oct 2022 23:18:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229678AbiJKXSS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Oct 2022 19:18:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38872 "EHLO
+        id S229589AbiJKXST (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Oct 2022 19:18:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38898 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229663AbiJKXSR (ORCPT
+        with ESMTP id S229656AbiJKXSR (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2022 19:18:17 -0400
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93C775244E;
-        Tue, 11 Oct 2022 16:18:14 -0700 (PDT)
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B9BA5F99F;
+        Tue, 11 Oct 2022 16:18:16 -0700 (PDT)
 Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI3pK005692;
-        Tue, 11 Oct 2022 18:18:03 -0500
+        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29BNHxbH086168;
+        Tue, 11 Oct 2022 18:17:59 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1665530283;
-        bh=cR268UZvfBM1FlE0yMkmHq1DV0bRnQaCFdVx4NiAZW4=;
+        s=ti-com-17Q1; t=1665530279;
+        bh=oPlOVAsMdXzy8y19AijK6Kt1rJmvxBuq0bQNBBMio5g=;
         h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=Ah50Newn2/6TzODu00VwBWZPIwRtC80EfIxafxg1VS9j9fIQzVUSOM0obubjjejSC
-         gqNWnxcOrkmxFg2L15V2WPsDKJ4n9DMUJbRSQk7m/AoIsfVpV1c/SGTEETr1ccR1Xx
-         X/jHs0B6Gvtyx4xksXaWxq1WlvWBwd2qRrYCmZb4=
-Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNI386029505
+        b=JNtsx2BfVvcI7M8/YBNJLPLBOtCW/OlMs95juLOko2oDi2Dce00r9XDhULNWfzEbk
+         hWHbMeZbhB5oH0QyntYAzLHFYr3Ge/ziH3et46ouZhxRbcTtQ3zvl3QFAi/aKRu4Uv
+         yyXAdZFEc5VjN9oJPB4nemQp9Mjc5offLizF89jc=
+Received: from DFLE102.ent.ti.com (dfle102.ent.ti.com [10.64.6.23])
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29BNHwu5029438
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 11 Oct 2022 18:18:03 -0500
-Received: from DFLE113.ent.ti.com (10.64.6.34) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
+        Tue, 11 Oct 2022 18:17:58 -0500
+Received: from DFLE104.ent.ti.com (10.64.6.25) by DFLE102.ent.ti.com
+ (10.64.6.23) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 11
- Oct 2022 18:18:02 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE113.ent.ti.com
- (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
+ Oct 2022 18:17:58 -0500
+Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE104.ent.ti.com
+ (10.64.6.25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
- Frontend Transport; Tue, 11 Oct 2022 18:18:02 -0500
-Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNI2bQ059088;
-        Tue, 11 Oct 2022 18:18:02 -0500
+ Frontend Transport; Tue, 11 Oct 2022 18:17:58 -0500
+Received: from localhost (ileaxei01-snat2.itg.ti.com [10.180.69.6])
+        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29BNHwxN058954;
+        Tue, 11 Oct 2022 18:17:58 -0500
 From:   Bryan Brattlof <bb@ti.com>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
@@ -53,14 +53,14 @@ CC:     "Rafael J. Wysocki" <rafael@kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         Bryan Brattlof <bb@ti.com>
-Subject: [PATCH 06/11] dt-bindings: thermal: k3-j72xx: conditionally require efuse reg range
-Date:   Tue, 11 Oct 2022 18:17:22 -0500
-Message-ID: <20221011231727.8090-7-bb@ti.com>
+Subject: [PATCH 02/11] thermal: k3_j72xx_bandgap: use bool for i2128 erratum flag
+Date:   Tue, 11 Oct 2022 18:17:18 -0500
+Message-ID: <20221011231727.8090-3-bb@ti.com>
 X-Mailer: git-send-email 2.38.0
 In-Reply-To: <20221011231727.8090-1-bb@ti.com>
 References: <20221011231727.8090-1-bb@ti.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2213; h=from:subject; bh=392o2SIsDC1TRw+VXUL68Q4QmibPK2Rjnky1U7t/3gE=; b=owNCWmg5MUFZJlNZGbDbUgAAan/////9+uvvzcru7OcZ+4c+2U362e1//9+R93z8/bXO+vewARsw IeoDQAaNNAB6QAaANAAaNNMQDQxDQAaGIDQABoNNNGjE0DTTQeptQ2jUbU/VDoaaZGmjIDJkAAaAZP QhoAZGgaBoaaAGTIxMJ6gaBkNDIwjI9TEGmhkBpoAdNMTQyMjQwgGmgaDJppphNAGhoAYhk0wRoyGB MJhAAAYgMEAAaDQABg8IMdCJgQiNnz8TIkuavngDGMNCq0/DEXAsUAs1sGIyFfRtD4fhmgu8kWYdov xguio2arETPjgAr10QiqFfLxFimu4m2IbQjOBdPkJrQ8HgQDdKsaFLr6aK6k6fIK42nt+5ZhbdbpPb PHBxv4+gng2490wMxfvp8kMwC2PgDLOOYDdACNO16WMsDqgQkb0ixfqOxbAUVe5NlSOBA3oVM8rQpD SruWyBMFTh3wCo3G7B7h1NGjjRInfxIzIeO5oiM1Y1X5aulQEUa38bWZY0+p2J7ADH62BwoxIxU8yf AFbomYriq2fU2XL+Pw0SjsDGcNlKHrW3hK9Y0bKUjUFrALGqUgdCLUImbLJJBHqwIPhmgFN35HEf1y 6cC8hmqpMu9LQxp/uxDDt8g4ycMQBx9cTnUZDkj+C0IR0LGlZn+rT7gAP8XckU4UJAZsNtSA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1775; h=from:subject; bh=G++pLIL58zYxITYxZt/Js9a9L5y9Z83+mB8bqnuk0QA=; b=owNCWmg5MUFZJlNZc5J6KwAAaX////7vb/+7avme6zsd/nu7/8f/77/8u8bv2pntp/3m7/8wARsw HaTQaAABoAAaA0B6Rk0AAaAaAAABoNNGQA00ADEaDRptJoaaMI0aMnkT1CDRkaBoaDQyaNANGgaYJo NqGgGgAAGQaYhhGQA0aGQNGEGh6gGE0ABoAZCGho0GjQNNNNMgaNBo0BpkYjTQAGgGQMQNAGgMRgjE MgaAADJoANGmjAmmgBA3tsDH1kA+YS4MChQkNMixc48PamP0EQcH3h4R2dDz/YAQVaUENTyAQmq8wF ad8slCVbZEYU3Iu7xYLX0A5wexyloD4T877UUi2M24597+Sw4+8VipicodE4TYYnKVagXAMzImjuxT 2y6fX/C011ECzla3KscgUFGihCA2RkCM81BYHuYjLyoPekVmjWPI1629RHrE41+hs+kYlmqT5hz/Nz T8PLH1RBOhVWqQMx+jD0tWGOoqO6PQyFyrts22J8NpzwY1aTmL5QRWDQiCEoy3Af3xRdqUpDSlCpYX abMTH0B53AEBY35cS37+MiEEWUviNocE8xYnBrmL2gZqfIT4Xk1bjVnWC5YvzgxeQMBmiOiLQPv7Ea bqheyR6jJuDsgAyQ87cCsEueXpGZqK1zLypJEuEvTNBYkqC9OgEmMQgi439/WkR/i7kinChIOck9FY
 X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -69,70 +69,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Only some of TI's J721E SoCs will need a eFuse register range mapped to
-determine if they're affected by TI's i2128 erratum. All other SoC will
-not need this eFuse range to be mapped to function properly
+Some of TI's J721E's require a software trimming method to report
+temperatures accurately. Currently we are using a few different data
+types to indicate when this device should apply the erratum.
 
-Update the bindings for the k3_j72xx_bandgap thermal driver so other
-devices will only need to define two register ranges
+Change the 'workaround_needed' variable's data type to a bool to align
+with how we are using this variable currently.
 
 Signed-off-by: Bryan Brattlof <bb@ti.com>
 ---
- .../bindings/thermal/ti,j72xx-thermal.yaml    | 34 +++++++++++++------
- 1 file changed, 24 insertions(+), 10 deletions(-)
+ drivers/thermal/k3_j72xx_bandgap.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
-index 0b6a6fa07a532..387628ab35959 100644
---- a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
-@@ -33,16 +33,6 @@ properties:
-       - ti,j721e-vtm
-       - ti,j7200-vtm
+diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
+index a9f99a190cb61..b9d20026771a5 100644
+--- a/drivers/thermal/k3_j72xx_bandgap.c
++++ b/drivers/thermal/k3_j72xx_bandgap.c
+@@ -340,7 +340,7 @@ static void print_look_up_table(struct device *dev, int *ref_table)
+ }
  
--  reg:
--    items:
--      - description: VTM cfg1 register space
--      - description: VTM cfg2 register space
--      - description: |
--          A software trimming method must be applied to some Jacinto
--          devices to function properly. This eFuse region provides
--          the information needed for these SoCs to report
--          temperatures accurately.
--
-   power-domains:
-     description: |
-       Should contain the phandle to a power management (PM) domain
-@@ -52,6 +42,30 @@ properties:
-   "#thermal-sensor-cells":
-     const: 1
+ struct k3_j72xx_bandgap_data {
+-	unsigned int has_errata_i2128;
++	const bool has_errata_i2128;
+ };
  
-+if:
-+  properties:
-+    compatible:
-+      contains:
-+        enum:
-+          - ti,j721e-vtm
-+then:
-+  properties:
-+    reg:
-+      items:
-+        - description: VTM cfg1 register space
-+        - description: VTM cfg2 register space
-+        - description: |
-+            A software trimming method must be applied to some Jacinto
-+            devices to function properly. This eFuse region provides
-+            the information needed for these SoCs to report
-+            temperatures accurately.
-+else:
-+  properties:
-+    reg:
-+      items:
-+        - description: VTM cfg1 register space
-+        - description: VTM cfg2 register space
-+
- required:
-   - compatible
-   - reg
+ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+@@ -351,7 +351,7 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct k3_j72xx_bandgap *bgp;
+ 	struct k3_thermal_data *data;
+-	int workaround_needed = 0;
++	bool workaround_needed = false;
+ 	const struct k3_j72xx_bandgap_data *driver_data;
+ 	struct thermal_zone_device *ti_thermal;
+ 	int *ref_table;
+@@ -522,11 +522,11 @@ static int k3_j72xx_bandgap_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct k3_j72xx_bandgap_data k3_j72xx_bandgap_j721e_data = {
+-	.has_errata_i2128 = 1,
++	.has_errata_i2128 = true,
+ };
+ 
+ static const struct k3_j72xx_bandgap_data k3_j72xx_bandgap_j7200_data = {
+-	.has_errata_i2128 = 0,
++	.has_errata_i2128 = false,
+ };
+ 
+ static const struct of_device_id of_k3_j72xx_bandgap_match[] = {
 -- 
 2.38.0
 
