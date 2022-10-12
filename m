@@ -2,160 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71F06C43219
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Oct 2022 18:07:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15178C43217
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Oct 2022 18:16:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229484AbiJLSHI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Oct 2022 14:07:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53528 "EHLO
+        id S229533AbiJLSQ3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Oct 2022 14:16:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36098 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229471AbiJLSHH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2022 14:07:07 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7622861B06;
-        Wed, 12 Oct 2022 11:07:05 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id 9949fdea2438a364; Wed, 12 Oct 2022 20:07:03 +0200
-Received: from kreacher.localnet (unknown [213.134.169.115])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 63C5666677E;
-        Wed, 12 Oct 2022 20:07:02 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc:     Alessandro Zummo <a.zummo@towertech.it>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        linux-rtc@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>,
+        with ESMTP id S229846AbiJLSQL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2022 14:16:11 -0400
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 126D717A94;
+        Wed, 12 Oct 2022 11:15:50 -0700 (PDT)
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29CIFVNH129232;
+        Wed, 12 Oct 2022 13:15:31 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1665598531;
+        bh=ep5GtCavMkvjrrA9IxGQyL1LS5VWk/moXIEdjG8E7Ik=;
+        h=Date:From:To:CC:Subject:References:In-Reply-To;
+        b=bbusyDaSb9DVGIqFHRhfCETC28HimkaSBd4KBZExXLgiXD6s8ytA7ee1k3brb7/fk
+         GfQbK3KCdTUPEqULdOEi+m3BYkalOYKyJ04QldI2h99SyQAgrQJwI8QiFklqa7+TZP
+         /yLfz3WHNoVEG4SdoZsXV0sNCr+cccheMQlC08/o=
+Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29CIFV1f067217
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 12 Oct 2022 13:15:31 -0500
+Received: from DFLE105.ent.ti.com (10.64.6.26) by DFLE109.ent.ti.com
+ (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Wed, 12
+ Oct 2022 13:15:31 -0500
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE105.ent.ti.com
+ (10.64.6.26) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
+ Frontend Transport; Wed, 12 Oct 2022 13:15:31 -0500
+Received: from localhost (ileaxei01-snat2.itg.ti.com [10.180.69.6])
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29CIFVhR075788;
+        Wed, 12 Oct 2022 13:15:31 -0500
+Date:   Wed, 12 Oct 2022 13:15:31 -0500
+From:   Bryan Brattlof <bb@ti.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+CC:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Nishanth Menon <nm@ti.com>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Tero Kristo <kristo@kernel.org>, Keerthy <j-keerthy@ti.com>,
+        Linux Thermal <linux-pm@vger.kernel.org>,
+        Linux Device Tree <devicetree@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Mel Gorman <mgorman@techsingularity.net>
-Subject: [PATCH] rtc: rtc-cmos: Fix event handler registration ordering issue
-Date:   Wed, 12 Oct 2022 20:07:01 +0200
-Message-ID: <5629262.DvuYhMxLoT@kreacher>
+        Linux ARM <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 06/11] dt-bindings: thermal: k3-j72xx: conditionally
+ require efuse reg range
+Message-ID: <20221012181531.cdvbfhbdxb3tscm4@bryanbrattlof.com>
+References: <20221011231727.8090-1-bb@ti.com>
+ <20221011231727.8090-7-bb@ti.com>
+ <2eaae603-9726-290e-7c9d-67b89256140c@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.169.115
-X-CLIENT-HOSTNAME: 213.134.169.115
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrfeejkedguddvvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeegfffhudejlefhtdegffekteduhfethffhieettefhkeevgfdvgfefieekiefgheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppedvudefrddufeegrdduieelrdduudehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeiledrudduhedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepledprhgtphhtthhopegrlhgvgigrnhgurhgvrdgsvghllhhonhhisegsohhothhlihhnrdgtohhmpdhrtghpthhtoheprgdriihumhhmohesthhofigvrhhtvggthhdrihhtpdhrtghpthhtohepmhgrrhhiohdrlhhimhhonhgtihgvlhhlohesrghmugdrtghomhdprhgtphhtthhopehlihhnuhigqdhrthgtsehv
- ghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohephhgvlhhgrggrsheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepmhhgohhrmhgrnhesthgvtghhshhinhhguhhlrghrihhthidrnhgvth
-X-DCC--Metrics: v370.home.net.pl 1024; Body=9 Fuz1=9 Fuz2=9
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+In-Reply-To: <2eaae603-9726-290e-7c9d-67b89256140c@linaro.org>
+X-PGP-Fingerprint: D3D1 77E4 0A38 DF4D 1853 FEEF 41B9 0D5D 71D5 6CE0
+User-Agent: NeoMutt/20171215
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On October 12, 2022 thus sayeth Krzysztof Kozlowski:
+> On 11/10/2022 19:17, Bryan Brattlof wrote:
+> > Only some of TI's J721E SoCs will need a eFuse register range mapped to
+> > determine if they're affected by TI's i2128 erratum. All other SoC will
+> > not need this eFuse range to be mapped to function properly
+> > 
+> > Update the bindings for the k3_j72xx_bandgap thermal driver so other
+> > devices will only need to define two register ranges
+> > 
+> > Signed-off-by: Bryan Brattlof <bb@ti.com>
+> > ---
+> >  .../bindings/thermal/ti,j72xx-thermal.yaml    | 34 +++++++++++++------
+> >  1 file changed, 24 insertions(+), 10 deletions(-)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+> > index 0b6a6fa07a532..387628ab35959 100644
+> > --- a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+> > +++ b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+> > @@ -33,16 +33,6 @@ properties:
+> >        - ti,j721e-vtm
+> >        - ti,j7200-vtm
+> >  
+> > -  reg:
+> 
+> No, keep entire part here.
+> with minItems:2
+>
 
-Because acpi_install_fixed_event_handler() enables the event
-automatically on success, it is incorrect to call it before the
-handler routine passed to it is ready to handle events.
+Ah ok! I was unsure what this should look like. Your way is better :)
 
-Unfortunately, the rtc-cmos driver does exactly the incorrect thing
-by calling cmos_wake_setup(), which passes rtc_handler() to
-acpi_install_fixed_event_handler(), before cmos_do_probe(), because
-rtc_handler() uses dev_get_drvdata() to get to the cmos object
-pointer and the driver data pointer is only populated in
-cmos_do_probe().
-
-This leads to a NULL pointer dereference in rtc_handler() on boot
-if the RTC fixed event happens to be active at the init time.
-
-To address this issue, change the initialization ordering of the
-driver so that cmos_wake_setup() is always called after a successful
-cmos_do_probe() call.
-
-While at it, change cmos_pnp_probe() to call cmos_do_probe() after
-the initial if () statement used for computing the IRQ argument to
-be passed to cmos_do_probe() which is cleaner than calling it in
-each branch of that if () (local variable "irq" can be of type int,
-because it is passed to that function as an argument of type int).
-
-Note that commit 6492fed7d8c9 ("rtc: rtc-cmos: Do not check
-ACPI_FADT_LOW_POWER_S0") caused this issue to affect a larger number
-of systems, because previously it only affected systems with
-ACPI_FADT_LOW_POWER_S0 set, but it is present regardless of that
-commit.
-
-Fixes: 6492fed7d8c9 ("rtc: rtc-cmos: Do not check ACPI_FADT_LOW_POWER_S0")
-Fixes: a474aaedac99 ("rtc-cmos: move wake setup from ACPI glue into RTC driver")
-Link: https://lore.kernel.org/linux-acpi/20221010141630.zfzi7mk7zvnmclzy@techsingularity.net/
-Reported-by: Mel Gorman <mgorman@techsingularity.net>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/rtc/rtc-cmos.c |   29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
-
-Index: linux-pm/drivers/rtc/rtc-cmos.c
-===================================================================
---- linux-pm.orig/drivers/rtc/rtc-cmos.c
-+++ linux-pm/drivers/rtc/rtc-cmos.c
-@@ -1352,10 +1352,10 @@ static void cmos_check_acpi_rtc_status(s
- 
- static int cmos_pnp_probe(struct pnp_dev *pnp, const struct pnp_device_id *id)
- {
--	cmos_wake_setup(&pnp->dev);
-+	int irq, ret;
- 
- 	if (pnp_port_start(pnp, 0) == 0x70 && !pnp_irq_valid(pnp, 0)) {
--		unsigned int irq = 0;
-+		irq = 0;
- #ifdef CONFIG_X86
- 		/* Some machines contain a PNP entry for the RTC, but
- 		 * don't define the IRQ. It should always be safe to
-@@ -1364,13 +1364,17 @@ static int cmos_pnp_probe(struct pnp_dev
- 		if (nr_legacy_irqs())
- 			irq = RTC_IRQ;
- #endif
--		return cmos_do_probe(&pnp->dev,
--				pnp_get_resource(pnp, IORESOURCE_IO, 0), irq);
- 	} else {
--		return cmos_do_probe(&pnp->dev,
--				pnp_get_resource(pnp, IORESOURCE_IO, 0),
--				pnp_irq(pnp, 0));
-+		irq = pnp_irq(pnp, 0);
- 	}
-+
-+	ret = cmos_do_probe(&pnp->dev, pnp_get_resource(pnp, IORESOURCE_IO, 0), irq);
-+	if (ret)
-+		return ret;
-+
-+	cmos_wake_setup(&pnp->dev);
-+
-+	return 0;
- }
- 
- static void cmos_pnp_remove(struct pnp_dev *pnp)
-@@ -1454,10 +1458,9 @@ static inline void cmos_of_init(struct p
- static int __init cmos_platform_probe(struct platform_device *pdev)
- {
- 	struct resource *resource;
--	int irq;
-+	int irq, ret;
- 
- 	cmos_of_init(pdev);
--	cmos_wake_setup(&pdev->dev);
- 
- 	if (RTC_IOMAPPED)
- 		resource = platform_get_resource(pdev, IORESOURCE_IO, 0);
-@@ -1467,7 +1470,13 @@ static int __init cmos_platform_probe(st
- 	if (irq < 0)
- 		irq = -1;
- 
--	return cmos_do_probe(&pdev->dev, resource, irq);
-+	ret = cmos_do_probe(&pdev->dev, resource, irq);
-+	if (ret)
-+		return ret;
-+
-+	cmos_wake_setup(&pdev->dev);
-+
-+	return 0;
- }
- 
- static int cmos_platform_remove(struct platform_device *pdev)
-
-
+Thanks Krzysztof
+~Bryan
 
