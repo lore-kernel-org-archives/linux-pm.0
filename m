@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F2E2C43219
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Oct 2022 00:44:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED792C43219
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Oct 2022 00:57:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232093AbiJMAov (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Oct 2022 20:44:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34620 "EHLO
+        id S230322AbiJMA5A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Oct 2022 20:57:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232661AbiJMAo2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2022 20:44:28 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6683F11BDB3;
-        Wed, 12 Oct 2022 17:36:48 -0700 (PDT)
+        with ESMTP id S230291AbiJMA43 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2022 20:56:29 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E621BD119;
+        Wed, 12 Oct 2022 17:53:33 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 4A019B81CF3;
-        Thu, 13 Oct 2022 00:24:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 127A9C43143;
-        Thu, 13 Oct 2022 00:24:05 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id DC7C0616E0;
+        Thu, 13 Oct 2022 00:26:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CEFCC4347C;
+        Thu, 13 Oct 2022 00:26:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1665620647;
-        bh=PyVuP224LTfOgKeY7PGhWDcswJIc+RIZ/ujbhn1tRm4=;
+        s=k20201202; t=1665620790;
+        bh=ksRKJY5TQUMx/Q1CSvNcnmyPvkMbckLSJ11m16BwXMg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Q5/dTYUxizyF7NvyZyQZ75mgeAGMOMiw3CV3AtuuMXVEkRfRwgu1MDvKQH9y1CvpX
-         gnQTWkLQpjbWvp8zXGaokA2a/qcF6s4siQn14jnQ+YNdGKgNhdIzuLU7b+IhpAVhdz
-         rSzOT6ZlLTr5Rs5/h8EgVdjVSKwtcT6K8PSB0kVjl//Dj+Y3TpcMjTmscs6CHzyzS/
-         DxzYFqaQuE2YxAn1fpcBgSc3SO5rj9p+zVulbCPjJhNLdcxSYU0THlO23BQzQlVI94
-         AYJWgCiz/kMcmiUmGV0aAjkG05wqsDyzFNFvkcD8/uPpewnB9qjSG3EUv0dz90/gMi
-         QCnSn2XmQEK3g==
+        b=Yo79oo7vuqiO+YbIAT9zsZL+svnonnCNL6p7/4nh7shAS9usoFB+ZhU6lTg6tmlN8
+         gEblXpHJtN79VoSHkCWyLzWtBTJMuvKZffckl8JJ/g1QQ4R5R9HM3L8eA98Fj5+7yY
+         8T9kOtcQrQg46GxD8iVcBciAyp6tSvDU7pC39g5djLYFWV2BW4UJ4WN2YBRqSwADf8
+         IUC9b0cuvL7BSSKUSlqsBdV3C1z4LcnbrKl5MB/eLKUm0NQnUB0sUGejrZ4N/Xc9S6
+         Y1QZoWifduDjqBRTydmDdfOhrpM4X8eSPHH2RS6RZJq6QJrzAmlphJxuvgjvdv4tvZ
+         RXcURX1g6GZRg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Wei Yongjun <weiyongjun1@huawei.com>,
@@ -38,12 +38,12 @@ Cc:     Wei Yongjun <weiyongjun1@huawei.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, Michael.Hennerich@analog.com,
         sre@kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 11/33] power: supply: adp5061: fix out-of-bounds read in adp5061_get_chg_type()
-Date:   Wed, 12 Oct 2022 20:23:10 -0400
-Message-Id: <20221013002334.1894749-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 04/19] power: supply: adp5061: fix out-of-bounds read in adp5061_get_chg_type()
+Date:   Wed, 12 Oct 2022 20:26:03 -0400
+Message-Id: <20221013002623.1895576-4-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221013002334.1894749-1-sashal@kernel.org>
-References: <20221013002334.1894749-1-sashal@kernel.org>
+In-Reply-To: <20221013002623.1895576-1-sashal@kernel.org>
+References: <20221013002623.1895576-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -69,10 +69,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/power/supply/adp5061.c b/drivers/power/supply/adp5061.c
-index 003557043ab3..daee1161c305 100644
+index 939fd3d8fb1a..1ad044330599 100644
 --- a/drivers/power/supply/adp5061.c
 +++ b/drivers/power/supply/adp5061.c
-@@ -427,11 +427,11 @@ static int adp5061_get_chg_type(struct adp5061_state *st,
+@@ -428,11 +428,11 @@ static int adp5061_get_chg_type(struct adp5061_state *st,
  	if (ret < 0)
  		return ret;
  
