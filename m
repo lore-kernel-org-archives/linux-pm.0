@@ -2,82 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D99B6C4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Oct 2022 15:58:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CADD5C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Oct 2022 17:46:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229604AbiJMP6Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Oct 2022 11:58:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33510 "EHLO
+        id S229437AbiJMRqd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Oct 2022 13:46:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38908 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229620AbiJMP6P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2022 11:58:15 -0400
+        with ESMTP id S229462AbiJMRqc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2022 13:46:32 -0400
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5C320DAC7B;
-        Thu, 13 Oct 2022 08:58:13 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 67D7213ECC4;
+        Thu, 13 Oct 2022 10:46:31 -0700 (PDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2C1C813D5;
-        Thu, 13 Oct 2022 08:58:19 -0700 (PDT)
-Received: from [10.57.5.87] (unknown [10.57.5.87])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A70873F67D;
-        Thu, 13 Oct 2022 08:58:11 -0700 (PDT)
-Message-ID: <77cfc218-0c87-7dd7-6f60-2c2c12f9f892@arm.com>
-Date:   Thu, 13 Oct 2022 16:58:10 +0100
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ED9491424;
+        Thu, 13 Oct 2022 10:46:36 -0700 (PDT)
+Received: from e120937-lin.home (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6DFB63F766;
+        Thu, 13 Oct 2022 10:46:28 -0700 (PDT)
+From:   Cristian Marussi <cristian.marussi@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
+Cc:     sudeep.holla@arm.com, james.quinlan@broadcom.com,
+        Jonathan.Cameron@Huawei.com, f.fainelli@gmail.com,
+        etienne.carriere@linaro.org, vincent.guittot@linaro.org,
+        daniel.lezcano@linaro.org, tarek.el-sherbiny@arm.com,
+        adrian.slatineanu@arm.com, souvik.chakravarty@arm.com,
+        wleavitt@marvell.com, wbartczak@marvell.com, wzmuda@marvell.com,
+        dan.carpenter@oracle.com,
+        Cristian Marussi <cristian.marussi@arm.com>
+Subject: [PATCH v3 0/1] Add ARM SCMI Powercap driver
+Date:   Thu, 13 Oct 2022 18:46:11 +0100
+Message-Id: <20221013174612.393830-1-cristian.marussi@arm.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] thermal/governors: Remove integral_cutoff parameter, IPA
- is more regulated
-Content-Language: en-US
-To:     Qibo Huang <huangqibo.tech@gmail.com>
-Cc:     rafael@kernel.org, daniel.lezcano@linaro.org, amitk@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        rui.zhang@intel.com
-References: <20221013090733.28462-1-huangqibo.tech@gmail.com>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20221013090733.28462-1-huangqibo.tech@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Qibo,
+Hi all,
 
-On 10/13/22 10:07, Qibo Huang wrote:
-> Reason 1: If the integral_cutoff parameter is 0,
-> the current temperature is greater than the control
-> temperature, and err_integral continues to increase.
-> If an abnormal situation occurs suddenly, the err_integral
-> value will become very large. Even if the current
-> temperature is lower than the control temperature,
-> err_integral will always exist, which will cause the
-> IPA to run out of control and cannot return to normal.
-> This is the problem I'm actually having.
-> 
-> Reason 2: The integral_cutoff parameter is difficult to
-> confirm the optimal, and can not bring good results.
+this patch builts on top of recently introduced SCMI v3.1 Powercap protocol
+to implement an ARM SCMI Powercap driver which takes care to expose via the
+Powercap framework all the SCMI Powercap zones that have been discovered
+asking the SCMI platform firmware.
 
-Have you tired different 'k_i', 'k_po', 'k_pu' settings,
-not the default from binding estimation?
+Basic testing has been performed against an emulated SCMI platform
+supporting SCMIv3.1 Powercap protocol using powercap-utils.
 
-These coefficients help to control the behavior of IPA
-and how good the control loop could work.
+A couple of fixes spotted with Smatch by Dan have been squashed into this
+patch in V3.
 
-The integral cutoff in default is set to 0, which means
-we account the error when we overshoot the temperature
-vs our desired control temperature value.
+Based on v6.0.
 
-Please also pay attention to the type for those variables:
-err, i, p and how they are treated (and when).
-In current implementation we account 'err' negative, so we
-reduce the power budget. Next time, even when we are below
-control temperature, we still 'remember' those
-overshoot mistakes, so we upfront shrink the possible
-budget (to avoid overshooting). We clean the accumulated
-error when the temperature drops below 'enable' trip point.
+Thanks,
+Cristian
 
-Could you describe a bit more what kind of problems you
-observe, please?
+---
+v2 --> v3
+ - rebased on v6.0
+ - added review tag
+ - squashed Dan Carpenter fixes into this powercap patch:
+    https://lore.kernel.org/linux-arm-kernel/20220906142337.1697569-3-cristian.marussi@arm.com/
+    https://lore.kernel.org/linux-arm-kernel/20220906142337.1697569-4-cristian.marussi@arm.com/
 
-Regards,
-Lukasz
+v1 --> v2
+  - using clamp_t() to simplify normalizations
+  - cleanup style in block of var declarations
+  - refactor scale conversions code
+  - add MAINTAINER entry
+  - refactored normalizations and added dev_dbg
+
+Cristian Marussi (1):
+  powercap: arm_scmi: Add SCMI Powercap based driver
+
+ MAINTAINERS                          |   1 +
+ drivers/powercap/Kconfig             |  13 +
+ drivers/powercap/Makefile            |   1 +
+ drivers/powercap/arm_scmi_powercap.c | 509 +++++++++++++++++++++++++++
+ 4 files changed, 524 insertions(+)
+ create mode 100644 drivers/powercap/arm_scmi_powercap.c
+
+-- 
+2.34.1
+
