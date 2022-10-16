@@ -2,71 +2,71 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24CF8C43217
-	for <linux-pm@archiver.kernel.org>; Sun, 16 Oct 2022 09:01:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E84B3C4167E
+	for <linux-pm@archiver.kernel.org>; Sun, 16 Oct 2022 09:01:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229622AbiJPJBb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 16 Oct 2022 05:01:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45872 "EHLO
+        id S229655AbiJPJBc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 16 Oct 2022 05:01:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229572AbiJPJB1 (ORCPT
+        with ESMTP id S229575AbiJPJB1 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Oct 2022 05:01:27 -0400
 Received: from mail.z3ntu.xyz (mail.z3ntu.xyz [128.199.32.197])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B082236BDC;
-        Sun, 16 Oct 2022 02:01:23 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 061FB36BE6;
+        Sun, 16 Oct 2022 02:01:22 -0700 (PDT)
 Received: from g550jk.arnhem.chello.nl (31-151-115-246.dynamic.upc.nl [31.151.115.246])
-        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 01C92CE595;
-        Sun, 16 Oct 2022 09:01:21 +0000 (UTC)
+        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 02964C9D5F;
+        Sun, 16 Oct 2022 09:01:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=z3ntu.xyz; s=z3ntu;
-        t=1665910882; bh=+LC0nQ/rmVa9aJgBr3/Wzl+B6dflfpHLFO4lmvsYrYs=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=TZTD7JjgyVbh2p5vn4+OjdSChltTlFRs7ti0z8LbtVQlHILoUXCmCJ76qvuoJ9ZLA
-         ITFhmkXBcRBZo/ZV4YGgvMy87a5cJ8lfG5g3qrj3bAxSUzF2NppRxXFj+3SaP48iEf
-         anjJerOqt/Z6Mfz9jc9XKf2pLHKpH0w1c0cZQM/E=
+        t=1665910880; bh=o6090StYy9rrjYaQWTN5tjx96AqoXxW9GLTito76qxA=;
+        h=From:To:Cc:Subject:Date;
+        b=TwFgrKTq+WxkR/CGI0UldtmvRK0iYDoXEFtmgLDLcMBRDh7qASbnAuFx8PJaNqUO8
+         XXhMfn9XvzmQbgseQfUdUBIAtDi5JJKPEXk8jfbgYOKzUxCn3ZDLmVFcec+bgM9geH
+         j7lvtOftvNvROCrOBok3dZi0r+cXJ/EFx3wYEA6o=
 From:   Luca Weiss <luca@z3ntu.xyz>
 To:     linux-arm-msm@vger.kernel.org
 Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Luca Weiss <luca@z3ntu.xyz>, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
+        Luca Weiss <luca@z3ntu.xyz>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Manivannan Sadhasivam <mani@kernel.org>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] dt-bindings: thermal: tsens: Add sm8450 compatible
-Date:   Sun, 16 Oct 2022 11:00:34 +0200
-Message-Id: <20221016090035.565350-5-luca@z3ntu.xyz>
+Subject: [PATCH 1/5] dt-bindings: cpufreq: cpufreq-qcom-hw: Add missing compatibles
+Date:   Sun, 16 Oct 2022 11:00:30 +0200
+Message-Id: <20221016090035.565350-1-luca@z3ntu.xyz>
 X-Mailer: git-send-email 2.38.0
-In-Reply-To: <20221016090035.565350-1-luca@z3ntu.xyz>
-References: <20221016090035.565350-1-luca@z3ntu.xyz>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the tsens-v2 compatible for sm8450 SoC.
+Document the cpufreq-epss compatibles currently used in the tree, plus
+the sc7280 which will be added in a separate commit.
 
 Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
 ---
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ .../devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml          | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 038d81338fcf..7db905c1d555 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -57,6 +57,7 @@ properties:
-               - qcom,sm8150-tsens
-               - qcom,sm8250-tsens
-               - qcom,sm8350-tsens
-+              - qcom,sm8450-tsens
-           - const: qcom,tsens-v2
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+index 24fa3d87a40b..d6af29ee889a 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+@@ -25,8 +25,12 @@ properties:
+       - description: v2 of CPUFREQ HW (EPSS)
+         items:
+           - enum:
++              - qcom,sc7280-cpufreq-epss
++              - qcom,sc8280xp-cpufreq-epss
+               - qcom,sm6375-cpufreq-epss
+               - qcom,sm8250-cpufreq-epss
++              - qcom,sm8350-cpufreq-epss
++              - qcom,sm8450-cpufreq-epss
+           - const: qcom,cpufreq-epss
  
    reg:
 -- 
