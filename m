@@ -2,104 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 380AEC4332F
-	for <linux-pm@archiver.kernel.org>; Sat, 15 Oct 2022 17:52:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24CF8C43217
+	for <linux-pm@archiver.kernel.org>; Sun, 16 Oct 2022 09:01:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229573AbiJORwi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 15 Oct 2022 13:52:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57402 "EHLO
+        id S229622AbiJPJBb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 16 Oct 2022 05:01:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45872 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229646AbiJORwi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Oct 2022 13:52:38 -0400
-Received: from phobos.denx.de (phobos.denx.de [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 499E943E58
-        for <linux-pm@vger.kernel.org>; Sat, 15 Oct 2022 10:52:37 -0700 (PDT)
-Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: marex@denx.de)
-        by phobos.denx.de (Postfix) with ESMTPSA id 0382384D5E;
-        Sat, 15 Oct 2022 19:52:33 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-        s=phobos-20191101; t=1665856354;
-        bh=GE2WPFMMKDS6MY8HKGskb9PZEqpJdsFB7gM7B6immxc=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=Wp0r15xrvCgho/m0ERGjAUa+FJLhdZLVNT++SjKDkzEz4o7rSIOCaTHSCq3z5J5dE
-         Qhvx3yU5WrrEnDKQ2UyJAs4ycsDu5/mYh84bgPrdUjt2KzLp+R2GeqwLyvIdF6wdPX
-         zKLPkU0IM+FnGa05QMBQ0IpWGnT9UzmccbZMN1IJFpXZxB20gaq7F+xczwal7sx2JI
-         9kzqCGrZ+GcKhbKGfVMmbHa+NVzBmXsheK1wT64MDXh6zvbWph9wQeEzMiFziNC0wB
-         aA7GQ9bb85zOV6f1dbRSZSGKavJ7fgx9gSLj45PluNZc5VM4CsSWcdcw13NFbAK5kr
-         2+BUew/ndm7vQ==
-Message-ID: <5369532e-548d-09c5-38b6-c4405dc3f79c@denx.de>
-Date:   Sat, 15 Oct 2022 19:52:33 +0200
+        with ESMTP id S229572AbiJPJB1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Oct 2022 05:01:27 -0400
+Received: from mail.z3ntu.xyz (mail.z3ntu.xyz [128.199.32.197])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B082236BDC;
+        Sun, 16 Oct 2022 02:01:23 -0700 (PDT)
+Received: from g550jk.arnhem.chello.nl (31-151-115-246.dynamic.upc.nl [31.151.115.246])
+        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 01C92CE595;
+        Sun, 16 Oct 2022 09:01:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=z3ntu.xyz; s=z3ntu;
+        t=1665910882; bh=+LC0nQ/rmVa9aJgBr3/Wzl+B6dflfpHLFO4lmvsYrYs=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=TZTD7JjgyVbh2p5vn4+OjdSChltTlFRs7ti0z8LbtVQlHILoUXCmCJ76qvuoJ9ZLA
+         ITFhmkXBcRBZo/ZV4YGgvMy87a5cJ8lfG5g3qrj3bAxSUzF2NppRxXFj+3SaP48iEf
+         anjJerOqt/Z6Mfz9jc9XKf2pLHKpH0w1c0cZQM/E=
+From:   Luca Weiss <luca@z3ntu.xyz>
+To:     linux-arm-msm@vger.kernel.org
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Luca Weiss <luca@z3ntu.xyz>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 5/5] dt-bindings: thermal: tsens: Add sm8450 compatible
+Date:   Sun, 16 Oct 2022 11:00:34 +0200
+Message-Id: <20221016090035.565350-5-luca@z3ntu.xyz>
+X-Mailer: git-send-email 2.38.0
+In-Reply-To: <20221016090035.565350-1-luca@z3ntu.xyz>
+References: <20221016090035.565350-1-luca@z3ntu.xyz>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.2
-Subject: Re: [PATCH 5/7] power: supply: bq25890: Factor out regulator
- registration code
-To:     Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-References: <20221010210310.165461-1-marex@denx.de>
- <20221010210310.165461-5-marex@denx.de>
- <e0659fb1-7e1e-de5c-de6a-99a8f180bd3f@redhat.com>
- <00e6b9b0-ddef-6e2f-0603-9a25fd3b9e0d@denx.de>
- <848ada38-00a1-0631-871f-926bb33a166f@redhat.com>
- <021a1dfc-eb05-77ad-644c-f967a5bf7799@denx.de>
- <27d4c17a-1894-e055-9311-9fb6d69d3665@redhat.com>
- <08bbfa77-8001-9a69-94ea-936afe8195a8@denx.de>
- <a86c5d18-5e4d-30f7-7634-675e78ee3a19@redhat.com>
-Content-Language: en-US
-From:   Marek Vasut <marex@denx.de>
-In-Reply-To: <a86c5d18-5e4d-30f7-7634-675e78ee3a19@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
-X-Virus-Status: Clean
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 10/15/22 16:16, Hans de Goede wrote:
+Document the tsens-v2 compatible for sm8450 SoC.
 
-Hi,
+Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+---
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
->>>>> Looking at standard Linux userspace (Debian/Fedora/etc.)
->>>>> all the userspace tools capable of reporting voltages
->>>>> of various voltage rails inside the system to the user
->>>>> use the hwmon interface for this. This is also why
->>>>> the power-supply class core recently got support for
->>>>> proxying some psy properties to a hwmon class device.
->>>>>
->>>>> So the way I see it is that if we want to report Vsys to
->>>>> userspace, that we then clearly need to report it through
->>>>> the hwmon interface.
->>>>
->>>> For regulators, you can read their values via /sys/class/regulators/* , if the user is interesting in Vsys .
->>>>
->>>> Maybe that is where we disagree -- I'm not particularly interested in exposing Vsys to user space, but since it was exposed before, I tried to retain that exposure, although via different channel. And the regulator also makes the Vsys useful, since it can be used as a supply on the kernel level.
->>>
->>> I don't particularly care a lot about exposing Vsys to user space either,
->>> but like you I do believe that we should at least keep the functionality
->>> around while fixing the wrong property use.
->>
->> I agree.
->>
->>> I'm still not 100% convinced a regular for Vsys is not a bit
->>> overkill but I don't want to block going this route either.
->>
->> Why would a regulator be an overkill compared to hwmon ?
->> What am I missing here ?
-> 
-> A regulator is another struct device, and also more code at the
-> driver level then just adding a new property (there already is
-> a hwmon device related to the psy device, so a new property would
-> just use that.
-> 
-> Anyways you have expressed a clear preference for the regulator
-> approach and I'm fine with that, lets see what sre has to say.
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 038d81338fcf..7db905c1d555 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -57,6 +57,7 @@ properties:
+               - qcom,sm8150-tsens
+               - qcom,sm8250-tsens
+               - qcom,sm8350-tsens
++              - qcom,sm8450-tsens
+           - const: qcom,tsens-v2
+ 
+   reg:
+-- 
+2.38.0
 
-Let's do that indeed.
-
-Thanks for clarifying!
