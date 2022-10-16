@@ -2,73 +2,86 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E84B3C4167E
-	for <linux-pm@archiver.kernel.org>; Sun, 16 Oct 2022 09:01:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DB6AC4332F
+	for <linux-pm@archiver.kernel.org>; Sun, 16 Oct 2022 09:58:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229655AbiJPJBc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 16 Oct 2022 05:01:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45864 "EHLO
+        id S229618AbiJPJ6f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 16 Oct 2022 05:58:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229575AbiJPJB1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Oct 2022 05:01:27 -0400
-Received: from mail.z3ntu.xyz (mail.z3ntu.xyz [128.199.32.197])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 061FB36BE6;
-        Sun, 16 Oct 2022 02:01:22 -0700 (PDT)
-Received: from g550jk.arnhem.chello.nl (31-151-115-246.dynamic.upc.nl [31.151.115.246])
-        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 02964C9D5F;
-        Sun, 16 Oct 2022 09:01:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=z3ntu.xyz; s=z3ntu;
-        t=1665910880; bh=o6090StYy9rrjYaQWTN5tjx96AqoXxW9GLTito76qxA=;
-        h=From:To:Cc:Subject:Date;
-        b=TwFgrKTq+WxkR/CGI0UldtmvRK0iYDoXEFtmgLDLcMBRDh7qASbnAuFx8PJaNqUO8
-         XXhMfn9XvzmQbgseQfUdUBIAtDi5JJKPEXk8jfbgYOKzUxCn3ZDLmVFcec+bgM9geH
-         j7lvtOftvNvROCrOBok3dZi0r+cXJ/EFx3wYEA6o=
-From:   Luca Weiss <luca@z3ntu.xyz>
-To:     linux-arm-msm@vger.kernel.org
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Luca Weiss <luca@z3ntu.xyz>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] dt-bindings: cpufreq: cpufreq-qcom-hw: Add missing compatibles
-Date:   Sun, 16 Oct 2022 11:00:30 +0200
-Message-Id: <20221016090035.565350-1-luca@z3ntu.xyz>
-X-Mailer: git-send-email 2.38.0
+        with ESMTP id S229687AbiJPJ6e (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Oct 2022 05:58:34 -0400
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9246D2F678
+        for <linux-pm@vger.kernel.org>; Sun, 16 Oct 2022 02:58:33 -0700 (PDT)
+Received: by mail-pj1-x102c.google.com with SMTP id x1-20020a17090ab00100b001fda21bbc90so11743315pjq.3
+        for <linux-pm@vger.kernel.org>; Sun, 16 Oct 2022 02:58:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=OtzY9AfvtG9xTgyGyHBnIXaAiiTuXFCltxImevKgkqM=;
+        b=kZM/bndEKtYZijRanfxD1Z+Sf4sTpaSccjAzYHXv/rMYVsufpaab6hBFkzyavqDBTX
+         0CBqFm1Wy/jzMNK5SQMI1bvoTLSlH9JW4dsUOXw1Kg3/JvQOcFl6rYTa/ba0jP0LDJ8Y
+         oLLqnmayYKm4ExXowfk4CrwfomehgboEhOGMVj3h5Aj09hSSBRasCsCkZJ8HCj2XytoG
+         9fkeisH4wX9bweAfmo9fM2m2/p3stboXKE9fQWJBrBF7Szx6pnImFe56/O8gbKPH6AX/
+         UAIFRwED11tWPijhsTaJ5ynnSwNWHLHR3h7XZVrrd61FX3I65X8HXewPW5rbJGc8euuo
+         6scA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=OtzY9AfvtG9xTgyGyHBnIXaAiiTuXFCltxImevKgkqM=;
+        b=qxCKmO+QVVc7igJx482c3f3uxWlIaaQWc09BAsjqA/A6Z6tGQIebTf/p0BkNh8HUgS
+         jHBS6Np48TLEJXC1n1RpKmhezgmiWtnVgaQlze9QqVAeQmRtH2KTkT1a5IONxHUMei+9
+         S1/xrZhx5EYdjatiwE+0+czjWT8MIOzeAbfXsRzzpdg7yWwIAvOQey/Jpufre/gR/9M8
+         qpIOuXSi2QqcXyo2SALAutxK+W4G0eLXzWZdJtnFRc4TSaEGN9OXJ0rL7Dbdb7mGQZ0m
+         aqT1+95/HpVkJvi8ocKPpP4M0q+evPX0iZ07nGYAZ2fmj1xSOwvgfVbAuDG0R/JDWaKG
+         FpVg==
+X-Gm-Message-State: ACrzQf2XS5mwfKOzshk3rZ/B+PbIDT3EMU+87le0XtPaRMBxfw8NKqM+
+        abDBHD8cdk6u1wAj4aFcSXOnKw==
+X-Google-Smtp-Source: AMsMyM4RdVjokxZyQinSeGmUgZIlLlBTWY8+LMqU0RtxFplW7uEesRom6zx6CveHQx9ymnlr2yl3QA==
+X-Received: by 2002:a17:902:e982:b0:17f:ca1f:aa44 with SMTP id f2-20020a170902e98200b0017fca1faa44mr6388293plb.76.1665914313066;
+        Sun, 16 Oct 2022 02:58:33 -0700 (PDT)
+Received: from localhost.localdomain (80.251.214.228.16clouds.com. [80.251.214.228])
+        by smtp.gmail.com with ESMTPSA id c18-20020a170902d49200b001745662d568sm4481838plg.278.2022.10.16.02.58.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 16 Oct 2022 02:58:32 -0700 (PDT)
+From:   Shawn Guo <shawn.guo@linaro.org>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>
+Cc:     Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH 0/3] Manage domain power state for hibernate freeze
+Date:   Sun, 16 Oct 2022 17:58:12 +0800
+Message-Id: <20221016095815.2550034-1-shawn.guo@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the cpufreq-epss compatibles currently used in the tree, plus
-the sc7280 which will be added in a separate commit.
+The series tries to fix a hardware lockup issue caused by missing domain
+power state management from hibernate .freeze[thaw]_noirq hooks.  The
+detailed description of the issue can be found in commit log of patch
+#3.
 
-Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
----
- .../devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml          | 4 ++++
- 1 file changed, 4 insertions(+)
+Shawn Guo (3):
+  PM: domains: Pass generic PM noirq hooks to genpd_finish_suspend()
+  PM: domains: Consolidate genpd_restore_noirq() and
+    genpd_resume_noirq()
+  PM: domains: Power off[on] domain in hibernate .freeze[thaw]_noirq
+    hook
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-index 24fa3d87a40b..d6af29ee889a 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
-@@ -25,8 +25,12 @@ properties:
-       - description: v2 of CPUFREQ HW (EPSS)
-         items:
-           - enum:
-+              - qcom,sc7280-cpufreq-epss
-+              - qcom,sc8280xp-cpufreq-epss
-               - qcom,sm6375-cpufreq-epss
-               - qcom,sm8250-cpufreq-epss
-+              - qcom,sm8350-cpufreq-epss
-+              - qcom,sm8450-cpufreq-epss
-           - const: qcom,cpufreq-epss
- 
-   reg:
+ drivers/base/power/domain.c | 130 +++++++++++++++---------------------
+ 1 file changed, 52 insertions(+), 78 deletions(-)
+
 -- 
-2.38.0
+2.25.1
 
