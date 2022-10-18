@@ -2,100 +2,113 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73655C433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Oct 2022 12:53:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAF12C43217
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Oct 2022 15:23:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230217AbiJRMxf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Oct 2022 08:53:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51628 "EHLO
+        id S230083AbiJRPXK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Oct 2022 11:23:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230215AbiJRMxe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Oct 2022 08:53:34 -0400
-Received: from mail-qv1-f41.google.com (mail-qv1-f41.google.com [209.85.219.41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EAB6C34CD
-        for <linux-pm@vger.kernel.org>; Tue, 18 Oct 2022 05:53:33 -0700 (PDT)
-Received: by mail-qv1-f41.google.com with SMTP id de14so9204772qvb.5
-        for <linux-pm@vger.kernel.org>; Tue, 18 Oct 2022 05:53:33 -0700 (PDT)
+        with ESMTP id S230127AbiJRPXJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Oct 2022 11:23:09 -0400
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11FC3D0CD9;
+        Tue, 18 Oct 2022 08:23:05 -0700 (PDT)
+Received: by mail-wm1-x332.google.com with SMTP id bh7-20020a05600c3d0700b003c6fb3b2052so3305500wmb.2;
+        Tue, 18 Oct 2022 08:23:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:message-id:in-reply-to:date:subject:cc:to:from
+         :references:from:to:cc:subject:date:message-id:reply-to;
+        bh=bEddq63SNEjeM/xMvu/ByxpDSe5rVs/O0NJXLl0d3Xg=;
+        b=gE7AGVea8ljT1IZHd4CmvcafBr/enqORfbdBqrgjJSrVGOOKPY4ywo7IeiIrQ4fywQ
+         gGszJUNF2NeKfFoHUPRtFvPEspit2YSpFRUvPiEzhL7vwfDme0ymoDPUyXkErRgHREor
+         CVHrUmmhl4EnlfNPBACKMfwWD7Cfq1rRqjVLE4X7/UoyEzHRNSE2G4+fZ5kz4vyQq3RV
+         Gq6NjMEKfrzAqX7plM5nLqGKAaeAo1PUfqwaZMh7cMslP4rh6iK04VkQSKzeia1omlP2
+         UWG39AfB76XqX9a9VyIPZkeki2r2wX1ytOjcOtnYcvwQbb+SgU9QBsDFGpreb+T1klDt
+         okRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        h=mime-version:message-id:in-reply-to:date:subject:cc:to:from
+         :references:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=h/71xEgCu9k6XZrQPgQ/3X/Oa2dhcLmjFgOgRm4PWVE=;
-        b=wqaC6J4E0kKKiqU+JvgBMU+jDqlNJKza13NIYLhKhFjtGrZzhS2/S8XGHhamPvScOm
-         hTdRD9Qn1kwubZHguF99XhgLfHW02Vek+y/1sVBh8vI0Smn+RaSwZHwQEt5dcuXeo9gR
-         44T5FpouaSPZQ8o8tdXgIU59YGykzybEWqdR3Y9PrZG3F17hp3WdcZGasNs9qzGzt5au
-         1+h7LB6wNyKsybOuZrUJcLqiHLQJLKT1fKFt0icDSSg/VsdP3uq1OCwVsV3iz1Ob5sKE
-         sRDgKm4V1K24ClgMEZZfq1pS9ct44VDC7aPuJl3amt5SrkI3bkIUqNCNu8OXXORDYQib
-         2ADA==
-X-Gm-Message-State: ACrzQf3NbWIyEd+kWoQjF6FpFq2XljGXJNDJ1bFdCuU35J3UOb+7j2lt
-        WvLacVLNgItHaayjLRdIQeBaBqmJ2+pt0OuLQYM=
-X-Google-Smtp-Source: AMsMyM41i4DCLQyQaiAHUo5kBQjKNYboe24fBCXzuT/gMoBDwN8/srCShpWEdSmJdtVdnJV0g3E7GCyim2H0ECFWC9s=
-X-Received: by 2002:a05:6214:f24:b0:4b3:efeb:d800 with SMTP id
- iw4-20020a0562140f2400b004b3efebd800mr1943822qvb.15.1666097612453; Tue, 18
- Oct 2022 05:53:32 -0700 (PDT)
+        bh=bEddq63SNEjeM/xMvu/ByxpDSe5rVs/O0NJXLl0d3Xg=;
+        b=0UfGsMGXQ5zaYOgqOa1rtlRueBRlApBqSBvYhKbfHluxO1Oi6X5bcoZs+0hxhbXxg6
+         0MV1dD9ga/sulmLJvbtOn3mMTYfU1KxD7u+/l9vbIXtAWsVAWLToBsuucYdqSHfi/NSo
+         nzmKA2BcwpjXfH5e0h+mb4dNGUTJqgbkJ2+ZlOA1hajImhnwS6a35RCpnLP5jqP0lzSY
+         kcCdqwreUJMUkVdixc7OR5/LYEjPfjbaSvDBHfMhG5uX8zlXm4phHVlgK7kuNkv96Q/A
+         tqFMKlaNzS8DkPb9u4bUltZR+IRZb7g8kxYLdjAn8eS9njQNhj3l7lEXihtIOtcD8bln
+         Qjjw==
+X-Gm-Message-State: ACrzQf12VwKfPToUNxPuRFRITTte2XD6NnKoO1bdMLOSG5JcCivcPGb2
+        rz3Gbe2eYgaki7TuOtcH11A=
+X-Google-Smtp-Source: AMsMyM4daIGfqDv/NZF1S01gyC5tFEmQdv3UTJqAdeeUQvv25Fu5Hg5RKSgZXfi/kzn0A0QnspLPOg==
+X-Received: by 2002:a05:600c:1509:b0:3c6:809a:b5a1 with SMTP id b9-20020a05600c150900b003c6809ab5a1mr23993837wmg.71.1666106584459;
+        Tue, 18 Oct 2022 08:23:04 -0700 (PDT)
+Received: from localhost (94.197.29.248.threembb.co.uk. [94.197.29.248])
+        by smtp.gmail.com with ESMTPSA id l6-20020a05600c1d0600b003a5f3f5883dsm20187232wms.17.2022.10.18.08.23.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 18 Oct 2022 08:23:03 -0700 (PDT)
+References: <20221016234335.904212-1-aidanmacdonald.0x0@gmail.com>
+ <20221017184419.62d365c1@jic23-huawei>
+ <LYfRwE3pxZfgZBDC6gwvsSrHWqcSQXHK@localhost>
+ <CAHp75VfL5TXvoVY8Zq946eUJYetLt2Od2m26mUSPGxsdF=TC-Q@mail.gmail.com>
+From:   Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Jonathan Cameron <jic23@kernel.org>, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, wens@csie.org,
+        lee.jones@linaro.org, sre@kernel.org, lgirdwood@gmail.com,
+        broonie@kernel.org, lars@metafoo.de, linus.walleij@linaro.org,
+        brgl@bgdev.pl, michael@walle.cc, samuel@sholland.org,
+        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 00/13] Add support for AXP192 PMIC
+Date:   Tue, 18 Oct 2022 16:15:37 +0100
+In-reply-to: <CAHp75VfL5TXvoVY8Zq946eUJYetLt2Od2m26mUSPGxsdF=TC-Q@mail.gmail.com>
+Message-ID: <HMq7csUe6Gk3DrWRzgEmM5kpQ9DomiFs@localhost>
 MIME-Version: 1.0
-References: <20221018105904.ab3mtqgja5jk3twf@vireshk-i7>
-In-Reply-To: <20221018105904.ab3mtqgja5jk3twf@vireshk-i7>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 18 Oct 2022 14:53:21 +0200
-Message-ID: <CAJZ5v0jwvF4T_KKc9xLG++DKfkyJ3-kgmTmWJNVcvVAQCMEDMg@mail.gmail.com>
-Subject: Re: [GIT PULL] cpufreq/arm fixes for 6.1-rc
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 18, 2022 at 12:59 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> Hi Rafael,
->
-> The following changes since commit 9abf2313adc1ca1b6180c508c25f22f9395cc780:
->
->   Linux 6.1-rc1 (2022-10-16 15:36:24 -0700)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/cpufreq-arm-fixes-6.1-rc
->
-> for you to fetch changes up to 889a50aedcd216cc5f2b98bb2412f0498d417721:
->
->   cpufreq: sun50i: Switch to use dev_err_probe() helper (2022-10-18 16:22:26 +0530)
->
-> ----------------------------------------------------------------
-> cpufreq arm fixes / cleanups for 6.1-rc
->
-> - Fix module loading in Tegra124 driver (Jon Hunter).
-> - Fix memory leak and update to read-only region in qcom driver (Fabien
->   Parent).
-> - Miscellaneous minor cleanups to cpufreq drivers (Fabien Parent and
->   Yang Yingliang).
->
-> ----------------------------------------------------------------
-> Fabien Parent (3):
->       cpufreq: qcom: fix memory leak in error path
->       cpufreq: qcom: fix writes in read-only memory region
->       cpufreq: qcom: remove unused parameter in function definition
->
-> Jon Hunter (1):
->       cpufreq: tegra194: Fix module loading
->
-> Yang Yingliang (4):
->       cpufreq: dt: Switch to use dev_err_probe() helper
->       cpufreq: imx6q: Switch to use dev_err_probe() helper
->       cpufreq: qcom-nvmem: Switch to use dev_err_probe() helper
->       cpufreq: sun50i: Switch to use dev_err_probe() helper
->
->  drivers/cpufreq/cpufreq-dt.c           |  6 ++----
->  drivers/cpufreq/imx6q-cpufreq.c        |  4 +---
->  drivers/cpufreq/qcom-cpufreq-nvmem.c   | 25 +++++++++++++------------
->  drivers/cpufreq/sun50i-cpufreq-nvmem.c |  9 +++------
->  drivers/cpufreq/tegra194-cpufreq.c     |  1 +
->  5 files changed, 20 insertions(+), 25 deletions(-)
->
-> --
 
-Pulled and pushed into my linux-next branch, thanks!
+Andy Shevchenko <andy.shevchenko@gmail.com> writes:
+
+> On Tue, Oct 18, 2022 at 2:06 AM Aidan MacDonald
+> <aidanmacdonald.0x0@gmail.com> wrote:
+>> Jonathan Cameron <jic23@kernel.org> writes:
+>> > On Mon, 17 Oct 2022 00:43:22 +0100
+>> > Aidan MacDonald <aidanmacdonald.0x0@gmail.com> wrote:
+>
+> ...
+>
+>> > Lee has recently expressed that he keen to take as much of these sorts
+>> > of series as possible via the various subsystem trees.
+>> >
+>> > As such, it is useful to call out in the cover letter of such a series
+>> > if this can be done.  For example, patch 9 (last IIO one) can't be
+>> > applied without defines in patch 6 (I think).  Thus I'm assuming Lee
+>> > will do an immutable branch with at least those patches on it.
+>> >
+>> > Perhaps worth expressing if that is also the case for the power
+>> > and regulator subsystem patches?
+>
+>> Yep, the IIO, regulator, and power subsystem patches all depend on
+>> the MFD patch.
+>
+> There are two types of dependencies: compile and functional.
+>
+>> Specifically, patches 6, 9, and 10 depend on patch 5.
+>> I can't get rid of this dependency because the variant ID (AXP192_ID)
+>> has to be defined centrally in the MFD patch.
+>
+> It's not clear which one you are talking about. If it's functional,
+> then each driver can be taken separately via each concerned subsystem.
+
+Johnathan was talking about compile dependencies -- the defines he's
+mentioning -- so what I mean is compile dependencies. Patches 6/9/10
+do not compile unless they are applied after patch 5, because of a new
+enumerator AXP192_ID defined in patch 5.
+
+Regards,
+Aidan
