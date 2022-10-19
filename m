@@ -2,187 +2,165 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E30C4C433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:28:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19BD9C43219
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:34:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232222AbiJSO2c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Oct 2022 10:28:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54810 "EHLO
+        id S229944AbiJSOeQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Oct 2022 10:34:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232920AbiJSO1r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:27:47 -0400
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73AC119DD90
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:12:33 -0700 (PDT)
-Received: by mail-pj1-x102e.google.com with SMTP id o17-20020a17090aac1100b0020d98b0c0f4so98390pjq.4
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:12:32 -0700 (PDT)
+        with ESMTP id S229552AbiJSOdf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:33:35 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E7991DA35D
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:18:10 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id v1so123768wrt.11
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:18:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=from:to:subject:content-transfer-encoding:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=PgVmODZmFsiRPEkfBZLorZMtIv/xztHQaWuUE6+qnj8=;
-        b=7SwTzUhn3peUm0SHvT1752xh+I113A92zeloflnYASXYNZaGPaESV3uPRWCzDbWhQb
-         y1jSz5LQJYmxB6CWKL8Tej2zkVj2W11ga42+pTqGHPXU1MCDph+RqkTdNZWwL8dhLGXK
-         A4FpTDbo6EYbMjLJVXI22Bri1KBnMpy/7pw3bdOoTLlcgS8AanD7V4D/sdgfH44SILmO
-         x8iy9bt225pLnRiVxET/rUnaeWlCvlNrifnjVW5+gF+kPRxZVvWCZG/DfiZedsfS1l4J
-         iG4VJr4FxzNkHnr4+2klcSkvAqK8fMDPCPoAP/AdrAnVLMd+gCGusgFq0D/hANMU5ND5
-         Gn6w==
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=fyeoHLNYgE+7jRWrI7Gid0gjC7DyyjDTDuyVioxNv2s=;
+        b=fd2H3oNq5MmlrHBIUeEAt5HznMAZ2POQtEIeR09QEcojJHXyuzAyCpqcKtxRmHv939
+         e4Z7TpU6LrsAVi7ME645aV5eRSukfeCtUwEzga1p+sF2bPzK9BT0F/bqlpvT7XTnlDMV
+         U6IZmMD4pxg5qJh2kGnDnP+Xuh8nhP9JM4u68gkEm0H779qBk+j1YzU3ycjtIOVxWI0h
+         /EJhekxrIKT0c9Lm9QokfFAM3McA67e5PccyWNPZoTgFMgJ9NmA1jZ0zHanvRL5oNODZ
+         1Btlq0O8pbi8sKHIIhS7KNFnjAl7c3zzDyMjHImKcHVFgfGedsSQahyhJrmsMtCeF0pm
+         JDyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=from:to:subject:content-transfer-encoding:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=PgVmODZmFsiRPEkfBZLorZMtIv/xztHQaWuUE6+qnj8=;
-        b=fNLbCwfSN+lwMa5VU8szLcLRxvK2LLd07S82SlNGbnWIZ7YP/XKW2tNBLERLw2YoqK
-         DD2yRfqXBuFiI1Zi1gSyHmZzM7xSGhvnwI2B8n/DpKdYEo5VDc7aZdCJPtVHbsNZJqGf
-         sulRCFeU2KB26cbC6j5pqTiTF2bKu/eHoTGIUfUP4rWV9znojSCW8Sdxk5bxaAjPrN72
-         XYiay322PHY+yeSKA8c9Gp9ODQZVjbGB44ONvsjN6LXkvP1gEdEh0xZShQoNlTL7Rnem
-         k1sS8rZat4hD17jeznhXaPgPD4Sz5ZVV+A+glQWwice1wEpVz2j/4MKs787XBm1OeC8P
-         eMgA==
-X-Gm-Message-State: ACrzQf3htObmkwneTjb4wX46ekVhcNgwBMc2d7IGCTKXdLe7XzvwQDZH
-        uGhbkZTWGXnQUQTtbdklWN3xeLQHRPMPIoBI
-X-Google-Smtp-Source: AMsMyM54P76/i3apgnu+gdALbc/04Ko1G2Gw1zkIzurbp6IIP44Gorcsc6mPtLeOT0AAncLrFol36A==
-X-Received: by 2002:a17:902:f693:b0:17f:6974:cf90 with SMTP id l19-20020a170902f69300b0017f6974cf90mr8874771plg.62.1666188692011;
-        Wed, 19 Oct 2022 07:11:32 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id o125-20020a62cd83000000b00561c179e17dsm11412633pfg.76.2022.10.19.07.11.31
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fyeoHLNYgE+7jRWrI7Gid0gjC7DyyjDTDuyVioxNv2s=;
+        b=d5I6wnajq9RIcO1ptpAae7YIdniSwa3nW8TW6Jl77q8H7mroNDV7DF/KqGHJe+cXaE
+         clroHa24vN3g03cRWv2Svsy0VGiDZdeu0kDaWt8l3nOEx4XyWMnjr52wSNzd71M/6UWy
+         DpW8QMMOe0bSPXkOkh+j77u9AUMqcq9fjwXQlRGfQmmqzVUiROakyPUUSSRR2IAY2vJ7
+         Kc2bnxxJNWNX0qNYsEiRrCEkVgvZZoVdGfsTlXAwJUYBmaI8PLRqPRk1TCgANQC+3gq3
+         0NS+pQJrQO0gcDnjnwdtqfavtRDIfOW2G6LrpekcS3w8/BbF4qrsPAD4uTtTd0Xdx2Xy
+         XUSw==
+X-Gm-Message-State: ACrzQf17AHg1pB0tm3DMmw4ozuOyAURuCUPzx/MYPjRTJtT5okAtht3o
+        aY05kpc/bgQxvBex8tJloK1fzQ==
+X-Google-Smtp-Source: AMsMyM6Y0dtt2fThAblWCgNb77KCrIudxhVEmZ7gKIrjKDhykgfz+sMekViuzb9RepprVLdj7p2OkA==
+X-Received: by 2002:a5d:6a48:0:b0:22e:34f0:617f with SMTP id t8-20020a5d6a48000000b0022e34f0617fmr5220654wrw.644.1666189079254;
+        Wed, 19 Oct 2022 07:17:59 -0700 (PDT)
+Received: from [127.0.1.1] (rtr.23.90.200.126.unyc.it. [23.90.200.126])
+        by smtp.googlemail.com with ESMTPSA id n9-20020a05600c3b8900b003b4ff30e566sm2126577wms.3.2022.10.19.07.17.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Oct 2022 07:11:31 -0700 (PDT)
-Message-ID: <63500593.620a0220.414c4.52f3@mx.google.com>
-Date:   Wed, 19 Oct 2022 07:11:31 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        Wed, 19 Oct 2022 07:17:58 -0700 (PDT)
+From:   Amjad Ouled-Ameur <aouledameur@baylibre.com>
+Date:   Wed, 19 Oct 2022 16:17:55 +0200
+Subject: [PATCH v6 2/4] thermal: mediatek: control buffer enablement tweaks
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: build
-X-Kernelci-Kernel: v6.1-rc1-20-g1c24b2556ca7
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing build: 8 builds: 1 failed, 7 passed, 1 error,
- 5 warnings (v6.1-rc1-20-g1c24b2556ca7)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20221018-up-i350-thermal-bringup-v6-2-c87b9f75550b@baylibre.com>
+References: <20221018-up-i350-thermal-bringup-v6-0-c87b9f75550b@baylibre.com>
+In-Reply-To: <20221018-up-i350-thermal-bringup-v6-0-c87b9f75550b@baylibre.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Fabien Parent <fparent@baylibre.com>,
+        linux-mediatek@lists.infradead.org, Rob Herring <robh@kernel.org>,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Michael Kao <michael.kao@mediatek.com>,
+        Hsin-Yi Wang <hsinyi@chromium.org>,
+        Amjad Ouled-Ameur <aouledameur@baylibre.com>,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        Matthias Brugger <matthias.bgg@gmail.com>
+X-Mailer: b4 0.10.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1666189076; l=2549;
+ i=aouledameur@baylibre.com; s=20220920; h=from:subject:message-id;
+ bh=BUYgiWUyEmLmv5YqBlzSOjPnRULIXZAPNGFdkdhmkOQ=;
+ b=DuTCH2nYQby2Rp3rUYfbKfiiNFfGGwSHOKQAOBeLAf4oWTYlJ5qTJGiqvCQvObkl5s1dpqQ5GpOv
+ 3eK/2IoPDmqAKTAP4GM6xGNbfcEtstHqPfVKPpPJpZh3kiuqEiPL
+X-Developer-Key: i=aouledameur@baylibre.com; a=ed25519;
+ pk=HgYWawSL4qLGPx+RzJ+Cuu+V8Pi/KQnDDm1wjWPMOFE=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 8 builds: 1 failed, 7 passed, 1 error, 5 warnings (v6.1-r=
-c1-20-g1c24b2556ca7)
+From: Markus Schneider-Pargmann <msp@baylibre.com>
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v6.=
-1-rc1-20-g1c24b2556ca7/
+Add logic in order to be able to turn on the control buffer on MT8365.
+This change now allows to have control buffer support for MTK_THERMAL_V1,
+and it allows to define the register offset, and mask used to enable it.
 
-Tree: pm
-Branch: testing
-Git Describe: v6.1-rc1-20-g1c24b2556ca7
-Git Commit: 1c24b2556ca732f37204db7e4ab5970ccef9196e
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 8 unique architectures
-
-Build Failure Detected:
-
-riscv:
-    defconfig: (gcc-10) FAIL
-
-Errors and Warnings Detected:
-
-arc:
-
-arm64:
-
-arm:
-
-i386:
-
-mips:
-    32r2el_defconfig (gcc-10): 1 warning
-
-riscv:
-    defconfig (gcc-10): 1 error
-
-sparc:
-    sparc64_defconfig (gcc-10): 4 warnings
-
-x86_64:
-
-Errors summary:
-
-    1    ERROR: modpost: "riscv_cbom_block_size" [arch/riscv/kvm/kvm.ko] un=
-defined!
-
-Warnings summary:
-
-    2    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version genera=
-tion failed, symbol will not be versioned.
-    2    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [=
--Wcpp]
-    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
-e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
-ted "0,0"
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
-ion mismatches
-
-Warnings:
-    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
-): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
-0,0"
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-10) =E2=80=94 FAIL, 1 error, 0 warnings, 0 section mi=
-smatches
-
-Errors:
-    ERROR: modpost: "riscv_cbom_block_size" [arch/riscv/kvm/kvm.ko] undefin=
-ed!
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
- section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
-on mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----------------------------------------------------------------------------=
------
-sparc64_defconfig (sparc, gcc-10) =E2=80=94 PASS, 0 errors, 4 warnings, 0 s=
-ection mismatches
-
-Warnings:
-    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [-Wcpp]
-    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
-failed, symbol will not be versioned.
-    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [-Wcpp]
-    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
-failed, symbol will not be versioned.
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
-ection mismatches
-
+Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+Signed-off-by: Fabien Parent <fparent@baylibre.com>
+Signed-off-by: Amjad Ouled-Ameur <aouledameur@baylibre.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
-For more info write to <info@kernelci.org>
+ drivers/thermal/mtk_thermal.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 8440692e3890..d8ddceb75372 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -271,6 +271,9 @@ struct mtk_thermal_data {
+ 	bool need_switch_bank;
+ 	struct thermal_bank_cfg bank_data[MAX_NUM_ZONES];
+ 	enum mtk_thermal_version version;
++	u32 apmixed_buffer_ctl_reg;
++	u32 apmixed_buffer_ctl_mask;
++	u32 apmixed_buffer_ctl_set;
+ };
+ 
+ struct mtk_thermal {
+@@ -514,6 +517,9 @@ static const struct mtk_thermal_data mt7622_thermal_data = {
+ 	.adcpnp = mt7622_adcpnp,
+ 	.sensor_mux_values = mt7622_mux_values,
+ 	.version = MTK_THERMAL_V2,
++	.apmixed_buffer_ctl_reg = APMIXED_SYS_TS_CON1,
++	.apmixed_buffer_ctl_mask = GENMASK(31, 6) | BIT(3),
++	.apmixed_buffer_ctl_set = BIT(0),
+ };
+ 
+ /*
+@@ -963,14 +969,18 @@ static const struct of_device_id mtk_thermal_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, mtk_thermal_of_match);
+ 
+-static void mtk_thermal_turn_on_buffer(void __iomem *apmixed_base)
++static void mtk_thermal_turn_on_buffer(struct mtk_thermal *mt,
++				       void __iomem *apmixed_base)
+ {
+-	int tmp;
++	u32 tmp;
++
++	if (!mt->conf->apmixed_buffer_ctl_reg)
++		return;
+ 
+-	tmp = readl(apmixed_base + APMIXED_SYS_TS_CON1);
+-	tmp &= ~(0x37);
+-	tmp |= 0x1;
+-	writel(tmp, apmixed_base + APMIXED_SYS_TS_CON1);
++	tmp = readl(apmixed_base + mt->conf->apmixed_buffer_ctl_reg);
++	tmp &= mt->conf->apmixed_buffer_ctl_mask;
++	tmp |= mt->conf->apmixed_buffer_ctl_set;
++	writel(tmp, apmixed_base + mt->conf->apmixed_buffer_ctl_reg);
+ 	udelay(200);
+ }
+ 
+@@ -1070,8 +1080,9 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 		goto err_disable_clk_auxadc;
+ 	}
+ 
++	mtk_thermal_turn_on_buffer(mt, apmixed_base);
++
+ 	if (mt->conf->version == MTK_THERMAL_V2) {
+-		mtk_thermal_turn_on_buffer(apmixed_base);
+ 		mtk_thermal_release_periodic_ts(mt, auxadc_base);
+ 	}
+ 
+
+-- 
+b4 0.10.1
