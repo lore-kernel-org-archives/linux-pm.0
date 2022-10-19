@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A954EC4332F
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:18:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E751C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:18:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231355AbiJSOSo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Oct 2022 10:18:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43178 "EHLO
+        id S233462AbiJSOSs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Oct 2022 10:18:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50980 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233409AbiJSOSQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:18:16 -0400
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 189EF1929B9
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:01:22 -0700 (PDT)
-Received: by mail-pl1-x636.google.com with SMTP id c24so17327864pls.9
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:01:22 -0700 (PDT)
+        with ESMTP id S232332AbiJSOS1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:18:27 -0400
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com [IPv6:2607:f8b0:4864:20::642])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A40D81974E6
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:01:31 -0700 (PDT)
+Received: by mail-pl1-x642.google.com with SMTP id z20so17316414plb.10
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:01:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=YBJNc8d1DN49dwvNIgcD6LtTNDN4+u1e0rvTArMbSRY=;
-        b=YGAYOVv+brUZd23y7jvKSb64Bb5umVyN2Q3QSeu1MMFEuhjPw2hd8U1Zx8Vsqj0Sd8
-         vzvgLc83OHECsisUyP9UWZgPnvUSOt/KGIz/h/D6SIS6z9DRQBv0qfRq6tKbYHCS/hYm
-         AFf5CgV2T1wHNeCArE60X4fjJFf7WwCcYzDouX1lzJCEvjpGR4dRZpFM99Dru7lPpiix
-         HyFttEscr3sUOB/T3vMUgzBxl0G/HmbkqvS/HbpeBBWNpSfAaM6lUEDtuLR6duB2dHrl
-         Pj3wiwvBiI8v9iWj3kwfrkJ4Q0qgJhyMtUbrKBUxKPOlsKA9tVYEMKmVHRWTeJST54W1
-         b0/w==
+        bh=sOX/hC2X41UFwbpGdGHI430ElqEtPDdbL5GfxahROlI=;
+        b=dVd2escWA07wQyW29+yHtf1Aabg3rIpLGn64iqrAMkpAVqzr3PKpKo/woq+fpTux+P
+         OV67s5a2ZUJCkU53QILMfg3ASfe6ticcgpoQ/U4Ya1KJv4LQfq/hn7SkBgDWzyfGAyG7
+         Z2sTsQ0afOXdPkM1cDbQVYIHt1pWH0qp+k7Lv8VQfsB5tj66huJLPa8kMWzeBN8aKHIv
+         G5TtWxDNa8HL5kvhyQiEr5qLzZ3jxsOTIZNmd6VciiQbbg0tX7kSlhZdssOO/8zcTMm1
+         UiOqYIq1amvuIMkbhcK3FXbyPq478KivxxiUekU7kInHLyB/fV8dkcm5Tzbucaq/pBYr
+         Z+bw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=YBJNc8d1DN49dwvNIgcD6LtTNDN4+u1e0rvTArMbSRY=;
-        b=4SUWh4BMIfN/PwVPxmlJ39ocbsAYO1HdO04uRJssAuCg4eCUWQzS34T50hgnpFDPOu
-         wQCirKifRAkhT2m40LQGufve0Dkm5jabm/LflV6pD0BD/tzuilQ0Dsz6GZ5pQ3dT69D3
-         06ddCDB6AtRACEWysrx0nR7BTcMna1YMOV1/+bU3D2Fud7fckulql+FlGZz9D8LWqVCN
-         1ws1FRKMD1C2g9M2KUK1n6fj994xNzMBd5L3Z003rmaCa1PNIEnGbi+Z9S3eA0Kjkplp
-         h0qB56O04to2MNpCNaY8nZGSAiBo9xr4kmWIgdfrBsjdNDIf2ZwcKO+ECCTjxCENYzPW
-         k8BQ==
-X-Gm-Message-State: ACrzQf03rhFfDJ2vs1WiYgYOi138Z+hP2MfSmauDgpHVWyscI6yqEArF
-        yBDjJRK1zRKWPnOUMzJoLxY4HBG4KHrAtI536Q==
-X-Google-Smtp-Source: AMsMyM5RAyuFcDOTNF/J54YuFDz0XY336F9mIaRgP/VNJvUjPZvimZIU8+XTmb04ID/iF9YODLsMLQ==
-X-Received: by 2002:a17:90b:4a84:b0:20d:8953:5ab0 with SMTP id lp4-20020a17090b4a8400b0020d89535ab0mr44983588pjb.48.1666187982638;
-        Wed, 19 Oct 2022 06:59:42 -0700 (PDT)
+        bh=sOX/hC2X41UFwbpGdGHI430ElqEtPDdbL5GfxahROlI=;
+        b=Dk850GWtzkOPWWo/eff/FXmVrDU1XeEl1MT3kU0gXoxRpBLKMeO5mgrQPr6Cv881W+
+         JIH61EE0BTa6lYK3hYLF9czw5S+SHOfEg6ZzruuuggfGpQsEszKoxdL45C1gh/eTJz6m
+         j30vVDiley8vbn4xQahiY7KRLJ++sycuAI3tYK9M6co1sOP3MFgnGk6C6E5zhyJwCWMI
+         MaqfcBWAVYX90+Yomwp/S0UFqdwPTKOtGDkwg2hMpcFDFBau1hNu7vaSaTpot2eiI2NL
+         IPNLwVzkTCQSNGUUKHnub/C0pgO6mpDN6O3MOK5/+qN4MKU9puVHJeR3qdycj75HdEw/
+         E4Wg==
+X-Gm-Message-State: ACrzQf118V98wK1t48LEm09r2vUHKqFRjuM8XZ0lmysS/g43adR5CzLx
+        tE7M0DjMMaVY90Pj6wBtpQeb
+X-Google-Smtp-Source: AMsMyM4Rf1cbF2sWXTg1dfLCfhcWy6pUBvlDplgDIArkHHmRI+jsUANiVp81hJPfsEUHqgPOVBNUDg==
+X-Received: by 2002:a17:902:d588:b0:180:cf18:e76c with SMTP id k8-20020a170902d58800b00180cf18e76cmr8498867plh.138.1666187994228;
+        Wed, 19 Oct 2022 06:59:54 -0700 (PDT)
 Received: from localhost.localdomain ([117.193.210.93])
-        by smtp.gmail.com with ESMTPSA id 194-20020a6216cb000000b0053e199aa99bsm11240322pfw.220.2022.10.19.06.59.37
+        by smtp.gmail.com with ESMTPSA id 194-20020a6216cb000000b0053e199aa99bsm11240322pfw.220.2022.10.19.06.59.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Oct 2022 06:59:41 -0700 (PDT)
+        Wed, 19 Oct 2022 06:59:52 -0700 (PDT)
 From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 To:     andersson@kernel.org, viresh.kumar@linaro.org,
         krzysztof.kozlowski+dt@linaro.org, rafael@kernel.org,
@@ -57,9 +57,9 @@ Cc:     johan@kernel.org, devicetree@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH 1/4] cpufreq: qcom-hw: Remove un-necessary cpumask_empty() check
-Date:   Wed, 19 Oct 2022 19:29:22 +0530
-Message-Id: <20221019135925.366162-2-manivannan.sadhasivam@linaro.org>
+Subject: [PATCH 3/4] cpufreq: qcom-hw: Add CPU clock provider support
+Date:   Wed, 19 Oct 2022 19:29:24 +0530
+Message-Id: <20221019135925.366162-4-manivannan.sadhasivam@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20221019135925.366162-1-manivannan.sadhasivam@linaro.org>
 References: <20221019135925.366162-1-manivannan.sadhasivam@linaro.org>
@@ -69,31 +69,154 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CPUFreq core will always set the "policy->cpus" bitmask with the bitfield
-of the CPU that goes first per domain/policy. So there is no way the
-"policy->cpus" bitmask will be empty during qcom_cpufreq_hw_cpu_init().
+Qcom CPUFreq hardware (EPSS/OSM) controls clock and voltage to the CPU
+cores. But this relationship is not represented with the clk framework
+so far.
+
+So, let's make the qcom-cpufreq-hw driver a clock provider. This makes the
+clock producer/consumer relationship cleaner and is also useful for CPU
+related frameworks like OPP to know the frequency at which the CPUs are
+running.
+
+The clock frequency provided by the driver is for each CPU policy. We
+cannot get the frequency of each CPU core because, not all platforms
+support per-core DCVS feature.
+
+Also the frequency supplied by the driver is the actual frequency that
+comes out of the EPSS/OSM block after the DCVS operation. This frequency is
+not same as what the CPUFreq framework has set but it is the one that gets
+supplied to the CPUs after throttling by LMh.
 
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 ---
- drivers/cpufreq/qcom-cpufreq-hw.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/cpufreq/qcom-cpufreq-hw.c | 67 +++++++++++++++++++++++++++++--
+ 1 file changed, 63 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index d5ef3c66c762..a5b3b8d0e164 100644
+index a5b3b8d0e164..4dd710f9fb69 100644
 --- a/drivers/cpufreq/qcom-cpufreq-hw.c
 +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -552,11 +552,6 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 		data->per_core_dcvs = true;
+@@ -4,6 +4,7 @@
+  */
  
- 	qcom_get_related_cpus(index, policy->cpus);
--	if (cpumask_empty(policy->cpus)) {
--		dev_err(dev, "Domain-%d failed to get related CPUs\n", index);
--		ret = -ENOENT;
--		goto error;
--	}
+ #include <linux/bitfield.h>
++#include <linux/clk-provider.h>
+ #include <linux/cpufreq.h>
+ #include <linux/init.h>
+ #include <linux/interconnect.h>
+@@ -54,6 +55,7 @@ struct qcom_cpufreq_data {
+ 	bool cancel_throttle;
+ 	struct delayed_work throttle_work;
+ 	struct cpufreq_policy *policy;
++	struct clk_hw cpu_clk;
  
+ 	bool per_core_dcvs;
+ };
+@@ -482,6 +484,54 @@ static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
+ 	free_irq(data->throttle_irq, data);
+ }
+ 
++static unsigned long qcom_cpufreq_hw_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
++{
++	struct qcom_cpufreq_data *data = container_of(hw, struct qcom_cpufreq_data, cpu_clk);
++
++	return qcom_lmh_get_throttle_freq(data) / HZ_PER_KHZ;
++}
++
++static const struct clk_ops qcom_cpufreq_hw_clk_ops = {
++	.recalc_rate = qcom_cpufreq_hw_recalc_rate,
++};
++
++static int qcom_cpufreq_hw_clk_add(struct qcom_cpufreq_data *data, u32 index)
++{
++	struct platform_device *pdev = cpufreq_get_driver_data();
++	struct device *dev = &pdev->dev;
++	char *clk_name = devm_kasprintf(dev, GFP_KERNEL, "qcom_cpufreq%d", index);
++	static struct clk_init_data init = {};
++	int ret;
++
++	init.name = clk_name;
++	init.flags = CLK_GET_RATE_NOCACHE;
++	init.ops = &qcom_cpufreq_hw_clk_ops;
++	data->cpu_clk.init = &init;
++
++	ret = clk_hw_register(dev, &data->cpu_clk);
++	if (ret < 0) {
++		dev_err(dev, "Failed to register Qcom CPUFreq clock\n");
++		return ret;
++	}
++
++	ret = of_clk_add_hw_provider(dev->of_node, of_clk_hw_simple_get, &data->cpu_clk);
++	if (ret < 0) {
++		dev_err(dev, "Failed to add Qcom CPUFreq clock provider\n");
++		clk_hw_unregister(&data->cpu_clk);
++	}
++
++	return ret;
++}
++
++static void qcom_cpufreq_hw_clk_remove(struct qcom_cpufreq_data *data)
++{
++	struct platform_device *pdev = cpufreq_get_driver_data();
++	struct device *dev = &pdev->dev;
++
++	of_clk_del_provider(dev->of_node);
++	clk_hw_unregister(&data->cpu_clk);
++}
++
+ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct platform_device *pdev = cpufreq_get_driver_data();
+@@ -556,19 +606,24 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
  	policy->driver_data = data;
  	policy->dvfs_possible_from_any_cpu = true;
+ 
++	ret = qcom_cpufreq_hw_clk_add(data, index);
++	if (ret) {
++		dev_err(dev, "Domain-%d failed to add CPU clock\n", index);
++		goto error;
++	}
++
+ 	ret = qcom_cpufreq_hw_read_lut(cpu_dev, policy);
+ 	if (ret) {
+ 		dev_err(dev, "Domain-%d failed to read LUT\n", index);
+-		goto error;
++		goto clk_remove;
+ 	}
+ 
+ 	ret = dev_pm_opp_get_opp_count(cpu_dev);
+ 	if (ret <= 0) {
+ 		dev_err(cpu_dev, "Failed to add OPPs\n");
+ 		ret = -ENODEV;
+-		goto error;
++		goto clk_remove;
+ 	}
+-
+ 	if (policy_has_boost_freq(policy)) {
+ 		ret = cpufreq_enable_boost_support();
+ 		if (ret)
+@@ -577,9 +632,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	ret = qcom_cpufreq_hw_lmh_init(policy, index);
+ 	if (ret)
+-		goto error;
++		goto clk_remove;
+ 
+ 	return 0;
++
++clk_remove:
++	qcom_cpufreq_hw_clk_remove(data);
+ error:
+ 	kfree(data);
+ unmap_base:
+@@ -599,6 +657,7 @@ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
+ 	dev_pm_opp_remove_all_dynamic(cpu_dev);
+ 	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
+ 	qcom_cpufreq_hw_lmh_exit(data);
++	qcom_cpufreq_hw_clk_remove(data);
+ 	kfree(policy->freq_table);
+ 	kfree(data);
+ 	iounmap(base);
 -- 
 2.25.1
 
