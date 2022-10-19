@@ -2,161 +2,150 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 337C6C433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:42:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4883FC43219
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:50:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230498AbiJSOmu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Oct 2022 10:42:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53696 "EHLO
+        id S229509AbiJSOuK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Oct 2022 10:50:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43416 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230009AbiJSOm2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:42:28 -0400
-Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com [IPv6:2607:f8b0:4864:20::f2e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2908A17A036
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:28:08 -0700 (PDT)
-Received: by mail-qv1-xf2e.google.com with SMTP id df9so11451426qvb.9
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:28:07 -0700 (PDT)
+        with ESMTP id S229508AbiJSOtm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:49:42 -0400
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0372FAA6C
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:37:34 -0700 (PDT)
+Received: by mail-pj1-x102a.google.com with SMTP id q10-20020a17090a304a00b0020b1d5f6975so214676pjl.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:37:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5vgVZXeinbhpnwzOcj3FGms9cM/M5Xj4R/cDa4Tk1cA=;
-        b=rk5peA0BMWFeyDVMmseRsE34nvZ6ETndaDo8/pPXbdaMYNHXtIqBDx9Voigy0BlSKB
-         w4Ch9hzSDZ6TEnBjZPBnKyTIPHIy4UaziH9o03NjzzrQ8HJ4nrvBXc35I8Bjo02kHFhH
-         HTRueBS7B0zoCmi47wCK+/JrVRDlzKZICYaueC0HQ4YE5gmQ4CVRwJMmTS1EOvVl5kLy
-         safAUk6uLnfvYRatROHZzB5PFDfETN+QPQAOLHEEvH5zyHPZs6SvPRJVGQCTUnmznXPP
-         FanCKOiU1cWgR7wzMsBBed7tYw5v0bwiRzvdg0pD74ea8tYwgMTvlQ3jQeb9y23XbeaJ
-         khrw==
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=E3D7xLeTJfZExy4Qr6oS8VSf/FBMXw2x6SOkYhaZN+s=;
+        b=ECH6pwt4hfQ5LT+r1+MYEqwvvGGZGGzzFb4kRVkMr/eSMus2+goglWxGqxypR4p9oX
+         2VaTN5Cf5pKi/ZpNoXq6RUtInGVy44LD8q6Au+GOvxutgTaKFGEPCZdS7HYG4WIpeRYg
+         ECbFv9Dd8i6unraH3mUmBQarLoo+yRWj5uuEfm/2TNQ01agBSMH523NWhle/v1DayA6H
+         qwDSdSCdNFyqFb8gfB6n6eC5RshabdqUfXunqeEC9mQ7SUcSpSzGc59J22JojfXQvGz1
+         SUVp0TzJwtzaDXIDBJgK5NPl1zEcfXXMJTYMjNgzhPGaGa6xmtVlATy1Q3CFfls6URDu
+         uJ5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5vgVZXeinbhpnwzOcj3FGms9cM/M5Xj4R/cDa4Tk1cA=;
-        b=QSwzRPVYuJPgYssiN5NKXemZfxdg4OMvkh18dBChHA0SuhVUHKpBv8mrEOkE8m7q0q
-         To5B2ziiXSwrATC5BaqzYoOYpfHtZk3EThMPAlKDLx/RxiiFY6BreZ+0mNbVb/BlR81R
-         jMuQZWQ/N+rQ5ZCClzXMvhIxsZvL3pawc56q+bpjuHLWV8NJARxH1W9+2N8a2xHhF3P4
-         c8h5J8Rj2mIFUeiEasCf4CdRzz4/q2LYHtB7AulqKdp70VeYm1lJqj6R1I3a1vhUoAGQ
-         DyLv+jCRW7/iPk7HLO+b3zAYijsJ+fGrxGiVOQvrH0D3pAhDn5Is5BzDhXmw4MURLMO6
-         oimQ==
-X-Gm-Message-State: ACrzQf0DE/OX7YNpGiICUawp2BJBdQ9ABPv3GUBzmwSJ9SrYFY50ttlK
-        7XexYtpcsHN3l5Im9Q/eZ87gZO9WNXdiiUd/dg==
-X-Google-Smtp-Source: AMsMyM4mOJ/ZRGynrSUABhwfAdolVCW+k/oCuD8MciOZ3QxKdz/q9Sa33mzbHg22ndZhxIQLzGpdgQ==
-X-Received: by 2002:a17:903:48e:b0:17e:ea4a:394e with SMTP id jj14-20020a170903048e00b0017eea4a394emr8350170plb.48.1666187999426;
-        Wed, 19 Oct 2022 06:59:59 -0700 (PDT)
-Received: from localhost.localdomain ([117.193.210.93])
-        by smtp.gmail.com with ESMTPSA id 194-20020a6216cb000000b0053e199aa99bsm11240322pfw.220.2022.10.19.06.59.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Oct 2022 06:59:58 -0700 (PDT)
-From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To:     andersson@kernel.org, viresh.kumar@linaro.org,
-        krzysztof.kozlowski+dt@linaro.org, rafael@kernel.org,
-        robh+dt@kernel.org
-Cc:     johan@kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH 4/4] arm64: dts: qcom: sm8450: Supply clock from cpufreq node to CPUs
-Date:   Wed, 19 Oct 2022 19:29:25 +0530
-Message-Id: <20221019135925.366162-5-manivannan.sadhasivam@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20221019135925.366162-1-manivannan.sadhasivam@linaro.org>
-References: <20221019135925.366162-1-manivannan.sadhasivam@linaro.org>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=E3D7xLeTJfZExy4Qr6oS8VSf/FBMXw2x6SOkYhaZN+s=;
+        b=LfU8I5fJWPf/sMShWYdkHUsVI0aM8UeHKPd3N53upw2daZ/gecEIP48UFa3Likv04k
+         ujAF0YWcgY2hnth4X/KQEOcKPYXs8QRDcYeSW+fa0BL8Up5FyvJknCLMAPnJGenQ9xxV
+         fYtJHOyt94l6na8Br0etx9zM5yoH0+O44Qe70aqSICbkq6jrKsWKw5mNA+Bzze+qnCtH
+         iYk31PpOLfSBC95VUjz75dloFylgCj3uKgps4cFq9WEwVhRKUuYSpWmicIITphdet9eP
+         iBKfowtTHORZwpb1VWg2tRMP/w7m/b1jmjtPUu8Bg64Q195rl17yiEttPy6HW9BQVT++
+         VtcQ==
+X-Gm-Message-State: ACrzQf208ag6td6uV5jnmppvYlQk9TS39sw5y0Ygl/k8W89j+J4ZVRKV
+        suQvyf5pN5AZGiemRheEZ3x1mHnsi8pF0rxXuS5uYw==
+X-Google-Smtp-Source: AMsMyM48SBZaiUUlrTpj2bDamgu4fV2U5ynJP5kKxEY7CfdR+4nEK4g50EIxaPPM3gsLEVdpAXrZaQVxnENHN+BOyBs=
+X-Received: by 2002:a17:902:d714:b0:17f:5813:1df4 with SMTP id
+ w20-20020a170902d71400b0017f58131df4mr9046640ply.148.1666190253032; Wed, 19
+ Oct 2022 07:37:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220926110249.666813-1-dmitry.baryshkov@linaro.org> <Y1AGLPXWFOmjfdd0@hovoldconsulting.com>
+In-Reply-To: <Y1AGLPXWFOmjfdd0@hovoldconsulting.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Wed, 19 Oct 2022 16:36:56 +0200
+Message-ID: <CAPDyKFr9MraGWz7hbHyGtFsk7V2_GBUqvWBG5yM40zV6utwXOQ@mail.gmail.com>
+Subject: Re: [RESEND PATCH v2] firmware/psci: Print a warning if PSCI doesn't
+ accept PC mode
+To:     Johan Hovold <johan@kernel.org>
+Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-arm-kernel@lists.infradead.org, soc@kernel.org,
+        linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Qualcomm platforms making use of CPUFreq HW Engine (EPSS/OSM) supply clocks
-to the CPU cores. But this relationship is not represented in DTS so far.
+On Wed, 19 Oct 2022 at 16:14, Johan Hovold <johan@kernel.org> wrote:
+>
+> On Mon, Sep 26, 2022 at 02:02:49PM +0300, Dmitry Baryshkov wrote:
+> > The function psci_pd_try_set_osi_mode() will print an error if enabling
+> > OSI mode fails. To ease debugging PSCI issues print corresponding
+> > message if switching to PC mode fails too.
+> >
+> > Acked-by: Mark Rutland <mark.rutland@arm.com>
+> > Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> > ---
+> > This is a replacement for [1], now moving the warning from
+> > psci_set_osi_mode() callers to the function iself.
+> >
+> > The patch is resent to include soc@kernel.org
+> >
+> > [1] https://lore.kernel.org/all/20220727182034.983727-1-dmitry.baryshkov@linaro.org/
+> >
+> > ---
+> >  drivers/cpuidle/cpuidle-psci-domain.c | 4 +---
+> >  drivers/firmware/psci/psci.c          | 2 ++
+> >  2 files changed, 3 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+> > index 3db4fca1172b..821984947ed9 100644
+> > --- a/drivers/cpuidle/cpuidle-psci-domain.c
+> > +++ b/drivers/cpuidle/cpuidle-psci-domain.c
+> > @@ -124,10 +124,8 @@ static bool psci_pd_try_set_osi_mode(void)
+> >               return false;
+> >
+> >       ret = psci_set_osi_mode(true);
+> > -     if (ret) {
+> > -             pr_warn("failed to enable OSI mode: %d\n", ret);
+> > +     if (ret)
+> >               return false;
+> > -     }
+> >
+> >       return true;
+> >  }
+> > diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> > index 9fdcb6bff403..42cae0ba10e2 100644
+> > --- a/drivers/firmware/psci/psci.c
+> > +++ b/drivers/firmware/psci/psci.c
+> > @@ -164,6 +164,8 @@ int psci_set_osi_mode(bool enable)
+> >                       PSCI_1_0_SUSPEND_MODE_PC;
+> >
+> >       err = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE, suspend_mode, 0, 0);
+> > +     if (err < 0)
+> > +             pr_warn("failed to set %s mode: %d\n", enable ? "OSI" : "PC", err);
+> >       return psci_to_linux_errno(err);
+> >  }
+>
+> When booting 6.1-rc1 I now see:
+>
+>         [    0.000000] psci: OSI mode supported.
+>         [    0.000000] psci: failed to set PC mode: -3
+>
+> on every boot with sc8280xp, while later enabling OSI mode still works:
+>
+>         [    0.227358] CPUidle PSCI: psci_pd_try_set_osi_mode - success
+>         [    0.227599] CPUidle PSCI: Initialized CPU PM domain topology
+>
+> Judging from Sudeep's comment on v1:
+>
+>         The platform must boot in PC mode, so even if it fails we ignore
+>         so not sure if the logging is of much help here IMO.
+>
+> perhaps logging this as an error is not a good idea?
 
-So let's make cpufreq node as the clock provider and CPU nodes as the
-consumers. The clock index for each CPU node is based on the frequency
-domain index.
+I think it's useful to get information that the FW doesn't fully
+conform to the spec (it should support PC mode), but that doesn't
+really mean that it can't work.
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
----
- arch/arm64/boot/dts/qcom/sm8450.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+To me, it sounds like we should move the logging to the debug level!?
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8450.dtsi b/arch/arm64/boot/dts/qcom/sm8450.dtsi
-index 6c18cfca9a34..8f26cf9aad01 100644
---- a/arch/arm64/boot/dts/qcom/sm8450.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8450.dtsi
-@@ -52,6 +52,7 @@ CPU0: cpu@0 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 0>;
- 			L2_0: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -71,6 +72,7 @@ CPU1: cpu@100 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 0>;
- 			L2_100: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -87,6 +89,7 @@ CPU2: cpu@200 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 0>;
- 			L2_200: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -103,6 +106,7 @@ CPU3: cpu@300 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 0>;
- 			L2_300: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -119,6 +123,7 @@ CPU4: cpu@400 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 1>;
- 			L2_400: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -135,6 +140,7 @@ CPU5: cpu@500 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 1>;
- 			L2_500: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -152,6 +158,7 @@ CPU6: cpu@600 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 1>;
- 			L2_600: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -168,6 +175,7 @@ CPU7: cpu@700 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 2>;
- 			#cooling-cells = <2>;
-+			clocks = <&cpufreq_hw 2>;
- 			L2_700: l2-cache {
- 			      compatible = "cache";
- 			      next-level-cache = <&L3_0>;
-@@ -3804,6 +3812,7 @@ cpufreq_hw: cpufreq@17d91000 {
- 				     <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>;
- 			interrupt-names = "dcvsh-irq-0", "dcvsh-irq-1", "dcvsh-irq-2";
- 			#freq-domain-cells = <1>;
-+			#clock-cells = <1>;
- 		};
- 
- 		gem_noc: interconnect@19100000 {
--- 
-2.25.1
+>
+> Johan
 
+Br
+Uffe
