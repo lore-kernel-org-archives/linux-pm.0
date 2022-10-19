@@ -2,119 +2,187 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E56C1C4332F
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E30C4C433FE
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 14:28:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231560AbiJSOYt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Oct 2022 10:24:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33418 "EHLO
+        id S232222AbiJSO2c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Oct 2022 10:28:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54810 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231521AbiJSOY1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:24:27 -0400
-Received: from mail-qv1-xf44.google.com (mail-qv1-xf44.google.com [IPv6:2607:f8b0:4864:20::f44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 606A482D22
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:09:05 -0700 (PDT)
-Received: by mail-qv1-xf44.google.com with SMTP id i12so11428912qvs.2
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:09:04 -0700 (PDT)
+        with ESMTP id S232920AbiJSO1r (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 10:27:47 -0400
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73AC119DD90
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:12:33 -0700 (PDT)
+Received: by mail-pj1-x102e.google.com with SMTP id o17-20020a17090aac1100b0020d98b0c0f4so98390pjq.4
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 07:12:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=OzAmFJUitT522Y1pMwEljBD9yHh+MrS0Tv4SZYF/11U=;
-        b=a8Xhd+ArGyjvYWY5frIWpbb/ecNGCYPd7mpbXRTTZA6scDoaNxbKEd8qrby48Z8uJu
-         Er5AvA2IBoGO9b2gZI+6rL5Tt4AeIJDtp9Xdupu+8O1HcjLlXirCgIuPuUuqCJ5P5QGQ
-         L6S8UTL0sQ6i3OdxzomruA0s8QUU5YGDJJUbGPy0K2zgc3pWQqf9WP2ZfBWzDmSC+4jW
-         gjH8TWVchZS1zNi+js3ax0z+FdOOhRREqA37n/oqA6nyEU/V/bMl6NPXnljJt7oUIjMy
-         q25JDpfjhPfgZfafX5i1QUFAaYoMSCHU19vzxc5zWQ7n//J9grmDSRe6VlDxHpEns4fj
-         +LLw==
+        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=PgVmODZmFsiRPEkfBZLorZMtIv/xztHQaWuUE6+qnj8=;
+        b=7SwTzUhn3peUm0SHvT1752xh+I113A92zeloflnYASXYNZaGPaESV3uPRWCzDbWhQb
+         y1jSz5LQJYmxB6CWKL8Tej2zkVj2W11ga42+pTqGHPXU1MCDph+RqkTdNZWwL8dhLGXK
+         A4FpTDbo6EYbMjLJVXI22Bri1KBnMpy/7pw3bdOoTLlcgS8AanD7V4D/sdgfH44SILmO
+         x8iy9bt225pLnRiVxET/rUnaeWlCvlNrifnjVW5+gF+kPRxZVvWCZG/DfiZedsfS1l4J
+         iG4VJr4FxzNkHnr4+2klcSkvAqK8fMDPCPoAP/AdrAnVLMd+gCGusgFq0D/hANMU5ND5
+         Gn6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=OzAmFJUitT522Y1pMwEljBD9yHh+MrS0Tv4SZYF/11U=;
-        b=qCrXQfvdTUQMyg7N7EvoVZ7mU1lI0/r1LGsrzfLjVlAunzuH2PFNUjhvCihxTlmu1x
-         FfW7N1Ke+udF0JWVxhI9CTCs4mCkyT8hgONES5aj+2d4YvdoSQsawVTIXhPk0yuFNN5y
-         yGFuSLdqAhapxnfuh+vF6yrX+XRHJEGshDHrqwSjbGvdVLPG3SeRbSyu2tgAN3ysBX5W
-         bwJwWamCCLuqv1bOj98dmtUPTl6oAQKne9MgxuxMVjGXg11lX9RdQwDgdwDOhzKefTAw
-         yPrQPyPNemNU4Teze6URaaCuHUJEAcIvSCNgYm2NSDH5GHwBnuYcowOqRclOnbf1Rlee
-         MOAQ==
-X-Gm-Message-State: ACrzQf3+/sR7YJupyYVyUzj+wmfY336sBajA2vf8zcJKYvcreSomtykC
-        yCh51IEIVJWkPQ+GJ9IydTLIqMYQlHtXdZUg7g==
-X-Google-Smtp-Source: AMsMyM4FRnEfHMnSGKSja2zW54o0AMPMEWL6DU12fRR0KMBMA5OQDJjdo/83d0CU/vTI9yGKcvtyGg==
-X-Received: by 2002:aa7:810d:0:b0:563:1fa6:fecc with SMTP id b13-20020aa7810d000000b005631fa6feccmr8916163pfi.24.1666187977124;
-        Wed, 19 Oct 2022 06:59:37 -0700 (PDT)
-Received: from localhost.localdomain ([117.193.210.93])
-        by smtp.gmail.com with ESMTPSA id 194-20020a6216cb000000b0053e199aa99bsm11240322pfw.220.2022.10.19.06.59.31
+        bh=PgVmODZmFsiRPEkfBZLorZMtIv/xztHQaWuUE6+qnj8=;
+        b=fNLbCwfSN+lwMa5VU8szLcLRxvK2LLd07S82SlNGbnWIZ7YP/XKW2tNBLERLw2YoqK
+         DD2yRfqXBuFiI1Zi1gSyHmZzM7xSGhvnwI2B8n/DpKdYEo5VDc7aZdCJPtVHbsNZJqGf
+         sulRCFeU2KB26cbC6j5pqTiTF2bKu/eHoTGIUfUP4rWV9znojSCW8Sdxk5bxaAjPrN72
+         XYiay322PHY+yeSKA8c9Gp9ODQZVjbGB44ONvsjN6LXkvP1gEdEh0xZShQoNlTL7Rnem
+         k1sS8rZat4hD17jeznhXaPgPD4Sz5ZVV+A+glQWwice1wEpVz2j/4MKs787XBm1OeC8P
+         eMgA==
+X-Gm-Message-State: ACrzQf3htObmkwneTjb4wX46ekVhcNgwBMc2d7IGCTKXdLe7XzvwQDZH
+        uGhbkZTWGXnQUQTtbdklWN3xeLQHRPMPIoBI
+X-Google-Smtp-Source: AMsMyM54P76/i3apgnu+gdALbc/04Ko1G2Gw1zkIzurbp6IIP44Gorcsc6mPtLeOT0AAncLrFol36A==
+X-Received: by 2002:a17:902:f693:b0:17f:6974:cf90 with SMTP id l19-20020a170902f69300b0017f6974cf90mr8874771plg.62.1666188692011;
+        Wed, 19 Oct 2022 07:11:32 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id o125-20020a62cd83000000b00561c179e17dsm11412633pfg.76.2022.10.19.07.11.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Oct 2022 06:59:35 -0700 (PDT)
-From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To:     andersson@kernel.org, viresh.kumar@linaro.org,
-        krzysztof.kozlowski+dt@linaro.org, rafael@kernel.org,
-        robh+dt@kernel.org
-Cc:     johan@kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH 0/4] qcom-cpufreq-hw: Add CPU clock provider support
-Date:   Wed, 19 Oct 2022 19:29:21 +0530
-Message-Id: <20221019135925.366162-1-manivannan.sadhasivam@linaro.org>
-X-Mailer: git-send-email 2.25.1
+        Wed, 19 Oct 2022 07:11:31 -0700 (PDT)
+Message-ID: <63500593.620a0220.414c4.52f3@mx.google.com>
+Date:   Wed, 19 Oct 2022 07:11:31 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: build
+X-Kernelci-Kernel: v6.1-rc1-20-g1c24b2556ca7
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing build: 8 builds: 1 failed, 7 passed, 1 error,
+ 5 warnings (v6.1-rc1-20-g1c24b2556ca7)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+pm/testing build: 8 builds: 1 failed, 7 passed, 1 error, 5 warnings (v6.1-r=
+c1-20-g1c24b2556ca7)
 
-This series adds clock provider support to the Qcom CPUFreq driver for
-supplying the clocks to the CPU cores in Qcom SoCs.
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v6.=
+1-rc1-20-g1c24b2556ca7/
 
-The Qualcomm platforms making use of CPUFreq HW Engine (EPSS/OSM) supply
-clocks to the CPU cores. But this is not represented clearly in devicetree.
-There is no clock coming out of the CPUFreq HW node to the CPU. This created
-an issue [1] with the OPP core when a recent enhancement series was submitted.
-Eventhough the issue got fixed in the OPP framework in the meantime, that's
-not a proper solution and this series aims to fix it properly.
+Tree: pm
+Branch: testing
+Git Describe: v6.1-rc1-20-g1c24b2556ca7
+Git Commit: 1c24b2556ca732f37204db7e4ab5970ccef9196e
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 8 unique architectures
 
-There was also an attempt made by Viresh [2] to fix the issue by moving the
-clocks supplied to the CPUFreq HW node to the CPU. But that was not accepted
-since those clocks belong to the CPUFreq HW node only.
+Build Failure Detected:
 
-The proposal here is to add clock provider support to the Qcom CPUFreq HW
-driver to supply clocks to the CPUs that comes out of the EPSS/OSM block.
-This correctly reflects the hardware implementation.
+riscv:
+    defconfig: (gcc-10) FAIL
 
-The clock provider is a simple one that just provides the frequency of the
-clocks supplied to each frequency domain in the SoC using .recalc_rate()
-callback. The frequency supplied by the driver will be the actual frequency
-that comes out of the EPSS/OSM block after the DCVS operation. This frequency
-is not same as what the CPUFreq framework has set but it is the one that gets
-supplied to the CPUs after throttling by LMh.
+Errors and Warnings Detected:
 
-This series has been tested on SM8450 based dev board and hence there is a DTS
-change only for that platform. Once this series gets accepted, rest of the
-platform DTS can also be modified and finally the hack on the OPP core can be
-dropped.
+arc:
 
-Thanks,
-Mani
+arm64:
 
-[1] https://lore.kernel.org/lkml/YsxSkswzsqgMOc0l@hovoldconsulting.com/
-[2] https://lore.kernel.org/lkml/20220801054255.GA12039@thinkpad/t/
+arm:
 
-Manivannan Sadhasivam (4):
-  cpufreq: qcom-hw: Remove un-necessary cpumask_empty() check
-  dt-bindings: cpufreq: cpufreq-qcom-hw: Add cpufreq clock provider
-  cpufreq: qcom-hw: Add CPU clock provider support
-  arm64: dts: qcom: sm8450: Supply clock from cpufreq node to CPUs
+i386:
 
- .../bindings/cpufreq/cpufreq-qcom-hw.yaml     | 12 ++++
- arch/arm64/boot/dts/qcom/sm8450.dtsi          |  9 +++
- drivers/cpufreq/qcom-cpufreq-hw.c             | 72 ++++++++++++++++---
- 3 files changed, 84 insertions(+), 9 deletions(-)
+mips:
+    32r2el_defconfig (gcc-10): 1 warning
 
--- 
-2.25.1
+riscv:
+    defconfig (gcc-10): 1 error
 
+sparc:
+    sparc64_defconfig (gcc-10): 4 warnings
+
+x86_64:
+
+Errors summary:
+
+    1    ERROR: modpost: "riscv_cbom_block_size" [arch/riscv/kvm/kvm.ko] un=
+defined!
+
+Warnings summary:
+
+    2    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version genera=
+tion failed, symbol will not be versioned.
+    2    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [=
+-Wcpp]
+    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
+e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
+ted "0,0"
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
+ion mismatches
+
+Warnings:
+    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
+): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
+0,0"
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-10) =E2=80=94 FAIL, 1 error, 0 warnings, 0 section mi=
+smatches
+
+Errors:
+    ERROR: modpost: "riscv_cbom_block_size" [arch/riscv/kvm/kvm.ko] undefin=
+ed!
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
+ section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
+on mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---------------------------------------------------------------------------=
+-----
+sparc64_defconfig (sparc, gcc-10) =E2=80=94 PASS, 0 errors, 4 warnings, 0 s=
+ection mismatches
+
+Warnings:
+    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [-Wcpp]
+    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
+failed, symbol will not be versioned.
+    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [-Wcpp]
+    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
+failed, symbol will not be versioned.
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
+ection mismatches
+
+---
+For more info write to <info@kernelci.org>
