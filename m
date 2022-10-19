@@ -2,102 +2,139 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1848C43219
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 21:43:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0256C433FE
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Oct 2022 22:23:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231293AbiJSVns (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Oct 2022 17:43:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46556 "EHLO
+        id S230398AbiJSWXx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Oct 2022 18:23:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231253AbiJSVnr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 17:43:47 -0400
-Received: from smtp.smtpout.orange.fr (smtp-25.smtpout.orange.fr [80.12.242.25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id EFCF3199895
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 14:43:45 -0700 (PDT)
-Received: from sopl295.home ([109.220.248.156])
-        by smtp.orange.fr with ESMTPA
-        id lGNMo1N0Kg7y2lGNMocFLS; Wed, 19 Oct 2022 23:13:31 +0200
-X-ME-Helo: sopl295.home
-X-ME-Auth: amFyem1pay5yb2JlcnRAb3JhbmdlLmZy
-X-ME-Date: Wed, 19 Oct 2022 23:13:31 +0200
-X-ME-IP: 109.220.248.156
-From:   Robert Jarzmik <jarzmik.robert@orange.fr>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     linux-arm-kernel@lists.infradead.org,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-        stern@rowland.harvard.edu, alexandre.belloni@bootlin.com,
-        brgl@bgdev.pl, damien.lemoal@opensource.wdc.com,
-        dmitry.torokhov@gmail.com, linux@dominikbrodowski.net,
-        balbi@kernel.org, gregkh@linuxfoundation.org, deller@gmx.de,
-        perex@perex.cz, jingoohan1@gmail.com, lee@kernel.org,
-        kernel@wantstofly.org, lgirdwood@gmail.com,
-        linus.walleij@linaro.org, marek.vasut@gmail.com,
-        broonie@kernel.org, mkpetch@internode.on.net,
-        miquel.raynal@bootlin.com, lost.distance@yahoo.com,
-        philipp.zabel@gmail.com, linux@armlinux.org.uk, sre@kernel.org,
-        slapin@ossfans.org, s.shtylyov@omp.ru, sudipm.mukherjee@gmail.com,
-        tiwai@suse.com, ulf.hansson@linaro.org, vigneshr@ti.com,
-        viresh.kumar@linaro.org, wsa+renesas@sang-engineering.com,
-        linux-pm@vger.kernel.org, linux-ide@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-input@vger.kernel.org,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-rtc@vger.kernel.org,
-        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH 00/30] ARM: pxa: remove all unused boards&drivers
-References: <20221019161831.3864786-1-arnd@kernel.org>
-X-URL:  http://belgarath.falguerolles.org/
-Date:   Wed, 19 Oct 2022 23:13:20 +0200
-In-Reply-To: <20221019161831.3864786-1-arnd@kernel.org> (Arnd Bergmann's
-        message of "Wed, 19 Oct 2022 18:17:53 +0200")
-Message-ID: <m2sfjjh5zj.fsf@sopl295.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.1 (darwin)
+        with ESMTP id S230006AbiJSWXw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2022 18:23:52 -0400
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4355181CA6
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 15:23:50 -0700 (PDT)
+Received: by mail-pl1-x62c.google.com with SMTP id c24so18603043plo.3
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2022 15:23:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=NT7ZFogFkmlI57Imvtb/uGPP7vrPZDS0Ypoa2cGMjo4=;
+        b=1jsTMmQFv1BpxuevWU4fpMzSzZCSbbF82yqD20iHwy1D9DMqEBMRloyPlSUcGsDdox
+         +8B1VLBIj6EL6a1rwsFlpZQ/XfEDXHHzEPdBLAbP/WkzrzZysxWT3oRJZmopFQLCxSwd
+         +m/KKyPTQz6mxcbQRaZvgIX0lLDESN2kjw9T50tAGK7IkYuUkXUREIobIPlLOQLchO2I
+         XEh5x2pS/VaRJXh8f7ADxVrhcHXPlL7xAMXA43wgLIWBB0Cm4dLV08lunOK8AkwFZRy7
+         Q6VHr/liHjXQH4lpnCUmqPgz/lB0Z44rVKT29ez5T7qbspHMFFTA4JKSkJS8PES+7Te5
+         klTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=from:to:subject:content-transfer-encoding:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NT7ZFogFkmlI57Imvtb/uGPP7vrPZDS0Ypoa2cGMjo4=;
+        b=Dxmam2JQTC9T2E+cG39J2SEaXVh2yGOJkbFnCl8nCa37cflIuz2dPp2vsYQRQEkXm4
+         /ts2hIoRP+r4ujhLsAOr19gzTMZylOGM+K0rHRT/qqMrTNi3jqcqaf8chMmHADOJDKn8
+         NldXxFOXXSg7WYn0kIhfJdmxxUKBte3s7Z+iKRr8OcoAs1nST3/IqVEo8fVFTqjcEGWL
+         KQvChtHEPpOnWDA1tCJpAdguydes3ffcOkL721ZAp0SxhoLJ5H8//YbzIBOeAqNuhmmR
+         0wFNY0eCMfNEj/P7FFm5a96ZqtE9rbR1MITPAVsbZs1b9hqyxhck9xejQnCICavL0tHV
+         O8Fw==
+X-Gm-Message-State: ACrzQf2rvcLbJ31PQAfR+CIMlX72zxCuWJ8B9vNp0j3mFxQelKW7w95A
+        3uzKWOMatImN8xiuFozmWjUJPniXJUxqo4Aj
+X-Google-Smtp-Source: AMsMyM4dURUwZ3DJL2rhXZqP6SxSCFsyPZpOxPvjJ/b9Uk1OlGINgITN/1Q3wiIP0bPkubZuIsqebw==
+X-Received: by 2002:a17:90b:388e:b0:20d:4a1f:d5a2 with SMTP id mu14-20020a17090b388e00b0020d4a1fd5a2mr11892283pjb.135.1666218230047;
+        Wed, 19 Oct 2022 15:23:50 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id t20-20020a63f354000000b00451f4071151sm10229471pgj.65.2022.10.19.15.23.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Oct 2022 15:23:49 -0700 (PDT)
+Message-ID: <635078f5.630a0220.d7a4a.3313@mx.google.com>
+Date:   Wed, 19 Oct 2022 15:23:49 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: test
+X-Kernelci-Kernel: v6.1-rc1-22-g89871b5c10a0
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing baseline: 73 runs,
+ 1 regressions (v6.1-rc1-22-g89871b5c10a0)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Arnd Bergmann <arnd@kernel.org> writes:
+pm/testing baseline: 73 runs, 1 regressions (v6.1-rc1-22-g89871b5c10a0)
 
-> From: Arnd Bergmann <arnd@arndb.de>
-...zip...
+Regressions Summary
+-------------------
 
-> A good number of drivers become impossible to select after this, so
-> each of these also get dropped. I'm including the driver patches in the
-> series here and can either merge them through the soc tree, or they
-> can get picked up by the individual subsystem maintainers. Since both
-> the platform and the drivers get removed, the order should not matter.
-This part is a bit ... bothering.
-I at least identified these :
->  delete mode 100644 drivers/input/touchscreen/wm9705.c
->  delete mode 100644 drivers/input/touchscreen/wm9712.c
->  delete mode 100644 drivers/input/touchscreen/wm9713.c
->  delete mode 100644 drivers/input/touchscreen/wm97xx-core.c
->  delete mode 100644 drivers/mfd/wm97xx-core.c
->  delete mode 100644 sound/ac97/bus.c
->  delete mode 100644 sound/ac97/codec.c
->  delete mode 100644 sound/ac97/snd_ac97_compat.c
+platform              | arch  | lab         | compiler | defconfig | regres=
+sions
+----------------------+-------+-------------+----------+-----------+-------=
+-----
+kontron-kbox-a-230-ls | arm64 | lab-kontron | gcc-10   | defconfig | 1     =
+     =
 
-For the existing platforms working with devicetree support (mioa701 for
-example), the wm9713 was properly used, providing both sound support and input
-touchscreen.
-So was the a97 part, providing a framework to make the wm9713 work.
 
-So I'm wondering how the choice to chop these drivers was done, and it is
-necessary to remove them. If so, maybe pxa support in the kernel should be
-removed all together, as people playing with it loose part of the working DT
-platforms they had.
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v6.1-rc1=
+-22-g89871b5c10a0/plan/baseline/
 
-As for the removal of defconfigs and arch-pxa, sure, this was PXA's destiny.
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v6.1-rc1-22-g89871b5c10a0
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      89871b5c10a0504b364a83363f47a069578ae1f9 =
 
-Cheers.
 
---
-Robert
 
-PS: If this mail is sent twice, sorry in advance, my mailer is a bad mood
-lately.
+Test Regressions
+---------------- =
+
+
+
+platform              | arch  | lab         | compiler | defconfig | regres=
+sions
+----------------------+-------+-------------+----------+-----------+-------=
+-----
+kontron-kbox-a-230-ls | arm64 | lab-kontron | gcc-10   | defconfig | 1     =
+     =
+
+
+  Details:     https://kernelci.org/test/plan/id/63506a11d409289b035e5b80
+
+  Results:     94 PASS, 1 FAIL, 1 SKIP
+  Full config: defconfig
+  Compiler:    gcc-10 (aarch64-linux-gnu-gcc (Debian 10.2.1-6) 10.2.1 20210=
+110)
+  Plain log:   https://storage.kernelci.org//pm/testing/v6.1-rc1-22-g89871b=
+5c10a0/arm64/defconfig/gcc-10/lab-kontron/baseline-kontron-kbox-a-230-ls.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v6.1-rc1-22-g89871b=
+5c10a0/arm64/defconfig/gcc-10/lab-kontron/baseline-kontron-kbox-a-230-ls.ht=
+ml
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/buildroo=
+t-baseline/20221007.0/arm64/rootfs.cpio.gz =
+
+
+
+  * baseline.bootrr.mscc_felix-probed: https://kernelci.org/test/case/id/63=
+506a11d409289b035e5b8d
+        failing since 134 days (last pass: v5.18-rc7-183-g45785e0ed597, fir=
+st fail: v5.19-rc1-2-g6a8964e282382)
+
+    2022-10-19T21:20:03.435443  /lava-187146/1/../bin/lava-test-case
+    2022-10-19T21:20:03.435750  <8>[   18.505010] <LAVA_SIGNAL_TESTCASE TES=
+T_CASE_ID=3Dmscc_felix-probed RESULT=3Dfail>
+    2022-10-19T21:20:03.435903  /lava-187146/1/../bin/lava-test-case
+    2022-10-19T21:20:03.436045  <8>[   18.521261] <LAVA_SIGNAL_TESTCASE TES=
+T_CASE_ID=3Dleds-gpio-driver-present RESULT=3Dpass>
+    2022-10-19T21:20:03.436544  /lava-187146/1/../bin/lava-test-case
+    2022-10-19T21:20:03.436696  <8>[   18.539088] <LAVA_SIGNAL_TESTCASE TES=
+T_CASE_ID=3Dleds-gpio-probed RESULT=3Dpass>
+    2022-10-19T21:20:03.436837  /lava-187146/1/../bin/lava-test-case   =
+
+ =20
