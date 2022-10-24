@@ -2,105 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18BE0ECAAA1
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 15:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA7DAFA3740
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 15:25:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231881AbiJXPW4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Oct 2022 11:22:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48750 "EHLO
+        id S231750AbiJXPZw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Oct 2022 11:25:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230187AbiJXPWj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 11:22:39 -0400
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4620F18F923;
-        Mon, 24 Oct 2022 07:06:40 -0700 (PDT)
-Received: by mail-ed1-x52d.google.com with SMTP id y12so11373255edc.9;
-        Mon, 24 Oct 2022 07:06:39 -0700 (PDT)
+        with ESMTP id S231842AbiJXPZ1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 11:25:27 -0400
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0945AC588B;
+        Mon, 24 Oct 2022 07:10:38 -0700 (PDT)
+Received: by mail-ed1-x52b.google.com with SMTP id i21so10643884edj.10;
+        Mon, 24 Oct 2022 07:10:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9UBEsDOtGvuqocb1tQphZqfQPO49fazm6XTep7E5qLU=;
-        b=nDAwkhGpUseVldEa+nd6n9zF/tkqyQhZlEI9B4uy5NneWVkbJl1WuxqnMr3UT7mk82
-         BspUUfEUTcKa8mBe65Q3kL7B/2T8UENqq5LM0iTq/HEtj7cWLPts9qPIj+FAMeWjI8VA
-         oUTSPRXOVimyRDgRTbQ8Kgsopaqrd6/Ma280044VHyYnJbY4hnpecHJdDrWNM1tAgu0y
-         KsJxs9vq+5A3Euo3RHHUaTFQvh6vVYFP2cIUYEtAD0y0fB/drr3NUS44qgNJSqWWcrUl
-         kYyVfkqEjeMRF01E0N8dfPwquasC/ka9GoShuPZ7XevSvAWv7TaEAISDlTFsLf2unKgO
-         9axQ==
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=lvDfUqBBoJwjlhc3LTQhEDbv7nOdzHTpwwahn4z7YPM=;
+        b=qQNIQkeNybSbEFdYwv9QInKQ2tjDNh1z0OZIeJ8AKEtvpZ60hrNqraDdvdFb96Epi0
+         IhmbqP/ZNYq6HjuAGOFMiGad4Q8G05/wKeKfEkHkj9e+MigJt8IwZiDA4z0vexIjZXzx
+         VqFGhfSjHx4Gb2Ul3yf7gHlbgO9JBxw86LMLyQICPtgRGqaiUZz7pwUEFNx+3nz3Jo5g
+         oRJp5Pjq48vq0BKrggtATqQvl39brNIgBLQ6LaV26fH2WqtScvLPBnPtTsIphpdpGaIr
+         O+Fgq0bJf/2lB8KojD8puEaIARcgtZQre2/QCm/kEY0AMo6ZKnYtLaycy7ApmCwVLP+A
+         uoUw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=9UBEsDOtGvuqocb1tQphZqfQPO49fazm6XTep7E5qLU=;
-        b=KZY8hcA1qYxCRdyVLxi+ShPL3NUVwNBUyBLRggVNB5KeWv3wHMCcybeKXR/skt97we
-         UWNS/hw63Ri2CYokkPA9bkTl2D6WD2ayn9z2yPx5oGa4e63ObbyOFtixYyMR/IJgs38q
-         i7bseoEQ03BlbQPet9PJ2Pw8stp9Ddm2ELzbfVidyBkAO9evRnkGTJs93Zo3MbdgxLoh
-         +qiaIi+J7nUNXSXLOKm1tn6ChvDE4Og/F1/oVVAZ5Jd4HewpqrsJ+jMf5e4X6KhLPHRa
-         P2LYnpVepNbWlmhIgxqLu8beWQWUQM0ygPRVk8DLBxr3K5fAtOOBLC0mQaElazM3uefS
-         JRhA==
-X-Gm-Message-State: ACrzQf3qtKnzJz+DP6c4dzx/aFC4Zw0aDonWhSp1gFBlvBTSNhPvcVpj
-        UfhBd88KA4I+QT99m4H9uTV9Or5NMpM=
-X-Google-Smtp-Source: AMsMyM741Q0+KuGzBJqCT6ePEjtdpRdPVylZpUQ2x6R6r5bekAgiB5+Ns9qejo/ngiDM7t/TJvK10Q==
-X-Received: by 2002:a05:6402:3705:b0:454:e006:82 with SMTP id ek5-20020a056402370500b00454e0060082mr30580615edb.360.1666618086450;
-        Mon, 24 Oct 2022 06:28:06 -0700 (PDT)
-Received: from discovery.. (p5dcfeede.dip0.t-ipconnect.de. [93.207.238.222])
-        by smtp.gmail.com with ESMTPSA id l20-20020a056402231400b00457c5637578sm18243818eda.63.2022.10.24.06.28.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Oct 2022 06:28:06 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, jic23@kernel.org,
-        lars@metafoo.de, andy.shevchenko@gmail.com
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-iio@vger.kernel.org, Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v4 5/8] power: supply: mp2629: Add USB fast charge settings
-Date:   Mon, 24 Oct 2022 15:27:54 +0200
-Message-Id: <20221024132757.3345400-6-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20221024132757.3345400-1-sravanhome@gmail.com>
-References: <20221024132757.3345400-1-sravanhome@gmail.com>
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=lvDfUqBBoJwjlhc3LTQhEDbv7nOdzHTpwwahn4z7YPM=;
+        b=v6YCje9EtcigFbG6SLj7HS4E7KcOEzIt9aSdNuTHwBxc5MGyuRdi/OSvlNjwfnkFvh
+         ZmNguU3ADxTzL0xC/louNhg/JPft7AMoeLUcdRBuqY3WhoClANez9FUdpzmz4oTqziiA
+         t/9hRmfYCST7RrIgGRu45fP6odweXzeILmOEavlZo3OplYTczpqUHFtCC8h7Edy4wVTe
+         piUdPycVPMXo/9mvtIS58+3lYYWaGuQfqRfYEEryMteIsLYELNCk7OOYCnWhOj8nn5WE
+         J69zAS1FXHlfZOdC4uGiTwb7/eJrbMx4K1tGmSzVkNNRbrm06gS6J9vHzhAIsUVSkIrd
+         clMg==
+X-Gm-Message-State: ACrzQf3b4Z/43kNf8rp+fF+LjNqNg3CkYyANARtJu7mZ/4JKqKqtiqKG
+        nh8GgJiU9GjJSqb3RwjpdYE=
+X-Google-Smtp-Source: AMsMyM6+RgBK/xW8+LjlIXzdLBr6rM/1hS60OWG3DGZkGpn5iEkMfQzzBfp68dcoorpPtZ+tWloEJA==
+X-Received: by 2002:a17:907:96a0:b0:78d:dd45:a6d4 with SMTP id hd32-20020a17090796a000b0078ddd45a6d4mr28063728ejc.643.1666620451719;
+        Mon, 24 Oct 2022 07:07:31 -0700 (PDT)
+Received: from [192.168.0.104] (p5dcfeede.dip0.t-ipconnect.de. [93.207.238.222])
+        by smtp.gmail.com with ESMTPSA id ky8-20020a170907778800b007a4e02e32ffsm2438993ejc.60.2022.10.24.07.07.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Oct 2022 07:07:31 -0700 (PDT)
+Message-ID: <40711ccb-ef96-4905-40ed-525c0a490fba@gmail.com>
+Date:   Mon, 24 Oct 2022 16:07:30 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v4 8/8] power: supply: fix wrong interpretation of
+ register value
+Content-Language: en-US
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, jic23@kernel.org,
+        lars@metafoo.de, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org
+References: <20221024132757.3345400-1-sravanhome@gmail.com>
+ <20221024132757.3345400-9-sravanhome@gmail.com>
+ <CAHp75VeCGNvLhpsRvfzf8oedAhZVGuaiDQYJyahpPkvz1qQd7g@mail.gmail.com>
+ <CAHp75Vd8L3vnfqahSP77b8bA-Z70w7rHOSNVgXPUXmOjBonLPg@mail.gmail.com>
+From:   saravanan sekar <sravanhome@gmail.com>
+In-Reply-To: <CAHp75Vd8L3vnfqahSP77b8bA-Z70w7rHOSNVgXPUXmOjBonLPg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Allows the user to change the USB device fast charge setting to advertise
-host on enumeration helps to accelerate the charging cycle. Altering this
-value resets USB existing connection.
+On 24/10/22 15:50, Andy Shevchenko wrote:
+> On Mon, Oct 24, 2022 at 4:50 PM Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+>> On Mon, Oct 24, 2022 at 4:28 PM Saravanan Sekar <sravanhome@gmail.com> wrote:
+>>>
+>>> fix wrong interpretation of bitwise as hex
+> 
+> Maybe you can replace 0x with 0b instead?
+> 
 
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
----
- .../ABI/testing/sysfs-class-power-mp2629         | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+Ok, I consider to changes as "fix the register value interpretation as 
+0x instead of 0b" does it fits !!
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-mp2629 b/Documentation/ABI/testing/sysfs-class-power-mp2629
-index 914d67caac0d..b386d02cb010 100644
---- a/Documentation/ABI/testing/sysfs-class-power-mp2629
-+++ b/Documentation/ABI/testing/sysfs-class-power-mp2629
-@@ -1,3 +1,19 @@
-+What:		/sys/class/power_supply/mp2629_battery/usb_fast_charge
-+Date:		June 2022
-+KernelVersion:	5.20
-+Description:
-+		Represents a USB device fast charge settings.Altering this
-+		value resets USB existing connection
-+		USB DP:DM[0:0] 0.6V : Hi-Z
-+		USB DP:DM[0:1] 3.3V : 0.6V
-+		USB DP:DM[1:0] 0.6V : 0.6V
-+		USB DP:DM[1:1] 0.6V : 3.3V
-+
-+                Access: Read, Write
-+
-+                Valid values: Represented in bit DP & DM setting. Valid
-+			      range is [0, 3].
-+
- What:		/sys/class/power_supply/mp2629_battery/batt_impedance_compen
- Date:		April 2020
- KernelVersion:	5.7
--- 
-2.32.0
-
+Thanks,
+Saravanan
