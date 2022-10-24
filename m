@@ -2,88 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EBB0ECAAA1
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 15:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7988C38A2D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 15:49:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230123AbiJXPf5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Oct 2022 11:35:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60040 "EHLO
+        id S229744AbiJXPtj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Oct 2022 11:49:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49138 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230165AbiJXPfc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 11:35:32 -0400
-Received: from mail-qt1-f176.google.com (mail-qt1-f176.google.com [209.85.160.176])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3C3597D76;
-        Mon, 24 Oct 2022 07:22:57 -0700 (PDT)
-Received: by mail-qt1-f176.google.com with SMTP id w3so5660108qtv.9;
-        Mon, 24 Oct 2022 07:22:57 -0700 (PDT)
+        with ESMTP id S232503AbiJXPtV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 11:49:21 -0400
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E6FD2A968;
+        Mon, 24 Oct 2022 07:42:55 -0700 (PDT)
+Received: by mail-ed1-f45.google.com with SMTP id a13so32180194edj.0;
+        Mon, 24 Oct 2022 07:42:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=z95RGHhrq2RpkVpagLbxbym9uTh1REHQsUV1yjQ7WkY=;
-        b=L13ity+YPc1L1SXl6GrXMurF79RdrsqFl3nO8Gd+biOii0FxyhcAYB2fL1AYmdme88
-         ZC+DSWWsNPDyndApeebfPYY1QIMc1/CA2LB4i2IzJnu/Wr6hSDooEHVaD6l3uv6EeMDI
-         Q4Wc/+T6iD7cEm06seJXGEEud3bTd9yW6MIu5bSnjrumR2QAlDKDS23ffNVHU2vgNuEA
-         De0IeY7dL1n45UaPhVOhva+fn7Gjoqm30N8s1yFs+go0G403zWIDjckcvXboMFDsqprw
-         VCRx9fshRCgx8k+4l50w4zhXcFGB22MXLAo5LFM6zS5BMmprJBk5cqTNk21rjuu1tCTO
-         4QFQ==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VYDe+pPSD0vc7fcU9WurDQ2z2Lc918aKtSIZ7Rn8KXw=;
+        b=iPiLBv6575MeL9d+q2zZB1Oe/sGJ3rPuJQad8fELE0DVeDXDgIzRyDMC+CoStYEpy8
+         z/mDAR2Vec+1BPqOaKUGtIo2GMVhyltj5zjo6E/Wo63C5qIHPhAPTEtv6nbmX74dv6II
+         SkcTuoZkhvNOL33U2CxQEE77hIqv1e/kilbGi1Kd6ewYtipek8gH8v4+WgVwniEYXDlh
+         ZTXgywMN8Nq58NbrFlNdZFKVRSSRGBZ//MQ4B42j34z9Km3PrHq9uRr2b7L4dwu0T/pr
+         o/pk0YWkH9MgqJJWqMlQ8z/2/D3FQkyDDXZCHt11i+3dB09hhmP9DrRyxCdyrHTOR+5C
+         PpPw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=z95RGHhrq2RpkVpagLbxbym9uTh1REHQsUV1yjQ7WkY=;
-        b=kC/q1lWQXzFxEc1G0Rwy3LGioo3nUM3rmOHHm+jmxISPoyAB1TWffgxlUUMoQ2qDfK
-         urKjS5DbhY/RCiORhi1044amAHDyUpfp4K86gxihRqvi2SGMgj76P7e4v7kulcL//a/Z
-         eXx2MyWnrW016VGDLYgUDc/gx9Ka4ngcLZlIx/7PW3VuXFvQ0aBYXNwfzvZEL27r3hb8
-         43xKM+S4snICmq9TJDVMW2PLg33IJKbQrBcx/nNd9qXjFKBxi40EnYz3iAEHgwGJ+tk2
-         bAbB5Hi7Zm09Ni4w0BK/bHB9KouW6WRKZ9e2GWOharSIOFIGtVOYkM0/j11Liu6bnVDS
-         mlaQ==
-X-Gm-Message-State: ACrzQf3StRG08rwOpT+zORlxFrWYFH5Ib6bxpnIDcFNPlZkg9sDIrlsq
-        HsT8ZIoARuqRWsaFg5fzuO+MXNt8tDgx6oSWGX4=
-X-Google-Smtp-Source: AMsMyM4wZ3KM3bv1WBiHFnmWOO8Msm6909wuihlUA7xJv313iAW4xA1mzKBzJI2/4dgP//ip6ORR+aTOhySEHm5arhM=
-X-Received: by 2002:ac8:7c46:0:b0:39c:fa92:a27a with SMTP id
- o6-20020ac87c46000000b0039cfa92a27amr25660189qtv.61.1666621148926; Mon, 24
- Oct 2022 07:19:08 -0700 (PDT)
-MIME-Version: 1.0
-References: <20221024132757.3345400-1-sravanhome@gmail.com>
- <20221024132757.3345400-9-sravanhome@gmail.com> <CAHp75VeCGNvLhpsRvfzf8oedAhZVGuaiDQYJyahpPkvz1qQd7g@mail.gmail.com>
- <CAHp75Vd8L3vnfqahSP77b8bA-Z70w7rHOSNVgXPUXmOjBonLPg@mail.gmail.com> <40711ccb-ef96-4905-40ed-525c0a490fba@gmail.com>
-In-Reply-To: <40711ccb-ef96-4905-40ed-525c0a490fba@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Mon, 24 Oct 2022 17:18:33 +0300
-Message-ID: <CAHp75Veht22nPGyZGp4G0yGvYm4hyjZGvX4fdz4qCz7VUJcEdg@mail.gmail.com>
-Subject: Re: [PATCH v4 8/8] power: supply: fix wrong interpretation of
- register value
-To:     saravanan sekar <sravanhome@gmail.com>
-Cc:     sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org,
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=VYDe+pPSD0vc7fcU9WurDQ2z2Lc918aKtSIZ7Rn8KXw=;
+        b=OyHuSlbW0TuNGIBUlLuvMgwZaAA/iofhlJX+jX+NSbJro0h+UzSzGmYRSyKIQ5mj7o
+         Jbikht8l4KzjSEFp1f3JF++/Ok73YcctNNyBdnfvyLfcmDVvi3I31A8/PWY5dw8XwzJb
+         QaSUSHb0ntoby5h6VUFRW/3IwNPxl1MkxuEPZFUk5u3A1PqrUvj1xtUGIzmL2N2O4Yuy
+         CocJfGdK/MtTJSfJghEEvDNpqu8ZwUGo67ag7L2q/tTLtPMMW66oRfiXZus4E3Lp5CZd
+         INaNr7TVgA1v7tTalIG8wkha0NEXfH/yrPKdFZ125JbVJzJN580+bJSOYPiDTQ7w3pNT
+         +gCw==
+X-Gm-Message-State: ACrzQf14j4B/lxxcPY4+TrD8I2FsijgPIntI4NeRwaYGWsNAT6NJuso7
+        CkfdwZ4t0Bmtl2vzfj5m4bkh3PJrRQ8=
+X-Google-Smtp-Source: AMsMyM7rW8i8eCkcbfpOCp3IRqDyjVQj3PEdLDUFEk4WffYh+K+tRiFC1TX13LHlUYZPJ9uASUMg5w==
+X-Received: by 2002:a17:906:65c6:b0:73c:8897:65b0 with SMTP id z6-20020a17090665c600b0073c889765b0mr27950016ejn.322.1666618087180;
+        Mon, 24 Oct 2022 06:28:07 -0700 (PDT)
+Received: from discovery.. (p5dcfeede.dip0.t-ipconnect.de. [93.207.238.222])
+        by smtp.gmail.com with ESMTPSA id l20-20020a056402231400b00457c5637578sm18243818eda.63.2022.10.24.06.28.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Oct 2022 06:28:06 -0700 (PDT)
+From:   Saravanan Sekar <sravanhome@gmail.com>
+To:     sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, jic23@kernel.org,
-        lars@metafoo.de, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        lars@metafoo.de, andy.shevchenko@gmail.com
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-iio@vger.kernel.org, Saravanan Sekar <sravanhome@gmail.com>
+Subject: [PATCH v4 6/8] power: supply: fix failed to get iio channel by device name
+Date:   Mon, 24 Oct 2022 15:27:55 +0200
+Message-Id: <20221024132757.3345400-7-sravanhome@gmail.com>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20221024132757.3345400-1-sravanhome@gmail.com>
+References: <20221024132757.3345400-1-sravanhome@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 24, 2022 at 5:07 PM saravanan sekar <sravanhome@gmail.com> wrote:
->
-> On 24/10/22 15:50, Andy Shevchenko wrote:
-> > On Mon, Oct 24, 2022 at 4:50 PM Andy Shevchenko
-> > <andy.shevchenko@gmail.com> wrote:
-> >> On Mon, Oct 24, 2022 at 4:28 PM Saravanan Sekar <sravanhome@gmail.com> wrote:
-> >>>
-> >>> fix wrong interpretation of bitwise as hex
-> >
-> > Maybe you can replace 0x with 0b instead?
-> >
->
-> Ok, I consider to changes as "fix the register value interpretation as
-> 0x instead of 0b" does it fits !!
+The mfd cell devices name populated on sysfs entry is dynamically derived
+from an auto instance which introduced a regression. As a result
+mpc2629_charger driver failed to get adc channel because of iio consumer
+name mismatch with the sysfs.
 
-No, it doesn't because there is no evidence of 0b in use. I suggested
-to use 0b in the code (as the part of your change) instead of
-switching to hex.
+/sys/class/i2c-adapter/i2c-1/mp2629_adc.0.auto/
+/sys/class/i2c-adapter/i2c-1/mp2629_charger.1.auto/
 
+Fixes: 466a62d7642f(mfd: core: Make a best effort attempt to match devices)
+Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
+---
+ drivers/mfd/mp2629.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mfd/mp2629.c b/drivers/mfd/mp2629.c
+index f59c97e70f83..57db0f5009b9 100644
+--- a/drivers/mfd/mp2629.c
++++ b/drivers/mfd/mp2629.c
+@@ -53,7 +53,7 @@ static int mp2629_probe(struct i2c_client *client)
+ 		return PTR_ERR(ddata->regmap);
+ 	}
+ 
+-	ret = devm_mfd_add_devices(ddata->dev, PLATFORM_DEVID_AUTO, mp2629_cell,
++	ret = devm_mfd_add_devices(ddata->dev, PLATFORM_DEVID_NONE, mp2629_cell,
+ 				   ARRAY_SIZE(mp2629_cell), NULL, 0, NULL);
+ 	if (ret)
+ 		dev_err(ddata->dev, "Failed to register sub-devices %d\n", ret);
 -- 
-With Best Regards,
-Andy Shevchenko
+2.32.0
+
