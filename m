@@ -2,83 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D9B3FA373F
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 16:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D81EC38A2D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 16:33:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232110AbiJXQUL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Oct 2022 12:20:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36704 "EHLO
+        id S233110AbiJXQd2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Oct 2022 12:33:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47538 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234944AbiJXQTh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 12:19:37 -0400
-Received: from mail-qt1-x831.google.com (mail-qt1-x831.google.com [IPv6:2607:f8b0:4864:20::831])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C732115436;
-        Mon, 24 Oct 2022 08:05:47 -0700 (PDT)
-Received: by mail-qt1-x831.google.com with SMTP id h24so5750412qta.7;
-        Mon, 24 Oct 2022 08:05:47 -0700 (PDT)
+        with ESMTP id S230375AbiJXQcy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 12:32:54 -0400
+Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3D0BF5B2;
+        Mon, 24 Oct 2022 08:19:45 -0700 (PDT)
+Received: by mail-lf1-f49.google.com with SMTP id r14so17307803lfm.2;
+        Mon, 24 Oct 2022 08:19:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=QuRSYRsBBAeZV4fcTjPOUogplLOaj6PiAdrhBn0xRFc=;
-        b=TRC5DsPBnnroOzB2R+k7IqSDXUB8zUw5cJS8GSsv3Sv3JpjzME2PlcEZyD0HdKIfAl
-         TT0WmdZdr4LnCHt6TzkYLrbkUevvOGMJWNt6sg9VF5lzlbC/YwVlm7oCf/RsC5xlAJaU
-         ntdDGymdDlSSfXjVU/OfNSQ/pDaKsKm7pt+nTS88XMWgHD3MiZ8WsfYUC2n9EjJlu/FL
-         mLQjpCSREQIMXan/3vtGwkQPVK59lZjXicFGppG48LN4wDW18ChdjMgKHn7b9X9p4lDM
-         kMs71ar5oE4cnKJiVTshlaj3fzV5RLPmUWuooQzRFMtWNrntFp75N2GtsGniedKxVIB4
-         yhFg==
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=BOauOQqA15pGA1yiVR8SjVcAabhIPWsiPuETAcU24cE=;
+        b=Us0r4OLNUf4DmjVrBsQjdQ00h8GEaGPZm+gSxV5+mY4PVewEcqKTIyPG6Mq9pjVoP6
+         DBsMXCTmYXODrbCPGU9+Uv6//2DvEb9oIBTrqwJ8sEv86Yivj3krJ6SAujZy+OAh8jhR
+         WTsRoJd4oDDzwpfi8URCQNX7OQbH3wPhGfSrgpoqv+G0eItV+2GnXM5FffTMlu7xabFg
+         ZA7CzsO8XA0jotBNAMaXY8ghPaH9MoCaV2yO+gXO5ehiCBQo4QARwFq7yDJBQic3MI1G
+         v50hjzR8JglDVMz+HeWqSfSqqplfLjhEwImHe3bRuVMBH5LbJieJwxo8Haa+QRnmyhYV
+         yVCQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=QuRSYRsBBAeZV4fcTjPOUogplLOaj6PiAdrhBn0xRFc=;
-        b=Ylcfal068ICxDPwUQUmO89fMwXkEpfVJ1ss5kH37ziHb+/E6InAs/ouy6rZQ+bcFBV
-         st/SOqXEaO4fFL4NY1m9umvXrkd2ItWqGo1SJMZLCsLhwPrmVm18QjyZyf5EtIfcy+gr
-         oLibEmkTehjn2/s14UQ/q8tB60p/PO3KqirffxnACevvsGFMsAL9/wkp9znLj0HnwdEM
-         1yOhqe8zbe5UF189keB1kURhOjpPFFldN96dN6pl/fiJM0rJBNcbK5uHcF1wxPpD5W/W
-         Oi/cqaT2GwfTcaFeIe9AIkGM+Ffio3IVixxudE/7mh9Z8AcvdxD8IT5BVVZV2EGdvabn
-         hfJw==
-X-Gm-Message-State: ACrzQf35P2HI2cJbtJIZcoib53cQwDsSDSiVUJ7dvfGxzNYOmi7heX1J
-        X8xXHJG3Um5mv2EiuJB19Ku9NwPy8TX0W+tBDmVeRDEYJUg=
-X-Google-Smtp-Source: AMsMyM6/vj+OYU1fRsLNLVy+HcOFy1orUfoRd/mpNbcZyL3cQ3fg3lm2uBrQdR/K8mMJSxGHIWgDdf1nm1tdZD/DXvM=
-X-Received: by 2002:ac8:5c83:0:b0:39c:e9b9:9efd with SMTP id
- r3-20020ac85c83000000b0039ce9b99efdmr27992397qta.481.1666619400481; Mon, 24
- Oct 2022 06:50:00 -0700 (PDT)
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=BOauOQqA15pGA1yiVR8SjVcAabhIPWsiPuETAcU24cE=;
+        b=gPiaU3/K6NFBaYGrL3qNniizdO5qvRGE9iI3LEq0F36T0XoxjMcKhjC3TPnmfog6t7
+         e277JuTU69j27PtZL5bpPuQ2G5pEZsenEEAQ931kLic8OwljlCL0VoxS+n+uF0HlMAvj
+         aHG4XSABidA13zxK2KbQGzHZ1vEpjJieFqFQ05rGpf0AMNyLEwt5gw7M1BpzDUno7XuQ
+         rneT+QxEDQei4++crB1ausZxqQxvdw4uk6QHArYg6RY4OkPhwf3xyDeiFzyPbHt1wtES
+         bj+MaAjlr7yWkJIK/BLSt1tz5CZT5I0e9JsM4PNAXk/d1s+o28JKy4/T3k0sxK+JZqMm
+         UYGw==
+X-Gm-Message-State: ACrzQf38MgKmiFnA24DWPKFYNrzXJZsQ/pgz4pl/SNgM9AtrMDFreqRe
+        D99Kdt4gJ/F+Bj5lNJX7pmtMmQ+isEc=
+X-Google-Smtp-Source: AMsMyM7zQgTjup/5+mQsX00g0CBboY8PB8EHRLws1fEkVApc4axNwo6+tHUEJ7ZF/uJRbrBY6ha3Yw==
+X-Received: by 2002:a05:6402:2947:b0:451:32a:2222 with SMTP id ed7-20020a056402294700b00451032a2222mr30533851edb.376.1666620142601;
+        Mon, 24 Oct 2022 07:02:22 -0700 (PDT)
+Received: from [192.168.0.104] (p5dcfeede.dip0.t-ipconnect.de. [93.207.238.222])
+        by smtp.gmail.com with ESMTPSA id c22-20020a170906155600b007081282cbd8sm15562000ejd.76.2022.10.24.07.02.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Oct 2022 07:02:22 -0700 (PDT)
+Message-ID: <049e0cf3-49b9-ed25-c595-06de22117f1a@gmail.com>
+Date:   Mon, 24 Oct 2022 16:02:21 +0200
 MIME-Version: 1.0
-References: <20221024132757.3345400-1-sravanhome@gmail.com> <20221024132757.3345400-7-sravanhome@gmail.com>
-In-Reply-To: <20221024132757.3345400-7-sravanhome@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Mon, 24 Oct 2022 16:49:24 +0300
-Message-ID: <CAHp75VcvZ9drkFfbpVJFz0UWQvOMgAu3+JmV4HvOG3dPKDoN5w@mail.gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
 Subject: Re: [PATCH v4 6/8] power: supply: fix failed to get iio channel by
  device name
-To:     Saravanan Sekar <sravanhome@gmail.com>
+Content-Language: en-US
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
 Cc:     sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, jic23@kernel.org,
         lars@metafoo.de, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+References: <20221024132757.3345400-1-sravanhome@gmail.com>
+ <20221024132757.3345400-7-sravanhome@gmail.com>
+ <CAHp75VcvZ9drkFfbpVJFz0UWQvOMgAu3+JmV4HvOG3dPKDoN5w@mail.gmail.com>
+From:   saravanan sekar <sravanhome@gmail.com>
+In-Reply-To: <CAHp75VcvZ9drkFfbpVJFz0UWQvOMgAu3+JmV4HvOG3dPKDoN5w@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 24, 2022 at 4:28 PM Saravanan Sekar <sravanhome@gmail.com> wrote:
->
-> The mfd cell devices name populated on sysfs entry is dynamically derived
-> from an auto instance which introduced a regression. As a result
-> mpc2629_charger driver failed to get adc channel because of iio consumer
-> name mismatch with the sysfs.
->
-> /sys/class/i2c-adapter/i2c-1/mp2629_adc.0.auto/
-> /sys/class/i2c-adapter/i2c-1/mp2629_charger.1.auto/
->
-> Fixes: 466a62d7642f(mfd: core: Make a best effort attempt to match devices)
+On 24/10/22 15:49, Andy Shevchenko wrote:
+> On Mon, Oct 24, 2022 at 4:28 PM Saravanan Sekar <sravanhome@gmail.com> wrote:
+>>
+>> The mfd cell devices name populated on sysfs entry is dynamically derived
+>> from an auto instance which introduced a regression. As a result
+>> mpc2629_charger driver failed to get adc channel because of iio consumer
+>> name mismatch with the sysfs.
+>>
+>> /sys/class/i2c-adapter/i2c-1/mp2629_adc.0.auto/
+>> /sys/class/i2c-adapter/i2c-1/mp2629_charger.1.auto/
+>>
+>> Fixes: 466a62d7642f(mfd: core: Make a best effort attempt to match devices)
+> 
+> Wrong Fixes tag format, moreover the fixes should be grouped at the
+> beginning of the series, so it will be visible and splittable based on
+> this property.
 
-Wrong Fixes tag format, moreover the fixes should be grouped at the
-beginning of the series, so it will be visible and splittable based on
-this property.
+Thanks for quick review Andy, I will correct fixes tag format and group 
+all the fixes beginning of series in v5.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Thanks,
+Saravanan
+
+
