@@ -2,98 +2,190 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7988C38A2D
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 15:49:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60B66C38A2D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 15:52:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229744AbiJXPtj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Oct 2022 11:49:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49138 "EHLO
+        id S231249AbiJXPwB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Oct 2022 11:52:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232503AbiJXPtV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 11:49:21 -0400
-Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E6FD2A968;
-        Mon, 24 Oct 2022 07:42:55 -0700 (PDT)
-Received: by mail-ed1-f45.google.com with SMTP id a13so32180194edj.0;
-        Mon, 24 Oct 2022 07:42:55 -0700 (PDT)
+        with ESMTP id S230328AbiJXPvq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 11:51:46 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8ECDC10B7A
+        for <linux-pm@vger.kernel.org>; Mon, 24 Oct 2022 07:46:08 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id z14so3101319wrn.7
+        for <linux-pm@vger.kernel.org>; Mon, 24 Oct 2022 07:46:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=VYDe+pPSD0vc7fcU9WurDQ2z2Lc918aKtSIZ7Rn8KXw=;
-        b=iPiLBv6575MeL9d+q2zZB1Oe/sGJ3rPuJQad8fELE0DVeDXDgIzRyDMC+CoStYEpy8
-         z/mDAR2Vec+1BPqOaKUGtIo2GMVhyltj5zjo6E/Wo63C5qIHPhAPTEtv6nbmX74dv6II
-         SkcTuoZkhvNOL33U2CxQEE77hIqv1e/kilbGi1Kd6ewYtipek8gH8v4+WgVwniEYXDlh
-         ZTXgywMN8Nq58NbrFlNdZFKVRSSRGBZ//MQ4B42j34z9Km3PrHq9uRr2b7L4dwu0T/pr
-         o/pk0YWkH9MgqJJWqMlQ8z/2/D3FQkyDDXZCHt11i+3dB09hhmP9DrRyxCdyrHTOR+5C
-         PpPw==
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=sQyeI3iWyNHZjtENn8DPYNUxwogrtaagMEXW+y/NypA=;
+        b=mdfvV7EMrnMzMfiq/epK8Pii9oFAzgTAvPfpGQ0cibGpOEYZ5ROakOkngZ/DzqnpR1
+         i4wUoiwGayt5INMX+SKcL5W3nifaLuJTl2+tz+JGmx1oMOZViTLmWHuiohgGa2PfLXj4
+         vzQOsN+6WIH1aPsO9YqLjCNHnslwyZGVDRVkL5ekZSJNGDv6l4xelj4aiSKJZWtps05G
+         JmVEDx9i8IqfiFEk1/NUEAcaZDRSif419q8EoDJfDY5sio+9SvjrClJhMJlf8fPFhOZz
+         B/wo1TWrWwEMiSD4ih0sDC7Vstx4wgw+Gfb5b85aDd8cwdtrI/PiPjBRDgsCywKo0yHD
+         Peyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=VYDe+pPSD0vc7fcU9WurDQ2z2Lc918aKtSIZ7Rn8KXw=;
-        b=OyHuSlbW0TuNGIBUlLuvMgwZaAA/iofhlJX+jX+NSbJro0h+UzSzGmYRSyKIQ5mj7o
-         Jbikht8l4KzjSEFp1f3JF++/Ok73YcctNNyBdnfvyLfcmDVvi3I31A8/PWY5dw8XwzJb
-         QaSUSHb0ntoby5h6VUFRW/3IwNPxl1MkxuEPZFUk5u3A1PqrUvj1xtUGIzmL2N2O4Yuy
-         CocJfGdK/MtTJSfJghEEvDNpqu8ZwUGo67ag7L2q/tTLtPMMW66oRfiXZus4E3Lp5CZd
-         INaNr7TVgA1v7tTalIG8wkha0NEXfH/yrPKdFZ125JbVJzJN580+bJSOYPiDTQ7w3pNT
-         +gCw==
-X-Gm-Message-State: ACrzQf14j4B/lxxcPY4+TrD8I2FsijgPIntI4NeRwaYGWsNAT6NJuso7
-        CkfdwZ4t0Bmtl2vzfj5m4bkh3PJrRQ8=
-X-Google-Smtp-Source: AMsMyM7rW8i8eCkcbfpOCp3IRqDyjVQj3PEdLDUFEk4WffYh+K+tRiFC1TX13LHlUYZPJ9uASUMg5w==
-X-Received: by 2002:a17:906:65c6:b0:73c:8897:65b0 with SMTP id z6-20020a17090665c600b0073c889765b0mr27950016ejn.322.1666618087180;
-        Mon, 24 Oct 2022 06:28:07 -0700 (PDT)
-Received: from discovery.. (p5dcfeede.dip0.t-ipconnect.de. [93.207.238.222])
-        by smtp.gmail.com with ESMTPSA id l20-20020a056402231400b00457c5637578sm18243818eda.63.2022.10.24.06.28.06
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=sQyeI3iWyNHZjtENn8DPYNUxwogrtaagMEXW+y/NypA=;
+        b=DEjK0xz1u0ngdmt9o8AuuYzcsPHS/YImMFIi5Mm0CaEONAc53j3zHFm+mFP21lxj8/
+         WTI+iBgzIMU3/fA1YHFKESRsiuFeFXkPpFlCj4tExuNCWn4bXsGGpVTo+pErEoVDq17t
+         dvWAVZJvbMZFaJxC4cHZkUU0pHMgHNYXdmYZ+B5pm3hW+DcOQRl2mGwtoBnSXGaaRqQY
+         5pRNLEZruD9bIPosR3MLoW3ibL7JW+hExcz8mm2YMhMBX0YBJo2LbKSpJuAjEDBor0HQ
+         R7yee2QrzRUN0SoQxGZYtPZsePJfMMXG+RI/k0M8G1N7RXZ8FuvhS1GC1bEgW+wjn4W3
+         qUbg==
+X-Gm-Message-State: ACrzQf2OAWCZFXZqCwQVbjTpuf1U9zfCui5SghmF6HOni58ymoSdzRwb
+        BCmerAJTUNDBNVDXBbVnIh7vkIuujmvePg==
+X-Google-Smtp-Source: AMsMyM4cYodD69HYnsNl9PmV/C27D0XivwktN7mQHyiN/OCBLBuzGLBnqTOplabDhZvWBrHfB/4HzA==
+X-Received: by 2002:a5d:6f12:0:b0:236:6b05:7a78 with SMTP id ay18-20020a5d6f12000000b002366b057a78mr5565708wrb.374.1666622648215;
+        Mon, 24 Oct 2022 07:44:08 -0700 (PDT)
+Received: from localhost.localdomain ([94.52.112.99])
+        by smtp.gmail.com with ESMTPSA id u8-20020a05600c00c800b003b4935f04a4sm163258wmm.5.2022.10.24.07.44.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Oct 2022 06:28:06 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, jic23@kernel.org,
-        lars@metafoo.de, andy.shevchenko@gmail.com
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-iio@vger.kernel.org, Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v4 6/8] power: supply: fix failed to get iio channel by device name
-Date:   Mon, 24 Oct 2022 15:27:55 +0200
-Message-Id: <20221024132757.3345400-7-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20221024132757.3345400-1-sravanhome@gmail.com>
-References: <20221024132757.3345400-1-sravanhome@gmail.com>
+        Mon, 24 Oct 2022 07:44:07 -0700 (PDT)
+From:   Abel Vesa <abel.vesa@linaro.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bjorn Andersson <andersson@kernel.org>
+Cc:     linux-pm@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PM: domains: Reverse the order of performance and enabling ops
+Date:   Mon, 24 Oct 2022 17:43:04 +0300
+Message-Id: <20221024144304.198689-1-abel.vesa@linaro.org>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The mfd cell devices name populated on sysfs entry is dynamically derived
-from an auto instance which introduced a regression. As a result
-mpc2629_charger driver failed to get adc channel because of iio consumer
-name mismatch with the sysfs.
+The ->set_performance_state() needs to be called before ->power_on()
+when a genpd is powered on, and after ->power_off() when a genpd is
+powered off. Do this in order to let the provider know to which
+performance state to power on the genpd, on the power on sequence, and
+also to maintain the performance for that genpd until after powering off,
+on power off sequence.
 
-/sys/class/i2c-adapter/i2c-1/mp2629_adc.0.auto/
-/sys/class/i2c-adapter/i2c-1/mp2629_charger.1.auto/
+There is no scenario where a consumer would need its genpd enabled and
+then its performance state increased. Instead, in every scenario, the
+consumer needs the genpd to be enabled from the start at a specific
+performance state.
 
-Fixes: 466a62d7642f(mfd: core: Make a best effort attempt to match devices)
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
+And same logic applies to the powering down. No consumer would need its
+genpd performance state dropped right before powering down.
+
+Now, there are currently two vendors which use ->set_performance_state()
+in their genpd providers. One of them is Tegra, but the only genpd provider
+(PMC) that makes use of ->set_performance_state() doesn't implement the
+->power_on() or ->power_off(), and so it will not be affected by the ops
+reversal.
+
+The other vendor that uses it is Qualcomm, in multiple genpd providers
+actually (RPM, RPMh and CPR). But all Qualcomm genpd providers that make
+use of ->set_performance_state() need the order between enabling ops and
+the performance setting op to be reversed. And the reason for that is that
+it currently translates into two different voltages in order to power on
+a genpd to a specific performance state. Basically, ->power_on() switches
+to the minimum (enabling) voltage for that genpd, and then
+->set_performance_state() sets it to the voltage level required by the
+consumer.
+
+By reversing the call order, we rely on the provider to know what to do
+on each call, but most popular usecase is to cache the performance state
+and postpone the voltage setting until the ->power_on() gets called.
+
+As for the reason of still needing the ->power_on() and ->power_off() for a
+provider which could get away with just having ->set_performance_state()
+implemented, there are consumers that do not (nor should) provide an
+opp-table. For those consumers, ->set_performance_state() will not be
+called, and so they will enable the genpd to its minimum performance state
+by a ->power_on() call. Same logic goes for the disabling.
+
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
 ---
- drivers/mfd/mp2629.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/power/domain.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/mfd/mp2629.c b/drivers/mfd/mp2629.c
-index f59c97e70f83..57db0f5009b9 100644
---- a/drivers/mfd/mp2629.c
-+++ b/drivers/mfd/mp2629.c
-@@ -53,7 +53,7 @@ static int mp2629_probe(struct i2c_client *client)
- 		return PTR_ERR(ddata->regmap);
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index ead135c7044c..e66a711fec88 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -939,8 +939,8 @@ static int genpd_runtime_suspend(struct device *dev)
+ 		return 0;
+ 
+ 	genpd_lock(genpd);
+-	gpd_data->rpm_pstate = genpd_drop_performance_state(dev);
+ 	genpd_power_off(genpd, true, 0);
++	gpd_data->rpm_pstate = genpd_drop_performance_state(dev);
+ 	genpd_unlock(genpd);
+ 
+ 	return 0;
+@@ -978,9 +978,8 @@ static int genpd_runtime_resume(struct device *dev)
+ 		goto out;
+ 
+ 	genpd_lock(genpd);
++	genpd_restore_performance_state(dev, gpd_data->rpm_pstate);
+ 	ret = genpd_power_on(genpd, 0);
+-	if (!ret)
+-		genpd_restore_performance_state(dev, gpd_data->rpm_pstate);
+ 	genpd_unlock(genpd);
+ 
+ 	if (ret)
+@@ -1018,8 +1017,8 @@ static int genpd_runtime_resume(struct device *dev)
+ err_poweroff:
+ 	if (!pm_runtime_is_irq_safe(dev) || genpd_is_irq_safe(genpd)) {
+ 		genpd_lock(genpd);
+-		gpd_data->rpm_pstate = genpd_drop_performance_state(dev);
+ 		genpd_power_off(genpd, true, 0);
++		gpd_data->rpm_pstate = genpd_drop_performance_state(dev);
+ 		genpd_unlock(genpd);
  	}
  
--	ret = devm_mfd_add_devices(ddata->dev, PLATFORM_DEVID_AUTO, mp2629_cell,
-+	ret = devm_mfd_add_devices(ddata->dev, PLATFORM_DEVID_NONE, mp2629_cell,
- 				   ARRAY_SIZE(mp2629_cell), NULL, 0, NULL);
- 	if (ret)
- 		dev_err(ddata->dev, "Failed to register sub-devices %d\n", ret);
+@@ -2749,17 +2748,6 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
+ 	dev->pm_domain->detach = genpd_dev_pm_detach;
+ 	dev->pm_domain->sync = genpd_dev_pm_sync;
+ 
+-	if (power_on) {
+-		genpd_lock(pd);
+-		ret = genpd_power_on(pd, 0);
+-		genpd_unlock(pd);
+-	}
+-
+-	if (ret) {
+-		genpd_remove_device(pd, dev);
+-		return -EPROBE_DEFER;
+-	}
+-
+ 	/* Set the default performance state */
+ 	pstate = of_get_required_opp_performance_state(dev->of_node, index);
+ 	if (pstate < 0 && pstate != -ENODEV && pstate != -EOPNOTSUPP) {
+@@ -2771,6 +2759,18 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
+ 			goto err;
+ 		dev_gpd_data(dev)->default_pstate = pstate;
+ 	}
++
++	if (power_on) {
++		genpd_lock(pd);
++		ret = genpd_power_on(pd, 0);
++		genpd_unlock(pd);
++	}
++
++	if (ret) {
++		genpd_remove_device(pd, dev);
++		return -EPROBE_DEFER;
++	}
++
+ 	return 1;
+ 
+ err:
 -- 
-2.32.0
+2.34.1
 
