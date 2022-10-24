@@ -2,107 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 949B0FA3741
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 19:46:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19D10C67871
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Oct 2022 21:03:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233510AbiJXTq1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Oct 2022 15:46:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46692 "EHLO
+        id S233264AbiJXVDf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Oct 2022 17:03:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233633AbiJXToN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 15:44:13 -0400
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41F842FFC3;
-        Mon, 24 Oct 2022 11:12:22 -0700 (PDT)
-Received: by mail-lj1-x229.google.com with SMTP id z24so3822817ljn.4;
-        Mon, 24 Oct 2022 11:12:22 -0700 (PDT)
+        with ESMTP id S232812AbiJXVDT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2022 17:03:19 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 846B72C5684;
+        Mon, 24 Oct 2022 12:08:59 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id b2so18267074lfp.6;
+        Mon, 24 Oct 2022 12:08:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=kbQJ09ZTPaHlRrFCuN4fBc+xGyuOsxpPwvn3XoL26j8=;
-        b=guspafMuQ/edprFnQg7tzMksVRTX1qD8gIg+VAl/J8Efpbln+KOjbeSlwX77rZTUYO
-         xgyS94nUzLMewUpXm0Of2SEPcX2RnxRS1/fiLLCY7ahV/V6+UQ9eJZDyIvW7L1MqNJFb
-         NM4TJqQ1MewCs2FyP/K4ofhfKFvY4ciQ/pup4wDM3hOozBYWfGVOOWKqKMjRYO4Sn0EV
-         omCVCseLGCP3FOZkwkmKkqkk15gZdyqOjGkWvHRhoSsDQRkA6rORsOQXXVBh//bkrecU
-         B88/t4/0BIx7pEt145wZlmnqR6JXu7FEDwrO5u9CylXeBlnKmo57hGZEUWcR0AGOe7d4
-         NEvA==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PwL8/qx1/0F0Hrq3IMB5cdMrfq8hnyHJ0+oU5aJtiFo=;
+        b=hJu80Hr9tWx4yHsXduGAuqtUGB6IrvpVnsc1taAXKITwr6UOest6JMpQe+OrjHD3ad
+         aFOG3QKptelq11AzR0C5ldh2kjMtVx6U7CiknAIDKoPWfyETrjo+Nj+nXkqCj0XnQ+9h
+         vq7wuHNQowYgbH4lSqPsACZvbP2xweM+UB9NAZL7o9LTXCtANE7RPF+ipOshTuHpG6EZ
+         eIky0yzzS1yCvDzwsR3k8KBqcsFPG8/SPdsiBB2a9OO+K4jb4dorwxmVgajFEg5dSzWL
+         cDYCTDP6v4pg8BvhemFU5crB5+dn/n+KAge4M8kn50ywJBmFnhMtEHx4U61d1GZ07MRo
+         dTZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kbQJ09ZTPaHlRrFCuN4fBc+xGyuOsxpPwvn3XoL26j8=;
-        b=mPvYuhA11J+Hbcn5i2v8u+foDVNh3FJpBek4yuHuCHcx5JnVP7c827zIA7VD9G1Ubn
-         idVDeUyryyUn/UquijDRBt8k0O/am8G1/eBYAFQrTLYx7fXfCXOTLTsUujQLAngH0xUd
-         3M5IDk7lhk5l96i7Yujkx3DAMc7DbAng6kTy/mWXws0t9q1z9Y4/ekqSTWRuwyADwWPC
-         M/mpc08VV9vZsDNhVWnBVxos0XnFb/8/hQOxRERJQhq56dalhZXJDgeQDXVAzQHYssJ8
-         l+GQtxtCASpJz9YM3O6B7knnc2O7sroSZVBOnS4abaWtEt49yifpkRuLSTIQ54+J6SGE
-         Zm7Q==
-X-Gm-Message-State: ACrzQf0pgUKlDyz4C6h/Px5yVIhwqUhVfz/7L7UnBfJuhtvEtcFB2sUC
-        8iu+PBCHGl/s1Zy6NMHhSL/YMRDJYTw=
-X-Google-Smtp-Source: AMsMyM6HmwPoHkG90IEhF0m7PQ6pO40U8ZN/esxQmIUCuawhp3BayxivI/DswckqIn88qEg0ge6BGg==
-X-Received: by 2002:a05:6402:f24:b0:461:7c77:98c4 with SMTP id i36-20020a0564020f2400b004617c7798c4mr10841948eda.80.1666618082256;
-        Mon, 24 Oct 2022 06:28:02 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=PwL8/qx1/0F0Hrq3IMB5cdMrfq8hnyHJ0+oU5aJtiFo=;
+        b=Rd13/FD7+O0dYHPqSn9Z3TZ4B6m+0vq/bzD0oNlZq/GlPwGTrwuhjdrU15lXm74BP+
+         XisNNlXIAN6BBw0u2BCNtG0tSgW1ZET9e/foF1gEo/YTeGCY2160r+iuMyTadLGl+llT
+         320KxvsH0azztunRWssuNNyKoUjfQoNr6TckiVbrZ7llHsycVngsgyV9emHJyiovJs6+
+         s+m06Xm6yqSuY0lMs8zCoQRVUC9If4Yrdi2mv/2Hx1jI+yPuIK995DH/nEHVZ/lu5f+Y
+         cbfjnoudC0md4/wHvMoYDahrYjaAv5C6FoPYmoUSa3gH2shIpdlYxwnhS9hWK7g2VpRb
+         xUpQ==
+X-Gm-Message-State: ACrzQf3AcqaLE6wwyPvM5z6mub/fp7jFGrdzga7SQezSoj+uliXWTtEJ
+        9QT0pMGFJmxfF4NkWrfSIzIsU9HD8Uk=
+X-Google-Smtp-Source: AMsMyM4QQorvU7/sJtwzla1liZs/dJanTTjXhWgjZ6BdF4BKG+u2hgWU1L3QBk8NZOE7g3hFix2TsA==
+X-Received: by 2002:a17:907:5c2:b0:77e:def7:65d8 with SMTP id wg2-20020a17090705c200b0077edef765d8mr28009125ejb.487.1666618087998;
+        Mon, 24 Oct 2022 06:28:07 -0700 (PDT)
 Received: from discovery.. (p5dcfeede.dip0.t-ipconnect.de. [93.207.238.222])
-        by smtp.gmail.com with ESMTPSA id l20-20020a056402231400b00457c5637578sm18243818eda.63.2022.10.24.06.28.01
+        by smtp.gmail.com with ESMTPSA id l20-20020a056402231400b00457c5637578sm18243818eda.63.2022.10.24.06.28.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Oct 2022 06:28:01 -0700 (PDT)
+        Mon, 24 Oct 2022 06:28:07 -0700 (PDT)
 From:   Saravanan Sekar <sravanhome@gmail.com>
 To:     sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, jic23@kernel.org,
         lars@metafoo.de, andy.shevchenko@gmail.com
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-iio@vger.kernel.org, Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v4 0/8] Add support for mp2733 battery charger
-Date:   Mon, 24 Oct 2022 15:27:49 +0200
-Message-Id: <20221024132757.3345400-1-sravanhome@gmail.com>
+Subject: [PATCH v4 7/8] iio: adc: mp2629: fix potential array out of bound access
+Date:   Mon, 24 Oct 2022 15:27:56 +0200
+Message-Id: <20221024132757.3345400-8-sravanhome@gmail.com>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20221024132757.3345400-1-sravanhome@gmail.com>
+References: <20221024132757.3345400-1-sravanhome@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-changes in v4:
-  - fixed attributes groups review comments in v3
-  - added new bug fix patches v4-0007 and v4-0008 
+Add sentinel at end of maps to avoid potential array out of
+bound access in iio core.
 
-changes in v3:
-  - fixed dt_binding_check error
-  - fixed spelling usb->USB
+Fixes: 7abd9fb6468 ("iio: adc: mp2629: Add support for mp2629 ADC driver")
+Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
+---
+ drivers/iio/adc/mp2629_adc.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-changes in v2:
-  - fixed spelling
-  - revert back probe to probe_new in mfd driver
-
-I do not see a cover letter, but FWIW,
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-for all patches except DT binding
-Note, some of the comments regarding spelling were given, I believe
-you are going to address them in v3.
-
-
-add support for mp2733 Battery charger control driver for Monolithic
-Power System's MP2733 chipset 
-
-Saravanan Sekar (8):
-  iio: adc: mp2629: fix wrong comparison of channel
-  mfd: mp2629: Add support for mps mp2733 battery charger
-  iio: adc: mp2629: restrict input voltage mask for mp2629
-  power: supply: Add support for mp2733 battery charger
-  power: supply: mp2629: Add USB fast charge settings
-  power: supply: fix failed to get iio channel by device name
-  iio: adc: mp2629: fix potential array out of bound access
-  power: supply: fix wrong interpretation of register value
-
- .../ABI/testing/sysfs-class-power-mp2629      |  16 ++
- drivers/iio/adc/mp2629_adc.c                  |   8 +-
- drivers/mfd/mp2629.c                          |   7 +-
- drivers/power/supply/mp2629_charger.c         | 229 +++++++++++++++---
- include/linux/mfd/mp2629.h                    |   6 +
- 5 files changed, 228 insertions(+), 38 deletions(-)
-
+diff --git a/drivers/iio/adc/mp2629_adc.c b/drivers/iio/adc/mp2629_adc.c
+index 0f297072b8aa..18290e176e1e 100644
+--- a/drivers/iio/adc/mp2629_adc.c
++++ b/drivers/iio/adc/mp2629_adc.c
+@@ -57,7 +57,8 @@ static struct iio_map mp2629_adc_maps[] = {
+ 	MP2629_MAP(SYSTEM_VOLT, "system-volt"),
+ 	MP2629_MAP(INPUT_VOLT, "input-volt"),
+ 	MP2629_MAP(BATT_CURRENT, "batt-current"),
+-	MP2629_MAP(INPUT_CURRENT, "input-current")
++	MP2629_MAP(INPUT_CURRENT, "input-current"),
++	{ }
+ };
+ 
+ static int mp2629_read_raw(struct iio_dev *indio_dev,
 -- 
 2.32.0
 
