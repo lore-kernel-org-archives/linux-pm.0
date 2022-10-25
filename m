@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE26CC38A2D
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 13:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17943FA3740
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 13:59:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230158AbiJYN7b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Oct 2022 09:59:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47414 "EHLO
+        id S231836AbiJYN7c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Oct 2022 09:59:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231492AbiJYN7Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 09:59:25 -0400
+        with ESMTP id S231546AbiJYN70 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 09:59:26 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A17AD18A03B;
-        Tue, 25 Oct 2022 06:59:23 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3917A29C;
+        Tue, 25 Oct 2022 06:59:25 -0700 (PDT)
 From:   Anna-Maria Behnsen <anna-maria@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1666706362;
+        s=2020; t=1666706363;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=l3DckWoO10WRg2UnQ17gmGvcP+Cj39tE06wtS471Li8=;
-        b=em6zftEaoVI3HcNeSkFX3GvNS7Mq87YKqxPi6jzPuNuMnsd9hOpgXqU7YxHKnOnE0H2Ufu
-        sMMiJ3fP/8URs7IkpEbXMveDREe9Xgh6xeGoiBBECWHhoneW8CwhTfZ7ZfxLHfNyhDZlj2
-        byidkY6FCvMadm7QpHIlKqV+AjY7oxRV3K72azJSsMGdosRYL5uomyDcy9PeuyAJ93ZXZs
-        SetjXxk2RaAkHdrysvgQd+ms+lQVxFnRIzqoCkh6xwgcvMsyEVqML/rFdUokeLBy2A9x1J
-        uahbz5O8/T4v4H3Ipi+mvXlTfVD0H6r+Gp17i4lkUIKiC2blUUr0Q5p3xhGKtg==
+        bh=vvmb4wfRRA26uf1ExR6XWWcWf4ly6fbBq4i3VJ/TCEY=;
+        b=LwzQPpX+Ny/PxpUuI5+8qcVrqQfT+WjE7/NENxhUShNmOEw/iTf37CJ4FwRBqsuzl/u5z+
+        wnhOmVBSHuvvQyowXC9m+wb5s2TtJpaDZsDxGrXBFbncS/SR0qiDtqA+1c8pv+rwlX9rfm
+        aKX3hwqW3fvLBrefg8HwPjql35faDPU5ouq3uzKL5MPAVoxJLVIEeSj2Pgi26Jjk/kIKG7
+        eEX9DHBUgsGP6QEHMDXA0SIbTKgCLNyh0PJSXLS9Q2AxQ0fmesw+KOHPOCPl+ANDsd6Tw8
+        jjKvOFiZGe8GwKADdu1P0m0wi7qVYiwGlix0MqBMBM89OEmMaLhlzh/DYDe1LQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1666706362;
+        s=2020e; t=1666706363;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=l3DckWoO10WRg2UnQ17gmGvcP+Cj39tE06wtS471Li8=;
-        b=vp4yKAYpyd4o5LxaF5jjMGHvfVD89NYnRkiFrZ1e/WQoU6DXiDUEbm31y9dPKO9NE6TBLM
-        vFUfK3nSHkMMU3Dw==
+        bh=vvmb4wfRRA26uf1ExR6XWWcWf4ly6fbBq4i3VJ/TCEY=;
+        b=8N2pUT0OaCAesECVu/HpMphD9DDy2spXcuoPHDFPo3FjS0DZYJm78WHzj9wdoRKnl4Q9t9
+        /tIBD5wqb5wMx+Cg==
 To:     linux-kernel@vger.kernel.org
 Cc:     Peter Zijlstra <peterz@infradead.org>,
         John Stultz <john.stultz@linaro.org>,
@@ -47,9 +47,9 @@ Cc:     Peter Zijlstra <peterz@infradead.org>,
         Frederic Weisbecker <fweisbec@gmail.com>,
         Rik van Riel <riel@redhat.com>,
         Anna-Maria Behnsen <anna-maria@linutronix.de>
-Subject: [PATCH v3 03/17] timer: Move store of next event into __next_timer_interrupt()
-Date:   Tue, 25 Oct 2022 15:58:36 +0200
-Message-Id: <20221025135850.51044-4-anna-maria@linutronix.de>
+Subject: [PATCH v3 05/17] timer: Rework idle logic
+Date:   Tue, 25 Oct 2022 15:58:38 +0200
+Message-Id: <20221025135850.51044-6-anna-maria@linutronix.de>
 In-Reply-To: <20221025135850.51044-1-anna-maria@linutronix.de>
 References: <20221025135850.51044-1-anna-maria@linutronix.de>
 MIME-Version: 1.0
@@ -58,64 +58,57 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Both call sides of __next_timer_interrupt() store the return value directly
-in base->next_expiry. Move the store into __next_timer_interrupt().
+From: Thomas Gleixner <tglx@linutronix.de>
 
-No functional change.
+To improve readability of the code, split base->idle calculation and
+expires calculation into separate parts.
 
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Anna-Maria Behnsen <anna-maria@linutronix.de>
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- kernel/time/timer.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ kernel/time/timer.c | 29 ++++++++++++++---------------
+ 1 file changed, 14 insertions(+), 15 deletions(-)
 
 diff --git a/kernel/time/timer.c b/kernel/time/timer.c
-index 717fcb9fb14a..7695c733dfa5 100644
+index f34bc75ff848..cb4194ecca60 100644
 --- a/kernel/time/timer.c
 +++ b/kernel/time/timer.c
-@@ -1571,8 +1571,10 @@ static int next_pending_bucket(struct timer_base *base, unsigned offset,
- /*
-  * Search the first expiring timer in the various clock levels. Caller must
-  * hold base->lock.
-+ *
-+ * Store next expiry time in base->next_expiry.
-  */
--static unsigned long __next_timer_interrupt(struct timer_base *base)
-+static void __next_timer_interrupt(struct timer_base *base)
- {
- 	unsigned long clk, next, adj;
- 	unsigned lvl, offset = 0;
-@@ -1638,10 +1640,11 @@ static unsigned long __next_timer_interrupt(struct timer_base *base)
- 		clk += adj;
+@@ -1727,21 +1727,20 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
+ 			base->clk = nextevt;
  	}
  
-+	base->next_expiry = next;
- 	base->next_expiry_recalc = false;
- 	base->timers_pending = !(next == base->clk + NEXT_TIMER_MAX_DELTA);
+-	if (time_before_eq(nextevt, basej)) {
+-		expires = basem;
+-		base->is_idle = false;
+-	} else {
+-		if (base->timers_pending)
+-			expires = basem + (u64)(nextevt - basej) * TICK_NSEC;
+-		/*
+-		 * If we expect to sleep more than a tick, mark the base idle.
+-		 * Also the tick is stopped so any added timer must forward
+-		 * the base clk itself to keep granularity small. This idle
+-		 * logic is only maintained for the BASE_STD base, deferrable
+-		 * timers may still see large granularity skew (by design).
+-		 */
+-		if ((expires - basem) > TICK_NSEC)
+-			base->is_idle = true;
++	/*
++	 * Base is idle if the next event is more than a tick away. Also
++	 * the tick is stopped so any added timer must forward the base clk
++	 * itself to keep granularity small. This idle logic is only
++	 * maintained for the BASE_STD base, deferrable timers may still
++	 * see large granularity skew (by design).
++	 */
++	base->is_idle = time_after(nextevt, basej + 1);
++
++	if (base->timers_pending) {
++		/* If we missed a tick already, force 0 delta */
++		if (time_before_eq(nextevt, basej))
++			nextevt = basej;
++		expires = basem + (u64)(nextevt - basej) * TICK_NSEC;
+ 	}
+ 	raw_spin_unlock(&base->lock);
  
--	return next;
-+	return;
- }
- 
- #ifdef CONFIG_NO_HZ_COMMON
-@@ -1701,7 +1704,7 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
- 
- 	raw_spin_lock(&base->lock);
- 	if (base->next_expiry_recalc)
--		base->next_expiry = __next_timer_interrupt(base);
-+		__next_timer_interrupt(base);
- 	nextevt = base->next_expiry;
- 
- 	/*
-@@ -1784,7 +1787,7 @@ static inline void __run_timers(struct timer_base *base)
- 		WARN_ON_ONCE(!levels && !base->next_expiry_recalc
- 			     && base->timers_pending);
- 		base->clk++;
--		base->next_expiry = __next_timer_interrupt(base);
-+		__next_timer_interrupt(base);
- 
- 		while (levels--)
- 			expire_timers(base, heads + levels);
 -- 
 2.30.2
 
