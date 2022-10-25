@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CD9CC04A95
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 13:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEC65FA3741
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 13:59:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231696AbiJYN72 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Oct 2022 09:59:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47330 "EHLO
+        id S231789AbiJYN7a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Oct 2022 09:59:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47416 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231191AbiJYN7Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 09:59:24 -0400
+        with ESMTP id S231526AbiJYN7Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 09:59:25 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D25561B9CD;
-        Tue, 25 Oct 2022 06:59:22 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 371C13BB;
+        Tue, 25 Oct 2022 06:59:24 -0700 (PDT)
 From:   Anna-Maria Behnsen <anna-maria@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1666706361;
+        s=2020; t=1666706362;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=JsI07DTqXjWlRwYDoljjsPLtGx2xh4qIy28E4h8N7no=;
-        b=T3EsepFnG1VEPakgQAPv6utfeISI5b9SCb3qu9nw9yeGr8jw8t1zR6Dx6ch73PUNFHVOGL
-        oqi15SnAg6HRSDAkl4rHMmQDmCPs6a9Lv63YmgSPuSPwPNSps9UbplBD71AHpxg2pJhoxM
-        FyKJ6I+g+ewtLZORJV916KEkkleW6We3dblqJb1P61KSpLSm5qD968Gg2KoZJ148/HVXoU
-        TIw427aYJT6plp81tvDQn1+JvmlMVHx6z/OXTHK8T9S81zxHoAeP4HroqZjYTVa+HVrrka
-        zTpa7evXpC5fGDXUF91xC6m66JO487MZ65rfWuv1Y0eNCYhcD7momR1AF1QKSQ==
+        bh=I9KrkHTSRk9elfiy6IejGCtNRlCE++/FB5CiuBByAlk=;
+        b=Tf/9SYQHSN3IMkZcm9kCZ3W33EouF/PiE/b3UwATQokC0EG5MUmZFfaAaIw39OPEAGAF5q
+        iQr76ZtsG8TfY63OCJJ3O9/tzgpnPH07vtmiA6dFcZC+Zyz2G9+V6BNpVSUU13v2T/+fxv
+        9nM/6qUrpyyQz2Ig9L0SRTlljVnV2GkKK8t+BTNSU/awtJpdbuAC+MIpV7a/G25MbhV/QP
+        IU0hjTK/jGQbmg3rOHBUHtaK6HRgecu0ArBIpH/i01KKv4LXgf1/cyqxu2a4UyXAdPVykw
+        1ZhmDzeWXqPKo1EArrzyXdnWCBaaBnFQ/8TC5YsmdQYrIIqVEq/L4DeGGba4pg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1666706361;
+        s=2020e; t=1666706362;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=JsI07DTqXjWlRwYDoljjsPLtGx2xh4qIy28E4h8N7no=;
-        b=i7qAAP55lL27scwdgwJ3teCam7iQjkFLDDmuZcmI7LTkktrsPSWpugrETm6inYdHUHJQBi
-        M/D/ekZWd+6fl2BQ==
+        bh=I9KrkHTSRk9elfiy6IejGCtNRlCE++/FB5CiuBByAlk=;
+        b=OOxPYlfB3OREmJmPIE3ZC4Fnc8ctFR4lOH9DY2WH8sgffZSKb7Qg8OSTwLzHciSDREJlBN
+        tiS+6dl2kh8Hd1Bg==
 To:     linux-kernel@vger.kernel.org
 Cc:     Peter Zijlstra <peterz@infradead.org>,
         John Stultz <john.stultz@linaro.org>,
@@ -46,13 +46,10 @@ Cc:     Peter Zijlstra <peterz@infradead.org>,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
         Frederic Weisbecker <fweisbec@gmail.com>,
         Rik van Riel <riel@redhat.com>,
-        Anna-Maria Behnsen <anna-maria@linutronix.de>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 01/17] cpufreq: Prepare timer flags for hierarchical timer pull model
-Date:   Tue, 25 Oct 2022 15:58:34 +0200
-Message-Id: <20221025135850.51044-2-anna-maria@linutronix.de>
+        Anna-Maria Behnsen <anna-maria@linutronix.de>
+Subject: [PATCH v3 04/17] timer: Split next timer interrupt logic
+Date:   Tue, 25 Oct 2022 15:58:37 +0200
+Message-Id: <20221025135850.51044-5-anna-maria@linutronix.de>
 In-Reply-To: <20221025135850.51044-1-anna-maria@linutronix.de>
 References: <20221025135850.51044-1-anna-maria@linutronix.de>
 MIME-Version: 1.0
@@ -61,69 +58,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Note: This is a proposal only. I was waiting on input how to change this
-driver properly to use the already existing infrastructure. See therfore
-the thread on linux-pm mailinglist:
-https://lore.kernel.org/linux-pm/4c99f34b-40f1-e6cc-2669-7854b615b5fd@linutronix.de/
+Logic for getting next timer interrupt (no matter of recalculated or
+already stored in base->next_expiry) is split into a separate function
+"next_timer_interrupt()" to make it available for new call sites.
 
-gpstates timer is the only timer using TIMER_PINNED and TIMER_DEFERRABLE
-flag. When moving to hierarchical timer pull model, pinned and deferrable
-timers are stored in separate bases.
-
-To ensure gpstates timer always expires on the CPU where it is pinned to,
-keep only TIMER_PINNED flag and drop TIMER_DEFERRABLE flag.
-
-While at it, rewrite comment explaining the rule for timer expiry for the
-next interval and fix whitespace damages.
+No functional change.
 
 Signed-off-by: Anna-Maria Behnsen <anna-maria@linutronix.de>
-Cc: linux-pm@vger.kernel.org
-Cc: Rafael J. Wysocki <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ kernel/time/timer.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index fddbd1ea1635..08d6bd54539d 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -640,18 +640,18 @@ static inline int calc_global_pstate(unsigned int elapsed_time,
- 		return highest_lpstate_idx + index_diff;
+diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+index 7695c733dfa5..f34bc75ff848 100644
+--- a/kernel/time/timer.c
++++ b/kernel/time/timer.c
+@@ -1681,6 +1681,15 @@ static u64 cmp_next_hrtimer_event(u64 basem, u64 expires)
+ 	return DIV_ROUND_UP_ULL(nextevt, TICK_NSEC) * TICK_NSEC;
  }
  
--static inline void  queue_gpstate_timer(struct global_pstate_info *gpstates)
-+static inline void queue_gpstate_timer(struct global_pstate_info *gpstates)
- {
- 	unsigned int timer_interval;
++
++static unsigned long next_timer_interrupt(struct timer_base *base)
++{
++	if (base->next_expiry_recalc)
++		__next_timer_interrupt(base);
++
++	return base->next_expiry;
++}
++
+ /**
+  * get_next_timer_interrupt - return the time (clock mono) of the next timer
+  * @basej:	base time jiffies
+@@ -1703,9 +1712,8 @@ u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
+ 		return expires;
+ 
+ 	raw_spin_lock(&base->lock);
+-	if (base->next_expiry_recalc)
+-		__next_timer_interrupt(base);
+-	nextevt = base->next_expiry;
++
++	nextevt = next_timer_interrupt(base);
  
  	/*
--	 * Setting up timer to fire after GPSTATE_TIMER_INTERVAL ms, But
--	 * if it exceeds MAX_RAMP_DOWN_TIME ms for ramp down time.
--	 * Set timer such that it fires exactly at MAX_RAMP_DOWN_TIME
--	 * seconds of ramp down time.
-+	 * Timer should expire next time after GPSTATE_TIMER_INTERVAL. If
-+	 * the resulting interval (elapsed time + interval) between last
-+	 * and next timer expiry is greater than MAX_RAMP_DOWN_TIME, ensure
-+	 * it is maximum MAX_RAMP_DOWN_TIME when queueing the next timer.
- 	 */
- 	if ((gpstates->elapsed_time + GPSTATE_TIMER_INTERVAL)
--	     > MAX_RAMP_DOWN_TIME)
-+	    > MAX_RAMP_DOWN_TIME)
- 		timer_interval = MAX_RAMP_DOWN_TIME - gpstates->elapsed_time;
- 	else
- 		timer_interval = GPSTATE_TIMER_INTERVAL;
-@@ -865,8 +865,7 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	/* initialize timer */
- 	gpstates->policy = policy;
--	timer_setup(&gpstates->timer, gpstate_timer_handler,
--		    TIMER_PINNED | TIMER_DEFERRABLE);
-+	timer_setup(&gpstates->timer, gpstate_timer_handler, TIMER_PINNED);
- 	gpstates->timer.expires = jiffies +
- 				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
- 	spin_lock_init(&gpstates->gpstate_lock);
+ 	 * We have a fresh next event. Check whether we can forward the
 -- 
 2.30.2
 
