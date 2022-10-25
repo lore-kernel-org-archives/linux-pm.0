@@ -2,114 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B781FA373E
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 19:44:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59AA0C38A2D
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 20:39:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231374AbiJYToX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Oct 2022 15:44:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56630 "EHLO
+        id S232183AbiJYUjD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Oct 2022 16:39:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230460AbiJYToW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 15:44:22 -0400
-Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3270EB3B0F;
-        Tue, 25 Oct 2022 12:44:22 -0700 (PDT)
-Received: by mail-qt1-f179.google.com with SMTP id z6so464742qtv.5;
-        Tue, 25 Oct 2022 12:44:22 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=YGKKI9J0n8rIfX9oZQEzGX9YCINu+GWwt1TnCnAQ1BI=;
-        b=RGO9b1RyvlxzdykVmp+1WwQtBh4Jp+Y7clVN7yDetbyd+VWu/eE6F/wxSIwM6neeDg
-         GCLrouykg1qrekal3Iy2RHE1DelVO2iiKlCAQqeP4+nL99Fw78UCcq1zn8kNNTTxM8+n
-         RYTAQvfDybDM8fLKEGn6doTDizQhz+nvncc1Wd83oYGWkGd7yONj8yKhO0oaxvBCOLKh
-         M8MM5yfyr6OlfLzrqjVQsdEDYceMLjquh8GMmxHZm5S8yK6YSduyfl0gpIUuSsc6evRL
-         S5KJVgzM7tWO7fxc4a33PGxsDKGeoVj8ImJcOT6d0xcYYlrBrrFicYXiy+p2C9ZIDPwX
-         L2IQ==
-X-Gm-Message-State: ACrzQf0Tu/ZAthnj8L5lHvlH55di+4+xVUuP+8umEsopIqUNqnvPGxEU
-        PxoAqYunhCtRRGut9/wztXGd2r5pNjy32q3HM1U=
-X-Google-Smtp-Source: AMsMyM5ytdS2lcDQqzDLgwIWQq2p+uoveyPZE8UkKxS+0igoe4Zqlk/GW6VpUD0GhIlenQaqje0ZaT1HLvLRYgfLmQo=
-X-Received: by 2002:ac8:7d02:0:b0:39c:bbef:178a with SMTP id
- g2-20020ac87d02000000b0039cbbef178amr33243867qtb.357.1666727061344; Tue, 25
- Oct 2022 12:44:21 -0700 (PDT)
+        with ESMTP id S230057AbiJYUjC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 16:39:02 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46C7061DBB;
+        Tue, 25 Oct 2022 13:39:02 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id D34DA61B8A;
+        Tue, 25 Oct 2022 20:39:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09E56C433D6;
+        Tue, 25 Oct 2022 20:39:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1666730341;
+        bh=9BVyvHpCzFYNdZ3nJvRlGSWnz3qxu4Z4JfrHxC45mlk=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=qBbuxxY38N33cQ/3BYsV0hJWID/Npq535lOhs3s3GHFA+eOZJkQFwyRO6QGKNvAWw
+         4OxvHZVKfIZcDS6cmW7s5k4h/o4eX/8rbBUzRAfMVVaHvRIlmBTTmBFo5A5PPfxvCi
+         SBYnWqE4tVNK3GbGFuSShSlqsy3hIirBQOW7HzdkzHY6zorVc3EukzWS3QCe0UmxCl
+         1Jf3+j+1RgXXXvRZ+36ky/5VZ+pm3q+3zF+AJGYpJXf8oFXp87XLJFKBnWPl7DHMKU
+         AY5ngkYBrZMwHM9C0MtSKZ1rWFYlW93VI7VqsImEml8vJZug+S9SXaWfFxMNzkiXYL
+         kpVqdYCkYHWsg==
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     David Airlie <airlied@redhat.com>
+Cc:     =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v2 1/8] agp/efficeon: Convert to generic power management
+Date:   Tue, 25 Oct 2022 15:38:45 -0500
+Message-Id: <20221025203852.681822-2-helgaas@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221025203852.681822-1-helgaas@kernel.org>
+References: <20221025203852.681822-1-helgaas@kernel.org>
 MIME-Version: 1.0
-References: <20221025193502.669091-1-helgaas@kernel.org>
-In-Reply-To: <20221025193502.669091-1-helgaas@kernel.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 25 Oct 2022 21:44:10 +0200
-Message-ID: <CAJZ5v0g-EoVgpC3qot4iBqXp98-Ejt7ib28qxtDJfCjr13EVBg@mail.gmail.com>
-Subject: Re: [PATCH] PCI/PM: Remove unused 'state' parameter to pci_legacy_suspend_late()
-To:     Bjorn Helgaas <helgaas@kernel.org>
-Cc:     linux-pci@vger.kernel.org,
-        =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 25, 2022 at 9:35 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
->
-> From: Bjorn Helgaas <bhelgaas@google.com>
->
-> 1a1daf097e21 ("PCI/PM: Remove unused pci_driver.suspend_late() hook")
-> removed the legacy .suspend_late() hook, which was the only user of the
-> "state" parameter to pci_legacy_suspend_late(), but it neglected to remove
-> the parameter.
->
-> Remove the unused "state" parameter to pci_legacy_suspend_late().
->
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Convert agpgart-efficeon from legacy PCI power management to the generic
+power management framework.
 
-> ---
->  drivers/pci/pci-driver.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index 107d77f3c846..a2ceeacc33eb 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -646,7 +646,7 @@ static int pci_legacy_suspend(struct device *dev, pm_message_t state)
->         return 0;
->  }
->
-> -static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
-> +static int pci_legacy_suspend_late(struct device *dev)
->  {
->         struct pci_dev *pci_dev = to_pci_dev(dev);
->
-> @@ -848,7 +848,7 @@ static int pci_pm_suspend_noirq(struct device *dev)
->                 return 0;
->
->         if (pci_has_legacy_pm_support(pci_dev))
-> -               return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
-> +               return pci_legacy_suspend_late(dev);
->
->         if (!pm) {
->                 pci_save_state(pci_dev);
-> @@ -1060,7 +1060,7 @@ static int pci_pm_freeze_noirq(struct device *dev)
->         const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->
->         if (pci_has_legacy_pm_support(pci_dev))
-> -               return pci_legacy_suspend_late(dev, PMSG_FREEZE);
-> +               return pci_legacy_suspend_late(dev);
->
->         if (pm && pm->freeze_noirq) {
->                 int error;
-> @@ -1179,7 +1179,7 @@ static int pci_pm_poweroff_noirq(struct device *dev)
->                 return 0;
->
->         if (pci_has_legacy_pm_support(pci_dev))
-> -               return pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
-> +               return pci_legacy_suspend_late(dev);
->
->         if (!pm) {
->                 pci_fixup_device(pci_fixup_suspend_late, pci_dev);
-> --
-> 2.25.1
->
+Previously agpgart-efficeon used legacy PCI power management, which means
+agp_efficeon_suspend() and agp_efficeon_resume() were responsible for both
+device-specific things and generic PCI things like saving and restoring
+config space and managing power state.
+
+In this case, agp_efficeon_suspend() was empty, and agp_efficeon_resume()
+already did only device-specific things, so simply convert it to take a
+struct device * instead of a struct pci_dev *.
+
+Based on 0aeddbd0cb07 ("via-agp: convert to generic power management") by
+Vaibhav Gupta <vaibhavgupta40@gmail.com>.
+
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/char/agp/efficeon-agp.c | 16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/char/agp/efficeon-agp.c b/drivers/char/agp/efficeon-agp.c
+index c53f0f9ef5b0..f28d42319269 100644
+--- a/drivers/char/agp/efficeon-agp.c
++++ b/drivers/char/agp/efficeon-agp.c
+@@ -412,18 +412,11 @@ static void agp_efficeon_remove(struct pci_dev *pdev)
+ 	agp_put_bridge(bridge);
+ }
+ 
+-#ifdef CONFIG_PM
+-static int agp_efficeon_suspend(struct pci_dev *dev, pm_message_t state)
+-{
+-	return 0;
+-}
+-
+-static int agp_efficeon_resume(struct pci_dev *pdev)
++static int agp_efficeon_resume(struct device *dev)
+ {
+ 	printk(KERN_DEBUG PFX "agp_efficeon_resume()\n");
+ 	return efficeon_configure();
+ }
+-#endif
+ 
+ static const struct pci_device_id agp_efficeon_pci_table[] = {
+ 	{
+@@ -437,6 +430,8 @@ static const struct pci_device_id agp_efficeon_pci_table[] = {
+ 	{ }
+ };
+ 
++static DEFINE_SIMPLE_DEV_PM_OPS(agp_efficeon_pm_ops, NULL, agp_efficeon_resume);
++
+ MODULE_DEVICE_TABLE(pci, agp_efficeon_pci_table);
+ 
+ static struct pci_driver agp_efficeon_pci_driver = {
+@@ -444,10 +439,7 @@ static struct pci_driver agp_efficeon_pci_driver = {
+ 	.id_table	= agp_efficeon_pci_table,
+ 	.probe		= agp_efficeon_probe,
+ 	.remove		= agp_efficeon_remove,
+-#ifdef CONFIG_PM
+-	.suspend	= agp_efficeon_suspend,
+-	.resume		= agp_efficeon_resume,
+-#endif
++	.driver.pm	= &agp_efficeon_pm_ops,
+ };
+ 
+ static int __init agp_efficeon_init(void)
+-- 
+2.25.1
+
