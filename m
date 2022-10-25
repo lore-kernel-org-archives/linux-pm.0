@@ -2,151 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5D75C38A2D
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 18:56:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A240C38A2D
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 19:15:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231877AbiJYS4y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Oct 2022 14:56:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33730 "EHLO
+        id S232000AbiJYTPc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Oct 2022 15:15:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57638 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231847AbiJYS4x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 14:56:53 -0400
-Received: from mail-qv1-xf34.google.com (mail-qv1-xf34.google.com [IPv6:2607:f8b0:4864:20::f34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EB251D0FB
-        for <linux-pm@vger.kernel.org>; Tue, 25 Oct 2022 11:56:52 -0700 (PDT)
-Received: by mail-qv1-xf34.google.com with SMTP id h10so9385728qvq.7
-        for <linux-pm@vger.kernel.org>; Tue, 25 Oct 2022 11:56:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=2qLSpogfW3OQu3eVlGO6LKpsYjIV1r1MhY4lvAzTskc=;
-        b=KX4Mi+BLarTQIYnjBPsFf/oCYyAVBxh0ePagIS0BJ2Wbo7g7d//418+ayy+2I8rARM
-         s3FCaqvCsNzcaKfHSPBiOjG1a/AkPSHHXqh9lqymOWXRLoY8Hxu8ZLzFBsFMAi7XT5w3
-         D4e2wLoajRDUFOpl6Z0Hq4VN+d5WWMVNcx26Bn60ZLQR5kHqgdNWqIGIjjHcTIDhiKpr
-         AKN/8YO23QXoQEssPmhql5yGZkzekKpDM/u0SYRfBAFntru/bZriZoTBptZHp1ZWVqw+
-         IzdwdTMm9R3E0idMrn0gqrSdX9/+2h0nALoD/VrnkI0rC3BzIXan0vDWTceceWLuiLT1
-         +CZQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2qLSpogfW3OQu3eVlGO6LKpsYjIV1r1MhY4lvAzTskc=;
-        b=TjTpvhFzg+iDkpHWAEzDoAuJIlCIqM+Y6ju/s+x8bMwjYVmMk9y21FnrbQXG8Hl3GT
-         pWfrjJ5eot0JIGXIe/YODptR+C2jN47Ds11KERJz0cC+N1Y2Dg06gXTdGnA/NMAWxC0f
-         0DDH5oofU7aknwtzT8m5dPb4OINUsQSTVx7l4yUFeQFUX1G56Hlmb0C9Yap1rvEZaIuO
-         +HdST05IRXoA2TT86S/VymUlKFQNVMzlhI6VbY03tmFNkmMC//B3prbsWfsIBx77uOW5
-         EK0vNXh4Y0PqEl4LuXAxpVYY19Kh4RttHfrGgP8Bcuxawy6X+VzNqzIufMvKAGLz4EPz
-         4pvg==
-X-Gm-Message-State: ACrzQf10TlrN6S9Tpzd/QSaF+19MN2CJtSg0D73jgfY6SEGAtDhh/lGh
-        pwG/ShqdECqMR5G6YlNcw4wE9g==
-X-Google-Smtp-Source: AMsMyM4bCIbXwBiHy/Q3UOvNd8jZjJ7e5ZS+wJwzwYzIb8/YnaoXKvANkVRVKcLnP84ZJQ4p7ieKbA==
-X-Received: by 2002:ad4:5dc6:0:b0:4bb:798f:5272 with SMTP id m6-20020ad45dc6000000b004bb798f5272mr8134448qvh.131.1666724211165;
-        Tue, 25 Oct 2022 11:56:51 -0700 (PDT)
-Received: from [192.168.1.11] ([64.57.193.93])
-        by smtp.gmail.com with ESMTPSA id b23-20020ac87557000000b003a4ec43f2b5sm195614qtr.72.2022.10.25.11.56.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 25 Oct 2022 11:56:50 -0700 (PDT)
-Message-ID: <21602556-8312-fb7a-1981-cd03a314d904@linaro.org>
-Date:   Tue, 25 Oct 2022 14:56:48 -0400
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.0
-Subject: Re: [PATCH v3 2/5] dt-bindings: cpufreq: apple,soc-cpufreq: Add
- binding for Apple SoC cpufreq
-Content-Language: en-US
-To:     Hector Martin <marcan@marcan.st>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>
-Cc:     Sven Peter <sven@svenpeter.dev>,
-        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        with ESMTP id S229952AbiJYTPb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 15:15:31 -0400
+Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3715D7B596;
+        Tue, 25 Oct 2022 12:15:30 -0700 (PDT)
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29PJFJ7b114083;
+        Tue, 25 Oct 2022 14:15:19 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1666725319;
+        bh=ZL+YBJQnQSuukUMqpWoTNGCHm/b9bnX/oYmoOE+d/FI=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=OKckoL/GfszSOf8nC78uXgGuGM54L9GiYSrrW6i9/k5QJQsmxC1e7lOxR4gN7xN2u
+         xVtSxCra31wWCVz/YFvHj18BVZF2/dw2MnPC+Wa2jW+tFH9o0WdUF2s3BihTFmP9kQ
+         lr3eVbz0IqppJcBkX7mp9qCx3TnTPEiJCLa141qY=
+Received: from DFLE103.ent.ti.com (dfle103.ent.ti.com [10.64.6.24])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29PJFJDd065990
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Tue, 25 Oct 2022 14:15:19 -0500
+Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE103.ent.ti.com
+ (10.64.6.24) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 25
+ Oct 2022 14:15:19 -0500
+Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE107.ent.ti.com
+ (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
+ Frontend Transport; Tue, 25 Oct 2022 14:15:19 -0500
+Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
+        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29PJFJbX038872;
+        Tue, 25 Oct 2022 14:15:19 -0500
+From:   Bryan Brattlof <bb@ti.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Marc Zyngier <maz@kernel.org>,
-        Mark Kettenis <mark.kettenis@xs4all.nl>, asahi@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20221024043925.25379-1-marcan@marcan.st>
- <20221024043925.25379-3-marcan@marcan.st>
- <5c3126fb-8fdb-5163-95a8-136a4a7ee2ce@linaro.org>
- <97d3d6d4-b19c-a194-de41-f17e65bf3eb6@marcan.st>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <97d3d6d4-b19c-a194-de41-f17e65bf3eb6@marcan.st>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Nishanth Menon <nm@ti.com>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Tero Kristo <kristo@kernel.org>
+CC:     Keerthy <j-keerthy@ti.com>, Linux PM <linux-pm@vger.kernel.org>,
+        Device Trees <devicetree@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        LKML ARM <linux-arm-kernel@lists.infradead.org>,
+        Bryan Brattlof <bb@ti.com>
+Subject: [PATCH v2 05/11] dt-bindings: thermal: k3-j72xx: elaborate on binding description
+Date:   Tue, 25 Oct 2022 14:15:09 -0500
+Message-ID: <20221025191515.9151-6-bb@ti.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221025191515.9151-1-bb@ti.com>
+References: <20221025191515.9151-1-bb@ti.com>
+MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1844; h=from:subject; bh=X0Gh04bGx605RJeJrzQxigJ9CmhRVnqOURTu0JyzGYk=; b=owNCWmg5MUFZJlNZOWG3gQAAcn///77Pf////l/XLb/v/tvruz978P3uvvbz8XsZvZJ+j/SwARsr B2k00aDQDQNDQAAGQZGQDQDQaAANDEBkwIGgAAAAeoAAbSDTRmp6m2qHQAaAaABoxGmg0BoaDIaA9I ZMgADQNANNG1NADNQDQG0JkDRoeKBkAZBoZQep6mTINGgDQyBiA00DAmhoANBiNABkZBkAyDIaGjQG QBkANNA9QNGmjIAg775YQYWGC/iiIwpkEAttmJGCwEMBul41oBi14bzmVinKERBshcHg3a31TuCY5M TVKNjWOYqa/w5Y5ulEDTUbuSuEHRel89F1Vl8IoUWPb0inrrCUgmViG/X25ACoHtm/scRZo5frcWVA DgmCpoGQSJcw2/pNT37GINJi7TJUnGkIYDzJ2ayfE51S5x9IFkxcgeD2XHhK5xlpSM3RdaxExWh2sf +uuMQvROfQ45LEXTA24LCTwvfZlxAOZhuWjE9eJpOLgshOPaowmYvP96WXsHEESZAJ+rLdCshlJIoM G1aCo4bvPVv1iEuscLwKCZ7Bq/U/kvDPImYi8RDmIMkiyJjkYwW+yPgHNpUkitLR4rBnqlEbY4nJKZ tCQX5jBIkZb06dYxukxwhg9zLDdRmkm1oHPYAMy/gRaEBAgKgMQrSmSDg/xdyRThQkDlht4EA=
+X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 25/10/2022 13:22, Hector Martin wrote:
-> On 26/10/2022 01.01, Krzysztof Kozlowski wrote:
->> On 24/10/2022 00:39, Hector Martin wrote:
->>> This binding represents the cpufreq/DVFS hardware present in Apple SoCs.
->>> The hardware has an independent controller per CPU cluster, and we
->>> represent them as unique nodes in order to accurately describe the
->>> hardware. The driver is responsible for binding them as a single cpufreq
->>> device (in the Linux cpufreq model).
->>>
->>> Signed-off-by: Hector Martin <marcan@marcan.st>
->>> ---
->>>  .../cpufreq/apple,cluster-cpufreq.yaml        | 119 ++++++++++++++++++
->>>  1 file changed, 119 insertions(+)
->>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
->>>
->>> diff --git a/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml b/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
->>> new file mode 100644
->>> index 000000000000..b11452f91468
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
->>> @@ -0,0 +1,119 @@
->>> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
->>> +%YAML 1.2
->>> +---
->>> +$id: http://devicetree.org/schemas/cpufreq/apple,cluster-cpufreq.yaml#
->>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->>> +
->>> +title: Apple SoC cluster cpufreq device
->>
->> Few nits, in general looks fine to me.
->>
->>> +
->>> +maintainers:
->>> +  - Hector Martin <marcan@marcan.st>
->>> +
->>> +description: |
->>> +  Apple SoCs (e.g. M1) have a per-cpu-cluster DVFS controller that is part of
->>> +  the cluster management register block. This binding uses the standard
->>> +  operating-points-v2 table to define the CPU performance states, with the
->>> +  opp-level property specifying the hardware p-state index for that level.
->>> +
->>> +properties:
->>> +  compatible:
->>> +    oneOf:
->>> +      - items:
->>> +          - const: apple,t8103-cluster-cpufreq
->>> +          - const: apple,cluster-cpufreq
->>> +      - items:
->>> +          - const: apple,t6000-cluster-cpufreq
->>> +          - const: apple,t8103-cluster-cpufreq
->>> +          - const: apple,cluster-cpufreq
->>> +      - items:
->>> +          - const: apple,t8112-cluster-cpufreq
->>
->> With the first one (t8103) - it's an enum.
-> 
-> This is deliberate. t6000 is compatible with t8103, but t8112 is not
-> (though all are compatible with what the generic apple,cluster-cpufreq
-> compatible implies).
+Elaborate on the function of this device node as well as some of the
+properties this node uses.
 
-I was not talking about t6000. I was talking about two entries - first
-and last - which should be just an enum. There is no compatibility, so
-what is here deliberate? To not make enum things which are an enum?
+Signed-off-by: Bryan Brattlof <bb@ti.com>
+---
+ .../bindings/thermal/ti,j72xx-thermal.yaml    | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
 
-Best regards,
-Krzysztof
+diff --git a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+index c74f124ebfc00..3bb870a26872f 100644
+--- a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+@@ -9,6 +9,19 @@ title: Texas Instruments J72XX VTM (DTS) binding
+ maintainers:
+   - Keerthy <j-keerthy@ti.com>
+ 
++description: |
++  The TI K3 family of SoCs typically have a Voltage & Thermal
++  Management (VTM) device to control up to 8 temperature diode
++  sensors to measure silicon junction temperatures from different
++  hotspots of the chip as well as provide temperature, interrupt
++  and alerting information.
++
++  The following polynomial equation can then be used to convert
++  value returned by this device into a temperature in Celsius
++
++  Temp(C) = (-9.2627e-12) * x^4 + (6.0373e-08) * x^3 + \
++            (-1.7058e-04) * x^2 + (3.2512e-01) * x   + (-4.9003e+01)
++
+ properties:
+   compatible:
+     enum:
+@@ -19,7 +32,11 @@ properties:
+     items:
+       - description: VTM cfg1 register space
+       - description: VTM cfg2 register space
+-      - description: VTM efuse register space
++      - description: |
++          A software trimming method must be applied to some Jacinto
++          devices to function properly. This eFuse region provides
++          the information needed for these SoCs to report
++          temperatures accurately.
+ 
+   power-domains:
+     maxItems: 1
+-- 
+2.38.1
 
