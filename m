@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 908F8FA3740
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 20:39:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E89FA3744
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Oct 2022 20:39:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232442AbiJYUjG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Oct 2022 16:39:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37688 "EHLO
+        id S232197AbiJYUjK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Oct 2022 16:39:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37714 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231482AbiJYUjD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 16:39:03 -0400
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8412AC4B9;
-        Tue, 25 Oct 2022 13:39:02 -0700 (PDT)
+        with ESMTP id S232539AbiJYUjG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2022 16:39:06 -0400
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3254BD019A;
+        Tue, 25 Oct 2022 13:39:06 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id 532D6CE1C10;
-        Tue, 25 Oct 2022 20:39:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1190BC433C1;
-        Tue, 25 Oct 2022 20:38:58 +0000 (UTC)
+        by sin.source.kernel.org (Postfix) with ESMTPS id 9B630CE1ED2;
+        Tue, 25 Oct 2022 20:39:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1D08C433D6;
+        Tue, 25 Oct 2022 20:39:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1666730339;
-        bh=pNxIekC28wfpOc5Ypgdt8TBFN8v88QrFVDS9wqoB4fk=;
-        h=From:To:Cc:Subject:Date:From;
-        b=RqSfv94sp39rY9R6dfnKNtA2yzyyL+taF+AKAbt1StMoVeHrtOmoZ8ZmMBXJ3krGy
-         M280K4bsUBIoOIHOGnsOcYDpHG4zzHCwDB2UlH1lj9XqKQQ/c59IeIWCxRi/So+So1
-         9YdUIZBVduYEZ2X9LjSbAmi+lV5q17+kcrwyC8SYNJdPS5iw4NwroUyds1T3C6z0Cj
-         8dGKvrKF3RoP70esMxj9xNR3mEfVfRJFsKoSZ2eei4mESQfW7/WTW8UllreUfuXm2l
-         n3F06FCCOIHuqCd4/nW8IrlGIyY/pdfabLlj4WNAyoXrpyK0r8S/p+trjChtqiu1fm
-         Dar8mob5nL9SA==
+        s=k20201202; t=1666730343;
+        bh=MvbJy3JxdO3ShsrhkWcJG0ADbJX6DM/ql5rIFpCUTAw=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=MRJFtTL3yE5rbOVqjRdQwIY+nvkQweZHqDhluMjuI+hY4L2YO6v1JrH0q5KB9Hvsj
+         OEkJmdpI7YSMNZ5N04fesYTqbHp1N0JiCnRwSQjbAfo0y6ALvFaIG7sMGGsogYJRYY
+         7cCP1sCMOWWX7VOza9Bj5hatOelFi5JFSati+L+6NUFOCKnLBabkkIDSx+ySFAZRn7
+         zYZc46w71OSDkWRVTzypggKvowHjlOtXFeCsljVl7PvbKto4k43qCPVOjVpj+YSuvL
+         KpsEDwspvDMxLIS1JjHAhqsBjlPy1XMkbycWf+iZwlmNUUztQ0towjJ+gmuoxtDCCW
+         N6IRxVPDOskaw==
 From:   Bjorn Helgaas <helgaas@kernel.org>
 To:     David Airlie <airlied@redhat.com>
 Cc:     =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
@@ -39,10 +39,12 @@ Cc:     =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
         dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 0/8] agp: Convert to generic power management
-Date:   Tue, 25 Oct 2022 15:38:44 -0500
-Message-Id: <20221025203852.681822-1-helgaas@kernel.org>
+Subject: [PATCH v2 2/8] agp/intel: Convert to generic power management
+Date:   Tue, 25 Oct 2022 15:38:46 -0500
+Message-Id: <20221025203852.681822-3-helgaas@kernel.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221025203852.681822-1-helgaas@kernel.org>
+References: <20221025203852.681822-1-helgaas@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -51,38 +53,67 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Bjorn Helgaas <bhelgaas@google.com>
 
-Vaibhav converted several AGP drivers from legacy PCI power management to
-generic power management [1].  This series converts the rest of them.
+Convert agpgart-intel from legacy PCI power management to the generic power
+management framework.
 
-v1 posted at [2].
+Previously agpgart-intel used legacy PCI power management, and
+agp_intel_resume() was responsible for both device-specific things and
+generic PCI things like saving and restoring config space and managing
+power state.
 
-Changes from v1 to v2:
-  - Convert from SIMPLE_DEV_PM_OPS() (which is deprecated) to
-    DEFINE_SIMPLE_DEV_PM_OPS() and remove __maybe_unused annotations.
+In this case, agp_intel_suspend() was empty, and agp_intel_resume()
+already did only device-specific things, so simply convert it to take a
+struct device * instead of a struct pci_dev *.
 
-[1] https://lore.kernel.org/all/20210112080924.1038907-1-vaibhavgupta40@gmail.com/#t
-[2] https://lore.kernel.org/all/20220607034340.307318-1-helgaas@kernel.org/
+Based on 0aeddbd0cb07 ("via-agp: convert to generic power management") by
+Vaibhav Gupta <vaibhavgupta40@gmail.com>.
 
-Bjorn Helgaas (8):
-  agp/efficeon: Convert to generic power management
-  agp/intel: Convert to generic power management
-  agp/amd-k7: Convert to generic power management
-  agp/ati: Convert to generic power management
-  agp/nvidia: Convert to generic power management
-  agp/amd64: Update to DEFINE_SIMPLE_DEV_PM_OPS()
-  agp/sis: Update to DEFINE_SIMPLE_DEV_PM_OPS()
-  agp/via: Update to DEFINE_SIMPLE_DEV_PM_OPS()
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/char/agp/intel-agp.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
- drivers/char/agp/amd-k7-agp.c   | 24 ++++--------------------
- drivers/char/agp/amd64-agp.c    |  6 ++----
- drivers/char/agp/ati-agp.c      | 22 ++++------------------
- drivers/char/agp/efficeon-agp.c | 16 ++++------------
- drivers/char/agp/intel-agp.c    | 11 +++++------
- drivers/char/agp/nvidia-agp.c   | 24 ++++--------------------
- drivers/char/agp/sis-agp.c      |  7 ++-----
- drivers/char/agp/via-agp.c      |  6 ++----
- 8 files changed, 27 insertions(+), 89 deletions(-)
-
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index 9e4f27a6cb5a..c518b3a9db04 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -817,16 +817,15 @@ static void agp_intel_remove(struct pci_dev *pdev)
+ 	agp_put_bridge(bridge);
+ }
+ 
+-#ifdef CONFIG_PM
+-static int agp_intel_resume(struct pci_dev *pdev)
++static int agp_intel_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+ 
+ 	bridge->driver->configure();
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ static const struct pci_device_id agp_intel_pci_table[] = {
+ #define ID(x)						\
+@@ -895,14 +894,14 @@ static const struct pci_device_id agp_intel_pci_table[] = {
+ 
+ MODULE_DEVICE_TABLE(pci, agp_intel_pci_table);
+ 
++static DEFINE_SIMPLE_DEV_PM_OPS(agp_intel_pm_ops, NULL, agp_intel_resume);
++
+ static struct pci_driver agp_intel_pci_driver = {
+ 	.name		= "agpgart-intel",
+ 	.id_table	= agp_intel_pci_table,
+ 	.probe		= agp_intel_probe,
+ 	.remove		= agp_intel_remove,
+-#ifdef CONFIG_PM
+-	.resume		= agp_intel_resume,
+-#endif
++	.driver.pm	= &agp_intel_pm_ops,
+ };
+ 
+ static int __init agp_intel_init(void)
 -- 
 2.25.1
 
