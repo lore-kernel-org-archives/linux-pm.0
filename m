@@ -2,254 +2,208 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62E87C38A2D
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Oct 2022 17:22:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB9A4FA373E
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Oct 2022 19:08:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234149AbiJZRWn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Oct 2022 13:22:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58420 "EHLO
+        id S234532AbiJZTI0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Oct 2022 15:08:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50656 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234137AbiJZRWj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2022 13:22:39 -0400
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCA309B846
-        for <linux-pm@vger.kernel.org>; Wed, 26 Oct 2022 10:22:37 -0700 (PDT)
-Received: by mail-pj1-x102b.google.com with SMTP id v13-20020a17090a6b0d00b0021332e5388fso2756143pjj.1
-        for <linux-pm@vger.kernel.org>; Wed, 26 Oct 2022 10:22:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gateworks-com.20210112.gappssmtp.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=quHF11bisNBche9+VnC8BLjKYyYleEVda0+BIKXMuLE=;
-        b=cc+zseFHMVC95ncVRpvbvWJ0frPHxIprtbNYVnAfezAsSiHiBRVT+ILOylUO758TxU
-         k95bfYWuNLTkg0Cj4IQWeFSFPpk0L8P/yU+X1jOce8vxNp6WHkOeBfBFogw7DZEMcqBp
-         tm8erm1rx2lhNL9Wg96QX4J9JRsbFxTsYIK5xZM70K9YoCF7kaKOlkH0JKOT6/Q0llkc
-         SgBuwIBg6yTDvHnmThG3O2rhaO1DPVfN2ruK3bkfzrSZtFekj5R6rfpg7zs5HAbFX/Ln
-         DF+yTDzp8Lzmn+3e6VzpgFQtd5Q4fNfHJDZIjFPnJVKZyk8QeCjNSKq/Hv+/1cvwyQ6i
-         XI3Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=quHF11bisNBche9+VnC8BLjKYyYleEVda0+BIKXMuLE=;
-        b=VqGEmA8IQjHVttC2w6uZtCSfZ0nseSiMW6Z0kjaCor4PStp+TpEGMH0il0IlrqQQ/F
-         BBXW0EyOGelK/krdt+h1fN7/imUkxBjZmeyQAHt9UyjCM2fw770muP5MMFJZeyKcj0QC
-         TP6qQ4qGWAmDreziYr+bPQ98cGmSWrWFjLEGw+5AI3mHXD2ycUKpWeD//UfUbRAhw+6g
-         YBsy2xuwkJrZl1sz3WgeZgo5g3N4jdly6F82qE6yO1M+hEMLVCMczim2lDxfuNxOczZq
-         KsCCcnQ7/UFUsiINplz66ucKqDx2VXmtbvAEZlwTd2gNcW4C33K1a+oSQYKXLW9elsf2
-         5Log==
-X-Gm-Message-State: ACrzQf2Jg7WGM2pCJc2LaqOk1F5SHIDVbyLXOg2oB5w/L0HPQ5bh7vRp
-        FU76VJSmTvJkxOfQvkUpP+Y5QhPbcMosbV7KAMoIOw==
-X-Google-Smtp-Source: AMsMyM558UTbwtNu3DoELIB0y+tfRhgP734rMthquZje+JjLbW7CN3/n9bYbdNCN6wABvYemtjxp3gREVqE1VHyxSYY=
-X-Received: by 2002:a17:902:768c:b0:186:b136:187a with SMTP id
- m12-20020a170902768c00b00186b136187amr14281399pll.94.1666804957189; Wed, 26
- Oct 2022 10:22:37 -0700 (PDT)
+        with ESMTP id S234678AbiJZTHp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2022 15:07:45 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4097A2A243;
+        Wed, 26 Oct 2022 12:05:36 -0700 (PDT)
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29QIoq7O016334;
+        Wed, 26 Oct 2022 19:05:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding : content-type; s=qcppdkim1;
+ bh=On2Tkp/SOMNMD/CqnyJV8xm/X46u/rXaY4PhjgNS3to=;
+ b=ApjEWRpyLfn7R4MerEgEHjt+oDa3aMBaoeu18mbY7/UGBEKDf5ms4S5oMNLfndHWNL2M
+ IWZdug/E/3YHZIB7K5mhyc+bOp+1e5KYNt5MRQTm9cECdEda9fV68/JMSa/LKlPFKPsJ
+ P+gocexv8EMwjuVApp8vL3foQwsmp0ML2zTDhkfPNR00i5xweEflfICBnuxnL4b04C6V
+ f4IBRmgdDDDkEJUtwdzGCzj9SZY+NePb8WBYaK+gSv5cFMyjEpmhNtGxePlkn+X2Jfgn
+ XLdxbHKq3/pRdyt0yM2QvUEcw3/Mrnw96AfPReRgKDQJsa2/sxfao7Vq+dKWylNnppxO RQ== 
+Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3kfah5r1pf-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 26 Oct 2022 19:05:33 +0000
+Received: from nasanex01b.na.qualcomm.com (corens_vlan604_snip.qualcomm.com [10.53.140.1])
+        by NASANPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 29QJ5Wuo022362
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 26 Oct 2022 19:05:32 GMT
+Received: from hu-eberman-lv.qualcomm.com (10.49.16.6) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.29; Wed, 26 Oct 2022 12:05:32 -0700
+From:   Melody Olvera <quic_molvera@quicinc.com>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+CC:     Odelu Kukatla <quic_okukatla@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Melody Olvera <quic_molvera@quicinc.com>
+Subject: [PATCH v3 2/3] dt-bindings: interconnect: Add QDU1000/QRU1000 dt bindings
+Date:   Wed, 26 Oct 2022 12:05:19 -0700
+Message-ID: <20221026190520.4004264-3-quic_molvera@quicinc.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221026190520.4004264-1-quic_molvera@quicinc.com>
+References: <20221026190520.4004264-1-quic_molvera@quicinc.com>
 MIME-Version: 1.0
-References: <20220708085632.1918323-1-peng.fan@oss.nxp.com>
- <CAJ+vNU3uYtDGMd6fPi7skWKL8UNXntfAEODARF0NVz9k7DCT7w@mail.gmail.com>
- <ec599991-44da-7b83-9374-d0043b32f053@denx.de> <CAJ+vNU2g+e8_PBq0SJYOXsB6PKpMb3dmzDRA5Gyj=NJS3Ckc1g@mail.gmail.com>
- <CAJ+vNU0mPt27PgheodNLcOk97OdD6TK+1us58jc=4DMHndQpvQ@mail.gmail.com>
- <849213369ce9ed3364ba0beb2744bfbcb3740b0c.camel@pengutronix.de> <CAJ+vNU0r_4mEJk0aNHE0c-81KDvdhV6aTBa6R-BgHa+zeB_u=g@mail.gmail.com>
-In-Reply-To: <CAJ+vNU0r_4mEJk0aNHE0c-81KDvdhV6aTBa6R-BgHa+zeB_u=g@mail.gmail.com>
-From:   Tim Harvey <tharvey@gateworks.com>
-Date:   Wed, 26 Oct 2022 10:22:23 -0700
-Message-ID: <CAJ+vNU23qCrXqULTMMHVSxiRSg2F2GE2v=mTn7stV7nEp6DMmQ@mail.gmail.com>
-Subject: Re: [PATCH V4 0/7] imx: blk-ctrl: Add interconnect for i.MX8MP
-To:     Lucas Stach <l.stach@pengutronix.de>
-Cc:     Marek Vasut <marex@denx.de>,
-        "Peng Fan (OSS)" <peng.fan@oss.nxp.com>, djakov@kernel.org,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, festevam@gmail.com,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        abelvesa@kernel.org, abailon@baylibre.com,
-        laurent.pinchart@ideasonboard.com, paul.elder@ideasonboard.com,
-        Markus.Niebel@ew.tq-group.com, aford173@gmail.com,
-        kernel@pengutronix.de, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-imx@nxp.com,
-        Peng Fan <peng.fan@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: lXQ-5qMC_DL3JUEz_fS04F6sd8ayMmfF
+X-Proofpoint-GUID: lXQ-5qMC_DL3JUEz_fS04F6sd8ayMmfF
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-10-26_07,2022-10-26_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ mlxlogscore=999 mlxscore=0 priorityscore=1501 lowpriorityscore=0
+ malwarescore=0 clxscore=1015 phishscore=0 spamscore=0 adultscore=0
+ bulkscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2210260107
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 17, 2022 at 11:53 AM Tim Harvey <tharvey@gateworks.com> wrote:
->
-> On Thu, Oct 13, 2022 at 2:49 PM Lucas Stach <l.stach@pengutronix.de> wrote:
-> >
-> > Hi Tim,
-> >
-> > Am Donnerstag, dem 13.10.2022 um 11:23 -0700 schrieb Tim Harvey:
-> > > On Wed, Oct 12, 2022 at 11:46 AM Tim Harvey <tharvey@gateworks.com> wrote:
-> > > >
-> > > > On Tue, Oct 11, 2022 at 4:13 PM Marek Vasut <marex@denx.de> wrote:
-> > > > >
-> > > > > On 10/11/22 22:10, Tim Harvey wrote:
-> > > > > > On Fri, Jul 8, 2022 at 1:57 AM Peng Fan (OSS) <peng.fan@oss.nxp.com> wrote:
-> > > > > > >
-> > > > > > > From: Peng Fan <peng.fan@nxp.com>
-> > > > > > >
-> > > > > > > V4:
-> > > > > > >   Because the header is not included when adding NoC node, the fsl,imx8mp.h
-> > > > > > >   needs be included in this patchset. So include it in patch 6
-> > > > > > >
-> > > > > > > V3:
-> > > > > > >   Move adding NoC node patch to i.MX8MP ICC driver patchset
-> > > > > > >   Per Lucas's comments, warn once when icc bulk get not return probe defer and continue.
-> > > > > > >
-> > > > > > > V2:
-> > > > > > >   Use a low bandwidth value instead INT_MAX
-> > > > > > >   Minor fix to move fsl,imx8mp.h out to dts patch, not driver patch
-> > > > > > >   Add A-b tag from DT maintainer
-> > > > > > >
-> > > > > > > i.MX8MP NoC settings is invalid after related power domain up. So
-> > > > > > > need to set valid values after power domain up.
-> > > > > > >
-> > > > > > > This patchset is to bind interconnect for each entry in blk ctrl.
-> > > > > > >
-> > > > > > > This patchset is not include DVFS DDRC feature.
-> > > > > > >
-> > > > > > > Peng Fan (7):
-> > > > > > >    dt-bindings: soc: imx: add interconnect property for i.MX8MP media blk
-> > > > > > >      ctrl
-> > > > > > >    dt-bindings: soc: imx: add interconnect property for i.MX8MP hdmi blk
-> > > > > > >      ctrl
-> > > > > > >    dt-bindings: soc: imx: add interconnect property for i.MX8MP hsio blk
-> > > > > > >      ctrl
-> > > > > > >    soc: imx: add icc paths for i.MX8MP media blk ctrl
-> > > > > > >    soc: imx: add icc paths for i.MX8MP hsio/hdmi blk ctrl
-> > > > > > >    arm64: dts: imx8mp: add interconnects for media blk ctrl
-> > > > > > >    arm64: dts: imx8mp: add interconnect for hsio blk ctrl
-> > > > > > >
-> > > > > > >   .../soc/imx/fsl,imx8mp-hdmi-blk-ctrl.yaml     |  9 +++++
-> > > > > > >   .../soc/imx/fsl,imx8mp-hsio-blk-ctrl.yaml     | 10 +++++
-> > > > > > >   .../soc/imx/fsl,imx8mp-media-blk-ctrl.yaml    | 14 +++++++
-> > > > > > >   arch/arm64/boot/dts/freescale/imx8mp.dtsi     | 18 +++++++++
-> > > > > > >   drivers/soc/imx/imx8m-blk-ctrl.c              | 39 +++++++++++++++++++
-> > > > > > >   drivers/soc/imx/imx8mp-blk-ctrl.c             | 35 +++++++++++++++++
-> > > > > > >   6 files changed, 125 insertions(+)
-> > > > > > >
-> > > > > > > --
-> > > > > > > 2.25.1
-> > > > > > >
-> > > > > >
-> > > > > > Hi Peng,
-> > > > > >
-> > > > > > I built origin/master from commit 041bc24d867a today for an imx8mp
-> > > > > > board and am running into errors that appear to be introduced by this
-> > > > > > series:
-> > > > > > [   15.177372] platform 381f0040.usb-phy: deferred probe pending
-> > > > > > [   15.183155] platform 382f0040.usb-phy: deferred probe pending
-> > > > > > [   15.188928] platform 33800000.pcie: deferred probe pending
-> > > > > > [   15.194439] platform 32ec0000.blk-ctrl: deferred probe pending
-> > > > > > [   15.200287] platform 38330000.blk-ctrl: deferred probe pending
-> > > > > > [   15.206129] platform 32f10000.blk-ctrl: deferred probe pending
-> > > > > > [   15.211974] platform 32f10100.usb: deferred probe pending
-> > > > > > [   15.217382] platform 32f10108.usb: deferred probe pending
-> > > > > > [   15.222791] platform cpufreq-dt: deferred probe pending
-> > > > > > # cat /sys/kernel/debug/devices_deferred
-> > > > > > 381f0040.usb-phy        platform: supplier 32f10000.blk-ctrl not ready
-> > > > > > 382f0040.usb-phy        platform: supplier 32f10000.blk-ctrl not ready
-> > > > > > 33800000.pcie   platform: supplier 32f10000.blk-ctrl not ready
-> > > > > > 32ec0000.blk-ctrl       imx8m-blk-ctrl: failed to get noc entries
-> > > > > > 38330000.blk-ctrl       imx8m-blk-ctrl: failed to get noc entries
-> > > > > > 32f10000.blk-ctrl       imx8mp-blk-ctrl: failed to get noc entries
-> > > > > > 32f10100.usb    platform: supplier 32f10000.blk-ctrl not ready
-> > > > > > 32f10108.usb    platform: supplier 32f10000.blk-ctrl not ready
-> > > > > > cpufreq-dt
-> > > > > >
-> > > > > > Is there a driver I'm perhaps missing that is needed now or are there
-> > > > > > some patches that come from a different unmerged tree needed?
-> > > > >
-> > > > > Do you have these enabled ?
-> > > > >
-> > > > > CONFIG_INTERCONNECT_IMX8MM=y
-> > > > > CONFIG_INTERCONNECT_IMX8MN=y
-> > > > > CONFIG_INTERCONNECT_IMX8MQ=y
-> > > > > CONFIG_INTERCONNECT_IMX8MP=y
-> > > >
-> > > > Marek,
-> > > >
-> > > > Yes, I have those as well as CONFIG_ARCH_NXP which appears new for 6.1 enabled.
-> > > >
-> > > > Best Regards,
-> > > >
-> > > > Tim
-> > >
-> > > I see this issue on origin/master 1440f5760228 using
-> > > arch/arm64/configs/defconfig.
-> > >
-> > > It seems to me that the imx8m*_blk_ctrl_probe will all defer now until
-> > > perhaps all the drivers using interconnects can probe, such as
-> > > g1/lcdif etc?
-> > >
-> > > Some added debugging shows me:
-> > > [   14.951371] of_icc_bulk_get path lcdif-rd err=-517
-> > > [   14.956205] devm_of_icc_bulk_get ret=-517
-> > > [   14.960562] imx8m_blk_ctrl_probe failed -517
-> > > [   14.967191] of_icc_bulk_get path g1 err=-517
-> > > [   14.971487] devm_of_icc_bulk_get ret=-517
-> > > [   14.975614] imx8m_blk_ctrl_probe failed -517
-> > > [   14.982200] of_icc_bulk_get path usb1 err=-517
-> > > [   14.986680] devm_of_icc_bulk_get ret=-517
-> > > [   14.990709] imx8mp_blk_ctrl_probe 0:usb1
-> > > [   14.994641] imx8mp_blk_ctrl_probe 1:usb2
-> > > [   15.002086] platform 381f0040.usb-phy: deferred probe pending
-> > > [   15.007875] platform 382f0040.usb-phy: deferred probe pending
-> > > [   15.013636] platform 32f00000.pcie-phy: deferred probe pending
-> > > [   15.019480] platform 33800000.pcie: deferred probe pending
-> > > [   15.024975] platform 32ec0000.blk-ctrl: deferred probe pending
-> > > [   15.030819] platform 38330000.blk-ctrl: deferred probe pending
-> > > [   15.036662] platform 32f10000.blk-ctrl: deferred probe pending
-> > > [   15.042503] platform 32f10100.usb: deferred probe pending
-> > > [   15.047912] platform 32f10108.usb: deferred probe pending
-> > >
-> > Do you have CONFIG_ARM_IMX_BUS_DEVFREQ enabled? This one will actually
-> > instantiate the interconnect devices for the interconnect drivers to
-> > hang onto. Once the interconnect is probed the blk-ctrl drivers should
-> > probe. There is no dependency into leaf peripheral devices.
-> >
-> > Regards,
-> > Lucas
-> >
->
-> Lucas,
->
-> That's configured as a module in arch/arm64/configs/defconfig - making
-> it static still does not help. I am booting a static kernel with no
-> modules here so there must be something else required that is
-> configured as a module that wasn't needed before this series?
->
-> I haven't had much time to look into this. I'm simply using
-> arch/arm64/configs/defconfig and CONFIG_INITRAMFS_SOURCE set to a
-> rootfs I use for quick testing. If there is indeed now one or more
-> modules required before USB and PCIe are available I wonder if they
-> should be made static in arch/arm64/configs/defconfig? If not then I
-> don't know what the point in having the PCI and USB drivers static is.
->
+Add interconnect IDs for Qualcomm QDU1000 and QRU1000 platforms.
 
-Lucas,
+Signed-off-by: Melody Olvera <quic_molvera@quicinc.com>
+---
+ .../bindings/interconnect/qcom,rpmh.yaml      |  4 +
+ .../dt-bindings/interconnect/qcom,qdu1000.h   | 98 +++++++++++++++++++
+ 2 files changed, 102 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/qcom,qdu1000.h
 
-Sorry, I misspoke - I did not have CONFIG_ARM_IMX_BUS_DEVFREQ and that
-was indeed my issue.
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+index d9cdba15b4f4..a6a361a8f3bb 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+@@ -27,6 +27,10 @@ properties:
+ 
+   compatible:
+     enum:
++      - qcom,qdu1000-clk-virt
++      - qcom,qdu1000-gem-noc
++      - qcom,qdu1000-mc-virt
++      - qcom,qdu1000-system-noc
+       - qcom,sc7180-aggre1-noc
+       - qcom,sc7180-aggre2-noc
+       - qcom,sc7180-camnoc-virt
+diff --git a/include/dt-bindings/interconnect/qcom,qdu1000.h b/include/dt-bindings/interconnect/qcom,qdu1000.h
+new file mode 100644
+index 000000000000..7f0ad1571128
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,qdu1000.h
+@@ -0,0 +1,98 @@
++/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
++/*
++ * Copyright (c) 2022, Qualcomm Innovation Center, Inc. All rights reserved.
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_QDU1000_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_QDU1000_H
++
++#define MASTER_QUP_CORE_0			0
++#define MASTER_QUP_CORE_1			1
++#define SLAVE_QUP_CORE_0			2
++#define SLAVE_QUP_CORE_1			3
++
++#define MASTER_SYS_TCU				0
++#define MASTER_APPSS_PROC			1
++#define MASTER_GEMNOC_ECPRI_DMA			2
++#define MASTER_FEC_2_GEMNOC			3
++#define MASTER_ANOC_PCIE_GEM_NOC		4
++#define MASTER_SNOC_GC_MEM_NOC			5
++#define MASTER_SNOC_SF_MEM_NOC			6
++#define MASTER_MSS_PROC				7
++#define SLAVE_GEM_NOC_CNOC			8
++#define SLAVE_LLCC				9
++#define SLAVE_GEMNOC_MODEM_CNOC			10
++#define SLAVE_MEM_NOC_PCIE_SNOC			11
++
++#define MASTER_LLCC				0
++#define SLAVE_EBI1				1
++
++#define MASTER_GIC_AHB				0
++#define MASTER_QDSS_BAM				1
++#define MASTER_QPIC				2
++#define MASTER_QSPI_0				3
++#define MASTER_QUP_0				4
++#define MASTER_QUP_1				5
++#define MASTER_SNOC_CFG				6
++#define MASTER_ANOC_SNOC			7
++#define MASTER_ANOC_GSI				8
++#define MASTER_GEM_NOC_CNOC			9
++#define MASTER_GEMNOC_MODEM_CNOC		10
++#define MASTER_GEM_NOC_PCIE_SNOC		11
++#define MASTER_CRYPTO				12
++#define MASTER_ECPRI_GSI			13
++#define MASTER_PIMEM				14
++#define MASTER_SNOC_ECPRI_DMA			15
++#define MASTER_GIC				16
++#define MASTER_PCIE				17
++#define MASTER_QDSS_ETR				18
++#define MASTER_QDSS_ETR_1			19
++#define MASTER_SDCC_1				20
++#define MASTER_USB3				21
++#define SLAVE_AHB2PHY_SOUTH			22
++#define SLAVE_AHB2PHY_NORTH			23
++#define SLAVE_AHB2PHY_EAST			24
++#define SLAVE_AOSS				25
++#define SLAVE_CLK_CTL				26
++#define SLAVE_RBCPR_CX_CFG			27
++#define SLAVE_RBCPR_MX_CFG			28
++#define SLAVE_CRYPTO_0_CFG			29
++#define SLAVE_ECPRI_CFG				30
++#define SLAVE_IMEM_CFG				31
++#define SLAVE_IPC_ROUTER_CFG			32
++#define SLAVE_CNOC_MSS				33
++#define SLAVE_PCIE_CFG				34
++#define SLAVE_PDM				35
++#define SLAVE_PIMEM_CFG				36
++#define SLAVE_PRNG				37
++#define SLAVE_QDSS_CFG				38
++#define SLAVE_QPIC				40
++#define SLAVE_QSPI_0				41
++#define SLAVE_QUP_0				42
++#define SLAVE_QUP_1				43
++#define SLAVE_SDCC_2				44
++#define SLAVE_SMBUS_CFG				45
++#define SLAVE_SNOC_CFG				46
++#define SLAVE_TCSR				47
++#define SLAVE_TLMM				48
++#define SLAVE_TME_CFG				49
++#define SLAVE_TSC_CFG				50
++#define SLAVE_USB3_0				51
++#define SLAVE_VSENSE_CTRL_CFG			52
++#define SLAVE_A1NOC_SNOC			53
++#define SLAVE_ANOC_SNOC_GSI			54
++#define SLAVE_DDRSS_CFG				55
++#define SLAVE_ECPRI_GEMNOC			56
++#define SLAVE_SNOC_GEM_NOC_GC			57
++#define SLAVE_SNOC_GEM_NOC_SF			58
++#define SLAVE_MODEM_OFFLINE			59
++#define SLAVE_ANOC_PCIE_GEM_NOC			60
++#define SLAVE_IMEM				61
++#define SLAVE_PIMEM				62
++#define SLAVE_SERVICE_SNOC			63
++#define SLAVE_ETHERNET_SS			64
++#define SLAVE_PCIE_0				65
++#define SLAVE_QDSS_STM				66
++#define SLAVE_TCU				67
++
++#endif
+-- 
+2.25.1
 
-Question: Should the intention of arch/arm64/configs/defconfig be to
-provide static bus support for PCIe/USB which can be boot devices?
-
-Prior to the interconnect drivers (and even following those drivers
-for imx8mm/imx8mn) PCIe/USB are available without module support with
-arch/arm64/configs/defconfig but now the following would need to be
-changed to make PCIe/USB available with defconfig and no modules:
-CONFIG_INTERCONNECT_IMX8MM=y
-CONFIG_INTERCONNECT_IMX8MN=y
-CONFIG_INTERCONNECT_IMX8MQ=y
-CONFIG_INTERCONNECT_IMX8MP=y
-CONFIG_ARM_IMX_BUS_DEVFREQ=y
-
-Without this change one would need an initrd to boot off PCIe/NVMe or
-USB boot devices. I'm simply not clear what the intended use case is
-for the defconfig with regards to modules vs static drivers.
-
-Best Regards,
-
-Tim
