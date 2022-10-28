@@ -2,503 +2,221 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2F56FA374F
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Oct 2022 03:42:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CD7EECAAA1
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Oct 2022 06:57:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236281AbiJ1Dm1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Oct 2022 23:42:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56604 "EHLO
+        id S229880AbiJ1G53 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Oct 2022 02:57:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58350 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235114AbiJ1DmT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2022 23:42:19 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1FF3D0CEB;
-        Thu, 27 Oct 2022 20:42:17 -0700 (PDT)
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29S1hWvC030749;
-        Fri, 28 Oct 2022 03:42:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=qcppdkim1;
- bh=W+Br6GRh8zbWIwctcQycUyDzHP6dGDS4vhJzi36bkZE=;
- b=bc+Rl+2TWvrq7QZfn725CmXpS2Dtj1eKVpDhDTSaG4z57DQp2GMV5M6YbbhIG0mvlGkM
- 80oF9GoYtOkb0DTNeK9HMtaqPRoo+VnM5VDCs7wCVbjdYvDK6I2pLHEylNiM7IfKLbWR
- OdZ+2myXyGc6iPfsDBc3LMczoMYMKoRhsPJWwRvXQhKRkWq1xJq/8QI2AYKjZmJu0NjN
- mqm4BscKOo6LEVCfoXhgYIu2cJBj0nVFAhg/DlwV2j1NUjxb0WPrLXS7eWhMvqDOXwyz
- nXKHLDlT0nj7U/iAOV9TzxFRMJZMZiN2aYqcJ40YmYDDQODUOyyRAKk2w6X4jsZXmOh1 EQ== 
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3kfyf7h3fh-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 28 Oct 2022 03:42:06 +0000
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 29S3g55q003744
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 28 Oct 2022 03:42:05 GMT
-Received: from th-lint-050.qualcomm.com (10.80.80.8) by
- nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.29; Thu, 27 Oct 2022 20:42:05 -0700
-From:   Bjorn Andersson <quic_bjorande@quicinc.com>
-To:     Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Sibi Sankar <quic_sibis@quicinc.com>
-CC:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
+        with ESMTP id S229441AbiJ1G51 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Oct 2022 02:57:27 -0400
+Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8024E16D89A;
+        Thu, 27 Oct 2022 23:57:25 -0700 (PDT)
+Received: from loongson.cn (unknown [10.180.13.64])
+        by gateway (Coremail) with SMTP id _____8DxvrdTfVtj3wkDAA--.6717S3;
+        Fri, 28 Oct 2022 14:57:23 +0800 (CST)
+Received: from [10.180.13.64] (unknown [10.180.13.64])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8AxiFdOfVtjsjkGAA--.3812S2;
+        Fri, 28 Oct 2022 14:57:19 +0800 (CST)
+Subject: Re: [PATCH v8 1/2] thermal: loongson-2: add thermal management
+ support
+To:     kernel test robot <lkp@intel.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        zhuyinbo@loongson.cn, Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
         Rob Herring <robh+dt@kernel.org>,
-        Mike Tipton <quic_mdtipton@quicinc.com>,
-        Johan Hovold <johan+linaro@kernel.org>,
-        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 08/10] arm64: dts: qcom: sc8280xp: Set up L3 scaling
-Date:   Thu, 27 Oct 2022 20:41:53 -0700
-Message-ID: <20221028034155.5580-9-quic_bjorande@quicinc.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20221028034155.5580-1-quic_bjorande@quicinc.com>
-References: <20221028034155.5580-1-quic_bjorande@quicinc.com>
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     oe-kbuild-all@lists.linux.dev,
+        zhanghongchen <zhanghongchen@loongson.cn>,
+        Liu Peibao <liupeibao@loongson.cn>
+References: <20221028013532.10361-1-zhuyinbo@loongson.cn>
+ <202210281326.Wv56U0Zw-lkp@intel.com>
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+Message-ID: <53b1516b-ec53-dc03-fc23-f3d8014e7d55@loongson.cn>
+Date:   Fri, 28 Oct 2022 14:57:17 +0800
+User-Agent: Mozilla/5.0 (X11; Linux loongarch64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: Hwsnt8oUWtkgZnJoACOh8FHVVwSMOEEI
-X-Proofpoint-GUID: Hwsnt8oUWtkgZnJoACOh8FHVVwSMOEEI
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-10-27_07,2022-10-27_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 phishscore=0
- spamscore=0 malwarescore=0 clxscore=1015 lowpriorityscore=0 suspectscore=0
- priorityscore=1501 mlxscore=0 bulkscore=0 adultscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
- definitions=main-2210280022
+In-Reply-To: <202210281326.Wv56U0Zw-lkp@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8AxiFdOfVtjsjkGAA--.3812S2
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBjvJXoW3Jr18ZF17trykKr47uw45KFg_yoWxCw4rpa
+        y5Jas8GrZ7Xr1DZ3WUA3y8Ar4Dtr13tasrZr4xGw15ArWrX34agFy8JF15urWIkF98KFyj
+        vr90gFWY93Z8XrJanT9S1TB71UUUUUJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+        qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
+        bqxFc2x0x2IEx4CE42xK8VAvwI8IcIk0rVWrJVCq3wAFIxvE14AKwVWUXVWUAwA2ocxC64
+        kIII0Yj41l84x0c7CEw4AK67xGY2AK021l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28E
+        F7xvwVC0I7IYx2IY6xkF7I0E14v26r4j6F4UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJw
+        A2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr1j6rxdM2kKe7AKxVWUXVWUAwAS0I0E0xvYzxvE
+        52x082IY62kv0487Mc804VCY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I
+        80ewAv7VC0I7IYx2IY67AKxVWUXVWUAwAv7VC2z280aVAFwI0_Cr0_Gr1UMcvjeVCFs4IE
+        7xkEbVWUJVW8JwACjcxG0xvEwIxGrwCYjI0SjxkI62AI1cAE67vIY487MxkF7I0En4kS14
+        v26r126r1DMxAIw28IcxkI7VAKI48JMxAIw28IcVCjz48v1sIEY20_WwCFx2IqxVCFs4IE
+        7xkEbVWUJVW8JwCFI7km07C267AKxVWUXVWUAwC20s026c02F40E14v26r1j6r18MI8I3I
+        0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAI
+        cVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcV
+        CF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26F4j6r4UJwCI42IY6I8E87Iv
+        6xkF7I0E14v26r4UJVWxJrUvcSsGvfC2KfnxnUUI43ZEXa7IU8jXdUUUUUU==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the L3 interconnect path to all CPUs and define the bandwidth
-requirements for all opp entries across sc8280xp and sa8540p.
 
-The values are based on the tables reported by the hardware, distributed
-such that each value is the largest value, lower than the cluster
-frequency.
 
-Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
----
- arch/arm64/boot/dts/qcom/sa8540p.dtsi  | 39 ++++++++++++++++++++
- arch/arm64/boot/dts/qcom/sc8280xp.dtsi | 51 ++++++++++++++++++++++++++
- 2 files changed, 90 insertions(+)
+在 2022/10/28 下午1:55, kernel test robot 写道:
+> Hi Yinbo,
+> 
+> I love your patch! Perhaps something to improve:
+> 
+> [auto build test WARNING on rafael-pm/thermal]
+> [also build test WARNING on linus/master v6.1-rc2 next-20221027]
+> [If your patch is applied to the wrong git tree, kindly drop us a note.
+> And when submitting patch, we suggest to use '--base' as documented in
+> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> 
+> url:    https://github.com/intel-lab-lkp/linux/commits/Yinbo-Zhu/thermal-loongson-2-add-thermal-management-support/20221028-093603
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal
+> patch link:    https://lore.kernel.org/r/20221028013532.10361-1-zhuyinbo%40loongson.cn
+> patch subject: [PATCH v8 1/2] thermal: loongson-2: add thermal management support
+> config: sparc-allyesconfig
+> compiler: sparc64-linux-gcc (GCC) 12.1.0
+> reproduce (this is a W=1 build):
+>          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>          chmod +x ~/bin/make.cross
+>          # https://github.com/intel-lab-lkp/linux/commit/d94e01f4aefe4c0ab05babe101f0a0ce53165456
+>          git remote add linux-review https://github.com/intel-lab-lkp/linux
+>          git fetch --no-tags linux-review Yinbo-Zhu/thermal-loongson-2-add-thermal-management-support/20221028-093603
+>          git checkout d94e01f4aefe4c0ab05babe101f0a0ce53165456
+>          # save the config file
+>          mkdir build_dir && cp config build_dir/.config
+>          COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=sparc SHELL=/bin/bash drivers/thermal/
+> 
+> If you fix the issue, kindly add following tag where applicable
+> | Reported-by: kernel test robot <lkp@intel.com>
+> 
+> All warnings (new ones prefixed by >>):
+> 
+>     drivers/thermal/loongson2_thermal.c:136:21: error: variable 'loongson2_of_thermal_ops' has initializer but incomplete type
+>       136 | static const struct thermal_zone_of_device_ops loongson2_of_thermal_ops = {
+>           |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~
+>     drivers/thermal/loongson2_thermal.c:137:10: error: 'const struct thermal_zone_of_device_ops' has no member named 'get_temp'
+>       137 |         .get_temp = loongson2_thermal_get_temp,
+>           |          ^~~~~~~~
+>>> drivers/thermal/loongson2_thermal.c:137:21: warning: excess elements in struct initializer
+>       137 |         .get_temp = loongson2_thermal_get_temp,
+>           |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~
+>     drivers/thermal/loongson2_thermal.c:137:21: note: (near initialization for 'loongson2_of_thermal_ops')
+>     drivers/thermal/loongson2_thermal.c:138:10: error: 'const struct thermal_zone_of_device_ops' has no member named 'set_trips'
+>       138 |         .set_trips = loongson2_thermal_set_trips,
+>           |          ^~~~~~~~~
+>     drivers/thermal/loongson2_thermal.c:138:22: warning: excess elements in struct initializer
+>       138 |         .set_trips = loongson2_thermal_set_trips,
+>           |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+>     drivers/thermal/loongson2_thermal.c:138:22: note: (near initialization for 'loongson2_of_thermal_ops')
+>     drivers/thermal/loongson2_thermal.c: In function 'loongson2_thermal_probe':
+>     drivers/thermal/loongson2_thermal.c:177:21: error: implicit declaration of function 'devm_thermal_zone_of_sensor_register'; did you mean 'devm_thermal_of_zone_register'? [-Werror=implicit-function-declaration]
+>       177 |         data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+>           |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>           |                     devm_thermal_of_zone_register
+>>> drivers/thermal/loongson2_thermal.c:177:19: warning: assignment to 'struct thermal_zone_device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+>       177 |         data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+>           |                   ^
+>     drivers/thermal/loongson2_thermal.c: At top level:
+>     drivers/thermal/loongson2_thermal.c:136:48: error: storage size of 'loongson2_of_thermal_ops' isn't known
+>       136 | static const struct thermal_zone_of_device_ops loongson2_of_thermal_ops = {
+>           |                                                ^~~~~~~~~~~~~~~~~~~~~~~~
+>     cc1: some warnings being treated as errors
+> 
+> 
+> vim +137 drivers/thermal/loongson2_thermal.c
+> 
+>     135	
+>     136	static const struct thermal_zone_of_device_ops loongson2_of_thermal_ops = {
+>   > 137		.get_temp = loongson2_thermal_get_temp,
+>     138		.set_trips = loongson2_thermal_set_trips,
+>     139	};
+>     140	
+>     141	static int loongson2_thermal_probe(struct platform_device *pdev)
+>     142	{
+>     143		struct device *dev = &pdev->dev;
+>     144		struct resource *res;
+>     145		struct loongson2_thermal_data *data;
+>     146		int ret;
+>     147	
+>     148		data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+>     149		if (!data)
+>     150			return -ENOMEM;
+>     151	
+>     152		data->pdev = pdev;
+>     153		platform_set_drvdata(pdev, data);
+>     154	
+>     155		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>     156		data->regs = devm_ioremap(dev, res->start, resource_size(res));
+>     157		if (IS_ERR(data->regs))
+>     158			return PTR_ERR(data->regs);
+>     159	
+>     160		/* get irq */
+>     161		data->irq = platform_get_irq(pdev, 0);
+>     162		if (data->irq < 0)
+>     163			return data->irq;
+>     164	
+>     165		/* get id */
+>     166		data->id = loongson2_thermal_get_sensor_id();
+>     167		if (data->id > LOONGSON2_SOC_MAX_SENSOR_NUM - 1 || data->id < 0) {
+>     168			dev_err(dev, "sensor id error,must be in <0 ~ %d>\n",
+>     169					LOONGSON2_SOC_MAX_SENSOR_NUM - 1);
+>     170			return -EINVAL;
+>     171		}
+>     172	
+>     173		writeb(0xff, data->regs + LOONGSON2_TSENSOR_STATUS);
+>     174	
+>     175		loongson2_thermal_set(data, 0, 0, false);
+>     176	
+>   > 177		data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+>     178								   data->id, data,
+>     179								   &loongson2_of_thermal_ops);
+>     180		if (IS_ERR(data->tzd)) {
+>     181			ret = PTR_ERR(data->tzd);
+>     182			data->tzd = NULL;
+>     183			dev_err(&pdev->dev, "failed to register %d\n", ret);
+>     184			return ret;
+>     185		}
+>     186	
+>     187		ret = devm_request_threaded_irq(dev, data->irq,
+>     188				loongson2_thermal_alarm_irq, loongson2_thermal_irq_thread,
+>     189				IRQF_ONESHOT, "loongson2_thermal", data);
+>     190		if (ret < 0) {
+>     191			dev_err(dev, "failed to request alarm irq: %d\n", ret);
+>     192			return ret;
+>     193		}
+>     194	
+>     195		/*
+>     196		 * Thermal_zone doesn't enable hwmon as default,
+>     197		 * enable it here
+>     198		 */
+>     199		data->tzd->tzp->no_hwmon = false;
+>     200		ret = thermal_add_hwmon_sysfs(data->tzd);
+>     201		if (ret) {
+>     202			dev_err(dev, "failed to add hwmon sysfs interface %d\n", ret);
+>     203			return ret;
+>     204		}
+>     205	
+>     206		return 0;
+>     207	}Hi
 
-diff --git a/arch/arm64/boot/dts/qcom/sa8540p.dtsi b/arch/arm64/boot/dts/qcom/sa8540p.dtsi
-index 8ea2886fbab2..fd36800a7578 100644
---- a/arch/arm64/boot/dts/qcom/sa8540p.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sa8540p.dtsi
-@@ -14,59 +14,81 @@ cpu0_opp_table: cpu0-opp-table {
- 		compatible = "operating-points-v2";
- 		opp-shared;
- 
-+		opp-300000000 {
-+			opp-hz = /bits/ 64 <300000000>;
-+			opp-peak-kBps = <(300000 * 32)>;
-+		};
- 		opp-403200000 {
- 			opp-hz = /bits/ 64 <403200000>;
-+			opp-peak-kBps = <(384000 * 32)>;
- 		};
- 		opp-499200000 {
- 			opp-hz = /bits/ 64 <499200000>;
-+			opp-peak-kBps = <(480000 * 32)>;
- 		};
- 		opp-595200000 {
- 			opp-hz = /bits/ 64 <595200000>;
-+			opp-peak-kBps = <(576000 * 32)>;
- 		};
- 		opp-710400000 {
- 			opp-hz = /bits/ 64 <710400000>;
-+			opp-peak-kBps = <(672000 * 32)>;
- 		};
- 		opp-806400000 {
- 			opp-hz = /bits/ 64 <806400000>;
-+			opp-peak-kBps = <(768000 * 32)>;
- 		};
- 		opp-902400000 {
- 			opp-hz = /bits/ 64 <902400000>;
-+			opp-peak-kBps = <(864000 * 32)>;
- 		};
- 		opp-1017600000 {
- 			opp-hz = /bits/ 64 <1017600000>;
-+			opp-peak-kBps = <(960000 * 32)>;
- 		};
- 		opp-1113600000 {
- 			opp-hz = /bits/ 64 <1113600000>;
-+			opp-peak-kBps = <(1075200 * 32)>;
- 		};
- 		opp-1209600000 {
- 			opp-hz = /bits/ 64 <1209600000>;
-+			opp-peak-kBps = <(1171200 * 32)>;
- 		};
- 		opp-1324800000 {
- 			opp-hz = /bits/ 64 <1324800000>;
-+			opp-peak-kBps = <(1286400 * 32)>;
- 		};
- 		opp-1440000000 {
- 			opp-hz = /bits/ 64 <1440000000>;
-+			opp-peak-kBps = <(1382400 * 32)>;
- 		};
- 		opp-1555200000 {
- 			opp-hz = /bits/ 64 <1555200000>;
-+			opp-peak-kBps = <(1497600 * 32)>;
- 		};
- 		opp-1670400000 {
- 			opp-hz = /bits/ 64 <1670400000>;
-+			opp-peak-kBps = <(1593600 * 32)>;
- 		};
- 		opp-1785600000 {
- 			opp-hz = /bits/ 64 <1785600000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-1881600000 {
- 			opp-hz = /bits/ 64 <1881600000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2016000000 {
- 			opp-hz = /bits/ 64 <2016000000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2131200000 {
- 			opp-hz = /bits/ 64 <2131200000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2246400000 {
- 			opp-hz = /bits/ 64 <2246400000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 	};
- 
-@@ -76,54 +98,71 @@ cpu4_opp_table: cpu4-opp-table {
- 
- 		opp-825600000 {
- 			opp-hz = /bits/ 64 <825600000>;
-+			opp-peak-kBps = <(300000 * 32)>;
- 		};
- 		opp-940800000 {
- 			opp-hz = /bits/ 64 <940800000>;
-+			opp-peak-kBps = <(864000 * 32)>;
- 		};
- 		opp-1056000000 {
- 			opp-hz = /bits/ 64 <1056000000>;
-+			opp-peak-kBps = <(960000 * 32)>;
- 		};
- 		opp-1171200000 {
- 			opp-hz = /bits/ 64 <1171200000>;
-+			opp-peak-kBps = <(1171200 * 32)>;
- 		};
- 		opp-1286400000 {
- 			opp-hz = /bits/ 64 <1286400000>;
-+			opp-peak-kBps = <(1286400 * 32)>;
- 		};
- 		opp-1401600000 {
- 			opp-hz = /bits/ 64 <1401600000>;
-+			opp-peak-kBps = <(1382400 * 32)>;
- 		};
- 		opp-1516800000 {
- 			opp-hz = /bits/ 64 <1516800000>;
-+			opp-peak-kBps = <(1497600 * 32)>;
- 		};
- 		opp-1632000000 {
- 			opp-hz = /bits/ 64 <1632000000>;
-+			opp-peak-kBps = <(1593600 * 32)>;
- 		};
- 		opp-1747200000 {
- 			opp-hz = /bits/ 64 <1747200000>;
-+			opp-peak-kBps = <(1593600 * 32)>;
- 		};
- 		opp-1862400000 {
- 			opp-hz = /bits/ 64 <1862400000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-1977600000 {
- 			opp-hz = /bits/ 64 <1977600000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2073600000 {
- 			opp-hz = /bits/ 64 <2073600000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2169600000 {
- 			opp-hz = /bits/ 64 <2169600000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2284800000 {
- 			opp-hz = /bits/ 64 <2284800000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2380800000 {
- 			opp-hz = /bits/ 64 <2380800000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2496000000 {
- 			opp-hz = /bits/ 64 <2496000000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 		opp-2592000000 {
- 			opp-hz = /bits/ 64 <2592000000>;
-+			opp-peak-kBps = <(1708800 * 32)>;
- 		};
- 	};
- };
-diff --git a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-index ba404a31206e..e62245e37a61 100644
---- a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-@@ -6,6 +6,7 @@
- 
- #include <dt-bindings/clock/qcom,gcc-sc8280xp.h>
- #include <dt-bindings/clock/qcom,rpmh.h>
-+#include <dt-bindings/interconnect/qcom,osm-l3.h>
- #include <dt-bindings/interconnect/qcom,sc8280xp.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/mailbox/qcom-ipcc.h>
-@@ -38,66 +39,87 @@ cpu0_opp_table: cpu0-opp-table {
- 
- 		opp-300000000 {
- 			opp-hz = /bits/ 64 <300000000>;
-+			opp-peak-kBps = <(300000 * 32)>;
- 		};
- 		opp-403200000 {
- 			opp-hz = /bits/ 64 <403200000>;
-+			opp-peak-kBps = <(384000 * 32)>;
- 		};
- 		opp-499200000 {
- 			opp-hz = /bits/ 64 <499200000>;
-+			opp-peak-kBps = <(480000 * 32)>;
- 		};
- 		opp-595200000 {
- 			opp-hz = /bits/ 64 <595200000>;
-+			opp-peak-kBps = <(576000 * 32)>;
- 		};
- 		opp-691200000 {
- 			opp-hz = /bits/ 64 <691200000>;
-+			opp-peak-kBps = <(672000 * 32)>;
- 		};
- 		opp-806400000 {
- 			opp-hz = /bits/ 64 <806400000>;
-+			opp-peak-kBps = <(768000 * 32)>;
- 		};
- 		opp-902400000 {
- 			opp-hz = /bits/ 64 <902400000>;
-+			opp-peak-kBps = <(864000 * 32)>;
- 		};
- 		opp-1017600000 {
- 			opp-hz = /bits/ 64 <1017600000>;
-+			opp-peak-kBps = <(960000 * 32)>;
- 		};
- 		opp-1113600000 {
- 			opp-hz = /bits/ 64 <1113600000>;
-+			opp-peak-kBps = <(1075200 * 32)>;
- 		};
- 		opp-1209600000 {
- 			opp-hz = /bits/ 64 <1209600000>;
-+			opp-peak-kBps = <(1171200 * 32)>;
- 		};
- 		opp-1324800000 {
- 			opp-hz = /bits/ 64 <1324800000>;
-+			opp-peak-kBps = <(1267200 * 32)>;
- 		};
- 		opp-1440000000 {
- 			opp-hz = /bits/ 64 <1440000000>;
-+			opp-peak-kBps = <(1363200 * 32)>;
- 		};
- 		opp-1555200000 {
- 			opp-hz = /bits/ 64 <1555200000>;
-+			opp-peak-kBps = <(1536000 * 32)>;
- 		};
- 		opp-1670400000 {
- 			opp-hz = /bits/ 64 <1670400000>;
-+			opp-peak-kBps = <(1612800 * 32)>;
- 		};
- 		opp-1785600000 {
- 			opp-hz = /bits/ 64 <1785600000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-1881600000 {
- 			opp-hz = /bits/ 64 <1881600000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-1996800000 {
- 			opp-hz = /bits/ 64 <1996800000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2112000000 {
- 			opp-hz = /bits/ 64 <2112000000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2227200000 {
- 			opp-hz = /bits/ 64 <2227200000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2342400000 {
- 			opp-hz = /bits/ 64 <2342400000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2438400000 {
- 			opp-hz = /bits/ 64 <2438400000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 	};
- 
-@@ -107,66 +129,87 @@ cpu4_opp_table: cpu4-opp-table {
- 
- 		opp-825600000 {
- 			opp-hz = /bits/ 64 <825600000>;
-+			opp-peak-kBps = <(768000 * 32)>;
- 		};
- 		opp-940800000 {
- 			opp-hz = /bits/ 64 <940800000>;
-+			opp-peak-kBps = <(864000 * 32)>;
- 		};
- 		opp-1056000000 {
- 			opp-hz = /bits/ 64 <1056000000>;
-+			opp-peak-kBps = <(960000 * 32)>;
- 		};
- 		opp-1171200000 {
- 			opp-hz = /bits/ 64 <1171200000>;
-+			opp-peak-kBps = <(1171200 * 32)>;
- 		};
- 		opp-1286400000 {
- 			opp-hz = /bits/ 64 <1286400000>;
-+			opp-peak-kBps = <(1267200 * 32)>;
- 		};
- 		opp-1401600000 {
- 			opp-hz = /bits/ 64 <1401600000>;
-+			opp-peak-kBps = <(1363200 * 32)>;
- 		};
- 		opp-1516800000 {
- 			opp-hz = /bits/ 64 <1516800000>;
-+			opp-peak-kBps = <(1459200 * 32)>;
- 		};
- 		opp-1632000000 {
- 			opp-hz = /bits/ 64 <1632000000>;
-+			opp-peak-kBps = <(1612800 * 32)>;
- 		};
- 		opp-1747200000 {
- 			opp-hz = /bits/ 64 <1747200000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-1862400000 {
- 			opp-hz = /bits/ 64 <1862400000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-1977600000 {
- 			opp-hz = /bits/ 64 <1977600000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2073600000 {
- 			opp-hz = /bits/ 64 <2073600000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2169600000 {
- 			opp-hz = /bits/ 64 <2169600000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2284800000 {
- 			opp-hz = /bits/ 64 <2284800000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2400000000 {
- 			opp-hz = /bits/ 64 <2400000000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2496000000 {
- 			opp-hz = /bits/ 64 <2496000000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2592000000 {
- 			opp-hz = /bits/ 64 <2592000000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2688000000 {
- 			opp-hz = /bits/ 64 <2688000000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2803200000 {
- 			opp-hz = /bits/ 64 <2803200000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2899200000 {
- 			opp-hz = /bits/ 64 <2899200000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 		opp-2995200000 {
- 			opp-hz = /bits/ 64 <2995200000>;
-+			opp-peak-kBps = <(1689600 * 32)>;
- 		};
- 	};
- 
-@@ -185,6 +228,7 @@ CPU0: cpu@0 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_0: l2-cache {
- 				compatible = "cache";
-@@ -206,6 +250,7 @@ CPU1: cpu@100 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_100: l2-cache {
- 				compatible = "cache";
-@@ -224,6 +269,7 @@ CPU2: cpu@200 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_200: l2-cache {
- 				compatible = "cache";
-@@ -242,6 +288,7 @@ CPU3: cpu@300 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_300: l2-cache {
- 				compatible = "cache";
-@@ -260,6 +307,7 @@ CPU4: cpu@400 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_400: l2-cache {
- 				compatible = "cache";
-@@ -278,6 +326,7 @@ CPU5: cpu@500 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_500: l2-cache {
- 				compatible = "cache";
-@@ -296,6 +345,7 @@ CPU6: cpu@600 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_600: l2-cache {
- 				compatible = "cache";
-@@ -314,6 +364,7 @@ CPU7: cpu@700 {
- 			power-domain-names = "psci";
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
-+			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
- 			#cooling-cells = <2>;
- 			L2_700: l2-cache {
- 				compatible = "cache";
--- 
-2.37.3
+I use W=1 to compile it and doesn't reproduce that warning, and I added
+the change that don't touch .c code. I think it shoud be error report.
+
+Tks
+Yinbo
+>     208	
+> 
 
