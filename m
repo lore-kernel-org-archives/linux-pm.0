@@ -2,56 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34CA8FA374C
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Oct 2022 03:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1F43FA3749
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Oct 2022 03:42:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236139AbiJ1DmV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Oct 2022 23:42:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56570 "EHLO
+        id S236059AbiJ1DmT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Oct 2022 23:42:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56568 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235990AbiJ1DmQ (ORCPT
+        with ESMTP id S236002AbiJ1DmQ (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2022 23:42:16 -0400
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2686D0CFE;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABE9FD0CC0;
         Thu, 27 Oct 2022 20:42:15 -0700 (PDT)
 Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29S2pLiT000932;
-        Fri, 28 Oct 2022 03:42:04 GMT
+        by mx0a-0031df01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29S2o1OV026286;
+        Fri, 28 Oct 2022 03:42:05 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=X9wfV/UctWWoKLEcIq+bmims0/mEAkeq/OCKUib/uaY=;
- b=EzeJlY6ig3nFTG4USCSozYjNA/dAYEELRFkbphn/i88/QEIWxhlOVWRsSm9QK0BF+WJE
- ilotIILq3HOrV6J15vTDuNAvJgXx2Td+9aICZJz0uWNWzJia8DxM37nv+s/AIeT05mM5
- nCjIkqfsWYitRdd4Hoc5jwyZXo3hBEnaCV+CE3ib/81xOKVTRZnP9iAOy1UpihU5waSz
- KbOegSUDlfh4PO5GIt0fo4fDV7QUPcZyQZXE8eb+XVaH7yeB0UVrubpZorE3LtEw5pYN
- lervCliiXVjBD+ivetlrgxjguuRkYJ7c+HH44xAGpLmfPS3aEy5K9PDXyO6a10lwn4zH GA== 
-Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3kfahwbxt1-1
+ bh=im6yITI1531e3Mh3hR1LfHjB0NtsCe0RG1IWCtmk4iY=;
+ b=iwTont8evdsUviVhgp9O75tYPdiyTpn1kZrOae1lXRD7WHicr4U+FYyd38mKB1STUpld
+ 8akzpRmedS5PIS4L+92RDmFWqFbEf0gDpx2Urt4mKKvdDe+rwbIv2kscH9vE3I4k+Yqq
+ /CreEPPkf6n0WiDmezvpZjnS5VtpqnU9vGzf7ADETJlLYwJODA+AhN+pwNLxqxSM9i+G
+ pzItdQ96hHPCLvw8zv4XZxcKKl8bNmn9ajQZ4Dq82et5gWoJEH062dlRl6I0GRWi4BD3
+ TFJ0mTyy0jaGquq6AHLt7lvQHCqcjrRk3ketyxUMyrV3iQHE0OABNcXCAK9OsZZljipM 1g== 
+Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3kfahwbxt2-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 28 Oct 2022 03:42:04 +0000
+        Fri, 28 Oct 2022 03:42:05 +0000
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 29S3g30U009901
+        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 29S3g41c001405
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 28 Oct 2022 03:42:03 GMT
+        Fri, 28 Oct 2022 03:42:04 GMT
 Received: from th-lint-050.qualcomm.com (10.80.80.8) by
  nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.29; Thu, 27 Oct 2022 20:42:02 -0700
+ 15.2.986.29; Thu, 27 Oct 2022 20:42:03 -0700
 From:   Bjorn Andersson <quic_bjorande@quicinc.com>
-To:     Georgi Djakov <djakov@kernel.org>,
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
         Sibi Sankar <quic_sibis@quicinc.com>
-CC:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Bjorn Andersson <andersson@kernel.org>,
+CC:     Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@somainline.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
         Mike Tipton <quic_mdtipton@quicinc.com>,
-        "Johan Hovold" <johan+linaro@kernel.org>,
+        Johan Hovold <johan+linaro@kernel.org>,
         <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 03/10] interconnect: qcom: osm-l3: Add per-core EPSS L3 support
-Date:   Thu, 27 Oct 2022 20:41:48 -0700
-Message-ID: <20221028034155.5580-4-quic_bjorande@quicinc.com>
+Subject: [PATCH 05/10] dt-bindings: interconnect: Add sm8350, sc8280xp and generic OSM L3 compatibles
+Date:   Thu, 27 Oct 2022 20:41:50 -0700
+Message-ID: <20221028034155.5580-6-quic_bjorande@quicinc.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221028034155.5580-1-quic_bjorande@quicinc.com>
 References: <20221028034155.5580-1-quic_bjorande@quicinc.com>
@@ -62,8 +62,8 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: m15ls0RJkq_tpc5ruFwJvgpSRVKOwgb-
-X-Proofpoint-ORIG-GUID: m15ls0RJkq_tpc5ruFwJvgpSRVKOwgb-
+X-Proofpoint-GUID: SR_D6yQBde2Tvf8ljaRrri17d423xc6k
+X-Proofpoint-ORIG-GUID: SR_D6yQBde2Tvf8ljaRrri17d423xc6k
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-10-27_07,2022-10-27_01,2022-06-22_01
@@ -76,75 +76,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The EPSS instance in e.g. SM8350 and SC8280XP has per-core L3 voting
-enabled. In this configuration, the "shared" vote is done using the
-REG_L3_VOTE register instead of PERF_STATE.
-
-Rename epss_l3 to clarify that it's affecting the PERF_STATE register
-and add a new L3_VOTE description. Given platform lineage it's assumed
-that the L3_VOTE-based case will be the predominant one, so use this for
-a new generic qcom,epss-l3 compatible.
-
-While adding the EPSS generic, also add qcom,osm-l3.
+Add EPSS L3 compatibles for sm8350 and sc8280xp, but while at it also
+introduce generic compatible for both qcom,osm-l3 and qcom,epss-l3.
 
 Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
 ---
- drivers/interconnect/qcom/osm-l3.c | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ .../bindings/interconnect/qcom,osm-l3.yaml    | 22 +++++++++++++------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/osm-l3.c b/drivers/interconnect/qcom/osm-l3.c
-index 7d6844253241..469be732a00b 100644
---- a/drivers/interconnect/qcom/osm-l3.c
-+++ b/drivers/interconnect/qcom/osm-l3.c
-@@ -34,6 +34,7 @@
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
+index bf538c0c5a81..ae0995341a78 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
+@@ -16,13 +16,21 @@ description:
  
- /* EPSS Register offsets */
- #define EPSS_LUT_ROW_SIZE		4
-+#define EPSS_REG_L3_VOTE		0x90
- #define EPSS_REG_FREQ_LUT		0x100
- #define EPSS_REG_PERF_STATE		0x320
+ properties:
+   compatible:
+-    enum:
+-      - qcom,sc7180-osm-l3
+-      - qcom,sc7280-epss-l3
+-      - qcom,sc8180x-osm-l3
+-      - qcom,sdm845-osm-l3
+-      - qcom,sm8150-osm-l3
+-      - qcom,sm8250-epss-l3
++    oneOf:
++      items:
++        - enum:
++            - qcom,sc7180-osm-l3
++            - qcom,sc8180x-osm-l3
++            - qcom,sdm845-osm-l3
++            - qcom,sm8150-osm-l3
++        - const: qcom,osm-l3
++      items:
++        - enum:
++            - qcom,sc7280-epss-l3
++            - qcom,sc8280xp-epss-l3
++            - qcom,sm8250-epss-l3
++            - qcom,sm8350-epss-l3
++        - const: qcom,epss-l3
  
-@@ -112,7 +113,7 @@ static const struct qcom_osm_l3_desc osm_l3 = {
- 	.reg_perf_state = OSM_REG_PERF_STATE,
- };
- 
--static const struct qcom_osm_l3_desc epss_l3 = {
-+static const struct qcom_osm_l3_desc epss_l3_perf_state = {
- 	.nodes = epss_l3_nodes,
- 	.num_nodes = ARRAY_SIZE(epss_l3_nodes),
- 	.lut_row_size = EPSS_LUT_ROW_SIZE,
-@@ -120,6 +121,14 @@ static const struct qcom_osm_l3_desc epss_l3 = {
- 	.reg_perf_state = EPSS_REG_PERF_STATE,
- };
- 
-+static const struct qcom_osm_l3_desc epss_l3_l3_vote = {
-+	.nodes = epss_l3_nodes,
-+	.num_nodes = ARRAY_SIZE(epss_l3_nodes),
-+	.lut_row_size = EPSS_LUT_ROW_SIZE,
-+	.reg_freq_lut = EPSS_REG_FREQ_LUT,
-+	.reg_perf_state = EPSS_REG_L3_VOTE,
-+};
-+
- static int qcom_osm_l3_set(struct icc_node *src, struct icc_node *dst)
- {
- 	struct qcom_osm_l3_icc_provider *qp;
-@@ -285,12 +294,14 @@ static int qcom_osm_l3_probe(struct platform_device *pdev)
- }
- 
- static const struct of_device_id osm_l3_of_match[] = {
-+	{ .compatible = "qcom,epss-l3", .data = &epss_l3_l3_vote },
-+	{ .compatible = "qcom,osm-l3", .data = &osm_l3 },
- 	{ .compatible = "qcom,sc7180-osm-l3", .data = &osm_l3 },
--	{ .compatible = "qcom,sc7280-epss-l3", .data = &epss_l3 },
-+	{ .compatible = "qcom,sc7280-epss-l3", .data = &epss_l3_perf_state },
- 	{ .compatible = "qcom,sdm845-osm-l3", .data = &osm_l3 },
- 	{ .compatible = "qcom,sm8150-osm-l3", .data = &osm_l3 },
- 	{ .compatible = "qcom,sc8180x-osm-l3", .data = &osm_l3 },
--	{ .compatible = "qcom,sm8250-epss-l3", .data = &epss_l3 },
-+	{ .compatible = "qcom,sm8250-epss-l3", .data = &epss_l3_perf_state },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, osm_l3_of_match);
+   reg:
+     maxItems: 1
 -- 
 2.37.3
 
