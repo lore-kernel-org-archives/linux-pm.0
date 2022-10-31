@@ -2,144 +2,234 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2710C38A02
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 09:25:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E42BC38A02
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 12:14:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229746AbiJaJZ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Oct 2022 05:25:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58460 "EHLO
+        id S231221AbiJaMOr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Oct 2022 08:14:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229761AbiJaJZ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 05:25:27 -0400
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D28865C0;
-        Mon, 31 Oct 2022 02:25:26 -0700 (PDT)
-Received: by mail-lf1-x136.google.com with SMTP id j16so18260312lfe.12;
-        Mon, 31 Oct 2022 02:25:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=6WU26MBOt8WJip0LsF+/o2BON0nZWtJO9/skfyzMYys=;
-        b=l9Ec6Z3pCXkd/0PTcwHkH7+fM6BIWq9SSTBElCmHDmP12O19aP/1XUl2kowGBBfSU5
-         SOxQ/i+u9Vgo1beE6pzWMWl3fTxd/ZjV+Yr0Kx8Y80OSmj9Tn1PecncY5g4FDnKqAbxL
-         eM3nqIt+vxJmx1KKet+q7PJY8XH2IZeoUCDYft69i36rS7iL/lstV1faHoQIpIOLolg+
-         OAKeADCXW7ZXzf8JijPKPbptu+c5Kvhmz9D+biGjBxcdo6IvfHZvUaDnD4/2KvWWRjS2
-         BB0Ooas8nyXPXLJ76DjhtD8enNTPyOeQZNhIRVAAhGbjqFNJf3U30CqiXSH6zebSH57j
-         pG+Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=6WU26MBOt8WJip0LsF+/o2BON0nZWtJO9/skfyzMYys=;
-        b=yANXHbJWDPBt3YZkA2/4a+tWOqeMNPNNDpmye2IgnA5uoefFYV5rSZihtGMglLSvJP
-         hCW22xPOJjN/5QAtCc+qo525448lOkn39HQlen5u6na7irtv3sxM73EkNitmmX6zQIob
-         hHzYk5VUJ+MTBgeGf9/HsehqeQH5GvGDUSaW44YLLW54gm3ilDMvTFxiQZcZ/oC1STuD
-         /khj+UVgzvFXUALtVPD6LM9N2YosSsDWhEQz+/9Cql9GewGFx/OfkCtNouRJWWPoZon2
-         uGaEZ0m/e8f50DcINuH4zJ3ayl1P3z5edOmosy3HhzQWRUoHHnAm6hGwBVc996GQbI4R
-         dTUg==
-X-Gm-Message-State: ACrzQf2oydC2B7HCjo68aN5P/+uRtpY6rk3kZlRdrEHPV7DWHez9KMMl
-        3axdzqgPpJ7N8To05R6julw=
-X-Google-Smtp-Source: AMsMyM4+8FD7UeMjok9pXXcM0gZLvNIuCQiyoXprPxWuWz6Gf31a80EiV+fpLs6m7K9BmQJVvF3j9Q==
-X-Received: by 2002:a05:6512:6d4:b0:4a2:f89:db7d with SMTP id u20-20020a05651206d400b004a20f89db7dmr4718215lff.125.1667208324715;
-        Mon, 31 Oct 2022 02:25:24 -0700 (PDT)
-Received: from dc75zzyyyyyyyyyyyyyby-3.rev.dnainternet.fi (dc75zzyyyyyyyyyyyyyby-3.rev.dnainternet.fi. [2001:14ba:16f3:4a00::2])
-        by smtp.gmail.com with ESMTPSA id 190-20020a2e05c7000000b0026f9cb6d10fsm1239260ljf.45.2022.10.31.02.25.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Oct 2022 02:25:23 -0700 (PDT)
-Date:   Mon, 31 Oct 2022 11:25:00 +0200
-From:   Matti Vaittinen <mazziesaccount@gmail.com>
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
-        Matti Vaittinen <mazziesaccount@gmail.com>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] power: supply: mt6360: Use LINEAR_RANGE_IDX()
-Message-ID: <2c6267efae04a3f64d88baf2e34ea309af438d40.1667208242.git.mazziesaccount@gmail.com>
+        with ESMTP id S231199AbiJaMOn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 08:14:43 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 98E31F013;
+        Mon, 31 Oct 2022 05:14:34 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AD17F1FB;
+        Mon, 31 Oct 2022 05:14:40 -0700 (PDT)
+Received: from e126311.arm.com (unknown [10.57.68.155])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 284333F5A1;
+        Mon, 31 Oct 2022 05:14:31 -0700 (PDT)
+From:   Kajetan Puchalski <kajetan.puchalski@arm.com>
+To:     rafael@kernel.org
+Cc:     daniel.lezcano@linaro.org, lukasz.luba@arm.com,
+        Dietmar.Eggemann@arm.com, dsmythies@telus.net,
+        yu.chen.surf@gmail.com, kajetan.puchalski@arm.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC PATCH v3 2/2] cpuidle: teo: Introduce util-awareness
+Date:   Mon, 31 Oct 2022 12:13:14 +0000
+Message-Id: <20221031121314.1381472-3-kajetan.puchalski@arm.com>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20221031121314.1381472-1-kajetan.puchalski@arm.com>
+References: <20221031121314.1381472-1-kajetan.puchalski@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="spmfeW7Hd1DSSs/Y"
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Modern interactive systems, such as recent Android phones, tend to have
+power efficient shallow idle states. Selecting deeper idle states on a
+device while a latency-sensitive workload is running can adversely impact
+performance due to increased latency. Additionally, if the CPU wakes up
+from a deeper sleep before its target residency as is often the case, it
+results in a waste of energy on top of that.
 
---spmfeW7Hd1DSSs/Y
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch extends the TEO governor with a mechanism adding util-awareness,
+effectively providing a way for the governor to reduce the selected idle
+state by 1 when the CPU is being utilized over a certain threshold while
+still trying to select the deepest possible state using TEO's metrics when
+the CPU is not being utilized. This is now possible since the CPU
+utilization is exported from the scheduler with the sched_cpu_util function
+and already used e.g. in the thermal governor IPA.
 
-Do minor clean-up by using the newly inroduced LINEAR_RANGE_IDX()
-initialization macro.
+Under this implementation, when the CPU is being utilised and the
+selected candidate state is C1, it will be reduced to C0 as long as C0
+is not a polling state. This effectively should make the patch have no
+effect on most Intel systems.
 
-Signed-off-by: Matti Vaittinen <mazziesaccount@gmail.com>
+This can provide drastically decreased latency and performance benefits in
+certain types of mobile workloads that are sensitive to latency,
+such as Geekbench 5.
 
+Signed-off-by: Kajetan Puchalski <kajetan.puchalski@arm.com>
 ---
-Sorry, this one evaded my original grep so sending an individual patch.
-Would've squashed this with bd99954 one if I spotted it right away.
----
- drivers/power/supply/mt6360_charger.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ drivers/cpuidle/governors/teo.c | 84 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 82 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/mt6360_charger.c b/drivers/power/supply/m=
-t6360_charger.c
-index 3abaa72e0668..92e48e3a4853 100644
---- a/drivers/power/supply/mt6360_charger.c
-+++ b/drivers/power/supply/mt6360_charger.c
-@@ -113,16 +113,13 @@ enum {
- 	MT6360_RANGE_MAX,
+diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
+index e2864474a98d..0f38b3ecab3c 100644
+--- a/drivers/cpuidle/governors/teo.c
++++ b/drivers/cpuidle/governors/teo.c
+@@ -2,8 +2,13 @@
+ /*
+  * Timer events oriented CPU idle governor
+  *
++ * TEO governor:
+  * Copyright (C) 2018 - 2021 Intel Corporation
+  * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++ *
++ * Util-awareness mechanism:
++ * Copyright (C) 2022 Arm Ltd.
++ * Author: Kajetan Puchalski <kajetan.puchalski@arm.com>
+  */
+ 
+ /**
+@@ -99,14 +104,49 @@
+  *      select the given idle state instead of the candidate one.
+  *
+  * 3. By default, select the candidate state.
++ *
++ * Util-awareness mechanism:
++ *
++ * The idea behind the util-awareness extension is that there are two distinct
++ * scenarios for the CPU which should result in two different approaches to idle
++ * state selection - utilized and not utilized.
++ *
++ * In this case, 'utilized' means that the average runqueue util of the CPU is
++ * above a certain threshold.
++ *
++ * When the CPU is utilized while going into idle, more likely than not it will
++ * be woken up to do more work soon and so a shallower idle state should be
++ * selected to minimise latency and maximise performance. When the CPU is not
++ * being utilized, the usual metrics-based approach to selecting the deepest
++ * available idle state should be preferred to take advantage of the power
++ * saving.
++ *
++ * In order to achieve this, the governor uses a utilization threshold.
++ * The threshold is computed per-cpu as a percentage of the CPU's capacity
++ * by bit shifting the capacity value. Based on testing, the shift of 6 (~1.56%)
++ * seems to be getting the best results.
++ *
++ * Before selecting the next idle state, the governor compares the current CPU
++ * util to the precomputed util threshold. If it's below, it defaults to the
++ * TEO metrics mechanism. If it's above and the currently selected candidate is
++ * C1, the idle state will be reduced to C0 as long as C0 is not a polling state.
+  */
+ 
+ #include <linux/cpuidle.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/sched/clock.h>
++#include <linux/sched/topology.h>
+ #include <linux/tick.h>
+ 
++/*
++ * The number of bits to shift the cpu's capacity by in order to determine
++ * the utilized threshold
++ */
++#define UTIL_THRESHOLD_SHIFT 6
++
++
+ /*
+  * The PULSE value is added to metrics when they grow and the DECAY_SHIFT value
+  * is used for decreasing metrics on a regular basis.
+@@ -137,9 +177,11 @@ struct teo_bin {
+  * @time_span_ns: Time between idle state selection and post-wakeup update.
+  * @sleep_length_ns: Time till the closest timer event (at the selection time).
+  * @state_bins: Idle state data bins for this CPU.
+- * @total: Grand total of the "intercepts" and "hits" mertics for all bins.
++ * @total: Grand total of the "intercepts" and "hits" metrics for all bins.
+  * @next_recent_idx: Index of the next @recent_idx entry to update.
+  * @recent_idx: Indices of bins corresponding to recent "intercepts".
++ * @util_threshold: Threshold above which the CPU is considered utilized
++ * @utilized: Whether the last sleep on the CPU happened while utilized
+  */
+ struct teo_cpu {
+ 	s64 time_span_ns;
+@@ -148,10 +190,24 @@ struct teo_cpu {
+ 	unsigned int total;
+ 	int next_recent_idx;
+ 	int recent_idx[NR_RECENT];
++	unsigned long util_threshold;
++	bool utilized;
  };
-=20
--#define MT6360_LINEAR_RANGE(idx, _min, _min_sel, _max_sel, _step) \
--	[idx] =3D REGULATOR_LINEAR_RANGE(_min, _min_sel, _max_sel, _step)
--
- static const struct linear_range mt6360_chg_range[MT6360_RANGE_MAX] =3D {
--	MT6360_LINEAR_RANGE(MT6360_RANGE_VMIVR, 3900000, 0, 0x5F, 100000),
--	MT6360_LINEAR_RANGE(MT6360_RANGE_ICHG, 100000, 0, 0x31, 100000),
--	MT6360_LINEAR_RANGE(MT6360_RANGE_VOREG, 3900000, 0, 0x51, 10000),
--	MT6360_LINEAR_RANGE(MT6360_RANGE_AICR, 100000, 0, 0x3F, 50000),
--	MT6360_LINEAR_RANGE(MT6360_RANGE_IPREC, 100000, 0, 0x0F, 50000),
--	MT6360_LINEAR_RANGE(MT6360_RANGE_IEOC, 100000, 0, 0x0F, 50000),
-+	LINEAR_RANGE_IDX(MT6360_RANGE_VMIVR, 3900000, 0, 0x5F, 100000),
-+	LINEAR_RANGE_IDX(MT6360_RANGE_ICHG, 100000, 0, 0x31, 100000),
-+	LINEAR_RANGE_IDX(MT6360_RANGE_VOREG, 3900000, 0, 0x51, 10000),
-+	LINEAR_RANGE_IDX(MT6360_RANGE_AICR, 100000, 0, 0x3F, 50000),
-+	LINEAR_RANGE_IDX(MT6360_RANGE_IPREC, 100000, 0, 0x0F, 50000),
-+	LINEAR_RANGE_IDX(MT6360_RANGE_IEOC, 100000, 0, 0x0F, 50000),
- };
-=20
- struct mt6360_chg_info {
---=20
-2.37.3
+ 
+ static DEFINE_PER_CPU(struct teo_cpu, teo_cpus);
+ 
++/**
++ * teo_get_util - Update the CPU utilized status
++ * @dev: Target CPU
++ * @cpu_data: Governor CPU data for the target CPU
++ */
++static void teo_get_util(struct cpuidle_device *dev, struct teo_cpu *cpu_data)
++{
++	unsigned long util = sched_cpu_util(dev->cpu);
++
++	cpu_data->utilized = util > cpu_data->util_threshold;
++}
++
+ /**
+  * teo_update - Update CPU metrics after wakeup.
+  * @drv: cpuidle driver containing state data.
+@@ -303,7 +359,9 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 	int i;
+ 
+ 	if (dev->last_state_idx >= 0) {
+-		teo_update(drv, dev);
++		/* don't update metrics if the cpu was utilized during the last sleep */
++		if (!cpu_data->utilized)
++			teo_update(drv, dev);
+ 		dev->last_state_idx = -1;
+ 	}
+ 
+@@ -323,6 +381,21 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 			goto end;
+ 	}
+ 
++	teo_get_util(dev, cpu_data);
++	/* the cpu is being utilized and there's only 2 states to choose from */
++	/* no need to consider metrics, choose the shallowest non-polling state and exit */
++	if (drv->state_count < 3 && cpu_data->utilized) {
++		for (i = 0; i < drv->state_count; ++i) {
++			if (dev->states_usage[i].disable ||
++					drv->states[i].flags & CPUIDLE_FLAG_POLLING)
++				continue;
++			break;
++		}
++
++		idx = i;
++		goto end;
++	}
++
+ 	/*
+ 	 * Find the deepest idle state whose target residency does not exceed
+ 	 * the current sleep length and the deepest idle state not deeper than
+@@ -454,6 +527,11 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 	if (idx > constraint_idx)
+ 		idx = constraint_idx;
+ 
++	/* if the CPU is being utilized and C1 is the selected candidate */
++	/* choose a shallower non-polling state to improve latency */
++	if (cpu_data->utilized && idx == 1)
++		idx = teo_find_shallower_state(drv, dev, idx, duration_ns, true);
++
+ end:
+ 	/*
+ 	 * Don't stop the tick if the selected state is a polling one or if the
+@@ -510,9 +588,11 @@ static int teo_enable_device(struct cpuidle_driver *drv,
+ 			     struct cpuidle_device *dev)
+ {
+ 	struct teo_cpu *cpu_data = per_cpu_ptr(&teo_cpus, dev->cpu);
++	unsigned long max_capacity = arch_scale_cpu_capacity(dev->cpu);
+ 	int i;
+ 
+ 	memset(cpu_data, 0, sizeof(*cpu_data));
++	cpu_data->util_threshold = max_capacity >> UTIL_THRESHOLD_SHIFT;
+ 
+ 	for (i = 0; i < NR_RECENT; i++)
+ 		cpu_data->recent_idx[i] = -1;
+-- 
+2.37.1
 
-
---=20
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
-
-~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
-Simon says - in Latin please.
-~~~ "non cogito me" dixit Rene Descarte, deinde evanescavit ~~~
-Thanks to Simon Glass for the translation =3D]=20
-
---spmfeW7Hd1DSSs/Y
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEIx+f8wZb28fLKEhTeFA3/03aocUFAmNflF8ACgkQeFA3/03a
-ocUITQf/Vr2UgDLY58WdZKQDMEovsWmrPfqqvVaI8lXvunXIoru48z0u5F1LPzev
-X65VfIgyQ4rrH+sbgBpatfqcMP9EsIe0Qu9oDEAu97ycfO4iNiWHHJKxvqqim/D2
-gDu1jgH+zlgtSp/N5QKCH7R1157yQ96JFIP6Ka4Tr7LQcgjQGoygS51wMNF3G41b
-MaMmrXM6ZqDNuaMOOhXMo7MQd1NGO2wAFU6bQt9KoGbHNTMM68NMlowyHIE/pLJc
-5ysNufmSt5NkIEhLO0SkQNkeUYoerb4mBRYfshBlonftVuFkpcLQqyec+KAyMbRo
-6zM/giLvVS8M3NJy2I514PmoEYCENA==
-=KmNS
------END PGP SIGNATURE-----
-
---spmfeW7Hd1DSSs/Y--
