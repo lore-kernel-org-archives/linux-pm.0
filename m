@@ -2,111 +2,134 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8635AFA3741
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 15:22:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E634FA3741
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 16:47:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230512AbiJaPWk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Oct 2022 11:22:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49654 "EHLO
+        id S231784AbiJaQrc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Oct 2022 12:47:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40332 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231365AbiJaPWj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 11:22:39 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FADC11803;
-        Mon, 31 Oct 2022 08:22:37 -0700 (PDT)
-Date:   Mon, 31 Oct 2022 16:22:34 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1667229755;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=gfgV6mGS26skLphn6hioeVNQQARpNHg2LEwEcY6JCWk=;
-        b=ttPlZw30ReFKM4Fq/UqmtOecjidGo55rrXy1DTsPutOc94LHYAZkwz6OdwAY+BL5Sx3X6e
-        N+SlsYp7c6hoJw5cIqsgvrJu0bOOdYXxjhH0rLQ9dIU3D1oDuXTRjp7sqyGpl1dV079I08
-        wjdpIotyTtnpDTmXz6pRYwkYnPhZdoJMsn+lG7zP8Z4jCnFfp7lSD3IpJVzVS37A5Jlnou
-        Rr1z9PaTmx2UnqMno00obhr3a1Uf10hagCktj2W4N8L56VtAwySkLmU5V/r2qrn56FiOkT
-        SShpnHSpxzPnDY2vbtlpmjMNF3/mjM0l941KVKCkH62Bemiud2PSXkYEr+x+4w==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1667229755;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=gfgV6mGS26skLphn6hioeVNQQARpNHg2LEwEcY6JCWk=;
-        b=INLp3IinyZOrHN20dbK5JioVNwe8LkOV4Lq4rHokGCqbFFXkP6tJgz1hGlE2oEiTuZ5Ly6
-        1tDaX5Xsy5Yfu7CA==
-From:   Anna-Maria Behnsen <anna-maria@linutronix.de>
-To:     Frederic Weisbecker <frederic@kernel.org>
-cc:     linux-kernel@vger.kernel.org,
-        Peter Zijlstra <peterz@infradead.org>,
-        John Stultz <jstultz@google.com>,
-        Eric Dumazet <edumazet@google.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        Rik van Riel <riel@surriel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 01/17] cpufreq: Prepare timer flags for hierarchical
- timer pull model
-In-Reply-To: <20221026135423.GA1329996@lothringen>
-Message-ID: <cb54d934-bef7-cc21-308b-e25aaeb63d94@linutronix.de>
-References: <20221025135850.51044-1-anna-maria@linutronix.de> <20221025135850.51044-2-anna-maria@linutronix.de> <20221026135423.GA1329996@lothringen>
+        with ESMTP id S231755AbiJaQrb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 12:47:31 -0400
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 430991181E
+        for <linux-pm@vger.kernel.org>; Mon, 31 Oct 2022 09:47:30 -0700 (PDT)
+Received: by mail-wr1-x436.google.com with SMTP id l14so16836510wrw.2
+        for <linux-pm@vger.kernel.org>; Mon, 31 Oct 2022 09:47:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NOvjAXevhTkIKEozXkDl99JqlY+Qi6ewDIiwMUqw+eI=;
+        b=qY2IeKDRG1F4poEQPiAWWwD+glIBmz2L95iZxZiagfOCWZPnnMTf3cBx/VNmUR3OSl
+         O2CLdUJ8mHfln5H75LZ1mzfbQ/cAL6C3oMFXSNSbbavXhhQNkMD2qQ897BCUKTSa+SHS
+         L4bV0YSEwLQQeIegTJV3MIJgFJSYs5K5tdIR8H2MRRYvESbxB8zqP7qdblVFmAIFgm5o
+         IycEid4/5BbtDlltxbKqLS9INDgq8xCg13tVBe+RaIVPMTe6gCdrWRLx8yjueLjRmeC+
+         JWLK42+UZHM2V5bL1ZYpVuUu1r3KY9BDCEn/a5Z1YyiuGrHONQQ2NKE7BnRGprS0Mqev
+         vV0Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=NOvjAXevhTkIKEozXkDl99JqlY+Qi6ewDIiwMUqw+eI=;
+        b=GUlqfgYTj9KoK2nzVENRt1BELw3XMgyKZQ2UarDPTpOXYoQQ0bb0OL3RH07z+HWvxy
+         PPmXKYMIo6m8K67deguwP8jeDlvEQ6mlmee4pR1JTEIkLu+sGLNb863UyYxKoWLAVgvv
+         s8HJjk8BpvXIR8WTVVMAJU6FUilNuVveSqi4T5F4HCE3WrQgsZlc8VFmkFCjZ7Nkt0XO
+         nV+a/M3kgCgWvsGWFzDluqs6V0GafgtWT6JHIkM5qdyvXqi7DABjSZ210wFIG5hG7NYb
+         +BIyTg0bsTheAoe/TgT/AZ+TcukTVutGX5ZmlU7nHrmIma7EQSVehAYituyAxLqE/i6R
+         si/Q==
+X-Gm-Message-State: ACrzQf3ihuEz6ZtjUPnXXBUv6exDJxyT7ZFsLGJeBZfCFEMM56HfCaM+
+        XOWerSVW/TmBF6CKjisCFk/h5A==
+X-Google-Smtp-Source: AMsMyM70WHblAByJ4Qi+nU6doCl8thqDKuH5Zl1XoFQhfj9UxiE9dDkzhRNahah6ucvCPCN5k67C1Q==
+X-Received: by 2002:adf:da4f:0:b0:236:cdd4:4ce2 with SMTP id r15-20020adfda4f000000b00236cdd44ce2mr3330832wrl.626.1667234848824;
+        Mon, 31 Oct 2022 09:47:28 -0700 (PDT)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id q8-20020a05600c46c800b003b4868eb71bsm7488871wmo.25.2022.10.31.09.47.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Oct 2022 09:47:28 -0700 (PDT)
+From:   Neil Armstrong <neil.armstrong@linaro.org>
+Date:   Mon, 31 Oct 2022 17:47:25 +0100
+Subject: [PATCH 1/4] dt-bindings: reset: document Odroid Go Ultra power-off
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20221031-b4-odroid-go-ultra-initial-v1-1-42e3dbea86d5@linaro.org>
+References: <20221031-b4-odroid-go-ultra-initial-v1-0-42e3dbea86d5@linaro.org>
+In-Reply-To: <20221031-b4-odroid-go-ultra-initial-v1-0-42e3dbea86d5@linaro.org>
+To:     Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Jerome Brunet <jbrunet@baylibre.com>
+Cc:     linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+        devicetree@vger.kernel.org,
+        Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.10.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 26 Oct 2022, Frederic Weisbecker wrote:
+The Hardkernel Odroid Go Ultra poweroff scheme requires requesting a poweroff
+to its two PMICs in order, this represents the poweroff scheme needed to complet
+a clean poeroff of the system.
 
-> On Tue, Oct 25, 2022 at 03:58:34PM +0200, Anna-Maria Behnsen wrote:
-> > Note: This is a proposal only. I was waiting on input how to change this
-> > driver properly to use the already existing infrastructure. See therfore
-> > the thread on linux-pm mailinglist:
-> > https://lore.kernel.org/linux-pm/4c99f34b-40f1-e6cc-2669-7854b615b5fd@linutronix.de/
-> > 
-> > gpstates timer is the only timer using TIMER_PINNED and TIMER_DEFERRABLE
-> > flag. When moving to hierarchical timer pull model, pinned and deferrable
-> > timers are stored in separate bases.
-> > 
-> > To ensure gpstates timer always expires on the CPU where it is pinned to,
-> > keep only TIMER_PINNED flag and drop TIMER_DEFERRABLE flag.
-> 
-> OTOH there are deferrable timers out there that expect to run on a
-> specific CPU, because there are always queued with add_timer_on().
-> 
-> For example workqueues using DECLARE_DEFERRABLE_WORK() that are queued
-> with queue_delayed_work_on(). Like vmstat().
-> 
-> Those are not explicitely pinned because they don't rely on __mod_timer()
-> but they expect CPU affinity.
-> 
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ .../reset/hardkernel,odroid-go-ultra-poweroff.yaml | 42 ++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-You are right. In contrast to the original plan, I'm not able (yet) to
-remove the deferrable timers completely. But all timers using the
-add_timer_on() path need the TIMER_PINNED flag. Then three timer bases per
-CPU will be available:
+diff --git a/Documentation/devicetree/bindings/power/reset/hardkernel,odroid-go-ultra-poweroff.yaml b/Documentation/devicetree/bindings/power/reset/hardkernel,odroid-go-ultra-poweroff.yaml
+new file mode 100644
+index 000000000000..65e42258717c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/hardkernel,odroid-go-ultra-poweroff.yaml
+@@ -0,0 +1,42 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/reset/hardkernel,odroid-go-ultra-poweroff.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Hardkernel Odroid Go Ultra poweroff
++
++maintainers:
++  - Neil Armstrong <neil.armstrong@linaro.org>
++
++description:
++  The Hardkernel Odroid Go Ultra poweroff scheme requires requesting a poweroff
++  to its two PMICs in order, this represents the poweroff scheme needed to complete
++  a clean poeroff of the system.
++
++properties:
++  compatible:
++    const: hardkernel,odroid-go-ultra-poweroff
++
++  hardkernel,rk817-pmic:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: Phandle to the RK817 PMIC node
++
++  hardkernel,rk818-pmic:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: Phandle to the RK818 PMIC node
++
++required:
++  - compatible
++  - hardkernel,rk817-pmic
++  - hardkernel,rk818-pmic
++
++additionalProperties: false
++
++examples:
++  - |
++    poweroff {
++        compatible = "hardkernel,odroid-go-ultra-poweroff";
++        hardkernel,rk817-pmic = <&rk817>;
++        hardkernel,rk818-pmic = <&rk818>;
++    };
 
-- global base (TIMER_PINNED is not set)
-- local base (TIMER_PINNED is set but not TIMER_DEFERRABLE)
-- deferrable pinned base (TIMER_PINNED and TIMER_DEFERRABLE is set)
-
-The logic stays the same as already implemented in patch queue: Timers in
-global base will not prevent CPU from going idle. When the CPU has the
-migrator duty, timers in hierarchy are taken into account. Timers in local
-base force the CPU to wake up. Timers in the deferrable pinned base are not
-taken into account when going idle.
-
-With this, the rework of cpufreq driver is no longer required - the timer
-will end up in deferrable pinned base the same with vmstat.
-
-Thanks,
-
-	Anna-Maria
-
-
-
-
+-- 
+b4 0.10.1
