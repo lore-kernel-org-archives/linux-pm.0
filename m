@@ -2,199 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9751FA3748
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 23:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03630ECAAA1
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 23:30:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229939AbiJaX1i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Oct 2022 19:27:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45394 "EHLO
+        id S230073AbiJaXaG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Oct 2022 19:30:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47768 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229823AbiJaX1c (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 19:27:32 -0400
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47DA412AB5;
-        Mon, 31 Oct 2022 16:27:31 -0700 (PDT)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29VNRGZY092621;
-        Mon, 31 Oct 2022 18:27:16 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1667258836;
-        bh=zrG9w02JnVRZZt0ciyWlc0+Fr/UocYsC+JZnx4gz+Fc=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=osN2iagWhZ21t+3MnIb8dhxKrgDGu+9Ca9VXDCFimJNFuzQf9uTsN8GcP2fxzMI+Q
-         igk96UIcg9kwsPuavjZCOy0Md6/x8bwbdBWlM0AK97Vg9f1ddwCpH8s5Ux6UKzqt3y
-         cpvfJ9tjDS651UG7lyV4OozcVftQuwsLwM8ZBpS8=
-Received: from DFLE115.ent.ti.com (dfle115.ent.ti.com [10.64.6.36])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29VNRGKn115393
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 31 Oct 2022 18:27:16 -0500
-Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE115.ent.ti.com
- (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Mon, 31
- Oct 2022 18:27:16 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE107.ent.ti.com
- (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
- Frontend Transport; Mon, 31 Oct 2022 18:27:16 -0500
-Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29VNRGug037187;
-        Mon, 31 Oct 2022 18:27:16 -0500
-From:   Bryan Brattlof <bb@ti.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Nishanth Menon <nm@ti.com>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Tero Kristo <kristo@kernel.org>
-CC:     Keerthy <j-keerthy@ti.com>, Linux PM <linux-pm@vger.kernel.org>,
-        Device Trees <devicetree@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        LKML ARM <linux-arm-kernel@lists.infradead.org>,
-        Bryan Brattlof <bb@ti.com>
-Subject: [PATCH v3 09/11] arm64: dts: ti: k3-j721e-mcu-wakeup: add VTM node
-Date:   Mon, 31 Oct 2022 18:27:00 -0500
-Message-ID: <20221031232702.10339-10-bb@ti.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221031232702.10339-1-bb@ti.com>
-References: <20221031232702.10339-1-bb@ti.com>
+        with ESMTP id S230075AbiJaX3v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 19:29:51 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CE85BA5;
+        Mon, 31 Oct 2022 16:29:20 -0700 (PDT)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 29VMxBUC018265;
+        Mon, 31 Oct 2022 23:29:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=qcppdkim1;
+ bh=i+BTeQs/uLoY4sXsMIzzuDbt+PCHvSTaZbj7cPW3MiA=;
+ b=bgcNNpyUAjmmaqKcjvMWEr6ndM30a9a9Cw/WTs+H/j1cl5ABwrjUCAG5JIKWCcW/eB6g
+ SH15mgvRaq41BvoUsOfPckqJ1P/a6ZE/owry5YsWQOiBnejzP4GriRdMgrdUraDY5f8U
+ 3Sx/aj26IMdhmF5APW6TcvB1ojklaG+cBHUFR+KDMXtVp9urDav3dVhW4r7qryldVAnU
+ UbOzPfSJGiR9FQ45kDEh/k71tGl6QhV6vnPJaxJXst1CbohmlmDgafpdiX3VsX+A0Kgw
+ FEg8aASLPPELmt+X1bPKsmnKreqkCFKhCz+uI99yqqM4Uu55gURQ0eppL9eCJDdk8rrK iQ== 
+Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3kjjqb0mrd-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 31 Oct 2022 23:29:17 +0000
+Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
+        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 29VNTG1d028916
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 31 Oct 2022 23:29:16 GMT
+Received: from [10.110.115.41] (10.80.80.8) by nasanex01b.na.qualcomm.com
+ (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.29; Mon, 31 Oct
+ 2022 16:29:15 -0700
+Message-ID: <64d0e5ef-fd36-6f25-2c39-00e8e1346af7@quicinc.com>
+Date:   Mon, 31 Oct 2022 16:29:15 -0700
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3842; h=from:subject; bh=vlkzNaHkJyVHTvJvk+O1jhmqXAYXIkCfkx3XmZoRK9Y=; b=owNCWmg5MUFZJlNZmNFxbgAAa3////9dv+8s237e+nV+/1fmz486/Sb7vfd53Wq/n7Fw//2wARlo HagANAAA0BiA00NAHqGgA0A000A0NDQA0DQyADQ9Q0MgyMho9RsmkxpNlDoaNDQAYmmmgDIaMmEaMI AGhiMjJkxNGTBMRiGCA0NGQBoyAAGjQ0yABwnqGjIMmgyZAaG1DQMmnqZNMhoGgAAAAaZA09JoaGTR oaAyaaaYTEGhkNAaAAAYDa+ByTgES8s4aKeTtqslzBcbaXHuh2hcQCmDIx1sVJiEXUJqg7Go9AQ3ol KEXQQSejEPqlOpIn0vyCVMeR+DDXZ/msc8r0JBp37A7TyahD1nd3SzJ7oNOWRhAvtnpsrEQNdkqbxI KlPuAgySySIWqhWilMigMhIsdkeWpwWEjCKmiIp4szhVxd5e+t2QCpuWBM9ikv/M39DmIzacWIyRRS ADD+f71okKvwBNxor26exrOq/JCeXDegLUt8RrESgCcW5hCrpqS+WBWnqPz/plbB/SiBRhBv6f8Ryi gA+KtBMHag6cZNolnOMBC7cfTYunsCa0W69RJORCg54fuLfKUqMImIbtk47HmeAwGVhmLARADM/X48 mXUi1gwyXraGwBL9zCkuv8uVzWkFtEitXJGhvEIYeKwWBBIBrGM7HGHqk/4u5IpwoSExouLcA=
-X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.2
+Subject: Re: [PATCH v3 1/3] dt-bindings: interconnect: Remove required reg
+ field
+Content-Language: en-US
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+CC:     Odelu Kukatla <quic_okukatla@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20221026190520.4004264-1-quic_molvera@quicinc.com>
+ <20221026190520.4004264-2-quic_molvera@quicinc.com>
+ <a214f513-fe28-2096-c2b0-2107e97f3ce2@linaro.org>
+From:   Melody Olvera <quic_molvera@quicinc.com>
+In-Reply-To: <a214f513-fe28-2096-c2b0-2107e97f3ce2@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: JW5bdcnBbfT8RrbgZDWEhlgz1HgcA-WI
+X-Proofpoint-GUID: JW5bdcnBbfT8RrbgZDWEhlgz1HgcA-WI
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-10-31_21,2022-10-31_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 impostorscore=0
+ lowpriorityscore=0 adultscore=0 malwarescore=0 bulkscore=0 mlxscore=0
+ mlxlogscore=843 priorityscore=1501 spamscore=0 phishscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
+ definitions=main-2210310146
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The j721e supports a single Voltage and Thermal Management (VTM) module
-located in the wakeup domain with five associated temperature monitors
-located in various hot spots on the die.
 
-Signed-off-by: Bryan Brattlof <bb@ti.com>
----
- .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |  9 +++
- arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi  | 75 +++++++++++++++++++
- arch/arm64/boot/dts/ti/k3-j721e.dtsi          |  3 +
- 3 files changed, 87 insertions(+)
- create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
 
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
-index df08724bbf1c5..9a09f66c51c01 100644
---- a/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
-@@ -418,4 +418,13 @@ mcu_mcan1: can@40568000 {
- 		interrupt-names = "int0", "int1";
- 		bosch,mram-cfg = <0x0 128 64 64 64 64 32 32>;
- 	};
+On 10/27/2022 8:29 AM, Krzysztof Kozlowski wrote:
+> On 26/10/2022 15:05, Melody Olvera wrote:
+>> Many of the *-virt compatible devices do not have a reg field
+>> so remove it as required from the bindings.
+> and some virt have it... This should be probably separate binding or if
+> the list is small - allOf:if:then.
+I attempted this; however I'm still seeing failures in dtb_check. I've added this
+to the binding; does this look correct?
+ allOf:
+   - $ref: qcom,rpmh-common.yaml#
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,qdu1000-clk-virt
++              - qcom,qdu1000-mc-virt
 +
-+	vtm0: temperature-sensor@42040000 {
-+		compatible = "ti,j721e-vtm";
-+		reg = <0x00 0x42040000 0x00 0x350>,
-+		      <0x00 0x42050000 0x00 0x350>,
-+		      <0x00 0x43000300 0x00 0x10>;
-+		power-domains = <&k3_pds 154 TI_SCI_PD_EXCLUSIVE>;
-+		#thermal-sensor-cells = <1>;
-+	};
- };
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
-new file mode 100644
-index 0000000000000..79641927a9092
---- /dev/null
-+++ b/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
-@@ -0,0 +1,75 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+thermal_zones: thermal-zones {
-+	wkup_thermal: wkup-thermal {
-+		polling-delay-passive = <250>;	/* milliSeconds */
-+		polling-delay = <500>;		/* milliSeconds */
-+		thermal-sensors = <&vtm0 0>;
-+
-+		trips {
-+			wkup_crit: wkup-crit {
-+				temperature = <125000>;	/* milliCelsius */
-+				hysteresis = <2000>;	/* milliCelsius */
-+				type = "critical";
-+			};
-+		};
-+	};
-+
-+	mpu_thermal: mpu-thermal {
-+		polling-delay-passive = <250>;	/* milliSeconds */
-+		polling-delay = <500>;		/* milliSeconds */
-+		thermal-sensors = <&vtm0 1>;
-+
-+		trips {
-+			mpu_crit: mpu-crit {
-+				temperature = <125000>;	/* milliCelsius */
-+				hysteresis = <2000>;	/* milliCelsius */
-+				type = "critical";
-+			};
-+		};
-+	};
-+
-+	c7x_thermal: c7x-thermal {
-+		polling-delay-passive = <250>;	/* milliSeconds */
-+		polling-delay = <500>;		/* milliSeconds */
-+		thermal-sensors = <&vtm0 2>;
-+
-+		trips {
-+			c7x_crit: c7x-crit {
-+				temperature = <125000>;	/* milliCelsius */
-+				hysteresis = <2000>;	/* milliCelsius */
-+				type = "critical";
-+			};
-+		};
-+	};
-+
-+	gpu_thermal: gpu-thermal {
-+		polling-delay-passive = <250>;	/* milliSeconds */
-+		polling-delay = <500>;		/* milliSeconds */
-+		thermal-sensors = <&vtm0 3>;
-+
-+		trips {
-+			gpu_crit: gpu-crit {
-+				temperature = <125000>; /* milliCelsius */
-+				hysteresis = <2000>;	/* milliCelsius */
-+				type = "critical";
-+			};
-+		};
-+	};
-+
-+	r5f_thermal: r5f-thermal {
-+		polling-delay-passive = <250>;	/* milliSeconds */
-+		polling-delay = <500>;		/* milliSeconds */
-+		thermal-sensors = <&vtm0 4>;
-+
-+		trips {
-+			r5f_crit: r5f-crit {
-+				temperature = <125000>;	/* milliCelsius */
-+				hysteresis = <2000>;	/* milliCelsius */
-+				type = "critical";
-+			};
-+		};
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e.dtsi b/arch/arm64/boot/dts/ti/k3-j721e.dtsi
-index 0e23886c9fd1d..cfab10e2455c4 100644
---- a/arch/arm64/boot/dts/ti/k3-j721e.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j721e.dtsi
-@@ -181,6 +181,9 @@ cbass_mcu_wakeup: bus@28380000 {
- 				 <0x07 0x00000000 0x07 0x00000000 0x01 0x00000000>; /* FSS OSPI1 data region 3*/
- 		};
- 	};
-+
-+	#include "k3-j721e-thermal.dtsi"
-+
- };
- 
- /* Now include the peripherals for each bus segments */
--- 
-2.38.1
++    then:
++      required:
++        - compatible
 
+>
+> Anyway you need to resend everything to Cc all maintainers, not some subset.
+Discussed earlier.
+
+Thanks,
+Melody
