@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68435FA374C
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 17:51:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1637CFA3741
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 17:51:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231950AbiJaRvQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S231784AbiJaRvQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 31 Oct 2022 13:51:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55750 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55842 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231888AbiJaRvL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 13:51:11 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58E1C63BA;
+        with ESMTP id S231876AbiJaRvK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 13:51:10 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5863563AB;
         Mon, 31 Oct 2022 10:51:09 -0700 (PDT)
 Received: from jupiter.universe (dyndsl-095-033-157-181.ewe-ip-backbone.de [95.33.157.181])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 8817B6602948;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 9BA9E660294B;
         Mon, 31 Oct 2022 17:51:03 +0000 (GMT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1667238663;
-        bh=kGeCW1YTwGhNttEL0JAP5rbTFVI1UH3AbwhQ1VzHwhQ=;
+        bh=FlQo9FQcO4iSqXwimyRA9FxPm+Y3gWWIMKZ0MZxtaWQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=WwSB0Vi3Lb7nP++iI7kmLX9IXeF6EV96YGvhOgFlyjostnFF9O5UvudkathyoVGND
-         SPrk/qjwdnYvvBIThFino+OiEGBADYgwxoQVajMf8omGdWS6wWfKuuDdCIq9+fCkvE
-         PsGjpcwVSNRWHjIlyTkPIXGgfnB9Fjg8oIFa4+2/Z0xe5M62ayZYHIa3AKI/btVlri
-         IBuhp5kMLvNfbhde3lLuunzXrxKmpgh0ezM2UyKP7BYGSSAJEHTWXvFba1Id5u7P6Q
-         RAUOQ/YT0ctizL/yP4b7NCbK17hpIh1tpkl5AGazB8/RZc3gh06NvIn1xllZckkoBG
-         IfX8WAPKDOqng==
+        b=l5ImKr8Rwli4X0rA0B5dEvcAm/aT8I63weULy1XZ5JRmLUTp0xxycNGyBXVb/0t1P
+         k5Q4yndE5SPIAMFH9NYnRH0H2kGXTHHLWgglgGBBSyZSl9l0Wjck3BpCwHHPxwnGco
+         VxqNs2C4qMLajBK0kwNsXfubgVo4ZwTb5KqKqZuh9HEOXQ8gJ1zP6OnNH8I15LieVd
+         tGwNOZJdes6VTyuJMQ3D6wB9ViAkC5r7C4zxCwL2g10MV5PEFDLIlJr6MVAOiP2gDx
+         vSbtOcUS5t+E0YVof7uW9NksB8bqr3EnjBfVkPci59Whi97QlpdRFcjXS43ceBd4CK
+         eLHowV/6QfrIg==
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 5529F4801D1; Mon, 31 Oct 2022 18:50:59 +0100 (CET)
+        id 598FF4801D5; Mon, 31 Oct 2022 18:50:59 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Heiko Stuebner <heiko@sntech.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -44,10 +44,11 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH 5/7] thermal: rockchip: Support dynamic sized sensor array
-Date:   Mon, 31 Oct 2022 18:50:56 +0100
-Message-Id: <20221031175058.175698-6-sebastian.reichel@collabora.com>
+        kernel@collabora.com,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH 7/7] dt-bindings: rockchip-thermal: Support the RK3588 SoC compatible
+Date:   Mon, 31 Oct 2022 18:50:58 +0100
+Message-Id: <20221031175058.175698-8-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20221031175058.175698-1-sebastian.reichel@collabora.com>
 References: <20221031175058.175698-1-sebastian.reichel@collabora.com>
@@ -57,53 +58,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dynamically allocate the sensors array based on the amount
-of platform sensors in preparation for rk3588 support, which
-needs 7 sensors.
+Add a new compatible for the thermal sensor device on RK3588 SoCs.
 
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/thermal/rockchip_thermal.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index a547e44e2b64..c9d04b58a1e5 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -51,12 +51,6 @@ enum adc_sort_mode {
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+index f6c1be226aaa..55f8ec0bec01 100644
+--- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+@@ -19,6 +19,7 @@ properties:
+       - rockchip,rk3368-tsadc
+       - rockchip,rk3399-tsadc
+       - rockchip,rk3568-tsadc
++      - rockchip,rk3588-tsadc
+       - rockchip,rv1108-tsadc
  
- #include "thermal_hwmon.h"
- 
--/**
-- * The max sensors is two in rockchip SoCs.
-- * Two sensors: CPU and GPU sensor.
-- */
--#define SOC_MAX_SENSORS	2
--
- /**
-  * struct chip_tsadc_table - hold information about chip-specific differences
-  * @id: conversion table
-@@ -147,7 +141,7 @@ struct rockchip_thermal_data {
- 	struct platform_device *pdev;
- 	struct reset_control *reset;
- 
--	struct rockchip_thermal_sensor sensors[SOC_MAX_SENSORS];
-+	struct rockchip_thermal_sensor *sensors;
- 
- 	struct clk *clk;
- 	struct clk *pclk;
-@@ -1367,6 +1361,11 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	if (!thermal->chip)
- 		return -EINVAL;
- 
-+	thermal->sensors = devm_kcalloc(&pdev->dev, thermal->chip->chn_num,
-+					sizeof(*thermal->sensors), GFP_KERNEL);
-+	if (!thermal->sensors)
-+		return -ENOMEM;
-+
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	thermal->regs = devm_ioremap_resource(&pdev->dev, res);
- 	if (IS_ERR(thermal->regs))
+   reg:
 -- 
 2.35.1
 
