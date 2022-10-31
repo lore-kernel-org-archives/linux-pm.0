@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA9B3FA3744
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 23:27:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51E55FA3746
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Oct 2022 23:27:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229729AbiJaX1a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Oct 2022 19:27:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45320 "EHLO
+        id S229761AbiJaX1b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Oct 2022 19:27:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229695AbiJaX13 (ORCPT
+        with ESMTP id S229641AbiJaX13 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 19:27:29 -0400
 Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 559C311C2E;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8275512095;
         Mon, 31 Oct 2022 16:27:28 -0700 (PDT)
 Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29VNRG30106690;
+        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 29VNRGG3106686;
         Mon, 31 Oct 2022 18:27:16 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
         s=ti-com-17Q1; t=1667258836;
-        bh=DlAiLs5Ku3VbelFDsEYPq0YQ/PIXlM05Is7Om0VplhQ=;
+        bh=i4FyJ9+wFGH1WYq6OT4ovHtAHbJIpIoaqp6lWcMTEDc=;
         h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=XHq32o/ajyBUMTsY3f5iRkiubGgm6ovQqZb/gPmeUEtLi6MaP9M/+R/5mG4LB1KHe
-         peMA8Sh5H5ofTw8EP2x6oINUJhc70TfDPt0cZ6xBtv1EgtZvPqeoexs/E1nfcZtEHt
-         jI02fsc7z8d9hwksvsaU0VvuIdXEg+dEISgng1s0=
+        b=wCaW+X+GyUJ2OoHcny1AxrEn6PsUCDTkgD5FVBsukj2aZ7VZXLSmkYi+4YArwr/kp
+         mxr56tFDE1tjZmXZtTmfo0bszvNFpmJxUkWcR3P+FbLHfiiWzogRflfyozd9XTbemf
+         BZI1EJ5cYtfiMxPVgmOIq4eX4T6wqE/8r78QnQEo=
 Received: from DLEE104.ent.ti.com (dlee104.ent.ti.com [157.170.170.34])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29VNRGtJ023424
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 29VNRGtI023424
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
         Mon, 31 Oct 2022 18:27:16 -0500
-Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE104.ent.ti.com
+Received: from DLEE104.ent.ti.com (157.170.170.34) by DLEE104.ent.ti.com
  (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Mon, 31
  Oct 2022 18:27:15 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE104.ent.ti.com
+ (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
  Frontend Transport; Mon, 31 Oct 2022 18:27:15 -0500
 Received: from localhost (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29VNRFG5037168;
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 29VNRFxw124774;
         Mon, 31 Oct 2022 18:27:15 -0500
 From:   Bryan Brattlof <bb@ti.com>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -53,15 +53,16 @@ CC:     Keerthy <j-keerthy@ti.com>, Linux PM <linux-pm@vger.kernel.org>,
         Device Trees <devicetree@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         LKML ARM <linux-arm-kernel@lists.infradead.org>,
-        Bryan Brattlof <bb@ti.com>
-Subject: [PATCH v3 04/11] thermal: k3_j72xx_bandgap: map fuse_base only for erratum workaround
-Date:   Mon, 31 Oct 2022 18:26:55 -0500
-Message-ID: <20221031232702.10339-5-bb@ti.com>
+        Bryan Brattlof <bb@ti.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v3 06/11] dt-bindings: thermal: k3-j72xx: conditionally require efuse reg range
+Date:   Mon, 31 Oct 2022 18:26:57 -0500
+Message-ID: <20221031232702.10339-7-bb@ti.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221031232702.10339-1-bb@ti.com>
 References: <20221031232702.10339-1-bb@ti.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2554; h=from:subject; bh=UJw18bTWhZzEYgN7X9MypDXipXRn727Xr/6BWs3NM9w=; b=owNCWmg5MUFZJlNZSuIudgAAX////v7/x62sf+rzdf57/9XntRuiWP/D637nWx/+7v/f/3ewARtp B2pp6g9QNDQAAA0yAAAyAAANBpoAB6gBp6jQBppoAGgNNB6QPUZD1D0am1P1RA0BoAAeoMgAA0PUBo 0APSAAAaAep6jQDT1B6h6QA9QaAaNDaj9U0A9QHoh6mgcJk0Yh6mhiNAaMgMAjENAADQABgmmmCDI0 ZMmgA0NDRoDIYIaAAAAMGaia8rBlMEOALqBiPIKgGyULEuOaearQLypXww0EWkfx0CPBFtjbEt8zvP wYSK7fCJXBCJtEb2lUI36A+leBsqNuBTrVJAJs6ZcxaVuaQBLgX4oINdUKVre/0fLsMsU1aD3w9+Dn RrPkNlqE7Tv0Ke6FScOUgIMl1JpFbrzpQ/YcE3TTgmFHwksVo6+bjlJtBivVl9ZqI0MoYSz5NU39Ii JO+iythUIXkn1/3vsFR/aWbgxZnCJbkzyC1ZxWJJ5ttk/cA4NlGa2EoXGjUBiYPqajjKkmqEWeclSP 6A8Oat34fDMFGVCLvUgQqP+KcggslCG1LPsJgKNCTwWMntuYZitO1y8YxQWBcnSoQh2JwkmmS7bIzC PCFKy3UDBmHUm0VUzkkHEfPGz8GAQK6UATGN/4qAkB+zHV5qxkft/i7kinChIJXEXOwA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1514; h=from:subject; bh=zQFnRZirEDAR1saQhH/S1yZ3qKsjNcR+QWeALNN71T8=; b=owNCWmg5MUFZJlNZyCid4gAAZP///77Pu6vu7Tf+fv/r/D7+evt/36yb+tr/+Hi76v9++vewARsw Iek0yNADQaNADRoAAANNABpo0aAANAA0AGjT1DRoGgDIaaAHpNDJmiGnqZNlDoDIDTQANNDIABoGjQ AMhoADENABpoYjaEyaA0A9Ro8o009QNNDQZAepoNAB00ZGmIAMjTRoANNMmQxGTRoNAABo0YEaZADQ MhhGgyA0aA0GmgA0aANDCAQJiF9O2uJBL8a+QfvAZ1vDkFEkEoX32/Q4iBAH1ln1APsDl1+makPF4e uBTsfk2Taqytr5XL/PBXS4vM1CWPNozgrH9O5YgpI9Q78rGwUnOHg116UTgBxBdjsg83WfprhWDFND j9d/x0A2fT5TXTCkhRNF8Z7oXdkYIkpqDA1PrHAjCJTSKpiQ5prsdOtX7w2OlKWPmmkkq0c/niZwJ6 3RHcU86v3EPi2BtfiiV2jFIB73hk/Vmp6TAKchd5hXooQWCRX9N9q+J1Rkcy5QsIg2IdrICbgUy0Op VYgoAZ2M7TSYwOIsYH7Wd6/0OR6PPZBdxQyZP+7VgV6NwVKREgritDLtpaXyVbEAS8j1gCFCKrXMyS It1BixIEx4qKoQkxNjIhyCCc0ciyK/ksoIiCjbY3yGd0DR+0ZiAgCzShcpL79w0aDDf4u5IpwoSGQU TvEA
 X-Developer-Key: i=bb@ti.com; a=openpgp; fpr=D3D177E40A38DF4D1853FEEF41B90D5D71D56CE0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -70,75 +71,53 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some of TI's J721E SoCs require a software trimming procedure for the
-temperature monitors to function properly. To determine if a particular
-J721E is not affected by this erratum, both bits in the WKUP_SPARE_FUSE0
-region must be set. Other SoCs, not affected by this erratum, will not
-need this region.
+Only some of TI's J721E SoCs will need a eFuse register range mapped to
+determine if they're affected by TI's i2128 erratum. All other SoC will
+not need this eFuse range to function properly
 
-Map the 'fuse_base' region only when the erratum fix is needed.
+Update the bindings for the k3_j72xx_bandgap thermal driver so other
+devices will only need two register ranges
 
 Signed-off-by: Bryan Brattlof <bb@ti.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- drivers/thermal/k3_j72xx_bandgap.c | 34 +++++++++++++++++++-----------
- 1 file changed, 22 insertions(+), 12 deletions(-)
+ .../bindings/thermal/ti,j72xx-thermal.yaml       | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
-index 395a73cb37425..031ea1091909a 100644
---- a/drivers/thermal/k3_j72xx_bandgap.c
-+++ b/drivers/thermal/k3_j72xx_bandgap.c
-@@ -386,15 +386,32 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
- 	if (IS_ERR(bgp->cfg2_base))
- 		return PTR_ERR(bgp->cfg2_base);
+diff --git a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+index 3bb870a26872f..0509c9cec224d 100644
+--- a/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/ti,j72xx-thermal.yaml
+@@ -37,6 +37,7 @@ properties:
+           devices to function properly. This eFuse region provides
+           the information needed for these SoCs to report
+           temperatures accurately.
++    minItems: 2
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
--	fuse_base = devm_ioremap_resource(dev, res);
--	if (IS_ERR(fuse_base))
--		return PTR_ERR(fuse_base);
--
- 	driver_data = of_device_get_match_data(dev);
- 	if (driver_data)
- 		workaround_needed = driver_data->has_errata_i2128;
+   power-domains:
+     maxItems: 1
+@@ -44,6 +45,21 @@ properties:
+   "#thermal-sensor-cells":
+     const: 1
  
-+	/*
-+	 * Some of TI's J721E SoCs require a software trimming procedure
-+	 * for the temperature monitors to function properly. To determine
-+	 * if this particular SoC is NOT affected, both bits in the
-+	 * WKUP_SPARE_FUSE0[31:30] will be set (0xC0000000) indicating
-+	 * when software trimming should NOT be applied.
-+	 *
-+	 * https://www.ti.com/lit/er/sprz455c/sprz455c.pdf
-+	 */
-+	if (workaround_needed) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
-+		fuse_base = devm_ioremap_resource(dev, res);
-+		if (IS_ERR(fuse_base))
-+			return PTR_ERR(fuse_base);
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: ti,j721e-vtm
++    then:
++      properties:
++        reg:
++          minItems: 3
++    else:
++      properties:
++        reg:
++          maxItems: 2
 +
-+		if ((readl(fuse_base) & 0xc0000000) == 0xc0000000)
-+			workaround_needed = false;
-+	}
-+
-+	dev_dbg(bgp->dev, "Work around %sneeded\n",
-+		workaround_needed ? "" : "not ");
-+
- 	pm_runtime_enable(dev);
- 	ret = pm_runtime_get_sync(dev);
- 	if (ret < 0) {
-@@ -427,13 +444,6 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
- 		goto err_free_ref_table;
- 	}
- 
--	/* Workaround not needed if bit30/bit31 is set even for J721e */
--	if (workaround_needed && (readl(fuse_base + 0x0) & 0xc0000000) == 0xc0000000)
--		workaround_needed = false;
--
--	dev_dbg(bgp->dev, "Work around %sneeded\n",
--		workaround_needed ? "" : "not ");
--
- 	if (!workaround_needed)
- 		init_table(5, ref_table, golden_factors);
- 	else
+ required:
+   - compatible
+   - reg
 -- 
 2.38.1
 
