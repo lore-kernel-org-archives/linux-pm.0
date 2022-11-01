@@ -2,90 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD1A8C4332F
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 17:10:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E34C4332F
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 17:37:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229516AbiKARKs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Nov 2022 13:10:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41716 "EHLO
+        id S230518AbiKARhq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Nov 2022 13:37:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38466 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230249AbiKARKo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2022 13:10:44 -0400
-Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63D5713DD7;
-        Tue,  1 Nov 2022 10:10:40 -0700 (PDT)
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 2A1HAM6m020324;
-        Tue, 1 Nov 2022 12:10:22 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1667322622;
-        bh=VXLEaiRzIpBxKr20IVnYTwBnIGTOBLrBVNSbdQwg7eo=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=GEl4MCNu4UcZYPxIF5khG+QOJhHGq6Ddfi33o+nHSf/7kZ/be7ec7Rf1GI5hEMCnW
-         MsHbT5hA29OFAUDWVCoI7oHSM6mKVEMyVmlIl48RbU2D1DVi/fJzRxt56re9Qwft+F
-         RDbEFYCojplvkpJpukQImIJTbrCQLi1wZYORj5MI=
-Received: from DFLE102.ent.ti.com (dfle102.ent.ti.com [10.64.6.23])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 2A1HAMNC087424
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 1 Nov 2022 12:10:22 -0500
-Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE102.ent.ti.com
- (10.64.6.23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 1 Nov
- 2022 12:10:22 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
- Frontend Transport; Tue, 1 Nov 2022 12:10:22 -0500
-Received: from maitri.dhcp.ti.com (ileaxei01-snat2.itg.ti.com [10.180.69.6])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 2A1HAMwE106008;
-        Tue, 1 Nov 2022 12:10:22 -0500
-From:   Vibhore Vardhan <vibhore@ti.com>
-To:     <nm@ti.com>, <vigneshr@ti.com>, <kristo@kernel.org>,
-        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <rafael@kernel.org>, <viresh.kumar@linaro.org>
-CC:     <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>
-Subject: [4/5] cpufreq: ti: Enable ti-cpufreq for ARCH_K3
-Date:   Tue, 1 Nov 2022 12:10:21 -0500
-Message-ID: <20221101171022.133322-5-vibhore@ti.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20221101171022.133322-1-vibhore@ti.com>
-References: <20221101171022.133322-1-vibhore@ti.com>
+        with ESMTP id S231181AbiKARhn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2022 13:37:43 -0400
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 699161CB09
+        for <linux-pm@vger.kernel.org>; Tue,  1 Nov 2022 10:37:40 -0700 (PDT)
+Received: by mail-ed1-x533.google.com with SMTP id u24so13567120edd.13
+        for <linux-pm@vger.kernel.org>; Tue, 01 Nov 2022 10:37:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=cdUAsiAgmBJ1jbIAcY/gGR+Z/7ih0XBIpAP4mnSXYwg=;
+        b=U+3jcriNI6G3mRzAxSj20osZtTDZErBW8Nh3ObL1xuyZVmynG7VTQ6hdaJDZfvYuc4
+         BsAvfNmsSOYVQr1aPoTaBNp/Wjsp/mcsuXhQVkBEvgszY1b+jniCkvoAvlnhfUO9/7Ew
+         nYABzAW6uipYWW4pCOp3Jvxu/hanu2Vo9v1kg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=cdUAsiAgmBJ1jbIAcY/gGR+Z/7ih0XBIpAP4mnSXYwg=;
+        b=qU89293XOYQI06woxUuHm4RBMfiTdAHIFuTKRsJ0lWtYgxLmOEyC5LiSnGcK3J1P1q
+         F7Vfz5u+BCxaetCs/hLivVVkhifJiBLlj+cal2gkOgx5sC1VJIPw5aCD+/Fjg9FJV6l4
+         j9xmZBlaB7Q65W2CkWfu5VzuIFyFhkNrDF6PrnIsPraEDoDbXTmic/4aDYzft/a5/48f
+         CKSvvgy4odn5i7e8zuVDJMqxASio/R5E/SpPNNkZS6flsByYW8p2OqBIjl4Kev0wvXKv
+         jlA38rBldjwDH4vLoaDUQW1fX5RfDb7JOi78JRAAUqg1gDmKPhXhL9ax/N3bpTa0dpU2
+         D9sg==
+X-Gm-Message-State: ACrzQf0pmu8NiytZBLD/NpGXWfuc6uNMpMpboWLKTtNXE9hrSq4hSShP
+        YWxprEPmCNZVZFG7mlgbe/YoyR47j9l/1rmE
+X-Google-Smtp-Source: AMsMyM4oovNvYE2rTldzriYsx9FP6y3jXAIQ0D50132qFZPgFSlV3bpdc2AF+asi6Pz1mvesptLG9Q==
+X-Received: by 2002:a05:6402:5159:b0:462:3e9f:a0a4 with SMTP id n25-20020a056402515900b004623e9fa0a4mr19702820edd.313.1667324258800;
+        Tue, 01 Nov 2022 10:37:38 -0700 (PDT)
+Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com. [209.85.208.44])
+        by smtp.gmail.com with ESMTPSA id o7-20020a056402444700b00461aaa39efbsm4746229edb.0.2022.11.01.10.37.37
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 01 Nov 2022 10:37:37 -0700 (PDT)
+Received: by mail-ed1-f44.google.com with SMTP id 21so22816844edv.3
+        for <linux-pm@vger.kernel.org>; Tue, 01 Nov 2022 10:37:37 -0700 (PDT)
+X-Received: by 2002:a05:6402:1947:b0:461:a47d:274 with SMTP id
+ f7-20020a056402194700b00461a47d0274mr20093632edz.165.1667324257158; Tue, 01
+ Nov 2022 10:37:37 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <20221031204320.22464-1-mario.limonciello@amd.com> <20221031204320.22464-2-mario.limonciello@amd.com>
+In-Reply-To: <20221031204320.22464-2-mario.limonciello@amd.com>
+From:   Sven van Ashbrook <svenva@chromium.org>
+Date:   Tue, 1 Nov 2022 13:37:26 -0400
+X-Gmail-Original-Message-ID: <CAM7w-FXAGki+k9aP0wV1Qs8dKqpPXgY9ZJR_a83ETrUF6ZRZOw@mail.gmail.com>
+Message-ID: <CAM7w-FXAGki+k9aP0wV1Qs8dKqpPXgY9ZJR_a83ETrUF6ZRZOw@mail.gmail.com>
+Subject: Re: [RFC 1/3] PM: Add a sysfs file to represent whether hardware
+ reached the deepest state
+To:     Mario Limonciello <mario.limonciello@amd.com>
+Cc:     Rafael J Wysocki <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+        Len Brown <len.brown@intel.com>,
+        Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
+        S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
+        rrangel@chromium.org, platform-driver-x86@vger.kernel.org,
+        Rajat Jain <rajatja@google.com>,
+        David E Box <david.e.box@intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dave Gerlach <d-gerlach@ti.com>
+On Mon, Oct 31, 2022 at 4:43 PM Mario Limonciello
+<mario.limonciello@amd.com> wrote:
+>
+> +void pm_set_hw_deepest_state(u64 duration)
+> +{
+> +       suspend_stats.last_hw_deepest_state = duration;
 
-Make ti-cpufreq driver depend on ARCH_K3 and set it to `default y` so it
-is always enabled for platforms that it depends on.
+I'm wondering if we could add a userspace notification here. Then
+userspace wouldn't have to synchronize with the suspend/resume state
+of the system when reading this entry.
 
-Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-Signed-off-by: Vibhore Vardhan <vibhore@ti.com>
----
- drivers/cpufreq/Kconfig.arm | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+What about sysfs_notify() ? Or via udev?
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 954749afb5fe..33bb890a0a5b 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -340,8 +340,8 @@ config ARM_TEGRA194_CPUFREQ
- 
- config ARM_TI_CPUFREQ
- 	bool "Texas Instruments CPUFreq support"
--	depends on ARCH_OMAP2PLUS
--	default ARCH_OMAP2PLUS
-+	depends on ARCH_OMAP2PLUS || ARCH_K3
-+	default y
- 	help
- 	  This driver enables valid OPPs on the running platform based on
- 	  values contained within the SoC in use. Enable this in order to
--- 
-2.34.1
-
+> +}
+> +EXPORT_SYMBOL_GPL(pm_set_hw_deepest_state);
