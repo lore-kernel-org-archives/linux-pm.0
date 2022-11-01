@@ -2,61 +2,64 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51280FA3746
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 02:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54A44FA3740
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 02:29:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229674AbiKAC3B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229877AbiKAC3B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 31 Oct 2022 22:29:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34894 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229875AbiKAC2u (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 22:28:50 -0400
-Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4EE11789E;
-        Mon, 31 Oct 2022 19:28:46 -0700 (PDT)
-Received: by mail-pg1-x52a.google.com with SMTP id r18so12248574pgr.12;
-        Mon, 31 Oct 2022 19:28:46 -0700 (PDT)
+        with ESMTP id S229576AbiKAC2w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2022 22:28:52 -0400
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2321D13E;
+        Mon, 31 Oct 2022 19:28:50 -0700 (PDT)
+Received: by mail-pl1-x62f.google.com with SMTP id p21so8493768plr.7;
+        Mon, 31 Oct 2022 19:28:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=rcYDeI5SBeBnTD+t/yVKUy/qxI+mXodW4zJ5wc3sj7g=;
-        b=C4FK3XybtipAlqgoYWZe/WzlhC82YUsRxr8zgYTroJf82Xdb9uumW5TYpZ+J5tB915
-         uNxwl3bwD+VqtSzArx8MZ0pEZ7F848a7TyG+8JlcmkMiy3zYBEJ5c9Mpzr6WxIZ+kM1k
-         gw0P9iJwXghJoblIlXvyFbLF4Vw3peX9j/fmwibD/d0Qk+4mEafrRUhF696Wqpbw2a4D
-         57eopvOwHaubxmD7zUSe/rsvslezFdCSjZEncCX5yvQg6972ZXjRouxHXZmXCKbq1ygt
-         KMgzzwGwDeo4YDMro8KixnxyBnMkWb4RWRRptJPN48pw821dUVCsHlNkk0fNZyBGHT/5
-         vB2g==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=GitM46EFRM9nH6tIDAppCJX9q32SAFXaMRLIqIakjjU=;
+        b=jH3NvDCyBGXMBaUTMBOvkNef8p9Z0VL8qnWhCvi1CTp9CmZfiFm2mNXMFVRACIbxqw
+         cwWoyLGSHOe3qVRquSR8VN5C4hCEK1au5oRDOi+Bd5HG9wi9gMNcgbk4g8rd/ceqFBbk
+         IN4dQ3PK03TQyCZk8aguSBzrkCq7hwpNcDik2LXJdWnwMq0hJ89pqAMzo7y6eqwdJ2KF
+         PsUG1EoGlPHx4F46ITYdA4ePouSbjaley6tLhKljI6o/a1/snxg6BTiU/RkitsV1fAuX
+         7w43sG0PPrzHFGX44CI9BqAeC7CTCa/D18yPOiRKN3Nm4v6kvyzK+I7Fn00X+ZZh2m5v
+         XHHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rcYDeI5SBeBnTD+t/yVKUy/qxI+mXodW4zJ5wc3sj7g=;
-        b=i32JYzypQhIl4WfcON6liBwIoQELT5KA721Kzad02zlNP2ZiiMbwQj1nXDc4iLk7v9
-         MAnkTXLnXXwJagLeklRvZParfgAZJqyreu4W2ZLCfSSw11seDO7n9kGDwnhgpsIi4KuT
-         HYf5A5S+iey1txTqaFDRsOvzJiZCMxrgKxbxhG8onwAqSqv2r2s28OwDaseiDkQDSR0g
-         PBkuAFscpk4qDoJM1pGGd1kti3a5RcD5sdk0CNOt08kMntqK1PUPlnTlndQotmrB7R2K
-         uGrshLrnuxZEkhdznO7xy07Ze37GZwy+M4FbMA4HGjRvXVpNqI0WiQ4QgzPsePrvy7fQ
-         nz/Q==
-X-Gm-Message-State: ACrzQf0GEinBBW8bxABFHQ/g7VoibkbrnyAmZDwxmMreiNZ1q0HsHVUT
-        xJxB3yhx/sQTEmxy855Szhs=
-X-Google-Smtp-Source: AMsMyM7Ulyp+a388OV9INgKc/JfAXLQTl8oJNbn5WefBkUQGKIa1Fl//qX+7mhHO6Tt0eKInzbHH9g==
-X-Received: by 2002:a63:2158:0:b0:46f:9c0c:8673 with SMTP id s24-20020a632158000000b0046f9c0c8673mr50182pgm.154.1667269725704;
-        Mon, 31 Oct 2022 19:28:45 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=GitM46EFRM9nH6tIDAppCJX9q32SAFXaMRLIqIakjjU=;
+        b=E+mZb8vtiZUf/NL5IbK6iVkMGnl38hfPZGb4X/ryfJSIribWgQWrsS3bNwgNgy7M8m
+         uPK2xJAiEfZ4D3WiVe/nCA8HwYt1AmCDFqjrHQR3OSuH7tcTGThWcPZJ8zBKNbkVz/w6
+         bH6kX9TVMm2iyCtNKUyUyT4P/1F5GLZMT6Z90tAXXq9vdwwH0/Ryw44K5imq/fFEx2xr
+         ETSqPB1IKD+61G7FyF+0PQJzqPH8JSEqleJx5p4Pd4wV2TNLx3EQmhdvNDVRnz7WzNwG
+         djVtITh3msVwZxS/ApAZnopvkiW2Dc53z0BfMtbAwZ90GncabZJQNsPyZ16804Iu+KAV
+         3N+A==
+X-Gm-Message-State: ACrzQf0t0KfSWjn1REnM4BUf3Dvte1keu7fBFAeSpVP2l7BJoLv/lUIh
+        f9MqPhBITplEzE8GuzfnsTo=
+X-Google-Smtp-Source: AMsMyM7uD7HN829N+C1C4t09vo0KK4aDVkMaEbkwQUkvJuBMdbb616LQFG4C5eXBXRIIdRUgC0Q4dQ==
+X-Received: by 2002:a17:90a:13:b0:212:d139:748a with SMTP id 19-20020a17090a001300b00212d139748amr17340844pja.182.1667269730416;
+        Mon, 31 Oct 2022 19:28:50 -0700 (PDT)
 Received: from localhost.localdomain ([116.128.244.169])
-        by smtp.gmail.com with ESMTPSA id t5-20020a625f05000000b005385e2e86eesm5126925pfb.18.2022.10.31.19.28.43
+        by smtp.gmail.com with ESMTPSA id t5-20020a625f05000000b005385e2e86eesm5126925pfb.18.2022.10.31.19.28.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Oct 2022 19:28:45 -0700 (PDT)
+        Mon, 31 Oct 2022 19:28:50 -0700 (PDT)
 From:   TGSP <tgsp002@gmail.com>
 To:     rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz,
         huanglei@kylinos.cn
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        xiongxin <xiongxin@kylinos.cn>
-Subject: [PATCH -next 0/2] Fixes to the hibernate_preallocate_memory()
-Date:   Tue,  1 Nov 2022 10:28:38 +0800
-Message-Id: <20221101022840.1351163-1-tgsp002@gmail.com>
+        xiongxin <xiongxin@kylinos.cn>, stable@vger.kernel.org
+Subject: [PATCH -next 2/2] PM: hibernate: add check of preallocate mem for image size pages
+Date:   Tue,  1 Nov 2022 10:28:40 +0800
+Message-Id: <20221101022840.1351163-3-tgsp002@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221101022840.1351163-1-tgsp002@gmail.com>
+References: <20221101022840.1351163-1-tgsp002@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -65,22 +68,53 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: xiongxin <xiongxin@kylinos.cn>
 
-hibernate_preallocate_memory() function is still quite obscure, can
-anyone add a little more description?
+Added a check on the return value of preallocate_image_highmem(). If
+memory preallocate is insufficient, S4 cannot be done;
 
-It seems that the max_size calculation formula is wrong in the comment
-part, correct it;
+I am playing 4K video on a machine with AMD or other graphics card and
+only 8GiB memory, and the kernel is not configured with CONFIG_HIGHMEM.
+When doing the S4 test, the analysis found that when the pages get from
+minimum_image_size() is large enough, The preallocate_image_memory() and
+preallocate_image_highmem() calls failed to obtain enough memory. Add
+the judgment that memory preallocate is insufficient;
 
-It is also found that when mem preallocate is not enough, it goes
-directly down without checking.
+"pages -= free_unnecessary_pages()" below will let pages to drop a lot,
+so I wonder if it makes sense to add a judgment here.
 
-xiongxin (2):
-  PM: hibernate: fix spelling mistake for annotation
-  PM: hibernate: add check of preallocate mem for image size pages
+Cc: stable@vger.kernel.org
+Signed-off-by: xiongxin <xiongxin@kylinos.cn>
+Signed-off-by: huanglei <huanglei@kylinos.cn>
+---
+ kernel/power/snapshot.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
- kernel/power/snapshot.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
-
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index c20ca5fb9adc..670abf89cf31 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -1738,6 +1738,7 @@ int hibernate_preallocate_memory(void)
+ 	struct zone *zone;
+ 	unsigned long saveable, size, max_size, count, highmem, pages = 0;
+ 	unsigned long alloc, save_highmem, pages_highmem, avail_normal;
++	unsigned long size_highmem;
+ 	ktime_t start, stop;
+ 	int error;
+ 
+@@ -1863,7 +1864,13 @@ int hibernate_preallocate_memory(void)
+ 		pages_highmem += size;
+ 		alloc -= size;
+ 		size = preallocate_image_memory(alloc, avail_normal);
+-		pages_highmem += preallocate_image_highmem(alloc - size);
++		size_highmem += preallocate_image_highmem(alloc - size);
++		if (size_highmem < (alloc - size)) {
++			pr_err("Image allocation is %lu pages short, exit\n",
++				alloc - size - pages_highmem);
++			goto err_out;
++		}
++		pages_highmem += size_highmem;
+ 		pages += pages_highmem + size;
+ 	}
+ 
 -- 
 2.25.1
 
