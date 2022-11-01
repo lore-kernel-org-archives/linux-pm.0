@@ -2,91 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E34C4332F
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 17:37:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89E00C4332F
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 18:09:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230518AbiKARhq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Nov 2022 13:37:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38466 "EHLO
+        id S230132AbiKASJp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Nov 2022 14:09:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55468 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231181AbiKARhn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2022 13:37:43 -0400
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 699161CB09
-        for <linux-pm@vger.kernel.org>; Tue,  1 Nov 2022 10:37:40 -0700 (PDT)
-Received: by mail-ed1-x533.google.com with SMTP id u24so13567120edd.13
-        for <linux-pm@vger.kernel.org>; Tue, 01 Nov 2022 10:37:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=cdUAsiAgmBJ1jbIAcY/gGR+Z/7ih0XBIpAP4mnSXYwg=;
-        b=U+3jcriNI6G3mRzAxSj20osZtTDZErBW8Nh3ObL1xuyZVmynG7VTQ6hdaJDZfvYuc4
-         BsAvfNmsSOYVQr1aPoTaBNp/Wjsp/mcsuXhQVkBEvgszY1b+jniCkvoAvlnhfUO9/7Ew
-         nYABzAW6uipYWW4pCOp3Jvxu/hanu2Vo9v1kg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=cdUAsiAgmBJ1jbIAcY/gGR+Z/7ih0XBIpAP4mnSXYwg=;
-        b=qU89293XOYQI06woxUuHm4RBMfiTdAHIFuTKRsJ0lWtYgxLmOEyC5LiSnGcK3J1P1q
-         F7Vfz5u+BCxaetCs/hLivVVkhifJiBLlj+cal2gkOgx5sC1VJIPw5aCD+/Fjg9FJV6l4
-         j9xmZBlaB7Q65W2CkWfu5VzuIFyFhkNrDF6PrnIsPraEDoDbXTmic/4aDYzft/a5/48f
-         CKSvvgy4odn5i7e8zuVDJMqxASio/R5E/SpPNNkZS6flsByYW8p2OqBIjl4Kev0wvXKv
-         jlA38rBldjwDH4vLoaDUQW1fX5RfDb7JOi78JRAAUqg1gDmKPhXhL9ax/N3bpTa0dpU2
-         D9sg==
-X-Gm-Message-State: ACrzQf0pmu8NiytZBLD/NpGXWfuc6uNMpMpboWLKTtNXE9hrSq4hSShP
-        YWxprEPmCNZVZFG7mlgbe/YoyR47j9l/1rmE
-X-Google-Smtp-Source: AMsMyM4oovNvYE2rTldzriYsx9FP6y3jXAIQ0D50132qFZPgFSlV3bpdc2AF+asi6Pz1mvesptLG9Q==
-X-Received: by 2002:a05:6402:5159:b0:462:3e9f:a0a4 with SMTP id n25-20020a056402515900b004623e9fa0a4mr19702820edd.313.1667324258800;
-        Tue, 01 Nov 2022 10:37:38 -0700 (PDT)
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com. [209.85.208.44])
-        by smtp.gmail.com with ESMTPSA id o7-20020a056402444700b00461aaa39efbsm4746229edb.0.2022.11.01.10.37.37
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Nov 2022 10:37:37 -0700 (PDT)
-Received: by mail-ed1-f44.google.com with SMTP id 21so22816844edv.3
-        for <linux-pm@vger.kernel.org>; Tue, 01 Nov 2022 10:37:37 -0700 (PDT)
-X-Received: by 2002:a05:6402:1947:b0:461:a47d:274 with SMTP id
- f7-20020a056402194700b00461a47d0274mr20093632edz.165.1667324257158; Tue, 01
- Nov 2022 10:37:37 -0700 (PDT)
+        with ESMTP id S229995AbiKASJo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2022 14:09:44 -0400
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40FF51CFD1;
+        Tue,  1 Nov 2022 11:09:42 -0700 (PDT)
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9ZNJ032058;
+        Tue, 1 Nov 2022 13:09:35 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1667326175;
+        bh=98NsNHJ9mWZw9/Smvouol/zmoEAz5/KbOnhXrW9NNDQ=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=a1y32Cef02dYf8Rg2KvQwoqJQJimyWgJJlceKYU765HBBkGB1+078UO1P1xlu9znQ
+         KnDkNEmwsjDfzdTtvsKU4incWax6mJaEDOcyYpvjHu/dqfEwNRlqsFvg+8CkYkCihd
+         AwJCtTD/2TYNOtFCSipp98eoGf82w2kpKl8ghnhM=
+Received: from DLEE102.ent.ti.com (dlee102.ent.ti.com [157.170.170.32])
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 2A1I9Z2s017618
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Tue, 1 Nov 2022 13:09:35 -0500
+Received: from DLEE109.ent.ti.com (157.170.170.41) by DLEE102.ent.ti.com
+ (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 1 Nov
+ 2022 13:09:35 -0500
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE109.ent.ti.com
+ (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
+ Frontend Transport; Tue, 1 Nov 2022 13:09:35 -0500
+Received: from maitri.dhcp.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9ZVn008602;
+        Tue, 1 Nov 2022 13:09:35 -0500
+From:   Vibhore Vardhan <vibhore@ti.com>
+To:     <nm@ti.com>, <vigneshr@ti.com>, <kristo@kernel.org>,
+        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
+        <rafael@kernel.org>, <viresh.kumar@linaro.org>
+CC:     <linux-arm-kernel@lists.infradead.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>
+Subject: [PATCH RESEND 2/5] cpufreq: dt-platdev: Blacklist ti,am625 SoC
+Date:   Tue, 1 Nov 2022 13:09:32 -0500
+Message-ID: <20221101180935.139268-3-vibhore@ti.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20221101180935.139268-1-vibhore@ti.com>
+References: <20221101180935.139268-1-vibhore@ti.com>
 MIME-Version: 1.0
-References: <20221031204320.22464-1-mario.limonciello@amd.com> <20221031204320.22464-2-mario.limonciello@amd.com>
-In-Reply-To: <20221031204320.22464-2-mario.limonciello@amd.com>
-From:   Sven van Ashbrook <svenva@chromium.org>
-Date:   Tue, 1 Nov 2022 13:37:26 -0400
-X-Gmail-Original-Message-ID: <CAM7w-FXAGki+k9aP0wV1Qs8dKqpPXgY9ZJR_a83ETrUF6ZRZOw@mail.gmail.com>
-Message-ID: <CAM7w-FXAGki+k9aP0wV1Qs8dKqpPXgY9ZJR_a83ETrUF6ZRZOw@mail.gmail.com>
-Subject: Re: [RFC 1/3] PM: Add a sysfs file to represent whether hardware
- reached the deepest state
-To:     Mario Limonciello <mario.limonciello@amd.com>
-Cc:     Rafael J Wysocki <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Len Brown <len.brown@intel.com>,
-        Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
-        S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
-        rrangel@chromium.org, platform-driver-x86@vger.kernel.org,
-        Rajat Jain <rajatja@google.com>,
-        David E Box <david.e.box@intel.com>,
-        Hans de Goede <hdegoede@redhat.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 31, 2022 at 4:43 PM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
->
-> +void pm_set_hw_deepest_state(u64 duration)
-> +{
-> +       suspend_stats.last_hw_deepest_state = duration;
+From: Dave Gerlach <d-gerlach@ti.com>
 
-I'm wondering if we could add a userspace notification here. Then
-userspace wouldn't have to synchronize with the suspend/resume state
-of the system when reading this entry.
+Add ti,am625 SoC to the blacklist as the ti-cpufreq driver will handle
+creating the cpufreq-dt platform device after it completes so it is not
+created twice.
 
-What about sysfs_notify() ? Or via udev?
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+Signed-off-by: Vibhore Vardhan <vibhore@ti.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> +}
-> +EXPORT_SYMBOL_GPL(pm_set_hw_deepest_state);
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 6ac3800db450..85ee11f79840 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -160,6 +160,7 @@ static const struct of_device_id blocklist[] __initconst = {
+ 	{ .compatible = "ti,am43", },
+ 	{ .compatible = "ti,dra7", },
+ 	{ .compatible = "ti,omap3", },
++	{ .compatible = "ti,am625", },
+ 
+ 	{ .compatible = "qcom,ipq8064", },
+ 	{ .compatible = "qcom,apq8064", },
+-- 
+2.34.1
+
