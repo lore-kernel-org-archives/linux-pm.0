@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CD1DC43219
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 18:09:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ADC4C41535
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 18:09:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230370AbiKASJs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Nov 2022 14:09:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55488 "EHLO
+        id S229650AbiKASJt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Nov 2022 14:09:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230425AbiKASJp (ORCPT
+        with ESMTP id S230261AbiKASJp (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2022 14:09:45 -0400
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF14B1D0E8;
-        Tue,  1 Nov 2022 11:09:44 -0700 (PDT)
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9aTH083738;
-        Tue, 1 Nov 2022 13:09:36 -0500
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B980A1D0D0;
+        Tue,  1 Nov 2022 11:09:43 -0700 (PDT)
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9Z8X066871;
+        Tue, 1 Nov 2022 13:09:35 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1667326176;
-        bh=aHfPf+ay0vTuzra6DofDgrduM8g8o28Yub+/Uu/B19Q=;
+        s=ti-com-17Q1; t=1667326175;
+        bh=zuc2d798pjg2cZJq4aTsVQVxPd6NLeA8WTnzeqH9IYg=;
         h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=JEcSkaHC0ykuoH7zYS+XXHizmjO16pr52Iia2v2KstNUeKlbq4Dlaoa2t0/rUEdDE
-         LaQ0QaThHIzm5m7CkqX0Bjeoruuh3m9+oayawUri/itWVr7KVegvHOTn52BsSVfl3Q
-         2JljI14U7FQI6qUSiYEiocfHYiH5eGQLXLtmN+ls=
-Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 2A1I9alH017625
+        b=nml7eN3xtPKWgOOOSL7rto7+nj8u1GpdloyYEmZgo5jcVCW2wH4ediMZETDxTMR1a
+         2DlKPYUDatjrCDB5T4E8iNG6RE5M00ADQqc6b085ECoVxjFbDj0sVsydSR6nYMPASk
+         q7ysvErDYA7UyaehMIEGeV2kCojNOBv40wEDkA+A=
+Received: from DFLE110.ent.ti.com (dfle110.ent.ti.com [10.64.6.31])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 2A1I9Zdl076789
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 1 Nov 2022 13:09:36 -0500
-Received: from DLEE103.ent.ti.com (157.170.170.33) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
+        Tue, 1 Nov 2022 13:09:35 -0500
+Received: from DFLE109.ent.ti.com (10.64.6.30) by DFLE110.ent.ti.com
+ (10.64.6.31) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 1 Nov
  2022 13:09:35 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE103.ent.ti.com
- (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE109.ent.ti.com
+ (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
  Frontend Transport; Tue, 1 Nov 2022 13:09:35 -0500
 Received: from maitri.dhcp.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9ZVq008602;
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9ZVm008602;
         Tue, 1 Nov 2022 13:09:35 -0500
 From:   Vibhore Vardhan <vibhore@ti.com>
 To:     <nm@ti.com>, <vigneshr@ti.com>, <kristo@kernel.org>,
@@ -46,9 +46,9 @@ To:     <nm@ti.com>, <vigneshr@ti.com>, <kristo@kernel.org>,
 CC:     <linux-arm-kernel@lists.infradead.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-pm@vger.kernel.org>
-Subject: [PATCH RESEND 5/5] arm64: dts: ti: k3-am625-sk: Add 1.4GHz OPP
-Date:   Tue, 1 Nov 2022 13:09:35 -0500
-Message-ID: <20221101180935.139268-6-vibhore@ti.com>
+Subject: [PATCH RESEND 1/5] cpufreq: ti-cpufreq: Add support for AM625
+Date:   Tue, 1 Nov 2022 13:09:31 -0500
+Message-ID: <20221101180935.139268-2-vibhore@ti.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20221101180935.139268-1-vibhore@ti.com>
 References: <20221101180935.139268-1-vibhore@ti.com>
@@ -60,38 +60,85 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The 1.4 GHz OPP requires supported silicon variant (T speed grade) and
-also VDD_CORE to be at 0.85V.  All production revisions of the AM625-SK
-have both so we can enable the 1.4 GHz OPP for it.  Any other boards
-based on this design should verify that they have the right silicon
-variant and the right power tree before adding 1.4 GHz support in their
-board dts file.
+From: Dave Gerlach <d-gerlach@ti.com>
 
+Add support for TI K3 AM625 SoC to read speed and revision values from
+hardware and pass to OPP layer.
+
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 Signed-off-by: Vibhore Vardhan <vibhore@ti.com>
 ---
- arch/arm64/boot/dts/ti/k3-am625-sk.dts | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/cpufreq/ti-cpufreq.c | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/ti/k3-am625-sk.dts b/arch/arm64/boot/dts/ti/k3-am625-sk.dts
-index 93a5f0817efc..4620ef5e19bb 100644
---- a/arch/arm64/boot/dts/ti/k3-am625-sk.dts
-+++ b/arch/arm64/boot/dts/ti/k3-am625-sk.dts
-@@ -31,6 +31,15 @@ chosen {
- 		bootargs = "console=ttyS2,115200n8 earlycon=ns16550a,mmio32,0x02800000";
- 	};
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index f64180dd2005..be4209d97cb3 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -39,6 +39,14 @@
+ #define OMAP34xx_ProdID_SKUID			0x4830A20C
+ #define OMAP3_SYSCON_BASE	(0x48000000 + 0x2000 + 0x270)
  
-+	opp-table {
-+		/* Add 1.4GHz OPP for am625-sk board. Requires VDD_CORE to be at 0.85V */
-+		opp-1400000000 {
-+			opp-hz = /bits/ 64 <1400000000>;
-+			opp-supported-hw = <0x01 0x0004>;
-+			clock-latency-ns = <6000000>;
-+		};
-+	};
++#define AM625_EFUSE_K_MPU_OPP			11
++#define AM625_EFUSE_S_MPU_OPP			19
++#define AM625_EFUSE_T_MPU_OPP			20
 +
- 	memory@80000000 {
- 		device_type = "memory";
- 		/* 2G RAM */
++#define AM625_SUPPORT_K_MPU_OPP			BIT(0)
++#define AM625_SUPPORT_S_MPU_OPP			BIT(1)
++#define AM625_SUPPORT_T_MPU_OPP			BIT(2)
++
+ #define VERSION_COUNT				2
+ 
+ struct ti_cpufreq_data;
+@@ -104,6 +112,25 @@ static unsigned long omap3_efuse_xlate(struct ti_cpufreq_data *opp_data,
+ 	return BIT(efuse);
+ }
+ 
++static unsigned long am625_efuse_xlate(struct ti_cpufreq_data *opp_data,
++				       unsigned long efuse)
++{
++	unsigned long calculated_efuse = AM625_SUPPORT_K_MPU_OPP;
++
++	switch (efuse) {
++	case AM625_EFUSE_T_MPU_OPP:
++		calculated_efuse |= AM625_SUPPORT_T_MPU_OPP;
++		fallthrough;
++	case AM625_EFUSE_S_MPU_OPP:
++		calculated_efuse |= AM625_SUPPORT_S_MPU_OPP;
++		fallthrough;
++	case AM625_EFUSE_K_MPU_OPP:
++		calculated_efuse |= AM625_SUPPORT_K_MPU_OPP;
++	}
++
++	return calculated_efuse;
++}
++
+ static struct ti_cpufreq_soc_data am3x_soc_data = {
+ 	.efuse_xlate = amx3_efuse_xlate,
+ 	.efuse_fallback = AM33XX_800M_ARM_MPU_MAX_FREQ,
+@@ -198,6 +225,14 @@ static struct ti_cpufreq_soc_data am3517_soc_data = {
+ 	.multi_regulator = false,
+ };
+ 
++static struct ti_cpufreq_soc_data am625_soc_data = {
++	.efuse_xlate = am625_efuse_xlate,
++	.efuse_offset = 0x0018,
++	.efuse_mask = 0x07c0,
++	.efuse_shift = 0x6,
++	.rev_offset = 0x0014,
++	.multi_regulator = false,
++};
+ 
+ /**
+  * ti_cpufreq_get_efuse() - Parse and return efuse value present on SoC
+@@ -301,6 +336,7 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
+ 	{ .compatible = "ti,dra7", .data = &dra7_soc_data },
+ 	{ .compatible = "ti,omap34xx", .data = &omap34xx_soc_data, },
+ 	{ .compatible = "ti,omap36xx", .data = &omap36xx_soc_data, },
++	{ .compatible = "ti,am625", .data = &am625_soc_data, },
+ 	/* legacy */
+ 	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
+ 	{ .compatible = "ti,omap3630", .data = &omap36xx_soc_data, },
 -- 
 2.34.1
 
