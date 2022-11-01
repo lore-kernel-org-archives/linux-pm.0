@@ -2,143 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ADC4C41535
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 18:09:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 548EDC43217
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Nov 2022 18:17:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229650AbiKASJt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Nov 2022 14:09:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55484 "EHLO
+        id S229933AbiKASRb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Nov 2022 14:17:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230261AbiKASJp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2022 14:09:45 -0400
-Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B980A1D0D0;
-        Tue,  1 Nov 2022 11:09:43 -0700 (PDT)
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9Z8X066871;
-        Tue, 1 Nov 2022 13:09:35 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1667326175;
-        bh=zuc2d798pjg2cZJq4aTsVQVxPd6NLeA8WTnzeqH9IYg=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=nml7eN3xtPKWgOOOSL7rto7+nj8u1GpdloyYEmZgo5jcVCW2wH4ediMZETDxTMR1a
-         2DlKPYUDatjrCDB5T4E8iNG6RE5M00ADQqc6b085ECoVxjFbDj0sVsydSR6nYMPASk
-         q7ysvErDYA7UyaehMIEGeV2kCojNOBv40wEDkA+A=
-Received: from DFLE110.ent.ti.com (dfle110.ent.ti.com [10.64.6.31])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 2A1I9Zdl076789
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 1 Nov 2022 13:09:35 -0500
-Received: from DFLE109.ent.ti.com (10.64.6.30) by DFLE110.ent.ti.com
- (10.64.6.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6; Tue, 1 Nov
- 2022 13:09:35 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE109.ent.ti.com
- (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.6 via
- Frontend Transport; Tue, 1 Nov 2022 13:09:35 -0500
-Received: from maitri.dhcp.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 2A1I9ZVm008602;
-        Tue, 1 Nov 2022 13:09:35 -0500
-From:   Vibhore Vardhan <vibhore@ti.com>
-To:     <nm@ti.com>, <vigneshr@ti.com>, <kristo@kernel.org>,
-        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <rafael@kernel.org>, <viresh.kumar@linaro.org>
-CC:     <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>
-Subject: [PATCH RESEND 1/5] cpufreq: ti-cpufreq: Add support for AM625
-Date:   Tue, 1 Nov 2022 13:09:31 -0500
-Message-ID: <20221101180935.139268-2-vibhore@ti.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20221101180935.139268-1-vibhore@ti.com>
-References: <20221101180935.139268-1-vibhore@ti.com>
+        with ESMTP id S229926AbiKASR3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2022 14:17:29 -0400
+Received: from mail.marcansoft.com (marcansoft.com [212.63.210.85])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 064A810548;
+        Tue,  1 Nov 2022 11:17:26 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: marcan@marcan.st)
+        by mail.marcansoft.com (Postfix) with ESMTPSA id 90F894267F;
+        Tue,  1 Nov 2022 18:17:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=marcan.st; s=default;
+        t=1667326644; bh=GJ6UagwrNwG/uy6EayoDIRM68iGK+xdSGDUz3nYaQYk=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=zL6q+tNEyi5i/2DUXyv6d24t0f5qiyTKF5Oyf7Zy6rigRBpX7SEPw6hEZwy7xg7Zl
+         1IM4ww4DszMY8f0McbZqzDAnwG6/J8eMNfLfWGZW702nTigM6q5w2cR8YN/xVp0x/l
+         Ybi6RNCHP3YadSkYjDe5nvu8Gt5fkaS40rPfkU8wZMjBcUVZZzobfnSsIAGm+jFcvE
+         +M6ZptTWWuJtYaSGMtURzQPCZ4WPNEikroi1LWyJ1HE1QnMtD19PcNViH5naCsCMgn
+         jeSzUbZ8gEF8b7gcurOGoyVhxcsTUqcBKMMo3BjpO5n3AaKEMj1ffglaHIFIqzgiij
+         yHxuxbK5p17Dw==
+Message-ID: <c791b776-c90f-4ee5-b025-79352937bf62@marcan.st>
+Date:   Wed, 2 Nov 2022 03:17:17 +0900
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH v3 4/5] cpufreq: apple-soc: Add new driver to control
+ Apple SoC CPU P-states
+Content-Language: en-US
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sven Peter <sven@svenpeter.dev>,
+        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>, Marc Zyngier <maz@kernel.org>,
+        Mark Kettenis <mark.kettenis@xs4all.nl>, asahi@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20221024043925.25379-1-marcan@marcan.st>
+ <20221024043925.25379-5-marcan@marcan.st>
+ <CAPDyKFqYr5NDhZNT=EHWzWq=eCZKbF8Z3Y0eRHY8-nY7Ej0PBw@mail.gmail.com>
+From:   Hector Martin <marcan@marcan.st>
+In-Reply-To: <CAPDyKFqYr5NDhZNT=EHWzWq=eCZKbF8Z3Y0eRHY8-nY7Ej0PBw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dave Gerlach <d-gerlach@ti.com>
+On 02/11/2022 00.16, Ulf Hansson wrote:
+> On Mon, 24 Oct 2022 at 06:40, Hector Martin <marcan@marcan.st> wrote:
+>>
+>> This driver implements CPU frequency scaling for Apple Silicon SoCs,
+>> including M1 (t8103), M1 Max/Pro/Ultra (t600x), and M2 (t8112).
+>>
+>> Each CPU cluster has its own register set, and frequency management is
+>> fully automated by the hardware; the driver only has to write one
+>> register. There is boost frequency support, but the hardware will only
+>> allow their use if only a subset of cores in a cluster are in
+>> non-deep-idle. Since we don't support deep idle yet, these frequencies
+>> are not achievable, but the driver supports them. They will remain
+>> disabled in the device tree until deep idle is implemented, to avoid
+>> confusing users.
+> 
+> Out of curiosity, may I ask if this implies the need of a
+> synchronization mechanism on the Linux side? Or is the boost frequency
+> dynamically managed solely by HW/FW?
 
-Add support for TI K3 AM625 SoC to read speed and revision values from
-hardware and pass to OPP layer.
+It's managed by hardware - Linux gets to request whatever frequency it
+wants, and the hardware will limit it to what is achievable given the
+current idle states within the cluster (and it will change automatically
+with them). So if Linux asks for 3.2 GHz but there are no deep idle
+cores in the cluster, you get 3.0. If there's one deep idle core, you
+get 3.1 (I think). Three, 3.2. So this driver doesn't have to do
+anything (and will report the correct current-frequency as long as the
+per-SoC compatible is matched; without that this feature is disabled and
+it just reports the requested frequency). We could enable the boost
+states today just fine, it's just that they would never actually be
+reached by the hardware.
 
-Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-Signed-off-by: Vibhore Vardhan <vibhore@ti.com>
----
- drivers/cpufreq/ti-cpufreq.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
-
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index f64180dd2005..be4209d97cb3 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -39,6 +39,14 @@
- #define OMAP34xx_ProdID_SKUID			0x4830A20C
- #define OMAP3_SYSCON_BASE	(0x48000000 + 0x2000 + 0x270)
- 
-+#define AM625_EFUSE_K_MPU_OPP			11
-+#define AM625_EFUSE_S_MPU_OPP			19
-+#define AM625_EFUSE_T_MPU_OPP			20
-+
-+#define AM625_SUPPORT_K_MPU_OPP			BIT(0)
-+#define AM625_SUPPORT_S_MPU_OPP			BIT(1)
-+#define AM625_SUPPORT_T_MPU_OPP			BIT(2)
-+
- #define VERSION_COUNT				2
- 
- struct ti_cpufreq_data;
-@@ -104,6 +112,25 @@ static unsigned long omap3_efuse_xlate(struct ti_cpufreq_data *opp_data,
- 	return BIT(efuse);
- }
- 
-+static unsigned long am625_efuse_xlate(struct ti_cpufreq_data *opp_data,
-+				       unsigned long efuse)
-+{
-+	unsigned long calculated_efuse = AM625_SUPPORT_K_MPU_OPP;
-+
-+	switch (efuse) {
-+	case AM625_EFUSE_T_MPU_OPP:
-+		calculated_efuse |= AM625_SUPPORT_T_MPU_OPP;
-+		fallthrough;
-+	case AM625_EFUSE_S_MPU_OPP:
-+		calculated_efuse |= AM625_SUPPORT_S_MPU_OPP;
-+		fallthrough;
-+	case AM625_EFUSE_K_MPU_OPP:
-+		calculated_efuse |= AM625_SUPPORT_K_MPU_OPP;
-+	}
-+
-+	return calculated_efuse;
-+}
-+
- static struct ti_cpufreq_soc_data am3x_soc_data = {
- 	.efuse_xlate = amx3_efuse_xlate,
- 	.efuse_fallback = AM33XX_800M_ARM_MPU_MAX_FREQ,
-@@ -198,6 +225,14 @@ static struct ti_cpufreq_soc_data am3517_soc_data = {
- 	.multi_regulator = false,
- };
- 
-+static struct ti_cpufreq_soc_data am625_soc_data = {
-+	.efuse_xlate = am625_efuse_xlate,
-+	.efuse_offset = 0x0018,
-+	.efuse_mask = 0x07c0,
-+	.efuse_shift = 0x6,
-+	.rev_offset = 0x0014,
-+	.multi_regulator = false,
-+};
- 
- /**
-  * ti_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-@@ -301,6 +336,7 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
- 	{ .compatible = "ti,dra7", .data = &dra7_soc_data },
- 	{ .compatible = "ti,omap34xx", .data = &omap34xx_soc_data, },
- 	{ .compatible = "ti,omap36xx", .data = &omap36xx_soc_data, },
-+	{ .compatible = "ti,am625", .data = &am625_soc_data, },
- 	/* legacy */
- 	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
- 	{ .compatible = "ti,omap3630", .data = &omap36xx_soc_data, },
--- 
-2.34.1
-
+- Hector
