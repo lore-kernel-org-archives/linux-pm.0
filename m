@@ -2,50 +2,50 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFCF1C43217
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Nov 2022 18:04:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DF3BC4321E
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Nov 2022 18:04:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230489AbiKCSEs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Nov 2022 14:04:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37472 "EHLO
+        id S230258AbiKCSEv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Nov 2022 14:04:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230297AbiKCSEE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Nov 2022 14:04:04 -0400
-Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 711E6233AE
-        for <linux-pm@vger.kernel.org>; Thu,  3 Nov 2022 11:01:42 -0700 (PDT)
-Received: by mail-pj1-x102a.google.com with SMTP id k5so2385259pjo.5
-        for <linux-pm@vger.kernel.org>; Thu, 03 Nov 2022 11:01:42 -0700 (PDT)
+        with ESMTP id S229805AbiKCSEG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Nov 2022 14:04:06 -0400
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24F5B233BD
+        for <linux-pm@vger.kernel.org>; Thu,  3 Nov 2022 11:01:47 -0700 (PDT)
+Received: by mail-pj1-x1032.google.com with SMTP id e7-20020a17090a77c700b00216928a3917so1138075pjs.4
+        for <linux-pm@vger.kernel.org>; Thu, 03 Nov 2022 11:01:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=YgNHjxBxYUWB/PCbKrlrwrwc9VDJqlW54PKdqCwW8ic=;
-        b=AStpaMSzeObtZoItnIgikawKuuo5Qq71b1rLR3rkcbld1k90YwIpcDKtGID+9H3Wxv
-         mIkg68yA2nOb1F042C3Gf6qWKKYczZzj0+RfL1qnS2jhStKdZN/l3jY/d76fv4Jv5xT+
-         2oHWymVaZW0NMQTpKgdvsa1VfM2CLlGnYdLxM=
+        bh=izZdOIN6JWP3fwMuNlCfXVu66JA2QFEY9SoPm54SNBw=;
+        b=MOY3PJGr2LIy205MrPpag/ClsGw4MP56tI7WpOwNj6gRfuTiQCVn98MtRZStlxteOr
+         z/rYnBoJ3tFl3LO6m2/egnvL4bcl7xkZx16guu7qdEyEmyMdVtcyQ9dR/pPXZQo6EsME
+         JCOc9PvVPmrBN7ZLPAp3bUoEUQZ3DsvlFd5so=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=YgNHjxBxYUWB/PCbKrlrwrwc9VDJqlW54PKdqCwW8ic=;
-        b=hRkTRwMpzzxQfO82E2zPS41Hv7Q/AiP2Y6AX4xNBzGAgThZTpwefwUGMTXGWkQalp2
-         j/J8YrSevOSbmaxOyjDNgdUgsoIMxGHseZLrt6ECg9Xd2Ga8m81jX9lIBSctr/ug+LnV
-         czIqAhxu+4iftYMCj+PAzP804rtuVqeNqDhRwlGNC8+IxjEQnuwQYBFtDhxnLApk2vZU
-         aF+DOAR9HbMQO173hQ/McQ6IjBnRhSH2wP3arcNg2OMAYfKiviMn6fpU+8u72n628qIO
-         zUBEztQg+R5M7hA/9xKXEHiwtmbDPBvgtWfQEVMuX+GNn3LhtZ+EOshQ41UOI7R+aPhZ
-         xvzw==
-X-Gm-Message-State: ACrzQf3mJsiwtvogF5janx5+n8hAQAgcBXCD2xJT6z9dm6GXEJVUorSv
-        JkV1+vkVTyjBX5rGExSlDVVY3Q==
-X-Google-Smtp-Source: AMsMyM7klMwRzFRi1wf5io00iXyMCbSIKPI7ThN1LZsPqMDPIRHMOxaEDuixIyR7R/CPv5Fs/C86zA==
-X-Received: by 2002:a17:902:8e84:b0:178:57e4:805b with SMTP id bg4-20020a1709028e8400b0017857e4805bmr31426128plb.144.1667498502037;
-        Thu, 03 Nov 2022 11:01:42 -0700 (PDT)
+        bh=izZdOIN6JWP3fwMuNlCfXVu66JA2QFEY9SoPm54SNBw=;
+        b=E67G6EubtpoeJRn/YTk22m25/OauDuWi8JakMtA4aFj9REbWXORlTc2Ery36pNJXXh
+         H0jzkwFEMWe0BBUJH5tCVeJ/E4TtxVovyX1Rtyk35WN9lKZVZgVn2n+3ewjnjJJW0Hu6
+         8gmmgfimqHmB+LeRdQf+TlaT9kVqCGODvfDRyqR+bml+DoJ8AdRG3Htzkuobw0twv8A2
+         8uH2hFZe6YWCqkfNWNR/SAHmpU4Vq6XizuB8PT9r3FSlcNSCcXmnNchvumFVY8eRtXl8
+         hDd2JCi1QsQRWEYoWzv3jnkrmX6FlbQ0X+IDqQkzaFbam0RSKr84cSwd87ejpAUpVshr
+         fOOQ==
+X-Gm-Message-State: ACrzQf1jcPqCoKculWjBA29i4XXP0ma0lEpJGhWCaYk1zr+ecqU53BJJ
+        nZJ2fIVebyPqSUW/eObsu5xTlQ==
+X-Google-Smtp-Source: AMsMyM6RmbXOOHxWXmI1WbxbS7/D6I8ewM4LRqfQX2jVykTakTV/EqKIJaeg9+BsosfNX6F7K9BLXw==
+X-Received: by 2002:a17:90a:540e:b0:210:1e26:9422 with SMTP id z14-20020a17090a540e00b002101e269422mr31496427pjh.100.1667498506839;
+        Thu, 03 Nov 2022 11:01:46 -0700 (PDT)
 Received: from evgreen-glaptop.lan ([98.45.28.95])
-        by smtp.gmail.com with ESMTPSA id t12-20020a1709027fcc00b00177fb862a87sm1000277plb.20.2022.11.03.11.01.40
+        by smtp.gmail.com with ESMTPSA id t12-20020a1709027fcc00b00177fb862a87sm1000277plb.20.2022.11.03.11.01.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Nov 2022 11:01:41 -0700 (PDT)
+        Thu, 03 Nov 2022 11:01:46 -0700 (PDT)
 From:   Evan Green <evgreen@chromium.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     corbet@lwn.net, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
@@ -59,10 +59,15 @@ Cc:     corbet@lwn.net, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
         Matthew Garrett <matthewgarrett@google.com>,
         Matthew Garrett <mjg59@google.com>,
         Evan Green <evgreen@chromium.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>, Peter Huewe <peterhuewe@gmx.de>
-Subject: [PATCH v4 03/11] tpm: Allow PCR 23 to be restricted to kernel-only use
-Date:   Thu,  3 Nov 2022 11:01:11 -0700
-Message-Id: <20221103105558.v4.3.I9ded8c8caad27403e9284dfc78ad6cbd845bc98d@changeid>
+        Ben Boeckel <linux@me.benboeckel.net>,
+        David Howells <dhowells@redhat.com>,
+        James Morris <jmorris@namei.org>,
+        Paul Moore <paul@paul-moore.com>,
+        "Serge E. Hallyn" <serge@hallyn.com>, keyrings@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: [PATCH v4 05/11] security: keys: trusted: Allow storage of PCR values in creation data
+Date:   Thu,  3 Nov 2022 11:01:13 -0700
+Message-Id: <20221103105558.v4.5.I32591db064b6cdc91850d777f363c9d05c985b39@changeid>
 X-Mailer: git-send-email 2.38.1.431.g37b22c650d-goog
 In-Reply-To: <20221103180120.752659-1-evgreen@chromium.org>
 References: <20221103180120.752659-1-evgreen@chromium.org>
@@ -74,170 +79,137 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Matthew Garrett <matthewgarrett@google.com>
 
-Introduce a new Kconfig, TCG_TPM_RESTRICT_PCR, which if enabled
-restricts usermode's ability to extend or reset PCR 23.
+When TPMs generate keys, they can also generate some information
+describing the state of the PCRs at creation time. This data can then
+later be certified by the TPM, allowing verification of the PCR values.
+This allows us to determine the state of the system at the time a key
+was generated. Add an additional argument to the trusted key creation
+options, allowing the user to provide the set of PCRs that should have
+their values incorporated into the creation data.
 
-Under certain circumstances it might be desirable to enable the creation
-of TPM-backed secrets that are only accessible to the kernel. In an
-ideal world this could be achieved by using TPM localities, but these
-don't appear to be available on consumer systems. An alternative is to
-simply block userland from modifying one of the resettable PCRs, leaving
-it available to the kernel. If the kernel ensures that no userland can
-access the TPM while it is carrying out work, it can reset PCR 23,
-extend it to an arbitrary value, create or load a secret, and then reset
-the PCR again. Even if userland somehow obtains the sealed material, it
-will be unable to unseal it since PCR 23 will never be in the
-appropriate state.
-
-This Kconfig is only properly supported for systems with TPM2 devices.
-For systems with TPM1 devices, having this Kconfig enabled completely
-restricts usermode's access to the TPM. TPM1 contains support for
-tunnelled transports, which usermode could use to smuggle commands
-through that this Kconfig is attempting to restrict.
-
-Link: https://lore.kernel.org/lkml/20210220013255.1083202-3-matthewgarrett@google.com/
+Link: https://lore.kernel.org/lkml/20210220013255.1083202-6-matthewgarrett@google.com/
 Signed-off-by: Matthew Garrett <mjg59@google.com>
 Signed-off-by: Evan Green <evgreen@chromium.org>
+Reviewed-by: Ben Boeckel <linux@me.benboeckel.net>
 ---
 
-Changes in v4:
- - Augment the commit message (Jarkko)
+(no changes since v3)
 
 Changes in v3:
- - Fix up commit message (Jarkko)
- - tpm2_find_and_validate_cc() was split (Jarkko)
- - Simply fully restrict TPM1 since v2 failed to account for tunnelled
-   transport sessions (Stefan and Jarkko).
+ - Clarified creationpcrs documentation (Ben)
 
-Changes in v2:
- - Fixed sparse warnings
+ .../security/keys/trusted-encrypted.rst       |  6 +++++
+ include/keys/trusted-type.h                   |  1 +
+ security/keys/trusted-keys/trusted_tpm1.c     |  9 +++++++
+ security/keys/trusted-keys/trusted_tpm2.c     | 25 +++++++++++++++++--
+ 4 files changed, 39 insertions(+), 2 deletions(-)
 
- drivers/char/tpm/Kconfig          | 12 ++++++++++++
- drivers/char/tpm/tpm-dev-common.c |  8 ++++++++
- drivers/char/tpm/tpm.h            | 19 +++++++++++++++++++
- drivers/char/tpm/tpm1-cmd.c       | 13 +++++++++++++
- drivers/char/tpm/tpm2-cmd.c       | 22 ++++++++++++++++++++++
- 5 files changed, 74 insertions(+)
-
-diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
-index 927088b2c3d3f2..c8ed54c66e399a 100644
---- a/drivers/char/tpm/Kconfig
-+++ b/drivers/char/tpm/Kconfig
-@@ -211,4 +211,16 @@ config TCG_FTPM_TEE
- 	  This driver proxies for firmware TPM running in TEE.
+diff --git a/Documentation/security/keys/trusted-encrypted.rst b/Documentation/security/keys/trusted-encrypted.rst
+index 9bc9db8ec6517c..a1872964fe862f 100644
+--- a/Documentation/security/keys/trusted-encrypted.rst
++++ b/Documentation/security/keys/trusted-encrypted.rst
+@@ -199,6 +199,12 @@ Usage::
+        policyhandle= handle to an authorization policy session that defines the
+                      same policy and with the same hash algorithm as was used to
+                      seal the key.
++       creationpcrs= hex integer representing the set of PCRs to be
++                     included in the creation data. For each bit set, the
++                     corresponding PCR will be included in the key creation
++                     data. Bit 0 corresponds to PCR0. Currently only the first
++                     PC standard 24 PCRs are supported on the currently active
++                     bank. Leading zeroes are optional. TPM2 only.
  
- source "drivers/char/tpm/st33zp24/Kconfig"
-+
-+config TCG_TPM_RESTRICT_PCR
-+	bool "Restrict userland access to PCR 23"
-+	depends on TCG_TPM
-+	help
-+	  If set, block userland from extending or resetting PCR 23. This allows it
-+	  to be restricted to in-kernel use, preventing userland from being able to
-+	  make use of data sealed to the TPM by the kernel. This is required for
-+	  secure hibernation support, but should be left disabled if any userland
-+	  may require access to PCR23. This is a TPM2-only feature, and if enabled
-+	  on a TPM1 machine will cause all usermode TPM commands to return EPERM due
-+	  to the complications introduced by tunnelled sessions in TPM1.2.
- endif # TCG_TPM
-diff --git a/drivers/char/tpm/tpm-dev-common.c b/drivers/char/tpm/tpm-dev-common.c
-index dc4c0a0a512903..7a4e618c7d1942 100644
---- a/drivers/char/tpm/tpm-dev-common.c
-+++ b/drivers/char/tpm/tpm-dev-common.c
-@@ -198,6 +198,14 @@ ssize_t tpm_common_write(struct file *file, const char __user *buf,
- 	priv->response_read = false;
- 	*off = 0;
+ "keyctl print" returns an ascii hex copy of the sealed key, which is in standard
+ TPM_STORED_DATA format.  The key length for new keys are always in bytes.
+diff --git a/include/keys/trusted-type.h b/include/keys/trusted-type.h
+index 209086fed240a5..8523d41507b2a4 100644
+--- a/include/keys/trusted-type.h
++++ b/include/keys/trusted-type.h
+@@ -54,6 +54,7 @@ struct trusted_key_options {
+ 	uint32_t policydigest_len;
+ 	unsigned char policydigest[MAX_DIGEST_SIZE];
+ 	uint32_t policyhandle;
++	uint32_t creation_pcrs;
+ };
  
-+	if (priv->chip->flags & TPM_CHIP_FLAG_TPM2)
-+		ret = tpm2_cmd_restricted(priv->chip, priv->data_buffer, size);
-+	else
-+		ret = tpm1_cmd_restricted(priv->chip, priv->data_buffer, size);
-+
-+	if (ret)
-+		goto out;
-+
- 	/*
- 	 * If in nonblocking mode schedule an async job to send
- 	 * the command return the size.
-diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-index f1e0f490176f01..c0845e3f9eda17 100644
---- a/drivers/char/tpm/tpm.h
-+++ b/drivers/char/tpm/tpm.h
-@@ -245,4 +245,23 @@ void tpm_bios_log_setup(struct tpm_chip *chip);
- void tpm_bios_log_teardown(struct tpm_chip *chip);
- int tpm_dev_common_init(void);
- void tpm_dev_common_exit(void);
-+
-+#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-+#define TPM_RESTRICTED_PCR 23
-+
-+int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
-+int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
-+#else
-+static inline int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
-+				      size_t size)
-+{
-+	return 0;
-+}
-+
-+static inline int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
-+				      size_t size)
-+{
-+	return 0;
-+}
-+#endif
- #endif
-diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
-index cf64c738510529..1869e89215fcb9 100644
---- a/drivers/char/tpm/tpm1-cmd.c
-+++ b/drivers/char/tpm/tpm1-cmd.c
-@@ -811,3 +811,16 @@ int tpm1_get_pcr_allocation(struct tpm_chip *chip)
+ struct trusted_key_ops {
+diff --git a/security/keys/trusted-keys/trusted_tpm1.c b/security/keys/trusted-keys/trusted_tpm1.c
+index aa108bea6739b3..2975827c01bec0 100644
+--- a/security/keys/trusted-keys/trusted_tpm1.c
++++ b/security/keys/trusted-keys/trusted_tpm1.c
+@@ -713,6 +713,7 @@ enum {
+ 	Opt_hash,
+ 	Opt_policydigest,
+ 	Opt_policyhandle,
++	Opt_creationpcrs,
+ };
  
- 	return 0;
- }
-+
-+#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-+int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
-+{
-+	/*
-+	 * Restrict all usermode commands on TPM1.2. Ideally we'd just restrict
-+	 * TPM_ORD_PCR_EXTEND and TPM_ORD_PCR_RESET, but TPM1.2 also supports
-+	 * tunnelled transport sessions where the kernel would be unable to filter
-+	 * commands.
-+	 */
-+	return -EPERM;
-+}
-+#endif
-diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
-index 303ce2ea02a4b0..e0503cfd7bcfee 100644
---- a/drivers/char/tpm/tpm2-cmd.c
-+++ b/drivers/char/tpm/tpm2-cmd.c
-@@ -778,3 +778,25 @@ int tpm2_find_cc(struct tpm_chip *chip, u32 cc)
+ static const match_table_t key_tokens = {
+@@ -725,6 +726,7 @@ static const match_table_t key_tokens = {
+ 	{Opt_hash, "hash=%s"},
+ 	{Opt_policydigest, "policydigest=%s"},
+ 	{Opt_policyhandle, "policyhandle=%s"},
++	{Opt_creationpcrs, "creationpcrs=%s"},
+ 	{Opt_err, NULL}
+ };
  
- 	return -1;
- }
+@@ -858,6 +860,13 @@ static int getoptions(char *c, struct trusted_key_payload *pay,
+ 				return -EINVAL;
+ 			opt->policyhandle = handle;
+ 			break;
++		case Opt_creationpcrs:
++			if (!tpm2)
++				return -EINVAL;
++			res = kstrtoint(args[0].from, 16, &opt->creation_pcrs);
++			if (res < 0)
++				return -EINVAL;
++			break;
+ 		default:
+ 			return -EINVAL;
+ 		}
+diff --git a/security/keys/trusted-keys/trusted_tpm2.c b/security/keys/trusted-keys/trusted_tpm2.c
+index e1388d7d799a36..a7ad83bc0e5396 100644
+--- a/security/keys/trusted-keys/trusted_tpm2.c
++++ b/security/keys/trusted-keys/trusted_tpm2.c
+@@ -401,7 +401,7 @@ int tpm2_seal_trusted(struct tpm_chip *chip,
+ 	struct tpm_buf buf;
+ 	u32 hash;
+ 	u32 flags;
+-	int i;
++	int i, j;
+ 	int rc;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(tpm2_hash_map); i++) {
+@@ -470,7 +470,28 @@ int tpm2_seal_trusted(struct tpm_chip *chip,
+ 	tpm_buf_append_u16(&buf, 0);
+ 
+ 	/* creation PCR */
+-	tpm_buf_append_u32(&buf, 0);
++	if (options->creation_pcrs) {
++		/* One bank */
++		tpm_buf_append_u32(&buf, 1);
++		/* Which bank to use */
++		tpm_buf_append_u16(&buf, hash);
++		/* Length of the PCR bitmask */
++		tpm_buf_append_u8(&buf, 3);
++		/* PCR bitmask */
++		for (i = 0; i < 3; i++) {
++			char tmp = 0;
 +
-+#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-+int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
-+{
-+	int cc = tpm2_find_and_validate_cc(chip, NULL, buffer, size);
-+	__be32 *handle;
++			for (j = 0; j < 8; j++) {
++				char bit = (i * 8) + j;
 +
-+	switch (cc) {
-+	case TPM2_CC_PCR_EXTEND:
-+	case TPM2_CC_PCR_RESET:
-+		if (size < (TPM_HEADER_SIZE + sizeof(u32)))
-+			return -EINVAL;
-+
-+		handle = (__be32 *)&buffer[TPM_HEADER_SIZE];
-+		if (be32_to_cpu(*handle) == TPM_RESTRICTED_PCR)
-+			return -EPERM;
-+		break;
++				if (options->creation_pcrs & (1 << bit))
++					tmp |= (1 << j);
++			}
++			tpm_buf_append_u8(&buf, tmp);
++		}
++	} else {
++		tpm_buf_append_u32(&buf, 0);
 +	}
-+
-+	return 0;
-+}
-+#endif
+ 
+ 	if (buf.flags & TPM_BUF_OVERFLOW) {
+ 		rc = -E2BIG;
 -- 
 2.38.1.431.g37b22c650d-goog
 
