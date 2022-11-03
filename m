@@ -2,50 +2,50 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 133FCC4167B
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Nov 2022 18:04:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFCF1C43217
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Nov 2022 18:04:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230254AbiKCSEt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Nov 2022 14:04:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37546 "EHLO
+        id S230489AbiKCSEs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Nov 2022 14:04:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229485AbiKCSEE (ORCPT
+        with ESMTP id S230297AbiKCSEE (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Nov 2022 14:04:04 -0400
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7581A22BF6
-        for <linux-pm@vger.kernel.org>; Thu,  3 Nov 2022 11:01:38 -0700 (PDT)
-Received: by mail-pj1-x1033.google.com with SMTP id gw22so2394838pjb.3
-        for <linux-pm@vger.kernel.org>; Thu, 03 Nov 2022 11:01:38 -0700 (PDT)
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 711E6233AE
+        for <linux-pm@vger.kernel.org>; Thu,  3 Nov 2022 11:01:42 -0700 (PDT)
+Received: by mail-pj1-x102a.google.com with SMTP id k5so2385259pjo.5
+        for <linux-pm@vger.kernel.org>; Thu, 03 Nov 2022 11:01:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=lM9Z5v7Eu604CuNLTlsjSA95eezHukKIbUcTBhCY+mI=;
-        b=CvFb2x1b3z+i8giCOFLIxOTr2h/EG7j7EOr7ZFJmGhsDpF8OGa6M8BuPcydgaJdIwN
-         A12osLRgjAjuT+xh6XMrP3FqWCEwBgabYCyexK4WkbweBlnA/aMbv771mWFp8ujR+YLR
-         SFcZhIMdAV5+Bbt+pF9eqILuLuAuvFSKVHTc8=
+        bh=YgNHjxBxYUWB/PCbKrlrwrwc9VDJqlW54PKdqCwW8ic=;
+        b=AStpaMSzeObtZoItnIgikawKuuo5Qq71b1rLR3rkcbld1k90YwIpcDKtGID+9H3Wxv
+         mIkg68yA2nOb1F042C3Gf6qWKKYczZzj0+RfL1qnS2jhStKdZN/l3jY/d76fv4Jv5xT+
+         2oHWymVaZW0NMQTpKgdvsa1VfM2CLlGnYdLxM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=lM9Z5v7Eu604CuNLTlsjSA95eezHukKIbUcTBhCY+mI=;
-        b=230MgxRMHYLbm5tIvPZrsqcFTntOCVXN0d0MezaPEQfr5A/OuFcAs83ztoYzwI5dyf
-         /MLpd+ful+W2t5lh2JlRe+IPYMQCGWP9Gr6ikh9FsUK/4ZAjWO4k6xKH02PmQXaLEdFd
-         ovSvC8oNUzYXNKc6GKFgvc6FBVpcTWuleRR/fr9ykDq+iBSCQlxDBdqsJBLSaWrsFWGp
-         gAR6ZtI6Oc/VoMSijKYUjDJZXfZVhMj9hcux2ikixIA9I7PK7SKwOU0H603HiNMPAydA
-         YBa8xzlEvBwroDPfMOa2sijGTGJ8g097f+eHZ+bLIVPzI6PKWbRNQFZGFvgabLfW+GKE
-         PEeg==
-X-Gm-Message-State: ACrzQf0VX6bpctZRpeXp9/lJN0V+BdeJ4nuAMKv+3DSF7UaZMEfHL/Jy
-        +UgA/Jfdkxa+4rSLpimyE16VYQ==
-X-Google-Smtp-Source: AMsMyM4BFtMIHZPkyPImjndEgL8twoWmXUd1CLFYolLyArfMGqdQQ5DZVSgLhAeK40Pvt2w0iVF0AA==
-X-Received: by 2002:a17:90b:1918:b0:213:d97c:c6c9 with SMTP id mp24-20020a17090b191800b00213d97cc6c9mr24352877pjb.198.1667498498208;
-        Thu, 03 Nov 2022 11:01:38 -0700 (PDT)
+        bh=YgNHjxBxYUWB/PCbKrlrwrwc9VDJqlW54PKdqCwW8ic=;
+        b=hRkTRwMpzzxQfO82E2zPS41Hv7Q/AiP2Y6AX4xNBzGAgThZTpwefwUGMTXGWkQalp2
+         j/J8YrSevOSbmaxOyjDNgdUgsoIMxGHseZLrt6ECg9Xd2Ga8m81jX9lIBSctr/ug+LnV
+         czIqAhxu+4iftYMCj+PAzP804rtuVqeNqDhRwlGNC8+IxjEQnuwQYBFtDhxnLApk2vZU
+         aF+DOAR9HbMQO173hQ/McQ6IjBnRhSH2wP3arcNg2OMAYfKiviMn6fpU+8u72n628qIO
+         zUBEztQg+R5M7hA/9xKXEHiwtmbDPBvgtWfQEVMuX+GNn3LhtZ+EOshQ41UOI7R+aPhZ
+         xvzw==
+X-Gm-Message-State: ACrzQf3mJsiwtvogF5janx5+n8hAQAgcBXCD2xJT6z9dm6GXEJVUorSv
+        JkV1+vkVTyjBX5rGExSlDVVY3Q==
+X-Google-Smtp-Source: AMsMyM7klMwRzFRi1wf5io00iXyMCbSIKPI7ThN1LZsPqMDPIRHMOxaEDuixIyR7R/CPv5Fs/C86zA==
+X-Received: by 2002:a17:902:8e84:b0:178:57e4:805b with SMTP id bg4-20020a1709028e8400b0017857e4805bmr31426128plb.144.1667498502037;
+        Thu, 03 Nov 2022 11:01:42 -0700 (PDT)
 Received: from evgreen-glaptop.lan ([98.45.28.95])
-        by smtp.gmail.com with ESMTPSA id t12-20020a1709027fcc00b00177fb862a87sm1000277plb.20.2022.11.03.11.01.36
+        by smtp.gmail.com with ESMTPSA id t12-20020a1709027fcc00b00177fb862a87sm1000277plb.20.2022.11.03.11.01.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Nov 2022 11:01:37 -0700 (PDT)
+        Thu, 03 Nov 2022 11:01:41 -0700 (PDT)
 From:   Evan Green <evgreen@chromium.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     corbet@lwn.net, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
@@ -59,11 +59,10 @@ Cc:     corbet@lwn.net, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
         Matthew Garrett <matthewgarrett@google.com>,
         Matthew Garrett <mjg59@google.com>,
         Evan Green <evgreen@chromium.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Peter Huewe <peterhuewe@gmx.de>, axelj <axelj@axis.com>
-Subject: [PATCH v4 01/11] tpm: Add support for in-kernel resetting of PCRs
-Date:   Thu,  3 Nov 2022 11:01:09 -0700
-Message-Id: <20221103105558.v4.1.I776854f47e3340cc2913ed4d8ecdd328048b73c3@changeid>
+        Jason Gunthorpe <jgg@ziepe.ca>, Peter Huewe <peterhuewe@gmx.de>
+Subject: [PATCH v4 03/11] tpm: Allow PCR 23 to be restricted to kernel-only use
+Date:   Thu,  3 Nov 2022 11:01:11 -0700
+Message-Id: <20221103105558.v4.3.I9ded8c8caad27403e9284dfc78ad6cbd845bc98d@changeid>
 X-Mailer: git-send-email 2.38.1.431.g37b22c650d-goog
 In-Reply-To: <20221103180120.752659-1-evgreen@chromium.org>
 References: <20221103180120.752659-1-evgreen@chromium.org>
@@ -75,154 +74,170 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Matthew Garrett <matthewgarrett@google.com>
 
-Add an internal command for resetting a PCR. This will be used by the
-encrypted hibernation code to set PCR23 to a known value. The
-hibernation code will seal the hibernation key with a policy specifying
-PCR23 be set to this known value as a mechanism to ensure that the
-hibernation key is genuine. But to do this repeatedly, resetting the PCR
-is necessary as well.
+Introduce a new Kconfig, TCG_TPM_RESTRICT_PCR, which if enabled
+restricts usermode's ability to extend or reset PCR 23.
 
-Link: https://lore.kernel.org/lkml/20210220013255.1083202-2-matthewgarrett@google.com/
+Under certain circumstances it might be desirable to enable the creation
+of TPM-backed secrets that are only accessible to the kernel. In an
+ideal world this could be achieved by using TPM localities, but these
+don't appear to be available on consumer systems. An alternative is to
+simply block userland from modifying one of the resettable PCRs, leaving
+it available to the kernel. If the kernel ensures that no userland can
+access the TPM while it is carrying out work, it can reset PCR 23,
+extend it to an arbitrary value, create or load a secret, and then reset
+the PCR again. Even if userland somehow obtains the sealed material, it
+will be unable to unseal it since PCR 23 will never be in the
+appropriate state.
+
+This Kconfig is only properly supported for systems with TPM2 devices.
+For systems with TPM1 devices, having this Kconfig enabled completely
+restricts usermode's access to the TPM. TPM1 contains support for
+tunnelled transports, which usermode could use to smuggle commands
+through that this Kconfig is attempting to restrict.
+
+Link: https://lore.kernel.org/lkml/20210220013255.1083202-3-matthewgarrett@google.com/
 Signed-off-by: Matthew Garrett <mjg59@google.com>
 Signed-off-by: Evan Green <evgreen@chromium.org>
 ---
 
 Changes in v4:
- - Open code tpm2_pcr_reset implementation in tpm-interface.c (Jarkko)
- - Rename interface symbol to tpm2_pcr_reset, fix kerneldocs (Jarkko)
+ - Augment the commit message (Jarkko)
 
 Changes in v3:
- - Unify tpm1/2_pcr_reset prototypes (Jarkko)
- - Wait no, remove the TPM1 stuff altogether (Jarkko)
- - Remove extra From tag and blank in commit msg (Jarkko).
+ - Fix up commit message (Jarkko)
+ - tpm2_find_and_validate_cc() was split (Jarkko)
+ - Simply fully restrict TPM1 since v2 failed to account for tunnelled
+   transport sessions (Stefan and Jarkko).
 
- drivers/char/tpm/tpm-interface.c | 47 ++++++++++++++++++++++++++++++++
- drivers/char/tpm/tpm2-cmd.c      |  7 -----
- include/linux/tpm.h              | 14 ++++++++++
- 3 files changed, 61 insertions(+), 7 deletions(-)
+Changes in v2:
+ - Fixed sparse warnings
 
-diff --git a/drivers/char/tpm/tpm-interface.c b/drivers/char/tpm/tpm-interface.c
-index 1621ce8187052c..886277b2654e3b 100644
---- a/drivers/char/tpm/tpm-interface.c
-+++ b/drivers/char/tpm/tpm-interface.c
-@@ -342,6 +342,53 @@ int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
- }
- EXPORT_SYMBOL_GPL(tpm_pcr_extend);
+ drivers/char/tpm/Kconfig          | 12 ++++++++++++
+ drivers/char/tpm/tpm-dev-common.c |  8 ++++++++
+ drivers/char/tpm/tpm.h            | 19 +++++++++++++++++++
+ drivers/char/tpm/tpm1-cmd.c       | 13 +++++++++++++
+ drivers/char/tpm/tpm2-cmd.c       | 22 ++++++++++++++++++++++
+ 5 files changed, 74 insertions(+)
+
+diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
+index 927088b2c3d3f2..c8ed54c66e399a 100644
+--- a/drivers/char/tpm/Kconfig
++++ b/drivers/char/tpm/Kconfig
+@@ -211,4 +211,16 @@ config TCG_FTPM_TEE
+ 	  This driver proxies for firmware TPM running in TEE.
  
-+/**
-+ * tpm2_pcr_reset - Reset the specified PCR
-+ * @chip: A &struct tpm_chip instance, %NULL for the default chip
-+ * @pcr_idx: The PCR to be reset
-+ *
-+ * Return: Same as with tpm_transmit_cmd(), or ENOTTY for TPM1 devices.
-+ */
-+int tpm2_pcr_reset(struct tpm_chip *chip, u32 pcr_idx)
+ source "drivers/char/tpm/st33zp24/Kconfig"
++
++config TCG_TPM_RESTRICT_PCR
++	bool "Restrict userland access to PCR 23"
++	depends on TCG_TPM
++	help
++	  If set, block userland from extending or resetting PCR 23. This allows it
++	  to be restricted to in-kernel use, preventing userland from being able to
++	  make use of data sealed to the TPM by the kernel. This is required for
++	  secure hibernation support, but should be left disabled if any userland
++	  may require access to PCR23. This is a TPM2-only feature, and if enabled
++	  on a TPM1 machine will cause all usermode TPM commands to return EPERM due
++	  to the complications introduced by tunnelled sessions in TPM1.2.
+ endif # TCG_TPM
+diff --git a/drivers/char/tpm/tpm-dev-common.c b/drivers/char/tpm/tpm-dev-common.c
+index dc4c0a0a512903..7a4e618c7d1942 100644
+--- a/drivers/char/tpm/tpm-dev-common.c
++++ b/drivers/char/tpm/tpm-dev-common.c
+@@ -198,6 +198,14 @@ ssize_t tpm_common_write(struct file *file, const char __user *buf,
+ 	priv->response_read = false;
+ 	*off = 0;
+ 
++	if (priv->chip->flags & TPM_CHIP_FLAG_TPM2)
++		ret = tpm2_cmd_restricted(priv->chip, priv->data_buffer, size);
++	else
++		ret = tpm1_cmd_restricted(priv->chip, priv->data_buffer, size);
++
++	if (ret)
++		goto out;
++
+ 	/*
+ 	 * If in nonblocking mode schedule an async job to send
+ 	 * the command return the size.
+diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+index f1e0f490176f01..c0845e3f9eda17 100644
+--- a/drivers/char/tpm/tpm.h
++++ b/drivers/char/tpm/tpm.h
+@@ -245,4 +245,23 @@ void tpm_bios_log_setup(struct tpm_chip *chip);
+ void tpm_bios_log_teardown(struct tpm_chip *chip);
+ int tpm_dev_common_init(void);
+ void tpm_dev_common_exit(void);
++
++#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
++#define TPM_RESTRICTED_PCR 23
++
++int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
++int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
++#else
++static inline int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
++				      size_t size)
 +{
-+	struct tpm2_null_auth_area auth_area;
-+	struct tpm_buf buf;
-+	int rc;
-+
-+	chip = tpm_find_get_ops(chip);
-+	if (!chip)
-+		return -ENODEV;
-+
-+	if (!(chip->flags & TPM_CHIP_FLAG_TPM2)) {
-+		rc = -ENOTTY;
-+		goto out;
-+	}
-+
-+	rc = tpm_buf_init(&buf, TPM2_ST_SESSIONS, TPM2_CC_PCR_RESET);
-+	if (rc)
-+		goto out;
-+
-+	tpm_buf_append_u32(&buf, pcr_idx);
-+
-+	auth_area.handle = cpu_to_be32(TPM2_RS_PW);
-+	auth_area.nonce_size = 0;
-+	auth_area.attributes = 0;
-+	auth_area.auth_size = 0;
-+
-+	tpm_buf_append_u32(&buf, sizeof(struct tpm2_null_auth_area));
-+	tpm_buf_append(&buf, (const unsigned char *)&auth_area,
-+		       sizeof(auth_area));
-+
-+	rc = tpm_transmit_cmd(chip, &buf, 0, "attempting to reset a PCR");
-+
-+	tpm_buf_destroy(&buf);
-+
-+out:
-+	tpm_put_ops(chip);
-+	return rc;
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(tpm2_pcr_reset);
 +
- /**
-  * tpm_send - send a TPM command
-  * @chip:	a &struct tpm_chip instance, %NULL for the default chip
++static inline int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
++				      size_t size)
++{
++	return 0;
++}
++#endif
+ #endif
+diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
+index cf64c738510529..1869e89215fcb9 100644
+--- a/drivers/char/tpm/tpm1-cmd.c
++++ b/drivers/char/tpm/tpm1-cmd.c
+@@ -811,3 +811,16 @@ int tpm1_get_pcr_allocation(struct tpm_chip *chip)
+ 
+ 	return 0;
+ }
++
++#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
++int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
++{
++	/*
++	 * Restrict all usermode commands on TPM1.2. Ideally we'd just restrict
++	 * TPM_ORD_PCR_EXTEND and TPM_ORD_PCR_RESET, but TPM1.2 also supports
++	 * tunnelled transport sessions where the kernel would be unable to filter
++	 * commands.
++	 */
++	return -EPERM;
++}
++#endif
 diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
-index 65d03867e114c5..303ce2ea02a4b0 100644
+index 303ce2ea02a4b0..e0503cfd7bcfee 100644
 --- a/drivers/char/tpm/tpm2-cmd.c
 +++ b/drivers/char/tpm/tpm2-cmd.c
-@@ -216,13 +216,6 @@ int tpm2_pcr_read(struct tpm_chip *chip, u32 pcr_idx,
- 	return rc;
+@@ -778,3 +778,25 @@ int tpm2_find_cc(struct tpm_chip *chip, u32 cc)
+ 
+ 	return -1;
  }
- 
--struct tpm2_null_auth_area {
--	__be32  handle;
--	__be16  nonce_size;
--	u8  attributes;
--	__be16  auth_size;
--} __packed;
--
- /**
-  * tpm2_pcr_extend() - extend a PCR value
-  *
-diff --git a/include/linux/tpm.h b/include/linux/tpm.h
-index dfeb25a0362dee..70134e6551745f 100644
---- a/include/linux/tpm.h
-+++ b/include/linux/tpm.h
-@@ -219,6 +219,7 @@ enum tpm2_command_codes {
- 	TPM2_CC_HIERARCHY_CONTROL       = 0x0121,
- 	TPM2_CC_HIERARCHY_CHANGE_AUTH   = 0x0129,
- 	TPM2_CC_CREATE_PRIMARY          = 0x0131,
-+	TPM2_CC_PCR_RESET		= 0x013D,
- 	TPM2_CC_SEQUENCE_COMPLETE       = 0x013E,
- 	TPM2_CC_SELF_TEST	        = 0x0143,
- 	TPM2_CC_STARTUP		        = 0x0144,
-@@ -293,6 +294,13 @@ struct tpm_header {
- 	};
- } __packed;
- 
-+struct tpm2_null_auth_area {
-+	__be32  handle;
-+	__be16  nonce_size;
-+	u8  attributes;
-+	__be16  auth_size;
-+} __packed;
 +
- /* A string buffer type for constructing TPM commands. This is based on the
-  * ideas of string buffer code in security/keys/trusted.h but is heap based
-  * in order to keep the stack usage minimal.
-@@ -423,6 +431,7 @@ extern ssize_t tpm_transmit_cmd(struct tpm_chip *chip, struct tpm_buf *buf,
- 				size_t min_rsp_body_length, const char *desc);
- extern int tpm_pcr_read(struct tpm_chip *chip, u32 pcr_idx,
- 			struct tpm_digest *digest);
-+extern int tpm2_pcr_reset(struct tpm_chip *chip, u32 pcr_idx);
- extern int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
- 			  struct tpm_digest *digests);
- extern int tpm_send(struct tpm_chip *chip, void *cmd, size_t buflen);
-@@ -440,6 +449,11 @@ static inline int tpm_pcr_read(struct tpm_chip *chip, int pcr_idx,
- 	return -ENODEV;
- }
- 
-+static inline int tpm2_pcr_reset(struct tpm_chip *chip, int pcr_idx)
++#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
++int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
 +{
-+	return -ENODEV;
-+}
++	int cc = tpm2_find_and_validate_cc(chip, NULL, buffer, size);
++	__be32 *handle;
 +
- static inline int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
- 				 struct tpm_digest *digests)
- {
++	switch (cc) {
++	case TPM2_CC_PCR_EXTEND:
++	case TPM2_CC_PCR_RESET:
++		if (size < (TPM_HEADER_SIZE + sizeof(u32)))
++			return -EINVAL;
++
++		handle = (__be32 *)&buffer[TPM_HEADER_SIZE];
++		if (be32_to_cpu(*handle) == TPM_RESTRICTED_PCR)
++			return -EPERM;
++		break;
++	}
++
++	return 0;
++}
++#endif
 -- 
 2.38.1.431.g37b22c650d-goog
 
