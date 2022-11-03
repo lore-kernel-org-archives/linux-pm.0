@@ -2,155 +2,167 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F2C3C433FE
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Nov 2022 03:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AD32C43217
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Nov 2022 08:34:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229980AbiKCDol (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Nov 2022 23:44:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40662 "EHLO
+        id S230376AbiKCIeW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Nov 2022 04:34:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40976 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229591AbiKCDoj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Nov 2022 23:44:39 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF63014D1C;
-        Wed,  2 Nov 2022 20:44:36 -0700 (PDT)
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2A33a7nj022426;
-        Thu, 3 Nov 2022 03:44:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
- cc : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=qcppdkim1; bh=ZcWHqAEGAjOKGtkmsDwh5f5J8VCtHBxsiRN3InV05C0=;
- b=O+f83m7cTVPKN0UW7K1U1CwkMtOgvPw01Da0VW109Sx77showA4yYNra0NHSQVtMoHTg
- KMScOqRrDNco11hbPhUJzhT564imWAP7gP2MsRmI3qS2kp5+SvN/hVZJJaS9xpc59HGn
- xCI4Om92AB30ZhwPImGvilf6QnIGY2BAh03qgLwOt6jgzfkuz7XHErIkOudoKgRw1bxA
- IaC4vn8WHIjxf5DV4YaAR8vOU3Pck8KKc9X3CBBKn8DjdTXSWahYn6HckTCtN1HXo5S6
- g04wjNlDMARiJKM4LynaI+gWcNy7grQ2g9bh4BotyzfIDD8mN3amrmZCuf89yvm7hNHd vg== 
-Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3kkvyy94xa-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 03 Nov 2022 03:44:15 +0000
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2A33iESK026505
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 3 Nov 2022 03:44:14 GMT
-Received: from core-thresher1.qualcomm.com (10.80.80.8) by
- nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.29; Wed, 2 Nov 2022 20:44:13 -0700
-Date:   Wed, 2 Nov 2022 20:44:12 -0700
-From:   Bjorn Andersson <quic_bjorande@quicinc.com>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-CC:     Georgi Djakov <djakov@kernel.org>,
+        with ESMTP id S230383AbiKCIeP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Nov 2022 04:34:15 -0400
+Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 063AF2705;
+        Thu,  3 Nov 2022 01:34:13 -0700 (PDT)
+Received: from loongson.cn (unknown [10.180.13.64])
+        by gateway (Coremail) with SMTP id _____8BxXbcFfWNjzy8EAA--.5317S3;
+        Thu, 03 Nov 2022 16:34:13 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.180.13.64])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8BxV1cAfWNjsYcLAA--.15570S3;
+        Thu, 03 Nov 2022 16:34:12 +0800 (CST)
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
         Rob Herring <robh+dt@kernel.org>,
-        "Sibi Sankar" <quic_sibis@quicinc.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Mike Tipton <quic_mdtipton@quicinc.com>,
-        Johan Hovold <johan+linaro@kernel.org>,
-        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 05/10] dt-bindings: interconnect: Add sm8350, sc8280xp
- and generic OSM L3 compatibles
-Message-ID: <20221103034410.GB5525@core-thresher1.qualcomm.com>
-References: <20221028034155.5580-1-quic_bjorande@quicinc.com>
- <20221028034155.5580-6-quic_bjorande@quicinc.com>
- <a364b343-fa19-348c-bc38-e8b44061890b@linaro.org>
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     zhanghongchen <zhanghongchen@loongson.cn>,
+        Liu Peibao <liupeibao@loongson.cn>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v10 2/2] dt-bindings: thermal: add loongson-2 thermal
+Date:   Thu,  3 Nov 2022 16:34:07 +0800
+Message-Id: <20221103083407.4039-2-zhuyinbo@loongson.cn>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20221103083407.4039-1-zhuyinbo@loongson.cn>
+References: <20221103083407.4039-1-zhuyinbo@loongson.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <a364b343-fa19-348c-bc38-e8b44061890b@linaro.org>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: mh42O8xuFCL6XvfAz10GflIXPuk7e-44
-X-Proofpoint-ORIG-GUID: mh42O8xuFCL6XvfAz10GflIXPuk7e-44
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-02_15,2022-11-02_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 bulkscore=0
- phishscore=0 priorityscore=1501 lowpriorityscore=0 malwarescore=0
- suspectscore=0 mlxlogscore=999 impostorscore=0 clxscore=1015 mlxscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2210170000 definitions=main-2211030024
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8BxV1cAfWNjsYcLAA--.15570S3
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBjvJXoWxXF47tF4rWr1DJr47trW5ZFb_yoW5CrW3pF
+        47C3WDJrWv9F17uanIkFyxArsYvFnYyFZrXrs7Kw15Kr98Xa4aq3y7K3WDu393Wr1jgFWU
+        uFySkr4UCF1DArJanT9S1TB71UUUUUJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+        qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
+        bSxFc2x0x2IEx4CE42xK8VAvwI8IcIk0rVWrJVCq3wAFIxvE14AKwVWUAVWUZwA2ocxC64
+        kIII0Yj41l84x0c7CEw4AK67xGY2AK021l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28E
+        F7xvwVC0I7IYx2IY6xkF7I0E14v26r4j6F4UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJw
+        A2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJwAaw2AFwI0_Jrv_JF1le2I262IYc4CY
+        6c8Ij28IcVAaY2xG8wAqjxCEc2xF0cIa020Ex4CE44I27wAqx4xG64xvF2IEw4CE5I8CrV
+        C2j2WlYx0E2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26F4j6r4UJwAm72CE4IkC
+        6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lc7CjxVAaw2AFwI0_JF0_Jw1l42xK82IYc2
+        Ij64vIr41l42xK82IY6x8ErcxFaVAv8VWrMxC20s026xCaFVCjc4AY6r1j6r4UMxCIbckI
+        1I0E14v26r1Y6r17MI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_Jr
+        Wlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1I
+        6r4UMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr
+        0_JF4lIxAIcVC2z280aVAFwI0_Cr0_Gr1UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4U
+        JbIYCTnIWIevJa73UjIFyTuYvjxUzrcfUUUUU
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Oct 28, 2022 at 06:12:29PM -0400, Krzysztof Kozlowski wrote:
-> On 27/10/2022 23:41, Bjorn Andersson wrote:
-> > Add EPSS L3 compatibles for sm8350 and sc8280xp, but while at it also
-> > introduce generic compatible for both qcom,osm-l3 and qcom,epss-l3.
-> > 
-> > Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
-> > ---
-> >  .../bindings/interconnect/qcom,osm-l3.yaml    | 22 +++++++++++++------
-> >  1 file changed, 15 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> > index bf538c0c5a81..ae0995341a78 100644
-> > --- a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> > +++ b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-> > @@ -16,13 +16,21 @@ description:
-> >  
-> >  properties:
-> >    compatible:
-> > -    enum:
-> > -      - qcom,sc7180-osm-l3
-> > -      - qcom,sc7280-epss-l3
-> > -      - qcom,sc8180x-osm-l3
-> > -      - qcom,sdm845-osm-l3
-> > -      - qcom,sm8150-osm-l3
-> > -      - qcom,sm8250-epss-l3
-> > +    oneOf:
-> > +      items:
-> 
-> oneOf expects a list, so this should be "    - items"
-> 
+Add the Loongson-2 thermal binding with DT schema format using
+json-schema.
 
-Ahh, thanks. Must have missed running the dt_binding_check on this one.
+Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+Change in v10:
+		1. Add all history change log information.
+Change in v9:
+		1. NO change, but other patch in this series of patches set
+		   has changes.
+Change in v8:
+                1. Replace string Loongson2/loongson2 with Loongson-2/loongson-2.
+Change in v7:
+		1. Split the modification of patch 3 and merge it into this patch.
+Change in v6:
+		1. Fix the warning "reg: [[0, 534779136], [0, 48]] is too long"
+		   when compile the yaml.
+Change in v5:
+		1. Keep use same quotes "'" in all places. 
+Change in v4:
+		1. Fixup the compatible.
+		2. Update the binding file name.
+		3. Include irq.h to fix compile issue.
+Change in v3:
+		1. Remove the sensor id.
+		2. Remove the interrupt-parent in thermal required property.
+		3. Update the thermal binding file name.
+		4. Fixup the commit log information.
+Change in v2:
+		1. Add description and type about the "id".	
+		2. Make the filename was based on compatible.
 
-> > +        - enum:
-> > +            - qcom,sc7180-osm-l3
-> > +            - qcom,sc8180x-osm-l3
-> > +            - qcom,sdm845-osm-l3
-> > +            - qcom,sm8150-osm-l3
-> > +        - const: qcom,osm-l3
-> 
-> The concept is good, but are you sure all SoCs will be compatible with
-> generic osm-l3?
+ .../thermal/loongson,ls2k-thermal.yaml        | 43 +++++++++++++++++++
+ MAINTAINERS                                   |  1 +
+ 2 files changed, 44 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
 
-Per the current implementation yes, worst case if one or more of them isn't the
-more specific compatible can be used to alter the behavior of that platform.
+diff --git a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+new file mode 100644
+index 000000000000..c0637e2d6d57
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+@@ -0,0 +1,43 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/loongson,ls2k-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Thermal sensors on Loongson-2 SoCs
++
++maintainers:
++  - zhanghongchen <zhanghongchen@loongson.cn>
++  - Yinbo Zhu <zhuyinbo@loongson.cn>
++
++properties:
++  compatible:
++    const: loongson,ls2k-thermal
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  '#thermal-sensor-cells':
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - '#thermal-sensor-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++    thermal: thermal-sensor@1fe01500 {
++        compatible = "loongson,ls2k-thermal";
++        reg = <0x1fe01500 0x30>;
++        interrupt-parent = <&liointc0>;
++        interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
++        #thermal-sensor-cells = <1>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 37ab451d9258..3aff8b8723b1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12015,6 +12015,7 @@ M:	zhanghongchen <zhanghongchen@loongson.cn>
+ M:	Yinbo Zhu <zhuyinbo@loongson.cn>
+ L:	linux-pm@vger.kernel.org
+ S:	Maintained
++F:	Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+ F:	drivers/thermal/loongson2_thermal.c
+ 
+ LSILOGIC MPT FUSION DRIVERS (FC/SAS/SPI)
+-- 
+2.33.0
 
-> Why not using dedicated compatible of one soc, e.g. the
-> oldest here? We already did like that for BWMON, DMA and few others.
-> 
-
-Because if we say compatible = "qcom,sc8180x-osm-l3", "qcom,sdm845-osm-l3" and
-there is a quirk needed for "qcom,sdm845-osm-l3" we're forced to add a "special
-case" every other *-osm-l3 in the driver.
-
-This way we can have a generic implementation for the qcom,osm-l3 and if we
-realize that we need to quirk something for the oldest platform, we can do so
-without affecting the others.
-
-Regards,
-Bjorn
-
-> > +      items:
-> > +        - enum:
-> > +            - qcom,sc7280-epss-l3
-> > +            - qcom,sc8280xp-epss-l3
-> > +            - qcom,sm8250-epss-l3
-> > +            - qcom,sm8350-epss-l3
-> > +        - const: qcom,epss-l3
-> >  
-> >    reg:
-> >      maxItems: 1
-> 
-> Best regards,
-> Krzysztof
-> 
