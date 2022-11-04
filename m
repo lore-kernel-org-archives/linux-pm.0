@@ -2,96 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87DD6C4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Nov 2022 05:28:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B78BFC4332F
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Nov 2022 05:41:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230001AbiKDF2e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Nov 2022 01:28:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47664 "EHLO
+        id S230231AbiKDFl2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Nov 2022 01:41:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229700AbiKDF2d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2022 01:28:33 -0400
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A9B617428
-        for <linux-pm@vger.kernel.org>; Thu,  3 Nov 2022 22:28:30 -0700 (PDT)
-Received: by mail-pl1-x632.google.com with SMTP id u6so3912264plq.12
-        for <linux-pm@vger.kernel.org>; Thu, 03 Nov 2022 22:28:30 -0700 (PDT)
+        with ESMTP id S229964AbiKDFl1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2022 01:41:27 -0400
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E3DA275CD;
+        Thu,  3 Nov 2022 22:41:26 -0700 (PDT)
+Received: by mail-pj1-x102a.google.com with SMTP id m14-20020a17090a3f8e00b00212dab39bcdso7308118pjc.0;
+        Thu, 03 Nov 2022 22:41:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=vZA/RVayZ3xPzTcijc9xreYUpwXHdEjEcBaYNiEBe2w=;
-        b=uGtGtq6UnyJR/jkkWscar8jyw73oiXSdxk3hWQF0TF3JLCC2yng0atFxpBJE+AiHkV
-         7BwNBcKDBrV1HMnq6ryIXpG4LQE6qNPilaqHBPjqQF9P9EXT0KGXWnYwEe498qKVc3Om
-         Vxzi/0G7wvv0QwshG0wsletJH957EuWfRJgbxmyukTjMj03ClZnYXMnkM6OpnxqHVEbl
-         cqtHja6gQemx8PoV/WJM1jTqGdFmSAnpxHlKumaYlu/y2TDPYl9R2a6vlqmO6xSzY6P7
-         aYUKt1ShATG2pvlcS/pHNBJImRel3NE3lITcMEzLHSayvjN+X2w0L6HUs6HlX5zDaraZ
-         rwZg==
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/BZyFt5dCsT73A04TLBbOghf3YLF5kXYNj3qEppPq5Y=;
+        b=GOyEzehOcyRHUAlammU7EX9xRYhpA+YP4HPYMpKjovpagz8U6b8H/dV/9LC7A3Rv7z
+         AuxQJcKBDJn/mP7obi/aEMAwYNI1Xn5pH1LkBZ6x0hJbVlZvpH1fYaDb1Kh9r9CaT8zu
+         MSY+NsJdDzUYN+6VkC+KXowti8qjlc1G10BwbMY4GzVHlPf5JkPu3YLiYexmfJuf+d5F
+         Sp3JNnhfIKQ1HdhKAT+8ipgGbQf4Of7LlL4lon0tktVxAmYuOOwY8gbnTLjBOmZ5A6zg
+         booqWifuUzuyxxhwia00Sg8H0jof0+9oBzdsx8XaRXT7arCujN+pp9aO3zQjoawt7m6f
+         fT0A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vZA/RVayZ3xPzTcijc9xreYUpwXHdEjEcBaYNiEBe2w=;
-        b=orBkIv5fX0FJNiB8K/Q9f70J2AmDz5waVr/AfwzkoHk4Tm2zLSvRRFNrsvykG7TemR
-         64u/HkstdhvVq6orLBaWotogE39Z7TrIyqztnxBI+E7pvBu0DO5Q6peWEkwUaWCEDfu1
-         74M9wz3delLz4xyrA2LQmMqF5ZWcWNryGQooCDNRY4dvuV6XfqzNPHoA7aASrA37DaU4
-         MyS+I30ZrGKTy+EvSHX1sUMLu6kpyTCID+BFNLlLr+pKikvvHQIDhU5VGn1lvka3tTJC
-         CY43S42CLL9Aet7oIr7W+DsuhJpTEEAkznEoJTom5o6pYylgEXzOg+mpQIvl0NFTDR86
-         +8oA==
-X-Gm-Message-State: ACrzQf2Vccncwvg4L3VEDvaCx3ucRYUZE1ARLIvfwbdWBmMyJKnPdcIv
-        XirxM0mzeqjeEE6lbTwSDzBNZoGeyVIydA==
-X-Google-Smtp-Source: AMsMyM66RRa5hHdEci2sgowcXAvY4FXvutVFcYNi00yIFLuY38qpZu4IRAvZMe8bNb0luDlIHV7f/A==
-X-Received: by 2002:a17:902:cecf:b0:187:fd2:79c3 with SMTP id d15-20020a170902cecf00b001870fd279c3mr17242552plg.34.1667539709985;
-        Thu, 03 Nov 2022 22:28:29 -0700 (PDT)
-Received: from localhost ([122.172.84.80])
-        by smtp.gmail.com with ESMTPSA id s11-20020a170902c64b00b00186c3727294sm1525909pls.270.2022.11.03.22.28.29
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/BZyFt5dCsT73A04TLBbOghf3YLF5kXYNj3qEppPq5Y=;
+        b=Cqsfjpb/OXIOC9PWPvSuBs4uHwjLLVtPr8m/KHEpEAUrHGfDgin6l6ZFoRgXOB9Ff4
+         TMHq/uWhrmGNCLpneqzhGJu4YMuXzrcHWuvkam1hkOKs4iekWzEOOb8jKO32Rx1MpzM1
+         V3FQHB0K/K3McZ9NCLTvajtEnWOkJNOKd1et88uZZ62Dm57p+59sdtIhSD9sZDbH175+
+         nDPR1z86lYNgW932CfmD0HerT/UojKpmCgFWp4lwuKTgQ3DdCYvHwNV0B7+Q7k5Yo64c
+         E14EjiBYYgsR4Do+O7HEIfDlKVXs9Myk6SJHO4ehY3/mnurPpU+VgA6zzNQUItNhra1H
+         uoUw==
+X-Gm-Message-State: ACrzQf0A7MpVC9NyEjlc8k8EB1Rba+vx4JXI0TaW3vi7SvVWSOLsagE/
+        64krewzoCDrUU2dYN6FdE3E=
+X-Google-Smtp-Source: AMsMyM5ppXYAEctK4C52i9lpfUEFpfzLG/flwaMFtbqyr03aXVwRpcqL6NjtiSyJGTuT8RqckuL2aQ==
+X-Received: by 2002:a17:902:b94c:b0:178:336f:13d6 with SMTP id h12-20020a170902b94c00b00178336f13d6mr34498524pls.64.1667540485964;
+        Thu, 03 Nov 2022 22:41:25 -0700 (PDT)
+Received: from localhost.localdomain ([116.128.244.169])
+        by smtp.gmail.com with ESMTPSA id q15-20020aa7960f000000b0056bdc3f5b29sm1684043pfg.186.2022.11.03.22.41.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Nov 2022 22:28:29 -0700 (PDT)
-Date:   Fri, 4 Nov 2022 10:58:26 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     James Calligeros <jcalligeros99@gmail.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, nm@ti.com,
-        rafael@kernel.org, sboyd@kernel.org, vincent.guittot@linaro.org,
-        vireshk@kernel.org
-Subject: Re: [PATCH V2 5/5] OPP: decouple dt properties in
- opp_parse_supplies()
-Message-ID: <20221104052826.umvk6gxm6nus2oqv@vireshk-i7>
-References: <cover.1667473008.git.viresh.kumar@linaro.org>
- <2379445.NG923GbCHz@makoto>
- <20221104050752.67eh54ui2ohbbyni@vireshk-i7>
- <2209158.NgBsaNRSFp@makoto>
+        Thu, 03 Nov 2022 22:41:25 -0700 (PDT)
+From:   TGSP <tgsp002@gmail.com>
+To:     rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz,
+        huanglei@kylinos.cn
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        TGSP <tgsp002@gmail.com>
+Subject: [PATCH v2 0/2] Fixes to the hibernate_preallocate_memory()
+Date:   Fri,  4 Nov 2022 13:41:17 +0800
+Message-Id: <20221104054119.1946073-1-tgsp002@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2209158.NgBsaNRSFp@makoto>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 04-11-22, 15:25, James Calligeros wrote:
-> On Friday, 4 November 2022 3:07:52 PM AEST Viresh Kumar wrote:
-> > It should happen sequentially.
-> 
->  I noticed the mutexes after I got some sleep :)
-> 
-> > Initialize "ret = 0" in opp_parse_supplies().
-> > 
-> > Or pick patches from:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/linux-next
-> > 
-> 
-> It didn't even cross my mind that opp_parse_supplies() returning
-> ret uninitialised was causing the failure further up the chain. Applied
-> and tested, everything's working as expected now. 
-> 
-> > Sorry for the trouble.
-> 
-> This is on me, I should have heeded the compiler warning.
+Changes in v2:
+- Optimize code to resolve compilation warnings;
+- Add comments, add debug data, easy to view and modify.
 
-Thanks James for giving this a try. Really appreciate it. The changes are
-applied and pushed for linux-next along with your Tested-by.
+v1:
+hibernate_preallocate_memory() function is still quite obscure, can
+anyone add a little more description?
+
+It seems that the max_size calculation formula is wrong in the comment
+part, correct it;
+
+It is also found that when mem preallocate is not enough, it goes
+directly down without checking.
+
+xiongxin (2):
+  PM: hibernate: fix spelling mistake for annotation
+  PM: hibernate: add check of preallocate mem for image size pages
+
+ kernel/power/snapshot.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
 -- 
-viresh
+2.25.1
+
