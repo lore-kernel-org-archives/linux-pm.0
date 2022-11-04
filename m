@@ -2,252 +2,153 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09ACDC3A5A1
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Nov 2022 05:49:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC969C4332F
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Nov 2022 06:09:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231436AbiKDFs6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Nov 2022 01:48:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55654 "EHLO
+        id S229481AbiKDGJy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Nov 2022 02:09:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43180 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231150AbiKDFsu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2022 01:48:50 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3FBA28E11;
-        Thu,  3 Nov 2022 22:48:48 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 460CCB82BFA;
-        Fri,  4 Nov 2022 05:48:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4911C433D6;
-        Fri,  4 Nov 2022 05:48:45 +0000 (UTC)
-Received: from rostedt by gandalf.local.home with local (Exim 4.96)
-        (envelope-from <rostedt@goodmis.org>)
-        id 1oqpZo-0070xm-08;
-        Fri, 04 Nov 2022 01:49:12 -0400
-Message-ID: <20221104054053.431922658@goodmis.org>
-User-Agent: quilt/0.66
-Date:   Fri, 04 Nov 2022 01:40:53 -0400
-From:   Steven Rostedt <rostedt@goodmis.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Anna-Maria Gleixner <anna-maria@linutronix.de>,
-        Andrew Morton <akpm@linux-foundation.org>, rcu@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-        linux-edac@vger.kernel.org, cgroups@vger.kernel.org,
-        linux-block@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-atm-general@lists.sourceforge.net, netdev@vger.kernel.org,
-        linux-pm@vger.kernel.org, drbd-dev@lists.linbit.com,
-        linux-bluetooth@vger.kernel.org,
-        openipmi-developer@lists.sourceforge.net,
-        linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linaro-mm-sig@lists.linaro.org, intel-gfx@lists.freedesktop.org,
-        linux-input@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linux-leds@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
-        linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-ext4@vger.kernel.org, linux-nilfs@vger.kernel.org,
-        bridge@lists.linux-foundation.org, netfilter-devel@vger.kernel.org,
-        coreteam@netfilter.org, lvs-devel@vger.kernel.org,
-        linux-afs@lists.infradead.org, linux-nfs@vger.kernel.org,
-        tipc-discussion@lists.sourceforge.net, alsa-devel@alsa-project.org
-Subject: [RFC][PATCH v3 00/33] timers: Use timer_shutdown*() before freeing timers
+        with ESMTP id S229646AbiKDGJx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2022 02:09:53 -0400
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BF3C178B8;
+        Thu,  3 Nov 2022 23:09:53 -0700 (PDT)
+Received: by mail-ej1-x62e.google.com with SMTP id bj12so10645941ejb.13;
+        Thu, 03 Nov 2022 23:09:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:content-language:in-reply-to:mime-version
+         :user-agent:date:message-id:from:references:cc:to:subject:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+Tr/8hi5G7RL1UIjwqgzK0lAVGdQMoS2Pg25E/W9mMA=;
+        b=j47wp55XIfHt/4ShZQhg6PwD0qLIXnfGr8DblGzC564u4/ZP8LKISgmism26QTukkz
+         MiZcUXoboPKpeMG8nc8RPx/iXHluu08o1fX2xsHOYJbWI1TEjEcLu2BLDqzT+q6MUnvF
+         E6k9Ln/b/nV9qbOPQKSviQgz9Gw4dxZoaOQKryAahiSMwHq2jkyGO0pqdchJVtfgNMLj
+         Bn+JtuhfuQGtDYXguOID8sob9ZKuWaCOHQerkdGQ6x8qC4YAJRNFaX7GiQUZhMZdQgrT
+         7TKbH7AJq4JvHe1FAodjMRIGojve/FDHs7exu/EcmHirWgg25o3Y0yK/XhqFaB4Mkscn
+         CeVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:content-language:in-reply-to:mime-version
+         :user-agent:date:message-id:from:references:cc:to:subject
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=+Tr/8hi5G7RL1UIjwqgzK0lAVGdQMoS2Pg25E/W9mMA=;
+        b=QYXmQ2LzlTnmuX4sJLd7iJNbdRuhxeTP0ulxkYDNDGEJ4GM1wb6TtHRe/SnF3ZRp7o
+         jE9sEtJHQ3PylFl3sXN92SfJ0+9bxs54NOfFbm1zsV0DKW2SeUJrtLEraJmpwzoJX/3f
+         vXejnNeoVmQ8v0NIHvszqcGmykyj9FvapQnzTyY8BNEtvhH608om/DacsUh5mK2WW1k+
+         G8yp4k84Ws1OyiUWdZE0irexuyuaWlA4swfArc4awUFg2+cl5Oy78MCxxYmEe+PSDbIK
+         m82ECBQ4iohh4HQSgcI7w+PuGJuSynunLp6+ThdP8DLYZgKw56mJ+yxW0sZhHBn2pnZp
+         3U7Q==
+X-Gm-Message-State: ACrzQf0vf2AkNO0BoTb/yQYuGuMN3LEvL0LRTrnYuOt2Q7RJ9iOlMRcC
+        csLGiFFmzNgmbcEW3ei0x3tCxZeRn+M78w==
+X-Google-Smtp-Source: AMsMyM7hve8hRJtZwRoCWB82qjULQJwqJkd4zxtaiGuBlB8BhuG7A+PxHy1rT30oWU4f04ZlKqQerQ==
+X-Received: by 2002:a17:907:5c2:b0:77e:def7:65d8 with SMTP id wg2-20020a17090705c200b0077edef765d8mr33622937ejb.487.1667542191538;
+        Thu, 03 Nov 2022 23:09:51 -0700 (PDT)
+Received: from [192.168.1.10] ([46.249.74.23])
+        by smtp.googlemail.com with ESMTPSA id m11-20020a170906258b00b0078dce9984afsm1331503ejb.220.2022.11.03.23.09.50
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 03 Nov 2022 23:09:51 -0700 (PDT)
+Subject: Re: [PATCH 1/3] power: cpcap-battery: Do not issue low signal too
+ frequently
+To:     sre@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        tony@atomide.com, philipp@uvos.xyz
+References: <1667332425-12536-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+ <1667332425-12536-2-git-send-email-ivo.g.dimitrov.75@gmail.com>
+From:   Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Message-ID: <ce999c0b-342d-6a29-6a16-b69cf8a1db9d@gmail.com>
+Date:   Fri, 4 Nov 2022 08:09:46 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Firefox/60.0 Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <1667332425-12536-2-git-send-email-ivo.g.dimitrov.75@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+This patch has issues (calling enable_irq() from timer function), will 
+send v2 that uses delayed_work.
 
-Back in April, I posted an RFC patch set to help mitigate a common issue
-where a timer gets armed just before it is freed, and when the timer
-goes off, it crashes in the timer code without any evidence of who the
-culprit was. I got side tracked and never finished up on that patch set.
-Since this type of crash is still our #1 crash we are seeing in the field,
-it has become a priority again to finish it.
-
-This is v3 of that patch set. Thomas Gleixner posted an untested version
-that makes timer->function NULL as the flag that it is shutdown. I took that
-code, tested it (fixed it up), added more comments, and changed the
-name to timer_shutdown_sync(). I also converted it to use WARN_ON_ONCE()
-instead of just WARN_ON() as Linus asked for.
-
-I then created a trivial coccinelle script to find where del_timer*()
-is called before being freed, and converted them all to timer_shutdown*()
-(There was a couple that still used del_timer() instead of del_timer_sync()).
-
-I also updated DEBUG_OBJECTS_TIMERS to check from where the timer is ever
-armed, to calling of timer_shutdown_sync(), and it will trigger if a timer
-is freed in between. The current way is to only check if the timer is armed,
-but that means it only triggers if the race condition is hit, and with
-experience, it's not run on enough machines to catch all of them. By triggering
-it from the time the timer is armed to the time it is shutdown, it catches
-all potential cases even if the race condition is not hit.
-
-I went though the result of the cocinelle script, and updated the locations.
-Some locations were caught by DEBUG_OBJECTS_TIMERS as the coccinelle script
-only checked for timers being freed in the same function as the del_timer*().
-
-Ideally, I would have the first patch go into this rc cycle, which is mostly
-non functional as it will allow the other patches to come in via the respective
-subsystems in the next merge window.
-
-Changes since v2: https://lore.kernel.org/all/20221027150525.753064657@goodmis.org/
-
- - Talking with Thomas Gleixner, he wanted a better name space and to remove
-   the "del_" portion of the API.
-
- - Since there's now a shutdown interface that does not synchronize, to keep
-   it closer to del_timer() and del_timer_sync(), the API is now:
-
-    timer_shutdown() - same as del_timer() but deactivates the timer.
-
-    timer_shutdown_sync() - same as del_timer_sync() but deactivates the timer.
-
- - Added a few more locations that got converted.
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
-trace/timers
-
-Head SHA1: 25106f0bb7968b3e8c746a7853f44b51840746c3
-
-
-Steven Rostedt (Google) (33):
-      timers: Add timer_shutdown_sync() and timer_shutdown() to be called before freeing timers
-      timers: s390/cmm: Use timer_shutdown_sync() before freeing timer
-      timers: sh: Use timer_shutdown_sync() before freeing timer
-      timers: block: Use timer_shutdown_sync() before freeing timer
-      timers: ACPI: Use timer_shutdown_sync() before freeing timer
-      timers: atm: Use timer_shutdown_sync() before freeing timer
-      timers: PM: Use timer_shutdown_sync()
-      timers: Bluetooth: Use timer_shutdown_sync() before freeing timer
-      timers: hangcheck: Use timer_shutdown_sync() before freeing timer
-      timers: ipmi: Use timer_shutdown_sync() before freeing timer
-      random: use timer_shutdown_sync() before freeing timer
-      timers: dma-buf: Use timer_shutdown_sync() before freeing timer
-      timers: drm: Use timer_shutdown_sync() before freeing timer
-      timers: HID: Use timer_shutdown_sync() before freeing timer
-      timers: Input: Use timer_shutdown_sync() before freeing timer
-      timers: mISDN: Use timer_shutdown_sync() before freeing timer
-      timers: leds: Use timer_shutdown_sync() before freeing timer
-      timers: media: Use timer_shutdown_sync() before freeing timer
-      timers: net: Use timer_shutdown_sync() before freeing timer
-      timers: usb: Use timer_shutdown_sync() before freeing timer
-      timers: cgroup: Use timer_shutdown_sync() before freeing timer
-      timers: workqueue: Use timer_shutdown_sync() before freeing timer
-      timers: nfc: pn533: Use timer_shutdown_sync() before freeing timer
-      timers: pcmcia: Use timer_shutdown_sync() before freeing timer
-      timers: scsi: Use timer_shutdown_sync() and timer_shutdown() before freeing timer
-      timers: tty: Use timer_shutdown_sync() before freeing timer
-      timers: ext4: Use timer_shutdown_sync() before freeing timer
-      timers: fs/nilfs2: Use timer_shutdown_sync() before freeing timer
-      timers: ALSA: Use timer_shutdown_sync() before freeing timer
-      timers: jbd2: Use timer_shutdown() before freeing timer
-      timers: sched/psi: Use timer_shutdown_sync() before freeing timer
-      timers: x86/mce: Use __init_timer() for resetting timers
-      timers: Expand DEBUG_OBJECTS_TIMER to check if it ever was used
-
-----
- .../RCU/Design/Requirements/Requirements.rst       |   2 +-
- Documentation/core-api/local_ops.rst               |   2 +-
- Documentation/kernel-hacking/locking.rst           |   5 +
- arch/s390/mm/cmm.c                                 |   4 +-
- arch/sh/drivers/push-switch.c                      |   2 +-
- arch/x86/kernel/cpu/mce/core.c                     |  14 ++-
- block/blk-iocost.c                                 |   2 +-
- block/blk-iolatency.c                              |   2 +-
- block/blk-stat.c                                   |   2 +-
- block/blk-throttle.c                               |   2 +-
- block/kyber-iosched.c                              |   2 +-
- drivers/acpi/apei/ghes.c                           |   2 +-
- drivers/atm/idt77105.c                             |   4 +-
- drivers/atm/idt77252.c                             |   4 +-
- drivers/atm/iphase.c                               |   2 +-
- drivers/base/power/wakeup.c                        |   7 +-
- drivers/block/drbd/drbd_main.c                     |   2 +-
- drivers/block/loop.c                               |   2 +-
- drivers/block/sunvdc.c                             |   2 +-
- drivers/bluetooth/hci_bcsp.c                       |   2 +-
- drivers/bluetooth/hci_h5.c                         |   2 +-
- drivers/bluetooth/hci_qca.c                        |   4 +-
- drivers/char/hangcheck-timer.c                     |   4 +-
- drivers/char/ipmi/ipmi_msghandler.c                |   2 +-
- drivers/char/ipmi/ipmi_ssif.c                      |   4 +-
- drivers/char/random.c                              |   2 +-
- drivers/dma-buf/st-dma-fence.c                     |   2 +-
- drivers/gpu/drm/gud/gud_pipe.c                     |   2 +-
- drivers/gpu/drm/i915/i915_sw_fence.c               |   2 +-
- drivers/hid/hid-wiimote-core.c                     |   2 +-
- drivers/input/keyboard/locomokbd.c                 |   2 +-
- drivers/input/keyboard/omap-keypad.c               |   2 +-
- drivers/input/mouse/alps.c                         |   2 +-
- drivers/input/serio/hil_mlc.c                      |   2 +-
- drivers/input/serio/hp_sdc.c                       |   2 +-
- drivers/isdn/hardware/mISDN/hfcmulti.c             |   6 +-
- drivers/isdn/mISDN/l1oip_core.c                    |   4 +-
- drivers/isdn/mISDN/timerdev.c                      |   4 +-
- drivers/leds/trigger/ledtrig-activity.c            |   2 +-
- drivers/leds/trigger/ledtrig-heartbeat.c           |   2 +-
- drivers/leds/trigger/ledtrig-pattern.c             |   2 +-
- drivers/leds/trigger/ledtrig-transient.c           |   2 +-
- drivers/media/pci/ivtv/ivtv-driver.c               |   2 +-
- drivers/media/usb/pvrusb2/pvrusb2-hdw.c            |  18 ++--
- drivers/media/usb/s2255/s2255drv.c                 |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c        |   6 +-
- drivers/net/ethernet/marvell/sky2.c                |   2 +-
- drivers/net/ethernet/sun/sunvnet.c                 |   2 +-
- drivers/net/usb/sierra_net.c                       |   2 +-
- drivers/net/wireless/intel/iwlwifi/iwl-dbg-tlv.c   |   2 +-
- drivers/net/wireless/intersil/hostap/hostap_ap.c   |   2 +-
- drivers/net/wireless/marvell/mwifiex/main.c        |   2 +-
- drivers/net/wireless/microchip/wilc1000/hif.c      |   8 +-
- drivers/nfc/pn533/pn533.c                          |   2 +-
- drivers/nfc/pn533/uart.c                           |   2 +-
- drivers/pcmcia/bcm63xx_pcmcia.c                    |   2 +-
- drivers/pcmcia/electra_cf.c                        |   2 +-
- drivers/pcmcia/omap_cf.c                           |   2 +-
- drivers/pcmcia/pd6729.c                            |   4 +-
- drivers/pcmcia/yenta_socket.c                      |   4 +-
- drivers/scsi/qla2xxx/qla_edif.c                    |   4 +-
- drivers/scsi/scsi_lib.c                            |   1 +
- drivers/staging/media/atomisp/i2c/atomisp-lm3554.c |   2 +-
- drivers/tty/n_gsm.c                                |   2 +-
- drivers/tty/sysrq.c                                |   2 +-
- drivers/usb/gadget/udc/m66592-udc.c                |   2 +-
- drivers/usb/serial/garmin_gps.c                    |   2 +-
- drivers/usb/serial/mos7840.c                       |   2 +-
- fs/ext4/super.c                                    |   2 +-
- fs/jbd2/journal.c                                  |   2 +
- fs/nilfs2/segment.c                                |   2 +-
- include/linux/timer.h                              | 100 +++++++++++++++++--
- include/linux/workqueue.h                          |   4 +-
- kernel/cgroup/cgroup.c                             |   2 +-
- kernel/sched/psi.c                                 |   1 +
- kernel/time/timer.c                                | 106 ++++++++++++++-------
- kernel/workqueue.c                                 |   4 +-
- net/802/garp.c                                     |   2 +-
- net/802/mrp.c                                      |   2 +-
- net/bridge/br_multicast.c                          |   6 +-
- net/bridge/br_multicast_eht.c                      |   4 +-
- net/core/gen_estimator.c                           |   2 +-
- net/core/neighbour.c                               |   2 +
- net/ipv4/inet_connection_sock.c                    |   2 +-
- net/ipv4/inet_timewait_sock.c                      |   3 +-
- net/ipv4/ipmr.c                                    |   2 +-
- net/ipv6/ip6mr.c                                   |   2 +-
- net/mac80211/mesh_pathtbl.c                        |   2 +-
- net/netfilter/ipset/ip_set_list_set.c              |   2 +-
- net/netfilter/ipvs/ip_vs_lblc.c                    |   2 +-
- net/netfilter/ipvs/ip_vs_lblcr.c                   |   2 +-
- net/netfilter/xt_LED.c                             |   2 +-
- net/rxrpc/conn_object.c                            |   2 +-
- net/sched/cls_flow.c                               |   2 +-
- net/sunrpc/svc.c                                   |   2 +-
- net/sunrpc/xprt.c                                  |   2 +-
- net/tipc/discover.c                                |   2 +-
- net/tipc/monitor.c                                 |   2 +-
- sound/i2c/other/ak4117.c                           |   2 +-
- sound/synth/emux/emux.c                            |   2 +-
- 100 files changed, 310 insertions(+), 175 deletions(-)
+On 1.11.22 г. 21:53 ч., Ivaylo Dimitrov wrote:
+> It seems that low battery irq may be generated tens of times per second,
+> leading to userspace being flooded with unnecessary events.
+> 
+> Fix that by preventing such events being generated more than once every 30
+> seconds.
+> 
+> Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+> ---
+>   drivers/power/supply/cpcap-battery.c | 25 ++++++++++++++++++++++++-
+>   1 file changed, 24 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
+> index 4676560..2659df7 100644
+> --- a/drivers/power/supply/cpcap-battery.c
+> +++ b/drivers/power/supply/cpcap-battery.c
+> @@ -137,6 +137,7 @@ struct cpcap_battery_ddata {
+>   	struct power_supply *psy;
+>   	struct cpcap_battery_config config;
+>   	struct cpcap_battery_state_data state[CPCAP_BATTERY_STATE_NR];
+> +	struct timer_list low_timer;
+>   	u32 cc_lsb;		/* μAms per LSB */
+>   	atomic_t active;
+>   	int charge_full;
+> @@ -914,9 +915,14 @@ static irqreturn_t cpcap_battery_irq_thread(int irq, void *data)
+>   		dev_info(ddata->dev, "Coulomb counter calibration done\n");
+>   		break;
+>   	case CPCAP_BATTERY_IRQ_ACTION_BATTERY_LOW:
+> -		if (latest->current_ua >= 0)
+> +		if (latest->current_ua >= 0 &&
+> +		    !timer_pending(&ddata->low_timer)) {
+>   			dev_warn(ddata->dev, "Battery low at %imV!\n",
+>   				latest->voltage / 1000);
+> +			mod_timer(&ddata->low_timer,
+> +				  jiffies + msecs_to_jiffies(30000));
+> +			disable_irq_nosync(d->irq);
+> +		}
+>   		break;
+>   	case CPCAP_BATTERY_IRQ_ACTION_POWEROFF:
+>   		if (latest->current_ua >= 0 && latest->voltage <= 3200000) {
+> @@ -1087,6 +1093,19 @@ static int cpcap_battery_calibrate(struct cpcap_battery_ddata *ddata)
+>   	return error;
+>   }
+>   
+> +static void cpcap_battery_lowbph_enable(struct timer_list *t)
+> +{
+> +	struct cpcap_battery_ddata *ddata = from_timer(ddata, t, low_timer);
+> +	struct cpcap_interrupt_desc *d;
+> +
+> +	list_for_each_entry(d, &ddata->irq_list, node) {
+> +		if (d->action == CPCAP_BATTERY_IRQ_ACTION_BATTERY_LOW)
+> +			break;
+> +	}
+> +
+> +	enable_irq(d->irq);
+> +}
+> +
+>   #ifdef CONFIG_OF
+>   static const struct of_device_id cpcap_battery_id_table[] = {
+>   	{
+> @@ -1118,6 +1137,8 @@ static int cpcap_battery_probe(struct platform_device *pdev)
+>   	if (!ddata)
+>   		return -ENOMEM;
+>   
+> +	timer_setup(&ddata->low_timer, cpcap_battery_lowbph_enable, 0);
+> +
+>   	cpcap_battery_detect_battery_type(ddata);
+>   
+>   	INIT_LIST_HEAD(&ddata->irq_list);
+> @@ -1185,6 +1206,8 @@ static int cpcap_battery_remove(struct platform_device *pdev)
+>   	if (error)
+>   		dev_err(&pdev->dev, "could not disable: %i\n", error);
+>   
+> +	del_timer_sync(&ddata->low_timer);
+> +
+>   	return 0;
+>   }
+>   
+> 
