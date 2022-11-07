@@ -2,66 +2,110 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B66F9C43219
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Nov 2022 20:04:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4288C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Nov 2022 20:12:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232841AbiKGUEA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Nov 2022 15:04:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43730 "EHLO
+        id S232484AbiKGUMU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Nov 2022 15:12:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232083AbiKGUD4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2022 15:03:56 -0500
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75E0027145;
-        Mon,  7 Nov 2022 12:03:42 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id 5c35a72100802c72; Mon, 7 Nov 2022 21:03:40 +0100
-Received: from kreacher.localnet (unknown [213.134.188.205])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 259866682BE;
-        Mon,  7 Nov 2022 21:03:39 +0100 (CET)
-Authentication-Results: v370.home.net.pl; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: v370.home.net.pl; spf=fail smtp.mailfrom=rjwysocki.net
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-rtc@vger.kernel.org
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 0/5] rtc: rtc-cmos: Assorted ACPI-related cleanups and fixes
-Date:   Mon, 07 Nov 2022 20:58:06 +0100
-Message-ID: <2276401.ElGaqSPkdT@kreacher>
+        with ESMTP id S231598AbiKGUMS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2022 15:12:18 -0500
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7EF0F222BE
+        for <linux-pm@vger.kernel.org>; Mon,  7 Nov 2022 12:12:17 -0800 (PST)
+Received: by mail-ej1-x62f.google.com with SMTP id d26so33125536eje.10
+        for <linux-pm@vger.kernel.org>; Mon, 07 Nov 2022 12:12:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=enMdjmIsSbUUYGb+RiHPQULVTIcs0r1uA7QvgYehDfo=;
+        b=cK5mzUepaprD41nCiRUmaLmzTIgcnNw5msQaClmACmYhAcO7XK6rJUBvOqZtgby6y8
+         52QvjVVQH7ojFFZrM7qfAy0IdolyIX8knrA6IaYyvW21uhXHySccJ3/m2Wleu58EVtDt
+         6MIVe9aRiDrWdsThdVgafQbhigdkLUk4g2knQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=enMdjmIsSbUUYGb+RiHPQULVTIcs0r1uA7QvgYehDfo=;
+        b=WDG3CgJTjj0MbSG9if358PLtQnh5lDueVFWsE68QsmfpaZteRcqTFhKCoGUmH3kcFH
+         gwwuGtNJcA9jWuI1YoQoNCBwcuodpBbo/bMQ8In9QQpuZN2B6y+Durd/462qwvZjc6zY
+         GASPRmmB+RwSNJbgobcdqCzLqMKIvy98E0czIkY15U2kOO1XZKORcrOAq+8wAywakma7
+         1oCEZfZ8gxG+fN+HL3EjBbArH0aylRhUL87EgFqv4OSum0HuVqNnfzJvov/gkNfEyjJZ
+         OkJjN/Bw/+NNliHkhOoleQXLsO8Bb7iBPxC3PlxTtSZfL3v37lltEvskszgOmEZawXCs
+         Xxjw==
+X-Gm-Message-State: ACrzQf1t7H9dH6FWpksgRku5ZLacINfqEOJBhRY9Dc6Y2D87Z5N8Vhip
+        ta/akwXTj4JsZXeQiJlfyGhTxvhDk8o+CA==
+X-Google-Smtp-Source: AMsMyM5a9sxjnIbCnEH9h3dbjdvBdKFSq0Ek7JAq8x2Egc9FQ0pyWxhGyp8jQymPDxmDbYhUxtfg/A==
+X-Received: by 2002:a17:906:6a1b:b0:7ad:ba1e:879b with SMTP id qw27-20020a1709066a1b00b007adba1e879bmr46311135ejc.311.1667851936135;
+        Mon, 07 Nov 2022 12:12:16 -0800 (PST)
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com. [209.85.221.48])
+        by smtp.gmail.com with ESMTPSA id w23-20020aa7dcd7000000b00443d657d8a4sm4613117edu.61.2022.11.07.12.12.15
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 07 Nov 2022 12:12:15 -0800 (PST)
+Received: by mail-wr1-f48.google.com with SMTP id cl5so17871186wrb.9
+        for <linux-pm@vger.kernel.org>; Mon, 07 Nov 2022 12:12:15 -0800 (PST)
+X-Received: by 2002:a5d:6dc3:0:b0:22a:bcc3:21c6 with SMTP id
+ d3-20020a5d6dc3000000b0022abcc321c6mr34070892wrz.450.1667851934711; Mon, 07
+ Nov 2022 12:12:14 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20221103180120.752659-1-evgreen@chromium.org> <20221103105558.v4.4.Ieb1215f598bc9df56b0e29e5977eae4fcca25e15@changeid>
+ <202211041132.E8CB636@keescook>
+In-Reply-To: <202211041132.E8CB636@keescook>
+From:   Evan Green <evgreen@chromium.org>
+Date:   Mon, 7 Nov 2022 12:11:38 -0800
+X-Gmail-Original-Message-ID: <CAE=gft4+KHVd_cNApo6EcTtxSDQDNB-nPXdus-0K8pQdWF+tiw@mail.gmail.com>
+Message-ID: <CAE=gft4+KHVd_cNApo6EcTtxSDQDNB-nPXdus-0K8pQdWF+tiw@mail.gmail.com>
+Subject: Re: [PATCH v4 04/11] security: keys: trusted: Include TPM2 creation data
+To:     Kees Cook <keescook@chromium.org>
+Cc:     linux-kernel@vger.kernel.org, corbet@lwn.net,
+        linux-pm@vger.kernel.org, rjw@rjwysocki.net, gwendal@chromium.org,
+        apronin@chromium.org, Pavel Machek <pavel@ucw.cz>,
+        Matthew Garrett <mgarrett@aurora.tech>,
+        linux-integrity@vger.kernel.org, jejb@linux.ibm.com,
+        zohar@linux.ibm.com, dlunev@google.com,
+        Eric Biggers <ebiggers@kernel.org>,
+        Ben Boeckel <me@benboeckel.net>, jarkko@kernel.org,
+        David Howells <dhowells@redhat.com>,
+        James Morris <jmorris@namei.org>,
+        Paul Moore <paul@paul-moore.com>,
+        "Serge E. Hallyn" <serge@hallyn.com>, keyrings@vger.kernel.org,
+        linux-security-module@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.188.205
-X-CLIENT-HOSTNAME: 213.134.188.205
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvgedrvdekgddufedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppedvudefrddufeegrddukeekrddvtdehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekkedrvddthedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepkedprhgtphhtthhopegrlhgvgigrnhgurhgvrdgsvghllhhonhhisegsohhothhlihhnrdgtohhmpdhrtghpthhtoheplhhinhhugidqrhhttgesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdr
- ohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtoheprgdriihumhhmohesthhofigvrhhtvggthhdrihhtpdhrtghpthhtoheprghnughrihihrdhshhgvvhgthhgvnhhkoheslhhinhhugidrihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+On Fri, Nov 4, 2022 at 11:33 AM Kees Cook <keescook@chromium.org> wrote:
+>
+> On Thu, Nov 03, 2022 at 11:01:12AM -0700, Evan Green wrote:
+> > In addition to the private key and public key, the TPM2_Create
+> > command may also return creation data, a creation hash, and a creation
+> > ticket. These fields allow the TPM to attest to the contents of a
+> > specified set of PCRs at the time the trusted key was created. Encrypted
+> > hibernation will use this to ensure that PCRs settable only by the
+> > kernel were set properly at the time of creation, indicating this is an
+> > authentic hibernate key.
+> >
+> > Encode these additional parameters into the ASN.1 created to represent
+> > the key blob. The new fields are made optional so that they don't bloat
+> > key blobs which don't need them, and to ensure interoperability with
+> > old blobs.
+> >
+> > Signed-off-by: Evan Green <evgreen@chromium.org>
+>
+> There's a lot of open-coded math for the bounds checking. I didn't
+> immediately see any problems, but it'd be nice if there was a way to
+> hook a fuzzer up to this, or at least write some KUnit tests to check
+> boundary conditions explicitly.
+>
+> Reviewed-by: Kees Cook <keescook@chromium.org>
 
-This series of patches does some assorted ACPI-related cleanups to the CMOS RTC
-driver:
-- redundant static variable is dropped,
-- code duplication is reduced,
-- code is relocated so as to drop a few unnecessary forward declarations of
-  functions,
-- functions are renamed to avoid confusion,
-and fixes up an issue in the driver removal path.
-
-Thanks!
-
-
-
+Thank you! Yes, agreed about all the bounds checking. I could probably
+pull out the "check for src + 2 > end, then get_unaligned_be16()" into
+a helper function. Let me see if that makes things look better or ends
+up looking the same.
+-Evan
