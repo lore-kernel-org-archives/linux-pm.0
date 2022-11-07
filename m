@@ -2,88 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7CE7C43217
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Nov 2022 21:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76B0AC4332F
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Nov 2022 22:01:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233075AbiKGV2o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Nov 2022 16:28:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51716 "EHLO
+        id S232244AbiKGWBL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Nov 2022 17:01:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44264 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231659AbiKGV2o (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2022 16:28:44 -0500
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5746118E03;
-        Mon,  7 Nov 2022 13:28:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1667856523; x=1699392523;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=eMhhFWN0tq3l9heiz2390g+NAjEPIpwyv/9Bc22v3Xg=;
-  b=EZrjx+/FT6Askg25K7DfXJ+Uua8eu0oyfjEx8Bq12Rq7yt+O3K4ZXdcn
-   CFxYUdJfln2q0ybuCzbdLWRye2Oa/C7DKHZTjRN4BQJOmZ2E/p4xZ/kKf
-   MTarx+TTBoQvszxzrhNj9ZdflwpI00iloINgdBanqK7tZov0FFgqbmgmt
-   RYiw7N44rVNiO6iNmwJ2OGX8psA0BriskYA9YmOZxeSTN3cS4IvIo25Zh
-   w8X1s1ijindBtlXvBZVvGHJSsNheZALNwc/23hbclArJzS27guQr2Wj+f
-   1hlUUYWOvI1PeKpmJ6s8/KDCSmr65owMNHDnesaYp0xipnxwgCT6UC3n9
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10524"; a="310530454"
-X-IronPort-AV: E=Sophos;i="5.96,145,1665471600"; 
-   d="scan'208";a="310530454"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Nov 2022 13:28:43 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10524"; a="614022429"
-X-IronPort-AV: E=Sophos;i="5.96,145,1665471600"; 
-   d="scan'208";a="614022429"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga006.jf.intel.com with ESMTP; 07 Nov 2022 13:28:40 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1os9fa-008qG5-1s;
-        Mon, 07 Nov 2022 23:28:38 +0200
-Date:   Mon, 7 Nov 2022 23:28:38 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-rtc@vger.kernel.org, Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Alessandro Zummo <a.zummo@towertech.it>
-Subject: Re: [PATCH v1 5/5] rtc: rtc-cmos: Disable ACPI RTC event on removal
-Message-ID: <Y2l4hmXQTiQZssDK@smile.fi.intel.com>
-References: <2276401.ElGaqSPkdT@kreacher>
- <2219830.iZASKD2KPV@kreacher>
+        with ESMTP id S232448AbiKGWBJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2022 17:01:09 -0500
+X-Greylist: delayed 2400 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 07 Nov 2022 14:01:02 PST
+Received: from post.baikalelectronics.com (post.baikalelectronics.com [213.79.110.86])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7E38A6385;
+        Mon,  7 Nov 2022 14:01:02 -0800 (PST)
+Received: from post.baikalelectronics.com (localhost.localdomain [127.0.0.1])
+        by post.baikalelectronics.com (Proxmox) with ESMTP id 524D6E0EAC;
+        Mon,  7 Nov 2022 23:44:49 +0300 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        baikalelectronics.ru; h=cc:cc:content-transfer-encoding
+        :content-type:content-type:date:from:from:message-id
+        :mime-version:reply-to:subject:subject:to:to; s=post; bh=ypuVjFp
+        3Hgx1sBJP8N0IPOtO9JwOrzeOMW551uvk+vU=; b=rPQy6bRV0eY+8tpO4QyqQ6z
+        3rNjK8APbaUO//K2uczk+BippVnNT1miaG+oWL3YWq0GKaAJUA5nEgp1PaiZ03Xe
+        zE+5zLTyMw9a2DL+xb/MlwbgDe42lv2UBloUnqQMBeupAcn8dfH/deqPADlKYQNL
+        lC/t7uq8fXcaMIZaqld0=
+Received: from mail.baikal.int (mail.baikal.int [192.168.51.25])
+        by post.baikalelectronics.com (Proxmox) with ESMTP id 37F3FE0E1D;
+        Mon,  7 Nov 2022 23:44:49 +0300 (MSK)
+Received: from localhost (192.168.168.10) by mail (192.168.51.25) with
+ Microsoft SMTP Server (TLS) id 15.0.1395.4; Mon, 7 Nov 2022 23:44:48 +0300
+From:   Serge Semin <Sergey.Semin@baikalelectronics.ru>
+To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Maxime Ripard <maxime@cerno.tech>
+CC:     Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+        Serge Semin <fancer.lancer@gmail.com>,
+        Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+        Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Rob Herring <robh@kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] dt-bindings: opp-v2: Fix clock-latency-ns prop in example
+Date:   Mon, 7 Nov 2022 23:43:54 +0300
+Message-ID: <20221107204355.31971-1-Sergey.Semin@baikalelectronics.ru>
+X-Mailer: git-send-email 2.38.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2219830.iZASKD2KPV@kreacher>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [192.168.168.10]
+X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 07, 2022 at 09:03:06PM +0100, Rafael J. Wysocki wrote:
+Accidentally discovered a hidden typo in the DT-nodes defined in the
+opp-v2 bindings example. Instead of specifying the "clock-latency-ns"
+property the DT-node has been created with the "lock-latency-ns" property
+in it, which doesn't exist neither in opp-v2 nor in the base schemas.
+Let's fix the name to having the "clock-" prefix as it was originally
+implied and as the rest of the similar nodes has.
 
-...
+Fixes: 94274f20f6bf ("dt-bindings: opp: Convert to DT schema")
+Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 
-> +static inline void acpi_rtc_event_cleanup(void)
-> +{
-> +	if (!acpi_disabled)
+---
 
-Btw, other functions look like using
+Note unevaluatedProperties flag hasn't revealed the problem here most
+likely due to the property having the "-ns" suffix which implies the
+property being single-number. It is implicitly evaluated by the dt-schema
+core thus preventing the unevaluatedProperties schema to detect the
+inconsistency.
+---
+ Documentation/devicetree/bindings/opp/opp-v2.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-	if (acpi_disabled)
-		return;
-
-pattern. Maybe here the same for the sake of consistency?
-
-> +		acpi_remove_fixed_event_handler(ACPI_EVENT_RTC, rtc_handler);
-> +}
-
+diff --git a/Documentation/devicetree/bindings/opp/opp-v2.yaml b/Documentation/devicetree/bindings/opp/opp-v2.yaml
+index eaf8fba2c691..2f05920fce79 100644
+--- a/Documentation/devicetree/bindings/opp/opp-v2.yaml
++++ b/Documentation/devicetree/bindings/opp/opp-v2.yaml
+@@ -155,7 +155,7 @@ examples:
+             opp-hz = /bits/ 64 <1200000000>;
+             opp-microvolt = <1025000>;
+             opp-microamp = <90000>;
+-            lock-latency-ns = <290000>;
++            clock-latency-ns = <290000>;
+             turbo-mode;
+         };
+     };
 -- 
-With Best Regards,
-Andy Shevchenko
+2.38.0
 
 
