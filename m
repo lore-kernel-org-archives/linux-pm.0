@@ -2,278 +2,199 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06C80C43217
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Nov 2022 18:17:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52464C4332F
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Nov 2022 18:19:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232587AbiKGSR4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Nov 2022 13:17:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33884 "EHLO
+        id S232733AbiKGSTd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Nov 2022 13:19:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35256 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232585AbiKGSRf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2022 13:17:35 -0500
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 662CE1F2E4
-        for <linux-pm@vger.kernel.org>; Mon,  7 Nov 2022 10:16:07 -0800 (PST)
-Received: by mail-ed1-x52d.google.com with SMTP id a13so18976854edj.0
-        for <linux-pm@vger.kernel.org>; Mon, 07 Nov 2022 10:16:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=vtrMkZFocbzvh3Fb7sIjN2QjJcyDrliJV+MQq6spUEQ=;
-        b=JtFUkF6lW0iiArnwsSga6axf7pcO3ebIRhdLrfWgfAGGASUFX/xUsjttKiW5cf4NwE
-         ZYtfHDGd9LDqxyx/u0nQTmayhxKq9k+Dv7nMPLoWp25gc2FrsOAEOcjSU4jcV/QWoWUj
-         G25cehRcqY6dnUgNfcgH/qJKkyrru5zj1FF44=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vtrMkZFocbzvh3Fb7sIjN2QjJcyDrliJV+MQq6spUEQ=;
-        b=KDLlgtGDelUdaAZCggmWHFkR3yncBXB71RIS4m2ufLInHLK3gLPraQGe8P/WRZM9cK
-         9AHndG4Gi/b6Eidpm364pdl2Bpy5/Zfpbd9rQpYmWa8PMrHTJK6MasmwAcWSs8oNtmxo
-         2JpBReirkQfhq+/ON63tudrFM+4R9Jp9UR4bOdbfR9aKvx3lk6feBxOckvLxq2OtNPeh
-         drWogIdWiTfBFzr0DQkkKKlx71nTjXXXpQo5gcCplER7mtSABdPmJSy/PXY7Yk2Uoi3Z
-         QMm8Fvf3MdQi95eOFe3z+kLktdIU11DqlAjteZN00PC+geaH8OXhO9RUqdBptwOmAMik
-         rOxA==
-X-Gm-Message-State: ACrzQf1pK4UkVBto3wQXwFIOL5TnvLiPoqglxYWTXiEriZqi8BuUHD17
-        c/S/VhC6eZ2Bwns/KxjLeGgLIkYoMOieXA==
-X-Google-Smtp-Source: AMsMyM6i5IWhmRaSuxnl8KfsJkw8wQxmxLqnS3f8immsY0xfie6R/DzAnCbDiVuSDqPYz4dp6vjdCw==
-X-Received: by 2002:aa7:d0c5:0:b0:464:39e1:68f8 with SMTP id u5-20020aa7d0c5000000b0046439e168f8mr24457762edo.34.1667844965833;
-        Mon, 07 Nov 2022 10:16:05 -0800 (PST)
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com. [209.85.128.44])
-        by smtp.gmail.com with ESMTPSA id k8-20020a1709062a4800b007ad9c826d75sm3763265eje.61.2022.11.07.10.16.03
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Nov 2022 10:16:04 -0800 (PST)
-Received: by mail-wm1-f44.google.com with SMTP id ja4-20020a05600c556400b003cf6e77f89cso8748205wmb.0
-        for <linux-pm@vger.kernel.org>; Mon, 07 Nov 2022 10:16:03 -0800 (PST)
-X-Received: by 2002:a1c:e90b:0:b0:3b4:fb6c:7654 with SMTP id
- q11-20020a1ce90b000000b003b4fb6c7654mr33681795wmc.98.1667844963446; Mon, 07
- Nov 2022 10:16:03 -0800 (PST)
+        with ESMTP id S232741AbiKGSTQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2022 13:19:16 -0500
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2073.outbound.protection.outlook.com [40.107.243.73])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A278E218F;
+        Mon,  7 Nov 2022 10:18:17 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HDyrfkhXYWfaF/ZPWqAvN1dY70NV5lwIGwvp9bP4/40esRk1EcxkVD2+760DgvD6RmZ+2iPDK9WJlfnVnrQ2qVkE8qX5ZCPPybZ7a5+SONEuyNWtYcKTz6+bM1oU1DkV+tm+9olmHGD1JteQyJokK0uhKtN4rrkOdkmZ9KH+9jNyJHh6AV5jTWsbZMi068mNx+BWo58359ZgFQXOvBkeCrbMT3DDBjgnvDh1+dP3I9MQrGy9ftBRzNZuBUdh8fs6HQAVn2SAWcACzPoHLgPX9iBizfu8d1aCLpSBDmLsS3zi3NAatDQPTU6x7D5P0mmabkHsr3DYYt1y3jTqSQux9g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=qYasbIiL0YgH5mZOOE/OQZlOBJ9vDc+0nFXIHERWJq4=;
+ b=KerET0GiUDCobJ7wMLvmsNpnbeSBQO4cJQosNei21OwbxuZJRyA6+LNZop4xDFFNBg1uUcOBJdpGAD4Z9nvHW6yDHvMQLpubzf50NlLbhX5CDAvBSLatGj2iIsLKRJuVGwWt3TTKOumCtK/o9F//w2so1h2u0tOYet0aKofJUSytWGxXu268iTgJVAUz0j7JkvMB68U66s7As5tq+IGB9gJcPGAITMeqVlHLQLAQj2bpMNqL/855iuiafBLlfBduuTZvEluyeO28pXKfLpqDb/vQkBtSwqwrNj6D8LjOYrKyPE5DKY2LKsiPk0IawPxfWvQoeviGbYxUX7QzwMS3Sg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qYasbIiL0YgH5mZOOE/OQZlOBJ9vDc+0nFXIHERWJq4=;
+ b=x5gr0WnZl5qjd5qSOhaBPpyZyuZfRw7evnY9lbh0shiI93VivaFjCPpkKZOZIqMO9+nc41jYRQq9k5HR8S/1QXCqVVnpLrBJg23TPhdFnm4qlgpIjXTLZmAOLPVQjusmY+oKYA+FUAFgvBa06Tjr0mXpIZzJ+d9UN0npvxaqZzg=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from MN0PR12MB6101.namprd12.prod.outlook.com (2603:10b6:208:3cb::10)
+ by BY5PR12MB4146.namprd12.prod.outlook.com (2603:10b6:a03:20d::24) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5791.27; Mon, 7 Nov
+ 2022 18:18:13 +0000
+Received: from MN0PR12MB6101.namprd12.prod.outlook.com
+ ([fe80::f842:a9ba:3f41:3c3c]) by MN0PR12MB6101.namprd12.prod.outlook.com
+ ([fe80::f842:a9ba:3f41:3c3c%5]) with mapi id 15.20.5791.026; Mon, 7 Nov 2022
+ 18:18:13 +0000
+Message-ID: <30690bad-e3f4-36ee-c957-a2cf750b7775@amd.com>
+Date:   Mon, 7 Nov 2022 12:18:09 -0600
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.1
+Subject: Re: [PATCH v3 6/8] cpufreq: amd-pstate: implement suspend and resume
+ callbacks
+Content-Language: en-US
+To:     Perry Yuan <Perry.Yuan@amd.com>, rafael.j.wysocki@intel.com,
+        ray.huang@amd.com, viresh.kumar@linaro.org
+Cc:     Deepak.Sharma@amd.com, Nathan.Fontenot@amd.com,
+        Alexander.Deucher@amd.com, Shimmer.Huang@amd.com,
+        Xiaojian.Du@amd.com, Li.Meng@amd.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20221107175705.2207842-1-Perry.Yuan@amd.com>
+ <20221107175705.2207842-7-Perry.Yuan@amd.com>
+From:   "Limonciello, Mario" <mario.limonciello@amd.com>
+In-Reply-To: <20221107175705.2207842-7-Perry.Yuan@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CH0PR07CA0007.namprd07.prod.outlook.com
+ (2603:10b6:610:32::12) To MN0PR12MB6101.namprd12.prod.outlook.com
+ (2603:10b6:208:3cb::10)
 MIME-Version: 1.0
-References: <20221103180120.752659-1-evgreen@chromium.org> <20221103105558.v4.3.I9ded8c8caad27403e9284dfc78ad6cbd845bc98d@changeid>
- <Y2jujfZ01h5JriYc@kernel.org>
-In-Reply-To: <Y2jujfZ01h5JriYc@kernel.org>
-From:   Evan Green <evgreen@chromium.org>
-Date:   Mon, 7 Nov 2022 10:15:27 -0800
-X-Gmail-Original-Message-ID: <CAE=gft750QYs-AWQ9MC1Z1E==v=m-tf4aKUWjrjBtoWqRJz5dQ@mail.gmail.com>
-Message-ID: <CAE=gft750QYs-AWQ9MC1Z1E==v=m-tf4aKUWjrjBtoWqRJz5dQ@mail.gmail.com>
-Subject: Re: [PATCH v4 03/11] tpm: Allow PCR 23 to be restricted to
- kernel-only use
-To:     Jarkko Sakkinen <jarkko@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, corbet@lwn.net,
-        linux-pm@vger.kernel.org, rjw@rjwysocki.net, gwendal@chromium.org,
-        apronin@chromium.org, Pavel Machek <pavel@ucw.cz>,
-        Kees Cook <keescook@chromium.org>,
-        Matthew Garrett <mgarrett@aurora.tech>,
-        linux-integrity@vger.kernel.org, jejb@linux.ibm.com,
-        zohar@linux.ibm.com, dlunev@google.com,
-        Eric Biggers <ebiggers@kernel.org>,
-        Ben Boeckel <me@benboeckel.net>,
-        Matthew Garrett <matthewgarrett@google.com>,
-        Matthew Garrett <mjg59@google.com>,
-        Jason Gunthorpe <jgg@ziepe.ca>, Peter Huewe <peterhuewe@gmx.de>
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN0PR12MB6101:EE_|BY5PR12MB4146:EE_
+X-MS-Office365-Filtering-Correlation-Id: 520170b1-647c-4862-2abd-08dac0ec6ec4
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: DNUcTLeFUJXAQHbfvGUymHey4PUl9TOJzKQWIa33Wg0YRZm/utcnHgeyx7/HCu7/VddZbnxS50ilsxUT9hcQh/16RUG//5rs7gJezvjuMtQm166z2VndeXXTFxyd21cNchU8xNxynRCGE1jSJNbLbcst8feaQ/geW3BkwZzo5GcXxoZOBWRxHMivg6ijIXW8nuUr+7g+9OxZ39smAh/QV9jbzA+ID8mwQ1IG7lB6VjEKR7nztedkssaCcmhldvo5njjwhrHcB8f1C1BgDiJp66Cl1y2DShGEBswA3AbG/ERVkN1WOG9zWZTkKDJhfyhDDIH73Cn3XTj33Ro/dh4Odle7WRfFwgtYIQ8sPEpQTc3+o5edyIlQOF8it2Yc/m0kqwmHC8UUWt9kgnfmAmtkSOXgvSl5gXLfGW4PnxpsAjCt6F0WWU+RtQDdUGEoggZVGyh56TQREWXH01IaZ6a85ZabjK6uiLYAxyh8kdzIJT1qp88swL/N/WFjLHD1Lb6HAUv/6aXwaM1gIewHkYJ/5lve+ds2LsWrf89HNM4ly6SJ4rN6O2Y8of0w9b/vMvgYZejO1J5d+/w1M4jdH2kt5Q+Ic7WNXEzGpteC3vVInHAaeci41pyjl7EY+eHd3sYjbJay3Jkw54QkzjvuvHZJHx1DBbIpMI7xGUleE6rGSosqBOILA+p/ZlIfboeiQNRYPXbOt7aiDzXBmBQrxS/ZSX+bOw2TQH4W3Ug3mysoWcOpNSfGOV5PIfYtn8uZOJOcYSNWcqU6gP23mjwRZU6P9BAVEpfPfgGpE7o/BTVTNE0=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN0PR12MB6101.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(376002)(39860400002)(396003)(136003)(346002)(366004)(451199015)(26005)(186003)(6512007)(83380400001)(2616005)(38100700002)(2906002)(5660300002)(8936002)(15650500001)(53546011)(6486002)(478600001)(6666004)(6506007)(4326008)(66556008)(8676002)(41300700001)(66946007)(316002)(66476007)(31686004)(31696002)(86362001)(36756003)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?UDNJYUw0NytmREEzeTY1K2xONUJEWlArZGFPNVJvR0ZvNS95dysxd1duOWh1?=
+ =?utf-8?B?ejRpMHNENW1TN2pWd1Y4bGg2MktTT2NVWTFvQXlvdDM3SFE3Qm5VZGhqZEUx?=
+ =?utf-8?B?MXVCbHZQMFI4RDA2NWtxNTN0REZiUHZybTVPKyttTHNwSWxRbFJ3NnpnTk9S?=
+ =?utf-8?B?RU1QWThNR1o5NDdwZGFVaVowdm1pdE1tNUFLeThlWHY5UEdYUU1icHA0ME1M?=
+ =?utf-8?B?bTdVY0owcTdCVlM0T0dRUm5BSmpsSUtFbktIa29HUXg4eHdpaWV2eE5ZU0k1?=
+ =?utf-8?B?MG03MFpkSEp6K3ZQbnZBSEZRTWpZeGxYT3pZOXlrSVlxc2VsTGZjNXUzSWhi?=
+ =?utf-8?B?b213Q0dlakE2OHp4Nk9xTnI2OEd2WHpDSVkvNnd3cGljRW5QS2tULy81aUJI?=
+ =?utf-8?B?aVVIN2w4SUZGNXZVR1pTdXR2LzZvYzNqUWNwUUZ5dWM4ck9BeWRxSWs0K2VZ?=
+ =?utf-8?B?eFhhMWYra0M1SlRJSCt4b1pDUCt3MkdZbFA4b21Fa2hpekZ2RGVyNTdleTJM?=
+ =?utf-8?B?T0U3dkhYaUMvMnRJaFNpN2hNeWI5ckc2VElvb3JPNVpUaUFrMS84WEgvcEQr?=
+ =?utf-8?B?c3lQdDAwNTB3Vk9JblUwZTlPekJRcGpCTDNtWk1LbkxLcXRLNlFFTGJFRHZ5?=
+ =?utf-8?B?cklUZ3gvRDZlSlJ4emtBVjUySncrNFk0UEpJTXRMTi9tSTZPaDJpVFN2cE5w?=
+ =?utf-8?B?cEh2eEZUTXBqQWIzanZhYitueWlnZlVxc2dFV291bmxSSkJyUHk3Nm5GTUla?=
+ =?utf-8?B?WjdidkFYNTg5OFNUL3BCNDU0RFh3QzVVcmFESUNHM1BIVzlUN0ZhRVd4UzV3?=
+ =?utf-8?B?bWVuTGNidHZaZFZreHJ6K0pLZitlK3RMaFFPZkdBY1RvU0xEM2hCZ3N6OHlJ?=
+ =?utf-8?B?UU0rRk43dEZyNk9IQ2xZZDVkZU12ZnJFbkc5bFRYZ3NhdzFKMmZOb1F6M3Vs?=
+ =?utf-8?B?akNaTW9ydWp6UjRRVjFiQlJCRWFCU0g3UWZvUUhRY28rTEtFQXR1Y2wwc0Rz?=
+ =?utf-8?B?N0JUZGtiY1c3OFJpU2w2UC9KZEl3cjErazJrcGJBVG0vSTZRY0t1TmRBdy9Y?=
+ =?utf-8?B?dnF2MGJGNWhjZFVBcUZtcCt4U1YyTUwxTVE2TENoMGFVRkg0c0tvd3A5b1NU?=
+ =?utf-8?B?bkR6NEJWcTVNN3Mrc2xSdUpjNnl2ZEFxcGpPZE9kM09CTU85ZzJjOHlXQXQ2?=
+ =?utf-8?B?ZDNZM0V2UmZ6cDM0ZjlxZkdBaElKTVA3ZFlDUFNUTjA5OEN5OW8vamhtZlRW?=
+ =?utf-8?B?VnlVZERNNS8xYXg5V3VKeFVrdkloVlJ4U1BKNnV1WW5sN0wwbCtvQ0gzcmgr?=
+ =?utf-8?B?YUtTQ3pFNGhjOTQ4Nk84eVRJWVFLU1R4ZXgzcVZHdzh1MnkzdTdoQmlYV3Ju?=
+ =?utf-8?B?QTV5WkZMSnN1MU9Pd2l3bVlCUlM0aHU3WUt3YTRQNTIyQjFTWmQ0c095cC8v?=
+ =?utf-8?B?dStpRm4zVUpTbTd0QmZMT2ExcnpEbHdEbk5hMzh2aFlxRzI1R2h2YUFXSkh3?=
+ =?utf-8?B?eXZsVjVKc3RrT0FHQWV3NTE2VlhaT3kvdW8vTWxMTk9Qdkhqd3E1bXdXSHll?=
+ =?utf-8?B?b2NRMUZEdzBkRGxBYWFOYUxOZW1JU3NvU1lJMXhOZ0FUSEZGdm9FTDJlSkQx?=
+ =?utf-8?B?ZEloU0VlZU8vdXEwT2xJVjlMbkhFQzFnUWJrUkZvZnI5d0x5U1RqaGI3ZTlN?=
+ =?utf-8?B?V29WbHpPUDlGcE9RQW9wVzgwdkVyNVpUL3NSR2xweWhseExTK0ZOdno2VW14?=
+ =?utf-8?B?K1VHeS9nTGFrdlkwSU5oZFBWQXo4RldSTjd3ak9HNERDL1lPdlEza0MvV3BJ?=
+ =?utf-8?B?OGRWRmpwQ0lYWmdvSWNiL2xBVWJzR1g5WmxkRVF0SnpDZGQzU1I3RVhldmQw?=
+ =?utf-8?B?U3BjRHFtbVI3TTh2dG5BVk5sMmE0MTkvamgxejY2OHVUZlhCTmdVREJSVUI2?=
+ =?utf-8?B?Y2RmWGNOOUpGS1d1aUhaamMvWjFKL2xpOXRrUEgveEhtbWg1UGl6Wll5cXNJ?=
+ =?utf-8?B?aHBYZFdGRXU5QS9ER1M5d201M1NJS2JKZWZ0WDJOSVFVRVpwd1FDbjh4c29P?=
+ =?utf-8?B?OVhyQzAwWEZ2VDI4eGg3eS9rWTgreUtXd1Y0ZWFVeDVpRUd4dmE2V1h3T0xk?=
+ =?utf-8?Q?OwrLq3j6ooWe8OIvOvvDdDY7c?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 520170b1-647c-4862-2abd-08dac0ec6ec4
+X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB6101.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Nov 2022 18:18:13.0760
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: blmvPNbYFObLVrQLLJiglwq1cjT1fu/Y+JZCfT3yYW/uW6lX5vuabOBcKfSyfYaRv1zkfDjZBbawlM549r+zCg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4146
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 7, 2022 at 3:40 AM Jarkko Sakkinen <jarkko@kernel.org> wrote:
->
-> On Thu, Nov 03, 2022 at 11:01:11AM -0700, Evan Green wrote:
-> > From: Matthew Garrett <matthewgarrett@google.com>
-> >
-> > Introduce a new Kconfig, TCG_TPM_RESTRICT_PCR, which if enabled
-> > restricts usermode's ability to extend or reset PCR 23.
-> >
-> > Under certain circumstances it might be desirable to enable the creation
-> > of TPM-backed secrets that are only accessible to the kernel. In an
-> > ideal world this could be achieved by using TPM localities, but these
-> > don't appear to be available on consumer systems. An alternative is to
-> > simply block userland from modifying one of the resettable PCRs, leaving
-> > it available to the kernel. If the kernel ensures that no userland can
-> > access the TPM while it is carrying out work, it can reset PCR 23,
-> > extend it to an arbitrary value, create or load a secret, and then reset
-> > the PCR again. Even if userland somehow obtains the sealed material, it
-> > will be unable to unseal it since PCR 23 will never be in the
-> > appropriate state.
-> >
-> > This Kconfig is only properly supported for systems with TPM2 devices.
-> > For systems with TPM1 devices, having this Kconfig enabled completely
-> > restricts usermode's access to the TPM. TPM1 contains support for
-> > tunnelled transports, which usermode could use to smuggle commands
-> > through that this Kconfig is attempting to restrict.
-> >
-> > Link: https://lore.kernel.org/lkml/20210220013255.1083202-3-matthewgarrett@google.com/
-> > Signed-off-by: Matthew Garrett <mjg59@google.com>
-> > Signed-off-by: Evan Green <evgreen@chromium.org>
-> > ---
-> >
-> > Changes in v4:
-> >  - Augment the commit message (Jarkko)
-> >
-> > Changes in v3:
-> >  - Fix up commit message (Jarkko)
-> >  - tpm2_find_and_validate_cc() was split (Jarkko)
-> >  - Simply fully restrict TPM1 since v2 failed to account for tunnelled
-> >    transport sessions (Stefan and Jarkko).
-> >
-> > Changes in v2:
-> >  - Fixed sparse warnings
-> >
-> >  drivers/char/tpm/Kconfig          | 12 ++++++++++++
-> >  drivers/char/tpm/tpm-dev-common.c |  8 ++++++++
-> >  drivers/char/tpm/tpm.h            | 19 +++++++++++++++++++
-> >  drivers/char/tpm/tpm1-cmd.c       | 13 +++++++++++++
-> >  drivers/char/tpm/tpm2-cmd.c       | 22 ++++++++++++++++++++++
-> >  5 files changed, 74 insertions(+)
-> >
-> > diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
-> > index 927088b2c3d3f2..c8ed54c66e399a 100644
-> > --- a/drivers/char/tpm/Kconfig
-> > +++ b/drivers/char/tpm/Kconfig
-> > @@ -211,4 +211,16 @@ config TCG_FTPM_TEE
-> >         This driver proxies for firmware TPM running in TEE.
-> >
-> >  source "drivers/char/tpm/st33zp24/Kconfig"
-> > +
-> > +config TCG_TPM_RESTRICT_PCR
-> > +     bool "Restrict userland access to PCR 23"
-> > +     depends on TCG_TPM
-> > +     help
-> > +       If set, block userland from extending or resetting PCR 23. This allows it
-> > +       to be restricted to in-kernel use, preventing userland from being able to
-> > +       make use of data sealed to the TPM by the kernel. This is required for
-> > +       secure hibernation support, but should be left disabled if any userland
-> > +       may require access to PCR23. This is a TPM2-only feature, and if enabled
-> > +       on a TPM1 machine will cause all usermode TPM commands to return EPERM due
-> > +       to the complications introduced by tunnelled sessions in TPM1.2.
-> >  endif # TCG_TPM
-> > diff --git a/drivers/char/tpm/tpm-dev-common.c b/drivers/char/tpm/tpm-dev-common.c
-> > index dc4c0a0a512903..7a4e618c7d1942 100644
-> > --- a/drivers/char/tpm/tpm-dev-common.c
-> > +++ b/drivers/char/tpm/tpm-dev-common.c
-> > @@ -198,6 +198,14 @@ ssize_t tpm_common_write(struct file *file, const char __user *buf,
-> >       priv->response_read = false;
-> >       *off = 0;
-> >
-> > +     if (priv->chip->flags & TPM_CHIP_FLAG_TPM2)
-> > +             ret = tpm2_cmd_restricted(priv->chip, priv->data_buffer, size);
-> > +     else
-> > +             ret = tpm1_cmd_restricted(priv->chip, priv->data_buffer, size);
-> > +
-> > +     if (ret)
-> > +             goto out;
-> > +
-> >       /*
-> >        * If in nonblocking mode schedule an async job to send
-> >        * the command return the size.
-> > diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-> > index f1e0f490176f01..c0845e3f9eda17 100644
-> > --- a/drivers/char/tpm/tpm.h
-> > +++ b/drivers/char/tpm/tpm.h
-> > @@ -245,4 +245,23 @@ void tpm_bios_log_setup(struct tpm_chip *chip);
-> >  void tpm_bios_log_teardown(struct tpm_chip *chip);
-> >  int tpm_dev_common_init(void);
-> >  void tpm_dev_common_exit(void);
-> > +
-> > +#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-> > +#define TPM_RESTRICTED_PCR 23
-> > +
-> > +int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
-> > +int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
-> > +#else
-> > +static inline int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
-> > +                                   size_t size)
-> > +{
-> > +     return 0;
-> > +}
-> > +
-> > +static inline int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
-> > +                                   size_t size)
-> > +{
-> > +     return 0;
-> > +}
-> > +#endif
-> >  #endif
-> > diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
-> > index cf64c738510529..1869e89215fcb9 100644
-> > --- a/drivers/char/tpm/tpm1-cmd.c
-> > +++ b/drivers/char/tpm/tpm1-cmd.c
-> > @@ -811,3 +811,16 @@ int tpm1_get_pcr_allocation(struct tpm_chip *chip)
-> >
-> >       return 0;
-> >  }
-> > +
-> > +#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-> > +int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
-> > +{
-> > +     /*
-> > +      * Restrict all usermode commands on TPM1.2. Ideally we'd just restrict
-> > +      * TPM_ORD_PCR_EXTEND and TPM_ORD_PCR_RESET, but TPM1.2 also supports
-> > +      * tunnelled transport sessions where the kernel would be unable to filter
-> > +      * commands.
-> > +      */
-> > +     return -EPERM;
-> > +}
-> > +#endif
-> > diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
-> > index 303ce2ea02a4b0..e0503cfd7bcfee 100644
-> > --- a/drivers/char/tpm/tpm2-cmd.c
-> > +++ b/drivers/char/tpm/tpm2-cmd.c
-> > @@ -778,3 +778,25 @@ int tpm2_find_cc(struct tpm_chip *chip, u32 cc)
-> >
-> >       return -1;
-> >  }
-> > +
-> > +#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-> > +int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
-> > +{
-> > +     int cc = tpm2_find_and_validate_cc(chip, NULL, buffer, size);
-> > +     __be32 *handle;
-> > +
-> > +     switch (cc) {
-> > +     case TPM2_CC_PCR_EXTEND:
-> > +     case TPM2_CC_PCR_RESET:
-> > +             if (size < (TPM_HEADER_SIZE + sizeof(u32)))
-> > +                     return -EINVAL;
-> > +
-> > +             handle = (__be32 *)&buffer[TPM_HEADER_SIZE];
-> > +             if (be32_to_cpu(*handle) == TPM_RESTRICTED_PCR)
-> > +                     return -EPERM;
-> > +             break;
-> > +     }
-> > +
-> > +     return 0;
-> > +}
-> > +#endif
-> > --
-> > 2.38.1.431.g37b22c650d-goog
-> >
->
-> This looks otherwise good but I have still one remark: what is the reason
-> for restricting PCR23 for TPM 1.x?
+On 11/7/2022 11:57, Perry Yuan wrote:
+> add suspend and resume support for the AMD processors by amd_pstate_epp
+> driver instance.
+> 
+> When the CPPC is suspended, EPP driver will set EPP profile to 'power'
+> profile and set max/min perf to lowest perf value.
+> When resume happens, it will restore the MSR registers with
+> previous cached value.
+> 
+> Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
 
-Mostly I was trying to do the least surprising thing for someone who
-had compiled with this RESTRICT_PCR Kconfig enabled but booted a TPM1
-system. If we do nothing for TPM1, then the encrypted hibernation
-mechanism appears to work fine, but leaves a gaping hole where
-usermode can manipulate PCR23 themselves to create forged encrypted
-hibernate images. Denying all usermode access makes the Kconfig
-correct on TPM1 systems, at the expense of all usermode access (rather
-than just access to PCR23).
+Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
 
-An alternative that might be friendlier to users would be to do a
-runtime check in the encrypted hibernate code to simply fail if this
-isn't TPM2. The tradeoff there is that it waters down the Kconfig
-significantly to "RESTRICT_PCR sometimes, if you can, otherwise meh".
-That seemed a bit dangerous, as any future features that may want to
-rely on this Kconfig would have to remember to restrict their support
-to TPM2 as well.
+> ---
+>   drivers/cpufreq/amd-pstate.c | 40 ++++++++++++++++++++++++++++++++++++
+>   1 file changed, 40 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 6ce9fca0a128..841b1e2383b8 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -1282,6 +1282,44 @@ static int amd_pstate_epp_cpu_offline(struct cpufreq_policy *policy)
+>   	return amd_pstate_cpu_offline(policy);
+>   }
+>   
+> +static int amd_pstate_epp_suspend(struct cpufreq_policy *policy)
+> +{
+> +	struct amd_cpudata *cpudata = all_cpu_data[policy->cpu];
+> +	int ret;
+> +
+> +	/* avoid suspending when EPP is not enabled */
+> +	if (!cppc_active)
+> +		return 0;
+> +
+> +	/* set this flag to avoid setting core offline*/
+> +	cpudata->suspended = true;
+> +
+> +	/* disable CPPC in lowlevel firmware */
+> +	ret = amd_pstate_enable(false);
+> +	if (ret)
+> +		pr_err("failed to suspend, return %d\n", ret);
+> +
+> +	return 0;
+> +}
+> +
+> +static int amd_pstate_epp_resume(struct cpufreq_policy *policy)
+> +{
+> +	struct amd_cpudata *cpudata = all_cpu_data[policy->cpu];
+> +
+> +	if (cpudata->suspended) {
+> +		mutex_lock(&amd_pstate_limits_lock);
+> +
+> +		/* enable amd pstate from suspend state*/
+> +		amd_pstate_epp_reenable(cpudata);
+> +
+> +		mutex_unlock(&amd_pstate_limits_lock);
+> +
+> +		cpudata->suspended = false;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>   static void amd_pstate_verify_cpu_policy(struct amd_cpudata *cpudata,
+>   					   struct cpufreq_policy_data *policy)
+>   {
+> @@ -1318,6 +1356,8 @@ static struct cpufreq_driver amd_pstate_epp_driver = {
+>   	.update_limits	= amd_pstate_epp_update_limits,
+>   	.offline	= amd_pstate_epp_cpu_offline,
+>   	.online		= amd_pstate_epp_cpu_online,
+> +	.suspend	= amd_pstate_epp_suspend,
+> +	.resume		= amd_pstate_epp_resume,
+>   	.name		= "amd_pstate_epp",
+>   	.attr		= amd_pstate_epp_attr,
+>   };
 
--Evan
-
->
-> BR, Jarkko
->
