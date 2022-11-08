@@ -2,259 +2,75 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED33EC43219
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Nov 2022 14:12:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5883DC433FE
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Nov 2022 14:43:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235305AbiKHOMt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Nov 2022 09:12:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49084 "EHLO
+        id S234418AbiKHOnW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Nov 2022 09:43:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235309AbiKHOMg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2022 09:12:36 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94BB05655D;
-        Tue,  8 Nov 2022 06:12:13 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 471F1B81AF2;
-        Tue,  8 Nov 2022 14:12:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2588C433D7;
-        Tue,  8 Nov 2022 14:12:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1667916731;
-        bh=iaEbcrkCuX8cye+YoOUheK23PYqax7r56lSiUtWcv2Q=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SSBV8Y6sP3jsA7agiZn4ZWxHc4B9z+OxMSC3C4B5X0AKxQ0t3yaFSbHRbVkbn88ME
-         9vxNgVybucdgIQ+5TCtjQ84AL2/LiMtVzrxXhcq6EZcmiti+Tzn2YryCwTzcwiT0qT
-         RBIRpoN2LIz2sZW8D2Hps2DRBm8fF331xYmTLUV0=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     stable@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        patches@lists.linux.dev, Linus Walleij <linus.walleij@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.0 115/197] ARM: dts: ux500: Add trips to battery thermal zones
-Date:   Tue,  8 Nov 2022 14:39:13 +0100
-Message-Id: <20221108133400.187793178@linuxfoundation.org>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221108133354.787209461@linuxfoundation.org>
-References: <20221108133354.787209461@linuxfoundation.org>
-User-Agent: quilt/0.67
+        with ESMTP id S232367AbiKHOnV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2022 09:43:21 -0500
+Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2102631ECF;
+        Tue,  8 Nov 2022 06:43:20 -0800 (PST)
+Received: by mail-qk1-f178.google.com with SMTP id p18so4626390qkg.2;
+        Tue, 08 Nov 2022 06:43:20 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=chPq10Gzwk+MmB+dQBE8YARzKswl0L8S0c4cotUK9Yo=;
+        b=Nel+RCouuBuJs1TaAED5Cvd/nfznpqnUTi9Q0+X++UdFTeQ4MNw88NfXMK0pdiBLVp
+         xr4K+7kkKqYRk4HW5P2C7UsMk6UT9ghbd++Z0KEBUNJFPHGzJ3t1Whmuzz+oybC8xZQQ
+         xURZD392gkNacpyQ3UPKy7LPBjh5/BRtiqEbdAGRoEWuiViwRRuw+Cm+elPpe5V0rvG/
+         hsUAC/lkUEcKXq9GgtvdSke5QkeKvzTVxPjutX5/MzFbrqWD7cKyWZynmc5oI4MiLiNN
+         XOI/y1sJDeroHBMAOocVfr5t+RXxtTj73YRUz8PDlgKSMy+Qb93ohs0WFYBlSRA3GVGq
+         Y7lA==
+X-Gm-Message-State: ACrzQf0yBEiLduDrjmQczD9clJEByYdLMt414dNPUvhaFomUL06dYzzr
+        N55IUZIiIeP9qF3VU9aF3v4FAKoixSJiuwjHbzI=
+X-Google-Smtp-Source: AMsMyM61bIp/lkNqz9d4L2NL67oaG2AS8g2ED2d2BN7jytLEkidQhYJsMKVpa/kDJFQhN8K4Q8s3uCUrZF8Mm0Ykuqc=
+X-Received: by 2002:a05:620a:d89:b0:6cf:c98b:744c with SMTP id
+ q9-20020a05620a0d8900b006cfc98b744cmr38559368qkl.443.1667918599300; Tue, 08
+ Nov 2022 06:43:19 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <2276401.ElGaqSPkdT@kreacher> <8155359.T7Z3S40VBb@kreacher> <Y2l21CkXvm7mkONq@smile.fi.intel.com>
+In-Reply-To: <Y2l21CkXvm7mkONq@smile.fi.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 8 Nov 2022 15:43:08 +0100
+Message-ID: <CAJZ5v0j1zeucPOrSa9buYoUms7M9rPAQqo7g50hS2SeyBy63HQ@mail.gmail.com>
+Subject: Re: [PATCH v1 4/5] rtc: rtc-cmos: Rename ACPI-related functions
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        linux-rtc@vger.kernel.org, Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Alessandro Zummo <a.zummo@towertech.it>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Linus Walleij <linus.walleij@linaro.org>
+On Mon, Nov 7, 2022 at 10:22 PM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> On Mon, Nov 07, 2022 at 09:01:50PM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > The names of rtc_wake_setup() and cmos_wake_setup() don't indicate
+> > that these functions are ACPI-related, which is the case, and the
+> > former doesn't really reflect the role of the function.
+> >
+> > Rename them to acpi_rtc_event_setup() and cmos_acpi_wake_setup(),
+> > respectively, to address this shortcoming.
+>
+> Hmm... I'm not sure I understand why in one case acpi is a prefix and
+> in the other is kinda mid-suffix?
 
-[ Upstream commit cd73adcdbad3d9e9923b045d3643409e9c148d17 ]
+Because the former installs an ACPI RTC fixed event handler and the
+latter populates the cmos_rtc data structure in the ACPI case.
 
-Recent changes to the thermal framework has made the trip
-points (trips) for thermal zones compulsory, which made
-the Ux500 DTS files break validation and also stopped
-probing because of similar changes to the code.
-
-Fix this by adding an "outer bounding box": battery thermal
-zones should not get warmer than 70 degress, then we will
-shut down.
-
-Fixes: 8c596324232d ("dt-bindings: thermal: Fix missing required property")
-Fixes: 3fd6d6e2b4e8 ("thermal/of: Rework the thermal device tree initialization")
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Link: https://lore.kernel.org/r/20221030210854.346662-1-linus.walleij@linaro.org'
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/arm/boot/dts/ste-href.dtsi                    | 8 ++++++++
- arch/arm/boot/dts/ste-snowball.dts                 | 8 ++++++++
- arch/arm/boot/dts/ste-ux500-samsung-codina-tmo.dts | 8 ++++++++
- arch/arm/boot/dts/ste-ux500-samsung-codina.dts     | 8 ++++++++
- arch/arm/boot/dts/ste-ux500-samsung-gavini.dts     | 8 ++++++++
- arch/arm/boot/dts/ste-ux500-samsung-golden.dts     | 8 ++++++++
- arch/arm/boot/dts/ste-ux500-samsung-janice.dts     | 8 ++++++++
- arch/arm/boot/dts/ste-ux500-samsung-kyle.dts       | 8 ++++++++
- arch/arm/boot/dts/ste-ux500-samsung-skomer.dts     | 8 ++++++++
- 9 files changed, 72 insertions(+)
-
-diff --git a/arch/arm/boot/dts/ste-href.dtsi b/arch/arm/boot/dts/ste-href.dtsi
-index fbaa0ce46427..8f1bb78fc1e4 100644
---- a/arch/arm/boot/dts/ste-href.dtsi
-+++ b/arch/arm/boot/dts/ste-href.dtsi
-@@ -24,6 +24,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-snowball.dts b/arch/arm/boot/dts/ste-snowball.dts
-index 1c9094f24893..e2f0cdacba7d 100644
---- a/arch/arm/boot/dts/ste-snowball.dts
-+++ b/arch/arm/boot/dts/ste-snowball.dts
-@@ -28,6 +28,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-ux500-samsung-codina-tmo.dts b/arch/arm/boot/dts/ste-ux500-samsung-codina-tmo.dts
-index d6940e0afa86..27a3ab7e25e1 100644
---- a/arch/arm/boot/dts/ste-ux500-samsung-codina-tmo.dts
-+++ b/arch/arm/boot/dts/ste-ux500-samsung-codina-tmo.dts
-@@ -44,6 +44,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-ux500-samsung-codina.dts b/arch/arm/boot/dts/ste-ux500-samsung-codina.dts
-index 5f41256d7f4b..b88f0c07873d 100644
---- a/arch/arm/boot/dts/ste-ux500-samsung-codina.dts
-+++ b/arch/arm/boot/dts/ste-ux500-samsung-codina.dts
-@@ -57,6 +57,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-ux500-samsung-gavini.dts b/arch/arm/boot/dts/ste-ux500-samsung-gavini.dts
-index 806da3fc33cd..7231bc745200 100644
---- a/arch/arm/boot/dts/ste-ux500-samsung-gavini.dts
-+++ b/arch/arm/boot/dts/ste-ux500-samsung-gavini.dts
-@@ -30,6 +30,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-ux500-samsung-golden.dts b/arch/arm/boot/dts/ste-ux500-samsung-golden.dts
-index b0dce91aff4b..9604695edf53 100644
---- a/arch/arm/boot/dts/ste-ux500-samsung-golden.dts
-+++ b/arch/arm/boot/dts/ste-ux500-samsung-golden.dts
-@@ -35,6 +35,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-ux500-samsung-janice.dts b/arch/arm/boot/dts/ste-ux500-samsung-janice.dts
-index ed5c79c3d04b..69387e8754a9 100644
---- a/arch/arm/boot/dts/ste-ux500-samsung-janice.dts
-+++ b/arch/arm/boot/dts/ste-ux500-samsung-janice.dts
-@@ -30,6 +30,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-ux500-samsung-kyle.dts b/arch/arm/boot/dts/ste-ux500-samsung-kyle.dts
-index c57676faf181..167846df3104 100644
---- a/arch/arm/boot/dts/ste-ux500-samsung-kyle.dts
-+++ b/arch/arm/boot/dts/ste-ux500-samsung-kyle.dts
-@@ -34,6 +34,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
-diff --git a/arch/arm/boot/dts/ste-ux500-samsung-skomer.dts b/arch/arm/boot/dts/ste-ux500-samsung-skomer.dts
-index 81b341a5ae45..93e5f5ed888d 100644
---- a/arch/arm/boot/dts/ste-ux500-samsung-skomer.dts
-+++ b/arch/arm/boot/dts/ste-ux500-samsung-skomer.dts
-@@ -30,6 +30,14 @@ battery-thermal {
- 			polling-delay = <0>;
- 			polling-delay-passive = <0>;
- 			thermal-sensors = <&bat_therm>;
-+
-+			trips {
-+				battery-crit-hi {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 	};
- 
--- 
-2.35.1
-
-
-
+Maybe it would be better to call the latter cmos_wake_setup_acpi().
