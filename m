@@ -2,98 +2,156 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D216C433FE
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Nov 2022 21:41:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D880FC433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Nov 2022 22:15:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231272AbiKIVlf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Nov 2022 16:41:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46296 "EHLO
+        id S229516AbiKIWP2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Nov 2022 17:15:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229447AbiKIVle (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2022 16:41:34 -0500
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AB4F29C8A;
-        Wed,  9 Nov 2022 13:41:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1668030093; x=1699566093;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=1U/Ysvzugqok1OiNYXo54FZ7q5XZ9HUDIbpMFGaIxRg=;
-  b=bnV3xqAO+cKRILFyRhMHTvVYbT9ywddCRAAHpkQKmXhvPrEPIOPCNPaz
-   eEC1qm1BEB4tQ3VjcaDSf9YuAVDWqmANclsazZJUUQr8N9cMYDTc5esSh
-   gbYLzjuusK4u802+PWyk1wCxBIFyK79NCSQvHUBhUfDGIzMFBlr6i6OPs
-   ojDvl9kBgg1zDWUv+BzsvUxKueM2J/ClyZXApX0vGvnKE6DcIuGxz2pK6
-   Bby7r+IprEj2d3knF/38/2FPdvDwTiNmz+aT5L36usnCNVYnoiiTCiWFW
-   lWt1TdrDQsMR2Wz3g10BEITYwUdHuLwNYQ1+4a+lPoTIr7ewnRn1kz7OC
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10526"; a="309835698"
-X-IronPort-AV: E=Sophos;i="5.96,151,1665471600"; 
-   d="scan'208";a="309835698"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Nov 2022 13:41:32 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10526"; a="762036677"
-X-IronPort-AV: E=Sophos;i="5.96,151,1665471600"; 
-   d="scan'208";a="762036677"
-Received: from sibacon-mobl1.amr.corp.intel.com (HELO desk) ([10.212.38.58])
-  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Nov 2022 13:41:29 -0800
-Date:   Wed, 9 Nov 2022 13:41:26 -0800
-From:   Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-To:     Borislav Petkov <bp@alien8.de>
-Cc:     Andrew Cooper <Andrew.Cooper3@citrix.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "x86@kernel.org" <x86@kernel.org>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        "hdegoede@redhat.com" <hdegoede@redhat.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Daniel Sneddon <daniel.sneddon@linux.intel.com>,
-        "antonio.gomez.iglesias@linux.intel.com" 
-        <antonio.gomez.iglesias@linux.intel.com>
-Subject: Re: [PATCH 2/3] x86/cpu/amd: Add feature bit for MSR_AMD64_LS_CFG
- enumeration
-Message-ID: <20221109214126.ao477sucsks6msyd@desk>
-References: <cover.1663025154.git.pawan.kumar.gupta@linux.intel.com>
- <034c7f5ac243ee7b40ba1a8cc3f9b10b1e380674.1663025154.git.pawan.kumar.gupta@linux.intel.com>
- <Y2qlyfRKgIc4KVcx@zn.tnic>
- <20221108225141.aikng7veemp25p62@desk>
- <Y2rh6FN+gbD6Vbzj@zn.tnic>
- <1ee02d57-21a7-b18e-6cf9-0667445a6fb3@citrix.com>
- <20221109173720.4ovtb2ao3vuuge43@desk>
- <Y2vyz2OAp1xKedYc@zn.tnic>
+        with ESMTP id S229551AbiKIWP0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2022 17:15:26 -0500
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D07B22EF3B
+        for <linux-pm@vger.kernel.org>; Wed,  9 Nov 2022 14:15:24 -0800 (PST)
+Received: from tr.lan (ip-86-49-120-218.bb.vodafone.cz [86.49.120.218])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: marex@denx.de)
+        by phobos.denx.de (Postfix) with ESMTPSA id E8B01806FC;
+        Wed,  9 Nov 2022 23:15:22 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+        s=phobos-20191101; t=1668032123;
+        bh=hbju7MdyTF8RRhhvNpIw4k/q4fO57Qv9kCdlfK/EM80=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=J9FrYYpGGlOpYQq/gpsVoslsAA7aTfTcaTrVylHRPowyyTRBHCMriNun2WNbgnXj1
+         7RLbbJ+5hmCrR40k/oFj3f3+Jlbq+kT2h4JaUzBgAaHWG8o3EL0GflGmluSICiF3Es
+         U88bFeoM9t9xlCYUivGFUDLzEQMdcVEP2eUiXm0gs7nlxrrOYEt4ktEis77JjGY0ZX
+         Auv0TZyBnuuGQsznxmXaDswz+c+k741QWZn29hX67vCR2dcwpZaOKFV5cdhrBnULit
+         v6n2TS8FipjS4+NlhmO0QxgPNAEEvTrNWtIzmD9k78RJ034QYs4IWQ2/hHcCTD2ayn
+         yeZitWj+6RVfA==
+From:   Marek Vasut <marex@denx.de>
+To:     linux-pm@vger.kernel.org
+Cc:     Marek Vasut <marex@denx.de>, Hans de Goede <hdegoede@redhat.com>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sebastian Reichel <sre@kernel.org>
+Subject: [PATCH 2/2] power: supply: bq25890: Add HiZ mode support
+Date:   Wed,  9 Nov 2022 23:15:04 +0100
+Message-Id: <20221109221504.79562-2-marex@denx.de>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20221109221504.79562-1-marex@denx.de>
+References: <20221109221504.79562-1-marex@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <Y2vyz2OAp1xKedYc@zn.tnic>
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 09, 2022 at 07:34:55PM +0100, Borislav Petkov wrote:
->On Wed, Nov 09, 2022 at 09:37:20AM -0800, Pawan Gupta wrote:
->> Looks like we need to restore this MSR too,
->
->Why do we? Is that MSR read-only too or what is the reason for that one?
+The bq25890 is capable of disconnecting itself from the external supply,
+in which case the system is supplied only from the battery. This can be
+useful e.g. to test the pure battery operation, or draw no power from
+USB port.
 
-Please ignore, it doesn't concern this series.
+Implement support for this mode, which can be toggled by writing 0 or
+non-zero to sysfs 'online' attribute, to select either offline or online
+mode.
 
->Yes, MSR_AMD64_LS_CFG is used in SSBD mitigations. For everything <= 0x12:
->
->        /* AMD Family 0xf - 0x12 */
->        VULNWL_AMD(0x0f,        NO_MELTDOWN | NO_SSB | NO_L1TF | NO_MDS | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
->        VULNWL_AMD(0x10,        NO_MELTDOWN | NO_SSB | NO_L1TF | NO_MDS | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
->        VULNWL_AMD(0x11,        NO_MELTDOWN | NO_SSB | NO_L1TF | NO_MDS | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
->        VULNWL_AMD(0x12,        NO_MELTDOWN | NO_SSB | NO_L1TF | NO_MDS | NO_SWAPGS | NO_ITLB_MULTIHIT | NO_MMIO),
->
->On F14h it says here:
->
->[    0.278930] Speculative Store Bypass: Vulnerable
->
->simply because it is not present there.
+The IRQ handler has to be triggered to update chip state, as switching
+to and from HiZ mode does not generate an interrupt automatically.
 
-So looks like MSR_AMD64_LS_CFG should only be restored when
-X86_FEATURE_LS_CFG_SSBD is present. I will make this change in v2.
+Signed-off-by: Marek Vasut <marex@denx.de>
+---
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+---
+ drivers/power/supply/bq25890_charger.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index 676eb66374e01..70b5783999345 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -95,6 +95,7 @@ struct bq25890_init_data {
+ 
+ struct bq25890_state {
+ 	u8 online;
++	u8 hiz;
+ 	u8 chrg_status;
+ 	u8 chrg_fault;
+ 	u8 vsys_status;
+@@ -676,7 +677,8 @@ static int bq25890_power_supply_set_property(struct power_supply *psy,
+ 					     const union power_supply_propval *val)
+ {
+ 	struct bq25890_device *bq = power_supply_get_drvdata(psy);
+-	int maxval;
++	struct bq25890_state state;
++	int maxval, ret;
+ 	u8 lval;
+ 
+ 	switch (psp) {
+@@ -691,6 +693,10 @@ static int bq25890_power_supply_set_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+ 		lval = bq25890_find_idx(val->intval, TBL_IINLIM);
+ 		return bq25890_field_write(bq, F_IINLIM, lval);
++	case POWER_SUPPLY_PROP_ONLINE:
++		ret = bq25890_field_write(bq, F_EN_HIZ, !val->intval);
++		bq25890_update_state(bq, psp, &state);
++		return ret;
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -703,6 +709,7 @@ static int bq25890_power_supply_property_is_writeable(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++	case POWER_SUPPLY_PROP_ONLINE:
+ 		return true;
+ 	default:
+ 		return false;
+@@ -757,6 +764,7 @@ static int bq25890_get_chip_state(struct bq25890_device *bq,
+ 	} state_fields[] = {
+ 		{F_CHG_STAT,	&state->chrg_status},
+ 		{F_PG_STAT,	&state->online},
++		{F_EN_HIZ,	&state->hiz},
+ 		{F_VSYS_STAT,	&state->vsys_status},
+ 		{F_BOOST_FAULT, &state->boost_fault},
+ 		{F_BAT_FAULT,	&state->bat_fault},
+@@ -772,10 +780,11 @@ static int bq25890_get_chip_state(struct bq25890_device *bq,
+ 		*state_fields[i].data = ret;
+ 	}
+ 
+-	dev_dbg(bq->dev, "S:CHG/PG/VSYS=%d/%d/%d, F:CHG/BOOST/BAT/NTC=%d/%d/%d/%d\n",
+-		state->chrg_status, state->online, state->vsys_status,
+-		state->chrg_fault, state->boost_fault, state->bat_fault,
+-		state->ntc_fault);
++	dev_dbg(bq->dev, "S:CHG/PG/HIZ/VSYS=%d/%d/%d/%d, F:CHG/BOOST/BAT/NTC=%d/%d/%d/%d\n",
++		state->chrg_status, state->online,
++		state->hiz, state->vsys_status,
++		state->chrg_fault, state->boost_fault,
++		state->bat_fault, state->ntc_fault);
+ 
+ 	return 0;
+ }
+@@ -792,12 +801,14 @@ static irqreturn_t __bq25890_handle_irq(struct bq25890_device *bq)
+ 	if (!memcmp(&bq->state, &new_state, sizeof(new_state)))
+ 		return IRQ_NONE;
+ 
+-	if (!new_state.online && bq->state.online) {	    /* power removed */
++	/* power removed or HiZ */
++	if ((!new_state.online || new_state.hiz) && bq->state.online) {
+ 		/* disable ADC */
+ 		ret = bq25890_field_write(bq, F_CONV_RATE, 0);
+ 		if (ret < 0)
+ 			goto error;
+-	} else if (new_state.online && !bq->state.online) { /* power inserted */
++	} else if (new_state.online && !new_state.hiz && !bq->state.online) {
++		/* power inserted and not HiZ */
+ 		/* enable ADC, to have control of charge current/voltage */
+ 		ret = bq25890_field_write(bq, F_CONV_RATE, 1);
+ 		if (ret < 0)
+-- 
+2.35.1
+
