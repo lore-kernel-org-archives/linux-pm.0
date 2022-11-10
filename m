@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86AD2C4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Nov 2022 15:25:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65FABC43219
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Nov 2022 15:25:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229820AbiKJPZH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Nov 2022 10:25:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40258 "EHLO
+        id S229622AbiKJPZJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Nov 2022 10:25:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229673AbiKJPZG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 10:25:06 -0500
-Received: from mail-oa1-x30.google.com (mail-oa1-x30.google.com [IPv6:2001:4860:4864:20::30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF66E10B56;
-        Thu, 10 Nov 2022 07:25:04 -0800 (PST)
-Received: by mail-oa1-x30.google.com with SMTP id 586e51a60fabf-13b6c1c89bdso2454319fac.13;
-        Thu, 10 Nov 2022 07:25:04 -0800 (PST)
+        with ESMTP id S231414AbiKJPZI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 10:25:08 -0500
+Received: from mail-oa1-x31.google.com (mail-oa1-x31.google.com [IPv6:2001:4860:4864:20::31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ACD010B56;
+        Thu, 10 Nov 2022 07:25:07 -0800 (PST)
+Received: by mail-oa1-x31.google.com with SMTP id 586e51a60fabf-13bd19c3b68so2491077fac.7;
+        Thu, 10 Nov 2022 07:25:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=xmjfoekNorwtXNFPR8+wc2e3NKk91Fqcl9jBDPzH2h0=;
-        b=OoFJpuKP06gHaiTsiMKZxvVP/vRtZ6/vmOHy78Sq1coYwR8N06LS/U+x3T1L0kvd8x
-         qAtJkzzJqGF/qbZ5EIsVFE2r77WABYlMpOuoXZm8P+tZPpudbaxw7lf0GLQ575BiC/QX
-         +7BYUiUlAwo9/u1VPzmxh6U0KDQ6/GTAqHpcEnxbC22TFTy4cwi3AyWavssXjok3gGFo
-         AwD/2tQf3+qcYnseDpA1VBTeiCHx3BhHGOM38ZY14LYizTjD9Hu4hkSXXa+lnZGiVvkj
-         ydbYYfTeD8Wjbg514S+hoU/Vn/UAZmzLb7NR5hFvQYB5WwlBrxA/oY4bW0M1ePkEcE38
-         UHeQ==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:sender:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iSO/JGqHw5m1/Y8PZVH1KMpl9TGQLAVgPtR2Ov1K83Q=;
+        b=hL0xDKbdkurOTH+ZJ8RqK9mu/W5/Nn3jy/R5bg31F2r2Yv6izlO+yxjcypm//piNHi
+         f9LkoIlq67C9YYVHzxzyr/HaRR6a4DAFefa4AWDzp45bhkB31ZtUQjDmWDxlwcF9/L5j
+         +hq38MWZl3/KDsuIpW+z3Uqi+3iMM8NTdi29RWP6AqRlWBJU6J+mqKySjblFlRBPCcte
+         ZTPT1mUYPk+eH1CQS/cQOgZtqPXUTC/gy/o5mjcixvzh3T/TkMB0rbaBILu6xyYw3tsn
+         IRUHErAeG2vubG07+oReAXhnRjRj5ROgVSTuRYqTXfF+mLkOCx0m/vta5DPwN0KApJJP
+         aVUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xmjfoekNorwtXNFPR8+wc2e3NKk91Fqcl9jBDPzH2h0=;
-        b=nmSO4AjzOj9oE8SdehoKTS68h9LtRKn224gaNpOU87R9cE43ECd16+DMzeeDQ4eXP1
-         woGfRPgsJcmrvgXXyaUkJf2yaQDjDROPAPgDhGhdhn4IxUQi1F0S47RaVJVpbBQwPTgC
-         paWOcB4IdCd3eYoZyQo5KywYgu+dkDG4WtYrZ5MdZDuqz+V/fTMuE16fSaH4US8wqRsl
-         kvXi7CWeLHwb48S61ky3sVKexdYVekKe5cA7gYE6q53kN72Zj9FQGTVq3Gzy9MaONQnT
-         ylGc2U996U79BW2cnuG76uASsqkUHt+S56wmea7fBEGPIuEw1vKi4SQRdNzyDJnttPpI
-         jMow==
-X-Gm-Message-State: ACrzQf0QHuMbrv8ahRIl3JPRifQdbR9xglBq3KPQseTaoO4rh3BAhjT/
-        PHc/+dOG0dh/dqSRwfSuhxI=
-X-Google-Smtp-Source: AMsMyM4tv6SJrs25LfigTFxxbKTX69rCzYOsQrWo/oRyq+T/KlzKa2ylTHnf6qQWc6lsUY1JZ3oNSQ==
-X-Received: by 2002:a05:6870:a713:b0:131:8f4f:b8ea with SMTP id g19-20020a056870a71300b001318f4fb8eamr46141369oam.138.1668093903986;
-        Thu, 10 Nov 2022 07:25:03 -0800 (PST)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:sender:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=iSO/JGqHw5m1/Y8PZVH1KMpl9TGQLAVgPtR2Ov1K83Q=;
+        b=pQDPhyx5jb+EsTbvcx7Mt9OkWtkMUsQgtGeOTLZxrXWJpIh5DuWo0mbGdbkBfMEzA5
+         sORJscEDtHQQ6qmhptAiltd1OgabpmD4+rFTYwmJS3hc27X0AuK3qNA2Fpm92IEfDqCz
+         7+9lNXQW8bjSLr+uhq/wf6nF51aCHLhaG2aY/FJ9BqbXAUERqr3KF5wKaYQ0opKdFS4V
+         gjKYYP2mCwktgG1BbfApjyZavtnZSBl5VhGY6V4FtG4xw3YdRsAPhHhWPOYdUwJkKWg2
+         TenM354OgVAqcApypy+OANNRPEPFxMXPaJbKSygmnLmoJ8HQ+eIHRGBUygBP6Evk5FHt
+         WZtA==
+X-Gm-Message-State: ACrzQf2bzJrCzNkARkjtwajoHnSTevTlxiN+sTpvM3W/heHbsA/UHyai
+        2d6Oh7p2eTBB1vbohvYPGtU=
+X-Google-Smtp-Source: AMsMyM4qRuoL9gOLv0mThbhHZMTEUzxEYiaHkQY9MCDHpNdAj7jMESvjOo5Xeyn2epCVZsHSmm12Lg==
+X-Received: by 2002:a05:6870:aa0d:b0:13b:b765:4791 with SMTP id gv13-20020a056870aa0d00b0013bb7654791mr1528823oab.274.1668093906906;
+        Thu, 10 Nov 2022 07:25:06 -0800 (PST)
 Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id y36-20020a05687045a400b0013ae39d0575sm7604236oao.15.2022.11.10.07.25.02
+        by smtp.gmail.com with ESMTPSA id z6-20020a4a2246000000b0049eb2793516sm5271977ooe.44.2022.11.10.07.25.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Nov 2022 07:25:03 -0800 (PST)
+        Thu, 10 Nov 2022 07:25:06 -0800 (PST)
 Sender: Guenter Roeck <groeck7@gmail.com>
 From:   Guenter Roeck <linux@roeck-us.net>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -55,52 +56,54 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
 Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 0/9] thermal/core: Protect thermal device operations against removal
-Date:   Thu, 10 Nov 2022 07:24:51 -0800
-Message-Id: <20221110152500.3032655-1-linux@roeck-us.net>
+Subject: [PATCH v2 2/9] thermal/core: Delete device under thermal device zone lock
+Date:   Thu, 10 Nov 2022 07:24:53 -0800
+Message-Id: <20221110152500.3032655-3-linux@roeck-us.net>
 X-Mailer: git-send-email 2.36.2
+In-Reply-To: <20221110152500.3032655-1-linux@roeck-us.net>
+References: <20221110152500.3032655-1-linux@roeck-us.net>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Accesses to thermal zones, and with it to thermal zone device operations,
-are still possible after the thermal zone device has been unregistered.
-For example, thermal_zone_get_temp() can be called from temp_show()
-in thermal_sysfs.c if the sysfs attribute was opened before the thermal
-device was unregistered. This is problematic and may result in crashes
-since the operations data structure and the underlying code may be gone
-when the calls are made.
+Thermal device attributes may still be opened after unregistering
+the thermal zone and deleting the thermal device.
 
-The following series solves the problem by protecting accesses to thermal
-device operations with the thermal device mutex, and by verifying that the
-thermal device is still registered after the mutex has been acquired.
+Currently there is no protection against accessing thermal device
+operations after unregistering a thermal zone. To enable adding
+such protection, protect the device delete operation with the
+thermal zone device mutex. This requires splitting the call to
+device_unregister() into its components, device_del() and put_device().
+Only the first call can be executed under mutex protection, since
+put_device() may result in releasing the thermal zone device memory.
 
-This was previously sent as RFC/RFT as single patch [1]. The code was reworked
-to match thermal subsystem changes made between v6.0 and v6.1, and it was
-split into several patches to simplify review.
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+v2: No change
 
-[1] https://lore.kernel.org/linux-pm/20221004033936.1047691-1-linux@roeck-us.net/
+ drivers/thermal/thermal_core.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-v2: Improved documentation, rearranged code.
-    No functional changes. See individual patches for details.
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index f548875a016d..562ece8d16aa 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1391,7 +1391,12 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	thermal_remove_hwmon_sysfs(tz);
+ 	ida_free(&thermal_tz_ida, tz->id);
+ 	ida_destroy(&tz->ida);
+-	device_unregister(&tz->device);
++
++	mutex_lock(&tz->lock);
++	device_del(&tz->device);
++	mutex_unlock(&tz->lock);
++
++	put_device(&tz->device);
+ 
+ 	thermal_notify_tz_delete(tz_id);
+ }
+-- 
+2.36.2
 
-----------------------------------------------------------------
-Guenter Roeck (9):
-      thermal/core: Destroy thermal zone device mutex in release function
-      thermal/core: Delete device under thermal device zone lock
-      thermal/core: Ensure that thermal device is registered in thermal_zone_get_temp
-      thermal/core: Move parameter validation from __thermal_zone_get_temp to thermal_zone_get_temp
-      thermal/core: Introduce locked version of thermal_zone_device_update
-      thermal/core: Protect hwmon accesses to thermal operations with thermal zone mutex
-      thermal/core: Protect sysfs accesses to thermal operations with thermal zone mutex
-      thermal/core: Remove thermal_zone_set_trips()
-      thermal/core: Protect thermal device operations against thermal device removal
-
- drivers/thermal/thermal_core.c    | 76 +++++++++++++++++++++++--------------
- drivers/thermal/thermal_core.h    |  3 +-
- drivers/thermal/thermal_helpers.c | 67 +++++++++++++++++++++------------
- drivers/thermal/thermal_hwmon.c   | 10 ++++-
- drivers/thermal/thermal_sysfs.c   | 79 ++++++++++++++++++++++++++++++++-------
- 5 files changed, 168 insertions(+), 67 deletions(-)
