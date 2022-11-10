@@ -2,94 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29FFEC433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Nov 2022 13:02:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99F76C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Nov 2022 13:57:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230160AbiKJNCU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Nov 2022 08:02:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57170 "EHLO
+        id S230208AbiKJN5i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Nov 2022 08:57:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39124 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230128AbiKJNCQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 08:02:16 -0500
-Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3588725E9;
-        Thu, 10 Nov 2022 05:02:12 -0800 (PST)
-Received: by mail-qk1-f180.google.com with SMTP id z17so976398qki.11;
-        Thu, 10 Nov 2022 05:02:12 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=zsfYp5SezvI3MFiQxEmlFhh5nmWcQ5tJ6YkRjK54Yks=;
-        b=J5jMbJ1GbKefOaYWZMpCbsrCxMXfDjPzyB5ZJ/WOnkPpjpqqB+BPbFt/dEQTOtGFem
-         2+w7z/IWX//gTzJeE2NaUKljlVOHVoiIbQr1ltE9gO8pw/x9kFP7hW6Lr05AzxPI46BP
-         BWdNzDCabRRH87uQwyq8CLUc9cKxpb89VmumwSrxBQlYBTGWne46l8ZY9k93x2jpmNf6
-         YFMVNtLej4QeMpL8PPPUvqe35qV5fVzBIgZ3aqViGfz2hoarS/VIhCoFHx0/O/cwLw5P
-         L6q6UQjiNhYlP2H3smgfZ+TBj86Q+qSSyRD1SvZ0+LjktLhmYh14brxXJF2jyZCw7XC8
-         r/xQ==
-X-Gm-Message-State: ACrzQf3EzMGIP/9UcSHBIzx1ZNptf8GsoeSoGQqZJf1ez5MBXyi+sxwH
-        zcsr4cLBVKYQfHTUMXAzxf/5jV+e8MMkGrLncfo=
-X-Google-Smtp-Source: AMsMyM4OVrGeZTrljL1VI+EAIhcce32gE+BmWfg9mU3oy4JLELw23BWbxtfUa68k/0KZqijNLfojC25ZrabY7qGYoSw=
-X-Received: by 2002:a05:620a:1476:b0:6fa:4c67:83ec with SMTP id
- j22-20020a05620a147600b006fa4c6783ecmr35189800qkl.23.1668085321410; Thu, 10
- Nov 2022 05:02:01 -0800 (PST)
+        with ESMTP id S230124AbiKJN5h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 08:57:37 -0500
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 57FC6289;
+        Thu, 10 Nov 2022 05:57:36 -0800 (PST)
+Received: from dggpeml500026.china.huawei.com (unknown [172.30.72.54])
+        by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4N7NcR5ZDMzJnVv;
+        Thu, 10 Nov 2022 21:54:31 +0800 (CST)
+Received: from dggpeml500005.china.huawei.com (7.185.36.59) by
+ dggpeml500026.china.huawei.com (7.185.36.106) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Thu, 10 Nov 2022 21:57:34 +0800
+Received: from huawei.com (10.175.112.125) by dggpeml500005.china.huawei.com
+ (7.185.36.59) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Thu, 10 Nov
+ 2022 21:57:33 +0800
+From:   Yongqiang Liu <liuyongqiang13@huawei.com>
+To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>, <tobin@kernel.org>
+CC:     <zhangxiaoxu5@huawei.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpufreq: Init completion before kobject_init_and_add()
+Date:   Thu, 10 Nov 2022 14:23:07 +0000
+Message-ID: <20221110142307.981883-1-liuyongqiang13@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20221017130910.2307118-1-linux@roeck-us.net> <20221017130910.2307118-6-linux@roeck-us.net>
- <CAJZ5v0hO9_95uD1qY8aBe094JWsxPrba2wk_PchKHmVqRj0CHw@mail.gmail.com> <20221110002549.GA3550654@roeck-us.net>
-In-Reply-To: <20221110002549.GA3550654@roeck-us.net>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 10 Nov 2022 14:01:49 +0100
-Message-ID: <CAJZ5v0je2QSUhU8Knk9UsboGLRpk2sNqE6U4X6eGAe+NUxZt_Q@mail.gmail.com>
-Subject: Re: [PATCH 5/9] thermal/core: Introduce locked version of thermal_zone_device_update
-To:     Guenter Roeck <linux@roeck-us.net>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.112.125]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpeml500005.china.huawei.com (7.185.36.59)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Nov 10, 2022 at 1:25 AM Guenter Roeck <linux@roeck-us.net> wrote:
->
-> On Wed, Nov 09, 2022 at 08:15:17PM +0100, Rafael J. Wysocki wrote:
-> > On Mon, Oct 17, 2022 at 3:09 PM Guenter Roeck <linux@roeck-us.net> wrote:
-> > >
-> > > In thermal_zone_device_set_mode(), the thermal zone mutex is released only
-> > > to be reacquired in the subsequent call to thermal_zone_device_update().
-> > >
-> > > Introduce __thermal_zone_device_update() as locked version of
-> >
-> > Did you mean "unlocked"?
-> >
-> No, I did mean "locked", as in "must be called with thermal zone device
-> mutex acquired".
->
-> locked:
->
-> void __thermal_zone_device_update(struct thermal_zone_device *tz,
->                                   enum thermal_notify_event event)
-> {
->         ...
-> }
->
-> unlocked:
->
-> void thermal_zone_device_update(struct thermal_zone_device *tz,
->                                 enum thermal_notify_event event)
-> {
->         mutex_lock(&tz->lock);
->         if (device_is_registered(&tz->device))
->                 __thermal_zone_device_update(tz, event);
->         mutex_unlock(&tz->lock);
-> }
+In cpufreq_policy_alloc(), it will call uninitialed completion in
+cpufreq_sysfs_release() when kobject_init_and_add() fails. And
+that will cause a crash such as the following page fault in complete:
 
-Thanks for the explanation.
+BUG: unable to handle page fault for address: fffffffffffffff8
+[..]
+RIP: 0010:complete+0x98/0x1f0
+[..]
+Call Trace:
+ kobject_put+0x1be/0x4c0
+ cpufreq_online.cold+0xee/0x1fd
+ cpufreq_add_dev+0x183/0x1e0
+ subsys_interface_register+0x3f5/0x4e0
+ cpufreq_register_driver+0x3b7/0x670
+ acpi_cpufreq_init+0x56c/0x1000 [acpi_cpufreq]
+ do_one_initcall+0x13d/0x780
+ do_init_module+0x1c3/0x630
+ load_module+0x6e67/0x73b0
+ __do_sys_finit_module+0x181/0x240
+ do_syscall_64+0x35/0x80
+ entry_SYSCALL_64_after_hwframe+0x63/0xcd
 
-> Should I phrase or explain it differently ?
+Fixes: 4ebe36c94aed ("cpufreq: Fix kobject memleak")
+Signed-off-by: Yongqiang Liu <liuyongqiang13@huawei.com>
+---
+ drivers/cpufreq/cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I would rather say "bare" or something like that so it is all clear to
-people like me, but it is your call.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 69b3d61852ac..7e56a42750ea 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1207,6 +1207,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+ 	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
+ 		goto err_free_rcpumask;
+ 
++	init_completion(&policy->kobj_unregister);
+ 	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+ 				   cpufreq_global_kobject, "policy%u", cpu);
+ 	if (ret) {
+@@ -1245,7 +1246,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+ 	init_rwsem(&policy->rwsem);
+ 	spin_lock_init(&policy->transition_lock);
+ 	init_waitqueue_head(&policy->transition_wait);
+-	init_completion(&policy->kobj_unregister);
+ 	INIT_WORK(&policy->update, handle_update);
+ 
+ 	policy->cpu = cpu;
+-- 
+2.25.1
+
