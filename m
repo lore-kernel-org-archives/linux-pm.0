@@ -2,56 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 512A2C3A589
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB72EC46467
 	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 03:25:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233023AbiKKDZo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Nov 2022 22:25:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57224 "EHLO
+        id S233037AbiKKDZp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Nov 2022 22:25:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232431AbiKKDZh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 22:25:37 -0500
+        with ESMTP id S230043AbiKKDZi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 22:25:38 -0500
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CACE85B5AD;
-        Thu, 10 Nov 2022 19:25:35 -0800 (PST)
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AB2skcL032608;
-        Fri, 11 Nov 2022 03:25:24 GMT
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6324059867;
+        Thu, 10 Nov 2022 19:25:37 -0800 (PST)
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AB2pi4c017396;
+        Fri, 11 Nov 2022 03:25:26 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=z5frpm/ISY1/dDKvfQ5rmMpPUkbAUIx93wq2BLbBdl8=;
- b=Cfs/a7mbLyeN25ef54lKavp3Ox1FL/l24+bQ+PtogN0r2Ml3qazjrGm4ENSXsl2MCr8J
- B1EAzzlscvxihXftAdOhJA7ZlS37BPufRmYF5BgQN7sysURoWHoSyEhtLx5fLc7RgrYs
- ZZBlmcEvmmzJJmNJAj43N150e1wQG/oiw8mv/+CDQFqCm4MbTGYhpiXfi/Rq2ppwNQCK
- /KRMR3hp0GxMvFNxOpLsKoBLeTKMKx4XyRrnEq6DiQezGjrqCELamzSctfGjXkWM7EGO
- khhIsOnKs9qPrKax5EXdjWflxepDI7YtuXNGoTRdiruw9phv5ODMF5sRHeoxBEzfwt0B 0Q== 
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ksantrf0j-1
+ bh=lD86X0OQ5dCB6O6o1/+iPAtT36dAVPEgdmKBPA9o/3w=;
+ b=Dpvs6HDN2w0rzcCJiepfxs560b/+lSwRdbLQecVL7Zvr5N7Ak0tpjTbrG10papF6Oc5G
+ xLx27F5eJzw4qgmnB1adDr3QtqnAtPOgw4P0sv6ODIdP7nlTrTSadE7bpWZhqJyFUmCU
+ kBM/3lDxmkuMH/GAkxePO1pg4tR/8B/8EMCx4h21QxPvDUjc0YpmqH2m+cVdGCfzFcc0
+ GnnWm9WiPWQG7O1l6BvG9xt0jQJ8QJIm9cV6tICRRCZYDIGa/DrSN3gLJwP260gp4n8l
+ fwBdjZdOoNcRmuqFXuSddEVFuYtLS+mg8m1+hDtjP8unv7Su95J1W9uSIai4ep4Ok1qp Sg== 
+Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ksa89rg6u-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 11 Nov 2022 03:25:24 +0000
+        Fri, 11 Nov 2022 03:25:26 +0000
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2AB3PO5d014391
+        by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2AB3PQFV027175
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 11 Nov 2022 03:25:24 GMT
+        Fri, 11 Nov 2022 03:25:26 GMT
 Received: from th-lint-050.qualcomm.com (10.80.80.8) by
  nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.29; Thu, 10 Nov 2022 19:25:23 -0800
+ 15.2.986.29; Thu, 10 Nov 2022 19:25:25 -0800
 From:   Bjorn Andersson <quic_bjorande@quicinc.com>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Bjorn Andersson <andersson@kernel.org>,
+To:     Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@somainline.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
         Sibi Sankar <quic_sibis@quicinc.com>
-CC:     Georgi Djakov <djakov@kernel.org>,
+CC:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
         Mike Tipton <quic_mdtipton@quicinc.com>,
         Johan Hovold <johan+linaro@kernel.org>,
         <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 06/10] arm64: dts: qcom: Align with generic osm-l3/epss-l3
-Date:   Thu, 10 Nov 2022 19:25:11 -0800
-Message-ID: <20221111032515.3460-7-quic_bjorande@quicinc.com>
+Subject: [PATCH v2 10/10] arm64: dts: qcom: sc8280xp: Add bwmon instances
+Date:   Thu, 10 Nov 2022 19:25:15 -0800
+Message-ID: <20221111032515.3460-11-quic_bjorande@quicinc.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221111032515.3460-1-quic_bjorande@quicinc.com>
 References: <20221111032515.3460-1-quic_bjorande@quicinc.com>
@@ -62,102 +62,136 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: pItXTgrdchAgqbcPUkENB_H18CgyHzRy
-X-Proofpoint-ORIG-GUID: pItXTgrdchAgqbcPUkENB_H18CgyHzRy
+X-Proofpoint-ORIG-GUID: wMUIszZGM2dNCQetFurm7Nnz8up4nFKa
+X-Proofpoint-GUID: wMUIszZGM2dNCQetFurm7Nnz8up4nFKa
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-10_14,2022-11-09_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 mlxscore=0
- impostorscore=0 lowpriorityscore=0 phishscore=0 spamscore=0 suspectscore=0
- bulkscore=0 priorityscore=1501 adultscore=0 clxscore=1015 mlxlogscore=848
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
- definitions=main-2211110021
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ spamscore=0 bulkscore=0 mlxscore=0 suspectscore=0 phishscore=0
+ lowpriorityscore=0 malwarescore=0 clxscore=1015 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2210170000 definitions=main-2211110021
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Update all references to OSM or EPSS L3 compatibles, to include the
-generic compatible, as defined by the updated binding.
+Add the two bwmon instances and define votes for CPU -> LLCC and LLCC ->
+DDR, with bandwidth values based on the downstream DeviceTree.
 
 Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Tested-by: Steev Klimaszewski <steev@kali.org>
 ---
 
 Changes since v1:
-- None
+- Added "cpu" to compatible for the CPU-subsystem bwmon instance
 
- arch/arm64/boot/dts/qcom/sc7180.dtsi | 2 +-
- arch/arm64/boot/dts/qcom/sc7280.dtsi | 2 +-
- arch/arm64/boot/dts/qcom/sdm845.dtsi | 2 +-
- arch/arm64/boot/dts/qcom/sm8150.dtsi | 2 +-
- arch/arm64/boot/dts/qcom/sm8250.dtsi | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ arch/arm64/boot/dts/qcom/sc8280xp.dtsi | 91 ++++++++++++++++++++++++++
+ 1 file changed, 91 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sc7180.dtsi b/arch/arm64/boot/dts/qcom/sc7180.dtsi
-index ea886cf08b4d..f71cf21a8dd8 100644
---- a/arch/arm64/boot/dts/qcom/sc7180.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7180.dtsi
-@@ -3558,7 +3558,7 @@
+diff --git a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
+index 2ac8f5204905..62e9dd8a2f07 100644
+--- a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
++++ b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
+@@ -1287,6 +1287,97 @@
+ 			};
  		};
  
- 		osm_l3: interconnect@18321000 {
--			compatible = "qcom,sc7180-osm-l3";
-+			compatible = "qcom,sc7180-osm-l3", "qcom,osm-l3";
- 			reg = <0 0x18321000 0 0x1400>;
- 
- 			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
-diff --git a/arch/arm64/boot/dts/qcom/sc7280.dtsi b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-index 07334e19be99..ad9c61768016 100644
---- a/arch/arm64/boot/dts/qcom/sc7280.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7280.dtsi
-@@ -5359,7 +5359,7 @@
- 		};
- 
- 		epss_l3: interconnect@18590000 {
--			compatible = "qcom,sc7280-epss-l3";
-+			compatible = "qcom,sc7280-epss-l3", "qcom,epss-l3";
- 			reg = <0 0x18590000 0 0x1000>;
- 			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GCC_GPLL0>;
- 			clock-names = "xo", "alternate";
-diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-index 1a257f672887..9c7d484ce72f 100644
---- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-@@ -5302,7 +5302,7 @@
- 		};
- 
- 		osm_l3: interconnect@17d41000 {
--			compatible = "qcom,sdm845-osm-l3";
-+			compatible = "qcom,sdm845-osm-l3", "qcom,osm-l3";
- 			reg = <0 0x17d41000 0 0x1400>;
- 
- 			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
-diff --git a/arch/arm64/boot/dts/qcom/sm8150.dtsi b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-index 18bf51ce8b13..8409fb5ea532 100644
---- a/arch/arm64/boot/dts/qcom/sm8150.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-@@ -3958,7 +3958,7 @@
- 		};
- 
- 		osm_l3: interconnect@18321000 {
--			compatible = "qcom,sm8150-osm-l3";
-+			compatible = "qcom,sm8150-osm-l3", "qcom,osm-l3";
- 			reg = <0 0x18321000 0 0x1400>;
- 
- 			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
-diff --git a/arch/arm64/boot/dts/qcom/sm8250.dtsi b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-index 27b507f3632b..351c232b8dc6 100644
---- a/arch/arm64/boot/dts/qcom/sm8250.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-@@ -4884,7 +4884,7 @@
- 		};
- 
- 		epss_l3: interconnect@18590000 {
--			compatible = "qcom,sm8250-epss-l3";
-+			compatible = "qcom,sm8250-epss-l3", "qcom,epss-l3";
- 			reg = <0 0x18590000 0 0x1000>;
- 
- 			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
++		pmu@9091000 {
++			compatible = "qcom,sc8280xp-llcc-bwmon", "qcom,sc7280-llcc-bwmon";
++			reg = <0 0x9091000 0 0x1000>;
++
++			interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
++
++			interconnects = <&mc_virt MASTER_LLCC 3 &mc_virt SLAVE_EBI1 3>;
++
++			operating-points-v2 = <&llcc_bwmon_opp_table>;
++
++			llcc_bwmon_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-0 {
++					opp-peak-kBps = <762000>;
++				};
++				opp-1 {
++					opp-peak-kBps = <1720000>;
++				};
++				opp-2 {
++					opp-peak-kBps = <2086000>;
++				};
++				opp-3 {
++					opp-peak-kBps = <2597000>;
++				};
++				opp-4 {
++					opp-peak-kBps = <2929000>;
++				};
++				opp-5 {
++					opp-peak-kBps = <3879000>;
++				};
++				opp-6 {
++					opp-peak-kBps = <5161000>;
++				};
++				opp-7 {
++					opp-peak-kBps = <5931000>;
++				};
++				opp-8 {
++					opp-peak-kBps = <6515000>;
++				};
++				opp-9 {
++					opp-peak-kBps = <7980000>;
++				};
++				opp-10 {
++					opp-peak-kBps = <8136000>;
++				};
++				opp-11 {
++					opp-peak-kBps = <10437000>;
++				};
++				opp-12 {
++					opp-peak-kBps = <12191000>;
++				};
++			};
++		};
++
++		pmu@90b6400 {
++			compatible = "qcom,sc8280xp-cpu-bwmon", "qcom,msm8998-bwmon";
++			reg = <0 0x090b6400 0 0x600>;
++
++			interrupts = <GIC_SPI 581 IRQ_TYPE_LEVEL_HIGH>;
++
++			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &gem_noc SLAVE_LLCC 3>;
++			operating-points-v2 = <&cpu_bwmon_opp_table>;
++
++			cpu_bwmon_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-0 {
++					opp-peak-kBps = <2288000>;
++				};
++				opp-1 {
++					opp-peak-kBps = <4577000>;
++				};
++				opp-2 {
++					opp-peak-kBps = <7110000>;
++				};
++				opp-3 {
++					opp-peak-kBps = <9155000>;
++				};
++				opp-4 {
++					opp-peak-kBps = <12298000>;
++				};
++				opp-5 {
++					opp-peak-kBps = <14236000>;
++				};
++				opp-6 {
++					opp-peak-kBps = <15258001>;
++				};
++			};
++		};
++
+ 		system-cache-controller@9200000 {
+ 			compatible = "qcom,sc8280xp-llcc";
+ 			reg = <0 0x09200000 0 0x58000>, <0 0x09600000 0 0x58000>;
 -- 
 2.17.1
 
