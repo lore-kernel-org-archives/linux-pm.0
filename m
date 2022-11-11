@@ -2,56 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB72EC46467
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 03:25:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F03DDC4708C
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 03:25:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233037AbiKKDZp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Nov 2022 22:25:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57234 "EHLO
+        id S231126AbiKKDZr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Nov 2022 22:25:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57218 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230043AbiKKDZi (ORCPT
+        with ESMTP id S232684AbiKKDZi (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 22:25:38 -0500
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6324059867;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 528F25985A;
         Thu, 10 Nov 2022 19:25:37 -0800 (PST)
 Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AB2pi4c017396;
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AB2suI1026558;
         Fri, 11 Nov 2022 03:25:26 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=lD86X0OQ5dCB6O6o1/+iPAtT36dAVPEgdmKBPA9o/3w=;
- b=Dpvs6HDN2w0rzcCJiepfxs560b/+lSwRdbLQecVL7Zvr5N7Ak0tpjTbrG10papF6Oc5G
- xLx27F5eJzw4qgmnB1adDr3QtqnAtPOgw4P0sv6ODIdP7nlTrTSadE7bpWZhqJyFUmCU
- kBM/3lDxmkuMH/GAkxePO1pg4tR/8B/8EMCx4h21QxPvDUjc0YpmqH2m+cVdGCfzFcc0
- GnnWm9WiPWQG7O1l6BvG9xt0jQJ8QJIm9cV6tICRRCZYDIGa/DrSN3gLJwP260gp4n8l
- fwBdjZdOoNcRmuqFXuSddEVFuYtLS+mg8m1+hDtjP8unv7Su95J1W9uSIai4ep4Ok1qp Sg== 
-Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ksa89rg6u-1
+ bh=xnPkl0UT3Sv6l3LkuZ1/D4ybnzKZVruHKUKBxCpS5ME=;
+ b=RzNhS5/BA8m9XSMVQ1ksta8LZNypxW/QgNWWi98Qf5A/Bq7hKL5zoxVfcPHeKEN/ci1a
+ notrTNbAJcci6sl35nP3Lf44BEHe4XnnZeXCBq5sLje3jPRAlNNhuyaQAOA37nZTFtrl
+ ZvX3DXhtSwXYvyZZ20WQpu85C8fL+sksJzLwD4xZisz9Sep3+A6CnFhvnT2Mw75WkGgg
+ xiLceE62/hXrlvUMd99L1s2wg5FVgMcbMx24uxWTKjVftyQSqnwMc0Apy2wO+gJbE6M2
+ 4IHNj74PNre/j1TrDvw78d1sj2v3s5hRzZkcTVir5UT9Qv/nzD+r4iDUDIcMw9NZ+4GO uQ== 
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ksa89rg6t-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 11 Nov 2022 03:25:26 +0000
+        Fri, 11 Nov 2022 03:25:25 +0000
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2AB3PQFV027175
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2AB3PPkU018978
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 11 Nov 2022 03:25:26 GMT
+        Fri, 11 Nov 2022 03:25:25 GMT
 Received: from th-lint-050.qualcomm.com (10.80.80.8) by
  nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.29; Thu, 10 Nov 2022 19:25:25 -0800
+ 15.2.986.29; Thu, 10 Nov 2022 19:25:24 -0800
 From:   Bjorn Andersson <quic_bjorande@quicinc.com>
 To:     Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Rob Herring <robh+dt@kernel.org>,
         Sibi Sankar <quic_sibis@quicinc.com>
 CC:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
         Mike Tipton <quic_mdtipton@quicinc.com>,
         Johan Hovold <johan+linaro@kernel.org>,
         <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 10/10] arm64: dts: qcom: sc8280xp: Add bwmon instances
-Date:   Thu, 10 Nov 2022 19:25:15 -0800
-Message-ID: <20221111032515.3460-11-quic_bjorande@quicinc.com>
+Subject: [PATCH v2 08/10] arm64: dts: qcom: sc8280xp: Set up L3 scaling
+Date:   Thu, 10 Nov 2022 19:25:13 -0800
+Message-ID: <20221111032515.3460-9-quic_bjorande@quicinc.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221111032515.3460-1-quic_bjorande@quicinc.com>
 References: <20221111032515.3460-1-quic_bjorande@quicinc.com>
@@ -62,8 +62,8 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: wMUIszZGM2dNCQetFurm7Nnz8up4nFKa
-X-Proofpoint-GUID: wMUIszZGM2dNCQetFurm7Nnz8up4nFKa
+X-Proofpoint-ORIG-GUID: tec-_x8BQLDg0C9nM402BpBzZ3NpIG5d
+X-Proofpoint-GUID: tec-_x8BQLDg0C9nM402BpBzZ3NpIG5d
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-10_14,2022-11-09_01,2022-06-22_01
@@ -76,122 +76,434 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the two bwmon instances and define votes for CPU -> LLCC and LLCC ->
-DDR, with bandwidth values based on the downstream DeviceTree.
+Add the L3 interconnect path to all CPUs and define the bandwidth
+requirements for all opp entries across sc8280xp and sa8540p.
+
+The values are based on the tables reported by the hardware, distributed
+such that each value is the largest value, lower than the cluster
+frequency.
 
 Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Tested-by: Steev Klimaszewski <steev@kali.org>
 ---
 
 Changes since v1:
-- Added "cpu" to compatible for the CPU-subsystem bwmon instance
+- None
 
- arch/arm64/boot/dts/qcom/sc8280xp.dtsi | 91 ++++++++++++++++++++++++++
- 1 file changed, 91 insertions(+)
+ arch/arm64/boot/dts/qcom/sa8540p.dtsi  | 39 ++++++++++++++++++++
+ arch/arm64/boot/dts/qcom/sc8280xp.dtsi | 51 ++++++++++++++++++++++++++
+ 2 files changed, 90 insertions(+)
 
+diff --git a/arch/arm64/boot/dts/qcom/sa8540p.dtsi b/arch/arm64/boot/dts/qcom/sa8540p.dtsi
+index 8ea2886fbab2..fd36800a7578 100644
+--- a/arch/arm64/boot/dts/qcom/sa8540p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8540p.dtsi
+@@ -14,59 +14,81 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
++		opp-300000000 {
++			opp-hz = /bits/ 64 <300000000>;
++			opp-peak-kBps = <(300000 * 32)>;
++		};
+ 		opp-403200000 {
+ 			opp-hz = /bits/ 64 <403200000>;
++			opp-peak-kBps = <(384000 * 32)>;
+ 		};
+ 		opp-499200000 {
+ 			opp-hz = /bits/ 64 <499200000>;
++			opp-peak-kBps = <(480000 * 32)>;
+ 		};
+ 		opp-595200000 {
+ 			opp-hz = /bits/ 64 <595200000>;
++			opp-peak-kBps = <(576000 * 32)>;
+ 		};
+ 		opp-710400000 {
+ 			opp-hz = /bits/ 64 <710400000>;
++			opp-peak-kBps = <(672000 * 32)>;
+ 		};
+ 		opp-806400000 {
+ 			opp-hz = /bits/ 64 <806400000>;
++			opp-peak-kBps = <(768000 * 32)>;
+ 		};
+ 		opp-902400000 {
+ 			opp-hz = /bits/ 64 <902400000>;
++			opp-peak-kBps = <(864000 * 32)>;
+ 		};
+ 		opp-1017600000 {
+ 			opp-hz = /bits/ 64 <1017600000>;
++			opp-peak-kBps = <(960000 * 32)>;
+ 		};
+ 		opp-1113600000 {
+ 			opp-hz = /bits/ 64 <1113600000>;
++			opp-peak-kBps = <(1075200 * 32)>;
+ 		};
+ 		opp-1209600000 {
+ 			opp-hz = /bits/ 64 <1209600000>;
++			opp-peak-kBps = <(1171200 * 32)>;
+ 		};
+ 		opp-1324800000 {
+ 			opp-hz = /bits/ 64 <1324800000>;
++			opp-peak-kBps = <(1286400 * 32)>;
+ 		};
+ 		opp-1440000000 {
+ 			opp-hz = /bits/ 64 <1440000000>;
++			opp-peak-kBps = <(1382400 * 32)>;
+ 		};
+ 		opp-1555200000 {
+ 			opp-hz = /bits/ 64 <1555200000>;
++			opp-peak-kBps = <(1497600 * 32)>;
+ 		};
+ 		opp-1670400000 {
+ 			opp-hz = /bits/ 64 <1670400000>;
++			opp-peak-kBps = <(1593600 * 32)>;
+ 		};
+ 		opp-1785600000 {
+ 			opp-hz = /bits/ 64 <1785600000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-1881600000 {
+ 			opp-hz = /bits/ 64 <1881600000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2016000000 {
+ 			opp-hz = /bits/ 64 <2016000000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2131200000 {
+ 			opp-hz = /bits/ 64 <2131200000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2246400000 {
+ 			opp-hz = /bits/ 64 <2246400000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 	};
+ 
+@@ -76,54 +98,71 @@
+ 
+ 		opp-825600000 {
+ 			opp-hz = /bits/ 64 <825600000>;
++			opp-peak-kBps = <(300000 * 32)>;
+ 		};
+ 		opp-940800000 {
+ 			opp-hz = /bits/ 64 <940800000>;
++			opp-peak-kBps = <(864000 * 32)>;
+ 		};
+ 		opp-1056000000 {
+ 			opp-hz = /bits/ 64 <1056000000>;
++			opp-peak-kBps = <(960000 * 32)>;
+ 		};
+ 		opp-1171200000 {
+ 			opp-hz = /bits/ 64 <1171200000>;
++			opp-peak-kBps = <(1171200 * 32)>;
+ 		};
+ 		opp-1286400000 {
+ 			opp-hz = /bits/ 64 <1286400000>;
++			opp-peak-kBps = <(1286400 * 32)>;
+ 		};
+ 		opp-1401600000 {
+ 			opp-hz = /bits/ 64 <1401600000>;
++			opp-peak-kBps = <(1382400 * 32)>;
+ 		};
+ 		opp-1516800000 {
+ 			opp-hz = /bits/ 64 <1516800000>;
++			opp-peak-kBps = <(1497600 * 32)>;
+ 		};
+ 		opp-1632000000 {
+ 			opp-hz = /bits/ 64 <1632000000>;
++			opp-peak-kBps = <(1593600 * 32)>;
+ 		};
+ 		opp-1747200000 {
+ 			opp-hz = /bits/ 64 <1747200000>;
++			opp-peak-kBps = <(1593600 * 32)>;
+ 		};
+ 		opp-1862400000 {
+ 			opp-hz = /bits/ 64 <1862400000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-1977600000 {
+ 			opp-hz = /bits/ 64 <1977600000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2073600000 {
+ 			opp-hz = /bits/ 64 <2073600000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2169600000 {
+ 			opp-hz = /bits/ 64 <2169600000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2284800000 {
+ 			opp-hz = /bits/ 64 <2284800000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2380800000 {
+ 			opp-hz = /bits/ 64 <2380800000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2496000000 {
+ 			opp-hz = /bits/ 64 <2496000000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 		opp-2592000000 {
+ 			opp-hz = /bits/ 64 <2592000000>;
++			opp-peak-kBps = <(1708800 * 32)>;
+ 		};
+ 	};
+ };
 diff --git a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-index 2ac8f5204905..62e9dd8a2f07 100644
+index 0e80cdcf6bcf..2ac8f5204905 100644
 --- a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
 +++ b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-@@ -1287,6 +1287,97 @@
- 			};
- 		};
+@@ -6,6 +6,7 @@
  
-+		pmu@9091000 {
-+			compatible = "qcom,sc8280xp-llcc-bwmon", "qcom,sc7280-llcc-bwmon";
-+			reg = <0 0x9091000 0 0x1000>;
-+
-+			interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
-+
-+			interconnects = <&mc_virt MASTER_LLCC 3 &mc_virt SLAVE_EBI1 3>;
-+
-+			operating-points-v2 = <&llcc_bwmon_opp_table>;
-+
-+			llcc_bwmon_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-0 {
-+					opp-peak-kBps = <762000>;
-+				};
-+				opp-1 {
-+					opp-peak-kBps = <1720000>;
-+				};
-+				opp-2 {
-+					opp-peak-kBps = <2086000>;
-+				};
-+				opp-3 {
-+					opp-peak-kBps = <2597000>;
-+				};
-+				opp-4 {
-+					opp-peak-kBps = <2929000>;
-+				};
-+				opp-5 {
-+					opp-peak-kBps = <3879000>;
-+				};
-+				opp-6 {
-+					opp-peak-kBps = <5161000>;
-+				};
-+				opp-7 {
-+					opp-peak-kBps = <5931000>;
-+				};
-+				opp-8 {
-+					opp-peak-kBps = <6515000>;
-+				};
-+				opp-9 {
-+					opp-peak-kBps = <7980000>;
-+				};
-+				opp-10 {
-+					opp-peak-kBps = <8136000>;
-+				};
-+				opp-11 {
-+					opp-peak-kBps = <10437000>;
-+				};
-+				opp-12 {
-+					opp-peak-kBps = <12191000>;
-+				};
-+			};
-+		};
-+
-+		pmu@90b6400 {
-+			compatible = "qcom,sc8280xp-cpu-bwmon", "qcom,msm8998-bwmon";
-+			reg = <0 0x090b6400 0 0x600>;
-+
-+			interrupts = <GIC_SPI 581 IRQ_TYPE_LEVEL_HIGH>;
-+
-+			interconnects = <&gem_noc MASTER_APPSS_PROC 3 &gem_noc SLAVE_LLCC 3>;
-+			operating-points-v2 = <&cpu_bwmon_opp_table>;
-+
-+			cpu_bwmon_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-0 {
-+					opp-peak-kBps = <2288000>;
-+				};
-+				opp-1 {
-+					opp-peak-kBps = <4577000>;
-+				};
-+				opp-2 {
-+					opp-peak-kBps = <7110000>;
-+				};
-+				opp-3 {
-+					opp-peak-kBps = <9155000>;
-+				};
-+				opp-4 {
-+					opp-peak-kBps = <12298000>;
-+				};
-+				opp-5 {
-+					opp-peak-kBps = <14236000>;
-+				};
-+				opp-6 {
-+					opp-peak-kBps = <15258001>;
-+				};
-+			};
-+		};
-+
- 		system-cache-controller@9200000 {
- 			compatible = "qcom,sc8280xp-llcc";
- 			reg = <0 0x09200000 0 0x58000>, <0 0x09600000 0 0x58000>;
+ #include <dt-bindings/clock/qcom,gcc-sc8280xp.h>
+ #include <dt-bindings/clock/qcom,rpmh.h>
++#include <dt-bindings/interconnect/qcom,osm-l3.h>
+ #include <dt-bindings/interconnect/qcom,sc8280xp.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/mailbox/qcom-ipcc.h>
+@@ -38,66 +39,87 @@
+ 
+ 		opp-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
++			opp-peak-kBps = <(300000 * 32)>;
+ 		};
+ 		opp-403200000 {
+ 			opp-hz = /bits/ 64 <403200000>;
++			opp-peak-kBps = <(384000 * 32)>;
+ 		};
+ 		opp-499200000 {
+ 			opp-hz = /bits/ 64 <499200000>;
++			opp-peak-kBps = <(480000 * 32)>;
+ 		};
+ 		opp-595200000 {
+ 			opp-hz = /bits/ 64 <595200000>;
++			opp-peak-kBps = <(576000 * 32)>;
+ 		};
+ 		opp-691200000 {
+ 			opp-hz = /bits/ 64 <691200000>;
++			opp-peak-kBps = <(672000 * 32)>;
+ 		};
+ 		opp-806400000 {
+ 			opp-hz = /bits/ 64 <806400000>;
++			opp-peak-kBps = <(768000 * 32)>;
+ 		};
+ 		opp-902400000 {
+ 			opp-hz = /bits/ 64 <902400000>;
++			opp-peak-kBps = <(864000 * 32)>;
+ 		};
+ 		opp-1017600000 {
+ 			opp-hz = /bits/ 64 <1017600000>;
++			opp-peak-kBps = <(960000 * 32)>;
+ 		};
+ 		opp-1113600000 {
+ 			opp-hz = /bits/ 64 <1113600000>;
++			opp-peak-kBps = <(1075200 * 32)>;
+ 		};
+ 		opp-1209600000 {
+ 			opp-hz = /bits/ 64 <1209600000>;
++			opp-peak-kBps = <(1171200 * 32)>;
+ 		};
+ 		opp-1324800000 {
+ 			opp-hz = /bits/ 64 <1324800000>;
++			opp-peak-kBps = <(1267200 * 32)>;
+ 		};
+ 		opp-1440000000 {
+ 			opp-hz = /bits/ 64 <1440000000>;
++			opp-peak-kBps = <(1363200 * 32)>;
+ 		};
+ 		opp-1555200000 {
+ 			opp-hz = /bits/ 64 <1555200000>;
++			opp-peak-kBps = <(1536000 * 32)>;
+ 		};
+ 		opp-1670400000 {
+ 			opp-hz = /bits/ 64 <1670400000>;
++			opp-peak-kBps = <(1612800 * 32)>;
+ 		};
+ 		opp-1785600000 {
+ 			opp-hz = /bits/ 64 <1785600000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-1881600000 {
+ 			opp-hz = /bits/ 64 <1881600000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-1996800000 {
+ 			opp-hz = /bits/ 64 <1996800000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2112000000 {
+ 			opp-hz = /bits/ 64 <2112000000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2227200000 {
+ 			opp-hz = /bits/ 64 <2227200000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2342400000 {
+ 			opp-hz = /bits/ 64 <2342400000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2438400000 {
+ 			opp-hz = /bits/ 64 <2438400000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 	};
+ 
+@@ -107,66 +129,87 @@
+ 
+ 		opp-825600000 {
+ 			opp-hz = /bits/ 64 <825600000>;
++			opp-peak-kBps = <(768000 * 32)>;
+ 		};
+ 		opp-940800000 {
+ 			opp-hz = /bits/ 64 <940800000>;
++			opp-peak-kBps = <(864000 * 32)>;
+ 		};
+ 		opp-1056000000 {
+ 			opp-hz = /bits/ 64 <1056000000>;
++			opp-peak-kBps = <(960000 * 32)>;
+ 		};
+ 		opp-1171200000 {
+ 			opp-hz = /bits/ 64 <1171200000>;
++			opp-peak-kBps = <(1171200 * 32)>;
+ 		};
+ 		opp-1286400000 {
+ 			opp-hz = /bits/ 64 <1286400000>;
++			opp-peak-kBps = <(1267200 * 32)>;
+ 		};
+ 		opp-1401600000 {
+ 			opp-hz = /bits/ 64 <1401600000>;
++			opp-peak-kBps = <(1363200 * 32)>;
+ 		};
+ 		opp-1516800000 {
+ 			opp-hz = /bits/ 64 <1516800000>;
++			opp-peak-kBps = <(1459200 * 32)>;
+ 		};
+ 		opp-1632000000 {
+ 			opp-hz = /bits/ 64 <1632000000>;
++			opp-peak-kBps = <(1612800 * 32)>;
+ 		};
+ 		opp-1747200000 {
+ 			opp-hz = /bits/ 64 <1747200000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-1862400000 {
+ 			opp-hz = /bits/ 64 <1862400000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-1977600000 {
+ 			opp-hz = /bits/ 64 <1977600000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2073600000 {
+ 			opp-hz = /bits/ 64 <2073600000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2169600000 {
+ 			opp-hz = /bits/ 64 <2169600000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2284800000 {
+ 			opp-hz = /bits/ 64 <2284800000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2400000000 {
+ 			opp-hz = /bits/ 64 <2400000000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2496000000 {
+ 			opp-hz = /bits/ 64 <2496000000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2592000000 {
+ 			opp-hz = /bits/ 64 <2592000000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2688000000 {
+ 			opp-hz = /bits/ 64 <2688000000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2803200000 {
+ 			opp-hz = /bits/ 64 <2803200000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2899200000 {
+ 			opp-hz = /bits/ 64 <2899200000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 		opp-2995200000 {
+ 			opp-hz = /bits/ 64 <2995200000>;
++			opp-peak-kBps = <(1689600 * 32)>;
+ 		};
+ 	};
+ 
+@@ -185,6 +228,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_0: l2-cache {
+ 				compatible = "cache";
+@@ -206,6 +250,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_100: l2-cache {
+ 				compatible = "cache";
+@@ -224,6 +269,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_200: l2-cache {
+ 				compatible = "cache";
+@@ -242,6 +288,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_300: l2-cache {
+ 				compatible = "cache";
+@@ -260,6 +307,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_400: l2-cache {
+ 				compatible = "cache";
+@@ -278,6 +326,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_500: l2-cache {
+ 				compatible = "cache";
+@@ -296,6 +345,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_600: l2-cache {
+ 				compatible = "cache";
+@@ -314,6 +364,7 @@
+ 			power-domain-names = "psci";
+ 			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			operating-points-v2 = <&cpu4_opp_table>;
++			interconnects = <&epss_l3 MASTER_EPSS_L3_APPS &epss_l3 SLAVE_EPSS_L3_SHARED>;
+ 			#cooling-cells = <2>;
+ 			L2_700: l2-cache {
+ 				compatible = "cache";
 -- 
 2.17.1
 
