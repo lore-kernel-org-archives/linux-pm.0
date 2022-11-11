@@ -2,268 +2,132 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0119C4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 16:28:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE247C43217
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 16:38:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233814AbiKKQ2k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Nov 2022 11:28:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54944 "EHLO
+        id S233217AbiKKQip (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Nov 2022 11:38:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234255AbiKKQ2f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2022 11:28:35 -0500
-Received: from mail-oi1-f182.google.com (mail-oi1-f182.google.com [209.85.167.182])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30C66FD26;
-        Fri, 11 Nov 2022 08:28:34 -0800 (PST)
-Received: by mail-oi1-f182.google.com with SMTP id m204so5341992oib.6;
-        Fri, 11 Nov 2022 08:28:34 -0800 (PST)
+        with ESMTP id S233714AbiKKQii (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2022 11:38:38 -0500
+Received: from mail-qk1-x730.google.com (mail-qk1-x730.google.com [IPv6:2607:f8b0:4864:20::730])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0FAD2497A;
+        Fri, 11 Nov 2022 08:38:33 -0800 (PST)
+Received: by mail-qk1-x730.google.com with SMTP id x21so3303389qkj.0;
+        Fri, 11 Nov 2022 08:38:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:sender
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=cc79vdpftLtKCsTxy/EdUCgt0SXSyffM6ZriKdKDbtw=;
+        b=n1RXtrlzLU+n02CT3soAPseTrXYQVpst+DE5CreTvGRr30AXGfdTHJAwTl5z881kL+
+         4LGEERExB03/Yq1vr6GzRpwkwSaKPi24hnT5xlWWEo9wki0gXDZiJ2kdh91/eoZWqtce
+         YN8dnyK4Ig4DFp/JA3DF3HgJm3iOWfFsD+YfLpg3WMwwLr/0q2yyLMa16q2PWZwlo7c+
+         A3RJwQNMhQT7aEFguxGUvn94tuj5v3Auw0RQPueXCBGczDqhhmhOqT87TdZw4BWB2zqG
+         UpG3eqKjuO05RFHM8jsAQdSqOqf7+B5IwnKB8cCp0fVon9oqGYQ+RTKgb81UW4MrCHiM
+         LHQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=WlWKqilQvfT4UpBgWLtBIrqId5drbsn0GWpy9R/E6MM=;
-        b=dL6gAhqUYdsj8+aUkemkN4Ol9grQl2VfX/NHPM9H8/7E1hFY4YFcTg3vL/viPqW2Aa
-         U7D/txLVw0N930vQahXbHmq3tV+77F7j1plUNb+h41oTE0QseSf7nfrKhpr4qJiR2TTz
-         Jh54uEcWG/SzuOFJfHnNOKR0BzFysZ2WSKCR0+JSmOD1PZlj7y1asgm83ttq4M6TBgUI
-         AfS1nDzu/PUUmxqlIlu6b615zQjhcgCzH1Yj0QabMD/lSy0g0rDwveUZ+cmq69h2mchj
-         +4g0ZSiEwta3Yhv9TAF8yb+EGN8zBRq5kmHUfvONABaVWT5kUcivZfTR4TC8H6mMleDl
-         w2tQ==
-X-Gm-Message-State: ANoB5plCpfq2SlsbiLG7ht5Y4KvoJtVkh3hvPwQypeUNHw9NjFrjP3Iu
-        JiO/KyY4U3H9seP0m3yS1m0oEoW6Dw==
-X-Google-Smtp-Source: AA0mqf4GhyWvktF5Cl6SZWd3YSGG1Wt6QGNqW22NrXhzSOMRuw7mgEK0rV6rDOLgLcKJXrrMvLL79w==
-X-Received: by 2002:a05:6808:1813:b0:35a:7300:7208 with SMTP id bh19-20020a056808181300b0035a73007208mr1182508oib.75.1668184113206;
-        Fri, 11 Nov 2022 08:28:33 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id fo20-20020a0568709a1400b0013b8b3710bfsm1467802oab.13.2022.11.11.08.28.32
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:sender
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=cc79vdpftLtKCsTxy/EdUCgt0SXSyffM6ZriKdKDbtw=;
+        b=oZ7zMys6ebWoI3YpBhFQy5m/q8gu6zjbEVO14KnrLxMkQnwn5GCMfN3DbTWY6kGcZ+
+         18Vk0s9z+T8aRFM3SLJt3Zq4dBX0ZFAJ6ddpsq20VN+fQa2r0msCx5xKMI5p5ktE/ys4
+         D0xtbvp569LNlPnIp73bsIcWz0C1uBoarW/CE1mxUcvowCaR1e8veSG9/QyiAtopSigG
+         f0WSeSTiMtQ4xAvlWtWx0RC2lfqyz2mA8zIaP+W3N4jL5R13kh7hBd3Vg8gHka5WD/Ur
+         /yIWxmi7SHviC5jf6/IJA6RQRz6KnBLpye9P2vnEHQmwJiGcZMun9DG5s09KwIJzZvNQ
+         oy+w==
+X-Gm-Message-State: ANoB5pkFKGQOK7hSdqUKeHpxaLlasfd9o0aDe1h4xzYClVyq8ymLA+vA
+        vGJujkR+Tnjg8iYDb8oD0Y8OIB+WCgI=
+X-Google-Smtp-Source: AA0mqf7UFI1m8W80QsrDOx3KAYJvkESRmsawupXo5W/rx00YTtgm89UZ7Lic9sd1Nb5bjpF9d6s9MQ==
+X-Received: by 2002:a37:bf46:0:b0:6ec:5409:5eaf with SMTP id p67-20020a37bf46000000b006ec54095eafmr1716543qkf.404.1668184712630;
+        Fri, 11 Nov 2022 08:38:32 -0800 (PST)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id m15-20020a05622a054f00b003434d3b5938sm1536008qtx.2.2022.11.11.08.38.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Nov 2022 08:28:32 -0800 (PST)
-Received: (nullmailer pid 3383310 invoked by uid 1000);
-        Fri, 11 Nov 2022 16:28:34 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] dt-bindings: thermal: thermal-idle: Fix example paths
-Date:   Fri, 11 Nov 2022 10:27:29 -0600
-Message-Id: <20221111162729.3381835-1-robh@kernel.org>
-X-Mailer: git-send-email 2.35.1
+        Fri, 11 Nov 2022 08:38:30 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date:   Fri, 11 Nov 2022 08:38:28 -0800
+From:   Guenter Roeck <linux@roeck-us.net>
+To:     Ninad Malwade <nmalwade@nvidia.com>
+Cc:     treding@nvidia.com, jonathanh@nvidia.com, jdelvare@suse.com,
+        nicolinc@nvidia.com, rkasirajan@nvidia.com,
+        linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH] ina3221: correct the update_interval value
+Message-ID: <20221111163828.GA323658@roeck-us.net>
+References: <20221108050029.24576-1-nmalwade@nvidia.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20221108050029.24576-1-nmalwade@nvidia.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The reference by path (&{/cpus/cpu@101/thermal-idle}) in the example causes
-an error with new version of dtc:
+On Tue, Nov 08, 2022 at 01:00:29PM +0800, Ninad Malwade wrote:
+> As per the INA3221 datasheet the samples value should not be
+> considered while calculating the update_interval value.
+> Section 8.4.2.2 from datasheet says - "The conversion-time
+> settings, along with the programmable-averaging mode, enable
+> the INA3221 to optimize available timing requirements in a given
+> application. For example, if a system requires data to be read
+> every 2 ms with all three channels monitored, configure the INA3221
+> with the conversion times for the shunt- and bus-voltage
+> measurements set to 332 μs"
+> 
+> As per above only conversion time and number of channels are
+> required to set the update_interval value. Correcting the same in
+> the driver.
+> 
+> Signed-off-by: Ninad Malwade <nmalwade@nvidia.com>
 
-FATAL ERROR: Can't generate fixup for reference to path &{/cpus/cpu@100/thermal-idle}
+As a bug fix, this patch should come before any functional changes.
 
-This is because the examples are built as an overlay and absolute paths
-are not valid as references must be by label. The path was also not
-resolvable because, by default, examples are placed under 'example-N'
-nodes.
+> ---
+>  Documentation/hwmon/ina3221.rst | 3 +--
+>  drivers/hwmon/ina3221.c         | 4 +---
+>  2 files changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/hwmon/ina3221.rst b/Documentation/hwmon/ina3221.rst
+> index 8c12c54d2c24..a4f107d1e489 100644
+> --- a/Documentation/hwmon/ina3221.rst
+> +++ b/Documentation/hwmon/ina3221.rst
+> @@ -61,10 +61,9 @@ samples                 Number of samples using in the averaging mode.
+>  
+>  update_interval         Data conversion time in millisecond, following:
+>  
+> -                          update_interval = C x S x (BC + SC)
+> +                          update_interval = C x (BC + SC)
+>  
+>                            * C:	number of enabled channels
+> -                          * S:	number of samples
+>                            * BC:	bus-voltage conversion time in millisecond
+>                            * SC:	shunt-voltage conversion time in millisecond
+>  
+> diff --git a/drivers/hwmon/ina3221.c b/drivers/hwmon/ina3221.c
+> index 2a57f4b60c29..e3aa57e3b039 100644
+> --- a/drivers/hwmon/ina3221.c
+> +++ b/drivers/hwmon/ina3221.c
+> @@ -183,11 +183,9 @@ static const int ina3221_avg_samples[] = {
+>  static inline u32 ina3221_interval_ms_to_conv_time(u16 config, int interval)
+>  {
+>  	u32 channels = hweight16(config & INA3221_CONFIG_CHs_EN_MASK);
+> -	u32 samples_idx = INA3221_CONFIG_AVG(config);
+> -	u32 samples = ina3221_avg_samples[samples_idx];
+>  
+>  	/* Bisect the result to Bus and Shunt conversion times */
+> -	return DIV_ROUND_CLOSEST(interval * 1000 / 2, channels * samples);
+> +	return DIV_ROUND_CLOSEST(interval / 2, channels);
 
-As the example contains top-level nodes, the root node must be explicit for
-the example to be extracted as-is. This changes the indentation for the
-whole example, but the existing indentation is a mess of of random amounts.
-Clean this up to be 4 spaces everywhere.
+Same question as Thierry: Why drop the multiplication ?
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-The dtc update is in my tree, so I'd prefer to take this via the DT 
-tree.
+Guenter
 
- .../bindings/thermal/thermal-idle.yaml        | 154 +++++++++---------
- 1 file changed, 80 insertions(+), 74 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-idle.yaml b/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
-index cc938d7ad1f3..72d85eb64247 100644
---- a/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
-+++ b/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
-@@ -48,99 +48,105 @@ additionalProperties: false
- 
- examples:
-   - |
--    #include <dt-bindings/thermal/thermal.h>
-+    /{
-+        #include <dt-bindings/thermal/thermal.h>
- 
--    // Example: Combining idle cooling device on big CPUs with cpufreq cooling device
--    cpus {
-+        compatible = "foo";
-+        model = "foo";
-+        #address-cells = <1>;
-+        #size-cells = <1>;
-+
-+        // Example: Combining idle cooling device on big CPUs with cpufreq cooling device
-+        cpus {
-             #address-cells = <2>;
-             #size-cells = <0>;
- 
-             /* ... */
- 
--                 cpu_b0: cpu@100 {
--                         device_type = "cpu";
--                         compatible = "arm,cortex-a72";
--                         reg = <0x0 0x100>;
--                         enable-method = "psci";
--                         capacity-dmips-mhz = <1024>;
--                         dynamic-power-coefficient = <436>;
--                         #cooling-cells = <2>; /* min followed by max */
--                         cpu-idle-states = <&CPU_SLEEP>, <&CLUSTER_SLEEP>;
--                         thermal-idle {
--                                 #cooling-cells = <2>;
--                                 duration-us = <10000>;
--                                 exit-latency-us = <500>;
--                         };
-+            cpu_b0: cpu@100 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a72";
-+                reg = <0x0 0x100>;
-+                enable-method = "psci";
-+                capacity-dmips-mhz = <1024>;
-+                dynamic-power-coefficient = <436>;
-+                #cooling-cells = <2>; /* min followed by max */
-+                cpu-idle-states = <&CPU_SLEEP>, <&CLUSTER_SLEEP>;
-+                thermal-idle {
-+                    #cooling-cells = <2>;
-+                    duration-us = <10000>;
-+                    exit-latency-us = <500>;
-+                };
-+            };
-+
-+            cpu_b1: cpu@101 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a72";
-+                reg = <0x0 0x101>;
-+                enable-method = "psci";
-+                capacity-dmips-mhz = <1024>;
-+                dynamic-power-coefficient = <436>;
-+                #cooling-cells = <2>; /* min followed by max */
-+                cpu-idle-states = <&CPU_SLEEP>, <&CLUSTER_SLEEP>;
-+                thermal-idle {
-+                    #cooling-cells = <2>;
-+                    duration-us = <10000>;
-+                    exit-latency-us = <500>;
-                 };
-+            };
- 
--                cpu_b1: cpu@101 {
--                        device_type = "cpu";
--                        compatible = "arm,cortex-a72";
--                        reg = <0x0 0x101>;
--                        enable-method = "psci";
--                        capacity-dmips-mhz = <1024>;
--                        dynamic-power-coefficient = <436>;
--                        #cooling-cells = <2>; /* min followed by max */
--                        cpu-idle-states = <&CPU_SLEEP>, <&CLUSTER_SLEEP>;
--                        thermal-idle {
--                                #cooling-cells = <2>;
--                                duration-us = <10000>;
--                                exit-latency-us = <500>;
--                        };
--                 };
--
--          /* ... */
-+            /* ... */
- 
--    };
-+        };
- 
--    /* ... */
-+        /* ... */
- 
--    thermal_zones {
--         cpu_thermal: cpu {
-+        thermal_zones {
-+            cpu_thermal: cpu {
-                 polling-delay-passive = <100>;
-                 polling-delay = <1000>;
- 
-                 /* ... */
- 
-                 trips {
--                        cpu_alert0: cpu_alert0 {
--                                    temperature = <65000>;
--                                    hysteresis = <2000>;
--                                    type = "passive";
--                        };
--
--                        cpu_alert1: cpu_alert1 {
--                                    temperature = <70000>;
--                                    hysteresis = <2000>;
--                                    type = "passive";
--                        };
--
--                        cpu_alert2: cpu_alert2 {
--                                    temperature = <75000>;
--                                    hysteresis = <2000>;
--                                    type = "passive";
--                        };
--
--                        cpu_crit: cpu_crit {
--                                    temperature = <95000>;
--                                    hysteresis = <2000>;
--                                    type = "critical";
--                        };
-+                    cpu_alert0: cpu_alert0 {
-+                        temperature = <65000>;
-+                        hysteresis = <2000>;
-+                        type = "passive";
-+                    };
-+
-+                    cpu_alert1: cpu_alert1 {
-+                        temperature = <70000>;
-+                        hysteresis = <2000>;
-+                        type = "passive";
-+                    };
-+
-+                    cpu_alert2: cpu_alert2 {
-+                        temperature = <75000>;
-+                        hysteresis = <2000>;
-+                        type = "passive";
-+                    };
-+
-+                    cpu_crit: cpu_crit {
-+                        temperature = <95000>;
-+                        hysteresis = <2000>;
-+                        type = "critical";
-+                    };
-                 };
- 
-                 cooling-maps {
--                        map0 {
--                             trip = <&cpu_alert1>;
--                             cooling-device = <&{/cpus/cpu@100/thermal-idle} 0 15 >,
--                                              <&{/cpus/cpu@101/thermal-idle} 0 15>;
--                        };
--
--                        map1 {
--                             trip = <&cpu_alert2>;
--                             cooling-device =
--                                        <&cpu_b0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--                                        <&cpu_b1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--                       };
-+                    map0 {
-+                        trip = <&cpu_alert1>;
-+                        cooling-device = <&cpu_b0 0 15 >,
-+                                         <&cpu_b1 0 15>;
-+                    };
-+
-+                    map1 {
-+                        trip = <&cpu_alert2>;
-+                        cooling-device = <&cpu_b0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+                                         <&cpu_b1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+                    };
-                 };
--          };
-+            };
-+        };
-     };
--- 
-2.35.1
-
+>  }
+>  
+>  /* Converting CONFIG register value to update_interval in usec */
