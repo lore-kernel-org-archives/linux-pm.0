@@ -2,59 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C07CBC4167B
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 03:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9EAFC07E9D
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 03:25:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232809AbiKKDZi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Nov 2022 22:25:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57202 "EHLO
+        id S232225AbiKKDZk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Nov 2022 22:25:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57214 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231126AbiKKDZg (ORCPT
+        with ESMTP id S231300AbiKKDZg (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2022 22:25:36 -0500
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71ED759FC4;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70FDA59867;
         Thu, 10 Nov 2022 19:25:35 -0800 (PST)
 Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AB3FB5K005701;
-        Fri, 11 Nov 2022 03:25:23 GMT
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AB2td77016733;
+        Fri, 11 Nov 2022 03:25:22 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=qcppdkim1;
- bh=RgAfutV/X1+EaLp624oAtxBTKGYUwrZyuYo4Na5GOeg=;
- b=I5z53LhBJhHZWWMjJOT4SeW9v86GGhEfwu+MOzkEMRBTMcuo+6tAH5gLJVR9EPtkatlE
- zIlzv2/jqFimq6eL9W0mi6SUJOywiG1XQRVJs7OzFuHhfzJFgR24KFC/OKOrgEHxhn5s
- qzzm7myxo7F7thKtZDkc+ShpAIhuaIiqyQSPefHtrjXfKumm24hHIrqyzVStAeTjzTWz
- AjnJKwYgBma6XkevVI2g0SV6QKGcfuvuPCHweS0ebEH5rtyYpmsc6/Kkuxr20XDc+OBr
- ecklW8QAubnM8VFOHwZwLFqdHWHmUbr/uBQBbel5XxoXzTnoFC8+WzUAyeOwoqOzWvZg VQ== 
-Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ksaqxren7-1
+ subject : date : message-id : mime-version : content-type; s=qcppdkim1;
+ bh=+LcDJCGR0d0D4hLlz8YtCccmj6+WQ/Bu0GB1cKAUxsk=;
+ b=Q0A0EIn/SY0wM7bp0hFPJT5qGeyhrh743ezMdqKI/BS7TAA/W1rb9TmlrQjjCXK0x2Ca
+ mvqQpU+xgffie4c2cT+qOdmqtKyr2m1QIw77/yn5440/NG49bkc6A3B1KJXES2KwAglP
+ kkU4teS4gKFEv7VQUG0W21iCxnVMHuF53hLwFpH08AqDoT66q6847NDfV9BhDBHrj1au
+ AkUs8DWUaNrR9kaAAeok1YpoCBUCPj3xbMKT6f3D4kKFBjdJe+/PaVPhdeGx7y9Fvx5v
+ 2vDu+FjmHk3yOw5uaYCToCc3hgdcxU7KDnUujwDnbCMZlT4Xb8HyywuJvIE4EVw01RXQ cg== 
+Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3ksaqxren6-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 11 Nov 2022 03:25:23 +0000
+        Fri, 11 Nov 2022 03:25:22 +0000
 Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2AB3PNUC018961
+        by NALASPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2AB3PLE7027147
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 11 Nov 2022 03:25:23 GMT
+        Fri, 11 Nov 2022 03:25:21 GMT
 Received: from th-lint-050.qualcomm.com (10.80.80.8) by
  nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.29; Thu, 10 Nov 2022 19:25:22 -0800
+ 15.2.986.29; Thu, 10 Nov 2022 19:25:20 -0800
 From:   Bjorn Andersson <quic_bjorande@quicinc.com>
-To:     Georgi Djakov <djakov@kernel.org>,
-        Sibi Sankar <quic_sibis@quicinc.com>
-CC:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@somainline.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
-        Mike Tipton <quic_mdtipton@quicinc.com>,
-        "Johan Hovold" <johan+linaro@kernel.org>,
+        "Georgi Djakov" <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Sibi Sankar <quic_sibis@quicinc.com>
+CC:     Mike Tipton <quic_mdtipton@quicinc.com>,
+        Johan Hovold <johan+linaro@kernel.org>,
         <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 04/10] interconnect: qcom: osm-l3: Simplify osm_l3_set()
-Date:   Thu, 10 Nov 2022 19:25:09 -0800
-Message-ID: <20221111032515.3460-5-quic_bjorande@quicinc.com>
+Subject: [PATCH v2 00/10] interconnect: osm-l3: SC8280XP L3 and DDR scaling
+Date:   Thu, 10 Nov 2022 19:25:05 -0800
+Message-ID: <20221111032515.3460-1-quic_bjorande@quicinc.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20221111032515.3460-1-quic_bjorande@quicinc.com>
-References: <20221111032515.3460-1-quic_bjorande@quicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.80.80.8]
@@ -62,8 +59,8 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nalasex01c.na.qualcomm.com (10.47.97.35)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: 7bRXggEAdYQjf5ewWAfPYZM6MiEqUpUj
-X-Proofpoint-GUID: 7bRXggEAdYQjf5ewWAfPYZM6MiEqUpUj
+X-Proofpoint-ORIG-GUID: X7TEkaYeAXnh9_AjJA_U3Vw3V4jOnujN
+X-Proofpoint-GUID: X7TEkaYeAXnh9_AjJA_U3Vw3V4jOnujN
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-10_14,2022-11-09_01,2022-06-22_01
@@ -76,51 +73,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The aggregation over votes for all nodes in the provider will always
-only find the bandwidth votes for the destination side of the path.
-Further more, the average kBps value will always be 0.
+The SC8280XP currently shows depressing results in memory benchmarks.
+Fix this by introducing support for the platform in the OSM (and EPSS)
+L3 driver and support for the platform in the bwmon binding.
 
-Simplify the logic by directly looking at the destination node's peak
-bandwidth request.
+Then add the necessary nodes and values throughout the sc8280xp and
+sa8540p dtsi files to make the various devices on these platforms scale
+both L3, memory bus and DDR.
 
-Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
-Tested-by: Steev Klimaszewski <steev@kali.org>
----
+Bjorn Andersson (10):
+  interconnect: qcom: osm-l3: Use platform-independent node ids
+  interconnect: qcom: osm-l3: Squash common descriptors
+  interconnect: qcom: osm-l3: Add per-core EPSS L3 support
+  interconnect: qcom: osm-l3: Simplify osm_l3_set()
+  dt-bindings: interconnect: Add sm8350, sc8280xp and generic OSM L3
+    compatibles
+  arm64: dts: qcom: Align with generic osm-l3/epss-l3
+  arm64: dts: qcom: sc8280xp: Add epss_l3 node
+  arm64: dts: qcom: sc8280xp: Set up L3 scaling
+  dt-bindings: interconnect: qcom,msm8998-bwmon: Add sc8280xp bwmon
+    instances
+  arm64: dts: qcom: sc8280xp: Add bwmon instances
 
-Changes since v1:
-- None
+ .../interconnect/qcom,msm8998-bwmon.yaml      |   5 +
+ .../bindings/interconnect/qcom,osm-l3.yaml    |  24 ++-
+ arch/arm64/boot/dts/qcom/sa8540p.dtsi         |  39 +++++
+ arch/arm64/boot/dts/qcom/sc7180.dtsi          |   2 +-
+ arch/arm64/boot/dts/qcom/sc7280.dtsi          |   2 +-
+ arch/arm64/boot/dts/qcom/sc8280xp.dtsi        | 152 ++++++++++++++++++
+ arch/arm64/boot/dts/qcom/sdm845.dtsi          |   2 +-
+ arch/arm64/boot/dts/qcom/sm8150.dtsi          |   2 +-
+ arch/arm64/boot/dts/qcom/sm8250.dtsi          |   2 +-
+ drivers/interconnect/qcom/osm-l3.c            | 126 ++++-----------
+ 10 files changed, 252 insertions(+), 104 deletions(-)
 
- drivers/interconnect/qcom/osm-l3.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
-
-diff --git a/drivers/interconnect/qcom/osm-l3.c b/drivers/interconnect/qcom/osm-l3.c
-index 469be732a00b..5fa171087425 100644
---- a/drivers/interconnect/qcom/osm-l3.c
-+++ b/drivers/interconnect/qcom/osm-l3.c
-@@ -134,22 +134,14 @@ static int qcom_osm_l3_set(struct icc_node *src, struct icc_node *dst)
- 	struct qcom_osm_l3_icc_provider *qp;
- 	struct icc_provider *provider;
- 	const struct qcom_osm_l3_node *qn;
--	struct icc_node *n;
- 	unsigned int index;
--	u32 agg_peak = 0;
--	u32 agg_avg = 0;
- 	u64 rate;
- 
- 	qn = src->data;
- 	provider = src->provider;
- 	qp = to_osm_l3_provider(provider);
- 
--	list_for_each_entry(n, &provider->nodes, node_list)
--		provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
--				    &agg_avg, &agg_peak);
--
--	rate = max(agg_avg, agg_peak);
--	rate = icc_units_to_bps(rate);
-+	rate = icc_units_to_bps(dst->peak_bw);
- 	do_div(rate, qn->buswidth);
- 
- 	for (index = 0; index < qp->max_state - 1; index++) {
 -- 
 2.17.1
 
