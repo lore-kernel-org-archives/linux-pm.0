@@ -2,97 +2,80 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88DDAC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 13:31:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61261C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Nov 2022 16:27:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233338AbiKKNb4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Nov 2022 08:31:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47778 "EHLO
+        id S233824AbiKKQ14 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Nov 2022 11:27:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54160 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232983AbiKKNbz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2022 08:31:55 -0500
-Received: from smtp.smtpout.orange.fr (smtp-29.smtpout.orange.fr [80.12.242.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C67760359
-        for <linux-pm@vger.kernel.org>; Fri, 11 Nov 2022 05:31:49 -0800 (PST)
-Received: from [192.168.1.18] ([86.243.100.34])
-        by smtp.orange.fr with ESMTPA
-        id tU8GonQCiJvOZtU8GoRdhX; Fri, 11 Nov 2022 14:31:47 +0100
-X-ME-Helo: [192.168.1.18]
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Fri, 11 Nov 2022 14:31:47 +0100
-X-ME-IP: 86.243.100.34
-Message-ID: <9a21c0ae-1f6b-fafb-6054-616f85edfba0@wanadoo.fr>
-Date:   Fri, 11 Nov 2022 14:31:44 +0100
+        with ESMTP id S232841AbiKKQ14 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2022 11:27:56 -0500
+Received: from mail-qk1-x732.google.com (mail-qk1-x732.google.com [IPv6:2607:f8b0:4864:20::732])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7301977E4A;
+        Fri, 11 Nov 2022 08:27:54 -0800 (PST)
+Received: by mail-qk1-x732.google.com with SMTP id d7so859154qkk.3;
+        Fri, 11 Nov 2022 08:27:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=jwi5a4EeVLwNH8TsDU2iURs6gMBXFninZhcpZAryrJc=;
+        b=RqiU2lUFVF40jBACbBIK0c2oUL9FbFGhEyio4P/E/NRsq39HNX9c5LdWmxy1SN5X1s
+         ZKtePxySfD6aIh/7m9Rd0mdQPYgM8J89rmgKh7Rx7D3W6XTCpaFsAFBAKtnjct8xLR4J
+         FQ5bk4YoIfRyGrkHPDyHs7OntpLqagoyZgKAxV2y8QrsMRDC8+ELRS7tn83/fzw7q2rB
+         PkmKL6Qjd6envuJ9VoL1biQGw7Y/SFt6HDRpYiLybLX6U4usJmeEU2UzvVg3r6OaYDVf
+         26o8eKiP7uwi8EhFhWpVjHJ/XcOIyKMqKT2FL0jUs1RQsO9wCayOSufpFhhHTsAUW6cd
+         mn5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=jwi5a4EeVLwNH8TsDU2iURs6gMBXFninZhcpZAryrJc=;
+        b=YelZG+RHLUjCdUzjIbjnXEPi1lGnUyX2OdoLrmn7oRfdgvWTWlE5Oc4ydPe5ru1xSd
+         ihpFUrxXcKMvS4AR+vgIoPSCPXnEUHYcHc4TdOsPXNx16K0JoYo6K0zyKpyU3RKi0WjB
+         jaNAeVY6Np7ku030YqWSDJfPEldz9SiYOcygNzCxQgU5yke4/MVn9zMTIG+8Em0xBfDp
+         wACcZVISWw4lP9uSXsAYIb9w0b4F8URWdf/6NLof3JG+0aPfNSnzR0u46NnKGr9ammLC
+         JwHgj0Fq0qZx3hg6ELm3QhCb0C1M5JzQDL/SXuEVuZ24swa1nd15JwM1IwJlz8tABPwj
+         iAEw==
+X-Gm-Message-State: ANoB5pkpRBW0tjb2Ir3ImU7WyfxybI2yYthGyXnoeGMCqgp+VwpGSmeV
+        LPg9M0poN3avJuznYarU+TxPVYjUiD0=
+X-Google-Smtp-Source: AA0mqf5+GBU34baLMqJL/YUHL/7dCwSejX37aBGTALP3iOTFiuFxropjjSLiOTOwYRSHnmQVQNqhaw==
+X-Received: by 2002:a05:620a:78d:b0:6fa:7d46:33ad with SMTP id 13-20020a05620a078d00b006fa7d4633admr1698559qka.278.1668184073616;
+        Fri, 11 Nov 2022 08:27:53 -0800 (PST)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id 3-20020a05620a070300b006ce9e880c6fsm1589675qkc.111.2022.11.11.08.27.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 11 Nov 2022 08:27:52 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date:   Fri, 11 Nov 2022 08:27:51 -0800
+From:   Guenter Roeck <linux@roeck-us.net>
+To:     Ninad Malwade <nmalwade@nvidia.com>
+Cc:     treding@nvidia.com, jonathanh@nvidia.com, jdelvare@suse.com,
+        nicolinc@nvidia.com, rkasirajan@nvidia.com,
+        linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH] ina3221: Fix shunt sum critical calculation
+Message-ID: <20221111162751.GA275294@roeck-us.net>
+References: <20221108044508.23463-1-nmalwade@nvidia.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: [PATCH v11 1/2] thermal: loongson-2: add thermal management
- support
-Content-Language: fr
-To:     Yinbo Zhu <zhuyinbo@loongson.cn>
-Cc:     amitk@kernel.org, daniel.lezcano@linaro.org,
-        devicetree@vger.kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        liupeibao@loongson.cn, rafael@kernel.org, robh+dt@kernel.org,
-        rui.zhang@intel.com, zhanghongchen@loongson.cn
-References: <20221111095824.26898-1-zhuyinbo@loongson.cn>
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20221111095824.26898-1-zhuyinbo@loongson.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221108044508.23463-1-nmalwade@nvidia.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Le 11/11/2022 à 10:58, Yinbo Zhu a écrit :
-> This patch adds the support for Loongson-2 thermal sensor controller,
-> which can support maximum 4 sensors.
+On Tue, Nov 08, 2022 at 12:45:08PM +0800, Ninad Malwade wrote:
+> The shunt sum critical limit register value should be left shifted
+> by one bit as its LSB-0 is a reserved bit.
 > 
-> It's based on thermal of framework:
->   - Trip points defined in device tree.
->   - Cpufreq as cooling device registered in Loongson-2 cpufreq driver.
->   - Pwm fan as cooling device registered in hwmon pwm-fan driver.
-> 
-> Signed-off-by: zhanghongchen <zhanghongchen-cXZgJK919ebM1kAEIRd3EQ@public.gmane.org>
-> Signed-off-by: Yinbo Zhu <zhuyinbo-cXZgJK919ebM1kAEIRd3EQ@public.gmane.org>
-> ---
+> Signed-off-by: Ninad Malwade <nmalwade@nvidia.com>
+> Reviewed-by: Thierry Reding <treding@nvidia.com>
 
-[...]
+Applied.
 
-> +static int loongson2_thermal_set(struct loongson2_thermal_data *data,
-> +					int low, int high, bool enable)
-> +{
-> +	u64 reg_ctrl = 0;
-> +	int reg_off = data->id * 2;
-> +
-> +	if (low > high)
-> +		return -EINVAL;
-> +
-> +	low = min(low, -100);
-
-Should be max()?
-
-> +	high = max(high, 155);
-
-Should be min()?
-
-CJ
-
-> +
-> +	low += 100;
-> +	high += 100;
-> +
-> +	reg_ctrl |= low;
-> +	reg_ctrl |= enable ? 0x100 : 0;
-> +	writew(reg_ctrl, data->regs + LOONGSON2_TSENSOR_CTRL_LO + reg_off);
-> +
-> +	reg_ctrl = 0;
-> +	reg_ctrl |= high;
-> +	reg_ctrl |= enable ? 0x100 : 0;
-> +	writew(reg_ctrl, data->regs + LOONGSON2_TSENSOR_CTRL_HI + reg_off);
-> +
-> +	return 0;
-> +}
-
-[...]
-
+Thanks,
+Guenter
