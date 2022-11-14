@@ -2,143 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E9FBC433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Nov 2022 20:06:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35190C4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Nov 2022 20:32:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237355AbiKNUG1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Nov 2022 15:06:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34046 "EHLO
+        id S236823AbiKNUcU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Nov 2022 15:32:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236438AbiKNUGY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2022 15:06:24 -0500
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A32ACEA4;
-        Mon, 14 Nov 2022 12:06:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1668456383; x=1699992383;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=E6Fr5EqSLsNUebM1iEN8hkFtHJmRiv4orK6AmUjJIB0=;
-  b=U7E1D+2tcfMlvcnqf11wUH3nRsprsN+UpWhzby9FLTInSS9YErYZe+Dx
-   tB4Vn4QLHZMg5pH7iuwcFNSaUi/YlwpWMflMegkYVJzMMFyqAtjQOC0TF
-   t65v2uzL8Mwnrdvk9F0MIfndEy5yVaLoCE8LaVYa4LB9ANnYz5LLH+9Mr
-   PvdsLLZh7gRCmzla+jg778J2qeRLgonQTh7Ys3Gwy/2HFXJH0NvYI2smB
-   yNup7SiKUEHKw3KXcvETUrqcf+joLTpVZZ3bgGeBdNrc+Zi25Pefp1eiT
-   UpqK9jMuYdW7s1SsdksBvAsfLoAwS9rUwac9knFiHxzCutSQ57IkObB3v
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="310779575"
-X-IronPort-AV: E=Sophos;i="5.96,164,1665471600"; 
-   d="scan'208";a="310779575"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2022 12:06:22 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="589508116"
-X-IronPort-AV: E=Sophos;i="5.96,164,1665471600"; 
-   d="scan'208";a="589508116"
-Received: from parandri-mobl.amr.corp.intel.com (HELO guptapa-desk.intel.com) ([10.209.117.50])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2022 12:06:22 -0800
-From:   Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-To:     "H. Peter Anvin" <hpa@zytor.com>,
-        Thomas Gleixner <tglx@linutronix.de>, David.Kaplan@amd.com,
-        thomas.lendacky@amd.com, Borislav Petkov <bp@alien8.de>,
-        x86@kernel.org, hdegoede@redhat.com,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Andrew Cooper <Andrew.Cooper3@citrix.com>,
-        Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Daniel Sneddon <daniel.sneddon@linux.intel.com>,
-        antonio.gomez.iglesias@linux.intel.com
-Subject: [PATCH v2 1/2] x86/tsx: Add feature bit for TSX control MSR support
-Date:   Mon, 14 Nov 2022 12:06:15 -0800
-Message-Id: <80961915d70eb31d564f9ddeaab809e5c895f3cc.1668455932.git.pawan.kumar.gupta@linux.intel.com>
-X-Mailer: git-send-email 2.37.3
-In-Reply-To: <cover.1668455932.git.pawan.kumar.gupta@linux.intel.com>
-References: <cover.1668455932.git.pawan.kumar.gupta@linux.intel.com>
+        with ESMTP id S236559AbiKNUcT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2022 15:32:19 -0500
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94035102;
+        Mon, 14 Nov 2022 12:32:17 -0800 (PST)
+Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: marex@denx.de)
+        by phobos.denx.de (Postfix) with ESMTPSA id 7E188833F9;
+        Mon, 14 Nov 2022 21:32:13 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+        s=phobos-20191101; t=1668457935;
+        bh=9YyOSpKzqVVws+Y9bNHk1/QJAvQGfurrcCfXg7JraVI=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=gXuSAEWmcLjvoIj7RYKkTRkklx+oGIsBKGCaPTLmx2CQggrvkzUaDWDBgoQliC4sb
+         1qR6pftyLU/jiIkTfZ34N98RHZZnFR3W7ryJkvuIcLs5IPG3b40hf8IVgr55K5te4Y
+         ONse+XjUsp/KWJghgmcNDza9Ye14iBpI/Lq9RTS3IAO82dQqXS5wTpUl/TrewVISiP
+         N7EIt8R0OAM4F0FMbNvNiOfWlAqcKnjKoPJDAW+PNmhLMjZIkI/Oj24t85Dt3luoGG
+         U/RxTWSemvE3C//SGKNLad0lEgJSugxJJxTpdkjACjgAaehIfvCfzVF6P6Obp+qkmV
+         kAz83lKq4jnDw==
+Message-ID: <52578b45-cf4c-e949-b2b1-a0f251815337@denx.de>
+Date:   Mon, 14 Nov 2022 21:32:12 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.1
+Subject: Re: [PATCH 1/3] [RFC] PM: domains: Introduce .power_pre/post_on/off
+ callbacks
+Content-Language: en-US
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     linux-pm@vger.kernel.org, Adam Ford <aford173@gmail.com>,
+        Fabio Estevam <festevam@denx.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jacky Bai <ping.bai@nxp.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Len Brown <len.brown@intel.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Martin Kepplinger <martink@posteo.de>,
+        Pavel Machek <pavel@ucw.cz>, Peng Fan <peng.fan@nxp.com>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Shengjiu Wang <shengjiu.wang@nxp.com>,
+        Stephen Boyd <sboyd@kernel.org>, linux-clk@vger.kernel.org,
+        linux-imx@nxp.com
+References: <20221108013517.749665-1-marex@denx.de>
+ <CAPDyKFoUdfUjZMgzU-3SS0gVstj-04FbTSjxihdar2wxu5c97w@mail.gmail.com>
+From:   Marek Vasut <marex@denx.de>
+In-Reply-To: <CAPDyKFoUdfUjZMgzU-3SS0gVstj-04FbTSjxihdar2wxu5c97w@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Support for TSX control MSR is enumerated in MSR_IA32_ARCH_CAPABILITIES.
-This is different from how other CPU features are enumerated i.e. via
-CPUID. Currently a call to tsx_ctrl_is_supported() is required for
-enumerating the feature. In the absence of feature bit for TSX control,
-any code that relies on checking feature bits directly will not work.
+On 11/14/22 20:40, Ulf Hansson wrote:
+> On Tue, 8 Nov 2022 at 02:35, Marek Vasut <marex@denx.de> wrote:
+>>
+>> Currently it is possible that a power domain power on or off would claim
+>> the genpd lock first and clock core prepare_lock second, while another
+>> thread could do the reverse, and this would trigger lockdep warning.
+> 
+> I am not quite sure I fully understand. In this case is the lockdep
+> warning relevant or just something that we want to silence?
 
-In preparation for adding a feature bit check in MSR save/restore during
-suspend/resume, set a new feature bit X86_FEATURE_TSX_CTRL when
-MSR_IA32_TSX_CTRL is present. Also make tsx_ctrl_is_supported() use the
-new feature bit to avoid any overhead of reading the MSR.
+This is a valid problem, see patches 2/3 and 3/3 for details too.
 
-Suggested-by: Andrew Cooper <andrew.cooper3@citrix.com>
-Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
----
- arch/x86/include/asm/cpufeatures.h |  1 +
- arch/x86/kernel/cpu/tsx.c          | 30 +++++++++++++++---------------
- 2 files changed, 16 insertions(+), 15 deletions(-)
+>> Introduce new callbacks, .power_pre/post_on() and .power_off_pre/post(), which
+>> are triggered before the genpd_lock() and after genpd_unlock() respectively in
+>> case the domain is powered on and off. Those are meant to let drivers claim
+>> clock core prepare_lock via clk_*prepare() call and release the lock via
+>> clk_*unprepare() call to always assure that the clock and genpd lock ordering
+>> is correct.
+> 
+> To me, this sounds like a problem that may be better fixed by trying
+> to model the parent/child-domains in a more strict way, through genpd.
+> 
+> There is a comment in the code in imx8mp_blk_ctrl_probe() that seems
+> to be pointing in this direction too.
+> 
+> "* We use runtime PM to trigger power on/off of the upstream GPC
+>    * domain, as a strict hierarchical parent/child power domain
+>    * setup doesn't allow us to meet the sequencing requirements......"
+> 
+> I am wondering about what those "sequencing requirements" are - and
+> whether it could make better sense to fix these issues instead?
 
-diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
-index b71f4f2ecdd5..3cda06ebe046 100644
---- a/arch/x86/include/asm/cpufeatures.h
-+++ b/arch/x86/include/asm/cpufeatures.h
-@@ -304,6 +304,7 @@
- #define X86_FEATURE_UNRET		(11*32+15) /* "" AMD BTB untrain return */
- #define X86_FEATURE_USE_IBPB_FW		(11*32+16) /* "" Use IBPB during runtime firmware calls */
- #define X86_FEATURE_RSB_VMEXIT_LITE	(11*32+17) /* "" Fill RSB on VM exit when EIBRS is enabled */
-+#define X86_FEATURE_MSR_TSX_CTRL	(11*32+18) /* "" MSR IA32_TSX_CTRL (Intel) implemented */
- 
- /* Intel-defined CPU features, CPUID level 0x00000007:1 (EAX), word 12 */
- #define X86_FEATURE_AVX_VNNI		(12*32+ 4) /* AVX VNNI instructions */
-diff --git a/arch/x86/kernel/cpu/tsx.c b/arch/x86/kernel/cpu/tsx.c
-index ec7bbac3a9f2..9fe488dbed15 100644
---- a/arch/x86/kernel/cpu/tsx.c
-+++ b/arch/x86/kernel/cpu/tsx.c
-@@ -60,20 +60,7 @@ static void tsx_enable(void)
- 
- static bool tsx_ctrl_is_supported(void)
- {
--	u64 ia32_cap = x86_read_arch_cap_msr();
--
--	/*
--	 * TSX is controlled via MSR_IA32_TSX_CTRL.  However, support for this
--	 * MSR is enumerated by ARCH_CAP_TSX_MSR bit in MSR_IA32_ARCH_CAPABILITIES.
--	 *
--	 * TSX control (aka MSR_IA32_TSX_CTRL) is only available after a
--	 * microcode update on CPUs that have their MSR_IA32_ARCH_CAPABILITIES
--	 * bit MDS_NO=1. CPUs with MDS_NO=0 are not planned to get
--	 * MSR_IA32_TSX_CTRL support even after a microcode update. Thus,
--	 * tsx= cmdline requests will do nothing on CPUs without
--	 * MSR_IA32_TSX_CTRL support.
--	 */
--	return !!(ia32_cap & ARCH_CAP_TSX_CTRL_MSR);
-+	return cpu_feature_enabled(X86_FEATURE_MSR_TSX_CTRL);
- }
- 
- static enum tsx_ctrl_states x86_get_tsx_auto_mode(void)
-@@ -191,7 +178,20 @@ void __init tsx_init(void)
- 		return;
- 	}
- 
--	if (!tsx_ctrl_is_supported()) {
-+	/*
-+	 * TSX is controlled via MSR_IA32_TSX_CTRL.  However, support for this
-+	 * MSR is enumerated by ARCH_CAP_TSX_MSR bit in MSR_IA32_ARCH_CAPABILITIES.
-+	 *
-+	 * TSX control (aka MSR_IA32_TSX_CTRL) is only available after a
-+	 * microcode update on CPUs that have their MSR_IA32_ARCH_CAPABILITIES
-+	 * bit MDS_NO=1. CPUs with MDS_NO=0 are not planned to get
-+	 * MSR_IA32_TSX_CTRL support even after a microcode update. Thus,
-+	 * tsx= cmdline requests will do nothing on CPUs without
-+	 * MSR_IA32_TSX_CTRL support.
-+	 */
-+	if (x86_read_arch_cap_msr() & ARCH_CAP_TSX_CTRL_MSR) {
-+		setup_force_cpu_cap(X86_FEATURE_MSR_TSX_CTRL);
-+	} else {
- 		tsx_ctrl_state = TSX_CTRL_NOT_SUPPORTED;
- 		return;
- 	}
--- 
-2.37.3
+Here is the lockdep splat:
 
+https://lore.kernel.org/all/Y1cs++TV2GCuh4tS@pendragon.ideasonboard.com/
+
+It really is a problem between the clock and genpd subsystem locks, they 
+can be claimed in arbitrary order, see patch 2/3 and 3/3.
+
+I think that might clarify what I am attempting to solve here.
+
+[...]
