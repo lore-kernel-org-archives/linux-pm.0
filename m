@@ -2,41 +2,41 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87853C4332F
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Nov 2022 20:06:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DF86C43219
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Nov 2022 20:06:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237240AbiKNUG0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Nov 2022 15:06:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34032 "EHLO
+        id S237412AbiKNUG2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Nov 2022 15:06:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235591AbiKNUGY (ORCPT
+        with ESMTP id S236970AbiKNUGY (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2022 15:06:24 -0500
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1E58B43;
-        Mon, 14 Nov 2022 12:06:22 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD0FAEAC;
+        Mon, 14 Nov 2022 12:06:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1668456383; x=1699992383;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=Z7vdBH5qB1VYZSaLpKPfeGlUHh3AbGFnYftB56TDl0E=;
-  b=BgnAl6/TZXV9GoMsoicNuRT8TE6MW9Vb9UvlZVwntm2EOfOc3no8uqSq
-   LWm9/ulBTYMFVnbZcEQowLhtY3LMob5L0QQn7/p+fkjnzB/+ykarK7PCD
-   5QyA8K5xalMsTGLvz2ktCzj3zl4rm1YjXvmWu/4kiIaqXFrg27mqRG3CQ
-   /c85Oeuvbcew1YCRdPw+uWs4EKLB8OppXVJgT6gPDUd4OnUm0MNAUImLj
-   7IrqdP21C4ieYOyYOxhWL0mlpqUBogTy8g7bbxOoUysD7ODuIZzbKNyzB
-   bK0J9uC/UaPXIIcYukrTWF1oIN1iiJcqRBZ9/MG3Ciy4DCRALVp6EzF8r
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="310779573"
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=EoZdGGK1L5qyZWve7P1IZ9ifkLXTCDDXv1VoITm9IvI=;
+  b=bHTj4Ll0uPeZFYmtLnKb6J1F2XzdW5+wtvAaH+lQ8WpJwfm5/xQWWLho
+   S0b1j6DpwCPlAxIeVFK9PpbiQPECtucNu+vU6i+QH6WUGzHWvWDJW/05w
+   UGESvsnyB+p7/4mIJmh9rWEGiMuedtYZJnnM4dEp5th/hA5455DccMG5K
+   4mZP+DfjKaxAYS3gVZGNBz5NeT7QpoacpAmmZIW7XjduPW1w+cit24czo
+   E5j1VZ56ODgPsximjByoXUJV0PeWKMNOBoroeLqyQu7xcgNPWtmM7XOjk
+   T/QxtpGYjQCokTN+k83jz/C0Syx/B1hMQJYQT5lsKGTTixAe98hyh5Dfz
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="310779577"
 X-IronPort-AV: E=Sophos;i="5.96,164,1665471600"; 
-   d="scan'208";a="310779573"
+   d="scan'208";a="310779577"
 Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2022 12:06:22 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="589508113"
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2022 12:06:23 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="589508117"
 X-IronPort-AV: E=Sophos;i="5.96,164,1665471600"; 
-   d="scan'208";a="589508113"
+   d="scan'208";a="589508117"
 Received: from parandri-mobl.amr.corp.intel.com (HELO guptapa-desk.intel.com) ([10.209.117.50])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2022 12:06:21 -0800
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Nov 2022 12:06:22 -0800
 From:   Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
 To:     "H. Peter Anvin" <hpa@zytor.com>,
         Thomas Gleixner <tglx@linutronix.de>, David.Kaplan@amd.com,
@@ -49,47 +49,103 @@ To:     "H. Peter Anvin" <hpa@zytor.com>,
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Daniel Sneddon <daniel.sneddon@linux.intel.com>,
         antonio.gomez.iglesias@linux.intel.com
-Subject: [PATCH v2 0/2] Check enumeration before MSR save/restore
-Date:   Mon, 14 Nov 2022 12:06:14 -0800
-Message-Id: <cover.1668455932.git.pawan.kumar.gupta@linux.intel.com>
+Subject: [PATCH v2 2/2] x86/pm: Add enumeration check before spec MSRs save/restore setup
+Date:   Mon, 14 Nov 2022 12:06:16 -0800
+Message-Id: <ce8c7a5af804eca3b8978317bc8a5a219a7a7b88.1668455932.git.pawan.kumar.gupta@linux.intel.com>
 X-Mailer: git-send-email 2.37.3
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <cover.1668455932.git.pawan.kumar.gupta@linux.intel.com>
+References: <cover.1668455932.git.pawan.kumar.gupta@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-v2:
-- Dropped patch for X86_FEATURE_AMD64_LS_CFG, using X86_FEATURE_AMD64_LS_CFG_SSBD instead.
-- Commit message updated.
+pm_save_spec_msr() keeps a list of all the MSRs which _might_ need to be
+saved and restored at hibernate?? and resume??.  However, it has zero
+awareness of CPU support for these MSRs.  It mostly works by
+unconditionally attempting to manipulate these MSRs and relying on
+rdmsrl_safe() being able to handle a #GP on CPUs where the support is
+unavailable.
 
-v1: https://lore.kernel.org/lkml/cover.1663025154.git.pawan.kumar.gupta@linux.intel.com/
+However, it's possible for reads (RDMSR) to be supported for a given MSR
+while writes (WRMSR) are not.  In this case, msr_build_context() sees a
+successful read (RDMSR) and marks the MSR as 'valid'.  Then, later, a
+write (WRMSR) fails, producing a nasty (but harmless) error message.
+This causes restore_processor_state() to try and restore it, but writing
+this MSR is not allowed on the Intel Atom N2600 leading to:
 
-Hi,
+  unchecked MSR access error: WRMSR to 0x122 (tried to write 0x0000000000000002) \
+     at rIP: 0xffffffff8b07a574 (native_write_msr+0x4/0x20)
+  Call Trace:
+   <TASK>
+   restore_processor_state
+   x86_acpi_suspend_lowlevel
+   acpi_suspend_enter
+   suspend_devices_and_enter
+   pm_suspend.cold
+   state_store
+   kernfs_fop_write_iter
+   vfs_write
+   ksys_write
+   do_syscall_64
+   ? do_syscall_64
+   ? up_read
+   ? lock_is_held_type
+   ? asm_exc_page_fault
+   ? lockdep_hardirqs_on
+   entry_SYSCALL_64_after_hwframe
 
-This patchset is to fix the "unchecked MSR access error" [1] during S3
-resume. Patch 1/3 adds a feature bit for MSR_IA32_TSX_CTRL.
+To fix this, add the corresponding X86_FEATURE bit for each MSR.  Avoid
+trying to manipulate the MSR when the feature bit is clear. This
+required adding a X86_FEATURE bit for MSRs that do not have one already,
+but it's a small price to pay.
 
-Patch 2/3 adds a feature bit for MSR_AMD64_LS_CFG.
+Fixes: 73924ec4d560 ("x86/pm: Save the MSR validity status at context setup")
+Reported-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+---
+ arch/x86/power/cpu.c | 23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
 
-Patch 3/3 adds check for feature bit before adding any speculation
-control MSR to the list of MSRs to save/restore.
-
-[1] https://lore.kernel.org/lkml/20220906201743.436091-1-hdegoede@redhat.com/
-
-Thanks,
-Pawan
-
-Pawan Gupta (2):
-  x86/tsx: Add feature bit for TSX control MSR support
-  x86/pm: Add enumeration check before spec MSRs save/restore setup
-
- arch/x86/include/asm/cpufeatures.h |  1 +
- arch/x86/kernel/cpu/tsx.c          | 30 +++++++++++++++---------------
- arch/x86/power/cpu.c               | 23 ++++++++++++++++-------
- 3 files changed, 32 insertions(+), 22 deletions(-)
-
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index bb176c72891c..0d97c25551f0 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -511,17 +511,26 @@ static int pm_cpu_check(const struct x86_cpu_id *c)
+ 	return ret;
+ }
+ 
++struct msr_enumeration {
++	u32 msr_no;
++	u32 feature;
++};
++
+ static void pm_save_spec_msr(void)
+ {
+-	u32 spec_msr_id[] = {
+-		MSR_IA32_SPEC_CTRL,
+-		MSR_IA32_TSX_CTRL,
+-		MSR_TSX_FORCE_ABORT,
+-		MSR_IA32_MCU_OPT_CTRL,
+-		MSR_AMD64_LS_CFG,
++	struct msr_enumeration msr_enum[] = {
++		{MSR_IA32_SPEC_CTRL,	X86_FEATURE_MSR_SPEC_CTRL},
++		{MSR_IA32_TSX_CTRL,	X86_FEATURE_MSR_TSX_CTRL},
++		{MSR_TSX_FORCE_ABORT,	X86_FEATURE_TSX_FORCE_ABORT},
++		{MSR_IA32_MCU_OPT_CTRL,	X86_FEATURE_SRBDS_CTRL},
++		{MSR_AMD64_LS_CFG,	X86_FEATURE_LS_CFG_SSBD},
+ 	};
++	int i;
+ 
+-	msr_build_context(spec_msr_id, ARRAY_SIZE(spec_msr_id));
++	for (i = 0; i < ARRAY_SIZE(msr_enum); i++) {
++		if (boot_cpu_has(msr_enum[i].feature))
++			msr_build_context(&msr_enum[i].msr_no, 1);
++	}
+ }
+ 
+ static int pm_check_save_msr(void)
 -- 
 2.37.3
 
