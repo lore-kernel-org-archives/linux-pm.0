@@ -2,72 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 089C2C433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Nov 2022 11:25:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4841FC4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Nov 2022 11:39:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238819AbiKPLZe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Nov 2022 06:25:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42962 "EHLO
+        id S233024AbiKPLjz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Nov 2022 06:39:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55022 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239055AbiKPLZL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2022 06:25:11 -0500
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0ADFB248C1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2022 03:15:27 -0800 (PST)
-Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.54])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4NC0nT3W1yzHvxQ;
-        Wed, 16 Nov 2022 19:14:53 +0800 (CST)
-Received: from dggpemm500002.china.huawei.com (7.185.36.229) by
- dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Wed, 16 Nov 2022 19:15:22 +0800
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- dggpemm500002.china.huawei.com (7.185.36.229) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Wed, 16 Nov 2022 19:15:22 +0800
-From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
-To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
-        <Akshu.Agrawal@amd.com>
-CC:     <linux-pm@vger.kernel.org>, <yangyingliang@huawei.com>,
-        <wangxiongfeng2@huawei.com>
-Subject: [PATCH] cpufreq: amd_freq_sensitivity: Add missing pci_dev_put()
-Date:   Wed, 16 Nov 2022 19:33:39 +0800
-Message-ID: <20221116113339.177740-1-wangxiongfeng2@huawei.com>
-X-Mailer: git-send-email 2.20.1
+        with ESMTP id S233103AbiKPLjQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2022 06:39:16 -0500
+Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8B385B854
+        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2022 03:26:57 -0800 (PST)
+Received: by mail-lf1-x12e.google.com with SMTP id s8so11863882lfc.8
+        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2022 03:26:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=WO8pGk2BtJ5SR1HFNUrXI6oNBAFdhi38e2dTG4f6QyE=;
+        b=jHBeRIEQAojNe0b9tevX4K+rOyn+2dC9TLKAX7JnLugSYHxEPjuYaEeiaWxvsNjT3l
+         6J7MYFUKi6WKuDtagBeLKPLKhg1UrN+ddt9e8ioGDdGLeMJCih/pSmC7OA7+TSsGnTzR
+         DFPcL38wk7774acfRt2xpPDqWOojJCkuQ4AFkFvR6hVx1VzscGuQrDfgx5pClA0g+EaH
+         vBzJmipGY4el5f8cyVuRTgshbGie9mjP9GMbyZtza6g5BwtU0XxUSrUVihCl+BH/97xG
+         /gWXA3b28qesH2rSABmvOJpXkYDaE2E5lmdcMB5e1rqK+mRfVHPaIUYSfr0Mng2BFGyn
+         KIRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=WO8pGk2BtJ5SR1HFNUrXI6oNBAFdhi38e2dTG4f6QyE=;
+        b=zMQxiM5rxpN7DyM7I726cJL3VZ+bkNqoautnoEkslF7GC+kJAU5HqgpdWRc9+Ukt4G
+         wPLOUFl78J/Bj6YfvgP7udp2KNQLCgjd1EtZxi+jQ+A7tnu0MxG7/xr19uyPIVAhbmTI
+         bG7UAxs6IaXDpGtdiEg7IZsM4ibcixgCZo94XlKdbXxile3r+FyM+3mZlygjTm/1SvzZ
+         CqHXv7KGifq5F2DkN2+uYyD4bqJlVpQkMEGNPZN5N3KNm0BfgGDhNyZe1n3HbHXqgECl
+         9A/c07rzTffI4JvB//a+3bEkY29miyOuszh9RAywJ6lQCIA2kYPJjO4owpWVBK2lhLHR
+         yP9Q==
+X-Gm-Message-State: ANoB5pn5diDlM12AUN/AVzMXD9+ko8e/lRM4jIKesVdBvt1BRL4RWsez
+        94k/JD/lJ+GAGyo454HqMU/5UA==
+X-Google-Smtp-Source: AA0mqf676ax6bbZt0psW63FhP1PZcELcaNCa/iyrl4/M889Rk8oiaIdVAX/Su/2MiNSfLRnvKLuPrA==
+X-Received: by 2002:a05:6512:530:b0:4a4:77a8:45a4 with SMTP id o16-20020a056512053000b004a477a845a4mr6708458lfc.654.1668598015691;
+        Wed, 16 Nov 2022 03:26:55 -0800 (PST)
+Received: from [192.168.0.20] (088156142067.dynamic-2-waw-k-3-2-0.vectranet.pl. [88.156.142.67])
+        by smtp.gmail.com with ESMTPSA id s8-20020a056512314800b00492ce573726sm2548868lfi.47.2022.11.16.03.26.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 16 Nov 2022 03:26:55 -0800 (PST)
+Message-ID: <4dd96db7-b667-7b8f-f80d-a250ac63f223@linaro.org>
+Date:   Wed, 16 Nov 2022 12:26:54 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemm500002.china.huawei.com (7.185.36.229)
-X-CFilter-Loop: Reflected
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
+Subject: Re: [PATCH] dt-bindings: thermal: qcom-tsens: Add compatible for
+ sm8550
+Content-Language: en-US
+To:     Neil Armstrong <neil.armstrong@linaro.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20221114-narmstrong-sm8550-upstream-tsens-v1-0-0e169822830f@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20221114-narmstrong-sm8550-upstream-tsens-v1-0-0e169822830f@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pci_get_device() will increase the reference count for the returned
-pci_dev. We need to use pci_dev_put() to decrease the reference count
-after using pci_get_device(). Let's add it.
+On 16/11/2022 11:09, Neil Armstrong wrote:
+> The Qualcomm SM8550 platform has three instances of the tsens block,
+> add a compatible for these instances.
+> 
+> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+> ---
+> To: Andy Gross <agross@kernel.org>
+> To: Bjorn Andersson <andersson@kernel.org>
+> To: Konrad Dybcio <konrad.dybcio@somainline.org>
+> To: Amit Kucheria <amitk@kernel.org>
+> To: Thara Gopinath <thara.gopinath@gmail.com>
+> To: "Rafael J. Wysocki" <rafael@kernel.org>
+> To: Daniel Lezcano <daniel.lezcano@linaro.org>
+> To: Zhang Rui <rui.zhang@intel.com>
+> To: Rob Herring <robh+dt@kernel.org>
+> To: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> Cc: linux-arm-msm@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> index f0bd4b979e28..09dbd96d380e 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> @@ -58,6 +58,7 @@ properties:
+>                - qcom,sm8250-tsens
+>                - qcom,sm8350-tsens
+>                - qcom,sm8450-tsens
+> +              - qcom,sm8550-tsens
 
-Fixes: 59a3b3a8db16 ("cpufreq: AMD: Ignore the check for ProcFeedback in ST/CZ")
-Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
----
- drivers/cpufreq/amd_freq_sensitivity.c | 2 ++
- 1 file changed, 2 insertions(+)
+alOf:if:then should be updated.
 
-diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
-index 6448e03bcf48..59b19b9975e8 100644
---- a/drivers/cpufreq/amd_freq_sensitivity.c
-+++ b/drivers/cpufreq/amd_freq_sensitivity.c
-@@ -125,6 +125,8 @@ static int __init amd_freq_sensitivity_init(void)
- 	if (!pcidev) {
- 		if (!boot_cpu_has(X86_FEATURE_PROC_FEEDBACK))
- 			return -ENODEV;
-+	} else {
-+		pci_dev_put(pcidev);
- 	}
- 
- 	if (rdmsrl_safe(MSR_AMD64_FREQ_SENSITIVITY_ACTUAL, &val))
--- 
-2.20.1
+Best regards,
+Krzysztof
 
