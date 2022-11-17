@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0515CC43219
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 22:58:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DD0CC4332F
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 22:58:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240440AbiKQW6v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Nov 2022 17:58:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55450 "EHLO
+        id S240254AbiKQW6x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Nov 2022 17:58:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55466 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235129AbiKQW6r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 17:58:47 -0500
-Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam04on2081.outbound.protection.outlook.com [40.107.101.81])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95741A193;
-        Thu, 17 Nov 2022 14:58:29 -0800 (PST)
+        with ESMTP id S240455AbiKQW6s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 17:58:48 -0500
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2058.outbound.protection.outlook.com [40.107.220.58])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0ACB10B5C;
+        Thu, 17 Nov 2022 14:58:31 -0800 (PST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ggeBx1EZsHzve8zDQDyUbgHV6e5yUllhMEmKBBZSXRTyVtRikndnAsKiAM6Ux9iNP6lnHEDk0z1FG0u2zCdXd6rAIhKc0QjRakZpXFhxIFJi5JGc7ZkqfSNMXvd+IWHi+nNXId6a3Fj0woGBkiQXMO0wY9UggzegqAWeM0LpoAU3FAuEQNKduu/eWweOxdisMsLLYnqOxFU8Tv0v79Bb4WXYnQb6GunikFzCUUYeX8nMxhnbHpMGm/7eSZ6n7Z/6gc7VchDQzpBDJYtav5nydgRo/8ujbpzOB+WAm2lngTjROa05s+j57pBCtgV6yDH996ONUJ/OMzQ6jPHklBgShg==
+ b=PByVHZEmndZEVolMbyihxNZ0V5ZSuHfUGyh1gC6GPicAtVORbczkQ+Fh8Zt2wrdK1DT/ggw+moY50ypAcyWez7LNM6Y5hL1eUDRIqSiGQtKcpcQ+2ajwx7+PqGuEyKrQ6XNHxJ77EcFryE1NmnhnZJA8For2vKgCWYXZKLWVz/Um5TkEmaeiC86i+/2k3O0FTO6SUnetmarNFV4fpW5wgzfkCaaggHgYc91OosF30wVfvYI0AIuBc9Y+HLEEALnI7a+zDg8D8K5cLDQepcyFs6TkQoO1/SeVukHpnHzfanvK6cLs0MLiubaIAg1ArMgfZTiA9P0W5l6Ku63MjDrOJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9vYM9RH7QTI+zoueCoHtEf8XndNeINySFB4MYccqk4w=;
- b=ZpatHFOvYxLWPbiGQjs4ZFFE2nl6V3JiS8gZj69FR283UnmLKDJLnkv83K40Ry9ygHzTQdilK7Nb+Kt211uTMNropQdeFx//0Fzn4I9cAZHkDpFbEeLe6Msi4qKNZgFunw0+JMDJfvFo1Lf2pEufyZ0vkF5rezfIE54P++IfxTjIvdS/b9c8OdFBb1eMqUq6kecz2oSh90yESWBJIYusXBVnYO/QMggdbThIjOQ17csNq/DkwVgoRGML9PcNyJ0/DwOs1Ml4p5irJ0WuO2gUTz4wxZjg2g7qnaSecAGEso6twJHl+W2XVxsoUqkijm5O7C/C+Dr7PAQpFM7BcxmJIw==
+ bh=L+/X29lmRHgI2UbPvsa4Gj8XsmqN3IqycqK0f56Sb7A=;
+ b=PABlshNxbGDgdjdM30EDLLWoZyvQpbkHDeslZXdIThVyaKzqyCXx8ir0RsdXQQQesbjOmpiF/mOIK3LDSBVFpL0wAKT9WSuCUcPddsNdwWPb+lMydsN/SXVtGbq+akhrgkJIu7sfVJjbO0931mZuOXiGFNzVfTek/Z5qYLyAfe3yIUc+LFEnYSDtgJuU7qbVHAwPxY8tBoyHJU6lZUx6Ic6mdoaaTA3FoBkuhgNNv8SmCyrbC5fwFfikU5ahLRomQoF7AqJhFEtE8nEXit2CiVtUxo6ORd3Io2uLr4+ft3waCmHtsWXtEFDtbAMwja6I+WdpS9gf+m68O9yYLj9i5Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9vYM9RH7QTI+zoueCoHtEf8XndNeINySFB4MYccqk4w=;
- b=Rf0Ix+s795RpYADCFS1MPaWP9o5xlbrIgRpWwQ9499HRTBLCjCleR6zLVvBfrhY1b43Or48BWbLr8i1nuBGa58k5jhJGL7ODJ5zlhNtQa/S5XpcfbNpgk2ZQUx0ScbT8t6lBbgGFfdmWXhPvzqQDN2p4JysuNo2caAnQQTYwr1w=
-Received: from MW4PR04CA0222.namprd04.prod.outlook.com (2603:10b6:303:87::17)
- by IA1PR12MB6044.namprd12.prod.outlook.com (2603:10b6:208:3d4::20) with
+ bh=L+/X29lmRHgI2UbPvsa4Gj8XsmqN3IqycqK0f56Sb7A=;
+ b=BCYhQWFFP/8wGdJ+AATed23arR4uBLCRdJrxeaHuRTk+89z41kaq18JkrocltN795g0UN/HoxAa1ns0ThCwsSJMqc2LQIcWwatoRh/9fwrSa+NHxW4hc78X4DLGoZ3MWM733SUrLi9Q5hI/6wCgahGTaA0jywt7gu3mEvALN8Fo=
+Received: from MW4P223CA0006.NAMP223.PROD.OUTLOOK.COM (2603:10b6:303:80::11)
+ by BL1PR12MB5828.namprd12.prod.outlook.com (2603:10b6:208:397::11) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5813.18; Thu, 17 Nov
- 2022 22:58:25 +0000
-Received: from CO1NAM11FT057.eop-nam11.prod.protection.outlook.com
- (2603:10b6:303:87:cafe::fd) by MW4PR04CA0222.outlook.office365.com
- (2603:10b6:303:87::17) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5813.19; Thu, 17 Nov
+ 2022 22:58:29 +0000
+Received: from CO1NAM11FT092.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:303:80:cafe::e8) by MW4P223CA0006.outlook.office365.com
+ (2603:10b6:303:80::11) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5813.20 via Frontend
- Transport; Thu, 17 Nov 2022 22:58:25 +0000
+ Transport; Thu, 17 Nov 2022 22:58:29 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -46,32 +46,33 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- CO1NAM11FT057.mail.protection.outlook.com (10.13.174.205) with Microsoft SMTP
+ CO1NAM11FT092.mail.protection.outlook.com (10.13.175.225) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5834.8 via Frontend Transport; Thu, 17 Nov 2022 22:58:25 +0000
+ 15.20.5834.8 via Frontend Transport; Thu, 17 Nov 2022 22:58:28 +0000
 Received: from AUS-LX-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 17 Nov
- 2022 16:58:24 -0600
+ 2022 16:58:26 -0600
 From:   Mario Limonciello <mario.limonciello@amd.com>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, "Len Brown" <len.brown@intel.com>,
-        John Stultz <jstultz@google.com>,
-        "Thomas Gleixner" <tglx@linutronix.de>,
-        Stephen Boyd <sboyd@kernel.org>
+        Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
+        David E Box <david.e.box@intel.com>
 CC:     Sven van Ashbrook <svenva@chromium.org>,
         Raul Rangel <rrangel@chromium.org>, <linux-pm@vger.kernel.org>,
-        <platform-driver-x86@vger.kernel.org>,
-        Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
+        <platform-driver-x86@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+        Len Brown <len.brown@intel.com>,
+        John Stultz <jstultz@google.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Stephen Boyd <sboyd@kernel.org>,
         S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
         Rajat Jain <rajatja@google.com>,
-        David E Box <david.e.box@intel.com>,
-        "Hans de Goede" <hdegoede@redhat.com>,
+        Hans de Goede <hdegoede@redhat.com>,
         <linux-kernel@vger.kernel.org>,
-        "Mario Limonciello" <mario.limonciello@amd.com>
-Subject: [RFC v4 1/5] PM: Add a sysfs file to represent the percentage of sleep in hardware state
-Date:   Thu, 17 Nov 2022 16:58:17 -0600
-Message-ID: <20221117225822.16154-2-mario.limonciello@amd.com>
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Mark Gross <markgross@kernel.org>
+Subject: [RFC v4 3/5] platform/x86/intel/pmc: core: Drop check_counters
+Date:   Thu, 17 Nov 2022 16:58:19 -0600
+Message-ID: <20221117225822.16154-4-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20221117225822.16154-1-mario.limonciello@amd.com>
 References: <20221117225822.16154-1-mario.limonciello@amd.com>
@@ -83,226 +84,88 @@ X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1NAM11FT057:EE_|IA1PR12MB6044:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3d85abbd-56bd-4961-daf9-08dac8ef3bfd
+X-MS-TrafficTypeDiagnostic: CO1NAM11FT092:EE_|BL1PR12MB5828:EE_
+X-MS-Office365-Filtering-Correlation-Id: 528dab81-d01a-4428-0302-08dac8ef3e03
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: pEBbrXsstFrZB6K0U74zfbXx9/m+wR6o9VdKvF2lOVe2ErY9k4hCaWh2nexCYmSqgbp4cBB9C7KcEJ4HKOzF8IfyqwWEE0p4+kST0h62cOn9XKRxiapCfbWfrQOIsF9hCWB9JlJuO2pnyf413Rs8EdvcnEL0I5Ha+xIEgtplr5qah1ysJlZXhdCGg6w0TTbuUS6vnl8782VtbwceKfpZ28GNYhFJ346V70xkEjt8MrAmAuHZW5eOe072syJrRC0qAh6plMrWXQVsZAqgvTP/67NziGaNva21gW6e0FSB6V+x/znw55E9aOay0xwaE7j6Qtdxxj1xT8iDcwGi5/ANhUuFB7lRERahcMkhYWPVsjuDom+nXolAZy1+q1Q1atfxj5tyvC1AEMOYWCl2jl0V38AGxNNqPUozVoaEun9Iadavbqo6Ra2/qDbzlXWiyxHaICyBRSGQoOsRJ4MuO/0cVujZivS+8P+Us/zRgntq3DF1JZVcZ9bHqa0RgnTbgJZI3lNacb00q3PbpCNl1Y5TgVtN/ENfVItyA2DxLndGXe13A/tEr0dSgjad9F4H4kPYObApNqXwf1a3Prb1acHOaYWAWl17odzkjMx3xFpVy3QGOSwLxYKmkQLcvjUbMnGsJca142lAIfxsyTvyZv3tUbvA7fUT3FyqV3W10LKZyO7FGPNPPbVeytArY+AUVgyVfIbOpu8bTXN0N717BH3YXNBaDJwMwYG85kyhett6g04=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230022)(4636009)(376002)(396003)(39860400002)(346002)(136003)(451199015)(36840700001)(40470700004)(46966006)(426003)(40480700001)(47076005)(336012)(5660300002)(316002)(2906002)(356005)(186003)(40460700003)(41300700001)(1076003)(70586007)(36756003)(7416002)(8936002)(16526019)(44832011)(36860700001)(26005)(82740400003)(2616005)(70206006)(83380400001)(4326008)(8676002)(86362001)(54906003)(81166007)(110136005)(7696005)(82310400005)(6666004)(478600001)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: zFM60C1uNwv7+cA+ge1ofwV5zNd43ja+NRT0X4m01/EyqCdMXqx7lm4JBqptPoRG+a2TZtXMCm1Y/U55D3Eku2qkNmZ7nEfAONb0Nhe5siBq78uEe2+g/EBiP9ZNmaqVhaW9VjPDUC/BZde+6cGXw37RmSno8sw/IaxaJv9lCortHZ/VRsvK6nnBMnwubaC6Fom+r+suMFl3a9k8ex1krU+H7ID8Fho8598pPs2ySK2r2r88yEzJKtgBG5Donh6XskSwY6Ah6VQW+Tp75iwViE9bUnL9H2FExUb/vfTf3K3IV6E41WpiHwBNwCv3MUlf12iHYV87oGn4QQtS74p1Z0iYzCLJGIw33RWyernxmGDsztYiosvZmkP/SyaQK8vufARJpuKDF3v+mAuIU8cZ7kWULXvEeLVcX++p7hgbTY5X9NvFeCp5SqQBvxXEb7icvxPm6HhmncuK+Dm3NiOPGwUDia7MHBlk/YPc0ElQNdhiKBpXiz65qW0v9hQBuHqlEn8HoS2ljWjzkkEbWfzqvqSJ2a4e/LGuI5Ig/NK9g+0f0jbVl3cM3mGsEhhVjQrkCW0xkv3LQtZAS4mNFvseU3zFHI81sCNkv4uvKrEsrD9x9JCtNPl/P71SSJz9CWcaEV5TTL/7aUIVeMnnSiN1ro6hA96AZiR4BRGh316+3PLs5CiM9LWtetLcuGPNWYuyS3JDm5mcZfg8ZRwrHLYohSoaYOOnKX0s0G4FNtk+fO8=
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230022)(4636009)(39860400002)(376002)(136003)(396003)(346002)(451199015)(46966006)(40470700004)(36840700001)(2906002)(356005)(8936002)(40480700001)(7416002)(81166007)(44832011)(5660300002)(82310400005)(4326008)(70586007)(478600001)(7696005)(6666004)(26005)(36756003)(8676002)(36860700001)(40460700003)(83380400001)(70206006)(41300700001)(82740400003)(54906003)(16526019)(2616005)(86362001)(47076005)(426003)(1076003)(336012)(186003)(110136005)(316002)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2022 22:58:25.4015
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2022 22:58:28.7907
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3d85abbd-56bd-4961-daf9-08dac8ef3bfd
+X-MS-Exchange-CrossTenant-Network-Message-Id: 528dab81-d01a-4428-0302-08dac8ef3e03
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT057.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT092.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6044
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR12MB5828
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Userspace can't easily discover how much of a sleep cycle was spent in a
-hardware sleep state without using kernel tracing and vendor specific sysfs
-or debugfs files.
+`check_counters` is a stateful variable for indicating whether or
+not to be checking if counters incremented on resume from s2idle.
 
-To make this information more discoverable, introduce a new sysfs file
-to represent the percentage of time spent in a sleep state.
-This file will be present only if the system supports s2idle.
+As the module already has code to gate whether to check the counters
+that will fail the suspend when this is enabled, use that instead.
 
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
-RFC v3->v4
- * Switch to a percentage for reporting
- * Hook into timekeeping differently
+RFC v3->v4:
+ * No changes
 ---
- Documentation/ABI/testing/sysfs-power |  9 +++++++
- include/linux/suspend.h               |  2 ++
- include/linux/timekeeping.h           |  1 +
- kernel/power/main.c                   | 36 +++++++++++++++++++++++++++
- kernel/time/timekeeping.c             | 20 ++++++++++++---
- 5 files changed, 64 insertions(+), 4 deletions(-)
+ drivers/platform/x86/intel/pmc/core.c | 7 ++-----
+ drivers/platform/x86/intel/pmc/core.h | 1 -
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index f99d433ff311..60b6948f5982 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -413,6 +413,15 @@ Description:
- 		The /sys/power/suspend_stats/last_failed_step file contains
- 		the last failed step in the suspend/resume path.
- 
-+What:		/sys/power/suspend_stats/last_hw_sleep_percent
-+Date:		December 2022
-+Contact:	Mario Limonciello <mario.limonciello@amd.com>
-+Description:
-+		The /sys/power/suspend_stats/last_hw_sleep_percent file
-+		contains the percentage of time that the last suspend cycle
-+		was spent in a hardware sleep state.  It is expressed as an
-+		integer between between 0 and 100.
-+
- What:		/sys/power/sync_on_suspend
- Date:		October 2019
- Contact:	Jonas Meurer <jonas@freesources.org>
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index cfe19a028918..e0f2ac5f4406 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -68,6 +68,7 @@ struct suspend_stats {
- 	int	last_failed_errno;
- 	int	errno[REC_FAILED_NUM];
- 	int	last_failed_step;
-+	u64	last_hw_sleep;
- 	enum suspend_stat_step	failed_steps[REC_FAILED_NUM];
- };
- 
-@@ -489,6 +490,7 @@ void restore_processor_state(void);
- extern int register_pm_notifier(struct notifier_block *nb);
- extern int unregister_pm_notifier(struct notifier_block *nb);
- extern void ksys_sync_helper(void);
-+extern void pm_set_hw_sleep_time(u64 t);
- 
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
-diff --git a/include/linux/timekeeping.h b/include/linux/timekeeping.h
-index fe1e467ba046..2a81366f3e31 100644
---- a/include/linux/timekeeping.h
-+++ b/include/linux/timekeeping.h
-@@ -70,6 +70,7 @@ extern ktime_t ktime_get_coarse_with_offset(enum tk_offsets offs);
- extern ktime_t ktime_mono_to_any(ktime_t tmono, enum tk_offsets offs);
- extern ktime_t ktime_get_raw(void);
- extern u32 ktime_get_resolution_ns(void);
-+extern u64 get_suspend_duration_ns(void);
- 
- /**
-  * ktime_get_real - get the real (wall-) time in ktime_t format
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 31ec4a9b9d70..be82f4a740c0 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -6,6 +6,7 @@
-  * Copyright (c) 2003 Open Source Development Lab
-  */
- 
-+#include <linux/acpi.h>
- #include <linux/export.h>
- #include <linux/kobject.h>
- #include <linux/string.h>
-@@ -83,6 +84,12 @@ int unregister_pm_notifier(struct notifier_block *nb)
- }
- EXPORT_SYMBOL_GPL(unregister_pm_notifier);
- 
-+void pm_set_hw_sleep_time(u64 t)
-+{
-+	suspend_stats.last_hw_sleep = t;
-+}
-+EXPORT_SYMBOL_GPL(pm_set_hw_sleep_time);
-+
- int pm_notifier_call_chain_robust(unsigned long val_up, unsigned long val_down)
+diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+index 17ec5825d13d..adc2cae4db28 100644
+--- a/drivers/platform/x86/intel/pmc/core.c
++++ b/drivers/platform/x86/intel/pmc/core.c
+@@ -2059,8 +2059,6 @@ static __maybe_unused int pmc_core_suspend(struct device *dev)
  {
- 	int ret;
-@@ -377,6 +384,20 @@ static ssize_t last_failed_step_show(struct kobject *kobj,
- }
- static struct kobj_attribute last_failed_step = __ATTR_RO(last_failed_step);
+ 	struct pmc_dev *pmcdev = dev_get_drvdata(dev);
  
-+static ssize_t last_hw_sleep_percent_show(struct kobject *kobj,
-+		struct kobj_attribute *attr, char *buf)
-+{
-+	u64 t = get_suspend_duration_ns();
-+	int p;
-+
-+	if (!t)
-+		return -EINVAL;
-+
-+	p = min((100 * NSEC_PER_USEC * suspend_stats.last_hw_sleep) / t, 100);
-+	return sysfs_emit(buf, "%llu\n", p);
-+}
-+static struct kobj_attribute last_hw_sleep_percent = __ATTR_RO(last_hw_sleep_percent);
-+
- static struct attribute *suspend_attrs[] = {
- 	&success.attr,
- 	&fail.attr,
-@@ -391,12 +412,27 @@ static struct attribute *suspend_attrs[] = {
- 	&last_failed_dev.attr,
- 	&last_failed_errno.attr,
- 	&last_failed_step.attr,
-+	&last_hw_sleep_percent.attr,
- 	NULL,
- };
+-	pmcdev->check_counters = false;
+-
+ 	/* No warnings on S0ix failures */
+ 	if (!warn_on_s0ix_failures)
+ 		return 0;
+@@ -2077,7 +2075,6 @@ static __maybe_unused int pmc_core_suspend(struct device *dev)
+ 	if (pmc_core_dev_state_get(pmcdev, &pmcdev->s0ix_counter))
+ 		return -EIO;
  
-+static umode_t suspend_attr_is_visible(struct kobject *kobj, struct attribute *attr, int idx)
-+{
-+	if (attr == &last_hw_sleep_percent.attr) {
-+#ifdef CONFIG_ACPI
-+		if (acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0)
-+			return 0444;
-+#endif
-+		return 0;
-+	}
-+
-+	return 0444;
-+}
-+
- static const struct attribute_group suspend_attr_group = {
- 	.name = "suspend_stats",
- 	.attrs = suspend_attrs,
-+	.is_visible = suspend_attr_is_visible,
- };
- 
- #ifdef CONFIG_DEBUG_FS
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index f72b9f1de178..49119a942cb2 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -1779,7 +1779,7 @@ void timekeeping_resume(void)
- 	struct timekeeper *tk = &tk_core.timekeeper;
- 	struct clocksource *clock = tk->tkr_mono.clock;
- 	unsigned long flags;
--	struct timespec64 ts_new, ts_delta;
-+	struct timespec64 ts_new;
- 	u64 cycle_now, nsec;
- 	bool inject_sleeptime = false;
- 
-@@ -1806,16 +1806,16 @@ void timekeeping_resume(void)
- 	cycle_now = tk_clock_read(&tk->tkr_mono);
- 	nsec = clocksource_stop_suspend_timing(clock, cycle_now);
- 	if (nsec > 0) {
--		ts_delta = ns_to_timespec64(nsec);
-+		timekeeping_suspend_time = ns_to_timespec64(nsec);
- 		inject_sleeptime = true;
- 	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0) {
--		ts_delta = timespec64_sub(ts_new, timekeeping_suspend_time);
-+		timekeeping_suspend_time = timespec64_sub(ts_new, timekeeping_suspend_time);
- 		inject_sleeptime = true;
- 	}
- 
- 	if (inject_sleeptime) {
- 		suspend_timing_needed = false;
--		__timekeeping_inject_sleeptime(tk, &ts_delta);
-+		__timekeeping_inject_sleeptime(tk, &timekeeping_suspend_time);
- 	}
- 
- 	/* Re-base the last cycle value */
-@@ -2232,6 +2232,18 @@ void update_wall_time(void)
- 		clock_was_set_delayed();
+-	pmcdev->check_counters = true;
+ 	return 0;
  }
  
-+/**
-+ * get_suspend_duration_ns - Return the duration of a system suspend.
-+ *
-+ * Returns the calculation of the duration of time that passed while a
-+ * system was suspended.
-+ *
-+ */
-+u64 get_suspend_duration_ns(void)
-+{
-+	return timespec64_to_ns(&timekeeping_suspend_time);
-+}
-+
- /**
-  * getboottime64 - Return the real time of system boot.
-  * @ts:		pointer to the timespec64 to be set
+@@ -2113,10 +2110,10 @@ static __maybe_unused int pmc_core_resume(struct device *dev)
+ 	const struct pmc_bit_map **maps = pmcdev->map->lpm_sts;
+ 	int offset = pmcdev->map->lpm_status_offset;
+ 
+-	if (!pmcdev->check_counters)
++	if (!pmc_core_is_s0ix_failed(pmcdev))
+ 		return 0;
+ 
+-	if (!pmc_core_is_s0ix_failed(pmcdev))
++	if (!warn_on_s0ix_failures)
+ 		return 0;
+ 
+ 	if (pmc_core_is_pc10_failed(pmcdev)) {
+diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
+index 7a059e02c265..5687e91e884c 100644
+--- a/drivers/platform/x86/intel/pmc/core.h
++++ b/drivers/platform/x86/intel/pmc/core.h
+@@ -316,7 +316,6 @@ struct pmc_reg_map {
+  * @pmc_xram_read_bit:	flag to indicate whether PMC XRAM shadow registers
+  *			used to read MPHY PG and PLL status are available
+  * @mutex_lock:		mutex to complete one transcation
+- * @check_counters:	On resume, check if counters are getting incremented
+  * @pc10_counter:	PC10 residency counter
+  * @s0ix_counter:	S0ix residency (step adjusted)
+  * @num_lpm_modes:	Count of enabled modes
 -- 
 2.34.1
 
