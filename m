@@ -2,70 +2,84 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BD44C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 13:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7012EC433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 13:52:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240028AbiKQNYL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Nov 2022 08:24:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41348 "EHLO
+        id S233179AbiKQNwF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Nov 2022 08:52:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240016AbiKQNYA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 08:24:00 -0500
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACC9F67F5F;
-        Thu, 17 Nov 2022 05:23:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-        s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-        Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-        Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-        bh=+G6PrQX4WZ0clAFOG+6oorGnE1VikHeuERGrZVmD//k=; b=vgwvpEFQBvBPGJ4l5Fdl5ZljTl
-        ypo25jDbsASqpcWo44PsikMJUyEh/j8+KuNKwMVnNYUK8cne4i1X7nrUciBY+tVcS/iiHdJ2HFZ/H
-        2esnkjM/ujU0Xuz3sce+hbgODPmYjA5uixlRGmvbn4lmRkP+O1N9/KY5ao9XxabklPQ0=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-        (envelope-from <andrew@lunn.ch>)
-        id 1overO-002grq-5j; Thu, 17 Nov 2022 14:23:18 +0100
-Date:   Thu, 17 Nov 2022 14:23:18 +0100
-From:   Andrew Lunn <andrew@lunn.ch>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, netdev@vger.kernel.org,
-        linux-can@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pwm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-serial@vger.kernel.org, alsa-devel@alsa-project.org,
-        linux-spi@vger.kernel.org, linux-usb@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-watchdog@vger.kernel.org
-Subject: Re: [RFC PATCH 1/9] dt-bindings: drop redundant part of title of
- shared bindings
-Message-ID: <Y3Y1xjOjijBsQLZA@lunn.ch>
-References: <20221117123850.368213-1-krzysztof.kozlowski@linaro.org>
- <20221117123850.368213-2-krzysztof.kozlowski@linaro.org>
+        with ESMTP id S240194AbiKQNvz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 08:51:55 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B2BB65FE;
+        Thu, 17 Nov 2022 05:51:53 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 4FD98B8206D;
+        Thu, 17 Nov 2022 13:51:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1CA0C433C1;
+        Thu, 17 Nov 2022 13:51:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1668693111;
+        bh=6LXtYkaXpc656JJPaAoyFD2EShPivYPbaTNhtrdLYdo=;
+        h=From:To:Cc:Subject:Date:From;
+        b=gB/LH6txua4K9iRxJW/G4/xGWen7nIZdRYKK+McQem6aE/eBmQ1l1hnbtw3qLYRaI
+         Xp2TQt2+HYAYmnZU63u+LTqf9oufu/I2vDMPziP77iPsW0wFLRPuA8ytaYrMf4/0da
+         vuPtN4lZQwojQ85GMcwI2+islUkH59wsrS+P7uVClOkrPpcaLysTMlnGn0P4xrThqT
+         n9nS8k9JvoQWLUoBIuqx2l45okbNMmhirMg3ridfpb1k+IV62W7Iez7z5xSkWCjRnv
+         Ewl7VGsIUHlvSe7kLhi8R4XSg67oaanQqb6wj9fRrasKHZ/N9yBVfilnM1Lqw8QiUh
+         3Vt8bOXJjaSLQ==
+From:   Georgi Djakov <djakov@kernel.org>
+To:     gregkh@linuxfoundation.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        djakov@kernel.org
+Subject: [GIT PULL] interconnect fix for 6.1-rc
+Date:   Thu, 17 Nov 2022 15:51:46 +0200
+Message-Id: <20221117135146.9261-1-djakov@kernel.org>
+X-Mailer: git-send-email 2.29.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221117123850.368213-2-krzysztof.kozlowski@linaro.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
->  allOf:
-> -  - $ref: "dma-common.yaml#"
-> +  - $ref: dma-common.yaml#
->  
->  
->  allOf:
-> -  - $ref: "dma-common.yaml#"
-> +  - $ref: dma-common.yaml#
+Hello Greg,
 
-Looks like some other automated change made its way into this patch.
+This pull request contains a tiny fix for the current cycle. The
+details are in the signed tag. It has been in linux-next for a week.
+Please pull into char-misc-linus when possible.
 
-      Andrew
+Thanks,
+Georgi
+
+
+The following changes since commit 9abf2313adc1ca1b6180c508c25f22f9395cc780:
+
+  Linux 6.1-rc1 (2022-10-16 15:36:24 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-6.1-rc6
+
+for you to fetch changes up to 1498a5a79980fb86458297df2b4aaa9cc56503b3:
+
+  dt-bindings: interconnect: qcom,msm8998-bwmon: Correct SC7280 CPU compatible (2022-10-19 13:16:28 +0300)
+
+----------------------------------------------------------------
+interconnect fix for v6.1-rc
+
+This contains a tiny fix to align the driver compatible string in the
+binding documentation with the one used in DTS.
+
+- dt-bindings: interconnect: qcom,msm8998-bwmon: Correct SC7280 CPU compatible
+
+Signed-off-by: Georgi Djakov <djakov@kernel.org>
+
+----------------------------------------------------------------
+Krzysztof Kozlowski (1):
+      dt-bindings: interconnect: qcom,msm8998-bwmon: Correct SC7280 CPU compatible
+
+ Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
