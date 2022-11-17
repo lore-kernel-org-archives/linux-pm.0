@@ -2,325 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B401AC4708A
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 12:42:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F2FFC43219
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 12:58:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240243AbiKQMm0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Nov 2022 07:42:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36980 "EHLO
+        id S234614AbiKQM6Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Nov 2022 07:58:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52528 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233714AbiKQMkZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 07:40:25 -0500
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2535748EE
-        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2022 04:39:32 -0800 (PST)
-Received: by mail-lf1-x132.google.com with SMTP id r12so2599554lfp.1
-        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2022 04:39:32 -0800 (PST)
+        with ESMTP id S234875AbiKQM6W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 07:58:22 -0500
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 640F82EF0E
+        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2022 04:58:19 -0800 (PST)
+Received: by mail-lf1-x135.google.com with SMTP id j4so2718346lfk.0
+        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2022 04:58:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=R8CmD7RbkL+ji5H/crPH42LzC8841fyb/TVI9PZsytk=;
-        b=akgyKWsBf5JOVzUBq8UvEkZoJ6otNSr7tSbXScAFP37V9N27JC+GbZwfaI/dh+bGkP
-         UYZrA3xVSRw7uJu9/IzQBV5XOsW8dDbLI7b6lg3hzHAUeEXnrT3aZoicmVl2T4Qhj51e
-         +He82cpuB1NGbY/jsRdou+x44KghVgtmCAIgVtty7Ajdj+YFM2dQwWMB1X2prFuVvTEo
-         Jl8JewWYn7GO+7hE8xhUCyXTM3/aUrvskStEZFHy2MUZt5GvVr61ysxm7yP385YLbfJn
-         zvYJZufIh8SvuBRZdL3BDpok0859VTkJEuJxrbZY4aZjJTJCfKhSFNMis4139fpVGn7l
-         dwSQ==
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=3/Ym4H+GfMviN6/G1FhFGdK0zwCiyAfv5x1OUJDNIlY=;
+        b=ZbxBs8x57tViKk8dVG4W/fkLcsnZT2gppAREc2LdVbeTgxqD/1ZHMkdrZ9I74TzPMY
+         Q9U1yUOTl7P9Od7dwn5G89vjhe79ux2WNr6C2j/1h1C1DVKozMVzAEUA9TApVKROZ15I
+         AH8sJQK2RNJAp8FLKHYxGZmKk4YiHjy7oaAupkkhNGC62r9pSKsmJZQRyA9fL7D0tjT1
+         rOU2ENSFG0Mc5PECnFKIi2f8GOXSBP33jtpsXivaZjDxvxAgKfbkgWSva5zI2DOW3+Tx
+         x2FR3N3WorLmKSZwdYEJIfxhYZ1/JNRrormrp7U3YS2SKdSZnXgf4dV1lsT/md1XnibW
+         fpsA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=R8CmD7RbkL+ji5H/crPH42LzC8841fyb/TVI9PZsytk=;
-        b=LZddLrUlzm5uJy8rr/fztWjWnL6uZIckzLFDJMDfoooa9D9WB6ILrg45TucuPjqG1f
-         vSFYpQV9392DCnE0cJW5lJQGbQIfeYavflcudy79z50O+N5755dCoYOLcl3ZTi0pV2FF
-         2PPtZhBw3WkjYKSXxVW2grC8Ierq64+AnU/4+iYzJToaNwUXjsPqkJhXWalAEiup1aUH
-         VFpdb2RMTNp03pqUWPz9R0eUO3GDvZPmymI/VpTjp+XT/ZtdQ4uQFyTXRXxYSvrV1YOG
-         T15k4izU1Pf0DJHBgMUtn0leY+ykQ8WR8cWDYadBmLAvVNZTrRrZhZaB7DA3ncijbjc1
-         Mzzw==
-X-Gm-Message-State: ANoB5plcoIDjMKiTNjfwBjI949y8wIRwQUKd8t31ZDFm6Rkgh72kaBU5
-        7JPwjRt0CwkxNflkQv4BXXBUSQ==
-X-Google-Smtp-Source: AA0mqf7y30IKvOOOde4f7vZWAb3iI/B/VqdojVIdarj+ydxO/NQfC24JkDmXGQARlyE0k2gXx1/exg==
-X-Received: by 2002:a05:6512:340b:b0:4a2:5897:2b44 with SMTP id i11-20020a056512340b00b004a258972b44mr913826lfr.431.1668688754007;
-        Thu, 17 Nov 2022 04:39:14 -0800 (PST)
-Received: from krzk-bin.NAT.warszawa.vectranet.pl (088156142067.dynamic-2-waw-k-3-2-0.vectranet.pl. [88.156.142.67])
-        by smtp.gmail.com with ESMTPSA id u28-20020ac24c3c000000b004972b0bb426sm127855lfq.257.2022.11.17.04.39.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Nov 2022 04:39:13 -0800 (PST)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Andrew Lunn <andrew@lunn.ch>, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
-        netdev@vger.kernel.org, linux-can@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-pwm@vger.kernel.org,
-        linux-rtc@vger.kernel.org, linux-serial@vger.kernel.org,
-        alsa-devel@alsa-project.org, linux-spi@vger.kernel.org,
-        linux-usb@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-watchdog@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [RFC PATCH 5/9] dt-bindings: drop redundant part of title (end, part two)
-Date:   Thu, 17 Nov 2022 13:38:46 +0100
-Message-Id: <20221117123850.368213-6-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20221117123850.368213-1-krzysztof.kozlowski@linaro.org>
-References: <20221117123850.368213-1-krzysztof.kozlowski@linaro.org>
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=3/Ym4H+GfMviN6/G1FhFGdK0zwCiyAfv5x1OUJDNIlY=;
+        b=wtrxSMSWYeWPi6YONMVxdkNCTHcP1LyCoAtQyIpWJ5nLaiL2cyexofJkzv3TWHiG3o
+         JuP/UvkelUH+uOpIrtBCrqZPC4Liyt+03v4RNR0HCe9pyeuZsmrnhW/w6dd76nLrXC3z
+         CEG/D0ngxMyFWHtfRcVQe+DjHCcbCPiK54mNLI5HRvQKif5lRAHISUQnexZESVKkyfuO
+         KXjqDZ+1YviALaEN86Fw5nN4TINQZyr2LphRGNUCSFwI8paAClS4A8PhBl1kCRawQrGo
+         O9Sadanjrzd9jaBZTXNfiRnknSv2JMIqc4JDY/tXquhy8UzSqzu6mMgzDhUAFz+zLKFT
+         chkQ==
+X-Gm-Message-State: ANoB5pmhS5o/dKgDNsopZYBDGjgP5WCVEInnr/xpN8mYZftW5iYstKyW
+        GrtUG47LgGuiFapCGTbsPncinA==
+X-Google-Smtp-Source: AA0mqf6CahUyXo5c2XC3fgjghDAZPTCYLIkRDSTrxOCJK4a0guVWdA7pQcn0TaJj7XPlFRL86NnNBQ==
+X-Received: by 2002:a19:5e58:0:b0:4a7:5a63:71e1 with SMTP id z24-20020a195e58000000b004a75a6371e1mr873041lfi.399.1668689897798;
+        Thu, 17 Nov 2022 04:58:17 -0800 (PST)
+Received: from [192.168.0.20] (088156142067.dynamic-2-waw-k-3-2-0.vectranet.pl. [88.156.142.67])
+        by smtp.gmail.com with ESMTPSA id m6-20020a056512114600b0048cc076a03dsm135517lfg.237.2022.11.17.04.58.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 17 Nov 2022 04:58:17 -0800 (PST)
+Message-ID: <c818f6d8-94e1-5ac4-ec67-f6f872780c38@linaro.org>
+Date:   Thu, 17 Nov 2022 13:58:16 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
+Subject: Re: [PATCH] dt-bindings: thermal: qcom-tsens: Add compatible for
+ sm8550
+Content-Language: en-US
+To:     neil.armstrong@linaro.org, Bjorn Andersson <andersson@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20221114-narmstrong-sm8550-upstream-tsens-v1-0-0e169822830f@linaro.org>
+ <4dd96db7-b667-7b8f-f80d-a250ac63f223@linaro.org>
+ <cb94a2f5-6521-19b5-ca30-c68ffd2068a4@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <cb94a2f5-6521-19b5-ca30-c68ffd2068a4@linaro.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Devicetree bindings document does not have to say in the title that
-it is a "binding", but instead just describe the hardware.
+On 17/11/2022 09:06, Neil Armstrong wrote:
+> Hi,
+> 
+> On 16/11/2022 12:26, Krzysztof Kozlowski wrote:
+>> On 16/11/2022 11:09, Neil Armstrong wrote:
+>>> The Qualcomm SM8550 platform has three instances of the tsens block,
+>>> add a compatible for these instances.
+>>>
+>>> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+>>> ---
+>>> To: Andy Gross <agross@kernel.org>
+>>> To: Bjorn Andersson <andersson@kernel.org>
+>>> To: Konrad Dybcio <konrad.dybcio@somainline.org>
+>>> To: Amit Kucheria <amitk@kernel.org>
+>>> To: Thara Gopinath <thara.gopinath@gmail.com>
+>>> To: "Rafael J. Wysocki" <rafael@kernel.org>
+>>> To: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> To: Zhang Rui <rui.zhang@intel.com>
+>>> To: Rob Herring <robh+dt@kernel.org>
+>>> To: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+>>> Cc: linux-arm-msm@vger.kernel.org
+>>> Cc: linux-pm@vger.kernel.org
+>>> Cc: devicetree@vger.kernel.org
+>>> Cc: linux-kernel@vger.kernel.org
+>>> ---
+>>>   Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>>>   1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+>>> index f0bd4b979e28..09dbd96d380e 100644
+>>> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+>>> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+>>> @@ -58,6 +58,7 @@ properties:
+>>>                 - qcom,sm8250-tsens
+>>>                 - qcom,sm8350-tsens
+>>>                 - qcom,sm8450-tsens
+>>> +              - qcom,sm8550-tsens
+>>
+>> alOf:if:then should be updated.
+> 
+> I thought the -v2 fallback would be enough since 8450 isn't present either in the alOf:if:then either.
+> 
+> Anyway, will fix this.
 
-Drop trailing "Node|Tree|Generic bindings" in various forms (also with
-trailling full stop):
 
-  find Documentation/devicetree/bindings/ -type f -name '*.yaml' \
-    -not -name 'trivial-devices.yaml' \
-    -exec sed -i -e 's/^title: \(.*\) [nN]ode [bB]indings\?\.\?$/title: \1/' {} \;
+No, you are right. The v2 fallback is already in several allOf:if:then,
+so this should be fine.
 
-  find Documentation/devicetree/bindings/ -type f -name '*.yaml' \
-    -not -name 'trivial-devices.yaml' \
-    -exec sed -i -e 's/^title: \(.*\) [tT]ree [bB]indings\?\.\?$/title: \1/' {} \;
 
-  find Documentation/devicetree/bindings/ -type f -name '*.yaml' \
-    -not -name 'trivial-devices.yaml' \
-    -exec sed -i -e 's/^title: \(.*\) [gG]eneric [bB]indings\?\.\?$/title: \1/' {} \;
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-  find Documentation/devicetree/bindings/ -type f -name '*.yaml' \
-    -not -name 'trivial-devices.yaml' \
-    -exec sed -i -e 's/^title: \(.*\) [bB]indings\? description\.\?$/title: \1/' {} \;
-
-  find Documentation/devicetree/bindings/ -type f -name '*.yaml' \
-    -not -name 'trivial-devices.yaml' \
-    -exec sed -i -e 's/^title: \(.*\) [bB]indings\? document\.\?$/title: \1/' {} \;
-
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- Documentation/devicetree/bindings/clock/ti,sci-clk.yaml         | 2 +-
- Documentation/devicetree/bindings/cpu/idle-states.yaml          | 2 +-
- .../devicetree/bindings/net/dsa/microchip,lan937x.yaml          | 2 +-
- .../devicetree/bindings/net/wireless/mediatek,mt76.yaml         | 2 +-
- Documentation/devicetree/bindings/net/wireless/qca,ath9k.yaml   | 2 +-
- Documentation/devicetree/bindings/net/wireless/qcom,ath11k.yaml | 2 +-
- Documentation/devicetree/bindings/phy/brcm,ns2-pcie-phy.yaml    | 2 +-
- Documentation/devicetree/bindings/phy/qcom,usb-hs-phy.yaml      | 2 +-
- Documentation/devicetree/bindings/phy/ti,phy-gmii-sel.yaml      | 2 +-
- Documentation/devicetree/bindings/power/domain-idle-state.yaml  | 2 +-
- .../devicetree/bindings/reserved-memory/shared-dma-pool.yaml    | 2 +-
- Documentation/devicetree/bindings/reset/ti,sci-reset.yaml       | 2 +-
- Documentation/devicetree/bindings/reset/ti,tps380x-reset.yaml   | 2 +-
- Documentation/devicetree/bindings/soc/ti/sci-pm-domain.yaml     | 2 +-
- Documentation/devicetree/bindings/sound/audio-graph-port.yaml   | 2 +-
- 15 files changed, 15 insertions(+), 15 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/clock/ti,sci-clk.yaml b/Documentation/devicetree/bindings/clock/ti,sci-clk.yaml
-index 0e370289a053..63d976341696 100644
---- a/Documentation/devicetree/bindings/clock/ti,sci-clk.yaml
-+++ b/Documentation/devicetree/bindings/clock/ti,sci-clk.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/clock/ti,sci-clk.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: TI-SCI clock controller node bindings
-+title: TI-SCI clock controller
- 
- maintainers:
-   - Nishanth Menon <nm@ti.com>
-diff --git a/Documentation/devicetree/bindings/cpu/idle-states.yaml b/Documentation/devicetree/bindings/cpu/idle-states.yaml
-index fa4d4142ac93..b8cc826c9501 100644
---- a/Documentation/devicetree/bindings/cpu/idle-states.yaml
-+++ b/Documentation/devicetree/bindings/cpu/idle-states.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/cpu/idle-states.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: Idle states binding description
-+title: Idle states
- 
- maintainers:
-   - Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-diff --git a/Documentation/devicetree/bindings/net/dsa/microchip,lan937x.yaml b/Documentation/devicetree/bindings/net/dsa/microchip,lan937x.yaml
-index 630bf0f8294b..b34de303966b 100644
---- a/Documentation/devicetree/bindings/net/dsa/microchip,lan937x.yaml
-+++ b/Documentation/devicetree/bindings/net/dsa/microchip,lan937x.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/net/dsa/microchip,lan937x.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: LAN937x Ethernet Switch Series Tree Bindings
-+title: LAN937x Ethernet Switch Series
- 
- maintainers:
-   - UNGLinuxDriver@microchip.com
-diff --git a/Documentation/devicetree/bindings/net/wireless/mediatek,mt76.yaml b/Documentation/devicetree/bindings/net/wireless/mediatek,mt76.yaml
-index 70e328589cfb..f0c78f994491 100644
---- a/Documentation/devicetree/bindings/net/wireless/mediatek,mt76.yaml
-+++ b/Documentation/devicetree/bindings/net/wireless/mediatek,mt76.yaml
-@@ -6,7 +6,7 @@
- $id: http://devicetree.org/schemas/net/wireless/mediatek,mt76.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: MediaTek mt76 wireless devices Generic Binding
-+title: MediaTek mt76 wireless devices
- 
- maintainers:
-   - Felix Fietkau <nbd@nbd.name>
-diff --git a/Documentation/devicetree/bindings/net/wireless/qca,ath9k.yaml b/Documentation/devicetree/bindings/net/wireless/qca,ath9k.yaml
-index 7029cb1f38ff..0e5412cff2bc 100644
---- a/Documentation/devicetree/bindings/net/wireless/qca,ath9k.yaml
-+++ b/Documentation/devicetree/bindings/net/wireless/qca,ath9k.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/net/wireless/qca,ath9k.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: Qualcomm Atheros ath9k wireless devices Generic Binding
-+title: Qualcomm Atheros ath9k wireless devices
- 
- maintainers:
-   - Toke Høiland-Jørgensen <toke@toke.dk>
-diff --git a/Documentation/devicetree/bindings/net/wireless/qcom,ath11k.yaml b/Documentation/devicetree/bindings/net/wireless/qcom,ath11k.yaml
-index f7cf135aa37f..556eb523606a 100644
---- a/Documentation/devicetree/bindings/net/wireless/qcom,ath11k.yaml
-+++ b/Documentation/devicetree/bindings/net/wireless/qcom,ath11k.yaml
-@@ -6,7 +6,7 @@
- $id: http://devicetree.org/schemas/net/wireless/qcom,ath11k.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: Qualcomm Technologies ath11k wireless devices Generic Binding
-+title: Qualcomm Technologies ath11k wireless devices
- 
- maintainers:
-   - Kalle Valo <kvalo@kernel.org>
-diff --git a/Documentation/devicetree/bindings/phy/brcm,ns2-pcie-phy.yaml b/Documentation/devicetree/bindings/phy/brcm,ns2-pcie-phy.yaml
-index 70eb48b391c9..527010702f5e 100644
---- a/Documentation/devicetree/bindings/phy/brcm,ns2-pcie-phy.yaml
-+++ b/Documentation/devicetree/bindings/phy/brcm,ns2-pcie-phy.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/phy/brcm,ns2-pcie-phy.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: Broadcom NS2 PCIe PHY binding document
-+title: Broadcom NS2 PCIe PHY
- 
- maintainers:
-   - Ray Jui <ray.jui@broadcom.com>
-diff --git a/Documentation/devicetree/bindings/phy/qcom,usb-hs-phy.yaml b/Documentation/devicetree/bindings/phy/qcom,usb-hs-phy.yaml
-index 0655e485b260..aa97478dd016 100644
---- a/Documentation/devicetree/bindings/phy/qcom,usb-hs-phy.yaml
-+++ b/Documentation/devicetree/bindings/phy/qcom,usb-hs-phy.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/phy/qcom,usb-hs-phy.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: Qualcomm's USB HS PHY binding description
-+title: Qualcomm's USB HS PHY
- 
- maintainers:
-   - Bjorn Andersson <bjorn.andersson@linaro.org>
-diff --git a/Documentation/devicetree/bindings/phy/ti,phy-gmii-sel.yaml b/Documentation/devicetree/bindings/phy/ti,phy-gmii-sel.yaml
-index 3a6d686383cf..6d46f57fa1b4 100644
---- a/Documentation/devicetree/bindings/phy/ti,phy-gmii-sel.yaml
-+++ b/Documentation/devicetree/bindings/phy/ti,phy-gmii-sel.yaml
-@@ -5,7 +5,7 @@
- $id: "http://devicetree.org/schemas/phy/ti,phy-gmii-sel.yaml#"
- $schema: "http://devicetree.org/meta-schemas/core.yaml#"
- 
--title: CPSW Port's Interface Mode Selection PHY Tree Bindings
-+title: CPSW Port's Interface Mode Selection PHY
- 
- maintainers:
-   - Kishon Vijay Abraham I <kishon@ti.com>
-diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.yaml b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
-index 4ee920a1de69..ec1f6f669e50 100644
---- a/Documentation/devicetree/bindings/power/domain-idle-state.yaml
-+++ b/Documentation/devicetree/bindings/power/domain-idle-state.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/power/domain-idle-state.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: PM Domain Idle States binding description
-+title: PM Domain Idle States
- 
- maintainers:
-   - Ulf Hansson <ulf.hansson@linaro.org>
-diff --git a/Documentation/devicetree/bindings/reserved-memory/shared-dma-pool.yaml b/Documentation/devicetree/bindings/reserved-memory/shared-dma-pool.yaml
-index 618105f079be..47696073b665 100644
---- a/Documentation/devicetree/bindings/reserved-memory/shared-dma-pool.yaml
-+++ b/Documentation/devicetree/bindings/reserved-memory/shared-dma-pool.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/reserved-memory/shared-dma-pool.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: /reserved-memory DMA pool node bindings
-+title: /reserved-memory DMA pool
- 
- maintainers:
-   - devicetree-spec@vger.kernel.org
-diff --git a/Documentation/devicetree/bindings/reset/ti,sci-reset.yaml b/Documentation/devicetree/bindings/reset/ti,sci-reset.yaml
-index 4639d2cec557..dcf9206e12be 100644
---- a/Documentation/devicetree/bindings/reset/ti,sci-reset.yaml
-+++ b/Documentation/devicetree/bindings/reset/ti,sci-reset.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/reset/ti,sci-reset.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: TI-SCI reset controller node bindings
-+title: TI-SCI reset controller
- 
- maintainers:
-   - Nishanth Menon <nm@ti.com>
-diff --git a/Documentation/devicetree/bindings/reset/ti,tps380x-reset.yaml b/Documentation/devicetree/bindings/reset/ti,tps380x-reset.yaml
-index afc835eda0ef..f436f2cf1df7 100644
---- a/Documentation/devicetree/bindings/reset/ti,tps380x-reset.yaml
-+++ b/Documentation/devicetree/bindings/reset/ti,tps380x-reset.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/reset/ti,tps380x-reset.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: TI TPS380x reset controller node bindings
-+title: TI TPS380x reset controller
- 
- maintainers:
-   - Marco Felsch <kernel@pengutronix.de>
-diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.yaml b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.yaml
-index 9e6cb4ee9755..5df7688a1e1c 100644
---- a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.yaml
-+++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/soc/ti/sci-pm-domain.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: TI-SCI generic power domain node bindings
-+title: TI-SCI generic power domain
- 
- maintainers:
-   - Nishanth Menon <nm@ti.com>
-diff --git a/Documentation/devicetree/bindings/sound/audio-graph-port.yaml b/Documentation/devicetree/bindings/sound/audio-graph-port.yaml
-index 64654ceef208..f5b8b6d13077 100644
---- a/Documentation/devicetree/bindings/sound/audio-graph-port.yaml
-+++ b/Documentation/devicetree/bindings/sound/audio-graph-port.yaml
-@@ -4,7 +4,7 @@
- $id: http://devicetree.org/schemas/sound/audio-graph-port.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
--title: Audio Graph Card 'port' Node Bindings
-+title: Audio Graph Card 'port'
- 
- maintainers:
-   - Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
--- 
-2.34.1
+Best regards,
+Krzysztof
 
