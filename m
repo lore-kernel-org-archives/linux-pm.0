@@ -2,65 +2,79 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17F84C4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 12:02:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0102AC43217
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 12:09:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239987AbiKQMCJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Nov 2022 07:02:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33520 "EHLO
+        id S240122AbiKQMJC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Nov 2022 07:09:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239896AbiKQMBs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 07:01:48 -0500
-Received: from mx.swemel.ru (mx.swemel.ru [95.143.211.150])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F21959FE8;
-        Thu, 17 Nov 2022 04:01:44 -0800 (PST)
-From:   Denis Arefev <arefev@swemel.ru>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=swemel.ru; s=mail;
-        t=1668686500;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=L6AmVYk+3czGQRwn6dfUAWPTlXwM30IpBMZAykr0mwg=;
-        b=s9XEMn872hGlytHJ1n3LB32DjIrVnEMxL1+/h0qVx8jNx8bhMXujyeUNTXF5H2jThWOtsB
-        Oo2Qa/tT/wVPHpCfOmIwskELJzkf9R3T4paKA/sCDNgv2PKMHVw4scdZD5GPw8/qQ81IGz
-        QeE/7CRsJyryXyfd0sztD4yrng+EieY=
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        lvc-patches@linuxtesting.org, trufanov@swemel.ru, vfh@swemel.ru
-Subject: [PATCH] power: supply: Added check for negative values
-Date:   Thu, 17 Nov 2022 15:01:40 +0300
-Message-Id: <20221117120140.103208-1-arefev@swemel.ru>
+        with ESMTP id S240131AbiKQMIy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 07:08:54 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 769976EB5E;
+        Thu, 17 Nov 2022 04:08:51 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9481B13D5;
+        Thu, 17 Nov 2022 04:08:57 -0800 (PST)
+Received: from bogus (unknown [10.57.6.137])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0CAE03FA31;
+        Thu, 17 Nov 2022 04:08:48 -0800 (PST)
+Date:   Thu, 17 Nov 2022 12:08:46 +0000
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Cc:     andersson@kernel.org, viresh.kumar@linaro.org,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        krzysztof.kozlowski+dt@linaro.org, rafael@kernel.org,
+        robh+dt@kernel.org, johan@kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v7 0/4] qcom-cpufreq-hw: Add CPU clock provider support
+Message-ID: <20221117120846.yhmilsndw2bmmvnv@bogus>
+References: <20221117053145.10409-1-manivannan.sadhasivam@linaro.org>
+ <20221117101903.sw3hxaruj5sfhybw@bogus>
+ <20221117111207.GA93179@thinkpad>
+ <20221117115203.356vexlpca746o6m@bogus>
+ <20221117115807.GF93179@thinkpad>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221117115807.GF93179@thinkpad>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Variable 'pirq', which may receive negative value
-in platform_get_irq().
-Used as an index in a function regmap_irq_get_virq().
+On Thu, Nov 17, 2022 at 05:28:07PM +0530, Manivannan Sadhasivam wrote:
+> On Thu, Nov 17, 2022 at 11:52:03AM +0000, Sudeep Holla wrote:
+> > On Thu, Nov 17, 2022 at 04:42:07PM +0530, Manivannan Sadhasivam wrote:
+> > > On Thu, Nov 17, 2022 at 10:19:03AM +0000, Sudeep Holla wrote:
+> > > > 
+> > > > Why do you need the above 3 changes if the below(4/4) will ensure
+> > > > cpufreq_get(cpu) returns the clock frequency. I was expecting to drop the
+> > > > whole "confusing" clock bindings and the unnecessary clock provider.
+> > > > 
+> > > > Can't we just use cpufreq_get(cpu) ?
+> > > > 
+> > > 
+> > > This can be possible for OPP implementations for the CPUs but not for other
+> > > peripherals making use of OPP framework like GPU etc... Moreover this may end
+> > > up with different code path for CPUs and other peripherals inside OPP framework.
+> > > 
+> > 
+> > Fair enough, you can use this for non-CPU devices. But you are adding this for
+> > CPUs here. Is the consumer unaware that this is a CPU or non-CPU device ?
+> > If so, make sense. Otherwise, it is unnecessary to go through the clk
+> > framework to get CPU frequency.
+> > 
+> 
+> The consumer here is the OPP framework and yes it doesn't have the knowledge of
+> the device it is dealing with (for this context).
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
+Ah OK, I thought it is something else. Does this mean OPP is tied with clk
+framework or clock bindings ? Is this for some specific feature ? Or is it
+compulsory for all the devices using OPP ? Just wondering how this affects
+SCMI which doesn't use or provide clocks yet.
 
-Signed-off-by: Denis Arefev <arefev@swemel.ru>
----
- drivers/power/supply/axp288_fuel_gauge.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 148eb8105803..36c7039c99c2 100644
---- a/drivers/power/supply/axp288_fuel_gauge.c
-+++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -640,6 +640,8 @@ static void fuel_gauge_init_irq(struct axp288_fg_info *info)
- 
- 	for (i = 0; i < AXP288_FG_INTR_NUM; i++) {
- 		pirq = platform_get_irq(info->pdev, i);
-+		if (pirq < 0)
-+			continue;
- 		info->irq[i] = regmap_irq_get_virq(info->regmap_irqc, pirq);
- 		if (info->irq[i] < 0) {
- 			dev_warn(&info->pdev->dev,
 -- 
-2.25.1
-
+Regards,
+Sudeep
