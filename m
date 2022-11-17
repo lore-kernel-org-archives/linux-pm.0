@@ -2,125 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A363AC43219
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 13:03:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FD39C43219
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Nov 2022 13:23:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239305AbiKQNDB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Nov 2022 08:03:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55640 "EHLO
+        id S239934AbiKQNX3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Nov 2022 08:23:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234569AbiKQNDA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 08:03:00 -0500
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A110C682A8
-        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2022 05:02:59 -0800 (PST)
-Received: by mail-lf1-x12f.google.com with SMTP id bp15so2626288lfb.13
-        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2022 05:02:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=YPiJ7os7PhEqrWGvtI8HCACMGN0RvPMekiv79MxyVqE=;
-        b=rb1lpgP+fARO/6FtRRzLWhf1wyTHfYMbmqIXevWEuMS94ujwYdhoe7VQAH/Hs7wYyG
-         pYwovs9TxBIwqW5zZR702ZamIB42qBnxhfyAW6T1JJUDbMD7PqFwCTDldyXg3NZnuhWq
-         mjU0PtqlfwMYyFbquOQWCWndXRTU7i2XG6cZuCFoMRsXZU9X/3ElM+HV/GG14lsCCIOu
-         /pgIGIhPo1HUHgs638m/yuf3SH02fZxkXo1Ew2rWyFgNKZYAzB/trAgdcGxYOfD+dXOM
-         c6TyjbWA21lopFHHBaeaMUTgGzAUWK4oEE2TQHGQlIw23WuRRj0CUJkGeNajcBylR1kd
-         Wq5A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=YPiJ7os7PhEqrWGvtI8HCACMGN0RvPMekiv79MxyVqE=;
-        b=3UsDSLd3jbUa94XIZU+Kaebp6e9vzcaKgZ3Ah+KxZYWCmHuxeTOMSPRXkgCfzIeQ1+
-         kym9Jt55mQ0y1hxA9S3KfkvDKZTo7sf7UOKnojk0bL28dIBiqUdEOv1NlEhrn6HpwaZr
-         pTH/PdEDoboQ1yjjEMKOQEonVUbrDfAFYtyo8fes8OhKsQMKuzl84UtA522zMWq7Hb1E
-         WINdHD5S85vV7+JXPicbW1G9cTlk/q54my5BuIP91GmcsFoQPI/c4/et7C4S0ykSr+5S
-         cf7ryCuFG4nCI8xYJmNVGnzJQZyT/o6MpGH8Zo5gi4koL7MSGAEjRBXQkUblELFczcy+
-         OoHA==
-X-Gm-Message-State: ANoB5pkn5/lCyf2hrgxCHIZhHDzYGT6OATsqLLLHX/H+Xsvi0Qwx8pXH
-        klcIsE6PaNOPp4IsxcgJ6rChgQ==
-X-Google-Smtp-Source: AA0mqf4ACSvvgnA3OevUWAqQJmbuiVpzqjBLDs6tP3CCwp3fODm5slkGppX+15vDxgXXVaFEUgTOFQ==
-X-Received: by 2002:a05:6512:25a0:b0:4a2:bbdc:1430 with SMTP id bf32-20020a05651225a000b004a2bbdc1430mr813519lfb.404.1668690177498;
-        Thu, 17 Nov 2022 05:02:57 -0800 (PST)
-Received: from krzk-bin.NAT.warszawa.vectranet.pl (088156142067.dynamic-2-waw-k-3-2-0.vectranet.pl. [88.156.142.67])
-        by smtp.gmail.com with ESMTPSA id v6-20020a2ea606000000b0026c4c1a0b4dsm186982ljp.126.2022.11.17.05.02.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Nov 2022 05:02:56 -0800 (PST)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Neil Armstrong <neil.armstrong@linaro.org>
-Subject: [PATCH] dt-bindings: thermal: qcom-tsens: simplify if:then: clauses
-Date:   Thu, 17 Nov 2022 14:02:54 +0100
-Message-Id: <20221117130254.378109-1-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S234870AbiKQNX2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2022 08:23:28 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D310D133;
+        Thu, 17 Nov 2022 05:23:23 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BE1A81424;
+        Thu, 17 Nov 2022 05:23:29 -0800 (PST)
+Received: from bogus (unknown [10.57.6.137])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B262E3F663;
+        Thu, 17 Nov 2022 05:23:21 -0800 (PST)
+Date:   Thu, 17 Nov 2022 13:23:19 +0000
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Cc:     andersson@kernel.org, viresh.kumar@linaro.org,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        krzysztof.kozlowski+dt@linaro.org, rafael@kernel.org,
+        robh+dt@kernel.org, johan@kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v7 0/4] qcom-cpufreq-hw: Add CPU clock provider support
+Message-ID: <20221117132319.cx7cwt3dwywlt6wx@bogus>
+References: <20221117053145.10409-1-manivannan.sadhasivam@linaro.org>
+ <20221117101903.sw3hxaruj5sfhybw@bogus>
+ <20221117111207.GA93179@thinkpad>
+ <20221117115203.356vexlpca746o6m@bogus>
+ <20221117115807.GF93179@thinkpad>
+ <20221117120846.yhmilsndw2bmmvnv@bogus>
+ <20221117123841.GI93179@thinkpad>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221117123841.GI93179@thinkpad>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Most of the device-specific compatibles have generic fallbacks like
-qcom,tsens-v1 or qcom,tsens-v2.  The if:then: block mentions these
-fallbacks, so drop redundant entries for specific compatibles.
+On Thu, Nov 17, 2022 at 06:08:41PM +0530, Manivannan Sadhasivam wrote:
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+[...]
+>
+> AFAIK, OPP framework needs to know the current frequency of the device it is
+> dealing with for setting the device's OPP. So it uses clk_get_rate() of the
+> first clock of the device. If the clock is not available, then it uses the
+> frequency in the first entry of the OPP table (since it is going to be the
+> minimum freq of the device).
+>
 
----
+It has been a while since I followed OPP. Thanks for all the info, helped me
+get updated without looking at the code in detail.
 
-Cc: Neil Armstrong <neil.armstrong@linaro.org>
----
- .../devicetree/bindings/thermal/qcom-tsens.yaml  | 16 ----------------
- 1 file changed, 16 deletions(-)
+> As you can see, the clk_get_rate() is eminent for switching the OPPs and since
+> OPP framework doesn't know what device it is dealing with, it cannot use
+> cpufreq_get().
+>
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index f0bd4b979e28..c9949713f714 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -118,12 +118,7 @@ allOf:
-           contains:
-             enum:
-               - qcom,ipq8064-tsens
--              - qcom,mdm9607-tsens
--              - qcom,msm8916-tsens
-               - qcom,msm8960-tsens
--              - qcom,msm8974-tsens
--              - qcom,msm8976-tsens
--              - qcom,qcs404-tsens
-               - qcom,tsens-v0_1
-               - qcom,tsens-v1
-     then:
-@@ -140,17 +135,6 @@ allOf:
-         compatible:
-           contains:
-             enum:
--              - qcom,msm8953-tsens
--              - qcom,msm8996-tsens
--              - qcom,msm8998-tsens
--              - qcom,sc7180-tsens
--              - qcom,sc7280-tsens
--              - qcom,sc8180x-tsens
--              - qcom,sdm630-tsens
--              - qcom,sdm845-tsens
--              - qcom,sm8150-tsens
--              - qcom,sm8250-tsens
--              - qcom,sm8350-tsens
-               - qcom,tsens-v2
-     then:
-       properties:
--- 
-2.34.1
+Agreed. I had assumed the qcom-cpufreq-hw as setting cpufreq directly pocking
+the hardware but now I see it is using opp library to set some additional
+policy.
 
+> Is SCMI node itself has the OPP tables? Or the consumer nodes of the SCMI?
+>
+
+No, OPPs are read from the f/w and we just use OPP APIs to register them.
+But we don't use OPP library to set the performance.
+
+> TLDR; If you tell OPP framework to set a new OPP for a device, it needs to the
+> know the current frequency of the device. And it is not manadatory now, but in
+> the future maybe.
+>
+
+Hmm, good to know. I prefer it is not coupled with clocks and have some
+alternative mechanism that is suitable for performance domains and don't
+enforce the use of clock bindings and clk framework unnecessarily.
+
+--
+Regards,
+Sudeep`
