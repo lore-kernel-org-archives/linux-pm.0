@@ -2,83 +2,153 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C268EC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Nov 2022 18:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23D54C4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Nov 2022 18:23:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234994AbiKRSMh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Nov 2022 13:12:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54054 "EHLO
+        id S242708AbiKRSXm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Nov 2022 13:23:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33070 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234447AbiKRSMh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2022 13:12:37 -0500
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E19B7C5D;
-        Fri, 18 Nov 2022 10:12:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1668795155; x=1700331155;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=a5XYRuFsTWq7kic2uFkZnRtD13iqt4AWhF3B29PLMp4=;
-  b=LMSXzJRCpRkq9JXWwSHID5d6LqNAs1HYDLXA62D/gof2wAMMZn4wZ2aY
-   p5iBdGEQxtMFWlX4AluuDkaqR9E+nj6Yupk4Tell5l1gjwlnQgK/j3say
-   x5bm46jJWto31MAxe7MaOgNpiZlNbs3770Yy5Dytec5ifoGFa5xNUWWzi
-   +z1gIMXFdSj4DJhFeEpMG2XZFdqERCLup3BPtWaiho3F4WoqlpflxOmeL
-   nunxlq2MhsCUQmumGcb6wwLAZanVZ0cLQGJfX6YyiQRaKkMSgv6cT50Fx
-   ISP+Aa+Ky28eMwzqytieWKvgr+lBCRIVBRuaHbXsKcoXgtHnzEUEyATl+
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10535"; a="340041947"
-X-IronPort-AV: E=Sophos;i="5.96,175,1665471600"; 
-   d="scan'208";a="340041947"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2022 10:12:35 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10535"; a="969361944"
-X-IronPort-AV: E=Sophos;i="5.96,175,1665471600"; 
-   d="scan'208";a="969361944"
-Received: from mbeebe-mobl1.amr.corp.intel.com (HELO [10.209.82.240]) ([10.209.82.240])
-  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2022 10:12:32 -0800
-Message-ID: <dc39988c-7b44-63b2-9ddf-6fa986fe7c3b@intel.com>
-Date:   Fri, 18 Nov 2022 10:12:32 -0800
+        with ESMTP id S242713AbiKRSXD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2022 13:23:03 -0500
+Received: from alexa-out-sd-01.qualcomm.com (alexa-out-sd-01.qualcomm.com [199.106.114.38])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62928976E8;
+        Fri, 18 Nov 2022 10:22:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
+  t=1668795777; x=1700331777;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=qak47M4u6T8kHiYXWecTuKzaOl0IZojjbcoprnvHzZc=;
+  b=J+bRXUIjbW0qQWNTXz6Iv0eHrYl+wxDuTh8uraAKRgv26i9zWsxxcGXz
+   sso6moYAAOUmb6+BvATo5q3gh10udkngrVgtc8Xarpgypyc6VCtX9xBvr
+   bJNz1+N0xY5AweHluu3vqujyd5UDP3Ms1ubkR085cFn56tMU2DDxCL+v2
+   Q=;
+Received: from unknown (HELO ironmsg-SD-alpha.qualcomm.com) ([10.53.140.30])
+  by alexa-out-sd-01.qualcomm.com with ESMTP; 18 Nov 2022 10:22:57 -0800
+X-QCInternal: smtphost
+Received: from nasanex01b.na.qualcomm.com ([10.46.141.250])
+  by ironmsg-SD-alpha.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2022 10:22:57 -0800
+Received: from hu-molvera-sd.qualcomm.com (10.80.80.8) by
+ nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.36; Fri, 18 Nov 2022 10:22:56 -0800
+From:   Melody Olvera <quic_molvera@quicinc.com>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+CC:     Odelu Kukatla <quic_okukatla@quicinc.com>,
+        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Melody Olvera <quic_molvera@quicinc.com>
+Subject: [PATCH v4 1/3] dt-bindings: interconnect: Add rpmh virt devices
+Date:   Fri, 18 Nov 2022 10:22:43 -0800
+Message-ID: <20221118182245.31035-2-quic_molvera@quicinc.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221118182245.31035-1-quic_molvera@quicinc.com>
+References: <20221118182245.31035-1-quic_molvera@quicinc.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: [PATCH v3 2/2] x86/pm: Add enumeration check before spec MSRs
- save/restore setup
-Content-Language: en-US
-To:     Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        Andrew Cooper <Andrew.Cooper3@citrix.com>,
-        thomas.lendacky@amd.com, "H. Peter Anvin" <hpa@zytor.com>,
-        hdegoede@redhat.com, Ingo Molnar <mingo@redhat.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-        Pavel Machek <pavel@ucw.cz>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David.Kaplan@amd.com, Borislav Petkov <bp@alien8.de>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Daniel Sneddon <daniel.sneddon@linux.intel.com>,
-        antonio.gomez.iglesias@linux.intel.com
-References: <cover.1668539735.git.pawan.kumar.gupta@linux.intel.com>
- <c24db75d69df6e66c0465e13676ad3f2837a2ed8.1668539735.git.pawan.kumar.gupta@linux.intel.com>
-From:   Dave Hansen <dave.hansen@intel.com>
-In-Reply-To: <c24db75d69df6e66c0465e13676ad3f2837a2ed8.1668539735.git.pawan.kumar.gupta@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01b.na.qualcomm.com (10.46.141.250)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11/15/22 11:17, Pawan Gupta wrote:
-> To fix this, add the corresponding X86_FEATURE bit for each MSR.  Avoid
-> trying to manipulate the MSR when the feature bit is clear. This
-> required adding a X86_FEATURE bit for MSRs that do not have one already,
-> but it's a small price to pay.
-> 
-> Fixes: 73924ec4d560 ("x86/pm: Save the MSR validity status at context setup")
-> Reported-by: Hans de Goede <hdegoede@redhat.com>
-> Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-> Cc: stable@kernel.org
+Add documentation for virtual rpmh devices. These interconnects
+are not controlled by the application processor and thus
+require separate bindings. Also, move compatibles for sm8450 to
+this document and add them for QDU1000/QRU1000 platforms.
 
-Thanks for fixing this up.  The X86_FEATURE approach is a good one.  The
-"poking at random MSRs" always seemed a bit wonky.
+Signed-off-by: Melody Olvera <quic_molvera@quicinc.com>
+---
+ .../bindings/interconnect/qcom,rpmh-virt.yaml | 55 +++++++++++++++++++
+ .../bindings/interconnect/qcom,rpmh.yaml      |  2 -
+ 2 files changed, 55 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,rpmh-virt.yaml
 
-Reviewed-by: Dave Hansen <dave.hansen@linux.intel.com>
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh-virt.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh-virt.yaml
+new file mode 100644
+index 000000000000..5cbaa51df863
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh-virt.yaml
+@@ -0,0 +1,55 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/qcom,rpmh-virt.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm RPMh Virtual Network-On-Chip Interconnect
++
++maintainers:
++  - Georgi Djakov <georgi.djakov@linaro.org>
++  - Odelu Kukatla <quic_okukatla@quicinc.com>
++
++description: |
++   RPMh interconnect providers support system bandwidth requirements through
++   RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
++   able to communicate with the BCM through the Resource State Coordinator (RSC)
++   associated with each execution environment. Provider nodes must point to at
++   least one RPMh device child node pertaining to their RSC and each provider
++   can map to multiple RPMh resources. Virtual interconnect providers are not
++   controlled by AP and do not support QoS; they should not have associated
++   register regions.
++
++allOf:
++  - $ref: qcom,rpmh-common.yaml#
++
++properties:
++  compatible:
++    enum:
++      - qcom,qdu1000-clk-virt
++      - qcom,qdu1000-mc-virt
++      - qcom,sm8450-clk-virt
++      - qcom,sm8450-mc-virt
++
++  '#interconnect-cells': true
++
++required:
++  - compatible
++
++unevaluatedProperties: false
++
++examples:
++  - |
++      #include <dt-bindings/interconnect/qcom,sm8450.h>
++
++      clk_virt: interconnect-0 {
++             compatible = "qcom,sm8450-clk-virt";
++             #interconnect-cells = <2>;
++             qcom,bcm-voters = <&apps_bcm_voter>;
++      };
++
++      mc_virt: interconnect-1 {
++             compatible = "qcom,sm8450-mc-virt";
++             #interconnect-cells = <2>;
++             qcom,bcm-voters = <&apps_bcm_voter>;
++      };
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+index a429a1ed1006..bd474f49deb0 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+@@ -123,11 +123,9 @@ properties:
+       - qcom,sm8350-system-noc
+       - qcom,sm8450-aggre1-noc
+       - qcom,sm8450-aggre2-noc
+-      - qcom,sm8450-clk-virt
+       - qcom,sm8450-config-noc
+       - qcom,sm8450-gem-noc
+       - qcom,sm8450-lpass-ag-noc
+-      - qcom,sm8450-mc-virt
+       - qcom,sm8450-mmss-noc
+       - qcom,sm8450-nsp-noc
+       - qcom,sm8450-pcie-anoc
+-- 
+2.38.1
+
