@@ -2,141 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01397C43219
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Nov 2022 15:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FC5EC4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Nov 2022 17:54:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242228AbiKRPuY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Nov 2022 10:50:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58430 "EHLO
+        id S235344AbiKRRyu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Nov 2022 12:54:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242406AbiKRPuQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2022 10:50:16 -0500
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B6588C48D
-        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2022 07:50:08 -0800 (PST)
-Received: by mail-wr1-x436.google.com with SMTP id w14so9863722wru.8
-        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2022 07:50:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=cc:to:message-id:date:from:content-transfer-encoding:mime-version
-         :subject:from:to:cc:subject:date:message-id:reply-to;
-        bh=CmTL+mg18Z4AepnU6eZyDbtFVjUFILiYsH5hlR5uEro=;
-        b=OKMKBVZQLGFbwj7QynAdCsT1VPXH4Rioy1t2pjuIIwxWZix6jBtDy7618JyJPVVbKc
-         9cyV2lgYpSqGprBK/Zo5n0gBEwNItE5wk5Gn9gntUX2rkuu0ze1qAwFs2OWCJn+nFkcl
-         JAqCvez9iMlY31ZS4LunN34VGNDFXbZ3vWTgbY1e/y+4E+EpNgB7JTLS3KsHPGVn8q3D
-         unjpp+2+9+3F+IeR0mpzwPO5FSgMd1PgXO5xo8ymNxjTuTysCfEcwqT0Z6UAln26Rlcv
-         7+h/5k5SFS9tYojx/tMVyRFw2tCzjRc3rsQ6wEoArQ40uBTijfLSQD+45DjsTzDCm51g
-         ZFHQ==
+        with ESMTP id S235240AbiKRRyt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2022 12:54:49 -0500
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA7AFFCE2;
+        Fri, 18 Nov 2022 09:54:48 -0800 (PST)
+Received: by mail-qt1-f179.google.com with SMTP id z6so3602969qtv.5;
+        Fri, 18 Nov 2022 09:54:48 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:message-id:date:from:content-transfer-encoding:mime-version
-         :subject:x-gm-message-state:from:to:cc:subject:date:message-id
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=CmTL+mg18Z4AepnU6eZyDbtFVjUFILiYsH5hlR5uEro=;
-        b=eQCr5AhmuSvu/0GVHTNSWy/4azrWAYi9zNdKk3APzdpObGrKxwtTu1VQACYUF6YjIp
-         hOhGdPlda8Yg/7sOisWLb3K10XJeGvU1akZDZl2AbKhd0jNMAe4l9l5Bt5Ww8qz+0pdR
-         poNxLQj+NIQDwhXwHfpB9sKTJiXbi4c5RaQkdWjGcmtvUwbmiZJTeBH46I13o+3L+QFP
-         UAg/5QxRugpRxSjPdBuv6Mjrn7Suh80Ryfzkgq3ZGOYSGp0VLnWUGQRkTQ6lSaVjRydy
-         kVE6IJ9Yi/fJ7XoYmr/JWj3n84bigHCF1SWg5cdx9toZ91nwTtEs43K8VIxVFcNQWpV2
-         MaZg==
-X-Gm-Message-State: ANoB5pkYUjwnGImIqL05AYgBWQ3yYFCAVxKs1Ifiwz+pcEjuXfCenxc/
-        7qAuCjj4oNG7pGcuiecdsDle79aVyxV7eg==
-X-Google-Smtp-Source: AA0mqf4VUH/lC1IDoaI1Aq0Zpxjp4JBMofLzpxPK1c2Yw11pg5JIQHZmyxkopn1qIikCQ7p5Weaomw==
-X-Received: by 2002:adf:e78e:0:b0:22e:32ab:c37 with SMTP id n14-20020adfe78e000000b0022e32ab0c37mr4831201wrm.317.1668786606917;
-        Fri, 18 Nov 2022 07:50:06 -0800 (PST)
-Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:52eb:f6ff:feb3:451a])
-        by smtp.gmail.com with ESMTPSA id a13-20020a5d53cd000000b002383edcde09sm3812465wrw.59.2022.11.18.07.50.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Nov 2022 07:50:06 -0800 (PST)
-Subject: [PATCH v2 0/2] arm64: amlogic: add initial Odroid Go Ultra DTS
+        bh=RlqnSN+qPaBwTzyL2CAPXxMmkHP1kcbHFxxv679aPDE=;
+        b=WETdqozBD//OevXVKteyi25UC0nqPRvrWL03bi7c5q8GlqCrdCdlid/QTNUH2Jtcsf
+         ecvJHnpvp09uGgRUpTLQ5PP3ncwvjljjwpBnhm1wsMaJ5gbXRkk0cM1aRVpAfq3uNnJW
+         zbf2+JzqVNWEsUkGE7OzWuNQu2nSJvmC6JKXxoKqBefvifXL2kSJ+4/CfAwKmsdJOa9q
+         2QymwHX3Z7GA4Oti/xybLm/n7aSMKVVeQEVT5mXnEGrJ3beX6GAs8q/w4iabuxD7hxnI
+         H/tg3h4ObmEpFvuIlu2yv6kqk1VGg7uoyWrKmn0Fr4QmhLzZcOg+U/jPNHSc8OMngolD
+         141w==
+X-Gm-Message-State: ANoB5pllH230MsJTRle7bsX0pyZolGWjSC/Mp3qiwBhKUMZ08ev9g1fr
+        2DLF5jnm2ptL6fTZ/SDJ2qJKXTT0mw660F7uLKc=
+X-Google-Smtp-Source: AA0mqf5GXPkLFnYUu7hHRe0D0Q3l2NJQjtO5Exs/VyMsF1z+ZwcgTiFcEp/8Q8zoNq5Jcw7X8xMG4iLSX1944UD49fg=
+X-Received: by 2002:a05:622a:1989:b0:3a5:7cf8:1a6e with SMTP id
+ u9-20020a05622a198900b003a57cf81a6emr7716974qtc.48.1668794087923; Fri, 18 Nov
+ 2022 09:54:47 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-b4-tracking: H4sIAKypd2MC/42NQQrDMAwEv1J0rkrsxKH01H+UHuRYJAJjgZwESsjfa/qCnpbZw8wBlU24wuNygP
- EuVbQ08NcLTAuVmVFSY/Cd967rHcYBNZlKwllxy6sRSpFVKGPgMUyJA/ueoAkiVcZoVKalKcqWczsX
- qava5xfcXZvXX+7dYYeD5z5FpvuYwjNLIdOb2gzv8zy/1JQWNcoAAAA=
-From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Fri, 18 Nov 2022 16:50:04 +0100
-Message-Id: <20221031-b4-odroid-go-ultra-initial-v2-0-a3df1e09b0af@linaro.org>
-To:     Jerome Brunet <jbrunet@baylibre.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Kevin Hilman <khilman@baylibre.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Cc:     linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>,
-        linux-amlogic@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        linux-kernel@vger.kernel.org
-X-Mailer: b4 0.10.1
+References: <20221116025417.2590275-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20221116025417.2590275-1-srinivas.pandruvada@linux.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 18 Nov 2022 18:54:36 +0100
+Message-ID: <CAJZ5v0hQkZ=jprMc5MNaCudKNATtjs_5Z+N7+a7eeaXRjGpaDQ@mail.gmail.com>
+Subject: Re: [PATCH RESEND 1/2] thermal: intel: Prevent accidental clearing of
+ HFI status
+To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     rafael@kernel.org, daniel.lezcano@linaro.org, amitk@kernel.org,
+        rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds initial support for the Hardkernel Odroid Go Ultra.
+On Wed, Nov 16, 2022 at 3:54 AM Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> When there is a package thermal interrupt with PROCHOT log, it will be
+> processed and cleared. It is possible that there is an active HFI event
+> status, which is about to get processed or getting processed. While
+> clearing PROCHOT log bit, it will also clear HFI status bit. This means
+> that hardware is free to update HFI memory.
+>
+> When clearing a package thermal interrupt, some processors will generate
+> a "general protection fault" when any of the read only bit is set to 1.
+> The driver maintains a mask of all read-write bits which can be set.
+> This mask doesn't include HFI status bit. This bit will also be cleared,
+> as it will be assumed read-only bit. So, add HFI status bit 26 to the
+> mask.
+>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Reviewed-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 
-The Odroid Go Ultra is a portable gaming device with the following
-characteristics:
-- Amlogic S922X SoC
-- RK817 & RK818 PMICs
-- 2GiB LPDDR4
-- On board 16GiB eMMC
-- Micro SD Card slot
-- 5inch 854×480 MIPI-DSI TFT LCD
-- Earphone stereo jack, 0.5Watt 8Ω Mono speaker
-- Li-Polymer 3.7V/4000mAh Battery
-- USB-A 2.0 Host Connector
-- x16 GPIO Input Buttons
-- 2x ADC Analog Joysticks
-- USB-C Port for USB2 Device and Charging
+Is a Fixes tag missing here?
 
-The following are not yet handled:
-- Battery RK818 Gauge and Charging
-- Earphone stereo jack detect
-- 5inch 854×480 MIPI-DSI TFT LCD
+Also, do you want it in 6.1-rc7 or would 6.2 suffice?
 
-This adds:
-- Device bindings
-- Initial device DT
-
-This serie depends on:
-- https://lore.kernel.org/all/20221025-rk808-multi-v2-0-d292d51ada81@linaro.org/
-
-To: Sebastian Reichel <sre@kernel.org>
-To: Rob Herring <robh+dt@kernel.org>
-To: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-To: Kevin Hilman <khilman@baylibre.com>
-To: Jerome Brunet <jbrunet@baylibre.com>
-To: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-amlogic@lists.infradead.org
-Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
-
----
-Changes in v2:
-- Dropped power off driver/bindings, will move to another patchset
-- Fixed DT comments from Krzysztof
-- Dropped poweroff node
-- Add Acked-by from Rob to bindings change
-- Link to v1: https://lore.kernel.org/r/20221031-b4-odroid-go-ultra-initial-v1-0-42e3dbea86d5@linaro.org
-
----
-Neil Armstrong (2):
-      dt-bindings: amlogic: document Odroid Go Ultra compatible
-      arm64: dts: amlogic: add initial Odroid Go Ultra DTS
-
- Documentation/devicetree/bindings/arm/amlogic.yaml |   1 +
- arch/arm64/boot/dts/amlogic/Makefile               |   1 +
- .../dts/amlogic/meson-g12b-odroid-go-ultra.dts     | 722 +++++++++++++++++++++
- 3 files changed, 724 insertions(+)
----
-base-commit: 2c3c398ddfabf48b7a0b66b5f01052ba43c36337
-change-id: 20221031-b4-odroid-go-ultra-initial-5e65cde5e23a
-
-Best regards,
--- 
-Neil Armstrong <neil.armstrong@linaro.org>
+> ---
+> Email address was wrong, so sending again.
+>
+>  drivers/thermal/intel/therm_throt.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
+> index 8352083b87c7..9e8ab31d756e 100644
+> --- a/drivers/thermal/intel/therm_throt.c
+> +++ b/drivers/thermal/intel/therm_throt.c
+> @@ -197,7 +197,7 @@ static const struct attribute_group thermal_attr_group = {
+>  #define THERM_STATUS_PROCHOT_LOG       BIT(1)
+>
+>  #define THERM_STATUS_CLEAR_CORE_MASK (BIT(1) | BIT(3) | BIT(5) | BIT(7) | BIT(9) | BIT(11) | BIT(13) | BIT(15))
+> -#define THERM_STATUS_CLEAR_PKG_MASK  (BIT(1) | BIT(3) | BIT(5) | BIT(7) | BIT(9) | BIT(11))
+> +#define THERM_STATUS_CLEAR_PKG_MASK  (BIT(1) | BIT(3) | BIT(5) | BIT(7) | BIT(9) | BIT(11) | BIT(26))
+>
+>  static void clear_therm_status_log(int level)
+>  {
+> --
+> 2.31.1
+>
