@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF6E7C46467
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Nov 2022 23:52:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37D41C4167B
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Nov 2022 23:52:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235597AbiKRXwc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Nov 2022 18:52:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57064 "EHLO
+        id S236838AbiKRXwd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Nov 2022 18:52:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57664 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230494AbiKRXvo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2022 18:51:44 -0500
+        with ESMTP id S236978AbiKRXv7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2022 18:51:59 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0FE8BB9E8
-        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2022 15:27:09 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B319B97DA
+        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2022 15:27:17 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <ukl@pengutronix.de>)
-        id 1owA9W-0004oT-4d; Fri, 18 Nov 2022 23:48:06 +0100
+        id 1owA9X-0004s7-Gi; Fri, 18 Nov 2022 23:48:07 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1owA9T-0058nQ-Ga; Fri, 18 Nov 2022 23:48:04 +0100
+        id 1owA9U-0058nt-TU; Fri, 18 Nov 2022 23:48:05 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <ukl@pengutronix.de>)
-        id 1owA9T-0000QY-IR; Fri, 18 Nov 2022 23:48:03 +0100
+        id 1owA9V-0000Qt-1Y; Fri, 18 Nov 2022 23:48:05 +0100
 From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>
 To:     Angel Iglesias <ang.iglesiasg@gmail.com>,
         Lee Jones <lee.jones@linaro.org>,
@@ -36,9 +36,9 @@ Cc:     linux-i2c@vger.kernel.org, kernel@pengutronix.de,
         =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 519/606] power: supply: bq256xx: Convert to i2c's .probe_new()
-Date:   Fri, 18 Nov 2022 23:44:13 +0100
-Message-Id: <20221118224540.619276-520-uwe@kleine-koenig.org>
+Subject: [PATCH 524/606] power: supply: lp8727: Convert to i2c's .probe_new()
+Date:   Fri, 18 Nov 2022 23:44:18 +0100
+Message-Id: <20221118224540.619276-525-uwe@kleine-koenig.org>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
 References: <20221118224540.619276-1-uwe@kleine-koenig.org>
@@ -55,39 +55,36 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-.probe_new() doesn't get the i2c_device_id * parameter, so determine
-that explicitly in the probe function.
+The probe function doesn't make use of the i2c_device_id * parameter so it
+can be trivially converted.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/power/supply/bq256xx_charger.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/power/supply/lp8727_charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/bq256xx_charger.c b/drivers/power/supply/bq256xx_charger.c
-index 01ad84fd147c..db13e288e439 100644
---- a/drivers/power/supply/bq256xx_charger.c
-+++ b/drivers/power/supply/bq256xx_charger.c
-@@ -1619,9 +1619,9 @@ static int bq256xx_parse_dt(struct bq256xx_device *bq,
- 	return 0;
+diff --git a/drivers/power/supply/lp8727_charger.c b/drivers/power/supply/lp8727_charger.c
+index 384a374b52c1..e6c21377d53c 100644
+--- a/drivers/power/supply/lp8727_charger.c
++++ b/drivers/power/supply/lp8727_charger.c
+@@ -540,7 +540,7 @@ static struct lp8727_platform_data *lp8727_parse_dt(struct device *dev)
  }
+ #endif
  
--static int bq256xx_probe(struct i2c_client *client,
--			 const struct i2c_device_id *id)
-+static int bq256xx_probe(struct i2c_client *client)
+-static int lp8727_probe(struct i2c_client *cl, const struct i2c_device_id *id)
++static int lp8727_probe(struct i2c_client *cl)
  {
-+	const struct i2c_device_id *id = i2c_client_get_device_id(client);
- 	struct device *dev = &client->dev;
- 	struct bq256xx_device *bq;
- 	struct power_supply_config psy_cfg = { };
-@@ -1744,7 +1744,7 @@ static struct i2c_driver bq256xx_driver = {
- 		.of_match_table = bq256xx_of_match,
- 		.acpi_match_table = bq256xx_acpi_match,
- 	},
--	.probe = bq256xx_probe,
-+	.probe_new = bq256xx_probe,
- 	.id_table = bq256xx_i2c_ids,
+ 	struct lp8727_chg *pchg;
+ 	struct lp8727_platform_data *pdata;
+@@ -615,7 +615,7 @@ static struct i2c_driver lp8727_driver = {
+ 		   .name = "lp8727",
+ 		   .of_match_table = of_match_ptr(lp8727_dt_ids),
+ 		   },
+-	.probe = lp8727_probe,
++	.probe_new = lp8727_probe,
+ 	.remove = lp8727_remove,
+ 	.id_table = lp8727_ids,
  };
- module_i2c_driver(bq256xx_driver);
 -- 
 2.38.1
 
