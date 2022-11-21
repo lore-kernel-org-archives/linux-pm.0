@@ -2,150 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8710C43217
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Nov 2022 17:55:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E13A9C433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Nov 2022 18:18:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229586AbiKURz3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Nov 2022 12:55:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45616 "EHLO
+        id S229624AbiKUSS0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Nov 2022 13:18:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230415AbiKURz1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2022 12:55:27 -0500
-Received: from alexa-out-sd-02.qualcomm.com (alexa-out-sd-02.qualcomm.com [199.106.114.39])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BC32D32AC;
-        Mon, 21 Nov 2022 09:55:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
-  t=1669053324; x=1700589324;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=qfsa8AbMabrYEp+ISD3eb3o1sx27qrYMkB2inZEHjBw=;
-  b=ShAPLAOcKWM+5VyOVw+JzL5kp0IrmDdXZCcvRBYhqKIJx2vEJq5o66r4
-   gUq01KfJWM4XhskXz/Sw60K/Od3k5QZTEkYOv6XCfmoFbvMZKQkqD91bs
-   ITjx070s5qwZDP5k6b+XTqtgrWYzXbrvWz71zqVhBwEPBkZrWdmQbhWzW
-   Q=;
-Received: from unknown (HELO ironmsg04-sd.qualcomm.com) ([10.53.140.144])
-  by alexa-out-sd-02.qualcomm.com with ESMTP; 21 Nov 2022 09:55:23 -0800
-X-QCInternal: smtphost
-Received: from nasanex01b.na.qualcomm.com ([10.46.141.250])
-  by ironmsg04-sd.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Nov 2022 09:55:09 -0800
-Received: from [10.110.33.239] (10.80.80.8) by nasanex01b.na.qualcomm.com
- (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.36; Mon, 21 Nov
- 2022 09:55:08 -0800
-Message-ID: <76219489-99cc-7f2e-7df6-b11f6a2c1933@quicinc.com>
-Date:   Mon, 21 Nov 2022 11:55:07 -0600
+        with ESMTP id S229613AbiKUSSZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2022 13:18:25 -0500
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B5E2C6BE0;
+        Mon, 21 Nov 2022 10:18:23 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
+ id 8955e2bb27aa72ee; Mon, 21 Nov 2022 19:18:19 +0100
+Received: from kreacher.localnet (unknown [213.134.163.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 1D520780F76;
+        Mon, 21 Nov 2022 19:18:19 +0100 (CET)
+Authentication-Results: v370.home.net.pl; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: v370.home.net.pl; spf=fail smtp.mailfrom=rjwysocki.net
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Bjorn Helgaas <helgaas@kernel.org>
+Cc:     Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        Lukas Wunner <lukas@wunner.de>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH v1 2/2] ACPI: PCI: hotplug: Avoid setting is_hotplug_bridge for PCIe Upstream Ports
+Date:   Mon, 21 Nov 2022 19:16:57 +0100
+Message-ID: <2262230.ElGaqSPkdT@kreacher>
+In-Reply-To: <5623410.DvuYhMxLoT@kreacher>
+References: <5623410.DvuYhMxLoT@kreacher>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: [PATCH v4 3/3] interconnect: qcom: Add QDU1000/QRU1000
- interconnect driver
-Content-Language: en-US
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-CC:     Odelu Kukatla <quic_okukatla@quicinc.com>,
-        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20221118182245.31035-1-quic_molvera@quicinc.com>
- <20221118182245.31035-4-quic_molvera@quicinc.com>
- <6b68b7c2-e070-0a88-35ee-2060dcbdee91@wanadoo.fr>
-From:   Melody Olvera <quic_molvera@quicinc.com>
-In-Reply-To: <6b68b7c2-e070-0a88-35ee-2060dcbdee91@wanadoo.fr>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
+X-CLIENT-IP: 213.134.163.140
+X-CLIENT-HOSTNAME: 213.134.163.140
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvgedrheeigdduudduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrdduieefrddugedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeifedrudegtddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepkedprhgtphhtthhopehhvghlghgrrghssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehrohgurhhighhordhvihhvihesihhnthgvlhdrtghomhdprhgtphhtthhopehluhhkrghsseifuhhnnhgvrhdruggvpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehv
+ ghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+It is reported that on some systems pciehp binds to an Upstream Port and
+attempts to operate it which causes devices below the Port to disappear
+from the bus.
+
+This happens because acpiphp sets is_hotplug_bridge for that Port (after
+receiving a Device Check notification on it from the platform firmware
+via ACPI) during the enumeration of PCI devices and so when
+get_port_device_capability() runs, it sees that is_hotplug_bridge is
+set and adds PCIE_PORT_SERVICE_HP to Port services (which allows pciehp
+to bind to the Port in question).
+
+Even though this particular problem can be addressed by making the
+portdrv_core checks more robust, it also causes power management to
+work differently on the affected systems which generally is not
+desirable (PCIe Ports with is_hotplug_bridge set have to pass
+additional tests to be allowed to go into the D3hot/cold power
+states which affects runtime PM of devices below these Ports).
+
+For this reason, amend check_hotplug_bridge() with a PCIe type check
+to prevent it from setting is_hotplug_bridge for Upstream Ports.
+
+Reported-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Suggested-by: Lukas Wunner <lukas@wunner.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/hotplug/acpiphp_glue.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+Index: linux-pm/drivers/pci/hotplug/acpiphp_glue.c
+===================================================================
+--- linux-pm.orig/drivers/pci/hotplug/acpiphp_glue.c
++++ linux-pm/drivers/pci/hotplug/acpiphp_glue.c
+@@ -411,6 +411,14 @@ static void check_hotplug_bridge(struct
+ 	if (dev->is_hotplug_bridge)
+ 		return;
+ 
++	/*
++	 * In the PCIe case, only Root Ports and Downstream Ports are capable of
++	 * accommodating hotplug devices, so avoid marking Upstream Ports as
++	 * "hotplug bridges".
++	 */
++	if (pci_is_pcie(dev) && pci_pcie_type(dev) == PCI_EXP_TYPE_UPSTREAM)
++		return;
++
+ 	list_for_each_entry(func, &slot->funcs, sibling) {
+ 		if (PCI_FUNC(dev->devfn) == func->function) {
+ 			dev->is_hotplug_bridge = 1;
 
 
-On 11/20/2022 6:19 AM, Christophe JAILLET wrote:
-> Le 18/11/2022 à 19:22, Melody Olvera a écrit :
->> Add interconnect provider driver for Qualcomm QDU1000 and QRU1000
->> platforms.
->>
->> Signed-off-by: Melody Olvera <quic_molvera@quicinc.com>
->> ---
->>   drivers/interconnect/qcom/Kconfig   |    9 +
->>   drivers/interconnect/qcom/Makefile  |    2 +
->>   drivers/interconnect/qcom/qdu1000.c | 1079 +++++++++++++++++++++++++++
->>   drivers/interconnect/qcom/qdu1000.h |   95 +++
->>   4 files changed, 1185 insertions(+)
->>   create mode 100644 drivers/interconnect/qcom/qdu1000.c
->>   create mode 100644 drivers/interconnect/qcom/qdu1000.h
->>
->
-> [...]
->
->> +static int qnoc_probe(struct platform_device *pdev)
->> +{
->> +    int ret;
->> +
->> +    ret = qcom_icc_rpmh_probe(pdev);
->> +    if (ret)
->> +        dev_err(&pdev->dev, "failed to register ICC provider\n");
->> +
->> +    return ret;
->> +}
->> +
->> +static int qnoc_remove(struct platform_device *pdev)
->> +{
->> +    struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
->> +
->> +    icc_nodes_remove(&qp->provider);
->> +    icc_provider_del(&qp->provider);
->
-> qcom_icc_rpmh_remove()?
->
-> (more future proof, less verbose and more consistent with qcom_icc_rpmh_probe() in the probe)
->
-> CJ
-
-Good call. Does it make sense to just set the .probe and .remove functions as
-qcom_icc_rpmh_probe() and qcom_icc_rpmh_remove(), respectively? Probe function
-is just reporting if qcom_icc_rpmh_probe fails.
-
-Thanks,
-Melody
->
->> +
->> +    return 0;
->> +}
->> +
->> +static const struct of_device_id qnoc_of_match[] = {
->> +    { .compatible = "qcom,qdu1000-clk-virt",
->> +      .data = &qdu1000_clk_virt
->> +    },
->> +    { .compatible = "qcom,qdu1000-gem-noc",
->> +      .data = &qdu1000_gem_noc
->> +    },
->> +    { .compatible = "qcom,qdu1000-mc-virt",
->> +      .data = &qdu1000_mc_virt
->> +    },
->> +    { .compatible = "qcom,qdu1000-system-noc",
->> +      .data = &qdu1000_system_noc
->> +    },
->> +    { }
->> +};
->> +MODULE_DEVICE_TABLE(of, qnoc_of_match);
->> +
->> +static struct platform_driver qnoc_driver = {
->> +    .probe = qnoc_probe,
->> +    .remove = qnoc_remove,
->> +    .driver = {
->> +        .name = "qnoc-qdu1000",
->> +        .of_match_table = qnoc_of_match,
->> +    },
->> +};
->
-> [...]
->
 
