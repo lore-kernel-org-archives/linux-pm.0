@@ -2,179 +2,313 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B604CC433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Nov 2022 15:32:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FA1DC4167D
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Nov 2022 16:05:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233692AbiKVPcG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Nov 2022 10:32:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41814 "EHLO
+        id S234182AbiKVQFP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Nov 2022 11:05:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233387AbiKVPcE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2022 10:32:04 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEAB2331
-        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2022 07:31:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1669131064;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=M9Rq8NAw1T2YjzVTECZnA2JWS2PTg96PRA2tMjqGKL8=;
-        b=Xboar2RhCdbNFdmP2C4+wlxtmm3rgCBwY7AFRfjHCRZaM1pDltSLfFuKkijMQxCj3BGBU/
-        bZyRT86W9uZstRECnua8UR8tyfLKrlussO1AvkSC2JJzAGwsZp64kJSEPy9OjNbFRX00Tn
-        hvyiT120TrnhbJ/AbOhWEezjfwmYYfI=
-Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
- [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-267-7t01k15uNiqosnffnWeCOg-1; Tue, 22 Nov 2022 10:31:02 -0500
-X-MC-Unique: 7t01k15uNiqosnffnWeCOg-1
-Received: by mail-ej1-f72.google.com with SMTP id nb1-20020a1709071c8100b007ae4083d6f5so8418639ejc.15
-        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2022 07:31:02 -0800 (PST)
+        with ESMTP id S234120AbiKVQFN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2022 11:05:13 -0500
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CB13FD3C
+        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2022 08:05:10 -0800 (PST)
+Received: by mail-pg1-x536.google.com with SMTP id 6so14438768pgm.6
+        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2022 08:05:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=mKqixJN/8zapPMiYOY0ZA2E36N6vIQg16uLiOxlikFI=;
+        b=Sxgb7NdwQ/FjyYXzMQLr2Ufh8inWhewppyg2kEhKfSMa5+4xLhcDZFgBkLe+YVojYR
+         b1j/8R8eepdhz2QNEoN59UWxI0C8HtPNMN2hfsnJ2VXdsyzTbL+tlNksQKPnsWg/NtBp
+         chCgU4N95aPK2lbuS5RzKtW5ffOhO3rTLhquzizFSUU3p/ux1MbE2BMO0btBQyCrWeJK
+         WXzMJ1H0fbnItfONfrC7qjjeZVQUnHu7QZDLXM8ZsS1OkeorqU4Yt3+bnHeBb63EIVUM
+         ARM0B0wTMD/PlD/5zjrBQjmOnBQvgdxEwxF1FwYHEN8lHlbB5RkK/8WK1b4hFP6jFplD
+         FuDA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=M9Rq8NAw1T2YjzVTECZnA2JWS2PTg96PRA2tMjqGKL8=;
-        b=gFOKCrFO+W8OA9VV/8ayB5XQWD3f/eJVxLThvUNM+TmH2D+W/BiSD8xwZxz1ItAMvA
-         PJGnUkDFy+j0nbVF9aclGezETtdT2ok08AUBI64E2hZ/eTV9SxRSIbvRnbtFJ8uzHZ3a
-         jTBoLFyqe3P/lEQzHhxl+A32Jvop+MYJpCZ54q9/Y3Cv/O4MCH0Ln8mrVqmtjF1mRNKu
-         9Jzo9o/7JX9Wpw60awrBCzjeKdHIJS3oQDu46aqSA5PKHuJy25uO2aWZvssZsmWcZ0xt
-         Z4UhfSrd6eOuYsvLoCRieXdwsjQrMit+ajejV3eM45nE7c4PC9nODSBS+nfUQgAUCzgN
-         sBuA==
-X-Gm-Message-State: ANoB5pky3Um4z2AIBO3IC1h4ZLtz8Cmqmnanete5OExi94sBtu0300LO
-        Ua1PYNVPDT6YZYoVvw9nrKikFD4C0zEV/0BP6fY2HgHqhkmAHosMLnvDbRyBrj3/0WtHBxEXnlN
-        zi9nK5XXUyzSaZA6E39g=
-X-Received: by 2002:a05:6402:1118:b0:467:a8cb:10c9 with SMTP id u24-20020a056402111800b00467a8cb10c9mr6837305edv.123.1669131061176;
-        Tue, 22 Nov 2022 07:31:01 -0800 (PST)
-X-Google-Smtp-Source: AA0mqf4CH+Vx3pIPif4bvQ7VvOOVeImcHVPAHjQC8cn+lp8ryOJqSR/ruqW5OSSaZonQqQi7ybLLrw==
-X-Received: by 2002:a05:6402:1118:b0:467:a8cb:10c9 with SMTP id u24-20020a056402111800b00467a8cb10c9mr6837287edv.123.1669131060931;
-        Tue, 22 Nov 2022 07:31:00 -0800 (PST)
-Received: from ?IPV6:2001:1c00:c1e:bf00:d69d:5353:dba5:ee81? (2001-1c00-0c1e-bf00-d69d-5353-dba5-ee81.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:d69d:5353:dba5:ee81])
-        by smtp.gmail.com with ESMTPSA id u26-20020a170906409a00b0078ddb518a90sm6132853ejj.223.2022.11.22.07.31.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Nov 2022 07:31:00 -0800 (PST)
-Message-ID: <0b867f52-5fe8-f0e8-3f05-746b1db0059e@redhat.com>
-Date:   Tue, 22 Nov 2022 16:30:59 +0100
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=mKqixJN/8zapPMiYOY0ZA2E36N6vIQg16uLiOxlikFI=;
+        b=utqgDXp5N7hdj5BbfuhY34wRzqzbk6ZyhaeVfGMQQkpd77D0EYN/WSkjy+mKL+Dm0t
+         jFZq4N/UAwtHUeNEo+wgUatYXBayu8iVUyopYiX9V6QV+JlCpudfBPNqdHyiXVvTcpNp
+         /NyrkJd3beJkpEUDOIKQUoV4Wded5gW0kktGwKjocIjwGwHGazw2CpnQURwvNyeB1rbG
+         bMEyMSVeNZm0WUnJwlod7I6aZX6iM/JVmTMVwpyoCDRexuvBS0jOZW9cZxn9t3vrLGYM
+         PHXw5IKsTikCgScomnCBKAD073jvcg3X8t8AXZKJoCbGdhm3DAcgqBCfGeL1Lk4bqw2Z
+         SD1w==
+X-Gm-Message-State: ANoB5pmYzKvttN8hrEiSNSKKogoPGrx76JooRfm+rFwZMC8OwWqMhG3c
+        faIb0+Qd/v0MiFR7H751GUN6mDsj3Q0IqtdPS7rZTw==
+X-Google-Smtp-Source: AA0mqf6JSvaqlcRgOCqphXQ3MBWuxLvJ9cnb0DNFGeizoGOcIFvJAwjnOuz3SuqXXwFDZ3Z3O+rn4vXVPvsxTfgKOLE=
+X-Received: by 2002:a63:501c:0:b0:477:650a:c29a with SMTP id
+ e28-20020a63501c000000b00477650ac29amr3900068pgb.541.1669133109958; Tue, 22
+ Nov 2022 08:05:09 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.0
-Subject: Re: [PATCH resend] platform/x86: intel-uncore-freq: add Emerald
- Rapids support
-Content-Language: en-US, nl
-To:     Artem Bityutskiy <dedekind1@gmail.com>
-Cc:     Mark Gross <markgross@kernel.org>,
-        platform-driver-x86@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Linux PM Mailing List <linux-pm@vger.kernel.org>
-References: <20221122070014.3639277-1-dedekind1@gmail.com>
-From:   Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <20221122070014.3639277-1-dedekind1@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20220919095939.761690562@infradead.org> <20220919101521.139727471@infradead.org>
+ <CAPDyKFqTWd4W5Ofk76CtC4X43dxBTNHtmY9YzN355-vpviLsPw@mail.gmail.com> <Y3UBwYNY15ETUKy9@hirez.programming.kicks-ass.net>
+In-Reply-To: <Y3UBwYNY15ETUKy9@hirez.programming.kicks-ass.net>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Tue, 22 Nov 2022 17:04:33 +0100
+Message-ID: <CAPDyKFqzmJdVVrcuJ6Hmr5nNgtpd9Oke_exmUKuTGZEb=PjvjQ@mail.gmail.com>
+Subject: Re: [PATCH v2 12/44] cpuidle,dt: Push RCU-idle into driver
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com,
+        linus.walleij@linaro.org, bsegall@google.com, guoren@kernel.org,
+        pavel@ucw.cz, agordeev@linux.ibm.com, linux-arch@vger.kernel.org,
+        vincent.guittot@linaro.org, mpe@ellerman.id.au,
+        chenhuacai@kernel.org, christophe.leroy@csgroup.eu,
+        linux-acpi@vger.kernel.org, agross@kernel.org,
+        geert@linux-m68k.org, linux-imx@nxp.com, vgupta@kernel.org,
+        mattst88@gmail.com, mturquette@baylibre.com, sammy@sammy.net,
+        pmladek@suse.com, linux-pm@vger.kernel.org,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        linux-um@lists.infradead.org, npiggin@gmail.com,
+        tglx@linutronix.de, linux-omap@vger.kernel.org,
+        dietmar.eggemann@arm.com, andreyknvl@gmail.com,
+        gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+        linux-perf-users@vger.kernel.org, senozhatsky@chromium.org,
+        svens@linux.ibm.com, jolsa@kernel.org, tj@kernel.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        mark.rutland@arm.com, linux-ia64@vger.kernel.org,
+        dave.hansen@linux.intel.com,
+        virtualization@lists.linux-foundation.org,
+        James.Bottomley@hansenpartnership.com, jcmvbkbc@gmail.com,
+        thierry.reding@gmail.com, kernel@xen0n.name, cl@linux.com,
+        linux-s390@vger.kernel.org, vschneid@redhat.com,
+        john.ogness@linutronix.de, ysato@users.sourceforge.jp,
+        linux-sh@vger.kernel.org, festevam@gmail.com, deller@gmx.de,
+        daniel.lezcano@linaro.org, jonathanh@nvidia.com, dennis@kernel.org,
+        lenb@kernel.org, linux-xtensa@linux-xtensa.org,
+        kernel@pengutronix.de, gor@linux.ibm.com,
+        linux-arm-msm@vger.kernel.org, linux-alpha@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev,
+        shorne@gmail.com, chris@zankel.net, sboyd@kernel.org,
+        dinguyen@kernel.org, bristot@redhat.com,
+        alexander.shishkin@linux.intel.com, fweisbec@gmail.com,
+        lpieralisi@kernel.org, atishp@atishpatra.org,
+        linux@rasmusvillemoes.dk, kasan-dev@googlegroups.com,
+        will@kernel.org, boris.ostrovsky@oracle.com, khilman@kernel.org,
+        linux-csky@vger.kernel.org, pv-drivers@vmware.com,
+        linux-snps-arc@lists.infradead.org, mgorman@suse.de,
+        jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
+        ulli.kroll@googlemail.com, linux-clk@vger.kernel.org,
+        rostedt@goodmis.org, ink@jurassic.park.msu.ru, bcain@quicinc.com,
+        tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org,
+        ryabinin.a.a@gmail.com, sudeep.holla@arm.com, shawnguo@kernel.org,
+        davem@davemloft.net, dalias@libc.org, tony@atomide.com,
+        amakhalov@vmware.com, konrad.dybcio@somainline.org,
+        bjorn.andersson@linaro.org, glider@google.com, hpa@zytor.com,
+        sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
+        linux-riscv@lists.infradead.org, vincenzo.frascino@arm.com,
+        anton.ivanov@cambridgegreys.com, jonas@southpole.se,
+        yury.norov@gmail.com, richard@nod.at, x86@kernel.org,
+        linux@armlinux.org.uk, mingo@redhat.com, aou@eecs.berkeley.edu,
+        hca@linux.ibm.com, richard.henderson@linaro.org,
+        stefan.kristiansson@saunalahti.fi, openrisc@lists.librecores.org,
+        acme@kernel.org, paul.walmsley@sifive.com,
+        linux-tegra@vger.kernel.org, namhyung@kernel.org,
+        andriy.shevchenko@linux.intel.com, jpoimboe@kernel.org,
+        dvyukov@google.com, jgross@suse.com, monstr@monstr.eu,
+        linux-mips@vger.kernel.org, palmer@dabbelt.com,
+        anup@brainfault.org, bp@alien8.de, johannes@sipsolutions.net,
+        linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, 16 Nov 2022 at 16:29, Peter Zijlstra <peterz@infradead.org> wrote:
+>
+>
+> Sorry; things keep getting in the way of finishing this :/
+>
+> As such, I need a bit of time to get on-track again..
+>
+> On Tue, Oct 04, 2022 at 01:03:57PM +0200, Ulf Hansson wrote:
+>
+> > > --- a/drivers/acpi/processor_idle.c
+> > > +++ b/drivers/acpi/processor_idle.c
+> > > @@ -1200,6 +1200,8 @@ static int acpi_processor_setup_lpi_stat
+> > >                 state->target_residency = lpi->min_residency;
+> > >                 if (lpi->arch_flags)
+> > >                         state->flags |= CPUIDLE_FLAG_TIMER_STOP;
+> > > +               if (lpi->entry_method == ACPI_CSTATE_FFH)
+> > > +                       state->flags |= CPUIDLE_FLAG_RCU_IDLE;
+> >
+> > I assume the state index here will never be 0?
+> >
+> > If not, it may lead to that acpi_processor_ffh_lpi_enter() may trigger
+> > CPU_PM_CPU_IDLE_ENTER_PARAM() to call ct_cpuidle_enter|exit() for an
+> > idle-state that doesn't have the CPUIDLE_FLAG_RCU_IDLE bit set.
+>
+> I'm not quite sure I see how. AFAICT this condition above implies
+> acpi_processor_ffh_lpi_enter() gets called, no?
+>
+> Which in turn is an unconditional __CPU_PM_CPU_IDLE_ENTER() user, so
+> even if idx==0, it ends up in ct_idle_{enter,exit}().
 
-On 11/22/22 08:00, Artem Bityutskiy wrote:
-> From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-> 
-> Make Intel uncore frequency driver support Emerald Rapids by adding its CPU
-> model to the match table. Emerald Rapids uncore frequency control is the same
-> as in Sapphire Rapids.
-> 
-> Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
-> 
-> Re-sending the same patch, but added X86 platform maintainers.
+Seems like I was overlooking something here, you are right, this
+shouldn't really be a problem.
 
-There are 3 different issues with this patch, next time please
-check your patch a bit more thorough before submitting it:
+>
+> >
+> > >                 state->enter = acpi_idle_lpi_enter;
+> > >                 drv->safe_state_index = i;
+> > >         }
+> > > --- a/drivers/cpuidle/cpuidle-arm.c
+> > > +++ b/drivers/cpuidle/cpuidle-arm.c
+> > > @@ -53,6 +53,7 @@ static struct cpuidle_driver arm_idle_dr
+> > >          * handler for idle state index 0.
+> > >          */
+> > >         .states[0] = {
+> > > +               .flags                  = CPUIDLE_FLAG_RCU_IDLE,
+> >
+> > Comparing arm64 and arm32 idle-states/idle-drivers, the $subject
+> > series ends up setting the CPUIDLE_FLAG_RCU_IDLE for the ARM WFI idle
+> > state (state zero), but only for the arm64 and psci cases (mostly
+> > arm64). For arm32 we would need to update the ARM_CPUIDLE_WFI_STATE
+> > too, as that is what most arm32 idle-drivers are using. My point is,
+> > the code becomes a bit inconsistent.
+>
+> True.
+>
+> > Perhaps it's easier to avoid setting the CPUIDLE_FLAG_RCU_IDLE bit for
+> > all of the ARM WFI idle states, for both arm64 and arm32?
+>
+> As per the below?
+>
+> >
+> > >                 .enter                  = arm_enter_idle_state,
+> > >                 .exit_latency           = 1,
+> > >                 .target_residency       = 1,
+>
+> > > --- a/include/linux/cpuidle.h
+> > > +++ b/include/linux/cpuidle.h
+> > > @@ -282,14 +282,18 @@ extern s64 cpuidle_governor_latency_req(
+> > >         int __ret = 0;                                                  \
+> > >                                                                         \
+> > >         if (!idx) {                                                     \
+> > > +               ct_idle_enter();                                        \
+> >
+> > According to my comment above, we should then drop these calls to
+> > ct_idle_enter and ct_idle_exit() here. Right?
+>
+> Yes, if we ensure idx==0 never has RCU_IDLE set then these must be
+> removed.
+>
+> > >                 cpu_do_idle();                                          \
+> > > +               ct_idle_exit();                                         \
+> > >                 return idx;                                             \
+> > >         }                                                               \
+> > >                                                                         \
+> > >         if (!is_retention)                                              \
+> > >                 __ret =  cpu_pm_enter();                                \
+> > >         if (!__ret) {                                                   \
+> > > +               ct_idle_enter();                                        \
+> > >                 __ret = low_level_idle_enter(state);                    \
+> > > +               ct_idle_exit();                                         \
+> > >                 if (!is_retention)                                      \
+> > >                         cpu_pm_exit();                                  \
+> > >         }                                                               \
+> > >
+>
+> So the basic premise is that everything that needs RCU inside the idle
+> callback must set CPUIDLE_FLAG_RCU_IDLE and by doing that promise to
+> call ct_idle_{enter,exit}() themselves.
+>
+> Setting RCU_IDLE is required when there is RCU usage, however even if
+> there is no RCU usage, setting RCU_IDLE is fine, as long as
+> ct_idle_{enter,exit}() then get called.
 
-1. This is the first time I see this, or that the platform-driver-x86@vger.kernel.org
-list sees this. Next time please make sure you address the patch to the right
-people the first time you send it:
+Right, I was thinking that it could make sense to shrink the window
+for users getting this wrong. In other words, we shouldn't set the
+CPUIDLE_FLAG_RCU_IDLE unless we really need to.
 
-[hans@shalem platform-drivers-x86]$ scripts/get_maintainer.pl -f drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c
-Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> (maintainer:INTEL UNCORE FREQUENCY CONTROL)
-Hans de Goede <hdegoede@redhat.com> (maintainer:X86 PLATFORM DRIVERS)
-Mark Gross <markgross@kernel.org> (maintainer:X86 PLATFORM DRIVERS)
-platform-driver-x86@vger.kernel.org (open list:INTEL UNCORE FREQUENCY CONTROL)
-linux-kernel@vger.kernel.org (open list)
+And as I said, consistent behaviour is also nice to have.
 
+>
+>
+> So does the below (delta) look better to you?
 
-2. This has checkpatch warnings which are easily fixable:
+Yes, it does!
 
-[hans@shalem platform-drivers-x86]$ scripts/checkpatch.pl 0001-platform-x86-intel-uncore-freq-add-Emerald-Rapids-su.patch 
-WARNING: Possible unwrapped commit description (prefer a maximum 75 chars per line)
-#7: 
-model to the match table. Emerald Rapids uncore frequency control is the same
+Although, one minor comment below.
 
-total: 0 errors, 1 warnings, 7 lines checked
+>
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -1218,7 +1218,7 @@ static int acpi_processor_setup_lpi_stat
+>                 state->target_residency = lpi->min_residency;
+>                 if (lpi->arch_flags)
+>                         state->flags |= CPUIDLE_FLAG_TIMER_STOP;
+> -               if (lpi->entry_method == ACPI_CSTATE_FFH)
+> +               if (i != 0 && lpi->entry_method == ACPI_CSTATE_FFH)
+>                         state->flags |= CPUIDLE_FLAG_RCU_IDLE;
+>                 state->enter = acpi_idle_lpi_enter;
+>                 drv->safe_state_index = i;
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -53,7 +53,7 @@ static struct cpuidle_driver arm_idle_dr
+>          * handler for idle state index 0.
+>          */
+>         .states[0] = {
+> -               .flags                  = CPUIDLE_FLAG_RCU_IDLE,
+> +               .flags                  = 0,
 
-NOTE: For some of the reported defects, checkpatch may be able to
-      mechanically convert to the typical style using --fix or --fix-inplace.
+Nitpick: I don't think we need to explicitly clear the flag, as it
+should already be zeroed by the compiler from its static declaration.
+Right?
 
-0001-platform-x86-intel-uncore-freq-add-Emerald-Rapids-su.patch has style problems, please review.
+>                 .enter                  = arm_enter_idle_state,
+>                 .exit_latency           = 1,
+>                 .target_residency       = 1,
+> --- a/drivers/cpuidle/cpuidle-psci.c
+> +++ b/drivers/cpuidle/cpuidle-psci.c
+> @@ -357,7 +357,7 @@ static int psci_idle_init_cpu(struct dev
+>          * PSCI idle states relies on architectural WFI to be represented as
+>          * state index 0.
+>          */
+> -       drv->states[0].flags = CPUIDLE_FLAG_RCU_IDLE;
+> +       drv->states[0].flags = 0;
+>         drv->states[0].enter = psci_enter_idle_state;
+>         drv->states[0].exit_latency = 1;
+>         drv->states[0].target_residency = 1;
+> --- a/drivers/cpuidle/cpuidle-qcom-spm.c
+> +++ b/drivers/cpuidle/cpuidle-qcom-spm.c
+> @@ -72,7 +72,7 @@ static struct cpuidle_driver qcom_spm_id
+>         .owner = THIS_MODULE,
+>         .states[0] = {
+>                 .enter                  = spm_enter_idle_state,
+> -               .flags                  = CPUIDLE_FLAG_RCU_IDLE,
+> +               .flags                  = 0,
+>                 .exit_latency           = 1,
+>                 .target_residency       = 1,
+>                 .power_usage            = UINT_MAX,
+> --- a/drivers/cpuidle/cpuidle-riscv-sbi.c
+> +++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
+> @@ -337,7 +337,7 @@ static int sbi_cpuidle_init_cpu(struct d
+>         drv->cpumask = (struct cpumask *)cpumask_of(cpu);
+>
+>         /* RISC-V architectural WFI to be represented as state index 0. */
+> -       drv->states[0].flags = CPUIDLE_FLAG_RCU_IDLE;
+> +       drv->states[0].flags = 0;
+>         drv->states[0].enter = sbi_cpuidle_enter_state;
+>         drv->states[0].exit_latency = 1;
+>         drv->states[0].target_residency = 1;
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -282,9 +282,7 @@ extern s64 cpuidle_governor_latency_req(
+>         int __ret = 0;                                                  \
+>                                                                         \
+>         if (!idx) {                                                     \
+> -               ct_idle_enter();                                        \
+>                 cpu_do_idle();                                          \
+> -               ct_idle_exit();                                         \
+>                 return idx;                                             \
+>         }                                                               \
+>                                                                         \
 
-NOTE: If any of the errors are false positives, please report
-      them to the maintainer, see CHECKPATCH in MAINTAINERS.
-
-
-3. This fails to build on top of:
-https://git.kernel.org/pub/scm/linux/kernel/git/pdx86/platform-drivers-x86.git/log/?h=for-next
-which is the branch on which this needs to be applied to get upstream, so this is also
-the branch on which you should base the patch (and build test it) before submitting it
-upstream:
-
-In file included from drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c:21:
-./arch/x86/include/asm/cpu_device_id.h:161:46: error: ‘INTEL_FAM6_EMERALDRAPIDS_X’ undeclared here (not in a function); did you mean ‘INTEL_FAM6_SAPPHIRERAPIDS_X’?
-  161 |         X86_MATCH_VENDOR_FAM_MODEL(INTEL, 6, INTEL_FAM6_##model, data)
-      |                                              ^~~~~~~~~~~
-./arch/x86/include/asm/cpu_device_id.h:46:27: note: in definition of macro ‘X86_MATCH_VENDOR_FAM_MODEL_STEPPINGS_FEATURE’
-   46 |         .model          = _model,                                       \
-      |                           ^~~~~~
-./arch/x86/include/asm/cpu_device_id.h:129:9: note: in expansion of macro ‘X86_MATCH_VENDOR_FAM_MODEL_FEATURE’
-  129 |         X86_MATCH_VENDOR_FAM_MODEL_FEATURE(vendor, family, model,       \
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-./arch/x86/include/asm/cpu_device_id.h:161:9: note: in expansion of macro ‘X86_MATCH_VENDOR_FAM_MODEL’
-  161 |         X86_MATCH_VENDOR_FAM_MODEL(INTEL, 6, INTEL_FAM6_##model, data)
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c:206:9: note: in expansion of macro ‘X86_MATCH_INTEL_FAM6_MODEL’
-  206 |         X86_MATCH_INTEL_FAM6_MODEL(EMERALDRAPIDS_X, NULL),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
-make[6]: *** [scripts/Makefile.build:250: drivers/platform/x86/intel/uncore-frequency/uncore-frequency.o] Error 1
-
-
-Regards,
-
-Hans
-
-
-
-
-
-
-
-> 
->  drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c b/drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c
-> index 8f9c571d7257..00ac7e381441 100644
-> --- a/drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c
-> +++ b/drivers/platform/x86/intel/uncore-frequency/uncore-frequency.c
-> @@ -203,6 +203,7 @@ static const struct x86_cpu_id intel_uncore_cpu_ids[] = {
->  	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_X,	NULL),
->  	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_D,	NULL),
->  	X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X, NULL),
-> +	X86_MATCH_INTEL_FAM6_MODEL(EMERALDRAPIDS_X, NULL),
->  	{}
->  };
->  MODULE_DEVICE_TABLE(x86cpu, intel_uncore_cpu_ids);
-
+Kind regards
+Uffe
