@@ -2,83 +2,110 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A38E5C46467
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Nov 2022 19:10:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C52AC4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Nov 2022 20:00:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229894AbiKYTKR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Nov 2022 14:10:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40696 "EHLO
+        id S229787AbiKYUAg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Nov 2022 15:00:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229732AbiKYTKP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2022 14:10:15 -0500
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C95D55C9D;
-        Fri, 25 Nov 2022 11:10:12 -0800 (PST)
-From:   =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
-        s=mail; t=1669403409;
-        bh=g/SxQQpcICtujmdjN+34deYm/7mbOuynAwNDgxwnZRI=;
-        h=From:To:Cc:Subject:Date:From;
-        b=Bq/Y7NRturTvjRkhWN5xLm7MCA+plFgO7mBnfnJEPJqytptvWZS4NpKEGtEeb8L5+
-         r8xCRXvbU6Nu5ZWOlx2tS47vqY8egIroPDXME/m8Z/T7PXtN6kBpN9+IKnrZYZTIeA
-         Z/7P3wObBzTderaOTTi5RUATuLPaFHAXUaY1AOmA=
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Andy Whitcroft <apw@canonical.com>,
-        Joe Perches <joe@perches.com>
-Cc:     =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-        linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-        Dwaipayan Ray <dwaipayanray1@gmail.com>,
-        Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Subject: [PATCH v2 0/3] printk: introduce new macros pr_<level>_cont()
-Date:   Fri, 25 Nov 2022 20:09:45 +0100
-Message-Id: <20221125190948.2062-1-linux@weissschuh.net>
-X-Mailer: git-send-email 2.38.1
+        with ESMTP id S229724AbiKYUAf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2022 15:00:35 -0500
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA2122EF02
+        for <linux-pm@vger.kernel.org>; Fri, 25 Nov 2022 12:00:33 -0800 (PST)
+Received: by mail-pf1-x433.google.com with SMTP id b29so4956671pfp.13
+        for <linux-pm@vger.kernel.org>; Fri, 25 Nov 2022 12:00:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=telus.net; s=google;
+        h=thread-index:content-language:content-transfer-encoding
+         :mime-version:message-id:date:subject:in-reply-to:references:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=5OTzkH3CdtgMvkxSL/SyGfXxDbvuq+njYGlJM/u4onY=;
+        b=WjZPrJ3lgchjf9mb8TbsCGA1p6hY2q8P2C9C9cUZpHEoh+x/eklawszc1NLq4d5cB/
+         UgxQnrSu7U74Yb5HsnjZbdiJVNSgZFGsR0nXbys3Ejh+r+7dkAN6/l/QsEPTaTq+mKbV
+         dwTTdUuMf4OXHcYtNFSAfvJ1Ddq/cv4JmeXAzwLah2n+m48iGfvjeKq50hDNo21UMqxA
+         DaQ7c6vQHGnbuT+4uT8BlT97zWU9p0TPxjLgUS5QFXTY+fn59uO1Yarsu4l596GILP+i
+         cO2At/Y3mZnuQjBLJdNbye2OiF3TLbISYV21lF+13FAFVES2zMx+KElzq88K0TKDRGxG
+         QFJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=thread-index:content-language:content-transfer-encoding
+         :mime-version:message-id:date:subject:in-reply-to:references:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=5OTzkH3CdtgMvkxSL/SyGfXxDbvuq+njYGlJM/u4onY=;
+        b=aOktF0o8NQh7K/GjQUStGn/lyCVDKZZijDirS620rWOGUlobUWyCXefWJzFCOlS3EB
+         ixw8g6InDPFxCUwB6MLg3o2g90qypBgBFv/lupdQDGVUFAeJAxQnMGLsyoKIw04qxMTM
+         klaWZM+L8t5LyinxvkVDVTxm3lKZwhxkV5rH8RG77LOB0V6bmvVs202OhCjdKUh5ZXCT
+         hYYvI9I8m+o66fX5tGQNlaAmGaC10zEa1wa8gVS824CBgpl4Kqnv11DwJTuFb0TsB0EA
+         3/DrvLCPVBBYLCWftivfZXT9bmfA84rRY5B6+yD0z2Yf0/0umUZVt2NCtDcnvLplOs9U
+         cdQw==
+X-Gm-Message-State: ANoB5pkPT6Ekag/kX1zsQK7Upc5pzhDWMI5a0usrbk34xaqDr5jJQ7Fg
+        OGKwmm5q/HqKr+x3L/7AYIsb6H0hnSWVhg==
+X-Google-Smtp-Source: AA0mqf5U35aZ0d9BkDlXhYRv/DVhcOtmFKDIgoKi+wypTLliGt/ZKwosItB72t/SFh3oPNMKZjL7AQ==
+X-Received: by 2002:a63:134e:0:b0:46e:f011:9563 with SMTP id 14-20020a63134e000000b0046ef0119563mr36694720pgt.451.1669406433184;
+        Fri, 25 Nov 2022 12:00:33 -0800 (PST)
+Received: from DougS18 (s173-180-45-4.bc.hsia.telus.net. [173.180.45.4])
+        by smtp.gmail.com with ESMTPSA id x14-20020a170902a38e00b0018912c37c8fsm640064pla.129.2022.11.25.12.00.31
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 25 Nov 2022 12:00:32 -0800 (PST)
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Rafael J. Wysocki'" <rafael@kernel.org>,
+        "'Kajetan Puchalski'" <kajetan.puchalski@arm.com>
+Cc:     <daniel.lezcano@linaro.org>, <lukasz.luba@arm.com>,
+        <Dietmar.Eggemann@arm.com>, <yu.chen.surf@gmail.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        "Doug Smythies" <dsmythies@telus.net>
+References: <20221031121314.1381472-1-kajetan.puchalski@arm.com> <20221031121314.1381472-3-kajetan.puchalski@arm.com> <CAJZ5v0hHvf-033Oa-nW7UEZq=9cTFzn6e_znccPXBUeNa=YY+Q@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hHvf-033Oa-nW7UEZq=9cTFzn6e_znccPXBUeNa=YY+Q@mail.gmail.com>
+Subject: RE: [RFC PATCH v3 2/2] cpuidle: teo: Introduce util-awareness
+Date:   Fri, 25 Nov 2022 12:00:32 -0800
+Message-ID: <002401d90108$93a831e0$baf895a0$@telus.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1669403373; l=1346; i=linux@weissschuh.net; s=20211113; h=from:subject; bh=g/SxQQpcICtujmdjN+34deYm/7mbOuynAwNDgxwnZRI=; b=cJBM5DFWiGF9QnAVkNtozi6pqByCpuEASnEYQnyrCxmVjHyA1kV5rp0QeDjmRHHqmQ3N1OgkRmMt ipaSdfSSCfm0BDAhn8ROkPjNvwylA/wZdinAiayUOOKci5E9L3nQ
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519; pk=9LP6KM4vD/8CwHW7nouRBhWLyQLcK1MkP6aTZbzUlj4=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Outlook 16.0
+Content-Language: en-ca
+Thread-Index: AQJ3niu74TkyFjUbsRqSa0N7+FgHagJieOsRAbWVYo2s8hAF8A==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds new printk wrapper macros pr_<level>_cont().
-These create continuation messages with an explicit level.
+On 2022.11.25 10:27 Rafael wrote:
+> On Mon, Oct 31, 2022 at 1:14 PM Kajetan wrote:
 
-Explicit levels are useful when a continuation message is split from its main
-message. Without the explicit level KERN_DEFAULT ("warn" by default) is used
-which can lead to stray partial log messages when filtering by level.
+... [delete some] ...
 
-Also checkpatch is modified to recommend the new macros over plain pr_cont().
+>> +}
+>> +
+>> /**
+>>   * teo_update - Update CPU metrics after wakeup.
+>>   * @drv: cpuidle driver containing state data.
+>> @@ -303,7 +359,9 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>>         int i;
+>>
+>>         if (dev->last_state_idx >= 0) {
+>> -               teo_update(drv, dev);
+>> +               /* don't update metrics if the cpu was utilized during the last sleep */
+>
+> Why?
+>
+> The metrics are related to idle duration and cpu_data->utilized
+> indicates whether or not latency should be reduced.  These are
+> different things.
+>
+> Moreover, this is just one data point and there may not be any direct
+> connection between it and the decision made in this particular cycle.
 
-Lastly the new macros are used in kernel/power/process.c as this file uses
-continuation messages during system suspend-resume which creates a high
-likelyhood of interspersed messages.
+Hi Rafael,
 
-Changelog:
+Yes, agreed. And version 4 of this patch set deleted this stuff.
+See also my similar feedback, with accompanying test data
+that verified the issue in [1].
 
-This was original a single patch but was expanded into a series.
+[1] https://lore.kernel.org/linux-pm/CAAYoRsUgm6KyJCDowGKFVuMwJepnVN8NFEenjd3O-FN7+BETSw@mail.gmail.com/
 
-v1: https://lore.kernel.org/lkml/20221121050946.3540-1-linux@weissschuh.net/
-v1 -> v2:
-  * Introduce new pr_<level>_cont() macros in printk.h
-  * Add checkpatch.pl validation
+... Doug
 
-Thomas Weißschuh (3):
-  printk: introduce new macros pr_<level>_cont()
-  checkpatch: handle new pr_<level>_cont macros
-  power: process: use explicit levels for printk continuations
-
- include/linux/printk.h | 23 +++++++++++++++++++++++
- kernel/power/process.c | 18 +++++++++---------
- scripts/checkpatch.pl  | 10 ++++++++--
- 3 files changed, 40 insertions(+), 11 deletions(-)
-
-
-base-commit: 0b1dcc2cf55ae6523c6fbd0d741b3ac28c9f4536
--- 
-2.38.1
 
