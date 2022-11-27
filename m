@@ -2,124 +2,71 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4AC3C352A1
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Nov 2022 18:03:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA91FC4332F
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Nov 2022 21:36:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229475AbiK0SD5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Nov 2022 13:03:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60452 "EHLO
+        id S229727AbiK0VgJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Nov 2022 16:36:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37676 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229609AbiK0SDz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Nov 2022 13:03:55 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DC6163A1
-        for <linux-pm@vger.kernel.org>; Sun, 27 Nov 2022 10:02:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1669572173;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=MTY4DO2FIOhTmDrW9V5N/y/N6qxknBVOFxutodlRLvY=;
-        b=CdCM39/c8o89LzLUV9Nah1Lo/NY8JcgB7jWlgm5XwEW74ke4FiS1IeaWgOnJm87Db7cF6E
-        Qf595L3LKh6TD0kdAX1Ifx8u5DiNpCjhYQGWeQdbcIsyFviKVJfGd2hcx2sknM66UpuCdJ
-        w4/aIn4P2GcPn6hzX/OSb8yJ7IE+ftQ=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-554-W1G1sF4SNwyk_PxXfBaCsQ-1; Sun, 27 Nov 2022 13:02:44 -0500
-X-MC-Unique: W1G1sF4SNwyk_PxXfBaCsQ-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        with ESMTP id S229600AbiK0VgI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Nov 2022 16:36:08 -0500
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFD13D2F2
+        for <linux-pm@vger.kernel.org>; Sun, 27 Nov 2022 13:36:06 -0800 (PST)
+Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id E5A0029AA388;
-        Sun, 27 Nov 2022 18:02:43 +0000 (UTC)
-Received: from localhost.localdomain (unknown [10.39.192.80])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 3F8E5140EBF5;
-        Sun, 27 Nov 2022 18:02:43 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     Sebastian Reichel <sre@kernel.org>, Marek Vasut <marex@denx.de>
-Cc:     Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 00/10] power: supply: bq25890: Fixes for 6.2 + further work for 6.3
-Date:   Sun, 27 Nov 2022 19:02:23 +0100
-Message-Id: <20221127180233.103678-1-hdegoede@redhat.com>
+        (Authenticated sender: marex@denx.de)
+        by phobos.denx.de (Postfix) with ESMTPSA id 5F2BB850D1;
+        Sun, 27 Nov 2022 22:36:05 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+        s=phobos-20191101; t=1669584965;
+        bh=TzeKo5Mh7ICHTdgMprNU/6fv71pHoypygS2bF0thQA8=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=GscXsRz3YdkEeGug3ixjlvtxWbgm1CNrswgIqJUfuPbfluS+B8ZwkHgxHf0pU6F2G
+         LwHMMesH2CGeF0wN9zngG7VzkrUCBGVO9NSvnOfkfD8m9QIVD1iaewzfYuGeRG6EvS
+         aTZguzn/heHANstyTK3hk6sMMIZeXXn3Yf7JUp9I5WNA+8kUiRRB3z/JnTPAoKUrSD
+         fQCpBV2YfarcUhnd5wrMyjKGgGjetnqugzTUpN2/7bGZgsUMFwynIa14/haX7K3MzT
+         LiGBJyEsGjFWUT7B9s1G+/aafmY28qEXI7qTUa+tfgdv3QjwiprbKZ9v3z0SNu/E/U
+         HYrPwrxBy4wsQ==
+Message-ID: <b20d8c6b-0f1e-382e-27e2-7a3b63b2fb01@denx.de>
+Date:   Sun, 27 Nov 2022 22:17:41 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.7
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: [PATCH 02/10] power: supply: bq25890: Ensure pump_express_work is
+ cancelled on remove
+Content-Language: en-US
+To:     Hans de Goede <hdegoede@redhat.com>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org
+References: <20221127180233.103678-1-hdegoede@redhat.com>
+ <20221127180233.103678-3-hdegoede@redhat.com>
+From:   Marek Vasut <marex@denx.de>
+In-Reply-To: <20221127180233.103678-3-hdegoede@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Sebastian, Marek,
+On 11/27/22 19:02, Hans de Goede wrote:
+> The pump_express_work which gets queued from an external_power_changed
+> callback might be pending / running on remove() (or on probe failure).
+> 
+> Add a devm action cancelling the work, to ensure that it is cancelled.
+> 
+> Note the devm action is added before devm_power_supply_register(), making
+> it run after devm unregisters the power_supply, so that the work cannot
+> be queued anymore (this is also why a devm action is used for this).
+> 
+> Fixes: 48f45b094dbb ("power: supply: bq25890: Support higher charging voltages through Pump Express+ protocol")
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-I have been working on getting a Lenovo Yoga Tab 3 Pro (YT3-X90F) to
-work with the mainline kernel. This tablet has 2 batteries with
-2 bq25892 chargers both connected to a single Micro-USB connector.
+A comment in the code matching the last paragraph of this commit message 
+would be helpful I think.
 
-Supporting the 2 charger board also requires the recent HiZ mode patches
-from Marek, to avoid merging order problems / conflicts I have included
-a copy of Marek's series here so this series obsoletes the:
-
-[PATCH 1/2] power: supply: bq25890: Factor out chip state update
-[PATCH 2/2] power: supply: bq25890: Add HiZ mode support
-[PATCH v2 1/2] power: supply: bq25890: Factor out chip state update
-[PATCH v2 2/2] power: supply: bq25890: Add HiZ mode support
-
-patches from Marek.
-
-While working on adding support for this I also noticed some generic issues
-with the bq25890 driver currently in linux-power-supply/for-next and I also
-have some fixes to the HiZ support on top of Marek's support.
-
-So this entire series consist of 4 parts:
-
-1. Patches 1-3:
-
-Generic bugfixes for the bq25890 charger in its current state
-in linux-power-supply/for-next. Patch 1/10 fixes an actual regression on
-some boards with for-next so that one definitely needs to go to 6.2.
-The other 2 fixes can go to either 6.2 or 6.3
-
-2. Patches 4-5:
-
-Marek's HiZ support work, thank you Marek.
-
-3. Patches 6-7:
-
-Some fixes / improvements from me to Marek's HiZ support.
-
-4. Patch 8-10:
-
-The actual support for boards with 2 chargers.
-
-Stating the obvious here: given where we are in the cycle I expect
-parts 2-4 / patches 4-10 to all be 6.3 material. 
-
-Regards,
-
-Hans
-
-
-
-Hans de Goede (8):
-  power: supply: bq25890: Only use pdata->regulator_init_data for vbus
-  power: supply: bq25890: Ensure pump_express_work is cancelled on
-    remove
-  power: supply: bq25890: Fix usb-notifier probe and remove races
-  power: supply: bq25890: Fix setting of F_CONV_RATE rate when disabling
-    HiZ mode
-  power: supply: bq25890: Always take HiZ mode into account for ADC rate
-  power: supply: bq25890: Support boards with more then one charger IC
-  power: supply: bq25890: Add support for having a secondary charger IC
-  power: supply: bq25890: Add new linux,iinlim-percentage property
-
-Marek Vasut (2):
-  power: supply: bq25890: Factor out chip state update
-  power: supply: bq25890: Add HiZ mode support
-
- drivers/platform/x86/x86-android-tablets.c |   2 +-
- drivers/power/supply/bq25890_charger.c     | 213 ++++++++++++++++-----
- 2 files changed, 169 insertions(+), 46 deletions(-)
-
--- 
-2.38.1
-
+Reviewed-by: Marek Vasut <marex@denx.de>
