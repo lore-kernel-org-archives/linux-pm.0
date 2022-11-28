@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CD09C43217
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:14:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A366C433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:14:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231764AbiK1NN6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Nov 2022 08:13:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40088 "EHLO
+        id S231776AbiK1NN7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Nov 2022 08:13:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39688 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231660AbiK1NNi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:38 -0500
+        with ESMTP id S231653AbiK1NNj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:39 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80F121D675;
-        Mon, 28 Nov 2022 05:13:37 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C4391D67C;
+        Mon, 28 Nov 2022 05:13:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1669641217; x=1701177217;
+  t=1669641218; x=1701177218;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=bGQyQKNPbV4jkYdbDYkNg5GZCIoRHz5qvQ3UspaGSq0=;
-  b=aS5gpUB51cG2KwtKRyqqMPr/zzbMb3muopZIkuvj2n9GJlu08ulRQAVM
-   sp/YONifCZxsl+vDaQaHzCMLfWRCxyvsKL9MBdwNKXxMQJNZikhQ58SgZ
-   8YtqjHIxJ2Nn9PegIYdj7xa3Qi9fnWrv9OvRxJ/hFIGEQThkBC7Y4PigB
-   5TtYthlWfGoAzzCyXn47u6Gb5yn3Z9bWzaC3kf5Uax9XOm0ZdqkfZdrGp
-   7hCFNA5sKqV3pJmdBIyArMg6TUnW7W2F+0QIETBZGZwISm7/d0BT+ikr3
-   AGiZ8qPbIRU9uCIcyGKtuKQ6WoXZntzLVhTRezo3FoPV84ak0JiRNXPk/
+  bh=Ts4gZATy16m9TfKQnjzi/8+7PtA65oHBAtgxhfYL63g=;
+  b=dUhTCKb9+Deq3nD5cKNThUR5G3vwq71Bg7saPFZ5um7Wlua7/F/upQPJ
+   RRhTDsz7xqH2nud8wqpz2x+cjS2FUh9DA8y5OaMabpdhwpPlnpD+JebNT
+   I64o+SdsjNXkSJafO02AOp2dNx4l6jQ/wOeGCh/5CTDSkjxgYaL176zvp
+   RnQblt2WgZVSPuYjmIeacSm+RFs6KtICOWyLzMp3JWyV/hBo2RohGJinx
+   tSRsslZnuK83Ho8zgLGyo7HBvbJ3tt7NJQXXrVcDzP2cwqKLlcEIqvrUM
+   2Ok9NSyUMCJER11DT73mRPUUPMv8NYriZnKCr3Z2Y6oYG6y5TC/jOOWoY
    Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117105"
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117148"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="401117105"
+   d="scan'208";a="401117148"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:32 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:33 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381342"
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381357"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="749381342"
+   d="scan'208";a="749381357"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 05:13:32 -0800
+  by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 05:13:33 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
         Juri Lelli <juri.lelli@redhat.com>,
@@ -57,9 +57,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v2 06/22] sched/fair: Collect load-balancing stats for IPC classes
-Date:   Mon, 28 Nov 2022 05:20:44 -0800
-Message-Id: <20221128132100.30253-7-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v2 10/22] thermal: intel: hfi: Introduce Intel Thread Director classes
+Date:   Mon, 28 Nov 2022 05:20:48 -0800
+Message-Id: <20221128132100.30253-11-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
 References: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
@@ -67,19 +67,12 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When selecting a busiest scheduling group, the IPC class of the current
-task can be used to select between two scheduling groups of equal
-asym_packing priority and number of running tasks.
+On Intel hybrid parts, each type of CPU has specific performance and
+energy efficiency capabilities. The Intel Thread Director technology
+extends the Hardware Feedback Interface (HFI) to provide performance and
+energy efficiency data for advanced classes of instructions.
 
-Compute a new IPC class performance score for a scheduling group. It
-is the sum of the performance of the current tasks of all the runqueues.
-
-Also, keep track of the task with the lowest IPC class score on the
-scheduling group.
-
-These two metrics will be used during idle load balancing to compute the
-current and the prospective task-class performance of a scheduling
-group.
+Add support to parse and parse per-class capabilities.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -98,95 +91,100 @@ Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v1:
- * Implemented cleanups and reworks from PeterZ. Thanks!
- * Used the new interface names.
+ * Removed a now obsolete comment.
 ---
- kernel/sched/fair.c | 55 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
+ drivers/thermal/intel/intel_hfi.c | 30 ++++++++++++++++++++++++------
+ 1 file changed, 24 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 224107278471..3a1d6c50a19b 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -9100,6 +9100,57 @@ group_type group_classify(unsigned int imbalance_pct,
- 	return group_has_spare;
+diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
+index a0640f762dc5..df4dc50e19fb 100644
+--- a/drivers/thermal/intel/intel_hfi.c
++++ b/drivers/thermal/intel/intel_hfi.c
+@@ -79,7 +79,7 @@ union cpuid6_edx {
+  * @ee_cap:		Energy efficiency capability
+  *
+  * Capabilities of a logical processor in the HFI table. These capabilities are
+- * unitless.
++ * unitless and specific to each HFI class.
+  */
+ struct hfi_cpu_data {
+ 	u8	perf_cap;
+@@ -91,7 +91,8 @@ struct hfi_cpu_data {
+  * @perf_updated:	Hardware updated performance capabilities
+  * @ee_updated:		Hardware updated energy efficiency capabilities
+  *
+- * Properties of the data in an HFI table.
++ * Properties of the data in an HFI table. There exists one header per each
++ * HFI class.
+  */
+ struct hfi_hdr {
+ 	u8	perf_updated;
+@@ -129,16 +130,21 @@ struct hfi_instance {
+ 
+ /**
+  * struct hfi_features - Supported HFI features
++ * @nr_classes:		Number of classes supported
+  * @nr_table_pages:	Size of the HFI table in 4KB pages
+  * @cpu_stride:		Stride size to locate the capability data of a logical
+  *			processor within the table (i.e., row stride)
++ * @class_stride:	Stride size to locate a class within the capability
++ *			data of a logical processor or the HFI table header
+  * @hdr_size:		Size of the table header
+  *
+  * Parameters and supported features that are common to all HFI instances
+  */
+ struct hfi_features {
++	unsigned int	nr_classes;
+ 	unsigned int	nr_table_pages;
+ 	unsigned int	cpu_stride;
++	unsigned int	class_stride;
+ 	unsigned int	hdr_size;
+ };
+ 
+@@ -325,8 +331,8 @@ static void init_hfi_cpu_index(struct hfi_cpu_info *info)
  }
  
-+struct sg_lb_ipcc_stats {
-+	int min_score;	/* Min(score(rq->curr->ipcc)) */
-+	int min_ipcc;	/* Min(rq->curr->ipcc) */
-+	long sum_score; /* Sum(score(rq->curr->ipcc)) */
-+};
-+
-+#ifdef CONFIG_IPC_CLASSES
-+static void init_rq_ipcc_stats(struct sg_lb_ipcc_stats *sgcs)
-+{
-+	*sgcs = (struct sg_lb_ipcc_stats) {
-+		.min_score = INT_MAX,
-+	};
-+}
-+
-+/** Called only if cpu_of(@rq) is not idle and has tasks running. */
-+static void update_sg_lb_ipcc_stats(struct sg_lb_ipcc_stats *sgcs,
-+				    struct rq *rq)
-+{
-+	struct task_struct *curr;
-+	unsigned short ipcc;
-+	int score;
-+
-+	if (!sched_ipcc_enabled())
-+		return;
-+
-+	curr = rcu_dereference(rq->curr);
-+	if (!curr || (curr->flags & PF_EXITING) || is_idle_task(curr))
-+		return;
-+
-+	ipcc = curr->ipcc;
-+	score = arch_get_ipcc_score(ipcc, cpu_of(rq));
-+
-+	sgcs->sum_score += score;
-+
-+	if (score < sgcs->min_score) {
-+		sgcs->min_score = score;
-+		sgcs->min_ipcc = ipcc;
-+	}
-+}
-+
-+#else /* CONFIG_IPC_CLASSES */
-+static void update_sg_lb_ipcc_stats(struct sg_lb_ipcc_stats *sgcs,
-+				    struct rq *rq)
-+{
-+}
-+
-+static void init_rq_ipcc_stats(struct sg_lb_ipcc_stats *class_sgs)
-+{
-+}
-+#endif /* CONFIG_IPC_CLASSES */
-+
- /**
-  * asym_smt_can_pull_tasks - Check whether the load balancing CPU can pull tasks
-  * @dst_cpu:	Destination CPU of the load balancing
-@@ -9212,9 +9263,11 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 				      struct sg_lb_stats *sgs,
- 				      int *sg_status)
+ /*
+- * The format of the HFI table depends on the number of capabilities that the
+- * hardware supports. Keep a data structure to navigate the table.
++ * The format of the HFI table depends on the number of capabilities and classes
++ * that the hardware supports. Keep a data structure to navigate the table.
+  */
+ static void init_hfi_instance(struct hfi_instance *hfi_instance)
  {
-+	struct sg_lb_ipcc_stats sgcs;
- 	int i, nr_running, local_group;
+@@ -507,18 +513,30 @@ static __init int hfi_parse_features(void)
+ 	/* The number of 4KB pages required by the table */
+ 	hfi_features.nr_table_pages = edx.split.table_pages + 1;
  
- 	memset(sgs, 0, sizeof(*sgs));
-+	init_rq_ipcc_stats(&sgcs);
- 
- 	local_group = group == sds->local;
- 
-@@ -9264,6 +9317,8 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 			if (sgs->group_misfit_task_load < load)
- 				sgs->group_misfit_task_load = load;
- 		}
++	/*
++	 * Capability fields of an HFI class are grouped together. Classes are
++	 * contiguous in memory.  Hence, use the number of supported features to
++	 * locate a specific class.
++	 */
++	hfi_features.class_stride = nr_capabilities;
 +
-+		update_sg_lb_ipcc_stats(&sgcs, rq);
- 	}
++	/* For now, use only one class of the HFI table */
++	hfi_features.nr_classes = 1;
++
+ 	/*
+ 	 * The header contains change indications for each supported feature.
+ 	 * The size of the table header is rounded up to be a multiple of 8
+ 	 * bytes.
+ 	 */
+-	hfi_features.hdr_size = DIV_ROUND_UP(nr_capabilities, 8) * 8;
++	hfi_features.hdr_size = DIV_ROUND_UP(nr_capabilities *
++					     hfi_features.nr_classes, 8) * 8;
  
- 	sgs->group_capacity = group->sgc->capacity;
+ 	/*
+ 	 * Data of each logical processor is also rounded up to be a multiple
+ 	 * of 8 bytes.
+ 	 */
+-	hfi_features.cpu_stride = DIV_ROUND_UP(nr_capabilities, 8) * 8;
++	hfi_features.cpu_stride = DIV_ROUND_UP(nr_capabilities *
++					       hfi_features.nr_classes, 8) * 8;
+ 
+ 	return 0;
+ }
 -- 
 2.25.1
 
