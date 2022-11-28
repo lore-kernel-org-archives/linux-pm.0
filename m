@@ -2,225 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0BE9C47089
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:14:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D46BC43217
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:18:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231860AbiK1NO1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Nov 2022 08:14:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39908 "EHLO
+        id S231859AbiK1NR7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Nov 2022 08:17:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231611AbiK1NNm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:42 -0500
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E08141DA61;
-        Mon, 28 Nov 2022 05:13:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1669641221; x=1701177221;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references;
-  bh=HY2fKdj5Se/fueVNKplVVj75mjSgfhPku4CZtL+A+14=;
-  b=Dgkl7iS7+1RSuICNFpLw6aI+H/O68dtl5VdMfg/wzxMvbWp9G5lVZ1YT
-   jd+ha2kfxx8hLtZOjpfBXdztE9POFNkKS2x1BYYMxDnzYxEy2KLkWNYjH
-   gbyNBH76I8VZwrtC2Vb4iJqEuwbDhDQqg8ts3vNTpAarns66dsfZbKstx
-   rY48qOddNnO6LjeAR4+EouCHWPvq0hsv79dWlZfjtxYZ28OMvbOw4QZGq
-   OSbKYGD/Ig5gDgyWlJ5JxoUOzTm4S1TqcOQGQXkaMYX523PDGkwzI5ojh
-   Iy1j+xh2IRRufyubgiNNQ7MM2/I7NkJ6Frz7DWBWsWjXR5s4jNQjRLUOA
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117286"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="401117286"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:37 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381406"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="749381406"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 05:13:36 -0800
-From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
-Cc:     Ricardo Neri <ricardo.neri@intel.com>,
-        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
-        Ben Segall <bsegall@google.com>,
-        Daniel Bristot de Oliveira <bristot@redhat.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Len Brown <len.brown@intel.com>, Mel Gorman <mgorman@suse.de>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        Valentin Schneider <vschneid@redhat.com>, x86@kernel.org,
-        "Joel Fernandes (Google)" <joel@joelfernandes.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
-        "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v2 22/22] x86/process: Reset hardware history in context switch
-Date:   Mon, 28 Nov 2022 05:21:00 -0800
-Message-Id: <20221128132100.30253-23-ricardo.neri-calderon@linux.intel.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
-References: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
+        with ESMTP id S231722AbiK1NRj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:17:39 -0500
+Received: from mail.marcansoft.com (marcansoft.com [212.63.210.85])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61BE220346;
+        Mon, 28 Nov 2022 05:15:20 -0800 (PST)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: marcan@marcan.st)
+        by mail.marcansoft.com (Postfix) with ESMTPSA id A944D3FB17;
+        Mon, 28 Nov 2022 13:14:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=marcan.st; s=default;
+        t=1669641291; bh=FIkQB5lmPZ4s9NS7JtxyZUKE03ixueajpd0v6qEFWhY=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=I4j7QaFyIkkiCf6wp4xp7IiFLrNgBX4uvHR4J9RZSgrRabszG/xGCknbFN3Lsv5Vt
+         eB38csaqIghQPRuYpLkZBflq9ZVQT2tNkF7uLYihmOQFdHWF4bw63mdMOJdDo6zasE
+         dWuaDG7P+Im0nFkATFeSsX4LNJD6dj0/vajMo64hv3GfX8ObB7fK8d17l5cpTJIjPg
+         xqorCK/GyExauyLoVS0aww8QuYdWwrUoNMcCi780QD4BbKvBPDFy7ihYcEC8jjtG4t
+         YW0S//3Ymvu8jP6Sf6HXGI8CFPM//rQW0LNGaHHZ53BfCWPIBHIXaNqWzVGoaWmSbj
+         qD5lfyPZGXvgw==
+Message-ID: <0b250757-b7b4-2df9-5d16-1b540fa85b0d@marcan.st>
+Date:   Mon, 28 Nov 2022 22:14:43 +0900
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH v4 2/4] dt-bindings: cpufreq: apple,soc-cpufreq: Add
+ binding for Apple SoC cpufreq
+Content-Language: en-US
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>
+Cc:     Sven Peter <sven@svenpeter.dev>,
+        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Marc Zyngier <maz@kernel.org>,
+        Mark Kettenis <mark.kettenis@xs4all.nl>, asahi@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20221128124216.13477-1-marcan@marcan.st>
+ <20221128124216.13477-3-marcan@marcan.st>
+ <0b608b1e-e7a0-0084-e691-6e957028dd90@linaro.org>
+From:   Hector Martin <marcan@marcan.st>
+In-Reply-To: <0b608b1e-e7a0-0084-e691-6e957028dd90@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Reset the classification history of the current task when switching to the
-next task. Hardware will start the classification of the next task from
-scratch.
+On 28/11/2022 21.56, Krzysztof Kozlowski wrote:
+> On 28/11/2022 13:42, Hector Martin wrote:
+>> This binding represents the cpufreq/DVFS hardware present in Apple SoCs.
+>> The hardware has an independent controller per CPU cluster, and we
+>> represent them as unique nodes in order to accurately describe the
+>> hardware. The driver is responsible for binding them as a single cpufreq
+>> device (in the Linux cpufreq model).
+>>
+>> Acked-by: Marc Zyngier <maz@kernel.org>
+>> Signed-off-by: Hector Martin <marcan@marcan.st>
+>> ---
+>>  .../cpufreq/apple,cluster-cpufreq.yaml        | 117 ++++++++++++++++++
+>>  1 file changed, 117 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml b/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
+>> new file mode 100644
+>> index 000000000000..a21271f73fc1
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
+>> @@ -0,0 +1,117 @@
+>> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/cpufreq/apple,cluster-cpufreq.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Apple SoC cluster cpufreq device
+>> +
+>> +maintainers:
+>> +  - Hector Martin <marcan@marcan.st>
+>> +
+>> +description: |
+>> +  Apple SoCs (e.g. M1) have a per-cpu-cluster DVFS controller that is part of
+>> +  the cluster management register block. This binding uses the standard
+>> +  operating-points-v2 table to define the CPU performance states, with the
+>> +  opp-level property specifying the hardware p-state index for that level.
+>> +
+>> +properties:
+>> +  compatible:
+>> +    oneOf:
+>> +      - items:
+>> +          - oneOf:
+> 
+> This is enum.
 
-Cc: Ben Segall <bsegall@google.com>
-Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Joel Fernandes (Google) <joel@joelfernandes.org>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Tim C. Chen <tim.c.chen@intel.com>
-Cc: Valentin Schneider <vschneid@redhat.com>
-Cc: x86@kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
----
-Changes since v1:
- * Measurements of the cost of the HRESET instruction
+Sigh. Every single time I think the changes are too simple and I
+definitely don't need to run the DT checker this time.
 
-   Methodology:
-   I created a tight loop with interrupts and preemption disabled. I
-   recorded the value of the TSC counter before and after executing
-   HRESET or RDTSC. I repeated the measurement 100,000 times.
-   I performed the experiment using an Alder Lake S system. I set the
-   frequency of the CPUs at a fixed value.
+I'll send a v5 shortly because this is just me being an idiot.
 
-   The table below compares the cost of HRESET with RDTSC (expressed in
-   the elapsed TSC count). The cost of the two instructions is
-   comparable.
+> Any other changes? Your cover letter say quite unspecific "minor review
+> feedback"...
 
-                              PCore      ECore
-        Frequency (GHz)        5.0        3.8
-        HRESET (avg)          28.5       44.7
-        HRESET (stdev %)       3.6        2.3
-        RDTSC  (avg)          25.2       35.7
-        RDTSC  (stdev %)       3.9        2.6
+For the DT, the things you asked for ;) (this, dropping the reg
+description, and the performance-controller thing).
 
- * Used an ALTERNATIVE macro instead of static_cpu_has() to execute HRESET
-   when supported. (PeterZ)
----
- arch/x86/include/asm/hreset.h | 30 ++++++++++++++++++++++++++++++
- arch/x86/kernel/cpu/common.c  |  7 +++++++
- arch/x86/kernel/process_32.c  |  3 +++
- arch/x86/kernel/process_64.c  |  3 +++
- 4 files changed, 43 insertions(+)
- create mode 100644 arch/x86/include/asm/hreset.h
-
-diff --git a/arch/x86/include/asm/hreset.h b/arch/x86/include/asm/hreset.h
-new file mode 100644
-index 000000000000..d68ca2fb8642
---- /dev/null
-+++ b/arch/x86/include/asm/hreset.h
-@@ -0,0 +1,30 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_X86_HRESET_H
-+
-+/**
-+ * HRESET - History reset. Available since binutils v2.36.
-+ *
-+ * Request the processor to reset the history of task classification on the
-+ * current logical processor. The history components to be
-+ * reset are specified in %eax. Only bits specified in CPUID(0x20).EBX
-+ * and enabled in the IA32_HRESET_ENABLE MSR can be selected.
-+ *
-+ * The assembly code looks like:
-+ *
-+ *	hreset %eax
-+ *
-+ * The corresponding machine code looks like:
-+ *
-+ *	F3 0F 3A F0 ModRM Imm
-+ *
-+ * The value of ModRM is 0xc0 to specify %eax register addressing.
-+ * The ignored immediate operand is set to 0.
-+ *
-+ * The instruction is documented in the Intel SDM.
-+ */
-+
-+#define __ASM_HRESET  ".byte 0xf3, 0xf, 0x3a, 0xf0, 0xc0, 0x0"
-+
-+void reset_hardware_history(void);
-+
-+#endif /* _ASM_X86_HRESET_H */
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index f8630da2a6dd..6c2b9768698e 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -53,6 +53,7 @@
- #include <asm/mce.h>
- #include <asm/msr.h>
- #include <asm/cacheinfo.h>
-+#include <asm/hreset.h>
- #include <asm/memtype.h>
- #include <asm/microcode.h>
- #include <asm/microcode_intel.h>
-@@ -414,6 +415,12 @@ static __always_inline void setup_umip(struct cpuinfo_x86 *c)
- 
- static u32 hardware_history_features __ro_after_init;
- 
-+void reset_hardware_history(void)
-+{
-+	asm_inline volatile (ALTERNATIVE("", __ASM_HRESET, X86_FEATURE_HRESET)
-+			     : : "a" (hardware_history_features) : "memory");
-+}
-+
- static __always_inline void setup_hreset(struct cpuinfo_x86 *c)
- {
- 	if (!cpu_feature_enabled(X86_FEATURE_HRESET))
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 470c128759ea..397a6e6f4e61 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -52,6 +52,7 @@
- #include <asm/switch_to.h>
- #include <asm/vm86.h>
- #include <asm/resctrl.h>
-+#include <asm/hreset.h>
- #include <asm/proto.h>
- 
- #include "process.h"
-@@ -214,6 +215,8 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	/* Load the Intel cache allocation PQR MSR. */
- 	resctrl_sched_in();
- 
-+	reset_hardware_history();
-+
- 	return prev_p;
- }
- 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 084ec467dbb1..ac9b3d44c1bd 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -53,6 +53,7 @@
- #include <asm/xen/hypervisor.h>
- #include <asm/vdso.h>
- #include <asm/resctrl.h>
-+#include <asm/hreset.h>
- #include <asm/unistd.h>
- #include <asm/fsgsbase.h>
- #ifdef CONFIG_IA32_EMULATION
-@@ -658,6 +659,8 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	/* Load the Intel cache allocation PQR MSR. */
- 	resctrl_sched_in();
- 
-+	reset_hardware_history();
-+
- 	return prev_p;
- }
- 
--- 
-2.25.1
-
+- Hector
