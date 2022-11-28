@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC9B0C4708C
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:13:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3205EC433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:13:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231638AbiK1NNt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Nov 2022 08:13:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40018 "EHLO
+        id S231708AbiK1NNu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Nov 2022 08:13:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231510AbiK1NNh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:37 -0500
+        with ESMTP id S231657AbiK1NNi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:38 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43DDB1CFCF;
-        Mon, 28 Nov 2022 05:13:35 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80F671D676;
+        Mon, 28 Nov 2022 05:13:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1669641215; x=1701177215;
+  t=1669641217; x=1701177217;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=C8o1EqWi47EMS3NLEboiqwaO6Cqj8PqboSa/beXp5NY=;
-  b=CIquFBhoaOO+JcnTLi7Rt1q5gZb9/AhDXDPV2ooUICbRVFq3AHQFlfSD
-   WoyyIfAMrneTWaWYNTpYjfhLsB+y/nk+cVRBnNqKoOp2lOgePfoZGw9Eo
-   9ysUk4bmTWUaPYoxRJ/QPmaY4QPZ7LCBei/RpGL09Wzzq62QTeGvXUQH0
-   VEWBACqkmUvgwONsKSMr/FNFreA2nu+2lwo2Gjv6GjtpINguY9QUm++bO
-   St+BlwWawy1G8AhdGmg491/qACjerpzgug7iF9Tz4rIk2fSJL0eQ1Y0zn
-   kU2NA5JTmZF5apbH9lPXpX6NvQiyrZHSNES3n2f1Rh8P7w0QwrjnBT+K9
+  bh=2uPfNNplw7xOwTi269F+VNr3fJJfs2c0TJ+7Nw/WlL4=;
+  b=W2mD71dOmlZY9WM53EkJ/Uy9G7hyZOgGnRJ14qwTAHhYW/RLkVjqhltN
+   CuKkQs3ExkJPIt4eO0JvXCYhXHVkpoh8vBDkouHeSKDrzRmO7F0LsX0Wb
+   dWiEwUb+UKsNOXNloc8CSUTIgZ7pJ3PhTtdrM+NN8opTVzbjye6aTVkSe
+   BqnP71iOS6AFuL8v2jSc4DfLB8ghR6Gk6683P3ZRFRl6O+DEUNEuQOQus
+   ZVLNyI/m+NjIJYpbHlHas1VJMAcNnSUh90JrqcnmR0Ojh6Skyq+1sFrOy
+   TPec0XhDsegeMrYxVUnlaLsXWsyKFILWR3RTCHS4kocgHVMRrEiAt2vWL
    g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117084"
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117115"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="401117084"
+   d="scan'208";a="401117115"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:32 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:33 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381335"
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381345"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="749381335"
+   d="scan'208";a="749381345"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
   by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 05:13:32 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
@@ -57,9 +57,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v2 04/22] sched/core: Add user_tick as argument to scheduler_tick()
-Date:   Mon, 28 Nov 2022 05:20:42 -0800
-Message-Id: <20221128132100.30253-5-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v2 07/22] sched/fair: Compute IPC class scores for load balancing
+Date:   Mon, 28 Nov 2022 05:20:45 -0800
+Message-Id: <20221128132100.30253-8-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
 References: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
@@ -67,8 +67,18 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Differentiate between user and kernel ticks so that the scheduler updates
-the IPC class of the current task during the latter.
+Compute the joint total (both current and prospective) IPC class score of
+a scheduling group and the local scheduling group.
+
+These IPCC statistics are used during asym_packing load balancing. It
+implies that the candidate sched group will have one fewer busy CPU after
+load balancing. This observation is important for physical cores with
+SMT support.
+
+The IPCC score of scheduling groups composed of SMT siblings needs to
+consider that the siblings share CPU resources. When computing the total
+IPCC score of the scheduling group, divide score from each sibilng by
+the number of busy siblings.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -87,52 +97,94 @@ Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v1:
- * None
+ * Implemented cleanups and reworks from PeterZ. I took all his
+   suggestions, except the computation of the  IPC score before and after
+   load balancing. We are computing not the average score, but the *total*.
+ * Check for the SD_SHARE_CPUCAPACITY to compute the throughput of the SMT
+   siblings of a physical core.
+ * Used the new interface names.
+ * Reworded commit message for clarity.
 ---
- include/linux/sched.h | 2 +-
- kernel/sched/core.c   | 2 +-
- kernel/time/timer.c   | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ kernel/sched/fair.c | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 47ae3557ba07..ddabc7449edd 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -293,7 +293,7 @@ enum {
- 	TASK_COMM_LEN = 16,
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 3a1d6c50a19b..e333f9623b3a 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -8766,6 +8766,10 @@ struct sg_lb_stats {
+ 	unsigned int nr_numa_running;
+ 	unsigned int nr_preferred_running;
+ #endif
++#ifdef CONFIG_IPC_CLASSES
++	long ipcc_score_after; /* Prospective IPCC score after load balancing */
++	long ipcc_score_before; /* IPCC score before load balancing */
++#endif
  };
  
--extern void scheduler_tick(void);
-+extern void scheduler_tick(bool user_tick);
- 
- #define	MAX_SCHEDULE_TIMEOUT		LONG_MAX
- 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 8dd43ee05534..8bb6f597c42b 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -5487,7 +5487,7 @@ static inline u64 cpu_resched_latency(struct rq *rq) { return 0; }
-  * This function gets called by the timer code, with HZ frequency.
-  * We call it with interrupts disabled.
-  */
--void scheduler_tick(void)
-+void scheduler_tick(bool user_tick)
- {
- 	int cpu = smp_processor_id();
- 	struct rq *rq = cpu_rq(cpu);
-diff --git a/kernel/time/timer.c b/kernel/time/timer.c
-index 63a8ce7177dd..e15e24105891 100644
---- a/kernel/time/timer.c
-+++ b/kernel/time/timer.c
-@@ -2073,7 +2073,7 @@ void update_process_times(int user_tick)
- 	if (in_irq())
- 		irq_work_tick();
- #endif
--	scheduler_tick();
-+	scheduler_tick(user_tick);
- 	if (IS_ENABLED(CONFIG_POSIX_TIMERS))
- 		run_posix_cpu_timers();
+ /*
+@@ -9140,6 +9144,38 @@ static void update_sg_lb_ipcc_stats(struct sg_lb_ipcc_stats *sgcs,
+ 	}
  }
+ 
++static void update_sg_lb_stats_scores(struct sg_lb_ipcc_stats *sgcs,
++				      struct sg_lb_stats *sgs,
++				      struct sched_group *sg,
++				      int dst_cpu)
++{
++	int busy_cpus, score_on_dst_cpu;
++	long before, after;
++
++	if (!sched_ipcc_enabled())
++		return;
++
++	busy_cpus = sgs->group_weight - sgs->idle_cpus;
++	/* No busy CPUs in the group. No tasks to move. */
++	if (!busy_cpus)
++		return;
++
++	score_on_dst_cpu = arch_get_ipcc_score(sgcs->min_ipcc, dst_cpu);
++
++	before = sgcs->sum_score;
++	after = before - sgcs->min_score;
++
++	/* SMT siblings share throughput. */
++	if (busy_cpus > 1 && sg->flags & SD_SHARE_CPUCAPACITY) {
++		before /= busy_cpus;
++		/* One sibling will become idle after load balance. */
++		after /= busy_cpus - 1;
++	}
++
++	sgs->ipcc_score_after = after + score_on_dst_cpu;
++	sgs->ipcc_score_before = before;
++}
++
+ #else /* CONFIG_IPC_CLASSES */
+ static void update_sg_lb_ipcc_stats(struct sg_lb_ipcc_stats *sgcs,
+ 				    struct rq *rq)
+@@ -9149,6 +9185,14 @@ static void update_sg_lb_ipcc_stats(struct sg_lb_ipcc_stats *sgcs,
+ static void init_rq_ipcc_stats(struct sg_lb_ipcc_stats *class_sgs)
+ {
+ }
++
++static void update_sg_lb_stats_scores(struct sg_lb_ipcc_stats *sgcs,
++				      struct sg_lb_stats *sgs,
++				      struct sched_group *sg,
++				      int dst_cpu)
++{
++}
++
+ #endif /* CONFIG_IPC_CLASSES */
+ 
+ /**
+@@ -9329,6 +9373,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
+ 	if (!local_group && env->sd->flags & SD_ASYM_PACKING &&
+ 	    env->idle != CPU_NOT_IDLE && sgs->sum_h_nr_running &&
+ 	    sched_asym(env, sds, sgs, group)) {
++		update_sg_lb_stats_scores(&sgcs, sgs, group, env->dst_cpu);
+ 		sgs->group_asym_packing = 1;
+ 	}
+ 
 -- 
 2.25.1
 
