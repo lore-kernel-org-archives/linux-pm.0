@@ -2,126 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04BFDC43217
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 14:15:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BA4DC43217
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 14:29:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232358AbiK1OPQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Nov 2022 09:15:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42416 "EHLO
+        id S232506AbiK1O3g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Nov 2022 09:29:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232427AbiK1OPG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 09:15:06 -0500
-Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2A6C220F8;
-        Mon, 28 Nov 2022 06:15:02 -0800 (PST)
-Received: by mail-oi1-f171.google.com with SMTP id m204so11670416oib.6;
-        Mon, 28 Nov 2022 06:15:02 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=date:subject:message-id:references:in-reply-to:cc:to:from
-         :mime-version:content-transfer-encoding:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=rMDrKJM1JYq9frHiDAV6QjHrjgaT+Wd+P/w7Ou0pGrc=;
-        b=FJMqrqaggu+xu84dmIACxHlCmKBZBO92yLaeIT6fVNe2woR7EQQurkeEYbMUhV2S6X
-         aFJD79J9DgeOOiRrp5eEwEeYEsF8cMwquzOsgvyOdOIHvjiWGHijVqUv6jSDBQyZhGxy
-         +pEDKxkmasI9nuwJf4K/9bVmB5/9aZr/XaceWnPr/A34kiaZz7S36P/oyI73tflIvf+I
-         ZMD0HJvwfjbMTrM9zjmDbIbWK6zzZSZvGm5CT4TZa4zYlLMlAAo3fZP6RLn8OOaNgESi
-         wz2UsetPI0ijOiBwKu0xyl3BRSUDy/y7km1z9f87h3evIIbiFeqlud7niACuk6FOMRpZ
-         m2rg==
-X-Gm-Message-State: ANoB5plBF2UjrxR8FIUdyCHi4Xh+L1u9wssNJQ5wj6GBvBoR/8T3EXI9
-        98sxd1w+Z4HX2AegQ595Kw==
-X-Google-Smtp-Source: AA0mqf7GaLmT+j6KXYSEaDabzZGvwPVlEA86w3Pu8lzi8pqWtO//a4CTd3PVxjYaNKvONEotUcwvLA==
-X-Received: by 2002:a05:6808:22a1:b0:35b:8a39:ab76 with SMTP id bo33-20020a05680822a100b0035b8a39ab76mr8955735oib.196.1669644902054;
-        Mon, 28 Nov 2022 06:15:02 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id t12-20020a056870e74c00b001375188dae9sm5946085oak.16.2022.11.28.06.15.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Nov 2022 06:15:01 -0800 (PST)
-Received: (nullmailer pid 722965 invoked by uid 1000);
-        Mon, 28 Nov 2022 14:15:00 -0000
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-MIME-Version: 1.0
-From:   Rob Herring <robh@kernel.org>
-To:     Hector Martin <marcan@marcan.st>
-Cc:     linux-arm-kernel@lists.infradead.org,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Marc Zyngier <maz@kernel.org>, Sven Peter <sven@svenpeter.dev>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>,
-        linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        Mark Kettenis <mark.kettenis@xs4all.nl>,
+        with ESMTP id S232524AbiK1O3Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 09:29:25 -0500
+Received: from mail.marcansoft.com (marcansoft.com [212.63.210.85])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24FCB22291;
+        Mon, 28 Nov 2022 06:29:23 -0800 (PST)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: sendonly@marcansoft.com)
+        by mail.marcansoft.com (Postfix) with ESMTPSA id 6E7CA41A42;
+        Mon, 28 Nov 2022 14:29:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=marcan.st; s=default;
+        t=1669645760; bh=r56d4PU2Z6JM/OvZ//Bewks010h3jvwvcNPfumIUlyc=;
+        h=From:To:Cc:Subject:Date;
+        b=zAHKHc++geBjgd0H31hst6+LMrycaXOXIpWW2+rGX0yZYxN7c/FXOcVnnmd3YvQe9
+         UEuXJHeSX7QixANaRGR9amL+5ZSSx+Oo9stKID2cE46zENK6s2SiOs/xa3SwzgdYm4
+         +UVp32w8Lny5sggUz1xqC83tZ18bNEzucayXDIHeLotDDxkKMgcMbvYqupUjX6sXPx
+         WNe4dQvdBskVgdy7kDVm35BgUk3yYIH85VuMDr/4KveaQBzDsW0LS2n2DZt7McvMUj
+         ngtKpRGPaUWiwDbKioFXSoSwEolTrZbowN3IalxGSLXdbVLAmW9637aLha9vQopQon
+         CCQyMp1jhbPng==
+From:   Hector Martin <marcan@marcan.st>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>
+Cc:     Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>,
         Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-        devicetree@vger.kernel.org,
+        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        asahi@lists.linux.dev
-In-Reply-To: <20221128124216.13477-3-marcan@marcan.st>
-References: <20221128124216.13477-1-marcan@marcan.st>
- <20221128124216.13477-3-marcan@marcan.st>
-Message-Id: <166964486801.717655.2608444925832576232.robh@kernel.org>
-Subject: Re: [PATCH v4 2/4] dt-bindings: cpufreq: apple,soc-cpufreq: Add
- binding for Apple SoC cpufreq
-Date:   Mon, 28 Nov 2022 08:15:00 -0600
+        Stephen Boyd <sboyd@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Marc Zyngier <maz@kernel.org>,
+        Mark Kettenis <mark.kettenis@xs4all.nl>, asahi@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v5 0/4] Apple SoC cpufreq driver
+Date:   Mon, 28 Nov 2022 23:29:08 +0900
+Message-Id: <20221128142912.16022-1-marcan@marcan.st>
+X-Mailer: git-send-email 2.35.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi folks,
 
-On Mon, 28 Nov 2022 21:42:14 +0900, Hector Martin wrote:
-> This binding represents the cpufreq/DVFS hardware present in Apple SoCs.
-> The hardware has an independent controller per CPU cluster, and we
-> represent them as unique nodes in order to accurately describe the
-> hardware. The driver is responsible for binding them as a single cpufreq
-> device (in the Linux cpufreq model).
-> 
-> Acked-by: Marc Zyngier <maz@kernel.org>
-> Signed-off-by: Hector Martin <marcan@marcan.st>
-> ---
->  .../cpufreq/apple,cluster-cpufreq.yaml        | 117 ++++++++++++++++++
->  1 file changed, 117 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
-> 
+Here's v5 of the cpufreq driver for Apple SoCs. v5 just incorporates
+minor review feedback changes from v3, and no functional changes. v4
+had a DT schema SNAFU; this supersedes it.
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+Once reviewed, please merge #3 via the cpufreq tree, and we'll take
+care of #1,#2,#4 via the asahi-soc tree. This lets us merge the DT
+changes in the same cycle without blocking on the binding coming in
+via the cpufreq tree first.
 
-yamllint warnings/errors:
+This version takes a page from both v1 and v2, keeping the dedicated
+cpufreq style (instead of pretending to be a clock controller) but using
+dedicated DT nodes for each cluster, which accurately represents the
+hardware. In particular, this makes supporting t6002 (M1 Ultra) a lot
+more reasonable on the DT side.
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml: properties:compatible:oneOf:0:items: 'anyOf' conditional failed, one must be fixed:
-	[{'oneOf': ['apple,t8103-cluster-cpufreq', 'apple,t8112-cluster-cpufreq']}, {'const': 'apple,cluster-cpufreq'}] is not of type 'object', 'boolean'
-	'apple,t8103-cluster-cpufreq' is not of type 'object', 'boolean'
-	'apple,t8112-cluster-cpufreq' is not of type 'object', 'boolean'
-	from schema $id: http://json-schema.org/draft-07/schema#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml: properties:compatible:oneOf:0:items: 'oneOf' conditional failed, one must be fixed:
-	[{'oneOf': ['apple,t8103-cluster-cpufreq', 'apple,t8112-cluster-cpufreq']}, {'const': 'apple,cluster-cpufreq'}] is not of type 'object'
-	['apple,t8103-cluster-cpufreq', 'apple,t8112-cluster-cpufreq'] should not be valid under {'items': {'propertyNames': {'const': 'const'}, 'required': ['const']}}
-		hint: Use 'enum' rather than 'oneOf' + 'const' entries
-	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml: properties:compatible:oneOf:0:items: 'oneOf' conditional failed, one must be fixed:
-	[{'oneOf': ['apple,t8103-cluster-cpufreq', 'apple,t8112-cluster-cpufreq']}, {'const': 'apple,cluster-cpufreq'}] is not of type 'object'
-	Additional properties are not allowed ('oneOf' was unexpected)
-	from schema $id: http://devicetree.org/meta-schemas/string-array.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml: ignoring, error in schema: properties: compatible: oneOf: 0: items
-Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.example.dtb:0:0: /example-0/soc/performance-controller@210e20000: failed to match any schema with compatible: ['apple,t8103-cluster-cpufreq', 'apple,cluster-cpufreq']
-Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.example.dtb:0:0: /example-0/soc/performance-controller@210e20000: failed to match any schema with compatible: ['apple,t8103-cluster-cpufreq', 'apple,cluster-cpufreq']
-Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.example.dtb:0:0: /example-0/soc/performance-controller@211e20000: failed to match any schema with compatible: ['apple,t8103-cluster-cpufreq', 'apple,cluster-cpufreq']
-Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.example.dtb:0:0: /example-0/soc/performance-controller@211e20000: failed to match any schema with compatible: ['apple,t8103-cluster-cpufreq', 'apple,cluster-cpufreq']
+This version also switches to the standard performance-domains binding,
+so we don't need any more vendor-specific properties. In order to
+support this, I had to make the performance-domains parsing code more
+generic. This required a minor change to the only consumer
+(mediatek-cpufreq-hw).
 
-doc reference errors (make refcheckdocs):
+The Linux driver probes based on platform compatible, and then attempts
+to locate the cluster nodes by following the performance-domains links
+from CPU nodes (this will then fail for any incompatible nodes, e.g. if
+a future SoC needs a new compatible and can't fall back). This approach
+was suggested by robh as the right way to handle the impedance mismatch
+between the hardware, which has separate controllers per cluster, and
+the Linux model where there can only be one CPUFreq driver instance.
 
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20221128124216.13477-3-marcan@marcan.st
+Functionality-wise, there are no significant changes from v2. The only
+notable difference is support for t8112 (M2). This works largely the
+same as the other SoCs, but they ran out of bits in the current PState
+register, so that needs a SoC-specific quirk. Since that register is
+not used by macOS (it was discovered experimentally) and is not critical
+for functionality (it just allows accurately reporting the current
+frequency to userspace, given boost clock limitations), I've decided to
+only use it when a SoC-specific compatible is present. The default
+fallback code will simply report the requested frequency as actual.
+I expect this will work for future SoCs.
 
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
+Hector Martin (4):
+  MAINTAINERS: Add entries for Apple SoC cpufreq driver
+  dt-bindings: cpufreq: apple,soc-cpufreq: Add binding for Apple SoC
+    cpufreq
+  cpufreq: apple-soc: Add new driver to control Apple SoC CPU P-states
+  arm64: dts: apple: Add CPU topology & cpufreq nodes for t8103
 
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
+ .../cpufreq/apple,cluster-cpufreq.yaml        | 117 ++++++
+ MAINTAINERS                                   |   2 +
+ arch/arm64/boot/dts/apple/t8103.dtsi          | 204 +++++++++-
+ drivers/cpufreq/Kconfig.arm                   |   9 +
+ drivers/cpufreq/Makefile                      |   1 +
+ drivers/cpufreq/apple-soc-cpufreq.c           | 352 ++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
+ 7 files changed, 677 insertions(+), 10 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/apple,cluster-cpufreq.yaml
+ create mode 100644 drivers/cpufreq/apple-soc-cpufreq.c
 
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command.
+-- 
+2.35.1
 
