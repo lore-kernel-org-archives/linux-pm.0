@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D76F6C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 059DBC43217
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:13:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231675AbiK1NNp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Nov 2022 08:13:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39936 "EHLO
+        id S231432AbiK1NNr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Nov 2022 08:13:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39028 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231656AbiK1NNd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:33 -0500
+        with ESMTP id S231624AbiK1NNf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:35 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5727713D5E;
-        Mon, 28 Nov 2022 05:13:32 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90105120A3;
+        Mon, 28 Nov 2022 05:13:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1669641212; x=1701177212;
+  t=1669641213; x=1701177213;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=bVqpVo1Q9MYSWk8Td5o+e8rn4ip/1+KMBJaJ/M8s+/Y=;
-  b=U5vi/ORGokvMveSG0Qai9S11M08uOBRjdSHA8jXTTzLa/lPDNCuT7VvG
-   8B9LKyJjj3eCneQEjqVHlJNnyHMu2TGaEC8GGCNV5yTk4KHa++thsMMeb
-   l5iCSupGVtJK7hfRJqg6g0EPqyy2ZI60zCZRjn8tZu62mSuhuZeRaBYbm
-   fmNEFhICVDfE3Co+d5zeqdzCqk47bwvo8zk1Ff+ryj+1b69WPwhxi79Mk
-   34f1KPLeonfpCRCiQwyYtvxX8sENJcSDv2cDCNqvRfPErv12Jn7FFtfA3
-   X3ZuadxzzzstMV4a3hPI7mZIy5kQ03No4d1QBqNJ30D/3GNT/XVn9C+eo
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117058"
+  bh=SGRJsWlMFBDt9YHKWDWh4VtdInjeycHfz68CW0YMoNE=;
+  b=V03l0WTHV5S3FfrqNguzqJB+2yysCVjerBdkNqpNDS0sQrIsS8sZLIaN
+   sSyY2JCBkkPJILUo6kgK304SCUfnjw/Dp4bTn8MgUagOG88dI4R9QQ3pA
+   +9Ym90KFbjrggAafgIiATCA/E7bLKHEHiFn6wHUEXat2Eh/7AW01OpNkB
+   Hp9Y8aH3r/CR5X9ZjydRdr4p2PB/dCa/eLjAHKNVk1DWptAwI+Q9a/ylf
+   m9qfr6Gwcas3FbwWWARjUrG8GmcHV2TT4lfA/xlh1s4Vm33LIMghHmnes
+   6wI1QXQmUmCLC1Khr1ydkrDAjT5ioPmo0nDJV1apxSmlupUG0bmFcSSgY
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117071"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="401117058"
+   d="scan'208";a="401117071"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:31 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:32 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381321"
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381332"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="749381321"
+   d="scan'208";a="749381332"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
   by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 05:13:31 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
@@ -57,9 +57,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v2 01/22] sched/task_struct: Introduce IPC classes of tasks
-Date:   Mon, 28 Nov 2022 05:20:39 -0800
-Message-Id: <20221128132100.30253-2-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v2 03/22] sched/core: Initialize the IPC class of a new task
+Date:   Mon, 28 Nov 2022 05:20:41 -0800
+Message-Id: <20221128132100.30253-4-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
 References: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
@@ -67,24 +67,8 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On hybrid processors, the architecture differences between the types of
-CPUs lead to different instructions-per-cycle (IPC) on each type of CPU.
-IPCs may differ further by the type of instructions. Instructions can be
-grouped into classes of similar IPCs.
-
-Hence, tasks can be classified into groups based on the type of
-instructions they execute.
-
-Add a new member task_struct::ipcc to associate a particular task to
-an IPC class that depends on the instructions it executes.
-
-The scheduler may use the IPC class of a task and data about the
-performance among CPUs of a given IPC class to improve throughput. It
-may, for instance, place certain classes of tasks on CPUs of higher
-performance.
-
-The methods to determine the classification of a task and its relative
-IPC score are specific to each CPU architecture.
+New tasks shall start life as unclassified. They will be classified by
+hardware when they run.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -103,65 +87,25 @@ Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v1:
- * Renamed task_struct::class as task::struct_ipcc. (Joel)
- * Use task_struct::ipcc = 0 for unclassified tasks. (PeterZ)
- * Renamed CONFIG_SCHED_TASK_CLASSES as CONFIG_IPC_CLASSES. (PeterZ, Joel)
+ * None
 ---
- include/linux/sched.h | 10 ++++++++++
- init/Kconfig          | 12 ++++++++++++
- 2 files changed, 22 insertions(+)
+ kernel/sched/core.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 68c07ae0d7ff..47ae3557ba07 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -127,6 +127,8 @@ struct task_group;
- 					 __TASK_TRACED | EXIT_DEAD | EXIT_ZOMBIE | \
- 					 TASK_PARKED)
- 
-+#define IPC_CLASS_UNCLASSIFIED		0
-+
- #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
- 
- #define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
-@@ -1525,6 +1527,14 @@ struct task_struct {
- 	union rv_task_monitor		rv[RV_PER_TASK_MONITORS];
- #endif
- 
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 78b2d5cabcc5..8dd43ee05534 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -4372,6 +4372,9 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+ 	p->se.prev_sum_exec_runtime	= 0;
+ 	p->se.nr_migrations		= 0;
+ 	p->se.vruntime			= 0;
 +#ifdef CONFIG_IPC_CLASSES
-+	/*
-+	 * A hardware-defined classification of task based on the number
-+	 * of instructions per cycle.
-+	 */
-+	unsigned int			ipcc;
++	p->ipcc				= IPC_CLASS_UNCLASSIFIED;
 +#endif
-+
- 	/*
- 	 * New fields for task_struct should be added above here, so that
- 	 * they are included in the randomized portion of task_struct.
-diff --git a/init/Kconfig b/init/Kconfig
-index abf65098f1b6..cd17dd4d3718 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -865,6 +865,18 @@ config UCLAMP_BUCKETS_COUNT
+ 	INIT_LIST_HEAD(&p->se.group_node);
  
- 	  If in doubt, use the default value.
- 
-+config IPC_CLASSES
-+	bool "IPC classes of tasks"
-+	depends on SMP
-+	help
-+	  If selected, each task is assigned a classification value that
-+	  reflects the type of instructions that the task executes. This
-+	  classification reflects but is not equal to the number of
-+	  instructions retired per cycle.
-+
-+	  The scheduler uses the classification value to improve the placement
-+	  of tasks.
-+
- endmenu
- 
- #
+ #ifdef CONFIG_FAIR_GROUP_SCHED
 -- 
 2.25.1
 
