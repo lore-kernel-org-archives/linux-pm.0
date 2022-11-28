@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18CE6C43217
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 09:30:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D7CFC433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 09:30:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230016AbiK1JaL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Nov 2022 04:30:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54304 "EHLO
+        id S230064AbiK1JaN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Nov 2022 04:30:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230064AbiK1JaJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 04:30:09 -0500
+        with ESMTP id S229968AbiK1JaM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 04:30:12 -0500
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09E8E12D1A
-        for <linux-pm@vger.kernel.org>; Mon, 28 Nov 2022 01:29:12 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38E275F62
+        for <linux-pm@vger.kernel.org>; Mon, 28 Nov 2022 01:29:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1669627752;
+        s=mimecast20190719; t=1669627749;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=MYue9vNH+4tqOqrnK18S1M7Ioxkt9jY9OIFGxyJaw5U=;
-        b=GnIfarFR2xHOmpf/JwBsAkW5TLuFYzpJ6GgZ8dfXFBV1sWYeGsezB+HlOEo4JnfwEp4cSl
-        MSVsU6jiz2ld1fFyBhgMQVqzgllWvVUJrEqWqiyZumOo94a20m651PVI6rkmwOiYV/Civ3
-        D2ZdmHmHcKQuKYWLIaeEHof8/xQaXx0=
+        bh=ymAdaUOVg/PTZtGMFazS7nrw3mgKfKim5MfI+PVzSfg=;
+        b=TjggX2YXfs+tpGYOkxju02ymlyJdxSD4xibqrlyW5ZZTCdcvUl/wgSyLdNlpJC6Uo2vdqy
+        NEAco3xV33BF8uv+pn+FpaX07KkaE5TVwLbFf/bTIITkP0xKO6fm/TvUc6q6mZOKmV41Rk
+        ls1/OsNwIh/TstZexEETuKHDzTTVzz0=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-344-CTU3_-iwMBWLtZ3zp8ehqg-1; Mon, 28 Nov 2022 04:29:09 -0500
-X-MC-Unique: CTU3_-iwMBWLtZ3zp8ehqg-1
+ us-mta-320-6iRhRmmVMfG12wD-kAlzXA-1; Mon, 28 Nov 2022 04:29:05 -0500
+X-MC-Unique: 6iRhRmmVMfG12wD-kAlzXA-1
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 984F2802314;
-        Mon, 28 Nov 2022 09:29:09 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 45809886063;
+        Mon, 28 Nov 2022 09:29:05 +0000 (UTC)
 Received: from x1.localdomain.com (unknown [10.39.195.70])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 40384FD48;
-        Mon, 28 Nov 2022 09:29:08 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 55BFAFD48;
+        Mon, 28 Nov 2022 09:29:04 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     Sebastian Reichel <sre@kernel.org>, Marek Vasut <marex@denx.de>
 Cc:     Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
-Subject: [PATCH v2 7/9] power: supply: bq25890: Support boards with more then one charger IC
-Date:   Mon, 28 Nov 2022 10:28:54 +0100
-Message-Id: <20221128092856.71619-8-hdegoede@redhat.com>
+Subject: [PATCH v2 4/9] power: supply: bq25890: Add HiZ mode support
+Date:   Mon, 28 Nov 2022 10:28:51 +0100
+Message-Id: <20221128092856.71619-5-hdegoede@redhat.com>
 In-Reply-To: <20221128092856.71619-1-hdegoede@redhat.com>
 References: <20221128092856.71619-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -52,127 +52,175 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some devices, such as the Lenovo Yoga Tab 3 Pro (YT3-X90F) have
-multiple batteries with a separate bq25890 charger for each battery.
+From: Marek Vasut <marex@denx.de>
 
-This requires the bq25890_charger code to use a unique name per
-registered power_supply class device, rather then hardcoding
-"bq25890-charger" as power_supply class device name.
+The bq25890 is capable of disconnecting itself from the external supply,
+in which case the system is supplied only from the battery. This can be
+useful e.g. to test the pure battery operation, or draw no power from
+USB port.
 
-Add a "-%d" prefix to the name, allocated through idr in the same way
-as several other power_supply drivers are already doing this.
+Implement support for this mode, which can be toggled by writing 0 or
+non-zero to sysfs 'online' attribute, to select either offline or online
+mode.
 
-Note this also updates: drivers/platform/x86/x86-android-tablets.c
-which refers to the charger by power_supply-class-device-name for
-the purpose of setting the "supplied-from" property on the fuel-gauge
-to this name.
+The IRQ handler has to be triggered to update chip state, as switching
+to and from HiZ mode does not generate an interrupt automatically.
 
-Reviewed-by: Marek Vasut <marex@denx.de>
+The IRQ handler reinstates the HiZ mode in case a cable is replugged by
+the user, the chip itself clears the HiZ mode bit when cable is plugged
+in by the user and the chip detects PG bad-to-good transition.
+
+Signed-off-by: Marek Vasut <marex@denx.de>
+[hdegoede@redhat.com: Replace "&" with "&&" in a boolean check]
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
-As the subsystem maintainer for drivers/platform/x86 I'm fine with
-the small x86-android-tablets.c being merged through the
-linux-power-supply tree.
+ drivers/power/supply/bq25890_charger.c | 58 +++++++++++++++++++-------
+ 1 file changed, 44 insertions(+), 14 deletions(-)
 
-Also note I did a full grep for "bq25890-charger" and
-x86-android-tablets.c is the only file in the kernel tree referring
-to this name.
----
- drivers/platform/x86/x86-android-tablets.c |  2 +-
- drivers/power/supply/bq25890_charger.c     | 29 +++++++++++++++++++---
- 2 files changed, 26 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/platform/x86/x86-android-tablets.c b/drivers/platform/x86/x86-android-tablets.c
-index ad98b557cd75..5a7adcc76b1e 100644
---- a/drivers/platform/x86/x86-android-tablets.c
-+++ b/drivers/platform/x86/x86-android-tablets.c
-@@ -187,7 +187,7 @@ struct x86_dev_info {
- /* Generic / shared charger / battery settings */
- static const char * const tusb1211_chg_det_psy[] = { "tusb1211-charger-detect" };
- static const char * const bq24190_psy[] = { "bq24190-charger" };
--static const char * const bq25890_psy[] = { "bq25890-charger" };
-+static const char * const bq25890_psy[] = { "bq25890-charger-0" };
- 
- static const struct property_entry fg_bq24190_supply_props[] = {
- 	PROPERTY_ENTRY_STRING_ARRAY("supplied-from", bq24190_psy),
 diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 9b3a173b316a..30854d08bba9 100644
+index e9f5964f9dcd..f5fa39dca832 100644
 --- a/drivers/power/supply/bq25890_charger.c
 +++ b/drivers/power/supply/bq25890_charger.c
-@@ -108,6 +108,9 @@ struct bq25890_device {
- 	struct i2c_client *client;
- 	struct device *dev;
- 	struct power_supply *charger;
-+	struct power_supply_desc desc;
-+	char name[28]; /* "bq25890-charger-%d" */
-+	int id;
+@@ -95,6 +95,7 @@ struct bq25890_init_data {
  
- 	struct usb_phy *usb_phy;
- 	struct notifier_block usb_nb;
-@@ -129,6 +132,9 @@ struct bq25890_device {
- 	struct mutex lock; /* protect state data */
- };
+ struct bq25890_state {
+ 	u8 online;
++	u8 hiz;
+ 	u8 chrg_status;
+ 	u8 chrg_fault;
+ 	u8 vsys_status;
+@@ -119,6 +120,7 @@ struct bq25890_device {
  
-+static DEFINE_IDR(bq25890_id);
-+static DEFINE_MUTEX(bq25890_id_mutex);
-+
- static const struct regmap_range bq25890_readonly_reg_ranges[] = {
- 	regmap_reg_range(0x0b, 0x0c),
- 	regmap_reg_range(0x0e, 0x13),
-@@ -989,7 +995,6 @@ static char *bq25890_charger_supplied_to[] = {
- };
+ 	bool skip_reset;
+ 	bool read_back_init_data;
++	bool force_hiz;
+ 	u32 pump_express_vbus_max;
+ 	enum bq25890_chip_version chip_version;
+ 	struct bq25890_init_data init_data;
+@@ -487,7 +489,7 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
  
- static const struct power_supply_desc bq25890_power_supply_desc = {
--	.name = "bq25890-charger",
- 	.type = POWER_SUPPLY_TYPE_USB,
- 	.properties = bq25890_power_supply_props,
- 	.num_properties = ARRAY_SIZE(bq25890_power_supply_props),
-@@ -1003,12 +1008,21 @@ static int bq25890_power_supply_init(struct bq25890_device *bq)
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+-		if (!state.online)
++		if (!state.online || state.hiz)
+ 			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+ 		else if (state.chrg_status == STATUS_NOT_CHARGING)
+ 			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+@@ -502,7 +504,8 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
+ 		break;
+ 
+ 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+-		if (!state.online || state.chrg_status == STATUS_NOT_CHARGING ||
++		if (!state.online || state.hiz ||
++		    state.chrg_status == STATUS_NOT_CHARGING ||
+ 		    state.chrg_status == STATUS_TERMINATION_DONE)
+ 			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
+ 		else if (state.chrg_status == STATUS_PRE_CHARGING)
+@@ -522,7 +525,7 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
+ 		break;
+ 
+ 	case POWER_SUPPLY_PROP_ONLINE:
+-		val->intval = state.online;
++		val->intval = state.online && !state.hiz;
+ 		break;
+ 
+ 	case POWER_SUPPLY_PROP_HEALTH:
+@@ -676,7 +679,8 @@ static int bq25890_power_supply_set_property(struct power_supply *psy,
+ 					     const union power_supply_propval *val)
  {
- 	struct power_supply_config psy_cfg = { .drv_data = bq, };
+ 	struct bq25890_device *bq = power_supply_get_drvdata(psy);
+-	int maxval;
++	struct bq25890_state state;
++	int maxval, ret;
+ 	u8 lval;
  
-+	/* Get ID for the device */
-+	mutex_lock(&bq25890_id_mutex);
-+	bq->id = idr_alloc(&bq25890_id, bq, 0, 0, GFP_KERNEL);
-+	mutex_unlock(&bq25890_id_mutex);
-+	if (bq->id < 0)
-+		return bq->id;
-+
-+	snprintf(bq->name, sizeof(bq->name), "bq25890-charger-%d", bq->id);
-+	bq->desc = bq25890_power_supply_desc;
-+	bq->desc.name = bq->name;
-+
- 	psy_cfg.supplied_to = bq25890_charger_supplied_to;
- 	psy_cfg.num_supplicants = ARRAY_SIZE(bq25890_charger_supplied_to);
+ 	switch (psp) {
+@@ -691,6 +695,12 @@ static int bq25890_power_supply_set_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+ 		lval = bq25890_find_idx(val->intval, TBL_IINLIM);
+ 		return bq25890_field_write(bq, F_IINLIM, lval);
++	case POWER_SUPPLY_PROP_ONLINE:
++		ret = bq25890_field_write(bq, F_EN_HIZ, !val->intval);
++		if (!ret)
++			bq->force_hiz = !val->intval;
++		bq25890_update_state(bq, psp, &state);
++		return ret;
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -703,6 +713,7 @@ static int bq25890_power_supply_property_is_writeable(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++	case POWER_SUPPLY_PROP_ONLINE:
+ 		return true;
+ 	default:
+ 		return false;
+@@ -757,6 +768,7 @@ static int bq25890_get_chip_state(struct bq25890_device *bq,
+ 	} state_fields[] = {
+ 		{F_CHG_STAT,	&state->chrg_status},
+ 		{F_PG_STAT,	&state->online},
++		{F_EN_HIZ,	&state->hiz},
+ 		{F_VSYS_STAT,	&state->vsys_status},
+ 		{F_BOOST_FAULT, &state->boost_fault},
+ 		{F_BAT_FAULT,	&state->bat_fault},
+@@ -772,10 +784,11 @@ static int bq25890_get_chip_state(struct bq25890_device *bq,
+ 		*state_fields[i].data = ret;
+ 	}
  
--	bq->charger = devm_power_supply_register(bq->dev,
--						 &bq25890_power_supply_desc,
--						 &psy_cfg);
-+	bq->charger = devm_power_supply_register(bq->dev, &bq->desc, &psy_cfg);
+-	dev_dbg(bq->dev, "S:CHG/PG/VSYS=%d/%d/%d, F:CHG/BOOST/BAT/NTC=%d/%d/%d/%d\n",
+-		state->chrg_status, state->online, state->vsys_status,
+-		state->chrg_fault, state->boost_fault, state->bat_fault,
+-		state->ntc_fault);
++	dev_dbg(bq->dev, "S:CHG/PG/HIZ/VSYS=%d/%d/%d/%d, F:CHG/BOOST/BAT/NTC=%d/%d/%d/%d\n",
++		state->chrg_status, state->online,
++		state->hiz, state->vsys_status,
++		state->chrg_fault, state->boost_fault,
++		state->bat_fault, state->ntc_fault);
  
- 	return PTR_ERR_OR_ZERO(bq->charger);
+ 	return 0;
  }
-@@ -1354,6 +1368,12 @@ static void bq25890_non_devm_cleanup(void *data)
- 	struct bq25890_device *bq = data;
+@@ -792,16 +805,33 @@ static irqreturn_t __bq25890_handle_irq(struct bq25890_device *bq)
+ 	if (!memcmp(&bq->state, &new_state, sizeof(new_state)))
+ 		return IRQ_NONE;
  
- 	cancel_delayed_work_sync(&bq->pump_express_work);
+-	if (!new_state.online && bq->state.online) {	    /* power removed */
++	/* power removed or HiZ */
++	if ((!new_state.online || new_state.hiz) && bq->state.online) {
+ 		/* disable ADC */
+ 		ret = bq25890_field_write(bq, F_CONV_RATE, 0);
+ 		if (ret < 0)
+ 			goto error;
+-	} else if (new_state.online && !bq->state.online) { /* power inserted */
+-		/* enable ADC, to have control of charge current/voltage */
+-		ret = bq25890_field_write(bq, F_CONV_RATE, 1);
+-		if (ret < 0)
+-			goto error;
++	} else if (new_state.online && !bq->state.online) {
++		/*
++		 * Restore HiZ bit in case it was set by user.
++		 * The chip does not retain this bit once the
++		 * cable is re-plugged, hence the bit must be
++		 * reset manually here.
++		 */
++		if (bq->force_hiz) {
++			ret = bq25890_field_write(bq, F_EN_HIZ, bq->force_hiz);
++			if (ret < 0)
++				goto error;
++			new_state.hiz = 1;
++		}
 +
-+	if (bq->id >= 0) {
-+		mutex_lock(&bq25890_id_mutex);
-+		idr_remove(&bq25890_id, bq->id);
-+		mutex_unlock(&bq25890_id_mutex);
-+	}
- }
++		if (!new_state.hiz) {
++			/* power inserted and not HiZ */
++			/* enable ADC, to have control of charge current/voltage */
++			ret = bq25890_field_write(bq, F_CONV_RATE, 1);
++			if (ret < 0)
++				goto error;
++		}
+ 	}
  
- static int bq25890_probe(struct i2c_client *client)
-@@ -1368,6 +1388,7 @@ static int bq25890_probe(struct i2c_client *client)
- 
- 	bq->client = client;
- 	bq->dev = dev;
-+	bq->id = -1;
- 
- 	mutex_init(&bq->lock);
- 	INIT_DELAYED_WORK(&bq->pump_express_work, bq25890_pump_express_work);
+ 	bq->state = new_state;
 -- 
 2.37.3
 
