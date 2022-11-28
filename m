@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1092BC4167D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B710DC46467
 	for <linux-pm@archiver.kernel.org>; Mon, 28 Nov 2022 13:14:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230502AbiK1NOU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Nov 2022 08:14:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39894 "EHLO
+        id S231841AbiK1NOX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Nov 2022 08:14:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40168 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231607AbiK1NNl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:41 -0500
+        with ESMTP id S231655AbiK1NNm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2022 08:13:42 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C07FE1CFC2;
-        Mon, 28 Nov 2022 05:13:40 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A3921DA5F;
+        Mon, 28 Nov 2022 05:13:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1669641220; x=1701177220;
+  t=1669641221; x=1701177221;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=KWVB7nlsf20aLmkJw9PMc9fnASyxtCkpqLu/IPZ9sIY=;
-  b=gNCDRFydNHxGrZ32vgvgI8pBRG7LjpNHtdZzMzyuZ8fXB50Uwp9lS3kA
-   zRoRQPUFn5de46HRr7ZQ0XtAZjS5JTFIKMxG6YaJQ8yhdeAb692U3a5lz
-   ddTIozmiUIT/bUIamOMSsrzn2+clHiq2Bbf27x66B0kySRWFuc+HrSSI3
-   AUQXSVS4riThDleOtdzqdRFCp1EU8JYHP/JptWOUl42lRUMyceLqsS+cS
-   WlehERQ4rOdZkTyepAbsEHN1ulF3wM+Q7NBexfVzod03maujcwqaCd/fT
-   MQl2rA2qzsFcYqON4Vzc9K56Rj4InE42wLT0QjnYCqvOH+kp1+kp0uZ6x
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117238"
+  bh=U9TIyYUMDTGWF/am2zEWFCJshAZh6Eamp8JHDo02tn8=;
+  b=d1X0izXQsq8bimLuxoByKBtb50BbTS+NFW017jW42z9oH2Kx7+MdQCvw
+   DHnuol0lmQF9TtLyWyC9pnifMZ6+TH27FiVyCEb+1YQCl8zJxw0yR66sC
+   36dmkJm5y9XZnJlFOwIz2+5KvQjomBjdDvjFhNaRP5Ul8okM6MEXs4/ye
+   USKMXdv4UnRDepjeAdDyn0KDAjbFBjzsgF4vL0iZlVu74c8/SwZwBbjts
+   8xc/pV7265ZSHrW0afZzECNLxJfa5oCmRb/fIJ9UcTwdmC9nc9xopYDm4
+   /SsGNA2pbDDXf4C+sMg/TOVhQyuget34YhnmjDe9LaDLPeCBNYsa7699Z
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="401117261"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="401117238"
+   d="scan'208";a="401117261"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
   by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Nov 2022 05:13:36 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381390"
+X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="749381398"
 X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; 
-   d="scan'208";a="749381390"
+   d="scan'208";a="749381398"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 05:13:35 -0800
+  by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 05:13:36 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
         Juri Lelli <juri.lelli@redhat.com>,
@@ -57,9 +57,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v2 18/22] sched/core: Initialize helpers of task classification
-Date:   Mon, 28 Nov 2022 05:20:56 -0800
-Message-Id: <20221128132100.30253-19-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v2 20/22] x86/cpufeatures: Add feature bit for HRESET
+Date:   Mon, 28 Nov 2022 05:20:58 -0800
+Message-Id: <20221128132100.30253-21-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
 References: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
@@ -67,8 +67,9 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Just as tasks start life unclassified, initialize the classification
-auxiliar variables.
+The HRESET instruction prevents the classification of the current task
+from influencing the classification of the next task when running serially
+on the same logical processor.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -89,22 +90,55 @@ Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 Changes since v1:
  * None
 ---
- kernel/sched/core.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/include/asm/cpufeatures.h | 1 +
+ arch/x86/include/asm/msr-index.h   | 4 +++-
+ arch/x86/kernel/cpu/scattered.c    | 1 +
+ 3 files changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 2cd409536b72..0406b07c51a0 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -4374,6 +4374,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
- 	p->se.vruntime			= 0;
- #ifdef CONFIG_IPC_CLASSES
- 	p->ipcc				= IPC_CLASS_UNCLASSIFIED;
-+	p->ipcc_tmp			= IPC_CLASS_UNCLASSIFIED;
-+	p->ipcc_cntr			= 0;
- #endif
- 	INIT_LIST_HEAD(&p->se.group_node);
+diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+index 80b2beafc81e..281a7c861b8d 100644
+--- a/arch/x86/include/asm/cpufeatures.h
++++ b/arch/x86/include/asm/cpufeatures.h
+@@ -308,6 +308,7 @@
+ #define X86_FEATURE_CALL_DEPTH		(11*32+19) /* "" Call depth tracking for RSB stuffing */
  
+ #define X86_FEATURE_MSR_TSX_CTRL	(11*32+20) /* "" MSR IA32_TSX_CTRL (Intel) implemented */
++#define X86_FEATURE_HRESET		(11*32+21) /* Hardware history reset instruction */
+ 
+ /* Intel-defined CPU features, CPUID level 0x00000007:1 (EAX), word 12 */
+ #define X86_FEATURE_AVX_VNNI		(12*32+ 4) /* AVX VNNI instructions */
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 96303330223b..7a3ff73164bd 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -1078,6 +1078,9 @@
+ #define MSR_IA32_HW_FEEDBACK_THREAD_CONFIG 0x17d4
+ #define MSR_IA32_HW_FEEDBACK_CHAR	0x17d2
+ 
++/* Hardware History Reset  */
++#define MSR_IA32_HW_HRESET_ENABLE	0x17da
++
+ /* x2APIC locked status */
+ #define MSR_IA32_XAPIC_DISABLE_STATUS	0xBD
+ #define LEGACY_XAPIC_DISABLED		BIT(0) /*
+@@ -1085,5 +1088,4 @@
+ 						* disabling x2APIC will cause
+ 						* a #GP
+ 						*/
+-
+ #endif /* _ASM_X86_MSR_INDEX_H */
+diff --git a/arch/x86/kernel/cpu/scattered.c b/arch/x86/kernel/cpu/scattered.c
+index f53944fb8f7f..66bc5713644d 100644
+--- a/arch/x86/kernel/cpu/scattered.c
++++ b/arch/x86/kernel/cpu/scattered.c
+@@ -28,6 +28,7 @@ static const struct cpuid_bit cpuid_bits[] = {
+ 	{ X86_FEATURE_EPB,		CPUID_ECX,  3, 0x00000006, 0 },
+ 	{ X86_FEATURE_INTEL_PPIN,	CPUID_EBX,  0, 0x00000007, 1 },
+ 	{ X86_FEATURE_RRSBA_CTRL,	CPUID_EDX,  2, 0x00000007, 2 },
++	{ X86_FEATURE_HRESET,		CPUID_EAX, 22, 0x00000007, 1 },
+ 	{ X86_FEATURE_CQM_LLC,		CPUID_EDX,  1, 0x0000000f, 0 },
+ 	{ X86_FEATURE_CQM_OCCUP_LLC,	CPUID_EDX,  0, 0x0000000f, 1 },
+ 	{ X86_FEATURE_CQM_MBM_TOTAL,	CPUID_EDX,  1, 0x0000000f, 1 },
 -- 
 2.25.1
 
