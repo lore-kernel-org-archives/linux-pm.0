@@ -2,154 +2,137 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41DBCC4167B
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Nov 2022 16:23:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45EABC46467
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Nov 2022 16:36:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235761AbiK2QX2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Nov 2022 11:23:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52314 "EHLO
+        id S235150AbiK2Qf7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Nov 2022 11:35:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33274 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235766AbiK2QX0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2022 11:23:26 -0500
-X-Greylist: delayed 2623 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 29 Nov 2022 08:23:24 PST
-Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E0A729818;
-        Tue, 29 Nov 2022 08:23:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
-        s=20161220; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:
-        Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
-        Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-        In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-        List-Post:List-Owner:List-Archive;
-        bh=38ZO5dcQL7vEBOSehjzd4koG7jc6NaxBkgnbwvWmh2Y=; b=xlk1fVSDvS2IHfd8DdjH/YnlDh
-        o/+tEzgh7v2gBMCj862rB3kWujZyesuCtaiypcv0V9Lb1JWEUqFHSIDa/Gm1WrcujHNHiFRlKZyMH
-        meq9x6mbCVn8oxAfX9K4OaezgSfwcF1JsYakeak3EW1H8yad0nb3jhaQ3/iMP0rwc1u4kyFYu8f8M
-        jEGAENuEeJr3crC9DMwPB+7AYYBMa07v4wyUemABf4FNE7v6aaYn4EbnPtXFQNJXvQpfSG3Gr2BWU
-        MjHt+tDyp2gyOSEOtPbchQhQ1mswqXMJvhCl9X8wW0hCGL/loGnY31gEOt9r0o4XsxjQdPfDm02HR
-        AQn90mMQ==;
-Received: from 91-158-25-70.elisa-laajakaista.fi ([91.158.25.70] helo=toshino.localdomain)
-        by mail.kapsi.fi with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <cyndis@kapsi.fi>)
-        id 1p02hb-00DfaO-Mo; Tue, 29 Nov 2022 17:39:19 +0200
-From:   Mikko Perttunen <cyndis@kapsi.fi>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     Mikko Perttunen <mperttunen@nvidia.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH] thermal: tegra-bpmp: Check if BPMP supports trip points
-Date:   Tue, 29 Nov 2022 17:39:14 +0200
-Message-Id: <20221129153914.2699041-1-cyndis@kapsi.fi>
-X-Mailer: git-send-email 2.37.0
+        with ESMTP id S235964AbiK2Qf4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2022 11:35:56 -0500
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E08E697DC
+        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2022 08:35:55 -0800 (PST)
+Received: by mail-lf1-x129.google.com with SMTP id b3so22910471lfv.2
+        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2022 08:35:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=DozG8slifYUbIeG4p5hbkPUxWwGRFcCdA+vVxiWXmfs=;
+        b=I9CBZQoGxjED9f6Xxs7R1Rh6NnUMmuWqQXJdRRmpJ19Mz89DIjvjAoIuZf7K9iWSBb
+         BiuLtCwS1l8gbw3kmoN3yBnAy0UNEWGDVWoL2sM0tJjSRAYvll5qomZ569ewA9ysgSxU
+         JzfdKhZGEjom0GwBUbMn2PSvs3xj6oK1LcdbY+Tk/SBTR5WTvgMJBNv2HG66Cws6pPO9
+         Sia8hauW5d44/JN0lbQF8CYJlynN0e2tJ0r9jPqXIbic6wHazU6w0R3BFFReizNVGZHf
+         3nghfdGrmHKOK8Kcx91mFYj0lzTVx4zPIFCmuqQfPRQHqdG09bfrB8NBJpuESEprcOvX
+         cnnw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=DozG8slifYUbIeG4p5hbkPUxWwGRFcCdA+vVxiWXmfs=;
+        b=gF03N4Q1Qhdasc4FSdN1UL9LkNYJGX9v0oixFSHRxPef7/tmc1AoT5b4rQhriev6n1
+         gkQdG5qiQbqzi8K2bL6wxj31joI/I2V7FEQADQgDv60jNWYriiEmqedpdRzjvjcMVich
+         5eq/w954pHx9RK9Z3Si7zHj3r5hKkzUvOqgc+rSFw14Z3f+TUBi2k+l20qmoRGiabU4U
+         hwdiF8cXDWy3dtTBdmgps1mp/R12HnEMMcKLNpVhxS9b5mogRw26LL8Ah2OAb8EGt45p
+         AP1eHi0j4S6O1NVVvucx5ZfGVEOiDFY3PSHehil019ZPgtZJHn5fzblmZXRLcZ1irD00
+         CNog==
+X-Gm-Message-State: ANoB5pkLRZa0FxAfMMNXaoxzprX7nfQbApLV0YagMUqKXx1KqTO7Wy2d
+        mpSp3YpzKCFwJ1GS3KEkUSVVCsHUZN45dnHq
+X-Google-Smtp-Source: AA0mqf6nIP2Y/A3+PfTGlbmjvNTL2zsWVEGp5bBox8UJh3b4flIMVZs/UJDXUOiNFTamoISUgQ+TEQ==
+X-Received: by 2002:ac2:4346:0:b0:4b4:a5c8:cc0f with SMTP id o6-20020ac24346000000b004b4a5c8cc0fmr21241693lfl.138.1669739753191;
+        Tue, 29 Nov 2022 08:35:53 -0800 (PST)
+Received: from [192.168.0.20] (088156142067.dynamic-2-waw-k-3-2-0.vectranet.pl. [88.156.142.67])
+        by smtp.gmail.com with ESMTPSA id a26-20020a056512201a00b0049496608d58sm2240486lfb.155.2022.11.29.08.35.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 29 Nov 2022 08:35:52 -0800 (PST)
+Message-ID: <bc230481-1c31-6121-6647-8e2b4b80512e@linaro.org>
+Date:   Tue, 29 Nov 2022 17:35:51 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 91.158.25.70
-X-SA-Exim-Mail-From: cyndis@kapsi.fi
-X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: [PATCH v3 1/2] dt-bindings: interconnect: Add Qualcomm SM8550
+Content-Language: en-US
+To:     Abel Vesa <abel.vesa@linaro.org>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20221129131203.2197959-1-abel.vesa@linaro.org>
+ <20221129131203.2197959-2-abel.vesa@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20221129131203.2197959-2-abel.vesa@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Mikko Perttunen <mperttunen@nvidia.com>
+On 29/11/2022 14:12, Abel Vesa wrote:
+> The Qualcomm SM8550 SoC has several bus fabrics that could be
+> controlled and tuned dynamically according to the bandwidth demand.
+> 
+> Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+> ---
 
-Check if BPMP supports thermal trip points, and if not,
-do not expose the .set_trips callback to the thermal core
-framework. This can happen in virtualized environments
-where asynchronous communication with VM BPMP drivers is not
-available.
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            enum:
+> +              - qcom,sm8550-aggre1-noc
+> +              - qcom,sm8550-aggre2-noc
+> +              - qcom,sm8550-pcie-anoc
+> +    then:
+> +      required:
+> +        - clocks
+> +    else:
+> +      properties:
+> +        clocks: false
+> +
+> +required:
+> +  - compatible
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +      #include <dt-bindings/clock/qcom,sm8550-gcc.h>
+> +      #include <dt-bindings/interconnect/qcom,sm8550-rpmh.h>
+> +      #include <dt-bindings/clock/qcom,rpmh.h>
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
----
- drivers/thermal/tegra/tegra-bpmp-thermal.c | 52 +++++++++++++++++++++-
- 1 file changed, 51 insertions(+), 1 deletion(-)
+Keep headers sorted.... but actually these two look like not used. If
+you want to mention the header for interconnect IDs, you can add it in
+top level descritpion.
 
-diff --git a/drivers/thermal/tegra/tegra-bpmp-thermal.c b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-index 0b7a1a1948cb..c76e1ea62c8a 100644
---- a/drivers/thermal/tegra/tegra-bpmp-thermal.c
-+++ b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-@@ -163,19 +163,69 @@ static int tegra_bpmp_thermal_get_num_zones(struct tegra_bpmp *bpmp,
- 	return 0;
- }
- 
-+static int tegra_bpmp_thermal_trips_supported(struct tegra_bpmp *bpmp, bool *supported)
-+{
-+	struct mrq_thermal_host_to_bpmp_request req;
-+	union mrq_thermal_bpmp_to_host_response reply;
-+	struct tegra_bpmp_message msg;
-+	int err;
-+
-+	memset(&req, 0, sizeof(req));
-+	req.type = CMD_THERMAL_QUERY_ABI;
-+	req.query_abi.type = CMD_THERMAL_SET_TRIP;
-+
-+	memset(&msg, 0, sizeof(msg));
-+	msg.mrq = MRQ_THERMAL;
-+	msg.tx.data = &req;
-+	msg.tx.size = sizeof(req);
-+	msg.rx.data = &reply;
-+	msg.rx.size = sizeof(reply);
-+
-+	err = tegra_bpmp_transfer(bpmp, &msg);
-+	if (err)
-+		return err;
-+
-+	if (msg.rx.ret == 0) {
-+		*supported = true;
-+		return 0;
-+	} else if (msg.rx.ret == -BPMP_ENODEV) {
-+		*supported = false;
-+		return 0;
-+	} else {
-+		return -EINVAL;
-+	}
-+}
-+
- static const struct thermal_zone_device_ops tegra_bpmp_of_thermal_ops = {
- 	.get_temp = tegra_bpmp_thermal_get_temp,
- 	.set_trips = tegra_bpmp_thermal_set_trips,
- };
- 
-+static const struct thermal_zone_device_ops tegra_bpmp_of_thermal_ops_notrips = {
-+	.get_temp = tegra_bpmp_thermal_get_temp,
-+};
-+
- static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
- {
- 	struct tegra_bpmp *bpmp = dev_get_drvdata(pdev->dev.parent);
-+	const struct thermal_zone_device_ops *thermal_ops;
- 	struct tegra_bpmp_thermal *tegra;
- 	struct thermal_zone_device *tzd;
- 	unsigned int i, max_num_zones;
-+	bool supported;
- 	int err;
- 
-+	err = tegra_bpmp_thermal_trips_supported(bpmp, &supported);
-+	if (err) {
-+		dev_err(&pdev->dev, "failed to determine if trip points are supported\n");
-+		return err;
-+	}
-+
-+	if (supported)
-+		thermal_ops = &tegra_bpmp_of_thermal_ops;
-+	else
-+		thermal_ops = &tegra_bpmp_of_thermal_ops_notrips;
-+
- 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
- 	if (!tegra)
- 		return -ENOMEM;
-@@ -213,7 +263,7 @@ static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
- 		}
- 
- 		tzd = devm_thermal_of_zone_register(
--			&pdev->dev, i, zone, &tegra_bpmp_of_thermal_ops);
-+			&pdev->dev, i, zone, thermal_ops);
- 		if (IS_ERR(tzd)) {
- 			if (PTR_ERR(tzd) == -EPROBE_DEFER)
- 				return -EPROBE_DEFER;
--- 
-2.37.0
+> +
+> +      clk_virt: interconnect-0 {
+> +             compatible = "qcom,sm8550-clk-virt";
+> +             #interconnect-cells = <2>;
+> +             qcom,bcm-voters = <&apps_bcm_voter>;
+> +      };
+> +
+> +      aggre1_noc: interconnect@16e0000 {
+> +             compatible = "qcom,sm8550-aggre1-noc";
+> +             reg = <0x016e0000 0x14400>;
+> +             #interconnect-cells = <2>;
+> +             clocks = <&gcc GCC_AGGRE_UFS_PHY_AXI_CLK>,
+> +                      <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>;
+> +             qcom,bcm-voters = <&apps_bcm_voter>;
+> +      };
+
+Your DTS example is oddly indented. I missed it during previous review.
+DTS examples go either with 2 or 4 spaces.
+
+
+Best regards,
+Krzysztof
 
