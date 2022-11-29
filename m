@@ -2,158 +2,154 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C309C433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Nov 2022 16:14:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41DBCC4167B
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Nov 2022 16:23:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234628AbiK2QOv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Nov 2022 11:14:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42566 "EHLO
+        id S235761AbiK2QX2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Nov 2022 11:23:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235846AbiK2QOV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2022 11:14:21 -0500
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39C076479
-        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2022 08:14:19 -0800 (PST)
-Received: by mail-pl1-x632.google.com with SMTP id d6so13878334pll.7
-        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2022 08:14:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=kNFxlZ5UZHdqkY5D469ZlAF99iMQpaT7Z5Tb3gRNO6s=;
-        b=mklqGGWoIM/Kk03/T+/9GKUrA6BxCbIlOnGYi47ya+PsGaq5PuQ79ArfHzHUmocpKh
-         UWYRyw2YoIeBkjr3Eqm6k/Gdwca1jZhoqdZYMEv0kDpavQqW0uemlTyNhrp3s8Lyp0wf
-         dfoVI3AWKhWpEbKWDtpXW8RUcscnpr6oqcIWCY5X0aF1OS5tSH/X9xee82Tifpp8sMRD
-         co8Ej+77pmSyRY25H4eiRVWk8ImjBJxYvrt7ksEMgk4BwtOVGzzQd6dW7IwDPPvW45Db
-         MMLLaFIp/OL9/QILpT4+Emv8SB0DSzXuP/u0J5ZxNBL52B7jukWPRDqx1Ry5wVQdlurk
-         K0rQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kNFxlZ5UZHdqkY5D469ZlAF99iMQpaT7Z5Tb3gRNO6s=;
-        b=6b64fgoH8WVQcxFyHqNzFgqlYQ1/KehIDWYBVNgXlBwLKir5gI+YQpPgDJn9EWPs4u
-         VCwP9AXrofdnxhUH8Jki1AWYr8lMUxUps5QwnAfgxJv/96zVnpytp2F97f9h5+IKroX6
-         PM+pmU56qHuGSZhPoAHCIMFVRZFDsIQIZFxIhqXFTmqtwKeuwFDPvpf8hnDUGYsb4G+P
-         cbg6T/+Vs+derudrIOhHK9XxaP1iIyh/QPvZiz1a5AgJzt5MlT46M9HaM6dWNNAUOVOz
-         oN65IvDiK5GlEdO/O+yoc8Xn+f214LZbXRO4MMN1QrHmDKyINHuhDkAItjaLJV/K1YHa
-         Wf1A==
-X-Gm-Message-State: ANoB5pmuLC1dGCeCCUZ1+8fXfA9D5IGHtZ8o2wzFnQu3pKCTCJi/vZNW
-        8fGDDLbNZuBTF9V8rINl4EfqKgNUoNUsyBJyef/spw==
-X-Google-Smtp-Source: AA0mqf5Rhd9HRwHYXDQMJsdsuHv6CWi3cvL30xHSRd2rhgyF1yVicxH7ZuTFM37ksIosNcYkVDDs3i5NQrVQbGRzqH4=
-X-Received: by 2002:a17:90b:1d45:b0:218:6db5:fd98 with SMTP id
- ok5-20020a17090b1d4500b002186db5fd98mr61969036pjb.164.1669738459171; Tue, 29
- Nov 2022 08:14:19 -0800 (PST)
+        with ESMTP id S235766AbiK2QX0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2022 11:23:26 -0500
+X-Greylist: delayed 2623 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 29 Nov 2022 08:23:24 PST
+Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E0A729818;
+        Tue, 29 Nov 2022 08:23:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
+        s=20161220; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:
+        Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
+        Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+        In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+        List-Post:List-Owner:List-Archive;
+        bh=38ZO5dcQL7vEBOSehjzd4koG7jc6NaxBkgnbwvWmh2Y=; b=xlk1fVSDvS2IHfd8DdjH/YnlDh
+        o/+tEzgh7v2gBMCj862rB3kWujZyesuCtaiypcv0V9Lb1JWEUqFHSIDa/Gm1WrcujHNHiFRlKZyMH
+        meq9x6mbCVn8oxAfX9K4OaezgSfwcF1JsYakeak3EW1H8yad0nb3jhaQ3/iMP0rwc1u4kyFYu8f8M
+        jEGAENuEeJr3crC9DMwPB+7AYYBMa07v4wyUemABf4FNE7v6aaYn4EbnPtXFQNJXvQpfSG3Gr2BWU
+        MjHt+tDyp2gyOSEOtPbchQhQ1mswqXMJvhCl9X8wW0hCGL/loGnY31gEOt9r0o4XsxjQdPfDm02HR
+        AQn90mMQ==;
+Received: from 91-158-25-70.elisa-laajakaista.fi ([91.158.25.70] helo=toshino.localdomain)
+        by mail.kapsi.fi with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <cyndis@kapsi.fi>)
+        id 1p02hb-00DfaO-Mo; Tue, 29 Nov 2022 17:39:19 +0200
+From:   Mikko Perttunen <cyndis@kapsi.fi>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     Mikko Perttunen <mperttunen@nvidia.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+Subject: [PATCH] thermal: tegra-bpmp: Check if BPMP supports trip points
+Date:   Tue, 29 Nov 2022 17:39:14 +0200
+Message-Id: <20221129153914.2699041-1-cyndis@kapsi.fi>
+X-Mailer: git-send-email 2.37.0
 MIME-Version: 1.0
-References: <20221128142912.16022-1-marcan@marcan.st> <20221128142912.16022-3-marcan@marcan.st>
- <CAPDyKFobMvef_BWGMR=7avODh2r5XNMGpwO3xYgrN-u=DqRwbg@mail.gmail.com> <41c6882a-bff0-378c-edd3-160b54be7c1d@marcan.st>
-In-Reply-To: <41c6882a-bff0-378c-edd3-160b54be7c1d@marcan.st>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Tue, 29 Nov 2022 17:13:42 +0100
-Message-ID: <CAPDyKFqZJEqijsKMhMSZVCOA-RugnEJ7aqxwRRin1JE3i1WxMA@mail.gmail.com>
-Subject: Re: [PATCH v5 2/4] dt-bindings: cpufreq: apple,soc-cpufreq: Add
- binding for Apple SoC cpufreq
-To:     Hector Martin <marcan@marcan.st>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Sven Peter <sven@svenpeter.dev>,
-        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>, Marc Zyngier <maz@kernel.org>,
-        Mark Kettenis <mark.kettenis@xs4all.nl>, asahi@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 91.158.25.70
+X-SA-Exim-Mail-From: cyndis@kapsi.fi
+X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 29 Nov 2022 at 15:00, Hector Martin <marcan@marcan.st> wrote:
->
-> On 29/11/2022 20.36, Ulf Hansson wrote:
-> > On Mon, 28 Nov 2022 at 15:29, Hector Martin <marcan@marcan.st> wrote:
-> >> +examples:
-> >> +  - |
-> >> +    // This example shows a single CPU per domain and 2 domains,
-> >> +    // with two p-states per domain.
-> >> +    // Shipping hardware has 2-4 CPUs per domain and 2-6 domains.
-> >> +    cpus {
-> >> +      #address-cells = <2>;
-> >> +      #size-cells = <0>;
-> >> +
-> >> +      cpu@0 {
-> >> +        compatible = "apple,icestorm";
-> >> +        device_type = "cpu";
-> >> +        reg = <0x0 0x0>;
-> >> +        operating-points-v2 = <&ecluster_opp>;
-> >
-> > To me, it looks like the operating-points-v2 phandle better belongs in
-> > the performance-domains provider node. I mean, isn't the OPPs really a
-> > description of the performance-domain provider?
-> >
-> > That said, I suggest we try to extend the generic performance-domain
-> > binding [1] with an "operating-points-v2". In that way, we should
-> > instead be able to reference it from this binding.
-> >
-> > In fact, that would be very similar to what already exists for the
-> > generic power-domain binding [2]. I think it would be rather nice to
-> > follow a similar pattern for the performance-domain binding.
->
-> While I agree with the technical rationale and the proposed approach
-> being better in principle...
->
-> We're at v5 of bikeshedding this trivial driver's DT binding, and the
-> comment could've been made at v3. To quote IRC just now:
+From: Mikko Perttunen <mperttunen@nvidia.com>
 
-It could and I certainly apologize for that.
+Check if BPMP supports thermal trip points, and if not,
+do not expose the .set_trips callback to the thermal core
+framework. This can happen in virtualized environments
+where asynchronous communication with VM BPMP drivers is not
+available.
 
-It's simply been a busy period for me, so I haven't been able to look
-closer at the DT bindings, until now.
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+ drivers/thermal/tegra/tegra-bpmp-thermal.c | 52 +++++++++++++++++++++-
+ 1 file changed, 51 insertions(+), 1 deletion(-)
 
->
-> > this way the machines will be obsolete before things are fully upstreamed
->
-> I think it's long overdue for the kernel community to take a deep look
-> at itself and its development and review process, because it is quite
-> honestly insane how pathologically inefficient it is compared to,
-> basically, every other large and healthy open source project of similar
-> or even greater impact and scope.
->
-> Cc Linus, because this is for your Mac and I assume you care. We're at
-> v5 here for this silly driver. Meanwhile, rmk recently threw the towel
-> on upstreaming macsmc for us. We're trying, and I'll keep trying because
-> I actually get paid (by very generous donors) to do this, but if I
-> weren't I'd have given up a long time ago. And while I won't give up, I
-> can't deny this situation affects my morale and willingness to keep
-> pushing on upstreaming on a regular basis.
->
-> Meanwhile, OpenBSD has been *shipping* full M1 support for a while now
-> in official release images (and since Linux is the source of truth for
-> DT bindings, every time we re-bikeshed it we break their users because
-> they, quite reasonably, aren't interested in waiting for us Linux
-> slowpokes to figure it out first).
->
-> Please, let's introspect about this for a moment. Something is deeply
-> broken if people with 25+ years being an arch maintainer can't get a
-> 700-line mfd driver upstreamed before giving up. I don't know how we
-> expect to ever get a Rust GPU driver merged if it takes 6+ versions to
-> upstream the world's easiest cpufreq hardware.
->
-> - Hector
+diff --git a/drivers/thermal/tegra/tegra-bpmp-thermal.c b/drivers/thermal/tegra/tegra-bpmp-thermal.c
+index 0b7a1a1948cb..c76e1ea62c8a 100644
+--- a/drivers/thermal/tegra/tegra-bpmp-thermal.c
++++ b/drivers/thermal/tegra/tegra-bpmp-thermal.c
+@@ -163,19 +163,69 @@ static int tegra_bpmp_thermal_get_num_zones(struct tegra_bpmp *bpmp,
+ 	return 0;
+ }
+ 
++static int tegra_bpmp_thermal_trips_supported(struct tegra_bpmp *bpmp, bool *supported)
++{
++	struct mrq_thermal_host_to_bpmp_request req;
++	union mrq_thermal_bpmp_to_host_response reply;
++	struct tegra_bpmp_message msg;
++	int err;
++
++	memset(&req, 0, sizeof(req));
++	req.type = CMD_THERMAL_QUERY_ABI;
++	req.query_abi.type = CMD_THERMAL_SET_TRIP;
++
++	memset(&msg, 0, sizeof(msg));
++	msg.mrq = MRQ_THERMAL;
++	msg.tx.data = &req;
++	msg.tx.size = sizeof(req);
++	msg.rx.data = &reply;
++	msg.rx.size = sizeof(reply);
++
++	err = tegra_bpmp_transfer(bpmp, &msg);
++	if (err)
++		return err;
++
++	if (msg.rx.ret == 0) {
++		*supported = true;
++		return 0;
++	} else if (msg.rx.ret == -BPMP_ENODEV) {
++		*supported = false;
++		return 0;
++	} else {
++		return -EINVAL;
++	}
++}
++
+ static const struct thermal_zone_device_ops tegra_bpmp_of_thermal_ops = {
+ 	.get_temp = tegra_bpmp_thermal_get_temp,
+ 	.set_trips = tegra_bpmp_thermal_set_trips,
+ };
+ 
++static const struct thermal_zone_device_ops tegra_bpmp_of_thermal_ops_notrips = {
++	.get_temp = tegra_bpmp_thermal_get_temp,
++};
++
+ static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct tegra_bpmp *bpmp = dev_get_drvdata(pdev->dev.parent);
++	const struct thermal_zone_device_ops *thermal_ops;
+ 	struct tegra_bpmp_thermal *tegra;
+ 	struct thermal_zone_device *tzd;
+ 	unsigned int i, max_num_zones;
++	bool supported;
+ 	int err;
+ 
++	err = tegra_bpmp_thermal_trips_supported(bpmp, &supported);
++	if (err) {
++		dev_err(&pdev->dev, "failed to determine if trip points are supported\n");
++		return err;
++	}
++
++	if (supported)
++		thermal_ops = &tegra_bpmp_of_thermal_ops;
++	else
++		thermal_ops = &tegra_bpmp_of_thermal_ops_notrips;
++
+ 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+ 	if (!tegra)
+ 		return -ENOMEM;
+@@ -213,7 +263,7 @@ static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
+ 		}
+ 
+ 		tzd = devm_thermal_of_zone_register(
+-			&pdev->dev, i, zone, &tegra_bpmp_of_thermal_ops);
++			&pdev->dev, i, zone, thermal_ops);
+ 		if (IS_ERR(tzd)) {
+ 			if (PTR_ERR(tzd) == -EPROBE_DEFER)
+ 				return -EPROBE_DEFER;
+-- 
+2.37.0
 
-I didn't intend to bikesheed this, while I do understand your valid
-concerns from the above statements.
-
-Instead, my intent was to help, by reviewing. Simply, because I care
-about this too.
-
-If you think incorporating the changes I proposed is a too big deal at
-this point, let me not stand in the way of applying this. In the end,
-it's the DT maintainers' decision.
-
-Kind regards
-Uffe
