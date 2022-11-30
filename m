@@ -2,129 +2,146 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10DE2C4321E
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 21:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4652BC4321E
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 23:29:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229456AbiK3Vfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Nov 2022 16:35:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34244 "EHLO
+        id S230119AbiK3X3l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Nov 2022 18:29:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45356 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229445AbiK3Vfo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 16:35:44 -0500
-X-Greylist: delayed 1800 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 30 Nov 2022 13:35:43 PST
-Received: from wind.enjellic.com (wind.enjellic.com [76.10.64.91])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4DFE4900F4
-        for <linux-pm@vger.kernel.org>; Wed, 30 Nov 2022 13:35:43 -0800 (PST)
-Received: from wind.enjellic.com (localhost [127.0.0.1])
-        by wind.enjellic.com (8.15.2/8.15.2) with ESMTP id 2AUKMMDE013659;
-        Wed, 30 Nov 2022 14:22:22 -0600
-Received: (from greg@localhost)
-        by wind.enjellic.com (8.15.2/8.15.2/Submit) id 2AUKMKYG013658;
-        Wed, 30 Nov 2022 14:22:20 -0600
-Date:   Wed, 30 Nov 2022 14:22:20 -0600
-From:   "Dr. Greg" <greg@enjellic.com>
-To:     James Bottomley <jejb@linux.ibm.com>
-Cc:     Jarkko Sakkinen <jarkko@kernel.org>,
-        Evan Green <evgreen@chromium.org>,
-        linux-kernel@vger.kernel.org, corbet@lwn.net,
-        linux-integrity@vger.kernel.org,
-        Eric Biggers <ebiggers@kernel.org>, gwendal@chromium.org,
-        dianders@chromium.org, apronin@chromium.org,
-        Pavel Machek <pavel@ucw.cz>, Ben Boeckel <me@benboeckel.net>,
-        rjw@rjwysocki.net, Kees Cook <keescook@chromium.org>,
-        dlunev@google.com, zohar@linux.ibm.com,
-        Matthew Garrett <mgarrett@aurora.tech>,
-        linux-pm@vger.kernel.org, Matthew Garrett <mjg59@google.com>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Peter Huewe <peterhuewe@gmx.de>, casey@schaufler-ca.com
-Subject: Re: [PATCH v5 03/11] tpm: Allow PCR 23 to be restricted to kernel-only use
-Message-ID: <20221130202220.GA13122@wind.enjellic.com>
-Reply-To: "Dr. Greg" <greg@enjellic.com>
-References: <20221111231636.3748636-1-evgreen@chromium.org> <20221111151451.v5.3.I9ded8c8caad27403e9284dfc78ad6cbd845bc98d@changeid> <8ae56656a461d7b957b93778d716c6161070383a.camel@linux.ibm.com> <Y4ORZT2t/KhL5jfn@kernel.org> <53e3d7f9cc50e1fe9cf67e7889c6b5498580e5d9.camel@linux.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+        with ESMTP id S229971AbiK3X30 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 18:29:26 -0500
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B7D9AD985;
+        Wed, 30 Nov 2022 15:19:46 -0800 (PST)
+Date:   Wed, 30 Nov 2022 15:56:33 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
+        s=mail; t=1669850360;
+        bh=lMd/Ab2MOUBi5t1VUZde5XMv406zWEvfnprZnZ23DB0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=KK36kGVJJsHbA+RE+PK9eplFpMUZn84XFvP0AWuGpZMiaLLFM8PVqHOEclWBeXttd
+         iSjdOeh2tvQc4VerOM0mv7ZqcHkjvryo4tUfbvGNuCKrzIrTmxa6zM6nCl7hTMDjrc
+         0PICaw9/tMrR4pbEtxIUoeIfHLgG/+I3COMhpTLA=
+From:   Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
+To:     Petr Mladek <pmladek@suse.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        linux-pm@vger.kernel.org,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Andy Whitcroft <apw@canonical.com>,
+        Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Dwaipayan Ray <dwaipayanray1@gmail.com>,
+        Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Subject: Re: [PATCH v2 1/3] printk: introduce new macros pr_<level>_cont()
+Message-ID: <6bc60e00-30b8-40ff-81f4-e7973c701ad4@t-8ch.de>
+References: <20221125190948.2062-1-linux@weissschuh.net>
+ <20221125190948.2062-2-linux@weissschuh.net>
+ <Y4dndyIiosT7l4RG@alley>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <53e3d7f9cc50e1fe9cf67e7889c6b5498580e5d9.camel@linux.ibm.com>
-User-Agent: Mutt/1.4i
-X-Greylist: Sender passed SPF test, not delayed by milter-greylist-4.2.3 (wind.enjellic.com [127.0.0.1]); Wed, 30 Nov 2022 14:22:22 -0600 (CST)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Y4dndyIiosT7l4RG@alley>
+Jabber-ID: thomas@t-8ch.de
+X-Accept: text/plain, text/html;q=0.2, text/*;q=0.1
+X-Accept-Language: en-us, en;q=0.8, de-de;q=0.7, de;q=0.6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Nov 27, 2022 at 11:41:26AM -0500, James Bottomley wrote:
-
-Good afternoon, I hope the week is going well for everyone.
-
-> On Sun, 2022-11-27 at 18:33 +0200, Jarkko Sakkinen wrote:
-> > On Mon, Nov 14, 2022 at 12:11:20PM -0500, James Bottomley wrote:
-> > > On Fri, 2022-11-11 at 15:16 -0800, Evan Green wrote:
-> > > > Introduce a new Kconfig, TCG_TPM_RESTRICT_PCR, which if enabled
-> > > > restricts usermode's ability to extend or reset PCR 23.
-> > > 
-> > > Could I re ask the question here that I asked of Matthew's patch
-> > > set:
-> > > 
-> > > https://lore.kernel.org/all/b0c4980c8fad14115daa3040979c52f07f7fbe2c.camel@linux.ibm.com/
-> > > 
-> > > Which was could we use an NVRAM index in the TPM instead of a PCR???
-> > > The reason for asking was that PCRs are rather precious and might
-> > > get more so now that Lennart has some grand scheme for using more
-> > > of them in his unified boot project.?? Matthew promised to play with
-> > > the idea but never got back to the patch set to say whether he
-> > > investigated this or not.
-> > 
-> > Even for PCR case it would be better to have it configurable through
-> > kernel command-line, including a disabled state, which would the
-> > default.
-> > 
-> > This would be backwards compatible, and if designed properly, could
-> > more easily extended for NV index later on.
+On 2022-11-30 15:23+0100, Petr Mladek wrote:
+> On Fri 2022-11-25 20:09:46, Thomas Weißschuh wrote:
+>> These macros emit continuation messages with explicit levels.
+>> In case the continuation is logged separately from the original message
+>> it will retain its level instead of falling back to KERN_DEFAULT.
+>> 
+>> This remedies the issue that logs filtered by level contain stray
+>> continuation messages without context.
+>> 
+>> Suggested-by: Petr Mladek <pmladek@suse.com>
+>> Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+>> ---
+>>  include/linux/printk.h | 23 +++++++++++++++++++++++
+>>  1 file changed, 23 insertions(+)
+>> 
+>> diff --git a/include/linux/printk.h b/include/linux/printk.h
+>> index 8c81806c2e99..8f564c38f121 100644
+>> --- a/include/linux/printk.h
+>> +++ b/include/linux/printk.h
+>> @@ -537,6 +537,8 @@ struct pi_entry {
+>>   * This macro expands to a printk with KERN_CONT loglevel. It should only be
+>>   * used when continuing a log message with no newline ('\n') enclosed. Otherwise
+>>   * it defaults back to KERN_DEFAULT loglevel.
+>> + *
+>> + * Use the dedicated pr_<level>_cont() macros instead.
+>>   */
+>>  #define pr_cont(fmt, ...) \
+>>  	printk(KERN_CONT fmt, ##__VA_ARGS__)
+>> @@ -701,6 +703,27 @@ do {									\
+>>  	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+>>  #endif
+>>  
+>> +/*
+>> + * Print a continuation message with level. In case the continuation is split
+>> + * from the main message it preserves the level.
+>> + */
+>> +
+>> +#define pr_emerg_cont(fmt, ...)					\
+>> +	printk(KERN_EMERG KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> +#define pr_alert_cont(fmt, ...)					\
+>> +	printk(KERN_ALERT KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> +#define pr_crit_cont(fmt, ...)					\
+>> +	printk(KERN_CRIT KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> +#define pr_err_cont(fmt, ...)					\
+>> +	printk(KERN_ERR KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> +#define pr_warn_cont(fmt, ...)					\
+>> +	printk(KERN_WARN KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> +#define pr_notice_cont(fmt, ...)					\
+>> +	printk(KERN_NOTICE KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> +#define pr_info_cont(fmt, ...)					\
+>> +	printk(KERN_INFO KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
+>> +/* no pr_debug_ratelimited, it doesn't make sense with CONFIG_DYNAMIC_DEBUG. */
 > 
-> Um how?  The observation is in the above referenced email is that PCR23
-> is reserved in the TCG literature for application usage.  If any
-> application is actually using PCR23 based on that spec then revoking
-> access to user space will cause it to break.  This is an ABI change
-> which is not backwards compatible.  You can call it a distro problem if
-> it's command line configurable, but the default would be what most
-> distros take, so it's rather throwing them under the bus if there is an
-> application using it.
+> I guess that you wanted to write "pr_debug_cont".
+
+Indeed.
+
+> Also I am not sure what you mean with "doesn't make sense". IMHO, it
+> might  make sense. But it would be hard to use and error prone
+> with CONFIG_DYNAMIC_DEBUG.
 > 
-> Of course, if no application is actually using PCR23, then it's
-> probably OK to use it in the kernel and make it invisible to user
-> space, but no evidence about this has actually been presented.
+> And more importantly, it probably would not work properly. If I get
+> it corretly the dynamic debug messages are printed by the wrapper:
+> 
+> void __dynamic_pr_debug(struct _ddebug *descriptor, const char *fmt, ...)
+> {
+> [...]
+> 	vaf.fmt = fmt;
+> 	vaf.va = &args;
+> 
+> 	printk(KERN_DEBUG "%s%pV", dynamic_emit_prefix(descriptor, buf), &vaf);
+> [...]
+> 
+> This clearly does not support KERN_CONT in "fmt".
 
-If there isn't, there will be in in the next week or so, if we can
-stay on schedule.  Otherwise, I fear that Casey Schaufler, who I
-believe is holding his breath, may turn irretrievably blue.... :-)
+Good point.
 
-The Trust Orchestration System, Quixote, that we are releasing for
-Linux uses PCR23 to generate an attestation of the functional state
-value for an internally modeled security domain.
+My doubt was more that it would force users to know which message
+continuations belong together and always enable all of them together with
+dynamic debug.
+Which would be very errorprone and annoying to use.
 
-TSEM, the LSM based kernel component in all of this, supports the
-ability to implement multiple 'domains', nee namespaces, each of which
-can have a security modeling function attached to it.  Each internally
-modeled domain has to have the ability to independently attest the
-functional value of the security model implemented for the
-domain/namespace.
+But if it doesn't work at all that's an even stronger point.
 
-We have found, and I believe others will find that, particularly the
-resettable registers, are too precious to be constrained from general
-usage.  We actually just finished lifting the PCR23 extension
-functionality out of the TSEM driver and into userspace because having
-it in the kernel was too constraining.
+> I suggest to either remove the comment completely. Or write something
+> like:
+> 
+> /* no pr_debug_cont(), can't be supported easily with CONFIG_DYNAMIC_DEBUG */
 
-With respect to making the behavior a command-line option.  We've
-slogged through 2+ years of conversations with sizable players who
-have indicated that if the 'distys' don't implement something, it
-isn't a relevant Linux technology, so a command-line option poses a
-barrier to innovation.
+What about:
 
-> James
+/* no pr_debug_cont(), it's errorprone to use
+ * and can't be supported easily with CONFIG_DYNAMIC_DEBUG */
 
-Have a good day.
-
-As always,
-Dr. Greg
-
-The Quixote Project - Flailing at the Travails of Cybersecurity
+Thomas
