@@ -2,410 +2,141 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B9BAC47089
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 20:12:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6AEEC4321E
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 20:23:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230112AbiK3UMh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Nov 2022 15:12:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46546 "EHLO
+        id S229568AbiK3UXZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Nov 2022 15:23:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33938 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230103AbiK3UMB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 15:12:01 -0500
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0AEE4E6A6;
-        Wed, 30 Nov 2022 12:10:28 -0800 (PST)
-Received: by mail-lj1-x229.google.com with SMTP id q7so22148980ljp.9;
-        Wed, 30 Nov 2022 12:10:28 -0800 (PST)
+        with ESMTP id S229449AbiK3UW5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 15:22:57 -0500
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7AB82AFA;
+        Wed, 30 Nov 2022 12:21:29 -0800 (PST)
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-3a7081e3b95so183342147b3.1;
+        Wed, 30 Nov 2022 12:21:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5lsAMEj6HaUbhZ9bHj/9+ikD6XEF6DUBZQroGChklKg=;
-        b=LXfwVLgkA7GrdcTV8UNA2Fem5L/wCKZkMyCv+nQBl9dkWQ3HrGiwiI5/s5ODiYwn7R
-         fcojBBzqduf9uqtWP4tU2bnV3JmbHRaVmAJjteg8gsRurtELhABlGJ9eEbvpFKhbOmUC
-         JY9dg4XuRFq7WTMqv4Rzj1Ryt8GV6xIEtFfG3amezj9sJCJrOiitnfYlQH8pehTBPFw2
-         tU2hlG8H9ZmnOFbUkEK6VRK/CLNZzvUOWnmaOdtuWJA2j31SFrkVHilOp7rCQJm4/8VR
-         crgGIGrsEc3DGUG5qW4bB+6gczVK2evMpE2g29sadIEVvbZVaQY8ld9RvFcBkCEOVsAP
-         gAdw==
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=/E33WRItmkoiLgpHDHd24EmIcJsNGQPAC7NQMjlLAgo=;
+        b=evY1rXJKVKWb3sgc1Zd+kNKUwFZR8XT+XEsQIFIOsi+1jnzs47YHmQRW6OzLy4Xay1
+         KI2cGjwBHegJJuzuaROFf0+mpgTCEx2oKA+GjgbvG8t4C/TJ+0ZbLFNPahJdwarIf8od
+         Wtk+Yvq2pEaTqp8NBvXzV3bWj781yLKxNft/aooRBgBR5ChEvcFDIFn+5nYLWQrp1W1Y
+         iCkH7WB0mBgSQvkyuyVeBQkZRar9F0w8wq0y1OWrkF1rP0XPgSQRoJwGGmjoeSS/p+/D
+         PzS4+Uo6oicJ3lGsZMTYFbIbX3Y2kMjOn4CUFnNS6VjGoqAg31p92NJRT1RNpxPPfMbC
+         2cGw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5lsAMEj6HaUbhZ9bHj/9+ikD6XEF6DUBZQroGChklKg=;
-        b=QP3nw/Fqz5abb/R1QVuq/KmsT2DdATDHxXqi0sGYbBTI2zML4jW/PVNR76IHYBVfYY
-         IrrW4ekUOCDFofSTbfsuOt0CfBPUj74+TMtE645E9LdybcUQ6q2AVb3LfPlhJSWrpGOX
-         DU5NnFFljHNV9NMu2187yqlIR2CvBq8WGf7Igs57JJvN7rXpKFusYlpVmD9JrNHoxNot
-         dLJZ5rB/Ob7SxinyQWsCSpjlWV+2yqSaTv5N7G7rMQQZ955H/LrcbXbtp0Im0qnMawVs
-         FQt8kBdhMRVWtfT6fgfCNdolwHl5MOnK9CxXWREs+LeY1n9JSb1Vgth7+8pSA6ImUHmJ
-         Q6MA==
-X-Gm-Message-State: ANoB5pn34bJLa23VuzoSfUz6113Wlt8MDfn7d/1bOVC1IzoHl7CR4Uhc
-        egLWMar6Ov855sz1oYWIKyqPlQxU0H4=
-X-Google-Smtp-Source: AA0mqf7kU3fM2GF4LqoHEcstGJ72edHxe2AQx+Uy6dMhopVvX+xPkK5azXuGEa59xmmiEysaHIHZYw==
-X-Received: by 2002:a2e:be28:0:b0:278:f1a5:a361 with SMTP id z40-20020a2ebe28000000b00278f1a5a361mr14223947ljq.124.1669839019153;
-        Wed, 30 Nov 2022 12:10:19 -0800 (PST)
-Received: from localhost.localdomain (ccy110.neoplus.adsl.tpnet.pl. [83.30.148.110])
-        by smtp.gmail.com with ESMTPSA id a25-20020a056512201900b004b4e9580b1asm369754lfb.66.2022.11.30.12.10.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Nov 2022 12:10:18 -0800 (PST)
-From:   Adam Skladowski <a39.skl@gmail.com>
-Cc:     phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
-        Adam Skladowski <a39.skl@gmail.com>,
-        Rob Clark <robdclark@gmail.com>,
-        Abhinav Kumar <quic_abhinavk@quicinc.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Sean Paul <sean@poorly.run>, David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Loic Poulain <loic.poulain@linaro.org>,
-        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        freedreno@lists.freedesktop.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v2 10/12] arm64: dts: qcom: sm6115: Add i2c/spi nodes
-Date:   Wed, 30 Nov 2022 21:09:48 +0100
-Message-Id: <20221130200950.144618-11-a39.skl@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20221130200950.144618-1-a39.skl@gmail.com>
-References: <20221130200950.144618-1-a39.skl@gmail.com>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/E33WRItmkoiLgpHDHd24EmIcJsNGQPAC7NQMjlLAgo=;
+        b=iD5giEzTq3MvfTNWKiHClvXfEws1pOwy7wFd9SY/QZbNpAjKnIZSwhbFj0QFxLOuB+
+         m3YQEGxJghire0mI/wb5L5lz8CP4KFvq3O7cIMsCjEt02tQoeOTH2iVMSwOo57IB3L0m
+         PPyQJVd10saFVacp8egIm3j9PiJHr0b8Ovz8kPnyQEyo0sSEKSRfxBkZDrMLTR0zz/sN
+         2A191sh0RseK3ljTzyGqPeghGGrr5cHivjovZWaqtYP6cs4IhbuntD9T15Qk3YPXeBwT
+         hdCpgQITtO/Y0LDwv2US4wrzy2DPQIOx/aOY7iVpl1h2SnRQrBocWmy3RvDIXV316ObU
+         F5YQ==
+X-Gm-Message-State: ANoB5pmAXkFhcrHueIRS8yDjrbWijUu4wFHGja00ymGBVrVGQMu3v8nZ
+        hhSmMjHmj/9wQEfpG4MVCu3Tp7k5yWMy837q0oU=
+X-Google-Smtp-Source: AA0mqf4QYVeo8noGqZEeUSQP0QhYgoUL9V5zvLRwNvCg7F5rTZturd/1+QWGiFv5o3YnBp/PokoRl9Q0AlpS0hzTsWY=
+X-Received: by 2002:a0d:ea8c:0:b0:3c3:5477:68c1 with SMTP id
+ t134-20020a0dea8c000000b003c3547768c1mr19055436ywe.464.1669839688853; Wed, 30
+ Nov 2022 12:21:28 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+References: <20221107105657.19002-1-lukas.bulwahn@gmail.com> <CAJZ5v0jFO=6WLNZUe4vqUXxxWuhZuaq1Sifk7+094YFXUWp2wA@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jFO=6WLNZUe4vqUXxxWuhZuaq1Sifk7+094YFXUWp2wA@mail.gmail.com>
+From:   Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Date:   Wed, 30 Nov 2022 21:21:18 +0100
+Message-ID: <CAKXUXMz_M5z00yZiBkYWxBmuQGFwMD4JwMH11qs4EHfPOawUvQ@mail.gmail.com>
+Subject: Re: [PATCH] notifier: repair slips in kernel-doc comments
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add I2C/SPI nodes for SM6115.
+On Wed, Nov 30, 2022 at 7:34 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Mon, Nov 7, 2022 at 11:57 AM Lukas Bulwahn <lukas.bulwahn@gmail.com> wrote:
+> >
+> > Invoking ./scripts/kernel-doc -none kernel/notifier.c warns:
+> >
+> >   kernel/notifier.c:71: warning: Excess function parameter 'returns' description in 'notifier_call_chain'
+> >   kernel/notifier.c:119: warning: Function parameter or member 'v' not described in 'notifier_call_chain_robust'
+> >
+> > These two warning are easy to fix, as they are just due to some minor slips
+> > that makes the comment not follow kernel-doc's syntactic expectation.
+> >
+> > Fix those minor slips in kernel-doc comments for make W=1 happiness.
+> >
+> > Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+> > ---
+> > Rafael, please pick this minor non-urgent patch for your pm tree. Thanks.
+>
+> Applied as 6.2 material, but I'm kind of wondering why you decided to
+> send this to me.
+>
 
-Signed-off-by: Adam Skladowski <a39.skl@gmail.com>
----
- arch/arm64/boot/dts/qcom/sm6115.dtsi | 290 +++++++++++++++++++++++++++
- 1 file changed, 290 insertions(+)
+Well, kernel/notifier.c is one of those files, with no specific
+maintainer and no specific obvious subsystem... so the next patch goes
+to the last one touching it ;)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm6115.dtsi b/arch/arm64/boot/dts/qcom/sm6115.dtsi
-index b30a5485671d..e676b9d117e3 100644
---- a/arch/arm64/boot/dts/qcom/sm6115.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm6115.dtsi
-@@ -6,6 +6,7 @@
- #include <dt-bindings/clock/qcom,gcc-sm6115.h>
- #include <dt-bindings/clock/qcom,sm6115-dispcc.h>
- #include <dt-bindings/clock/qcom,rpmcc.h>
-+#include <dt-bindings/dma/qcom-gpi.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/power/qcom-rpmpd.h>
-@@ -365,6 +366,90 @@ tlmm: pinctrl@500000 {
- 			interrupt-controller;
- 			#interrupt-cells = <2>;
- 
-+			qup_i2c0_default: qup-i2c0-default-state {
-+				pins = "gpio0", "gpio1";
-+				function = "qup0";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_i2c1_default: qup-i2c1-default-state {
-+				pins = "gpio4", "gpio5";
-+				function = "qup1";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_i2c2_default: qup-i2c2-default-state {
-+				pins = "gpio6", "gpio7";
-+				function = "qup2";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_i2c3_default: qup-i2c3-default-state {
-+				pins = "gpio8", "gpio9";
-+				function = "qup3";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_i2c4_default: qup-i2c4-default-state {
-+				pins = "gpio12", "gpio13";
-+				function = "qup4";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_i2c5_default: qup-i2c5-default-state {
-+				pins = "gpio14", "gpio15";
-+				function = "qup5";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_spi0_default: qup-spi0-default-state {
-+				pins = "gpio0", "gpio1","gpio2", "gpio3";
-+				function = "qup0";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_spi1_default: qup-spi1-default-state {
-+				pins = "gpio4", "gpio5", "gpio69", "gpio70";
-+				function = "qup1";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_spi2_default: qup-spi2-default-state {
-+				pins = "gpio6", "gpio7", "gpio71", "gpio80";
-+				function = "qup2";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_spi3_default: qup-spi3-default-state {
-+				pins = "gpio8", "gpio9", "gpio10", "gpio11";
-+				function = "qup3";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_spi4_default: qup-spi4-default-state {
-+				pins = "gpio12", "gpio13", "gpio96", "gpio97";
-+				function = "qup4";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
-+			qup_spi5_default: qup-spi5-default-state {
-+				pins = "gpio14", "gpio15", "gpio16", "gpio17";
-+				function = "qup5";
-+				drive-strength = <2>;
-+				bias-pull-up;
-+			};
-+
- 			sdc1_state_on: sdc1-on-state {
- 				clk-pins {
- 					pins = "sdc1_clk";
-@@ -701,6 +786,211 @@ gpi_dma0: dma-controller@4a00000 {
- 			status = "disabled";
- 		};
- 
-+		qupv3_id_0: geniqup@4ac0000 {
-+			compatible = "qcom,geni-se-qup";
-+			reg = <0x04ac0000 0x2000>;
-+			clock-names = "m-ahb", "s-ahb";
-+			clocks = <&gcc GCC_QUPV3_WRAP_0_M_AHB_CLK>,
-+				 <&gcc GCC_QUPV3_WRAP_0_S_AHB_CLK>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			iommus = <&apps_smmu 0xe3 0x0>;
-+			ranges;
-+			status = "disabled";
-+
-+			i2c0: i2c@4a80000 {
-+				compatible = "qcom,geni-i2c";
-+				reg = <0x04a80000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S0_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_i2c0_default>;
-+				interrupts = <GIC_SPI 327 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 0 QCOM_GPI_I2C>,
-+				       <&gpi_dma0 1 0 QCOM_GPI_I2C>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			spi0: spi@4a80000 {
-+				compatible = "qcom,geni-spi";
-+				reg = <0x04a80000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S0_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_spi0_default>;
-+				interrupts = <GIC_SPI 327 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 0 QCOM_GPI_SPI>,
-+				       <&gpi_dma0 1 0 QCOM_GPI_SPI>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			i2c1: i2c@4a84000 {
-+				compatible = "qcom,geni-i2c";
-+				reg = <0x04a84000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S1_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_i2c1_default>;
-+				interrupts = <GIC_SPI 328 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 1 QCOM_GPI_I2C>,
-+				       <&gpi_dma0 1 1 QCOM_GPI_I2C>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			spi1: spi@4a84000 {
-+				compatible = "qcom,geni-spi";
-+				reg = <0x04a84000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S1_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_spi1_default>;
-+				interrupts = <GIC_SPI 328 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 1 QCOM_GPI_SPI>,
-+				       <&gpi_dma0 1 1 QCOM_GPI_SPI>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			i2c2: i2c@4a88000 {
-+				compatible = "qcom,geni-i2c";
-+				reg = <0x04a88000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S2_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_i2c2_default>;
-+				interrupts = <GIC_SPI 329 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 2 QCOM_GPI_I2C>,
-+				       <&gpi_dma0 1 2 QCOM_GPI_I2C>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			spi2: spi@4a88000 {
-+				compatible = "qcom,geni-spi";
-+				reg = <0x04a88000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S2_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_spi2_default>;
-+				interrupts = <GIC_SPI 329 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 2 QCOM_GPI_SPI>,
-+				       <&gpi_dma0 1 2 QCOM_GPI_SPI>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			i2c3: i2c@4a8c000 {
-+				compatible = "qcom,geni-i2c";
-+				reg = <0x04a8c000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S3_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_i2c3_default>;
-+				interrupts = <GIC_SPI 330 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 3 QCOM_GPI_I2C>,
-+				       <&gpi_dma0 1 3 QCOM_GPI_I2C>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			spi3: spi@4a8c000 {
-+				compatible = "qcom,geni-spi";
-+				reg = <0x04a8c000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S3_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_spi3_default>;
-+				interrupts = <GIC_SPI 330 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 3 QCOM_GPI_SPI>,
-+				       <&gpi_dma0 1 3 QCOM_GPI_SPI>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			i2c4: i2c@4a90000 {
-+				compatible = "qcom,geni-i2c";
-+				reg = <0x04a90000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S4_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_i2c4_default>;
-+				interrupts = <GIC_SPI 331 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 4 QCOM_GPI_I2C>,
-+				       <&gpi_dma0 1 4 QCOM_GPI_I2C>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			spi4: spi@4a90000 {
-+				compatible = "qcom,geni-spi";
-+				reg = <0x04a90000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S4_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_spi4_default>;
-+				interrupts = <GIC_SPI 331 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 4 QCOM_GPI_SPI>,
-+				       <&gpi_dma0 1 4 QCOM_GPI_SPI>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			i2c5: i2c@4a94000 {
-+				compatible = "qcom,geni-i2c";
-+				reg = <0x04a94000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S5_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_i2c5_default>;
-+				interrupts = <GIC_SPI 332 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 5 QCOM_GPI_I2C>,
-+				       <&gpi_dma0 1 5 QCOM_GPI_I2C>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+
-+			spi5: spi@4a94000 {
-+				compatible = "qcom,geni-spi";
-+				reg = <0x04a94000 0x4000>;
-+				clock-names = "se";
-+				clocks = <&gcc GCC_QUPV3_WRAP0_S5_CLK>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&qup_spi5_default>;
-+				interrupts = <GIC_SPI 332 IRQ_TYPE_LEVEL_HIGH>;
-+				dmas = <&gpi_dma0 0 5 QCOM_GPI_SPI>,
-+				       <&gpi_dma0 1 5 QCOM_GPI_SPI>;
-+				dma-names = "tx", "rx";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "disabled";
-+			};
-+		};
-+
- 		usb_1: usb@4ef8800 {
- 			compatible = "qcom,sm6115-dwc3", "qcom,dwc3";
- 			reg = <0x04ef8800 0x400>;
--- 
-2.25.1
+More seriously:
 
+get_maintainer.pl -f kernel/notifier.c does state:
+
+"Rafael J. Wysocki" <rafael.j.wysocki@intel.com> (commit_signer:2/3=67%)
+
+Rafael, you took the only two patches in 2022 and carried them forward
+to Linus. So, that was my thinking for this minor patch as well; no
+deeper thought than that.
+
+If you would not have accepted them, I might have tried Andrew Morton
+in a few weeks for the next merge window (v6.3) as a last resort.
+
+Rafael, thanks for picking up this patch.
+
+Lukas
+
+> >
+> >  kernel/notifier.c | 6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/kernel/notifier.c b/kernel/notifier.c
+> > index 0d5bd62c480e..ab75637fd904 100644
+> > --- a/kernel/notifier.c
+> > +++ b/kernel/notifier.c
+> > @@ -62,7 +62,7 @@ static int notifier_chain_unregister(struct notifier_block **nl,
+> >   *                     value of this parameter is -1.
+> >   *     @nr_calls:      Records the number of notifications sent. Don't care
+> >   *                     value of this field is NULL.
+> > - *     @returns:       notifier_call_chain returns the value returned by the
+> > + *     Return:         notifier_call_chain returns the value returned by the
+> >   *                     last notifier function called.
+> >   */
+> >  static int notifier_call_chain(struct notifier_block **nl,
+> > @@ -105,13 +105,13 @@ NOKPROBE_SYMBOL(notifier_call_chain);
+> >   * @val_up:    Value passed unmodified to the notifier function
+> >   * @val_down:  Value passed unmodified to the notifier function when recovering
+> >   *              from an error on @val_up
+> > - * @v          Pointer passed unmodified to the notifier function
+> > + * @v:         Pointer passed unmodified to the notifier function
+> >   *
+> >   * NOTE:       It is important the @nl chain doesn't change between the two
+> >   *             invocations of notifier_call_chain() such that we visit the
+> >   *             exact same notifier callbacks; this rules out any RCU usage.
+> >   *
+> > - * Returns:    the return value of the @val_up call.
+> > + * Return:     the return value of the @val_up call.
+> >   */
+> >  static int notifier_call_chain_robust(struct notifier_block **nl,
+> >                                      unsigned long val_up, unsigned long val_down,
+> > --
+> > 2.17.1
+> >
