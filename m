@@ -2,49 +2,46 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3ABC4321E
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 23:30:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACC7CC4321E
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 23:37:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229978AbiK3XaJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Nov 2022 18:30:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49220 "EHLO
+        id S230034AbiK3Xhw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Nov 2022 18:37:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229461AbiK3X3m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 18:29:42 -0500
+        with ESMTP id S230073AbiK3Xhk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 18:37:40 -0500
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A6C82BD5;
-        Wed, 30 Nov 2022 15:20:05 -0800 (PST)
-Date:   Wed, 30 Nov 2022 15:50:55 +0100
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62E5330558;
+        Wed, 30 Nov 2022 15:37:21 -0800 (PST)
+Date:   Thu, 1 Dec 2022 00:37:15 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
-        s=mail; t=1669850360;
-        bh=AOooFKU7NIxLs7yLATARLHPgA86wAoxNAcbcgPZM9II=;
+        s=mail; t=1669851439;
+        bh=gCjQ7v9MiSprJKAXVgQSc3QwycT+eoWtbLZH/ib/kuY=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=YZ7g80E1uS2FjZUXZepWD0GWT2LswMhWGPDrY6iItcUht2OhtmIjdSMLA3N8pxqVI
-         Jp2ozhHPa4vOeklRuAX4zU13ndJldrhTeeCQg0vls8qIhNC4W5X8/y94LXJNZcBS/U
-         vnO0viZBlBj8/Td4MeF4UtHKFBIWWcIWK6Zik19g=
+        b=psBRQAE+7XvBm97cEAeXI4A+z18YICLeLxtzacCWac3q9okGnsfzcr389b4NC3XCJ
+         GFuc1YVLbI2PmPqxc/KUMvPo/u2PenmGyXfag3PQJa3fM6zbjXCqTbaRAiaEPObgn7
+         PlefG2fEPty/Cj6Y24KmsJrtaPqUYLKoNRNJAI/I=
 From:   Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To:     Petr Mladek <pmladek@suse.com>
-Cc:     Joe Perches <joe@perches.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Petr Mladek <pmladek@suse.com>
+Cc:     Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
         linux-pm@vger.kernel.org,
         Sergey Senozhatsky <senozhatsky@chromium.org>,
         Andy Whitcroft <apw@canonical.com>,
-        linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+        Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+        Steven Rostedt <rostedt@goodmis.org>,
         Dwaipayan Ray <dwaipayanray1@gmail.com>,
         Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Subject: Re: [PATCH v2 1/3] printk: introduce new macros pr_<level>_cont()
-Message-ID: <42950773-aac6-4ec6-8cbe-543489afe316@t-8ch.de>
+Subject: Re: [PATCH v2 0/3] printk: introduce new macros pr_<level>_cont()
+Message-ID: <d31b4a2b-fc6b-4084-9cac-ced83a37a8ad@t-8ch.de>
 References: <20221125190948.2062-1-linux@weissschuh.net>
- <20221125190948.2062-2-linux@weissschuh.net>
- <1fb146231e1810b4c9923f384afa166e07e7f253.camel@perches.com>
- <cf45b62e-6248-42f3-807f-5df0954437e0@t-8ch.de>
- <Y4dhs1G3mcX/YraJ@alley>
+ <CAJZ5v0i8pm1vxQeQu4GJqvf=rinU9dO2gswsLseyEt3E2CgbtA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <Y4dhs1G3mcX/YraJ@alley>
+In-Reply-To: <CAJZ5v0i8pm1vxQeQu4GJqvf=rinU9dO2gswsLseyEt3E2CgbtA@mail.gmail.com>
 Jabber-ID: thomas@t-8ch.de
 X-Accept: text/plain, text/html;q=0.2, text/*;q=0.1
 X-Accept-Language: en-us, en;q=0.8, de-de;q=0.7, de;q=0.6
@@ -52,80 +49,121 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2022-11-30 14:59+0100, Petr Mladek wrote:
-> On Fri 2022-11-25 21:33:40, Thomas Weißschuh wrote:
->> On 2022-11-25 12:18-0800, Joe Perches wrote:
->>> On Fri, 2022-11-25 at 20:09 +0100, Thomas Weißschuh wrote:
->>>> These macros emit continuation messages with explicit levels.
->>>> In case the continuation is logged separately from the original message
->>>> it will retain its level instead of falling back to KERN_DEFAULT.
->>>> 
->>>> This remedies the issue that logs filtered by level contain stray
->>>> continuation messages without context.
->>>> 
->>>> --- a/include/linux/printk.h
->>>> +++ b/include/linux/printk.h
->>>> @@ -701,6 +703,27 @@ do {									\
->>>>  	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
->>>>  #endif
->>>>  
->>>> +/*
->>>> + * Print a continuation message with level. In case the continuation is split
->>>> + * from the main message it preserves the level.
->>>> + */
->>>> +
->>>> +#define pr_emerg_cont(fmt, ...)					\
->>>> +	printk(KERN_EMERG KERN_CONT pr_fmt(fmt), ##__VA_ARGS__)
->>> 
->>> Aren't this rather backwards?
->>> KERN_CONT KERN_<LEVEL> seems to make more sense to me.
->> 
->> If nobody else disagrees I'll do this for v3.
+On 2022-11-30 18:57+0100, Rafael J. Wysocki wrote:
+> On Fri, Nov 25, 2022 at 8:10 PM Thomas Weißschuh <linux@weissschuh.net> wrote:
+>>
+>> This series adds new printk wrapper macros pr_<level>_cont().
+>> These create continuation messages with an explicit level.
+>>
+>> Explicit levels are useful when a continuation message is split from its main
+>> message. Without the explicit level KERN_DEFAULT ("warn" by default) is used
+>> which can lead to stray partial log messages when filtering by level.
+>>
+>> Also checkpatch is modified to recommend the new macros over plain pr_cont().
+>>
+>> Lastly the new macros are used in kernel/power/process.c as this file uses
+>> continuation messages during system suspend-resume which creates a high
+>> likelyhood of interspersed messages.
 > 
-> I slightly prefer the way how it is now. IMHO, it makes it easier
-> to check the related levels in /sys/kernel/debug/printk/index/vmlinux [*]:
+> Well, if process.c is the only problematic piece of code in this
+> respect, I'm not sure if adding the new infrastructure for its benefit
+> alone is worth it, because it can very well do without pr_cont() at
+> all.
+
+In general all usages of pr_cont() are problematic.
+Any continuation can be split from its main message, leading to misleved
+continuations.
+process.c is just the one that I noticed reliably hitting this problem on my
+machine.
+
+> Please see the patch below (compiled only, sorry for gmail-induced
+> white space damage).  I'll submit it properly later if it works for
+> everyone.
+
+The patch looks fine to me and getting rid of usages of pr_cont() seems to be
+the better aproach where it is possible.
+
+Petr: do you still want me to submit the new macros even if it is not used
+directly anymore?
+
+> ---
+>  kernel/power/process.c |   25 ++++++++++---------------
+>  1 file changed, 10 insertions(+), 15 deletions(-)
 > 
-> <6> kernel/power/process.c:227 thaw_kernel_threads "Restarting kernel threads ... "
-> <6,c> kernel/power/process.c:218 thaw_processes "done.\n"
-> <6> kernel/power/process.c:197 thaw_processes "Restarting tasks ... "
-> <6,c> kernel/power/process.c:176 freeze_kernel_threads "\n"
-> <6,c> kernel/power/process.c:174 freeze_kernel_threads "done."
-> <6> kernel/power/process.c:169 freeze_kernel_threads "Freezing remaining freezable tasks ... "
-> <6,c> kernel/power/process.c:140 freeze_processes "\n"
-> <6,c> kernel/power/process.c:138 freeze_processes "done."
-> <6> kernel/power/process.c:133 freeze_processes "Freezing user space processes ... "
-> <6,c> kernel/power/process.c:105 try_to_freeze_tasks "(elapsed %d.%03d seconds) "
-
-I did not test it (will do so later) but it seems to me that the code in
-kernel/printk/index.c should do this correctly in either case. At least it
-tries to:
-
-if (flags & LOG_CONT) {
-	/*
-	 * LOGLEVEL_DEFAULT here means "use the same level as the
-	 * message we're continuing from", not the default message
-	 * loglevel, so don't display it as such.
-	 */
-	if (level == LOGLEVEL_DEFAULT)
-		seq_puts(s, "<c>");
-		else
-		seq_printf(s, "<%d,c>", level);
-	} else
-		seq_printf(s, "<%d>", level);
-	}
-}
-
-I'll try to validate it.
-
-If it doesn't work it may make more sense to fix the index file generation.
-What do you think
-
-> That said, I do not want to fight over it. It is hidden behind the
-> API. The only really visible place is the printk index.
+> Index: linux-pm/kernel/power/process.c
+> ===================================================================
+> --- linux-pm.orig/kernel/power/process.c
+> +++ linux-pm/kernel/power/process.c
+> @@ -27,6 +27,8 @@ unsigned int __read_mostly freeze_timeou
 > 
-> [*] The index is available only when CONFIG_PRINTK_INDEX is enabled.
+>  static int try_to_freeze_tasks(bool user_only)
+>  {
+> +    const char *what = user_only ? "user space processes" :
+> +                    "remaining freezable tasks";
+>      struct task_struct *g, *p;
+>      unsigned long end_time;
+>      unsigned int todo;
+> @@ -36,6 +38,8 @@ static int try_to_freeze_tasks(bool user
+>      bool wakeup = false;
+>      int sleep_usecs = USEC_PER_MSEC;
 > 
-> Best Regards,
-> Petr
-
-Thomas
+> +    pr_info("Freezing %s\n", what);
+> +
+>      start = ktime_get_boottime();
+> 
+>      end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
+> @@ -82,9 +86,8 @@ static int try_to_freeze_tasks(bool user
+>      elapsed_msecs = ktime_to_ms(elapsed);
+> 
+>      if (todo) {
+> -        pr_cont("\n");
+> -        pr_err("Freezing of tasks %s after %d.%03d seconds "
+> -               "(%d tasks refusing to freeze, wq_busy=%d):\n",
+> +        pr_err("Freezing %s %s after %d.%03d seconds "
+> +               "(%d tasks refusing to freeze, wq_busy=%d):\n", what,
+>                 wakeup ? "aborted" : "failed",
+>                 elapsed_msecs / 1000, elapsed_msecs % 1000,
+>                 todo - wq_busy, wq_busy);
+> @@ -101,8 +104,8 @@ static int try_to_freeze_tasks(bool user
+>              read_unlock(&tasklist_lock);
+>          }
+>      } else {
+> -        pr_cont("(elapsed %d.%03d seconds) ", elapsed_msecs / 1000,
+> -            elapsed_msecs % 1000);
+> +        pr_info("Freezing %s completed (elapsed %d.%03d seconds)\n",
+> +            what, elapsed_msecs / 1000, elapsed_msecs % 1000);
+>      }
+> 
+>      return todo ? -EBUSY : 0;
+> @@ -130,14 +133,11 @@ int freeze_processes(void)
+>          static_branch_inc(&freezer_active);
+> 
+>      pm_wakeup_clear(0);
+> -    pr_info("Freezing user space processes ... ");
+>      pm_freezing = true;
+>      error = try_to_freeze_tasks(true);
+> -    if (!error) {
+> +    if (!error)
+>          __usermodehelper_set_disable_depth(UMH_DISABLED);
+> -        pr_cont("done.");
+> -    }
+> -    pr_cont("\n");
+> +
+>      BUG_ON(in_atomic());
+> 
+>      /*
+> @@ -166,14 +166,9 @@ int freeze_kernel_threads(void)
+>  {
+>      int error;
+> 
+> -    pr_info("Freezing remaining freezable tasks ... ");
+> -
+>      pm_nosig_freezing = true;
+>      error = try_to_freeze_tasks(false);
+> -    if (!error)
+> -        pr_cont("done.");
+> 
+> -    pr_cont("\n");
+>      BUG_ON(in_atomic());
+> 
+>      if (error)
