@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1BCFC352A1
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 20:12:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3146C47089
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Nov 2022 20:12:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229851AbiK3UMB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Nov 2022 15:12:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46534 "EHLO
+        id S230032AbiK3UMV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Nov 2022 15:12:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230002AbiK3ULU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 15:11:20 -0500
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B24F99F19;
-        Wed, 30 Nov 2022 12:10:14 -0800 (PST)
-Received: by mail-lj1-x22b.google.com with SMTP id d3so22188784ljl.1;
-        Wed, 30 Nov 2022 12:10:13 -0800 (PST)
+        with ESMTP id S230076AbiK3ULq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2022 15:11:46 -0500
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A2F34E682;
+        Wed, 30 Nov 2022 12:10:24 -0800 (PST)
+Received: by mail-lj1-x22a.google.com with SMTP id z4so22181486ljq.6;
+        Wed, 30 Nov 2022 12:10:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=xiwkmaUk+kjHEaXyaNwbQEqrPkyA7kZAaaBGjnhG2Z8=;
-        b=oWRD1+WUXaaxMS5Mg/1rdrbTt8T2V+mdEPBWLT3DExbd71SkO5nzdxGM3PGNxuLF8i
-         9n9+7oEnRsw3840Vw2qEDBHGOfiL6vG94R3YhmB2IcEesj6Of7wcSR0AqOplJy7ON7tp
-         Zwh/f6efCKHmGMqxaWYRnWoEaIgA6v36Cpc2j5mgoP7Z4C+to6ZYLQNoZVfTZudO1M9M
-         kesLWt97H9oeOH8sngOs02k49FZ9fTGzT91FWBC8Lk1hij2gnJZAg3Q88vN2y/IE5Fcr
-         hOLH7YADsyu8aOAYNBRq8/roA1a2oLmcG5G6hwf+HIo2l7QVMJMo8zW1qQrntVPR5a6o
-         V5vQ==
+        bh=ZI36fDcXOdBjV+BrFI2iVTCVlIJAblM9KI9TL7sAns8=;
+        b=TLnqAXll6nYU3/cRmZ9Qb5BrSLih5PKDpNI/nN0IqYBT75P7ZTfcaSxQ1vzQCOphf1
+         4dH78gHGmendt1LXrbeD4+DgE4L5Q1Ar+dpwrJTJMLQoLLsfPNSXb3aLBhgIo2QXxUIl
+         z2EHmQR9O+O9Fg8sPELylItlPE2bC+O3x2pQWtdtBbdg8MHUolxP0hjRyK8m1z3Y1EET
+         sQMvyqPamW2HGY3/x76DRMZILwQ9/RCxhVcN4en3dfpiWOo+DoydkfsH17u5YcVTIdaj
+         DN1oVmz6ath7K/OXtf+KBHb9dGM8mYbWxhNJs3RT7M0HOFbjak8fiQp/42Njrl4Z/GiB
+         NcYw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=xiwkmaUk+kjHEaXyaNwbQEqrPkyA7kZAaaBGjnhG2Z8=;
-        b=JKNzJYYll5gug//evC4IA3AmVWIXdVLM9H7o0D2bwHUS/ZXPYY948TStgDaKK7MVk5
-         J0HObHQrcU/wmEHX1GNJjQwVQEu5aQvLp5/w3y2PLx5RvMYIOXa9LMKFl0Rjuwbr9bOM
-         wsxBENiyiKN+47MMRntco/nXHbLd5h/XY4DV/jpaJxGiqehomzSTTng3I1CHXJCtEIiJ
-         17FWAKIl21f211H0wbimepQ2luYFgyBWTC0HQZbVpPYwoRKHcwgmDOjfWDqNaIOehx9M
-         yj439YDajIxgzdSqu5IBkrzOhR/7Lv0/TK7JPi2mH9/BerwJuTwj2hETPuoENZ2yiL8U
-         RySA==
-X-Gm-Message-State: ANoB5pnHzmoPk87p62bOcGDJSofZZagk2wooepATA7kRn5x90dI5rsNe
-        xfrwjZY2KkRNz0BmSUqhlTlYJ07DB8A=
-X-Google-Smtp-Source: AA0mqf7H8jFJmIp9vGhj3Np3GgraaEdLHNj5o6/9BuD0+raVoHuCn9Fl71toHFP3Ere3LMIP9RxUNA==
-X-Received: by 2002:a05:651c:198f:b0:277:6a5:109b with SMTP id bx15-20020a05651c198f00b0027706a5109bmr16196943ljb.42.1669839009907;
-        Wed, 30 Nov 2022 12:10:09 -0800 (PST)
+        bh=ZI36fDcXOdBjV+BrFI2iVTCVlIJAblM9KI9TL7sAns8=;
+        b=7CfZvg5G49sT84Wo0UOzcIbDKoD4VH7/fE4+zSxwHXtM1qkBem1sYwJzKpW5fAGvHS
+         qY40XuQMVx1uzBJOMqsKpoAersVe9s6nVfhqnsY/LyIYAt8axdTEhLqXzbh5pQPKsfuA
+         zQDerYF1ChoA/HJlQgZ9CtrDnC854ITr0cbxLIwB/ivk0IWAgZDcR+RaQGpNih0vVidD
+         6zuc+EnLDIn4IMrIuz7H86nLvNZL4fFoNMkFthrpPho0e3mwvmjWYmN0xipDGyn4kVZU
+         DvWtOU7fnIHUHUvsmke+/GyDHE8GbGD8zZM6ISuXDeSATrHce22q+SUsiUk2V65NhqIt
+         cEhw==
+X-Gm-Message-State: ANoB5pnLLMsLowr1lQIVTWfHs15cJtEWiFdCNMen/sEivuAWwC01Osbe
+        gD3CR0z/aS5I6BTAFfgNe1Qvg/4Ii4I=
+X-Google-Smtp-Source: AA0mqf6fR/tKq40y1o1ew89Q6kWJtu3M42/4bXxdpMmVeT0mXXt9SSBGrAf8yGd0Pz6k3OUuLYKWqA==
+X-Received: by 2002:a2e:be08:0:b0:277:857:87ab with SMTP id z8-20020a2ebe08000000b00277085787abmr13626350ljq.442.1669839023684;
+        Wed, 30 Nov 2022 12:10:23 -0800 (PST)
 Received: from localhost.localdomain (ccy110.neoplus.adsl.tpnet.pl. [83.30.148.110])
-        by smtp.gmail.com with ESMTPSA id a25-20020a056512201900b004b4e9580b1asm369754lfb.66.2022.11.30.12.10.08
+        by smtp.gmail.com with ESMTPSA id a25-20020a056512201900b004b4e9580b1asm369754lfb.66.2022.11.30.12.10.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Nov 2022 12:10:09 -0800 (PST)
+        Wed, 30 Nov 2022 12:10:23 -0800 (PST)
 From:   Adam Skladowski <a39.skl@gmail.com>
 Cc:     phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
         Adam Skladowski <a39.skl@gmail.com>,
@@ -71,9 +71,9 @@ Cc:     phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
         linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
         freedreno@lists.freedesktop.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v2 06/12] arm64: dts: qcom: sm6115: Add rpm-stats node
-Date:   Wed, 30 Nov 2022 21:09:44 +0100
-Message-Id: <20221130200950.144618-7-a39.skl@gmail.com>
+Subject: [PATCH v2 12/12] arm64: dts: qcom: sm6115: Add smmu fallback to qcom generic compatible
+Date:   Wed, 30 Nov 2022 21:09:50 +0100
+Message-Id: <20221130200950.144618-13-a39.skl@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20221130200950.144618-1-a39.skl@gmail.com>
 References: <20221130200950.144618-1-a39.skl@gmail.com>
@@ -84,30 +84,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add rpm stats node.
+Add fallback to generic qcom mmu-500 implementation.
 
 Signed-off-by: Adam Skladowski <a39.skl@gmail.com>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/sm6115.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm64/boot/dts/qcom/sm6115.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/arm64/boot/dts/qcom/sm6115.dtsi b/arch/arm64/boot/dts/qcom/sm6115.dtsi
-index 6f4c36f3da40..d0928f19965f 100644
+index 38b903592a57..572bf04adf90 100644
 --- a/arch/arm64/boot/dts/qcom/sm6115.dtsi
 +++ b/arch/arm64/boot/dts/qcom/sm6115.dtsi
-@@ -546,6 +546,11 @@ rpm_msg_ram: sram@45f0000 {
- 			reg = <0x045f0000 0x7000>;
+@@ -1233,7 +1233,7 @@ dispcc: clock-controller@5f00000 {
  		};
  
-+		sram@4690000 {
-+			compatible = "qcom,rpm-stats";
-+			reg = <0x04690000 0x10000>;
-+		};
-+
- 		sdhc_1: mmc@4744000 {
- 			compatible = "qcom,sm6115-sdhci", "qcom,sdhci-msm-v5";
- 			reg = <0x04744000 0x1000>, <0x04745000 0x1000>, <0x04748000 0x8000>;
+ 		apps_smmu: iommu@c600000 {
+-			compatible = "qcom,sm6115-smmu-500", "arm,mmu-500";
++			compatible = "qcom,sm6115-smmu-500", "qcom,smmu-500", "arm,mmu-500";
+ 			reg = <0x0c600000 0x80000>;
+ 			#iommu-cells = <2>;
+ 			#global-interrupts = <1>;
 -- 
 2.25.1
 
