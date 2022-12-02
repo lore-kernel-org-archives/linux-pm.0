@@ -2,124 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87262C4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Dec 2022 09:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D045C4167B
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Dec 2022 09:53:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232845AbiLBJpL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Dec 2022 04:45:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47594 "EHLO
+        id S232854AbiLBJxP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Dec 2022 04:53:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231833AbiLBJot (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2022 04:44:49 -0500
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20230C82C6
-        for <linux-pm@vger.kernel.org>; Fri,  2 Dec 2022 01:44:48 -0800 (PST)
-Received: from dggpemm500007.china.huawei.com (unknown [172.30.72.55])
-        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4NNp1H5gfQz15N5W;
-        Fri,  2 Dec 2022 17:44:03 +0800 (CST)
-Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
- (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Fri, 2 Dec
- 2022 17:44:45 +0800
-From:   Yang Yingliang <yangyingliang@huawei.com>
-To:     <sre@kernel.org>, <rafael.j.wysocki@intel.com>,
-        <swboyd@chromium.org>
-CC:     <linux-pm@vger.kernel.org>, <yangyingliang@huawei.com>
-Subject: [PATCH] power: supply: fix missing device_del() in __power_supply_register()
-Date:   Fri, 2 Dec 2022 17:42:39 +0800
-Message-ID: <20221202094239.2130443-1-yangyingliang@huawei.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S232647AbiLBJxO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2022 04:53:14 -0500
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11B72326F9;
+        Fri,  2 Dec 2022 01:53:14 -0800 (PST)
+Received: from IcarusMOD.eternityproject.eu (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id BAD536602BB8;
+        Fri,  2 Dec 2022 09:53:11 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1669974792;
+        bh=0SFbDcrjgdD7wLBImp+e4xl59u0MBvEJjOar0fcf22M=;
+        h=From:To:Cc:Subject:Date:From;
+        b=MpUHSJNjjrAaah9BzvQfbxFwCFmUvuLyArUQIkqitNGpRZ5UByHfyXjeoE582XThv
+         ehgRGkC8FC1TNAtRXATImVO+UAtBWoTGLl4OyuDBDJhN0foXXk6tNyt3jgro6Y0VKO
+         EIOwHdaNKoCrsFX/W8IJv7+QOt8mu0ZCIJDb72VtkNjkgB55OHYpn+Zox7vF7JxdoU
+         EYdT3cFQFK0xk7zrD2SI5qRlqlOrNtTir1TVt3hITUABWWqNiKtbGtmR7nUS3k9XwM
+         pTJ3CiHPYDlk/aJYwhJ00ndo2ceWUwic95eCqvJqoA8EUq2zVX0cm/rnbIOGIBkgK0
+         /3+qZpdk54tpg==
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+To:     viresh.kumar@linaro.org
+Cc:     rafael@kernel.org, matthias.bgg@gmail.com,
+        angelogioacchino.delregno@collabora.com,
+        jia-wei.chang@mediatek.com, rex-bc.chen@mediatek.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, vincent@systemli.org,
+        frank-w@public-files.de, daniel@makrotopia.org
+Subject: [PATCH] cpufreq: mediatek: Raise proc and sram max voltage for MT7622/7623
+Date:   Fri,  2 Dec 2022 10:52:27 +0100
+Message-Id: <20221202095227.167492-1-angelogioacchino.delregno@collabora.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.175.103.91]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemm500007.china.huawei.com (7.185.36.183)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-I got the a UAF and some warning reports while doing fault injection test:
+During the addition of SRAM voltage tracking for CCI scaling, this
+driver got some voltage limits set for the vtrack algorithm: these
+were moved to platform data first, then enforced in a later commit
+6a17b3876bc8 ("cpufreq: mediatek: Refine mtk_cpufreq_voltage_tracking()")
+using these as max values for the regulator_set_voltage() calls.
 
-==================================================================
-BUG: KASAN: use-after-free in power_supply_uevent+0x59/0x190
-Read of size 8 at addr ffff8881092c3c58 by task systemd-udevd/268
+In this case, the vsram/vproc constraints for MT7622 and MT7623
+were supposed to be the same as MT2701 (and a number of other SoCs),
+but that turned out to be a mistake because the aforementioned two
+SoCs' maximum voltage for both VPROC and VPROC_SRAM is 1.36V.
 
-CPU: 3 PID: 268 Comm: systemd-udevd Tainted: G                 N 6.1.0-rc3+
-rt1719: probe of 0-0043 failed with error -17
-Call Trace:
- <TASK>
- kasan_report+0x90/0x190
- power_supply_uevent+0x59/0x190
- dev_uevent+0x1c8/0x3d0
- uevent_show+0x10f/0x1c0
+Fix that by adding new platform data for MT7622/7623 declaring the
+right {proc,sram}_max_volt parameter.
 
-Allocated by task 253:
- __kasan_kmalloc+0x7e/0x90
- __kmalloc_node_track_caller+0x55/0x1b0
- devm_kmalloc+0x5e/0x110
- rt1719_probe+0xdf/0x770 [rt1719]
-
-Freed by task 253:
- kasan_save_free_info+0x2a/0x50
- __kasan_slab_free+0x102/0x190
- __kmem_cache_free+0xca/0x400
- release_nodes+0x78/0xa0
- devres_release_group+0x171/0x200
-==================================================================
-
-sysfs: cannot create duplicate filename '/class/power_supply/rt1719-source-psy-0-0043'
-CPU: 3 PID: 1140 Comm: 89-i2c-rt1719 Tainted: G    B   W        N 6.1.0-rc3+
-Call Trace:
- <TASK>
- dump_stack_lvl+0x67/0x83
- sysfs_warn_dup.cold.3+0x1c/0x28
- sysfs_do_create_link_sd.isra.2+0x11d/0x130
- sysfs_create_link+0x4c/0x80
- device_add+0x55a/0x10f0
- __power_supply_register+0x863/0xae0
- devm_power_supply_register+0x5f/0xb0
-
-device_add() is called before device_init_wakeup(), if device_init_wakeup()
-fails, device_del() needs be called.
-
-Leak of device in sysfs, it also causes UAF problem:
-
-CPU A
-rt1719_probe()			|CPU B
-  //desc is allocated by driver	|
-  devm_kmalloc()		|
-  __power_supply_register()	|
-    psy->desc = desc;		|
-  //desc is freed		|
-  release_nodes()		|
-				|power_supply_uevent()
-				|  psy = dev_get_drvdata(dev);
-				|  add_uevent_var(psy->desc->name) <-- UAF
-
-So move device_del() after the error label wakeup_init_failed to fix this leak.
-
-Fixes: 828802228485 ("power: supply: Init device wakeup after device_add()")
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+Fixes: ead858bd128d ("cpufreq: mediatek: Move voltage limits to platform data")
+Fixes: 6a17b3876bc8 ("cpufreq: mediatek: Refine mtk_cpufreq_voltage_tracking()")
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/power/supply/power_supply_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/mediatek-cpufreq.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 4b5fb172fa99..9bae94d2ea3a 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1387,8 +1387,8 @@ __power_supply_register(struct device *parent,
- register_cooler_failed:
- 	psy_unregister_thermal(psy);
- register_thermal_failed:
--	device_del(dev);
- wakeup_init_failed:
-+	device_del(dev);
- device_add_failed:
- check_supplies_failed:
- dev_set_name_failed:
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index 7f2680bc9a0f..f9a9f08c75c4 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -695,6 +695,15 @@ static const struct mtk_cpufreq_platform_data mt2701_platform_data = {
+ 	.ccifreq_supported = false,
+ };
+ 
++static const struct mtk_cpufreq_platform_data mt7622_platform_data = {
++	.min_volt_shift = 100000,
++	.max_volt_shift = 200000,
++	.proc_max_volt = 1360000,
++	.sram_min_volt = 0,
++	.sram_max_volt = 1360000,
++	.ccifreq_supported = false,
++};
++
+ static const struct mtk_cpufreq_platform_data mt8183_platform_data = {
+ 	.min_volt_shift = 100000,
+ 	.max_volt_shift = 200000,
+@@ -717,8 +726,8 @@ static const struct mtk_cpufreq_platform_data mt8186_platform_data = {
+ static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
+ 	{ .compatible = "mediatek,mt2701", .data = &mt2701_platform_data },
+ 	{ .compatible = "mediatek,mt2712", .data = &mt2701_platform_data },
+-	{ .compatible = "mediatek,mt7622", .data = &mt2701_platform_data },
+-	{ .compatible = "mediatek,mt7623", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt7622", .data = &mt7622_platform_data },
++	{ .compatible = "mediatek,mt7623", .data = &mt7622_platform_data },
+ 	{ .compatible = "mediatek,mt8167", .data = &mt2701_platform_data },
+ 	{ .compatible = "mediatek,mt817x", .data = &mt2701_platform_data },
+ 	{ .compatible = "mediatek,mt8173", .data = &mt2701_platform_data },
 -- 
-2.25.1
+2.38.1
 
