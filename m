@@ -2,37 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9889BC47089
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Dec 2022 16:25:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96B8DC4708E
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Dec 2022 16:25:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233938AbiLBQZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S233644AbiLBQZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 2 Dec 2022 11:25:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37606 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233995AbiLBQZX (ORCPT
+        with ESMTP id S231470AbiLBQZX (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2022 11:25:23 -0500
 Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11A622AF3;
-        Fri,  2 Dec 2022 08:24:14 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B883101D;
+        Fri,  2 Dec 2022 08:24:13 -0800 (PST)
 Received: from tr.lan (ip-86-49-120-218.bb.vodafone.cz [86.49.120.218])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
         (No client certificate requested)
         (Authenticated sender: marex@denx.de)
-        by phobos.denx.de (Postfix) with ESMTPSA id 1C74884F24;
-        Fri,  2 Dec 2022 17:24:12 +0100 (CET)
+        by phobos.denx.de (Postfix) with ESMTPSA id 5F20484F66;
+        Fri,  2 Dec 2022 17:24:11 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
         s=phobos-20191101; t=1669998252;
-        bh=cpkr+6W4IkLsd2qpDf9AOZesJ6DmLNkDIFbno1OM1Gk=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=C0UOsiIFaS7SA+oekVgYFcpc5H8qC8TIoYdrCh/wC9NdkYGzAop2J18M6MwK5fzmK
-         i63Sb4eGz6AIcD419JCAsSmdHjHZiG4p4WCnQ6xwpQ0fYQ8gsQN/IsxQ2UlfNtGeQJ
-         FfRFDYzMLv04KGVcHaSMCxywewr+3BqFDcTmYVPNEZeNxDTRjtbyZMReYkhfGz8rx1
-         g7jzU/pv8nAE5rCUxiuQ83tKI4aAkUdXc3neyIg65uIAE0nyPrRzIGHf7bj7C4tOTI
-         RnN318n9Bt0Yg+uKyjiGNAbWD5uhOxHV2LqaZcYe9s4z7ba7z7PpchQ/2ICwbqCCb1
-         Zm+jhdwwORDmA==
+        bh=CJLV50zn4/UdYMLrvwnU+6Q7Znd55DAnHXwpVXmTeWs=;
+        h=From:To:Cc:Subject:Date:From;
+        b=eWp8X8DtAWZhQUDrxevA4wVUkOKn/FJgL5sLPk29zi+iwBvId3tRL30KrUvdOjONG
+         vvBh/t72U9EKgT7DfXTXgn4TV2Em3prtyPzXAusx/rkXhE9fTnIj+HgAm5NAb7XBG8
+         ZO+F9KBip7T4LsYiwYY1aTYinNGON8oLzNNob8Nhwavzc7TptIBVw1NVzaEfP2A7C0
+         xbGE4i38eqtxYp7O9glpxbF5Z4gYsVs0/8mcm5n03GePRe6CkhV50sa6HdBifxWL/h
+         1Qo3HbiyNyZuhYZi8mSbmB13M7mYpZkNo8s+J31Kn6GViUqbmFyKmOYHiNxE5vvLpL
+         fNxpnYAjv0Gdw==
 From:   Marek Vasut <marex@denx.de>
 To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc:     Marek Vasut <marex@denx.de>, Peng Fan <peng.fan@nxp.com>,
+Cc:     Marek Vasut <marex@denx.de>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Adam Ford <aford173@gmail.com>, Alice Guo <alice.guo@nxp.com>,
         Amit Kucheria <amitk@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -41,6 +42,7 @@ Cc:     Marek Vasut <marex@denx.de>, Peng Fan <peng.fan@nxp.com>,
         Li Jun <jun.li@nxp.com>, Lucas Stach <l.stach@pengutronix.de>,
         Markus Niebel <Markus.Niebel@ew.tq-group.com>,
         NXP Linux Team <linux-imx@nxp.com>,
+        Peng Fan <peng.fan@nxp.com>,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
         Richard Cochran <richardcochran@gmail.com>,
@@ -48,12 +50,10 @@ Cc:     Marek Vasut <marex@denx.de>, Peng Fan <peng.fan@nxp.com>,
         Sascha Hauer <s.hauer@pengutronix.de>,
         Shawn Guo <shawnguo@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org
-Subject: [PATCH v3 2/5] arm64: dts: imx8m: Align SoC unique ID node unit address
-Date:   Fri,  2 Dec 2022 17:23:50 +0100
-Message-Id: <20221202162353.274009-2-marex@denx.de>
+Subject: [PATCH v3 1/5] dt-bindings: thermal: imx8mm-thermal: Document optional nvmem-cells
+Date:   Fri,  2 Dec 2022 17:23:49 +0100
+Message-Id: <20221202162353.274009-1-marex@denx.de>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221202162353.274009-1-marex@denx.de>
-References: <20221202162353.274009-1-marex@denx.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
@@ -62,10 +62,11 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Align the SoC unique ID DT node unit address with its reg property.
+The TMU TASR, TCALIVn, TRIM registers must be explicitly programmed with
+calibration values from OCOTP. Document optional phandle to OCOTP nvmem
+provider.
 
-Reviewed-by: Peng Fan <peng.fan@nxp.com>
-Fixes: cbff23797fa1 ("arm64: dts: imx8m: add NVMEM provider and consumer to read soc unique ID")
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Marek Vasut <marex@denx.de>
 ---
 Cc: Adam Ford <aford173@gmail.com>
@@ -90,67 +91,30 @@ Cc: devicetree@vger.kernel.org
 To: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 ---
-V2: Add RB from Peng
+V2: Add AB from Krzysztof
 V3: No change
 ---
- arch/arm64/boot/dts/freescale/imx8mm.dtsi | 2 +-
- arch/arm64/boot/dts/freescale/imx8mn.dtsi | 2 +-
- arch/arm64/boot/dts/freescale/imx8mp.dtsi | 2 +-
- arch/arm64/boot/dts/freescale/imx8mq.dtsi | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/thermal/imx8mm-thermal.yaml        | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-index 0c97aca8db6b6..423cb36cbcd53 100644
---- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-@@ -563,7 +563,7 @@ ocotp: efuse@30350000 {
- 				#address-cells = <1>;
- 				#size-cells = <1>;
+diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
+index 89c54e08ee61b..b90726229ac9c 100644
+--- a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
+@@ -32,6 +32,13 @@ properties:
+   clocks:
+     maxItems: 1
  
--				imx8mm_uid: unique-id@410 {
-+				imx8mm_uid: unique-id@4 {
- 					reg = <0x4 0x8>;
- 				};
- 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mn.dtsi b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-index 9b3a9e1384ae9..312e3abc35ea8 100644
---- a/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-@@ -564,7 +564,7 @@ ocotp: efuse@30350000 {
- 				#address-cells = <1>;
- 				#size-cells = <1>;
- 
--				imx8mn_uid: unique-id@410 {
-+				imx8mn_uid: unique-id@4 {
- 					reg = <0x4 0x8>;
- 				};
- 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mp.dtsi b/arch/arm64/boot/dts/freescale/imx8mp.dtsi
-index f18cf611f778e..c9459ed21b243 100644
---- a/arch/arm64/boot/dts/freescale/imx8mp.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mp.dtsi
-@@ -426,7 +426,7 @@ ocotp: efuse@30350000 {
- 				#address-cells = <1>;
- 				#size-cells = <1>;
- 
--				imx8mp_uid: unique-id@420 {
-+				imx8mp_uid: unique-id@8 {
- 					reg = <0x8 0x8>;
- 				};
- 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-index 5246b44a37d4a..2b6d3f4ff5d93 100644
---- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-@@ -593,7 +593,7 @@ ocotp: efuse@30350000 {
- 				#address-cells = <1>;
- 				#size-cells = <1>;
- 
--				imx8mq_uid: soc-uid@410 {
-+				imx8mq_uid: soc-uid@4 {
- 					reg = <0x4 0x8>;
- 				};
- 
++  nvmem-cells:
++    maxItems: 1
++    description: Phandle to the calibration data provided by ocotp
++
++  nvmem-cell-names:
++    const: calib
++
+   "#thermal-sensor-cells":
+     description: |
+       Number of cells required to uniquely identify the thermal
 -- 
 2.35.1
 
