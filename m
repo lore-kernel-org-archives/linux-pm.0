@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1248AC47089
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Dec 2022 18:58:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAF8CC4321E
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Dec 2022 19:08:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232776AbiLES6h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Dec 2022 13:58:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48898 "EHLO
+        id S232055AbiLETIQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Dec 2022 14:08:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232540AbiLES6g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Dec 2022 13:58:36 -0500
+        with ESMTP id S230352AbiLETIP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Dec 2022 14:08:15 -0500
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9CB1634D;
-        Mon,  5 Dec 2022 10:58:34 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2826DDF33;
+        Mon,  5 Dec 2022 11:08:14 -0800 (PST)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
- id 57dcb16a7ec5752c; Mon, 5 Dec 2022 19:58:33 +0100
+ id 517f8ee01c49655d; Mon, 5 Dec 2022 20:08:12 +0100
 Received: from kreacher.localnet (unknown [213.134.188.181])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 55E792801EA8;
-        Mon,  5 Dec 2022 19:58:32 +0100 (CET)
+        by v370.home.net.pl (Postfix) with ESMTPSA id C38072801EA0;
+        Mon,  5 Dec 2022 20:08:11 +0100 (CET)
 Authentication-Results: v370.home.net.pl; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: v370.home.net.pl; spf=fail smtp.mailfrom=rjwysocki.net
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
@@ -31,17 +31,19 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] ACPI: processor: idle: Drop unnecessary statements and parens
-Date:   Mon, 05 Dec 2022 19:58:25 +0100
-Message-ID: <2262740.ElGaqSPkdT@kreacher>
+Subject: [PATCH v1 5/5] ACPI: processor: perflib: Adjust acpi_processor_notify_smm() return value
+Date:   Mon, 05 Dec 2022 20:08:00 +0100
+Message-ID: <21694351.EfDdHjke4D@kreacher>
+In-Reply-To: <1836012.tdWV9SEqCh@kreacher>
+References: <1836012.tdWV9SEqCh@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.188.181
 X-CLIENT-HOSTNAME: 213.134.188.181
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudeggdduudelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppedvudefrddufeegrddukeekrddukedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekkedrudekuddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohep
- shhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudeggdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrddukeekrddukedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekkedrudekuddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthht
+ ohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -49,48 +51,35 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Drop a redundant "else", a "return" statement at the end of a void
-function and redundant parentheses around an unsigent int variable
-name from the ACPI processor idle driver.
-
-No expected functional impact.
+Avoid returning a confusing error code from acpi_processor_notify_smm()
+if it is called for the second time in the case when SMM notification
+regarding P-state control is not supported.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/processor_idle.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/acpi/processor_perflib.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Index: linux-pm/drivers/acpi/processor_idle.c
+Index: linux-pm/drivers/acpi/processor_perflib.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/processor_idle.c
-+++ linux-pm/drivers/acpi/processor_idle.c
-@@ -324,7 +324,7 @@ static void acpi_processor_power_verify_
- 	 * the erratum), but this is known to disrupt certain ISA
- 	 * devices thus we take the conservative approach.
- 	 */
--	else if (errata.piix4.fdma) {
-+	if (errata.piix4.fdma) {
- 		acpi_handle_debug(pr->handle,
- 				  "C3 not supported on PIIX4 with Type-F DMA\n");
- 		return;
-@@ -384,8 +384,6 @@ static void acpi_processor_power_verify_
- 	 * handle BM_RLD is to set it and leave it set.
- 	 */
- 	acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, 1);
+--- linux-pm.orig/drivers/acpi/processor_perflib.c
++++ linux-pm/drivers/acpi/processor_perflib.c
+@@ -475,10 +475,12 @@ int acpi_processor_notify_smm(struct mod
+ 
+ 	result = acpi_processor_pstate_control();
+ 	if (result <= 0) {
+-		if (!result)
++		if (result) {
++			is_done = result;
++		} else {
+ 			pr_debug("No SMI port or pstate_control\n");
 -
--	return;
- }
+-		is_done = -EIO;
++			is_done = 1;
++		}
+ 		goto out_put;
+ 	}
  
- static int acpi_cst_latency_cmp(const void *a, const void *b)
-@@ -459,7 +457,7 @@ static int acpi_processor_power_verify(s
- 
- 	lapic_timer_propagate_broadcast(pr);
- 
--	return (working);
-+	return working;
- }
- 
- static int acpi_processor_get_cstate_info(struct acpi_processor *pr)
 
 
 
