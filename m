@@ -2,86 +2,66 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC6D3C4332F
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 11:53:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79600C3A5A7
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 12:44:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229972AbiLHLxG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Dec 2022 06:53:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40226 "EHLO
+        id S229677AbiLHMoX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Dec 2022 07:44:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229982AbiLHLwp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2022 06:52:45 -0500
-Received: from mail-qv1-f42.google.com (mail-qv1-f42.google.com [209.85.219.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B25FB81DBC;
-        Thu,  8 Dec 2022 03:51:31 -0800 (PST)
-Received: by mail-qv1-f42.google.com with SMTP id mn15so759088qvb.13;
-        Thu, 08 Dec 2022 03:51:31 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=U/EBcLW8zYEQ4+t+S3wEcSxpFnIWriPs3pqX5SXYMw8=;
-        b=2HFYh6ymMdtAfbR6lHQq28G2/W7yk0qqbILS2JWCkg6brLY6hOSeeil80ijSYMlPHG
-         JezIAL5jHIV6lI1w097zEdHVz2gdmiVYq/Ag2xr0X/+ubUQ8t+VJ8Droksyl3vMZ9bmz
-         D+WCfKdFO7fMLhiQ9RHgArlakeEX7d87p+ldu8X2K/9hbvF+aejoyvyEgoD4XnrO7hRo
-         lFx2k2YS2kfLOFfsrK3H2u4aEr0qXCwn6bXEBO6KGobnBUhxS1gRgG1R3+Oxs1vpH5Wl
-         vPdx3b2lZHGsyETnIBPDpgYXeThrif7xXHwLYvNBsduP7aQoYjge5tZbtl6OKWDFyqDW
-         SufQ==
-X-Gm-Message-State: ANoB5plRNjMD5fwvvoiZOpB+cAfcPqphoAm9G2Km3kxSaKlWVvkKtapP
-        D9CHLLtGGdCSx5KwH/8tZh3+fKZ4Nf0W1ux+gJI=
-X-Google-Smtp-Source: AA0mqf5h2CSXWVb/QRPpxwMdjYO3+RytgXcRavvYeTIJsi374NagoXdX4L8AJsyAIHDcElruy9foc2FKO0QcpKSnaVs=
-X-Received: by 2002:a0c:ea49:0:b0:4c7:660f:1845 with SMTP id
- u9-20020a0cea49000000b004c7660f1845mr14762438qvp.73.1670500290885; Thu, 08
- Dec 2022 03:51:30 -0800 (PST)
+        with ESMTP id S229568AbiLHMoW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2022 07:44:22 -0500
+Received: from baidu.com (mx20.baidu.com [111.202.115.85])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC7C860B7B;
+        Thu,  8 Dec 2022 04:44:19 -0800 (PST)
+From:   "Li,Rongqing" <lirongqing@baidu.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+CC:     "tglx@linutronix.de" <tglx@linutronix.de>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "bp@alien8.de" <bp@alien8.de>,
+        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "tony.luck@intel.com" <tony.luck@intel.com>,
+        "jpoimboe@kernel.org" <jpoimboe@kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: RE: [PATCH 1/2][v2] cpuidle-haltpoll: Replace default_idle with
+ arch_cpu_idle
+Thread-Topic: [PATCH 1/2][v2] cpuidle-haltpoll: Replace default_idle with
+ arch_cpu_idle
+Thread-Index: AQHZCkl35vAH2p6SAUK3SxvI0ANPyq5jOG4AgAAgUwCAAJTQoA==
+Date:   Thu, 8 Dec 2022 12:41:23 +0000
+Message-ID: <3fb3526aa012449db95767c6092da8f6@baidu.com>
+References: <1670416895-50172-1-git-send-email-lirongqing@baidu.com>
+ <080936167059.CAJZ5v0g5kTRE+x-8xC2WwQr11j01ox=Nk0aguiC1_HGPU8W=Rw@mail.gmail.com>
+ <9e19c594bcf144fbb433fb4cfee54e08@baidu.com>
+ <CAJZ5v0jofKbdRbKzLSEMkjQjP1GTcbt7OYqO=0ZYvpt_HwTQTg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jofKbdRbKzLSEMkjQjP1GTcbt7OYqO=0ZYvpt_HwTQTg@mail.gmail.com>
+Accept-Language: zh-CN, en-US
+Content-Language: zh-CN
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [172.22.204.59]
+x-baidu-bdmsfe-datecheck: 1_BJHW-Mail-Ex15_2022-12-08 20:41:24:190
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-References: <202212081706290141979@zte.com.cn>
-In-Reply-To: <202212081706290141979@zte.com.cn>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 8 Dec 2022 12:51:20 +0100
-Message-ID: <CAJZ5v0juOSoQt_9XLM6HmuVOR4A=rkJtucXCgCgMZAU9GhFeow@mail.gmail.com>
-Subject: Re: [PATCH] thermal: Convert to use sysfs_emit_at() API
-To:     ye.xingchen@zte.com.cn
-Cc:     rafael@kernel.org, daniel.lezcano@linaro.org, amitk@kernel.org,
-        rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-FEAS-Client-IP: 10.127.64.38
+X-FE-Last-Public-Client-IP: 100.100.100.38
+X-FE-Policy-ID: 15:10:21:SYSTEM
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Dec 8, 2022 at 10:06 AM <ye.xingchen@zte.com.cn> wrote:
->
-> From: ye xingchen <ye.xingchen@zte.com.cn>
->
-> Follow the advice of the Documentation/filesystems/sysfs.rst and show()
-> should only use sysfs_emit() or sysfs_emit_at() when formatting the
-> value to be returned to user space.
->
-> Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
-
-Again, please resend this after 6.2-rc1 is out, thanks!
-
-> ---
->  drivers/thermal/thermal_core.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index f17ab2316dbd..91d40ce62c92 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -229,10 +229,9 @@ int thermal_build_list_of_policies(char *buf)
->         mutex_lock(&thermal_governor_lock);
->
->         list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-> -               count += scnprintf(buf + count, PAGE_SIZE - count, "%s ",
-> -                                  pos->name);
-> +               count += sysfs_emit_at(buf, count, "%s ", pos->name);
->         }
-> -       count += scnprintf(buf + count, PAGE_SIZE - count, "\n");
-> +       count += sysfs_emit_at(buf, count, "\n");
->
->         mutex_unlock(&thermal_governor_lock);
->
-> --
-> 2.25.1
+PiA+DQo+ID4gV2hlbiBjcHVpZGxlLWhhbHRwb2xsIGlzIGJ1aWx0IGFzIG1vZHVsZSwNCj4gDQo+
+IEJ1dCBpdCBpc24ndCBub3cuDQoNCkNlbnRvcyBpcyBjb21waWxpbmcgaXQgYXMgbW9kdWxlLCBp
+dCB3aWxsIGZhaWw7DQpPdGhlciB1c2VyIHdhbnRzIHRvIGNvbXBpbGUgaXQgYXMgbW9kdWxlLCB0
+aGV5IHdpbGwgZmFpbCwgDQpTeXpib3QgcmFuZG9tIGNvbmZpZ3VyYXRpb24gYnVpbGRpbmcgd2ls
+bCBmYWlsDQoNClVubGVzcyBwcm9oaWJpdCB0byBidWlsZCBpdCBhcyBtb2R1bGUgYXMgYmVsb3c6
+DQoNCmNvbmZpZyBIQUxUUE9MTF9DUFVJRExFDQotICAgICAgICB0cmlzdGF0ZSAiSGFsdCBwb2xs
+IGNwdWlkbGUgZHJpdmVyIg0KKyAgICAgICAgYm9vbCAiSGFsdCBwb2xsIGNwdWlkbGUgZHJpdmVy
+Ig0KICAgICAgICBkZXBlbmRzIG9uIFg4NiAmJiBLVk1fR1VFU1QNCiAgICAgICAgZGVmYXVsdCB5
+DQogICAgICAgIGhlbHANCg0KDQp0aGFua3MNCg0KLUxpDQoNCg0K
