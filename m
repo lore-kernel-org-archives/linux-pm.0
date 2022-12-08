@@ -2,553 +2,173 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7714FC6370D
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 08:30:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD755C3A5A7
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 08:38:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229773AbiLHIaX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Dec 2022 03:30:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36970 "EHLO
+        id S229714AbiLHIiC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Dec 2022 03:38:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43014 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229725AbiLHIaS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2022 03:30:18 -0500
-Received: from fd01.gateway.ufhost.com (fd01.gateway.ufhost.com [61.152.239.71])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 997D660B4E;
-        Thu,  8 Dec 2022 00:30:15 -0800 (PST)
-Received: from EXMBX165.cuchost.com (unknown [175.102.18.54])
-        (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-        (Client CN "EXMBX165", Issuer "EXMBX165" (not verified))
-        by fd01.gateway.ufhost.com (Postfix) with ESMTP id 0457224E289;
-        Thu,  8 Dec 2022 16:30:09 +0800 (CST)
-Received: from EXMBX068.cuchost.com (172.16.6.68) by EXMBX165.cuchost.com
- (172.16.6.75) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Thu, 8 Dec
- 2022 16:30:08 +0800
-Received: from localhost.localdomain (113.72.146.33) by EXMBX068.cuchost.com
- (172.16.6.68) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Thu, 8 Dec
- 2022 16:30:07 +0800
-From:   Walker Chen <walker.chen@starfivetech.com>
-To:     <linux-riscv@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>
-CC:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor.dooley@microchip.com>,
-        Emil Renner Berthing <emil.renner.berthing@canonical.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Walker Chen <walker.chen@starfivetech.com>,
-        <linux-kernel@vger.kernel.org>
-Subject: [PATCH v1 2/3] soc: starfive: Add StarFive JH71XX pmu driver
-Date:   Thu, 8 Dec 2022 16:29:54 +0800
-Message-ID: <20221208082955.10653-3-walker.chen@starfivetech.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20221208082955.10653-1-walker.chen@starfivetech.com>
-References: <20221208082955.10653-1-walker.chen@starfivetech.com>
+        with ESMTP id S229695AbiLHIiA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2022 03:38:00 -0500
+Received: from mail-io1-xd2d.google.com (mail-io1-xd2d.google.com [IPv6:2607:f8b0:4864:20::d2d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3135031EDF
+        for <linux-pm@vger.kernel.org>; Thu,  8 Dec 2022 00:37:59 -0800 (PST)
+Received: by mail-io1-xd2d.google.com with SMTP id 3so332824iou.12
+        for <linux-pm@vger.kernel.org>; Thu, 08 Dec 2022 00:37:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=Mc02ZfrYOJ3+oJFjjLedRFiQuFgTS0ibOsHmLGsOq1s=;
+        b=SBf4qsXMiYTRUzMgRFTlaE6NAOf5FNKX2hHcsPvW0zoMyzf+W2AZMbBTFyKaIdnbP9
+         TvsZzNWQfFuh38MVCiNfUyQSc7nzXLncW0WFIG3FGMar6jOW/qJ2NDKWbjsKvzWa5StN
+         I0eAVuaVNkrEltBmn2/BQvM1CWarMEk+UKc60J10qNHzjGEmFVDAhg0vFIyvBY7FR0ew
+         SxRcIa5gLlEk6WoU9XYQlIw4cLW5xk4UaTRhyFTWeIHQsM8xl2BozD6eu3U/f8DnKhUK
+         +Ar2V7QMXKaxQf2PIzAjCNOKmhbBpoBQezhG6CAXENQ1xpAb80Ef0K0Gp/1RfY+dnsG6
+         T0cg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Mc02ZfrYOJ3+oJFjjLedRFiQuFgTS0ibOsHmLGsOq1s=;
+        b=I34wbNwFeGqL+B9SwyvaPrU+6eMMBwADUipPSI6M/kcLKS/5tLVF3iUmzBww5nWOEf
+         C42fYpkD81fQxS7EDCPUfz0KU3cGOO8rDeIrgVMcE2tlOie+it25hp87XlPShxJ/9lUn
+         0ABrbPMRZVPuTTez6npXEKIWeJ5s9kVKvePYaQO/pt3iGG/Hm30h9JeHLP52gRdXVj/q
+         EjgkP9LNR643Wh467EewaS8oP53iuFuCL2Nri4IaTliqZMIuH+G9VL8oqjdAZoxC6FUQ
+         RfLxYegJdqBF16IPQY5XWGBQLRnDv9sIbaML7P7vhu4h8Ugsjjh90oEwP+U0O+I1W8TP
+         qapg==
+X-Gm-Message-State: ANoB5pnvPcMSZ69rXoJkNmYpa2H8d5CBk5MeOXmWvS5u5ampU9T/+tx2
+        wBn2exqe/k3mvOHrQghdsZi8WisztIDILXHLg0v2dA==
+X-Google-Smtp-Source: AA0mqf6rj5WxqJdQ5U5VKCUfb5VL+yDTa+9Uxc+7TZaty5sKReLB8Ovbc/Wnf4ZzlJC8Z8YOa3jeD0h5UVRN4JoRwQg=
+X-Received: by 2002:a05:6638:328a:b0:386:eaa7:85dd with SMTP id
+ f10-20020a056638328a00b00386eaa785ddmr32566226jav.120.1670488678426; Thu, 08
+ Dec 2022 00:37:58 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [113.72.146.33]
-X-ClientProxiedBy: EXCAS064.cuchost.com (172.16.6.24) To EXMBX068.cuchost.com
- (172.16.6.68)
-X-YovoleRuleAgent: yovoleflag
+References: <20221207101705.9460-1-lukasz.luba@arm.com> <20221207101705.9460-3-lukasz.luba@arm.com>
+In-Reply-To: <20221207101705.9460-3-lukasz.luba@arm.com>
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Thu, 8 Dec 2022 09:37:47 +0100
+Message-ID: <CAKfTPtB8f0RH4qToLrWS+HSZhm8pyUe42DijiXZqo+mQQPWetQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] cpufreq: schedutil: Optimize operations with
+ single max CPU capacity
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        rafael@kernel.org, viresh.kumar@linaro.org,
+        dietmar.eggemann@arm.com, saravanak@google.com,
+        wusamuel@google.com, isaacmanjarres@google.com,
+        kernel-team@android.com, juri.lelli@redhat.com,
+        peterz@infradead.org, mingo@redhat.com, rostedt@goodmis.org,
+        bsegall@google.com, mgorman@suse.de
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add pmu driver for the StarFive JH71XX SoC.
+On Wed, 7 Dec 2022 at 11:17, Lukasz Luba <lukasz.luba@arm.com> wrote:
+>
+> The max CPU capacity is the same for all CPUs sharing frequency domain
+> and thus 'policy' object. There is a way to avoid heavy operations
+> in a loop for each CPU by leveraging this knowledge. Thus, simplify
+> the looping code in the sugov_next_freq_shared() and drop heavy
+> multiplications. Instead, use simple max() to get the highest utilization
+> from these CPUs. This is useful for platforms with many (4 or 6) little
+> CPUs.
+>
+> The max CPU capacity must be fetched every time we are called, due to
+> difficulties during the policy setup, where we are not able to get the
+> normalized CPU capacity at the right time.
+>
+> The stored value in sugov_policy::max is also than used in
+> sugov_iowait_apply() to calculate the right boost. Thus, that field is
+> useful to have in that sugov_policy struct.
+>
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 22 +++++++++++-----------
+>  1 file changed, 11 insertions(+), 11 deletions(-)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index c19d6de67b7a..f9881f3d9488 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -158,10 +158,8 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>
+>  static void sugov_get_util(struct sugov_cpu *sg_cpu)
+>  {
+> -       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+>         struct rq *rq = cpu_rq(sg_cpu->cpu);
+>
+> -       sg_policy->max = arch_scale_cpu_capacity(sg_cpu->cpu);
+>         sg_cpu->bw_dl = cpu_bw_dl(rq);
+>         sg_cpu->util = effective_cpu_util(sg_cpu->cpu, cpu_util_cfs(sg_cpu->cpu),
+>                                           FREQUENCY_UTIL, NULL);
+> @@ -317,6 +315,8 @@ static inline void ignore_dl_rate_limit(struct sugov_cpu *sg_cpu)
+>  static inline bool sugov_update_single_common(struct sugov_cpu *sg_cpu,
+>                                               u64 time, unsigned int flags)
+>  {
+> +       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+> +
+>         sugov_iowait_boost(sg_cpu, time, flags);
+>         sg_cpu->last_update = time;
+>
+> @@ -325,6 +325,9 @@ static inline bool sugov_update_single_common(struct sugov_cpu *sg_cpu,
+>         if (!sugov_should_update_freq(sg_cpu->sg_policy, time))
+>                 return false;
+>
+> +       /* Fetch the latest CPU capcity to avoid stale data */
+> +       sg_policy->max = arch_scale_cpu_capacity(sg_cpu->cpu);
+> +
+>         sugov_get_util(sg_cpu);
+>         sugov_iowait_apply(sg_cpu, time);
+>
+> @@ -414,25 +417,22 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
+>  {
+>         struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+>         struct cpufreq_policy *policy = sg_policy->policy;
+> -       unsigned long util = 0, max = 1;
+> +       unsigned long util = 0;
+>         unsigned int j;
+>
+> +       /* Fetch the latest CPU capcity to avoid stale data */
+> +       sg_policy->max = arch_scale_cpu_capacity(sg_cpu->cpu);
+> +
+>         for_each_cpu(j, policy->cpus) {
+>                 struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
+> -               unsigned long j_util, j_max;
+>
+>                 sugov_get_util(j_sg_cpu);
+>                 sugov_iowait_apply(j_sg_cpu, time);
+> -               j_util = j_sg_cpu->util;
+> -               j_max = j_sg_cpu->max;
+>
+> -               if (j_util * max > j_max * util) {
+> -                       util = j_util;
+> -                       max = j_max;
+> -               }
 
-As the power domains provider, the Power Management Unit (PMU) is
-designed for including multiple PM domains that can be used for power
-gating of selected IP blocks for power saving by reduced leakage
-current. It accepts software encourage command to switch the power mode
-of SoC.
+With the code removed above, max is only used in 2 places:
+- sugov_iowait_apply
+- map_util_freq
 
-Signed-off-by: Walker Chen <walker.chen@starfivetech.com>
----
- MAINTAINERS                       |  14 ++
- drivers/soc/Kconfig               |   1 +
- drivers/soc/Makefile              |   1 +
- drivers/soc/starfive/Kconfig      |  11 +
- drivers/soc/starfive/Makefile     |   3 +
- drivers/soc/starfive/jh71xx_pmu.c | 396 ++++++++++++++++++++++++++++++
- 6 files changed, 426 insertions(+)
- create mode 100644 drivers/soc/starfive/Kconfig
- create mode 100644 drivers/soc/starfive/Makefile
- create mode 100644 drivers/soc/starfive/jh71xx_pmu.c
+I wonder if it would be better to just call arch_scale_cpu_capacity()
+in these 2 places instead of saving a copy in sg_policy and then
+reading it twice.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a70c1d0f303e..dbbc25a9f25b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -19623,6 +19623,20 @@ F:	Documentation/devicetree/bindings/reset/starfive,jh7100-reset.yaml
- F:	drivers/reset/starfive/
- F:	include/dt-bindings/reset/starfive*
- 
-+STARFIVE SOC DRIVER
-+M:	Conor Dooley <conor@kernel.org>
-+S:	Maintained
-+T:	git https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux.git/
-+F:	drivers/soc/starfive/
-+F:	include/soc/starfive/
-+
-+STARFIVE JH71XX PMU CONTROLLER DRIVER
-+M:	Walker Chen <walker.chen@starfivetech.com>
-+S:	Supported
-+F:	Documentation/devicetree/bindings/power/starfive*
-+F:	drivers/soc/starfive/jh71xx_pmu.c
-+F:	include/dt-bindings/power/starfive,jh7110-pmu.h
-+
- STATIC BRANCH/CALL
- M:	Peter Zijlstra <peterz@infradead.org>
- M:	Josh Poimboeuf <jpoimboe@kernel.org>
-diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
-index e461c071189b..628fda4d5ed9 100644
---- a/drivers/soc/Kconfig
-+++ b/drivers/soc/Kconfig
-@@ -21,6 +21,7 @@ source "drivers/soc/renesas/Kconfig"
- source "drivers/soc/rockchip/Kconfig"
- source "drivers/soc/samsung/Kconfig"
- source "drivers/soc/sifive/Kconfig"
-+source "drivers/soc/starfive/Kconfig"
- source "drivers/soc/sunxi/Kconfig"
- source "drivers/soc/tegra/Kconfig"
- source "drivers/soc/ti/Kconfig"
-diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
-index 534669840858..cbe076f42068 100644
---- a/drivers/soc/Makefile
-+++ b/drivers/soc/Makefile
-@@ -27,6 +27,7 @@ obj-y				+= renesas/
- obj-y				+= rockchip/
- obj-$(CONFIG_SOC_SAMSUNG)	+= samsung/
- obj-y				+= sifive/
-+obj-y				+= starfive/
- obj-y				+= sunxi/
- obj-$(CONFIG_ARCH_TEGRA)	+= tegra/
- obj-y				+= ti/
-diff --git a/drivers/soc/starfive/Kconfig b/drivers/soc/starfive/Kconfig
-new file mode 100644
-index 000000000000..29d92df97421
---- /dev/null
-+++ b/drivers/soc/starfive/Kconfig
-@@ -0,0 +1,11 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+config JH71XX_PMU
-+	bool "Support PMU for StarFive JH71XX Soc"
-+	depends on PM && (SOC_STARFIVE || COMPILE_TEST)
-+	default SOC_STARFIVE
-+	select PM_GENERIC_DOMAINS
-+	help
-+	  Say 'y' here to enable support power domain support.
-+	  In order to meet low power requirements, a Power Management Unit (PMU)
-+	  is designed for controlling power resources in StarFive JH71XX SoCs.
-diff --git a/drivers/soc/starfive/Makefile b/drivers/soc/starfive/Makefile
-new file mode 100644
-index 000000000000..13b589d6b5f3
---- /dev/null
-+++ b/drivers/soc/starfive/Makefile
-@@ -0,0 +1,3 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+obj-$(CONFIG_JH71XX_PMU)	+= jh71xx_pmu.o
-diff --git a/drivers/soc/starfive/jh71xx_pmu.c b/drivers/soc/starfive/jh71xx_pmu.c
-new file mode 100644
-index 000000000000..7a0145779e07
---- /dev/null
-+++ b/drivers/soc/starfive/jh71xx_pmu.c
-@@ -0,0 +1,396 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * StarFive JH71XX PMU (Power Management Unit) Controller Driver
-+ *
-+ * Copyright (C) 2022 StarFive Technology Co., Ltd.
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/iopoll.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
-+#include <dt-bindings/power/starfive,jh7110-pmu.h>
-+
-+/* register offset */
-+#define JH71XX_PMU_HW_EVENT_ON		0x04
-+#define JH71XX_PMU_HW_EVENT_OFF		0x08
-+#define JH71XX_PMU_SW_TURN_ON_POWER	0x0C
-+#define JH71XX_PMU_SW_TURN_OFF_POWER	0x10
-+#define JH71XX_PMU_SW_ENCOURAGE		0x44
-+#define JH71XX_PMU_INT_MASK		0x48
-+#define JH71XX_PMU_PCH_BYPASS		0x4C
-+#define JH71XX_PMU_PCH_PSTATE		0x50
-+#define JH71XX_PMU_PCH_TIMEOUT		0x54
-+#define JH71XX_PMU_LP_TIMEOUT		0x58
-+#define JH71XX_PMU_HW_TURN_ON		0x5C
-+#define JH71XX_PMU_CURR_POWER_MODE	0x80
-+#define JH71XX_PMU_EVENT_STATUS		0x88
-+#define JH71XX_PMU_INT_STATUS		0x8C
-+
-+/* sw encourage cfg */
-+#define JH71XX_PMU_SW_ENCOURAGE_EN_LO	0x05
-+#define JH71XX_PMU_SW_ENCOURAGE_EN_HI	0x50
-+#define JH71XX_PMU_SW_ENCOURAGE_DIS_LO	0x0A
-+#define JH71XX_PMU_SW_ENCOURAGE_DIS_HI	0xA0
-+#define JH71XX_PMU_SW_ENCOURAGE_ON	0xFF
-+
-+/* pmu int status */
-+#define JH71XX_PMU_INT_SEQ_DONE		BIT(0)
-+#define JH71XX_PMU_INT_HW_REQ		BIT(1)
-+#define JH71XX_PMU_INT_SW_FAIL		GENMASK(3, 2)
-+#define JH71XX_PMU_INT_HW_FAIL		GENMASK(5, 4)
-+#define JH71XX_PMU_INT_PCH_FAIL		GENMASK(8, 6)
-+#define JH71XX_PMU_INT_FAIL_MASK	(JH71XX_PMU_INT_SW_FAIL | \
-+					JH71XX_PMU_INT_HW_FAIL | \
-+					JH71XX_PMU_INT_PCH_FAIL)
-+#define JH71XX_PMU_INT_ALL_MASK		(JH71XX_PMU_INT_SEQ_DONE | \
-+					JH71XX_PMU_INT_HW_REQ | \
-+					JH71XX_PMU_INT_FAIL_MASK)
-+
-+/*
-+ * The time required for switching power status is based on the time
-+ * to turn on the largest domain's power, which is at microsecond level
-+ */
-+#define JH71XX_PMU_TIMEOUT_US		100
-+
-+struct jh71xx_domain_info {
-+	const char * const name;
-+	u8 bit;
-+	unsigned int flags;
-+};
-+
-+struct jh71xx_pmu_match_data {
-+	int num_domains;
-+	const struct jh71xx_domain_info *domain_info;
-+};
-+
-+struct jh71xx_pmu {
-+	struct device *dev;
-+	const struct jh71xx_pmu_match_data *match_data;
-+	void __iomem *base;
-+	spinlock_t lock;	/* protects pmu reg */
-+	int irq;
-+	struct genpd_onecell_data genpd_data;
-+	struct generic_pm_domain **genpd;
-+};
-+
-+struct jh71xx_pmu_dev {
-+	struct generic_pm_domain genpd;
-+	const struct jh71xx_domain_info *domain_info;
-+	struct jh71xx_pmu *pmu;
-+};
-+
-+static int jh71xx_pmu_get_state(struct jh71xx_pmu_dev *pmd, u32 mask, bool *is_on)
-+{
-+	struct jh71xx_pmu *pmu = pmd->pmu;
-+
-+	if (!mask) {
-+		*is_on = false;
-+		return -EINVAL;
-+	}
-+
-+	*is_on = readl(pmu->base + JH71XX_PMU_CURR_POWER_MODE) & mask;
-+
-+	return 0;
-+}
-+
-+static int jh71xx_pmu_set_state(struct jh71xx_pmu_dev *pmd, u32 mask, bool on)
-+{
-+	struct jh71xx_pmu *pmu = pmd->pmu;
-+	unsigned long flags;
-+	u32 val;
-+	u32 mode;
-+	u32 encourage_lo;
-+	u32 encourage_hi;
-+	bool is_on;
-+	int ret;
-+
-+	ret = jh71xx_pmu_get_state(pmd, mask, &is_on);
-+	if (ret) {
-+		dev_dbg(pmu->dev, "unable to get current state for %s\n",
-+			pmd->genpd.name);
-+		return ret;
-+	}
-+
-+	if (is_on == on) {
-+		dev_dbg(pmu->dev, "pm domain [%s] is already %sable status.\n",
-+			pmd->genpd.name, on ? "en" : "dis");
-+		return 0;
-+	}
-+
-+	spin_lock_irqsave(&pmu->lock, flags);
-+
-+	/*
-+	 * The PMU accepts software encourage to switch power mode in the following 2 steps:
-+	 *
-+	 * 1. Configure the register SW_TURN_ON_POWER (offset 0x0c), write 1 to
-+	 *    the bit which power domain will be turn-on, write 0 to the others.
-+	 *    Likewise, configure the register SW_TURN_OFF_POWER (offset 0x10),
-+	 *    write 1 to the bit which power domain will be turn-off, write 0 to the others.
-+	 */
-+	if (on) {
-+		mode = JH71XX_PMU_SW_TURN_ON_POWER;
-+		encourage_lo = JH71XX_PMU_SW_ENCOURAGE_EN_LO;
-+		encourage_hi = JH71XX_PMU_SW_ENCOURAGE_EN_HI;
-+	} else {
-+		mode = JH71XX_PMU_SW_TURN_OFF_POWER;
-+		encourage_lo = JH71XX_PMU_SW_ENCOURAGE_DIS_LO;
-+		encourage_hi = JH71XX_PMU_SW_ENCOURAGE_DIS_HI;
-+	}
-+
-+	writel(mask, pmu->base + mode);
-+
-+	/*
-+	 * 2. Write SW encourage command sequence to the Software Encourage Reg (offset 0x44)
-+	 * SW turn-on command sequence: 0xff -> 0x05 -> 0x50
-+	 * SW turn-off command sequence: 0xff -> 0x0a -> 0xa0
-+	 *
-+	 * Note: writing SW_MODE_ENCOURAGE_ON (0xFF) to the SW_ENCOURAGE register,
-+	 * the purpose is to reset the state machine which is going to parse instruction
-+	 *  sequence. It has to be written every time.
-+	 */
-+	writel(JH71XX_PMU_SW_ENCOURAGE_ON, pmu->base + JH71XX_PMU_SW_ENCOURAGE);
-+	writel(encourage_lo, pmu->base + JH71XX_PMU_SW_ENCOURAGE);
-+	writel(encourage_hi, pmu->base + JH71XX_PMU_SW_ENCOURAGE);
-+
-+	spin_unlock_irqrestore(&pmu->lock, flags);
-+
-+	/* Wait for the power domain bit to be enabled / disabled */
-+	if (on) {
-+		ret = readl_poll_timeout_atomic(pmu->base + JH71XX_PMU_CURR_POWER_MODE,
-+						val, val & mask,
-+						1, JH71XX_PMU_TIMEOUT_US);
-+	} else {
-+		ret = readl_poll_timeout_atomic(pmu->base + JH71XX_PMU_CURR_POWER_MODE,
-+						val, !(val & mask),
-+						1, JH71XX_PMU_TIMEOUT_US);
-+	}
-+
-+	if (ret) {
-+		dev_err(pmu->dev, "%s: failed to power %s\n",
-+			pmd->genpd.name, on ? "on" : "off");
-+		return -ETIMEDOUT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int jh71xx_pmu_on(struct generic_pm_domain *genpd)
-+{
-+	struct jh71xx_pmu_dev *pmd = container_of(genpd,
-+						  struct jh71xx_pmu_dev, genpd);
-+	u32 pwr_mask = BIT(pmd->domain_info->bit);
-+
-+	return jh71xx_pmu_set_state(pmd, pwr_mask, true);
-+}
-+
-+static int jh71xx_pmu_off(struct generic_pm_domain *genpd)
-+{
-+	struct jh71xx_pmu_dev *pmd = container_of(genpd,
-+						  struct jh71xx_pmu_dev, genpd);
-+	u32 pwr_mask = BIT(pmd->domain_info->bit);
-+
-+	return jh71xx_pmu_set_state(pmd, pwr_mask, false);
-+}
-+
-+static void jh71xx_pmu_int_enable(struct jh71xx_pmu *pmu, u32 mask, bool enable)
-+{
-+	u32 val;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&pmu->lock, flags);
-+	val = readl(pmu->base + JH71XX_PMU_INT_MASK);
-+
-+	if (enable)
-+		val &= ~mask;
-+	else
-+		val |= mask;
-+
-+	writel(val, pmu->base + JH71XX_PMU_INT_MASK);
-+	spin_unlock_irqrestore(&pmu->lock, flags);
-+}
-+
-+static irqreturn_t jh71xx_pmu_interrupt(int irq, void *data)
-+{
-+	struct jh71xx_pmu *pmu = data;
-+	u32 val;
-+
-+	val = readl(pmu->base + JH71XX_PMU_INT_STATUS);
-+
-+	if (val & JH71XX_PMU_INT_SEQ_DONE)
-+		dev_dbg(pmu->dev, "sequence done.\n");
-+	if (val & JH71XX_PMU_INT_HW_REQ)
-+		dev_dbg(pmu->dev, "hardware encourage requestion.\n");
-+	if (val & JH71XX_PMU_INT_SW_FAIL)
-+		dev_err(pmu->dev, "software encourage fail.\n");
-+	if (val & JH71XX_PMU_INT_HW_FAIL)
-+		dev_err(pmu->dev, "hardware encourage fail.\n");
-+	if (val & JH71XX_PMU_INT_PCH_FAIL)
-+		dev_err(pmu->dev, "p-channel fail event.\n");
-+
-+	/* clear interrupts */
-+	writel(val, pmu->base + JH71XX_PMU_INT_STATUS);
-+	writel(val, pmu->base + JH71XX_PMU_EVENT_STATUS);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int jh71xx_pmu_init_domain(struct jh71xx_pmu *pmu, int index)
-+{
-+	struct jh71xx_pmu_dev *pmd;
-+	bool is_on;
-+	u32 pwr_mask;
-+	int ret;
-+
-+	pmd = devm_kzalloc(pmu->dev, sizeof(*pmd), GFP_KERNEL);
-+	if (!pmd)
-+		return -ENOMEM;
-+
-+	pmd->domain_info = &pmu->match_data->domain_info[index];
-+	pmd->pmu = pmu;
-+	pwr_mask = BIT(pmd->domain_info->bit);
-+
-+	pmd->genpd.name = pmd->domain_info->name;
-+	pmd->genpd.flags = pmd->domain_info->flags;
-+
-+	ret = jh71xx_pmu_get_state(pmd, pwr_mask, &is_on);
-+	if (ret)
-+		dev_warn(pmu->dev, "unable to get current state for %s\n",
-+			 pmd->genpd.name);
-+
-+	pmd->genpd.power_on = jh71xx_pmu_on;
-+	pmd->genpd.power_off = jh71xx_pmu_off;
-+	pm_genpd_init(&pmd->genpd, NULL, !is_on);
-+
-+	pmu->genpd_data.domains[index] = &pmd->genpd;
-+
-+	return 0;
-+}
-+
-+static int jh71xx_pmu_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
-+	const struct jh71xx_pmu_match_data *match_data;
-+	struct jh71xx_pmu *pmu;
-+	unsigned int i;
-+	int ret;
-+
-+	pmu = devm_kzalloc(dev, sizeof(*pmu), GFP_KERNEL);
-+	if (!pmu)
-+		return -ENOMEM;
-+
-+	pmu->base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(pmu->base))
-+		return PTR_ERR(pmu->base);
-+
-+	/* initialize pmu interrupt  */
-+	pmu->irq = platform_get_irq(pdev, 0);
-+	if (pmu->irq < 0)
-+		return pmu->irq;
-+
-+	ret = devm_request_irq(dev, pmu->irq, jh71xx_pmu_interrupt,
-+			       0, pdev->name, pmu);
-+	if (ret)
-+		dev_err(dev, "request irq failed.\n");
-+
-+	match_data = of_device_get_match_data(dev);
-+	if (!match_data)
-+		return -EINVAL;
-+
-+	pmu->genpd = devm_kcalloc(dev, match_data->num_domains,
-+				  sizeof(struct generic_pm_domain *),
-+				  GFP_KERNEL);
-+	if (!pmu->genpd)
-+		return -ENOMEM;
-+
-+	pmu->dev = dev;
-+	pmu->match_data = match_data;
-+	pmu->genpd_data.domains = pmu->genpd;
-+	pmu->genpd_data.num_domains = match_data->num_domains;
-+
-+	for (i = 0; i < match_data->num_domains; i++) {
-+		ret = jh71xx_pmu_init_domain(pmu, i);
-+		if (ret) {
-+			dev_err(dev, "failed to initialize power domain\n");
-+			return ret;
-+		}
-+	}
-+
-+	spin_lock_init(&pmu->lock);
-+	jh71xx_pmu_int_enable(pmu, JH71XX_PMU_INT_ALL_MASK & ~JH71XX_PMU_INT_PCH_FAIL, true);
-+
-+	ret = of_genpd_add_provider_onecell(np, &pmu->genpd_data);
-+	if (ret) {
-+		dev_err(dev, "failed to register genpd driver: %d\n", ret);
-+		return ret;
-+	}
-+
-+	dev_info(dev, "registered %u power domains\n", i);
-+
-+	return 0;
-+}
-+
-+static const struct jh71xx_domain_info jh7110_power_domains[] = {
-+	[JH7110_PD_SYSTOP] = {
-+		.name = "SYSTOP",
-+		.bit = 0,
-+		.flags = GENPD_FLAG_ALWAYS_ON,
-+	},
-+	[JH7110_PD_CPU] = {
-+		.name = "CPU",
-+		.bit = 1,
-+		.flags = GENPD_FLAG_ALWAYS_ON,
-+	},
-+	[JH7110_PD_GPUA] = {
-+		.name = "GPUA",
-+		.bit = 2,
-+	},
-+	[JH7110_PD_VDEC] = {
-+		.name = "VDEC",
-+		.bit = 3,
-+	},
-+	[JH7110_PD_VOUT] = {
-+		.name = "VOUT",
-+		.bit = 4,
-+	},
-+	[JH7110_PD_ISP] = {
-+		.name = "ISP",
-+		.bit = 5,
-+	},
-+	[JH7110_PD_VENC] = {
-+		.name = "VENC",
-+		.bit = 6,
-+	},
-+};
-+
-+static const struct jh71xx_pmu_match_data jh7110_pmu = {
-+	.num_domains = ARRAY_SIZE(jh7110_power_domains),
-+	.domain_info = jh7110_power_domains,
-+};
-+
-+static const struct of_device_id jh71xx_pmu_of_match[] = {
-+	{
-+		.compatible = "starfive,jh7110-pmu",
-+		.data = (void *)&jh7110_pmu,
-+	}, {
-+		/* sentinel */
-+	}
-+};
-+
-+static struct platform_driver jh71xx_pmu_driver = {
-+	.driver = {
-+		.name = "jh71xx-pmu",
-+		.of_match_table = jh71xx_pmu_of_match,
-+	},
-+	.probe  = jh71xx_pmu_probe,
-+};
-+builtin_platform_driver(jh71xx_pmu_driver);
-+
-+MODULE_AUTHOR("Walker Chen <walker.chen@starfivetech.com>");
-+MODULE_DESCRIPTION("StarFive JH71XX PMU Driver");
-+MODULE_LICENSE("GPL");
--- 
-2.17.1
+arch_scaleu_cpu_capacity is already a per_cpu variable so accessing it
+should be pretty cheap.
 
+Thought ?
+
+> +               util = max(j_sg_cpu->util, util);
+>         }
+>
+> -       return get_next_freq(sg_policy, util, max);
+> +       return get_next_freq(sg_policy, util, sg_policy->max);
+>  }
+>
+>  static void
+> --
+> 2.17.1
+>
