@@ -2,56 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF1EEC4332F
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 12:49:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5576C4332F
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 13:02:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229901AbiLHMth (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Dec 2022 07:49:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47704 "EHLO
+        id S229709AbiLHNCH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Dec 2022 08:02:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229776AbiLHMth (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2022 07:49:37 -0500
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04D5027CD1
-        for <linux-pm@vger.kernel.org>; Thu,  8 Dec 2022 04:49:35 -0800 (PST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrZ0Zg9z4xN1;
-        Thu,  8 Dec 2022 23:49:34 +1100 (AEDT)
-From:   Michael Ellerman <patch-notifications@ellerman.id.au>
-To:     rafael@kernel.org, npiggin@gmail.com,
-        Aboorva Devarajan <aboorvad@linux.vnet.ibm.com>,
-        mpe@ellerman.id.au, daniel.lezcano@linaro.org,
-        svaidy@linux.vnet.ibm.com
-Cc:     srikar@linux.vnet.ibm.com, christophe.leroy@csgroup.eu,
-        linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-In-Reply-To: <20221114145611.37669-1-aboorvad@linux.vnet.ibm.com>
-References: <20221114073154.30407-1-aboorvad@linux.vnet.ibm.com> <20221114145611.37669-1-aboorvad@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/cpuidle: Set CPUIDLE_FLAG_POLLING for snooze state
-Message-Id: <167050321754.1457988.14917789901150069869.b4-ty@ellerman.id.au>
-Date:   Thu, 08 Dec 2022 23:40:17 +1100
+        with ESMTP id S229728AbiLHNCG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2022 08:02:06 -0500
+Received: from mail-qv1-f53.google.com (mail-qv1-f53.google.com [209.85.219.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D43E78E598;
+        Thu,  8 Dec 2022 05:02:05 -0800 (PST)
+Received: by mail-qv1-f53.google.com with SMTP id q10so873563qvt.10;
+        Thu, 08 Dec 2022 05:02:05 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=hf8w5dCI8SN8jx8p/uI1zYTlW+tlmcbclme8iwGq8uU=;
+        b=wd5FB4RIxl89kOS5bHWyvVXfoRTfmHqUwjNyXztcJaSy47513H/Reacrc4L/VPrsV0
+         AF0Bv4P/crZ70uLE7T5Kll9ItDNj8z0Ok+YrWOCsTwcyFwNl+mUgKWogJu7QR4+I3nh6
+         2cZZugSOYPHNuoruktktU2z2Qjg+8Lsax/I9hdDTyjKaH7HnEyKmN4VkKY07nm6plobL
+         LnEgkCFTcN9SVppy/k9oU5/HF1VdW586HDZs4zTBbFLMKOH/iAa7p5gJLxDKU9Pr4AbW
+         EupGUffJxUFRWiJSJp45YuVEZiU5BBlh3VH3X7ZJMYiE2CJAqXEuNVR9zrmL9JPIlNYT
+         D7Gw==
+X-Gm-Message-State: ANoB5pnFCsynEnXFNrlxZdeRrPISWnBUXbPc+N4BhN51pVR4Fg/UftMN
+        a3dlG5apVs+HSYHyON1WOFQu6Ez+ncjVo4EgaQgOF+PD
+X-Google-Smtp-Source: AA0mqf42V25f4DFkTROd0mn8pwc2QIzYAHjGOqeNpnET/+SplRdUK2bzUH/jToONq39hYrQE3KQqLyhVeVKktLCWqOE=
+X-Received: by 2002:a05:6214:2b90:b0:4c7:27cf:dfca with SMTP id
+ kr16-20020a0562142b9000b004c727cfdfcamr28403564qvb.3.1670504524902; Thu, 08
+ Dec 2022 05:02:04 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <1670416895-50172-1-git-send-email-lirongqing@baidu.com>
+ <080936167059.CAJZ5v0g5kTRE+x-8xC2WwQr11j01ox=Nk0aguiC1_HGPU8W=Rw@mail.gmail.com>
+ <9e19c594bcf144fbb433fb4cfee54e08@baidu.com> <CAJZ5v0jofKbdRbKzLSEMkjQjP1GTcbt7OYqO=0ZYvpt_HwTQTg@mail.gmail.com>
+ <3fb3526aa012449db95767c6092da8f6@baidu.com>
+In-Reply-To: <3fb3526aa012449db95767c6092da8f6@baidu.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 8 Dec 2022 14:01:53 +0100
+Message-ID: <CAJZ5v0iEYwrNjD5wqq-VA4C4KLwYL6O9SXu2bEEh87-4WmsExQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2][v2] cpuidle-haltpoll: Replace default_idle with arch_cpu_idle
+To:     "Li,Rongqing" <lirongqing@baidu.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "tglx@linutronix.de" <tglx@linutronix.de>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "bp@alien8.de" <bp@alien8.de>,
+        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "tony.luck@intel.com" <tony.luck@intel.com>,
+        "jpoimboe@kernel.org" <jpoimboe@kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 14 Nov 2022 20:26:11 +0530, Aboorva Devarajan wrote:
-> During the comparative study of cpuidle governors, it is noticed that the
-> menu governor does not select CEDE state in some scenarios even though when
-> the sleep duration of the CPU exceeds the target residency of the CEDE idle
-> state this is because the CPU exits the snooze "polling" state when snooze
-> time limit is reached in the snooze_loop(), which is not a real wake up
-> and it just means that the polling state selection was not adequate.
-> 
-> [...]
+On Thu, Dec 8, 2022 at 1:43 PM Li,Rongqing <lirongqing@baidu.com> wrote:
+>
+> > >
+> > > When cpuidle-haltpoll is built as module,
+> >
+> > But it isn't now.
+>
+> Centos is compiling it as module, it will fail;
+> Other user wants to compile it as module, they will fail,
+> Syzbot random configuration building will fail
+>
+> Unless prohibit to build it as module as below:
+>
+> config HALTPOLL_CPUIDLE
+> -        tristate "Halt poll cpuidle driver"
+> +        bool "Halt poll cpuidle driver"
+>         depends on X86 && KVM_GUEST
+>         default y
+>         help
 
-Applied to powerpc/next.
+Ah, OK.  Sorry about the confusion.
 
-[1/1] powerpc/cpuidle: Set CPUIDLE_FLAG_POLLING for snooze state
-      https://git.kernel.org/powerpc/c/5ddcc03a07ae1ab5062f89a946d9495f1fd8eaa4
-
-cheers
+Yes, the driver (not the governor, though), can be modular, so yes you
+need the export, but please change it to EXPORT_SYMBOL_GPL().
