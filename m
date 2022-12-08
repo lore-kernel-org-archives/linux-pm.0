@@ -2,104 +2,139 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBEEBC4332F
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 04:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5577C3A5A7
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Dec 2022 08:30:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229779AbiLHEQX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Dec 2022 23:16:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59496 "EHLO
+        id S229733AbiLHIaT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Dec 2022 03:30:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36926 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229643AbiLHEQW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2022 23:16:22 -0500
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20F0629814
-        for <linux-pm@vger.kernel.org>; Wed,  7 Dec 2022 20:16:21 -0800 (PST)
-Received: by mail-pl1-x633.google.com with SMTP id w23so362177ply.12
-        for <linux-pm@vger.kernel.org>; Wed, 07 Dec 2022 20:16:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Vr4Iu5BVbe01s1rT8smT36x+TYWRbPQICEznB+Ae7Q8=;
-        b=yBvhrWL+A/kCBVS4MGy/NjwrpHIMPZurfmIzsx4neakG3t+cCfME3n8wajiL58P/dg
-         5myFyO+w21AjPpL4V0vTGsaWblNF97osEbvgCBLoOHGts4G31mWPAZkOWp86o2dvWXtx
-         vCfVI9SPvAE7EF/e4RC1hs8pNXF6V+FcupNqwZjS0+3zsdd9w8cNgb0KgLJgaSM024/L
-         gospE35XY3gSe1nEW5mN3LYPXkqhiVB00ymiMfsyPRm3ESy6htE09X2ByY21Ea+VQWqi
-         PVAUJX+VIu9zGHyN5KIWtUqymV1OdyNqHv3i1N+KSj1pwoxp6hJS+LG2rNZSBO35rFqi
-         M5mw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Vr4Iu5BVbe01s1rT8smT36x+TYWRbPQICEznB+Ae7Q8=;
-        b=1QO+AjwXoaapPsWVnEzJNZQwA7kRGb5XX//KTsHXUvNYSirHMl7EClTj2X+AHT3oiB
-         WHtbDXgpbAAlHGuq1v1PcgBwKmAIqMYderYZFWsF4H80o6ADWMJY4Lk9gCa4SmRdAd7A
-         6eImpZJCo6co357WMC3P7K/Rb7ekh/Tuunw1LKIlPfIcn1zs7oBLu6Uf0ScasgyDtbbn
-         2kWcmvVwD0omDx7xgUdeG9BJ1oVlmNhL2SYryCRNmvTFdB4FR32L3RTTW5VxdQes2JLi
-         JdpyNLeG2Ji8Fos7kU1vmsq5tdzu//3OAebgkyK9Rb9tqm8EodxS5Fxke8UoQ5wDqDqS
-         0EKQ==
-X-Gm-Message-State: ANoB5pkR1jW8iH+VCd+KKGZ1+Q9oFotG9hgaEUalr+oxQ0hh0YfOJnPN
-        0ly1GGh+ptD/Hkqr8tPq7nYpuA==
-X-Google-Smtp-Source: AA0mqf4njlA4WTgWF83snVkrtQ9N1QP7elEJdN3JpX/G4HiuA7X9rnolD38Li/2QJmaAM777LvIJgA==
-X-Received: by 2002:a17:903:452:b0:189:6574:7ac1 with SMTP id iw18-20020a170903045200b0018965747ac1mr61287388plb.47.1670472980638;
-        Wed, 07 Dec 2022 20:16:20 -0800 (PST)
-Received: from localhost ([122.172.87.149])
-        by smtp.gmail.com with ESMTPSA id mr4-20020a17090b238400b002193f87fb4asm314384pjb.4.2022.12.07.20.16.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Dec 2022 20:16:19 -0800 (PST)
-Date:   Thu, 8 Dec 2022 09:46:14 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Ilia Lin <ilia.lin@kernel.org>, Viresh Kumar <vireshk@kernel.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        with ESMTP id S229737AbiLHIaO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2022 03:30:14 -0500
+Received: from ex01.ufhost.com (ex01.ufhost.com [61.152.239.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F36D6036A;
+        Thu,  8 Dec 2022 00:30:11 -0800 (PST)
+Received: from EXMBX165.cuchost.com (unknown [175.102.18.54])
+        (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+        (Client CN "EXMBX165", Issuer "EXMBX165" (not verified))
+        by ex01.ufhost.com (Postfix) with ESMTP id 045F424E1C9;
+        Thu,  8 Dec 2022 16:30:08 +0800 (CST)
+Received: from EXMBX068.cuchost.com (172.16.6.68) by EXMBX165.cuchost.com
+ (172.16.6.75) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Thu, 8 Dec
+ 2022 16:30:07 +0800
+Received: from localhost.localdomain (113.72.146.33) by EXMBX068.cuchost.com
+ (172.16.6.68) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Thu, 8 Dec
+ 2022 16:30:06 +0800
+From:   Walker Chen <walker.chen@starfivetech.com>
+To:     <linux-riscv@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>
+CC:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: opp: opp-v2-kryo-cpu: Add missing
- 'cache-unified' property in example
-Message-ID: <20221208041614.zpg5skdixia2mduj@vireshk-i7>
-References: <20221206014343.3117101-1-robh@kernel.org>
+        Conor Dooley <conor.dooley@microchip.com>,
+        Emil Renner Berthing <emil.renner.berthing@canonical.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Walker Chen <walker.chen@starfivetech.com>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH v1 1/3] dt-bindings: power: Add starfive,jh71xx-pmu
+Date:   Thu, 8 Dec 2022 16:29:53 +0800
+Message-ID: <20221208082955.10653-2-walker.chen@starfivetech.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20221208082955.10653-1-walker.chen@starfivetech.com>
+References: <20221208082955.10653-1-walker.chen@starfivetech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221206014343.3117101-1-robh@kernel.org>
+Content-Type: text/plain
+X-Originating-IP: [113.72.146.33]
+X-ClientProxiedBy: EXCAS064.cuchost.com (172.16.6.24) To EXMBX068.cuchost.com
+ (172.16.6.68)
+X-YovoleRuleAgent: yovoleflag
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05-12-22, 19:43, Rob Herring wrote:
-> The examples' cache nodes are incomplete as 'cache-unified' is a
-> required cache property for unified caches which an L2 cache certainly
-> is.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml b/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml
-> index a202b6c6561d..27412c2cfc0f 100644
-> --- a/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml
-> +++ b/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml
-> @@ -106,6 +106,7 @@ examples:
->                  L2_0: l2-cache {
->                      compatible = "cache";
->                      cache-level = <2>;
-> +                    cache-unified;
->                  };
->              };
->  
-> @@ -140,6 +141,7 @@ examples:
->                  L2_1: l2-cache {
->                      compatible = "cache";
->                      cache-level = <2>;
-> +                    cache-unified;
->                  };
->              };
->  
+Add bindings for Power Management Unit (PMU) on the StarFive JH71XX SoC.
 
-Applied. Thanks.
+Signed-off-by: Walker Chen <walker.chen@starfivetech.com>
+---
+ .../bindings/power/starfive,jh71xx-pmu.yaml   | 45 +++++++++++++++++++
+ .../dt-bindings/power/starfive,jh7110-pmu.h   | 17 +++++++
+ 2 files changed, 62 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/starfive,jh71xx-pmu.yaml
+ create mode 100644 include/dt-bindings/power/starfive,jh7110-pmu.h
 
+diff --git a/Documentation/devicetree/bindings/power/starfive,jh71xx-pmu.yaml b/Documentation/devicetree/bindings/power/starfive,jh71xx-pmu.yaml
+new file mode 100644
+index 000000000000..f308ae136a57
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/starfive,jh71xx-pmu.yaml
+@@ -0,0 +1,45 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/starfive,jh71xx-pmu.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: StarFive JH71xx Power Management Unit
++
++maintainers:
++  - Walker Chen <walker.chen@starfivetech.com>
++
++description: |
++  StarFive JH71xx SoCs include support for multiple power domains which can be
++  powered on/off by software based on different application scenes to save power.
++
++properties:
++  compatible:
++      - enum:
++          - starfive,jh7110-pmu
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  "#power-domain-cells":
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - "#power-domain-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    pwrc: power-controller@17030000 {
++        compatible = "starfive,jh7110-pmu";
++        reg = <0x17030000 0x10000>;
++        interrupts = <111>;
++        #power-domain-cells = <1>;
++    };
+diff --git a/include/dt-bindings/power/starfive,jh7110-pmu.h b/include/dt-bindings/power/starfive,jh7110-pmu.h
+new file mode 100644
+index 000000000000..73c6a79a2181
+--- /dev/null
++++ b/include/dt-bindings/power/starfive,jh7110-pmu.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: (GPL-2.0 OR MIT) */
++/*
++ * Copyright (C) 2022 StarFive Technology Co., Ltd.
++ * Author: Walker Chen <walker.chen@starfivetech.com>
++ */
++#ifndef __DT_BINDINGS_POWER_JH7110_POWER_H__
++#define __DT_BINDINGS_POWER_JH7110_POWER_H__
++
++#define JH7110_PD_SYSTOP	0
++#define JH7110_PD_CPU		1
++#define JH7110_PD_GPUA		2
++#define JH7110_PD_VDEC		3
++#define JH7110_PD_VOUT		4
++#define JH7110_PD_ISP		5
++#define JH7110_PD_VENC		6
++
++#endif
 -- 
-viresh
+2.17.1
+
