@@ -2,50 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5CF7C4167B
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F31E2C10F1E
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230502AbiLIP0v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47430 "EHLO
+        id S230442AbiLIP0x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:26:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47428 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230409AbiLIP0h (ORCPT
+        with ESMTP id S230408AbiLIP0h (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:37 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6F968F701
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E832A8BD2B
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:32 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:28 -0000
+Date:   Fri, 09 Dec 2022 15:26:29 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599588;
+        s=2020; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=MRj8s/i5RdqiFE54qQQMtWA9Kdo3GoMylSZp5n0gbB4=;
-        b=mPQV+J6KzN6AUysQJA1hGaPICN9iLCWs3KdzEI+OW7WsNa6qw9/GOaIRjfO3NZ8DgDUOvT
-        b2FEgSBK83iPFaS/JmNcM8Nv8biTyRSlKQP5dCIWiPBszhJjYZpg6M36XrSpPHz4XmlAQ/
-        PuG92D8eCjV5BJIOrGduM/a/yRnH1Cz7huxRxhCvZQfVf5/4z2LdBbPNoPawA/j6ecJTyM
-        wAx7SFz8OLK+ZeX46ZUwToui0JngRS7G6qpWn/iiVglSN/hSc7yx+rUo2eeuHcDCpFaWBi
-        /JfPoUZtRbc7YhgbyQRaXLFpBhVQNeqBW0TnwWDAj5Mreh67VLktXCQWHokAig==
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=hKgeX5ekyTjFxiIorZB6Z1/MVueRfzszmacEkYf7BAM=;
+        b=IFgprJZRB8B/0p/hX/54qeGJiWPca+73yzJZAgK4CyB8PTcTwXobzJBnKy0x6GVGyQwoDE
+        /nZejRM4ZwSmpuxwyyREZloyhZy1H0RAgucXaRvsfRbjgz1azrt30GokN7RQrT4STbjkxQ
+        uT9OpgqFo1xJtFvkVnIimU+1QRzPn3BLOEkrWJPfpcEKRSDAQs2M7+Q8HMoe5Vg2v5X3wG
+        dMfuPTsa+5jfBp1N0ToRU+B61dcHteZUNS25NjYxyJ2Z8d60FrHmU1y7ml8WAnzDvLSvSS
+        5z9xAyub5/2sGhvqoAvt9KjcvNjJGz3bKjXIMbUyByQMsTmz9vtHQ3HEJ99hgw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599588;
+        s=2020e; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=MRj8s/i5RdqiFE54qQQMtWA9Kdo3GoMylSZp5n0gbB4=;
-        b=xYs8Jq2qG1/HehVZZii6fX4QIt8nRUPqyCJ56l/oAdadA56q0uPLLUGMSvPOVX2XzQTXjk
-        ilz5I6/UeKjE4oBg==
-From:   "thermal-bot for Daniel Golle" <tip-bot2@linutronix.de>
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=hKgeX5ekyTjFxiIorZB6Z1/MVueRfzszmacEkYf7BAM=;
+        b=aA/OzrTVIAbLqGmtGmMF418Fc0xrAL4+7cuxvtRxzVYSPqlKegzRCMAXqS+YtvsKj9GteO
+        uFGhUsZsuqLlq8Dg==
+From:   "thermal-bot for Christian Marangi" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: mediatek: add
- compatible string for MT7986 and MT7981 SoC
-Cc:     Daniel Golle <daniel@makrotopia.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+Subject: [thermal: thermal/next] thermal/drivers/qcom/tsens: Init debugfs only
+ with successful probe
+Cc:     Christian Marangi <ansuelsmth@gmail.com>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
+In-Reply-To: <20221022125657.22530-2-ansuelsmth@gmail.com>
+References: <20221022125657.22530-2-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-Message-ID: <167059958844.4906.2869788614670880099.tip-bot2@tip-bot2>
+Message-ID: <167059958938.4906.8038603702843511422.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -56,37 +62,50 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     071e99848ccc1fbe238c4c9c7cfffd83f1dfe156
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//071e99848ccc1fbe238c4c9c7cfffd83f1dfe156
-Author:        Daniel Golle <daniel@makrotopia.org>
-AuthorDate:    Wed, 30 Nov 2022 13:20:38 
+Commit-ID:     4d248fcb7c80e67dc22338ed44e00ac5d96ab0be
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//4d248fcb7c80e67dc22338ed44e00ac5d96ab0be
+Author:        Christian Marangi <ansuelsmth@gmail.com>
+AuthorDate:    Sat, 22 Oct 2022 14:56:55 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-dt-bindings: thermal: mediatek: add compatible string for MT7986 and MT7981 SoC
+thermal/drivers/qcom/tsens: Init debugfs only with successful probe
 
-Document compatible string 'mediatek,mt7986-thermal' for V3 thermal
-unit found in MT7986 SoCs.
-'mediatek,mt7981-thermal' is also added as it is identical with the
-thermal unit of MT7986.
+Calibrate and tsens_register can fail or PROBE_DEFER. This will cause a
+double or a wrong init of the debugfs information. Init debugfs only
+with successful probe fixing warning about directory already present.
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+Acked-by: Thara Gopinath <thara.gopinath@linaro.org>
+Link: https://lore.kernel.org/r/20221022125657.22530-2-ansuelsmth@gmail.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/thermal/qcom/tsens.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-index 5c7e7bd..38b32bb 100644
---- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -13,6 +13,8 @@ Required properties:
-   - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
-   - "mediatek,mt2712-thermal" : For MT2712 family of SoCs
-   - "mediatek,mt7622-thermal" : For MT7622 SoC
-+  - "mediatek,mt7981-thermal", "mediatek,mt7986-thermal" : For MT7981 SoC
-+  - "mediatek,mt7986-thermal" : For MT7986 SoC
-   - "mediatek,mt8183-thermal" : For MT8183 family of SoCs
-   - "mediatek,mt8516-thermal", "mediatek,mt2701-thermal : For MT8516 family of SoCs
- - reg: Address range of the thermal controller
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index b7d9782..3ac7804 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -939,8 +939,6 @@ int __init init_common(struct tsens_priv *priv)
+ 	if (tsens_version(priv) >= VER_0_1)
+ 		tsens_enable_irq(priv);
+ 
+-	tsens_debug_init(op);
+-
+ err_put_device:
+ 	put_device(&op->dev);
+ 	return ret;
+@@ -1182,7 +1180,11 @@ static int tsens_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	return tsens_register(priv);
++	ret = tsens_register(priv);
++	if (!ret)
++		tsens_debug_init(pdev);
++
++	return ret;
+ }
+ 
+ static int tsens_remove(struct platform_device *pdev)
