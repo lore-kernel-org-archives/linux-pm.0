@@ -2,19 +2,19 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF0C5C4167B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A79BBC4332F
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230394AbiLIP1Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47668 "EHLO
+        id S229909AbiLIP1O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230449AbiLIP0n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:43 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DA9990770
+        with ESMTP id S230446AbiLIP0m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:42 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5989C90757
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:37 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:32 -0000
+Date:   Fri, 09 Dec 2022 15:26:33 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020; t=1670599593;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -22,12 +22,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Yp5wxpyEjPYr7Q/nsZyPAr2AcYHhyh4u665nj3QlHWE=;
-        b=Bj9W1g8vC6yEegr2nroscLna5i9PmZwkPPlh+W0dQ0b55kLmfEHCLxhV1mdYxD91WbuoM6
-        xaOejhgtua5xMBODVa71zwRqDp2kuIxVBudxoraaF/xjNJ/EAUmkxfGWGv+LoGNo6qUcHm
-        S+pEtAvf3Iq0OVf/EVhkEycIZOIwdi7zrmD6MLCIN1f/p7CRFWHbCjbhqesCd3CM5zBEWc
-        sTftf/gi4Ru+CYL95nZgztj/YWP/tkKYcF1wwzVlM1ohPcvTIRLmhYyPJD9DjaTA4MhgUZ
-        VoxJu0V7M1mei2aZcUr0YUxtlav6t2cT1QcTBYXwsb2qH4GFjw0xsS4io288Sw==
+        bh=9SkKZS2e/i415ciOV10uKIEjF41f/Tm2Rd0sy9KXdZA=;
+        b=3n425L0L8ATXqtt570Iedt7oFGV36IFHuVgGMVH21k+o/SAKUW5IYYXtUJEexo5DzAp0Ni
+        PGrkcpYMqBtakXprEUx3yzqEBULQoXYKYe+rN1Rf35adfHivHiag3b52+dUJnD4sLrMwdg
+        ePQuJOr8DoUz/HRnWg4DhLR6lOI1lwBmnW9S63ILO8fy606xUFx6AOT1SITCPWWz5IfxR8
+        ecA1OdbDWdlOx/hW+IcYGylFZImtnA7+FJ3mCMofjiDWfxVrBWyCWlmhLHAOh4+cmO5spx
+        1/CE5FiSlrpI4iPMeNv3uwbq1xbPOCj2sXUFq9SvCMWHjX3yox/l3KH7iuSEWg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599593;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -35,22 +35,20 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Yp5wxpyEjPYr7Q/nsZyPAr2AcYHhyh4u665nj3QlHWE=;
-        b=hQgoNf/JHW/RNLdiF8S3zaOT6mg5nvsmC6gn95O/ZAH+iwNbqg1KZ0n7cts0BRvyBD9oKY
-        iiT6mTXfURAs6gCg==
+        bh=9SkKZS2e/i415ciOV10uKIEjF41f/Tm2Rd0sy9KXdZA=;
+        b=mxDDw+EONcuQgna8zgEi+M3e+XH3aWsxqUMAIITYWqbFnxMFZcK8ZD29/wWDPUCtQfSKW7
+        Uh7w2t1iPaLSEMCA==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/broadcom: Use generic
- thermal_zone_get_trip() function
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Florian Fainelli <f.fainelli@gmail.com>, rui.zhang@intel.com,
+Subject: [thermal: thermal/next] thermal/drivers/st: Use generic trip points
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
         amitk@kernel.org
-In-Reply-To: <20221003092602.1323944-24-daniel.lezcano@linaro.org>
-References: <20221003092602.1323944-24-daniel.lezcano@linaro.org>
+In-Reply-To: <20221003092602.1323944-21-daniel.lezcano@linaro.org>
+References: <20221003092602.1323944-21-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <167059959298.4906.6439354441043067914.tip-bot2@tip-bot2>
+Message-ID: <167059959350.4906.6069926624215002734.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,66 +59,94 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     d5a96a90b513e0378cc504d09324bed945db8842
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d5a96a90b513e0378cc504d09324bed945db8842
+Commit-ID:     c838039ebdb360cda04c5f021e1047d3d694013a
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c838039ebdb360cda04c5f021e1047d3d694013a
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Mon, 03 Oct 2022 11:25:56 +02:00
+AuthorDate:    Mon, 03 Oct 2022 11:25:53 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Thu, 08 Dec 2022 14:30:43 +01:00
+CommitterDate: Thu, 08 Dec 2022 14:30:42 +01:00
 
-thermal/drivers/broadcom: Use generic thermal_zone_get_trip() function
+thermal/drivers/st: Use generic trip points
 
 The thermal framework gives the possibility to register the trip
 points with the thermal zone. When that is done, no get_trip_* ops are
 needed and they can be removed.
 
-Convert ops content logic into generic trip points and register them with the
-thermal zone.
+Convert to the generic trip points
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Florian Fainelli <f.fainelli@gmail.com>
-Link: https://lore.kernel.org/r/20221003092602.1323944-24-daniel.lezcano@linaro.org
+Link: https://lore.kernel.org/r/20221003092602.1323944-21-daniel.lezcano@linaro.org
 ---
- drivers/thermal/broadcom/bcm2835_thermal.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/thermal/st/st_thermal.c | 47 ++++----------------------------
+ 1 file changed, 7 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-index 2c67841..5485e59 100644
---- a/drivers/thermal/broadcom/bcm2835_thermal.c
-+++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-@@ -18,6 +18,7 @@
- #include <linux/platform_device.h>
- #include <linux/thermal.h>
+diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_thermal.c
+index 1276b95..1009f08 100644
+--- a/drivers/thermal/st/st_thermal.c
++++ b/drivers/thermal/st/st_thermal.c
+@@ -134,48 +134,12 @@ static int st_thermal_get_temp(struct thermal_zone_device *th, int *temperature)
+ 	return 0;
+ }
  
-+#include "../thermal_core.h"
- #include "../thermal_hwmon.h"
+-static int st_thermal_get_trip_type(struct thermal_zone_device *th,
+-				int trip, enum thermal_trip_type *type)
+-{
+-	struct st_thermal_sensor *sensor = th->devdata;
+-	struct device *dev = sensor->dev;
+-
+-	switch (trip) {
+-	case 0:
+-		*type = THERMAL_TRIP_CRITICAL;
+-		break;
+-	default:
+-		dev_err(dev, "invalid trip point\n");
+-		return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-
+-static int st_thermal_get_trip_temp(struct thermal_zone_device *th,
+-				    int trip, int *temp)
+-{
+-	struct st_thermal_sensor *sensor = th->devdata;
+-	struct device *dev = sensor->dev;
+-
+-	switch (trip) {
+-	case 0:
+-		*temp = mcelsius(sensor->cdata->crit_temp);
+-		break;
+-	default:
+-		dev_err(dev, "Invalid trip point\n");
+-		return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-
+ static struct thermal_zone_device_ops st_tz_ops = {
+ 	.get_temp	= st_thermal_get_temp,
+-	.get_trip_type	= st_thermal_get_trip_type,
+-	.get_trip_temp	= st_thermal_get_trip_temp,
+ };
  
- #define BCM2835_TS_TSENSCTL			0x00
-@@ -224,7 +225,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 	 */
- 	val = readl(data->regs + BCM2835_TS_TSENSCTL);
- 	if (!(val & BCM2835_TS_TSENSCTL_RSTB)) {
--		int trip_temp, offset, slope;
-+		struct thermal_trip trip;
-+		int offset, slope;
++static struct thermal_trip trip;
++
+ int st_thermal_register(struct platform_device *pdev,
+ 			const struct of_device_id *st_thermal_of_match)
+ {
+@@ -238,9 +202,12 @@ int st_thermal_register(struct platform_device *pdev,
  
- 		slope = thermal_zone_get_slope(tz);
- 		offset = thermal_zone_get_offset(tz);
-@@ -232,7 +234,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 		 * For now we deal only with critical, otherwise
- 		 * would need to iterate
- 		 */
--		err = tz->ops->get_trip_temp(tz, 0, &trip_temp);
-+		err = thermal_zone_get_trip(tz, 0, &trip);
- 		if (err < 0) {
- 			dev_err(&pdev->dev,
- 				"Not able to read trip_temp: %d\n",
-@@ -249,7 +251,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 		val |= (0xFE << BCM2835_TS_TSENSCTL_RSTDELAY_SHIFT);
+ 	polling_delay = sensor->ops->register_enable_irq ? 0 : 1000;
  
- 		/*  trip_adc value from info */
--		val |= bcm2835_thermal_temp2adc(trip_temp,
-+		val |= bcm2835_thermal_temp2adc(trip.temperature,
- 						offset,
- 						slope)
- 			<< BCM2835_TS_TSENSCTL_THOLD_SHIFT;
++	trip.temperature = sensor->cdata->crit_temp;
++	trip.type = THERMAL_TRIP_CRITICAL;
++
+ 	sensor->thermal_dev =
+-		thermal_zone_device_register(dev_name(dev), 1, 0, sensor,
+-					     &st_tz_ops, NULL, 0, polling_delay);
++		thermal_zone_device_register_with_trips(dev_name(dev), &trip, 1, 0, sensor,
++							&st_tz_ops, NULL, 0, polling_delay);
+ 	if (IS_ERR(sensor->thermal_dev)) {
+ 		dev_err(dev, "failed to register thermal zone device\n");
+ 		ret = PTR_ERR(sensor->thermal_dev);
