@@ -2,57 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFBDDC04FDE
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9183CC10F1E
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230487AbiLIP0t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47286 "EHLO
+        id S230491AbiLIP0u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:26:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47426 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230404AbiLIP0h (ORCPT
+        with ESMTP id S230407AbiLIP0h (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:37 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C51958F0AE
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8E678F70A
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:32 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:28 -0000
+Date:   Fri, 09 Dec 2022 15:26:29 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599588;
+        s=2020; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=x61v7bg0mA7iagJ9asTj4lKa9Gg2uXWFJd1qvDMl+dI=;
-        b=vLGqBgG+X2BuQfZvZsBaq66jduEz0i4D2sCmdpsmBcwqUsaJyXpaaWK2kBPfDjLl1nsokk
-        Z+5jQoBZSHWb6Mz5ZBXiNJVs3P2xqUbzpLnvy3ddrGJoF4C7V98qh4lHgi/jxJH1qVkENY
-        4p5ZYLobV7khpPcKqee9/qewGEp6LJAccmcRTuyYeAtVbWTxHXj9iC4h1p5ptc2itC4XeV
-        X2BzDwPLMhLjuABaw2NXEPTFCbrGCJBocsmkN336jHUZEybbdmoxghmZvHMrlegvaVBPfR
-        TyaXXjpxWgD/+EJTfRJ1LPxPzfGGDx05q9o7uP2Ie4+mE2mCC0Zr2DmMt4Spsg==
+        bh=UIw0gePhQ+zRlzkmXPM5mXiUEwXtOxLnUPpwurNnLsA=;
+        b=C+cl/03aKpowcjBGC/iGo3WF6xygyPMarZGEyO5QYoDJ8y9c+UKcvQz0fVzlVobZsHuQcm
+        nvb65U2gSX11fYSyGCAexQr8a/naEXbbc4XMxhwAw8Qi8lJsRtzHRBgRr/Ekm5Xsoxr9mw
+        djn3bHK2R2prkZX1Tm0WGlLaVf1pnlk9NCnLu9YIUeBfx4vtTNns6HbbanWApCaXXkcXHn
+        bMTFqtVSzVAbDXwqp0rdCq3YFOyK5qSS57dtjbhaF7S6uZwBzsTAJXcUcSf6fSzfRKMwSV
+        v8cRXRw1JE/YPUVFWl0kKIHH5nEvYlX4+ux99HXd8/34bGQT+j9T5+fWutq2nw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599588;
+        s=2020e; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=x61v7bg0mA7iagJ9asTj4lKa9Gg2uXWFJd1qvDMl+dI=;
-        b=ceFh/BdxDStnOR1HkRJb/YpmhKQFDfI/RnGV3ar2IWrtTC/Z50zw2PrIbvEGz26lhXlcAM
-        4WigGYjbqvfIgkBA==
-From:   "thermal-bot for Johan Hovold" <tip-bot2@linutronix.de>
+        bh=UIw0gePhQ+zRlzkmXPM5mXiUEwXtOxLnUPpwurNnLsA=;
+        b=fp49ft3eM1Edqv1hhtCN7NhXqc97u+n+ymnrZxA+UmoHRAtLHEeb3BShpt+uEEw0ft85UG
+        mGQDkwO4Gz/No/CQ==
+From:   "thermal-bot for Christian Marangi" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: qcom-spmi-adc-tm5: suppress
- probe-deferral error message
-Cc:     Johan Hovold <johan+linaro@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Andrew Halaney <ahalaney@redhat.com>,
+Subject: [thermal: thermal/next] thermal/drivers/qcom/tsens: Rework debugfs
+ file structure
+Cc:     Christian Marangi <ansuelsmth@gmail.com>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: <20221102152630.696-1-johan+linaro@kernel.org>
-References: <20221102152630.696-1-johan+linaro@kernel.org>
+In-Reply-To: <20221022125657.22530-4-ansuelsmth@gmail.com>
+References: <20221022125657.22530-4-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-Message-ID: <167059958829.4906.9817713570611553877.tip-bot2@tip-bot2>
+Message-ID: <167059958905.4906.3276458499915937604.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -63,46 +61,63 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     807efb7102e8d22b61cd400495f9478a110badd2
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//807efb7102e8d22b61cd400495f9478a110badd2
-Author:        Johan Hovold <johan+linaro@kernel.org>
-AuthorDate:    Wed, 02 Nov 2022 16:26:30 +01:00
+Commit-ID:     c6a32aca175ef04adcfe6344145d1857c917dde4
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c6a32aca175ef04adcfe6344145d1857c917dde4
+Author:        Christian Marangi <ansuelsmth@gmail.com>
+AuthorDate:    Sat, 22 Oct 2022 14:56:57 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-thermal: qcom-spmi-adc-tm5: suppress probe-deferral error message
+thermal/drivers/qcom/tsens: Rework debugfs file structure
 
-Drivers should not be logging errors on probe deferral. Switch to using
-dev_err_probe() to log failures when parsing the devicetree to avoid
-errors like:
+The current tsens debugfs structure is composed by:
+- a tsens dir in debugfs with a version file
+- a directory for each tsens istance with sensors file to dump all the
+  sensors value.
 
-	qcom-spmi-adc-tm5 c440000.spmi:pmic@0:adc-tm@3400: get dt data failed: -517
+This works on the assumption that we have the same version for each
+istance but this assumption seems fragile and with more than one tsens
+istance results in the version file not tracking each of them.
 
-when a channel is not yet available.
+A better approach is to just create a subdirectory for each tsens
+istance and put there version and sensors debugfs file.
 
-Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
-Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
-Reviewed-by: Andrew Halaney <ahalaney@redhat.com>
-Link: https://lore.kernel.org/r/20221102152630.696-1-johan+linaro@kernel.org
+Using this new implementation results in less code since debugfs entry
+are created only on successful tsens probe.
+
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+Link: https://lore.kernel.org/r/20221022125657.22530-4-ansuelsmth@gmail.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- drivers/thermal/qcom/qcom-spmi-adc-tm5.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/thermal/qcom/tsens.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-index 1b2c43e..88462a4 100644
---- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-+++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
-@@ -1030,10 +1030,8 @@ static int adc_tm5_probe(struct platform_device *pdev)
- 		return irq;
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 5f8d8f0..b5b136f 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -725,21 +725,14 @@ DEFINE_SHOW_ATTRIBUTE(dbg_sensors);
+ static void tsens_debug_init(struct platform_device *pdev)
+ {
+ 	struct tsens_priv *priv = platform_get_drvdata(pdev);
+-	struct dentry *root, *file;
  
- 	ret = adc_tm5_get_dt_data(adc_tm, node);
--	if (ret) {
--		dev_err(dev, "get dt data failed: %d\n", ret);
--		return ret;
--	}
-+	if (ret)
-+		return dev_err_probe(dev, ret, "get dt data failed\n");
+-	root = debugfs_lookup("tsens", NULL);
+-	if (!root)
++	priv->debug_root = debugfs_lookup("tsens", NULL);
++	if (!priv->debug_root)
+ 		priv->debug_root = debugfs_create_dir("tsens", NULL);
+-	else
+-		priv->debug_root = root;
+-
+-	file = debugfs_lookup("version", priv->debug_root);
+-	if (!file)
+-		debugfs_create_file("version", 0444, priv->debug_root,
+-				    pdev, &dbg_version_fops);
  
- 	ret = adc_tm->data->init(adc_tm);
- 	if (ret) {
+ 	/* A directory for each instance of the TSENS IP */
+ 	priv->debug = debugfs_create_dir(dev_name(&pdev->dev), priv->debug_root);
++	debugfs_create_file("version", 0444, priv->debug, pdev, &dbg_version_fops);
+ 	debugfs_create_file("sensors", 0444, priv->debug, pdev, &dbg_sensors_fops);
+ }
+ #else
