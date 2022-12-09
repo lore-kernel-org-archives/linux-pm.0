@@ -2,56 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F7AAC4167B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C43AC4708D
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230508AbiLIP06 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47218 "EHLO
+        id S230515AbiLIP07 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:26:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47362 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230389AbiLIP0j (ORCPT
+        with ESMTP id S230421AbiLIP0j (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:39 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 619368F73F
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61A07900C5
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:34 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:30 -0000
+Date:   Fri, 09 Dec 2022 15:26:31 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599590;
+        s=2020; t=1670599591;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Ay1QYZd/DWdr5Xhl49laL2dx6B+wC08VW4bdDpGe7Ok=;
-        b=4h85Pt3587TrZ7vx9HVcUm9kYxs1SLx3EQ02tSjH4oVSEKTB86j7nvfJa5aTwXV0fuIi8c
-        2OMXw9VSypGdYkitlQmQDq8sf8VLHbB27FTs8CIA5Aa2EqfqTkT/Y39byIqWNoCOubi1kO
-        0WYgoV8n7u9nw8qiOJo7d9G72Z8YnSZY0V7Ev3Nr6dCAJHRIJJpR7B9Msljopv/RQkocel
-        /VRwk6DDhSQa54TtAm1Tx9yxMJaqr8vIcQpCSiIZ0RL6lbpl500ia4HkBaj1ey8dRJWzbG
-        xQ4nWPF8x6PMmW0LlVJOnHRXdDx2fNH37W/LGCj2wRmR3Sn4PodNTKjqR7yO0w==
+        bh=L66KVDqgtF9bZOrXWLrpHr9D0eE7kXOXaFnZ7xzX7yc=;
+        b=tBONnzruUgMMRYTtp4EV5bC2e6UZp5Z2CNzdiZI25VSzG89Xwxnzfv4w6iZUBDbi2vCTaE
+        GkQ4aHtaz+L0UQa5fntMocxHUeP0BzC3mFYBcxopDD5gacdyQRbePxnrCMd/mxdzlbcWZw
+        lgXc8c/YZ1f8a08Zjn4wEQNBGzOCVg/DrCSRKgxnRoMGzRdFMGQPlpsQP/zMwDuEUt+10k
+        toPkcZK/lXmaFwxJk/B43NoF0QidMuGpf8XRWBcpGpWbHl02W2WxXW6QkisXB/aTGQOSdJ
+        CAykHlI6GBrJiJXlEE/eVBBkK5MJ4cVOcXB5U2kGU/9XZGEHzACz/mqri8S8NQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599590;
+        s=2020e; t=1670599591;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Ay1QYZd/DWdr5Xhl49laL2dx6B+wC08VW4bdDpGe7Ok=;
-        b=gUF1AvnvoTVN1IDi8ZwNcHyS4yy087rE/hWM89hXX9vYLofMW1k4KjKDmieUuw4HbT3IFu
-        /HtF04aGO1naY6Cw==
-From:   "thermal-bot for Ido Schimmel" <tip-bot2@linutronix.de>
+        bh=L66KVDqgtF9bZOrXWLrpHr9D0eE7kXOXaFnZ7xzX7yc=;
+        b=CVQF3Puq/HmEu8MuecFoCQRpAmhqHqLrC9gNDxyuIQoW8ktACTfwYQ2MZkOybwd0dusgmp
+        FM16yTuJnYQi1ICA==
+From:   "thermal-bot for Rob Herring" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/of: Fix memory leak on
- thermal_of_zone_register() failure
-Cc:     Ido Schimmel <idosch@nvidia.com>,
-        Vadim Pasternak <vadimp@nvidia.com>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: Convert
+ generic-adc-thermal to DT schema
+Cc:     Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20221020103658.802457-1-idosch@nvidia.com>
-References: <20221020103658.802457-1-idosch@nvidia.com>
+In-Reply-To: <20221011175235.3191509-1-robh@kernel.org>
+References: <20221011175235.3191509-1-robh@kernel.org>
 MIME-Version: 1.0
-Message-ID: <167059959040.4906.12545259120227523646.tip-bot2@tip-bot2>
+Message-ID: <167059959129.4906.7250746047893500403.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -62,81 +62,223 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     35deafe88f5a5f509f87960a9fe726acc1fe9506
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//35deafe88f5a5f509f87960a9fe726acc1fe9506
-Author:        Ido Schimmel <idosch@nvidia.com>
-AuthorDate:    Thu, 20 Oct 2022 13:36:58 +03:00
+Commit-ID:     baf00b6096b41571741153da3e7c8ef778649726
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//baf00b6096b41571741153da3e7c8ef778649726
+Author:        Rob Herring <robh@kernel.org>
+AuthorDate:    Tue, 11 Oct 2022 12:52:35 -05:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:43 +01:00
 
-thermal/of: Fix memory leak on thermal_of_zone_register() failure
+dt-bindings: thermal: Convert generic-adc-thermal to DT schema
 
-The function does not free 'of_ops' upon failure, leading to a memory
-leak [1].
+Convert the 'generic-adc-thermal' binding to DT schema format.
 
-Fix by freeing 'of_ops' in the error path.
+The binding said '#thermal-sensor-cells' should be 1, but all in tree
+users are 0 and 1 doesn't make sense for a single channel.
 
-[1]
-unreferenced object 0xffff8ee846198c80 (size 128):
-  comm "swapper/0", pid 1, jiffies 4294699704 (age 70.076s)
-  hex dump (first 32 bytes):
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-    d0 3f 6e 8c ff ff ff ff 00 00 00 00 00 00 00 00  .?n.............
-  backtrace:
-    [<00000000d136f562>] __kmalloc_node_track_caller+0x42/0x120
-    [<0000000063f31678>] kmemdup+0x1d/0x40
-    [<00000000e6d24096>] thermal_of_zone_register+0x49/0x520
-    [<000000005e78c755>] devm_thermal_of_zone_register+0x54/0x90
-    [<00000000ee6b209e>] pmbus_add_sensor+0x1b4/0x1d0
-    [<00000000896105e3>] pmbus_add_sensor_attrs_one+0x123/0x440
-    [<0000000049e990a6>] pmbus_add_sensor_attrs+0xfe/0x1d0
-    [<00000000466b5440>] pmbus_do_probe+0x66b/0x14e0
-    [<0000000084d42285>] i2c_device_probe+0x13b/0x2f0
-    [<0000000029e2ae74>] really_probe+0xce/0x2c0
-    [<00000000692df15c>] driver_probe_device+0x19/0xd0
-    [<00000000547d9cce>] __device_attach_driver+0x6f/0x100
-    [<0000000020abd24b>] bus_for_each_drv+0x76/0xc0
-    [<00000000665d9563>] __device_attach+0xfc/0x180
-    [<000000008ddd4d6a>] bus_probe_device+0x82/0xa0
-    [<000000009e61132b>] device_add+0x3fe/0x920
+Drop the example's related providers and consumers of the
+'generic-adc-thermal' node as the convention is to not have those in
+the examples.
 
-Fixes: 3fd6d6e2b4e8 ("thermal/of: Rework the thermal device tree initialization")
-Signed-off-by: Ido Schimmel <idosch@nvidia.com>
-Reviewed-by: Vadim Pasternak <vadimp@nvidia.com>
-Link: https://lore.kernel.org/r/20221020103658.802457-1-idosch@nvidia.com
+Signed-off-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20221011175235.3191509-1-robh@kernel.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/thermal_of.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml | 84 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt  | 95 +----------------------------------------------------------------------
+ 2 files changed, 84 insertions(+), 95 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
+ delete mode 100644 Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index bd87218..ff4d12e 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -493,13 +493,15 @@ struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor,
- 	if (IS_ERR(np)) {
- 		if (PTR_ERR(np) != -ENODEV)
- 			pr_err("Failed to find thermal zone for %pOFn id=%d\n", sensor, id);
--		return ERR_CAST(np);
-+		ret = PTR_ERR(np);
-+		goto out_kfree_of_ops;
- 	}
- 
- 	trips = thermal_of_trips_init(np, &ntrips);
- 	if (IS_ERR(trips)) {
- 		pr_err("Failed to find trip points for %pOFn id=%d\n", sensor, id);
--		return ERR_CAST(trips);
-+		ret = PTR_ERR(trips);
-+		goto out_kfree_of_ops;
- 	}
- 
- 	ret = thermal_of_monitor_init(np, &delay, &pdelay);
-@@ -543,6 +545,8 @@ out_kfree_tzp:
- 	kfree(tzp);
- out_kfree_trips:
- 	kfree(trips);
-+out_kfree_of_ops:
-+	kfree(of_ops);
- 
- 	return ERR_PTR(ret);
- }
+diff --git a/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml b/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
+new file mode 100644
+index 0000000..f1fc3b0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
+@@ -0,0 +1,84 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/generic-adc-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: General Purpose Analog To Digital Converter (ADC) based thermal sensor
++
++maintainers:
++  - Laxman Dewangan <ldewangan@nvidia.com>
++
++description:
++  On some of platforms, thermal sensor like thermistors are connected to
++  one of ADC channel and sensor resistance is read via voltage across the
++  sensor resistor. The voltage read across the sensor is mapped to
++  temperature using voltage-temperature lookup table.
++
++properties:
++  compatible:
++    const: generic-adc-thermal
++
++  '#thermal-sensor-cells':
++    const: 0
++
++  io-channels:
++    maxItems: 1
++
++  io-channel-names:
++    const: sensor-channel
++
++  temperature-lookup-table:
++    description: |
++      Lookup table to map the relation between ADC value and temperature.
++      When ADC is read, the value is looked up on the table to get the
++      equivalent temperature.
++
++      If not specified, driver assumes the ADC channel gives milliCelsius
++      directly.
++    $ref: /schemas/types.yaml#/definitions/int32-matrix
++    items:
++      items:
++        - description: Temperature in milliCelsius
++        - description: ADC read value
++
++required:
++  - compatible
++  - '#thermal-sensor-cells'
++  - io-channels
++  - io-channel-names
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/thermal/thermal.h>
++
++    thermal-sensor {
++        compatible = "generic-adc-thermal";
++        #thermal-sensor-cells = <0>;
++        io-channels = <&ads1015 1>;
++        io-channel-names = "sensor-channel";
++        temperature-lookup-table = <
++              (-40000) 2578
++              (-39000) 2577
++              (-38000) 2576
++              (-37000) 2575
++              (-36000) 2574
++              (-35000) 2573
++              (-34000) 2572
++              (-33000) 2571
++              (-32000) 2569
++              (-31000) 2568
++              (-30000) 2567
++              /* skip */
++              118000 254
++              119000 247
++              120000 240
++              121000 233
++              122000 226
++              123000 220
++              124000 214
++              125000 208>;
++    };
++...
+diff --git a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
+deleted file mode 100644
+index e136946..0000000
+--- a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
++++ /dev/null
+@@ -1,95 +0,0 @@
+-General Purpose Analog To Digital Converter (ADC) based thermal sensor.
+-
+-On some of platforms, thermal sensor like thermistors are connected to
+-one of ADC channel and sensor resistance is read via voltage across the
+-sensor resistor. The voltage read across the sensor is mapped to
+-temperature using voltage-temperature lookup table.
+-
+-Required properties:
+-===================
+-- compatible:		     Must be "generic-adc-thermal".
+-- #thermal-sensor-cells:     Should be 1. See Documentation/devicetree/bindings/thermal/thermal-sensor.yaml for a description
+-		             of this property.
+-Optional properties:
+-===================
+-- temperature-lookup-table:  Two dimensional array of Integer; lookup table
+-			     to map the relation between ADC value and
+-			     temperature. When ADC is read, the value is
+-			     looked up on the table to get the equivalent
+-			     temperature.
+-
+-			     The first value of the each row of array is the
+-			     temperature in milliCelsius and second value of
+-			     the each row of array is the ADC read value.
+-
+-			     If not specified, driver assumes the ADC channel
+-			     gives milliCelsius directly.
+-
+-Example :
+-#include <dt-bindings/thermal/thermal.h>
+-
+-i2c@7000c400 {
+-	ads1015: ads1015@4a {
+-		reg = <0x4a>;
+-		compatible = "ads1015";
+-		sampling-frequency = <3300>;
+-		#io-channel-cells = <1>;
+-	};
+-};
+-
+-tboard_thermistor: thermal-sensor {
+-	compatible = "generic-adc-thermal";
+-	#thermal-sensor-cells = <0>;
+-	io-channels = <&ads1015 1>;
+-	io-channel-names = "sensor-channel";
+-	temperature-lookup-table = <    (-40000) 2578
+-					(-39000) 2577
+-					(-38000) 2576
+-					(-37000) 2575
+-					(-36000) 2574
+-					(-35000) 2573
+-					(-34000) 2572
+-					(-33000) 2571
+-					(-32000) 2569
+-					(-31000) 2568
+-					(-30000) 2567
+-					::::::::::
+-					118000 254
+-					119000 247
+-					120000 240
+-					121000 233
+-					122000 226
+-					123000 220
+-					124000 214
+-					125000 208>;
+-};
+-
+-dummy_cool_dev: dummy-cool-dev {
+-	compatible = "dummy-cooling-dev";
+-	#cooling-cells = <2>; /* min followed by max */
+-};
+-
+-thermal-zones {
+-	Tboard {
+-		polling-delay = <15000>; /* milliseconds */
+-		polling-delay-passive = <0>; /* milliseconds */
+-		thermal-sensors = <&tboard_thermistor>;
+-
+-		trips {
+-			therm_est_trip: therm_est_trip {
+-				temperature = <40000>;
+-				type = "active";
+-				hysteresis = <1000>;
+-			};
+-		};
+-
+-		cooling-maps {
+-			map0 {
+-				trip = <&therm_est_trip>;
+-				cooling-device = <&dummy_cool_dev THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				contribution = <100>;
+-			};
+-
+-		};
+-	};
+-};
