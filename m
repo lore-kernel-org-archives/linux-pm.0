@@ -2,56 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8A52C3DA78
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B14BC3DA79
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230399AbiLIP1X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47218 "EHLO
+        id S230224AbiLIP1Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47722 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230224AbiLIP0p (ORCPT
+        with ESMTP id S230458AbiLIP0p (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:45 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47BFE92302
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DAC592309
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:38 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:34 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599594;
+        s=2020; t=1670599595;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=O/IX5TqHkYdPnqND5xMvBgcRu9Zzc/WzrdNP2x3xjcs=;
-        b=NxG9m82I+DUOVdKjKLqymkrs/S1tCeLQKq7IFKet47IGvSq3+jl3Guoi9d+Zv5S+hLfR1D
-        yT0GNz/6wF2PFNQ56F0HpTDdGqdevS/o4F0edTGBBkM2MV8rMioYCWQSNu2kD5C1HT/NuW
-        LP6Ejt0dxe0+ewN7LtzwvuX8BNIb1o3z2AMuT8/kJ67UmyHfs3V95AUgbK+dh4BjZ4eVyG
-        RGYrH6It/rJvQdalDFW8i1Z5yR8CRmJjb7g2My8I6SbPJgkMw3lvXrTyxQVqNGT/vHUlRD
-        0Q7TpfC2yW+clxgvyqVlZozALSGewbgrXJoIszvIQszon98g1f82ODWDPQjnBQ==
+        bh=f/RjYDNpTEn7ZyaS++C9qKWjzlamSTthuIQ3XjIWVyM=;
+        b=NOnxNPzAOTxM00RTljaxxS1YeSxbP1X5b64kj0xKsCcLHWsLR8eovnVbzrt5aFbJaXwPeh
+        9Ym7zX9M+UWktDh4ElibaESDI906X+0Fj+k3frFcCYNFZRFZtKUP4lz1ejQvljhUsTDPkc
+        9RstrQCtGKSwSVjrC/XPAlrme7lTZbqfCmkfo2S4XR/2H7jV29qLKRLdjMh9Y/LiCQJogr
+        WnR3osPZjZyLraE9Gpu/H6e0vUdM2AL4H9hguIf+WjPoIY8bKN1AJWCV4oSMvcjA/FCA3f
+        Kq1FASNG1I52yeYWmyINEj7czooLdGdMN+aB+qsxkipdZGl9m1FJK9YH0/oX3w==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599594;
+        s=2020e; t=1670599595;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=O/IX5TqHkYdPnqND5xMvBgcRu9Zzc/WzrdNP2x3xjcs=;
-        b=yz1HROm1mH1/v9VWOA4qOss+w32LD7vRnFm85BUj6nbtkDfhRzs79a2U3zKwcU5MoWAhCp
-        x7IllCiDxF2UIXDw==
+        bh=f/RjYDNpTEn7ZyaS++C9qKWjzlamSTthuIQ3XjIWVyM=;
+        b=NsNu0bo0SdddXSN0kZHdmA9e3/ZE+QqqLWOo7ZlymYe/ojGkYZQgQti0Le/2GjCL1b7mj8
+        RUa+O9gD1NHhjBDA==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/qcom: Use generic
+Subject: [thermal: thermal/next] thermal/drivers/uniphier: Use generic
  thermal_zone_get_trip() function
 Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        rui.zhang@intel.com
-In-Reply-To: <20221003092602.1323944-14-daniel.lezcano@linaro.org>
-References: <20221003092602.1323944-14-daniel.lezcano@linaro.org>
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20221003092602.1323944-12-daniel.lezcano@linaro.org>
+References: <20221003092602.1323944-12-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <167059959457.4906.5001961856711194753.tip-bot2@tip-bot2>
+Message-ID: <167059959489.4906.1914254461678902578.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -62,14 +61,14 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     78c3e2429be863d4bdbd86c76d86f64c5231d9af
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//78c3e2429be863d4bdbd86c76d86f64c5231d9af
+Commit-ID:     e6f4c0a03fe1a3bdd8b3f48c91d8f8d42fd8dd6e
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e6f4c0a03fe1a3bdd8b3f48c91d8f8d42fd8dd6e
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Mon, 03 Oct 2022 11:25:46 +02:00
+AuthorDate:    Mon, 03 Oct 2022 11:25:44 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:42 +01:00
 
-thermal/drivers/qcom: Use generic thermal_zone_get_trip() function
+thermal/drivers/uniphier: Use generic thermal_zone_get_trip() function
 
 The thermal framework gives the possibility to register the trip
 points with the thermal zone. When that is done, no get_trip_* ops are
@@ -79,72 +78,55 @@ Convert ops content logic into generic trip points and register them with the
 thermal zone.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Amit Kucheria <amitk@kernel.org>
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Link: https://lore.kernel.org/r/20221003092602.1323944-14-daniel.lezcano@linaro.org
+Reviewed-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Link: https://lore.kernel.org/r/20221003092602.1323944-12-daniel.lezcano@linaro.org
 ---
- drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 39 ++++++++------------
- 1 file changed, 17 insertions(+), 22 deletions(-)
+ drivers/thermal/uniphier_thermal.c | 27 ++++++++++++---------------
+ 1 file changed, 12 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-index be785ab..127e8c9 100644
---- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-@@ -263,17 +263,17 @@ skip:
- 	return qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
- }
- 
--static int qpnp_tm_set_trip_temp(struct thermal_zone_device *tz, int trip, int temp)
-+static int qpnp_tm_set_trip_temp(struct thermal_zone_device *tz, int trip_id, int temp)
- {
- 	struct qpnp_tm_chip *chip = tz->devdata;
--	const struct thermal_trip *trip_points;
-+	struct thermal_trip trip;
- 	int ret;
- 
--	trip_points = of_thermal_get_trip_points(chip->tz_dev);
--	if (!trip_points)
--		return -EINVAL;
-+	ret = thermal_zone_get_trip(chip->tz_dev, trip_id, &trip);
-+	if (ret)
-+		return ret;
- 
--	if (trip_points[trip].type != THERMAL_TRIP_CRITICAL)
-+	if (trip.type != THERMAL_TRIP_CRITICAL)
- 		return 0;
- 
- 	mutex_lock(&chip->lock);
-@@ -299,22 +299,17 @@ static irqreturn_t qpnp_tm_isr(int irq, void *data)
- 
- static int qpnp_tm_get_critical_trip_temp(struct qpnp_tm_chip *chip)
- {
--	int ntrips;
+diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
+index 4111d99..277ae30 100644
+--- a/drivers/thermal/uniphier_thermal.c
++++ b/drivers/thermal/uniphier_thermal.c
+@@ -248,8 +248,7 @@ static int uniphier_tm_probe(struct platform_device *pdev)
+ 	struct regmap *regmap;
+ 	struct device_node *parent;
+ 	struct uniphier_tm_dev *tdev;
 -	const struct thermal_trip *trips;
--	int i;
--
--	ntrips = of_thermal_get_ntrips(chip->tz_dev);
--	if (ntrips <= 0)
--		return THERMAL_TEMP_INVALID;
--
--	trips = of_thermal_get_trip_points(chip->tz_dev);
--	if (!trips)
--		return THERMAL_TEMP_INVALID;
--
--	for (i = 0; i < ntrips; i++) {
--		if (of_thermal_is_trip_valid(chip->tz_dev, i) &&
--		    trips[i].type == THERMAL_TRIP_CRITICAL)
--			return trips[i].temperature;
-+	struct thermal_trip trip;
-+	int i, ret;
-+
-+	for (i = 0; i < thermal_zone_get_num_trips(chip->tz_dev); i++) {
-+
-+		ret = thermal_zone_get_trip(chip->tz_dev, i, &trip);
-+		if (ret)
-+			continue;
-+
-+		if (trip.type == THERMAL_TRIP_CRITICAL)
-+			return trip.temperature;
+-	int i, ret, irq, ntrips, crit_temp = INT_MAX;
++	int i, ret, irq, crit_temp = INT_MAX;
+ 
+ 	tdev = devm_kzalloc(dev, sizeof(*tdev), GFP_KERNEL);
+ 	if (!tdev)
+@@ -296,20 +295,18 @@ static int uniphier_tm_probe(struct platform_device *pdev)
+ 		return PTR_ERR(tdev->tz_dev);
  	}
  
- 	return THERMAL_TEMP_INVALID;
+-	/* get trip points */
+-	trips = of_thermal_get_trip_points(tdev->tz_dev);
+-	ntrips = of_thermal_get_ntrips(tdev->tz_dev);
+-	if (ntrips > ALERT_CH_NUM) {
+-		dev_err(dev, "thermal zone has too many trips\n");
+-		return -E2BIG;
+-	}
+-
+ 	/* set alert temperatures */
+-	for (i = 0; i < ntrips; i++) {
+-		if (trips[i].type == THERMAL_TRIP_CRITICAL &&
+-		    trips[i].temperature < crit_temp)
+-			crit_temp = trips[i].temperature;
+-		uniphier_tm_set_alert(tdev, i, trips[i].temperature);
++	for (i = 0; i < thermal_zone_get_num_trips(tdev->tz_dev); i++) {
++		struct thermal_trip trip;
++
++		ret = thermal_zone_get_trip(tdev->tz_dev, i, &trip);
++		if (ret)
++			return ret;
++
++		if (trip.type == THERMAL_TRIP_CRITICAL &&
++		    trip.temperature < crit_temp)
++			crit_temp = trip.temperature;
++		uniphier_tm_set_alert(tdev, i, trip.temperature);
+ 		tdev->alert_en[i] = true;
+ 	}
+ 	if (crit_temp > CRITICAL_TEMP_LIMIT) {
