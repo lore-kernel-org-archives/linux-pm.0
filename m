@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAC97C4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0961C4167B
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230415AbiLIP1j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47560 "EHLO
+        id S229888AbiLIP1k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229888AbiLIP0r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:47 -0500
+        with ESMTP id S230481AbiLIP0s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:48 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5292C92323
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E4588F0BF
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:41 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:37 -0000
+Date:   Fri, 09 Dec 2022 15:26:38 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599597;
+        s=2020; t=1670599598;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=mcjw3+G70ffidzFwibf8WIyWyIs0dYYGTGd8CPedFW4=;
-        b=pPVf/VhXAKPXcITDsRCTtONTEFKcnp+LIiivi9Vba0sm4V+PZlp4ZJV0AgtFp9uorAZLpB
-        AY2UlT9qvy5OskW+ZFrXK4YDeUAMcbN5C2gMpRoefpBbaxtk0etFTSEvThrltbPlQC7aA5
-        yMdZ8Clk5/hWQ7XX5lnlrZRxkvBtSaWHu6W8QHw/X2aeVtUTfWdy9aPmKwwEBz7AcpoNgM
-        yt3c0QsWeqNQlDJrsnvunG/Onc1JarACaZgcwhOtiE67jVJ2juI2xwXwkWHur9AWKRvRk+
-        osPXKkRXclRA5yRvJfDJ87amyfe6amDTBrUEpZyFQWrHeP0+uw/vSh8NyjJ2iQ==
+        bh=frS3EzYa2XR/D6WbzPF+EQ7AWO1d3yfGz8sx8Bc8OyM=;
+        b=kheYFCsQ2w6ooglmeLeaZex2upz8FYJNvIOCzMqO9TxjSl+6aZ7ey2dcDVJVsXe/1RIxXb
+        xT/lhqYgTA7Hg5SyT+DcX4U6O1oHXVIMuEpaT9qMdgSpX5fP9N0Htpk9vwfizIkeAY4J3s
+        rD7nJTnw0M/iUJajMtRePe/2SDh97Rn4jvx9+jlhv+nFQ+I3KgWrA8vIj8+ibrE45jurGl
+        zWbGmFWg2R0A7P3oqFR6Sk2bdJME0QKwUTUs1M0NebogY++/wUQ/pzYM5UmpFYOTAS119m
+        ZYadpr8XDKMnrJjxNASV/cPNK2vJgpC4j89P11VlQwbau/eIO/+Fe/5TFftAfA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599597;
+        s=2020e; t=1670599598;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=mcjw3+G70ffidzFwibf8WIyWyIs0dYYGTGd8CPedFW4=;
-        b=ql1bCkV9t/Q+jlBbKuWeg1ojIc5/vCU9Go0eWg11LXoF4NfMit7hJKZBVl4sx4IynupQdi
-        VDUbsauuQW1M3BAg==
+        bh=frS3EzYa2XR/D6WbzPF+EQ7AWO1d3yfGz8sx8Bc8OyM=;
+        b=Nl9oJiQDqNF+qPb98u8RiNXCGLK3lvt3/Acztc8D2f2VrnERvqDcHvhxeahtFzVQmsAY4L
+        UnwLJ+IP8VTVJ+Bw==
 From:   "thermal-bot for Guenter Roeck" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core: Protect thermal device
- operations against thermal device removal
+Subject: [thermal: thermal/next] thermal/core: Move parameter validation from
+ __thermal_zone_get_temp to thermal_zone_get_temp
 Cc:     Guenter Roeck <linux@roeck-us.net>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 MIME-Version: 1.0
-Message-ID: <167059959741.4906.11406532013896487477.tip-bot2@tip-bot2>
+Message-ID: <167059959830.4906.18053139639944296768.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -55,61 +55,83 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     b778b4d782d48b9a8751b21deb8eb2f054a3c772
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//b778b4d782d48b9a8751b21deb8eb2f054a3c772
+Commit-ID:     ed97d10a8b2c78d1664b01658c5f581e6791ff7d
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ed97d10a8b2c78d1664b01658c5f581e6791ff7d
 Author:        Guenter Roeck <linux@roeck-us.net>
-AuthorDate:    Thu, 10 Nov 2022 07:25:00 -08:00
+AuthorDate:    Thu, 10 Nov 2022 07:24:55 -08:00
 Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 CommitterDate: Mon, 14 Nov 2022 19:04:37 +01:00
 
-thermal/core: Protect thermal device operations against thermal device removal
+thermal/core: Move parameter validation from __thermal_zone_get_temp to thermal_zone_get_temp
 
-Thermal device operations may be called after thermal zone device removal.
-After thermal zone device removal, thermal zone device operations must
-no longer be called. To prevent such calls from happening, ensure that
-the thermal device is registered before executing any thermal device
-operations.
+All callers of __thermal_zone_get_temp() already validated the
+thermal zone parameters. Move validation to thermal_zone_get_temp()
+where it is actually needed. Also add kernel documentation for
+__thermal_zone_get_temp(), listing the requirement that the
+function must be called with validated parameters and with thermal
+device mutex held.
 
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_helpers.c | 26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 173b049..cc7dbcb 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -203,6 +203,9 @@ int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
- 	mutex_lock(&thermal_governor_lock);
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index fca0b23..321f802 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -64,6 +64,20 @@ get_thermal_instance(struct thermal_zone_device *tz,
+ }
+ EXPORT_SYMBOL(get_thermal_instance);
+ 
++/**
++ * __thermal_zone_get_temp() - returns the temperature of a thermal zone
++ * @tz: a valid pointer to a struct thermal_zone_device
++ * @temp: a valid pointer to where to store the resulting temperature.
++ *
++ * When a valid thermal zone reference is passed, it will fetch its
++ * temperature and fill @temp.
++ *
++ * Both tz and tz->ops must be valid pointers when calling this function,
++ * and the tz->ops->get_temp callback must be provided.
++ * The function must be called under tz->lock.
++ *
++ * Return: On success returns 0, an error code otherwise
++ */
+ int __thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+ 	int ret = -EINVAL;
+@@ -73,9 +87,6 @@ int __thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 
+ 	lockdep_assert_held(&tz->lock);
+ 
+-	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
+-		return -EINVAL;
+-
+ 	ret = tz->ops->get_temp(tz, temp);
+ 
+ 	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
+@@ -114,13 +125,22 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+ 	int ret;
+ 
++	if (IS_ERR_OR_NULL(tz))
++		return -EINVAL;
++
  	mutex_lock(&tz->lock);
  
-+	if (!device_is_registered(&tz->device))
-+		goto exit;
-+
- 	gov = __find_governor(strim(policy));
- 	if (!gov)
- 		goto exit;
-@@ -445,6 +448,12 @@ static int thermal_zone_device_set_mode(struct thermal_zone_device *tz,
- 		return ret;
- 	}
- 
-+	if (!device_is_registered(&tz->device)) {
-+		mutex_unlock(&tz->lock);
-+
-+		return -ENODEV;
++	if (!tz->ops->get_temp) {
++		ret = -EINVAL;
++		goto unlock;
 +	}
 +
- 	if (tz->ops->change_mode)
- 		ret = tz->ops->change_mode(tz, mode);
+ 	if (device_is_registered(&tz->device))
+ 		ret = __thermal_zone_get_temp(tz, temp);
+ 	else
+ 		ret = -ENODEV;
  
-@@ -486,7 +495,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
- 				enum thermal_notify_event event)
- {
- 	mutex_lock(&tz->lock);
--	__thermal_zone_device_update(tz, event);
-+	if (device_is_registered(&tz->device))
-+		__thermal_zone_device_update(tz, event);
++unlock:
  	mutex_unlock(&tz->lock);
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+ 
+ 	return ret;
