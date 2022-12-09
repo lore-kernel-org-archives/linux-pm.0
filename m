@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5066BC4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 893E6C04FDE
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230511AbiLIP1t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47596 "EHLO
+        id S230302AbiLIP1u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47794 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230426AbiLIP0s (ORCPT
+        with ESMTP id S230483AbiLIP0s (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:48 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E6029232E
-        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:41 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:38 -0000
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D59098F70A
+        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:42 -0800 (PST)
+Date:   Fri, 09 Dec 2022 15:26:39 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020; t=1670599599;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=qDZHZ+79q+oGET6R8sLKec9GgkM6O9aboKpJ6jGJemo=;
-        b=E+d4UxVKSVsY8RaGQSAY/joFu+LX9vgwp7DeqGeQKj+UJLz6AXfh/J52hMdNvTmSKgJMfV
-        LuNT0cmC5GRFlVXkAMa0q+itkqRLI8kcPoHm1t516mWXH3zdtb/yBGAVXWLP9hDOB1yYDU
-        XENxEsmWcPs4XQCym6slIgnd/diUB5VFxQRaJsZFNMg3ls8JgFCniZZokZAE1v856lWAm7
-        GkcTFpflm/x8CVwqoQ/ixf/LxZJfFH3baGMhQyruhMWJvc1PLtaJYYOJjpa9QycF3TV8ds
-        SY4joPuUtuxol4TA86CvDhqmvUg8N9PlSObJ9AyF706ml6i3Pqg9RMYfQ9/8hA==
+        bh=n1Yv7x4DAhLB1jZ5aV02TrryESpXZ6xL+NjPjWCPf0Q=;
+        b=3MXY577iAmDN0FCZgnNB09V7/TduDlmbCrf/gNTPfBstc1CRyHwfnt5iPzR1BcFDCOTG37
+        N0c0zdhI6EmtYBtIaGSlHjheqUhy9HrgdYdmAoPbgTGQlaRhxSulNEUN8ZDKL/Eaiec2q2
+        RndxuO1qMIM5xQwQsRDzwJVFMFe5w6igP37XDYvQ8SJTem28fXGTuWS7RwXXBUvNQZgt6S
+        khWy+ZzCTd1rP3RDMCNO185fB9YMhL9ZUjy50MYn2ltBydqGoDMz1vGCN/f51/sqES19so
+        j3pq3+9Kjlm4odwzbB8Weho97c+WTxPvwlwPdRW+EpxZt0vqRmZsZeGiZUA2cA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599599;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=qDZHZ+79q+oGET6R8sLKec9GgkM6O9aboKpJ6jGJemo=;
-        b=ikkaBEGA1mw9QCRzf5YoOOl0BRLHZFiKOBBb6geJy7FBW/KaX2w3qx8OE1QGQEZ37YfTwV
-        h7PVUyVwOjIaD0BA==
-From:   "thermal-bot for Guenter Roeck" <tip-bot2@linutronix.de>
+        bh=n1Yv7x4DAhLB1jZ5aV02TrryESpXZ6xL+NjPjWCPf0Q=;
+        b=Ol9NfAIXM/o8hVXyngPpBZG5Cb8zLaZ5Uxyhe0WpS3YI72//A8+zTN+q1msiydV58xRerS
+        bpIjr8aCGW85mmDg==
+From:   "thermal-bot for Ricardo Neri" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core: Destroy thermal zone device
- mutex in release function
-Cc:     Guenter Roeck <linux@roeck-us.net>,
+Subject: [thermal: thermal/next] thermal: intel: hfi: Improve the type of
+ hfi_features::nr_table_pages
+Cc:     Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 MIME-Version: 1.0
-Message-ID: <167059959889.4906.17504155884396642778.tip-bot2@tip-bot2>
+Message-ID: <167059959938.4906.9514132250300945843.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -55,48 +55,40 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     d35f29ed9d11ccc4f9b957871d14726f4451a4ad
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d35f29ed9d11ccc4f9b957871d14726f4451a4ad
-Author:        Guenter Roeck <linux@roeck-us.net>
-AuthorDate:    Thu, 10 Nov 2022 07:24:52 -08:00
+Commit-ID:     54d9135cf223f221546bd51b0f5e4a73e99891f4
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//54d9135cf223f221546bd51b0f5e4a73e99891f4
+Author:        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+AuthorDate:    Tue, 18 Oct 2022 04:22:40 -07:00
 Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-CommitterDate: Mon, 14 Nov 2022 19:04:37 +01:00
+CommitterDate: Fri, 28 Oct 2022 20:11:48 +02:00
 
-thermal/core: Destroy thermal zone device mutex in release function
+thermal: intel: hfi: Improve the type of hfi_features::nr_table_pages
 
-Accesses to thermal zones, and with it the thermal zone device mutex,
-are still possible after the thermal zone device has been unregistered.
-For example, thermal_zone_get_temp() can be called from temp_show()
-in thermal_sysfs.c if the sysfs attribute was opened before the thermal
-device was unregistered.
+A Coverity static code scan raised a potential overflow_before_widen
+warning when hfi_features::nr_table_pages is used as an argument to
+memcpy in intel_hfi_process_event().
 
-Move the call to mutex_destroy from thermal_zone_device_unregister()
-to thermal_release() to ensure that it is only destroyed after it is
-guaranteed to be no longer accessed.
+Even though the overflow can never happen (the maximum number of pages of
+the HFI table is 0x10 and 0x10 << PAGE_SHIFT = 0x10000), using size_t as
+the data type of hfi_features::nr_table_pages makes Coverity happy and
+matches the data type of the argument 'size' of memcpy().
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c | 2 +-
+ drivers/thermal/intel/intel_hfi.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index e0ca631..b31d324 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -754,6 +754,7 @@ static void thermal_release(struct device *dev)
- 		     sizeof("thermal_zone") - 1)) {
- 		tz = to_thermal_zone(dev);
- 		thermal_zone_destroy_device_groups(tz);
-+		mutex_destroy(&tz->lock);
- 		kfree(tz);
- 	} else if (!strncmp(dev_name(dev), "cooling_device",
- 			    sizeof("cooling_device") - 1)) {
-@@ -1390,7 +1391,6 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	thermal_remove_hwmon_sysfs(tz);
- 	ida_free(&thermal_tz_ida, tz->id);
- 	ida_destroy(&tz->ida);
--	mutex_destroy(&tz->lock);
- 	device_unregister(&tz->device);
- 
- 	thermal_notify_tz_delete(tz_id);
+diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
+index a0640f7..239afe0 100644
+--- a/drivers/thermal/intel/intel_hfi.c
++++ b/drivers/thermal/intel/intel_hfi.c
+@@ -137,7 +137,7 @@ struct hfi_instance {
+  * Parameters and supported features that are common to all HFI instances
+  */
+ struct hfi_features {
+-	unsigned int	nr_table_pages;
++	size_t		nr_table_pages;
+ 	unsigned int	cpu_stride;
+ 	unsigned int	hdr_size;
+ };
