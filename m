@@ -2,50 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EA9FC25B04
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB506C3DA6D
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230527AbiLIP1B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47274 "EHLO
+        id S231143AbiLIP1D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230425AbiLIP0k (ORCPT
+        with ESMTP id S230427AbiLIP0k (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:40 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 611018F732
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 615EA8F73A
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:34 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:30 -0000
+Date:   Fri, 09 Dec 2022 15:26:31 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020; t=1670599591;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=IzlNcnDfxQAsW2ypH8CsWH34L8dWt8xCsNqhHcS+mOw=;
-        b=DV6g7bAqYmHCeNTeZc2/u5ovikc+SYBPiNkcffS4Fcy4nnNqYC85bVdo0IeXKqIRzRNNOp
-        Excfzp03zWNA7TQ5ZLsn9arsI4jhq1u2M9vNsMiyauQFBzTz7DzJRKuQRW8Z5Au0yIb7Cf
-        KP05kEe56sNs2qO28lr+/v1PeAtV9jrrTmXa3GsS+FtOwJ66BXd0sf8ZHW4vKztO+vU3qW
-        fK1VqQ8M3xu/brcc5mO7PccBFPJ4ILviDURHgNJtk8fO/LcRO+vxFWGxWeVXTXk3ff2cVy
-        Zo9xMB3KcEBzzhGPa3Zlw7iLREloax3zwOryKH7OXJ3ae/75YwpxxQ5LAwjntA==
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=T14P9q04VmMxu/EEfvlHiAko6STCyXYU/6FDTqUIYQo=;
+        b=sSP11xpBiMmmIDbfVY+OhvFPT9pd+7C1VjoOyTS2PeddnVFHExxhWrr6RbPeQQwWgKu2A3
+        Djqz+QRYIeJGQMfENo6a7XoQFPloTKJ3plLX0Ykjy3VGPQ9G23dQ967N9OrYYWirMieFCE
+        668ybkWllhW5CeLW/C4r1+m+xk3O36chXlnLkr9cdrCones0gaB7w4bM4CQyx1tzykEPUX
+        ul0iEuIQw0HnBWbArElvUjjoe9+xEYnTUtA+ePhhGMCiZfW9kCV74vWDbHAu7+qZBocDjC
+        UG0v0YW1squGHqesD1T17djORsTCFgTyjUAg/mN+uQoX0UW7Riaa48zgr+i4yA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599591;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=IzlNcnDfxQAsW2ypH8CsWH34L8dWt8xCsNqhHcS+mOw=;
-        b=UkjA1yuDtJtoxjaUKqIIHCIyteeaRnltkQXNc7KYRrOZeIOUlFoB2VvsJyLe0OMulC8hAw
-        59N9OyPI8iqUZiDw==
-From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=T14P9q04VmMxu/EEfvlHiAko6STCyXYU/6FDTqUIYQo=;
+        b=VmhSQNjjqOh5BVEagwmJxqqmfd/WFqJkbTfzqu0FbhaS8KM+UQlyYQey/48tzzzFQ41G8d
+        hz1umgG/+2ml9zCQ==
+From:   "thermal-bot for Keerthy" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/exynos: Fix NULL pointer
- dereference when getting the critical temp
-Cc:     Marek Szyprowski <m.szyprowski@samsung.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+Subject: [thermal: thermal/next] thermal/drivers/k3_j72xx_bandgap: Fix the
+ debug print message
+Cc:     Bryan Brattlof <bb@ti.com>, Keerthy <j-keerthy@ti.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20221010034126.3550-1-j-keerthy@ti.com>
+References: <20221010034126.3550-1-j-keerthy@ti.com>
 MIME-Version: 1.0
-Message-ID: <167059959099.4906.10741139027772891408.tip-bot2@tip-bot2>
+Message-ID: <167059959114.4906.12982835997203907122.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -56,43 +61,37 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     4092d74e0e33f0a1ccb1f4560b4d77eeff05b8d1
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//4092d74e0e33f0a1ccb1f4560b4d77eeff05b8d1
-Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Mon, 03 Oct 2022 15:29:43 +02:00
+Commit-ID:     94f26962392cac2f467744c11bf2aec9ea199cc9
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//94f26962392cac2f467744c11bf2aec9ea199cc9
+Author:        Keerthy <j-keerthy@ti.com>
+AuthorDate:    Mon, 10 Oct 2022 09:11:26 +05:30
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:43 +01:00
 
-thermal/drivers/exynos: Fix NULL pointer dereference when getting the critical temp
+thermal/drivers/k3_j72xx_bandgap: Fix the debug print message
 
-The driver is assuming the get_critical temperature exists as it is
-inherited by the thermal of ops. But this one has been removed in
-favor of the generic one.
+The debug print message to check the workaround applicability is inverted.
+Fix the same.
 
-Use the generic thermal_zone_get_crit_temp() function instead
-
-Fixes: 13bea86623be ("thermal/of: Remove of_thermal_get_crit_temp(")
-Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Fixes: ffcb2fc86eb7 ("thermal: k3_j72xx_bandgap: Add the bandgap driver support")
+Reported-by: Bryan Brattlof <bb@ti.com>
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+Link: https://lore.kernel.org/r/20221010034126.3550-1-j-keerthy@ti.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/thermal/k3_j72xx_bandgap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 5a1ffe2..37465af 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -264,9 +264,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 	unsigned int status;
- 	int ret = 0, temp;
+diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
+index 16b6bcf..c073b10 100644
+--- a/drivers/thermal/k3_j72xx_bandgap.c
++++ b/drivers/thermal/k3_j72xx_bandgap.c
+@@ -439,7 +439,7 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 		workaround_needed = false;
  
--	if (data->soc != SOC_ARCH_EXYNOS5433) /* FIXME */
--		ret = tzd->ops->get_crit_temp(tzd, &temp);
--	if (ret) {
-+	ret = thermal_zone_get_crit_temp(tzd, &temp);
-+	if (ret && data->soc != SOC_ARCH_EXYNOS5433) { /* FIXME */
- 		dev_err(&pdev->dev,
- 			"No CRITICAL trip point defined in device tree!\n");
- 		goto out;
+ 	dev_dbg(bgp->dev, "Work around %sneeded\n",
+-		workaround_needed ? "not " : "");
++		workaround_needed ? "" : "not ");
+ 
+ 	if (!workaround_needed)
+ 		init_table(5, ref_table, golden_factors);
