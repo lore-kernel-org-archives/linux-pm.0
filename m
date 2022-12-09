@@ -2,56 +2,49 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C43AC4708D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90D22C04FDE
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230515AbiLIP07 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47362 "EHLO
+        id S230523AbiLIP1A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47280 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230421AbiLIP0j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:39 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61A07900C5
-        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:34 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:31 -0000
+        with ESMTP id S230424AbiLIP0k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:40 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0374B8F718
+        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:33 -0800 (PST)
+Date:   Fri, 09 Dec 2022 15:26:28 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599591;
+        s=2020; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=L66KVDqgtF9bZOrXWLrpHr9D0eE7kXOXaFnZ7xzX7yc=;
-        b=tBONnzruUgMMRYTtp4EV5bC2e6UZp5Z2CNzdiZI25VSzG89Xwxnzfv4w6iZUBDbi2vCTaE
-        GkQ4aHtaz+L0UQa5fntMocxHUeP0BzC3mFYBcxopDD5gacdyQRbePxnrCMd/mxdzlbcWZw
-        lgXc8c/YZ1f8a08Zjn4wEQNBGzOCVg/DrCSRKgxnRoMGzRdFMGQPlpsQP/zMwDuEUt+10k
-        toPkcZK/lXmaFwxJk/B43NoF0QidMuGpf8XRWBcpGpWbHl02W2WxXW6QkisXB/aTGQOSdJ
-        CAykHlI6GBrJiJXlEE/eVBBkK5MJ4cVOcXB5U2kGU/9XZGEHzACz/mqri8S8NQ==
+         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+        bh=lN/gag9sRqUt/38lGwiSw1RikEcAJs6Jm8bsH0719lo=;
+        b=alV9Hpw2tCWyu5gDaar1Bmy1hM+4GFdbLulh1cfrzay12efa9M06MMvY07VL+QuTgrPXao
+        bvFbI/BwQ8floUTBjwZWmWMVWS+NsphanrGGJpu4XWiYk+lRkXxLABhSBTP8ODmi32ImEV
+        wQe0iLIkJF4Xho4TgqPl3LkQMUBZ5vzaUZZP4RORtcQ4KHfWrjgduXb27HfMVTowvK8c3Y
+        6vdp9QNgBw5iMx1ELuRVMySESNt4AcSTsB5djIlnW+TNFQ0TP692QyNZd/UmTQUZ5i4/a4
+        3ceXdwJsdojdWEJvIb3GhJuRQ3bXwqDom8s5dcIB+TMgxPwZV9IPLRE5wvT5nA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599591;
+        s=2020e; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=L66KVDqgtF9bZOrXWLrpHr9D0eE7kXOXaFnZ7xzX7yc=;
-        b=CVQF3Puq/HmEu8MuecFoCQRpAmhqHqLrC9gNDxyuIQoW8ktACTfwYQ2MZkOybwd0dusgmp
-        FM16yTuJnYQi1ICA==
-From:   "thermal-bot for Rob Herring" <tip-bot2@linutronix.de>
+         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+        bh=lN/gag9sRqUt/38lGwiSw1RikEcAJs6Jm8bsH0719lo=;
+        b=Uvw+2LPOeOR2oDrtRbFLZIlgXGO612CJb0nAU+R89WPu9C0vDczWeWFerAfSvXk9GAg/1T
+        a8JSqrm2nIVOejBQ==
+From:   "thermal-bot for Marek Vasut" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: Convert
- generic-adc-thermal to DT schema
-Cc:     Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20221011175235.3191509-1-robh@kernel.org>
-References: <20221011175235.3191509-1-robh@kernel.org>
+Subject: [thermal: thermal/next] thermal/drivers/imx: Add support for loading
+ calibration data from OCOTP
+Cc:     Peng Fan <peng.fan@nxp.com>, Marek Vasut <marex@denx.de>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 MIME-Version: 1.0
-Message-ID: <167059959129.4906.7250746047893500403.tip-bot2@tip-bot2>
+Message-ID: <167059958874.4906.16345400954748935514.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -62,223 +55,236 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     baf00b6096b41571741153da3e7c8ef778649726
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//baf00b6096b41571741153da3e7c8ef778649726
-Author:        Rob Herring <robh@kernel.org>
-AuthorDate:    Tue, 11 Oct 2022 12:52:35 -05:00
+Commit-ID:     b1eccb25d015f7dcbe3b6ee5e4e2d15fe50edafa
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//b1eccb25d015f7dcbe3b6ee5e4e2d15fe50edafa
+Author:        Marek Vasut <marex@denx.de>
+AuthorDate:    Fri, 02 Dec 2022 17:23:53 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Thu, 08 Dec 2022 14:30:43 +01:00
+CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-dt-bindings: thermal: Convert generic-adc-thermal to DT schema
+thermal/drivers/imx: Add support for loading calibration data from OCOTP
 
-Convert the 'generic-adc-thermal' binding to DT schema format.
+The TMU TASR, TCALIVn, TRIM registers must be explicitly programmed with
+calibration values in OCOTP. Add support for reading the OCOTP calibration
+data and programming those into the TMU hardware.
 
-The binding said '#thermal-sensor-cells' should be 1, but all in tree
-users are 0 and 1 doesn't make sense for a single channel.
+The MX8MM/MX8MN TMUv1 uses only one OCOTP cell, while MX8MP TMUv2 uses 4,
+the programming differs in each case.
 
-Drop the example's related providers and consumers of the
-'generic-adc-thermal' node as the convention is to not have those in
-the examples.
+Based on U-Boot commits:
+70487ff386c ("imx8mm: Load fuse for TMU TCALIV and TASR")
+ebb9aab318b ("imx: load calibration parameters from fuse for i.MX8MP")
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Link: https://lore.kernel.org/r/20221011175235.3191509-1-robh@kernel.org
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Peng Fan <peng.fan@nxp.com>
+Signed-off-by: Marek Vasut <marex@denx.de>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml | 84 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt  | 95 +----------------------------------------------------------------------
- 2 files changed, 84 insertions(+), 95 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
- delete mode 100644 Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
+ drivers/thermal/imx8mm_thermal.c | 164 ++++++++++++++++++++++++++++++-
+ 1 file changed, 164 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml b/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
-new file mode 100644
-index 0000000..f1fc3b0
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/generic-adc-thermal.yaml
-@@ -0,0 +1,84 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/generic-adc-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
+index 182cc20..e709c03 100644
+--- a/drivers/thermal/imx8mm_thermal.c
++++ b/drivers/thermal/imx8mm_thermal.c
+@@ -10,9 +10,11 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
++#include <linux/nvmem-consumer.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
++#include <linux/slab.h>
+ #include <linux/thermal.h>
+ 
+ #include "thermal_core.h"
+@@ -20,6 +22,22 @@
+ #define TER			0x0	/* TMU enable */
+ #define TPS			0x4
+ #define TRITSR			0x20	/* TMU immediate temp */
++/* TMU calibration data registers */
++#define TASR			0x28
++#define TASR_BUF_SLOPE_MASK	GENMASK(19, 16)
++#define TASR_BUF_VREF_MASK	GENMASK(4, 0)	/* TMU_V1 */
++#define TASR_BUF_VERF_SEL_MASK	GENMASK(1, 0)	/* TMU_V2 */
++#define TCALIV(n)		(0x30 + ((n) * 4))
++#define TCALIV_EN		BIT(31)
++#define TCALIV_HR_MASK		GENMASK(23, 16)	/* TMU_V1 */
++#define TCALIV_RT_MASK		GENMASK(7, 0)	/* TMU_V1 */
++#define TCALIV_SNSR105C_MASK	GENMASK(27, 16)	/* TMU_V2 */
++#define TCALIV_SNSR25C_MASK	GENMASK(11, 0)	/* TMU_V2 */
++#define TRIM			0x3c
++#define TRIM_BJT_CUR_MASK	GENMASK(23, 20)
++#define TRIM_BGR_MASK		GENMASK(31, 28)
++#define TRIM_VLSB_MASK		GENMASK(15, 12)
++#define TRIM_EN_CH		BIT(7)
+ 
+ #define TER_ADC_PD		BIT(30)
+ #define TER_EN			BIT(31)
+@@ -32,6 +50,25 @@
+ #define SIGN_BIT		BIT(7)
+ #define TEMP_VAL_MASK		GENMASK(6, 0)
+ 
++/* TMU OCOTP calibration data bitfields */
++#define ANA0_EN			BIT(25)
++#define ANA0_BUF_VREF_MASK	GENMASK(24, 20)
++#define ANA0_BUF_SLOPE_MASK	GENMASK(19, 16)
++#define ANA0_HR_MASK		GENMASK(15, 8)
++#define ANA0_RT_MASK		GENMASK(7, 0)
++#define TRIM2_VLSB_MASK		GENMASK(23, 20)
++#define TRIM2_BGR_MASK		GENMASK(19, 16)
++#define TRIM2_BJT_CUR_MASK	GENMASK(15, 12)
++#define TRIM2_BUF_SLOP_SEL_MASK	GENMASK(11, 8)
++#define TRIM2_BUF_VERF_SEL_MASK	GENMASK(7, 6)
++#define TRIM3_TCA25_0_LSB_MASK	GENMASK(31, 28)
++#define TRIM3_TCA40_0_MASK	GENMASK(27, 16)
++#define TRIM4_TCA40_1_MASK	GENMASK(31, 20)
++#define TRIM4_TCA105_0_MASK	GENMASK(19, 8)
++#define TRIM4_TCA25_0_MSB_MASK	GENMASK(7, 0)
++#define TRIM5_TCA105_1_MASK	GENMASK(23, 12)
++#define TRIM5_TCA25_1_MASK	GENMASK(11, 0)
 +
-+title: General Purpose Analog To Digital Converter (ADC) based thermal sensor
+ #define VER1_TEMP_LOW_LIMIT	10000
+ #define VER2_TEMP_LOW_LIMIT	-40000
+ #define VER2_TEMP_HIGH_LIMIT	125000
+@@ -134,6 +171,129 @@ static void imx8mm_tmu_probe_sel_all(struct imx8mm_tmu *tmu)
+ 	writel_relaxed(val, tmu->base + TPS);
+ }
+ 
++static int imx8mm_tmu_probe_set_calib_v1(struct platform_device *pdev,
++					 struct imx8mm_tmu *tmu)
++{
++	struct device *dev = &pdev->dev;
++	u32 ana0;
++	int ret;
 +
-+maintainers:
-+  - Laxman Dewangan <ldewangan@nvidia.com>
++	ret = nvmem_cell_read_u32(&pdev->dev, "calib", &ana0);
++	if (ret) {
++		dev_warn(dev, "Failed to read OCOTP nvmem cell (%d).\n", ret);
++		return ret;
++	}
 +
-+description:
-+  On some of platforms, thermal sensor like thermistors are connected to
-+  one of ADC channel and sensor resistance is read via voltage across the
-+  sensor resistor. The voltage read across the sensor is mapped to
-+  temperature using voltage-temperature lookup table.
++	writel(FIELD_PREP(TASR_BUF_VREF_MASK,
++			  FIELD_GET(ANA0_BUF_VREF_MASK, ana0)) |
++	       FIELD_PREP(TASR_BUF_SLOPE_MASK,
++			  FIELD_GET(ANA0_BUF_SLOPE_MASK, ana0)),
++	       tmu->base + TASR);
 +
-+properties:
-+  compatible:
-+    const: generic-adc-thermal
++	writel(FIELD_PREP(TCALIV_RT_MASK, FIELD_GET(ANA0_RT_MASK, ana0)) |
++	       FIELD_PREP(TCALIV_HR_MASK, FIELD_GET(ANA0_HR_MASK, ana0)) |
++	       ((ana0 & ANA0_EN) ? TCALIV_EN : 0),
++	       tmu->base + TCALIV(0));
 +
-+  '#thermal-sensor-cells':
-+    const: 0
++	return 0;
++}
 +
-+  io-channels:
-+    maxItems: 1
++static int imx8mm_tmu_probe_set_calib_v2(struct platform_device *pdev,
++					 struct imx8mm_tmu *tmu)
++{
++	struct device *dev = &pdev->dev;
++	struct nvmem_cell *cell;
++	u32 trim[4] = { 0 };
++	size_t len;
++	void *buf;
 +
-+  io-channel-names:
-+    const: sensor-channel
++	cell = nvmem_cell_get(dev, "calib");
++	if (IS_ERR(cell))
++		return PTR_ERR(cell);
 +
-+  temperature-lookup-table:
-+    description: |
-+      Lookup table to map the relation between ADC value and temperature.
-+      When ADC is read, the value is looked up on the table to get the
-+      equivalent temperature.
++	buf = nvmem_cell_read(cell, &len);
++	nvmem_cell_put(cell);
 +
-+      If not specified, driver assumes the ADC channel gives milliCelsius
-+      directly.
-+    $ref: /schemas/types.yaml#/definitions/int32-matrix
-+    items:
-+      items:
-+        - description: Temperature in milliCelsius
-+        - description: ADC read value
++	if (IS_ERR(buf))
++		return PTR_ERR(buf);
 +
-+required:
-+  - compatible
-+  - '#thermal-sensor-cells'
-+  - io-channels
-+  - io-channel-names
++	memcpy(trim, buf, min(len, sizeof(trim)));
++	kfree(buf);
 +
-+additionalProperties: false
++	if (len != 16) {
++		dev_err(dev,
++			"OCOTP nvmem cell length is %zu, must be 16.\n", len);
++		return -EINVAL;
++	}
 +
-+examples:
-+  - |
-+    #include <dt-bindings/thermal/thermal.h>
++	/* Blank sample hardware */
++	if (!trim[0] && !trim[1] && !trim[2] && !trim[3]) {
++		/* Use a default 25C binary codes */
++		writel(FIELD_PREP(TCALIV_SNSR25C_MASK, 0x63c),
++		       tmu->base + TCALIV(0));
++		writel(FIELD_PREP(TCALIV_SNSR25C_MASK, 0x63c),
++		       tmu->base + TCALIV(1));
++		return 0;
++	}
 +
-+    thermal-sensor {
-+        compatible = "generic-adc-thermal";
-+        #thermal-sensor-cells = <0>;
-+        io-channels = <&ads1015 1>;
-+        io-channel-names = "sensor-channel";
-+        temperature-lookup-table = <
-+              (-40000) 2578
-+              (-39000) 2577
-+              (-38000) 2576
-+              (-37000) 2575
-+              (-36000) 2574
-+              (-35000) 2573
-+              (-34000) 2572
-+              (-33000) 2571
-+              (-32000) 2569
-+              (-31000) 2568
-+              (-30000) 2567
-+              /* skip */
-+              118000 254
-+              119000 247
-+              120000 240
-+              121000 233
-+              122000 226
-+              123000 220
-+              124000 214
-+              125000 208>;
-+    };
-+...
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-deleted file mode 100644
-index e136946..0000000
---- a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-+++ /dev/null
-@@ -1,95 +0,0 @@
--General Purpose Analog To Digital Converter (ADC) based thermal sensor.
--
--On some of platforms, thermal sensor like thermistors are connected to
--one of ADC channel and sensor resistance is read via voltage across the
--sensor resistor. The voltage read across the sensor is mapped to
--temperature using voltage-temperature lookup table.
--
--Required properties:
--===================
--- compatible:		     Must be "generic-adc-thermal".
--- #thermal-sensor-cells:     Should be 1. See Documentation/devicetree/bindings/thermal/thermal-sensor.yaml for a description
--		             of this property.
--Optional properties:
--===================
--- temperature-lookup-table:  Two dimensional array of Integer; lookup table
--			     to map the relation between ADC value and
--			     temperature. When ADC is read, the value is
--			     looked up on the table to get the equivalent
--			     temperature.
--
--			     The first value of the each row of array is the
--			     temperature in milliCelsius and second value of
--			     the each row of array is the ADC read value.
--
--			     If not specified, driver assumes the ADC channel
--			     gives milliCelsius directly.
--
--Example :
--#include <dt-bindings/thermal/thermal.h>
--
--i2c@7000c400 {
--	ads1015: ads1015@4a {
--		reg = <0x4a>;
--		compatible = "ads1015";
--		sampling-frequency = <3300>;
--		#io-channel-cells = <1>;
--	};
--};
--
--tboard_thermistor: thermal-sensor {
--	compatible = "generic-adc-thermal";
--	#thermal-sensor-cells = <0>;
--	io-channels = <&ads1015 1>;
--	io-channel-names = "sensor-channel";
--	temperature-lookup-table = <    (-40000) 2578
--					(-39000) 2577
--					(-38000) 2576
--					(-37000) 2575
--					(-36000) 2574
--					(-35000) 2573
--					(-34000) 2572
--					(-33000) 2571
--					(-32000) 2569
--					(-31000) 2568
--					(-30000) 2567
--					::::::::::
--					118000 254
--					119000 247
--					120000 240
--					121000 233
--					122000 226
--					123000 220
--					124000 214
--					125000 208>;
--};
--
--dummy_cool_dev: dummy-cool-dev {
--	compatible = "dummy-cooling-dev";
--	#cooling-cells = <2>; /* min followed by max */
--};
--
--thermal-zones {
--	Tboard {
--		polling-delay = <15000>; /* milliseconds */
--		polling-delay-passive = <0>; /* milliseconds */
--		thermal-sensors = <&tboard_thermistor>;
--
--		trips {
--			therm_est_trip: therm_est_trip {
--				temperature = <40000>;
--				type = "active";
--				hysteresis = <1000>;
--			};
--		};
--
--		cooling-maps {
--			map0 {
--				trip = <&therm_est_trip>;
--				cooling-device = <&dummy_cool_dev THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
--				contribution = <100>;
--			};
--
--		};
--	};
--};
++	writel(FIELD_PREP(TASR_BUF_VERF_SEL_MASK,
++			  FIELD_GET(TRIM2_BUF_VERF_SEL_MASK, trim[0])) |
++	       FIELD_PREP(TASR_BUF_SLOPE_MASK,
++			  FIELD_GET(TRIM2_BUF_SLOP_SEL_MASK, trim[0])),
++	       tmu->base + TASR);
++
++	writel(FIELD_PREP(TRIM_BJT_CUR_MASK,
++			  FIELD_GET(TRIM2_BJT_CUR_MASK, trim[0])) |
++	       FIELD_PREP(TRIM_BGR_MASK, FIELD_GET(TRIM2_BGR_MASK, trim[0])) |
++	       FIELD_PREP(TRIM_VLSB_MASK, FIELD_GET(TRIM2_VLSB_MASK, trim[0])) |
++	       TRIM_EN_CH,
++	       tmu->base + TRIM);
++
++	writel(FIELD_PREP(TCALIV_SNSR25C_MASK,
++			  FIELD_GET(TRIM3_TCA25_0_LSB_MASK, trim[1]) |
++			  (FIELD_GET(TRIM4_TCA25_0_MSB_MASK, trim[2]) << 4)) |
++	       FIELD_PREP(TCALIV_SNSR105C_MASK,
++			  FIELD_GET(TRIM4_TCA105_0_MASK, trim[2])),
++	       tmu->base + TCALIV(0));
++
++	writel(FIELD_PREP(TCALIV_SNSR25C_MASK,
++			  FIELD_GET(TRIM5_TCA25_1_MASK, trim[3])) |
++	       FIELD_PREP(TCALIV_SNSR105C_MASK,
++			  FIELD_GET(TRIM5_TCA105_1_MASK, trim[3])),
++	       tmu->base + TCALIV(1));
++
++	writel(FIELD_PREP(TCALIV_SNSR25C_MASK,
++			  FIELD_GET(TRIM3_TCA40_0_MASK, trim[1])) |
++	       FIELD_PREP(TCALIV_SNSR105C_MASK,
++			  FIELD_GET(TRIM4_TCA40_1_MASK, trim[2])),
++	       tmu->base + TCALIV(2));
++
++	return 0;
++}
++
++static int imx8mm_tmu_probe_set_calib(struct platform_device *pdev,
++				      struct imx8mm_tmu *tmu)
++{
++	struct device *dev = &pdev->dev;
++
++	/*
++	 * Lack of calibration data OCOTP reference is not considered
++	 * fatal to retain compatibility with old DTs. It is however
++	 * strongly recommended to update such old DTs to get correct
++	 * temperature compensation values for each SoC.
++	 */
++	if (!of_find_property(pdev->dev.of_node, "nvmem-cells", NULL)) {
++		dev_warn(dev,
++			 "No OCOTP nvmem reference found, SoC-specific calibration not loaded. Please update your DT.\n");
++		return 0;
++	}
++
++	if (tmu->socdata->version == TMU_VER1)
++		return imx8mm_tmu_probe_set_calib_v1(pdev, tmu);
++
++	return imx8mm_tmu_probe_set_calib_v2(pdev, tmu);
++}
++
+ static int imx8mm_tmu_probe(struct platform_device *pdev)
+ {
+ 	const struct thermal_soc_data *data;
+@@ -186,6 +346,10 @@ static int imx8mm_tmu_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, tmu);
+ 
++	ret = imx8mm_tmu_probe_set_calib(pdev, tmu);
++	if (ret)
++		goto disable_clk;
++
+ 	/* enable all the probes for V2 TMU */
+ 	if (tmu->socdata->version == TMU_VER2)
+ 		imx8mm_tmu_probe_sel_all(tmu);
