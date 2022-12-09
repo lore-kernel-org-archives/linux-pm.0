@@ -2,17 +2,17 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 893E6C04FDE
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8C35C25B04
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230302AbiLIP1u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230452AbiLIP1u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 9 Dec 2022 10:27:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47794 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47792 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230483AbiLIP0s (ORCPT
+        with ESMTP id S230482AbiLIP0s (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:48 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D59098F70A
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A89E58F701
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:42 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:39 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
@@ -20,31 +20,31 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=n1Yv7x4DAhLB1jZ5aV02TrryESpXZ6xL+NjPjWCPf0Q=;
-        b=3MXY577iAmDN0FCZgnNB09V7/TduDlmbCrf/gNTPfBstc1CRyHwfnt5iPzR1BcFDCOTG37
-        N0c0zdhI6EmtYBtIaGSlHjheqUhy9HrgdYdmAoPbgTGQlaRhxSulNEUN8ZDKL/Eaiec2q2
-        RndxuO1qMIM5xQwQsRDzwJVFMFe5w6igP37XDYvQ8SJTem28fXGTuWS7RwXXBUvNQZgt6S
-        khWy+ZzCTd1rP3RDMCNO185fB9YMhL9ZUjy50MYn2ltBydqGoDMz1vGCN/f51/sqES19so
-        j3pq3+9Kjlm4odwzbB8Weho97c+WTxPvwlwPdRW+EpxZt0vqRmZsZeGiZUA2cA==
+        bh=ob1RkAbRhZ2AtEFnH6z5mlrDf+gUffIhl67W1j1RCIU=;
+        b=cWVDI7BhxxKRs//GGreIJGRj1msQ2GQHT8oQIkfAcubWjola0R5P1E1qhmjFOxT2VdjbYD
+        zskZsvRtTDszqZCFV2Q9DlifbVmPPKJm1ud0t1uk2BM7+s5nyD4t6yJk6kTrff2uSVY0yU
+        SwffsHu3x9pWiTMgt3fvfhGZ1tlv4wZhI8bkFu4exTLDaaGQuflnNVlrs3oJnVKFXLBkS9
+        n2DzMcOsDhhkOm9xxzbWpW6oayB72jIcRWvLJUmLS39VVdhvv9Vp5AzrT0tGK+mmNP8n4I
+        HsaXUi1njriCTu034QXG49g2rgsBfRAapQB8N0SXmSp1QSgYqQMFqc8w3lBcOg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599599;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=n1Yv7x4DAhLB1jZ5aV02TrryESpXZ6xL+NjPjWCPf0Q=;
-        b=Ol9NfAIXM/o8hVXyngPpBZG5Cb8zLaZ5Uxyhe0WpS3YI72//A8+zTN+q1msiydV58xRerS
-        bpIjr8aCGW85mmDg==
-From:   "thermal-bot for Ricardo Neri" <tip-bot2@linutronix.de>
+        bh=ob1RkAbRhZ2AtEFnH6z5mlrDf+gUffIhl67W1j1RCIU=;
+        b=uVqb2bQYsvhkNH7bKi6FqAZ/h3kf6/SJMzwkzTnSZYCbDiafaqBollhcIoA1nwkny+xWYM
+        9Ge7psA2abvYglCg==
+From:   "thermal-bot for Zhang Rui" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: intel: hfi: Improve the type of
- hfi_features::nr_table_pages
-Cc:     Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+Subject: [thermal: thermal/next] thermal: intel: intel_tcc_cooling: Add TCC
+ cooling support for RaptorLake-S
+Cc:     Zhang Rui <rui.zhang@intel.com>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
+        daniel.lezcano@linaro.org, amitk@kernel.org
 MIME-Version: 1.0
-Message-ID: <167059959938.4906.9514132250300945843.tip-bot2@tip-bot2>
+Message-ID: <167059959907.4906.5100288226387491188.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -55,40 +55,33 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     54d9135cf223f221546bd51b0f5e4a73e99891f4
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//54d9135cf223f221546bd51b0f5e4a73e99891f4
-Author:        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-AuthorDate:    Tue, 18 Oct 2022 04:22:40 -07:00
+Commit-ID:     e77f069fd6cea822efd15ea79aa61aa6422d4f67
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e77f069fd6cea822efd15ea79aa61aa6422d4f67
+Author:        Zhang Rui <rui.zhang@intel.com>
+AuthorDate:    Tue, 08 Nov 2022 16:12:20 +08:00
 Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-CommitterDate: Fri, 28 Oct 2022 20:11:48 +02:00
+CommitterDate: Wed, 09 Nov 2022 14:58:02 +01:00
 
-thermal: intel: hfi: Improve the type of hfi_features::nr_table_pages
+thermal: intel: intel_tcc_cooling: Add TCC cooling support for RaptorLake-S
 
-A Coverity static code scan raised a potential overflow_before_widen
-warning when hfi_features::nr_table_pages is used as an argument to
-memcpy in intel_hfi_process_event().
+Add RaptorLake to the list of processor models supported by the Intel
+TCC cooling driver.
 
-Even though the overflow can never happen (the maximum number of pages of
-the HFI table is 0x10 and 0x10 << PAGE_SHIFT = 0x10000), using size_t as
-the data type of hfi_features::nr_table_pages makes Coverity happy and
-matches the data type of the argument 'size' of memcpy().
-
-Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/intel/intel_hfi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/intel/intel_tcc_cooling.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
-index a0640f7..239afe0 100644
---- a/drivers/thermal/intel/intel_hfi.c
-+++ b/drivers/thermal/intel/intel_hfi.c
-@@ -137,7 +137,7 @@ struct hfi_instance {
-  * Parameters and supported features that are common to all HFI instances
-  */
- struct hfi_features {
--	unsigned int	nr_table_pages;
-+	size_t		nr_table_pages;
- 	unsigned int	cpu_stride;
- 	unsigned int	hdr_size;
+diff --git a/drivers/thermal/intel/intel_tcc_cooling.c b/drivers/thermal/intel/intel_tcc_cooling.c
+index c9e84e6..a89e7e1 100644
+--- a/drivers/thermal/intel/intel_tcc_cooling.c
++++ b/drivers/thermal/intel/intel_tcc_cooling.c
+@@ -85,6 +85,7 @@ static const struct x86_cpu_id tcc_ids[] __initconst = {
+ 	X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE_N, NULL),
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE, NULL),
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_P, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_S, NULL),
+ 	{}
  };
+ 
