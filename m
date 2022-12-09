@@ -2,55 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11FBAC3DA79
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20FDCC3DA78
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231172AbiLIP1H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47414 "EHLO
+        id S231187AbiLIP1J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47606 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230394AbiLIP0l (ORCPT
+        with ESMTP id S230437AbiLIP0l (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:41 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44354900E7
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFB5F90752
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:35 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:31 -0000
+Date:   Fri, 09 Dec 2022 15:26:32 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599592;
+        s=2020; t=1670599593;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=7lB9w+h77K1tVFaJ2tkym5DpGnEbi6xiiEez0xShG2E=;
-        b=El4bf2NiWfktzebIfFCKL2VmRf35I8fVLTIxjHRQcTsvszVop6EVDkoS8mb7lL6az0Uqnb
-        zj9IP/clHKFwJTd+DWGPNbAfebdj4TOoNYbPjVY3nn4cgu477VpSYJbt2Ue1aK5I9hzA1F
-        YEucgedkURZNy3kDPAd7xMpHkOPH6v/j3iGswS2ZwH6WuMUbx2Vx3UB7hj4R7KD7bA3TGy
-        LZojmmmnPunRRHOXEIQ1TgajgaARb837BUOfY1rwFeNmAc5EL/78ghmbEUxexKIMsjmXlp
-        w08oZWzCkuBWjYeXumuqTI34F6QklxA1RvTSV/i1cZOoafUE1Q70e59On2TJMw==
+        bh=NqHgjVOWoaDaRzKkSO+uxl5YkUVnp6wJPbkpEm8GNM4=;
+        b=OSGePnMhO60XxSuENu3IXfDzF2C572kno91bxbetLZ2THAlanNhZ5UvqHHgBICroBoSqG6
+        V/v8PpJbS1nqlG+8i4hc1zwMkgtZ2/Yd1bhpUgBw6x3LRWO8jtA81MM4v/G/JjDbPEyvIJ
+        f0Op35MnpiqRuDl7+l26aEJDk+PRIdkXjtvVmbs9KyYAOmqMWqAf0VJy/aqQSQKvr8M2r5
+        uCZ0QYRhZo8qZEnHmfqICFoiutiLxqYgk5uVB6gpVdv7VPEAR3yBIlGboUeZVm7cMCLcar
+        S06l8gMFk5bOvkC2lRuizOkYBmNFzmhYkmpYdw2UOqQiUASpBKbT4GfWXPDOBA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599592;
+        s=2020e; t=1670599593;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=7lB9w+h77K1tVFaJ2tkym5DpGnEbi6xiiEez0xShG2E=;
-        b=XVmKuhldUgOQMd/fFWzgOM2y/OjCLAlbDK0g5czyOfn1t1CgAXUiDD5CCkptMtfUUGgd9F
-        vXcAkfNk3RgsPMAg==
-From:   "thermal-bot for Dan Carpenter" <tip-bot2@linutronix.de>
+        bh=NqHgjVOWoaDaRzKkSO+uxl5YkUVnp6wJPbkpEm8GNM4=;
+        b=D8J7PEr6aOxHLKZbr5lqtZXsiFKwVbFqIONv5HHM7pysETRes/IdRBM4Kn3QfPmelm4oAF
+        yDFYSgEdAzW7hmBw==
+From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/sysfs: remove unnecessary check in
- trip_point_hyst_show()
-Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <Y0pu2M6kKzIlhCMw@kili>
-References: <Y0pu2M6kKzIlhCMw@kili>
+Subject: [thermal: thermal/next] thermal/drivers/ti: Remove unused macros
+ ti_thermal_get_trip_value() / ti_thermal_trip_is_valid()
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
+        amitk@kernel.org
+In-Reply-To: <20221003092602.1323944-26-daniel.lezcano@linaro.org>
+References: <20221003092602.1323944-26-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <167059959175.4906.316857501482540497.tip-bot2@tip-bot2>
+Message-ID: <167059959269.4906.1333464194885770214.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,34 +60,51 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     1627cd2f820ad90d3249e6b4e6f1dbadfbed0d33
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//1627cd2f820ad90d3249e6b4e6f1dbadfbed0d33
-Author:        Dan Carpenter <dan.carpenter@oracle.com>
-AuthorDate:    Sat, 15 Oct 2022 11:27:04 +03:00
+Commit-ID:     a23e3ebef74e2f9c8e58a5052ea6b717cc8fa860
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//a23e3ebef74e2f9c8e58a5052ea6b717cc8fa860
+Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
+AuthorDate:    Mon, 03 Oct 2022 11:25:58 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:43 +01:00
 
-thermal/sysfs: remove unnecessary check in trip_point_hyst_show()
+thermal/drivers/ti: Remove unused macros ti_thermal_get_trip_value() / ti_thermal_trip_is_valid()
 
-The "ret" variable is zero at this point.  No need to check.
+The macros:
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Link: https://lore.kernel.org/r/Y0pu2M6kKzIlhCMw@kili
+ti_thermal_get_trip_value()
+ ti_thermal_trip_is_valid()
+
+are unused. Remove them.
+
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Link: https://lore.kernel.org/r/20221003092602.1323944-26-daniel.lezcano@linaro.org
 ---
- drivers/thermal/thermal_sysfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/ti-soc-thermal/ti-thermal.h | 15 ---------------
+ 1 file changed, 15 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index cef860d..d37133a 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -226,7 +226,7 @@ trip_point_hyst_show(struct device *dev, struct device_attribute *attr,
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal.h b/drivers/thermal/ti-soc-thermal/ti-thermal.h
+index c388ecf..4fd2c20 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal.h
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal.h
+@@ -38,21 +38,6 @@
+ /* Update rates */
+ #define FAST_TEMP_MONITORING_RATE				250
  
- 	mutex_unlock(&tz->lock);
- 
--	return ret ? ret : sprintf(buf, "%d\n", trip.hysteresis);
-+	return sprintf(buf, "%d\n", trip.hysteresis);
- }
- 
- static ssize_t
+-/* helper macros */
+-/**
+- * ti_thermal_get_trip_value - returns trip temperature based on index
+- * @i:	trip index
+- */
+-#define ti_thermal_get_trip_value(i)					\
+-	(OMAP_TRIP_HOT + ((i) * OMAP_TRIP_STEP))
+-
+-/**
+- * ti_thermal_is_valid_trip - check for trip index
+- * @i:	trip index
+- */
+-#define ti_thermal_is_valid_trip(trip)				\
+-	((trip) >= 0 && (trip) < OMAP_TRIP_NUMBER)
+-
+ #ifdef CONFIG_TI_THERMAL
+ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id, char *domain);
+ int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id);
