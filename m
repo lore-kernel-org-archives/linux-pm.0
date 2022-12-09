@@ -2,58 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53A3AC4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 402A0C04FDE
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230448AbiLIP0m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47220 "EHLO
+        id S230457AbiLIP0o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:26:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47218 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230396AbiLIP0e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:34 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB7038F098
+        with ESMTP id S230399AbiLIP0f (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:35 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0DED8F09A
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:30 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:27 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599588;
+        s=2020; t=1670599587;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=CfNidTnQB4F52eMK1hmMioyq+qkw1Xg/s7rzgZYmnYQ=;
-        b=QsPTieMdGeL/Hbk1UDU4Nq+Swzok5OkxZ3snEeAjgqXFtljMjju1sV22emsClj3PIAhKs/
-        kJxgaDuqBHB0A8fHnFdl5XKoeMO5VowTHvfA50HDskP4lbAoqlNYr2c6wM6bM1IlzSD4dx
-        K6CZPje0hVwQGWNUney3xGkw49ucZjinKmCyzh4rSA3eZonaUb170Oq6JEtaMrPNF8is9e
-        nlsiY1QF+Haa9zXdLlFaokbhez1Z+SeJtnxsqJeyd8wksUfqcrxBwoIj9gclNMHK3db+9/
-        1EXoPP3FdebZmdJFu7QhP8/qimaEUhQ6ZECQ7EAN+ez3e42GTn5meg+U17yn/A==
+        bh=y1z2+QNf23fmRo4F2+lntxzpo4/nggAvlPMEGZCBcO0=;
+        b=I6FJS+3c7iMd4Z0FHPJx8VTj4ocvBtonqIfnm9AuSelan+7EnFAbFcx+cLMUcUsDaj9hqD
+        C+/efsIjJu7l8nNfiHq9+vJr6lCSDyd0F598NfLg2RIaOdo74gO+4ckZbB1K+usMRSGXzY
+        SAdR4FVEbF52UBDrh5eISpUZCDrheGEqv95WVCaCuqASqv0c15Abw9MxyfJsuBw0onNbTc
+        wugV2xfyy89CXnuKj4FXg8BP4R8QgHMv21apprMoZPQqq78SBZkzF28Rl4t9mdZfDHpj2d
+        wsbHTJoI25pd2avHcKE18kk0LQpn5TtPwCQA1cAdQwN0+sJw00dXa+NPRut12g==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599588;
+        s=2020e; t=1670599587;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=CfNidTnQB4F52eMK1hmMioyq+qkw1Xg/s7rzgZYmnYQ=;
-        b=//uu8NGkkwMGV0pS+J6On7j0aP5a8zkVoduqO6WJ5/MSpBsO5Km/gqKD/BA7UrF0nyIucT
-        kohSSerpgoEa3IBQ==
-From:   "thermal-bot for Christophe JAILLET" <tip-bot2@linutronix.de>
+        bh=y1z2+QNf23fmRo4F2+lntxzpo4/nggAvlPMEGZCBcO0=;
+        b=/+I11SXG0LMED1mf6ZC5pzsOduE5bKpIE68iKBonxqW5OWpVXYLj2mgs252LruhXM6Ucck
+        UpOAZoeL5vsLmLBw==
+From:   "thermal-bot for Bryan Brattlof" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core/power allocator: Remove a
- useless include
-Cc:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] thermal/drivers/k3_j72xx_bandgap: Use bool
+ for i2128 erratum flag
+Cc:     Bryan Brattlof <bb@ti.com>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: =?utf-8?q?=3C9adeec47cb5a8193016272d5c8bf936235c1711d=2E16694?=
- =?utf-8?q?59337=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
-References: =?utf-8?q?=3C9adeec47cb5a8193016272d5c8bf936235c1711d=2E166945?=
- =?utf-8?q?9337=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
+In-Reply-To: <20221031232702.10339-3-bb@ti.com>
+References: <20221031232702.10339-3-bb@ti.com>
 MIME-Version: 1.0
-Message-ID: <167059958799.4906.16455516656871309686.tip-bot2@tip-bot2>
+Message-ID: <167059958719.4906.9205514028877667500.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -64,37 +61,62 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     8bd477942348cec5841be3f1ce4bef6c26c6b2e0
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8bd477942348cec5841be3f1ce4bef6c26c6b2e0
-Author:        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-AuthorDate:    Sat, 26 Nov 2022 11:42:25 +01:00
+Commit-ID:     41a0c31149fad89fd725dd57090d65b3036a6062
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//41a0c31149fad89fd725dd57090d65b3036a6062
+Author:        Bryan Brattlof <bb@ti.com>
+AuthorDate:    Mon, 31 Oct 2022 18:26:53 -05:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-thermal/core/power allocator: Remove a useless include
+thermal/drivers/k3_j72xx_bandgap: Use bool for i2128 erratum flag
 
-This file does not use rcu, so there is no point in including
-<linux/rculist.h>.
+Some of TI's J721E SoCs require a software trimming method to report
+temperatures accurately. Currently we are using a few different data
+types to indicate when we should apply the erratum.
 
-Remove it.
+Change the 'workaround_needed' variable's data type to a bool to align
+with how we are using this variable currently.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-Link: https://lore.kernel.org/r/9adeec47cb5a8193016272d5c8bf936235c1711d.1669459337.git.christophe.jaillet@wanadoo.fr
+Signed-off-by: Bryan Brattlof <bb@ti.com>
+Link: https://lore.kernel.org/r/20221031232702.10339-3-bb@ti.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- drivers/thermal/gov_power_allocator.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/thermal/k3_j72xx_bandgap.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index eafb288..0eaf152 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -8,7 +8,6 @@
+diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
+index a9f99a1..b9d2002 100644
+--- a/drivers/thermal/k3_j72xx_bandgap.c
++++ b/drivers/thermal/k3_j72xx_bandgap.c
+@@ -340,7 +340,7 @@ static void print_look_up_table(struct device *dev, int *ref_table)
+ }
  
- #define pr_fmt(fmt) "Power allocator: " fmt
+ struct k3_j72xx_bandgap_data {
+-	unsigned int has_errata_i2128;
++	const bool has_errata_i2128;
+ };
  
--#include <linux/rculist.h>
- #include <linux/slab.h>
- #include <linux/thermal.h>
+ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+@@ -351,7 +351,7 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct k3_j72xx_bandgap *bgp;
+ 	struct k3_thermal_data *data;
+-	int workaround_needed = 0;
++	bool workaround_needed = false;
+ 	const struct k3_j72xx_bandgap_data *driver_data;
+ 	struct thermal_zone_device *ti_thermal;
+ 	int *ref_table;
+@@ -522,11 +522,11 @@ static int k3_j72xx_bandgap_remove(struct platform_device *pdev)
+ }
  
+ static const struct k3_j72xx_bandgap_data k3_j72xx_bandgap_j721e_data = {
+-	.has_errata_i2128 = 1,
++	.has_errata_i2128 = true,
+ };
+ 
+ static const struct k3_j72xx_bandgap_data k3_j72xx_bandgap_j7200_data = {
+-	.has_errata_i2128 = 0,
++	.has_errata_i2128 = false,
+ };
+ 
+ static const struct of_device_id of_k3_j72xx_bandgap_match[] = {
