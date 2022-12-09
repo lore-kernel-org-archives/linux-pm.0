@@ -2,55 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB506C3DA6D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9BFEC2D0CD
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231143AbiLIP1D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47554 "EHLO
+        id S231157AbiLIP1F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47596 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230427AbiLIP0k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:40 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 615EA8F73A
-        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:34 -0800 (PST)
+        with ESMTP id S230435AbiLIP0l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:41 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62958900ED
+        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:35 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:31 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599591;
+        s=2020; t=1670599592;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=T14P9q04VmMxu/EEfvlHiAko6STCyXYU/6FDTqUIYQo=;
-        b=sSP11xpBiMmmIDbfVY+OhvFPT9pd+7C1VjoOyTS2PeddnVFHExxhWrr6RbPeQQwWgKu2A3
-        Djqz+QRYIeJGQMfENo6a7XoQFPloTKJ3plLX0Ykjy3VGPQ9G23dQ967N9OrYYWirMieFCE
-        668ybkWllhW5CeLW/C4r1+m+xk3O36chXlnLkr9cdrCones0gaB7w4bM4CQyx1tzykEPUX
-        ul0iEuIQw0HnBWbArElvUjjoe9+xEYnTUtA+ePhhGMCiZfW9kCV74vWDbHAu7+qZBocDjC
-        UG0v0YW1squGHqesD1T17djORsTCFgTyjUAg/mN+uQoX0UW7Riaa48zgr+i4yA==
+        bh=+nmFtaxdvKupHIPqBoHg2Qp5jEX+7YwB+eNs6DFwld0=;
+        b=AoGbCobin9Cj6RlefKvPXMVc2tq4FlisNIEJodjzExNFXg5dMsvJcg9osmw1jWQuw0iw3P
+        40B7R/qIFdJ47dz1qKDoeoedIzkeUn1yiofe1H2uoI0cSLjg8GCuuMKGmCsGR96Dv5erqP
+        77M7pqIBAVItIDnrnCyn3pUokA/52k8buqMkOYy526WhIbqZaf8RHGZcOmCk+g/M2Kt0Ce
+        yT1IqyagP++OpIsuUiT4aI1r78l4nMtDpFXrfdTf5+j2eUT4uwYlXSiVCpcYnpFrpNKqmx
+        fPHCh89d6z8vkoUqFossbQUA7bvXHDhV4NAYR2ICljldz+VOpvr08QfJa1Llig==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599591;
+        s=2020e; t=1670599592;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=T14P9q04VmMxu/EEfvlHiAko6STCyXYU/6FDTqUIYQo=;
-        b=VmhSQNjjqOh5BVEagwmJxqqmfd/WFqJkbTfzqu0FbhaS8KM+UQlyYQey/48tzzzFQ41G8d
-        hz1umgG/+2ml9zCQ==
-From:   "thermal-bot for Keerthy" <tip-bot2@linutronix.de>
+        bh=+nmFtaxdvKupHIPqBoHg2Qp5jEX+7YwB+eNs6DFwld0=;
+        b=4w04+JMm0OzkA3/WtoaKA/t6hkThjrPh1bb2sYA4CD8T9H2K8jAA0qDFszQfWi7mpcvT7N
+        4bGWyXPfPPsIf5Dw==
+From:   "thermal-bot for Luca Weiss" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/k3_j72xx_bandgap: Fix the
- debug print message
-Cc:     Bryan Brattlof <bb@ti.com>, Keerthy <j-keerthy@ti.com>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: tsens: Add sm8450 compatible
+Cc:     Luca Weiss <luca@z3ntu.xyz>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20221010034126.3550-1-j-keerthy@ti.com>
-References: <20221010034126.3550-1-j-keerthy@ti.com>
+In-Reply-To: <20221016090035.565350-5-luca@z3ntu.xyz>
+References: <20221016090035.565350-5-luca@z3ntu.xyz>
 MIME-Version: 1.0
-Message-ID: <167059959114.4906.12982835997203907122.tip-bot2@tip-bot2>
+Message-ID: <167059959190.4906.3499958315515314066.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,37 +61,34 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     94f26962392cac2f467744c11bf2aec9ea199cc9
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//94f26962392cac2f467744c11bf2aec9ea199cc9
-Author:        Keerthy <j-keerthy@ti.com>
-AuthorDate:    Mon, 10 Oct 2022 09:11:26 +05:30
+Commit-ID:     b7fb2fb8af74f9d5d90dde7cdddd16ee626e8a3d
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//b7fb2fb8af74f9d5d90dde7cdddd16ee626e8a3d
+Author:        Luca Weiss <luca@z3ntu.xyz>
+AuthorDate:    Sun, 16 Oct 2022 11:00:34 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:43 +01:00
 
-thermal/drivers/k3_j72xx_bandgap: Fix the debug print message
+dt-bindings: thermal: tsens: Add sm8450 compatible
 
-The debug print message to check the workaround applicability is inverted.
-Fix the same.
+Document the tsens-v2 compatible for sm8450 SoC.
 
-Fixes: ffcb2fc86eb7 ("thermal: k3_j72xx_bandgap: Add the bandgap driver support")
-Reported-by: Bryan Brattlof <bb@ti.com>
-Signed-off-by: Keerthy <j-keerthy@ti.com>
-Link: https://lore.kernel.org/r/20221010034126.3550-1-j-keerthy@ti.com
+Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Link: https://lore.kernel.org/r/20221016090035.565350-5-luca@z3ntu.xyz
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/k3_j72xx_bandgap.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
-index 16b6bcf..c073b10 100644
---- a/drivers/thermal/k3_j72xx_bandgap.c
-+++ b/drivers/thermal/k3_j72xx_bandgap.c
-@@ -439,7 +439,7 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
- 		workaround_needed = false;
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 038d813..7db905c 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -57,6 +57,7 @@ properties:
+               - qcom,sm8150-tsens
+               - qcom,sm8250-tsens
+               - qcom,sm8350-tsens
++              - qcom,sm8450-tsens
+           - const: qcom,tsens-v2
  
- 	dev_dbg(bgp->dev, "Work around %sneeded\n",
--		workaround_needed ? "not " : "");
-+		workaround_needed ? "" : "not ");
- 
- 	if (!workaround_needed)
- 		init_table(5, ref_table, golden_factors);
+   reg:
