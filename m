@@ -2,50 +2,50 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9838C4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5CF7C4167B
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230495AbiLIP0u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47322 "EHLO
+        id S230502AbiLIP0v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:26:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47430 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230410AbiLIP0h (ORCPT
+        with ESMTP id S230409AbiLIP0h (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:37 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E94C68F711
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6F968F701
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:32 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:28 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599589;
+        s=2020; t=1670599588;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=/Ov17rShqEIdKt5Y10I3tlPzc05UGf6alc0fppan3No=;
-        b=jDfxU8V79/OgOcHjt9CsQKekF+gtCPLL1GOZjnPunQBwjG9R3RWAmsrTD59Z09hZzUz7Lp
-        +e0ugMJ1+bXd11vgwbV7pXI+rV++aznzianZ0telVovS264bBWIcwudLkRJml8MgiL0Yoc
-        G+JYdh6cbJPdOu76XCk1mVEhkov8nBGckcJgvfVYGiOBN1n4uBJOhmE+zHc49Sq/oxiJyf
-        oOW3RKwIq229mkf3ya9/35WM4KaXfssXtVWmtWtq5nLywv7OjHK0y7wnvyMrovurWn1KLh
-        e52hTScIZT962MF0uvazcY7YT+wZPVsUttxtrUqgCMUaCu2ssdNZxFdodkGosA==
+        bh=MRj8s/i5RdqiFE54qQQMtWA9Kdo3GoMylSZp5n0gbB4=;
+        b=mPQV+J6KzN6AUysQJA1hGaPICN9iLCWs3KdzEI+OW7WsNa6qw9/GOaIRjfO3NZ8DgDUOvT
+        b2FEgSBK83iPFaS/JmNcM8Nv8biTyRSlKQP5dCIWiPBszhJjYZpg6M36XrSpPHz4XmlAQ/
+        PuG92D8eCjV5BJIOrGduM/a/yRnH1Cz7huxRxhCvZQfVf5/4z2LdBbPNoPawA/j6ecJTyM
+        wAx7SFz8OLK+ZeX46ZUwToui0JngRS7G6qpWn/iiVglSN/hSc7yx+rUo2eeuHcDCpFaWBi
+        /JfPoUZtRbc7YhgbyQRaXLFpBhVQNeqBW0TnwWDAj5Mreh67VLktXCQWHokAig==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599589;
+        s=2020e; t=1670599588;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=/Ov17rShqEIdKt5Y10I3tlPzc05UGf6alc0fppan3No=;
-        b=GLaWNnSbhrclRDutWypEPyHskfzeWQKLOt+fkzSM9rS1rXSTBGvDqv6dpUfSyB9r9jAIUn
-        FptDsijFgO6lEKDQ==
-From:   "thermal-bot for Marek Vasut" <tip-bot2@linutronix.de>
+        bh=MRj8s/i5RdqiFE54qQQMtWA9Kdo3GoMylSZp5n0gbB4=;
+        b=xYs8Jq2qG1/HehVZZii6fX4QIt8nRUPqyCJ56l/oAdadA56q0uPLLUGMSvPOVX2XzQTXjk
+        ilz5I6/UeKjE4oBg==
+From:   "thermal-bot for Daniel Golle" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: imx8mm-thermal:
- Document optional nvmem-cells
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Marek Vasut <marex@denx.de>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: mediatek: add
+ compatible string for MT7986 and MT7981 SoC
+Cc:     Daniel Golle <daniel@makrotopia.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 MIME-Version: 1.0
-Message-ID: <167059958890.4906.13799118120839910102.tip-bot2@tip-bot2>
+Message-ID: <167059958844.4906.2869788614670880099.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -56,41 +56,37 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     d431c3695a71cd33bc66e9d27a82e9d5b7b5fe45
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d431c3695a71cd33bc66e9d27a82e9d5b7b5fe45
-Author:        Marek Vasut <marex@denx.de>
-AuthorDate:    Fri, 02 Dec 2022 17:23:49 +01:00
+Commit-ID:     071e99848ccc1fbe238c4c9c7cfffd83f1dfe156
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//071e99848ccc1fbe238c4c9c7cfffd83f1dfe156
+Author:        Daniel Golle <daniel@makrotopia.org>
+AuthorDate:    Wed, 30 Nov 2022 13:20:38 
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-dt-bindings: thermal: imx8mm-thermal: Document optional nvmem-cells
+dt-bindings: thermal: mediatek: add compatible string for MT7986 and MT7981 SoC
 
-The TMU TASR, TCALIVn, TRIM registers must be explicitly programmed with
-calibration values from OCOTP. Document optional phandle to OCOTP nvmem
-provider.
+Document compatible string 'mediatek,mt7986-thermal' for V3 thermal
+unit found in MT7986 SoCs.
+'mediatek,mt7981-thermal' is also added as it is identical with the
+thermal unit of MT7986.
 
+Signed-off-by: Daniel Golle <daniel@makrotopia.org>
 Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Signed-off-by: Marek Vasut <marex@denx.de>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml | 7 +++++++-
- 1 file changed, 7 insertions(+)
+ Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
-index 89c54e0..b907262 100644
---- a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
-@@ -32,6 +32,13 @@ properties:
-   clocks:
-     maxItems: 1
- 
-+  nvmem-cells:
-+    maxItems: 1
-+    description: Phandle to the calibration data provided by ocotp
-+
-+  nvmem-cell-names:
-+    const: calib
-+
-   "#thermal-sensor-cells":
-     description: |
-       Number of cells required to uniquely identify the thermal
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+index 5c7e7bd..38b32bb 100644
+--- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+@@ -13,6 +13,8 @@ Required properties:
+   - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
+   - "mediatek,mt2712-thermal" : For MT2712 family of SoCs
+   - "mediatek,mt7622-thermal" : For MT7622 SoC
++  - "mediatek,mt7981-thermal", "mediatek,mt7986-thermal" : For MT7981 SoC
++  - "mediatek,mt7986-thermal" : For MT7986 SoC
+   - "mediatek,mt8183-thermal" : For MT8183 family of SoCs
+   - "mediatek,mt8516-thermal", "mediatek,mt2701-thermal : For MT8516 family of SoCs
+ - reg: Address range of the thermal controller
