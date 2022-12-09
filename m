@@ -2,17 +2,17 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24D1BC4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFBDDC04FDE
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230484AbiLIP0t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230487AbiLIP0t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 9 Dec 2022 10:26:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47424 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47286 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230406AbiLIP0h (ORCPT
+        with ESMTP id S230404AbiLIP0h (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:37 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C525C8F0BF
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C51958F0AE
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:32 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:28 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
@@ -22,12 +22,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=464kAP3bXu9jbNWQOT6aJi5FVrJbCMlzBfw/A21xNYM=;
-        b=Sm2JSX+zKnQxlv3unIF67kZZL5MKhEsYKgK0fTrCKtHjiHd7R7B/RSfxyXo+0OitsJ31LT
-        /5CGvTTA635LoNyMAyN+NeV9lqXYd8T9wNRr2+IICiHB5qttkkP93d2jjEr89TmphXKMky
-        3yOuJ8WGpC7rJ15vb8Q1/N5YNdddwbCJh5X25uO/oJyfWKvXQtoSPhAEg6ByeV/5QEk7Xs
-        yTIp/dpEZNKE1qOSuzVIek+q9IaaQqozK/y7dfDKKGYBDFWniVB8zhfZaXt5JhV1OyeYDn
-        K3QUmReEOHkfDATnwTXrA1Un2o9DlToDk53++dth1B25/5hRqPELsssESHvagQ==
+        bh=x61v7bg0mA7iagJ9asTj4lKa9Gg2uXWFJd1qvDMl+dI=;
+        b=vLGqBgG+X2BuQfZvZsBaq66jduEz0i4D2sCmdpsmBcwqUsaJyXpaaWK2kBPfDjLl1nsokk
+        Z+5jQoBZSHWb6Mz5ZBXiNJVs3P2xqUbzpLnvy3ddrGJoF4C7V98qh4lHgi/jxJH1qVkENY
+        4p5ZYLobV7khpPcKqee9/qewGEp6LJAccmcRTuyYeAtVbWTxHXj9iC4h1p5ptc2itC4XeV
+        X2BzDwPLMhLjuABaw2NXEPTFCbrGCJBocsmkN336jHUZEybbdmoxghmZvHMrlegvaVBPfR
+        TyaXXjpxWgD/+EJTfRJ1LPxPzfGGDx05q9o7uP2Ie4+mE2mCC0Zr2DmMt4Spsg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599588;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -35,21 +35,24 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=464kAP3bXu9jbNWQOT6aJi5FVrJbCMlzBfw/A21xNYM=;
-        b=K6ucULKHJ93eBFDrbFMFOCygREYZg5ENsCiPA1Ls/wrPfCBUigzOUY6NA8aLVnm1BE4W0o
-        nS/ofYDrvVbXQPAw==
-From:   "thermal-bot for Alexander Stein" <tip-bot2@linutronix.de>
+        bh=x61v7bg0mA7iagJ9asTj4lKa9Gg2uXWFJd1qvDMl+dI=;
+        b=ceFh/BdxDStnOR1HkRJb/YpmhKQFDfI/RnGV3ar2IWrtTC/Z50zw2PrIbvEGz26lhXlcAM
+        4WigGYjbqvfIgkBA==
+From:   "thermal-bot for Johan Hovold" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/imx8mm: Add hwmon support
-Cc:     Alexander Stein <alexander.stein@ew.tq-group.com>,
+Subject: [thermal: thermal/next] thermal: qcom-spmi-adc-tm5: suppress
+ probe-deferral error message
+Cc:     Johan Hovold <johan+linaro@kernel.org>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Andrew Halaney <ahalaney@redhat.com>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: <20220726122331.323093-1-alexander.stein@ew.tq-group.com>
-References: <20220726122331.323093-1-alexander.stein@ew.tq-group.com>
+In-Reply-To: <20221102152630.696-1-johan+linaro@kernel.org>
+References: <20221102152630.696-1-johan+linaro@kernel.org>
 MIME-Version: 1.0
-Message-ID: <167059958815.4906.3651022751204904731.tip-bot2@tip-bot2>
+Message-ID: <167059958829.4906.9817713570611553877.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -60,43 +63,46 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     7dccad3e0d79edc7a5b3947dc6d63ec683114c51
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7dccad3e0d79edc7a5b3947dc6d63ec683114c51
-Author:        Alexander Stein <alexander.stein@ew.tq-group.com>
-AuthorDate:    Tue, 26 Jul 2022 14:23:31 +02:00
+Commit-ID:     807efb7102e8d22b61cd400495f9478a110badd2
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//807efb7102e8d22b61cd400495f9478a110badd2
+Author:        Johan Hovold <johan+linaro@kernel.org>
+AuthorDate:    Wed, 02 Nov 2022 16:26:30 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-thermal/drivers/imx8mm: Add hwmon support
+thermal: qcom-spmi-adc-tm5: suppress probe-deferral error message
 
-Expose thermal sensors as HWMON devices.
+Drivers should not be logging errors on probe deferral. Switch to using
+dev_err_probe() to log failures when parsing the devicetree to avoid
+errors like:
 
-Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
-Link: https://lore.kernel.org/r/20220726122331.323093-1-alexander.stein@ew.tq-group.com
+	qcom-spmi-adc-tm5 c440000.spmi:pmic@0:adc-tm@3400: get dt data failed: -517
+
+when a channel is not yet available.
+
+Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
+Reviewed-by: Andrew Halaney <ahalaney@redhat.com>
+Link: https://lore.kernel.org/r/20221102152630.696-1-johan+linaro@kernel.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- drivers/thermal/imx8mm_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/thermal/qcom/qcom-spmi-adc-tm5.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
-index e709c03..d247b48 100644
---- a/drivers/thermal/imx8mm_thermal.c
-+++ b/drivers/thermal/imx8mm_thermal.c
-@@ -18,6 +18,7 @@
- #include <linux/thermal.h>
+diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+index 1b2c43e..88462a4 100644
+--- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
++++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+@@ -1030,10 +1030,8 @@ static int adc_tm5_probe(struct platform_device *pdev)
+ 		return irq;
  
- #include "thermal_core.h"
-+#include "thermal_hwmon.h"
+ 	ret = adc_tm5_get_dt_data(adc_tm, node);
+-	if (ret) {
+-		dev_err(dev, "get dt data failed: %d\n", ret);
+-		return ret;
+-	}
++	if (ret)
++		return dev_err_probe(dev, ret, "get dt data failed\n");
  
- #define TER			0x0	/* TMU enable */
- #define TPS			0x4
-@@ -342,6 +343,9 @@ static int imx8mm_tmu_probe(struct platform_device *pdev)
- 			goto disable_clk;
- 		}
- 		tmu->sensors[i].hw_id = i;
-+
-+		if (devm_thermal_add_hwmon_sysfs(tmu->sensors[i].tzd))
-+			dev_warn(&pdev->dev, "failed to add hwmon sysfs attributes\n");
- 	}
- 
- 	platform_set_drvdata(pdev, tmu);
+ 	ret = adc_tm->data->init(adc_tm);
+ 	if (ret) {
