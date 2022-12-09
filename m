@@ -2,50 +2,49 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D4E6C25B04
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC18DC04FDE
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230390AbiLIP1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47752 "EHLO
+        id S230456AbiLIP1d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47274 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230468AbiLIP0r (ORCPT
+        with ESMTP id S230340AbiLIP0r (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:47 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B37928F0A9
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8933C8F089
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:40 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:37 -0000
+Date:   Fri, 09 Dec 2022 15:26:36 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020; t=1670599597;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=ess20CBh9/5OyZSgIAjT52wxZOYsIni3iwxwHSSJSwo=;
-        b=nWmLpaMxIi+5dfOnBDdzECIieYrdA/wcQBKO1K+1t9UMPTFSUBMqsqxUf6LafhhZu4H9lc
-        kXrmS2eQNbep0PebB3CfQ0fyjDgmsxuCtMHy0ovBVziKHPgVccQ6YH+u6Vr7hFgmIVc1/I
-        g/fR08BWfI2P8PgXV4Ktst5ZnsI3iFkatcYaqTrRmMQyQ35ErnXoFOYBnbl4uRbcljECj+
-        ZvaY1pS2j7pU6UkQsdtZpQgYLiHekLMsXH38IyUzcLyfC2KYV4YeUNSeg2oGKrPA5i5qJg
-        UmXDruTjGO5SV8GaL1aDaMWFQFoczXImDZIvESjb4L2y0D0Ur8Xj/dXbA0z0xQ==
+        bh=fjfkI6+U5L0nHIhJEr+/AY8aDV/8PiroFIK3gXe7uTI=;
+        b=ieec9yeiVrG4AURNiEjsNWOQzfkCahc8TzMrmUrcShJEfUzQhOBY2EmRRDFHp9zQtUX/ms
+        e9XQsmSFSAwKpPT8cDnLFy14tHQ3f0kD4UAe8cz5oXGS4L61icH6X6LVpeN0lnCyuVkjFX
+        THZi5x1xGMiYMCC5sBldX2Be9cezixxTRlyYRgj2qxi8Ta/i9+Ue4aJnBXW5XX1Zj8NS7u
+        x+x0bfUyfpDYqWTCE7N4Wc3QJHLUGxeXOSb1pgsSMk4ljxMzoSN8SV/MIJvA/GKM4+DnGz
+        BI7SDmVdqr3X9t73TGwHBFSqsItJ6mmE1av/1Cv17BhHTh1KstWWCBcGV+iEDw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599597;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
-        bh=ess20CBh9/5OyZSgIAjT52wxZOYsIni3iwxwHSSJSwo=;
-        b=PjLnPw1shuYoGFBuRxHQbfE+w2xcuoYrRihy/37qJmFYqVBXpjsZqcRb8WzaJmIayUEHrB
-        pFmzUol3r4Ww8JBg==
-From:   "thermal-bot for Srinivas Pandruvada" <tip-bot2@linutronix.de>
+        bh=fjfkI6+U5L0nHIhJEr+/AY8aDV/8PiroFIK3gXe7uTI=;
+        b=JPnCkDHIk415GHar/GL4lJxBbcg3upATJF+iu27k3carJBB5nHyyx1Dl3G8nZ3yjs6/rWN
+        yWAe1BbYIo1hk5DQ==
+From:   "thermal-bot for Yang Yingliang" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: intel: Prevent accidental clearing
- of HFI status
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+Subject: [thermal: thermal/next] thermal: core: fix some possible name leaks
+ in error paths
+Cc:     Yang Yingliang <yangyingliang@huawei.com>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 MIME-Version: 1.0
-Message-ID: <167059959722.4906.8964362807961283510.tip-bot2@tip-bot2>
+Message-ID: <167059959672.4906.17420034404543985383.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -56,47 +55,74 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     6fe1e64b60269aa58fa00568807738025ae3bd05
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//6fe1e64b60269aa58fa00568807738025ae3bd05
-Author:        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-AuthorDate:    Tue, 15 Nov 2022 18:54:16 -08:00
+Commit-ID:     4748f9687caaeefab8578285b97b2f30789fc4b4
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//4748f9687caaeefab8578285b97b2f30789fc4b4
+Author:        Yang Yingliang <yangyingliang@huawei.com>
+AuthorDate:    Tue, 15 Nov 2022 17:19:45 +08:00
 Committer:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-CommitterDate: Wed, 23 Nov 2022 20:09:06 +01:00
+CommitterDate: Fri, 25 Nov 2022 19:51:41 +01:00
 
-thermal: intel: Prevent accidental clearing of HFI status
+thermal: core: fix some possible name leaks in error paths
 
-When there is a package thermal interrupt with PROCHOT log, it will be
-processed and cleared. It is possible that there is an active HFI event
-status, which is about to get processed or getting processed. While
-clearing PROCHOT log bit, it will also clear HFI status bit. This means
-that hardware is free to update HFI memory.
+In some error paths before device_register(), the names allocated
+by dev_set_name() are not freed. Move dev_set_name() front to
+device_register(), so the name can be freed while calling
+put_device().
 
-When clearing a package thermal interrupt, some processors will generate
-a "general protection fault" when any of the read only bit is set to 1.
-
-The driver maintains a mask of all read-write bits which can be set.
-
-This mask doesn't include HFI status bit. This bit will also be cleared,
-as it will be assumed read-only bit. So, add HFI status bit 26 to the
-mask.
-
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Reviewed-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Fixes: 1dd7128b839f ("thermal/core: Fix null pointer dereference in thermal_release()")
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/intel/therm_throt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/thermal_core.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
-index 8352083..9e8ab31 100644
---- a/drivers/thermal/intel/therm_throt.c
-+++ b/drivers/thermal/intel/therm_throt.c
-@@ -197,7 +197,7 @@ static const struct attribute_group thermal_attr_group = {
- #define THERM_STATUS_PROCHOT_LOG	BIT(1)
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index cc7dbcb..f17ab23 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -894,10 +894,6 @@ __thermal_cooling_device_register(struct device_node *np,
+ 	cdev->id = ret;
+ 	id = ret;
  
- #define THERM_STATUS_CLEAR_CORE_MASK (BIT(1) | BIT(3) | BIT(5) | BIT(7) | BIT(9) | BIT(11) | BIT(13) | BIT(15))
--#define THERM_STATUS_CLEAR_PKG_MASK  (BIT(1) | BIT(3) | BIT(5) | BIT(7) | BIT(9) | BIT(11))
-+#define THERM_STATUS_CLEAR_PKG_MASK  (BIT(1) | BIT(3) | BIT(5) | BIT(7) | BIT(9) | BIT(11) | BIT(26))
+-	ret = dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
+-	if (ret)
+-		goto out_ida_remove;
+-
+ 	cdev->type = kstrdup(type ? type : "", GFP_KERNEL);
+ 	if (!cdev->type) {
+ 		ret = -ENOMEM;
+@@ -917,6 +913,11 @@ __thermal_cooling_device_register(struct device_node *np,
+ 		goto out_kfree_type;
  
- static void clear_therm_status_log(int level)
- {
+ 	thermal_cooling_device_setup_sysfs(cdev);
++	ret = dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
++	if (ret) {
++		thermal_cooling_device_destroy_sysfs(cdev);
++		goto out_kfree_type;
++	}
+ 	ret = device_register(&cdev->device);
+ 	if (ret)
+ 		goto out_kfree_type;
+@@ -1250,10 +1251,6 @@ thermal_zone_device_register_with_trips(const char *type, struct thermal_trip *t
+ 	tz->id = id;
+ 	strscpy(tz->type, type, sizeof(tz->type));
+ 
+-	result = dev_set_name(&tz->device, "thermal_zone%d", tz->id);
+-	if (result)
+-		goto remove_id;
+-
+ 	if (!ops->critical)
+ 		ops->critical = thermal_zone_device_critical;
+ 
+@@ -1276,6 +1273,11 @@ thermal_zone_device_register_with_trips(const char *type, struct thermal_trip *t
+ 	/* A new thermal zone needs to be updated anyway. */
+ 	atomic_set(&tz->need_update, 1);
+ 
++	result = dev_set_name(&tz->device, "thermal_zone%d", tz->id);
++	if (result) {
++		thermal_zone_destroy_device_groups(tz);
++		goto remove_id;
++	}
+ 	result = device_register(&tz->device);
+ 	if (result)
+ 		goto release_device;
