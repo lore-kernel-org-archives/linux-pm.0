@@ -2,55 +2,50 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9183CC10F1E
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9838C4332F
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230491AbiLIP0u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230495AbiLIP0u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 9 Dec 2022 10:26:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47426 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47322 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230407AbiLIP0h (ORCPT
+        with ESMTP id S230410AbiLIP0h (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:37 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8E678F70A
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E94C68F711
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:32 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:29 -0000
+Date:   Fri, 09 Dec 2022 15:26:28 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=UIw0gePhQ+zRlzkmXPM5mXiUEwXtOxLnUPpwurNnLsA=;
-        b=C+cl/03aKpowcjBGC/iGo3WF6xygyPMarZGEyO5QYoDJ8y9c+UKcvQz0fVzlVobZsHuQcm
-        nvb65U2gSX11fYSyGCAexQr8a/naEXbbc4XMxhwAw8Qi8lJsRtzHRBgRr/Ekm5Xsoxr9mw
-        djn3bHK2R2prkZX1Tm0WGlLaVf1pnlk9NCnLu9YIUeBfx4vtTNns6HbbanWApCaXXkcXHn
-        bMTFqtVSzVAbDXwqp0rdCq3YFOyK5qSS57dtjbhaF7S6uZwBzsTAJXcUcSf6fSzfRKMwSV
-        v8cRXRw1JE/YPUVFWl0kKIHH5nEvYlX4+ux99HXd8/34bGQT+j9T5+fWutq2nw==
+         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+        bh=/Ov17rShqEIdKt5Y10I3tlPzc05UGf6alc0fppan3No=;
+        b=jDfxU8V79/OgOcHjt9CsQKekF+gtCPLL1GOZjnPunQBwjG9R3RWAmsrTD59Z09hZzUz7Lp
+        +e0ugMJ1+bXd11vgwbV7pXI+rV++aznzianZ0telVovS264bBWIcwudLkRJml8MgiL0Yoc
+        G+JYdh6cbJPdOu76XCk1mVEhkov8nBGckcJgvfVYGiOBN1n4uBJOhmE+zHc49Sq/oxiJyf
+        oOW3RKwIq229mkf3ya9/35WM4KaXfssXtVWmtWtq5nLywv7OjHK0y7wnvyMrovurWn1KLh
+        e52hTScIZT962MF0uvazcY7YT+wZPVsUttxtrUqgCMUaCu2ssdNZxFdodkGosA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599589;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=UIw0gePhQ+zRlzkmXPM5mXiUEwXtOxLnUPpwurNnLsA=;
-        b=fp49ft3eM1Edqv1hhtCN7NhXqc97u+n+ymnrZxA+UmoHRAtLHEeb3BShpt+uEEw0ft85UG
-        mGQDkwO4Gz/No/CQ==
-From:   "thermal-bot for Christian Marangi" <tip-bot2@linutronix.de>
+         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+        bh=/Ov17rShqEIdKt5Y10I3tlPzc05UGf6alc0fppan3No=;
+        b=GLaWNnSbhrclRDutWypEPyHskfzeWQKLOt+fkzSM9rS1rXSTBGvDqv6dpUfSyB9r9jAIUn
+        FptDsijFgO6lEKDQ==
+From:   "thermal-bot for Marek Vasut" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/qcom/tsens: Rework debugfs
- file structure
-Cc:     Christian Marangi <ansuelsmth@gmail.com>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: imx8mm-thermal:
+ Document optional nvmem-cells
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Marek Vasut <marex@denx.de>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: <20221022125657.22530-4-ansuelsmth@gmail.com>
-References: <20221022125657.22530-4-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-Message-ID: <167059958905.4906.3276458499915937604.tip-bot2@tip-bot2>
+Message-ID: <167059958890.4906.13799118120839910102.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,63 +56,41 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     c6a32aca175ef04adcfe6344145d1857c917dde4
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c6a32aca175ef04adcfe6344145d1857c917dde4
-Author:        Christian Marangi <ansuelsmth@gmail.com>
-AuthorDate:    Sat, 22 Oct 2022 14:56:57 +02:00
+Commit-ID:     d431c3695a71cd33bc66e9d27a82e9d5b7b5fe45
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d431c3695a71cd33bc66e9d27a82e9d5b7b5fe45
+Author:        Marek Vasut <marex@denx.de>
+AuthorDate:    Fri, 02 Dec 2022 17:23:49 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-thermal/drivers/qcom/tsens: Rework debugfs file structure
+dt-bindings: thermal: imx8mm-thermal: Document optional nvmem-cells
 
-The current tsens debugfs structure is composed by:
-- a tsens dir in debugfs with a version file
-- a directory for each tsens istance with sensors file to dump all the
-  sensors value.
+The TMU TASR, TCALIVn, TRIM registers must be explicitly programmed with
+calibration values from OCOTP. Document optional phandle to OCOTP nvmem
+provider.
 
-This works on the assumption that we have the same version for each
-istance but this assumption seems fragile and with more than one tsens
-istance results in the version file not tracking each of them.
-
-A better approach is to just create a subdirectory for each tsens
-istance and put there version and sensors debugfs file.
-
-Using this new implementation results in less code since debugfs entry
-are created only on successful tsens probe.
-
-Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-Link: https://lore.kernel.org/r/20221022125657.22530-4-ansuelsmth@gmail.com
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Marek Vasut <marex@denx.de>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- drivers/thermal/qcom/tsens.c | 13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+ Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml | 7 +++++++-
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 5f8d8f0..b5b136f 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -725,21 +725,14 @@ DEFINE_SHOW_ATTRIBUTE(dbg_sensors);
- static void tsens_debug_init(struct platform_device *pdev)
- {
- 	struct tsens_priv *priv = platform_get_drvdata(pdev);
--	struct dentry *root, *file;
+diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
+index 89c54e0..b907262 100644
+--- a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
+@@ -32,6 +32,13 @@ properties:
+   clocks:
+     maxItems: 1
  
--	root = debugfs_lookup("tsens", NULL);
--	if (!root)
-+	priv->debug_root = debugfs_lookup("tsens", NULL);
-+	if (!priv->debug_root)
- 		priv->debug_root = debugfs_create_dir("tsens", NULL);
--	else
--		priv->debug_root = root;
--
--	file = debugfs_lookup("version", priv->debug_root);
--	if (!file)
--		debugfs_create_file("version", 0444, priv->debug_root,
--				    pdev, &dbg_version_fops);
- 
- 	/* A directory for each instance of the TSENS IP */
- 	priv->debug = debugfs_create_dir(dev_name(&pdev->dev), priv->debug_root);
-+	debugfs_create_file("version", 0444, priv->debug, pdev, &dbg_version_fops);
- 	debugfs_create_file("sensors", 0444, priv->debug, pdev, &dbg_sensors_fops);
- }
- #else
++  nvmem-cells:
++    maxItems: 1
++    description: Phandle to the calibration data provided by ocotp
++
++  nvmem-cell-names:
++    const: calib
++
+   "#thermal-sensor-cells":
+     description: |
+       Number of cells required to uniquely identify the thermal
