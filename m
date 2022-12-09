@@ -2,17 +2,17 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B813BC10F1E
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53A3AC4332F
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230439AbiLIP0l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47338 "EHLO
+        id S230448AbiLIP0m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:26:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47220 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230397AbiLIP0e (ORCPT
+        with ESMTP id S230396AbiLIP0e (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:34 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB20B8F08D
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB7038F098
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:30 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:27 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
@@ -22,12 +22,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=rMrabYRj2/CttKMFYVgdk2uynK9d2UUAJGvXmuHNp1I=;
-        b=L4rCHU5FwWGiwf1UNPlrc7bcQO00q5aFeuM6o7OlyvKAqfeSGndqYxwJVQLnHZY1Ao1MXF
-        kn6caAKvCJ2u2C4TMeKrsFOKDZMB0qAZ3KY+3Uu+gUgDCBbcASNVPYyBk8/NTbEoVbtq2O
-        33KryXSswSMJwXi7k3UX9ko3hx3Mla/QqGPMLNhk3SrP2+xZ17i38oYlp9mWYMGCxbXOy6
-        LVXwpBv9g2PoOrR48YS4I1OYs85Cm9xQrzV2ZaJldKWi7VVbXM2mAkqIZi0IDLbwxkmwwx
-        ZNTI2T/5meNEfm3Y/YZlmd3Q1PVoENchY5Lb5QQS3dLpcFKepG5S26hspNSW+Q==
+        bh=CfNidTnQB4F52eMK1hmMioyq+qkw1Xg/s7rzgZYmnYQ=;
+        b=QsPTieMdGeL/Hbk1UDU4Nq+Swzok5OkxZ3snEeAjgqXFtljMjju1sV22emsClj3PIAhKs/
+        kJxgaDuqBHB0A8fHnFdl5XKoeMO5VowTHvfA50HDskP4lbAoqlNYr2c6wM6bM1IlzSD4dx
+        K6CZPje0hVwQGWNUney3xGkw49ucZjinKmCyzh4rSA3eZonaUb170Oq6JEtaMrPNF8is9e
+        nlsiY1QF+Haa9zXdLlFaokbhez1Z+SeJtnxsqJeyd8wksUfqcrxBwoIj9gclNMHK3db+9/
+        1EXoPP3FdebZmdJFu7QhP8/qimaEUhQ6ZECQ7EAN+ez3e42GTn5meg+U17yn/A==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599588;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -35,22 +35,25 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=rMrabYRj2/CttKMFYVgdk2uynK9d2UUAJGvXmuHNp1I=;
-        b=xWcUloq3ja+VdljWaXoMYGs2zwDMoCrj/6dH3ZrxWMuXj/dhabPcoQN29CR3zrbBFo2j+L
-        cZzjjaLdSsDD73BA==
-From:   "thermal-bot for Krzysztof Kozlowski" <tip-bot2@linutronix.de>
+        bh=CfNidTnQB4F52eMK1hmMioyq+qkw1Xg/s7rzgZYmnYQ=;
+        b=//uu8NGkkwMGV0pS+J6On7j0aP5a8zkVoduqO6WJ5/MSpBsO5Km/gqKD/BA7UrF0nyIucT
+        kohSSerpgoEa3IBQ==
+From:   "thermal-bot for Christophe JAILLET" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: qcom-tsens: narrow
- interrupts for SC8280XP, SM6350 and SM8450
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+Subject: [thermal: thermal/next] thermal/core/power allocator: Remove a
+ useless include
+Cc:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Lukasz Luba <lukasz.luba@arm.com>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: <20221116113140.69587-1-krzysztof.kozlowski@linaro.org>
-References: <20221116113140.69587-1-krzysztof.kozlowski@linaro.org>
+In-Reply-To: =?utf-8?q?=3C9adeec47cb5a8193016272d5c8bf936235c1711d=2E16694?=
+ =?utf-8?q?59337=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
+References: =?utf-8?q?=3C9adeec47cb5a8193016272d5c8bf936235c1711d=2E166945?=
+ =?utf-8?q?9337=2Egit=2Echristophe=2Ejaillet=40wanadoo=2Efr=3E?=
 MIME-Version: 1.0
-Message-ID: <167059958785.4906.8220628123764778872.tip-bot2@tip-bot2>
+Message-ID: <167059958799.4906.16455516656871309686.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,42 +64,37 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     37ab48c365e6f89d0e228725eeca66828f04a985
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//37ab48c365e6f89d0e228725eeca66828f04a985
-Author:        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-AuthorDate:    Wed, 16 Nov 2022 12:31:40 +01:00
+Commit-ID:     8bd477942348cec5841be3f1ce4bef6c26c6b2e0
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8bd477942348cec5841be3f1ce4bef6c26c6b2e0
+Author:        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+AuthorDate:    Sat, 26 Nov 2022 11:42:25 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-dt-bindings: thermal: qcom-tsens: narrow interrupts for SC8280XP, SM6350 and SM8450
+thermal/core/power allocator: Remove a useless include
 
-Narrow number of interrupts per variants: SC8280XP, SM6350 and SM8450.
-The compatibles are already used and described.  They only missed the
-constraints of number of interrupts.
+This file does not use rcu, so there is no point in including
+<linux/rculist.h>.
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Link: https://lore.kernel.org/r/20221116113140.69587-1-krzysztof.kozlowski@linaro.org
+Remove it.
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Link: https://lore.kernel.org/r/9adeec47cb5a8193016272d5c8bf936235c1711d.1669459337.git.christophe.jaillet@wanadoo.fr
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/thermal/gov_power_allocator.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index f0bd4b9..5bcfddc 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -146,11 +146,14 @@ allOf:
-               - qcom,sc7180-tsens
-               - qcom,sc7280-tsens
-               - qcom,sc8180x-tsens
-+              - qcom,sc8280xp-tsens
-               - qcom,sdm630-tsens
-               - qcom,sdm845-tsens
-+              - qcom,sm6350-tsens
-               - qcom,sm8150-tsens
-               - qcom,sm8250-tsens
-               - qcom,sm8350-tsens
-+              - qcom,sm8450-tsens
-               - qcom,tsens-v2
-     then:
-       properties:
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index eafb288..0eaf152 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -8,7 +8,6 @@
+ 
+ #define pr_fmt(fmt) "Power allocator: " fmt
+ 
+-#include <linux/rculist.h>
+ #include <linux/slab.h>
+ #include <linux/thermal.h>
+ 
