@@ -2,57 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BF57C4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34BFAC04FDE
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230402AbiLIP0h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229761AbiLIP0h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 9 Dec 2022 10:26:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47130 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230260AbiLIP03 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:29 -0500
+        with ESMTP id S230389AbiLIP0d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:33 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E25C58DBCA
-        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:27 -0800 (PST)
-Date:   Fri, 09 Dec 2022 15:26:25 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 720438E5A0
+        for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:30 -0800 (PST)
+Date:   Fri, 09 Dec 2022 15:26:26 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599585;
+        s=2020; t=1670599586;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=96jYxJl4C5JGlu1+xN05ijcTvTHdJniwDSxiV7ebjrs=;
-        b=ENsQRl8k/Y8DQz66BPhFdlcjKMg74RHPKa5SjT+EJAh+Ie9KHlwIg0aSwjhREtE+r8U7u6
-        lOn7K13cJI/34vQTkH+jtlTKZdHWsehLWjX/Dr0SStOE4ZSCp8qdWWCxkxP6eCaS7KOUAv
-        lNJ5HUfFMbjVlDugoG35X1BQESgUJq7jFeWlojyKxYHf2NFNw6Q8qQf81jujTz/pwQ8fqe
-        SZ3QKOu0P31urZwgVXrgOccDmnKQSUWgnwmnASMYmp3VjVtp6WhF3yAAQ625dZcuE1f8FX
-        O4puY7YiGouEZs2wrFmceqaF1q1Km7nySe1rBqOldh9K+HyVq8CS3md9LfBtfA==
+        bh=9rLvq4hcibfP3bxY/7nlAdWyPMcok0lyfU2X+0v1sqY=;
+        b=V+J5y8w0YkRlwTiBhsLez4swznipCObtbJy6q0/As5t1iX3m3U3yDWJYZfoo6yKWvemDwf
+        I7BLo1G2A0i3YRu2HOMBFxyPjnhkx9lAEGZYvP113pwfg/737ZVpxGIC4xzYBe3dQBs2Re
+        YOI2aMrYYSfNzY7FXietkUbupBctQUT/8Oqz10B8iPxgvJWpxmXxHWUHHrxoIk+pFRifLq
+        FYJrBDTLX5goUVvcxzouIhZuU+mZ1pQH+aKebYeupfg0S5efe+D7VIFGWBLDCccAi/Pkey
+        nX5l1rXUO95SeDML+EJbhqbUgfAzmlF7Hxu+PrZ9VBVBdYmfFRg+JZnnXLnjxQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599585;
+        s=2020e; t=1670599586;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=96jYxJl4C5JGlu1+xN05ijcTvTHdJniwDSxiV7ebjrs=;
-        b=LYfhKzCcf0b1XwHcs04xE58B6zDRIPsw6hVaXTgQRnMbBQGR+nhqL3h9dSAJBgC3fCIGB6
-        e1Oyrd2RSW82U4Cg==
-From:   "thermal-bot for Neil Armstrong" <tip-bot2@linutronix.de>
+        bh=9rLvq4hcibfP3bxY/7nlAdWyPMcok0lyfU2X+0v1sqY=;
+        b=SPybjYdDuju8/d0W+WcKUSFLPFtKKQ5BSeQTtxMP8vj+bQys1Dx9NnxxyuMFYm+E7H3PEd
+        vKBUmJyTMO6bXtBA==
+From:   "thermal-bot for Bryan Brattlof" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: qcom-tsens: Add
- compatible for sm8550
-Cc:     Neil Armstrong <neil.armstrong@linaro.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
+Subject: [thermal: thermal/next] thermal/drivers/k3_j72xx_bandgap: Map
+ fuse_base only for erratum workaround
+Cc:     Bryan Brattlof <bb@ti.com>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
-        rui.zhang@intel.com, daniel.lezcano@linaro.org
-In-Reply-To: <20221114-narmstrong-sm8550-upstream-tsens-v1-0-0e169822830f@linaro.org>
-References: <20221114-narmstrong-sm8550-upstream-tsens-v1-0-0e169822830f@linaro.org>
+        rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
+In-Reply-To: <20221031232702.10339-5-bb@ti.com>
+References: <20221031232702.10339-5-bb@ti.com>
 MIME-Version: 1.0
-Message-ID: <167059958552.4906.15143657012593622851.tip-bot2@tip-bot2>
+Message-ID: <167059958655.4906.3773019382136161143.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -63,36 +61,83 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     2d709c4f0520bafba4a797b116d3504fc70af99c
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//2d709c4f0520bafba4a797b116d3504fc70af99c
-Author:        Neil Armstrong <neil.armstrong@linaro.org>
-AuthorDate:    Wed, 16 Nov 2022 11:09:50 +01:00
+Commit-ID:     d73b040d88e2ca47746e6b2f7b0c432981a88ee7
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d73b040d88e2ca47746e6b2f7b0c432981a88ee7
+Author:        Bryan Brattlof <bb@ti.com>
+AuthorDate:    Mon, 31 Oct 2022 18:26:55 -05:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
-CommitterDate: Thu, 08 Dec 2022 14:30:45 +01:00
+CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-dt-bindings: thermal: qcom-tsens: Add compatible for sm8550
+thermal/drivers/k3_j72xx_bandgap: Map fuse_base only for erratum workaround
 
-The Qualcomm SM8550 platform has three instances of the tsens block,
-add a compatible for these instances.
+Some of TI's J721E SoCs require a software trimming procedure for the
+temperature monitors to function properly. To determine if a particular
+J721E is not affected by this erratum, both bits in the WKUP_SPARE_FUSE0
+region must be set. Other SoCs, not affected by this erratum, will not
+need this region.
 
-Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Acked-by: Amit Kucheria <amitk@kernel.org>
-Link: https://lore.kernel.org/r/20221114-narmstrong-sm8550-upstream-tsens-v1-0-0e169822830f@linaro.org
+Map the 'fuse_base' region only when the erratum fix is needed.
+
+Signed-off-by: Bryan Brattlof <bb@ti.com>
+Link: https://lore.kernel.org/r/20221031232702.10339-5-bb@ti.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/k3_j72xx_bandgap.c | 34 ++++++++++++++++++-----------
+ 1 file changed, 22 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 5bcfddc..7e04804 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -58,6 +58,7 @@ properties:
-               - qcom,sm8250-tsens
-               - qcom,sm8350-tsens
-               - qcom,sm8450-tsens
-+              - qcom,sm8550-tsens
-           - const: qcom,tsens-v2
+diff --git a/drivers/thermal/k3_j72xx_bandgap.c b/drivers/thermal/k3_j72xx_bandgap.c
+index 395a73c..031ea10 100644
+--- a/drivers/thermal/k3_j72xx_bandgap.c
++++ b/drivers/thermal/k3_j72xx_bandgap.c
+@@ -386,15 +386,32 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bgp->cfg2_base))
+ 		return PTR_ERR(bgp->cfg2_base);
  
-       - description: v2 of TSENS with combined interrupt
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
+-	fuse_base = devm_ioremap_resource(dev, res);
+-	if (IS_ERR(fuse_base))
+-		return PTR_ERR(fuse_base);
+-
+ 	driver_data = of_device_get_match_data(dev);
+ 	if (driver_data)
+ 		workaround_needed = driver_data->has_errata_i2128;
+ 
++	/*
++	 * Some of TI's J721E SoCs require a software trimming procedure
++	 * for the temperature monitors to function properly. To determine
++	 * if this particular SoC is NOT affected, both bits in the
++	 * WKUP_SPARE_FUSE0[31:30] will be set (0xC0000000) indicating
++	 * when software trimming should NOT be applied.
++	 *
++	 * https://www.ti.com/lit/er/sprz455c/sprz455c.pdf
++	 */
++	if (workaround_needed) {
++		res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
++		fuse_base = devm_ioremap_resource(dev, res);
++		if (IS_ERR(fuse_base))
++			return PTR_ERR(fuse_base);
++
++		if ((readl(fuse_base) & 0xc0000000) == 0xc0000000)
++			workaround_needed = false;
++	}
++
++	dev_dbg(bgp->dev, "Work around %sneeded\n",
++		workaround_needed ? "" : "not ");
++
+ 	pm_runtime_enable(dev);
+ 	ret = pm_runtime_get_sync(dev);
+ 	if (ret < 0) {
+@@ -427,13 +444,6 @@ static int k3_j72xx_bandgap_probe(struct platform_device *pdev)
+ 		goto err_free_ref_table;
+ 	}
+ 
+-	/* Workaround not needed if bit30/bit31 is set even for J721e */
+-	if (workaround_needed && (readl(fuse_base + 0x0) & 0xc0000000) == 0xc0000000)
+-		workaround_needed = false;
+-
+-	dev_dbg(bgp->dev, "Work around %sneeded\n",
+-		workaround_needed ? "" : "not ");
+-
+ 	if (!workaround_needed)
+ 		init_table(5, ref_table, golden_factors);
+ 	else
