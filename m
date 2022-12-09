@@ -2,17 +2,17 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D0FCC4708E
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24D1BC4332F
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:26:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230478AbiLIP0s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:26:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47414 "EHLO
+        id S230484AbiLIP0t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:26:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47424 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230401AbiLIP0g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:36 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEBE28DBE3
+        with ESMTP id S230406AbiLIP0h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:37 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C525C8F0BF
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:32 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:28 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
@@ -22,12 +22,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Zw1E0iZOsmUGFALD/3ISDazxL5ZlATvGx+mCbcUGsr8=;
-        b=e9fJnbRuihk1AFoPpBHw56tOlkE718sXyS19/24pA+SMq09OeNlg6ofzOnGCm6ubU08PBM
-        Kc2RW0de+DWtIQWPZ53ZIKwCB67peLmZlokLQ4xRlo3RUy6HZslyMbfCL8mo6+AA/jzleN
-        akgCvtzzRTam/gmv3mkb0zFdinqqPyc/E/pDI9dilFwKD/ZutCaku+HAk2tp+2lbq5QPhx
-        PW3pwX2FXi1uNzdAOAjLZn4441rnAFl9H0nwZ6kFxSULdIWtSdjgWsKoWxDIm9gsA9MRGo
-        JrtzkQg8Yj6TjRswXerEKaI7kK3WO0l/tbfrBPAgl+GPfN/dukHEU9/5HLgAqg==
+        bh=464kAP3bXu9jbNWQOT6aJi5FVrJbCMlzBfw/A21xNYM=;
+        b=Sm2JSX+zKnQxlv3unIF67kZZL5MKhEsYKgK0fTrCKtHjiHd7R7B/RSfxyXo+0OitsJ31LT
+        /5CGvTTA635LoNyMAyN+NeV9lqXYd8T9wNRr2+IICiHB5qttkkP93d2jjEr89TmphXKMky
+        3yOuJ8WGpC7rJ15vb8Q1/N5YNdddwbCJh5X25uO/oJyfWKvXQtoSPhAEg6ByeV/5QEk7Xs
+        yTIp/dpEZNKE1qOSuzVIek+q9IaaQqozK/y7dfDKKGYBDFWniVB8zhfZaXt5JhV1OyeYDn
+        K3QUmReEOHkfDATnwTXrA1Un2o9DlToDk53++dth1B25/5hRqPELsssESHvagQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1670599588;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -35,25 +35,21 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Zw1E0iZOsmUGFALD/3ISDazxL5ZlATvGx+mCbcUGsr8=;
-        b=IJX5lZIbLCAS8OQ+ZRnvp9njn74TpzMGfRuTZk9ILK+bSG7uogktaV/xQwJMSCdcjlwynm
-        guxBoXnUzOGJhFBQ==
-From:   "thermal-bot for Geert Uytterhoeven" <tip-bot2@linutronix.de>
+        bh=464kAP3bXu9jbNWQOT6aJi5FVrJbCMlzBfw/A21xNYM=;
+        b=K6ucULKHJ93eBFDrbFMFOCygREYZg5ENsCiPA1Ls/wrPfCBUigzOUY6NA8aLVnm1BE4W0o
+        nS/ofYDrvVbXQPAw==
+From:   "thermal-bot for Alexander Stein" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: ti-soc-thermal: Drop comma after SoC
- match table sentinel
-Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        Keerthy <j-keerthy@ti.com>,
+Subject: [thermal: thermal/next] thermal/drivers/imx8mm: Add hwmon support
+Cc:     Alexander Stein <alexander.stein@ew.tq-group.com>,
         Daniel Lezcano <daniel.lezcano@kernel.org>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: =?utf-8?q?=3C1d6de2a80b919cb11199e56ac06ad21c273ebe57=2E16690?=
- =?utf-8?q?45586=2Egit=2Egeert+renesas=40glider=2Ebe=3E?=
-References: =?utf-8?q?=3C1d6de2a80b919cb11199e56ac06ad21c273ebe57=2E166904?=
- =?utf-8?q?5586=2Egit=2Egeert+renesas=40glider=2Ebe=3E?=
+In-Reply-To: <20220726122331.323093-1-alexander.stein@ew.tq-group.com>
+References: <20220726122331.323093-1-alexander.stein@ew.tq-group.com>
 MIME-Version: 1.0
-Message-ID: <167059958858.4906.4491730221042665319.tip-bot2@tip-bot2>
+Message-ID: <167059958815.4906.3651022751204904731.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -64,36 +60,43 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     8a1ddd1c47a0274341091ce1bc2703c7aeea9b58
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8a1ddd1c47a0274341091ce1bc2703c7aeea9b58
-Author:        Geert Uytterhoeven <geert+renesas@glider.be>
-AuthorDate:    Mon, 21 Nov 2022 16:47:10 +01:00
+Commit-ID:     7dccad3e0d79edc7a5b3947dc6d63ec683114c51
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7dccad3e0d79edc7a5b3947dc6d63ec683114c51
+Author:        Alexander Stein <alexander.stein@ew.tq-group.com>
+AuthorDate:    Tue, 26 Jul 2022 14:23:31 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:44 +01:00
 
-thermal: ti-soc-thermal: Drop comma after SoC match table sentinel
+thermal/drivers/imx8mm: Add hwmon support
 
-It does not make sense to have a comma after a sentinel, as any new
-elements must be added before the sentinel.
+Expose thermal sensors as HWMON devices.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Keerthy <j-keerthy@ti.com>
-Link: https://lore.kernel.org/r/1d6de2a80b919cb11199e56ac06ad21c273ebe57.1669045586.git.geert+renesas@glider.be
+Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
+Link: https://lore.kernel.org/r/20220726122331.323093-1-alexander.stein@ew.tq-group.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/imx8mm_thermal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 67050a1..a1c9a15 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -878,7 +878,7 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
-  */
- static const struct soc_device_attribute soc_no_cpu_notifier[] = {
- 	{ .machine = "OMAP4430" },
--	{ /* sentinel */ },
-+	{ /* sentinel */ }
- };
+diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
+index e709c03..d247b48 100644
+--- a/drivers/thermal/imx8mm_thermal.c
++++ b/drivers/thermal/imx8mm_thermal.c
+@@ -18,6 +18,7 @@
+ #include <linux/thermal.h>
  
- /***   Device driver call backs   ***/
+ #include "thermal_core.h"
++#include "thermal_hwmon.h"
+ 
+ #define TER			0x0	/* TMU enable */
+ #define TPS			0x4
+@@ -342,6 +343,9 @@ static int imx8mm_tmu_probe(struct platform_device *pdev)
+ 			goto disable_clk;
+ 		}
+ 		tmu->sensors[i].hw_id = i;
++
++		if (devm_thermal_add_hwmon_sysfs(tmu->sensors[i].tzd))
++			dev_warn(&pdev->dev, "failed to add hwmon sysfs attributes\n");
+ 	}
+ 
+ 	platform_set_drvdata(pdev, tmu);
