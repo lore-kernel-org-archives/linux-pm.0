@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A79BBC4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4C95C54EF0
 	for <linux-pm@archiver.kernel.org>; Fri,  9 Dec 2022 15:27:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229909AbiLIP1O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Dec 2022 10:27:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47646 "EHLO
+        id S230389AbiLIP1P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Dec 2022 10:27:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230446AbiLIP0m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:42 -0500
+        with ESMTP id S230260AbiLIP0n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2022 10:26:43 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5989C90757
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59BF38E5B8
         for <linux-pm@vger.kernel.org>; Fri,  9 Dec 2022 07:26:37 -0800 (PST)
 Date:   Fri, 09 Dec 2022 15:26:33 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1670599593;
+        s=2020; t=1670599594;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=9SkKZS2e/i415ciOV10uKIEjF41f/Tm2Rd0sy9KXdZA=;
-        b=3n425L0L8ATXqtt570Iedt7oFGV36IFHuVgGMVH21k+o/SAKUW5IYYXtUJEexo5DzAp0Ni
-        PGrkcpYMqBtakXprEUx3yzqEBULQoXYKYe+rN1Rf35adfHivHiag3b52+dUJnD4sLrMwdg
-        ePQuJOr8DoUz/HRnWg4DhLR6lOI1lwBmnW9S63ILO8fy606xUFx6AOT1SITCPWWz5IfxR8
-        ecA1OdbDWdlOx/hW+IcYGylFZImtnA7+FJ3mCMofjiDWfxVrBWyCWlmhLHAOh4+cmO5spx
-        1/CE5FiSlrpI4iPMeNv3uwbq1xbPOCj2sXUFq9SvCMWHjX3yox/l3KH7iuSEWg==
+        bh=34QPOjYoDbhLTi4mstwfS6OfqGq2S9PSbVHfZ3UDsUY=;
+        b=YVLfp1fQXaRFB0nFSEmtBWw1RZwWdFZft5fO//vfvFKOC+C7JiBE6cjxxWKBUGEQS0vr6i
+        OnoXyo73l7+OLaAzCoyWxCmutR8HvBtV+xLLtzHJEAypyJGBQvnY6/XEWS0uur7Np9zhXC
+        2st/HMSVCqMA95kcVb1zhwZTCeG8uXs4wiiFu3pTyXNOWgUfcg0SARjt2N9bMLUS0MopAX
+        Lpo/VfixpLCVHs4eth4Bb9ieUmH7hEvpN/2ySOW1dn8AETmaNbIbcwP5u/J2CjvozJFEp/
+        YDJ3TLmfBhSSsK2eZfbK7LJixZoZHJhKc8ujtd2/xAKZFRZCtfKbL7OnUwzeGQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1670599593;
+        s=2020e; t=1670599594;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=9SkKZS2e/i415ciOV10uKIEjF41f/Tm2Rd0sy9KXdZA=;
-        b=mxDDw+EONcuQgna8zgEi+M3e+XH3aWsxqUMAIITYWqbFnxMFZcK8ZD29/wWDPUCtQfSKW7
-        Uh7w2t1iPaLSEMCA==
+        bh=34QPOjYoDbhLTi4mstwfS6OfqGq2S9PSbVHfZ3UDsUY=;
+        b=HIcfhZTM/BLd6PkvPn+oJBwC+GqSFW7HIr2HTEi7dJk4SBFune51yiSLH6/+AiCUIN2Wdk
+        m7tdJAto6EBmbdDQ==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/st: Use generic trip points
+Subject: [thermal: thermal/next] thermal/of: Remove of_thermal_set_trip_hyst()
 Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com,
         amitk@kernel.org
-In-Reply-To: <20221003092602.1323944-21-daniel.lezcano@linaro.org>
-References: <20221003092602.1323944-21-daniel.lezcano@linaro.org>
+In-Reply-To: <20221003092602.1323944-19-daniel.lezcano@linaro.org>
+References: <20221003092602.1323944-19-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <167059959350.4906.6069926624215002734.tip-bot2@tip-bot2>
+Message-ID: <167059959380.4906.14762586318894067457.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -59,94 +59,55 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     c838039ebdb360cda04c5f021e1047d3d694013a
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c838039ebdb360cda04c5f021e1047d3d694013a
+Commit-ID:     f00295bf50b581ecda6fad24dd8d713c2158e5da
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//f00295bf50b581ecda6fad24dd8d713c2158e5da
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Mon, 03 Oct 2022 11:25:53 +02:00
+AuthorDate:    Mon, 03 Oct 2022 11:25:51 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@kernel.org>
 CommitterDate: Thu, 08 Dec 2022 14:30:42 +01:00
 
-thermal/drivers/st: Use generic trip points
+thermal/of: Remove of_thermal_set_trip_hyst()
 
-The thermal framework gives the possibility to register the trip
-points with the thermal zone. When that is done, no get_trip_* ops are
-needed and they can be removed.
+The thermal core is providing the generic thermal_zone_set_trip()
+function which does exactly what the OF ops function is doing.
 
-Convert to the generic trip points
+It is pointless to define our own version, just remove the ops and the
+thermal_zone_set_trip() will take care of it.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20221003092602.1323944-21-daniel.lezcano@linaro.org
+Link: https://lore.kernel.org/r/20221003092602.1323944-19-daniel.lezcano@linaro.org
 ---
- drivers/thermal/st/st_thermal.c | 47 ++++----------------------------
- 1 file changed, 7 insertions(+), 40 deletions(-)
+ drivers/thermal/thermal_of.c | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_thermal.c
-index 1276b95..1009f08 100644
---- a/drivers/thermal/st/st_thermal.c
-+++ b/drivers/thermal/st/st_thermal.c
-@@ -134,48 +134,12 @@ static int st_thermal_get_temp(struct thermal_zone_device *th, int *temperature)
- 	return 0;
- }
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 4e54d62..494e9c3 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -19,18 +19,6 @@
  
--static int st_thermal_get_trip_type(struct thermal_zone_device *th,
--				int trip, enum thermal_trip_type *type)
+ #include "thermal_core.h"
+ 
+-static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
+-				    int hyst)
 -{
--	struct st_thermal_sensor *sensor = th->devdata;
--	struct device *dev = sensor->dev;
+-	if (trip >= tz->num_trips || trip < 0)
+-		return -EDOM;
 -
--	switch (trip) {
--	case 0:
--		*type = THERMAL_TRIP_CRITICAL;
--		break;
--	default:
--		dev_err(dev, "invalid trip point\n");
--		return -EINVAL;
--	}
+-	/* thermal framework should take care of data->mask & (1 << trip) */
+-	tz->trips[trip].hysteresis = hyst;
 -
 -	return 0;
 -}
 -
--static int st_thermal_get_trip_temp(struct thermal_zone_device *th,
--				    int trip, int *temp)
--{
--	struct st_thermal_sensor *sensor = th->devdata;
--	struct device *dev = sensor->dev;
--
--	switch (trip) {
--	case 0:
--		*temp = mcelsius(sensor->cdata->crit_temp);
--		break;
--	default:
--		dev_err(dev, "Invalid trip point\n");
--		return -EINVAL;
--	}
--
--	return 0;
--}
--
- static struct thermal_zone_device_ops st_tz_ops = {
- 	.get_temp	= st_thermal_get_temp,
--	.get_trip_type	= st_thermal_get_trip_type,
--	.get_trip_temp	= st_thermal_get_trip_temp,
- };
- 
-+static struct thermal_trip trip;
-+
- int st_thermal_register(struct platform_device *pdev,
- 			const struct of_device_id *st_thermal_of_match)
+ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
+ 				    int *temp)
  {
-@@ -238,9 +202,12 @@ int st_thermal_register(struct platform_device *pdev,
+@@ -541,7 +529,6 @@ struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor,
+ 		goto out_kfree_trips;
+ 	}
  
- 	polling_delay = sensor->ops->register_enable_irq ? 0 : 1000;
- 
-+	trip.temperature = sensor->cdata->crit_temp;
-+	trip.type = THERMAL_TRIP_CRITICAL;
-+
- 	sensor->thermal_dev =
--		thermal_zone_device_register(dev_name(dev), 1, 0, sensor,
--					     &st_tz_ops, NULL, 0, polling_delay);
-+		thermal_zone_device_register_with_trips(dev_name(dev), &trip, 1, 0, sensor,
-+							&st_tz_ops, NULL, 0, polling_delay);
- 	if (IS_ERR(sensor->thermal_dev)) {
- 		dev_err(dev, "failed to register thermal zone device\n");
- 		ret = PTR_ERR(sensor->thermal_dev);
+-	of_ops->set_trip_hyst = of_ops->set_trip_hyst ? : of_thermal_set_trip_hyst;
+ 	of_ops->get_crit_temp = of_ops->get_crit_temp ? : of_thermal_get_crit_temp;
+ 	of_ops->bind = thermal_of_bind;
+ 	of_ops->unbind = thermal_of_unbind;
