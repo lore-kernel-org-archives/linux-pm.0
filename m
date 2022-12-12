@@ -2,183 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EC15C4167B
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Dec 2022 17:34:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AB37C4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Dec 2022 18:42:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232812AbiLLReG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Dec 2022 12:34:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41608 "EHLO
+        id S233609AbiLLSmv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Dec 2022 13:42:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60784 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233013AbiLLRdi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2022 12:33:38 -0500
-Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com [209.85.160.173])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2D1C13DF2;
-        Mon, 12 Dec 2022 09:33:24 -0800 (PST)
-Received: by mail-qt1-f173.google.com with SMTP id fz10so9563085qtb.3;
-        Mon, 12 Dec 2022 09:33:24 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=FcqamNVbp2aF+rmJo2Yl2S00UCkp4K/1HRXPJQILO00=;
-        b=Y+XFcPoQEWmRbAlMItxamB+qncbao0ab6Wm03Cby3JllXy0hWfKZiJ3MoVvLNai32e
-         QDzDTeLX3qj4ukrJsHHrERxVC4WYfPgapl6/lHitfexlKCUZMHunIoekBQhBkPxSyrMS
-         LZoI1Ru6Snv/3U/HiaQtHXLfnKuDo7EBswsaxgvBN74M2uC/tMA+cGjFjmKxPbdRV7fh
-         /TFm2yv9oJXSFpGp7/NdaBQrdCouS67DIGO+f/BXx52DOxhrc7efQLbeuysAX2Zdh++j
-         lZEvgFhFFQiPevXkVWaufvMHG+Wqb+w6iJnjYN7kZPW1Y20jRKEzk2CMWCcX8M+auoCW
-         NEow==
-X-Gm-Message-State: ANoB5pkjiTJ+N6EF5RjalG0kgI71FqB6V/0fFRfjuIppx2RnjmoDcor2
-        nk427ZhF6PCu9DIf61Jx7MzSyN9QkzIozO3LZAPs33YMqz8=
-X-Google-Smtp-Source: AA0mqf5MgQVaK81m6F3yxgCcFQeSExBExZ8BZQghS0o7yl+jzKceAXygQL/YE3HkwayBLqKypMR6t/nERv8F7xoVJdc=
-X-Received: by 2002:a05:622a:410a:b0:3a5:5987:42c6 with SMTP id
- cc10-20020a05622a410a00b003a5598742c6mr87408854qtb.147.1670866403757; Mon, 12
- Dec 2022 09:33:23 -0800 (PST)
+        with ESMTP id S233570AbiLLSm2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2022 13:42:28 -0500
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8ECF8192B8;
+        Mon, 12 Dec 2022 10:39:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1670870376; x=1702406376;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=hOY+PVY/v4DYkDc4C97PdqkCHoMURrX76I77jZtDZkU=;
+  b=lFYya4OAgY/OENhzxazfE47h5bzNBVLziOSj2NLRgcHTUFEDoIK0hNtI
+   li3w9E+8SqPaBOsHLMPjk9ECDxFl0DogHFnl07xfzoBaOrrJc9qXHBuBW
+   II0siSpscF95q+2X72JokC2yLGWR+VUoltf6I44Mrq/rlsp4dW0FebzLq
+   0HaN4BvzUmn+I0fHbNeJA8xJ/1v/AoIR1olukVVMW4AeuM0Xt1Bm8kvDS
+   fjJHXYSEHhewNjDgK7NxPowW/50RUjQypADYZBizsrD4/9Y1/85/VlsVj
+   t6A7jJs1RdMOQ+Cc0ehoaoe1BvabbCHXb7dFx9ZD42KjmWDJ1VyQs2Cve
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10559"; a="301350536"
+X-IronPort-AV: E=Sophos;i="5.96,239,1665471600"; 
+   d="scan'208";a="301350536"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Dec 2022 10:38:58 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10559"; a="737072699"
+X-IronPort-AV: E=Sophos;i="5.96,239,1665471600"; 
+   d="scan'208";a="737072699"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by FMSMGA003.fm.intel.com with ESMTP; 12 Dec 2022 10:38:58 -0800
+Date:   Mon, 12 Dec 2022 10:47:05 -0800
+From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To:     Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Ricardo Neri <ricardo.neri@intel.com>,
+        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+        Ben Segall <bsegall@google.com>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        Len Brown <len.brown@intel.com>, Mel Gorman <mgorman@suse.de>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Tim Chen <tim.c.chen@linux.intel.com>,
+        Valentin Schneider <vschneid@redhat.com>, x86@kernel.org,
+        "Joel Fernandes (Google)" <joel@joelfernandes.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        "Tim C . Chen" <tim.c.chen@intel.com>
+Subject: Re: [PATCH v2 04/22] sched/core: Add user_tick as argument to
+ scheduler_tick()
+Message-ID: <20221212184705.GE27353@ranerica-svr.sc.intel.com>
+References: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
+ <20221128132100.30253-5-ricardo.neri-calderon@linux.intel.com>
+ <40ff1e4c-b128-c0d0-a024-e454e843ee46@arm.com>
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 12 Dec 2022 18:33:12 +0100
-Message-ID: <CAJZ5v0j=CNHAC-H9ci6qpTEeG4R1TD78oQWoKZXALN4TzPZubw@mail.gmail.com>
-Subject: [GIT PULL] Thermal control updates for v6.2-rc1
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <40ff1e4c-b128-c0d0-a024-e454e843ee46@arm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Wed, Dec 07, 2022 at 01:21:47PM +0100, Dietmar Eggemann wrote:
+> On 28/11/2022 14:20, Ricardo Neri wrote:
+> > Differentiate between user and kernel ticks so that the scheduler updates
+> > the IPC class of the current task during the latter.
+> 
+> Just to make sure ,,, 05/22 introduces `rq->curr` IPCC update during
+> user_tick, i.e. the former?
 
-Please pull from the tag
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- thermal-6.2-rc1
-
-with top-most commit 75b15aa0d83ec835082129b62e8cb9a44703ad72
-
- Merge branch 'thermal-intel'
-
-on top of commit 247f34f7b80357943234f93f247a1ae6b6c3a740
-
- Linux 6.1-rc2
-
-to receive thermal control updates for 6.2-rc1.
-
-These include thermal core fixes to protect thermal device operations
-against thermal device removal, other thermal core fixes and updates of
-Intel thermal control drivers.
-
-Specifics:
-
- - Fix race conditions related to thermal device operations that are not
-   protected against thermal device removal (Guenter Roeck).
-
- - Fix error code in __thermal_cooling_device_register() (Dan Carpenter).
-
- - Validate new cooling device state (coming from user space) in
-   cur_state_store() and reuse the max_state value from cooling device
-   structure in the sysfs interface (Viresh Kumar).
-
- - Fix some possible name leaks in error paths in the thermal control
-   core code (Yang Yingliang).
-
- - Detect TCC lock bit set in the intel_tcc_cooling driver and make it
-   refuse to update the TCC offset in that case (Zhang Rui).
-
- - Add TCC cooling support for RaptorLake-S (Zhang Rui).
-
- - Prevent accidental clearing of HFI status by one of the other
-   drivers using the same status register (Srinivas Pandruvada).
-
- - Protect clearing of thermal status bits in Intel thermal control
-   drivers (Srinivas Pandruvada).
-
- - Allow the HFI thermal control driver to ACK an HFI event for the
-   previously observed timestamp (Srinivas Pandruvada).
-
- - Remove a pointless die_id check from the HFI thermal driver and
-   adjust the definition of a data structure used by it (Ricardo Neri).
-
-The above said, there is potentially more thermal control material for
-6.2, but I only received a pull request for it from Daniel on Friday
-(https://patchwork.kernel.org/project/linux-pm/patch/3ccca41f-0899-b205-903b-ec8c742f3e91@linaro.org/).
-
-It is not included here, because in my view it hasn't received
-sufficient linux-next coverage yet, at least in its current form (some
-of it was in linux-next before, but then it had to be rebased on top
-of the fixes mentioned above), but deferring it by a whole release
-cycle wouldn't be my choice either.  In this particular case, the
-reason for the delay was an unfortunate coincidence of events rather
-than anything else (Daniel's extended sick leave that prevented him
-from being able to participate in the development process while he had
-had quite a bit of work staged already that overlapped with the
-submission of important fixes).  While I realize that this is a "late"
-merge window, deferring stuff from people that was submitted timely,
-but had not been processed because of a maintainer's absence that
-wasn't his fault, feels a bit harsh.
-
-I would really appreciate it if you please give me your recommendation
-regarding the extra thermal control material.  Would you like to
-receive a pull request with it later during this merge window, or
-would you prefer it to wait for the 6.3 one?
-
-Thanks!
-
-
----------------
-
-Dan Carpenter (1):
-      thermal/core: fix error code in __thermal_cooling_device_register()
-
-Guenter Roeck (9):
-      thermal/core: Destroy thermal zone device mutex in release function
-      thermal/core: Delete device under thermal device zone lock
-      thermal/core: Ensure that thermal device is registered in
-thermal_zone_get_temp
-      thermal/core: Move parameter validation from
-__thermal_zone_get_temp to thermal_zone_get_temp
-      thermal/core: Introduce locked version of thermal_zone_device_update
-      thermal/core: Protect hwmon accesses to thermal operations with
-thermal zone mutex
-      thermal/core: Protect sysfs accesses to thermal operations with
-thermal zone mutex
-      thermal/core: Remove thermal_zone_set_trips()
-      thermal/core: Protect thermal device operations against thermal
-device removal
-
-Ricardo Neri (2):
-      thermal: intel: hfi: Improve the type of hfi_features::nr_table_pages
-      thermal: intel: hfi: Remove a pointless die_id check
-
-Srinivas Pandruvada (3):
-      thermal: intel: Prevent accidental clearing of HFI status
-      thermal: intel: Protect clearing of thermal status bits
-      thermal: intel: hfi: ACK HFI for the same timestamp
-
-Viresh Kumar (2):
-      thermal: Validate new state in cur_state_store()
-      thermal: sysfs: Reuse cdev->max_state
-
-Yang Yingliang (1):
-      thermal: core: fix some possible name leaks in error paths
-
-Zhang Rui (2):
-      thermal: intel: intel_tcc_cooling: Detect TCC lock bit
-      thermal: intel: intel_tcc_cooling: Add TCC cooling support for
-RaptorLake-S
-
----------------
-
- drivers/thermal/gov_fair_share.c             |   6 +-
- drivers/thermal/intel/intel_hfi.c            |  34 +++++---
- drivers/thermal/intel/intel_tcc_cooling.c    |  11 +++
- drivers/thermal/intel/therm_throt.c          |  25 +++---
- drivers/thermal/intel/thermal_interrupt.h    |   6 ++
- drivers/thermal/intel/x86_pkg_temp_thermal.c |   9 +--
- drivers/thermal/thermal_core.c               | 110 +++++++++++++++----------
- drivers/thermal/thermal_core.h               |   3 +-
- drivers/thermal/thermal_helpers.c            |  67 ++++++++++------
- drivers/thermal/thermal_hwmon.c              |  10 ++-
- drivers/thermal/thermal_sysfs.c              | 116 ++++++++++++++++++---------
- include/linux/thermal.h                      |   1 +
- 12 files changed, 256 insertions(+), 142 deletions(-)
+Yes. Thank you for the catch!
