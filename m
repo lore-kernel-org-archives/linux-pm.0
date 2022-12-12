@@ -2,83 +2,69 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5D7DC4332F
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Dec 2022 21:49:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 255B9C4708D
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Dec 2022 21:52:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233558AbiLLVtj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Dec 2022 16:49:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41646 "EHLO
+        id S233476AbiLLVwG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Dec 2022 16:52:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232995AbiLLVtY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2022 16:49:24 -0500
-Received: from mail-qt1-x82c.google.com (mail-qt1-x82c.google.com [IPv6:2607:f8b0:4864:20::82c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 025EE1A045
-        for <linux-pm@vger.kernel.org>; Mon, 12 Dec 2022 13:49:24 -0800 (PST)
-Received: by mail-qt1-x82c.google.com with SMTP id j16so10256007qtv.4
-        for <linux-pm@vger.kernel.org>; Mon, 12 Dec 2022 13:49:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Sdm5LPHSgYM9xIUawQXpRV3gt1/XB5UGwiqZUgZf9G0=;
-        b=LbrNyZXHaOXAy+bQv/etbIYZ6VZoVPUi2kRpqwN6E+F/8a9V2FyFOqw87rg8zkpx6A
-         KWKB8da+Sp646sBYb4v/MUPjndRmHI+KOjVPKVdtrGt6fRTcp91l2koXjnApcd+mFyEJ
-         Xc63/McYW91ONI2KZvYwCGQk+pFyjTkIyGNE4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Sdm5LPHSgYM9xIUawQXpRV3gt1/XB5UGwiqZUgZf9G0=;
-        b=U8Iomtw6axIci/VXc1yMsQVOT0/Ol8mut2+rj9hNN2+dcFB88/1FKABO2Z8/dBoiio
-         vIA6H4OsPgDspjbQqRj4PEcmcwr/1JU4cajAJUxPXYp1u80aRgqQaQJc2DosB+5ul745
-         zaiMPplmuVkleT350Q/uF7mxvVUYAPgUp/HSdB+1AG4yq/feoTFIs3LVvYMn+1sBF2oh
-         KWyWycQS5txrNThJomyjOktuRMzmjFvC+hKpsND1tejNCTO0f0/h8z+Ds3BQXD5gpAxX
-         jBYqx7mhM4uONo9GB6oufYFYqx9d1bSInHq8NaGmRmDZSoYULVKACU5XDrDWRp+Ual4G
-         EcLg==
-X-Gm-Message-State: ANoB5pnQ2skseLjtdFD1zVW4La2StEs0Z4x9xAayjQSjuI4LTwPcPtwO
-        1m09zASdm5mnSKAf43EIzI70KN7ybLvX7j9j
-X-Google-Smtp-Source: AA0mqf6rluRwrFVd/0Ly+bdcEpPTRvA+cx50WsHx61YJ3tdE4KQuUJmdiC8GlcBVP4ZMvjqTtb88RA==
-X-Received: by 2002:ac8:6607:0:b0:3a6:a43a:8ba9 with SMTP id c7-20020ac86607000000b003a6a43a8ba9mr24206350qtp.3.1670881762685;
-        Mon, 12 Dec 2022 13:49:22 -0800 (PST)
-Received: from mail-qv1-f46.google.com (mail-qv1-f46.google.com. [209.85.219.46])
-        by smtp.gmail.com with ESMTPSA id de36-20020a05620a372400b006fae7e6204bsm6514026qkb.108.2022.12.12.13.49.22
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Dec 2022 13:49:22 -0800 (PST)
-Received: by mail-qv1-f46.google.com with SMTP id c14so9162527qvq.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Dec 2022 13:49:22 -0800 (PST)
-X-Received: by 2002:ad4:4101:0:b0:4b1:856b:4277 with SMTP id
- i1-20020ad44101000000b004b1856b4277mr70612302qvp.129.1670881761832; Mon, 12
- Dec 2022 13:49:21 -0800 (PST)
-MIME-Version: 1.0
-References: <CAJZ5v0j=CNHAC-H9ci6qpTEeG4R1TD78oQWoKZXALN4TzPZubw@mail.gmail.com>
-In-Reply-To: <CAJZ5v0j=CNHAC-H9ci6qpTEeG4R1TD78oQWoKZXALN4TzPZubw@mail.gmail.com>
-From:   Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Mon, 12 Dec 2022 13:49:06 -0800
-X-Gmail-Original-Message-ID: <CAHk-=whBn0PmD0pV5RZnnO=75tMd9XLFVstKfNxH5eM6MCK1-g@mail.gmail.com>
-Message-ID: <CAHk-=whBn0PmD0pV5RZnnO=75tMd9XLFVstKfNxH5eM6MCK1-g@mail.gmail.com>
-Subject: Re: [GIT PULL] Thermal control updates for v6.2-rc1
+        with ESMTP id S233813AbiLLVvi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2022 16:51:38 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C24891A21B;
+        Mon, 12 Dec 2022 13:51:37 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 7F27AB80E7E;
+        Mon, 12 Dec 2022 21:51:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 425E2C43398;
+        Mon, 12 Dec 2022 21:51:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1670881895;
+        bh=1bdEEAE7l0+6/7HzoDXdqyJ37o8BHR2uGkVS1LSpcSM=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=Szcxgk6umBd5yDx57ogrOyTsf8Z/zgpohQPg+p4rYx4p6O1eI9iwVZqVT+tsfR2m9
+         fj71SRLo8Z5mbSlxNo6Cg3ISDqxYhzSVN6l7LRp3dKHJX6P6smEsIip4TODllo4Nwz
+         p8j29btkBJm6xFEupg7JhHPW4sn2FxogcaJt6Vw4QDTmcqpP83m4B+Ppzy7hgeudfs
+         0JRrwZnV9/U/ow+er6em5vfXiTvp5uxg4ef6mDxYV5GoJ790BXGkAb5U9ySMqA5aea
+         36r40RH/1HrzkLrHLwqlG5+mBITKeELn0TU0QPL7HUQs6GCIaos37d8Usz8MIzqvvK
+         aUBKpBtubMUqw==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 2A8ADC00448;
+        Mon, 12 Dec 2022 21:51:35 +0000 (UTC)
+Subject: Re: [GIT PULL] ACPI and PNP updates for v6.2-rc1
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0jVU0jbU6KmQNQ7hUZp=kA+CP7fVibRnb1qCVjHRH2Xow@mail.gmail.com>
+References: <CAJZ5v0jVU0jbU6KmQNQ7hUZp=kA+CP7fVibRnb1qCVjHRH2Xow@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0jVU0jbU6KmQNQ7hUZp=kA+CP7fVibRnb1qCVjHRH2Xow@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.2-rc1
+X-PR-Tracked-Commit-Id: bee74dcbd3908291f4bfff3c81a52d52dcd48814
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 456ed864fd907d5f5484c7c4795da212537842fe
+Message-Id: <167088189517.24990.4948443203680839319.pr-tracker-bot@kernel.org>
+Date:   Mon, 12 Dec 2022 21:51:35 +0000
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 12, 2022 at 9:33 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> I would really appreciate it if you please give me your recommendation
-> regarding the extra thermal control material.  Would you like to
-> receive a pull request with it later during this merge window, or
-> would you prefer it to wait for the 6.3 one?
+The pull request you sent on Mon, 12 Dec 2022 17:54:06 +0100:
 
-If you are happy with it, and feel like you can review it and get it
-to me in a couple of days, then fine. But I really don't want to deal
-with it after that point - I'm on the road over the weekend, and then
-the week after that is xmas week. So at that point I'm solidly in the
-"it can wait until next release..
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.2-rc1
 
-            Linus
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/456ed864fd907d5f5484c7c4795da212537842fe
+
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
