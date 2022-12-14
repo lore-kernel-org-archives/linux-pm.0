@@ -2,166 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4F3C4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Dec 2022 22:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D267C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Dec 2022 00:23:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235771AbiLMWqb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Dec 2022 17:46:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47540 "EHLO
+        id S237075AbiLNAXl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Dec 2022 19:23:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236855AbiLMWqL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2022 17:46:11 -0500
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7696B233B0
-        for <linux-pm@vger.kernel.org>; Tue, 13 Dec 2022 14:45:58 -0800 (PST)
-Received: by mail-pj1-x102b.google.com with SMTP id t11-20020a17090a024b00b0021932afece4so5149876pje.5
-        for <linux-pm@vger.kernel.org>; Tue, 13 Dec 2022 14:45:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=from:to:subject:content-transfer-encoding:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=565UcnDeH/yj+bbP0W3kx3kiTHhqHfX9kMoQldk9UvU=;
-        b=N4V/f9Ulp1Pp96W1GEPHge2YklmsVc/K+vKKfpg79i0uJjuiTJlaQ44tSe9Dq4blEf
-         QkZBIHp5wwxF4aHVzuK2xpSpuHbc94oU3jGZR1fXEPEU7lSdUd/sHAFr3VD5UXS2bfuv
-         8B5EeGvh7Pchs6aGo/rQUjmiWJXRSDdicZ9ASYjkP+2jWaeVeBSK3+jGXlJYgVSBkUEc
-         B1odtcZxkHA4hTvU8cX3NtiY/cmQUJXjexz2HxWI9Q28ebp0cjM6+sNJks2HVzU0TOKv
-         gdiBGQyPKWKE6KCQr6j2/RoNtfdEWJP488Vgl6Hg6wNVE5ur29khTAn5NpgH0Ianne0m
-         T7vg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=from:to:subject:content-transfer-encoding:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=565UcnDeH/yj+bbP0W3kx3kiTHhqHfX9kMoQldk9UvU=;
-        b=wd8g4uCI7C4A95uRbT9XdoadaXD/6SRGu/rBroDqpRG3QNyvEhRrX/77c91GZqaWyr
-         y4vXq8dMOG4R4E2nI+AvDHl9PMdTFto86BuTTz/mTzDan8k4BME+XUJ2gpVSyE6nbFrI
-         ItSbp4hIA3iwkhye9GJXmscyv3LJ/3XQJ7FGOd/tfogzCTF7XA72s899ZKHwrr6XRH+d
-         cRsfDkd+8WJ+zAqyAdDsz/S5mUOkTkY1OSbNWplaZhOw6IkU2Z79WsihrHke33cMYUsz
-         TRJ1C/fPG5jnVEcFdWcfGw5NmdvIYzYGDiHbYSPCTVTr2rhyzUl8q1rgeZb+e0eluxR3
-         G9wQ==
-X-Gm-Message-State: ANoB5pmC84/eAQkjTeN93fBE1wDLOafTNf/8hUsTc4pR/hetVVnxW3hL
-        Po63G/deMTDLA69dJFSSzYHsuw==
-X-Google-Smtp-Source: AA0mqf4MoH1HSqNJA4ePtfA3fPwshx9iksWo7cqliR5+Khm/4ty1EjBkEzzd3n/3CAwsiWwxaKaI6g==
-X-Received: by 2002:a17:903:555:b0:188:8cfc:6ba7 with SMTP id jo21-20020a170903055500b001888cfc6ba7mr19416206plb.68.1670971557982;
-        Tue, 13 Dec 2022 14:45:57 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id p6-20020a170902e74600b0018f6900a183sm399967plf.140.2022.12.13.14.45.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Dec 2022 14:45:57 -0800 (PST)
-Message-ID: <639900a5.170a0220.6d0b5.160b@mx.google.com>
-Date:   Tue, 13 Dec 2022 14:45:57 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        with ESMTP id S237050AbiLNAXj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2022 19:23:39 -0500
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82C406165;
+        Tue, 13 Dec 2022 16:23:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1670977418; x=1702513418;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=aSgfFdFh7+vD8IJADliquC/z7NtT93tuuNY9WQr1as8=;
+  b=DjYqsIFHQUb10xg3VWrE/yhZQO/zAPEe0Fr0PlURGrgb+XYNkGzjetnw
+   4eETDmoHrGePK8Ol0bxJJdMCcGJuNQQ42Dbj7fri1XyWsMRRsGbAbMihP
+   wf7pj/n0O8V9Etc8eM8UfHxyboOxz38qvDXp6zdo7S9XmfQF3B253XTJl
+   MCaB1fLu3XVB8qFwhGCFIhdwGBt4V4JMiJ+vvbFIJBf1WC3yOj3mQkRrZ
+   /p5fzYYSn5zopqwbMjtPlDfB+Ypdx7Wvk8iWpWo2YZqFZMRnCKVUmWPNc
+   tJoRq5H+J2IRQtOdWAl90kGGac1CHung/zjl0N8hs9PYE19NVwD0jxkOD
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10560"; a="382573166"
+X-IronPort-AV: E=Sophos;i="5.96,242,1665471600"; 
+   d="scan'208";a="382573166"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Dec 2022 16:23:34 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10560"; a="642306690"
+X-IronPort-AV: E=Sophos;i="5.96,242,1665471600"; 
+   d="scan'208";a="642306690"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by orsmga007.jf.intel.com with ESMTP; 13 Dec 2022 16:23:32 -0800
+Date:   Tue, 13 Dec 2022 16:31:43 -0800
+From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To:     Ionela Voinescu <ionela.voinescu@arm.com>
+Cc:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Ricardo Neri <ricardo.neri@intel.com>,
+        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+        Ben Segall <bsegall@google.com>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Len Brown <len.brown@intel.com>, Mel Gorman <mgorman@suse.de>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Tim Chen <tim.c.chen@linux.intel.com>,
+        Valentin Schneider <vschneid@redhat.com>, x86@kernel.org,
+        "Joel Fernandes (Google)" <joel@joelfernandes.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        "Tim C . Chen" <tim.c.chen@intel.com>
+Subject: Re: [PATCH v2 06/22] sched/fair: Collect load-balancing stats for
+ IPC classes
+Message-ID: <20221214003143.GB30234@ranerica-svr.sc.intel.com>
+References: <20221128132100.30253-1-ricardo.neri-calderon@linux.intel.com>
+ <20221128132100.30253-7-ricardo.neri-calderon@linux.intel.com>
+ <Y5GlTwoe5spnxBYH@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Kernel: v6.1-rc8-256-gcaa56805aa43
-X-Kernelci-Report-Type: build
-X-Kernelci-Tree: pm
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 5 warnings (v6.1-rc8-256-gcaa56805aa43)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Y5GlTwoe5spnxBYH@arm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 5 warnings (v6.1-rc8-256-gc=
-aa56805aa43)
+On Thu, Dec 08, 2022 at 08:50:23AM +0000, Ionela Voinescu wrote:
+> Hi,
+> 
+> On Monday 28 Nov 2022 at 05:20:44 (-0800), Ricardo Neri wrote:
+> [..]
+> >  
+> > +struct sg_lb_ipcc_stats {
+> > +	int min_score;	/* Min(score(rq->curr->ipcc)) */
+> > +	int min_ipcc;	/* Min(rq->curr->ipcc) */
+> 
+> Nit: this is not the minimum IPCC between the current tasks of all
+> runqueues, but the IPCC specific to the task with the minimum score.
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v6.=
-1-rc8-256-gcaa56805aa43/
+> Possibly there's not much to be done about the variable name, but the
+> comment can be made more clear.
 
-Tree: pm
-Branch: testing
-Git Describe: v6.1-rc8-256-gcaa56805aa43
-Git Commit: caa56805aa4387838eba9fc5577a055b81c8433f
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+Very true. I will make the change.
 
-Warnings Detected:
-
-arc:
-
-arm:
-
-i386:
-
-mips:
-    32r2el_defconfig (gcc-10): 1 warning
-
-riscv:
-
-sparc:
-    sparc64_defconfig (gcc-10): 4 warnings
-
-x86_64:
-
-
-Warnings summary:
-
-    2    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version genera=
-tion failed, symbol will not be versioned.
-    2    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [=
--Wcpp]
-    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
-e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
-ted "0,0"
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
-ion mismatches
-
-Warnings:
-    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
-): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
-0,0"
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
- section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
-on mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----------------------------------------------------------------------------=
------
-sparc64_defconfig (sparc, gcc-10) =E2=80=94 PASS, 0 errors, 4 warnings, 0 s=
-ection mismatches
-
-Warnings:
-    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [-Wcpp]
-    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
-failed, symbol will not be versioned.
-    <stdin>:1517:2: warning: #warning syscall clone3 not implemented [-Wcpp]
-    WARNING: modpost: EXPORT symbol "_mcount" [vmlinux] version generation =
-failed, symbol will not be versioned.
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
-ection mismatches
-
----
-For more info write to <info@kernelci.org>
+Thanks and BR,
+Ricardo
