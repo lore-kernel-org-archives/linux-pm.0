@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59618C46467
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Dec 2022 13:19:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F682C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Dec 2022 13:19:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238364AbiLNNTC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Dec 2022 08:19:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44424 "EHLO
+        id S238569AbiLNNTD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Dec 2022 08:19:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238426AbiLNNS4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Dec 2022 08:18:56 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63AAE205D8;
-        Wed, 14 Dec 2022 05:18:55 -0800 (PST)
+        with ESMTP id S238446AbiLNNS5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Dec 2022 08:18:57 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E53EAEE16;
+        Wed, 14 Dec 2022 05:18:56 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 0085361A6D;
+        by ams.source.kernel.org (Postfix) with ESMTPS id 989F0B818B1;
         Wed, 14 Dec 2022 13:18:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47131C43392;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43BDEC433D2;
         Wed, 14 Dec 2022 13:18:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1671023934;
-        bh=nnr17/76ojmrtu3Co48KLMzaUzbzMgFxhN+A+PvMGo0=;
-        h=From:To:Cc:Subject:Date:From;
-        b=NyOELBd+dxAFQUM7O4WYB2KKigLf2eAT/a8BJX4Tdh5YFIE9DYaLwK/Sp8M7AZOeH
-         q4yfeUsevr3vxsCb2CHZcnMSUkbv2iVQKbH7LjRN32deVSK38gKnNetUQK0HrUHj/5
-         L96KPkyfAP3IaElm6AdKXwXQN9PZxw1RNA3ipDxG/WoX9vXGMAnMhq2Fc00XuAyFBK
-         CjS+nsV8qVkdsi3ecIpiU4vcvFO7UjVnfxi0OcV1qx5sBDU4oRXVbaInmiptqk34gV
-         Ixony2FmcWvUQUVXipx/YaWTlBXDBrV2VXiVy/O0Bf23I30eQ/jc4QTyeVuBTBEs9+
-         zKdT9GtSM/TPA==
+        bh=I3NjFkga/P0GdNEJyAvlKrNR4+s/YWzEm5lbyRY0s9o=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=e2WaLz9uLD0YeDJNA+Ip5rqhGSXG1u8qeishyJFdMYLR6Q4x2qHmyPIxxxb5STvGM
+         A/G5AzxETsvPhBcetsWvZUtJipLXsjwDoDXwif3Wi1NdluMHisdWXhaROrgnmVs5eV
+         XB+913GHKWDIleY8/bmovAaooXU5CJk+5jxkG5EewY6aaaF4Kj1t8DzP8MzeoHnpxh
+         Z6NzORvKUPLloBA4ok1WE85k7cJZWuR9mD/2FAakMLTfbTGaCc08HkNIPhxAFvdatL
+         cxbqlyACrKBkyTZBicZB6GTYFHuLEAP5mA/ccsZXdtdB8lT1vjB50P3vCOj5Q221nb
+         qY++E7gwzKEoA==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1p5RfN-0000gG-Kq; Wed, 14 Dec 2022 14:19:22 +0100
+        id 1p5RfO-0000gK-Hc; Wed, 14 Dec 2022 14:19:22 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>
@@ -53,43 +53,41 @@ Cc:     Amit Kucheria <amitk@kernel.org>,
         linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
         Johan Hovold <johan+linaro@kernel.org>
-Subject: [PATCH 0/4] thermal: fix locking regressions in linux-next
-Date:   Wed, 14 Dec 2022 14:16:13 +0100
-Message-Id: <20221214131617.2447-1-johan+linaro@kernel.org>
+Subject: [PATCH 2/4] thermal/drivers/exynos: fix set_trip_temp() deadlock
+Date:   Wed, 14 Dec 2022 14:16:15 +0100
+Message-Id: <20221214131617.2447-3-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.37.4
+In-Reply-To: <20221214131617.2447-1-johan+linaro@kernel.org>
+References: <20221214131617.2447-1-johan+linaro@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series fixes some of the fallout after the thermal changes that
-just landed in linux-next.
+The set_trip_temp() callback is used when changing the trip temperature
+through sysfs. As it is called with the thermal-zone-device lock held
+it must not use thermal_zone_get_trip() directly or it will deadlock.
 
-Lockdep reported a lock inversion in one of the Qualcomm drivers and a
-closer review revealed that the changes had also broken the sysfs
-interface for at least three drivers.
+Fixes: 169865e317f2 ("thermal/drivers/exynos: Use generic thermal_zone_get_trip() function")
+Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Note that a simple revert of the offending patches was not an option as
-some of the infrastructure that the old implementation relied on has
-also been removed.
-
-Johan
-
-
-Johan Hovold (4):
-  thermal/drivers/qcom: fix set_trip_temp() deadlock
-  thermal/drivers/exynos: fix set_trip_temp() deadlock
-  thermal/drivers/tegra: fix set_trip_temp() deadlock
-  thermal/drivers/qcom: fix lock inversion
-
- drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 7 ++++++-
- drivers/thermal/samsung/exynos_tmu.c        | 2 +-
- drivers/thermal/tegra/soctherm.c            | 2 +-
- drivers/thermal/thermal_core.c              | 1 +
- include/linux/thermal.h                     | 2 ++
- 5 files changed, 11 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 37465af59262..cf9028f80415 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -354,7 +354,7 @@ static void exynos4210_tmu_set_trip_temp(struct exynos_tmu_data *data,
+ 	struct thermal_trip trip;
+ 	u8 ref, th_code;
+ 
+-	if (thermal_zone_get_trip(data->tzd, 0, &trip))
++	if (__thermal_zone_get_trip(data->tzd, 0, &trip))
+ 		return;
+ 
+ 	ref = trip.temperature / MCELSIUS;
 -- 
 2.37.4
 
