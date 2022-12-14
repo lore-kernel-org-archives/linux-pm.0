@@ -2,117 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A934EC001B2
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Dec 2022 09:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59618C46467
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Dec 2022 13:19:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237367AbiLNJky (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Dec 2022 04:40:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48896 "EHLO
+        id S238364AbiLNNTC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Dec 2022 08:19:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44424 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237958AbiLNJkg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Dec 2022 04:40:36 -0500
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72930201BD
-        for <linux-pm@vger.kernel.org>; Wed, 14 Dec 2022 01:40:33 -0800 (PST)
-Received: by mail-lf1-x12f.google.com with SMTP id b13so9475370lfo.3
-        for <linux-pm@vger.kernel.org>; Wed, 14 Dec 2022 01:40:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:references
-         :in-reply-to:user-agent:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=Na1nf8qjjb1uMGoebJs/VqSMr6q5uwCqvQJ2Ul04o+w=;
-        b=YBVPuBr0jQKvXOKcWIdTT4V+PF+IEh9EFO+h1JTbjhB86iMmEgTMXkROy9xjNdDqx4
-         jpGYcATEhqkzZ9RjQomgPHMwbMFBmfCT+MuIFYt4KAU/hZ/3PtVIf0k7OgAC/Oy+Gz7t
-         pu5Sde0A8HvWabj8UWSQd1hR+2bRnXI8l5G3BWDfayRUqbnVAnABL83boyiBoI4g1KjP
-         JCUJaCqOtHUfyIybEzQgcI0ItHC1kgpfx9SXRrszffu05E/dzlJ0kMahaf4hsPK+J4gv
-         bYTywPFS6eB5+Bj1CjC+ywEQIULQgC5wjCG7SLXM+Obb4EKuOfB+Jg+UCnvECyGA1/aW
-         XeDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:references
-         :in-reply-to:user-agent:subject:cc:to:from:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Na1nf8qjjb1uMGoebJs/VqSMr6q5uwCqvQJ2Ul04o+w=;
-        b=yCe2hdjRG5HznHCEhOrGwqFBF4RmINJblI2QMO9o3Bo290m0WFPaiUIo2kPmFwA7Ap
-         h0tD1JVVCkBk3IBRLWfA933fCp5I3gM9kwycDGMVpGC0cg2QE9rapT4nF5nec58PbOWH
-         pforZ0Ov3gv0cNaJpq2UrcCIP+S89V5PEufTukluUBDdgypRvJtPuUF2R8xoxP/l+6aO
-         9eAwZo59mL4YZPE5xWNqrmuTVFzUpHIy5pz/KiWEro+pN6eOMtfY8j/5SCTJ5thIqNQv
-         aN1DK8CNB1I5zt/OPbZIWfSawtcUL6Wje4IvdH86TBr4lQS0Oz2b3+gALnzKo5eg1x9P
-         mxOQ==
-X-Gm-Message-State: ANoB5pkQRiOETeYzRTFY/kxgMl5ilqoLzOcR+UltWKsqKHxKwyoHwf/C
-        9AyktH/LfWTcM+rxCDHT4PvGRg==
-X-Google-Smtp-Source: AA0mqf5bAzf6oxaXCjoLImk3QkwtNBbzrPPDJ1DfSP1B46ND5nVtJkfVfzcY7e3jBODV9kNLTtpEMQ==
-X-Received: by 2002:a05:6512:308b:b0:4b6:e4b3:d82d with SMTP id z11-20020a056512308b00b004b6e4b3d82dmr4229361lfd.7.1671010831840;
-        Wed, 14 Dec 2022 01:40:31 -0800 (PST)
-Received: from [127.0.0.1] (85-76-128-40-nat.elisa-mobile.fi. [85.76.128.40])
-        by smtp.gmail.com with ESMTPSA id p7-20020a2e9ac7000000b0026c2d2a9b92sm544123ljj.101.2022.12.14.01.40.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 14 Dec 2022 01:40:31 -0800 (PST)
-Date:   Wed, 14 Dec 2022 11:40:29 +0200
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Abhinav Kumar <quic_abhinavk@quicinc.com>,
-        Adam Skladowski <a39.skl@gmail.com>
-CC:     phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
-        Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        with ESMTP id S238426AbiLNNS4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Dec 2022 08:18:56 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63AAE205D8;
+        Wed, 14 Dec 2022 05:18:55 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 0085361A6D;
+        Wed, 14 Dec 2022 13:18:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47131C43392;
+        Wed, 14 Dec 2022 13:18:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1671023934;
+        bh=nnr17/76ojmrtu3Co48KLMzaUzbzMgFxhN+A+PvMGo0=;
+        h=From:To:Cc:Subject:Date:From;
+        b=NyOELBd+dxAFQUM7O4WYB2KKigLf2eAT/a8BJX4Tdh5YFIE9DYaLwK/Sp8M7AZOeH
+         q4yfeUsevr3vxsCb2CHZcnMSUkbv2iVQKbH7LjRN32deVSK38gKnNetUQK0HrUHj/5
+         L96KPkyfAP3IaElm6AdKXwXQN9PZxw1RNA3ipDxG/WoX9vXGMAnMhq2Fc00XuAyFBK
+         CjS+nsV8qVkdsi3ecIpiU4vcvFO7UjVnfxi0OcV1qx5sBDU4oRXVbaInmiptqk34gV
+         Ixony2FmcWvUQUVXipx/YaWTlBXDBrV2VXiVy/O0Bf23I30eQ/jc4QTyeVuBTBEs9+
+         zKdT9GtSM/TPA==
+Received: from johan by xi.lan with local (Exim 4.94.2)
+        (envelope-from <johan+linaro@kernel.org>)
+        id 1p5RfN-0000gG-Kq; Wed, 14 Dec 2022 14:19:22 +0100
+From:   Johan Hovold <johan+linaro@kernel.org>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>,
-        Loic Poulain <loic.poulain@linaro.org>,
-        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        freedreno@lists.freedesktop.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v2_01/12=5D_dt-bindings=3A_displa?= =?US-ASCII?Q?y=3A_msm=3A_Rename_mdss_node_name_in_example?=
-User-Agent: K-9 Mail for Android
-In-Reply-To: <86FA3AF9-5B35-4E27-80DA-8B5BF9E6B3AC@linaro.org>
-References: <20221130200950.144618-1-a39.skl@gmail.com> <20221130200950.144618-2-a39.skl@gmail.com> <19e78a06-2f3d-92af-1988-b22dc3ffc84e@linaro.org> <ad7ecffc-3fc9-7859-82b7-9d161fc28cae@quicinc.com> <86FA3AF9-5B35-4E27-80DA-8B5BF9E6B3AC@linaro.org>
-Message-ID: <558C636F-850D-41AF-9CA1-CC3E8E5C04F9@linaro.org>
+        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
+        Johan Hovold <johan+linaro@kernel.org>
+Subject: [PATCH 0/4] thermal: fix locking regressions in linux-next
+Date:   Wed, 14 Dec 2022 14:16:13 +0100
+Message-Id: <20221214131617.2447-1-johan+linaro@kernel.org>
+X-Mailer: git-send-email 2.37.4
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-14 =D0=B4=D0=B5=D0=BA=D0=B0=D0=B1=D1=80=D1=8F 2022 =D0=B3=2E 00:11:58 GMT+0=
-2:00, Dmitry Baryshkov <dmitry=2Ebaryshkov@linaro=2Eorg> =D0=BF=D0=B8=D1=88=
-=D0=B5=D1=82:
->
->
->On 13 December 2022 23:53:48 EET, Abhinav Kumar <quic_abhinavk@quicinc=2E=
-com> wrote:
->>
->>
->>On 12/1/2022 11:54 AM, Dmitry Baryshkov wrote:
->>> On 30/11/2022 22:09, Adam Skladowski wrote:
->>
->>>=20
->>> We will pick this into msm-fixes during the next cycle=2E
->>
->>Yes, we can with the above fixes tags but first, can you please send a M=
-R from msm-next-lumag to msm-next? So that I can send a MR for fixes to msm=
--next=2E
->
->This would create an additional merge commit in msm-next for no particula=
-r reason=2E You can branch -fixes from rc1, or from the msm-next-lumag and =
-then send MR to msm-next=2E
+This series fixes some of the fallout after the thermal changes that
+just landed in linux-next.
 
-Another option would be to base msm-fixes on drm-next directly=2E
+Lockdep reported a lock inversion in one of the Qualcomm drivers and a
+closer review revealed that the changes had also broken the sysfs
+interface for at least three drivers.
 
->
->>
->>ATM, they are out of sync=2E
->>
->>
+Note that a simple revert of the offending patches was not an option as
+some of the infrastructure that the old implementation relied on has
+also been removed.
 
+Johan
+
+
+Johan Hovold (4):
+  thermal/drivers/qcom: fix set_trip_temp() deadlock
+  thermal/drivers/exynos: fix set_trip_temp() deadlock
+  thermal/drivers/tegra: fix set_trip_temp() deadlock
+  thermal/drivers/qcom: fix lock inversion
+
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 7 ++++++-
+ drivers/thermal/samsung/exynos_tmu.c        | 2 +-
+ drivers/thermal/tegra/soctherm.c            | 2 +-
+ drivers/thermal/thermal_core.c              | 1 +
+ include/linux/thermal.h                     | 2 ++
+ 5 files changed, 11 insertions(+), 3 deletions(-)
+
+-- 
+2.37.4
 
