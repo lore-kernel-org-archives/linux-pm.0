@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F682C4332F
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Dec 2022 13:19:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E59BC46467
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Dec 2022 13:19:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238569AbiLNNTD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Dec 2022 08:19:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44446 "EHLO
+        id S238234AbiLNNTG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Dec 2022 08:19:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238446AbiLNNS5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Dec 2022 08:18:57 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E53EAEE16;
-        Wed, 14 Dec 2022 05:18:56 -0800 (PST)
+        with ESMTP id S238520AbiLNNTA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Dec 2022 08:19:00 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12920209AC;
+        Wed, 14 Dec 2022 05:18:57 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 989F0B818B1;
+        by ams.source.kernel.org (Postfix) with ESMTPS id C3B0DB818BA;
         Wed, 14 Dec 2022 13:18:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43BDEC433D2;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A14FC433EF;
         Wed, 14 Dec 2022 13:18:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1671023934;
-        bh=I3NjFkga/P0GdNEJyAvlKrNR4+s/YWzEm5lbyRY0s9o=;
+        bh=xwJ2F+HL8Yk0Fx3XqoMXtNfS5GIPd1gzxcsg5dDoon8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=e2WaLz9uLD0YeDJNA+Ip5rqhGSXG1u8qeishyJFdMYLR6Q4x2qHmyPIxxxb5STvGM
-         A/G5AzxETsvPhBcetsWvZUtJipLXsjwDoDXwif3Wi1NdluMHisdWXhaROrgnmVs5eV
-         XB+913GHKWDIleY8/bmovAaooXU5CJk+5jxkG5EewY6aaaF4Kj1t8DzP8MzeoHnpxh
-         Z6NzORvKUPLloBA4ok1WE85k7cJZWuR9mD/2FAakMLTfbTGaCc08HkNIPhxAFvdatL
-         cxbqlyACrKBkyTZBicZB6GTYFHuLEAP5mA/ccsZXdtdB8lT1vjB50P3vCOj5Q221nb
-         qY++E7gwzKEoA==
+        b=QP7v+ZzVI06/yPy1cj0gYDD7mG1of1hKuSt/w5bpOrTOsOETjgUEc6Dxsq65g4/hQ
+         Fjy5ZqjxlEO4FPBy+HmWmxUARSuxIc328Fzp+FLLmftMf0i9OO7JDX0pfLb1AAELxO
+         4F2oUr73dVKcnjM84Sm1+0uoO332iQyxBEjrQDzgOhOchxhbfaBaP0GiecxfOpt8U7
+         2RgX4K0g69VvqkFaH3Oy4ffIl4AFigY7gl+xIltPIJbjXCwlSdgufiiDPMDhPmI97X
+         cp5rZOCf/Bmf7NFqdGdEGrwTBsae1YJmG5SHuHSmoPTDEGuXLGZ97M7gAlRE+SBO+a
+         iT520n6hJ8R2Q==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1p5RfO-0000gK-Hc; Wed, 14 Dec 2022 14:19:22 +0100
+        id 1p5RfO-0000gO-Nm; Wed, 14 Dec 2022 14:19:22 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>
@@ -53,9 +53,9 @@ Cc:     Amit Kucheria <amitk@kernel.org>,
         linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
         Johan Hovold <johan+linaro@kernel.org>
-Subject: [PATCH 2/4] thermal/drivers/exynos: fix set_trip_temp() deadlock
-Date:   Wed, 14 Dec 2022 14:16:15 +0100
-Message-Id: <20221214131617.2447-3-johan+linaro@kernel.org>
+Subject: [PATCH 4/4] thermal/drivers/qcom: fix lock inversion
+Date:   Wed, 14 Dec 2022 14:16:17 +0100
+Message-Id: <20221214131617.2447-5-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.37.4
 In-Reply-To: <20221214131617.2447-1-johan+linaro@kernel.org>
 References: <20221214131617.2447-1-johan+linaro@kernel.org>
@@ -65,29 +65,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The set_trip_temp() callback is used when changing the trip temperature
-through sysfs. As it is called with the thermal-zone-device lock held
-it must not use thermal_zone_get_trip() directly or it will deadlock.
+The thermal-zone-device lock is held by core when setting trip points
+and the driver takes its chip lock in the corresponding callback.
 
-Fixes: 169865e317f2 ("thermal/drivers/exynos: Use generic thermal_zone_get_trip() function")
+Fetching the thermal trip points using thermal_zone_get_trip() also
+involves taking the thermal-zone-device lock, which means that the chip
+lock can not be held when doing so.
+
+Drop the chip lock temporarily during probe to avoid the lock inversion
+that was detected by lockdep:
+
+  ======================================================
+  WARNING: possible circular locking dependency detected
+  6.1.0-next-20221213 #122 Not tainted
+  ------------------------------------------------------
+  systemd-udevd/264 is trying to acquire lock:
+  ffff741e444a0920 (&chip->lock){+.+.}-{3:3}, at: qpnp_tm_get_temp+0xb4/0x1b0 [qcom_spmi_temp_alarm]
+
+  but task is already holding lock:
+  ffff741e44341618 (&tz->lock){+.+.}-{3:3}, at: thermal_zone_device_update+0x2c/0x70
+
+  which lock already depends on the new lock.
+
+Fixes: 78c3e2429be8 ("thermal/drivers/qcom: Use generic thermal_zone_get_trip() function")
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 37465af59262..cf9028f80415 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -354,7 +354,7 @@ static void exynos4210_tmu_set_trip_temp(struct exynos_tmu_data *data,
- 	struct thermal_trip trip;
- 	u8 ref, th_code;
+diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+index bfaec74f13b2..e2429676d0d2 100644
+--- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+@@ -348,7 +348,12 @@ static int qpnp_tm_init(struct qpnp_tm_chip *chip)
+ 	if (stage)
+ 		chip->temp = qpnp_tm_decode_temp(chip, stage);
  
--	if (thermal_zone_get_trip(data->tzd, 0, &trip))
-+	if (__thermal_zone_get_trip(data->tzd, 0, &trip))
- 		return;
- 
- 	ref = trip.temperature / MCELSIUS;
++	mutex_unlock(&chip->lock);
++
+ 	crit_temp = qpnp_tm_get_critical_trip_temp(chip);
++
++	mutex_lock(&chip->lock);
++
+ 	ret = qpnp_tm_update_critical_trip_temp(chip, crit_temp);
+ 	if (ret < 0)
+ 		goto out;
 -- 
 2.37.4
 
