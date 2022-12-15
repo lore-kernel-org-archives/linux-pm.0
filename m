@@ -2,71 +2,172 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCA4DC4167B
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Dec 2022 13:10:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E9ABC3DA6E
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Dec 2022 15:12:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229656AbiLONKV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Dec 2022 08:10:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45258 "EHLO
+        id S229988AbiLOPMF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Dec 2022 10:12:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229462AbiLONKT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2022 08:10:19 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D4EF32BB25;
-        Thu, 15 Dec 2022 05:10:18 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 4FC6261CF8;
-        Thu, 15 Dec 2022 13:10:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10104C433EF;
-        Thu, 15 Dec 2022 13:10:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1671109817;
-        bh=eXqB5wBx6ldyx3WnmnFI9DbCmJ6qg7OnLYn5htvtC+o=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=GlJeLrmBOBHAew9fzsQmTrx1TmEuLtTIP+BbFQjFJWSzHlcrjgx98QVTC+pXu2WS/
-         UMq7CmEQFnnnLrhvT4oSCXmr35Khx8wQVeeS7LgXQTBGSEVM5hC+4HQIAvDjO/dFeb
-         NbwMlCO4T+WBvu78R25apZo47roRd0ES1carQew0q4M5bfSF5SJaMhm9Lwp5NYERyh
-         aEmolh2zEyA9ZQTR94CofDW1vR8flsy9hkPL8VQGaLzBYo9ceqVfzWkt+GX0X2Eyud
-         xUE4Ls8kILiIZTXA4Hnuv07neG1du0AYbCqbLxJGzjV09eqNUmH0A7JKM+N1907/4G
-         MUNF0iC2Y8wPA==
-Message-ID: <5a8c636f-b8b4-69d2-344b-66dbcfd2b710@kernel.org>
-Date:   Thu, 15 Dec 2022 14:10:11 +0100
+        with ESMTP id S230082AbiLOPLv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2022 10:11:51 -0500
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A9F430575;
+        Thu, 15 Dec 2022 07:11:46 -0800 (PST)
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2BFAjkI2018902;
+        Thu, 15 Dec 2022 15:11:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type; s=qcppdkim1;
+ bh=NQjuWdRJhlzvQflQiWmSjH+nZpjlOK16M6kbc7ZMIv4=;
+ b=MjYlOQcCGoJhiESaeavfM6gxfW7Xn+jK53Jip20RGxsTMbT2NB6HQJ7rZ/YSWWVW3ymW
+ 0tOj1sRiZIs/gBWRB2H8bow0imZ3sNiCN7s0zMosGe9LO26sIog4JRoDESqNvYc4Mzap
+ Z9SfllnVXZxM5IVCLQ6kE/azQFIX2VU+DfmU6CSMRPkdpy4sA4qLpgOTorfQQ6jMotWy
+ yDfjtFmaE5afTbGwNgDbJgVK7wemFS4+d7+n6YSvyphYjxazxb9lx+KeRWvYqysd0GO9
+ R2pTak/MfSb1ba0qN0Jn99NcGq3VXwfiyZDLjnfFcVcohJatE0kydL6KrrKxl7aOVz18 tw== 
+Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3mfukhstj5-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 15 Dec 2022 15:11:29 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2BFFBSss012483
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 15 Dec 2022 15:11:28 GMT
+Received: from hyd-lnxbld559.qualcomm.com (10.80.80.8) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.36; Thu, 15 Dec 2022 07:11:24 -0800
+From:   Akhil P Oommen <quic_akhilpo@quicinc.com>
+To:     freedreno <freedreno@lists.freedesktop.org>,
+        <dri-devel@lists.freedesktop.org>, <linux-arm-msm@vger.kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Bjorn Andersson <andersson@kernel.org>
+CC:     Akhil P Oommen <quic_akhilpo@quicinc.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH 1/5] PM: domains: Allow a genpd consumer to require a synced power off
+Date:   Thu, 15 Dec 2022 20:40:57 +0530
+Message-ID: <20221215203751.1.I3e6b1f078ad0f1ca9358c573daa7b70ec132cdbe@changeid>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1671117062-26276-1-git-send-email-quic_akhilpo@quicinc.com>
+References: <1671117062-26276-1-git-send-email-quic_akhilpo@quicinc.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.1
-Subject: Re: [PATCH v14 2/2] dt-bindings: thermal: Add Sunplus schema
-To:     Li-hao Kuo <lhjeff911@gmail.com>, rafael@kernel.org,
-        rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org,
-        robh+dt@kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     lh.kuo@sunplus.com
-References: <cover.1665990345.git.lhjeff911@gmail.com>
- <038211f33e4d5dd5129712aef2738a83577c7745.1665990345.git.lhjeff911@gmail.com>
-Content-Language: en-US
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-In-Reply-To: <038211f33e4d5dd5129712aef2738a83577c7745.1665990345.git.lhjeff911@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: 3ozT3s2LygexvKrtlfkWG3Is6S-kalNQ
+X-Proofpoint-ORIG-GUID: 3ozT3s2LygexvKrtlfkWG3Is6S-kalNQ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-12-15_08,2022-12-15_02,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 clxscore=1015
+ mlxscore=0 malwarescore=0 impostorscore=0 lowpriorityscore=0 bulkscore=0
+ mlxlogscore=602 spamscore=0 priorityscore=1501 adultscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2212150123
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 15/12/2022 09:23, Li-hao Kuo wrote:
-> Add bindings for Sunplus thermal driver
-> 
-> Signed-off-by: Li-hao Kuo <lhjeff911@gmail.com>
-> ---
-> Changes in v12:
->  - no change.
-> 
-> Changes in v13:
->  - no change.
+From: Ulf Hansson <ulf.hansson@linaro.org>
 
-You got comment which you ignored. Stop sending the same while ignoring
-feedback.
+Some genpd providers doesn't ensure that it has turned off at hardware.
+This is fine until the consumer really requires during some special
+scenarios that the power domain collapse at hardware before it is
+turned ON again.
 
-Best regards,
-Krzysztof
+An example is the reset sequence of Adreno GPU which requires that the
+'gpucc cx gdsc' power domain should move to OFF state in hardware at
+least once before turning in ON again to clear the internal state.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Akhil P Oommen <quic_akhilpo@quicinc.com>
+---
+@Ulf, I took the liberty to cleanup and post your patch.
+
+ drivers/base/power/domain.c | 23 +++++++++++++++++++++++
+ include/linux/pm_domain.h   |  5 +++++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 967bcf9d415e..4fa624218967 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -519,6 +519,28 @@ ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_genpd_get_next_hrtimer);
+ 
++/*
++ * dev_pm_genpd_synced_poweroff - Next power off should be synchronous
++ *
++ * @dev: A device that is attached to the genpd.
++ *
++ * Allows a consumer of the genpd to notify the provider that the next power off
++ * should be synchronous.
++ */
++void dev_pm_genpd_synced_poweroff(struct device *dev)
++{
++	struct generic_pm_domain *genpd;
++
++	genpd = dev_to_genpd_safe(dev);
++	if (!genpd)
++		return;
++
++	genpd_lock(genpd);
++		genpd->synced_poweroff = true;
++	genpd_unlock(genpd);
++}
++EXPORT_SYMBOL_GPL(dev_pm_genpd_synced_poweroff);
++
+ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ {
+ 	unsigned int state_idx = genpd->state_idx;
+@@ -562,6 +584,7 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ 
+ out:
+ 	raw_notifier_call_chain(&genpd->power_notifiers, GENPD_NOTIFY_ON, NULL);
++	genpd->synced_poweroff = false;
+ 	return 0;
+ err:
+ 	raw_notifier_call_chain(&genpd->power_notifiers, GENPD_NOTIFY_OFF,
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 1cd41bdf73cf..f776fb93eaa0 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -136,6 +136,7 @@ struct generic_pm_domain {
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
+ 	unsigned int performance_state;	/* Aggregated max performance state */
+ 	cpumask_var_t cpus;		/* A cpumask of the attached CPUs */
++	bool synced_poweroff;		/* A consumer needs a synced poweroff */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+ 	int (*power_on)(struct generic_pm_domain *domain);
+ 	struct raw_notifier_head power_notifiers; /* Power on/off notifiers */
+@@ -235,6 +236,7 @@ int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb);
+ int dev_pm_genpd_remove_notifier(struct device *dev);
+ void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
+ ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev);
++void dev_pm_genpd_synced_poweroff(struct device *dev);
+ 
+ extern struct dev_power_governor simple_qos_governor;
+ extern struct dev_power_governor pm_domain_always_on_gov;
+@@ -300,6 +302,9 @@ static inline ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev)
+ {
+ 	return KTIME_MAX;
+ }
++static inline void dev_pm_genpd_synced_poweroff(struct device *dev)
++{ }
++
+ #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
+ #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
+ #endif
+-- 
+2.7.4
 
