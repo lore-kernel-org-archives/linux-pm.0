@@ -2,134 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42560C4167B
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Dec 2022 10:22:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99811C4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Dec 2022 11:19:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230349AbiLPKWx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Dec 2022 05:22:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53176 "EHLO
+        id S230498AbiLPLTx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Dec 2022 06:19:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229952AbiLPKWl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2022 05:22:41 -0500
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E11E50D6A;
-        Fri, 16 Dec 2022 02:22:32 -0800 (PST)
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2BGAAmjT002282;
-        Fri, 16 Dec 2022 10:21:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-type; s=qcppdkim1;
- bh=7WZgQQGfLi75ZWNskFxxTaZq35gnqysSKNpwvvUbTxA=;
- b=SCXgLrkORiqWOfmhyNkKGkJlG+mvSM3T1zbsSLttZK8bfuykdkGyZ6k8loOWplx80w95
- 6W484tAQeuEpcE+BTVSM2wanLdJH2veox6GhooD8ArG7Wupm3foOkSSjTtCgy5x7h+VX
- Xc/h2S+/VXazNC9fwd0HKYpNCOG43LGNrS47E4hHiV12BQRVGMC8OB5EhFzRDbEltnUG
- T0QNigE6UcyaLMt/6UEM7i5a6fUQTFpydWSGEWMXcGOKb8+5AoispgP7KRmxNsm+moGQ
- nopWsJ/JiwdGhBzFgkiHbr6gM0TQHXCtt08UWgJALvTGD/vyWmbaFgn9UojBYJhIpOVq ow== 
-Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3mgpdb02cq-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 16 Dec 2022 10:21:57 +0000
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2BGALubP029954
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 16 Dec 2022 10:21:56 GMT
-Received: from hyd-lnxbld559.qualcomm.com (10.80.80.8) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.36; Fri, 16 Dec 2022 02:21:47 -0800
-From:   Akhil P Oommen <quic_akhilpo@quicinc.com>
-To:     freedreno <freedreno@lists.freedesktop.org>,
-        <dri-devel@lists.freedesktop.org>, <linux-arm-msm@vger.kernel.org>,
-        Rob Clark <robdclark@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Bjorn Andersson <andersson@kernel.org>
-CC:     Akhil P Oommen <quic_akhilpo@quicinc.com>,
-        Abhinav Kumar <quic_abhinavk@quicinc.com>,
-        Andy Gross <agross@kernel.org>, Chia-I Wu <olvaffe@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@gmail.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        "Douglas Anderson" <dianders@chromium.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        "Len Brown" <len.brown@intel.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Sean Paul <sean@poorly.run>, Stephen Boyd <sboyd@kernel.org>,
-        <linux-clk@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>
-Subject: [PATCH v2 0/5] Improve GPU reset sequence for Adreno GPU
-Date:   Fri, 16 Dec 2022 15:51:19 +0530
-Message-ID: <1671186084-11356-1-git-send-email-quic_akhilpo@quicinc.com>
-X-Mailer: git-send-email 2.7.4
+        with ESMTP id S230488AbiLPLTs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2022 06:19:48 -0500
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDD89167E7;
+        Fri, 16 Dec 2022 03:19:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=3wRp5ZGx5kiuxjosfiMrA8DF+A0U9qyxpgTwKOxpegg=; b=RBK2OIb9hMLPOkJnVKb076SADP
+        GMqJZ9KRts/r0V4Ft5akZTHnoO6h4yT8h4G4Wa74+vsVOyjULxJGhMRDr94NwLl2cRN/Wo/tpXtoB
+        E1VgQsvotWFICibrxkyUH6exxohiZ3dzGCHPbaniyGO2nrv+2pU46/fsUpmPwc14p0OpVhCPu1Xf5
+        wBdQfw44cY7exj8gzzu5bP3Sk96WFyr9Ra5S+MHXygYxJidrn5NkqN5LhzKc+I77mWe5luGI6LEXn
+        uloy72JmtBJT6lcMEMsb8XnK1LDfuEhkhEwKBcsXqLWGLhx5We5UWACViVKKzZg05GAbDxtseggNR
+        T1UVN/AQ==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1p68kj-00FOqs-Bn; Fri, 16 Dec 2022 11:19:45 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id EF24E300E04;
+        Fri, 16 Dec 2022 12:19:34 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id AAAC62C539E75; Fri, 16 Dec 2022 12:19:34 +0100 (CET)
+Date:   Fri, 16 Dec 2022 12:19:34 +0100
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     rafael@kernel.org, frederic@kernel.org, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        len.brown@intel.com
+Subject: Re: [RFC/RFT PATCH 1/2] sched/core: Check and schedule ksoftirq
+Message-ID: <Y5xURk3CkzhIjmmq@hirez.programming.kicks-ass.net>
+References: <20221215184300.1592872-1-srinivas.pandruvada@linux.intel.com>
+ <20221215184300.1592872-2-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: KkV3VQBqqnBlhADXXe1t6BFfV39C_5Jy
-X-Proofpoint-ORIG-GUID: KkV3VQBqqnBlhADXXe1t6BFfV39C_5Jy
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-12-16_06,2022-12-15_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 bulkscore=0
- mlxlogscore=942 phishscore=0 mlxscore=0 adultscore=0 impostorscore=0
- malwarescore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2212160091
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221215184300.1592872-2-srinivas.pandruvada@linux.intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Thu, Dec 15, 2022 at 10:42:59AM -0800, Srinivas Pandruvada wrote:
+> +		/* Give ksoftirqd 1 jiffy to get a chance to start its job */
+> +		if (!READ_ONCE(it.done) && task_is_running(__this_cpu_read(ksoftirqd))) {
+> +			__set_current_state(TASK_UNINTERRUPTIBLE);
+> +			schedule_timeout(1);
+> +		}
 
-This is a rework of [1] using genpd instead of 'reset' framework.
-
-As per the recommended reset sequence of Adreno gpu, we should ensure that
-gpucc-cx-gdsc has collapsed at hardware to reset gpu's internal hardware states.
-Because this gdsc is implemented as 'votable', gdsc driver doesn't poll and
-wait until its hw status says OFF.
-
-So use the newly introduced genpd api (dev_pm_genpd_synced_poweroff()) to
-provide a hint to the gdsc driver to poll for the hw status and use genpd
-notifier to wait from adreno gpu driver until gdsc is turned OFF.
-
-This series is rebased on top of linux-next (20221215) since the changes span
-multiple drivers.
-
-[1] https://patchwork.freedesktop.org/series/107507/
-
-Changes in v2:
-- Minor formatting fix
-- Select PM_GENERIC_DOMAINS from Kconfig
-
-Akhil P Oommen (4):
-  clk: qcom: gdsc: Support 'synced_poweroff' genpd flag
-  drm/msm/a6xx: Vote for cx gdsc from gpu driver
-  drm/msm/a6xx: Remove cx gdsc polling using 'reset'
-  drm/msm/a6xx: Use genpd notifier to ensure cx-gdsc collapse
-
-Ulf Hansson (1):
-  PM: domains: Allow a genpd consumer to require a synced power off
-
- drivers/base/power/domain.c           | 23 ++++++++++++++++++
- drivers/clk/qcom/gdsc.c               | 11 +++++----
- drivers/gpu/drm/msm/Kconfig           |  1 +
- drivers/gpu/drm/msm/adreno/a6xx_gmu.c | 46 ++++++++++++++++++++++++++++++++---
- drivers/gpu/drm/msm/adreno/a6xx_gmu.h |  7 ++++++
- drivers/gpu/drm/msm/adreno/a6xx_gpu.c | 13 +++++++---
- drivers/gpu/drm/msm/msm_gpu.c         |  4 ---
- drivers/gpu/drm/msm/msm_gpu.h         |  4 ---
- include/linux/pm_domain.h             |  5 ++++
- 9 files changed, 94 insertions(+), 20 deletions(-)
-
--- 
-2.7.4
-
+That's absolutely disgusting :-/
