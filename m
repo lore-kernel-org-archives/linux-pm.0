@@ -2,137 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BFBBC4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Dec 2022 07:45:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 141D7C10F1E
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Dec 2022 10:07:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233610AbiLTHpV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Dec 2022 02:45:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57892 "EHLO
+        id S229738AbiLTKHq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Dec 2022 05:07:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36788 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233676AbiLTHpO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Dec 2022 02:45:14 -0500
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7BB81182B;
-        Mon, 19 Dec 2022 23:45:11 -0800 (PST)
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2BK6pRC6004460;
-        Tue, 20 Dec 2022 07:44:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-type; s=qcppdkim1;
- bh=GU/43o5aYgQU494/wwpx1NXvBoK3twBIVcRyWPGgpG8=;
- b=MwyqbcjbughfVljkZOKSxIVdVZVm1BluZTXBlXawCiEiWKYMmTdA9PBmktLdd5hMLVmp
- kgF71rzukz76deCfpatr4DCTeSUUyvgyu0zEVRylQUb9s20Sz8IY0SPhLBl7rFwm71Eo
- yI7gA/ZwlsWt+8utJVgs/0nfUtMk1gOW5hgZVXSHNn8lrm1AYTxPpu46ZVH4KSVvqPgv
- 0oOc7swSUIXbROarDsVsEZctY/1tTY5dVHQuEOgXqNRlJ3UYBqZj3wEabrR4qaeYMXgn
- ep+KDu5yhKJyJGqkhx4geLeFQojwzSXtOHCqQTmoOniNIeiKUEwxWwc5/pmoxx+Oeo2Q Aw== 
-Received: from nalasppmta04.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3mk83xr4k2-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 20 Dec 2022 07:44:39 +0000
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-        by NALASPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2BK7ibkA017977
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 20 Dec 2022 07:44:37 GMT
-Received: from hyd-lnxbld559.qualcomm.com (10.80.80.8) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.36; Mon, 19 Dec 2022 23:44:29 -0800
-From:   Akhil P Oommen <quic_akhilpo@quicinc.com>
-To:     freedreno <freedreno@lists.freedesktop.org>,
-        <dri-devel@lists.freedesktop.org>, <linux-arm-msm@vger.kernel.org>,
-        Rob Clark <robdclark@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>
-CC:     Akhil P Oommen <quic_akhilpo@quicinc.com>,
-        Abhinav Kumar <quic_abhinavk@quicinc.com>,
-        Andy Gross <agross@kernel.org>, Chia-I Wu <olvaffe@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@gmail.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        "Douglas Anderson" <dianders@chromium.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        "Len Brown" <len.brown@intel.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Sean Paul" <sean@poorly.run>, <linux-clk@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH v3 0/5] Improve GPU reset sequence for Adreno GPU
-Date:   Tue, 20 Dec 2022 13:14:12 +0530
-Message-ID: <1671522257-38778-1-git-send-email-quic_akhilpo@quicinc.com>
-X-Mailer: git-send-email 2.7.4
+        with ESMTP id S229845AbiLTKHp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Dec 2022 05:07:45 -0500
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77CE230B
+        for <linux-pm@vger.kernel.org>; Tue, 20 Dec 2022 02:07:44 -0800 (PST)
+Received: by mail-lf1-x12b.google.com with SMTP id b13so17855257lfo.3
+        for <linux-pm@vger.kernel.org>; Tue, 20 Dec 2022 02:07:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=EqFRU8P7zqmZfaYVXOcDfL9WuQYKC06tycOM2BCpeho=;
+        b=Q5ZMnjaem8ibVMO/h2fyvyqnR12hGQjkbE4WcOcFnneyo3AWbg0wqBUzH3xfz7Tzk/
+         aoDEAGG7P71V6nRA0gqVhqh1GmTil89peE9ntDAU10I1dhUzAXt2+HTnlu7EGd5IZAm+
+         lwLQtS/AFemlsvvE4bC85Ky69Pf1kVMbXRx20+zr8goGmABpZYVgMfZtCkcrCuO9yceS
+         8eSlaB4gKsqMF0VLprZ2BS3sjJHttHoiVAj+zez0Q/zLDNWf5VQaf3qyAljYur06OkGe
+         UQV1O3vWtUxLtbXxgRDX6UYKpOSNqtRg1AWq7k3F8Y3i7jPnvheATAqDjk4hMIvN//EM
+         qBZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=EqFRU8P7zqmZfaYVXOcDfL9WuQYKC06tycOM2BCpeho=;
+        b=fc9YuCCyRyurCbgVvXbDaMonauO1x4dzss2Z2NbiCTw97CY0Lp7q1mYew3kSrE4G3m
+         0m3AqL4QaqXJpbLSyqXAB7qYr+fYg2Cbwp/oyvFGOcJ2ZDgHCQ5ke6sUvyoT1eEEGL07
+         WV1bb0QHVPIUBjsfekK+YvdN1kOwY69tYcOu5CfpACsh37fCvbquBwUB6h2MiP6ZAePg
+         5wwL6mAOTDxCf8Vx2AJhRc7KS8ftLIx13CqDsWbQUNwtMVxKb9nYIRDK+GXY86XpXoyC
+         oMdTROm1HldDS/lHSUiLftceYcwGMJqN5TixynJ/Y2l7zAx1KS0yVRIA/uwJ2gzYj8XW
+         fdrQ==
+X-Gm-Message-State: ANoB5pmMoGDieW3JPEzjza81dlHaiTEarWrECukxIv2A9OoTdtxZIIk/
+        QUGHTd8JmsNEBw8Etqr3AmQMkw==
+X-Google-Smtp-Source: AA0mqf4Rsq+WF0/EsDCXOfhDk0WK7wbdiGXl4R1p74gdF5pkAZE3k7+uCbJ78GRNpVrjqNW5j5BVfg==
+X-Received: by 2002:a05:6512:39c2:b0:4b4:f303:9b3f with SMTP id k2-20020a05651239c200b004b4f3039b3fmr15110281lfu.66.1671530862859;
+        Tue, 20 Dec 2022 02:07:42 -0800 (PST)
+Received: from [192.168.1.101] (abxh212.neoplus.adsl.tpnet.pl. [83.9.1.212])
+        by smtp.gmail.com with ESMTPSA id q8-20020a056512210800b00498f871f33fsm1399330lfr.86.2022.12.20.02.07.41
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 20 Dec 2022 02:07:42 -0800 (PST)
+Message-ID: <8b20bf1d-af39-dcba-cb79-5ad037c1364a@linaro.org>
+Date:   Tue, 20 Dec 2022 11:07:40 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: MZw744GSw6qEKIu2d7SsqSrh8Y93nJJs
-X-Proofpoint-GUID: MZw744GSw6qEKIu2d7SsqSrh8Y93nJJs
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-12-20_01,2022-12-15_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
- clxscore=1015 bulkscore=0 phishscore=0 impostorscore=0 lowpriorityscore=0
- adultscore=0 priorityscore=1501 spamscore=0 suspectscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2212200063
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH v3 04/15] thermal/drivers/tsens: Drop unnecessary hw_ids
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+References: <20221220024721.947147-1-dmitry.baryshkov@linaro.org>
+ <20221220024721.947147-5-dmitry.baryshkov@linaro.org>
+Content-Language: en-US
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20221220024721.947147-5-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-This is a rework of [1] using genpd instead of 'reset' framework.
 
-As per the recommended reset sequence of Adreno gpu, we should ensure that
-gpucc-cx-gdsc has collapsed at hardware to reset gpu's internal hardware states.
-Because this gdsc is implemented as 'votable', gdsc driver doesn't poll and
-wait until its hw status says OFF.
+On 20.12.2022 03:47, Dmitry Baryshkov wrote:
+> The tsens driver defaults to using hw_id equal to the index of the
+> sensor. Thus it is superfluous to declare such hw_id arrays. Drop such
+> arrays from mdm9607 and msm8976 data.
+> 
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> ---
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 
-So use the newly introduced genpd api (dev_pm_genpd_synced_poweroff()) to
-provide a hint to the gdsc driver to poll for the hw status and use genpd
-notifier to wait from adreno gpu driver until gdsc is turned OFF.
-
-This series is rebased on top of linux-next (20221215) since the changes span
-multiple drivers.
-
-[1] https://patchwork.freedesktop.org/series/107507/
-
-Changes in v3:
-- Rename the var 'force_sync' to 'wait (Stephen)
-
-Changes in v2:
-- Minor formatting fix
-- Select PM_GENERIC_DOMAINS from Kconfig
-
-Akhil P Oommen (4):
-  clk: qcom: gdsc: Support 'synced_poweroff' genpd flag
-  drm/msm/a6xx: Vote for cx gdsc from gpu driver
-  drm/msm/a6xx: Remove cx gdsc polling using 'reset'
-  drm/msm/a6xx: Use genpd notifier to ensure cx-gdsc collapse
-
-Ulf Hansson (1):
-  PM: domains: Allow a genpd consumer to require a synced power off
-
- drivers/base/power/domain.c           | 23 ++++++++++++++++++
- drivers/clk/qcom/gdsc.c               | 11 +++++----
- drivers/gpu/drm/msm/Kconfig           |  1 +
- drivers/gpu/drm/msm/adreno/a6xx_gmu.c | 46 ++++++++++++++++++++++++++++++++---
- drivers/gpu/drm/msm/adreno/a6xx_gmu.h |  7 ++++++
- drivers/gpu/drm/msm/adreno/a6xx_gpu.c | 13 +++++++---
- drivers/gpu/drm/msm/msm_gpu.c         |  4 ---
- drivers/gpu/drm/msm/msm_gpu.h         |  4 ---
- include/linux/pm_domain.h             |  5 ++++
- 9 files changed, 94 insertions(+), 20 deletions(-)
-
--- 
-2.7.4
-
+Konrad
+>  drivers/thermal/qcom/tsens-v0_1.c | 1 -
+>  drivers/thermal/qcom/tsens-v1.c   | 1 -
+>  2 files changed, 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
+> index 04d012e4f728..0bc4e5cec184 100644
+> --- a/drivers/thermal/qcom/tsens-v0_1.c
+> +++ b/drivers/thermal/qcom/tsens-v0_1.c
+> @@ -635,7 +635,6 @@ static const struct tsens_ops ops_9607 = {
+>  struct tsens_plat_data data_9607 = {
+>  	.num_sensors	= 5,
+>  	.ops		= &ops_9607,
+> -	.hw_ids		= (unsigned int []){ 0, 1, 2, 3, 4 },
+>  	.feat		= &tsens_v0_1_feat,
+>  	.fields	= tsens_v0_1_regfields,
+>  };
+> diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+> index 1d7f8a80bd13..96ef12d47bff 100644
+> --- a/drivers/thermal/qcom/tsens-v1.c
+> +++ b/drivers/thermal/qcom/tsens-v1.c
+> @@ -387,7 +387,6 @@ static const struct tsens_ops ops_8976 = {
+>  struct tsens_plat_data data_8976 = {
+>  	.num_sensors	= 11,
+>  	.ops		= &ops_8976,
+> -	.hw_ids		= (unsigned int[]){0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+>  	.feat		= &tsens_v1_feat,
+>  	.fields		= tsens_v1_regfields,
+>  };
