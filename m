@@ -2,118 +2,147 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 080FEC4167B
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Dec 2022 15:45:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0636DC4167B
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Dec 2022 15:52:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231871AbiLUPpo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Dec 2022 10:45:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44818 "EHLO
+        id S232553AbiLUPwV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Dec 2022 10:52:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46106 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231702AbiLUPpn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Dec 2022 10:45:43 -0500
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AA4E25E9
-        for <linux-pm@vger.kernel.org>; Wed, 21 Dec 2022 07:45:40 -0800 (PST)
-Received: by mail-wm1-x330.google.com with SMTP id o5-20020a05600c510500b003d21f02fbaaso1860779wms.4
-        for <linux-pm@vger.kernel.org>; Wed, 21 Dec 2022 07:45:40 -0800 (PST)
+        with ESMTP id S232524AbiLUPwS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Dec 2022 10:52:18 -0500
+Received: from smtp-fw-6002.amazon.com (smtp-fw-6002.amazon.com [52.95.49.90])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF8601A393;
+        Wed, 21 Dec 2022 07:52:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=KGbeBQRjTmGtaWEzjEWMVtiqNlsW5lW0CoNY9zIiLc4=;
-        b=k81vhdDhN4j7y0R2uh1f2NxwYOxgXJp7lobsFLPPvq/M6F8hB3TFqsN9lZCSAyYnEd
-         w8o1nWeu7EELY58lSlSwPPEf7OHtsaeK5VqI5NdERLRgDlkuD8VoffEoiseBO4Me6Xwa
-         ifuxfqerftFrPqfHxkggSkp/dgjNFkopcT3j7tY3CoHu1j/tr6DqJjhfL2jhzkknG2rW
-         IWHIdkiqSdq/Pns8ulArC0uAW88dF2pnfmWI7AL3zmnA+w8GrN/9mTN8E/U3g+CIdDvs
-         Oo5yH1AG6gEDamjIdU0nuUxw+S7xyIawnU/iFCFr8jrFNF/KdSPBc+13/EGs2AsfNPYz
-         dHQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=KGbeBQRjTmGtaWEzjEWMVtiqNlsW5lW0CoNY9zIiLc4=;
-        b=ekSII8c8ejvtedz6PlMgYqKvZ/f9SCpxzavU3FP7R1BsLL2J3Ue+iMuUOd4ZbjvFxf
-         5ShcvWj+a3FJLXnoXlKEqhbhLAw1g5oFQYcQ3B1EaeeFq96YsYbLsourjdHfXTJvj92v
-         bmAYuMxph5pzytHK6Ywm6TrzQ/pLBALgE8+JxnpoQ2FW2yGKVof/qb2r5SUKpwmSnIiT
-         9lwqROwxbNAXJ4zzGN3050+pxU2lPHvQ1WEVtdHk3i92K3qDV91iwnPRvyBS4yLw1r2C
-         xBWjy3jB5v3Uysq/bdNXNz1SDjjGOOqMXPkbLjz12NWjdLMXLNm7mmwj9pXy2MhZJj04
-         YiFA==
-X-Gm-Message-State: AFqh2koBRS1LNYcJEYezR7jcOCNvgxOpR5LFarcx5BwiiMhQmgeGWwWV
-        Jjscv/aSOpJFmrHCaSvNpyI0ug==
-X-Google-Smtp-Source: AMrXdXsMuyF2s0KfLk6G49bLBkUwiohwuGsdWlz+hiiVccvbYcehjbTwlBshzkeCA5pNWrZvwQufJQ==
-X-Received: by 2002:a05:600c:a51:b0:3d2:3376:6f38 with SMTP id c17-20020a05600c0a5100b003d233766f38mr2020662wmq.20.1671637538618;
-        Wed, 21 Dec 2022 07:45:38 -0800 (PST)
-Received: from [192.168.175.23] (pur13-1-78-242-214-186.fbx.proxad.net. [78.242.214.186])
-        by smtp.googlemail.com with ESMTPSA id v192-20020a1cacc9000000b003cfd4e6400csm2531518wme.19.2022.12.21.07.45.36
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Dec 2022 07:45:37 -0800 (PST)
-Message-ID: <ed4aafb9-c33e-6f24-1e9c-7c7efa0e58ae@linaro.org>
-Date:   Wed, 21 Dec 2022 16:45:34 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH v4 07/20] thermal/drivers/tsens: limit num_sensors to 9
-Content-Language: en-US
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
+  d=amazon.de; i=@amazon.de; q=dns/txt; s=amazon201209;
+  t=1671637937; x=1703173937;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=fPHbtq9qCbxUujjnY3/7YX+cvjvbTVPwrWqhH/h+PEk=;
+  b=JJ1Fsp534wZA9AD1yviaKPtplc1g6I0dGyLxS10aSnMnPQZcuoFlA9H0
+   MJjOlk4CoauWjggrH5KI4gsZG3f9sQ2eAKTWp9CFi0dJkwpP3gxVINcuJ
+   c1XzecTP9Ne0c9IR2fKLxMmAPNhuuEE8vE2yWy4wcWzshoQfFsjHY2VMN
+   Y=;
+X-IronPort-AV: E=Sophos;i="5.96,262,1665446400"; 
+   d="scan'208";a="279685468"
+Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-iad-1d-m6i4x-25ac6bd5.us-east-1.amazon.com) ([10.43.8.6])
+  by smtp-border-fw-6002.iad6.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Dec 2022 15:52:14 +0000
+Received: from EX13D46EUB002.ant.amazon.com (iad12-ws-svc-p26-lb9-vlan2.iad.amazon.com [10.40.163.34])
+        by email-inbound-relay-iad-1d-m6i4x-25ac6bd5.us-east-1.amazon.com (Postfix) with ESMTPS id B0BFB428FE;
+        Wed, 21 Dec 2022 15:52:11 +0000 (UTC)
+Received: from EX19D028EUB002.ant.amazon.com (10.252.61.43) by
+ EX13D46EUB002.ant.amazon.com (10.43.166.241) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.42; Wed, 21 Dec 2022 15:52:10 +0000
+Received: from EX13MTAUWB001.ant.amazon.com (10.43.161.207) by
+ EX19D028EUB002.ant.amazon.com (10.252.61.43) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.1118.20; Wed, 21 Dec 2022 15:52:10 +0000
+Received: from dev-dsk-ptyadav-1c-37607b33.eu-west-1.amazon.com (10.15.11.255)
+ by mail-relay.amazon.com (10.43.161.249) with Microsoft SMTP Server id
+ 15.0.1497.42 via Frontend Transport; Wed, 21 Dec 2022 15:52:08 +0000
+Received: by dev-dsk-ptyadav-1c-37607b33.eu-west-1.amazon.com (Postfix, from userid 23027615)
+        id 4B3C120D20; Wed, 21 Dec 2022 16:52:08 +0100 (CET)
+From:   Pratyush Yadav <ptyadav@amazon.de>
+To:     <linux-pm@vger.kernel.org>
+CC:     Pratyush Yadav <ptyadav@amazon.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-References: <20221221020520.1326964-1-dmitry.baryshkov@linaro.org>
- <20221221020520.1326964-8-dmitry.baryshkov@linaro.org>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20221221020520.1326964-8-dmitry.baryshkov@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+        Len Brown <lenb@kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Robert Moore <robert.moore@intel.com>,
+        <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <devel@acpica.org>
+Subject: [PATCH 1/2] acpi: processor: allow fixing up the frequency for a performance state
+Date:   Wed, 21 Dec 2022 16:52:02 +0100
+Message-ID: <20221221155203.11347-2-ptyadav@amazon.de>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221221155203.11347-1-ptyadav@amazon.de>
+References: <20221221155203.11347-1-ptyadav@amazon.de>
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21/12/2022 03:05, Dmitry Baryshkov wrote:
-> According to the vendor kernels (msm-3.10, 3.14 and 3.18), msm8939
-> supports only 9 sensors. Remove the rogue sensor's hw_id.
-> 
-> Fixes: 332bc8ebab2c ("thermal: qcom: tsens-v0_1: Add support for MSM8939")
-> Cc: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-> ---
->   drivers/thermal/qcom/tsens-v0_1.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-> index 0bc4e5cec184..57ac23f9d9b7 100644
-> --- a/drivers/thermal/qcom/tsens-v0_1.c
-> +++ b/drivers/thermal/qcom/tsens-v0_1.c
-> @@ -605,9 +605,9 @@ static const struct tsens_ops ops_8939 = {
->   };
->   
->   struct tsens_plat_data data_8939 = {
-> -	.num_sensors	= 10,
-> +	.num_sensors	= 9,
->   	.ops		= &ops_8939,
-> -	.hw_ids		= (unsigned int []){ 0, 1, 2, 3, 5, 6, 7, 8, 9, 10 },
-> +	.hw_ids		= (unsigned int []){ 0, 1, 2, 3, 5, 6, 7, 8, 9 },
+In some cases the ACPI table can have an incorrect frequency populated
+for a performance state. For example, in Intel platforms, the Turbo
+frequency is just listed as +1 MHz above the max non-turbo frequency.
+The frequency can actually go much higher based on various factors like
+temperature, voltage, etc.
 
-Does not patch 4 says we can drop those hw_ids ?
+Allow drivers like intel_pstate to fix up performance state frequencies
+with the actual maximum value. While at it, also update the QoS
+constraints if needed to match the new frequency values.
 
->   
->   	.feat		= &tsens_v0_1_feat,
->   	.fields	= tsens_v0_1_regfields,
+Signed-off-by: Pratyush Yadav <ptyadav@amazon.de>
+---
+ drivers/acpi/processor_perflib.c | 40 ++++++++++++++++++++++++++++++++
+ include/acpi/processor.h         |  2 ++
+ 2 files changed, 42 insertions(+)
 
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 970f04a958cd..4958aee4c024 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -766,3 +766,43 @@ void acpi_processor_unregister_performance(unsigned int cpu)
+ 	mutex_unlock(&performance_mutex);
+ }
+ EXPORT_SYMBOL(acpi_processor_unregister_performance);
++
++int acpi_processor_fixup_perf_state(unsigned int cpu, unsigned int state,
++				    unsigned int frequency)
++{
++	struct acpi_processor *pr;
++	int ret;
++
++	mutex_lock(&performance_mutex);
++
++	pr = per_cpu(processors, cpu);
++	if (!pr) {
++		mutex_unlock(&performance_mutex);
++		return -ENODEV;
++	}
++
++	if (!pr->performance) {
++		mutex_unlock(&performance_mutex);
++		return -EINVAL;
++	}
++
++	if (state >= pr->performance->state_count) {
++		mutex_unlock(&performance_mutex);
++		return -EINVAL;
++	}
++
++	pr->performance->states[state].core_frequency = frequency;
++
++	if (ignore_ppc != 1 && state == pr->performance_platform_limit &&
++	    freq_qos_request_active(&pr->perflib_req)) {
++		ret = freq_qos_update_request(&pr->perflib_req,
++					      frequency * 1000);
++		if (ret < 0)
++			pr_warn("Failed to update perflib freq constraint: CPU%d (%d)\n",
++				pr->id, ret);
++	}
++
++	mutex_unlock(&performance_mutex);
++	return 0;
++}
++EXPORT_SYMBOL(acpi_processor_fixup_perf_state);
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 94181fe9780a..daff978cfa7d 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -258,6 +258,8 @@ extern int acpi_processor_preregister_performance(struct
+ extern int acpi_processor_register_performance(struct acpi_processor_performance
+ 					       *performance, unsigned int cpu);
+ extern void acpi_processor_unregister_performance(unsigned int cpu);
++extern int acpi_processor_fixup_perf_state(unsigned int cpu, unsigned int state,
++					   unsigned int frequency);
+ 
+ int acpi_processor_pstate_control(void);
+ /* note: this locks both the calling module and the processor module
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.38.1
 
