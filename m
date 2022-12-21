@@ -2,116 +2,182 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F378FC41535
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Dec 2022 16:55:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51C66C41535
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Dec 2022 17:15:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233016AbiLUQzL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Dec 2022 11:55:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44808 "EHLO
+        id S234716AbiLURPs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Dec 2022 12:15:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54530 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234296AbiLUQzJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Dec 2022 11:55:09 -0500
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD542240B8;
-        Wed, 21 Dec 2022 08:55:07 -0800 (PST)
-Received: by mail-lf1-x12f.google.com with SMTP id 1so24385890lfz.4;
-        Wed, 21 Dec 2022 08:55:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=pKpFopFM+2p/s1rCGdP6Z1nsO+BxLqf3LvQx/9wlFY0=;
-        b=ChA+yVv3lB6Fzz5kJ1UE+vuKF2qz6h08hFftpVh0TotNethlWSKylrQR5xIP+QxAk6
-         sSzxD+z9NTp84P+QTcNTScu5QrEzHEDr9pcDPoxlVTX9bm0guls39R0GyjTkcK/ymMFs
-         aL1oFCKZymTRxAjCchuiA9b5LvonHJDYrjfYaTjZD0gqs6cEmyC2Erna5KxDaKkEB1Ek
-         RLJ8QXCE7ovCElVoHQcBtcSCxeiY70Z3RUxDa/uA8BLvsyQ2BlcFthcUsEF0eDpqrXeF
-         58zYI9hq2x7FvMhGJ0ojI89z7iu/ysDBQZOjKuobznqo36Wo6QGSdkA5SAn0HYjAGwjI
-         ecpw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=pKpFopFM+2p/s1rCGdP6Z1nsO+BxLqf3LvQx/9wlFY0=;
-        b=S1aYCp5x6ejABxDsnGGvswv78vbV+7sK/snLO7UPmqWgGOI/Wwv+pqd8VrzLT51oxC
-         681NJI+cdYbmeF6EBrucfwFThsv916tgFx0Ee09CnQ2fstgJoHQX9VyjjBiyipdRRffp
-         M/htQvw11F0ZV7bx2TINuE08FON5CyTOET189glVauLApN5uCW1DEbG61M39jt8CGfHJ
-         10tt36QeHAfLJ6aWdheNaVM85L5y4Fw3ne765AJA8gQ5Wqajkw9y6jHm0wDgmtPNRQvR
-         rcnIH1hHBcrG/4r+hqWfGBr9wAImnYOEescizvnB0DBtF4BAKhreFBoPZuKdTCvT7/C+
-         Dd7w==
-X-Gm-Message-State: AFqh2kptMjmtjaOn8bgDAThsoJytyoWHCZ+nCwJcidVlsPjUGYadnIE1
-        Z1HkW4nVBqGOnCIhZ7nP7dE=
-X-Google-Smtp-Source: AMrXdXsE0hc14q00/Ji4tJF2zXxYjgrpZbqAN7yU8tEF5zJcQPgy7AKxaPcyNetQ1YqvfdfczeZc2Q==
-X-Received: by 2002:ac2:5b12:0:b0:4b5:6fa3:5d63 with SMTP id v18-20020ac25b12000000b004b56fa35d63mr2192589lfn.13.1671641706009;
-        Wed, 21 Dec 2022 08:55:06 -0800 (PST)
-Received: from [192.168.2.145] (109-252-113-89.nat.spd-mgts.ru. [109.252.113.89])
-        by smtp.googlemail.com with ESMTPSA id bi26-20020a05651c231a00b0027a2a26a655sm1395056ljb.8.2022.12.21.08.55.05
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Dec 2022 08:55:05 -0800 (PST)
-Message-ID: <8641fad2-7170-4c0c-fbd6-6e2e784b3106@gmail.com>
-Date:   Wed, 21 Dec 2022 19:54:58 +0300
+        with ESMTP id S234641AbiLURPV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Dec 2022 12:15:21 -0500
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0819060CB;
+        Wed, 21 Dec 2022 09:14:42 -0800 (PST)
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2BLFUkJq007601;
+        Wed, 21 Dec 2022 17:14:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type; s=qcppdkim1;
+ bh=kTRNd0ZWlY5KuPVYgpIN99RcdLmVOyb2yNRO1k0We5s=;
+ b=Ip8nBKYGA0hGRZhc9nYHz3gnoI68/ecFKxjfc4Ey0xBZr2QJ6LGav7xG9q8ts9Kl5DGx
+ BHzd+OyN/J3PVRBEVx05TXjUnrbxX5RUWQ15iG2ySuWVk1TZ43m5VTZXd8eu8soA+HEH
+ nfIoUAvJO0JCmFSEqFNwm12tFfCm8I+KV04kCJ0jF4sCIPX2JVTLGAaVZUbqRTt9gqpS
+ EvQB8ym4+C5yTNOw1bqNGizHgjBonfaTHbz0P6/z2pKFXlTaz5hGwgQg7grI3L7Rp0e8
+ QR0YQgj9W4FM+Z6RMvsxi19c4z5ZK9k/3QdlAlaNc82CIMz1i++adecQX/2QlSVTMUaM gg== 
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3mkkxctbj1-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 21 Dec 2022 17:14:30 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 2BLHEUCs024137
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 21 Dec 2022 17:14:30 GMT
+Received: from hyd-lnxbld559.qualcomm.com (10.80.80.8) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.36; Wed, 21 Dec 2022 09:14:25 -0800
+From:   Akhil P Oommen <quic_akhilpo@quicinc.com>
+To:     freedreno <freedreno@lists.freedesktop.org>,
+        <dri-devel@lists.freedesktop.org>, <linux-arm-msm@vger.kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>
+CC:     Akhil P Oommen <quic_akhilpo@quicinc.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH v4 1/5] PM: domains: Allow a genpd consumer to require a synced power off
+Date:   Wed, 21 Dec 2022 22:43:59 +0530
+Message-ID: <20221221224338.v4.1.I3e6b1f078ad0f1ca9358c573daa7b70ec132cdbe@changeid>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1671642843-5244-1-git-send-email-quic_akhilpo@quicinc.com>
+References: <1671642843-5244-1-git-send-email-quic_akhilpo@quicinc.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [Patch v1 01/10] memory: tegra: add interconnect support for DRAM
- scaling in Tegra234
-Content-Language: en-US
-To:     Sumit Gupta <sumitg@nvidia.com>, treding@nvidia.com,
-        krzysztof.kozlowski@linaro.org, dmitry.osipenko@collabora.com,
-        viresh.kumar@linaro.org, rafael@kernel.org, jonathanh@nvidia.com,
-        robh+dt@kernel.org, linux-kernel@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-Cc:     sanjayc@nvidia.com, ksitaraman@nvidia.com, ishah@nvidia.com,
-        bbasu@nvidia.com
-References: <20221220160240.27494-1-sumitg@nvidia.com>
- <20221220160240.27494-2-sumitg@nvidia.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-In-Reply-To: <20221220160240.27494-2-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: nxnlkiM3p5S542DpfjpQ4Typjqz_ei4L
+X-Proofpoint-ORIG-GUID: nxnlkiM3p5S542DpfjpQ4Typjqz_ei4L
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-12-21_09,2022-12-21_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
+ clxscore=1015 priorityscore=1501 spamscore=0 adultscore=0 impostorscore=0
+ malwarescore=0 suspectscore=0 mlxscore=0 mlxlogscore=938
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2212210144
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-20.12.2022 19:02, Sumit Gupta пишет:
->  static int tegra186_emc_probe(struct platform_device *pdev)
->  {
->  	struct mrq_emc_dvfs_latency_response response;
->  	struct tegra_bpmp_message msg;
->  	struct tegra186_emc *emc;
-> +	struct tegra_mc *mc;
->  	unsigned int i;
->  	int err;
->  
-> @@ -158,6 +307,9 @@ static int tegra186_emc_probe(struct platform_device *pdev)
->  	if (!emc)
->  		return -ENOMEM;
->  
-> +	platform_set_drvdata(pdev, emc);
-> +	emc->dev = &pdev->dev;
-> +
->  	emc->bpmp = tegra_bpmp_get(&pdev->dev);
->  	if (IS_ERR(emc->bpmp))
->  		return dev_err_probe(&pdev->dev, PTR_ERR(emc->bpmp), "failed to get BPMP\n");
-> @@ -236,6 +388,19 @@ static int tegra186_emc_probe(struct platform_device *pdev)
->  	debugfs_create_file("max_rate", S_IRUGO | S_IWUSR, emc->debugfs.root,
->  			    emc, &tegra186_emc_debug_max_rate_fops);
->  
-> +	mc = dev_get_drvdata(emc->dev->parent);
-> +	if (mc && mc->soc->icc_ops) {
-> +		if (tegra_bpmp_mrq_is_supported(emc->bpmp, MRQ_BWMGR_INT)) {
-> +			err = tegra_emc_interconnect_init(emc);
-> +			if (!err)
-> +				return err;
-> +			dev_err(&pdev->dev, "tegra_emc_interconnect_init failed:%d\n", err);
-> +			goto put_bpmp;
-> +		} else {
-> +			dev_info(&pdev->dev, "MRQ_BWMGR_INT not present\n");
-> +		}
+From: Ulf Hansson <ulf.hansson@linaro.org>
 
-If there is no MRQ_BWMGR_INT, then device drivers using ICC won't probe.
-This is either a error condition, or ICC should inited and then ICC
-changes should be skipped.
+Some genpd providers doesn't ensure that it has turned off at hardware.
+This is fine until the consumer really requires during some special
+scenarios that the power domain collapse at hardware before it is
+turned ON again.
+
+An example is the reset sequence of Adreno GPU which requires that the
+'gpucc cx gdsc' power domain should move to OFF state in hardware at
+least once before turning in ON again to clear the internal state.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Akhil P Oommen <quic_akhilpo@quicinc.com>
+---
+
+Changes in v4:
+- Update genpd function documentation (Ulf)
+
+Changes in v2:
+- Minor formatting fix
+
+ drivers/base/power/domain.c | 26 ++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  5 +++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 967bcf9d415e..84662d338188 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -519,6 +519,31 @@ ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_genpd_get_next_hrtimer);
+ 
++/*
++ * dev_pm_genpd_synced_poweroff - Next power off should be synchronous
++ *
++ * @dev: A device that is attached to the genpd.
++ *
++ * Allows a consumer of the genpd to notify the provider that the next power off
++ * should be synchronous.
++ *
++ * It is assumed that the users guarantee that the genpd wouldn't be detached
++ * while this routine is getting called.
++ */
++void dev_pm_genpd_synced_poweroff(struct device *dev)
++{
++	struct generic_pm_domain *genpd;
++
++	genpd = dev_to_genpd_safe(dev);
++	if (!genpd)
++		return;
++
++	genpd_lock(genpd);
++	genpd->synced_poweroff = true;
++	genpd_unlock(genpd);
++}
++EXPORT_SYMBOL_GPL(dev_pm_genpd_synced_poweroff);
++
+ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ {
+ 	unsigned int state_idx = genpd->state_idx;
+@@ -562,6 +587,7 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ 
+ out:
+ 	raw_notifier_call_chain(&genpd->power_notifiers, GENPD_NOTIFY_ON, NULL);
++	genpd->synced_poweroff = false;
+ 	return 0;
+ err:
+ 	raw_notifier_call_chain(&genpd->power_notifiers, GENPD_NOTIFY_OFF,
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 1cd41bdf73cf..f776fb93eaa0 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -136,6 +136,7 @@ struct generic_pm_domain {
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
+ 	unsigned int performance_state;	/* Aggregated max performance state */
+ 	cpumask_var_t cpus;		/* A cpumask of the attached CPUs */
++	bool synced_poweroff;		/* A consumer needs a synced poweroff */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+ 	int (*power_on)(struct generic_pm_domain *domain);
+ 	struct raw_notifier_head power_notifiers; /* Power on/off notifiers */
+@@ -235,6 +236,7 @@ int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb);
+ int dev_pm_genpd_remove_notifier(struct device *dev);
+ void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
+ ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev);
++void dev_pm_genpd_synced_poweroff(struct device *dev);
+ 
+ extern struct dev_power_governor simple_qos_governor;
+ extern struct dev_power_governor pm_domain_always_on_gov;
+@@ -300,6 +302,9 @@ static inline ktime_t dev_pm_genpd_get_next_hrtimer(struct device *dev)
+ {
+ 	return KTIME_MAX;
+ }
++static inline void dev_pm_genpd_synced_poweroff(struct device *dev)
++{ }
++
+ #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
+ #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
+ #endif
+-- 
+2.7.4
 
