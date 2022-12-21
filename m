@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D138C4167B
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Dec 2022 02:05:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B8BEC46467
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Dec 2022 02:05:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234339AbiLUCFm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Dec 2022 21:05:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53358 "EHLO
+        id S234192AbiLUCFq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Dec 2022 21:05:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53214 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234338AbiLUCFd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Dec 2022 21:05:33 -0500
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1CE41FF84
-        for <linux-pm@vger.kernel.org>; Tue, 20 Dec 2022 18:05:31 -0800 (PST)
-Received: by mail-lf1-x12b.google.com with SMTP id 1so21377288lfz.4
-        for <linux-pm@vger.kernel.org>; Tue, 20 Dec 2022 18:05:31 -0800 (PST)
+        with ESMTP id S234287AbiLUCFg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Dec 2022 21:05:36 -0500
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 318BD1F9EF
+        for <linux-pm@vger.kernel.org>; Tue, 20 Dec 2022 18:05:33 -0800 (PST)
+Received: by mail-lf1-x12f.google.com with SMTP id 1so21377352lfz.4
+        for <linux-pm@vger.kernel.org>; Tue, 20 Dec 2022 18:05:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=1Z/T/h1X9J//bIOmS0oUJh7T3j6BIBrKh1OEuGetHB8=;
-        b=XvLc5SXYOW4p60XB55nOihQ2Q9Q4zkrmyoqN2oK77QbnRp16V8yoFAnr9sD51JC2C+
-         pX0qoDNWQBTDGX4KNEgse+FHrCTEh7JbuNSnzgnfVpLd1SwZgvPwg7PHagn0HD6RKiSf
-         hgBaNqwvnREmPYz2t8PwiIiviLfUkjpKjWIOPwAo4H3xoON2u4r6PmWKvnx2gGrICXER
-         NzJRKqd1PwtRvNIxLDJ+Swb1FC9SpeCGMQTqJ9LRX+LHQG+osDEh3mOIY03Z/83X27KM
-         k8c/lIzHBYyM3KcRMp7AnsUjeGKIHLTCo7ORRJYhc9CSBlxhiqTqtccSZKJtIE31/7O9
-         pC0w==
+        bh=wbww+IqG9GctHbEU9KIuyB6Vi/2pULzTX7OLKgs1wwk=;
+        b=crJzRtwgAE87DUY0ezKOhJ/YGD5rDb61yWuXNDjwJs7WGV0sZyex8ss9BVIU+IWHm6
+         vvjMaWB1aqkqqUeOJwPyEpPOBdq4Po8td6CWn0FEL41od/2yZV/UQxfeP06YGvzGEwti
+         KZkPEzf9fetD0392Ge3QuNJ1vt0tRQnA2DpK5LeEmQT9g/lQYtxUC5BbHczBjLFs/hAa
+         VbNOsUCgsRN5QekcJd6e8UyXg9TUWesZlFudj+abn75ckEkyt0rvtQTZ9iRYiGS95GVk
+         S4wwEjkKLcK8Fkf3p8LO4AYnk7LUwzUN5e4ZiO+hW4pQenCrMbLdlBw8mIKUaDWV5s+1
+         8JCA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=1Z/T/h1X9J//bIOmS0oUJh7T3j6BIBrKh1OEuGetHB8=;
-        b=yxjj4AHEWPPs6NFNq3kdLTTmkqP6qK+29KSiqat+ahwv81Qne2Vt0mFMEQnCHxfjQs
-         zkZOo5Rt5FRh6MncmchGf5y/rEPuZoGyqYYQKUmpgk+hczIuCzwaO2rX9ChyAukee/7V
-         qk2N0rSpwC/GCpLdakuXvehB8bh0HM4uwwNOiv77iF9qwaAYfUXLJ9n4acCEFjmaTI9J
-         U+Z+4FJtDeCqZ+RLJfZJIE6uN0+mg5SUoxYPa+nseSJofOL8Tk12kq/5c30cnljaDcuf
-         ovt4orkcL7NX+9NBGeh6iSfCY/qjT4CqbZvUhf+98wyknX9gNAPnwX7SE1bZEl1aHBns
-         yi7Q==
-X-Gm-Message-State: AFqh2koLGxdDOqmh2ojsouiogVr0Ur1IJl0+yI8qJWr7ACABOOvNn23q
-        ImG4kaufBYb8xGh9PtcFX40LnA==
-X-Google-Smtp-Source: AMrXdXuRMviGs1p935z4r1ByadYZGxUif1+QK9/LqBRocDr3Md7KblpwL3IVAHYyMQWZti22AqPreA==
-X-Received: by 2002:a05:6512:400d:b0:4b5:1b4a:efb7 with SMTP id br13-20020a056512400d00b004b51b4aefb7mr94291lfb.61.1671588329985;
-        Tue, 20 Dec 2022 18:05:29 -0800 (PST)
+        bh=wbww+IqG9GctHbEU9KIuyB6Vi/2pULzTX7OLKgs1wwk=;
+        b=x9w3Hh4LlrzYkuGwnbuhi/IYpaIh4l4irY23aoJFHAPXYTXkZT5N+yG4z5MjTfAbCe
+         vqdInS1lhJQkG0uZdIGefFcL6wQVNh6eDHXRtOsTRpL7n2PysYvOVcjdrAYd8SZ7iXKq
+         rc3IaQtqYT8MFcZOHclWAt/y5r8T06phok8pLNeL8DLShwHUH7PFwJ7iavplCSjq6NXY
+         QMXD5Wq0LdLVIy3rcLpmPpL+EMSPzncSk3XgK7dQO7ZcuXl/ve+mr6dEFctQ8qdu2BOr
+         9wLIGo9QVuPbZlTrk1K0ZQEH/TsKWw6io82y1xQ2Sx2JhqqpArgnex8Tay/6lKxFUqwF
+         ZN7w==
+X-Gm-Message-State: AFqh2kqwu9yrFPjumTAIpnnYeYE2mtqL0RHxIoBtQCmXxfXOzo3sFoFe
+        2afPqH17YcGVt7jtsC2mw+IBMA==
+X-Google-Smtp-Source: AMrXdXtJiQEDtE5EIstQmwoZitxcGRBiWJfzn2dnViwsysUtefTWrMOqpaAjx/QaInD8cWcKocDabw==
+X-Received: by 2002:a05:6512:539:b0:4c5:64ed:df06 with SMTP id o25-20020a056512053900b004c564eddf06mr53711lfc.27.1671588331574;
+        Tue, 20 Dec 2022 18:05:31 -0800 (PST)
 Received: from eriador.lan (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
-        by smtp.gmail.com with ESMTPSA id q18-20020a056512211200b004b257fef958sm1673048lfr.94.2022.12.20.18.05.29
+        by smtp.gmail.com with ESMTPSA id q18-20020a056512211200b004b257fef958sm1673048lfr.94.2022.12.20.18.05.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 Dec 2022 18:05:29 -0800 (PST)
+        Tue, 20 Dec 2022 18:05:31 -0800 (PST)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -63,9 +63,9 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     "Bryan O'Donoghue" <bryan.odonoghue@linaro.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v4 10/20] thermal/drivers/tsens: Support using nvmem cells for msm8974 calibration
-Date:   Wed, 21 Dec 2022 04:05:10 +0200
-Message-Id: <20221221020520.1326964-11-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v4 12/20] thermal/drivers/tsens: Drop single-cell code for mdm9607
+Date:   Wed, 21 Dec 2022 04:05:12 +0200
+Message-Id: <20221221020520.1326964-13-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20221221020520.1326964-1-dmitry.baryshkov@linaro.org>
 References: <20221221020520.1326964-1-dmitry.baryshkov@linaro.org>
@@ -75,190 +75,82 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MSM8974 has two sets of calibration data: main one and backup. Add
-support for parsing both sets of calibration data from nvmem cells.
+There is no dtsi file for mdm9607 in the kernel sources. Drop the
+compatibility with unofficial dtsi and remove support for handling the
+single-cell calibration data on mdm9607.
 
+Cc: Konrad Dybcio <konrad.dybcio@linaro.org>
 Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/thermal/qcom/tsens-v0_1.c | 50 +++++++++++++++++++++++++++++++
- drivers/thermal/qcom/tsens.c      | 39 +++++++++++++++++++-----
- drivers/thermal/qcom/tsens.h      |  1 +
- 3 files changed, 82 insertions(+), 8 deletions(-)
+ drivers/thermal/qcom/tsens-v0_1.c | 38 ++++++-------------------------
+ 1 file changed, 7 insertions(+), 31 deletions(-)
 
 diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index a6c2b2b76264..41b061c0bdd1 100644
+index 6b8f7cb7ab9d..d3f46f44c1e1 100644
 --- a/drivers/thermal/qcom/tsens-v0_1.c
 +++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -3,6 +3,7 @@
-  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
-  */
- 
-+#include <linux/nvmem-consumer.h>
- #include <linux/platform_device.h>
- #include "tsens.h"
- 
-@@ -359,6 +360,50 @@ static int calibrate_8939(struct tsens_priv *priv)
+@@ -266,30 +266,6 @@ static int calibrate_8974(struct tsens_priv *priv)
  	return 0;
  }
  
-+static int calibrate_8974_nvmem(struct tsens_priv *priv)
-+{
-+	int i, ret, mode;
-+	u32 p1[11], p2[11];
-+	u32 backup;
-+
-+	ret = nvmem_cell_read_variable_le_u32(priv->dev, "use_backup", &backup);
-+	if (ret == -ENOENT)
-+		dev_warn(priv->dev, "Please migrate to separate nvmem cells for calibration data\n");
-+	if (ret < 0)
-+		return ret;
-+
-+	mode = tsens_read_calibration(priv, 2, p1, p2, backup == BKP_SEL);
-+	if (mode < 0)
-+		return mode;
-+
-+	if (mode == NO_PT_CALIB) {
-+		p1[0] += 2;
-+		p1[1] += 9;
-+		p1[2] += 3;
-+		p1[3] += 9;
-+		p1[4] += 5;
-+		p1[5] += 9;
-+		p1[6] += 7;
-+		p1[7] += 10;
-+		p1[8] += 8;
-+		p1[9] += 9;
-+		p1[10] += 8;
-+	} else {
-+		for (i = 0; i < priv->num_sensors; i++) {
-+			/*
-+			 * ONE_PT_CALIB requires using addition here instead of
-+			 * using OR operation.
-+			 */
-+			p1[i] += BIT_APPEND;
-+			p2[i] += BIT_APPEND;
-+		}
-+	}
-+
-+	compute_intercept_slope(priv, p1, p2, mode);
-+
-+	return 0;
-+}
-+
- static int calibrate_8974(struct tsens_priv *priv)
- {
- 	int base1 = 0, base2 = 0, i;
-@@ -366,6 +411,11 @@ static int calibrate_8974(struct tsens_priv *priv)
- 	int mode = 0;
- 	u32 *calib, *bkp;
- 	u32 calib_redun_sel;
-+	int ret;
-+
-+	ret = calibrate_8974_nvmem(priv);
-+	if (ret == 0)
-+		return 0;
- 
- 	calib = (u32 *)qfprom_read(priv->dev, "calib");
- 	if (IS_ERR(calib))
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 68aef0ed6182..83bf60fa9008 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -70,18 +70,21 @@ char *qfprom_read(struct device *dev, const char *cname)
- 	return ret;
- }
- 
--int tsens_calibrate_nvmem(struct tsens_priv *priv, int shift)
-+int tsens_read_calibration(struct tsens_priv *priv, int shift, u32 *p1, u32 *p2, bool backup)
- {
- 	u32 mode;
- 	u32 base1, base2;
--	u32 p1[MAX_SENSORS], p2[MAX_SENSORS];
--	char name[] = "sXX_pY"; /* s10_p1 */
-+	char name[] = "sXX_pY_backup"; /* s10_p1_backup */
- 	int i, ret;
- 
- 	if (priv->num_sensors > MAX_SENSORS)
- 		return -EINVAL;
- 
--	ret = nvmem_cell_read_variable_le_u32(priv->dev, "mode", &mode);
-+	ret = snprintf(name, sizeof(name), "mode%s", backup ? "_backup" : "");
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = nvmem_cell_read_variable_le_u32(priv->dev, name, &mode);
- 	if (ret == -ENOENT)
- 		dev_warn(priv->dev, "Please migrate to separate nvmem cells for calibration data\n");
- 	if (ret < 0)
-@@ -89,16 +92,24 @@ int tsens_calibrate_nvmem(struct tsens_priv *priv, int shift)
- 
- 	dev_dbg(priv->dev, "calibration mode is %d\n", mode);
- 
--	ret = nvmem_cell_read_variable_le_u32(priv->dev, "base1", &base1);
-+	ret = snprintf(name, sizeof(name), "base1%s", backup ? "_backup" : "");
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = nvmem_cell_read_variable_le_u32(priv->dev, name, &base1);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = snprintf(name, sizeof(name), "base2%s", backup ? "_backup" : "");
- 	if (ret < 0)
- 		return ret;
- 
--	ret = nvmem_cell_read_variable_le_u32(priv->dev, "base2", &base2);
-+	ret = nvmem_cell_read_variable_le_u32(priv->dev, name, &base2);
- 	if (ret < 0)
- 		return ret;
- 
- 	for (i = 0; i < priv->num_sensors; i++) {
--		ret = snprintf(name, sizeof(name), "s%d_p1", i);
-+		ret = snprintf(name, sizeof(name), "s%d_p1%s", i, backup ? "_backup" : "");
- 		if (ret < 0)
- 			return ret;
- 
-@@ -106,7 +117,7 @@ int tsens_calibrate_nvmem(struct tsens_priv *priv, int shift)
- 		if (ret)
- 			return ret;
- 
--		ret = snprintf(name, sizeof(name), "s%d_p2", i);
-+		ret = snprintf(name, sizeof(name), "s%d_p2%s", i, backup ? "_backup" : "");
- 		if (ret < 0)
- 			return ret;
- 
-@@ -136,6 +147,18 @@ int tsens_calibrate_nvmem(struct tsens_priv *priv, int shift)
- 		}
- 	}
- 
-+	return mode;
-+}
-+
-+int tsens_calibrate_nvmem(struct tsens_priv *priv, int shift)
-+{
-+	u32 p1[MAX_SENSORS], p2[MAX_SENSORS];
-+	int mode;
-+
-+	mode = tsens_read_calibration(priv, shift, p1, p2, false);
-+	if (mode < 0)
-+		return mode;
-+
- 	compute_intercept_slope(priv, p1, p2, mode);
- 
- 	return 0;
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 645ae02438fa..a9ae8df9f810 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -585,6 +585,7 @@ struct tsens_priv {
+-static int calibrate_9607(struct tsens_priv *priv)
+-{
+-	u32 p1[5], p2[5];
+-	u32 *qfprom_cdata;
+-	int mode, ret;
+-
+-	ret = tsens_calibrate_common(priv);
+-	if (!ret)
+-		return 0;
+-
+-	qfprom_cdata = (u32 *)qfprom_read(priv->dev, "calib");
+-	if (IS_ERR(qfprom_cdata))
+-		return PTR_ERR(qfprom_cdata);
+-
+-	mode = tsens_read_calibration_legacy(priv, &tsens_9607_nvmem,
+-					     p1, p2,
+-					     qfprom_cdata, NULL);
+-
+-	compute_intercept_slope(priv, p1, p2, mode);
+-	kfree(qfprom_cdata);
+-
+-	return 0;
+-}
+-
+ static int __init init_8939(struct tsens_priv *priv) {
+ 	priv->sensor[0].slope = 2911;
+ 	priv->sensor[1].slope = 2789;
+@@ -353,6 +329,12 @@ static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
+ 	[TRDY] = REG_FIELD(TM_TRDY_OFF, 0, 0),
  };
  
- char *qfprom_read(struct device *dev, const char *cname);
-+int tsens_read_calibration(struct tsens_priv *priv, int shift, u32 *p1, u32 *p2, bool backup);
- int tsens_calibrate_nvmem(struct tsens_priv *priv, int shift);
- int tsens_calibrate_common(struct tsens_priv *priv);
- void compute_intercept_slope(struct tsens_priv *priv, u32 *pt1, u32 *pt2, u32 mode);
++static const struct tsens_ops ops_v0_1 = {
++	.init		= init_common,
++	.calibrate	= tsens_calibrate_common,
++	.get_temp	= get_temp_common,
++};
++
+ static const struct tsens_ops ops_8916 = {
+ 	.init		= init_common,
+ 	.calibrate	= calibrate_8916,
+@@ -396,15 +378,9 @@ struct tsens_plat_data data_8974 = {
+ 	.fields	= tsens_v0_1_regfields,
+ };
+ 
+-static const struct tsens_ops ops_9607 = {
+-	.init		= init_common,
+-	.calibrate	= calibrate_9607,
+-	.get_temp	= get_temp_common,
+-};
+-
+ struct tsens_plat_data data_9607 = {
+ 	.num_sensors	= 5,
+-	.ops		= &ops_9607,
++	.ops		= &ops_v0_1,
+ 	.feat		= &tsens_v0_1_feat,
+ 	.fields	= tsens_v0_1_regfields,
+ };
 -- 
 2.35.1
 
