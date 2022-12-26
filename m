@@ -2,41 +2,41 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86C2DC4167B
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Dec 2022 09:43:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE383C4708E
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Dec 2022 09:43:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231534AbiLZJnC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Dec 2022 04:43:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60158 "EHLO
+        id S231689AbiLZJnE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Dec 2022 04:43:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60170 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229447AbiLZJnB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Dec 2022 04:43:01 -0500
+        with ESMTP id S229638AbiLZJnC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Dec 2022 04:43:02 -0500
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7DB5E9A;
-        Mon, 26 Dec 2022 01:42:55 -0800 (PST)
-X-UUID: 3d8b3de9dccd48a38854db9895f980cf-20221226
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E417265B;
+        Mon, 26 Dec 2022 01:42:57 -0800 (PST)
+X-UUID: f75097b16bd44136bf827b66f0e67cd0-20221226
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=+ZY4AZDYf3MqfVor9zqLlQKC36zLAsqpKfJ+7P47ujI=;
-        b=iRqE5c1fBQfL9ilf9ed2Vj8bLdLF+Uuiep35H9CBSpFBhd1wB2QvdlX7Zvf2WfcAuR9Pj4o2B+4Bbx5/ajnldNn4UzHeeNXRVAA92mjfhWNCBpk/tzwQxD+dX+8d9oEQKGx98t81eQQL+xpzveomHDnNChVw7sK8MwqbvD1b1t0=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=ehDXbWE7c2/1x4Hvq0je5a3soIAyc70ylWW5qGoa4JM=;
+        b=uqgBqnjJhx/EplZXO0VOkT2mnlyC7a8/FhVhhy0tZcX4w1jS+xxWR+2Vb48+97cob8qegzs3gu+M/ZKaPUFZqunu7u8M4rD+tOIhZ8mD2GpbdQc1iDtRMK9JDfOwGqmfGuL/zYLHxO0O2s0x2Hxb7Km4v2N/+DHZ6Sf5woWA2b8=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.14,REQID:30fa7659-3431-4768-9d21-253a3aa23a69,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-        release,TS:0
-X-CID-META: VersionHash:dcaaed0,CLOUDID:e1166a8a-8530-4eff-9f77-222cf6e2895b,B
+X-CID-O-INFO: VERSION:1.1.14,REQID:64ab8a17-7552-4ee6-bd9d-ff92101a8d5d,IP:0,U
+        RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+        :release,TS:-5
+X-CID-META: VersionHash:dcaaed0,CLOUDID:d10fcf52-dd49-462e-a4be-2143a3ddc739,B
         ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
         RL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
-X-UUID: 3d8b3de9dccd48a38854db9895f980cf-20221226
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
+X-UUID: f75097b16bd44136bf827b66f0e67cd0-20221226
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1154924887; Mon, 26 Dec 2022 17:42:52 +0800
+        with ESMTP id 68490924; Mon, 26 Dec 2022 17:42:50 +0800
 Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs13n1.mediatek.inc (172.21.101.193) with Microsoft SMTP Server
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Mon, 26 Dec 2022 17:42:51 +0800
+ 15.2.792.15; Mon, 26 Dec 2022 17:42:49 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Mon, 26 Dec 2022 17:42:51 +0800
+ 15.2.792.15 via Frontend Transport; Mon, 26 Dec 2022 17:42:49 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -48,10 +48,11 @@ CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v1 13/13] soc: mediatek: mtk-svs: keep svs alive even though debug cmd create fail
-Date:   Mon, 26 Dec 2022 17:42:48 +0800
-Message-ID: <20221226094248.4506-14-roger.lu@mediatek.com>
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Ricardo Ribalda <ribalda@chromium.org>
+Subject: [PATCH v1 01/13] soc: mediatek: mtk-svs: enable the IRQ later
+Date:   Mon, 26 Dec 2022 17:42:36 +0800
+Message-ID: <20221226094248.4506-2-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20221226094248.4506-1-roger.lu@mediatek.com>
 References: <20221226094248.4506-1-roger.lu@mediatek.com>
@@ -62,30 +63,70 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some projects might not support DEBUG_FS but still needs svs to be
-supported. Therefore, keep svs alive even though debug cmd create fail.
+From: Ricardo Ribalda <ribalda@chromium.org>
 
+If the system does not come from reset (like when is booted via
+kexec(), the peripheral might trigger an IRQ before the data structures
+are initialized.
+
+Fixes:
+
+[    0.227710] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000f08
+[    0.227913] Call trace:
+[    0.227918]  svs_isr+0x8c/0x538
+
+Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
- drivers/soc/mediatek/mtk-svs.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/soc/mediatek/mtk-svs.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-index af3a12e29e78..c780a115543e 100644
+index 0469c9dfeb04..91e06f43969d 100644
 --- a/drivers/soc/mediatek/mtk-svs.c
 +++ b/drivers/soc/mediatek/mtk-svs.c
-@@ -2390,10 +2390,8 @@ static int svs_probe(struct platform_device *pdev)
+@@ -2379,20 +2379,6 @@ static int svs_probe(struct platform_device *pdev)
+ 		goto svs_probe_free_resource;
  	}
  
- 	ret = svs_create_debug_cmds(svsp);
--	if (ret) {
-+	if (ret)
- 		dev_err(svsp->dev, "svs create debug cmds fail: %d\n", ret);
--		goto svs_probe_iounmap;
+-	svsp_irq = platform_get_irq(pdev, 0);
+-	if (svsp_irq < 0) {
+-		ret = svsp_irq;
+-		goto svs_probe_free_resource;
 -	}
+-
+-	ret = devm_request_threaded_irq(svsp->dev, svsp_irq, NULL, svs_isr,
+-					IRQF_ONESHOT, svsp->name, svsp);
+-	if (ret) {
+-		dev_err(svsp->dev, "register irq(%d) failed: %d\n",
+-			svsp_irq, ret);
+-		goto svs_probe_free_resource;
+-	}
+-
+ 	svsp->main_clk = devm_clk_get(svsp->dev, "main");
+ 	if (IS_ERR(svsp->main_clk)) {
+ 		dev_err(svsp->dev, "failed to get clock: %ld\n",
+@@ -2414,6 +2400,20 @@ static int svs_probe(struct platform_device *pdev)
+ 		goto svs_probe_clk_disable;
+ 	}
  
- 	return 0;
- 
++	svsp_irq = platform_get_irq(pdev, 0);
++	if (svsp_irq < 0) {
++		ret = svsp_irq;
++		goto svs_probe_iounmap;
++	}
++
++	ret = devm_request_threaded_irq(svsp->dev, svsp_irq, NULL, svs_isr,
++					IRQF_ONESHOT, svsp->name, svsp);
++	if (ret) {
++		dev_err(svsp->dev, "register irq(%d) failed: %d\n",
++			svsp_irq, ret);
++		goto svs_probe_iounmap;
++	}
++
+ 	ret = svs_start(svsp);
+ 	if (ret) {
+ 		dev_err(svsp->dev, "svs start fail: %d\n", ret);
 -- 
 2.18.0
 
