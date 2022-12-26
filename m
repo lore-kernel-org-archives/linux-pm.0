@@ -2,79 +2,94 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FAF8C3DA79
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Dec 2022 22:36:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7825AC46467
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Dec 2022 22:50:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232439AbiLZWgZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Dec 2022 17:36:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40832 "EHLO
+        id S232491AbiLZWuU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Dec 2022 17:50:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232377AbiLZWgH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Dec 2022 17:36:07 -0500
-Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D473110C0;
-        Mon, 26 Dec 2022 14:36:00 -0800 (PST)
-Received: by mail-ot1-f54.google.com with SMTP id p17-20020a9d6951000000b00678306ceb94so7302257oto.5;
-        Mon, 26 Dec 2022 14:36:00 -0800 (PST)
+        with ESMTP id S232425AbiLZWuA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Dec 2022 17:50:00 -0500
+Received: from mail-io1-xd2c.google.com (mail-io1-xd2c.google.com [IPv6:2607:f8b0:4864:20::d2c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52C3D25E7;
+        Mon, 26 Dec 2022 14:49:59 -0800 (PST)
+Received: by mail-io1-xd2c.google.com with SMTP id z144so6215192iof.3;
+        Mon, 26 Dec 2022 14:49:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=R8ZQWcOuaItNqEqb8fb1Ttbkxvq+QX//Eo34yPc/SMY=;
+        b=QSRhxgXe7bU4RLcuceAdMdRQSzG12VFnijUx/NrTFF519FnvufvDnbPQVgV66f6TBo
+         Egbh/J6bKhi5I4hFqfk9P4/32MaXaJfX63IwjBYZMowezMSJu3EvbTw6MaTJx3zQ0+J4
+         /zk0WO7DnCQTwChTQ9kPWVDeSRbZi5wTuhm0flCG6rxZ7SJ7gYwKH99tA65PMRdsCLhf
+         e9t2A6ZzHAGxLYH8CiikEO+vgVAQz4asv5wlU3e45sLTEnzBjugwueze+/295GatjrPX
+         zDVSw1bdABVxEIoNkNYRTCn8q0AtgO+lGMH2VByrL5Uij4vwookyQvHnaFRBQAh/GAW+
+         UDMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tj9ILcg+bOogopqPB7nsta4PBD3Nt/3ZcFqMZXwiVHA=;
-        b=nxy5NSKl7M3k2lwMI8+92FjaN1YyeiqRm9LDbRUjpnxJgtNXiuNfkOXFxEGkM1D9wv
-         3s2NhjuP3C7Z67vNsaG/AoJXWt0aJOvcAYRU0zU7pViTD/KqvU4QkSqkhvLcopSt51Gk
-         g7TTkf63ksZptJuZduTYPxybir66kWSWBMEitQCQ6rCBUgsSBGulKcGu1sNsWctGnnIK
-         SFcJpyUnqKu5zNKw61czDvqJe91hkTuDxeTVS6GKLPUWggidwL+7hfP4JkVYOvhgNehz
-         lfpVSNwtbQ4NJwrb0/ppJiiQdnvrvkPTAZ/ICbvlGQrjeOmX1RMO7LuaSzpbNOT3k9CE
-         cNRA==
-X-Gm-Message-State: AFqh2kr8tAxQt+DLSuBET13JhVgQDGvfFdPFcS4o2WWZJEXU78vOa79J
-        eEPNqJ4lXt/VCeYUVl0fGA==
-X-Google-Smtp-Source: AMrXdXuUKd9iWApMElBZHyqgOah61WNUz7iZJN/YCH14LXn6Be+G7ggj7P0yhLekXDl67qWKKVPX4w==
-X-Received: by 2002:a9d:73ca:0:b0:66a:ea19:28ea with SMTP id m10-20020a9d73ca000000b0066aea1928eamr12596982otk.38.1672094160197;
-        Mon, 26 Dec 2022 14:36:00 -0800 (PST)
-Received: from robh_at_kernel.org ([2605:ef80:80e8:2792:eb0e:539f:f657:547b])
-        by smtp.gmail.com with ESMTPSA id q17-20020a05683022d100b0066e67925addsm5840174otc.26.2022.12.26.14.35.58
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=R8ZQWcOuaItNqEqb8fb1Ttbkxvq+QX//Eo34yPc/SMY=;
+        b=q8fS2ekO0j11PxfdpnKDNRhxKfHzjI6RU2OgEkKKclXM7rhXE5QSxrCTEm6zHCPFBB
+         hH9UOax3ptT+NKdDPD739UzmKxTJND3XVr7UjDSXX9k7BfzUKUVyMD0f5SWpxp2RXL0r
+         eC0ZFkcqHwrFC5BsZfYq2X9fpbDbiUCpzhGCRDK88v7Gtc6c3eU7r/so5qJpELbNlg/X
+         OV5tYVfP1EK550Lf0OuA0wPRLM54owlmTw4nX+XOiu4L2LXcGq6fsEzRtX9krsl1cnly
+         YCpnNC2xCx0pZMQQZP9HX7620zRfQyuHuJUxBt5Kb7GycV7vAH3yjWvcLZ9Of9cpHfFq
+         PSMQ==
+X-Gm-Message-State: AFqh2koCpZMH4PzY3shL33fMXl6FfzD6qEnVlhJfHFSF0cQfMvYZWsS+
+        JhenuddQLtV3ruKoDZ6eoLe8pjPO8fVuPw==
+X-Google-Smtp-Source: AMrXdXtpZ/WPCbaIcnT65q0BQg3Fx3H9SOAXrdmoAvhflOwDpIZlgtp7vu7RJem9vfO6tZDqea9SDw==
+X-Received: by 2002:a6b:7206:0:b0:6e5:d1b2:d921 with SMTP id n6-20020a6b7206000000b006e5d1b2d921mr13004146ioc.18.1672094998713;
+        Mon, 26 Dec 2022 14:49:58 -0800 (PST)
+Received: from localhost ([2607:fea8:a2df:3d00::e694])
+        by smtp.gmail.com with ESMTPSA id j1-20020a5e9e41000000b006e2d21ab686sm4398142ioq.38.2022.12.26.14.49.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Dec 2022 14:35:59 -0800 (PST)
-Received: (nullmailer pid 61940 invoked by uid 1000);
-        Mon, 26 Dec 2022 19:07:12 -0000
-Date:   Mon, 26 Dec 2022 13:07:12 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     linux-pm@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Odelu Kukatla <okukatla@codeaurora.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>, devicetree@vger.kernel.org,
+        Mon, 26 Dec 2022 14:49:58 -0800 (PST)
+From:   Richard Acayan <mailingradian@gmail.com>
+To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 1/3] dt-bindings: interconnect: split SC7280 to own schema
-Message-ID: <167208163047.61869.6167467313153334331.robh@kernel.org>
-References: <20221223132040.80858-1-krzysztof.kozlowski@linaro.org>
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Cc:     Odelu Kukatla <quic_okukatla@quicinc.com>,
+        Luca Weiss <luca@z3ntu.xyz>,
+        Richard Acayan <mailingradian@gmail.com>
+Subject: [PATCH 0/4] SDM670 Interconnects
+Date:   Mon, 26 Dec 2022 17:49:40 -0500
+Message-Id: <20221226224944.37242-1-mailingradian@gmail.com>
+X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221223132040.80858-1-krzysztof.kozlowski@linaro.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+This series adds interconnects and consumers to the Snapdragon 670.
 
-On Fri, 23 Dec 2022 14:20:38 +0100, Krzysztof Kozlowski wrote:
-> SC7280 comes with interconnects having and missing IO address space, so
-> split it from common file for easier maintenancen and to fix warnings like:
-> 
->   sc7280-herobrine-crd.dtb: interconnect: 'reg' is a required property
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
->  .../bindings/interconnect/qcom,rpmh.yaml      | 12 ----
->  .../interconnect/qcom,sc7280-rpmh.yaml        | 71 +++++++++++++++++++
->  2 files changed, 71 insertions(+), 12 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sc7280-rpmh.yaml
-> 
+Richard Acayan (4):
+  dt-bindings: interconnect: add sdm670 interconnects
+  interconnect: qcom: add sdm670 interconnects
+  arm64: dts: qcom: sdm670: add interconnects
+  arm64: dts: qcom: sdm670: add opps for peripherals
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+ .../bindings/interconnect/qcom,rpmh.yaml      |   8 +
+ arch/arm64/boot/dts/qcom/sdm670.dtsi          | 165 +++++++
+ drivers/interconnect/qcom/Kconfig             |   9 +
+ drivers/interconnect/qcom/Makefile            |   2 +
+ drivers/interconnect/qcom/sdm670.c            | 440 ++++++++++++++++++
+ drivers/interconnect/qcom/sdm670.h            | 128 +++++
+ .../dt-bindings/interconnect/qcom,sdm670.h    | 136 ++++++
+ 7 files changed, 888 insertions(+)
+ create mode 100644 drivers/interconnect/qcom/sdm670.c
+ create mode 100644 drivers/interconnect/qcom/sdm670.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,sdm670.h
+
+-- 
+2.39.0
+
