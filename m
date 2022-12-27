@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFC4FC10F1B
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Dec 2022 12:09:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7225EC46467
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Dec 2022 12:09:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229579AbiL0MJq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Dec 2022 07:09:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51548 "EHLO
+        id S231721AbiL0MJr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Dec 2022 07:09:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231510AbiL0MJb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2022 07:09:31 -0500
+        with ESMTP id S231445AbiL0MJa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2022 07:09:30 -0500
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0F72C74;
-        Tue, 27 Dec 2022 04:09:29 -0800 (PST)
-X-UUID: b35a70be08d4479691b14978edd7a41f-20221227
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF486B0D;
+        Tue, 27 Dec 2022 04:09:26 -0800 (PST)
+X-UUID: 365b76a695714dc7bfa639c82fdfec1c-20221227
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=egOl5iq5coPFCtNJCs9nRdOS8+zQru1z7+L5Cup8Vb0=;
-        b=FkDQKcBOAY6BZ8lO5wWELl+Nly7XOR7thNOIHN+xrxOVoEGTmG9tQULqwPxVPE7KI4adGD0TTO8tp7+G46vzBMKET2DhOYnNIOpr1cSQXFDptKRTrO52wlMS038mFD2TngYUsriUrGQEWz29CNyyD7OF+vdEalM/OUhQMudNIyU=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=ncu7dzvmjAzaCKHKvpc5QfiiB7neOIm6BCctvHMioBc=;
+        b=OndYrEFfSC786cjK8eiNsW3Xn5ZTl379eCS2snWG2/2h3R7bDW1auS5arqABx0crFtAnG8EfOwe56qoEtK4upXwaDUFEYDhpUyrwVLXH9GQeeeMuXaa//VNl2Ast/XUBcYGvHgNXBWdNlpAq3maO3M7UEoqAvGrjzOkzlWkJeNQ=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.14,REQID:e6935c66-e605-469d-a4f6-154dc40939a0,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-        release,TS:0
-X-CID-META: VersionHash:dcaaed0,CLOUDID:059cee52-dd49-462e-a4be-2143a3ddc739,B
+X-CID-O-INFO: VERSION:1.1.14,REQID:20c61863-3ec1-4e08-b884-322621da0ac9,IP:0,U
+        RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+        N:release,TS:-25
+X-CID-META: VersionHash:dcaaed0,CLOUDID:d73c18f4-ff42-4fb0-b929-626456a83c14,B
         ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
         RL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
-X-UUID: b35a70be08d4479691b14978edd7a41f-20221227
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+X-UUID: 365b76a695714dc7bfa639c82fdfec1c-20221227
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1677478592; Tue, 27 Dec 2022 20:09:20 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1353592235; Tue, 27 Dec 2022 20:09:18 +0800
 Received: from mtkmbs13n1.mediatek.inc (172.21.101.193) by
- mtkmbs13n2.mediatek.inc (172.21.101.108) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Tue, 27 Dec 2022 20:09:19 +0800
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Tue, 27 Dec 2022 20:09:18 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs13n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
  15.2.792.15 via Frontend Transport; Tue, 27 Dec 2022 20:09:18 +0800
@@ -49,9 +49,9 @@ CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v2 13/13] soc: mediatek: mtk-svs: keep svs alive even though debug cmd create fail
-Date:   Tue, 27 Dec 2022 20:09:14 +0800
-Message-ID: <20221227120914.11346-14-roger.lu@mediatek.com>
+Subject: [PATCH v2 08/13] soc: mediatek: mtk-svs: use svs get efuse common function
+Date:   Tue, 27 Dec 2022 20:09:09 +0800
+Message-ID: <20221227120914.11346-9-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20221227120914.11346-1-roger.lu@mediatek.com>
 References: <20221227120914.11346-1-roger.lu@mediatek.com>
@@ -62,80 +62,163 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some projects might not support DEBUG_FS but still needs svs to be
-supported. Therefore, keep svs alive even though debug cmd create fail.
+SVS might need to read both svs efuse and thermal efuse on the probe flow.
+Therefore, add a common efuse read function to remove the superfluous
+codes.
 
 Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
- drivers/soc/mediatek/mtk-svs.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+ drivers/soc/mediatek/mtk-svs.c | 69 ++++++++++++----------------------
+ 1 file changed, 24 insertions(+), 45 deletions(-)
 
 diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-index 8ef330175d39..89579276c09c 100644
+index 9578baf3d9a7..70f87715a084 100644
 --- a/drivers/soc/mediatek/mtk-svs.c
 +++ b/drivers/soc/mediatek/mtk-svs.c
-@@ -806,7 +806,7 @@ static int svs_status_debug_show(struct seq_file *m, void *v)
- 
- debug_fops_ro(status);
- 
--static int svs_create_debug_cmds(struct svs_platform *svsp)
-+static void svs_create_debug_cmds(struct svs_platform *svsp)
- {
- 	struct svs_bank *svsb;
- 	struct dentry *svs_dir, *svsb_dir, *file_entry;
-@@ -831,7 +831,7 @@ static int svs_create_debug_cmds(struct svs_platform *svsp)
- 	if (IS_ERR(svs_dir)) {
- 		dev_err(svsp->dev, "cannot create %s: %ld\n",
- 			d, PTR_ERR(svs_dir));
--		return PTR_ERR(svs_dir);
-+		return;
- 	}
- 
- 	for (i = 0; i < ARRAY_SIZE(svs_entries); i++) {
-@@ -841,7 +841,7 @@ static int svs_create_debug_cmds(struct svs_platform *svsp)
- 		if (IS_ERR(file_entry)) {
- 			dev_err(svsp->dev, "cannot create %s/%s: %ld\n",
- 				d, svs_entries[i].name, PTR_ERR(file_entry));
--			return PTR_ERR(file_entry);
-+			return;
- 		}
- 	}
- 
-@@ -855,7 +855,7 @@ static int svs_create_debug_cmds(struct svs_platform *svsp)
- 		if (IS_ERR(svsb_dir)) {
- 			dev_err(svsp->dev, "cannot create %s/%s: %ld\n",
- 				d, svsb->name, PTR_ERR(svsb_dir));
--			return PTR_ERR(svsb_dir);
-+			return;
- 		}
- 
- 		for (i = 0; i < ARRAY_SIZE(svsb_entries); i++) {
-@@ -866,12 +866,10 @@ static int svs_create_debug_cmds(struct svs_platform *svsp)
- 				dev_err(svsp->dev, "no %s/%s/%s?: %ld\n",
- 					d, svsb->name, svsb_entries[i].name,
- 					PTR_ERR(file_entry));
--				return PTR_ERR(file_entry);
-+				return;
- 			}
- 		}
- 	}
--
--	return 0;
+@@ -1701,26 +1701,28 @@ static int svs_bank_resource_setup(struct svs_platform *svsp)
+ 	return 0;
  }
  
- static u32 interpolate(u32 f0, u32 f1, u32 v0, u32 v1, u32 fx)
-@@ -2417,11 +2415,7 @@ static int svs_probe(struct platform_device *pdev)
- 		goto svs_probe_iounmap;
+-static int svs_thermal_efuse_get_data(struct svs_platform *svsp)
++static int svs_get_efuse_data(struct svs_platform *svsp,
++			      const char *nvmem_cell_name,
++			      u32 **svsp_efuse, size_t *svsp_efuse_max)
+ {
+ 	struct nvmem_cell *cell;
+ 
+-	/* Thermal efuse parsing */
+-	cell = nvmem_cell_get(svsp->dev, "t-calibration-data");
++	cell = nvmem_cell_get(svsp->dev, nvmem_cell_name);
+ 	if (IS_ERR_OR_NULL(cell)) {
+-		dev_err(svsp->dev, "no \"t-calibration-data\"? %ld\n", PTR_ERR(cell));
++		dev_err(svsp->dev, "no \"%s\"? %ld\n",
++			nvmem_cell_name, PTR_ERR(cell));
+ 		return PTR_ERR(cell);
  	}
  
--	ret = svs_create_debug_cmds(svsp);
--	if (ret) {
--		dev_err(svsp->dev, "svs create debug cmds fail: %d\n", ret);
--		goto svs_probe_iounmap;
--	}
-+	svs_create_debug_cmds(svsp);
+-	svsp->tefuse = nvmem_cell_read(cell, &svsp->tefuse_max);
+-	if (IS_ERR(svsp->tefuse)) {
+-		dev_err(svsp->dev, "cannot read thermal efuse: %ld\n",
+-			PTR_ERR(svsp->tefuse));
++	*svsp_efuse = nvmem_cell_read(cell, svsp_efuse_max);
++	if (IS_ERR(*svsp_efuse)) {
++		dev_err(svsp->dev, "cannot read \"%s\" efuse: %ld\n",
++			nvmem_cell_name, PTR_ERR(*svsp_efuse));
+ 		nvmem_cell_put(cell);
+-		return PTR_ERR(svsp->tefuse);
++		return PTR_ERR(*svsp_efuse);
+ 	}
+ 
+-	svsp->tefuse_max /= sizeof(u32);
++	*svsp_efuse_max /= sizeof(u32);
+ 	nvmem_cell_put(cell);
  
  	return 0;
+@@ -1768,7 +1770,8 @@ static bool svs_mt8192_efuse_parsing(struct svs_platform *svsp)
+ 		svsb->vmax += svsb->dvt_fixed;
+ 	}
+ 
+-	ret = svs_thermal_efuse_get_data(svsp);
++	ret = svs_get_efuse_data(svsp, "t-calibration-data",
++				 &svsp->tefuse, &svsp->tefuse_max);
+ 	if (ret)
+ 		return false;
+ 
+@@ -1873,7 +1876,8 @@ static bool svs_mt8183_efuse_parsing(struct svs_platform *svsp)
+ 		}
+ 	}
+ 
+-	ret = svs_thermal_efuse_get_data(svsp);
++	ret = svs_get_efuse_data(svsp, "t-calibration-data",
++				 &svsp->tefuse, &svsp->tefuse_max);
+ 	if (ret)
+ 		return false;
+ 
+@@ -1975,32 +1979,6 @@ static bool svs_mt8183_efuse_parsing(struct svs_platform *svsp)
+ 	return true;
+ }
+ 
+-static bool svs_is_efuse_data_correct(struct svs_platform *svsp)
+-{
+-	struct nvmem_cell *cell;
+-
+-	/* Get svs efuse by nvmem */
+-	cell = nvmem_cell_get(svsp->dev, "svs-calibration-data");
+-	if (IS_ERR(cell)) {
+-		dev_err(svsp->dev, "no \"svs-calibration-data\"? %ld\n",
+-			PTR_ERR(cell));
+-		return false;
+-	}
+-
+-	svsp->efuse = nvmem_cell_read(cell, &svsp->efuse_max);
+-	if (IS_ERR(svsp->efuse)) {
+-		dev_err(svsp->dev, "cannot read svs efuse: %ld\n",
+-			PTR_ERR(svsp->efuse));
+-		nvmem_cell_put(cell);
+-		return false;
+-	}
+-
+-	svsp->efuse_max /= sizeof(u32);
+-	nvmem_cell_put(cell);
+-
+-	return true;
+-}
+-
+ static struct device *svs_get_subsys_device(struct svs_platform *svsp,
+ 					    const char *node_name)
+ {
+@@ -2335,8 +2313,9 @@ static int svs_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	if (!svs_is_efuse_data_correct(svsp)) {
+-		dev_notice(svsp->dev, "efuse data isn't correct\n");
++	ret = svs_get_efuse_data(svsp, "svs-calibration-data",
++				 &svsp->efuse, &svsp->efuse_max);
++	if (ret) {
+ 		ret = -EPERM;
+ 		goto svs_probe_free_efuse;
+ 	}
+@@ -2344,13 +2323,13 @@ static int svs_probe(struct platform_device *pdev)
+ 	if (!svsp_data->efuse_parsing(svsp)) {
+ 		dev_err(svsp->dev, "efuse data parsing failed\n");
+ 		ret = -EPERM;
+-		goto svs_probe_free_resource;
++		goto svs_probe_free_tefuse;
+ 	}
+ 
+ 	ret = svs_bank_resource_setup(svsp);
+ 	if (ret) {
+ 		dev_err(svsp->dev, "svs bank resource setup fail: %d\n", ret);
+-		goto svs_probe_free_resource;
++		goto svs_probe_free_tefuse;
+ 	}
+ 
+ 	svsp->main_clk = devm_clk_get(svsp->dev, "main");
+@@ -2358,13 +2337,13 @@ static int svs_probe(struct platform_device *pdev)
+ 		dev_err(svsp->dev, "failed to get clock: %ld\n",
+ 			PTR_ERR(svsp->main_clk));
+ 		ret = PTR_ERR(svsp->main_clk);
+-		goto svs_probe_free_resource;
++		goto svs_probe_free_tefuse;
+ 	}
+ 
+ 	ret = clk_prepare_enable(svsp->main_clk);
+ 	if (ret) {
+ 		dev_err(svsp->dev, "cannot enable main clk: %d\n", ret);
+-		goto svs_probe_free_resource;
++		goto svs_probe_free_tefuse;
+ 	}
+ 
+ 	svsp->base = of_iomap(svsp->dev->of_node, 0);
+@@ -2408,7 +2387,7 @@ static int svs_probe(struct platform_device *pdev)
+ svs_probe_clk_disable:
+ 	clk_disable_unprepare(svsp->main_clk);
+ 
+-svs_probe_free_resource:
++svs_probe_free_tefuse:
+ 	if (!IS_ERR_OR_NULL(svsp->tefuse))
+ 		kfree(svsp->tefuse);
  
 -- 
 2.18.0
