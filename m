@@ -2,126 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31D80C4167B
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Dec 2022 20:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD1A9C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Dec 2022 21:27:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230389AbiL1Ull (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Dec 2022 15:41:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60872 "EHLO
+        id S230508AbiL1V1V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Dec 2022 16:27:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230406AbiL1Ulk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2022 15:41:40 -0500
-Received: from mail-il1-f178.google.com (mail-il1-f178.google.com [209.85.166.178])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21C6C10ED;
-        Wed, 28 Dec 2022 12:41:38 -0800 (PST)
-Received: by mail-il1-f178.google.com with SMTP id d10so8736112ilc.12;
-        Wed, 28 Dec 2022 12:41:38 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5uBOQQYDQCIH7OuKYOssxy4KhYY8m5RLan038W/LXmQ=;
-        b=gUgagun4p8kPK3znssZQqmHmLAY9t7WcXzRdmjlqg1W7LanXj4dPThdLA8Luq38bSW
-         jNR1EOrb2WAlaD4XhVJoJ3/AZku76pEko39JydqScCYoMgsUU/z/WjSSYUSk+Ub6AtG1
-         5fOaApnd9hOku3mP8+x4HRyYmoMTasdvGk8do4G0VdnvhWWj5HJaMbQ4CZEifEOcEBA0
-         wBgysXoIArJ4L6ngFvfTaW2XxJBwtbA2r/uSFbMQ04ciNOfZxL9ijDStD+0cmVsHzxBn
-         m7IBE1v+D2oMYm4h1F9VQNAumrLh+R1eNN73Yun9kM9uOw97SXtxCzswnX/u9GkZHXJt
-         egPQ==
-X-Gm-Message-State: AFqh2kpNRnaZDwxdrnpViGoMCx6nm1mCacm4LnvI3U8+tkolssjYmsLY
-        TBY5jhOT66Kthn5sdg2uiuLXGlbJlnfx2PRNHdQjJwTdfCQ=
-X-Google-Smtp-Source: AMrXdXtVFTOYdLYC6urrEdam3FcpQgdgrbXEsoSsRSMqw6Empx6ZePHd+m5ebqd/PzjGesSIvGKSR1KSrzAfQ7un8BE=
-X-Received: by 2002:a05:6e02:1d8c:b0:303:814:dc0d with SMTP id
- h12-20020a056e021d8c00b003030814dc0dmr2830249ila.131.1672260097365; Wed, 28
- Dec 2022 12:41:37 -0800 (PST)
-MIME-Version: 1.0
-References: <12138067.O9o76ZdvQC@kreacher> <24821308109ba20d845e11caf32bede92fec5d8e.camel@linux.intel.com>
-In-Reply-To: <24821308109ba20d845e11caf32bede92fec5d8e.camel@linux.intel.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 28 Dec 2022 21:41:24 +0100
-Message-ID: <CAJZ5v0j1km2y6RAZcfJ8ERnn8r73vm2mSd6MUq2mHj32hFXu-g@mail.gmail.com>
-Subject: Re: [PATCH v1 1/2] ACPI: processor: perflib: Use the "no limit"
- frequency QoS
-To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Pratyush Yadav <ptyadav@amazon.de>,
+        with ESMTP id S229745AbiL1V1U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2022 16:27:20 -0500
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 273A8140B5;
+        Wed, 28 Dec 2022 13:27:18 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
+ id 5f72451d9ceeb59f; Wed, 28 Dec 2022 22:27:16 +0100
+Received: from kreacher.localnet (89-77-51-84.dynamic.chello.pl [89.77.51.84])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 0C8E9780AF8;
+        Wed, 28 Dec 2022 22:27:16 +0100 (CET)
+Authentication-Results: v370.home.net.pl; dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Authentication-Results: v370.home.net.pl; spf=fail smtp.mailfrom=rjwysocki.net
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Pratyush Yadav <ptyadav@amazon.de>,
         LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 3/3] cpufreq: intel_pstate: Drop ACPI _PSS states table patching
+Date:   Wed, 28 Dec 2022 22:26:04 +0100
+Message-ID: <2269998.ElGaqSPkdT@kreacher>
+In-Reply-To: <12138067.O9o76ZdvQC@kreacher>
+References: <12138067.O9o76ZdvQC@kreacher>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 89.77.51.84
+X-CLIENT-HOSTNAME: 89-77-51-84.dynamic.chello.pl
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedriedvgdduhedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeekledrjeejrdehuddrkeegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdejjedrhedurdekgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehpthihrggurghvsegrmhgriihonhdruggvpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghs
+ rdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Dec 27, 2022 at 9:55 PM srinivas pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> On Tue, 2022-12-27 at 20:51 +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > When _PPC returns 0, it means that the CPU frequency is not limited
-> > by
-> > the platform firmware, so make acpi_processor_get_platform_limit()
-> > update the frequency QoS request used by it to "no limit" in that
-> > case
-> > and avoid updating the QoS request when the _PPC return value has not
-> > changed.
-> >
-> > This addresses a problem with limiting CPU frequency artificially on
-> > some systems after CPU offline/online to the frequency that
-> > corresponds
-> > to the first entry in the _PSS return package.
-> >
-> > While at it, move the _PPC return value check against the state count
-> > earlier to avoid setting performance_platform_limit to an invalid
-> > value.
-> >
-> > Reported-by: Pratyush Yadav <ptyadav@amazon.de>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/acpi/processor_perflib.c |   27 +++++++++++++++++++++------
-> >  1 file changed, 21 insertions(+), 6 deletions(-)
-> >
-> > Index: linux-pm/drivers/acpi/processor_perflib.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/acpi/processor_perflib.c
-> > +++ linux-pm/drivers/acpi/processor_perflib.c
-> > @@ -53,6 +53,8 @@ static int acpi_processor_get_platform_l
-> >  {
-> >         acpi_status status = 0;
-> >         unsigned long long ppc = 0;
-> > +       s32 qos_value;
-> > +       int index;
-> >         int ret;
-> >
-> >         if (!pr)
-> > @@ -72,17 +74,30 @@ static int acpi_processor_get_platform_l
-> >                 }
-> >         }
-> >
-> > +       index = ppc;
-> > +
-> > +       if (pr->performance_platform_limit == index ||
-> > +           ppc >= pr->performance->state_count)
-> > +               return 0;
->
-> Do we need to re initialize pr->performance_platform_limit to 0 in
-> acpi_processor_unregister_performance()?
->
-> If PPC was 1 before the offline and after online the above check will
-> cause it to return as the pr->performance_platform_limit is not
-> changed. Not sure if the PM QOS state is preserved after offline and
-> online. This is stored in a per CPU variable, not in dynamically
-> allocated memory which will be reallocated during online again.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Good point in general, but the QoS request is tied to the cpufreq
-policy, so it is not freed on offline.
+After making acpi_processor_get_platform_limit() use the "no limit"
+value for its frequency QoS request when _PPC returns 0, it is not
+necessary to replace the frequency corresponding to the first _PSS
+return package entry with the maximum turbo frequency of the given
+CPU in intel_pstate_init_acpi_perf_limits() any more, so drop the
+code doing that along with the comment explaining it.
 
-However, if the policy goes away and is created again for the same CPU
-(like when the intel_pstate mode is changed via its 'status' attribute
-in sysfs), there may be a stale value in performance_platform_limit,
-so it needs to be cleared in acpi_processor_ppc_init() when the QoS
-request is first set to "no limit".
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-I'll update the patch accordingly.  I think I'll also split it in two
-to avoid making too many changes in one go.
+v1 -> v2:
+   * Same as the previous [2/2], no changes.
+
+---
+ drivers/cpufreq/intel_pstate.c |   14 --------------
+ 1 file changed, 14 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -452,20 +452,6 @@ static void intel_pstate_init_acpi_perf_
+ 			 (u32) cpu->acpi_perf_data.states[i].control);
+ 	}
+ 
+-	/*
+-	 * The _PSS table doesn't contain whole turbo frequency range.
+-	 * This just contains +1 MHZ above the max non turbo frequency,
+-	 * with control value corresponding to max turbo ratio. But
+-	 * when cpufreq set policy is called, it will call with this
+-	 * max frequency, which will cause a reduced performance as
+-	 * this driver uses real max turbo frequency as the max
+-	 * frequency. So correct this frequency in _PSS table to
+-	 * correct max turbo frequency based on the turbo state.
+-	 * Also need to convert to MHz as _PSS freq is in MHz.
+-	 */
+-	if (!global.turbo_disabled)
+-		cpu->acpi_perf_data.states[0].core_frequency =
+-					policy->cpuinfo.max_freq / 1000;
+ 	cpu->valid_pss_table = true;
+ 	pr_debug("_PPC limits will be enforced\n");
+ 
+
+
+
