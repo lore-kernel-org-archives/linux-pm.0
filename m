@@ -2,89 +2,106 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EBAC3DA7A
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Dec 2022 00:40:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B0CBC4708D
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Dec 2022 03:01:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229716AbiL2Akw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Dec 2022 19:40:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52974 "EHLO
+        id S232989AbiL2DBT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Dec 2022 22:01:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231635AbiL2Aku (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2022 19:40:50 -0500
-Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF8D0BF4
-        for <linux-pm@vger.kernel.org>; Wed, 28 Dec 2022 16:40:48 -0800 (PST)
-Received: by mail-ot1-x330.google.com with SMTP id y18-20020a0568301d9200b0067082cd4679so10729008oti.4
-        for <linux-pm@vger.kernel.org>; Wed, 28 Dec 2022 16:40:48 -0800 (PST)
+        with ESMTP id S233070AbiL2DBM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2022 22:01:12 -0500
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19F2512756
+        for <linux-pm@vger.kernel.org>; Wed, 28 Dec 2022 19:01:09 -0800 (PST)
+Received: by mail-lf1-x12b.google.com with SMTP id cf42so25930542lfb.1
+        for <linux-pm@vger.kernel.org>; Wed, 28 Dec 2022 19:01:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=f2p2shVUpdpBRcPbig+xzUB8/WfGytn/tvXqnk/G7/Y=;
-        b=Gzjw0D8iyAbTjlB/MOb4J4YmMSW1zdzpRQCifiwhKhsZ7e8lkDYZvuuDw9+alRwI9j
-         3becoCce9AZU4D3fLWu5VgjqdWZmwVbd16kzYohhpmZHS64shJslyqIbB4nhVjZ0BvJd
-         Z4W7VaKotC5HqA/8wU3fn8lx7vi9Ox2i0PP+M1J7GM9ZuO3VCpP7hQrRndAfHkWkOpX+
-         GqnNNrnymEPDCRoO6MXXEEoMbfXd5hdAdox8Pdi/2sMyzkBeHL9F5HM5PoULI+bK7L4z
-         xMvOqu25W0oUvfDLAg7fCGEqRnesaAEkZgN7/t8t2Vlu6z6gNhM4BhIjvS3lWghb//4p
-         Mj0g==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=TXCQltnJB15hT96I0u7uf01iijzutH3MEcPaoII8eTE=;
+        b=B0t/ABUpg4aPD4l3uD/tKdcJHsdtWr6qTTrgvJzwxEWzX0Tj6RF4JhxLEQzV3zAdUa
+         PeDe4WQ5Gb1q9i7S+5mURVLaxjkZyJCb3WAysnn6hpB/DKuVdXrE9sb+Ox/r37Nrf6rb
+         mrgi24w0axd7xNDD/dOVqxf0GUsP+RcoQcCtnTjs9MpVvk5dKdfhkrb1Xs2oTmXB7G8l
+         IzmukR1veKX9ST+jcXdcYCTJYAvaFYl6Kbf+zc9G1CqQCFUfhU1ceeAi+EhZrl/eAeZ2
+         fJuN3j220ewD3RkjRYIgxKYrCjcosHVKFxUxxqx7CFkIk9li+AnoElNA00LhnwEgun0w
+         Vc7A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=f2p2shVUpdpBRcPbig+xzUB8/WfGytn/tvXqnk/G7/Y=;
-        b=Pc4FEymzv/Jp8IiQ9bRrCVOGk0HpIq4qyfjhalcJf6T9xR1vOR6w7MRM0ZSEl9gOlR
-         c1RUuzRh2q9++8pBiHE6EhXjVbLNjosvkwYlYWy3SnGfFOh+vX9jx/xn+49BEa6JKfr6
-         pNxkjgZCoDC0nSx4ZnmrYIBbbfxMA8wFU34v3qYB9ORokptZkrNt2a4M9U7iuxlWtrqr
-         1aG2FU46WUUymjnsWyKTLjU5ha66FM7PNnkDrGa2hUQNKNoFKzJusG7eKhgdFqEnIflx
-         MSPIEK41HHxkpt5U2b5pCntV2hAEfLYpBtg+O01l/dhArqs9HhjtKTT29wo3RtB/Y0M8
-         KjQw==
-X-Gm-Message-State: AFqh2kqrK0q9ODloBVGAezM9y3GuiZBagPok/ZDkNvIPtIXCgaRNRBaF
-        oSmvlQQM+J9TnzeifVAXZGBHK6CK9LSmK30XJBJacg==
-X-Google-Smtp-Source: AMrXdXss1Jmt661r3O2VlGaPW9mKv9FIuBxyzoUhU0tjN3DiJULKXqqoxPvNSGzhCM/K9neAcF+2BHIkcgzsyvCr2mg=
-X-Received: by 2002:a05:6830:3499:b0:66c:61c8:ceeb with SMTP id
- c25-20020a056830349900b0066c61c8ceebmr1793244otu.12.1672274448080; Wed, 28
- Dec 2022 16:40:48 -0800 (PST)
-MIME-Version: 1.0
-References: <20221221210917.458537-1-fabrizio.castro.jz@renesas.com> <20221221210917.458537-4-fabrizio.castro.jz@renesas.com>
-In-Reply-To: <20221221210917.458537-4-fabrizio.castro.jz@renesas.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Thu, 29 Dec 2022 01:40:36 +0100
-Message-ID: <CACRpkdZBz_+MeJjP5-vjNGbqyrCBTj+f=gm87o4sgiMqRwndVQ@mail.gmail.com>
-Subject: Re: [PATCH v2 3/4] gpio: Add support for the Renesas RZ/V2M PWC GPIOs
-To:     Fabrizio Castro <fabrizio.castro.jz@renesas.com>
-Cc:     Bartosz Golaszewski <brgl@bgdev.pl>,
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=TXCQltnJB15hT96I0u7uf01iijzutH3MEcPaoII8eTE=;
+        b=C+tn0eKo7Ys+mzpmKLSMCUA4o+qmdu7f3mylJUELwdHGElYCaDJuKx4WbRGfSUMJeA
+         Ce8IktLbwRVcidBDz20x9V8AGJ6Rrcsl1KjRjfcOzG0boexiLyVwyH/8rkOrFqg/4JaS
+         5Mb2NDrd13M1n1ig1r0XlH+jpNroxtx9D6Vk5etpBJig2MbrGYZG7PPD7iA3FMoxh/ub
+         Dm3zWlbaOosVpAGRUh4epyZM7Mu107v8OK5ZD81eL8XDhiBvmHrzNCeiDTOi8scWq0/u
+         HQjR4YXSdaGBRbm+9kZE3mbiOL4IEWiM5aGC2S8bMbBKIlW1+94VW3Qp2prEWG/+VOmL
+         DoZQ==
+X-Gm-Message-State: AFqh2kqYx2ZuZ9CmhBvvwVTVp0imVBPye9B81euDAoT+OgkIKzjGJZc1
+        Jr7TMlfFM4Bd+F5ILBrRfGU+Hg==
+X-Google-Smtp-Source: AMrXdXuvuVl9P6M4dvkUd4ynzY7US27FKEYHNUKxxFjMlZXY+i3qOoQTt6dcI9DuazbqrvWm95fKEA==
+X-Received: by 2002:a19:760a:0:b0:4cb:96:57d2 with SMTP id c10-20020a19760a000000b004cb009657d2mr5257961lff.36.1672282868392;
+        Wed, 28 Dec 2022 19:01:08 -0800 (PST)
+Received: from eriador.lan (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
+        by smtp.gmail.com with ESMTPSA id b11-20020a056512024b00b004b57277474esm2883070lfo.106.2022.12.28.19.01.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Dec 2022 19:01:07 -0800 (PST)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Lee Jones <lee@kernel.org>, linux-gpio@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Chris Paterson <Chris.Paterson2@renesas.com>,
-        Biju Das <biju.das@bp.renesas.com>,
-        linux-renesas-soc@vger.kernel.org,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Jacopo Mondi <jacopo@jmondi.org>
-Content-Type: text/plain; charset="UTF-8"
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     "Bryan O'Donoghue" <bryan.odonoghue@linaro.org>,
+        Shawn Guo <shawn.guo@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v5 01/20] dt-bindings: thermal: tsens: add msm8956 compat
+Date:   Thu, 29 Dec 2022 05:00:47 +0200
+Message-Id: <20221229030106.3303205-2-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20221229030106.3303205-1-dmitry.baryshkov@linaro.org>
+References: <20221229030106.3303205-1-dmitry.baryshkov@linaro.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Dec 21, 2022 at 10:09 PM Fabrizio Castro
-<fabrizio.castro.jz@renesas.com> wrote:
+When adding support for msm8976 it was thought that msm8956 would reuse
+the same compat. However checking the vendor kernel revealed that these
+two platforms use different slope values for calculating the calibration
+data.
 
-> The RZ/V2M SoC contains an External Power Sequence Controller
-> (PWC) module. The PWC module provides an external power supply
-> on/off sequence, on/off signal for the LPDDR4 core power supply,
-> General-Purpose Outputs, and key input signals.
->
-> Add a driver for controlling the General-Purpose Outputs.
->
-> Signed-off-by: Fabrizio Castro <fabrizio.castro.jz@renesas.com>
+Add new compatible for the tsens on msm8956 SoC.
 
-This is a nice driver.
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Yours,
-Linus Walleij
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 0231f187b097..f3660af0b3bf 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -37,6 +37,7 @@ properties:
+       - description: v1 of TSENS
+         items:
+           - enum:
++              - qcom,msm8956-tsens
+               - qcom,msm8976-tsens
+               - qcom,qcs404-tsens
+           - const: qcom,tsens-v1
+-- 
+2.39.0
+
