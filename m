@@ -2,120 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42D83C4332F
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Dec 2022 21:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EBAC3DA7A
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Dec 2022 00:40:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231446AbiL1V1Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Dec 2022 16:27:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39652 "EHLO
+        id S229716AbiL2Akw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Dec 2022 19:40:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52974 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231338AbiL1V1W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2022 16:27:22 -0500
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 544C4140AF;
-        Wed, 28 Dec 2022 13:27:21 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
- id 36817dc0ed6b8a83; Wed, 28 Dec 2022 22:27:19 +0100
-Received: from kreacher.localnet (89-77-51-84.dynamic.chello.pl [89.77.51.84])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 12A5D780AF8;
-        Wed, 28 Dec 2022 22:27:19 +0100 (CET)
-Authentication-Results: v370.home.net.pl; dmarc=none (p=none dis=none) header.from=rjwysocki.net
-Authentication-Results: v370.home.net.pl; spf=fail smtp.mailfrom=rjwysocki.net
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     Pratyush Yadav <ptyadav@amazon.de>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 1/3] ACPI: processor: perflib: Use the "no limit" frequency QoS
-Date:   Wed, 28 Dec 2022 22:21:49 +0100
-Message-ID: <12124970.O9o76ZdvQC@kreacher>
-In-Reply-To: <12138067.O9o76ZdvQC@kreacher>
-References: <12138067.O9o76ZdvQC@kreacher>
+        with ESMTP id S231635AbiL2Aku (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2022 19:40:50 -0500
+Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF8D0BF4
+        for <linux-pm@vger.kernel.org>; Wed, 28 Dec 2022 16:40:48 -0800 (PST)
+Received: by mail-ot1-x330.google.com with SMTP id y18-20020a0568301d9200b0067082cd4679so10729008oti.4
+        for <linux-pm@vger.kernel.org>; Wed, 28 Dec 2022 16:40:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=f2p2shVUpdpBRcPbig+xzUB8/WfGytn/tvXqnk/G7/Y=;
+        b=Gzjw0D8iyAbTjlB/MOb4J4YmMSW1zdzpRQCifiwhKhsZ7e8lkDYZvuuDw9+alRwI9j
+         3becoCce9AZU4D3fLWu5VgjqdWZmwVbd16kzYohhpmZHS64shJslyqIbB4nhVjZ0BvJd
+         Z4W7VaKotC5HqA/8wU3fn8lx7vi9Ox2i0PP+M1J7GM9ZuO3VCpP7hQrRndAfHkWkOpX+
+         GqnNNrnymEPDCRoO6MXXEEoMbfXd5hdAdox8Pdi/2sMyzkBeHL9F5HM5PoULI+bK7L4z
+         xMvOqu25W0oUvfDLAg7fCGEqRnesaAEkZgN7/t8t2Vlu6z6gNhM4BhIjvS3lWghb//4p
+         Mj0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=f2p2shVUpdpBRcPbig+xzUB8/WfGytn/tvXqnk/G7/Y=;
+        b=Pc4FEymzv/Jp8IiQ9bRrCVOGk0HpIq4qyfjhalcJf6T9xR1vOR6w7MRM0ZSEl9gOlR
+         c1RUuzRh2q9++8pBiHE6EhXjVbLNjosvkwYlYWy3SnGfFOh+vX9jx/xn+49BEa6JKfr6
+         pNxkjgZCoDC0nSx4ZnmrYIBbbfxMA8wFU34v3qYB9ORokptZkrNt2a4M9U7iuxlWtrqr
+         1aG2FU46WUUymjnsWyKTLjU5ha66FM7PNnkDrGa2hUQNKNoFKzJusG7eKhgdFqEnIflx
+         MSPIEK41HHxkpt5U2b5pCntV2hAEfLYpBtg+O01l/dhArqs9HhjtKTT29wo3RtB/Y0M8
+         KjQw==
+X-Gm-Message-State: AFqh2kqrK0q9ODloBVGAezM9y3GuiZBagPok/ZDkNvIPtIXCgaRNRBaF
+        oSmvlQQM+J9TnzeifVAXZGBHK6CK9LSmK30XJBJacg==
+X-Google-Smtp-Source: AMrXdXss1Jmt661r3O2VlGaPW9mKv9FIuBxyzoUhU0tjN3DiJULKXqqoxPvNSGzhCM/K9neAcF+2BHIkcgzsyvCr2mg=
+X-Received: by 2002:a05:6830:3499:b0:66c:61c8:ceeb with SMTP id
+ c25-20020a056830349900b0066c61c8ceebmr1793244otu.12.1672274448080; Wed, 28
+ Dec 2022 16:40:48 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20221221210917.458537-1-fabrizio.castro.jz@renesas.com> <20221221210917.458537-4-fabrizio.castro.jz@renesas.com>
+In-Reply-To: <20221221210917.458537-4-fabrizio.castro.jz@renesas.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Thu, 29 Dec 2022 01:40:36 +0100
+Message-ID: <CACRpkdZBz_+MeJjP5-vjNGbqyrCBTj+f=gm87o4sgiMqRwndVQ@mail.gmail.com>
+Subject: Re: [PATCH v2 3/4] gpio: Add support for the Renesas RZ/V2M PWC GPIOs
+To:     Fabrizio Castro <fabrizio.castro.jz@renesas.com>
+Cc:     Bartosz Golaszewski <brgl@bgdev.pl>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Lee Jones <lee@kernel.org>, linux-gpio@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Chris Paterson <Chris.Paterson2@renesas.com>,
+        Biju Das <biju.das@bp.renesas.com>,
+        linux-renesas-soc@vger.kernel.org,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Jacopo Mondi <jacopo@jmondi.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 89.77.51.84
-X-CLIENT-HOSTNAME: 89-77-51-84.dynamic.chello.pl
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedriedvgdduhedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppeekledrjeejrdehuddrkeegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdejjedrhedurdekgedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehpthihrggurghvsegrmhgriihonhdruggvpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghs
- rdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Dec 21, 2022 at 10:09 PM Fabrizio Castro
+<fabrizio.castro.jz@renesas.com> wrote:
 
-When _PPC returns 0, it means that the CPU frequency is not limited by
-the platform firmware, so make acpi_processor_get_platform_limit()
-update the frequency QoS request used by it to "no limit" in that case.
+> The RZ/V2M SoC contains an External Power Sequence Controller
+> (PWC) module. The PWC module provides an external power supply
+> on/off sequence, on/off signal for the LPDDR4 core power supply,
+> General-Purpose Outputs, and key input signals.
+>
+> Add a driver for controlling the General-Purpose Outputs.
+>
+> Signed-off-by: Fabrizio Castro <fabrizio.castro.jz@renesas.com>
 
-This addresses a problem with limiting CPU frequency artificially on
-some systems after CPU offline/online to the frequency that corresponds
-to the first entry in the _PSS return package.
+This is a nice driver.
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-Reported-by: Pratyush Yadav <ptyadav@amazon.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-v1 -> v2:
-   * Move some changes into a separate patch
-   * Update the changelog accordingly
-
----
- drivers/acpi/processor_perflib.c |   20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/acpi/processor_perflib.c
-===================================================================
---- linux-pm.orig/drivers/acpi/processor_perflib.c
-+++ linux-pm/drivers/acpi/processor_perflib.c
-@@ -53,6 +53,8 @@ static int acpi_processor_get_platform_l
- {
- 	acpi_status status = 0;
- 	unsigned long long ppc = 0;
-+	s32 qos_value;
-+	int index;
- 	int ret;
- 
- 	if (!pr)
-@@ -72,17 +74,27 @@ static int acpi_processor_get_platform_l
- 		}
- 	}
- 
-+	index = ppc;
-+
- 	pr_debug("CPU %d: _PPC is %d - frequency %s limited\n", pr->id,
--		       (int)ppc, ppc ? "" : "not");
-+		 index, index ? "is" : "is not");
- 
--	pr->performance_platform_limit = (int)ppc;
-+	pr->performance_platform_limit = index;
- 
- 	if (ppc >= pr->performance->state_count ||
- 	    unlikely(!freq_qos_request_active(&pr->perflib_req)))
- 		return 0;
- 
--	ret = freq_qos_update_request(&pr->perflib_req,
--			pr->performance->states[ppc].core_frequency * 1000);
-+	/*
-+	 * If _PPC returns 0, it means that all of the available states can be
-+	 * used ("no limit").
-+	 */
-+	if (index == 0)
-+		qos_value = FREQ_QOS_MAX_DEFAULT_VALUE;
-+	else
-+		qos_value = pr->performance->states[index].core_frequency * 1000;
-+
-+	ret = freq_qos_update_request(&pr->perflib_req, qos_value);
- 	if (ret < 0) {
- 		pr_warn("Failed to update perflib freq constraint: CPU%d (%d)\n",
- 			pr->id, ret);
-
-
-
+Yours,
+Linus Walleij
