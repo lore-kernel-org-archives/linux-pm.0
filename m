@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6164C54EBF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E4F7C3DA7D
 	for <linux-pm@archiver.kernel.org>; Sun,  1 Jan 2023 19:41:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230201AbjAATlH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 1 Jan 2023 14:41:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44182 "EHLO
+        id S231535AbjAATlE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 1 Jan 2023 14:41:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231618AbjAATk6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Jan 2023 14:40:58 -0500
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C1371103
-        for <linux-pm@vger.kernel.org>; Sun,  1 Jan 2023 11:40:50 -0800 (PST)
-Received: by mail-lf1-x12b.google.com with SMTP id f34so38853795lfv.10
-        for <linux-pm@vger.kernel.org>; Sun, 01 Jan 2023 11:40:50 -0800 (PST)
+        with ESMTP id S230201AbjAATkw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Jan 2023 14:40:52 -0500
+Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDE87FFC
+        for <linux-pm@vger.kernel.org>; Sun,  1 Jan 2023 11:40:48 -0800 (PST)
+Received: by mail-lf1-x133.google.com with SMTP id y25so38891221lfa.9
+        for <linux-pm@vger.kernel.org>; Sun, 01 Jan 2023 11:40:48 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=sKkMnuQ5SojDaY5hYIWgCCfvVjdyKx2GWzmqbTIcADY=;
-        b=VYcYC1ax1MLrJgHBCvyJGwKT3zrfoNe7w5d6nRnsAf2zRFDnuOC54MOf8waZkajwTa
-         cwJAQXk8bfSz2pgWDou6XNpWr8FL4SLrXgaLTASMDGU0Sl1D0D9TAwCBIFOAMg34kB6+
-         W+Z3K4BJVE7OW2SDAjBkJHcVEfKsd80atSqXLO0PWhpyYIfS7uhtEyIvCEQbU9F9aA8u
-         mZAkgta6oyi8E4a/FSSWRP4O8GyJkAfm8Zsv369SkfMbxpkQpfHfU97MHNdy9+y5NDsT
-         fqf248rMt4d1HkJnu0LDJl3eOhNNcJ2TcEFbzMl+KHKWDjFDddpxpBwDNCZrT8e1Omy5
-         JKSQ==
+        bh=zvBs74YfpWC4BlnlrgIGPtcDViBoUL8HTEcoEwvCBA8=;
+        b=H5B7N3z5HmbvnUAap8b+0J9g19cmjTXFDe7f80d/0ogLbfCPP/mph6SISOuV/8zP9D
+         vyVIbiLA1HqpeoyNuuTRqfTMQMKO6lqjA3+/Ya3qySMaFxbujQry3h/gWCKgcFdijhQt
+         4RyFMLZBM7rh7sEhXm/FK9CEN75Em2FIJX+aMbsWJgrPEpIn+D2IfGqgWm0Q4tXUKu/I
+         Rji3QvECGDbOMh75rGWj4VeeD3yORX3gfbvOXFWXG9nJJWeWXhuP1YUYNj5vk3f9kASS
+         Gj2FrAnwJyG2TvsScH1d9EkEFGtcEvfTbV669mIkjkbXc0/uZWvNAYkviKLvnGpE0Vx5
+         USWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=sKkMnuQ5SojDaY5hYIWgCCfvVjdyKx2GWzmqbTIcADY=;
-        b=5zmYwW6aHA6LQ+nWsRnwn2qZvjaORvvOLlaoXv0SP3oKnG3YipKITFt1BbvTieBXoW
-         TUMark8t0dI3nZZxwj90Cl+NbNBQPdGmHHcB2TLopFzSgsEmilSnjdow9RJVYZcPy871
-         ax+Dn6qQ6zgUgdRrg09Pj5aTfZfFqm97oNQiKs3N250Cl7KqtLhgkQ+2MCNker5SFUo5
-         t4WFSETqBw9niFuARkFGy3OUrHGQZUBrlr/W/902aWKUh5dSZAG8aLYICN0gkBs1RyAG
-         tkc8l6tSPWgkUm8KSG5sLM0F3Hq22mG8FEP8+pnc2Gt1xdQbzfnmjMlLEAnmecGTnU1c
-         AiMw==
-X-Gm-Message-State: AFqh2krnBpKGwSFGVylX9jEBTdba1pDG1dxtywEfDsItlnf477UmNFWM
-        PjfvaPQ4pFnNvhHtgKloz2K+uA==
-X-Google-Smtp-Source: AMrXdXsV1UpdNGuYD6mNR3cR3m/Mw9FyJKRGAeJm5OTkaFBzZ1WRSE5o++aaXVdQX3FIUy2BVQn6hQ==
-X-Received: by 2002:a05:6512:24e:b0:4b5:82f1:7f3d with SMTP id b14-20020a056512024e00b004b582f17f3dmr17895100lfo.58.1672602050591;
-        Sun, 01 Jan 2023 11:40:50 -0800 (PST)
+        bh=zvBs74YfpWC4BlnlrgIGPtcDViBoUL8HTEcoEwvCBA8=;
+        b=OLzlECUIKXCpOKEa34OJtPLQ02MeMGr0tP8tFYWp5orIrtlY5GTtgbkqtW1+/9ipIs
+         RfvVqUq9khQBG7FllK1ghD01tH90vpEaX/a2FIuJ4smF0gHJCsFrVGW5/2Ipb0KVwh6m
+         3Rc1CYkUO+5XzNTH4aL+MtgmrUJYosMqzMp6FoH276M/5okWZcwKmPf4c6eGwe9xQaNv
+         EdYeMcrHLrJkLUxfq0h/8/b4WOXjI7k7OTBqnWx8ZhO/99J5N3HqJ57QFL756OuTHaJj
+         Lkv7RGBCypHYkMTQxyaX1pU4k2eDMtc4Y5rWF/DSZ/7XipbG/xI5zTF543NtcsNDaNHC
+         BgNA==
+X-Gm-Message-State: AFqh2ko6rCDpnwZNASBXQOvzXZ6JFL5IOSGODPFyOadGNtBGhqLd+5Sf
+        0/NxNaxg7/Bd8HgG8w4qaKRWyw==
+X-Google-Smtp-Source: AMrXdXue3QJH27rRQHt1kNxFyvrmcDGwWgd5top/bBUbSdiiizljPqJMh73IKaKZiEBzf+cd85HAQA==
+X-Received: by 2002:a05:6512:3f16:b0:4ca:f97f:4a21 with SMTP id y22-20020a0565123f1600b004caf97f4a21mr9460201lfa.37.1672602048431;
+        Sun, 01 Jan 2023 11:40:48 -0800 (PST)
 Received: from eriador.lan (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
-        by smtp.gmail.com with ESMTPSA id w11-20020a056512098b00b004a100c21eaesm4228013lft.97.2023.01.01.11.40.49
+        by smtp.gmail.com with ESMTPSA id w11-20020a056512098b00b004a100c21eaesm4228013lft.97.2023.01.01.11.40.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 01 Jan 2023 11:40:49 -0800 (PST)
+        Sun, 01 Jan 2023 11:40:47 -0800 (PST)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -63,10 +63,12 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     "Bryan O'Donoghue" <bryan.odonoghue@linaro.org>,
         Shawn Guo <shawn.guo@linaro.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: [PATCH v6 16/20] arm64: dts: qcom: msm8916: specify per-sensor calibration cells
-Date:   Sun,  1 Jan 2023 21:40:30 +0200
-Message-Id: <20230101194034.831222-17-dmitry.baryshkov@linaro.org>
+        devicetree@vger.kernel.org,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+Subject: [PATCH v6 14/20] thermal/drivers/tsens: Drop single-cell code for msm8976/msm8956
+Date:   Sun,  1 Jan 2023 21:40:28 +0200
+Message-Id: <20230101194034.831222-15-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230101194034.831222-1-dmitry.baryshkov@linaro.org>
 References: <20230101194034.831222-1-dmitry.baryshkov@linaro.org>
@@ -76,118 +78,71 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Specify pre-parsed per-sensor calibration nvmem cells in the tsens
-device node rather than parsing the whole data blob in the driver.
+There is no dtsi file for msm8976 in the kernel sources. Drop the
+compatibility with unofficial dtsi and remove support for handling the
+single-cell calibration data on msm8976.
 
+Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 85 +++++++++++++++++++++++++--
- 1 file changed, 79 insertions(+), 6 deletions(-)
+ drivers/thermal/qcom/tsens-v1.c | 29 ++---------------------------
+ 1 file changed, 2 insertions(+), 27 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 2ca8e977fc2a..2ae21c5ade03 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -442,11 +442,70 @@ qfprom: qfprom@5c000 {
- 			reg = <0x0005c000 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
--			tsens_caldata: caldata@d0 {
--				reg = <0xd0 0x8>;
-+
-+			tsens_base1: base1@d0 {
-+				reg = <0xd0 0x1>;
-+				bits = <0 7>;
-+			};
-+
-+			tsens_s0_p1: s0-p1@d0 {
-+				reg = <0xd0 0x2>;
-+				bits = <7 5>;
-+			};
-+
-+			tsens_s0_p2: s0-p2@d1 {
-+				reg = <0xd1 0x2>;
-+				bits = <4 5>;
-+			};
-+
-+			tsens_s1_p1: s1-p1@d2 {
-+				reg = <0xd2 0x1>;
-+				bits = <1 5>;
-+			};
-+			tsens_s1_p2: s1-p2@d2 {
-+				reg = <0xd2 0x2>;
-+				bits = <6 5>;
-+			};
-+			tsens_s2_p1: s2-p1@d3 {
-+				reg = <0xd3 0x1>;
-+				bits = <3 5>;
-+			};
-+
-+			tsens_s2_p2: s2-p2@d4 {
-+				reg = <0xd4 0x1>;
-+				bits = <0 5>;
-+			};
-+
-+			// no tsens with hw_id 3
-+
-+			tsens_s4_p1: s4-p1@d4 {
-+				reg = <0xd4 0x2>;
-+				bits = <5 5>;
-+			};
-+
-+			tsens_s4_p2: s4-p2@d5 {
-+				reg = <0xd5 0x1>;
-+				bits = <2 5>;
-+			};
-+
-+			tsens_s5_p1: s5-p1@d5 {
-+				reg = <0xd5 0x2>;
-+				bits = <7 5>;
- 			};
--			tsens_calsel: calsel@ec {
--				reg = <0xec 0x4>;
-+
-+			tsens_s5_p2: s5-p2@d6 {
-+				reg = <0xd6 0x2>;
-+				bits = <4 5>;
-+			};
-+
-+			tsens_base2: base2@d7 {
-+				reg = <0xd7 0x1>;
-+				bits = <1 7>;
-+			};
-+
-+			tsens_mode: mode@ec {
-+				reg = <0xef 0x1>;
-+				bits = <5 3>;
- 			};
- 		};
+diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+index 6d1ea430f90b..b822a426066d 100644
+--- a/drivers/thermal/qcom/tsens-v1.c
++++ b/drivers/thermal/qcom/tsens-v1.c
+@@ -88,31 +88,6 @@ static int calibrate_v1(struct tsens_priv *priv)
+ 	return 0;
+ }
  
-@@ -473,8 +532,22 @@ tsens: thermal-sensor@4a9000 {
- 			compatible = "qcom,msm8916-tsens", "qcom,tsens-v0_1";
- 			reg = <0x004a9000 0x1000>, /* TM */
- 			      <0x004a8000 0x1000>; /* SROT */
--			nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
--			nvmem-cell-names = "calib", "calib_sel";
-+
-+			// no hw_id 3
-+			nvmem-cells = <&tsens_mode>,
-+				      <&tsens_base1>, <&tsens_base2>,
-+				      <&tsens_s0_p1>, <&tsens_s0_p2>,
-+				      <&tsens_s1_p1>, <&tsens_s1_p2>,
-+				      <&tsens_s2_p1>, <&tsens_s2_p2>,
-+				      <&tsens_s4_p1>, <&tsens_s4_p2>,
-+				      <&tsens_s5_p1>, <&tsens_s5_p2>;
-+			nvmem-cell-names = "mode",
-+					   "base1", "base2",
-+					   "s0_p1", "s0_p2",
-+					   "s1_p1", "s1_p2",
-+					   "s2_p1", "s2_p2",
-+					   "s4_p1", "s4_p2",
-+					   "s5_p1", "s5_p2";
- 			#qcom,sensors = <5>;
- 			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
- 			interrupt-names = "uplow";
+-static int calibrate_8976(struct tsens_priv *priv)
+-{
+-	u32 p1[11], p2[11];
+-	u32 *qfprom_cdata;
+-	int mode, ret;
+-
+-	ret = tsens_calibrate_common(priv);
+-	if (!ret)
+-		return 0;
+-
+-	qfprom_cdata = (u32 *)qfprom_read(priv->dev, "calib");
+-	if (IS_ERR(qfprom_cdata))
+-		return PTR_ERR(qfprom_cdata);
+-
+-	mode = tsens_read_calibration_legacy(priv, &tsens_8976_nvmem,
+-					     p1, p2,
+-					     qfprom_cdata, NULL);
+-
+-
+-	compute_intercept_slope(priv, p1, p2, mode);
+-	kfree(qfprom_cdata);
+-
+-	return 0;
+-}
+-
+ /* v1.x: msm8956,8976,qcs404,405 */
+ 
+ static struct tsens_features tsens_v1_feat = {
+@@ -211,7 +186,7 @@ struct tsens_plat_data data_tsens_v1 = {
+ 
+ static const struct tsens_ops ops_8956 = {
+ 	.init		= init_8956,
+-	.calibrate	= calibrate_8976,
++	.calibrate	= tsens_calibrate_common,
+ 	.get_temp	= get_temp_tsens_valid,
+ };
+ 
+@@ -224,7 +199,7 @@ struct tsens_plat_data data_8956 = {
+ 
+ static const struct tsens_ops ops_8976 = {
+ 	.init		= init_common,
+-	.calibrate	= calibrate_8976,
++	.calibrate	= tsens_calibrate_common,
+ 	.get_temp	= get_temp_tsens_valid,
+ };
+ 
 -- 
 2.39.0
 
