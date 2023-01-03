@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE7AFC4708E
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:30:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97D8CC46467
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:30:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233082AbjACL35 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Jan 2023 06:29:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57704 "EHLO
+        id S237391AbjACLaA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Jan 2023 06:30:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57760 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237446AbjACL3n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 06:29:43 -0500
+        with ESMTP id S237448AbjACL3o (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 06:29:44 -0500
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33C4DFD01;
-        Tue,  3 Jan 2023 03:29:35 -0800 (PST)
-X-UUID: 860d5573e83745bf84eb45d41f03f421-20230103
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 258DA10042;
+        Tue,  3 Jan 2023 03:29:38 -0800 (PST)
+X-UUID: f69125d12c6d445197d68a33d7d36f85-20230103
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=lmc3nBCTQwWzf0yQuGvl+YARoD+4DowvoSdMjMCGIrM=;
-        b=czBDGMzy0jt1Jr0Td0ER6cs6aMnGsyB0zNzbuN86ALEWgO2JHdziJEoaHsDQ4E7xiCT13uVemuz0b9ryFzrO/eUVPLtc285q1x9Pm94TDkXPeQzZ+X03xzugTxZYhQgVuyL9H8J0qGCb5gBno5nKjrLzvdZEGj6Jb0acEutNSdQ=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=4gNcF7vsUH3TomKrULGmuoGv4uA8ZyTj2XFNqGbNkWo=;
+        b=UCyBMSNLCktALEJjdn1Tg5zzc/hJxnJ1IcL+KpwjWAjSO3BQ5MjCfuc5RBqumGSMrOdqaqWRYZYboXrHC9HKBuSiLhEOiOuq3ZBHzXZ6ogAzeO0wnxIskaWvh0IW8FHR41WnKBj6zPLttWqErqNJRxlOnUF1B7DS7Bshw02nz3E=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.16,REQID:e6e5d94e-0065-4c6a-95a1-339360872b0d,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-        :release,TS:95
-X-CID-INFO: VERSION:1.1.16,REQID:e6e5d94e-0065-4c6a-95a1-339360872b0d,IP:0,URL
-        :0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTION
-        :quarantine,TS:95
-X-CID-META: VersionHash:09771b1,CLOUDID:55a48053-dd49-462e-a4be-2143a3ddc739,B
-        ulkID:230103192928J3CXCKI5,BulkQuantity:0,Recheck:0,SF:38|28|17|19|48,TC:n
-        il,Content:0,EDM:-3,IP:nil,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OS
-        I:0,OSA:0
+X-CID-O-INFO: VERSION:1.1.16,REQID:711e4342-8c0e-47e4-9d64-71e63ffc8008,IP:0,U
+        RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Release_Ham,ACTI
+        ON:release,TS:70
+X-CID-INFO: VERSION:1.1.16,REQID:711e4342-8c0e-47e4-9d64-71e63ffc8008,IP:0,URL
+        :0,TC:0,Content:-25,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTI
+        ON:quarantine,TS:70
+X-CID-META: VersionHash:09771b1,CLOUDID:719e1b8b-8530-4eff-9f77-222cf6e2895b,B
+        ulkID:230103192931P9V2WQ1E,BulkQuantity:1,Recheck:0,SF:38|28|17|19|48,TC:n
+        il,Content:0,EDM:-3,IP:nil,URL:11|1,File:nil,Bulk:40,QS:nil,BEC:nil,COL:0,
+        OSI:0,OSA:0
 X-CID-BVR: 0
-X-UUID: 860d5573e83745bf84eb45d41f03f421-20230103
+X-UUID: f69125d12c6d445197d68a33d7d36f85-20230103
 Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1185210505; Tue, 03 Jan 2023 19:29:27 +0800
+        with ESMTP id 1460600979; Tue, 03 Jan 2023 19:29:28 +0800
 Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ mtkmbs13n1.mediatek.inc (172.21.101.193) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Tue, 3 Jan 2023 19:29:26 +0800
+ 15.2.792.15; Tue, 3 Jan 2023 19:29:27 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Tue, 3 Jan 2023 19:29:26 +0800
+ 15.2.792.15 via Frontend Transport; Tue, 3 Jan 2023 19:29:27 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -54,10 +54,12 @@ CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v3 0/14] Enhance SVS's robustness
-Date:   Tue, 3 Jan 2023 19:29:11 +0800
-Message-ID: <20230103112925.16554-1-roger.lu@mediatek.com>
+Subject: [PATCH v3 05/14] soc: mediatek: mtk-svs: move svs_platform_probe into probe
+Date:   Tue, 3 Jan 2023 19:29:16 +0800
+Message-ID: <20230103112925.16554-6-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20230103112925.16554-1-roger.lu@mediatek.com>
+References: <20230103112925.16554-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK:  N
@@ -65,40 +67,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SVS driver got accepted upstream but still has room to be improved.
-Therefore, we add these patches to fix issues and coding style.
+From: Matthias Brugger <matthias.bgg@gmail.com>
 
-Change since v2:
-- change the goto label wording from "out_of_resume" to "svs_resume_reset_assert" patch [9/14]
-- Add patch [10/14] to reset svs hardware when svs_resume fail
+Moving svs_platform_probe into driver probe function will allow us to
+reduce svs_platform members. This will be done in a follow-up patch.
 
-Matthias Brugger (4):
-  soc: mediatek: mtk-svs: clean up platform probing
-  soc: mediatek: mtk-svs: improve readability of platform_probe
-  soc: mediatek: mtk-svs: move svs_platform_probe into probe
-  soc: mediatek: mtk-svs: delete superfluous platform data entries
+Signed-off-by: Matthias Brugger <matthias.bgg@gmail.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+---
+ drivers/soc/mediatek/mtk-svs.c | 20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
 
-Ricardo Ribalda (1):
-  soc: mediatek: mtk-svs: enable the IRQ later
-
-Roger Lu (8):
-  soc: mtk-svs: mt8183: refactor o_slope calculation
-  soc: mediatek: mtk-svs: use svs get efuse common function
-  soc: mediatek: mtk-svs: use svs clk control APIs
-  soc: mediatek: mtk-svs: reset svs when svs_resume() fail
-  soc: mediatek: mtk-svs: use common function to disable restore
-    voltages
-  soc: mediatek: mtk-svs: restore default voltages when svs_init02()
-    fail
-  soc: mediatek: mtk-svs: add thermal voltage compensation if needed
-  soc: mediatek: mtk-svs: keep svs alive even though debug cmd create
-    fail
-
-Shang XiaoJing (1):
-  soc: mediatek: mtk-svs: Use pm_runtime_resume_and_get() in
-    svs_init01()
-
- drivers/soc/mediatek/mtk-svs.c | 351 ++++++++++++++++-----------------
- 1 file changed, 174 insertions(+), 177 deletions(-)
-
+diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
+index 7fea1a5bb842..bbec96696c55 100644
+--- a/drivers/soc/mediatek/mtk-svs.c
++++ b/drivers/soc/mediatek/mtk-svs.c
+@@ -2325,17 +2325,17 @@ static const struct of_device_id svs_of_match[] = {
+ 	},
+ };
+ 
+-static struct svs_platform *svs_platform_probe(struct platform_device *pdev)
++static int svs_probe(struct platform_device *pdev)
+ {
+ 	struct svs_platform *svsp;
+ 	const struct svs_platform_data *svsp_data;
+-	int ret;
++	int ret, svsp_irq;
+ 
+ 	svsp_data = of_device_get_match_data(&pdev->dev);
+ 
+ 	svsp = devm_kzalloc(&pdev->dev, sizeof(*svsp), GFP_KERNEL);
+ 	if (!svsp)
+-		return ERR_PTR(-ENOMEM);
++		return -ENOMEM;
+ 
+ 	svsp->dev = &pdev->dev;
+ 	svsp->name = svsp_data->name;
+@@ -2346,19 +2346,7 @@ static struct svs_platform *svs_platform_probe(struct platform_device *pdev)
+ 
+ 	ret = svsp_data->probe(svsp);
+ 	if (ret)
+-		return ERR_PTR(ret);
+-
+-	return svsp;
+-}
+-
+-static int svs_probe(struct platform_device *pdev)
+-{
+-	struct svs_platform *svsp;
+-	int svsp_irq, ret;
+-
+-	svsp = svs_platform_probe(pdev);
+-	if (IS_ERR(svsp))
+-		return PTR_ERR(svsp);
++		return ret;
+ 
+ 	if (!svs_is_efuse_data_correct(svsp)) {
+ 		dev_notice(svsp->dev, "efuse data isn't correct\n");
+-- 
+2.18.0
 
