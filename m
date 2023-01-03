@@ -2,102 +2,165 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAF19C54EBE
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 12:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66BD3C46467
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 13:32:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237570AbjACMyu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Jan 2023 07:54:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41760 "EHLO
+        id S237598AbjACNb7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Jan 2023 08:31:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233216AbjACMtl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 07:49:41 -0500
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA38D30C;
-        Tue,  3 Jan 2023 04:49:40 -0800 (PST)
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: kholk11)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id A2BB56602CF4;
-        Tue,  3 Jan 2023 12:49:38 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1672750179;
-        bh=8ji9uM0rPrYHIz3P734RsmkYAcXteBVac3pmsXFW90Q=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=n6G0SNZjtaBdV/0/2Fd7PbL6pO+oO5JW0vDldxzUZnOI8gHX8lJ/Wx/uX0mxAjmJp
-         OZrxOV6gtRankj1cdmrQ+kKsUDtV2DiWe626RinwkegpPV7iaTicYmbYaUtwd0on3w
-         bXEAzTRbbxZaybjJg0o5JsmAT/He8PPj1HLIM4Pyi/2OV3UeMcQjGsMtN9a62cYSVw
-         Rgi4RkDum2H+Xxrk1TFz+zvBw05dWj/+w7f+sktffPBao72r69/l1GDV72/+ALTyXE
-         6slxPKIpLjNW70nc8hxFwgaIfh7P9IXeqVLkmCQZCjVFQS4gR3sBPuH/rZdc46nuX/
-         OkAls005mxgMg==
-Message-ID: <2f4a78f8-9cdd-9e44-20a2-b3bd6abd5cc7@collabora.com>
-Date:   Tue, 3 Jan 2023 13:49:36 +0100
+        with ESMTP id S237608AbjACNbq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 08:31:46 -0500
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 946AD331
+        for <linux-pm@vger.kernel.org>; Tue,  3 Jan 2023 05:31:44 -0800 (PST)
+Received: by mail-lf1-x131.google.com with SMTP id j17so36179806lfr.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2023 05:31:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=h4F07qx/QVlS2RAoXeqbSO8X5f50BArwoSvnoJo3aGw=;
+        b=XfKHz0owizOb1M8oze5ybsZSstPeuRmOw5Osh7no/tCYwo2GxK5ASeSfUKjsWAutdL
+         o1qT7Pxc/P0Bftl1pC7oi4a4Mfpvn5Do8TY9gKiWSTDZlqm908grTca4ghMRhwen8ff+
+         yyai57hBSrI44W4pvwyGos3gqeHbo4SYX1t0X1y6OhENsztKIXJZbntjF1cm0LN52yD2
+         P8oi6yXffgNe8UxRgwr/x+5ifol/iBk060R7Bc2IpF3zfI3LiA1zorkL0xvc/FIV/Zeu
+         Fvmu6AsuLCqx4FL1Di0xCs0PqRKLoY5ZtUXXfv9VHujPYmIEB93DGK4Pa8SsPZ2B/K6x
+         YyFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=h4F07qx/QVlS2RAoXeqbSO8X5f50BArwoSvnoJo3aGw=;
+        b=HmtQSsmMHEUrw4rurOlztlsNrTmiUtpYHcRFsN3Orkq7S1OD7Cg8rjJUyIIOYftk9c
+         +gm7Umxrde2yKZajoQ9m26W3QJyhyCyNl8Pa2TCTFX+NuJ93DF0KDQaqegI+JyrydY6I
+         2YbNkh0y7sb6svgaRk9cjLDZfBBQCz+CVyiq24JsBPjOnMKLNpquOqHsVw7N9ihLZFsy
+         V1AnMgBNYoezCoI8U7v5OrUQlMASySeuymgHEKwhNOZCEXH99aj+kgQbUmy/ramknBS7
+         2xBfp+zrFp4EC/QnMSD7pkUD2/F123fj+kNv5Snl9qOv9CxLF7nKQCWE2Qq692mTo0Y4
+         T+7A==
+X-Gm-Message-State: AFqh2krrx2xxyU5rV+V+/HSGv7rlE3v6Lpbni23uaAREyjOpatj0g/bh
+        dxpd/9AtGX8Oc0+f5qSe0csshw==
+X-Google-Smtp-Source: AMrXdXvUjM9oU81WsMfVf8yfr4w3MhaFjnuZ4sFElY3etij9CxmsN8LK51kzJpmsxsjyR9umYznc+w==
+X-Received: by 2002:a05:6512:32cc:b0:4cb:4378:9c6 with SMTP id f12-20020a05651232cc00b004cb437809c6mr118398lfg.23.1672752702906;
+        Tue, 03 Jan 2023 05:31:42 -0800 (PST)
+Received: from [192.168.1.101] (abxi45.neoplus.adsl.tpnet.pl. [83.9.2.45])
+        by smtp.gmail.com with ESMTPSA id c18-20020ac25312000000b004cb2995de37sm1537942lfh.265.2023.01.03.05.31.41
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 03 Jan 2023 05:31:42 -0800 (PST)
+Message-ID: <944603e6-d898-30d9-b5a1-16cb553c0d04@linaro.org>
+Date:   Tue, 3 Jan 2023 14:31:40 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH v1 13/13] soc: mediatek: mtk-svs: keep svs alive even
- though debug cmd create fail
+ Thunderbird/102.6.1
+Subject: Re: [PATCH] interconnect: qcom: drop obsolete OSM_L3/EPSS defines
 Content-Language: en-US
-To:     Roger Lu <roger.lu@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>
-Cc:     Fan Chen <fan.chen@mediatek.com>,
-        Jia-wei Chang <jia-wei.chang@mediatek.com>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Project_Global_Chrome_Upstream_Group@mediatek.com
-References: <20221226094248.4506-1-roger.lu@mediatek.com>
- <20221226094248.4506-14-roger.lu@mediatek.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20221226094248.4506-14-roger.lu@mediatek.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20230103045717.1079067-1-dmitry.baryshkov@linaro.org>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20230103045717.1079067-1-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 26/12/22 10:42, Roger Lu ha scritto:
-> Some projects might not support DEBUG_FS but still needs svs to be
-> supported. Therefore, keep svs alive even though debug cmd create fail.
+
+
+On 3.01.2023 05:57, Dmitry Baryshkov wrote:
+> Since Qualcomm platforms have switched to the separate OSM_L3/EPSS
+> driver, old related defines became unused. Drop them now.
 > 
-> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+> Suggested-by: Bjorn Andersson <andersson@kernel.org>
+> Fixes: 4529992c9474 ("interconnect: qcom: osm-l3: Use platform-independent node ids")
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 > ---
->   drivers/soc/mediatek/mtk-svs.c | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+
+Konrad
+>  drivers/interconnect/qcom/sc7180.h  | 2 --
+>  drivers/interconnect/qcom/sc7280.h  | 2 --
+>  drivers/interconnect/qcom/sc8180x.h | 2 --
+>  drivers/interconnect/qcom/sdm845.h  | 2 --
+>  drivers/interconnect/qcom/sm8150.h  | 2 --
+>  drivers/interconnect/qcom/sm8250.h  | 2 --
+>  6 files changed, 12 deletions(-)
 > 
-> diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-> index af3a12e29e78..c780a115543e 100644
-> --- a/drivers/soc/mediatek/mtk-svs.c
-> +++ b/drivers/soc/mediatek/mtk-svs.c
-> @@ -2390,10 +2390,8 @@ static int svs_probe(struct platform_device *pdev)
->   	}
->   
-
-Instead of ignoring a planned failure, it's sensible to not fail at all:
-enclose this call and the svs_create_debug_cmds() function in an ifdef.
-
-#ifdef CONFIG_DEBUG_FS
-
->   	ret = svs_create_debug_cmds(svsp);
-> -	if (ret) {
-> +	if (ret)
->   		dev_err(svsp->dev, "svs create debug cmds fail: %d\n", ret);
-> -		goto svs_probe_iounmap;
-> -	}
-
-#endif
-
->   
->   	return 0;
->   
-> 
-
-Regards,
-Angelo
-
-
+> diff --git a/drivers/interconnect/qcom/sc7180.h b/drivers/interconnect/qcom/sc7180.h
+> index c6212a10c2f6..c2d8388bb880 100644
+> --- a/drivers/interconnect/qcom/sc7180.h
+> +++ b/drivers/interconnect/qcom/sc7180.h
+> @@ -145,7 +145,5 @@
+>  #define SC7180_SLAVE_SERVICE_SNOC			134
+>  #define SC7180_SLAVE_QDSS_STM				135
+>  #define SC7180_SLAVE_TCU				136
+> -#define SC7180_MASTER_OSM_L3_APPS			137
+> -#define SC7180_SLAVE_OSM_L3				138
+>  
+>  #endif
+> diff --git a/drivers/interconnect/qcom/sc7280.h b/drivers/interconnect/qcom/sc7280.h
+> index 1fb9839b2c14..175e400305c5 100644
+> --- a/drivers/interconnect/qcom/sc7280.h
+> +++ b/drivers/interconnect/qcom/sc7280.h
+> @@ -150,7 +150,5 @@
+>  #define SC7280_SLAVE_PCIE_1			139
+>  #define SC7280_SLAVE_QDSS_STM			140
+>  #define SC7280_SLAVE_TCU			141
+> -#define SC7280_MASTER_EPSS_L3_APPS		142
+> -#define SC7280_SLAVE_EPSS_L3			143
+>  
+>  #endif
+> diff --git a/drivers/interconnect/qcom/sc8180x.h b/drivers/interconnect/qcom/sc8180x.h
+> index 2eafd35543c7..ce32295af8f3 100644
+> --- a/drivers/interconnect/qcom/sc8180x.h
+> +++ b/drivers/interconnect/qcom/sc8180x.h
+> @@ -168,8 +168,6 @@
+>  #define SC8180X_SLAVE_EBI_CH0_DISPLAY		158
+>  #define SC8180X_SLAVE_MNOC_SF_MEM_NOC_DISPLAY	159
+>  #define SC8180X_SLAVE_MNOC_HF_MEM_NOC_DISPLAY	160
+> -#define SC8180X_MASTER_OSM_L3_APPS		161
+> -#define SC8180X_SLAVE_OSM_L3			162
+>  
+>  #define SC8180X_MASTER_QUP_CORE_0		163
+>  #define SC8180X_MASTER_QUP_CORE_1		164
+> diff --git a/drivers/interconnect/qcom/sdm845.h b/drivers/interconnect/qcom/sdm845.h
+> index 776e9c2acb27..bc7e425ce985 100644
+> --- a/drivers/interconnect/qcom/sdm845.h
+> +++ b/drivers/interconnect/qcom/sdm845.h
+> @@ -136,7 +136,5 @@
+>  #define SDM845_SLAVE_SERVICE_SNOC			128
+>  #define SDM845_SLAVE_QDSS_STM				129
+>  #define SDM845_SLAVE_TCU				130
+> -#define SDM845_MASTER_OSM_L3_APPS			131
+> -#define SDM845_SLAVE_OSM_L3				132
+>  
+>  #endif /* __DRIVERS_INTERCONNECT_QCOM_SDM845_H__ */
+> diff --git a/drivers/interconnect/qcom/sm8150.h b/drivers/interconnect/qcom/sm8150.h
+> index 97996f64d799..3e01ac76ae1d 100644
+> --- a/drivers/interconnect/qcom/sm8150.h
+> +++ b/drivers/interconnect/qcom/sm8150.h
+> @@ -148,7 +148,5 @@
+>  #define SM8150_SLAVE_VSENSE_CTRL_CFG		137
+>  #define SM8150_SNOC_CNOC_MAS			138
+>  #define SM8150_SNOC_CNOC_SLV			139
+> -#define SM8150_MASTER_OSM_L3_APPS		140
+> -#define SM8150_SLAVE_OSM_L3			141
+>  
+>  #endif
+> diff --git a/drivers/interconnect/qcom/sm8250.h b/drivers/interconnect/qcom/sm8250.h
+> index b31fb431a20f..7eb6c709c30d 100644
+> --- a/drivers/interconnect/qcom/sm8250.h
+> +++ b/drivers/interconnect/qcom/sm8250.h
+> @@ -158,7 +158,5 @@
+>  #define SM8250_SLAVE_VSENSE_CTRL_CFG		147
+>  #define SM8250_SNOC_CNOC_MAS			148
+>  #define SM8250_SNOC_CNOC_SLV			149
+> -#define SM8250_MASTER_EPSS_L3_APPS		150
+> -#define SM8250_SLAVE_EPSS_L3			151
+>  
+>  #endif
