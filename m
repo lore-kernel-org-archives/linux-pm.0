@@ -2,89 +2,136 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 625B2C53210
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:19:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D4FDC46467
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:29:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237400AbjACLTT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Jan 2023 06:19:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53728 "EHLO
+        id S230006AbjACL3s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Jan 2023 06:29:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57504 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237380AbjACLTR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 06:19:17 -0500
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E38EF581
-        for <linux-pm@vger.kernel.org>; Tue,  3 Jan 2023 03:19:16 -0800 (PST)
-Received: by mail-ej1-x62a.google.com with SMTP id tz12so72811799ejc.9
-        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2023 03:19:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=BQJyR5W3A4f1ySu0UGGHSzR6lOpSLkq+TzKRR4GKR3s=;
-        b=uiPQEnOeSUlbBNbrKOyzbrLx7Zl5d72kqG93ulTrg7ZDZHPRt3L2aE9Ks1kaQ54CcS
-         F6xoKoMzKDU362iYQwJ2zkA7JNzUywQQRqGJJYSsXKBIw4fKyVttGqrm58ZqONb7LDos
-         GyhEp1x6L8zoMYFqjvpPqxveF0qm6HcsNL5FGAhxpk0pQVlnZXRbKI1ZCNWRYYZdsE9I
-         6H8yFx8gO+IKKkFdtsGCqUYw3uzjhEvCLPylg5rwFjVmi01rbrMtok282mVbe0DBv6ld
-         fgupCUMFpEC9XSe5Uy3gmezyioXlafT+EpISk0rzNNaNSVtl3h6S6GLV8+qTJMK9b5Su
-         MfUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=BQJyR5W3A4f1ySu0UGGHSzR6lOpSLkq+TzKRR4GKR3s=;
-        b=iRNIA9R6V2955eeu7mTzZmQCAMy2WIO5pOtNoBoEmAwahP6xBEatTzIQnkMXK6TfI3
-         mmG7V7mXXevtJmcpkCXRiq6eY3nsd4SsDHJ8vqZr0+oiG48s9MPSpj+c6Qi1ZqMFANTr
-         SE9ps4aVFwiO+/FBgtxbXeXFzt8su8rYxPx07zw5sCOw7B3LhU85goxxGzPuK28OXh9E
-         ouDS8+fnQc+jal/aA6TlNlMoU9pzKJnu1w0B6P2ZYpITA7ckfoqEtq0A6djh16LEYv20
-         R8sVSsunMLkAOaPfYeRscUaw4kcnfj7vVCCoHk1VUeFsBJj640qqEPVUqtWMo+ZwGqve
-         +uZw==
-X-Gm-Message-State: AFqh2kpwxo8dHbW5UvAS413Pbw9ZHpNFkcIW4dBtcDlf+2FR0VSNtS8A
-        lXYU6yq1Epej4pR0peu7wHl11w==
-X-Google-Smtp-Source: AMrXdXuzwiaCZt1ZjEmk+p69Sd4xpuX0vBLO7a+8it9tst+k6JqXO4pEx2T5IkhLyynjradloprwRA==
-X-Received: by 2002:a17:907:d389:b0:7c1:5a37:825 with SMTP id vh9-20020a170907d38900b007c15a370825mr49560094ejc.34.1672744754929;
-        Tue, 03 Jan 2023 03:19:14 -0800 (PST)
-Received: from ?IPV6:2001:1c06:2302:5600:29fe:fa1a:5ca3:7f83? (2001-1c06-2302-5600-29fe-fa1a-5ca3-7f83.cable.dynamic.v6.ziggo.nl. [2001:1c06:2302:5600:29fe:fa1a:5ca3:7f83])
-        by smtp.gmail.com with ESMTPSA id bw1-20020a170906c1c100b007aef930360asm13997509ejb.59.2023.01.03.03.19.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 03 Jan 2023 03:19:14 -0800 (PST)
-Message-ID: <b146fcf8-e829-8df7-7153-b4a8913e4c9b@linaro.org>
-Date:   Tue, 3 Jan 2023 11:19:11 +0000
+        with ESMTP id S237429AbjACL3m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 06:29:42 -0500
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3248AFAEE;
+        Tue,  3 Jan 2023 03:29:33 -0800 (PST)
+X-UUID: 0344f89caad3474597815f639370c3b6-20230103
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=ehDXbWE7c2/1x4Hvq0je5a3soIAyc70ylWW5qGoa4JM=;
+        b=itXlxSQHD9TRXBvnP3BatwO8XbJ0f3UwqIKF4MDwpNDe0F2ekd9UqoKUSo/oQG1EvHPVMkqLRmKKEBFne2BQea+vptmwWJYUqRaFNdZqHM3sJNRodibA13R//DvjS4W9bH6/ABgPM0RGBHm1XHRp5soJblUg/z8KeQ/l1AwDElI=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.16,REQID:d5c0b618-d91a-46ba-8d27-1389320e442b,IP:0,U
+        RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+        N:release,TS:90
+X-CID-INFO: VERSION:1.1.16,REQID:d5c0b618-d91a-46ba-8d27-1389320e442b,IP:0,URL
+        :0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTIO
+        N:quarantine,TS:90
+X-CID-META: VersionHash:09771b1,CLOUDID:7d64aaf4-ff42-4fb0-b929-626456a83c14,B
+        ulkID:230103192928VSUAJLLU,BulkQuantity:0,Recheck:0,SF:38|28|17|19|48,TC:n
+        il,Content:0,EDM:-3,IP:nil,URL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
+        ,OSI:0,OSA:0
+X-CID-BVR: 0,NGT
+X-UUID: 0344f89caad3474597815f639370c3b6-20230103
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 769229823; Tue, 03 Jan 2023 19:29:27 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.792.15; Tue, 3 Jan 2023 19:29:26 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.792.15 via Frontend Transport; Tue, 3 Jan 2023 19:29:26 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>
+CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
+        Jia-wei Chang <jia-wei.chang@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Ricardo Ribalda <ribalda@chromium.org>
+Subject: [PATCH v3 01/14] soc: mediatek: mtk-svs: enable the IRQ later
+Date:   Tue, 3 Jan 2023 19:29:12 +0800
+Message-ID: <20230103112925.16554-2-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20230103112925.16554-1-roger.lu@mediatek.com>
+References: <20230103112925.16554-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH v2 7/7] arm64: dts: qcom: Add msm8939 Sony Xperia M4 Aqua
-Content-Language: en-US
-To:     Konrad Dybcio <konrad.dybcio@linaro.org>, agross@kernel.org,
-        andersson@kernel.org, djakov@kernel.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        benl@squareup.com, shawn.guo@linaro.org, fabien.parent@linaro.org,
-        leo.yan@linaro.org, dmitry.baryshkov@linaro.org
-References: <20230103010904.3201835-1-bryan.odonoghue@linaro.org>
- <20230103010904.3201835-8-bryan.odonoghue@linaro.org>
- <f293e1c3-d192-fe98-c599-e9c40d01175d@linaro.org>
-From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-In-Reply-To: <f293e1c3-d192-fe98-c599-e9c40d01175d@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 03/01/2023 02:29, Konrad Dybcio wrote:
-> 12, 13?
-> 
-> Also, why does this node exist in the first place? Is it
-> going to be used for some non-standard touchpanel-off-flipping?
+From: Ricardo Ribalda <ribalda@chromium.org>
 
-For most of your comments here the answer is "because that's what the 
-incoming dts does" from Sony's downstream.
+If the system does not come from reset (like when is booted via
+kexec(), the peripheral might trigger an IRQ before the data structures
+are initialized.
 
-For V3 I will see if I can get some better insight on the gpio bias and 
-what this entry here is intended for.
+Fixes:
 
+[    0.227710] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000f08
+[    0.227913] Call trace:
+[    0.227918]  svs_isr+0x8c/0x538
+
+Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
-bod
+ drivers/soc/mediatek/mtk-svs.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
+index 0469c9dfeb04..91e06f43969d 100644
+--- a/drivers/soc/mediatek/mtk-svs.c
++++ b/drivers/soc/mediatek/mtk-svs.c
+@@ -2379,20 +2379,6 @@ static int svs_probe(struct platform_device *pdev)
+ 		goto svs_probe_free_resource;
+ 	}
+ 
+-	svsp_irq = platform_get_irq(pdev, 0);
+-	if (svsp_irq < 0) {
+-		ret = svsp_irq;
+-		goto svs_probe_free_resource;
+-	}
+-
+-	ret = devm_request_threaded_irq(svsp->dev, svsp_irq, NULL, svs_isr,
+-					IRQF_ONESHOT, svsp->name, svsp);
+-	if (ret) {
+-		dev_err(svsp->dev, "register irq(%d) failed: %d\n",
+-			svsp_irq, ret);
+-		goto svs_probe_free_resource;
+-	}
+-
+ 	svsp->main_clk = devm_clk_get(svsp->dev, "main");
+ 	if (IS_ERR(svsp->main_clk)) {
+ 		dev_err(svsp->dev, "failed to get clock: %ld\n",
+@@ -2414,6 +2400,20 @@ static int svs_probe(struct platform_device *pdev)
+ 		goto svs_probe_clk_disable;
+ 	}
+ 
++	svsp_irq = platform_get_irq(pdev, 0);
++	if (svsp_irq < 0) {
++		ret = svsp_irq;
++		goto svs_probe_iounmap;
++	}
++
++	ret = devm_request_threaded_irq(svsp->dev, svsp_irq, NULL, svs_isr,
++					IRQF_ONESHOT, svsp->name, svsp);
++	if (ret) {
++		dev_err(svsp->dev, "register irq(%d) failed: %d\n",
++			svsp_irq, ret);
++		goto svs_probe_iounmap;
++	}
++
+ 	ret = svs_start(svsp);
+ 	if (ret) {
+ 		dev_err(svsp->dev, "svs start fail: %d\n", ret);
+-- 
+2.18.0
+
