@@ -2,93 +2,103 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9AC2C3DA7A
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 01:09:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 498C2C54EBD
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 01:58:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232696AbjACBJg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Jan 2023 20:09:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38750 "EHLO
+        id S236605AbjACB6z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Jan 2023 20:58:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57752 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236446AbjACBJS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2023 20:09:18 -0500
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C1AC9FE6
-        for <linux-pm@vger.kernel.org>; Mon,  2 Jan 2023 17:09:14 -0800 (PST)
-Received: by mail-ej1-x62d.google.com with SMTP id fc4so70077643ejc.12
-        for <linux-pm@vger.kernel.org>; Mon, 02 Jan 2023 17:09:14 -0800 (PST)
+        with ESMTP id S236603AbjACB6y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2023 20:58:54 -0500
+Received: from mail-il1-x12d.google.com (mail-il1-x12d.google.com [IPv6:2607:f8b0:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DCBB9127;
+        Mon,  2 Jan 2023 17:58:53 -0800 (PST)
+Received: by mail-il1-x12d.google.com with SMTP id a9so5093691ilk.6;
+        Mon, 02 Jan 2023 17:58:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+balc+MRgedWafjUxob4M65cvBwrRUb1ln9bhd9UBPw=;
-        b=KUblhxszEPc8VviOgPBZQSF/dWySeQ+15/+JKg3M6LwC+KjmP4oNWnY7AGHUI2UqN6
-         xbfHaj15VgVoSVboOCncvwIg44dhDIF4dx1aU+u9oa2bpX0YCB4qsh/fanJuTeZOKbXb
-         CxhthhdL2tv9CO+pCmnvOZFclIy6NVWAi0vKsU7XNX1vDXd2a+QIuhBFtyf4fX6RWJ7H
-         +okSSjcIlkE4bp7LPS44K8yKYZZoiSUhKZwKdFLhPO4Ft337ZG+0Zqfg/JxUCQM+nZNj
-         /ockMyzHX7fnZOAZ+3iBblIneXsfC9KjPmsa878yLLe9XP2XP0qmIAwgONwn3Rip2d/T
-         s3vw==
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=q9ep0fuIijQ2WKk1HRvET07Y4q3Esjm/P8zfecbF5PA=;
+        b=mAh4DEdGGndMdRLdcoygx2jSWLH/w2Pfa0O5DPG6DRuhUdFE7Qx5QsViPMMNZFkSCB
+         5r2Wqh1Gh2clSie0Y2+42jqjStQvaOFzdJlFkXoqHIvMM2KNL8XWvBJWtojEtukNZx7h
+         ir81HCz+oovhNdQmsZGnvJXpFVLQOeK56RqmFkSQAWmoCBT41rv0iOn4CpJpA6hvx1Pf
+         Urr8i+gh44jUctYneDAzKiOhHw0jPOlcDmbweodKP0gNqsuJkRdGrp6VAvfpo27wk5CR
+         JAnyUgvXYnoKYrBjxJFib9O2lNFcnj5DR+fmj4xMZ2WdyZU/JkZjpZ2QuqYKbSguoK25
+         m8bQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+balc+MRgedWafjUxob4M65cvBwrRUb1ln9bhd9UBPw=;
-        b=u9b+VwQY2FXlLCkhxj/Dw4w6JARdsBFmBJj0ScT+2MCsJ4ow2iah05hZogRz97la4B
-         FVHhT2cT57S6FcRWSn3A/ZCbDo/xVE0/dxu7BEt0oCpfsH0N9SVqMGHsj0rbzSqB2oOW
-         /Pe1ztrsjyPrlMTmIQhEJaA1bor4ya7FbG6QNNQD8bGZtoRyjEEBFprsNlP6vFN+RerC
-         mwg57VsNykJIttS5ynWiLsIMLO0m+u4D0nr8xT99BjBInLqY6IA5M5ia/PiAP8+rMMYp
-         E5EZWS3u560s+ZO3LeO8oNYyz4P8cs1C49wX+L5B/PUtgjH2p8vlFRNex7lbBITIfTv+
-         WCkw==
-X-Gm-Message-State: AFqh2kq7WYLvcdijcj1LL3fKHQ/8+GrXp1tL9D21QQQxQ/iEWw/uuuw3
-        ZbAYZ69u9d513fvbBgjlH6HEYQ==
-X-Google-Smtp-Source: AMrXdXt/04HbPLb4VObsdtgNjvhaI1eQZZhOUZBAY5X+BNtFSISQyXoy0yIulyZu2RM7fVR3FEmXlg==
-X-Received: by 2002:a17:906:6d47:b0:7c0:c312:acaa with SMTP id a7-20020a1709066d4700b007c0c312acaamr35522054ejt.49.1672708152930;
-        Mon, 02 Jan 2023 17:09:12 -0800 (PST)
-Received: from planet9.chello.ie (2001-1c06-2302-5600-b443-9db7-1e5c-4fd5.cable.dynamic.v6.ziggo.nl. [2001:1c06:2302:5600:b443:9db7:1e5c:4fd5])
-        by smtp.gmail.com with ESMTPSA id q26-20020a17090676da00b008302732f569sm13564648ejn.78.2023.01.02.17.09.12
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=q9ep0fuIijQ2WKk1HRvET07Y4q3Esjm/P8zfecbF5PA=;
+        b=f7pXJ3gnFy6whYrR0xI5SmFK5cyRWILVqclVNoifGCqrz2J49Frxrh3duc0TYidgec
+         9CbNg03LFnCWPyAf36GvjLKlHfJ+GwShG9YvkPuwB1AqNy8hK5gnUHDhZtxO+cYyRL+5
+         jSOzT8pgj1DIZVF/6f8urwjvR/9JI2z+U7hqkyfxdX7q3gJoy+mJdaYtX/0oo1kMfJpI
+         y5v+payhTD/fy6gZNSBRBNSueXtRSb+Bae/HBBh7RnkkTSLXPBow7UU8BVXqWqAiEkIw
+         gvr/0zXnYl5Ma67rpsBfq3YeY4/auoKprcaQIHLClOj9J08aqYbT/5DBPDCINnMTH8jn
+         S2pg==
+X-Gm-Message-State: AFqh2kpLNURR32lOdGt9RDw2fIbU59gthoCbTt3XsZIb8tPgAuWd3CMf
+        F5QscP6W/g/mi06cc6As6XC275Jb9PbSew==
+X-Google-Smtp-Source: AMrXdXv9vjXTaC73he/AnyjuFYBLc3RX/8a7d69JrGC++iDeVXHPTk+0Jg1BkBC3syk2C8Rlf7YF3g==
+X-Received: by 2002:a05:6e02:1d0a:b0:303:67aa:e5f3 with SMTP id i10-20020a056e021d0a00b0030367aae5f3mr35360139ila.15.1672711133291;
+        Mon, 02 Jan 2023 17:58:53 -0800 (PST)
+Received: from localhost ([2607:fea8:a2df:3d00::d097])
+        by smtp.gmail.com with ESMTPSA id a18-20020a92d352000000b002eb3b43cd63sm9552995ilh.18.2023.01.02.17.58.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Jan 2023 17:09:12 -0800 (PST)
-From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
-        djakov@kernel.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org
-Cc:     bryan.odonoghue@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, benl@squareup.com,
-        shawn.guo@linaro.org, fabien.parent@linaro.org, leo.yan@linaro.org,
-        dmitry.baryshkov@linaro.org
-Subject: [PATCH v2 3/7] dt-bindings: soc: qcom: smd-rpm: Exclude MSM8936 from glink-channels
-Date:   Tue,  3 Jan 2023 01:09:00 +0000
-Message-Id: <20230103010904.3201835-4-bryan.odonoghue@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230103010904.3201835-1-bryan.odonoghue@linaro.org>
-References: <20230103010904.3201835-1-bryan.odonoghue@linaro.org>
+        Mon, 02 Jan 2023 17:58:52 -0800 (PST)
+From:   Richard Acayan <mailingradian@gmail.com>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Cc:     Odelu Kukatla <quic_okukatla@quicinc.com>,
+        Luca Weiss <luca@z3ntu.xyz>,
+        Richard Acayan <mailingradian@gmail.com>
+Subject: [PATCH v3 0/4] SDM670 Interconnects
+Date:   Mon,  2 Jan 2023 20:58:41 -0500
+Message-Id: <20230103015845.314551-1-mailingradian@gmail.com>
+X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MSM8936/MSM8939 should like MSM8916 not require glink-channels.
+Changes since v2:
+ - change qcom,sdm670.h to qcom,sdm670-rpmh.h (2/4)
+ - use SPDX v3 license identifiers (1/4, 2/4)
+ - accumulate ack tag (1/4)
+ - format changelog (0/4)
 
-Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
----
- Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Changes since v1:
+ - change qcom,sdm670.h to qcom,sdm670-rpmh.h (1/4, 4/4)
 
-diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml
-index 11c0f4dd797ce..16fd67c0bd1fd 100644
---- a/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml
-+++ b/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml
-@@ -80,6 +80,7 @@ if:
-         enum:
-           - qcom,rpm-apq8084
-           - qcom,rpm-msm8916
-+          - qcom,rpm-msm8936
-           - qcom,rpm-msm8974
-           - qcom,rpm-msm8976
-           - qcom,rpm-msm8953
+This series adds interconnects and consumers to the Snapdragon 670.
+
+Richard Acayan (4):
+  dt-bindings: interconnect: add sdm670 interconnects
+  interconnect: qcom: add sdm670 interconnects
+  arm64: dts: qcom: sdm670: add interconnects
+  arm64: dts: qcom: sdm670: add opps for peripherals
+
+ .../bindings/interconnect/qcom,rpmh.yaml      |   8 +
+ arch/arm64/boot/dts/qcom/sdm670.dtsi          | 165 +++++++
+ drivers/interconnect/qcom/Kconfig             |   9 +
+ drivers/interconnect/qcom/Makefile            |   2 +
+ drivers/interconnect/qcom/sdm670.c            | 440 ++++++++++++++++++
+ drivers/interconnect/qcom/sdm670.h            | 128 +++++
+ .../interconnect/qcom,sdm670-rpmh.h           | 136 ++++++
+ 7 files changed, 888 insertions(+)
+ create mode 100644 drivers/interconnect/qcom/sdm670.c
+ create mode 100644 drivers/interconnect/qcom/sdm670.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,sdm670-rpmh.h
+
 -- 
-2.34.1
+2.39.0
 
