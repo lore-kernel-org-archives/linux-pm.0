@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E49C54EBD
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:30:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 158A2C3DA7D
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:30:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237469AbjACLaD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Jan 2023 06:30:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57548 "EHLO
+        id S237493AbjACLaF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Jan 2023 06:30:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237447AbjACL3o (ORCPT
+        with ESMTP id S237449AbjACL3o (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 06:29:44 -0500
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E96F10060;
-        Tue,  3 Jan 2023 03:29:37 -0800 (PST)
-X-UUID: ea8ec37d831044f1a372fe3a8ea97f79-20230103
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C6A9101C4;
+        Tue,  3 Jan 2023 03:29:40 -0800 (PST)
+X-UUID: b227e30382c243d48c6f37c664012c1b-20230103
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=9JeE+5LqZ6k4NifYeA8Fk9/IcVz1Gx3PLSu0PON7bng=;
-        b=u0jyPGc/lAFqCi8QD3naz6wyStcVPMK9Z/FrTdfn2Cx+jP47NJfHxUZ8XUZ0pgLf6xu1F2luh371ttJcHAk3ikdITY5cKgAx4E5bi8gu0CPZ/Y0BHKlDxgEKcOQtsypvwjCvNLy50KvWS+yHz3XEbdZQrB17fRk4zz7Ywy0+J6U=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=ZYhjIXpUxLFLAxdNKrtJBR6ZBD1h3ZRO4PIhBpFBTnM=;
+        b=iVbjB25mpGx9FpjLQ0c9QOaPWpusepNufJNvO3iiaZ4sMFWQt0UtLGrk0TLmhfTg6bvH4MFt6Ahs9znQ3sSb/rw0LcJZAL6zN5yxBz1QcruUCULPCyHZkXaql2ilK4iISs467ml53efEOD1FxHLrRMOEdbP31tz/U8fSsZvri0Y=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.16,REQID:c7663e6d-4eb0-4e74-9bbb-d8a300b5e91a,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-        :release,TS:95
-X-CID-INFO: VERSION:1.1.16,REQID:c7663e6d-4eb0-4e74-9bbb-d8a300b5e91a,IP:0,URL
-        :0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTION
-        :quarantine,TS:95
-X-CID-META: VersionHash:09771b1,CLOUDID:84a48053-dd49-462e-a4be-2143a3ddc739,B
-        ulkID:230103192931MEA2OUOW,BulkQuantity:1,Recheck:0,SF:38|28|17|19|48,TC:n
-        il,Content:0,EDM:-3,IP:nil,URL:11|1,File:nil,Bulk:40,QS:nil,BEC:nil,COL:0,
-        OSI:0,OSA:0
-X-CID-BVR: 0,NGT
-X-UUID: ea8ec37d831044f1a372fe3a8ea97f79-20230103
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.16,REQID:213207a3-21b3-455a-af76-e9a972d3b20c,IP:0,U
+        RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+        N:release,TS:90
+X-CID-INFO: VERSION:1.1.16,REQID:213207a3-21b3-455a-af76-e9a972d3b20c,IP:0,URL
+        :0,TC:0,Content:-5,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTIO
+        N:quarantine,TS:90
+X-CID-META: VersionHash:09771b1,CLOUDID:b064aaf4-ff42-4fb0-b929-626456a83c14,B
+        ulkID:230103192931VUTDZ9CE,BulkQuantity:0,Recheck:0,SF:38|28|17|19|48,TC:n
+        il,Content:0,EDM:-3,IP:nil,URL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
+        ,OSI:0,OSA:0
+X-CID-BVR: 0
+X-UUID: b227e30382c243d48c6f37c664012c1b-20230103
+Received: from mtkmbs13n1.mediatek.inc [(172.21.101.193)] by mailgw02.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 727530901; Tue, 03 Jan 2023 19:29:28 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 2118861942; Tue, 03 Jan 2023 19:29:28 +0800
 Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs13n1.mediatek.inc (172.21.101.193) with Microsoft SMTP Server
+ mtkmbs13n2.mediatek.inc (172.21.101.108) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Tue, 3 Jan 2023 19:29:28 +0800
+ 15.2.792.15; Tue, 3 Jan 2023 19:29:27 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Tue, 3 Jan 2023 19:29:28 +0800
+ 15.2.792.15 via Frontend Transport; Tue, 3 Jan 2023 19:29:27 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -54,9 +54,9 @@ CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v3 12/14] soc: mediatek: mtk-svs: restore default voltages when svs_init02() fail
-Date:   Tue, 3 Jan 2023 19:29:23 +0800
-Message-ID: <20230103112925.16554-13-roger.lu@mediatek.com>
+Subject: [PATCH v3 06/14] soc: mediatek: mtk-svs: delete superfluous platform data entries
+Date:   Tue, 3 Jan 2023 19:29:17 +0800
+Message-ID: <20230103112925.16554-7-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20230103112925.16554-1-roger.lu@mediatek.com>
 References: <20230103112925.16554-1-roger.lu@mediatek.com>
@@ -67,60 +67,109 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-If svs init02 fail, it means we cannot rely on svs bank voltages anymore.
-We need to disable svs function and restore DVFS opp voltages back to the
-default voltages for making sure we have enough DVFS voltages.
+From: Matthias Brugger <matthias.bgg@gmail.com>
 
+The platform name and efuse parsing function pointer are only used while
+probing the device. Use them from the svs_platform_data struct instead.
+
+Signed-off-by: Matthias Brugger <matthias.bgg@gmail.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
- drivers/soc/mediatek/mtk-svs.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ drivers/soc/mediatek/mtk-svs.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-index f4382def9736..1b4798a9101c 100644
+index bbec96696c55..308cd36a23fc 100644
 --- a/drivers/soc/mediatek/mtk-svs.c
 +++ b/drivers/soc/mediatek/mtk-svs.c
-@@ -1495,6 +1495,7 @@ static int svs_init02(struct svs_platform *svsp)
- {
- 	struct svs_bank *svsb;
- 	unsigned long flags, time_left;
-+	int ret;
- 	u32 idx;
+@@ -311,14 +311,12 @@ static const u32 svs_regs_v2[] = {
  
- 	for (idx = 0; idx < svsp->bank_max; idx++) {
-@@ -1513,7 +1514,8 @@ static int svs_init02(struct svs_platform *svsp)
- 							msecs_to_jiffies(5000));
- 		if (!time_left) {
- 			dev_err(svsb->dev, "init02 completion timeout\n");
--			return -EBUSY;
-+			ret = -EBUSY;
-+			goto out_of_init02;
- 		}
- 	}
+ /**
+  * struct svs_platform - svs platform control
+- * @name: svs platform name
+  * @base: svs platform register base
+  * @dev: svs platform device
+  * @main_clk: main clock for svs bank
+  * @pbank: svs bank pointer needing to be protected by spin_lock section
+  * @banks: svs banks that svs platform supports
+  * @rst: svs platform reset control
+- * @efuse_parsing: svs platform efuse parsing function pointer
+  * @efuse_max: total number of svs efuse
+  * @tefuse_max: total number of thermal efuse
+  * @regs: svs platform registers map
+@@ -327,14 +325,12 @@ static const u32 svs_regs_v2[] = {
+  * @tefuse: thermal efuse data received from NVMEM framework
+  */
+ struct svs_platform {
+-	char *name;
+ 	void __iomem *base;
+ 	struct device *dev;
+ 	struct clk *main_clk;
+ 	struct svs_bank *pbank;
+ 	struct svs_bank *banks;
+ 	struct reset_control *rst;
+-	bool (*efuse_parsing)(struct svs_platform *svsp);
+ 	size_t efuse_max;
+ 	size_t tefuse_max;
+ 	const u32 *regs;
+@@ -2009,7 +2005,7 @@ static bool svs_is_efuse_data_correct(struct svs_platform *svsp)
+ 	svsp->efuse_max /= sizeof(u32);
+ 	nvmem_cell_put(cell);
  
-@@ -1531,12 +1533,21 @@ static int svs_init02(struct svs_platform *svsp)
- 		if (svsb->type == SVSB_HIGH || svsb->type == SVSB_LOW) {
- 			if (svs_sync_bank_volts_from_opp(svsb)) {
- 				dev_err(svsb->dev, "sync volt fail\n");
--				return -EPERM;
-+				ret = -EPERM;
-+				goto out_of_init02;
- 			}
- 		}
- 	}
- 
- 	return 0;
-+
-+out_of_init02:
-+	for (idx = 0; idx < svsp->bank_max; idx++) {
-+		svsb = &svsp->banks[idx];
-+		svs_bank_disable_and_restore_default_volts(svsp, svsb);
-+	}
-+
-+	return ret;
+-	return svsp->efuse_parsing(svsp);
++	return true;
  }
  
- static void svs_mon_mode(struct svs_platform *svsp)
+ static struct device *svs_get_subsys_device(struct svs_platform *svsp,
+@@ -2338,9 +2334,7 @@ static int svs_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	svsp->dev = &pdev->dev;
+-	svsp->name = svsp_data->name;
+ 	svsp->banks = svsp_data->banks;
+-	svsp->efuse_parsing = svsp_data->efuse_parsing;
+ 	svsp->regs = svsp_data->regs;
+ 	svsp->bank_max = svsp_data->bank_max;
+ 
+@@ -2351,6 +2345,12 @@ static int svs_probe(struct platform_device *pdev)
+ 	if (!svs_is_efuse_data_correct(svsp)) {
+ 		dev_notice(svsp->dev, "efuse data isn't correct\n");
+ 		ret = -EPERM;
++		goto svs_probe_free_efuse;
++	}
++
++	if (!svsp_data->efuse_parsing(svsp)) {
++		dev_err(svsp->dev, "efuse data parsing failed\n");
++		ret = -EPERM;
+ 		goto svs_probe_free_resource;
+ 	}
+ 
+@@ -2388,7 +2388,7 @@ static int svs_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ret = devm_request_threaded_irq(svsp->dev, svsp_irq, NULL, svs_isr,
+-					IRQF_ONESHOT, svsp->name, svsp);
++					IRQF_ONESHOT, svsp_data->name, svsp);
+ 	if (ret) {
+ 		dev_err(svsp->dev, "register irq(%d) failed: %d\n",
+ 			svsp_irq, ret);
+@@ -2416,11 +2416,13 @@ static int svs_probe(struct platform_device *pdev)
+ 	clk_disable_unprepare(svsp->main_clk);
+ 
+ svs_probe_free_resource:
+-	if (!IS_ERR_OR_NULL(svsp->efuse))
+-		kfree(svsp->efuse);
+ 	if (!IS_ERR_OR_NULL(svsp->tefuse))
+ 		kfree(svsp->tefuse);
+ 
++svs_probe_free_efuse:
++	if (!IS_ERR_OR_NULL(svsp->efuse))
++		kfree(svsp->efuse);
++
+ 	return ret;
+ }
+ 
 -- 
 2.18.0
 
