@@ -2,93 +2,95 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9368DC46467
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 17:24:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D996C3DA7D
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 17:31:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238446AbjACRMa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Jan 2023 12:12:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54606 "EHLO
+        id S237897AbjACRbL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Jan 2023 12:31:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35402 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238359AbjACRLc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 12:11:32 -0500
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35D3613F72;
-        Tue,  3 Jan 2023 09:08:58 -0800 (PST)
-Received: by mail-ej1-f48.google.com with SMTP id m18so75358057eji.5;
-        Tue, 03 Jan 2023 09:08:58 -0800 (PST)
+        with ESMTP id S233639AbjACRbK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 12:31:10 -0500
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0144DDE
+        for <linux-pm@vger.kernel.org>; Tue,  3 Jan 2023 09:31:08 -0800 (PST)
+Received: by mail-lf1-x132.google.com with SMTP id cf42so46593516lfb.1
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2023 09:31:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=sO6SUqVw2xTFajMx+hD52rACWsikx2Bdie3aQKKgmBc=;
+        b=sKT+ErZCG/vn8T8T/vb65Fv0rvNz2/3BkseTSV4iep6x/XE5PHNAgjU624UL7ldCeV
+         G4MggSBTBA4AXVD8rQNQGoVxaOUhmXC40r3hKoNAJ1E8Qr3lFDqUSWUBMmw2XeUJKgKD
+         viiRbda3KxDvIPIHRBmjkflp0adm5ZUqZzxFYLLPY9oD7pZ5ywVKbozmbtuKTOwh0Cej
+         9iF67YNTnNc2wWdDU8bQsDt7w4+LtK1nrq4Cnoh7Qmuri7Chy+ZAYB90P/neW5wCNSLD
+         7xMX7mrOquJD7gMkG6j5MX/JRVhzLr2P/QDItCAw6fQLbXVWuqZCqKwTIgB96zLyCUNJ
+         2t5A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=qCeNXkeIIS+L0VcS+kfcmiGxNLxFEc/bLfFVeu53wUM=;
-        b=RDGsjEHh96V3h//7ftm+DwvQ/ukeAjtS3IE7XkzID3GEaG3iD0suUUNuFHEmBxNIDn
-         L/XFXmc95eR72EVmcVqDdY2dkFUD+mM/Y/u9gI+dT4Ullg0UkCHK5/imAmT0mX72E9pK
-         2Hf+iMxqkC8RQs5pzX3Bj/vlOf+DjZ4e+bS9jFGBaAH+ppnS7/AKFEqWMNc4diR+SMju
-         FbKilFMYpLWKRkMHH6lNCjZAeypZEoEQa0VxDJX9z/EkG3yvteyyaDbLG1Ncv18ypoGm
-         6UXiC165PdY0CLi1HGtHsJgPzRBWHnRirJaAYv0pOGobQvGKS9tqAyJvJDkRYNDFYLfP
-         4S7Q==
-X-Gm-Message-State: AFqh2kpqQuDBUxCuakuLXcJDlnw+E3cB+xVMjnQbdceLWswmYR3adxU7
-        ssQ3zltn/MMhf3fMVhScjzkCLXB7qFKehN6J/Og=
-X-Google-Smtp-Source: AMrXdXsZBdq84Sdbd0uzp6o/nvS3DwY9gT8TiNiiT39nwlTsgyKTi/OAEjjzeT1He53v2xn5OcTC+7XUC/ssdJzH0b4=
-X-Received: by 2002:a17:907:7665:b0:843:770e:7787 with SMTP id
- kk5-20020a170907766500b00843770e7787mr3611075ejc.79.1672765736732; Tue, 03
- Jan 2023 09:08:56 -0800 (PST)
-MIME-Version: 1.0
-References: <20221130153204.2085591-1-kajetan.puchalski@arm.com> <Y7Q6GnjKKhCVp1Zf@e126311.manchester.arm.com>
-In-Reply-To: <Y7Q6GnjKKhCVp1Zf@e126311.manchester.arm.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 3 Jan 2023 18:08:45 +0100
-Message-ID: <CAJZ5v0jUPDM9_VYOz2V2NEjT0zke-vbP5Du8bj+PaaoXPq5WxA@mail.gmail.com>
-Subject: Re: [RFC PATCH v5 0/2] cpuidle: teo: Introduce util-awareness
-To:     Kajetan Puchalski <kajetan.puchalski@arm.com>
-Cc:     rafael@kernel.org, daniel.lezcano@linaro.org, lukasz.luba@arm.com,
-        Dietmar.Eggemann@arm.com, dsmythies@telus.net,
-        yu.chen.surf@gmail.com, linux-pm@vger.kernel.org,
+        bh=sO6SUqVw2xTFajMx+hD52rACWsikx2Bdie3aQKKgmBc=;
+        b=m5BMyVSQFoZduwAULqqL+SzcUZuBQNlH3Xk+Uc5ClD7u9iJq7DkT3Lfb9ZKLGq+5Ke
+         0eLqPbKDHhjboi2eq9CUqMsUfoMnLuWgVF80xms2jD8eb/qJDX1UFWTb5NoDFq7h50KK
+         Bm2VnR1P5RWnE/JLleeGTTLPE5fvvwJIya2RfCDiMSl+kfzdwud492JU2G3OWp8eT+f+
+         cviwQp8Z6xc5A+yIT3hRRH30xyl2J7+ql8keN+1lWrOX8DKrqczN2h7JYgYikPQq+RcH
+         nino7P637xvecATWYAjuZcsaVxR5dPf0MleWyx0nyvNA5623SkGc4GCF5oqvhGpTXTFF
+         G8Cg==
+X-Gm-Message-State: AFqh2krQTgRZG0/q6gEek1MhqlIbxO7My9dcK2TiicSIjNm6zryGT8Oh
+        8WpDIBLME0ClZ+Xlkx02399jUg==
+X-Google-Smtp-Source: AMrXdXtRuHRrMeMcw8VJe8kq/FI3A09Nu2cAUW98IOvRcpS0jNxsQfZwpT2zd01GWgyHI9hfNPA5WA==
+X-Received: by 2002:a05:6512:b23:b0:4cb:d3:3b99 with SMTP id w35-20020a0565120b2300b004cb00d33b99mr10295016lfu.36.1672767067289;
+        Tue, 03 Jan 2023 09:31:07 -0800 (PST)
+Received: from localhost.localdomain (abxi45.neoplus.adsl.tpnet.pl. [83.9.2.45])
+        by smtp.gmail.com with ESMTPSA id o9-20020ac25e29000000b004b4b5da5f80sm4916818lfg.219.2023.01.03.09.31.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Jan 2023 09:31:06 -0800 (PST)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+To:     linux-arm-msm@vger.kernel.org, andersson@kernel.org,
+        agross@kernel.org, krzysztof.kozlowski@linaro.org
+Cc:     marijn.suijten@somainline.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Subject: [PATCH 1/4] interconnect: qcom: rpm: Don't set QoS params before non-zero bw is requested
+Date:   Tue,  3 Jan 2023 18:30:56 +0100
+Message-Id: <20230103173059.265856-1-konrad.dybcio@linaro.org>
+X-Mailer: git-send-email 2.39.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 3, 2023 at 3:22 PM Kajetan Puchalski
-<kajetan.puchalski@arm.com> wrote:
->
-> On Wed, Nov 30, 2022 at 03:32:02PM +0000, Kajetan Puchalski wrote:
->
-> Hi Rafael,
->
-> As it's been a while since the last email I wanted to bump this thread
-> and ask what you think about the last changes.
+Until now, the icc-rpm driver unconditionally set QoS params, even on
+empty requests. This is superfluous and the downstream counterpart does
+not do it. Follow it by doing the same.
 
-Right, I'll send my comments on the last version of the patch separately.
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+---
+ drivers/interconnect/qcom/icc-rpm.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-> Additionally, I got some emails from the kernel test robot and noticed
-> that sched_cpu_util is contingent on CONFIG_SMP so in the current form
-> there's build errors on !SMP machines.
->
-> The following change should fix the problem, do you think it's all right to add?
->
-> @@ -207,10 +207,17 @@ static DEFINE_PER_CPU(struct teo_cpu, teo_cpus);
->   * @dev: Target CPU
->   * @cpu_data: Governor CPU data for the target CPU
->   */
-> +#ifdef CONFIG_SMP
->  static void teo_get_util(struct cpuidle_device *dev, struct teo_cpu *cpu_data)
->  {
->         cpu_data->utilized = sched_cpu_util(dev->cpu) > cpu_data->util_threshold;
->  }
-> +#else
-> +static void teo_get_util(struct cpuidle_device *dev, struct teo_cpu *cpu_data)
-> +{
-> +       cpu_data->utilized = false;
-> +}
-> +#endif
->
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 43b9ce0dcb6a..06e0fee547ab 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -193,6 +193,12 @@ static int qcom_icc_qos_set(struct icc_node *node, u64 sum_bw)
+ 	struct qcom_icc_provider *qp = to_qcom_provider(node->provider);
+ 	struct qcom_icc_node *qn = node->data;
+ 
++	/* Defer setting QoS until the first non-zero bandwidth request. */
++	if (!(node->avg_bw || node->peak_bw)) {
++		dev_dbg(node->provider->dev, "NOT Setting QoS for %s\n", qn->name);
++		return 0;
++	}
++
+ 	dev_dbg(node->provider->dev, "Setting QoS for %s\n", qn->name);
+ 
+ 	switch (qp->type) {
+-- 
+2.39.0
 
-IMV it would be better to use teo_cpu_is_utilized() that would be
-called to update cpu_data->utilized this way
-
-cpu_data->utilized = teo_cpu_is_utilized(dev->cpu, cpu_data->util_threshold);
-
-and define it as an empty stab in the !SMP case.
