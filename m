@@ -2,112 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E618C46467
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 12:37:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5860C46467
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 12:38:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233103AbjACMhV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Jan 2023 07:37:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35542 "EHLO
+        id S233201AbjACMiu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Jan 2023 07:38:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230337AbjACMhU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 07:37:20 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E610563BA;
-        Tue,  3 Jan 2023 04:37:18 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7E70E612F3;
-        Tue,  3 Jan 2023 12:37:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82135C433D2;
-        Tue,  3 Jan 2023 12:37:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1672749437;
-        bh=dB/QDWMWjPvnvJtwYHuiDSHxla5EZBvL/ZWB+joq7w0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Y+aabUelfstOIDqoO/0JWYLu6/dFlO9zksv+ub/3pQGAy+kaUznWjlY0BqJgZK/hR
-         bWId+uyeiT8RCnXX5jrYc08e4Rq290BvT0hotIBXivh+cVG7FyUGDKh0ii6NuRwJdp
-         ZoCcJmVLOfHCoMO1d2+1tSPcxJ3mH6KVxA/egzFQH9fSVhiqDpvdgeABu7pnvki/Ti
-         r250DNouxBqS9bir2kjL2hMyCWilnkn+Ju3ryXnZOu9nTABAHdAoDt7NyklaBFK9uH
-         ELIP3euShWo81qZIquUQ2JkkZgafED4ECJxhpulAgZDFJnp9mFz5y5YdHBoGo7/0EU
-         2p7vIvXV9wc2A==
-Date:   Tue, 3 Jan 2023 12:37:11 +0000
-From:   Lee Jones <lee@kernel.org>
-To:     Jonathan Cameron <jic23@kernel.org>
-Cc:     saravanan sekar <sravanhome@gmail.com>, sre@kernel.org,
-        lars@metafoo.de, andy.shevchenko@gmail.com,
-        linux-pm@vger.kernel.org, linux-iio@vger.kernel.org
-Subject: Re: [PATCH v6 0/7] Add support for mp2733 battery charger
-Message-ID: <Y7Qhd2uoHOHUh9h2@google.com>
-References: <20221123175425.564042-1-sravanhome@gmail.com>
- <eedcf790-5447-d988-f9cb-9103f34f27ae@gmail.com>
- <20221211115042.5ec91c3f@jic23-huawei>
+        with ESMTP id S230337AbjACMiu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 07:38:50 -0500
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 573502BF2;
+        Tue,  3 Jan 2023 04:38:48 -0800 (PST)
+Received: from dggpemm500007.china.huawei.com (unknown [172.30.72.53])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4NmXLl092KzJqsQ;
+        Tue,  3 Jan 2023 20:37:35 +0800 (CST)
+Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
+ (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Tue, 3 Jan
+ 2023 20:38:45 +0800
+From:   Yang Yingliang <yangyingliang@huawei.com>
+To:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC:     <rafael@kernel.org>, <srinivas.pandruvada@linux.intel.com>,
+        <jacob.jun.pan@linux.intel.com>, <gregkh@linuxfoundation.org>
+Subject: [PATCH] powercap: fix possible name leak in powercap_register_zone()
+Date:   Tue, 3 Jan 2023 20:57:26 +0800
+Message-ID: <20230103125726.681099-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20221211115042.5ec91c3f@jic23-huawei>
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpemm500007.china.huawei.com (7.185.36.183)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 11 Dec 2022, Jonathan Cameron wrote:
+In the error path after calling dev_set_name(), the device
+name is leaked. To fix this, calling dev_set_name() before
+device_register(), and call put_device() if it returns error.
+All the resources is released in powercap_release(), so it
+can return from powercap_register_zone() directly.
 
-> On Tue, 6 Dec 2022 17:05:26 +0100
-> saravanan sekar <sravanhome@gmail.com> wrote:
-> 
-> > On 23/11/22 18:54, Saravanan Sekar wrote:
-> > > changes in v6:
-> > >    - splitted chip id to v6-0003 and support of mp2733 to v6-0004 patch
-> > >    - fixed commit message English grammar
-> > > 
-> > > changes in v5:
-> > >    - fixed commit message on v5-0002 and v5-0004
-> > > 
-> > > changes in v4:
-> > >    - fixed attributes groups review comments in v3
-> > >    - added new bug fix patches v4-0007 and v4-0008
-> > > 
-> > > changes in v3:
-> > >    - fixed dt_binding_check error
-> > >    - fixed spelling usb->USB
-> > > 
-> > > changes in v2:
-> > >    - fixed spelling
-> > >    - revert back probe to probe_new in mfd driver
-> > > 
-> > > add support for mp2733 Battery charger control driver for Monolithic
-> > > Power System's MP2733 chipset
-> > > 
-> > > Saravanan Sekar (7):
-> > >    mfd: mp2629: fix failed to get iio channel by device name
-> > >    power: supply: fix wrong interpretation of register value
-> > >    mfd: mp2629: introduce chip id machanism to distinguish chip
-> > >    mfd: mp2629: Add support for mps mp2733 battery charger
-> > >    iio: adc: mp2629: restrict input voltage mask for mp2629
-> > >    power: supply: Add support for mp2733 battery charger
-> > >    power: supply: mp2629: Add USB fast charge settings
-> > > 
-> > >   .../ABI/testing/sysfs-class-power-mp2629      |  16 ++
-> > >   drivers/iio/adc/mp2629_adc.c                  |   5 +-
-> > >   drivers/mfd/mp2629.c                          |   7 +-
-> > >   drivers/power/supply/mp2629_charger.c         | 229 +++++++++++++++---
-> > >   include/linux/mfd/mp2629.h                    |   6 +
-> > >   5 files changed, 226 insertions(+), 37 deletions(-)
-> > >   
-> > 
-> > Hi,
-> > 
-> > Can someone give me share the plan for this series?
-> 
-> Given some cross dependencies I think the whole lot should go through
-> mfd.  Lee?
+Fixes: 75d2364ea0ca ("PowerCap: Add class driver")
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/powercap/powercap_sys.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-That's fine by me.
-
-I have some serious catching up to do though.
-
-Please bear with me.
-
+diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
+index 1f968353d479..e180dee0f83d 100644
+--- a/drivers/powercap/powercap_sys.c
++++ b/drivers/powercap/powercap_sys.c
+@@ -530,9 +530,6 @@ struct powercap_zone *powercap_register_zone(
+ 	power_zone->name = kstrdup(name, GFP_KERNEL);
+ 	if (!power_zone->name)
+ 		goto err_name_alloc;
+-	dev_set_name(&power_zone->dev, "%s:%x",
+-					dev_name(power_zone->dev.parent),
+-					power_zone->id);
+ 	power_zone->constraints = kcalloc(nr_constraints,
+ 					  sizeof(*power_zone->constraints),
+ 					  GFP_KERNEL);
+@@ -555,9 +552,16 @@ struct powercap_zone *powercap_register_zone(
+ 	power_zone->dev_attr_groups[0] = &power_zone->dev_zone_attr_group;
+ 	power_zone->dev_attr_groups[1] = NULL;
+ 	power_zone->dev.groups = power_zone->dev_attr_groups;
++	dev_set_name(&power_zone->dev, "%s:%x",
++					dev_name(power_zone->dev.parent),
++					power_zone->id);
+ 	result = device_register(&power_zone->dev);
+-	if (result)
+-		goto err_dev_ret;
++	if (result) {
++		put_device(&power_zone->dev);
++		mutex_unlock(&control_type->lock);
++
++		return ERR_PTR(result);
++	}
+ 
+ 	control_type->nr_zones++;
+ 	mutex_unlock(&control_type->lock);
 -- 
-Lee Jones [李琼斯]
+2.25.1
+
