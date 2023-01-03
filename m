@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A5F0C63705
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 01:09:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9AC2C3DA7A
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 01:09:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236435AbjACBJS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Jan 2023 20:09:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38724 "EHLO
+        id S232696AbjACBJg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Jan 2023 20:09:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38750 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232635AbjACBJO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2023 20:09:14 -0500
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69717659D
-        for <linux-pm@vger.kernel.org>; Mon,  2 Jan 2023 17:09:11 -0800 (PST)
-Received: by mail-ej1-x632.google.com with SMTP id vm8so63216773ejc.2
-        for <linux-pm@vger.kernel.org>; Mon, 02 Jan 2023 17:09:11 -0800 (PST)
+        with ESMTP id S236446AbjACBJS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2023 20:09:18 -0500
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C1AC9FE6
+        for <linux-pm@vger.kernel.org>; Mon,  2 Jan 2023 17:09:14 -0800 (PST)
+Received: by mail-ej1-x62d.google.com with SMTP id fc4so70077643ejc.12
+        for <linux-pm@vger.kernel.org>; Mon, 02 Jan 2023 17:09:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=/nTv4kuBySseup9AFRXNN/s4Q16X70y3zcx7ENZQnWA=;
-        b=nIHlvE7UJ7MsDNjIX3BA6jETbDa7qvoZAGyevY55bcjDTjL54j/h76oKnsqLOU5R00
-         cDjhakxUWUKYW4Hglc1NnvJ99J+V0DOQMjX7+b+cHwp4hgu3DGC9W82L162F5LYuteiX
-         u69yMUBBFbtKIUryVZaTrxRGAt3H1KwXSVb3RxqWouY/Ct7Bp8Ik9ZijtZjiMFE0nLrd
-         QCib+mBuYqqtgtGAiMKSCpj1nndLV8qlnWcjc8XAKFvfSqrq5+pqHiaC+OmVKT24gFdf
-         6dxQnP1ue77I7AcNNuKUk0czePP4Mb2Fen6xOftFrq3xd0o3R+Y9bMVHQXuRFWcUiInE
-         INnA==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+balc+MRgedWafjUxob4M65cvBwrRUb1ln9bhd9UBPw=;
+        b=KUblhxszEPc8VviOgPBZQSF/dWySeQ+15/+JKg3M6LwC+KjmP4oNWnY7AGHUI2UqN6
+         xbfHaj15VgVoSVboOCncvwIg44dhDIF4dx1aU+u9oa2bpX0YCB4qsh/fanJuTeZOKbXb
+         CxhthhdL2tv9CO+pCmnvOZFclIy6NVWAi0vKsU7XNX1vDXd2a+QIuhBFtyf4fX6RWJ7H
+         +okSSjcIlkE4bp7LPS44K8yKYZZoiSUhKZwKdFLhPO4Ft337ZG+0Zqfg/JxUCQM+nZNj
+         /ockMyzHX7fnZOAZ+3iBblIneXsfC9KjPmsa878yLLe9XP2XP0qmIAwgONwn3Rip2d/T
+         s3vw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/nTv4kuBySseup9AFRXNN/s4Q16X70y3zcx7ENZQnWA=;
-        b=4GsjzxehxiAYR5KcqZM22ZntrQ/q/6gor2JU6mWkEcl+7XYdzFy973yZ87BIeyuh5l
-         ik72FUb83ny9Ljkvs1EpdGq0o1KUV5qyzDfWciZCj84oMsts0W9BSvhqz4SUWiOh5u19
-         nWy4736ZKRiY9ohKr/akkZzOuPwkHb4/lt/nCmJQ3VniXM4nT7eeTjkp+PHEjJpw/OG8
-         vJ/0C9Qy/jKKPWBAIDzsrepE/iaGbn8loJ7OhvzsjWosZckKgVj7616qRoT2tNeIM2v/
-         Zqe7F8952J5gRgtYMaWtqtkKPTMLV4zzEgaXifeNo2ncAKlPaRb4PgrvJ5W3/6EmD3uI
-         7wrg==
-X-Gm-Message-State: AFqh2kp1QNzhHOX5cwEULTa0S+Tw9DCKmXCMHtykOT1ewoqTZggrax0b
-        EzrKcyqbcIrWCh+zm8ZUIReA0g==
-X-Google-Smtp-Source: AMrXdXul9N0lLJMwSDTX6mx2eHz8xMktMAuiAvG2e/32W9DipikFGiqzshGsKAvqiYjymM4Tx5vjHQ==
-X-Received: by 2002:a17:906:4704:b0:7c1:ac8:73a0 with SMTP id y4-20020a170906470400b007c10ac873a0mr37926630ejq.51.1672708149937;
-        Mon, 02 Jan 2023 17:09:09 -0800 (PST)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+balc+MRgedWafjUxob4M65cvBwrRUb1ln9bhd9UBPw=;
+        b=u9b+VwQY2FXlLCkhxj/Dw4w6JARdsBFmBJj0ScT+2MCsJ4ow2iah05hZogRz97la4B
+         FVHhT2cT57S6FcRWSn3A/ZCbDo/xVE0/dxu7BEt0oCpfsH0N9SVqMGHsj0rbzSqB2oOW
+         /Pe1ztrsjyPrlMTmIQhEJaA1bor4ya7FbG6QNNQD8bGZtoRyjEEBFprsNlP6vFN+RerC
+         mwg57VsNykJIttS5ynWiLsIMLO0m+u4D0nr8xT99BjBInLqY6IA5M5ia/PiAP8+rMMYp
+         E5EZWS3u560s+ZO3LeO8oNYyz4P8cs1C49wX+L5B/PUtgjH2p8vlFRNex7lbBITIfTv+
+         WCkw==
+X-Gm-Message-State: AFqh2kq7WYLvcdijcj1LL3fKHQ/8+GrXp1tL9D21QQQxQ/iEWw/uuuw3
+        ZbAYZ69u9d513fvbBgjlH6HEYQ==
+X-Google-Smtp-Source: AMrXdXt/04HbPLb4VObsdtgNjvhaI1eQZZhOUZBAY5X+BNtFSISQyXoy0yIulyZu2RM7fVR3FEmXlg==
+X-Received: by 2002:a17:906:6d47:b0:7c0:c312:acaa with SMTP id a7-20020a1709066d4700b007c0c312acaamr35522054ejt.49.1672708152930;
+        Mon, 02 Jan 2023 17:09:12 -0800 (PST)
 Received: from planet9.chello.ie (2001-1c06-2302-5600-b443-9db7-1e5c-4fd5.cable.dynamic.v6.ziggo.nl. [2001:1c06:2302:5600:b443:9db7:1e5c:4fd5])
-        by smtp.gmail.com with ESMTPSA id q26-20020a17090676da00b008302732f569sm13564648ejn.78.2023.01.02.17.09.09
+        by smtp.gmail.com with ESMTPSA id q26-20020a17090676da00b008302732f569sm13564648ejn.78.2023.01.02.17.09.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Jan 2023 17:09:09 -0800 (PST)
+        Mon, 02 Jan 2023 17:09:12 -0800 (PST)
 From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
         djakov@kernel.org, robh+dt@kernel.org,
@@ -57,174 +58,37 @@ Cc:     bryan.odonoghue@linaro.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org, benl@squareup.com,
         shawn.guo@linaro.org, fabien.parent@linaro.org, leo.yan@linaro.org,
         dmitry.baryshkov@linaro.org
-Subject: [PATCH v2 0/7] Add MSM8939 SoC support with two devices
-Date:   Tue,  3 Jan 2023 01:08:57 +0000
-Message-Id: <20230103010904.3201835-1-bryan.odonoghue@linaro.org>
+Subject: [PATCH v2 3/7] dt-bindings: soc: qcom: smd-rpm: Exclude MSM8936 from glink-channels
+Date:   Tue,  3 Jan 2023 01:09:00 +0000
+Message-Id: <20230103010904.3201835-4-bryan.odonoghue@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230103010904.3201835-1-bryan.odonoghue@linaro.org>
+References: <20230103010904.3201835-1-bryan.odonoghue@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-V2:
-- Sorts core dtsi node list by address followed by alpahbetical sorting
-  within address sorted nodes - Bjorn
-- Drops use of 8916-pins - Bjorn
-- Adds msm8939-pm8916.dtsi - Stephan
-- Fixes every dts splat from previous submission minus non-converted
-  .txt compat strings [1] and one yaml error in Bjorn's tree not in -next yet
-- I haven't applied Dmitry's change for tsens since that's not been
-  picked up yet
-- Picks up a number of suggestions and fixes from Stephan Gerhold and Vincent Knecht
+MSM8936/MSM8939 should like MSM8916 not require glink-channels.
 
-- Depends on
+Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+---
+ Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-  Applied:
-  [PATCH v4 0/7] remoteproc: qcom_q6v5_mss: Add MSM8909 and MSM8953 
-  https://lore.kernel.org/linux-arm-msm/167216232800.738877.17567287056128563074.b4-ty@kernel.org/
-
-  [PATCH v6 0/5] remoteproc: qcom: Add support for pronto-v3
-  https://lore.kernel.org/linux-arm-msm/167216232801.738877.15895916910585144737.b4-ty@kernel.org/
-
-  [PATCH v6 00/18] mdss-dsi-ctrl binding and dts fixes
-  https://lore.kernel.org/linux-arm-msm/167233461766.1099840.17628700245792986354.b4-ty@kernel.org/
-
-  Awaiting application:
-  https://lore.kernel.org/linux-arm-msm/20221228133058.213886-1-bryan.odonoghue@linaro.org/
-
-- Previous
-  https://lore.kernel.org/linux-arm-msm/20220419010903.3109514-1-bryan.odonoghue@linaro.org/
-
-- Bootable tree
-  https://git.linaro.org/people/bryan.odonoghue/kernel.git/log/?h=linux-next-23-01-03-msm8939-no-cpr
-
-- [1] DTC_CHK arch/arm64/boot/dts/qcom/apq8039-t2.dtb
-
-  Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
-  qcom/apq8039-t2.dtb: idle-states: cpu-sleep-0:compatible:0: 'qcom,idle-state-spc' is not one of ['arm,idle-state', 'riscv,idle-state']
-        From schema: Documentation/devicetree/bindings/cpu/idle-states.yaml
-  qcom/apq8039-t2.dtb: idle-states: cpu-sleep-0:compatible: ['qcom,idle-state-spc', 'arm,idle-state'] is too long
-        From schema: Documentation/devicetree/bindings/cpu/idle-states.yaml
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /cpus/idle-states/cpu-sleep-0: failed to match any schema with compatible: ['qcom,idle-state-spc', 'arm,idle-state']
-
-  Documentation/devicetree/bindings/iommu/qcom,iommu.txt
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/iommu@1ef0000: failed to match any schema with compatible: ['qcom,msm8916-iommu', 'qcom,msm-iommu-v1']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/iommu@1ef0000/iommu-ctx@4000: failed to match any schema with compatible: ['qcom,msm-iommu-v1-ns']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/iommu@1ef0000/iommu-ctx@5000: failed to match any schema with compatible: ['qcom,msm-iommu-v1-sec']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/iommu@1f08000: failed to match any schema with compatible: ['qcom,msm8916-iommu', 'qcom,msm-iommu-v1']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/iommu@1f08000/iommu-ctx@1000: failed to match any schema with compatible: ['qcom,msm-iommu-v1-ns']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/iommu@1f08000/iommu-ctx@2000: failed to match any schema with compatible: ['qcom,msm-iommu-v1-ns']
-
-  arch/arm64/boot/dts/qcom/pm8916.dtsi f5d7bca55425c8
-  qcom/apq8039-t2.dtb: pmic@0: 'extcon@1300' does not match any of the regexes: '(.*)?(wled|leds)@[0-9a-f]+$', '^adc-tm@[0-9a-f]+$', '^adc@[0-9a-f]+$', '^audio-codec@[0-9a-f]+$', '^charger@[0-9a-f]+$', '^mpps@[0-9a-f]+$', '^rtc@[0-9a-f]+$', '^temp-alarm@[0-9a-f]+$', '^usb-detect@[0-9a-f]+$', '^usb-vbus-regulator@[0-9a-f]+$', '^vibrator@[0-9a-f]+$', 'gpio@[0-9a-f]+$', 'pinctrl-[0-9]+', 'pon@[0-9a-f]+$'
-        From schema: Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
-
-  Documentation/devicetree/bindings/sound/qcom,msm8916-wcd-analog.txt
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/spmi@200f000/pmic@1/audio-codec@f000: failed to match any schema with compatible: ['qcom,pm8916-wcd-analog-codec']
-
-  yaml documentation error not yet in -next
-  arm64/boot/dts/qcom/apq8039-t2.dtb: remoteproc@4080000: qcom,halt-regs:0: [33] is too short
-        From schema: Documentation/devicetree/bindings/remoteproc/qcom,msm8916-mss-pil.yaml
-
-  Documentation/devicetree/bindings/usb/ci-hdrc-usb2.txt
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/usb@78d9000: failed to match any schema with compatible: ['qcom,ci-hdrc']
-
-  Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt:            compatible = "qcom,kpss-acc-v2";
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b088000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b098000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b0a8000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b0b8000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b188000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b198000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b1a8000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-  arch/arm64/boot/dts/qcom/apq8039-t2.dtb:0:0: /soc@0/clock-controller@b1b8000: failed to match any schema with compatible: ['qcom,kpss-acc-v2']
-
-V1:
-This series adds in MSM8939 SoC support with two supported devices.
-
-- CPU
-  MSM8939 is a non-PSCI compliant device. As such in the downstreaming
-  shipped image custom code is used to bring non-boot cores out of reset.
-
-  This drop specifies the boot-method as spin-table instead and is
-  completely standard. To accomplish this, we rely on lk2nd.
-
-  https://github.com/msm8916-mainline/lk2nd/pull/142
-
-- Serial
-- i2c
-- USB
-- eMMC
-- MDP/DSI
-- WiFi
-- Bluetooth
-
-What's not included
-
-- CPR
-  We have CPR working in a 4.19 kernel quite well but for now it feels like
-  putting the cart before the horse to gate the SoC and boards on CPR.
-
-- Venus
-  I've been told this works but I haven't tried it myself and right now
-  consider it maybe working but probably not 100%.
-
-- Sound
-  We have a copy-exactly from the 4.19 kernel here in the DTS.
-  I haven't run the sound through any sort of reasonable test.
-  Vincent Knecht has some PostmarketOS kernels which use a 5.17 version of
-  this DTS to get sound up so, I think sound is in good shape.
-
-- CAMSS
-  There are slight differences between msm8916 and msm8939 for CAMSS. It
-  doesn't feel like tons of work but, right now it is work we haven't even
-  started.
-
-- Devices
-  I've booted on the Square device obviously and this is my regular
-  hardware for upstream development. I've also booted on the Sony Xperia M4
-  Aqua including mutli-core bring-up, WiFi and ADB.
-
-Dependencies for this drop:
-
-qcom-cpufreq-nvmem: Add msm8939 with some fixups
-link: https://lore.kernel.org/linux-arm-msm/20220418162226.2983117-1-bryan.odonoghue@linaro.org/T/#t
-
-Fix apq8016 compat string
-link: https://lore.kernel.org/linux-arm-msm/20220418230956.3059563-1-bryan.odonoghue@linaro.org/T/#t
-
-dt-bindings: soc: qcom: smd-rpm: Fix missing MSM8936 compatible
-link: https://lore.kernel.org/linux-arm-msm/20220418231857.3061053-1-bryan.odonoghue@linaro.org/T/#u
-
-Bootable tree here:
-https://git.linaro.org/people/bryan.odonoghue/kernel.git/log/?h=v5.18-rc2%2bapq8039-without-cpr
-
-Bryan O'Donoghue (6):
-  dt-bindings: interconnect: Move interconnect child node definition
-  dt-bindings: arm: qcom: Document MSM8939 SoC binding
-  dt-bindings: soc: qcom: smd-rpm: Exclude MSM8936 from glink-channels
-  arm64: dts: qcom: Add msm8939 SoC
-  arm64: dts: qcom: Add Square apq8039-t2 board
-  arm64: dts: qcom: Add msm8939 Sony Xperia M4 Aqua
-
-Stephan Gerhold (1):
-  arm64: dts: qcom: Add msm8939-pm8916.dtsi include
-
- .../devicetree/bindings/arm/qcom.yaml         |    8 +
- .../bindings/interconnect/qcom,rpm.yaml       |   62 +-
- .../bindings/soc/qcom/qcom,smd-rpm.yaml       |    1 +
- arch/arm64/boot/dts/qcom/Makefile             |    2 +
- arch/arm64/boot/dts/qcom/apq8039-t2.dts       |  557 ++++
- arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi  |   82 +
- .../qcom/msm8939-sony-xperia-kanuti-tulip.dts |  472 ++++
- arch/arm64/boot/dts/qcom/msm8939.dtsi         | 2470 +++++++++++++++++
- 8 files changed, 3623 insertions(+), 31 deletions(-)
- create mode 100644 arch/arm64/boot/dts/qcom/apq8039-t2.dts
- create mode 100644 arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi
- create mode 100644 arch/arm64/boot/dts/qcom/msm8939-sony-xperia-kanuti-tulip.dts
- create mode 100644 arch/arm64/boot/dts/qcom/msm8939.dtsi
-
+diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml
+index 11c0f4dd797ce..16fd67c0bd1fd 100644
+--- a/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml
++++ b/Documentation/devicetree/bindings/soc/qcom/qcom,smd-rpm.yaml
+@@ -80,6 +80,7 @@ if:
+         enum:
+           - qcom,rpm-apq8084
+           - qcom,rpm-msm8916
++          - qcom,rpm-msm8936
+           - qcom,rpm-msm8974
+           - qcom,rpm-msm8976
+           - qcom,rpm-msm8953
 -- 
 2.34.1
 
