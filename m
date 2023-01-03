@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 665C2C3DA7A
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 01:58:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C816BC3DA7A
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 01:59:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236614AbjACB66 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Jan 2023 20:58:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57774 "EHLO
+        id S236626AbjACB7A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Jan 2023 20:59:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236603AbjACB64 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2023 20:58:56 -0500
-Received: from mail-io1-xd31.google.com (mail-io1-xd31.google.com [IPv6:2607:f8b0:4864:20::d31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AACC6266;
-        Mon,  2 Jan 2023 17:58:55 -0800 (PST)
-Received: by mail-io1-xd31.google.com with SMTP id e129so7483095iof.3;
-        Mon, 02 Jan 2023 17:58:55 -0800 (PST)
+        with ESMTP id S236603AbjACB67 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2023 20:58:59 -0500
+Received: from mail-il1-x134.google.com (mail-il1-x134.google.com [IPv6:2607:f8b0:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA1B2AC;
+        Mon,  2 Jan 2023 17:58:58 -0800 (PST)
+Received: by mail-il1-x134.google.com with SMTP id p15so6432809ilg.9;
+        Mon, 02 Jan 2023 17:58:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=OIy9aw7GHZ6QVTLXrKK72oArujDWvCFhFNu2XfmnEGc=;
-        b=UJpgorazUkua+6tQeK3SEi7KYKvfw65J8qvTJGyApXyaYGqeGi+Zk2SmYWl5DIgyeE
-         4MPGftXmqehwnpY8Gt4E+vUAUE0/8nfTGKgpGXOW6Ik8WMw/XebLhy/JRB30kHXRBV9P
-         9T2W+pqo86PFfmwncMOIm6hmE9+IEwJWmrhGDP1WkEGoqKhOr37vGCGRWiAJEFGW5syj
-         zcHvrePh7v6OYosxG4xHYTYSgYljmbDtqM6A/rIitz/zWFeRZm5Zdxj9QrtZ5gA1+Jek
-         ac2gr5gZzFZB6jDRrt9m8ODo5//YF0P4tZk/fz4rntclpJe++mxBysVfR9sQ0tg7F98d
-         CcBw==
+        bh=BwrqyXxOwDECeWUhsT5aw/2p3RQHTQl3MMrK+gg4ReM=;
+        b=hrplG5J0mZEWwEcalPRbiRRGiJ8o1Nv91Sqr65AJAHVpC20fDc/j9uxcxKd5+OFAGZ
+         A8EQ/QyJQr0dYSbByAFXdujm2nubO/GQc1QjFvPd8htR3al7p6RUJ/OwDDXRNG4EoomN
+         k9e75p9TlwmZyCNrv2lH3LmJ3hi0Yu3xldqoNMS8Hugdb6Kq/nQPPet3Gj4C3gHj+HZR
+         0/c405fMWQQLSU/FeVCwq9rjRs7hCdbnDyS8DS3xi3v4BI1U57xPSsmO88rCMH3rpDIp
+         Jdm+Su3hZ4Tb5dQum5CPj1cyBO+ZNCGmyW1yTZ3UkahEdhmhIH2uM2jcrSBH/u9MC7rD
+         Wupg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=OIy9aw7GHZ6QVTLXrKK72oArujDWvCFhFNu2XfmnEGc=;
-        b=00lopp9Z8vOnAOU/yFHwfVeNm/4OrAskQ/Lve4Rq1dWWdjxbwOqyBzp+aFrCwsZByP
-         wweefkfOm8Hb9Kg+WQ4fu4gRLJEbDRGhTSp62nUtGM7TgUUQ/7QBVRxM4JzIFcMuyULo
-         wIpgiZkGwd+tuxGhWACJiyQzF/ekyvd8GkB0TJHp0ZEbWP36+pWo2jlfTO+3mxi9cCtN
-         C+DXfmG1gIKsYnyr0IB9gie0LBg+a+92w4K8QgGxB5bvC8NiO5qYyFGdeowt3oxwVaBV
-         4hUNyBc1kJ5q7T+HlFvjX9wG8PfkjUodaerj7lnNnsTeF661yAK349fAZc/euwppsodf
-         q6QQ==
-X-Gm-Message-State: AFqh2koCL8jFTX2OUROc8u5gH6SM+Ltgvm6I8o/LiqEZU1F+ikJHo8lN
-        KJ2lbySExSlkVS8IFC9Dzjk=
-X-Google-Smtp-Source: AMrXdXvDVtDkOv6BvEnCQ/CjCWkzrR+KX8Z8iykIDubAaSngJwZ+6ADcJCVTVYknkruGWGHsBIJ5Lw==
-X-Received: by 2002:a6b:c84a:0:b0:6df:3382:b664 with SMTP id y71-20020a6bc84a000000b006df3382b664mr30802955iof.12.1672711135066;
-        Mon, 02 Jan 2023 17:58:55 -0800 (PST)
+        bh=BwrqyXxOwDECeWUhsT5aw/2p3RQHTQl3MMrK+gg4ReM=;
+        b=xBf9vpNVgFH6WczgaULLgIu6pzdLimCgOTnDqRIyYel0eECcW695cPt244pLAYr4OG
+         cceE/Z5pxQbKsVeiowYjKoCjcFkp/pBS1mypCAJPCW3/cI3ls0vvVrT5gGSIamzSyxSe
+         QUBWMo1tufBcj2KS8zbsIIeEpTGeKWpjygDIvekgidxP2UPAPzq/juzViaG+Ue9QKJBM
+         NDaio4KfJkBx8f69Tud/7ffl3fzjZlDy0Zic3VF6hTubzJQP4cfqLpxt4LGaDumCvdOZ
+         3zuG3gYM1G2EksYrci7JLLVkgDucDmYSxkVpv6vDaBpsnXn0v5YBzy/yppX9J85wOxDJ
+         55OQ==
+X-Gm-Message-State: AFqh2krN4lR518/HhAxeZfAt0vAdlUeKTVlJYHqq04bYaQ5bfIq3IdRv
+        IluRoRisc3TLXX79r7rw2coTGediyso7TA==
+X-Google-Smtp-Source: AMrXdXvupotTc6aNKA7hHGphgqcer7a+O6QsUIoNtKDEV+FSKQpHYn89I0S5qYvIOk2B7DcqtK7uRg==
+X-Received: by 2002:a05:6e02:1d0a:b0:30b:b565:7c3 with SMTP id i10-20020a056e021d0a00b0030bb56507c3mr32367766ila.1.1672711138285;
+        Mon, 02 Jan 2023 17:58:58 -0800 (PST)
 Received: from localhost ([2607:fea8:a2df:3d00::d097])
-        by smtp.gmail.com with ESMTPSA id e21-20020a6bf115000000b006d8b7bcaa6esm11089023iog.4.2023.01.02.17.58.54
+        by smtp.gmail.com with ESMTPSA id w9-20020a92d609000000b0030314a7f039sm2188988ilm.10.2023.01.02.17.58.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Jan 2023 17:58:54 -0800 (PST)
+        Mon, 02 Jan 2023 17:58:57 -0800 (PST)
 From:   Richard Acayan <mailingradian@gmail.com>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -61,9 +61,9 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     Odelu Kukatla <quic_okukatla@quicinc.com>,
         Luca Weiss <luca@z3ntu.xyz>,
         Richard Acayan <mailingradian@gmail.com>
-Subject: [PATCH v3 1/4] dt-bindings: interconnect: add sdm670 interconnects
-Date:   Mon,  2 Jan 2023 20:58:42 -0500
-Message-Id: <20230103015845.314551-2-mailingradian@gmail.com>
+Subject: [PATCH v3 3/4] arm64: dts: qcom: sdm670: add interconnects
+Date:   Mon,  2 Jan 2023 20:58:44 -0500
+Message-Id: <20230103015845.314551-4-mailingradian@gmail.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230103015845.314551-1-mailingradian@gmail.com>
 References: <20230103015845.314551-1-mailingradian@gmail.com>
@@ -73,181 +73,88 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There are controllable interconnects on Snapdragon 670. Add the
-compatible strings to the documentation and interconnect ID definitions.
-
-The device tree header was generated by
-linux-interconnect-driver-generator and the copyright year was changed.
+The interconnects for Snapdragon 670 can be controlled. Add their
+corresponding nodes in the device tree.
 
 Signed-off-by: Richard Acayan <mailingradian@gmail.com>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- .../bindings/interconnect/qcom,rpmh.yaml      |   8 ++
- .../interconnect/qcom,sdm670-rpmh.h           | 136 ++++++++++++++++++
- 2 files changed, 144 insertions(+)
- create mode 100644 include/dt-bindings/interconnect/qcom,sdm670-rpmh.h
+ arch/arm64/boot/dts/qcom/sdm670.dtsi | 56 ++++++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-index a429a1ed1006..db1e93583554 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-@@ -75,6 +75,14 @@ properties:
-       - qcom,sc8280xp-nspa-noc
-       - qcom,sc8280xp-nspb-noc
-       - qcom,sc8280xp-system-noc
-+      - qcom,sdm670-aggre1-noc
-+      - qcom,sdm670-aggre2-noc
-+      - qcom,sdm670-config-noc
-+      - qcom,sdm670-dc-noc
-+      - qcom,sdm670-gladiator-noc
-+      - qcom,sdm670-mem-noc
-+      - qcom,sdm670-mmss-noc
-+      - qcom,sdm670-system-noc
-       - qcom,sdm845-aggre1-noc
-       - qcom,sdm845-aggre2-noc
-       - qcom,sdm845-config-noc
-diff --git a/include/dt-bindings/interconnect/qcom,sdm670-rpmh.h b/include/dt-bindings/interconnect/qcom,sdm670-rpmh.h
-new file mode 100644
-index 000000000000..9b516cc360bb
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,sdm670-rpmh.h
-@@ -0,0 +1,136 @@
-+/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
-+/*
-+ * Qualcomm SDM670 interconnect IDs
-+ *
-+ * Copyright (c) 2022, The Linux Foundation. All rights reserved.
-+ */
+diff --git a/arch/arm64/boot/dts/qcom/sdm670.dtsi b/arch/arm64/boot/dts/qcom/sdm670.dtsi
+index ec9946e5f08d..02f14692dd9d 100644
+--- a/arch/arm64/boot/dts/qcom/sdm670.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm670.dtsi
+@@ -788,6 +788,55 @@ i2c15: i2c@a9c000 {
+ 			};
+ 		};
+ 
++		mem_noc: interconnect@1380000 {
++			compatible = "qcom,sdm670-mem-noc";
++			reg = <0 0x01380000 0 0x27200>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SDM670_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_SDM670_H
++		dc_noc: interconnect@14e0000 {
++			compatible = "qcom,sdm670-dc-noc";
++			reg = <0 0x014e0000 0 0x400>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
-+#define MASTER_A1NOC_CFG		0
-+#define MASTER_BLSP_1			1
-+#define MASTER_TSIF			2
-+#define MASTER_EMMC			3
-+#define MASTER_SDCC_2			4
-+#define MASTER_SDCC_4			5
-+#define MASTER_UFS_MEM			6
-+#define SLAVE_A1NOC_SNOC		7
-+#define SLAVE_SERVICE_A1NOC		8
++		config_noc: interconnect@1500000 {
++			compatible = "qcom,sdm670-config-noc";
++			reg = <0 0x01500000 0 0x5080>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
-+#define MASTER_A2NOC_CFG		0
-+#define MASTER_QDSS_BAM			1
-+#define MASTER_BLSP_2			2
-+#define MASTER_CNOC_A2NOC		3
-+#define MASTER_CRYPTO_CORE_0		4
-+#define MASTER_IPA			5
-+#define MASTER_QDSS_ETR			6
-+#define MASTER_USB3			7
-+#define SLAVE_A2NOC_SNOC		8
-+#define SLAVE_SERVICE_A2NOC		9
++		system_noc: interconnect@1620000 {
++			compatible = "qcom,sdm670-system-noc";
++			reg = <0 0x01620000 0 0x18080>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
++		aggre1_noc: interconnect@16e0000 {
++			compatible = "qcom,sdm670-aggre1-noc";
++			reg = <0 0x016e0000 0 0x15080>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
-+#define MASTER_SPDM			0
-+#define MASTER_SNOC_CNOC		1
-+#define SLAVE_A1NOC_CFG			2
-+#define SLAVE_A2NOC_CFG			3
-+#define SLAVE_AOP			4
-+#define SLAVE_AOSS			5
-+#define SLAVE_CAMERA_CFG		6
-+#define SLAVE_CLK_CTL			7
-+#define SLAVE_CDSP_CFG			8
-+#define SLAVE_RBCPR_CX_CFG		9
-+#define SLAVE_CRYPTO_0_CFG		10
-+#define SLAVE_DCC_CFG			11
-+#define SLAVE_CNOC_DDRSS		12
-+#define SLAVE_DISPLAY_CFG		13
-+#define SLAVE_EMMC_CFG			14
-+#define SLAVE_GLM			15
-+#define SLAVE_GRAPHICS_3D_CFG		16
-+#define SLAVE_IMEM_CFG			17
-+#define SLAVE_IPA_CFG			18
-+#define SLAVE_CNOC_MNOC_CFG		19
-+#define SLAVE_PDM			20
-+#define SLAVE_SOUTH_PHY_CFG		21
-+#define SLAVE_PIMEM_CFG			22
-+#define SLAVE_PRNG			23
-+#define SLAVE_QDSS_CFG			24
-+#define SLAVE_BLSP_2			25
-+#define SLAVE_BLSP_1			26
-+#define SLAVE_SDCC_2			27
-+#define SLAVE_SDCC_4			28
-+#define SLAVE_SNOC_CFG			29
-+#define SLAVE_SPDM_WRAPPER		30
-+#define SLAVE_TCSR			31
-+#define SLAVE_TLMM_NORTH		32
-+#define SLAVE_TLMM_SOUTH		33
-+#define SLAVE_TSIF			34
-+#define SLAVE_UFS_MEM_CFG		35
-+#define SLAVE_USB3			36
-+#define SLAVE_VENUS_CFG			37
-+#define SLAVE_VSENSE_CTRL_CFG		38
-+#define SLAVE_CNOC_A2NOC		39
-+#define SLAVE_SERVICE_CNOC		40
++		aggre2_noc: interconnect@1700000 {
++			compatible = "qcom,sdm670-aggre2-noc";
++			reg = <0 0x01700000 0 0x1f300>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
-+#define MASTER_CNOC_DC_NOC		0
-+#define SLAVE_LLCC_CFG			1
-+#define SLAVE_MEM_NOC_CFG		2
++		mmss_noc: interconnect@1740000 {
++			compatible = "qcom,sdm670-mmss-noc";
++			reg = <0 0x01740000 0 0x1c100>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
-+#define MASTER_AMPSS_M0			0
-+#define MASTER_GNOC_CFG			1
-+#define SLAVE_GNOC_SNOC			2
-+#define SLAVE_GNOC_MEM_NOC		3
-+#define SLAVE_SERVICE_GNOC		4
+ 		tlmm: pinctrl@3400000 {
+ 			compatible = "qcom,sdm670-tlmm";
+ 			reg = <0 0x03400000 0 0xc00000>;
+@@ -1083,6 +1132,13 @@ apps_smmu: iommu@15000000 {
+ 				     <GIC_SPI 343 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
++		gladiator_noc: interconnect@17900000 {
++			compatible = "qcom,sdm670-gladiator-noc";
++			reg = <0 0x17900000 0 0xd080>;
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
 +
-+#define MASTER_TCU_0			0
-+#define MASTER_MEM_NOC_CFG		1
-+#define MASTER_GNOC_MEM_NOC		2
-+#define MASTER_MNOC_HF_MEM_NOC		3
-+#define MASTER_MNOC_SF_MEM_NOC		4
-+#define MASTER_SNOC_GC_MEM_NOC		5
-+#define MASTER_SNOC_SF_MEM_NOC		6
-+#define MASTER_GRAPHICS_3D		7
-+#define SLAVE_MSS_PROC_MS_MPU_CFG	8
-+#define SLAVE_MEM_NOC_GNOC		9
-+#define SLAVE_LLCC			10
-+#define SLAVE_MEM_NOC_SNOC		11
-+#define SLAVE_SERVICE_MEM_NOC		12
-+#define MASTER_LLCC			13
-+#define SLAVE_EBI_CH0			14
-+
-+#define MASTER_CNOC_MNOC_CFG		0
-+#define MASTER_CAMNOC_HF0		1
-+#define MASTER_CAMNOC_HF1		2
-+#define MASTER_CAMNOC_SF		3
-+#define MASTER_MDP_PORT0		4
-+#define MASTER_MDP_PORT1		5
-+#define MASTER_ROTATOR			6
-+#define MASTER_VIDEO_P0			7
-+#define MASTER_VIDEO_P1			8
-+#define MASTER_VIDEO_PROC		9
-+#define SLAVE_MNOC_SF_MEM_NOC		10
-+#define SLAVE_MNOC_HF_MEM_NOC		11
-+#define SLAVE_SERVICE_MNOC		12
-+
-+#define MASTER_SNOC_CFG			0
-+#define MASTER_A1NOC_SNOC		1
-+#define MASTER_A2NOC_SNOC		2
-+#define MASTER_GNOC_SNOC		3
-+#define MASTER_MEM_NOC_SNOC		4
-+#define MASTER_PIMEM			5
-+#define MASTER_GIC			6
-+#define SLAVE_APPSS			7
-+#define SLAVE_SNOC_CNOC			8
-+#define SLAVE_SNOC_MEM_NOC_GC		9
-+#define SLAVE_SNOC_MEM_NOC_SF		10
-+#define SLAVE_OCIMEM			11
-+#define SLAVE_PIMEM			12
-+#define SLAVE_SERVICE_SNOC		13
-+#define SLAVE_QDSS_STM			14
-+#define SLAVE_TCU			15
-+#define MASTER_CAMNOC_HF0_UNCOMP	16
-+#define MASTER_CAMNOC_HF1_UNCOMP	17
-+#define MASTER_CAMNOC_SF_UNCOMP		18
-+#define SLAVE_CAMNOC_UNCOMP		19
-+
-+#endif
+ 		apps_rsc: rsc@179c0000 {
+ 			compatible = "qcom,rpmh-rsc";
+ 			reg = <0 0x179c0000 0 0x10000>,
 -- 
 2.39.0
 
