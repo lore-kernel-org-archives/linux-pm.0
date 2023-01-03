@@ -2,46 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01EE4C4708E
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30C83C46467
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Jan 2023 11:30:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237400AbjACLaL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S237503AbjACLaL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 3 Jan 2023 06:30:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57786 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57788 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237461AbjACL3p (ORCPT
+        with ESMTP id S237463AbjACL3p (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2023 06:29:45 -0500
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7BE3CF03F;
-        Tue,  3 Jan 2023 03:29:32 -0800 (PST)
-X-UUID: c0aa10b8ccbf46719f0f612fe6d7d22f-20230103
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71EC5FAF6;
+        Tue,  3 Jan 2023 03:29:34 -0800 (PST)
+X-UUID: 35f120e895814bea8a46946f006df901-20230103
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=vf6IcfalnyFtEwcYPBgscSxhCUGC67GQz9ghXYhk16o=;
-        b=iXBnmaZmVaA3MtKd34q/1M3YfSMRqyZ9ld57d4n4U0X8VJ8RshKnl+58Kx9wItjjHsOnFW7aV+FEcl6QzjBJWyOaAWb/XpIKTDPkzIT9qkaXUqq3+RNkAUmAytQvsNnZhNTKBwjb1OgdRN77ksm56h5pTBHow0Wg8X3UG/mMNXw=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=7RQEeKIIux1PCUXqzkDn4LBhrz6tKrtyzvHPPUbC6vE=;
+        b=d1UgQWq4GLYOAEIDfi53xLwArwSRl7XZrJPp+NyYsgw/Jxflp1ikMhv1OjYcbCkR0BqB4tp/7zY5knMQdLix9/86n/WdA5ZGfewkN/nJs23s94GNYqEtnqicCz6DF5RTuFomcmyzHX05ppcRvBlVNx3NX/KOFDYNJA874a2kKu4=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.16,REQID:2957d9b0-b490-45a5-90a6-c71fe306039b,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-        :release,TS:95
-X-CID-INFO: VERSION:1.1.16,REQID:2957d9b0-b490-45a5-90a6-c71fe306039b,IP:0,URL
-        :0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTION
-        :quarantine,TS:95
-X-CID-META: VersionHash:09771b1,CLOUDID:359e1b8b-8530-4eff-9f77-222cf6e2895b,B
-        ulkID:230103192928A19EHKMY,BulkQuantity:0,Recheck:0,SF:38|28|17|19|48,TC:n
-        il,Content:0,EDM:-3,IP:nil,URL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
-        ,OSI:0,OSA:0
+X-CID-O-INFO: VERSION:1.1.16,REQID:8906b7f1-2be3-4f50-9bac-2bf33265a314,IP:0,U
+        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+        release,TS:0
+X-CID-META: VersionHash:09771b1,CLOUDID:c064aaf4-ff42-4fb0-b929-626456a83c14,B
+        ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
 X-CID-BVR: 0
-X-UUID: c0aa10b8ccbf46719f0f612fe6d7d22f-20230103
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+X-UUID: 35f120e895814bea8a46946f006df901-20230103
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 153076878; Tue, 03 Jan 2023 19:29:27 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 411707678; Tue, 03 Jan 2023 19:29:28 +0800
 Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
  mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Tue, 3 Jan 2023 19:29:26 +0800
+ 15.2.792.15; Tue, 3 Jan 2023 19:29:27 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Tue, 3 Jan 2023 19:29:26 +0800
+ 15.2.792.15 via Frontend Transport; Tue, 3 Jan 2023 19:29:27 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -54,9 +50,9 @@ CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v3 03/14] soc: mediatek: mtk-svs: clean up platform probing
-Date:   Tue, 3 Jan 2023 19:29:14 +0800
-Message-ID: <20230103112925.16554-4-roger.lu@mediatek.com>
+Subject: [PATCH v3 07/14] soc: mtk-svs: mt8183: refactor o_slope calculation
+Date:   Tue, 3 Jan 2023 19:29:18 +0800
+Message-ID: <20230103112925.16554-8-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20230103112925.16554-1-roger.lu@mediatek.com>
 References: <20230103112925.16554-1-roger.lu@mediatek.com>
@@ -67,52 +63,92 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Matthias Brugger <matthias.bgg@gmail.com>
-
-We only ever call the SoC specific probe function from
-svs_platform_probe. No need to carry that function in a global
-datastructure around.
+The o_slope value is dependent of the o_slope_sign, refactor code to get
+rid of unnecessary if constructs.
 
 Signed-off-by: Matthias Brugger <matthias.bgg@gmail.com>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
- drivers/soc/mediatek/mtk-svs.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/soc/mediatek/mtk-svs.c | 51 +++++++++++++++-------------------
+ 1 file changed, 22 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-index 465b60a5cedc..5abf94aafbac 100644
+index 308cd36a23fc..9578baf3d9a7 100644
 --- a/drivers/soc/mediatek/mtk-svs.c
 +++ b/drivers/soc/mediatek/mtk-svs.c
-@@ -319,7 +319,6 @@ static const u32 svs_regs_v2[] = {
-  * @banks: svs banks that svs platform supports
-  * @rst: svs platform reset control
-  * @efuse_parsing: svs platform efuse parsing function pointer
-- * @probe: svs platform probe function pointer
-  * @efuse_max: total number of svs efuse
-  * @tefuse_max: total number of thermal efuse
-  * @regs: svs platform registers map
-@@ -336,7 +335,6 @@ struct svs_platform {
- 	struct svs_bank *banks;
- 	struct reset_control *rst;
- 	bool (*efuse_parsing)(struct svs_platform *svsp);
--	int (*probe)(struct svs_platform *svsp);
- 	size_t efuse_max;
- 	size_t tefuse_max;
- 	const u32 *regs;
-@@ -2347,11 +2345,10 @@ static struct svs_platform *svs_platform_probe(struct platform_device *pdev)
- 	svsp->name = svsp_data->name;
- 	svsp->banks = svsp_data->banks;
- 	svsp->efuse_parsing = svsp_data->efuse_parsing;
--	svsp->probe = svsp_data->probe;
- 	svsp->regs = svsp_data->regs;
- 	svsp->bank_max = svsp_data->bank_max;
+@@ -1893,26 +1893,27 @@ static bool svs_mt8183_efuse_parsing(struct svs_platform *svsp)
+ 	o_slope_sign = (svsp->tefuse[0] >> 7) & BIT(0);
  
--	ret = svsp->probe(svsp);
-+	ret = svsp_data->probe(svsp);
- 	if (ret)
- 		return ERR_PTR(ret);
+ 	ts_id = (svsp->tefuse[1] >> 9) & BIT(0);
+-	o_slope = (svsp->tefuse[0] >> 26) & GENMASK(5, 0);
+-
+-	if (adc_cali_en_t == 1) {
+-		if (!ts_id)
+-			o_slope = 0;
+-
+-		if (adc_ge_t < 265 || adc_ge_t > 758 ||
+-		    adc_oe_t < 265 || adc_oe_t > 758 ||
+-		    o_vtsmcu[0] < -8 || o_vtsmcu[0] > 484 ||
+-		    o_vtsmcu[1] < -8 || o_vtsmcu[1] > 484 ||
+-		    o_vtsmcu[2] < -8 || o_vtsmcu[2] > 484 ||
+-		    o_vtsmcu[3] < -8 || o_vtsmcu[3] > 484 ||
+-		    o_vtsmcu[4] < -8 || o_vtsmcu[4] > 484 ||
+-		    o_vtsabb < -8 || o_vtsabb > 484 ||
+-		    degc_cali < 1 || degc_cali > 63) {
+-			dev_err(svsp->dev, "bad thermal efuse, no mon mode\n");
+-			goto remove_mt8183_svsb_mon_mode;
+-		}
++	if (!ts_id) {
++		o_slope = 1534;
+ 	} else {
+-		dev_err(svsp->dev, "no thermal efuse, no mon mode\n");
++		o_slope = (svsp->tefuse[0] >> 26) & GENMASK(5, 0);
++		if (!o_slope_sign)
++			o_slope = 1534 + o_slope * 10;
++		else
++			o_slope = 1534 - o_slope * 10;
++	}
++
++	if (adc_cali_en_t == 0 ||
++	    adc_ge_t < 265 || adc_ge_t > 758 ||
++	    adc_oe_t < 265 || adc_oe_t > 758 ||
++	    o_vtsmcu[0] < -8 || o_vtsmcu[0] > 484 ||
++	    o_vtsmcu[1] < -8 || o_vtsmcu[1] > 484 ||
++	    o_vtsmcu[2] < -8 || o_vtsmcu[2] > 484 ||
++	    o_vtsmcu[3] < -8 || o_vtsmcu[3] > 484 ||
++	    o_vtsmcu[4] < -8 || o_vtsmcu[4] > 484 ||
++	    o_vtsabb < -8 || o_vtsabb > 484 ||
++	    degc_cali < 1 || degc_cali > 63) {
++		dev_err(svsp->dev, "bad thermal efuse, no mon mode\n");
+ 		goto remove_mt8183_svsb_mon_mode;
+ 	}
  
+@@ -1931,11 +1932,7 @@ static bool svs_mt8183_efuse_parsing(struct svs_platform *svsp)
+ 		x_roomt[i] = (((format[i] * 10000) / 4096) * 10000) / gain;
+ 
+ 	temp0 = (10000 * 100000 / gain) * 15 / 18;
+-
+-	if (!o_slope_sign)
+-		mts = (temp0 * 10) / (1534 + o_slope * 10);
+-	else
+-		mts = (temp0 * 10) / (1534 - o_slope * 10);
++	mts = (temp0 * 10) / o_slope;
+ 
+ 	for (idx = 0; idx < svsp->bank_max; idx++) {
+ 		svsb = &svsp->banks[idx];
+@@ -1962,11 +1959,7 @@ static bool svs_mt8183_efuse_parsing(struct svs_platform *svsp)
+ 		temp0 = (degc_cali * 10 / 2);
+ 		temp1 = ((10000 * 100000 / 4096 / gain) *
+ 			 oe + tb_roomt * 10) * 15 / 18;
+-
+-		if (!o_slope_sign)
+-			temp2 = temp1 * 100 / (1534 + o_slope * 10);
+-		else
+-			temp2 = temp1 * 100 / (1534 - o_slope * 10);
++		temp2 = temp1 * 100 / o_slope;
+ 
+ 		svsb->bts = (temp0 + temp2 - 250) * 4 / 10;
+ 	}
 -- 
 2.18.0
 
