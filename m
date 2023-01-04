@@ -2,74 +2,74 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FFD0C4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Jan 2023 14:17:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 964F5C4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Jan 2023 14:29:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229499AbjADORW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Jan 2023 09:17:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43228 "EHLO
+        id S231418AbjADO3P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Jan 2023 09:29:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51130 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239541AbjADORA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 09:17:00 -0500
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01D4217424
-        for <linux-pm@vger.kernel.org>; Wed,  4 Jan 2023 06:16:59 -0800 (PST)
+        with ESMTP id S233142AbjADO3J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 09:29:09 -0500
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68BFE1743A;
+        Wed,  4 Jan 2023 06:29:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1672841819; x=1704377819;
+  t=1672842548; x=1704378548;
   h=from:to:cc:subject:date:message-id;
-  bh=K2Xq4JISotYBFghaTBAdgS1F9YIJdw76QRERW/X0HNM=;
-  b=Y+JbrCWnxYEPHFsGp/eLt8y4xcuFATnf6WDuDN4hY7Y81YELo/8nH1xI
-   P92jy99IpISeBsKpTVuZnE8zuIs1MeTyp+4GblSqkWAKWAa7Kf0UKXDRz
-   NjdPGd2Le++BkmwOQdBgUBiHSG930Grnl66JlNKDF+4X+MhwcD+7HrdwP
-   DerblR1A/RDQ8AsbmNiH68uDsUpWc4ntdr+r5xL2+8mJLGhssC8I9x9sZ
-   Wst+QyvkVgl63HOuHurknX2AVujt4nMdWrsGm8wfOI7ghZH5sX+KrtX/B
-   f2/8fNEzeb2NT+Mu3MSGNaqFGzkNrBM5gFd0wYe8bACnuf8UmdUXDbx+b
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10580"; a="349163459"
+  bh=LjoN4gPM2Xqx189nas75Dz8thY4msPK/MRpkF+8Sm0w=;
+  b=EroMluxrM0S4a6LWbRiVdkBK/rnVocJG5BTDc+SQKTFH3ydf3YnNmU20
+   wdu7RfEE1r+oSC8fQ96mYFYqzQ6R4bCWZ3D1Zc218sDa5R85BNIZT2gJK
+   i6OwiSqAFc+XYCRLdurBTASHCWd9+YZ9aFkSHaJtVMMd4lIf8gCfz33L/
+   dj++vSwwC7KnqyfOt/RJkbdMm707oisxeP5J5IZJj0X7AxDjZlgdlKr4I
+   VwH8KwxGSIjyj5lluHSz4s1/IFbxxaD8AtSvDrmasKkOsRFAXsNQ8I2hE
+   +O8Nky3Dxrk/2f1CHMbQs4qWJ+B/f0kHA70BYrqME1KdQ3L7KLkct0eii
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10580"; a="319652435"
 X-IronPort-AV: E=Sophos;i="5.96,300,1665471600"; 
-   d="scan'208";a="349163459"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jan 2023 06:16:59 -0800
+   d="scan'208";a="319652435"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jan 2023 06:29:08 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10580"; a="723658185"
+X-IronPort-AV: E=McAfee;i="6500,9779,10580"; a="762684935"
 X-IronPort-AV: E=Sophos;i="5.96,300,1665471600"; 
-   d="scan'208";a="723658185"
+   d="scan'208";a="762684935"
 Received: from power-sh.sh.intel.com ([10.239.183.7])
-  by fmsmga004.fm.intel.com with ESMTP; 04 Jan 2023 06:16:58 -0800
+  by fmsmga002.fm.intel.com with ESMTP; 04 Jan 2023 06:29:06 -0800
 From:   Zhang Rui <rui.zhang@intel.com>
 To:     linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com,
-        len.brown@intel.com
-Cc:     artem.bityutskiy@linux.intel.com
-Subject: [PATCH] tools/power turbostat: Introduce support for EMR
-Date:   Wed,  4 Jan 2023 22:23:53 +0800
-Message-Id: <20230104142353.22871-1-rui.zhang@intel.com>
+        daniel.lezcano@linaro.org
+Cc:     linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] powercap: intel_rapl: add support for METEORLAKE
+Date:   Wed,  4 Jan 2023 22:36:01 +0800
+Message-Id: <20230104143602.23792-1-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce support for EMR.
+Add METEORLAKE to the list of supported processor models in the Intel
+RAPL power capping driver.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/powercap/intel_rapl_common.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index aba460410dbd..5073e5cdfec5 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -5463,6 +5463,9 @@ unsigned int intel_model_duplicates(unsigned int model)
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index 26d00b1853b4..ca6ff27b4384 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -1113,6 +1113,8 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE,		&rapl_defaults_core),
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_P,        &rapl_defaults_core),
+ 	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE_S,	&rapl_defaults_core),
++	X86_MATCH_INTEL_FAM6_MODEL(METEORLAKE,		&rapl_defaults_core),
++	X86_MATCH_INTEL_FAM6_MODEL(METEORLAKE_L,	&rapl_defaults_core),
+ 	X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X,	&rapl_defaults_spr_server),
+ 	X86_MATCH_INTEL_FAM6_MODEL(LAKEFIELD,		&rapl_defaults_core),
  
- 	case INTEL_FAM6_ICELAKE_D:
- 		return INTEL_FAM6_ICELAKE_X;
-+
-+	case INTEL_FAM6_EMERALDRAPIDS_X:
-+		return INTEL_FAM6_SAPPHIRERAPIDS_X;
- 	}
- 	return model;
- }
 -- 
 2.25.1
 
