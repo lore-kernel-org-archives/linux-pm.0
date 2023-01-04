@@ -2,106 +2,141 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB258C54EF0
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Jan 2023 17:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A20C0C4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Jan 2023 18:35:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239935AbjADRQ4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Jan 2023 12:16:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33524 "EHLO
+        id S235349AbjADSeu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Jan 2023 13:34:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239783AbjADRQw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 12:16:52 -0500
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7931712D3D
-        for <linux-pm@vger.kernel.org>; Wed,  4 Jan 2023 09:16:49 -0800 (PST)
-Received: by mail-lf1-x136.google.com with SMTP id bu8so2313355lfb.4
-        for <linux-pm@vger.kernel.org>; Wed, 04 Jan 2023 09:16:49 -0800 (PST)
+        with ESMTP id S240181AbjADSea (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 13:34:30 -0500
+Received: from mail-io1-xd36.google.com (mail-io1-xd36.google.com [IPv6:2607:f8b0:4864:20::d36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6E163D1F1
+        for <linux-pm@vger.kernel.org>; Wed,  4 Jan 2023 10:34:09 -0800 (PST)
+Received: by mail-io1-xd36.google.com with SMTP id g20so18455755iob.2
+        for <linux-pm@vger.kernel.org>; Wed, 04 Jan 2023 10:34:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YQ2K0kYnRt+YlD+PL9WGp6KBl813c0oprYOBplj3bv4=;
-        b=szXPsA0QOxmO8j4kyf6xPafkQvC5VentVyIlxxl27L+xV3FCYT5IgdKfbLJYzJoafs
-         +nr6QdisZKtL8jUYIsHkVphXY09VEoBLiMqQi1Bg0XLSRmZ6GUiqEx5iZc00IEsqh44E
-         2Qbp9A5TY2L0m1ikGnfvM3+NDcmu8JmQCEEwvf8/cJJucsyOGUgO+Yx7hKbE95B3Tc9F
-         gvcdfO0sVVACBB7z3RlbskMAu6MyDJrKzh9d8VO4v/euVgXlKb+Xiqdt5A2KuUhO2jZv
-         3Uooe6c0eKlmZ7f7664coF/cUdcemyTJY5vZa+t6jOII+riO5iO1XkLa9oGzYvezFcRr
-         ZdSw==
+        d=chromium.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=og5W/pf+GC35o306sZo7M+U9bRheLryDvrZbfbaDyxs=;
+        b=O7auC2m9bx6mUqQqnZN9CUlfJT6TP4fWluRnhPbjmVgetTy7ua6wNbYEv2jxIHZS8X
+         vbuWRV96tsVSNPAWDrOwL1ngFzWeHYpkwnspdSJxHEgcxBJoAx3m06b5T1Dkp0/X0sNh
+         DBVjEWBJYOLF+63tkogSgZuHnoW378XoyyxPE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=YQ2K0kYnRt+YlD+PL9WGp6KBl813c0oprYOBplj3bv4=;
-        b=UI2T9b8umCfcHbQfl+iL2p2x4iXcQNJ/zB10CC9OBnQM7XQg/dW74uEDKV9zjzWNEV
-         hYwc73GWz+74PcMmrjLmy2/itmD6ZLGc449VP5sviM2iRZn5U0/YSVt/4/5XI5ttmbW9
-         qfSTXFniTwilwK2BhM6QdAOmvdC/rqA8zVziJWQPsxPTmMMrI6ZsXHPUPWvwJrcf9WJU
-         OMh4j7pAyzdB6E6mZEhBxc7mOgfXcYoDAl5zicO0+x8IFon8mLA28wI6AMuUmbfdHxfw
-         tkEvwS0rBb6x6Z9h38ft0Vk1/IXi4gjQsZD9vKjCdy47rHpT04GmoyzLU/gXUW4FkwzA
-         MgUQ==
-X-Gm-Message-State: AFqh2koGY7vAoCrRnO46S7oONVmQ0J4/4KMg75LvYVTU23f7tLOqWICk
-        TEgDF1UV6mdMu9y+yD8mOf3htw==
-X-Google-Smtp-Source: AMrXdXscXw0c3pCpDcMCnQnPl+ncC64J815G9Ky1zt0LltxWhrlPa2H6iSrRjGLzuQdj2BZMsp7xZA==
-X-Received: by 2002:a19:e611:0:b0:4a4:68b9:608a with SMTP id d17-20020a19e611000000b004a468b9608amr12873814lfh.21.1672852607749;
-        Wed, 04 Jan 2023 09:16:47 -0800 (PST)
-Received: from localhost.localdomain (abxi45.neoplus.adsl.tpnet.pl. [83.9.2.45])
-        by smtp.gmail.com with ESMTPSA id o22-20020a056512051600b004a44ffb1050sm5179520lfb.171.2023.01.04.09.16.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Jan 2023 09:16:47 -0800 (PST)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-To:     linux-arm-msm@vger.kernel.org, andersson@kernel.org,
-        agross@kernel.org, krzysztof.kozlowski@linaro.org
-Cc:     marijn.suijten@somainline.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Sibi Sankar <quic_sibis@quicinc.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/3] arm64: dts: qcom: sm6350: Add OSM L3 node
-Date:   Wed,  4 Jan 2023 18:16:41 +0100
-Message-Id: <20230104171643.1004054-2-konrad.dybcio@linaro.org>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230104171643.1004054-1-konrad.dybcio@linaro.org>
-References: <20230104171643.1004054-1-konrad.dybcio@linaro.org>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=og5W/pf+GC35o306sZo7M+U9bRheLryDvrZbfbaDyxs=;
+        b=cHFJvLxpg3jfTfrP75i4j3nJQWjWqNG1DPpCreN5Zhn2a6hJPqhifRgNfxAFL+rR+4
+         W138y3kJjUu0XSyFwq1I66X+BSgkPn/XZnw1WAthMGeKfI88df7LJ3kE9hgC1jRW+/p0
+         ObwJD2xt/M+YIoaEqfZsBKlUGl0ImqWKVC1Lu7CHvf54pM/2z+5sRr7kITWsGDdO8qC+
+         IQqcLjdmBwrSAyQQs6wwnRcnT/tP+iWdFUbEHqY4px1p3ANHSZs9+eLDDBbI/mEpkrlI
+         YFPrcsuIiS68xXlkrOCc0sIki4G+5mVxeTT4TtT4la9y67ZHeNNoXjQPVYwXM6yYykKJ
+         MrAw==
+X-Gm-Message-State: AFqh2koGEtV6Ex7/B0MccldonkrxFLsHBZa9GrVm8VdgSFomG4C9RZ9v
+        k438CWo9cDpJ9Ec8trYSiyldavG8U3RYdBn6rMfRWQ==
+X-Google-Smtp-Source: AMrXdXv7d2HqnjPOksgFTlUuTo3bNaY6y2c16rjCrih6M9+5a1aCxEFZtLPXVz2wEdreVgMmwVc19HaSqSkP3yNnFBk=
+X-Received: by 2002:a6b:b2c5:0:b0:6e0:34aa:4548 with SMTP id
+ b188-20020a6bb2c5000000b006e034aa4548mr2844680iof.72.1672857248764; Wed, 04
+ Jan 2023 10:34:08 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20221212213857.3636830-1-grundler@chromium.org>
+ <CABXOdTd34M1fCEdYfT7F7RAMDmvEj=Ak_Wcg+HgcU83nOFor8w@mail.gmail.com>
+ <CANEJEGtOE8HYDPJi80=TQ==4bwLh2=c7Dn3450Girxm5Uhgz9A@mail.gmail.com> <20230102221907.i474olwdaxjfbyns@mercury.elektranox.org>
+In-Reply-To: <20230102221907.i474olwdaxjfbyns@mercury.elektranox.org>
+From:   Grant Grundler <grundler@chromium.org>
+Date:   Wed, 4 Jan 2023 10:33:57 -0800
+Message-ID: <CANEJEGvY01tSVB=LyEcrWk+s07cS7Upk+LOa9T0nLHy1adZ5Vg@mail.gmail.com>
+Subject: Re: [PATCH] power: supply: cros_usbpd: reclassify "default case!" as debug
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc:     Grant Grundler <grundler@chromium.org>,
+        Guenter Roeck <groeck@google.com>,
+        Benson Leung <bleung@chromium.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        chrome-platform@lists.linux.dev, linux-pm@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable the OSM block responsible for scaling the L3 cache.
+[plain text this time]
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
-v1 -> v2:
-No changes
+On Mon, Jan 2, 2023 at 2:19 PM Sebastian Reichel
+<sebastian.reichel@collabora.com> wrote:
+> Hi,
+>
+> Thanks, queued to power-supply's fixes branch.
 
- arch/arm64/boot/dts/qcom/sm6350.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Awesome - thanks Sebastian!
 
-diff --git a/arch/arm64/boot/dts/qcom/sm6350.dtsi b/arch/arm64/boot/dts/qcom/sm6350.dtsi
-index e71ffc31d41e..893a1ffb5e3d 100644
---- a/arch/arm64/boot/dts/qcom/sm6350.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm6350.dtsi
-@@ -2040,6 +2040,16 @@ apps_bcm_voter: bcm-voter {
- 			};
- 		};
- 
-+		osm_l3: interconnect@18321000 {
-+			compatible = "qcom,sm6350-osm-l3", "qcom,osm-l3";
-+			reg = <0x0 0x18321000 0x0 0x1000>;
-+
-+			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
-+			clock-names = "xo", "alternate";
-+
-+			#interconnect-cells = <1>;
-+		};
-+
- 		cpufreq_hw: cpufreq@18323000 {
- 			compatible = "qcom,cpufreq-hw";
- 			reg = <0 0x18323000 0 0x1000>, <0 0x18325800 0 0x1000>;
--- 
-2.39.0
+I'll pull from that branch when backporting to  the Chrome OS kernels.
+   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/commit/?h=fixes&id=bb6bbf5df16201ece2dacabeb489fc2180c7cfcd
 
+cheers,
+grant
+
+>
+> -- Sebastian
+>
+> On Thu, Dec 29, 2022 at 11:53:55PM -0800, Grant Grundler wrote:
+> > Hi Sebastian, linux-pm folks, Benson,
+> > Can I get feedback on this patch please?
+> >
+> > I was just told another user feedback report had 70% of the dmesg buffer
+> > filled with the cros-usbpd-charger output.
+> >
+> > cheers,
+> > grant
+> >
+> >
+> > On Mon, Dec 12, 2022 at 1:49 PM Guenter Roeck <groeck@google.com> wrote:
+> >
+> > > On Mon, Dec 12, 2022 at 1:39 PM Grant Grundler <grundler@chromium.org>
+> > > wrote:
+> > > >
+> > > > This doesn't need to be printed every second as an error:
+> > > > ...
+> > > > <3>[17438.628385] cros-usbpd-charger cros-usbpd-charger.3.auto: Port 1:
+> > > default case!
+> > > > <3>[17439.634176] cros-usbpd-charger cros-usbpd-charger.3.auto: Port 1:
+> > > default case!
+> > > > <3>[17440.640298] cros-usbpd-charger cros-usbpd-charger.3.auto: Port 1:
+> > > default case!
+> > > > ...
+> > > >
+> > > > Reduce priority from ERROR to DEBUG.
+> > > >
+> > > > Signed-off-by: Grant Grundler <grundler@chromium.org>
+> > >
+> > > Reviewed-by: Guenter Roeck <groeck@chromium.org>
+> > >
+> > > >
+> > > > ---
+> > > >  drivers/power/supply/cros_usbpd-charger.c | 2 +-
+> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > >
+> > > > diff --git a/drivers/power/supply/cros_usbpd-charger.c
+> > > b/drivers/power/supply/cros_usbpd-charger.c
+> > > > index cadb6a0c2cc7..b6c96376776a 100644
+> > > > --- a/drivers/power/supply/cros_usbpd-charger.c
+> > > > +++ b/drivers/power/supply/cros_usbpd-charger.c
+> > > > @@ -276,7 +276,7 @@ static int cros_usbpd_charger_get_power_info(struct
+> > > port_data *port)
+> > > >                 port->psy_current_max = 0;
+> > > >                 break;
+> > > >         default:
+> > > > -               dev_err(dev, "Port %d: default case!\n",
+> > > port->port_number);
+> > > > +               dev_dbg(dev, "Port %d: default case!\n",
+> > > port->port_number);
+> > > >                 port->psy_usb_type = POWER_SUPPLY_USB_TYPE_SDP;
+> > > >         }
+> > > >
+> > > > --
+> > > > 2.39.0.rc1.256.g54fd8350bd-goog
+> > > >
+> > >
