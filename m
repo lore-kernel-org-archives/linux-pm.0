@@ -2,172 +2,135 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E573C54EBD
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Jan 2023 14:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B59C4708D
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Jan 2023 15:15:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239504AbjADOef (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Jan 2023 09:34:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55682 "EHLO
+        id S234927AbjADPPv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Jan 2023 10:15:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239580AbjADOec (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 09:34:32 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 142FF373A6;
-        Wed,  4 Jan 2023 06:34:31 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id C83C4B81674;
-        Wed,  4 Jan 2023 14:34:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53E62C433D2;
-        Wed,  4 Jan 2023 14:34:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1672842868;
-        bh=gRkCSnXk5MjxVH+vyivnl3Fj49JHVY24sOY1WJh8QEg=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=k5MykoyoJXROrSbBrVfL6RN/UKCq7OIH2LH9suxKq1RhPopZd0KV9VzH9OZArvVAi
-         OjeULj7tH4EBtWom9/n4D8+Bq67oYBDRuS79zCMcnKeV3uohIyY7Yg9vF3LtdZ5ijX
-         OME+yvl/61fF7eMF7/j3La0XQbhVDW/PFfRXTx0EWs3N9hO6BZC25sGAKUkzS9+gGU
-         nCNXqaSlXkppnNS1gAnozooIQ0Ex1pEkn2m96QOmGFIJL8fF8o3QxsObi4Rpb0wi7O
-         4gL8y75HZVvL7qRenCVdHz77J3/DFblD9V+fjJ41jwtSpdkfZBGYUEV6pAlarxz3bP
-         hgZjXGlhHRxJA==
-Date:   Wed, 4 Jan 2023 14:34:21 +0000
-From:   Lee Jones <lee@kernel.org>
-To:     Fabrizio Castro <fabrizio.castro.jz@renesas.com>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Chris Paterson <Chris.Paterson2@renesas.com>,
-        Biju Das <biju.das@bp.renesas.com>,
-        "linux-renesas-soc@vger.kernel.org" 
-        <linux-renesas-soc@vger.kernel.org>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Jacopo Mondi <jacopo@jmondi.org>
-Subject: Re: [PATCH v2 2/4] mfd: Add RZ/V2M PWC core driver
-Message-ID: <Y7WObZFfsCJuMdLW@google.com>
-References: <20221221210917.458537-1-fabrizio.castro.jz@renesas.com>
- <20221221210917.458537-3-fabrizio.castro.jz@renesas.com>
- <CAMuHMdXDwEUzBpG+w_G6=CzKo=n92cdVw6v8JwOwf9o86HnOZQ@mail.gmail.com>
- <TYWPR01MB87758FB15ED12D396AE738DDC2F49@TYWPR01MB8775.jpnprd01.prod.outlook.com>
- <Y7Qk/EgOI9mkJIjn@google.com>
- <TYWPR01MB87753C261831519F4D6788E5C2F49@TYWPR01MB8775.jpnprd01.prod.outlook.com>
+        with ESMTP id S233916AbjADPPn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 10:15:43 -0500
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84DEF1AA33
+        for <linux-pm@vger.kernel.org>; Wed,  4 Jan 2023 07:15:42 -0800 (PST)
+Received: by mail-pf1-x430.google.com with SMTP id c9so18156688pfj.5
+        for <linux-pm@vger.kernel.org>; Wed, 04 Jan 2023 07:15:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=NcHEJMiIJ2CTsxxcy2YLVjiMLnHtyJJbhyDHZkGM4Oc=;
+        b=F9bpsh37Sd0YglgZi0WpS89CpHqfv0diullW3FFmTO9bOi7hfscSE/OjGPxPEPQkEN
+         30dLoca9DbFdO0h28yq/V0+zKhhwP7if4KzONvm0C5e4ZGN7RR/mJV/dX+GglLwSPMpc
+         Gck5P/9AM6XxWAH5yODKBjx04KGJHJrt3cUGzkNpLz7TtkHshqQEQMmgpRlw05G6wUeV
+         5W4gvQ8VVwwjaGsE/rtTb24nlbbWIKIJVIXrbhMZpYUq/nPtkr3qwhzF10vZuWlV1+AP
+         2/8yaiwVmq1nGEh+/72E1SVue5OHi7WQ+fmXOrDqBI08/KLZ3ui1bKaArAvMh6A4NakM
+         rQ1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NcHEJMiIJ2CTsxxcy2YLVjiMLnHtyJJbhyDHZkGM4Oc=;
+        b=VQOkKhe8GFCCoov3A0T+KSodJ/EVKjJ2Oi1ImgQHZ3Gh1ngB+BArRdl8HPVSXzOT8J
+         nWwy6QwrnEbT/emdfD/h8bztZe8lK92GatSCAn54PNjLgAOjKwkisc2dSvTmaghJG1Pr
+         auG/7k4GTLW/vcpX3Tfcf8Y5jTam+dyAvhDYHPrd6NihsBc9gss2dMm4LM9YrDpY3Bc2
+         MQqpfYcai4KrVQEt5M04f/kvChkaW9KLhsSTszMraA/rvkg+yt2xLJAXxe5H6BdhusLg
+         ml/HKd6Ya7I5qKggl4h+BwTh8/6YaHDHCxCTObdyFM8vmmDnlyW8ceVdKNfrSy0RG9+l
+         PaBw==
+X-Gm-Message-State: AFqh2krD673nS4YCHRl0B6scWLfIqBh2jL3m4Pv+8RMKxEN74RYoJKWd
+        oUc3WCWOSFqckSKOJL/9dfDVCtc2rKG0e8Y+599GYeo0873gau67
+X-Google-Smtp-Source: AMrXdXt93Kj3tA2/Y9cGuM6OLuxk7FuAuBumQ9h/vxk1VLQQewgTolksdOkOGf5EMaiCJCDrv92isJrfu7ZsSe9hYkE=
+X-Received: by 2002:a63:ba09:0:b0:479:2227:3aa1 with SMTP id
+ k9-20020a63ba09000000b0047922273aa1mr2127830pgf.595.1672845341858; Wed, 04
+ Jan 2023 07:15:41 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <TYWPR01MB87753C261831519F4D6788E5C2F49@TYWPR01MB8775.jpnprd01.prod.outlook.com>
+References: <20221219151503.385816-1-krzysztof.kozlowski@linaro.org> <Y6Iq1CyHScvZM++Y@fedora>
+In-Reply-To: <Y6Iq1CyHScvZM++Y@fedora>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Wed, 4 Jan 2023 16:15:05 +0100
+Message-ID: <CAPDyKFpCK-z5TH02rFTUHwsFTz83xtiAq=Vp0iE+iztB-CcB5w@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] PM: Fixes for Realtime systems
+To:     Adrien Thierry <athierry@redhat.com>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Brian Masney <bmasney@redhat.com>,
+        linux-rt-users@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 03 Jan 2023, Fabrizio Castro wrote:
+On Tue, 20 Dec 2022 at 22:36, Adrien Thierry <athierry@redhat.com> wrote:
+>
+> Hi Krzysztof,
+> Thanks for looking into this!
+>
+> I tested your patchset on the QDrive3 on a CentOS Stream 9 RT kernel (I
+> couldn't test it on mainline because the latest RT patchset only supports
+> 6.1 which is missing some bits needed to boot QDrive3).
+>
+> It fixes the PSCI cpuidle issue I was encountering in [1]. However, I may
+> have found another code path that triggers a similar issue:
+>
+> BUG: sleeping function called from invalid context at kernel/locking/spinlock_rt.c:46
+> in_atomic(): 1, irqs_disabled(): 128, non_block: 0, pid: 113, name: kworker/4:2
+> preempt_count: 1, expected: 0
+> RCU nest depth: 0, expected: 0
+> 4 locks held by kworker/4:2/113:
+>  #0: ffff09b0c2376928 ((wq_completion)pm){+.+.}-{0:0}, at: process_one_work+0x1f4/0x7c0
+>  #1: ffff800008bf3dd0 ((work_completion)(&genpd->power_off_work)){+.+.}-{0:0}, at: process_one_work+0x1f4/0x7c0
+>  #2: ffff09b0c2e44860 (&genpd->rslock){....}-{2:2}, at: genpd_lock_rawspin+0x20/0x30
+>  #3: ffff09b0c6696a20 (&dev->power.lock){+.+.}-{2:2}, at: dev_pm_qos_flags+0x2c/0x60
+> irq event stamp: 170
+> hardirqs last  enabled at (169): [<ffffa1be822f8a78>] _raw_spin_unlock_irq+0x48/0xc4
+> hardirqs last disabled at (170): [<ffffa1be822f8df4>] _raw_spin_lock_irqsave+0xb0/0xfc
+> softirqs last  enabled at (0): [<ffffa1be814cfff0>] copy_process+0x68c/0x1500
+> softirqs last disabled at (0): [<0000000000000000>] 0x0
+> Preemption disabled at:
+> [<ffffa1be81d7e620>] genpd_lock_rawspin+0x20/0x30
+> CPU: 4 PID: 113 Comm: kworker/4:2 Tainted: G               X --------- ---  5.14.0-rt14+ #2
+> Hardware name: Qualcomm SA8540 ADP (DT)
+> Workqueue: pm genpd_power_off_work_fn
+> Call trace:
+>  dump_backtrace+0xb4/0x12c
+>  show_stack+0x1c/0x70
+>  dump_stack_lvl+0x98/0xd0
+>  dump_stack+0x14/0x2c
+>  __might_resched+0x180/0x220
+>  rt_spin_lock+0x74/0x11c
+>  dev_pm_qos_flags+0x2c/0x60
+>  genpd_power_off.part.0.isra.0+0xac/0x2d0
+>  genpd_power_off_work_fn+0x68/0x8c
+>  process_one_work+0x2b8/0x7c0
+>  worker_thread+0x15c/0x44c
+>  kthread+0xf8/0x104
+>  ret_from_fork+0x10/0x20
+>
+> This happens consistently during boot. But on the mainline kernel, this
+> code path has changed: genpd_power_off no longer calls dev_pm_qos_flags.
+> So it might not happen on mainline. I hope to be able to test your
+> patchset again soon on mainline with the next version of the RT patchset
+> (which should be able to boot the QDrive3).
 
-> Hi Lees,
-> 
-> Thanks for your feedback!
-> 
-> > From: Lee Jones <lee@kernel.org>
-> > Sent: 03 January 2023 12:52
-> > Subject: Re: [PATCH v2 2/4] mfd: Add RZ/V2M PWC core driver
-> > 
-> > On Tue, 03 Jan 2023, Fabrizio Castro wrote:
-> > 
-> > > Hi Geert,
-> > >
-> > > Thanks for your feedback!
-> > >
-> > > > -----Original Message-----
-> > > > From: Geert Uytterhoeven <geert@linux-m68k.org>
-> > > > Sent: 03 January 2023 08:37
-> > > > To: Fabrizio Castro <fabrizio.castro.jz@renesas.com>
-> > > > Cc: Linus Walleij <linus.walleij@linaro.org>; Bartosz Golaszewski
-> > > > <brgl@bgdev.pl>; Rob Herring <robh+dt@kernel.org>; Krzysztof Kozlowski
-> > > > <krzysztof.kozlowski+dt@linaro.org>; Sebastian Reichel
-> > <sre@kernel.org>;
-> > > > Geert Uytterhoeven <geert+renesas@glider.be>; Lee Jones
-> > <lee@kernel.org>;
-> > > > linux-gpio@vger.kernel.org; devicetree@vger.kernel.org; linux-
-> > > > kernel@vger.kernel.org; linux-pm@vger.kernel.org; Chris Paterson
-> > > > <Chris.Paterson2@renesas.com>; Biju Das <biju.das@bp.renesas.com>;
-> > linux-
-> > > > renesas-soc@vger.kernel.org; Laurent Pinchart
-> > > > <laurent.pinchart@ideasonboard.com>; Jacopo Mondi <jacopo@jmondi.org>
-> > > > Subject: Re: [PATCH v2 2/4] mfd: Add RZ/V2M PWC core driver
+You are right, since commit 3f9ee7da724a ("PM: domains: Don't check
+PM_QOS_FLAG_NO_POWER_OFF in genpd") dev_pm_qos_flags() doesn't get
+called in genpd_power_off() anymore. That patch was introduced in
+v5.19.
+>
+> Best,
+> Adrien
+>
+> [1] https://lore.kernel.org/all/20220615203605.1068453-1-athierry@redhat.com/
+>
 
-Could you please tell your mailer to remove mail headers from the body
-please.
-
-> > > > > The External Power Sequence Controller (PWC) IP (found in the
-> > > > > RZ/V2M SoC) is a controller for external power supplies (regulators
-> > > > > and power switches), and it supports the following features: it
-> > > > > generates a power on/off sequence for external power supplies,
-> > > > > it generates an on/off sequence for the LPDDR4 core power supply
-> > > > > (LPVDD), it comes with General-Purpose Outputs, and it processes
-> > > > > key input signals.
-> > > >
-> > > > Thanks for your patch!
-> > > >
-> > > > > The PWC is basically a Multi-Function Device (MFD), its software
-> > > > > support comes with a core driver, and specialized drivers for
-> > > > > its specific features.
-> > > >
-> > > > I have to admit I'm not such a big fan of MFD.  In this driver,
-> > > > you are not even sharing resources in the MFD cells, just the mapped
-> > > > register base.  So I think you can easily save +100 LoC and reduce
-> > > > maintenance synchronization overhead across subsystems by just having
-> > > > a single non-MFD driver instead.
-> > > >
-> > > > Did you pick MFD because the PWC poweroff feature depends on board
-> > > > wiring, and thus is optional?
-> > >
-> > > I am not a big fan of MFD, either.
-> > 
-> > Interesting.
-> > 
-> > Could you both elaborate further please?
-> 
-> I have nothing against MFD
-
-Okay, just checking.  I'll withdraw my next command then. :)
-
-$ rm -rf drivers/mfd
-
-> > If you do not have any resources to share, you can simply register each
-> > of the devices via Device Tree.  I do not see a valid reason to force a
-> > parent / child relationship for your use-case.
-> 
-> There would probably be overlapping on the same memory region, which would
-> lead to ioremapping the same region multiple times, which is something
-> I would prefer to avoid if possible.
-
-Okay, so you *do* have shared resources.
-
-In which case, why is simple-mfd not working for you?
-
-> > Many people attempt to use MFD as a dumping ground / workaround for a
-> > bunch of reasons.  Some valid, others not so much.
-> 
-> As it turns out, it looks like I don't have valid reasons to use MFD,
-> therefore I'll switch to a single, non MFD, driver.
-> 
-> Thank you for taking the time to look into this though! Really
-> appreciated.
-
-Although it is considered okay to have a multi-purpose driver in any one
-of the subsystems, it's sometimes nicer to split the various
-functionality to be looked after (maintained) by their respective
-subject matter experts.  You have to do what's right in any given
-situation.
-
-Ultimately it's a call you need to make with the maintainer(s).
-
--- 
-Lee Jones [李琼斯]
+Kind regards
+Uffe
