@@ -2,102 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3E6EC678D8
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 13:47:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 873EBC54EF0
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 14:13:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232803AbjAENrd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Jan 2023 08:47:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60564 "EHLO
+        id S234091AbjAEONT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Jan 2023 09:13:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57596 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233195AbjAENrE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2023 08:47:04 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE6C73D9DF;
-        Thu,  5 Jan 2023 05:47:03 -0800 (PST)
+        with ESMTP id S234089AbjAEOMv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2023 09:12:51 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7736B5791F;
+        Thu,  5 Jan 2023 06:12:49 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 812EFB81ADD;
-        Thu,  5 Jan 2023 13:47:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56FD3C433EF;
-        Thu,  5 Jan 2023 13:46:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1672926421;
-        bh=dEuDRHQ7Sm3N5Gxt4MXi3ZvxmHYSAXFo1vd8BJvQn2w=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=OchErH5pzoqwPQBxaeD1KmpvM0Qf2mQyORTo8uiK9ZSVEqrBoYdnvxeA9fgltxI2w
-         K+lt7wSpOAQhtFngzLS1YPMeDa7u8YyYfUQzWhLEXx//v+NcMwVVGMZ14j5B4yYwtc
-         Gz2llC+hREtLN7T2j8TJhoapsu4Tvl9H9Ea4U+iywIe1WfdqiSsa91X/PN/QU6vkOj
-         vpceBO4bgkeM8GC/d+9oF8hnTDs4VEmb/5XPegk8IVnpcFPmYY/oaZHAn80aeJ5bzl
-         P3e/3RKK1j7yO5jllOrMfT/qGfdO1mmg+SQO7/JuMeTPBucaMAGW81RqdaLxPIKrsw
-         0Y6heMtAHqsQg==
-From:   Arnd Bergmann <arnd@kernel.org>
-To:     Robert Jarzmik <robert.jarzmik@free.fr>
-Cc:     Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH 07/27] power: remove tosa_battery driver
-Date:   Thu,  5 Jan 2023 14:46:02 +0100
-Message-Id: <20230105134622.254560-8-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230105134622.254560-1-arnd@kernel.org>
-References: <20230105134622.254560-1-arnd@kernel.org>
+        by ams.source.kernel.org (Postfix) with ESMTPS id 26C58B81AEB;
+        Thu,  5 Jan 2023 14:12:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A407C433EF;
+        Thu,  5 Jan 2023 14:12:40 +0000 (UTC)
+Date:   Thu, 5 Jan 2023 09:12:38 -0500
+From:   Steven Rostedt <rostedt@goodmis.org>
+To:     "Arnd Bergmann" <arnd@arndb.de>
+Cc:     "Jules Maselbas" <jmaselbas@kalray.eu>,
+        "Yann Sionneau" <ysionneau@kalray.eu>,
+        "Albert Ou" <aou@eecs.berkeley.edu>,
+        "Alexander Shishkin" <alexander.shishkin@linux.intel.com>,
+        "Andrew Morton" <akpm@linux-foundation.org>,
+        "Aneesh Kumar" <aneesh.kumar@linux.ibm.com>,
+        "Ard Biesheuvel" <ardb@kernel.org>,
+        "Arnaldo Carvalho de Melo" <acme@kernel.org>,
+        "Boqun Feng" <boqun.feng@gmail.com>, bpf@vger.kernel.org,
+        "Christian Brauner" <brauner@kernel.org>,
+        devicetree@vger.kernel.org,
+        "Eric W. Biederman" <ebiederm@xmission.com>,
+        "Eric Paris" <eparis@redhat.com>, "Ingo Molnar" <mingo@redhat.com>,
+        "Jan Kiszka" <jan.kiszka@siemens.com>,
+        "Jason Baron" <jbaron@akamai.com>, "Jiri Olsa" <jolsa@kernel.org>,
+        "Jonathan Corbet" <corbet@lwn.net>,
+        "Josh Poimboeuf" <jpoimboe@kernel.org>,
+        "Kees Cook" <keescook@chromium.org>,
+        "Kieran Bingham" <kbingham@kernel.org>,
+        "Krzysztof Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
+        Linux-Arch <linux-arch@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-audit@redhat.com,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-mm@kvack.org, linux-perf-users@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org,
+        "Marc Zyngier" <maz@kernel.org>,
+        "Mark Rutland" <mark.rutland@arm.com>,
+        "Masami Hiramatsu" <mhiramat@kernel.org>,
+        "Namhyung Kim" <namhyung@kernel.org>,
+        "Nicholas Piggin" <npiggin@gmail.com>,
+        "Oleg Nesterov" <oleg@redhat.com>,
+        "Palmer Dabbelt" <palmer@dabbelt.com>,
+        "Paul Moore" <paul@paul-moore.com>,
+        "Paul Walmsley" <paul.walmsley@sifive.com>,
+        "Peter Zijlstra" <peterz@infradead.org>,
+        "Rob Herring" <robh+dt@kernel.org>,
+        "Sebastian Reichel" <sre@kernel.org>,
+        "Thomas Gleixner" <tglx@linutronix.de>,
+        "Waiman Long" <longman@redhat.com>,
+        "Will Deacon" <will@kernel.org>, "Alex Michon" <amichon@kalray.eu>,
+        "Ashley Lesdalons" <alesdalons@kalray.eu>,
+        "Benjamin Mugnier" <mugnier.benjamin@gmail.com>,
+        "Clement Leger" <clement.leger@bootlin.com>,
+        "Guillaume Missonnier" <gmissonnier@kalray.eu>,
+        "Guillaume Thouvenin" <gthouvenin@kalray.eu>,
+        "Jean-Christophe Pince" <jcpince@gmail.com>,
+        "Jonathan Borne" <jborne@kalray.eu>,
+        "Julian Vetter" <jvetter@kalray.eu>,
+        "Julien Hascoet" <jhascoet@kalray.eu>,
+        "Julien Villette" <jvillette@kalray.eu>,
+        "Louis Morhet" <lmorhet@kalray.eu>,
+        "Luc Michel" <lmichel@kalray.eu>,
+        Marc =?UTF-8?B?UG91bGhpw6hz?= <dkm@kataplop.net>,
+        "Marius Gligor" <mgligor@kalray.eu>,
+        "Samuel Jones" <sjones@kalray.eu>,
+        "Thomas Costis" <tcostis@kalray.eu>,
+        "Vincent Chardon" <vincent.chardon@elsys-design.com>
+Subject: Re: [RFC PATCH 00/25] Upstream kvx Linux port
+Message-ID: <20230105091238.42bd6e6f@gandalf.local.home>
+In-Reply-To: <5b69db0b-9eed-42ce-8e93-4b656022433f@app.fastmail.com>
+References: <20230103164359.24347-1-ysionneau@kalray.eu>
+        <7c531595-e987-422b-bcf7-48ad0ba49ce6@app.fastmail.com>
+        <20230105104019.GA7446@tellis.lin.mbt.kalray.eu>
+        <5b69db0b-9eed-42ce-8e93-4b656022433f@app.fastmail.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+On Thu, 05 Jan 2023 13:05:32 +0100
+"Arnd Bergmann" <arnd@arndb.de> wrote:
 
-The PXA tosa machine is removed, so this driver is no longer
-in use.
+> >> I did not receive most of the other patches as I'm
+> >> not subscribed to all the mainline lists. For future 
+> >> submissions, can you add the linux-arch list to Cc for
+> >> all patches?  
+> >
+> > We misused get_maintainers.pl, running it on each patch instead
+> > of using it on the whole series. next time every one will be in
+> > copy of every patch in the series and including linux-arch.  
+> 
+> Be careful not to make the list too long though, there is
+> usually a limit of 1024 characters for the entire Cc list,
+> above this your mails may get dropped by the mailing lists.
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/power/supply/Kconfig        |   7 -
- drivers/power/supply/Makefile       |   1 -
- drivers/power/supply/tosa_battery.c | 512 ----------------------------
- 3 files changed, 520 deletions(-)
- delete mode 100644 drivers/power/supply/tosa_battery.c
+It's best to include mailing lists for the entire series, and perhaps
+individuals for each patch. As I don't want the entire series just to see
+the tracing portion.
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index b7fdcfd5d4e7..3c37f3a6431c 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -195,13 +195,6 @@ config BATTERY_SAMSUNG_SDI
- 	  Say Y to enable support for Samsung SDI battery data.
- 	  These batteries are used in Samsung mobile phones.
- 
--config BATTERY_TOSA
--	tristate "Sharp SL-6000 (tosa) battery"
--	depends on MACH_TOSA && MFD_TC6393XB && TOUCHSCREEN_WM97XX
--	help
--	  Say Y to enable support for the battery on the Sharp Zaurus
--	  SL-6000 (tosa) models.
--
- config BATTERY_COLLIE
- 	tristate "Sharp SL-5500 (collie) battery"
- 	depends on SA1100_COLLIE && MCP_UCB1200
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 38737ea9b9d5..55c1aae91d1d 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -36,7 +36,6 @@ obj-$(CONFIG_BATTERY_LEGO_EV3)	+= lego_ev3_battery.o
- obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
- obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
- obj-$(CONFIG_BATTERY_SAMSUNG_SDI)	+= samsung-sdi-battery.o
--obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
- obj-$(CONFIG_BATTERY_COLLIE)	+= collie_battery.o
- obj-$(CONFIG_BATTERY_INGENIC)	+= ingenic-battery.o
- obj-$(CONFIG_BATTERY_IPAQ_MICRO) += ipaq_micro_battery.o
-diff --git a/drivers/power/supply/tosa_battery.c b/drivers/power/supply/tosa_battery.c
-deleted file mode 100644
-index 73d4aca4c386..000000000000
--- 
-2.39.0
-
+-- Steve
