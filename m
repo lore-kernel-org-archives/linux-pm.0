@@ -2,118 +2,86 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 873EBC54EF0
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 14:13:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CBB6C3DA7A
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 14:52:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234091AbjAEONT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Jan 2023 09:13:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57596 "EHLO
+        id S232779AbjAEOwV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Jan 2023 09:52:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234089AbjAEOMv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2023 09:12:51 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7736B5791F;
-        Thu,  5 Jan 2023 06:12:49 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 26C58B81AEB;
-        Thu,  5 Jan 2023 14:12:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A407C433EF;
-        Thu,  5 Jan 2023 14:12:40 +0000 (UTC)
-Date:   Thu, 5 Jan 2023 09:12:38 -0500
-From:   Steven Rostedt <rostedt@goodmis.org>
-To:     "Arnd Bergmann" <arnd@arndb.de>
-Cc:     "Jules Maselbas" <jmaselbas@kalray.eu>,
-        "Yann Sionneau" <ysionneau@kalray.eu>,
-        "Albert Ou" <aou@eecs.berkeley.edu>,
-        "Alexander Shishkin" <alexander.shishkin@linux.intel.com>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "Aneesh Kumar" <aneesh.kumar@linux.ibm.com>,
-        "Ard Biesheuvel" <ardb@kernel.org>,
-        "Arnaldo Carvalho de Melo" <acme@kernel.org>,
-        "Boqun Feng" <boqun.feng@gmail.com>, bpf@vger.kernel.org,
-        "Christian Brauner" <brauner@kernel.org>,
-        devicetree@vger.kernel.org,
-        "Eric W. Biederman" <ebiederm@xmission.com>,
-        "Eric Paris" <eparis@redhat.com>, "Ingo Molnar" <mingo@redhat.com>,
-        "Jan Kiszka" <jan.kiszka@siemens.com>,
-        "Jason Baron" <jbaron@akamai.com>, "Jiri Olsa" <jolsa@kernel.org>,
-        "Jonathan Corbet" <corbet@lwn.net>,
-        "Josh Poimboeuf" <jpoimboe@kernel.org>,
-        "Kees Cook" <keescook@chromium.org>,
-        "Kieran Bingham" <kbingham@kernel.org>,
-        "Krzysztof Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
-        Linux-Arch <linux-arch@vger.kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-audit@redhat.com,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, linux-perf-users@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org,
-        "Marc Zyngier" <maz@kernel.org>,
-        "Mark Rutland" <mark.rutland@arm.com>,
-        "Masami Hiramatsu" <mhiramat@kernel.org>,
-        "Namhyung Kim" <namhyung@kernel.org>,
-        "Nicholas Piggin" <npiggin@gmail.com>,
-        "Oleg Nesterov" <oleg@redhat.com>,
-        "Palmer Dabbelt" <palmer@dabbelt.com>,
-        "Paul Moore" <paul@paul-moore.com>,
-        "Paul Walmsley" <paul.walmsley@sifive.com>,
-        "Peter Zijlstra" <peterz@infradead.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
-        "Sebastian Reichel" <sre@kernel.org>,
-        "Thomas Gleixner" <tglx@linutronix.de>,
-        "Waiman Long" <longman@redhat.com>,
-        "Will Deacon" <will@kernel.org>, "Alex Michon" <amichon@kalray.eu>,
-        "Ashley Lesdalons" <alesdalons@kalray.eu>,
-        "Benjamin Mugnier" <mugnier.benjamin@gmail.com>,
-        "Clement Leger" <clement.leger@bootlin.com>,
-        "Guillaume Missonnier" <gmissonnier@kalray.eu>,
-        "Guillaume Thouvenin" <gthouvenin@kalray.eu>,
-        "Jean-Christophe Pince" <jcpince@gmail.com>,
-        "Jonathan Borne" <jborne@kalray.eu>,
-        "Julian Vetter" <jvetter@kalray.eu>,
-        "Julien Hascoet" <jhascoet@kalray.eu>,
-        "Julien Villette" <jvillette@kalray.eu>,
-        "Louis Morhet" <lmorhet@kalray.eu>,
-        "Luc Michel" <lmichel@kalray.eu>,
-        Marc =?UTF-8?B?UG91bGhpw6hz?= <dkm@kataplop.net>,
-        "Marius Gligor" <mgligor@kalray.eu>,
-        "Samuel Jones" <sjones@kalray.eu>,
-        "Thomas Costis" <tcostis@kalray.eu>,
-        "Vincent Chardon" <vincent.chardon@elsys-design.com>
-Subject: Re: [RFC PATCH 00/25] Upstream kvx Linux port
-Message-ID: <20230105091238.42bd6e6f@gandalf.local.home>
-In-Reply-To: <5b69db0b-9eed-42ce-8e93-4b656022433f@app.fastmail.com>
-References: <20230103164359.24347-1-ysionneau@kalray.eu>
-        <7c531595-e987-422b-bcf7-48ad0ba49ce6@app.fastmail.com>
-        <20230105104019.GA7446@tellis.lin.mbt.kalray.eu>
-        <5b69db0b-9eed-42ce-8e93-4b656022433f@app.fastmail.com>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        with ESMTP id S234258AbjAEOwU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2023 09:52:20 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 772C0E50;
+        Thu,  5 Jan 2023 06:52:19 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0A92A16F2;
+        Thu,  5 Jan 2023 06:53:01 -0800 (PST)
+Received: from e126311.arm.com (unknown [10.57.76.65])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D7FCB3F71A;
+        Thu,  5 Jan 2023 06:52:17 -0800 (PST)
+From:   Kajetan Puchalski <kajetan.puchalski@arm.com>
+To:     rafael@kernel.org
+Cc:     daniel.lezcano@linaro.org, lukasz.luba@arm.com,
+        Dietmar.Eggemann@arm.com, dsmythies@telus.net,
+        yu.chen.surf@gmail.com, kajetan.puchalski@arm.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v6 1/2] cpuidle: teo: Optionally skip polling states in teo_find_shallower_state()
+Date:   Thu,  5 Jan 2023 14:51:58 +0000
+Message-Id: <20230105145159.1089531-2-kajetan.puchalski@arm.com>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20230105145159.1089531-1-kajetan.puchalski@arm.com>
+References: <20230105145159.1089531-1-kajetan.puchalski@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 05 Jan 2023 13:05:32 +0100
-"Arnd Bergmann" <arnd@arndb.de> wrote:
+Add a no_poll flag to teo_find_shallower_state() that will let the
+function optionally not consider polling states.
+This allows the caller to guard against the function inadvertently
+resulting in TEO putting the CPU in a polling state when that
+behaviour is undesirable.
 
-> >> I did not receive most of the other patches as I'm
-> >> not subscribed to all the mainline lists. For future 
-> >> submissions, can you add the linux-arch list to Cc for
-> >> all patches?  
-> >
-> > We misused get_maintainers.pl, running it on each patch instead
-> > of using it on the whole series. next time every one will be in
-> > copy of every patch in the series and including linux-arch.  
-> 
-> Be careful not to make the list too long though, there is
-> usually a limit of 1024 characters for the entire Cc list,
-> above this your mails may get dropped by the mailing lists.
+Signed-off-by: Kajetan Puchalski <kajetan.puchalski@arm.com>
+---
+ drivers/cpuidle/governors/teo.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-It's best to include mailing lists for the entire series, and perhaps
-individuals for each patch. As I don't want the entire series just to see
-the tracing portion.
+diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
+index d9262db79cae..e2864474a98d 100644
+--- a/drivers/cpuidle/governors/teo.c
++++ b/drivers/cpuidle/governors/teo.c
+@@ -258,15 +258,17 @@ static s64 teo_middle_of_bin(int idx, struct cpuidle_driver *drv)
+  * @dev: Target CPU.
+  * @state_idx: Index of the capping idle state.
+  * @duration_ns: Idle duration value to match.
++ * @no_poll: Don't consider polling states.
+  */
+ static int teo_find_shallower_state(struct cpuidle_driver *drv,
+ 				    struct cpuidle_device *dev, int state_idx,
+-				    s64 duration_ns)
++				    s64 duration_ns, bool no_poll)
+ {
+ 	int i;
+ 
+ 	for (i = state_idx - 1; i >= 0; i--) {
+-		if (dev->states_usage[i].disable)
++		if (dev->states_usage[i].disable ||
++				(no_poll && drv->states[i].flags & CPUIDLE_FLAG_POLLING))
+ 			continue;
+ 
+ 		state_idx = i;
+@@ -469,7 +471,7 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 		 */
+ 		if (idx > idx0 &&
+ 		    drv->states[idx].target_residency_ns > delta_tick)
+-			idx = teo_find_shallower_state(drv, dev, idx, delta_tick);
++			idx = teo_find_shallower_state(drv, dev, idx, delta_tick, false);
+ 	}
+ 
+ 	return idx;
+-- 
+2.37.1
 
--- Steve
