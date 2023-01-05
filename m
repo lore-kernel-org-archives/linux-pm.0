@@ -2,81 +2,197 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C332C53210
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 00:22:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41EB3C54EBE
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 00:22:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234751AbjAEAW2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Jan 2023 19:22:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60284 "EHLO
+        id S234898AbjAEAW3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Jan 2023 19:22:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60268 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229654AbjAEAWZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 19:22:25 -0500
-Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com [IPv6:2a00:1450:4864:20::232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A506C1AD9E
-        for <linux-pm@vger.kernel.org>; Wed,  4 Jan 2023 16:22:24 -0800 (PST)
-Received: by mail-lj1-x232.google.com with SMTP id f20so37205722lja.4
-        for <linux-pm@vger.kernel.org>; Wed, 04 Jan 2023 16:22:24 -0800 (PST)
+        with ESMTP id S234581AbjAEAW1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2023 19:22:27 -0500
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C941E43A3E
+        for <linux-pm@vger.kernel.org>; Wed,  4 Jan 2023 16:22:26 -0800 (PST)
+Received: by mail-lf1-x135.google.com with SMTP id v25so5432086lfe.12
+        for <linux-pm@vger.kernel.org>; Wed, 04 Jan 2023 16:22:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Fc+e1Wrqq4V5fta3bJ+Z/tnWjxVJEg8xzf66W9K/0o4=;
-        b=mUZrkIkjyuG0yydo+LZSs35Xp4eEUvd7tuI0+IgsMBHzDQKBCByVXRurDLNQ8sWlxk
-         VEur3SVfhqissP6NGjKvrKZnYSFbhXmYuYNW8wt/AIDx4YzIMYnErkvNwdjpqxH06X1t
-         zRJn/U5Gf+KU6RKw3WDTPICAc1uL8zx7EpxC/RMKB28z9QyLbb6XvSyZFy5M1ut+prky
-         8qcU1J3h7Iv4ucisORhJq9/r1lLOB0bqVcdGxr4s2shTM7LLm72l0+0DJdRdnQBHWBSp
-         REokbkxmKCIc6Ml3zNRiI7n1EMXbRqbdSzlkjX4Oh93SKXGWc+B8wFnminw0gfGP+hiO
-         KndQ==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1NMmTiUGV9FdUmug/UYdoZYx4aroDbr73GnE3YCbpaI=;
+        b=aXDWs1rUKThWuSv0XaZges+BWAdi4FGvQ94RQts9a1uldSBdCQd9tn8os0tWrR0zs3
+         HuPkmFZLFUyjb9C73vyNnjvdA4m2MvI5zRzXh4ETQyileKrSmyXLbzT5ivuxgvom3shz
+         vs5cjCqLcMxOWzHAvWLjBTW54aWgo+l4SSSk+KNcm23AAIbdcvB0YDigGLHahxERaE/S
+         tyHq0i/dJBEeRO+uMiEeW4na3ysFLJUwfnvu4lnAEuSPAKcmblB2690qDppViPmHaQ+i
+         TwoPDYXbJqzK6lNC3+x6/auGesqsNswjUW23v/m+Ral41leWcBUxm3Ka7IJbMrpfswwk
+         zDXw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Fc+e1Wrqq4V5fta3bJ+Z/tnWjxVJEg8xzf66W9K/0o4=;
-        b=MPNoOO2DMR+fODTqTEY7LGB1vcuYeGczT62P6bzlQ/Ai00Dv3EysNOtSm9B41lygcQ
-         JZFj/bRmzxTMrakcNl7RQ67uuYizkpMQB4Moo4a8y07r6gVQce7nTHYAVjLumA5KiDs3
-         wCLJg4RI/t2ba0b1qoTDzCiBnXpvKfEXCZZQF4ug8a7mEWnTVDCF7K5k0cMMjgTFfkSj
-         ielKXwCF7XFhTMLy4DSURBFq0ogoOsJc1LvBY7h7Iw9DSrCehWmRPNSQ16vVKO/gYFl1
-         jJDY5xVsNSujcMX3toutOrysLH8qAvxJ1Cy2x+TZGl36Vp8i/f1tZq0WKB1mmvxsigpv
-         bU0w==
-X-Gm-Message-State: AFqh2kqnW3dsnnI2ajvfELxMUJv6DWTtDpaqmzOKqsvH+RqhDvwEadxP
-        ZM8v4Cm7C4sYY7J9kxZ4vbADyA==
-X-Google-Smtp-Source: AMrXdXs7UOIS4610Df0fYQLXcyJqdoyIuRuVbCjPH0YG+963HoNzi6xIOLH+DZQY8/obbKPQEJW3JQ==
-X-Received: by 2002:a05:651c:1541:b0:27f:f897:b8d3 with SMTP id y1-20020a05651c154100b0027ff897b8d3mr3811539ljp.25.1672878142982;
-        Wed, 04 Jan 2023 16:22:22 -0800 (PST)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1NMmTiUGV9FdUmug/UYdoZYx4aroDbr73GnE3YCbpaI=;
+        b=B0Z8AxPN94zHdgiiwhX2x1EiyF4RE0GejIOAzv/IvLpKS4VdQXhIpFsmvcRLeVAxxD
+         BYQLzhwQWM3FcmMDCrUF3YFEuEAy9aRDZDCuhwqRtCpj97tPTgz0dkUsA4xhRZe+fDVo
+         5e9DOHBW+1u2aE3iwQlY46fdSAAd39Yr8sr8rZMaiUtYUllbLXoklE3a3ns9hSYUoT1D
+         9NudEnvHB8EfO1+TM4nJTCfEVqhftZ3GHPI9zVMnpaKiXjYvlzd1S8d0C3qS2CuNqUPd
+         M1LOurBNW2hx08mgDTBLVm2EPBRxBkLiibs/kh1BV6SoNMbls+EEzQ2TKXVIoiO+vlcL
+         b1JQ==
+X-Gm-Message-State: AFqh2krIrmuGD//MuR2rA5r/ZRsu7HbxOMjRCe/kYC1F+uJguTcKYBPf
+        DhoCJFnhqQZD/zhhp997QQkP8Q==
+X-Google-Smtp-Source: AMrXdXsJqbZdjoEp+2dq+ytY4cwMflOU6RNck2fSP/PIoPEMXt3kw4RFQfbmnajicseYubv2ice4Gg==
+X-Received: by 2002:a05:6512:3d08:b0:4b5:9b84:2366 with SMTP id d8-20020a0565123d0800b004b59b842366mr15797279lfv.58.1672878145191;
+        Wed, 04 Jan 2023 16:22:25 -0800 (PST)
 Received: from eriador.lan (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
-        by smtp.gmail.com with ESMTPSA id d18-20020ac241d2000000b004b4cbc942a3sm5291992lfi.127.2023.01.04.16.22.22
+        by smtp.gmail.com with ESMTPSA id d18-20020ac241d2000000b004b4cbc942a3sm5291992lfi.127.2023.01.04.16.22.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Jan 2023 16:22:22 -0800 (PST)
+        Wed, 04 Jan 2023 16:22:24 -0800 (PST)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
         Georgi Djakov <djakov@kernel.org>
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 0/3] interconnect: qcom: several fixes
-Date:   Thu,  5 Jan 2023 02:22:18 +0200
-Message-Id: <20230105002221.1416479-1-dmitry.baryshkov@linaro.org>
+Subject: [PATCH 2/3] interconnect: qcom: sm8450: switch to qcom_icc_rpmh_* function
+Date:   Thu,  5 Jan 2023 02:22:20 +0200
+Message-Id: <20230105002221.1416479-3-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230105002221.1416479-1-dmitry.baryshkov@linaro.org>
+References: <20230105002221.1416479-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Patches 1 and 2 are applicable on top of 6.2-rc1, patch 3 applies only
-on top of the immutable branch `icc-sm8550-immutable'.
+Change sm8450 interconnect driver to use generic qcom_icc_rpmh_*
+functions rather than embedding a copy of thema. This also fixes an
+overallocation of memory for icc_onecell_data structure.
 
-Dmitry Baryshkov (3):
-  interconnect: qcom: osm-l3: fix icc_onecell_data allocation
-  interconnect: qcom: sm8450: switch to qcom_icc_rpmh_* function
-  interconnect: qcom: sm8550: switch to qcom_icc_rpmh_* function
+Fixes: fafc114a468e ("interconnect: qcom: Add SM8450 interconnect provider driver")
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ drivers/interconnect/qcom/sm8450.c | 98 +-----------------------------
+ 1 file changed, 2 insertions(+), 96 deletions(-)
 
- drivers/interconnect/qcom/osm-l3.c |  2 +-
- drivers/interconnect/qcom/sm8450.c | 98 +----------------------------
- drivers/interconnect/qcom/sm8550.c | 99 +-----------------------------
- 3 files changed, 5 insertions(+), 194 deletions(-)
-
+diff --git a/drivers/interconnect/qcom/sm8450.c b/drivers/interconnect/qcom/sm8450.c
+index e3a12e3d6e06..2d7a8e7b85ec 100644
+--- a/drivers/interconnect/qcom/sm8450.c
++++ b/drivers/interconnect/qcom/sm8450.c
+@@ -1844,100 +1844,6 @@ static const struct qcom_icc_desc sm8450_system_noc = {
+ 	.num_bcms = ARRAY_SIZE(system_noc_bcms),
+ };
+ 
+-static int qnoc_probe(struct platform_device *pdev)
+-{
+-	const struct qcom_icc_desc *desc;
+-	struct icc_onecell_data *data;
+-	struct icc_provider *provider;
+-	struct qcom_icc_node * const *qnodes;
+-	struct qcom_icc_provider *qp;
+-	struct icc_node *node;
+-	size_t num_nodes, i;
+-	int ret;
+-
+-	desc = device_get_match_data(&pdev->dev);
+-	if (!desc)
+-		return -EINVAL;
+-
+-	qnodes = desc->nodes;
+-	num_nodes = desc->num_nodes;
+-
+-	qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
+-	if (!qp)
+-		return -ENOMEM;
+-
+-	data = devm_kcalloc(&pdev->dev, num_nodes, sizeof(*node), GFP_KERNEL);
+-	if (!data)
+-		return -ENOMEM;
+-
+-	provider = &qp->provider;
+-	provider->dev = &pdev->dev;
+-	provider->set = qcom_icc_set;
+-	provider->pre_aggregate = qcom_icc_pre_aggregate;
+-	provider->aggregate = qcom_icc_aggregate;
+-	provider->xlate_extended = qcom_icc_xlate_extended;
+-	INIT_LIST_HEAD(&provider->nodes);
+-	provider->data = data;
+-
+-	qp->dev = &pdev->dev;
+-	qp->bcms = desc->bcms;
+-	qp->num_bcms = desc->num_bcms;
+-
+-	qp->voter = of_bcm_voter_get(qp->dev, NULL);
+-	if (IS_ERR(qp->voter))
+-		return PTR_ERR(qp->voter);
+-
+-	ret = icc_provider_add(provider);
+-	if (ret) {
+-		dev_err(&pdev->dev, "error adding interconnect provider\n");
+-		return ret;
+-	}
+-
+-	for (i = 0; i < qp->num_bcms; i++)
+-		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
+-
+-	for (i = 0; i < num_nodes; i++) {
+-		size_t j;
+-
+-		if (!qnodes[i])
+-			continue;
+-
+-		node = icc_node_create(qnodes[i]->id);
+-		if (IS_ERR(node)) {
+-			ret = PTR_ERR(node);
+-			goto err;
+-		}
+-
+-		node->name = qnodes[i]->name;
+-		node->data = qnodes[i];
+-		icc_node_add(node, provider);
+-
+-		for (j = 0; j < qnodes[i]->num_links; j++)
+-			icc_link_create(node, qnodes[i]->links[j]);
+-
+-		data->nodes[i] = node;
+-	}
+-	data->num_nodes = num_nodes;
+-
+-	platform_set_drvdata(pdev, qp);
+-
+-	return 0;
+-err:
+-	icc_nodes_remove(provider);
+-	icc_provider_del(provider);
+-	return ret;
+-}
+-
+-static int qnoc_remove(struct platform_device *pdev)
+-{
+-	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+-
+-	icc_nodes_remove(&qp->provider);
+-	icc_provider_del(&qp->provider);
+-
+-	return 0;
+-}
+-
+ static const struct of_device_id qnoc_of_match[] = {
+ 	{ .compatible = "qcom,sm8450-aggre1-noc",
+ 	  .data = &sm8450_aggre1_noc},
+@@ -1966,8 +1872,8 @@ static const struct of_device_id qnoc_of_match[] = {
+ MODULE_DEVICE_TABLE(of, qnoc_of_match);
+ 
+ static struct platform_driver qnoc_driver = {
+-	.probe = qnoc_probe,
+-	.remove = qnoc_remove,
++	.probe = qcom_icc_rpmh_probe,
++	.remove = qcom_icc_rpmh_remove,
+ 	.driver = {
+ 		.name = "qnoc-sm8450",
+ 		.of_match_table = qnoc_of_match,
 -- 
 2.39.0
 
