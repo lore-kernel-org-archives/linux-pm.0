@@ -2,193 +2,485 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC7EBC54EBD
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 12:05:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F0CC54E76
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 13:47:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232101AbjAEMF5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Jan 2023 07:05:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46856 "EHLO
+        id S232361AbjAENrA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Jan 2023 08:47:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60518 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232700AbjAEMFz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2023 07:05:55 -0500
-Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com [66.111.4.27])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 570B95471F;
-        Thu,  5 Jan 2023 04:05:53 -0800 (PST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-        by mailout.nyi.internal (Postfix) with ESMTP id BB1615C0153;
-        Thu,  5 Jan 2023 07:05:52 -0500 (EST)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Thu, 05 Jan 2023 07:05:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; t=1672920352; x=1673006752; bh=UhZB23ikgg
-        upzfYjMRU5YJTnDOqqv+WR2zf5S9u612M=; b=RS4DcE88H2bSZhCoHSBnFauHLI
-        iBC3nX2sj/ud09rEeqkh7ALUK2+vJlNREh/g8XdJcaG+kAhrVR6CKwuzuB1MCx2E
-        Fd64uqrJ/zNqGXSf/cffjs61K1WY5KqXxX3tJP0Ky+bvozO/KNcSf/waz4N6ollD
-        G/5Q5PKyhM686OqNqyPvpMU6a5D+1TDYtqua1dvkfUaVXRg5/SPfLEqQSlRKhJP8
-        3QjrIr2FCb6ie9mz4X7dvpzhtQiMlFhm2IhyzSVlBOjygSOCeocgaGES8JPsAf22
-        KW4ZMmq6cWH7gGqpOpkPQDzzRpwe+HlgYEAxcdKKq5OFQXwSp7+V/UXO7/EQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
-        :feedback-id:from:from:in-reply-to:in-reply-to:message-id
-        :mime-version:references:reply-to:sender:subject:subject:to:to
-        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm2; t=1672920352; x=1673006752; bh=UhZB23ikggupzfYjMRU5YJTnDOqq
-        v+WR2zf5S9u612M=; b=Sr04uMptHAnE4rxGGbbE3gGANmQXNawSH5VJVMuhRPJo
-        7sOz5iB7b8B3KY1JcnwE1J7eHomLLVlkcQC3m/NIDkr6OhW77G2TR4hnm/dclZwN
-        m/8Sat0FZVDEM2ggTTy8qPGr8hx9Odws7QLwpt90XoUyFqpSm7bQ8L30EJ2MNlWL
-        184gGj+kN9mBMn3xBMdccDAos+EcZpKJdohCICDIjfZd/kk5rc7Sm461pIEH3Pe1
-        pHhmXZ0oLWoMQbXd239AJTqhGTOGyUctE/Lq6/s/ON4qu24ox5vSrqErYNXvPZK7
-        Oq/3hpF9V8NglYnLd+ZiWWByYq8By36AlzxbrVESTw==
-X-ME-Sender: <xms:H722Y-iPa3z3j_Obn9xJ3y4iLVHhLZYRWE53ebwI868UqtTNDK5plw>
-    <xme:H722Y_DR7L7Ik-e0GNVxK4qRWiDzyZlVGLcd9_UeECqwuSW1v_o48jnzUAXib3fI1
-    l2hOQJUDcEf27Bnh80>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrjeekgdefjecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
-    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
-    gvrhhnpeevhfffledtgeehfeffhfdtgedvheejtdfgkeeuvefgudffteettdekkeeufeeh
-    udenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
-    enucfrrghrrghmpehmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:IL22Y2FbE7Dg5EIyTdQbXO2BylVr2xsUQ8dgioEgrBp0aBvl5yIzAw>
-    <xmx:IL22Y3R6pvyQ83oUVYNDJvXQYrV_MCh96rREY2TwUokJi-LRFkGQew>
-    <xmx:IL22Y7wfGtxDIPBbXqwUsBIkc8fSVT82W3nBfU_1b_qETo-u8EOO8g>
-    <xmx:IL22YzhCDyHE_6V7W5RQnzsUyD5S1ryM9MpvwA09NHFl1ioeyc63Vg>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-        id E6BA2B60086; Thu,  5 Jan 2023 07:05:51 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.7.0-alpha0-1185-g841157300a-fm-20221208.002-g84115730
-Mime-Version: 1.0
-Message-Id: <5b69db0b-9eed-42ce-8e93-4b656022433f@app.fastmail.com>
-In-Reply-To: <20230105104019.GA7446@tellis.lin.mbt.kalray.eu>
-References: <20230103164359.24347-1-ysionneau@kalray.eu>
- <7c531595-e987-422b-bcf7-48ad0ba49ce6@app.fastmail.com>
- <20230105104019.GA7446@tellis.lin.mbt.kalray.eu>
-Date:   Thu, 05 Jan 2023 13:05:32 +0100
-From:   "Arnd Bergmann" <arnd@arndb.de>
-To:     "Jules Maselbas" <jmaselbas@kalray.eu>
-Cc:     "Yann Sionneau" <ysionneau@kalray.eu>,
-        "Albert Ou" <aou@eecs.berkeley.edu>,
-        "Alexander Shishkin" <alexander.shishkin@linux.intel.com>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "Aneesh Kumar" <aneesh.kumar@linux.ibm.com>,
-        "Ard Biesheuvel" <ardb@kernel.org>,
-        "Arnaldo Carvalho de Melo" <acme@kernel.org>,
-        "Boqun Feng" <boqun.feng@gmail.com>, bpf@vger.kernel.org,
-        "Christian Brauner" <brauner@kernel.org>,
-        devicetree@vger.kernel.org,
-        "Eric W. Biederman" <ebiederm@xmission.com>,
-        "Eric Paris" <eparis@redhat.com>, "Ingo Molnar" <mingo@redhat.com>,
-        "Jan Kiszka" <jan.kiszka@siemens.com>,
-        "Jason Baron" <jbaron@akamai.com>, "Jiri Olsa" <jolsa@kernel.org>,
-        "Jonathan Corbet" <corbet@lwn.net>,
-        "Josh Poimboeuf" <jpoimboe@kernel.org>,
-        "Kees Cook" <keescook@chromium.org>,
-        "Kieran Bingham" <kbingham@kernel.org>,
-        "Krzysztof Kozlowski" <krzysztof.kozlowski+dt@linaro.org>,
-        Linux-Arch <linux-arch@vger.kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-audit@redhat.com,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, linux-perf-users@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org,
-        "Marc Zyngier" <maz@kernel.org>,
-        "Mark Rutland" <mark.rutland@arm.com>,
-        "Masami Hiramatsu" <mhiramat@kernel.org>,
-        "Namhyung Kim" <namhyung@kernel.org>,
-        "Nicholas Piggin" <npiggin@gmail.com>,
-        "Oleg Nesterov" <oleg@redhat.com>,
-        "Palmer Dabbelt" <palmer@dabbelt.com>,
-        "Paul Moore" <paul@paul-moore.com>,
-        "Paul Walmsley" <paul.walmsley@sifive.com>,
-        "Peter Zijlstra" <peterz@infradead.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
-        "Sebastian Reichel" <sre@kernel.org>,
-        "Steven Rostedt" <rostedt@goodmis.org>,
-        "Thomas Gleixner" <tglx@linutronix.de>,
-        "Waiman Long" <longman@redhat.com>,
-        "Will Deacon" <will@kernel.org>, "Alex Michon" <amichon@kalray.eu>,
-        "Ashley Lesdalons" <alesdalons@kalray.eu>,
-        "Benjamin Mugnier" <mugnier.benjamin@gmail.com>,
-        "Clement Leger" <clement.leger@bootlin.com>,
-        "Guillaume Missonnier" <gmissonnier@kalray.eu>,
-        "Guillaume Thouvenin" <gthouvenin@kalray.eu>,
-        "Jean-Christophe Pince" <jcpince@gmail.com>,
-        "Jonathan Borne" <jborne@kalray.eu>,
-        "Julian Vetter" <jvetter@kalray.eu>,
-        "Julien Hascoet" <jhascoet@kalray.eu>,
-        "Julien Villette" <jvillette@kalray.eu>,
-        "Louis Morhet" <lmorhet@kalray.eu>,
-        "Luc Michel" <lmichel@kalray.eu>,
-        =?UTF-8?Q?Marc_Poulhi=C3=A8s?= <dkm@kataplop.net>,
-        "Marius Gligor" <mgligor@kalray.eu>,
-        "Samuel Jones" <sjones@kalray.eu>,
-        "Thomas Costis" <tcostis@kalray.eu>,
-        "Vincent Chardon" <vincent.chardon@elsys-design.com>
-Subject: Re: [RFC PATCH 00/25] Upstream kvx Linux port
-Content-Type: text/plain
+        with ESMTP id S231664AbjAENq6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2023 08:46:58 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 343173D9FA;
+        Thu,  5 Jan 2023 05:46:57 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id B5707B81AD7;
+        Thu,  5 Jan 2023 13:46:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44E88C433F1;
+        Thu,  5 Jan 2023 13:46:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1672926414;
+        bh=hDZVtcujKWtYdndI0ba6f6HB7HdfrT4YcZAnQccoayk=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=WOFoWAlDkvszr2Z9eXXqIFC8gOTs7I37sRn3nu8apjX/TkKYTAPrYcDIzcob28eaS
+         SeyWfKycLybcABQHQPKx5Y6+yKe+rl632JOj6VAeujuekGIM1xfT7Yl37eWUPIDQ3A
+         TXUjc4y42lLafyUY5hB4erUixdsqFoSYLX7OK0623wp096hPzQrHTllwIsSBoPY5ti
+         JrJMtyRiMGR2tLK1U6d/Yu2/NLi7XucsmlqJEZC+I4n/MQ+ABVv1TzyedcJ821uh00
+         bLond2MHPo/9+POwA4LJa2AGEthZSIU1ZsUw+xsCp95eyUHhIpp34Hrmit5od6w4id
+         50btfknoOraqw==
+From:   Arnd Bergmann <arnd@kernel.org>
+To:     Robert Jarzmik <robert.jarzmik@free.fr>
+Cc:     Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-mmc@vger.kernel.org
+Subject: [PATCH 04/27] ARM: pxa: drop pxa310/pxa320/pxa93x support
+Date:   Thu,  5 Jan 2023 14:45:59 +0100
+Message-Id: <20230105134622.254560-5-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230105134622.254560-1-arnd@kernel.org>
+References: <20230105134622.254560-1-arnd@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 5, 2023, at 11:40, Jules Maselbas wrote:
-> On Wed, Jan 04, 2023 at 04:58:25PM +0100, Arnd Bergmann wrote:
->> On Tue, Jan 3, 2023, at 17:43, Yann Sionneau wrote:
+From: Arnd Bergmann <arnd@arndb.de>
 
->> I commented on the syscall patch directly, I think it's
->> important to stop using the deprecated syscalls as soon
->> as possible to avoid having dependencies in too many
->> libc binaries. Almost everything else can be changed
->> easily as you get closer to upstream inclusion.
->> 
->> I did not receive most of the other patches as I'm
->> not subscribed to all the mainline lists. For future 
->> submissions, can you add the linux-arch list to Cc for
->> all patches?
->
-> We misused get_maintainers.pl, running it on each patch instead
-> of using it on the whole series. next time every one will be in
-> copy of every patch in the series and including linux-arch.
+There is currently no devicetree support for any of these three
+SoCs, and no board files remain. As it seems unlikely that anyone
+is going to add DT support soon, let's drop the SoC specific code
+now.
 
-Be careful not to make the list too long though, there is
-usually a limit of 1024 characters for the entire Cc list,
-above this your mails may get dropped by the mailing lists.
+Cc: Michael Turquette <mturquette@baylibre.com>
+Cc: Stephen Boyd <sboyd@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-clk@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-mmc@vger.kernel.org
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/arm/mach-pxa/devices.h      |   1 -
+ arch/arm/mach-pxa/mfp-pxa300.h   |  52 ----
+ arch/arm/mach-pxa/mfp-pxa930.h   | 495 -------------------------------
+ arch/arm/mach-pxa/pxa300.c       |  17 +-
+ arch/arm/mach-pxa/pxa3xx.c       |   4 +-
+ drivers/clk/pxa/clk-pxa3xx.c     |  22 +-
+ drivers/cpufreq/pxa3xx-cpufreq.c |  21 +-
+ drivers/mmc/host/pxamci.c        |   3 +-
+ drivers/pcmcia/pxa2xx_base.c     |   6 -
+ include/linux/soc/pxa/cpu.h      |  93 +-----
+ 10 files changed, 9 insertions(+), 705 deletions(-)
+ delete mode 100644 arch/arm/mach-pxa/mfp-pxa930.h
 
->> Reading the rest of the series through lore.kernel.org,
->> most of the comments I have are for improvements that
->> you may find valuable rather than serious mistakes:
->> 
->> - the {copy_to,copy_from,clear}_user functions are
->>   well worth optimizing better than the byte-at-a-time
->>   version you have, even just a C version built around
->>   your __get_user/__put_user inline asm should help, and
->>   could be added to lib/usercopy.c.
->
-> right, we are using memcpy for {copy_to,copy_from}_user_page
-> which has a simple optimized version introduced in
-> (kvx: Add some library functions).
-> I wonder if it is possible to do the same for copy_*_user functions.
+diff --git a/arch/arm/mach-pxa/devices.h b/arch/arm/mach-pxa/devices.h
+index 82c83939017a..1c252eca39c1 100644
+--- a/arch/arm/mach-pxa/devices.h
++++ b/arch/arm/mach-pxa/devices.h
+@@ -54,7 +54,6 @@ extern struct platform_device pxa_device_asoc_ssp4;
+ extern struct platform_device pxa25x_device_gpio;
+ extern struct platform_device pxa27x_device_gpio;
+ extern struct platform_device pxa3xx_device_gpio;
+-extern struct platform_device pxa93x_device_gpio;
+ 
+ void __init pxa_register_device(struct platform_device *dev, void *data);
+ void __init pxa2xx_set_dmac_info(struct mmp_dma_platdata *dma_pdata);
+diff --git a/arch/arm/mach-pxa/mfp-pxa300.h b/arch/arm/mach-pxa/mfp-pxa300.h
+index 1223e350cea0..058698e7e513 100644
+--- a/arch/arm/mach-pxa/mfp-pxa300.h
++++ b/arch/arm/mach-pxa/mfp-pxa300.h
+@@ -27,15 +27,6 @@
+ #define GPIO61_GPIO		MFP_CFG(GPIO61, AF0)
+ #define GPIO62_GPIO		MFP_CFG(GPIO62, AF0)
+ 
+-#ifdef CONFIG_CPU_PXA310
+-#define GPIO7_2_GPIO		MFP_CFG(GPIO7_2, AF0)
+-#define GPIO8_2_GPIO		MFP_CFG(GPIO8_2, AF0)
+-#define GPIO9_2_GPIO		MFP_CFG(GPIO9_2, AF0)
+-#define GPIO10_2_GPIO		MFP_CFG(GPIO10_2, AF0)
+-#define GPIO11_2_GPIO		MFP_CFG(GPIO11_2, AF0)
+-#define GPIO12_2_GPIO		MFP_CFG(GPIO12_2, AF0)
+-#endif
+-
+ /* Chip Select */
+ #define GPIO1_nCS2		MFP_CFG(GPIO1,	AF1)
+ #define GPIO2_nCS3		MFP_CFG(GPIO2,  AF1)
+@@ -526,47 +517,4 @@
+ #define GPIO46_UTM_PHYDATA_7	MFP_CFG(GPIO46,  AF3)
+ #endif /* CONFIG_CPU_PXA300 */
+ 
+-/*
+- * PXA310 specific MFP configurations
+- */
+-#ifdef CONFIG_CPU_PXA310
+-/* USB P2 */
+-#define GPIO36_USB_P2_1		MFP_CFG(GPIO36, AF1)
+-#define GPIO30_USB_P2_2		MFP_CFG(GPIO30, AF1)
+-#define GPIO35_USB_P2_3		MFP_CFG(GPIO35, AF1)
+-#define GPIO32_USB_P2_4		MFP_CFG(GPIO32, AF1)
+-#define GPIO34_USB_P2_5		MFP_CFG(GPIO34, AF1)
+-#define GPIO31_USB_P2_6		MFP_CFG(GPIO31, AF1)
+-
+-/* MMC1 */
+-#define GPIO24_MMC1_CMD		MFP_CFG(GPIO24, AF3)
+-#define GPIO29_MMC1_DAT0	MFP_CFG(GPIO29, AF3)
+-
+-/* MMC3 */
+-#define GPIO103_MMC3_CLK	MFP_CFG(GPIO103, AF2)
+-#define GPIO105_MMC3_CMD	MFP_CFG(GPIO105, AF2)
+-#define GPIO11_2_MMC3_CLK	MFP_CFG(GPIO11_2, AF1)
+-#define GPIO12_2_MMC3_CMD	MFP_CFG(GPIO12_2, AF1)
+-#define GPIO7_2_MMC3_DAT0	MFP_CFG(GPIO7_2, AF1)
+-#define GPIO8_2_MMC3_DAT1	MFP_CFG(GPIO8_2, AF1)
+-#define GPIO9_2_MMC3_DAT2	MFP_CFG(GPIO9_2, AF1)
+-#define GPIO10_2_MMC3_DAT3	MFP_CFG(GPIO10_2, AF1)
+-
+-/* ULPI */
+-#define GPIO38_ULPI_CLK		MFP_CFG(GPIO38, AF1)
+-#define GPIO30_ULPI_DATA_OUT_0	MFP_CFG(GPIO30, AF3)
+-#define GPIO31_ULPI_DATA_OUT_1	MFP_CFG(GPIO31, AF3)
+-#define GPIO32_ULPI_DATA_OUT_2	MFP_CFG(GPIO32, AF3)
+-#define GPIO33_ULPI_DATA_OUT_3	MFP_CFG(GPIO33, AF3)
+-#define GPIO34_ULPI_DATA_OUT_4	MFP_CFG(GPIO34, AF3)
+-#define GPIO35_ULPI_DATA_OUT_5	MFP_CFG(GPIO35, AF3)
+-#define GPIO36_ULPI_DATA_OUT_6	MFP_CFG(GPIO36, AF3)
+-#define GPIO37_ULPI_DATA_OUT_7	MFP_CFG(GPIO37, AF3)
+-#define GPIO33_ULPI_OTG_INTR	MFP_CFG(GPIO33, AF1)
+-
+-#define ULPI_DIR	MFP_CFG_DRV(ULPI_DIR, AF0, DS01X)
+-#define ULPI_NXT	MFP_CFG_DRV(ULPI_NXT, AF0, DS01X)
+-#define ULPI_STP	MFP_CFG_DRV(ULPI_STP, AF0, DS01X)
+-#endif /* CONFIG_CPU_PXA310 */
+-
+ #endif /* __ASM_ARCH_MFP_PXA300_H */
+diff --git a/arch/arm/mach-pxa/mfp-pxa930.h b/arch/arm/mach-pxa/mfp-pxa930.h
+deleted file mode 100644
+index 0d195d3a8c61..000000000000
+diff --git a/arch/arm/mach-pxa/pxa300.c b/arch/arm/mach-pxa/pxa300.c
+index f77ec118d5b9..accd270ff8e2 100644
+--- a/arch/arm/mach-pxa/pxa300.c
++++ b/arch/arm/mach-pxa/pxa300.c
+@@ -69,28 +69,13 @@ static struct mfp_addr_map pxa300_mfp_addr_map[] __initdata = {
+ 	MFP_ADDR_END,
+ };
+ 
+-/* override pxa300 MFP register addresses */
+-static struct mfp_addr_map pxa310_mfp_addr_map[] __initdata = {
+-	MFP_ADDR_X(GPIO30,  GPIO98,   0x0418),
+-	MFP_ADDR_X(GPIO7_2, GPIO12_2, 0x052C),
+-
+-	MFP_ADDR(ULPI_STP, 0x040C),
+-	MFP_ADDR(ULPI_NXT, 0x0410),
+-	MFP_ADDR(ULPI_DIR, 0x0414),
+-
+-	MFP_ADDR_END,
+-};
+-
+ static int __init pxa300_init(void)
+ {
+-	if (cpu_is_pxa300() || cpu_is_pxa310()) {
++	if (cpu_is_pxa300()) {
+ 		mfp_init_base(io_p2v(MFPR_BASE));
+ 		mfp_init_addr(pxa300_mfp_addr_map);
+ 	}
+ 
+-	if (cpu_is_pxa310())
+-		mfp_init_addr(pxa310_mfp_addr_map);
+-
+ 	return 0;
+ }
+ 
+diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
+index b26f00fc75d5..7a02ddb30969 100644
+--- a/arch/arm/mach-pxa/pxa3xx.c
++++ b/arch/arm/mach-pxa/pxa3xx.c
+@@ -496,8 +496,6 @@ static int __init pxa3xx_init(void)
+ 		pxa3xx_init_pm();
+ 
+ 		enable_irq_wake(IRQ_WAKEUP0);
+-		if (cpu_is_pxa320())
+-			enable_irq_wake(IRQ_WAKEUP1);
+ 
+ 		register_syscore_ops(&pxa_irq_syscore_ops);
+ 		register_syscore_ops(&pxa3xx_mfp_syscore_ops);
+@@ -509,7 +507,7 @@ static int __init pxa3xx_init(void)
+ 		ret = platform_add_devices(devices, ARRAY_SIZE(devices));
+ 		if (ret)
+ 			return ret;
+-		if (cpu_is_pxa300() || cpu_is_pxa310() || cpu_is_pxa320()) {
++		if (cpu_is_pxa300()) {
+ 			platform_device_add_data(&pxa3xx_device_gpio,
+ 						 &pxa3xx_gpio_pdata,
+ 						 sizeof(pxa3xx_gpio_pdata));
+diff --git a/drivers/clk/pxa/clk-pxa3xx.c b/drivers/clk/pxa/clk-pxa3xx.c
+index 42958a542662..9b45dc297b22 100644
+--- a/drivers/clk/pxa/clk-pxa3xx.c
++++ b/drivers/clk/pxa/clk-pxa3xx.c
+@@ -269,19 +269,6 @@ static struct desc_clk_cken pxa300_310_clocks[] __initdata = {
+ 	PXA3XX_CKEN_1RATE("pxa3xx-gpio", NULL, GPIO, pxa3xx_13MHz_bus_parents),
+ };
+ 
+-static struct desc_clk_cken pxa320_clocks[] __initdata = {
+-	PXA3XX_PBUS_CKEN("pxa3xx-nand", NULL, NAND, 1, 2, 1, 6, 0),
+-	PXA3XX_PBUS_CKEN("pxa3xx-gcu", NULL, PXA320_GCU, 1, 1, 1, 1, 0),
+-	PXA3XX_CKEN_1RATE("pxa3xx-gpio", NULL, GPIO, pxa3xx_13MHz_bus_parents),
+-};
+-
+-static struct desc_clk_cken pxa93x_clocks[] __initdata = {
+-
+-	PXA3XX_PBUS_CKEN("pxa3xx-gcu", NULL, PXA300_GCU, 1, 1, 1, 1, 0),
+-	PXA3XX_PBUS_CKEN("pxa3xx-nand", NULL, NAND, 1, 2, 1, 4, 0),
+-	PXA3XX_CKEN_1RATE("pxa93x-gpio", NULL, GPIO, pxa3xx_13MHz_bus_parents),
+-};
+-
+ static unsigned long clk_pxa3xx_system_bus_get_rate(struct clk_hw *hw,
+ 					    unsigned long parent_rate)
+ {
+@@ -446,13 +433,8 @@ int __init pxa3xx_clocks_init(void __iomem *regs, void __iomem *oscc_reg)
+ 	ret = clk_pxa_cken_init(pxa3xx_clocks, ARRAY_SIZE(pxa3xx_clocks), regs);
+ 	if (ret)
+ 		return ret;
+-	if (cpu_is_pxa320())
+-		return clk_pxa_cken_init(pxa320_clocks,
+-					 ARRAY_SIZE(pxa320_clocks), regs);
+-	if (cpu_is_pxa300() || cpu_is_pxa310())
+-		return clk_pxa_cken_init(pxa300_310_clocks,
+-					 ARRAY_SIZE(pxa300_310_clocks), regs);
+-	return clk_pxa_cken_init(pxa93x_clocks, ARRAY_SIZE(pxa93x_clocks), regs);
++	return clk_pxa_cken_init(pxa300_310_clocks,
++				 ARRAY_SIZE(pxa300_310_clocks), regs);
+ }
+ 
+ static void __init pxa3xx_dt_clocks_init(struct device_node *np)
+diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
+index 4afa48d172db..23bc3c7a6288 100644
+--- a/drivers/cpufreq/pxa3xx-cpufreq.c
++++ b/drivers/cpufreq/pxa3xx-cpufreq.c
+@@ -91,15 +91,6 @@ static struct pxa3xx_freq_info pxa300_freqs[] = {
+ 	OP(624, 24, 2, 208, 260, 208, 312, 3, 1375, 1400), /* 624MHz */
+ };
+ 
+-static struct pxa3xx_freq_info pxa320_freqs[] = {
+-	/*  CPU XL XN  HSS DMEM SMEM SRAM DFI VCC_CORE VCC_SRAM */
+-	OP(104,  8, 1, 104, 260,  78, 104, 3, 1000, 1100), /* 104MHz */
+-	OP(208, 16, 1, 104, 260, 104, 156, 2, 1000, 1100), /* 208MHz */
+-	OP(416, 16, 2, 156, 260, 104, 208, 2, 1100, 1200), /* 416MHz */
+-	OP(624, 24, 2, 208, 260, 208, 312, 3, 1375, 1400), /* 624MHz */
+-	OP(806, 31, 2, 208, 260, 208, 312, 3, 1400, 1400), /* 806MHz */
+-};
+-
+ static unsigned int pxa3xx_freqs_num;
+ static struct pxa3xx_freq_info *pxa3xx_freqs;
+ static struct cpufreq_frequency_table *pxa3xx_freqs_table;
+@@ -186,17 +177,11 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	/* set default policy and cpuinfo */
+ 	policy->min = policy->cpuinfo.min_freq = 104000;
+-	policy->max = policy->cpuinfo.max_freq =
+-		(cpu_is_pxa320()) ? 806000 : 624000;
++	policy->max = policy->cpuinfo.max_freq = 624000;
+ 	policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
+ 
+-	if (cpu_is_pxa300() || cpu_is_pxa310())
+-		ret = setup_freqs_table(policy, pxa300_freqs,
+-					ARRAY_SIZE(pxa300_freqs));
+-
+-	if (cpu_is_pxa320())
+-		ret = setup_freqs_table(policy, pxa320_freqs,
+-					ARRAY_SIZE(pxa320_freqs));
++	ret = setup_freqs_table(policy, pxa300_freqs,
++				ARRAY_SIZE(pxa300_freqs));
+ 
+ 	if (ret) {
+ 		pr_err("failed to setup frequency table\n");
+diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
+index 2a988f942b6c..60bdd691c391 100644
+--- a/drivers/mmc/host/pxamci.c
++++ b/drivers/mmc/host/pxamci.c
+@@ -44,8 +44,7 @@
+ #define NR_SG	1
+ #define CLKRT_OFF	(~0)
+ 
+-#define mmc_has_26MHz()		(cpu_is_pxa300() || cpu_is_pxa310() \
+-				|| cpu_is_pxa935())
++#define mmc_has_26MHz()		(cpu_is_pxa300())
+ 
+ struct pxamci_host {
+ 	struct mmc_host		*mmc;
+diff --git a/drivers/pcmcia/pxa2xx_base.c b/drivers/pcmcia/pxa2xx_base.c
+index 5254028354f4..a6c6ee034582 100644
+--- a/drivers/pcmcia/pxa2xx_base.c
++++ b/drivers/pcmcia/pxa2xx_base.c
+@@ -268,12 +268,6 @@ static int pxa2xx_drv_pcmcia_probe(struct platform_device *dev)
+ 		goto err0;
+ 	}
+ 
+-	if (cpu_is_pxa320() && ops->nr > 1) {
+-		dev_err(&dev->dev, "pxa320 supports only one pcmcia slot");
+-		ret = -EINVAL;
+-		goto err0;
+-	}
+-
+ 	clk = devm_clk_get(&dev->dev, NULL);
+ 	if (IS_ERR(clk))
+ 		return -ENODEV;
+diff --git a/include/linux/soc/pxa/cpu.h b/include/linux/soc/pxa/cpu.h
+index 5782450ee45c..0f894d12fe1d 100644
+--- a/include/linux/soc/pxa/cpu.h
++++ b/include/linux/soc/pxa/cpu.h
+@@ -56,12 +56,6 @@
+  *  PXA935	B1	0x56056938	0x8E653013
+  */
+ #ifdef CONFIG_PXA25x
+-#define __cpu_is_pxa210(id)				\
+-	({						\
+-		unsigned int _id = (id) & 0xf3f0;	\
+-		_id == 0x2120;				\
+-	})
+-
+ #define __cpu_is_pxa250(id)				\
+ 	({						\
+ 		unsigned int _id = (id) & 0xf3ff;	\
+@@ -80,7 +74,6 @@
+ 		_id == 0x2100;				\
+ 	})
+ #else
+-#define __cpu_is_pxa210(id)	(0)
+ #define __cpu_is_pxa250(id)	(0)
+ #define __cpu_is_pxa255(id)	(0)
+ #define __cpu_is_pxa25x(id)	(0)
+@@ -106,51 +99,6 @@
+ #define __cpu_is_pxa300(id)	(0)
+ #endif
+ 
+-#ifdef CONFIG_CPU_PXA310
+-#define __cpu_is_pxa310(id)				\
+-	({						\
+-		unsigned int _id = (id) >> 4 & 0xfff;	\
+-		_id == 0x689;				\
+-	 })
+-#else
+-#define __cpu_is_pxa310(id)	(0)
+-#endif
+-
+-#ifdef CONFIG_CPU_PXA320
+-#define __cpu_is_pxa320(id)				\
+-	({						\
+-		unsigned int _id = (id) >> 4 & 0xfff;	\
+-		_id == 0x603 || _id == 0x682;		\
+-	 })
+-#else
+-#define __cpu_is_pxa320(id)	(0)
+-#endif
+-
+-#ifdef CONFIG_CPU_PXA930
+-#define __cpu_is_pxa930(id)				\
+-	({						\
+-		unsigned int _id = (id) >> 4 & 0xfff;	\
+-		_id == 0x683;				\
+-	 })
+-#else
+-#define __cpu_is_pxa930(id)	(0)
+-#endif
+-
+-#ifdef CONFIG_CPU_PXA935
+-#define __cpu_is_pxa935(id)				\
+-	({						\
+-		unsigned int _id = (id) >> 4 & 0xfff;	\
+-		_id == 0x693;				\
+-	 })
+-#else
+-#define __cpu_is_pxa935(id)	(0)
+-#endif
+-
+-#define cpu_is_pxa210()					\
+-	({						\
+-		__cpu_is_pxa210(read_cpuid_id());	\
+-	})
+-
+ #define cpu_is_pxa250()					\
+ 	({						\
+ 		__cpu_is_pxa250(read_cpuid_id());	\
+@@ -176,27 +124,6 @@
+ 		__cpu_is_pxa300(read_cpuid_id());	\
+ 	 })
+ 
+-#define cpu_is_pxa310()					\
+-	({						\
+-		__cpu_is_pxa310(read_cpuid_id());	\
+-	 })
+-
+-#define cpu_is_pxa320()					\
+-	({						\
+-		__cpu_is_pxa320(read_cpuid_id());	\
+-	 })
+-
+-#define cpu_is_pxa930()					\
+-	({						\
+-		__cpu_is_pxa930(read_cpuid_id());	\
+-	 })
+-
+-#define cpu_is_pxa935()					\
+-	({						\
+-		__cpu_is_pxa935(read_cpuid_id());	\
+-	 })
+-
+-
+ 
+ /*
+  * CPUID Core Generation Bit
+@@ -215,25 +142,12 @@
+ #ifdef CONFIG_PXA3xx
+ #define __cpu_is_pxa3xx(id)				\
+ 	({						\
+-		__cpu_is_pxa300(id)			\
+-			|| __cpu_is_pxa310(id)		\
+-			|| __cpu_is_pxa320(id)		\
+-			|| __cpu_is_pxa93x(id);		\
++		__cpu_is_pxa300(id);			\
+ 	 })
+ #else
+ #define __cpu_is_pxa3xx(id)	(0)
+ #endif
+ 
+-#if defined(CONFIG_CPU_PXA930) || defined(CONFIG_CPU_PXA935)
+-#define __cpu_is_pxa93x(id)				\
+-	({						\
+-		__cpu_is_pxa930(id)			\
+-			|| __cpu_is_pxa935(id);		\
+-	 })
+-#else
+-#define __cpu_is_pxa93x(id)	(0)
+-#endif
+-
+ #define cpu_is_pxa2xx()					\
+ 	({						\
+ 		__cpu_is_pxa2xx(read_cpuid_id());	\
+@@ -244,9 +158,4 @@
+ 		__cpu_is_pxa3xx(read_cpuid_id());	\
+ 	 })
+ 
+-#define cpu_is_pxa93x()					\
+-	({						\
+-		__cpu_is_pxa93x(read_cpuid_id());	\
+-	 })
+-
+ #endif
+-- 
+2.39.0
 
-copy_from_user_page() is only about managing cache aliases,
-not user access, and it's not used anywhere in the fast
-path, so it's a bit different.
-
-arch/arm/lib/copy_template.S has an example for how
-you can share the same assembler implementation between
-memcpy() and copy_from_user(), but it's not very
-intuitive.
-
-The tricky bit with copy_from_user() is the partial copy
-that relies on copying the exact amount of data that can
-be accessed including the last byte before the end of
-the mapping, and returning the correct count of non-copied
-bytes.
-
-If you want a C version, you can probably use the
-copy_from_kernel_nofault implementation mm/maccess.c
-as a template, but have to add code for the correct
-return value.
-
-    Arnd
