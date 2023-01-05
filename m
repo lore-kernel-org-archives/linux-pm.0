@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A1C6C54EBF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBE5AC54EF0
 	for <linux-pm@archiver.kernel.org>; Thu,  5 Jan 2023 18:03:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235453AbjAESDw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Jan 2023 13:03:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35596 "EHLO
+        id S235458AbjAESDx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Jan 2023 13:03:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235053AbjAESDt (ORCPT
+        with ESMTP id S234788AbjAESDt (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2023 13:03:49 -0500
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4321C564D1;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43045564CA;
         Thu,  5 Jan 2023 10:03:46 -0800 (PST)
 Received: from jupiter.universe (dyndsl-085-016-198-020.ewe-ip-backbone.de [85.16.198.20])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 425D86602CA6;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 5D3706602CD7;
         Thu,  5 Jan 2023 18:03:45 +0000 (GMT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1672941825;
-        bh=Eit57BSuLLiRFOU6myIJto2e9A9VEfM0WBizgrQT8yc=;
+        bh=sbwbPC8CQ9pDo6+I6EbaGiqJManEPRlNV8KKXl/kDSc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TCMwnIV2hWgSnZDyenJ47ozEXjmCBJyGuEY+enk/AaIe17xPaSIZBk2PFzjZCb6UN
-         r2W1Z0qS5rNWgM/iWrV9AIe+oCXCxPOK+Yyf5ywoPBP4uezkq029c3fc4tm1C+zeRp
-         GBN1LAuHmS0EIzBEpLaTkjEAoV1kQH87RcsVQRThLXY5+pIecALH1oY76CxqeebjhH
-         UyTthQriDPZyhoNxW9tf9h3nrZrd49TBJYrtRdGI9ZT+zWSHG9mqepJFrsFqhUqe49
-         8nckB0mLM572zFZhZbBbOn4w9Tdkl7AZNdNgcrZdeSmrkb0Fffv/kpifSwEOSyY8QQ
-         Y7lKf90bleAqw==
+        b=gls4Mzv+c+/KPrDmXnys6tTry4Su9e0SSucEF8h5b0l+nTCgBykn2cy3CgnB8Rt3k
+         Z5MUAGSHGjuIdLQQVRCCYMz6xMaKkKnIe6r59dm9pw+0a+gkXniPNJxeJ2YCiMLnq+
+         NUqrKIsBmPtcc3LNfryQsEpghqRSCzHAF5lo3OtjSsun3VOQ85XTJs2LVYLgrnxlW4
+         fIRIVi4MRORbXxW/UWVQ1apH1nqRBsTeu26Xn+NWAzaJahOd0Z42Q1E/qu5EjZaxlP
+         QrNIFCgEPh6YpP7UDOD2ognfztesuKzM+OmD7DIoX0QVml7sv6Z+4NjuM27kXsF5ZC
+         v1UzEf3wL9/wA==
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id A39FE480118; Thu,  5 Jan 2023 19:03:42 +0100 (CET)
+        id A800848011A; Thu,  5 Jan 2023 19:03:42 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Heiko Stuebner <heiko@sntech.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -45,9 +45,9 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCHv3 1/7] thermal: rockchip: Simplify getting match data
-Date:   Thu,  5 Jan 2023 19:03:34 +0100
-Message-Id: <20230105180340.29140-2-sebastian.reichel@collabora.com>
+Subject: [PATCHv3 3/7] thermal: rockchip: Use dev_err_probe
+Date:   Thu,  5 Jan 2023 19:03:36 +0100
+Message-Id: <20230105180340.29140-4-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230105180340.29140-1-sebastian.reichel@collabora.com>
 References: <20230105180340.29140-1-sebastian.reichel@collabora.com>
@@ -57,44 +57,96 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's possible to directly get the match data in a generic
-way nowadays.
+Use dev_err_probe to simplify error printing in the driver's probe
+routine.
 
 Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/thermal/rockchip_thermal.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 50 +++++++++++-------------------
+ 1 file changed, 18 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 819e059cde71..8c52700d58e8 100644
+index 74e0ad001b33..0670584533a5 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -1353,16 +1353,11 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
- 	struct rockchip_thermal_data *thermal;
--	const struct of_device_id *match;
- 	struct resource *res;
- 	int irq;
- 	int i;
- 	int error;
+@@ -1379,35 +1379,26 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 		return PTR_ERR(thermal->regs);
  
--	match = of_match_node(of_rockchip_thermal_match, np);
--	if (!match)
--		return -ENXIO;
--
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0)
- 		return -EINVAL;
-@@ -1374,7 +1369,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 	thermal->reset = devm_reset_control_array_get(&pdev->dev, false, false);
+-	if (IS_ERR(thermal->reset)) {
+-		error = PTR_ERR(thermal->reset);
+-		dev_err(&pdev->dev, "failed to get tsadc reset: %d\n", error);
+-		return error;
+-	}
++	if (IS_ERR(thermal->reset))
++		return dev_err_probe(&pdev->dev, PTR_ERR(thermal->reset),
++				     "failed to get tsadc reset.\n");
  
- 	thermal->pdev = pdev;
+ 	thermal->clk = devm_clk_get_enabled(&pdev->dev, "tsadc");
+-	if (IS_ERR(thermal->clk)) {
+-		error = PTR_ERR(thermal->clk);
+-		dev_err(&pdev->dev, "failed to get tsadc clock: %d\n", error);
+-		return error;
+-	}
++	if (IS_ERR(thermal->clk))
++		return dev_err_probe(&pdev->dev, PTR_ERR(thermal->clk),
++				     "failed to get tsadc clock.\n");
  
--	thermal->chip = (const struct rockchip_tsadc_chip *)match->data;
-+	thermal->chip = device_get_match_data(&pdev->dev);
- 	if (!thermal->chip)
- 		return -EINVAL;
+ 	thermal->pclk = devm_clk_get_enabled(&pdev->dev, "apb_pclk");
+-	if (IS_ERR(thermal->pclk)) {
+-		error = PTR_ERR(thermal->pclk);
+-		dev_err(&pdev->dev, "failed to get apb_pclk clock: %d\n",
+-			error);
+-		return error;
+-	}
++	if (IS_ERR(thermal->pclk))
++		return dev_err_probe(&pdev->dev, PTR_ERR(thermal->pclk),
++				     "failed to get apb_pclk clock.\n");
+ 
+ 	rockchip_thermal_reset_controller(thermal->reset);
+ 
+ 	error = rockchip_configure_from_dt(&pdev->dev, np, thermal);
+-	if (error) {
+-		dev_err(&pdev->dev, "failed to parse device tree data: %d\n",
+-			error);
+-		return error;
+-	}
++	if (error)
++		return dev_err_probe(&pdev->dev, error,
++				"failed to parse device tree data\n");
+ 
+ 	thermal->chip->initialize(thermal->grf, thermal->regs,
+ 				  thermal->tshut_polarity);
+@@ -1416,23 +1407,18 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 		error = rockchip_thermal_register_sensor(pdev, thermal,
+ 						&thermal->sensors[i],
+ 						thermal->chip->chn_id[i]);
+-		if (error) {
+-			dev_err(&pdev->dev,
+-				"failed to register sensor[%d] : error = %d\n",
+-				i, error);
+-			return error;
+-		}
++		if (error)
++			return dev_err_probe(&pdev->dev, error,
++				"failed to register sensor[%d].\n", i);
+ 	}
+ 
+ 	error = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+ 					  &rockchip_thermal_alarm_irq_thread,
+ 					  IRQF_ONESHOT,
+ 					  "rockchip_thermal", thermal);
+-	if (error) {
+-		dev_err(&pdev->dev,
+-			"failed to request tsadc irq: %d\n", error);
+-		return error;
+-	}
++	if (error)
++		return dev_err_probe(&pdev->dev, error,
++				     "failed to request tsadc irq.\n");
+ 
+ 	thermal->chip->control(thermal->regs, true);
  
 -- 
 2.39.0
