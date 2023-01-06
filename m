@@ -2,25 +2,25 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15902C5479D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D1B5C63705
 	for <linux-pm@archiver.kernel.org>; Fri,  6 Jan 2023 12:59:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232821AbjAFM6k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Jan 2023 07:58:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46550 "EHLO
+        id S234013AbjAFM6l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Jan 2023 07:58:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46730 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234506AbjAFM62 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jan 2023 07:58:28 -0500
-Received: from relmlie5.idc.renesas.com (relmlor1.renesas.com [210.160.252.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 820C86B59C;
-        Fri,  6 Jan 2023 04:58:26 -0800 (PST)
+        with ESMTP id S234616AbjAFM6j (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jan 2023 07:58:39 -0500
+Received: from relmlie6.idc.renesas.com (relmlor2.renesas.com [210.160.252.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D67AB6B59C;
+        Fri,  6 Jan 2023 04:58:37 -0800 (PST)
 X-IronPort-AV: E=Sophos;i="5.96,305,1665414000"; 
-   d="scan'208";a="145413761"
+   d="scan'208";a="148398389"
 Received: from unknown (HELO relmlir6.idc.renesas.com) ([10.200.68.152])
-  by relmlie5.idc.renesas.com with ESMTP; 06 Jan 2023 21:58:25 +0900
+  by relmlie6.idc.renesas.com with ESMTP; 06 Jan 2023 21:58:37 +0900
 Received: from mulinux.example.org (unknown [10.226.92.206])
-        by relmlir6.idc.renesas.com (Postfix) with ESMTP id 7A49B4254DA6;
-        Fri,  6 Jan 2023 21:58:20 +0900 (JST)
+        by relmlir6.idc.renesas.com (Postfix) with ESMTP id 0D0264254DA7;
+        Fri,  6 Jan 2023 21:58:31 +0900 (JST)
 From:   Fabrizio Castro <fabrizio.castro.jz@renesas.com>
 To:     Linus Walleij <linus.walleij@linaro.org>,
         Bartosz Golaszewski <brgl@bgdev.pl>,
@@ -37,41 +37,229 @@ Cc:     Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
         linux-renesas-soc@vger.kernel.org,
         Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
         Jacopo Mondi <jacopo@jmondi.org>
-Subject: [PATCH v5 0/2] Driver support for RZ/V2M PWC
-Date:   Fri,  6 Jan 2023 12:58:14 +0000
-Message-Id: <20230106125816.10600-1-fabrizio.castro.jz@renesas.com>
+Subject: [PATCH v5 2/2] soc: renesas: Add PWC support for RZ/V2M
+Date:   Fri,  6 Jan 2023 12:58:16 +0000
+Message-Id: <20230106125816.10600-3-fabrizio.castro.jz@renesas.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230106125816.10600-1-fabrizio.castro.jz@renesas.com>
+References: <20230106125816.10600-1-fabrizio.castro.jz@renesas.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The PWC IP found in the RZ/V2M family of chips comes with the below
-capabilities:
+The Renesas RZ/V2M External Power Sequence Controller (PWC)
+IP is capable of:
 * external power supply on/off sequence generation
 * on/off signal generation for the LPDDR4 core power supply (LPVDD)
 * key input signals processing
 * general-purpose output pins
 
-Version 5 of this series fixes subject line and changelog of the
-dt-bindings patch.
+Add the corresponding device driver.
 
-Thanks,
-Fab
+Signed-off-by: Fabrizio Castro <fabrizio.castro.jz@renesas.com>
+---
 
-Fabrizio Castro (2):
-  dt-bindings: soc: renesas: Add RZ/V2M PWC
-  soc: renesas: Add PWC support for RZ/V2M
+v1: In the first version, I had 1 driver for GPIO handling, and 1 driver
+    for poweroff handling, both based on syscon to share the mapped
+    memory region.
+v2: One more driver added to act as MFD core driver. Dropped syscon, and
+    dropped the OF compatible string for the GPIO and poweroff drivers.
+v3: This new patch merges all the PWC code in 1 new driver.
+    It also takes into account the comments received from Bartosz and Geert.
+    Since this is a new driver, I have dropped all the Reviewed-by tags
+    received on the separated drivers.
+v4: No change.
+v5: No change.
 
- .../soc/renesas/renesas,rzv2m-pwc.yaml        |  56 +++++++
- drivers/soc/renesas/Kconfig                   |   4 +
- drivers/soc/renesas/Makefile                  |   1 +
- drivers/soc/renesas/pwc-rzv2m.c               | 141 ++++++++++++++++++
- 4 files changed, 202 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/renesas/renesas,rzv2m-pwc.yaml
+ drivers/soc/renesas/Kconfig     |   4 +
+ drivers/soc/renesas/Makefile    |   1 +
+ drivers/soc/renesas/pwc-rzv2m.c | 141 ++++++++++++++++++++++++++++++++
+ 3 files changed, 146 insertions(+)
  create mode 100644 drivers/soc/renesas/pwc-rzv2m.c
 
+diff --git a/drivers/soc/renesas/Kconfig b/drivers/soc/renesas/Kconfig
+index 660498252ec5..4e8b51ba2266 100644
+--- a/drivers/soc/renesas/Kconfig
++++ b/drivers/soc/renesas/Kconfig
+@@ -330,6 +330,7 @@ config ARCH_R9A09G011
+ 	bool "ARM64 Platform support for RZ/V2M"
+ 	select PM
+ 	select PM_GENERIC_DOMAINS
++	select PWC_RZV2M
+ 	help
+ 	  This enables support for the Renesas RZ/V2M SoC.
+ 
+@@ -345,6 +346,9 @@ config ARCH_R9A07G043
+ 
+ endif # RISCV
+ 
++config PWC_RZV2M
++	bool "Renesas RZ/V2M PWC support" if COMPILE_TEST
++
+ config RST_RCAR
+ 	bool "Reset Controller support for R-Car" if COMPILE_TEST
+ 
+diff --git a/drivers/soc/renesas/Makefile b/drivers/soc/renesas/Makefile
+index 535868c9c7e4..6e4e77b0afff 100644
+--- a/drivers/soc/renesas/Makefile
++++ b/drivers/soc/renesas/Makefile
+@@ -32,6 +32,7 @@ obj-$(CONFIG_ARCH_R9A06G032)	+= r9a06g032-smp.o
+ endif
+ 
+ # Family
++obj-$(CONFIG_PWC_RZV2M)		+= pwc-rzv2m.o
+ obj-$(CONFIG_RST_RCAR)		+= rcar-rst.o
+ obj-$(CONFIG_SYSC_RCAR)		+= rcar-sysc.o
+ obj-$(CONFIG_SYSC_RCAR_GEN4)	+= rcar-gen4-sysc.o
+diff --git a/drivers/soc/renesas/pwc-rzv2m.c b/drivers/soc/renesas/pwc-rzv2m.c
+new file mode 100644
+index 000000000000..c83bdbdabb64
+--- /dev/null
++++ b/drivers/soc/renesas/pwc-rzv2m.c
+@@ -0,0 +1,141 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2023 Renesas Electronics Corporation
++ */
++
++#include <linux/delay.h>
++#include <linux/gpio/driver.h>
++#include <linux/platform_device.h>
++#include <linux/reboot.h>
++
++#define PWC_PWCRST			0x00
++#define PWC_PWCCKEN			0x04
++#define PWC_PWCCTL			0x50
++#define PWC_GPIO			0x80
++
++#define PWC_PWCRST_RSTSOFTAX		0x1
++#define PWC_PWCCKEN_ENGCKMAIN		0x1
++#define PWC_PWCCTL_PWOFF		0x1
++
++struct rzv2m_pwc_priv {
++	void __iomem *base;
++	struct device *dev;
++	struct gpio_chip gp;
++	DECLARE_BITMAP(ch_en_bits, 2);
++};
++
++static void rzv2m_pwc_gpio_set(struct gpio_chip *chip, unsigned int offset,
++			       int value)
++{
++	struct rzv2m_pwc_priv *priv = gpiochip_get_data(chip);
++	u32 reg;
++
++	/* BIT 16 enables write to BIT 0, and BIT 17 enables write to BIT 1 */
++	reg = BIT(offset + 16);
++	if (value)
++		reg |= BIT(offset);
++
++	writel(reg, priv->base + PWC_GPIO);
++
++	assign_bit(offset, priv->ch_en_bits, value);
++}
++
++static int rzv2m_pwc_gpio_get(struct gpio_chip *chip, unsigned int offset)
++{
++	struct rzv2m_pwc_priv *priv = gpiochip_get_data(chip);
++
++	return test_bit(offset, priv->ch_en_bits);
++}
++
++static int rzv2m_pwc_gpio_direction_output(struct gpio_chip *gc,
++					   unsigned int nr, int value)
++{
++	if (nr > 1)
++		return -EINVAL;
++
++	rzv2m_pwc_gpio_set(gc, nr, value);
++
++	return 0;
++}
++
++static const struct gpio_chip rzv2m_pwc_gc = {
++	.label = "gpio_rzv2m_pwc",
++	.owner = THIS_MODULE,
++	.get = rzv2m_pwc_gpio_get,
++	.set = rzv2m_pwc_gpio_set,
++	.direction_output = rzv2m_pwc_gpio_direction_output,
++	.can_sleep = false,
++	.ngpio = 2,
++	.base = -1,
++};
++
++static int rzv2m_pwc_poweroff(struct sys_off_data *data)
++{
++	struct rzv2m_pwc_priv *priv = data->cb_data;
++
++	writel(PWC_PWCRST_RSTSOFTAX, priv->base + PWC_PWCRST);
++	writel(PWC_PWCCKEN_ENGCKMAIN, priv->base + PWC_PWCCKEN);
++	writel(PWC_PWCCTL_PWOFF, priv->base + PWC_PWCCTL);
++
++	mdelay(150);
++
++	dev_err(priv->dev, "Failed to power off the system");
++
++	return NOTIFY_DONE;
++}
++
++static int rzv2m_pwc_probe(struct platform_device *pdev)
++{
++	struct rzv2m_pwc_priv *priv;
++	int ret;
++
++	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->base = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(priv->base))
++		return PTR_ERR(priv->base);
++
++	/*
++	 * The register used by this driver cannot be read, therefore set the
++	 * outputs to their default values and initialize priv->ch_en_bits
++	 * accordingly. BIT 16 enables write to BIT 0, BIT 17 enables write to
++	 * BIT 1, and the default value of both BIT 0 and BIT 1 is 0.
++	 */
++	writel(BIT(17) | BIT(16), priv->base + PWC_GPIO);
++	bitmap_zero(priv->ch_en_bits, 2);
++
++	priv->gp = rzv2m_pwc_gc;
++	priv->gp.parent = pdev->dev.parent;
++	priv->gp.fwnode = dev_fwnode(&pdev->dev);
++
++	ret = devm_gpiochip_add_data(&pdev->dev, &priv->gp, priv);
++	if (ret)
++		return ret;
++
++	if (device_property_read_bool(&pdev->dev, "renesas,rzv2m-pwc-power"))
++		ret = devm_register_power_off_handler(&pdev->dev,
++						      rzv2m_pwc_poweroff, priv);
++
++	return ret;
++}
++
++static const struct of_device_id rzv2m_pwc_of_match[] = {
++	{ .compatible = "renesas,rzv2m-pwc" },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, rzv2m_pwc_of_match);
++
++static struct platform_driver rzv2m_pwc_driver = {
++	.probe = rzv2m_pwc_probe,
++	.driver = {
++		.name = "rzv2m_pwc",
++		.of_match_table = of_match_ptr(rzv2m_pwc_of_match),
++	},
++};
++module_platform_driver(rzv2m_pwc_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Fabrizio Castro <castro.fabrizio.jz@renesas.com>");
++MODULE_DESCRIPTION("Renesas RZ/V2M PWC driver");
 -- 
 2.34.1
 
