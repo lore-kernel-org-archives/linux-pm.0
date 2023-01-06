@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77610C63707
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9CAAC64981
 	for <linux-pm@archiver.kernel.org>; Fri,  6 Jan 2023 20:11:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235330AbjAFUKw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Jan 2023 15:10:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49026 "EHLO
+        id S236270AbjAFUKz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Jan 2023 15:10:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236337AbjAFUKd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jan 2023 15:10:33 -0500
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5E6A84092
-        for <linux-pm@vger.kernel.org>; Fri,  6 Jan 2023 12:10:31 -0800 (PST)
-Received: by mail-lf1-x133.google.com with SMTP id bq39so3579667lfb.0
-        for <linux-pm@vger.kernel.org>; Fri, 06 Jan 2023 12:10:31 -0800 (PST)
+        with ESMTP id S236412AbjAFUKg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jan 2023 15:10:36 -0500
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7753F8409E
+        for <linux-pm@vger.kernel.org>; Fri,  6 Jan 2023 12:10:34 -0800 (PST)
+Received: by mail-lf1-x12d.google.com with SMTP id bq39so3579817lfb.0
+        for <linux-pm@vger.kernel.org>; Fri, 06 Jan 2023 12:10:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ld16vqaKUSxN5A0I4GN+9kByy6in7O9iVGRZjqiJhYQ=;
-        b=Qqx1jPnzQSBBYjqqiJTAbL8U4eLPzKAXcL00ol0YYn37n5JyrsSoGzelaSV/NrN5s2
-         EgWyv4CVSsaIh2+EJKyrMtuaAZxFY7EwlupBDfpFHl4xBWZbg2JOxwFWl0wX5VN2w1DP
-         kS1DePzn/PZUrAHRw1msypXudCf2cRxzL65WJCZHGXuQJldUjPca8b2XokvqrzoHc4SL
-         z1pGLTZnO6OiYVyQnP5jq3KHN8GTgfdl+mf8pToByODVQQeIFAZ5+jrwberPvyBOHxyk
-         dYOfH/i4O6eQSfLPtGTfhV8Xy25O7m79Buph7nrg6085a9sqx9n6THRpgJ8NvvIBzYZg
-         63ng==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ZoFX+uyNvirhCPaMd+M/V/XROMnpJsVx6sr6S5ADEQk=;
+        b=H6uTi7WKEGeSsTq+A4b7zFaDmj+mpHg5GeEZfTeeUCMTk5FhKXfb1MPjkXw9Ed6Ujj
+         q1YoDG5acoSuFdnaAObyxwZCjcKGdIAo4QIdzgy3wyaa8JYaAhv9SMNaMidNHm0dp9We
+         1Zh40exHdwiVkyxv4/0jMsmOPYCdS1rS9jQkwQqgCSCLcI5e7fvgnYiThoMpayuINzJJ
+         gNU38tHc2uAUMNAIRyFmrzLwtfZuoxb9UrxBdSI3/rVfwvFSOVfuiS7MIeZ0NzjVVQ7s
+         162/KA5AFeMujbOUwb4AokHFEcbfSuDOgufsrOpDg7osZS9yDkRluBiF3PNIsU5DFTg3
+         UsVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ld16vqaKUSxN5A0I4GN+9kByy6in7O9iVGRZjqiJhYQ=;
-        b=iJ7Iou3y+OFwUmzd3SW9Kr2rwJtuj1J3q81CrpaOyZEOIsOLErN8vf/+kBHCfiRRQv
-         AtqJ7LRdFZSuv50WXNWcYq8Tmyhb4LAJen7Uul951GIhQ36m5eDgtjX2JKATPBFXPSs+
-         AeF2/jR1GmF+5ggjFDlWeTktoRH/gj2JmVaRqIvwplFH/61FQHLIdDcfACH3PISaJ+iB
-         lxPXw/ymR16qzEa9M5TCz/VcbNILncbqkefrQz5Q8qCAdkjl2xiMPZVhUFvuPiSmYGsw
-         RqFRJXDZWH7t1/P7YEVS96bo9Xij0TL5iG/07nzZ/IfKm2Zwj4NlBNFwz9bBhmMa36Zj
-         hf4w==
-X-Gm-Message-State: AFqh2kov4onwYnkKR98AL2qsJFvGfNf6C46d7ZDnw/Td96tbp8AL/Jqi
-        fxSuz+8GVNqyvIrnp+SIpvXsnw==
-X-Google-Smtp-Source: AMrXdXtAerNPCONkOwYvsQomNiPLyeo4G2kUzYvjFXBPPrs00CzWrY0VwrWzchXhTHFfAoOgE8iPHA==
-X-Received: by 2002:a05:6512:2102:b0:4ca:f9bd:3390 with SMTP id q2-20020a056512210200b004caf9bd3390mr12515321lfr.31.1673035829961;
-        Fri, 06 Jan 2023 12:10:29 -0800 (PST)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ZoFX+uyNvirhCPaMd+M/V/XROMnpJsVx6sr6S5ADEQk=;
+        b=sZsoZtSXxr22i7D6NI9YmhqIXMmtpv5A8w6lTCLQ+oRKafoIie6uNbVkCn+SBSr6u1
+         g0JFaD4V/OozIEiHp3fB2sOA9XTNpWrYFAF2lsQw5C5TNF/addOVuYKAWdr5Dv8+VGBp
+         m8vmpywpREFDJHctwxyLyTx12DBse+alZclY2A3gOOBKPNbOH0s9ki7ffsN/A/UTEcbO
+         IVAeCFTAQj8PI/Q5wjWPtcCZnsv0hJOl2LXrsXpdrUkAZ9/Iby+j0ghViIV6gSuFFAxg
+         ZAxDBEuf37Zi0XnOenlh+3ZPosJgRV5nlnRthpJbHMEzE92l4cY5R1brrkElNaMl/vxo
+         Bs9Q==
+X-Gm-Message-State: AFqh2koZQ9FMzihtnwo1wfeSTComT+FWY8oYftdm/WzPsoaIEq/e2QZ1
+        t9YXBe7F9qjzMAK47PXauINYXw==
+X-Google-Smtp-Source: AMrXdXt8/GGN2rQ0UPbKUZA/oMyGuRwUs6LIM9WpUnKXK0RkwdZmR7eLo/yBQHJcZBRcryjHrwG+7A==
+X-Received: by 2002:ac2:5fad:0:b0:4b5:964d:499e with SMTP id s13-20020ac25fad000000b004b5964d499emr15319959lfe.8.1673035832777;
+        Fri, 06 Jan 2023 12:10:32 -0800 (PST)
 Received: from eriador.lan (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
-        by smtp.gmail.com with ESMTPSA id f14-20020a0565123b0e00b004b7033da2d7sm260875lfv.128.2023.01.06.12.10.28
+        by smtp.gmail.com with ESMTPSA id f14-20020a0565123b0e00b004b7033da2d7sm260875lfv.128.2023.01.06.12.10.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Jan 2023 12:10:29 -0800 (PST)
+        Fri, 06 Jan 2023 12:10:32 -0800 (PST)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -61,67 +62,124 @@ Cc:     Georgi Djakov <djakov@kernel.org>, Alex Elder <elder@linaro.org>,
         Johan Hovold <johan@kernel.org>, linux-arm-msm@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v2 00/11] clk/interconnect: qcom: finish migration of IP0 to clocks
-Date:   Fri,  6 Jan 2023 22:10:17 +0200
-Message-Id: <20230106201028.1809541-1-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v2 03/11] interconnect: qcom: sm8150: Drop IP0 interconnects
+Date:   Fri,  6 Jan 2023 22:10:20 +0200
+Message-Id: <20230106201028.1809541-4-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230106201028.1809541-1-dmitry.baryshkov@linaro.org>
+References: <20230106201028.1809541-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Commits 2f3724930eb4 ("interconnect: qcom: sc7180: Drop IP0
-interconnects") and 2fb251c26560 ("interconnect: qcom: sdx55: Drop IP0
-interconnects") removed IP0 interconnects (and ipa-virt devices support)
-in favour of the RPMH clocks. Follow this example for other platforms
-defining IP0 RPMH resource. While we are at it, remove several leftover
-from the mentioned patches.
+Similar to the sdx55 and sc7180, let's drop the MASTER_IPA_CORE and
+SLAVE_IPA_CORE interconnects for this platofm. There are no actual users
+of this intercoonect. The IP0 resource will be handled by clk-rpmh
+driver.
 
-Changes since v1:
-- Reorder patches to put clock patch after the interconnect patches
-  (Alex)
-- Add comments in place of removed defines (Alex)
-- Drop ipa-virt nodes from device trees
-- Add removed ipa-virt nodes to the blacklist in of_count_icc_providers
-  to let icc_sync_state work even with non-updated device trees.
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ drivers/interconnect/core.c        |  1 +
+ drivers/interconnect/qcom/sm8150.c | 21 ---------------------
+ drivers/interconnect/qcom/sm8150.h |  4 ++--
+ 3 files changed, 3 insertions(+), 23 deletions(-)
 
-Dmitry Baryshkov (11):
-  interconnect: qcom: sdx55: drop IP0 remnants
-  interconnect: qcom: sc7180: drop IP0 remnants
-  interconnect: qcom: sm8150: Drop IP0 interconnects
-  interconnect: qcom: sm8250: Drop IP0 interconnects
-  interconnect: qcom: sc8180x: Drop IP0 interconnects
-  interconnect: qcom: sc8280xp: Drop IP0 interconnects
-  dt-bindings: interconnect: qcom: Remove ipa-virt compatibles
-  dt-bindings: interconnect: qcom: drop IPA_CORE related defines
-  clk: qcom: rpmh: define IPA clocks where required
-  arm64: dts: qcom: sm8150: drop the virtual ipa-virt device
-  arm64: dts: qcom: sm8250: drop the virtual ipa-virt device
-
- .../bindings/interconnect/qcom,rpmh.yaml      |  3 --
- arch/arm64/boot/dts/qcom/sm8150.dtsi          |  7 ----
- arch/arm64/boot/dts/qcom/sm8250.dtsi          |  7 ----
- drivers/clk/qcom/clk-rpmh.c                   |  4 ++
- drivers/interconnect/core.c                   |  3 ++
- drivers/interconnect/qcom/sc7180.h            |  4 +-
- drivers/interconnect/qcom/sc8180x.c           | 38 -------------------
- drivers/interconnect/qcom/sc8180x.h           |  4 +-
- drivers/interconnect/qcom/sc8280xp.c          | 25 ------------
- drivers/interconnect/qcom/sc8280xp.h          |  4 +-
- drivers/interconnect/qcom/sdx55.h             |  4 +-
- drivers/interconnect/qcom/sm8150.c            | 21 ----------
- drivers/interconnect/qcom/sm8150.h            |  4 +-
- drivers/interconnect/qcom/sm8250.c            | 21 ----------
- drivers/interconnect/qcom/sm8250.h            |  4 +-
- .../dt-bindings/interconnect/qcom,sc7180.h    |  3 --
- .../dt-bindings/interconnect/qcom,sc8180x.h   |  3 --
- .../dt-bindings/interconnect/qcom,sc8280xp.h  |  4 +-
- include/dt-bindings/interconnect/qcom,sdx55.h |  2 -
- .../dt-bindings/interconnect/qcom,sm8150.h    |  3 --
- .../dt-bindings/interconnect/qcom,sm8250.h    |  3 --
- 21 files changed, 21 insertions(+), 150 deletions(-)
-
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 25debded65a8..402db0c53a59 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -1086,6 +1086,7 @@ static int of_count_icc_providers(struct device_node *np)
+ 	const struct of_device_id __maybe_unused ignore_list[] = {
+ 		{ .compatible = "qcom,sc7180-ipa-virt" },
+ 		{ .compatible = "qcom,sdx55-ipa-virt" },
++		{ .compatible = "qcom,sm8150-ipa-virt" },
+ 		{}
+ 	};
+ 
+diff --git a/drivers/interconnect/qcom/sm8150.c b/drivers/interconnect/qcom/sm8150.c
+index 1d04a4bfea80..c5ab29322164 100644
+--- a/drivers/interconnect/qcom/sm8150.c
++++ b/drivers/interconnect/qcom/sm8150.c
+@@ -56,7 +56,6 @@ DEFINE_QNODE(qnm_pcie, SM8150_MASTER_GEM_NOC_PCIE_SNOC, 1, 16, SM8150_SLAVE_LLCC
+ DEFINE_QNODE(qnm_snoc_gc, SM8150_MASTER_SNOC_GC_MEM_NOC, 1, 8, SM8150_SLAVE_LLCC);
+ DEFINE_QNODE(qnm_snoc_sf, SM8150_MASTER_SNOC_SF_MEM_NOC, 1, 16, SM8150_SLAVE_LLCC);
+ DEFINE_QNODE(qxm_ecc, SM8150_MASTER_ECC, 2, 32, SM8150_SLAVE_LLCC);
+-DEFINE_QNODE(ipa_core_master, SM8150_MASTER_IPA_CORE, 1, 8, SM8150_SLAVE_IPA_CORE);
+ DEFINE_QNODE(llcc_mc, SM8150_MASTER_LLCC, 4, 4, SM8150_SLAVE_EBI_CH0);
+ DEFINE_QNODE(qhm_mnoc_cfg, SM8150_MASTER_CNOC_MNOC_CFG, 1, 4, SM8150_SLAVE_SERVICE_MNOC);
+ DEFINE_QNODE(qxm_camnoc_hf0, SM8150_MASTER_CAMNOC_HF0, 1, 32, SM8150_SLAVE_MNOC_HF_MEM_NOC);
+@@ -139,7 +138,6 @@ DEFINE_QNODE(qns_ecc, SM8150_SLAVE_ECC, 1, 32);
+ DEFINE_QNODE(qns_gem_noc_snoc, SM8150_SLAVE_GEM_NOC_SNOC, 1, 8, SM8150_MASTER_GEM_NOC_SNOC);
+ DEFINE_QNODE(qns_llcc, SM8150_SLAVE_LLCC, 4, 16, SM8150_MASTER_LLCC);
+ DEFINE_QNODE(srvc_gemnoc, SM8150_SLAVE_SERVICE_GEM_NOC, 1, 4);
+-DEFINE_QNODE(ipa_core_slave, SM8150_SLAVE_IPA_CORE, 1, 8);
+ DEFINE_QNODE(ebi, SM8150_SLAVE_EBI_CH0, 4, 4);
+ DEFINE_QNODE(qns2_mem_noc, SM8150_SLAVE_MNOC_SF_MEM_NOC, 1, 32, SM8150_MASTER_MNOC_SF_MEM_NOC);
+ DEFINE_QNODE(qns_mem_noc_hf, SM8150_SLAVE_MNOC_HF_MEM_NOC, 2, 32, SM8150_MASTER_MNOC_HF_MEM_NOC);
+@@ -172,7 +170,6 @@ DEFINE_QBCM(bcm_co0, "CO0", false, &qns_cdsp_mem_noc);
+ DEFINE_QBCM(bcm_ce0, "CE0", false, &qxm_crypto);
+ DEFINE_QBCM(bcm_sn1, "SN1", false, &qxs_imem);
+ DEFINE_QBCM(bcm_co1, "CO1", false, &qnm_npu);
+-DEFINE_QBCM(bcm_ip0, "IP0", false, &ipa_core_slave);
+ DEFINE_QBCM(bcm_cn0, "CN0", true, &qhm_spdm, &qnm_snoc, &qhs_a1_noc_cfg, &qhs_a2_noc_cfg, &qhs_ahb2phy_south, &qhs_aop, &qhs_aoss, &qhs_camera_cfg, &qhs_clk_ctl, &qhs_compute_dsp, &qhs_cpr_cx, &qhs_cpr_mmcx, &qhs_cpr_mx, &qhs_crypto0_cfg, &qhs_ddrss_cfg, &qhs_display_cfg, &qhs_emac_cfg, &qhs_glm, &qhs_gpuss_cfg, &qhs_imem_cfg, &qhs_ipa, &qhs_mnoc_cfg, &qhs_npu_cfg, &qhs_pcie0_cfg, &qhs_pcie1_cfg, &qhs_phy_refgen_north, &qhs_pimem_cfg, &qhs_prng, &qhs_qdss_cfg, &qhs_qspi, &qhs_qupv3_east, &qhs_qupv3_north, &qhs_qupv3_south, &qhs_sdc2, &qhs_sdc4, &qhs_snoc_cfg, &qhs_spdm, &qhs_spss_cfg, &qhs_ssc_cfg, &qhs_tcsr, &qhs_tlmm_east, &qhs_tlmm_north, &qhs_tlmm_south, &qhs_tlmm_west, &qhs_tsif, &qhs_ufs_card_cfg, &qhs_ufs_mem_cfg, &qhs_usb3_0, &qhs_usb3_1, &qhs_venus_cfg, &qhs_vsense_ctrl_cfg, &qns_cnoc_a2noc, &srvc_cnoc);
+ DEFINE_QBCM(bcm_qup0, "QUP0", false, &qhm_qup0, &qhm_qup1, &qhm_qup2);
+ DEFINE_QBCM(bcm_sn2, "SN2", false, &qns_gemnoc_gc);
+@@ -398,22 +395,6 @@ static const struct qcom_icc_desc sm8150_gem_noc = {
+ 	.num_bcms = ARRAY_SIZE(gem_noc_bcms),
+ };
+ 
+-static struct qcom_icc_bcm * const ipa_virt_bcms[] = {
+-	&bcm_ip0,
+-};
+-
+-static struct qcom_icc_node * const ipa_virt_nodes[] = {
+-	[MASTER_IPA_CORE] = &ipa_core_master,
+-	[SLAVE_IPA_CORE] = &ipa_core_slave,
+-};
+-
+-static const struct qcom_icc_desc sm8150_ipa_virt = {
+-	.nodes = ipa_virt_nodes,
+-	.num_nodes = ARRAY_SIZE(ipa_virt_nodes),
+-	.bcms = ipa_virt_bcms,
+-	.num_bcms = ARRAY_SIZE(ipa_virt_bcms),
+-};
+-
+ static struct qcom_icc_bcm * const mc_virt_bcms[] = {
+ 	&bcm_acv,
+ 	&bcm_mc0,
+@@ -517,8 +498,6 @@ static const struct of_device_id qnoc_of_match[] = {
+ 	  .data = &sm8150_dc_noc},
+ 	{ .compatible = "qcom,sm8150-gem-noc",
+ 	  .data = &sm8150_gem_noc},
+-	{ .compatible = "qcom,sm8150-ipa-virt",
+-	  .data = &sm8150_ipa_virt},
+ 	{ .compatible = "qcom,sm8150-mc-virt",
+ 	  .data = &sm8150_mc_virt},
+ 	{ .compatible = "qcom,sm8150-mmss-noc",
+diff --git a/drivers/interconnect/qcom/sm8150.h b/drivers/interconnect/qcom/sm8150.h
+index 97996f64d799..023161681fb8 100644
+--- a/drivers/interconnect/qcom/sm8150.h
++++ b/drivers/interconnect/qcom/sm8150.h
+@@ -35,7 +35,7 @@
+ #define SM8150_MASTER_GPU_TCU			24
+ #define SM8150_MASTER_GRAPHICS_3D		25
+ #define SM8150_MASTER_IPA			26
+-#define SM8150_MASTER_IPA_CORE			27
++/* 27 was used by SLAVE_IPA_CORE, now represented as RPMh clock */
+ #define SM8150_MASTER_LLCC			28
+ #define SM8150_MASTER_MDP_PORT0			29
+ #define SM8150_MASTER_MDP_PORT1			30
+@@ -94,7 +94,7 @@
+ #define SM8150_SLAVE_GRAPHICS_3D_CFG		83
+ #define SM8150_SLAVE_IMEM_CFG			84
+ #define SM8150_SLAVE_IPA_CFG			85
+-#define SM8150_SLAVE_IPA_CORE			86
++/* 86 was used by SLAVE_IPA_CORE, now represented as RPMh clock */
+ #define SM8150_SLAVE_LLCC			87
+ #define SM8150_SLAVE_LLCC_CFG			88
+ #define SM8150_SLAVE_MNOC_HF_MEM_NOC		89
 -- 
 2.39.0
 
