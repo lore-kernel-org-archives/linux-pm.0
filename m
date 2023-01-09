@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11989C7113C
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Jan 2023 00:29:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AF65C678D8
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Jan 2023 00:30:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233618AbjAIA3z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 8 Jan 2023 19:29:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57678 "EHLO
+        id S230175AbjAIA36 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 8 Jan 2023 19:29:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235375AbjAIA3r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2023 19:29:47 -0500
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D189DFA0
-        for <linux-pm@vger.kernel.org>; Sun,  8 Jan 2023 16:29:46 -0800 (PST)
-Received: by mail-lj1-x22c.google.com with SMTP id s22so7363017ljp.5
-        for <linux-pm@vger.kernel.org>; Sun, 08 Jan 2023 16:29:46 -0800 (PST)
+        with ESMTP id S234118AbjAIA3n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2023 19:29:43 -0500
+Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48C7FC741
+        for <linux-pm@vger.kernel.org>; Sun,  8 Jan 2023 16:29:42 -0800 (PST)
+Received: by mail-lj1-x235.google.com with SMTP id g14so7337997ljh.10
+        for <linux-pm@vger.kernel.org>; Sun, 08 Jan 2023 16:29:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=yUZkGu7n26m3Xs47uNyxkgnrLNsx2oRREgP537Zptxo=;
-        b=BjAIsfiL8ioFaNCr494zDu8a1xs4OAvZZM7zXchq+DNsPrCh32EWqsbkNh/uIgF/wP
-         po+ltNrn4bt9LEGdXuWWEwzMc3SqB7SzaMb2dleO+OdjCEo4k9LgyH3ruFCXvsL6xwYB
-         pAnrOAQrRBKssUwXwiHIeYkJBal5CNwYDl5HiyPEgMLqODOontMXDTCgQOhS1qJnecMo
-         bkmO3VIBc8voe28OuWjKLD8bPIKtHW+4c9dSI/NNNZG+eW+3Gb11DdOIoe9MWI/ucXkd
-         +qEFP3864dmhFzeZitrTB6CFqtreDqOMhV2M2ialkJ2EY90QzoDLUrK0aDNrEirez2fE
-         i6JA==
+        bh=jlvp5KyMN3SkZHshH3FZPnIMw0H8l2p4d7kxD9VWm9U=;
+        b=SAuv2bKYNfOw9eM/pLyz/iIIFB7BECa7368lIlJPY1fZ3MVlVTJl5gf7xQKnUpI5//
+         1j+ND1OVnQiQmZFqKsGTjorC1P1zk+Ac9SzKYJPpkPoZ9qyjYAqiyedYiFgplK1QKEr6
+         N4WpNZ9NHPgnqkwwcgn1nCu/C3eXhGAQ/juhUEhnxozzD5RlOseuYIGfsmq+Viwteabq
+         Tc/fuuM/Dbkupjb9HPVBJu9+mIwlQY/k6odGDmi5rKhu8APKA4ZgOSvD+5ghdd+gNOES
+         NA9gWN1OEI9lQK1gA2w1jf560q6cQEjy3QeUm8jSo6KyApgEjcmiDAS9ch0dRhfLTEhg
+         Y0Ew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=yUZkGu7n26m3Xs47uNyxkgnrLNsx2oRREgP537Zptxo=;
-        b=jr5hUQ5zZAqVG3ZsVG8PJc1v2faavGdRVCaiJyNb+9QoDA5QSJnkkhY4FTA0SirQvc
-         2rI9ejwy3hJnNQvs7vzj9jGxXrgE4GxTFVCSGAl2IXh9sjILO4836pmfWLzqs/rkIzwk
-         DhkcOc8JC63aObwOZlRaqd7kU5/h5DDdkCUvJ4qHPQywauCqTTIsjVP8XJH+CXVyb6D/
-         mnm2ab1Ea0TkdrZDZSsVQ1F39YiTbR9QKWmZt/SgUGQDaTOLQorFCb07/LT2WtB9aq6A
-         znAOwIhgfMXbu8FqAi7ahkm+Mv9oqan3YDofCpmuGhbQfxUSzCBBzPsPacdnFl5Z5Hvs
-         6dAg==
-X-Gm-Message-State: AFqh2kpKb/EQVAqdFxtOlz5uJ/fpsGFzOej53zQ5UausvLn+BgaPD6lF
-        8Cen4yjzB+N4t5PH4TtQ4ed6Gw==
-X-Google-Smtp-Source: AMrXdXsm0qvQ28CsJDKyvreI4c4N14eIL3NRwxEH2oxQksOZyIYDsPnwgFapJDXViBeZVLGQU4yNAw==
-X-Received: by 2002:a2e:be27:0:b0:27f:b724:e98a with SMTP id z39-20020a2ebe27000000b0027fb724e98amr18505484ljq.18.1673224185894;
-        Sun, 08 Jan 2023 16:29:45 -0800 (PST)
+        bh=jlvp5KyMN3SkZHshH3FZPnIMw0H8l2p4d7kxD9VWm9U=;
+        b=R+pDoMok2UXAHIRQ+UhZzCUDADF7rksc16xEJ22HULp0QYOBPobbxgP5XYySQDLIO7
+         AF7bz/gnA43HMcgIn6hVw1DI4EiLqc6Y5bcYEhO1ffsNnyvazyXI3uXJuA8Ut8GffJIY
+         CY52m1vQNDCrSPZpdjf3JOfoOZUElYIh6MPKcmP+LDZSwq/E0sdYtxlB8YLY1H5ZFFmt
+         z1cx1bOKnSFGIccKqfwCQGw0Br8D44EVq0XIDPhYqFhfHyj5RSgbRzlsdPaDaAeGatVS
+         8tF/tsZmFWy7/exGsXnP+xlIJ7ymTU2ToU1Q1+NL2aVRnKryzCJWD2FTje0BpPFlTnSZ
+         pGog==
+X-Gm-Message-State: AFqh2koIVpbz7zImj9uB7ajcWOmIz/TJ4E/OuJfK60mWYaDn39+Z71I3
+        e/J7A2zdO362xn4AYZuAfFNkCw==
+X-Google-Smtp-Source: AMrXdXuaMq0PsnBvKcmibU0M8+nEK8yfyi33eBMXpBv/Tv2OX7AwjmKRxecqaHwcC9C3kUZoC1vqGQ==
+X-Received: by 2002:a2e:a23c:0:b0:284:b2ce:293a with SMTP id i28-20020a2ea23c000000b00284b2ce293amr667139ljm.16.1673224181863;
+        Sun, 08 Jan 2023 16:29:41 -0800 (PST)
 Received: from eriador.lan (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
-        by smtp.gmail.com with ESMTPSA id a22-20020a2e9816000000b0027fc54f8bf0sm706626ljj.35.2023.01.08.16.29.45
+        by smtp.gmail.com with ESMTPSA id a22-20020a2e9816000000b0027fc54f8bf0sm706626ljj.35.2023.01.08.16.29.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Jan 2023 16:29:45 -0800 (PST)
+        Sun, 08 Jan 2023 16:29:41 -0800 (PST)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -62,9 +62,9 @@ Cc:     Georgi Djakov <djakov@kernel.org>, Alex Elder <elder@linaro.org>,
         Johan Hovold <johan@kernel.org>, linux-arm-msm@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v3 11/12] arm64: dts: qcom: sm8150: drop the virtual ipa-virt device
-Date:   Mon,  9 Jan 2023 02:29:34 +0200
-Message-Id: <20230109002935.244320-12-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v3 06/12] interconnect: qcom: sc8180x: Drop IP0 interconnects
+Date:   Mon,  9 Jan 2023 02:29:29 +0200
+Message-Id: <20230109002935.244320-7-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230109002935.244320-1-dmitry.baryshkov@linaro.org>
 References: <20230109002935.244320-1-dmitry.baryshkov@linaro.org>
@@ -74,32 +74,143 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Drop the virtual ipa-virt device. The interconnects it provided are
-going to be represented as <&rpmhcc RPMH_IPA_CLK> clock.
+Similar to the sdx55 and sc7180, let's drop the MASTER_IPA_CORE and
+SLAVE_IPA_CORE interconnects for this platofm. There are no actual users
+of this intercoonect. The IP0 resource will be handled by clk-rpmh
+driver.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/sm8150.dtsi | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/interconnect/core.c         |  1 +
+ drivers/interconnect/qcom/sc8180x.c | 38 -----------------------------
+ drivers/interconnect/qcom/sc8180x.h |  4 +--
+ 3 files changed, 3 insertions(+), 40 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8150.dtsi b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-index 99750987c9d6..0759bc22d0c2 100644
---- a/arch/arm64/boot/dts/qcom/sm8150.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-@@ -2057,13 +2057,6 @@ ufs_mem_phy_lanes: phy@1d87400 {
- 			};
- 		};
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 5b5fd436f23f..0f392f59b135 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -1081,6 +1081,7 @@ EXPORT_SYMBOL_GPL(icc_provider_del);
  
--		ipa_virt: interconnect@1e00000 {
--			compatible = "qcom,sm8150-ipa-virt";
--			reg = <0 0x01e00000 0 0x1000>;
--			#interconnect-cells = <1>;
--			qcom,bcm-voters = <&apps_bcm_voter>;
--		};
+ static const struct of_device_id __maybe_unused ignore_list[] = {
+ 	{ .compatible = "qcom,sc7180-ipa-virt" },
++	{ .compatible = "qcom,sc8180x-ipa-virt" },
+ 	{ .compatible = "qcom,sdx55-ipa-virt" },
+ 	{ .compatible = "qcom,sm8150-ipa-virt" },
+ 	{ .compatible = "qcom,sm8250-ipa-virt" },
+diff --git a/drivers/interconnect/qcom/sc8180x.c b/drivers/interconnect/qcom/sc8180x.c
+index 0f515bf10bd7..c76e3a6a98cd 100644
+--- a/drivers/interconnect/qcom/sc8180x.c
++++ b/drivers/interconnect/qcom/sc8180x.c
+@@ -469,15 +469,6 @@ static struct qcom_icc_node mas_qxm_ecc = {
+ 	.links = { SC8180X_SLAVE_LLCC }
+ };
+ 
+-static struct qcom_icc_node mas_ipa_core_master = {
+-	.name = "mas_ipa_core_master",
+-	.id = SC8180X_MASTER_IPA_CORE,
+-	.channels = 1,
+-	.buswidth = 8,
+-	.num_links = 1,
+-	.links = { SC8180X_SLAVE_IPA_CORE }
+-};
 -
- 		tcsr_mutex: hwlock@1f40000 {
- 			compatible = "qcom,tcsr-mutex";
- 			reg = <0x0 0x01f40000 0x0 0x20000>;
+ static struct qcom_icc_node mas_llcc_mc = {
+ 	.name = "mas_llcc_mc",
+ 	.id = SC8180X_MASTER_LLCC,
+@@ -1201,13 +1192,6 @@ static struct qcom_icc_node slv_srvc_gemnoc1 = {
+ 	.buswidth = 4
+ };
+ 
+-static struct qcom_icc_node slv_ipa_core_slave = {
+-	.name = "slv_ipa_core_slave",
+-	.id = SC8180X_SLAVE_IPA_CORE,
+-	.channels = 1,
+-	.buswidth = 8
+-};
+-
+ static struct qcom_icc_node slv_ebi = {
+ 	.name = "slv_ebi",
+ 	.id = SC8180X_SLAVE_EBI_CH0,
+@@ -1524,11 +1508,6 @@ static struct qcom_icc_bcm bcm_co2 = {
+ 	.nodes = { &mas_qnm_npu }
+ };
+ 
+-static struct qcom_icc_bcm bcm_ip0 = {
+-	.name = "IP0",
+-	.nodes = { &slv_ipa_core_slave }
+-};
+-
+ static struct qcom_icc_bcm bcm_sn3 = {
+ 	.name = "SN3",
+ 	.keepalive = true,
+@@ -1604,10 +1583,6 @@ static struct qcom_icc_bcm * const gem_noc_bcms[] = {
+ 	&bcm_sh3,
+ };
+ 
+-static struct qcom_icc_bcm * const ipa_virt_bcms[] = {
+-	&bcm_ip0,
+-};
+-
+ static struct qcom_icc_bcm * const mc_virt_bcms[] = {
+ 	&bcm_mc0,
+ 	&bcm_acv,
+@@ -1766,11 +1741,6 @@ static struct qcom_icc_node * const gem_noc_nodes[] = {
+ 	[SLAVE_SERVICE_GEM_NOC_1] = &slv_srvc_gemnoc1,
+ };
+ 
+-static struct qcom_icc_node * const ipa_virt_nodes[] = {
+-	[MASTER_IPA_CORE] = &mas_ipa_core_master,
+-	[SLAVE_IPA_CORE] = &slv_ipa_core_slave,
+-};
+-
+ static struct qcom_icc_node * const mc_virt_nodes[] = {
+ 	[MASTER_LLCC] = &mas_llcc_mc,
+ 	[SLAVE_EBI_CH0] = &slv_ebi,
+@@ -1857,13 +1827,6 @@ static const struct qcom_icc_desc sc8180x_gem_noc  = {
+ 	.num_bcms = ARRAY_SIZE(gem_noc_bcms),
+ };
+ 
+-static const struct qcom_icc_desc sc8180x_ipa_virt  = {
+-	.nodes = ipa_virt_nodes,
+-	.num_nodes = ARRAY_SIZE(ipa_virt_nodes),
+-	.bcms = ipa_virt_bcms,
+-	.num_bcms = ARRAY_SIZE(ipa_virt_bcms),
+-};
+-
+ static const struct qcom_icc_desc sc8180x_mc_virt  = {
+ 	.nodes = mc_virt_nodes,
+ 	.num_nodes = ARRAY_SIZE(mc_virt_nodes),
+@@ -1913,7 +1876,6 @@ static const struct of_device_id qnoc_of_match[] = {
+ 	{ .compatible = "qcom,sc8180x-config-noc", .data = &sc8180x_config_noc },
+ 	{ .compatible = "qcom,sc8180x-dc-noc", .data = &sc8180x_dc_noc },
+ 	{ .compatible = "qcom,sc8180x-gem-noc", .data = &sc8180x_gem_noc },
+-	{ .compatible = "qcom,sc8180x-ipa-virt", .data = &sc8180x_ipa_virt },
+ 	{ .compatible = "qcom,sc8180x-mc-virt", .data = &sc8180x_mc_virt },
+ 	{ .compatible = "qcom,sc8180x-mmss-noc", .data = &sc8180x_mmss_noc },
+ 	{ .compatible = "qcom,sc8180x-qup-virt", .data = &sc8180x_qup_virt },
+diff --git a/drivers/interconnect/qcom/sc8180x.h b/drivers/interconnect/qcom/sc8180x.h
+index 2eafd35543c7..c138dcd350f1 100644
+--- a/drivers/interconnect/qcom/sc8180x.h
++++ b/drivers/interconnect/qcom/sc8180x.h
+@@ -51,7 +51,7 @@
+ #define SC8180X_MASTER_SNOC_GC_MEM_NOC		41
+ #define SC8180X_MASTER_SNOC_SF_MEM_NOC		42
+ #define SC8180X_MASTER_ECC			43
+-#define SC8180X_MASTER_IPA_CORE			44
++/* 44 was used by MASTER_IPA_CORE, now represented as RPMh clock */
+ #define SC8180X_MASTER_LLCC			45
+ #define SC8180X_MASTER_CNOC_MNOC_CFG		46
+ #define SC8180X_MASTER_CAMNOC_HF0		47
+@@ -146,7 +146,7 @@
+ #define SC8180X_SLAVE_LLCC			136
+ #define SC8180X_SLAVE_SERVICE_GEM_NOC		137
+ #define SC8180X_SLAVE_SERVICE_GEM_NOC_1		138
+-#define SC8180X_SLAVE_IPA_CORE			139
++/* 139 was used by SLAVE_IPA_CORE, now represented as RPMh clock */
+ #define SC8180X_SLAVE_EBI_CH0			140
+ #define SC8180X_SLAVE_MNOC_SF_MEM_NOC		141
+ #define SC8180X_SLAVE_MNOC_HF_MEM_NOC		142
 -- 
 2.39.0
 
