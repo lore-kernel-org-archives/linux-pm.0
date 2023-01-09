@@ -2,183 +2,117 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF75FC678D8
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Jan 2023 13:21:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 594D0C678D5
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Jan 2023 13:44:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234478AbjAINVd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Jan 2023 08:21:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37222 "EHLO
+        id S237206AbjAINor (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Jan 2023 08:44:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237214AbjAINVW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2023 08:21:22 -0500
-Received: from fx405.security-mail.net (smtpout140.security-mail.net [85.31.212.145])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3D9FA18A
-        for <linux-pm@vger.kernel.org>; Mon,  9 Jan 2023 05:21:20 -0800 (PST)
-Received: from localhost (fx405.security-mail.net [127.0.0.1])
-        by fx405.security-mail.net (Postfix) with ESMTP id DFC7B335ECD
-        for <linux-pm@vger.kernel.org>; Mon,  9 Jan 2023 14:21:18 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kalray.eu;
-        s=sec-sig-email; t=1673270478;
-        bh=VTyAgBvawac4uHB7eMyMDicCX2xLvVfQ11WRs4OqUgg=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=YZ+jS6/1Ma7JCmcJ3+OEDQF6/jdcWUhHaMCMCUIMiS/QRA3hvieFeCchl43TWG6g4
-         8uzP1OQwFTqJST5NGfflnAynHPXH43mmkQhylk6XZiFnOpe64YOUPMjH/EHaBa+r6X
-         XNQwFD9kMcy8gj0OVjfaZ+Y+swU0mq962ckt9ZPA=
-Received: from fx405 (fx405.security-mail.net [127.0.0.1]) by
- fx405.security-mail.net (Postfix) with ESMTP id 382DC335EA5; Mon,  9 Jan
- 2023 14:21:18 +0100 (CET)
-Received: from zimbra2.kalray.eu (unknown [217.181.231.53]) by
- fx405.security-mail.net (Postfix) with ESMTPS id 1E46D335E6D; Mon,  9 Jan
- 2023 14:21:17 +0100 (CET)
-Received: from zimbra2.kalray.eu (localhost [127.0.0.1]) by
- zimbra2.kalray.eu (Postfix) with ESMTPS id D765927E03FF; Mon,  9 Jan 2023
- 14:21:16 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1]) by zimbra2.kalray.eu
- (Postfix) with ESMTP id B3B4327E03FA; Mon,  9 Jan 2023 14:21:16 +0100 (CET)
-Received: from zimbra2.kalray.eu ([127.0.0.1]) by localhost
- (zimbra2.kalray.eu [127.0.0.1]) (amavisd-new, port 10026) with ESMTP id
- RFDkxXP_U9mz; Mon,  9 Jan 2023 14:21:16 +0100 (CET)
-Received: from [192.168.37.161] (unknown [192.168.37.161]) by
- zimbra2.kalray.eu (Postfix) with ESMTPSA id 46FC927E03F5; Mon,  9 Jan 2023
- 14:21:16 +0100 (CET)
-X-Virus-Scanned: E-securemail
-Secumail-id: <18db.63bc14cd.171d3.0>
-DKIM-Filter: OpenDKIM Filter v2.10.3 zimbra2.kalray.eu B3B4327E03FA
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kalray.eu;
- s=32AE1B44-9502-11E5-BA35-3734643DEF29; t=1673270476;
- bh=pFwL+Y0S0qo0MF7wO/awAfpxvBk+/1wXJh5pVmIIW2g=;
- h=Message-ID:Date:MIME-Version:To:From;
- b=XjT0yLLBY18QxivMgV9uczq9z+HpKf5TnyecD/FGL3y5WOfaxlypJyAxpZ8saNN2c
- xkoB4C8EPYxurJyqIoGRHgJxE+LjZeyAAIvw8YYk1DjcyoP679xtmnwZh9BbBCh3Ku
- YVP4+a/ZNoUFvoUsbRjrSO4n7fz2l6dahOcJsTh0=
-Message-ID: <6570d22d-ee19-f8b1-6fb4-bf8865ec4142@kalray.eu>
-Date:   Mon, 9 Jan 2023 14:21:15 +0100
+        with ESMTP id S237439AbjAINoB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2023 08:44:01 -0500
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50D671EC7B
+        for <linux-pm@vger.kernel.org>; Mon,  9 Jan 2023 05:43:55 -0800 (PST)
+Received: by mail-lf1-x132.google.com with SMTP id g13so13015177lfv.7
+        for <linux-pm@vger.kernel.org>; Mon, 09 Jan 2023 05:43:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=rWl8UCfCUg60fJjNfhX7+lZo9Tp69LmtvnhMusTDvNs=;
+        b=e2uVmD2gTVdDiQ/o8CVBjNj0ZqdlkQ5V8xjQF3phVP/ZKAWEMs0yue/Vpj+yBm/tri
+         bRokMDB+cTmP4GLtI/B36CnUst2OIT9eLqpPqN86WT0eJEAxkrL69/QSlvd8aFXScgg2
+         1r+FVd/0GelAkea7rSaKWxaQ52Cmzxh+6y+WspRZvJAE0gNFTleEUWIwg/SyasXbrLRM
+         NFXi5bO19gBu6D6UnrCxSCsSrxhCF8wR7+DsFmClCeDIshG2Sexbn0mtYTdvTCW23DPE
+         WxIKrpBA4qaUf0E30Yo1UTU2zUycI3ZZr0aqrvVTcROrJv2qYfM5a/XRVBIfHppGV/DS
+         laLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=rWl8UCfCUg60fJjNfhX7+lZo9Tp69LmtvnhMusTDvNs=;
+        b=MYshy6KLSD0Pb8sJqv1dLOunkQyDdKLIZzu46lp8yBoq4cPzRycd/jelY5i+lAR1gF
+         94bTA0Gwwxi3LfNkk7FxWhqNo5DfkVEgFWuD5nDqBTIbPdV7Mqzz6InKI1vemN1xCzvg
+         qiIv3Bs9sVxHBZZixmXZbYGsntwAuabb8yxfyXvQgTnQtNiUayS3GOh+8AWcAgWT2kfR
+         iqc+OUuWLofH9+CdjaTc/CYEOKWAl1YzVm3Bhonq9uxwHYRHbSvYsWyPDnwIZdPulaJN
+         6gwbJ3STE5QmDPD1I/EfQH0XnoEh2/sMBwVgDLtDx1L28QCEurSyhNPgFtBFqxaJ0vzS
+         1ACg==
+X-Gm-Message-State: AFqh2krdGNPkgMc23fpylBWGQqxH6cOluBmyI/oTKByCeQ9DkJWNa70K
+        y4AGj9nm+UoVr2sArUbpVXYQVsolfOPXNRxq
+X-Google-Smtp-Source: AMrXdXuuwmZXRfVrYIvR4aFB8quO5/AwWXVjENPMlBK/Ld7vEdp8oFvN1cTzz/Bn9YABrA4d6vb5AQ==
+X-Received: by 2002:a05:6512:1111:b0:4b5:43ef:a552 with SMTP id l17-20020a056512111100b004b543efa552mr19663828lfg.16.1673271833659;
+        Mon, 09 Jan 2023 05:43:53 -0800 (PST)
+Received: from [192.168.1.101] (abxi45.neoplus.adsl.tpnet.pl. [83.9.2.45])
+        by smtp.gmail.com with ESMTPSA id f7-20020ac25327000000b004b4ea0f4e25sm1628259lfh.301.2023.01.09.05.43.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 09 Jan 2023 05:43:53 -0800 (PST)
+Message-ID: <e9b0f691-82f6-d0a8-653e-a78470607588@linaro.org>
+Date:   Mon, 9 Jan 2023 14:43:51 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [RFC PATCH 00/25] Upstream kvx Linux port
-Content-Language: en-us
-To:     Jeff Xie <xiehuan09@gmail.com>
-Cc:     Arnd Bergmann <arnd@arndb.de>, Albert Ou <aou@eecs.berkeley.edu>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Arnaldo Carvalho de Melo <acme@kernel.org>,
-        Boqun Feng <boqun.feng@gmail.com>, bpf@vger.kernel.org,
-        Christian Brauner <brauner@kernel.org>,
-        devicetree@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
-        Eric Paris <eparis@redhat.com>, Ingo Molnar <mingo@redhat.com>,
-        Jan Kiszka <jan.kiszka@siemens.com>,
-        Jason Baron <jbaron@akamai.com>, Jiri Olsa <jolsa@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Kees Cook <keescook@chromium.org>,
-        Kieran Bingham <kbingham@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-audit@redhat.com, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        linux-perf-users@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Namhyung Kim <namhyung@kernel.org>,
-        Nick Piggin <npiggin@gmail.com>,
-        Oleg Nesterov <oleg@redhat.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paul Moore <paul@paul-moore.com>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Peter Zijlstra <peterz@infradead.org>,
+ Thunderbird/102.6.1
+Subject: Re: [PATCH v3 02/12] interconnect: qcom: sc7180: drop IP0 remnants
+Content-Language: en-US
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
         Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Waiman Long <longman@redhat.com>,
-        Will Deacon <will@kernel.org>, Alex Michon <amichon@kalray.eu>,
-        Ashley Lesdalons <alesdalons@kalray.eu>,
-        Benjamin Mugnier <mugnier.benjamin@gmail.com>,
-        Clement Leger <clement.leger@bootlin.com>,
-        Guillaume Missonnier <gmissonnier@kalray.eu>,
-        Guillaume Thouvenin <gthouvenin@kalray.eu>,
-        Jean-Christophe Pince <jcpince@gmail.com>,
-        Jonathan Borne <jborne@kalray.eu>,
-        Jules Maselbas <jmaselbas@kalray.eu>,
-        Julian Vetter <jvetter@kalray.eu>,
-        Julien Hascoet <jhascoet@kalray.eu>,
-        Julien Villette <jvillette@kalray.eu>,
-        Louis Morhet <lmorhet@kalray.eu>,
-        Luc Michel <lmichel@kalray.eu>,
-        Marc =?utf-8?b?UG91bGhpw6hz?= <dkm@kataplop.net>,
-        Marius Gligor <mgligor@kalray.eu>,
-        Samuel Jones <sjones@kalray.eu>,
-        Thomas Costis <tcostis@kalray.eu>,
-        Vincent Chardon <vincent.chardon@elsys-design.com>
-References: <20230103164359.24347-1-ysionneau@kalray.eu>
- <CAEr6+ECRh_9App18zmcS6FUR81YYhR=n4kGdeZAtQBsdMB55_A@mail.gmail.com>
-From:   Yann Sionneau <ysionneau@kalray.eu>
-In-Reply-To: <CAEr6+ECRh_9App18zmcS6FUR81YYhR=n4kGdeZAtQBsdMB55_A@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ALTERMIMEV2_out: done
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Taniya Das <quic_tdas@quicinc.com>
+Cc:     Georgi Djakov <djakov@kernel.org>, Alex Elder <elder@linaro.org>,
+        Johan Hovold <johan@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+References: <20230109002935.244320-1-dmitry.baryshkov@linaro.org>
+ <20230109002935.244320-3-dmitry.baryshkov@linaro.org>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20230109002935.244320-3-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Jeff,
-
-On 1/7/23 07:25, Jeff Xie wrote:
-> Hi,
->
-> On Wed, Jan 4, 2023 at 1:01 AM Yann Sionneau <ysionneau@kalray.eu> wrote:
->> [snip]
->>
->> A kvx toolchain can be built using:
->> # install dependencies: texinfo bison flex libgmp-dev libmpc-dev libmpfr-dev
->> $ git clone https://github.com/kalray/build-scripts
->> $ cd build-scripts
->> $ source last.refs
->> $ ./build-kvx-xgcc.sh output
-> I would like to build the kvx-xgcc to compile and test the linux
-> kernel, but it reported a compile error.
-> I wonder what version of gcc you are using.
->
-> My build environment:
-> VERSION="20.04.2 LTS (Focal Fossa)"
-> gcc version 9.3.0 (Ubuntu 9.3.0-17ubuntu1~20.04)
->
->
-> Compile error:
-> $ ./build-kvx-xgcc.sh output
->
-> ../../binutils/libiberty/fibheap.c: In function ‘fibheap_replace_key_data’:
-> ../../binutils/libiberty/fibheap.c:38:24: error: ‘LONG_MIN’ undeclared
-> (first use in this function)
->     38 | #define FIBHEAPKEY_MIN LONG_MIN
->        |                        ^~~~~~~~
-> [snip]
-
-What SHA1 of https://github.com/kalray/build-scripts are you using?
-
-We are building our toolchain on Ubuntu 18.04 / 20.04 and 22.04 without 
-issues, I don't understand why it does not work for you, although indeed 
-the error log you are having pops out on my search engine and seems to 
-be some well known issue.
-
-If the build-script does not work for you, you can still use the 
-pre-built toolchains generated by the GitHub automated actions: 
-https://github.com/kalray/build-scripts/releases/tag/v4.11.1 ("latest" 
-means 22.04)
-
-I hope it will work for you.
-
-Regards,
-
--- 
-
-Yann
 
 
+On 9.01.2023 01:29, Dmitry Baryshkov wrote:
+> Drop two defines leftover from the commit 2f3724930eb4 ("interconnect:
+> qcom: sc7180: Drop IP0 interconnects"), which dropped handling of the
+> IP0 resource in favour of handling it in the clk-rpmh driver.
+> 
+> Fixes: 2f3724930eb4 ("interconnect: qcom: sc7180: Drop IP0 interconnects")
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> ---
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 
-
-
+Konrad
+>  drivers/interconnect/qcom/sc7180.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/interconnect/qcom/sc7180.h b/drivers/interconnect/qcom/sc7180.h
+> index c6212a10c2f6..7a2b3eb00923 100644
+> --- a/drivers/interconnect/qcom/sc7180.h
+> +++ b/drivers/interconnect/qcom/sc7180.h
+> @@ -11,7 +11,7 @@
+>  #define SC7180_MASTER_APPSS_PROC			0
+>  #define SC7180_MASTER_SYS_TCU				1
+>  #define SC7180_MASTER_NPU_SYS				2
+> -#define SC7180_MASTER_IPA_CORE				3
+> +/* 3 was used by MASTER_IPA_CORE, now represented as RPMh clock */
+>  #define SC7180_MASTER_LLCC				4
+>  #define SC7180_MASTER_A1NOC_CFG				5
+>  #define SC7180_MASTER_A2NOC_CFG				6
+> @@ -58,7 +58,7 @@
+>  #define SC7180_MASTER_USB3				47
+>  #define SC7180_MASTER_EMMC				48
+>  #define SC7180_SLAVE_EBI1				49
+> -#define SC7180_SLAVE_IPA_CORE				50
+> +/* 50 was used by SLAVE_IPA_CORE, now represented as RPMh clock */
+>  #define SC7180_SLAVE_A1NOC_CFG				51
+>  #define SC7180_SLAVE_A2NOC_CFG				52
+>  #define SC7180_SLAVE_AHB2PHY_SOUTH			53
