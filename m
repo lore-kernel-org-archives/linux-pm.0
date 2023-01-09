@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B690C678D9
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Jan 2023 00:29:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 779CFC678DD
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Jan 2023 00:29:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234160AbjAIA3u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 8 Jan 2023 19:29:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57462 "EHLO
+        id S234314AbjAIA3v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 8 Jan 2023 19:29:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57624 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234181AbjAIA3p (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2023 19:29:45 -0500
-Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9FE0C74A
-        for <linux-pm@vger.kernel.org>; Sun,  8 Jan 2023 16:29:43 -0800 (PST)
-Received: by mail-lj1-x22a.google.com with SMTP id bn6so7328586ljb.13
-        for <linux-pm@vger.kernel.org>; Sun, 08 Jan 2023 16:29:43 -0800 (PST)
+        with ESMTP id S233575AbjAIA3q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2023 19:29:46 -0500
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7BB3A10FCC
+        for <linux-pm@vger.kernel.org>; Sun,  8 Jan 2023 16:29:45 -0800 (PST)
+Received: by mail-lf1-x134.google.com with SMTP id y25so10609985lfa.9
+        for <linux-pm@vger.kernel.org>; Sun, 08 Jan 2023 16:29:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=8FiMYGHFGXrVpyzi7ZgB2e/VL6pJCok4vFhR2XZcqc4=;
-        b=PZ1QLxq7FSPWJ7kL0sGttGozusdpey5kBAQTAqmjeC9XxAAS08x/Y0Emm7Fr/jQnXb
-         aGx8knQkVtHBzCsha5za25b8PniisVEvXQQEISmV4J/B6G5cOVWRhUZBJElKOXKy7RtR
-         beRX8Gz6U7QgVNRu8wXtaipsf4EG40TiplBiUviwVH6GErjPdaCbTu6NGHu0RH9cPezt
-         ISlAY/6tUZf8HxFLMk6ZX/TbriaGQB3DTkGXfSA4lt6Zs9yp6/vZb6fA4wok6PTjOju6
-         hnWp6DaTRaKZ87uKvU3YIJtrw/fLT3uK3L16rCpC5/dKfrhgfFVMhYmnFTHh8+dtpzMh
-         eYKw==
+        bh=gb4Hmw0ivnJsVO8PIbi88m0ZabNr+OPDmkSoxgPdTJc=;
+        b=kfA0sN/szPqeUnMr6kvcQTrgmwZrO+ZhLuvfLeFgJ4oLmb2U0aEkYE5Yurc6tasULk
+         QMfQuWmiJ+QldJ9q0BpE+B6Um0GOOLZG+xsrzTwZlcMnSAiJsq7iESTCSF6yuDLW6Pua
+         XJg9yovoBUkaZIx5mfmbHnEr2Wm2LUqot+ogjKeyCa1JJ+EyczUYbUjl31WacyujvUuD
+         exzWUiK+XPJEx/1y+IXVHej7c/vAqEU6uHRC76JElNRuIBIAmWHhNPD9Cz9dpN5uRv1Y
+         o0+hR9jMKtqxFko/Up6uua2bkklQhIKglSKqPGo3wVwzplFxZyI8TbusBDzoeH8im7+D
+         05kw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=8FiMYGHFGXrVpyzi7ZgB2e/VL6pJCok4vFhR2XZcqc4=;
-        b=kmzAsBzBrsyH8vejNZ2bogD0sYI+h16B7ItRPncIlcSZYSqFoEDbrRxHAK6VE+rdqJ
-         NROqQOBhmkbctR5k6DQZemjDI1hgUm0WnEmugy1MkGwHNxrShtDfOCXFIgdRdhSS3rOG
-         oewFznU4bDc5Qto0hgvILKUZIHJU1H9m4YPnZqLjcTThs6BSFuMN6ge1aVWYbUzdT8BN
-         egeOA+NjPIg5HUayPsMDDOwufb77QBhw4AeC1nBym9TZdYuutYSEcapNy/0+mOvnR3zD
-         mP8CBn3zrvj3KNCcGBnhYI+2QAntFLgVmTHeLiUIhsDRXE5i3hLS6heoJvurIjOqiyC7
-         yCsA==
-X-Gm-Message-State: AFqh2krWIjnA7g5KWN63pQM+b4Fr96R+RwOBsYqC1V2fmumj5qmLvstQ
-        Dp1CANCnV7fVUpE3gfH3McVP5w==
-X-Google-Smtp-Source: AMrXdXvIh/UnBUZHr6BN0MGUAx+F/Z+scaaE+j4R+07r9IvBAVGLtl3YOB6xUp9f1wI5NL98H3xtCw==
-X-Received: by 2002:a2e:940c:0:b0:281:e762:35aa with SMTP id i12-20020a2e940c000000b00281e76235aamr2610488ljh.3.1673224183468;
-        Sun, 08 Jan 2023 16:29:43 -0800 (PST)
+        bh=gb4Hmw0ivnJsVO8PIbi88m0ZabNr+OPDmkSoxgPdTJc=;
+        b=fDvzbXKPmoSDzB0hi93KTyTNRHRYOm8kGE7jFSY+Twx9j0ma8iS/ostFv6b0lY2JT4
+         GEo/CzHsP/THfvJTSlnG0hOf1Ih2vRQNNWCKxPb28in6nyUMRyfJ91k4bOuk4Pfc9x+n
+         6MaMR1eO/zn7R+yevhHJriJDvsjcjpY5i2zX+6k0TDb54UXaDOQNli/o93GQDl+qUvIQ
+         AkFF1pyUBes4vQ/Ysf1IPJYlAGfZ+VKWFchZf8gdX5jvLtd6IR3oL3haMma/liHR12xZ
+         70F7Y3gvSoARu2gBLHJ7pTzp2GDrKp4b83JoTbq67z89lz3TXjUdF68dfcom+ewJNHlg
+         dZ4Q==
+X-Gm-Message-State: AFqh2krAHw4pz/BXrlDj5p4X6ZFZLFVl6QZY4C2k+/0GrYF0qCLY7pbf
+        Bh5M+EeBxpOWqta2WS6o0hVsFg==
+X-Google-Smtp-Source: AMrXdXsAMmHtU/nYMUvA+nFtJod6ijOnt2kZOEg0ludb0KI+AXAy0MdF8wCg7iQtuF1/q2wazJpM0A==
+X-Received: by 2002:a05:6512:1307:b0:4cb:3d40:93ff with SMTP id x7-20020a056512130700b004cb3d4093ffmr7907463lfu.58.1673224184965;
+        Sun, 08 Jan 2023 16:29:44 -0800 (PST)
 Received: from eriador.lan (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
-        by smtp.gmail.com with ESMTPSA id a22-20020a2e9816000000b0027fc54f8bf0sm706626ljj.35.2023.01.08.16.29.42
+        by smtp.gmail.com with ESMTPSA id a22-20020a2e9816000000b0027fc54f8bf0sm706626ljj.35.2023.01.08.16.29.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Jan 2023 16:29:42 -0800 (PST)
+        Sun, 08 Jan 2023 16:29:44 -0800 (PST)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
@@ -61,11 +61,10 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     Georgi Djakov <djakov@kernel.org>, Alex Elder <elder@linaro.org>,
         Johan Hovold <johan@kernel.org>, linux-arm-msm@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v3 08/12] dt-bindings: interconnect: qcom: Remove ipa-virt compatibles
-Date:   Mon,  9 Jan 2023 02:29:31 +0200
-Message-Id: <20230109002935.244320-9-dmitry.baryshkov@linaro.org>
+        devicetree@vger.kernel.org
+Subject: [PATCH v3 10/12] clk: qcom: rpmh: define IPA clocks where required
+Date:   Mon,  9 Jan 2023 02:29:33 +0200
+Message-Id: <20230109002935.244320-11-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230109002935.244320-1-dmitry.baryshkov@linaro.org>
 References: <20230109002935.244320-1-dmitry.baryshkov@linaro.org>
@@ -75,45 +74,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These interconnects are going to be modeled as clockks, not
-interconnects. There are no other interconnects left on the virtual
-SoC-ipa-virt NoCs, therefore remove the compatibles from the binding as
-they're unused.
+Follow the example of sc7180 and sdx55 and implement IP0 resource as
+clocks rather than interconnects.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/clk/qcom/clk-rpmh.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-index a429a1ed1006..4e8d950c2832 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-@@ -58,7 +58,6 @@ properties:
-       - qcom,sc8180x-config-noc
-       - qcom,sc8180x-dc-noc
-       - qcom,sc8180x-gem-noc
--      - qcom,sc8180x-ipa-virt
-       - qcom,sc8180x-mc-virt
-       - qcom,sc8180x-mmss-noc
-       - qcom,sc8180x-qup-virt
-@@ -96,7 +95,6 @@ properties:
-       - qcom,sm8150-config-noc
-       - qcom,sm8150-dc-noc
-       - qcom,sm8150-gem-noc
--      - qcom,sm8150-ipa-virt
-       - qcom,sm8150-mc-virt
-       - qcom,sm8150-mmss-noc
-       - qcom,sm8150-system-noc
-@@ -106,7 +104,6 @@ properties:
-       - qcom,sm8250-config-noc
-       - qcom,sm8250-dc-noc
-       - qcom,sm8250-gem-noc
--      - qcom,sm8250-ipa-virt
-       - qcom,sm8250-mc-virt
-       - qcom,sm8250-mmss-noc
-       - qcom,sm8250-npu-noc
+diff --git a/drivers/clk/qcom/clk-rpmh.c b/drivers/clk/qcom/clk-rpmh.c
+index 7db5a53d73f0..05940e51b261 100644
+--- a/drivers/clk/qcom/clk-rpmh.c
++++ b/drivers/clk/qcom/clk-rpmh.c
+@@ -455,6 +455,7 @@ static struct clk_hw *sm8150_rpmh_clocks[] = {
+ 	[RPMH_RF_CLK2_A]	= &clk_rpmh_rf_clk2_a_ao.hw,
+ 	[RPMH_RF_CLK3]		= &clk_rpmh_rf_clk3_a.hw,
+ 	[RPMH_RF_CLK3_A]	= &clk_rpmh_rf_clk3_a_ao.hw,
++	[RPMH_IPA_CLK]		= &clk_rpmh_ipa.hw,
+ };
+ 
+ static const struct clk_rpmh_desc clk_rpmh_sm8150 = {
+@@ -494,6 +495,7 @@ static struct clk_hw *sc8180x_rpmh_clocks[] = {
+ 	[RPMH_RF_CLK2_A]	= &clk_rpmh_rf_clk2_d_ao.hw,
+ 	[RPMH_RF_CLK3]		= &clk_rpmh_rf_clk3_d.hw,
+ 	[RPMH_RF_CLK3_A]	= &clk_rpmh_rf_clk3_d_ao.hw,
++	[RPMH_IPA_CLK]		= &clk_rpmh_ipa.hw,
+ };
+ 
+ static const struct clk_rpmh_desc clk_rpmh_sc8180x = {
+@@ -514,6 +516,7 @@ static struct clk_hw *sm8250_rpmh_clocks[] = {
+ 	[RPMH_RF_CLK1_A]	= &clk_rpmh_rf_clk1_a_ao.hw,
+ 	[RPMH_RF_CLK3]		= &clk_rpmh_rf_clk3_a.hw,
+ 	[RPMH_RF_CLK3_A]	= &clk_rpmh_rf_clk3_a_ao.hw,
++	[RPMH_IPA_CLK]		= &clk_rpmh_ipa.hw,
+ };
+ 
+ static const struct clk_rpmh_desc clk_rpmh_sm8250 = {
+@@ -556,6 +559,7 @@ static struct clk_hw *sc8280xp_rpmh_clocks[] = {
+ 	[RPMH_IPA_CLK]          = &clk_rpmh_ipa.hw,
+ 	[RPMH_PKA_CLK]          = &clk_rpmh_pka.hw,
+ 	[RPMH_HWKM_CLK]         = &clk_rpmh_hwkm.hw,
++	[RPMH_IPA_CLK]		= &clk_rpmh_ipa.hw,
+ };
+ 
+ static const struct clk_rpmh_desc clk_rpmh_sc8280xp = {
 -- 
 2.39.0
 
