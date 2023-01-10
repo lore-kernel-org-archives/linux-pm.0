@@ -2,69 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E60DC63797
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Jan 2023 13:22:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7774DC46467
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Jan 2023 13:22:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238072AbjAJNWQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Jan 2023 08:22:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48670 "EHLO
+        id S232529AbjAJNWT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Jan 2023 08:22:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234166AbjAJNWN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jan 2023 08:22:13 -0500
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F890CFC
-        for <linux-pm@vger.kernel.org>; Tue, 10 Jan 2023 05:22:11 -0800 (PST)
-Received: by mail-lf1-x132.google.com with SMTP id bq39so18427285lfb.0
-        for <linux-pm@vger.kernel.org>; Tue, 10 Jan 2023 05:22:11 -0800 (PST)
+        with ESMTP id S230468AbjAJNWR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jan 2023 08:22:17 -0500
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C05610FDD
+        for <linux-pm@vger.kernel.org>; Tue, 10 Jan 2023 05:22:16 -0800 (PST)
+Received: by mail-lf1-x12b.google.com with SMTP id v25so18342736lfe.12
+        for <linux-pm@vger.kernel.org>; Tue, 10 Jan 2023 05:22:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=eopF37r4F26RIQkQPr5Re4R97smck9636TYDpPDGFN4=;
-        b=Tz8JEQMsD8UlqDrlwMWLBJ+WeW7rE7R3QPQYGKSVgq8Wgc2ESSVGACEzXv/+O/D/vg
-         /qadqL4x5iZzKTAXJDM17RCgGWM4h1rK5oMEW/Pdv5SazZGbwwPYsfeiWXIOnq0iIsCA
-         89g0z+K8GQ6/l0dmOiAbxVpJudxmKpIwUkYAxPoVo8tBaNVwPfsTh2BLqO7/pr0xG1b3
-         iNnc5mIsEYgMzGaSY0aGQg/cBb4gTMqEcCdeJHJ2bVsDtswR2XwgTWReyOwx+xuk5V71
-         TQHs1AfuuJjitNYYHC8e0HRMmjeprUD/RQ7Csp/FlmKk9bpsOIrlysNwnCx4ssLALBAI
-         8uow==
+        bh=+gIMoLkP77aNH+efgKowydUwLYRslPo+L1GU+pJJwb4=;
+        b=AP9igvSTRyb2W8VjVO+Er7QSZYzIpbV1tBKoAVcbTDRWQaMIsvEEnTsDn0NG0saZhJ
+         6LsUm534zOHUKYx6U0FduY1C2sB23XmrLrc16kMDzn764Ej/+keELyJSFLeXPYt15mkD
+         WzI2R+x2+/PoXT8djTQ6IQ2+UAkSYSY5+jad5PxFfiLCs1QkoABcCpRUUxRSXNupvkDw
+         dqtNjHGZ1Q+Bu/YQ8FEfiDNTjaNodxfqyTlDzlLogf37EhbhNlppgujRBR6o01EvsZ41
+         HvvGynAI8YZB85swYgNrr4PkLmE1W5ph2N/H8nAK87C3K+sQpV8hfVXqDZBaWrlWIofm
+         9Kdg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=eopF37r4F26RIQkQPr5Re4R97smck9636TYDpPDGFN4=;
-        b=6hnG1kmAk4Qmfoev4mUfK7kx/11r/k2bXycCPk2E+IIpaUjYLwOy6/9yXf3uOYgJpU
-         zgpFNKO8nESSaE/Nl5sVuaeG0pPGhFoh5ct3GrgWq2DbtEdJCdDqJLaIS88/dLj9nlfn
-         DinVl3Zei22aDSy11ocpNMHGuLb8m0u5LREKzgsKW1dTD35DHIGFwvpEaGqtxPn9K41t
-         gDnPqcsKYxoCXPGrnCVdZje9+oHnsvyzVNzYsJ8Bl7Y5ejKXSG6LV+Pcb91c4jldheTQ
-         QNnd9/V+T5iPBPo7o3T+QhHXndTl3k6DUoXzHe4fFK5SQnTL4LP5KLu8S6OWlmJ+ywJB
-         +iEA==
-X-Gm-Message-State: AFqh2krj8Z9yxcp/LdARpr3vxnf9Y9I1bnsERCW5CuXEeHSKoB/4ECUb
-        3qBt1gVZJ3lvrJhBTc6e53eByPc3RnANv0Wl
-X-Google-Smtp-Source: AMrXdXu/tX/vk2v4CFFFwu6l0yPQ6gFWoouP07+7c8t9vfiXgtNURYYm+elcPNtW9g3cT7HFVV2q6w==
-X-Received: by 2002:a05:6512:2987:b0:4b1:3960:4cf8 with SMTP id du7-20020a056512298700b004b139604cf8mr17722938lfb.28.1673356929926;
-        Tue, 10 Jan 2023 05:22:09 -0800 (PST)
+        bh=+gIMoLkP77aNH+efgKowydUwLYRslPo+L1GU+pJJwb4=;
+        b=ovVd8Aiy0w3EsxoO6qfy+WA4GLIRa/Kse9fKcCTI1MKZRGOgtNfvXewz+oXAmSeE71
+         2Oko5jWvg4nTLonRbcnTcDOXvxPRUWmL8/6wkc16MLVuGnoqN+6SNf+EC9zT1ViRid0Z
+         t7PvkJf0So6VtAhX0af2KrHxwLiz75TXvXxskwZipeTtV4myBXsJywnzlQGblRFTVDQI
+         YcQamfXW75Bc7nSutaJ4zP/M4DjQEkemETFVdHtajj6IIKsu3RDlFWsor6NkZM17t0tq
+         4c8SzD0VJguS9OGRWFoT9m3YaP63FEWjXP9XxSOtUctH4i02SYRvfd4N7AJL1BJUnKSE
+         CZxw==
+X-Gm-Message-State: AFqh2koitmp+M+ZvNvz6/gj740k2HIb4hbzEGDkMlclB26cBPtXOzAMM
+        FzAMBl00NzyWtKkVmtEwSHZMyw==
+X-Google-Smtp-Source: AMrXdXvF+/lnLJj/yIhJptSVaALtj/tZt53EmTrLR103q3QsxIQvwQfmHjLsJhITreow8Ah13B0Tdw==
+X-Received: by 2002:ac2:42c4:0:b0:4a4:68b7:d645 with SMTP id n4-20020ac242c4000000b004a468b7d645mr15855883lfl.44.1673356934563;
+        Tue, 10 Jan 2023 05:22:14 -0800 (PST)
 Received: from localhost.localdomain (abxi45.neoplus.adsl.tpnet.pl. [83.9.2.45])
-        by smtp.gmail.com with ESMTPSA id w4-20020a19c504000000b004b5812207dbsm2183000lfe.201.2023.01.10.05.22.08
+        by smtp.gmail.com with ESMTPSA id w4-20020a19c504000000b004b5812207dbsm2183000lfe.201.2023.01.10.05.22.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Jan 2023 05:22:09 -0800 (PST)
+        Tue, 10 Jan 2023 05:22:14 -0800 (PST)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
 To:     linux-arm-msm@vger.kernel.org, andersson@kernel.org,
         agross@kernel.org, krzysztof.kozlowski@linaro.org
 Cc:     marijn.suijten@somainline.org, bryan.odonoghue@linaro.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Evan Green <evgreen@chromium.org>,
-        Jun Nie <jun.nie@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Brian Masney <masneyb@onstation.org>,
-        Yassine Oudjana <y.oudjana@protonmail.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 02/10] interconnect: qcom: rpm: make QoS INVALID default, separate out driver data
-Date:   Tue, 10 Jan 2023 14:21:54 +0100
-Message-Id: <20230110132202.956619-3-konrad.dybcio@linaro.org>
+        Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2 05/10] interconnect: qcom: Sort kerneldoc entries
+Date:   Tue, 10 Jan 2023 14:21:57 +0100
+Message-Id: <20230110132202.956619-6-konrad.dybcio@linaro.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230110132202.956619-1-konrad.dybcio@linaro.org>
 References: <20230110132202.956619-1-konrad.dybcio@linaro.org>
@@ -74,114 +68,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, NOC_QOS_MODE_FIXED is defined as 0x0, which makes it the
-"default" option (as that's what uninitialized members of partially
-initialized structs are set to), which should really have been
-NOC_QOS_MODE_INVALID, and that's what people (wrongly) assumed was
-the case when .qos.qos_mode was not defined and what really makes
-the most sense..
+Sort the kerneldoc entries the same way the struct members are
+sorted.
 
-That resulted in {port 0, prio 0, areq_prio 0, urg_fwd = false, rpm-voted}
-QoS being always voted for, because the code flow assumed "hey, it's fixed
-QoS, so let's just roll with whatever parameters are set" [again, set by
-partial struct initialization, as these fields were left unfilled by the
-developers]. That is of course incorrect, and on many of these platforms
-port 0 is MAS_APPS_PROC, which 9/10 times is supposed to be handled by
-the ap_owned path, not to mention the rest of the parameters may differ.
-Arguably, the APPS node is the most important one, next to EBI0..
-
-The modes are defined as preprocessor constants. They are not used
-anywhere outside the driver or sent to any remote processor outside
-qcom_icc_set_noc_qos(), which is easily worked around.
-Separate the type specified in driver data from the value sent to msmbus.
-Make the former an enum for better mainainability.
-
-This is an implicit fix for every SMD RPM ICC driver that didn't
-explicitly specify NOC_QOS_MODE_INVALID on non-AP_owned nodes that
-don't have QoS settings.
-
-Fixes: 30c8fa3ec61a ("interconnect: qcom: Add MSM8916 interconnect provider driver")
-Fixes: 6c6fe5d3dc5e ("interconnect: qcom: Add MSM8939 interconnect provider driver")
-Fixes: 4e60a9568dc6 ("interconnect: qcom: add msm8974 driver")
-Fixes: 7add937f5222 ("interconnect: qcom: Add MSM8996 interconnect provider driver")
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/icc-rpm.c | 23 +++++++++++++----------
- drivers/interconnect/qcom/icc-rpm.h | 10 ++++++----
- 2 files changed, 19 insertions(+), 14 deletions(-)
+ drivers/interconnect/qcom/icc-rpm.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 361dcbf3386f..cd1eab3d93ba 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -48,6 +48,10 @@
- #define NOC_QOS_MODEn_ADDR(n)		(0xc + (n * 0x1000))
- #define NOC_QOS_MODEn_MASK		0x3
- 
-+#define NOC_QOS_MODE_INVALID_VAL	-1
-+#define NOC_QOS_MODE_FIXED_VAL		0x0
-+#define NOC_QOS_MODE_BYPASS_VAL		0x2
-+
- static int qcom_icc_set_qnoc_qos(struct icc_node *src, u64 max_bw)
- {
- 	struct icc_provider *provider = src->provider;
-@@ -153,7 +157,7 @@ static int qcom_icc_set_noc_qos(struct icc_node *src, u64 max_bw)
- 	struct qcom_icc_provider *qp;
- 	struct qcom_icc_node *qn;
- 	struct icc_provider *provider;
--	u32 mode = NOC_QOS_MODE_BYPASS;
-+	u32 mode = NOC_QOS_MODE_BYPASS_VAL;
- 	int rc = 0;
- 
- 	qn = src->data;
-@@ -167,18 +171,17 @@ static int qcom_icc_set_noc_qos(struct icc_node *src, u64 max_bw)
- 		return 0;
- 	}
- 
--	if (qn->qos.qos_mode != NOC_QOS_MODE_INVALID)
--		mode = qn->qos.qos_mode;
--
--	if (mode == NOC_QOS_MODE_FIXED) {
--		dev_dbg(src->provider->dev, "NoC QoS: %s: Set Fixed mode\n",
--			qn->name);
-+	if (qn->qos.qos_mode == NOC_QOS_MODE_FIXED) {
-+		dev_dbg(src->provider->dev, "NoC QoS: %s: Set Fixed mode\n", qn->name);
-+		mode = NOC_QOS_MODE_FIXED_VAL;
- 		rc = qcom_icc_noc_set_qos_priority(qp, &qn->qos);
- 		if (rc)
- 			return rc;
--	} else if (mode == NOC_QOS_MODE_BYPASS) {
--		dev_dbg(src->provider->dev, "NoC QoS: %s: Set Bypass mode\n",
--			qn->name);
-+	} else if (qn->qos.qos_mode == NOC_QOS_MODE_BYPASS) {
-+		dev_dbg(src->provider->dev, "NoC QoS: %s: Set Bypass mode\n", qn->name);
-+		mode = NOC_QOS_MODE_BYPASS_VAL;
-+	} else {
-+		/* How did we get here? */
- 	}
- 
- 	return regmap_update_bits(qp->regmap,
 diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index 13d5252f08a5..3762648f9d47 100644
+index eb51680f890d..b75e99fa08b8 100644
 --- a/drivers/interconnect/qcom/icc-rpm.h
 +++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -97,10 +97,12 @@ struct qcom_icc_desc {
- 	int qos_offset;
- };
- 
--/* Valid for both NoC and BIMC */
--#define NOC_QOS_MODE_INVALID		-1
--#define NOC_QOS_MODE_FIXED		0x0
--#define NOC_QOS_MODE_BYPASS		0x2
-+/* Valid for all bus types */
-+enum qos_mode {
-+	NOC_QOS_MODE_INVALID = 0,
-+	NOC_QOS_MODE_FIXED,
-+	NOC_QOS_MODE_BYPASS,
-+};
- 
- int qnoc_probe(struct platform_device *pdev);
- int qnoc_remove(struct platform_device *pdev);
+@@ -23,12 +23,12 @@ enum qcom_icc_type {
+ /**
+  * struct qcom_icc_provider - Qualcomm specific interconnect provider
+  * @provider: generic interconnect provider
+- * @bus_clks: the clk_bulk_data table of bus clocks
+  * @num_clks: the total number of clk_bulk_data entries
+  * @type: the ICC provider type
+- * @qos_offset: offset to QoS registers
+  * @regmap: regmap for QoS registers read/write access
++ * @qos_offset: offset to QoS registers
+  * @bus_clk_rate: bus clock rate in Hz
++ * @bus_clks: the clk_bulk_data table of bus clocks
+  */
+ struct qcom_icc_provider {
+ 	struct icc_provider provider;
 -- 
 2.39.0
 
