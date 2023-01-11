@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 710B0C46467
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Jan 2023 07:46:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EB7EC67871
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Jan 2023 07:46:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235868AbjAKHp5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Jan 2023 02:45:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50540 "EHLO
+        id S236041AbjAKHp7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Jan 2023 02:45:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50544 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235716AbjAKHpr (ORCPT
+        with ESMTP id S229592AbjAKHpr (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2023 02:45:47 -0500
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 156BF11834;
-        Tue, 10 Jan 2023 23:45:42 -0800 (PST)
-X-UUID: ed6bdba8918311eda06fc9ecc4dadd91-20230111
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A96D4101DC;
+        Tue, 10 Jan 2023 23:45:38 -0800 (PST)
+X-UUID: ecb1f7ce918311ed945fc101203acc17-20230111
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=Rccj3hC3ZZZsXgr2FSQRe2w9nA2OqCkV+QSW2NwXvGo=;
-        b=czHkMuKIduxm0klGkfnMkFtC0eLrhc0Na6FhRzsNq7gfh/qTc6x5NNTiVO1o/S4IF5z2aXj7KffT+EQo0GPeGRx+Xc7fn0v9Q7974fhPjHCAsScFNogNTMHEtFnlXnKl/Mlum73yiy+H89CEpCLEvFmfBgM/ryDK/StaGJlEg2Q=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=b7yNvUj+1iWfdSzh60OgaeHK/98sY0UhtMzQV5RG5IE=;
+        b=VHbWunAZ/lHLCYHSkp0yG6DBHSCDAzgM/k5moPOX+2dNVmArRNiSwET9OqwAQF0cmRkq85LZ2aRtIAx7RhjHisM6j3dVfr52p9I1ip/kSN6eyfrosq/KLo5SxHN+vPnwZa0whCrasxTmb5Gf7pHx33fL4jG+kmNyk0mRFnQxyF4=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.17,REQID:46ec3e7c-cc97-48cd-87ff-0c385ba51ca7,IP:0,U
+X-CID-O-INFO: VERSION:1.1.17,REQID:b752f472-6719-4877-b344-5ca1713b9bae,IP:0,U
         RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
         N:release,TS:-25
-X-CID-META: VersionHash:543e81c,CLOUDID:c699ee8b-8530-4eff-9f77-222cf6e2895b,B
+X-CID-META: VersionHash:543e81c,CLOUDID:28ac5354-dd49-462e-a4be-2143a3ddc739,B
         ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
         RL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
 X-CID-BVR: 0,NGT
-X-UUID: ed6bdba8918311eda06fc9ecc4dadd91-20230111
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+X-UUID: ecb1f7ce918311ed945fc101203acc17-20230111
+Received: from mtkmbs11n1.mediatek.inc [(172.21.101.185)] by mailgw02.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 147598433; Wed, 11 Jan 2023 15:45:32 +0800
+        with ESMTP id 530755976; Wed, 11 Jan 2023 15:45:31 +0800
 Received: from mtkmbs13n2.mediatek.inc (172.21.101.108) by
  mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Wed, 11 Jan 2023 15:45:31 +0800
+ Wed, 11 Jan 2023 15:45:30 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs13n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Wed, 11 Jan 2023 15:45:31 +0800
+ 15.2.792.15 via Frontend Transport; Wed, 11 Jan 2023 15:45:30 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -50,9 +50,9 @@ CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v4 12/14] soc: mediatek: mtk-svs: use svs get efuse common function
-Date:   Wed, 11 Jan 2023 15:45:26 +0800
-Message-ID: <20230111074528.29354-13-roger.lu@mediatek.com>
+Subject: [PATCH v4 05/14] soc: mediatek: mtk-svs: use svs clk control APIs
+Date:   Wed, 11 Jan 2023 15:45:19 +0800
+Message-ID: <20230111074528.29354-6-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20230111074528.29354-1-roger.lu@mediatek.com>
 References: <20230111074528.29354-1-roger.lu@mediatek.com>
@@ -63,163 +63,160 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SVS might need to read both svs efuse and thermal efuse on the probe flow.
-Therefore, add a common efuse read function to remove the superfluous
-codes.
+In MediaTek HW design, svs and thermal both use the same clk source.
+It means that svs clk reference count from CCF includes thermal control
+counts. That makes svs driver confuse whether it disabled svs's main clk
+or not from CCF's perspective and lead to turn off their shared clk
+unexpectedly. Therefore, we add svs clk control APIs to make sure svs's
+main clk is controlled well by svs driver itself.
 
+Here is a NG example. Rely on CCF's reference count and cause problem.
+
+thermal probe (clk ref = 1)
+-> svs probe (clk ref = 2)
+   -> svs suspend (clk ref = 1)
+      -> thermal suspend (clk ref = 0)
+      -> thermal resume (clk ref = 1)
+   -> svs resume (encounter error, clk ref = 1)
+   -> svs suspend (clk ref = 0)
+      -> thermal suspend (Fail here, thermal HW control w/o clk)
+
+Fixes: a825d72f74a3 ("soc: mediatek: fix missing clk_disable_unprepare() on err in svs_resume()")
 Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
- drivers/soc/mediatek/mtk-svs.c | 69 ++++++++++++----------------------
- 1 file changed, 24 insertions(+), 45 deletions(-)
+ drivers/soc/mediatek/mtk-svs.c | 57 ++++++++++++++++++++++++++--------
+ 1 file changed, 44 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-index bd23d1111d7b..a7f0a6f02d52 100644
+index 9575aa645643..830263bad81e 100644
 --- a/drivers/soc/mediatek/mtk-svs.c
 +++ b/drivers/soc/mediatek/mtk-svs.c
-@@ -1758,26 +1758,28 @@ static int svs_bank_resource_setup(struct svs_platform *svsp)
- 	return 0;
+@@ -326,6 +326,7 @@ static const u32 svs_regs_v2[] = {
+  * @bank_max: total number of svs banks
+  * @efuse: svs efuse data received from NVMEM framework
+  * @tefuse: thermal efuse data received from NVMEM framework
++ * @clk_cnt: clock count shows the clk enable/disable times by svs driver
+  */
+ struct svs_platform {
+ 	char *name;
+@@ -343,6 +344,7 @@ struct svs_platform {
+ 	u32 bank_max;
+ 	u32 *efuse;
+ 	u32 *tefuse;
++	s32 clk_cnt;
+ };
+ 
+ struct svs_platform_data {
+@@ -502,6 +504,32 @@ static void svs_switch_bank(struct svs_platform *svsp)
+ 	svs_writel_relaxed(svsp, svsb->core_sel, CORESEL);
  }
  
--static int svs_thermal_efuse_get_data(struct svs_platform *svsp)
-+static int svs_get_efuse_data(struct svs_platform *svsp,
-+			      const char *nvmem_cell_name,
-+			      u32 **svsp_efuse, size_t *svsp_efuse_max)
- {
- 	struct nvmem_cell *cell;
- 
--	/* Thermal efuse parsing */
--	cell = nvmem_cell_get(svsp->dev, "t-calibration-data");
-+	cell = nvmem_cell_get(svsp->dev, nvmem_cell_name);
- 	if (IS_ERR_OR_NULL(cell)) {
--		dev_err(svsp->dev, "no \"t-calibration-data\"? %ld\n", PTR_ERR(cell));
-+		dev_err(svsp->dev, "no \"%s\"? %ld\n",
-+			nvmem_cell_name, PTR_ERR(cell));
- 		return PTR_ERR(cell);
- 	}
- 
--	svsp->tefuse = nvmem_cell_read(cell, &svsp->tefuse_max);
--	if (IS_ERR(svsp->tefuse)) {
--		dev_err(svsp->dev, "cannot read thermal efuse: %ld\n",
--			PTR_ERR(svsp->tefuse));
-+	*svsp_efuse = nvmem_cell_read(cell, svsp_efuse_max);
-+	if (IS_ERR(*svsp_efuse)) {
-+		dev_err(svsp->dev, "cannot read \"%s\" efuse: %ld\n",
-+			nvmem_cell_name, PTR_ERR(*svsp_efuse));
- 		nvmem_cell_put(cell);
--		return PTR_ERR(svsp->tefuse);
-+		return PTR_ERR(*svsp_efuse);
- 	}
- 
--	svsp->tefuse_max /= sizeof(u32);
-+	*svsp_efuse_max /= sizeof(u32);
- 	nvmem_cell_put(cell);
- 
- 	return 0;
-@@ -1825,7 +1827,8 @@ static bool svs_mt8192_efuse_parsing(struct svs_platform *svsp)
- 		svsb->vmax += svsb->dvt_fixed;
- 	}
- 
--	ret = svs_thermal_efuse_get_data(svsp);
-+	ret = svs_get_efuse_data(svsp, "t-calibration-data",
-+				 &svsp->tefuse, &svsp->tefuse_max);
- 	if (ret)
- 		return false;
- 
-@@ -1930,7 +1933,8 @@ static bool svs_mt8183_efuse_parsing(struct svs_platform *svsp)
- 		}
- 	}
- 
--	ret = svs_thermal_efuse_get_data(svsp);
-+	ret = svs_get_efuse_data(svsp, "t-calibration-data",
-+				 &svsp->tefuse, &svsp->tefuse_max);
- 	if (ret)
- 		return false;
- 
-@@ -2039,32 +2043,6 @@ static bool svs_mt8183_efuse_parsing(struct svs_platform *svsp)
- 	return true;
- }
- 
--static bool svs_is_efuse_data_correct(struct svs_platform *svsp)
--{
--	struct nvmem_cell *cell;
--
--	/* Get svs efuse by nvmem */
--	cell = nvmem_cell_get(svsp->dev, "svs-calibration-data");
--	if (IS_ERR(cell)) {
--		dev_err(svsp->dev, "no \"svs-calibration-data\"? %ld\n",
--			PTR_ERR(cell));
--		return false;
--	}
--
--	svsp->efuse = nvmem_cell_read(cell, &svsp->efuse_max);
--	if (IS_ERR(svsp->efuse)) {
--		dev_err(svsp->dev, "cannot read svs efuse: %ld\n",
--			PTR_ERR(svsp->efuse));
--		nvmem_cell_put(cell);
--		return false;
--	}
--
--	svsp->efuse_max /= sizeof(u32);
--	nvmem_cell_put(cell);
--
--	return true;
--}
--
- static struct device *svs_get_subsys_device(struct svs_platform *svsp,
- 					    const char *node_name)
- {
-@@ -2404,8 +2382,9 @@ static int svs_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
--	if (!svs_is_efuse_data_correct(svsp)) {
--		dev_notice(svsp->dev, "efuse data isn't correct\n");
-+	ret = svs_get_efuse_data(svsp, "svs-calibration-data",
-+				 &svsp->efuse, &svsp->efuse_max);
++static bool svs_is_clk_enabled(struct svs_platform *svsp)
++{
++	return svsp->clk_cnt > 0 ? true : false;
++}
++
++static int svs_clk_enable(struct svs_platform *svsp)
++{
++	int ret;
++
++	ret = clk_prepare_enable(svsp->main_clk);
 +	if (ret) {
- 		ret = -EPERM;
- 		goto svs_probe_free_efuse;
- 	}
-@@ -2413,13 +2392,13 @@ static int svs_probe(struct platform_device *pdev)
- 	if (!svsp_data->efuse_parsing(svsp)) {
- 		dev_err(svsp->dev, "efuse data parsing failed\n");
- 		ret = -EPERM;
--		goto svs_probe_free_resource;
-+		goto svs_probe_free_tefuse;
++		dev_err(svsp->dev, "cannot enable main_clk: %d\n", ret);
++		return ret;
++	}
++
++	svsp->clk_cnt++;
++
++	return 0;
++}
++
++static void svs_clk_disable(struct svs_platform *svsp)
++{
++	clk_disable_unprepare(svsp->main_clk);
++	svsp->clk_cnt--;
++}
++
+ static u32 svs_bank_volt_to_opp_volt(u32 svsb_volt, u32 svsb_volt_step,
+ 				     u32 svsb_volt_base)
+ {
+@@ -1569,6 +1597,12 @@ static int svs_suspend(struct device *dev)
+ 	int ret;
+ 	u32 idx;
+ 
++	if (!svs_is_clk_enabled(svsp)) {
++		dev_err(svsp->dev, "svs clk is disabled already (%d)\n",
++			svsp->clk_cnt);
++		return 0;
++	}
++
+ 	for (idx = 0; idx < svsp->bank_max; idx++) {
+ 		svsb = &svsp->banks[idx];
+ 
+@@ -1590,7 +1624,7 @@ static int svs_suspend(struct device *dev)
+ 		return ret;
  	}
  
- 	ret = svs_bank_resource_setup(svsp);
+-	clk_disable_unprepare(svsp->main_clk);
++	svs_clk_disable(svsp);
+ 
+ 	return 0;
+ }
+@@ -1600,16 +1634,14 @@ static int svs_resume(struct device *dev)
+ 	struct svs_platform *svsp = dev_get_drvdata(dev);
+ 	int ret;
+ 
+-	ret = clk_prepare_enable(svsp->main_clk);
+-	if (ret) {
+-		dev_err(svsp->dev, "cannot enable main_clk, disable svs\n");
++	ret = svs_clk_enable(svsp);
++	if (ret)
+ 		return ret;
+-	}
+ 
+ 	ret = reset_control_deassert(svsp->rst);
  	if (ret) {
- 		dev_err(svsp->dev, "svs bank resource setup fail: %d\n", ret);
--		goto svs_probe_free_resource;
-+		goto svs_probe_free_tefuse;
+ 		dev_err(svsp->dev, "cannot deassert reset %d\n", ret);
+-		goto out_of_resume;
++		goto svs_resume_clk_disable;
  	}
  
- 	svsp->main_clk = devm_clk_get(svsp->dev, "main");
-@@ -2427,12 +2406,12 @@ static int svs_probe(struct platform_device *pdev)
- 		dev_err(svsp->dev, "failed to get clock: %ld\n",
- 			PTR_ERR(svsp->main_clk));
- 		ret = PTR_ERR(svsp->main_clk);
--		goto svs_probe_free_resource;
-+		goto svs_probe_free_tefuse;
+ 	ret = svs_init02(svsp);
+@@ -1624,8 +1656,9 @@ static int svs_resume(struct device *dev)
+ 	dev_err(svsp->dev, "assert reset: %d\n",
+ 		reset_control_assert(svsp->rst));
+ 
+-out_of_resume:
+-	clk_disable_unprepare(svsp->main_clk);
++svs_resume_clk_disable:
++	svs_clk_disable(svsp);
++
+ 	return ret;
+ }
+ 
+@@ -2411,11 +2444,9 @@ static int svs_probe(struct platform_device *pdev)
+ 		goto svs_probe_free_resource;
  	}
  
- 	ret = svs_clk_enable(svsp);
- 	if (ret)
--		goto svs_probe_free_resource;
-+		goto svs_probe_free_tefuse;
+-	ret = clk_prepare_enable(svsp->main_clk);
+-	if (ret) {
+-		dev_err(svsp->dev, "cannot enable main clk: %d\n", ret);
++	ret = svs_clk_enable(svsp);
++	if (ret)
+ 		goto svs_probe_free_resource;
+-	}
  
  	svsp->base = of_iomap(svsp->dev->of_node, 0);
  	if (IS_ERR_OR_NULL(svsp->base)) {
-@@ -2477,7 +2456,7 @@ static int svs_probe(struct platform_device *pdev)
+@@ -2456,7 +2487,7 @@ static int svs_probe(struct platform_device *pdev)
+ 	iounmap(svsp->base);
+ 
  svs_probe_clk_disable:
- 	svs_clk_disable(svsp);
+-	clk_disable_unprepare(svsp->main_clk);
++	svs_clk_disable(svsp);
  
--svs_probe_free_resource:
-+svs_probe_free_tefuse:
- 	if (!IS_ERR_OR_NULL(svsp->tefuse))
- 		kfree(svsp->tefuse);
- 
+ svs_probe_free_resource:
+ 	if (!IS_ERR_OR_NULL(svsp->efuse))
 -- 
 2.18.0
 
