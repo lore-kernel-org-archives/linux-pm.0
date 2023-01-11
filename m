@@ -2,178 +2,127 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9FE9C5479D
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Jan 2023 07:46:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0790C54EBE
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Jan 2023 09:16:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235753AbjAKHqE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Jan 2023 02:46:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50550 "EHLO
+        id S238325AbjAKJQP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Jan 2023 04:16:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235758AbjAKHpr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2023 02:45:47 -0500
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1650D11838;
-        Tue, 10 Jan 2023 23:45:43 -0800 (PST)
-X-UUID: ed6cdf30918311eda06fc9ecc4dadd91-20230111
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=E7JOiwSOEFumewXbPXzCtjLpJhE2onK4s/UM3OcOq0g=;
-        b=BYhn1Cga7+Zedw82kA7Dc0VpPWur0omTqNWfnDbXeu2VrBCSxJXYOyIpElJLcoAu1ZKG/+eaNdhK0HuhnlLfAUr5fwh6gITWNY0seXBjHsx1VIG0QypOl8veTfazGj5KSMJZuOKleMkGoHT3KF5/P3jn39ZGSgYFPZc/b5aEAiQ=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.17,REQID:3fb7ae9f-79cd-4537-a794-3c6890a6dc43,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-        release,TS:0
-X-CID-META: VersionHash:543e81c,CLOUDID:c599ee8b-8530-4eff-9f77-222cf6e2895b,B
-        ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
-        RL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
-X-CID-BVR: 0
-X-UUID: ed6cdf30918311eda06fc9ecc4dadd91-20230111
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
-        (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 563853188; Wed, 11 Jan 2023 15:45:32 +0800
-Received: from mtkmbs13n2.mediatek.inc (172.21.101.108) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
- Wed, 11 Jan 2023 15:45:31 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
- mtkmbs13n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Wed, 11 Jan 2023 15:45:31 +0800
-From:   Roger Lu <roger.lu@mediatek.com>
-To:     Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>
-CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
-        Jia-wei Chang <jia-wei.chang@mediatek.com>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v4 13/14] soc: mediatek: mtk-svs: use common function to disable restore voltages
-Date:   Wed, 11 Jan 2023 15:45:27 +0800
-Message-ID: <20230111074528.29354-14-roger.lu@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20230111074528.29354-1-roger.lu@mediatek.com>
-References: <20230111074528.29354-1-roger.lu@mediatek.com>
+        with ESMTP id S238398AbjAKJPh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2023 04:15:37 -0500
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0606B140C2
+        for <linux-pm@vger.kernel.org>; Wed, 11 Jan 2023 01:12:29 -0800 (PST)
+Received: by mail-wm1-x336.google.com with SMTP id g10so10622682wmo.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Jan 2023 01:12:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=eZY9at94V7P9Q8ZmcTLckeYfqsa9rY4dut4aTvEClmo=;
+        b=twfwFW4SzfZQSlglT1rzGB/JM5GiX+NnC0Sjqeo+j0cHLoNw/PxwBuXCtV43e8UNP7
+         zM6oZ/ggYwOE1F2Xp6WBwp4i4u2IMVqKwLsE8CtSafCz0EMo91UMT82VEGRFa6m0WvGN
+         u98Ro3rDWXqHCyftZk+LtQQ085e73sQDoxmJ267U/P4XWh03Gq6FZtsamq6juFRwTjxD
+         yfpopjSA+Nmwb7nmhyy1bQm8NmE02GLi0u483oa89tQf/cylcLMk5E0uoMaZh3ydEeCH
+         s1Bigfqp3H39oDsRcsa7smNSI+rUcpWW1Ja5SSB+phaNMrgxCGmdGI+l2tiyxp4a3kQk
+         GX7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=eZY9at94V7P9Q8ZmcTLckeYfqsa9rY4dut4aTvEClmo=;
+        b=qUwAZjpziQqrn86bhLzDykE7fIPksaS72+3A4Ve7WCncrP2qB5izFNlTsowbrrEV8P
+         b2yDb3H+zHP5IRF+8gC4K1kjomgr7vS5AlLOKX5Lvaof2U51Gypl4w1r9FqWnO8WXNa+
+         gXVZkx5tWE5KjS8cXjntBylTX0TVMpn7UTeWKeSfz5sj+436BUTVkq3AClmWNtLfEos+
+         PrUEtvctuJSm4RZCt4Afv9FXEMeCTj1zg+pJhoibXutMuhLyAKQCiUDrtkLadIZvKskz
+         BL3qztxF8AW3IdJe+iglj+GRhtKMF6qeRcMU3t79e9zJLW2oV58XwEK4aimBpwpJ9Mje
+         PN7g==
+X-Gm-Message-State: AFqh2kqcp8EUIccLd3YswCQ5CSOs4MQrRl3pjCWAbPcB4qfMBmOKtzuA
+        ZjEZIH4lGzt5Og34OwBF2+dRrQ==
+X-Google-Smtp-Source: AMrXdXuGGYuouvjFkU04+BHPeCn1p1R2rZNNH//wli0EM9e/fMUnrTsSen06OWCuPV/zqNWJGDL2HA==
+X-Received: by 2002:a05:600c:5114:b0:3d9:fa37:e42d with SMTP id o20-20020a05600c511400b003d9fa37e42dmr3596584wms.17.1673428347726;
+        Wed, 11 Jan 2023 01:12:27 -0800 (PST)
+Received: from [192.168.1.109] ([178.197.216.144])
+        by smtp.gmail.com with ESMTPSA id h10-20020a1ccc0a000000b003d237d60318sm17928277wmb.2.2023.01.11.01.12.26
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 11 Jan 2023 01:12:27 -0800 (PST)
+Message-ID: <547ef944-be4d-365e-c639-91812286e42a@linaro.org>
+Date:   Wed, 11 Jan 2023 10:12:25 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH v2 4/7] arm64: dts: qcom: Add msm8939 SoC
+Content-Language: en-US
+To:     Bryan O'Donoghue <bryan.odonoghue@linaro.org>, agross@kernel.org,
+        andersson@kernel.org, konrad.dybcio@linaro.org, djakov@kernel.org,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        benl@squareup.com, shawn.guo@linaro.org, fabien.parent@linaro.org,
+        leo.yan@linaro.org, dmitry.baryshkov@linaro.org,
+        Jun Nie <jun.nie@linaro.org>,
+        James Willcox <jwillcox@squareup.com>,
+        Joseph Gates <jgates@squareup.com>,
+        Max Chen <mchen@squareup.com>, Zac Crosby <zac@squareup.com>,
+        Vincent Knecht <vincent.knecht@mailoo.org>,
+        Stephan Gerhold <stephan@gerhold.net>
+References: <20230103010904.3201835-1-bryan.odonoghue@linaro.org>
+ <20230103010904.3201835-5-bryan.odonoghue@linaro.org>
+ <6e594438-843a-d03e-5276-d6316a9dc2c0@linaro.org>
+ <88d66834-ca80-888b-e56e-7694e84b6eae@linaro.org>
+ <411a1a02-568e-3695-0a24-0681fbe9f265@linaro.org>
+ <bde66389-619b-771d-1956-43059f8e4d5a@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <bde66389-619b-771d-1956-43059f8e4d5a@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The timing of disabling SVS bank and restore default voltage is more
-than one place. Therefore, add a common function to use for removing
-the superfluous codes.
+On 10/01/2023 14:42, Bryan O'Donoghue wrote:
+> On 10/01/2023 13:24, Krzysztof Kozlowski wrote:
+>> On 10/01/2023 14:14, Bryan O'Donoghue wrote:
+>>> On 03/01/2023 09:14, Krzysztof Kozlowski wrote:
+>>>> ../arch/arm64/boot/dts/qcom/msm8939.dtsi:1825.23-1842.5: Warning
+>>>> (simple_bus_reg): /soc@0/mmc@7824000: simple-bus unit address format
+>>>> error, expected "7824900
+>>>
+>>> For the record the driver consuming this dt entry requires the host regs
+>>> to come first followed by the core
+>>>
+>>> sdhc_1: mmc@7824000 {
+>>>           compatible = "qcom,msm8916-sdhci", "qcom,sdhci-msm-v4";
+>>>           reg = <0x07824900 0x11c>, <0x07824000 0x800>;
+>>>           reg-names = "hc", "core";
+>>> }
+>>>
+>>> If I change this and the msm8916 to
+>>
+>> That's not the solution. The warning is saying that unit address does
+>> not match your reg. You need to correct unit address.
+>>
+>> Best regards,
+>> Krzysztof
+>>
+> 
+> Is it not the case that the unit-address should match the first reg and 
 
-Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- drivers/soc/mediatek/mtk-svs.c | 54 ++++++++++++++--------------------
- 1 file changed, 22 insertions(+), 32 deletions(-)
+As Konrad wrote, yes.
 
-diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-index a7f0a6f02d52..89117807e85d 100644
---- a/drivers/soc/mediatek/mtk-svs.c
-+++ b/drivers/soc/mediatek/mtk-svs.c
-@@ -648,6 +648,25 @@ static int svs_adjust_pm_opp_volts(struct svs_bank *svsb)
- 	return ret;
- }
- 
-+static void svs_bank_disable_and_restore_default_volts(struct svs_platform *svsp,
-+						       struct svs_bank *svsb)
-+{
-+	unsigned long flags;
-+
-+	if (svsb->mode_support == SVSB_MODE_ALL_DISABLE)
-+		return;
-+
-+	spin_lock_irqsave(&svs_lock, flags);
-+	svsp->pbank = svsb;
-+	svs_switch_bank(svsp);
-+	svs_writel_relaxed(svsp, SVSB_PTPEN_OFF, SVSEN);
-+	svs_writel_relaxed(svsp, SVSB_INTSTS_VAL_CLEAN, INTSTS);
-+	spin_unlock_irqrestore(&svs_lock, flags);
-+
-+	svsb->phase = SVSB_PHASE_ERROR;
-+	svs_adjust_pm_opp_volts(svsb);
-+}
-+
- #ifdef CONFIG_DEBUG_FS
- static int svs_dump_debug_show(struct seq_file *m, void *p)
- {
-@@ -724,7 +743,6 @@ static ssize_t svs_enable_debug_write(struct file *filp,
- {
- 	struct svs_bank *svsb = file_inode(filp)->i_private;
- 	struct svs_platform *svsp = dev_get_drvdata(svsb->dev);
--	unsigned long flags;
- 	int enabled, ret;
- 	char *buf = NULL;
- 
-@@ -740,16 +758,8 @@ static ssize_t svs_enable_debug_write(struct file *filp,
- 		return ret;
- 
- 	if (!enabled) {
--		spin_lock_irqsave(&svs_lock, flags);
--		svsp->pbank = svsb;
-+		svs_bank_disable_and_restore_default_volts(svsp, svsb);
- 		svsb->mode_support = SVSB_MODE_ALL_DISABLE;
--		svs_switch_bank(svsp);
--		svs_writel_relaxed(svsp, SVSB_PTPEN_OFF, SVSEN);
--		svs_writel_relaxed(svsp, SVSB_INTSTS_VAL_CLEAN, INTSTS);
--		spin_unlock_irqrestore(&svs_lock, flags);
--
--		svsb->phase = SVSB_PHASE_ERROR;
--		svs_adjust_pm_opp_volts(svsb);
- 	}
- 
- 	kfree(buf);
-@@ -1532,16 +1542,7 @@ static int svs_init02(struct svs_platform *svsp)
- out_of_init02:
- 	for (idx = 0; idx < svsp->bank_max; idx++) {
- 		svsb = &svsp->banks[idx];
--
--		spin_lock_irqsave(&svs_lock, flags);
--		svsp->pbank = svsb;
--		svs_switch_bank(svsp);
--		svs_writel_relaxed(svsp, SVSB_PTPEN_OFF, SVSEN);
--		svs_writel_relaxed(svsp, SVSB_INTSTS_VAL_CLEAN, INTSTS);
--		spin_unlock_irqrestore(&svs_lock, flags);
--
--		svsb->phase = SVSB_PHASE_ERROR;
--		svs_adjust_pm_opp_volts(svsb);
-+		svs_bank_disable_and_restore_default_volts(svsp, svsb);
- 	}
- 
- 	return ret;
-@@ -1587,7 +1588,6 @@ static int svs_suspend(struct device *dev)
- {
- 	struct svs_platform *svsp = dev_get_drvdata(dev);
- 	struct svs_bank *svsb;
--	unsigned long flags;
- 	int ret;
- 	u32 idx;
- 
-@@ -1599,17 +1599,7 @@ static int svs_suspend(struct device *dev)
- 
- 	for (idx = 0; idx < svsp->bank_max; idx++) {
- 		svsb = &svsp->banks[idx];
--
--		/* This might wait for svs_isr() process */
--		spin_lock_irqsave(&svs_lock, flags);
--		svsp->pbank = svsb;
--		svs_switch_bank(svsp);
--		svs_writel_relaxed(svsp, SVSB_PTPEN_OFF, SVSEN);
--		svs_writel_relaxed(svsp, SVSB_INTSTS_VAL_CLEAN, INTSTS);
--		spin_unlock_irqrestore(&svs_lock, flags);
--
--		svsb->phase = SVSB_PHASE_ERROR;
--		svs_adjust_pm_opp_volts(svsb);
-+		svs_bank_disable_and_restore_default_volts(svsp, svsb);
- 	}
- 
- 	ret = reset_control_assert(svsp->rst);
--- 
-2.18.0
+> that the first reg should also be the lowest address ?
+
+I never heard such requirement, although it would be logical choice. In
+this case your solution is to use the higher address as unit address.
+apq8084, msm8226 and maybe more already do it.
+
+You can also look at this that HC was made as the main IO address of a
+device (if one can call something "main" here), thus it should be
+expressed in unit address.
+
+Best regards,
+Krzysztof
 
