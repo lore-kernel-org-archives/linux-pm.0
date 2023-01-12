@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC1ACC678D9
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Jan 2023 20:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1587FC678DB
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Jan 2023 20:03:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241112AbjALUDJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Jan 2023 15:03:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44296 "EHLO
+        id S241123AbjALUDL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Jan 2023 15:03:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44226 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234248AbjALT7S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2023 14:59:18 -0500
+        with ESMTP id S233223AbjALT7Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2023 14:59:16 -0500
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40CF725F8;
-        Thu, 12 Jan 2023 11:58:08 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94ABB2031;
+        Thu, 12 Jan 2023 11:58:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=uinp+F1SpsUbDqJ/LD9jugydtpLudfVqOBpAkBm/Kuw=; b=YR175EZY4r1kZkSNwONKk5sRjm
-        0Jh9q1s+0AnbJ3XR1s+uETOHy6/KMPWcZ2A/3pPA2YRmIe4FLXT5YQWBLkP162ZQZQxcLo5zKmBR8
-        yPxuLFclFoYWLWUAfQaCyKbJfRfGBsr2SyTtFnOANeO7FTb/SglFZ6SweZE90daB8dw1ASmM8UjQM
-        M4ZnMo5a3b3a00pQSh2naJ9Y8eCc6pRMpPzYKWwgFkcsiZ93mCPMmAdByjjnxT7hStav5sFWJ+w/a
-        kpBCoIODr/szF4CoOZ9aEs2Ye7nsYGTHHRFperi/Zde5nuQcuGmRSiIIIE6VXydfVcevstKfVVHvk
-        kpjr9KYQ==;
+        bh=jJDEZOhAk9N+ZSaOA6QuB1P1t6S4a5Fqf3eoW7G5up4=; b=XRf8ma7wutsfHyKi1Hi+7cA2E+
+        ISzQ8igYvc962LFZPwr1xU5gtcPEyFKNa7hJA+KxC5XYQsvH3rZWOBWKUXYbDQ9bWkdzQ7R9MueJy
+        Y09hIRzOfrTWr+PbbdBO+O+pTL3ssag303MZrAFSuk6pYPo4AKY8MFdhAn4zOXUIZKSkp8h/gpwEl
+        10HK45GmCZ5H2fOQVRJUoXUZAyby/MNlI+UHfVfbzb2L+6OHj+J51Q3gO67ND5o6v5qko/EvYLuAD
+        +m7PUs3WeOOZ5RmRIxjaCKuS/CLHTwupWE8RYxRQfUMqsC07nwadxffrMTzEBUzUfxjbGDDH9bFmT
+        jfFMvHtw==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pG3hY-005OcU-0E; Thu, 12 Jan 2023 19:57:28 +0000
+        id 1pG3ha-005Odo-Dd; Thu, 12 Jan 2023 19:57:30 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 0E3943033F9;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 568FF303420;
         Thu, 12 Jan 2023 20:57:13 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id ADA0F2CCF1F54; Thu, 12 Jan 2023 20:57:07 +0100 (CET)
-Message-ID: <20230112195539.821714572@infradead.org>
+        id E64E52CCF1F79; Thu, 12 Jan 2023 20:57:07 +0100 (CET)
+Message-ID: <20230112195540.434302128@infradead.org>
 User-Agent: quilt/0.66
-Date:   Thu, 12 Jan 2023 20:43:22 +0100
+Date:   Thu, 12 Jan 2023 20:43:32 +0100
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     peterz@infradead.org
 Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
@@ -104,7 +104,7 @@ Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
         linux-trace-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 08/51] cpuidle,imx6: Push RCU-idle into driver
+Subject: [PATCH v3 18/51] cpuidle,intel_idle: Fix CPUIDLE_FLAG_IRQ_ENABLE *again*
 References: <20230112194314.845371875@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -112,42 +112,46 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Doing RCU-idle outside the driver, only to then temporarily enable it
-again, at least twice, before going idle is daft.
+  vmlinux.o: warning: objtool: intel_idle_irq+0x10c: call to trace_hardirqs_off() leaves .noinstr.text section
 
-Notably both cpu_pm_enter() and cpu_cluster_pm_enter() implicity
-re-enable RCU.
+As per commit 32d4fd5751ea ("cpuidle,intel_idle: Fix
+CPUIDLE_FLAG_IRQ_ENABLE"):
 
+  "must not have tracing in idle functions"
+
+Clearly people can't read and tinker along until splat dissapears.
+This straight up reverts commit d295ad34f236 ("intel_idle: Fix false
+positive RCU splats due to incorrect hardirqs state").
+
+It doesn't re-introduce the problem because preceding patches fixed it
+properly.
+
+Fixes: d295ad34f236 ("intel_idle: Fix false positive RCU splats due to incorrect hardirqs state")
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Frederic Weisbecker <frederic@kernel.org>
 Tested-by: Tony Lindgren <tony@atomide.com>
 Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- arch/arm/mach-imx/cpuidle-imx6sx.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/idle/intel_idle.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
---- a/arch/arm/mach-imx/cpuidle-imx6sx.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6sx.c
-@@ -47,7 +47,9 @@ static int imx6sx_enter_wait(struct cpui
- 		cpu_pm_enter();
- 		cpu_cluster_pm_enter();
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -168,13 +168,7 @@ static __cpuidle int intel_idle_irq(stru
  
-+		ct_idle_enter();
- 		cpu_suspend(0, imx6sx_idle_finish);
-+		ct_idle_exit();
+ 	raw_local_irq_enable();
+ 	ret = __intel_idle(dev, drv, index);
+-
+-	/*
+-	 * The lockdep hardirqs state may be changed to 'on' with timer
+-	 * tick interrupt followed by __do_softirq(). Use local_irq_disable()
+-	 * to keep the hardirqs state correct.
+-	 */
+-	local_irq_disable();
++	raw_local_irq_disable();
  
- 		cpu_cluster_pm_exit();
- 		cpu_pm_exit();
-@@ -87,7 +89,8 @@ static struct cpuidle_driver imx6sx_cpui
- 			 */
- 			.exit_latency = 300,
- 			.target_residency = 500,
--			.flags = CPUIDLE_FLAG_TIMER_STOP,
-+			.flags = CPUIDLE_FLAG_TIMER_STOP |
-+				 CPUIDLE_FLAG_RCU_IDLE,
- 			.enter = imx6sx_enter_wait,
- 			.name = "LOW-POWER-IDLE",
- 			.desc = "ARM power off",
+ 	return ret;
+ }
 
 
