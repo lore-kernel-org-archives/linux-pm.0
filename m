@@ -2,151 +2,226 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C626C678DB
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Jan 2023 20:12:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF10BC54EBE
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Jan 2023 20:50:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241944AbjALUM0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Jan 2023 15:12:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44140 "EHLO
+        id S232884AbjALUuy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Jan 2023 15:50:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232708AbjALT7O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2023 14:59:14 -0500
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EB86F5C;
-        Thu, 12 Jan 2023 11:58:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
-        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
-        Content-ID:Content-Description:In-Reply-To;
-        bh=H++Izq9gHCigzm3jyfqVQx/OXXHHURXAPu4rHKpriQs=; b=Oi0kUglcFrS3jIOUrZoDJvcOVN
-        KMsu46dZ6R4xAuLNdPZMHSde5BXLi7p5BoS3AvQIKTnK+Y7UxJNqVM2oTIBnlXrFTnLrdeXIfb+Qi
-        7AAikG9twh8Anr/sZFYaO7bb7qNnwpMCkz7DkMEjS9gx3+xe9hOodyU8GQp9X/lUnZ8sRJesyThHi
-        RIfrPCVCdHkqJ74NP1GdEPmsGlsYXN+DPENhh6IP5huV+DA0rAhflvdEIcm2geli5CAbtis/SJcyh
-        5rHDUys63xFKGoXiApF9zgw4oIsvJ6+DyPsl9rZJITMkEb2o+HPd+tXle08OBDnF39ptfNNqdFe8b
-        lJF6i9+g==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1pG3hG-0045ov-0L;
-        Thu, 12 Jan 2023 19:57:10 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 824E6303432;
-        Thu, 12 Jan 2023 20:57:13 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 0D9AD2CCF62A9; Thu, 12 Jan 2023 20:57:08 +0100 (CET)
-Message-ID: <20230112195540.804410487@infradead.org>
-User-Agent: quilt/0.66
-Date:   Thu, 12 Jan 2023 20:43:38 +0100
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     peterz@infradead.org
-Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
-        mattst88@gmail.com, vgupta@kernel.org, linux@armlinux.org.uk,
-        nsekhar@ti.com, brgl@bgdev.pl, ulli.kroll@googlemail.com,
-        linus.walleij@linaro.org, shawnguo@kernel.org,
-        Sascha Hauer <s.hauer@pengutronix.de>, kernel@pengutronix.de,
-        festevam@gmail.com, linux-imx@nxp.com, tony@atomide.com,
-        khilman@kernel.org, krzysztof.kozlowski@linaro.org,
-        alim.akhtar@samsung.com, catalin.marinas@arm.com, will@kernel.org,
-        guoren@kernel.org, bcain@quicinc.com, chenhuacai@kernel.org,
-        kernel@xen0n.name, geert@linux-m68k.org, sammy@sammy.net,
-        monstr@monstr.eu, tsbogend@alpha.franken.de, dinguyen@kernel.org,
-        jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
-        shorne@gmail.com, James.Bottomley@HansenPartnership.com,
-        deller@gmx.de, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, paul.walmsley@sifive.com,
-        palmer@dabbelt.com, aou@eecs.berkeley.edu, hca@linux.ibm.com,
-        gor@linux.ibm.com, agordeev@linux.ibm.com,
-        borntraeger@linux.ibm.com, svens@linux.ibm.com,
-        ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
-        richard@nod.at, anton.ivanov@cambridgegreys.com,
-        johannes@sipsolutions.net, tglx@linutronix.de, mingo@redhat.com,
-        bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org,
-        hpa@zytor.com, acme@kernel.org, mark.rutland@arm.com,
-        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-        namhyung@kernel.org, jgross@suse.com, srivatsa@csail.mit.edu,
-        amakhalov@vmware.com, pv-drivers@vmware.com,
-        boris.ostrovsky@oracle.com, chris@zankel.net, jcmvbkbc@gmail.com,
-        rafael@kernel.org, lenb@kernel.org, pavel@ucw.cz,
-        gregkh@linuxfoundation.org, mturquette@baylibre.com,
-        sboyd@kernel.org, daniel.lezcano@linaro.org, lpieralisi@kernel.org,
-        sudeep.holla@arm.com, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@linaro.org, anup@brainfault.org,
-        thierry.reding@gmail.com, jonathanh@nvidia.com,
-        jacob.jun.pan@linux.intel.com, atishp@atishpatra.org,
-        Arnd Bergmann <arnd@arndb.de>, yury.norov@gmail.com,
-        andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk,
-        dennis@kernel.org, tj@kernel.org, cl@linux.com,
-        rostedt@goodmis.org, mhiramat@kernel.org, frederic@kernel.org,
-        paulmck@kernel.org, pmladek@suse.com, senozhatsky@chromium.org,
-        john.ogness@linutronix.de, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        bsegall@google.com, mgorman@suse.de, bristot@redhat.com,
-        vschneid@redhat.com, ryabinin.a.a@gmail.com, glider@google.com,
-        andreyknvl@gmail.com, dvyukov@google.com,
-        vincenzo.frascino@arm.com,
-        Andrew Morton <akpm@linux-foundation.org>, jpoimboe@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-snps-arc@lists.infradead.org, linux-omap@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, linux-csky@vger.kernel.org,
-        linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
-        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-xtensa@linux-xtensa.org, linux-acpi@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-mm@kvack.org,
-        linux-trace-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
-        Marc Zyngier <maz@kernel.org>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 24/51] arm64,smp: Remove trace_.*_rcuidle() usage
-References: <20230112194314.845371875@infradead.org>
+        with ESMTP id S240129AbjALUuJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2023 15:50:09 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87418193E5;
+        Thu, 12 Jan 2023 12:21:37 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 104E3B81E62;
+        Thu, 12 Jan 2023 20:21:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63674C433EF;
+        Thu, 12 Jan 2023 20:21:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1673554894;
+        bh=sJrQxbgpJcSinpuASwh8fpAZzuBQXGPnSzJI9r6rvLM=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=vGxTMm1eCbLw6Lz4iwxfmvpA7r3nsuuArRggVP3zFlyP2FP8SaongTVQKaMHrKNwp
+         E3RMgJZdc0whOAU/M9HpyhYfhx5etE/y1qFzWTIDQWU2kRRsbVefjYrJHk5RJ6EXRW
+         eTdBIdhTS8fqabNekWIoz7Y5RfBN814//OgH+qDmFtNfw3XfP/4QUxCg9UPPWKi3XN
+         eGJo+d0/u1WejTmNiOUgHZJHtTc8VE9udws++58RJq59NmTuudsf3L5EnL+0GPvGza
+         +g3S7Bl6Jh2oCLFn7m9hC07x1qCundByOpXqlu6eXDWGvN9xbhZWo+w5FCIH3bfZ+K
+         LLa0Tuw3JsIRA==
+Date:   Thu, 12 Jan 2023 14:21:32 -0600
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pci@vger.kernel.org,
+        "Limonciello, Mario" <mario.limonciello@amd.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Mehta Sanju <Sanju.Mehta@amd.com>,
+        Lukas Wunner <lukas@wunner.de>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v3] PCI / ACPI: PM: Take _S0W of the target bridge into
+ account in acpi_pci_bridge_d3(()
+Message-ID: <20230112202132.GA1788706@bhelgaas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5659681.DvuYhMxLoT@kreacher>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Ever since commit d3afc7f12987 ("arm64: Allow IPIs to be handled as
-normal interrupts") this function is called in regular IRQ context.
+On Wed, Jan 11, 2023 at 11:38:55AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> It is generally questionable to allow a PCI bridge to go into D3 if
+> it has _S0W returning D2 or a shallower power state, so modify
+> acpi_pci_bridge_d3(() to always take the return value of _S0W for the
+> target bridge into accout.  That is, make it return 'false' if _S0W
+> returns D2 or a shallower power state for the target bridge regardless
+> of its ancestor PCIe Root Port properties.  Of course, this also causes
+> 'false' to be returned if the PCIe Root Port itself is the target and
+> its _S0W returns D2 or a shallower power state.
+> 
+> However, still allow bridges without _S0W that are power-manageable via
+> ACPI to enter D3 to retain the current code behavior in that case.
+> 
+> Link: https://lore.kernel.org/linux-pci/20221031223356.32570-1-mario.limonciello@amd.com/
+> Reported-by: Mario Limonciello <mario.limonciello@amd.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> v2 -> v3:
+>    * Use rpadev for the ACPI companion of the Root Port in acpi_pci_bridge_d3(()
+>      to avoid confusion.
+>    * Make the function evaluating _S0W return the value produced by it or "unknown
+>      state" on errors and let its caller deal with that value.
+> 
+> ---
+>  drivers/acpi/device_pm.c |   19 +++++++++++++++++++
+>  drivers/pci/pci-acpi.c   |   45 +++++++++++++++++++++++++++++++--------------
+>  include/acpi/acpi_bus.h  |    1 +
+>  3 files changed, 51 insertions(+), 14 deletions(-)
+> 
+> Index: linux-pm/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-acpi.c
+> +++ linux-pm/drivers/pci/pci-acpi.c
+> @@ -976,24 +976,41 @@ bool acpi_pci_power_manageable(struct pc
+>  bool acpi_pci_bridge_d3(struct pci_dev *dev)
+>  {
+>  	struct pci_dev *rpdev;
+> -	struct acpi_device *adev;
+> -	acpi_status status;
+> -	unsigned long long state;
+> +	struct acpi_device *adev, *rpadev;
+>  	const union acpi_object *obj;
+>  
+>  	if (acpi_pci_disabled || !dev->is_hotplug_bridge)
+>  		return false;
+>  
+> -	/* Assume D3 support if the bridge is power-manageable by ACPI. */
+> -	if (acpi_pci_power_manageable(dev))
+> -		return true;
+> +	adev = ACPI_COMPANION(&dev->dev);
+> +	if (adev) {
+> +		/*
+> +		 * If the bridge has _S0W, whether or not it can go into D3
+> +		 * depends on what is returned by that object.  In particular,
+> +		 * if the power state returned by _S0W is D2 or shallower,
+> +		 * entering D3 should not be allowed.
+> +		 */
+> +		if (acpi_dev_power_state_for_wake(adev) <= ACPI_STATE_D3_HOT)
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Acked-by: Mark Rutland <mark.rutland@arm.com>
-Acked-by: Marc Zyngier <maz@kernel.org>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Frederic Weisbecker <frederic@kernel.org>
-Tested-by: Tony Lindgren <tony@atomide.com>
-Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- arch/arm64/kernel/smp.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+The comment suggests that this should check for "<= ACPI_STATE_D2"
+(not ACPI_STATE_D3_HOT).  Or is there some subtlety here that I'm
+missing?
 
---- a/arch/arm64/kernel/smp.c
-+++ b/arch/arm64/kernel/smp.c
-@@ -865,7 +865,7 @@ static void do_handle_IPI(int ipinr)
- 	unsigned int cpu = smp_processor_id();
- 
- 	if ((unsigned)ipinr < NR_IPI)
--		trace_ipi_entry_rcuidle(ipi_types[ipinr]);
-+		trace_ipi_entry(ipi_types[ipinr]);
- 
- 	switch (ipinr) {
- 	case IPI_RESCHEDULE:
-@@ -914,7 +914,7 @@ static void do_handle_IPI(int ipinr)
- 	}
- 
- 	if ((unsigned)ipinr < NR_IPI)
--		trace_ipi_exit_rcuidle(ipi_types[ipinr]);
-+		trace_ipi_exit(ipi_types[ipinr]);
- }
- 
- static irqreturn_t ipi_handler(int irq, void *data)
+> +			return false;
+> +
+> +		/*
+> +		 * Otherwise, assume that the bridge can enter D3 so long as it
+> +		 * is power-manageable via ACPI.
+> +		 */
+> +		if (acpi_device_power_manageable(adev))
+> +			return true;
+> +	}
+>  
+>  	rpdev = pcie_find_root_port(dev);
+>  	if (!rpdev)
+>  		return false;
+>  
+> -	adev = ACPI_COMPANION(&rpdev->dev);
+> -	if (!adev)
+> +	if (rpdev == dev)
+> +		rpadev = adev;
+> +	else
+> +		rpadev = ACPI_COMPANION(&rpdev->dev);
+> +
+> +	if (!rpadev)
+>  		return false;
+>  
+>  	/*
+> @@ -1001,15 +1018,15 @@ bool acpi_pci_bridge_d3(struct pci_dev *
+>  	 * doesn't supply a wakeup GPE via _PRW, it cannot signal hotplug
+>  	 * events from low-power states including D3hot and D3cold.
+>  	 */
+> -	if (!adev->wakeup.flags.valid)
+> +	if (!rpadev->wakeup.flags.valid)
+>  		return false;
+>  
+>  	/*
+> -	 * If the Root Port cannot wake itself from D3hot or D3cold, we
+> -	 * can't use D3.
+> +	 * In the bridge-below-a-Root-Port case, evaluate _S0W for the Root Port
+> +	 * to verify whether or not it can signal wakeup from D3.
+>  	 */
+> -	status = acpi_evaluate_integer(adev->handle, "_S0W", NULL, &state);
+> -	if (ACPI_SUCCESS(status) && state < ACPI_STATE_D3_HOT)
+> +	if (rpadev != adev &&
+> +	    acpi_dev_power_state_for_wake(rpadev) <= ACPI_STATE_D3_HOT)
 
+Same question here.
 
+>  		return false;
+>  
+>  	/*
+> @@ -1018,7 +1035,7 @@ bool acpi_pci_bridge_d3(struct pci_dev *
+>  	 * bridges *below* that Root Port can also signal hotplug events
+>  	 * while in D3.
+>  	 */
+> -	if (!acpi_dev_get_property(adev, "HotPlugSupportInD3",
+> +	if (!acpi_dev_get_property(rpadev, "HotPlugSupportInD3",
+>  				   ACPI_TYPE_INTEGER, &obj) &&
+>  	    obj->integer.value == 1)
+>  		return true;
+> Index: linux-pm/drivers/acpi/device_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/device_pm.c
+> +++ linux-pm/drivers/acpi/device_pm.c
+> @@ -484,6 +484,25 @@ void acpi_dev_power_up_children_with_adr
+>  	acpi_dev_for_each_child(adev, acpi_power_up_if_adr_present, NULL);
+>  }
+>  
+> +/**
+> + * acpi_dev_power_state_for_wake - Deepest power state for wakeup signaling
+> + * @adev: ACPI companion of the target device.
+> + *
+> + * Evaluate _S0W for @adev and return the value produced by it or return
+> + * ACPI_STATE_UNKNOWN on errors (including _S0W not present).
+> + */
+> +u8 acpi_dev_power_state_for_wake(struct acpi_device *adev)
+> +{
+> +	unsigned long long state;
+> +	acpi_status status;
+> +
+> +	status = acpi_evaluate_integer(adev->handle, "_S0W", NULL, &state);
+> +	if (ACPI_FAILURE(status))
+> +		return ACPI_STATE_UNKNOWN;
+> +
+> +	return state;
+> +}
+> +
+>  #ifdef CONFIG_PM
+>  static DEFINE_MUTEX(acpi_pm_notifier_lock);
+>  static DEFINE_MUTEX(acpi_pm_notifier_install_lock);
+> Index: linux-pm/include/acpi/acpi_bus.h
+> ===================================================================
+> --- linux-pm.orig/include/acpi/acpi_bus.h
+> +++ linux-pm/include/acpi/acpi_bus.h
+> @@ -533,6 +533,7 @@ int acpi_bus_update_power(acpi_handle ha
+>  int acpi_device_update_power(struct acpi_device *device, int *state_p);
+>  bool acpi_bus_power_manageable(acpi_handle handle);
+>  void acpi_dev_power_up_children_with_adr(struct acpi_device *adev);
+> +u8 acpi_dev_power_state_for_wake(struct acpi_device *adev);
+>  int acpi_device_power_add_dependent(struct acpi_device *adev,
+>  				    struct device *dev);
+>  void acpi_device_power_remove_dependent(struct acpi_device *adev,
+> 
+> 
+> 
