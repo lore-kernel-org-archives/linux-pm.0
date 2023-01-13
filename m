@@ -2,733 +2,348 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73E19C54EBD
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Jan 2023 06:52:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FEFAC61DB3
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Jan 2023 06:55:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233394AbjAMGwI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Jan 2023 01:52:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56722 "EHLO
+        id S234761AbjAMGzH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Jan 2023 01:55:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56658 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240087AbjAMGvc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2023 01:51:32 -0500
-Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id AB2E37F475;
-        Thu, 12 Jan 2023 22:35:25 -0800 (PST)
-X-MailGates: (flag:4,DYNAMIC,BADHELO,RELAY,NOHOST:PASS)(compute_score:DE
-        LIVER,40,3)
-Received: from 192.168.10.47
-        by mg.richtek.com with MailGates ESMTP Server V5.0(16474:0:AUTH_RELAY)
-        (envelope-from <cy_huang@richtek.com>); Fri, 13 Jan 2023 14:34:43 +0800 (CST)
-Received: from ex4.rt.l (192.168.10.47) by ex4.rt.l (192.168.10.47) with
+        with ESMTP id S240677AbjAMGyc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2023 01:54:32 -0500
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2052.outbound.protection.outlook.com [40.107.237.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1356280AEB;
+        Thu, 12 Jan 2023 22:38:21 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=cj6OpqQe3qQT463EdSvuCcxstybrN2hdYdsSKsL9d3t3zrHBQV/AUn7RCn7bhWK1vOJxaQ0AECjZIOgKcL7rH3NR2i8dmUI2kPNxpqFRqtuaLITyoZqLnwhFUghPhZ5FG+GY7utMlMQwDdUxiP9mgzTmzHgnnr2/cNdySsotddHOIQwm0QDujoHlFgjTHyWMRjK4yx9r5CP4Nc+1kJTa7CC1ZbyC1lKAuvGzYTgEd/5uy/Op7kV5dCiOYJ59drdSi+y8dubN1/bI49PqnNn9dZ3vWEvzov27NEYezqmdh4S5ow+Ag6gc+sP8DncKG88SZYbvgUgnOENWuOUEfDabbQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=v9K8FPjHrQ4wDjZ/GT1tCP2ENJOS87zsaG90azpGA6E=;
+ b=HFWB+50qeI1uzHKooRbU2vr4RdU5GO0FHh76j9akYsbHS5ky9dMlTCJG15Sk5OUCsdhyOYUHEEPo5U+8qz13oDmrq20DZaTq6KHWGMqF0THwGyqZP758GVhBHDO6O93RN/xNYRZpO7uSX82W4ftnV0jyApUocKacNHy9j5hsniwl0K0d0fuX1oZ2WzUKcpsK/+NZBTOaXl8id/sq7LBeROtrQsI7/mmzoDX7WPj7HHhvu28kI7+TvYr4vR7t/zfQMMh3KsVsqBa5ODkHHs2bFuRQMx4dF31/whZ4LgWN1n38EX991Hr6mOVrjCRrtenrEpZ+T51Ltt8kbcasnsC55g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=v9K8FPjHrQ4wDjZ/GT1tCP2ENJOS87zsaG90azpGA6E=;
+ b=YKBNmmuWrckhGe9X33RbbEWC4poPgN69PEYkzro+enLZYy9S/aqmvKShkCBpWF/UXvt399PwXRjz5+khXqqF+eT3jdnMIQINe8lqD4KP1mfkDIM3M3ygFIiKNU9q859sxCO/E7U4loQgiTrIZaaCsBwK6TQVnJxxUtmrWbTZfJg=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from BY5PR12MB3876.namprd12.prod.outlook.com (2603:10b6:a03:1a7::26)
+ by LV2PR12MB5751.namprd12.prod.outlook.com (2603:10b6:408:17d::11) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.20; Fri, 13 Jan
- 2023 14:34:43 +0800
-Received: from linuxcarl2.richtek.com (192.168.10.154) by ex4.rt.l
- (192.168.10.45) with Microsoft SMTP Server id 15.2.1118.20 via Frontend
- Transport; Fri, 13 Jan 2023 14:34:43 +0800
-From:   <cy_huang@richtek.com>
-To:     <sre@kernel.org>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>
-CC:     <allen_chiang@richtek.com>, <cy_huang@richtek.com>,
-        <u0084500@gmail.com>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH RESEND v3 2/3] power: supply: rt9759: Add Richtek RT9759 smart cap divider charger
-Date:   Fri, 13 Jan 2023 14:34:41 +0800
-Message-ID: <1673591682-25789-3-git-send-email-cy_huang@richtek.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1673591682-25789-1-git-send-email-cy_huang@richtek.com>
-References: <1673591682-25789-1-git-send-email-cy_huang@richtek.com>
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5986.19; Fri, 13 Jan
+ 2023 06:38:18 +0000
+Received: from BY5PR12MB3876.namprd12.prod.outlook.com
+ ([fe80::4ac9:c4f8:b0f:a863]) by BY5PR12MB3876.namprd12.prod.outlook.com
+ ([fe80::4ac9:c4f8:b0f:a863%7]) with mapi id 15.20.5986.018; Fri, 13 Jan 2023
+ 06:38:18 +0000
+Message-ID: <e6e162b0-7b69-cac5-b0d3-b33a589cb8dc@amd.com>
+Date:   Fri, 13 Jan 2023 12:08:06 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v2 5/6] cpufreq: amd_pstate: Add guided mode control
+ support via sysfs
+Content-Language: en-US
+To:     Mario Limonciello <mario.limonciello@amd.com>,
+        Rafael J Wysocki <rafael@kernel.org>,
+        Huang Rui <ray.huang@amd.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>, Perry.Yuan@amd.com,
+        Ananth Narayan <ananth.narayan@amd.com>, gautham.shenoy@amd.com
+Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>,
+        santosh.shukla@amd.com
+References: <20230113052141.2874296-1-wyes.karny@amd.com>
+ <20230113052141.2874296-6-wyes.karny@amd.com>
+ <00f4f977-b381-1b1a-a9a5-e2d342979b83@amd.com>
+From:   Wyes Karny <wyes.karny@amd.com>
+In-Reply-To: <00f4f977-b381-1b1a-a9a5-e2d342979b83@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: PN0PR01CA0033.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:4e::23) To BY5PR12MB3876.namprd12.prod.outlook.com
+ (2603:10b6:a03:1a7::26)
 MIME-Version: 1.0
-Content-Type: text/plain
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BY5PR12MB3876:EE_|LV2PR12MB5751:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1d1229bd-7fb2-430c-1bdb-08daf530c193
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Y3SxG1UzejkIckSuKy86xzwotsBvOjb8ytk1kljt+LBH1kEp5BQvrCGKaZoyKD2dBLj+2n6NS7Ae6e/HI01enN5qlnhY7/rIEBW3VXGjc9Y5wsJuhze38mBUyCp6i6lHtUQNrWjQYMlkUv/TmfaJ1X7cy6Y+gxDK+YAjJj84F4j7P05ZTr75GoblCzV1YR3Bjo3ZId3MuGa4zHNgF6WbVl8BqjqwS0nvk45LiTemF2ntHkQ5+tYl9+DZi3Ebte3SfSNZ5kFn/bAqOHEG85M2redlSZsuiwqtlfwDBEoxwIBUpBptRX18053FqO2cPUijuqz5+GOLh/nRR8L08xhm4zm9sFrkuhAWNrFiTkbsJLiiyzI2axDqVPdV+2htPaZ8q8OKKsGIYMphH+8In3vFdS1+Rcxu8pxWeCYVyQ3ZLrKD6yjNcVXiSf2vs+wInbd6DgfiDCQu+LySKwQ3ZdzSM1In5agpUgT04bcRa3oVq/WeVMOV1NDEHAgruqbybSHKexH6pmT7E1pG3JuiaLuZgX+OA3PsUIrnj/wpMOiTaXu3exq0VRwkwKuim9TXaXU2cGhCwsgI4BVP6roHQHfRW4ksoSI9REyR9kqUlAz4kx4/1dyoILJrHU/aNRBdW34nNqTTD/aEsoEDJ9WPFBlbap/sx31dQLjBjfzemEFD/kg389Jtva9tdtO0cR2Gy33Ldfd6eSmVOqZ+8BPBUFRuV+T0PPXTdKDO5QK7Mgg6eTM=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BY5PR12MB3876.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(396003)(346002)(136003)(39860400002)(366004)(376002)(451199015)(86362001)(31696002)(41300700001)(36756003)(44832011)(186003)(26005)(5660300002)(8936002)(53546011)(6512007)(6506007)(478600001)(6666004)(6486002)(83380400001)(2616005)(316002)(6636002)(4326008)(8676002)(66946007)(66476007)(38100700002)(66556008)(110136005)(2906002)(31686004)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?NUgwTGtVK3FHejU1bjhibUpFTlo4Rnd2cVBXOHRCaGJGRDFwRWpnR2pIdWZw?=
+ =?utf-8?B?NVZWYnc1WnRSU1gvSVJiSGtmLzRwTlVNaVFadzdlSUxhcmlaeHhkd0l0c3J1?=
+ =?utf-8?B?VVhYTS8rS2ZLOVBzbmpCcEFpUjFoZTVLa3g4eWYrb0hQVDByVWt2WTB2WU9Y?=
+ =?utf-8?B?Uk05TjkvQkFnMzRjbUI0UGlYVjNjNlVoWlB2MEdJenk2YktGa0xmdXFVMUUv?=
+ =?utf-8?B?NjVXU093eFRLbzd6NzhCcXN6RDMzN0lUSFI3OWZXUEhwRUZwdXVxbS8zRXBG?=
+ =?utf-8?B?OU1MWTRuT0NDTHZPQnhyNytNZm1laDhqaVVRUzltN01PdUh4VVBuUVBBT0dy?=
+ =?utf-8?B?b0wyakYraStEVkpjeGd4emt1cEd5eC9VYVhSbTFmbm5abVBqT2hCYVJZMkhT?=
+ =?utf-8?B?WTZqT2FnZGpsWWIyeVQrVWxENis5MVlyV1RiaDNVS3JlNkt1ck81V2swTW5k?=
+ =?utf-8?B?bkNNOExTd0c0b0wrSzFHZUZSVVUzN24rM1dxMW5zc3huQVdaa0pqMkhoNTRw?=
+ =?utf-8?B?NjlteTcrMmR6V2FWcEJUdDExdG5iM3dHejhrOGFQeTJaUUlRblArOGpiKzFw?=
+ =?utf-8?B?TnNZMEFTSGpFdXBUMmVNZ21WZElUbWtvWFF6RzVSenVzMldLSDBscEtxWitS?=
+ =?utf-8?B?Qjg0RC9CVVlkdW9RQ0FYOEpEV2hIY0hMWFlSS1Y1L25WNDdVZlB3VDJ1Y3k3?=
+ =?utf-8?B?YWNKUk9BazhlUTNPRUc1aWQ5NGNzUmpzaDFxQUFDNSsxNXdqU0tKSWJpVGts?=
+ =?utf-8?B?OEJjajZxeGc4YU9RNEJVb0JSRzNIQkpnQUVncVVlZE5RTkhUVStzQlAraC9u?=
+ =?utf-8?B?Y0RsdEErZ3lac0JUNVVqay9wcExRclNTa0E0RjVIQ1pmemxFRGppbVdqZFdw?=
+ =?utf-8?B?NGRJTmxobFJ4RjBsU01IMW9WbjlwWnVSRnk2WlFwb3N4VGw2Q2w5TXcwQnFz?=
+ =?utf-8?B?OERXZHcwSmFTemxTbE42cUxBUUZOWGpYd0oyZk0xNStPT3hIR2V3TlhZWTdj?=
+ =?utf-8?B?WXFvUThtbFVsYmEwVkdxSjZzd2ptVGhEUFM5ZmVpM3lSTWVsam9IMlpBUnlr?=
+ =?utf-8?B?azF5dStOUENqODkrVmU1dXZHQmxCZXY4NGtMTU9rNnJBeFBEVlpIUG51UUNS?=
+ =?utf-8?B?UHhmWDVsV1hycGNTWkM4K0dCeXRicDhPRXpFbEdLdC91eUlzaDVnVEg5a1Jt?=
+ =?utf-8?B?eTV1cWhVZUovRGpNTmZIYTh5VHJFL1FHRmJOUHJjcW14VTU5emFSLzRpakJu?=
+ =?utf-8?B?Zk10VXFLVjhPZnlpU1NzOUxlR3hxenFJWFdRQkR3OVpUSGk1WlFKaytQdmlp?=
+ =?utf-8?B?NDBXMEdSOHJRbklYdkdGUVlNaGtUcGRaNXRvRC91WUdIdmdkRERxd0JDc0cw?=
+ =?utf-8?B?cjF1U0I2TU0vNGhYMkI5ZVJ0SzQ4blBuQUdTSUJHYk9CSU9paDhCNU04bUdr?=
+ =?utf-8?B?Z09YMVBCQ2Z1TEZ4UWZUSXo3WWE3UGl1djZBOW44M2dOT3h1WllrV3J3dERP?=
+ =?utf-8?B?Mm9DcVkwbExFandTYjh4UkRxbTBXVTJpdG5lQm5JeUE1QVpJZ2JUWWdhaXBj?=
+ =?utf-8?B?TzRuSU9jYXdJQlZKbkROb1gwd2QydXJEdllSTXdTRm5sZmQxaEtFWUZlQ01C?=
+ =?utf-8?B?L1B5eXFqdVBrUEM0M3JySHMwVlNhVDI5NDNCblhjbFpmb05mVmdlN1ZxdUNL?=
+ =?utf-8?B?NERXWnFWd2F3b3hnTjVGSWlKS0JmVEtpYnlDaEdzNVBVZ3AwOXFNek1lQ0g0?=
+ =?utf-8?B?Q0lQSURWRnFSRWk0cmtuVmdzQkwxTXZORkZQZ2QwRkdVdjFDcHhVdmhLQ01D?=
+ =?utf-8?B?NUZLS3FWMmtBQTZ1UHNSdnN2V1cwcTFISGdoekMyM2drYm5keE9RL2JIQ2xi?=
+ =?utf-8?B?VmkrbXU5VC85T0JWYVFpRkRTRlFzZnNSTkp3SDFsbGxGQkFrMjJ2OXBzOUZn?=
+ =?utf-8?B?c3RCbU9wSmltWTRHaktvRVIwdUNxNmRzQzZDM2xPWm1tTW5qdnZZekozMHFS?=
+ =?utf-8?B?bm1nRVlkMys5WHZuQno4emRVTks1M0lyY0I0dTQ5ZEVwWnpLa0dkcDdTeWsx?=
+ =?utf-8?B?UWgyVk8reUR5ZmlRY1c3K0VqeUVzTDE0OHhRN0xidFB3OUNpazdLMmpYWXox?=
+ =?utf-8?Q?tmXwSVbiSgYZZ1JZUFnUVup7P?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1d1229bd-7fb2-430c-1bdb-08daf530c193
+X-MS-Exchange-CrossTenant-AuthSource: BY5PR12MB3876.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jan 2023 06:38:18.4818
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: IKb7huZIrG+XpAAg5nQoNbi4WMyxEt3M5MSyczRt03gOuxcSZhPeCtryo/u3id3wdMEgt6jXqqpGSkz6XFyP6Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR12MB5751
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: ChiYuan Huang <cy_huang@richtek.com>
 
-Add support for RT9759 smart cap divider charger.
 
-The RT9759 is a high efficiency and high charge current charger. The
-maximum charge current is up to 8A. It integrates a dual-phase charge
-pump core with ADC monitoring.
+On 1/13/2023 11:18 AM, Mario Limonciello wrote:
+> On 1/12/23 23:21, Wyes Karny wrote:
+>> amd_pstate driver's `status` sysfs entry helps to control the driver's
+>> mode dynamically by user. After the addition of guided mode the
+>> combinations of mode transitions have been increased (16 combinations).
+>> Therefore optimise the amd_pstate_update_status function by implementing
+>> a state transition table.
+>>
+>> There are 4 states amd_pstate supports, namely: 'disable', 'passive',
+>> 'active', and 'guided'.  The transition from any state to any other
+>> state is possible after this change. Only if the state requested matches
+>> with the current state then -EBUSY value is returned.
+>>
+>> Sysfs interface:
+>>
+>> To disable amd_pstate driver:
+>>   # echo disable > /sys/devices/system/cpu/amd_pstate/status
+>>
+>> To enable passive mode:
+>>   # echo passive > /sys/devices/system/cpu/amd_pstate/status
+>>
+>> To change mode to active:
+>>   # echo active > /sys/devices/system/cpu/amd_pstate/status
+>>
+>> To change mode to guided:
+>>   # echo guided > /sys/devices/system/cpu/amd_pstate/status
+>>
+>> Signed-off-by: Wyes Karny <wyes.karny@amd.com>
+>> ---
+>>   drivers/cpufreq/amd-pstate.c | 144 ++++++++++++++++++++++++++---------
+>>   1 file changed, 109 insertions(+), 35 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+>> index 20d78dad712d..4a2b559fd712 100644
+>> --- a/drivers/cpufreq/amd-pstate.c
+>> +++ b/drivers/cpufreq/amd-pstate.c
+>> @@ -65,6 +65,8 @@ static struct cpufreq_driver amd_pstate_epp_driver;
+>>   static int cppc_state = AMD_PSTATE_DISABLE;
+>>   struct kobject *amd_pstate_kobj;
+>>   +typedef int (*cppc_mode_transition_fn)(int);
+>> +
+>>   static inline int get_mode_idx_from_str(const char *str, size_t size)
+>>   {
+>>       int i;
+>> @@ -806,55 +808,127 @@ static ssize_t amd_pstate_show_status(char *buf)
+>>     static void amd_pstate_driver_cleanup(void)
+>>   {
+>> +    amd_pstate_enable(false);
+>> +    cppc_state = AMD_PSTATE_DISABLE;
+>>       default_pstate_driver = NULL;
+>>   }
+>>   -static int amd_pstate_update_status(const char *buf, size_t size)
+>> +static int amd_pstate_register_driver(int mode)
+>>   {
+>>       int ret;
+>> -    int mode_idx;
+>>   -    if (size > 7 || size < 3)
+>> +    if (mode == AMD_PSTATE_PASSIVE || mode == AMD_PSTATE_GUIDED)
+>> +        default_pstate_driver = &amd_pstate_driver;
+>> +    else if (mode == AMD_PSTATE_ACTIVE)
+>> +        default_pstate_driver = &amd_pstate_epp_driver;
+>> +    else
+>>           return -EINVAL;
+>> -    mode_idx = get_mode_idx_from_str(buf, size);
+>>   -    switch(mode_idx) {
+>> -    case AMD_PSTATE_DISABLE:
+>> -        if (!default_pstate_driver)
+>> -            return -EINVAL;
+>> -        if (cppc_state == AMD_PSTATE_ACTIVE)
+>> -            return -EBUSY;
+>> -        ret = cpufreq_unregister_driver(default_pstate_driver);
+>> +    ret = cpufreq_register_driver(default_pstate_driver);
+>> +    if (ret) {
+>>           amd_pstate_driver_cleanup();
+>> -        break;
+>> -    case AMD_PSTATE_PASSIVE:
+>> -        if (default_pstate_driver) {
+>> -            if (default_pstate_driver == &amd_pstate_driver)
+>> -                return 0;
+>> -            cpufreq_unregister_driver(default_pstate_driver);
+>> -            cppc_state = AMD_PSTATE_PASSIVE;
+>> -            default_pstate_driver = &amd_pstate_driver;
+>> -        }
+>> +        return ret;
+>> +    }
+>>   -        ret = cpufreq_register_driver(default_pstate_driver);
+>> -        break;
+>> -    case AMD_PSTATE_ACTIVE:
+>> -        if (default_pstate_driver) {
+>> -            if (default_pstate_driver == &amd_pstate_epp_driver)
+>> -                return 0;
+>> -            cpufreq_unregister_driver(default_pstate_driver);
+>> -            default_pstate_driver = &amd_pstate_epp_driver;
+>> -            cppc_state = AMD_PSTATE_ACTIVE;
+>> +    cppc_state = mode;
+>> +    return 0;
+>> +}
+>> +
+>> +static int amd_pstate_unregister_driver(int dummy)
+>> +{
+>> +    int ret;
+>> +
+>> +    ret = cpufreq_unregister_driver(default_pstate_driver);
+>> +
+>> +    if (ret)
+>> +        return ret;
+>> +
+>> +    amd_pstate_driver_cleanup();
+>> +    return 0;
+>> +}
+>> +
+>> +static void amd_pstate_change_mode_without_dvr_change(int mode)
+>> +{
+>> +    int cpu = 0;
+>> +
+>> +    cppc_state = mode;
+>> +    if (!boot_cpu_has(X86_FEATURE_CPPC)) {
+> 
+> You can save some indentation by inverting the check and calling "return
 
-Co-developed-by: Allen Chiang <allen_chiang@richtek.com>
-Signed-off-by: Allen Chiang <allen_chiang@richtek.com>
-Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
----
-Since v3:
-- Fix patch title typo (from 'rt9471' to 'rt9759')
-- Remove unused R_VAC_OVP range.
-- Refer to ABI document, use 'status' to control battery charging, not 'online'
-- Refer to ABI document, use 'online' to indicate bus state
+Makes sense. Thanks!
+> 
+>> +        if (cppc_state == AMD_PSTATE_PASSIVE) {
+>> +            for_each_present_cpu(cpu) {
+>> +                cppc_set_auto_sel(cpu, 0);
+>> +            }
+>> +        } else if (cppc_state == AMD_PSTATE_GUIDED) {
+>> +                for_each_present_cpu(cpu) {
+>> +                    cppc_set_auto_sel(cpu, 1);
+>> +                }
+>>           }
+>> +    }
+>> +}
+>>   -        ret = cpufreq_register_driver(default_pstate_driver);
+>> -        break;
+>> -    default:
+>> -        break;
+>> -        ret = -EINVAL;
+>> +static int amd_pstate_change_driver_mode(int mode)
+>> +{
+>> +    int ret;
+>> +
+>> +    if ((mode == AMD_PSTATE_GUIDED && cppc_state == AMD_PSTATE_PASSIVE) ||
+>> +            (mode == AMD_PSTATE_PASSIVE && cppc_state == AMD_PSTATE_GUIDED)) {
+>> +        amd_pstate_change_mode_without_dvr_change(mode);
+>> +        return 0;
+> 
+> This feels like you're duplicating your logic of your mode transition table.  How about having the mode transition table call the function for changing modes without a driver change directly instead for those cases?
 
-Since v2:
-No change
+Makes sense. Will add this in the table.
+> 
+>>       }
+>>   -    return ret;
+>> +    ret = amd_pstate_unregister_driver(0);
+>> +    if (ret)
+>> +        return ret;
+>> +
+>> +    ret = amd_pstate_register_driver(mode);
+>> +    if (ret)
+>> +        return ret;
+>> +
+>> +    return 0;
+>> +}
+>> +
+>> +/* Mode transition table */
+>> +cppc_mode_transition_fn mode_state_machine[AMD_PSTATE_MAX][AMD_PSTATE_MAX] = {
+>> +    [AMD_PSTATE_DISABLE]         = {
+>> +        [AMD_PSTATE_DISABLE]     = NULL,
+>> +        [AMD_PSTATE_PASSIVE]     = amd_pstate_register_driver,
+>> +        [AMD_PSTATE_ACTIVE]      = amd_pstate_register_driver,
+>> +        [AMD_PSTATE_GUIDED]      = amd_pstate_register_driver,
+>> +    },
+>> +    [AMD_PSTATE_PASSIVE]         = {
+>> +        [AMD_PSTATE_DISABLE]     = amd_pstate_unregister_driver,
+>> +        [AMD_PSTATE_PASSIVE]     = NULL,
+>> +        [AMD_PSTATE_ACTIVE]      = amd_pstate_change_driver_mode,
+>> +        [AMD_PSTATE_GUIDED]      = amd_pstate_change_driver_mode,
+>> +    },
+>> +    [AMD_PSTATE_ACTIVE]          = {
+>> +        [AMD_PSTATE_DISABLE]     = amd_pstate_unregister_driver,
+>> +        [AMD_PSTATE_PASSIVE]     = amd_pstate_change_driver_mode,
+>> +        [AMD_PSTATE_ACTIVE]      = NULL,
+>> +        [AMD_PSTATE_GUIDED]      = amd_pstate_change_driver_mode,
+>> +    },
+>> +    [AMD_PSTATE_GUIDED]          = {
+>> +        [AMD_PSTATE_DISABLE]     = amd_pstate_unregister_driver,
+>> +        [AMD_PSTATE_PASSIVE]     = amd_pstate_change_driver_mode,
+>> +        [AMD_PSTATE_ACTIVE]      = amd_pstate_change_driver_mode,
+>> +        [AMD_PSTATE_GUIDED]      = NULL,
+>> +    },
+>> +};
+>> +
+>> +static int amd_pstate_update_status(const char *buf, size_t size)
+>> +{
+>> +    int mode_idx;
+>> +
+>> +    if (size > 7 || size < 3)
+>> +        return -EINVAL;
+> 
+> The compiler typically inlines strlen.  Perhaps to make this more obvious what these boundaries are maybe do this:
+> 
+> size > strlen("passive") || size < strlen("off")
+> 
+>> +    mode_idx = get_mode_idx_from_str(buf, size);
+>> +
+>> +    if (mode_idx < 0 || mode_idx >= AMD_PSTATE_MAX)
+>> +        return -EINVAL;
+>> +
+>> +    if (mode_state_machine[cppc_state][mode_idx])
+>> +        return mode_state_machine[cppc_state][mode_idx](mode_idx);
+>> +
+>> +    return -EBUSY;
+>>   }
+>>     static ssize_t show_status(struct kobject *kobj,
+> 
 
----
- drivers/power/supply/Kconfig  |  15 ++
- drivers/power/supply/Makefile |   1 +
- drivers/power/supply/rt9759.c | 613 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 629 insertions(+)
- create mode 100644 drivers/power/supply/rt9759.c
-
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 0bbfe6a..2f24f29 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -785,6 +785,21 @@ config BATTERY_RT5033
- 	  The fuelgauge calculates and determines the battery state of charge
- 	  according to battery open circuit voltage.
- 
-+config CHARGER_RT9759
-+	tristate "Richtek RT9759 smart cap divider charger driver"
-+	depends on I2C
-+	select REGMAP_I2C
-+	select LINEAR_RANGES
-+	help
-+	  This adds support for Richtek RT9759 smart cap divider charger driver.
-+	  It's a high efficiency and high charge current charger. the device
-+	  integrates smart cap divider topology with 9-channel high speed
-+	  ADCs that can provide input and output voltage, current and
-+	  temperature monitoring.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called rt9759.
-+
- config CHARGER_RT9455
- 	tristate "Richtek RT9455 battery charger driver"
- 	depends on I2C
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 0ee8653..b872c06 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -56,6 +56,7 @@ obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
- obj-$(CONFIG_BATTERY_MAX1721X)	+= max1721x_battery.o
- obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
- obj-$(CONFIG_BATTERY_RT5033)	+= rt5033_battery.o
-+obj-$(CONFIG_CHARGER_RT9759)	+= rt9759.o
- obj-$(CONFIG_CHARGER_RT9455)	+= rt9455_charger.o
- obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
-diff --git a/drivers/power/supply/rt9759.c b/drivers/power/supply/rt9759.c
-new file mode 100644
-index 00000000..fd9bdae
---- /dev/null
-+++ b/drivers/power/supply/rt9759.c
-@@ -0,0 +1,613 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (C) 2022 Richtek Technology Corp.
-+ *
-+ * Authors: Allen Chiang <allen_chiang@richtek.com>
-+ *          ChiYuan Huang <cy_huang@richtek.com>
-+ */
-+
-+#include <linux/i2c.h>
-+#include <linux/kernel.h>
-+#include <linux/linear_range.h>
-+#include <linux/interrupt.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+#include <linux/sysfs.h>
-+#include <linux/util_macros.h>
-+
-+#define RT9759_REG_VBATOVP	0x00
-+#define RT9759_REG_IBATOCP	0x02
-+#define RT9759_REG_VBUSOVP	0x06
-+#define RT9759_REG_IBUSOCPUCP	0x08
-+#define RT9759_REG_CONVST	0x0A
-+#define RT9759_REG_CHGCTL0	0x0B
-+#define RT9759_REG_CHGCTL1	0x0C
-+#define RT9759_REG_INTSTAT	0x0D
-+#define RT9759_REG_FLTFLAG	0x11
-+#define RT9759_REG_DEVINFO	0x13
-+#define RT9759_REG_ADCCTL	0x14
-+#define RT9759_REG_IBUSADC	0x16
-+#define RT9759_REG_REGCTL	0x2B
-+#define RT9759_REG_OTHER4	0x33
-+
-+#define RT9759_VBUSUCP_MASK	BIT(4)
-+#define RT9759_TDIEOTP_MASK	BIT(7)
-+#define RT9759_WDT_MASK		BIT(3)
-+#define RT9759_BUSBATOVP_MASK	(BIT(7) | BIT(5))
-+#define RT9759_BUSBATOCP_MASK	(BIT(6) | BIT(4))
-+#define RT9759_ADCEN_MASK	BIT(7)
-+#define RT9759_ADCONCE_MASK	BIT(6)
-+
-+#define RT9759_DEVID		0x08
-+#define RT9759_ADC_CONVTIME	2000
-+#define RT9759_ADC_MAXWAIT	16000
-+
-+enum rt9759_adc_chan {
-+	ADC_IBUS = 0,
-+	ADC_VBUS,
-+	ADC_VAC,
-+	ADC_VOUT,
-+	ADC_VBAT,
-+	ADC_IBAT,
-+	ADC_TSBUS,
-+	ADC_TSBAT,
-+	ADC_TDIE,
-+	ADC_MAX_CHANNEL
-+};
-+
-+enum rt9759_fields {
-+	F_VBATOVP = 0,
-+	F_IBATOCP,
-+	F_VBUSOVP,
-+	F_IBUSOCP,
-+	F_SWITCHING,
-+	F_REG_RST,
-+	F_WDT_DIS,
-+	F_WDT_TMR,
-+	F_CHG_EN,
-+	F_VAC_INSERT,
-+	F_DEV_ID,
-+	F_ADC_EN,
-+	F_IBAT_RSEN,
-+	F_MAX_FIELD
-+};
-+
-+enum rt9759_ranges {
-+	R_VBATOVP = 0,
-+	R_IBATOCP,
-+	R_VBUSOVP,
-+	R_IBUSOCP,
-+	R_MAX_RANGE
-+};
-+
-+static const struct reg_field rt9759_chg_fields[F_MAX_FIELD] = {
-+	[F_VBATOVP]	= REG_FIELD(RT9759_REG_VBATOVP, 0, 5),
-+	[F_IBATOCP]	= REG_FIELD(RT9759_REG_IBATOCP, 0, 6),
-+	[F_VBUSOVP]	= REG_FIELD(RT9759_REG_VBUSOVP, 0, 6),
-+	[F_IBUSOCP]	= REG_FIELD(RT9759_REG_IBUSOCPUCP, 0, 3),
-+	[F_SWITCHING]	= REG_FIELD(RT9759_REG_CONVST, 2, 2),
-+	[F_REG_RST]	= REG_FIELD(RT9759_REG_CHGCTL0, 7, 7),
-+	[F_WDT_DIS]	= REG_FIELD(RT9759_REG_CHGCTL0, 2, 2),
-+	[F_WDT_TMR]	= REG_FIELD(RT9759_REG_CHGCTL0, 0, 1),
-+	[F_CHG_EN]	= REG_FIELD(RT9759_REG_CHGCTL1, 7, 7),
-+	[F_VAC_INSERT]	= REG_FIELD(RT9759_REG_INTSTAT, 2, 2),
-+	[F_DEV_ID]	= REG_FIELD(RT9759_REG_DEVINFO, 0, 3),
-+	[F_ADC_EN]	= REG_FIELD(RT9759_REG_ADCCTL, 7, 7),
-+	[F_IBAT_RSEN]	= REG_FIELD(RT9759_REG_REGCTL, 1, 1),
-+};
-+
-+/* All converted to microvolt or microamp */
-+static const struct linear_range rt9759_chg_ranges[R_MAX_RANGE] = {
-+	LINEAR_RANGE_IDX(R_VBATOVP, 3500000, 0, 63, 25000),
-+	LINEAR_RANGE_IDX(R_IBATOCP, 2000000, 0, 80, 100000),
-+	LINEAR_RANGE_IDX(R_VBUSOVP, 6000000, 0, 127, 50000),
-+	LINEAR_RANGE_IDX(R_IBUSOCP, 1000000, 0, 15, 250000),
-+};
-+
-+struct charger_event {
-+	unsigned int ucp_flag;
-+	unsigned int conv_flag;
-+	unsigned int wdt_flag;
-+	unsigned int flt_flag;
-+};
-+
-+struct rt9759_data {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	struct regmap_field *rm_fields[F_MAX_FIELD];
-+	struct power_supply *psy;
-+	struct mutex adc_lock;
-+	struct power_supply_desc psy_desc;
-+	struct charger_event chg_evt;
-+	unsigned int rg_resistor;
-+	unsigned int real_resistor;
-+};
-+
-+static int rt9759_get_value_by_field_range(struct rt9759_data *data,
-+					   enum rt9759_fields field,
-+					   enum rt9759_ranges rsel, int *val)
-+{
-+	const struct linear_range *range = rt9759_chg_ranges + rsel;
-+	unsigned int sel;
-+	int ret;
-+
-+	ret = regmap_field_read(data->rm_fields[field], &sel);
-+	if (ret)
-+		return ret;
-+
-+	return linear_range_get_value(range, sel, val);
-+}
-+
-+static int rt9759_set_value_by_field_range(struct rt9759_data *data,
-+					   enum rt9759_fields field,
-+					   enum rt9759_ranges rsel, int val)
-+{
-+	const struct linear_range *range = rt9759_chg_ranges + rsel;
-+	unsigned int sel;
-+
-+	linear_range_get_selector_within(range, val, &sel);
-+	return regmap_field_write(data->rm_fields[field], sel);
-+}
-+
-+static int rt9759_get_adc(struct rt9759_data *data, enum rt9759_adc_chan chan,
-+			  int *val)
-+{
-+	struct regmap *regmap = data->regmap;
-+	unsigned int reg_addr = RT9759_REG_IBUSADC + chan * 2;
-+	unsigned int mask = RT9759_ADCEN_MASK | RT9759_ADCONCE_MASK;
-+	unsigned int adc_cntl;
-+	__be16 raws;
-+	int scale, ret;
-+
-+	mutex_lock(&data->adc_lock);
-+
-+	ret = regmap_update_bits(regmap, RT9759_REG_ADCCTL, mask, mask);
-+	if (ret)
-+		goto adc_unlock;
-+
-+	ret = regmap_read_poll_timeout(regmap, RT9759_REG_ADCCTL, adc_cntl,
-+				       !(adc_cntl & RT9759_ADCEN_MASK),
-+				       RT9759_ADC_CONVTIME, RT9759_ADC_MAXWAIT);
-+	if (ret && ret != -ETIMEDOUT)
-+		goto adc_unlock;
-+
-+	ret = regmap_raw_read(regmap, reg_addr, &raws, sizeof(raws));
-+	if (ret)
-+		goto adc_unlock;
-+
-+	/*
-+	 * TDIE LSB 0.5'c, others LSB 1000uV or 1000uA.
-+	 * Rsense ratio is needed for IBAT channel
-+	 */
-+	if (chan == ADC_TDIE)
-+		scale = 5;
-+	else if (chan == ADC_IBAT)
-+		scale = 1000 * data->rg_resistor / data->real_resistor;
-+	else
-+		scale = 1000;
-+
-+
-+	*val = be16_to_cpu(raws) * scale;
-+
-+adc_unlock:
-+	regmap_update_bits(regmap, RT9759_REG_ADCCTL, mask, 0);
-+
-+	mutex_unlock(&data->adc_lock);
-+
-+	return ret;
-+}
-+
-+static int rt9759_get_switching_state(struct rt9759_data *data, int *status)
-+{
-+	unsigned int switching_state;
-+	int ret;
-+
-+	ret = regmap_field_read(data->rm_fields[F_SWITCHING], &switching_state);
-+	if (ret)
-+		return ret;
-+
-+	if (switching_state)
-+		*status = POWER_SUPPLY_STATUS_CHARGING;
-+	else
-+		*status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+
-+	return 0;
-+}
-+
-+static int rt9759_get_charger_health(struct rt9759_data *data)
-+{
-+	struct charger_event *evt = &data->chg_evt;
-+
-+	if (evt->ucp_flag & RT9759_VBUSUCP_MASK)
-+		return POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
-+
-+	if (evt->conv_flag & RT9759_TDIEOTP_MASK)
-+		return POWER_SUPPLY_HEALTH_OVERHEAT;
-+
-+	if (evt->wdt_flag & RT9759_WDT_MASK)
-+		return POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE;
-+
-+	if (evt->flt_flag & RT9759_BUSBATOVP_MASK)
-+		return POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+
-+	if (evt->flt_flag & RT9759_BUSBATOCP_MASK)
-+		return POWER_SUPPLY_HEALTH_OVERCURRENT;
-+
-+	return POWER_SUPPLY_HEALTH_GOOD;
-+}
-+
-+static const char * const rt9759_manufacturer	= "Richtek Technology Corp.";
-+static const char * const rt9759_model		= "RT9759";
-+
-+static int rt9759_psy_get_property(struct power_supply *psy,
-+				   enum power_supply_property psp,
-+				   union power_supply_propval *val)
-+{
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int *pval = &val->intval;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		return rt9759_get_switching_state(data, pval);
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		*pval = rt9759_get_charger_health(data);
-+		return 0;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		return regmap_field_read(data->rm_fields[F_VAC_INSERT], pval);
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-+		return rt9759_get_value_by_field_range(data, F_VBUSOVP, R_VBUSOVP, pval);
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		return rt9759_get_adc(data, ADC_VBUS, pval);
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return rt9759_get_value_by_field_range(data, F_IBUSOCP, R_IBUSOCP, pval);
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		return rt9759_get_adc(data, ADC_IBUS, pval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		return rt9759_get_value_by_field_range(data, F_VBATOVP, R_VBATOVP, pval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return rt9759_get_value_by_field_range(data, F_IBATOCP, R_IBATOCP, pval);
-+	case POWER_SUPPLY_PROP_TEMP:
-+		return rt9759_get_adc(data, ADC_TDIE, pval);
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = rt9759_model;
-+		return 0;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = rt9759_manufacturer;
-+		return 0;
-+	default:
-+		return -ENODATA;
-+	}
-+}
-+
-+static int rt9759_psy_set_property(struct power_supply *psy,
-+				   enum power_supply_property psp,
-+				   const union power_supply_propval *val)
-+{
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int intval = val->intval;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		/* Before enabled, clear stored event */
-+		if (intval)
-+			memset(&data->chg_evt, 0, sizeof(data->chg_evt));
-+
-+		return regmap_field_write(data->rm_fields[F_CHG_EN], !!intval);
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-+		return rt9759_set_value_by_field_range(data, F_VBUSOVP, R_VBUSOVP, intval);
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return rt9759_set_value_by_field_range(data, F_IBUSOCP, R_IBUSOCP, intval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		return rt9759_set_value_by_field_range(data, F_VBATOVP, R_VBATOVP, intval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return rt9759_set_value_by_field_range(data, F_IBATOCP, R_IBATOCP, intval);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static const enum power_supply_property rt9759_psy_properties[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_MAX,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
-+static int rt9759_psy_property_is_writeable(struct power_supply *psy,
-+					    enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return 1;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+static const unsigned int rt9759_wdt_millisecond[] = { 500, 1000, 5000, 30000 };
-+
-+static ssize_t watchdog_timer_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	unsigned int wdt_tmr_now = 0, wdt_sel, wdt_dis;
-+	int ret;
-+
-+	ret = regmap_field_read(data->rm_fields[F_WDT_DIS], &wdt_dis);
-+	if (ret)
-+		return ret;
-+
-+	if (!wdt_dis) {
-+		ret = regmap_field_read(data->rm_fields[F_WDT_TMR], &wdt_sel);
-+		if (ret)
-+			return ret;
-+
-+		wdt_tmr_now = rt9759_wdt_millisecond[wdt_sel];
-+	}
-+
-+	return sysfs_emit(buf, "%d\n", wdt_tmr_now);
-+}
-+
-+static ssize_t watchdog_timer_store(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t count)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	unsigned int wdt_set, wdt_sel;
-+	int ret;
-+
-+	ret = kstrtouint(buf, 10, &wdt_set);
-+	if (ret)
-+		return ret;
-+
-+	ret = regmap_field_write(data->rm_fields[F_WDT_DIS], 1);
-+	if (ret)
-+		return ret;
-+
-+	wdt_sel = find_closest(wdt_set, rt9759_wdt_millisecond,
-+			       ARRAY_SIZE(rt9759_wdt_millisecond));
-+
-+	ret = regmap_field_write(data->rm_fields[F_WDT_TMR], wdt_sel);
-+	if (ret)
-+		return ret;
-+
-+	if (wdt_set) {
-+		ret = regmap_field_write(data->rm_fields[F_WDT_DIS], 0);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return count;
-+}
-+
-+static ssize_t battery_voltage_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int vbat_now, ret;
-+
-+	ret = rt9759_get_adc(data, ADC_VBAT, &vbat_now);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%d\n", vbat_now);
-+}
-+
-+static ssize_t battery_current_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int ibat_now, ret;
-+
-+	ret = rt9759_get_adc(data, ADC_IBAT, &ibat_now);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%d\n", ibat_now);
-+}
-+
-+static DEVICE_ATTR_RW(watchdog_timer);
-+static DEVICE_ATTR_RO(battery_voltage);
-+static DEVICE_ATTR_RO(battery_current);
-+
-+static struct attribute *rt9759_sysfs_attrs[] = {
-+	&dev_attr_watchdog_timer.attr,
-+	&dev_attr_battery_voltage.attr,
-+	&dev_attr_battery_current.attr,
-+	NULL
-+};
-+
-+ATTRIBUTE_GROUPS(rt9759_sysfs);
-+
-+static int rt9759_register_psy(struct rt9759_data *data)
-+{
-+	struct device *dev = data->dev;
-+	struct power_supply_desc *desc = &data->psy_desc;
-+	struct power_supply_config cfg = {};
-+	char *psy_name;
-+
-+	cfg.drv_data = data;
-+	cfg.of_node = dev->of_node;
-+	cfg.attr_grp = rt9759_sysfs_groups;
-+
-+	psy_name = devm_kasprintf(dev, GFP_KERNEL, "rt9759-%s", dev_name(dev));
-+	if (!psy_name)
-+		return -ENOMEM;
-+
-+	desc->name = psy_name;
-+	desc->type = POWER_SUPPLY_TYPE_USB;
-+	desc->properties = rt9759_psy_properties;
-+	desc->num_properties = ARRAY_SIZE(rt9759_psy_properties);
-+	desc->property_is_writeable = rt9759_psy_property_is_writeable;
-+	desc->get_property = rt9759_psy_get_property;
-+	desc->set_property = rt9759_psy_set_property;
-+
-+	data->psy = devm_power_supply_register(dev, desc, &cfg);
-+
-+	return PTR_ERR_OR_ZERO(data->psy);
-+}
-+
-+static irqreturn_t rt9759_irq_handler(int irq, void *devid)
-+{
-+	struct rt9759_data *data = devid;
-+	struct regmap *regmap = data->regmap;
-+	struct charger_event *evt = &data->chg_evt;
-+	int ret;
-+
-+	ret = regmap_read(regmap, RT9759_REG_IBUSOCPUCP, &evt->ucp_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	ret = regmap_read(regmap, RT9759_REG_CONVST, &evt->conv_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	ret = regmap_read(regmap, RT9759_REG_CHGCTL0, &evt->wdt_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	ret = regmap_read(regmap, RT9759_REG_FLTFLAG, &evt->flt_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	power_supply_changed(data->psy);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int rt9759_config_batsense_resistor(struct rt9759_data *data)
-+{
-+	unsigned int shunt_resistor_uohms = 2000, rsense_sel;
-+
-+	device_property_read_u32(data->dev, "shunt-resistor-micro-ohms",
-+				 &shunt_resistor_uohms);
-+
-+	if (!shunt_resistor_uohms || shunt_resistor_uohms > 5000)
-+		return -EINVAL;
-+
-+	data->real_resistor = shunt_resistor_uohms;
-+
-+	if (shunt_resistor_uohms <= 2000) {
-+		rsense_sel = 0;
-+		data->rg_resistor = 2000;
-+	} else {
-+		rsense_sel = 1;
-+		data->rg_resistor = 5000;
-+	}
-+
-+	return regmap_field_write(data->rm_fields[F_IBAT_RSEN], rsense_sel);
-+}
-+
-+static const struct reg_sequence rt9759_init_regs[] = {
-+	REG_SEQ(0x0B, 0x80, 1000), /* REG_RESET */
-+	REG_SEQ0(0x05, 0x00), /* VAC_OVP = 11V */
-+	REG_SEQ0(0x0B, 0x44), /* WDT_DIS = 1 */
-+	REG_SEQ0(0x0C, 0x06), /* TSBUS/TSBAT OTP_DIS = 1 */
-+	REG_SEQ0(0x0F, 0xF9), /* DIS ALARM & ADC_DONE */
-+	REG_SEQ0(0x14, 0x00), /* IBUS_ADC_DIS = 0 */
-+};
-+
-+static const struct regmap_config rt9759_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = RT9759_REG_OTHER4,
-+};
-+
-+static int rt9759_probe(struct i2c_client *i2c)
-+{
-+	struct device *dev = &i2c->dev;
-+	struct rt9759_data *data;
-+	struct regmap *regmap;
-+	unsigned int devid;
-+	int ret;
-+
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->dev = dev;
-+	mutex_init(&data->adc_lock);
-+	i2c_set_clientdata(i2c, data);
-+
-+	regmap = devm_regmap_init_i2c(i2c, &rt9759_regmap_config);
-+	if (IS_ERR(regmap))
-+		return dev_err_probe(dev, PTR_ERR(regmap), "Failed to init regmap\n");
-+
-+	data->regmap = regmap;
-+
-+	ret = devm_regmap_field_bulk_alloc(dev, regmap, data->rm_fields,
-+					   rt9759_chg_fields,
-+					   ARRAY_SIZE(rt9759_chg_fields));
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to alloc regmap fields\n");
-+
-+	ret = regmap_field_read(data->rm_fields[F_DEV_ID], &devid);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Filaed to read devid\n");
-+
-+	if (devid != RT9759_DEVID)
-+		return dev_err_probe(dev, -ENODEV, "Incorrect VID 0x%02x\n", devid);
-+
-+	ret = regmap_register_patch(regmap, rt9759_init_regs,
-+				    ARRAY_SIZE(rt9759_init_regs));
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to init registers\n");
-+
-+	ret = rt9759_config_batsense_resistor(data);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to config batsense resistor\n");
-+
-+	ret = rt9759_register_psy(data);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to init power supply\n");
-+
-+	return devm_request_threaded_irq(dev, i2c->irq, NULL, rt9759_irq_handler,
-+					 IRQF_ONESHOT, dev_name(dev), data);
-+}
-+
-+static void rt9759_shutdown(struct i2c_client *i2c)
-+{
-+	struct rt9759_data *data = i2c_get_clientdata(i2c);
-+
-+	regmap_field_write(data->rm_fields[F_REG_RST], 1);
-+}
-+
-+static const struct of_device_id rt9759_device_match_table[] = {
-+	{ .compatible = "richtek,rt9759" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, rt9759_device_match_table);
-+
-+static struct i2c_driver rt9759_charger_driver = {
-+	.driver = {
-+		.name = "rt9759",
-+		.of_match_table = rt9759_device_match_table,
-+	},
-+	.probe_new = rt9759_probe,
-+	.shutdown = rt9759_shutdown,
-+};
-+module_i2c_driver(rt9759_charger_driver);
-+
-+MODULE_DESCRIPTION("Richtek RT9759 charger driver");
-+MODULE_AUTHOR("Allen Chiang <allen_chiang@richtek.com>");
-+MODULE_AUTHOR("ChiYuan Huang <cy_huang@richtek.com>");
-+MODULE_LICENSE("GPL");
 -- 
-2.7.4
-
+Thanks & Regards,
+Wyes
