@@ -2,26 +2,26 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21B8DC678D6
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Jan 2023 06:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2EB9C54EBE
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Jan 2023 06:58:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240665AbjAMG6x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Jan 2023 01:58:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57972 "EHLO
+        id S240961AbjAMG65 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Jan 2023 01:58:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34008 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240795AbjAMG5E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2023 01:57:04 -0500
+        with ESMTP id S231154AbjAMG47 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2023 01:56:59 -0500
 Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0F27C81C2E;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A454F81C26;
         Thu, 12 Jan 2023 22:42:28 -0800 (PST)
 X-MailGates: (compute_score:DELIVER,40,3)
 Received: from 192.168.8.21
-        by mg.richtek.com with MailGates ESMTP Server V3.0(2729:0:AUTH_RELAY)
+        by mg.richtek.com with MailGates ESMTP Server V3.0(2734:0:AUTH_RELAY)
         (envelope-from <prvs=1372DA5DC2=cy_huang@richtek.com>); Fri, 13 Jan 2023 14:23:39 +0800 (CST)
 X-MailGates: (compute_score:DELIVER,40,3)
 Received: from 192.168.10.46
-        by mg.richtek.com with MailGates ESMTP Server V5.0(16494:0:AUTH_RELAY)
-        (envelope-from <cy_huang@richtek.com>); Fri, 13 Jan 2023 14:17:47 +0800 (CST)
+        by mg.richtek.com with MailGates ESMTP Server V5.0(16476:0:AUTH_RELAY)
+        (envelope-from <cy_huang@richtek.com>); Fri, 13 Jan 2023 14:17:48 +0800 (CST)
 Received: from ex4.rt.l (192.168.10.47) by ex3.rt.l (192.168.10.46) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.20; Fri, 13 Jan
@@ -35,10 +35,12 @@ To:     <sre@kernel.org>, <robh+dt@kernel.org>,
 CC:     <alina_yu@richtek.com>, <cy_huang@richtek.com>,
         <u0084500@gmail.com>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH RESEND v8 0/3] Add Richtek RT9471 3A battery charger support
-Date:   Fri, 13 Jan 2023 14:17:43 +0800
-Message-ID: <1673590666-24618-1-git-send-email-cy_huang@richtek.com>
+Subject: [PATCH RESEND v8 3/3] Documentation: power: rt9471: Document exported sysfs entries
+Date:   Fri, 13 Jan 2023 14:17:46 +0800
+Message-ID: <1673590666-24618-4-git-send-email-cy_huang@richtek.com>
 X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1673590666-24618-1-git-send-email-cy_huang@richtek.com>
+References: <1673590666-24618-1-git-send-email-cy_huang@richtek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Precedence: bulk
@@ -47,69 +49,64 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: ChiYuan Huang <cy_huang@richtek.com>
 
-This patch set is to add Richtek RT9471 charger support.
+Document the settings exported by rt9471 charger driver through sysfs entries:
+- sysoff_enable
+- port_detect_enable
 
-The RT9471/D is a highly-integrated 3A switch mode battery charge management
-and system power path management device for single cell Li-Ion and Li-polymer
-battery. The low impedance power path optimizes switch-mode operation
-efficiency, reduces battery charging time and extends battery life during
-discharging phase.
-
-Since v8:
-- revert v7 for adding irq wakeup capable, i2c core already did it.
-
-Since v7:
-- Add irq wakeup capable.
-- Add missing header 'module.h' for MODULE_DEVICE_TABLE.
-
+Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+---
 Since v6:
-- Use 'ATTRIBUTE_GROUPS' macro to simplify the attribute coding.
 - Explain more details for sysoff_enable attribute.
 
 Since v5:
-- Remove one line wrapper.
-- Merge header content into source file, remove header file.
-- Remove 'charge_term_enable' sysfs entry and merge it into
-  'charge_term_current' property control.
-- Change MODULE_LICENSE from 'GPL v2' to 'GPL'.
-  Following by the below discussion
-  https://lore.kernel.org/all/YxAVAt2eWB3NFlrk@google.com/
 - Recover all the change in sysfs-class-power.
 - New a sysfs-class-power-rt9471 file.
 - Remove 'charge_term_enable' sysfs entry, directly integrate it in
   'charge_term_current' power supply property control.
 
-Since v4:
-- Remove the line for the owner field in driver.
-- Add the documentation for sysfs entries.
-
-Since v3:
-- Move unevaluatedProperties line after $ref for binding patch.
-- Add Reviewed-by tag for binding patch.
-
-Since v2:
-- Remove the properties for interrupt controller things in the binding documentation.
-- Fix dtc error for typo, it's 'regulator-name', not 'regulator-compatible'.
-- Add regulator min/max microamp to allow otg vbus current adjustable in example.
-- Specify the active-level for charge-enable-gpios in binding example.
-- Fix checkpatch error about 'foo * bar' to 'foo *bar' in psy_device_to_chip function.
-- Specify the member name directly for the use of linear range.
-
-ChiYuan Huang (3):
-  dt-bindings: power: supply: Add Richtek RT9471 battery charger
-  power: supply: rt9471: Add Richtek RT9471 charger driver
-  Documentation: power: rt9471: Document exported sysfs entries
-
- Documentation/ABI/testing/sysfs-class-power-rt9471 |  32 +
- .../bindings/power/supply/richtek,rt9471.yaml      |  73 ++
- drivers/power/supply/Kconfig                       |  16 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/rt9471.c                      | 931 +++++++++++++++++++++
- 5 files changed, 1053 insertions(+)
+---
+ Documentation/ABI/testing/sysfs-class-power-rt9471 | 32 ++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
  create mode 100644 Documentation/ABI/testing/sysfs-class-power-rt9471
- create mode 100644 Documentation/devicetree/bindings/power/supply/richtek,rt9471.yaml
- create mode 100644 drivers/power/supply/rt9471.c
 
+diff --git a/Documentation/ABI/testing/sysfs-class-power-rt9471 b/Documentation/ABI/testing/sysfs-class-power-rt9471
+new file mode 100644
+index 00000000..38227a8
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-power-rt9471
+@@ -0,0 +1,32 @@
++What:		/sys/class/power_supply/rt9471-*/sysoff_enable
++Date:		Oct 2022
++KernelVersion:	6.1
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		This entry allows enabling the sysoff mode of rt9471 charger devices.
++		If enabled and the input is removed, the internal battery FET is turned
++		off to reduce the leakage from the BAT pin. See device datasheet for details.
++		It's commonly used when the product enter shipping stage. After entering
++		shipping mode, only 'VBUS' or 'Power key" pressed can make it leave this
++		mode. 'Disable' also can help to leave it, but it's more like to abort
++		the action before the device really enter shipping mode.
++
++		Access: Read, Write
++		Valid values:
++		- 1: enabled
++		- 0: disabled
++
++What:		/sys/class/power_supply/rt9471-*/port_detect_enable
++Date:		Oct 2022
++KernelVersion:	6.1
++Contact:	ChiYuan Huang <cy_huang@richtek.com>
++Description:
++		This entry allows enabling the USB BC12 port detect function of rt9471 charger
++		devices. If enabled and VBUS is inserted, device will start to do the BC12
++		port detect and report the usb port type when port detect is done. See
++		datasheet for details. Normally controlled when TypeC/USBPD port integrated.
++
++		Access: Read, Write
++		Valid values:
++		- 1: enabled
++		- 0: disabled
 -- 
 2.7.4
 
