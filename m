@@ -2,296 +2,199 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D82DC54EBD
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Jan 2023 06:03:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A6B3C61DB3
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Jan 2023 06:45:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238248AbjAMGDP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Jan 2023 01:03:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52958 "EHLO
+        id S239998AbjAMGpX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Jan 2023 01:45:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52982 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238124AbjAMGCq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2023 01:02:46 -0500
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2047.outbound.protection.outlook.com [40.107.220.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30C256B5BB;
-        Thu, 12 Jan 2023 21:58:42 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=MbUp+GcGdaK0pyAvJSU23eRAzLNZy3467/+gYvG5xGCCeh5UlZlOYDsiFndMjoUBYKsUbIZ0FVEuy79Sd5nwQOR5t1GA0DrnXUt/QFgUqzak8BuLUMMWL1iiz4870A/R8XusFTrBzDy+ETponHbXwjVAN6ykiNHjIwXXxc9vlN1eZYl5RZcTY/a3E3Ko4D+g7ITrzg05VDwSMnvtgVwXGMOG4qP9f3qjtdXjoeLJ9nXMgUDeLCYzjkx5Gz7f6itdk120dWQcnaDmRpKn9M45TvyDVn3RoQNPED7v59+xTDG1ERoa8i19a+mp1NQffdaEnhmm2Rb7jSGYDSwLo09yBQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=uHVHRUCeRiR3IVaH6oRtyO0GDzuY+efyWn9KiLWjQng=;
- b=RZcTiibElV0jIvKo3uEPlIGX9i2oaDKtonKb0OX8Gd8Qx2YwTrWAah9lzQSSJN2Y/utxrtrHgsOI42k+0GlNHvUqYGMaStMNCMPLgTSAFgh1CLEmo4fKQ4fgK2w/NOe17CLsQv14HbOsQ+ksWdvQZIEJzVQ/R34ljZKH0YFNycbRRsCF9lAYQiR3lQgZsKRXLLXSz1w3WaB9ka4vrlbgbWjnVG6qmAyCDsXRwFKww9qVxF5AVm3y2R+vdcp1kCWOPL1XH5jxFrMdnx0dGIi6c3OfubKA/CxNZkrr6pCILpRs7TF5gFG7SqqKtQ2A6zAyWrdJgIeQkxPDfYcnPewr4w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=uHVHRUCeRiR3IVaH6oRtyO0GDzuY+efyWn9KiLWjQng=;
- b=QOIHDD2tAvmJ6tH+6B3KOPmO7rdvdvSRCOCtNpV67HnRBDy9Np+ebPB/stVOwcxerU1kaifVkjBqR19Gjzk4Da2CTjJQWtoo3f6g8myZzBSljBYwqHoVNpHMkCCY6E+RU61CZqfVhPiafQb70URue4TyRoTJUJk/PGC/B6ZPgDU=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from MN0PR12MB6101.namprd12.prod.outlook.com (2603:10b6:208:3cb::10)
- by PH8PR12MB6818.namprd12.prod.outlook.com (2603:10b6:510:1c9::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5986.18; Fri, 13 Jan
- 2023 05:58:39 +0000
-Received: from MN0PR12MB6101.namprd12.prod.outlook.com
- ([fe80::ff3c:2d37:75f3:442a]) by MN0PR12MB6101.namprd12.prod.outlook.com
- ([fe80::ff3c:2d37:75f3:442a%7]) with mapi id 15.20.5986.018; Fri, 13 Jan 2023
- 05:58:39 +0000
-Message-ID: <c21e3837-aaf3-d198-392e-d48b5d82cda4@amd.com>
-Date:   Thu, 12 Jan 2023 23:58:37 -0600
+        with ESMTP id S231342AbjAMGo5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2023 01:44:57 -0500
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F79676236
+        for <linux-pm@vger.kernel.org>; Thu, 12 Jan 2023 22:30:30 -0800 (PST)
+Received: by mail-lj1-x22a.google.com with SMTP id q2so21575990ljp.6
+        for <linux-pm@vger.kernel.org>; Thu, 12 Jan 2023 22:30:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:references:cc:to:from
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Oj46fwhldUKw7hGOkuucEHWnwosnLZLmKbpNEe+nkf8=;
+        b=DMlQzIbjrx6noC4zvk1nNOJ0mMmIsO+2TmviK49LvgYJ3NNycvtwgvyH7hp0WlBEnW
+         GoFkvJl52SrhguGGpkKrHH47+DtXSjzmO8mJU338Z92TyKCNfZnTNFqfmJaAsI2Vd1bv
+         gB9Y15ZmpZunVX3hhX3s4A/H87lTYq3AxOkKnmf9A8g/JXYFiTTNbgkSqbsmGQ1P3ZM7
+         VIss+IF8ERjk/+PSOt4+Cq9vNtxSeWAaRTVUMjCP93QCOf9aJMdAEjTYRW+id/4kT1EG
+         JAYhptzgguTMeCOLh1s0gKigCNr3H4XbKVdGXmodaW4ZLd7VJV+4rNJQzHDExTKo+qjX
+         WvhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:references:cc:to:from
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Oj46fwhldUKw7hGOkuucEHWnwosnLZLmKbpNEe+nkf8=;
+        b=4WF8T9tBSZQjhN8c3w/8bCwoP4KkLNYYqiAvqjhXsNXtviv8+8O5hqIJ7i0vOiJKpd
+         zOJNPiR3ydAQVCVAIXzNvf8EGpm+h2hNimTETbdCbARYIW8z6/qSAN5Sd/hKbEvpoRXw
+         PZoSDZLXdwxR2Xl7bAguACZE/5/cQrXGA4Tik84rHSDN6XyMl6i+aDlx+Uz6Klrxces2
+         Opejeo0LRN1hr9Njyf/LuPgxAGgNI6SQ+1PyqfoEvhe46+bdExAPChqgB4izdvVBsGli
+         m3tNVCypcwfKaPm3VI3TlMXkv1pLCUjNg1ii/YnpC3tdJFN++JC9jEhhGBKqomAqNLXt
+         /C4w==
+X-Gm-Message-State: AFqh2kqd4ZtUR/FZoLHsBPeZQtdRmQzfW9b74BAV4Jco9ID1eEP+jU79
+        0dw7lPFlU5e3xlue2B86EY8atg==
+X-Google-Smtp-Source: AMrXdXuA5g9KSX/L8Um/aMbyDWngUyvbaNrkXDGrZveQ5jVwlZB++vxUVV+D1NpsZ5pvXEz6QtRbxw==
+X-Received: by 2002:a2e:bd07:0:b0:27f:ae14:511e with SMTP id n7-20020a2ebd07000000b0027fae14511emr19304641ljq.46.1673591376875;
+        Thu, 12 Jan 2023 22:29:36 -0800 (PST)
+Received: from [192.168.2.31] ([194.204.33.9])
+        by smtp.gmail.com with ESMTPSA id v7-20020a2ea607000000b0027712379ec8sm2422778ljp.28.2023.01.12.22.29.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 12 Jan 2023 22:29:36 -0800 (PST)
+Message-ID: <cdebb6a9-0bc3-70ef-53ef-4a48ead869da@linaro.org>
+Date:   Fri, 13 Jan 2023 08:29:34 +0200
+MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.1
-Subject: Re: [PATCH v2 3/6] cpufreq: amd_pstate: Add guided autonomous mode
-Content-Language: en-US
-To:     Wyes Karny <wyes.karny@amd.com>,
-        Rafael J Wysocki <rafael@kernel.org>,
-        Huang Rui <ray.huang@amd.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>, Perry.Yuan@amd.com,
-        Ananth Narayan <ananth.narayan@amd.com>, gautham.shenoy@amd.com
-Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>,
-        santosh.shukla@amd.com
-References: <20230113052141.2874296-1-wyes.karny@amd.com>
- <20230113052141.2874296-4-wyes.karny@amd.com>
-From:   Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <20230113052141.2874296-4-wyes.karny@amd.com>
+ Thunderbird/102.6.0
+Subject: Re: [PATCH v6 00/20] thermal/drivers/tsens: specify nvmem cells in DT
+ rather than parsing them manually
+Content-Language: en-GB
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
+        Shawn Guo <shawn.guo@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+References: <20230101194034.831222-1-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20230101194034.831222-1-dmitry.baryshkov@linaro.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SN7PR04CA0039.namprd04.prod.outlook.com
- (2603:10b6:806:120::14) To MN0PR12MB6101.namprd12.prod.outlook.com
- (2603:10b6:208:3cb::10)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN0PR12MB6101:EE_|PH8PR12MB6818:EE_
-X-MS-Office365-Filtering-Correlation-Id: eb4a58d8-43ef-42cf-e08b-08daf52b37c6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: qNDck5c1I06PNQOeYQBy8qPtzCZTiN99IHWExNmiK2m66gtEbhSgcFuA5g8GYjbaeY+tHtNFHYpJCUQ6KVd1eTv/K2IHYb40AcnoDWCau/DG4SvuX62QqBzT8n2N201FIvgkea4Yc3CWdGrParwjx3+/p2NAWuCui6rQh90qosKP1SwAQugjHYR+558IJGrooobUA9gLsAfJaA4c0cXje/kK7iJhE9C3WCMy57HGiPtWz3lhQZdMl/IFKd6caHHTC8882XOXOplG2Uz0Q92xsWcW41gjWsqeAyt9TDv8SNLfmGyK5sq5JeLfCOSoGC3WXMwc2ssEi9yFbcW6n/sKvsHx589zqXm4Szm4qKvNsyBjdQjKgtA0P625jK0NyzNcdyNTL0wvxgWnt5QWODc6jvSCO+vP5zvOckQR+emn37dkzXuSiQh+TrpPQHBpBrSPzolqOrMMgc2v97Ca/QKTtuGkvF2nUzx2lkZQ0bYoyYKo/+yeWanreWjLoSM/SHg5710PgejAAnvktOcY6OJ9S7gjXKO9RPORud3bFfVFbl0WpMRDIgEk0qUYj6EbR/QV2Mbn7ovr+EetaXPqNoq+u9khwyV6aogBRFI7ikGFSFJvZxv0ti/rLgAhKYnHenopywdEbDECpgJZ73t3p0M7EbOW7kD6hS8iNI0n50Cl3uy7xgkQHnjCtr2b5ls5zydWYMu34HBL5NGYTaSYn4Shi+fvnAcS3b/aWjkoAs7Pyxc=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN0PR12MB6101.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(346002)(396003)(39860400002)(366004)(136003)(376002)(451199015)(41300700001)(6636002)(4326008)(110136005)(2616005)(66946007)(83380400001)(8676002)(36756003)(316002)(66476007)(66556008)(86362001)(31696002)(5660300002)(8936002)(38100700002)(44832011)(2906002)(31686004)(6506007)(53546011)(6486002)(6512007)(186003)(478600001)(43740500002)(45980500001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VytkbXpkNFYzKzdNQVRoU2R6cHpKb0tFVVFCM05MZW1YcmRBOEc5OVZkNkNs?=
- =?utf-8?B?L2pNN3FXeG9HMXlUYk5DNHJBdFFXTlBkUmU2anlkNHdKdFhSbmhWdkhKRWpk?=
- =?utf-8?B?aWZFMjVIYnBqVjBMOWQ3OUZLSm9ZVlVZRkJuMVBFWU5xWTREalhmNUx5OFEy?=
- =?utf-8?B?dHNCSGxwS2NORFRBWk8zeW1wdklZVEVMRkMvTGRaaE5RbXdybXlWdjhzc3pr?=
- =?utf-8?B?TU9ySHN6ZDBaTG4wS3BpQ3JqNnh4VUNEUGVPVzNSMlVxYkk5MVN2WnhNYWxw?=
- =?utf-8?B?eFVONXlWTTFlelVNSjU1bDNDYWJHYUQ5cDFySjNHVlRHRnJOZVdPYXJmTGRP?=
- =?utf-8?B?RXlPRTVvNmJTc1pDYkU5eEw2d2oyRjh5MWQ0SHcvNjN5bFRGV3lSYmhoT2RS?=
- =?utf-8?B?OS9QV1RqeGhpRlhBaDk4bGl4alNYTE1YOVlVUTNXWHhYTTFqcURyOVpGT0Nj?=
- =?utf-8?B?TVoyVEEraEVIeGQwOVgwUkt6b3ZTWlBDeUNpdUx5UVN0TUlOVnRZNVdBUVlj?=
- =?utf-8?B?WHRlMzBpMjU4SklEcy9Hb1pzbHVKMHBhdzVENE16NGlLN2lkcVFjdG1rK1Vs?=
- =?utf-8?B?a04xaGtLSHJsQ2FxMUhkaWZpZnNTYXhVWUV3TWQvRG8wRG45cDdRUzFaS28x?=
- =?utf-8?B?MEU4d3RkMDRvSHlrVkFqWWhiSEVrY3JaWUV6NERCWGJ6YUp3NS8weElzVk5I?=
- =?utf-8?B?TTZ5b0pkRkwxNjFEd1NxSHAzb2NPelpUM1FEV0V0VEtpWGdTdVA4bS9EdWtY?=
- =?utf-8?B?Y0RBMkZncFhqYWFDL2VaS2pSZFVWTjhOOXluQlgvbWFMMDJueHRxUndnNmow?=
- =?utf-8?B?NXB1ZS9admMxbU5kUE1ld0thYzhaWnRBR0FsMER6b1RqbXNjZkJuNG12Sm42?=
- =?utf-8?B?aDdkQStNWmtGWVNIUjJoSHR3RDdDQ3BnTkU3akVUci94SXVUb3JDY1pDWU5m?=
- =?utf-8?B?QkRjUmNScjF3bHg4VUUvSm1jSk0yMmRSYis1N2pGWG5PRXd4TXdDdzZiTHRG?=
- =?utf-8?B?dG1WeWFBY29MOU0rUytSeWhRdU9jWFNBNGxUOVBsUGY2V2tBWVo1RzZSMnVP?=
- =?utf-8?B?OU5yY0c3QVNYZzM4QXlzbmI0Qi9obmZlZ25ndjhBaUl0SWRIK3prUUpBc2J6?=
- =?utf-8?B?UjFrMjE5MWVmZmtmR21OR0JOTFRyTytmWVdZWkJXdXE2anJkSVFFdUo0RnNi?=
- =?utf-8?B?c2VWOEJYRFlSNHlqYm44bldMdklLdDhqYWpnb2hJNUF0ck1QZ0tvSjZneVhC?=
- =?utf-8?B?WUN6TS9YSUZZUlpDbDlSeDRpNmdwMC9rM0hYVlUxQ3Z6MjZOWlg0S2lPUkJT?=
- =?utf-8?B?Z0dCYTFGVVN5WXppbGY4SUo5bjJIbjBMRmtXcm5mS3J3eGl1RkJvL1R5N1FK?=
- =?utf-8?B?SFZXdE93Ny91SXFqWjEveUtYQ1lLbHFkckZ4WnI3S29VMFlQVCt0Ui9hMVZX?=
- =?utf-8?B?ZDdCTVY2eXBZWDE4bU9HZDlEQ3JHZmdoZkE0K3ZjVndEZnBjWE0xYlMxSVRm?=
- =?utf-8?B?Q2RGNUs5RDRqdGsyai95d0JMMWhERkUyRGJzY0lXS0FKVWVRMFZtQWszRU05?=
- =?utf-8?B?UEd5djROZnNxSThtSy90eFVMYWszK0tUdTlmcTA2VVFEdk9Na1VlZ0FVL2lC?=
- =?utf-8?B?alp6eEFPTkcrbmdwVE1yUUJocEdPTDJuaEYvNVg2UnlKOGRCR1Bra0pFMDBS?=
- =?utf-8?B?aGl4U3RML0RKZ1dKV002U0V1SmtWY2NnMS9pWTh1N0VuTmh6Q01GYW01U0c1?=
- =?utf-8?B?bDhqallxRlN1c0FEQVZJTkhjVTNFbkduVzlmcTB5alA4KytMaVpNakQ5c0dv?=
- =?utf-8?B?WGZpNDBnU2hRZHNVeWJWTWJBNU5JNDQyT3B1T01hSkg3QkRGcDhVODNjZ1hI?=
- =?utf-8?B?L1FGczd0K1hnK2lJOWlQS3lNODVPb3hST3lnRkdoTFlONUJhOUlMcDZxVEZK?=
- =?utf-8?B?Q3V4YUNaNzMrSkdKVmU5bzJycEZqak96SnMwYkkvYjM2RDF6c0E3RExDQVVD?=
- =?utf-8?B?SlJsNnpkSllMTjJWWDJ6Q2J1VTEwQUtEblhNZEtQWk8wRlZUT0dJWDVkSkVG?=
- =?utf-8?B?OS9qR1dLWU9PWUIyT0F4eE1Xa2lqTklhZEI3a2JZZHVBZTJ0VWhwOXlGMDBm?=
- =?utf-8?B?RWoza21HYktVR3hjZnNzT1YzSUVNbTRhQ0ZXeFdHOXlURFNkdzZOQ3RGVkRT?=
- =?utf-8?Q?RNDUJKkG3fgbAsjx9kLBgBRX+kUQlJV6R7z2cfKwjpxj?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: eb4a58d8-43ef-42cf-e08b-08daf52b37c6
-X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB6101.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jan 2023 05:58:39.6414
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ymbHjzxEgxdFxTK7ybh4fY6PjcDmpGuMhH66ZLFEM7SDp9Fy7wZ95/e4VlQ04mE6yKIjgMchVNxxBaNOFFezfw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB6818
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 1/12/23 23:21, Wyes Karny wrote:
->  From ACPI spec below 3 modes for CPPC can be defined:
-> 1. Non autonomous: OS scaling governor specifies operating frequency/
->     performance level through `Desired Performance` register and platform
-> follows that.
-> 2. Guided autonomous: OS scaling governor specifies min and max
->     frequencies/ performance levels through `Minimum Performance` and
-> `Maximum Performance` register, and platform can autonomously select an
-> operating frequency in this range.
-> 3. Fully autonomous: OS only hints (via EPP) to platform for the required
->     energy performance preference for the workload and platform autonomously
-> scales the frequency.
+On 01/01/2023 21:40, Dmitry Baryshkov wrote:
+> Historically the tsens driver fetches the calibration data as a blob and
+> then parses the blob on its own. This results in semi-duplicated code
+> spreading over the platform-specific functions.
 > 
-> Currently (1) is supported by amd_pstate as passive mode, and (3) is
-> implemented by EPP support. This change is to support (2).
+> This patch series changes tsens calibration code to per-value nvmem
+> cells rather than parsing the blob in the driver. For backwards
+> compatibility the old code is left in place for msm8916, msm8974 and
+> qcs404, the platforms which have in-tree DT files. For all other
+> affected platforms the old parsing code has been dropped as a part of
+> this series.
+
+Amit, Thara. This has been lingering for quite some time whout any 
+attention from your side. Could you please review the patchseries? Thank 
+you!
+
 > 
-> In guided autonomous mode the min_perf is based on the input from the
-> scaling governor. For example, in case of schedutil this value depends
-> on the current utilization. And max_perf is set to max capacity.
+> The code was tested on msm8916 and qcs404 only.
 > 
-> To activate guided auto mode ``amd_pstate=guided`` command line
-> parameter has to be passed in the kernel.
+> Note: the DTs changes depend on driver changes. Tsens driver will not
+> work if DT patches are merged, but the driver bits are not. As the
+> thermal sense is critical for device safety, I'kindly ask to have an
+> immutable branch with the driver changes that can be merged into the
+> msm-dts tree.
 > 
-> Signed-off-by: Wyes Karny <wyes.karny@amd.com>
-> ---
->   .../admin-guide/kernel-parameters.txt         | 15 ++++++----
->   drivers/cpufreq/amd-pstate.c                  | 29 ++++++++++++++++---
->   include/linux/amd-pstate.h                    |  2 ++
->   3 files changed, 37 insertions(+), 9 deletions(-)
+> Note2:
+> I still have included patches to drop legacy support for 8939
+> (msm8939.dtsi is on the list, patch to convert it to the proposed
+> bindings is available at [1]) and 8976 (msm8976.dtsi and msm8956.dtsi,
+> which use single-blob bindings, have been accepted for 6.2, dropping old
+> bindings support depends on mutual consensuns of platform and thermal
+> code maintainers). Corresponding patches are the last ones in the
+> thermal part of the series, thus if they are declined, the reset of the
+> series still can be applied without any problems.
 > 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index e3618dfdb36a..0d8486325c9a 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -7015,11 +7015,11 @@
->   			  Do not enable amd_pstate as the default
->   			  scaling driver for the supported processors
->   			passive
-> -			  Use amd_pstate as a scaling driver, driver requests a
-> -			  desired performance on this abstract scale and the power
-> -			  management firmware translates the requests into actual
-> -			  hardware states (core frequency, data fabric and memory
-> -			  clocks etc.)
-> +			  Use amd_pstate with passive mode as a scaling driver.
-> +			  In this mode autonomous selection is disabled.
-> +			  Driver requests a desired performance level and platform
-> +			  tires to match the same performance level (if it is
-> +			  satisfied by guaranteed performance level).
->   			active
->   			  Use amd_pstate_epp driver instance as the scaling driver,
->   			  driver provides a hint to the hardware if software wants
-> @@ -7027,3 +7027,8 @@
->   			  to the CPPC firmware. then CPPC power algorithm will
->   			  calculate the runtime workload and adjust the realtime cores
->   			  frequency.
-> +			guided
-> +			  Activate guided autonomous mode. Driver requests minimum and
-> +			  maximum performance level and the platform autonomously
-> +			  selects a performance level in this range and appropriate
-> +			  to the current workload.
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 87450413cf45..20d78dad712d 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -267,6 +267,20 @@ static int cppc_init_perf(struct amd_cpudata *cpudata)
->   		   cppc_perf.lowest_nonlinear_perf);
->   	WRITE_ONCE(cpudata->lowest_perf, cppc_perf.lowest_perf);
->   
-> +	ret = cppc_get_auto_sel_caps(cpudata->cpu, &cppc_perf);
-> +	if (ret) {
-> +		pr_warn("failed to get auto_sel\n");
+> [1] https://pastebin.ubuntu.com/p/rfkZgy767K/
+> 
+> Changes since v5:
+> - Reworked bindings to use patterns instead of enum,
+> - Changed the order of items in msm8974/apq8084 bindings. If there will
+>    be any other platform using main & backup calibration values, it would
+>    be easier to reuse msm8974 bindings by using 's[0-9]+_p[12](_backup)?'
+>    patterns, rather than listing all the cases explicitly.
+> 
+> Changes since v4:
+> - Changed DT bindings to use HW sensor ids rather than bare indices.
+>    This follows the usage of hw_ids in thermal-sensors specifications
+>    (and corresponds to the ID visible in debugfs).
+>    Previously there was no correspondence, which resulted e.g. in usage
+>    of s0_p1/s0_p2 for sensor 0, but s4_p1/s4_p2 for the sensor 5 on
+>    the msm8916 platform).
+> - Reworked msm8939 code to ignore the sensor10. It is available only on
+>    latest hw revision, it doesn't seem to be actually used and it also
+>    wasn't covered by the old single-blob bindings because of the parsing
+>    error.
+> - Fixed missing include reported by testing robot.
+> 
+> Changes since v3:
+> - Added a patch to fix the tsens compatible string on msm8956 SoC,
+> - Fixed num-sensors and slope coefficients for the msm8939 SoC,
+> - Rewrote code supporting old bindings into the simple data-driven
+>    parser common to all legacy platforms which made dropping support for
+>    old bindings less demanding.
+> 
+> Changes since v2:
+> - Made init_8956 static, as pointed out by the testing robot and by
+>    AngeloGioacchino Del Regno.
+> 
+> Changes since the RFC:
+> - Sorted out the msm8976/msm8956, custom slopes are used only for msm8956,
+> - Implemented proper support for msm8974/apq8084,
+> - Added tsens_calibrate_common() and ops_v0_1 which can be used in
+>    common cases,
+> - Removed superfluous identity hw_ids
+> - Fixed calibration calculation in tsens_calibrate_nvmem() for
+>    ONE_PT_CALIB case
+> 
+> Dmitry Baryshkov (20):
+>    dt-bindings: thermal: tsens: add msm8956 compat
+>    dt-bindings: thermal: tsens: support per-sensor calibration cells
+>    dt-bindings: thermal: tsens: add per-sensor cells for msm8974
+>    thermal/drivers/tsens: Drop unnecessary hw_ids
+>    thermal/drivers/tsens: Drop msm8976-specific defines
+>    thermal/drivers/tsens: Sort out msm8976 vs msm8956 data
+>    thermal/drivers/tsens: fix slope values for msm8939
+>    thermal/drivers/tsens: limit num_sensors to 9 for msm8939
+>    thermal/drivers/tsens: Support using nvmem cells for calibration data
+>    thermal/drivers/tsens: Support using nvmem cells for msm8974
+>      calibration
+>    thermal/drivers/tsens: Rework legacy calibration data parsers
+>    thermal/drivers/tsens: Drop single-cell code for mdm9607
+>    thermal/drivers/tsens: Drop single-cell code for msm8939
+>    thermal/drivers/tsens: Drop single-cell code for msm8976/msm8956
+>    arm64: dts: qcom: msm8956: use SoC-specific compat for tsens
+>    arm64: dts: qcom: msm8916: specify per-sensor calibration cells
+>    arm64: dts: qcom: msm8976: specify per-sensor calibration cells
+>    arm64: dts: qcom: qcs404: specify per-sensor calibration cells
+>    ARM: dts: qcom-msm8974: specify per-sensor calibration cells
+>    ARM: dts: qcom-apq8084: specify per-sensor calibration cells
+> 
+>   .../bindings/thermal/qcom-tsens.yaml          | 153 +++-
+>   arch/arm/boot/dts/qcom-apq8084.dtsi           | 313 ++++++++-
+>   arch/arm/boot/dts/qcom-msm8974.dtsi           | 313 ++++++++-
+>   arch/arm64/boot/dts/qcom/msm8916.dtsi         |  85 ++-
+>   arch/arm64/boot/dts/qcom/msm8956.dtsi         |   4 +
+>   arch/arm64/boot/dts/qcom/msm8976.dtsi         | 153 +++-
+>   arch/arm64/boot/dts/qcom/qcs404.dtsi          | 145 +++-
+>   drivers/thermal/qcom/tsens-v0_1.c             | 655 +++++-------------
+>   drivers/thermal/qcom/tsens-v1.c               | 340 +++------
+>   drivers/thermal/qcom/tsens.c                  | 168 +++++
+>   drivers/thermal/qcom/tsens.h                  |  46 +-
+>   11 files changed, 1610 insertions(+), 765 deletions(-)
+> 
 
-To make debugging easier in the future perhaps:
-
-pr_warn("failed to get auto sel: %d\n", ret);
-
-> +		return 0;
-> +	}
-> +
-> +	if (cppc_state == AMD_PSTATE_PASSIVE)
-> +		ret = cppc_set_auto_sel(cpudata->cpu, 0);
-> +	else if (cppc_state == AMD_PSTATE_GUIDED)
-> +		ret = cppc_set_auto_sel(cpudata->cpu, 1);
-> +
-
-as a simplification maybe:
-
-ret = cppc_set_auto_sel(cpudata->cpu, cppc_state == AMD_PSTATE_PASSIVE ? 
-0 : 1);
-
-> +	if (ret)
-> +		pr_warn("failed to set auto_sel\n");
-
-Again, probably good to emit the error code in this message;
-> +
->   	return 0;
-
-As this could fail now shouldn't you be returning ret?
-
->   }
->   
-> @@ -344,12 +358,18 @@ static inline bool amd_pstate_sample(struct amd_cpudata *cpudata)
->   }
->   
->   static void amd_pstate_update(struct amd_cpudata *cpudata, u32 min_perf,
-> -			      u32 des_perf, u32 max_perf, bool fast_switch)
-> +			      u32 des_perf, u32 max_perf, bool fast_switch, int guv_flags)
->   {
->   	u64 prev = READ_ONCE(cpudata->cppc_req_cached);
->   	u64 value = prev;
->   
->   	des_perf = clamp_t(unsigned long, des_perf, min_perf, max_perf);
-> +
-> +	if ((cppc_state == AMD_PSTATE_GUIDED) && (guv_flags & CPUFREQ_GOV_DYNAMIC_SWITCHING)) {
-> +		min_perf = des_perf;
-> +		des_perf = 0;
-> +	}
-> +
->   	value &= ~AMD_CPPC_MIN_PERF(~0L);
->   	value |= AMD_CPPC_MIN_PERF(min_perf);
->   
-> @@ -404,7 +424,7 @@ static int amd_pstate_target(struct cpufreq_policy *policy,
->   
->   	cpufreq_freq_transition_begin(policy, &freqs);
->   	amd_pstate_update(cpudata, min_perf, des_perf,
-> -			  max_perf, false);
-> +			  max_perf, false, policy->governor->flags);
->   	cpufreq_freq_transition_end(policy, &freqs, false);
->   
->   	return 0;
-> @@ -438,7 +458,8 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
->   	if (max_perf < min_perf)
->   		max_perf = min_perf;
->   
-> -	amd_pstate_update(cpudata, min_perf, des_perf, max_perf, true);
-> +	amd_pstate_update(cpudata, min_perf, des_perf, max_perf, true,
-> +			policy->governor->flags);
->   	cpufreq_cpu_put(policy);
->   }
->   
-> @@ -1233,7 +1254,7 @@ static int __init amd_pstate_init(void)
->   	/* capability check */
->   	if (boot_cpu_has(X86_FEATURE_CPPC)) {
->   		pr_debug("AMD CPPC MSR based functionality is supported\n");
-> -		if (cppc_state == AMD_PSTATE_PASSIVE)
-> +		if (cppc_state != AMD_PSTATE_ACTIVE)
->   			default_pstate_driver->adjust_perf = amd_pstate_adjust_perf;
->   	} else {
->   		pr_debug("AMD CPPC shared memory based functionality is supported\n");
-> diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
-> index 15761a581e82..e07cfbd63560 100644
-> --- a/include/linux/amd-pstate.h
-> +++ b/include/linux/amd-pstate.h
-> @@ -92,6 +92,7 @@ enum amd_pstate_mode {
->   	AMD_PSTATE_DISABLE = 0,
->   	AMD_PSTATE_PASSIVE,
->   	AMD_PSTATE_ACTIVE,
-> +	AMD_PSTATE_GUIDED,
->   	AMD_PSTATE_MAX,
->   };
->   
-> @@ -99,6 +100,7 @@ static const char * const amd_pstate_mode_string[] = {
->   	[AMD_PSTATE_DISABLE]     = "disable",
->   	[AMD_PSTATE_PASSIVE]     = "passive",
->   	[AMD_PSTATE_ACTIVE]      = "active",
-> +	[AMD_PSTATE_GUIDED]      = "guided",
->   	NULL,
->   };
->   
+-- 
+With best wishes
+Dmitry
 
