@@ -2,168 +2,239 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1BDAC678DA
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Jan 2023 07:43:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D135C46467
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Jan 2023 09:09:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231807AbjAPHnW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Jan 2023 02:43:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53410 "EHLO
+        id S232128AbjAPJJs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Jan 2023 04:09:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38316 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231963AbjAPHnU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2023 02:43:20 -0500
-Received: from fd01.gateway.ufhost.com (fd01.gateway.ufhost.com [61.152.239.71])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78A4BC142;
-        Sun, 15 Jan 2023 23:43:18 -0800 (PST)
-Received: from EXMBX166.cuchost.com (unknown [175.102.18.54])
-        (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-        (Client CN "EXMBX166", Issuer "EXMBX166" (not verified))
-        by fd01.gateway.ufhost.com (Postfix) with ESMTP id C05EA24E13F;
-        Mon, 16 Jan 2023 15:43:10 +0800 (CST)
-Received: from EXMBX168.cuchost.com (172.16.6.78) by EXMBX166.cuchost.com
- (172.16.6.76) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Mon, 16 Jan
- 2023 15:43:10 +0800
-Received: from localhost.localdomain (113.72.144.207) by EXMBX168.cuchost.com
- (172.16.6.78) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Mon, 16 Jan
- 2023 15:43:09 +0800
-From:   Walker Chen <walker.chen@starfivetech.com>
-To:     <linux-riscv@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>
-CC:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor.dooley@microchip.com>,
-        Emil Renner Berthing <emil.renner.berthing@canonical.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Walker Chen <walker.chen@starfivetech.com>,
-        <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 0/3] JH7110 PMU Support
-Date:   Mon, 16 Jan 2023 15:42:56 +0800
-Message-ID: <20230116074259.22874-1-walker.chen@starfivetech.com>
-X-Mailer: git-send-email 2.17.1
+        with ESMTP id S231864AbjAPJJ0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2023 04:09:26 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D0DAC1632A;
+        Mon, 16 Jan 2023 01:07:18 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0E378AD7;
+        Mon, 16 Jan 2023 01:08:00 -0800 (PST)
+Received: from [10.12.3.201] (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0D35B3F67D;
+        Mon, 16 Jan 2023 01:07:14 -0800 (PST)
+Message-ID: <78bf2d91-0076-f748-7c6a-530dad466787@arm.com>
+Date:   Mon, 16 Jan 2023 09:07:04 +0000
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [113.72.144.207]
-X-ClientProxiedBy: EXCAS066.cuchost.com (172.16.6.26) To EXMBX168.cuchost.com
- (172.16.6.78)
-X-YovoleRuleAgent: yovoleflag
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
+Subject: Re: [PATCH v3] sched/fair: unlink misfit task from cpu overutilized
+Content-Language: en-US
+To:     Vincent Guittot <vincent.guittot@linaro.org>, mingo@kernel.org,
+        peterz@infradead.org, qyousef@layalina.io, rafael@kernel.org,
+        viresh.kumar@linaro.org, vschneid@redhat.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     lukasz.luba@arm.com, wvw@google.com, xuewen.yan94@gmail.com,
+        han.lin@mediatek.com, Jonathan.JMChen@mediatek.com
+References: <20230113134056.257691-1-vincent.guittot@linaro.org>
+From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <20230113134056.257691-1-vincent.guittot@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On 13/01/2023 14:40, Vincent Guittot wrote:
+> By taking into account uclamp_min, the 1:1 relation between task misfit
+> and cpu overutilized is no more true as a task with a small util_avg of
 
-This patchset adds PMU (Power Management Unit) controller driver for the
-StarFive JH7110 SoC. In order to meet low power requirements, PMU is
-designed for including multiple PM domains that can be used for power
-gating of selected IP blocks for power saving by reduced leakage
-current. The first patch adds device tree binding for PM domain provider
-and consumer. The second patch adds pmu driver and support JH7110 SoC.
-The last patch adds device node about pmu to JH7110 dts. 
+of ?
 
-The series has been tested on the VisionFive 2 boards which equip with
-JH7110 SoC and works normally.
+> may not fit a high capacity cpu because of uclamp_min constraint.
+> 
+> Add a new state in util_fits_cpu() to reflect the case that task would fit
+> a CPU except for the uclamp_min hint which is a performance requirement.
+> 
+> Use -1 to reflect that a CPU doesn't fit only because of uclamp_min so we
+> can use this new value to take additional action to select the best CPU
+> that doesn't match uclamp_min hint.
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+> 
+> Change since v2:
+> - fix a condition in feec()
+> - add comments
+> 
+>  kernel/sched/fair.c | 108 ++++++++++++++++++++++++++++++++++----------
+>  1 file changed, 83 insertions(+), 25 deletions(-)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index e9d906a9bba9..29adb9e27b3d 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4525,8 +4525,7 @@ static inline int util_fits_cpu(unsigned long util,
+>  	 *     2. The system is being saturated when we're operating near
+>  	 *        max capacity, it doesn't make sense to block overutilized.
+>  	 */
+> -	uclamp_max_fits = (capacity_orig == SCHED_CAPACITY_SCALE) && (uclamp_max == SCHED_CAPACITY_SCALE);
+> -	uclamp_max_fits = !uclamp_max_fits && (uclamp_max <= capacity_orig);
+> +	uclamp_max_fits = (uclamp_max <= capacity_orig) || (capacity_orig == SCHED_CAPACITY_SCALE);
 
-The last patch should be applied after the following patchset:
-https://lore.kernel.org/all/20221220011247.35560-1-hal.feng@starfivetech.com/
+Isn't `uclamp_max <= capacity_orig` always true for `capacity_orig ==
+SCHED_CAPACITY_SCALE`?
 
-Changes in v3:
-- Rebased on tag v6.1.
-- Renamed the dt-bindings 'starfive,jh71xx-power.yaml' to
-  'starfive,jh7110-pmu.yaml' which is matching compatible.
-- Fixed wrong indentation and error when running 'make dt_binding_check'
-  in dt-bindings.
-- Changed the license of the dt-bindings header to be same with
-  dt-bindings.
-- Changed a little bit on dependency conditions in Kconfig of driver.
-- Dropped some macros that are temporarily useless.
-- Simplified the definition of macro 'JH71XX_PMU_INT_ALL_MASK'.
-- Changed the sorting of structure members, such as 'struct
-  jh71xx_domain_info', 'struct jh71xx_pmu', etc.
-- Modified detailed comment about controlling power domain.
-- Dropped useless comment when running 'platform_get_irq'.
+uclamp_max = [0..SCHED_CAPACITY_SCALE] , capacity_orig =
+SCHED_CAPACITY_SCALE
 
-v2 - https://lore.kernel.org/all/20221208084523.9733-1-walker.chen@starfivetech.com/
+>  	fits = fits || uclamp_max_fits;
 
-Changes in v2:
-- Squashed 1st patch (dt-bindings header) into 2nd which is related to
-  dt-bindings stuff.
-- Renamed the dt-bindings header 'jh7110-power.h' to
-  'starfive,jh7110-pmu.h' and used dual license for it.
-- Renamed the dt-bindings 'starfive,jh71xx-power.yaml' to
-  'starfive,jh71xx-pmu.yaml', dropped items from properties.
-- Change of MAINTAINERS: added the entry of 'starfive soc drivers';
-  changed status to 'Supported' for the entry of
-  'STARFIVE JH71XX PMU CONTROLLER DRIVER' and sorted the lines alphabetically.
-- Dropped the header file 'include/soc/starfive/pm_domains.h'.
-- Dropped starfive_pmu_hw_event_turn_on() and starfive_pmu_hw_event_turn_off().
-- Added 'default SOC_STARFIVE' and expanded help text in the Kconfig.
-- Added a JH71XX_PMU_ prefix to those macro definitions in driver.
-- Replaced the data type 'uint8_t / uint32_t' with 'u8 / u32'.
-- Fixed some complains by using checkpatch.pl
-- Added spinlock to jh71xx_pmu_int_enable().
-- Dropped spinlock from jh71xx_pmu_interrupt().
-- Used jh71xx_pmu_ as prefix to all functions.
-- Replaced io accessors '__raw_readl / __raw_writel' with 'readl / writel'.
-- Added jh71xx_pmu_get_state() to the beginning of jh71xx_pmu_set_state().
-- Added more detailed comment about controlling power domain.
-- Simplified the usage of loop when performing pm_genpd_init() to register
-  power domain.
-- Added more detailed description about the features of power domain
-  hardware to commit message in 2nd patch.
-- Replaced dev_info() with dev_dbg() in jh71xx_pmu_set_state().
-- Decreased the timeout numbers of polling power status when switching
-  power mode.
+Like Qais I don't understand this change. I read the previous discussion
+from https://lkml.kernel.org/r/20221208140526.vvmjxlz6akgqyoma@airbuntu
+("Re: [RFC PATCH 3/3] sched/fair: Traverse cpufreq policies to detect
+capacity inversion").
 
-v1 - https://lore.kernel.org/all/20221118133216.17037-1-walker.chen@starfivetech.com/
+I assume Qais wanted to force `uclamp_max_fits = 0` for a big CPU
+(`capacity_orig = 1024`) and a `uclamp_max = 1024` to not lift `fits`
+from 0 to 1.
 
-Best regards,
-Walker
+>  	/*
+> @@ -4561,8 +4560,8 @@ static inline int util_fits_cpu(unsigned long util,
+>  	 * handle the case uclamp_min > uclamp_max.
+>  	 */
+>  	uclamp_min = min(uclamp_min, uclamp_max);
+> -	if (util < uclamp_min && capacity_orig != SCHED_CAPACITY_SCALE)
+> -		fits = fits && (uclamp_min <= capacity_orig_thermal);
+> +	if (fits && (util < uclamp_min) && (uclamp_min > capacity_orig_thermal))
+> +		return -1;
+>  	return fits;
+>  }
+> @@ -4572,7 +4571,11 @@ static inline int task_fits_cpu(struct task_struct *p, int cpu)
+>  	unsigned long uclamp_min = uclamp_eff_value(p, UCLAMP_MIN);
+>  	unsigned long uclamp_max = uclamp_eff_value(p, UCLAMP_MAX);
+>  	unsigned long util = task_util_est(p);
+> -	return util_fits_cpu(util, uclamp_min, uclamp_max, cpu);
+> +	/*
+> +	 * Return true only if the cpu fully fits the task requirements, which
+> +	 * include the utilization but also the performance.
 
-Walker Chen (3):
-  dt-bindings: power: Add starfive,jh7110-pmu
-  soc: starfive: Add StarFive JH71XX pmu driver
-  riscv: dts: starfive: add pmu controller node
+Not sure if people get what `performance requirements` mean here? I know
+we want to use `performance` rather `bandwidth hint` to describe what
+uclamp is. So shouldn't we use `utilization but also uclamp`?
 
- .../bindings/power/starfive,jh7110-pmu.yaml   |  45 ++
- MAINTAINERS                                   |  14 +
- arch/riscv/boot/dts/starfive/jh7110.dtsi      |   7 +
- drivers/soc/Kconfig                           |   1 +
- drivers/soc/Makefile                          |   1 +
- drivers/soc/starfive/Kconfig                  |  12 +
- drivers/soc/starfive/Makefile                 |   3 +
- drivers/soc/starfive/jh71xx_pmu.c             | 384 ++++++++++++++++++
- .../dt-bindings/power/starfive,jh7110-pmu.h   |  17 +
- 9 files changed, 484 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/starfive,jh7110-pmu.yaml
- create mode 100644 drivers/soc/starfive/Kconfig
- create mode 100644 drivers/soc/starfive/Makefile
- create mode 100644 drivers/soc/starfive/jh71xx_pmu.c
- create mode 100644 include/dt-bindings/power/starfive,jh7110-pmu.h
+> +	 */
+> +	return (util_fits_cpu(util, uclamp_min, uclamp_max, cpu) > 0);
+>  }
+>  
+>  static inline void update_misfit_status(struct task_struct *p, struct rq *rq)
+> @@ -6132,6 +6135,7 @@ static inline bool cpu_overutilized(int cpu)
+>  	unsigned long rq_util_min = uclamp_rq_get(cpu_rq(cpu), UCLAMP_MIN);
+>  	unsigned long rq_util_max = uclamp_rq_get(cpu_rq(cpu), UCLAMP_MAX);
+>  
+> +	/* Return true only if the utlization doesn't fit its capacity */
 
+s/utlization/utilization
+s/its/CPU ?
 
-base-commit: 830b3c68c1fb1e9176028d02ef86f3cf76aa2476
-prerequisite-patch-id: 54ce870d6ea747466474b5d4105cfbc05e1b01ab
-prerequisite-patch-id: e8dd8258a4c4062eee2cf07c4607d52baea71f3a
-prerequisite-patch-id: 057fa35870d8d7d22a57c13362588ffb9e9df316
-prerequisite-patch-id: 102368a6ff799c4cb639aed513deff09c1839161
-prerequisite-patch-id: 7c1a50a37919fedbbd336ca5dec295ac63c2a89d
-prerequisite-patch-id: a5d9e0f7d4f8163f566678894cf693015119f2d9
-prerequisite-patch-id: 87cb528acd9a7f1ffe7475d7261553f6a4de5753
-prerequisite-patch-id: 417736eb958e1158c60a5ed74bc2350394321a80
-prerequisite-patch-id: a137312ca162b5712e28719f77d0da78e9fdd778
-prerequisite-patch-id: f7c548b4619f491ce27f319242c4e3685c76173b
-prerequisite-patch-id: 4d90febab2fb7928f50a73104e7454312b9ce6c8
-prerequisite-patch-id: 645a807d50e0e56593ffdc6c3b50ea54a230827a
-prerequisite-patch-id: 165f8cd740ae60585d22c95b99a0689084d468e3
-prerequisite-patch-id: 480d910deccadc2947b3318c3c13dfa0882c8e0d
-prerequisite-patch-id: 1d1cb90ec12dfc9312e448759c7cab89f2bc6394
-prerequisite-patch-id: 5f539ac7c96023b36489c6da7c70c31eaf64a25b
-prerequisite-patch-id: 6bb9a780c62af3bcc2368dfd20303c7b1bc91e23
-prerequisite-patch-id: 258ea5f9b8bf41b6981345dcc81795f25865d38f
-prerequisite-patch-id: 8b6f2c9660c0ac0ee4e73e4c21aca8e6b75e81b9
-prerequisite-patch-id: e3b986b9c60b2b93b7812ec174c9e1b4cfb14c97
-prerequisite-patch-id: 2e03eeb766aefd5d38f132d091618e9fa19a37b6
-prerequisite-patch-id: e0ba7af0f8d3d41844da9fbcba14b548cbc18f55
-prerequisite-patch-id: c1f8603e58c64828d0f36deac9b93c24289d8e05
--- 
-2.17.1
+>  	return !util_fits_cpu(cpu_util_cfs(cpu), rq_util_min, rq_util_max, cpu);
+>  }
 
+cpu_overutilized() is the only place where we now only test for
+!util_fits_cpu(). The new comment says we only care about utilization
+not fitting CPU capacity.
+
+Does this mean the rq uclamp values are not important here and we could
+go back to use fits_capacity()?
+
+Not sure since util_fits_cpu() is still coded differently:
+
+  fits = fits_capacity(util, capacity)
+
+  fits = fits || uclamp_max_fits  <-- uclamp_max_fits can turn fits from
+                                      0 into 1, so util doesn't fit but
+                                      we don't return 1?
+
+That said, I don't understand the current 'uclamp_max_fits = (uclamp_max
+<= capacity_orig) || (capacity_orig == SCHED_CAPACITY_SCALE)' in
+util_fits_cpu(), like already mentioned.
+
+> @@ -6925,6 +6929,7 @@ static int
+>  select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
+>  {
+>  	unsigned long task_util, util_min, util_max, best_cap = 0;
+> +	int fits, best_fits = 0;
+>  	int cpu, best_cpu = -1;
+>  	struct cpumask *cpus;
+>  
+> @@ -6940,12 +6945,28 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
+>  
+>  		if (!available_idle_cpu(cpu) && !sched_idle_cpu(cpu))
+>  			continue;
+> -		if (util_fits_cpu(task_util, util_min, util_max, cpu))
+> +
+> +		fits = util_fits_cpu(task_util, util_min, util_max, cpu);
+> +
+> +		/* This CPU fits with all capacity and performance requirements */
+
+In task_fits_cpu() `utilization and performance (better uclamp)
+requirements` term was used. I assume it's the same thing here?
+
+> +		if (fits > 0)
+>  			return cpu;
+> +		/*
+> +		 * Only the min performance (i.e. uclamp_min) doesn't fit. Look
+> +		 * for the CPU with highest performance capacity.
+                                            ^^^^^^^^^^^^^^^^^^^^
+
+Do we use a new CPU capacity value `performance capacity (1)` here?
+
+Which I guess is `capacity_orig_of(cpu) - thermal_load_avg(cpu_rq(cpu)`.
+
+I'm asking since util_fits_cpu() still uses: `capacity_orig_thermal (2)
+= capacity_orig - arch_scale_thermal_pressure()` when checking whether
+to return -1. Shouldn't (1) and (2) be the same?
+
+> +		 */
+> +		else if (fits < 0)
+> +			cpu_cap = capacity_orig_of(cpu) - thermal_load_avg(cpu_rq(cpu));
+>  
+> -		if (cpu_cap > best_cap) {
+> +		/*
+> +		 * First, select cpu which fits better (-1 being better than 0).
+> +		 * Then, select the one with largest capacity at same level.
+> +		 */
+> +		if ((fits < best_fits) ||
+> +		    ((fits == best_fits) && (cpu_cap > best_cap))) {
+>  			best_cap = cpu_cap;
+>  			best_cpu = cpu;
+> +			best_fits = fits;
+>  		}
+>  	}
+>  
+
+[...]
+
+> @@ -7446,26 +7480,50 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
+>  			if (prev_delta < base_energy)
+>  				goto unlock;
+>  			prev_delta -= base_energy;
+> +			prev_thermal_cap = cpu_thermal_cap;
+>  			best_delta = min(best_delta, prev_delta);
+>  		}
+>  
+>  		/* Evaluate the energy impact of using max_spare_cap_cpu. */
+>  		if (max_spare_cap_cpu >= 0 && max_spare_cap > prev_spare_cap) {
+> +			/* Current best energy cpu fits better */
+> +			if (max_fits < best_fits)
+> +				continue;
+> +
+> +			/*
+> +			 * Both don't fit performance (i.e. uclamp_min) but
+> +			 * best energy cpu has better performance.
+
+IMHO, `performance` stands for `cpu_thermal_cap` which is
+`cpu_capacity_orig - thermal pressure`.
+
+I assume `performance` is equal to `performance capacity` used in
+select_idle_capacity which uses thermal_load_avg() and not thermal
+pressure. Why this difference?
+
+[...]
