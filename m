@@ -2,153 +2,173 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18062C3DA78
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Jan 2023 09:24:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5013C63797
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Jan 2023 09:29:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236386AbjAQJYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 Jan 2023 04:24:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54690 "EHLO
+        id S236617AbjAQJ3L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Jan 2023 04:29:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236638AbjAQJXp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2023 04:23:45 -0500
-Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2060.outbound.protection.outlook.com [40.107.20.60])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78E3A24137;
-        Tue, 17 Jan 2023 01:20:24 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=OOnw+XVRtWitjd+QJ5Hevy+CUpvfGh2O7/ExjI3Hyv4UV8Vbgqx1Wha6Tbge/18ZzjmCERVS0c0GV/nOBZqpNAoUG+76ZjujGX6ZdHz5Tdk3HTtQOnSt32Cmyu/LsFNPPIgB0EClxwy6W6+wG08FVRbOD4SDC4jq3xeNDKOE6jqvz5qWtVJgvAgeNl2QHE0hdt0B8aONY3VcisN0lZtYuqEB2dj720SbsecHE93Rh89NnpKw8cvVfHzmSLZZTWCIOqVpq29XP4A4/P2qjRyq3LRH1Z95KmvdYIHT0yIciY5hFCp0j4MHkEfpDISdzZupRDpv++xHjowvJAYTjoDeWg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=AZ4H+g2+FR3r9dFt+Tiyg+onDMrCrThJ7dOrXpzVnxY=;
- b=Ii3XPqFci4GMEy7XD4+E/ZE2NVUahdJv6D+9jIzvdljALv+f6tsbH6Jr8Jox0wo3YwmDunY3jRmQALr1MytsjjdBkc97C57szOXxEIjAIiez4tIssOQltKp8LImr3JXXg5Ar7GUghCNSAGPt0AUf+uV7S7Av+xloKEtzA8JzHEau4SAI3FezbEbMcUOpQkYQMOvfIOmQcHIc+xYc37m69pL2/xwrvLVzp6zSFeJq4g8LvUf7fgaBTjIaijpgH/JDVzw2b6IFfKx5MZWnfVoe5HWEVWBzPEU0ncU7jReU5CuHQ9qJ757ze4fTP+1rfi56+21hgi9szdw4asVmG2YyJw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector2-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AZ4H+g2+FR3r9dFt+Tiyg+onDMrCrThJ7dOrXpzVnxY=;
- b=GoKl/bzEMCuWjcFcSTosYdzh5srsK0Pk66znA2aGCGwws6cAuij6Ejsov7oQnSKJrKlf7zi3w3DFhg5RD8WhT5sjE9wtiP0f7wEugwIK4Bk4oh4lxJNisOTeptm7UHavd3K83rj6+dHgAq4fgyXvnWFzy/TH2QnijTccAZ1jJbI=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from VI1PR04MB5005.eurprd04.prod.outlook.com (2603:10a6:803:57::30)
- by AM0PR04MB7090.eurprd04.prod.outlook.com (2603:10a6:208:19e::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.12; Tue, 17 Jan
- 2023 09:20:21 +0000
-Received: from VI1PR04MB5005.eurprd04.prod.outlook.com
- ([fe80::e2d1:cb8b:dc57:8749]) by VI1PR04MB5005.eurprd04.prod.outlook.com
- ([fe80::e2d1:cb8b:dc57:8749%6]) with mapi id 15.20.5986.023; Tue, 17 Jan 2023
- 09:20:21 +0000
-From:   "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] thermal/drivers/imx_sc_thermal: fix the loop condition
-Date:   Tue, 17 Jan 2023 11:19:55 +0200
-Message-Id: <20230117091956.61729-1-viorel.suman@oss.nxp.com>
-X-Mailer: git-send-email 2.38.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: VI1PR0202CA0022.eurprd02.prod.outlook.com
- (2603:10a6:803:14::35) To VI1PR04MB5005.eurprd04.prod.outlook.com
- (2603:10a6:803:57::30)
+        with ESMTP id S236667AbjAQJ2c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2023 04:28:32 -0500
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7FCFA5D8
+        for <linux-pm@vger.kernel.org>; Tue, 17 Jan 2023 01:27:01 -0800 (PST)
+Received: by mail-ej1-x630.google.com with SMTP id ss4so66602698ejb.11
+        for <linux-pm@vger.kernel.org>; Tue, 17 Jan 2023 01:27:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=aG/8wcVo3iRFKTM15eP07bvogfZDNrsKDxEfzDzAxqQ=;
+        b=I0xtpXyMLKdw4YC1KQ+i/CO9seD/pJWEEKfI4ib77wLtEsrjFfaYTeXcnp4hnHrjA1
+         m8S5X9QeXhhav0yuntaQ7x2KuQqNzfK8YPV4nXEaBlL13kg35pHmSY7Dltq3VnWAdeKk
+         XAia9YcWJLOdosghZQn3U77KI60Ryy6jz4pK/TeEWA65+vdd8dwQxAcwmYWXRSUNa83t
+         2TEF87WC10QFXfWyW7RwEK8PoCTFXn5lT1m5HQrEi+P5RyY/Jr7WMnja41VsATUH2+Lt
+         IuUzpnlsFspRKgwmSuDxBIYPVh/VYnbvCzydKX7GgIcKh2xSos5mlvWiS1celQVLkr22
+         IfOw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aG/8wcVo3iRFKTM15eP07bvogfZDNrsKDxEfzDzAxqQ=;
+        b=ZcjCPrzsnRUMuf5GgH+FX2CYvERxYdZPSzP2YBzdaN/JgRMAedbkeJLztPuIGbHvU7
+         3KOCoTrAXkEBNhpLBLXDWSRlCxNNIahoHqWzdT7qZB0xmCrJH31WpjYf6aL2LLR+qH8q
+         IYyHmxFxi7HUSnC0UsgwcjiYQaFl2Gqhsx/PaNrQE3c5jhtX8cR3cSF3LTjl4AaDdzdh
+         aefalNSVsaOEO9ZiIZafHp+d8Ty8JJOop44mpp+NjYSY3aMZL1aJ9ps04/u905AOXN1Y
+         uhfYlU9zzOHghjbtXH/Af7HfBX60fHrcGzOWL4JLYj0B3KUhsYT/y/KB2U73ALzK3dPO
+         QalQ==
+X-Gm-Message-State: AFqh2krY3CBm4o1cGRB3unwDDBm0/wQNx5z/N8lj4HCjM/WfgEBn4xem
+        Y3zrCwTjzFQhcD4Xx7Imc69Q1w==
+X-Google-Smtp-Source: AMrXdXu2si9HzTcy4nOGsEf7y8i21dY9vxEP7F2SyxnNBkvx0AeN1qN1paxsr2aPYTdtxPI9Z81GaQ==
+X-Received: by 2002:a17:907:2a56:b0:84d:35e1:2781 with SMTP id fe22-20020a1709072a5600b0084d35e12781mr14583345ejc.46.1673947620250;
+        Tue, 17 Jan 2023 01:27:00 -0800 (PST)
+Received: from ?IPV6:2001:14ba:a085:4d00::8a5? (dzccz6yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a085:4d00::8a5])
+        by smtp.gmail.com with ESMTPSA id et21-20020a170907295500b00871f66bf354sm1254923ejc.204.2023.01.17.01.26.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 17 Jan 2023 01:26:59 -0800 (PST)
+Message-ID: <ed32ade2-41b1-5aa0-cc1f-0f40f1d9f099@linaro.org>
+Date:   Tue, 17 Jan 2023 11:26:58 +0200
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: VI1PR04MB5005:EE_|AM0PR04MB7090:EE_
-X-MS-Office365-Filtering-Correlation-Id: 339a36c7-4292-432f-b9a2-08daf86c0e4e
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 3UtWgI8AgtXpU7g6EcepeBk+inELMGV96JcccQvmIY0b82VHPRUOd2Dso/0+BSUNSz14wE+cmU8zCn04KcSstBIB/QT1m8bqjCm077XnQjOmVtzA79f2GSEy5FbHyNKVvJBVYxpXH8u7BenPMUozuF7Lu/D4gP2Xkp/jtjTKQ/jMBBhn8NRrPWuQPCsQbgfIwnOKjHTXb6EN7dmaHA+z+ZyWUvmsca9ngkkzpaFtr+CmdcG+d6ZzD4a5sMwHUOv7nFdF45Hx8bK5GZqp0eVev5v4C8e5A8bus3b1pOnW61WCdKG5+qQR0LRfu/nr3KmYrDkHW3/3guk3cZScoRkw7oHGeoFGXnXnya9K5uO78dlY5bHayrcnXYFdsRyP1ABCjT+rzj5NibalWA8SrcYN/sjdt8MKwgKAF3iPiQG+DLBwy0KlSYqPwijaCSVkz16b0RX0G3ks9OoG+tIwrGtkaR9VBvxYP0hjeiXjA6tbuGTZ5yvf9rjzGPQhtoruRuCEbFnCB61RrR1vmxSjmOloVXgEPE147/gTpDIKg/3umNANyGK3c1+lBc58dbXsgdhC7TbYwchSV9nr0qIuPRN74DTwXSh6Bs27OLpaIzh3D0/ZKwN9UA2zIvbXF42rD1eT4+zKQ2WbN/26ioKvLFmUMRGNuL7C3KSpT6VpDuJ6ACTgZVav5ym4Y2Y/IFl2UsJ/S3Rmwy8apSVGgX1bULnBAVscIXmUjASylhn0vE+W5sc=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB5005.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(376002)(396003)(346002)(136003)(39860400002)(366004)(451199015)(83380400001)(110136005)(6486002)(6512007)(52116002)(478600001)(921005)(186003)(38350700002)(38100700002)(2616005)(1076003)(86362001)(41300700001)(2906002)(26005)(6506007)(6666004)(8936002)(66556008)(8676002)(66946007)(66476007)(7416002)(316002)(5660300002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?OPjw4plVjo/ULNpgXSwZUQZSAl3enmj1EYziu4xB4mIi/e0jyd7FeOg1HJrt?=
- =?us-ascii?Q?fyD+icTyxP1PAVHBVwyWc977/+FG9ufiuOqbJw1eJCqEeyKaR/Vg65gOD03r?=
- =?us-ascii?Q?7kjV3DpBEny7DEOFoiTyFkWVBlEca1yLEY65m2hnCsFYTWzefFZnqyk/g7uo?=
- =?us-ascii?Q?cRmNORJ6jV6P7YP1f5WDl5uCWc8kGvsEYCTX24mLLCMrx5vX1V168tO3p9As?=
- =?us-ascii?Q?b8g8NVijD3xfu/6vtcUSx3ryA1IVeRkkRqCCW6yxDRo9G3P9kRLOcRsr9rkE?=
- =?us-ascii?Q?Dvs04bxDTBbz/sFSyy6H5aGjRQmSutZfJe0sSH24WQrRqJdXfOQRTMyHuAHn?=
- =?us-ascii?Q?K60EADuZy1HCReWCzdafIaBSLJ1HtJNlFVc2r7dtuGELixgnvZgeyNoJTJVY?=
- =?us-ascii?Q?qkhY7v38KT5kvEBD/29LS/JzxSTpPGz17HnUhgly/VHGjTj89DUk5ClNeQEc?=
- =?us-ascii?Q?E96huXkBzQZb1oWO5SKP4PXWe6OBD0gq9OB87OIvi/t3/MKLGBO7Urwzc/dD?=
- =?us-ascii?Q?jIt5JmqGkOqdPV0f8J92EjfPTZGX5EgfZo59KbtFu/3OTPfDuhfaMOZ1HTUA?=
- =?us-ascii?Q?gPqDSuA7YbyQmHrr73Ljz2mhRp9YqZF4BvtKC8BrCuj3W6Jzn7/br+3uIJF2?=
- =?us-ascii?Q?BMNgADrEQqgfEecLvLVy5h44I6kUSxw6NImucP7wXQlFwCl/zaREh1kJk8l4?=
- =?us-ascii?Q?w5g/fCVGgCUSCFm3RZ5e30ekcsWsp23Yx6hrks2wlENQAh3GDGarnA1iTtWi?=
- =?us-ascii?Q?FUk8viwOjoPUM/wtJWHqHUq5oNimaxWWxfC42DgDNogjl7jwIEZpPLGVMDVr?=
- =?us-ascii?Q?mlgJ5NlPstF5ai2VMmPWLXxBDHJ4v1KFCrfD8V+B4u3Txp0g7mlgxKXldkKg?=
- =?us-ascii?Q?g+BaYqncZPJV8rMISYaJuih2vddE/k27xgst1PjbZOXgYUraxNk8FwNKmei/?=
- =?us-ascii?Q?lDa6Izh9zcyJC1c+phZb47cf6wCP3REiwB8CuvbuPxlmjxIkudQpG5LggaRW?=
- =?us-ascii?Q?PGYkcTBuyJVmsiA1ifjmToGCLdxo8cqpPr7XielDvq6s6V1j7QudjIkte9u3?=
- =?us-ascii?Q?YpGGOJiPm/uILpMKuoLttcD3fgSQQFc0IIlxMLYspOPm2wFCjrRaGsJy16L/?=
- =?us-ascii?Q?eMvZmmoSV+KJVIeLL+UAS81PzDeHQEf/iWlUzkxbCUXxrRQrvmn/xv6va5+K?=
- =?us-ascii?Q?PNfibXdJL1OJzDo/9d39yvIpeQ3zSSPPkrJ+omWC3sa2z3JHrk05zM8V9o9K?=
- =?us-ascii?Q?4tc3ygEe7yJoaDGYKTz9rQgLdKczWp8/4Ts/0R2WVKJw9SWiG+YyGEYPE5Oy?=
- =?us-ascii?Q?IEbWCTOn3LAilJeka62MXQf1bfxcOQ64hfgWNb6tKSZsgVxfJ94TFMjtl4gs?=
- =?us-ascii?Q?/P6X9LgJ+4kEhYwy0vMbbWq2dP6ckB1rL1eH1aQEhOwiztvXufWDvKhzbs7N?=
- =?us-ascii?Q?DuJxx6DHJkefWKM2SAyFS/NCx99wcgghPj8Dn+OXmOThVad4akK2ptJZ5g0r?=
- =?us-ascii?Q?cRA2pnjD8jFLBEGrT1x2JnUi7oQNOOk+vYiTSi8eh3wo7PDhoWH2GWYFZjQn?=
- =?us-ascii?Q?mUUH/kpE22XlUGobYONB2MtsFQRrX08vdeHmkSIvjr7ZXDPqsubFiBf+Tmz8?=
- =?us-ascii?Q?7g=3D=3D?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 339a36c7-4292-432f-b9a2-08daf86c0e4e
-X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB5005.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jan 2023 09:20:21.0136
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: uqXCPGPk8hhTsn0SWCxfzsRhhNqU+m88jN8gsj9uY5w4hz0gHvCzJHMM2uKrmhenpiSLy54m2kftwB6zECIcmg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB7090
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH v2 0/4] soc: qcom: Introduce PMIC GLINK
+To:     Bjorn Andersson <quic_bjorande@quicinc.com>,
+        Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>,
+        Johan Hovold <johan@kernel.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>
+References: <20230113041132.4189268-1-quic_bjorande@quicinc.com>
+ <9e831252-7198-7983-8a52-0e745688452d@linaro.org>
+ <20230117023238.GB2350793@hu-bjorande-lv.qualcomm.com>
+ <c1e3db0d-7593-b0fc-043b-60538faf9ba2@linaro.org>
+ <20230117025818.GC2350793@hu-bjorande-lv.qualcomm.com>
+Content-Language: en-GB
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+In-Reply-To: <20230117025818.GC2350793@hu-bjorande-lv.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Viorel Suman <viorel.suman@nxp.com>
+On 17/01/2023 04:58, Bjorn Andersson wrote:
+> On Tue, Jan 17, 2023 at 02:37:27AM +0000, Bryan O'Donoghue wrote:
+>> On 17/01/2023 02:32, Bjorn Andersson wrote:
+>>> On Fri, Jan 13, 2023 at 05:10:17PM +0000, Bryan O'Donoghue wrote:
+>>>> On 13/01/2023 04:11, Bjorn Andersson wrote:
+>>>>> This implements the base PMIC GLINK driver, a power_supply driver and a
+>>>>> driver for the USB Type-C altmode protocol. This has been tested and
+>>>>> shown to provide battery information, USB Type-C switch and mux requests
+>>>>> and DisplayPort notifications on SC8180X, SC8280XP and SM8350.
+>>>>>
+>>>>> Bjorn Andersson (4):
+>>>>>      dt-bindings: soc: qcom: Introduce PMIC GLINK binding
+>>>>>      soc: qcom: pmic_glink: Introduce base PMIC GLINK driver
+>>>>>      soc: qcom: pmic_glink: Introduce altmode support
+>>>>>      power: supply: Introduce Qualcomm PMIC GLINK power supply
+>>>>>
+>>>>>     .../bindings/soc/qcom/qcom,pmic-glink.yaml    |  102 ++
+>>>>>     drivers/power/supply/Kconfig                  |    9 +
+>>>>>     drivers/power/supply/Makefile                 |    1 +
+>>>>>     drivers/power/supply/qcom_battmgr.c           | 1421 +++++++++++++++++
+>>>>>     drivers/soc/qcom/Kconfig                      |   15 +
+>>>>>     drivers/soc/qcom/Makefile                     |    2 +
+>>>>>     drivers/soc/qcom/pmic_glink.c                 |  336 ++++
+>>>>>     drivers/soc/qcom/pmic_glink_altmode.c         |  477 ++++++
+>>>>>     include/linux/soc/qcom/pmic_glink.h           |   32 +
+>>>>>     9 files changed, 2395 insertions(+)
+>>>>>     create mode 100644 Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
+>>>>>     create mode 100644 drivers/power/supply/qcom_battmgr.c
+>>>>>     create mode 100644 drivers/soc/qcom/pmic_glink.c
+>>>>>     create mode 100644 drivers/soc/qcom/pmic_glink_altmode.c
+>>>>>     create mode 100644 include/linux/soc/qcom/pmic_glink.h
+>>>>>
+>>>>
+>>>> How does the USB PHY and a USB redriver fit into this ?
+>>>>
+>>>> Is the host supposed to manage both/neither ? Is the DSP responsible for
+>>>> configuring the PHY lanes and the turnaround on orientation switch ?
+>>>>
+>>>
+>>> As indicated above, the firmware deals with battery management and USB
+>>> Type-C handling.
+>>>
+>>> The battery/power management is handled by the battmgr implementation,
+>>> exposing the various properties through a set of power_supply objects.
+>>>
+>>> The USB Type-C handling comes in two forms. The "altmode" protocol
+>>> handles DisplayPort notifications - plug detect, orientation and mode
+>>> switches. The other part of the USB implementation exposes UCSI.
+>>>
+>>> The altmode implementation provides two things:
+>>> - A drm_bridge, per connector, which can be tied (of_graph) to a
+>>>     DisplayPort instance, and will invoke HPD notifications on the
+>>>     drm_bridge, based on notification messages thereof.
+>>>
+>>> - Acquire typec_switch and typec_mux handles through the of_graph and
+>>>     signal the remotes when notifications of state changes occur. Linking
+>>>     this to the FSA4480, is sufficient to get USB/DP combo (2+2 lanes)
+>>>     working on e.g. SM8350 HDK.
+>>>     Work in progress patches also exists for teaching QMP about
+>>>     orientation switching of the SS lines, but it seems this needs to be
+>>>     rebased onto the refactored QMP driver.
+>>>     I also have patches for QMP to make it switch USB/DP combo -> 4-lane
+>>>     DP, which allow 4k support without DSC, unfortunately switch back to
+>>>     USB has not been fully reliable, so this requires some more work
+>>>     (downstream involves DWC3 here as well, to reprogram the PHY).
+>>
+>> Oki doki that makes sense and is pretty much in-line with what I thought.
+>>
+>> We still have a bunch of typec-mux and phy work to do even with adsp/glink
+>> doing the TCPM.
+>>
+> 
+> Correct, the registration of QMP as a typec_switch and typec_mux and
+> handling of respective notification remains open and should (by design)
+> be independent of the TCPM implementation.
+> 
+> In particular the orientation switching is an itch worth scratching at
+> this time. But when the DPU becomes capable of producing 4k@60 output it
+> would obviously be nice to have the whole shebang :)
 
-The minimal resource ID is 0: IMX_SC_R_AP_0=0, so fix
-the loop condition. Aside of this - constify the array.
+Did you try it with the wide planes patchset at [1]? I was able to get 
+stable 4k@30 on RB3 (being limited only by the DSI-HDMI bridge).
 
-Fixes: 31fd4b9db13b ("thermal/drivers/imx_sc: Rely on the platform data to get the resource id")
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-Reviewed-by: Dong Aisheng <Aisheng.dong@nxp.com>
----
- drivers/thermal/imx_sc_thermal.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+[1] 
+https://lore.kernel.org/linux-arm-msm/20221229191856.3508092-1-dmitry.baryshkov@linaro.org/
 
-diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
-index 4df925e3a80b..dfadb03580ae 100644
---- a/drivers/thermal/imx_sc_thermal.c
-+++ b/drivers/thermal/imx_sc_thermal.c
-@@ -88,7 +88,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 	if (!resource_id)
- 		return -EINVAL;
- 
--	for (i = 0; resource_id[i] > 0; i++) {
-+	for (i = 0; resource_id[i] >= 0; i++) {
- 
- 		sensor = devm_kzalloc(&pdev->dev, sizeof(*sensor), GFP_KERNEL);
- 		if (!sensor)
-@@ -127,7 +127,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int imx_sc_sensors[] = { IMX_SC_R_SYSTEM, IMX_SC_R_PMIC_0, -1 };
-+static const int imx_sc_sensors[] = { IMX_SC_R_SYSTEM, IMX_SC_R_PMIC_0, -1 };
- 
- static const struct of_device_id imx_sc_thermal_table[] = {
- 	{ .compatible = "fsl,imx-sc-thermal", .data =  imx_sc_sensors },
 -- 
-2.38.1
+With best wishes
+Dmitry
 
