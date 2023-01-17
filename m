@@ -2,147 +2,154 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84109C678D4
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Jan 2023 08:54:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01BEBC678D4
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Jan 2023 09:24:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235576AbjAQIyq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 Jan 2023 03:54:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57046 "EHLO
+        id S236374AbjAQJYM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Jan 2023 04:24:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56370 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235927AbjAQIyk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2023 03:54:40 -0500
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA4213C07;
-        Tue, 17 Jan 2023 00:54:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=82O7MPpmKDKH/y6naoktZs3WQBLC/PHyEl3Wjqd7/dM=; b=Ke5GdVNvGDwhG+k46q7dng0FmD
-        4svqJ3BuhIzpCyRd3d34EzrwpAYhtIPNP9U0JudPObAhyc7mKDDB2ufRnVUe8NMuF1emh9A0PNWIH
-        p1R0fL14Y4BiUEbkIt1kuIDfTIDr+dtl1B0SONy0L6U6H9msSNXgpTQM8WUKpqJC+XOMDTKkpqJUy
-        A0FDeq5XRHSYeh/RQjtt4CQSF65Phgmx7FmreCSehAcpaORvkTTe37Nk1Kd9I9heUV3/iILob+ev7
-        j5Jfjn7noy51S9Ufs13OCaNuk4vpeID6Jvr5f0ui2whQba0QF6a+wxAzj0g5CzDexgL5+ikNTlFRJ
-        Sa81nPeg==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pHhjP-009Wew-5Z; Tue, 17 Jan 2023 08:54:11 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 99EF1302D60;
-        Tue, 17 Jan 2023 09:53:52 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 46751201ABB3C; Tue, 17 Jan 2023 09:53:52 +0100 (CET)
-Date:   Tue, 17 Jan 2023 09:53:52 +0100
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Masami Hiramatsu <mhiramat@kernel.org>
-Cc:     richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
-        mattst88@gmail.com, vgupta@kernel.org, linux@armlinux.org.uk,
-        nsekhar@ti.com, brgl@bgdev.pl, ulli.kroll@googlemail.com,
-        linus.walleij@linaro.org, shawnguo@kernel.org,
-        Sascha Hauer <s.hauer@pengutronix.de>, kernel@pengutronix.de,
-        festevam@gmail.com, linux-imx@nxp.com, tony@atomide.com,
-        khilman@kernel.org, krzysztof.kozlowski@linaro.org,
-        alim.akhtar@samsung.com, catalin.marinas@arm.com, will@kernel.org,
-        guoren@kernel.org, bcain@quicinc.com, chenhuacai@kernel.org,
-        kernel@xen0n.name, geert@linux-m68k.org, sammy@sammy.net,
-        monstr@monstr.eu, tsbogend@alpha.franken.de, dinguyen@kernel.org,
-        jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
-        shorne@gmail.com, James.Bottomley@hansenpartnership.com,
-        deller@gmx.de, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, paul.walmsley@sifive.com,
-        palmer@dabbelt.com, aou@eecs.berkeley.edu, hca@linux.ibm.com,
-        gor@linux.ibm.com, agordeev@linux.ibm.com,
-        borntraeger@linux.ibm.com, svens@linux.ibm.com,
-        ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
-        richard@nod.at, anton.ivanov@cambridgegreys.com,
-        johannes@sipsolutions.net, tglx@linutronix.de, mingo@redhat.com,
-        bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org,
-        hpa@zytor.com, acme@kernel.org, mark.rutland@arm.com,
-        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-        namhyung@kernel.org, jgross@suse.com, srivatsa@csail.mit.edu,
-        amakhalov@vmware.com, pv-drivers@vmware.com,
-        boris.ostrovsky@oracle.com, chris@zankel.net, jcmvbkbc@gmail.com,
-        rafael@kernel.org, lenb@kernel.org, pavel@ucw.cz,
-        gregkh@linuxfoundation.org, mturquette@baylibre.com,
-        sboyd@kernel.org, daniel.lezcano@linaro.org, lpieralisi@kernel.org,
-        sudeep.holla@arm.com, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@linaro.org, anup@brainfault.org,
-        thierry.reding@gmail.com, jonathanh@nvidia.com,
-        jacob.jun.pan@linux.intel.com, atishp@atishpatra.org,
-        Arnd Bergmann <arnd@arndb.de>, yury.norov@gmail.com,
-        andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk,
-        dennis@kernel.org, tj@kernel.org, cl@linux.com,
-        rostedt@goodmis.org, frederic@kernel.org, paulmck@kernel.org,
-        pmladek@suse.com, senozhatsky@chromium.org,
-        john.ogness@linutronix.de, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        bsegall@google.com, mgorman@suse.de, bristot@redhat.com,
-        vschneid@redhat.com, ryabinin.a.a@gmail.com, glider@google.com,
-        andreyknvl@gmail.com, dvyukov@google.com,
-        vincenzo.frascino@arm.com,
-        Andrew Morton <akpm@linux-foundation.org>, jpoimboe@kernel.org,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-snps-arc@lists.infradead.org, linux-omap@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, linux-csky@vger.kernel.org,
-        linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
-        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-xtensa@linux-xtensa.org, linux-acpi@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-mm@kvack.org,
-        linux-trace-kernel@vger.kernel.org, kasan-dev@googlegroups.com
-Subject: Re: [PATCH v3 35/51] trace,hardirq: No moar _rcuidle() tracing
-Message-ID: <Y8ZiIMHyXX/yW1EI@hirez.programming.kicks-ass.net>
-References: <20230112194314.845371875@infradead.org>
- <20230112195541.477416709@infradead.org>
- <20230117132446.02ec12e4c10718de27790900@kernel.org>
+        with ESMTP id S236642AbjAQJXp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2023 04:23:45 -0500
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com (mail-he1eur04on2043.outbound.protection.outlook.com [40.107.7.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACECB252AC;
+        Tue, 17 Jan 2023 01:20:28 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HlYarJ7Kb1kSfMQ8ZhfhtASUVvbwHyCA03gb4ucWZK6+iyETJADOa8geCyOv/OEgtKa4uvub9SlrgMCS2+DprJKvB7GrNqCLq0jE2ZxoR8gn9CAFKuotegw2gQUIjnKejg7rapdqGbrMQORpvPhV1dvXjk0IKhLvZYYcVuJ4Bdq0YBu+owUKhNCBhvoFaw2ADIBv9sMCZiaTZJvE0Zj4HH/K2uEIHQIwjNjtPmsE44S9avgo/OCeOkv21brEf6Yxk396ePfPuHFe8Rs6i5iP3V2ykaht1NjXYjql6hXkcj0r/sTD5FQFBpILIJdNf4JmFjI4iS0kGF1YFbfGVhePjA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FjT5Ym02m0BNo8cGHsuRvsam9lqjVJ732nJnBR+Juyc=;
+ b=G4CO0kNWqfWBbPVCrxHXt1rMorQ06pb1QJfkPywsJkgHtBOMa36aWwxVQTj7L9vXmfCXH2d6PyXhNep2yBhDPCO/ltMrVQ9fVWA6QzAErwqCtubxYRwNtSyvMyuDRMXqJO3sQE3Gl1EME9xRwximPtXkg31xAiqcu+8DZNoATlMTe7QpbfQyP3lQ16hpAr0ddjz+uHueFAkWcOknW9fY38y3O7M3MmkwU7QPVEFC+pHZDmrvePem+HZs80/dmn3R6vm/lp+7M7cgXP7qruJGMk+o/QZXruV0AZARkE596afY7nbazG/eXvm1RPDnI73UhyP0arKT6Vxas1Zq51mdRQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector2-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FjT5Ym02m0BNo8cGHsuRvsam9lqjVJ732nJnBR+Juyc=;
+ b=SqXk6Haj+zQ2TzYN3EDD8aPEk1zv0dlIRoZpsuj7ecDuaspyyboBSdiG4edaun2jgDLP6uTjfpC8WeI7cbYXQhkvG5nC5uBJA+ekGap5FELlYpvqleaQ5mY8vSER1mg7ivmp9gXhoY1vyTWxoJYq2UacxS+cMlXHkFSJTwYjdLs=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from VI1PR04MB5005.eurprd04.prod.outlook.com (2603:10a6:803:57::30)
+ by DBAPR04MB7381.eurprd04.prod.outlook.com (2603:10a6:10:1a2::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5986.23; Tue, 17 Jan
+ 2023 09:20:24 +0000
+Received: from VI1PR04MB5005.eurprd04.prod.outlook.com
+ ([fe80::e2d1:cb8b:dc57:8749]) by VI1PR04MB5005.eurprd04.prod.outlook.com
+ ([fe80::e2d1:cb8b:dc57:8749%6]) with mapi id 15.20.5986.023; Tue, 17 Jan 2023
+ 09:20:24 +0000
+From:   "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] thermal/drivers/imx_sc_thermal: add iMX8QM sensors
+Date:   Tue, 17 Jan 2023 11:19:56 +0200
+Message-Id: <20230117091956.61729-2-viorel.suman@oss.nxp.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20230117091956.61729-1-viorel.suman@oss.nxp.com>
+References: <20230117091956.61729-1-viorel.suman@oss.nxp.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: VI1PR0202CA0022.eurprd02.prod.outlook.com
+ (2603:10a6:803:14::35) To VI1PR04MB5005.eurprd04.prod.outlook.com
+ (2603:10a6:803:57::30)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230117132446.02ec12e4c10718de27790900@kernel.org>
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: VI1PR04MB5005:EE_|DBAPR04MB7381:EE_
+X-MS-Office365-Filtering-Correlation-Id: 82565ea8-5919-4ab9-5e68-08daf86c1043
+X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: JUtKbmfd3W6etPDyi4c9XkXOErBMKzElqIgJECrWfWoRy4NCYwegfrFGsXWW4NsZ0dfl0eMzf3KvxYMHiy4p+tygXXQw4uo2PZQzPxLSXtWb7hvtZEhumQK7Mn4fBZ0qtb+K+TPhQRvnvONdksMbxa6AJTDRMdp7haNFEF8/ir49TVh9kYSKg8xBVi4jnMk2o32kbj+tGkI+ojzp3ta1THZaHornXPgteAlPydKZGo7tz6WPhC0WBAqfTotiYO7UH6p5a0CK0rgGjmhrlSmdTdxE4RcIxmDchtTw/QEvEtMowFt7bNCCaCCuWLxKgqJARHnMYAe9fHFz57JFAhsumqgml1o/dZd4HftR546jsyQz8YPb0NaA54Eu/eWuXqZzOO3OTf6vzP75ex4GLDrad3cnTvhozJ8Y+iW0F4o5qzMazWL+wo5LjDxvXXe/I6zTjFZg4CZVuNLy8w9aMicXoRPkECYBLAXgd+gTKKw+SlY0MRgtwmpEcs9KZp7ntzIx9uoFbrcG4QBPWDQRFPcy8mMfL6N6lU7IXMRu5YN7HeTahmEDxeQt5MTojvTGEZDw5/FUKIh7EoS+Qlhl27M3aJorCPMI0Cby4TSF7kWNJTnnySAfpvTEeDodbumpPXt2sNLXaJtA3b34P90VnSWLicIF7YsmGdEET3ndoCGrdXA/WVrCQUA0aX2ZX42GdrU/v2Fuou5jfT3Wmxtdg8I3Cs3bXxxAFcfFl1JfvAKEZ1W1AOsFA+1lQulUJ+UCkY4d
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB5005.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(376002)(396003)(39860400002)(346002)(136003)(366004)(451199015)(38100700002)(7416002)(86362001)(921005)(8936002)(8676002)(66556008)(66946007)(66476007)(2906002)(5660300002)(83380400001)(38350700002)(478600001)(6486002)(52116002)(110136005)(6666004)(316002)(41300700001)(6512007)(1076003)(2616005)(26005)(186003)(6506007)(32563001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?J3Pa2/iAN2XZRY9WTG/NdWCOna1hs5FOyRSPkGJXqvlH7fJXlwkd5ZBRvvi+?=
+ =?us-ascii?Q?mdVKWzalZ6Hd9MzN7Qs/41ek84BSb1d1NzCGk5N71Voo+xJ9iRXmtg6IPuvg?=
+ =?us-ascii?Q?/jZ+ki+Id5SxgaRkBR+ZnHU9vv/14NdGcYdwS9lozU1YavPLm0TBfL5KXryS?=
+ =?us-ascii?Q?ruPRSj0Eg7Ogl2H/4J/QQ9kAGiJtqUZFpPUyFDDl9WVzYH8zPMa9aUfAL5vO?=
+ =?us-ascii?Q?tNgkl32t8pTpSlFQf+qpSOMy+bGpG6+9+8TfrdcGVEfsZKmRbuW6afi1ovP8?=
+ =?us-ascii?Q?KVtkeceMn/wn1LEEiflJw7MyCMxup4Sbr44KpJQODTRIMtSawZTCCGTyBw22?=
+ =?us-ascii?Q?cocuv/T29VNgOtsTzbYnmgwxXJrTJ1rr8LdkLxpkfpteSvpRO6mo7E7TmYko?=
+ =?us-ascii?Q?aKMgJcWscReIHNjW3Y+oHsPcyHMi3m8eAedWWf8v8XLYFmrf64gTU/EaUnHL?=
+ =?us-ascii?Q?rQGp6CXqcXWyWcS3TAKbFLutuklifRs6/siirFT0OqElO5JWMQd03jU8vzVj?=
+ =?us-ascii?Q?pGh5fLh/mUjHJqnJ5Dp9+PJKrDGWfj9vn8hlzOPzRVmNTwHHJjgJdJRNrIe5?=
+ =?us-ascii?Q?SAKg6gpWKSUCZsw0GcM/4vITAnV8yLRxmIFU5qg/FkgWHOQUKWrfXv4zdWmW?=
+ =?us-ascii?Q?vNj7lbKDGfpeQvaMrU+39T5V8cx/LXFjJxMsjD6uRabS6DJOeJwzD2Rrd/Np?=
+ =?us-ascii?Q?bNPrNzo8DdvokmNEM9edntZonMr/FQNoShzmMga/ELPHPbQs9fB+hWCST5VD?=
+ =?us-ascii?Q?SOSY8pcJQ1PzH807Y/xruL3mK9sEu6Wycu4pkLNQuR8wy07ga0cuVTf0edco?=
+ =?us-ascii?Q?YJu3dK2LTM/dZAGbJwPwBCF2NEJ6/KGQmZYHxhq6vJr+Kf3cRFnITvAzvEre?=
+ =?us-ascii?Q?RJo1AmI5E+NAJw1Yt/CaRmDjkeMaTbJjCNYhj7ZrLi0jMIOSH9z2fYpmJBDB?=
+ =?us-ascii?Q?uzfMUUciVqBc+4DMf+Z7IxSAy7AomWAATEgoQAsbBQgolmLdjgUM5erN4QsC?=
+ =?us-ascii?Q?KFdFFQXUJq+l5qBZ1eSjqfookPuqr5mVz9OdIS6CXCvnRMC3O6ofuS8yyeP/?=
+ =?us-ascii?Q?XL3kUL3eksg4/rs+LwSJRJ6Zx2zI6F+FvEfY+8RwONrSN3m0++JW1S8Ufnw/?=
+ =?us-ascii?Q?wtDAriFiB0CsquPKtj0//MKiYP9Fs8dTASMNnkTfHsTh/DgjUke9zBt8S+4+?=
+ =?us-ascii?Q?dWxVUTBFeMA57WnIa5PZkYm5VdW2z7RBxVDZfOS+XdMkBDOWzlt+mEK9jMat?=
+ =?us-ascii?Q?Q9wyipgeebxujbiIeC0eBd6Cf2BJX8VMAXMOZa7eQLleG4YjsyxDDtT9kg/x?=
+ =?us-ascii?Q?vgmnNIcj728uBzogjAz6eHvLfZ/jupYaMaMWfwEmG7iSPpFtDCn+HxRhp+85?=
+ =?us-ascii?Q?Pl0ssjQPkRWob5chNdgL+nqyxjE8K83NwW3n4EgJ5SU1F84PKav9v+UlBkzb?=
+ =?us-ascii?Q?axOpxni/sYhYCpVAKfBVlLAaG1XJlHfUz/e0EaX+KVobR1YS31I+quYFQVLF?=
+ =?us-ascii?Q?9+tbSH3HQBu6BNnA2H4fRcicnVIp4V4van+gOPbbyFi5IkCm5YpNyj7e/ARx?=
+ =?us-ascii?Q?LJ6pNRT9ieoEH3tQyhQ5Q5LYGsudt4ffAef3WaXKfa9owfdxmf47/FEMRnnc?=
+ =?us-ascii?Q?aA=3D=3D?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 82565ea8-5919-4ab9-5e68-08daf86c1043
+X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB5005.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jan 2023 09:20:24.2165
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: fIDPp8nGMw9X+jCzNa//WUdeueojQMttyDYKwQ8huWVCetU4qUWDgjSVyMostpegdN6+NAbO3tB19XJpeDCjVg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR04MB7381
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 17, 2023 at 01:24:46PM +0900, Masami Hiramatsu wrote:
-> Hi Peter,
-> 
-> On Thu, 12 Jan 2023 20:43:49 +0100
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > Robot reported that trace_hardirqs_{on,off}() tickle the forbidden
-> > _rcuidle() tracepoint through local_irq_{en,dis}able().
-> > 
-> > For 'sane' configs, these calls will only happen with RCU enabled and
-> > as such can use the regular tracepoint. This also means it's possible
-> > to trace them from NMI context again.
-> > 
-> > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> 
-> The code looks good to me. I just have a question about comment.
-> 
-> > ---
-> >  kernel/trace/trace_preemptirq.c |   21 +++++++++++++--------
-> >  1 file changed, 13 insertions(+), 8 deletions(-)
-> > 
-> > --- a/kernel/trace/trace_preemptirq.c
-> > +++ b/kernel/trace/trace_preemptirq.c
-> > @@ -20,6 +20,15 @@
-> >  static DEFINE_PER_CPU(int, tracing_irq_cpu);
-> >  
-> >  /*
-> > + * ...
-> 
-> Is this intended? Wouldn't you leave any comment here?
+From: Viorel Suman <viorel.suman@nxp.com>
 
-I indeed forgot to write the comment before posting, my bad :/ Ingo fixed
-it up when he applied.
+Add iMX8QM sensors. As stated in 31fd4b9db13b ("thermal/drivers/imx_sc:
+Rely on the platform data to get the resource id"):
+
+    The thermal OF code returns -ENODEV if the thermal zone registration
+    with a specific id fails because the description is not available in
+    the DT for such a sensor id. In this case we continue with the other
+    ids without bailing out with an error.
+
+Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+Reviewed-by: Dong Aisheng <aisheng.dong@nxp.com>
+---
+ drivers/thermal/imx_sc_thermal.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
+index dfadb03580ae..378f574607f7 100644
+--- a/drivers/thermal/imx_sc_thermal.c
++++ b/drivers/thermal/imx_sc_thermal.c
+@@ -127,7 +127,11 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static const int imx_sc_sensors[] = { IMX_SC_R_SYSTEM, IMX_SC_R_PMIC_0, -1 };
++static const int imx_sc_sensors[] = {
++	IMX_SC_R_SYSTEM, IMX_SC_R_PMIC_0,
++	IMX_SC_R_AP_0, IMX_SC_R_AP_1,
++	IMX_SC_R_GPU_0_PID0, IMX_SC_R_GPU_1_PID0,
++	IMX_SC_R_DRC_0, -1 };
+ 
+ static const struct of_device_id imx_sc_thermal_table[] = {
+ 	{ .compatible = "fsl,imx-sc-thermal", .data =  imx_sc_sensors },
+-- 
+2.38.1
+
