@@ -2,49 +2,66 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 022EAC54EBE
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Jan 2023 02:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57F7EC54EBE
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Jan 2023 02:50:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235785AbjAQCuT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Jan 2023 21:50:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49524 "EHLO
+        id S235192AbjAQCuv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Jan 2023 21:50:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50242 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235704AbjAQCt4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2023 21:49:56 -0500
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [183.62.165.209])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AC5B33463;
-        Mon, 16 Jan 2023 18:43:03 -0800 (PST)
+        with ESMTP id S235652AbjAQCuI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2023 21:50:08 -0500
+Received: from mxct.zte.com.cn (mxct.zte.com.cn [58.251.27.85])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B0312CC78;
+        Mon, 16 Jan 2023 18:43:10 -0800 (PST)
+Received: from mxde.zte.com.cn (unknown [10.35.20.165])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mxct.zte.com.cn (FangMail) with ESMTPS id 4NwtV03zmDz1DFC;
+        Tue, 17 Jan 2023 10:42:48 +0800 (CST)
+Received: from mxus.zte.com.cn (unknown [10.207.168.8])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mxde.zte.com.cn (FangMail) with ESMTPS id 4NwtSy0bk8z64Wf7;
+        Tue, 17 Jan 2023 10:41:54 +0800 (CST)
+Received: from mxhk.zte.com.cn (unknown [192.168.250.138])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mxus.zte.com.cn (FangMail) with ESMTPS id 4NwtRz3N4zzdmYkn;
+        Tue, 17 Jan 2023 10:41:03 +0800 (CST)
 Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mxct.zte.com.cn (FangMail) with ESMTPS id 4NwtTV5mHYz501TL;
-        Tue, 17 Jan 2023 10:42:22 +0800 (CST)
+        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NwtRM1KGKz6FK2V;
+        Tue, 17 Jan 2023 10:40:31 +0800 (CST)
 Received: from xaxapp01.zte.com.cn ([10.88.99.176])
-        by mse-fl1.zte.com.cn with SMTP id 30H2gFa3047682;
-        Tue, 17 Jan 2023 10:42:15 +0800 (+08)
+        by mse-fl1.zte.com.cn with SMTP id 30H2eOU0046357;
+        Tue, 17 Jan 2023 10:40:24 +0800 (+08)
         (envelope-from ye.xingchen@zte.com.cn)
 Received: from mapi (xaxapp01[null])
         by mapi (Zmail) with MAPI id mid31;
-        Tue, 17 Jan 2023 10:42:17 +0800 (CST)
-Date:   Tue, 17 Jan 2023 10:42:17 +0800 (CST)
-X-Zmail-TransId: 2af963c60b09602345dd
+        Tue, 17 Jan 2023 10:40:26 +0800 (CST)
+Date:   Tue, 17 Jan 2023 10:40:26 +0800 (CST)
+X-Zmail-TransId: 2af963c60a9affffffff9fc2c9df
 X-Mailer: Zmail v1.0
-Message-ID: <202301171042170334662@zte.com.cn>
+Message-ID: <202301171040260804580@zte.com.cn>
 Mime-Version: 1.0
 From:   <ye.xingchen@zte.com.cn>
 To:     <rafael@kernel.org>
 Cc:     <daniel.lezcano@linaro.org>, <amitk@kernel.org>,
-        <rui.zhang@intel.com>, <srinivas.pandruvada@linux.intel.com>,
-        <dave@stgolabs.net>, <chuansheng.liu@intel.com>,
-        <joeyli.kernel@gmail.com>, <jiasheng@iscas.ac.cn>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIXSB0aGVybWFsL2ludDM0MHhfdGhlcm1hbDogQ29udmVydCB0byB1c2Ugc3lzZnNfZW1pdF9hdCgpIEFQSQ==?=
+        <rui.zhang@intel.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: =?UTF-8?B?W1BBVENIXSB0aGVybWFsOiBDb252ZXJ0IHRvIHVzZSBzeXNmc19lbWl0X2F0KCkgQVBJ?=
 Content-Type: text/plain;
         charset="UTF-8"
-X-MAIL: mse-fl1.zte.com.cn 30H2gFa3047682
+X-MAIL: mse-fl1.zte.com.cn 30H2eOU0046357
+X-FangMail-Bounce-Flag: 1673923263.63C60ABE.000
+X-FangMail-Outinfo: 1673923263/63C60ABE.000/4NwtRz3N4zzdmYkn/ye.xingchen@zte.com.cn/1
 X-Fangmail-Gw-Spam-Type: 0
+X-FangMail-Miltered: at cgslv5.04-192.168.251.14.novalocal with ID 63C60B27.000 by FangMail milter!
+X-FangMail-Envelope: 1673923368/4NwtV03zmDz1DFC/63C60B27.000/10.35.20.165/[10.35.20.165]/mxde.zte.com.cn/<ye.xingchen@zte.com.cn>
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 63C60B0E.000/4NwtTV5mHYz501TL
+X-Fangmail-MID-QID: 63C60B27.000/4NwtV03zmDz1DFC
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -57,36 +74,25 @@ value to be returned to user space.
 
 Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
 ---
- .../thermal/intel/int340x_thermal/int3400_thermal.c    | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/thermal/thermal_core.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index db8a6f63657d..c1fc4a78607c 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -130,10 +130,7 @@ static ssize_t available_uuids_show(struct device *dev,
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d9a3d9566d73..5ffc7006cce4 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -229,10 +229,9 @@ int thermal_build_list_of_policies(char *buf)
+ 	mutex_lock(&thermal_governor_lock);
 
- 	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; i++) {
- 		if (priv->uuid_bitmap & (1 << i))
--			length += scnprintf(&buf[length],
--					    PAGE_SIZE - length,
--					    "%s\n",
--					    int3400_thermal_uuids[i]);
-+			length += sysfs_emit_at(buf, length, int3400_thermal_uuids[i]);
+ 	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
+-		count += scnprintf(buf + count, PAGE_SIZE - count, "%s ",
+-				   pos->name);
++		count += sysfs_emit_at(buf, count, "%s ", pos->name);
  	}
+-	count += scnprintf(buf + count, PAGE_SIZE - count, "\n");
++	count += sysfs_emit_at(buf, count, "\n");
 
- 	return length;
-@@ -151,10 +148,7 @@ static ssize_t current_uuid_show(struct device *dev,
+ 	mutex_unlock(&thermal_governor_lock);
 
- 	for (i = 0; i <= INT3400_THERMAL_CRITICAL; i++) {
- 		if (priv->os_uuid_mask & BIT(i))
--			length += scnprintf(&buf[length],
--					    PAGE_SIZE - length,
--					    "%s\n",
--					    int3400_thermal_uuids[i]);
-+			length += sysfs_emit_at(buf, length, int3400_thermal_uuids[i]);
- 	}
-
- 	if (length)
 -- 
 2.25.1
