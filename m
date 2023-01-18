@@ -2,48 +2,52 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50CE5C32793
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 09:26:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E435BC004D4
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 09:26:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230058AbjARJZi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Jan 2023 04:25:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45478 "EHLO
+        id S229450AbjARJZp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Jan 2023 04:25:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43854 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230180AbjARJVP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 04:21:15 -0500
-Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.216.63.35])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5E2C5CFED;
-        Wed, 18 Jan 2023 00:42:44 -0800 (PST)
+        with ESMTP id S230063AbjARJTj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 04:19:39 -0500
+Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.216.63.40])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAEAD279BC;
+        Wed, 18 Jan 2023 00:36:27 -0800 (PST)
 Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NxfQq34TGz508D2;
-        Wed, 18 Jan 2023 16:42:43 +0800 (CST)
+        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NxfHZ34Hzz8RTZH;
+        Wed, 18 Jan 2023 16:36:26 +0800 (CST)
 Received: from xaxapp01.zte.com.cn ([10.88.99.176])
-        by mse-fl2.zte.com.cn with SMTP id 30I8gdJq072264;
-        Wed, 18 Jan 2023 16:42:39 +0800 (+08)
+        by mse-fl2.zte.com.cn with SMTP id 30I8aKc1066268;
+        Wed, 18 Jan 2023 16:36:20 +0800 (+08)
         (envelope-from ye.xingchen@zte.com.cn)
 Received: from mapi (xaxapp01[null])
         by mapi (Zmail) with MAPI id mid31;
-        Wed, 18 Jan 2023 16:42:41 +0800 (CST)
-Date:   Wed, 18 Jan 2023 16:42:41 +0800 (CST)
-X-Zmail-TransId: 2af963c7b10161418917
+        Wed, 18 Jan 2023 16:36:22 +0800 (CST)
+Date:   Wed, 18 Jan 2023 16:36:22 +0800 (CST)
+X-Zmail-TransId: 2af963c7af866cf0a9e0
 X-Mailer: Zmail v1.0
-Message-ID: <202301181642412733780@zte.com.cn>
+Message-ID: <202301181636223863583@zte.com.cn>
 Mime-Version: 1.0
 From:   <ye.xingchen@zte.com.cn>
 To:     <daniel.lezcano@linaro.org>
 Cc:     <rafael@kernel.org>, <amitk@kernel.org>, <rui.zhang@intel.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIXSB0aGVybWFsOiBraXJrd29vZDogVXNlwqBkZXZtX3BsYXRmb3JtX2dldF9hbmRfaW9yZW1hcF9yZXNvdXJjZSgp?=
+        <f.fainelli@gmail.com>, <rjui@broadcom.com>,
+        <sbranden@broadcom.com>, <bcm-kernel-feedback-list@broadcom.com>,
+        <linux-pm@vger.kernel.org>, <linux-rpi-kernel@lists.infradead.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: =?UTF-8?B?W1BBVENIXSB0aGVybWFsL2RyaXZlcnMvYmNtMjgzNTogVXNlwqBkZXZtX3BsYXRmb3JtX2dldF9hbmRfaW9yZW1hcF9yZXNvdXJjZSgp?=
 Content-Type: text/plain;
         charset="UTF-8"
-X-MAIL: mse-fl2.zte.com.cn 30I8gdJq072264
+X-MAIL: mse-fl2.zte.com.cn 30I8aKc1066268
 X-Fangmail-Gw-Spam-Type: 0
-X-FangMail-Miltered: at cgslv5.04-192.168.250.138.novalocal with ID 63C7B103.000 by FangMail milter!
-X-FangMail-Envelope: 1674031363/4NxfQq34TGz508D2/63C7B103.000/10.5.228.133/[10.5.228.133]/mse-fl2.zte.com.cn/<ye.xingchen@zte.com.cn>
+X-FangMail-Miltered: at cgslv5.04-192.168.250.137.novalocal with ID 63C7AF8A.000 by FangMail milter!
+X-FangMail-Envelope: 1674030986/4NxfHZ34Hzz8RTZH/63C7AF8A.000/10.5.228.133/[10.5.228.133]/mse-fl2.zte.com.cn/<ye.xingchen@zte.com.cn>
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 63C7B103.000/4NxfQq34TGz508D2
+X-Fangmail-MID-QID: 63C7AF8A.000/4NxfHZ34Hzz8RTZH
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -56,29 +60,30 @@ what this function does.
 
 Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
 ---
- drivers/thermal/kirkwood_thermal.c | 4 +---
+ drivers/thermal/broadcom/bcm2835_thermal.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-index 7fb6e476c82a..bec7ec20e79d 100644
---- a/drivers/thermal/kirkwood_thermal.c
-+++ b/drivers/thermal/kirkwood_thermal.c
-@@ -64,15 +64,13 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
- {
- 	struct thermal_zone_device *thermal = NULL;
- 	struct kirkwood_thermal_priv *priv;
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index 5485e59d03a9..b1b000e6833f 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -167,7 +167,6 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 	const struct of_device_id *match;
+ 	struct thermal_zone_device *tz;
+ 	struct bcm2835_thermal_data *data;
 -	struct resource *res;
- 	int ret;
-
- 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
+ 	int err = 0;
+ 	u32 val;
+ 	unsigned long rate;
+@@ -181,8 +180,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 	if (!match)
+ 		return -EINVAL;
 
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
-+	priv->sensor = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
- 	if (IS_ERR(priv->sensor))
- 		return PTR_ERR(priv->sensor);
-
+-	data->regs = devm_ioremap_resource(&pdev->dev, res);
++	data->regs = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
+ 	if (IS_ERR(data->regs)) {
+ 		err = PTR_ERR(data->regs);
+ 		return err;
 -- 
 2.25.1
