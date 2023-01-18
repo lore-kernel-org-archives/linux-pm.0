@@ -2,163 +2,247 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7A9FC004D4
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 08:08:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41938C004D4
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 08:26:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229734AbjARIIp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Jan 2023 03:08:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34832 "EHLO
+        id S230004AbjARI0Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Jan 2023 03:26:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230146AbjARIFl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 03:05:41 -0500
-Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79E7B37550;
-        Tue, 17 Jan 2023 23:38:13 -0800 (PST)
-Received: by mail-qt1-x829.google.com with SMTP id fd15so19332459qtb.9;
-        Tue, 17 Jan 2023 23:38:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:subject:from:cc:to:content-language
-         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=H1iGZ5/GI1ftx5bXyZvLIEDu341DI6h5lnVp/beeYxs=;
-        b=Amv1SgoM8nsMpQnxAtYRnRwNKazGpBx7zF1RsVtZXMLUBGVhwls4EMgSXCRM09S7wm
-         g5k+YXRZuzjIQGhqBbagivPT93o36t2AJRThTi9F4/F1DtOPb/LNxqM2YzEEssdY3DSA
-         gNmmtl1xZX7+komBMD7ITD6/BhoslmephqMSS8NEIIVnhWb6CwBb3E+3uar6uJoRTiG0
-         tDz4yrOpyM/GxyQ0IYpfRjbslnwxunvPZ3IFyxjEL1q7Fm/Sh/3MLuvoZWqGpBT9+Saz
-         yyRBoiOAZ9yc1I8zLJr4HYlEhNStK0WaEX06taqQShabc60FqeUDHlbGT8ARK+75X0v+
-         5RJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:subject:from:cc:to:content-language
-         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=H1iGZ5/GI1ftx5bXyZvLIEDu341DI6h5lnVp/beeYxs=;
-        b=cY7/pVzx9YqmfbHtHu0n128MzFlmRbJCnN818Q3wUH8wvnZVN41bhPhs/4BEjoWnEX
-         49VnkqjSLWF13Vks5ATtIwIekUA/yyV3HICZ0jDDlLIdnjN4fn50ouGBteNc3c4kJzf6
-         4rwnvHt3QOMMFbA7rqX2OGtXbSWgYoTGsn/oK0SLeCH6gI5e6MuLvvoRIgyixl/P8Z7F
-         HS48p11Yd7jaCs8Cwdad6FogXL9/ow4qvngHv/NabT7kubigXY7O800iiU121NEOPJ2X
-         grASqTuy/GicQxseZPobjt5KM1MygtN6Ce5egTIUmTpGv2ZH1gQB4RPsDkCNTTwdwYn2
-         V9LQ==
-X-Gm-Message-State: AFqh2koA7oiFuOqostueGRBO4CWAXOQgSOvgoy0YmJTv0piJaaIFoMKb
-        jgcsL8tTqg0tWmfXxbpypig=
-X-Google-Smtp-Source: AMrXdXuQFRVoyeqq1q8kvdW9qSsch1QYQOW3CtRIyQXLkYt3IrPA7GrYroSj6fA97gXAJOy/3TQvRA==
-X-Received: by 2002:ac8:65d4:0:b0:3b6:308e:94a8 with SMTP id t20-20020ac865d4000000b003b6308e94a8mr14626348qto.43.1674027492598;
-        Tue, 17 Jan 2023 23:38:12 -0800 (PST)
-Received: from ?IPV6:2600:1700:2442:6db0:f4b4:b4d2:cf71:89f7? ([2600:1700:2442:6db0:f4b4:b4d2:cf71:89f7])
-        by smtp.gmail.com with ESMTPSA id fe13-20020a05622a4d4d00b003a580cd979asm17326293qtb.58.2023.01.17.23.38.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 17 Jan 2023 23:38:12 -0800 (PST)
-Message-ID: <06ed7c15-cd37-a0ce-b75e-b0c8d3188f3a@gmail.com>
-Date:   Wed, 18 Jan 2023 01:38:06 -0600
+        with ESMTP id S230055AbjARI0E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 03:26:04 -0500
+Received: from NAM04-DM6-obe.outbound.protection.outlook.com (mail-dm6nam04on2064.outbound.protection.outlook.com [40.107.102.64])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 816F75AB64;
+        Tue, 17 Jan 2023 23:52:53 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ZgSontSLiH/G2WZhD3oC3Au9SDDc/UR4dFVrgW5fLEdkuSGF5EMPqM6u5dS9P9QcUuhs9BgFMd0Q//4SccHB5KrdToZ+6O2AWUkFigeeBnc5Tc8jrBBY8bQKTpbZL3Wqzd8FmkISS7KmEr7i+jOqbRIrPBapvMKEGYOon+RqjiOJCgID+KWkgnjW+8dGSJ8LC2gQOnvQNRB7nwcsYO0yeFElm0+6DkjOGrwvLd0+bfXVv0PcZnBPCs4WdApTM1NmPYQmTxDGYIfhDnPZnaUXeWVlk7Q5y8FtEqMjcqJ56jPPWUuIn8wNiYx7SqLkI0YB6pUSlWqaTlI2vplGlVvnmw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=y2kg3NyOxDpCcsc9p7SzAIbT3cisV55IEpKRJajCNT0=;
+ b=nYqqPRMezX419ibe5kMZMFpePLhA19EKKlcYisnE3OEo9joyB3itZG9Tz7Y/FVRE++DmioloPkGdB2VyEags5RzSifNTd1bevoDzhsoU8KpOI4JoxPz7+jRwkUwFT7ffHufOUL9WqmskN/wen0Pr1n9W2BdywP8Rzm0SD9Bj3SL3pQnmuOcOxPKLX729b86bRp1bXxq/J9xbxsQWGMnLtw5HI1HiiBkA+cApcVQ//eHTYKL2FIXO4BBMdY+yjoWqmLXbdA06W++tVn3b9ol6hOGctsSD5w0q1jn2q5/eD7CnfI0zZAUGJEM3JhXFvbJ4aF2ZnkDdUmI5RfDAnJaK+w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=y2kg3NyOxDpCcsc9p7SzAIbT3cisV55IEpKRJajCNT0=;
+ b=1nhH+li9KDgWXj5VbEnVKKyiD5gruhU4Vx+gVgL5kEeQHPhd+2YVAentuo6boTny2GVcdx5RscjwwyutIYGgUbwQ3x0Pb3BYnoaVK75wq+4RQWNK4w1oojTzYrctRzQ3LizlO95Z7mZKDtM46cJBfuFdpypgGfxqYM76QUQNHfM=
+Received: from MW4PR04CA0262.namprd04.prod.outlook.com (2603:10b6:303:88::27)
+ by SJ1PR12MB6121.namprd12.prod.outlook.com (2603:10b6:a03:45c::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5986.23; Wed, 18 Jan
+ 2023 07:52:51 +0000
+Received: from CO1NAM11FT060.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:303:88:cafe::c4) by MW4PR04CA0262.outlook.office365.com
+ (2603:10b6:303:88::27) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.19 via Frontend
+ Transport; Wed, 18 Jan 2023 07:52:51 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ CO1NAM11FT060.mail.protection.outlook.com (10.13.175.132) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6002.13 via Frontend Transport; Wed, 18 Jan 2023 07:52:50 +0000
+Received: from pyuan-Cloudripper.amd.com (10.180.168.240) by
+ SATLEXMB04.amd.com (10.181.40.145) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.34; Wed, 18 Jan 2023 01:52:46 -0600
+From:   Perry Yuan <perry.yuan@amd.com>
+To:     <rafael.j.wysocki@intel.com>, <Mario.Limonciello@amd.com>,
+        <ray.huang@amd.com>, <viresh.kumar@linaro.org>
+CC:     <Deepak.Sharma@amd.com>, <Nathan.Fontenot@amd.com>,
+        <Alexander.Deucher@amd.com>, <Shimmer.Huang@amd.com>,
+        <Xiaojian.Du@amd.com>, <Li.Meng@amd.com>, <wyes.karny@amd.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v11 01/11] ACPI: CPPC: Add AMD pstate energy performance preference cppc control
+Date:   Wed, 18 Jan 2023 15:52:00 +0800
+Message-ID: <20230118075210.447418-2-perry.yuan@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230118075210.447418-1-perry.yuan@amd.com>
+References: <20230118075210.447418-1-perry.yuan@amd.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org
-Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-From:   Frank Rowand <frowand.list@gmail.com>
-Subject: WARNING in __thermal_cooling_device_register()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1NAM11FT060:EE_|SJ1PR12MB6121:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4ebb6237-10d1-4e63-1ce1-08daf928ff6a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: U18OPDA2v2uUoIgAD4jXjsXbnrRy1L1dpwjwKjLCmciM/TWlAAXB0vRXur1H1Z+eIprxVXDh5sgsGp7Ad6UiEhsPggbzcwX9oBLK/2z3+XhdhfjoQmNkZKY/TWFQBUJ7dBJJylJvWyEy+YGxZDhtBm6nO4xlDUcuXRi8Yqutr1bDQi1cTktTCehbTW7klrwVny44J2cNOOI55hj8i10AvCdNGXiaT3tomJctkIJQ9bSaAjgzCXu0okMcwcjVbyE/NeSx646tUlJ8X/7fmRaj9E6S3eG2ggFYrTyPzDMUHQU0DdT+ZA699eeypO2JoddawVSFUiVhYbbVkvpJgcfLSojx3EnhFznX5Gkaryyj8eQMEsJeG8XqeRVUG/Fd2jiidJDQ2NxYG1wYoZGnB3GZIdKZQ9SC9yhfGPL5lYc6LzIBlHUeanbUUTu7G+23XJ4LBz6QXTHzcPgwGiwz5tHuJ0k3Z10Vdk730mlyZFvn2EtO/0QDIp3WCCCj+l8KqeWSF+eTO17XJ+kyxP6SDQCxkHTVb1f4o/bh3ub4fil3nLcDtECLOZCDGImJD7I3mEgueFroUPpRamHxi3q8WL1uW7daNVxW6HwlF4TpB/y9RK3B1gEMmY5nWYt+HDzwBoy5fVUJ5d6R2fJ+NWZ3tuMc7oal/AEOet8vf76NZwPbe8YxwBShBcJiONfJLFN33xQvdoRsS4eJ80R3zWplPFuUx5BCbEtllMVtjqncufNPV7M=
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230022)(4636009)(39860400002)(136003)(376002)(396003)(346002)(451199015)(40470700004)(36840700001)(46966006)(41300700001)(8936002)(1076003)(36756003)(336012)(70206006)(110136005)(70586007)(2616005)(47076005)(426003)(54906003)(8676002)(83380400001)(4326008)(316002)(356005)(81166007)(82740400003)(82310400005)(86362001)(2906002)(44832011)(40460700003)(5660300002)(40480700001)(36860700001)(16526019)(478600001)(186003)(26005)(7696005)(6666004)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jan 2023 07:52:50.3936
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4ebb6237-10d1-4e63-1ce1-08daf928ff6a
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT060.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ1PR12MB6121
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-I am getting two new warning traces in v6.2-rc1 on boot that are not present in v6.1-rc1.
+From: Perry Yuan <Perry.Yuan@amd.com>
 
-I have not done a bisect yet, but wanted to report the issue without further delay.
+Add support for setting and querying EPP preferences to the generic
+CPPC driver.  This enables downstream drivers such as amd-pstate to discover
+and use these values.
 
-The configuration is qcom_defconfig
+Downstream drivers that want to use the new symbols cppc_get_epp_caps
+and cppc_set_epp_perf for querying and setting EPP preferences will need
+to call cppc_set_epp_perf to enable the EPP function firstly.
 
-The system is a Qualcomm Dragon 8074
+Acked-by: Huang Rui <ray.huang@amd.com>
+Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+Reviewed-by: Wyes Karny <wyes.karny@amd.com>
+Tested-by: Wyes Karny <wyes.karny@amd.com>
+Signed-off-by: Perry Yuan <Perry.Yuan@amd.com>
+---
+ drivers/acpi/cppc_acpi.c | 67 ++++++++++++++++++++++++++++++++++++++++
+ include/acpi/cppc_acpi.h | 12 +++++++
+ 2 files changed, 79 insertions(+)
 
-I have not done any debugging, but noted some changes to the file that contains
-__thermal_cooling_device_register() since 6.1-rc1:
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 0f17b1c32718..02d83c807271 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1153,6 +1153,19 @@ int cppc_get_nominal_perf(int cpunum, u64 *nominal_perf)
+ 	return cppc_get_perf(cpunum, NOMINAL_PERF, nominal_perf);
+ }
+ 
++/**
++ * cppc_get_epp_perf - Get the epp register value.
++ * @cpunum: CPU from which to get epp preference value.
++ * @epp_perf: Return address.
++ *
++ * Return: 0 for success, -EIO otherwise.
++ */
++int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
++{
++	return cppc_get_perf(cpunum, ENERGY_PERF, epp_perf);
++}
++EXPORT_SYMBOL_GPL(cppc_get_epp_perf);
++
+ /**
+  * cppc_get_perf_caps - Get a CPU's performance capabilities.
+  * @cpunum: CPU from which to get capabilities info.
+@@ -1365,6 +1378,60 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+ }
+ EXPORT_SYMBOL_GPL(cppc_get_perf_ctrs);
+ 
++/*
++ * Set Energy Performance Preference Register value through
++ * Performance Controls Interface
++ */
++int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
++{
++	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
++	struct cpc_register_resource *epp_set_reg;
++	struct cpc_register_resource *auto_sel_reg;
++	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
++	struct cppc_pcc_data *pcc_ss_data = NULL;
++	int ret;
++
++	if (!cpc_desc) {
++		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
++		return -ENODEV;
++	}
++
++	auto_sel_reg = &cpc_desc->cpc_regs[AUTO_SEL_ENABLE];
++	epp_set_reg = &cpc_desc->cpc_regs[ENERGY_PERF];
++
++	if (CPC_IN_PCC(epp_set_reg) || CPC_IN_PCC(auto_sel_reg)) {
++		if (pcc_ss_id < 0) {
++			pr_debug("Invalid pcc_ss_id for CPU:%d\n", cpu);
++			return -ENODEV;
++		}
++
++		if (CPC_SUPPORTED(auto_sel_reg)) {
++			ret = cpc_write(cpu, auto_sel_reg, enable);
++			if (ret)
++				return ret;
++		}
++
++		if (CPC_SUPPORTED(epp_set_reg)) {
++			ret = cpc_write(cpu, epp_set_reg, perf_ctrls->energy_perf);
++			if (ret)
++				return ret;
++		}
++
++		pcc_ss_data = pcc_data[pcc_ss_id];
++
++		down_write(&pcc_ss_data->pcc_lock);
++		/* after writing CPC, transfer the ownership of PCC to platform */
++		ret = send_pcc_cmd(pcc_ss_id, CMD_WRITE);
++		up_write(&pcc_ss_data->pcc_lock);
++	} else {
++		ret = -ENOTSUPP;
++		pr_debug("_CPC in PCC is not supported\n");
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(cppc_set_epp_perf);
++
+ /**
+  * cppc_set_enable - Set to enable CPPC on the processor by writing the
+  * Continuous Performance Control package EnableRegister field.
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index c5614444031f..6b487a5bd638 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -108,12 +108,14 @@ struct cppc_perf_caps {
+ 	u32 lowest_nonlinear_perf;
+ 	u32 lowest_freq;
+ 	u32 nominal_freq;
++	u32 energy_perf;
+ };
+ 
+ struct cppc_perf_ctrls {
+ 	u32 max_perf;
+ 	u32 min_perf;
+ 	u32 desired_perf;
++	u32 energy_perf;
+ };
+ 
+ struct cppc_perf_fb_ctrs {
+@@ -149,6 +151,8 @@ extern bool cpc_ffh_supported(void);
+ extern bool cpc_supported_by_cpu(void);
+ extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
+ extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
++extern int cppc_get_epp_perf(int cpunum, u64 *epp_perf);
++extern int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable);
+ #else /* !CONFIG_ACPI_CPPC_LIB */
+ static inline int cppc_get_desired_perf(int cpunum, u64 *desired_perf)
+ {
+@@ -202,6 +206,14 @@ static inline int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
+ {
+ 	return -ENOTSUPP;
+ }
++static inline int cppc_set_epp_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls, bool enable)
++{
++	return -ENOTSUPP;
++}
++static inline int cppc_get_epp_perf(int cpunum, u64 *epp_perf)
++{
++	return -ENOTSUPP;
++}
+ #endif /* !CONFIG_ACPI_CPPC_LIB */
+ 
+ #endif /* _CPPC_ACPI_H*/
+-- 
+2.34.1
 
-linux--6.2-rc> git log --oneline v6.1-rc1.. -- drivers/thermal/thermal_core.c
-4748f9687caa thermal: core: fix some possible name leaks in error paths
-b778b4d782d4 thermal/core: Protect thermal device operations against thermal device removal
-05eeee2b51b4 thermal/core: Protect sysfs accesses to thermal operations with thermal zone mutex
-1c439dec359c thermal/core: Introduce locked version of thermal_zone_device_update
-30b2ae07d3d6 thermal/core: Delete device under thermal device zone lock
-d35f29ed9d11 thermal/core: Destroy thermal zone device mutex in release function
-e49a1e1ee078 thermal/core: fix error code in __thermal_cooling_device_register()
-c408b3d1d9bb thermal: Validate new state in cur_state_store()
-
-
-
-The stack traces are:
-
------------[ cut here ]------------
-WARNING: CPU: 0 PID: 31 at lib/kobject.c:718 kobject_put+0x114/0x29c
-kobject: '(null)' ((ptrval)): is not initialized, yet kobject_put() is being called.
-Modules linked in:
-CPU: 0 PID: 31 Comm: kworker/u8:2 Not tainted 6.2.0-rc1 #1
-Hardware name: Generic DT based system
-Workqueue: events_unbound deferred_probe_work_func
- unwind_backtrace from show_stack+0x10/0x14
- show_stack from dump_stack_lvl+0x40/0x4c
- dump_stack_lvl from __warn+0x7c/0x15c
- __warn from warn_slowpath_fmt+0x98/0xcc
- warn_slowpath_fmt from kobject_put+0x114/0x29c
- kobject_put from __thermal_cooling_device_register+0x11c/0x388
- __thermal_cooling_device_register from __power_supply_register+0x49c/0x5dc
- __power_supply_register from devm_power_supply_register+0x54/0x90
- devm_power_supply_register from smbb_charger_probe+0x358/0x61c
- smbb_charger_probe from platform_probe+0x5c/0xb8
- platform_probe from really_probe+0xe0/0x3dc
- really_probe from __driver_probe_device+0x9c/0x208
- __driver_probe_device from driver_probe_device+0x30/0xcc
- driver_probe_device from __device_attach_driver+0xa8/0x120
- __device_attach_driver from bus_for_each_drv+0x84/0xd4
- bus_for_each_drv from __device_attach+0x108/0x1d8
- __device_attach from bus_probe_device+0x84/0x8c
- bus_probe_device from deferred_probe_work_func+0x9c/0xdc
- deferred_probe_work_func from process_one_work+0x1d4/0x510
- process_one_work from worker_thread+0x1fc/0x4d0
- worker_thread from kthread+0xf4/0x124
- kthread from ret_from_fork+0x14/0x2c
-Exception stack(0xf0901fb0 to 0xf0901ff8)
-1fa0:                                     00000000 00000000 00000000 00000000
-1fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-1fe0: 00000000 00000000 00000000 00000000 00000013 00000000
----[ end trace 0000000000000000 ]---
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 31 at lib/refcount.c:28 __thermal_cooling_device_register+0x11c/0x388
-refcount_t: underflow; use-after-free.
-Modules linked in:
-CPU: 0 PID: 31 Comm: kworker/u8:2 Tainted: G        W          6.2.0-rc1 #1
-Hardware name: Generic DT based system
-Workqueue: events_unbound deferred_probe_work_func
- unwind_backtrace from show_stack+0x10/0x14
- show_stack from dump_stack_lvl+0x40/0x4c
- dump_stack_lvl from __warn+0x7c/0x15c
- __warn from warn_slowpath_fmt+0x98/0xcc
- warn_slowpath_fmt from __thermal_cooling_device_register+0x11c/0x388
- __thermal_cooling_device_register from __power_supply_register+0x49c/0x5dc
- __power_supply_register from devm_power_supply_register+0x54/0x90
- devm_power_supply_register from smbb_charger_probe+0x358/0x61c
- smbb_charger_probe from platform_probe+0x5c/0xb8
- platform_probe from really_probe+0xe0/0x3dc
- really_probe from __driver_probe_device+0x9c/0x208
- __driver_probe_device from driver_probe_device+0x30/0xcc
- driver_probe_device from __device_attach_driver+0xa8/0x120
- __device_attach_driver from bus_for_each_drv+0x84/0xd4
- bus_for_each_drv from __device_attach+0x108/0x1d8
- __device_attach from bus_probe_device+0x84/0x8c
- bus_probe_device from deferred_probe_work_func+0x9c/0xdc
- deferred_probe_work_func from process_one_work+0x1d4/0x510
- process_one_work from worker_thread+0x1fc/0x4d0
- worker_thread from kthread+0xf4/0x124
- kthread from ret_from_fork+0x14/0x2c
-Exception stack(0xf0901fb0 to 0xf0901ff8)
-1fa0:                                     00000000 00000000 00000000 00000000
-1fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-1fe0: 00000000 00000000 00000000 00000000 00000013 00000000
----[ end trace 0000000000000000 ]---
-
-
--Frank
