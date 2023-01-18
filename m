@@ -2,88 +2,92 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 827E1C004D4
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 09:25:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAD82C54EBE
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 09:25:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229475AbjARJZY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Jan 2023 04:25:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45524 "EHLO
+        id S229907AbjARJZc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Jan 2023 04:25:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45170 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230183AbjARJYE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 04:24:04 -0500
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 382C0798F8
-        for <linux-pm@vger.kernel.org>; Wed, 18 Jan 2023 00:49:27 -0800 (PST)
-Received: by mail-pl1-x62b.google.com with SMTP id v23so31309115plo.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Jan 2023 00:49:27 -0800 (PST)
+        with ESMTP id S230266AbjARJUh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 04:20:37 -0500
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FA385AA64
+        for <linux-pm@vger.kernel.org>; Wed, 18 Jan 2023 00:38:32 -0800 (PST)
+Received: by mail-pf1-x432.google.com with SMTP id 207so9502873pfv.5
+        for <linux-pm@vger.kernel.org>; Wed, 18 Jan 2023 00:38:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ACMX/rYtpwog5RBKFT4Bl4KCPeviYqcrlPIVvg3gfv4=;
-        b=TTRxm6HEV3Ax5bsr6E+mCXOjTdUde7Aavz4/DKVeRo4IbvjIRbzBX7gjOi+OnD8V/B
-         ZsQNgHykS68MCvlH2tzV/JnJpGjFr/6NGpRTrPhg374STYJDWD+HRxHsYGcaozsROY3o
-         +cd8DAoh6RFbgtR55896pQL4qi0+wirhLBSAdzHfFkwAfwb9Op3vIUD6v7bSCe/WNAEZ
-         Tsri4uNHixsLJhl9KQ8DydyfQajRm+BWcobiLge/ZY/KU5VPnTXo+oi7bpdC+Yps4UUd
-         ksgCec7OMjsDulyLr91JhQbo+hck56MRa0zFjnTokjHjyhaApGoMX77yQdVynBHQBwo4
-         0GJQ==
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=8Seq1mX1XtKCwlcIcPQRmNyguKpAMYVn4ufk1mjtx/c=;
+        b=H8yMg62Cq5wI/wHrn1Gcd5A/7UHoJqQ4Mc7NinTnr/5hGSO48NgbHgNQa2QuBVBHbN
+         VJ/PSuW7KKTckTfWhC8lDoLWSpKEOynWhuH/7iskzZjvs8yBrnWYFOLH80zf2l9Gw59M
+         XHUbEQxjaJKBLZLzxO9gYb+ZR2xX5ADI+P8oSTHiJNVH39HPPHqS5YqOqvb3b0h/rUI1
+         0kXBUhgR3QjmsFl8l9T82o0xjBIGLcjidI2pWIOtagtqYjwtcQspYcV5YBQpjQpwM7bf
+         AEPyic5C+u2QiF34C5tmEdiKMSUXuUvCatYasrKADxfUMeljP4QNsj900ZTbuEqTthgK
+         S+Bg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ACMX/rYtpwog5RBKFT4Bl4KCPeviYqcrlPIVvg3gfv4=;
-        b=3fvtrfrIvfW20o2hSYw450Wm/CqM/j+Yd3gghGY/GctebovTeqmokDIloYgEKatjQn
-         fA1HXJjCrosIYK2iodqj+Bn+Cqy3igZI/sJ+Qg3a83HUi4NavnA0wRp0jgBvhgBF8LDo
-         /3RCwH+ljEi4cvECdB0JsYdXFuzF9lV16qKobqyZQxIpdCoDZ2BKJlNnMmjmOWVm+jkY
-         TjcJtfVICsVX3i2avl0eSOkCx8cy+OGumDypvlSLyp+zwGDHyLdvjFvrc9sFs0aVR3lt
-         nKrgfal0W08UFDluhuM8p95qEYro41nq8ntl0I8lJBWWpz4nyqLXdO/VF5WqA/z45X2f
-         +FGw==
-X-Gm-Message-State: AFqh2kr3cBhgQE/SNIVlJjE8lEFleusRCs9TGKSSVM5T3FFuce5HbmN+
-        ggEAoAXBDG2drnXGOM59WKLjxQ==
-X-Google-Smtp-Source: AMrXdXuC6FRTTT3m2sKNJd3v7eYjibMNTVCRskuIxXGz018rzDhmQVGzqorCxJaR8ZGowLy3/ns0wg==
-X-Received: by 2002:a17:903:200a:b0:188:640f:f41e with SMTP id s10-20020a170903200a00b00188640ff41emr5663995pla.4.1674031766608;
-        Wed, 18 Jan 2023 00:49:26 -0800 (PST)
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8Seq1mX1XtKCwlcIcPQRmNyguKpAMYVn4ufk1mjtx/c=;
+        b=dcFOOGNBYB2PQye4wRudQWP/0YoGPyRH6uh7LciyXodzp8gZ2KRGvMn4T0Q1rKTWGe
+         oK+cahkJIzzzuBwQLyBBKJBhE4642UbVIxWBwFnr9Jn7QjGXI8ng9hMsoJtd19Z2HgIR
+         CPLxNAnYHR1yAj09f3LMKt/5EdKyqE9ZWbKjXo1c8r9QbMAJxvrVxDHqS5hvc581YcYl
+         1YMdoqiyv21TDIESwNN9O3Je+W1La2m4hl/NLt8sFeqMsHuP2JRw+TYcNn2J3qdSZHqz
+         P2x2TPymU3L36LJ5XeUvk4tNAWfBPcmGr9Nl+xSMPAZY8TXtatPOirReAG3uZNNclYH3
+         HLKg==
+X-Gm-Message-State: AFqh2krUwd0QfbhWMJpS5SDCJUo4U1eymXeyVRSQHG4iYpYnzGI2XLIK
+        sBRkTs2OTXijzGJd7xORqFAkww==
+X-Google-Smtp-Source: AMrXdXuTJH4v7znJMxTMt9jc5jG0ofaVClDu4kQgHlioRTy6pjhtRH5jVqPmJ4Xz+BGXRqadTtX29g==
+X-Received: by 2002:aa7:8283:0:b0:588:9c15:65c4 with SMTP id s3-20020aa78283000000b005889c1565c4mr5481132pfm.3.1674031111722;
+        Wed, 18 Jan 2023 00:38:31 -0800 (PST)
 Received: from localhost ([122.172.81.45])
-        by smtp.gmail.com with ESMTPSA id z20-20020a170903409400b001933b4b1a49sm17152344plc.183.2023.01.18.00.49.25
+        by smtp.gmail.com with ESMTPSA id d62-20020a623641000000b005800cb7cbcasm19709245pfa.120.2023.01.18.00.38.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Jan 2023 00:49:25 -0800 (PST)
-Date:   Wed, 18 Jan 2023 14:19:23 +0530
+        Wed, 18 Jan 2023 00:38:31 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Vincent Wang <bhuwz@163.com>
-Cc:     rafael@kernel.org, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Yang Yingliang <yangyingliang@huawei.com>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Caleb Connolly <caleb.connolly@linaro.org>,
         linux-kernel@vger.kernel.org,
-        Vincent Wang <vincentwang3@lenovo.com>
-Subject: Re: [PATCH v2] cpufreq: Register with perf domain before
-Message-ID: <20230118084923.m3ztfn6v3hskpad6@vireshk-i7>
-References: <20230118044733.29391-1-bhuwz@163.com>
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: [PATCH 0/3] thermal: Fix/cleanup error paths in __thermal_cooling_device_register()
+Date:   Wed, 18 Jan 2023 14:08:23 +0530
+Message-Id: <cover.1674030722.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230118044733.29391-1-bhuwz@163.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 18-01-23, 12:47, Vincent Wang wrote:
-> From: Vincent Wang <vincentwang3@lenovo.com>
-> 
-> We found the following issue during kernel boot on android phone:
-> 
-> [    1.325272][    T1] cpu cpu0: EM: created perf domain
-> [    1.329317][    T1] cpu cpu4: EM: created perf domain
-> [    1.337597][   T76] pd_init: no EM found for CPU7
-> [    1.350849][    T1] cpu cpu7: EM: created perf domain
-> 
-> pd init for cluster2 is executed in a kworker thread and
-> is earlier than the perf domain creation for cluster2.
+Hi,
 
-Can you please give detail of the exact code path, for mainline kernel
-? I am not sure which kworker thread are you talking about here.
+The error paths in __thermal_cooling_device_register() are trying to free
+un-acquired resources, fix that and clean it up a bit.
 
-> pd_init() is called from the cpufreq notification of
-> CPUFREQ_CREATE_POLICY in cpufreq_online(), which is earlier
-> than that cpufreq_driver->register_em() is called.
+Caleb, can you please test this? I have just build tested it for now.
+
+--
+Viresh
+
+Viresh Kumar (3):
+  thermal: core: call put_device() only after device_register() fails
+  thermal: core: Move cdev cleanup to thermal_release()
+  thermal: core: Use device_unregister() instead of device_del/put()
+
+ drivers/thermal/thermal_core.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
 -- 
-viresh
+2.31.1.272.g89b43f80a514
+
