@@ -2,49 +2,51 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62B1CC004D4
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 09:17:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 094B4C004D4
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Jan 2023 09:21:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229496AbjARJRf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Jan 2023 04:17:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41408 "EHLO
+        id S229463AbjARJU5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Jan 2023 04:20:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229971AbjARJQm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 04:16:42 -0500
-Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.216.63.40])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8304765ED1;
-        Wed, 18 Jan 2023 00:34:50 -0800 (PST)
+        with ESMTP id S230213AbjARJU3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2023 04:20:29 -0500
+Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.216.63.35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8A2038B60;
+        Wed, 18 Jan 2023 00:37:56 -0800 (PST)
 Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NxfFj03dGz8RTZH;
-        Wed, 18 Jan 2023 16:34:49 +0800 (CST)
+        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NxfKG2Wkwz508D2;
+        Wed, 18 Jan 2023 16:37:54 +0800 (CST)
 Received: from xaxapp02.zte.com.cn ([10.88.97.241])
-        by mse-fl1.zte.com.cn with SMTP id 30I8YZHb018610;
-        Wed, 18 Jan 2023 16:34:35 +0800 (+08)
+        by mse-fl1.zte.com.cn with SMTP id 30I8bi8n021856;
+        Wed, 18 Jan 2023 16:37:44 +0800 (+08)
         (envelope-from ye.xingchen@zte.com.cn)
 Received: from mapi (xaxapp01[null])
         by mapi (Zmail) with MAPI id mid31;
-        Wed, 18 Jan 2023 16:34:37 +0800 (CST)
-Date:   Wed, 18 Jan 2023 16:34:37 +0800 (CST)
-X-Zmail-TransId: 2af963c7af1dffffffff9c206cd7
+        Wed, 18 Jan 2023 16:37:47 +0800 (CST)
+Date:   Wed, 18 Jan 2023 16:37:47 +0800 (CST)
+X-Zmail-TransId: 2af963c7afdbffffffffa170dd25
 X-Mailer: Zmail v1.0
-Message-ID: <202301181634379503534@zte.com.cn>
+Message-ID: <202301181637472073620@zte.com.cn>
 Mime-Version: 1.0
 From:   <ye.xingchen@zte.com.cn>
 To:     <daniel.lezcano@linaro.org>
-Cc:     <miquel.raynal@bootlin.com>, <rafael@kernel.org>,
-        <amitk@kernel.org>, <rui.zhang@intel.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIXSB0aGVybWFsL2RyaXZlcnMvYXJtYWRhOiBVc2XCoGRldm1fcGxhdGZvcm1fZ2V0X2FuZF9pb3JlbWFwX3Jlc291cmNlKCk=?=
+Cc:     <rafael@kernel.org>, <amitk@kernel.org>, <rui.zhang@intel.com>,
+        <matthias.bgg@gmail.com>, <linux-pm@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: =?UTF-8?B?W1BBVENIXSB0aGVybWFsL2RyaXZlcnMvbXRrX3RoZXJtYWw6IFVzZcKgZGV2bV9wbGF0Zm9ybV9nZXRfYW5kX2lvcmVtYXBfcmVzb3VyY2UoKQ==?=
 Content-Type: text/plain;
         charset="UTF-8"
-X-MAIL: mse-fl1.zte.com.cn 30I8YZHb018610
+X-MAIL: mse-fl1.zte.com.cn 30I8bi8n021856
 X-Fangmail-Gw-Spam-Type: 0
-X-FangMail-Miltered: at cgslv5.04-192.168.250.137.novalocal with ID 63C7AF29.000 by FangMail milter!
-X-FangMail-Envelope: 1674030889/4NxfFj03dGz8RTZH/63C7AF29.000/10.5.228.132/[10.5.228.132]/mse-fl1.zte.com.cn/<ye.xingchen@zte.com.cn>
+X-FangMail-Miltered: at cgslv5.04-192.168.250.138.novalocal with ID 63C7AFE2.000 by FangMail milter!
+X-FangMail-Envelope: 1674031074/4NxfKG2Wkwz508D2/63C7AFE2.000/10.5.228.132/[10.5.228.132]/mse-fl1.zte.com.cn/<ye.xingchen@zte.com.cn>
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 63C7AF29.000/4NxfFj03dGz8RTZH
+X-Fangmail-MID-QID: 63C7AFE2.000/4NxfKG2Wkwz508D2
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -57,26 +59,30 @@ what this function does.
 
 Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
 ---
- drivers/thermal/armada_thermal.c | 4 +---
+ drivers/thermal/mtk_thermal.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index db040dbdaa0a..7d2682e8ef96 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -709,12 +709,10 @@ static int armada_thermal_probe_legacy(struct platform_device *pdev,
- 				       struct armada_thermal_priv *priv)
- {
- 	struct armada_thermal_data *data = priv->data;
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 0084b76493d9..9a8b107900e9 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -990,7 +990,6 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 	int ret, i, ctrl_id;
+ 	struct device_node *auxadc, *apmixedsys, *np = pdev->dev.of_node;
+ 	struct mtk_thermal *mt;
 -	struct resource *res;
- 	void __iomem *base;
+ 	u64 auxadc_phys_base, apmixed_phys_base;
+ 	struct thermal_zone_device *tzdev;
+ 	void __iomem *apmixed_base, *auxadc_base;
+@@ -1009,8 +1008,7 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 	if (IS_ERR(mt->clk_auxadc))
+ 		return PTR_ERR(mt->clk_auxadc);
 
- 	/* First memory region points towards the status register */
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	base = devm_ioremap_resource(&pdev->dev, res);
-+	base = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
- 	if (IS_ERR(base))
- 		return PTR_ERR(base);
+-	mt->thermal_base = devm_ioremap_resource(&pdev->dev, res);
++	mt->thermal_base = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
+ 	if (IS_ERR(mt->thermal_base))
+ 		return PTR_ERR(mt->thermal_base);
 
 -- 
 2.25.1
