@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7FACC27C76
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Jan 2023 19:48:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB078C25B50
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Jan 2023 19:48:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230085AbjATTsz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Jan 2023 14:48:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42400 "EHLO
+        id S230006AbjATTs4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Jan 2023 14:48:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42398 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229910AbjATTsn (ORCPT
+        with ESMTP id S229911AbjATTsn (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2023 14:48:43 -0500
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D3A59373F;
-        Fri, 20 Jan 2023 11:48:33 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8B7ABB96;
+        Fri, 20 Jan 2023 11:48:35 -0800 (PST)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
- id f845a5482e773122; Fri, 20 Jan 2023 20:48:32 +0100
+ id 09fbaefc78dc5128; Fri, 20 Jan 2023 20:48:33 +0100
 Received: from kreacher.localnet (unknown [213.134.183.98])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 7256E23101AB;
-        Fri, 20 Jan 2023 20:48:31 +0100 (CET)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 26BDD23101AB;
+        Fri, 20 Jan 2023 20:48:33 +0100 (CET)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>
@@ -30,78 +30,41 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v1 1/2] driver core: class: Clear private pointer on registration failures
-Date:   Fri, 20 Jan 2023 20:46:57 +0100
-Message-ID: <4463268.LvFx2qVVIh@kreacher>
-In-Reply-To: <5905717.lOV4Wx5bFT@kreacher>
-References: <5905717.lOV4Wx5bFT@kreacher>
+Subject: [PATCH v1 0/2] driver core/thermal: Fail registration of thermal object when thermal_class is not registered
+Date:   Fri, 20 Jan 2023 20:45:09 +0100
+Message-ID: <5905717.lOV4Wx5bFT@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.183.98
 X-CLIENT-HOSTNAME: 213.134.183.98
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudduvddgudefvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeetkeeigfegjeevudelvdejvdetteehleekjeegkeejiedvlefgheehieehgedugfenucffohhmrghinhepkhhosghjrdhnrghmvgenucfkphepvddufedrudefgedrudekfedrleeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekfedrleekpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepghhrvghgkhhhsehlihhnuhigfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhl
- vgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudduvddgudefvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeffffffkefgheehffelteeiveeffeevhfelteejvddvieejjeelvdeiheeuveeuffenucfkphepvddufedrudefgedrudekfedrleeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekfedrleekpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepghhrvghgkhhhsehlihhnuhigfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgt
+ phhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Clear the class private pointer if __class_register() fails for it, so
-as to allow its users to verify that the class is usable by checking
-the value of that pointer.
+If thermal_class is not registered, the whole thermal framework is basically
+unusable, because the governors are not there and its sysfs interface is not
+present.
 
-For consistency, clear that pointer before freeing the object pointed
-to by it in class_release().
+In that case it doesn't make sense to register thermal zones and cooling
+devices, because they cannot be used as expected anyway, so make it possible
+to fail the registration of these things if the registration of thermal_class
+has failed.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/class.c |   16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+To that end, make sure that the private pointer of a class is NULL when that
+class is not registered with the driver core (patch [1/2]).
 
-Index: linux-pm/drivers/base/class.c
-===================================================================
---- linux-pm.orig/drivers/base/class.c
-+++ linux-pm/drivers/base/class.c
-@@ -53,6 +53,8 @@ static void class_release(struct kobject
- 
- 	pr_debug("class '%s': release.\n", class->name);
- 
-+	class->p = NULL;
-+
- 	if (class->class_release)
- 		class->class_release(class);
- 	else
-@@ -186,17 +188,21 @@ int __class_register(struct class *cls,
- 	cls->p = cp;
- 
- 	error = kset_register(&cp->subsys);
--	if (error) {
--		kfree(cp);
--		return error;
--	}
-+	if (error)
-+		goto err_out;
-+
- 	error = class_add_groups(class_get(cls), cls->class_groups);
- 	class_put(cls);
- 	if (error) {
- 		kobject_del(&cp->subsys.kobj);
- 		kfree_const(cp->subsys.kobj.name);
--		kfree(cp);
-+		goto err_out;
- 	}
-+	return 0;
-+
-+err_out:
-+	kfree(cp);
-+	cls->p = NULL;
- 	return error;
- }
- EXPORT_SYMBOL_GPL(__class_register);
+Next, make the thermal framework check the value of the thermal_class' private
+pointer against NULL and fail the registration of thermal zones and cooling
+devices when it is NULL (patch [2/2]).
+
+Thanks!
 
 
 
