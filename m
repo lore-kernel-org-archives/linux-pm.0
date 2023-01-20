@@ -2,69 +2,68 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB078C25B50
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Jan 2023 19:48:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB043C05027
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Jan 2023 20:06:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230006AbjATTs4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Jan 2023 14:48:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42398 "EHLO
+        id S230049AbjATUGp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Jan 2023 15:06:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229911AbjATTsn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2023 14:48:43 -0500
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8B7ABB96;
-        Fri, 20 Jan 2023 11:48:35 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
- id 09fbaefc78dc5128; Fri, 20 Jan 2023 20:48:33 +0100
-Received: from kreacher.localnet (unknown [213.134.183.98])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        with ESMTP id S230213AbjATUGm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2023 15:06:42 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AAB4EA5CD3;
+        Fri, 20 Jan 2023 12:06:41 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 26BDD23101AB;
-        Fri, 20 Jan 2023 20:48:33 +0100 (CET)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v1 0/2] driver core/thermal: Fail registration of thermal object when thermal_class is not registered
-Date:   Fri, 20 Jan 2023 20:45:09 +0100
-Message-ID: <5905717.lOV4Wx5bFT@kreacher>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.183.98
-X-CLIENT-HOSTNAME: 213.134.183.98
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudduvddgudefvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeffffffkefgheehffelteeiveeffeevhfelteejvddvieejjeelvdeiheeuveeuffenucfkphepvddufedrudefgedrudekfedrleeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekfedrleekpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepghhrvghgkhhhsehlihhnuhigfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgt
- phhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
+        by ams.source.kernel.org (Postfix) with ESMTPS id 59554B829FB;
+        Fri, 20 Jan 2023 20:06:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0881FC433D2;
+        Fri, 20 Jan 2023 20:06:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1674245199;
+        bh=xvFeQKlx28JrZmqEd3a9qdBhtaAnG/d6yZFcO6TRsQI=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=Ycvq0GDop7TfOZZgSSLMb2VGWVWT24JYkCdM75iamvhFBJpzcltcAXoG7j2sJu6ux
+         GS/RhmzxRG74qKkZYI9+VkCuToAZkHh5e6X3Ot6UX6Lv6tLcgjuWYZ65OVFEvj0g4q
+         rnebUiqpZRfw+q8Ec9c2JVyHikSC0dyrW4Pyv9nKTYdW3+pCN2L5ghU/oYwBP385/y
+         kOM/m4cZCe1HBOBL/pS2SrPBOKuSeAiGo+JjOpLUzS53Ari6h16+Ey80uhg3SxbkNa
+         s0Y/2Eq4Iuhd84PazBUVRMHLX6A4ucp4lmyOatJK/JlK5T42If+dxYNHPkrLjrUSbk
+         mpbrcq+g7Gfjg==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id E7952C04E31;
+        Fri, 20 Jan 2023 20:06:38 +0000 (UTC)
+Subject: Re: [GIT PULL] Thermal control fixes for v6.2-rc5
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0hh=K6rAhhRn+tg-mJaY-Fm_ysJLZDhVnYc+D1B1FnzuA@mail.gmail.com>
+References: <CAJZ5v0hh=K6rAhhRn+tg-mJaY-Fm_ysJLZDhVnYc+D1B1FnzuA@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0hh=K6rAhhRn+tg-mJaY-Fm_ysJLZDhVnYc+D1B1FnzuA@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.2-rc5
+X-PR-Tracked-Commit-Id: 6c54b7bc8a31ce0f7cc7f8deef05067df414f1d8
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: dc18175938e65e979b866f23dc5b93e81d649cc4
+Message-Id: <167424519894.30775.7489270621163248518.pr-tracker-bot@kernel.org>
+Date:   Fri, 20 Jan 2023 20:06:38 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+The pull request you sent on Fri, 20 Jan 2023 19:05:25 +0100:
 
-If thermal_class is not registered, the whole thermal framework is basically
-unusable, because the governors are not there and its sysfs interface is not
-present.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.2-rc5
 
-In that case it doesn't make sense to register thermal zones and cooling
-devices, because they cannot be used as expected anyway, so make it possible
-to fail the registration of these things if the registration of thermal_class
-has failed.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/dc18175938e65e979b866f23dc5b93e81d649cc4
 
-To that end, make sure that the private pointer of a class is NULL when that
-class is not registered with the driver core (patch [1/2]).
+Thank you!
 
-Next, make the thermal framework check the value of the thermal_class' private
-pointer against NULL and fail the registration of thermal zones and cooling
-devices when it is NULL (patch [2/2]).
-
-Thanks!
-
-
-
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
