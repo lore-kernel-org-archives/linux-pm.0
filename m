@@ -2,114 +2,228 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 606D8C5320B
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Jan 2023 11:30:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DE85C004D4
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Jan 2023 11:33:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229523AbjAUL36 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 21 Jan 2023 06:29:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48130 "EHLO
+        id S229575AbjAULdh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 21 Jan 2023 06:33:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229686AbjAUL3y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Jan 2023 06:29:54 -0500
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 455673D91E;
-        Sat, 21 Jan 2023 03:29:53 -0800 (PST)
-Received: by mail-ej1-x62b.google.com with SMTP id mg12so19934375ejc.5;
-        Sat, 21 Jan 2023 03:29:53 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=APNLiKmbt8JWMBZWCLrn0Q41j8dsCsL0653AwgPsFDA=;
-        b=g1UzDz1rMz/aM52AgBjc3ucmXLS+TBgaPsQES6XJz7DWT4VKzPfjlknwi4AXGEwbhQ
-         tFX0r02QSxf6CnmsdRQCnAH+Y8xP7FB+b0x7Hj4KXHJWjmgKw/iZCYIcltpw5UhC6CLV
-         TKqS+7TEWZX9x653IPLzRAbNMeW9CLGbl89PfEbHS4w5xiYIWnMHMzDknz3YAupITNZw
-         3zlIFYRfyGVlexcI8grFSdVKHv/hK481UzVIbV25x7Zm06f8aNq+0kNbc3EruZLc5QkC
-         +YHXcWsLPBeHNl11RjQ89dIsEe3OSJMo8PyjDRvz6aK2B8fv6ON6XG61vUC1Zk/RzoF7
-         pvhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=APNLiKmbt8JWMBZWCLrn0Q41j8dsCsL0653AwgPsFDA=;
-        b=Y6Y89EvCu4Vo9VZo8Jg6/WZjfGYCSShhAGBLSBLDJ2sTdmsBKs/Zjszl3fCClu6NJC
-         pB0aKTNICkAu8kwbNHFp0QF+9z19eTLr/eyGNaSz5vLie/2ebi7khzWMXDWVT+waObEq
-         L6MELexn75LmLs3+WlbVkCYXq8e5GhiEcmYFF/ArXv3nDnWhR1uWw06IvO/qdhIyrZPz
-         CdqUDbNidMYohZwYTkzG7GfJLoXI8pF+X8BeIcwXx2rIEd25af0LAwheoMjRTkhgN+w6
-         mdUi8YsKpjOZcajNdsuNJ/g1Ua4AHQTdkQlBlmz6jgUmkOpDhGF3GjUWtqbbwn0Q2N76
-         LcTw==
-X-Gm-Message-State: AFqh2kp9fbzIOk7Q5CDQ3S8WoDPFwSFhqZLuaioSHPZ2oCM15hFmd7WC
-        jDBcvzz+dMudD3XMHDxWrs0=
-X-Google-Smtp-Source: AMrXdXvvXTupPobSVzZSXlsGrSw071RkVOjTM5EO22JRbV8ArGldH8Ps6I9uHpDJa3iZACtgQr6GYg==
-X-Received: by 2002:a17:906:78a:b0:86e:7683:4213 with SMTP id l10-20020a170906078a00b0086e76834213mr19743279ejc.42.1674300591806;
-        Sat, 21 Jan 2023 03:29:51 -0800 (PST)
-Received: from fedora.. ([188.252.220.152])
-        by smtp.googlemail.com with ESMTPSA id d26-20020a056402401a00b0046c7c3755a7sm5152151eda.17.2023.01.21.03.29.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 21 Jan 2023 03:29:51 -0800 (PST)
-From:   Robert Marko <robimarko@gmail.com>
-To:     ilia.lin@kernel.org, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@linaro.org, rafael@kernel.org,
-        viresh.kumar@linaro.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Cc:     Robert Marko <robimarko@gmail.com>
-Subject: [PATCH 3/4] cpufreq: qcom-nvmem: use SoC ID-s from bindings
-Date:   Sat, 21 Jan 2023 12:29:46 +0100
-Message-Id: <20230121112947.53433-3-robimarko@gmail.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230121112947.53433-1-robimarko@gmail.com>
-References: <20230121112947.53433-1-robimarko@gmail.com>
+        with ESMTP id S229484AbjAULdh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Jan 2023 06:33:37 -0500
+Received: from smtp.smtpout.orange.fr (smtp-20.smtpout.orange.fr [80.12.242.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 278333E09B
+        for <linux-pm@vger.kernel.org>; Sat, 21 Jan 2023 03:33:34 -0800 (PST)
+Received: from [192.168.1.18] ([86.243.2.178])
+        by smtp.orange.fr with ESMTPA
+        id JC7npf6vrobXwJC7np5qZQ; Sat, 21 Jan 2023 12:33:32 +0100
+X-ME-Helo: [192.168.1.18]
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sat, 21 Jan 2023 12:33:32 +0100
+X-ME-IP: 86.243.2.178
+Message-ID: <9956151e-d678-646f-b82e-fcf98ad25a1f@wanadoo.fr>
+Date:   Sat, 21 Jan 2023 12:33:28 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
+Subject: Re: [PATCH 1/4] soc: qcom: socinfo: move SMEM item struct and defines
+ to a header
+Content-Language: fr
+To:     Robert Marko <robimarko@gmail.com>, ilia.lin@kernel.org,
+        agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        rafael@kernel.org, viresh.kumar@linaro.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+References: <20230121112947.53433-1-robimarko@gmail.com>
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+In-Reply-To: <20230121112947.53433-1-robimarko@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SMEM SoC ID-s are now stored in DT bindings so lets use those instead of
-defining them in the driver again.
+Le 21/01/2023 à 12:29, Robert Marko a écrit :
+> Move SMEM item struct and related defines to a header in order to be able
+> to reuse them in the Qualcomm NVMEM CPUFreq driver instead of duplicating
+> them.
+> 
+> Signed-off-by: Robert Marko <robimarko@gmail.com>
+> ---
+>   drivers/soc/qcom/socinfo.c       | 65 +-----------------------------
+>   include/linux/soc/qcom/socinfo.h | 68 ++++++++++++++++++++++++++++++++
+>   2 files changed, 69 insertions(+), 64 deletions(-)
+>   create mode 100644 include/linux/soc/qcom/socinfo.h
+> 
+> diff --git a/drivers/soc/qcom/socinfo.c b/drivers/soc/qcom/socinfo.c
+> index 3b970a80f3aa..5919f863f369 100644
+> --- a/drivers/soc/qcom/socinfo.c
+> +++ b/drivers/soc/qcom/socinfo.c
+> @@ -11,6 +11,7 @@
+>   #include <linux/random.h>
+>   #include <linux/slab.h>
+>   #include <linux/soc/qcom/smem.h>
+> +#include <linux/soc/qcom/socinfo.h>
+>   #include <linux/string.h>
+>   #include <linux/stringify.h>
+>   #include <linux/sys_soc.h>
+> @@ -32,15 +33,6 @@
+>   #define qcom_board_id(id) QCOM_ID_ ## id, __stringify(id)
+>   #define qcom_board_id_named(id, name) QCOM_ID_ ## id, (name)
+>   
+> -#define SMEM_SOCINFO_BUILD_ID_LENGTH           32
+> -#define SMEM_SOCINFO_CHIP_ID_LENGTH            32
+> -
+> -/*
+> - * SMEM item id, used to acquire handles to respective
+> - * SMEM region.
+> - */
+> -#define SMEM_HW_SW_BUILD_ID            137
+> -
+>   #ifdef CONFIG_DEBUG_FS
+>   #define SMEM_IMAGE_VERSION_BLOCKS_COUNT        32
+>   #define SMEM_IMAGE_VERSION_SIZE                4096
+> @@ -121,62 +113,7 @@ static const char *const pmic_models[] = {
+>   	[58] = "PM8450",
+>   	[65] = "PM8010",
+>   };
+> -#endif /* CONFIG_DEBUG_FS */
 
-Signed-off-by: Robert Marko <robimarko@gmail.com>
----
- drivers/cpufreq/qcom-cpufreq-nvmem.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+This removal is spurious.
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-index c0a7841a56c1..da55d2e1925a 100644
---- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-@@ -30,12 +30,7 @@
- #include <linux/soc/qcom/smem.h>
- #include <linux/soc/qcom/socinfo.h>
- 
--enum _msm_id {
--	MSM8996V3 = 0xF6ul,
--	APQ8096V3 = 0x123ul,
--	MSM8996SG = 0x131ul,
--	APQ8096SG = 0x138ul,
--};
-+#include <dt-bindings/arm/qcom,ids.h>
- 
- enum _msm8996_version {
- 	MSM8996_V3,
-@@ -150,12 +145,12 @@ static enum _msm8996_version qcom_cpufreq_get_msm_id(void)
- 		return NUM_OF_MSM8996_VERSIONS;
- 
- 	switch (info->id) {
--	case MSM8996V3:
--	case APQ8096V3:
-+	case QCOM_ID_MSM8996:
-+	case QCOM_ID_APQ8096:
- 		version = MSM8996_V3;
- 		break;
--	case MSM8996SG:
--	case APQ8096SG:
-+	case QCOM_ID_MSM8996SG:
-+	case QCOM_ID_APQ8096SG:
- 		version = MSM8996_SG;
- 		break;
- 	default:
--- 
-2.39.1
+CJ
+
+
+> -
+> -/* Socinfo SMEM item structure */
+> -struct socinfo {
+> -	__le32 fmt;
+> -	__le32 id;
+> -	__le32 ver;
+> -	char build_id[SMEM_SOCINFO_BUILD_ID_LENGTH];
+> -	/* Version 2 */
+> -	__le32 raw_id;
+> -	__le32 raw_ver;
+> -	/* Version 3 */
+> -	__le32 hw_plat;
+> -	/* Version 4 */
+> -	__le32 plat_ver;
+> -	/* Version 5 */
+> -	__le32 accessory_chip;
+> -	/* Version 6 */
+> -	__le32 hw_plat_subtype;
+> -	/* Version 7 */
+> -	__le32 pmic_model;
+> -	__le32 pmic_die_rev;
+> -	/* Version 8 */
+> -	__le32 pmic_model_1;
+> -	__le32 pmic_die_rev_1;
+> -	__le32 pmic_model_2;
+> -	__le32 pmic_die_rev_2;
+> -	/* Version 9 */
+> -	__le32 foundry_id;
+> -	/* Version 10 */
+> -	__le32 serial_num;
+> -	/* Version 11 */
+> -	__le32 num_pmics;
+> -	__le32 pmic_array_offset;
+> -	/* Version 12 */
+> -	__le32 chip_family;
+> -	__le32 raw_device_family;
+> -	__le32 raw_device_num;
+> -	/* Version 13 */
+> -	__le32 nproduct_id;
+> -	char chip_id[SMEM_SOCINFO_CHIP_ID_LENGTH];
+> -	/* Version 14 */
+> -	__le32 num_clusters;
+> -	__le32 ncluster_array_offset;
+> -	__le32 num_defective_parts;
+> -	__le32 ndefective_parts_array_offset;
+> -	/* Version 15 */
+> -	__le32 nmodem_supported;
+> -	/* Version 16 */
+> -	__le32  feature_code;
+> -	__le32  pcode;
+> -	__le32  npartnamemap_offset;
+> -	__le32  nnum_partname_mapping;
+> -};
+>   
+> -#ifdef CONFIG_DEBUG_FS
+>   struct socinfo_params {
+>   	u32 raw_device_family;
+>   	u32 hw_plat_subtype;
+> diff --git a/include/linux/soc/qcom/socinfo.h b/include/linux/soc/qcom/socinfo.h
+> new file mode 100644
+> index 000000000000..6a175d635617
+> --- /dev/null
+> +++ b/include/linux/soc/qcom/socinfo.h
+> @@ -0,0 +1,68 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +
+> +#ifndef __QCOM_SOCINFO_H__
+> +#define __QCOM_SOCINFO_H__
+> +
+> +/*
+> + * SMEM item id, used to acquire handles to respective
+> + * SMEM region.
+> + */
+> +#define SMEM_HW_SW_BUILD_ID		137
+> +
+> +#define SMEM_SOCINFO_BUILD_ID_LENGTH	32
+> +#define SMEM_SOCINFO_CHIP_ID_LENGTH	32
+> +
+> +/* Socinfo SMEM item structure */
+> +struct socinfo {
+> +	__le32 fmt;
+> +	__le32 id;
+> +	__le32 ver;
+> +	char build_id[SMEM_SOCINFO_BUILD_ID_LENGTH];
+> +	/* Version 2 */
+> +	__le32 raw_id;
+> +	__le32 raw_ver;
+> +	/* Version 3 */
+> +	__le32 hw_plat;
+> +	/* Version 4 */
+> +	__le32 plat_ver;
+> +	/* Version 5 */
+> +	__le32 accessory_chip;
+> +	/* Version 6 */
+> +	__le32 hw_plat_subtype;
+> +	/* Version 7 */
+> +	__le32 pmic_model;
+> +	__le32 pmic_die_rev;
+> +	/* Version 8 */
+> +	__le32 pmic_model_1;
+> +	__le32 pmic_die_rev_1;
+> +	__le32 pmic_model_2;
+> +	__le32 pmic_die_rev_2;
+> +	/* Version 9 */
+> +	__le32 foundry_id;
+> +	/* Version 10 */
+> +	__le32 serial_num;
+> +	/* Version 11 */
+> +	__le32 num_pmics;
+> +	__le32 pmic_array_offset;
+> +	/* Version 12 */
+> +	__le32 chip_family;
+> +	__le32 raw_device_family;
+> +	__le32 raw_device_num;
+> +	/* Version 13 */
+> +	__le32 nproduct_id;
+> +	char chip_id[SMEM_SOCINFO_CHIP_ID_LENGTH];
+> +	/* Version 14 */
+> +	__le32 num_clusters;
+> +	__le32 ncluster_array_offset;
+> +	__le32 num_defective_parts;
+> +	__le32 ndefective_parts_array_offset;
+> +	/* Version 15 */
+> +	__le32 nmodem_supported;
+> +	/* Version 16 */
+> +	__le32  feature_code;
+> +	__le32  pcode;
+> +	__le32  npartnamemap_offset;
+> +	__le32  nnum_partname_mapping;
+> +};
+> +
+> +#endif
 
