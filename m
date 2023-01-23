@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFC33C38142
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 20:58:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88933C54EAA
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 20:58:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232441AbjAWU6f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Jan 2023 15:58:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58832 "EHLO
+        id S232543AbjAWU6j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Jan 2023 15:58:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232315AbjAWU6e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2023 15:58:34 -0500
+        with ESMTP id S232553AbjAWU6i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2023 15:58:38 -0500
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0CD98A41;
-        Mon, 23 Jan 2023 12:58:09 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FA403802B;
+        Mon, 23 Jan 2023 12:58:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=YEKkyvTZ05I2hq93YUH2assl5KDOT02g9Cn+Y86W8Rg=; b=mnTOOg0XrV4WQaWs8SDkyTd870
-        AOXy0F8U69ylAPKd0Bj22aigz2fTag/FIRvErdlguRoxjrnM0OypFDE6S1vWQrjBZGeWY4Ll4eifA
-        2TYoxsVgfCELCo2LAmT6StQd77sf54f/X3g9dtv6SlV7B+6SfiH8vo6Afz0D4LyN041bW5oVZQEmL
-        wJTKOfFCTUiDtudmB5IBHXNLseVMvpkZfx2j3aqj6nukdEvfME1cMgkAvHeKpa2Gl4sVEk2GzwFUI
-        SsquzAD1nbcZnlRrjSBi8t8ssbNVb3NCiWW+m9k8hxMwJDW9OgardpBYukVrHGMgSneTYsH144L+e
-        a2YqqZTQ==;
+        bh=bIfFAXl3Gv4EnKDtIDltBqYZ3txjVL6G+NhMkZyfGI4=; b=gnYqMu4PNJySVrCjnkQZIgqD33
+        wQXB/rRboPQU3LRLINoxnUhxHyuyRecqTgiKPD7HJmGt1ujJzhYLpFgeknPGh83xjZgsPFTRxusSP
+        6FrdKCC3GQlR3CMbnpwqtGVsjcmD/Ej0w7wbfIM3vLWi6cNVejzdRqOExLrFK1rAnGCpRPlxr5+Oc
+        wDq1C+RIa8zZ3MBxAWZBdlLHGxcQGyE/awpvRp1BLNR+dLrA+45FqNKyNNuglm+LzlsIk4VYNAJ/q
+        P97sHNR5ecVeHuLhJ2L/MEZt49xD/FKILOzWA0ABELctEl+d01ONaULWBfayuntvr+R+X1nyG1EMb
+        5ooM8zaA==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pK3se-004WU2-SZ; Mon, 23 Jan 2023 20:57:29 +0000
+        id 1pK3se-004WTw-59; Mon, 23 Jan 2023 20:57:28 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 6AB95300C22;
-        Mon, 23 Jan 2023 21:57:27 +0100 (CET)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 64BDE300747;
+        Mon, 23 Jan 2023 21:57:24 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id D40E02075A6FB; Mon, 23 Jan 2023 21:57:24 +0100 (CET)
-Message-ID: <20230123205515.175774650@infradead.org>
+        id C96002075A6F7; Mon, 23 Jan 2023 21:57:24 +0100 (CET)
+Message-ID: <20230123205515.059999893@infradead.org>
 User-Agent: quilt/0.66
-Date:   Mon, 23 Jan 2023 21:50:14 +0100
+Date:   Mon, 23 Jan 2023 21:50:12 +0100
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     mingo@kernel.org
 Cc:     will@kernel.org, peterz@infradead.org, boqun.feng@gmail.com,
@@ -54,7 +54,7 @@ Cc:     will@kernel.org, peterz@infradead.org, boqun.feng@gmail.com,
         vschneid@redhat.com, linux-kernel@vger.kernel.org,
         kvm@vger.kernel.org, virtualization@lists.linux-foundation.org,
         linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 5/6] sched/clock: Make local_clock() noinstr
+Subject: [PATCH 3/6] ftrace/x86: Warn and ignore graph tracing when RCU is disabled
 References: <20230123205009.790550642@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -62,104 +62,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-With sched_clock() noinstr, provide a noinstr implementation of
-local_clock().
+All RCU disabled code should be noinstr and hence we should never get
+here -- when we do, WARN about it and make sure to not actually do
+tracing.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- include/linux/sched/clock.h |    8 +++-----
- kernel/sched/clock.c        |   27 +++++++++++++++++++++------
- 2 files changed, 24 insertions(+), 11 deletions(-)
+ arch/x86/kernel/ftrace.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/include/linux/sched/clock.h
-+++ b/include/linux/sched/clock.h
-@@ -45,7 +45,7 @@ static inline u64 cpu_clock(int cpu)
- 	return sched_clock();
- }
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -646,6 +646,9 @@ void prepare_ftrace_return(unsigned long
+ 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
+ 		return;
  
--static inline u64 local_clock(void)
-+static __always_inline u64 local_clock(void)
- {
- 	return sched_clock();
- }
-@@ -79,10 +79,8 @@ static inline u64 cpu_clock(int cpu)
- 	return sched_clock_cpu(cpu);
- }
- 
--static inline u64 local_clock(void)
--{
--	return sched_clock_cpu(raw_smp_processor_id());
--}
-+extern u64 local_clock(void);
++	if (WARN_ONCE(!rcu_is_watching(), "RCU not on for: %pS\n", (void *)ip))
++		return;
 +
- #endif
- 
- #ifdef CONFIG_IRQ_TIME_ACCOUNTING
---- a/kernel/sched/clock.c
-+++ b/kernel/sched/clock.c
-@@ -93,7 +93,7 @@ struct sched_clock_data {
- 
- static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);
- 
--notrace static inline struct sched_clock_data *this_scd(void)
-+static __always_inline struct sched_clock_data *this_scd(void)
- {
- 	return this_cpu_ptr(&sched_clock_data);
- }
-@@ -244,12 +244,12 @@ late_initcall(sched_clock_init_late);
-  * min, max except they take wrapping into account
-  */
- 
--notrace static inline u64 wrap_min(u64 x, u64 y)
-+static __always_inline u64 wrap_min(u64 x, u64 y)
- {
- 	return (s64)(x - y) < 0 ? x : y;
- }
- 
--notrace static inline u64 wrap_max(u64 x, u64 y)
-+static __always_inline u64 wrap_max(u64 x, u64 y)
- {
- 	return (s64)(x - y) > 0 ? x : y;
- }
-@@ -260,7 +260,7 @@ notrace static inline u64 wrap_max(u64 x
-  *  - filter out backward motion
-  *  - use the GTOD tick value to create a window to filter crazy TSC values
-  */
--notrace static u64 sched_clock_local(struct sched_clock_data *scd)
-+static __always_inline u64 sched_clock_local(struct sched_clock_data *scd)
- {
- 	u64 now, clock, old_clock, min_clock, max_clock, gtod;
- 	s64 delta;
-@@ -287,13 +287,28 @@ notrace static u64 sched_clock_local(str
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
- 
--	if (!try_cmpxchg64(&scd->clock, &old_clock, clock))
-+	if (!arch_try_cmpxchg64(&scd->clock, &old_clock, clock))
- 		goto again;
- 
- 	return clock;
- }
- 
--notrace static u64 sched_clock_remote(struct sched_clock_data *scd)
-+noinstr u64 local_clock(void)
-+{
-+	u64 clock;
-+
-+	if (static_branch_likely(&__sched_clock_stable))
-+		return sched_clock() + __sched_clock_offset;
-+
-+	preempt_disable_notrace();
-+	clock = sched_clock_local(this_scd());
-+	preempt_enable_notrace();
-+
-+	return clock;
-+}
-+EXPORT_SYMBOL_GPL(local_clock);
-+
-+static notrace u64 sched_clock_remote(struct sched_clock_data *scd)
- {
- 	struct sched_clock_data *my_scd = this_scd();
- 	u64 this_clock, remote_clock;
+ 	bit = ftrace_test_recursion_trylock(ip, *parent);
+ 	if (bit < 0)
+ 		return;
 
 
