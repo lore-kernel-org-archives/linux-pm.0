@@ -2,181 +2,125 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67009C05027
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 15:38:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 349E2C54E94
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 16:14:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232768AbjAWPiK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Jan 2023 10:38:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43248 "EHLO
+        id S233084AbjAWQO2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Jan 2023 11:14:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49738 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231883AbjAWPiF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2023 10:38:05 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D92F5298EC
-        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2023 07:37:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1674488239;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=nrgSGGG2jivQORYVrLOlwmevh4Rgh/EU/neEY/ItRis=;
-        b=AcOONj4Zkw07VMfGCdI8jiMyZc9jIsl35CdxHqIOGgTqM5n3YD64jS9sBw4AgUVfuBBTFS
-        KlVFGozBdR+ywONhYwHoCpnNfv9NA67B/2XT6VcO+vs6w1/MbxpplTHpJqXmbY8/fVQc9i
-        P3Ku0KvZEcq3wOEhmyHHbq5mVzibs7k=
-Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
- [209.85.208.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-223-wBYvJGzyMbynFS13mhrpyw-1; Mon, 23 Jan 2023 10:37:17 -0500
-X-MC-Unique: wBYvJGzyMbynFS13mhrpyw-1
-Received: by mail-ed1-f71.google.com with SMTP id z18-20020a05640235d200b0049d84165065so8759878edc.18
-        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2023 07:37:13 -0800 (PST)
+        with ESMTP id S233072AbjAWQO1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2023 11:14:27 -0500
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8273E1E1F3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2023 08:14:25 -0800 (PST)
+Received: by mail-wr1-x434.google.com with SMTP id e3so11278034wru.13
+        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2023 08:14:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=xhWhg+JuWpH66LGbtp0HELb5qzJ+wDxiJkPbeIleqvY=;
+        b=LE4CGd6YvWykB2LGRtQySlcZcz5IpKMgb3o1AVvjaObGK94WPygzmtYSrKnSplWMxh
+         CLRScqMzFoGVqITFCTi/HO7hmQR0vl1NeKsxJKJ63NCxRkzBvJSjpDiZDvEGMhFANwnT
+         Woce5z7k1lF7DzJ1M1yOSQvMZcImSXBY0PUgbw9Oet09I+g3pTGF7IJNQOCDYxrp2PTJ
+         0DANDipQl0y/QIOnQB3MJKRzgDPiYe8FNZjvph5w1lPOdWP9zFhLb7xc0uCwuTdbvX2E
+         8PBjof+aHSRHBhiK2WM4Hr6NA4BVhThCP1roZKiT7a6dMH+tfLts0OqilLx49YEdxHKN
+         P0ZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=nrgSGGG2jivQORYVrLOlwmevh4Rgh/EU/neEY/ItRis=;
-        b=ejbYz1AlvheW1EFWI5SpS80IwtjpgCDXlKvGEA5wECAyYg9doUp1C5nzobANMjd9o6
-         gq8mmXgSZ9HuVQYhwhM0N/qW4c/YwKr3QS24/htfXHw0dXEuBhh9sgXR9tkxBPOjAnP6
-         jN0ElVuFi0QSngOLREzvMHwnWcYHU5+dShZ4pkLtQYo6J47B04qs+A14OiZa1T4l717R
-         AV5CpfqC/oSD9Y9Y9n4rt7q/ACcef/iFm65NGsssTKfRSU2jihKZ9uLRNc1AnEDkIunF
-         bCGirMoDxtc5O4u3h5zuq7VAuQoxV38wIpbC7vGjluyEa34rdZIHgHEEfmYGd/9FtZlV
-         XMmQ==
-X-Gm-Message-State: AFqh2kqNS0ubOML/QtAm4bCAwcbQqIsX58Vn09R5wqBn+UeJcKnPNHAg
-        aYOMTjcNwWXUCEOoptD9A+mDqEn3kQZbUf2NiUaUeO2FDY3PhkZzZm+0a2dq7okaCOMvPS7qW8W
-        kj9KztffS57V04L0gYHA=
-X-Received: by 2002:a17:907:a601:b0:877:a7ec:5ff with SMTP id vt1-20020a170907a60100b00877a7ec05ffmr11987739ejc.10.1674488231732;
-        Mon, 23 Jan 2023 07:37:11 -0800 (PST)
-X-Google-Smtp-Source: AMrXdXtr1c6/aX5wLHbH7NQWaOi30A9xv9EkJz28AZBsNN6soWEYPWWpSZA9Zkp3Fm+NFpmtrXZwug==
-X-Received: by 2002:a17:907:a601:b0:877:a7ec:5ff with SMTP id vt1-20020a170907a60100b00877a7ec05ffmr11987725ejc.10.1674488231560;
-        Mon, 23 Jan 2023 07:37:11 -0800 (PST)
-Received: from [10.40.98.142] ([78.108.130.194])
-        by smtp.gmail.com with ESMTPSA id kz22-20020a17090777d600b007c1633cea13sm22618884ejc.12.2023.01.23.07.37.10
+        bh=xhWhg+JuWpH66LGbtp0HELb5qzJ+wDxiJkPbeIleqvY=;
+        b=cAauGFshraEIL3GNi3NvMkWMIWAvEiVQlKnEAwee+0jVeyPevhkZSZgS8tbyrv6fBg
+         FBm6w0C7U+enssUJXKyxWk8fhlKKtbyjZGmv5Xt47+ZwSBWieOwf1hmoPjHzXOac8ND1
+         TiQI2q2iu1DP6DgVqa8TWLlfBHDb6LU8E7n/XUfMWCtryZennXypKdJe583L4bgeo6Vb
+         YGR6D2ucjRso9ouLD7CEBt+RX3ORgl4r19Xsne2P0JZgtVeIauvJPOp567+ZjIYuMHiA
+         EkeAi4+uJKIuHbedzxRD41m2KXx1WNaOGIlW0f65DngDNFp8xbtLPw/Z+b9D/kUo1C3Q
+         ixlg==
+X-Gm-Message-State: AFqh2koI4K8mAF1ayZcxqWM5VReDfCvi9N+UV3kL40tptFbeVN4A9BYX
+        R/7+g5Ot9y1ZsR555HhWL2rqEA==
+X-Google-Smtp-Source: AMrXdXs7vxhLakcU7TmXf5NFoLwqsO/mZDZ+3lJ0pB/UiDi2GJk3mfN51PLloZRCRnEhaE3u8I2weg==
+X-Received: by 2002:adf:dc47:0:b0:2be:5ca4:7480 with SMTP id m7-20020adfdc47000000b002be5ca47480mr9393695wrj.46.1674490464104;
+        Mon, 23 Jan 2023 08:14:24 -0800 (PST)
+Received: from [192.168.0.162] (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
+        by smtp.gmail.com with ESMTPSA id h3-20020adfe983000000b002bdf5832843sm21813631wrm.66.2023.01.23.08.14.23
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 23 Jan 2023 07:37:11 -0800 (PST)
-Message-ID: <33c497ad-2279-ccf6-016b-52b8e1b4783f@redhat.com>
-Date:   Mon, 23 Jan 2023 16:37:10 +0100
+        Mon, 23 Jan 2023 08:14:23 -0800 (PST)
+Message-ID: <254ce21e-5c19-0c29-acc4-9758bdca83b6@linaro.org>
+Date:   Mon, 23 Jan 2023 16:14:22 +0000
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH 0/9] platform/surface: aggregator: Improve target/source
- handling in SSH messages
+ Thunderbird/102.5.0
+Subject: Re: [PATCH v4 0/6] Add MSM8939 SoC support with two devices
 Content-Language: en-US
-To:     Maximilian Luz <luzmaximilian@gmail.com>,
-        Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        Sebastian Reichel <sre@kernel.org>
-Cc:     Mark Gross <markgross@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        platform-driver-x86@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20221202223327.690880-1-luzmaximilian@gmail.com>
-From:   Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <20221202223327.690880-1-luzmaximilian@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To:     Stephan Gerhold <stephan@gerhold.net>
+Cc:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        djakov@kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, benl@squareup.com,
+        shawn.guo@linaro.org, fabien.parent@linaro.org, leo.yan@linaro.org,
+        dmitry.baryshkov@linaro.org
+References: <20230123023127.1186619-1-bryan.odonoghue@linaro.org>
+ <42baa874-c926-9111-b0b3-2df2562d8de6@linaro.org>
+ <Y86CPmgvAi+kChQI@gerhold.net>
+ <45800033-e2ae-09c8-b8a2-e97afb6508fd@linaro.org>
+ <Y86S7h/QxqXoKS1U@gerhold.net>
+From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+In-Reply-To: <Y86S7h/QxqXoKS1U@gerhold.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On 23/01/2023 14:00, Stephan Gerhold wrote:
+> Unless this conclusion changes with your CPR patch set this means that
+> both the DTS and the DT schema will need changes anyway, because you
+> wouldn't need power-domain-names = "cpr", but rather
+> 
+> 	power-domains = <&rpmpd MSM8939_VDDMX_AO>, <&vreg_dummy>;
+> 	power-domain-names = "mx", "cpr";
 
-On 12/2/22 23:33, Maximilian Luz wrote:
-> We have some new insights into the Serial Hub protocol, obtained through
-> reverse engineering. In particular, regarding the command structure. The
-> input/output target IDs actually represent source and target IDs of
-> (what looks like) physical entities (specifically: host, SAM EC, KIP EC,
-> debug connector, and SurfLink connector).
-> 
-> This series aims to improve handling of messages with regards to those
-> new findings and, mainly, improve clarity of the documentation and usage
-> around those fields.
-> 
-> See the discussion in
-> 
->     https://github.com/linux-surface/surface-aggregator-module/issues/64
-> 
-> for more details.
-> 
-> There are a couple of standouts:
-> 
-> - Patch 1 ensures that we only handle commands actually intended for us.
->   It's possible that we receive messages not intended for us when we
->   enable debugging. I've kept it intentionally minimal to simplify
->   backporting. The rest of the series patch 9 focuses more on clarity
->   and documentation, which is probably too much to backport.
-> 
-> - Patch 8 touches on multiple subsystems. The intention is to enforce
->   proper usage and documentation of target IDs in the SSAM_SDEV() /
->   SSAM_VDEV() macros. As it directly touches those macros I
->   unfortunately can't split it up by subsystem.
-> 
-> - Patch 9 is a loosely connected cleanup for consistency.
-> 
-> Hans, Jiri, Benjamin, Sebastian: While patch 8 ("platform/surface:
-> aggregator: Enforce use of target-ID enum in device ID macros") touches
-> multiple subsystems, it should be possible to take the whole series
-> through the pdx86 tree. The changes in other subsystems are fairly
-> limited.
+I have not been owning the CPR for 8939 so far but, this what we have in 
+our 4.19 tree.
 
-Thank you for your patch-series, I've applied the series to my
-review-hans branch:
-https://git.kernel.org/pub/scm/linux/kernel/git/pdx86/platform-drivers-x86.git/log/?h=review-hans
+CPU0: cpu@100 {
+         device_type = "cpu";
+         compatible = "arm,cortex-a53", "arm,armv8";
+         reg = <0x100>;
+         next-level-cache = <&L2_1>;
+         enable-method = "qcom,kpss-acc-v2";
+         qcom,acc = <&acc0>;
+         qcom,saw = <&saw0>;
+         clocks = <&apcs1>;
+         operating-points-v2 = <&cluster1_opp_table>;
+         power-domains = <&cpr>;
+         power-domain-names = "cpr";
+         #cooling-cells = <2>;
+         capacity-dmips-mhz = <1024>;
+};
 
-Note it will show up in my review-hans branch once I've pushed my
-local branch there, which might take a while.
+cpr: power-controller@b018000 {
+         compatible = "qcom,msm8939-cpr", "qcom,cpr";
+         reg = <0x0b018000 0x1000>;
+         interrupts = <0 15 IRQ_TYPE_EDGE_RISING>;
+         clocks = <&rpmcc CXO_SMD_CXO_A_CLK>;
+         clock-names = "ref";
+         power-domains = <&rpmpd MSM8939_VDDMX_AO>;
+         #power-domain-cells = <0>;
+         operating-points-v2 = <&cpr_opp_table>;
+};
 
-Once I've run some tests on this branch the patches there will be
-added to the platform-drivers-x86/for-next branch and eventually
-will be included in the pdx86 pull-request to Linus for the next
-merge-window.
+So the CPR code not the CPU code owns VDDMX_AO. I'm not sure if there's 
+a good reason why it has been done that way.
 
-Regards,
+Anyway, this feels like a bit of a departure from our core discussion. I 
+will see if it is possible to drop the CPU power-domain entirely 
+contingent on the patch you flagged.
 
-Hans
-
-
-
-> 
-> 
-> Maximilian Luz (9):
->   platform/surface: aggregator: Ignore command messages not intended for
->     us
->   platform/surface: aggregator: Improve documentation and handling of
->     message target and source IDs
->   platform/surface: aggregator: Add target and source IDs to command
->     trace events
->   platform/surface: aggregator_hub: Use target-ID enum instead of
->     hard-coding values
->   platform/surface: aggregator_tabletsw: Use target-ID enum instead of
->     hard-coding values
->   platform/surface: dtx: Use target-ID enum instead of hard-coding
->     values
->   HID: surface-hid: Use target-ID enum instead of hard-coding values
->   platform/surface: aggregator: Enforce use of target-ID enum in device
->     ID macros
->   platform/surface: aggregator_registry: Fix target-ID of base-hub
-> 
->  .../driver-api/surface_aggregator/client.rst  |  4 +-
->  .../driver-api/surface_aggregator/ssh.rst     | 36 ++++-----
->  drivers/hid/surface-hid/surface_hid.c         |  2 +-
->  drivers/hid/surface-hid/surface_kbd.c         |  2 +-
->  .../platform/surface/aggregator/controller.c  | 12 +--
->  .../platform/surface/aggregator/ssh_msgb.h    |  4 +-
->  .../surface/aggregator/ssh_request_layer.c    | 15 ++++
->  drivers/platform/surface/aggregator/trace.h   | 73 +++++++++++++++++--
->  .../platform/surface/surface_aggregator_hub.c |  8 +-
->  .../surface/surface_aggregator_registry.c     |  2 +-
->  .../surface/surface_aggregator_tabletsw.c     | 10 +--
->  drivers/platform/surface/surface_dtx.c        | 20 ++---
->  .../surface/surface_platform_profile.c        |  2 +-
->  drivers/power/supply/surface_battery.c        |  4 +-
->  drivers/power/supply/surface_charger.c        |  2 +-
->  include/linux/surface_aggregator/controller.h |  4 +-
->  include/linux/surface_aggregator/device.h     | 50 ++++++-------
->  include/linux/surface_aggregator/serial_hub.h | 40 ++++++----
->  18 files changed, 191 insertions(+), 99 deletions(-)
-> 
-
+---
+bod
