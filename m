@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF188C61DA2
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 02:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E59EBC27C76
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 02:31:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230072AbjAWCbh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Jan 2023 21:31:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51724 "EHLO
+        id S231509AbjAWCbr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Jan 2023 21:31:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231294AbjAWCbg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2023 21:31:36 -0500
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25EF216338
-        for <linux-pm@vger.kernel.org>; Sun, 22 Jan 2023 18:31:34 -0800 (PST)
-Received: by mail-wr1-x434.google.com with SMTP id bk16so9463182wrb.11
-        for <linux-pm@vger.kernel.org>; Sun, 22 Jan 2023 18:31:34 -0800 (PST)
+        with ESMTP id S231437AbjAWCbq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2023 21:31:46 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A900116333
+        for <linux-pm@vger.kernel.org>; Sun, 22 Jan 2023 18:31:36 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id t5so9507997wrq.1
+        for <linux-pm@vger.kernel.org>; Sun, 22 Jan 2023 18:31:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=F6Z6SxNt59v/q1tzc92V2WGdngE9GnNNYwlh4MmijG0=;
-        b=zuPWTtTO696nI6DcIOBy7rM+IxBFf8mrAJijmP7r+YiiB6Q3ar94HbnTh18nabxywW
-         7TDx+sHX3hijMz9brH3yWS6OZVEeY7k5BVtqhVKANYBG3bnB/Whdvi+e5NeI8M8yXgRB
-         7ooWyjIn9UgoAxsTl/2a5o0+PK0Y5uqRUp8wpbvsUdY3eOKg3sUWJXaGuOkoGxNafOd4
-         bR5GEFFr+y/FQX9GU5r/N7UBO8nzgQXb9STZJ2MakTPF/elaHtr3C13FI+XTgbJpwbEy
-         DCBMtrbJGy1BxQJ+b4hAUjeigTYNY/JJ82AEE6w+jjpXtf1CXdCKfROsVIL6ibU92Tex
-         HkkQ==
+        bh=tyw85nc/PwcD3lfXSO76poeJVDlKaOkIt5Q0MKdYW04=;
+        b=tlFWUO+J1/0CkQIa646Kv8in1aiHnBN/7eoQk1B6TasxF1tXHw1L9pVBlXcILb5pDF
+         Ij3Vf/Pma8HxRKotn/VfwdK733K0HBP4hohGo6n/WOqlPfV8sDFWyH7T8yaO+2Tyk/51
+         w3TQjywYoUJJLH21wAUk1zPl5UAJV8Xp/Y2XUrnv9qFLkOPimBGw5ve3vbkE6VVNW68C
+         K5LnWUtllljhYPoLusGAPxsFpYyfms5ytZ6VGow8ei8AmcpfZQiPlPBUmXD2u2YQT7xc
+         i32cYaqhnIZvcxWpxZU3FQtFrTf+6sUMGjeI0Bjk1e0eX/DPJaIY1EOOsxG0RXm5cr2G
+         eERQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=F6Z6SxNt59v/q1tzc92V2WGdngE9GnNNYwlh4MmijG0=;
-        b=1RKdmAGiN+w2F2NefwuuMMRaJ4adXuUOz4tt7ev6ag74F96cU1rwd//vZ9utgGLgkv
-         bBExycIeh5Vf6rtU7QXVqqU2QNqgsflMyVExnQkjiUdzimyeC5ftKt0U0a9yPEd0QyoM
-         tnztaiSNZ1WXRyUkCYPsGOtfbK0h9cGhc/spcyXavj5xjj5TAZZMQMxhbsYSJBMkEi1M
-         0Utn+bIef2U3FsYRa4OT9hAhA5beoZssCl4GmDP6v/Q95DsSA5TFasgqtfzq8Ou6tMxV
-         EJ78bJS+GGGJE4QVVp4JIIupI3T0dXE316xO43bBlAt4GVBLtVVs0UR7g7vF0LvwrLLm
-         pByg==
-X-Gm-Message-State: AFqh2krJl75FkZyJkkVIHCuK9lZF3rWV5DWVhj4FnDzLpvNyCsX74dz0
-        sjXCIT77senFgSyqiKJC/YfZnA==
-X-Google-Smtp-Source: AMrXdXtnxzOlNJdhIR4KFNck/ZCdyo2ciJwXZ1fblEy1e3WPtItsYM83pvm1NXCTQEnLNziobcZ5Wg==
-X-Received: by 2002:a5d:6d4a:0:b0:27a:d81:1137 with SMTP id k10-20020a5d6d4a000000b0027a0d811137mr14246396wri.38.1674441092561;
-        Sun, 22 Jan 2023 18:31:32 -0800 (PST)
+        bh=tyw85nc/PwcD3lfXSO76poeJVDlKaOkIt5Q0MKdYW04=;
+        b=lSDK5++pmTBtghEDTgH5bUX9CvgLXABRtvzJ+Mtfj7w87txbMZHfYD0c9JMRaDNE/f
+         WybN3X0QpmNN4O1zz9IjEcNY1tqFqGIleZbPT+YWDTtd/triJ/m8m4YgoK0bSu/7D3Gv
+         /PHPuYxH0y8Lug7h3dwUz40SmYBj69abH66Du7txXrovNBkimu8YikTw1SuYmMcjN8En
+         InnRdCudQEPpdorhxeh77ov+ytqetgA8PKS0ILDQZnafl8duPqm0HDr3d3vGJwlBqWkl
+         e+Kypa8zIWKzpe7e2ui4SnZQILpXgOi4f5cT1GsKR5lWf05jdHfrpfr7BsDBltPCX5XY
+         1pbQ==
+X-Gm-Message-State: AFqh2koav4Mr6YSl9lMLtyE8tbv9G2lbGtzkP99fCVjOVP5h/lhbbj6J
+        yud1STrgjrupGEBIkxqzycy4Rg==
+X-Google-Smtp-Source: AMrXdXuXqz/aCi6HoQmRqatT6pPkmUBr19lwXLCECUyYH5z/bdL0Z5qNOWqyin1NKXcwuJiZDBK6RA==
+X-Received: by 2002:adf:edd1:0:b0:2bd:c6ce:7bfc with SMTP id v17-20020adfedd1000000b002bdc6ce7bfcmr20804816wro.42.1674441094980;
+        Sun, 22 Jan 2023 18:31:34 -0800 (PST)
 Received: from sagittarius-a.chello.ie (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
-        by smtp.gmail.com with ESMTPSA id r11-20020adff70b000000b002bdf290efdasm18672703wrp.58.2023.01.22.18.31.31
+        by smtp.gmail.com with ESMTPSA id r11-20020adff70b000000b002bdf290efdasm18672703wrp.58.2023.01.22.18.31.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Jan 2023 18:31:32 -0800 (PST)
+        Sun, 22 Jan 2023 18:31:34 -0800 (PST)
 From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
         djakov@kernel.org, robh+dt@kernel.org,
@@ -57,11 +57,10 @@ Cc:     bryan.odonoghue@linaro.org, linux-arm-msm@vger.kernel.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, benl@squareup.com,
         shawn.guo@linaro.org, fabien.parent@linaro.org, leo.yan@linaro.org,
-        dmitry.baryshkov@linaro.org, stephan@gerhold.net,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v4 2/6] dt-bindings: interconnect: Exclude all non msm8939 from snoc-mm
-Date:   Mon, 23 Jan 2023 02:31:23 +0000
-Message-Id: <20230123023127.1186619-3-bryan.odonoghue@linaro.org>
+        dmitry.baryshkov@linaro.org, stephan@gerhold.net
+Subject: [PATCH v4 4/6] arm64: dts: qcom: Add msm8939-pm8916.dtsi include
+Date:   Mon, 23 Jan 2023 02:31:25 +0000
+Message-Id: <20230123023127.1186619-5-bryan.odonoghue@linaro.org>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20230123023127.1186619-1-bryan.odonoghue@linaro.org>
 References: <20230123023127.1186619-1-bryan.odonoghue@linaro.org>
@@ -71,117 +70,108 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-New properties should be defined before the allOf. Move the
-patternProperties definition to before the additionalProperties: false in
-this file.
+From: Stephan Gerhold <stephan@gerhold.net>
 
-Exclude all non msm8939 compats from containing a matching
-patternProperties.
+The msm8939-pm8916.dtsi include configures the regulator supplies of
+MSM8939 used together with PM8916, as recommended by Qualcomm. In rare
+cases where boards deviate from the recommended design they can just
+avoid using this include.
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
 Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 ---
- .../bindings/interconnect/qcom,rpm.yaml       | 73 +++++++++++--------
- 1 file changed, 42 insertions(+), 31 deletions(-)
+ arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi | 82 ++++++++++++++++++++
+ 1 file changed, 82 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-index 5e6be4e79201e..d9d243c5514b5 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-@@ -62,6 +62,37 @@ properties:
-   power-domains:
-     maxItems: 1
- 
-+# Child node's properties
-+patternProperties:
-+  '^interconnect-[a-z0-9]+$':
-+    type: object
-+    description:
-+      snoc-mm is a child of snoc, sharing snoc's register address space.
+diff --git a/arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi
+new file mode 100644
+index 0000000000000..18a1b3cca01d6
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi
+@@ -0,0 +1,82 @@
++// SPDX-License-Identifier: GPL-2.0-only
 +
-+    properties:
-+      compatible:
-+        enum:
-+          - qcom,msm8939-snoc-mm
++#include "msm8939.dtsi"
++#include "pm8916.dtsi"
 +
-+      '#interconnect-cells':
-+        const: 1
++&dsi0 {
++	vdda-supply = <&pm8916_l2>;
++	vddio-supply = <&pm8916_l6>;
++};
 +
-+      clock-names:
-+        items:
-+          - const: bus
-+          - const: bus_a
++&dsi1 {
++	vdda-supply = <&pm8916_l2>;
++	vddio-supply = <&pm8916_l6>;
++};
 +
-+      clocks:
-+        items:
-+          - description: Bus Clock
-+          - description: Bus A Clock
++&dsi_phy0 {
++	vddio-supply = <&pm8916_l6>;
++};
 +
-+    required:
-+      - compatible
-+      - '#interconnect-cells'
-+      - clock-names
-+      - clocks
++&dsi_phy1 {
++	vddio-supply = <&pm8916_l6>;
++};
 +
- required:
-   - compatible
-   - reg
-@@ -108,37 +139,6 @@ allOf:
-             - description: Bus Clock
-             - description: Bus A Clock
- 
--      # Child node's properties
--      patternProperties:
--        '^interconnect-[a-z0-9]+$':
--          type: object
--          description:
--            snoc-mm is a child of snoc, sharing snoc's register address space.
--
--          properties:
--            compatible:
--              enum:
--                - qcom,msm8939-snoc-mm
--
--            '#interconnect-cells':
--              const: 1
--
--            clock-names:
--              items:
--                - const: bus
--                - const: bus_a
--
--            clocks:
--              items:
--                - description: Bus Clock
--                - description: Bus A Clock
--
--          required:
--            - compatible
--            - '#interconnect-cells'
--            - clock-names
--            - clocks
--
-   - if:
-       properties:
-         compatible:
-@@ -237,6 +237,17 @@ allOf:
-             - description: Aggregate2 USB3 AXI Clock.
-             - description: Config NoC USB2 AXI Clock.
- 
-+  - if:
-+      not:
-+        properties:
-+          compatible:
-+            contains:
-+              enum:
-+                - qcom,msm8939-snoc
-+    then:
-+      patternProperties:
-+        '^interconnect-[a-z0-9]+$': false
++&mpss {
++	pll-supply = <&pm8916_l7>;
++};
 +
- examples:
-   - |
-       #include <dt-bindings/clock/qcom,rpmcc.h>
++&pronto {
++	vddpx-supply = <&pm8916_l7>;
++
++	iris {
++		vddxo-supply = <&pm8916_l7>;
++		vddrfa-supply = <&pm8916_s3>;
++		vddpa-supply = <&pm8916_l9>;
++		vdddig-supply = <&pm8916_l5>;
++	};
++};
++
++&sdhc_1 {
++	vmmc-supply = <&pm8916_l8>;
++	vqmmc-supply = <&pm8916_l5>;
++};
++
++&sdhc_2 {
++	vmmc-supply = <&pm8916_l11>;
++	vqmmc-supply = <&pm8916_l12>;
++};
++
++&usb_hs_phy {
++	v1p8-supply = <&pm8916_l7>;
++	v3p3-supply = <&pm8916_l13>;
++};
++
++&rpm_requests {
++	smd_rpm_regulators: regulators {
++		compatible = "qcom,rpm-pm8916-regulators";
++
++		/* pm8916_s1 is managed by rpmpd (MSM8939_VDDMDCX) */
++		/* pm8916_s2 is managed by rpmpd (MSM8939_VDDCX) */
++		pm8916_s3: s3 {};
++		pm8916_s4: s4 {};
++
++		pm8916_l1: l1 {};
++		pm8916_l2: l2 {};
++		/* pm8916_l3 is managed by rpmpd (MSM8939_VDDMX) */
++		pm8916_l4: l4 {};
++		pm8916_l5: l5 {};
++		pm8916_l6: l6 {};
++		pm8916_l7: l7 {};
++		pm8916_l8: l8 {};
++		pm8916_l9: l9 {};
++		pm8916_l10: l10 {};
++		pm8916_l11: l11 {};
++		pm8916_l12: l12 {};
++		pm8916_l13: l13 {};
++		pm8916_l14: l14 {};
++		pm8916_l15: l15 {};
++		pm8916_l16: l16 {};
++		pm8916_l17: l17 {};
++		pm8916_l18: l18 {};
++	};
++};
 -- 
 2.38.1
 
