@@ -2,208 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6CE4C54EAA
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 19:34:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A2EDC38142
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Jan 2023 19:54:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231847AbjAWTeh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Jan 2023 14:34:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41854 "EHLO
+        id S232024AbjAWTyc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Jan 2023 14:54:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56972 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230236AbjAWTeg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2023 14:34:36 -0500
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E654931E0C;
-        Mon, 23 Jan 2023 11:34:34 -0800 (PST)
-Received: by mail-wr1-x430.google.com with SMTP id bk16so11826848wrb.11;
-        Mon, 23 Jan 2023 11:34:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=fT8/4JtDsE0YLu2QTGwrIucYe0iIl5yrZgyKe52Vxt0=;
-        b=MyN/HVpy+iGknjLb01ZXX6V1zantOArIGSbx7Hfh02ILItgOR5jbSdjM1rh7k91pal
-         Hmldfoz3YoxtE41iHSI5EvSN6AomdKawaUQjq6uRI26Qeukgrqn2GClLSNS6Afktqgc4
-         ozpUPH0Sf6I+vM9nTM/BfiDCxKmlR0wMoYUBpsk0RmkxyVjyjlfmuLbx6y2yerX2XlyL
-         B1L6dAhHdGErOVp/cT85OSW81lvkLLU7q0Xnx6GHOIxTbTLhoBYxafGAG0XPlazzYJQw
-         RaSQDc3RvrL92asL1VbkPuDOXsoEj1wvmrWefuxk5IfVEpKmfz5cxXiXh3tqoaqCD/82
-         YVTg==
+        with ESMTP id S231468AbjAWTyb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2023 14:54:31 -0500
+Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A49030EBD;
+        Mon, 23 Jan 2023 11:54:30 -0800 (PST)
+Received: by mail-ed1-f46.google.com with SMTP id w14so15948651edi.5;
+        Mon, 23 Jan 2023 11:54:30 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=fT8/4JtDsE0YLu2QTGwrIucYe0iIl5yrZgyKe52Vxt0=;
-        b=C5OsWFNNZF9rtKDBk6MZEfvqudQ85/KTP1zQAIA3D2/ePqvDSlMSW/ogKbWAOih7N5
-         wZvIT4OzMGSsktaNse7wnX2NSbn43065vnvhn5ZIk93yXi+KwcAl62Le3BJ6YyEGmjka
-         dhgcRdJhvH79Vuop/1HUySxFuanBZZ2U+6yN22/PGptkXvTpZYv9DITaK2sURf91MCfl
-         UbB7RRn7FiSCbY+9kWM5QErkYxufzet+C0v/QIRX56a6ILwcqVLX83VJONf0duntk2sP
-         o5an1+dPf+O6suNG1Q0wqSWjNIcm9vISpOeWr5g1CokwdPb73+Nm5cddSiDI1foUAEKn
-         ts9Q==
-X-Gm-Message-State: AFqh2koSyGePlMV6OTbh16MdGg3OFJRzEDLhDZ+ktdat6q5jfqUQ1VT/
-        iscZ8/H39Sb69e5H/xGULzc=
-X-Google-Smtp-Source: AMrXdXseQT646WmqbfLo2Jjq9TtOmfd4GJkOXvOok5et0qEfdMM3jD97AMUlbSv77byUoFS/oq4iPQ==
-X-Received: by 2002:a5d:4644:0:b0:2be:5cf8:2a83 with SMTP id j4-20020a5d4644000000b002be5cf82a83mr10311279wrs.37.1674502473337;
-        Mon, 23 Jan 2023 11:34:33 -0800 (PST)
-Received: from localhost.localdomain (93-34-89-61.ip49.fastwebnet.it. [93.34.89.61])
-        by smtp.googlemail.com with ESMTPSA id z8-20020a5d4408000000b002b8fe58d6desm151428wrq.62.2023.01.23.11.34.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Jan 2023 11:34:32 -0800 (PST)
-From:   Christian Marangi <ansuelsmth@gmail.com>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Yassine Oudjana <y.oudjana@protonmail.com>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Christian Marangi <ansuelsmth@gmail.com>
-Subject: [PATCH v3 1/2] dt-bindings: cpufreq: qcom-cpufreq-nvmem: make cpr bindings optional
-Date:   Mon, 23 Jan 2023 20:34:21 +0100
-Message-Id: <20230123193422.15972-1-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.38.1
+        bh=7OnFmO9xTR9Xu/C+ebnyO395E7LnrsXHhVtvHZqLro4=;
+        b=OfUhXFjPcuBGN1Yp2tm+KNK24mlwVEF6HJ4K6Q0lkUE7srQSs02pBoovIGek5ySAfG
+         0kk4KazibhHQqORSxLKejOmpdAPQLeYGuxM8j/dcgo43wrngZGG0WiqmFh6FYj3TdhSu
+         J26ysP1CQ/j49U+rsJiJkXfsFr5kh/IVF3YOuveYO+56nfnDeFevu5qufGhL8IUwN8jd
+         37AsRJr2I9VtpiJm808wXcF6VsTyJ2OHgp7rrojRqXrFTSzUlg0ocHlk6SyEh7I5hvIQ
+         3mPsV7ZZK1IkQ6Wo4f+WpNMZJnYrXwxt5+98AD3NxbJvgpy3eMGuz1cV5VyewIyB9OXH
+         OEMw==
+X-Gm-Message-State: AO0yUKUoCNtRSs3YrVghaUn7wou4bLzcggCAENEgB/GRg0StG8MkpStD
+        1MEyWCXnq00R9UwUevnaSyaTiZ2dFWr4VZ8UkmI=
+X-Google-Smtp-Source: AK7set9cTilvBV+L5qo6TMmPzDimd8d6AOUOsy91hVUnjjLUoYABTMFOCbFaqCLdAWnKXOhc1HAxC/jEk9VOXmYMfpY=
+X-Received: by 2002:a50:ec8f:0:b0:49f:6dda:9e1f with SMTP id
+ e15-20020a50ec8f000000b0049f6dda9e1fmr92431edr.251.1674503668936; Mon, 23 Jan
+ 2023 11:54:28 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <5916342.lOV4Wx5bFT@kreacher> <2882611.e9J7NaK4W3@kreacher>
+ <3234230.44csPzL39Z@kreacher> <19f1860e20fbc75c3d2c3eefda29cccd18ca59a9.camel@linux.intel.com>
+In-Reply-To: <19f1860e20fbc75c3d2c3eefda29cccd18ca59a9.camel@linux.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 23 Jan 2023 20:54:17 +0100
+Message-ID: <CAJZ5v0gK_O-9_tPEVbmBbf+2vxVA2_C5tPGOo_qghyw86pohoA@mail.gmail.com>
+Subject: Re: [PATCH v7 0/3] thermal: intel: Use generic trip points in 2 drivers
+To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The qcom-cpufreq-nvmem driver supports 2 kind of devices:
-- pre-cpr that doesn't have power-domains and base everything on nvmem
-  cells and multiple named microvolt bindings
-- cpr-based that require power-domain in the cpu nodes and use various
-  source to decide the correct voltage and freq
+On Mon, Jan 23, 2023 at 8:26 PM srinivas pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> On Mon, 2023-01-23 at 19:52 +0100, Rafael J. Wysocki wrote:
+> > On Monday, January 23, 2023 7:45:30 PM CET Rafael J. Wysocki wrote:
+> > > On Monday, January 23, 2023 7:36:52 PM CET Rafael J. Wysocki wrote:
+> > > > Hi All,
+> > > >
+> > > > This is a new version of the series from Daniel posted as:
+> > > >
+> > > > https://lore.kernel.org/linux-pm/20230120231530.2368330-1-daniel.lezcano@linaro.org/
+> > > >
+> > > > The first patch has been reworked (see
+> > > > https://lore.kernel.org/linux-pm/5911499.lOV4Wx5bFT@kreacher/)
+> > > > and the other two have been rebased on top of it.
+> > > >
+> > > > I have retained the R-by tags from Rui, because the changes in
+> > > > patches [2-3/3] are
+> > > > not essential, but I think that this new set needs to be tested
+> > > > again.
+> > > >
+> > > > Srinivas, can you test it please?
+> > >
+> > > Something's wrong, sorry.
+> > >
+> > > I get some invalid trip temperatures with this set.
+> >
+> > Sorry, scratch this, I got confused by THERMAL_TEMP_INVALID showing
+> > up in
+> > sysfs, but it did show up before too.
+> >
+> > Please test!
+> >
+>
+> >
+>
+> >
+> It will be easy if you have some test branch to avoid dependecies on
+> other patches.
 
-When the schema was introduced, it was wrongly set to always require these
-binding but this is not the case for pre-cpr devices.
-
-Make the power-domain optional and set them required only for qcs404
-based devices.
-
-While at it also make more clear what the opp-table supports by adding
-ref to the opp-v2-kryo-cpu and opp-v2-qcom-level schema.
-
-Fixes: ec24d1d55469 ("dt-bindings: opp: Convert qcom-nvmem-cpufreq to DT schema")
-Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
----
-
-Changes v2:
-- Reword commit description
-- Fix condition order
-- Add allOf
-
- .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml  | 81 +++++++++++++------
- 1 file changed, 56 insertions(+), 25 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
-index 9c086eac6ca7..6f5e7904181f 100644
---- a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
-+++ b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
-@@ -17,6 +17,9 @@ description: |
-   on the CPU OPP in use. The CPUFreq driver sets the CPR power domain level
-   according to the required OPPs defined in the CPU OPP tables.
- 
-+  For old implementation efuses are parsed to select the correct opp table and
-+  voltage and CPR is not supported/used.
-+
- select:
-   properties:
-     compatible:
-@@ -33,37 +36,65 @@ select:
-   required:
-     - compatible
- 
--properties:
--  cpus:
--    type: object
--
--    patternProperties:
--      '^cpu@[0-9a-f]+$':
--        type: object
--
--        properties:
--          power-domains:
--            maxItems: 1
--
--          power-domain-names:
--            items:
--              - const: cpr
--
--        required:
--          - power-domains
--          - power-domain-names
--
- patternProperties:
-   '^opp-table(-[a-z0-9]+)?$':
--    if:
-+    allOf:
-+      - if:
-+          properties:
-+            compatible:
-+              const: operating-points-v2-kryo-cpu
-+        then:
-+          $ref: /schemas/opp/opp-v2-kryo-cpu.yaml#
-+
-+      - if:
-+          properties:
-+            compatible:
-+              const: operating-points-v2-qcom-level
-+        then:
-+          $ref: /schemas/opp/opp-v2-qcom-level.yaml#
-+
-+    unevaluatedProperties: false
-+
-+allOf:
-+  - if:
-       properties:
-         compatible:
--          const: operating-points-v2-kryo-cpu
-+          contains:
-+            enum:
-+              - qcom,qcs404
-+
-     then:
-+      properties:
-+        cpus:
-+          type: object
-+
-+          patternProperties:
-+            '^cpu@[0-9a-f]+$':
-+              type: object
-+
-+              properties:
-+                power-domains:
-+                  maxItems: 1
-+
-+                power-domain-names:
-+                  items:
-+                    - const: cpr
-+
-+              required:
-+                - power-domains
-+                - power-domain-names
-+
-       patternProperties:
--        '^opp-?[0-9]+$':
--          required:
--            - required-opps
-+        '^opp-table(-[a-z0-9]+)?$':
-+          if:
-+            properties:
-+              compatible:
-+                const: operating-points-v2-kryo-cpu
-+          then:
-+            patternProperties:
-+              '^opp-?[0-9]+$':
-+                required:
-+                  - required-opps
- 
- additionalProperties: true
- 
--- 
-2.38.1
-
+Please see the thermal-intel-test branch in linux-pm.git.  It's this
+series on top of the core thermal stuff + ARM drivers.
