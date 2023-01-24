@@ -2,95 +2,83 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4C6AC38142
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Jan 2023 16:35:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 991B8C54EAA
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Jan 2023 16:38:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234394AbjAXQfm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Jan 2023 11:35:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38122 "EHLO
+        id S233326AbjAXQit (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Jan 2023 11:38:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234411AbjAXQfi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2023 11:35:38 -0500
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A339C42DE8
-        for <linux-pm@vger.kernel.org>; Tue, 24 Jan 2023 08:35:16 -0800 (PST)
-Received: by mail-wm1-x32e.google.com with SMTP id d4-20020a05600c3ac400b003db1de2aef0so11390669wms.2
-        for <linux-pm@vger.kernel.org>; Tue, 24 Jan 2023 08:35:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=KWY8t6MGSD+ddhFLpUPHcH1FizkiNtOJ0a7ycgsdp9A=;
-        b=tRFUEFCqosQ2VLKNFVJlOmLwDyAusvTvviijp1YiLfpIrYW8hO4cHDzGlFF65sb5aY
-         +1GcO9Nnoam06P9O7wKozz7TFIkiry+R5z9UnSQd/T2u+l60RcSM7wWCZDAg0z5keo2F
-         erIicnRZXjv9FaegvYDEKRyvGPJrMm6cOOjBb3AvfdAABcbEN6K5ogQgLNYWK0xKHuUY
-         VOq9cXmbyheFAJjhRDcuHKF7MCuFDeWS5wAWXK2/d+4K4LQygxuk10CVLxHV6NSdTSZ7
-         7JTDTLF7duMsu/ccWK1DVxAlz8WQU/OX4ayXinWlAzSFPBX7FP6WqUosOre+N7t9g+n2
-         uWBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=KWY8t6MGSD+ddhFLpUPHcH1FizkiNtOJ0a7ycgsdp9A=;
-        b=b1VcawpZ/DlOmxLtbZ7+WbW0aWmusFhEJv6j3jRpDNMnzDet8zAI5Ez5+IhVcuSsod
-         GUw9z7L/cKpAwI+8dewK5j9Oxv+ODesGf16MGlT6kK/6UAA8B9WQ+5PDXQE5YiW3TZMd
-         xu13NeryW6toCfXA6G5ZRffcexC2+oKM05QaH7eFSYFeahK5UbrKK/P2huNS2ztt4hqw
-         Y6j5xLQ0+l4dOExkmufVy7ZBk4kSZp+TXIIegdEas2nPYkjnm9nMUtbGGrHPFc2g4ZUq
-         zcbj6x7bm6j7UzbYPoIXgg00n+V6rBWUvLFonFH1zniPQgdAAfjE5MVShyyp8aOTXUXG
-         hOdg==
-X-Gm-Message-State: AFqh2koSrraJp/Peu2aISWOhgbH9qRGdO3KjWjqkUSFvZNH8irsVlFlj
-        9o8tCvv7S0JU6jaBlzA+dJ/HpBwgKyKVHPGO
-X-Google-Smtp-Source: AMrXdXtEsvhEpSWe+OLcAKIsAFoPG7UhBOBeQiMUSEIqblkGFiizLQINmdJP1+ZtFxCkSQrR4HSX3Q==
-X-Received: by 2002:a05:600c:c0c:b0:3db:1caf:1044 with SMTP id fm12-20020a05600c0c0c00b003db1caf1044mr22587617wmb.13.1674578113098;
-        Tue, 24 Jan 2023 08:35:13 -0800 (PST)
-Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id m26-20020a7bcb9a000000b003db2dede1a2sm13605171wmi.26.2023.01.24.08.35.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Jan 2023 08:35:12 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     rafael@kernel.org
-Cc:     error27@gmail.com, Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
+        with ESMTP id S232744AbjAXQis (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2023 11:38:48 -0500
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B99540F6;
+        Tue, 24 Jan 2023 08:38:38 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
+ id d69c236b73ece573; Tue, 24 Jan 2023 17:38:36 +0100
+Received: from kreacher.localnet (unknown [213.134.189.30])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 7E9297A643A;
+        Tue, 24 Jan 2023 17:38:35 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        linux-pm@vger.kernel.org (open list:THERMAL),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] thermal/drivers/int340x: Fix uninitialized trip_cnt variable
-Date:   Tue, 24 Jan 2023 17:31:25 +0100
-Message-Id: <20230124163127.445942-1-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <Y8/1ccQLn41w+Vek@kili>
-References: <Y8/1ccQLn41w+Vek@kili>
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Dan Carpenter <error27@gmail.com>
+Subject: [PATCH v1] thermal: intel: int340x: Fix unitialized variable error
+Date:   Tue, 24 Jan 2023 17:38:34 +0100
+Message-ID: <2685606.mvXUDI8C0e@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.189.30
+X-CLIENT-HOSTNAME: 213.134.189.30
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedruddvtddgkeejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffffffekgfehheffleetieevfeefvefhleetjedvvdeijeejledvieehueevueffnecukfhppedvudefrddufeegrddukeelrdeftdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddukeelrdeftddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdp
+ rhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtohepvghrrhhorhdvjeesghhmrghilhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The conversion to the generic trip points missed to initializes the
-extra trip points to zero in case the _PATC method is not found.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Set by default the trip_cnt to zero.
+If PATC evaluation fails in int340x_thermal_zone_add(), trip_cnt will
+not be initialized when allocating the trips array later.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Address this by initializing trip_cnt to 0.
+
+While at it, move the status variable definition lower for better
+code readability.
+
+Fixes: d58c653e9e26 ("thermal: intel: int340x: Use generic trip points")
+Reported-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-index 7ff5d9b1c490..c113962a599e 100644
---- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-+++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-@@ -121,7 +121,7 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
++++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+@@ -120,9 +120,9 @@ struct int34x_thermal_zone *int340x_ther
+ 						     int (*get_temp) (struct thermal_zone_device *, int *))
  {
  	struct int34x_thermal_zone *int34x_thermal_zone;
- 	acpi_status status;
+-	acpi_status status;
 -	unsigned long long trip_cnt;
 +	unsigned long long trip_cnt = 0;
  	int trip_mask = 0;
++	acpi_status status;
  	int i, ret;
  
--- 
-2.34.1
+ 	int34x_thermal_zone = kzalloc(sizeof(*int34x_thermal_zone),
+
+
 
