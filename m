@@ -2,171 +2,100 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0F91C61D9D
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Jan 2023 15:06:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AD39C25B4E
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Jan 2023 15:12:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234597AbjAXPGF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Jan 2023 10:06:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49158 "EHLO
+        id S233135AbjAXPM5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Jan 2023 10:12:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56980 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234450AbjAXPGE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2023 10:06:04 -0500
-Received: from mail-ua1-x929.google.com (mail-ua1-x929.google.com [IPv6:2607:f8b0:4864:20::929])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 035C9166F9;
-        Tue, 24 Jan 2023 07:06:03 -0800 (PST)
-Received: by mail-ua1-x929.google.com with SMTP id b18so3795841uan.11;
-        Tue, 24 Jan 2023 07:06:02 -0800 (PST)
+        with ESMTP id S233370AbjAXPM4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2023 10:12:56 -0500
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F681FF13
+        for <linux-pm@vger.kernel.org>; Tue, 24 Jan 2023 07:12:55 -0800 (PST)
+Received: by mail-wr1-x42e.google.com with SMTP id m7so543657wru.8
+        for <linux-pm@vger.kernel.org>; Tue, 24 Jan 2023 07:12:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Xk4NzLn775SqBcZ9Gdxs085F6GDZQ3PRAe8LMT1ju+U=;
-        b=opkDBuFFr0iqHbk1+WK1en1LCdiewYwnnrcBIpbNpI+rj6VK1o0plpD9kOQP03etTU
-         zuyjkjFpCIe91cMdry3vD8yjnFL7Q7qfYjlmiUmBiBC9DeSG/dt1Uh6/M0kbYRNI8Pzp
-         MJnBNieAp9FzNSlPbMH/pdqyHdsLUG2PjQGEJd+ElZG4b0arLzxTrONQ38e57dCtF3mx
-         OMAUKhtnDQKU6gUeiLdt2X60efjUHbQWOjGeC9zLwC5JlnqweNcXyYjiSENhDU9+tNo0
-         aQ/fuH31TNoIvjSCpIrwoMGruvUIUcp/GoABW26wxDubQo6Yje3WW+Jp8xMK4fXri2r6
-         pUDQ==
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=+qrAjBwfzacLHZcDLSem7cYqjezsfIssgjyVtcj5ml0=;
+        b=dMpVtOKBFVlhsczGxt2WUhFC8nr2lxvBUOJbbWkAdP98/iFiOOUnifLb7r5m5J/bbK
+         5jO2M1NNr/qWF9ZUBbjX+LHvC4ejcX8RHRE8fDSDD7T/Pki3FfVm8D91rzSWbh6/8QD/
+         05cJnoiVunPeFHcwuffIcEKneZgEjTnu2yfPm5jWHKz1SuXjkfglMxMCV4sZEPTXlr6B
+         EI8BMfP/chkf93MKOt0pxwioJv1WaaK/6RNN0bdb9RzkAf8t9tYYwvwboJd69gLrPGSC
+         9iKIj1VHRxJPQ5UDPlR3qt3YldkcCs8a6464GpbWMeiCKCZT/TrqLsesjvw+KXXSkkw1
+         P77g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Xk4NzLn775SqBcZ9Gdxs085F6GDZQ3PRAe8LMT1ju+U=;
-        b=WYpgkoOLLSM4sAiQZxQ0m5tn9/AcsmKD5ul72ohUdTKjWx64oFi9ucQPKEAIocweKy
-         PY+rB1Iwb5vxtpGr/Dh0xaOCmQfU1RFZCvBsW2zuG18U+ynvdJsejI/CR9GVVfkXWHKf
-         1gbg31DLoyjRnnq49OjjClX53lYubgfM24cjX7ZuHaxUOfo0RIsrwW42eI2Pc9uDWl1z
-         8HARmWua3TJ0lVkV1ApJ+4Ak46U07pZyft/Mbmq1GCGo/XxEBayGB04WjskMcvFLU1IP
-         Hdw1KAZaj4llYRi2vOlSrzRkONr8cQgMhKiEtkSWylrBdSX+UiIFw+551cCltDmDEVDv
-         TVhg==
-X-Gm-Message-State: AO0yUKVeQ89gSMHGcbRglSHsbcDihYBTAWglZXqh/B4kpUbkqmMGWCnp
-        4utSFtfZtnVeWe14qd9peqazG4/ZlFILhXKEQeQ=
-X-Google-Smtp-Source: AK7set9SxL8+BSSAQ+mGJmncufvAe48UOmzcxwxelwoZtvwfaIYGMbwfRem2FF7dyTqHGOxPxpCP4PWKX5CxGxWC588=
-X-Received: by 2002:ab0:71ca:0:b0:655:c9e7:b4d2 with SMTP id
- n10-20020ab071ca000000b00655c9e7b4d2mr46376uao.78.1674572762009; Tue, 24 Jan
- 2023 07:06:02 -0800 (PST)
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=+qrAjBwfzacLHZcDLSem7cYqjezsfIssgjyVtcj5ml0=;
+        b=0Vi9hotIMo+sdsW1iR86bdOp0HKa+hUa9NPuz8w/vjTYMjssUSaKRzD4Ediek9zT2b
+         PL8vYASqMtveHgPkP1xKRW0WYj3MkJWvOQaLZG5R7DIdn5+m1fsax2ZvHFRKBO3Hc8wD
+         9C9M2ctND/GAH5vv5shapL0lMzJr4al7+8Dn0W7YoTxJQIXmPqS2Z5dyxcvr4i2r71BU
+         30RGNo1wTaxZkRNEkcUqtmT0C2ZdloBhzcU0o/FuNpJgeyeMUmLgxkmD2EGplxfSzFaM
+         9+6dFsSFL/2qdhXaNj61ZKp3I6aZ50RmT2shz8jSa9rt5UPzXxy2c9YZ1yv0As6nJinN
+         Sa7A==
+X-Gm-Message-State: AFqh2kpU5knyoKDYBsxLKO4tiLmaEgs5KmV+8AZTHSnpc4z81Ch9FGC1
+        BQ+qaYVoBXNzq6TImqn+m30=
+X-Google-Smtp-Source: AMrXdXsaEzOS6d3eoCLPnagAxJLMQAwzpkCKtOXD+lnlUboG5gmG6LiDRa33EqCykwagRSF0nbiB6g==
+X-Received: by 2002:a5d:5087:0:b0:2bd:e007:c54f with SMTP id a7-20020a5d5087000000b002bde007c54fmr24520022wrt.57.1674573173888;
+        Tue, 24 Jan 2023 07:12:53 -0800 (PST)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id p7-20020adff207000000b002bdff778d87sm2120970wro.34.2023.01.24.07.12.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Jan 2023 07:12:53 -0800 (PST)
+Date:   Tue, 24 Jan 2023 18:12:49 +0300
+From:   Dan Carpenter <error27@gmail.com>
+To:     daniel.lezcano@linaro.org
+Cc:     linux-pm@vger.kernel.org
+Subject: [bug report] thermal/drivers/intel: Use generic trip points int340x
+Message-ID: <Y8/1ccQLn41w+Vek@kili>
 MIME-Version: 1.0
-References: <20221111231636.3748636-1-evgreen@chromium.org>
- <20221111151451.v5.3.I9ded8c8caad27403e9284dfc78ad6cbd845bc98d@changeid>
- <8ae56656a461d7b957b93778d716c6161070383a.camel@linux.ibm.com>
- <CAHSSk06sH6Ck11R7k8Pk_30KbzLzZVdBdj5MpsNfY-R_1kt_dA@mail.gmail.com>
- <CAFftDdqUOiysgrAC4wPUXRaEWz4j9V6na3u4bm29AfxE8TAyXw@mail.gmail.com>
- <CAHSSk04asd_ac8KLJYNRyR1Z+fD+iUb+UxjUu0U=HbT1-2R7Ag@mail.gmail.com>
- <08302ed1c056da86a71aa2e6ca19111075383e75.camel@linux.ibm.com>
- <Y8tcEtr8Kl3p4qtA@kernel.org> <CAFftDdoVraQVKLZGc6gMpZRyyK+LEO3cwjLhKM61qbp8ZSRYrg@mail.gmail.com>
- <5fb9193be57d22131feecf8b39dffbb03af3f60a.camel@linux.ibm.com>
-In-Reply-To: <5fb9193be57d22131feecf8b39dffbb03af3f60a.camel@linux.ibm.com>
-From:   William Roberts <bill.c.roberts@gmail.com>
-Date:   Tue, 24 Jan 2023 09:05:50 -0600
-Message-ID: <CAFftDdpC4BAqYHP=26T-bkntv-mdrwJD2MP6HBWzHvBSEXRDFw@mail.gmail.com>
-Subject: Re: [PATCH v5 03/11] tpm: Allow PCR 23 to be restricted to
- kernel-only use
-To:     jejb@linux.ibm.com
-Cc:     Jarkko Sakkinen <jarkko@kernel.org>,
-        Matthew Garrett <mgarrett@aurora.tech>,
-        Evan Green <evgreen@chromium.org>,
-        linux-kernel@vger.kernel.org, corbet@lwn.net,
-        linux-integrity@vger.kernel.org,
-        Eric Biggers <ebiggers@kernel.org>, gwendal@chromium.org,
-        dianders@chromium.org, apronin@chromium.org,
-        Pavel Machek <pavel@ucw.cz>, Ben Boeckel <me@benboeckel.net>,
-        rjw@rjwysocki.net, Kees Cook <keescook@chromium.org>,
-        dlunev@google.com, zohar@linux.ibm.com, linux-pm@vger.kernel.org,
-        Matthew Garrett <mjg59@google.com>,
-        Jason Gunthorpe <jgg@ziepe.ca>, Peter Huewe <peterhuewe@gmx.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 24, 2023 at 6:38 AM James Bottomley <jejb@linux.ibm.com> wrote:
->
-> On Mon, 2023-01-23 at 11:48 -0600, William Roberts wrote:
-> > On Fri, Jan 20, 2023 at 9:29 PM Jarkko Sakkinen <jarkko@kernel.org>
-> > wrote:
-> > >
-> > > On Sat, Jan 14, 2023 at 09:55:37AM -0500, James Bottomley wrote:
-> > > > On Tue, 2023-01-03 at 13:10 -0800, Matthew Garrett wrote:
-> > > > > On Tue, Jan 3, 2023 at 1:05 PM William Roberts
-> > > > > <bill.c.roberts@gmail.com> wrote:
-> > > > >
-> > > > > > What's the use case of using the creation data and ticket in
-> > > > > > this context? Who gets the creationData and the ticket?
-> > > > > > Could a user supplied outsideInfo work? IIRC I saw some
-> > > > > > patches flying around where the sessions will get encrypted
-> > > > > > and presumably correctly as well. This would allow the
-> > > > > > transfer of that outsideInfo, like the NV Index PCR value to
-> > > > > > be included and integrity protected by the session HMAC.
-> > > > >
-> > > > > The goal is to ensure that the key was generated by the kernel.
-> > > > > In the absence of the creation data, an attacker could generate
-> > > > > a hibernation image using their own key and trick the kernel
-> > > > > into resuming arbitrary code. We don't have any way to pass
-> > > > > secret data from the hibernate kernel to the resume kernel, so
-> > > > > I don't think there's any easy way to do it with outsideinfo.
-> > > >
-> > > > Can we go back again to why you can't use locality?  It's exactly
-> > > > designed for this since locality is part of creation data.
-> > > > Currently everything only uses locality 0, so it's impossible for
-> > > > anyone on Linux to produce a key with anything other than 0 in
-> > > > the creation data for locality.  However, the dynamic launch
-> > > > people are proposing that the Kernel should use Locality 2 for
-> > > > all its operations, which would allow you to distinguish a key
-> > > > created by the kernel from one created by a user by locality.
-> > > >
-> > > > I think the previous objection was that not all TPMs implement
-> > > > locality, but then not all laptops have TPMs either, so if you
-> > > > ever come across one which has a TPM but no locality, it's in a
-> > > > very similar security boat to one which has no TPM.
-> > >
-> > > Kernel could try to use locality 2 and use locality 0 as fallback.
-> >
-> > I don't think that would work for Matthew, they need something
-> > reliable to indicate key provenance.
->
-> No, I think it would be good enough: locality 0 means anyone (including
-> the kernel on a machine which doesn't function correctly) could have
-> created this key.  Locality 2 would mean only the kernel could have
-> created this key.
+Hello Daniel Lezcano,
 
-That's exactly what I was saying, for this feature to be functional
-2 localities need to be supported.
+The patch 0d568e144ead: "thermal/drivers/intel: Use generic trip
+points int340x" from Jan 13, 2023, leads to the following Smatch
+static checker warning:
 
->
-> By the time the kernel boots and before it loads the hibernation image
-> it will know the answer to the question "does my TPM support locality
-> 2", so it can use that in its security assessment: if the kernel
-> supports locality 2 and the key wasn't created in locality 2 then
-> assume an attack.  Obviously, if the kernel doesn't support locality 2
-> then the hibernation resume has to accept any old key, but that's the
-> same as the situation today.
->
+	drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c:137 int340x_thermal_zone_add()
+	error: uninitialized symbol 'trip_cnt'.
 
-Yep, we had this conversation offline on a thread, i'm in agreement here
-as well.
+drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+    127         if (get_temp)
+    128                 int34x_thermal_zone->ops->get_temp = get_temp;
+    129 
+    130         status = acpi_evaluate_integer(adev->handle, "PATC", NULL, &trip_cnt);
+    131         if (!ACPI_FAILURE(status)) {
+    132                 int34x_thermal_zone->aux_trip_nr = trip_cnt;
+    133                 trip_mask = BIT(trip_cnt) - 1;
+    134         }
 
-> > I was informed that all 5 localities should be supported starting
-> > with Gen 7 Kaby Lake launched in 2016. Don't know if this is
-> > still "too new".
->
-> It's probably good enough.  Current laptops which can't use locality 2
-> are in the same position as now, but newer ones can provide more
-> security guarantees.
->
-> There is, however, another wrinkle: can Kaby Lake be persuaded, though
-> bios settings perhaps, to shut off the non zero localities?
+"trip_cnt" not initialized on error path.
 
-I have no idea, and I don't have one handy, but I can ask around.
+    135 
+    136         int34x_thermal_zone->trips = kzalloc(sizeof(*int34x_thermal_zone->trips) *
+--> 137                                              (INT340X_THERMAL_MAX_TRIP_COUNT + trip_cnt),
+                                                                                       ^^^^^^^^
 
-> This would
-> allow for a downgrade attack where you shut off locality 2 then present
-> a forged locality 0 key and hibernation image; the kernel will think,
-> because it can't access locality 2, that it's in a reduced security
-> environment so the key might be OK.  We could fix this by requiring
-> Kaby Lake and beyond to have locality 2 and refusing to hibernate if it
-> can't be accessed and building "is this Kaby lake or beyond" into the
-> check for should I have locality 2, but this is getting complex and
-> error prone.
->
-> James
->
+    138                                               GFP_KERNEL);
+    139         if (!int34x_thermal_zone->trips) {
+    140                 ret = -ENOMEM;
+    141                 goto err_trips_alloc;
+    142         }
+    143 
+    144         trip_cnt = int340x_thermal_read_trips(int34x_thermal_zone);
+    145 
+    146         for (i = 0; i < trip_cnt; ++i)
+    147                 int34x_thermal_zone->trips[i].hysteresis = thermal_acpi_trip_gtsh(adev);
+
+regards,
+dan carpenter
