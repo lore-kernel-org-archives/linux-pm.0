@@ -2,81 +2,181 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99C1CC61DA2
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Jan 2023 14:36:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE66FC27C76
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Jan 2023 14:55:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235928AbjAYOgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Jan 2023 09:36:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38696 "EHLO
+        id S235854AbjAYOzp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Jan 2023 09:55:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55750 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235775AbjAYOgI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jan 2023 09:36:08 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 000E6599A3;
-        Wed, 25 Jan 2023 06:35:40 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        with ESMTP id S235335AbjAYOzp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jan 2023 09:55:45 -0500
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4DA74EC6;
+        Wed, 25 Jan 2023 06:55:39 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
+ id 7fbb2e3704d35487; Wed, 25 Jan 2023 15:55:38 +0100
+Received: from kreacher.localnet (unknown [213.134.163.149])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C28FC61515;
-        Wed, 25 Jan 2023 14:35:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ADA0EC433D2;
-        Wed, 25 Jan 2023 14:35:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1674657328;
-        bh=f6ppKayRUr7vsPgDqYxYeWCDPUB24nWR6oxyS6RxttI=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=iXRlm+7XLdqQ3M8qH34O78lITOWuy66dXjDG9k9FX7094bxbfiTNoqEck+RGgGUdW
-         Mu3UaoPgDoGhMuPYS1vFqTdkS82zEchYur6y7DkBRvU5GGWn7orW2gVyIj7oYnX0Li
-         a4g4b1uHK4Um9Ae1Sbyh4u9sDkYGMHuHE3BCky4A=
-Date:   Wed, 25 Jan 2023 15:35:25 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        David Airlie <airlied@gmail.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Marc Zyngier <maz@kernel.org>,
-        Jassi Brar <jassisinghbrar@gmail.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Lee Jones <lee@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Richard Weinberger <richard@nod.at>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-gpio@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-media@vger.kernel.org,
-        openbmc@lists.ozlabs.org, linux-mmc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org,
-        alsa-devel@alsa-project.org, linux-spi@vger.kernel.org,
-        linux-usb@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Add missing
- (unevaluated|additional)Properties on child node schemas
-Message-ID: <Y9E+LX0/wQ894SiU@kroah.com>
-References: <20230124230228.372305-1-robh@kernel.org>
+        by v370.home.net.pl (Postfix) with ESMTPSA id 994952201948;
+        Wed, 25 Jan 2023 15:55:37 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH v1 2/3] thermal: intel: int340x: Use zone lock for synchronization
+Date:   Wed, 25 Jan 2023 15:54:03 +0100
+Message-ID: <4798426.GXAFRqVoOG@kreacher>
+In-Reply-To: <5665899.DvuYhMxLoT@kreacher>
+References: <5665899.DvuYhMxLoT@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230124230228.372305-1-robh@kernel.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.163.149
+X-CLIENT-HOSTNAME: 213.134.163.149
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedruddvvddgjedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrdduieefrddugeelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeifedrudegledphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthht
+ ohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 24, 2023 at 05:02:28PM -0600, Rob Herring wrote:
-> Just as unevaluatedProperties or additionalProperties are required at
-> the top level of schemas, they should (and will) also be required for
-> child node schemas. That ensures only documented properties are
-> present.
-> 
-> Add unevaluatedProperties or additionalProperties as appropriate, and
-> then add any missing properties flagged by the addition.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Because the ->get_trip_temp() and ->get_trip_type() thermal zone
+callbacks are only invoked from __thermal_zone_get_trip() which is
+always called by the thermal core under the zone lock, it is sufficient
+for int340x_thermal_update_trips() to acquire the zone lock for mutual
+exclusion with those callbacks.
+
+Accordingly, modify int340x_thermal_update_trips() to use the zone lock
+instead of the internal trip_mutex and drop the latter which is not
+necessary any more.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c |   28 +++--------
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h |    1 
+ 2 files changed, 8 insertions(+), 21 deletions(-)
+
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
++++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+@@ -41,9 +41,7 @@ static int int340x_thermal_get_trip_temp
+ 					 int trip, int *temp)
+ {
+ 	struct int34x_thermal_zone *d = zone->devdata;
+-	int i, ret = 0;
+-
+-	mutex_lock(&d->trip_mutex);
++	int i;
+ 
+ 	if (trip < d->aux_trip_nr)
+ 		*temp = d->aux_trips[trip];
+@@ -62,12 +60,10 @@ static int int340x_thermal_get_trip_temp
+ 			}
+ 		}
+ 		if (i == INT340X_THERMAL_MAX_ACT_TRIP_COUNT)
+-			ret = -EINVAL;
++			return -EINVAL;
+ 	}
+ 
+-	mutex_unlock(&d->trip_mutex);
+-
+-	return ret;
++	return 0;
+ }
+ 
+ static int int340x_thermal_get_trip_type(struct thermal_zone_device *zone,
+@@ -75,9 +71,7 @@ static int int340x_thermal_get_trip_type
+ 					 enum thermal_trip_type *type)
+ {
+ 	struct int34x_thermal_zone *d = zone->devdata;
+-	int i, ret = 0;
+-
+-	mutex_lock(&d->trip_mutex);
++	int i;
+ 
+ 	if (trip < d->aux_trip_nr)
+ 		*type = THERMAL_TRIP_PASSIVE;
+@@ -96,12 +90,10 @@ static int int340x_thermal_get_trip_type
+ 			}
+ 		}
+ 		if (i == INT340X_THERMAL_MAX_ACT_TRIP_COUNT)
+-			ret = -EINVAL;
++			return -EINVAL;
+ 	}
+ 
+-	mutex_unlock(&d->trip_mutex);
+-
+-	return ret;
++	return 0;
+ }
+ 
+ static int int340x_thermal_set_trip_temp(struct thermal_zone_device *zone,
+@@ -222,8 +214,6 @@ struct int34x_thermal_zone *int340x_ther
+ 	if (!int34x_thermal_zone)
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	mutex_init(&int34x_thermal_zone->trip_mutex);
+-
+ 	int34x_thermal_zone->adev = adev;
+ 
+ 	int34x_thermal_zone->ops = kmemdup(&int340x_thermal_zone_ops,
+@@ -286,7 +276,6 @@ err_thermal_zone:
+ err_trip_alloc:
+ 	kfree(int34x_thermal_zone->ops);
+ err_ops_alloc:
+-	mutex_destroy(&int34x_thermal_zone->trip_mutex);
+ 	kfree(int34x_thermal_zone);
+ 	return ERR_PTR(ret);
+ }
+@@ -299,7 +288,6 @@ void int340x_thermal_zone_remove(struct
+ 	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
+ 	kfree(int34x_thermal_zone->aux_trips);
+ 	kfree(int34x_thermal_zone->ops);
+-	mutex_destroy(&int34x_thermal_zone->trip_mutex);
+ 	kfree(int34x_thermal_zone);
+ }
+ EXPORT_SYMBOL_GPL(int340x_thermal_zone_remove);
+@@ -309,7 +297,7 @@ void int340x_thermal_update_trips(struct
+ 	acpi_handle zone_handle = int34x_zone->adev->handle;
+ 	int i, err;
+ 
+-	mutex_lock(&int34x_zone->trip_mutex);
++	mutex_lock(&int34x_zone->zone->lock);
+ 
+ 	if (int34x_zone->crt_trip_id > 0) {
+ 		err = int340x_thermal_get_trip_config(zone_handle, "_CRT",
+@@ -344,7 +332,7 @@ void int340x_thermal_update_trips(struct
+ 			int34x_zone->act_trips[i].temp = THERMAL_TEMP_INVALID;
+ 	}
+ 
+-	mutex_unlock(&int34x_zone->trip_mutex);
++	mutex_unlock(&int34x_zone->zone->lock);
+ }
+ EXPORT_SYMBOL_GPL(int340x_thermal_update_trips);
+ 
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h
++++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.h
+@@ -32,7 +32,6 @@ struct int34x_thermal_zone {
+ 	struct thermal_zone_device_ops *ops;
+ 	void *priv_data;
+ 	struct acpi_lpat_conversion_table *lpat_table;
+-	struct mutex trip_mutex;
+ };
+ 
+ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *,
+
+
+
