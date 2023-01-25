@@ -2,182 +2,164 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85AA9C54E94
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Jan 2023 23:47:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30363C61D9D
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Jan 2023 01:05:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234274AbjAXXrT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Jan 2023 18:47:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46430 "EHLO
+        id S229528AbjAYBFK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Jan 2023 20:05:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60888 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229809AbjAXXrQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2023 18:47:16 -0500
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F09776B9;
-        Tue, 24 Jan 2023 15:47:14 -0800 (PST)
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30OMdYux009362;
-        Tue, 24 Jan 2023 23:47:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding : content-type; s=qcppdkim1;
- bh=Hxx4aX+g3p2ggEJ5LuDFh79LNNcb8nZD2I2P+rCtMlM=;
- b=CyaYpRetPJeacjtI2A2M38ndyv7Zizcxxcyco1KSu9wsfxw2mxdQuEOMyMJQGtCeW/g5
- 6ZkrInM4dIgsEPLrlNN86EEFbwwUdydS1RIUNS1FMiR64+cfZU0/uCxuOCCjIlN1tRS9
- ZvOMxGfYb0TUDpJJLuHTJMJ4PIvLKSKEpaszXG1UPS81LRe19rQ6Dtlj2hac4dGtfncj
- oJl47WKJKMz0zNjTTZpUDAFjVkABOMGUarpHv1tDTKgSE0hB9ukyG4q/glm9Zjd2t2q9
- pc5zOJ4VZDHznRo1zfbRdhS/TUBCXO8iMlTcLas9F55ae4Lp3V0LwoYGTPklNmb0HhLy YQ== 
-Received: from nasanppmta03.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3najqa8se0-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 24 Jan 2023 23:47:05 +0000
-Received: from nasanex01b.na.qualcomm.com (nasanex01b.na.qualcomm.com [10.46.141.250])
-        by NASANPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 30ONl5id008667
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 24 Jan 2023 23:47:05 GMT
-Received: from hu-collinsd-lv.qualcomm.com (10.49.16.6) by
- nasanex01b.na.qualcomm.com (10.46.141.250) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.36; Tue, 24 Jan 2023 15:47:04 -0800
-From:   David Collins <quic_collinsd@quicinc.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>
-CC:     David Collins <quic_collinsd@quicinc.com>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: [RESEND PATCH v3 1/3] thermal: qcom-spmi-temp-alarm: enable stage 2 shutdown when required
-Date:   Tue, 24 Jan 2023 15:46:04 -0800
-Message-ID: <57466b092dd16ed2a25e5a472dfd0b856a5cca00.1674602698.git.quic_collinsd@quicinc.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1674602698.git.quic_collinsd@quicinc.com>
-References: <cover.1674602698.git.quic_collinsd@quicinc.com>
+        with ESMTP id S231646AbjAYBFJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2023 20:05:09 -0500
+Received: from mail-io1-xd30.google.com (mail-io1-xd30.google.com [IPv6:2607:f8b0:4864:20::d30])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39BF172BA
+        for <linux-pm@vger.kernel.org>; Tue, 24 Jan 2023 17:04:47 -0800 (PST)
+Received: by mail-io1-xd30.google.com with SMTP id h184so7856236iof.9
+        for <linux-pm@vger.kernel.org>; Tue, 24 Jan 2023 17:04:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=3irqnNBdQ9Wio7OIw4BasqAgdBTVFcPBsPir/dXgS1Y=;
+        b=IOhwJoNGWrc6Ssnx/rAzo4+y8kZcnZglqC3ihgrdZFG6wunsTG50yW0kFXrmLkq6wY
+         rEVQpwBEsMe3uSn3IZIJ8+JLIO1TOlyKwoi0tuNASYXyrXKzVDAq/MEZPmAP2J22J6U7
+         9KS1ixqxzrKW8x6WZJ+ra5B8ySlxf7nmPJhbY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3irqnNBdQ9Wio7OIw4BasqAgdBTVFcPBsPir/dXgS1Y=;
+        b=CF0shO7kF92jM5pvisHunjnGF51qvcoMgjLfoY2CROqObuJoCE7yp2mR1C9tU3iidw
+         SuLMII9gnxO5pj/HBIo7XOZ/3+v2Ch/1MzOm1w+R8MNf0yo/H4Yo35FfzMvOi1Tv3HvI
+         i3nZHWlGwdQQDRMwrRqrtmYe2hDfrlqw8NkQn9tlvwuGv/qA88YDn3kO8pQo/NSh6DKY
+         FWb/69Ofy414tdW+VPM9hv/ahINQ9IthfbOkshRj/q8XQ7Hqc3lmzp84ds/krjfELAWT
+         ozlBz+3D8L1besKall2SC+GjIl/7GEo4BAu1KzkrfNyOPoo2pmc4qlO+88XsrdkYGmnZ
+         rAiw==
+X-Gm-Message-State: AFqh2kpw2aoTu0nNDEG2LlDgy54zwb9YrjhrUhtKMtRRYDtKX1EA0uXD
+        xRrguJxLUm54rm1jFY3H6fB1hQ==
+X-Google-Smtp-Source: AMrXdXsRTdO6kwJYFVkU1zh46cZoVczKlZniDBt22SEYCqwL/5QpIXZ8R4L6sjO0V/W4PTg85CEzmw==
+X-Received: by 2002:a5d:950a:0:b0:704:cf41:8a24 with SMTP id d10-20020a5d950a000000b00704cf418a24mr19093320iom.15.1674608686462;
+        Tue, 24 Jan 2023 17:04:46 -0800 (PST)
+Received: from localhost (30.23.70.34.bc.googleusercontent.com. [34.70.23.30])
+        by smtp.gmail.com with UTF8SMTPSA id g11-20020a05660203cb00b006bc039e3224sm1021116iov.17.2023.01.24.17.04.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 24 Jan 2023 17:04:46 -0800 (PST)
+Date:   Wed, 25 Jan 2023 01:04:45 +0000
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Georgi Djakov <djakov@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Rajendra Nayak <quic_rjendra@quicinc.com>, agross@kernel.org,
+        andersson@kernel.org, konrad.dybcio@somainline.org,
+        robh+dt@kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, Douglas Anderson <dianders@chromium.org>,
+        Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH v2 4/4] arm64: dts: qcom: sc7280: Add cpu and llcc BWMON
+ (=> interconnect issue)
+Message-ID: <Y9CALT+ec6fxXlWZ@google.com>
+References: <20220902043511.17130-1-quic_rjendra@quicinc.com>
+ <20220902043511.17130-5-quic_rjendra@quicinc.com>
+ <Y8Ggh6RObbB1cxSS@google.com>
+ <dc5487d8-d31e-28c6-07e8-8d1ff54a4ba4@linaro.org>
+ <Y8baZWlKB9vNGYJw@google.com>
+ <754f8193-09ec-8bbf-e0d4-898525dc242f@linaro.org>
+ <Y8bfIv6GJU1TD4Dh@google.com>
+ <Y8sIf+41EGJuPQrP@google.com>
+ <2d064077-d4ec-31c4-19a9-4cc9aec8d85b@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.49.16.6]
-X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: IjM-NRbRxbcgvt4EEmKBeob68dAw8v8n
-X-Proofpoint-ORIG-GUID: IjM-NRbRxbcgvt4EEmKBeob68dAw8v8n
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
- definitions=2023-01-24_17,2023-01-24_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
- malwarescore=0 adultscore=0 spamscore=0 mlxscore=0 clxscore=1011
- impostorscore=0 priorityscore=1501 mlxlogscore=999 suspectscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2301240219
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2d064077-d4ec-31c4-19a9-4cc9aec8d85b@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Certain TEMP_ALARM GEN2 PMIC peripherals need over-temperature
-stage 2 automatic PMIC partial shutdown to be enabled in order to
-avoid repeated faults in the event of reaching over-temperature
-stage 3.  Modify the stage 2 shutdown control logic to ensure that
-stage 2 shutdown is enabled on all affected PMICs.  Read the
-digital major and minor revision registers to identify these
-PMICs.
+Hi Georgi,
 
-Signed-off-by: David Collins <quic_collinsd@quicinc.com>
----
- drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 32 +++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
+Thanks for your reply!
 
-diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-index ad84978109e6..e2e52703ac4d 100644
---- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Copyright (c) 2011-2015, 2017, 2020, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2022, Qualcomm Innovation Center, Inc. All rights reserved.
-  */
- 
- #include <linux/bitops.h>
-@@ -18,6 +19,7 @@
- #include "../thermal_core.h"
- #include "../thermal_hwmon.h"
- 
-+#define QPNP_TM_REG_DIG_MINOR		0x00
- #define QPNP_TM_REG_DIG_MAJOR		0x01
- #define QPNP_TM_REG_TYPE		0x04
- #define QPNP_TM_REG_SUBTYPE		0x05
-@@ -73,6 +75,7 @@ struct qpnp_tm_chip {
- 	struct device			*dev;
- 	struct thermal_zone_device	*tz_dev;
- 	unsigned int			subtype;
-+	unsigned int			dig_revision;
- 	long				temp;
- 	unsigned int			thresh;
- 	unsigned int			stage;
-@@ -224,6 +227,7 @@ static int qpnp_tm_update_critical_trip_temp(struct qpnp_tm_chip *chip,
- 	long stage2_threshold_min = (*chip->temp_map)[THRESH_MIN][1];
- 	long stage2_threshold_max = (*chip->temp_map)[THRESH_MAX][1];
- 	bool disable_s2_shutdown = false;
-+	bool require_s2_shutdown = false;
- 	u8 reg;
- 
- 	WARN_ON(!mutex_is_locked(&chip->lock));
-@@ -256,9 +260,25 @@ static int qpnp_tm_update_critical_trip_temp(struct qpnp_tm_chip *chip,
- 				 temp, stage2_threshold_max, stage2_threshold_max);
- 	}
- 
-+	if (chip->subtype == QPNP_TM_SUBTYPE_GEN2) {
-+		/*
-+		 * Check if stage 2 automatic partial shutdown must remain
-+		 * enabled to avoid potential repeated faults upon reaching
-+		 * over-temperature stage 3.
-+		 */
-+		switch (chip->dig_revision) {
-+		case 0x0001:
-+		case 0x0002:
-+		case 0x0100:
-+		case 0x0101:
-+			require_s2_shutdown = true;
-+			break;
-+		}
-+	}
-+
- skip:
- 	reg |= chip->thresh;
--	if (disable_s2_shutdown)
-+	if (disable_s2_shutdown && !require_s2_shutdown)
- 		reg |= SHUTDOWN_CTRL1_OVERRIDE_S2;
- 
- 	return qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
-@@ -373,7 +393,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- {
- 	struct qpnp_tm_chip *chip;
- 	struct device_node *node;
--	u8 type, subtype, dig_major;
-+	u8 type, subtype, dig_major, dig_minor;
- 	u32 res;
- 	int ret, irq;
- 
-@@ -429,6 +449,14 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_DIG_MINOR, &dig_minor);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "could not read dig_minor\n");
-+		return ret;
-+	}
-+
-+	chip->dig_revision = (dig_major << 8) | dig_minor;
-+
- 	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
- 				     && subtype != QPNP_TM_SUBTYPE_GEN2)) {
- 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
--- 
-2.25.1
+On Tue, Jan 24, 2023 at 02:02:36AM +0200, Georgi Djakov wrote:
+> Hi Matthias,
+> 
+> On 20.01.23 23:32, Matthias Kaehlcke wrote:
+> > On Tue, Jan 17, 2023 at 05:47:14PM +0000, Matthias Kaehlcke wrote:
+> > > On Tue, Jan 17, 2023 at 06:33:41PM +0100, Krzysztof Kozlowski wrote:
+> > > > On 17/01/2023 18:27, Matthias Kaehlcke wrote:
+> > > > > 
+> > > > > > > which would set the initially bandwidths to 0 and determine the actually
+> > > > > > > needed bandwidth. But since the driver isn't probed the initial
+> > > > > > > bandwidths stay at INT_MAX.
+> > > > > > > 
+> > > > > > > This isn't actually an issue with this patch, but how the interconnect
+> > > > > > > framework deals with devices that are registered on the bus, but aren't
+> > > > > > > probed (yet). Not sure how this would be best fixed. Georgi, do you have
+> > > > > > > any ideas?
+> > > > > > 
+> > > > > > Why the device is not probed (yet)? If it is registered, it will come
+> > > > > > soon during boot up.
+> > > > > 
+> > > > > Because CONFIG_QCOM_ICC_BWMON is not enabled for the board in question (see
+> > > > > above). It could be enabled as a short term mitigtion, however we shouldn't
+> > > > > require drivers to be enabled just because the DT has a corresponding node.
+> > > > 
+> > > > It's the same case as with all other interconnect leafs/consumers. The
+> > > > same behavior if you do not have it enabled, right? If not, I wonder
+> > > > what is here different?
+> > > 
+> > > Right, this is a general issue. The problem on sc7280 (and probably other
+> > > Qualcomm SoCs) is that the interconnect link at full throttle prevents the
+> > > SoC from entering its low power mode (AOSS sleep) during system suspend.
+> > > On many boards this might go unnoticed, on herobrine the condition is
+> > > detected by the embedded controller (EC) and considered a failed suspend,
+> > > which results in waking up the system.
+> > 
+> > I did some hackery to convince the EC to enter/stay in S3, despite AOSS
+> > no entering sleep mode. That allowed me to take power measurements. With
+> > the kernel suspended but the AOSS remaining on the power consumption of
+> > the Qcard is more than 7x higher than when the AOSS enters sleep mode!
+> > On a Qcard system I can't break the power consumption further down, but
+> > I think the extra power consumption must be coming mostly from the SoC
+> > itself, since the kernel and the EC are essentially in the same state as
+> > during a suspend with AOSS in sleep mode.
+> > 
+> > The enormous increase in power consumption suggests that this is a serious
+> > issue for non-Chrome OS platforms as well. On herobrine and trogdor boards
+> > we have the 'luxury' of being able to detect that AOSS stays awake (though
+> > it comes with the caveat that the system can't suspend when that happens).
+> > On other boards this goes likely unnoticed until someone measures suspend
+> > power or notices a significant regression in S3 battery life.
+> > 
+> > It seems something needs to be done at the interconnect core to fix this.
+> > Is it really necessary to init all link to max bandwidth? Maybe it is
+> > needed for certain links, but not all of them? What is the background
+> > here?
+> 
+> The basic idea here is to do some initial configuration of the system and
+> enable the interconnect buses until all consumers have probed. Otherwise
+> it might disable the bus to some hardware, whose driver (module) is not
+> loaded yet (and didn't had a chance to express it's bandwidth needs).
 
+I imagine this is an issue for a subset of consumers that are already using
+the interconnects before they are probed (like an early-console UART). For
+most consumers (like SPI, USB, eMMC, GPU, ...) I'd expect that it should be
+fine if the interconnect is disabled until the driver is probed and
+specifies the bandwidth requirements.
+
+> The max bandwidth is the default, but we can implement the get_bw() for a
+> given platform to return the current (or initial) value. It would be best
+> if we could read this value from the hardware, but as this is not possible
+> on this board, maybe we can implement get_bw() to return something else.
+
+If my above assumption is correct maybe it would be an option to return
+a bandwidth of zero, except for the select links that might be used before
+the driver is probed.
+
+> I guess that you see some int_max values in interconnect_summary for the
+> ebi and llcc nodes that stay forever?
+
+Exactly:
+
+grep -e llcc_mc -e ebi /sys/kernel/debug/interconnect/interconnect_summary
+llcc_mc                                      2148483647   2147483647
+ebi                                          2148483647   2147483647
