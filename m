@@ -2,99 +2,152 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 988D6C05027
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 11:19:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E81EC54E94
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 11:42:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237017AbjAZLTA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Jan 2023 06:19:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37176 "EHLO
+        id S236303AbjAZLmR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Jan 2023 06:42:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234220AbjAZLS5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 06:18:57 -0500
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A65BB4997C
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jan 2023 03:18:51 -0800 (PST)
-Received: by mail-wm1-x32b.google.com with SMTP id bg13-20020a05600c3c8d00b003d9712b29d2so3043513wmb.2
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jan 2023 03:18:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=p3zgwj/N2m78fr4mQomhV+/0L8iV0s8h+XqoJd6wA6U=;
-        b=LXLuoY62A52JG2d1O1qQQxvByARad/iGJzYq2HxpgW8+sUarqND5Kz5zV4gyPoNL1i
-         yq9Mr6mWWPDplbks3qmsHiQPllaKr+R+859bmxlHrnqwGHCvYKV61T8L6KD2TIDB9qkO
-         b4H8Q+jVKPt6Sl9NySyFGKGgb5eAyLUztAkIVNkWxBmVq+Ri6qHYIJ73RMW1tenreXwA
-         Kdp365+K6AFazBHK8Igp2A6JTTEzf9jFdzEZayIwn+ZrZqiCG9SZRbu+wexvfOZcV0aN
-         qpARl0E3/2XT1NKblMYE3xkN8O4r3xMJ8rVtguA2OUUd1SNFcVeObKX34hUczu1mBkzh
-         5zpQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=p3zgwj/N2m78fr4mQomhV+/0L8iV0s8h+XqoJd6wA6U=;
-        b=eisCYYePmJ5tB2HPXRgEaUGqcnx6k0ucA0T9wKqgjtXfzHAk8q7FHnrV6RaU03LO/U
-         gzyX++9QLjLX6fF73ROD0ZxOCZE6wUb47dab167Ra6k7WSMlOCLQpN5zjVn0nbQtVf62
-         iwmvQ6nmIOo9yVqQibdsQUfAECvwl4JcYl8qBoIEO0jGE2KBRJKpBe9JihS3wES8a88P
-         ewndybYopOx/+ijeZapovgqBsrRipauV1xnZPiSEnmYPANGH6t+KLf6ruqtVg+ldrN5A
-         WX25cxo2YIgVtC1deRdBV1/fDu6RF8UQu17irkIke5I40lh9OQ8fpMnsuOle/NY7mQ2+
-         BUbg==
-X-Gm-Message-State: AO0yUKWxad1OgPgUe3JhnePNLYqfsghDZ774m+DIpoa5XdwXgOGPP990
-        I8eqp1gg2Dx5O+DR93LtpgJfZw==
-X-Google-Smtp-Source: AK7set9lB/2kTVzhBnU62TmJMHNYHvsyX3yIGi3D04EymHpXcSdwKyllD5e8qRMiDwpXFiut+Ar65A==
-X-Received: by 2002:a05:600c:310c:b0:3dc:18de:b20d with SMTP id g12-20020a05600c310c00b003dc18deb20dmr7272177wmo.33.1674731929685;
-        Thu, 26 Jan 2023 03:18:49 -0800 (PST)
-Received: from [192.168.1.109] ([178.197.216.144])
-        by smtp.gmail.com with ESMTPSA id i21-20020a05600c071500b003db1ca20170sm1136755wmn.37.2023.01.26.03.18.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 26 Jan 2023 03:18:49 -0800 (PST)
-Message-ID: <407f1860-faaf-be6e-cde2-17272e65ee87@linaro.org>
-Date:   Thu, 26 Jan 2023 12:18:47 +0100
+        with ESMTP id S237281AbjAZLmQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 06:42:16 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8B99963841;
+        Thu, 26 Jan 2023 03:42:15 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 21EB54B3;
+        Thu, 26 Jan 2023 03:42:57 -0800 (PST)
+Received: from [192.168.178.6] (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 425B73F71E;
+        Thu, 26 Jan 2023 03:42:13 -0800 (PST)
+Message-ID: <d5012cdf-ad5b-adf8-11f6-8ac2c3a89f0b@arm.com>
+Date:   Thu, 26 Jan 2023 12:42:01 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.0
-Subject: Re: [PATCH v3 2/2] dt-bindings: opp: opp-v2-kryo-cpu: enlarge
- opp-supported-hw maximum
+ Thunderbird/102.4.2
+Subject: Re: [PATCH v4] sched/fair: unlink misfit task from cpu overutilized
 Content-Language: en-US
-To:     Christian Marangi <ansuelsmth@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Yassine Oudjana <y.oudjana@protonmail.com>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230123193422.15972-1-ansuelsmth@gmail.com>
- <20230123193422.15972-2-ansuelsmth@gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230123193422.15972-2-ansuelsmth@gmail.com>
+To:     Vincent Guittot <vincent.guittot@linaro.org>, mingo@kernel.org,
+        peterz@infradead.org, qyousef@layalina.io, rafael@kernel.org,
+        viresh.kumar@linaro.org, vschneid@redhat.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     lukasz.luba@arm.com, wvw@google.com, xuewen.yan94@gmail.com,
+        han.lin@mediatek.com, Jonathan.JMChen@mediatek.com
+References: <20230119174244.2059628-1-vincent.guittot@linaro.org>
+From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
+In-Reply-To: <20230119174244.2059628-1-vincent.guittot@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 23/01/2023 20:34, Christian Marangi wrote:
-> Enlarge opp-supported-hw maximum value. In recent SoC we started
-> matching more bit and we currently match mask of 112. The old maximum of
-> 7 was good for old SoC that didn't had complex id, but now this is
-> limiting and we need to enlarge it to support more variants.
+On 19/01/2023 17:42, Vincent Guittot wrote:
+> By taking into account uclamp_min, the 1:1 relation between task misfit
+> and cpu overutilized is no more true as a task with a small util_avg may
+> not fit a high capacity cpu because of uclamp_min constraint.
 > 
-> Document all the various mask that can be used and limit them to only
-> reasonable values instead of using a generic maximum limit.
+> Add a new state in util_fits_cpu() to reflect the case that task would fit
+> a CPU except for the uclamp_min hint which is a performance requirement.
 > 
-> Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+> Use -1 to reflect that a CPU doesn't fit only because of uclamp_min so we
+> can use this new value to take additional action to select the best CPU
+> that doesn't match uclamp_min hint.
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 > ---
+> 
+> Change since v3:
+> - Keep current condition for uclamp_max_fits in util_fits_cpu()
+> - Update some comments
 
+We had already this discussion whether this patch can also remove
+Capacity Inversion (CapInv).
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+After studying the code again, I'm not so sure anymore.
 
-Best regards,
-Krzysztof
+This patch:
+
+(1) adds a dedicated return value (-1) to util_fits_cpu() when:
+
+`util fits 80% capacity_of() && util < uclamp_min && uclamp_min >
+capacity_orig_thermal (region c)`
+
+(2) Enhancements to the CPU selection in sic() and feec() to cater for
+this new return value.
+
+IMHO this doesn't make the intention of CapInv in util_fits_cpu()
+obsolete, which is using:
+
+in CapInv:
+
+  capacity_orig         = capacity_orig_of() - thermal_load_avg
+  capacity_orig_thermal = capacity_orig_of() - thermal_load_avg
+
+not in CapInv:
+
+  capacity_orig         = capacity_orig_of()
+  capacity_orig_thermal = capacity_orig_of() - th_pressure
+
+Maybe I still miss a bit of the story?
+
+v3 hints to removing the bits in the next version:
+
+https://lkml.kernel.org/r/20230115001906.v7uq4ddodrbvye7d@airbuntu
+
+>  kernel/sched/fair.c | 105 ++++++++++++++++++++++++++++++++++----------
+>  1 file changed, 82 insertions(+), 23 deletions(-)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index d4db72f8f84e..54e14da53274 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4561,8 +4561,8 @@ static inline int util_fits_cpu(unsigned long util,
+>  	 * handle the case uclamp_min > uclamp_max.
+>  	 */
+>  	uclamp_min = min(uclamp_min, uclamp_max);
+> -	if (util < uclamp_min && capacity_orig != SCHED_CAPACITY_SCALE)
+> -		fits = fits && (uclamp_min <= capacity_orig_thermal);
+> +	if (fits && (util < uclamp_min) && (uclamp_min > capacity_orig_thermal))
+> +		return -1;
+
+Or does the definition 'return -1 if util fits but uclamp doesn't' make
+the distinction between capacity_orig and capacity_orig_thermal obsolete
+and so CapInv?
+
+[...]
+
+>  static inline void update_misfit_status(struct task_struct *p, struct rq *rq)
+> @@ -6138,6 +6142,7 @@ static inline bool cpu_overutilized(int cpu)
+>  	unsigned long rq_util_min = uclamp_rq_get(cpu_rq(cpu), UCLAMP_MIN);
+>  	unsigned long rq_util_max = uclamp_rq_get(cpu_rq(cpu), UCLAMP_MAX);
+>  
+> +	/* Return true only if the utilization doesn't fits CPU's capacity */
+
+small typo: s/doesn't fits/doesn't fit
+
+[...]
+
+> @@ -6946,12 +6952,28 @@ select_idle_capacity(struct task_struct *p, struct sched_domain *sd, int target)
+>  
+>  		if (!available_idle_cpu(cpu) && !sched_idle_cpu(cpu))
+>  			continue;
+> -		if (util_fits_cpu(task_util, util_min, util_max, cpu))
+> +
+> +		fits = util_fits_cpu(task_util, util_min, util_max, cpu);
+> +
+> +		/* This CPU fits with all requirements */
+> +		if (fits > 0)
+>  			return cpu;
+> +		/*
+> +		 * Only the min performance hint (i.e. uclamp_min) doesn't fit.
+> +		 * Look for the CPU with best capacity.
+> +		 */
+> +		else if (fits < 0)
+> +			cpu_cap = capacity_orig_of(cpu) - thermal_load_avg(cpu_rq(cpu));
+
+Still don't grasp why we use thermal_load_avg() here? Looks to me that
+this would only match the CapInv case in util_fits_cpu().
+
+[...]
 
