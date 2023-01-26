@@ -2,42 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FAE2C54EED
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 15:15:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EB4CC636CB
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 15:15:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232097AbjAZPPl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Jan 2023 10:15:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49322 "EHLO
+        id S232128AbjAZPPm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Jan 2023 10:15:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231994AbjAZPPj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 10:15:39 -0500
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46B38A270;
-        Thu, 26 Jan 2023 07:15:35 -0800 (PST)
+        with ESMTP id S232052AbjAZPPk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 10:15:40 -0500
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE48236680;
+        Thu, 26 Jan 2023 07:15:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=pyTrMe3jhurI/BaMPEZBtDxCzUP65k9hfIEEnQDx/dc=; b=SCwG+pI8dtXiXs5fHX2T03qFh2
-        FxmbB75QLDwxETIRu7SzBr44AIZPxkRheMoOz2leFrDzr7pCwCg96bSIE3YZ7ixOkCI8zeqUnWkeq
-        yhMxx9kJ12vTPTX4yd9cZWPhKEpliYGXUXd6AlvngD7wny+Xocx/BBzCKGB02L8jbUewkukPrldTL
-        g0wdXPHGwND+vSctF5py0h78sDcQ35z39TocjSH26Z2JWyeJTe/zQGOWfraVT7GlVvrLoKlJbnwgL
-        m4iNuVXSYpt6iRhgxyWU6g7BLDonTQNB8dyyViN6YqjQXpJ44ZGL9o+Q8XtceVirkr/I2Ed3hkxap
-        O+p80HNA==;
+        bh=ITY5vhqoQzxGNcQfzB0qFe7a/JC0Zil+qvNvTmPdd5g=; b=FDXi87ouOhD/N+HR5oXUf1InkH
+        ZbQ7wu2PWcmxsDeqCLwyvbFWzMDt9JKoTSCgnbXmSdW4QlnLZgFcQaeiIagk4uk6Ht2D+3gbaFyMl
+        YZVaUh37TBAK1qdqLXmF1z6q4dRQC29a2cA+IdwOgm3uqWDZHpYWME17mUClgR8ZxcUQB1q5yiCFu
+        ppr1IlYisLoIGLSB/+HZO8P/cYBxVYTR9k2a2oxSiOz06Vzs+/+SF3+skSs50PwuDyWs+7Jdr7Wth
+        RrcN4a9apT7N18+1edgpGiySKxpweOYohIL+3wwDOZMElUP3GUP4GMYiEiLOH9uAOBg8yFfR9945Q
+        I/4qKDng==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pL3xn-006qUE-F4; Thu, 26 Jan 2023 15:14:56 +0000
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1pL3xH-002U1f-2Z;
+        Thu, 26 Jan 2023 15:14:23 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 298AA300657;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3A142301BEC;
         Thu, 26 Jan 2023 16:14:53 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 0AE0D2084C4A9; Thu, 26 Jan 2023 16:14:53 +0100 (CET)
-Message-ID: <20230126151323.349423061@infradead.org>
+        id 148172084C4AE; Thu, 26 Jan 2023 16:14:53 +0100 (CET)
+Message-ID: <20230126151323.526275416@infradead.org>
 User-Agent: quilt/0.66
-Date:   Thu, 26 Jan 2023 16:08:30 +0100
+Date:   Thu, 26 Jan 2023 16:08:33 +0100
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     mingo@kernel.org
 Cc:     will@kernel.org, peterz@infradead.org, boqun.feng@gmail.com,
@@ -55,7 +56,7 @@ Cc:     will@kernel.org, peterz@infradead.org, boqun.feng@gmail.com,
         vschneid@redhat.com, linux-kernel@vger.kernel.org,
         kvm@vger.kernel.org, virtualization@lists.linux-foundation.org,
         linux-pm@vger.kernel.org, linux-trace-kernel@vger.kernel.org
-Subject: [PATCH v2 1/9] drivers: firmware: psci: Dont instrument suspend code
+Subject: [PATCH v2 4/9] tracing, preempt: Squash _rcuidle tracing
 References: <20230126150829.087606759@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -63,111 +64,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Mark Rutland <mark.rutland@arm.com>
+Extend commit 9aedeaed6fc6 ("tracing, hardirq: No moar _rcuidle()
+tracing") to also cover trace_preempt_{on,off}() which were
+mysteriously untouched.
 
-The PSCI suspend code is currently instrumentable, which is not safe as
-instrumentation (e.g. ftrace) may try to make use of RCU during idle
-periods when RCU is not watching.
-
-To fix this we need to ensure that psci_suspend_finisher() and anything
-it calls are not instrumented. We can do this fairly simply by marking
-psci_suspend_finisher() and the psci*_cpu_suspend() functions as
-noinstr, and the underlying helper functions as __always_inline.
-
-When CONFIG_DEBUG_VIRTUAL=y, __pa_symbol() can expand to an out-of-line
-instrumented function, so we must use __pa_symbol_nodebug() within
-psci_suspend_finisher().
-
-The raw SMCCC invocation functions are written in assembly, and are not
-subject to compiler instrumentation.
-
-Signed-off-by: Mark Rutland <mark.rutland@arm.com>
+Fixes: 9aedeaed6fc6 ("tracing, hardirq: No moar _rcuidle() tracing")
+Reported-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Tested-by: Mark Rutland <mark.rutland@arm.com>
+Link: https://lkml.kernel.org/r/Y9D5AfnOukWNOZ5q@hirez.programming.kicks-ass.net
 ---
- drivers/firmware/psci/psci.c |   31 +++++++++++++++++++------------
- 1 file changed, 19 insertions(+), 12 deletions(-)
-
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -108,9 +108,10 @@ bool psci_power_state_is_valid(u32 state
- 	return !(state & ~valid_mask);
+diff --git a/kernel/trace/trace_preemptirq.c b/kernel/trace/trace_preemptirq.c
+index f992444a0b1f..ea96b41c8838 100644
+--- a/kernel/trace/trace_preemptirq.c
++++ b/kernel/trace/trace_preemptirq.c
+@@ -100,15 +100,13 @@ NOKPROBE_SYMBOL(trace_hardirqs_off);
+ 
+ void trace_preempt_on(unsigned long a0, unsigned long a1)
+ {
+-	if (!in_nmi())
+-		trace_preempt_enable_rcuidle(a0, a1);
++	trace(preempt_enable)(a0, a1);
+ 	tracer_preempt_on(a0, a1);
  }
  
--static unsigned long __invoke_psci_fn_hvc(unsigned long function_id,
--			unsigned long arg0, unsigned long arg1,
--			unsigned long arg2)
-+static __always_inline unsigned long
-+__invoke_psci_fn_hvc(unsigned long function_id,
-+		     unsigned long arg0, unsigned long arg1,
-+		     unsigned long arg2)
+ void trace_preempt_off(unsigned long a0, unsigned long a1)
  {
- 	struct arm_smccc_res res;
- 
-@@ -118,9 +119,10 @@ static unsigned long __invoke_psci_fn_hv
- 	return res.a0;
+-	if (!in_nmi())
+-		trace_preempt_disable_rcuidle(a0, a1);
++	trace(preempt_disable)(a0, a1);
+ 	tracer_preempt_off(a0, a1);
  }
- 
--static unsigned long __invoke_psci_fn_smc(unsigned long function_id,
--			unsigned long arg0, unsigned long arg1,
--			unsigned long arg2)
-+static __always_inline unsigned long
-+__invoke_psci_fn_smc(unsigned long function_id,
-+		     unsigned long arg0, unsigned long arg1,
-+		     unsigned long arg2)
- {
- 	struct arm_smccc_res res;
- 
-@@ -128,7 +130,7 @@ static unsigned long __invoke_psci_fn_sm
- 	return res.a0;
- }
- 
--static int psci_to_linux_errno(int errno)
-+static __always_inline int psci_to_linux_errno(int errno)
- {
- 	switch (errno) {
- 	case PSCI_RET_SUCCESS:
-@@ -169,7 +171,8 @@ int psci_set_osi_mode(bool enable)
- 	return psci_to_linux_errno(err);
- }
- 
--static int __psci_cpu_suspend(u32 fn, u32 state, unsigned long entry_point)
-+static __always_inline int
-+__psci_cpu_suspend(u32 fn, u32 state, unsigned long entry_point)
- {
- 	int err;
- 
-@@ -177,13 +180,15 @@ static int __psci_cpu_suspend(u32 fn, u3
- 	return psci_to_linux_errno(err);
- }
- 
--static int psci_0_1_cpu_suspend(u32 state, unsigned long entry_point)
-+static __always_inline int
-+psci_0_1_cpu_suspend(u32 state, unsigned long entry_point)
- {
- 	return __psci_cpu_suspend(psci_0_1_function_ids.cpu_suspend,
- 				  state, entry_point);
- }
- 
--static int psci_0_2_cpu_suspend(u32 state, unsigned long entry_point)
-+static __always_inline int
-+psci_0_2_cpu_suspend(u32 state, unsigned long entry_point)
- {
- 	return __psci_cpu_suspend(PSCI_FN_NATIVE(0_2, CPU_SUSPEND),
- 				  state, entry_point);
-@@ -447,10 +452,12 @@ late_initcall(psci_debugfs_init)
  #endif
- 
- #ifdef CONFIG_CPU_IDLE
--static int psci_suspend_finisher(unsigned long state)
-+static noinstr int psci_suspend_finisher(unsigned long state)
- {
- 	u32 power_state = state;
--	phys_addr_t pa_cpu_resume = __pa_symbol(cpu_resume);
-+	phys_addr_t pa_cpu_resume;
-+
-+	pa_cpu_resume = __pa_symbol_nodebug((unsigned long)cpu_resume);
- 
- 	return psci_ops.cpu_suspend(power_state, pa_cpu_resume);
- }
 
 
