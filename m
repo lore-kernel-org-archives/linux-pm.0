@@ -2,116 +2,161 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2957BC61D97
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 23:42:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D1F2C61DA7
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 23:43:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233545AbjAZXl6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Jan 2023 18:41:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52504 "EHLO
+        id S233580AbjAZXnj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Jan 2023 18:43:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233538AbjAZXl6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 18:41:58 -0500
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE12D474DF
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jan 2023 15:41:27 -0800 (PST)
-Received: by mail-wr1-x436.google.com with SMTP id q10so3474408wrm.4
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jan 2023 15:41:27 -0800 (PST)
+        with ESMTP id S233598AbjAZXnc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 18:43:32 -0500
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A81849011;
+        Thu, 26 Jan 2023 15:43:21 -0800 (PST)
+Received: by mail-wm1-x335.google.com with SMTP id f25-20020a1c6a19000000b003da221fbf48so2297193wmc.1;
+        Thu, 26 Jan 2023 15:43:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=PnAyme+18j6KOPf6iRNbRr3tHa520TeEGKv2pHUyxsg=;
-        b=EVaGZ2eSnG+0XVwaIjbh+ZI03+/vFgVhoQhIG3OghMLgQ5R+zljPkZIZTclKyOWu/l
-         f+GYYrKqS3qHX9MaWjVNZ0zEhtWAWq0fv4LqpdcpR4mSEnb8Ns36h+DVRh6gOVfOcxsP
-         rMMeGeL/krHqLBVhNJ7QG0Cr8f7+K/6bh3hRzkHXjW0HCiLXpohwfSbYPVSrASdbTho/
-         /WmsfmMnkx84ZELcOG2C0kxnY/bkqatTcX6efPE0z9kpIeM5xdQY8n0nV3Ptgt2kF+49
-         hEP0vR8XEupELCm0FWZXNlftC+3k+76Y5KGkuOopclEZiGXqZnp2pa9WbcoVOfcIoCA6
-         5iog==
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:subject:cc
+         :to:from:date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=EONYoIxZjQ2TsLY9+i04B1myHyhVfZp+OAShfITEebg=;
+        b=SLrvUsVpk/8wYUgiDh8+8xfwGmz+PuigYX0XGJ3C5LG+5NbRY/OXV/A6mn564EVVWr
+         BQn9m+lYalUK1Q/5CgoF+1gaepal+ISvm8jC/nnFTd2IMRiOPpEABSB3DP6jiVGrfYMq
+         m3HUmyaNxZ+pn9PcLCBe5/tuoAvL43QoBcwEWnKGE3x0l910TQ68G9gK1h59BCWoFMOq
+         963XbYi1uNEGrX4o590PbXMZm7tNi4mCN5K9t0hC7vy14Ks392Fubx8caokp8rSLhRyy
+         XNcxBGlPcViMPb29sbANp1+k1uhz0wty+vTiBFcyrEGEKogiuf+G1E8FiT5OS2ZLy3G3
+         wp1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=PnAyme+18j6KOPf6iRNbRr3tHa520TeEGKv2pHUyxsg=;
-        b=wRAL0XGgXkpcA9UiWHJ0YIKt9fZMKoxE90/uNn5+aSGAWp8M3+GIAKqAeBL+XxNp/2
-         O2ETqAbc/fbT7pM85FH1Y9C1SJOps5tUc5fKOyzDXxy1Kg/kOuY+4nnSqdrFw7J/KKAq
-         IH5Dh6p8Ss22YC3CiWLP3w2crWdTR6Ofr76+nIz+IzDP5RcjdJnWfMJxAi4RBBSp3FO8
-         PdIwCnT3y638VKZhy9jrHqqOB8qUkljUZh6j2AUyUm0coxyB8odjetDDSHzvu1OdcXjL
-         Lj8b05abR/gPKbmokzONL/tvD0rUJ50EqwHfoGIw5Fvie3Gi4hz/imZdL/Dx01UEvLpT
-         HmwQ==
-X-Gm-Message-State: AFqh2kpSqywNH46bhPrc4NJ8WVvS9thZYaXSCJr/YrPm1pg6gpLcwH0J
-        0SmxJF1YCQD2oINdnP7nTVaXkw==
-X-Google-Smtp-Source: AMrXdXt7ZykcZm8+avHGdBvOtqm7wIEodJMiz/bX3gyWZfzVQr/vlnHzmmcdMAu5FAZDPJXoB1VG1A==
-X-Received: by 2002:adf:e197:0:b0:2be:546f:50c2 with SMTP id az23-20020adfe197000000b002be546f50c2mr25865313wrb.12.1674776425507;
-        Thu, 26 Jan 2023 15:40:25 -0800 (PST)
-Received: from hackbox.lan ([94.52.112.99])
-        by smtp.gmail.com with ESMTPSA id s5-20020a5d5105000000b002bdfcd8c77csm2481182wrt.101.2023.01.26.15.40.24
+        h=in-reply-to:content-disposition:mime-version:references:subject:cc
+         :to:from:date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=EONYoIxZjQ2TsLY9+i04B1myHyhVfZp+OAShfITEebg=;
+        b=K5WekQr3N9/X0W6KfCY2TXF6zdHgvletcZheKJXpP7DAeH613ZT+bk43KycUuUbUim
+         sJm96Ck58eDSlTgZc9nrHKzWTQwiqNTZWJn/W5OZb9Iqtp8JyvUIKLC3QxH/CkGVMpUf
+         Fh25IQaaVdPXQ3ujFVTdBgjRBElgnIKhlCxD2kmGM6mry83Rv5YBNUjdw9SryBrcch7G
+         0raq58vGv6FMRK6LoPd7WG3IBLdYtZTt6GzvHhjEPuYBn1ksFwwUTgjbDPSELo4L9BDb
+         ENYc1Gn+Pzje7GK0QcSGBMM9KzsTJvy00SMV84CmcwI31ePPsWizDv64WN9P8RtEq4DC
+         EU9Q==
+X-Gm-Message-State: AFqh2kqTO9H0Ta7LV27fdBry/9Ti6SEiPPNI2dLuCOIMx2qObnRx/0i1
+        +gvvCVfLGJ/85/WL4UaOwEM=
+X-Google-Smtp-Source: AMrXdXtClFX3qNEKpixctJRKjnKhz717i7YBO0EMNuKGjh+4T+5edcCNG6tl549AQ9+f/vxqSfgo8g==
+X-Received: by 2002:a05:600c:1609:b0:3db:12a:5e65 with SMTP id m9-20020a05600c160900b003db012a5e65mr36540049wmn.4.1674776599385;
+        Thu, 26 Jan 2023 15:43:19 -0800 (PST)
+Received: from Ansuel-xps. (93-34-89-61.ip49.fastwebnet.it. [93.34.89.61])
+        by smtp.gmail.com with ESMTPSA id az26-20020a05600c601a00b003d99469ece1sm6183454wmb.24.2023.01.26.15.43.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Jan 2023 15:40:24 -0800 (PST)
-From:   Abel Vesa <abel.vesa@linaro.org>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Bjorn Andersson <andersson@kernel.org>,
-        Andy Gross <agross@kernel.org>,
+        Thu, 26 Jan 2023 15:43:18 -0800 (PST)
+Message-ID: <63d31016.050a0220.a8e15.261d@mx.google.com>
+X-Google-Original-Message-ID: <Y9Lz6X9qKT4HICIV@Ansuel-xps.>
+Date:   Thu, 26 Jan 2023 22:43:05 +0100
+From:   Christian Marangi <ansuelsmth@gmail.com>
+To:     Rob Herring <robh@kernel.org>
+Cc:     Ilia Lin <ilia.lin@kernel.org>, linux-pm@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        linux-pm@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm@vger.kernel.org,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>
-Subject: [RFC] PM: domains: Skip disabling unused domains if provider has sync_state
-Date:   Fri, 27 Jan 2023 01:40:13 +0200
-Message-Id: <20230126234013.3638425-1-abel.vesa@linaro.org>
-X-Mailer: git-send-email 2.34.1
+        Yassine Oudjana <y.oudjana@protonmail.com>,
+        linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>
+Subject: Re: [PATCH v4 1/3] dt-bindings: cpufreq: qcom-cpufreq-nvmem: make
+ cpr bindings optional
+References: <20230126150026.14590-1-ansuelsmth@gmail.com>
+ <167475624070.2087166.4816561741085643801.robh@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <167475624070.2087166.4816561741085643801.robh@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, there are cases when a domain needs to remain enabled until
-the consumer driver probes. Sometimes such consumer drivers may be built
-as modules. Since the genpd_power_off_unused is called too early for
-such consumer driver modules to get a chance to probe, the domain, since
-it is unused, will get disabled. On the other hand, the best time for
-an unused domain to be disabled is on the provider's sync_state
-callback. So, if the provider has registered a sync_state callback,
-assume the unused domains for that provider will be disabled on its
-sync_state callback.
+On Thu, Jan 26, 2023 at 04:05:46PM -0600, Rob Herring wrote:
+> 
+> On Thu, 26 Jan 2023 16:00:24 +0100, Christian Marangi wrote:
+> > The qcom-cpufreq-nvmem driver supports 2 kind of devices:
+> > - pre-cpr that doesn't have power-domains and base everything on nvmem
+> >   cells and multiple named microvolt bindings.
+> >   Doesn't need required-opp binding in the opp nodes as they are only
+> >   used for genpd based devices.
+> > - cpr-based that require power-domain in the cpu nodes and use various
+> >   source to decide the correct voltage and freq
+> >   Require required-opp binding since they need to be linked to the
+> >   related opp-level.
+> > 
+> > When the schema was introduced, it was wrongly set to always require these
+> > binding but this is not the case for pre-cpr devices.
+> > 
+> > Make the power-domain and the required-opp optional and set them required
+> > only for qcs404 based devices.
+> > 
+> > Fixes: ec24d1d55469 ("dt-bindings: opp: Convert qcom-nvmem-cpufreq to DT schema")
+> > Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+> > ---
+> > Changes v4:
+> > - Explain why required-opp needs to be conditional
+> > - Split additional ref part
+> > Changesv3:
+> > - No change
+> > Changes v2:
+> > - Reword commit description
+> > - Fix condition order
+> > - Add allOf
+> > 
+> >  .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml  | 62 +++++++++++--------
+> >  1 file changed, 37 insertions(+), 25 deletions(-)
+> > 
+> 
+> My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+> on your patch (DT_CHECKER_FLAGS is new in v5.13):
+> 
+> yamllint warnings/errors:
+> 
+> dtschema/dtc warnings/errors:
+> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml: 'anyOf' conditional failed, one must be fixed:
+> 	'type' is a required property
+> 	'properties' is a required property
+> 	'patternProperties' is a required property
+> 	hint: 'additionalProperties' depends on 'properties' or 'patternProperties'
+> 	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
+> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml: 'anyOf' conditional failed, one must be fixed:
+> 	'properties' is a required property
+> 	'patternProperties' is a required property
+> 	hint: Metaschema for devicetree binding documentation
+> 	from schema $id: http://devicetree.org/meta-schemas/core.yaml#
+> 
+> doc reference errors (make refcheckdocs):
+> 
+> See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230126150026.14590-1-ansuelsmth@gmail.com
+> 
+> The base for the series is generally the latest rc1. A different dependency
+> should be noted in *this* patch.
+> 
+> If you already ran 'make dt_binding_check' and didn't see the above
+> error(s), then make sure 'yamllint' is installed and dt-schema is up to
+> date:
+> 
+> pip3 install dtschema --upgrade
+> 
+> Please check and re-submit after running the above command yourself. Note
+> that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+> your schema. However, it must be unset to test all examples with your schema.
+>
 
-Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
----
+Hi, Rob, was aware of this error but it was expected from the split of
+patches. (since i made each part of the patch conditional the check
+complain for no binding defined)
 
-This approach has been applied for unused clocks as well.
-With this patch merged in, all the providers that have sync_state
-callback registered will leave the domains enabled unless the provider's
-sync_state callback explicitly disables them. So those providers will
-need to add the disabling part to their sync_state callback. On the
-other hand, the platforms that have cases where domains need to remain
-enabled (even if unused) until the consumer driver probes, will be able,
-with this patch in, to run without the pd_ignore_unused kernel argument,
-which seems to be the case for most Qualcomm platforms, at this moment.
+If we really want I can send v5 that should fix this bisect problem by
+swapping patch 1 with patch 2 and rebasing.
 
- drivers/base/power/domain.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I already have that ready and fix this bisect error.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 84662d338188..8e72e8e38c77 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1099,7 +1099,8 @@ static int __init genpd_power_off_unused(void)
- 	mutex_lock(&gpd_list_lock);
- 
- 	list_for_each_entry(genpd, &gpd_list, gpd_list_node)
--		genpd_queue_power_off_work(genpd);
-+		if (!dev_has_sync_state(genpd->provider->dev))
-+			genpd_queue_power_off_work(genpd);
- 
- 	mutex_unlock(&gpd_list_lock);
- 
 -- 
-2.34.1
-
+	Ansuel
