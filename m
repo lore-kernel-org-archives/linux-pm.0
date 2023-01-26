@@ -2,42 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A6E5C54E94
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 15:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D69BBC61DA2
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 15:15:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231994AbjAZPPq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Jan 2023 10:15:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49396 "EHLO
+        id S232263AbjAZPPr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Jan 2023 10:15:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231952AbjAZPPl (ORCPT
+        with ESMTP id S232067AbjAZPPl (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 10:15:41 -0500
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F19756ED8;
-        Thu, 26 Jan 2023 07:15:41 -0800 (PST)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E1E630EAA;
+        Thu, 26 Jan 2023 07:15:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=UiLenWKE4N7YiebGVKqbpfxu4L5ilGfROJtDYiqSmiM=; b=qX/MohLe9qK+s0H2S0N4CLq75M
-        M5NWyzV407+Sw95ha/kiM8+WNubx3nxlrRDsOez5SufNbaj+tOgiUxwcFYAfFylqwUDtGPS8zRw3V
-        fVqgKLPbr4qYfsWggrrIlzNNs0Ob3+qwLO7tliC+1UZT+IiWdPvO20WjSEmY94ECD3SBgZ+a7nYZG
-        KG+gKRDeVThBA4mW5cVkDi/0bMExLI0z7glVYiBpo4h4Zx7aeHRGC0McEZTK0CzFD7vGjnl1zMgsG
-        1lidiKa+8sR+PTZusDAk/vRwS+UBzHyi2gv2JF+N2IG1+2qMlQ4wzc6C+XHLOI9XMnW8gn67Zliwx
-        /c9NewWg==;
+        bh=svQEe0ECCGCg8wgaTJSn7Vk6+ZlADTvcOCMWRjGVrA4=; b=j6AtqAY3qshb8rFaiRpU53+4Fs
+        d1J02gGQk0PHmOdIPPOlItYWC5gMKlVfMkNsvOKixr/gcdoRrOyoJIMmURBLFUMjjZxbH9RT+doob
+        sWAjknqD0TQTUUqw5WeqAFD55KQsjxLuN3VkSTHmsOJZ27RI89v7gkCfAStu/mucawQ6N7OOReCI6
+        eW2CAbQn8KA5quGx7LzF9m3lpgkZOhvOqTTlyh0DjOQGkMZEZAqRA2Rpqfg1X00lhxZaSM53Xwxsj
+        ClmO4ylSPEm29DLDWKgKHaKX7Gd0eoQfQKTxnc1k+VQ1wqqiNWA6sWglXic+xTBfzRP1LWPVf5DET
+        J0E7VO2A==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pL3xn-006qUR-F4; Thu, 26 Jan 2023 15:14:56 +0000
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1pL3xH-002U1d-2R;
+        Thu, 26 Jan 2023 15:14:23 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 88EC6302D60;
-        Thu, 26 Jan 2023 16:14:54 +0100 (CET)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3633E3010ED;
+        Thu, 26 Jan 2023 16:14:53 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 34A262084C4B0; Thu, 26 Jan 2023 16:14:53 +0100 (CET)
-Message-ID: <20230126151323.819534689@infradead.org>
+        id 10C412084C4A8; Thu, 26 Jan 2023 16:14:53 +0100 (CET)
+Message-ID: <20230126151323.466670589@infradead.org>
 User-Agent: quilt/0.66
-Date:   Thu, 26 Jan 2023 16:08:38 +0100
+Date:   Thu, 26 Jan 2023 16:08:32 +0100
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     mingo@kernel.org
 Cc:     will@kernel.org, peterz@infradead.org, boqun.feng@gmail.com,
@@ -54,9 +55,8 @@ Cc:     will@kernel.org, peterz@infradead.org, boqun.feng@gmail.com,
         bsegall@google.com, mgorman@suse.de, bristot@redhat.com,
         vschneid@redhat.com, linux-kernel@vger.kernel.org,
         kvm@vger.kernel.org, virtualization@lists.linux-foundation.org,
-        linux-pm@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
-        kernel test robot <oliver.sang@intel.com>
-Subject: [PATCH v2 9/9] cpuidle: Fix poll_idle() noinstr annotation
+        linux-pm@vger.kernel.org, linux-trace-kernel@vger.kernel.org
+Subject: [PATCH v2 3/9] tracing: Warn about !rcu_is_watching()
 References: <20230126150829.087606759@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -64,50 +64,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The instrumentation_begin()/end() annotations in poll_idle() were
-complete nonsense. Specifically they caused tracing to happen in the
-middle of noinstr code, resulting in RCU splats.
+When using noinstr, WARN when tracing hits when RCU is disabled.
 
-Now that local_clock() is noinstr, mark up the rest and let it rip.
-
-Fixes: 00717eb8c955 ("cpuidle: Annotate poll_idle()")
+Suggested-by: Steven Rostedt (Google) <rostedt@goodmis.org>
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reported-by: kernel test robot <oliver.sang@intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Link: https://lore.kernel.org/oe-lkp/202301192148.58ece903-oliver.sang@intel.com
 ---
- drivers/cpuidle/cpuidle.c    |    2 +-
- drivers/cpuidle/poll_state.c |    2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ include/linux/trace_recursion.h |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -426,7 +426,7 @@ void cpuidle_reflect(struct cpuidle_devi
-  * @dev:   the cpuidle device
-  *
+--- a/include/linux/trace_recursion.h
++++ b/include/linux/trace_recursion.h
+@@ -135,6 +135,21 @@ extern void ftrace_record_recursion(unsi
+ # define do_ftrace_record_recursion(ip, pip)	do { } while (0)
+ #endif
+ 
++#ifdef CONFIG_ARCH_WANTS_NO_INSTR
++# define trace_warn_on_no_rcu(ip)					\
++	({								\
++		bool __ret = !rcu_is_watching();			\
++		if (__ret && !trace_recursion_test(TRACE_RECORD_RECURSION_BIT)) { \
++			trace_recursion_set(TRACE_RECORD_RECURSION_BIT); \
++			WARN_ONCE(true, "RCU not on for: %pS\n", (void *)ip); \
++			trace_recursion_clear(TRACE_RECORD_RECURSION_BIT); \
++		}							\
++		__ret;							\
++	})
++#else
++# define trace_warn_on_no_rcu(ip)	false
++#endif
++
+ /*
+  * Preemption is promised to be disabled when return bit >= 0.
   */
--u64 cpuidle_poll_time(struct cpuidle_driver *drv,
-+__cpuidle u64 cpuidle_poll_time(struct cpuidle_driver *drv,
- 		      struct cpuidle_device *dev)
- {
- 	int i;
---- a/drivers/cpuidle/poll_state.c
-+++ b/drivers/cpuidle/poll_state.c
-@@ -15,7 +15,6 @@ static int __cpuidle poll_idle(struct cp
- {
- 	u64 time_start;
+@@ -144,6 +159,9 @@ static __always_inline int trace_test_an
+ 	unsigned int val = READ_ONCE(current->trace_recursion);
+ 	int bit;
  
--	instrumentation_begin();
- 	time_start = local_clock();
- 
- 	dev->poll_time_limit = false;
-@@ -42,7 +41,6 @@ static int __cpuidle poll_idle(struct cp
- 	raw_local_irq_disable();
- 
- 	current_clr_polling();
--	instrumentation_end();
- 
- 	return index;
- }
++	if (trace_warn_on_no_rcu(ip))
++		return -1;
++
+ 	bit = trace_get_context_bit() + start;
+ 	if (unlikely(val & (1 << bit))) {
+ 		/*
 
 
