@@ -2,237 +2,353 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F328C38142
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Jan 2023 20:21:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B2E7C38142
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Jan 2023 20:24:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232167AbjA0UVM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Jan 2023 15:21:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35598 "EHLO
+        id S229713AbjA0UYE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Jan 2023 15:24:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38188 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232622AbjA0UVG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jan 2023 15:21:06 -0500
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0C3A790B3;
-        Fri, 27 Jan 2023 12:21:01 -0800 (PST)
+        with ESMTP id S229495AbjA0UYB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jan 2023 15:24:01 -0500
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93D1C6A67;
+        Fri, 27 Jan 2023 12:24:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1674850861; x=1706386861;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=EATllbCD8tCrkyOe+A2As7KubdJWPVBiPDGExUYSfcY=;
-  b=NiQQ0cjHSDaGSzJnwAgL6gXTmF2otTz3qeJWZ2sihfZJ8esuwixYdGF9
-   bwSag+H+fVmxkiafXXflWWEVdhZiw+81BHElc+Z3vNcZENPRaKAkzUJkb
-   LViMFgekc+QhCHhz1UQDv/5k6z6EsiFzS0FqOScqcxoEfPtPkSIbc/4q1
-   P/jIebKdNRlNO0P4DEHXKJq4WxJtd3wSHZuDx/bN8poHdl6w0gBaryUmM
-   RyPqLpk/ekocFdaTWU8q7ekcTbqsexqwGsCgA/RPhLjUZSQKl6Ljmk7K1
-   MUGGfjGBDM1FUTIYkBxqmjU0WZ8XWiZzDyYtOgfbm4oXynuI+6BWoR5hP
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10603"; a="310804599"
+  t=1674851040; x=1706387040;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=UdsiALeU4rr0v+aNNFHWoK4uGHxdzHfOzR8c4y++rjk=;
+  b=KV3ICMY7TJhyL0BAawcBTNf9FdgqyLdm0YcvQfFG9In8t8KvtCfura1t
+   vN5+/X2LHdFnW6pPqsW6Nh0NwDnqFs7OLEZMlFftrlKiiMTbcswJdD/oz
+   TxmJMj+FvZjy/zZL1wq8Vj3KIYwO/6Z4GSCQ2O5iMCB/bTxJKo3gkwApB
+   m754GEPZjkunFUdydKyC7dHHqMLj+8xZFPCT1F8B1qmn67WJHsk9+Pw7k
+   LLXS/292lCLO71DdNH+XLu9OJYF7o3wOV4BIBZKiVat9qvxNXG27+iCql
+   cjh3L0Jp+dfh8eyts+eVRITSQFtPK+n+j0hUHLNTz/rHasGZ7Pmmn1D6T
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10603"; a="354484490"
 X-IronPort-AV: E=Sophos;i="5.97,252,1669104000"; 
-   d="scan'208";a="310804599"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2023 12:20:57 -0800
+   d="scan'208";a="354484490"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2023 12:24:00 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10603"; a="693840016"
+X-IronPort-AV: E=McAfee;i="6500,9779,10603"; a="640816925"
 X-IronPort-AV: E=Sophos;i="5.97,252,1669104000"; 
-   d="scan'208";a="693840016"
+   d="scan'208";a="640816925"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
-  by orsmga008.jf.intel.com with ESMTP; 27 Jan 2023 12:20:57 -0800
+  by orsmga006.jf.intel.com with ESMTP; 27 Jan 2023 12:23:58 -0800
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v4 2/3] powercap: idle_inject: Add update callback
-Date:   Fri, 27 Jan 2023 12:20:47 -0800
-Message-Id: <20230127202048.992504-3-srinivas.pandruvada@linux.intel.com>
+Subject: [RFC PATCH] thermal/drivers/intel_powerclamp: Support cpumask and step_size
+Date:   Fri, 27 Jan 2023 12:23:58 -0800
+Message-Id: <20230127202358.992651-1-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230127202048.992504-1-srinivas.pandruvada@linux.intel.com>
-References: <20230127202048.992504-1-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The powercap/idle_inject core uses play_idle_precise() to inject idle
-time. But play_idle_precise() can't ensure that the CPU is fully idle
-for the specified duration because of wakeups due to interrupts. To
-compensate for the reduced idle time due to these wakes, the caller
-can adjust requested idle time for the next cycle.
+In some use cases, it is desirable to only inject idle on certain set
+of CPUs. For example on Alder Lake systems, it is possible that we force
+idle only on P-Cores for thermal reasons. Also the idle percent can be
+more than 50% if we only choose partial set of CPUs in the system.
 
-The goal of idle injection is to keep system at some idle percent on
-average, so this is fine to overshoot or undershoot instantaneous idle
-times.
+Introduce module parameters for setting cpumask and step_size. They
+can be only changed when the cooling device is inactive. This module
+already have other module parameters. There is no change done for
+those parameters.
 
-The idle inject core provides an interface idle_inject_set_duration()
-to set idle and runtime duration.
+cpumask (Read/Write): A bit mask of CPUs to inject idle. The format of
+this bitmask is same as used in other subsystems like in
+/proc/irq/*/smp_affinity. The mask is comma separated 32 bit groups.
+Each CPU is one bit. For example for 256 CPU system the full mask is:
+ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff
+The leftmost mask is for CPU 0-32.
 
-Some architectures provide interface to get actual idle time observed
-by the hardware. So, the effective idle percent can be adjusted using
-the hardware feedback. For example, Intel CPUs provides package idle
-counters, which is currently used by Intel powerclamp driver to
-readjust runtime duration.
+step_size (Read/Write): Step size specifies a multiplication factor to
+the cooling device state. The step size can be either 1 or 2. By default,
+step_size = 1. When the step size = 1, the max idle percent is 50%.
+When step size = 2, the max idle percent is 100%. For the step size of 2,
+the cpumask should be smaller than the full system cpumask. In this way
+the system wide idle injection is restricted to 50%.
 
-When the caller's desired idle time over a period is less or greater
-than the actual CPU idle time observed by the hardware, caller can
-readjust idle and runtime duration for the next cycle.
-
-The only way this can be done currently is by monitoring hardware idle
-time from a different software thread and readjust idle and runtime
-duration using idle_inject_set_duration().
-
-This can be avoided by adding a callback which callers can register and
-readjust from this callback function.
-
-Add a capability to register an optional update() callback, which can be
-called from the idle inject core before waking up CPUs for idle injection.
-This callback can be registered via a new interface:
-idle_inject_register_full().
-
-During this process of constantly adjusting idle and runtime duration
-there can be some cases where actual idle time is more than the desired.
-In this case idle inject can be skipped for a cycle. If update() callback
-returns false, then the idle inject core skips waking up CPUs for the
-idle injection.
+Since the max state for thermal cooling can't be changed with some
+thermal core changes, step_size is a way to allow more than 50% idle
+percent.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
-v4:
-- No change
+ .../driver-api/thermal/intel_powerclamp.rst   |  22 +++
+ drivers/thermal/intel/intel_powerclamp.c      | 166 ++++++++++++++++--
+ 2 files changed, 170 insertions(+), 18 deletions(-)
 
-v3:
-- Replace prepare/complete callback with update callback
-
-v2
-- Replace begin/end with prepare/complete
-- Add new interface idle_inject_register_full with callbacks
-- Update kernel doc
-- Update commit description
-
- drivers/powercap/idle_inject.c | 50 ++++++++++++++++++++++++++++++----
- include/linux/idle_inject.h    |  3 ++
- 2 files changed, 47 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
-index a7aed680b54f..36d3b96b9739 100644
---- a/drivers/powercap/idle_inject.c
-+++ b/drivers/powercap/idle_inject.c
-@@ -63,13 +63,27 @@ struct idle_inject_thread {
-  * @idle_duration_us: duration of CPU idle time to inject
-  * @run_duration_us: duration of CPU run time to allow
-  * @latency_us: max allowed latency
-+ * @update: Optional callback deciding whether or not to skip idle
-+ *		injection in the given cycle.
-  * @cpumask: mask of CPUs affected by idle injection
-+ *
-+ * This structure is used to define per instance idle inject device data. Each
-+ * instance has an idle duration, a run duration and mask of CPUs to inject
-+ * idle.
-+ * Actual idle is injected by calling kernel scheduler interface
-+ * play_idle_precise(). There is one optional callbacks which the caller can
-+ * register by calling idle_inject_register_full():
-+ * update() - This callback is called just before waking up CPUs to inject
-+ * idle. If this callback returns false, CPUs are not woken up to inject idle
-+ * for this cycle. Also gives opportunity to the caller to readjust idle
-+ * and run duration by calling idle_inject_set_duration() for the next cycle.
-  */
- struct idle_inject_device {
- 	struct hrtimer timer;
- 	unsigned int idle_duration_us;
- 	unsigned int run_duration_us;
- 	unsigned int latency_us;
-+	bool (*update)(void);
- 	unsigned long cpumask[];
- };
+diff --git a/Documentation/driver-api/thermal/intel_powerclamp.rst b/Documentation/driver-api/thermal/intel_powerclamp.rst
+index 3f6dfb0b3ea6..582e3e42750b 100644
+--- a/Documentation/driver-api/thermal/intel_powerclamp.rst
++++ b/Documentation/driver-api/thermal/intel_powerclamp.rst
+@@ -26,6 +26,8 @@ By:
+ 	    - Generic Thermal Layer (sysfs)
+ 	    - Kernel APIs (TBD)
  
-@@ -111,11 +125,12 @@ static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
- 	struct idle_inject_device *ii_dev =
- 		container_of(timer, struct idle_inject_device, timer);
- 
-+	if (!ii_dev->update || (ii_dev->update && ii_dev->update()))
-+		idle_inject_wakeup(ii_dev);
++	(*) Module Parameters
 +
- 	duration_us = READ_ONCE(ii_dev->run_duration_us);
- 	duration_us += READ_ONCE(ii_dev->idle_duration_us);
+ INTRODUCTION
+ ============
  
--	idle_inject_wakeup(ii_dev);
--
- 	hrtimer_forward_now(timer, ns_to_ktime(duration_us * NSEC_PER_USEC));
- 
- 	return HRTIMER_RESTART;
-@@ -298,17 +313,22 @@ static int idle_inject_should_run(unsigned int cpu)
- }
- 
- /**
-- * idle_inject_register - initialize idle injection on a set of CPUs
-+ * idle_inject_register_full - initialize idle injection on a set of CPUs
-  * @cpumask: CPUs to be affected by idle injection
-+ * @update: This callback is called just before waking up CPUs to inject
-+ * idle
-  *
-  * This function creates an idle injection control device structure for the
-- * given set of CPUs and initializes the timer associated with it.  It does not
-- * start any injection cycles.
-+ * given set of CPUs and initializes the timer associated with it. This
-+ * function also allows to register update()callback.
-+ * It does not start any injection cycles.
-  *
-  * Return: NULL if memory allocation fails, idle injection control device
-  * pointer on success.
-  */
--struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
+@@ -318,3 +320,23 @@ device, a PID based userspace thermal controller can manage to
+ control CPU temperature effectively, when no other thermal influence
+ is added. For example, a UltraBook user can compile the kernel under
+ certain temperature (below most active trip points).
 +
-+struct idle_inject_device *idle_inject_register_full(struct cpumask *cpumask,
-+						     bool (*update)(void))
- {
- 	struct idle_inject_device *ii_dev;
- 	int cpu, cpu_rb;
-@@ -321,6 +341,7 @@ struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
- 	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
- 	ii_dev->timer.function = idle_inject_timer_fn;
- 	ii_dev->latency_us = UINT_MAX;
-+	ii_dev->update = update;
- 
- 	for_each_cpu(cpu, to_cpumask(ii_dev->cpumask)) {
- 
-@@ -345,6 +366,23 @@ struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
- 
- 	return NULL;
- }
-+EXPORT_SYMBOL_NS_GPL(idle_inject_register_full, IDLE_INJECT);
++Module Parameters
++=================
 +
-+/**
-+ * idle_inject_register - initialize idle injection on a set of CPUs
-+ * @cpumask: CPUs to be affected by idle injection
-+ *
-+ * This function creates an idle injection control device structure for the
-+ * given set of CPUs and initializes the timer associated with it.  It does not
-+ * start any injection cycles.
-+ *
-+ * Return: NULL if memory allocation fails, idle injection control device
-+ * pointer on success.
-+ */
-+struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
++``cpumask`` (RW)
++	A bit mask of CPUs to inject idle. The format of the bitmask is same as
++	used in other subsystems like in /proc/irq/*/smp_affinity. The mask is
++	comma separated 32 bit groups. Each CPU is one bit. For example for a 256
++	CPU system the full mask is:
++	ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff
++
++	The leftmost mask is for CPU 0-32.
++
++``step_size`` (RW)
++	Step size specifies a multiplication factor to the cooling device state.
++	The step size can be either 1 or 2. By default,
++	step_size = 1. When the step size = 1, the max idle percent is 50%.
++	When step size = 2, the max idle percent is 100%. For the step size of 2,
++	the cpumask should be smaller than the full system cpumask. In this way
++	the system wide idle injection is restricted to 50%.
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index 320525c3c530..221c6de3e06f 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -108,6 +108,119 @@ static const struct kernel_param_ops duration_ops = {
+ module_param_cb(duration, &duration_ops, &duration, 0644);
+ MODULE_PARM_DESC(duration, "forced idle time for each attempt in msec.");
+ 
++static u8 step_size = 1;
++static cpumask_var_t idle_injection_cpu_mask;
++
++static int cpumask_set(const char *arg, const struct kernel_param *kp)
 +{
-+	return idle_inject_register_full(cpumask, NULL);
-+}
- EXPORT_SYMBOL_NS_GPL(idle_inject_register, IDLE_INJECT);
- 
- /**
-diff --git a/include/linux/idle_inject.h b/include/linux/idle_inject.h
-index fb88e23a99d3..a85d5dd40f72 100644
---- a/include/linux/idle_inject.h
-+++ b/include/linux/idle_inject.h
-@@ -13,6 +13,9 @@ struct idle_inject_device;
- 
- struct idle_inject_device *idle_inject_register(struct cpumask *cpumask);
- 
-+struct idle_inject_device *idle_inject_register_full(struct cpumask *cpumask,
-+						     bool (*update)(void));
++	int ret;
 +
- void idle_inject_unregister(struct idle_inject_device *ii_dev);
++	mutex_lock(&powerclamp_lock);
++
++	/* Can't set mask when cooling device is in use */
++	if (powerclamp_data.clamping) {
++		ret = -EAGAIN;
++		goto skip_cpumask_set;
++	}
++
++	if (!idle_injection_cpu_mask) {
++		if (!zalloc_cpumask_var(&idle_injection_cpu_mask, GFP_KERNEL)) {
++			ret = -ENOMEM;
++			goto skip_cpumask_set;
++		}
++	}
++
++	ret = bitmap_parse(arg, strlen(arg), cpumask_bits(idle_injection_cpu_mask),
++			   nr_cpumask_bits);
++	if (ret)
++		goto free_cpu_mask;
++
++	if (cpumask_empty(idle_injection_cpu_mask)) {
++		ret = -EINVAL;
++		goto free_cpu_mask;
++	}
++
++	if (cpumask_equal(cpu_present_mask, idle_injection_cpu_mask) &&
++			  step_size > 1) {
++		ret = -EINVAL;
++		goto free_cpu_mask;
++	}
++
++	mutex_unlock(&powerclamp_lock);
++
++	return 0;
++
++free_cpu_mask:
++	free_cpumask_var(idle_injection_cpu_mask);
++	idle_injection_cpu_mask = NULL;
++
++skip_cpumask_set:
++	mutex_unlock(&powerclamp_lock);
++
++	return ret;
++}
++
++static int cpumask_get(char *buf, const struct kernel_param *kp)
++{
++	if (!idle_injection_cpu_mask)
++		return -EINVAL;
++
++	return bitmap_print_to_pagebuf(false, buf, cpumask_bits(idle_injection_cpu_mask),
++				       nr_cpumask_bits);
++}
++
++static const struct kernel_param_ops cpumask_ops = {
++	.set = cpumask_set,
++	.get = cpumask_get,
++};
++
++module_param_cb(cpumask, &cpumask_ops, NULL, 0644);
++MODULE_PARM_DESC(cpumask, "Mask of CPUs to use for idle injection.");
++
++static int step_size_set(const char *arg, const struct kernel_param *kp)
++{
++	u8 _step_size;
++	int ret = 0;
++
++	mutex_lock(&powerclamp_lock);
++
++	/* Can't set mask when cooling device is in use */
++	if (powerclamp_data.clamping) {
++		ret = -EAGAIN;
++		goto skip_limit_set;
++	}
++
++	ret = kstrtou8(arg, 10, &_step_size);
++	if (ret)
++		goto skip_limit_set;
++
++	if (_step_size > 2) {
++		ret = -EINVAL;
++		goto skip_limit_set;
++	}
++
++	if (idle_injection_cpu_mask && cpumask_equal(cpu_present_mask, idle_injection_cpu_mask) &&
++	    _step_size > 1) {
++		ret = -EINVAL;
++		goto skip_limit_set;
++	}
++
++	step_size = _step_size;
++
++skip_limit_set:
++	mutex_unlock(&powerclamp_lock);
++
++	return ret;
++}
++
++static const struct kernel_param_ops step_size_ops = {
++	.set = step_size_set,
++	.get = param_get_int,
++};
++
++module_param_cb(step_size, &step_size_ops, &step_size, 0644);
++MODULE_PARM_DESC(step_size, "Step size to increment for each cooling state. range 1-2");
++
+ struct powerclamp_calibration_data {
+ 	unsigned long confidence;  /* used for calibration, basically a counter
+ 				    * gets incremented each time a clamping
+@@ -246,6 +359,9 @@ static unsigned int get_compensation(int ratio)
+ {
+ 	unsigned int comp = 0;
  
- int idle_inject_start(struct idle_inject_device *ii_dev);
++	if (step_size > 1)
++		return 0;
++
+ 	/* we only use compensation if all adjacent ones are good */
+ 	if (ratio == 1 &&
+ 		cal_data[ratio].confidence >= CONFIDENCE_OK &&
+@@ -338,6 +454,10 @@ static unsigned int get_run_time(void)
+ 	unsigned int compensated_ratio;
+ 	unsigned int runtime;
+ 
++	/* No compensation for non systemwide idle injection */
++	if (step_size > 1)
++		return (duration * 100 / powerclamp_data.target_ratio - duration);
++
+ 	/*
+ 	 * make sure user selected ratio does not take effect until
+ 	 * the next round. adjust target_ratio if user has changed
+@@ -454,21 +574,26 @@ static void trigger_idle_injection(void)
+  */
+ static int powerclamp_idle_injection_register(void)
+ {
+-	/*
+-	 * The idle inject core will only inject for online CPUs,
+-	 * So we can register for all present CPUs. In this way
+-	 * if some CPU goes online/offline while idle inject
+-	 * is registered, nothing additional calls are required.
+-	 * The same runtime and idle time is applicable for
+-	 * newly onlined CPUs if any.
+-	 *
+-	 * Here cpu_present_mask can be used as is.
+-	 * cast to (struct cpumask *) is required as the
+-	 * cpu_present_mask is const struct cpumask *, otherwise
+-	 * there will be compiler warnings.
+-	 */
+-	ii_dev = idle_inject_register_full((struct cpumask *)cpu_present_mask,
+-					   idle_inject_update);
++	if (!idle_injection_cpu_mask) {
++		if (!zalloc_cpumask_var(&idle_injection_cpu_mask, GFP_KERNEL))
++			return -ENOMEM;
++
++		/*
++		 * The idle inject core will only inject for online CPUs,
++		 * So we can register for all present CPUs. In this way
++		 * if some CPU goes online/offline while idle inject
++		 * is registered, nothing additional calls are required.
++		 * The same runtime and idle time is applicable for
++		 * newly onlined CPUs if any.
++		 */
++		cpumask_copy(idle_injection_cpu_mask, cpu_present_mask);
++	}
++
++	if (cpumask_equal(cpu_present_mask, idle_injection_cpu_mask))
++		ii_dev = idle_inject_register_full(idle_injection_cpu_mask, idle_inject_update);
++	else
++		ii_dev = idle_inject_register(idle_injection_cpu_mask);
++
+ 	if (!ii_dev) {
+ 		pr_err("powerclamp: idle_inject_register failed\n");
+ 		return -EAGAIN;
+@@ -504,7 +629,9 @@ static int start_power_clamp(void)
+ 	ret = powerclamp_idle_injection_register();
+ 	if (!ret) {
+ 		trigger_idle_injection();
+-		schedule_delayed_work(&poll_pkg_cstate_work, 0);
++		/* No use of package residency counters when partial set is used */
++		if (cpumask_equal(cpu_present_mask, idle_injection_cpu_mask))
++			schedule_delayed_work(&poll_pkg_cstate_work, 0);
+ 	}
+ 
+ 	return ret;
+@@ -558,7 +685,7 @@ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
+ 				(unsigned long) (MAX_TARGET_RATIO - 1));
+ 	if (!powerclamp_data.target_ratio && new_target_ratio > 0) {
+ 		pr_info("Start idle injection to reduce power\n");
+-		powerclamp_data.target_ratio = new_target_ratio;
++		powerclamp_data.target_ratio = new_target_ratio * step_size;
+ 		ret = start_power_clamp();
+ 		if (ret)
+ 			powerclamp_data.target_ratio = 0;
+@@ -570,7 +697,7 @@ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
+ 	} else	/* adjust currently running */ {
+ 		unsigned int runtime;
+ 
+-		powerclamp_data.target_ratio = new_target_ratio;
++		powerclamp_data.target_ratio = new_target_ratio * step_size;
+ 		runtime = get_run_time();
+ 		idle_inject_set_duration(ii_dev, runtime, duration);
+ 	}
+@@ -676,6 +803,9 @@ static void __exit powerclamp_exit(void)
+ 
+ 	cancel_delayed_work_sync(&poll_pkg_cstate_work);
+ 	debugfs_remove_recursive(debug_dir);
++
++	if (idle_injection_cpu_mask)
++		free_cpumask_var(idle_injection_cpu_mask);
+ }
+ module_exit(powerclamp_exit);
+ 
 -- 
 2.37.2
 
