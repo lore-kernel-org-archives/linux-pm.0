@@ -2,161 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D1F2C61DA7
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Jan 2023 23:43:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C855C05027
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Jan 2023 03:08:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233580AbjAZXnj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Jan 2023 18:43:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55048 "EHLO
+        id S231540AbjA0DIG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Jan 2023 22:08:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42262 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233598AbjAZXnc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 18:43:32 -0500
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A81849011;
-        Thu, 26 Jan 2023 15:43:21 -0800 (PST)
-Received: by mail-wm1-x335.google.com with SMTP id f25-20020a1c6a19000000b003da221fbf48so2297193wmc.1;
-        Thu, 26 Jan 2023 15:43:21 -0800 (PST)
+        with ESMTP id S231266AbjA0DIF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2023 22:08:05 -0500
+Received: from mail-oa1-x2b.google.com (mail-oa1-x2b.google.com [IPv6:2001:4860:4864:20::2b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 752CA227A1;
+        Thu, 26 Jan 2023 19:08:03 -0800 (PST)
+Received: by mail-oa1-x2b.google.com with SMTP id 586e51a60fabf-16346330067so4931662fac.3;
+        Thu, 26 Jan 2023 19:08:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:subject:cc
-         :to:from:date:message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=EONYoIxZjQ2TsLY9+i04B1myHyhVfZp+OAShfITEebg=;
-        b=SLrvUsVpk/8wYUgiDh8+8xfwGmz+PuigYX0XGJ3C5LG+5NbRY/OXV/A6mn564EVVWr
-         BQn9m+lYalUK1Q/5CgoF+1gaepal+ISvm8jC/nnFTd2IMRiOPpEABSB3DP6jiVGrfYMq
-         m3HUmyaNxZ+pn9PcLCBe5/tuoAvL43QoBcwEWnKGE3x0l910TQ68G9gK1h59BCWoFMOq
-         963XbYi1uNEGrX4o590PbXMZm7tNi4mCN5K9t0hC7vy14Ks392Fubx8caokp8rSLhRyy
-         XNcxBGlPcViMPb29sbANp1+k1uhz0wty+vTiBFcyrEGEKogiuf+G1E8FiT5OS2ZLy3G3
-         wp1Q==
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=eWVjgWC+CRaiVU6jf3be0WvlqWbyqa4cbGUte3LE0QY=;
+        b=SvGlwWDC+KblJS2mqQCluTm269HgIQaXn+HLtXa7cMZkrTaP7lnJrOIR33mFaXXtH/
+         8cL8KrnTBBZBGVXsgQ1DKAHWIM1+EKPpFW4p8IgxhR84Xbv3LigkPTByRA4kMaEdj6TU
+         k7Kv1PNhnRA8GIoxbImSjJVcnIGMd9W4vnrh7KM6GtdcdB294Ly2ExbAI4DPIRsycidq
+         ebpds6vqjuZg4C56lG2puV681tfO6LsMOE0MJ0KcEX5tTtzSLpp1IujIkVVhugeAFgp9
+         cvAJNHs9DU6/eY5NWUZIL8O6Ph//ikJT+Lk7G/rojhpgq5p2I7AuJy6bEG+5t5c459tI
+         xUFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:subject:cc
-         :to:from:date:message-id:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=EONYoIxZjQ2TsLY9+i04B1myHyhVfZp+OAShfITEebg=;
-        b=K5WekQr3N9/X0W6KfCY2TXF6zdHgvletcZheKJXpP7DAeH613ZT+bk43KycUuUbUim
-         sJm96Ck58eDSlTgZc9nrHKzWTQwiqNTZWJn/W5OZb9Iqtp8JyvUIKLC3QxH/CkGVMpUf
-         Fh25IQaaVdPXQ3ujFVTdBgjRBElgnIKhlCxD2kmGM6mry83Rv5YBNUjdw9SryBrcch7G
-         0raq58vGv6FMRK6LoPd7WG3IBLdYtZTt6GzvHhjEPuYBn1ksFwwUTgjbDPSELo4L9BDb
-         ENYc1Gn+Pzje7GK0QcSGBMM9KzsTJvy00SMV84CmcwI31ePPsWizDv64WN9P8RtEq4DC
-         EU9Q==
-X-Gm-Message-State: AFqh2kqTO9H0Ta7LV27fdBry/9Ti6SEiPPNI2dLuCOIMx2qObnRx/0i1
-        +gvvCVfLGJ/85/WL4UaOwEM=
-X-Google-Smtp-Source: AMrXdXtClFX3qNEKpixctJRKjnKhz717i7YBO0EMNuKGjh+4T+5edcCNG6tl549AQ9+f/vxqSfgo8g==
-X-Received: by 2002:a05:600c:1609:b0:3db:12a:5e65 with SMTP id m9-20020a05600c160900b003db012a5e65mr36540049wmn.4.1674776599385;
-        Thu, 26 Jan 2023 15:43:19 -0800 (PST)
-Received: from Ansuel-xps. (93-34-89-61.ip49.fastwebnet.it. [93.34.89.61])
-        by smtp.gmail.com with ESMTPSA id az26-20020a05600c601a00b003d99469ece1sm6183454wmb.24.2023.01.26.15.43.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Jan 2023 15:43:18 -0800 (PST)
-Message-ID: <63d31016.050a0220.a8e15.261d@mx.google.com>
-X-Google-Original-Message-ID: <Y9Lz6X9qKT4HICIV@Ansuel-xps.>
-Date:   Thu, 26 Jan 2023 22:43:05 +0100
-From:   Christian Marangi <ansuelsmth@gmail.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Ilia Lin <ilia.lin@kernel.org>, linux-pm@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-arm-msm@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Yassine Oudjana <y.oudjana@protonmail.com>,
-        linux-kernel@vger.kernel.org,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>
-Subject: Re: [PATCH v4 1/3] dt-bindings: cpufreq: qcom-cpufreq-nvmem: make
- cpr bindings optional
-References: <20230126150026.14590-1-ansuelsmth@gmail.com>
- <167475624070.2087166.4816561741085643801.robh@kernel.org>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=eWVjgWC+CRaiVU6jf3be0WvlqWbyqa4cbGUte3LE0QY=;
+        b=osUSeku/sP88UW/fmIhl0IgJ5hEaMz7tsq4ANNqgk4hTplAKS8QMG8uTA69E1EIZ8f
+         lcAhQsEhme9lnsx6jmJRNv5ue+xI4Z2VFf5AfV1gG4Ta2doUhhmfvEMDxcdcqV2OM74N
+         1UM6X9MInzTNkoJ3xePre6Ffm6ooNrGNxHOLg6Imm8lFb1wB2SP2abJT52v36/1tH3x4
+         LFNPOa6MAUxfTYyjr0UTSzqVO/v1mBnF9N27ZDMA8i1/FUbx5WvHwg0tLzQd5GD54iPw
+         tro+IxOIfFrjfVzArNZp8PUspW2IvRyOnhCPOdf9+FmUAyKfHUKwcClsrkviA/z0Fmqc
+         UMnA==
+X-Gm-Message-State: AFqh2koVJAGiwEyHBWif0QmVpLDqz6XG5Pd+QMz370sZHKKEyFU5eP/c
+        727sKVSxlvq7+4xcXoAlEXgQ+k22K3QEfB4VtpU=
+X-Google-Smtp-Source: AMrXdXtwNNbWR+EBpOWIEthHcrNWHYhATjGinf4U7RAj7/ORzz2dj7jhO7LE+yBhT7G/zMVkJANBNpaCoJ1m0UeBexw=
+X-Received: by 2002:a05:6870:44d0:b0:15b:96b8:e2be with SMTP id
+ t16-20020a05687044d000b0015b96b8e2bemr2351141oai.38.1674788882705; Thu, 26
+ Jan 2023 19:08:02 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <167475624070.2087166.4816561741085643801.robh@kernel.org>
+References: <20230123153745.3185032-1-robdclark@gmail.com> <20230125040403epcms1p1646e9668b87df3e9c344ad58d39b6eb6@epcms1p1>
+ <CGME20230123153745epcas1p17e57cf83ed371e86258139473befc615@epcms1p3>
+ <CAF6AEGud-ESF=VgcaSFzKsWas0H5eSXZDdZGcnd8Ju=pr-W2EQ@mail.gmail.com> <20230125054626epcms1p38d34dc65cbc9cb29dd707a4b2cac8fb4@epcms1p3>
+In-Reply-To: <20230125054626epcms1p38d34dc65cbc9cb29dd707a4b2cac8fb4@epcms1p3>
+From:   Rob Clark <robdclark@gmail.com>
+Date:   Thu, 26 Jan 2023 19:08:01 -0800
+Message-ID: <CAF6AEGvkepf4eLKqXYkadOvtu_7ehCzmgoiq3_s7qvJXi_n3sw@mail.gmail.com>
+Subject: Re: Re: [PATCH] PM / devfreq: Fix build issues with devfreq disabled
+To:     myungjoo.ham@samsung.com
+Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "freedreno@lists.freedesktop.org" <freedreno@lists.freedesktop.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Rob Clark <robdclark@chromium.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chia-I Wu <olvaffe@gmail.com>,
+        open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 26, 2023 at 04:05:46PM -0600, Rob Herring wrote:
-> 
-> On Thu, 26 Jan 2023 16:00:24 +0100, Christian Marangi wrote:
-> > The qcom-cpufreq-nvmem driver supports 2 kind of devices:
-> > - pre-cpr that doesn't have power-domains and base everything on nvmem
-> >   cells and multiple named microvolt bindings.
-> >   Doesn't need required-opp binding in the opp nodes as they are only
-> >   used for genpd based devices.
-> > - cpr-based that require power-domain in the cpu nodes and use various
-> >   source to decide the correct voltage and freq
-> >   Require required-opp binding since they need to be linked to the
-> >   related opp-level.
-> > 
-> > When the schema was introduced, it was wrongly set to always require these
-> > binding but this is not the case for pre-cpr devices.
-> > 
-> > Make the power-domain and the required-opp optional and set them required
-> > only for qcs404 based devices.
-> > 
-> > Fixes: ec24d1d55469 ("dt-bindings: opp: Convert qcom-nvmem-cpufreq to DT schema")
-> > Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
-> > ---
-> > Changes v4:
-> > - Explain why required-opp needs to be conditional
-> > - Split additional ref part
-> > Changesv3:
-> > - No change
-> > Changes v2:
-> > - Reword commit description
-> > - Fix condition order
-> > - Add allOf
-> > 
-> >  .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml  | 62 +++++++++++--------
-> >  1 file changed, 37 insertions(+), 25 deletions(-)
-> > 
-> 
-> My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-> on your patch (DT_CHECKER_FLAGS is new in v5.13):
-> 
-> yamllint warnings/errors:
-> 
-> dtschema/dtc warnings/errors:
-> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml: 'anyOf' conditional failed, one must be fixed:
-> 	'type' is a required property
-> 	'properties' is a required property
-> 	'patternProperties' is a required property
-> 	hint: 'additionalProperties' depends on 'properties' or 'patternProperties'
-> 	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml#
-> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml: 'anyOf' conditional failed, one must be fixed:
-> 	'properties' is a required property
-> 	'patternProperties' is a required property
-> 	hint: Metaschema for devicetree binding documentation
-> 	from schema $id: http://devicetree.org/meta-schemas/core.yaml#
-> 
-> doc reference errors (make refcheckdocs):
-> 
-> See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230126150026.14590-1-ansuelsmth@gmail.com
-> 
-> The base for the series is generally the latest rc1. A different dependency
-> should be noted in *this* patch.
-> 
-> If you already ran 'make dt_binding_check' and didn't see the above
-> error(s), then make sure 'yamllint' is installed and dt-schema is up to
-> date:
-> 
-> pip3 install dtschema --upgrade
-> 
-> Please check and re-submit after running the above command yourself. Note
-> that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-> your schema. However, it must be unset to test all examples with your schema.
+On Tue, Jan 24, 2023 at 9:46 PM MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
 >
+> >On Tue, Jan 24, 2023 at 8:04 PM MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> >>
+> >> >Sender : Rob Clark <robdclark@gmail.com>
+> >> >Date : 2023-01-24 00:37 (GMT+9)
+> >> >Title : [PATCH] PM / devfreq: Fix build issues with devfreq disabled
+> >> >
+> >> >From: Rob Clark <robdclark@chromium.org>
+> >> >
+> >> >The existing no-op shims for when PM_DEVFREQ (or an individual governor)
+> >> >only do half the job.  The governor specific config/tuning structs need
+> >> >to be available to avoid compile errors in drivers using devfreq.
+> >> >
+> >> >Fixes: 6563f60f14cb ("drm/msm/gpu: Add devfreq tuning debugfs")
+> >> >Signed-off-by: Rob Clark <robdclark@chromium.org>
+> >>
+> >> Doesn't this imply that DRM_MSM should depend on PM_DEVFREQ ?
+> >>
+> >> It appears that gpu/drm/msm/DRM_MSM uses PM_DEVFREQ without actually
+> >> declaring the dependency on PM_DEVFREQ.
+> >> You cannot use SIMPLE_ONDEMAND without DEVFREQ.
+> >
+> >Possibly that would resolve some issues, and that might have been my
+> >mistake in assuming that depending on SIMPLE_ONDEMAND implied a
+> >dependency on DEFREQ (which seems like a reasonable assumption, IMHO)
+> >
+> >But AFAICT some kernel configs that could otherwise use DRM_MSM don't
+> >support PM_DEVFREQ.. either way, lets solve this properly and remove
+> >needless dependencies on devfreq.
+> >
+> >BR,
+> >-R
+>
+> Ok. You are enabling struct and enum only and that looks harmless.
+>
+> PTAL, Chanwoo.
+>
+> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-Hi, Rob, was aware of this error but it was expected from the split of
-patches. (since i made each part of the patch conditional the check
-complain for no binding defined)
+Thanks, if possible, an ack to land this via msm-next would avoid
+build break headaches with COMPILE_TEST=y and other more obscure
+setups
 
-If we really want I can send v5 that should fix this bisect problem by
-swapping patch 1 with patch 2 and rebasing.
-
-I already have that ready and fix this bisect error.
-
--- 
-	Ansuel
+BR,
+-R
