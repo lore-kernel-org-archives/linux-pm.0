@@ -2,81 +2,98 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB033C636D3
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 19:04:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60E86C54EAA
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 19:07:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237876AbjA3TEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Jan 2023 14:04:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36024 "EHLO
+        id S236703AbjA3THb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Jan 2023 14:07:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38204 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229573AbjA3TEX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 14:04:23 -0500
-Received: from mail-oa1-f49.google.com (mail-oa1-f49.google.com [209.85.160.49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FF333865D;
-        Mon, 30 Jan 2023 11:04:20 -0800 (PST)
-Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-142b72a728fso16328719fac.9;
-        Mon, 30 Jan 2023 11:04:20 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=2KJ9Rz1Ynh3fjcAdkx5iP/6JNhfuUpXfGWr8jMXGpK8=;
-        b=DfFQEal8N3PGF1mRijjLtabH4AolzTqXVelRSeOgDbNMIOjj37h+wjT30VnvGhRfoV
-         i+rHqIk7GuBOQQdM4146l7COV0WOys+Vih20hhJ/a/TM0ZNd7SmzGMNZXgN9attYPVqv
-         rl5YiR27TQkP1H5K4MxXg/CT6tWB6ZAVO34NH/QT/945umkahsy/XFuLi1YlPhl10ndu
-         cOrDWbirqh5jKoANg8uWEH75FlyxfRcBoojmcf3brcfRXGalBURg3V2zrEllQcug78YJ
-         96pDfPWvihmD3J6LFD4inkx4X1LpwiaycNKLZ2GJwIEaFN9NVLerS3e48CktvKQWA0cQ
-         R/jw==
-X-Gm-Message-State: AFqh2krQNxmFOa4zoUXnrxBqiK7R566DHmpDAu3EwBcmAckvly6741VT
-        ZEjp/+k/+eTZFZv7KdnQkA==
-X-Google-Smtp-Source: AMrXdXtjE2UK5IbXgI+0HH5dQJ2HxAVZhp2l7U70Q5qV6hgbDhg9WyJ89Jl7Cr6tB34YfAkN15nwIw==
-X-Received: by 2002:a05:6870:828a:b0:15f:dac1:7e7d with SMTP id q10-20020a056870828a00b0015fdac17e7dmr19809449oae.25.1675105459938;
-        Mon, 30 Jan 2023 11:04:19 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id mv7-20020a0568706a8700b0015f4d1b195bsm5567310oab.36.2023.01.30.11.04.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Jan 2023 11:04:19 -0800 (PST)
-Received: (nullmailer pid 3125626 invoked by uid 1000);
-        Mon, 30 Jan 2023 19:04:18 -0000
-Date:   Mon, 30 Jan 2023 13:04:18 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Bartosz Golaszewski <brgl@bgdev.pl>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        devicetree@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Eric Chanudet <echanude@redhat.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        linux-arm-msm@vger.kernel.org,
-        Bjorn Andersson <andersson@kernel.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: interconnect: qcom,sa8775p-rpmh: fix a typo
-Message-ID: <167510545823.3125572.248582702391244849.robh@kernel.org>
-References: <20230127092615.39690-1-brgl@bgdev.pl>
+        with ESMTP id S236432AbjA3THa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 14:07:30 -0500
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A397538B5C;
+        Mon, 30 Jan 2023 11:07:28 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
+ id e536acd3fe07cf94; Mon, 30 Jan 2023 20:07:26 +0100
+Received: from kreacher.localnet (unknown [213.134.169.112])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 246EA2528287;
+        Mon, 30 Jan 2023 20:07:26 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        David Box <david.e.box@linux.intel.com>
+Subject: [PATCH v1 8/8] thermal: intel: intel_pch: Refer to thermal zone name directly
+Date:   Mon, 30 Jan 2023 20:07:17 +0100
+Message-ID: <837557782.0ifERbkFSE@kreacher>
+In-Reply-To: <1751684.VLH7GnMWUR@kreacher>
+References: <1751684.VLH7GnMWUR@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230127092615.39690-1-brgl@bgdev.pl>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.169.112
+X-CLIENT-HOSTNAME: 213.134.169.112
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudefvddguddvfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudeiledrudduvdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrdduieelrdduuddvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdho
+ rhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrvhhiugdrvgdrsghogieslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Fri, 27 Jan 2023 10:26:15 +0100, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> 
-> The name of the chip is sa8775p, not sa8875p.
-> 
-> Reported-by: Eric Chanudet <echanude@redhat.com>
-> Link: https://lore.kernel.org/lkml/20230126203618.nbqwppaddncq7on7@echanude/
-> Fixes: 2579af94c813 ("dt-bindings: interconnect: qcom: document the interconnects for sa8775p")
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> ---
->  .../devicetree/bindings/interconnect/qcom,sa8775p-rpmh.yaml     | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
+Make intel_pch_thermal_probe() use a const char pointer instead of
+a struct board_info one for accessing the thermal zone name.
 
-Acked-by: Rob Herring <robh@kernel.org>
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+BTW, Srinivas, I'm wondering if user space would be terribly confused by
+changing this driver to use "Intel PCH" as the thermal zone name of all
+of the supported platforms?
+
+---
+ drivers/thermal/intel/intel_pch_thermal.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-pm/drivers/thermal/intel/intel_pch_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/intel_pch_thermal.c
++++ linux-pm/drivers/thermal/intel/intel_pch_thermal.c
+@@ -175,7 +175,7 @@ static int intel_pch_thermal_probe(struc
+ 				   const struct pci_device_id *id)
+ {
+ 	enum pch_board_ids board_id = id->driver_data;
+-	const struct board_info *bi = &board_info[board_id];
++	const char *zone_name = board_info[board_id].name;
+ 	struct pch_thermal_device *ptd;
+ 	u16 trip_temp;
+ 	int nr_trips;
+@@ -249,12 +249,12 @@ read_trips:
+ 
+ 	nr_trips += pch_wpt_add_acpi_psv_trip(ptd, nr_trips);
+ 
+-	ptd->tzd = thermal_zone_device_register_with_trips(bi->name, ptd->trips,
++	ptd->tzd = thermal_zone_device_register_with_trips(zone_name, ptd->trips,
+ 							   nr_trips, 0, ptd,
+ 							   &tzd_ops, NULL, 0, 0);
+ 	if (IS_ERR(ptd->tzd)) {
+ 		dev_err(&pdev->dev, "Failed to register thermal zone %s\n",
+-			bi->name);
++			zone_name);
+ 		err = PTR_ERR(ptd->tzd);
+ 		goto error_cleanup;
+ 	}
+
+
+
