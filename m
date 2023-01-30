@@ -2,59 +2,72 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9491C636D4
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 19:08:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA52BC636D4
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 19:13:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238337AbjA3TII (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Jan 2023 14:08:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38750 "EHLO
+        id S238040AbjA3TN4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Jan 2023 14:13:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45214 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238115AbjA3TH5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 14:07:57 -0500
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9E733B0CC;
-        Mon, 30 Jan 2023 11:07:40 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
- id 7011943c141ad891; Mon, 30 Jan 2023 20:07:38 +0100
-Received: from kreacher.localnet (unknown [213.134.169.112])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 2EC8E25277C6;
-        Mon, 30 Jan 2023 20:07:38 +0100 (CET)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+        with ESMTP id S238300AbjA3TNw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 14:13:52 -0500
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C1762693;
+        Mon, 30 Jan 2023 11:13:41 -0800 (PST)
+Received: by mail-ej1-f47.google.com with SMTP id kt14so34836992ejc.3;
+        Mon, 30 Jan 2023 11:13:41 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=AF1ytHP8yIyD33XjERJjWJgeLd5sZmmY2qcXpld0hmk=;
+        b=5jmcA5qsn70rwYYqHQOrS8fni7G/BkrUGTic11TJcA+1jkXm2kmH8Wrw1R1JGlJtWd
+         hCpQjzs2jjTJOierD18/261C6c+9ei+hT0cBwBAfNnz7RdUx6KprPM8xgBySXU4GvHs9
+         hPC/QXFQrc0nzgRagipdnycMOv9UECbWusGpm+4kgIydFoLKkDlJYDWDj0XOrlbpRCp3
+         MNRnutLWlV1AzkLjGV9UgGGRadfmW76t2QGcvYLVFKyf9ObPrmxkuKjLZ1SdK5Gyx8SN
+         Vj61k5BsHgdkJUFjD2mSJzB1ZgobKjNxBG5ohk8OamarZMT7dzYYipWiNsPNNsyo2SPQ
+         PZVA==
+X-Gm-Message-State: AFqh2kpsd5+BW0DiSttWqZGLH0MQ6qxA1LqTscaxyEDBIGrFw1qcAz7t
+        y7HR1W6L1xWuc4KyVz5hE5hRDRZan+8CvcrpluTtxHDp4XM=
+X-Google-Smtp-Source: AMrXdXtwgvtL34Ya4QUw4+O+GI4+Uu/LUQaoUd34IgcpjkCKRYATzrxmUKA8Gy/+7oCNRZTgtKKY5Zoz1L/NPpwYzTM=
+X-Received: by 2002:a17:906:60c8:b0:877:612e:517e with SMTP id
+ f8-20020a17090660c800b00877612e517emr7090384ejk.152.1675106019926; Mon, 30
+ Jan 2023 11:13:39 -0800 (PST)
+MIME-Version: 1.0
+References: <1751684.VLH7GnMWUR@kreacher>
+In-Reply-To: <1751684.VLH7GnMWUR@kreacher>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 30 Jan 2023 20:13:28 +0100
+Message-ID: <CAJZ5v0jpmyBGFMhhKqGH6kfsuAGhhvqwbiM_Ck++_N9kUOav0Q@mail.gmail.com>
+Subject: Re: [PATCH v1 0/8] thermal: intel: intel_pch: Code simplification and cleanups
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Linux ACPI <linux-acpi@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
-        David Box <david.e.box@linux.intel.com>
-Subject: [PATCH v1 0/8] thermal: intel: intel_pch: Code simplification and cleanups
-Date:   Mon, 30 Jan 2023 19:56:49 +0100
-Message-ID: <1751684.VLH7GnMWUR@kreacher>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+        David Box <david.e.box@linux.intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.169.112
-X-CLIENT-HOSTNAME: 213.134.169.112
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudefvddguddvfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeffffffkefgheehffelteeiveeffeevhfelteejvddvieejjeelvdeiheeuveeuffenucfkphepvddufedrudefgedrudeiledrudduvdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrdduieelrdduuddvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhg
- pdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrvhhiugdrvgdrsghogieslhhinhhugidrihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+On Mon, Jan 30, 2023 at 8:08 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> Hi All,
+>
+> This patch series removes some uneeded code and data structures from the
+> intel_pch_thermal driver, rearranges it and does some assorted minor cleanups
+> (no change in behavior should result from it).
+>
+> Please refer to the individual patch changelogs for details.
 
-This patch series removes some uneeded code and data structures from the
-intel_pch_thermal driver, rearranges it and does some assorted minor cleanups
-(no change in behavior should result from it).
+I forgot to mention that this series is applicable on top of
 
-Please refer to the individual patch changelogs for details.
+https://patchwork.kernel.org/project/linux-pm/patch/5641279.DvuYhMxLoT@kreacher/
+
+which in turn applies on top of the current thermal branch in linux-pm.git,
+that is also present in the linux-next branch in linux-pm.git.
 
 Thanks!
-
-
-
