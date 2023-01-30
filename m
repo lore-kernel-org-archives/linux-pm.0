@@ -2,190 +2,81 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37E28C636D4
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 18:48:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB033C636D3
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 19:04:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237510AbjA3SsI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Jan 2023 13:48:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55044 "EHLO
+        id S237876AbjA3TEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Jan 2023 14:04:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237184AbjA3SsF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 13:48:05 -0500
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C51D269C;
-        Mon, 30 Jan 2023 10:47:59 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
- id 53872a6aedc49286; Mon, 30 Jan 2023 19:47:58 +0100
-Received: from kreacher.localnet (unknown [213.134.169.112])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 728A425258B8;
-        Mon, 30 Jan 2023 19:47:57 +0100 (CET)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH v2 2/4] thermal: intel: int340x: Rename variable in int340x_thermal_zone_add()
-Date:   Mon, 30 Jan 2023 19:43:32 +0100
-Message-ID: <10219014.nUPlyArG6x@kreacher>
-In-Reply-To: <2133431.irdbgypaU6@kreacher>
-References: <2133431.irdbgypaU6@kreacher>
+        with ESMTP id S229573AbjA3TEX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 14:04:23 -0500
+Received: from mail-oa1-f49.google.com (mail-oa1-f49.google.com [209.85.160.49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FF333865D;
+        Mon, 30 Jan 2023 11:04:20 -0800 (PST)
+Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-142b72a728fso16328719fac.9;
+        Mon, 30 Jan 2023 11:04:20 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=2KJ9Rz1Ynh3fjcAdkx5iP/6JNhfuUpXfGWr8jMXGpK8=;
+        b=DfFQEal8N3PGF1mRijjLtabH4AolzTqXVelRSeOgDbNMIOjj37h+wjT30VnvGhRfoV
+         i+rHqIk7GuBOQQdM4146l7COV0WOys+Vih20hhJ/a/TM0ZNd7SmzGMNZXgN9attYPVqv
+         rl5YiR27TQkP1H5K4MxXg/CT6tWB6ZAVO34NH/QT/945umkahsy/XFuLi1YlPhl10ndu
+         cOrDWbirqh5jKoANg8uWEH75FlyxfRcBoojmcf3brcfRXGalBURg3V2zrEllQcug78YJ
+         96pDfPWvihmD3J6LFD4inkx4X1LpwiaycNKLZ2GJwIEaFN9NVLerS3e48CktvKQWA0cQ
+         R/jw==
+X-Gm-Message-State: AFqh2krQNxmFOa4zoUXnrxBqiK7R566DHmpDAu3EwBcmAckvly6741VT
+        ZEjp/+k/+eTZFZv7KdnQkA==
+X-Google-Smtp-Source: AMrXdXtjE2UK5IbXgI+0HH5dQJ2HxAVZhp2l7U70Q5qV6hgbDhg9WyJ89Jl7Cr6tB34YfAkN15nwIw==
+X-Received: by 2002:a05:6870:828a:b0:15f:dac1:7e7d with SMTP id q10-20020a056870828a00b0015fdac17e7dmr19809449oae.25.1675105459938;
+        Mon, 30 Jan 2023 11:04:19 -0800 (PST)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id mv7-20020a0568706a8700b0015f4d1b195bsm5567310oab.36.2023.01.30.11.04.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 Jan 2023 11:04:19 -0800 (PST)
+Received: (nullmailer pid 3125626 invoked by uid 1000);
+        Mon, 30 Jan 2023 19:04:18 -0000
+Date:   Mon, 30 Jan 2023 13:04:18 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Bartosz Golaszewski <brgl@bgdev.pl>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        devicetree@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Eric Chanudet <echanude@redhat.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        linux-arm-msm@vger.kernel.org,
+        Bjorn Andersson <andersson@kernel.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: interconnect: qcom,sa8775p-rpmh: fix a typo
+Message-ID: <167510545823.3125572.248582702391244849.robh@kernel.org>
+References: <20230127092615.39690-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.169.112
-X-CLIENT-HOSTNAME: 213.134.169.112
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudefvddguddulecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudeiledrudduvdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrdduieelrdduuddvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhu
- gidrihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230127092615.39690-1-brgl@bgdev.pl>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Rename local variables int34x_thermal_zone in int340x_thermal_zone_add()
-and int340x_thermal_zone_remove() to int34x_zone which allows a number
-of code lines to be shorter and easier to read and adjust some white
-space for consistency.
+On Fri, 27 Jan 2023 10:26:15 +0100, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> 
+> The name of the chip is sa8775p, not sa8875p.
+> 
+> Reported-by: Eric Chanudet <echanude@redhat.com>
+> Link: https://lore.kernel.org/lkml/20230126203618.nbqwppaddncq7on7@echanude/
+> Fixes: 2579af94c813 ("dt-bindings: interconnect: qcom: document the interconnects for sa8775p")
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> ---
+>  .../devicetree/bindings/interconnect/qcom,sa8775p-rpmh.yaml     | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-No intentional functional impact.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-v1 -> v2: Rebase
-
----
- drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c |   67 +++++------
- 1 file changed, 33 insertions(+), 34 deletions(-)
-
-Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-===================================================================
---- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-+++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-@@ -113,7 +113,7 @@ static struct thermal_zone_params int340
- struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
- 						     int (*get_temp) (struct thermal_zone_device *, int *))
- {
--	struct int34x_thermal_zone *int34x_thermal_zone;
-+	struct int34x_thermal_zone *int34x_zone;
- 	struct thermal_trip *zone_trips;
- 	unsigned long long trip_cnt = 0;
- 	unsigned long long hyst;
-@@ -121,25 +121,25 @@ struct int34x_thermal_zone *int340x_ther
- 	acpi_status status;
- 	int i, ret;
- 
--	int34x_thermal_zone = kzalloc(sizeof(*int34x_thermal_zone), GFP_KERNEL);
--	if (!int34x_thermal_zone)
-+	int34x_zone = kzalloc(sizeof(*int34x_zone), GFP_KERNEL);
-+	if (!int34x_zone)
- 		return ERR_PTR(-ENOMEM);
- 
--	int34x_thermal_zone->adev = adev;
-+	int34x_zone->adev = adev;
- 
--	int34x_thermal_zone->ops = kmemdup(&int340x_thermal_zone_ops,
--					   sizeof(int340x_thermal_zone_ops), GFP_KERNEL);
--	if (!int34x_thermal_zone->ops) {
-+	int34x_zone->ops = kmemdup(&int340x_thermal_zone_ops,
-+				   sizeof(int340x_thermal_zone_ops), GFP_KERNEL);
-+	if (!int34x_zone->ops) {
- 		ret = -ENOMEM;
- 		goto err_ops_alloc;
- 	}
- 
- 	if (get_temp)
--		int34x_thermal_zone->ops->get_temp = get_temp;
-+		int34x_zone->ops->get_temp = get_temp;
- 
- 	status = acpi_evaluate_integer(adev->handle, "PATC", NULL, &trip_cnt);
- 	if (ACPI_SUCCESS(status)) {
--		int34x_thermal_zone->aux_trip_nr = trip_cnt;
-+		int34x_zone->aux_trip_nr = trip_cnt;
- 		trip_mask = BIT(trip_cnt) - 1;
- 	}
- 
-@@ -166,48 +166,47 @@ struct int34x_thermal_zone *int340x_ther
- 	for (i = 0; i < trip_cnt; ++i)
- 		zone_trips[i].hysteresis = hyst;
- 
--	int34x_thermal_zone->trips = zone_trips;
-+	int34x_zone->trips = zone_trips;
- 
--	int34x_thermal_zone->lpat_table = acpi_lpat_get_conversion_table(adev->handle);
-+	int34x_zone->lpat_table = acpi_lpat_get_conversion_table(adev->handle);
- 
--	int34x_thermal_zone->zone = thermal_zone_device_register_with_trips(
--						acpi_device_bid(adev),
--						zone_trips, trip_cnt,
--						trip_mask, int34x_thermal_zone,
--						int34x_thermal_zone->ops,
--						&int340x_thermal_params,
--						0, 0);
--	if (IS_ERR(int34x_thermal_zone->zone)) {
--		ret = PTR_ERR(int34x_thermal_zone->zone);
-+	int34x_zone->zone = thermal_zone_device_register_with_trips(
-+							acpi_device_bid(adev),
-+							zone_trips, trip_cnt,
-+							trip_mask, int34x_zone,
-+							int34x_zone->ops,
-+							&int340x_thermal_params,
-+							0, 0);
-+	if (IS_ERR(int34x_zone->zone)) {
-+		ret = PTR_ERR(int34x_zone->zone);
- 		goto err_thermal_zone;
- 	}
--	ret = thermal_zone_device_enable(int34x_thermal_zone->zone);
-+	ret = thermal_zone_device_enable(int34x_zone->zone);
- 	if (ret)
- 		goto err_enable;
- 
--	return int34x_thermal_zone;
-+	return int34x_zone;
- 
- err_enable:
--	thermal_zone_device_unregister(int34x_thermal_zone->zone);
-+	thermal_zone_device_unregister(int34x_zone->zone);
- err_thermal_zone:
--	kfree(int34x_thermal_zone->trips);
--	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
-+	kfree(int34x_zone->trips);
-+	acpi_lpat_free_conversion_table(int34x_zone->lpat_table);
- err_trips_alloc:
--	kfree(int34x_thermal_zone->ops);
-+	kfree(int34x_zone->ops);
- err_ops_alloc:
--	kfree(int34x_thermal_zone);
-+	kfree(int34x_zone);
- 	return ERR_PTR(ret);
- }
- EXPORT_SYMBOL_GPL(int340x_thermal_zone_add);
- 
--void int340x_thermal_zone_remove(struct int34x_thermal_zone
--				 *int34x_thermal_zone)
-+void int340x_thermal_zone_remove(struct int34x_thermal_zone *int34x_zone)
- {
--	thermal_zone_device_unregister(int34x_thermal_zone->zone);
--	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
--	kfree(int34x_thermal_zone->trips);
--	kfree(int34x_thermal_zone->ops);
--	kfree(int34x_thermal_zone);
-+	thermal_zone_device_unregister(int34x_zone->zone);
-+	acpi_lpat_free_conversion_table(int34x_zone->lpat_table);
-+	kfree(int34x_zone->trips);
-+	kfree(int34x_zone->ops);
-+	kfree(int34x_zone);
- }
- EXPORT_SYMBOL_GPL(int340x_thermal_zone_remove);
- 
-
-
-
+Acked-by: Rob Herring <robh@kernel.org>
