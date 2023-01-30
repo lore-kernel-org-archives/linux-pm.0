@@ -2,178 +2,91 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61157C64EC4
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 18:20:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C902EC54EAA
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Jan 2023 18:48:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237876AbjA3ST7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Jan 2023 13:19:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51792 "EHLO
+        id S237028AbjA3SsE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Jan 2023 13:48:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237710AbjA3STs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 13:19:48 -0500
-Received: from mail-il1-x136.google.com (mail-il1-x136.google.com [IPv6:2607:f8b0:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 514F430EB5
-        for <linux-pm@vger.kernel.org>; Mon, 30 Jan 2023 10:19:45 -0800 (PST)
-Received: by mail-il1-x136.google.com with SMTP id u8so5469614ilq.13
-        for <linux-pm@vger.kernel.org>; Mon, 30 Jan 2023 10:19:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5wxgSxSbB5Zk2REp2cxLJz/oBwzWiBxlC3Q9YLCtBp0=;
-        b=U7mVx7EzS1yrwU2P3yJCFPbOxhUhYMyue5ugqwlqBzMAWGhJp/ZcnJ5LAvCCjChwqy
-         47CGNCJ6W2hhzUKfjuleCoW0qvFzcmy96ylKq+qjamUZs0sP8W+lWn949ru912sUju2v
-         kb6hb0iu6cc++EFMCnCck8CjESUAvMzyqlZq8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5wxgSxSbB5Zk2REp2cxLJz/oBwzWiBxlC3Q9YLCtBp0=;
-        b=ane+a+cmRPCCGtpduFl39rS0wQGQ3vQGmZBa5cV1RLnfxqjve8i3bOueIr4TZXdv7c
-         TFCzwK4fGNF7Lr4+1Uf1bF9hKMOUsQwmAMYXUNLWmoTtIL9GdyPh0SJutvgHRrfP5+g6
-         gMq3jZXqnyZuPf7n5X+OUVu5p3RgcOL0q6mQbuNorGwCgp0rnAupNgP7dPB1x7B3R+9z
-         zr+RakCz21PB/ZlYyi7p/KdGG6C7ajyOUBkmTFiBTY1hfm/qdkJKDvPk0CVvINRkOBVo
-         Xuw5e6XRRDRUR2IPjVftJc7wpGGd0o1UayurpQHyFtotWFKtQEKqvDYBHZwSckCxGI2+
-         ZgMA==
-X-Gm-Message-State: AO0yUKXrmG1TVqR4U7NCSJgQV00vteeW76naMlevxGiK/3s2KCCIghFR
-        FKFTp41hyBnonWRQC2/FTAlirw==
-X-Google-Smtp-Source: AK7set9OTHPr7LKtPzs3v501iP4cToy0c5RMq+2KAtzEJ4vKLeWYV/L2SKkPk0ThRJGdjrofBXwgTg==
-X-Received: by 2002:a05:6e02:1c83:b0:310:e1f6:4a73 with SMTP id w3-20020a056e021c8300b00310e1f64a73mr7318629ill.24.1675102784653;
-        Mon, 30 Jan 2023 10:19:44 -0800 (PST)
-Received: from ravnica.bld.corp.google.com ([2620:15c:183:200:fc8a:dd2f:5914:df14])
-        by smtp.gmail.com with ESMTPSA id o16-20020a056e02115000b002f139ba4135sm4189801ill.86.2023.01.30.10.19.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Jan 2023 10:19:44 -0800 (PST)
-From:   Ross Zwisler <zwisler@chromium.org>
-X-Google-Original-From: Ross Zwisler <zwisler@google.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Ross Zwisler <zwisler@google.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        linux-trace-kernel@vger.kernel.org,
-        Todd E Brandt <todd.e.brandt@linux.intel.com>,
-        Huang Rui <ray.huang@amd.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 5/9] tools/power: use canonical ftrace path
-Date:   Mon, 30 Jan 2023 11:19:11 -0700
-Message-Id: <20230130181915.1113313-6-zwisler@google.com>
-X-Mailer: git-send-email 2.39.1.456.gfc5497dd1b-goog
-In-Reply-To: <20230130181915.1113313-1-zwisler@google.com>
-References: <20230130181915.1113313-1-zwisler@google.com>
+        with ESMTP id S236090AbjA3SsD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2023 13:48:03 -0500
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 309961421D;
+        Mon, 30 Jan 2023 10:47:56 -0800 (PST)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
+ id 8426bca2ecd88b5b; Mon, 30 Jan 2023 19:47:55 +0100
+Received: from kreacher.localnet (unknown [213.134.169.112])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 1C48725258B8;
+        Mon, 30 Jan 2023 19:47:54 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH v2 4/4] thermal: intel: int340x: Improve int340x_thermal_set_trip_temp()
+Date:   Mon, 30 Jan 2023 19:47:43 +0100
+Message-ID: <3719164.kQq0lBPeGt@kreacher>
+In-Reply-To: <2133431.irdbgypaU6@kreacher>
+References: <2133431.irdbgypaU6@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.169.112
+X-CLIENT-HOSTNAME: 213.134.169.112
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudefvddguddulecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudeiledrudduvdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrdduieelrdduuddvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeeipdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhu
+ gidrihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The canonical location for the tracefs filesystem is at /sys/kernel/tracing.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-But, from Documentation/trace/ftrace.rst:
+Instead of using snprintf() to populate the ACPI object name in
+int340x_thermal_set_trip_temp(), use an appropriate initializer
+and make the function fail if its trip argument is greater than 9,
+because ACPI object names can only be 4 characters long and it does
+not make sense to even try to evaluate objects with longer names (that
+argument is guaranteed to be non-negative, because it comes from the
+thermal code that will not pass negative trip numbers to zone
+callbacks).
 
-  Before 4.1, all ftrace tracing control files were within the debugfs
-  file system, which is typically located at /sys/kernel/debug/tracing.
-  For backward compatibility, when mounting the debugfs file system,
-  the tracefs file system will be automatically mounted at:
-
-  /sys/kernel/debug/tracing
-
-A few scripts in tools/power still refer to this older debugfs path, so
-let's update them to avoid confusion.
-
-Signed-off-by: Ross Zwisler <zwisler@google.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- tools/power/pm-graph/sleepgraph.py                     |  4 ++--
- tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py  |  4 ++--
- .../x86/intel_pstate_tracer/intel_pstate_tracer.py     | 10 +++++-----
- 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/tools/power/pm-graph/sleepgraph.py b/tools/power/pm-graph/sleepgraph.py
-index cfe343306e08..eddf8101ddf6 100755
---- a/tools/power/pm-graph/sleepgraph.py
-+++ b/tools/power/pm-graph/sleepgraph.py
-@@ -120,9 +120,9 @@ class SystemValues:
- 	cgexp = False
- 	testdir = ''
- 	outdir = ''
--	tpath = '/sys/kernel/debug/tracing/'
-+	tpath = '/sys/kernel/tracing/'
- 	fpdtpath = '/sys/firmware/acpi/tables/FPDT'
--	epath = '/sys/kernel/debug/tracing/events/power/'
-+	epath = '/sys/kernel/tracing/events/power/'
- 	pmdpath = '/sys/power/pm_debug_messages'
- 	s0ixpath = '/sys/module/intel_pmc_core/parameters/warn_on_s0ix_failures'
- 	s0ixres = '/sys/devices/system/cpu/cpuidle/low_power_idle_system_residency_us'
-diff --git a/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py b/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
-index 2dea4032ac56..904df0ea0a1e 100755
---- a/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
-+++ b/tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
-@@ -248,7 +248,7 @@ def signal_handler(signal, frame):
-         ipt.free_trace_buffer()
-         sys.exit(0)
+v1 -> v2: New patch in v2
+
+---
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
++++ linux-pm/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+@@ -42,10 +42,12 @@ static int int340x_thermal_set_trip_temp
+ 					 int trip, int temp)
+ {
+ 	struct int34x_thermal_zone *d = zone->devdata;
++	char name[] = {'P', 'A', 'T', '0' + trip, '\0'};
+ 	acpi_status status;
+-	char name[10];
  
--trace_file = "/sys/kernel/debug/tracing/events/amd_cpu/enable"
-+trace_file = "/sys/kernel/tracing/events/amd_cpu/enable"
- signal.signal(signal.SIGINT, signal_handler)
- 
- interval = ""
-@@ -319,7 +319,7 @@ print(cur_version)
- cleanup_data_files()
- 
- if interval:
--    file_name = "/sys/kernel/debug/tracing/trace"
-+    file_name = "/sys/kernel/tracing/trace"
-     ipt.clear_trace_file()
-     ipt.set_trace_buffer_size(memory)
-     ipt.enable_trace(trace_file)
-diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-index b46e9eb8f5aa..ec3323100e1a 100755
---- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-+++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-@@ -373,7 +373,7 @@ def clear_trace_file():
-     """ Clear trace file """
- 
-     try:
--        f_handle = open('/sys/kernel/debug/tracing/trace', 'w')
-+        f_handle = open('/sys/kernel/tracing/trace', 'w')
-         f_handle.close()
-     except:
-         print('IO error clearing trace file ')
-@@ -401,7 +401,7 @@ def set_trace_buffer_size(memory):
-     """ Set trace buffer size """
- 
-     try:
--       with open('/sys/kernel/debug/tracing/buffer_size_kb', 'w') as fp:
-+       with open('/sys/kernel/tracing/buffer_size_kb', 'w') as fp:
-           fp.write(memory)
-     except:
-        print('IO error setting trace buffer size ')
-@@ -411,7 +411,7 @@ def free_trace_buffer():
-     """ Free the trace buffer memory """
- 
-     try:
--       open('/sys/kernel/debug/tracing/buffer_size_kb'
-+       open('/sys/kernel/tracing/buffer_size_kb'
-                  , 'w').write("1")
-     except:
-         print('IO error freeing trace buffer ')
-@@ -495,7 +495,7 @@ def signal_handler(signal, frame):
-         sys.exit(0)
- 
- if __name__ == "__main__":
--    trace_file = "/sys/kernel/debug/tracing/events/power/pstate_sample/enable"
-+    trace_file = "/sys/kernel/tracing/events/power/pstate_sample/enable"
-     signal.signal(signal.SIGINT, signal_handler)
- 
-     interval = ""
-@@ -569,7 +569,7 @@ if __name__ == "__main__":
-     cleanup_data_files()
- 
-     if interval:
--        filename = "/sys/kernel/debug/tracing/trace"
-+        filename = "/sys/kernel/tracing/trace"
-         clear_trace_file()
-         set_trace_buffer_size(memory)
-         enable_trace(trace_file)
--- 
-2.39.1.456.gfc5497dd1b-goog
+-	snprintf(name, sizeof(name), "PAT%d", trip);
++	if (trip > 9)
++		return -EINVAL;
++
+ 	status = acpi_execute_simple_method(d->adev->handle, name,
+ 					    millicelsius_to_deci_kelvin(temp));
+ 	if (ACPI_FAILURE(status))
+
+
 
