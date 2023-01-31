@@ -2,101 +2,137 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E41E3C38142
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Jan 2023 14:57:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE462C636D4
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Jan 2023 15:21:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232319AbjAaO5x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Jan 2023 09:57:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56504 "EHLO
+        id S233197AbjAaPVB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Jan 2023 10:21:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232329AbjAaO5c (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2023 09:57:32 -0500
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 149314900C
-        for <linux-pm@vger.kernel.org>; Tue, 31 Jan 2023 06:57:24 -0800 (PST)
-Received: by mail-wm1-x32a.google.com with SMTP id bg26so4695997wmb.0
-        for <linux-pm@vger.kernel.org>; Tue, 31 Jan 2023 06:57:24 -0800 (PST)
+        with ESMTP id S230054AbjAaPUg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2023 10:20:36 -0500
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5DAE5866F;
+        Tue, 31 Jan 2023 07:18:32 -0800 (PST)
+Received: by mail-wm1-x331.google.com with SMTP id c4-20020a1c3504000000b003d9e2f72093so12708689wma.1;
+        Tue, 31 Jan 2023 07:18:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=oHAz431bQVsrWdf09rNRXz2YYOaoDWdEG53YOtzyMSQ=;
-        b=NPd6zNRKzONuD2Bt3nTD1S2D1/hPxA1Tii6pwOg3YI2S7XlGqO3PVRx8DjdKC7usic
-         WRgM72iqDgdYDvTlpvokkexd98wusJk2S5CFituZpGdGu59bTyMPueBrOFFDaymNyNJv
-         huEHZktGRtEtyL+zjP7bhPjYfRxGhuypLfDcQntqcq5bfg0qw6ivIfp/XiHuWS6nHcD9
-         f1K2aJC8SrxaBfk+ytz4zeq5xqeBibECPZy6TW/3gYrB+ec7xhv8+HMWVrT6cPrG/tU2
-         iHSxaG8QWDtevNoImOV2yp94wEONl6/SqrtoSGWuRJoUGGyQ3RzlV6sfAHSoi7tgfPcz
-         SP3g==
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bBwrI8hKmSv5gQ7N7D3hIfQL3dVj+xe6qEN98lCdCy0=;
+        b=KUvk6pa+U6ArxTo3fM5DG3JpjKo5Mparu+2/mk+iCDI/peBaxA3PK9rAFfvRCUXu57
+         kS6KKtIfsB5+4KDeLjxkUqzowUynUK6Bggov5so9huUjuB8vxtXaylHXdP9YeSHzt7tx
+         9Rmk6bn88UuIjtj63z/UaEyg0XCx7lxEYHS64Ulhv8bqk2KhIYBGAOYBYowTAlPDYEiu
+         OQ53w+e3VH2C0NOAQmDH15haFVFBqsOU+BmdaIq3ZG4PItdg7kzy+QpQt1H+WoWwsfle
+         Brbx9uW1Z2/pjU1oX93aoRVkElmYBJaqeWPOd3wUAVTHJCZQ72d3FtbyROAH+yDL3voH
+         4Big==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=oHAz431bQVsrWdf09rNRXz2YYOaoDWdEG53YOtzyMSQ=;
-        b=mTStpzMA4IwBDNIJbDJ/0ThXHaZiA6/ZDPvmvKvA1yOawm87u3M0XGh7gkUdM9wNYt
-         W9XjC18v9aGDk88Lz1RIyhaXLu7787bEFhk01D6eCjHoV9a7NKtOCSqZ4FAMJwhy7slT
-         gyxAe0VpJ4dIDseJTUAyuxaNwWwOfI2XRgTCwpGMJxKdg+BsQuIMbGg+TW4Twm3II65I
-         be3Tjo1ZTmcPAb3vHa3oL93V0o7xET2QHhN059TFTMPBrfpwS6YWFbw4vfyWIuPN8aq4
-         UNYUV9S7P7+n6Tvoouqsfuda2nzYiqelgmkSZPhz0XrzV4Y0b/XAJZu1d9cU+S6M/oOd
-         e7aw==
-X-Gm-Message-State: AFqh2kq3s134aAAB3fUg07bMrJ3A3OZ3WpWeePF7sr0VXt4c8t+2Dr40
-        Akd4JdfioUTTml6GPjIdxjWHxg==
-X-Google-Smtp-Source: AMrXdXt/MYfxZlWFqCP9KNKC+s3TYem6ne/GKkZEeZLYLy2NQfumKPXr30pG4kvYeFN7am8u18dT4Q==
-X-Received: by 2002:a05:600c:5386:b0:3cf:9844:7b11 with SMTP id hg6-20020a05600c538600b003cf98447b11mr56227425wmb.23.1675177042481;
-        Tue, 31 Jan 2023 06:57:22 -0800 (PST)
-Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.googlemail.com with ESMTPSA id v6-20020a05600c444600b003db09692364sm21691874wmn.11.2023.01.31.06.57.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 31 Jan 2023 06:57:22 -0800 (PST)
-Message-ID: <8897ee56-3043-d2cb-4dbc-3ddc97e19854@linaro.org>
-Date:   Tue, 31 Jan 2023 15:57:20 +0100
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=bBwrI8hKmSv5gQ7N7D3hIfQL3dVj+xe6qEN98lCdCy0=;
+        b=UgpC9zeGEF/tKv+TCTCXPEfW8sVqz/OpWCjdkZiSKDXcWMjBkH8C1VVjpanVWufFxR
+         qibvClZNhWtXUdTdEZize5quw0riwKBPRMcRqAV+l5EKKjTi4jkAEdSwrvVszRE+p5bF
+         lpfnhOFLzA8bogdQUHz0wFxfMDQPcTiaB0MUE7RsYPHn1FjglVpNlzIHpmoeHyj4VI39
+         c6z5koFvnguBFNeNToUdedghyRJ5vJx2AjrdzS6XGlYpIwvh+jv5P+Qs97yobj9IDQmo
+         QXgUUPr66w+qibf7Ha3utZLC1zlvXXiqIeuZ+n5aQDc4TT21cw82Z2QG6AshgFd6Zx8I
+         5luw==
+X-Gm-Message-State: AO0yUKXRqMLnkVoKWXmNFWL+AWWftVRCHeBz1bbjAFVS3TL8QVovHLOZ
+        toibGtwrFVBc0tSld4MFVlhDKziyvtk=
+X-Google-Smtp-Source: AK7set+VVu+M+aULp66owrhILnZtcngXHdXkQ2pADm4UZQdos1fjvbwnPnM2kpyojLmxxTWfqCzXpg==
+X-Received: by 2002:a05:600c:3492:b0:3dc:de85:5007 with SMTP id a18-20020a05600c349200b003dcde855007mr5985854wmq.21.1675178311223;
+        Tue, 31 Jan 2023 07:18:31 -0800 (PST)
+Received: from localhost.localdomain (93-34-88-241.ip49.fastwebnet.it. [93.34.88.241])
+        by smtp.googlemail.com with ESMTPSA id x9-20020a05600c21c900b003dc434b39c7sm2854861wmj.0.2023.01.31.07.18.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Jan 2023 07:18:30 -0800 (PST)
+From:   Christian Marangi <ansuelsmth@gmail.com>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Ilia Lin <ilia.lin@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        Yassine Oudjana <y.oudjana@protonmail.com>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Christian Marangi <ansuelsmth@gmail.com>
+Subject: [PATCH v5 1/3] dt-bindings: cpufreq: qcom-cpufreq-nvmem: specify supported opp tables
+Date:   Tue, 31 Jan 2023 16:18:17 +0100
+Message-Id: <20230131151819.16612-1-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH v1 4/8] thermal: intel: intel_pch: Eliminate device
- operations object
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        David Box <david.e.box@linux.intel.com>
-References: <1751684.VLH7GnMWUR@kreacher> <2141577.Mh6RI2rZIc@kreacher>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <2141577.Mh6RI2rZIc@kreacher>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 30/01/2023 20:02, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The same device operations object is pointed to by all of the board
-> configurations in the driver, so effectively the same operations
-> callbacks are used by all of them which only adds overhead (that can
-> be significant due to retpolines) for no real purpose.
-> 
-> For this reason, drop the device operations object and replace the
-> respective callback invocations by direct calls to the specific
-> functions that were previously pointed to by callback pointers.
-> 
-> No intentional change in behavior.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
+Add additional info on what opp tables the defined devices in this schema
+supports (operating-points-v2-kryo-cpu and operating-points-v2-qcom-level)
+and reference them.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+Changes v5:
+- Swap patch 1 and patch 2 to fix dt_check_warning on single
+  patch bisecting 
+Changes v4:
+- Add patch split from patch 1
 
+ .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml  | 35 ++++++++++++++-----
+ 1 file changed, 26 insertions(+), 9 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
+index 9c086eac6ca7..7c42d9439abd 100644
+--- a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
+@@ -55,15 +55,32 @@ properties:
+ 
+ patternProperties:
+   '^opp-table(-[a-z0-9]+)?$':
+-    if:
+-      properties:
+-        compatible:
+-          const: operating-points-v2-kryo-cpu
+-    then:
+-      patternProperties:
+-        '^opp-?[0-9]+$':
+-          required:
+-            - required-opps
++    allOf:
++      - if:
++          properties:
++            compatible:
++              const: operating-points-v2-kryo-cpu
++        then:
++          $ref: /schemas/opp/opp-v2-kryo-cpu.yaml#
++
++      - if:
++          properties:
++            compatible:
++              const: operating-points-v2-kryo-cpu
++        then:
++          patternProperties:
++            '^opp-?[0-9]+$':
++              required:
++                - required-opps
++
++      - if:
++          properties:
++            compatible:
++              const: operating-points-v2-qcom-level
++        then:
++          $ref: /schemas/opp/opp-v2-qcom-level.yaml#
++
++    unevaluatedProperties: false
+ 
+ additionalProperties: true
+ 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.38.1
 
