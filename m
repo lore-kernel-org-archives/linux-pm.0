@@ -2,81 +2,94 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BCBEC636CC
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Jan 2023 15:32:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6A95C636CC
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Jan 2023 15:36:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232971AbjAaPcf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Jan 2023 10:32:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43672 "EHLO
+        id S233327AbjAaPgO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Jan 2023 10:36:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46754 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233248AbjAaPcb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2023 10:32:31 -0500
-X-Greylist: delayed 601 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 31 Jan 2023 07:32:31 PST
-Received: from vulcan.natalenko.name (vulcan.natalenko.name [IPv6:2001:19f0:6c00:8846:5400:ff:fe0c:dfa0])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C757199FB;
-        Tue, 31 Jan 2023 07:32:31 -0800 (PST)
-Received: from spock.localnet (unknown [83.148.33.151])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by vulcan.natalenko.name (Postfix) with ESMTPSA id EC25A11F6B51;
-        Tue, 31 Jan 2023 16:13:31 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=natalenko.name;
-        s=dkim-20170712; t=1675178012;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=SEAFekxO4H1r0D0uCq8wnBQbhqfRc6NLBnWGl+JsmXc=;
-        b=tjKz44pDJwB6f8baVJEvgny1EJsyMst+Y/ZkdXo6IoXPslCNquifKGGDuTBpDrJsCBe2Ky
-        g6RyIOi/LTpj+Id7xPevFkXwYi99T4Sho7F8ZnU4Iq2Lkb265x52TShUvMwLfY8SGdj0Yv
-        HO1C6GCKW6by2OC8izCMKYkkoeW9lEE=
-From:   Oleksandr Natalenko <oleksandr@natalenko.name>
-To:     Wyes Karny <wyes.karny@amd.com>,
-        Rafael J Wysocki <rafael@kernel.org>,
-        Huang Rui <ray.huang@amd.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Mario.Limonciello@amd.com, Perry.Yuan@amd.com, torvic9@mailbox.org
-Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>,
-        santosh.shukla@amd.com, Len Brown <lenb@kernel.org>,
-        Robert Moore <robert.moore@intel.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Ananth Narayan <ananth.narayan@amd.com>, gautham.shenoy@amd.com
-Subject: Re: [PATCH v4 0/6] amd_pstate: Add guided autonomous mode support
-Date:   Tue, 31 Jan 2023 16:13:30 +0100
-Message-ID: <5643269.DvuYhMxLoT@natalenko.name>
-In-Reply-To: <1501106335.274.1675161471528@office.mailbox.org>
-References: <20230131052141.96475-1-wyes.karny@amd.com>
- <1501106335.274.1675161471528@office.mailbox.org>
+        with ESMTP id S231866AbjAaPgN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2023 10:36:13 -0500
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA0A94C6F8
+        for <linux-pm@vger.kernel.org>; Tue, 31 Jan 2023 07:36:08 -0800 (PST)
+Received: by mail-wr1-x42b.google.com with SMTP id h12so14575100wrv.10
+        for <linux-pm@vger.kernel.org>; Tue, 31 Jan 2023 07:36:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=4He1XsPyOlYucKqUu+Gkem7+0XnZThvYXyNg8w0n1J0=;
+        b=FXYxuL+bEVPsdk0pKfFMkVrGNHdxbaWQGjA6GMmUQtujuicg4G9YLycFKwywYU04GY
+         +vxdNP0O61f5kufbMCbHTcNQ7EuLrsZz12p29ZwMZMQC4hmPM8forOsvM8DcZH9rOqWC
+         CYqa1bbaFOycwWWIXtZonbkQMKAa8AyMJiiZkRlnLzS6yQUbKIYQxLSVZ2rfol6eouze
+         Oz6i50OwSkVkaTVRNqRV9xUd+OmeaK0gvyid5QPOUhjcRVFz1B0je3S4APWEHX5mLPQv
+         FfpzpJj/rxbhTXxA4ZsrWvixR24y1xMe6gQKJcs/KumGvVKokDmmB1DRVI+Qpm1PPUO7
+         zANA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4He1XsPyOlYucKqUu+Gkem7+0XnZThvYXyNg8w0n1J0=;
+        b=D2OXCF8za4Bcich+V2nnam6wCzuc2SlXECGO+gA3d30+hXZhWMmhiKCazoD4+mT9nu
+         gngIGTx+Ms+SuLKfzJ16JcjYHyLt5JQUAoPeXk1IaUnTsbkjHutaQEtmQQUc3zJ35/oE
+         N2RC/LvWlwQwY+FQutF6dcvFKUPTqhVrWbknhHtT24gY+RmbWX7RdU9tfNEZt0gRaeQz
+         4BqWK9QcUdhwzjvEm8Zyfa9jqjItMm35Yp3oDILQGI1HjckMD6vJDDahrqc+hBpM4xmH
+         d4x4wXrmUj7D4x7OjaOQvm2XCpY3MVcrzn9yffN1JDYJmBN005q0gbABqwD4PQcqHHXz
+         Kigg==
+X-Gm-Message-State: AFqh2ko5mapSGrb5dQiH83WD1LrrkWZSvOKIDw4NkDGlV9UuZ7tXSmH6
+        QFo4j8zYT63NLIySM1/M1p1UUg==
+X-Google-Smtp-Source: AMrXdXv6BQjgkDK9X3LVit0UZaU80yr2mOlMCeXEk4wJ8iH+3bhvZ9pxQUPZ2tEWvPXsTjR/SWwGeg==
+X-Received: by 2002:a5d:46c2:0:b0:2bf:9468:340 with SMTP id g2-20020a5d46c2000000b002bf94680340mr33831907wrs.19.1675179367303;
+        Tue, 31 Jan 2023 07:36:07 -0800 (PST)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id z2-20020a5d6542000000b00267bcb1bbe5sm14991191wrv.56.2023.01.31.07.36.06
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 31 Jan 2023 07:36:06 -0800 (PST)
+Message-ID: <c3a142c5-aac5-5d0a-72fa-3b444a2fa202@linaro.org>
+Date:   Tue, 31 Jan 2023 16:36:05 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
+Subject: Re: [PATCH v2 1/4] thermal: intel: int340x: Assorted minor cleanups
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>
+References: <2133431.irdbgypaU6@kreacher> <3220135.44csPzL39Z@kreacher>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <3220135.44csPzL39Z@kreacher>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello.
+On 30/01/2023 19:42, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Improve some inconsistent usage of white space in int340x_thermal_zone.c,
+> fix up one coding style issue in it (missing braces around an else
+> branch of a conditional) and while at it replace a !ACPI_FAILURE()
+> check with an equivalent ACPI_SUCCESS() one.
+> 
+> No intentional functional impact.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 
-On =FAter=FD 31. ledna 2023 11:37:51 CET torvic9@mailbox.org wrote:
-> Can you rebase this patchset onto the newest EPP v12 series [1] ?
->=20
-> [1] https://lore.kernel.org/linux-pm/20230131090016.3970625-1-perry.yuan@=
-amd.com/
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-You may consider trying my rebase here: [1].
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-This commit applies to v11+v3 series. I hope I didn't miss anything.
-
-If interested, please let me know whether it works for you.
-
-Thanks.
-
-[1] https://codeberg.org/pf-kernel/linux/commit/438525b8029b23967722e9c7af9=
-7c6b8deb25029
-
-=2D-=20
-Oleksandr Natalenko (post-factum)
-
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
