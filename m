@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 464ADC6FD1A
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:17:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18E3EC64EC5
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:17:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230286AbjBAKRF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Feb 2023 05:17:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52088 "EHLO
+        id S232031AbjBAKQf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Feb 2023 05:16:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232165AbjBAKQj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 05:16:39 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 227BD53542;
-        Wed,  1 Feb 2023 02:16:38 -0800 (PST)
+        with ESMTP id S230294AbjBAKQe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 05:16:34 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 541762ED46;
+        Wed,  1 Feb 2023 02:16:33 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 1A396B81FDA;
-        Wed,  1 Feb 2023 10:16:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F477C4361C;
-        Wed,  1 Feb 2023 10:16:33 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E4EFC61719;
+        Wed,  1 Feb 2023 10:16:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 54262C433D2;
+        Wed,  1 Feb 2023 10:16:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1675246593;
-        bh=4DlVblB8F3elgXtYl/ybK6UQCtFfPIALduJwWumbzVs=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LNsGODldlO93I8GvVgFCiD7Z+2kCq1rZ3tqmRwXziFuyep550BZXGHVg+lVKTaCzf
-         HO2c0hp0tHSBwCHl1eCEcew3mjkVJlWmtXLbcWUk7q1jmVvAfTW0E1z7VjOSTIGuuT
-         Ga2XbQhAQ2L8VswsOei8+SuYWAMwCdeaZpTVMsq39MI+mWQy2aVt3oWW74CEUJQBv0
-         TJKX9kMxvPeL39gogJyYEWdZNC/tWHV6F24wicVuAFaP/845NbUL8XpzGbzAFh6/v1
-         fRpw5ArSogRCx3n1KKCFyoDJR3o4vorvkivtBJIRqbm0oZ9s7LEXrfWmMwG1gIx5P2
-         e77bCfdMJ97xg==
+        s=k20201202; t=1675246592;
+        bh=+WgLPL8WT0FxtagHVUrZnhdj/8PeUOkJkr1/3azk/kU=;
+        h=From:To:Cc:Subject:Date:From;
+        b=NFnfkoB205ThPCMvaBzX+X/y7sneBmT7QeC/v8unUSlKGl0usZngnprenkKkUYfAV
+         wrDzbWxvFlgCyvjLDdB1zlVyBSyXAXe3zx23luAukwYf7e9+d4fKoh2u2KKUvd0egz
+         dEbdnUF1PvOUlERVVJvxiaMIhswRaVQxdAAoeW0r2tkkSN3MjqkdJc1xRGqS5ggZAy
+         BoqAYpHPzIi/Mcg31Jl7ua2eQzpz3iNEzznPFrI6gAuKDoCq4Doy9L9jH+7lJ0El84
+         Z6xyeDO8w/+MYFKMWGf26rZEBG+AZRLi3Od3KYKQb3ubFi1ZZ5y74any3nlj2Q6AO6
+         KGv6vPgk9Yjhw==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pNAAg-00044G-7X; Wed, 01 Feb 2023 11:16:54 +0100
+        id 1pNAAe-00043g-7u; Wed, 01 Feb 2023 11:16:53 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     Shawn Guo <shawnguo@kernel.org>,
@@ -53,54 +53,89 @@ Cc:     Shawn Guo <shawnguo@kernel.org>,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org
-Subject: [PATCH 14/23] interconnect: exynos: fix node leak in probe PM QoS error path
-Date:   Wed,  1 Feb 2023 11:15:50 +0100
-Message-Id: <20230201101559.15529-15-johan+linaro@kernel.org>
+        Johan Hovold <johan+linaro@kernel.org>
+Subject: [PATCH 00/23] interconnect: fix racy provider registration
+Date:   Wed,  1 Feb 2023 11:15:36 +0100
+Message-Id: <20230201101559.15529-1-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230201101559.15529-1-johan+linaro@kernel.org>
-References: <20230201101559.15529-1-johan+linaro@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make sure to add the newly allocated interconnect node to the provider
-before adding the PM QoS request so that the node is freed on errors.
+The current interconnect provider interface is inherently racy as
+providers are expected to be registered before being fully initialised.
 
-Fixes: 2f95b9d5cf0b ("interconnect: Add generic interconnect driver for Exynos SoCs")
-Cc: stable@vger.kernel.org      # 5.11
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
----
- drivers/interconnect/samsung/exynos.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+This can specifically cause racing DT lookups to fail as I recently
+noticed when the Qualcomm cpufreq driver failed to probe:
 
-diff --git a/drivers/interconnect/samsung/exynos.c b/drivers/interconnect/samsung/exynos.c
-index 6559d8cf8068..e70665899482 100644
---- a/drivers/interconnect/samsung/exynos.c
-+++ b/drivers/interconnect/samsung/exynos.c
-@@ -149,6 +149,9 @@ static int exynos_generic_icc_probe(struct platform_device *pdev)
- 				 &priv->bus_clk_ratio))
- 		priv->bus_clk_ratio = EXYNOS_ICC_DEFAULT_BUS_CLK_RATIO;
- 
-+	icc_node->data = priv;
-+	icc_node_add(icc_node, provider);
-+
- 	/*
- 	 * Register a PM QoS request for the parent (devfreq) device.
- 	 */
-@@ -157,9 +160,6 @@ static int exynos_generic_icc_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto err_node_del;
- 
--	icc_node->data = priv;
--	icc_node_add(icc_node, provider);
--
- 	icc_parent_node = exynos_icc_get_parent(bus_dev->of_node);
- 	if (IS_ERR(icc_parent_node)) {
- 		ret = PTR_ERR(icc_parent_node);
+	of_icc_xlate_onecell: invalid index 0
+        cpu cpu0: error -EINVAL: error finding src node
+        cpu cpu0: dev_pm_opp_of_find_icc_paths: Unable to get path0: -22
+        qcom-cpufreq-hw: probe of 18591000.cpufreq failed with error -22
+
+This only happens very rarely, but the bug is easily reproduced by
+increasing the race window by adding an msleep() after registering
+osm-l3 interconnect provider.
+
+Note that the Qualcomm cpufreq driver is especially susceptible to this
+race as the interconnect path is looked up from the CPU nodes so that
+driver core does not guarantee the probe order even when device links
+are enabled (which they not always are).
+
+This series adds a new interconnect provider registration API which is
+used to fix up the interconnect drivers before removing the old racy
+API.
+
+Included are also a number of fixes for other bugs found while preparing
+the series.
+
+Johan
+
+
+Johan Hovold (23):
+  interconnect: fix mem leak when freeing nodes
+  interconnect: fix icc_provider_del() error handling
+  interconnect: fix provider registration API
+  interconnect: imx: fix registration race
+  interconnect: qcom: osm-l3: fix registration race
+  interconnect: qcom: rpm: fix probe child-node error handling
+  interconnect: qcom: rpm: fix probe PM domain error handling
+  interconnect: qcom: rpm: fix registration race
+  interconnect: qcom: rpmh: fix probe child-node error handling
+  interconnect: qcom: rpmh: fix registration race
+  interconnect: qcom: msm8974: fix registration race
+  interconnect: qcom: sm8450: fix registration race
+  interconnect: qcom: sm8550: fix registration race
+  interconnect: exynos: fix node leak in probe PM QoS error path
+  interconnect: exynos: fix registration race
+  interconnect: exynos: drop redundant link destroy
+  memory: tegra: fix interconnect registration race
+  memory: tegra124-emc: fix interconnect registration race
+  memory: tegra20-emc: fix interconnect registration race
+  memory: tegra30-emc: fix interconnect registration race
+  interconnect: drop racy registration API
+  interconnect: drop unused icc_get() interface
+  interconnect: drop unused icc_link_destroy() interface
+
+ drivers/interconnect/core.c           | 149 +++++---------------------
+ drivers/interconnect/imx/imx.c        |  20 ++--
+ drivers/interconnect/qcom/icc-rpm.c   |  33 +++---
+ drivers/interconnect/qcom/icc-rpmh.c  |  30 ++++--
+ drivers/interconnect/qcom/msm8974.c   |  20 ++--
+ drivers/interconnect/qcom/osm-l3.c    |  14 ++-
+ drivers/interconnect/qcom/sm8450.c    |  22 ++--
+ drivers/interconnect/qcom/sm8550.c    |  22 ++--
+ drivers/interconnect/samsung/exynos.c |  30 +++---
+ drivers/memory/tegra/mc.c             |  16 ++-
+ drivers/memory/tegra/tegra124-emc.c   |  12 +--
+ drivers/memory/tegra/tegra20-emc.c    |  12 +--
+ drivers/memory/tegra/tegra30-emc.c    |  12 +--
+ include/linux/interconnect-provider.h |  19 ++--
+ include/linux/interconnect.h          |   8 --
+ 15 files changed, 154 insertions(+), 265 deletions(-)
+
 -- 
 2.39.1
 
