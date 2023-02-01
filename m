@@ -2,109 +2,98 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAF6CC05027
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 18:16:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B36ACC38142
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 18:32:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230494AbjBASQM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Feb 2023 13:16:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54836 "EHLO
+        id S230432AbjBASc3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Feb 2023 13:32:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230000AbjBASQJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 13:16:09 -0500
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [IPv6:2001:67c:2050:0:465::201])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBD677E6E4
-        for <linux-pm@vger.kernel.org>; Wed,  1 Feb 2023 10:16:08 -0800 (PST)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org [10.196.197.2])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4P6VTp3jWPz9sjr;
-        Wed,  1 Feb 2023 19:15:58 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-        t=1675275358;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=JTa13PkDyAD5Fq00WCKRPhtlL382Rc6MKBWbBS0vN8U=;
-        b=anz+I5B7rcrJv6dHk6f+Fs58QbKAObnFuF75K65qNfjem6PEjB+mNYe/dcg68Ja1i+0i7g
-        2Ae2MrMs5rNwhGssVKgAFEn0nDCmc5yOW8CD9ALtr1WsvaA56amvrw6VRPp88At7UvTjZy
-        zfLO0xkxaAmidwXgW2TwbGMCANkM0bKG6SUBeNnS96StLfB2C455j0mD/POXukDKtULvuy
-        h+X5NAQX1uBNKgJ39aCyMKb9vTC7e1bBpBFkL1DPtaJ9CCVivGpciiLzqDL3VkJ2tfd19A
-        dO6S+oUsf/XQhiGKpx9rWfGUy8AZpdM87yJWqL6wzIPyk8p9CP3BLIrSSzZT5g==
-Message-ID: <dfacbc3f-beb3-73f3-7e44-f3d919839d7f@mailbox.org>
-Date:   Wed, 1 Feb 2023 18:15:47 +0000
+        with ESMTP id S231569AbjBASc0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 13:32:26 -0500
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D6E62BEF0;
+        Wed,  1 Feb 2023 10:32:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1675276345; x=1706812345;
+  h=from:to:cc:subject:date:message-id:mime-version:reply-to:
+   content-transfer-encoding;
+  bh=UclNVWFvqIPe9hClgldAXJmUDe82JxeqnIRpO7uqdR0=;
+  b=n83o5CEDJKnGoWCI6ttm9CV+a57Tb2wkjJzqqHqBgCfDdmnlJCjS1gIB
+   E5nyIzE4vW0d2YrhsGc75EZl4J+D7JqSWdS/rGaPe9mFqju0w+gbBLsn1
+   AvLtgnfzHqJLSqcsIpGdu8SoGZtK3esEH3Bw88FtralSqE2GgWzZ2pCP6
+   ptzAARW9tHqU2EorQj7pUYHjWunhkMEFgvM+9qYYzxwEuscUt3t5VWZn9
+   QV2Bq7Qucg6FrS2ntDUzHBld4F4/gmgW9z12dpcfSP42xLlMYnxCsoeok
+   WxKtaLcP6/0z4oajIARlnYIwZzMAnbW2dQmV9aPVuDMGdTPtteH/ygS3q
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10608"; a="390626521"
+X-IronPort-AV: E=Sophos;i="5.97,265,1669104000"; 
+   d="scan'208";a="390626521"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2023 10:32:21 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10608"; a="697374361"
+X-IronPort-AV: E=Sophos;i="5.97,265,1669104000"; 
+   d="scan'208";a="697374361"
+Received: from earamire-mobl1.amr.corp.intel.com (HELO lenb-desk1.amr.corp.intel.com) ([10.212.85.96])
+  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2023 10:32:17 -0800
+From:   Len Brown <len.brown@intel.com>
+To:     rafael@kernel.org
+Cc:     kvalo@codeaurora.org, linux-pm@vger.kernel.org,
+        linux-wireless@vger.kernel.org, Len Brown <len.brown@intel.com>,
+        Carl Huang <cjhuang@codeaurora.org>, stable@vger.kernel.org
+Subject: [PATCH] ath11k: allow system suspend to survive ath11k
+Date:   Wed,  1 Feb 2023 12:32:01 -0600
+Message-Id: <20230201183201.14431-1-len.brown@intel.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-Subject: Re: [PATCH v3 0/6] amd_pstate: Add guided autonomous mode support
-Content-Language: en-US
-To:     Wyes Karny <wyes.karny@amd.com>
-Cc:     Rafael J Wysocki <rafael@kernel.org>,
-        Huang Rui <ray.huang@amd.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Mario.Limonciello@amd.com, Perry.Yuan@amd.com,
-        Ananth Narayan <ananth.narayan@amd.com>,
-        gautham.shenoy@amd.com, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Bagas Sanjaya <bagasdotme@gmail.com>, santosh.shukla@amd.com,
-        Len Brown <lenb@kernel.org>,
-        Robert Moore <robert.moore@intel.com>,
-        Borislav Petkov <bp@suse.de>
-References: <20230119115017.10188-1-wyes.karny@amd.com>
- <8c09f806-b00d-515b-bd1d-2f433e44b1a4@mailbox.org>
- <20230131053427.cdpg5zaqyxf7ou2f@beas>
-From:   Tor Vic <torvic9@mailbox.org>
-In-Reply-To: <20230131053427.cdpg5zaqyxf7ou2f@beas>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-META: ws53a61rg81hufw5idcjtd9gi7bxwzf5
-X-MBO-RS-ID: 9827835aedd8814a521
+Reply-To: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+When ath11k runs into internal errors upon suspend,
+it returns an error code to pci_pm_suspend, which
+aborts the entire system suspend.
 
+The driver should not abort system suspend, but should
+keep its internal errors to itself, and allow the system
+to suspend.  Otherwise, a user can suspend a laptop
+by closing the lid and sealing it into a case, assuming
+that is will suspend, rather than heating up and draining
+the battery when in transit.
 
-On 31.01.23 05:34, Wyes Karny wrote:
-> Hi Tor Vic,
-> 
-> On 24 Jan 20:40, Tor Vic wrote:
-> --------------------------------->8-----------------------------
->>
->> The "active" mode seems to be broken here on a Zen2 3900X running Linux 6.1.
->> Frequency remains stuck at minimum which is +-500 MHz.
-> 
-> I've fixed this in v4.
-> 
->>
->> Some queries of the new /sys devices lead to I/O error:
->>
->>    # LANG=C cat /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_*
->>    166
->>    cat:
->> /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_lowest_nonlinear_freq:
->> Input/output error
->>    cat: /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_max_freq:
->> Input/output error
->>
-> This issue I'm not able to reproduce. Is this issue seen with only EPP
-> patches also?
-> Could you please check if this issue still there with v4?
+In practice, the ath11k device seems to have plenty of transient
+errors, and subsequent suspend cycles after this failure
+often succeed.
 
-No, it's gone. Could have been a mismerge, I'm sorry.
+https://bugzilla.kernel.org/show_bug.cgi?id=216968
 
-> 
-> Thanks,
-> Wyes
+Fixes: d1b0c33850d29 ("ath11k: implement suspend for QCA6390 PCI devices")
 
-Thank you!
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Carl Huang <cjhuang@codeaurora.org>
+Cc: Kalle Valo <kvalo@codeaurora.org>
+Cc: stable@vger.kernel.org
+---
+ drivers/net/wireless/ath/ath11k/pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> 
->> The "guided" mode seems to work fine with no stuck frequency, but also
->> produces I/O error on some /sys files.
->>
->> I haven't tested "passive".
->>
->> Cheers,
->>
->> Tor Vic
+diff --git a/drivers/net/wireless/ath/ath11k/pci.c b/drivers/net/wireless/ath/ath11k/pci.c
+index 99cf3357c66e..3c6005ab9a71 100644
+--- a/drivers/net/wireless/ath/ath11k/pci.c
++++ b/drivers/net/wireless/ath/ath11k/pci.c
+@@ -979,7 +979,7 @@ static __maybe_unused int ath11k_pci_pm_suspend(struct device *dev)
+ 	if (ret)
+ 		ath11k_warn(ab, "failed to suspend core: %d\n", ret);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static __maybe_unused int ath11k_pci_pm_resume(struct device *dev)
+-- 
+2.37.2
+
