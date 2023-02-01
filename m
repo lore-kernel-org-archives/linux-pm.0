@@ -2,117 +2,76 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83CAEC636CD
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 14:58:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FAF0C636D3
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 15:15:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232413AbjBAO6Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Feb 2023 09:58:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33194 "EHLO
+        id S232165AbjBAPP6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Feb 2023 10:15:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54168 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232108AbjBAO6P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 09:58:15 -0500
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6960565EF9
-        for <linux-pm@vger.kernel.org>; Wed,  1 Feb 2023 06:58:13 -0800 (PST)
-Received: by mail-ej1-x62c.google.com with SMTP id hx15so32659129ejc.11
-        for <linux-pm@vger.kernel.org>; Wed, 01 Feb 2023 06:58:13 -0800 (PST)
+        with ESMTP id S232266AbjBAPPe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 10:15:34 -0500
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAD39274B8
+        for <linux-pm@vger.kernel.org>; Wed,  1 Feb 2023 07:15:13 -0800 (PST)
+Received: by mail-lf1-x129.google.com with SMTP id bp15so29698963lfb.13
+        for <linux-pm@vger.kernel.org>; Wed, 01 Feb 2023 07:15:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=1K2QLZf20WzArFF57Z/oEEEaWTDipa37/z/55nd9EU0=;
-        b=Nah5PAYnu9QEq0n/OmutLtBjUogzMhh9m73d6Xr5n7GVEgZfedfxeLFxc4lFeXx7Oz
-         k0KgkcX45oYCSXdQ2zUSlumSazh8qpkxFnCLIqQABKPjHpSzvnDjaj9+jHjM0Dh3JNfO
-         eAdUydJSCxh9ISJUGThAmA8wEb+bHcOX+3dpxf9uCkjvM3WIVQ3waeJqV3Luc9U2/+Yg
-         Q607oF5XKVzNMRK+tQSk+Fsx+zUZ3Z7uWg58B/yOjAsg6EbYb3OcWXwbEwYEasrUWkVK
-         4M/jMrpwHj6XvqSTrAJnDFxxHovYCkCp0o+b8LnJr5RU0P49g7yxpdbyg0ed1yZ2tqxR
-         EdcA==
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=lLX7pM7hqpU4TFyVN86DeJVlh/KarrGEhTFMLvDtTOs=;
+        b=hjwajA05EUmyxHZfZu4qw7wCS12SG2M/0HznMKoVMNYUs7IE2wl44TQOqWT2G820xw
+         YE/KLGqmLVq2VuzSCCu95XoF/b+FKqKtPMgd2GIMuHWuAli975mt+4ULJLj1DQmc20Xz
+         Mbq5uKgwFHJcDKJbrTT/LEaDeNCVRmhXUx+fjIn5z8eQ+gkE3/isLyg5fC6Gdfs6fwRh
+         NOOr4NF1zGGuoBJsZVpaauqKp/TPu9OBiyUyOzIucVWL/egrkdTb4zN9xdsvyMCR/XQF
+         YqQSX+4D6tqpdl+qQ9Y0HMSnTcM4EPGt5P1H6+tk5YynZ/FLtdw8Zg/br2c7bla12+1x
+         UnBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1K2QLZf20WzArFF57Z/oEEEaWTDipa37/z/55nd9EU0=;
-        b=V8m8FAWMf+9DOs7hQwAzHkSJ5vgIxaqgrWw0g5Oy5f2IhYt7koTdqwR2Gl6/tYa+dt
-         0rSBM3Np6oCNzIkQqemCOBQjKhdRpft84qeu1quPjvXq29GySs0ziyYk+S/BkrP7el7T
-         nBdrCEQNJw7zbHWEFNxcaqQQkK/TIVZQqkGu7CfyKH/hBdTWk1WazbMcs/iCBnS9aAWW
-         IhsmSObtGLXxZM5/Itt8T5RDsFQraZeqp0cxcg/FJMacP4uocCmGfZ2wIuKqaVbXQ0rW
-         5kDwl4z8TOqCrGGb7IDimw1B3tHb33j5QhPal7Vr7BWjDXBHTmDgXNsLervZsO8nZdNV
-         5TCw==
-X-Gm-Message-State: AO0yUKUyk1OKR9C4aoKB5e/f9p4wsNFazCoOMmR1oWKgvmAQ8P2nfx9E
-        2iYzMYL4ctT1uysU5LpaJd2me9idgUwr9A4X
-X-Google-Smtp-Source: AK7set8UfepV6n09w0GbCwgH4ikTcH7SQ7W6ASYt5eg4QMpwzBniDMArfRtN+7iLV0dbCgXMD++YjQ==
-X-Received: by 2002:a17:906:88a:b0:7c1:8f53:83a0 with SMTP id n10-20020a170906088a00b007c18f5383a0mr2566070eje.13.1675263492024;
-        Wed, 01 Feb 2023 06:58:12 -0800 (PST)
-Received: from [10.10.15.130] ([192.130.178.91])
-        by smtp.gmail.com with ESMTPSA id bt7-20020a170906b14700b0080345493023sm10043281ejb.167.2023.02.01.06.58.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Feb 2023 06:58:11 -0800 (PST)
-Message-ID: <1d33eb58-95d1-643d-52cc-2888ff0cea43@linaro.org>
-Date:   Wed, 1 Feb 2023 16:58:08 +0200
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=lLX7pM7hqpU4TFyVN86DeJVlh/KarrGEhTFMLvDtTOs=;
+        b=nLuQHAaD1U2gnHuaQ62zIYm9p2I1C4J1hz+XUtS2UizPEYmmj7VDfQ9Hys5OynaT64
+         92zF2H1uNnC7ZerE8yMZE7m2Rsmg4vbreF09V13zmgMiKPUfBTyc0hlUnCLVSNSGgA+K
+         loxpqpDJ3Wdy0kGmZObrHoMGa9S0U7qpS6kDvErcNmpvE9NsmGccJ4b1IkFRoSNyXQIc
+         CXYnbfVBBE3+aRf0rTP+giG2nmCdvYhQg8Al0F+HuI2DR7aWfCX8Rs9y9HfrjZRLfALI
+         CNE8jpd8fg1E7EBeMtKgS05jyHr8fGlvpYrVGsfnv/NnT2VJjfczdsn7aI9oMKIHSoxQ
+         +0mw==
+X-Gm-Message-State: AO0yUKXNaCDSnkEtP1RWjMYY7rsyxUdX+x9mCG61zBzO8m6it+012iJi
+        +eLH62edv+avsYbLdgTytoX+aPEhuJO/ZRTfcXJJ25y75O011Q==
+X-Google-Smtp-Source: AK7set9FlH3YuQTbPCgh8mr0LjPnk5XhZB1nXXLdBvl7PGkvQMWtqwoUMM40I3hsgJ9TvVKQ6Wl7KoC5IoZD0JPcu+Q=
+X-Received: by 2002:ac2:43d0:0:b0:4d2:e530:d53c with SMTP id
+ u16-20020ac243d0000000b004d2e530d53cmr434756lfl.8.1675264512162; Wed, 01 Feb
+ 2023 07:15:12 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
+References: <20230201080227.473547-1-jun.nie@linaro.org> <20230201080227.473547-2-jun.nie@linaro.org>
+ <5ecc68a6-2914-1059-460f-752adc1d3d01@kernel.org>
+In-Reply-To: <5ecc68a6-2914-1059-460f-752adc1d3d01@kernel.org>
+From:   Jun Nie <jun.nie@linaro.org>
+Date:   Wed, 1 Feb 2023 23:15:08 +0800
+Message-ID: <CABymUCP0sC58vi1nU=0BM9JmwWh2eNTt883_VGwXdoaZ3ZZUJQ@mail.gmail.com>
 Subject: Re: [PATCH 2/2] PM / devfreq: qcom: Introduce CCI devfreq driver
-To:     Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-Cc:     Jun Nie <jun.nie@linaro.org>, myungjoo.ham@samsung.com,
-        kyungmin.park@samsung.com, cw00.choi@samsung.com,
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        cw00.choi@samsung.com, bryan.odonoghue@linaro.org,
         linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         devicetree@vger.kernel.org
-References: <20230201080227.473547-1-jun.nie@linaro.org>
- <20230201080227.473547-2-jun.nie@linaro.org>
- <515f4e9e-2804-e03a-26f5-f2d3ac331109@linaro.org>
- <71ba0d05-6183-95ef-9e45-cc3dd512475f@linaro.org>
- <CAA8EJpqyqC5D+O=KJnuZnWN4BwBOKcquN11nJfEp2WMSmJobBg@mail.gmail.com>
- <58a5e856-3e8b-d660-09ee-7a18b184452f@linaro.org>
-Content-Language: en-GB
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-In-Reply-To: <58a5e856-3e8b-d660-09ee-7a18b184452f@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 01/02/2023 16:45, Bryan O'Donoghue wrote:
-> On 01/02/2023 13:41, Dmitry Baryshkov wrote:
->>>                           cci-cpufreq {
->>>                                   target-dev = <&cci_cache>;
->>>                                   cpu-to-dev-map-0 =
->>>                                           <  200000  200000000 >,
->>>                                           <  345600  200000000 >,
->>>                                           <  400000  200000000 >,
->>>                                           <  533330  297600000 >,
->>>                                           <  800000  297600000 >,
->>>                                           <  960000  297600000 >,
->>>                                           < 1113600  297000000 >,
->>>                                           < 1344000  595200000 >,
->>>                                           < 1459200  595200000 >,
->>>                                           < 1497600  595200000 >,
->>>                                           < 1651200  595200000 >;
->>>                                   cpu-to-dev-map-4 =
->>>                                           <  200000 200000000 >,
->>>                                           <  249600 200000000 >,
->>>                                           <  499200 297600000 >,
->>>                                           <  800000 297600000 >,
->>>                                           <  998400 595200000 >,
->>>                                           < 1113600 595200000 >;
->> These should map to existing opp entries.
->>
->> I ended up doing the interconnect driver that maps a clock to the
->> interconnect. Then I can use it in the cpu opp tables.
->>
-> 
-> Can you point us at what it is you are proposing ?
+> > Signed-off-by: Jun Nie <jun.nie@linaro.org>
+> > ---
+> >  drivers/devfreq/Kconfig    |   9 +++
+> >  drivers/devfreq/Makefile   |   1 +
+> >  drivers/devfreq/qcom-cci.c | 162 +++++++++++++++++++++++++++++++++++++
+>
+> Who is going to maintain this file/driver?
+>
+I will add myself as maintainer of this file.
+All other comments will be addressed in next version. Thanks!
 
-https://patchwork.kernel.org/project/linux-arm-msm/patch/20230120061417.2623751-9-dmitry.baryshkov@linaro.org/
-
-> 
-> ---
-> bod
-
--- 
-With best wishes
-Dmitry
-
+- Jun
