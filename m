@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20F70C6FD1F
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:16:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C18B8C74A4B
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:16:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232274AbjBAKQo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Feb 2023 05:16:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52004 "EHLO
+        id S232308AbjBAKQr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Feb 2023 05:16:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52076 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232083AbjBAKQh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 05:16:37 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7C054A201;
-        Wed,  1 Feb 2023 02:16:35 -0800 (PST)
+        with ESMTP id S232152AbjBAKQj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 05:16:39 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B24DA4F86D;
+        Wed,  1 Feb 2023 02:16:37 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 5C509B8214A;
+        by ams.source.kernel.org (Postfix) with ESMTPS id D365DB82159;
         Wed,  1 Feb 2023 10:16:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65338C433A1;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A64F6C43335;
         Wed,  1 Feb 2023 10:16:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1675246592;
-        bh=J38ZBR8pc72tC+fYh5xI/DIrVur7uHuPuNlQh0t7yw0=;
+        bh=JZ8Di4CzHKn16RcSbx8LP5dTbxPMPcpqLRNP1ZpuGGk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LsBOSRc4LhP6on2c2AZqn81X6spj//gAX3H/2MHYy6XlYJdsCZVehWiGleOkH6NVn
-         KqXYxiA9cw5qYXG/OmKJqBe3CwqzJxavQPSYz3Gua4ydMiq9gTW/2mr9ea6flfX2qr
-         PKbUgoGAZUB7A1OhpWvomiggi4nJLO1xntbQzEYE7CIpXK8L4ZQvOpe8aQHPa/rXds
-         z4dHgDaeX2+OiQndciatPNIbed+G2+JmEwcIPC8tR6+3QU5lLmvf3Kd7H2VztQfV42
-         tFyAufV/4d0UrNFJGMHeqll8RqysfbfCChfNrmJjy5gcjZYuyDWnCXUrdF7OlMeqD0
-         rGltDlalUW1Iw==
+        b=Vn1HFGVf1GAUTFcDCThdyvv6IHi6lO71eQTmwJBKVGgav8zteruUU9TSwhFHumKhX
+         3S7b07Ph+A5au0m2gtIe490ppkXc436Rk7/d0MVjWJk5sTvpBQ3ybMithQ69RSbmqg
+         hu2was/8X4btp97sAK9Efz4SOCrYpKz51hB9bgh67ewmesJ0XrxrDB3tMt5QqgBVw3
+         +ui/cF6i9ucFzGHeITYOEASwkNccGa6gZsWS3corWPKGC54JR0c0T+IWv7komicUAv
+         xqzvgNZMFr5WfK3DvbWIO/l4pkFK/srEwjIRiLkag/XpaVPqGgsxW0aDPmn1c3JOsz
+         2fWd8T4wxjQvA==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pNAAf-00043k-57; Wed, 01 Feb 2023 11:16:53 +0100
+        id 1pNAAf-000444-SC; Wed, 01 Feb 2023 11:16:53 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     Shawn Guo <shawnguo@kernel.org>,
@@ -54,9 +54,9 @@ Cc:     Shawn Guo <shawnguo@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org
-Subject: [PATCH 02/23] interconnect: fix icc_provider_del() error handling
-Date:   Wed,  1 Feb 2023 11:15:38 +0100
-Message-Id: <20230201101559.15529-3-johan+linaro@kernel.org>
+Subject: [PATCH 10/23] interconnect: qcom: rpmh: fix registration race
+Date:   Wed,  1 Feb 2023 11:15:46 +0100
+Message-Id: <20230201101559.15529-11-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230201101559.15529-1-johan+linaro@kernel.org>
 References: <20230201101559.15529-1-johan+linaro@kernel.org>
@@ -66,50 +66,97 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The interconnect framework currently expects that providers are only
-removed when there are no users and after all nodes have been removed.
+The current interconnect provider registration interface is inherently
+racy as nodes are not added until the after adding the provider. This
+can specifically cause racing DT lookups to fail.
 
-There is currently nothing that guarantees this to be the case and the
-framework does not do any reference counting, but refusing to remove the
-provider is never correct as that would leave a dangling pointer to a
-resource that is about to be released in the global provider list (e.g.
-accessible through debugfs).
+Switch to using the new API where the provider is not registered until
+after it has been fully initialised.
 
-Replace the current sanity checks with WARN_ON() so that the provider is
-always removed.
-
-Fixes: 11f1ceca7031 ("interconnect: Add generic on-chip interconnect API")
-Cc: stable@vger.kernel.org      # 5.1: 680f8666baf6: interconnect: Make icc_provider_del() return void
+Fixes: 976daac4a1c5 ("interconnect: qcom: Consolidate interconnect RPMh support")
+Cc: stable@vger.kernel.org      # 5.7
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/interconnect/core.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ drivers/interconnect/qcom/icc-rpmh.c | 25 +++++++++++++++----------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index dc61620a0191..43c5c8503ee8 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -1062,18 +1062,8 @@ EXPORT_SYMBOL_GPL(icc_provider_add);
- void icc_provider_del(struct icc_provider *provider)
- {
- 	mutex_lock(&icc_lock);
--	if (provider->users) {
--		pr_warn("interconnect provider still has %d users\n",
--			provider->users);
--		mutex_unlock(&icc_lock);
--		return;
--	}
--
--	if (!list_empty(&provider->nodes)) {
--		pr_warn("interconnect provider still has nodes\n");
--		mutex_unlock(&icc_lock);
--		return;
--	}
-+	WARN_ON(provider->users);
-+	WARN_ON(!list_empty(&provider->nodes));
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index 5168bbf3d92f..fdb5e58e408b 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -192,9 +192,10 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 	provider->pre_aggregate = qcom_icc_pre_aggregate;
+ 	provider->aggregate = qcom_icc_aggregate;
+ 	provider->xlate_extended = qcom_icc_xlate_extended;
+-	INIT_LIST_HEAD(&provider->nodes);
+ 	provider->data = data;
  
- 	list_del(&provider->provider_list);
- 	mutex_unlock(&icc_lock);
++	icc_provider_init(provider);
++
+ 	qp->dev = dev;
+ 	qp->bcms = desc->bcms;
+ 	qp->num_bcms = desc->num_bcms;
+@@ -203,10 +204,6 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 	if (IS_ERR(qp->voter))
+ 		return PTR_ERR(qp->voter);
+ 
+-	ret = icc_provider_add(provider);
+-	if (ret)
+-		return ret;
+-
+ 	for (i = 0; i < qp->num_bcms; i++)
+ 		qcom_icc_bcm_init(qp->bcms[i], dev);
+ 
+@@ -218,7 +215,7 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 		node = icc_node_create(qn->id);
+ 		if (IS_ERR(node)) {
+ 			ret = PTR_ERR(node);
+-			goto err;
++			goto err_remove_nodes;
+ 		}
+ 
+ 		node->name = qn->name;
+@@ -232,19 +229,27 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	data->num_nodes = num_nodes;
++
++	ret = icc_provider_register(provider);
++	if (ret)
++		goto err_remove_nodes;
++
+ 	platform_set_drvdata(pdev, qp);
+ 
+ 	/* Populate child NoC devices if any */
+ 	if (of_get_child_count(dev->of_node) > 0) {
+ 		ret = of_platform_populate(dev->of_node, NULL, NULL, dev);
+ 		if (ret)
+-			goto err;
++			goto err_deregister_provider;
+ 	}
+ 
+ 	return 0;
+-err:
++
++err_deregister_provider:
++	icc_provider_deregister(provider);
++err_remove_nodes:
+ 	icc_nodes_remove(provider);
+-	icc_provider_del(provider);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(qcom_icc_rpmh_probe);
+@@ -253,8 +258,8 @@ int qcom_icc_rpmh_remove(struct platform_device *pdev)
+ {
+ 	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+ 
++	icc_provider_deregister(&qp->provider);
+ 	icc_nodes_remove(&qp->provider);
+-	icc_provider_del(&qp->provider);
+ 
+ 	return 0;
+ }
 -- 
 2.39.1
 
