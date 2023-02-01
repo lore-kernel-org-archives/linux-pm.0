@@ -2,129 +2,114 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19271C636D7
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 15:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75762C05027
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 15:18:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231817AbjBAPP7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Feb 2023 10:15:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53138 "EHLO
+        id S231892AbjBAPSS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Feb 2023 10:18:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232411AbjBAPPh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 10:15:37 -0500
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1295F298FD
-        for <linux-pm@vger.kernel.org>; Wed,  1 Feb 2023 07:15:14 -0800 (PST)
-Received: by mail-ed1-x52c.google.com with SMTP id z11so18032901ede.1
-        for <linux-pm@vger.kernel.org>; Wed, 01 Feb 2023 07:15:13 -0800 (PST)
+        with ESMTP id S231811AbjBAPR4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 10:17:56 -0500
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1BF59273D
+        for <linux-pm@vger.kernel.org>; Wed,  1 Feb 2023 07:17:29 -0800 (PST)
+Received: by mail-wr1-x42e.google.com with SMTP id m7so17636736wru.8
+        for <linux-pm@vger.kernel.org>; Wed, 01 Feb 2023 07:17:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=WKcD/zDARR0ET8GDXucrQ586p1EZyc/trnwGgWqi5oM=;
-        b=UNvI8KAlb1PeQQTsF/6w1pZ0C36wdH+yiGj8bP1bem/hCAcaJOM/nE7ucQiIIsRBwY
-         rqtp2QIG/OrrPjr2NX7bTvR2H6DfxHFwlGVO2g/FdDLws8yAfsNiFQpcmQzYByIu32Ed
-         p1wCa4CSnyD3nw6sDu+pewrKZa+8JX184CH99a75W0nzWEHCaau6Ak++1zVUdiqyK3f+
-         t+OxDVJvT6Nb0Ot7ANLlt084gp9wEov6ZGd6D7K37LFWKDmBV4j0hMR2TNmbhhoQsQJP
-         74Vcj6qNZEUT7CDXuBJ9+c521drz49X7juopPmmR9kUeIiOTtqmxFjRoS6jYhnTT1TuS
-         5GwQ==
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=RVLkiMwFidl/M+DwCkpsxP4ftj8ZYza6IWwRBi4/7pQ=;
+        b=VNPQ/X/pqW5podXmM+4Pm71xXcIBqaG9d/J1oLSRD2Q1+9xzw6uT7JpQko04yi36aW
+         wT1xbH4utSDP9jVgA9Wa3gY/P2ObskxsziMpQOX+D/hFGW0AOCO8jgwaK+EQuo2MdfI/
+         VYOyqQMT+RrgnZxgXQKrPRS7ss+Y17Ai2KuUjpN9KAE9lBIF9lWujX7MYx77JK6TUJfh
+         nZ25QhLs66WhojLED0KSBlF7he+OojxpUcYOvXs4RibFMpqMFklreHl/f7/A5wPJ4J4X
+         eyQZBaTHfHIYwLjutg6jIBd48RdHEwRqW2s8uPhS4DaHyWzs9/Xctn+2+zKQL9OBw1GJ
+         qoTA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=WKcD/zDARR0ET8GDXucrQ586p1EZyc/trnwGgWqi5oM=;
-        b=oIPGRxPU662SrU4eTvQ2UJd0CKbDfXrKdAuWzdYs9U7L+saCgJUhijYt8vzbjnA0d7
-         agCO0EYDKW19/r3JP6NPz+YXl6/Lm19nQvLtBIcc3/riLfl68r0OToGjSfP/EQMN16tC
-         HV4SvSaE+zB+iVbsImtJFJJzNgRVI730xERf7jEJBfsAeMnZ8xplNJbZjf84K/lVgcPg
-         noLbE1yE0o6D4q3hs624Dpfw8HKoExaEG7janFHtkyRlKhugAuptZfEfbdTg4iR/gmbG
-         VOfHBNBsuzeKWKLuv+wGk6BeUtr8Bg4JIlpOqxybtGTuH5yOkoR2eeOOabKZjeMBWtnn
-         bkdQ==
-X-Gm-Message-State: AO0yUKW3C/gz6NQXAxYSqlhEl2ltRkMVokL7Wy92g/GNRg/NIPTHx/od
-        VQ7w+vkHf70K/KPnJN5r0pjB1mzyVfCUqA+yjFR9tQ==
-X-Google-Smtp-Source: AK7set8Sqpf7IQKI8pCxzgiefm4DEzyA6FF6UcZXLNTZNnDOHduTVAL3Dj7gPRjuCIZZHhxAewq7V1amgnQUE4iiCRY=
-X-Received: by 2002:a50:f60f:0:b0:4a2:27c2:aa9a with SMTP id
- c15-20020a50f60f000000b004a227c2aa9amr741605edn.61.1675264512617; Wed, 01 Feb
- 2023 07:15:12 -0800 (PST)
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=RVLkiMwFidl/M+DwCkpsxP4ftj8ZYza6IWwRBi4/7pQ=;
+        b=R8L+3SawmDuxMMKxterG5xTdDesuqQmbdV/mKn40rEDSr4FusKP2LRi0lhGsuZGL8V
+         qth+qd1SywBJQlcr6/TGRqveTgjwslELnmRFM8DP3SI1GlGmw2NFs4S1NHiLrU/z+k68
+         nuXr7y197SXaxUm9sTrGuKkLMoZY8+/fM1K7Xd54nqeJh8qKQxpm5gcGYNnriVjZ13wA
+         doapMXvL4JyJT5gv6z76mNVaNf+7uX+/kbsngtlb1cQ1nreJlFvye6DoxpOdrg3y9ggh
+         R0z1vjWDv+shyy+E6qMocuhVfs1D2BaFqm6q0meN1Inebtwb+o72SFmTaLOuGxXTV6Z8
+         Fk4w==
+X-Gm-Message-State: AO0yUKXi6hAU3+Zlw4Obeg3LlW4WtWKWqHhrp8c4Fh8x9G2nClbG9hur
+        pokdFth/jBAUW9D+ewDJhb2pZ9Kv4kDn2C00
+X-Google-Smtp-Source: AK7set/nCiNy+Pzi77nIa65QImfC3rdztS1HtejxiWDwDPA66QnckjniT6lXmI3fv1qnkQSONcRnnA==
+X-Received: by 2002:a5d:4e02:0:b0:2bf:e1f8:c4b6 with SMTP id p2-20020a5d4e02000000b002bfe1f8c4b6mr2583288wrt.52.1675264645313;
+        Wed, 01 Feb 2023 07:17:25 -0800 (PST)
+Received: from [192.168.0.162] (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
+        by smtp.gmail.com with ESMTPSA id t8-20020a5d6908000000b002bc7e5a1171sm17846257wru.116.2023.02.01.07.17.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Feb 2023 07:17:24 -0800 (PST)
+Message-ID: <86478fbd-590a-f94f-6cc1-f4d06a96826e@linaro.org>
+Date:   Wed, 1 Feb 2023 15:17:24 +0000
 MIME-Version: 1.0
-References: <20230131153816.21709-1-bchihi@baylibre.com> <202302011058.17Vvc1pN-lkp@intel.com>
- <17072296-c1fb-1e82-65fd-26b448167087@linaro.org>
-In-Reply-To: <17072296-c1fb-1e82-65fd-26b448167087@linaro.org>
-From:   Balsam CHIHI <bchihi@baylibre.com>
-Date:   Wed, 1 Feb 2023 16:14:36 +0100
-Message-ID: <CAGuA+opm_oM-BdHgcnj09C_6oT4WSbu8-v2QnzmERUiNQD4rUQ@mail.gmail.com>
-Subject: Re: [PATCH v12] thermal: drivers: mediatek: Add the Low Voltage
- Thermal Sensor driver
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     kernel test robot <lkp@intel.com>, daniel.lezcano@linaro.org,
-        angelogioacchino.delregno@collabora.com, rafael@kernel.org,
-        amitk@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        rdunlap@infradead.org, ye.xingchen@zte.com.cn,
-        p.zabel@pengutronix.de, oe-kbuild-all@lists.linux.dev,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        khilman@baylibre.com, james.lo@mediatek.com,
-        rex-bc.chen@mediatek.com
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.0
+Subject: Re: [PATCH 2/2] PM / devfreq: qcom: Introduce CCI devfreq driver
+Content-Language: en-US
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc:     Jun Nie <jun.nie@linaro.org>, myungjoo.ham@samsung.com,
+        kyungmin.park@samsung.com, cw00.choi@samsung.com,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org
+References: <20230201080227.473547-1-jun.nie@linaro.org>
+ <20230201080227.473547-2-jun.nie@linaro.org>
+ <515f4e9e-2804-e03a-26f5-f2d3ac331109@linaro.org>
+ <71ba0d05-6183-95ef-9e45-cc3dd512475f@linaro.org>
+ <CAA8EJpqyqC5D+O=KJnuZnWN4BwBOKcquN11nJfEp2WMSmJobBg@mail.gmail.com>
+ <58a5e856-3e8b-d660-09ee-7a18b184452f@linaro.org>
+ <1d33eb58-95d1-643d-52cc-2888ff0cea43@linaro.org>
+From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+In-Reply-To: <1d33eb58-95d1-643d-52cc-2888ff0cea43@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+On 01/02/2023 14:58, Dmitry Baryshkov wrote:
+> On 01/02/2023 16:45, Bryan O'Donoghue wrote:
+>> On 01/02/2023 13:41, Dmitry Baryshkov wrote:
+>>>>                           cci-cpufreq {
+>>>>                                   target-dev = <&cci_cache>;
+>>>>                                   cpu-to-dev-map-0 =
+>>>>                                           <  200000  200000000 >,
+>>>>                                           <  345600  200000000 >,
+>>>>                                           <  400000  200000000 >,
+>>>>                                           <  533330  297600000 >,
+>>>>                                           <  800000  297600000 >,
+>>>>                                           <  960000  297600000 >,
+>>>>                                           < 1113600  297000000 >,
+>>>>                                           < 1344000  595200000 >,
+>>>>                                           < 1459200  595200000 >,
+>>>>                                           < 1497600  595200000 >,
+>>>>                                           < 1651200  595200000 >;
+>>>>                                   cpu-to-dev-map-4 =
+>>>>                                           <  200000 200000000 >,
+>>>>                                           <  249600 200000000 >,
+>>>>                                           <  499200 297600000 >,
+>>>>                                           <  800000 297600000 >,
+>>>>                                           <  998400 595200000 >,
+>>>>                                           < 1113600 595200000 >;
+>>> These should map to existing opp entries.
+>>>
+>>> I ended up doing the interconnect driver that maps a clock to the
+>>> interconnect. Then I can use it in the cpu opp tables.
+>>>
+>>
+>> Can you point us at what it is you are proposing ?
+> 
+> https://patchwork.kernel.org/project/linux-arm-msm/patch/20230120061417.2623751-9-dmitry.baryshkov@linaro.org/
+> 
 
-On Wed, Feb 1, 2023 at 8:47 AM Krzysztof Kozlowski
-<krzysztof.kozlowski@linaro.org> wrote:
->
-> On 01/02/2023 04:09, kernel test robot wrote:
-> > Hi Balsam,
-> >
-> > Thank you for the patch! Yet something to improve:
-> >
-> >
-> >
-> > url:    https://github.com/intel-lab-lkp/linux/commits/UPDATE-20230131-234122/bchihi-baylibre-com/thermal-drivers-mediatek-Relocate-driver-to-mediatek-folder/20230124-211910
-> > base:   the 4th patch of https://lore.kernel.org/r/20230124131717.128660-5-bchihi%40baylibre.com
-> > patch link:    https://lore.kernel.org/r/20230131153816.21709-1-bchihi%40baylibre.com
-> > patch subject: [PATCH v12] thermal: drivers: mediatek: Add the Low Voltage Thermal Sensor driver
-> > config: s390-allyesconfig (https://download.01.org/0day-ci/archive/20230201/202302011058.17Vvc1pN-lkp@intel.com/config)
-> > compiler: s390-linux-gcc (GCC) 12.1.0
-> > reproduce (this is a W=1 build):
-> >         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-> >         chmod +x ~/bin/make.cross
-> >         # https://github.com/intel-lab-lkp/linux/commit/5646ebf6f10ff0fc60c04d8c57523f7c44526b41
-> >         git remote add linux-review https://github.com/intel-lab-lkp/linux
-> >         git fetch --no-tags linux-review UPDATE-20230131-234122/bchihi-baylibre-com/thermal-drivers-mediatek-Relocate-driver-to-mediatek-folder/20230124-211910
-> >         git checkout 5646ebf6f10ff0fc60c04d8c57523f7c44526b41
-> >         # save the config file
-> >         mkdir build_dir && cp config build_dir/.config
-> >         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=s390 olddefconfig
-> >         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=s390 SHELL=/bin/bash
-> >
-> > If you fix the issue, kindly add following tag where applicable
-> > | Reported-by: kernel test robot <lkp@intel.com>
-> >
-> > All errors (new ones prefixed by >>):
-> >
-> >>> drivers/thermal/mediatek/lvts_thermal.c:20:10: fatal error: dt-bindings/thermal/mediatek,lvts-thermal.h: No such file or directory
-> >       20 | #include <dt-bindings/thermal/mediatek,lvts-thermal.h>
-> >          |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->
-> So here is your driver... and you decided not only to make reviewers
-> life more difficult, but also to fail all automated tools.
->
-> No, that's not how patchsets should be sent. You have here clear
-> dependency, you cannot send them separately.
+Is there no driver code too ?
 
-I'm sorry, I'll be careful next time.
-I apologize for breaking the series.
-I will take into account the new change requests in the next full
-v13 the series.
-
->
-> Best regards,
-> Krzysztof
->
-
-Best regards,
-Balsam
