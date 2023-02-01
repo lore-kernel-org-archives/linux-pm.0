@@ -2,111 +2,205 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CD6EC38142
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 03:10:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9081CC63797
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 04:19:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230404AbjBADKK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Jan 2023 22:10:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42200 "EHLO
+        id S231362AbjBAETH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Jan 2023 23:19:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229761AbjBADKJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2023 22:10:09 -0500
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F240619D;
-        Tue, 31 Jan 2023 19:10:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675221008; x=1706757008;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=hG0Cqd9tAcf9bnbBhEdpsPgvTCJitgXKwvwPCaj9CO8=;
-  b=UpUbRuW9Y945dLAHXmWHcSxnooUZDmPsltN7KpJ95OH77KHryL3s8FB5
-   mD1N89fvEshXC44+OoDzzwJyQpAYefg3rp8gmk2Fq1QqtikYTJbdzMsHB
-   zkvgx6kBQQ+JA114894B/tvULi63LP8mjpkylh4X+0shT/DppYSZnlrIp
-   yGh0RhkQJlYexBLp3jaEw6DVTZE/Vd9PahnDp09cIfF7hV+XEdZ5md+Nl
-   0cszVJuMYXhxkjb1yX5TFnQ7MpxGQ56SlYHAnmSriotexhWIh6XqOfAcQ
-   hPDIxZGSxQAwMXPjEfMXpPtWh9ZdGOqD8VFR2PmlpRpzAtN4NfWwW/QpN
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="414233287"
-X-IronPort-AV: E=Sophos;i="5.97,263,1669104000"; 
-   d="scan'208";a="414233287"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2023 19:09:47 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="695185072"
-X-IronPort-AV: E=Sophos;i="5.97,263,1669104000"; 
-   d="scan'208";a="695185072"
-Received: from lkp-server01.sh.intel.com (HELO ffa7f14d1d0f) ([10.239.97.150])
-  by orsmga008.jf.intel.com with ESMTP; 31 Jan 2023 19:09:41 -0800
-Received: from kbuild by ffa7f14d1d0f with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1pN3VE-0004ys-1B;
-        Wed, 01 Feb 2023 03:09:40 +0000
-Date:   Wed, 1 Feb 2023 11:09:28 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     bchihi@baylibre.com, daniel.lezcano@linaro.org,
-        angelogioacchino.delregno@collabora.com, rafael@kernel.org,
-        amitk@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        rdunlap@infradead.org, ye.xingchen@zte.com.cn,
-        p.zabel@pengutronix.de
-Cc:     oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        khilman@baylibre.com, james.lo@mediatek.com,
-        rex-bc.chen@mediatek.com
-Subject: Re: [PATCH v12] thermal: drivers: mediatek: Add the Low Voltage
- Thermal Sensor driver
-Message-ID: <202302011058.17Vvc1pN-lkp@intel.com>
-References: <20230131153816.21709-1-bchihi@baylibre.com>
+        with ESMTP id S231285AbjBAETF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2023 23:19:05 -0500
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C75B9402F7;
+        Tue, 31 Jan 2023 20:19:04 -0800 (PST)
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3113PDQk031113;
+        Wed, 1 Feb 2023 04:19:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding : content-type; s=qcppdkim1;
+ bh=PQt3fQopKUNxXskBOhMqwr8e4wI+me9M7xC10H3pHa8=;
+ b=Xy6+L65DY0FpIu52lPvlqijj5zL1B7SL8St/TDzohXOHTHUilMkLGect6zddwN+NZPEU
+ 5q4kuUuQrBGLxhBzJ/wmsZgdwqH5OJvAhTJ2eWUSve3q7ZFcDJLatq9meyWc/BxxfPIh
+ FXT2yxjLOBXD/XWy0y5y9fnRehCRLS6XKrI/557RGg864CECceDZ1/b6kA3tBbxjyo1s
+ +NsfRt5OuBvH2+IEx7fI/yl4AgsPTQiN4z5Qus3DM6/Va3oqB5z/MIGV4FGlRXP1iGYR
+ VH5neS8ub0iSdTXEk9q3yT1WBLm8/Lj2r0chRf7Erf/10MS64+Qv5UJqCj/dvQURRSJq RQ== 
+Received: from nalasppmta02.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3neua9b4p2-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 01 Feb 2023 04:19:00 +0000
+Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
+        by NALASPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3114IxUa009898
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 1 Feb 2023 04:18:59 GMT
+Received: from hu-bjorande-lv.qualcomm.com (10.49.16.6) by
+ nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.36; Tue, 31 Jan 2023 20:18:59 -0800
+From:   Bjorn Andersson <quic_bjorande@quicinc.com>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>
+CC:     <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        "Subbaraman Narayanamurthy" <quic_subbaram@quicinc.com>,
+        Johan Hovold <johan@kernel.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>
+Subject: [PATCH v4 1/4] dt-bindings: soc: qcom: Introduce PMIC GLINK binding
+Date:   Tue, 31 Jan 2023 20:18:50 -0800
+Message-ID: <20230201041853.1934355-2-quic_bjorande@quicinc.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20230201041853.1934355-1-quic_bjorande@quicinc.com>
+References: <20230201041853.1934355-1-quic_bjorande@quicinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230131153816.21709-1-bchihi@baylibre.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
+ nalasex01c.na.qualcomm.com (10.47.97.35)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: YbTn68O2dTx1PqzV7z5KpU9Izvi_elb5
+X-Proofpoint-ORIG-GUID: YbTn68O2dTx1PqzV7z5KpU9Izvi_elb5
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
+ definitions=2023-02-01_01,2023-01-31_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ mlxscore=0 suspectscore=0 adultscore=0 lowpriorityscore=0 malwarescore=0
+ phishscore=0 priorityscore=1501 clxscore=1015 spamscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2302010035
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Balsam,
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
 
-Thank you for the patch! Yet something to improve:
+The PMIC GLINK service, running on a coprocessor on some modern Qualcomm
+platforms and implement USB Type-C handling and battery management.
+This binding describes the component in the OS used to communicate with
+the firmware and connect it's resources to those described in the
+Devicetree, particularly the USB Type-C controllers relationship with
+USB and DisplayPort components.
 
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Tested-by: Konrad Dybcio <konrad.dybcio@linaro.org> # SM8350 PDX215
+Signed-off-by: Bjorn Andersson <quic_bjorande@quicinc.com>
+---
 
+Changes since v3:
+- Dropped the additional endpoint from port@1 after discussions with
+  Rob.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/UPDATE-20230131-234122/bchihi-baylibre-com/thermal-drivers-mediatek-Relocate-driver-to-mediatek-folder/20230124-211910
-base:   the 4th patch of https://lore.kernel.org/r/20230124131717.128660-5-bchihi%40baylibre.com
-patch link:    https://lore.kernel.org/r/20230131153816.21709-1-bchihi%40baylibre.com
-patch subject: [PATCH v12] thermal: drivers: mediatek: Add the Low Voltage Thermal Sensor driver
-config: s390-allyesconfig (https://download.01.org/0day-ci/archive/20230201/202302011058.17Vvc1pN-lkp@intel.com/config)
-compiler: s390-linux-gcc (GCC) 12.1.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/5646ebf6f10ff0fc60c04d8c57523f7c44526b41
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review UPDATE-20230131-234122/bchihi-baylibre-com/thermal-drivers-mediatek-Relocate-driver-to-mediatek-folder/20230124-211910
-        git checkout 5646ebf6f10ff0fc60c04d8c57523f7c44526b41
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=s390 olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=s390 SHELL=/bin/bash
+ .../bindings/soc/qcom/qcom,pmic-glink.yaml    | 95 +++++++++++++++++++
+ 1 file changed, 95 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
->> drivers/thermal/mediatek/lvts_thermal.c:20:10: fatal error: dt-bindings/thermal/mediatek,lvts-thermal.h: No such file or directory
-      20 | #include <dt-bindings/thermal/mediatek,lvts-thermal.h>
-         |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   compilation terminated.
-
-
-vim +20 drivers/thermal/mediatek/lvts_thermal.c
-
-  > 20	#include <dt-bindings/thermal/mediatek,lvts-thermal.h>
-    21	
-
+diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
+new file mode 100644
+index 000000000000..cf863683c21a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
+@@ -0,0 +1,95 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/qcom/qcom,pmic-glink.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm PMIC GLINK firmware interface for battery management, USB
++  Type-C and other things.
++
++maintainers:
++  - Bjorn Andersson <andersson@kernel.org>
++
++description:
++  The PMIC GLINK service, running on a coprocessor on some modern Qualcomm
++  platforms and implement USB Type-C handling and battery management. This
++  binding describes the component in the OS used to communicate with the
++  firmware and connect it's resources to those described in the Devicetree,
++  particularly the USB Type-C controllers relationship with USB and DisplayPort
++  components.
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - qcom,sc8180x-pmic-glink
++          - qcom,sc8280xp-pmic-glink
++          - qcom,sm8350-pmic-glink
++      - const: qcom,pmic-glink
++
++  '#address-cells':
++    const: 1
++
++  '#size-cells':
++    const: 0
++
++patternProperties:
++  '^connector@\d$':
++    $ref: /schemas/connector/usb-connector.yaml#
++
++    properties:
++      reg: true
++
++    required:
++      - reg
++
++    unevaluatedProperties: false
++
++required:
++  - compatible
++
++additionalProperties: false
++
++examples:
++  - |+
++    pmic-glink {
++        compatible = "qcom,sc8280xp-pmic-glink", "qcom,pmic-glink";
++
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        connector@0 {
++            compatible = "usb-c-connector";
++            reg = <0>;
++            power-role = "dual";
++            data-role = "dual";
++
++            ports {
++                #address-cells = <1>;
++                #size-cells = <0>;
++
++                port@0 {
++                    reg = <0>;
++                    endpoint {
++                        remote-endpoint = <&usb_role>;
++                    };
++                };
++
++                port@1 {
++                    reg = <1>;
++                    endpoint {
++                        remote-endpoint = <&ss_phy_out>;
++                    };
++                };
++
++                port@2 {
++                    reg = <2>;
++                    endpoint {
++                        remote-endpoint = <&sbu_mux>;
++                    };
++                };
++            };
++        };
++    };
++...
++
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+2.25.1
+
