@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAB9AC64ED6
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:16:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 174EDC7618A
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:16:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232301AbjBAKQq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Feb 2023 05:16:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52074 "EHLO
+        id S232329AbjBAKQs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Feb 2023 05:16:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232148AbjBAKQj (ORCPT
+        with ESMTP id S230294AbjBAKQj (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 05:16:39 -0500
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADFE94A201;
-        Wed,  1 Feb 2023 02:16:37 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E901521D9;
+        Wed,  1 Feb 2023 02:16:38 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E4B3EB8215A;
-        Wed,  1 Feb 2023 10:16:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0FC2C4323C;
-        Wed,  1 Feb 2023 10:16:32 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 3EF7DB8215F;
+        Wed,  1 Feb 2023 10:16:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78D66C43178;
+        Wed,  1 Feb 2023 10:16:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1675246592;
-        bh=l0VN7msG9L+s5ijjJrCbTiHxIlXGehCmox8V3hFK5UU=;
+        s=k20201202; t=1675246593;
+        bh=/IShi5hUhU0AZjNAGVVo4Am8FiGtjGGx4tIm3pmMj/8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GSj50QqSIG0/gLjRUheGo/84VIuOPFzdLM3noqHeQSqElOphv+CLzLGUWROMm1uJb
-         gEG+/c0B2csR1hEuJ8UIN4iTjf6gUMPoLZ2KtX6pwXE5CPp08Bw6brh/erB9OsxxO9
-         bpRAdDY6acHV+rJkczpTvQInlqUafg/qtOKjEnPvQlPcLZJRifacdtdRqHJFgw1LJ3
-         AhwDUzwi2iWoOEem7wI4J/fYoMxo1eWQwA5pGDsArdTZh4AE3WrlTqdSXbQQPHFWO+
-         ma+8G0mPAdds0z4OfIHFdtYUqQ0aS/6AY+qhSiaxbF6zotfFKpUKakdFR+kZ4u5Gom
-         GT/+bZb6tI+cg==
+        b=HbhC0t32wJQOguBC5M6Bkmb8iS1AX/QNr2cdxYUVhuHpgPtnxYMFLyyX6CKCpJ10c
+         IReLoM/GmLUTIUpt3PIO+B3Ui6iBFFzqgG9K717PLiOtmjWka8k0jZFOOL+iVTrGcv
+         Y0gP6bNUx+vg/wmlS0taTc9YbdMY0ShFQ0cn8Pluf/yzGC6uTO+dsiFNQdUBLa9OSn
+         ubdB33SvaTLCSN2c+63rB6ExGj5rJqNOo9iPnWtDNQy/SUIeh/QDQ1OqGjSQrZjveU
+         dtlIa6MEJagsuQu6n9oLL9ltjMteNhUclRrRVF+ucuq9f+/yeXbjOCZWCwwsM40pEb
+         lMOqC2dk09T0g==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pNAAg-00044B-1h; Wed, 01 Feb 2023 11:16:54 +0100
+        id 1pNAAg-00044W-LZ; Wed, 01 Feb 2023 11:16:54 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     Shawn Guo <shawnguo@kernel.org>,
@@ -54,10 +54,10 @@ Cc:     Shawn Guo <shawnguo@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org,
-        Vinod Koul <vkoul@kernel.org>
-Subject: [PATCH 12/23] interconnect: qcom: sm8450: fix registration race
-Date:   Wed,  1 Feb 2023 11:15:48 +0100
-Message-Id: <20230201101559.15529-13-johan+linaro@kernel.org>
+        Dmitry Osipenko <digetx@gmail.com>
+Subject: [PATCH 19/23] memory: tegra20-emc: fix interconnect registration race
+Date:   Wed,  1 Feb 2023 11:15:55 +0100
+Message-Id: <20230201101559.15529-20-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230201101559.15529-1-johan+linaro@kernel.org>
 References: <20230201101559.15529-1-johan+linaro@kernel.org>
@@ -74,82 +74,53 @@ can specifically cause racing DT lookups to fail.
 Switch to using the new API where the provider is not registered until
 after it has been fully initialised.
 
-Fixes: fafc114a468e ("interconnect: qcom: Add SM8450 interconnect provider driver")
-Cc: stable@vger.kernel.org      # 5.17
-Cc: Vinod Koul <vkoul@kernel.org>
+Fixes: d5ef16ba5fbe ("memory: tegra20: Support interconnect framework")
+Cc: stable@vger.kernel.org      # 5.11
+Cc: Dmitry Osipenko <digetx@gmail.com>
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/interconnect/qcom/sm8450.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/memory/tegra/tegra20-emc.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/sm8450.c b/drivers/interconnect/qcom/sm8450.c
-index e3a12e3d6e06..c7a8bbf102a3 100644
---- a/drivers/interconnect/qcom/sm8450.c
-+++ b/drivers/interconnect/qcom/sm8450.c
-@@ -1876,9 +1876,10 @@ static int qnoc_probe(struct platform_device *pdev)
- 	provider->pre_aggregate = qcom_icc_pre_aggregate;
- 	provider->aggregate = qcom_icc_aggregate;
- 	provider->xlate_extended = qcom_icc_xlate_extended;
--	INIT_LIST_HEAD(&provider->nodes);
- 	provider->data = data;
+diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+index bd4e37b6552d..fd595c851a27 100644
+--- a/drivers/memory/tegra/tegra20-emc.c
++++ b/drivers/memory/tegra/tegra20-emc.c
+@@ -1021,15 +1021,13 @@ static int tegra_emc_interconnect_init(struct tegra_emc *emc)
+ 	emc->provider.aggregate = soc->icc_ops->aggregate;
+ 	emc->provider.xlate_extended = emc_of_icc_xlate_extended;
  
-+	icc_provider_init(provider);
-+
- 	qp->dev = &pdev->dev;
- 	qp->bcms = desc->bcms;
- 	qp->num_bcms = desc->num_bcms;
-@@ -1887,12 +1888,6 @@ static int qnoc_probe(struct platform_device *pdev)
- 	if (IS_ERR(qp->voter))
- 		return PTR_ERR(qp->voter);
+-	err = icc_provider_add(&emc->provider);
+-	if (err)
+-		goto err_msg;
++	icc_provider_init(&emc->provider);
  
--	ret = icc_provider_add(provider);
--	if (ret) {
--		dev_err(&pdev->dev, "error adding interconnect provider\n");
--		return ret;
--	}
--
- 	for (i = 0; i < qp->num_bcms; i++)
- 		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
- 
-@@ -1905,7 +1900,7 @@ static int qnoc_probe(struct platform_device *pdev)
- 		node = icc_node_create(qnodes[i]->id);
- 		if (IS_ERR(node)) {
- 			ret = PTR_ERR(node);
--			goto err;
-+			goto err_remove_nodes;
- 		}
- 
- 		node->name = qnodes[i]->name;
-@@ -1919,12 +1914,17 @@ static int qnoc_probe(struct platform_device *pdev)
+ 	/* create External Memory Controller node */
+ 	node = icc_node_create(TEGRA_ICC_EMC);
+ 	if (IS_ERR(node)) {
+ 		err = PTR_ERR(node);
+-		goto del_provider;
++		goto err_msg;
  	}
- 	data->num_nodes = num_nodes;
  
-+	ret = icc_provider_register(provider);
-+	if (ret)
-+		goto err_remove_nodes;
+ 	node->name = "External Memory Controller";
+@@ -1050,12 +1048,14 @@ static int tegra_emc_interconnect_init(struct tegra_emc *emc)
+ 	node->name = "External Memory (DRAM)";
+ 	icc_node_add(node, &emc->provider);
+ 
++	err = icc_provider_register(&emc->provider);
++	if (err)
++		goto remove_nodes;
 +
- 	platform_set_drvdata(pdev, qp);
- 
  	return 0;
--err:
-+
-+err_remove_nodes:
- 	icc_nodes_remove(provider);
--	icc_provider_del(provider);
-+
- 	return ret;
- }
  
-@@ -1932,8 +1932,8 @@ static int qnoc_remove(struct platform_device *pdev)
- {
- 	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+ remove_nodes:
+ 	icc_nodes_remove(&emc->provider);
+-del_provider:
+-	icc_provider_del(&emc->provider);
+ err_msg:
+ 	dev_err(emc->dev, "failed to initialize ICC: %d\n", err);
  
-+	icc_provider_deregister(&qp->provider);
- 	icc_nodes_remove(&qp->provider);
--	icc_provider_del(&qp->provider);
- 
- 	return 0;
- }
 -- 
 2.39.1
 
