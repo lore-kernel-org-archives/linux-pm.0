@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 478D5C64ED8
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:16:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC8CDC6FA95
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Feb 2023 10:16:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230152AbjBAKQg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Feb 2023 05:16:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51928 "EHLO
+        id S232048AbjBAKQi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Feb 2023 05:16:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51956 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231362AbjBAKQe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 05:16:34 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F70E4863F;
+        with ESMTP id S232019AbjBAKQf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2023 05:16:35 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8FF524ED3E;
         Wed,  1 Feb 2023 02:16:34 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 9C3B761752;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 02D0661757;
+        Wed,  1 Feb 2023 10:16:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 235EDC4361B;
         Wed,  1 Feb 2023 10:16:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8DBEAC4332A;
-        Wed,  1 Feb 2023 10:16:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1675246592;
-        bh=PuI2y+ATIFAja48qSbWFbubXBT9of+fd6FspPtD7xKY=;
+        s=k20201202; t=1675246593;
+        bh=0nF8bFxY3P5D9tTctpmyCeHRuEBYqHVlVkGhiXKBwvI=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=oltNLyenpK9EeuFPWsN55yTc+NWW5koqeNQi3VBoNpDpbmBslPZix20h+NprsKOwX
-         7AOiLvVwbXyniyEL0/FAmz1qQLScEnz+teo/5A4CUF08EHVBFv/tpmbdMlGfKN1Czc
-         SY6BcD04lfyMZKQiEVEfGN3xjRr/h0VgPT4/tHekxsCwoGzpR8rvjj8jkNEUVyo1hm
-         g5OCS6clJ5MvtTHEm0+60XfrdyZLgT138WblZmkkvsFt0tEucai8mgFOP1HjTl/oZz
-         jLHwRVZRKaXMKM+jOJM9wFSIGs4HKmQRqRTdRFwhZICWxjR5apwWOjjZWbKLQT/FZs
-         /ES9USwPd2vIA==
+        b=sz/RSIN67O56ujGi0CSF/0DVIJH32aKT1O15exs+nQ7Qbiz3JZaX8YQnhqQOhcVYF
+         IExipRlxc1qw0prEIMH9jsgFFHERR0sGSJ/DKvik0ImXY+wpwX7uoUTUKbGSsU73YT
+         VmDA17WCjEzSZ7JUu8WsIxEubtswYy/r5+pDsbncIfSCheRmzfbtlm2nQz1/XVOiIP
+         Ep4+nEojXdkXUNdPmdULXeyPfiJ0EYWHvbQiN2PLftsmWMX8HmezLS+JfbLeEI5OjQ
+         tU8X3ffKs8YfJAaz0uCXpc5t7NgbHZj9zOBCS+g+zU00yngr5ek6MDRNxTUeQRdrPP
+         UPLkdGa4aY6Aw==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pNAAf-00043s-Gc; Wed, 01 Feb 2023 11:16:53 +0100
+        id 1pNAAg-00044K-Am; Wed, 01 Feb 2023 11:16:54 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     Shawn Guo <shawnguo@kernel.org>,
@@ -54,9 +54,9 @@ Cc:     Shawn Guo <shawnguo@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org
-Subject: [PATCH 06/23] interconnect: qcom: rpm: fix probe child-node error handling
-Date:   Wed,  1 Feb 2023 11:15:42 +0100
-Message-Id: <20230201101559.15529-7-johan+linaro@kernel.org>
+Subject: [PATCH 15/23] interconnect: exynos: fix registration race
+Date:   Wed,  1 Feb 2023 11:15:51 +0100
+Message-Id: <20230201101559.15529-16-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230201101559.15529-1-johan+linaro@kernel.org>
 References: <20230201101559.15529-1-johan+linaro@kernel.org>
@@ -66,34 +66,81 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make sure to clean up and release resources properly also in case probe
-fails when populating child devices.
+The current interconnect provider registration interface is inherently
+racy as nodes are not added until the after adding the provider. This
+can specifically cause racing DT lookups to trigger a NULL-pointer
+deference when either a NULL pointer or not fully initialised node is
+returned from exynos_generic_icc_xlate().
 
-Fixes: e39bf2972c6e ("interconnect: icc-rpm: Support child NoC device probe")
-Cc: stable@vger.kernel.org      # 5.17
+Switch to using the new API where the provider is not registered until
+after it has been fully initialised.
+
+Fixes: 2f95b9d5cf0b ("interconnect: Add generic interconnect driver for Exynos SoCs")
+Cc: stable@vger.kernel.org      # 5.11
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/interconnect/qcom/icc-rpm.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/interconnect/samsung/exynos.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index df3196f72536..91778cfcbc65 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -541,8 +541,11 @@ int qnoc_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, qp);
+diff --git a/drivers/interconnect/samsung/exynos.c b/drivers/interconnect/samsung/exynos.c
+index e70665899482..72e42603823b 100644
+--- a/drivers/interconnect/samsung/exynos.c
++++ b/drivers/interconnect/samsung/exynos.c
+@@ -98,12 +98,13 @@ static int exynos_generic_icc_remove(struct platform_device *pdev)
+ 	struct exynos_icc_priv *priv = platform_get_drvdata(pdev);
+ 	struct icc_node *parent_node, *node = priv->node;
  
- 	/* Populate child NoC devices if any */
--	if (of_get_child_count(dev->of_node) > 0)
--		return of_platform_populate(dev->of_node, NULL, NULL, dev);
-+	if (of_get_child_count(dev->of_node) > 0) {
-+		ret = of_platform_populate(dev->of_node, NULL, NULL, dev);
-+		if (ret)
-+			goto err;
-+	}
++	icc_provider_deregister(&priv->provider);
++
+ 	parent_node = exynos_icc_get_parent(priv->dev->parent->of_node);
+ 	if (parent_node && !IS_ERR(parent_node))
+ 		icc_link_destroy(node, parent_node);
+ 
+ 	icc_nodes_remove(&priv->provider);
+-	icc_provider_del(&priv->provider);
  
  	return 0;
- err:
+ }
+@@ -132,15 +133,11 @@ static int exynos_generic_icc_probe(struct platform_device *pdev)
+ 	provider->inter_set = true;
+ 	provider->data = priv;
+ 
+-	ret = icc_provider_add(provider);
+-	if (ret < 0)
+-		return ret;
++	icc_provider_init(provider);
+ 
+ 	icc_node = icc_node_create(pdev->id);
+-	if (IS_ERR(icc_node)) {
+-		ret = PTR_ERR(icc_node);
+-		goto err_prov_del;
+-	}
++	if (IS_ERR(icc_node))
++		return PTR_ERR(icc_node);
+ 
+ 	priv->node = icc_node;
+ 	icc_node->name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%pOFn",
+@@ -171,14 +168,17 @@ static int exynos_generic_icc_probe(struct platform_device *pdev)
+ 			goto err_pmqos_del;
+ 	}
+ 
++	ret = icc_provider_register(provider);
++	if (ret < 0)
++		goto err_pmqos_del;
++
+ 	return 0;
+ 
+ err_pmqos_del:
+ 	dev_pm_qos_remove_request(&priv->qos_req);
+ err_node_del:
+ 	icc_nodes_remove(provider);
+-err_prov_del:
+-	icc_provider_del(provider);
++
+ 	return ret;
+ }
+ 
 -- 
 2.39.1
 
