@@ -2,86 +2,227 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60DB1C636D4
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Feb 2023 12:59:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D466CC05027
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Feb 2023 13:32:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231678AbjBBM7x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Feb 2023 07:59:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60308 "EHLO
+        id S232059AbjBBNcF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Feb 2023 08:32:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33244 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232145AbjBBM7e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2023 07:59:34 -0500
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16A1C8F271;
-        Thu,  2 Feb 2023 04:59:14 -0800 (PST)
-X-UUID: dd003a96a2f611ed945fc101203acc17-20230202
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=58VVwq5R0SeVWSTuqEd+Zn7+PpfZGMiJHhHOV+5UOXU=;
-        b=GsA7nA++86YWeUqE+Gyy4LLCuolRv0C53a3gQitonVW04ldOQBoaKEyRsc7gG51TslDtCk8zIUkctABETenRRBaC4cfQUC9/fz3prl6X3wOB7KGELo9CH68NxyLpFWXmjOuIL53L8qe5NdQ8fIOTZV9qVEcf9Ud97DmEm2gtqNc=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.18,REQID:2aa0d170-7b81-42c9-acc8-a10b94ef6169,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-        :release,TS:95
-X-CID-INFO: VERSION:1.1.18,REQID:2aa0d170-7b81-42c9-acc8-a10b94ef6169,IP:0,URL
-        :0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTION
-        :quarantine,TS:95
-X-CID-META: VersionHash:3ca2d6b,CLOUDID:17ccb68d-8530-4eff-9f77-222cf6e2895b,B
-        ulkID:2302022041080ZUO6MYN,BulkQuantity:0,Recheck:0,SF:38|29|28|17|19|48,T
-        C:nil,Content:0,EDM:-3,IP:nil,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
-        ,OSI:0,OSA:0
-X-CID-BVR: 0,NGT
-X-UUID: dd003a96a2f611ed945fc101203acc17-20230202
-Received: from mtkmbs13n1.mediatek.inc [(172.21.101.193)] by mailgw02.mediatek.com
-        (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 511999643; Thu, 02 Feb 2023 20:41:07 +0800
-Received: from mtkmbs13n1.mediatek.inc (172.21.101.193) by
- mtkmbs13n1.mediatek.inc (172.21.101.193) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.792.15; Thu, 2 Feb 2023 20:41:05 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
- mtkmbs13n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.792.15 via Frontend Transport; Thu, 2 Feb 2023 20:41:05 +0800
-From:   Roger Lu <roger.lu@mediatek.com>
-To:     Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>
-CC:     Fan Chen <fan.chen@mediatek.com>, Roger Lu <roger.lu@mediatek.com>,
-        Jia-wei Chang <jia-wei.chang@mediatek.com>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH v5 0/3] Enhance SVS's robustness
-Date:   Thu, 2 Feb 2023 20:41:01 +0800
-Message-ID: <20230202124104.16504-1-roger.lu@mediatek.com>
-X-Mailer: git-send-email 2.18.0
+        with ESMTP id S230070AbjBBNcE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2023 08:32:04 -0500
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBA4B7D98
+        for <linux-pm@vger.kernel.org>; Thu,  2 Feb 2023 05:32:02 -0800 (PST)
+Received: by mail-wm1-x335.google.com with SMTP id j32-20020a05600c1c2000b003dc4fd6e61dso3724255wms.5
+        for <linux-pm@vger.kernel.org>; Thu, 02 Feb 2023 05:32:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=p8QJM+cDMWDwGnLdY1LGO5+3ANd8IL6QkYM6Adr66uY=;
+        b=E2uSmXmY4dmx866H1u+0MVNnU1IS7WPXRtRsG9r8ILYDjsmv87BaJji0oo/nGEyjMn
+         iTm1/N20f9oNM7YQh/0SE4XzQqjkiS8tg8nSTErWGytM0wxvVKZjSeDZATiyytNni0OF
+         5oR9X0q6f5drJ5jbfbzibc5nCO2zscS87jLlScA/h5H+6C9A4IJwopMo6j1iWz2kQvrT
+         XtGSS/mmQqEE25Kuq/RoKUhxhAlGr3lMSdwNV55AiHrcqaIc6BvKTii3TAxWT87ZbRst
+         QuKIkJVu2Vg1Ez/onQAhfwz8N5L9unF3YFoaMtyyYk+HkPsI/CqtYMOjHT18SMbMuuYf
+         Xf1g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=p8QJM+cDMWDwGnLdY1LGO5+3ANd8IL6QkYM6Adr66uY=;
+        b=Q+f+E2puUuxi8gF337JU4w0uEiW37Mu0FGyWo0bxB4VSNkVheP1GzzSiv9QAKqxga+
+         sPVSHz52qWWKUPgmFXRfx+UvE1wBogK9trjUvWCIvAjN5CfdTEOZgfFxi6H5+VYwRcLj
+         e4dPDRIG/4t3X/06DX4YQ09pwuXgOk5APpTmF0EfQEyO43428xCRpN3Xr2yzZhr0wSbZ
+         jgPVWcfDD/P97XJWvwiJAvw5J6LSc+PmCcv5FrEjc0Zq/mn9ciZW69jLpVaqzIBkPekm
+         qOevnUdOBhbgubSAR15G90a6QxkTIOjYsp/XvjnR7QQ6kU276u6q85XCiZ+Tf9cd34pk
+         D+Yg==
+X-Gm-Message-State: AO0yUKXoBnNfcIScVLrC0izPYZEcZgaDUOqdWnmdAd/WOT+zAtddghU3
+        6WipTAVIm2HiqHtxkJMIy1C3glXrmGEvcBO/
+X-Google-Smtp-Source: AK7set8wfPW5+yKtg0ak5ruu80kd+dHgySJOEnsHJrFEo1iX7A/CpQPPYwiIzpK5NXzm6KvEaGIykA==
+X-Received: by 2002:a05:600c:2b46:b0:3dc:4aa6:a8a9 with SMTP id e6-20020a05600c2b4600b003dc4aa6a8a9mr5650270wmf.7.1675344721184;
+        Thu, 02 Feb 2023 05:32:01 -0800 (PST)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id y21-20020a05600c341500b003dc522dd25esm4613487wmp.30.2023.02.02.05.32.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 02 Feb 2023 05:32:00 -0800 (PST)
+Message-ID: <d69f2627-4669-5e30-6535-0a6bb98c365d@linaro.org>
+Date:   Thu, 2 Feb 2023 14:31:59 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
+Subject: Re: [PATCH 1/3] thermal/drivers/intel: Use generic trip points for
+ quark_dts
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     srinivas.pandruvada@linux.intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, rui.zhang@intel.com,
+        Amit Kucheria <amitk@kernel.org>
+References: <20230118181622.33335-1-daniel.lezcano@linaro.org>
+ <CAJZ5v0icjsLBNkDqm49az=GixfEoLHAtCm7H13uOUv7Hr6yO2Q@mail.gmail.com>
+ <621aca19-6a44-9d42-6fde-1835035c28b4@linaro.org>
+ <CAJZ5v0iOYH4WR5WoH=jL6VWKhB4CMeZv5V3U0Q_c_qdCJvvvBw@mail.gmail.com>
+ <fedc35c2-1dc9-48af-f03f-fbb8566284fb@linaro.org>
+ <CAJZ5v0h75VH4GQeBStfiAXrFJt1tL=1+nhP9=n_Ok=Txm3e_CA@mail.gmail.com>
+ <e7e9704c-df97-2c27-2955-959d847a8bb8@linaro.org>
+ <CAJZ5v0jHkL6Lit-0Cqg42i-vYRaD+zc4=g2XziCLSUPAeCpEcA@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <CAJZ5v0jHkL6Lit-0Cqg42i-vYRaD+zc4=g2XziCLSUPAeCpEcA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SVS driver got accepted upstream but still has room to be improved.
-Therefore, we add these patches to fix issues and coding style.
+On 02/02/2023 11:32, Rafael J. Wysocki wrote:
+> On Wed, Feb 1, 2023 at 8:27 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 01/02/2023 19:47, Rafael J. Wysocki wrote:
+>>> On Wed, Feb 1, 2023 at 11:42 AM Daniel Lezcano
+>>> <daniel.lezcano@linaro.org> wrote:
+>>>>
+>>>> On 31/01/2023 20:11, Rafael J. Wysocki wrote:
+>>>>> On Tue, Jan 31, 2023 at 5:41 PM Daniel Lezcano
+>>>>> <daniel.lezcano@linaro.org> wrote:
+>>>>>>
+>>>>>> On 26/01/2023 15:15, Rafael J. Wysocki wrote:
+>>>>>>> On Wed, Jan 18, 2023 at 7:16 PM Daniel Lezcano
+>>>>>>> <daniel.lezcano@linaro.org> wrote:
+>>>>>>>>
+>>>>>>>> The thermal framework gives the possibility to register the trip
+>>>>>>>> points with the thermal zone. When that is done, no get_trip_* ops are
+>>>>>>>> needed and they can be removed.
+>>>>>>>>
+>>>>>>>> Convert ops content logic into generic trip points and register them with the
+>>>>>>>> thermal zone.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>>>>>> ---
+>>>>>>
+>>>>>> [ ... ]
+>>>>>>
+>>>>>>>> -       aux_entry->tzone = thermal_zone_device_register("quark_dts",
+>>>>>>>> -                       QRK_MAX_DTS_TRIPS,
+>>>>>>>> -                       wr_mask,
+>>>>>>>> -                       aux_entry, &tzone_ops, NULL, 0, polling_delay);
+>>>>>>>> +       err = get_trip_temp(QRK_DTS_ID_TP_CRITICAL, &temperature);
+>>>>>>>> +       if (err)
+>>>>>>>> +               goto err_ret;
+>>>>>>>> +
+>>>>>>>> +       aux_entry->trips[QRK_DTS_ID_TP_CRITICAL].temperature = temperature;
+>>>>>>>> +       aux_entry->trips[QRK_DTS_ID_TP_CRITICAL].type = THERMAL_TRIP_CRITICAL;
+>>>>>>>> +
+>>>>>>>> +       err = get_trip_temp(QRK_DTS_ID_TP_HOT, &temperature);
+>>>>>>>> +       if (err)
+>>>>>>>> +               goto err_ret;
+>>>>>>>
+>>>>>>> If I'm not mistaken, this won't even try to register the thermal zone
+>>>>>>> if at least one trip cannot be initialized, but previously it was
+>>>>>>> registered in that case, but the trips that failed to respond were
+>>>>>>> disabled.
+>>>>>>>
+>>>>>>> This is a change in behavior that would at least need to be documented
+>>>>>>> in the changelog, but it isn't.
+>>>>>>>
+>>>>>>> I'm not sure if it is safe to make even, however.
+>>>>>>
+>>>>>> Thanks for catching this.
+>>>>>>
+>>>>>> Two solutions:
+>>>>>>
+>>>>>> 1. Set the temperature to THERMAL_TEMP_INVALID and change
+>>>>>> get_thermal_trip() to return -EINVAL or -ERANGE if the temperature is
+>>>>>> THERMAL_TEMP_INVALID
+>>>>>>
+>>>>>> 2. Register only the valid trip points.
+>>>>>>
+>>>>>> What would be the preferable way ?
+>>>>>
+>>>>> I think that the trip points that are registered currently need to
+>>>>> still be registered after the change.
+>>>>>
+>>>>> Does registering a trip point with the temperature set to
+>>>>> THERMAL_TEMP_INVALID cause it to be effectively disabled?
+>>>>
+>>>> The initial behavior before the changes is:
+>>>>
+>>>> The function thermal_zone_device_register() will go through all the trip
+>>>> points and call thermal_zone_get_trip(), resulting in a call to
+>>>> ops->get_trip_temp(). If the call fails, the trip point is tagged as
+>>>> disabled and will stay in this state forever, so discarded in the trip
+>>>> point crossed detection.
+>>>>
+>>>> That does not report an error and the trip point is showed in sysfs but
+>>>> in a inconsistent state as it is actually disabled. Reading the trip
+>>>> point will return an error or not, but it is in any case disabled in the
+>>>> thermal framework. The userspace does not have the information about the
+>>>> trip point being disabled, so showing it up regardless its state is
+>>>> pointless and prone to confusion for the userspace.
+>>>>
+>>>> IMO, it would be more sane to register the trip points which are
+>>>> actually valid, so invalid trip points are not showed up and does
+>>>> prevent extra complexity in the thermal core to handle them.
+>>>
+>>> Except when the trip point can be updated to become a valid one later,
+>>> for example in response to a system configuration change.  That can
+>>> happen to ACPI-provided trip points, for example.
+>>>
+>>> I don't think that this is an issue for this particular driver, but
+>>> the core needs to handle that case anyway.
+>>
+>> Yes, but the point is the core code never handled that case.
+> 
+> True.
+> 
+> What I wanted to say, though, is that the core needs to allow
+> registering trip points with THERMAL_TEMP_INVALID without disabling
+> them automatically, so they can be updated and used later.
 
-Change since v4:
-- Rebase unmerged patches and resend to patchwork
+Ok, so it is fine with the current code AFAICT.
 
-Tested on:
-MT8183 Platform (kernel v5.10)
-MT8192 Platform (kernel v5.4)
+The handle_thermal_trip() functions are discarding trips with 
+temperature below zero for hot and critical. The trip crossing detection 
+won't happen with these values.
 
-Roger Lu (3):
-  soc: mediatek: mtk-svs: use svs get efuse common function
-  soc: mediatek: mtk-svs: use common function to disable restore
-    voltages
-  soc: mediatek: mtk-svs: add thermal voltage compensation if needed
+However PASSIVE and ACTIVE trip points are going through the throttling 
+governor callback with a -273000 trip temperature. I suppose those very 
+specific trip points initialized to THERMAL_TEMP_INVALID are not 
+associated with a cooling device, right ?
 
- drivers/soc/mediatek/mtk-svs.c | 142 +++++++++++++--------------------
- 1 file changed, 56 insertions(+), 86 deletions(-)
 
+>> If the trip point fails when registering the thermal zone (and this is
+>> not related to our changes), the trip point is added to the disabled
+>> trips bitmap and then whatever the action to validate the trip point, it
+>> remains disabled for the thermal framework. There is no action to enable
+>> it (except I missed something).
+>>
+>>> Moreover, there is the case when trip points only become relevant when
+>>> their temperatures are set via ops->set_trip_temp() and they are
+>>> THERMAL_TEMP_INVALID initially, which needs to be handled by the core
+>>> either.
+>>
+>> Ok, then I guess the simplest change is to assign THERMAL_TEMP_INVALID
+>> in this driver, if get_trip_temp fails at the initialization time.
+>>
+>> Later we can add a thermal_zone_device_update_trips() with the needed
+>> locking and actions related to the update.
+> 
+> Well, there is thermal_zone_device_update() and one of the events it
+> is supposed to handle is THERMAL_TRIP_CHANGED, so I'm not sure how the
+> new interface would differ from it?
+
+Yes, we may have to investigate if the event should trigger the update 
+or the update should trigger the event.
+
+
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
