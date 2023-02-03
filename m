@@ -2,187 +2,137 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB26EC61DA4
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 12:50:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC04C05027
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 13:00:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233002AbjBCMu5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 07:50:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54724 "EHLO
+        id S231347AbjBCNAv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 08:00:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232805AbjBCMu4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 07:50:56 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C78A89A821
-        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 04:50:54 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <sha@pengutronix.de>)
-        id 1pNvWE-0000al-5M; Fri, 03 Feb 2023 13:50:18 +0100
-Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <sha@pengutronix.de>)
-        id 1pNvWA-002Opa-IL; Fri, 03 Feb 2023 13:50:15 +0100
-Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <sha@pengutronix.de>)
-        id 1pNvWA-000Zm5-5B; Fri, 03 Feb 2023 13:50:14 +0100
-From:   Sascha Hauer <s.hauer@pengutronix.de>
-To:     linux-pm@vger.kernel.org
-Cc:     linux-rockchip@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        Heiko Stuebner <heiko@sntech.de>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Will Deacon <will@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, kernel@pegutronix.de,
-        Michael Riesch <michael.riesch@wolfvision.net>,
-        Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 14/18] PM / devfreq: rockchip-dfi: Prepare for multiple users
-Date:   Fri,  3 Feb 2023 13:50:08 +0100
-Message-Id: <20230203125012.3804008-15-s.hauer@pengutronix.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20230203125012.3804008-1-s.hauer@pengutronix.de>
-References: <20230203125012.3804008-1-s.hauer@pengutronix.de>
+        with ESMTP id S231665AbjBCNAv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 08:00:51 -0500
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 581F513D74;
+        Fri,  3 Feb 2023 05:00:50 -0800 (PST)
+Received: from mercury (unknown [37.81.13.16])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: sre)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 0B2096602F0E;
+        Fri,  3 Feb 2023 13:00:49 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1675429249;
+        bh=A/jn8B8FWdXm620r8Qsxt7XexyyaId56TtoNgW3vcE0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=UYY1YQWLY23yZ5b8Xp/MWeOTy4/TqV4xhqLqEc7Xof7bK2kYc6ueamWviuYywAIEb
+         BMps1KV9exycBXpRLqa+/Lc6dH/IcBAhMGaMsXJdsDuFFhkimeqIQWESjlRG/uMEAt
+         62wgIZ6Tf0UCOJ/x9+a9BBjEmBVaj2AE0Na4+QbZc6cYYm6LDs/c4wvuQQ4IZgEBcq
+         S1o+p5aXSx421nflsrXkIYfjZoxO7GcI6u7WVj7XM2CNoUW9UKyqH+BmMUrZV/IX7J
+         X7IoBoDpPchGtCtYlO9b1yZlkfOQXaw8x/mQ4wDiSdVDp5pK1JQwm2irjQMlhrNHlc
+         4v1vbd/w5us6g==
+Received: by mercury (Postfix, from userid 1000)
+        id 06D1D1060930; Fri,  3 Feb 2023 14:00:45 +0100 (CET)
+Date:   Fri, 3 Feb 2023 14:00:45 +0100
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     cgel.zte@gmail.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Minghao Chi <chi.minghao@zte.com.cn>,
+        Zeal Robot <zealci@zte.com.cn>
+Subject: Re: [PATCH] power: supply: use strscpy() is more robust and safer
+Message-ID: <20230203130045.shjvwqkopic65wox@mercury.elektranox.org>
+References: <20220919024919.211210-1-chi.minghao@zte.com.cn>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="f2t2axxher2oxzor"
+Content-Disposition: inline
+In-Reply-To: <20220919024919.211210-1-chi.minghao@zte.com.cn>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When adding perf support later the DFI must be enabled when
-either of devfreq-event or perf is active. Prepare for that
-by adding a usage counter for the DFI. Also move enabling
-and disabling of the clock away from the devfreq-event specific
-functions to which the perf specific part won't have access.
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/devfreq/event/rockchip-dfi.c | 57 +++++++++++++++++++---------
- 1 file changed, 40 insertions(+), 17 deletions(-)
+--f2t2axxher2oxzor
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index c0b7b1e9805e9..eae010644935a 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -69,13 +69,28 @@ struct rockchip_dfi {
- 	void __iomem *regs;
- 	struct regmap *regmap_pmu;
- 	struct clk *clk;
-+	int usecount;
-+	struct mutex mutex;
- 	u32 ddr_type;
- 	unsigned int channel_mask;
- };
- 
--static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
-+static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
- {
- 	void __iomem *dfi_regs = dfi->regs;
-+	int ret = 0;
-+
-+	mutex_lock(&dfi->mutex);
-+
-+	dfi->usecount++;
-+	if (dfi->usecount > 1)
-+		goto out;
-+
-+	ret = clk_prepare_enable(dfi->clk);
-+	if (ret) {
-+		dev_err(&dfi->edev->dev, "failed to enable dfi clk: %d\n", ret);
-+		goto out;
-+	}
- 
- 	/* clear DDRMON_CTRL setting */
- 	writel_relaxed(HIWORD_UPDATE(0, 0xffff), dfi_regs + DDRMON_CTRL);
-@@ -99,14 +114,30 @@ static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
- 	/* enable count, use software mode */
- 	writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_SOFTWARE_EN, DDRMON_CTRL_SOFTWARE_EN),
- 		       dfi_regs + DDRMON_CTRL);
-+out:
-+	mutex_unlock(&dfi->mutex);
-+
-+	return ret;
- }
- 
--static void rockchip_dfi_stop_hardware_counter(struct rockchip_dfi *dfi)
-+static void rockchip_dfi_disable(struct rockchip_dfi *dfi)
- {
- 	void __iomem *dfi_regs = dfi->regs;
- 
-+	mutex_lock(&dfi->mutex);
-+
-+	dfi->usecount--;
-+
-+	WARN_ON_ONCE(dfi->usecount < 0);
-+
-+	if (dfi->usecount > 0)
-+		goto out;
-+
- 	writel_relaxed(HIWORD_UPDATE(0, DDRMON_CTRL_SOFTWARE_EN),
- 		       dfi_regs + DDRMON_CTRL);
-+	clk_disable_unprepare(dfi->clk);
-+out:
-+	mutex_unlock(&dfi->mutex);
- }
- 
- static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_count *count)
-@@ -124,29 +155,20 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
- 	}
- }
- 
--static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
-+static int rockchip_dfi_event_disable(struct devfreq_event_dev *edev)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 
--	rockchip_dfi_stop_hardware_counter(dfi);
--	clk_disable_unprepare(dfi->clk);
-+	rockchip_dfi_disable(dfi);
- 
- 	return 0;
- }
- 
--static int rockchip_dfi_enable(struct devfreq_event_dev *edev)
-+static int rockchip_dfi_event_enable(struct devfreq_event_dev *edev)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
--	int ret;
--
--	ret = clk_prepare_enable(dfi->clk);
--	if (ret) {
--		dev_err(&edev->dev, "failed to enable dfi clk: %d\n", ret);
--		return ret;
--	}
- 
--	rockchip_dfi_start_hardware_counter(dfi);
--	return 0;
-+	return rockchip_dfi_enable(dfi);
- }
- 
- static int rockchip_dfi_set_event(struct devfreq_event_dev *edev)
-@@ -190,8 +212,8 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- }
- 
- static const struct devfreq_event_ops rockchip_dfi_ops = {
--	.disable = rockchip_dfi_disable,
--	.enable = rockchip_dfi_enable,
-+	.disable = rockchip_dfi_event_disable,
-+	.enable = rockchip_dfi_event_enable,
- 	.get_event = rockchip_dfi_get_event,
- 	.set_event = rockchip_dfi_set_event,
- };
-@@ -285,6 +307,7 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 		return PTR_ERR(dfi->regmap_pmu);
- 
- 	dfi->dev = dev;
-+	mutex_init(&dfi->mutex);
- 
- 	desc = &dfi->desc;
- 	desc->ops = &rockchip_dfi_ops;
--- 
-2.30.2
+Hi,
 
+On Mon, Sep 19, 2022 at 02:49:19AM +0000, cgel.zte@gmail.com wrote:
+> From: Minghao Chi <chi.minghao@zte.com.cn>
+>=20
+> The implementation of strscpy() is more robust and safer.
+>=20
+> That's now the recommended way to copy NUL terminated strings.
+>=20
+> Reported-by: Zeal Robot <zealci@zte.com.cn>
+> Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+> ---
+
+Sorry, this fell between the cracks. Applied now, thanks!
+
+-- Sebastian
+
+>  drivers/power/supply/max1721x_battery.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/max1721x_battery.c b/drivers/power/supp=
+ly/max1721x_battery.c
+> index 473e53cd2801..0f948db958d5 100644
+> --- a/drivers/power/supply/max1721x_battery.c
+> +++ b/drivers/power/supply/max1721x_battery.c
+> @@ -384,7 +384,7 @@ static int devm_w1_max1721x_add_device(struct w1_slav=
+e *sl)
+>  	}
+> =20
+>  	if (!info->ManufacturerName[0])
+> -		strncpy(info->ManufacturerName, DEF_MFG_NAME,
+> +		strscpy(info->ManufacturerName, DEF_MFG_NAME,
+>  			2 * MAX1721X_REG_MFG_NUMB);
+> =20
+>  	if (get_string(info, MAX1721X_REG_DEV_STR,
+> @@ -403,15 +403,15 @@ static int devm_w1_max1721x_add_device(struct w1_sl=
+ave *sl)
+> =20
+>  		switch (dev_name & MAX172XX_DEV_MASK) {
+>  		case MAX172X1_DEV:
+> -			strncpy(info->DeviceName, DEF_DEV_NAME_MAX17211,
+> +			strscpy(info->DeviceName, DEF_DEV_NAME_MAX17211,
+>  				2 * MAX1721X_REG_DEV_NUMB);
+>  			break;
+>  		case MAX172X5_DEV:
+> -			strncpy(info->DeviceName, DEF_DEV_NAME_MAX17215,
+> +			strscpy(info->DeviceName, DEF_DEV_NAME_MAX17215,
+>  				2 * MAX1721X_REG_DEV_NUMB);
+>  			break;
+>  		default:
+> -			strncpy(info->DeviceName, DEF_DEV_NAME_UNKNOWN,
+> +			strscpy(info->DeviceName, DEF_DEV_NAME_UNKNOWN,
+>  				2 * MAX1721X_REG_DEV_NUMB);
+>  		}
+>  	}
+> --=20
+> 2.25.1
+
+--f2t2axxher2oxzor
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmPdBXUACgkQ2O7X88g7
++prhaw/9HGLScrgq/kceuN/lTUZENnhal350PLcsqUeOOTk63o7LJC2yYWf594WP
+kjEyXvXocvcAyhQPoFHKXi9uhIXWtk85av/d+TyC19gnfP+GMugVGt0N0ndn98h3
+fK7qpMqkvyCxSx3PeWYGP+rxzh8kf9M83k1r2LY0CSVizq4rFN88HIc19Y0nxytq
+Ft4E6lsjsq+ulFMkjR2nhWy/sdJDnCzlVxlWrHzIgYa4EyuaMFqcmBHuWX6WUXlx
+gJyCcwexKUVIXowL4ql4JPR6JTxsNJERtxPuLTVaEQXWh4Z0o2TFxGe0k7xrCrFP
+gnHndUnhhu3vzIWTyxB5q5nl0J1oj7+mspxbmA4SthoRwrHAZj3Fgl+t+q/AZ770
+kRN2Q2oOIHrK86d2dylimr2fsWiqyPB+A2HT1BfVrRUQDjhIYMRfjq6f4zWg2fTy
+JSr2/Wq4g2yOxzSTdb7ln+z0taCVie23ZcHXe8ECjqDO23mfO8bjZz1u+AkmbTGY
+QAAZ7O77VZx9j3OFJ6zmwQyiInutxAvcnhfcafG7Nu4mfQ0ha5inUVe8RJ9G2/vK
+y66CA3HHbsC8Kc6DeR0OhajowuNsMDDkpcZHu2cf9n/KqwfjxpHLUX3BBvPxQCOT
+YGMknFCklRjv5yMvmpbVjM/yKW2W9zn6Xsuv+8OPc+EMP2MEK0Y=
+=+h3N
+-----END PGP SIGNATURE-----
+
+--f2t2axxher2oxzor--
