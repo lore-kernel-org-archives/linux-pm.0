@@ -2,119 +2,90 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 509E9C636D6
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 13:57:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4870FC61DA4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 13:58:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233527AbjBCN55 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 08:57:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34304 "EHLO
+        id S233112AbjBCN6M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 08:58:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232736AbjBCN5Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 08:57:24 -0500
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CBDCCA42B0;
-        Fri,  3 Feb 2023 05:54:40 -0800 (PST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5ED761474;
-        Fri,  3 Feb 2023 05:54:12 -0800 (PST)
-Received: from eglon.cambridge.arm.com (eglon.cambridge.arm.com [10.1.196.177])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 915733F71E;
-        Fri,  3 Feb 2023 05:53:26 -0800 (PST)
-From:   James Morse <james.morse@arm.com>
-To:     linux-pm@vger.kernel.org, loongarch@lists.linux.dev,
-        kvmarm@lists.linux.dev, kvm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, x86@kernel.org
-Cc:     Marc Zyngier <maz@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Borislav Petkov <bp@alien8.de>, H Peter Anvin <hpa@zytor.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        James Morse <james.morse@arm.com>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Oliver Upton <oliver.upton@linux.dev>,
-        Len Brown <lenb@kernel.org>,
-        Rafael Wysocki <rafael@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        Salil Mehta <salil.mehta@huawei.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Jean-Philippe Brucker <jean-philippe@linaro.org>
-Subject: [RFC PATCH 22/32] arm64: acpi: Move get_cpu_for_acpi_id() to a header
-Date:   Fri,  3 Feb 2023 13:50:33 +0000
-Message-Id: <20230203135043.409192-23-james.morse@arm.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20230203135043.409192-1-james.morse@arm.com>
-References: <20230203135043.409192-1-james.morse@arm.com>
+        with ESMTP id S233019AbjBCN52 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 08:57:28 -0500
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE558A2A76;
+        Fri,  3 Feb 2023 05:54:49 -0800 (PST)
+Received: by mail-ej1-f44.google.com with SMTP id gr7so15513160ejb.5;
+        Fri, 03 Feb 2023 05:54:49 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=OemsrAqP9x0H9P+t2x9gMccQSvNjPhA2hT8xJ8/gamY=;
+        b=5+eWaA4Xidpr6geqixRPAxVZantVbMncdneumkSjz5Ag1IF14LF09QUceWh7NWtKlM
+         LQY8a0mCm1EcUyh3jKvoh3clQ3mP0+8bPMo5iK9Cwo8Xd9pQ5BFHrOmL1CMomIO50dMG
+         eAOpZ0Ojv6fbZE85laFyBcx+ZAqlXvjsyTo8egGsRZPCv4cSYwx812kqoFUmEWeHAjbc
+         NwvmMZYAIMx2vZ8LVltSasJRiEhc5qkvyZ8B+Ht2qPQQHNcFhPicnR7bvXZ68zmAZjKm
+         4CnWSbX9te/U2cH/2fBRUG6rmEUAeBIplYV9uwG3gyfuMpV/7RzxugdbSDjv8ugKNv47
+         9dug==
+X-Gm-Message-State: AO0yUKVF4xp65P7Mk/QIg14E4CqkTUsFSCcUPmMnaYCgNbDUHW3+OYnf
+        kfVGcVYl3PA3F0/7qqlxiEgxcAQeU88utUVHlkZD8mOZ
+X-Google-Smtp-Source: AK7set873Gbdt3HNkt0rgib8UrCFsds7W4lAbSmGQCoKc2oXUwf7ube+rnmt02kuwORIk+46f2Ckm52gpSGNG/uV+eE=
+X-Received: by 2002:a17:906:9bd4:b0:87f:575a:9b67 with SMTP id
+ de20-20020a1709069bd400b0087f575a9b67mr3244674ejc.274.1675432382946; Fri, 03
+ Feb 2023 05:53:02 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230203123516.2501755-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20230203123516.2501755-1-srinivas.pandruvada@linux.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 3 Feb 2023 14:52:50 +0100
+Message-ID: <CAJZ5v0gYvjT_=TADaFBHkYP7LGKE-SZVMYFFnCAj539JeJ3G5A@mail.gmail.com>
+Subject: Re: [PATCH] thermal: intel_powerclamp: Add dependency on CPU_IDLE
+To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel test robot <lkp@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-ACPI identifies CPUs by UID. get_cpu_for_acpi_id() maps the ACPI UID
-to the linux CPU number.
+On Fri, Feb 3, 2023 at 1:35 PM Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> Fix error:
+>    WARNING: unmet direct dependencies detected for IDLE_INJECT
+>      Depends on [n]: POWERCAP [=y] && CPU_IDLE [=n]
+>      Selected by [y]:
+>      - INTEL_POWERCLAMP [=y] && THERMAL [=y] && (X86 [=y] ||
+> X86_INTEL_QUARK [=n] || COMPILE_TEST [=y]) && X86 [=y] && CPU_SUP_INTEL [=y]
+>
+> Since IDLE_INJECT depends on CPU_IDLE, add that to INTEL_POWERCLAMP.
+>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-The helper to retrieve this mapping is only available in arm64's numa
-code.
+I have folded this into the original patch that introduced the issue.
 
-Move it to live next to get_acpi_id_for_cpu().
-
-Signed-off-by: James Morse <james.morse@arm.com>
----
- arch/arm64/include/asm/acpi.h | 11 +++++++++++
- arch/arm64/kernel/acpi_numa.c | 11 -----------
- 2 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-index bd68e1b7f29f..0d1da93a5bad 100644
---- a/arch/arm64/include/asm/acpi.h
-+++ b/arch/arm64/include/asm/acpi.h
-@@ -97,6 +97,17 @@ static inline u32 get_acpi_id_for_cpu(unsigned int cpu)
- 	return	acpi_cpu_get_madt_gicc(cpu)->uid;
- }
- 
-+static inline int get_cpu_for_acpi_id(u32 uid)
-+{
-+	int cpu;
-+
-+	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
-+		if (uid == get_acpi_id_for_cpu(cpu))
-+			return cpu;
-+
-+	return -EINVAL;
-+}
-+
- static inline void arch_fix_phys_package_id(int num, u32 slot) { }
- void __init acpi_init_cpus(void);
- int apei_claim_sea(struct pt_regs *regs);
-diff --git a/arch/arm64/kernel/acpi_numa.c b/arch/arm64/kernel/acpi_numa.c
-index e51535a5f939..0c036a9a3c33 100644
---- a/arch/arm64/kernel/acpi_numa.c
-+++ b/arch/arm64/kernel/acpi_numa.c
-@@ -34,17 +34,6 @@ int __init acpi_numa_get_nid(unsigned int cpu)
- 	return acpi_early_node_map[cpu];
- }
- 
--static inline int get_cpu_for_acpi_id(u32 uid)
--{
--	int cpu;
--
--	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
--		if (uid == get_acpi_id_for_cpu(cpu))
--			return cpu;
--
--	return -EINVAL;
--}
--
- static int __init acpi_parse_gicc_pxm(union acpi_subtable_headers *header,
- 				      const unsigned long end)
- {
--- 
-2.30.2
-
+> ---
+> This is for kernel
+> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+>
+>  drivers/thermal/intel/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/thermal/intel/Kconfig b/drivers/thermal/intel/Kconfig
+> index b346a646fffb..b5808f92702d 100644
+> --- a/drivers/thermal/intel/Kconfig
+> +++ b/drivers/thermal/intel/Kconfig
+> @@ -3,6 +3,7 @@ config INTEL_POWERCLAMP
+>         tristate "Intel PowerClamp idle injection driver"
+>         depends on X86
+>         depends on CPU_SUP_INTEL
+> +       depends on CPU_IDLE
+>         select POWERCAP
+>         select IDLE_INJECT
+>         help
+> --
+> 2.39.1
+>
