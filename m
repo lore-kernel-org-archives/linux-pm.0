@@ -2,385 +2,270 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 102BCC05027
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 17:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 713AEC636D4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 17:34:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231240AbjBCReT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 12:34:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39624 "EHLO
+        id S233540AbjBCRee (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 12:34:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232054AbjBCRd6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 12:33:58 -0500
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1366A429D
-        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 09:33:55 -0800 (PST)
-Received: by mail-wm1-x32a.google.com with SMTP id l21-20020a05600c1d1500b003dfe462b7e4so1913523wms.0
-        for <linux-pm@vger.kernel.org>; Fri, 03 Feb 2023 09:33:55 -0800 (PST)
+        with ESMTP id S233560AbjBCReA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 12:34:00 -0500
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE119A428A
+        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 09:33:57 -0800 (PST)
+Received: by mail-wm1-x331.google.com with SMTP id hn2-20020a05600ca38200b003dc5cb96d46so6505600wmb.4
+        for <linux-pm@vger.kernel.org>; Fri, 03 Feb 2023 09:33:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Za8uPsw5SSvV8WX2HiDt+VQyx2NN7X9xXkrZzQ/66K8=;
-        b=fP96O09tFdYsJTmC6eXLyl14WDoHUGqDsl5HcJXm2pMczExOBbEBwcmx5rnXoNG5vg
-         G7RUnGyDTBt15mybbBVoUAhlebN6IJ49RiKaPfiuHGIKoAcuP36FIqi3MmghgxFpMlqA
-         7bNGR8bBAvgxb5n47//Az6CDg30Rhe1XlUl6Pa9W4cJcEwLxxnXS7xxuM5lXJvTAdwDn
-         KJXG2zc7NEKYC8FUyKxb4osQvZZszjyX+YjIJsx+MQg+XTpyC/XdSJIkEI4Vft6PxIbC
-         6/m362S10ypEKT7cKfH1lGSVRB5xyjSVAMW6PJ0F3732qYyP3kM1aGLLI2atFZyebOHH
-         6Obw==
+        bh=QC3Bc1ZBnDqOCsf2GYYuc3UMis7l5JLiGW3gDWAr4Jo=;
+        b=BwPh2K1s3VvrNIFZ2qnZis7vTO6tK++DzNrfzs3Pted+Yr4HfKoXjAUkPh1CwzYp45
+         +vq9FSKPZLhTukJI7nBnbewsG+08a8+StMb3qLJjmbTxvb7/ZTxUvf6qERkVLErxzdsS
+         Urgi2wAb2B12FObZ38pPBUlwNTY4zpsDBm/BG8vQC5386AoIBElIBgeBwJ1JxurVpjQ8
+         ZmiYQSl4+do5jR71MneUuBGDmoRko0jYthu14ioOSrZRMq4uWRT8RJQyfqaGkISloFfi
+         htNNvoCM7kkd44KbL6nVa9xVEo2gOATtfRmQmrl6jthil+exkX+W2ZGWkW7C8RuLfk2r
+         w97g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Za8uPsw5SSvV8WX2HiDt+VQyx2NN7X9xXkrZzQ/66K8=;
-        b=lFsirmLUqYZNNv8+lBl5sj0TnqTIUNXnoHh3mv+il+sVXaTkaXoUuPOVfgVDmLb/CG
-         Sj4WJtBGyS0ExAt2FegPhy6n+jKz19IFtFdOfQyHvGbp+qWUw8pNFcnarEBs2oiPgq0f
-         4YGhJW9Q4Mz/h5KAtC2QlUxJCNZtbLbuMrhifiWaBifSQ/HrWUeC/MCg58tRSNk4aAIC
-         F4Y/zkqTAiOZj/7N3dpEpR4P0MUGgpAROfDWBMcestnPc2jkMJ2mnCnDRAsd1Ghnc+i3
-         OcsRBSE6KXH3plRgzJh69ylFaNZwv5cc5sPf/zZqLAU39HKYK89c6sxKs9f/tPR0uzTy
-         XUHA==
-X-Gm-Message-State: AO0yUKUv+9NnpYcMEA3C9Z5miJJJrxbmAul/0Aeg9KdrHnSA+rwIhiDC
-        YIRBPzGrQnLbQ0RLxLI4sV3hMnn7kHf0z4sj
-X-Google-Smtp-Source: AK7set9ZA+L6AMPGQzeHh6YBOlYTyUjgC9P72YkBFlAzfqluqd6fXuA0VSS1vf5hFUkebx0cJ65kKA==
-X-Received: by 2002:a05:600c:5006:b0:3dd:caa8:3ae2 with SMTP id n6-20020a05600c500600b003ddcaa83ae2mr10847151wmr.6.1675445634153;
-        Fri, 03 Feb 2023 09:33:54 -0800 (PST)
+        bh=QC3Bc1ZBnDqOCsf2GYYuc3UMis7l5JLiGW3gDWAr4Jo=;
+        b=jNc6N6O01763GQ8R6RvQUFv+p7FwcvNwaDKCIBIYkIG91gZYTJxY0n52webBGAf8T1
+         24K/sm03EGmYQ2r3Ww85WPrPsZpRHyM1gIZzRq0QB6u5l8Y0rzBfqihE1yJe2G4dGdfv
+         4I1xN+Y6VKmhy6kXz+ifap3DqLt5Bg6zMVo9PCxvbssVsKM88yLnBsEAjj/cN6qql/R5
+         TRnz81pfcBOxt/tIkGsy/MNMxlutTYre1xyEOTC8zpXuZM+ZI/73Asj1GpnNGUeNsoRU
+         vRSBgmPfnKpypLDLqfQiJgYTfuadnhWQp5u+f7LU0PAstoQ/TR2WtajCAPnhkHmg5yjO
+         dOfg==
+X-Gm-Message-State: AO0yUKWSfbnHowZapgC6bXVfFZ5V+TTOS5hriVYgwUhBtFIBphlfi9EQ
+        j/aJJxTxdOMGLfFQZ4Iwq85xg+IexdU7kIlM
+X-Google-Smtp-Source: AK7set/DBO+jLxmyS5XuEVXNwD4bAIY8rxWK0cGEjv8PAgpf9eDbnVw8xqM+yV9zrBcgKrvRXgYINg==
+X-Received: by 2002:a05:600c:c13:b0:3dc:496f:ad56 with SMTP id fm19-20020a05600c0c1300b003dc496fad56mr10290025wmb.14.1675445637441;
+        Fri, 03 Feb 2023 09:33:57 -0800 (PST)
 Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id z4-20020a05600c0a0400b003dfdeb57027sm5876356wmp.38.2023.02.03.09.33.53
+        by smtp.gmail.com with ESMTPSA id z4-20020a05600c0a0400b003dfdeb57027sm5876356wmp.38.2023.02.03.09.33.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Feb 2023 09:33:53 -0800 (PST)
+        Fri, 03 Feb 2023 09:33:57 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rjw@rjwysocki.net
 Cc:     linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
         linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v1 06/11] thermal/acpi: Encapsulate in functions the trip initialization
-Date:   Fri,  3 Feb 2023 18:33:26 +0100
-Message-Id: <20230203173331.3322089-7-daniel.lezcano@linaro.org>
+Subject: [PATCH v1 09/11] thermal/acpi: Convert the units to milli Celsuis
+Date:   Fri,  3 Feb 2023 18:33:29 +0100
+Message-Id: <20230203173331.3322089-10-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230203173331.3322089-1-daniel.lezcano@linaro.org>
 References: <20230203173331.3322089-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal trip update function is a bit difficult to read, it is
-very long and has everything put in there to initialize the trip
-points. In order to improve its readability, let's encapuslate the
-different parts into dedicated functions. So we can act individually
-per trip type changes and will make easier to review the next changes.
+From: Daniel Lezcano <daniel.lezcano@kernel.org>
 
+The trip points are storing the temperature using the Deci Kelvin
+units but the thermal framework expects milli Celsius.
+
+In order to migrate to the generic trip points where the temperature
+unit is millicelsius. Let's change the unit, so the resulting code
+will be compatible with thermal framework used unit.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/acpi/thermal.c | 257 ++++++++++++++++++++++++-----------------
- 1 file changed, 154 insertions(+), 103 deletions(-)
+ drivers/acpi/thermal.c | 56 ++++++++++++++++++------------------------
+ 1 file changed, 24 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index c4fd583fbf5c..a3a8130c955f 100644
+index 316a16ac1a09..9122d1c44777 100644
 --- a/drivers/acpi/thermal.c
 +++ b/drivers/acpi/thermal.c
-@@ -246,113 +246,120 @@ do {	\
- 		"Please report to linux-acpi@vger.kernel.org\n", str); \
- } while (0)
+@@ -177,9 +177,9 @@ static int acpi_thermal_get_temperature(struct acpi_thermal *tz)
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
  
--static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
-+static int acpi_thermal_trips_update_critical(struct acpi_thermal *tz, int flag)
- {
--	acpi_status status;
-+	acpi_status status = AE_OK;
+-	tz->temperature = tmp;
++	tz->temperature = deci_kelvin_to_millicelsius(tmp);
+ 
+-	acpi_handle_debug(tz->device->handle, "Temperature is %lu dK\n",
++	acpi_handle_debug(tz->device->handle, "Temperature is %lu m°C\n",
+ 			  tz->temperature);
+ 
+ 	return 0;
+@@ -250,7 +250,7 @@ static int acpi_thermal_trips_update_critical(struct acpi_thermal *tz, int flag)
  	unsigned long long tmp;
--	struct acpi_handle_list devices;
--	int valid = 0;
--	int i;
  
--	/* Critical Shutdown */
--	if (flag & ACPI_TRIPS_CRITICAL) {
--		status = acpi_evaluate_integer(tz->device->handle, "_CRT", NULL, &tmp);
--		tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = tmp;
--
--		/*
--		 * Treat freezing temperatures as invalid as well; some
--		 * BIOSes return really low values and cause reboots at startup.
--		 * Below zero (Celsius) values clearly aren't right for sure..
--		 * ... so lets discard those as invalid.
--		 */
--		if (ACPI_FAILURE(status)) {
--			tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 0;
--			acpi_handle_debug(tz->device->handle,
--					  "No critical threshold\n");
--		} else if (tmp <= 2732) {
--			pr_info(FW_BUG "Invalid critical threshold (%llu)\n", tmp);
-+	status = acpi_evaluate_integer(tz->device->handle, "_CRT", NULL, &tmp);
-+	tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = tmp;
-+	/*
-+	 * Treat freezing temperatures as invalid as well; some
-+	 * BIOSes return really low values and cause reboots at startup.
-+	 * Below zero (Celsius) values clearly aren't right for sure..
-+	 * ... so lets discard those as invalid.
-+	 */
-+	if (ACPI_FAILURE(status)) {
-+		tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 0;
-+		acpi_handle_debug(tz->device->handle,
-+				  "No critical threshold\n");
-+	} else if (tmp <= 2732) {
-+		pr_info(FW_BUG "Invalid critical threshold (%llu)\n", tmp);
-+		tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 0;
-+	} else {
-+		tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 1;
-+		acpi_handle_debug(tz->device->handle,
-+				  "Found critical threshold [%lu]\n",
-+				  tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature);
-+	}
-+	if (tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid == 1) {
-+		if (crt == -1) {
+ 	status = acpi_evaluate_integer(tz->device->handle, "_CRT", NULL, &tmp);
+-	tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = tmp;
++	tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = deci_kelvin_to_millicelsius(tmp);
+ 	/*
+ 	 * Treat freezing temperatures as invalid as well; some
+ 	 * BIOSes return really low values and cause reboots at startup.
+@@ -261,7 +261,7 @@ static int acpi_thermal_trips_update_critical(struct acpi_thermal *tz, int flag)
+ 		tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 0;
+ 		acpi_handle_debug(tz->device->handle,
+ 				  "No critical threshold\n");
+-	} else if (tmp <= 2732) {
++	} else if (tmp <= 0) {
+ 		pr_info(FW_BUG "Invalid critical threshold (%llu)\n", tmp);
+ 		tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 0;
+ 	} else {
+@@ -274,15 +274,15 @@ static int acpi_thermal_trips_update_critical(struct acpi_thermal *tz, int flag)
+ 		if (crt == -1) {
  			tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 0;
--		} else {
--			tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 1;
--			acpi_handle_debug(tz->device->handle,
--					  "Found critical threshold [%lu]\n",
--					  tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature);
--		}
--
--		if (tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid) {
--			if (crt == -1) {
--				tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid = 0;
--			} else if (crt > 0) {
--				unsigned long crt_k = celsius_to_deci_kelvin(crt);
-+		} else if (crt > 0) {
-+			unsigned long crt_k = celsius_to_deci_kelvin(crt);
+ 		} else if (crt > 0) {
+-			unsigned long crt_k = celsius_to_deci_kelvin(crt);
++			crt *= MILLIDEGREE_PER_DEGREE;
  
--				/*
--				 * Allow override critical threshold
--				 */
--				if (crt_k > tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature)
--					pr_info("Critical threshold %d C\n", crt);
-+			/*
-+			 * Allow override critical threshold
-+			 */
-+			if (crt_k > tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature)
-+				pr_info("Critical threshold %d C\n", crt);
+ 			/*
+ 			 * Allow override critical threshold
+ 			 */
+-			if (crt_k > tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature)
+-				pr_info("Critical threshold %d C\n", crt);
++			if (crt > tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature)
++				pr_info("Critical threshold %d m°C\n", crt);
  
--				tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = crt_k;
--			}
-+			tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = crt_k;
+-			tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = crt_k;
++			tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature = crt;
  		}
  	}
  
--	/* Critical Sleep (optional) */
--	if (flag & ACPI_TRIPS_HOT) {
--		status = acpi_evaluate_integer(tz->device->handle, "_HOT", NULL, &tmp);
--		if (ACPI_FAILURE(status)) {
--			tz->trips[ACPI_THERMAL_TRIP_HOT].flags.valid = 0;
--			acpi_handle_debug(tz->device->handle,
--					  "No hot threshold\n");
--		} else {
--			tz->trips[ACPI_THERMAL_TRIP_HOT].temperature = tmp;
--			tz->trips[ACPI_THERMAL_TRIP_HOT].flags.valid = 1;
--			acpi_handle_debug(tz->device->handle,
--					  "Found hot threshold [%lu]\n",
--					  tz->trips[ACPI_THERMAL_TRIP_HOT].temperature);
--		}
-+	return 0;
-+}
-+
-+static int acpi_thermal_trips_update_hot(struct acpi_thermal *tz, int flag)
-+{
-+	acpi_status status = AE_OK;
-+	unsigned long long tmp;
-+
-+	status = acpi_evaluate_integer(tz->device->handle,
-+				       "_HOT", NULL, &tmp);
-+	if (ACPI_FAILURE(status)) {
-+		tz->trips[ACPI_THERMAL_TRIP_HOT].flags.valid = 0;
-+		acpi_handle_debug(tz->device->handle,
-+				  "No hot threshold\n");
-+	} else {
-+		tz->trips[ACPI_THERMAL_TRIP_HOT].temperature = tmp;
-+		tz->trips[ACPI_THERMAL_TRIP_HOT].flags.valid = 1;
-+		acpi_handle_debug(tz->device->handle,
-+				  "Found hot threshold [%lu]\n",
-+				  tz->trips[ACPI_THERMAL_TRIP_HOT].temperature);
+@@ -325,10 +325,11 @@ static int acpi_thermal_trips_update_passive(struct acpi_thermal *tz, int flag)
+ 	if (psv == -1) {
+ 		status = AE_SUPPORT;
+ 	} else if (psv > 0) {
+-		tmp = celsius_to_deci_kelvin(psv);
++		tmp = psv * MILLIDEGREE_PER_DEGREE;
+ 		status = AE_OK;
+ 	} else {
+ 		status = acpi_evaluate_integer(tz->device->handle, "_PSV", NULL, &tmp);
++		tmp = deci_kelvin_to_millicelsius(tmp);
  	}
  
--	/* Passive (optional) */
--	if (((flag & ACPI_TRIPS_PASSIVE) && tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid) ||
--	    flag == ACPI_TRIPS_INIT) {
--		valid = tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid;
--		if (psv == -1) {
--			status = AE_SUPPORT;
--		} else if (psv > 0) {
--			tmp = celsius_to_deci_kelvin(psv);
--			status = AE_OK;
--		} else {
--			status = acpi_evaluate_integer(tz->device->handle,
--						       "_PSV", NULL, &tmp);
--		}
-+	return 0;
-+}
+ 	if (ACPI_FAILURE(status))
+@@ -411,6 +412,7 @@ static int acpi_thermal_trips_update_active(struct acpi_thermal *tz, int flag)
+ 		if (flag & ACPI_TRIPS_ACTIVE)  {
+ 			status = acpi_evaluate_integer(tz->device->handle,
+ 						       name, NULL, &tmp);
++			tmp = deci_kelvin_to_millicelsius(tmp);
+ 			if (ACPI_FAILURE(status)) {
+ 				tz->trips[i].flags.valid = 0;
+ 				if (i == 0)
+@@ -420,7 +422,7 @@ static int acpi_thermal_trips_update_active(struct acpi_thermal *tz, int flag)
+ 					break;
  
--		if (ACPI_FAILURE(status)) {
--			tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
--		} else {
--			tz->trips[ACPI_THERMAL_TRIP_PASSIVE].temperature = tmp;
--			tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 1;
--			if (flag == ACPI_TRIPS_INIT) {
--				status = acpi_evaluate_integer(tz->device->handle,
--							       "_TC1", NULL, &tmp);
--				if (ACPI_FAILURE(status))
--					tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
--				else
--					tz->trips[ACPI_THERMAL_TRIP_PASSIVE].tc1 = tmp;
--				status = acpi_evaluate_integer(tz->device->handle,
--							       "_TC2", NULL, &tmp);
--				if (ACPI_FAILURE(status))
--					tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
--				else
--					tz->trips[ACPI_THERMAL_TRIP_PASSIVE].tc2 = tmp;
--				status = acpi_evaluate_integer(tz->device->handle,
--							       "_TSP", NULL, &tmp);
--				if (ACPI_FAILURE(status))
--					tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
--				else
--					tz->trips[ACPI_THERMAL_TRIP_PASSIVE].tsp = tmp;
--			}
-+static int acpi_thermal_trips_update_passive(struct acpi_thermal *tz, int flag)
-+{
-+	acpi_status status;
-+	unsigned long long tmp;
-+	struct acpi_handle_list devices;
-+	int valid = 0;
-+
-+	valid = tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid;
-+	if (psv == -1) {
-+		status = AE_SUPPORT;
-+	} else if (psv > 0) {
-+		tmp = celsius_to_deci_kelvin(psv);
-+		status = AE_OK;
-+	} else {
-+		status = acpi_evaluate_integer(tz->device->handle, "_PSV", NULL, &tmp);
-+	}
-+
-+	if (ACPI_FAILURE(status))
-+		tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
-+	else {
-+		tz->trips[ACPI_THERMAL_TRIP_PASSIVE].temperature = tmp;
-+		tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 1;
-+		if (flag == ACPI_TRIPS_INIT) {
-+			status = acpi_evaluate_integer(
-+				tz->device->handle, "_TC1",
-+				NULL, &tmp);
-+			if (ACPI_FAILURE(status))
-+				tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
-+			else
-+				tz->trips[ACPI_THERMAL_TRIP_PASSIVE].tc1 = tmp;
-+			status = acpi_evaluate_integer(
-+				tz->device->handle, "_TC2",
-+				NULL, &tmp);
-+			if (ACPI_FAILURE(status))
-+				tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
-+			else
-+				tz->trips[ACPI_THERMAL_TRIP_PASSIVE].tc2 = tmp;
-+			status = acpi_evaluate_integer(
-+				tz->device->handle, "_TSP",
-+				NULL, &tmp);
-+			if (ACPI_FAILURE(status))
-+				tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid = 0;
-+			else
-+				tz->trips[ACPI_THERMAL_TRIP_PASSIVE].tsp = tmp;
- 		}
- 	}
-+
- 	if ((flag & ACPI_TRIPS_DEVICES) && tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid) {
- 		memset(&devices, 0, sizeof(struct acpi_handle_list));
- 		status = acpi_evaluate_reference(tz->device->handle, "_PSL",
-@@ -372,12 +379,23 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- 			ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "device");
- 		}
- 	}
-+
- 	if ((flag & ACPI_TRIPS_PASSIVE) || (flag & ACPI_TRIPS_DEVICES)) {
- 		if (valid != tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid)
- 			ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "state");
- 	}
+ 				if (i == 1)
+-					tz->trips[0].temperature = celsius_to_deci_kelvin(act);
++					tz->trips[0].temperature = act * MILLIDEGREE_PER_DEGREE;
+ 				else
+ 					/*
+ 					 * Don't allow override higher than
+@@ -428,9 +430,9 @@ static int acpi_thermal_trips_update_active(struct acpi_thermal *tz, int flag)
+ 					 */
+ 					tz->trips[i - 1].temperature =
+ 						(tz->trips[i - 2].temperature <
+-						celsius_to_deci_kelvin(act) ?
++						act * MILLIDEGREE_PER_DEGREE ?
+ 						tz->trips[i - 2].temperature :
+-						celsius_to_deci_kelvin(act));
++						act * MILLIDEGREE_PER_DEGREE);
  
--	/* Active (optional) */
-+	return 0;
-+}
-+
-+static int acpi_thermal_trips_update_active(struct acpi_thermal *tz, int flag)
-+{
-+	acpi_status status = AE_OK;
-+	unsigned long long tmp;
-+	struct acpi_handle_list devices;
-+	int valid = 0;
-+	int i;
-+
- 	for (i = ACPI_THERMAL_TRIP_ACTIVE; i < ACPI_THERMAL_MAX_ACTIVE; i++) {
- 		char name[5] = { '_', 'A', 'C', ('0' + i), '\0' };
- 		valid = tz->trips[i].flags.valid;
-@@ -445,17 +463,50 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- 			break;
- 	}
+ 				break;
+ 			} else {
+@@ -546,8 +548,8 @@ static int thermal_get_temp(struct thermal_zone_device *thermal, int *temp)
+ 	if (result)
+ 		return result;
  
--	if (flag & ACPI_TRIPS_DEVICES) {
--		memset(&devices, 0, sizeof(devices));
--		status = acpi_evaluate_reference(tz->device->handle, "_TZD",
--						 NULL, &devices);
--		if (ACPI_SUCCESS(status) &&
--		    memcmp(&tz->devices, &devices, sizeof(devices))) {
--			tz->devices = devices;
--			ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "device");
--		}
-+	return 0;
-+}
+-	*temp = deci_kelvin_to_millicelsius_with_offset(tz->temperature,
+-							tz->kelvin_offset);
++	*temp = tz->temperature;
 +
-+static int acpi_thermal_trips_update_devices(struct acpi_thermal *tz, int flag)
-+{
-+	acpi_status status = AE_OK;
-+	struct acpi_handle_list devices;
-+
-+	memset(&devices, 0, sizeof(devices));
-+	status = acpi_evaluate_reference(tz->device->handle, "_TZD", NULL, &devices);
-+	if (ACPI_SUCCESS(status)
-+	    && memcmp(&tz->devices, &devices, sizeof(devices))) {
-+		tz->devices = devices;
-+		ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "device");
-+	}
-+
-+	return 0;
-+}
-+
-+static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
-+{
-+	/* Critical Shutdown */
-+	if (flag & ACPI_TRIPS_CRITICAL) {
-+		acpi_thermal_trips_update_critical(tz, flag);
- 	}
- 
-+	/* Critical Sleep (optional) */
-+	if (flag & ACPI_TRIPS_HOT) {
-+		acpi_thermal_trips_update_hot(tz, flag);
-+	}
-+
-+	/* Passive (optional) */
-+	if (((flag & ACPI_TRIPS_PASSIVE) && tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid) ||
-+		(flag == ACPI_TRIPS_INIT)) {
-+		acpi_thermal_trips_update_passive(tz, flag);
-+	}
-+
-+	/* Active (optional) */
-+	acpi_thermal_trips_update_active(tz, flag);
-+
-+	if (flag & ACPI_TRIPS_DEVICES) {
-+		acpi_thermal_trips_update_devices(tz, flag);
-+	}
-+	
  	return 0;
  }
  
+@@ -606,9 +608,7 @@ static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
+ 
+ 	if (tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid) {
+ 		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature,
+-					tz->kelvin_offset);
++			*temp = tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature;
+ 			return 0;
+ 		}
+ 		trip--;
+@@ -616,9 +616,7 @@ static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
+ 
+ 	if (tz->trips[ACPI_THERMAL_TRIP_HOT].flags.valid) {
+ 		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips[ACPI_THERMAL_TRIP_HOT].temperature,
+-					tz->kelvin_offset);
++			*temp = tz->trips[ACPI_THERMAL_TRIP_HOT].temperature;
+ 			return 0;
+ 		}
+ 		trip--;
+@@ -626,9 +624,7 @@ static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
+ 
+ 	if (tz->trips[ACPI_THERMAL_TRIP_PASSIVE].flags.valid) {
+ 		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips[ACPI_THERMAL_TRIP_PASSIVE].temperature,
+-					tz->kelvin_offset);
++			*temp = tz->trips[ACPI_THERMAL_TRIP_PASSIVE].temperature;
+ 			return 0;
+ 		}
+ 		trip--;
+@@ -637,9 +633,7 @@ static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
+ 	for (i = ACPI_THERMAL_TRIP_ACTIVE; i < ACPI_THERMAL_MAX_ACTIVE &&
+ 		tz->trips[i].flags.valid; i++) {
+ 		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips[i].temperature,
+-					tz->kelvin_offset);
++			*temp = tz->trips[i].temperature;
+ 			return 0;
+ 		}
+ 		trip--;
+@@ -654,9 +648,7 @@ static int thermal_get_crit_temp(struct thermal_zone_device *thermal,
+ 	struct acpi_thermal *tz = thermal->devdata;
+ 
+ 	if (tz->trips[ACPI_THERMAL_TRIP_CRITICAL].flags.valid) {
+-		*temperature = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature,
+-					tz->kelvin_offset);
++		*temperature = tz->trips[ACPI_THERMAL_TRIP_CRITICAL].temperature;
+ 		return 0;
+ 	}
+ 
+@@ -675,8 +667,8 @@ static int thermal_get_trend(struct thermal_zone_device *thermal,
+ 
+ 	if (type == THERMAL_TRIP_ACTIVE) {
+ 		int trip_temp;
+-		int temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->temperature, tz->kelvin_offset);
++		int temp = tz->temperature;
++
+ 		if (thermal_get_trip_temp(thermal, trip, &trip_temp))
+ 			return -EINVAL;
+ 
+@@ -1090,7 +1082,7 @@ static int acpi_thermal_add(struct acpi_device *device)
+ 	INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
+ 
+ 	pr_info("%s [%s] (%ld C)\n", acpi_device_name(device),
+-		acpi_device_bid(device), deci_kelvin_to_celsius(tz->temperature));
++		acpi_device_bid(device), tz->temperature);
+ 	goto end;
+ 
+ free_memory:
 -- 
 2.34.1
 
