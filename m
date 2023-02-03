@@ -2,117 +2,78 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2347AC05027
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 12:46:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22F34C05027
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 12:50:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231495AbjBCMq1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 07:46:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51124 "EHLO
+        id S232166AbjBCMu1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 07:50:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54092 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229785AbjBCMq0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 07:46:26 -0500
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E6FF9AFEA;
-        Fri,  3 Feb 2023 04:46:26 -0800 (PST)
-Received: from mercury (unknown [37.81.13.16])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id C1AAB6602F0F;
-        Fri,  3 Feb 2023 12:46:24 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1675428384;
-        bh=eSr8KydWD2KO8r7TtN+Y+lpNdNVAYRGafaRB2qGXUTU=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=hkYYj+rFFgufgBiKAos8KdwI0MBVQmOCvulW0MQbnQ7azZzSoBzvzeCTcI7foLcHZ
-         Iar22OQOWp3hZh241dgbYQRbpxwtqPdXmDP6ozRPgclv9FWa8+yaRYoQ0XOqJ6CaLR
-         cIKanNrHRlbLvclE9cgOn/Ed2nzJEbnwWXIFSMkFE8RvXgBrzGgwlPoI0noHO6zDbk
-         0gZoAly9b4L+EZQrG7HvM89q44ubC5P8HiFgeSuTTueFu6p/e7VFaucO2/lnDuN8qe
-         kpODFfYBVFSqm2TGIVR52k++yglsrZ2ZD4XLPcAtwcqjSQGEwZ1gwFKOG3inzbzKK1
-         6b5bEumTPk4mA==
-Received: by mercury (Postfix, from userid 1000)
-        id 083561060930; Fri,  3 Feb 2023 13:46:22 +0100 (CET)
-Date:   Fri, 3 Feb 2023 13:46:22 +0100
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     yang.yang29@zte.com.cn
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        xu.panda@zte.com.cn
-Subject: Re: [PATCH linux-next] power: supply: test-power: use strscpy() to
- instead of? strncpy()
-Message-ID: <20230203124622.fgvo2udbrto3grwv@mercury.elektranox.org>
-References: <202212231042356202397@zte.com.cn>
+        with ESMTP id S232411AbjBCMuZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 07:50:25 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74C5C9AFF7
+        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 04:50:23 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <sha@pengutronix.de>)
+        id 1pNvWE-0000ap-5I; Fri, 03 Feb 2023 13:50:18 +0100
+Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <sha@pengutronix.de>)
+        id 1pNvWA-002Opd-M5; Fri, 03 Feb 2023 13:50:15 +0100
+Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <sha@pengutronix.de>)
+        id 1pNvWA-000ZmM-76; Fri, 03 Feb 2023 13:50:14 +0100
+From:   Sascha Hauer <s.hauer@pengutronix.de>
+To:     linux-pm@vger.kernel.org
+Cc:     linux-rockchip@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        Heiko Stuebner <heiko@sntech.de>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Will Deacon <will@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, kernel@pegutronix.de,
+        Michael Riesch <michael.riesch@wolfvision.net>,
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH 16/18] arm64: dts: rockchip: rk3399: Enable DFI
+Date:   Fri,  3 Feb 2023 13:50:10 +0100
+Message-Id: <20230203125012.3804008-17-s.hauer@pengutronix.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20230203125012.3804008-1-s.hauer@pengutronix.de>
+References: <20230203125012.3804008-1-s.hauer@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="zk4n2uiiwvyoynwj"
-Content-Disposition: inline
-In-Reply-To: <202212231042356202397@zte.com.cn>
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+the DFI unit can provide useful data for measuring DDR utilization
+and works without any configuration from the board, so enable it in the
+dtsi file directly.
 
---zk4n2uiiwvyoynwj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
 
-Hi,
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+index 4391aea25984b..077bb19664c06 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -1331,7 +1331,6 @@ dfi: dfi@ff630000 {
+ 		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
+ 		clocks = <&cru PCLK_DDR_MON>;
+ 		clock-names = "pclk_ddr_mon";
+-		status = "disabled";
+ 	};
+ 
+ 	vpu: video-codec@ff650000 {
+-- 
+2.30.2
 
-On Fri, Dec 23, 2022 at 10:42:35AM +0800, yang.yang29@zte.com.cn wrote:
-> From: Xu Panda <xu.panda@zte.com.cn>
->=20
-> The implementation of strscpy() is more robust and safer.
-> That's now the recommended way to copy NUL-terminated strings.
->=20
-> Signed-off-by: Xu Panda <xu.panda@zte.com.cn>
-> Signed-off-by: Yang Yang <yang.yang29@zte.com>
-> ---
-
-Thanks, queued.
-
--- Sebastian
-
->  drivers/power/supply/test_power.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/drivers/power/supply/test_power.c b/drivers/power/supply/tes=
-t_power.c
-> index 5f510ddc946d..0d0a77584c5d 100644
-> --- a/drivers/power/supply/test_power.c
-> +++ b/drivers/power/supply/test_power.c
-> @@ -306,8 +306,7 @@ static int map_get_value(struct battery_property_map =
-*map, const char *key,
->  	char buf[MAX_KEYLENGTH];
->  	int cr;
->=20
-> -	strncpy(buf, key, MAX_KEYLENGTH);
-> -	buf[MAX_KEYLENGTH-1] =3D '\0';
-> +	strscpy(buf, key, MAX_KEYLENGTH);
->=20
->  	cr =3D strnlen(buf, MAX_KEYLENGTH) - 1;
->  	if (cr < 0)
-> --=20
-> 2.15.2
-
---zk4n2uiiwvyoynwj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmPdAh0ACgkQ2O7X88g7
-+pq2xhAApLxSAyVBQTFenESoqlz0STQImWJtHJbcuSNHe9u2X3mii4USzEkToPxY
-cTUHwwdrsMsGAxioVXhvjaXf/wNLc0yxVW8qYzxwPJes9BgyCfatVNJBpRwoCBos
-n72VYGJ+F4wirBp4zHGs1MxFOJ4jRKiDnyYVzNi1NlHKkVIX2Z+jxuuEsHWnw5zf
-7aS7bGwJhvYW4KXbWRoaHYu9ZgOxPJkdCko4sYSjs2BIIhpeZtgCAGAZGgFbZOeV
-R8+NlRuHfe6HuVTbXAmBnuzAmEW5JCm1W3HE1equOsWK37mAlgd00KkyRv3G4+7H
-yNlT56rGPDiPJf3MdwNAyMR6KYK0Z8NNbdqnWs1J/lDQMKv+kUFwZ7lUrMrwdYDo
-TPZC7tg4KyFpkh2TF+xXwA++mtcm1dV/gDmfPf2W5mT4g9Pvie6DoDf981xa/tM7
-AmtJXiQtLptriXJjuzVFa8c34O1tgr8J30AylBJXtVZcZzLTLq9/dOea+K7un3y3
-tWoAS4H0zObO4GDqfU6fYCgFltQ2RQ0k4vNaBuVtA43DTFjg2frrT0LfEItRhxPr
-7AF9xz17thDm+Fxdx0C7ABS8xKJFaMrjYMu+8fbQnE/OPDn7N3ZrulG9sAZg+f6T
-aYXyz60p5QlRtSDgeAyAqRuL056yuHBCTYnjH2ieLXPWc9Hf2ZE=
-=1m5F
------END PGP SIGNATURE-----
-
---zk4n2uiiwvyoynwj--
