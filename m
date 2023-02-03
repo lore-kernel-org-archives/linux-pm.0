@@ -2,90 +2,186 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A3D9C61DA4
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 21:17:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EBCCC05027
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 21:18:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229448AbjBCVRD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 16:17:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32988 "EHLO
+        id S233149AbjBCVSl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 16:18:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33956 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232519AbjBCVRC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 16:17:02 -0500
-X-Greylist: delayed 485 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 03 Feb 2023 13:16:23 PST
-Received: from out-45.mta1.migadu.com (out-45.mta1.migadu.com [95.215.58.45])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C25E7A703C
-        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 13:16:23 -0800 (PST)
-Date:   Fri, 3 Feb 2023 21:08:00 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-        t=1675458492;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=zF794bsssBgYs01gtLHUkS28EIicNc0l0YnvFt/94YI=;
-        b=gF+Ot9L7bvkYWgstVlN3IGR5gepXbOhnLUW+ryxf0GGE8OvgoAe8gh4332GPCHIBnUEDfl
-        OstQTXxU52klLCCbGsxtBPABUoe9zoYwljDknwyOPX3XqLcs69d34u9p3+onFADs6Ko7Qx
-        oTbdNErPix3LGrijaxdz/cn1jgoVGFY=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From:   Oliver Upton <oliver.upton@linux.dev>
-To:     James Morse <james.morse@arm.com>
-Cc:     linux-pm@vger.kernel.org, loongarch@lists.linux.dev,
-        kvmarm@lists.linux.dev, kvm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, x86@kernel.org,
-        Marc Zyngier <maz@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Borislav Petkov <bp@alien8.de>, H Peter Anvin <hpa@zytor.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Len Brown <lenb@kernel.org>,
-        Rafael Wysocki <rafael@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        Salil Mehta <salil.mehta@huawei.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Jean-Philippe Brucker <jean-philippe@linaro.org>
-Subject: Re: [RFC PATCH 29/32] KVM: arm64: Pass hypercalls to userspace
-Message-ID: <Y913sIqWxmf4O5oG@google.com>
-References: <20230203135043.409192-1-james.morse@arm.com>
- <20230203135043.409192-30-james.morse@arm.com>
+        with ESMTP id S233412AbjBCVSk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 16:18:40 -0500
+Received: from mail-io1-xd35.google.com (mail-io1-xd35.google.com [IPv6:2607:f8b0:4864:20::d35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACB31A58ED
+        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 13:18:38 -0800 (PST)
+Received: by mail-io1-xd35.google.com with SMTP id j17so567447ioa.9
+        for <linux-pm@vger.kernel.org>; Fri, 03 Feb 2023 13:18:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=6lF6n2rSIBhhVUG47YWtdkbXsYAaDIW/2eoVceeEZec=;
+        b=Y+GNDwBItscjx4IWNQgrL4rrzHX+NlPRCydRuD87A0o9szzj6m4ayXIy/pwgOM6pQT
+         IRaRYwHQuMWqnuz8ocirIPlyikojM6Rha7bSHO/JrJmvdV21ZsJGbfORJE1qGZwgnBM9
+         pJN+lmKMXV5tTZSbIRkfEJZ3d437LRXG1N26U=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6lF6n2rSIBhhVUG47YWtdkbXsYAaDIW/2eoVceeEZec=;
+        b=x8VC+yBOYPVs3IDOc9Sb+EkXOEWjDNv0ghoE0D0ziVDyx+fnnRe4qjSHarlgkmvX+2
+         fJscJe1BCGxidcB1axN7Slmd6J4AOheYSYyxqH1AqxEK4xIUovkDjAP4wyFNwXvdpEpH
+         kL/ppi7tEsoqxVUujKLVgdlkZ1h5y/XMIwwrS3lLugkYDBzKAGq/ce9vIi5402koezGI
+         jgWqy/0tcRqOiQV1cNyOhFoy2EwabzG7O6jbE3neeS0HcjyU5nWrB+ZBgJREbuT1DHL+
+         jtdLZv3UmVQR1PEhkU6PU+rS5C/B51bwQiyf8YVus55OAG2hhXrpETf3W1aRNY+njmWV
+         htrw==
+X-Gm-Message-State: AO0yUKWhLjRPcsoIlVf5Fa3mwznDF1rh+TwpLZNTZMhUeg4bFXXLSuIN
+        UEcLl7cKdTQ+x9WAVXE55CsClw==
+X-Google-Smtp-Source: AK7set/iJDhcp481T1ZocaPxL/r5sQlivK3W+kbQZfyQXwYJ0ByMPDwkxhfb4u9NkdC4Vc5ZfWhVVA==
+X-Received: by 2002:a6b:dc10:0:b0:722:8687:fe37 with SMTP id s16-20020a6bdc10000000b007228687fe37mr7062384ioc.15.1675459117906;
+        Fri, 03 Feb 2023 13:18:37 -0800 (PST)
+Received: from localhost (30.23.70.34.bc.googleusercontent.com. [34.70.23.30])
+        by smtp.gmail.com with UTF8SMTPSA id b7-20020a056638150700b00363c4307bb2sm1173084jat.79.2023.02.03.13.18.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Feb 2023 13:18:37 -0800 (PST)
+Date:   Fri, 3 Feb 2023 21:18:37 +0000
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc:     Abel Vesa <abel.vesa@linaro.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Andy Gross <agross@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        linux-pm@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-arm-msm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>,
+        Doug Anderson <dianders@chromium.org>
+Subject: Re: [RFC PATCH v2 1/2] PM: domains: Skip disabling unused domains if
+ provider has sync_state
+Message-ID: <Y916LZXfwi17uVn5@google.com>
+References: <20230127104054.895129-1-abel.vesa@linaro.org>
+ <Y9v/z8CYik3faHh7@google.com>
+ <3826e0e6-bb2b-409d-d1c3-ed361305bce3@linaro.org>
+ <Y9xhbq/MIOgssslh@google.com>
+ <9b8af6b3-9ab5-12f8-5576-1a93c58a26c1@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20230203135043.409192-30-james.morse@arm.com>
-X-Migadu-Flow: FLOW_OUT
+In-Reply-To: <9b8af6b3-9ab5-12f8-5576-1a93c58a26c1@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi James,
-
-On Fri, Feb 03, 2023 at 01:50:40PM +0000, James Morse wrote:
-> From: Jean-Philippe Brucker <jean-philippe@linaro.org>
+On Fri, Feb 03, 2023 at 10:00:27PM +0200, Dmitry Baryshkov wrote:
+> On 03/02/2023 03:20, Matthias Kaehlcke wrote:
+> > Hi Dmitry,
+> > 
+> > On Thu, Feb 02, 2023 at 09:53:41PM +0200, Dmitry Baryshkov wrote:
+> > > On 02/02/2023 20:24, Matthias Kaehlcke wrote:
+> > > > Hi Abel,
+> > > > 
+> > > > On Fri, Jan 27, 2023 at 12:40:53PM +0200, Abel Vesa wrote:
+> > > > > Currently, there are cases when a domain needs to remain enabled until
+> > > > > the consumer driver probes. Sometimes such consumer drivers may be built
+> > > > > as modules. Since the genpd_power_off_unused is called too early for
+> > > > > such consumer driver modules to get a chance to probe, the domain, since
+> > > > > it is unused, will get disabled. On the other hand, the best time for
+> > > > > an unused domain to be disabled is on the provider's sync_state
+> > > > > callback. So, if the provider has registered a sync_state callback,
+> > > > > assume the unused domains for that provider will be disabled on its
+> > > > > sync_state callback. Also provide a generic sync_state callback which
+> > > > > disables all the domains unused for the provider that registers it.
+> > > > > 
+> > > > > Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+> > > > > ---
+> > > > > 
+> > > > > This approach has been applied for unused clocks as well.
+> > > > > With this patch merged in, all the providers that have sync_state
+> > > > > callback registered will leave the domains enabled unless the provider's
+> > > > > sync_state callback explicitly disables them. So those providers will
+> > > > > need to add the disabling part to their sync_state callback. On the
+> > > > > other hand, the platforms that have cases where domains need to remain
+> > > > > enabled (even if unused) until the consumer driver probes, will be able,
+> > > > > with this patch in, to run without the pd_ignore_unused kernel argument,
+> > > > > which seems to be the case for most Qualcomm platforms, at this moment.
+> > > > 
+> > > > I recently encountered a related issue on a Qualcomm platform with a
+> > > > v6.2-rc kernel, which includes 3a39049f88e4 ("soc: qcom: rpmhpd: Use
+> > > > highest corner until sync_state"). The issue involves a DT node with a
+> > > > rpmhpd, the DT node is enabled, however the corresponding device driver
+> > > > is not enabled in the kernel. In such a scenario the sync_state callback
+> > > > is never called, because the genpd consumer never probes. As a result
+> > > > the Always-on subsystem (AOSS) of the SoC doesn't enter sleep mode during
+> > > > system suspend, which results in a substantially higher power consumption
+> > > > in S3.
+> > > > 
+> > > > I wonder if genpd (and some other frameworks) needs something like
+> > > > regulator_init_complete(), which turns off unused regulators 30s after
+> > > > system boot. That's conceptually similar to the current
+> > > > genpd_power_off_unused(), but would provide time for modules being loaded.
+> > > 
+> > > I think the overall goal is to move away from ad-hoc implementations like
+> > > clk_disable_unused/genpd_power_off_unused/regulator_init_complete towards
+> > > the sync_state.
+> > 
+> > I generally agree with the goal of using common mechanisms whenever possible.
+> > 
+> > > So inherently one either has to provide drivers for all devices in question
+> > > or disable unused devices in DT.
+> > 
+> > I don't think that's a great solution, it essentially hands the issue down to
+> > the users or downstream maintainers of the kernel, who might not be aware that
+> > there is an issue, nor know about the specifics of genpd (or interconnects and
+> > clocks which have similar problems).
 > 
-> When capability KVM_CAP_ARM_HVC_TO_USER is available, userspace can
-> request to handle all hypercalls that aren't handled by KVM.
+> The goal is to move the control down to individual drivers. Previously we
+> had issues with clk_disable_unused() disabling mdss/mdp clocks incorrectly,
+> which frequently led to broken display output. Other clock/genpd/regulator
+> drivers might have other internal dependencies. Thus it is not really
+> possible to handle resource shutdown in the common  (framework) code.
+> 
+> > 
+> > In general symptoms are probably subtle, like a (potentially substantially)
+> > increased power consumption during system suspend. The issue might have been
+> > introduced by an update to a newer kernel, which now includes a DT node for a
+> > new SoC feature which wasn't supported by the 'old' kernel. It's common
+> > practice to use the 'old' .config, at least as a starting point, which
+> > obviously doesn't enable the new driver. That happend to me with [1] when
+> > testing v6.1. It took me quite some time to track the 'culprit' commit down
+> > and then some debugging to understand what's going on. Shortly after that I
+> > ran into a related issue involving genpds when testing v6.2-rc, which again
+> > took a non-trivial amount of time to track down (and I'm familiar with the SoC
+> > platform and the general nature of the issue). I don't think it's reasonable
+> > to expect every user/downstream maintainer of an impacted system to go through
+> > this, one person at a time.
+> 
+> I think it would be nice to have some way of 'sync_pending' debug available
+> (compare this to debugfs/devices_deferred).
 
-I would very much prefer we not go down this route. This capability
-effectively constructs an ABI out of what KVM presently does not
-implement. What would happen if KVM decides to implement a new set
-of hypercalls later down the road that were previously forwarded to
-userspace?
+Most folks are probably not even aware that they have a 'sync_state' issue and
+wouldn't look in debugfs, so I think this would have to be something proactive,
+like a warning log that is enabled by default (possibly with the option to
+disable it). Something in debugfs could be a nice complement.
 
-Instead of a catch-all I think we should take the approach of having
-userspace explicitly request which hypercalls should be forwarded to
-userspace. I proposed something similar [1], but never got around to
-respinning it (oops).
+> Note, we are trying to make sure that all supported drivers are enabled at
+> least as modules (if possible). If we fail, please send a patch fixing the
+> defconfig.
 
-Let me dust those patches off and align with Marc's suggestions.
+That's great, however not everybody uses the defconfig, it's just a default.
 
-[1]: https://lore.kernel.org/kvmarm/20221110015327.3389351-1-oliver.upton@linux.dev/
+> > Maybe there could be a generic solution for drivers with a 'sync_state'
+> > callback, e.g. a the driver (or framework) could have a 'sync_state_timeout'
+> > callback (or similar), which is called by the driver framework if 'sync_state'
+> > wasn't called (for example) 30s after the device was probed. Then the provider
+> > can power off or throttle unclaimed resources.
+> 
+> I might be missing a point somewhere, but for me it looks like a logical
+> solution. Please send a proposal.
 
---
-Thanks,
-Oliver
+I started working on a patch, I'll probably send it out next week if I don't
+encounter any evident major issues.
