@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FD3FC05027
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 12:50:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AD49C61DA4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 12:50:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233050AbjBCMuu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 07:50:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54646 "EHLO
+        id S232970AbjBCMuv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 07:50:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232970AbjBCMur (ORCPT
+        with ESMTP id S232991AbjBCMur (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 07:50:47 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF9169B6C9
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC6BA9B6C7
         for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 04:50:46 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1pNvWE-0000bb-5T; Fri, 03 Feb 2023 13:50:18 +0100
+        id 1pNvWE-0000aT-5L; Fri, 03 Feb 2023 13:50:18 +0100
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pNvWB-002OqH-Vf; Fri, 03 Feb 2023 13:50:17 +0100
+        id 1pNvW9-002OpX-SF; Fri, 03 Feb 2023 13:50:15 +0100
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pNvWA-000Zll-3J; Fri, 03 Feb 2023 13:50:14 +0100
+        id 1pNvW9-000Zkb-Su; Fri, 03 Feb 2023 13:50:13 +0100
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-pm@vger.kernel.org
 Cc:     linux-rockchip@lists.infradead.org,
@@ -37,9 +37,9 @@ Cc:     linux-rockchip@lists.infradead.org,
         Mark Rutland <mark.rutland@arm.com>, kernel@pegutronix.de,
         Michael Riesch <michael.riesch@wolfvision.net>,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 11/18] PM / devfreq: rockchip-dfi: Handle LPDDR2 correctly
-Date:   Fri,  3 Feb 2023 13:50:05 +0100
-Message-Id: <20230203125012.3804008-12-s.hauer@pengutronix.de>
+Subject: [PATCH 03/18] PM / devfreq: rockchip-dfi: Make pmu regmap mandatory
+Date:   Fri,  3 Feb 2023 13:49:57 +0100
+Message-Id: <20230203125012.3804008-4-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230203125012.3804008-1-s.hauer@pengutronix.de>
 References: <20230203125012.3804008-1-s.hauer@pengutronix.de>
@@ -53,42 +53,41 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-According to the downstream driver the DDRMON_CTRL_LPDDR23 bit must be
-set for both LPDDR2 and LPDDR3. Add the missing LPDDR2 case and while
-at it turn the if/else if/else into switch/case which makes it easier
-to read.
+As a matter of fact the regmap_pmu already is mandatory because
+it is used unconditionally in the driver. Bail out gracefully in
+probe() rather than crashing later.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 78cb594bd2a81..92ee61c96a1a9 100644
+index 98712ac68aa5f..47cc9e48dafab 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -82,12 +82,19 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 	writel_relaxed(HIWORD_UPDATE(0, 0xffff), dfi_regs + DDRMON_CTRL);
+@@ -193,14 +193,14 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+ 		return dev_err_probe(dev, PTR_ERR(dfi->clk),
+ 				     "Cannot get the clk pclk_ddr_mon\n");
  
- 	/* set ddr type to dfi */
--	if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR3)
-+	switch (dfi->ddr_type) {
-+	case ROCKCHIP_DDRTYPE_LPDDR2:
-+	case ROCKCHIP_DDRTYPE_LPDDR3:
- 		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR23, DDRMON_CTRL_DDR_TYPE_MASK),
- 			       dfi_regs + DDRMON_CTRL);
--	else if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR4)
-+		break;
-+	case ROCKCHIP_DDRTYPE_LPDDR4:
- 		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR4, DDRMON_CTRL_DDR_TYPE_MASK),
- 			       dfi_regs + DDRMON_CTRL);
-+		break;
-+	default:
-+		break;
-+	}
+-	/* try to find the optional reference to the pmu syscon */
+ 	node = of_parse_phandle(np, "rockchip,pmu", 0);
+-	if (node) {
+-		dfi->regmap_pmu = syscon_node_to_regmap(node);
+-		of_node_put(node);
+-		if (IS_ERR(dfi->regmap_pmu))
+-			return PTR_ERR(dfi->regmap_pmu);
+-	}
++	if (!node)
++		return dev_err_probe(&pdev->dev, -ENODEV, "Can't find pmu_grf registers\n");
++
++	dfi->regmap_pmu = syscon_node_to_regmap(node);
++	if (IS_ERR(dfi->regmap_pmu))
++		return PTR_ERR(dfi->regmap_pmu);
++
+ 	dfi->dev = dev;
  
- 	/* enable count, use software mode */
- 	writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_SOFTWARE_EN, DDRMON_CTRL_SOFTWARE_EN),
+ 	desc = &dfi->desc;
 -- 
 2.30.2
 
