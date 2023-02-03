@@ -2,114 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF3EC05027
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 14:04:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D6E8C636D6
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 14:04:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233387AbjBCOEA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 09:04:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49040 "EHLO
+        id S233310AbjBCOEQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 09:04:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49008 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233362AbjBCODm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 09:03:42 -0500
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7768A945E5;
-        Fri,  3 Feb 2023 06:01:24 -0800 (PST)
-Received: by mail-ed1-x535.google.com with SMTP id cw4so5204319edb.13;
-        Fri, 03 Feb 2023 06:01:24 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=DMxOcECTROuojakMPC85g2uiW2fNR65bS9sWaaYjKx0=;
-        b=pysH+jNR1RIsPECfhz0zsLyvvDuLNlBFdVheQ6FlgxyuvfxxkCQAfswneFezsGrSI5
-         7wnQygqm2eIXa0kpdRZ9kPhJQseL3JKpBfYT+3Vo/iNEtaFWQ1YnFQCrcfJWgzitmP6e
-         bSjItThW27LMjcO/GEqASjzgDBm1P5eQ1psiozIha34JfkRijIcQIYt1w48pJdOp9NuF
-         9VdRuCh0BBexkPEKGWW0WuuNX03CITLwGSQyBDWh+AyVPXtTKDq3FDS3pRLcmBUh84B/
-         5Ogglv6Hy9K3TSwwn8X/oWxY1E/4IFxDAQc0iMigUo/hI8hEFREO9KUpfPCRPGYM5nQv
-         Z3qA==
-X-Gm-Message-State: AO0yUKUfPQHbavZPD9wYDVPD4hnVNMA/B2veZ0waKyG+GNsMgb8YWBPa
-        e2bcuLTu7qpSZ6hTvw3ZcOC+cJqELD6JMRf1XDUdx78V
-X-Google-Smtp-Source: AK7set8uq7ebbsSriWJxHjrHMUC6X+0zB2DHHT/wCwhhmPTuZACsbPFqJ8NoROQqePjZsa6D2K4EbGrVsWTgDZ6U/EQ=
-X-Received: by 2002:a05:6402:40ce:b0:490:47c3:3d71 with SMTP id
- z14-20020a05640240ce00b0049047c33d71mr3247056edb.31.1675432767901; Fri, 03
- Feb 2023 05:59:27 -0800 (PST)
+        with ESMTP id S233075AbjBCOD6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 09:03:58 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 448D5A56E0;
+        Fri,  3 Feb 2023 06:01:46 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 16D091688;
+        Fri,  3 Feb 2023 05:54:25 -0800 (PST)
+Received: from eglon.cambridge.arm.com (eglon.cambridge.arm.com [10.1.196.177])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4979D3F71E;
+        Fri,  3 Feb 2023 05:53:39 -0800 (PST)
+From:   James Morse <james.morse@arm.com>
+To:     linux-pm@vger.kernel.org, loongarch@lists.linux.dev,
+        kvmarm@lists.linux.dev, kvm@vger.kernel.org,
+        linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org,
+        linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, x86@kernel.org
+Cc:     Marc Zyngier <maz@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Borislav Petkov <bp@alien8.de>, H Peter Anvin <hpa@zytor.com>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Huacai Chen <chenhuacai@kernel.org>,
+        James Morse <james.morse@arm.com>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Oliver Upton <oliver.upton@linux.dev>,
+        Len Brown <lenb@kernel.org>,
+        Rafael Wysocki <rafael@kernel.org>,
+        WANG Xuerui <kernel@xen0n.name>,
+        Salil Mehta <salil.mehta@huawei.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Jean-Philippe Brucker <jean-philippe@linaro.org>
+Subject: [RFC PATCH 25/32] irqchip/gic-v3: Don't return errors from gic_acpi_match_gicc()
+Date:   Fri,  3 Feb 2023 13:50:36 +0000
+Message-Id: <20230203135043.409192-26-james.morse@arm.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20230203135043.409192-1-james.morse@arm.com>
+References: <20230203135043.409192-1-james.morse@arm.com>
 MIME-Version: 1.0
-References: <20230201210712.2170312-1-srinivas.pandruvada@linux.intel.com>
- <CAJZ5v0ieQocb2oe1ggDCOos4HtkmypsadMkXCwH2J5XmRUdVyQ@mail.gmail.com> <2eb7f5335241cc9ca2f31761766e8cb34cfaa42d.camel@linux.intel.com>
-In-Reply-To: <2eb7f5335241cc9ca2f31761766e8cb34cfaa42d.camel@linux.intel.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 3 Feb 2023 14:59:16 +0100
-Message-ID: <CAJZ5v0j=Hs9F3UQqV_qCJ+ra6y+Q+HhBrN-tRtfrE47nH_Suxg@mail.gmail.com>
-Subject: Re: [PATCH] thermal: intel_powerclamp: Return last requested state as cur_state
-To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org,
-        rui.zhang@intel.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Feb 2, 2023 at 11:21 PM srinivas pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> On Thu, 2023-02-02 at 17:44 +0100, Rafael J. Wysocki wrote:
-> > On Wed, Feb 1, 2023 at 10:07 PM Srinivas Pandruvada
-> > <srinivas.pandruvada@linux.intel.com> wrote:
-> > >
-> > > When the user is reading cur_state from the thermal cooling device
-> > > for
-> > > Intel powerclamp device:
-> > > - It returns the idle ratio from Package C-state counters when
-> > > there is active idle injection session.
-> > > - -1, when there is no active idle injection session.
-> > >
-> > > This information is not very useful as the package C-state counters
-> > > vary
-> > > a lot from read to read. Instead just return the last requested
-> > > cur_state.
-> > >
-> > > Signed-off-by: Srinivas Pandruvada
-> > > <srinivas.pandruvada@linux.intel.com>
-> > > ---
-> > >  drivers/thermal/intel/intel_powerclamp.c | 12 +-----------
-> > >  1 file changed, 1 insertion(+), 11 deletions(-)
-> > >
-> > > diff --git a/drivers/thermal/intel/intel_powerclamp.c
-> > > b/drivers/thermal/intel/intel_powerclamp.c
-> > > index 2f4cbfdf26a0..72a45cf2708c 100644
-> > > --- a/drivers/thermal/intel/intel_powerclamp.c
-> > > +++ b/drivers/thermal/intel/intel_powerclamp.c
-> > > @@ -590,17 +590,7 @@ static int powerclamp_get_max_state(struct
-> > > thermal_cooling_device *cdev,
-> > >  static int powerclamp_get_cur_state(struct thermal_cooling_device
-> > > *cdev,
-> > >                                  unsigned long *state)
-> > >  {
-> > > -       if (clamping) {
-> > > -               if (poll_pkg_cstate_enable)
-> > > -                       *state = pkg_cstate_ratio_cur;
-> > > -               else
-> > > -                       *state = set_target_ratio;
-> > > -       } else {
-> > > -               /* to save power, do not poll idle ratio while not
-> > > clamping */
-> > > -               *state = -1; /* indicates invalid state */
-> > > -       }
-> > > -
-> > > -       return 0;
-> > > +       return set_target_ratio;
-> >
-> > *state = set_target_ratio;
-> > return 0;
-> >
-> Sorry.
->
-> What a blunder! Sent patch from 37000 ft. Should never do that.
+gic_acpi_match_gicc() is only called via gic_acpi_count_gicr_regions().
+It should only count the number of enabled redistributors, but it
+also tries to sanity check the GICC entry, currently returning an
+error if the Enabled bit is set, but the gicr_base_address is zero.
 
-No worries.
+Adding support for the online-capable bit to the sanity check
+complictes it, for no benefit. The existing check implicitly
+depends on gic_acpi_count_gicr_regions() previous failing to find
+any GICR regions (as it is valid to have gicr_base_address of zero if
+the redistributors are described via a GICR entry).
 
-I didn't realize that you were traveling.
+Instead of complicating the check, remove it. Failures that happen
+at this point cause the irqchip not to register, meaning no irqs
+can be requested. The kernel grinds to a panic() pretty quickly.
 
-I can prepare this patch myself just fine if that helps.
+Without the check, MADT tables that exhibit this problem are still
+caught by gic_populate_rdist(), which helpfully also prints what
+went wrong:
+| CPU4: mpidr 100 has no re-distributor!
+
+Signed-off-by: James Morse <james.morse@arm.com>
+---
+ drivers/irqchip/irq-gic-v3.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
+index d484cccfd612..a8b969d652b6 100644
+--- a/drivers/irqchip/irq-gic-v3.c
++++ b/drivers/irqchip/irq-gic-v3.c
+@@ -2237,21 +2237,15 @@ static int __init gic_acpi_match_gicc(union acpi_subtable_headers *header,
+ 
+ 	/*
+ 	 * If GICC is enabled and has valid gicr base address, then it means
+-	 * GICR base is presented via GICC
++	 * GICR base is presented via GICC. The redistributor is only known to
++	 * be accessible if the GICC is marked as enabled. If this bit is not
++	 * set, we'd need to add the redistributor at runtime, which isn't
++	 * supported.
+ 	 */
+-	if (acpi_gicc_is_usable(gicc) && gicc->gicr_base_address) {
++	if (gicc->flags & ACPI_MADT_ENABLED && gicc->gicr_base_address)
+ 		acpi_data.enabled_rdists++;
+-		return 0;
+-	}
+ 
+-	/*
+-	 * It's perfectly valid firmware can pass disabled GICC entry, driver
+-	 * should not treat as errors, skip the entry instead of probe fail.
+-	 */
+-	if (!acpi_gicc_is_usable(gicc))
+-		return 0;
+-
+-	return -ENODEV;
++	return 0;
+ }
+ 
+ static int __init gic_acpi_count_gicr_regions(void)
+-- 
+2.30.2
+
