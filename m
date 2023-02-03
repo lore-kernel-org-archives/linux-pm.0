@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F25CC64EC4
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 12:50:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A69CFC636D6
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 12:50:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232924AbjBCMuk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 07:50:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54446 "EHLO
+        id S232369AbjBCMuj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 07:50:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54422 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232876AbjBCMuh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 07:50:37 -0500
+        with ESMTP id S232956AbjBCMug (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 07:50:36 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 575329B6C1
-        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 04:50:34 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93DAF9AFF7
+        for <linux-pm@vger.kernel.org>; Fri,  3 Feb 2023 04:50:32 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1pNvWE-0000bY-5O; Fri, 03 Feb 2023 13:50:18 +0100
+        id 1pNvWE-0000ao-5I; Fri, 03 Feb 2023 13:50:18 +0100
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pNvWB-002OqB-Ol; Fri, 03 Feb 2023 13:50:16 +0100
+        id 1pNvWA-002Opb-M6; Fri, 03 Feb 2023 13:50:15 +0100
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pNvWA-000Zlc-2b; Fri, 03 Feb 2023 13:50:14 +0100
+        id 1pNvW9-000Zl5-VL; Fri, 03 Feb 2023 13:50:13 +0100
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-pm@vger.kernel.org
 Cc:     linux-rockchip@lists.infradead.org,
@@ -37,9 +37,9 @@ Cc:     linux-rockchip@lists.infradead.org,
         Mark Rutland <mark.rutland@arm.com>, kernel@pegutronix.de,
         Michael Riesch <michael.riesch@wolfvision.net>,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 10/18] PM / devfreq: rockchip-dfi: Add RK3568 support
-Date:   Fri,  3 Feb 2023 13:50:04 +0100
-Message-Id: <20230203125012.3804008-11-s.hauer@pengutronix.de>
+Subject: [PATCH 06/18] PM / devfreq: rockchip-dfi: Use free running counter
+Date:   Fri,  3 Feb 2023 13:50:00 +0100
+Message-Id: <20230203125012.3804008-7-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230203125012.3804008-1-s.hauer@pengutronix.de>
 References: <20230203125012.3804008-1-s.hauer@pengutronix.de>
@@ -53,86 +53,125 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds RK3568 support to the DFI driver. The driver itself doesn't
-need a change, only initialization differs from the currently supported
-RK3399.
+The DDR_MON counters are free running counters. These are resetted to 0
+when starting them over like currently done when reading the current
+counter values.
+
+Resetting the counters becomes a problem with perf support we want to
+add later, because perf needs a monotonicly increasing counter.
+
+This patch removes resetting the counters and keeps them running
+instead. Counter overflows are handled with modular arithmetics. Not
+stopping the counters also has the impact that they are running while
+we are reading them. We cannot read multiple timers atomically, so
+the values do not exactly fit together. The effect should be negligible
+though as the time between two measurements is some orders of magnitude
+bigger than the time we need to read multiple registers.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 24 ++++++++++++++++++++++++
- include/soc/rockchip/rk3568_grf.h    | 12 ++++++++++++
- 2 files changed, 36 insertions(+)
- create mode 100644 include/soc/rockchip/rk3568_grf.h
+ drivers/devfreq/event/rockchip-dfi.c | 53 ++++++++++++++++------------
+ 1 file changed, 31 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 035984d3c7b01..78cb594bd2a81 100644
+index 383fe8a17a512..25d64d9166a9a 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -23,6 +23,7 @@
+@@ -38,11 +38,15 @@
+ #define DDRMON_CH1_COUNT_NUM		0x3c
+ #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
  
- #include <soc/rockchip/rockchip_grf.h>
- #include <soc/rockchip/rk3399_grf.h>
-+#include <soc/rockchip/rk3568_grf.h>
+-struct dmc_usage {
++struct dmc_count_channel {
+ 	u32 access;
+ 	u32 total;
+ };
  
- #define DMC_MAX_CHANNELS	2
++struct dmc_count {
++	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
++};
++
+ /*
+  * The dfi controller can monitor DDR load. It has an upper and lower threshold
+  * for the operating points. Whenever the usage leaves these bounds an event is
+@@ -51,7 +55,8 @@ struct dmc_usage {
+ struct rockchip_dfi {
+ 	struct devfreq_event_dev *edev;
+ 	struct devfreq_event_desc desc;
+-	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
++	struct dmc_count count;
++	struct dmc_count last_event_count;
+ 	struct device *dev;
+ 	void __iomem *regs;
+ 	struct regmap *regmap_pmu;
+@@ -85,30 +90,18 @@ static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
+ 	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
+ }
  
-@@ -209,6 +210,24 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
+-static int rockchip_dfi_get_busier_ch(struct devfreq_event_dev *edev)
++static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+-	u32 tmp, max = 0;
+-	u32 i, busier_ch = 0;
++	u32 i;
+ 	void __iomem *dfi_regs = dfi->regs;
+ 
+-	rockchip_dfi_stop_hardware_counter(edev);
+-
+-	/* Find out which channel is busier */
+ 	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
+-		dfi->ch_usage[i].access = readl_relaxed(dfi_regs +
++		count->c[i].access = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+-		dfi->ch_usage[i].total = readl_relaxed(dfi_regs +
++		count->c[i].total = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_COUNT_NUM + i * 20);
+-		tmp = dfi->ch_usage[i].access;
+-		if (tmp > max) {
+-			busier_ch = i;
+-			max = tmp;
+-		}
+ 	}
+-	rockchip_dfi_start_hardware_counter(edev);
+-
+-	return busier_ch;
+ }
+ 
+ static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
+@@ -145,12 +138,28 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 				  struct devfreq_event_data *edata)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+-	int busier_ch;
++	struct dmc_count count;
++	struct dmc_count *last = &dfi->last_event_count;
++	u32 access = 0, total = 0;
++	int i;
++
++	rockchip_dfi_read_counters(edev, &count);
++
++	/* We can only report one channel, so find the busiest one */
++	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
++		u32 a = count.c[i].access - last->c[i].access;
++		u32 t = count.c[i].total - last->c[i].total;
++
++		if (a > access) {
++			access = a;
++			total = t;
++		}
++	}
+ 
+-	busier_ch = rockchip_dfi_get_busier_ch(edev);
++	edata->load_count = access * 4;
++	edata->total_count = total;
+ 
+-	edata->load_count = dfi->ch_usage[busier_ch].access * 4;
+-	edata->total_count = dfi->ch_usage[busier_ch].total;
++	dfi->last_event_count = count;
+ 
  	return 0;
- };
- 
-+static int rk3568_dfi_init(struct rockchip_dfi *dfi)
-+{
-+	struct regmap *regmap_pmu = dfi->regmap_pmu;
-+	u32 reg2, reg3;
-+
-+	regmap_read(regmap_pmu, RK3568_PMUGRF_OS_REG2, &reg2);
-+	regmap_read(regmap_pmu, RK3568_PMUGRF_OS_REG3, &reg3);
-+
-+	dfi->ddr_type = FIELD_GET(RK3568_PMUGRF_OS_REG2_DRAMTYPE_INFO, reg2);
-+
-+	if (FIELD_GET(RK3568_PMUGRF_OS_REG3_SYSREG_VERSION, reg3) >= 0x3)
-+		dfi->ddr_type |= FIELD_GET(RK3568_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3, reg3) << 3;
-+
-+	dfi->channel_mask = 1;
-+
-+	return 0;
-+};
-+
- struct rockchip_dfi_devtype_data {
- 	int (*init)(struct rockchip_dfi *dfi);
- };
-@@ -217,8 +236,13 @@ static struct rockchip_dfi_devtype_data rk3399_devtype_data = {
- 	.init = rk3399_dfi_init,
- };
- 
-+static struct rockchip_dfi_devtype_data rk3568_devtype_data = {
-+	.init = rk3568_dfi_init,
-+};
-+
- static const struct of_device_id rockchip_dfi_id_match[] = {
- 	{ .compatible = "rockchip,rk3399-dfi", .data = &rk3399_devtype_data },
-+	{ .compatible = "rockchip,rk3568-dfi", .data = &rk3568_devtype_data },
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, rockchip_dfi_id_match);
-diff --git a/include/soc/rockchip/rk3568_grf.h b/include/soc/rockchip/rk3568_grf.h
-new file mode 100644
-index 0000000000000..575584e9d8834
---- /dev/null
-+++ b/include/soc/rockchip/rk3568_grf.h
-@@ -0,0 +1,12 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+#ifndef __SOC_RK3568_GRF_H
-+#define __SOC_RK3568_GRF_H
-+
-+#define RK3568_PMUGRF_OS_REG2		0x208
-+#define RK3568_PMUGRF_OS_REG2_DRAMTYPE_INFO		GENMASK(15, 13)
-+
-+#define RK3568_PMUGRF_OS_REG3		0x20c
-+#define RK3568_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3		GENMASK(13, 12)
-+#define RK3568_PMUGRF_OS_REG3_SYSREG_VERSION		GENMASK(31, 28)
-+
-+#endif /* __SOC_RK3568_GRF_H */
+ }
 -- 
 2.30.2
 
