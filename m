@@ -2,24 +2,24 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A27BFC636D6
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 13:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94BE2C61DA4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Feb 2023 13:56:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233630AbjBCN4G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Feb 2023 08:56:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34604 "EHLO
+        id S233680AbjBCN4l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Feb 2023 08:56:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233149AbjBCNzL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 08:55:11 -0500
+        with ESMTP id S233272AbjBCN4H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2023 08:56:07 -0500
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4F2EAA7EF7;
-        Fri,  3 Feb 2023 05:53:35 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C4924A77AD;
+        Fri,  3 Feb 2023 05:54:00 -0800 (PST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2529515DB;
-        Fri,  3 Feb 2023 05:53:47 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 790DF175D;
+        Fri,  3 Feb 2023 05:54:33 -0800 (PST)
 Received: from eglon.cambridge.arm.com (eglon.cambridge.arm.com [10.1.196.177])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 53CE93F71E;
-        Fri,  3 Feb 2023 05:53:01 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AB7923F71E;
+        Fri,  3 Feb 2023 05:53:47 -0800 (PST)
 From:   James Morse <james.morse@arm.com>
 To:     linux-pm@vger.kernel.org, loongarch@lists.linux.dev,
         kvmarm@lists.linux.dev, kvm@vger.kernel.org,
@@ -45,9 +45,9 @@ Cc:     Marc Zyngier <maz@kernel.org>,
         Salil Mehta <salil.mehta@huawei.com>,
         Russell King <linux@armlinux.org.uk>,
         Jean-Philippe Brucker <jean-philippe@linaro.org>
-Subject: [RFC PATCH 17/32] ACPI: Add post_eject to struct acpi_scan_handler for cpu hotplug
-Date:   Fri,  3 Feb 2023 13:50:28 +0000
-Message-Id: <20230203135043.409192-18-james.morse@arm.com>
+Subject: [RFC PATCH 27/32] arm64: psci: Ignore DENIED CPUs
+Date:   Fri,  3 Feb 2023 13:50:38 +0000
+Message-Id: <20230203135043.409192-28-james.morse@arm.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230203135043.409192-1-james.morse@arm.com>
 References: <20230203135043.409192-1-james.morse@arm.com>
@@ -57,170 +57,65 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-struct acpi_scan_handler has a detach callback that is used to remove
-a driver when a bus is changed. When interacting with an eject-request,
-the detach callback is called before _EJ0.
+From: Jean-Philippe Brucker <jean-philippe@linaro.org>
 
-This means the ACPI processor driver can't use _STA to determine if a
-CPU has been made not-present, or some of the other _STA bits have been
-changed. acpi_processor_remove() needs to know the value of _STA after
-_EJ0 has been called.
+When a CPU is marked as disabled, but online capable in the MADT, PSCI
+applies some firmware policy to control when it can be brought online.
+PSCI returns DENIED to a CPU_ON request if this is not currently
+permitted. The OS can learn the current policy from the _STA enabled bit.
 
-Add a post_eject callback to struct acpi_scan_handler. This is called
-after acpi_scan_hot_remove() has successfully called _EJ0. Because
-acpi_bus_trim_one() also clears the handler pointer, it needs to be
-told if the caller will go on to call acpi_bus_post_eject(), so
-that acpi_device_clear_enumerated() and clearing the handler pointer
-can be deferred. The existing not-used pointer is used for this.
+Handle the PSCI DENIED return code gracefully instead of printing an
+error.
 
+Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
+[ morse: Rewrote commit message ]
 Signed-off-by: James Morse <james.morse@arm.com>
 ---
- drivers/acpi/acpi_processor.c |  4 +--
- drivers/acpi/scan.c           | 52 ++++++++++++++++++++++++++++++-----
- include/acpi/acpi_bus.h       |  1 +
- 3 files changed, 48 insertions(+), 9 deletions(-)
+ arch/arm64/kernel/psci.c     | 2 +-
+ arch/arm64/kernel/smp.c      | 3 ++-
+ drivers/firmware/psci/psci.c | 2 ++
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/acpi_processor.c b/drivers/acpi/acpi_processor.c
-index 6ab55f109417..ab0f80b83773 100644
---- a/drivers/acpi/acpi_processor.c
-+++ b/drivers/acpi/acpi_processor.c
-@@ -411,7 +411,7 @@ static int acpi_processor_add(struct acpi_device *device,
- 
- #ifdef CONFIG_ACPI_HOTPLUG_PRESENT_CPU
- /* Removal */
--static void acpi_processor_remove(struct acpi_device *device)
-+static void acpi_processor_post_eject(struct acpi_device *device)
+diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
+index 29a8e444db83..4fcc0cdd757b 100644
+--- a/arch/arm64/kernel/psci.c
++++ b/arch/arm64/kernel/psci.c
+@@ -40,7 +40,7 @@ static int cpu_psci_cpu_boot(unsigned int cpu)
  {
- 	struct acpi_processor *pr;
+ 	phys_addr_t pa_secondary_entry = __pa_symbol(secondary_entry);
+ 	int err = psci_ops.cpu_on(cpu_logical_map(cpu), pa_secondary_entry);
+-	if (err)
++	if (err && err != -EPROBE_DEFER)
+ 		pr_err("failed to boot CPU%d (%d)\n", cpu, err);
  
-@@ -523,7 +523,7 @@ static struct acpi_scan_handler processor_handler = {
- 	.ids = processor_device_ids,
- 	.attach = acpi_processor_add,
- #ifdef CONFIG_ACPI_HOTPLUG_PRESENT_CPU
--	.detach = acpi_processor_remove,
-+	.post_eject = acpi_processor_post_eject,
- #endif
- 	.hotplug = {
- 		.enabled = true,
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index cecf94192771..cd9bedb54393 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -245,18 +245,28 @@ static int acpi_scan_try_to_offline(struct acpi_device *device)
- 	return 0;
- }
- 
--static int acpi_bus_trim_one(struct acpi_device *adev, void *not_used)
-+/**
-+ * acpi_bus_trim_one() - Detach scan handlers and drivers from ACPI device
-+ *                       objects.
-+ * @adev:       Root of the ACPI namespace scope to walk.
-+ * @eject:      Pointer to a bool that indicates if this was due to an
-+ *              eject-request.
-+ *
-+ * Must be called under acpi_scan_lock.
-+ * If @eject points to true, clearing the device enumeration is deferred until
-+ * acpi_bus_post_eject() is called.
-+ */
-+static int acpi_bus_trim_one(struct acpi_device *adev, void *eject)
- {
- 	struct acpi_scan_handler *handler = adev->handler;
-+	bool is_eject = *(bool *)eject;
- 
--	acpi_dev_for_each_child_reverse(adev, acpi_bus_trim_one, NULL);
-+	acpi_dev_for_each_child_reverse(adev, acpi_bus_trim_one, eject);
- 
- 	adev->flags.match_driver = false;
- 	if (handler) {
- 		if (handler->detach)
- 			handler->detach(adev);
--
--		adev->handler = NULL;
- 	} else {
- 		device_release_driver(&adev->dev);
- 	}
-@@ -266,7 +276,12 @@ static int acpi_bus_trim_one(struct acpi_device *adev, void *not_used)
- 	 */
- 	acpi_device_set_power(adev, ACPI_STATE_D3_COLD);
- 	adev->flags.initialized = false;
--	acpi_device_clear_enumerated(adev);
-+
-+	/* For eject this is deferred to acpi_bus_post_eject() */
-+	if (!is_eject) {
-+		adev->handler = NULL;
-+		acpi_device_clear_enumerated(adev);
-+	}
- 
- 	return 0;
- }
-@@ -279,15 +294,36 @@ static int acpi_bus_trim_one(struct acpi_device *adev, void *not_used)
-  */
- void acpi_bus_trim(struct acpi_device *adev)
- {
--	acpi_bus_trim_one(adev, NULL);
-+	bool eject = false;
-+
-+	acpi_bus_trim_one(adev, &eject);
- }
- EXPORT_SYMBOL_GPL(acpi_bus_trim);
- 
-+static int acpi_bus_post_eject(struct acpi_device *adev, void *not_used)
-+{
-+	struct acpi_scan_handler *handler = adev->handler;
-+
-+	acpi_dev_for_each_child_reverse(adev, acpi_bus_post_eject, NULL);
-+
-+	if (handler) {
-+		if (handler->post_eject)
-+			handler->post_eject(adev);
-+
-+		adev->handler = NULL;
-+	}
-+
-+	acpi_device_clear_enumerated(adev);
-+
-+	return 0;
-+}
-+
- static int acpi_scan_hot_remove(struct acpi_device *device)
- {
- 	acpi_handle handle = device->handle;
- 	unsigned long long sta;
- 	acpi_status status;
-+	bool eject = true;
- 
- 	if (device->handler && device->handler->hotplug.demand_offline) {
- 		if (!acpi_scan_is_offline(device, true))
-@@ -300,7 +336,7 @@ static int acpi_scan_hot_remove(struct acpi_device *device)
- 
- 	acpi_handle_debug(handle, "Ejecting\n");
- 
--	acpi_bus_trim(device);
-+	acpi_bus_trim_one(device, &eject);
- 
- 	acpi_evaluate_lck(handle, 0);
- 	/*
-@@ -323,6 +359,8 @@ static int acpi_scan_hot_remove(struct acpi_device *device)
- 	} else if (sta & ACPI_STA_DEVICE_ENABLED) {
- 		acpi_handle_warn(handle,
- 			"Eject incomplete - status 0x%llx\n", sta);
-+	} else {
-+		acpi_bus_post_eject(device, NULL);
+ 	return err;
+diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+index 5669b013c2b7..ea031641545d 100644
+--- a/arch/arm64/kernel/smp.c
++++ b/arch/arm64/kernel/smp.c
+@@ -125,7 +125,8 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
+ 	/* Now bring the CPU into our world */
+ 	ret = boot_secondary(cpu, idle);
+ 	if (ret) {
+-		pr_err("CPU%u: failed to boot: %d\n", cpu, ret);
++		if (ret != -EPROBE_DEFER)
++			pr_err("CPU%u: failed to boot: %d\n", cpu, ret);
+ 		return ret;
  	}
  
- 	return 0;
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index cd3b75e08ec3..dc4028cafd33 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -126,6 +126,7 @@ struct acpi_scan_handler {
- 	bool (*match)(const char *idstr, const struct acpi_device_id **matchid);
- 	int (*attach)(struct acpi_device *dev, const struct acpi_device_id *id);
- 	void (*detach)(struct acpi_device *dev);
-+	void (*post_eject)(struct acpi_device *dev);
- 	void (*bind)(struct device *phys_dev);
- 	void (*unbind)(struct device *phys_dev);
- 	struct acpi_hotplug_profile hotplug;
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index e7bcfca4159f..3389c913b2ea 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -212,6 +212,8 @@ static int __psci_cpu_on(u32 fn, unsigned long cpuid, unsigned long entry_point)
+ 	int err;
+ 
+ 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
++	if (err == PSCI_RET_DENIED)
++		return -EPROBE_DEFER;
+ 	return psci_to_linux_errno(err);
+ }
+ 
 -- 
 2.30.2
 
