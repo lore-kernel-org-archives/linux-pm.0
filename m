@@ -2,162 +2,103 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E749C63797
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Feb 2023 10:13:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61B9DC636CC
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Feb 2023 14:52:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229541AbjBEKNA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Feb 2023 05:13:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54872 "EHLO
+        id S229637AbjBEOww (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Feb 2023 09:52:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229485AbjBEKM7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2023 05:12:59 -0500
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 679F2B771;
-        Sun,  5 Feb 2023 02:12:56 -0800 (PST)
+        with ESMTP id S229511AbjBEOwv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2023 09:52:51 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEB6A4EEC;
+        Sun,  5 Feb 2023 06:52:49 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id 90128CE0E7F;
-        Sun,  5 Feb 2023 10:12:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C7B5C433EF;
-        Sun,  5 Feb 2023 10:12:52 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 7CC50B80B51;
+        Sun,  5 Feb 2023 14:52:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E44A7C4339B;
+        Sun,  5 Feb 2023 14:52:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1675591972;
-        bh=07vseOO+bkMKl0Rl1FzCfpn6EqMSEMLBKqQXGh3SEPk=;
+        s=k20201202; t=1675608767;
+        bh=PhFwMfKmlT94SSccqVeyCs3OQPNSHIjJtZZRpjAbREQ=;
         h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=DoOsgC0qRgto2YORcUBWvV6iOdL3uElZk9c1nP4vdvnW7UJ0cfOzO3KFQKeGO+VoT
-         lG5o4CEP2bYQB54SUPK+LBFo7FMjbKUplHCl4bDIwWpTzEouuKsF0rpYgMtLrj6WDp
-         H9n6I/CA4cHgLaFDNCbQYTT7vcyhGFJmYijImsPsI/4Q5uIWFpOnPAJAD6OWCAYpbq
-         XW4C2a1Bp+bMsIAU2ZYwpWCbNJq7RPvEn3rPCgoAGbT4jFAUAilaaXkOZe3H9OPJI5
-         ENvwnY/2trtsxGYReAVlXWGJZfv291skBc8Gm3ylJfKUd99TlZf+kkTBtBIuHPTHhY
-         1rRJCG3l8FGQA==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-        by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.95)
-        (envelope-from <maz@kernel.org>)
-        id 1pOc0w-007W73-29;
-        Sun, 05 Feb 2023 10:12:50 +0000
-Date:   Sun, 05 Feb 2023 10:12:49 +0000
-Message-ID: <865ycg1kv2.wl-maz@kernel.org>
-From:   Marc Zyngier <maz@kernel.org>
-To:     James Morse <james.morse@arm.com>
-Cc:     linux-pm@vger.kernel.org, loongarch@lists.linux.dev,
-        kvmarm@lists.linux.dev, kvm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, x86@kernel.org,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Borislav Petkov <bp@alien8.de>, H Peter Anvin <hpa@zytor.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Oliver Upton <oliver.upton@linux.dev>,
-        Len Brown <lenb@kernel.org>,
-        Rafael Wysocki <rafael@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        Salil Mehta <salil.mehta@huawei.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Jean-Philippe Brucker <jean-philippe@linaro.org>
-Subject: Re: [RFC PATCH 29/32] KVM: arm64: Pass hypercalls to userspace
-In-Reply-To: <20230203135043.409192-30-james.morse@arm.com>
-References: <20230203135043.409192-1-james.morse@arm.com>
-        <20230203135043.409192-30-james.morse@arm.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/28.2
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+        b=S40unBvphTT2CS0N2ts1IOXCPst1Yf5PmuVdcKhHTOK1G1IyuxryPWJcG3zaAM8Pq
+         Tt7/eWfFn+1hZNeG+E39s7moRRV458dapG3pNBfTkTugtbAKHVcdVXrxIbEw6XsCnH
+         kfaZl9WMiCjGrwgtS4zfSQSw12U6ttXeY8eAo/bujgGzzQhWhzOo0+uuKQu1iRBV4M
+         IWPYcyE1o4w6NsIZU3SKl04RQmPAYE+t63r8XY9bBFMLzSnqC8kv8et52G+lkP9KWE
+         NppbwgUJH1EZ7MiPZLmSiwylRU96u4jYroKLwTiqGldcXayGbVQdbQd2U6fX9Co2Iv
+         ilVIiTCcMk25Q==
+Date:   Sun, 5 Feb 2023 15:06:45 +0000
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Rob Herring <robh@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Martin Botka <martin.botka@somainline.org>,
+        Jami Kettunen <jami.kettunen@somainline.org>,
+        iio@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 2/3] dt-bindings: thermal: qcom-spmi-adc-tm5: Use
+ generic ADC node name
+Message-ID: <20230205150645.549ff062@jic23-huawei>
+In-Reply-To: <20230203212501.GA908601-robh@kernel.org>
+References: <20230201204447.542385-1-marijn.suijten@somainline.org>
+        <20230201204447.542385-3-marijn.suijten@somainline.org>
+        <20230203212501.GA908601-robh@kernel.org>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.36; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: james.morse@arm.com, linux-pm@vger.kernel.org, loongarch@lists.linux.dev, kvmarm@lists.linux.dev, kvm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, x86@kernel.org, tglx@linutronix.de, lpieralisi@kernel.org, mark.rutland@arm.com, sudeep.holla@arm.com, bp@alien8.de, hpa@zytor.com, dave.hansen@linux.intel.com, mingo@redhat.com, will@kernel.org, catalin.marinas@arm.com, chenhuacai@kernel.org, suzuki.poulose@arm.com, oliver.upton@linux.dev, lenb@kernel.org, rafael@kernel.org, kernel@xen0n.name, salil.mehta@huawei.com, linux@armlinux.org.uk, jean-philippe@linaro.org
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 03 Feb 2023 13:50:40 +0000,
-James Morse <james.morse@arm.com> wrote:
-> 
-> From: Jean-Philippe Brucker <jean-philippe@linaro.org>
-> 
-> When capability KVM_CAP_ARM_HVC_TO_USER is available, userspace can
-> request to handle all hypercalls that aren't handled by KVM. With the
-> help of another capability, this will allow userspace to handle PSCI
-> calls.
-> 
-> Suggested-by: James Morse <james.morse@arm.com>
-> Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
-> Signed-off-by: James Morse <james.morse@arm.com>
-> 
-> ---
-> 
+On Fri, 3 Feb 2023 15:25:01 -0600
+Rob Herring <robh@kernel.org> wrote:
 
-On top of Oliver's ask not to make this a blanket "steal everything",
-but instead to have an actual request for ranges of forwarded
-hypercalls:
-
-> Notes on this implementation:
+> On Wed, Feb 01, 2023 at 09:44:46PM +0100, Marijn Suijten wrote:
+> > Update the example to reflect a future requirement for the generic
+> > adc-chan node name on ADC channel nodes, while conveying the board name
+> > of the channel in a label instead.  
 > 
-> * A similar mechanism was proposed for SDEI some time ago [1]. This RFC
->   generalizes the idea to all hypercalls, since that was suggested on
->   the list [2, 3].
+> I don't think we've defined 'adc-chan' as THE generic name. Looks like 
+> we have:
 > 
-> * We're reusing kvm_run.hypercall. I copied x0-x5 into
->   kvm_run.hypercall.args[] to help userspace but I'm tempted to remove
->   this, because:
->   - Most user handlers will need to write results back into the
->     registers (x0-x3 for SMCCC), so if we keep this shortcut we should
->     go all the way and read them back on return to kernel.
->   - QEMU doesn't care about this shortcut, it pulls all vcpu regs before
->     handling the call.
->   - SMCCC uses x0-x16 for parameters.
->   x0 does contain the SMCCC function ID and may be useful for fast
->   dispatch, we could keep that plus the immediate number.
+> adc-chan
+> adc-channel
+> channel
 > 
-> * Add a flag in the kvm_run.hypercall telling whether this is HVC or
->   SMC?  Can be added later in those bottom longmode and pad fields.
+> 'channel' is the most common (except for QCom).
+Good spot.
 
-We definitely need this. A nested hypervisor can (and does) use SMCs
-as the conduit. The question is whether they represent two distinct
-namespaces or not. I *think* we can unify them, but someone should
-check and maybe get clarification from the owners of the SMCCC spec.
+We also have that defined as the channel name in 
+bindings/iio/adc.yaml
 
->
-> * On top of this we could share with userspace which HVC ranges are
->   available and which ones are handled by KVM. That can actually be added
->   independently, through a vCPU/VM device attribute which doesn't consume
->   a new ioctl:
->   - userspace issues HAS_ATTR ioctl on the vcpu fd to query whether this
->     feature is available.
->   - userspace queries the number N of HVC ranges using one GET_ATTR.
->   - userspace passes an array of N ranges using another GET_ATTR. The
->     array is filled and returned by KVM.
-
-As mentioned above, I think this interface should go both ways.
-Userspace should request the forwarding of a certain range of
-hypercalls via a similar SET_ATTR interface.
-
-Another question is how we migrate VMs that have these forwarding
-requirements. Do we expect the VMM to replay the forwarding as part of
-the setting up on the other side? Or do we save/restore this via a
-firmware pseudo-register?
-
-> 
-> * Enabling this using a vCPU arch feature rather than the whole-VM
->   capability would be fine, but it would be difficult to do the same for
->   the following psci-in-user capability. So let's enable everything at
->   the VM scope.
-
-Absolutely.
+Now this particular binding doesn't use anything from that
+generic binding (other than trivial use of reg) but better to be
+consistent with it than not!
 
 Thanks,
 
-	M.
+Jonathan
 
--- 
-Without deviation from the norm, progress is not possible.
+
+> 
+> Rob
+
