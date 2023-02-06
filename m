@@ -2,736 +2,235 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64828C636CD
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 01:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A742C636CD
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 02:01:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229628AbjBFBps (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Feb 2023 20:45:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43904 "EHLO
+        id S229485AbjBFCBx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Feb 2023 21:01:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47772 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229608AbjBFBps (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2023 20:45:48 -0500
-Received: from mg.richtek.com (mg.richtek.com [220.130.44.152])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E2CC319F28;
-        Sun,  5 Feb 2023 17:45:43 -0800 (PST)
-X-MailGates: (flag:4,DYNAMIC,BADHELO,RELAY,NOHOST:PASS)(compute_score:DE
-        LIVER,40,3)
-Received: from 192.168.10.46
-        by mg.richtek.com with MailGates ESMTP Server V5.0(20362:0:AUTH_RELAY)
-        (envelope-from <cy_huang@richtek.com>); Mon, 06 Feb 2023 09:45:24 +0800 (CST)
-Received: from ex4.rt.l (192.168.10.47) by ex3.rt.l (192.168.10.46) with
+        with ESMTP id S229452AbjBFCBw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2023 21:01:52 -0500
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B7841ADC0;
+        Sun,  5 Feb 2023 18:01:45 -0800 (PST)
+X-UUID: 30be81b0a5c211ed945fc101203acc17-20230206
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=MIME-Version:Content-Transfer-Encoding:Content-ID:Content-Type:In-Reply-To:References:Message-ID:Date:Subject:CC:To:From; bh=a93JdUbtkM8YCZrQazYMx8ctGOHXQwLKS02g3KulzTY=;
+        b=N8PzXTrRsWijktVs7Ob8FBToWSRaKOMYA4qFEDhEBtqvBJJ7aBx3TufeuQXt7SMzk/bPXzRIRUkcQOd+HYBtOAkb5OgZJKWexDk+M7fSbnDPKsgvc/rB/FH+QP5h58hZ+jIsGMCDG+UMzoZfkdeL+O5MTRTJDriQzOe0rGfxsek=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.18,REQID:6554f831-fc59-44dd-b3aa-afa1f3019424,IP:0,U
+        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+        release,TS:0
+X-CID-META: VersionHash:3ca2d6b,CLOUDID:441a6256-dd49-462e-a4be-2143a3ddc739,B
+        ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:11|1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
+X-CID-BVR: 0
+X-UUID: 30be81b0a5c211ed945fc101203acc17-20230206
+Received: from mtkmbs13n2.mediatek.inc [(172.21.101.108)] by mailgw02.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1661281947; Mon, 06 Feb 2023 10:01:37 +0800
+Received: from mtkmbs10n2.mediatek.inc (172.21.101.183) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.792.3;
+ Mon, 6 Feb 2023 10:01:37 +0800
+Received: from APC01-SG2-obe.outbound.protection.outlook.com (172.21.101.239)
+ by mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server id
+ 15.2.792.3 via Frontend Transport; Mon, 6 Feb 2023 10:01:36 +0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=fWOlU/Gwfo3/EOYz3o2LrBS/nipNfZv5emZ9tuUxopM1RLw+Aq8C0h+LgzuMHjpRZLgPkDQ5sbXdCxQlBrv5PNxxfpho8EA6id0Pj4ELy22bykO/XtKt8Q3v84xY0ID/zB15sMT29a6CGP9u+1gscMRt6mwXxKNJ8HIquRrYrK/PRUTNLZdjluwlmSGj3Laoh9gpx8cCJnR4wZ+G/sskkumZixDwdtdnYESdp8Hwga1tg16KMNL+kVd337oKUf28V0L0X2Mi1dTF/r4D6LTYwZeP8uxq/FjtBV/nr51E7ZgmAzBGRPv4QsOu78ICr12n+LkWmhaMBNpb8WokKB6RCg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=a93JdUbtkM8YCZrQazYMx8ctGOHXQwLKS02g3KulzTY=;
+ b=H174tN445JumXP5Z5yp9zUliIOJd/f3UVNZZhNREArdjwgcYi6kAGRyG+kZXihhEBOlb9E9SDec1Dxnf01IKrBokLED3rnnGttd7oAqTQTh5E9I+ja3jKzSyqvNLwjbTne0vuvlczpJpXxUu6iGytStDaZuKY15NAh14Rk+440VXms2PVGbPWELvIjgcaViiCOQJrXNGDHJHPVBgT0jfGOJvlz/TkaF2ERT5Z5CNwqpXWSnbOojF5M9Ix+xIj77i6cXGISitmDzxHeAdaS03UluoeC6gN+GEBOYZXKwZjbGOZ86SVEeKqy9f3Lm8ihReaDAPGNu2xfTQXwXw1hOIeg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=mediatek.com; dmarc=pass action=none header.from=mediatek.com;
+ dkim=pass header.d=mediatek.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mediateko365.onmicrosoft.com; s=selector2-mediateko365-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=a93JdUbtkM8YCZrQazYMx8ctGOHXQwLKS02g3KulzTY=;
+ b=fDw5oJYDqnddQ+kThaZD+zfr2lUCpNyoMDhSKJwskX34tj01ddsWCJsRnGKVc6gLYYL7L+heyzx/RVrPfswyWYo0eKqVqg6/m4nCrLzz4/SVIXSPWppetL9XYlHLNTdOqwri0LGUBtdrzefPlTF0lQWYn8H3BiOAuDeTV8vISDo=
+Received: from TY2PR03MB3439.apcprd03.prod.outlook.com (2603:1096:404:33::10)
+ by TYZPR03MB6672.apcprd03.prod.outlook.com (2603:1096:400:1f0::13) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.20; Mon, 6 Feb
- 2023 09:45:23 +0800
-Received: from linuxcarl2.richtek.com (192.168.10.154) by ex4.rt.l
- (192.168.10.45) with Microsoft SMTP Server id 15.2.1118.20 via Frontend
- Transport; Mon, 6 Feb 2023 09:45:23 +0800
-From:   <cy_huang@richtek.com>
-To:     <sre@kernel.org>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>
-CC:     <cy_huang@richtek.com>, <allen_chiang@richtek.com>,
-        <u0084500@gmail.com>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>
-Subject: [PATCH v4 2/3] power: supply: Add Richtek RT9759 smart cap divider charger
-Date:   Mon, 6 Feb 2023 09:45:18 +0800
-Message-ID: <1675647919-11151-3-git-send-email-cy_huang@richtek.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1675647919-11151-1-git-send-email-cy_huang@richtek.com>
-References: <1675647919-11151-1-git-send-email-cy_huang@richtek.com>
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6064.25; Mon, 6 Feb
+ 2023 02:01:35 +0000
+Received: from TY2PR03MB3439.apcprd03.prod.outlook.com
+ ([fe80::c628:9f8b:322:bef6]) by TY2PR03MB3439.apcprd03.prod.outlook.com
+ ([fe80::c628:9f8b:322:bef6%3]) with mapi id 15.20.6064.034; Mon, 6 Feb 2023
+ 02:01:35 +0000
+From:   =?utf-8?B?Um9nZXIgTHUgKOmZuOeRnuWCkSk=?= <Roger.Lu@mediatek.com>
+To:     "eballetbo@gmail.com" <eballetbo@gmail.com>,
+        "matthias.bgg@gmail.com" <matthias.bgg@gmail.com>,
+        "khilman@kernel.org" <khilman@kernel.org>,
+        "sboyd@kernel.org" <sboyd@kernel.org>,
+        "drinkcat@google.com" <drinkcat@google.com>
+CC:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-mediatek@lists.infradead.org" 
+        <linux-mediatek@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        Project_Global_Chrome_Upstream_Group 
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        =?utf-8?B?SmlhLXdlaSBDaGFuZyAo5by15L2z5YGJKQ==?= 
+        <Jia-wei.Chang@mediatek.com>,
+        =?utf-8?B?RmFuIENoZW4gKOmZs+WHoSk=?= <fan.chen@mediatek.com>
+Subject: Re: [PATCH v4 05/14] soc: mediatek: mtk-svs: use svs clk control APIs
+Thread-Topic: [PATCH v4 05/14] soc: mediatek: mtk-svs: use svs clk control
+ APIs
+Thread-Index: AQHZJZDHI+SQIEhX8UKhJMQ/hdyBe664ohSAgAGESoCAAXDlgIAFu3kA
+Date:   Mon, 6 Feb 2023 02:01:34 +0000
+Message-ID: <615b406692504bb68bd781030023c0fa7b2bd11e.camel@mediatek.com>
+References: <20230111074528.29354-1-roger.lu@mediatek.com>
+         <20230111074528.29354-6-roger.lu@mediatek.com>
+         <5192bc94-12c7-dce4-c2e6-fa4b8c1ced9d@gmail.com>
+         <546d7f2b3607310f0ebe11b3d4e0aac40ac44c7a.camel@mediatek.com>
+         <68d19d2b-0613-f1b4-08ff-9d86f5021f9f@gmail.com>
+In-Reply-To: <68d19d2b-0613-f1b4-08ff-9d86f5021f9f@gmail.com>
+Accept-Language: en-US, zh-TW
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=mediatek.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TY2PR03MB3439:EE_|TYZPR03MB6672:EE_
+x-ms-office365-filtering-correlation-id: 74ba0f9f-ef6d-414d-0938-08db07e61339
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: C/Z02Tkqq92jPESZmXR7gbTypow9mz61CRnilsnVZsdoF+rDMIQYqlXaP0VnWa8GKzyOX5yTy6qLeGOi/EplEhm0E7dvRF4mIKihiFyxPGxNmnluW5PJ/j8v+64wy9nMXzpa6EzCDamE9iXkxyZEaHDg+WzU7Mb4fzJ7Z0Z/X2XBjvhyJn+yJpLsxSTcOcWbSU4DDGhM7tUC9MxGEXjFNzuDvT5xNEtHgX0vXYIISJHtMuJhbWh9kO5JbP6ENOKP4wHhnoRFrWZPhkmY4xNFyrgB1x7dtdvmgGQaaIh8J9m6y5IbHF0jJ+VzEh2F9vMrciom/6vIPQU7aBb5OFdlKP6RUZio0dJ5U/fiZ9PVQYG/9nJrG77bYFYQ/5L6ycGUuFDslrZ861jelhI48qQqht4hAQSeptSfZIAIWbYMrvnd/7weL4ipFjvzXxlf22pmVjFAC03HHLL7OuAlEmg64VEXsl8cENv3rSE7DZAuzNcb/ISmal/mrveHHVhwlodG9tL30QP2PHBYxiFOYPdsDGy3kLQthRRCeR5T3t3eLe1BgDNJ//cafMu9ZwP8vim3IjBSi9zXKdG2fnjSjYkdUQGZNat4Ah/CoBXoCDEIPGc4jdiD+iRtDiwn4PQLXcrXJM2gBYdvl/2FgQq90ccjrjjS4QIe80x7pVodhehE5JMfU6zbjjlepSeJ2LPhKH45YN6Hvzbe5S+KFmG9ppEqIw==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY2PR03MB3439.apcprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(4636009)(39850400004)(396003)(136003)(346002)(366004)(376002)(451199018)(85182001)(36756003)(66446008)(7416002)(66556008)(76116006)(6512007)(38070700005)(110136005)(54906003)(4326008)(6506007)(122000001)(478600001)(38100700002)(71200400001)(2906002)(316002)(6486002)(53546011)(83380400001)(26005)(8936002)(41300700001)(86362001)(5660300002)(8676002)(64756008)(66476007)(66946007)(186003)(107886003)(2616005);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?Q0U0L2RXRE1lZi8rL1pHRFlqdXAyU2p2Qit0VFNvcThFUGRlWks5Zk52NWFZ?=
+ =?utf-8?B?aFA3LzZrbk1la1FFOWhQd0orSys3VEJYcnNuM1Z5ajJwQmRGWk5KbENVdWpO?=
+ =?utf-8?B?ZnZ3MnlQSEc0Q1JQeWp3WEhwQ1dZekwza0VldmZyM1AvcmdVRnFXUVVxZm8r?=
+ =?utf-8?B?VjdvTnJNc3dwSzJWMTdtMDlUUzViK053b0pnZnM4bHBySmZ2V1hTU0tDeVU5?=
+ =?utf-8?B?ZVpQNExQSWVIZGUvbEltc3AwQUhUb3QwOVE3QUErL3h0cXdJUmtCRzdzS0Fw?=
+ =?utf-8?B?ZEdmQWdmTlkwWkpET2kwMkJNQ0ljTUo1Zmo5K3lTUHRSQU84TWJqdEFETlVL?=
+ =?utf-8?B?VElCLzUrVnVRa0poSDdZZ1lsOTA5VUR2c09lcENzNldrQ1dHU1FrT3MzYmxL?=
+ =?utf-8?B?ZGloYWxiWXJYalJHbUwyK0V5SzBhb3V5eTVuYUMyK2tUcVBJSFlGeTljQ1R3?=
+ =?utf-8?B?R1k1R1pyQko4RFQzTlVnMTlIMWtRUDlKVWRpdld6OThyZWFzbFpUcm4ycVN3?=
+ =?utf-8?B?cjI5RGVmZTV1TXFMUWR2NzVCTkV3M3BWcGNuQi8ySDl4S1ExWDBEOSsvcjc3?=
+ =?utf-8?B?QXgwTi9DbTR2WE83N0ZodUZhWWNBVDFSdUI2c091UVBDVFJGZTAzMW9WeVVo?=
+ =?utf-8?B?ZDN2ZmV4blU2cjhYYVd5cEFQOUhRcXUwN2ZjSnlVL1d6V0wxYndtSmM0VHl0?=
+ =?utf-8?B?S2hlWkpWajJqVWkxUlhwQmpUZGFCVVdZd3V0aDBTY08zazk3N1laRmVuc2kv?=
+ =?utf-8?B?MTBEdEliSjNXZ2VNalZVM3ZtcFUwOVZvQzNDeTRxdUZ1NFNpM2dsaUlTSVYz?=
+ =?utf-8?B?djdxSDBDT0NjVjBwZVl2aEhXNkJzSWsreEdhQ3RYdCs4SytIRDZ5VlJMK25h?=
+ =?utf-8?B?OVp0eVJCYlpCZ3JYVTIvZ05UWnFKZkV0NE1EdU1NK1dLenNwa0N4aGZRalVq?=
+ =?utf-8?B?UTgwTmxMSjJPeWtDaTRIMEZGWWloa3Z3enA4SE94Q2c5RVo2MzZXWjI2WnRk?=
+ =?utf-8?B?dGxzQkxXRDFOZnlEVlpTdzdlOHRUN0xnbmNRN3J4YjJ2bW5OeGhYbGJNMEkz?=
+ =?utf-8?B?akFGWXp2TnNvWUdRUzBEQklSMk9EaGx0dHRGdWpqOGNhaFc3Q004NTRUSnJz?=
+ =?utf-8?B?M2FCa2RmeEhBbnFkQndpVjYrVGRWZDc3R2VPK1RxellReERqSmpsN3l4eENu?=
+ =?utf-8?B?dmhtc21RVFpibTlwV2NtUzB5QlBBdFZDSXFxT2xBajY1OFVjVmF1VnRSY2RU?=
+ =?utf-8?B?NEczaGx2dDB3NlpuUmFHV3pRUHp6U2MxM0FsT0xoaXpOa2lqNmVQOUk1M1U5?=
+ =?utf-8?B?RnJodytWR2p6VWdsVHFZaGpsQ0hFRHAvTDA4YW5nWWhWcEM2a01OdHAzcjla?=
+ =?utf-8?B?TW5RTWVUaXJ3WlBTZ3IzNDJKTUpESFZVMWJ6dWVZWjRZN3hxVm1YL0crT1VX?=
+ =?utf-8?B?QWUrbzFZN1ZhWjRiRlRoZTNhaHlIYmZESFNwZmlxZ3BDck4vdTVmZUxJSzFs?=
+ =?utf-8?B?NDQyV0NwZiszd0VtdmJzL090MDJjVTMvZzNod3R0UVovNGo3d21yYjh0c2JG?=
+ =?utf-8?B?MytCVW9GMFRBQ2o0bkp4cmtQZ2FNYkRreFJZY0hGQUdyQ3JyT0RkeEF0d0Jp?=
+ =?utf-8?B?VDB6SkRmQUNxMXdpL2hleU1oaWFYR052eU5HNEptTzlnSG45UzJyK2tpekx2?=
+ =?utf-8?B?M2kvMW1sdktVMVJQZmhPN2pPYllUa21neHA2M3dPN1ROVnpBRnNtM2xHalI0?=
+ =?utf-8?B?aWVSMSthcU9qazJFQ3JocFEzT1lyeHc1OWJEQXZFMEtXb2N5NU9wSGlWZG1W?=
+ =?utf-8?B?ZFpaY3JrTEN1V2d1UjlUREI5emFDaW1ZM0RWdGdSK3NlMjBTTTZQbTNqdnBV?=
+ =?utf-8?B?YjkwOHpjSHhYWVhKQmJ2N2FxQWxmcXIwK2J0bjZCdWMvVC8wRmpDMzRRNC8z?=
+ =?utf-8?B?ZG15ZjFmWjB5MVd5VXY0RmlzdVkzWFROZ29zZ2dhWDRyRHgxT3BVTHlseGdB?=
+ =?utf-8?B?bkM1Q1VrN1lmTUhMOGFnekxnem1Qb0FNc1NFZExnMS9hYnZ0NXZOaDFBcEty?=
+ =?utf-8?B?Zms0OXNnS0tUekdqcE5lUlorS2tmbDkxQktDbFJoNUdWUXNUWktPYU5XTjZG?=
+ =?utf-8?B?T1lSMXhYTDNhODNreElSeVVFTjVmaXlkSUlSMDJEbHdCZmgxTThsTyt6TXdQ?=
+ =?utf-8?B?U1E9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <67EF1038C570574DB1BFCFB78AC85AEB@apcprd03.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TY2PR03MB3439.apcprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 74ba0f9f-ef6d-414d-0938-08db07e61339
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Feb 2023 02:01:34.8965
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: a7687ede-7a6b-4ef6-bace-642f677fbe31
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: /X+z3tbPLhpNICCy7xNFem3DysMnzDMKdLjTUIro4Z4tM3lnLoh2ho941enBSbUbi2JD9uX5G/O1IwtKpuA3bQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR03MB6672
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: ChiYuan Huang <cy_huang@richtek.com>
-
-Add support for RT9759 smart cap divider charger.
-
-The RT9759 is a high efficiency and high charge current charger. The
-maximum charge current is up to 8A. It integrates a dual-phase charge
-pump core with ADC monitoring.
-
-Co-developed-by: Allen Chiang <allen_chiang@richtek.com>
-Signed-off-by: Allen Chiang <allen_chiang@richtek.com>
-Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
----
-Since v4:
-- Modify year from 2022 to 2023 for the license string.
-
-Since v3:
-- Fix patch title typo (from 'rt9471' to 'rt9759')
-- Remove unused R_VAC_OVP range.
-- Refer to ABI document, use 'status' to control battery charging, not 'online'
-- Refer to ABI document, use 'online' to indicate bus state
-
-Since v2:
-No change
-
----
- drivers/power/supply/Kconfig  |  15 ++
- drivers/power/supply/Makefile |   1 +
- drivers/power/supply/rt9759.c | 613 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 629 insertions(+)
- create mode 100644 drivers/power/supply/rt9759.c
-
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 0bbfe6a..2f24f29 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -785,6 +785,21 @@ config BATTERY_RT5033
- 	  The fuelgauge calculates and determines the battery state of charge
- 	  according to battery open circuit voltage.
- 
-+config CHARGER_RT9759
-+	tristate "Richtek RT9759 smart cap divider charger driver"
-+	depends on I2C
-+	select REGMAP_I2C
-+	select LINEAR_RANGES
-+	help
-+	  This adds support for Richtek RT9759 smart cap divider charger driver.
-+	  It's a high efficiency and high charge current charger. the device
-+	  integrates smart cap divider topology with 9-channel high speed
-+	  ADCs that can provide input and output voltage, current and
-+	  temperature monitoring.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called rt9759.
-+
- config CHARGER_RT9455
- 	tristate "Richtek RT9455 battery charger driver"
- 	depends on I2C
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 0ee8653..b872c06 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -56,6 +56,7 @@ obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
- obj-$(CONFIG_BATTERY_MAX1721X)	+= max1721x_battery.o
- obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
- obj-$(CONFIG_BATTERY_RT5033)	+= rt5033_battery.o
-+obj-$(CONFIG_CHARGER_RT9759)	+= rt9759.o
- obj-$(CONFIG_CHARGER_RT9455)	+= rt9455_charger.o
- obj-$(CONFIG_BATTERY_S3C_ADC)	+= s3c_adc_battery.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
-diff --git a/drivers/power/supply/rt9759.c b/drivers/power/supply/rt9759.c
-new file mode 100644
-index 00000000..2b35199
---- /dev/null
-+++ b/drivers/power/supply/rt9759.c
-@@ -0,0 +1,613 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (C) 2023 Richtek Technology Corp.
-+ *
-+ * Authors: Allen Chiang <allen_chiang@richtek.com>
-+ *          ChiYuan Huang <cy_huang@richtek.com>
-+ */
-+
-+#include <linux/i2c.h>
-+#include <linux/kernel.h>
-+#include <linux/linear_range.h>
-+#include <linux/interrupt.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+#include <linux/sysfs.h>
-+#include <linux/util_macros.h>
-+
-+#define RT9759_REG_VBATOVP	0x00
-+#define RT9759_REG_IBATOCP	0x02
-+#define RT9759_REG_VBUSOVP	0x06
-+#define RT9759_REG_IBUSOCPUCP	0x08
-+#define RT9759_REG_CONVST	0x0A
-+#define RT9759_REG_CHGCTL0	0x0B
-+#define RT9759_REG_CHGCTL1	0x0C
-+#define RT9759_REG_INTSTAT	0x0D
-+#define RT9759_REG_FLTFLAG	0x11
-+#define RT9759_REG_DEVINFO	0x13
-+#define RT9759_REG_ADCCTL	0x14
-+#define RT9759_REG_IBUSADC	0x16
-+#define RT9759_REG_REGCTL	0x2B
-+#define RT9759_REG_OTHER4	0x33
-+
-+#define RT9759_VBUSUCP_MASK	BIT(4)
-+#define RT9759_TDIEOTP_MASK	BIT(7)
-+#define RT9759_WDT_MASK		BIT(3)
-+#define RT9759_BUSBATOVP_MASK	(BIT(7) | BIT(5))
-+#define RT9759_BUSBATOCP_MASK	(BIT(6) | BIT(4))
-+#define RT9759_ADCEN_MASK	BIT(7)
-+#define RT9759_ADCONCE_MASK	BIT(6)
-+
-+#define RT9759_DEVID		0x08
-+#define RT9759_ADC_CONVTIME	2000
-+#define RT9759_ADC_MAXWAIT	16000
-+
-+enum rt9759_adc_chan {
-+	ADC_IBUS = 0,
-+	ADC_VBUS,
-+	ADC_VAC,
-+	ADC_VOUT,
-+	ADC_VBAT,
-+	ADC_IBAT,
-+	ADC_TSBUS,
-+	ADC_TSBAT,
-+	ADC_TDIE,
-+	ADC_MAX_CHANNEL
-+};
-+
-+enum rt9759_fields {
-+	F_VBATOVP = 0,
-+	F_IBATOCP,
-+	F_VBUSOVP,
-+	F_IBUSOCP,
-+	F_SWITCHING,
-+	F_REG_RST,
-+	F_WDT_DIS,
-+	F_WDT_TMR,
-+	F_CHG_EN,
-+	F_VAC_INSERT,
-+	F_DEV_ID,
-+	F_ADC_EN,
-+	F_IBAT_RSEN,
-+	F_MAX_FIELD
-+};
-+
-+enum rt9759_ranges {
-+	R_VBATOVP = 0,
-+	R_IBATOCP,
-+	R_VBUSOVP,
-+	R_IBUSOCP,
-+	R_MAX_RANGE
-+};
-+
-+static const struct reg_field rt9759_chg_fields[F_MAX_FIELD] = {
-+	[F_VBATOVP]	= REG_FIELD(RT9759_REG_VBATOVP, 0, 5),
-+	[F_IBATOCP]	= REG_FIELD(RT9759_REG_IBATOCP, 0, 6),
-+	[F_VBUSOVP]	= REG_FIELD(RT9759_REG_VBUSOVP, 0, 6),
-+	[F_IBUSOCP]	= REG_FIELD(RT9759_REG_IBUSOCPUCP, 0, 3),
-+	[F_SWITCHING]	= REG_FIELD(RT9759_REG_CONVST, 2, 2),
-+	[F_REG_RST]	= REG_FIELD(RT9759_REG_CHGCTL0, 7, 7),
-+	[F_WDT_DIS]	= REG_FIELD(RT9759_REG_CHGCTL0, 2, 2),
-+	[F_WDT_TMR]	= REG_FIELD(RT9759_REG_CHGCTL0, 0, 1),
-+	[F_CHG_EN]	= REG_FIELD(RT9759_REG_CHGCTL1, 7, 7),
-+	[F_VAC_INSERT]	= REG_FIELD(RT9759_REG_INTSTAT, 2, 2),
-+	[F_DEV_ID]	= REG_FIELD(RT9759_REG_DEVINFO, 0, 3),
-+	[F_ADC_EN]	= REG_FIELD(RT9759_REG_ADCCTL, 7, 7),
-+	[F_IBAT_RSEN]	= REG_FIELD(RT9759_REG_REGCTL, 1, 1),
-+};
-+
-+/* All converted to microvolt or microamp */
-+static const struct linear_range rt9759_chg_ranges[R_MAX_RANGE] = {
-+	LINEAR_RANGE_IDX(R_VBATOVP, 3500000, 0, 63, 25000),
-+	LINEAR_RANGE_IDX(R_IBATOCP, 2000000, 0, 80, 100000),
-+	LINEAR_RANGE_IDX(R_VBUSOVP, 6000000, 0, 127, 50000),
-+	LINEAR_RANGE_IDX(R_IBUSOCP, 1000000, 0, 15, 250000),
-+};
-+
-+struct charger_event {
-+	unsigned int ucp_flag;
-+	unsigned int conv_flag;
-+	unsigned int wdt_flag;
-+	unsigned int flt_flag;
-+};
-+
-+struct rt9759_data {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	struct regmap_field *rm_fields[F_MAX_FIELD];
-+	struct power_supply *psy;
-+	struct mutex adc_lock;
-+	struct power_supply_desc psy_desc;
-+	struct charger_event chg_evt;
-+	unsigned int rg_resistor;
-+	unsigned int real_resistor;
-+};
-+
-+static int rt9759_get_value_by_field_range(struct rt9759_data *data,
-+					   enum rt9759_fields field,
-+					   enum rt9759_ranges rsel, int *val)
-+{
-+	const struct linear_range *range = rt9759_chg_ranges + rsel;
-+	unsigned int sel;
-+	int ret;
-+
-+	ret = regmap_field_read(data->rm_fields[field], &sel);
-+	if (ret)
-+		return ret;
-+
-+	return linear_range_get_value(range, sel, val);
-+}
-+
-+static int rt9759_set_value_by_field_range(struct rt9759_data *data,
-+					   enum rt9759_fields field,
-+					   enum rt9759_ranges rsel, int val)
-+{
-+	const struct linear_range *range = rt9759_chg_ranges + rsel;
-+	unsigned int sel;
-+
-+	linear_range_get_selector_within(range, val, &sel);
-+	return regmap_field_write(data->rm_fields[field], sel);
-+}
-+
-+static int rt9759_get_adc(struct rt9759_data *data, enum rt9759_adc_chan chan,
-+			  int *val)
-+{
-+	struct regmap *regmap = data->regmap;
-+	unsigned int reg_addr = RT9759_REG_IBUSADC + chan * 2;
-+	unsigned int mask = RT9759_ADCEN_MASK | RT9759_ADCONCE_MASK;
-+	unsigned int adc_cntl;
-+	__be16 raws;
-+	int scale, ret;
-+
-+	mutex_lock(&data->adc_lock);
-+
-+	ret = regmap_update_bits(regmap, RT9759_REG_ADCCTL, mask, mask);
-+	if (ret)
-+		goto adc_unlock;
-+
-+	ret = regmap_read_poll_timeout(regmap, RT9759_REG_ADCCTL, adc_cntl,
-+				       !(adc_cntl & RT9759_ADCEN_MASK),
-+				       RT9759_ADC_CONVTIME, RT9759_ADC_MAXWAIT);
-+	if (ret && ret != -ETIMEDOUT)
-+		goto adc_unlock;
-+
-+	ret = regmap_raw_read(regmap, reg_addr, &raws, sizeof(raws));
-+	if (ret)
-+		goto adc_unlock;
-+
-+	/*
-+	 * TDIE LSB 0.5'c, others LSB 1000uV or 1000uA.
-+	 * Rsense ratio is needed for IBAT channel
-+	 */
-+	if (chan == ADC_TDIE)
-+		scale = 5;
-+	else if (chan == ADC_IBAT)
-+		scale = 1000 * data->rg_resistor / data->real_resistor;
-+	else
-+		scale = 1000;
-+
-+
-+	*val = be16_to_cpu(raws) * scale;
-+
-+adc_unlock:
-+	regmap_update_bits(regmap, RT9759_REG_ADCCTL, mask, 0);
-+
-+	mutex_unlock(&data->adc_lock);
-+
-+	return ret;
-+}
-+
-+static int rt9759_get_switching_state(struct rt9759_data *data, int *status)
-+{
-+	unsigned int switching_state;
-+	int ret;
-+
-+	ret = regmap_field_read(data->rm_fields[F_SWITCHING], &switching_state);
-+	if (ret)
-+		return ret;
-+
-+	if (switching_state)
-+		*status = POWER_SUPPLY_STATUS_CHARGING;
-+	else
-+		*status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+
-+	return 0;
-+}
-+
-+static int rt9759_get_charger_health(struct rt9759_data *data)
-+{
-+	struct charger_event *evt = &data->chg_evt;
-+
-+	if (evt->ucp_flag & RT9759_VBUSUCP_MASK)
-+		return POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
-+
-+	if (evt->conv_flag & RT9759_TDIEOTP_MASK)
-+		return POWER_SUPPLY_HEALTH_OVERHEAT;
-+
-+	if (evt->wdt_flag & RT9759_WDT_MASK)
-+		return POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE;
-+
-+	if (evt->flt_flag & RT9759_BUSBATOVP_MASK)
-+		return POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+
-+	if (evt->flt_flag & RT9759_BUSBATOCP_MASK)
-+		return POWER_SUPPLY_HEALTH_OVERCURRENT;
-+
-+	return POWER_SUPPLY_HEALTH_GOOD;
-+}
-+
-+static const char * const rt9759_manufacturer	= "Richtek Technology Corp.";
-+static const char * const rt9759_model		= "RT9759";
-+
-+static int rt9759_psy_get_property(struct power_supply *psy,
-+				   enum power_supply_property psp,
-+				   union power_supply_propval *val)
-+{
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int *pval = &val->intval;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		return rt9759_get_switching_state(data, pval);
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		*pval = rt9759_get_charger_health(data);
-+		return 0;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		return regmap_field_read(data->rm_fields[F_VAC_INSERT], pval);
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-+		return rt9759_get_value_by_field_range(data, F_VBUSOVP, R_VBUSOVP, pval);
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		return rt9759_get_adc(data, ADC_VBUS, pval);
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return rt9759_get_value_by_field_range(data, F_IBUSOCP, R_IBUSOCP, pval);
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		return rt9759_get_adc(data, ADC_IBUS, pval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		return rt9759_get_value_by_field_range(data, F_VBATOVP, R_VBATOVP, pval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return rt9759_get_value_by_field_range(data, F_IBATOCP, R_IBATOCP, pval);
-+	case POWER_SUPPLY_PROP_TEMP:
-+		return rt9759_get_adc(data, ADC_TDIE, pval);
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = rt9759_model;
-+		return 0;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = rt9759_manufacturer;
-+		return 0;
-+	default:
-+		return -ENODATA;
-+	}
-+}
-+
-+static int rt9759_psy_set_property(struct power_supply *psy,
-+				   enum power_supply_property psp,
-+				   const union power_supply_propval *val)
-+{
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int intval = val->intval;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		/* Before enabled, clear stored event */
-+		if (intval)
-+			memset(&data->chg_evt, 0, sizeof(data->chg_evt));
-+
-+		return regmap_field_write(data->rm_fields[F_CHG_EN], !!intval);
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-+		return rt9759_set_value_by_field_range(data, F_VBUSOVP, R_VBUSOVP, intval);
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return rt9759_set_value_by_field_range(data, F_IBUSOCP, R_IBUSOCP, intval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		return rt9759_set_value_by_field_range(data, F_VBATOVP, R_VBATOVP, intval);
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return rt9759_set_value_by_field_range(data, F_IBATOCP, R_IBATOCP, intval);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static const enum power_supply_property rt9759_psy_properties[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_MAX,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
-+static int rt9759_psy_property_is_writeable(struct power_supply *psy,
-+					    enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		return 1;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+static const unsigned int rt9759_wdt_millisecond[] = { 500, 1000, 5000, 30000 };
-+
-+static ssize_t watchdog_timer_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	unsigned int wdt_tmr_now = 0, wdt_sel, wdt_dis;
-+	int ret;
-+
-+	ret = regmap_field_read(data->rm_fields[F_WDT_DIS], &wdt_dis);
-+	if (ret)
-+		return ret;
-+
-+	if (!wdt_dis) {
-+		ret = regmap_field_read(data->rm_fields[F_WDT_TMR], &wdt_sel);
-+		if (ret)
-+			return ret;
-+
-+		wdt_tmr_now = rt9759_wdt_millisecond[wdt_sel];
-+	}
-+
-+	return sysfs_emit(buf, "%d\n", wdt_tmr_now);
-+}
-+
-+static ssize_t watchdog_timer_store(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t count)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	unsigned int wdt_set, wdt_sel;
-+	int ret;
-+
-+	ret = kstrtouint(buf, 10, &wdt_set);
-+	if (ret)
-+		return ret;
-+
-+	ret = regmap_field_write(data->rm_fields[F_WDT_DIS], 1);
-+	if (ret)
-+		return ret;
-+
-+	wdt_sel = find_closest(wdt_set, rt9759_wdt_millisecond,
-+			       ARRAY_SIZE(rt9759_wdt_millisecond));
-+
-+	ret = regmap_field_write(data->rm_fields[F_WDT_TMR], wdt_sel);
-+	if (ret)
-+		return ret;
-+
-+	if (wdt_set) {
-+		ret = regmap_field_write(data->rm_fields[F_WDT_DIS], 0);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return count;
-+}
-+
-+static ssize_t battery_voltage_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int vbat_now, ret;
-+
-+	ret = rt9759_get_adc(data, ADC_VBAT, &vbat_now);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%d\n", vbat_now);
-+}
-+
-+static ssize_t battery_current_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct power_supply *psy = to_power_supply(dev);
-+	struct rt9759_data *data = power_supply_get_drvdata(psy);
-+	int ibat_now, ret;
-+
-+	ret = rt9759_get_adc(data, ADC_IBAT, &ibat_now);
-+	if (ret)
-+		return ret;
-+
-+	return sysfs_emit(buf, "%d\n", ibat_now);
-+}
-+
-+static DEVICE_ATTR_RW(watchdog_timer);
-+static DEVICE_ATTR_RO(battery_voltage);
-+static DEVICE_ATTR_RO(battery_current);
-+
-+static struct attribute *rt9759_sysfs_attrs[] = {
-+	&dev_attr_watchdog_timer.attr,
-+	&dev_attr_battery_voltage.attr,
-+	&dev_attr_battery_current.attr,
-+	NULL
-+};
-+
-+ATTRIBUTE_GROUPS(rt9759_sysfs);
-+
-+static int rt9759_register_psy(struct rt9759_data *data)
-+{
-+	struct device *dev = data->dev;
-+	struct power_supply_desc *desc = &data->psy_desc;
-+	struct power_supply_config cfg = {};
-+	char *psy_name;
-+
-+	cfg.drv_data = data;
-+	cfg.of_node = dev->of_node;
-+	cfg.attr_grp = rt9759_sysfs_groups;
-+
-+	psy_name = devm_kasprintf(dev, GFP_KERNEL, "rt9759-%s", dev_name(dev));
-+	if (!psy_name)
-+		return -ENOMEM;
-+
-+	desc->name = psy_name;
-+	desc->type = POWER_SUPPLY_TYPE_USB;
-+	desc->properties = rt9759_psy_properties;
-+	desc->num_properties = ARRAY_SIZE(rt9759_psy_properties);
-+	desc->property_is_writeable = rt9759_psy_property_is_writeable;
-+	desc->get_property = rt9759_psy_get_property;
-+	desc->set_property = rt9759_psy_set_property;
-+
-+	data->psy = devm_power_supply_register(dev, desc, &cfg);
-+
-+	return PTR_ERR_OR_ZERO(data->psy);
-+}
-+
-+static irqreturn_t rt9759_irq_handler(int irq, void *devid)
-+{
-+	struct rt9759_data *data = devid;
-+	struct regmap *regmap = data->regmap;
-+	struct charger_event *evt = &data->chg_evt;
-+	int ret;
-+
-+	ret = regmap_read(regmap, RT9759_REG_IBUSOCPUCP, &evt->ucp_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	ret = regmap_read(regmap, RT9759_REG_CONVST, &evt->conv_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	ret = regmap_read(regmap, RT9759_REG_CHGCTL0, &evt->wdt_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	ret = regmap_read(regmap, RT9759_REG_FLTFLAG, &evt->flt_flag);
-+	if (ret)
-+		return IRQ_NONE;
-+
-+	power_supply_changed(data->psy);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int rt9759_config_batsense_resistor(struct rt9759_data *data)
-+{
-+	unsigned int shunt_resistor_uohms = 2000, rsense_sel;
-+
-+	device_property_read_u32(data->dev, "shunt-resistor-micro-ohms",
-+				 &shunt_resistor_uohms);
-+
-+	if (!shunt_resistor_uohms || shunt_resistor_uohms > 5000)
-+		return -EINVAL;
-+
-+	data->real_resistor = shunt_resistor_uohms;
-+
-+	if (shunt_resistor_uohms <= 2000) {
-+		rsense_sel = 0;
-+		data->rg_resistor = 2000;
-+	} else {
-+		rsense_sel = 1;
-+		data->rg_resistor = 5000;
-+	}
-+
-+	return regmap_field_write(data->rm_fields[F_IBAT_RSEN], rsense_sel);
-+}
-+
-+static const struct reg_sequence rt9759_init_regs[] = {
-+	REG_SEQ(0x0B, 0x80, 1000), /* REG_RESET */
-+	REG_SEQ0(0x05, 0x00), /* VAC_OVP = 11V */
-+	REG_SEQ0(0x0B, 0x44), /* WDT_DIS = 1 */
-+	REG_SEQ0(0x0C, 0x06), /* TSBUS/TSBAT OTP_DIS = 1 */
-+	REG_SEQ0(0x0F, 0xF9), /* DIS ALARM & ADC_DONE */
-+	REG_SEQ0(0x14, 0x00), /* IBUS_ADC_DIS = 0 */
-+};
-+
-+static const struct regmap_config rt9759_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = RT9759_REG_OTHER4,
-+};
-+
-+static int rt9759_probe(struct i2c_client *i2c)
-+{
-+	struct device *dev = &i2c->dev;
-+	struct rt9759_data *data;
-+	struct regmap *regmap;
-+	unsigned int devid;
-+	int ret;
-+
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->dev = dev;
-+	mutex_init(&data->adc_lock);
-+	i2c_set_clientdata(i2c, data);
-+
-+	regmap = devm_regmap_init_i2c(i2c, &rt9759_regmap_config);
-+	if (IS_ERR(regmap))
-+		return dev_err_probe(dev, PTR_ERR(regmap), "Failed to init regmap\n");
-+
-+	data->regmap = regmap;
-+
-+	ret = devm_regmap_field_bulk_alloc(dev, regmap, data->rm_fields,
-+					   rt9759_chg_fields,
-+					   ARRAY_SIZE(rt9759_chg_fields));
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to alloc regmap fields\n");
-+
-+	ret = regmap_field_read(data->rm_fields[F_DEV_ID], &devid);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Filaed to read devid\n");
-+
-+	if (devid != RT9759_DEVID)
-+		return dev_err_probe(dev, -ENODEV, "Incorrect VID 0x%02x\n", devid);
-+
-+	ret = regmap_register_patch(regmap, rt9759_init_regs,
-+				    ARRAY_SIZE(rt9759_init_regs));
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to init registers\n");
-+
-+	ret = rt9759_config_batsense_resistor(data);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to config batsense resistor\n");
-+
-+	ret = rt9759_register_psy(data);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to init power supply\n");
-+
-+	return devm_request_threaded_irq(dev, i2c->irq, NULL, rt9759_irq_handler,
-+					 IRQF_ONESHOT, dev_name(dev), data);
-+}
-+
-+static void rt9759_shutdown(struct i2c_client *i2c)
-+{
-+	struct rt9759_data *data = i2c_get_clientdata(i2c);
-+
-+	regmap_field_write(data->rm_fields[F_REG_RST], 1);
-+}
-+
-+static const struct of_device_id rt9759_device_match_table[] = {
-+	{ .compatible = "richtek,rt9759" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, rt9759_device_match_table);
-+
-+static struct i2c_driver rt9759_charger_driver = {
-+	.driver = {
-+		.name = "rt9759",
-+		.of_match_table = rt9759_device_match_table,
-+	},
-+	.probe_new = rt9759_probe,
-+	.shutdown = rt9759_shutdown,
-+};
-+module_i2c_driver(rt9759_charger_driver);
-+
-+MODULE_DESCRIPTION("Richtek RT9759 charger driver");
-+MODULE_AUTHOR("Allen Chiang <allen_chiang@richtek.com>");
-+MODULE_AUTHOR("ChiYuan Huang <cy_huang@richtek.com>");
-+MODULE_LICENSE("GPL");
--- 
-2.7.4
-
+SGkgTWF0dGhpYXMgU2lyLA0KDQoNCk9uIFRodSwgMjAyMy0wMi0wMiBhdCAxMToyOSArMDEwMCwg
+TWF0dGhpYXMgQnJ1Z2dlciB3cm90ZToNCj4g5L2g5aW977yMDQoNCkkgZ290IHNob2NrIGFuZCB0
+aG91Z2h0IHNvbWVvbmUgdXNlZCB5b3VyIG5hbWUgdG8gcmVwbHkuIEhvd2V2ZXIsDQp5b3VyIGVt
+YWlsIGFjY291bnQgaGVscHMgbWUgY2xlYXIgbXkgbWluZC4gSGFoYS4uIE5pY2UgYW5kIHdhcm0g
+dG8gc2VlIG1hbmRhcmluDQpvbiBwYXRjaHdvcmsuIEl0J3Mgc28gZnJlc2ggYW5kIGV4Y2l0aW5n
+IDotKS4NCg0KPiANCj4gT24gMDEvMDIvMjAyMyAxMzoyOCwgUm9nZXIgTHUgKOmZuOeRnuWCkSkg
+d3JvdGU6DQo+ID4gSGkgTWF0dGhpYXMgU2lyLA0KPiA+IA0KPiA+IE9uIFR1ZSwgMjAyMy0wMS0z
+MSBhdCAxNDoxOSArMDEwMCwgTWF0dGhpYXMgQnJ1Z2dlciB3cm90ZToNCj4gPiA+IA0KPiA+ID4g
+T24gMTEvMDEvMjAyMyAwODo0NSwgUm9nZXIgTHUgd3JvdGU6DQo+ID4gPiA+IEluIE1lZGlhVGVr
+IEhXIGRlc2lnbiwgc3ZzIGFuZCB0aGVybWFsIGJvdGggdXNlIHRoZSBzYW1lIGNsayBzb3VyY2Uu
+DQo+ID4gPiA+IEl0IG1lYW5zIHRoYXQgc3ZzIGNsayByZWZlcmVuY2UgY291bnQgZnJvbSBDQ0Yg
+aW5jbHVkZXMgdGhlcm1hbCBjb250cm9sDQo+ID4gPiA+IGNvdW50cy4gVGhhdCBtYWtlcyBzdnMg
+ZHJpdmVyIGNvbmZ1c2Ugd2hldGhlciBpdCBkaXNhYmxlZCBzdnMncyBtYWluIGNsaw0KPiA+ID4g
+PiBvciBub3QgZnJvbSBDQ0YncyBwZXJzcGVjdGl2ZSBhbmQgbGVhZCB0byB0dXJuIG9mZiB0aGVp
+ciBzaGFyZWQgY2xrDQo+ID4gPiA+IHVuZXhwZWN0ZWRseS4gVGhlcmVmb3JlLCB3ZSBhZGQgc3Zz
+IGNsayBjb250cm9sIEFQSXMgdG8gbWFrZSBzdXJlIHN2cydzDQo+ID4gPiA+IG1haW4gY2xrIGlz
+IGNvbnRyb2xsZWQgd2VsbCBieSBzdnMgZHJpdmVyIGl0c2VsZi4NCj4gPiA+ID4gDQo+ID4gPiA+
+IEhlcmUgaXMgYSBORyBleGFtcGxlLiBSZWx5IG9uIENDRidzIHJlZmVyZW5jZSBjb3VudCBhbmQg
+Y2F1c2UgcHJvYmxlbS4NCj4gPiA+ID4gDQo+ID4gPiA+IHRoZXJtYWwgcHJvYmUgKGNsayByZWYg
+PSAxKQ0KPiA+ID4gPiAtPiBzdnMgcHJvYmUgKGNsayByZWYgPSAyKQ0KPiA+ID4gPiAgICAgIC0+
+IHN2cyBzdXNwZW5kIChjbGsgcmVmID0gMSkNCj4gPiA+ID4gICAgICAgICAtPiB0aGVybWFsIHN1
+c3BlbmQgKGNsayByZWYgPSAwKQ0KPiA+ID4gPiAgICAgICAgIC0+IHRoZXJtYWwgcmVzdW1lIChj
+bGsgcmVmID0gMSkNCj4gPiA+ID4gICAgICAtPiBzdnMgcmVzdW1lIChlbmNvdW50ZXIgZXJyb3Is
+IGNsayByZWYgPSAxKQ0KPiA+ID4gPiAgICAgIC0+IHN2cyBzdXNwZW5kIChjbGsgcmVmID0gMCkN
+Cj4gPiA+ID4gICAgICAgICAtPiB0aGVybWFsIHN1c3BlbmQgKEZhaWwgaGVyZSwgdGhlcm1hbCBI
+VyBjb250cm9sIHcvbyBjbGspDQo+ID4gPiA+IA0KPiA+ID4gPiBGaXhlczogYTgyNWQ3MmY3NGEz
+ICgic29jOiBtZWRpYXRlazogZml4IG1pc3NpbmcgY2xrX2Rpc2FibGVfdW5wcmVwYXJlKCkNCj4g
+PiA+ID4gb24NCj4gPiA+ID4gZXJyIGluIHN2c19yZXN1bWUoKSIpDQo+ID4gPiA+IFNpZ25lZC1v
+ZmYtYnk6IFJvZ2VyIEx1IDxyb2dlci5sdUBtZWRpYXRlay5jb20+DQo+ID4gPiANCj4gPiA+IFRo
+YXQgbG9va3Mgd3JvbmcuIEFsdGhvdWdoIEkgZG9uJ3Qgb3V0IG9mIG15IG1pbmQsIHRoZXJlIHNo
+b3VsZCBiZSBhIHdheQ0KPiA+ID4gdG8NCj4gPiA+IHRlbGwNCj4gPiA+IHRoZSBjbG9jayBmcmFt
+ZXdvcmsgdGhhdCB0aGlzIGNsb2NrIGlzIHNoYXJlZCBiZXR3ZWVuIHNldmVyYWwgZGV2aWNlcy4N
+Cj4gPiA+IA0KPiA+ID4gSSB3b25kZXIgaWYgdXNpbmcgY2xrX2VuYWJsZSBhbmQgY2xrX2Rpc2Fi
+bGUgaW4gc3ZzX3Jlc3VtZS9zdXNwZW5kDQo+ID4gPiB3b3VsZG4ndA0KPiA+ID4gYmUNCj4gPiA+
+IGVub3VnaC4NCj4gPiANCj4gPiBPaCB5ZXMsIENvbW1vbiBDbG9jayBGcmFtZXdvcmsgKENDRikg
+a25vd3MgdGhlIGNsb2NrIHNoYXJlZCBiZXR3ZWVuIHNldmVyYWwNCj4gPiBkZXZpY2VzIGFuZCBt
+YWludGFpbnMgY2xvY2sgIm9uL29mZiIgYnkgcmVmZXJlbmNlIGNvdW50Lg0KPiA+IA0KPiANCj4g
+VGhlIHRoaW5nIGlzIGlmIHlvdSB1c2UgY2xrX3ByZXBhcmVfZW5hYmxlIHRoZW4gdGhlIGNsb2Nr
+IGZyYW1ld29yayBjaGVjaydzDQo+IGlmIA0KPiB0aGUgY2xvY2sgaXMgYWxyZWFkeSBwcmVwYXJl
+ZCwgd2hpY2ggY291bGQgaGFwcGVuIGxpa2UgeW91IGRlc2NyaWJlZCBpbiB0aGUgDQo+IHN2c19y
+ZXN1bWUgKGVuY291bnQgZXJyb3IpIGNhc2UgaW4gdGhlIGNvbW1pdCBtZXNzYWdlLiBUaGUgcXVl
+c3Rpb24gaXMsIGNhbid0DQo+IHdlIA0KPiBqdXN0IHVzZSBjbGtfZW5hYmxlIGFuZCBjbGtfZGlz
+YWJsZSBpbiByZXN1bWUvc3VzcGVuZCBhbmQgb25seSBwcmVwYXJlIHRoZQ0KPiBjbG9jayANCj4g
+aW4gdGhlIHByb2JlIGZ1bmN0aW9uPw0KDQpXZSdsbCB0aGluayBpZiB0aGlzIGNhbiBmaXggdGhl
+IHByb2JsZW0uIFRoYW5rcyBmb3IgdGhlIGFkdmljZSB2ZXJ5IG11Y2guDQoNCj4gDQo+ID4gV2Ug
+Y29uY2VybiBob3cgdG8gc3RvcCBydW5uaW5nIHN2c19zdXNwZW5kKCkgd2hlbiBzdnMgY2xrIGlz
+IGFscmVhZHkNCj4gPiBkaXNhYmxlZCBieQ0KPiA+IHN2c19yZXN1bWUoKS4gVGFrZSBhbiBleGFt
+cGxlIGFzIGJlbG93LCBpZiB3ZSByZWZlcnMgdG8gX19jbGtfaXNfZW5hYmxlZCgpDQo+ID4gcmVz
+dWx0IGZvciBrbm93aW5nIHN2cyBjbGsgc3RhdHVzLCBpdCB3aWxsIHJldHVybiAidHJ1ZSIgYWxs
+IHRoZSB0aW1lDQo+ID4gYmVjYXVzZQ0KPiA+IHRoZXJtYWwgY2xrIGlzIHN0aWxsIG9uLiBUaGlz
+IGNhdXNlcyB0aGUgcHJvYmxlbSBtZW50aW9uZWQgaW4gY29tbWl0DQo+ID4gbWVzc2FnZS4NCj4g
+PiANCj4gDQo+IEkgd291bGQgZXhwZWN0IHRoYXQgdGhlIGtlcm5lbCB0YWtlcyBjYXJlIHRoYXQg
+d2UgY2FuJ3QgZW50ZXIgYSByZXN1bWUgcGF0aA0KPiBmb3IgDQo+IGEgZGV2aWNlIGJlZm9yZSB0
+aGUgc3VzcGVuZCBwYXRoIGhhcyBmaW5pc2hlZC4gSG9uZXN0bHkgSSBkb24ndCByZWFsbHkgDQo+
+IHVuZGVyc3RhbmQgdGhlIHByb2JsZW0gaGVyZS4gSXQgc2VlbXMgc29tZXRoaW5nIGRpZmZlcmVu
+dCB0aGVuIHdoYXQgeW91IA0KPiBkZXNjcmliZWQgaW4gdGhlIGNvbW1pdCBtZXNzYWdlLg0KPiAN
+Cj4gUGxlYXNlIGhlbHAgbWUgdW5kZXJzdGFuZCBiZXR0ZXIuDQoNCkkgc2VlLiBUaGlzIHBhdGNo
+IHRpdGxlIG5lZWRzIHRvIGJlIGNoYW5nZWQgdG8gImF2b2lkIHR1cm5pbmcgb2ZmIHN2cyBjbGsg
+dHdpY2UNCnVuZXhwZWN0ZWRseSIgZm9yIHBvaW50aW5nIG91dCB0aGUgcHJvYmxlbSBwcmVjaXNl
+bHkuIFdlIHNhdyBhIGxvb3Bob2xlIHRoYXQgc3ZzDQpjbGsgbWlnaHQgYmUgdHVybmVkIG9mZiBp
+biBzdnNfcmVzdW1lKCkgZmlyc3QgYW5kIGluIHN2c19zdXNwZW5kKCkgYWdhaW4gd2l0aG91dA0K
+ZW5hYmxpbmcgc3ZzIGNsayBkdXJpbmcgdGhlc2UgdGhlIHByb2Nlc3MuIFRoZXJlZm9yZSwgd2Ug
+dHJ5IHRvIGZpeCBpdCBieSB0aGlzDQpwYXRjaC4gQmVsb3cgaXMgb3VyIHRoaW5raW5nIHByb2Nl
+c3MgdG8gZXhwbGFpbiBob3cgd2UgZ290IGhlcmUuDQoNCjEuIChhYmFuZG9uZWQpIFdlIGFkZCBf
+X2Nsa19pc19lbmFibGVkKCkgY2hlY2sgaW4gc3ZzX3N1c3BlbmQoKSB0byBwcmV2ZW50IHN2cw0K
+Y2xrIGZyb20gYmVpbmcgdHVybmVkIG9mZiB0d2ljZSB3aGVuIHN2c19yZXN1bWUoKSB0dXJuZWQg
+b2ZmIHN2cyBjbGsgaW4gdGhlDQplcnJvci1oYW5kbGluZyBwcm9jZXNzLiBOb25ldGhlbGVzcywg
+d2UgbWV0IHRoZSBORyBjYXNlIGluIHRoZSBjb21taXQgbWVzc2FnZS4NCjIuIChjdXJyZW50IHBh
+dGNoKSBXZSBhZGQgc3ZzIGNsayBjb250cm9sIGhpbnQgdG8gdW5kZXJzdGFuZCBpZiB3ZSBuZWVk
+IHRvIHJ1bg0Kc3ZzX3N1c3BlbmQoKSBvciBub3QgaWYgc3ZzX3Jlc3VtZSgpIHR1cm5lZCBvZmYg
+c3ZzIGNsayBiZWZvcmUuDQoNCj4gDQo+IOiwouiwou+8jOWGjeingQ0KDQo6LSkNCg0KDQpTaW5j
+ZXJlbHksDQpSb2dlciBMdQ0K
