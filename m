@@ -2,355 +2,138 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 927B3C05027
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 17:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE89BC636D4
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 17:22:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229875AbjBFRB3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Feb 2023 12:01:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38760 "EHLO
+        id S229990AbjBFRW1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:22:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229607AbjBFRB1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 12:01:27 -0500
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 802562BED0
-        for <linux-pm@vger.kernel.org>; Mon,  6 Feb 2023 09:00:56 -0800 (PST)
-Received: by mail-ed1-x52d.google.com with SMTP id l14so2426668eds.4
-        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2023 09:00:56 -0800 (PST)
+        with ESMTP id S229817AbjBFRW1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 12:22:27 -0500
+Received: from mail-il1-x132.google.com (mail-il1-x132.google.com [IPv6:2607:f8b0:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99B4459D2
+        for <linux-pm@vger.kernel.org>; Mon,  6 Feb 2023 09:22:25 -0800 (PST)
+Received: by mail-il1-x132.google.com with SMTP id j12so1485042ila.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2023 09:22:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ragnatech-se.20210112.gappssmtp.com; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=a6q/V+E4w1GCT3UIo80p/1jk/eyzfrAH7kZCB3dF6EI=;
-        b=uCfTnrbkPsLAWL6gOh5JY9TMsdhSIK82e1NiuB7IshsdmrWsM5Hjr6FwUqZDOfVwE5
-         pvNIBn/sDzqqN32lvfDoOmAh45PK1wSUkPZLuoc6AEvpCgbhlvhcegjr+D6AEUDXeYYW
-         crvJhRIWcpDQskPdi0OoQGliNpJBpBY6VIzwBot4iZgUgiUf3fIUlETRkLbLODtr4PhJ
-         3TWSPMBYPdaLTxs1wac12U00iQXUDjiSDIkJN5Elr/OcQAIapmSRlT2ChNGZoaEjoLvI
-         /JAvT3ybEZlwj5jOQ0L0qHFxsB/XJq0OisD0eI8mYh3MtxQWHtEUbqVsfi2Ox0lT3Rd+
-         Q6tw==
+        d=chromium.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Yw/+BtW2ezyMBpb+PL+RAaJ796Lnvw8RBmFntpG4kQ0=;
+        b=Jsch1u1P08aMlSvbUW0czvFTL5qQZ5sk+5ctcwOSfnRo276WKpFm1yptSbGImgkR7e
+         hcI/+oSKB95NdrVTeVFmvmNAtcjz1cmgqhCBAXGH/PJFD2fuCIhGGvlsXyb4peVEn4HH
+         z4/xzFn972iPTC2/6TBrpeaw7r9We6QSqe3f4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=a6q/V+E4w1GCT3UIo80p/1jk/eyzfrAH7kZCB3dF6EI=;
-        b=G9qcQkXybe0HB7awIaiLJn+8dbHN5qGsxjCXGXqE9tRTXnUtWPWYVZ1JrQVC8HH5jm
-         EbJ4vfz2RdrIvCjgd0hTPgZY6oG9xL3Ah1/yiIwnpFe4pdkHnpC/DcCm4/c0eX1DRMni
-         lShFVrOcL6bycky8oJJA1I3r4WKwz+959tRmof6ylzL84uTEOSnNcdkjFAYA0xahRRPn
-         HkyYnAAIi1puJB47vQ8r/cEzrwTe/vxr3DajSR7fWU+dS9TIVPQkxcDGgxwMYjhuvBGK
-         4/1zoE2BOak2yxQRk500/zQ4c5Sj1EoKt953pzhwmtX3Nq14yyyzZP0B9anPNffx8KV5
-         xA/g==
-X-Gm-Message-State: AO0yUKWI6SX+5Z2dEKxLFZxSgvk/nwT/Shx4Q2AksIBZvtZAVC6E5ggz
-        RXjkVJ8ImCU23PEAYcnQYnIexQ==
-X-Google-Smtp-Source: AK7set9cQX60hct3CmrqQYLoS0zKl3hJEZ9KOOgC/H19Hq6SMdqrMyY4g16B+aPSjyDEPbDCn8cC1A==
-X-Received: by 2002:a50:9ea9:0:b0:4a0:e323:d59c with SMTP id a38-20020a509ea9000000b004a0e323d59cmr246400edf.20.1675702854925;
-        Mon, 06 Feb 2023 09:00:54 -0800 (PST)
-Received: from localhost (h-46-59-89-207.A463.priv.bahnhof.se. [46.59.89.207])
-        by smtp.gmail.com with ESMTPSA id c5-20020a50d645000000b004aaa656887esm2668878edj.96.2023.02.06.09.00.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Feb 2023 09:00:54 -0800 (PST)
-Date:   Mon, 6 Feb 2023 18:00:53 +0100
-From:   Niklas =?iso-8859-1?Q?S=F6derlund?= 
-        <niklas.soderlund@ragnatech.se>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Guillaume La Roque <glaroque@baylibre.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Yw/+BtW2ezyMBpb+PL+RAaJ796Lnvw8RBmFntpG4kQ0=;
+        b=2COhG1oYATr+FIVcJXJtTKv8onVkjOn2GzrTIAPEQgvBMKRRfNfoc7QwTw2HSy1Wg6
+         Vm5rfOu9G4vCqYMk7Z/EuY5cKauqymb6GI8Mw7cGOoFlQXbiCM6A5FKxaWXLOaicS6Fs
+         6Rterm08gJXvkU8QpQzm/T9mpOBzto9zhJeqIpIV67tqbt0Up8pRZMRUO1H3K6bcf2VO
+         tlJzkzG0fuJ+9l9bGC+BUsCz2CubFIQEEh8dxU8a4Hj2kNOJw0CFtup3A5mbk1qmH3Ua
+         jeA3a6VPrrRP5FT4k2GB3L/DkJRpAE71y3jMBbSSpt6YGSqz3FJg/c9Uz31xxxAa0E1F
+         ONcQ==
+X-Gm-Message-State: AO0yUKWZKvDRrtWiyZ6NrIfai5BAcAu7uipx+SVHujUUd2DmCn90lr8H
+        pG1ICiXuT8CwXPkaGAAPs6EeEA==
+X-Google-Smtp-Source: AK7set+9giy7MtVsRnVDSqMFV1NNAPeUBq+V7Zq6M2XdFeAjtjhTtSDqfoF4aJmoGQhN19DAYh3L5g==
+X-Received: by 2002:a05:6e02:154f:b0:313:d914:e544 with SMTP id j15-20020a056e02154f00b00313d914e544mr485892ilu.23.1675704144937;
+        Mon, 06 Feb 2023 09:22:24 -0800 (PST)
+Received: from localhost (30.23.70.34.bc.googleusercontent.com. [34.70.23.30])
+        by smtp.gmail.com with UTF8SMTPSA id i33-20020a056638382100b003a22298d014sm3778985jav.25.2023.02.06.09.22.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Feb 2023 09:22:24 -0800 (PST)
+Date:   Mon, 6 Feb 2023 17:22:23 +0000
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Abel Vesa <abel.vesa@linaro.org>
+Cc:     Bjorn Andersson <andersson@kernel.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        ye xingchen <ye.xingchen@zte.com.cn>,
-        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Haowen Bai <baihaowen@meizu.com>,
-        Minghao Chi <chi.minghao@zte.com.cn>,
-        "open list:THERMAL DRIVER FOR AMLOGIC SOCS" 
-        <linux-amlogic@lists.infradead.org>,
-        "moderated list:BROADCOM BCM2711/BCM2835 ARM ARCHITECTURE" 
-        <linux-rpi-kernel@lists.infradead.org>,
-        "moderated list:BROADCOM BCM2711/BCM2835 ARM ARCHITECTURE" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "open list:ARM/QUALCOMM SUPPORT" <linux-arm-msm@vger.kernel.org>,
-        "open list:RENESAS R-CAR THERMAL DRIVERS" 
-        <linux-renesas-soc@vger.kernel.org>,
-        "open list:SAMSUNG THERMAL DRIVER" 
-        <linux-samsung-soc@vger.kernel.org>,
-        "moderated list:ARM/STM32 ARCHITECTURE" 
-        <linux-stm32@st-md-mailman.stormreply.com>,
-        "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>
-Subject: Re: [PATCH] thermal: Remove core header inclusion from drivers
-Message-ID: <Y+EyRb9klmwwHGjn@oden.dyn.berto.se>
-References: <20230206153432.1017282-1-daniel.lezcano@linaro.org>
+        linux-pm@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-arm-msm@vger.kernel.org,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Doug Anderson <dianders@chromium.org>
+Subject: Re: [RFC PATCH v2 1/2] PM: domains: Skip disabling unused domains if
+ provider has sync_state
+Message-ID: <Y+E3T6bozU1K2sFb@google.com>
+References: <20230127104054.895129-1-abel.vesa@linaro.org>
+ <Y9v/z8CYik3faHh7@google.com>
+ <Y+ErWTyV8CnE3Hl+@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230206153432.1017282-1-daniel.lezcano@linaro.org>
+In-Reply-To: <Y+ErWTyV8CnE3Hl+@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+On Mon, Feb 06, 2023 at 06:31:21PM +0200, Abel Vesa wrote:
+> On 23-02-02 18:24:15, Matthias Kaehlcke wrote:
+> > Hi Abel,
+> > 
+> > On Fri, Jan 27, 2023 at 12:40:53PM +0200, Abel Vesa wrote:
+> > > Currently, there are cases when a domain needs to remain enabled until
+> > > the consumer driver probes. Sometimes such consumer drivers may be built
+> > > as modules. Since the genpd_power_off_unused is called too early for
+> > > such consumer driver modules to get a chance to probe, the domain, since
+> > > it is unused, will get disabled. On the other hand, the best time for
+> > > an unused domain to be disabled is on the provider's sync_state
+> > > callback. So, if the provider has registered a sync_state callback,
+> > > assume the unused domains for that provider will be disabled on its
+> > > sync_state callback. Also provide a generic sync_state callback which
+> > > disables all the domains unused for the provider that registers it.
+> > > 
+> > > Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+> > > ---
+> > > 
+> > > This approach has been applied for unused clocks as well.
+> > > With this patch merged in, all the providers that have sync_state
+> > > callback registered will leave the domains enabled unless the provider's
+> > > sync_state callback explicitly disables them. So those providers will
+> > > need to add the disabling part to their sync_state callback. On the
+> > > other hand, the platforms that have cases where domains need to remain
+> > > enabled (even if unused) until the consumer driver probes, will be able,
+> > > with this patch in, to run without the pd_ignore_unused kernel argument,
+> > > which seems to be the case for most Qualcomm platforms, at this moment.
+> > 
+> > I recently encountered a related issue on a Qualcomm platform with a
+> > v6.2-rc kernel, which includes 3a39049f88e4 ("soc: qcom: rpmhpd: Use
+> > highest corner until sync_state"). The issue involves a DT node with a
+> > rpmhpd, the DT node is enabled, however the corresponding device driver
+> > is not enabled in the kernel. In such a scenario the sync_state callback
+> > is never called, because the genpd consumer never probes. As a result
+> > the Always-on subsystem (AOSS) of the SoC doesn't enter sleep mode during
+> > system suspend, which results in a substantially higher power consumption
+> > in S3.
+> 
+> If I get this correctly, one of the providers is missing (doesn't matter
+> the reason), in which case, your kernel needs that driver, period. There
+> is no reason why you would expect the consumer to work without the
+> provider. Or, you could just remove the property in the devicetree node,
+> the property that makes the consumer wait for that provider. Anyway, you
+> should never end up with a consumer provider relationship in devicetree
+> without providing the provider driver.
 
-Thanks for your work.
+I would agree if it was actually a provider that's missing, however it's a
+'missing' consumer that prevents the sync_state() call.
 
-On 2023-02-06 16:34:29 +0100, Daniel Lezcano wrote:
-> As the name states "thermal_core.h" is the header file for the core
-> components of the thermal framework.
+> > I wonder if genpd (and some other frameworks) needs something like
+> > regulator_init_complete(), which turns off unused regulators 30s after
+> > system boot. That's conceptually similar to the current
+> > genpd_power_off_unused(), but would provide time for modules being loaded.
 > 
-> Too many drivers are including it. Hopefully the recent cleanups
-> helped to self encapsulate the code a bit more and prevented the
-> drivers to need this header.
-> 
-> Remove this inclusion in every place where it is possible.
-> 
-> Some other drivers did a confusion with the core header and the one
-> exported in linux/thermal.h. They include the former instead of the
-> latter. The changes also fix this.
-> 
-> The tegra/soctherm driver still remains as it uses an internal
-> function which need to be replaced.
-> 
-> The Intel HFI driver uses the netlink internal framework core and
-> should be changed to prevent to deal with the internals.
-> 
-> No functional changes
-> 
-> [ Applies to thermal/linux-next or linux-pm/linux-next ]
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/amlogic_thermal.c           | 1 -
->  drivers/thermal/armada_thermal.c            | 2 --
->  drivers/thermal/broadcom/bcm2835_thermal.c  | 1 -
->  drivers/thermal/hisi_thermal.c              | 3 +--
->  drivers/thermal/imx8mm_thermal.c            | 1 -
->  drivers/thermal/imx_sc_thermal.c            | 1 -
->  drivers/thermal/intel/intel_hfi.c           | 3 ++-
->  drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 1 -
->  drivers/thermal/qoriq_thermal.c             | 1 -
->  drivers/thermal/rcar_gen3_thermal.c         | 1 -
+> NACK, timeouts are just another hack in this case, specially when we
+> have a pretty reliable mechanism like sync_state.
 
-For R-Car,
-
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-
->  drivers/thermal/samsung/exynos_tmu.c        | 3 +--
->  drivers/thermal/st/stm_thermal.c            | 1 -
->  drivers/thermal/tegra/tegra30-tsensor.c     | 1 -
->  drivers/thermal/uniphier_thermal.c          | 2 --
->  14 files changed, 4 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
-> index d30cb791e63c..9235fda4ec1e 100644
-> --- a/drivers/thermal/amlogic_thermal.c
-> +++ b/drivers/thermal/amlogic_thermal.c
-> @@ -28,7 +28,6 @@
->  #include <linux/regmap.h>
->  #include <linux/thermal.h>
->  
-> -#include "thermal_core.h"
->  #include "thermal_hwmon.h"
->  
->  #define TSENSOR_CFG_REG1			0x4
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index 83a4080bffc7..36653f692c80 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -19,8 +19,6 @@
->  #include <linux/regmap.h>
->  #include <linux/interrupt.h>
->  
-> -#include "thermal_core.h"
-> -
->  /* Thermal Manager Control and Status Register */
->  #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
->  #define PMU_TM_DISABLE_OFFS		0
-> diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-> index 3d0710c6e004..23918bb76ae6 100644
-> --- a/drivers/thermal/broadcom/bcm2835_thermal.c
-> +++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-> @@ -18,7 +18,6 @@
->  #include <linux/platform_device.h>
->  #include <linux/thermal.h>
->  
-> -#include "../thermal_core.h"
->  #include "../thermal_hwmon.h"
->  
->  #define BCM2835_TS_TSENSCTL			0x00
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 45226cab466e..62c67942293e 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -16,8 +16,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/io.h>
->  #include <linux/of_device.h>
-> -
-> -#include "thermal_core.h"
-> +#include <linux/thermal.h>
->  
->  #define HI6220_TEMP0_LAG			(0x0)
->  #define HI6220_TEMP0_TH				(0x4)
-> diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
-> index d247b48696cb..72b5d6f319c1 100644
-> --- a/drivers/thermal/imx8mm_thermal.c
-> +++ b/drivers/thermal/imx8mm_thermal.c
-> @@ -17,7 +17,6 @@
->  #include <linux/slab.h>
->  #include <linux/thermal.h>
->  
-> -#include "thermal_core.h"
->  #include "thermal_hwmon.h"
->  
->  #define TER			0x0	/* TMU enable */
-> diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
-> index 378f574607f7..f32e59e74623 100644
-> --- a/drivers/thermal/imx_sc_thermal.c
-> +++ b/drivers/thermal/imx_sc_thermal.c
-> @@ -13,7 +13,6 @@
->  #include <linux/slab.h>
->  #include <linux/thermal.h>
->  
-> -#include "thermal_core.h"
->  #include "thermal_hwmon.h"
->  
->  #define IMX_SC_MISC_FUNC_GET_TEMP	13
-> diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
-> index 6e604bda2b93..c69db6c90869 100644
-> --- a/drivers/thermal/intel/intel_hfi.c
-> +++ b/drivers/thermal/intel/intel_hfi.c
-> @@ -40,10 +40,11 @@
->  
->  #include <asm/msr.h>
->  
-> -#include "../thermal_core.h"
->  #include "intel_hfi.h"
->  #include "thermal_interrupt.h"
->  
-> +#include "../thermal_netlink.h"
-> +
->  /* Hardware Feedback Interface MSR configuration bits */
->  #define HW_FEEDBACK_PTR_VALID_BIT		BIT(0)
->  #define HW_FEEDBACK_CONFIG_HFI_ENABLE_BIT	BIT(0)
-> diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-> index e2429676d0d2..101c75d0e13f 100644
-> --- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-> +++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-> @@ -15,7 +15,6 @@
->  #include <linux/regmap.h>
->  #include <linux/thermal.h>
->  
-> -#include "../thermal_core.h"
->  #include "../thermal_hwmon.h"
->  
->  #define QPNP_TM_REG_DIG_MAJOR		0x01
-> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index d111e218f362..431c29c0898a 100644
-> --- a/drivers/thermal/qoriq_thermal.c
-> +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -13,7 +13,6 @@
->  #include <linux/thermal.h>
->  #include <linux/units.h>
->  
-> -#include "thermal_core.h"
->  #include "thermal_hwmon.h"
->  
->  #define SITES_MAX		16
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index 4ef927437842..0fd2fd077638 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -17,7 +17,6 @@
->  #include <linux/sys_soc.h>
->  #include <linux/thermal.h>
->  
-> -#include "thermal_core.h"
->  #include "thermal_hwmon.h"
->  
->  /* Register offsets */
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 37465af59262..527d1eb0663a 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -20,11 +20,10 @@
->  #include <linux/of_irq.h>
->  #include <linux/platform_device.h>
->  #include <linux/regulator/consumer.h>
-> +#include <linux/thermal.h>
->  
->  #include <dt-bindings/thermal/thermal_exynos.h>
->  
-> -#include "../thermal_core.h"
-> -
->  /* Exynos generic registers */
->  #define EXYNOS_TMU_REG_TRIMINFO		0x0
->  #define EXYNOS_TMU_REG_CONTROL		0x20
-> diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-> index e7834ccc7976..735401958f01 100644
-> --- a/drivers/thermal/st/stm_thermal.c
-> +++ b/drivers/thermal/st/stm_thermal.c
-> @@ -19,7 +19,6 @@
->  #include <linux/platform_device.h>
->  #include <linux/thermal.h>
->  
-> -#include "../thermal_core.h"
->  #include "../thermal_hwmon.h"
->  
->  /* DTS register offsets */
-> diff --git a/drivers/thermal/tegra/tegra30-tsensor.c b/drivers/thermal/tegra/tegra30-tsensor.c
-> index 0ffe37ce7df7..b3218b71b6d9 100644
-> --- a/drivers/thermal/tegra/tegra30-tsensor.c
-> +++ b/drivers/thermal/tegra/tegra30-tsensor.c
-> @@ -28,7 +28,6 @@
->  
->  #include <soc/tegra/fuse.h>
->  
-> -#include "../thermal_core.h"
->  #include "../thermal_hwmon.h"
->  
->  #define TSENSOR_SENSOR0_CONFIG0				0x0
-> diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
-> index f8ab2ca76184..47801841b3f5 100644
-> --- a/drivers/thermal/uniphier_thermal.c
-> +++ b/drivers/thermal/uniphier_thermal.c
-> @@ -17,8 +17,6 @@
->  #include <linux/regmap.h>
->  #include <linux/thermal.h>
->  
-> -#include "thermal_core.h"
-> -
->  /*
->   * block registers
->   * addresses are the offset from .block_base
-> -- 
-> 2.34.1
-> 
-
--- 
-Kind Regards,
-Niklas Söderlund
+It does not work properly unless all consumers are probed successfully. It
+makes sense to wait some time for the consumers to probe, but not eternally,
+it's perfectly valid that a driver for a (potential) consumer is not enabled.
