@@ -2,106 +2,155 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31677C636D6
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 10:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB84CC05027
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 10:57:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230325AbjBFKV2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Feb 2023 05:21:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48004 "EHLO
+        id S229484AbjBFK5o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Feb 2023 05:57:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54092 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230057AbjBFKV0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 05:21:26 -0500
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 636032069F;
-        Mon,  6 Feb 2023 02:20:59 -0800 (PST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ED41813D5;
-        Mon,  6 Feb 2023 02:11:29 -0800 (PST)
-Received: from [10.57.75.57] (unknown [10.57.75.57])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 584233F71E;
-        Mon,  6 Feb 2023 02:10:43 -0800 (PST)
-Message-ID: <cffde8a1-74e4-9b61-1eea-544ba3405ed4@arm.com>
-Date:   Mon, 6 Feb 2023 10:10:41 +0000
+        with ESMTP id S229556AbjBFK5n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 05:57:43 -0500
+Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com [IPv6:2a00:1450:4864:20::52e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 336B1FF09
+        for <linux-pm@vger.kernel.org>; Mon,  6 Feb 2023 02:57:41 -0800 (PST)
+Received: by mail-ed1-x52e.google.com with SMTP id eq11so11195624edb.6
+        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2023 02:57:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=+9Gdf/2MjGZogoBIVbjV9E7gaQxvRNf+5azMe9hz9GY=;
+        b=cKlvvlV1MGIpOq1x/OezrMnsVT6hOtG8mgq3AMtaKVqrMg5ex4653EcefGF7VCU7ok
+         teEKLCLT0B4ni/PO7EJCvwmLBaP1ap0zC+IUFafrmpNUqVFIHcyVwOssQ44FHtHOKfbI
+         nULI1QIrTvXxx22TmPuu+dqqOUs0nb+iKvx+8NQa6771QaidlJiaMqDq8Oeq+EP3g4Dp
+         io/iLBgGap9HoreOnMvfh8Zces9ggdjJn5noPYBA6n3rN3neq9nKt8iO6lajkZlbaWCk
+         tdmtmfXsI42K3PPhzr0BFtEtcy00rTuGhcmcQur02xRbJ6KsjuuqNbp9w5EOyOuIi0SO
+         R/MQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=+9Gdf/2MjGZogoBIVbjV9E7gaQxvRNf+5azMe9hz9GY=;
+        b=o72eTGph31GgpLymrI//fGft9Wp506MzURQiPJBk7W+Fn8xWWzn2xBC2WhXNB8MY4C
+         o62KXUAmQfHxGmFVoKal5auLTE9zxhFd4WPC0iU5Uv/qIEC/7fzpOwXvcSmUg92bSjTw
+         zyZKAaIFS3fTtSLFZbwQDJHTfvuj+8mhHKBwAGy1q40UJ79zYo5ORXNNOSHe1QxcfpTz
+         aLimSDnQWwhwXbaYPGoss857Zdl/byLpwaaTvs0Ju2k3e9CFA0dQMec8srDor8noU0W7
+         37pw3SD0ZqBdOCIv+q+Wlk+M3az+iOJTLyz/UHZ5GltE8NWa8lZ7A25EixHSxQp2LnKu
+         2uXw==
+X-Gm-Message-State: AO0yUKV09slPDT4S9hlYf7IHq8RK2f5Gcgnog+uDlxL8SfRKq626XwhF
+        uCxzYvNp6Y1fgeCHZvVG0u8gFQ==
+X-Google-Smtp-Source: AK7set848nDphnldzbj3Q8XWmjilP7Ti0PyzogSDzYf6E75tifBm/Bc56/LAMokGe6LGFsB/8x4kBA==
+X-Received: by 2002:a50:ee92:0:b0:4a0:e234:5351 with SMTP id f18-20020a50ee92000000b004a0e2345351mr22652476edr.15.1675681059790;
+        Mon, 06 Feb 2023 02:57:39 -0800 (PST)
+Received: from [192.168.1.101] (abyl20.neoplus.adsl.tpnet.pl. [83.9.31.20])
+        by smtp.gmail.com with ESMTPSA id b11-20020aa7c6cb000000b004a986403dc1sm4473379eds.1.2023.02.06.02.57.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Feb 2023 02:57:39 -0800 (PST)
+Message-ID: <21074b46-1278-b442-1d32-a0ae3ae19ca2@linaro.org>
+Date:   Mon, 6 Feb 2023 11:57:36 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.6.1
-Subject: Re: [RFC PATCH 29/32] KVM: arm64: Pass hypercalls to userspace
-To:     Marc Zyngier <maz@kernel.org>, James Morse <james.morse@arm.com>
-Cc:     linux-pm@vger.kernel.org, loongarch@lists.linux.dev,
-        kvmarm@lists.linux.dev, kvm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, x86@kernel.org,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Borislav Petkov <bp@alien8.de>, H Peter Anvin <hpa@zytor.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Oliver Upton <oliver.upton@linux.dev>,
-        Len Brown <lenb@kernel.org>,
-        Rafael Wysocki <rafael@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        Salil Mehta <salil.mehta@huawei.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Jean-Philippe Brucker <jean-philippe@linaro.org>
-References: <20230203135043.409192-1-james.morse@arm.com>
- <20230203135043.409192-30-james.morse@arm.com> <865ycg1kv2.wl-maz@kernel.org>
-From:   Suzuki K Poulose <suzuki.poulose@arm.com>
-In-Reply-To: <865ycg1kv2.wl-maz@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Subject: Re: [PATCH v2 3/3] arm64: dts: qcom: c630: Add Embedded Controller
+ node
+Content-Language: en-US
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+References: <20230205152809.2233436-1-dmitry.baryshkov@linaro.org>
+ <20230205152809.2233436-4-dmitry.baryshkov@linaro.org>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20230205152809.2233436-4-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
 
-A few cents from the Realm support point of view.
 
-On 05/02/2023 10:12, Marc Zyngier wrote:
-> On Fri, 03 Feb 2023 13:50:40 +0000,
-> James Morse <james.morse@arm.com> wrote:
->>
->> From: Jean-Philippe Brucker <jean-philippe@linaro.org>
->>
->> When capability KVM_CAP_ARM_HVC_TO_USER is available, userspace can
->> request to handle all hypercalls that aren't handled by KVM. With the
->> help of another capability, this will allow userspace to handle PSCI
->> calls.
->>
->> Suggested-by: James Morse <james.morse@arm.com>
->> Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
->> Signed-off-by: James Morse <james.morse@arm.com>
->>
->> ---
->>
+On 5.02.2023 16:28, Dmitry Baryshkov wrote:
+> From: Bjorn Andersson <bjorn.andersson@linaro.org>
 > 
-> On top of Oliver's ask not to make this a blanket "steal everything",
-> but instead to have an actual request for ranges of forwarded
-> hypercalls:
+> The Embedded Controller in the Lenovo Yoga C630 is accessible on &i2c1
+> and provides battery and adapter status, as well as altmode
+> notifications for the second USB Type-C port.
 > 
->> Notes on this implementation:
->>
->> * A similar mechanism was proposed for SDEI some time ago [1]. This RFC
->>    generalizes the idea to all hypercalls, since that was suggested on
->>    the list [2, 3].
->>
->> * We're reusing kvm_run.hypercall. I copied x0-x5 into
->>    kvm_run.hypercall.args[] to help userspace but I'm tempted to remove
->>    this, because:
->>    - Most user handlers will need to write results back into the
->>      registers (x0-x3 for SMCCC), so if we keep this shortcut we should
->>      go all the way and read them back on return to kernel.
->>    - QEMU doesn't care about this shortcut, it pulls all vcpu regs before
->>      handling the call.
+> Add a definition for the EC.
+> 
+> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> ---
+>  .../boot/dts/qcom/sdm850-lenovo-yoga-c630.dts | 35 +++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+> 
+> diff --git a/arch/arm64/boot/dts/qcom/sdm850-lenovo-yoga-c630.dts b/arch/arm64/boot/dts/qcom/sdm850-lenovo-yoga-c630.dts
+> index 7038a0f7c06e..cf56ce68081c 100644
+> --- a/arch/arm64/boot/dts/qcom/sdm850-lenovo-yoga-c630.dts
+> +++ b/arch/arm64/boot/dts/qcom/sdm850-lenovo-yoga-c630.dts
+> @@ -352,6 +352,33 @@ zap-shader {
+>  &i2c1 {
+>  	status = "okay";
+>  	clock-frequency = <400000>;
+> +
+> +	embedded-controller@70 {
+> +		compatible = "lenovo,yoga-c630-ec";
+> +		reg = <0x70>;
+> +
+> +		interrupts-extended = <&tlmm 20 IRQ_TYPE_LEVEL_HIGH>;
+> +
+> +		pinctrl-names = "default";
+> +		pinctrl-0 = <&ec_int_state>;
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		connector@0 {
+> +			compatible = "usb-c-connector";
+> +			reg = <0>;
+> +			power-role = "source";
+> +			data-role = "host";
+> +		};
+> +
+> +		connector@1 {
+> +			compatible = "usb-c-connector";
+> +			reg = <1>;
+> +			power-role = "source";
+> +			data-role = "host";
+> +		};
+> +	};
+>  };
+>  
+>  &i2c3 {
+> @@ -652,6 +679,14 @@ mode_pin_active: mode-pin-state {
+>  		input-enable;
+>  		bias-disable;
+>  	};
+> +
+> +	ec_int_state: ec-int-state {
+> +		pins = "gpio20";
+> +		function = "gpio";
+> +
+> +		input-enable;
+> +		bias-disable;
+Unnecessary newline + most other trees do bias- before input/output-
 
-This may not be always possible, e.g., for Realms. GET_ONE_REG is
-not supported. So using an explicit passing down of the args is
-preferrable.
+Other than that
 
-Thanks
-Suzuki
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+
+Konrad
+> +	};
+>  };
+>  
+>  &uart6 {
