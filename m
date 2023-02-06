@@ -2,143 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33AFEC636D3
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 17:28:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A541C636D4
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 17:29:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229632AbjBFR2Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Feb 2023 12:28:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35118 "EHLO
+        id S229884AbjBFR3G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Feb 2023 12:29:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230244AbjBFR2K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 12:28:10 -0500
-X-Greylist: delayed 480 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 06 Feb 2023 09:27:40 PST
-Received: from out-196.mta0.migadu.com (out-196.mta0.migadu.com [91.218.175.196])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49B662CC68
-        for <linux-pm@vger.kernel.org>; Mon,  6 Feb 2023 09:27:40 -0800 (PST)
-Date:   Mon, 6 Feb 2023 17:19:25 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-        t=1675703978;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=HQYDCy4xAq7++DqBp2PrFrzWfoeLMTv7/t3BwVc+5/M=;
-        b=J9ErNIUpPqZIZXdMg30fbXll1h9T0Tvc0m6YwSEjZKdUoEOooQgqWauEEwTKgz5T3W0FTk
-        rki4AZWQsgRfhqb68OZxWvRzYjB94NkQRpb2vk7/ewhW1i4abF/GN+8YazanH4qC5F0Wee
-        Dwv1drNtXNr6gUzp6+ranIztAkcY0no=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From:   Oliver Upton <oliver.upton@linux.dev>
-To:     Marc Zyngier <maz@kernel.org>
-Cc:     James Morse <james.morse@arm.com>, linux-pm@vger.kernel.org,
-        loongarch@lists.linux.dev, kvmarm@lists.linux.dev,
-        kvm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-ia64@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Borislav Petkov <bp@alien8.de>, H Peter Anvin <hpa@zytor.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Len Brown <lenb@kernel.org>,
-        Rafael Wysocki <rafael@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        Salil Mehta <salil.mehta@huawei.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Jean-Philippe Brucker <jean-philippe@linaro.org>
-Subject: Re: [RFC PATCH 29/32] KVM: arm64: Pass hypercalls to userspace
-Message-ID: <Y+E2nVnadj1emNs5@google.com>
-References: <20230203135043.409192-1-james.morse@arm.com>
- <20230203135043.409192-30-james.morse@arm.com>
- <865ycg1kv2.wl-maz@kernel.org>
+        with ESMTP id S230376AbjBFR2o (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 12:28:44 -0500
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4E859EEE;
+        Mon,  6 Feb 2023 09:28:31 -0800 (PST)
+Received: by mail-ed1-f42.google.com with SMTP id l12so3530171edb.0;
+        Mon, 06 Feb 2023 09:28:31 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=iNUkQ9XxPrxK4otYbqHTBhXXuiskkXfC9w+d3Yp3xfA=;
+        b=BzFR+A9tlN8T+c/NgfU4sMSwiBpOrwL0O3jWc3SqUl/zr9GdRIFvrTPaEBYVq9Sf1S
+         0m489wbq97qQmpUPs5zifzcngcYU978KfhhPAzi2gV6Tm48Tz1XKH8B0Al6exdfEHfgI
+         0IX8WPb1CyZ8r0Dqbpjss05vEeAQGi+U52HAHS50pK7EnSgXhduZqS6AT0m//+DFt8Om
+         Gmx/u9NAxWVbO0JKUPVDHdHvP1zPEBcL5CKGknitbjq7KAscrD/w70O/+hOvoDI7yWMu
+         80gFvE0P7IAjuhUOwhbS6WYpitmncbV9UjRsfILgnzHZokXOnD+NvmPyu708lShmzEWq
+         TZYA==
+X-Gm-Message-State: AO0yUKXlQrXY3zsyQOoaDkcOZ+du6Fv7lfX3ygtHZg+rr502Pd3+pgx8
+        +jUPgQ+I5NF7zdl639rAX7gnD0ceJjeT7qFfcG4=
+X-Google-Smtp-Source: AK7set+VXS2r5wnk5Ptk/58i/WvzHxY8QKg6Qjw7V+e3YmJSnCNhHeIxgeSg1T7/wEA+8wtYKkp8VjbWNCR26qfNITo=
+X-Received: by 2002:a50:d654:0:b0:4aa:a0ee:7ed1 with SMTP id
+ c20-20020a50d654000000b004aaa0ee7ed1mr89647edj.58.1675704510461; Mon, 06 Feb
+ 2023 09:28:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <865ycg1kv2.wl-maz@kernel.org>
-X-Migadu-Flow: FLOW_OUT
+References: <20230203175832.3406504-1-daniel.lezcano@linaro.org> <CAJZ5v0jzLCQt22MhfaAvL8w+RP7Y-YqxUdcgQ2u2Tz9i0CS+2A@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jzLCQt22MhfaAvL8w+RP7Y-YqxUdcgQ2u2Tz9i0CS+2A@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 6 Feb 2023 18:28:19 +0100
+Message-ID: <CAJZ5v0gzaa5KMkULHtp9Vi-VTomOhkf2eP0eufHqz9NMx5crJA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: Hunt zero trip points thermal zones usage
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rjw@rjwysocki.net, linux-acpi@vger.kernel.org,
+        linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        Kees Cook <keescook@chromium.org>,
+        "Lee, Chun-Yi" <joeyli.kernel@gmail.com>,
+        Chuansheng Liu <chuansheng.liu@intel.com>,
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Feb 05, 2023 at 10:12:49AM +0000, Marc Zyngier wrote:
-> On Fri, 03 Feb 2023 13:50:40 +0000,
-> James Morse <james.morse@arm.com> wrote:
-> > 
-> > From: Jean-Philippe Brucker <jean-philippe@linaro.org>
-> > 
-> > When capability KVM_CAP_ARM_HVC_TO_USER is available, userspace can
-> > request to handle all hypercalls that aren't handled by KVM. With the
-> > help of another capability, this will allow userspace to handle PSCI
-> > calls.
-> > 
-> > Suggested-by: James Morse <james.morse@arm.com>
-> > Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
-> > Signed-off-by: James Morse <james.morse@arm.com>
-> > 
-> > ---
-> > 
-> 
-> On top of Oliver's ask not to make this a blanket "steal everything",
-> but instead to have an actual request for ranges of forwarded
-> hypercalls:
-> 
-> > Notes on this implementation:
-> > 
-> > * A similar mechanism was proposed for SDEI some time ago [1]. This RFC
-> >   generalizes the idea to all hypercalls, since that was suggested on
-> >   the list [2, 3].
-> > 
-> > * We're reusing kvm_run.hypercall. I copied x0-x5 into
-> >   kvm_run.hypercall.args[] to help userspace but I'm tempted to remove
-> >   this, because:
-> >   - Most user handlers will need to write results back into the
-> >     registers (x0-x3 for SMCCC), so if we keep this shortcut we should
-> >     go all the way and read them back on return to kernel.
-> >   - QEMU doesn't care about this shortcut, it pulls all vcpu regs before
-> >     handling the call.
-> >   - SMCCC uses x0-x16 for parameters.
-> >   x0 does contain the SMCCC function ID and may be useful for fast
-> >   dispatch, we could keep that plus the immediate number.
-> > 
-> > * Add a flag in the kvm_run.hypercall telling whether this is HVC or
-> >   SMC?  Can be added later in those bottom longmode and pad fields.
-> 
-> We definitely need this. A nested hypervisor can (and does) use SMCs
-> as the conduit. The question is whether they represent two distinct
-> namespaces or not. I *think* we can unify them, but someone should
-> check and maybe get clarification from the owners of the SMCCC spec.
-> 
+On Mon, Feb 6, 2023 at 5:08 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Fri, Feb 3, 2023 at 6:59 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 > >
-> > * On top of this we could share with userspace which HVC ranges are
-> >   available and which ones are handled by KVM. That can actually be added
-> >   independently, through a vCPU/VM device attribute which doesn't consume
-> >   a new ioctl:
-> >   - userspace issues HAS_ATTR ioctl on the vcpu fd to query whether this
-> >     feature is available.
-> >   - userspace queries the number N of HVC ranges using one GET_ATTR.
-> >   - userspace passes an array of N ranges using another GET_ATTR. The
-> >     array is filled and returned by KVM.
-> 
-> As mentioned above, I think this interface should go both ways.
-> Userspace should request the forwarding of a certain range of
-> hypercalls via a similar SET_ATTR interface.
-> 
-> Another question is how we migrate VMs that have these forwarding
-> requirements. Do we expect the VMM to replay the forwarding as part of
-> the setting up on the other side? Or do we save/restore this via a
-> firmware pseudo-register?
+> > Some drivers are declaring a thermal zone without any thermal trip
+> > points.
+> >
+> > On the other side, we are introducing the function
+> > thermal_zone_device_register_with_trips() which provides an array of
+> > generic thermal trip points. When all the drivers will be converted to
+> > the generic trip points, keeping two functions will be useless.
+> >
+> > Most of the drivers are now using
+> > thermal_zone_device_register_with_trips() with the generic trip
+> > points. As soon as the remaining drivers are merged, the
+> > thermal_zone_device_register_with_trips() will be renamed to
+> > thermal_zone_device_register().
+>
+> So why is this the first time I'm learning about this plan?
+>
+> > Obviously this renaming can only happen if there are no more user of
+> > the thermal_zone_device_register() function.
+> >
+> > This change uses thermal_zone_device_register_with_trips() with a NULL
+> > parameter for the trip point array instead of
+> > thermal_zone_device_register().
+>
+> And later it will be renamed to thermal_zone_device_register() again?
+>
+> Can we just stop confusing people this way?
+>
+> What would be wrong with changing both
+> thermal_zone_device_register_with_trips() and
+> thermal_zone_device_register() together when we are ready?  And why
+> can't the both be replaced with something line thermal_zone_register()
+> doing all of the necessary things in one go?  Why do we have to make
+> confusing and redundant changes?
 
-Personally I'd prefer we left that job to userspace.
-
-We could also implement GET_ATTR, in case userspace has forgotten what
-it wrote to the hypercall filter. The firmware pseudo-registers are
-handy for moving KVM state back and forth 'for free', but I don't think
-we need to bend over backwards to migrate state userspace is directly
-responsible for.
-
--- 
-Thanks,
-Oliver
+Or you can define a thermal_register_tripless_zone() wrapper around
+thermal_zone_device_register_with_trips() and make the drivers in
+question use that, and modify them just once.
