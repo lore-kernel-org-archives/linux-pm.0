@@ -2,96 +2,189 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E11AC05027
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 16:08:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F480C636D4
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 16:21:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229822AbjBFQIX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Feb 2023 11:08:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45528 "EHLO
+        id S229839AbjBFQVf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Feb 2023 11:21:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231560AbjBFQIW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 11:08:22 -0500
-Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35CD022030;
-        Mon,  6 Feb 2023 08:08:15 -0800 (PST)
-Received: by mail-ed1-f48.google.com with SMTP id l12so3262551edb.0;
-        Mon, 06 Feb 2023 08:08:15 -0800 (PST)
+        with ESMTP id S230018AbjBFQVe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2023 11:21:34 -0500
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11B8926870
+        for <linux-pm@vger.kernel.org>; Mon,  6 Feb 2023 08:21:24 -0800 (PST)
+Received: by mail-wm1-x32a.google.com with SMTP id l37-20020a05600c1d2500b003dfe46a9801so7778145wms.0
+        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2023 08:21:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=O1SvRQXFgKJW9MWWeXUNyZOsgozAf3at2hO0cPftBZs=;
+        b=hzQHYiiToN5GxCQ01547LGxjBpryGWlIUMBs0Oyl81LRC47MHuGKf0VCWf5C5KKj1K
+         2fY8MFuewnGkuubB2AVv5KcrZwN+v7Nq9NdCAxe6CXpV/FYVnHor/JIe5A/HvJS2tprZ
+         BNfJvSofIts0MoP7m9ajRG6Zh2qizfIhH8o7Jp+3GZKpiRbGOEiVK9weyDIR2a8oBsZu
+         c224R5u2RnAxSixSNtxqKe5r8OOehBZEU45PeuccV0W2tEH4O1SAWOUyMLwRG3U2DTTI
+         /HSM6X7oDEQ/QIqjpUPbhV7rS7TkBu3vuaQZ9DAYu8B0/LqloMiFMOqqMpjhXgDvf9t6
+         dMeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Bc2twtnw1XnblNNsxowZYsyvrqHE1B8hP2067+vzsN0=;
-        b=geG4GTd2B9V1/SQE3OsJvDmCzkhAvtva5WOxhOU6M0OwbTcYhZkHQll8ppfVYN7WgE
-         HTqPrA1GtYtuqIE1xYuFxjYv6yjkkz2Dq/bc4Ts9LiHeRAXm5Jb7+iiYwVLjGKdeE+xd
-         7CnsfxVIbqUVtN0ZL/jEVGzrkI03xBv+4moESOet5k7T3QmrjCw5xrFWEcVl63e8am5b
-         wXFatGiIz4LCV7NEdnvpO4fCIXRU6YfbVqU5TxmVGWt7G0tuHgsrCMIrrjsmm4pOt0FP
-         9gGcUdVjPxrkj3duh2X3NoiN6i9LbViMBn3H3ilxfLfiUrhNdk5RS4DHaG/kvpivcc9o
-         6B+w==
-X-Gm-Message-State: AO0yUKU+xxaRoEMFSzAXH4X1AWSOWHNgCoHoqyN9qaEgLZJuzNRVPH9T
-        OmyxLSQXdBlEAgy0J79UDKmoOe0HFkMOBhTb0V0=
-X-Google-Smtp-Source: AK7set+kqr+xxulHS4tVKGg+/HpeGG/yvK0eLZ3lf2Ji+NXibBMJjweUWTweXseG6JD/e8JPUt/3lVOi6PFeFL8WmsQ=
-X-Received: by 2002:a50:f693:0:b0:4aa:a0ee:7ed1 with SMTP id
- d19-20020a50f693000000b004aaa0ee7ed1mr2237358edn.58.1675699693712; Mon, 06
- Feb 2023 08:08:13 -0800 (PST)
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=O1SvRQXFgKJW9MWWeXUNyZOsgozAf3at2hO0cPftBZs=;
+        b=gx8N0Zl5TW6AZA04EU2BSZ44E3S6spb10dinEAn3lVXyRj03bwwA9FVDyKU24YnsBj
+         MfQltTRsfcN4mT8clQsJmkmX9Hts+EHYWicfdl24bKMv2L99UgX4mrOQ9iGmCgxNp30f
+         86JfCNadvHAe8NUpqwrF75OnsHeiLrHojagyANgyDvlQYk0tqSVxKPxc9Q5s2nRawCmo
+         255V43OyxTLWJ/JGf+jo/395OnDrzDgfyGD9kG0HjHOJDcpGxVcy/gOF/74CdX+LI9da
+         RizjEZzENgnzbemy+pOjABVBBf0BJHl3XkWA2Ihdwu0Oy2BWLjcfs+vIcCCUuC+UtBtu
+         0TaQ==
+X-Gm-Message-State: AO0yUKVC0ajjGh2/3jtrwSGuvlyelwrIjKNdETeLv1MWPq0PLyBhG4Yo
+        /uMzgKER31k8PP5YUrAAq9oCKg==
+X-Google-Smtp-Source: AK7set/C5SjtKdAAX85xHQABD3OMh3zWLxVGvREyu/EPJPrKdwKtNzmqb9QsTuttSJ7C26iGWYgbgw==
+X-Received: by 2002:a05:600c:13ca:b0:3dc:5937:35a2 with SMTP id e10-20020a05600c13ca00b003dc593735a2mr307220wmg.9.1675700482275;
+        Mon, 06 Feb 2023 08:21:22 -0800 (PST)
+Received: from linaro.org ([94.52.112.99])
+        by smtp.gmail.com with ESMTPSA id l4-20020a05600c16c400b003df245cd853sm11089860wmn.44.2023.02.06.08.21.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Feb 2023 08:21:21 -0800 (PST)
+Date:   Mon, 6 Feb 2023 18:21:20 +0200
+From:   Abel Vesa <abel.vesa@linaro.org>
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc:     Matthias Kaehlcke <mka@chromium.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Andy Gross <agross@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        linux-pm@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-arm-msm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>,
+        Doug Anderson <dianders@chromium.org>
+Subject: Re: [RFC PATCH v2 1/2] PM: domains: Skip disabling unused domains if
+ provider has sync_state
+Message-ID: <Y+EpAK2P+lN9GTPJ@linaro.org>
+References: <20230127104054.895129-1-abel.vesa@linaro.org>
+ <Y9v/z8CYik3faHh7@google.com>
+ <3826e0e6-bb2b-409d-d1c3-ed361305bce3@linaro.org>
+ <Y9xhbq/MIOgssslh@google.com>
+ <9b8af6b3-9ab5-12f8-5576-1a93c58a26c1@linaro.org>
 MIME-Version: 1.0
-References: <20230203175832.3406504-1-daniel.lezcano@linaro.org>
-In-Reply-To: <20230203175832.3406504-1-daniel.lezcano@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 6 Feb 2023 17:08:02 +0100
-Message-ID: <CAJZ5v0jzLCQt22MhfaAvL8w+RP7Y-YqxUdcgQ2u2Tz9i0CS+2A@mail.gmail.com>
-Subject: Re: [PATCH] thermal: Hunt zero trip points thermal zones usage
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rjw@rjwysocki.net, linux-acpi@vger.kernel.org,
-        linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Davidlohr Bueso <dave@stgolabs.net>,
-        Kees Cook <keescook@chromium.org>,
-        "Lee, Chun-Yi" <joeyli.kernel@gmail.com>,
-        Chuansheng Liu <chuansheng.liu@intel.com>,
-        ye xingchen <ye.xingchen@zte.com.cn>,
-        open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9b8af6b3-9ab5-12f8-5576-1a93c58a26c1@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 3, 2023 at 6:59 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->
-> Some drivers are declaring a thermal zone without any thermal trip
-> points.
->
-> On the other side, we are introducing the function
-> thermal_zone_device_register_with_trips() which provides an array of
-> generic thermal trip points. When all the drivers will be converted to
-> the generic trip points, keeping two functions will be useless.
->
-> Most of the drivers are now using
-> thermal_zone_device_register_with_trips() with the generic trip
-> points. As soon as the remaining drivers are merged, the
-> thermal_zone_device_register_with_trips() will be renamed to
-> thermal_zone_device_register().
+On 23-02-03 22:00:27, Dmitry Baryshkov wrote:
+> On 03/02/2023 03:20, Matthias Kaehlcke wrote:
+> > Hi Dmitry,
+> > 
+> > On Thu, Feb 02, 2023 at 09:53:41PM +0200, Dmitry Baryshkov wrote:
+> > > On 02/02/2023 20:24, Matthias Kaehlcke wrote:
+> > > > Hi Abel,
+> > > > 
+> > > > On Fri, Jan 27, 2023 at 12:40:53PM +0200, Abel Vesa wrote:
+> > > > > Currently, there are cases when a domain needs to remain enabled until
+> > > > > the consumer driver probes. Sometimes such consumer drivers may be built
+> > > > > as modules. Since the genpd_power_off_unused is called too early for
+> > > > > such consumer driver modules to get a chance to probe, the domain, since
+> > > > > it is unused, will get disabled. On the other hand, the best time for
+> > > > > an unused domain to be disabled is on the provider's sync_state
+> > > > > callback. So, if the provider has registered a sync_state callback,
+> > > > > assume the unused domains for that provider will be disabled on its
+> > > > > sync_state callback. Also provide a generic sync_state callback which
+> > > > > disables all the domains unused for the provider that registers it.
+> > > > > 
+> > > > > Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+> > > > > ---
+> > > > > 
+> > > > > This approach has been applied for unused clocks as well.
+> > > > > With this patch merged in, all the providers that have sync_state
+> > > > > callback registered will leave the domains enabled unless the provider's
+> > > > > sync_state callback explicitly disables them. So those providers will
+> > > > > need to add the disabling part to their sync_state callback. On the
+> > > > > other hand, the platforms that have cases where domains need to remain
+> > > > > enabled (even if unused) until the consumer driver probes, will be able,
+> > > > > with this patch in, to run without the pd_ignore_unused kernel argument,
+> > > > > which seems to be the case for most Qualcomm platforms, at this moment.
+> > > > 
+> > > > I recently encountered a related issue on a Qualcomm platform with a
+> > > > v6.2-rc kernel, which includes 3a39049f88e4 ("soc: qcom: rpmhpd: Use
+> > > > highest corner until sync_state"). The issue involves a DT node with a
+> > > > rpmhpd, the DT node is enabled, however the corresponding device driver
+> > > > is not enabled in the kernel. In such a scenario the sync_state callback
+> > > > is never called, because the genpd consumer never probes. As a result
+> > > > the Always-on subsystem (AOSS) of the SoC doesn't enter sleep mode during
+> > > > system suspend, which results in a substantially higher power consumption
+> > > > in S3.
+> > > > 
+> > > > I wonder if genpd (and some other frameworks) needs something like
+> > > > regulator_init_complete(), which turns off unused regulators 30s after
+> > > > system boot. That's conceptually similar to the current
+> > > > genpd_power_off_unused(), but would provide time for modules being loaded.
+> > > 
+> > > I think the overall goal is to move away from ad-hoc implementations like
+> > > clk_disable_unused/genpd_power_off_unused/regulator_init_complete towards
+> > > the sync_state.
+> > 
+> > I generally agree with the goal of using common mechanisms whenever possible.
+> > 
+> > > So inherently one either has to provide drivers for all devices in question
+> > > or disable unused devices in DT.
+> > 
+> > I don't think that's a great solution, it essentially hands the issue down to
+> > the users or downstream maintainers of the kernel, who might not be aware that
+> > there is an issue, nor know about the specifics of genpd (or interconnects and
+> > clocks which have similar problems).
+> 
+> The goal is to move the control down to individual drivers. Previously we
+> had issues with clk_disable_unused() disabling mdss/mdp clocks incorrectly,
+> which frequently led to broken display output. Other clock/genpd/regulator
+> drivers might have other internal dependencies. Thus it is not really
+> possible to handle resource shutdown in the common  (framework) code.
+> 
+> > 
+> > In general symptoms are probably subtle, like a (potentially substantially)
+> > increased power consumption during system suspend. The issue might have been
+> > introduced by an update to a newer kernel, which now includes a DT node for a
+> > new SoC feature which wasn't supported by the 'old' kernel. It's common
+> > practice to use the 'old' .config, at least as a starting point, which
+> > obviously doesn't enable the new driver. That happend to me with [1] when
+> > testing v6.1. It took me quite some time to track the 'culprit' commit down
+> > and then some debugging to understand what's going on. Shortly after that I
+> > ran into a related issue involving genpds when testing v6.2-rc, which again
+> > took a non-trivial amount of time to track down (and I'm familiar with the SoC
+> > platform and the general nature of the issue). I don't think it's reasonable
+> > to expect every user/downstream maintainer of an impacted system to go through
+> > this, one person at a time.
+> 
+> I think it would be nice to have some way of 'sync_pending' debug available
+> (compare this to debugfs/devices_deferred).
 
-So why is this the first time I'm learning about this plan?
+There is actually a 'state_synced' sysfs interface (per device) that
+either shows 0, meaning it hasn't reach sync_state yet, or the file is
+not available at all, meaning it has reached sync_state.
 
-> Obviously this renaming can only happen if there are no more user of
-> the thermal_zone_device_register() function.
->
-> This change uses thermal_zone_device_register_with_trips() with a NULL
-> parameter for the trip point array instead of
-> thermal_zone_device_register().
-
-And later it will be renamed to thermal_zone_device_register() again?
-
-Can we just stop confusing people this way?
-
-What would be wrong with changing both
-thermal_zone_device_register_with_trips() and
-thermal_zone_device_register() together when we are ready?  And why
-can't the both be replaced with something line thermal_zone_register()
-doing all of the necessary things in one go?  Why do we have to make
-confusing and redundant changes?
+> 
+> Note, we are trying to make sure that all supported drivers are enabled at
+> least as modules (if possible). If we fail, please send a patch fixing the
+> defconfig.
+> 
+> > Maybe there could be a generic solution for drivers with a 'sync_state'
+> > callback, e.g. a the driver (or framework) could have a 'sync_state_timeout'
+> > callback (or similar), which is called by the driver framework if 'sync_state'
+> > wasn't called (for example) 30s after the device was probed. Then the provider
+> > can power off or throttle unclaimed resources.
+> 
+> I might be missing a point somewhere, but for me it looks like a logical
+> solution. Please send a proposal.
+> 
+> -- 
+> With best wishes
+> Dmitry
+> 
