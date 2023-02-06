@@ -2,281 +2,94 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21544C636CC
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Feb 2023 20:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 899ADC636CD
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Feb 2023 01:23:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229539AbjBEUYg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Feb 2023 15:24:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48380 "EHLO
+        id S229556AbjBFBXz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Feb 2023 20:23:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229513AbjBEUYf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2023 15:24:35 -0500
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FA9E10AAF
-        for <linux-pm@vger.kernel.org>; Sun,  5 Feb 2023 12:24:33 -0800 (PST)
-Received: by mail-wm1-x332.google.com with SMTP id j29-20020a05600c1c1d00b003dc52fed235so7401721wms.1
-        for <linux-pm@vger.kernel.org>; Sun, 05 Feb 2023 12:24:33 -0800 (PST)
+        with ESMTP id S229523AbjBFBXy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2023 20:23:54 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECC1B17CD3
+        for <linux-pm@vger.kernel.org>; Sun,  5 Feb 2023 17:23:51 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id j25so5494662wrc.4
+        for <linux-pm@vger.kernel.org>; Sun, 05 Feb 2023 17:23:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20210112.gappssmtp.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=fPPGc52/qweAR4qOwMEm1FzbAp5khhYNOJIG5EkHPuU=;
-        b=F9/ZRC1cZQCGE9QpvSoYxdHAZ+UNj8RsE1Y4y25ZKtlXo3iyeRqDoI/oaHn7Y7SKs7
-         T1N8Pz4VqYajk4FBzbykEl5s1KvUe5R578IpbaCLmBQ81VD8lJyjnVund5SGc2N4jLsl
-         uG+CGJE7aYaGla4jnM8TS2qlYeaMLeDmQH0x691PDMH1If+oqvn+P6g6FMeCfYyRUoPu
-         oyI6iSQGdmCl4+zqOrX5Y0waD3JWEVQ+LcmjnsDtX5oIX6hkKsX9YFFpFT7bOJWR+giW
-         ecfxFPmQhKQ7w2vpBeGCz7kyNMQTHEE8FqOOLDjqa0jgvy3E3oKwTRq8cenotcaBDVVr
-         GrHA==
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iUksypkjsjXmpug5tiXZYyYvtBaikan2cm9Jx3UJnKk=;
+        b=bPD2724PdcjqFUXa5Y3b0pWm8+SZq7varn1UebsqrTb1x3muquLQsTG8UYPIG7A4L8
+         zHj+91rHCtOefQI8HsicmAjcDU6OBgG6o4qoktve0tv4nvQWBh+x6dCiTnoGMsiu9wXb
+         QVl9n5eYJmLMbicDxdl2JkozUQIMy1IQYSVJYXCdPIfdrbpfgrQUOreQxOHLI66bEenz
+         IJ7+UfG+UvBuRxycLigWLWl0roI41LgYYWmUrrtxPHSeA0abuaJJ32ctKI5f7PHxThDy
+         JgE+9kQhvunQ/Ux+N8eIvRSd140pWR7003inaTWhdnMVJd1zCvqyGEN6zEqPUWhRvAW/
+         MFiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=fPPGc52/qweAR4qOwMEm1FzbAp5khhYNOJIG5EkHPuU=;
-        b=BKPqFNf67hfif2wsLqhMoF+A23dpswNryhV87MZ39csRw/ekf80ZhcQbCtN1Zpp32z
-         K8i/uvnSgxgiwS55TAWxSPNutHml2cLmdPmPcupw64juXnK8DE5xX6bXAh6PiX6gkO6I
-         vqWSsN0I4ZxGXUgqpoRRr/PNAPR6GvYYMgrnyuYVutiGeHb94KDbKjVi3MWAsxOhv07u
-         7nMzChVwVN4gbgjR4UeAh3IGSN4Ip1lPHOEx9IHROVSePe2K/QIhHvINB5ZHglVE+m5f
-         6544xa/Ikzrl9tpomjug0zKeR6KyDilZEZUXrkod+Wt+U2K5oNTOeGbkYb+KGrK+ElPF
-         ny3A==
-X-Gm-Message-State: AO0yUKXJhQj6EnXwyg6m7B/0I0DD3sCjug6HhYl3IODKac0FGkhwbAg0
-        21HiueO9YoJ2dhoNRnde2wQJhQ==
-X-Google-Smtp-Source: AK7set9EGNPegv6eYvlujN072lJVFkT313sY3wujkiZmhV5bcg5ijXvjAWahaRv04peSUxZb7QIFlQ==
-X-Received: by 2002:a05:600c:1e24:b0:3da:f665:5b66 with SMTP id ay36-20020a05600c1e2400b003daf6655b66mr21166952wmb.6.1675628671537;
-        Sun, 05 Feb 2023 12:24:31 -0800 (PST)
-Received: from airbuntu (host86-163-35-10.range86-163.btcentralplus.com. [86.163.35.10])
-        by smtp.gmail.com with ESMTPSA id s22-20020a1cf216000000b003dffe312925sm2134609wmc.15.2023.02.05.12.24.30
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=iUksypkjsjXmpug5tiXZYyYvtBaikan2cm9Jx3UJnKk=;
+        b=RY8V0WEC1ktt2biUihYMi6d15qIdygJQCyYkrU8etjbRBdhUTIX+9Fq2S62upp3zeb
+         dTs7flNUjC5D8ZKLfrH9HyNNf4B8hU8dZf6tYDA8z4nSOlfj6a9bnm6Gt4v8WaR/O8zG
+         m6J2X0ld3iA1XugYJqnUjmRTH0glzE/dMtfLuE3hQZPmMt9VXqx0LjZUs/yG8oXfk8/R
+         T3muH296GH4kChTafR6RHEkJhVt/dKJT5Pr9OrVo/vfFndFLNU/Mc1FkWBsvNb8POQa3
+         OtVZK42A2EOAFr0RMCGgWbCCQtQUrrMazPgnB+sjm0g0gAbFl49/NE/EdirIY+5XLUXs
+         cAAw==
+X-Gm-Message-State: AO0yUKWtBOVWmrX0uZYiuS1QK6fuKO7clZK1jaI5EO0do0F/MNCTEFOb
+        wGNSKh1z8evRQssVMlCoDsBRnw==
+X-Google-Smtp-Source: AK7set9dHz3P3hwjKVybJO3qPKLRoeToWsqhddoNn1OUs7tbgi6fQVRYHHBdL2yABD5atWIgVtlGRw==
+X-Received: by 2002:a05:6000:1449:b0:2bf:b080:77ea with SMTP id v9-20020a056000144900b002bfb08077eamr18489321wrx.9.1675646630563;
+        Sun, 05 Feb 2023 17:23:50 -0800 (PST)
+Received: from sagittarius-a.chello.ie (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
+        by smtp.gmail.com with ESMTPSA id d2-20020a056000186200b002bddd75a83fsm8048027wri.8.2023.02.05.17.23.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 05 Feb 2023 12:24:30 -0800 (PST)
-Date:   Sun, 5 Feb 2023 20:24:29 +0000
-From:   Qais Yousef <qyousef@layalina.io>
-To:     Vincent Guittot <vincent.guittot@linaro.org>
-Cc:     mingo@kernel.org, peterz@infradead.org, dietmar.eggemann@arm.com,
-        rafael@kernel.org, viresh.kumar@linaro.org, vschneid@redhat.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kajetan.puchalski@arm.com, lukasz.luba@arm.com, wvw@google.com,
-        xuewen.yan94@gmail.com, han.lin@mediatek.com,
-        Jonathan.JMChen@mediatek.com
-Subject: Re: [PATCH 2/2 v5] sched/fair: Remove capacity inversion detection
-Message-ID: <20230205202429.dbwr5qz45qgp53gs@airbuntu>
-References: <20230201143628.270912-1-vincent.guittot@linaro.org>
- <20230201143628.270912-3-vincent.guittot@linaro.org>
- <20230204184231.zx6oo52r5q2nvij7@airbuntu>
- <CAKfTPtAGRY8duSnvafntYJ20H1JGPeuhyLCvVRk0MEUsoTY_Tg@mail.gmail.com>
+        Sun, 05 Feb 2023 17:23:50 -0800 (PST)
+From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        djakov@kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org
+Cc:     bryan.odonoghue@linaro.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, benl@squareup.com,
+        shawn.guo@linaro.org, fabien.parent@linaro.org, leo.yan@linaro.org,
+        dmitry.baryshkov@linaro.org, stephan@gerhold.net
+Subject: [PATCH v5 1/5] dt-bindings: vendor-prefixes: Add Square
+Date:   Mon,  6 Feb 2023 01:23:32 +0000
+Message-Id: <20230206012336.2130341-2-bryan.odonoghue@linaro.org>
+X-Mailer: git-send-email 2.39.1
+In-Reply-To: <20230206012336.2130341-1-bryan.odonoghue@linaro.org>
+References: <20230206012336.2130341-1-bryan.odonoghue@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtAGRY8duSnvafntYJ20H1JGPeuhyLCvVRk0MEUsoTY_Tg@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 02/05/23 18:29, Vincent Guittot wrote:
-> On Sat, 4 Feb 2023 at 19:42, Qais Yousef <qyousef@layalina.io> wrote:
-> >
-> > On 02/01/23 15:36, Vincent Guittot wrote:
-> > > Remove the capacity inversion detection which is now handled by
-> > > util_fits_cpu() returning -1 when we need to continue to look for a
-> > > potential CPU with better performance.
-> > >
-> > > This ends up almost reverting patches below except for some comments:
-> >
-> > nit: I think this comment must be removed/reworeded though
-> 
-> This comment has already been removed. That's why I said almost revert
-> except for some comments in the commit message
+Add vendor prefix for Square (https://squareup.com).
 
-Oh, my diff cmd had the wrong order then, sorry.
+Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+---
+ Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> 
-> >
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 691a2f9c4efa..c6c8e7f52935 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -4476,10 +4476,6 @@ static inline int util_fits_cpu(unsigned long util,
-> >          *
-> >          * For uclamp_max, we can tolerate a drop in performance level as the
-> >          * goal is to cap the task. So it's okay if it's getting less.
-> > -        *
-> > -        * In case of capacity inversion, which is not handled yet, we should
-> > -        * honour the inverted capacity for both uclamp_min and uclamp_max all
-> > -        * the time.
-> >          */
-> >         capacity_orig = capacity_orig_of(cpu);
-> >         capacity_orig_thermal = capacity_orig - arch_scale_thermal_pressure(cpu);
-> >
-> > > commit da07d2f9c153 ("sched/fair: Fixes for capacity inversion detection")
-> > > commit aa69c36f31aa ("sched/fair: Consider capacity inversion in util_fits_cpu()")
-> > > commit 44c7b80bffc3 ("sched/fair: Detect capacity inversion")
-> > >
-> > > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> >
-> > Apart from that, LGTM.
-> >
-> > Reviewed-by: Qais Yousef <qyousef@layalina.io>
-> 
-> Thanks
-> 
-> >
-> >
-> > Thanks!
-> >
-> > --
-> > Qais Yousef
-> >
-> > > ---
-> > >  kernel/sched/fair.c  | 84 +++-----------------------------------------
-> > >  kernel/sched/sched.h | 19 ----------
-> > >  2 files changed, 5 insertions(+), 98 deletions(-)
-> > >
-> > > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > > index 074742f107c0..c6c8e7f52935 100644
-> > > --- a/kernel/sched/fair.c
-> > > +++ b/kernel/sched/fair.c
-> > > @@ -4476,17 +4476,9 @@ static inline int util_fits_cpu(unsigned long util,
-> > >        *
-> > >        * For uclamp_max, we can tolerate a drop in performance level as the
-> > >        * goal is to cap the task. So it's okay if it's getting less.
-> > > -      *
-> > > -      * In case of capacity inversion we should honour the inverted capacity
-> > > -      * for both uclamp_min and uclamp_max all the time.
-> > >        */
-> > > -     capacity_orig = cpu_in_capacity_inversion(cpu);
-> > > -     if (capacity_orig) {
-> > > -             capacity_orig_thermal = capacity_orig;
-> > > -     } else {
-> > > -             capacity_orig = capacity_orig_of(cpu);
-> > > -             capacity_orig_thermal = capacity_orig - arch_scale_thermal_pressure(cpu);
-> > > -     }
-> > > +     capacity_orig = capacity_orig_of(cpu);
-> > > +     capacity_orig_thermal = capacity_orig - arch_scale_thermal_pressure(cpu);
-> > >
-> > >       /*
-> > >        * We want to force a task to fit a cpu as implied by uclamp_max.
-> > > @@ -9027,82 +9019,16 @@ static unsigned long scale_rt_capacity(int cpu)
-> > >
-> > >  static void update_cpu_capacity(struct sched_domain *sd, int cpu)
-> > >  {
-> > > -     unsigned long capacity_orig = arch_scale_cpu_capacity(cpu);
-> > >       unsigned long capacity = scale_rt_capacity(cpu);
-> > >       struct sched_group *sdg = sd->groups;
-> > > -     struct rq *rq = cpu_rq(cpu);
-> > >
-> > > -     rq->cpu_capacity_orig = capacity_orig;
-> > > +     cpu_rq(cpu)->cpu_capacity_orig = arch_scale_cpu_capacity(cpu);
-> > >
-> > >       if (!capacity)
-> > >               capacity = 1;
-> > >
-> > > -     rq->cpu_capacity = capacity;
-> > > -
-> > > -     /*
-> > > -      * Detect if the performance domain is in capacity inversion state.
-> > > -      *
-> > > -      * Capacity inversion happens when another perf domain with equal or
-> > > -      * lower capacity_orig_of() ends up having higher capacity than this
-> > > -      * domain after subtracting thermal pressure.
-> > > -      *
-> > > -      * We only take into account thermal pressure in this detection as it's
-> > > -      * the only metric that actually results in *real* reduction of
-> > > -      * capacity due to performance points (OPPs) being dropped/become
-> > > -      * unreachable due to thermal throttling.
-> > > -      *
-> > > -      * We assume:
-> > > -      *   * That all cpus in a perf domain have the same capacity_orig
-> > > -      *     (same uArch).
-> > > -      *   * Thermal pressure will impact all cpus in this perf domain
-> > > -      *     equally.
-> > > -      */
-> > > -     if (sched_energy_enabled()) {
-> > > -             unsigned long inv_cap = capacity_orig - thermal_load_avg(rq);
-> > > -             struct perf_domain *pd;
-> > > -
-> > > -             rcu_read_lock();
-> > > -
-> > > -             pd = rcu_dereference(rq->rd->pd);
-> > > -             rq->cpu_capacity_inverted = 0;
-> > > -
-> > > -             for (; pd; pd = pd->next) {
-> > > -                     struct cpumask *pd_span = perf_domain_span(pd);
-> > > -                     unsigned long pd_cap_orig, pd_cap;
-> > > -
-> > > -                     /* We can't be inverted against our own pd */
-> > > -                     if (cpumask_test_cpu(cpu_of(rq), pd_span))
-> > > -                             continue;
-> > > -
-> > > -                     cpu = cpumask_any(pd_span);
-> > > -                     pd_cap_orig = arch_scale_cpu_capacity(cpu);
-> > > -
-> > > -                     if (capacity_orig < pd_cap_orig)
-> > > -                             continue;
-> > > -
-> > > -                     /*
-> > > -                      * handle the case of multiple perf domains have the
-> > > -                      * same capacity_orig but one of them is under higher
-> > > -                      * thermal pressure. We record it as capacity
-> > > -                      * inversion.
-> > > -                      */
-> > > -                     if (capacity_orig == pd_cap_orig) {
-> > > -                             pd_cap = pd_cap_orig - thermal_load_avg(cpu_rq(cpu));
-> > > -
-> > > -                             if (pd_cap > inv_cap) {
-> > > -                                     rq->cpu_capacity_inverted = inv_cap;
-> > > -                                     break;
-> > > -                             }
-> > > -                     } else if (pd_cap_orig > inv_cap) {
-> > > -                             rq->cpu_capacity_inverted = inv_cap;
-> > > -                             break;
-> > > -                     }
-> > > -             }
-> > > -
-> > > -             rcu_read_unlock();
-> > > -     }
-> > > -
-> > > -     trace_sched_cpu_capacity_tp(rq);
-> > > +     cpu_rq(cpu)->cpu_capacity = capacity;
-> > > +     trace_sched_cpu_capacity_tp(cpu_rq(cpu));
-> > >
-> > >       sdg->sgc->capacity = capacity;
-> > >       sdg->sgc->min_capacity = capacity;
-> > > diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> > > index 1072502976df..3e8df6d31c1e 100644
-> > > --- a/kernel/sched/sched.h
-> > > +++ b/kernel/sched/sched.h
-> > > @@ -1044,7 +1044,6 @@ struct rq {
-> > >
-> > >       unsigned long           cpu_capacity;
-> > >       unsigned long           cpu_capacity_orig;
-> > > -     unsigned long           cpu_capacity_inverted;
-> > >
-> > >       struct balance_callback *balance_callback;
-> > >
-> > > @@ -2899,24 +2898,6 @@ static inline unsigned long capacity_orig_of(int cpu)
-> > >       return cpu_rq(cpu)->cpu_capacity_orig;
-> > >  }
-> > >
-> > > -/*
-> > > - * Returns inverted capacity if the CPU is in capacity inversion state.
-> > > - * 0 otherwise.
-> > > - *
-> > > - * Capacity inversion detection only considers thermal impact where actual
-> > > - * performance points (OPPs) gets dropped.
-> > > - *
-> > > - * Capacity inversion state happens when another performance domain that has
-> > > - * equal or lower capacity_orig_of() becomes effectively larger than the perf
-> > > - * domain this CPU belongs to due to thermal pressure throttling it hard.
-> > > - *
-> > > - * See comment in update_cpu_capacity().
-> > > - */
-> > > -static inline unsigned long cpu_in_capacity_inversion(int cpu)
-> > > -{
-> > > -     return cpu_rq(cpu)->cpu_capacity_inverted;
-> > > -}
-> > > -
-> > >  /**
-> > >   * enum cpu_util_type - CPU utilization type
-> > >   * @FREQUENCY_UTIL:  Utilization used to select frequency
-> > > --
-> > > 2.34.1
-> > >
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+index 1f7a519a936fd..6e03409c44cec 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
++++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+@@ -1249,6 +1249,8 @@ patternProperties:
+     description: SpinalHDL
+   "^sprd,.*":
+     description: Spreadtrum Communications Inc.
++  "^square,.*":
++    description: Square
+   "^ssi,.*":
+     description: SSI Computer Corp
+   "^sst,.*":
+-- 
+2.39.1
+
