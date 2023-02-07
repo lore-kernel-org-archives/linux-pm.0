@@ -2,109 +2,181 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35645C636CD
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 13:33:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4952CC64EC5
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 13:33:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232181AbjBGNdJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 08:33:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50944 "EHLO
+        id S232033AbjBGNdf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 08:33:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232008AbjBGNdI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 08:33:08 -0500
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DA8B1F5C2;
-        Tue,  7 Feb 2023 05:33:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675776780; x=1707312780;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=JXEbPFglSuiQr9d7wSUk0H3DKc91xWhi0p9Mc42n5FA=;
-  b=PTWVqzeiZVa8JSHw6vt4+wmYHw9mJ8c6mmINi97695zS7K0A7+MEgOsm
-   S9iVLdQZGRUxWfGpnGbHI2m1C/jGCksrH2mId+86tJzNk6DXP5GtK6HPg
-   wYF6gTeF+Kn/+CuVfPALaqMEFqe+SSZKZFkd3CqXWOuP5XgqCPOUu21PZ
-   /niOUNuoG6SjnyHJc6+/LQIpNLKjjB1woq+bKjblFTMrvJa+W96NdXtwp
-   7BxHOXRTi3ccpVW2CCEGwhWPqI3K1adens4sPx6XAdX24ULgmbjIUc8DK
-   tlXHjk7JU6L/+yu0RFixfItVCySS1fR+RHzHQdCJaqmw9iOkiATEiQ97Y
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10614"; a="391899591"
-X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="391899591"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Feb 2023 05:32:59 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10614"; a="755628365"
-X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="755628365"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by FMSMGA003.fm.intel.com with ESMTP; 07 Feb 2023 05:32:59 -0800
-Date:   Tue, 7 Feb 2023 05:42:37 -0800
-From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     "Zhang, Rui" <rui.zhang@intel.com>,
-        "rafael@kernel.org" <rafael@kernel.org>,
-        "Neri, Ricardo" <ricardo.neri@intel.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 0/2] intel_powerclamp: New module parameter
-Message-ID: <20230207134237.GA13076@ranerica-svr.sc.intel.com>
-References: <20230205025902.2899734-1-srinivas.pandruvada@linux.intel.com>
- <a68a6f8c76cb719cd4865bd6aa726306772d4ee3.camel@intel.com>
- <60514763753f572f854f1bbf287c3c16fbbc12c3.camel@linux.intel.com>
- <468eedb9d8a839d22ffd18125d3104f8c014965c.camel@intel.com>
- <f33bc346d8d4ae086ddf59db2670ce9a8f80a250.camel@linux.intel.com>
+        with ESMTP id S232206AbjBGNdd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 08:33:33 -0500
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5DF82C654
+        for <linux-pm@vger.kernel.org>; Tue,  7 Feb 2023 05:33:22 -0800 (PST)
+Received: by mail-wr1-x436.google.com with SMTP id j25so10028667wrc.4
+        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2023 05:33:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=4Gnj8mx6BQv+P/VZTc2ZRvZ4cPWBzn/d/g1R6N3t1SY=;
+        b=sywB6VKP5uMO4iMwIfYWNewUXqdyUmfAHNyhyo3OrdI4w9hMA/do0JdT6XDgbayfL+
+         hioKOeqNB9gmBTeOJ+GEqRzkacs91bBLXr18APnsVAUBpOFSSsRR/mPgDw2PAZiSngST
+         GHN3F7C6RRw0zyStZrcDu6HUwZTZEJW9//HKZNnFr8pbdBYO0ZeQTSQ1wJUc9qr39WDw
+         RAZprI560qB9/D7SJ2L2mhHzMzvqn4IkElOgb3RhfyiCRKxMOqVm8can1xTMfSUuQzTl
+         3d/Otz4g9TJG3uwzIfUqVNKE0lVe3mXM4bFnaRqiGH/VF2JhF06rxIQG2kcu+KI3CJbC
+         UTcQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4Gnj8mx6BQv+P/VZTc2ZRvZ4cPWBzn/d/g1R6N3t1SY=;
+        b=hMfJdW2nW9LRM1dBt3BWyE6vJglWj055pXNZ1CitGuiw1TuYP5iFIX/XDRvHksEk3H
+         RD3Uxo/SbSxLCt8ZY98dWX8+6NaCk5sK4pHHQy2DREjLybfghnBG6N/45P57UBbpsXFS
+         wwcBIRqZeTgcTZ6QkfuCBu6RdaL/cCne/2pN1yRahsHQKpl6nIfnQEPVI8HAd5LJnToM
+         jh4KUmB70382l8NAiKvAr/NdY0QliRmi0Y3ADZx7xYZ33o0pwKWbdipDUmJSuDflU7nv
+         VXwvVu7qB6Su7fAzqyn9moRaOVnUurFL71xQtcyAaXW84Xh4gfaXg9fBS4Dy0NTAxwYC
+         RavA==
+X-Gm-Message-State: AO0yUKVoG6KonxEuPnAyXX4nnWvJEYlXPN7PMxctvPDQkFRfroVYv/as
+        +FY67rWhoZRnCM0qIq/ZSKe99Q==
+X-Google-Smtp-Source: AK7set9tflq7m2WGhWzU48ho/FGtJPjdoU4DUvNTQOyFDfwfzYJ/cgrUGOgVxSNmGa0o1E+FD6YRHA==
+X-Received: by 2002:a05:6000:1b0f:b0:2c3:ea4d:3f01 with SMTP id f15-20020a0560001b0f00b002c3ea4d3f01mr2338118wrz.27.1675776801421;
+        Tue, 07 Feb 2023 05:33:21 -0800 (PST)
+Received: from ?IPV6:2a01:e0a:982:cbb0:c58c:fc5c:67d6:e5f3? ([2a01:e0a:982:cbb0:c58c:fc5c:67d6:e5f3])
+        by smtp.gmail.com with ESMTPSA id t1-20020a5d4601000000b002bdfe3aca17sm11241983wrq.51.2023.02.07.05.33.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 07 Feb 2023 05:33:21 -0800 (PST)
+Message-ID: <e8e983a7-5dac-507d-414e-0fdc1082644a@linaro.org>
+Date:   Tue, 7 Feb 2023 14:33:19 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f33bc346d8d4ae086ddf59db2670ce9a8f80a250.camel@linux.intel.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Reply-To: neil.armstrong@linaro.org
+Subject: Re: [PATCH] thermal: Remove core header inclusion from drivers
+Content-Language: en-US
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rafael.j.wysocki@intel.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Guillaume La Roque <glaroque@baylibre.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Broadcom internal kernel review list 
+        <bcm-kernel-feedback-list@broadcom.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund@ragnatech.se>,
+        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Haowen Bai <baihaowen@meizu.com>,
+        Minghao Chi <chi.minghao@zte.com.cn>,
+        "open list:THERMAL DRIVER FOR AMLOGIC SOCS" 
+        <linux-amlogic@lists.infradead.org>,
+        "moderated list:BROADCOM BCM2711/BCM2835 ARM ARCHITECTURE" 
+        <linux-rpi-kernel@lists.infradead.org>,
+        "moderated list:BROADCOM BCM2711/BCM2835 ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "open list:ARM/QUALCOMM SUPPORT" <linux-arm-msm@vger.kernel.org>,
+        "open list:RENESAS R-CAR THERMAL DRIVERS" 
+        <linux-renesas-soc@vger.kernel.org>,
+        "open list:SAMSUNG THERMAL DRIVER" 
+        <linux-samsung-soc@vger.kernel.org>,
+        "moderated list:ARM/STM32 ARCHITECTURE" 
+        <linux-stm32@st-md-mailman.stormreply.com>,
+        "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>
+References: <20230206153432.1017282-1-daniel.lezcano@linaro.org>
+From:   Neil Armstrong <neil.armstrong@linaro.org>
+Organization: Linaro Developer Services
+In-Reply-To: <20230206153432.1017282-1-daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Feb 06, 2023 at 02:02:28AM -0800, srinivas pandruvada wrote:
-> On Mon, 2023-02-06 at 08:05 +0000, Zhang, Rui wrote:
-> > On Sun, 2023-02-05 at 18:45 -0800, srinivas pandruvada wrote:
-> > > Hi Rui,
-> > > 
-> > > On Sun, 2023-02-05 at 15:57 +0000, Zhang, Rui wrote:
-> > > > Hi, Srinivas,
-> > > > 
-> > > > First of all, the previous build error is gone.
-> > > > 
-> > > > Second, I found something strange, which may be related with the
-> > > > scheduler asym-packing, so CC Ricardo.
-> > > > 
-> > > I thought you disable ITMT before idle injection and reenebale
-> > > after
-> > > removal.
-> > 
-> > No.
-> > 
-> > I can reproduce this by playing with raw intel_powerclamp sysfs knobs
-> > and ITMT enabled.
-> > 
+On 06/02/2023 16:34, Daniel Lezcano wrote:
+> As the name states "thermal_core.h" is the header file for the core
+> components of the thermal framework.
 > 
-> This issue is happening even if ITMT disabled. If the module mask is
-> composed of P-cores it works or even on servers as expected.
-> Also if you offline all P-cores then select mask among E-cores, it is
-> working. Somehow P-core influences E-cores.
+> Too many drivers are including it. Hopefully the recent cleanups
+> helped to self encapsulate the code a bit more and prevented the
+> drivers to need this header.
 > 
-> Since this patch is module mask related, that is functioning correctly.
-> We have to debug this interaction with P and E cores separately.
+> Remove this inclusion in every place where it is possible.
+> 
+> Some other drivers did a confusion with the core header and the one
+> exported in linux/thermal.h. They include the former instead of the
+> latter. The changes also fix this.
+> 
+> The tegra/soctherm driver still remains as it uses an internal
+> function which need to be replaced.
+> 
+> The Intel HFI driver uses the netlink internal framework core and
+> should be changed to prevent to deal with the internals.
+> 
+> No functional changes
+> 
+> [ Applies to thermal/linux-next or linux-pm/linux-next ]
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>   drivers/thermal/amlogic_thermal.c           | 1 -
+>   drivers/thermal/armada_thermal.c            | 2 --
+>   drivers/thermal/broadcom/bcm2835_thermal.c  | 1 -
+>   drivers/thermal/hisi_thermal.c              | 3 +--
+>   drivers/thermal/imx8mm_thermal.c            | 1 -
+>   drivers/thermal/imx_sc_thermal.c            | 1 -
+>   drivers/thermal/intel/intel_hfi.c           | 3 ++-
+>   drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 1 -
+>   drivers/thermal/qoriq_thermal.c             | 1 -
+>   drivers/thermal/rcar_gen3_thermal.c         | 1 -
+>   drivers/thermal/samsung/exynos_tmu.c        | 3 +--
+>   drivers/thermal/st/stm_thermal.c            | 1 -
+>   drivers/thermal/tegra/tegra30-tsensor.c     | 1 -
+>   drivers/thermal/uniphier_thermal.c          | 2 --
+>   14 files changed, 4 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+> index d30cb791e63c..9235fda4ec1e 100644
+> --- a/drivers/thermal/amlogic_thermal.c
+> +++ b/drivers/thermal/amlogic_thermal.c
+> @@ -28,7 +28,6 @@
+>   #include <linux/regmap.h>
+>   #include <linux/thermal.h>
+>   
+> -#include "thermal_core.h"
+>   #include "thermal_hwmon.h"
+>   
+>   #define TSENSOR_CFG_REG1			0x4
 
-Currently, when doing asym_packing, ECores will only pull tasks from a
-PCore only if both SMT siblings are busy. It will only pull from the
-lower-priority sibling. These patches [1] let ECores pull from either
-sibling, if both are busy.
+For Amlogic:
 
-I presume that by injecting idle, the scheduler thinks that the CPU is
-idle (i.e., idle_cpu() returns true) and it will not do asym_packing from
-lower-priority CPUs.
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
 
-However, in your experiment you have 16 threads. If a Pcore is overloaded,
-an ECore should be able to help.
+<snip>
 
-[1]. https://lore.kernel.org/lkml/20230207045838.11243-1-ricardo.neri-calderon@linux.intel.com/
- 
