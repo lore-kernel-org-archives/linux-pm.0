@@ -2,102 +2,144 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5A16C636CC
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 14:50:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44147C636CC
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 16:13:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230480AbjBGOuB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 09:50:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35936 "EHLO
+        id S232248AbjBGQNF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 11:13:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36144 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230210AbjBGOuA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 09:50:00 -0500
-Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E218D7;
-        Tue,  7 Feb 2023 06:49:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
-        s=20161220; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:
-        Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
-        Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-        In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-        List-Post:List-Owner:List-Archive;
-        bh=AMCBklPpZiJm6G+yI87fmT6RWZwGjjZhJUPUbbl1SrM=; b=r6xXnZyXYevGlxKGGwgcZW/CJm
-        ezl5C4pcwNrZuiifVl2gaIqYeXSDcSZJahz0ebZT4gOAJr0HiHo4/8EEBGrbWEuEGiwtqBbGNoItk
-        QSVbiWh2lOfajfyv6C910kc14wBP4cfsuotI4CBbK/d4ThNGzESE94rSLTVHGETgs9gwxk9+4j54o
-        cVXAjUt+sDkluLQ1T3zzc03hkj3xxKYAa8s8cte0TlLaRuZC5oFc6f6/vTNG2nAUIVK3Ome/Eq3AX
-        Gi7qeNpMCjLp8ZJPov0Tpbmu988nGveCOPhs0fs17rnKudOvwVW24SBm0Q9LPb8oiIXikUSOZUOZc
-        oSjLMn3w==;
-Received: from 91-158-25-70.elisa-laajakaista.fi ([91.158.25.70] helo=toshino.localdomain)
-        by mail.kapsi.fi with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <cyndis@kapsi.fi>)
-        id 1pPOSV-002qTL-L6; Tue, 07 Feb 2023 15:56:31 +0200
-From:   Mikko Perttunen <cyndis@kapsi.fi>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Srikar Srimath Tirumala <srikars@nvidia.com>
-Cc:     Mikko Perttunen <mperttunen@nvidia.com>,
-        Timo Alho <talho@nvidia.com>, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] thermal: tegra-bpmp: Handle offline zones
-Date:   Tue,  7 Feb 2023 15:56:08 +0200
-Message-Id: <20230207135610.3100865-1-cyndis@kapsi.fi>
-X-Mailer: git-send-email 2.39.0
+        with ESMTP id S232005AbjBGQND (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 11:13:03 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7ED98DBEF;
+        Tue,  7 Feb 2023 08:13:01 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id ECA1060F16;
+        Tue,  7 Feb 2023 16:13:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A13AC433D2;
+        Tue,  7 Feb 2023 16:12:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1675786380;
+        bh=cC2tkzskefDBrZsRvMNSczr6SitbzsKg7wGCqoUStHs=;
+        h=From:To:Cc:Subject:Date:From;
+        b=f6UuGFSLOAa3/jEqTL8xCu752LB/v8U3T4/n7H7TP+DnA7MHVJ5Vo5N6wy95yp83P
+         3RzDdYgxP0osFCxQoOpBVQ6QBH2x9upd1ijSxseNfiXM2jyY23tInRrYN/inEEjIEG
+         GPvz+k1Z1MlR7IVEt67M5aTJrybyZw5jDsUOkUFymVJjX/SlCwn7n24j6Vx5Dctp4F
+         YNCXUtoEGBQ1XJt914hG+MgsBiPcZ5bSnpnmdS6Gtknc5EOYbsBxUAljNC75gS2rh8
+         CMmRnOw9YU/dCZC6ACchSa1JcLgx1HKsBsJwkEtVF8w3aPEVcwndJ12mLguLm7M7wO
+         ZuWqcudZxdoyQ==
+From:   Arnd Bergmann <arnd@kernel.org>
+To:     Huang Rui <ray.huang@amd.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Wyes Karny <wyes.karny@amd.com>,
+        Perry Yuan <Perry.Yuan@amd.com>,
+        Mario Limonciello <Mario.Limonciello@amd.com>
+Cc:     Arnd Bergmann <arnd@arndb.de>, Perry Yuan <perry.yuan@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        Jinzhou Su <Jinzhou.Su@amd.com>, Meng Li <li.meng@amd.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: amd-pstate: avoid uninitialized variable use
+Date:   Tue,  7 Feb 2023 17:12:51 +0100
+Message-Id: <20230207161256.271613-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 91.158.25.70
-X-SA-Exim-Mail-From: cyndis@kapsi.fi
-X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Mikko Perttunen <mperttunen@nvidia.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
-Thermal zones located in power domains may not be accessible when
-the domain is powergated. In this situation, reading the temperature
-will return -BPMP_EFAULT and the temperature is considered to be
--256C for calculating trips.
+The new epp support causes warnings about three separate
+but related bugs:
 
-For smooth operation, for offline zones, return -EAGAIN when reading
-the temperature and allow registration of zones even if they are
-offline during probe.
+1) failing before allocation should just return an error:
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+drivers/cpufreq/amd-pstate.c:951:6: error: variable 'ret' is used uninitialized whenever 'if' condition is true [-Werror,-Wsometimes-uninitialized]
+        if (!dev)
+            ^~~~
+drivers/cpufreq/amd-pstate.c:1018:9: note: uninitialized use occurs here
+        return ret;
+               ^~~
+
+2) wrong variable to store return code:
+
+drivers/cpufreq/amd-pstate.c:963:6: error: variable 'ret' is used uninitialized whenever 'if' condition is true [-Werror,-Wsometimes-uninitialized]
+        if (rc)
+            ^~
+drivers/cpufreq/amd-pstate.c:1019:9: note: uninitialized use occurs here
+        return ret;
+               ^~~
+drivers/cpufreq/amd-pstate.c:963:2: note: remove the 'if' if its condition is always false
+        if (rc)
+        ^~~~~~~
+
+3) calling amd_pstate_set_epp() in cleanup path after determining
+that it should not be called:
+
+drivers/cpufreq/amd-pstate.c:1055:6: error: variable 'epp' is used uninitialized whenever 'if' condition is true [-Werror,-Wsometimes-uninitialized]
+        if (cpudata->epp_policy == cpudata->policy)
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/cpufreq/amd-pstate.c:1080:30: note: uninitialized use occurs here
+        amd_pstate_set_epp(cpudata, epp);
+                                    ^~~
+
+All three are trivial to fix, but most likely there are additional bugs
+in this function when the error handling was not really tested.
+
+Fixes: ffa5096a7c33 ("cpufreq: amd-pstate: implement Pstate EPP support for the AMD processors")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/thermal/tegra/tegra-bpmp-thermal.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/cpufreq/amd-pstate.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/tegra/tegra-bpmp-thermal.c b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-index c76e1ea62c8a..628b18818ae9 100644
---- a/drivers/thermal/tegra/tegra-bpmp-thermal.c
-+++ b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-@@ -52,6 +52,8 @@ static int __tegra_bpmp_thermal_get_temp(struct tegra_bpmp_thermal_zone *zone,
- 	err = tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
- 	if (err)
- 		return err;
-+	if (msg.rx.ret == -BPMP_EFAULT)
-+		return -EAGAIN;
- 	if (msg.rx.ret)
- 		return -EINVAL;
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 168a28bed6ee..847f5f31396d 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -940,7 +940,6 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
+ 	int min_freq, max_freq, nominal_freq, lowest_nonlinear_freq, ret;
+ 	struct amd_cpudata *cpudata;
+ 	struct device *dev;
+-	int rc;
+ 	u64 value;
  
-@@ -257,7 +259,12 @@ static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
- 		zone->tegra = tegra;
+ 	/*
+@@ -950,7 +949,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
+ 	amd_perf_ctl_reset(policy->cpu);
+ 	dev = get_cpu_device(policy->cpu);
+ 	if (!dev)
+-		goto free_cpudata1;
++		return -ENODEV;
  
- 		err = __tegra_bpmp_thermal_get_temp(zone, &temp);
--		if (err < 0) {
-+
-+		/*
-+		 * Sensors in powergated domains may temporarily fail to be read
-+		 * (-EAGAIN), but will become accessible when the domain is powered on.
-+		 */
-+		if (err < 0 && err != -EAGAIN) {
- 			devm_kfree(&pdev->dev, zone);
- 			continue;
- 		}
+ 	cpudata = kzalloc(sizeof(*cpudata), GFP_KERNEL);
+ 	if (!cpudata)
+@@ -959,8 +958,8 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
+ 	cpudata->cpu = policy->cpu;
+ 	cpudata->epp_policy = 0;
+ 
+-	rc = amd_pstate_init_perf(cpudata);
+-	if (rc)
++	ret = amd_pstate_init_perf(cpudata);
++	if (ret)
+ 		goto free_cpudata1;
+ 
+ 	min_freq = amd_get_min_freq(cpudata);
+@@ -1076,9 +1075,9 @@ static void amd_pstate_epp_init(unsigned int cpu)
+ 		value |= (u64)epp << 24;
+ 	}
+ 
++	amd_pstate_set_epp(cpudata, epp);
+ skip_epp:
+ 	WRITE_ONCE(cpudata->cppc_req_cached, value);
+-	amd_pstate_set_epp(cpudata, epp);
+ 	cpufreq_cpu_put(policy);
+ }
+ 
 -- 
-2.39.0
+2.39.1
 
