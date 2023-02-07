@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF0A3C636D4
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E175AC6379F
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230380AbjBGFCw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 00:02:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60484 "EHLO
+        id S230382AbjBGFCx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 00:02:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230034AbjBGFCA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 00:02:00 -0500
+        with ESMTP id S230096AbjBGFB7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 00:01:59 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0433F10ABF;
-        Mon,  6 Feb 2023 21:01:58 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C78A26EBF;
+        Mon,  6 Feb 2023 21:01:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675746118; x=1707282118;
+  t=1675746117; x=1707282117;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=MnwH95WqrXx0YKjXk9ndqrfgMIqXB+pUulyYTmcEQjs=;
-  b=kYtZL5d7ayHswTaAQ5gMhx0Nug0SLsiXIVIDCSc6wbcXjqbAv0T8xaVL
-   Pmtku8+ZXtdvlmlNDwu8OMjZcKjwqADLokBiQhzDqwCKuFJaiTaw+mUwm
-   hadIQlc2SIrM7S2FBELUTkITH3xGmaaz9rgbpaPVvgFjBkfLc9BZRXekH
-   7yakHEhYNbUfxxIEeZO2eB7/s7jzWB7UM1SpTmr6mLb09afy7TEsyDVDa
-   kjv3sYUPGbHW0/r+3xRDB66MQCZj+cs/ntE+AtWo13n1X8I2p7uXgKdAH
-   5algSyVlqMJM4m4IOKejY0wjCYxHZgPQYrvee/kCD+oPNnv0s4YU15FF6
+  bh=3ZodASqqSSM2NIj1LSnSMKhTz+ez7n5TchQdgqVyKMk=;
+  b=cf3RcTOkwDxK/NR3BWE33SHlTo7EtZxQEsk/ll545VQT14y2JO6ZaclE
+   FP+2ti8Bzb61Sst5OGfjNqF23wahIOHdpU6++RAAsvcssP0J4pn6d4/Cb
+   D7O7oYuFeRapk0b96g2ehWZj/YxfsCQU+avvB65ooJTzxmLLVYc67Xpc8
+   DGmU+eOTBhyAweTDJHMgr1bqc5lErPud88NxWOd93bTZO0c8rdObktfsf
+   fAJQD/AH7uEOd6scEKRIjli/Ksi6ntnHo4WOTcsGWJrHVVOtu0ZVUqMZw
+   A1mtrQKDfki2gCri0mN2zGkTRDc8y86fWRwgkI+8kWO2QWht0csLSO9Pu
    g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625938"
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625917"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="415625938"
+   d="scan'208";a="415625917"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
   by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2023 21:01:45 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657768"
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657758"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="668657768"
+   d="scan'208";a="668657758"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:45 -0800
+  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:44 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
         Juri Lelli <juri.lelli@redhat.com>,
@@ -59,9 +59,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v3 19/24] sched/core: Initialize helpers of task classification
-Date:   Mon,  6 Feb 2023 21:11:00 -0800
-Message-Id: <20230207051105.11575-20-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v3 17/24] thermal: intel: hfi: Enable the Intel Thread Director
+Date:   Mon,  6 Feb 2023 21:10:58 -0800
+Message-Id: <20230207051105.11575-18-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
 References: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
@@ -69,8 +69,13 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Just as tasks start life unclassified, initialize the classification
-auxiliar variables.
+Enable Intel Thread Director from the CPU hotplug callback: globally from
+CPU0 and then enable the thread-classification hardware in each logical
+processor individually.
+
+Also, initialize the number of classes supported.
+
+Let the scheduler know that it can start using IPC classes.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -91,27 +96,110 @@ Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v2:
- * None
+ * Use the new sched_enable_ipc_classes() interface to enable the use of
+   IPC classes in the scheduler.
 
 Changes since v1:
  * None
 ---
- kernel/sched/core.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/include/asm/msr-index.h  |  2 ++
+ drivers/thermal/intel/intel_hfi.c | 40 +++++++++++++++++++++++++++++--
+ 2 files changed, 40 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 9f4e9cc16df8..71b4af7ae496 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -4430,6 +4430,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
- 	p->se.vruntime			= 0;
- #ifdef CONFIG_IPC_CLASSES
- 	p->ipcc				= IPC_CLASS_UNCLASSIFIED;
-+	p->ipcc_tmp			= IPC_CLASS_UNCLASSIFIED;
-+	p->ipcc_cntr			= 0;
- #endif
- 	INIT_LIST_HEAD(&p->se.group_node);
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index ad35355ee43e..0ea25cc9c621 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -1106,6 +1106,8 @@
+ /* Hardware Feedback Interface */
+ #define MSR_IA32_HW_FEEDBACK_PTR        0x17d0
+ #define MSR_IA32_HW_FEEDBACK_CONFIG     0x17d1
++#define MSR_IA32_HW_FEEDBACK_THREAD_CONFIG 0x17d4
++#define MSR_IA32_HW_FEEDBACK_CHAR	0x17d2
  
+ /* x2APIC locked status */
+ #define MSR_IA32_XAPIC_DISABLE_STATUS	0xBD
+diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
+index 7ea6acce7107..35d947f47550 100644
+--- a/drivers/thermal/intel/intel_hfi.c
++++ b/drivers/thermal/intel/intel_hfi.c
+@@ -48,6 +48,8 @@
+ /* Hardware Feedback Interface MSR configuration bits */
+ #define HW_FEEDBACK_PTR_VALID_BIT		BIT(0)
+ #define HW_FEEDBACK_CONFIG_HFI_ENABLE_BIT	BIT(0)
++#define HW_FEEDBACK_CONFIG_ITD_ENABLE_BIT	BIT(1)
++#define HW_FEEDBACK_THREAD_CONFIG_ENABLE_BIT	BIT(0)
+ 
+ /* CPUID detection and enumeration definitions for HFI */
+ 
+@@ -72,6 +74,15 @@ union cpuid6_edx {
+ 	u32 full;
+ };
+ 
++union cpuid6_ecx {
++	struct {
++		u32	dont_care0:8;
++		u32	nr_classes:8;
++		u32	dont_care1:16;
++	} split;
++	u32 full;
++};
++
+ #ifdef CONFIG_IPC_CLASSES
+ union hfi_thread_feedback_char_msr {
+ 	struct {
+@@ -506,6 +517,11 @@ void intel_hfi_online(unsigned int cpu)
+ 
+ 	init_hfi_cpu_index(info);
+ 
++	if (cpu_feature_enabled(X86_FEATURE_ITD)) {
++		msr_val = HW_FEEDBACK_THREAD_CONFIG_ENABLE_BIT;
++		wrmsrl(MSR_IA32_HW_FEEDBACK_THREAD_CONFIG, msr_val);
++	}
++
+ 	/*
+ 	 * Now check if the HFI instance of the package/die of @cpu has been
+ 	 * initialized (by checking its header). In such case, all we have to
+@@ -561,8 +577,22 @@ void intel_hfi_online(unsigned int cpu)
+ 	 */
+ 	rdmsrl(MSR_IA32_HW_FEEDBACK_CONFIG, msr_val);
+ 	msr_val |= HW_FEEDBACK_CONFIG_HFI_ENABLE_BIT;
++
++	if (cpu_feature_enabled(X86_FEATURE_ITD))
++		msr_val |= HW_FEEDBACK_CONFIG_ITD_ENABLE_BIT;
++
+ 	wrmsrl(MSR_IA32_HW_FEEDBACK_CONFIG, msr_val);
+ 
++	/*
++	 * We have all we need to support IPC classes. Task classification is
++	 * now working.
++	 *
++	 * All class scores are zero until after the first HFI update. That is
++	 * OK. The scheduler queries these scores at every load balance.
++	 */
++	if (cpu_feature_enabled(X86_FEATURE_ITD))
++		sched_enable_ipc_classes();
++
+ unlock:
+ 	mutex_unlock(&hfi_instance_lock);
+ 	return;
+@@ -640,8 +670,14 @@ static __init int hfi_parse_features(void)
+ 	 */
+ 	hfi_features.class_stride = nr_capabilities;
+ 
+-	/* For now, use only one class of the HFI table */
+-	hfi_features.nr_classes = 1;
++	if (cpu_feature_enabled(X86_FEATURE_ITD)) {
++		union cpuid6_ecx ecx;
++
++		ecx.full = cpuid_ecx(CPUID_HFI_LEAF);
++		hfi_features.nr_classes = ecx.split.nr_classes;
++	} else {
++		hfi_features.nr_classes = 1;
++	}
+ 
+ 	/*
+ 	 * The header contains change indications for each supported feature.
 -- 
 2.25.1
 
