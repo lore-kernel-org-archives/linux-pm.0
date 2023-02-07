@@ -2,156 +2,145 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8A16C636CC
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 14:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49B57C636CD
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 14:19:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231713AbjBGORu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 09:17:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58440 "EHLO
+        id S232311AbjBGOT5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 09:19:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59606 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229441AbjBGORu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 09:17:50 -0500
-X-Greylist: delayed 1254 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 07 Feb 2023 06:17:47 PST
-Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E933C2884A;
-        Tue,  7 Feb 2023 06:17:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
-        s=20161220; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
-        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-        :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-        List-Post:List-Owner:List-Archive;
-        bh=Zrg3IByCp0PW4pKucv9m4DlG3g7aMkiLevmwDY/gzvE=; b=Yv381XU684DE4Rs0fSCgJIYiYj
-        3laAxXmTYSWyMYdozopx/SZwY9ye8H4r05BjptXLZDstz13Jt64EHOxhQH8kAuufolwfpyFLx3gwk
-        BMP/M4KDj/3O+5bjybx4oOGz1BBcQNPbO9lLQRUAB24sKL+vutxmYd4Q/PIPa+U572nGOFCbnxa2b
-        A+Zv5rYx9C8njUZ6DaLPs6H2ExlketAqxVD3mOjjhEVkazHiuPnIvkfQ8KJ7ZRp08dnVV1iw0+lvN
-        INHBTZTIeyjTr0wq/LGEWdLwPTZtfwc1KQ8FKNNAXYM3kfCouJxos1jV9CDHO1MN/smeq0G7zySQW
-        wFT4UIAA==;
-Received: from 91-158-25-70.elisa-laajakaista.fi ([91.158.25.70] helo=toshino.localdomain)
-        by mail.kapsi.fi with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <cyndis@kapsi.fi>)
-        id 1pPOSV-002qTL-Tk; Tue, 07 Feb 2023 15:56:31 +0200
-From:   Mikko Perttunen <cyndis@kapsi.fi>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Srikar Srimath Tirumala <srikars@nvidia.com>
-Cc:     Mikko Perttunen <mperttunen@nvidia.com>,
-        Timo Alho <talho@nvidia.com>, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] thermal: tegra-bpmp: Always (re)program trip temperatures
-Date:   Tue,  7 Feb 2023 15:56:09 +0200
-Message-Id: <20230207135610.3100865-2-cyndis@kapsi.fi>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230207135610.3100865-1-cyndis@kapsi.fi>
-References: <20230207135610.3100865-1-cyndis@kapsi.fi>
+        with ESMTP id S231531AbjBGOT4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 09:19:56 -0500
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A54D29434;
+        Tue,  7 Feb 2023 06:19:54 -0800 (PST)
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 317DcmHH020942;
+        Tue, 7 Feb 2023 14:19:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
+ cc : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=qcppdkim1; bh=k1M9nmRiFDLPQ8oXfcmTfW98qcSBYVvYTWTZ/0q5I4w=;
+ b=DZIpm5grI/gZVmCeGCJ0pYqkGEJb4FeOpZqTHjrwW0GHuWOBxqXch9AqKV/hTLPLcuDr
+ Mu+JP4Xa3P5aBpn/fDO0b/mbmESlK/IL8HfnXiYVphewn7MSGLQ4L8Qf4qLJuVVlIRpS
+ cIaTG5G2u2T+bU7ZGDjOKcjtKQy2qBX/cXQLUs0DMb5JxRdgqGx60RTRTwp3A+0LAV8R
+ aPIzNnLmxQU/UqGdO7/I1jXa5e+NLcXYKEM15dHobHh9UHxzUXsB+WmzPb4fX9Wo7ljg
+ Jxj6/El5RusyOQ/fWb6lgyOFHRlbb95lMcaUyxqL4xNDn9oW094qQUiWyS/z8UbOD9mx 9Q== 
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3nkfes98dg-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 07 Feb 2023 14:19:48 +0000
+Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 317EJlPJ026357
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 7 Feb 2023 14:19:47 GMT
+Received: from hu-bjorande-lv.qualcomm.com (10.49.16.6) by
+ nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.36; Tue, 7 Feb 2023 06:19:47 -0800
+Date:   Tue, 7 Feb 2023 06:19:45 -0800
+From:   Bjorn Andersson <quic_bjorande@quicinc.com>
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+CC:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        "Subbaraman Narayanamurthy" <quic_subbaram@quicinc.com>,
+        Johan Hovold <johan@kernel.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>
+Subject: Re: [PATCH v4 4/4] power: supply: Introduce Qualcomm PMIC GLINK
+ power supply
+Message-ID: <20230207141945.GA1639831@hu-bjorande-lv.qualcomm.com>
+References: <20230201041853.1934355-1-quic_bjorande@quicinc.com>
+ <20230201041853.1934355-5-quic_bjorande@quicinc.com>
+ <20230203112720.oa7e2psevbazicqo@mercury.elektranox.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 91.158.25.70
-X-SA-Exim-Mail-From: cyndis@kapsi.fi
-X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20230203112720.oa7e2psevbazicqo@mercury.elektranox.org>
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01c.na.qualcomm.com (10.47.97.35) To
+ nalasex01c.na.qualcomm.com (10.47.97.35)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: uC5Zdx35CjGFUL6WPEEJmo0TCVbfweKQ
+X-Proofpoint-ORIG-GUID: uC5Zdx35CjGFUL6WPEEJmo0TCVbfweKQ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
+ definitions=2023-02-07_05,2023-02-06_03,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ adultscore=0 suspectscore=0 mlxlogscore=999 impostorscore=0 mlxscore=0
+ malwarescore=0 spamscore=0 lowpriorityscore=0 clxscore=1011 phishscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2302070126
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Mikko Perttunen <mperttunen@nvidia.com>
+On Fri, Feb 03, 2023 at 12:27:20PM +0100, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Tue, Jan 31, 2023 at 08:18:53PM -0800, Bjorn Andersson wrote:
+> ...
+> > +static const enum power_supply_property sm8350_bat_props[] = {
+> > +	POWER_SUPPLY_PROP_STATUS,
+> > +	POWER_SUPPLY_PROP_HEALTH,
+> > +	POWER_SUPPLY_PROP_PRESENT,
+> > +	POWER_SUPPLY_PROP_CHARGE_TYPE,
+> > +	POWER_SUPPLY_PROP_CAPACITY,
+> > +	POWER_SUPPLY_PROP_VOLTAGE_OCV,
+> > +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> > +	POWER_SUPPLY_PROP_VOLTAGE_MAX,
+> > +	POWER_SUPPLY_PROP_CURRENT_NOW,
+> > +	POWER_SUPPLY_PROP_TEMP,
+> > +	POWER_SUPPLY_PROP_TECHNOLOGY,
+> > +	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+> > +	POWER_SUPPLY_PROP_CYCLE_COUNT,
+> > +	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+> > +	POWER_SUPPLY_PROP_CHARGE_FULL,
+> 
+> no CHARGE_NOW?
+> 
 
-In the rare case that calculation of trip temperatures would result
-in the same trip temperatures that were previously programmed, the
-thermal core skips calling .set_trips. However, presently, if it is
-not called, we may end up with no trip temperatures programmed at all.
+This doesn't seem to be exposed by the firmware...
 
-To avoid this, make set_trips a no-op and in places where it would be
-called, instead unconditionally program trip temperatures to the last
-specified temperatures.
+> > +	POWER_SUPPLY_PROP_MODEL_NAME,
+> > +	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+> > +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+> > +	POWER_SUPPLY_PROP_POWER_NOW,
+> > +};
+> 
+> ...
+> 
+> > +static struct auxiliary_driver qcom_battmgr_driver = {
+> > +	.name = "pmic_glink_power_supply",
+> > +	.probe = qcom_battmgr_probe,
+> > +	.id_table = qcom_battmgr_id_table,
+> > +};
+> > +
+> > +static int __init qcom_battmgr_init(void)
+> > +{
+> > +	return auxiliary_driver_register(&qcom_battmgr_driver);
+> > +}
+> > +module_init(qcom_battmgr_init);
+> > +
+> > +static void __exit qcom_battmgr_exit(void)
+> > +{
+> > +	auxiliary_driver_unregister(&qcom_battmgr_driver);
+> > +}
+> > +module_exit(qcom_battmgr_exit);
+> 
+> module_auxiliary_driver()
 
-This also fixes the situation where a trip is triggered between
-registering a thermal zone and registering the trip MRQ handler, in
-which case we would also get stuck.
+Missed that we have one of those, will update and resend.
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
----
- drivers/thermal/tegra/tegra-bpmp-thermal.c | 33 +++++++++++++++++++---
- 1 file changed, 29 insertions(+), 4 deletions(-)
+> 
+> Otherwise LGTM.
+> 
+> -- Sebastian 
 
-diff --git a/drivers/thermal/tegra/tegra-bpmp-thermal.c b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-index 628b18818ae9..9f69dbe1c7d4 100644
---- a/drivers/thermal/tegra/tegra-bpmp-thermal.c
-+++ b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-@@ -67,9 +67,8 @@ static int tegra_bpmp_thermal_get_temp(struct thermal_zone_device *tz, int *out_
- 	return __tegra_bpmp_thermal_get_temp(tz->devdata, out_temp);
- }
- 
--static int tegra_bpmp_thermal_set_trips(struct thermal_zone_device *tz, int low, int high)
-+static int tegra_bpmp_thermal_program_trips(struct tegra_bpmp_thermal_zone *zone)
- {
--	struct tegra_bpmp_thermal_zone *zone = tz->devdata;
- 	struct mrq_thermal_host_to_bpmp_request req;
- 	struct tegra_bpmp_message msg;
- 	int err;
-@@ -78,8 +77,10 @@ static int tegra_bpmp_thermal_set_trips(struct thermal_zone_device *tz, int low,
- 	req.type = CMD_THERMAL_SET_TRIP;
- 	req.set_trip.zone = zone->idx;
- 	req.set_trip.enabled = true;
--	req.set_trip.low = low;
--	req.set_trip.high = high;
-+	mutex_lock(&zone->tzd->lock);
-+	req.set_trip.low = zone->tzd->prev_low_trip;
-+	req.set_trip.high = zone->tzd->prev_high_trip;
-+	mutex_unlock(&zone->tzd->lock);
- 
- 	memset(&msg, 0, sizeof(msg));
- 	msg.mrq = MRQ_THERMAL;
-@@ -95,14 +96,31 @@ static int tegra_bpmp_thermal_set_trips(struct thermal_zone_device *tz, int low,
- 	return 0;
- }
- 
-+static int tegra_bpmp_thermal_set_trips(struct thermal_zone_device *tz, int low, int high)
-+{
-+	return 0;
-+}
-+
- static void tz_device_update_work_fn(struct work_struct *work)
- {
- 	struct tegra_bpmp_thermal_zone *zone;
-+	int err;
- 
- 	zone = container_of(work, struct tegra_bpmp_thermal_zone,
- 			    tz_device_update_work);
- 
-+	/* Recalculates trip temperatures. */
- 	thermal_zone_device_update(zone->tzd, THERMAL_TRIP_VIOLATED);
-+
-+	/*
-+	 * Program trip temperatures. We must do this outside `set_trips`
-+	 * since thermal core may skip calling it if the trip temperatures
-+	 * are unchanged.
-+	 */
-+	err = tegra_bpmp_thermal_program_trips(zone);
-+	if (err)
-+		dev_err(zone->tegra->dev, "failed to update trip temperatures for zone '%s': %d\n",
-+			zone->tzd->type, err);
- }
- 
- static void bpmp_mrq_thermal(unsigned int mrq, struct tegra_bpmp_channel *ch,
-@@ -293,6 +311,13 @@ static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
-+	for (i = 0; i < tegra->num_zones; i++) {
-+		err = tegra_bpmp_thermal_program_trips(tegra->zones[i]);
-+		if (err)
-+			dev_err(&pdev->dev, "failed to set trip temperatures for zone '%s': %d\n",
-+				tzd->type, err);
-+	}
-+
- 	platform_set_drvdata(pdev, tegra);
- 
- 	return 0;
--- 
-2.39.0
 
+Thanks,
+Bjorn
