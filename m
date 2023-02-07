@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11CD5C636D4
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF0A3C636D4
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230345AbjBGFCj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 00:02:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59990 "EHLO
+        id S230380AbjBGFCw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 00:02:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230092AbjBGFB7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 00:01:59 -0500
+        with ESMTP id S230034AbjBGFCA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 00:02:00 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C74CCDF1;
-        Mon,  6 Feb 2023 21:01:57 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0433F10ABF;
+        Mon,  6 Feb 2023 21:01:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675746117; x=1707282117;
+  t=1675746118; x=1707282118;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=A+SMOZzgEsVxAgLjF6sCJ/1gpwfA0tMbTNw8B4DLAIM=;
-  b=fCIWpLnWvVOZblBGvUfz1mfcwQWd0Wj6VTVW0bEwvGTCk23O+ZGxeuld
-   jjtcNSGAX6l4iZ/W9PZlReroJ2vApzJ3USF1g8Lm5qUnqlG7JT1qMWDI0
-   H6FNfi+ZqU1aCCQh8BNlveiPN+RIkkMHbCJ10uUqyWtocDETvtzI67hYH
-   hj9Z0//AAgnDnozgPFdehOz5Miy7HNxQ9O9luBHuopvI18PATDNOP04hv
-   0kmhNvELgkcUgxUUwU9wzBR/rmZt6fH1Go/E3a8qZeLjprt4QZbQHVhjZ
-   uunENef9sTQ0wGONgCJh2cT7ncG+dxubU8Opat1VDUcw4tNLBdVseObBe
+  bh=MnwH95WqrXx0YKjXk9ndqrfgMIqXB+pUulyYTmcEQjs=;
+  b=kYtZL5d7ayHswTaAQ5gMhx0Nug0SLsiXIVIDCSc6wbcXjqbAv0T8xaVL
+   Pmtku8+ZXtdvlmlNDwu8OMjZcKjwqADLokBiQhzDqwCKuFJaiTaw+mUwm
+   hadIQlc2SIrM7S2FBELUTkITH3xGmaaz9rgbpaPVvgFjBkfLc9BZRXekH
+   7yakHEhYNbUfxxIEeZO2eB7/s7jzWB7UM1SpTmr6mLb09afy7TEsyDVDa
+   kjv3sYUPGbHW0/r+3xRDB66MQCZj+cs/ntE+AtWo13n1X8I2p7uXgKdAH
+   5algSyVlqMJM4m4IOKejY0wjCYxHZgPQYrvee/kCD+oPNnv0s4YU15FF6
    g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625902"
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625938"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="415625902"
+   d="scan'208";a="415625938"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2023 21:01:44 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2023 21:01:45 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657752"
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657768"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="668657752"
+   d="scan'208";a="668657768"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:44 -0800
+  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:45 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
         Juri Lelli <juri.lelli@redhat.com>,
@@ -59,9 +59,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v3 15/24] thermal: intel: hfi: Report the IPC class score of a CPU
-Date:   Mon,  6 Feb 2023 21:10:56 -0800
-Message-Id: <20230207051105.11575-16-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v3 19/24] sched/core: Initialize helpers of task classification
+Date:   Mon,  6 Feb 2023 21:11:00 -0800
+Message-Id: <20230207051105.11575-20-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
 References: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
@@ -69,9 +69,8 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Implement the arch_get_ipcc_score() interface of the scheduler. Use the
-performance capabilities of the extended Hardware Feedback Interface table
-as the IPC score.
+Just as tasks start life unclassified, initialize the classification
+auxiliar variables.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -95,67 +94,24 @@ Changes since v2:
  * None
 
 Changes since v1:
- * Adjusted the returned HFI class (which starts at 0) to match the
-   scheduler IPCC class (which starts at 1). (PeterZ)
- * Used the new interface names.
+ * None
 ---
- arch/x86/include/asm/topology.h   |  2 ++
- drivers/thermal/intel/intel_hfi.c | 27 +++++++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
+ kernel/sched/core.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index ffcdac3f398f..c4fcd9c3c634 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -229,8 +229,10 @@ void init_freq_invariance_cppc(void);
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 9f4e9cc16df8..71b4af7ae496 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -4430,6 +4430,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+ 	p->se.vruntime			= 0;
+ #ifdef CONFIG_IPC_CLASSES
+ 	p->ipcc				= IPC_CLASS_UNCLASSIFIED;
++	p->ipcc_tmp			= IPC_CLASS_UNCLASSIFIED;
++	p->ipcc_cntr			= 0;
+ #endif
+ 	INIT_LIST_HEAD(&p->se.group_node);
  
- #if defined(CONFIG_IPC_CLASSES) && defined(CONFIG_INTEL_HFI_THERMAL)
- void intel_hfi_update_ipcc(struct task_struct *curr);
-+unsigned long intel_hfi_get_ipcc_score(unsigned short ipcc, int cpu);
- 
- #define arch_update_ipcc intel_hfi_update_ipcc
-+#define arch_get_ipcc_score intel_hfi_get_ipcc_score
- #endif /* defined(CONFIG_IPC_CLASSES) && defined(CONFIG_INTEL_HFI_THERMAL) */
- 
- #endif /* _ASM_X86_TOPOLOGY_H */
-diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
-index 530dcf57e06e..fa9b4a678d92 100644
---- a/drivers/thermal/intel/intel_hfi.c
-+++ b/drivers/thermal/intel/intel_hfi.c
-@@ -206,6 +206,33 @@ void intel_hfi_update_ipcc(struct task_struct *curr)
- 	curr->ipcc = msr.split.classid + 1;
- }
- 
-+unsigned long intel_hfi_get_ipcc_score(unsigned short ipcc, int cpu)
-+{
-+	unsigned short hfi_class;
-+	int *scores;
-+
-+	if (cpu < 0 || cpu >= nr_cpu_ids)
-+		return -EINVAL;
-+
-+	if (ipcc == IPC_CLASS_UNCLASSIFIED)
-+		return -EINVAL;
-+
-+	/*
-+	 * Scheduler IPC classes start at 1. HFI classes start at 0.
-+	 * See note intel_hfi_update_ipcc().
-+	 */
-+	hfi_class = ipcc - 1;
-+
-+	if (hfi_class >= hfi_features.nr_classes)
-+		return -EINVAL;
-+
-+	scores = per_cpu_ptr(hfi_ipcc_scores, cpu);
-+	if (!scores)
-+		return -ENODEV;
-+
-+	return READ_ONCE(scores[hfi_class]);
-+}
-+
- static int alloc_hfi_ipcc_scores(void)
- {
- 	if (!cpu_feature_enabled(X86_FEATURE_ITD))
 -- 
 2.25.1
 
