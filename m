@@ -2,146 +2,77 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0C8EC64EC4
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 17:51:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61F1FC636D3
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 18:31:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232484AbjBGRvo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 12:51:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53206 "EHLO
+        id S232065AbjBGSba (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 13:31:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56736 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232267AbjBGRvc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 12:51:32 -0500
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C18573EC48;
-        Tue,  7 Feb 2023 09:51:16 -0800 (PST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B6F651762;
-        Tue,  7 Feb 2023 09:51:58 -0800 (PST)
-Received: from [10.1.196.177] (eglon.cambridge.arm.com [10.1.196.177])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BDD593FA32;
-        Tue,  7 Feb 2023 09:51:11 -0800 (PST)
-Message-ID: <7462738f-e837-cd99-f441-8e7c29d250cd@arm.com>
-Date:   Tue, 7 Feb 2023 17:50:58 +0000
+        with ESMTP id S229992AbjBGSb3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 13:31:29 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75C2B1AE;
+        Tue,  7 Feb 2023 10:31:28 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 26827B81A1F;
+        Tue,  7 Feb 2023 18:31:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 362F6C433EF;
+        Tue,  7 Feb 2023 18:31:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1675794685;
+        bh=7D+FGdUcwyW9rKac2iRq0Q6ML2h/GFCkjJcCSB9Tu3E=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=Wn9h8sP7HD80T+q2uhlGOEc56yIl1cTicGx4Bg8WEXvGcisDb1NZ6Bh2TXPOC2fhr
+         7gNRHy9bET+GgfBhyg+Ox6x/xYdNyMF4rdQs/623dpjQvsodx0g11r0qHaTEgiY/xA
+         ouzb3XF5RR6v7yKuSAVKRmYVKDItJOKxUdx+eIKSqGwvmYKFhJv7JjwnRW0G3E5vcz
+         i72VUFScVMzeHnqyjFvDYLAFP9Ju1uZGtjWhob4SANZydDtBwtXQl46DR7rB+EvhoU
+         etnIBKSN5KMubloYUNXXEwq8XEiuaali+kRFVc6VADHBF8sOTXc4e5WiTvCx4Zgn4F
+         fhRt+vq7skNUw==
+Date:   Tue, 7 Feb 2023 10:31:24 -0800
+From:   Jakub Kicinski <kuba@kernel.org>
+To:     Qi Zheng <zhengqi.arch@bytedance.com>
+Cc:     patchwork-bot+netdevbpf@kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        rafael@kernel.org, j.vosburgh@gmail.com, vfalico@gmail.com,
+        andy@greyhouse.net, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 0/3] some minor fixes of error checking about
+ debugfs_rename()
+Message-ID: <20230207103124.052b5ce1@kernel.org>
+In-Reply-To: <aeae8fb8-b052-0d4a-5d3e-8de81e1b5092@bytedance.com>
+References: <20230202093256.32458-1-zhengqi.arch@bytedance.com>
+        <167548141786.31101.12461204128706467220.git-patchwork-notify@kernel.org>
+        <aeae8fb8-b052-0d4a-5d3e-8de81e1b5092@bytedance.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux aarch64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.0
-Subject: Re: [RFC PATCH 29/32] KVM: arm64: Pass hypercalls to userspace
-Content-Language: en-GB
-To:     Marc Zyngier <maz@kernel.org>
-Cc:     linux-pm@vger.kernel.org, loongarch@lists.linux.dev,
-        kvmarm@lists.linux.dev, kvm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, x86@kernel.org,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Borislav Petkov <bp@alien8.de>, H Peter Anvin <hpa@zytor.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Oliver Upton <oliver.upton@linux.dev>,
-        Len Brown <lenb@kernel.org>,
-        Rafael Wysocki <rafael@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        Salil Mehta <salil.mehta@huawei.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Jean-Philippe Brucker <jean-philippe@linaro.org>
-References: <20230203135043.409192-1-james.morse@arm.com>
- <20230203135043.409192-30-james.morse@arm.com> <865ycg1kv2.wl-maz@kernel.org>
-From:   James Morse <james.morse@arm.com>
-In-Reply-To: <865ycg1kv2.wl-maz@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Marc,
-
-On 05/02/2023 10:12, Marc Zyngier wrote:
-> On Fri, 03 Feb 2023 13:50:40 +0000,
-> James Morse <james.morse@arm.com> wrote:
->>
->> From: Jean-Philippe Brucker <jean-philippe@linaro.org>
->>
->> When capability KVM_CAP_ARM_HVC_TO_USER is available, userspace can
->> request to handle all hypercalls that aren't handled by KVM. With the
->> help of another capability, this will allow userspace to handle PSCI
->> calls.
-
-> On top of Oliver's ask not to make this a blanket "steal everything",
-> but instead to have an actual request for ranges of forwarded
-> hypercalls:
+On Tue, 7 Feb 2023 18:30:40 +0800 Qi Zheng wrote:
+> > Here is the summary with links:
+> >    - [1/3] debugfs: update comment of debugfs_rename()
+> >      (no matching commit)
+> >    - [2/3] bonding: fix error checking in bond_debug_reregister()
+> >      https://git.kernel.org/netdev/net/c/cbe83191d40d
+> >    - [3/3] PM/OPP: fix error checking in opp_migrate_dentry()
+> >      (no matching commit)  
 > 
->> Notes on this implementation:
->>
->> * A similar mechanism was proposed for SDEI some time ago [1]. This RFC
->>   generalizes the idea to all hypercalls, since that was suggested on
->>   the list [2, 3].
->>
->> * We're reusing kvm_run.hypercall. I copied x0-x5 into
->>   kvm_run.hypercall.args[] to help userspace but I'm tempted to remove
->>   this, because:
->>   - Most user handlers will need to write results back into the
->>     registers (x0-x3 for SMCCC), so if we keep this shortcut we should
->>     go all the way and read them back on return to kernel.
->>   - QEMU doesn't care about this shortcut, it pulls all vcpu regs before
->>     handling the call.
->>   - SMCCC uses x0-x16 for parameters.
->>   x0 does contain the SMCCC function ID and may be useful for fast
->>   dispatch, we could keep that plus the immediate number.
->>
->> * Add a flag in the kvm_run.hypercall telling whether this is HVC or
->>   SMC?  Can be added later in those bottom longmode and pad fields.
+> Does "no matching commit" means that these two patches have not been
+> applied? And I did not see them in the linux-next branch.
 
-> We definitely need this. A nested hypervisor can (and does) use SMCs
-> as the conduit.
+Correct, we took the networking patch to the networking tree.
+You'd be better off not grouping patches from different subsystems
+if there are no dependencies. Maintainers may get confused about
+who's supposed to apply them, err on the side of caution and 
+not apply anything.
 
-Christoffer's comments last time round on this was that EL2 guests get SMC with this,
-and EL1 guests get HVC. The VMM could never get both...
+> If so, hi Greg, Can you help to review and apply these two patches
+> ([1/3] and [3/3])?
 
-
-> The question is whether they represent two distinct
-> namespaces or not. I *think* we can unify them, but someone should
-> check and maybe get clarification from the owners of the SMCCC spec.
-
-i.e. the VMM requests 0xC400_0000:0xC400_001F regardless of SMC/HVC?
-
-I don't yet see how a VMM could get HVC out of a virtual-EL2 guest....
-
-
->> * On top of this we could share with userspace which HVC ranges are
->>   available and which ones are handled by KVM. That can actually be added
->>   independently, through a vCPU/VM device attribute which doesn't consume
->>   a new ioctl:
->>   - userspace issues HAS_ATTR ioctl on the vcpu fd to query whether this
->>     feature is available.
->>   - userspace queries the number N of HVC ranges using one GET_ATTR.
->>   - userspace passes an array of N ranges using another GET_ATTR. The
->>     array is filled and returned by KVM.
-
-> As mentioned above, I think this interface should go both ways.
-> Userspace should request the forwarding of a certain range of
-> hypercalls via a similar SET_ATTR interface.
-
-Yup, I'll sync up with Oliver about that.
-
-
-> Another question is how we migrate VMs that have these forwarding
-> requirements. Do we expect the VMM to replay the forwarding as part of
-> the setting up on the other side? Or do we save/restore this via a
-> firmware pseudo-register?
-
-Pfff. VMMs problem. Enabling these things means it has its own internal state to migrate.
-(is this vCPU on or off?), I doubt it needs reminding that the state exists.
-
-That said, Salil is looking at making this work with migration in Qemu.
-
-
-Thanks,
-
-James
+Or 3/3 should go to Viresh?.. Dunno..
