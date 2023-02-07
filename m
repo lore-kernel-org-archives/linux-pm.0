@@ -2,129 +2,172 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3DAEC636CC
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 13:52:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58E34C636D6
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 14:12:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232117AbjBGNwK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 08:52:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35290 "EHLO
+        id S232112AbjBGOMV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 09:12:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232135AbjBGNwI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 08:52:08 -0500
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3387A6A69;
-        Tue,  7 Feb 2023 05:52:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675777926; x=1707313926;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=/YLarjhVCWM9ERQghsklWhPfmj3oGMn0+g3tgiwq1pc=;
-  b=TTPPsQaVXERCyzKpsT0KQ1yWwx9CMjCmZis6w3r5MVsH9P513gzivgq6
-   ycMJUljWVBTI6q6NThntVYRBErUNbBYgtWEJIK2t0nuOPRLa5/6sEg+/b
-   o/gjSmaxmEN/JC46hALUme7mLXl2IF+ea8KFy60Vt5WVi5rb6C7QOA/jY
-   3+Az/XznHFfp9zJiODyqnjIjmiIS91siOXkKZP6AKQs4lXqLLxLc3Weo6
-   0+UnkSi7DpRz1CF2JQzLnnXkZIrYaJG3+dFuttswIcX5RqofE9pvaQ42Y
-   9lnSttTBcUGJG0J7uEW4hxIOpHLeu1DpWfCdeAOiV/TMpBZ5E6X/rSvXf
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10614"; a="394104626"
-X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="394104626"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Feb 2023 05:52:05 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10614"; a="735555721"
-X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="735555721"
-Received: from amarna2x-mobl.gar.corp.intel.com ([10.215.112.179])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Feb 2023 05:52:02 -0800
-Message-ID: <1395f577409bb7928dc1d9dc954e1af039253111.camel@linux.intel.com>
-Subject: Re: [PATCH v2 0/2] intel_powerclamp: New module parameter
-From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc:     "Zhang, Rui" <rui.zhang@intel.com>,
-        "rafael@kernel.org" <rafael@kernel.org>,
-        "Neri, Ricardo" <ricardo.neri@intel.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>
-Date:   Tue, 07 Feb 2023 05:51:59 -0800
-In-Reply-To: <20230207134237.GA13076@ranerica-svr.sc.intel.com>
-References: <20230205025902.2899734-1-srinivas.pandruvada@linux.intel.com>
-         <a68a6f8c76cb719cd4865bd6aa726306772d4ee3.camel@intel.com>
-         <60514763753f572f854f1bbf287c3c16fbbc12c3.camel@linux.intel.com>
-         <468eedb9d8a839d22ffd18125d3104f8c014965c.camel@intel.com>
-         <f33bc346d8d4ae086ddf59db2670ce9a8f80a250.camel@linux.intel.com>
-         <20230207134237.GA13076@ranerica-svr.sc.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.44.4-0ubuntu1 
+        with ESMTP id S232096AbjBGOMU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 09:12:20 -0500
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 904672884A
+        for <linux-pm@vger.kernel.org>; Tue,  7 Feb 2023 06:12:18 -0800 (PST)
+Received: by mail-ej1-x62d.google.com with SMTP id sa10so13022890ejc.9
+        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2023 06:12:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=sZ5mpqE2ocgxdfOCGy+CSBqlukMgoxHcZxwHA7en+qo=;
+        b=L5y670ucwvznmASN/AgU3Adj4DK9TRbO1/1YS+dn/0W79V62OSh3ZRPjtCulNArAWE
+         ivzFlnK2NeAwdYtafs0lMvGfiH6K7jW+0Que/knBzosItpl7clydO5JDQfAoD+SCMNWK
+         srqvl4iD1hYoDi36HJpgXDjxTHqXBnSjZNbu4692jQ9G5xa8usPfaPGDVtzDeMlX/rpT
+         qaSIopQsD6R+m7ErR4b+qrfgAcSl78f3JkYiC7AhQEZgeMGDFkTTjYESoNDoxMbN0cRr
+         odLHYw+6+82HUhV/gWdPCrf2cNxB0aO4vC70oa2SQlJflzZNMziU2XPjBThE/PSOd44z
+         +PxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=sZ5mpqE2ocgxdfOCGy+CSBqlukMgoxHcZxwHA7en+qo=;
+        b=xmqc01qNknh7t0o+I+Kskn7RtQKqCX2gCCC3GDuAcf1DvRaG2ljyiQVkYtu2rj3Ffo
+         t2etEkQ1wJ1Ge0LErnudXcMYzs5x8RBtW0oNUMtvOmAYT/aTPtm9FwP9rTGTLZLkFtJ2
+         NTLTbvMuLYES4V+NLotYjI29BvcyHACJqaLjqOGNZMPi9/BxPZb6b7T240ffALB0uB+m
+         j7DgM7p9nmunA8Or138zVP3s2PY4exStaQPjy1OJVJFPBESWXFCy7mS0gqDL1hSYuJeS
+         TWLyDa1xmfuJ5StoKbLz4ftY3aIb40oXRS7N4g6UcddrNcyp4it5CvVJLZwN195q+eoy
+         1xeg==
+X-Gm-Message-State: AO0yUKXmAcwdzvhFRGs/WPLl+lzyJt0L82A7VOtvxfZeRyL2fhZRf9fZ
+        ktRNouIzOFTUcIDvinjQJ+UYX/0XnkghLox67MrIZA==
+X-Google-Smtp-Source: AK7set/oFiHS7dnqOHD5CRTN/KUIGukzO1ouxhtBnCV18RKKz15grDjDu1XvBQC50v14OV0tRya/fbXqJ7mbQOxpli4=
+X-Received: by 2002:a17:906:ca04:b0:7c0:f45e:22ff with SMTP id
+ jt4-20020a170906ca0400b007c0f45e22ffmr999899ejb.104.1675779137174; Tue, 07
+ Feb 2023 06:12:17 -0800 (PST)
 MIME-Version: 1.0
+References: <20230207130958.608305-1-bchihi@baylibre.com> <20230207130958.608305-3-bchihi@baylibre.com>
+ <046b3b31-cbf7-674d-f05c-b825d6b46bf6@linaro.org>
+In-Reply-To: <046b3b31-cbf7-674d-f05c-b825d6b46bf6@linaro.org>
+From:   Balsam CHIHI <bchihi@baylibre.com>
+Date:   Tue, 7 Feb 2023 15:11:40 +0100
+Message-ID: <CAGuA+opvh95SXN-YGfxH0-NA8o4dBNkQJd9PfEXATFPbKHsHuA@mail.gmail.com>
+Subject: Re: [PATCH v13 2/6] dt-bindings: thermal: mediatek: Add LVTS thermal controllers
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
+        rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
+        matthias.bgg@gmail.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, rdunlap@infradead.org,
+        ye.xingchen@zte.com.cn, p.zabel@pengutronix.de,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        khilman@baylibre.com, james.lo@mediatek.com,
+        rex-bc.chen@mediatek.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 2023-02-07 at 05:42 -0800, Ricardo Neri wrote:
-> On Mon, Feb 06, 2023 at 02:02:28AM -0800, srinivas pandruvada wrote:
-> > On Mon, 2023-02-06 at 08:05 +0000, Zhang, Rui wrote:
-> > > On Sun, 2023-02-05 at 18:45 -0800, srinivas pandruvada wrote:
-> > > > Hi Rui,
-> > > >=20
-> > > > On Sun, 2023-02-05 at 15:57 +0000, Zhang, Rui wrote:
-> > > > > Hi, Srinivas,
-> > > > >=20
-> > > > > First of all, the previous build error is gone.
-> > > > >=20
-> > > > > Second, I found something strange, which may be related with
-> > > > > the
-> > > > > scheduler asym-packing, so CC Ricardo.
-> > > > >=20
-> > > > I thought you disable ITMT before idle injection and reenebale
-> > > > after
-> > > > removal.
-> > >=20
-> > > No.
-> > >=20
-> > > I can reproduce this by playing with raw intel_powerclamp sysfs
-> > > knobs
-> > > and ITMT enabled.
-> > >=20
-> >=20
-> > This issue is happening even if ITMT disabled. If the module mask
-> > is
-> > composed of P-cores it works or even on servers as expected.
-> > Also if you offline all P-cores then select mask among E-cores, it
-> > is
-> > working. Somehow P-core influences E-cores.
-> >=20
-> > Since this patch is module mask related, that is functioning
-> > correctly.
-> > We have to debug this interaction with P and E cores separately.
->=20
-> Currently, when doing asym_packing, ECores will only pull tasks from
-> a
-> PCore only if both SMT siblings are busy. It will only pull from the
-> lower-priority sibling. These patches [1] let ECores pull from either
-> sibling, if both are busy.
->=20
-> I presume that by injecting idle, the scheduler thinks that the CPU
-> is
-> idle (i.e., idle_cpu() returns true) and it will not do asym_packing
-> from
-> lower-priority CPUs.
->=20
-> However, in your experiment you have 16 threads. If a Pcore is
-> overloaded,
-> an ECore should be able to help.
-This issue happens with or without ITMT and also without any idle
-injection active.
+Hi Krzysztof,
 
-Thanks,
-Srinivas
+Thank you for the review.
 
+On Tue, Feb 7, 2023 at 2:35 PM Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org> wrote:
+>
+> On 07/02/2023 14:09, bchihi@baylibre.com wrote:
+> > From: Balsam CHIHI <bchihi@baylibre.com>
+> >
+> > Add LVTS thermal controllers dt-binding definition for mt8192 and mt8195.
+> >
+>
+>
+> > +allOf:
+> > +  - $ref: thermal-sensor.yaml#
+> > +
+> > +  - if:
+> > +      properties:
+> > +        compatible:
+> > +          contains:
+> > +            enum:
+> > +              - mediatek,mt8192-lvts-ap
+> > +              - mediatek,mt8192-lvts-mcu
+> > +    then:
+> > +      properties:
+> > +        nvmem-cells:
+> > +          maxItems: 1
+> > +
+> > +        nvmem-cell-names:
+> > +          maxItems: 1
+> > +
+> > +  - if:
+> > +      properties:
+> > +        compatible:
+> > +          contains:
+> > +            enum:
+> > +              - mediatek,mt8195-lvts-ap
+> > +              - mediatek,mt8195-lvts-mcu
+> > +    then:
+> > +      properties:
+> > +        nvmem-cells:
+>
+> minItems: 2
+>
 
->=20
-> [1].
-> https://lore.kernel.org/lkml/20230207045838.11243-1-ricardo.neri-calderon=
-@linux.intel.com/
-> =C2=A0
+OK,
+I will do the change.
 
+> > +          maxItems: 2
+> > +
+> > +        nvmem-cell-names:
+>
+> minItems: 2
+>
+
+OK,
+I will do this change too.
+
+> > +          maxItems: 2
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - interrupts
+>
+> (...)
+>
+> > diff --git a/include/dt-bindings/thermal/mediatek,lvts-thermal.h b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
+> > new file mode 100644
+> > index 000000000000..4f2082065a31
+> > --- /dev/null
+> > +++ b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
+> > @@ -0,0 +1,19 @@
+> > +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
+> > +/*
+> > + * Copyright (c) 2023 MediaTek Inc.
+> > + * Author: Balsam CHIHI <bchihi@baylibre.com>
+> > + */
+> > +
+> > +#ifndef __MEDIATEK_LVTS_DT_H
+> > +#define __MEDIATEK_LVTS_DT_H
+> > +
+> > +#define MT8195_MCU_BIG_CPU0          0
+> > +#define MT8195_MCU_BIG_CPU1          1
+> > +#define MT8195_MCU_BIG_CPU2          2
+> > +#define MT8195_MCU_BIG_CPU3          3
+> > +#define MT8195_MCU_LITTLE_CPU0       4
+>
+> These changed for some reason. Why? The indentation is now broken
+> (although not visible above quote, but visible in diff and code).
+
+I thought that I fixed the indentation.
+I will restore it.
+
+>
+> Best regards,
+> Krzysztof
+>
+
+Best regards,
+Balsam
