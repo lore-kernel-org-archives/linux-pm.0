@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF6ABC636CC
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C1D4C636D4
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230307AbjBGFC3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 00:02:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60104 "EHLO
+        id S230310AbjBGFCa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 00:02:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60010 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229878AbjBGFB5 (ORCPT
+        with ESMTP id S229960AbjBGFB5 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 00:01:57 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 901C7C678;
-        Mon,  6 Feb 2023 21:01:55 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 518F9CDCB;
+        Mon,  6 Feb 2023 21:01:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675746115; x=1707282115;
+  t=1675746116; x=1707282116;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=d7YOpMlf1P1ORwPsFp8Wf2z9+WUpcXCD+VCa+NWGzJ0=;
-  b=KgwOpYS9wwI5sG+q542pWz5u/vqrl00gdbipfL2/6e4zuRlSjEa2a1FL
-   EByuNyYUqIIm1c1vhNPO/wgqf+J91afi2g6JOobXDlY4H+cSFYwbpilRE
-   k2W035GmwVnSMmxflsN0H6BOW+8rw4OyOtxAf4PArdcu1YtuXJQjLuDxU
-   UdfT1ID5O/f8u7Lo1tBAdnH3XwyjQoLIOC1CwkU7FvRHl+99J5lfaDCKx
-   KinJoe/DUXiPwN55nUT5Qw8qoJhb7j5HVmHuNplFkU+0dkhqn8Rc+jMg8
-   msjsuc6nY5h3tVppu8rYD5ZtiImDWUCq9i95V9D/HTtapQu0W+SMGgVrg
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625861"
+  bh=3mEF+X1OQu4dffb2wbCkr1lz7Fm3ISrkb07VTK8J8lk=;
+  b=W4bVfXgZ4TDooAdFk0rCdotTO+9FgnsoPB4KQuc1cHFEbK6hlQBY2ZCt
+   LymnpowYpI6ElxLMO2Y4We9FDf9WOlAwChKUXGZVvm1IEShyajI+RjXQc
+   ZryVBGaY5kIRPfmdDsofC+uy4oIHnHvGZ2Km7D/0bR2s9dxjdYZ4Pbiio
+   e7wxwopXaIoB7/Lxff+oNuzh79YrPYLy8OJR7oW5Fp2QendG2bYPDNf6L
+   I3bnIxtMrUiRnTOXGY/9J9bpAy3h7S+Fr05c3RPfPnrGkhLNRMNq7uYnB
+   rWdG6LmTSqDZ5rAHWhfx4Uwbi4P4jNDLQF6mDBdVYk+J6zLS3SpBTCfUq
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625888"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="415625861"
+   d="scan'208";a="415625888"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2023 21:01:43 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2023 21:01:44 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657733"
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657749"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="668657733"
+   d="scan'208";a="668657749"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:43 -0800
+  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:44 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
         Juri Lelli <juri.lelli@redhat.com>,
@@ -59,9 +59,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v3 11/24] thermal: intel: hfi: Introduce Intel Thread Director classes
-Date:   Mon,  6 Feb 2023 21:10:52 -0800
-Message-Id: <20230207051105.11575-12-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v3 14/24] thermal: intel: hfi: Update the IPC class of the current task
+Date:   Mon,  6 Feb 2023 21:10:55 -0800
+Message-Id: <20230207051105.11575-15-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
 References: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
@@ -69,12 +69,8 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Intel hybrid parts, each type of CPU has specific performance and
-energy efficiency capabilities. The Intel Thread Director technology
-extends the Hardware Feedback Interface (HFI) to provide performance and
-energy efficiency data for advanced classes of instructions.
-
-Add support to parse per-class capabilities.
+Use Intel Thread Director classification to update the IPC class of a
+task. Implement the arch_update_ipcc() interface of the scheduler.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -95,103 +91,88 @@ Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v2:
- * None
+ * Removed the implementation of arch_has_ipc_classes().
 
 Changes since v1:
- * Removed a now obsolete comment.
+ * Adjusted the result the classification of Intel Thread Director to start
+   at class 1. Class 0 for the scheduler means that the task is
+   unclassified.
+ * Redefined union hfi_thread_feedback_char_msr to ensure all
+   bit-fields are packed. (PeterZ)
+ * Removed CONFIG_INTEL_THREAD_DIRECTOR. (PeterZ)
+ * Shortened the names of the functions that implement IPC classes.
+ * Removed argument smt_siblings_idle from intel_hfi_update_ipcc().
+   (PeterZ)
 ---
- drivers/thermal/intel/intel_hfi.c | 30 ++++++++++++++++++++++++------
- 1 file changed, 24 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/topology.h   |  6 ++++++
+ drivers/thermal/intel/intel_hfi.c | 32 +++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+)
 
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 458c891a8273..ffcdac3f398f 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -227,4 +227,10 @@ void init_freq_invariance_cppc(void);
+ #define arch_init_invariance_cppc init_freq_invariance_cppc
+ #endif
+ 
++#if defined(CONFIG_IPC_CLASSES) && defined(CONFIG_INTEL_HFI_THERMAL)
++void intel_hfi_update_ipcc(struct task_struct *curr);
++
++#define arch_update_ipcc intel_hfi_update_ipcc
++#endif /* defined(CONFIG_IPC_CLASSES) && defined(CONFIG_INTEL_HFI_THERMAL) */
++
+ #endif /* _ASM_X86_TOPOLOGY_H */
 diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
-index 6e604bda2b93..2527ae3836c7 100644
+index b06021828892..530dcf57e06e 100644
 --- a/drivers/thermal/intel/intel_hfi.c
 +++ b/drivers/thermal/intel/intel_hfi.c
-@@ -77,7 +77,7 @@ union cpuid6_edx {
-  * @ee_cap:		Energy efficiency capability
-  *
-  * Capabilities of a logical processor in the HFI table. These capabilities are
-- * unitless.
-+ * unitless and specific to each HFI class.
-  */
- struct hfi_cpu_data {
- 	u8	perf_cap;
-@@ -89,7 +89,8 @@ struct hfi_cpu_data {
-  * @perf_updated:	Hardware updated performance capabilities
-  * @ee_updated:		Hardware updated energy efficiency capabilities
-  *
-- * Properties of the data in an HFI table.
-+ * Properties of the data in an HFI table. There exists one header per each
-+ * HFI class.
-  */
- struct hfi_hdr {
- 	u8	perf_updated;
-@@ -127,16 +128,21 @@ struct hfi_instance {
- 
- /**
-  * struct hfi_features - Supported HFI features
-+ * @nr_classes:		Number of classes supported
-  * @nr_table_pages:	Size of the HFI table in 4KB pages
-  * @cpu_stride:		Stride size to locate the capability data of a logical
-  *			processor within the table (i.e., row stride)
-+ * @class_stride:	Stride size to locate a class within the capability
-+ *			data of a logical processor or the HFI table header
-  * @hdr_size:		Size of the table header
-  *
-  * Parameters and supported features that are common to all HFI instances
-  */
- struct hfi_features {
-+	unsigned int	nr_classes;
- 	size_t		nr_table_pages;
- 	unsigned int	cpu_stride;
-+	unsigned int	class_stride;
- 	unsigned int	hdr_size;
+@@ -72,6 +72,17 @@ union cpuid6_edx {
+ 	u32 full;
  };
  
-@@ -333,8 +339,8 @@ static void init_hfi_cpu_index(struct hfi_cpu_info *info)
- }
++#ifdef CONFIG_IPC_CLASSES
++union hfi_thread_feedback_char_msr {
++	struct {
++		u64	classid : 8;
++		u64	__reserved : 55;
++		u64	valid : 1;
++	} split;
++	u64 full;
++};
++#endif
++
+ /**
+  * struct hfi_cpu_data - HFI capabilities per CPU
+  * @perf_cap:		Performance capability
+@@ -174,6 +185,27 @@ static struct workqueue_struct *hfi_updates_wq;
+ #ifdef CONFIG_IPC_CLASSES
+ static int __percpu *hfi_ipcc_scores;
  
- /*
-- * The format of the HFI table depends on the number of capabilities that the
-- * hardware supports. Keep a data structure to navigate the table.
-+ * The format of the HFI table depends on the number of capabilities and classes
-+ * that the hardware supports. Keep a data structure to navigate the table.
-  */
- static void init_hfi_instance(struct hfi_instance *hfi_instance)
- {
-@@ -515,18 +521,30 @@ static __init int hfi_parse_features(void)
- 	/* The number of 4KB pages required by the table */
- 	hfi_features.nr_table_pages = edx.split.table_pages + 1;
- 
++void intel_hfi_update_ipcc(struct task_struct *curr)
++{
++	union hfi_thread_feedback_char_msr msr;
++
++	/* We should not be here if ITD is not supported. */
++	if (!cpu_feature_enabled(X86_FEATURE_ITD)) {
++		pr_warn_once("task classification requested but not supported!");
++		return;
++	}
++
++	rdmsrl(MSR_IA32_HW_FEEDBACK_CHAR, msr.full);
++	if (!msr.split.valid)
++		return;
++
 +	/*
-+	 * Capability fields of an HFI class are grouped together. Classes are
-+	 * contiguous in memory.  Hence, use the number of supported features to
-+	 * locate a specific class.
++	 * 0 is a valid classification for Intel Thread Director. A scheduler
++	 * IPCC class of 0 means that the task is unclassified. Adjust.
 +	 */
-+	hfi_features.class_stride = nr_capabilities;
++	curr->ipcc = msr.split.classid + 1;
++}
 +
-+	/* For now, use only one class of the HFI table */
-+	hfi_features.nr_classes = 1;
-+
- 	/*
- 	 * The header contains change indications for each supported feature.
- 	 * The size of the table header is rounded up to be a multiple of 8
- 	 * bytes.
- 	 */
--	hfi_features.hdr_size = DIV_ROUND_UP(nr_capabilities, 8) * 8;
-+	hfi_features.hdr_size = DIV_ROUND_UP(nr_capabilities *
-+					     hfi_features.nr_classes, 8) * 8;
- 
- 	/*
- 	 * Data of each logical processor is also rounded up to be a multiple
- 	 * of 8 bytes.
- 	 */
--	hfi_features.cpu_stride = DIV_ROUND_UP(nr_capabilities, 8) * 8;
-+	hfi_features.cpu_stride = DIV_ROUND_UP(nr_capabilities *
-+					       hfi_features.nr_classes, 8) * 8;
- 
- 	return 0;
- }
+ static int alloc_hfi_ipcc_scores(void)
+ {
+ 	if (!cpu_feature_enabled(X86_FEATURE_ITD))
 -- 
 2.25.1
 
