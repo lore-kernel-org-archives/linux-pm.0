@@ -2,159 +2,85 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E4FEC636CC
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 13:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF511C636CC
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 13:48:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232047AbjBGNfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 08:35:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52878 "EHLO
+        id S231782AbjBGNs1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 08:48:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60330 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231823AbjBGNfo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 08:35:44 -0500
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E01F923869
-        for <linux-pm@vger.kernel.org>; Tue,  7 Feb 2023 05:35:42 -0800 (PST)
-Received: by mail-wm1-x32f.google.com with SMTP id n28-20020a05600c3b9c00b003ddca7a2bcbso11470146wms.3
-        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2023 05:35:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=k1ykxnCSPogB0kbxJnMoBL8O048yCl07opBue4WpgaQ=;
-        b=tTuj0/XbFSyS4dn6D7rW1NOCwMHRyzAh+O6FP2x0BBLP/2F0FxstsfvHct8fILSH/K
-         0GllB2iScPYt8V7iN34H0RSFKCruoUivMiSVGCtxTkSnKMZpYaIpKftzuLJyH0leBR0+
-         qSJCq3ldl5dw6okdCiYezdtVaU1jvRex6x4G6R0UYxPklWw1Pn6TtaMyVhomxJuPkWMC
-         FpOPOnGAt3n96q4B+oUkaXxF7ct2JK8etPczii+PuYqtxUsmT2vaQP62U8p/PFz4SLTg
-         W11hImxwMZc1PGSjZR6AGekxCjzEeZzJJIP+OHLZ6Sb10ADbKfHuPKUElUaTxONnUgjE
-         sEjA==
+        with ESMTP id S231260AbjBGNs0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 08:48:26 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6580683C1
+        for <linux-pm@vger.kernel.org>; Tue,  7 Feb 2023 05:47:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1675777660;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=XA/I3fzzNYZ//8/vwERAn+P62R3VluePPy0fivL+Wr8=;
+        b=FISClwm9n2lK3nXC1EJXUFPtyGgEYcjLqBDtj/ZfPDxoAT3GJXU4bIqo59efpvohntqtSq
+        wt1zmCfFG4hBABcgPqadv97DTpBcq4Bcq/tF2X50u2Z2u9m8ZOjApoWXDtZ1O21HzRBV0j
+        Q6NDaeBk2jRkpGBpF5wD4k3YIo7tBAo=
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com
+ [209.85.219.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-421-FDj_buYhPde_Z-uJ5zsjPQ-1; Tue, 07 Feb 2023 08:47:39 -0500
+X-MC-Unique: FDj_buYhPde_Z-uJ5zsjPQ-1
+Received: by mail-qv1-f70.google.com with SMTP id j19-20020a056214033300b0056c11dfb0ddso181161qvu.19
+        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2023 05:47:39 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=k1ykxnCSPogB0kbxJnMoBL8O048yCl07opBue4WpgaQ=;
-        b=DATGbHNNQRxoryQA2r3WaGVTGzj54nHdxyBahCkQP8mA375EN822KTVWMCxyENGhxE
-         RcO+TMugLcGjO4d/Q51N70i2r5j6OVhh++JUYZFdkZ6k71pyqaojmSCSWMoiRBtaIqz8
-         a9NhOO/hQqIFCVrn89MQ93m2HFlVqjAvQcaBDYsi16rpjlw7VEOLYmt6j/3BjYX1lasz
-         3h98kj1voJL37IJ/gsQ+gL6E3ZUgR0Z/+aJDAixQUS/ToPCsZFhIzSKus6Nk6bBP/m1Q
-         7gzOEgr3pbMyAvHt4UKFLRsSrzAFCqooFCUKcVzzo9K1O4mq0jEE8W3yP5LE4PeOIGgi
-         xHog==
-X-Gm-Message-State: AO0yUKUTWlOY7naxCd1KQntKnLtEYm2f+VCtFDTwHY1ZcOzbrgzU8QEQ
-        wdD02tvZbj1q57KzmtsTm72pfQ==
-X-Google-Smtp-Source: AK7set9N2kRdkmfxK++BVbR4XXH+Yw/7DgZyRt1NfDA/eM1SF/QMNr1FLrcIAOqKD1ls1/bhgKNttg==
-X-Received: by 2002:a05:600c:3596:b0:3df:d431:cf64 with SMTP id p22-20020a05600c359600b003dfd431cf64mr3061555wmq.39.1675776941479;
-        Tue, 07 Feb 2023 05:35:41 -0800 (PST)
-Received: from [192.168.1.109] ([178.197.216.144])
-        by smtp.gmail.com with ESMTPSA id f1-20020a1cc901000000b003df14531724sm18521999wmb.21.2023.02.07.05.35.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 07 Feb 2023 05:35:41 -0800 (PST)
-Message-ID: <046b3b31-cbf7-674d-f05c-b825d6b46bf6@linaro.org>
-Date:   Tue, 7 Feb 2023 14:35:39 +0100
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XA/I3fzzNYZ//8/vwERAn+P62R3VluePPy0fivL+Wr8=;
+        b=WR7z3qa4Bq5Jg58wzqX3idDy5PXucjNUCtB+snAM/r/Ky6wjTFx6wJCu8FWHYDv7dZ
+         yC0CbDwEeVpQYf63fwP9wVAf1AWhp5kquzgqytxfpH4GvgZoCNOSQ8lUS7LrOULeDyNp
+         nWuiMQ5t093o+RhZcXVv9eNt/HrZ9rvsir6doetEgFwZXqOgNBKsB2yfNd2UOiSzXt/4
+         Utk36rtRLI0VG2g3WObV66LhfSEnRH+MMoi4gBm4hInMvBG/SnkeLBcv082BjlLcCIru
+         WM4XHKGP4DqyNaXvdm0H1yVWUzcax+kZ9wCybQ3Pf7IDHDR4QVZubDw5KYSvqJy/54bk
+         wCyA==
+X-Gm-Message-State: AO0yUKVGAtYZiyngTlllmOtaIyUkazGv2REj+61oxRYl2sEAC3oQfmzT
+        nRCKijCAqcgabO8MKtjY2JDZhIl3nKbxCYtOknga8ibgoOW5EwyYnnG3bPhh1n2QtWiNGTJbX9k
+        WcLMadnzDBBrm/HJT+Y/GS74/
+X-Received: by 2002:a05:622a:508:b0:3b8:6075:5d16 with SMTP id l8-20020a05622a050800b003b860755d16mr5879068qtx.56.1675777658673;
+        Tue, 07 Feb 2023 05:47:38 -0800 (PST)
+X-Google-Smtp-Source: AK7set/ejwgCvHaxLr87VY1OqTrLmCn+q6U4BxbYz736hZ4+blH4zqNep1u4j55SpjNPGPQlVa5mTQ==
+X-Received: by 2002:a05:622a:508:b0:3b8:6075:5d16 with SMTP id l8-20020a05622a050800b003b860755d16mr5879035qtx.56.1675777658395;
+        Tue, 07 Feb 2023 05:47:38 -0800 (PST)
+Received: from fedora (modemcable181.5-202-24.mc.videotron.ca. [24.202.5.181])
+        by smtp.gmail.com with ESMTPSA id pe4-20020a05620a850400b0071ada51ab48sm9503353qkn.37.2023.02.07.05.47.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Feb 2023 05:47:37 -0800 (PST)
+Date:   Tue, 7 Feb 2023 08:47:35 -0500
+From:   Adrien Thierry <athierry@redhat.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Brian Masney <bmasney@redhat.com>,
+        linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH v4] cpuidle: psci: Do not suspend topology CPUs on
+ PREEMPT_RT
+Message-ID: <Y+JWd6NfhH0sAlim@fedora>
+References: <20230125113418.455089-1-krzysztof.kozlowski@linaro.org>
+ <Y9L5VFPdDnsiCluu@fedora>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH v13 2/6] dt-bindings: thermal: mediatek: Add LVTS thermal
- controllers
-Content-Language: en-US
-To:     bchihi@baylibre.com, daniel.lezcano@linaro.org,
-        angelogioacchino.delregno@collabora.com, rafael@kernel.org,
-        amitk@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        rdunlap@infradead.org, ye.xingchen@zte.com.cn,
-        p.zabel@pengutronix.de
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        khilman@baylibre.com, james.lo@mediatek.com,
-        rex-bc.chen@mediatek.com
-References: <20230207130958.608305-1-bchihi@baylibre.com>
- <20230207130958.608305-3-bchihi@baylibre.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230207130958.608305-3-bchihi@baylibre.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Y9L5VFPdDnsiCluu@fedora>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 07/02/2023 14:09, bchihi@baylibre.com wrote:
-> From: Balsam CHIHI <bchihi@baylibre.com>
-> 
-> Add LVTS thermal controllers dt-binding definition for mt8192 and mt8195.
-> 
+Is there still something preventing this patch from being picked up?
 
+Best,
 
-> +allOf:
-> +  - $ref: thermal-sensor.yaml#
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - mediatek,mt8192-lvts-ap
-> +              - mediatek,mt8192-lvts-mcu
-> +    then:
-> +      properties:
-> +        nvmem-cells:
-> +          maxItems: 1
-> +
-> +        nvmem-cell-names:
-> +          maxItems: 1
-> +
-> +  - if:
-> +      properties:
-> +        compatible:
-> +          contains:
-> +            enum:
-> +              - mediatek,mt8195-lvts-ap
-> +              - mediatek,mt8195-lvts-mcu
-> +    then:
-> +      properties:
-> +        nvmem-cells:
-
-minItems: 2
-
-> +          maxItems: 2
-> +
-> +        nvmem-cell-names:
-
-minItems: 2
-
-> +          maxItems: 2
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupts
-
-(...)
-
-> diff --git a/include/dt-bindings/thermal/mediatek,lvts-thermal.h b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-> new file mode 100644
-> index 000000000000..4f2082065a31
-> --- /dev/null
-> +++ b/include/dt-bindings/thermal/mediatek,lvts-thermal.h
-> @@ -0,0 +1,19 @@
-> +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-> +/*
-> + * Copyright (c) 2023 MediaTek Inc.
-> + * Author: Balsam CHIHI <bchihi@baylibre.com>
-> + */
-> +
-> +#ifndef __MEDIATEK_LVTS_DT_H
-> +#define __MEDIATEK_LVTS_DT_H
-> +
-> +#define MT8195_MCU_BIG_CPU0		0
-> +#define MT8195_MCU_BIG_CPU1		1
-> +#define MT8195_MCU_BIG_CPU2		2
-> +#define MT8195_MCU_BIG_CPU3		3
-> +#define MT8195_MCU_LITTLE_CPU0	4
-
-These changed for some reason. Why? The indentation is now broken
-(although not visible above quote, but visible in diff and code).
-
-Best regards,
-Krzysztof
+Adrien
 
