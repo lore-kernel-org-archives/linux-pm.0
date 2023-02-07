@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C660C6379F
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AB27C64EC4
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Feb 2023 05:02:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230282AbjBGFC1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Feb 2023 00:02:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60084 "EHLO
+        id S230290AbjBGFC2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Feb 2023 00:02:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60020 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229843AbjBGFB4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 00:01:56 -0500
+        with ESMTP id S229874AbjBGFB5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2023 00:01:57 -0500
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E45BC643;
-        Mon,  6 Feb 2023 21:01:54 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90246C67C;
+        Mon,  6 Feb 2023 21:01:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675746114; x=1707282114;
+  t=1675746115; x=1707282115;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=BrjwTRAQcpfuOeAV7Rg7Zm/X0IgwzgEOiAKjPiNKh1M=;
-  b=ZGnjxVpa8iBCrxYykm4azWnUE82ILNVXXrmb3XL1r1GVuqN/eJz9Fv6+
-   BG5KtJsW2kvHDhW8u15yamKhtbsHFWIPtI5bZy6b62TNAOHUIfg8BTl6q
-   U+sxFHy32zkOO96x2ls6L01fxLkJfrLFYAAqUmWnvEcC3BtRfXWzNNNnD
-   wP+BBoG13YwvVkI85fwTRqaZp3LSWQKqYSjGYX+zBXadW27ShXC/Q0wv5
-   6eEhN8XbB0PTIvYMag6ip7fv7IhxmdWx61s09inzXdO9nfMYk/YOUB8lI
-   R8WIEstc3TnFW/izgAh1XJg4cMWsQLMitCr/4HASdp/tYqyQKsmegaFA6
+  bh=+1DtJmYoUbMLlAjJEQ1d3h7xcYK1w4mnpef+1fxd8fs=;
+  b=FT6uX/2Z2cJDqxB5UQdPg6yPU4mrWILNCMAbkcAW/F+e/3uy6Qs/0kEF
+   0XfIcNOwyLA75YRzVxpsWrrf+3UZ3uXHqSvt5KobjKrmL/EsQRSPjSI1h
+   M6BrDUgLkm2WB1VHRiPl2q6HDPof2pE362N5D8yj6dTRGbKjFfAmUHoDk
+   2vpL+iUZ0xIbh56yd9qHd6WZMi509xW0C8O00Fz6W8XETeQhaDwlzaLKE
+   tIDSGHVgWdEEBwXmBVdeIZdv7uYy+a4H64M9rtpmM2v9NtMPl/4OlZOkW
+   JuNtzcQi/sNh/azzkLMTbA8AP69uc2Flsg1o/GHUXjJ6xRrZEY0YMbB4b
    A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625849"
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="415625878"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="415625849"
+   d="scan'208";a="415625878"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2023 21:01:43 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2023 21:01:44 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657730"
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="668657740"
 X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
-   d="scan'208";a="668657730"
+   d="scan'208";a="668657740"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:42 -0800
+  by fmsmga007.fm.intel.com with ESMTP; 06 Feb 2023 21:01:43 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
         Juri Lelli <juri.lelli@redhat.com>,
@@ -59,9 +59,9 @@ Cc:     Ricardo Neri <ricardo.neri@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
         "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: [PATCH v3 10/24] sched/fair: Use IPCC scores to select a busiest runqueue
-Date:   Mon,  6 Feb 2023 21:10:51 -0800
-Message-Id: <20230207051105.11575-11-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v3 12/24] x86/cpufeatures: Add the Intel Thread Director feature definitions
+Date:   Mon,  6 Feb 2023 21:10:53 -0800
+Message-Id: <20230207051105.11575-13-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
 References: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
@@ -69,12 +69,13 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For two runqueues of equal priority and equal number of running of tasks,
-select the one whose current task would have the highest IPC class score
-if placed on the destination CPU.
+Intel Thread Director (ITD) provides hardware resources to classify
+the current task. The classification reflects the type of instructions that
+a task currently executes.
 
-For now, use IPCC scores only for scheduling domains with the
-SD_ASYM_PACKING flag.
+ITD extends the Hardware Feedback Interface table to provide performance
+and energy efficiency capabilities for each of the supported classes of
+tasks.
 
 Cc: Ben Segall <bsegall@google.com>
 Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
@@ -95,118 +96,67 @@ Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v2:
- * Only use IPCC scores to break ties if the sched domain uses
-   asym_packing. (Ionela)
- * Handle errors of arch_get_ipcc_score(). (Ionela)
+ * None
 
 Changes since v1:
- * Fixed a bug when selecting a busiest runqueue: when comparing two
-   runqueues with equal nr_running, we must compute the IPCC score delta
-   of both.
- * Renamed local variables to improve the layout of the code block.
-   (PeterZ)
- * Used the new interface names.
+ * Removed dependency on CONFIG_INTEL_THREAD_DIRECTOR. Instead, depend on
+   CONFIG_IPC_CLASSES.
+ * Added DISABLE_ITD to the correct DISABLE_MASK: 14 instead of 13.
 ---
- kernel/sched/fair.c | 64 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 64 insertions(+)
+ arch/x86/include/asm/cpufeatures.h       | 1 +
+ arch/x86/include/asm/disabled-features.h | 8 +++++++-
+ arch/x86/kernel/cpu/cpuid-deps.c         | 1 +
+ 3 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 72d88270b320..d3c22dc145f7 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -9399,6 +9399,37 @@ static bool sched_asym_ipcc_pick(struct sched_group *a,
- 	return sched_asym_ipcc_prefer(a_stats, b_stats);
- }
+diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+index fdb8e09234ba..8a6261a5dbbf 100644
+--- a/arch/x86/include/asm/cpufeatures.h
++++ b/arch/x86/include/asm/cpufeatures.h
+@@ -349,6 +349,7 @@
+ #define X86_FEATURE_HWP_EPP		(14*32+10) /* HWP Energy Perf. Preference */
+ #define X86_FEATURE_HWP_PKG_REQ		(14*32+11) /* HWP Package Level Request */
+ #define X86_FEATURE_HFI			(14*32+19) /* Hardware Feedback Interface */
++#define X86_FEATURE_ITD			(14*32+23) /* Intel Thread Director */
  
-+/**
-+ * ipcc_score_delta - Get the IPCC score delta wrt the load balance's dst_cpu
-+ * @p:		A task
-+ * @env:	Load balancing environment
-+ *
-+ * Returns: The IPCC score delta that @p would get if placed in the destination
-+ * CPU of @env. LONG_MIN to indicate that the delta should not be used.
-+ */
-+static long ipcc_score_delta(struct task_struct *p, struct lb_env *env)
-+{
-+	unsigned long score_src, score_dst;
-+	unsigned short ipcc = p->ipcc;
-+
-+	if (!sched_ipcc_enabled())
-+		return LONG_MIN;
-+
-+	/* Only asym_packing uses IPCC scores at the moment. */
-+	if (!(env->sd->flags & SD_ASYM_PACKING))
-+		return LONG_MIN;
-+
-+	score_dst = arch_get_ipcc_score(ipcc, env->dst_cpu);
-+	if (IS_ERR_VALUE(score_dst))
-+		return LONG_MIN;
-+
-+	score_src = arch_get_ipcc_score(ipcc, task_cpu(p));
-+	if (IS_ERR_VALUE(score_src))
-+		return LONG_MIN;
-+
-+	return score_dst - score_src;
-+}
-+
- #else /* CONFIG_IPC_CLASSES */
- static void update_sg_lb_ipcc_stats(int dst_cpu, struct sg_lb_stats *sgs,
- 				    struct rq *rq)
-@@ -9429,6 +9460,11 @@ static bool sched_asym_ipcc_pick(struct sched_group *a,
- 	return false;
- }
+ /* AMD SVM Feature Identification, CPUID level 0x8000000a (EDX), word 15 */
+ #define X86_FEATURE_NPT			(15*32+ 0) /* Nested Page Table support */
+diff --git a/arch/x86/include/asm/disabled-features.h b/arch/x86/include/asm/disabled-features.h
+index 5dfa4fb76f4b..f8e145a8c5dd 100644
+--- a/arch/x86/include/asm/disabled-features.h
++++ b/arch/x86/include/asm/disabled-features.h
+@@ -99,6 +99,12 @@
+ # define DISABLE_TDX_GUEST	(1 << (X86_FEATURE_TDX_GUEST & 31))
+ #endif
  
-+static long ipcc_score_delta(struct task_struct *p, struct lb_env *env)
-+{
-+	return LONG_MIN;
-+}
++#ifdef CONFIG_IPC_CLASSES
++# define DISABLE_ITD	0
++#else
++# define DISABLE_ITD	(1 << (X86_FEATURE_ITD & 31))
++#endif
 +
- #endif /* CONFIG_IPC_CLASSES */
- 
- /**
-@@ -10589,6 +10625,7 @@ static struct rq *find_busiest_queue(struct lb_env *env,
- {
- 	struct rq *busiest = NULL, *rq;
- 	unsigned long busiest_util = 0, busiest_load = 0, busiest_capacity = 1;
-+	long busiest_ipcc_delta = LONG_MIN;
- 	unsigned int busiest_nr = 0;
- 	int i;
- 
-@@ -10705,8 +10742,35 @@ static struct rq *find_busiest_queue(struct lb_env *env,
- 
- 		case migrate_task:
- 			if (busiest_nr < nr_running) {
-+				struct task_struct *curr;
-+
- 				busiest_nr = nr_running;
- 				busiest = rq;
-+
-+				/*
-+				 * Remember the IPCC score delta of busiest::curr.
-+				 * We may need it to break a tie with other queues
-+				 * with equal nr_running.
-+				 */
-+				curr = rcu_dereference(busiest->curr);
-+				busiest_ipcc_delta = ipcc_score_delta(curr, env);
-+			/*
-+			 * If rq and busiest have the same number of running
-+			 * tasks and IPC classes are supported, pick rq if doing
-+			 * so would give rq::curr a bigger IPC boost on dst_cpu.
-+			 */
-+			} else if (busiest_nr == nr_running) {
-+				struct task_struct *curr;
-+				long delta;
-+
-+				curr = rcu_dereference(rq->curr);
-+				delta = ipcc_score_delta(curr, env);
-+
-+				if (busiest_ipcc_delta < delta) {
-+					busiest_ipcc_delta = delta;
-+					busiest_nr = nr_running;
-+					busiest = rq;
-+				}
- 			}
- 			break;
+ /*
+  * Make sure to add features to the correct mask
+  */
+@@ -117,7 +123,7 @@
+ 			 DISABLE_CALL_DEPTH_TRACKING)
+ #define DISABLED_MASK12	0
+ #define DISABLED_MASK13	0
+-#define DISABLED_MASK14	0
++#define DISABLED_MASK14	(DISABLE_ITD)
+ #define DISABLED_MASK15	0
+ #define DISABLED_MASK16	(DISABLE_PKU|DISABLE_OSPKE|DISABLE_LA57|DISABLE_UMIP| \
+ 			 DISABLE_ENQCMD)
+diff --git a/arch/x86/kernel/cpu/cpuid-deps.c b/arch/x86/kernel/cpu/cpuid-deps.c
+index f6748c8bd647..7a87b823eef3 100644
+--- a/arch/x86/kernel/cpu/cpuid-deps.c
++++ b/arch/x86/kernel/cpu/cpuid-deps.c
+@@ -81,6 +81,7 @@ static const struct cpuid_dep cpuid_deps[] = {
+ 	{ X86_FEATURE_XFD,			X86_FEATURE_XSAVES    },
+ 	{ X86_FEATURE_XFD,			X86_FEATURE_XGETBV1   },
+ 	{ X86_FEATURE_AMX_TILE,			X86_FEATURE_XFD       },
++	{ X86_FEATURE_ITD,			X86_FEATURE_HFI       },
+ 	{}
+ };
  
 -- 
 2.25.1
