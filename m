@@ -2,219 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49B00C64ED6
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 15:39:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27624C636CC
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 15:42:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231768AbjBHPjn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Feb 2023 10:39:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59540 "EHLO
+        id S230503AbjBHPm3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Feb 2023 10:42:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231727AbjBHPjl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 10:39:41 -0500
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9606248A26;
-        Wed,  8 Feb 2023 07:39:37 -0800 (PST)
-Received: by mail-wm1-x32b.google.com with SMTP id bg26so13629627wmb.0;
-        Wed, 08 Feb 2023 07:39:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HFW09DSWE151zjBNnB3HWCYqZY622+jBm6O+Jc9cnLw=;
-        b=fhKRU/ws5vwOeH79D5Lma45fwrgAt7s1bP30GX5RUop3wYvlCJXl0c8gk74U2u4IZc
-         +NMCNVSr2HPCjjNalcUvvQGI/aQhmP0mhU44vEeq9XogiGx/KGGNVtRdTKTynY/YdJnU
-         v4C2Bo+5R1w11KaMVGEamNMpZLUW7Z1PRw4kDxnZYxgXXe7Ze9bDwJj7wtT8X8EqmhjP
-         ycNq7ywfYgJjVPyik909QmQmZpoSlv6ZMO2h8BvM7SHHBGa4yaJCGq9A2BJawY1c1b1G
-         rI18YeDIavR7n+zp9QKXO3D3y1lPWHT6Xp/RFIjR/DENhskDhDmVEFKInFsewIde7HC6
-         sUgQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=HFW09DSWE151zjBNnB3HWCYqZY622+jBm6O+Jc9cnLw=;
-        b=fGJCJBrqpSzLEPTgfWuFpF8jj0jII97/5V3Qp2OkeJkmYpqfJxCDpjZFtGzA3vvXT2
-         ERPVoTLpajqy+ubPV5ZVS2lUYhBWPA/r6cAT47swUHZa7VBtwsW7xvlHbR7Xdz341Yfx
-         HnBKMvclT+DveiEWGXdxjqwynJOGw9LhfJZ1qZsxZPLzDDn1wf6IZ1zfVTj4G5psykWO
-         MZO2tSHbs3pKrt0AhFiCDW2R8w1OFYVdEuvadh7oSyMUp22rCe9sPRyTQAV7yxp0c5j9
-         Elum0/Vr3emaHNnPBpTvNioOzqWoHKOWfGQr5kZZh4OyP1ICnJJJt1P3I/7UrX8RofZ0
-         sDrg==
-X-Gm-Message-State: AO0yUKUh/wla0oc6PEF14+2SrSfqIKlJ3wzdRfOz+iiXrxcw68bqkcXo
-        wOyQydi9xfe8UrKM6v7kC3c=
-X-Google-Smtp-Source: AK7set96rabuGY8uMwxhEXRUcmw7/0nZVzyGhNGMxmTgmsTUsR8WLekTdbtlb1CdIQC4idOKMtXDRg==
-X-Received: by 2002:a05:600c:3417:b0:3dc:5b79:2dbb with SMTP id y23-20020a05600c341700b003dc5b792dbbmr6887685wmp.25.1675870775954;
-        Wed, 08 Feb 2023 07:39:35 -0800 (PST)
-Received: from localhost.localdomain (93-34-91-73.ip49.fastwebnet.it. [93.34.91.73])
-        by smtp.googlemail.com with ESMTPSA id n2-20020a05600c3b8200b003dfe659f9b1sm6755596wms.3.2023.02.08.07.39.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Feb 2023 07:39:35 -0800 (PST)
-From:   Christian Marangi <ansuelsmth@gmail.com>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Christian Marangi <ansuelsmth@gmail.com>
-Subject: [PATCH v6 2/3] dt-bindings: cpufreq: qcom-cpufreq-nvmem: make cpr bindings optional
-Date:   Wed,  8 Feb 2023 16:39:12 +0100
-Message-Id: <20230208153913.24436-2-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20230208153913.24436-1-ansuelsmth@gmail.com>
-References: <20230208153913.24436-1-ansuelsmth@gmail.com>
+        with ESMTP id S230352AbjBHPm2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 10:42:28 -0500
+Received: from mail.marcansoft.com (marcansoft.com [212.63.210.85])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6032AA;
+        Wed,  8 Feb 2023 07:42:26 -0800 (PST)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: marcan@marcan.st)
+        by mail.marcansoft.com (Postfix) with ESMTPSA id 56F4B41EA7;
+        Wed,  8 Feb 2023 15:42:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=marcan.st; s=default;
+        t=1675870944; bh=9EEEtXkSzKmNuZPuh2VHDQl9lpD/J0a/AFRac3FFtQo=;
+        h=Date:To:Cc:References:From:Subject:In-Reply-To;
+        b=w46pOOne4H8Ry9Vrf1BwQn6dgb11NEULDBl2gQpPNN4a114LEGt56yCxpufMp6k83
+         nBDdN2v647BIdcKSNnVKgU4o1/XxmVhQwjIjMTDsugegQ5e84MvcPAp/v8fZTz4I00
+         EH/Q3AwpWJ2r7X9lq8Jl7iXt/sc1ri8VQg5KZ0SsYu951K4QOQ5niFGyjU6bceEzSj
+         M/ZJv/UMtIHRN93qWkqDtPHfp7mopBRfHFh45Br/bwAn4ilaCePCwLZUtNi5IpYxKo
+         BGW/cqtjZvAV+ncFY8ac9wTf38H61oxQ+ZT22N2Ameqvrc7kuJFeYj2KJaiA2HWmC/
+         J6XsrhiUWPc7w==
+Message-ID: <5f741a4f-f37d-079b-d464-59045ebef1ce@marcan.st>
+Date:   Thu, 9 Feb 2023 00:42:17 +0900
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Content-Language: en-US
+To:     Sudeep Holla <sudeep.holla@arm.com>, Kazuki <kazukih0205@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Sven Peter <sven@svenpeter.dev>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+References: <20230204152747.drte4uitljzngdt6@kazuki-mac>
+ <20230206101239.dret3fv65cnzpken@bogus>
+ <20230207194818.exskn3dhyzqwr32v@kazuki-mac>
+ <20230208103511.w7jzxw6spy6humdn@bogus>
+From:   Hector Martin <marcan@marcan.st>
+Subject: Re: s2idle breaks on machines without cpuidle support
+In-Reply-To: <20230208103511.w7jzxw6spy6humdn@bogus>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The qcom-cpufreq-nvmem driver supports 2 kind of devices:
-- pre-cpr that doesn't have power-domains and base everything on nvmem
-  cells and multiple named microvolt bindings.
-  Doesn't need required-opp binding in the opp nodes as they are only
-  used for genpd based devices.
-- cpr-based that require power-domain in the cpu nodes and use various
-  source to decide the correct voltage and freq
-  Require required-opp binding since they need to be linked to the
-  related opp-level.
+On 08/02/2023 19.35, Sudeep Holla wrote:
+> On Wed, Feb 08, 2023 at 04:48:18AM +0900, Kazuki wrote:
+>> On Mon, Feb 06, 2023 at 10:12:39AM +0000, Sudeep Holla wrote:
+>>>
+>>> What do you mean by break ? More details on the observation would be helpful.
+>> For example, CLOCK_MONOTONIC doesn't stop even after suspend since
+>> these chain of commands don't get called.
+>>
+>> call_cpuidle_s2idle->cpuidle_enter_s2idle->enter_s2idle_proper->tick_freeze->sched_clock_suspend (Function that pauses CLOCK_MONOTONIC)
+>>
+>> Which in turn causes programs like systemd to crash since it doesn't
+>> expect this.
+> 
+> Yes expected IIUC. The per-cpu timers and counters continue to tick in
+> WFI and hence CLOCK_MONOTONIC can't stop.
 
-When the schema was introduced, it was wrongly set to always require these
-binding but this is not the case for pre-cpr devices.
+The hardware counters would also keep ticking in "real" s2idle (with
+hypothetical PSCI idle support) and often in full suspend. There is a
+flag for this (CLOCK_SOURCE_SUSPEND_NONSTOP) that is set by default for
+ARM. So this isn't why CLOCK_MONOTONIC isn't stopping; there is
+machinery to make the kernel's view of time stop anyway, it's just not
+being invoked here.
 
-Make the power-domain and the required-opp optional and set them required
-only for qcs404 based devices.
+This is somewhat orthogonal to the issue of PSCI. These machines can't
+physically support PSCI and KVM at the same time (they do not have EL3),
+so PSCI is not an option. We will be starting a conversation about how
+to provide something "like" PSCI over some other sort of transport to
+solve this soon. So that will "fix" this issue once it's all implemented.
 
-Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
----
-Changes v6:
-- Drop Fixes tag (can't be backported due to prereq changes required)
-Changes v5:
-- Swap patch 1 and patch 2 to fix dt_check_warning on single
-Changes v4:
-- Explain why required-opp needs to be conditional
-- Split additional ref part
-Changes v3:
-- No change
-Changes v2:
-- Reword commit description
-- Fix condition order
-- Add allOf
+However, these machines aren't the only ones without PSCI (search for
+"spin-table" in arch/arm64/boot/dts, this isn't new and these aren't the
+first). It seems broken that Linux currently implements s2idle in such a
+way that it violates the userspace clock behavior contract on systems
+without a cpuidle driver (and does so silently, to make it worse). So
+that should be fixed regardless of whether we end up coming up with a
+PSCI alternative or not for these platforms. There's no fundamental
+reason why s2idle can't work properly with plain WFI.
 
- .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml  | 74 +++++++++++--------
- 1 file changed, 44 insertions(+), 30 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
-index 7c42d9439abd..6f5e7904181f 100644
---- a/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
-+++ b/Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
-@@ -17,6 +17,9 @@ description: |
-   on the CPU OPP in use. The CPUFreq driver sets the CPR power domain level
-   according to the required OPPs defined in the CPU OPP tables.
- 
-+  For old implementation efuses are parsed to select the correct opp table and
-+  voltage and CPR is not supported/used.
-+
- select:
-   properties:
-     compatible:
-@@ -33,26 +36,6 @@ select:
-   required:
-     - compatible
- 
--properties:
--  cpus:
--    type: object
--
--    patternProperties:
--      '^cpu@[0-9a-f]+$':
--        type: object
--
--        properties:
--          power-domains:
--            maxItems: 1
--
--          power-domain-names:
--            items:
--              - const: cpr
--
--        required:
--          - power-domains
--          - power-domain-names
--
- patternProperties:
-   '^opp-table(-[a-z0-9]+)?$':
-     allOf:
-@@ -63,16 +46,6 @@ patternProperties:
-         then:
-           $ref: /schemas/opp/opp-v2-kryo-cpu.yaml#
- 
--      - if:
--          properties:
--            compatible:
--              const: operating-points-v2-kryo-cpu
--        then:
--          patternProperties:
--            '^opp-?[0-9]+$':
--              required:
--                - required-opps
--
-       - if:
-           properties:
-             compatible:
-@@ -82,6 +55,47 @@ patternProperties:
- 
-     unevaluatedProperties: false
- 
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,qcs404
-+
-+    then:
-+      properties:
-+        cpus:
-+          type: object
-+
-+          patternProperties:
-+            '^cpu@[0-9a-f]+$':
-+              type: object
-+
-+              properties:
-+                power-domains:
-+                  maxItems: 1
-+
-+                power-domain-names:
-+                  items:
-+                    - const: cpr
-+
-+              required:
-+                - power-domains
-+                - power-domain-names
-+
-+      patternProperties:
-+        '^opp-table(-[a-z0-9]+)?$':
-+          if:
-+            properties:
-+              compatible:
-+                const: operating-points-v2-kryo-cpu
-+          then:
-+            patternProperties:
-+              '^opp-?[0-9]+$':
-+                required:
-+                  - required-opps
-+
- additionalProperties: true
- 
- examples:
--- 
-2.38.1
-
+- Hector
