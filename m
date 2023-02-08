@@ -2,88 +2,136 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EA29C636D3
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:30:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AE4FC636CC
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229478AbjBHJaV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Feb 2023 04:30:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44808 "EHLO
+        id S229755AbjBHJip (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Feb 2023 04:38:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231149AbjBHJ3k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:29:40 -0500
+        with ESMTP id S229559AbjBHJio (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:44 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7F1DA26BF
-        for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:28:04 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEEDF127
+        for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:38:43 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pPgjM-0001Fe-La; Wed, 08 Feb 2023 10:27:08 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        (envelope-from <sha@pengutronix.de>)
+        id 1pPguU-00039N-Hs; Wed, 08 Feb 2023 10:38:38 +0100
+Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pPgjK-003U6H-F0; Wed, 08 Feb 2023 10:27:07 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1pPgjK-001oNs-U0; Wed, 08 Feb 2023 10:27:06 +0100
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Kevin Hilman <khilman@deeprootsystems.com>,
-        Sekhar Nori <nsekhar@ti.com>, linux-pm@vger.kernel.org,
-        kernel@pengutronix.de
-Subject: [PATCH] cpufreq: davinci: Fix clk use after free
-Date:   Wed,  8 Feb 2023 10:26:54 +0100
-Message-Id: <20230208092654.551466-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.39.0
+        (envelope-from <sha@pengutronix.de>)
+        id 1pPguR-003UAO-W9; Wed, 08 Feb 2023 10:38:37 +0100
+Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <sha@pengutronix.de>)
+        id 1pPguQ-000s8T-Jr; Wed, 08 Feb 2023 10:38:34 +0100
+From:   Sascha Hauer <s.hauer@pengutronix.de>
+To:     linux-pm@vger.kernel.org
+Cc:     linux-rockchip@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Will Deacon <will@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
+        Michael Riesch <michael.riesch@wolfvision.net>,
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v2 07/19] PM / devfreq: rockchip-dfi: introduce channel mask
+Date:   Wed,  8 Feb 2023 10:38:18 +0100
+Message-Id: <20230208093830.143284-8-s.hauer@pengutronix.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20230208093830.143284-1-s.hauer@pengutronix.de>
+References: <20230208093830.143284-1-s.hauer@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1183; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=OhtEhe9xB7XLkvnPqNj66+aOQN1cEBGjGLrfZxrmedE=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBj42rZFo66+5m+S1ki5gtWRhGYgOqY2W1YfGLj6R7K h/7PereJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCY+Nq2QAKCRDB/BR4rcrsCWimCA CMUJ53334giFhsf4/wvCKvXoecpy7kvTTGJXK1RF9yj6/zZzqzZvwHd+CpeNSQNAN5KBUo5ilqE5a+ vCP6hv1WslFK2oENktm7zf9rJ3uPq8/kTnPEq0CgnOJVWJCpEdkZATvuj3KXJOsXRTOdUcNvR5mGdV NCCBgERur7kLm4E9l5W95qyKTu3oskHjYkPmfxumFiovkKHUF3tNjKp0EMHyeIErYKg3kXGefTGis0 YU6L4hoUqm2E+X1CyoXlKTkwYMd7m15pKLsVAF8bOxaMxGTSaeD5/r9z/wTse/qvPy0jsIWva46iNF govuPc7L1wSrB6ZxGxVcEZONa6C2ij
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Mail-From: sha@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
 X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The remove function first frees the clks and only then calls
-cpufreq_unregister_driver(). If one of the cpufreq callbacks is called
-just before cpufreq_unregister_driver() is run, the freed clks might be
-used.
+Different Rockchip SoC variants have a different number of channels.
+Introduce a channel mask to make the number of channels configurable
+from SoC initialization code.
 
-Fixes: 6601b8030de3 ("davinci: add generic CPUFreq driver for DaVinci")
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/cpufreq/davinci-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
-index 2d23015e2abd..ebb3a8102681 100644
---- a/drivers/cpufreq/davinci-cpufreq.c
-+++ b/drivers/cpufreq/davinci-cpufreq.c
-@@ -133,13 +133,13 @@ static int __init davinci_cpufreq_probe(struct platform_device *pdev)
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 25d64d9166a9a..18d578730fd0c 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -21,7 +21,7 @@
  
- static int __exit davinci_cpufreq_remove(struct platform_device *pdev)
- {
-+	cpufreq_unregister_driver(&davinci_driver);
+ #include <soc/rockchip/rk3399_grf.h>
+ 
+-#define RK3399_DMC_NUM_CH	2
++#define DMC_MAX_CHANNELS	2
+ 
+ /* DDRMON_CTRL */
+ #define DDRMON_CTRL	0x04
+@@ -44,7 +44,7 @@ struct dmc_count_channel {
+ };
+ 
+ struct dmc_count {
+-	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
++	struct dmc_count_channel c[DMC_MAX_CHANNELS];
+ };
+ 
+ /*
+@@ -62,6 +62,7 @@ struct rockchip_dfi {
+ 	struct regmap *regmap_pmu;
+ 	struct clk *clk;
+ 	u32 ddr_type;
++	unsigned int channel_mask;
+ };
+ 
+ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
+@@ -96,7 +97,9 @@ static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dm
+ 	u32 i;
+ 	void __iomem *dfi_regs = dfi->regs;
+ 
+-	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
++	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
++		if (!(dfi->channel_mask & BIT(i)))
++			continue;
+ 		count->c[i].access = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+ 		count->c[i].total = readl_relaxed(dfi_regs +
+@@ -146,9 +149,14 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 	rockchip_dfi_read_counters(edev, &count);
+ 
+ 	/* We can only report one channel, so find the busiest one */
+-	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
+-		u32 a = count.c[i].access - last->c[i].access;
+-		u32 t = count.c[i].total - last->c[i].total;
++	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
++		u32 a, t;
 +
- 	clk_put(cpufreq.armclk);
++		if (!(dfi->channel_mask & BIT(i)))
++			continue;
++
++		a = count.c[i].access - last->c[i].access;
++		t = count.c[i].total - last->c[i].total;
  
- 	if (cpufreq.asyncclk)
- 		clk_put(cpufreq.asyncclk);
+ 		if (a > access) {
+ 			access = a;
+@@ -186,6 +194,8 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
+ 	dfi->ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
+ 			RK3399_PMUGRF_DDRTYPE_MASK;
  
--	cpufreq_unregister_driver(&davinci_driver);
--
++	dfi->channel_mask = 3;
++
  	return 0;
- }
+ };
  
-
-base-commit: 05ecb680708a1dbe6554d6fc17e5d9a8a7cb5e6a
-prerequisite-patch-id: fcb02b20a32d8a3c6f628d8c10bd42173c2df0b7
 -- 
-2.39.0
+2.30.2
 
