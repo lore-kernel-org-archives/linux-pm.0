@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54F51C64EC6
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34354C6379F
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230207AbjBHJiu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Feb 2023 04:38:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58548 "EHLO
+        id S230360AbjBHJix (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Feb 2023 04:38:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230246AbjBHJit (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:49 -0500
+        with ESMTP id S230365AbjBHJiw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:52 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 669931BFF
-        for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:38:48 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D840F131
+        for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:38:49 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguU-00039M-Hr; Wed, 08 Feb 2023 10:38:38 +0100
+        id 1pPguV-0003C6-GI; Wed, 08 Feb 2023 10:38:39 +0100
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguR-003UAN-Sp; Wed, 08 Feb 2023 10:38:37 +0100
+        id 1pPguT-003UAq-GP; Wed, 08 Feb 2023 10:38:38 +0100
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguQ-000s8K-IJ; Wed, 08 Feb 2023 10:38:34 +0100
+        id 1pPguQ-000s9H-R9; Wed, 08 Feb 2023 10:38:34 +0100
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-pm@vger.kernel.org
 Cc:     linux-rockchip@lists.infradead.org,
@@ -39,9 +39,9 @@ Cc:     linux-rockchip@lists.infradead.org,
         Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
         Michael Riesch <michael.riesch@wolfvision.net>,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v2 06/19] PM / devfreq: rockchip-dfi: Use free running counter
-Date:   Wed,  8 Feb 2023 10:38:17 +0100
-Message-Id: <20230208093830.143284-7-s.hauer@pengutronix.de>
+Subject: [PATCH v2 14/19] PM / devfreq: rockchip-dfi: Prepare for multiple users
+Date:   Wed,  8 Feb 2023 10:38:25 +0100
+Message-Id: <20230208093830.143284-15-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230208093830.143284-1-s.hauer@pengutronix.de>
 References: <20230208093830.143284-1-s.hauer@pengutronix.de>
@@ -55,125 +55,136 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The DDR_MON counters are free running counters. These are resetted to 0
-when starting them over like currently done when reading the current
-counter values.
-
-Resetting the counters becomes a problem with perf support we want to
-add later, because perf needs a monotonicly increasing counter.
-
-This patch removes resetting the counters and keeps them running
-instead. Counter overflows are handled with modular arithmetics. Not
-stopping the counters also has the impact that they are running while
-we are reading them. We cannot read multiple timers atomically, so
-the values do not exactly fit together. The effect should be negligible
-though as the time between two measurements is some orders of magnitude
-bigger than the time we need to read multiple registers.
+When adding perf support later the DFI must be enabled when
+either of devfreq-event or perf is active. Prepare for that
+by adding a usage counter for the DFI. Also move enabling
+and disabling of the clock away from the devfreq-event specific
+functions to which the perf specific part won't have access.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 53 ++++++++++++++++------------
- 1 file changed, 31 insertions(+), 22 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 57 +++++++++++++++++++---------
+ 1 file changed, 40 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 383fe8a17a512..25d64d9166a9a 100644
+index c0b7b1e9805e9..eae010644935a 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -38,11 +38,15 @@
- #define DDRMON_CH1_COUNT_NUM		0x3c
- #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
- 
--struct dmc_usage {
-+struct dmc_count_channel {
- 	u32 access;
- 	u32 total;
- };
- 
-+struct dmc_count {
-+	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
-+};
-+
- /*
-  * The dfi controller can monitor DDR load. It has an upper and lower threshold
-  * for the operating points. Whenever the usage leaves these bounds an event is
-@@ -51,7 +55,8 @@ struct dmc_usage {
- struct rockchip_dfi {
- 	struct devfreq_event_dev *edev;
- 	struct devfreq_event_desc desc;
--	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
-+	struct dmc_count count;
-+	struct dmc_count last_event_count;
- 	struct device *dev;
+@@ -69,13 +69,28 @@ struct rockchip_dfi {
  	void __iomem *regs;
  	struct regmap *regmap_pmu;
-@@ -85,30 +90,18 @@ static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
- 	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
- }
+ 	struct clk *clk;
++	int usecount;
++	struct mutex mutex;
+ 	u32 ddr_type;
+ 	unsigned int channel_mask;
+ };
  
--static int rockchip_dfi_get_busier_ch(struct devfreq_event_dev *edev)
-+static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
+-static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
++static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
  {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
--	u32 tmp, max = 0;
--	u32 i, busier_ch = 0;
-+	u32 i;
  	void __iomem *dfi_regs = dfi->regs;
- 
--	rockchip_dfi_stop_hardware_counter(edev);
--
--	/* Find out which channel is busier */
- 	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
--		dfi->ch_usage[i].access = readl_relaxed(dfi_regs +
-+		count->c[i].access = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
--		dfi->ch_usage[i].total = readl_relaxed(dfi_regs +
-+		count->c[i].total = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_COUNT_NUM + i * 20);
--		tmp = dfi->ch_usage[i].access;
--		if (tmp > max) {
--			busier_ch = i;
--			max = tmp;
--		}
- 	}
--	rockchip_dfi_start_hardware_counter(edev);
--
--	return busier_ch;
- }
- 
- static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
-@@ -145,12 +138,28 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 				  struct devfreq_event_data *edata)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
--	int busier_ch;
-+	struct dmc_count count;
-+	struct dmc_count *last = &dfi->last_event_count;
-+	u32 access = 0, total = 0;
-+	int i;
++	int ret = 0;
 +
-+	rockchip_dfi_read_counters(edev, &count);
++	mutex_lock(&dfi->mutex);
 +
-+	/* We can only report one channel, so find the busiest one */
-+	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
-+		u32 a = count.c[i].access - last->c[i].access;
-+		u32 t = count.c[i].total - last->c[i].total;
++	dfi->usecount++;
++	if (dfi->usecount > 1)
++		goto out;
 +
-+		if (a > access) {
-+			access = a;
-+			total = t;
-+		}
++	ret = clk_prepare_enable(dfi->clk);
++	if (ret) {
++		dev_err(&dfi->edev->dev, "failed to enable dfi clk: %d\n", ret);
++		goto out;
 +	}
  
--	busier_ch = rockchip_dfi_get_busier_ch(edev);
-+	edata->load_count = access * 4;
-+	edata->total_count = total;
+ 	/* clear DDRMON_CTRL setting */
+ 	writel_relaxed(HIWORD_UPDATE(0, 0xffff), dfi_regs + DDRMON_CTRL);
+@@ -99,14 +114,30 @@ static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
+ 	/* enable count, use software mode */
+ 	writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_SOFTWARE_EN, DDRMON_CTRL_SOFTWARE_EN),
+ 		       dfi_regs + DDRMON_CTRL);
++out:
++	mutex_unlock(&dfi->mutex);
++
++	return ret;
+ }
  
--	edata->load_count = dfi->ch_usage[busier_ch].access * 4;
--	edata->total_count = dfi->ch_usage[busier_ch].total;
-+	dfi->last_event_count = count;
+-static void rockchip_dfi_stop_hardware_counter(struct rockchip_dfi *dfi)
++static void rockchip_dfi_disable(struct rockchip_dfi *dfi)
+ {
+ 	void __iomem *dfi_regs = dfi->regs;
+ 
++	mutex_lock(&dfi->mutex);
++
++	dfi->usecount--;
++
++	WARN_ON_ONCE(dfi->usecount < 0);
++
++	if (dfi->usecount > 0)
++		goto out;
++
+ 	writel_relaxed(HIWORD_UPDATE(0, DDRMON_CTRL_SOFTWARE_EN),
+ 		       dfi_regs + DDRMON_CTRL);
++	clk_disable_unprepare(dfi->clk);
++out:
++	mutex_unlock(&dfi->mutex);
+ }
+ 
+ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_count *count)
+@@ -124,29 +155,20 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
+ 	}
+ }
+ 
+-static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
++static int rockchip_dfi_event_disable(struct devfreq_event_dev *edev)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+ 
+-	rockchip_dfi_stop_hardware_counter(dfi);
+-	clk_disable_unprepare(dfi->clk);
++	rockchip_dfi_disable(dfi);
  
  	return 0;
  }
+ 
+-static int rockchip_dfi_enable(struct devfreq_event_dev *edev)
++static int rockchip_dfi_event_enable(struct devfreq_event_dev *edev)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+-	int ret;
+-
+-	ret = clk_prepare_enable(dfi->clk);
+-	if (ret) {
+-		dev_err(&edev->dev, "failed to enable dfi clk: %d\n", ret);
+-		return ret;
+-	}
+ 
+-	rockchip_dfi_start_hardware_counter(dfi);
+-	return 0;
++	return rockchip_dfi_enable(dfi);
+ }
+ 
+ static int rockchip_dfi_set_event(struct devfreq_event_dev *edev)
+@@ -190,8 +212,8 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ }
+ 
+ static const struct devfreq_event_ops rockchip_dfi_ops = {
+-	.disable = rockchip_dfi_disable,
+-	.enable = rockchip_dfi_enable,
++	.disable = rockchip_dfi_event_disable,
++	.enable = rockchip_dfi_event_enable,
+ 	.get_event = rockchip_dfi_get_event,
+ 	.set_event = rockchip_dfi_set_event,
+ };
+@@ -285,6 +307,7 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+ 		return PTR_ERR(dfi->regmap_pmu);
+ 
+ 	dfi->dev = dev;
++	mutex_init(&dfi->mutex);
+ 
+ 	desc = &dfi->desc;
+ 	desc->ops = &rockchip_dfi_ops;
 -- 
 2.30.2
 
