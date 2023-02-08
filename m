@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AE4FC636CC
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39782C05027
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229755AbjBHJip (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Feb 2023 04:38:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58470 "EHLO
+        id S229834AbjBHJir (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Feb 2023 04:38:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229559AbjBHJio (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:44 -0500
+        with ESMTP id S229822AbjBHJiq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:46 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEEDF127
-        for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:38:43 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA407127
+        for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:38:45 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguU-00039N-Hs; Wed, 08 Feb 2023 10:38:38 +0100
+        id 1pPguU-00038u-Hr; Wed, 08 Feb 2023 10:38:38 +0100
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguR-003UAO-W9; Wed, 08 Feb 2023 10:38:37 +0100
+        id 1pPguP-003UA9-TD; Wed, 08 Feb 2023 10:38:35 +0100
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguQ-000s8T-Jr; Wed, 08 Feb 2023 10:38:34 +0100
+        id 1pPguQ-000s7g-BZ; Wed, 08 Feb 2023 10:38:34 +0100
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-pm@vger.kernel.org
 Cc:     linux-rockchip@lists.infradead.org,
@@ -39,9 +39,9 @@ Cc:     linux-rockchip@lists.infradead.org,
         Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
         Michael Riesch <michael.riesch@wolfvision.net>,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v2 07/19] PM / devfreq: rockchip-dfi: introduce channel mask
-Date:   Wed,  8 Feb 2023 10:38:18 +0100
-Message-Id: <20230208093830.143284-8-s.hauer@pengutronix.de>
+Subject: [PATCH v2 01/19] PM / devfreq: rockchip-dfi: Embed desc into private data struct
+Date:   Wed,  8 Feb 2023 10:38:12 +0100
+Message-Id: <20230208093830.143284-2-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230208093830.143284-1-s.hauer@pengutronix.de>
 References: <20230208093830.143284-1-s.hauer@pengutronix.de>
@@ -55,83 +55,43 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Different Rockchip SoC variants have a different number of channels.
-Introduce a channel mask to make the number of channels configurable
-from SoC initialization code.
+No need for an extra allocation, just embed the struct
+devfreq_event_desc into the private data struct.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 25d64d9166a9a..18d578730fd0c 100644
+index 39ac069cabc75..570f1b36c3153 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -21,7 +21,7 @@
+@@ -49,7 +49,7 @@ struct dmc_usage {
+  */
+ struct rockchip_dfi {
+ 	struct devfreq_event_dev *edev;
+-	struct devfreq_event_desc *desc;
++	struct devfreq_event_desc desc;
+ 	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
+ 	struct device *dev;
+ 	void __iomem *regs;
+@@ -203,14 +203,10 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+ 	}
+ 	data->dev = dev;
  
- #include <soc/rockchip/rk3399_grf.h>
+-	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
+-	if (!desc)
+-		return -ENOMEM;
+-
++	desc = &data->desc;
+ 	desc->ops = &rockchip_dfi_ops;
+ 	desc->driver_data = data;
+ 	desc->name = np->name;
+-	data->desc = desc;
  
--#define RK3399_DMC_NUM_CH	2
-+#define DMC_MAX_CHANNELS	2
- 
- /* DDRMON_CTRL */
- #define DDRMON_CTRL	0x04
-@@ -44,7 +44,7 @@ struct dmc_count_channel {
- };
- 
- struct dmc_count {
--	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
-+	struct dmc_count_channel c[DMC_MAX_CHANNELS];
- };
- 
- /*
-@@ -62,6 +62,7 @@ struct rockchip_dfi {
- 	struct regmap *regmap_pmu;
- 	struct clk *clk;
- 	u32 ddr_type;
-+	unsigned int channel_mask;
- };
- 
- static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
-@@ -96,7 +97,9 @@ static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dm
- 	u32 i;
- 	void __iomem *dfi_regs = dfi->regs;
- 
--	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
-+	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
-+		if (!(dfi->channel_mask & BIT(i)))
-+			continue;
- 		count->c[i].access = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
- 		count->c[i].total = readl_relaxed(dfi_regs +
-@@ -146,9 +149,14 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 	rockchip_dfi_read_counters(edev, &count);
- 
- 	/* We can only report one channel, so find the busiest one */
--	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
--		u32 a = count.c[i].access - last->c[i].access;
--		u32 t = count.c[i].total - last->c[i].total;
-+	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
-+		u32 a, t;
-+
-+		if (!(dfi->channel_mask & BIT(i)))
-+			continue;
-+
-+		a = count.c[i].access - last->c[i].access;
-+		t = count.c[i].total - last->c[i].total;
- 
- 		if (a > access) {
- 			access = a;
-@@ -186,6 +194,8 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
- 	dfi->ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
- 			RK3399_PMUGRF_DDRTYPE_MASK;
- 
-+	dfi->channel_mask = 3;
-+
- 	return 0;
- };
- 
+ 	data->edev = devm_devfreq_event_add_edev(&pdev->dev, desc);
+ 	if (IS_ERR(data->edev)) {
 -- 
 2.30.2
 
