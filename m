@@ -2,128 +2,115 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D17DC64EC5
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 07:56:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F103BC05027
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 07:59:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230499AbjBHH4Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Feb 2023 02:56:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43004 "EHLO
+        id S231167AbjBHH6j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Feb 2023 02:58:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229797AbjBHH4W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 02:56:22 -0500
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 733121F5ED
-        for <linux-pm@vger.kernel.org>; Tue,  7 Feb 2023 23:56:21 -0800 (PST)
-Received: by mail-wm1-x330.google.com with SMTP id n28-20020a05600c3b9c00b003ddca7a2bcbso794089wms.3
-        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2023 23:56:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ETxDvVj98k7PU9AtIH67/6OJT7NKyjfCHV6l1l+MNQQ=;
-        b=JYXVjCxpNpr225kycoOKCpYUv9d7TUOsBrEU89nBfVKya6Dua1U16VPiPJ+uJfN4en
-         AWSKutDat+UFJUxzYXSE8VwBtHCFQB4TTMYKrLFcfpluBgJmKU+RFFJ7UpvgtzC+iajr
-         JIvfz50BvS4N8o3NNxc4LZ3Ml6IWlJqgxTn9GfkuL8Rpvz+OarEcBGjAtGa7hPh3lrit
-         3Cv+S2ov7vm80nv+NmAjxTaUJ+u/lv1h5az4msh01dBrx6HDpPtavEXy9jod1UgboOdK
-         LSdREKHCZFuacyIbvWoUOHSJwpvioc1k2jFMC5f/d+53erhNUTHyiAA1uZ5X2YM6tE/X
-         oeXg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ETxDvVj98k7PU9AtIH67/6OJT7NKyjfCHV6l1l+MNQQ=;
-        b=RYUXL006F9EkzqKN4GWK2n3HxAcXVjOk4PI8cMkk8nphFmDd1904kKgla+vXF49bYk
-         48DerT4Ew0jXH+r9199B4L5immBipe249mcRE8dVfE2f6e/OK+f5G2stoJ/XJjtD6Ffp
-         cLRj4ED+CL+S9iLzh2XDotsR7CzPWHiPaGOFWPTEwZJOQZxWcIccS5mrkrIYbpTDRWDY
-         7g70XqDXf0Rjnp7O1XDjT0VSWEkfDRLcGOzpq1Ipv+U0gbxvSdTvFJLFb+obixFLScaK
-         H4+Px/S5Dfdc84C9GXTXXabJlxx4D2niXBCSnMVBZQqIUutnhz1EoChy9KfPk+QXgYsy
-         l+vA==
-X-Gm-Message-State: AO0yUKUP+fa1OAhOwGpDCEu7WqRzSsuH92bXKkUVyPp4zm2NHyMIVhlS
-        /14UsbqWRlFZ3Qxl4ITYQcPv2A==
-X-Google-Smtp-Source: AK7set/nmPCad66nOdzB/ATnH2t6UekYKNilUC2JCRegAFqTQjcMwBcwNJH1PAkPH6wxUnVbqd+KHg==
-X-Received: by 2002:a05:600c:2e96:b0:3df:7948:886b with SMTP id p22-20020a05600c2e9600b003df7948886bmr5383344wmn.31.1675842980005;
-        Tue, 07 Feb 2023 23:56:20 -0800 (PST)
-Received: from [192.168.1.109] ([178.197.216.144])
-        by smtp.gmail.com with ESMTPSA id j22-20020a05600c485600b003dc521f336esm1062428wmo.14.2023.02.07.23.56.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 07 Feb 2023 23:56:19 -0800 (PST)
-Message-ID: <f80c617c-f595-bdc3-44d0-d29b3fff989e@linaro.org>
-Date:   Wed, 8 Feb 2023 08:56:17 +0100
+        with ESMTP id S229512AbjBHH6i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 02:58:38 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21C2440FC;
+        Tue,  7 Feb 2023 23:58:37 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B17EC6153C;
+        Wed,  8 Feb 2023 07:58:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAD1DC433D2;
+        Wed,  8 Feb 2023 07:58:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1675843116;
+        bh=ekCkgDhcpNyTrRI5U/hbOWjhHL/iqJL0wlX8hHfuD04=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Lymkujf6Tjydq6qfdneiPootbGvCjYiXKslv/Hg1nuijXMQ6kJ3jVQMgzN72PYzRe
+         hxTwqY+uVH0AvgkQtHAGSKUcv6IOQPvbNi836nwCwqnXqipmpmmqAVNELqmw+8SRXR
+         0aj0uqEUZDtDyLtmClbc5W2Pfa3aU/QBbixiXF0K54Y6vqhHnglAc6c+xNDqjCjsy2
+         2oC3DTulpjc/5/OnS4CIZobqgSot6d3DhyPgQNHP3HsIgaVDRq0YtkAJE8+6iPvuPb
+         s5aH3w1layMXYMBRJWH/10PbNw2hYsIANpfv1iP7zdejE4mPKWQ2nhW1wkzx3ugRth
+         dTAoXc4QzLYHA==
+Date:   Wed, 8 Feb 2023 08:58:33 +0100
+From:   Wolfram Sang <wsa@kernel.org>
+To:     Niklas =?utf-8?Q?S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH 2/2] drivers/thermal/rcar_gen3_thermal: Fix device
+ initialization
+Message-ID: <Y+NWKZuQm6uLMkTD@ninjato>
+Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
+        Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+References: <20230207171011.1596127-1-niklas.soderlund+renesas@ragnatech.se>
+ <20230207171011.1596127-3-niklas.soderlund+renesas@ragnatech.se>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH v5 2/3] dt-bindings: cpufreq: qcom-cpufreq-nvmem: make cpr
- bindings optional
-To:     Christian Marangi <ansuelsmth@gmail.com>
-Cc:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Yassine Oudjana <y.oudjana@protonmail.com>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230131151819.16612-1-ansuelsmth@gmail.com>
- <20230131151819.16612-2-ansuelsmth@gmail.com>
- <1670489b-e4f0-7328-3dbb-d849d1d6bd7e@linaro.org>
- <63e2e854.df0a0220.52915.56aa@mx.google.com>
-Content-Language: en-US
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <63e2e854.df0a0220.52915.56aa@mx.google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="arIY7se3Q65hGe11"
+Content-Disposition: inline
+In-Reply-To: <20230207171011.1596127-3-niklas.soderlund+renesas@ragnatech.se>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 08/02/2023 01:09, Christian Marangi wrote:
-> On Wed, Feb 01, 2023 at 09:20:39AM +0100, Krzysztof Kozlowski wrote:
->> On 31/01/2023 16:18, Christian Marangi wrote:
->>> The qcom-cpufreq-nvmem driver supports 2 kind of devices:
->>> - pre-cpr that doesn't have power-domains and base everything on nvmem
->>>   cells and multiple named microvolt bindings.
->>>   Doesn't need required-opp binding in the opp nodes as they are only
->>>   used for genpd based devices.
->>> - cpr-based that require power-domain in the cpu nodes and use various
->>>   source to decide the correct voltage and freq
->>>   Require required-opp binding since they need to be linked to the
->>>   related opp-level.
->>>
->>> When the schema was introduced, it was wrongly set to always require these
->>> binding but this is not the case for pre-cpr devices.
->>>
->>> Make the power-domain and the required-opp optional and set them required
->>> only for qcs404 based devices.
->>>
->>> Fixes: ec24d1d55469 ("dt-bindings: opp: Convert qcom-nvmem-cpufreq to DT schema")
->>
->> Fixes go as first patches in the series.
->>
-> 
-> Hi,
-> this is problematic. This documentation is a bit special.
-> 
-> v4 had this patch as first but this cause error with make
-> dt_binding_check as the schema will be effectively empty (as it will
-> have only if condition)
-> 
-> This is why I pushed v5 that swap this with the second patch and first
-> add non conditional stuff to the schema and only with the second patch
-> makes them conditional.
-> 
-> Any hint to handle this corner case? I'm having some diffiulties due to
-> how special this is but we really need this fix since it's blocking the
-> introduction of opp table for ipq806x and ipq807x (as the schema is
-> currently flawed)
 
-Let's then drop fixes tag, because it will only confuse any backporters.
+--arIY7se3Q65hGe11
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Best regards,
-Krzysztof
+On Tue, Feb 07, 2023 at 06:10:11PM +0100, Niklas S=C3=B6derlund wrote:
+> The thermal zone is registered before the device is register and the
+> thermal coefficients are calculated, providing a window for very
+> incorrect readings.
 
+While I could never actually be in this race window, the patch makes a
+lot of sense to me.
+
+> The reason why the zone was register before the device was fully
+> initialized was that the presence of the set_trips() callback is used to
+> determine if the driver supports interrupt or not, as it is not defined
+> if the device is incapable of interrupts.
+>=20
+> Fix this by using the operations structure in the private data instead
+> of the zone to determine if interrupts are available or not, and
+> initialize the device before registering the zone.
+>=20
+> Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.=
+se>
+
+Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+
+One minor question:
+
+> -		if (status)
+> +		if (status && priv->tscs[i]->zone)
+>  			thermal_zone_device_update(priv->tscs[i]->zone,
+>  						   THERMAL_EVENT_UNSPECIFIED);
+
+Isn't this a seperate change?
+
+
+--arIY7se3Q65hGe11
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmPjVikACgkQFA3kzBSg
+KbbtDBAAmTRKdLM3/GUY7HdnBMctjrIX7Sz3rid4nQcY7eFfvSO6lwzOHfSMQ3WP
+tmtY8eeQFlA3wvsu2loCgg2jHYJ3oMpBqmjoo1ds/kRiG7AncoIaRbqifgYo3TrT
+mNe50Vr4/0BRIvHi3recyUtfrt3nJyMbsE6pPXKXar4z1zt90McalErJu/DS/DHU
+AD7UqNe7orqxXtuRy+i+ayVOdchF7L4gWjmAFEgbpXmKacXY/0jOIQpA/k9zWsp4
+fUwTZJr+sxXAqWwsssDz34kr56cWScHzk/Flj92cpTUyMo47xCamFxIfCOGYkFUh
+UyTkFUbERS35UcPuwcDTk6qdEfM1qZGYZ97uVF+tUU/gC2FSWiuJf30KOPU7fE+c
+qoZUQV/zg70EiyvXqJS50QQOMTS+FDA96FaRVWb5lW9AGiasN0o5otKcS9Q8qhFj
+XUO4VhvPUq+KV10Waq4Mlk86mk4AeQO9yXrEAvYPVEQQqxRv7so6/0UTYYqFQX/a
+oijrgsfez+KvCIc01LMN+lhlSCsvV17P9XWD+VGkkp5LoSFiuxSwZ2gVyPvrgllm
+8b/Q6W1M2Txdj189IHsgL3iJIy4C6nN31wZ6JOwBGWqKWZtQHPsXH1wobo4bEB8I
+srwWFhqueQkwxuU0ie8pamJjfYViPGO1Y32/BcAF5E2sY0B5v20=
+=uYPz
+-----END PGP SIGNATURE-----
+
+--arIY7se3Q65hGe11--
