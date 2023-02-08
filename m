@@ -2,201 +2,144 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B4D8C636D6
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 11:06:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B64BC05027
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 11:19:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229732AbjBHLGn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Feb 2023 06:06:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39112 "EHLO
+        id S229741AbjBHLTW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Feb 2023 06:19:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42872 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230184AbjBHLGm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 06:06:42 -0500
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29B3420696
-        for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 03:06:41 -0800 (PST)
-Received: by mail-wr1-x430.google.com with SMTP id y1so16366391wru.2
-        for <linux-pm@vger.kernel.org>; Wed, 08 Feb 2023 03:06:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=6/O99q2mqAnU1YJFg0RL3IQ6v1yxtSNH23Gl9fNWxd0=;
-        b=teX6wrX/Q97Bvr5pqIzAFCji9BfOB31/BQFFkpvxEmvMu54kF5elITaRwQIOdiPb7E
-         k+xxjj7idBEyEjwFSYhlHQHtXMkzJ9DHdYKck/aQEAxUk7M91EJMXyszC33vRv5c+0ja
-         4AT5QM/NOgyUSPTYngDp4/LNhCas8myXTKzKt8XkppYY8GkcUKBj9bzdk2GkXEDVdRIe
-         32Z8i5LA+da6SkTtB2SNt74B9Q8ItYOMxfAwqlQPBWz+tdhgLdjch4SvVBrQigfG7FlZ
-         GljpKADp/RGS9qmGKWUlDrW8HPuP02TaRAbL0NFO0j+cs8o9+Gvkd5Q3bbpV2MsbcUFI
-         FEVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=6/O99q2mqAnU1YJFg0RL3IQ6v1yxtSNH23Gl9fNWxd0=;
-        b=RELRvyP16/dFBoT7W5e4TNkBhixE2VtMOcqOrLA62vxBmxEStUH2KMYimuSyXHNBoj
-         F6UcnO1uxIQvMtfo3FkgMFfpNjUo6fgFMUIsL/70ErXIILL1/zsgIapay9luIID7v3sn
-         youGvsjMBzs/lARwLW0e44Oxf93O+NVI7hDgVi6X4dkPNhUotDR9W36lSkj1NDxrWoQO
-         PzZvQy3gSH8iMFxs2EDOjV8cfqUJVjxeq4LsltPUgdoL/jvu5JkkOqb6MKi1fgqHSRN7
-         VLdj8HDO8B7eHJLoZWpHt1HZ/TZuG5qxJV49rrZvnm6U9BlQ3eXQVRHv7VtQH01lJj3y
-         Ql5w==
-X-Gm-Message-State: AO0yUKWa0wO8gDI0UsEFgcgpbbttShEDlXj/EYWl8iF9xdFmLKf9Y4JT
-        pzj2f8w/zXRzj6QIYjP4/YMk1ftS9ddB40Xi
-X-Google-Smtp-Source: AK7set8ADPhyhkhxlwNghIAevpvA+VWCXiTsS1EXnFuaiGNqTjHGrIXZD2kzfFHVr0QflAg80zAnHA==
-X-Received: by 2002:adf:e950:0:b0:2bf:d2d8:d604 with SMTP id m16-20020adfe950000000b002bfd2d8d604mr6535615wrn.46.1675854399613;
-        Wed, 08 Feb 2023 03:06:39 -0800 (PST)
-Received: from [172.17.49.168] (wifi-eduroam-trans.univ-tlse3.fr. [195.220.58.237])
-        by smtp.googlemail.com with ESMTPSA id p10-20020a5d59aa000000b002be5401ef5fsm13764145wrr.39.2023.02.08.03.06.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 08 Feb 2023 03:06:39 -0800 (PST)
-Message-ID: <8649a674-bbd4-435c-5574-c0c633988e66@linaro.org>
-Date:   Wed, 8 Feb 2023 12:06:37 +0100
+        with ESMTP id S230495AbjBHLTE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 06:19:04 -0500
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2077.outbound.protection.outlook.com [40.107.244.77])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EE5647096;
+        Wed,  8 Feb 2023 03:18:18 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=gVghLZk8wI37w0GD7mVSYFiB2natt1NgRKYqKYabnAyrbkDdYHSc0xVszc71vWPTkWSag3panalKUOEbvUU33Qqut7fw8REyZehfcATgulWvgTWDRaslZKQm5MgUcxy9i7TOimwC1pIZ3l3k3JtMy2f2CA3wxxj6KCYVtKgk2KaFt5kpFBCReMBTGePgEk94cZBkjX3AHP86J01kTPQ1BpWlp2hRfoHpDUDJVV1YB/9/bMIgOPhFYz4pfYP4SYE/FJlE/hHNoJYH8fi8wtbDvxcPSvHRLhc0cV1ejjKHV57KaVpTKOaJfGHouohuGtaFcfck+MyFP1TXcBjyAZbzKQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=E9TQPOQEHQ870a4qRyfXdcpDFIIS3KkVr+i6XqXCLro=;
+ b=UAoRVsJgz2GV/BlvkIMFXTh7mcR+Cs6r70sI3Unn+5RN0YrcYgojvGrjoL7zEikG2kRGd8Di64Lr6bxFmdMQKqhgoxi32RXvZRwfGWwUzVvI5VGNNnaXSf0YP1qLUeLYSGQBGl8syGpf/SBeKuKduH9TwcvDep4k9crYGNyXvI/A4yl8jbUIWCmTvUyI1ujQ+W76VkZ/FOz5rA6Q2y+9h+WAioswCzlez2CJR0YICHX1Gf7ooRiC7i9WgtralEVKoFqo5cE7J41QYPP0GBuJVLCUZEw8WFj2ncTJUGjtEC27M5335IZWHabX//No0rFVr5v8uAacMLbLFIjdX+zJyg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.161) smtp.rcpttodomain=google.com smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=E9TQPOQEHQ870a4qRyfXdcpDFIIS3KkVr+i6XqXCLro=;
+ b=HAWciG5B/e6SffkyBKSbseCgnLP4HACco0ZTvOnxMDIngMeXQ8lOOLrXkQBN/lc2t7wxQsYI+DNusWOvPDNCtYLLL4R5PLzcVQefYVcvfKlcA7H1PoFgvwJi1jmekplKvunSfbGFvUNxe6TGRB/lZ3JYGPoDFngzczINk1gXi2/kLcmtsStn/UhJFnI0b4+VCRXDzjaHjswquIdBF05u48hX00pi3OwZodco7ujnZP85923Euyjw6CkYolOc3SlByn8ipP0rpBAFvYAvkRDKtvJDCtBA2OKgobXgHdRlk5x1+nkQakaqF36+Fiw/UmXywltlVud6WVs63Wsy6RFwlA==
+Received: from BN9PR03CA0223.namprd03.prod.outlook.com (2603:10b6:408:f8::18)
+ by SN7PR12MB7322.namprd12.prod.outlook.com (2603:10b6:806:299::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6086.17; Wed, 8 Feb
+ 2023 11:17:51 +0000
+Received: from BN8NAM11FT073.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:f8:cafe::c2) by BN9PR03CA0223.outlook.office365.com
+ (2603:10b6:408:f8::18) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6086.18 via Frontend
+ Transport; Wed, 8 Feb 2023 11:17:51 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.161) by
+ BN8NAM11FT073.mail.protection.outlook.com (10.13.177.231) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6086.17 via Frontend Transport; Wed, 8 Feb 2023 11:17:51 +0000
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by mail.nvidia.com
+ (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.36; Wed, 8 Feb 2023
+ 03:17:37 -0800
+Received: from rnnvmail205.nvidia.com (10.129.68.10) by rnnvmail203.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.36; Wed, 8 Feb 2023
+ 03:17:37 -0800
+Received: from mmaddireddy-ubuntu.nvidia.com (10.127.8.10) by mail.nvidia.com
+ (10.129.68.10) with Microsoft SMTP Server id 15.2.986.36 via Frontend
+ Transport; Wed, 8 Feb 2023 03:17:30 -0800
+From:   Manikanta Maddireddy <mmaddireddy@nvidia.com>
+To:     <bhelgaas@google.com>, <thierry.reding@gmail.com>,
+        <petlozup@nvidia.com>, <rafael.j.wysocki@intel.com>,
+        <lpieralisi@kernel.org>, <robh@kernel.org>,
+        <jeffy.chen@rock-chips.com>
+CC:     <krzysztof.kozlowski+dt@linaro.org>, <jonathanh@nvidia.com>,
+        <dmitry.osipenko@collabora.com>, <viresh.kumar@linaro.org>,
+        <gregkh@linuxfoundation.org>, <steven.price@arm.com>,
+        <kw@linux.com>, <linux-pci@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-tegra@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <vidyas@nvidia.com>, Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Subject: [RFC,v14 4/5] arm64: tegra: Add PCIe port node with PCIe WAKE# for C1 controller
+Date:   Wed, 8 Feb 2023 16:46:44 +0530
+Message-ID: <20230208111645.3863534-5-mmaddireddy@nvidia.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20230208111645.3863534-1-mmaddireddy@nvidia.com>
+References: <20230208111645.3863534-1-mmaddireddy@nvidia.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH 2/2] drivers/thermal/rcar_gen3_thermal: Fix device
- initialization
-Content-Language: en-US
-To:     =?UTF-8?Q?Niklas_S=c3=b6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>,
-        Wolfram Sang <wsa@kernel.org>, linux-pm@vger.kernel.org
-Cc:     linux-renesas-soc@vger.kernel.org
-References: <20230207171011.1596127-1-niklas.soderlund+renesas@ragnatech.se>
- <20230207171011.1596127-3-niklas.soderlund+renesas@ragnatech.se>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20230207171011.1596127-3-niklas.soderlund+renesas@ragnatech.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-NVConfidentiality: public
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN8NAM11FT073:EE_|SN7PR12MB7322:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5e0acefc-9730-411c-810d-08db09c61e25
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: O4c4zBOjRzWgghsS9s35oBFxUCvMCXeG8U/K8BGjpYWckAcllCQRIGb8zNHPK9MDBN9tQrvR3IIvDgVS7tPhb635p3H/rqILO6/pIrOoYgM4q/GZFOxxN3L6yKIAwKKqBkb91mWWbvtX5DdS8712UcwZsCmLsy1ZvLzxgU3tlIWBDR1rUinDyoZWZAIR1f4bbXUfMGGyLTc9Dc1nWeo/bpDw+mQwbXLNH/JgLDH4/bYJYV+aVWpcfOLwU9u153OoFej3opVrq1t5UzF+GAj4ln81a9N+GPrexhMRGZGat+tXc0GSwifG/ASphVBJ4jA1E98I/1spIwp6g+j0k8E7NjJ0pPFZqOb1AJ/fhOtHiLo1902EoLI02ZD+rqQfVsfrk+/ApiUviBYnx3/EIvXkBjevqv+F9rxKha4a0AiLX4a6OngV1mQxJGXaLIl9G5hbNL+3zkV4W/S56D9S34TzsAiPSWCXVJVXdEsA6aey8Ffs1jeixPJjXwPzIOaGzgdB3z5C0sVrmchrtdMuSHI1Hwz6Q9MFzcudnrU6gzNBEh3qEjKilU/D3DCN13KBB/24G2EbDGYmvRzBqexSE87kCNPU7qRlheQNWK7GlMPvJUqJc/adRhSGXtppOy5EGJtTZWzJ6Y2kTbDoZrhODTrh1nMmB0e07MNIY9PMCQHMbDvuK5Oge0VoGXEISSe5vJPfUPnpLAQoANIeJt2yZYTZnw==
+X-Forefront-Antispam-Report: CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230025)(4636009)(346002)(136003)(39860400002)(376002)(396003)(451199018)(46966006)(36840700001)(40470700004)(36860700001)(36756003)(86362001)(7636003)(82740400003)(356005)(41300700001)(8676002)(4326008)(7416002)(5660300002)(8936002)(110136005)(54906003)(70586007)(70206006)(316002)(82310400005)(40460700003)(40480700001)(2906002)(426003)(47076005)(2616005)(336012)(478600001)(7696005)(186003)(26005)(107886003)(6666004)(1076003);DIR:OUT;SFP:1101;
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Feb 2023 11:17:51.4975
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5e0acefc-9730-411c-810d-08db09c61e25
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT073.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7322
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 07/02/2023 18:10, Niklas Söderlund wrote:
-> The thermal zone is registered before the device is register and the
-> thermal coefficients are calculated, providing a window for very
-> incorrect readings.
-> 
-> The reason why the zone was register before the device was fully
-> initialized was that the presence of the set_trips() callback is used to
-> determine if the driver supports interrupt or not, as it is not defined
-> if the device is incapable of interrupts.
-> 
-> Fix this by using the operations structure in the private data instead
-> of the zone to determine if interrupts are available or not, and
-> initialize the device before registering the zone.
-> 
-> Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> ---
->   drivers/thermal/rcar_gen3_thermal.c | 25 ++++++++++++++-----------
->   1 file changed, 14 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index bfa2ff20b945..1dedeece1a00 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -89,7 +89,8 @@ struct rcar_gen3_thermal_priv {
->   	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
->   	struct thermal_zone_device_ops ops;
->   	unsigned int num_tscs;
-> -	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
-> +	void (*thermal_init)(struct rcar_gen3_thermal_priv *priv,
-> +			     struct rcar_gen3_thermal_tsc *tsc);
->   	int ptat[3];
->   };
->   
-> @@ -240,7 +241,7 @@ static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
->   	for (i = 0; i < priv->num_tscs; i++) {
->   		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
->   		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
-> -		if (status)
-> +		if (status && priv->tscs[i]->zone)
->   			thermal_zone_device_update(priv->tscs[i]->zone,
->   						   THERMAL_EVENT_UNSPECIFIED);
->   	}
-> @@ -311,7 +312,8 @@ static bool rcar_gen3_thermal_read_fuses(struct rcar_gen3_thermal_priv *priv)
->   	return true;
->   }
->   
-> -static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_tsc *tsc)
-> +static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_priv *priv,
-> +					      struct rcar_gen3_thermal_tsc *tsc)
->   {
->   	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
->   	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
-> @@ -322,7 +324,7 @@ static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_tsc *tsc)
->   
->   	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
->   	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
-> -	if (tsc->zone->ops->set_trips)
-> +	if (priv->ops.set_trips)
->   		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN,
->   					IRQ_TEMPD1 | IRQ_TEMP2);
->   
-> @@ -338,7 +340,8 @@ static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_tsc *tsc)
->   	usleep_range(1000, 2000);
->   }
->   
-> -static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-> +static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_priv *priv,
-> +				   struct rcar_gen3_thermal_tsc *tsc)
->   {
->   	u32 reg_val;
->   
-> @@ -350,7 +353,7 @@ static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
->   
->   	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0);
->   	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
-> -	if (tsc->zone->ops->set_trips)
-> +	if (priv->ops.set_trips)
->   		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN,
->   					IRQ_TEMPD1 | IRQ_TEMP2);
->   
-> @@ -510,6 +513,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->   	for (i = 0; i < priv->num_tscs; i++) {
->   		struct rcar_gen3_thermal_tsc *tsc = priv->tscs[i];
->   
-> +		priv->thermal_init(priv, tsc);
-> +		rcar_gen3_thermal_calc_coefs(priv, tsc, *ths_tj_1);
-> +
->   		zone = devm_thermal_of_zone_register(dev, i, tsc, &priv->ops);
->   		if (IS_ERR(zone)) {
->   			dev_err(dev, "Sensor %u: Can't register thermal zone\n", i);
-> @@ -518,9 +524,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->   		}
->   		tsc->zone = zone;
->   
-> -		priv->thermal_init(tsc);
-> -		rcar_gen3_thermal_calc_coefs(priv, tsc, *ths_tj_1);
-> -
->   		tsc->zone->tzp->no_hwmon = false;
->   		ret = thermal_add_hwmon_sysfs(tsc->zone);
->   		if (ret)
-> @@ -559,8 +562,8 @@ static int __maybe_unused rcar_gen3_thermal_resume(struct device *dev)
->   		struct rcar_gen3_thermal_tsc *tsc = priv->tscs[i];
->   		struct thermal_zone_device *zone = tsc->zone;
->   
-> -		priv->thermal_init(tsc);
-> -		if (zone->ops->set_trips)
-> +		priv->thermal_init(priv, tsc);
-> +		if (priv->ops.set_trips)
->   			rcar_gen3_thermal_set_trips(zone, zone->prev_low_trip,
->   						    zone->prev_high_trip);
+Add PCIe port node under the PCIe controller-1 device tree node to support
+PCIe WAKE# interrupt for WiFi.
 
-This is not needed, at resume time, the thermal framework has a 
-pm_notifier and calls thermal_zone_device_update() which in turn calls 
-thermal_zone_set_trips(). If the ops is not set, it will continue.
+Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+---
 
-Actually, no call to set_trips should happen in the driver, just pass 
-the ops the thermal framework and it will do the actions.
+Changes in v14:
+New patch in the series to support PCIe WAKE# in NVIDIA Jetson AGX Orin.
 
-The same happens when you call thermal_zone_device_register(), it calls 
-thermal_zone_device_update(), then thermal_zone_set_trips().
+ .../dts/nvidia/tegra234-p3737-0000+p3701-0000.dts     | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-
+diff --git a/arch/arm64/boot/dts/nvidia/tegra234-p3737-0000+p3701-0000.dts b/arch/arm64/boot/dts/nvidia/tegra234-p3737-0000+p3701-0000.dts
+index 8a9747855d6b..9c89be263141 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra234-p3737-0000+p3701-0000.dts
++++ b/arch/arm64/boot/dts/nvidia/tegra234-p3737-0000+p3701-0000.dts
+@@ -2147,6 +2147,17 @@ pcie@14100000 {
+ 
+ 			phys = <&p2u_hsio_3>;
+ 			phy-names = "p2u-0";
++
++			pci@0,0 {
++				reg = <0x0000 0 0 0 0>;
++				#address-cells = <3>;
++				#size-cells = <2>;
++				ranges;
++
++				interrupt-parent = <&gpio>;
++				interrupts = <TEGRA234_MAIN_GPIO(L, 2) IRQ_TYPE_LEVEL_LOW>;
++				interrupt-names = "wakeup";
++			};
+ 		};
+ 
+ 		pcie@14160000 {
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.25.1
 
