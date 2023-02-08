@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DEA6C636D3
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DD19C64ED6
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230443AbjBHJiy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230246AbjBHJiy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 8 Feb 2023 04:38:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58624 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58648 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230379AbjBHJiw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:52 -0500
+        with ESMTP id S230370AbjBHJix (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:53 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6384F9013
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D19F3127
         for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:38:51 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguV-0003C9-Hf; Wed, 08 Feb 2023 10:38:39 +0100
+        id 1pPguU-00039I-I1; Wed, 08 Feb 2023 10:38:38 +0100
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguT-003UAt-H5; Wed, 08 Feb 2023 10:38:38 +0100
+        id 1pPguR-003UAK-Kr; Wed, 08 Feb 2023 10:38:36 +0100
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguQ-000s98-QL; Wed, 08 Feb 2023 10:38:34 +0100
+        id 1pPguQ-000s8p-MI; Wed, 08 Feb 2023 10:38:34 +0100
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-pm@vger.kernel.org
 Cc:     linux-rockchip@lists.infradead.org,
@@ -39,9 +39,9 @@ Cc:     linux-rockchip@lists.infradead.org,
         Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
         Michael Riesch <michael.riesch@wolfvision.net>,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v2 13/19] PM / devfreq: rockchip-dfi: Pass private data struct to internal functions
-Date:   Wed,  8 Feb 2023 10:38:24 +0100
-Message-Id: <20230208093830.143284-14-s.hauer@pengutronix.de>
+Subject: [PATCH v2 09/19] PM / devfreq: rockchip-dfi: Clean up DDR type register defines
+Date:   Wed,  8 Feb 2023 10:38:20 +0100
+Message-Id: <20230208093830.143284-10-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230208093830.143284-1-s.hauer@pengutronix.de>
 References: <20230208093830.143284-1-s.hauer@pengutronix.de>
@@ -55,78 +55,80 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The internal functions do not need the struct devfreq_event_dev *,
-so pass them the struct rockchip_dfi *. This is a preparation for
-adding perf support later which doesn't have a struct devfreq_event_dev *.
+Use the HIWORD_UPDATE() define known from other rockchip drivers to
+make the defines look less odd to the readers who've seen other
+rockchip drivers.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 32 +++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index dc48d9c26f599..c0b7b1e9805e9 100644
+index 7896cd8beb143..035984d3c7b01 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -73,9 +73,8 @@ struct rockchip_dfi {
- 	unsigned int channel_mask;
- };
+@@ -26,15 +26,19 @@
  
--static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
-+static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
- {
--	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+ #define DMC_MAX_CHANNELS	2
+ 
++#define HIWORD_UPDATE(val, mask)	((val) | (mask) << 16)
++
+ /* DDRMON_CTRL */
+ #define DDRMON_CTRL	0x04
+-#define CLR_DDRMON_CTRL	(0x1f0000 << 0)
+-#define LPDDR4_EN	(0x10001 << 4)
+-#define HARDWARE_EN	(0x10001 << 3)
+-#define LPDDR3_EN	(0x10001 << 2)
+-#define SOFTWARE_EN	(0x10001 << 1)
+-#define SOFTWARE_DIS	(0x10000 << 1)
+-#define TIME_CNT_EN	(0x10001 << 0)
++#define DDRMON_CTRL_DDR4		BIT(5)
++#define DDRMON_CTRL_LPDDR4		BIT(4)
++#define DDRMON_CTRL_HARDWARE_EN		BIT(3)
++#define DDRMON_CTRL_LPDDR23		BIT(2)
++#define DDRMON_CTRL_SOFTWARE_EN		BIT(1)
++#define DDRMON_CTRL_TIMER_CNT_EN	BIT(0)
++#define DDRMON_CTRL_DDR_TYPE_MASK	(DDRMON_CTRL_DDR4 | \
++					 DDRMON_CTRL_LPDDR4 | \
++					 DDRMON_CTRL_LPDDR23)
+ 
+ #define DDRMON_CH0_COUNT_NUM		0x28
+ #define DDRMON_CH0_DFI_ACCESS_NUM	0x2c
+@@ -74,16 +78,19 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
  	void __iomem *dfi_regs = dfi->regs;
  
  	/* clear DDRMON_CTRL setting */
-@@ -102,18 +101,16 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 		       dfi_regs + DDRMON_CTRL);
+-	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
++	writel_relaxed(HIWORD_UPDATE(0, 0xffff), dfi_regs + DDRMON_CTRL);
+ 
+ 	/* set ddr type to dfi */
+ 	if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR3)
+-		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
++		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR23, DDRMON_CTRL_DDR_TYPE_MASK),
++			       dfi_regs + DDRMON_CTRL);
+ 	else if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR4)
+-		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
++		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR4, DDRMON_CTRL_DDR_TYPE_MASK),
++			       dfi_regs + DDRMON_CTRL);
+ 
+ 	/* enable count, use software mode */
+-	writel_relaxed(SOFTWARE_EN, dfi_regs + DDRMON_CTRL);
++	writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_SOFTWARE_EN, DDRMON_CTRL_SOFTWARE_EN),
++		       dfi_regs + DDRMON_CTRL);
  }
  
--static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
-+static void rockchip_dfi_stop_hardware_counter(struct rockchip_dfi *dfi)
- {
--	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 	void __iomem *dfi_regs = dfi->regs;
- 
- 	writel_relaxed(HIWORD_UPDATE(0, DDRMON_CTRL_SOFTWARE_EN),
- 		       dfi_regs + DDRMON_CTRL);
- }
- 
--static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
-+static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_count *count)
- {
--	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 	u32 i;
- 	void __iomem *dfi_regs = dfi->regs;
- 
-@@ -131,7 +128,7 @@ static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
- {
+ static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
+@@ -91,7 +98,8 @@ static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
  	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+ 	void __iomem *dfi_regs = dfi->regs;
  
--	rockchip_dfi_stop_hardware_counter(edev);
-+	rockchip_dfi_stop_hardware_counter(dfi);
- 	clk_disable_unprepare(dfi->clk);
- 
- 	return 0;
-@@ -148,7 +145,7 @@ static int rockchip_dfi_enable(struct devfreq_event_dev *edev)
- 		return ret;
- 	}
- 
--	rockchip_dfi_start_hardware_counter(edev);
-+	rockchip_dfi_start_hardware_counter(dfi);
- 	return 0;
+-	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
++	writel_relaxed(HIWORD_UPDATE(0, DDRMON_CTRL_SOFTWARE_EN),
++		       dfi_regs + DDRMON_CTRL);
  }
  
-@@ -166,7 +163,7 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 	u32 access = 0, total = 0;
- 	int i;
- 
--	rockchip_dfi_read_counters(edev, &count);
-+	rockchip_dfi_read_counters(dfi, &count);
- 
- 	/* We can only report one channel, so find the busiest one */
- 	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
+ static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
 -- 
 2.30.2
 
