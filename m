@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2767C636D3
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54F51C64EC6
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Feb 2023 09:38:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230257AbjBHJiu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230207AbjBHJiu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 8 Feb 2023 04:38:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58536 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230132AbjBHJit (ORCPT
+        with ESMTP id S230246AbjBHJit (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2023 04:38:49 -0500
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65B181BE4
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 669931BFF
         for <linux-pm@vger.kernel.org>; Wed,  8 Feb 2023 01:38:48 -0800 (PST)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguU-00039R-Hw; Wed, 08 Feb 2023 10:38:38 +0100
+        id 1pPguU-00039M-Hr; Wed, 08 Feb 2023 10:38:38 +0100
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguS-003UAX-AJ; Wed, 08 Feb 2023 10:38:37 +0100
+        id 1pPguR-003UAN-Sp; Wed, 08 Feb 2023 10:38:37 +0100
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1pPguQ-000s9i-V4; Wed, 08 Feb 2023 10:38:34 +0100
+        id 1pPguQ-000s8K-IJ; Wed, 08 Feb 2023 10:38:34 +0100
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-pm@vger.kernel.org
 Cc:     linux-rockchip@lists.infradead.org,
@@ -39,9 +39,9 @@ Cc:     linux-rockchip@lists.infradead.org,
         Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
         Michael Riesch <michael.riesch@wolfvision.net>,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v2 18/19] dt-bindings: devfreq: event: convert Rockchip DFI binding to yaml
-Date:   Wed,  8 Feb 2023 10:38:29 +0100
-Message-Id: <20230208093830.143284-19-s.hauer@pengutronix.de>
+Subject: [PATCH v2 06/19] PM / devfreq: rockchip-dfi: Use free running counter
+Date:   Wed,  8 Feb 2023 10:38:17 +0100
+Message-Id: <20230208093830.143284-7-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230208093830.143284-1-s.hauer@pengutronix.de>
 References: <20230208093830.143284-1-s.hauer@pengutronix.de>
@@ -55,107 +55,125 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the Rockchip DFI binding to yaml.
+The DDR_MON counters are free running counters. These are resetted to 0
+when starting them over like currently done when reading the current
+counter values.
+
+Resetting the counters becomes a problem with perf support we want to
+add later, because perf needs a monotonicly increasing counter.
+
+This patch removes resetting the counters and keeps them running
+instead. Counter overflows are handled with modular arithmetics. Not
+stopping the counters also has the impact that they are running while
+we are reading them. We cannot read multiple timers atomically, so
+the values do not exactly fit together. The effect should be negligible
+though as the time between two measurements is some orders of magnitude
+bigger than the time we need to read multiple registers.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- .../bindings/devfreq/event/rockchip,dfi.yaml  | 61 +++++++++++++++++++
- .../bindings/devfreq/event/rockchip-dfi.txt   | 18 ------
- 2 files changed, 61 insertions(+), 18 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
- delete mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+ drivers/devfreq/event/rockchip-dfi.c | 53 ++++++++++++++++------------
+ 1 file changed, 31 insertions(+), 22 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-new file mode 100644
-index 0000000000000..7a82f6ae0701e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-@@ -0,0 +1,61 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/devfreq/event/rockchip,dfi.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 383fe8a17a512..25d64d9166a9a 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -38,11 +38,15 @@
+ #define DDRMON_CH1_COUNT_NUM		0x3c
+ #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
+ 
+-struct dmc_usage {
++struct dmc_count_channel {
+ 	u32 access;
+ 	u32 total;
+ };
+ 
++struct dmc_count {
++	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
++};
 +
-+title: Rockchip DFI
-+
-+maintainers:
-+  - Sascha Hauer <s.hauer@pengutronix.de>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - rockchip,rk3399-dfi
-+
-+  clocks:
-+    maxItems: 1
-+
-+  clock-names:
-+    items:
-+      - const: pclk_ddr_mon
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  reg:
-+    maxItems: 1
-+
-+  rockchip,pmu:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description:
-+      Phandle to the syscon managing the "PMU general register files".
-+
-+required:
-+  - compatible
-+  - clocks
-+  - clock-names
-+  - interrupts
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/rk3308-cru.h>
-+
-+    bus {
-+      #address-cells = <2>;
-+      #size-cells = <2>;
-+
-+      dfi: dfi@ff630000 {
-+        compatible = "rockchip,rk3399-dfi";
-+        reg = <0x00 0xff630000 0x00 0x4000>;
-+        interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
-+        rockchip,pmu = <&pmugrf>;
-+        clocks = <&cru PCLK_DDR_MON>;
-+        clock-names = "pclk_ddr_mon";
-+      };
-+    };
-diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-deleted file mode 100644
-index 148191b0fc158..0000000000000
---- a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-+++ /dev/null
-@@ -1,18 +0,0 @@
+ /*
+  * The dfi controller can monitor DDR load. It has an upper and lower threshold
+  * for the operating points. Whenever the usage leaves these bounds an event is
+@@ -51,7 +55,8 @@ struct dmc_usage {
+ struct rockchip_dfi {
+ 	struct devfreq_event_dev *edev;
+ 	struct devfreq_event_desc desc;
+-	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
++	struct dmc_count count;
++	struct dmc_count last_event_count;
+ 	struct device *dev;
+ 	void __iomem *regs;
+ 	struct regmap *regmap_pmu;
+@@ -85,30 +90,18 @@ static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
+ 	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
+ }
+ 
+-static int rockchip_dfi_get_busier_ch(struct devfreq_event_dev *edev)
++static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+-	u32 tmp, max = 0;
+-	u32 i, busier_ch = 0;
++	u32 i;
+ 	void __iomem *dfi_regs = dfi->regs;
+ 
+-	rockchip_dfi_stop_hardware_counter(edev);
 -
--* Rockchip rk3399 DFI device
+-	/* Find out which channel is busier */
+ 	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
+-		dfi->ch_usage[i].access = readl_relaxed(dfi_regs +
++		count->c[i].access = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+-		dfi->ch_usage[i].total = readl_relaxed(dfi_regs +
++		count->c[i].total = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_COUNT_NUM + i * 20);
+-		tmp = dfi->ch_usage[i].access;
+-		if (tmp > max) {
+-			busier_ch = i;
+-			max = tmp;
+-		}
+ 	}
+-	rockchip_dfi_start_hardware_counter(edev);
 -
--Required properties:
--- compatible: Must be "rockchip,rk3399-dfi".
--- reg: physical base address of each DFI and length of memory mapped region
--- rockchip,pmu: phandle to the syscon managing the "pmu general register files"
--- clocks: phandles for clock specified in "clock-names" property
--- clock-names : the name of clock used by the DFI, must be "pclk_ddr_mon";
--
--Example:
--	dfi: dfi@ff630000 {
--		compatible = "rockchip,rk3399-dfi";
--		reg = <0x00 0xff630000 0x00 0x4000>;
--		rockchip,pmu = <&pmugrf>;
--		clocks = <&cru PCLK_DDR_MON>;
--		clock-names = "pclk_ddr_mon";
--	};
+-	return busier_ch;
+ }
+ 
+ static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
+@@ -145,12 +138,28 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 				  struct devfreq_event_data *edata)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+-	int busier_ch;
++	struct dmc_count count;
++	struct dmc_count *last = &dfi->last_event_count;
++	u32 access = 0, total = 0;
++	int i;
++
++	rockchip_dfi_read_counters(edev, &count);
++
++	/* We can only report one channel, so find the busiest one */
++	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
++		u32 a = count.c[i].access - last->c[i].access;
++		u32 t = count.c[i].total - last->c[i].total;
++
++		if (a > access) {
++			access = a;
++			total = t;
++		}
++	}
+ 
+-	busier_ch = rockchip_dfi_get_busier_ch(edev);
++	edata->load_count = access * 4;
++	edata->total_count = total;
+ 
+-	edata->load_count = dfi->ch_usage[busier_ch].access * 4;
+-	edata->total_count = dfi->ch_usage[busier_ch].total;
++	dfi->last_event_count = count;
+ 
+ 	return 0;
+ }
 -- 
 2.30.2
 
