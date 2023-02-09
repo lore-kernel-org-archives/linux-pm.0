@@ -2,29 +2,29 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13C9EC64EC7
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8E2BC636D7
 	for <linux-pm@archiver.kernel.org>; Thu,  9 Feb 2023 16:12:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230446AbjBIQMI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Feb 2023 11:12:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57122 "EHLO
+        id S230043AbjBIQMJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Feb 2023 11:12:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57120 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230199AbjBIQMF (ORCPT
+        with ESMTP id S230235AbjBIQMF (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2023 11:12:05 -0500
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5C6329413
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D557828D00
         for <linux-pm@vger.kernel.org>; Thu,  9 Feb 2023 08:12:01 -0800 (PST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed50:eeed:e695:5a2f:fc6d])
-        by michel.telenet-ops.be with bizsmtp
-        id K4Bw2900n4vi5L7064BwPx; Thu, 09 Feb 2023 17:11:59 +0100
+        by albert.telenet-ops.be with bizsmtp
+        id K4Bw2900Q4vi5L7064BwSr; Thu, 09 Feb 2023 17:11:59 +0100
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtp (Exim 4.95)
         (envelope-from <geert@linux-m68k.org>)
-        id 1pQ9WM-008RDk-FL;
+        id 1pQ9WM-008RDm-Fm;
         Thu, 09 Feb 2023 17:11:56 +0100
 Received: from geert by rox.of.borg with local (Exim 4.95)
         (envelope-from <geert@linux-m68k.org>)
-        id 1pQ9We-007aV7-IO;
+        id 1pQ9We-007aVD-Jh;
         Thu, 09 Feb 2023 17:11:56 +0100
 From:   Geert Uytterhoeven <geert+renesas@glider.be>
 To:     =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
@@ -36,45 +36,47 @@ Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
         linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/2] thermal: Add support for R-Car V4H
-Date:   Thu,  9 Feb 2023 17:11:52 +0100
-Message-Id: <cover.1675958665.git.geert+renesas@glider.be>
+Subject: [PATCH 2/2] thermal/drivers/rcar_gen3: Add support for R-Car V4H
+Date:   Thu,  9 Feb 2023 17:11:54 +0100
+Message-Id: <852048eb5f4cc001be7a97744f4c5caea912d071.1675958665.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1675958665.git.geert+renesas@glider.be>
+References: <cover.1675958665.git.geert+renesas@glider.be>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-	Hi all,
+Add support for the Thermal Sensor/Chip Internal Voltage Monitor/Core
+Voltage Monitor (THS/CIVM/CVM) on the Renesas R-Car V4H (R8A779G0) SoC.
 
-This patch series adds support for the Thermal Sensor in the Renesas
-R-Car V4H SoC.
+According to the R-Car V4H Hardware User's Manual Rev. 0.70, the
+(preliminary) conversion formula for the thermal sensor is the same as
+for most other R-Car Gen3 and Gen4 SoCs, while the (preliminary)
+conversion formula for the chip internal voltage monitor differs.
+As the driver only uses the former, no further changes are needed.
 
-Unfortunately early revisions of R-Car V4H may suffer from a hardware
-issue with the thermal sensor, causing the values in
-/sys/devices/virtual/thermal/thermal_zone*/temp to be off.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/thermal/rcar_gen3_thermal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Thanks for your comments!
-
-Geert Uytterhoeven (2):
-  dt-bindings: thermal: rcar-gen3-thermal: Add r8a779g0 support
-  thermal/drivers/rcar_gen3: Add support for R-Car V4H
-
- .../devicetree/bindings/thermal/rcar-gen3-thermal.yaml        | 3 +++
- drivers/thermal/rcar_gen3_thermal.c                           | 4 ++++
- 2 files changed, 7 insertions(+)
-
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index 4ef927437842af74..04245393e78d02c5 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -403,6 +403,10 @@ static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
+ 		.compatible = "renesas,r8a779f0-thermal",
+ 		.data = &rcar_gen3_ths_tj_1,
+ 	},
++	{
++		.compatible = "renesas,r8a779g0-thermal",
++		.data = &rcar_gen3_ths_tj_1,
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
 -- 
 2.34.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
