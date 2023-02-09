@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D54FDC636D4
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Feb 2023 09:20:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08234C05027
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Feb 2023 09:24:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230316AbjBIJUd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Feb 2023 04:20:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53646 "EHLO
+        id S229892AbjBIJYc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Feb 2023 04:24:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230231AbjBIJTq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2023 04:19:46 -0500
-Received: from mr85p00im-zteg06021501.me.com (mr85p00im-zteg06021501.me.com [17.58.23.183])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1BF53402E
-        for <linux-pm@vger.kernel.org>; Thu,  9 Feb 2023 01:19:19 -0800 (PST)
+        with ESMTP id S230272AbjBIJYM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2023 04:24:12 -0500
+Received: from mr85p00im-zteg06023901.me.com (mr85p00im-zteg06023901.me.com [17.58.23.192])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FE1E61859
+        for <linux-pm@vger.kernel.org>; Thu,  9 Feb 2023 01:24:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=me.com; s=1a1hai;
-        t=1675934358; bh=SZhlB5Amphohnu89nA8T+9EvfjDSfEbmKX2qUghxvcs=;
+        t=1675934301; bh=l5/w8qzS8eROrSTSdYL3TF863UssIMOFYBR22gS7cAY=;
         h=From:To:Subject:Date:Message-Id:MIME-Version;
-        b=o/NxLQ9PU1l9X2sTMiXYxKhsPVmuzHGBO9PUsOvwhybe6UaP3w5cBwtG4Zdsj1UEh
-         N95VLTGsgxOg5d+OLa1AF9ChzM4EYIltiU99YPlgqCcEpojXv2bE3I3sXw9N2VlXkx
-         lEvu2MqlCqSNulpnjZvUm8HBJW1R5k2gKvmTSVaDOXNn/K2FWUqCaRpbIeihtVlAVc
-         bdEoU4cx3ZZutCWfUme4wy3t5yKPE8MlpWC+/KKeVimmtCzf9Q37gr2Bp5fHSZYWbb
-         Pg/W84KNZoKWpUAlpaKOmP/kU+Aih71SROAeduaqG184O+t7TI5E+jh/RqI/z9W+fc
-         WdZHNkF4+XPCA==
+        b=SbAzunJ6FLU016F/cc/EjMNDH/P8jyPB+PyhVT4GTts7KQwLycRHDYA+ptWx45CiP
+         gUVOUg3pM0d7mDkMOM3YQZGPjjpLQPk9UZEIs4IeBmsx2lWTQ2TZcR9xmVSu3r2whZ
+         p/B3CR2yy+Ut6WG2PaaiotK7Vn+qAXjeU6veSqHfvPcM1ajN1tD7geHvASdAel+urX
+         vmbSlwpNI9DLxulWrCzbjSyQPm9q+m5FjNWFnXsyRFTYRxrlzgdMPdWRHVnLobNf+6
+         zS8D0mvwv0OR/toDJsk7bOqA5l0jL1yElQ1Ogq6Vb6cvTu0jfsaxslU8T58J113qe1
+         poYcwtMXsFudg==
 Received: from localhost (mr38p00im-dlb-asmtp-mailmevip.me.com [17.57.152.18])
-        by mr85p00im-zteg06021501.me.com (Postfix) with ESMTPSA id 255E927945ED;
-        Thu,  9 Feb 2023 09:19:18 +0000 (UTC)
+        by mr85p00im-zteg06023901.me.com (Postfix) with ESMTPSA id D40EE6E0EC8;
+        Thu,  9 Feb 2023 09:18:20 +0000 (UTC)
 From:   Alain Volmat <avolmat@me.com>
 To:     Jonathan Corbet <corbet@lwn.net>, Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -53,16 +53,16 @@ Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         linux-stm32@st-md-mailman.stormreply.com, linux-pm@vger.kernel.org,
         linux-clk@vger.kernel.org, Alain Volmat <avolmat@me.com>
-Subject: [PATCH 11/11] ARM: debug: removal of STiH415/STiH416 related debug uart
-Date:   Thu,  9 Feb 2023 10:16:59 +0100
-Message-Id: <20230209091659.1409-12-avolmat@me.com>
+Subject: [PATCH 03/11] irqchip/st: remove stih415/stih416 and stid127 platforms support
+Date:   Thu,  9 Feb 2023 10:16:51 +0100
+Message-Id: <20230209091659.1409-4-avolmat@me.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230209091659.1409-1-avolmat@me.com>
 References: <20230209091659.1409-1-avolmat@me.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: 8Huc_KYpmbvx0eZVYoyHvKSEhimig7mi
-X-Proofpoint-ORIG-GUID: 8Huc_KYpmbvx0eZVYoyHvKSEhimig7mi
+X-Proofpoint-GUID: pz0XQy9R-Ydn-oBIWTvKFNEJ-fXGsuFC
+X-Proofpoint-ORIG-GUID: pz0XQy9R-Ydn-oBIWTvKFNEJ-fXGsuFC
 X-Proofpoint-Virus-Version: =?UTF-8?Q?vendor=3Dfsecure_engine=3D1.1.170-22c6f66c430a71ce266a39bfe25bc?=
  =?UTF-8?Q?2903e8d5c8f:6.0.138,18.0.572,17.0.605.474.0000000_definitions?=
  =?UTF-8?Q?=3D2020-02-14=5F11:2020-02-14=5F02,2020-02-14=5F11,2020-01-23?=
@@ -75,90 +75,53 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove the entries related to the debug uart addresses for
-platforms STiH415 and STiH416 which are no more supported.
+Remove support for the already no more supported stih415 and stih416
+platforms.  Remove as well the stid127 platform which never made it
+up to the kernel.
 
 Signed-off-by: Alain Volmat <avolmat@me.com>
 ---
- arch/arm/Kconfig.debug | 28 ----------------------------
- 1 file changed, 28 deletions(-)
+ drivers/irqchip/irq-st.c | 15 ---------------
+ 1 file changed, 15 deletions(-)
 
-diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
-index c345775f035b..e7307eeb2abb 100644
---- a/arch/arm/Kconfig.debug
-+++ b/arch/arm/Kconfig.debug
-@@ -1205,26 +1205,6 @@ choice
- 		  Say Y here if you want kernel low-level debugging support
- 		  on ST SPEAr13xx based platforms.
+diff --git a/drivers/irqchip/irq-st.c b/drivers/irqchip/irq-st.c
+index 1b83512b29c6..819a12297b58 100644
+--- a/drivers/irqchip/irq-st.c
++++ b/drivers/irqchip/irq-st.c
+@@ -15,10 +15,7 @@
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
  
--	config DEBUG_STIH41X_ASC2
--		bool "Use StiH415/416 ASC2 UART for low-level debug"
--		depends on ARCH_STI
--		help
--		  Say Y here if you want kernel low-level debugging support
--		  on STiH415/416 based platforms like b2000, which has
--		  default UART wired up to ASC2.
--
--		  If unsure, say N.
--
--	config DEBUG_STIH41X_SBC_ASC1
--		bool "Use StiH415/416 SBC ASC1 UART for low-level debug"
--		depends on ARCH_STI
--		help
--		  Say Y here if you want kernel low-level debugging support
--		  on STiH415/416 based platforms like b2020. which has
--		  default UART wired up to SBC ASC1.
--
--		  If unsure, say N.
--
- 	config DEBUG_STIH418_SBC_ASC0
- 		bool "Use StiH418 SBC ASC0 UART for low-level debug"
- 		depends on ARCH_STI
-@@ -1597,8 +1577,6 @@ config DEBUG_LL_INCLUDE
- 	default "debug/renesas-scif.S" if DEBUG_RMOBILE_SCIFA4
- 	default "debug/s3c24xx.S" if DEBUG_S3C24XX_UART || DEBUG_S3C64XX_UART
- 	default "debug/s5pv210.S" if DEBUG_S5PV210_UART
--	default "debug/sti.S" if DEBUG_STIH41X_ASC2
--	default "debug/sti.S" if DEBUG_STIH41X_SBC_ASC1
- 	default "debug/sti.S" if DEBUG_STIH418_SBC_ASC0
- 	default "debug/stm32.S" if DEBUG_STM32_UART
- 	default "debug/tegra.S" if DEBUG_TEGRA_UART
-@@ -1728,9 +1706,7 @@ config DEBUG_UART_PHYS
- 	default 0xfc00c000 if DEBUG_AT91_SAMA5D4_USART3
- 	default 0xfcb00000 if DEBUG_HI3620_UART
- 	default 0xfd883000 if DEBUG_ALPINE_UART0
--	default 0xfe531000 if DEBUG_STIH41X_SBC_ASC1
- 	default 0xfe800000 if ARCH_IOP32X
--	default 0xfed32000 if DEBUG_STIH41X_ASC2
- 	default 0xff690000 if DEBUG_RK32_UART2
- 	default 0xffc02000 if DEBUG_SOCFPGA_UART0
- 	default 0xffc02100 if DEBUG_SOCFPGA_ARRIA10_UART1
-@@ -1759,7 +1735,6 @@ config DEBUG_UART_PHYS
- 		DEBUG_BCM63XX_UART || DEBUG_ASM9260_UART || \
- 		DEBUG_DIGICOLOR_UA0 || \
- 		DEBUG_AT91_UART || DEBUG_STM32_UART || \
--		DEBUG_STIH41X_ASC2 || DEBUG_STIH41X_SBC_ASC1 || \
- 		DEBUG_STIH418_SBC_ASC0
+-#define STIH415_SYSCFG_642		0x0a8
+-#define STIH416_SYSCFG_7543		0x87c
+ #define STIH407_SYSCFG_5102		0x198
+-#define STID127_SYSCFG_734		0x088
  
- config DEBUG_UART_VIRT
-@@ -1827,9 +1802,7 @@ config DEBUG_UART_VIRT
- 	default 0xfcfe8600 if DEBUG_BCM63XX_UART
- 	default 0xfd000000 if DEBUG_SPEAR3XX || DEBUG_SPEAR13XX
- 	default 0xfd064200 if DEBUG_AT91_LAN966_FLEXCOM
--	default 0xfd531000 if DEBUG_STIH41X_SBC_ASC1
- 	default 0xfd883000 if DEBUG_ALPINE_UART0
--	default 0xfdd32000 if DEBUG_STIH41X_ASC2
- 	default 0xfe010000 if STM32MP1_DEBUG_UART
- 	default 0xfe017000 if DEBUG_MMP_UART2
- 	default 0xfe018000 if DEBUG_MMP_UART3
-@@ -1871,7 +1844,6 @@ config DEBUG_UART_VIRT
- 		DEBUG_BCM63XX_UART || DEBUG_ASM9260_UART || \
- 		DEBUG_DIGICOLOR_UA0 || \
- 		DEBUG_AT91_UART || DEBUG_STM32_UART || \
--		DEBUG_STIH41X_ASC2 || DEBUG_STIH41X_SBC_ASC1 || \
- 		DEBUG_STIH418_SBC_ASC0
+ #define ST_A9_IRQ_MASK			0x001FFFFF
+ #define ST_A9_IRQ_MAX_CHANS		2
+@@ -44,22 +41,10 @@ struct st_irq_syscfg {
+ };
  
- config DEBUG_UART_8250_SHIFT
+ static const struct of_device_id st_irq_syscfg_match[] = {
+-	{
+-		.compatible = "st,stih415-irq-syscfg",
+-		.data = (void *)STIH415_SYSCFG_642,
+-	},
+-	{
+-		.compatible = "st,stih416-irq-syscfg",
+-		.data = (void *)STIH416_SYSCFG_7543,
+-	},
+ 	{
+ 		.compatible = "st,stih407-irq-syscfg",
+ 		.data = (void *)STIH407_SYSCFG_5102,
+ 	},
+-	{
+-		.compatible = "st,stid127-irq-syscfg",
+-		.data = (void *)STID127_SYSCFG_734,
+-	},
+ 	{}
+ };
+ 
 -- 
 2.34.1
 
