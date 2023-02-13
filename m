@@ -2,129 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 397CFC64ED8
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Feb 2023 10:08:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E232BC64EC4
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Feb 2023 10:11:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230484AbjBMKIW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Feb 2023 05:08:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43170 "EHLO
+        id S229593AbjBMKLh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Feb 2023 05:11:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230095AbjBMKIR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Feb 2023 05:08:17 -0500
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 731B9C166;
-        Mon, 13 Feb 2023 02:08:15 -0800 (PST)
-Received: by mail-pj1-x1029.google.com with SMTP id a8-20020a17090a6d8800b002336b48f653so10334738pjk.3;
-        Mon, 13 Feb 2023 02:08:15 -0800 (PST)
+        with ESMTP id S229611AbjBMKLe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Feb 2023 05:11:34 -0500
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99DEFE387
+        for <linux-pm@vger.kernel.org>; Mon, 13 Feb 2023 02:11:33 -0800 (PST)
+Received: by mail-lf1-x135.google.com with SMTP id x40so18089166lfu.12
+        for <linux-pm@vger.kernel.org>; Mon, 13 Feb 2023 02:11:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ElAU4CorO8bAZ8rKYwIlcUT8ZfpT8t881iGNYaHkIfg=;
-        b=aMC4eto4PA34P9BDSmXpGxoYzfXGmN2U/yxW4+d6JyrBmu4utFRI5V+JBHGNbbbKH/
-         cWiQEaQT8Es+nwPwMu5sWt5AH0NH10j5R9z6tNuhPPOAWmpgfAqReCqqjsfD++5pLy8h
-         x8e/WVdPGW8V6Ax4bfJEjg7BtjaRHV6IWd0oyNyYVbMTZZKA4J08wOH+uGCbVSyxWtzR
-         XJs9oUo3y/j12ywDwloWzPDsOwQD/TPP06z36CBGkokqeJ3OY+B+XtIaDbelnXCAvgy/
-         RPRKRAZiYUszUo5Wbdd32C+QKa07nu7zl95m7pjUvKEvZ7tJ+1FkbopONMgLS7F/ezp2
-         fdWw==
+        d=semihalf.com; s=google;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=8ej+P/HoLnJs9+vTrBuMVaQw7HOLkNvqo2ZBWHCQRWw=;
+        b=kxHp6ZYqu2JxWOVwiStb6OfEpyHnn17hS1V1UAsQ+S8eME58V+yJeCgrKxm50aRbeM
+         KHGYbdW0CokYH933J0Fxs9SfcAbGEyX3EpaBSREHE5JMBcZFQ0dj0ftWveXO2m6/O3wZ
+         HbXIl4h8Ld4aysmd9PqxfaRvxutYyF5a8eAUOFW4oX1GrXW+tqEt5MWLoB6kkP5vZ3nP
+         /EGhDSob+4x4IYt18uuhtXbR+FGSlZJIWDvbw3lKKatzfkTrNUhakR/oPJOrjipTzWdx
+         Gj594JZ7qdenLr+8RpIoNSVGsVYZNedB1sHGgYUdTw8U09VooV0WVotNDLA/cBob8Y70
+         NLNw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ElAU4CorO8bAZ8rKYwIlcUT8ZfpT8t881iGNYaHkIfg=;
-        b=J97EgXOxvFIBzV68Z2/68BRTOIs1HQvYmL1pGop1O+LBDaHPv7xMPMVJ4RkXCoXChW
-         gfi9JwH5nFK7/ZvPBv3NpVveFXPjgBGiijM3IWYg47tpqwodt2wo+kahYoHisM1AkXVz
-         0Rr6kLZK20JOae8Hhum3KE2ML5oaQWzmZjTJwQgPRohq48qM5b60c/Fw4Lwn0kUXGNpk
-         xrpVbnpDXpom1zaV8O7xARoTCvQ7UtrPKwxwTuk88qIYb9O9XcB+JS4Bk4ZXppVMLd9+
-         e3AIQXq6AS63dDSoSHpFTKo4FBsSqNVncXX3cC5uAjzfHyIOzCbeCcgt1OLMMEQikw0i
-         N44g==
-X-Gm-Message-State: AO0yUKUlPKZToY4sAGr4qMRD2WdLMzJbaRlpaeQ78w0L+v4D1e5LTQcB
-        1XGVTxBJj7GvjfbKyklzaBI=
-X-Google-Smtp-Source: AK7set+yN2kUpLMvpm4uaucix/KMo1xOt9agM3NWlktkI391dCm40tZOelWolIy9Xuq35E6Ijp2fQQ==
-X-Received: by 2002:a17:903:2308:b0:196:6162:1a76 with SMTP id d8-20020a170903230800b0019661621a76mr28923221plh.0.1676282894939;
-        Mon, 13 Feb 2023 02:08:14 -0800 (PST)
-Received: from debian.me (subs02-180-214-232-93.three.co.id. [180.214.232.93])
-        by smtp.gmail.com with ESMTPSA id ji3-20020a170903324300b0019a9b73f229sm2088011plb.300.2023.02.13.02.08.14
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8ej+P/HoLnJs9+vTrBuMVaQw7HOLkNvqo2ZBWHCQRWw=;
+        b=mfv6tNl2m8NRCH3Memck9okbd6RGyRfNEaQ5z83dFe0/igJ1bcQGyKKp0DyPDlbCR9
+         FM9rtbhH00mRgePpNle7JZUM4iMENGYDwigndeERAn74SXLGzVKgGyDJTPZ0LGQP+y8g
+         wuT875oxk3Eg34AxM9UmegHriucRGUEpxp5oLsR+RXZ8AOqIhsfxzci1pN4SFQCoXg4J
+         uZrllIaBgcIfsi/bB4OnqZ7yHTTtTxj509/9f7TJJRnEBJuLe52Llx6cTwAPdAwr4eB6
+         qz1hjAe74GAyFUhgJjcXcm095BiG9qCzzIojZ8sNXUBlM2tZcF8QHJLjr7+WFDRPVcHV
+         l3iw==
+X-Gm-Message-State: AO0yUKVQUKYDOYDMC0bM/qsEmPrEo2KaeNTrKzF99sd1iyzhijYYYNLh
+        PYSKpvXgaMh7iQ9PNPqpCOzcMg==
+X-Google-Smtp-Source: AK7set+dB+QZXK5K8KWyZVBivFrc1Ty1r1X052ZMPzLr+pc4cPLcc5+fwWGIJBHmB0iWsIhcjbeciQ==
+X-Received: by 2002:ac2:41cb:0:b0:4d8:6492:5689 with SMTP id d11-20020ac241cb000000b004d864925689mr5944186lfi.31.1676283091886;
+        Mon, 13 Feb 2023 02:11:31 -0800 (PST)
+Received: from jazctssd.c.googlers.com.com (138.58.228.35.bc.googleusercontent.com. [35.228.58.138])
+        by smtp.gmail.com with ESMTPSA id t6-20020a19ad06000000b004b55da14ba8sm834416lfc.291.2023.02.13.02.11.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Feb 2023 02:08:14 -0800 (PST)
-Received: by debian.me (Postfix, from userid 1000)
-        id 54E3910558E; Mon, 13 Feb 2023 17:08:10 +0700 (WIB)
-From:   Bagas Sanjaya <bagasdotme@gmail.com>
-To:     Linux Documentation <linux-doc@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Power Management <linux-pm@vger.kernel.org>
-Cc:     Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Bagas Sanjaya <bagasdotme@gmail.com>,
-        Thorsten Leemhuis <linux@leemhuis.info>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Arjan van de Ven <arjan@linux.intel.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        oe-kbuild-all@lists.linux.dev, kernel test robot <lkp@intel.com>
-Subject: [PATCH 1/3] Documentation: admin-guide: Add toctree entry for thermal docs
-Date:   Mon, 13 Feb 2023 17:07:59 +0700
-Message-Id: <20230213100800.28333-2-bagasdotme@gmail.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230213100800.28333-1-bagasdotme@gmail.com>
-References: <20230213100800.28333-1-bagasdotme@gmail.com>
+        Mon, 13 Feb 2023 02:11:31 -0800 (PST)
+From:   Grzegorz Jaszczyk <jaz@semihalf.com>
+To:     linux-kernel@vger.kernel.org, rafael@kernel.org
+Cc:     dmy@semihalf.com, tn@semihalf.com, dbehr@google.com,
+        zide.chen@intel.corp-partner.google.com, seanjc@google.com,
+        upstream@semihalf.com, hdegoede@redhat.com, markgross@kernel.org,
+        dtor@google.com, mario.limonciello@amd.com,
+        linux-pm@vger.kernel.org, x86@kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        Grzegorz Jaszczyk <jaz@semihalf.com>
+Subject: [RFCv3 0/1] x86: allow to notify host about guest entering s2idle
+Date:   Mon, 13 Feb 2023 10:09:20 +0000
+Message-Id: <20230213100921.268770-1-jaz@semihalf.com>
+X-Mailer: git-send-email 2.39.1.581.gbfd45094c4-goog
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1694; i=bagasdotme@gmail.com; h=from:subject; bh=+d0cgl/LUXYVN5X4ZZz4OWLihJeYOaWifkPF9BOwx3E=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDMmveBhiq6sm2E+e55R8JDGZYdpKsWvV35ad2XjhwEP7k2sj Gq5Id5SyMIhxMciKKbJMSuRrOr3LSORC+1pHmDmsTCBDGLg4BWAiceoM/3Onrpf8v2vS3u97lKu5j7 FGaYrpVXesnxw0/yrX0btTduYz/OG9HV4guk94rU7m3J8Mu7hE2JdO+56sEJQ284wD046vZWwA
-X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-kernel test robot reported htmldocs warnings:
+According to the mailing list discussion [1] about the preferred approach
+for notifying hypervisor/VMM about guest entering s2idle state this RFC was
+implemented.
 
-Documentation/admin-guide/index.rst:62: WARNING: toctree contains reference to nonexisting document 'admin-guide/thermal'
-Documentation/admin-guide/thermal/intel_powerclamp.rst: WARNING: document isn't included in any toctree
+Instead of original hypercall based approach, which involves KVM change [2]
+and makes it hypervisor specific, implement different mechanism, which
+takes advantage of MMIO/PIO trapping and makes it hypervisor independent.
 
-Add toctree entry for thermal/ docs to fix these warnings.
+For the RFCv1 [3]:
+  Patch #1 extends S2Idle ops by new notify handler which will be invoked as a
+  very last command before system actually enters S2Idle states. It also allows
+  to register and use driver specific notification hook which is used in
+  patch #2.
 
-Link: https://lore.kernel.org/linux-doc/202302121759.MmJgDTxc-lkp@intel.com/
-Fixes: 707bf8e1dfd51d ("Documentation: admin-guide: Move intel_powerclamp documentation")
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
----
- Documentation/admin-guide/index.rst         | 2 +-
- Documentation/admin-guide/thermal/index.rst | 8 ++++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/admin-guide/thermal/index.rst
+  Patch #2 introduces new driver for virtual PMC, which registers
+  acpi_s2idle_dev_ops's notify handler. Its implementation is based on an
+  ACPI _DSM evaluation, which in turn can perform MMIO access and allow to
+  trap and therefore notify the VMM about guest entering S2Idle state.
 
-diff --git a/Documentation/admin-guide/index.rst b/Documentation/admin-guide/index.rst
-index c872a8a1ddfa28..0571938ecdc868 100644
---- a/Documentation/admin-guide/index.rst
-+++ b/Documentation/admin-guide/index.rst
-@@ -116,7 +116,7 @@ configure specific aspects of kernel behavior to your liking.
-    svga
-    syscall-user-dispatch
-    sysrq
--   thermal
-+   thermal/index
-    thunderbolt
-    ufs
-    unicode
-diff --git a/Documentation/admin-guide/thermal/index.rst b/Documentation/admin-guide/thermal/index.rst
-new file mode 100644
-index 00000000000000..193b7b01a87d7e
---- /dev/null
-+++ b/Documentation/admin-guide/thermal/index.rst
-@@ -0,0 +1,8 @@
-+=================
-+Thermal Subsystem
-+=================
-+
-+.. toctree::
-+   :maxdepth: 1
-+
-+   intel_powerclamp
+For the RFCv2 [4]: the patch #1 was dropped as in the meantime Mario Limonciello
+introduced a very similar patch [5] which uses s/notify/check and invokes the
+callback a bit earlier just before s2idle_entry. Mentioned patch has already
+been merged.
+
+This patchset is marked as RFC since patch #2 implements driver for non
+existing device "HYPE0001", which ACPI ID was not registered yet.
+Furthermore the required registration process [6] will not be started
+before getting positive feedback about this patchset.
+
+[1] https://patchwork.kernel.org/project/linux-pm/patch/20220609110337.1238762-2-jaz@semihalf.com/
+[2] https://patchwork.kernel.org/project/linux-pm/patch/20220609110337.1238762-3-jaz@semihalf.com/
+[3] https://patchwork.kernel.org/project/linux-pm/cover/20220707125329.378277-1-jaz@semihalf.com/
+[4] https://patchwork.kernel.org/project/linux-pm/cover/20230209152123.3186930-1-jaz@semihalf.com/
+[5] https://patchwork.kernel.org/project/linux-pm/patch/20220829162953.5947-2-mario.limonciello@amd.com
+[6] https://uefi.org/PNP_ACPI_Registry
+
+Grzegorz Jaszczyk (1):
+  platform/x86: Add virtual PMC driver used for S2Idle
+
+ drivers/platform/x86/Kconfig    |  7 +++
+ drivers/platform/x86/Makefile   |  3 ++
+ drivers/platform/x86/virt_pmc.c | 83 +++++++++++++++++++++++++++++++++
+ 3 files changed, 93 insertions(+)
+ create mode 100644 drivers/platform/x86/virt_pmc.c
+
 -- 
-An old man doll... just what I always wanted! - Clara
+2.39.1.581.gbfd45094c4-goog
 
