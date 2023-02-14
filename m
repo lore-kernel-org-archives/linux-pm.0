@@ -2,103 +2,130 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 219A2C6379F
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 14:26:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB0D6C6379F
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 14:38:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232475AbjBNO0C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Feb 2023 09:26:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49004 "EHLO
+        id S233036AbjBNOiF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Feb 2023 09:38:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60468 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232841AbjBNOZw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:25:52 -0500
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 30787B47C;
-        Tue, 14 Feb 2023 06:25:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1676384744; x=1707920744;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=rfaoZsgtkph5tbhQQ3UUnwAFv5xUvSirRQpgUD+R3bQ=;
-  b=OOhZcaW9z6pHRFNWfz0/VfG91fMpM/uOTVdftTGPhZh0FEux46s7RYGA
-   HfrCvmMR8tNYuSEgPPo+mS2ZOdMGOSObJPEu8ZGrHXgzXASNbk1MM0wbX
-   9SPpgUXnRA8H1jRdbMod/+k1UmDbA4ObtHeLF2+GXs2wBXlpRrVbCxhTc
-   cNVNPz4v6epUGFyUcOJIvBYqI12umsV1dHvfmyGRJ9uvveJG7V/85w4a7
-   fzQaASc7BJbJYJHXGCM694ryXFMfkfrOwmH/DRkTAMq++p4SfvCYqKGpq
-   pnKJArAEHx1x6WQs9Gf1NT1Ko8rtKRKHRu9Voh+UB7EPNw9yCOCqe4t3Z
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10621"; a="331166774"
-X-IronPort-AV: E=Sophos;i="5.97,296,1669104000"; 
-   d="scan'208";a="331166774"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2023 06:25:43 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10621"; a="914756323"
-X-IronPort-AV: E=Sophos;i="5.97,296,1669104000"; 
-   d="scan'208";a="914756323"
-Received: from bogasiva-mobl.amr.corp.intel.com ([10.215.122.78])
-  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2023 06:25:41 -0800
-Message-ID: <dc9f52c96be1be761177e4d52eae1cd4306abeb4.camel@linux.intel.com>
-Subject: Re: [PATCH v2 1/3] ACPI: processor: perflib: Use the "no limit"
- frequency QoS
-From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Pratyush Yadav <ptyadav@amazon.de>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>
-Date:   Tue, 14 Feb 2023 06:25:37 -0800
-In-Reply-To: <CAJZ5v0g1PiMDFUeVKy3YL4pni6oDDaEVTw-LLYnYMMsF+5uuMQ@mail.gmail.com>
-References: <12138067.O9o76ZdvQC@kreacher> <12124970.O9o76ZdvQC@kreacher>
-         <mafs0sfgybc3q.fsf_-_@amazon.de>
-         <CAJZ5v0hAjKvinPqX2VuCv1jVu50jrnDpECaO=sA2CQZFHZpJdA@mail.gmail.com>
-         <mafs0zga0ds30.fsf_-_@amazon.de>
-         <CAJZ5v0j1CBe7Hjhg7Tzm3HkuinA9zgtPffMtd96ZaOds=US+xQ@mail.gmail.com>
-         <0f74e16d2a1c5005c342d800445c046b8fe248cb.camel@linux.intel.com>
-         <CAJZ5v0g1PiMDFUeVKy3YL4pni6oDDaEVTw-LLYnYMMsF+5uuMQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.44.4-0ubuntu1 
+        with ESMTP id S231775AbjBNOiE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:38:04 -0500
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06DD1B76D
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:38:03 -0800 (PST)
+Received: by mail-ed1-x52a.google.com with SMTP id d40so16452259eda.8
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:38:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=M85Txp3qLBn12UcZyAcNozii0oizm6RueYAIHWFw6cU=;
+        b=qd0o44Kbx1EkTg2qCbYQ88IqKD2XXI8v0ZJsoaIdotgP0HkxnI4I19WQ24tTPfMAOW
+         lFpmnCRzr5pw1XHh7wzWefbw7qtNFHCqecYZrxwfMNsunLnZSMueBJzXoD9OPx0/W/en
+         QKB71ok8wQMLINpM8ANzhnK0SlwfdC+1SiPyhjIF3VmnQ7/VM4wlIygaptS/be0heIpN
+         S05FwmHSI7OHkWFwJfyZ51z2/cz6zQ+CQnfcbjqg08f6lCb+3xXhYGxHffyLA9Dhahxl
+         tI7ekiocb7FlKLETfreIF5bZv+FJXV6KdIzknhKtY4ogObFbAJgEGQ/jVXmvbD2ToUdo
+         RBZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=M85Txp3qLBn12UcZyAcNozii0oizm6RueYAIHWFw6cU=;
+        b=Z6WBE922jug/hK53xTDSA2fo10NJdPxOj8ZkTq8oRfyl3kt+NO2L7zoWpqh34M2pw3
+         S6uq6hdXzLEKiFNhfUYomxyadyEow3OyzpuBSAfLR0/tU/m5/FZYf0mFk027a4NXZVlu
+         25NrBc/MV6D1kgu7kvQR4VYicbQztVf5q5o/1bfROjbMAnDX/MhRqnhs90HXx5aBCGxg
+         qpCce9CSe19cusPfLHtTyG9q2roQSG+AkuYMRvjlBc8lE16HgqEMaGnsd4L0oHXRghjo
+         33DjBK/b5PrrELJh4ZhYdGGIKn3OJDMMhUACV9xPD8bPrJMlESPmWTrVd1DjRQBB382K
+         gr3Q==
+X-Gm-Message-State: AO0yUKVFxqnKkWMNhijNuZ9yLjquMvvkIInb41SGUicrbbrhMQqdTHB6
+        53RLSZfivPPT6j43C2QmaJrWGw==
+X-Google-Smtp-Source: AK7set+dGcrUWhW4uRJR+Y3MWD8ILgsLvd+GS1Qc911EPpD1TtoB3LUXv1PCZDb5FRpm7yPYa9emEQ==
+X-Received: by 2002:a50:bace:0:b0:4ab:4cf0:4ab3 with SMTP id x72-20020a50bace000000b004ab4cf04ab3mr2741589ede.38.1676385481563;
+        Tue, 14 Feb 2023 06:38:01 -0800 (PST)
+Received: from localhost.localdomain (abxh117.neoplus.adsl.tpnet.pl. [83.9.1.117])
+        by smtp.gmail.com with ESMTPSA id eg21-20020a056402289500b004acb6189693sm5378052edb.83.2023.02.14.06.38.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Feb 2023 06:38:01 -0800 (PST)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+To:     linux-arm-msm@vger.kernel.org, andersson@kernel.org,
+        agross@kernel.org
+Cc:     marijn.suijten@somainline.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v4 02/12] interconnect: qcom: rpm: Add support for specifying channel num
+Date:   Tue, 14 Feb 2023 15:37:10 +0100
+Message-Id: <20230214143720.2416762-3-konrad.dybcio@linaro.org>
+X-Mailer: git-send-email 2.39.1
+In-Reply-To: <20230214143720.2416762-1-konrad.dybcio@linaro.org>
+References: <20230214143720.2416762-1-konrad.dybcio@linaro.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 2023-02-14 at 14:57 +0100, Rafael J. Wysocki wrote:
-> On Tue, Feb 14, 2023 at 2:40 PM srinivas pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> >=20
-> > On Mon, 2023-01-30 at 15:58 +0100, Rafael J. Wysocki wrote:
-> > > On Mon, Jan 30, 2023 at 3:18 PM Pratyush Yadav
-> > > <ptyadav@amazon.de>
-> > > wrote:
-> > > >=20
-> > > >=20
-> >=20
-> > [...]
-> >=20
-> > > > [0]
-> > > > https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git=
-/
-> > >=20
-> > > It's already in the mainline:
-> > >=20
-> > > e8a0e30b742f cpufreq: intel_pstate: Drop ACPI _PSS states table
-> > > patching
-> > > 99387b016022 ACPI: processor: perflib: Avoid updating frequency
-> > > QoS
-> > > unnecessarily
-> > > c02d5feb6e2f ACPI: processor: perflib: Use the "no limit"
-> > > frequency
-> > > QoS
-> >=20
-> > I am checking 6.2-rc8.
-> > I don't see these commits.
->=20
-> You are right, they are in linux-next only, sorry for the confusion.
->=20
-> I'm going to push them for 6.3-rc1 this week, though.
-I don't think they are marked for stable. Can we add that?
+Some nodes, like EBI0 (DDR) or L3/LLCC, may be connected over more than
+one channel. This should be taken into account in bandwidth calcualtion,
+as we're supposed to feed msmbus with the per-channel bandwidth. Add
+support for specifying that and use it during bandwidth aggregation.
 
-Thanks,
-Srinivas
+Reviewed-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+---
+ drivers/interconnect/qcom/icc-rpm.c | 7 ++++++-
+ drivers/interconnect/qcom/icc-rpm.h | 2 ++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 385a67c20956..7fcc2d86117b 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -317,6 +317,7 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider,
+ {
+ 	struct icc_node *node;
+ 	struct qcom_icc_node *qn;
++	u64 sum_avg[QCOM_ICC_NUM_BUCKETS];
+ 	int i;
+ 
+ 	/* Initialise aggregate values */
+@@ -334,7 +335,11 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider,
+ 	list_for_each_entry(node, &provider->nodes, node_list) {
+ 		qn = node->data;
+ 		for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
+-			agg_avg[i] += qn->sum_avg[i];
++			if (qn->channels)
++				sum_avg[i] = div_u64(qn->sum_avg[i], qn->channels);
++			else
++				sum_avg[i] = qn->sum_avg[i];
++			agg_avg[i] += sum_avg[i];
+ 			agg_peak[i] = max_t(u64, agg_peak[i], qn->max_peak[i]);
+ 		}
+ 	}
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index 8ba1918d7997..8aed5400afda 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -66,6 +66,7 @@ struct qcom_icc_qos {
+  * @id: a unique node identifier
+  * @links: an array of nodes where we can go next while traversing
+  * @num_links: the total number of @links
++ * @channels: number of channels at this node (e.g. DDR channels)
+  * @buswidth: width of the interconnect between a node and the bus (bytes)
+  * @sum_avg: current sum aggregate value of all avg bw requests
+  * @max_peak: current max aggregate value of all peak bw requests
+@@ -78,6 +79,7 @@ struct qcom_icc_node {
+ 	u16 id;
+ 	const u16 *links;
+ 	u16 num_links;
++	u16 channels;
+ 	u16 buswidth;
+ 	u64 sum_avg[QCOM_ICC_NUM_BUCKETS];
+ 	u64 max_peak[QCOM_ICC_NUM_BUCKETS];
+-- 
+2.39.1
+
