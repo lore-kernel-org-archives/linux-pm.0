@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B8DFC64EC7
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 14:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18C00C64ED8
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 14:38:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233516AbjBNOig (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Feb 2023 09:38:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32872 "EHLO
+        id S233561AbjBNOin (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Feb 2023 09:38:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233339AbjBNOiR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:38:17 -0500
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95C1D27D4D
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:38:12 -0800 (PST)
-Received: by mail-ed1-x531.google.com with SMTP id bt8so11880422edb.12
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:38:12 -0800 (PST)
+        with ESMTP id S233498AbjBNOib (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:38:31 -0500
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44CD52B624
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:38:16 -0800 (PST)
+Received: by mail-ed1-x536.google.com with SMTP id fi26so17674979edb.7
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:38:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=4CEkCZ6M0V0rHXdhyITLeseCr9Rsf6DFLsvzd46ANmM=;
-        b=n1aeZTy4RMrg+Tgm5UPefjlZ3SkYZ64uuw44avuzcjWhCTmV8yAe23ueUB4bJGFDlb
-         Q9tUOxHYuiOil4iVbBdIMWNlj4wNPWkCOBNYLPsFeWZBHos4qN8yGb0QAbGKtqwo988g
-         7mXXYygMO3Od9lvS2jrVDch/qpr5JwYJ5TvVQE16bggIfDI7Q8z/+bz13TJVLpXX5zAm
-         mtjjeAY+lFIPMDuqefLcFrIZUM9qGJcbCq5gbzzG5Ia03xzWriNuHS8Ih8hBDH8TrOqX
-         LLJ6qPnCE9MtpZhQdWoO8q2bV6p3WJUPkowU9P/eWS089+UEaGCgwgQSX0MUt7oYJBJ8
-         uUyg==
+        bh=LJCQPkMo7WAJkj+57CfoI7qkGu8zTyPx4xks1X9yahs=;
+        b=eK1VYaDEis0UR1gAg3Ptuend7jTW3UObknUnXxOM6nz0hNjmg8mttlhnhzenS9CBjV
+         p2WLDq1lqWo7SRzrJJ7an9OQSLAEfcYu5aHpb1L3yGecDDR7jzaq/OSBi4bLeeW/jC63
+         Ae17BuCkT/vIhgPKq7Gn1uiaszE/bgZsyl3pYmpnJCkjaDLI47o22h9l/gifH5JpbzWU
+         zvnQaW6Vl3VP7wHxb6tE2nG/K3NMxG4vKBlS5IAMqJeSCtTbVoznpd3E8T9fJOHOAMdf
+         CR+TdZTqQ0pfv7PHa4w/JY+PRRtHirSHrPLQlQNxpmVcySeX4lA28EqbWG/v2rUgk0FF
+         DpBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=4CEkCZ6M0V0rHXdhyITLeseCr9Rsf6DFLsvzd46ANmM=;
-        b=KvaUdSvm0Ygncy8cVcK6JQHGLlovtYXhPcmvdScMKIvI9hki+sZ5kjprCYKXzJDK3w
-         AWKjn4cq/blpejLY6E7bWbK20F/uVcsFpj5o3ipZCHxcywZT2pPH0BZ1pvH4vV41ln3C
-         x4Jfm529m3ke6iiY0QNqeI7QMcK7GYt/B0llXT5gxA/W1+D4RlukQAx4Zedo7XTI2CZN
-         SZrUVIFUE/9xqaGCsT2WuZxojEkqF1+SS/ZYxEL4wsXpGEBmbkiotUUZUopES3EJcXpo
-         aMneajBfbRiGw0/aGwqsR7fC8PIxzlCxsnquhSwqVfFBNGuXFgqspxGzZay9kCZLXMcf
-         1uaA==
-X-Gm-Message-State: AO0yUKX2kmFygJSCilbDjCjj71GSjWvT7u64yKqwQVCIdY8n+WK5VrHw
-        QWlHm9qab5MQGUBmGxzZcHklsQ==
-X-Google-Smtp-Source: AK7set+Eaxs7wodwqIB4zDVySQzPvUzm9h+or6cuR9nyCbqpnBb1PZWk3UCQ2hcu8XGZ3a4NsGGUaw==
-X-Received: by 2002:a50:9b03:0:b0:4aa:a9c7:4224 with SMTP id o3-20020a509b03000000b004aaa9c74224mr2981618edi.30.1676385492095;
-        Tue, 14 Feb 2023 06:38:12 -0800 (PST)
+        bh=LJCQPkMo7WAJkj+57CfoI7qkGu8zTyPx4xks1X9yahs=;
+        b=JyJaewUiJiqTQuu5ddZbSBk5ii1VxvHshjtaesj4W3VSVSFqM8p9/eUrzOlURk/fxw
+         8XsAzb32MTgRgusBb0VHlPVqcmlWvIEQLhyF4wbiKiYy9apgTI87grTvGvttW+uoqhVF
+         KM0C5KhJKN4XpI2T5SX/M3EbOQmkWFjZX1uFOB1LgApS/+GV9lcuNrv573WAcsCF8u/t
+         hACKZ1NPD8syHIk/xLMM5Ea+fLl4hmjIbC9sUaXI9Q2mFhFsefycrMZbM6052x+9WTk8
+         FmtZSJQfKITIZtTfGh787cFyJwf7q0SBTaGAxgZxcW/5He3qdmUbsa2MAV0zwhyxbu19
+         KYkA==
+X-Gm-Message-State: AO0yUKV4cvl1m6j3uceN//2Sjy9cCMGMubMJEzpX6ie3MgEuvb/ig0WC
+        RfhitDNn0nqRtNaRhVySoU8I8Q==
+X-Google-Smtp-Source: AK7set+mYNNqE0zRpd6FXmlvts0mLH5Fc27sAuhJP17bGBM4zCE+afxTBjL4ls9yotjoq+pW8ca3hg==
+X-Received: by 2002:a50:8ade:0:b0:4ab:4d69:f9e3 with SMTP id k30-20020a508ade000000b004ab4d69f9e3mr2829455edk.20.1676385494659;
+        Tue, 14 Feb 2023 06:38:14 -0800 (PST)
 Received: from localhost.localdomain (abxh117.neoplus.adsl.tpnet.pl. [83.9.1.117])
-        by smtp.gmail.com with ESMTPSA id eg21-20020a056402289500b004acb6189693sm5378052edb.83.2023.02.14.06.38.10
+        by smtp.gmail.com with ESMTPSA id eg21-20020a056402289500b004acb6189693sm5378052edb.83.2023.02.14.06.38.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Feb 2023 06:38:11 -0800 (PST)
+        Tue, 14 Feb 2023 06:38:14 -0800 (PST)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
 To:     linux-arm-msm@vger.kernel.org, andersson@kernel.org,
         agross@kernel.org
@@ -56,9 +56,9 @@ Cc:     marijn.suijten@somainline.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
         Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v4 10/12] interconnect: qcom: msm8996: Promote to core_initcall
-Date:   Tue, 14 Feb 2023 15:37:18 +0100
-Message-Id: <20230214143720.2416762-11-konrad.dybcio@linaro.org>
+Subject: [PATCH v4 12/12] interconnect: qcom: icc-rpm: Allow negative QoS offset
+Date:   Tue, 14 Feb 2023 15:37:20 +0100
+Message-Id: <20230214143720.2416762-13-konrad.dybcio@linaro.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230214143720.2416762-1-konrad.dybcio@linaro.org>
 References: <20230214143720.2416762-1-konrad.dybcio@linaro.org>
@@ -68,41 +68,42 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The interconnect driver is (or soon will be) vital to many other
-devices, as it's not a given that the bootloader will set up enough
-bandwidth for us or that the values we come into are reasonable.
+In some very very very very unfortunate cases, the correct offset of
+the QoS registers will be.. negative. One such case is MSM8998, where
+The DDR BWMON occupies what-would-be-the-BIMC-base which we usually
+take into account with the register calculation, making the actual
+BIMC node start at what-would-be-the-BIMC-base+0x300.
 
-Promote the driver to core_initcall to ensure the consumers (i.e.
-most "meaningful" parts of the SoC) can probe without deferrals.
+In order to keep the calculation code sane, the simplest - however
+ugly it may be - solution is to allow the offset to be negative.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/msm8996.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/interconnect/qcom/icc-rpm.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/msm8996.c b/drivers/interconnect/qcom/msm8996.c
-index 45eb8675fb11..0e0395328dc7 100644
---- a/drivers/interconnect/qcom/msm8996.c
-+++ b/drivers/interconnect/qcom/msm8996.c
-@@ -2109,7 +2109,17 @@ static struct platform_driver qnoc_driver = {
- 		.sync_state = icc_sync_state,
- 	}
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index 77e263b93c27..5e4215f25c2e 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -39,7 +39,7 @@ struct qcom_icc_provider {
+ 	int num_intf_clks;
+ 	enum qcom_icc_type type;
+ 	struct regmap *regmap;
+-	unsigned int qos_offset;
++	int qos_offset;
+ 	u64 bus_clk_rate[2];
+ 	bool keep_alive;
+ 	struct clk_bulk_data bus_clks[2];
+@@ -105,7 +105,7 @@ struct qcom_icc_desc {
+ 	bool keep_alive;
+ 	enum qcom_icc_type type;
+ 	const struct regmap_config *regmap_cfg;
+-	unsigned int qos_offset;
++	int qos_offset;
  };
--module_platform_driver(qnoc_driver);
-+static int __init qnoc_driver_init(void)
-+{
-+	return platform_driver_register(&qnoc_driver);
-+}
-+core_initcall(qnoc_driver_init);
-+
-+static void __exit qnoc_driver_exit(void)
-+{
-+	platform_driver_unregister(&qnoc_driver);
-+}
-+module_exit(qnoc_driver_exit);
  
- MODULE_AUTHOR("Yassine Oudjana <y.oudjana@protonmail.com>");
- MODULE_DESCRIPTION("Qualcomm MSM8996 NoC driver");
+ /* Valid for all bus types */
 -- 
 2.39.1
 
