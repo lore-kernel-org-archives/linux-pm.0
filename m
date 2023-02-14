@@ -2,124 +2,99 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B701C05027
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 09:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80544C61DA4
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 09:24:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232287AbjBNJK2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Feb 2023 04:10:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45108 "EHLO
+        id S230052AbjBNJYa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Feb 2023 04:24:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59150 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232433AbjBNJKE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 04:10:04 -0500
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C6DB2528A
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 01:08:56 -0800 (PST)
-Received: by mail-ej1-x630.google.com with SMTP id sa10so38337453ejc.9
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 01:08:56 -0800 (PST)
+        with ESMTP id S229713AbjBNJY3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 04:24:29 -0500
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E817C10433;
+        Tue, 14 Feb 2023 01:24:27 -0800 (PST)
+Received: by mail-wm1-x336.google.com with SMTP id z13so10509312wmp.2;
+        Tue, 14 Feb 2023 01:24:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=CQlRVEdqb3xvOh0YbavmZdnZTVv7UAg4IoCftBovVqc=;
-        b=nkpCXQ56BxHkEWs0xM2KwhdQDFBBPyxNWzIisqVASibdi8RmNbz+7S3A//hu0rfqgm
-         NJHubDaNKd906a2/uWCZdR+yvvJNqEixXTtb+LJMweNmXtVOcjWaOMTyTBjKQYecpUsW
-         4YQrlSt3/wkk1g+19rmcSBLkX+ri+AS3CEUsfYc8DbHAQhj5m3064AWI5/ID+VnHXZYh
-         H6VEKdNW7wWpJKajcinMLgs80chXciNoPblQbW6m/p2LhZM1KgXFwkPIzDJir392a/PW
-         2j2WBtaWwv+8ZtKFkC9SFdLoa6jXiJaBPxX7JLGIJ7sJKDv6y5L9BOd1+Q+7K5OrbLoC
-         t28A==
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=az+YZuuI8dfSk3sN0dchfiJ8XRw3zhYvT0M8cnedGHg=;
+        b=j7x1y+t+AH6T+OgAYBUmSfoAoEzNUTCJkIwSk1YSwaxIUuj8wpf9XmJUWp5OyQ7TJh
+         j9HFBH9VUrBJNVAn2919Pa3EkwTagT5l4v2yw8DVIIxto4rrjVxC4OyHrw3OkxM7u672
+         e9dvY36sedRbJmhwjdxuVnuIk2IBi23DelAtGchCFEjlNtn+kgu5C0idVxDx31Kh3TqB
+         7TTeQmo45/kegdE7Z8ixQ/BRA3SdHeYpRGKhnQU0TpuRU99F0/TDTGMp2DWpqZWbVhk2
+         tROLWqBoamIgy0b9i427MGmWeQtg4envNEr3aZDmk+0BGnHJL5d/hOJ9b78nAhS85Ntr
+         jncQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=CQlRVEdqb3xvOh0YbavmZdnZTVv7UAg4IoCftBovVqc=;
-        b=qCxe3FI5O6xXnKQhA0ebU7MuKC+IO0cdM5QKabvcbfgunj52nyHZDNavJFjbM3Ox1I
-         HTjvjfpotVZSb+73NDNyUQ3y7i6DuN2HkKZoZvdf+eq1zlbwJq1G04KLCIt+QahUEawm
-         w49chlzXkR4/TrZNDHCS5u7ruX7Zepj5NmlFGLReTLwEbtC87QbG8+nKTe/b0+f7Yuup
-         Zdb6HzAIKCjkxiWwBKAlWhz4bkIuuQnUJ5GiVicBAgKzYueWiQoGCGnpqMEKfcUZ7l1B
-         Z1l7i0WgjKCsxlhPHsv/KW9EWjao9cDiAeNUKky++oy38e7etWJ2EVUjUXmgszQsZlTY
-         IxWQ==
-X-Gm-Message-State: AO0yUKUoHay1gymEMb3BwkyhO2tz0Ia1VDkD89LX9R2l9iVFxAkHpC1T
-        Ys/JGkjiOM2R1zXzBiXY1WSjSA==
-X-Google-Smtp-Source: AK7set+Fio3/V9C9xU0yVNQs5+EmRzMhhPFr4O3TEgYKhPb6nLL2gLmx8WtclBUSzQsbxVmqi0BxmQ==
-X-Received: by 2002:a17:906:1249:b0:88f:5377:1048 with SMTP id u9-20020a170906124900b0088f53771048mr22128328eja.22.1676365734746;
-        Tue, 14 Feb 2023 01:08:54 -0800 (PST)
-Received: from localhost.localdomain (abxh117.neoplus.adsl.tpnet.pl. [83.9.1.117])
-        by smtp.gmail.com with ESMTPSA id d6-20020a170906040600b008838b040454sm7998110eja.95.2023.02.14.01.08.53
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=az+YZuuI8dfSk3sN0dchfiJ8XRw3zhYvT0M8cnedGHg=;
+        b=JFH5DfdyhKVlzHT/6IFsuD7clMZekBzBXSW3IUcCczQfJWYfH3XHdA4nGqDTKCcN0f
+         iv8Wfs4ig4cgyDPnMcyg5vzT58dBr7upLm0uemTrITkG5iRezStNrQ0RMXJEd9uK7FvO
+         B7pz9Xza6LEo7QKvMWPVzb/Pf15VRksoVpqjrvpy8x5F0wBkXYLLbdDFKLqD67GeftME
+         ko2hU0M/3AWEUrBbbaVi7RHUWWitAI42DYRFiwmzlEAvNxegVtVsaypt89VQ6fZ6fsFZ
+         kmIv3MPaDAPKRSNmHOmmtQFdIO92zvBDsoTzf0nJ07KDtufuwii3qJHCu92HG4ughTNj
+         1liw==
+X-Gm-Message-State: AO0yUKWptr1Q4QYV3JTuBtNIAV6kPCWn20RdQsxoc3t+w9qUZrCDcd/R
+        /6BYygyqHRVfQFpeWvONtC/R/0sg7U0UqwRJ
+X-Google-Smtp-Source: AK7set+bTCMslfxVd4eH0FtnW1/ifdYHdESNV+Zzh2I9ib4akegREMkhWuFuhHC4g/U7D1JOOyiTZA==
+X-Received: by 2002:a05:600c:1695:b0:3dc:5deb:40a0 with SMTP id k21-20020a05600c169500b003dc5deb40a0mr1497591wmn.8.1676366666434;
+        Tue, 14 Feb 2023 01:24:26 -0800 (PST)
+Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
+        by smtp.gmail.com with ESMTPSA id t15-20020a05600c198f00b003ddc781b1d4sm17683205wmq.33.2023.02.14.01.24.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Feb 2023 01:08:54 -0800 (PST)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-To:     linux-arm-msm@vger.kernel.org, andersson@kernel.org,
-        agross@kernel.org
-Cc:     marijn.suijten@somainline.org,
+        Tue, 14 Feb 2023 01:24:26 -0800 (PST)
+From:   Colin Ian King <colin.i.king@gmail.com>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/3] dt-bindings: power: supply: pm8941-coincell: Don't require charging properties
-Date:   Tue, 14 Feb 2023 10:08:48 +0100
-Message-Id: <20230214090849.2186370-2-konrad.dybcio@linaro.org>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230214090849.2186370-1-konrad.dybcio@linaro.org>
-References: <20230214090849.2186370-1-konrad.dybcio@linaro.org>
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH][next] power: supply: fix spelling mistake "charing" -> "charging"
+Date:   Tue, 14 Feb 2023 09:24:25 +0000
+Message-Id: <20230214092425.265553-1-colin.i.king@gmail.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's fine for these properties to be absent, as the driver doesn't fail
-without them and functions with settings inherited from the reset/previous
-stage bootloader state.
+There are spelling mistakes in dev_err_probe messages. Fix them.
 
-Fixes: 6c463222a21d ("dt-bindings: power: supply: pm8941-coincell: Convert to DT schema format")
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
 ---
-v1 -> v2:
+ drivers/power/supply/qcom_battmgr.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-- Describe the behaviour when the properties are absent
-
- .../bindings/power/supply/qcom,pm8941-coincell.yaml  | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml b/Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml
-index b7b58aed3f3c..1d2405bea109 100644
---- a/Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml
-@@ -28,12 +28,18 @@ properties:
-     maxItems: 1
+diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply/qcom_battmgr.c
+index ec31f887184f..5c2353241099 100644
+--- a/drivers/power/supply/qcom_battmgr.c
++++ b/drivers/power/supply/qcom_battmgr.c
+@@ -1367,7 +1367,7 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+ 		battmgr->wls_psy = devm_power_supply_register(dev, &sc8280xp_wls_psy_desc, &psy_cfg_supply);
+ 		if (IS_ERR(battmgr->wls_psy))
+ 			return dev_err_probe(dev, PTR_ERR(battmgr->wls_psy),
+-					     "failed to register wireless charing power supply\n");
++					     "failed to register wireless charging power supply\n");
+ 	} else {
+ 		battmgr->bat_psy = devm_power_supply_register(dev, &sm8350_bat_psy_desc, &psy_cfg);
+ 		if (IS_ERR(battmgr->bat_psy))
+@@ -1382,7 +1382,7 @@ static int qcom_battmgr_probe(struct auxiliary_device *adev,
+ 		battmgr->wls_psy = devm_power_supply_register(dev, &sm8350_wls_psy_desc, &psy_cfg_supply);
+ 		if (IS_ERR(battmgr->wls_psy))
+ 			return dev_err_probe(dev, PTR_ERR(battmgr->wls_psy),
+-					     "failed to register wireless charing power supply\n");
++					     "failed to register wireless charging power supply\n");
+ 	}
  
-   qcom,rset-ohms:
--    description: resistance (in ohms) for current-limiting resistor
-+    description: |
-+      Resistance (in ohms) for current-limiting resistor. If unspecified,
-+      inherit the previous configuration (e.g. from bootloader or hardware
-+      default value).
-     enum: [ 800, 1200, 1700, 2100 ]
- 
-   qcom,vset-millivolts:
-     $ref: /schemas/types.yaml#/definitions/uint32
--    description: voltage (in millivolts) to apply for charging
-+    description: |
-+      Voltage (in millivolts) to apply for charging. If unspecified, inherit
-+      the previous configuration (e.g. from bootloader or hardware default
-+      value).
-     enum: [ 2500, 3000, 3100, 3200 ]
- 
-   qcom,charger-disable:
-@@ -43,8 +49,6 @@ properties:
- required:
-   - compatible
-   - reg
--  - qcom,rset-ohms
--  - qcom,vset-millivolts
- 
- additionalProperties: false
- 
+ 	battmgr->client = devm_pmic_glink_register_client(dev,
 -- 
-2.39.1
+2.30.2
 
