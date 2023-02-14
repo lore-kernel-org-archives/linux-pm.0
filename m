@@ -2,102 +2,105 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0255BC61DA4
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 22:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7849C61DA4
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 22:09:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233130AbjBNWEo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Feb 2023 17:04:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56306 "EHLO
+        id S229518AbjBNWJT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Feb 2023 17:09:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233212AbjBNWEm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 17:04:42 -0500
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FC0B3AAA;
-        Tue, 14 Feb 2023 14:04:39 -0800 (PST)
-Received: by mail-pl1-x629.google.com with SMTP id d8so17225339plr.10;
-        Tue, 14 Feb 2023 14:04:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=oV3VgFBLdqdFf0Ea+vkgthoqfBBbr34vGspqoFBdBuY=;
-        b=ci6jB/L5E5M98Nw7Z5xC1J1e0t9D3ayUJF0Fb03GdIxeHHbkym8/PRcs7av+rDcq1Z
-         osJFuYQ8zwoJKUO+5e2xMLXaT6pfQmtI/3I0a2uX6gOH3ZaxXZNdgOJ6QFMBjaWHw3q7
-         LMeEpIavISB31JJvk35mO0ZCv35C9poV2uiT3Lz92wgCB3GbwXvrmErdjuapg2PLuk0U
-         8n3bV6OteJRnbhggxEMnlylqFr6RB3kQwSBDYgutxYEkVGijTvXdAFNb1cJpk2BPt2L8
-         HRFL1nw32Oz854hiCrt7iUQs1iC0DyKo4p2UzdzHuHnDmvHPcs5LMz7/w1UhAGTfrgqM
-         22NQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=oV3VgFBLdqdFf0Ea+vkgthoqfBBbr34vGspqoFBdBuY=;
-        b=N/+Nq5KuAAduIjxKjnwSpJZPBwdZqngZ8cAZdwOkOKQQc8uf3xx3r8j8b6dOxL555p
-         tREu3rB29vWw+n2ovw1490fsvBPyLpsDPFEx4+f8yvumh7corJzBG9aJAp9h/oTS1ZIQ
-         zqBbnWnTkmKA4S8xtFfPPnSjLwBVCsnCVFYqwF5h5rhRKGPkZMFjCxk9fK2Zkfg9GRd9
-         EkT1+iKf+U2fqniDQKP9vIoe+ny4MxX3oNWnAjFUzf1VFlmWnQLajNleneJAZLOohz++
-         0wiY879EwR/TRO+VHqXbCcIRY6WXzWlc6gwaEOdBoqFY+dHoxjBaqaKGN3cmM42PCMSY
-         jrow==
-X-Gm-Message-State: AO0yUKVkH8xLAX5vinkfmCBVte+w2L9sdLWuyyGaVP9Alv1RbrcVmPnm
-        vpVYvXpQHFELRRF2yYRP+w9oALKDeQ6Pbg==
-X-Google-Smtp-Source: AK7set+JFYJC70ppqj6wFSZKns7z/qYnwZw5g3Dtklhm0QZPoVE5Foy6hPNHInIp/4cr3C64xgUXWQ==
-X-Received: by 2002:a17:90b:4b0b:b0:233:e940:d3f9 with SMTP id lx11-20020a17090b4b0b00b00233e940d3f9mr347227pjb.34.1676412279094;
-        Tue, 14 Feb 2023 14:04:39 -0800 (PST)
-Received: from kazuki-mac.lan ([2400:4051:ea3:5910::19a])
-        by smtp.gmail.com with ESMTPSA id e17-20020a17090ab39100b00233e8a83853sm23759pjr.34.2023.02.14.14.04.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Feb 2023 14:04:38 -0800 (PST)
-From:   Kazuki Hashimoto <kazukih0205@gmail.com>
-To:     linux-pm@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Hector Martin <marcan@marcan.st>,
-        Sven Peter <sven@svenpeter.dev>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Kazuki Hashimoto <kazukih0205@gmail.com>
-Subject: [PATCH] PM: s2idle: Don't allow s2idle when cpuidle isn't supported
-Date:   Wed, 15 Feb 2023 06:50:03 +0900
-Message-Id: <20230214215003.70683-1-kazukih0205@gmail.com>
-X-Mailer: git-send-email 2.39.1
+        with ESMTP id S229826AbjBNWJT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 17:09:19 -0500
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1622327D62;
+        Tue, 14 Feb 2023 14:09:17 -0800 (PST)
+Received: from mercury (unknown [185.209.196.162])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: sre)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 84B776602173;
+        Tue, 14 Feb 2023 22:09:16 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1676412556;
+        bh=alXr5cFGo6ZX+NcmH0aKeKPUofQn3NagXbNvEpCcFf8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=LzHQaH3ubU12gc9D9ci87g24fmc54eqPFhD+EtZwabcZuvw0+vuX1iQl9/tixjQ2D
+         AKsttnxf+pobj/u8QQlgfdcKRzOYalua5A64v9j5CxhkOHy1BjH/gLZsuenKy/qZfn
+         LzvwTVTLNyD2Gb3ZS5P5L3Dg946+6K3Em6nfCLNY5aAZCfMaHqs7kPCxvHptV+47Sj
+         5/bjxp8J/WJnvH++W1kfWwreVk19FRxzZi8x6zVfWUw7KsibIWZ4RPlqA0lTRMv+yU
+         tFd1d1deoxTCjpZjOvOH8gWsMlWjn2j7w/Ac1OPMXRsCfW0SzIB27Tjyomxq5SohB7
+         Cpw954tuXwFYA==
+Received: by mercury (Postfix, from userid 1000)
+        id B492310603FE; Tue, 14 Feb 2023 23:09:08 +0100 (CET)
+Date:   Tue, 14 Feb 2023 23:09:08 +0100
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Neil Armstrong <neil.armstrong@linaro.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-amlogic@lists.infradead.org
+Subject: Re: [PATCH v4] power: reset: add Odroid Go Ultra poweroff driver
+Message-ID: <20230214220908.vpzlduyhfcoqzenb@mercury.elektranox.org>
+References: <20230126-b4-odroid-go-ultra-poweroff-v4-1-979efb6eb3fb@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="t46mdvvr7bb4ua2l"
+Content-Disposition: inline
+In-Reply-To: <20230126-b4-odroid-go-ultra-poweroff-v4-1-979efb6eb3fb@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-s2idle isn't supported on platforms that don't support cpuidle as of
-31a3409065d1 ("cpuidle / sleep: Do sanity checks in cpuidle_enter_freeze()
-too"), so update the suspend framework to reflect this in order to avoid
-breakages.
 
-Link: https://lore.kernel.org/all/20230204152747.drte4uitljzngdt6@kazuki-mac
-Fixes: 31a3409065d1 ("cpuidle / sleep: Do sanity checks in cpuidle_enter_freeze() too")
-Signed-off-by: Kazuki Hashimoto <kazukih0205@gmail.com>
----
- kernel/power/suspend.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+--t46mdvvr7bb4ua2l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 3f436282547c..27507ae7c9c9 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -556,6 +556,12 @@ static int enter_state(suspend_state_t state)
- 
- 	trace_suspend_resume(TPS("suspend_enter"), state, true);
- 	if (state == PM_SUSPEND_TO_IDLE) {
-+		struct cpuidle_device *dev = cpuidle_get_device();
-+		struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-+
-+		if (cpuidle_not_available(drv, dev))
-+			return -EINVAL;
-+
- #ifdef CONFIG_PM_DEBUG
- 		if (pm_test_level != TEST_NONE && pm_test_level <= TEST_CPUS) {
- 			pr_warn("Unsupported test mode for suspend to idle, please choose none/freezer/devices/platform.\n");
--- 
-2.39.1
+Hi,
 
+On Tue, Feb 14, 2023 at 05:41:18PM +0100, Neil Armstrong wrote:
+> The Hardkernel Odroid Go Ultra poweroff scheme requires requesting a powe=
+roff
+> to its two PMICs in order, this represents the poweroff scheme needed to =
+complete
+> a clean poweroff of the system.
+>=20
+> This implement this scheme by implementing a self registering driver to p=
+ermit
+> using probe defer until both pmics are finally probed.
+>=20
+> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+> ---
+> Previous submission was at [1], but I converted it to an independent
+> platform device with device auto registration to permit waiting for
+> both the PMICs drivers to probe.
+>=20
+> [1] https://lore.kernel.org/all/20221031-b4-odroid-go-ultra-initial-v1-2-=
+42e3dbea86d5@linaro.org/
+> ---
+
+Thanks, queued.
+
+-- Sebastian
+
+--t46mdvvr7bb4ua2l
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmPsBoQACgkQ2O7X88g7
++pqYSQ//ZQ7xDk9zbf/G8rWnumQwSRBpGvVYR8J5b4sfxFtcH5CmlDYXAtIrYyq5
+pjcSnkQk6/v3g+hTX9yBcqLKtGUcC7xfk++QujipQKq2JNbVmq+0W3/A4dGlv+u/
+b1fTXfXOfU1PxJ46NwXzj391GEFbsAFljwhpkfIcncU6LJsOknalZ35YXths/Woi
+EDvxSkfbC01PV+JyFqd3lMzj1EPLlMBjHkVeVpQjj0EgGtaLIoi5t5w2w3euPm4C
+6fsniaL7DwunQeqhB7L9bjekD9zyNjHyboB/IJg5YKnLNRj8y1g7DD4nVrhcWqpu
+U6LRa1e5Y4D+Mgi8F4kkaS96A++gtMhWtwsXFzIy5OBP947kM3TQlNbufSMsEVOm
+zTwk+yjohrNKygBrhJazt+tWO9vub1nEs9hEnlpLlOvEVpz4dRqKOUuS9boqbEgG
+rOkxRLOvO0nnBhpKtwqXebJg/AZ7rctuqTnbsQnMtdIxZ0/jbzwObAtDf5C2xsG2
+T6EwKSJrJZ+45i/9k9SrJirbNKgJsVM6I9V0Tr7m30pD7CbGciBvy/STvwb2PRDX
+sjyWRm07aXPvSs+aYCfTr5fD3HPB310mXnYdVGhZ+bwFczOWiPifYnY1AZ4KVfp2
+Yc5yDhollHdA9ptAvhs70YFPMPT7r6kVOT1QjplNcdeeFDduEPk=
+=j0ok
+-----END PGP SIGNATURE-----
+
+--t46mdvvr7bb4ua2l--
