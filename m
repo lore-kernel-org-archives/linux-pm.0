@@ -2,76 +2,103 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48F21C61DA4
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECD20C6379F
 	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 14:44:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233170AbjBNOoQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S233249AbjBNOoQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 14 Feb 2023 09:44:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40404 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40412 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232395AbjBNOoP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:44:15 -0500
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F2F7166D0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:44:14 -0800 (PST)
-Received: by mail-ej1-x62c.google.com with SMTP id t24so396253eji.4
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:44:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=xrQFXlyYQ6BXMoPDycsGZ57c4QKFYnwrzSnOP2uhY5c=;
-        b=cyHfaTfuSm92uaxOOI5uhaqsN3TkKg07lGrEjNCHarVlWiuxKjf7oCRkDQiSrJ/KIk
-         p5VPejZpJlyqc19jdm4yIAtmbX44fCAdI6wqgg9v4YAaok/eEno0mOVacSZXPDhkxp2J
-         qbjHuqtbjrasP+JXVegXZbnKWHgRbS2t1jiCNmn6snPhkXdzrJH9qwW57EH/XhQrC7OJ
-         GsP5zfZEwJWcGtu9B4PtuDmEAtynzF2fLSrayg1qu971n2vEqSYIpVqTOiG566AkV1yM
-         rFM8V/u6mkKZxW8lB4fYFuz9Cm6kI3PSsKOAnaaCx59PjobGSRpOaMstMIaM4G63GO/I
-         oKUg==
+        with ESMTP id S233032AbjBNOoQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:44:16 -0500
+Received: from mail-ed1-f43.google.com (mail-ed1-f43.google.com [209.85.208.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4532D2119
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:44:15 -0800 (PST)
+Received: by mail-ed1-f43.google.com with SMTP id fi26so17701562edb.7
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:44:15 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=xrQFXlyYQ6BXMoPDycsGZ57c4QKFYnwrzSnOP2uhY5c=;
-        b=u8Niwffvgy6yhvG8iZmXjcDjghVzbMaaMZw49wUgoRPR2n8b0wJJXIUu7y1jHzQJJy
-         v7DZ6ggdgATyhOPJd2QTWDCvSdiy5fx8MyS/GyCjxARLVRjya7tinZnPPQ8QqvdUnTZc
-         aPdSDT1hY3YvXRHoummnLQP/nJ2BAwfUAbrabAATlp7AYYU/z/sOfHpMzpu36w2zCwOU
-         i53p3h9kQz/o1lss5xgglhuXKb8otfUJB4vjAOhWbhlB7nPn5Vx9qJk8eBXhR7NbOEPk
-         zB14pebWc4ffeGsTMgLrcdFc0yS+hBjVBD3WMSFc4yX/TQ+XN9zhlHjr0w1UrjAChG/F
-         vl8A==
-X-Gm-Message-State: AO0yUKWieTo7XfcaIMxQJiKcz7U/SUNG2WLNkcoAvuv0N2W7oXuXdH1s
-        TvdV3tL7v/PsSSncfw+4t8EmWAFCe4Zoe0s5ae2KVg==
-X-Google-Smtp-Source: AK7set/YceEYxxH3TbzkuGJIzLDMG/nIB5TSYUNzc7KRmoGREeVdPIvcdk7XhvgncEgDMo7G5qTrhettsGOZMVxekYo=
-X-Received: by 2002:a17:907:9877:b0:878:4e40:d3e0 with SMTP id
- ko23-20020a170907987700b008784e40d3e0mr1424731ejc.13.1676385852883; Tue, 14
- Feb 2023 06:44:12 -0800 (PST)
+        bh=r8DlOof1qKZcOLUpVo4Fr+SwDlEqIiPfD5b+11BU5tE=;
+        b=IBwHh78vuII4d0wn1bcc10x+2YgFGy9SUf0yX0TfyI9++eEmRkZYKsVJgXkR+oseS6
+         IaALWN6PXs2t6SLOwiIhg8ipuqSyQeZymDl4Nmk+k5aqYaDi1BqnIGjajnXZjxIBSkN5
+         ItPwhGNQBVnUqOeiFKaCn7T8d4+GuEsUvFktvdgD5QJ2lbKu20jKmY2kOE0KintklEGV
+         MAhCES3GzGMDCHBJ6Llz9BdLiSvVvTuATaMIaLrVRMyEqOmSnzMzZ/tVT7aeTy8NIXhT
+         ty8szAbCOzQSGNIzGI6hsSfBHoknS2B4NUx+9A1BGRBELuT8fnhqI6xUt/72w3ODAdbO
+         QuAw==
+X-Gm-Message-State: AO0yUKVlgXmWevFJraM0nMBW24zc4JNyku4iRcyTKSjG8LU7U3Y3/Jax
+        dAADJ57E5YiQMO99NTsZPJyUPET0Dx7gZWszyLI=
+X-Google-Smtp-Source: AK7set8iQhw78Gwz4w+L5hxXH9e/6QCPhu67ioGspnWYvg5+OnEhddiUb8SXK74VQUKRLEPiztoRvUD4zA2VvdXSPIs=
+X-Received: by 2002:a50:9f07:0:b0:4ac:20b:96b0 with SMTP id
+ b7-20020a509f07000000b004ac020b96b0mr1307755edf.3.1676385853665; Tue, 14 Feb
+ 2023 06:44:13 -0800 (PST)
 MIME-Version: 1.0
-References: <20230209105628.50294-1-bchihi@baylibre.com> <20230209105628.50294-7-bchihi@baylibre.com>
-In-Reply-To: <20230209105628.50294-7-bchihi@baylibre.com>
-From:   Balsam CHIHI <bchihi@baylibre.com>
-Date:   Tue, 14 Feb 2023 15:43:36 +0100
-Message-ID: <CAGuA+oqOgprdu0dVcmB=qJd5HJjada3d8ZazMpoG-SBPizzuPQ@mail.gmail.com>
-Subject: Re: [PATCH v14 6/6] arm64: dts: mediatek: mt8195: Add temperature
- mitigation threshold
-To:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
-        rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
-        matthias.bgg@gmail.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, rdunlap@infradead.org,
-        ye.xingchen@zte.com.cn, p.zabel@pengutronix.de
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        khilman@baylibre.com, james.lo@mediatek.com,
-        rex-bc.chen@mediatek.com
+References: <20230214053838.5tyq375sxbrprque@vireshk-i7>
+In-Reply-To: <20230214053838.5tyq375sxbrprque@vireshk-i7>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 14 Feb 2023 15:44:02 +0100
+Message-ID: <CAJZ5v0iEPY1RJiWJg_eTdrcmJsObTkafs92Bo0ZwwJA+bM9+gA@mail.gmail.com>
+Subject: Re: [GIT PULL] OPP updates for 6.3
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Matthias, Angelo,
+On Tue, Feb 14, 2023 at 6:38 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> Hi Rafael,
+>
+> The following changes since commit 1b929c02afd37871d5afb9d498426f83432e71c2:
+>
+>   Linux 6.2-rc1 (2022-12-25 13:41:39 -0800)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/opp-updates-6.3
+>
+> for you to fetch changes up to eca4c0eea53432ec4b711b2a8ad282cbad231b4f:
+>
+>   OPP: fix error checking in opp_migrate_dentry() (2023-02-08 10:40:59 +0530)
+>
+> ----------------------------------------------------------------
+> OPP updates for 6.3
+>
+> - Add missing 'cache-unified' property in example for kryo OPP bindings
+>   (Rob Herring).
+>
+> - Fix error checking in opp_migrate_dentry() (Qi Zheng).
+>
+> - Remove "select SRCU" (Paul E. McKenney).
+>
+> - Let qcom,opp-fuse-level be a 2-long array for qcom SoCs (Konrad
+>   Dybcio).
+>
+> ----------------------------------------------------------------
+> Konrad Dybcio (1):
+>       dt-bindings: opp: v2-qcom-level: Let qcom,opp-fuse-level be a 2-long array
+>
+> Paul E. McKenney (1):
+>       drivers/opp: Remove "select SRCU"
+>
+> Qi Zheng (1):
+>       OPP: fix error checking in opp_migrate_dentry()
+>
+> Rob Herring (1):
+>       dt-bindings: opp: opp-v2-kryo-cpu: Add missing 'cache-unified' property in example
+>
+>  Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml   | 2 ++
+>  Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml | 4 +++-
+>  drivers/opp/Kconfig                                          | 1 -
+>  drivers/opp/debugfs.c                                        | 2 +-
+>  4 files changed, 6 insertions(+), 3 deletions(-)
+>
+> --
 
-Would you please confirm if this patch can be applied?
-and, if it is the case, to which tree it will be applied?
+Pulled and pushed into the linux-next branch in linux-pm.git.
 
-Best regards,
-Balsam
+Thanks!
