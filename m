@@ -2,76 +2,109 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF429C61DA4
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 14:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38424C05027
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 14:44:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232822AbjBNOnS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Feb 2023 09:43:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39586 "EHLO
+        id S230162AbjBNOn7 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Feb 2023 09:43:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40162 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233417AbjBNOnR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:43:17 -0500
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 679AA9025
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:43:15 -0800 (PST)
-Received: by mail-ej1-x631.google.com with SMTP id dr8so40568480ejc.12
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:43:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=xrQFXlyYQ6BXMoPDycsGZ57c4QKFYnwrzSnOP2uhY5c=;
-        b=AlAbePd1Q3NeUZeR2Fa4w5Tmj4lwGN2RYVp1sWM1JcuteH4S4aia6L6QcVA/zPZHsT
-         HUS3yNyPJXYnbv+NeFtGYj16tN1gj/RjA2mrgoEWM+Tvba+fpl+r2SXDxgxa4ufDV1Nm
-         k1KyX2CkLJDqPsXtDFta117qhcdJFmoKDznYQcMbE4usvHZ2F8PQZDDwq936sE1AiivT
-         UEFYHNyFpMNOoPgBHr74B09zYdfZo44MCPmcBli6jekwlidoc0Q3TOGlnHx/p5bwtuSU
-         uMBUhIVhvLKF7A+ozHGqjnoBEywHcWk+8x5UVpFajK6ClMtYyraSEugTIkoiiIX+gkVa
-         bzrw==
+        with ESMTP id S230145AbjBNOn7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 09:43:59 -0500
+Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ECAEA271
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:43:58 -0800 (PST)
+Received: by mail-ej1-f46.google.com with SMTP id rp23so40646307ejb.7
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2023 06:43:58 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xrQFXlyYQ6BXMoPDycsGZ57c4QKFYnwrzSnOP2uhY5c=;
-        b=AKex/CEXirexPitbW9Q17iUHJSZajg9i7dvrpVbwgeDmNtmV8uGntr5dx3kg6tnhVv
-         y6JjvyyjyH9lL6U7JqbeKbTF4zM/1wYUjSzcHBHq+7n9fb2GGF9NsLtyyS1IWaPWUr75
-         qFWWaARZBqU/yGt2TWJnOWQNViEdwSRKoyz95uTrHEAjBxLIP3exU/o0hOjvwVA2lu3c
-         sBqWHiPAtqKdSMMhmyVigSpbubA6lS1EkVgfH7ouOcHJ2hdM2/2dS5Tq0Tt0znT26NBx
-         n5eA2oAXA0BVKNrx+3O/9StuPKyUmCeWL3E6PIvQYuc9HUBcbrc0UGXUaUp9cC/KP82n
-         BdGQ==
-X-Gm-Message-State: AO0yUKXwc8j+1ImIe2xMreZxQdzNdIYcFHmf7HKhh3dL17bK8BhA+2Gr
-        CCDBgMBPQIpZ9HvbCsVx0eo9Qc0FYMGKey7FS2l4dQ==
-X-Google-Smtp-Source: AK7set/eRZRwT84Ah6k0jwJ445lJrD4natFzZ1kVHXpD+dAT/lHnlzbyOxVzjwyjHZ518E8n33MZrsg1UFD9/40unP0=
-X-Received: by 2002:a17:906:14cf:b0:8aa:841e:ae71 with SMTP id
- y15-20020a17090614cf00b008aa841eae71mr1387871ejc.13.1676385793939; Tue, 14
- Feb 2023 06:43:13 -0800 (PST)
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=8XWKsMAMHm9nwcB8DjIvRNSxdBTihQ3x6QCKjjISyso=;
+        b=4WboDN5yTHWs/zGyWBZgKfAH3o6oyinJfRNXL9axNeu513r3hgr6rO62d30AfPKUG7
+         mieOLAX6v/athhXUX1LFOrcNU/SpzoAKNRlKRWHMuGgiDsM2eepCe7llY+mnVeai8L8d
+         QCn3pmjBtqDYRaZ+niuwoMsnlwsO6/hL2XyrB/muW0quCnFk4g1Vq8Uj4UtC9gfa2jeP
+         zcmEaNPCDQgIY0oKGvsHcSI4q07R6KsF0kPt4Ofjf/oSciA8a93i/dPq7mgvR/YvGq/d
+         vzVt7Ncisnjq3B2oWUAY6LQfKYaT2Z03x+w/YenMtkrx5Pj1dxMiOWZHqNNQqL8gQhmJ
+         eFZg==
+X-Gm-Message-State: AO0yUKXPjM05uYGSR+p8M8fHdZvxXyBIrMtOUtbqFgkkPDDlAKfXx8A3
+        75kqhhqy/X3CkuloehV5nottJhMWrIWnDlgPBpLCLd3E
+X-Google-Smtp-Source: AK7set/08ymOiEaoPnprA2XKlk+Zhx5jOEmBXu38SIyw/CxaviJIXGSFkM0zsHju4CK7WKeb/nAKOxUtcFRBbkGV+/I=
+X-Received: by 2002:a17:906:f154:b0:8af:38c9:d52d with SMTP id
+ gw20-20020a170906f15400b008af38c9d52dmr1475277ejb.2.1676385836571; Tue, 14
+ Feb 2023 06:43:56 -0800 (PST)
 MIME-Version: 1.0
-References: <20230209105628.50294-1-bchihi@baylibre.com> <20230209105628.50294-6-bchihi@baylibre.com>
-In-Reply-To: <20230209105628.50294-6-bchihi@baylibre.com>
-From:   Balsam CHIHI <bchihi@baylibre.com>
-Date:   Tue, 14 Feb 2023 15:42:38 +0100
-Message-ID: <CAGuA+oqD8qDVw=50dC=Qdi8f1-4YqtN7wKtV-msx3=a_Jb24aA@mail.gmail.com>
-Subject: Re: [PATCH v14 5/6] arm64: dts: mediatek: mt8195: Add thermal zones
- and thermal nodes
-To:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
-        rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
-        matthias.bgg@gmail.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, rdunlap@infradead.org,
-        ye.xingchen@zte.com.cn, p.zabel@pengutronix.de
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        khilman@baylibre.com, james.lo@mediatek.com,
-        rex-bc.chen@mediatek.com
+References: <20230214053500.ziqfmb3temvetssk@vireshk-i7>
+In-Reply-To: <20230214053500.ziqfmb3temvetssk@vireshk-i7>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 14 Feb 2023 15:43:45 +0100
+Message-ID: <CAJZ5v0juEfSpYALddGvKawd4sYZQKay=3ga2-OaNRib2ju5fEA@mail.gmail.com>
+Subject: Re: [GIT PULL] cpufreq/arm updates for 6.3
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Matthias, Angelo,
+On Tue, Feb 14, 2023 at 6:35 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> Hi Rafael,
+>
+> The following changes since commit 51be2fffd65d9f9cb427030ab0ee85d791b4437d:
+>
+>   cpufreq: qcom-hw: Fix cpufreq_driver->get() for non-LMH systems (2023-02-06 09:31:38 +0530)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/cpufreq-arm-updates-6.3
+>
+> for you to fetch changes up to ba38f3cbe7db2cec802c6d60e2bef57a3ff095a4:
+>
+>   dt-bindings: opp: opp-v2-kryo-cpu: enlarge opp-supported-hw maximum (2023-02-14 10:51:58 +0530)
+>
+> ----------------------------------------------------------------
+> Cpufreq arm updates for 6.3
+>
+> - Enable thermal cooling for Tegra194 (Yi-Wei Wang).
+>
+> - Register module device table and add missing compatibles for
+>   cpufreq-qcom-hw (Nícolas F. R. A. Prado, Abel Vesa and Luca Weiss).
+>
+> - Various dt binding updates for qcom-cpufreq-nvmem and opp-v2-kryo-cpu
+>   (Christian Marangi).
+>
+> ----------------------------------------------------------------
+> Abel Vesa (1):
+>       dt-bindings: cpufreq: cpufreq-qcom-hw: Add SM8550 compatible
+>
+> Christian Marangi (3):
+>       dt-bindings: cpufreq: qcom-cpufreq-nvmem: specify supported opp tables
+>       dt-bindings: cpufreq: qcom-cpufreq-nvmem: make cpr bindings optional
+>       dt-bindings: opp: opp-v2-kryo-cpu: enlarge opp-supported-hw maximum
+>
+> Luca Weiss (1):
+>       dt-bindings: cpufreq: cpufreq-qcom-hw: Add missing compatibles
+>
+> Nícolas F. R. A. Prado (1):
+>       cpufreq: mediatek-hw: Register to module device table
+>
+> Yi-Wei Wang (1):
+>       cpufreq: tegra194: Enable CPUFREQ thermal cooling
+>
+>  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml    |  5 +++++
+>  Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml | 81 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------
+>  Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml        | 16 +++++++++++++---
+>  drivers/cpufreq/mediatek-cpufreq-hw.c                             |  1 +
+>  drivers/cpufreq/tegra194-cpufreq.c                                |  3 ++-
+>  5 files changed, 77 insertions(+), 29 deletions(-)
+>
+> --
 
-Would you please confirm if this patch can be applied?
-and, if it is the case, to which tree it will be applied?
+Pulled and pushed into the linux-next branch in linux-pm.git.
 
-Best regards,
-Balsam
+Thanks!
