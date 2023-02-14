@@ -2,134 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82DF0C6379F
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 22:03:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0255BC61DA4
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Feb 2023 22:04:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233332AbjBNWDF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Feb 2023 17:03:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54048 "EHLO
+        id S233130AbjBNWEo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Feb 2023 17:04:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56306 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233331AbjBNWCz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 17:02:55 -0500
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88E8330EBF;
-        Tue, 14 Feb 2023 14:02:14 -0800 (PST)
-Received: from mercury (unknown [185.209.196.162])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 353E96602167;
-        Tue, 14 Feb 2023 22:02:13 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1676412133;
-        bh=4Fs1CTHNwLdNQOTNd9vU7qtTg6rYGMVLPMaOXowrgmA=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=UMa24GOVwA8dPGrUC6cp7XGKW4K8IiOoCELMidiTweZfpHRSgN2Wnu+ZN7x7St3hO
-         eLPcHPrCxI2udMPhPVzuY4Brfju+MNPmwQ/1KZTkMix4bQMETko/Ny7is+zVUAsTqy
-         Rwh9JgNZlz0W2p3mqj0LxzjHdi/8PLnvaullNXwhDO3DAKM9kv6bwYOX1iWEXbxBbv
-         0ErWTz+e9E2VxEHbMe3mA/kuUZLp+AHpQyAhDvzeGtYKZuv2g0WL+KcPHPK/yc2inJ
-         2BisrtGZ0nRZwB8YBQaRdNNwKuhdU5jOrFbslyUGdSY/+l2/DSM1FhFLR6fK8JquGW
-         X1ySpiyFepnPA==
-Received: by mercury (Postfix, from userid 1000)
-        id 2691510603FE; Tue, 14 Feb 2023 23:02:10 +0100 (CET)
-Date:   Tue, 14 Feb 2023 23:02:10 +0100
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc:     Arnd Bergmann <arnd@kernel.org>, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power: supply: qcom_battmgr: remove bogus do_div()
-Message-ID: <20230214220210.cpviycsmcppylkgj@mercury.elektranox.org>
-References: <20230214132052.1556699-1-arnd@kernel.org>
- <e55c4253-4c55-61cf-a5fd-4284fa164db8@linaro.org>
+        with ESMTP id S233212AbjBNWEm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2023 17:04:42 -0500
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FC0B3AAA;
+        Tue, 14 Feb 2023 14:04:39 -0800 (PST)
+Received: by mail-pl1-x629.google.com with SMTP id d8so17225339plr.10;
+        Tue, 14 Feb 2023 14:04:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=oV3VgFBLdqdFf0Ea+vkgthoqfBBbr34vGspqoFBdBuY=;
+        b=ci6jB/L5E5M98Nw7Z5xC1J1e0t9D3ayUJF0Fb03GdIxeHHbkym8/PRcs7av+rDcq1Z
+         osJFuYQ8zwoJKUO+5e2xMLXaT6pfQmtI/3I0a2uX6gOH3ZaxXZNdgOJ6QFMBjaWHw3q7
+         LMeEpIavISB31JJvk35mO0ZCv35C9poV2uiT3Lz92wgCB3GbwXvrmErdjuapg2PLuk0U
+         8n3bV6OteJRnbhggxEMnlylqFr6RB3kQwSBDYgutxYEkVGijTvXdAFNb1cJpk2BPt2L8
+         HRFL1nw32Oz854hiCrt7iUQs1iC0DyKo4p2UzdzHuHnDmvHPcs5LMz7/w1UhAGTfrgqM
+         22NQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=oV3VgFBLdqdFf0Ea+vkgthoqfBBbr34vGspqoFBdBuY=;
+        b=N/+Nq5KuAAduIjxKjnwSpJZPBwdZqngZ8cAZdwOkOKQQc8uf3xx3r8j8b6dOxL555p
+         tREu3rB29vWw+n2ovw1490fsvBPyLpsDPFEx4+f8yvumh7corJzBG9aJAp9h/oTS1ZIQ
+         zqBbnWnTkmKA4S8xtFfPPnSjLwBVCsnCVFYqwF5h5rhRKGPkZMFjCxk9fK2Zkfg9GRd9
+         EkT1+iKf+U2fqniDQKP9vIoe+ny4MxX3oNWnAjFUzf1VFlmWnQLajNleneJAZLOohz++
+         0wiY879EwR/TRO+VHqXbCcIRY6WXzWlc6gwaEOdBoqFY+dHoxjBaqaKGN3cmM42PCMSY
+         jrow==
+X-Gm-Message-State: AO0yUKVkH8xLAX5vinkfmCBVte+w2L9sdLWuyyGaVP9Alv1RbrcVmPnm
+        vpVYvXpQHFELRRF2yYRP+w9oALKDeQ6Pbg==
+X-Google-Smtp-Source: AK7set+JFYJC70ppqj6wFSZKns7z/qYnwZw5g3Dtklhm0QZPoVE5Foy6hPNHInIp/4cr3C64xgUXWQ==
+X-Received: by 2002:a17:90b:4b0b:b0:233:e940:d3f9 with SMTP id lx11-20020a17090b4b0b00b00233e940d3f9mr347227pjb.34.1676412279094;
+        Tue, 14 Feb 2023 14:04:39 -0800 (PST)
+Received: from kazuki-mac.lan ([2400:4051:ea3:5910::19a])
+        by smtp.gmail.com with ESMTPSA id e17-20020a17090ab39100b00233e8a83853sm23759pjr.34.2023.02.14.14.04.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Feb 2023 14:04:38 -0800 (PST)
+From:   Kazuki Hashimoto <kazukih0205@gmail.com>
+To:     linux-pm@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Hector Martin <marcan@marcan.st>,
+        Sven Peter <sven@svenpeter.dev>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Kazuki Hashimoto <kazukih0205@gmail.com>
+Subject: [PATCH] PM: s2idle: Don't allow s2idle when cpuidle isn't supported
+Date:   Wed, 15 Feb 2023 06:50:03 +0900
+Message-Id: <20230214215003.70683-1-kazukih0205@gmail.com>
+X-Mailer: git-send-email 2.39.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="hiuzcppypfku7ewl"
-Content-Disposition: inline
-In-Reply-To: <e55c4253-4c55-61cf-a5fd-4284fa164db8@linaro.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+s2idle isn't supported on platforms that don't support cpuidle as of
+31a3409065d1 ("cpuidle / sleep: Do sanity checks in cpuidle_enter_freeze()
+too"), so update the suspend framework to reflect this in order to avoid
+breakages.
 
---hiuzcppypfku7ewl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Link: https://lore.kernel.org/all/20230204152747.drte4uitljzngdt6@kazuki-mac
+Fixes: 31a3409065d1 ("cpuidle / sleep: Do sanity checks in cpuidle_enter_freeze() too")
+Signed-off-by: Kazuki Hashimoto <kazukih0205@gmail.com>
+---
+ kernel/power/suspend.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Hi,
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 3f436282547c..27507ae7c9c9 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -556,6 +556,12 @@ static int enter_state(suspend_state_t state)
+ 
+ 	trace_suspend_resume(TPS("suspend_enter"), state, true);
+ 	if (state == PM_SUSPEND_TO_IDLE) {
++		struct cpuidle_device *dev = cpuidle_get_device();
++		struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
++
++		if (cpuidle_not_available(drv, dev))
++			return -EINVAL;
++
+ #ifdef CONFIG_PM_DEBUG
+ 		if (pm_test_level != TEST_NONE && pm_test_level <= TEST_CPUS) {
+ 			pr_warn("Unsupported test mode for suspend to idle, please choose none/freezer/devices/platform.\n");
+-- 
+2.39.1
 
-On Tue, Feb 14, 2023 at 02:36:03PM +0100, Konrad Dybcio wrote:
-> On 14.02.2023 14:20, Arnd Bergmann wrote:
-> > From: Arnd Bergmann <arnd@arndb.de>
-> >=20
-> > The argument to do_div() is a 32-bit integer, and it was read from a
-> > 32-bit register so there is no point in doing a 64-bit division on it.
-> >=20
-> > On 32-bit arm, do_div() causes a compile-time warning here:
-> >=20
-> > include/asm-generic/div64.h:238:22: error: passing argument 1 of '__div=
-64_32' from incompatible pointer type [-Werror=3Dincompatible-pointer-types]
-> >   238 |   __rem =3D __div64_32(&(n), __base); \
-> >       |                      ^~~~
-> >       |                      |
-> >       |                      unsigned int *
-> > drivers/power/supply/qcom_battmgr.c:1130:4: note: in expansion of macro=
- 'do_div'
-> >  1130 |    do_div(battmgr->status.percent, 100);
-> >=20
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-
-Needs to go through the Qualcomm tree:
-
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
--- Sebastian
-
-> >  drivers/power/supply/qcom_battmgr.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> >=20
-> > diff --git a/drivers/power/supply/qcom_battmgr.c b/drivers/power/supply=
-/qcom_battmgr.c
-> > index ec31f887184f..de77df97b3a4 100644
-> > --- a/drivers/power/supply/qcom_battmgr.c
-> > +++ b/drivers/power/supply/qcom_battmgr.c
-> > @@ -1126,8 +1126,7 @@ static void qcom_battmgr_sm8350_callback(struct q=
-com_battmgr *battmgr,
-> >  			battmgr->info.charge_type =3D le32_to_cpu(resp->intval.value);
-> >  			break;
-> >  		case BATT_CAPACITY:
-> > -			battmgr->status.percent =3D le32_to_cpu(resp->intval.value);
-> > -			do_div(battmgr->status.percent, 100);
-> > +			battmgr->status.percent =3D le32_to_cpu(resp->intval.value) / 100;
-> >  			break;
-> >  		case BATT_VOLT_OCV:
-> >  			battmgr->status.voltage_ocv =3D le32_to_cpu(resp->intval.value);
-
---hiuzcppypfku7ewl
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmPsBOEACgkQ2O7X88g7
-+prd+A//X+1SPhbCa6f+5S3AeQuxbYdH/op6ISuu1PI6aAPY68xx5mtl6EeWCHx4
-VqojYvoOcqeowDliEuoFtJgP4tlPXpSm8AVvdbmstqlYW8igFtmzgvgWx1eyaRrl
-TuOxtDVR5LQHGsvFTxfUC9QZjjTJVzP3r6yeoPz+QCO3Y3EYfw3f3qZHrM95kYqC
-rFMq3S3qUhxmxa9ss7v5WrLyAb+kOetK3a9FHiyC8v5VVkTCkm21mbMPEjpccCAG
-L03gb7s9EdThr9t2UHqLvVrnvuuB2O5N/DaUuhuu7+qDwP45AOOQI2Y7c91qy2Ax
-XUnP1hTbyskN2JiTyK87ptio1pj4KKbmM5ILCWgLiU1+SKpU3rbKum38gEfB6qmB
-YMwveaRiMlCT/qYLFACD1O5gVKfqCy+gcsaOShhOsUXFhdszSBP8YxOFfBK6ytFT
-vOX4jblL4HfYzMGiVkNpniXdqngo1cRcNohXYMuU6k1waWkBsgy3vdOuWrFutDY7
-G13xALBCCX60wF3D3fRlwchdQXWVhSpwZSXjszRlJ1gnEY/bG0fgQE+BmZmN2di7
-2+3A1dkLehiYgZMVS4YwiDmtYiOfzJIu5AO6PIwdxG6F2k1aUGJI/HZcy7YNy5g9
-ByKgv9M2qTvlCQNzm+zkmHFqg8xCd+YAzkP87ZMdmc7lYLXCTZo=
-=jdxv
------END PGP SIGNATURE-----
-
---hiuzcppypfku7ewl--
