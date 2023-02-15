@@ -2,55 +2,54 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43A9EC64ED6
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Feb 2023 12:33:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FB8EC6FA9E
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Feb 2023 12:33:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232865AbjBOMdG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Feb 2023 07:33:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49770 "EHLO
+        id S233418AbjBOMdJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Feb 2023 07:33:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229618AbjBOMdF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2023 07:33:05 -0500
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 804A036446;
-        Wed, 15 Feb 2023 04:33:04 -0800 (PST)
-Received: by mail-pj1-x1030.google.com with SMTP id o13so18043021pjg.2;
-        Wed, 15 Feb 2023 04:33:04 -0800 (PST)
+        with ESMTP id S230492AbjBOMdG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2023 07:33:06 -0500
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 797803669C;
+        Wed, 15 Feb 2023 04:33:05 -0800 (PST)
+Received: by mail-pl1-x636.google.com with SMTP id be8so20085885plb.7;
+        Wed, 15 Feb 2023 04:33:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=KfufL2R00gIT5+p6ohoSf68FEJlxpyChqygBx8E3+7Y=;
-        b=T59RF1pqTWpYk9Y9uHmTFoauRukdIcU8prVrThhLMybqY6KszWBGH8SgtvUNDNK8EU
-         bHmJ4luWdBhxgaAQurXBtrSBC9YmBnhFUqgiAphj2aEYcbTlNPnglt0GZXIt3G2PF+3R
-         tlbVq/qLMcM7kUaz9+X0vztifbBQ0pDaX8QPSSL8E0zwai47qozYtR94F0Ok9fDWwbkS
-         9Bh2SbSttlM3LkH72pBLDESfORBpQ4BTkD8LvQcpjo+QGTunWVl4wy+vuSLKtWFxhi3X
-         g6w6U3cLe7RGZbUjuETUJ79BEpoE3SInvFOegR+VA5iVNDgRYm+HAx8Bq2rCl6gyUbrU
-         a04g==
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=1IsC8ng/nt0IIOs5zLEhvzEjLU5ZtX7trPinF9wC4HY=;
+        b=XpjVcbaAfAVK6cvQGU8LDsYr96rqAbvOVHsTzUlNZqTf6q6zEyEXhHiraiEGhgr6a4
+         f8PSxKnB5I5nSqeED5HwnD7OFwqfdrbjru1pzgA0SzLob3RBUE/f22Sks3NVtY7if7PN
+         LCvI/3Ug6wKAf5ihUKtvqERBxvgW0eFHx3n4iWOtDrliTYYvaiuQYFmpRef3q/+t4wNV
+         ylIQA66PF8DlHMoCTeXnJq2RXyqBXBIdto+B4MZTSP0prH6tT3sY7OJbLUFZvsXPWr1Y
+         v+F/zLqf9Wla01E4HQtZ0lJncCLgOB5vT41JeiqEeDxKpEg2gNRFNh2Qp8XWYf/FcDYB
+         DhnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=KfufL2R00gIT5+p6ohoSf68FEJlxpyChqygBx8E3+7Y=;
-        b=eSDLJ33FKWLYKfnWAZKxWHOfim/4O+hURlwF+Ooet4fotzk2BzjtHcX9+kV/SM915/
-         ckXCAr8FrFNr2D0wVd8Xd5UTBe3xQLztcwkirnqjb7+f0BAfbFSHuWeCcw4CdUuxUHfb
-         EJTlmdXejGBVpSmPilZG4s+ob8hOmeptacwqSyE7WkLbjSEnUQD3GPgicjtyU8cVGwG5
-         a/7mxyZHZkV8dL8G4OyQKkYMjW9XFSS3GV3eeJZE2QI73nDWIuKNLmylkka6wm6+ZWql
-         KlA+sN32x0zIa1/mfrWoPj63/jzVaBmOpi6U39GFi1jwp8iTB34puoSM2X0N2ox8iHwE
-         7RkQ==
-X-Gm-Message-State: AO0yUKUQSFztp/rVmxVFpC2kJd/uW0Bs+fo6zaP7oSJMNLKLZLs0QW1T
-        RXLpRE4EbLWF/vfjAajRxVQ=
-X-Google-Smtp-Source: AK7set86xq2Sn0OOELW7RYGHYtfVd1abYLUVPIgDLx0XQUQ8eURN5r+38OuRvluu6r4nEiZIXIQUzA==
-X-Received: by 2002:a17:90a:5e:b0:233:e1e6:33dc with SMTP id 30-20020a17090a005e00b00233e1e633dcmr2463233pjb.48.1676464383937;
-        Wed, 15 Feb 2023 04:33:03 -0800 (PST)
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1IsC8ng/nt0IIOs5zLEhvzEjLU5ZtX7trPinF9wC4HY=;
+        b=c80ieYSvL+YEUhXOWq3d6zH0kD/EVGzJPWFzpEBWxYtpSv6kXYSnT8v3d2mx7vTA06
+         +60bWUlNzURoyK8rIRnlr3r5U98dRXLIZM/mK8rNEw2RwO8DifU1Q/5UK6Ts3TqwMWy0
+         e5WJSGd02xtB8jTnPcPPgA3kq2ry45ALTL1wLfPmEiY6NAdn+k9sAXvm9RUlkvvQ9u8m
+         65UJkWkskLTuUp/jPyoIK8Xm+QWSYXOqEJ46u0NOiyHedaBkQFULpHBLloZDHH5nHiMj
+         W99fkZ65Uizzc19CiQbL7XyueCunjggZcp82hpeC5NbvjEpz4aQIDMV6U/JGIs64gqkf
+         1pYQ==
+X-Gm-Message-State: AO0yUKWp1rdIK4h95rQlPGLWZJEkiuJnbnLYwtYU9Qxj9zojxDBZMJsq
+        oPSfVM3zfK2+cEJ2Un8WBKQ=
+X-Google-Smtp-Source: AK7set9sYhrmqIc2PoBdRatAonL/QL6fPII6/8bPAa4/6SESq5JoJ9lV3XsruwM0w5/4COASa9t/rQ==
+X-Received: by 2002:a05:6a20:e688:b0:b8:78dd:5fa2 with SMTP id mz8-20020a056a20e68800b000b878dd5fa2mr1533864pzb.52.1676464384335;
+        Wed, 15 Feb 2023 04:33:04 -0800 (PST)
 Received: from debian.me (subs03-180-214-233-93.three.co.id. [180.214.233.93])
-        by smtp.gmail.com with ESMTPSA id nn9-20020a17090b38c900b00233cde36909sm1361116pjb.21.2023.02.15.04.33.02
+        by smtp.gmail.com with ESMTPSA id u9-20020a63a909000000b004790eb3fee1sm10219535pge.90.2023.02.15.04.33.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Wed, 15 Feb 2023 04:33:03 -0800 (PST)
 Received: by debian.me (Postfix, from userid 1000)
-        id EB8BC105499; Wed, 15 Feb 2023 19:32:59 +0700 (WIB)
+        id 70F8C1055EA; Wed, 15 Feb 2023 19:32:58 +0700 (WIB)
 From:   Bagas Sanjaya <bagasdotme@gmail.com>
 To:     Linux Documentation <linux-doc@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -75,66 +74,38 @@ Cc:     Jonathan Corbet <corbet@lwn.net>, Huang Rui <ray.huang@amd.com>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Wyes Karny <wyes.karny@amd.com>,
         Mario Limonciello <mario.limonciello@amd.com>,
-        oe-kbuild-all@lists.linux.dev, kernel test robot <lkp@intel.com>
-Subject: [PATCH 3/3] Documentation: amd-pstate: disambiguate user space sections
-Date:   Wed, 15 Feb 2023 19:32:53 +0700
-Message-Id: <20230215123253.41552-4-bagasdotme@gmail.com>
+        oe-kbuild-all@lists.linux.dev
+Subject: [PATCH 0/3] Documentation fixes for next-20230215
+Date:   Wed, 15 Feb 2023 19:32:50 +0700
+Message-Id: <20230215123253.41552-1-bagasdotme@gmail.com>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230215123253.41552-1-bagasdotme@gmail.com>
-References: <20230215123253.41552-1-bagasdotme@gmail.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2075; i=bagasdotme@gmail.com; h=from:subject; bh=fHPohjK/K4qEW5HlKhcOAQGypSB2hKRI2mFU/Af9yJ0=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDMlvLnypFeHJP9U//ZjaFwfFUEO5TL2iD6n7ZjXtdt++xeDk u+cqHaUsDGJcDLJiiiyTEvmaTu8yErnQvtYRZg4rE8gQBi5OAZjI6RSG36zXw4WPvT4wU21n1MzThQ 1NrRue5ibYmTPztAkrFj0qXcrIsOPQBrut18W+FQR/Sk56Paf7WmjUptzYRV4pbtdeOf7YyQUA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=832; i=bagasdotme@gmail.com; h=from:subject; bh=/OLtDi2ZSSHFwhtEVzxXuHzhqWiXCRsIhg/ssojQQRs=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDMlvLry90P20YdMKq8sTi8OPLpn7s4x/y//U2uoXJT6mT/YV O+236ChlYRDjYpAVU2SZlMjXdHqXkciF9rWOMHNYmUCGMHBxCsBEUsQZ/md7dP5oNzG4fMz6/uOM62 vmpoTuMGs48nJlW+dHNekTttKMDPsNG7c8vf/mur7iF6c7rXpXuT311luYpmws56mVXf17GRMA
 X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-kernel test robot reported htmldocs warning:
+Here are fixes for documentation (htmldocs) warnings as reported for
+next-20230215. The changelog below should be self-explanatory.
 
-Documentation/admin-guide/pm/amd-pstate.rst:343: WARNING: duplicate label admin-guide/pm/amd-pstate:user space interface in ``sysfs``, other instance in Documentation/admin-guide/pm/amd-pstate.rst
+Each patch can be applied separately by respective maintainers.
 
-The documentation contains two sections with the same "User Space Interface
-in ``sysfs``" title. The first one deals with per-policy sysfs and the
-second one is about general attributes (currently only global attributes
-are documented).
+Bagas Sanjaya (3):
+  Documentation: hw-vuln: Wrap mitigate_smt_rsb example in literal code
+    block
+  Documentation: bpf: Add missing line break separator in node_data
+    struct code block
+  Documentation: amd-pstate: disambiguate user space sections
 
-Disambiguate title text of both sections to fix the warning.
+ Documentation/admin-guide/hw-vuln/cross-thread-rsb.rst | 3 ++-
+ Documentation/admin-guide/pm/amd-pstate.rst            | 8 ++++----
+ Documentation/bpf/graph_ds_impl.rst                    | 1 +
+ 3 files changed, 7 insertions(+), 5 deletions(-)
 
-Link: https://lore.kernel.org/linux-doc/202302151041.0SWs1RHK-lkp@intel.com/
-Fixes: b9e6a2d47b2565 ("Documentation: amd-pstate: introduce new global sysfs attributes")
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
----
- Documentation/admin-guide/pm/amd-pstate.rst | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-index bca9a0ebee3ed8..6e5298b521b18b 100644
---- a/Documentation/admin-guide/pm/amd-pstate.rst
-+++ b/Documentation/admin-guide/pm/amd-pstate.rst
-@@ -230,8 +230,8 @@ with :c:macro:`MSR_AMD_CPPC_ENABLE` or ``cppc_set_enable``, it will respond
- to the request from AMD P-States.
- 
- 
--User Space Interface in ``sysfs``
--==================================
-+User Space Interface in ``sysfs`` - Per-policy control
-+======================================================
- 
- ``amd-pstate`` exposes several global attributes (files) in ``sysfs`` to
- control its functionality at the system level. They are located in the
-@@ -339,8 +339,8 @@ processor must provide at least nominal performance requested and go higher if c
- operating conditions allow.
- 
- 
--User Space Interface in ``sysfs``
--=================================
-+User Space Interface in ``sysfs`` - General
-+===========================================
- 
- Global Attributes
- -----------------
+base-commit: 9d9019bcea1aac7eed64a1a4966282b6b7b141c8
 -- 
 An old man doll... just what I always wanted! - Clara
 
