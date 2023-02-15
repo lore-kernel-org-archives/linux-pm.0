@@ -2,130 +2,218 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33AA8C64ED6
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Feb 2023 12:33:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2CF6C64ED9
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Feb 2023 12:35:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231253AbjBOMdI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Feb 2023 07:33:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49780 "EHLO
+        id S233730AbjBOMfH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Feb 2023 07:35:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52416 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230284AbjBOMdF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2023 07:33:05 -0500
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 411C928841;
-        Wed, 15 Feb 2023 04:33:05 -0800 (PST)
-Received: by mail-pl1-x632.google.com with SMTP id i18so11660778pli.3;
-        Wed, 15 Feb 2023 04:33:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=eRYLFMN4nFfXhPgoEELUJ9OsPT49XxcunYWNJLqgHSE=;
-        b=WenDNGndpb/OSq3BzcF6AU3IZXn+RPN86YMLQ1QAjyzlmWKFtjKkKO2TlGZgVAYCpo
-         UAkXUeUz+Idqs0+U8qIe5aPdJLTHoopwAPoUY2CB9/2J7JKNdtZAGmSZ5KgMYG9sd1Ct
-         5YvE92DdHS95Ri6z93aJzRFBtJc/eshbltJ7LjHz5oiPaeMp/GEj/+3lOAQBFumZLU2w
-         T03SoIBlOxlx2tWBZoZYhG/hhVZ0HiiwYUY+jxmRVK7yIALJtxLH3ULmnW8RQNwKlwi2
-         KXE3BijWsSpgsFOEOGJ+xICM8nKaCvs/CHek3MVct7wyJ2fuZeKrsKmTpcTypmnt9M+/
-         E5Uw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=eRYLFMN4nFfXhPgoEELUJ9OsPT49XxcunYWNJLqgHSE=;
-        b=v+OcgYQWVI1gwhHv4tPx4HgOXpzgV86moNFv5JM4a1+uPCataVJJTynqLdBaTz4Dvj
-         BhlE0Tb5KAVtShuazkvC/F9vlyEg2kwAaCRBuCXofpFTi/zPHcf46LKOZbF9Jfki+Hgi
-         Uu4m87yOVoUJbW+SOP4mkffAwBuVTLEd1FO6TFjWkbTehl+zY7ArgcvAgXaNF4gRi98U
-         que3mtDgkz6FWOsadZTfxSycFQ6T53fuyqBhX0c7cztLwa6HCXb7DwcpP7VYA75F+Zc3
-         tYgpwUSZjVpeSeTyTxDlzRYDCuRTXG844qdhnNkBwixVlQhgZ9PMZbibLb1lZN9G15R/
-         Dnbg==
-X-Gm-Message-State: AO0yUKUgfmk7ZDszNo6ynLDDR0Pl6usu0UQGlyKPYKvMX6j9NZbbnu1d
-        0peuRJ4/2odhb2mHJPvLekU=
-X-Google-Smtp-Source: AK7set9faJsxJ1uXq3wGy4JnDCcAdhfoq2C2lUxY6bVSO3jdVojAZu8HlLQSLCp/vIoEWCICqX7MgQ==
-X-Received: by 2002:a17:90b:3909:b0:234:13a3:6e67 with SMTP id ob9-20020a17090b390900b0023413a36e67mr2715633pjb.12.1676464384730;
-        Wed, 15 Feb 2023 04:33:04 -0800 (PST)
-Received: from debian.me (subs03-180-214-233-93.three.co.id. [180.214.233.93])
-        by smtp.gmail.com with ESMTPSA id fv21-20020a17090b0e9500b00230b8431323sm1384004pjb.30.2023.02.15.04.33.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Feb 2023 04:33:03 -0800 (PST)
-Received: by debian.me (Postfix, from userid 1000)
-        id DAECA105484; Wed, 15 Feb 2023 19:32:59 +0700 (WIB)
-From:   Bagas Sanjaya <bagasdotme@gmail.com>
-To:     Linux Documentation <linux-doc@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Next Mailing List <linux-next@vger.kernel.org>,
-        Linux Power Management <linux-pm@vger.kernel.org>,
-        Linux BPF Development <bpf@vger.kernel.org>
-Cc:     Jonathan Corbet <corbet@lwn.net>, Huang Rui <ray.huang@amd.com>,
-        Alexei Starovoitov <ast@kernel.org>,
-        Daniel Borkmann <daniel@iogearbox.net>,
-        Andrii Nakryiko <andrii@kernel.org>,
-        Martin KaFai Lau <martin.lau@linux.dev>,
-        Song Liu <song@kernel.org>, Yonghong Song <yhs@fb.com>,
-        John Fastabend <john.fastabend@gmail.com>,
-        KP Singh <kpsingh@kernel.org>,
-        Stanislav Fomichev <sdf@google.com>,
-        Hao Luo <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>,
-        Bagas Sanjaya <bagasdotme@gmail.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Tom Lendacky <thomas.lendacky@amd.com>,
-        Dave Marchevsky <davemarchevsky@fb.com>,
-        Perry Yuan <perry.yuan@amd.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Wyes Karny <wyes.karny@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        oe-kbuild-all@lists.linux.dev,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        kernel test robot <lkp@intel.com>
-Subject: [PATCH 2/3] Documentation: bpf: Add missing line break separator in node_data struct code block
-Date:   Wed, 15 Feb 2023 19:32:52 +0700
-Message-Id: <20230215123253.41552-3-bagasdotme@gmail.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230215123253.41552-1-bagasdotme@gmail.com>
-References: <20230215123253.41552-1-bagasdotme@gmail.com>
+        with ESMTP id S234131AbjBOMfE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2023 07:35:04 -0500
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2068.outbound.protection.outlook.com [40.107.223.68])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59A7337F15;
+        Wed, 15 Feb 2023 04:35:02 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=oD7fqzSbYISd6bKcuEDxPiaiMeSJbtkAKismtN3oLFOE1m9BM0bFAMKyUZzd4yiwOK/cKlaTlKO2WchHmcZfz1WoaOD+DRbX36NxT0yRSWXn9haUuaAjKZMbsZGe8p4qr/lu9WiP9xxUQM4fF29jMyi/1FZ4YJt7TnHZ0s58a5XE1uOmNbizsBVOGUYXimW08P3DbOG+fw2zu2eWG6RXviSXt0ppMBr0OThxMhsQ/APJIJdDosMdPDMyXYDEKbPrezFvCpptedRBjesU8l6l9lfrkxXYk9CRZ4Wo7TVC5XK0Vw2y1eTnJaTaO0IiC/jjWKOevPojfamhPxnpB9RxNg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=puwIUfbwAVdah5eI8xAORSytsbge5zoeaUM4S8PAWTI=;
+ b=byP5JYY+9sZ+dvXn0l+1xRl+LEf4wp5cLHbC0g/IiFUHQXruZejb5nFEWH8IuhQdhQ4QDAlciQkVbMwJF2JhBJse2+5JN83m8SzgZzDwE8uEBD4P9xVUUFbORj5QKraUCo9ftYBjAdA8JPMVTnEFN/tWxJXEyhuy0D8gmH45x7S/R1pItmdYZ56zsVggBu0fQV/yWpIuvCm96fjLpmVBsglKtSO5nZIqIDrQtaI0GlzXwXvDM3rGGcPCh9gXlwXtyfoH8lKKd/AiXxLZ7ae8Sp6bI/VXAhM9t5gtivR5ZftSEGFsJGju0vdflojUi8dJO430DLLumJAOARxFfe/3HQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=puwIUfbwAVdah5eI8xAORSytsbge5zoeaUM4S8PAWTI=;
+ b=afamgl7BAjZgFy6hF+72xxrwEQ49dZBSWdwtGYDoTs02+cnYp8LQ83hKLrWoFITmf9dt/YOp0RUYnRXO2o1kvxjkdXP3mYvR/Q2R6WGOf3X35J/3j3jXj9vAeOnuDOkYcvc1Er2RSRrLjt34aInr2/jR289yZPpPGpaYC1s04Ac=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DM5PR12MB2504.namprd12.prod.outlook.com (2603:10b6:4:b5::19) by
+ BL3PR12MB6593.namprd12.prod.outlook.com (2603:10b6:208:38c::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6086.22; Wed, 15 Feb
+ 2023 12:34:59 +0000
+Received: from DM5PR12MB2504.namprd12.prod.outlook.com
+ ([fe80::93f9:c1df:8ca3:fc5b]) by DM5PR12MB2504.namprd12.prod.outlook.com
+ ([fe80::93f9:c1df:8ca3:fc5b%7]) with mapi id 15.20.6086.024; Wed, 15 Feb 2023
+ 12:34:59 +0000
+Date:   Wed, 15 Feb 2023 20:34:37 +0800
+From:   Huang Rui <ray.huang@amd.com>
+To:     "Karny, Wyes" <Wyes.Karny@amd.com>
+Cc:     Rafael J Wysocki <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Yuan, Perry" <Perry.Yuan@amd.com>, Arnd Bergmann <arnd@arndb.de>,
+        "Limonciello, Mario" <Mario.Limonciello@amd.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpufreq: amd_pstate: Fix invalid write to
+ MSR_AMD_CPPC_REQ
+Message-ID: <Y+zRXZ4nHdFOFRuN@amd.com>
+References: <20230214075811.23644-1-wyes.karny@amd.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230214075811.23644-1-wyes.karny@amd.com>
+X-ClientProxiedBy: SI2PR01CA0015.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:191::15) To DM5PR12MB2504.namprd12.prod.outlook.com
+ (2603:10b6:4:b5::19)
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1458; i=bagasdotme@gmail.com; h=from:subject; bh=62NwC64cjyAWhaFrYFce2C+F3brashgF6x6NuyaIXGQ=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDMlvLnxJDvu8+uerssOvXIurX3etDJp9S391wButPqOtN0M+ pAiJd5SyMIhxMciKKbJMSuRrOr3LSORC+1pHmDmsTCBDGLg4BWAivs4M/6vD4+0UbR96/M7N/mkr0l oXynWj6JXZT9Vvqzev/St1xYzhr1jpisvCG8X+nek/Zj3dkLPM62Btja/vu8uT+mN7I46sZQcA
-X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM5PR12MB2504:EE_|BL3PR12MB6593:EE_
+X-MS-Office365-Filtering-Correlation-Id: c6a06fd9-9974-4997-3e43-08db0f510d38
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: x8C8wbNWuTj1W4lqvLIJ8kVJzD4eGJwZe1lIFjnI9cRsVFWK4IXd+OCxF8gheEYkVmKnwPf69wafW33EA7A6dfhHyIudJRtvR9NTZmFQvRxaey95BAoQwNVSmUdJwXfuNbw75bGQRzf3M8bGfaWyHW6DWtmyg4AAQdfMH1i4uBlgM+OoLc5pKHdFa6/rrZAR8bpw6bve05uZIdCg0s97rvzMWIJdYE1YKOwIfHqYpueg+BzecrRMPl1cbo0/sDkjjeVN5XHIhFcWNPWGO1NJBbE5Oi1ff9l1nU2qRjKtB9pIng/VE7fYf3lKS7bJZGkWjWZx5h0p5Y5kvjSy5jp6T+R/eltgjt3hWn0N+rriS1FGNvZSBz5B1AvkNYJhpt2Z+h7T4Ri5S1t826yOayDRghKCCI/CxKzbW6U8XDWF4hzUcJCfhaBONhT8XD/s7+6KNKa7JDK3jcfAdaiFUVl0fud5v5HBiSnNxXTFHe6CBS/eDjO+7A8qveG/o1GyemdQLhiBZ5uwmnQiCJU2wEmyeV+cZS8+tdRfEBe010iveIgYOC82rn+lkhwLj+v2yxal69CuZFFWIIcZKZjCBD3fW8ePcz6clx9/HsiO9TZOj1jTzNUrBH+qYIZNDHpTY7htuAif+UeWh04EMuydHJ+rnoiwR5FjPwCkCR0G7/Zx6u7KlY8RGMDvxmlk8w7Ws6D9
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR12MB2504.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(4636009)(366004)(39860400002)(396003)(346002)(376002)(136003)(451199018)(5660300002)(86362001)(26005)(186003)(6512007)(83380400001)(2906002)(38100700002)(36756003)(2616005)(66476007)(37006003)(66946007)(6636002)(54906003)(4326008)(316002)(6486002)(66556008)(478600001)(8676002)(8936002)(6862004)(6506007)(41300700001)(6666004)(67856001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?1RGSonKUE47ww+U31bS4u7myZahrDRClwN4HJJYj7dM6CoWuLDk3958SgKvL?=
+ =?us-ascii?Q?aRLcPDJ/zyfgqPpDvgszej/Zs3mkJ+5g6t77xVp0o1sc8bpP4v8hXuA4NiRi?=
+ =?us-ascii?Q?ZIYXf0exnCmbTPtq2VMmqcXFyV3w/AsnkDl48UdxLgb6D9M910JegrgUeaq4?=
+ =?us-ascii?Q?x7OH+MP9wtgRWQ955TlZgD87WBTnARvM+C9B3h1hFI7tZifb2XZIzkRIGxDT?=
+ =?us-ascii?Q?IoOiD5eDhRSf/Uj3NDD1oVX8OURMqEyYA+kj6K9EbqSqdS2MdMdKUs0yTD9t?=
+ =?us-ascii?Q?74EXDKATmTvu8lfdKxzKQk64R08vSPW1RJT41gAYXOivOcCNZ7wFzzXITevZ?=
+ =?us-ascii?Q?UdKmhlwOFY4Ypss5DgokKG0Oe0n7rG6FKpvJrbV5+a5jxDOk1NsYNlXvBFyY?=
+ =?us-ascii?Q?ayJzUf24yPdWaW8nrgWoW/6lKrzwERdMF+e1TwUUVwlaX/9qkyQJxreWa0SO?=
+ =?us-ascii?Q?mRR8uGEuNKmCJ5yvcCLDsCXXUmxrvHhXJKE5QphCsFItOjA7S2OtCo3BKGBT?=
+ =?us-ascii?Q?5SLVqsrlOUibLJkoxDUou0bdiixP3rC8GreTa7K/4N8Gg3iqBpQQpzQ4FXL0?=
+ =?us-ascii?Q?nhfh/ICtIDPFEkuWV3nhEFJHz5Kybd1P/RBCYEwoO2glw7mcF4yns6vBai/p?=
+ =?us-ascii?Q?W/75pOZ7ceehV4/guVvMoVbpRLM3TlnSGr4IAPI/2vASLzkxEjwp08h9lDMy?=
+ =?us-ascii?Q?pONuZqVhmeirjJL2arXTExc8o+fqsJvxRb8e39/HsJfP7fBnd81UONp3UQcA?=
+ =?us-ascii?Q?jurTzGHG3znDEI26opNjx4YyPx+WIu1i8riwmH058JrvXQmoCdQkc9nFY8Ar?=
+ =?us-ascii?Q?cD+DBuIatf9zkzfOdKpcWNmC7+G5aFfCPU6fYXvhDLIPw1S+NdOyX0JOvxRT?=
+ =?us-ascii?Q?BhNE1WEE0kiKHGdO9vSmjMmnghL5gaUZNI9vLm5VERgvf2FGVZFjxR5DSu+g?=
+ =?us-ascii?Q?xcqDIt2Rw92wpoTY0SQ6xx5rV6o4+BbRANS6wKVZQD6Nr+ZAkO+t5OqFz06V?=
+ =?us-ascii?Q?hQ9UIwA25D0YobINuq7onZ+IZi201nTpHLTxOhUibgZct+Sw/wRIGKG/mbXV?=
+ =?us-ascii?Q?zVc66ImogKJQ1aS8v2m9j6EkeFF5w+42jRLaA0VkH29woA1iYrVh8n6Kt42Z?=
+ =?us-ascii?Q?nnBxMAcc1E9lb3Oue9PQdHqr+3sagr5ZAfIMIZB4nImdkE8Z6Fna2U7aMZOI?=
+ =?us-ascii?Q?+uGvEr6W5+qHvFPn3j0PpbryZx19gHI8oFEqHna4uxpMID+luZzKQ8C7JRts?=
+ =?us-ascii?Q?n1iXFGyTHghx1A/qvdFj5VtbKi1tZMhUM5Be9SFTxo2JbhGHiDwiVVBaDYY1?=
+ =?us-ascii?Q?2YeGh2Md1MX0+Uxls5Zwg4TvLqA9O9do/KHKvw3SOiWOQc4YcBoocAylTMVl?=
+ =?us-ascii?Q?yLqL0xQ4SpISmRLRUA3Ei2NUbyINW6mRmONDXbO7LoPGrkbWW+OuNia10QB6?=
+ =?us-ascii?Q?iFIddAHPwe/7YbRj+/PnbrSunRyCKV9qpXkTgfX8/EUlza/+itp1C2N5OPRN?=
+ =?us-ascii?Q?cyc/D13tD4OOjj2og5u1leWbRhigoFEATFYdJPQKajT+V6BLTc2HZtNE73Cs?=
+ =?us-ascii?Q?FIaY/L/ByG/6BWfS+5ZUXwNg/1D701nsgsd+Fk5h?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c6a06fd9-9974-4997-3e43-08db0f510d38
+X-MS-Exchange-CrossTenant-AuthSource: DM5PR12MB2504.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Feb 2023 12:34:59.3801
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: R1hq7DiUYXZHt8NAtGvfcxC4WFpmXJHMZTTGqHhIZIIKseqRfbaP/U8ydmlrs4Aof8UUcvvOFSEAnbRlHwE5pg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR12MB6593
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Stephen Rothwell reported htmldocs warning when merging bpf-next tree,
-which was the same warning as reported by kernel test robot:
+On Tue, Feb 14, 2023 at 03:58:11PM +0800, Karny, Wyes wrote:
+> `amd_pstate_set_epp` function uses `cppc_req_cached` and `epp` variable
+> to update the MSR_AMD_CPPC_REQ register for AMD MSR systems. The recent
+> commit 7cca9a9851a5 ("cpufreq: amd-pstate: avoid uninitialized variable
+> use") changed the sequence of updating cppc_req_cached and writing the
+> MSR_AMD_CPPC_REQ. Therefore while switching from powersave to
+> performance governor and vice-versa in active mode MSR_AMD_CPPC_REQ is
+> set with the previous cached value. To fix this: first update the
+> `cppc_req_cached` variable and then call `amd_pstate_set_epp` function.
+> 
+> - Before commit 7cca9a9851a5 ("cpufreq: amd-pstate: avoid uninitialized
+> variable use"):
+> 
+> With powersave governor:
+> [    1.652743] amd_pstate_epp_init: writing to cppc_req_cached = 0x1eff
+> [    1.652744] amd_pstate_set_epp: writing cppc_req_cached = 0x1eff
+> [    1.652746] amd_pstate_set_epp: writing min_perf = 30, des_perf = 0, max_perf = 255, epp = 0
+> 
+> Changing to performance governor:
+> [  300.493842] amd_pstate_epp_init: writing to cppc_req_cached = 0xffff
+> [  300.493846] amd_pstate_set_epp: writing cppc_req_cached = 0xffff
+> [  300.493847] amd_pstate_set_epp: writing min_perf = 255, des_perf = 0, max_perf = 255, epp = 0
+> 
+> - After commit 7cca9a9851a5 ("cpufreq: amd-pstate: avoid uninitialized
+> variable use"):
+> 
+> With powersave governor:
+> [    1.646037] amd_pstate_set_epp: writing cppc_req_cached = 0xffff
+> [    1.646038] amd_pstate_set_epp: writing min_perf = 255, des_perf = 0, max_perf = 255, epp = 0
+> [    1.646042] amd_pstate_epp_init: writing to cppc_req_cached = 0x1eff
+> 
+> Changing to performance governor:
+> [  687.117401] amd_pstate_set_epp: writing cppc_req_cached = 0x1eff
+> [  687.117405] amd_pstate_set_epp: writing min_perf = 30, des_perf = 0, max_perf = 255, epp = 0
+> [  687.117419] amd_pstate_epp_init: writing to cppc_req_cached = 0xffff
+> 
+> - After this fix:
+> 
+> With powersave governor:
+> [    2.525717] amd_pstate_epp_init: writing to cppc_req_cached = 0x1eff
+> [    2.525720] amd_pstate_set_epp: writing cppc_req_cached = 0x1eff
+> [    2.525722] amd_pstate_set_epp: writing min_perf = 30, des_perf = 0, max_perf = 255, epp = 0
+> 
+> Changing to performance governor:
+> [ 3440.152468] amd_pstate_epp_init: writing to cppc_req_cached = 0xffff
+> [ 3440.152473] amd_pstate_set_epp: writing cppc_req_cached = 0xffff
+> [ 3440.152474] amd_pstate_set_epp: writing min_perf = 255, des_perf = 0, max_perf = 255, epp = 0
+> 
+> Fixes: 7cca9a9851a5 ("cpufreq: amd-pstate: avoid uninitialized variable use")
+> Signed-off-by: Wyes Karny <wyes.karny@amd.com>
 
-Documentation/bpf/graph_ds_impl.rst:62: ERROR: Error in "code-block" directive:
-maximum 1 argument(s) allowed, 12 supplied.
+That's really nice catch! Thanks Wyes.
 
-The error is due to Sphinx confuses node_data struct declaration with
-code-block directive option.
+Acked-by: Huang Rui <ray.huang@amd.com>
 
-Fix the warning by separating the code-block marker with node_data struct
-declaration.
-
-Link: https://lore.kernel.org/linux-next/20230215144505.4751d823@canb.auug.org.au/
-Link: https://lore.kernel.org/linux-doc/202302151123.wUE5FYFx-lkp@intel.com/
-Fixes: c31315c3aa0929 ("bpf, documentation: Add graph documentation for non-owning refs")
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
----
- Documentation/bpf/graph_ds_impl.rst | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/Documentation/bpf/graph_ds_impl.rst b/Documentation/bpf/graph_ds_impl.rst
-index 8bbf1815efe784..61274622b71d85 100644
---- a/Documentation/bpf/graph_ds_impl.rst
-+++ b/Documentation/bpf/graph_ds_impl.rst
-@@ -60,6 +60,7 @@ The new-style data structures are intrusive and are defined similarly to their
- vanilla kernel counterparts:
- 
- .. code-block:: c
-+
-         struct node_data {
-           long key;
-           long data;
--- 
-An old man doll... just what I always wanted! - Clara
-
+> ---
+>  drivers/cpufreq/amd-pstate.c | 25 +++++++++++++------------
+>  1 file changed, 13 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index b8862afef4e4..45c88894fd8e 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -1057,27 +1057,28 @@ static void amd_pstate_epp_init(unsigned int cpu)
+>  
+>  	cpudata->epp_policy = cpudata->policy;
+>  
+> -	if (cpudata->policy == CPUFREQ_POLICY_PERFORMANCE) {
+> -		epp = amd_pstate_get_epp(cpudata, value);
+> -		if (epp < 0)
+> -			goto skip_epp;
+> -		/* force the epp value to be zero for performance policy */
+> -		epp = 0;
+> -	} else {
+> -		/* Get BIOS pre-defined epp value */
+> -		epp = amd_pstate_get_epp(cpudata, value);
+> -		if (epp)
+> -			goto skip_epp;
+> +	/* Get BIOS pre-defined epp value */
+> +	epp = amd_pstate_get_epp(cpudata, value);
+> +	if (epp < 0) {
+> +		/**
+> +		 * This return value can only be negative for shared_memory
+> +		 * systems where EPP register read/write not supported.
+> +		 */
+> +		goto skip_epp;
+>  	}
+> +
+> +	if (cpudata->policy == CPUFREQ_POLICY_PERFORMANCE)
+> +		epp = 0;
+> +
+>  	/* Set initial EPP value */
+>  	if (boot_cpu_has(X86_FEATURE_CPPC)) {
+>  		value &= ~GENMASK_ULL(31, 24);
+>  		value |= (u64)epp << 24;
+>  	}
+>  
+> +	WRITE_ONCE(cpudata->cppc_req_cached, value);
+>  	amd_pstate_set_epp(cpudata, epp);
+>  skip_epp:
+> -	WRITE_ONCE(cpudata->cppc_req_cached, value);
+>  	cpufreq_cpu_put(policy);
+>  }
+>  
+> -- 
+> 2.34.1
+> 
