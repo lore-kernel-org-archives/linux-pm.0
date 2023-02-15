@@ -2,74 +2,74 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12F17C636CC
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Feb 2023 12:43:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AED8CC636CC
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Feb 2023 12:46:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234051AbjBOMnN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Feb 2023 07:43:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59322 "EHLO
+        id S229684AbjBOMqs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Feb 2023 07:46:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233909AbjBOMnM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2023 07:43:12 -0500
-Received: from smtp.smtpout.orange.fr (smtp-20.smtpout.orange.fr [80.12.242.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B842137F23
-        for <linux-pm@vger.kernel.org>; Wed, 15 Feb 2023 04:43:10 -0800 (PST)
-Received: from pop-os.home ([86.243.2.178])
-        by smtp.orange.fr with ESMTPA
-        id SH7ppsWwIZBE3SH7ppDdAf; Wed, 15 Feb 2023 13:43:08 +0100
-X-ME-Helo: pop-os.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Wed, 15 Feb 2023 13:43:08 +0100
-X-ME-IP: 86.243.2.178
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To:     Sebastian Reichel <sre@kernel.org>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        ChiaEn Wu <chiaen_wu@richtek.com>
-Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH] power: supply: rt9467: Fix rt9467_run_aicl()
-Date:   Wed, 15 Feb 2023 13:43:04 +0100
-Message-Id: <2ed01020fa8a135c36dbaa871095ded47d926507.1676464968.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S229503AbjBOMqr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2023 07:46:47 -0500
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC4D6BB81;
+        Wed, 15 Feb 2023 04:46:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1676465206; x=1708001206;
+  h=from:to:cc:subject:date:message-id;
+  bh=XMsYh2wmI7gJI4wUfH8bLNGEEGMD/YuTAXHzbBS5eRo=;
+  b=EdctLciNBxTpg/1EHQQMhczO+lmD9HDokwO+/vM5+/bHBRQXRQNGuzdR
+   3u+OPk/3x3SrlN5wgyh+uENHLINT21STp1b9za+tAitbYRHAzmYkzltC3
+   99VyC5dfLUPkKIUgVkSULS/7JGD/cnOvMgq/fPQqPl4kNjf3iABHSSbvE
+   CrQ1YMTvEsZ9es+UqAaRgErVBXNsi8lFfUbADOx1IKoYURLatixHSc9ub
+   +ZK2UA5AAzzpi4lVUzqUdQh0fsRSD+QdgxLJgLfawRV6kysjJyb4SEjAw
+   9TuqBR6prCikbS768NRGK6dcev56fesfTGBdrnqsDOT4mCR5nllAbiZjR
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10621"; a="311783937"
+X-IronPort-AV: E=Sophos;i="5.97,299,1669104000"; 
+   d="scan'208";a="311783937"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Feb 2023 04:46:46 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10621"; a="778773753"
+X-IronPort-AV: E=Sophos;i="5.97,299,1669104000"; 
+   d="scan'208";a="778773753"
+Received: from srpawnik.iind.intel.com ([10.99.123.68])
+  by fmsmga002.fm.intel.com with ESMTP; 15 Feb 2023 04:46:44 -0800
+From:   Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+To:     rafael@kernel.org, srinivas.pandruvada@linux.intel.com,
+        rui.zhang@intel.com, linux-pm@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, sumeet.r.pawnikar@intel.com
+Subject: [PATCH] powercap: RAPL: Add Power Limit4 support for Meteor Lake SoC
+Date:   Wed, 15 Feb 2023 18:02:49 +0530
+Message-Id: <20230215123249.4473-1-sumeet.r.pawnikar@intel.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It is spurious to bail-out on a wait_for_completion_timeout() call that
-does NOT timeout.
+Add Meteor Lake SoC to the list of processor models for which
+Power Limit4 is supported by the Intel RAPL driver.
 
-Reverse the logic to return -ETIMEDOUT instead, in case of tiemout.
-
-Fixes: 6f7f70e3a8dd ("power: supply: rt9467: Add Richtek RT9467 charger driver")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
 ---
-Compile tested only.
+ drivers/powercap/intel_rapl_msr.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-This is spurious, because if I'm right, it means that it does not work!
-Testing on a real hardware is really welcomed.
----
- drivers/power/supply/rt9467-charger.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/rt9467-charger.c b/drivers/power/supply/rt9467-charger.c
-index 96ad0d7d3af4..bb737fd1cca6 100644
---- a/drivers/power/supply/rt9467-charger.c
-+++ b/drivers/power/supply/rt9467-charger.c
-@@ -598,8 +598,8 @@ static int rt9467_run_aicl(struct rt9467_chg_data *data)
+diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
+index bc6adda58883..a27673706c3d 100644
+--- a/drivers/powercap/intel_rapl_msr.c
++++ b/drivers/powercap/intel_rapl_msr.c
+@@ -143,6 +143,8 @@ static const struct x86_cpu_id pl4_support_ids[] = {
+ 	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_ALDERLAKE_N, X86_FEATURE_ANY },
+ 	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_RAPTORLAKE, X86_FEATURE_ANY },
+ 	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_RAPTORLAKE_P, X86_FEATURE_ANY },
++	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_METEORLAKE, X86_FEATURE_ANY },
++	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_METEORLAKE_L, X86_FEATURE_ANY },
+ 	{}
+ };
  
- 	reinit_completion(&data->aicl_done);
- 	ret = wait_for_completion_timeout(&data->aicl_done, msecs_to_jiffies(3500));
--	if (ret)
--		return ret;
-+	if (ret == 0)
-+		return -ETIMEDOUT;
- 
- 	ret = rt9467_get_value_from_ranges(data, F_IAICR, RT9467_RANGE_IAICR, &aicr_get);
- 	if (ret) {
 -- 
-2.34.1
+2.17.1
 
