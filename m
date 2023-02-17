@@ -2,51 +2,48 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D462FC64ED6
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Feb 2023 14:52:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E081C6379F
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Feb 2023 14:53:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229489AbjBQOwz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Feb 2023 09:52:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44708 "EHLO
+        id S229933AbjBQOxA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Feb 2023 09:53:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229630AbjBQOwy (ORCPT
+        with ESMTP id S229922AbjBQOwy (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2023 09:52:54 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00B9A6E670
-        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2023 06:52:11 -0800 (PST)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 697A46D27F
+        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2023 06:52:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1676645531;
+        s=mimecast20190719; t=1676645523;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=3XM0s6Py2s9NABNZsjEwB9EJNT03Us1/96JqO8MWWMA=;
-        b=ArrSbwBqlaUhdN2PM057j4R30hMdBPJ686at8c4w36KZgCkUf3e97nMZuLr9E1O0D5s1Gt
-        hyRdi3DZro7vVizceqoYRcCg0MJydoL7XyA5agoKmAoNNRnFXDFOjeH1cdSJ/hDCOQVtOl
-        iJ4I8qWQ6Y6An5B+cPyzV+FbRcjXDes=
+         content-transfer-encoding:content-transfer-encoding;
+        bh=IGD7klui2lg3FOhZKFYbccHdCBj47eCYARHj7tU/AKI=;
+        b=g6/oj3mL7v7T+4Z28WO5Q6/4+KWLyF+A4WiMIrIOh2dFe5bkBUcJJQt3ch/oNPweoeHJGR
+        u8XBTU0Yp8us0/GG8iF+S0pcvKjvY1NzKEmc5SG/+Bnx8I0vF4WHGuBRPWQVINEOx68/IS
+        IRLJ226I5ymHtyYxtqky1pVkcZZCs9U=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-387-WRto6BekOkmEzLQhYEfrfQ-1; Fri, 17 Feb 2023 09:52:05 -0500
-X-MC-Unique: WRto6BekOkmEzLQhYEfrfQ-1
+ us-mta-400-fNQX-vtsNBSMFy3s4__saA-1; Fri, 17 Feb 2023 09:52:02 -0500
+X-MC-Unique: fNQX-vtsNBSMFy3s4__saA-1
 Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com [10.11.54.10])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 456C280280C;
-        Fri, 17 Feb 2023 14:52:05 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C40758028B0;
+        Fri, 17 Feb 2023 14:52:01 +0000 (UTC)
 Received: from shalem.redhat.com (unknown [10.39.193.199])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 5A9C5492C3E;
-        Fri, 17 Feb 2023 14:52:04 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id D94D3492C3E;
+        Fri, 17 Feb 2023 14:52:00 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Sebastian Reichel <sre@kernel.org>
 Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
         linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 3/3] power: supply: axp288_charger: Use alt usb-id extcon on some x86 android tablets
-Date:   Fri, 17 Feb 2023 15:52:00 +0100
-Message-Id: <20230217145200.31821-4-hdegoede@redhat.com>
-In-Reply-To: <20230217145200.31821-1-hdegoede@redhat.com>
-References: <20230217145200.31821-1-hdegoede@redhat.com>
+Subject: [PATCH 0/3] ACPI: x86: Introduce an acpi_quirk_skip_gpio_event_handlers() helper
+Date:   Fri, 17 Feb 2023 15:51:57 +0100
+Message-Id: <20230217145200.31821-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.10
@@ -54,66 +51,52 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-x86 ACPI boards which ship with only Android as their factory image may
-have pretty broken ACPI tables. This includes broken _AEI ACPI GPIO event
-handlers, which are normally used to listen to the micro-USB ID pin and:
+Hi All,
 
-1. Switch the USB-mux to the host / device USB controllers
-2. Disable Vbus path before enabling the 5V boost (AXP reg 0x30 bit 7)
-3. Turn 5V Vboost on / off
+x86 ACPI boards which ship with only Android as their factory image usually
+have pretty broken ACPI tables, relying on everything being hardcoded in
+the factory kernel image and often disabling parts of the ACPI enumeration
+kernel code to avoid the broken tables causing issues.
 
-On non broken systems where this is not done through an ACPI GPIO event
-handler, there is an ACPI INT3496 device describing the involved GPIOs
-which are handled by the extcon-intel-int3496 driver; and axp288-charger.ko
-listens to this extcon-device and disables the Vbus path when necessary.
+Part of this broken ACPI code is that sometimes these boards have _AEI
+ACPI GPIO event handlers which are broken.
 
-On x86 Android boards, with broken ACPI GPIO event handlers, these are
-disabled by acpi_quirk_skip_gpio_event_handlers() and an intel-int3496
-extcon device is manually instantiated by x86-android-tablets.ko .
+So far this has been dealt with in the platform/x86/x86-android-tablets.c
+module by it calling acpi_gpiochip_free_interrupts() on gpiochip-s with
+troublesome handlers to disable the handlers.
 
-Add support to the axp288-charger code for this setup, so that it
-properly disables the Vbus path when necessary. Note this uses
-acpi_quirk_skip_gpio_event_handlers() to identify these systems,
-to avoid the need to add a separate DMI match table for this.
+But this is racy and sometimes too late. This series adds a new
+acpi_quirk_skip_gpio_event_handlers() function to drivers/acpi/x86/utils.c
+using the existing DMI table for this to avoid duplication of DMI matches.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_charger.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+Patch 2 adds a new x86 Android tablet model which needs the new
+SKIP_GPIO_EVENT_HANDLERS quirk.
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 15219ed43ce9..b5903193e2f9 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -836,6 +836,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
- 	struct power_supply_config charger_cfg = {};
-+	const char *extcon_name = NULL;
- 	unsigned int val;
- 
- 	/*
-@@ -872,8 +873,18 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return PTR_ERR(info->cable.edev);
- 	}
- 
--	if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1)) {
--		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
-+	/*
-+	 * On devices with broken ACPI GPIO event handlers there also is no ACPI
-+	 * "INT3496" (USB_HOST_EXTCON_HID) device. x86-android-tablets.ko
-+	 * instantiates an "intel-int3496" extcon on these devs as a workaround.
-+	 */
-+	if (acpi_quirk_skip_gpio_event_handlers())
-+		extcon_name = "intel-int3496";
-+	else if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1))
-+		extcon_name = USB_HOST_EXTCON_NAME;
-+
-+	if (extcon_name) {
-+		info->otg.cable = extcon_get_extcon_dev(extcon_name);
- 		if (IS_ERR(info->otg.cable)) {
- 			dev_err_probe(dev, PTR_ERR(info->otg.cable),
- 				      "extcon_get_extcon_dev(%s) failed\n",
+Patch 3 uses acpi_quirk_skip_gpio_event_handlers() in axp288_charger.c
+to deal with there not being a ACPI event handler to disable charging
+from Vbus before enable 5V boost output on the tablets micro-USB conn.
+
+Sebastian (sre), since patch 3 depends on patch 1, it is probably
+easiest to just merge the entire series through the linux-pm tree.
+May we have your ack for this ?
+
+Regards,
+
+Hans
+
+
+Hans de Goede (3):
+  ACPI: x86: Introduce an acpi_quirk_skip_gpio_event_handlers() helper
+  ACPI: x86: Add skip i2c clients quirk for Acer Iconia One 7 B1-750
+  power: supply: axp288_charger: Use alt usb-id extcon on some x86
+    android tablets
+
+ drivers/acpi/x86/utils.c              | 34 ++++++++++++++++++++++++---
+ drivers/gpio/gpiolib-acpi.c           |  3 +++
+ drivers/power/supply/axp288_charger.c | 15 ++++++++++--
+ include/acpi/acpi_bus.h               |  5 ++++
+ 4 files changed, 52 insertions(+), 5 deletions(-)
+
 -- 
 2.39.1
 
