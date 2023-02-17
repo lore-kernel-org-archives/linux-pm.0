@@ -2,194 +2,114 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B4F5C64EC4
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Feb 2023 14:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9579EC636D6
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Feb 2023 19:27:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229922AbjBQOxB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Feb 2023 09:53:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44680 "EHLO
+        id S229737AbjBQT1f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Feb 2023 14:27:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229896AbjBQOw5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2023 09:52:57 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 753656D7AC
-        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2023 06:52:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1676645526;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=Uj8OIVxKXWzs/bRnAYOCp9dlZLmekhUbSThQysLtLt0=;
-        b=aBD1HA3ZO+iuqf+R0pmxk9bYDiEA2iYWzWtDe4jGkqIc4IrRgw0jgtV8f5v803Ejqs6n24
-        Ocg7lRV5hiTd5vF3JDuboGYvz6arjCfo5xN+EEqDKvC+8n1v5IFKrs1/dU/hXcFWqfiN1j
-        ku3Vs28MYXQXO3iKRkIsr0nudKlwINM=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-350-ozUaIUoFPmmGCmupq6ozRg-1; Fri, 17 Feb 2023 09:52:03 -0500
-X-MC-Unique: ozUaIUoFPmmGCmupq6ozRg-1
-Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com [10.11.54.10])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 07D97381459B;
-        Fri, 17 Feb 2023 14:52:03 +0000 (UTC)
-Received: from shalem.redhat.com (unknown [10.39.193.199])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 18E66492C3E;
-        Fri, 17 Feb 2023 14:52:01 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
-        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 1/3] ACPI: x86: Introduce an acpi_quirk_skip_gpio_event_handlers() helper
-Date:   Fri, 17 Feb 2023 15:51:58 +0100
-Message-Id: <20230217145200.31821-2-hdegoede@redhat.com>
-In-Reply-To: <20230217145200.31821-1-hdegoede@redhat.com>
-References: <20230217145200.31821-1-hdegoede@redhat.com>
+        with ESMTP id S229523AbjBQT1e (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2023 14:27:34 -0500
+Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4220653EF8
+        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2023 11:27:31 -0800 (PST)
+Received: by mail-lf1-x130.google.com with SMTP id y29so2640400lfj.12
+        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2023 11:27:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Uz2NfAEd2XkSCNRQ0Cf2XIdNUS8EOfOGf8nMWffaQ6Q=;
+        b=d8h28w+I6SaFghHGKq+rueegFnR+ak53o/B3WvB2zWmqlH5UWwKKSlZzEbB6UCC9Q8
+         lrz6drQc/xqMILvPXvdkbhCsH/twBoIb+7fthXlkQ7Re+sLWeitp2ElSFBa2fiMMsY9v
+         A/vAdjDrS/aFoMTSF1omukRYs6PzHa9JOyg/lcvNKVcN12Ut2Rnu5S/fIjdXVcn3nuMJ
+         alkkS+dgib4dnF/StRXh0Ben1uhMsJfN/nTWAD7ySGTWRXM2qpiN467ogYm6DCqVC6gh
+         sKA+m77UlB53UFOSHOELKKLZSAjpBANhMzeldJMiCI9Ue78LrH/ZJ5zRv3sGytmAzhHu
+         OjTg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Uz2NfAEd2XkSCNRQ0Cf2XIdNUS8EOfOGf8nMWffaQ6Q=;
+        b=5VHdS+DLwSefexCRXsXVEBkRbN6vuqE/GwvmA9eIEGaRbg1hBEeH/jGGugV/QhnwJD
+         nrD5vfgQC3qbkvD6NAKRRHKPGWX7RwXet5FoHG4oNjX9CTDHGmhgimqyu4SRUl3KC3RX
+         YwmgYr3EQwym1IELsHp1Q8uLXW4E8izNHw6unEIGvNpWI55/Rp0jZJGanUAPai75pNrN
+         awctbe02qxgmdsNpljaVxvhBYbMK5u1zJS+whVHvWFmmqoWzpgOFSs6/Spu7kps9wGvV
+         WOgQU73p8/jsSv9cOfw8H7Z8L/uuzVnDls5vpZ4n0eBe+AnSIpdGAZGRJrKaI+uTxxMD
+         ACtg==
+X-Gm-Message-State: AO0yUKVK2xB9hTch4LB7e4to9jpm2d6OdlbF6E7DL1XConLs61c0sz+5
+        j8BsvCvp57bwThp6g3RPgP0dqg==
+X-Google-Smtp-Source: AK7set8po41TbrO5+K/Ju564LVcLTspHRQuEEAXux8d9kPVKEbPt65ERSGOUom1RfUxQDA62SFqMtw==
+X-Received: by 2002:ac2:41ca:0:b0:4b4:89a9:6bfd with SMTP id d10-20020ac241ca000000b004b489a96bfdmr74067lfi.7.1676662049482;
+        Fri, 17 Feb 2023 11:27:29 -0800 (PST)
+Received: from [192.168.1.101] (abxh184.neoplus.adsl.tpnet.pl. [83.9.1.184])
+        by smtp.gmail.com with ESMTPSA id q17-20020ac25151000000b004b57bbaef87sm759621lfd.224.2023.02.17.11.27.27
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 17 Feb 2023 11:27:28 -0800 (PST)
+Message-ID: <8c4f1cc8-c1f8-06b6-53fe-7507d74ca958@linaro.org>
+Date:   Fri, 17 Feb 2023 20:27:26 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.10
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.2
+Subject: Re: [PATCH v5 08/10] interconnect: qcom: msm8996: Specify no bus
+ clock scaling on A0NoC
+Content-Language: en-US
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Evan Green <evgreen@chromium.org>,
+        Jun Nie <jun.nie@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Brian Masney <masneyb@onstation.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Yassine Oudjana <y.oudjana@protonmail.com>
+Cc:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20230217-topic-icc-fixes-v5-v5-0-c9a550f9fdb9@linaro.org>
+ <20230217-topic-icc-fixes-v5-v5-8-c9a550f9fdb9@linaro.org>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20230217-topic-icc-fixes-v5-v5-8-c9a550f9fdb9@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-x86 ACPI boards which ship with only Android as their factory image usually
-have pretty broken ACPI tables, relying on everything being hardcoded in
-the factory kernel image and often disabling parts of the ACPI enumeration
-kernel code to avoid the broken tables causing issues.
 
-Part of this broken ACPI code is that sometimes these boards have _AEI
-ACPI GPIO event handlers which are broken.
 
-So far this has been dealt with in the platform/x86/x86-android-tablets.c
-module, which contains various workarounds for these devices, by it calling
-acpi_gpiochip_free_interrupts() on gpiochip-s with troublesome handlers to
-disable the handlers.
+On 17.02.2023 11:46, Konrad Dybcio wrote:
+> A0NoC only does bus scaling through RPM votes and does not have any
+> ICC clocks. Describe this.
+> 
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+> ---
+This is bad, as devm_clk_get_bulk{"", _optional} doesn't
+check if num_clocks makes sense and passes "-1" down the
+devres alloc chain..
 
-But in some cases this is too late, if the handlers are of the edge type
-then gpiolib-acpi.c's code will already have run them at boot.
-This can cause issues such as GPIOs ending up as owned by "ACPI:OpRegion",
-making them unavailable for drivers which actually need them.
+I'll rework this for the next revision by simply assigning
+the common "bus", "bus_a" set everywhere instead of relying
+on it being there by default..
 
-Boards with these broken ACPI tables are already listed in
-drivers/acpi/x86/utils.c for e.g. acpi_quirk_skip_i2c_client_enumeration().
-Extend the quirks mechanism for a new acpi_quirk_skip_gpio_event_handlers()
-helper, this re-uses the DMI-ids rather then having to duplicate the same
-DMI table in gpiolib-acpi.c .
-
-Also add the new ACPI_QUIRK_SKIP_GPIO_EVENT_HANDLERS quirk to existing
-boards with troublesome ACPI gpio event handlers, so that the current
-acpi_gpiochip_free_interrupts() hack can be removed from
-x86-android-tablets.c .
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/acpi/x86/utils.c    | 24 +++++++++++++++++++++---
- drivers/gpio/gpiolib-acpi.c |  3 +++
- include/acpi/acpi_bus.h     |  5 +++++
- 3 files changed, 29 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/acpi/x86/utils.c b/drivers/acpi/x86/utils.c
-index 4e816bb402f6..4a6f3a6726d0 100644
---- a/drivers/acpi/x86/utils.c
-+++ b/drivers/acpi/x86/utils.c
-@@ -262,6 +262,7 @@ bool force_storage_d3(void)
- #define ACPI_QUIRK_UART1_TTY_UART2_SKIP				BIT(1)
- #define ACPI_QUIRK_SKIP_ACPI_AC_AND_BATTERY			BIT(2)
- #define ACPI_QUIRK_USE_ACPI_AC_AND_BATTERY			BIT(3)
-+#define ACPI_QUIRK_SKIP_GPIO_EVENT_HANDLERS			BIT(4)
- 
- static const struct dmi_system_id acpi_quirk_skip_dmi_ids[] = {
- 	/*
-@@ -297,7 +298,8 @@ static const struct dmi_system_id acpi_quirk_skip_dmi_ids[] = {
- 		},
- 		.driver_data = (void *)(ACPI_QUIRK_SKIP_I2C_CLIENTS |
- 					ACPI_QUIRK_UART1_TTY_UART2_SKIP |
--					ACPI_QUIRK_SKIP_ACPI_AC_AND_BATTERY),
-+					ACPI_QUIRK_SKIP_ACPI_AC_AND_BATTERY |
-+					ACPI_QUIRK_SKIP_GPIO_EVENT_HANDLERS),
- 	},
- 	{
- 		.matches = {
-@@ -305,7 +307,8 @@ static const struct dmi_system_id acpi_quirk_skip_dmi_ids[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "TF103C"),
- 		},
- 		.driver_data = (void *)(ACPI_QUIRK_SKIP_I2C_CLIENTS |
--					ACPI_QUIRK_SKIP_ACPI_AC_AND_BATTERY),
-+					ACPI_QUIRK_SKIP_ACPI_AC_AND_BATTERY |
-+					ACPI_QUIRK_SKIP_GPIO_EVENT_HANDLERS),
- 	},
- 	{
- 		/* Lenovo Yoga Tablet 2 1050F/L */
-@@ -347,7 +350,8 @@ static const struct dmi_system_id acpi_quirk_skip_dmi_ids[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "M890BAP"),
- 		},
- 		.driver_data = (void *)(ACPI_QUIRK_SKIP_I2C_CLIENTS |
--					ACPI_QUIRK_SKIP_ACPI_AC_AND_BATTERY),
-+					ACPI_QUIRK_SKIP_ACPI_AC_AND_BATTERY |
-+					ACPI_QUIRK_SKIP_GPIO_EVENT_HANDLERS),
- 	},
- 	{
- 		/* Whitelabel (sold as various brands) TM800A550L */
-@@ -424,6 +428,20 @@ int acpi_quirk_skip_serdev_enumeration(struct device *controller_parent, bool *s
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(acpi_quirk_skip_serdev_enumeration);
-+
-+bool acpi_quirk_skip_gpio_event_handlers(void)
-+{
-+	const struct dmi_system_id *dmi_id;
-+	long quirks;
-+
-+	dmi_id = dmi_first_match(acpi_quirk_skip_dmi_ids);
-+	if (!dmi_id)
-+		return false;
-+
-+	quirks = (unsigned long)dmi_id->driver_data;
-+	return (quirks & ACPI_QUIRK_SKIP_GPIO_EVENT_HANDLERS);
-+}
-+EXPORT_SYMBOL_GPL(acpi_quirk_skip_gpio_event_handlers);
- #endif
- 
- /* Lists of PMIC ACPI HIDs with an (often better) native charger driver */
-diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-index 17c53f484280..6041768bb72b 100644
---- a/drivers/gpio/gpiolib-acpi.c
-+++ b/drivers/gpio/gpiolib-acpi.c
-@@ -536,6 +536,9 @@ void acpi_gpiochip_request_interrupts(struct gpio_chip *chip)
- 	if (ACPI_FAILURE(status))
- 		return;
- 
-+	if (acpi_quirk_skip_gpio_event_handlers())
-+		return;
-+
- 	acpi_walk_resources(handle, METHOD_NAME__AEI,
- 			    acpi_gpiochip_alloc_event, acpi_gpio);
- 
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index e44be31115a6..d69545cd6a48 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -656,6 +656,7 @@ static inline bool acpi_quirk_skip_acpi_ac_and_battery(void)
- #if IS_ENABLED(CONFIG_X86_ANDROID_TABLETS)
- bool acpi_quirk_skip_i2c_client_enumeration(struct acpi_device *adev);
- int acpi_quirk_skip_serdev_enumeration(struct device *controller_parent, bool *skip);
-+bool acpi_quirk_skip_gpio_event_handlers(void);
- #else
- static inline bool acpi_quirk_skip_i2c_client_enumeration(struct acpi_device *adev)
- {
-@@ -667,6 +668,10 @@ acpi_quirk_skip_serdev_enumeration(struct device *controller_parent, bool *skip)
- 	*skip = false;
- 	return 0;
- }
-+static inline bool acpi_quirk_skip_gpio_event_handlers(void)
-+{
-+	return false;
-+}
- #endif
- 
- #ifdef CONFIG_PM
--- 
-2.39.1
-
+Konrad
+>  drivers/interconnect/qcom/msm8996.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/interconnect/qcom/msm8996.c b/drivers/interconnect/qcom/msm8996.c
+> index 1a5e0ad36cc4..45eb8675fb11 100644
+> --- a/drivers/interconnect/qcom/msm8996.c
+> +++ b/drivers/interconnect/qcom/msm8996.c
+> @@ -1817,6 +1817,7 @@ static const struct qcom_icc_desc msm8996_a0noc = {
+>  	.type = QCOM_ICC_NOC,
+>  	.nodes = a0noc_nodes,
+>  	.num_nodes = ARRAY_SIZE(a0noc_nodes),
+> +	.num_bus_clocks = -1, /* No bus clock scaling */
+>  	.intf_clocks = a0noc_intf_clocks,
+>  	.num_intf_clocks = ARRAY_SIZE(a0noc_intf_clocks),
+>  	.has_bus_pd = true,
+> 
