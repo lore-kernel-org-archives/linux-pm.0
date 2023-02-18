@@ -2,154 +2,107 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01124C64ED6
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Feb 2023 00:26:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9978C64ED6
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Feb 2023 10:33:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229748AbjBRA0k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Feb 2023 19:26:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40018 "EHLO
+        id S229771AbjBRKdb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Feb 2023 05:33:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37188 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229710AbjBRA0j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2023 19:26:39 -0500
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4951868ACA
-        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2023 16:26:36 -0800 (PST)
-Received: by mail-lf1-x129.google.com with SMTP id o3so3654090lfo.3
-        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2023 16:26:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Iz+PpBCaN2eTF1bAhZ+2tgpCk6bNWDrT4b3aQDTLjn4=;
-        b=C0d26VB/UL384OGHWCA1AXRo89XPr0JW09Y0bUgWGjPuT4pq2OCCGxWpqr9sDJiUkY
-         MSB5QRvHJSGSDGrk/vlfxhtQCValpz9gpXANpLcU+p5H2Oc9VdszeuPZHz6MedQpKxIX
-         eSXaDx5BLPhyMcKa854KKFdJjLpJxjvPMVCnCwO+Y0bl7TWn/TObzR7eYfwnYjku0U9N
-         DAceDkHWSuiL+nvkuaHmkizuhe2PfiQ1lO+Xd42kKC3RV3J9mEE8mQ6bmGbEOECGX8mc
-         XphU8SljyARdlMtk6jEg/5I4zBdHwKkCy30J+L9l/LUqaMgj1EELHqpcSvNxHs/YJogP
-         d1OA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Iz+PpBCaN2eTF1bAhZ+2tgpCk6bNWDrT4b3aQDTLjn4=;
-        b=mOQcVMi4S8hodU9z+/l8SEimVeKeVMCmG2fxUiuFgn7VPYFen/+0DTieIWmpR51TZj
-         CKxyXeRWeCp76iwRxIwod7gnayrdKgZrwVyWRNSTEvi6g9y9l5conwtKggDhZE+4mQmc
-         91E79g7st8s5CWSIRRWOaAZNQuauFyb4R9znJTcBCLaKRWUMn7O3aWgBZF9DE30NVdr7
-         7L9mXg+IkvBEJb/+GMNx6QDlh5rLkcJhbIjPhLt4HiZASKbO/HZ6DPOuxv7P3an2qe9H
-         LQWVWDw9BoWU7GN0geXiQc46I6nbln79gaaSxsHRpRKPpZtCqmULJk96OC3Kn/ZexqJH
-         Oxfw==
-X-Gm-Message-State: AO0yUKUbUbuIvKXSwZtLtEQdBbvanAKKsapMUSgkjSOHptRkwCmQwH3I
-        UyHef/zJUVx8dC2bh5y8MvkfZw==
-X-Google-Smtp-Source: AK7set/blEr5tuwakVvUBgDfcxlFT/0GmnlBbcRkf7FavIpGqWDHjeJsNPnY+VrSOFq8PpELXzUChg==
-X-Received: by 2002:ac2:4a87:0:b0:4db:2a28:6453 with SMTP id l7-20020ac24a87000000b004db2a286453mr745429lfp.25.1676679994477;
-        Fri, 17 Feb 2023 16:26:34 -0800 (PST)
-Received: from [192.168.1.101] (abxh184.neoplus.adsl.tpnet.pl. [83.9.1.184])
-        by smtp.gmail.com with ESMTPSA id e1-20020a05651c038100b002950ce0ecd0sm143976ljp.114.2023.02.17.16.26.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 17 Feb 2023 16:26:34 -0800 (PST)
-Message-ID: <c2bfa6b0-edee-b492-d40e-cf43291b90d4@linaro.org>
-Date:   Sat, 18 Feb 2023 01:26:32 +0100
+        with ESMTP id S229445AbjBRKda (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Feb 2023 05:33:30 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D1E91ADFA
+        for <linux-pm@vger.kernel.org>; Sat, 18 Feb 2023 02:32:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1676716362;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=+trPnWf+vRJ2/iTAVbxTHjHnpzIARmxivvQmHCINeLI=;
+        b=KdPZubhqqBVmCkkrU2PI4ZNdf0uYEHv9W1YD528KTg92L84tEXYDee99vAg7TwtEf0ku9V
+        fwfC0RilI/tNITnmliAW9xZKqb+Q5xWES7feJOkusIi0nMix8VEflHjhU3fnHuWrwJHwYi
+        FHCNssqj2ksnplQxgVuhjikS1XXyLBo=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-672-iLrO-an1P6O5kZPaiDdwCg-1; Sat, 18 Feb 2023 05:32:38 -0500
+X-MC-Unique: iLrO-an1P6O5kZPaiDdwCg-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id CE78B1C05EBD;
+        Sat, 18 Feb 2023 10:32:37 +0000 (UTC)
+Received: from shalem.redhat.com (unknown [10.39.192.45])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 4988B2026D4B;
+        Sat, 18 Feb 2023 10:32:36 +0000 (UTC)
+From:   Hans de Goede <hdegoede@redhat.com>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Andy Shevchenko <andy@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>
+Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
+        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-gpio@vger.kernel.org
+Subject: [PATCH 0/3] ACPI: x86: Introduce an acpi_quirk_skip_gpio_event_handlers() helper
+Date:   Sat, 18 Feb 2023 11:32:32 +0100
+Message-Id: <20230218103235.6934-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.2
-Subject: Re: [PATCH v10 2/6] dt-bindings: opp: v2-qcom-level: Document CPR3
- open/closed loop volt adjustment
-To:     Rob Herring <robh@kernel.org>
-Cc:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Niklas Cassel <nks@flawful.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Robert Marko <robimarko@gmail.com>,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20230217-topic-cpr3h-v10-0-67aed8fdfa61@linaro.org>
- <20230217-topic-cpr3h-v10-2-67aed8fdfa61@linaro.org>
- <20230217231330.GA2238521-robh@kernel.org>
-Content-Language: en-US
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-In-Reply-To: <20230217231330.GA2238521-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+<Resend with the gpiolib-acpi.c folks added to the To: list>
+
+Hi All,
+
+x86 ACPI boards which ship with only Android as their factory image usually
+have pretty broken ACPI tables, relying on everything being hardcoded in
+the factory kernel image and often disabling parts of the ACPI enumeration
+kernel code to avoid the broken tables causing issues.
+
+Part of this broken ACPI code is that sometimes these boards have _AEI
+ACPI GPIO event handlers which are broken.
+
+So far this has been dealt with in the platform/x86/x86-android-tablets.c
+module by it calling acpi_gpiochip_free_interrupts() on gpiochip-s with
+troublesome handlers to disable the handlers.
+
+But this is racy and sometimes too late. This series adds a new
+acpi_quirk_skip_gpio_event_handlers() function to drivers/acpi/x86/utils.c
+using the existing DMI table for this to avoid duplication of DMI matches.
+
+Patch 2 adds a new x86 Android tablet model which needs the new
+SKIP_GPIO_EVENT_HANDLERS quirk.
+
+Patch 3 uses acpi_quirk_skip_gpio_event_handlers() in axp288_charger.c
+to deal with there not being a ACPI event handler to disable charging
+from Vbus before enable 5V boost output on the tablets micro-USB conn.
+
+Sebastian (sre), since patch 3 depends on patch 1, it is probably
+easiest to just merge the entire series through the linux-pm tree.
+May we have your ack for this ?
+
+Regards,
+
+Hans
 
 
-On 18.02.2023 00:13, Rob Herring wrote:
-> On Fri, Feb 17, 2023 at 12:08:25PM +0100, Konrad Dybcio wrote:
->> CPR3 and newer can be fed per-OPP voltage adjustment values for both
->> open- and closed-loop paths to make better decisions about settling
->> on the final voltage offset target. Document these properties.
->>
->> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
->> ---
->>  .../devicetree/bindings/opp/opp-v2-qcom-level.yaml         | 14 ++++++++++++++
->>  1 file changed, 14 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml b/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml
->> index a30ef93213c0..93cc88434dfe 100644
->> --- a/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml
->> +++ b/Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml
->> @@ -34,6 +34,20 @@ patternProperties:
->>          minItems: 1
->>          maxItems: 2
->>  
->> +      qcom,opp-cloop-vadj:
->> +        description: |
->> +          A value representing the closed-loop voltage adjustment value
-> 
-> A value?
-> 
->> +          associated with this OPP node.
->> +        $ref: /schemas/types.yaml#/definitions/int32-array
->> +        maxItems: 2
-> 
-> Or 2 values?
-Right, this description doesn't make any sense if you're just
-looking at the documentation without looking at the driver..
+Hans de Goede (3):
+  ACPI: x86: Introduce an acpi_quirk_skip_gpio_event_handlers() helper
+  ACPI: x86: Add skip i2c clients quirk for Acer Iconia One 7 B1-750
+  power: supply: axp288_charger: Use alt usb-id extcon on some x86
+    android tablets
 
-Generally, each CPR3 instance can have multiple "threads"
-(each one of which regulates voltage for some on-SoC IP or
-part of it). The nth entry in the qcom,opp-[co]loop-vadj
-array corresponds to a voltage offset for the nth thread.
+ drivers/acpi/x86/utils.c              | 34 ++++++++++++++++++++++++---
+ drivers/gpio/gpiolib-acpi.c           |  3 +++
+ drivers/power/supply/axp288_charger.c | 15 ++++++++++--
+ include/acpi/acpi_bus.h               |  5 ++++
+ 4 files changed, 52 insertions(+), 5 deletions(-)
 
-If the nth entry in the array is missing, the driver assumes
-the arr[0] one is "global" to this CPR3 instance at this OPP
-level and applies it to all threads. ...and looking at it
-again, this is sorta just bad design, especially if you
-take into account that there's no known user of CPR3 that
-employs more than 2 threads.
+-- 
+2.39.1
 
-I'll remove that from the driver and make the description clearer.
-
-
-Also, only noticed now.. "qcom,sdm630-cprh" was not documented,
-so that's to be fixed for the next submission as well!
-
-
-Konrad
-> 
->> +
->> +      qcom,opp-oloop-vadj:
->> +        description: |
->> +          A value representing the open-loop voltage adjustment value
->> +          associated with this OPP node.
->> +        $ref: /schemas/types.yaml#/definitions/int32-array
->> +        maxItems: 2
->> +
->>      required:
->>        - opp-level
->>        - qcom,opp-fuse-level
->>
->> -- 
->> 2.39.1
->>
