@@ -2,75 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E8AC61DA4
-	for <linux-pm@archiver.kernel.org>; Sun, 19 Feb 2023 14:39:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91D8EC64ED6
+	for <linux-pm@archiver.kernel.org>; Sun, 19 Feb 2023 14:39:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230150AbjBSOi2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 19 Feb 2023 09:38:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37856 "EHLO
+        id S229665AbjBSOi1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 19 Feb 2023 09:38:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230198AbjBSOiH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Feb 2023 09:38:07 -0500
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E63D30EF
-        for <linux-pm@vger.kernel.org>; Sun, 19 Feb 2023 06:37:47 -0800 (PST)
-Received: by mail-wr1-x42f.google.com with SMTP id b10so387451wrx.11
-        for <linux-pm@vger.kernel.org>; Sun, 19 Feb 2023 06:37:47 -0800 (PST)
+        with ESMTP id S230235AbjBSOiU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Feb 2023 09:38:20 -0500
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B7B2901F
+        for <linux-pm@vger.kernel.org>; Sun, 19 Feb 2023 06:37:58 -0800 (PST)
+Received: by mail-wm1-x331.google.com with SMTP id p8so569601wmq.4
+        for <linux-pm@vger.kernel.org>; Sun, 19 Feb 2023 06:37:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=j3HcXJPInywKBgGcqF6ehgI3cQr8CSQVATX0aePHQ3M=;
-        b=LjJ/qHYASPdsd1Kziy6v1qEg/SkK3Sj4RyOlQyDAe7vFDb5w7C4MJHGb/dQCxG87tD
-         roha2s2C5xx5YKt+HUCusIC571yeUlRy4Mh83nZOEH8eiJzTZtxh/zvr6kVNO6tr7Pz0
-         wtJ9zzhUjASiyecs88MC3EJ7kqdjDqETBZIB68uAf7zhh6TMrSMgkBWcH9/M/aEpNHNE
-         +CgVGL8z9oNDANgXnrVktmfA5Qos0KnVCLNvWWJsCab+QQt8I0+/lLJaHv7mpQvOh3n3
-         Y6GxKVBtW04dhr5QBqqLyIWiMdjAC9v1iGQISuqiDRSp8k57rPHYqL/BkwWfgjSQDAS7
-         QV9Q==
+        bh=K/N/PusoT+hDJ8mhxwt7gAFO4vRcraA+apO1+Zvf8Ao=;
+        b=dXdJbs92siaoCYwl/ajGVp4YuI2jjPE4kHE41wCR9fO+GllbGhGOjR2ARb2+k45MkY
+         oe9bNl6ueGIKEUWQmV7PX9WpZ6o7HrZQIDLG7r9TpgGlfUydarNL4iaY1MwvvCm4vOM+
+         HBkEYW3NzF7STStypOLML79Lpr4XLxXIiqgHBvreCxa1AgIFNuEVs4kzQ0ta/Vr47vUR
+         y2cUJ104CHPVm3RN6WLFXs9sAr9MC58rvhRq1/F4UCX/n4hiwBctWjbGutT4CFicQyD9
+         hU3sBDcowGUs1Fa+hi8ID1FB+XguXSKJtgRHvNFoWsJowAxolE2aeN6vZG3ypPYnA4U0
+         AdyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=j3HcXJPInywKBgGcqF6ehgI3cQr8CSQVATX0aePHQ3M=;
-        b=FtXSJjkVJaws6BAeaoTsosOX+l4DwxlB6oOJOYTSdHyfYE55sDcdBiQuFwl5Kmeb2G
-         oZgG3dQiBIBk7WTag88tzPFY375J8EuD2El51FTmBdKZVie0ov6NWMBkP7UjhlPeeBoY
-         EJnHqdp25FzTUKb0Ko8qFoSuFKGgfwWLFEBpj0hUOeFCuRJ0sOipOvkSaloA8+4UoO4r
-         WFS3Pxx876WKHGnxtVRiI/rzcel0rkcUeJsDLkeAZTjbPL5qT/1l+8sad9owZ7xxn8pi
-         cKockiWHxgq5u55yBRR9zwfntJbuRUuwoEH50GL3fWwrREFHRGnxaIqgzJI+r/Y1cQD/
-         rLug==
-X-Gm-Message-State: AO0yUKXo1qzXtXir+YFzmmwY/DYH2HoJgeL7xtnmUWS4hJ4dUDz5iRle
-        0Ay+dAx1+z/t+cJ0OYTUunImRQ==
-X-Google-Smtp-Source: AK7set/2WPrwPq6V9ybFOt9Qcc5CrgB6A95D6Z+phRCsM8QfU2fdMH319V3xcu31kSWHJQ8569YqOw==
-X-Received: by 2002:adf:e483:0:b0:2c5:5984:6efe with SMTP id i3-20020adfe483000000b002c559846efemr2076803wrm.47.1676817467210;
-        Sun, 19 Feb 2023 06:37:47 -0800 (PST)
+        bh=K/N/PusoT+hDJ8mhxwt7gAFO4vRcraA+apO1+Zvf8Ao=;
+        b=rsAO6pJw4kCS2ETxcSMK7jS4FMbhitoo+apGcpSZWMkSIGylFjdVMX/k6WJV4Z1cEr
+         0kJMfhFTGEq+cVLimBuumn0t2Ik0pF2UexPWpNdKPAx5KLafKno+gpq0Hx5/mZ0A+ToK
+         djt9PSmSMGTEVqSJwHTvygKVepOd2ZhV0tI+tuTy9EbCcqb3URE4nS6obs24GoB8R5PP
+         9kHCIuro0Ziy9zBPwG0L99wke4Dz+TcHyhOOKY0uA1m6K8vBKa3DtL2xNZwgBWC+6888
+         ho97XPhOciY2gZubLCF0Y8gGN4VtTjes1S6N69wpfom5emjyf5mD8fX67xi52q7j/8gX
+         RCIA==
+X-Gm-Message-State: AO0yUKVBIabXK+VOXm/7NjCElirala9Q1r8At0WxprslcX+4Xx2XMlzQ
+        5/pXVBO4koiTdzlpgsTGzIGZAg==
+X-Google-Smtp-Source: AK7set92wguRhlEv6GXujA4tqELo1AZxoqd4sByefmk7Dqmh3mm+83wnvuaS9sAzZifH5oTtjzoYoA==
+X-Received: by 2002:a05:600c:4b10:b0:3e2:9b4:4303 with SMTP id i16-20020a05600c4b1000b003e209b44303mr9955738wmp.19.1676817476807;
+        Sun, 19 Feb 2023 06:37:56 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:6f43:b92:7670:463])
-        by smtp.gmail.com with ESMTPSA id a18-20020adfe5d2000000b002be505ab59asm86176wrn.97.2023.02.19.06.37.45
+        by smtp.gmail.com with ESMTPSA id a18-20020adfe5d2000000b002be505ab59asm86176wrn.97.2023.02.19.06.37.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 19 Feb 2023 06:37:46 -0800 (PST)
+        Sun, 19 Feb 2023 06:37:56 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rafael@kernel.org, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Guillaume La Roque <glaroque@baylibre.com>,
         Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
-        Markus Mayer <mmayer@broadcom.com>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
         Shawn Guo <shawnguo@kernel.org>,
         Sascha Hauer <s.hauer@pengutronix.de>,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
         Fabio Estevam <festevam@gmail.com>,
         NXP Linux Team <linux-imx@nxp.com>,
-        Heiko Stuebner <heiko@sntech.de>,
-        linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM BCM7XXX
-        ARM ARCHITECTURE),
-        linux-rockchip@lists.infradead.org (open list:ARM/Rockchip SoC support)
-Subject: [PATCH v1 03/17] thermal: Remove debug or error messages in get_temp() ops
-Date:   Sun, 19 Feb 2023 15:36:43 +0100
-Message-Id: <20230219143657.241542-4-daniel.lezcano@linaro.org>
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Daniel Golle <daniel@makrotopia.org>,
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        linux-amlogic@lists.infradead.org (open list:THERMAL DRIVER FOR AMLOGIC
+        SOCS),
+        linux-arm-kernel@lists.infradead.org (moderated list:ARM/FREESCALE IMX
+        / MXC ARM ARCHITECTURE),
+        linux-arm-msm@vger.kernel.org (open list:QUALCOMM TSENS THERMAL DRIVER),
+        linux-sunxi@lists.linux.dev (open list:ARM/Allwinner sunXi SoC support),
+        linux-tegra@vger.kernel.org (open list:TEGRA ARCHITECTURE SUPPORT),
+        linux-omap@vger.kernel.org (open list:TI BANDGAP AND THERMAL DRIVER),
+        linux-mediatek@lists.infradead.org (moderated list:ARM/Mediatek SoC
+        support)
+Subject: [PATCH v1 05/17] thermal/hwmon: Use the right device for devm_thermal_add_hwmon_sysfs()
+Date:   Sun, 19 Feb 2023 15:36:45 +0100
+Message-Id: <20230219143657.241542-6-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230219143657.241542-1-daniel.lezcano@linaro.org>
 References: <20230219143657.241542-1-daniel.lezcano@linaro.org>
@@ -80,225 +106,232 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some get_temp() ops implementation are showing an error or a debug
-message if the reading of the sensor fails.
+The devres variant of thermal_add_hwmon_sysfs() only takes the thermal
+zone structure pointer as parameter.
 
-The debug message is already displayed from the call site of this
-ops. So we can remove it.
+Actually, it uses the tz->device to add it in the devres list.
 
-On the other side, the error should not be displayed because in
-production that can raise tons of messages.
-
-Finally, some drivers are showing a debug message with the
-temperature, this is also accessible through the trace from the core
-code in the temperature_update() function.
-
-Another benefit is the dev_* messages are accessing the thermal zone
-device field from the structure, so we encapsulate even more the code
-by preventing these accesses.
-
-Remove those messages.
+It is preferable to use the device registering the thermal zone
+instead of the thermal zone device itself. That prevents the driver
+accessing the thermal zone structure internals and it is from my POV
+more correct regarding how devm_ is used.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/armada_thermal.c           | 10 ++--------
- drivers/thermal/broadcom/brcmstb_thermal.c |  4 +---
- drivers/thermal/dove_thermal.c             |  5 +----
- drivers/thermal/hisi_thermal.c             |  3 ---
- drivers/thermal/imx_sc_thermal.c           |  5 +----
- drivers/thermal/imx_thermal.c              |  4 +---
- drivers/thermal/kirkwood_thermal.c         |  5 +----
- drivers/thermal/max77620_thermal.c         |  4 +---
- drivers/thermal/rockchip_thermal.c         |  3 ---
- drivers/thermal/st/st_thermal.c            |  2 --
- drivers/thermal/thermal-generic-adc.c      |  5 ++---
- 11 files changed, 10 insertions(+), 40 deletions(-)
+ drivers/thermal/amlogic_thermal.c                  | 2 +-
+ drivers/thermal/imx8mm_thermal.c                   | 2 +-
+ drivers/thermal/imx_sc_thermal.c                   | 2 +-
+ drivers/thermal/k3_bandgap.c                       | 2 +-
+ drivers/thermal/mediatek/auxadc_thermal.c          | 2 +-
+ drivers/thermal/qcom/qcom-spmi-adc-tm5.c           | 2 +-
+ drivers/thermal/qcom/qcom-spmi-temp-alarm.c        | 2 +-
+ drivers/thermal/qcom/tsens.c                       | 2 +-
+ drivers/thermal/qoriq_thermal.c                    | 2 +-
+ drivers/thermal/sun8i_thermal.c                    | 2 +-
+ drivers/thermal/tegra/tegra30-tsensor.c            | 2 +-
+ drivers/thermal/thermal_hwmon.c                    | 4 ++--
+ drivers/thermal/thermal_hwmon.h                    | 4 ++--
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 2 +-
+ 14 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 82d3e15d51f6..9bbebde09dc4 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -360,11 +360,8 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
- 	 * we must absolutely wait for the sensor validity bit to ensure we read
- 	 * actual data.
- 	 */
--	if (armada_wait_sensor_validity(priv)) {
--		dev_err(priv->dev,
--			"Temperature sensor reading not valid\n");
-+	if (armada_wait_sensor_validity(priv))
- 		return -EIO;
--	}
+diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+index 9235fda4ec1e..337153042318 100644
+--- a/drivers/thermal/amlogic_thermal.c
++++ b/drivers/thermal/amlogic_thermal.c
+@@ -285,7 +285,7 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
  
- 	return 0;
- }
-@@ -402,11 +399,8 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
- 	int ret;
+-	if (devm_thermal_add_hwmon_sysfs(pdata->tzd))
++	if (devm_thermal_add_hwmon_sysfs(&pdev->dev, pdata->tzd))
+ 		dev_warn(&pdev->dev, "Failed to add hwmon sysfs attributes\n");
  
- 	/* Valid check */
--	if (!armada_is_valid(priv)) {
--		dev_err(priv->dev,
--			"Temperature sensor reading not valid\n");
-+	if (!armada_is_valid(priv))
- 		return -EIO;
--	}
+ 	ret = amlogic_thermal_initialize(pdata);
+diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
+index 750240f4fa32..e0830dcec4a0 100644
+--- a/drivers/thermal/imx8mm_thermal.c
++++ b/drivers/thermal/imx8mm_thermal.c
+@@ -343,7 +343,7 @@ static int imx8mm_tmu_probe(struct platform_device *pdev)
+ 		}
+ 		tmu->sensors[i].hw_id = i;
  
- 	/* Do the actual reading */
- 	ret = armada_read_sensor(priv, temp);
-diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
-index 668cdc16b108..ae1981506da0 100644
---- a/drivers/thermal/broadcom/brcmstb_thermal.c
-+++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-@@ -158,10 +158,8 @@ static int brcmstb_get_temp(struct thermal_zone_device *tz, int *temp)
- 
- 	val = __raw_readl(priv->tmon_base + AVS_TMON_STATUS);
- 
--	if (!(val & AVS_TMON_STATUS_valid_msk)) {
--		dev_err(priv->dev, "reading not valid\n");
-+	if (!(val & AVS_TMON_STATUS_valid_msk))
- 		return -EIO;
--	}
- 
- 	val = (val & AVS_TMON_STATUS_data_msk) >> AVS_TMON_STATUS_data_shift;
- 
-diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
-index ed7d1173d9fd..9cd54740713f 100644
---- a/drivers/thermal/dove_thermal.c
-+++ b/drivers/thermal/dove_thermal.c
-@@ -91,11 +91,8 @@ static int dove_get_temp(struct thermal_zone_device *thermal,
- 
- 	/* Valid check */
- 	reg = readl_relaxed(priv->control + PMU_TEMP_DIOD_CTRL1_REG);
--	if ((reg & PMU_TDC1_TEMP_VALID_MASK) == 0x0) {
--		dev_err(&thermal->device,
--			"Temperature sensor reading not valid\n");
-+	if ((reg & PMU_TDC1_TEMP_VALID_MASK) == 0x0)
- 		return -EIO;
--	}
- 
- 	/*
- 	 * Calculate temperature. According to Marvell internal
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 043751e6a31d..1e13fe80a9f3 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -436,9 +436,6 @@ static int hisi_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- 
- 	*temp = data->ops->get_temp(sensor);
- 
--	dev_dbg(&data->pdev->dev, "tzd=%p, id=%d, temp=%d, thres=%d\n",
--		sensor->tzd, sensor->id, *temp, sensor->thres_temp);
--
- 	return 0;
- }
+-		if (devm_thermal_add_hwmon_sysfs(tmu->sensors[i].tzd))
++		if (devm_thermal_add_hwmon_sysfs(&pdev->dev, tmu->sensors[i].tzd))
+ 			dev_warn(&pdev->dev, "failed to add hwmon sysfs attributes\n");
+ 	}
  
 diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
-index ca10d6a68f0f..26102d1c6bde 100644
+index 26102d1c6bde..631bda2401eb 100644
 --- a/drivers/thermal/imx_sc_thermal.c
 +++ b/drivers/thermal/imx_sc_thermal.c
-@@ -58,11 +58,8 @@ static int imx_sc_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- 	hdr->size = 2;
+@@ -116,7 +116,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
+ 			return ret;
+ 		}
  
- 	ret = imx_scu_call_rpc(thermal_ipc_handle, &msg, true);
--	if (ret) {
--		dev_err(&sensor->tzd->device, "read temp sensor %d failed, ret %d\n",
--			sensor->resource_id, ret);
-+	if (ret)
+-		if (devm_thermal_add_hwmon_sysfs(sensor->tzd))
++		if (devm_thermal_add_hwmon_sysfs(&pdev->dev, sensor->tzd))
+ 			dev_warn(&pdev->dev, "failed to add hwmon sysfs attributes\n");
+ 	}
+ 
+diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
+index 8cbd7361b492..ee059997d00d 100644
+--- a/drivers/thermal/k3_bandgap.c
++++ b/drivers/thermal/k3_bandgap.c
+@@ -222,7 +222,7 @@ static int k3_bandgap_probe(struct platform_device *pdev)
+ 			goto err_alloc;
+ 		}
+ 
+-		if (devm_thermal_add_hwmon_sysfs(data[id].tzd))
++		if (devm_thermal_add_hwmon_sysfs(dev, data[id].tzd))
+ 			dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
+ 	}
+ 
+diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
+index d7bf725d224b..d4b8246d4991 100644
+--- a/drivers/thermal/mediatek/auxadc_thermal.c
++++ b/drivers/thermal/mediatek/auxadc_thermal.c
+@@ -1210,7 +1210,7 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 		goto err_disable_clk_peri_therm;
+ 	}
+ 
+-	ret = devm_thermal_add_hwmon_sysfs(tzdev);
++	ret = devm_thermal_add_hwmon_sysfs(&pdev->dev, tzdev);
+ 	if (ret)
+ 		dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
+ 
+diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+index b0269daf128a..e3c8c9dc93e2 100644
+--- a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
++++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+@@ -689,7 +689,7 @@ static int adc_tm5_register_tzd(struct adc_tm5_chip *adc_tm)
+ 			return PTR_ERR(tzd);
+ 		}
+ 		adc_tm->channels[i].tzd = tzd;
+-		if (devm_thermal_add_hwmon_sysfs(tzd))
++		if (devm_thermal_add_hwmon_sysfs(adc_tm->dev, tzd))
+ 			dev_warn(adc_tm->dev,
+ 				 "Failed to add hwmon sysfs attributes\n");
+ 	}
+diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+index c817b03deb00..f82e0051d30e 100644
+--- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
+@@ -459,7 +459,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
  		return ret;
--	}
+ 	}
  
- 	*temp = msg.data.resp.celsius * 1000 + msg.data.resp.tenths * 100;
+-	if (devm_thermal_add_hwmon_sysfs(chip->tz_dev))
++	if (devm_thermal_add_hwmon_sysfs(&pdev->dev, chip->tz_dev))
+ 		dev_warn(&pdev->dev,
+ 			 "Failed to add hwmon sysfs attributes\n");
  
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index c3c14cd26aee..f621b778b0f0 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -265,10 +265,8 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 8020ead2794e..49c1fdca36dd 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -1189,7 +1189,7 @@ static int tsens_register(struct tsens_priv *priv)
+ 		if (priv->ops->enable)
+ 			priv->ops->enable(priv, i);
  
- 	regmap_read(map, soc_data->temp_data, &val);
+-		if (devm_thermal_add_hwmon_sysfs(tzd))
++		if (devm_thermal_add_hwmon_sysfs(priv->dev, tzd))
+ 			dev_warn(priv->dev,
+ 				 "Failed to add hwmon sysfs attributes\n");
+ 	}
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 8b6fe0c9ade2..e6f244d18c59 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -157,7 +157,7 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+ 			return ret;
+ 		}
  
--	if ((val & soc_data->temp_valid_mask) == 0) {
--		dev_dbg(&tz->device, "temp measurement never finished\n");
-+	if ((val & soc_data->temp_valid_mask) == 0)
- 		return -EAGAIN;
--	}
+-		if (devm_thermal_add_hwmon_sysfs(tzd))
++		if (devm_thermal_add_hwmon_sysfs(dev, tzd))
+ 			dev_warn(dev,
+ 				 "Failed to add hwmon sysfs attributes\n");
  
- 	n_meas = (val & soc_data->temp_value_mask)
- 		>> soc_data->temp_value_shift;
-diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-index 8e39c875ba58..f8c098a262fa 100644
---- a/drivers/thermal/kirkwood_thermal.c
-+++ b/drivers/thermal/kirkwood_thermal.c
-@@ -33,11 +33,8 @@ static int kirkwood_get_temp(struct thermal_zone_device *thermal,
+diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
+index 085b7b0b7c72..ec4aa60dd1fb 100644
+--- a/drivers/thermal/sun8i_thermal.c
++++ b/drivers/thermal/sun8i_thermal.c
+@@ -475,7 +475,7 @@ static int sun8i_ths_register(struct ths_device *tmdev)
+ 		if (IS_ERR(tmdev->sensor[i].tzd))
+ 			return PTR_ERR(tmdev->sensor[i].tzd);
  
- 	/* Valid check */
- 	if (!((reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
--	    KIRKWOOD_THERMAL_VALID_MASK)) {
--		dev_err(&thermal->device,
--			"Temperature sensor reading not valid\n");
-+	    KIRKWOOD_THERMAL_VALID_MASK))
- 		return -EIO;
--	}
+-		if (devm_thermal_add_hwmon_sysfs(tmdev->sensor[i].tzd))
++		if (devm_thermal_add_hwmon_sysfs(tmdev->dev, tmdev->sensor[i].tzd))
+ 			dev_warn(tmdev->dev,
+ 				 "Failed to add hwmon sysfs attributes\n");
+ 	}
+diff --git a/drivers/thermal/tegra/tegra30-tsensor.c b/drivers/thermal/tegra/tegra30-tsensor.c
+index 537413acc6d2..ceb5b1b338a9 100644
+--- a/drivers/thermal/tegra/tegra30-tsensor.c
++++ b/drivers/thermal/tegra/tegra30-tsensor.c
+@@ -528,7 +528,7 @@ static int tegra_tsensor_register_channel(struct tegra_tsensor *ts,
+ 		return 0;
+ 	}
  
- 	/*
- 	 * Calculate temperature. According to Marvell internal
-diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
-index 05b6e9a2a283..1dad8cb00735 100644
---- a/drivers/thermal/max77620_thermal.c
-+++ b/drivers/thermal/max77620_thermal.c
-@@ -51,10 +51,8 @@ static int max77620_thermal_read_temp(struct thermal_zone_device *tz, int *temp)
- 	int ret;
- 
- 	ret = regmap_read(mtherm->rmap, MAX77620_REG_STATLBT, &val);
--	if (ret < 0) {
--		dev_err(mtherm->dev, "Failed to read STATLBT: %d\n", ret);
-+	if (ret < 0)
- 		return ret;
--	}
- 
- 	if (val & MAX77620_IRQ_TJALRM2_MASK)
- 		*temp = MAX77620_TJALARM2_TEMP;
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index dafbdbb7c0c0..bd593ec712ee 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1233,9 +1233,6 @@ static int rockchip_thermal_get_temp(struct thermal_zone_device *tz, int *out_te
- 
- 	retval = tsadc->get_temp(&tsadc->table,
- 				 sensor->id, thermal->regs, out_temp);
--	dev_dbg(&thermal->pdev->dev, "sensor %d - temp: %d, retval: %d\n",
--		sensor->id, *out_temp, retval);
--
- 	return retval;
- }
- 
-diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_thermal.c
-index 1009f08e64e3..4d39626a4345 100644
---- a/drivers/thermal/st/st_thermal.c
-+++ b/drivers/thermal/st/st_thermal.c
-@@ -127,8 +127,6 @@ static int st_thermal_get_temp(struct thermal_zone_device *th, int *temperature)
- 	temp += sensor->cdata->temp_adjust_val;
- 	temp = mcelsius(temp);
- 
--	dev_dbg(dev, "temperature: %d\n", temp);
--
- 	*temperature = temp;
+-	if (devm_thermal_add_hwmon_sysfs(tsc->tzd))
++	if (devm_thermal_add_hwmon_sysfs(ts->dev, tsc->tzd))
+ 		dev_warn(ts->dev, "failed to add hwmon sysfs attributes\n");
  
  	return 0;
-diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-index 8e2ff0df7e64..7f3eda31d0fa 100644
---- a/drivers/thermal/thermal-generic-adc.c
-+++ b/drivers/thermal/thermal-generic-adc.c
-@@ -59,10 +59,9 @@ static int gadc_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
- 	int ret;
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index c594c42bea6d..964db7941e31 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -263,7 +263,7 @@ static void devm_thermal_hwmon_release(struct device *dev, void *res)
+ 	thermal_remove_hwmon_sysfs(*(struct thermal_zone_device **)res);
+ }
  
- 	ret = iio_read_channel_processed(gti->channel, &val);
--	if (ret < 0) {
--		dev_err(gti->dev, "IIO channel read failed %d\n", ret);
-+	if (ret < 0)
- 		return ret;
--	}
-+
- 	*temp = gadc_thermal_adc_to_temp(gti, val);
+-int devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
++int devm_thermal_add_hwmon_sysfs(struct device *dev, struct thermal_zone_device *tz)
+ {
+ 	struct thermal_zone_device **ptr;
+ 	int ret;
+@@ -280,7 +280,7 @@ int devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	}
+ 
+ 	*ptr = tz;
+-	devres_add(&tz->device, ptr);
++	devres_add(dev, ptr);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/thermal/thermal_hwmon.h b/drivers/thermal/thermal_hwmon.h
+index 1a9d65f6a6a8..b429f6e7abdb 100644
+--- a/drivers/thermal/thermal_hwmon.h
++++ b/drivers/thermal/thermal_hwmon.h
+@@ -17,7 +17,7 @@
+ 
+ #ifdef CONFIG_THERMAL_HWMON
+ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz);
+-int devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz);
++int devm_thermal_add_hwmon_sysfs(struct device *dev, struct thermal_zone_device *tz);
+ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz);
+ #else
+ static inline int
+@@ -27,7 +27,7 @@ thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ }
+ 
+ static inline int
+-devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
++devm_thermal_add_hwmon_sysfs(struct device *dev, struct thermal_zone_device *tz)
+ {
+ 	return 0;
+ }
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index 7f6b71d11eed..9fb1ca5e39f6 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -182,7 +182,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
+ 	ti_bandgap_set_sensor_data(bgp, id, data);
+ 	ti_bandgap_write_update_interval(bgp, data->sensor_id, interval);
+ 
+-	if (devm_thermal_add_hwmon_sysfs(data->ti_thermal))
++	if (devm_thermal_add_hwmon_sysfs(bgp->dev, data->ti_thermal))
+ 		dev_warn(bgp->dev, "failed to add hwmon sysfs attributes\n");
  
  	return 0;
 -- 
