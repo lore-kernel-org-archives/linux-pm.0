@@ -2,82 +2,188 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFB8EC05027
-	for <linux-pm@archiver.kernel.org>; Sun, 19 Feb 2023 22:12:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1812AC678DB
+	for <linux-pm@archiver.kernel.org>; Sun, 19 Feb 2023 22:34:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231272AbjBSWMT convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 19 Feb 2023 17:12:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53090 "EHLO
+        id S231588AbjBSWek (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 19 Feb 2023 17:34:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33526 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229491AbjBSWMT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Feb 2023 17:12:19 -0500
-Received: from smtprelay05.ispgateway.de (smtprelay05.ispgateway.de [80.67.18.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3BD2F17CF1
-        for <linux-pm@vger.kernel.org>; Sun, 19 Feb 2023 14:12:17 -0800 (PST)
-Received: from [80.82.223.85] (helo=mail.piie.net)
-        by smtprelay05.ispgateway.de with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.94.2)
-        (envelope-from <peter@piie.net>)
-        id 1pTrLJ-0008LS-Oh; Sun, 19 Feb 2023 22:35:33 +0100
+        with ESMTP id S231542AbjBSWei (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Feb 2023 17:34:38 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6838A14EAF;
+        Sun, 19 Feb 2023 14:34:37 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 095DFB80ABD;
+        Sun, 19 Feb 2023 22:34:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA138C433EF;
+        Sun, 19 Feb 2023 22:34:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1676846074;
+        bh=Rj5Qph10M1N4MQt3NlxqiBGyEeiAFAy607GKhiGrBcs=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=QknT0W3y6TsX+TayniMsGpFXVfZtOjT/nAq8KzOf9AlJQhiANq7osV79aq4fcITL6
+         Hg7+Lw2u77AIIdaf8YpBa24evSde/4bir9XM4MhCFrwsCyUAblXyo6pKk3OtFwMtLM
+         1g09yrZ0wML/pzOgNMputSoonB9n99hVaBhV0enKKeDnOdqcWobVPNkGL315o1SZb4
+         zxwB1uI4V2OlBqAxHh5UEoRQ0Re7vsLL4AyY3BBDd5YWYgtOj9N1e6pTBZu3I7BeCx
+         AexWtipprMU+wDDIw8lHtm8b1Vy52wQRYVbX0IEjzxA3qouoOfKbEbq5VEjhGI6Qf4
+         1uGDSiqc6ZFtQ==
+Date:   Sun, 19 Feb 2023 22:34:32 +0000
+From:   Mark Brown <broonie@kernel.org>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Raju Rangoju <rajur@chelsio.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Ido Schimmel <idosch@nvidia.com>,
+        Petr Machata <petrm@nvidia.com>,
+        Gregory Greenman <gregory.greenman@intel.com>,
+        Kalle Valo <kvalo@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Broadcom internal kernel review list 
+        <bcm-kernel-feedback-list@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Markus Mayer <mmayer@broadcom.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Niklas =?iso-8859-1?Q?S=F6derlund?= 
+        <niklas.soderlund@ragnatech.se>, Heiko Stuebner <heiko@sntech.de>,
+        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang@linux.alibaba.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Talel Shenhar <talel@amazon.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>,
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Stefan Wahren <stefan.wahren@i2se.com>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        Zheng Yongjun <zhengyongjun3@huawei.com>,
+        Tim Zimmermann <tim@linux4.de>,
+        Yang Li <yang.lee@linux.alibaba.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+        Jiang Jian <jiangjian@cdjrlc.com>,
+        Daniel Golle <daniel@makrotopia.org>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Mikko Perttunen <mperttunen@nvidia.com>,
+        "open list:ACPI THERMAL DRIVER" <linux-acpi@vger.kernel.org>,
+        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
+        <linux-ide@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "open list:HARDWARE MONITORING" <linux-hwmon@vger.kernel.org>,
+        "open list:IIO SUBSYSTEM AND DRIVERS" <linux-iio@vger.kernel.org>,
+        "open list:ARM/Allwinner sunXi SoC support" 
+        <linux-sunxi@lists.linux.dev>,
+        "open list:INPUT (KEYBOARD, MOUSE, JOYSTICK, TOUCHSCREEN)..." 
+        <linux-input@vger.kernel.org>,
+        "open list:CXGB4 ETHERNET DRIVER (CXGB4)" <netdev@vger.kernel.org>,
+        "open list:INTEL WIRELESS WIFI LINK (iwlwifi)" 
+        <linux-wireless@vger.kernel.org>,
+        "moderated list:BROADCOM BCM2711/BCM2835 ARM ARCHITECTURE" 
+        <linux-rpi-kernel@lists.infradead.org>,
+        "open list:ARM/QUALCOMM SUPPORT" <linux-arm-msm@vger.kernel.org>,
+        "open list:RENESAS R-CAR THERMAL DRIVERS" 
+        <linux-renesas-soc@vger.kernel.org>,
+        "open list:ARM/Rockchip SoC support" 
+        <linux-rockchip@lists.infradead.org>,
+        "open list:SAMSUNG THERMAL DRIVER" 
+        <linux-samsung-soc@vger.kernel.org>,
+        "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>,
+        "open list:TI BANDGAP AND THERMAL DRIVER" 
+        <linux-omap@vger.kernel.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>
+Subject: Re: [PATCH v1 01/17] thermal/core: Add a thermal zone 'devdata'
+ accessor
+Message-ID: <Y/Kj+BHpAmqzTYVz@sirena.org.uk>
+References: <20230219143657.241542-1-daniel.lezcano@linaro.org>
+ <20230219143657.241542-2-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Date:   Sun, 19 Feb 2023 21:35:33 +0000
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: RainLoop/1.16.0
-From:   "=?utf-8?B?UGV0ZXIgS8Okc3RsZQ==?=" <peter@piie.net>
-Message-ID: <08478e74cab0a5621fbcd4e0f0a97ccb@piie.net>
-Subject: Re: [PATCH v1 16/17] thermal/drivers/acerhdf: Remove pointless
- governor test
-To:     "Daniel Lezcano" <daniel.lezcano@linaro.org>, rafael@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Hans de Goede" <hdegoede@redhat.com>,
-        "Mark Gross" <markgross@kernel.org>,
-        platform-driver-x86@vger.kernel.org
-In-Reply-To: <20230219143657.241542-17-daniel.lezcano@linaro.org>
-References: <20230219143657.241542-17-daniel.lezcano@linaro.org>
- <20230219143657.241542-1-daniel.lezcano@linaro.org>
-X-Df-Sender: cGV0ZXJAcGlpZS5uZXQ=
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="NIn5HqEcLWwUktt/"
+Content-Disposition: inline
+In-Reply-To: <20230219143657.241542-2-daniel.lezcano@linaro.org>
+X-Cookie: Serving suggestion.
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-19. Februar 2023 15:38, "Daniel Lezcano" <daniel.lezcano@linaro.org> schrieb:
 
-> The thermal zone parameter specifies the bang-bang governor.
-> 
-> The Kconfig selects the bang-bang governor. So it is pointless to test
-> if the governor was set for the thermal zone assuming it may not have
-> been compiled-in.
-> 
-> Remove the test and prevent another access into the thermal internals.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+--NIn5HqEcLWwUktt/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Peter Kaestle <peter@piie.net>
+On Sun, Feb 19, 2023 at 03:36:41PM +0100, Daniel Lezcano wrote:
+> The thermal zone device structure is exposed to the different drivers
+> and obviously they access the internals while that should be
+> restricted to the core thermal code.
+>=20
+> In order to self-encapsulate the thermal core code, we need to prevent
+> the drivers accessing directly the thermal zone structure and provide
+> accessor functions to deal with.
+>=20
+> Provide an accessor to the 'devdata' structure and make use of it in
+> the different drivers.
 
+Acked-by: Mark Brown <broonie@kernel.org>
 
-> ---
-> drivers/platform/x86/acerhdf.c | 7 -------
-> 1 file changed, 7 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-> index 61f1c3090867..71b9c1f922d9 100644
-> --- a/drivers/platform/x86/acerhdf.c
-> +++ b/drivers/platform/x86/acerhdf.c
-> @@ -697,13 +697,6 @@ static int __init acerhdf_register_thermal(void)
-> if (ret)
-> return ret;
-> 
-> - if (strcmp(thz_dev->governor->name,
-> - acerhdf_zone_params.governor_name)) {
-> - pr_err("Didn't get thermal governor %s, perhaps not compiled into thermal subsystem.\n",
-> - acerhdf_zone_params.governor_name);
-> - return -EINVAL;
-> - }
-> -
-> return 0;
-> }
-> 
-> -- 
-> 2.34.1
+--NIn5HqEcLWwUktt/
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmPyo/UACgkQJNaLcl1U
+h9DM8Qf/Zmlh3lXuePXfWRw0LZtzREQmKoy5pRmB/DOVamg35ZgY0wcSzoBWY1aQ
+0CG5AKqrl3o9DDZNHLIlNvBV9bwHNMfWpg4v4Dg2E62N/spx8ytzblabmS1i3Nq2
+xZ1gwsGdnR+KBhWWrIqF8k/Fl4tyeFBMnypvUbBY7GeHDt68olsJE4OfAbNAd6Js
+3GS4Vmyeh74XUAwbAvx9jdona+bYN7cY8j8vQ5esi55rqmyfOQ3rUxRCW0kWifu8
+kPkx3gycE9EYfRgBFwoqjWdfhhuwlzVLZa5hPx3+erMdBVtguWlDArU6Mm7C7wNL
+1Pt8qdM5et8nPioby2thi64z0t5/2g==
+=iwAk
+-----END PGP SIGNATURE-----
+
+--NIn5HqEcLWwUktt/--
