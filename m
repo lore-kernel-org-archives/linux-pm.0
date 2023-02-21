@@ -2,62 +2,64 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA36C64ED9
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Feb 2023 18:09:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5594C678DB
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Feb 2023 18:09:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231668AbjBUSJG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Feb 2023 13:09:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58674 "EHLO
+        id S230341AbjBUSJh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Feb 2023 13:09:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231207AbjBUSIj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 13:08:39 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E14C71A486
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 10:08:04 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id o4-20020a05600c4fc400b003e1f5f2a29cso4348141wmq.4
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 10:08:04 -0800 (PST)
+        with ESMTP id S232481AbjBUSI5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 13:08:57 -0500
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D275F2FCFF
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 10:08:13 -0800 (PST)
+Received: by mail-wr1-x42d.google.com with SMTP id bo30so4856634wrb.0
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 10:08:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=2PLESKqLcdlyFOxotfZU1hq7qJ9ZRCDMy4R1xbT74Go=;
-        b=IDkOMIXOnBC0YaKuJQVL1UzixxoNKs9qrgYjkKo6jDz2bLz5dLKXpdOwWvf1Rnx8DV
-         Kytrn1nswuJgwZ28jXJZJydBccH1zX36Szzwa5+upGUmf6eFJxqmZ+QBhiCLXiqGhpG2
-         0jMrOb3HXxthyJbfwlVNppr6h8HGAwcv62B/enXccgNycCjhFq8cIrTiJfbRg0rHem1D
-         hZmJmE2WGrMOkhTlg/HCLdvi5RzBY8rV8u4U99z/APmJEIf8u0laVLLxkmEejYSaukDK
-         Gh4mb2DkJ5xUj7I0hTcrs3TCJLkNSyctnLAhim/44C96NoHcQV/Mtr2JU+Zx7eBzN8SW
-         s8qQ==
+        bh=FS5MMzUrtYY5N2w5QCadh2L/6Lyuv9jfcaqNKoRqTRU=;
+        b=Tp8eP0PUoiVcM75LMYL8aaZZbsS7AeKgdfxwsUZrAvJX8kJ1lowfTamb4kvxSEf+OC
+         iB0PF3Gj8urd+sZWlrpDP+jxK5eYX1FiS6nMy7OeuwpvIpPFCtwnBfq868njYeAUJELL
+         kUV3d20eLe2U8n1x7q6bvPUb83Mxd9ozIsFLsYcJ0Ii779JMjncM0lK2xL9UIhjPhBhr
+         rStCkRe5460M5VTyYeGLHaEY1FBFRs5ffrpi7kPJIN1POC4Pv7m5WK9JL05dMsxbRWyR
+         BC7udu4t16lTiwT36ekj1WW4wIarX2yjYV3PKcaTti/qjQxNurT0U+5quYgrkjTPYRe5
+         UILQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=2PLESKqLcdlyFOxotfZU1hq7qJ9ZRCDMy4R1xbT74Go=;
-        b=kBjtou0jXTYp4BLf0iGgWYOkgla78vpMRBcX1e7tGItzd18v62t13Hx7pVmp5Z1c1r
-         nyqxCV/5Sw8BJRhbT+GlJSQLqvIggz9yNDqwzSgPY+bvwXgLC6OS7RljccqyYoOCciaE
-         f6+Qm0q3Ls62gG9pJjg6j2i5p63q+CUfZXeGsJicPB/fKSNzR4UkKHoi+AGd+5FCscr4
-         kIf/j1IDaWXyd2FROzXoMdxwX5nFt7e8g0d0bYUoNiCFH0txMM0HFfXZqMqWkuXBTcer
-         /s0od8Ykc4yZNwTq8QbFbUTJbnkyO14vtnPBiUSRDXjkLYoSqy8936l8rOc3YaSitk6Y
-         gA6Q==
-X-Gm-Message-State: AO0yUKWCifLSmBd+A1+wRF02waIFlYdJQHioM8q5S4Kc8G3EI95UdNtl
-        AgenYsaEr+EVNxjLd+bWmt7oKQ==
-X-Google-Smtp-Source: AK7set8ruiUqU3jrcwlb8VAObzf+jUPiQQRUbmmbsRffwnPe5/KWjU2/Htpqbn26H5VSFApehTmg2Q==
-X-Received: by 2002:a05:600c:2a08:b0:3da:fb3c:c1ab with SMTP id w8-20020a05600c2a0800b003dafb3cc1abmr3758944wme.0.1677002884436;
-        Tue, 21 Feb 2023 10:08:04 -0800 (PST)
+        bh=FS5MMzUrtYY5N2w5QCadh2L/6Lyuv9jfcaqNKoRqTRU=;
+        b=KmMaBZQ1uxutjVkpHFK2XwmDNVVWtfxiUtFwPu6fsGEhKyY0hS+70v/kKKpbZ9rM6z
+         PLz9PJCakF6CmwOfvxbuD7R4MgqM3ZiPUJdmQbCO9WFKZjufmgTTu0528xQgvaZzGtX6
+         1b6ciyuyTsS2OTX5lgeHlmQrbbnHFlfblPaVjlZEW+yxGUyXvL1X6idgBRKECvaPHj+g
+         kNRl3TzvG3mTALc3QEnXxmj/5b8CuEB5rAJxGccDSdp+0UspsfI5J8dv85aUQmT1xjoV
+         GL2jL4wUyESrIo/IVib7I/bSgvXAWmbVvfpuFPLLenD3ua4yYY5GANW253Mhj05nEaYQ
+         rSRA==
+X-Gm-Message-State: AO0yUKWCnGmd2fuyJWKTgjfFjit7EYPoH893JE3R+QC9vjwvSkLD7u38
+        ItNVkiVCu6ZGCFRfX5rBPIDq7A==
+X-Google-Smtp-Source: AK7set/iZL0sNcSr7TU3hL+KxyxJYOv0oEHnJFiWZ3jR9FR+vy6ZKAmrWi7nkVzkyX+LRfH7CCtbtQ==
+X-Received: by 2002:adf:e4c5:0:b0:2c6:ca11:6c94 with SMTP id v5-20020adfe4c5000000b002c6ca116c94mr5101514wrm.60.1677002891504;
+        Tue, 21 Feb 2023 10:08:11 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:1e9:315c:bb40:e382])
-        by smtp.gmail.com with ESMTPSA id c128-20020a1c3586000000b003e21558ee9dsm5107815wma.2.2023.02.21.10.08.03
+        by smtp.gmail.com with ESMTPSA id c128-20020a1c3586000000b003e21558ee9dsm5107815wma.2.2023.02.21.10.08.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Feb 2023 10:08:04 -0800 (PST)
+        Tue, 21 Feb 2023 10:08:11 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rafael@kernel.org, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Support Opensource <support.opensource@diasemi.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v2 10/16] thermal/drivers/da9062: Don't access the thermal zone device fields
-Date:   Tue, 21 Feb 2023 19:07:04 +0100
-Message-Id: <20230221180710.2781027-11-daniel.lezcano@linaro.org>
+        Peter Kaestle <peter@piie.net>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Mark Gross <markgross@kernel.org>,
+        platform-driver-x86@vger.kernel.org (open list:ACER ASPIRE ONE
+        TEMPERATURE AND FAN DRIVER)
+Subject: [PATCH v2 15/16] thermal/drivers/acerhdf: Remove pointless governor test
+Date:   Tue, 21 Feb 2023 19:07:09 +0100
+Message-Id: <20230221180710.2781027-16-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230221180710.2781027-1-daniel.lezcano@linaro.org>
 References: <20230221180710.2781027-1-daniel.lezcano@linaro.org>
@@ -67,65 +69,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver is reading the passive polling rate in the thermal zone
-structure. We want to prevent the drivers to rummage around in the
-thermal zone structure.
+The thermal zone parameter specifies the bang-bang governor.
 
-On the other side, the delay is what the driver passed to the
-thermal_zone_device_register() function, so it has already the
-information.
+The Kconfig selects the bang-bang governor. So it is pointless to test
+if the governor was set for the thermal zone assuming it may not have
+been compiled-in.
 
-Reuse the information we have instead of reading the information we
-set.
+Remove the test and prevent another access into the thermal internals.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Peter Kaestle <peter@piie.net>
 ---
- drivers/thermal/da9062-thermal.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/platform/x86/acerhdf.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
-index e7097f354750..2d31b1f73423 100644
---- a/drivers/thermal/da9062-thermal.c
-+++ b/drivers/thermal/da9062-thermal.c
-@@ -41,6 +41,8 @@
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 61f1c3090867..71b9c1f922d9 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -697,13 +697,6 @@ static int __init acerhdf_register_thermal(void)
+ 	if (ret)
+ 		return ret;
  
- #define DA9062_MILLI_CELSIUS(t)			((t) * 1000)
+-	if (strcmp(thz_dev->governor->name,
+-				acerhdf_zone_params.governor_name)) {
+-		pr_err("Didn't get thermal governor %s, perhaps not compiled into thermal subsystem.\n",
+-				acerhdf_zone_params.governor_name);
+-		return -EINVAL;
+-	}
+-
+ 	return 0;
+ }
  
-+static unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
-+
- struct da9062_thermal_config {
- 	const char *name;
- };
-@@ -95,7 +97,10 @@ static void da9062_thermal_poll_on(struct work_struct *work)
- 		thermal_zone_device_update(thermal->zone,
- 					   THERMAL_EVENT_UNSPECIFIED);
- 
--		delay = thermal->zone->passive_delay_jiffies;
-+		/*
-+		 * pp_tmp is between 1s and 10s, so we can round the jiffies
-+		 */
-+		delay = round_jiffies(msecs_to_jiffies(pp_tmp));
- 		queue_delayed_work(system_freezable_wq, &thermal->work, delay);
- 		return;
- 	}
-@@ -155,7 +160,6 @@ static int da9062_thermal_probe(struct platform_device *pdev)
- {
- 	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
- 	struct da9062_thermal *thermal;
--	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
- 	const struct of_device_id *match;
- 	int ret = 0;
- 
-@@ -208,8 +212,7 @@ static int da9062_thermal_probe(struct platform_device *pdev)
- 	}
- 
- 	dev_dbg(&pdev->dev,
--		"TJUNC temperature polling period set at %d ms\n",
--		jiffies_to_msecs(thermal->zone->passive_delay_jiffies));
-+		"TJUNC temperature polling period set at %d ms\n", pp_tmp);
- 
- 	ret = platform_get_irq_byname(pdev, "THERMAL");
- 	if (ret < 0)
 -- 
 2.34.1
 
