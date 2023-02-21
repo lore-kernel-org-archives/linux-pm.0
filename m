@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86046C6379F
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Feb 2023 15:05:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79DFBC6FA9D
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Feb 2023 15:05:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234337AbjBUPFy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Feb 2023 10:05:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58224 "EHLO
+        id S234675AbjBUPF5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Feb 2023 10:05:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58266 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233988AbjBUPFx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 10:05:53 -0500
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01F7A2118
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 07:05:51 -0800 (PST)
-Received: by mail-wm1-x32f.google.com with SMTP id p26so3475475wmc.4
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 07:05:51 -0800 (PST)
+        with ESMTP id S234653AbjBUPFz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 10:05:55 -0500
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D49EE76AC
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 07:05:53 -0800 (PST)
+Received: by mail-wm1-x32e.google.com with SMTP id p16so1273444wmq.5
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 07:05:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=bgdev-pl.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=HDtAjKV2duI8aK39M5yuWp8bTPWDmPz63VxbaKpJyaU=;
-        b=mxPXxnRgZbP4sgi3fRh1A+8DfgE14IuMc+uQhc3HfBC6JvkSQEK9MyWyjSOk70uOJC
-         3YUppkPlJl2b7kmXkN0te4IMeuQn0L6y7a16uQB1teNNDjeQE7syu2ORY99hIEt0Fgj/
-         M8sPx66WsTYdF6v2ikIRMJbt99h92qPQEZ0Gj1VUcnS5UydtdQ1mT5uPBjfORdxjqbQF
-         uct4vuP/zYDnTpohSZTugLb1etyOzuTKLDWJ07bRKd1LaokdOTH+lHN9c/fBbDyJoDWI
-         r+pWjUkOk4wdr9fg0xXB7r6QI4Aib8eSJ8pneX6MrUITfTwg4OjaZAZ60UpMG9uhBvaD
-         zYqg==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=l1i149aTLNTOLkmkyvTEcAaXgMJdiI2YD/KUpWRXaaA=;
+        b=nZImdhglNUEScK1GjzBwIFIncyE6SLWbEYg5kAfxR5dt/o6o3T53UL11KPwyLmN1Bs
+         ebCn35FX8cxCiSk8xT7aSiaL+r2C3tY2si8M+bLoP7Pjrx042y/pFpAMj00Kyzi9dLIr
+         N/V3qjYZTmP7jEO8Jyxb/Zvvsb3Hkz0bM/yGP/tuO3vldxIrUmONOBO5CSZY19CbdzBo
+         zGyZDidXxOmxH2DVSG56Lf4G7bD3oudCYtJtR8yql76sQOWET1YsUIdKzeE4nzIVR56n
+         WLLNElor9meGT8lXFAzeCP/1oWTNeXJ70lmNoU2JzogbX/hZDx/qyUT6MBdMO5H+rqfE
+         eTUg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HDtAjKV2duI8aK39M5yuWp8bTPWDmPz63VxbaKpJyaU=;
-        b=VWsB2TSRCqjPipu3SUZrEUKK/24+Hv6ruqCzCclrzBR8rD15+3+MybZ7lRWZdJDTv/
-         oOrYhUbqCMVQrJLyXzGygbFpJpwPTA7EZL9orZTdPWafJat6qQroA+zdLQBsI7sh/T+i
-         IB4DUEjHUOe2vK1VwsRzp/LjaE3wJ6nWbRF/a8mpfIKUfSVoFqPbdOYxyehoyQCVZhxu
-         Y9IBWjbwZPqkoGsEeihnWvbpO17tzDaABs2Wv0KgNRORBYGEJO5sEqQWgyBlh/StH9d4
-         12J1ZF1Yk2UKtEw+6nXodyxrq/u8kUnLJBuVPh9zX/GUrqnhzOizhXx8VYn8mvc1BpJt
-         178w==
-X-Gm-Message-State: AO0yUKVmwdHDQ2W3ZvKT5prc3cn8pqoziJbEFaQp+tGdnGxM3zfzR/DU
-        WzuU1JxXfHVuf9vLecWagSiEKg==
-X-Google-Smtp-Source: AK7set+T90fi3mhrfQgkbcCGizsm63S6+3QdA6P15+Pm2WdZCuRMEGRomXni96sDgrifOTCwGEGj3g==
-X-Received: by 2002:a05:600c:600a:b0:3e1:e149:b67b with SMTP id az10-20020a05600c600a00b003e1e149b67bmr4736506wmb.18.1676991950469;
-        Tue, 21 Feb 2023 07:05:50 -0800 (PST)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=l1i149aTLNTOLkmkyvTEcAaXgMJdiI2YD/KUpWRXaaA=;
+        b=qrHpD8ksXH5MP4pKrT6TFqMuKtYev/Sztf2udimWSQqXI7a3UGWSvF+Bj0mX7D3+0W
+         UB8ciOIlyYxHNr96zwzSzEutEy8mmMyRl3qzxM5csaFPT28vupdyH3cTk6GjO37vbcLP
+         FJWKl1DZuvKr98u/hpxNCD4uWG/vwTIeilmvlXctOgtkjpU8NZwxa4VoSykH1CmAz1ye
+         AjCrb6GvTWvb6yP8VaB9OZ5QeX6ydjJke5ivs8g1/eQlnYYuK6ESNEhy2EnhwMGkpWhY
+         dXiXYUl8UmXdSLboAxLxA5ZcLmKh15lYOuenzzyRexTc6jN5V6jkV0q3XbP9nFC3UonU
+         VYoQ==
+X-Gm-Message-State: AO0yUKXlwUb7Nc8mp10RtyJWZFiZR2fHAb37z4azeXZhAw6YD0eS9geT
+        bxE99b2AAB6fKLoeZDLXhNbB1OSLZd5zygP7
+X-Google-Smtp-Source: AK7set8Ntvu4HilU/sI4URZx0iaMNEdxXnAvFGiSMkOuQcwlad5ePdFRr1QT6eVqPEY8Zy7uXc4BjQ==
+X-Received: by 2002:a05:600c:448a:b0:3e1:97d:612e with SMTP id e10-20020a05600c448a00b003e1097d612emr9154458wmo.29.1676991952314;
+        Tue, 21 Feb 2023 07:05:52 -0800 (PST)
 Received: from brgl-uxlite.home ([2a01:cb1d:334:ac00:4c24:722f:312a:76c4])
-        by smtp.gmail.com with ESMTPSA id n30-20020a05600c3b9e00b003e206cc7237sm5331687wms.24.2023.02.21.07.05.49
+        by smtp.gmail.com with ESMTPSA id n30-20020a05600c3b9e00b003e206cc7237sm5331687wms.24.2023.02.21.07.05.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Feb 2023 07:05:50 -0800 (PST)
+        Tue, 21 Feb 2023 07:05:51 -0800 (PST)
 From:   Bartosz Golaszewski <brgl@bgdev.pl>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -59,10 +60,12 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: [PATCH 0/2] arm64: qcom: sa8775p: enable cpufreq
-Date:   Tue, 21 Feb 2023 16:05:41 +0100
-Message-Id: <20230221150543.283487-1-brgl@bgdev.pl>
+Subject: [PATCH 2/2] arm64: dts: qcom: sa8775p: add cpufreq node
+Date:   Tue, 21 Feb 2023 16:05:43 +0100
+Message-Id: <20230221150543.283487-3-brgl@bgdev.pl>
 X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230221150543.283487-1-brgl@bgdev.pl>
+References: <20230221150543.283487-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -71,17 +74,102 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Add the new compatible for the cpufreq engine on the sa8775p SoC and
-enable it in the .dtsi.
+Add a node for the cpufreq engine and specify the frequency domains for
+all CPUs.
 
-Bartosz Golaszewski (2):
-  dt-bindings: cpufreq: qcom-hw: add a compatible for sa8775p
-  arm64: dts: qcom: sa8775p: add cpufreq node
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+---
+ arch/arm64/boot/dts/qcom/sa8775p.dtsi | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
- .../bindings/cpufreq/cpufreq-qcom-hw.yaml     |  1 +
- arch/arm64/boot/dts/qcom/sa8775p.dtsi         | 21 +++++++++++++++++++
- 2 files changed, 22 insertions(+)
-
+diff --git a/arch/arm64/boot/dts/qcom/sa8775p.dtsi b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+index ce5976e36aee..5e2bc67b3178 100644
+--- a/arch/arm64/boot/dts/qcom/sa8775p.dtsi
++++ b/arch/arm64/boot/dts/qcom/sa8775p.dtsi
+@@ -37,6 +37,7 @@ CPU0: cpu@0 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x0>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_0>;
+ 			L2_0: l2-cache {
+ 				compatible = "cache";
+@@ -52,6 +53,7 @@ CPU1: cpu@100 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x100>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_1>;
+ 			L2_1: l2-cache {
+ 				compatible = "cache";
+@@ -64,6 +66,7 @@ CPU2: cpu@200 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x200>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_2>;
+ 			L2_2: l2-cache {
+ 				compatible = "cache";
+@@ -76,6 +79,7 @@ CPU3: cpu@300 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x300>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			next-level-cache = <&L2_3>;
+ 			L2_3: l2-cache {
+ 				compatible = "cache";
+@@ -88,6 +92,7 @@ CPU4: cpu@10000 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x10000>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_4>;
+ 			L2_4: l2-cache {
+ 				compatible = "cache";
+@@ -104,6 +109,7 @@ CPU5: cpu@10100 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x10100>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_5>;
+ 			L2_5: l2-cache {
+ 				compatible = "cache";
+@@ -116,6 +122,7 @@ CPU6: cpu@10200 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x10200>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_6>;
+ 			L2_6: l2-cache {
+ 				compatible = "cache";
+@@ -128,6 +135,7 @@ CPU7: cpu@10300 {
+ 			compatible = "qcom,kryo";
+ 			reg = <0x0 0x10300>;
+ 			enable-method = "psci";
++			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			next-level-cache = <&L2_7>;
+ 			L2_7: l2-cache {
+ 				compatible = "cache";
+@@ -731,6 +739,19 @@ tcsr_mutex: hwlock@1f40000 {
+ 			#hwlock-cells = <1>;
+ 		};
+ 
++		cpufreq_hw: cpufreq@18591000 {
++			compatible = "qcom,sa8775p-cpufreq-epss",
++				     "qcom,cpufreq-epss";
++			reg = <0x0 0x18591000 0x0 0x1000>,
++			      <0x0 0x18593000 0x0 0x1000>;
++			reg-names = "freq-domain0", "freq-domain1";
++
++			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GCC_GPLL0>;
++			clock-names = "xo", "alternate";
++
++			#freq-domain-cells = <1>;
++		};
++
+ 		tlmm: pinctrl@f000000 {
+ 			compatible = "qcom,sa8775p-tlmm";
+ 			reg = <0x0 0xf000000 0x0 0x1000000>;
 -- 
 2.37.2
 
