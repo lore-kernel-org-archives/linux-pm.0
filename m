@@ -2,170 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B22FFC61DA3
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Feb 2023 13:31:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A665C64ED6
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Feb 2023 15:05:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232813AbjBUNbf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Feb 2023 08:31:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48242 "EHLO
+        id S234627AbjBUPFz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Feb 2023 10:05:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58254 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231916AbjBUNbe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 08:31:34 -0500
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0BC2929146
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 05:31:33 -0800 (PST)
-Received: by mail-wr1-x434.google.com with SMTP id t15so4548736wrz.7
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 05:31:32 -0800 (PST)
+        with ESMTP id S234122AbjBUPFz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 10:05:55 -0500
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D12C140C8
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 07:05:52 -0800 (PST)
+Received: by mail-wr1-x42c.google.com with SMTP id l25so4372735wrb.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 07:05:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ou0Xxb1ANHUtLSjHJzkplnWc8Iame8WOMDRsp2ccWvc=;
-        b=rHZgSP1CVvKTTZntkGj4fkpBX/mKKc8qULuu9LPToh/IGfYHudQD3Qbia7vH0BkY03
-         1JN/b5f5D1OLQKx4SYks3tLGx1AHpQXEj5TYlNxDvoSaojC0LUIJzZxpJe4By/JT9cs8
-         fAT8P1pyZocZzqbkDPNOEw8fTyIfctwuqhyzMJczNgYnXSC/rjmXOOizhDCj5UF0dBCw
-         GtHjqmzW2DUSsFxTttCugb7xhXXVIHAw5hm8sI+M7haReODugzqcDYXjUrJuYuQ2Znug
-         R5/4WMIUxJq/cV+UeIvavcbHwJBHW7/4ak6mdSYCSz+iPYi0PykaxVRhOzHEfSKUEfMW
-         /kMw==
+        d=bgdev-pl.20210112.gappssmtp.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5hU12FqArPVLmpEr900EkmsHffMDqv7keP7H+/lbE0o=;
+        b=0xwDX21OfpDIWBxbMXF/G+PdhB7KUalmzgO2jn0xC1tG72WJyjfR8nnlqH9MFVr5XU
+         9nIUR00btwcTqieGpa8v8b8aJJju3M+KgbPco+1YFYOvI6OzXmoPkmyRrm3uekWk1Tj5
+         RHv8kojqJTYHCxADJbOVU1qhwX9q2KlGvOk/WbTStzMfhWjg/1uaG0z1vs9kpUfcRXjh
+         3DGb5vCNjiMRSitTUwRCWjGWeEkwY/z1JBOsKhZwevEJLNJ/MapPBG0Dyy8CdjiknEDn
+         OCHdhHu/IJnyge15SuyCSmJOiWEi0u8MOhGr06TkCIpZ2LSra6giFRhAlB1vQTVj304y
+         IvYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ou0Xxb1ANHUtLSjHJzkplnWc8Iame8WOMDRsp2ccWvc=;
-        b=1rHQA+4cN1fDJpKyn7qZFRIwg0RGp0KkTl+tnJulsESija29Ij47I6S2EcBZ/rfAax
-         AI/r5q7/4avA9T7vv7kjErDiiIjT/6CDHNlfz5rQl1DjMQTH0P8128Q+FO94NKfjlev7
-         jHjfzVFc0udGXxQXb5ppapM1iUCWCsi+eGqGN/MJCuYOa3M6IqJx2epIHQm35CERm+fq
-         Z6AQbXjgedOzF0IzTgy5GsKhdHGC/NwQlctE+SS0GW+h5lugwdy+ElfHWpAm+4zFxTpg
-         LdPSvP2YHDYovx7lRS3eLYTlK1G3imax3Nfwxjtlfb0hZwSPyHy5dbfdovsoGONFxKhR
-         fb4Q==
-X-Gm-Message-State: AO0yUKVmLntEkXMCgtNpkWOxSKoOqukJFwRQE6XXMMd3l75uIklpTR1f
-        SwvnhOK2xmq56AErdJbcw+vu0A==
-X-Google-Smtp-Source: AK7set98PsxfIQfbzLOnguBlATa7Lc/wiRo1c9CJwnSBgUm6y4CfPZ1S8S1fumWoJl2mq+1NywWeKA==
-X-Received: by 2002:adf:e255:0:b0:2c5:52ef:61c5 with SMTP id bl21-20020adfe255000000b002c552ef61c5mr4000020wrb.41.1676986291418;
-        Tue, 21 Feb 2023 05:31:31 -0800 (PST)
-Received: from ?IPV6:2a05:6e02:1041:c10:1e9:315c:bb40:e382? ([2a05:6e02:1041:c10:1e9:315c:bb40:e382])
-        by smtp.googlemail.com with ESMTPSA id o24-20020a5d58d8000000b002c7066a6f77sm1331664wrf.31.2023.02.21.05.31.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 21 Feb 2023 05:31:31 -0800 (PST)
-Message-ID: <9932fe61-9a33-79f4-8680-8f504357d514@linaro.org>
-Date:   Tue, 21 Feb 2023 14:31:30 +0100
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5hU12FqArPVLmpEr900EkmsHffMDqv7keP7H+/lbE0o=;
+        b=ChujI0rDo4Sap33G65XrU8t8X1SYPf+QXh6+0aa60kzMqCs83XSq8QPQxlfD7iVv36
+         C5o1hf/QpV5zmal9rUrm8qMbzUKnBokQNeFfoWscLro5BcJzTLRBU90sjLQaQA7iTC/7
+         kB5IpNhoP03CqnsVffhXtkyRcDltR0p92gXPKIqQY7oKWwF7WR3LRHfPqp/qBwuMj5IF
+         ajGd0CoX7f1ZddMIC4snDBJmrD1woAfNCO8iCHKrsCq7pofpLM7j9a0uxdlTP8VpX9xa
+         8V5QZHiSoQ35LuutUUtKY2Zyl20Q5Txj28TYkkHcXZXkgPcArSchAwrYnZkU44D+QlEY
+         +t9w==
+X-Gm-Message-State: AO0yUKWNSv8P/4LsoylWHD6ldPMFECQegrIzm8g/yCfKPoOT7bN5hWO+
+        NBsm/Xmk1qHw0465msj/szEOgw==
+X-Google-Smtp-Source: AK7set+vmrTR7zH0FX7OMl6Gb7mK6qabSOlJP7BIzOxfl4ndccToH4qGXYEbkhKNFfwEhoOXsi76XQ==
+X-Received: by 2002:adf:e505:0:b0:2c3:dc42:5252 with SMTP id j5-20020adfe505000000b002c3dc425252mr4610327wrm.70.1676991951427;
+        Tue, 21 Feb 2023 07:05:51 -0800 (PST)
+Received: from brgl-uxlite.home ([2a01:cb1d:334:ac00:4c24:722f:312a:76c4])
+        by smtp.gmail.com with ESMTPSA id n30-20020a05600c3b9e00b003e206cc7237sm5331687wms.24.2023.02.21.07.05.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Feb 2023 07:05:51 -0800 (PST)
+From:   Bartosz Golaszewski <brgl@bgdev.pl>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: [PATCH 1/2] dt-bindings: cpufreq: qcom-hw: add a compatible for sa8775p
+Date:   Tue, 21 Feb 2023 16:05:42 +0100
+Message-Id: <20230221150543.283487-2-brgl@bgdev.pl>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230221150543.283487-1-brgl@bgdev.pl>
+References: <20230221150543.283487-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH RFC] thermal/drivers/intel_menlow: Remove
- add_one_attribute
-Content-Language: en-US
-To:     "Zhang, Rui" <rui.zhang@intel.com>,
-        "rafael@kernel.org" <rafael@kernel.org>
-Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "Thomas, Sujith" <sujith.thomas@intel.com>,
-        "amitk@kernel.org" <amitk@kernel.org>
-References: <20230220162419.1276952-1-daniel.lezcano@linaro.org>
- <27488f102c917ce1f6d24d30f801b1e1745674e1.camel@intel.com>
- <b66fca52-d1f9-2761-4117-819c5820308d@linaro.org>
- <6b63db0832fadffa56ff85a1c4ca2b98d165df50.camel@intel.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <6b63db0832fadffa56ff85a1c4ca2b98d165df50.camel@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21/02/2023 13:58, Zhang, Rui wrote:
-> Hi, Daniel,
-> 
-> On Tue, 2023-02-21 at 12:30 +0100, Daniel Lezcano wrote:
->> Hi Rui,
->>
->>
->> On 21/02/2023 07:22, Zhang, Rui wrote:
->>> On Mon, 2023-02-20 at 17:24 +0100, Daniel Lezcano wrote:
->>>> The driver hooks the thermal framework sysfs to add some driver
->>>> specific information. A debatable approach as that may belong the
->>>> device sysfs directory, not the thermal zone directory.
->>>>
->>>> As the driver is accessing the thermal internals, we should
->>>> provide
->>>> at
->>>> least an API to the thermal framework to add an attribute to the
->>>> existing sysfs thermal zone entry.
->>>>
->>>> Before doing that and given the age of the driver (2008) may be
->>>> it is
->>>> worth to double check if these attributes are really needed. So
->>>> my
->>>> first proposal is to remove them if that does not hurt.
->>>>
->>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>>
->>> I don't have any device that uses this driver.
->>> Let's see what Sujith says.
->>
->> Thanks for your answer.
->>
->> I take the opportunity to ask you for the ACPI thermal additional
->> sysfs
->> entries.
->>
->> The ACPI thermal driver adds a link:
->>
->> /sys/class/thermal/thermal_zone0/device
->>
->> which points to:
->>
->> ../../../LNXSYSTM:00/LNXSYBUS:01/LNXTHERM:00
->>
->>
->> And in this directory there is:
->>
->> /sys/devices/LNXSYSTM:00/LNXSYBUS:01/LNXTHERM:00/thermal_zone
->>
->> pointing to /sys/class/thermal/thermal_zone0
->>
->>
->> I was wondering if we have to keep it also? It is a cyclic
->> description
->> and we can have the several thermal zones having a device link
->> pointing
->> to the same location.
-> 
-> I don't think so. So far, ACPI Thermal object and the generic thermal
-> zone device are 1:1 match.
-> 
->>   So I'm not sure this is correct.
->>
->> I can understand adding a link in the thermal zone pointing to the
->> device could make sense, and that could be generalized to all the
->> thermal zone creation, but the back pointer link seems strange.
->>
->> Would it make sense to remove this second link ?
-> 
-> That was required by some userpsace tool running on menlow, similar to
-> this one. But TBH, I don't recall the userspace details.
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-If there is a 1:1 relationship, how can the userspace require the kernel 
-to describe an information it already has?
+Add the compatible for the cpufreq engine present on sa8775p platforms.
 
-eg.
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+---
+ Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-/sys/class/thermal/thermal_zone0/device points to 
-../../../LNXSYSTM:00/LNXSYBUS:01/LNXTHERM:00
-
-So, userspace has already the opposite relationship as the 1:1 tells 
-thermal_zone0 -> LNXTHERM:00, then LNXTHERM:00 is associated to 
-thermal_zone0. It is a duplicate information in sysfs.
-
-Anyway, I guess that now it is in sysfs, the removal will be very hard 
-to achieve *sigh*
-
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+index e4aa8c67d532..92693c33edf9 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+@@ -26,6 +26,7 @@ properties:
+         items:
+           - enum:
+               - qcom,qdu1000-cpufreq-epss
++              - qcom,sa8775p-cpufreq-epss
+               - qcom,sc7280-cpufreq-epss
+               - qcom,sc8280xp-cpufreq-epss
+               - qcom,sm6375-cpufreq-epss
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.37.2
 
