@@ -2,57 +2,115 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99972C61DA4
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Feb 2023 09:15:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F5DDC6FA99
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Feb 2023 09:36:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231650AbjBVJPp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Feb 2023 04:15:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34226 "EHLO
+        id S231313AbjBVJgA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Feb 2023 04:36:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55054 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229865AbjBVJPo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Feb 2023 04:15:44 -0500
-Received: from mail.corrib.pl (mail.corrib.pl [185.58.226.145])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47DA51632A
-        for <linux-pm@vger.kernel.org>; Wed, 22 Feb 2023 01:15:42 -0800 (PST)
-Received: by mail.corrib.pl (Postfix, from userid 1001)
-        id 4947EA37B6; Wed, 22 Feb 2023 09:15:45 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=corrib.pl; s=mail;
-        t=1677057346; bh=X6IEpSISwJiYlJ3uA866lskXve3r+4o2hf4z7VM6m5o=;
-        h=Date:From:To:Subject:From;
-        b=uqxPRDopdDZ/9Va52GAiKWFchfMfZULaoNSgT0D0ncGbKfSPTwSQLmRr6U2wxqUM6
-         WmLcmMZCZMeJtKFu3mqKQe4c1eimtq7iSASDGEIOGCZpVbP6htKitqfKPMnMUw+36p
-         /ez3o3EiWrUT6B/JUbNSgm/YRwnu2bxGPDjWf9tVkFux9yqZ2vrwiYJus6PBeABHlb
-         P5miV8xLblQugRBHSrwqJ8lZn04aMc30BNzcu1O7t1DNctmuqlpnhhXSv8Pjm2tYA8
-         zik69RjZvqkvmiStdqJ8qNI05qY6Atukz9Ucnq0bhrhH4mgR9GjCg624uj0rCZlZWa
-         CvZgVVXzYVBdg==
-Received: by mail.corrib.pl for <linux-pm@vger.kernel.org>; Wed, 22 Feb 2023 09:15:44 GMT
-Message-ID: <20230222074502-0.1.5n.hd8j.0.3fch233w5n@corrib.pl>
-Date:   Wed, 22 Feb 2023 09:15:44 GMT
-From:   =?UTF-8?Q? "Szczepan_Kie=C5=82basa" ?= 
-        <szczepan.kielbasa@corrib.pl>
-To:     <linux-pm@vger.kernel.org>
-Subject: Faktoring
-X-Mailer: mail.corrib.pl
+        with ESMTP id S232442AbjBVJf1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Feb 2023 04:35:27 -0500
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA9973B3DD;
+        Wed, 22 Feb 2023 01:33:32 -0800 (PST)
+Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id B776866021B5;
+        Wed, 22 Feb 2023 09:31:59 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1677058321;
+        bh=ypc2TjbNSU7dsJCUFEveVUwkvQ3RanGmsWbkzF7sWgo=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=FNUVhOeaDNZZVi6pZQ6VK2lEs7a/M+4teR0YM9KUip7qVBhKutdX2Zy5nYfzcsOw/
+         djyt2EwIP5Di/RZRdmEMzeMePbU80C0D67C7pzmY3I+ERCTLfaiuXS0VslS+F5WaQf
+         fjBUKZFaOPp8MNRri82Y6HG0SawCtkD28MTQdNV3Ngc9lm+Y7QvVyAYXZkPONKGGR3
+         //lqrmT+fnoduRyAOcor6oP/m+ktaSMj/YwcK6jU0HJ5AVhr5fHJkV6I6p37l2uCTI
+         uK1G4sXntFRI6/e2q9TLw+v7lgGy9Qq0NJ20hPk63AyJ776C9yOMTdEfDrBHBaptWP
+         uWZWkFvCBsZtA==
+Message-ID: <fce7ef68-8145-75ae-4ca2-35560e334cfc@collabora.com>
+Date:   Wed, 22 Feb 2023 10:31:57 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH v2 05/16] thermal/hwmon: Use the right device for
+ devm_thermal_add_hwmon_sysfs()
+Content-Language: en-US
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        Guillaume La Roque <glaroque@baylibre.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        Daniel Golle <daniel@makrotopia.org>,
+        =?UTF-8?Q?Niklas_S=c3=b6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Adam Ward <DLG-Adam.Ward.opensource@dm.renesas.com>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Mark Brown <broonie@kernel.org>,
+        "open list:THERMAL DRIVER FOR AMLOGIC SOCS" 
+        <linux-amlogic@lists.infradead.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "open list:ARM/QUALCOMM SUPPORT" <linux-arm-msm@vger.kernel.org>,
+        "open list:ARM/Allwinner sunXi SoC support" 
+        <linux-sunxi@lists.linux.dev>,
+        "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>,
+        "open list:TI BANDGAP AND THERMAL DRIVER" 
+        <linux-omap@vger.kernel.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>
+References: <20230221180710.2781027-1-daniel.lezcano@linaro.org>
+ <20230221180710.2781027-6-daniel.lezcano@linaro.org>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20230221180710.2781027-6-daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dzie=C5=84 dobry,
+Il 21/02/23 19:06, Daniel Lezcano ha scritto:
+> The devres variant of thermal_add_hwmon_sysfs() only takes the thermal
+> zone structure pointer as parameter.
+> 
+> Actually, it uses the tz->device to add it in the devres list.
+> 
+> It is preferable to use the device registering the thermal zone
+> instead of the thermal zone device itself. That prevents the driver
+> accessing the thermal zone structure internals and it is from my POV
+> more correct regarding how devm_ is used.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com> #amlogic_thermal
 
-rozwa=C5=BCali Pa=C5=84stwo wyb=C3=B3r finansowania, kt=C3=B3re spe=C5=82=
-ni potrzeby firmy, zapewniaj=C4=85c natychmiastowy dost=C4=99p do got=C3=B3=
-wki, bez zb=C4=99dnych przestoj=C3=B3w?=20
-
-Przygotowali=C5=9Bmy rozwi=C4=85zania faktoringowe dopasowane do Pa=C5=84=
-stwa bran=C5=BCy i wielko=C5=9Bci firmy, dzi=C4=99ki kt=C3=B3rym, nie mus=
-z=C4=85 Pa=C5=84stwo martwi=C4=87 si=C4=99 o niewyp=C5=82acalno=C5=9B=C4=87=
- kontrahent=C3=B3w, poniewa=C5=BC transakcje s=C4=85 zabezpieczone i posi=
-adaj=C4=85 gwarancj=C4=99 sp=C5=82aty.=20
-Chc=C4=85 Pa=C5=84stwo przeanalizowa=C4=87 dost=C4=99pne opcje?
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com> 
+#MediaTek auxadc
 
 
-Pozdrawiam
-Szczepan Kie=C5=82basa
