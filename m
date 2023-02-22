@@ -2,70 +2,98 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FA8EC678DB
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Feb 2023 20:39:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E17F0C636D6
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Feb 2023 04:03:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230468AbjBUUjQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Feb 2023 15:39:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47156 "EHLO
+        id S229546AbjBVEDZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Feb 2023 23:03:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48626 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230225AbjBUUjO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 15:39:14 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F399302B0;
-        Tue, 21 Feb 2023 12:39:02 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id D45A6B810C6;
-        Tue, 21 Feb 2023 20:39:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 82B31C4339E;
-        Tue, 21 Feb 2023 20:39:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677011940;
-        bh=QNtiWG7LnZ/oZkA84pBoLudNRf596An+hPKcjDTqEII=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=jLFiVIXL/VC1j80R0fu9sbXFpQN+FBFL+iyNccVIy6WKn4iGiwRS/LH7drgN1x3xq
-         Cw1cl+lKTaMmJO2Q3zdoVLFgXaCf7Hf4vvnrqxA1fR9DlTUlAhpxb1ZBHVBZSOJp9d
-         i4i8IAw758YodgVexJyvQbbefhTaqL7XiclxMpFAwHEonft9EATL42lUhXg/64fMxG
-         yKl2AZEkSRhog6u+/cuwguMKIw3P1u/j61cHmI7ABpB3fUVB5Vqn30dbl26Q9ynZiZ
-         nf64CwiklM3hwwnhg3gECGnP+Hv6zqrX/perLlk97DyLI+FErnYo1Xsc9/wGCUKqxO
-         +Itl8aErRFCeg==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 63EEDC43151;
-        Tue, 21 Feb 2023 20:39:00 +0000 (UTC)
-Subject: Re: [GIT PULL] Thermal control updates for v6.3-rc1
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0jXnjq+zRcsvUfuS=-5brPEdXw-BrFvkD8jR7kQ_ob_ww@mail.gmail.com>
-References: <CAJZ5v0jXnjq+zRcsvUfuS=-5brPEdXw-BrFvkD8jR7kQ_ob_ww@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-acpi.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0jXnjq+zRcsvUfuS=-5brPEdXw-BrFvkD8jR7kQ_ob_ww@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.3-rc1
-X-PR-Tracked-Commit-Id: 6828e402d06f7c574430b61c05db784cd847b19f
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 1b72607d7321e66829e11148712b3a2ba1dc83e7
-Message-Id: <167701194040.12980.17324492209369764610.pr-tracker-bot@kernel.org>
-Date:   Tue, 21 Feb 2023 20:39:00 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
+        with ESMTP id S229566AbjBVEDX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2023 23:03:23 -0500
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C5A3B777
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 20:03:20 -0800 (PST)
+Received: by mail-pf1-x436.google.com with SMTP id a26so3802736pfo.9
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2023 20:03:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=QuI/VvwDNYNNazJWSsosiKrPGXGOzC0MjV/AUA+0Y18=;
+        b=nCQyd6hFnx68A0tFIWYPEgBjsOibWoTXo/smz+3gYmBRuFPBPE4pSywkfCdKUgkvpA
+         2hEWf1fS6sHfJJXEu8DWcYvgIJnpq7iCy2lvMkzx+HoVbnLXGhDO3iOZBooeJGtaR0Pd
+         PIZdAXgjwX/QLrf6b4kb2lhJNJ1j/mPGS3Ik1K0eu/3Wy4urzl1+NUghMtTwh0O3P7VO
+         XwlRUrcPNrxw9hmttzjw+mE8ECx7oXM2WAMltKMJ6Ph5wzLKVBrlFjqFfJs7uN86eaQv
+         wJJXhF1XzUfKegtHqxyQWMa88wL+GMAeFpaouHVUjOmGIQMWTqRQH3o2TN5f/VRX0YMW
+         7WDA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QuI/VvwDNYNNazJWSsosiKrPGXGOzC0MjV/AUA+0Y18=;
+        b=Y1kY2j6OD8dalCZPn2xyYueOv1iih5ZwD2q0ZnFr88nMBPfvBujr6FSg7u5MuflNXl
+         7FCIt1vSUumusGNyVXfmRcUf3snE4Vd5QgyF73/nj6ZgyqbPdLThpKEhQavIPz+wsv6M
+         rTyXtrd4CY95wO6VhgR6yMNvUgSEonQk4LJtrqipeBwM/t97z0hRT2ta7o+nIVEqToex
+         SS7ble0ce3UIm7Lgz8gKyOAXqD+2PKHyIb+GRgx8rQoYcOYfkTuE52JliWhbQMqnOJ/2
+         U+72+2sAPSAyFqzTkhErNRJcfrxj8rYfkCYgwEIhq87AdJq9YD2nJtkq0KqhUOXJ5geW
+         hreg==
+X-Gm-Message-State: AO0yUKXt4MMmLkcGS0WO178utReVPnjCmFcW8P3vZsipn2e7R8FBXnef
+        ROyg/HYdMgiloslFQm8pL02OMA==
+X-Google-Smtp-Source: AK7set+j5AzguT+wPMqJTKHp23ybKVMqcUGOXK1UT3NyydZuoWzKn02WTplOAHKPGXm8wetjgNETZA==
+X-Received: by 2002:aa7:96d0:0:b0:5a8:515a:eba4 with SMTP id h16-20020aa796d0000000b005a8515aeba4mr6768719pfq.10.1677038600006;
+        Tue, 21 Feb 2023 20:03:20 -0800 (PST)
+Received: from localhost ([122.172.83.155])
+        by smtp.gmail.com with ESMTPSA id h5-20020a62b405000000b005ae8e94b0d5sm6764079pfn.107.2023.02.21.20.03.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Feb 2023 20:03:19 -0800 (PST)
+Date:   Wed, 22 Feb 2023 09:33:17 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Sumit Gupta <sumitg@nvidia.com>
+Cc:     treding@nvidia.com, krzysztof.kozlowski@linaro.org,
+        dmitry.osipenko@collabora.com, rafael@kernel.org,
+        jonathanh@nvidia.com, robh+dt@kernel.org, lpieralisi@kernel.org,
+        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pci@vger.kernel.org, mmaddireddy@nvidia.com, kw@linux.com,
+        bhelgaas@google.com, vidyas@nvidia.com, sanjayc@nvidia.com,
+        ksitaraman@nvidia.com, ishah@nvidia.com, bbasu@nvidia.com
+Subject: Re: [Patch v2 7/9] cpufreq: tegra194: add OPP support and set
+ bandwidth
+Message-ID: <20230222040317.r2p6zlbumazymluc@vireshk-i7>
+References: <20230220140559.28289-1-sumitg@nvidia.com>
+ <20230220140559.28289-8-sumitg@nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230220140559.28289-8-sumitg@nvidia.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Thu, 16 Feb 2023 14:45:38 +0100:
+On 20-02-23, 19:35, Sumit Gupta wrote:
+> +static int tegra_cpufreq_set_bw(struct cpufreq_policy *policy, unsigned long freq_khz)
+> +{
+> +	struct dev_pm_opp *opp;
+> +	struct device *dev;
+> +	int ret;
+> +
+> +	dev = get_cpu_device(policy->cpu);
+> +	if (!dev)
+> +		return -ENODEV;
+> +
+> +	opp = dev_pm_opp_find_freq_exact(dev, freq_khz * KHZ, true);
+> +	if (IS_ERR(opp))
+> +		return PTR_ERR(opp);
+> +
+> +	ret = dev_pm_opp_set_opp(dev, opp);
+> +	dev_pm_opp_put(opp);
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.3-rc1
+What about dev_pm_opp_set_rate() instead ?
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/1b72607d7321e66829e11148712b3a2ba1dc83e7
-
-Thank you!
+> +	return ret;
+> +}
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+viresh
