@@ -2,184 +2,398 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E576C636D6
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Feb 2023 12:39:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 128C9C61DA4
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Feb 2023 15:04:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231886AbjBVMjW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Feb 2023 07:39:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38556 "EHLO
+        id S232114AbjBVPEn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Feb 2023 10:04:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53188 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230440AbjBVMjV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Feb 2023 07:39:21 -0500
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 082D42709;
-        Wed, 22 Feb 2023 04:39:21 -0800 (PST)
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31M8xHEP002728;
-        Wed, 22 Feb 2023 12:16:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references :
- content-transfer-encoding : content-type : mime-version; s=corp-2022-7-12;
- bh=RxG6qkKpenjaeCQXI0DrkzFZCGFZpX5/xGj52ap59zk=;
- b=p5PRrOsBDEyX9FQDw3RHXwuvAWpVSKx2OJmBOC56Z3Hmw2WkW2xqDC5cvNf4kGfelCGR
- 4nbogl9B4z19OWL9FU60tcDGPY0ywTrJe0+sjYLSXwMUI4ZJjD4C6ZLXHKrsX+Itt2Ab
- y/wpPl3EKnCfRKLZ9lwKgl+GQ48pr3/STgRAtbzXsIQIwssd5GfXUwK+pXKW0EyZsHGM
- oZX6ZAHWajc+Cc+rT0XghpCtLC5F9TQ36vFS3RpKKoJKbg2vbZzkl2P6BFb++6zLtcO2
- ZZByNGZl96Ymb4c3fvqkBYdlT5MYW4NZ1u85zgYtd8uZFbMNztY1OkaQ6borg5WmekvD eg== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3ntpja7n8s-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 22 Feb 2023 12:16:10 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 31MBVZuk007051;
-        Wed, 22 Feb 2023 12:16:09 GMT
-Received: from nam12-dm6-obe.outbound.protection.outlook.com (mail-dm6nam12lp2174.outbound.protection.outlook.com [104.47.59.174])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3ntn4d211r-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 22 Feb 2023 12:16:08 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Uvllumb2N7hWv0chzpNt0i4lHz+/gd8TfRvres4hRBVj+oqbsADqVnpugWM5QhPS5jilTuzE08Ibs5EM0FLBbwTBzzMq3Vwk1gm+bTEVpoIYsMhO7n2Vp20B1RUbYF+gIXoqN/QUhRiygIABJ0qLdU9Ak/zqei6ZZFfqn3hVQOZX959J8P/+qhCw6sC7hoEB52HRYbGzPWPSjwlXUrEUvGYQuPRR0JtDYD0Pa8bRbottj8mdLclVvUcOPywLMvC1dLxwPXIFHcNX6m6txJ7X8umA6TjKscd0oJdWMYTvCfxCxKN3uI8odl/jLEeNCjWoY6c2uVqr84ELxdT3iUWpbA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RxG6qkKpenjaeCQXI0DrkzFZCGFZpX5/xGj52ap59zk=;
- b=a9sIob4BlFP5c6lnPVShjCA+UwWFZrWhRwMl5z5ZoaNmK8gAILz/X/SdKrLp++fVzWo31U/lest8Nzh/6VKKPo2DBwzkoFOSl8HZvhRfrbJwE+Y7h197hVH0TKd+WwYmOFfpdO3yvflb4iaB4SZZFKanob3qhBGN9P2Uj0B3kFiM7UKZxWP/eWhXzww/LL1RHD9cqD+hRUK32slioKSY+tuffXJKkwbOqn5i0YMVo2G7VZfYbxbPbTeUaJu16c2husyYZsdMc8p+TRta9R8b+mmvUhokamnI2poJU1j885YGk5kMoCYbu+MM+hBbQJU9LmmSugZO7TQNTWehB+fizA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RxG6qkKpenjaeCQXI0DrkzFZCGFZpX5/xGj52ap59zk=;
- b=mYLqKntIm5uiXVwUuUGJEGvjOqLf+vIGxnQ5VAKgFZ5F3ckXusfEJPXo465XgHu7NIF8sXD3UlSHH4HQvrRzPkRjnhkWtwx4vq2aH5Y537nNHA8dI59lxF88bdlvJTirn6jyf4B1Ga5ww+kZVoFoEKYnyIRZ0DClQv6HaDBrcV0=
-Received: from DS0PR10MB6798.namprd10.prod.outlook.com (2603:10b6:8:13c::20)
- by IA1PR10MB6805.namprd10.prod.outlook.com (2603:10b6:208:42b::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6134.15; Wed, 22 Feb
- 2023 12:16:06 +0000
-Received: from DS0PR10MB6798.namprd10.prod.outlook.com
- ([fe80::d0f7:e4fd:bd4:b760]) by DS0PR10MB6798.namprd10.prod.outlook.com
- ([fe80::d0f7:e4fd:bd4:b760%3]) with mapi id 15.20.6134.019; Wed, 22 Feb 2023
- 12:16:06 +0000
-From:   Nick Alcock <nick.alcock@oracle.com>
-To:     mcgrof@kernel.org
-Cc:     linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Hitomi Hasegawa <hasegawa-hitomi@fujitsu.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH 14/27] kbuild, cpufreq: tegra124: remove MODULE_LICENSE in non-modules
-Date:   Wed, 22 Feb 2023 12:14:40 +0000
-Message-Id: <20230222121453.91915-15-nick.alcock@oracle.com>
-X-Mailer: git-send-email 2.39.1.268.g9de2f9a303
-In-Reply-To: <20230222121453.91915-1-nick.alcock@oracle.com>
-References: <20230222121453.91915-1-nick.alcock@oracle.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: LO4P265CA0276.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:37a::16) To DS0PR10MB6798.namprd10.prod.outlook.com
- (2603:10b6:8:13c::20)
+        with ESMTP id S231916AbjBVPEl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Feb 2023 10:04:41 -0500
+Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A098A40FD;
+        Wed, 22 Feb 2023 07:04:38 -0800 (PST)
+Received: by mail-ed1-f46.google.com with SMTP id b12so31562076edd.4;
+        Wed, 22 Feb 2023 07:04:38 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=GDR4v8TjFA5wgCtE/oCu5MNbaltesnH6Ax0WsDRitKg=;
+        b=rkLT4ULvUHRMAIqf372IP0pt5OsCb8iZCLWs9oRu93zD0wLu/m6hEs34ZK5Akc/5q2
+         ESkPQfjP1CtjQ19Anfiq8rmt3G/W+wZchXnpMzkWokw+wTt6TCjYlIOuhtDpbyJOikdM
+         Pkow4AHKr1nLoOXmW9mxuvkbGToGB/anNCPzceKs5N5KOBDV/zhSTr9XHD8ZnxGW9UJv
+         1VC17UfnGdplv7PmujH6H+tggrwAVW1OUjfaoyzPbgDmfL0u1/Q+JtgbCwJmRYd8KslX
+         3y/7iXOIPaY/VcIAFd8WPhcmh18+qtSezKPYyFcoIuR17mWT5LtgauPwIRgWPk0tYj5e
+         E0Bw==
+X-Gm-Message-State: AO0yUKVzitVwCfBYa8NJqQpDbAsATsS8ARoFFI4gHCogGenw+y3K7X1E
+        lwDVM2pWmzFxi0QXN3CJkfkX+EROvNk91m45jkA=
+X-Google-Smtp-Source: AK7set9FCqhtBZkMhiyjHV5GyPeOYhiFVM/ZWQFR3jAjziohLscVI9j4k3qG88r2ggZov5GP/2SOpRdXMSwWRNPM+vQ=
+X-Received: by 2002:a17:907:c004:b0:8e5:1a7b:8ab2 with SMTP id
+ ss4-20020a170907c00400b008e51a7b8ab2mr2393230ejc.4.1677078276884; Wed, 22 Feb
+ 2023 07:04:36 -0800 (PST)
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR10MB6798:EE_|IA1PR10MB6805:EE_
-X-MS-Office365-Filtering-Correlation-Id: 019b094f-78c3-4eab-e93f-08db14ce930e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: pX+2wStaY0yQdxuOn52+UoemkcGx0nyf/Rey89BG/fP615hd/GNjyMd92OaPDmGJ9gUz1uFG5dGejkKkrtL/ic4rjUejZbVTdJkutPI33jvAmq2jWOHhFY4II/uisaEmAMCayook5rD8xBw49+MPNf8ivINWOWFxQ9Qxzk0MmjrhmfJlyWJ+ZZC5y4kGz/AmyKkGjKrwgqqNYTPv5RXE+3JtHRfbJLwkpr8HC6nia1RFv+mKybmpZLoO9XOL4WnctLMe3gSGczrXngBOCbGAa6vdKQ++2J8Tr4ZcwHNQAtOdqlxLQCWmw5Dzvgva6tJoQSfi3MS0cc/hpe2T9JcndnypHyP3zO46cG38hSWSw8AePuE/AbcZQhDH+EN33bRhOqGYz899L4wyGutJkIX48EliHzsIHGEFiKNl+5H61PkCTEG9FMEzZHd3f6ajQmjQ4YTXvNGQs5WK6sW5/vZbXSOjPK6oXZ63wLUNkhYS5RPc1dOkgjgZXVgeWsrLL5AITI3b52Bk6lZBO1mCMVMaNCwBem2yOhUpuWDHFysDGa6IoYb/46uFb9uRDhbZ3iMOOXsrAM3ppv6cBjlwOiE8BguHK8QRRUl5WExlBXRF1+yuvd5s+5Q/8f8SDnyublFFg+xGcf7ZCVpjPVJ70Z1YPA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR10MB6798.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(39860400002)(346002)(376002)(396003)(366004)(136003)(451199018)(7416002)(36756003)(5660300002)(44832011)(83380400001)(2616005)(6512007)(478600001)(6486002)(6666004)(6506007)(186003)(6916009)(66476007)(8936002)(66556008)(4326008)(66946007)(86362001)(41300700001)(8676002)(54906003)(1076003)(38100700002)(2906002)(316002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?LO7RLB00e7G3Aw3eQ8KFF9PQwDGnA9qw+6LAAI9RRnhrP2nPsJB3M1EAw0jQ?=
- =?us-ascii?Q?17KdQUyp/fGHH3ud+WLI6ofiqBlF7fmF/n9o7XElIlegQTAaIFYeVTLYrAR0?=
- =?us-ascii?Q?+wu1YN+nuejDEu7WvMRiZVFnFtKaKEzg/NRrvRxFsAOUaPn1AEhXWSCAE8pu?=
- =?us-ascii?Q?El0ASeiTQ3H1N8SAUcwTmADexV2eiDbTJ/33hEMHg3xrr0a4lsJdHsGKeDbh?=
- =?us-ascii?Q?6XkxnoKvUW5OlS6DkabzBGvhro01i5qyoNzIDgqKtt4LgGRb1IlkGSyQV4Pt?=
- =?us-ascii?Q?5AXVsx4IeiXj/ZO85z52Bv+hHNTc14Kjqj/6+pKiT6dzVDZfKO/CMLFK45lI?=
- =?us-ascii?Q?dv4ICMH77wQX57HjMuAt5v8ODrnFOyrMW69sQ4yq4Q0JQUixCubA007N0ctN?=
- =?us-ascii?Q?rVu8vIPGjIkkkoMaoafEd/8BK2BERjv73Nx3ZbE9fd0bHnXoOwD35PefQg16?=
- =?us-ascii?Q?DQe1CFE9JIl1exML1fTWPcYHGeowOxTRghvqozy6tn/jetP6TDVQx3JHqqrM?=
- =?us-ascii?Q?joMPzVttafpz369QhX/+wW+GueVWow8b3bg99HFtmMd/cXH+MKGyHJv4lK3R?=
- =?us-ascii?Q?iFn4dAFJF2O+6d4bDsWTWi76N1eJalDlMWsHVjrXygeoV1czZXLfav7ZppUC?=
- =?us-ascii?Q?d7JBC753o/+shOGQjwezfNzFMGo9SqGhcy6VOcIzvmTsY3C0MO5H/lbP77mu?=
- =?us-ascii?Q?uKXzKVTa6iI92reNjp29kf13WPlWB5iC9XnZyC1wP2p9giVuzwUSCzgw1Q/n?=
- =?us-ascii?Q?exGDVCPfUyL7UB6Az7eFJWSPIflOD/yNfRi2XI5AB2FLQuPA/BYWR1+mjtGP?=
- =?us-ascii?Q?74alZCXjEXo5ggzwYv9ujjTpONFb+ofqQtC8oc8cPPM2Qw8h4M9WhRBzR6y+?=
- =?us-ascii?Q?aGFVpr42fUKL9KsZEWkVZttxq6LRQXF4zzbkuet6l0ySMoE6qPyTDLMK65Cl?=
- =?us-ascii?Q?UuVH/YLp2Qq3jVXDiChMmlgwEKbX2k2LJGZ4ROjgcUhwK8lAMU+FuSKc1kqL?=
- =?us-ascii?Q?68BSlix7Mpb+OFBWNc5nbTXpvw9Hs6Ky59OBGbuJHVLbB0vdYHqAJ406g1DP?=
- =?us-ascii?Q?of9fzWPnh8wzOVb0pdkZT4LQ+d0mwjiLgY9lqj0XJms1Hpl2kExcht4mKUhq?=
- =?us-ascii?Q?ozY7QHpV7EhdUR4ZTGbhCLLNtgXWGj+XvvIOTJsI5OEp/mRNvLgNDLiociX5?=
- =?us-ascii?Q?Ay7/LCQum68GMEEofAD+YqdJEMSM+SAwmJIsWhRVqWau0qWYf1y5fxBIMRrh?=
- =?us-ascii?Q?emZ4XojV/9y/0s/qewFfdDZDgwfzOS4Xm+oxET8yH1Su+U/jpzHhDuB0W778?=
- =?us-ascii?Q?AvOm/Wg5D+/2zHacUh0wj6GWZjrDl6C5Zce2qn8H4aQMrVgEznXBoPmGUdGF?=
- =?us-ascii?Q?akPfgEevMppqyhYeX13wSvn2K+pbbWzenXOA5KeA33wKkv62PCQEK4UNNo6T?=
- =?us-ascii?Q?GGNTCsvF3YioDFVT2/eenFOKIXyUBB/+oXoiiSmRtS2z+hcTLpF3tkKsmU0D?=
- =?us-ascii?Q?VcwvrjhpU+lrYCiSO6AqAHEhxDrp1ZLLckh+1P15IQXd/bGZRDETxXnWm5j5?=
- =?us-ascii?Q?BSGq9q1dQ2ioOWIxhMY+ATuGwhgUR9VLwbZr/1y2O4wAzIXwAXm+DNq4hKYU?=
- =?us-ascii?Q?fMCI036Sm/pirLenyM3Mo6Q=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: MDX4KM+SCFgLoohEfRGu8nGz30JV9uOVn5/6+OkJGqYz31DpHvhBggxChC8MAFmboVyPwTKIbWWqYpUqBuqUYlhV6pHh5V46IiC/lAf+lVvnCLMu673S/ONkC+eyzVCliJxzjLrJM8n+mHae8OwNSqfrS3rmvtJxH/H23WPCbuxZBUPFtEuKurZp+h/ap4Rn7AeMZx+3WIFfPvoKN8/Kr2dGTLaItESobqWYSrqu+NBeLxterBhVgb/csym+njQ360p0/CXsqJVpQgEUt9BhoTLifj1rc/5qR+WLAwXqgh+cMSrp5KIJvysxC8NMoTdZDZYRp6TvbnqMMbqtidhpNOvj+BzVHAqZ6MkvdjWq6jWZ5A6MwVsUgYK2daznBJ3vlRpHetfjxosauIVseWpZDMWdJlhhPqwj/4uJ/zGc+rrvbuId2Vtrl7QrO74d2NztCE0TjxxXH8VbhgJPG+bkCIykQKQJASXCxBCK3L2eN/Oj7KWMORiKmZPZW3EqGjj5X0OgbJd6lmlqlmUEGWt+ZJVd4vUYJEHCJtvG4zWyJNOuZE1p4KI8QKiAP1IcchKUdiPyWtWKWMxQxfn5C2u9/lYJ3qRAznz9AtgMg12y18T/+itN6AJDFB1fD2xdVDFmh3I7usTkk/ZjKunknLWyz6fcaCevb4hJBcmZpKRQ1eh84BL2mRCh1Kl3ny3/Ja+GhLT8sK5I5RwUFCtBCftZ3gqht9CfNSC14p2BKc7zapnS29z6VxdAe26FM9z4l4x9RA/1Cz2OgYL3+vRLUFpF+gwW4cQH/nUqabi2GOTtUpSgNFh1Vc3zU/9CJe6ztUU6ZPAfe/nX44iH5ilOEHA4IldtI2pMtJM9uBkbGYwyHmMXqPUI1THopVrTioBWPrApPk+MaI/KB0vEqdG4tX5ByRh7M/78u1kLev5kqHZF/kg=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 019b094f-78c3-4eab-e93f-08db14ce930e
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR10MB6798.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Feb 2023 12:16:06.7353
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: prYDNoR6mcJwrFUBBwbXqWs6cxasyo4qhTCqJLuZW5VdViYHPmeHTbjVmbJZruOfs3YPhhRLp7xACJ5bmF7ufA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR10MB6805
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
- definitions=2023-02-22_05,2023-02-22_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 phishscore=0 suspectscore=0
- mlxlogscore=999 adultscore=0 mlxscore=0 bulkscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2302220108
-X-Proofpoint-ORIG-GUID: kpOfAeJD5s5zqt915NBobWGhP_fERCRJ
-X-Proofpoint-GUID: kpOfAeJD5s5zqt915NBobWGhP_fERCRJ
+References: <20230220143143.3492-1-petr.pavlu@suse.com>
+In-Reply-To: <20230220143143.3492-1-petr.pavlu@suse.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 22 Feb 2023 16:04:25 +0100
+Message-ID: <CAJZ5v0jng3PDPnTKAov0m2KTYKaQuwOdi+jCVwc5BM5duct2Pg@mail.gmail.com>
+Subject: Re: [PATCH v2] ACPI: cpufreq: use a platform device to load ACPI PPC
+ and PCC drivers
+To:     Petr Pavlu <petr.pavlu@suse.com>
+Cc:     rafael@kernel.org, lenb@kernel.org, viresh.kumar@linaro.org,
+        pmladek@suse.com, mcgrof@kernel.org, linux-acpi@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since commit 8b41fc4454e ("kbuild: create modules.builtin without
-Makefile.modbuiltin or tristate.conf"), MODULE_LICENSE declarations
-are used to identify modules. As a consequence, uses of the macro
-in non-modules will cause modprobe to misidentify their containing
-object file as a module when it is not (false positives), and modprobe
-might succeed rather than failing with a suitable error message.
+On Mon, Feb 20, 2023 at 3:32 PM Petr Pavlu <petr.pavlu@suse.com> wrote:
+>
+> The acpi-cpufreq and pcc-cpufreq drivers are loaded through per-CPU
+> module aliases. This can result in many unnecessary load requests during
+> boot if another frequency module, such as intel_pstate, is already
+> active. For instance, on a typical Intel system, one can observe that
+> udev makes 2x#CPUs attempts to insert acpi_cpufreq and 1x#CPUs attempts
+> for pcc_cpufreq. All these tries then fail if another frequency module
+> is already registered.
 
-So remove it in the files in this commit, none of which can be built as
-modules.
+Well, that's not nice.
 
-Signed-off-by: Nick Alcock <nick.alcock@oracle.com>
-Suggested-by: Luis Chamberlain <mcgrof@kernel.org>
-Cc: Luis Chamberlain <mcgrof@kernel.org>
-Cc: linux-modules@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Hitomi Hasegawa <hasegawa-hitomi@fujitsu.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Jonathan Hunter <jonathanh@nvidia.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org
----
- drivers/cpufreq/tegra124-cpufreq.c | 1 -
- 1 file changed, 1 deletion(-)
+> In the worst case, without the recent fix in commit 0254127ab977e
+> ("module: Don't wait for GOING modules"), these module loads occupied
+> all udev workers and had their initialization attempts ran sequentially.
+> Resolving all these loads then on some larger machines took too long,
+> prevented other hardware from getting its drivers initialized and
+> resulted in a failed boot. Discussion over these duplicate module
+> requests ended up with a conclusion that only one load attempt should be
+> ideally made.
 
-diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
-index 7a1ea6fdcab6..788672c0c834 100644
---- a/drivers/cpufreq/tegra124-cpufreq.c
-+++ b/drivers/cpufreq/tegra124-cpufreq.c
-@@ -221,4 +221,3 @@ module_init(tegra_cpufreq_init);
- 
- MODULE_AUTHOR("Tuomas Tynkkynen <ttynkkynen@nvidia.com>");
- MODULE_DESCRIPTION("cpufreq driver for NVIDIA Tegra124");
--MODULE_LICENSE("GPL v2");
--- 
-2.39.1.268.g9de2f9a303
+Fair enough.
 
+> Both acpi-cpufreq and pcc-cpufreq drivers have their platform firmware
+> interface defined by ACPI. Allowed performance states and parameters
+> must be same for each CPU.
+
+This is not a requirement set by the ACPI specification, though, but
+the assumption made by the drivers in question AFAICS.  It would be
+good to clarify this here.
+
+> This makes it possible to model these
+> interfaces as platform devices.
+>
+> The patch extends the ACPI parsing logic to check the ACPI namespace if
+> the PPC or PCC interface is present and creates a virtual platform
+> device for each if it is available.
+
+I'm not sure that this is the best approach.
+
+The ACPI subsystem already walks the ACPI namespace twice when
+enumerating devices and CPUs.  In particular, acpi_processor_add() is
+invoked for each of them in the first on these walks, so it might as
+well take care of creating the requisite platform device if _PCT is
+present, can't it?
+
+> The acpi-cpufreq and pcc-cpufreq
+> drivers are then updated to map to these devices.
+>
+> This allows to try loading acpi-cpufreq and pcc-cpufreq only once during
+> boot and only if a given interface is available in the firmware.
+>
+> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
+> ---
+>
+> Changes since v1 [1]:
+> - Describe the worst case scenario without the recent fix 0254127ab977e
+>   ("module: Don't wait for GOING modules") and refer to its discussion
+>   in the commit message.
+> - Consider ACPI processor device objects when looking for _PCT, in
+>   addition to processor objects.
+> - Add a few more comments explaining the code.
+>
+> [1] https://lore.kernel.org/lkml/20230131130041.629-1-petr.pavlu@suse.com/
+>
+>  drivers/acpi/Makefile          |  1 +
+>  drivers/acpi/acpi_cpufreq.c    | 77 ++++++++++++++++++++++++++++++++++
+>  drivers/acpi/bus.c             |  1 +
+>  drivers/acpi/internal.h        |  2 +
+>  drivers/cpufreq/acpi-cpufreq.c | 39 +++++++++--------
+>  drivers/cpufreq/pcc-cpufreq.c  | 34 ++++++++++-----
+>  6 files changed, 127 insertions(+), 27 deletions(-)
+>  create mode 100644 drivers/acpi/acpi_cpufreq.c
+>
+> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+> index feb36c0b9446..880db1082c3e 100644
+> --- a/drivers/acpi/Makefile
+> +++ b/drivers/acpi/Makefile
+> @@ -57,6 +57,7 @@ acpi-y                                += evged.o
+>  acpi-y                         += sysfs.o
+>  acpi-y                         += property.o
+>  acpi-$(CONFIG_X86)             += acpi_cmos_rtc.o
+> +acpi-$(CONFIG_X86)             += acpi_cpufreq.o
+>  acpi-$(CONFIG_X86)             += x86/apple.o
+>  acpi-$(CONFIG_X86)             += x86/utils.o
+>  acpi-$(CONFIG_X86)             += x86/s2idle.o
+> diff --git a/drivers/acpi/acpi_cpufreq.c b/drivers/acpi/acpi_cpufreq.c
+> new file mode 100644
+> index 000000000000..4e4ceb7cd226
+> --- /dev/null
+> +++ b/drivers/acpi/acpi_cpufreq.c
+> @@ -0,0 +1,77 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Registration of platform devices for ACPI Processor Performance Control and
+> + * Processor Clocking Control.
+> + */
+> +
+> +#include <linux/acpi.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <acpi/processor.h>
+> +
+> +#include "internal.h"
+> +
+> +static void __init cpufreq_add_device(const char *name)
+> +{
+> +       struct platform_device *pdev;
+> +
+> +       pdev = platform_device_register_simple(name, PLATFORM_DEVID_NONE, NULL,
+> +                                              0);
+> +       if (IS_ERR(pdev))
+> +               pr_err("%s device creation failed: %ld\n", name, PTR_ERR(pdev));
+> +}
+> +
+> +static acpi_status __init acpi_pct_match(acpi_handle handle, u32 level,
+> +                                        void *context, void **return_value)
+> +{
+> +       bool *pct = context;
+> +       acpi_status status;
+> +       acpi_object_type acpi_type;
+> +       struct acpi_device *acpi_dev;
+> +
+> +       static const struct acpi_device_id processor_device_ids[] = {
+> +               { ACPI_PROCESSOR_OBJECT_HID, 0 },
+> +               { ACPI_PROCESSOR_DEVICE_HID, 0 },
+> +               { "", 0 },
+> +       };
+> +
+> +       /* Skip nodes that cannot be a processor. */
+> +       status = acpi_get_type(handle, &acpi_type);
+> +       if (ACPI_FAILURE(status))
+> +               return status;
+> +       if (acpi_type != ACPI_TYPE_PROCESSOR && acpi_type != ACPI_TYPE_DEVICE)
+> +               return AE_OK;
+> +
+> +       /* Look at the set IDs if it is really a one. */
+> +       acpi_dev = acpi_fetch_acpi_dev(handle);
+> +       if (acpi_dev == NULL ||
+> +           acpi_match_device_ids(acpi_dev, processor_device_ids))
+> +               return AE_OK;
+> +
+> +       /* Check if it has _PCT and stop the walk as all CPUs must be same. */
+> +       *pct = acpi_has_method(handle, "_PCT");
+> +       return AE_CTRL_TERMINATE;
+> +}
+> +
+> +void __init acpi_cpufreq_init(void)
+> +{
+> +       bool pct = false;
+> +       acpi_status status;
+> +       acpi_handle handle;
+> +
+> +       /*
+> +        * Check availability of the PPC by looking at the presence of the _PCT
+> +        * object under the first processor definition.
+> +        */
+> +       acpi_walk_namespace(ACPI_TYPE_ANY, ACPI_ROOT_OBJECT, ACPI_UINT32_MAX,
+> +                           acpi_pct_match, NULL, &pct, NULL);
+> +       if (pct)
+> +               cpufreq_add_device("acpi-cpufreq");
+
+It should be possible to combine this with CPU enumeration as stated above.
+
+> +
+> +       /* Check availability of the PCC by searching for \_SB.PCCH. */
+> +       status = acpi_get_handle(NULL, "\\_SB", &handle);
+> +       if (ACPI_FAILURE(status))
+> +               return;
+> +       if (acpi_has_method(handle, "PCCH"))
+> +               cpufreq_add_device("pcc-cpufreq");
+
+And the remaining part can be called acpi_pcc_cpufreq_init().
+
+> +}
+> diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+> index 0c05ccde1f7a..f1559e26d5ff 100644
+> --- a/drivers/acpi/bus.c
+> +++ b/drivers/acpi/bus.c
+> @@ -1428,6 +1428,7 @@ static int __init acpi_init(void)
+>         acpi_viot_init();
+>         acpi_agdi_init();
+>         acpi_apmt_init();
+> +       acpi_cpufreq_init();
+>         return 0;
+>  }
+>
+> diff --git a/drivers/acpi/internal.h b/drivers/acpi/internal.h
+> index ec584442fb29..c9b1a5f689fa 100644
+> --- a/drivers/acpi/internal.h
+> +++ b/drivers/acpi/internal.h
+> @@ -157,8 +157,10 @@ static inline void acpi_early_processor_set_pdc(void) {}
+>
+>  #ifdef CONFIG_X86
+>  void acpi_early_processor_osc(void);
+> +void acpi_cpufreq_init(void);
+>  #else
+>  static inline void acpi_early_processor_osc(void) {}
+> +static inline void acpi_cpufreq_init(void) {}
+>  #endif
+>
+>  /* --------------------------------------------------------------------------
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 78adfb2ffff6..e1a5384cf21c 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -965,7 +965,7 @@ static void __init acpi_cpufreq_boost_init(void)
+>         acpi_cpufreq_driver.boost_enabled = boost_state(0);
+>  }
+>
+> -static int __init acpi_cpufreq_init(void)
+> +static int __init acpi_cpufreq_probe(struct platform_device *pdev)
+>  {
+>         int ret;
+>
+> @@ -1010,13 +1010,32 @@ static int __init acpi_cpufreq_init(void)
+>         return ret;
+>  }
+>
+> -static void __exit acpi_cpufreq_exit(void)
+> +static int acpi_cpufreq_remove(struct platform_device *pdev)
+>  {
+>         pr_debug("%s\n", __func__);
+>
+>         cpufreq_unregister_driver(&acpi_cpufreq_driver);
+>
+>         free_acpi_perf_data();
+> +
+> +       return 0;
+> +}
+> +
+> +static struct platform_driver acpi_cpufreq_platdrv = {
+> +       .driver = {
+> +               .name   = "acpi-cpufreq",
+> +       },
+> +       .remove         = acpi_cpufreq_remove,
+> +};
+> +
+> +static int __init acpi_cpufreq_init(void)
+> +{
+> +       return platform_driver_probe(&acpi_cpufreq_platdrv, acpi_cpufreq_probe);
+> +}
+> +
+> +static void __exit acpi_cpufreq_exit(void)
+> +{
+> +       platform_driver_unregister(&acpi_cpufreq_platdrv);
+>  }
+>
+>  module_param(acpi_pstate_strict, uint, 0644);
+> @@ -1027,18 +1046,4 @@ MODULE_PARM_DESC(acpi_pstate_strict,
+>  late_initcall(acpi_cpufreq_init);
+>  module_exit(acpi_cpufreq_exit);
+>
+> -static const struct x86_cpu_id __maybe_unused acpi_cpufreq_ids[] = {
+> -       X86_MATCH_FEATURE(X86_FEATURE_ACPI, NULL),
+> -       X86_MATCH_FEATURE(X86_FEATURE_HW_PSTATE, NULL),
+> -       {}
+> -};
+> -MODULE_DEVICE_TABLE(x86cpu, acpi_cpufreq_ids);
+> -
+> -static const struct acpi_device_id __maybe_unused processor_device_ids[] = {
+> -       {ACPI_PROCESSOR_OBJECT_HID, },
+> -       {ACPI_PROCESSOR_DEVICE_HID, },
+> -       {},
+> -};
+> -MODULE_DEVICE_TABLE(acpi, processor_device_ids);
+> -
+> -MODULE_ALIAS("acpi");
+> +MODULE_ALIAS("platform:acpi-cpufreq");
+> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+> index 9f3fc7a073d0..0c362932ca60 100644
+> --- a/drivers/cpufreq/pcc-cpufreq.c
+> +++ b/drivers/cpufreq/pcc-cpufreq.c
+> @@ -384,7 +384,7 @@ static int __init pcc_cpufreq_do_osc(acpi_handle *handle)
+>         return ret;
+>  }
+>
+> -static int __init pcc_cpufreq_probe(void)
+> +static int __init pcc_cpufreq_evaluate(void)
+>  {
+>         acpi_status status;
+>         struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
+> @@ -576,7 +576,7 @@ static struct cpufreq_driver pcc_cpufreq_driver = {
+>         .name = "pcc-cpufreq",
+>  };
+>
+> -static int __init pcc_cpufreq_init(void)
+> +static int __init pcc_cpufreq_probe(struct platform_device *pdev)
+>  {
+>         int ret;
+>
+> @@ -587,9 +587,9 @@ static int __init pcc_cpufreq_init(void)
+>         if (acpi_disabled)
+>                 return -ENODEV;
+>
+> -       ret = pcc_cpufreq_probe();
+> +       ret = pcc_cpufreq_evaluate();
+>         if (ret) {
+> -               pr_debug("pcc_cpufreq_init: PCCH evaluation failed\n");
+> +               pr_debug("pcc_cpufreq_probe: PCCH evaluation failed\n");
+>                 return ret;
+>         }
+>
+> @@ -607,21 +607,35 @@ static int __init pcc_cpufreq_init(void)
+>         return ret;
+>  }
+>
+> -static void __exit pcc_cpufreq_exit(void)
+> +static int pcc_cpufreq_remove(struct platform_device *pdev)
+>  {
+>         cpufreq_unregister_driver(&pcc_cpufreq_driver);
+>
+>         pcc_clear_mapping();
+>
+>         free_percpu(pcc_cpu_info);
+> +
+> +       return 0;
+>  }
+>
+> -static const struct acpi_device_id __maybe_unused processor_device_ids[] = {
+> -       {ACPI_PROCESSOR_OBJECT_HID, },
+> -       {ACPI_PROCESSOR_DEVICE_HID, },
+> -       {},
+> +static struct platform_driver pcc_cpufreq_platdrv = {
+> +       .driver = {
+> +               .name   = "pcc-cpufreq",
+> +       },
+> +       .remove         = pcc_cpufreq_remove,
+>  };
+> -MODULE_DEVICE_TABLE(acpi, processor_device_ids);
+> +
+> +static int __init pcc_cpufreq_init(void)
+> +{
+> +       return platform_driver_probe(&pcc_cpufreq_platdrv, pcc_cpufreq_probe);
+> +}
+> +
+> +static void __exit pcc_cpufreq_exit(void)
+> +{
+> +       platform_driver_unregister(&pcc_cpufreq_platdrv);
+> +}
+> +
+> +MODULE_ALIAS("platform:pcc-cpufreq");
+>
+>  MODULE_AUTHOR("Matthew Garrett, Naga Chumbalkar");
+>  MODULE_VERSION(PCC_VERSION);
+> --
