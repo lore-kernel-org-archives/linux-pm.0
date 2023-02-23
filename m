@@ -2,177 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B609FC61DA4
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Feb 2023 14:36:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ACC8C6FA99
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Feb 2023 15:37:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234536AbjBWOgJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Feb 2023 09:36:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44190 "EHLO
+        id S234109AbjBWPhG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Feb 2023 10:37:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234630AbjBWOgH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Feb 2023 09:36:07 -0500
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 586EE58B7F
-        for <linux-pm@vger.kernel.org>; Thu, 23 Feb 2023 06:36:01 -0800 (PST)
-Received: by mail-wm1-x32b.google.com with SMTP id p18-20020a05600c359200b003dc57ea0dfeso10711898wmq.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Feb 2023 06:36:01 -0800 (PST)
+        with ESMTP id S234944AbjBWPhE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Feb 2023 10:37:04 -0500
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8B0B580FB
+        for <linux-pm@vger.kernel.org>; Thu, 23 Feb 2023 07:37:00 -0800 (PST)
+Received: by mail-wr1-x433.google.com with SMTP id c12so11003633wrw.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Feb 2023 07:37:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=5A8UeRr2Gc2z9WOFsL/7qhv/YNUuwYHZ6QFgk2PLkf4=;
-        b=G/KnzB+TqsBI8cevd406M1H2uS/axQyn5O3J8LbGgYCVum00LDCUcdsLRO4e+PYdTW
-         U53td03TDwO3oqU/DfyEACJp3u8kqk/fQs1hqFQfHLbFvVaGxAxtxfhj20dVBDn/KocL
-         bRm4dGcQ8RneN0QZZOclkTDXg5Tz49YHzlv2KJwX01gmRldUTxSI9wx6CwNtT7JS4MpX
-         XQc/ceZ/Ksf8XK7DsOO+WaVEgFWi4+WZcf9lLCMAByGprBtrAIY/OBJ06L3/FJ6oVN0s
-         EtSN5c388v7cMmniaxK9MZ4F5hupqKl7pkEC/gfUk5A76nvfNX4TMsgdKEROOksO965j
-         GZ+w==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XUvAJiwYybcfxuPaO1uSIiPaY9bXRmDYQO0thKgpZNw=;
+        b=xfyHhN31SYkq+4nWRk+57GWnYNH4MtjAzPqAK2RL19Xj2/8H7kgWWMFsjm5S5f2UGR
+         cMqUqEeei1F6mPBRa5L9/cG7nAX7DAVkKp05ybcHLnkDPhns0sXtLoLlLf7Vs82uZ5W9
+         VMO5SnzN6+NEgm3uyjvXFoQLUIXu6fY3UNEeHTZcVU6XlQ+ob77itTyqgTUy3+M2nyzA
+         rIuZC2Upcn1TVEg8/dccALdOuVXl/OqJmpBio9FYVxpRl+rMTCOA14Qv6yVtmw2aCV94
+         kUu8gME6ZvThAFA73hduYFxwXRwaJxKO4ceWQCRnS6DRJgcBaInJrdUuAz7kIBJuITnt
+         LgyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=5A8UeRr2Gc2z9WOFsL/7qhv/YNUuwYHZ6QFgk2PLkf4=;
-        b=lulJFWqCSKTlpDqm1rDjbNS4umCHwlRFYRQCZ0F0T7xAFv8ULhDvlFNvRf9cn/M4f8
-         munzY4QEc+r/4SNT16XCcph9Mz7DA2Zb32d0/Ts27yo9vXccLzGtk2YdPiAypVpbN1/O
-         +rNiiwiEmjpqxgqbzhxeVusvsXm6lf01omJNVvqCfGBmY+qMmBbDBZ6z+tZKrfSXr6Fe
-         M3Ce+cqCsWhA2R8Yb6Y/2mWHtA1utz5ZZfD5uqSrQZA+HMDZsB9OZbX3ZFFU01PNgfSF
-         +lftfI5U+4D5g10ox6qvY3Td6oJHQS55sx8FOG1WNcypqY49Xelt9y5/GFwL+hIlGKZl
-         0TJw==
-X-Gm-Message-State: AO0yUKXWKsfvzIIjiPRpAYdgpSvwYLR9VCMkJzpSN8mU8KOswuwGbcKq
-        FpDfDatITQlLIhXbFn/OHopssA==
-X-Google-Smtp-Source: AK7set8m6oTFiOFyJ69IZZpXnSY707D1wGVpzvSHc156iH26zK9yl1Et8LQfhfLoNB4CqfmWsB2ihw==
-X-Received: by 2002:a05:600c:43c9:b0:3e1:f8af:7942 with SMTP id f9-20020a05600c43c900b003e1f8af7942mr3008298wmn.22.1677162958724;
-        Thu, 23 Feb 2023 06:35:58 -0800 (PST)
-Received: from ?IPV6:2a05:6e02:1041:c10:c265:a8c7:c71d:6e47? ([2a05:6e02:1041:c10:c265:a8c7:c71d:6e47])
-        by smtp.googlemail.com with ESMTPSA id n15-20020a05600c3b8f00b003e224ff61a8sm12388179wms.43.2023.02.23.06.35.57
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 23 Feb 2023 06:35:58 -0800 (PST)
-Message-ID: <abac6405-6a09-4267-a5ec-626e92f08f30@linaro.org>
-Date:   Thu, 23 Feb 2023 15:35:56 +0100
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XUvAJiwYybcfxuPaO1uSIiPaY9bXRmDYQO0thKgpZNw=;
+        b=m2OcXXx5438hF38Avei1Fb07Zwv3L3GGmmbPxV3l/Z/rr1jDVBzUL+yoMsEsgCjqHh
+         2lYbKPLEdThmz9hccuRxrYcNm9MqlgmUsmExpS2UsksqFhoknmVDOuYuga6LzT2r00vv
+         S+BxVL5T3oK0KAtUxCqfy72ei9OQxKGNBXvvwKpwFUBMy+8imNbVVAIBN2zUKlXVBGVx
+         o/7kalqQoQde4xUQS2GAx+lNKFCrxyje6ArVIyTnYjTigVEy4BnkT32p7M2zB+h/dq0K
+         QIlygh2+9/YhLCAcUz/u00fctl6Z8FTkG8MA+xa3qEnMT1vn3qrXrq0BRJErdPkQtgus
+         nXjA==
+X-Gm-Message-State: AO0yUKV/m9k7qckMpIOQp07kIFnNXHifpR4CK+gqRNyG3yC8PE3H+BKf
+        0e+8cQ+Hn0fY+18q+8OvkYaTyg==
+X-Google-Smtp-Source: AK7set8dR4zzoxnEnLUoJZ/nmlb/gM+R8h1iDGx7inK3P4oMolEEoBuEdlXd4lOg7kcx2jMKdobr8w==
+X-Received: by 2002:adf:ce0b:0:b0:2c6:e827:21c1 with SMTP id p11-20020adfce0b000000b002c6e82721c1mr9365669wrn.50.1677166619227;
+        Thu, 23 Feb 2023 07:36:59 -0800 (PST)
+Received: from sagittarius-a.chello.ie (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
+        by smtp.gmail.com with ESMTPSA id c18-20020a05600c0a5200b003e733a973d2sm11076978wmq.39.2023.02.23.07.36.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Feb 2023 07:36:58 -0800 (PST)
+From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        djakov@kernel.org, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org
+Cc:     bryan.odonoghue@linaro.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, benl@squareup.com,
+        shawn.guo@linaro.org, fabien.parent@linaro.org, leo.yan@linaro.org,
+        dmitry.baryshkov@linaro.org, stephan@gerhold.net,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v7 1/5] dt-bindings: vendor-prefixes: Add Square
+Date:   Thu, 23 Feb 2023 15:36:51 +0000
+Message-Id: <20230223153655.262783-2-bryan.odonoghue@linaro.org>
+X-Mailer: git-send-email 2.39.1
+In-Reply-To: <20230223153655.262783-1-bryan.odonoghue@linaro.org>
+References: <20230223153655.262783-1-bryan.odonoghue@linaro.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH v2 06/16] thermal: Don't use 'device' internal thermal
- zone structure field
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Balsam CHIHI <bchihi@baylibre.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Keerthy <j-keerthy@ti.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Ido Schimmel <idosch@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
-        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "open list:TI BANDGAP AND THERMAL DRIVER" 
-        <linux-omap@vger.kernel.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>
-References: <20230221180710.2781027-1-daniel.lezcano@linaro.org>
- <20230221180710.2781027-7-daniel.lezcano@linaro.org>
- <CAJZ5v0gTmi7ZeDDdHWGWju4m3bv2366oVqSP1dGOT+3jLV-jaw@mail.gmail.com>
- <0889767f-d187-0cb4-895e-c149517b6636@linaro.org>
- <CAJZ5v0h=UCOyJ88UgEdqch4NZK+DaT8jWnDaguQGNx-KOMhPPA@mail.gmail.com>
- <2b843912-cc9b-f1ac-1f81-28e3ecf8daba@linaro.org>
- <CAJZ5v0g+fkX=ZUJ0MgENy2SmMv98wD0dApVwU352OS4ZXpDDCw@mail.gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <CAJZ5v0g+fkX=ZUJ0MgENy2SmMv98wD0dApVwU352OS4ZXpDDCw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 23/02/2023 12:43, Rafael J. Wysocki wrote:
-> On Thu, Feb 23, 2023 at 10:56 AM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> On 22/02/2023 21:06, Rafael J. Wysocki wrote:
->>> On Wed, Feb 22, 2023 at 9:00 PM Daniel Lezcano
->>> <daniel.lezcano@linaro.org> wrote:
->>>>
->>>> On 22/02/2023 20:43, Rafael J. Wysocki wrote:
->>>>> On Tue, Feb 21, 2023 at 7:07 PM Daniel Lezcano
->>>>> <daniel.lezcano@linaro.org> wrote:
->>>>>>
->>>>>> Some drivers are directly using the thermal zone's 'device' structure
->>>>>> field.
->>>>>>
->>>>>> Use the driver device pointer instead of the thermal zone device when
->>>>>> it is available.
->>>>>>
->>>>>> Remove the traces when they are duplicate with the traces in the core
->>>>>> code.
->>>>>>
->>>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>>>>> Reviewed-by: Balsam CHIHI <bchihi@baylibre.com> #Mediatek LVTS
->>>>>> ---
->>>>
->>>> [ ... ]
->>>>
->>>>>>            thermal_zone_device_update(data->ti_thermal, THERMAL_EVENT_UNSPECIFIED);
->>>>>>
->>>>>> -       dev_dbg(&data->ti_thermal->device, "updated thermal zone %s\n",
->>>>>> +       dev_dbg(data->bgp->dev, "updated thermal zone %s\n",
->>>>>>                    data->ti_thermal->type);
->>>>>
->>>>> The code before the change is more consistent, because it refers to
->>>>> the same object in both instances.
->>>>>
->>>>> It looks like a type field accessor is needed, eg. thermal_zone_device_type()?
->>>>>
->>>>> Or move the debug message to thermal_zone_device_update()?
->>>>
->>>> Actually it is done on purpose because the patch 9 replaces the accesses
->>>> to 'type' by 'id', the thermal_zone_device_type() accessor won't be needed.
->>>
->>> Cool.
->>>
->>> However, this is a change in behavior (albeit small) which doesn't
->>> appear to be necessary.
->>>
->>> What would be wrong with having a tz->type accessor too?
->>
->> I can add the 'type' accessor but from my point of view it is not
->> correct because the information belongs to the thermal framework and it
->> is used to export the information in the sysfs which is along with the
->> directory name giving the id of the thermal zone.
-> 
-> I'm not sure what you mean here.
-> 
-> Surely, the 'type' is provided by whoever registers the thermal zone,
-> so I'm not sure in what way it "belongs" to the framework.
+Add vendor prefix for Square (https://squareup.com).
 
-I meant the goal of 'type' is to be exported to sysfs, nothing else.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+---
+ Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-That is the reason why I used the word 'belongs', because it was 
-introduced to stay in the scope of the thermal framework, but then its 
-usage has been diverted to a name.
-
-Anyway, from my POV having traces in the ops is not a good thing, so 
-I'll propose later to remove them and add a single message in the call 
-sites.
-
-Meanwhile, I'll provide the accessor for 'type' and hopefully we do not 
-end up with a plethora of accessors to be used in the core code.
-
-
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+index ed64e06ecca49..90b746d237d26 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
++++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+@@ -1251,6 +1251,8 @@ patternProperties:
+     description: SpinalHDL
+   "^sprd,.*":
+     description: Spreadtrum Communications Inc.
++  "^square,.*":
++    description: Square
+   "^ssi,.*":
+     description: SSI Computer Corp
+   "^sst,.*":
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.39.1
 
