@@ -2,70 +2,64 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64188C7EE2E
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 22:56:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82B33C64ED6
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 22:56:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229952AbjBZW42 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Feb 2023 17:56:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34582 "EHLO
+        id S229745AbjBZW4a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Feb 2023 17:56:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34170 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229876AbjBZWzx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 17:55:53 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C9B41A64B
-        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:30 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id j19-20020a05600c1c1300b003e9b564fae9so5956521wms.2
-        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:30 -0800 (PST)
+        with ESMTP id S229686AbjBZWzy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 17:55:54 -0500
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C903D1A944
+        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:34 -0800 (PST)
+Received: by mail-wr1-x429.google.com with SMTP id q16so4434383wrw.2
+        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=C2s/AS9OMV5i6t0w60QjnkUP8k7sKtqb93EMncEZug0=;
-        b=RrXcIqzcrWf2lNRMsPY+D8nUU5rGWSM/ctrK4w2nFXbnQIS281ZCN9hQiySwkMaUmg
-         upw/yejus11mTRnMf9kyQ8gqoPpRUayc7Le6DAYr8ShIyNEV8dg63GJFOplB+8exl3wJ
-         Em6nycsPTYfFl+zDoWh5qQ9+mHwo48EJhqJK0rjys+U3DHccFifM5dHgsYx+C/EWFYRc
-         cbKjrnTFV1f9nQ4eHFai6JIqCKWyRn/dQWMKYr/8MrIJLqCcfaP4SlVyfdiQOaLEvGGb
-         cVnH3W/4JRlsSbhTSaUAhTampVjDhPKyEAtrQ7rClYMgA3/L96CQykGpc6QpVg+ie+VQ
-         ICRA==
+        bh=FS5MMzUrtYY5N2w5QCadh2L/6Lyuv9jfcaqNKoRqTRU=;
+        b=DgprYmeHBjj1QzTvylKGYwPam1q6cXCND0PzN/JHv1fIlxg+oS9gS+MrmgNuKZAI+1
+         O0pEW4qREyxsNftF17Uw8vvkC+iavEQR9LTDHma6fBAAyP36KS2OJNzs/bhwnmNz8TH6
+         3CFZBmKkQA2h6kzBDu5TuqiyoaFEthZxnHPJNj5QLUWeprwFH7S/p8ZP3z9iQceNrZTv
+         E8vzBjUCBo2dogzXpNgzLOy4cJkNhNk8YRP7IG8g3OKyfPto5PBgvwl88Mtkg2D53HP5
+         8mRk5vBC6uc9vttrEFYbzXzvaTZnKXgYxFHXX4P9LEItr7jTuyw3BusYV0zir1MY1pYQ
+         /9iQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=C2s/AS9OMV5i6t0w60QjnkUP8k7sKtqb93EMncEZug0=;
-        b=QBLqFf9GPsu8C7rXFC1p15hxGNzgEVNSoOnIcvlMn1RrwmJBILxz2uaKBG5K8K2QNJ
-         3mSYPpsEMJ866d9+QrmDqL/njcFxcYyaNg7VAH11pDVboXJYq+VBA4S1rJwtT9R4eL5f
-         IzCnG208XJII/hopHYJV5o0nwP/mCbruj24TxmOMm7z38wUuBZmBeR1Kgv+88Dgpw9V3
-         7CDmXZ50KzQWOMfImO8QGtKd7zQ37vVfDur5/HxmW/TwVqyzOmpbtCy20UQmB5o6uZ1p
-         ogBSPlRMZDJjDGbDrxVInZYtz6GZcRmrESqxOoMqET0g6rb8UF/DQpsR8Am6A9qZQtdr
-         BziQ==
-X-Gm-Message-State: AO0yUKUL28w5NlwZTUCSSwVXgw32H2WmBh4DCobgBRmw4WWNFmQ9B7tl
-        kzwMaqKodTm09zEJTwuynrfIsQ==
-X-Google-Smtp-Source: AK7set/kFC/e3JlZYmMRVlzQDE+2UMKDg2IK1WyToa9A8POY4T7GJ/bhhVXjg1e/yJdRr/Fu6abtUw==
-X-Received: by 2002:a05:600c:3089:b0:3eb:29fe:734a with SMTP id g9-20020a05600c308900b003eb29fe734amr6436608wmn.39.1677452121129;
-        Sun, 26 Feb 2023 14:55:21 -0800 (PST)
+        bh=FS5MMzUrtYY5N2w5QCadh2L/6Lyuv9jfcaqNKoRqTRU=;
+        b=OaJZGq6iLgMSrONCwE65CVbhys0v4noQBv1WJTCod/Ww9a2GVa00/JGaO70qtYIHcL
+         peZBNfmHIkXcYh37gw0nJhegaT5AuKAq+D0S6Gn8xTufCfEUUzBDy56KCJMvENc/m0cY
+         lHRXXeNHXfTd4BOrLiKM1X55NW1Tc3E5M5zGFJT6VldRlJKZafYE/xMM5z5f49+p+EBm
+         gqlvUmNaWD8GWJfY1oFBGsjo8r+z7CyKls1eKYYzMoCwK4y0F56eup4wZ3xbowCwNrNm
+         5mdsbf/1+5qb+H+t4Si9++dvFdUwKCX7+zRQjdm7JxdpMBl63tK/IYhGDVFeCgdYYaOq
+         IloA==
+X-Gm-Message-State: AO0yUKV7x+TYWzZSj6itq9snXDBqkIMgT2Zfwn50l6R9Z87j5TtovIeK
+        g3vTTMkJv91zM/nHjO6srC5XCg==
+X-Google-Smtp-Source: AK7set+h6bH1PS798t0mZMvOJZreT3hJ4B4BCSYDF4mYjx4jbb5JDOxUc4MvsYcrBJcRWeYdU1goCA==
+X-Received: by 2002:a05:6000:1110:b0:2c8:42b5:8030 with SMTP id z16-20020a056000111000b002c842b58030mr6254219wrw.62.1677452123541;
+        Sun, 26 Feb 2023 14:55:23 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:8baa:6b32:391b:62de])
-        by smtp.gmail.com with ESMTPSA id d10-20020a05600c3aca00b003eb369abd92sm6138074wms.2.2023.02.26.14.55.19
+        by smtp.gmail.com with ESMTPSA id d10-20020a05600c3aca00b003eb369abd92sm6138074wms.2.2023.02.26.14.55.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Feb 2023 14:55:20 -0800 (PST)
+        Sun, 26 Feb 2023 14:55:23 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rafael@kernel.org, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        linux-tegra@vger.kernel.org (open list:TEGRA ARCHITECTURE SUPPORT)
-Subject: [PATCH v3 17/20] thermal/tegra: Do not enable the thermal zone, it is already enabled
-Date:   Sun, 26 Feb 2023 23:54:03 +0100
-Message-Id: <20230226225406.979703-18-daniel.lezcano@linaro.org>
+        Peter Kaestle <peter@piie.net>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Mark Gross <markgross@kernel.org>,
+        platform-driver-x86@vger.kernel.org (open list:ACER ASPIRE ONE
+        TEMPERATURE AND FAN DRIVER)
+Subject: [PATCH v3 19/20] thermal/drivers/acerhdf: Remove pointless governor test
+Date:   Sun, 26 Feb 2023 23:54:05 +0100
+Message-Id: <20230226225406.979703-20-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230226225406.979703-1-daniel.lezcano@linaro.org>
 References: <20230226225406.979703-1-daniel.lezcano@linaro.org>
@@ -75,35 +69,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The code enables the thermal zone after setting it up. But the thermal
-zone is already enabled by thermal_of_zone_register() function.
+The thermal zone parameter specifies the bang-bang governor.
+
+The Kconfig selects the bang-bang governor. So it is pointless to test
+if the governor was set for the thermal zone assuming it may not have
+been compiled-in.
+
+Remove the test and prevent another access into the thermal internals.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Peter Kaestle <peter@piie.net>
 ---
- drivers/thermal/tegra/tegra30-tsensor.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ drivers/platform/x86/acerhdf.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/drivers/thermal/tegra/tegra30-tsensor.c b/drivers/thermal/tegra/tegra30-tsensor.c
-index 3506c3f3c474..e38902abf207 100644
---- a/drivers/thermal/tegra/tegra30-tsensor.c
-+++ b/drivers/thermal/tegra/tegra30-tsensor.c
-@@ -346,7 +346,7 @@ static int tegra_tsensor_enable_hw_channel(const struct tegra_tsensor *ts,
- {
- 	const struct tegra_tsensor_channel *tsc = &ts->ch[id];
- 	struct thermal_zone_device *tzd = tsc->tzd;
--	int err, hot_trip = 0, crit_trip = 0;
-+	int hot_trip = 0, crit_trip = 0;
- 	u32 val;
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 61f1c3090867..71b9c1f922d9 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -697,13 +697,6 @@ static int __init acerhdf_register_thermal(void)
+ 	if (ret)
+ 		return ret;
  
- 	if (!tzd) {
-@@ -401,12 +401,6 @@ static int tegra_tsensor_enable_hw_channel(const struct tegra_tsensor *ts,
- 	val |= FIELD_PREP(TSENSOR_SENSOR0_CONFIG0_INTR_THERMAL_RST_EN, 1);
- 	writel_relaxed(val, tsc->regs + TSENSOR_SENSOR0_CONFIG0);
- 
--	err = thermal_zone_device_enable(tzd);
--	if (err) {
--		dev_err(ts->dev, "ch%u: failed to enable zone: %d\n", id, err);
--		return err;
+-	if (strcmp(thz_dev->governor->name,
+-				acerhdf_zone_params.governor_name)) {
+-		pr_err("Didn't get thermal governor %s, perhaps not compiled into thermal subsystem.\n",
+-				acerhdf_zone_params.governor_name);
+-		return -EINVAL;
 -	}
 -
  	return 0;
