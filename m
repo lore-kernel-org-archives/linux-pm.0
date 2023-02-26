@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19B57C64ED6
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 14:52:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5713C7EE23
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 14:52:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229959AbjBZOwM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Feb 2023 09:52:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44062 "EHLO
+        id S230254AbjBZOwa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Feb 2023 09:52:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45014 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230055AbjBZOvm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 09:51:42 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E1D318B22;
-        Sun, 26 Feb 2023 06:49:05 -0800 (PST)
+        with ESMTP id S230217AbjBZOvp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 09:51:45 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5049193DA;
+        Sun, 26 Feb 2023 06:49:06 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id E253F60C3C;
-        Sun, 26 Feb 2023 14:47:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C641C433D2;
-        Sun, 26 Feb 2023 14:47:11 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 4A70BB80C01;
+        Sun, 26 Feb 2023 14:49:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 180FBC433D2;
+        Sun, 26 Feb 2023 14:49:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677422832;
+        s=k20201202; t=1677422945;
         bh=pqwBY4Qj32039YQGPewsnivkpgIkhZ1G6WVXK4iMSFo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=aE9LF387B4C0VgD47OODa8WAEEtt7ZN62smEOAXyz/iUedZStaFgLV8OBB2mQVqdb
-         NOH5naqO7S/A6oIyg5C6OO4ooMRBVxWsySPqmAGxR+C6acuSdluM25EKZSNBKqGeXJ
-         Mv+uuh2MwAA8V0wuk3nJEqPJ1pXWrs7+9JkjvhwxM7R7EZPW9LctMvp332Pd3FfEyG
-         MwE2vgQYRZJe3qL6y/EZ3wMVsKsgbenAayVF266pXl4Z23gadoVRFwGXmOAjraiWQ7
-         SbRvI+U3D4/K3PCn+9NjNuYozXojqI78Oih1whGR8+cFsmuoBHWerQaH9nBWE5iR9J
-         igk/setWtxrxw==
+        b=rL6S36J7LKt0UZwcNFX1Lm0/MSLn5qrGbDoSAFt8kRw/F5VOinl8wkdahbI/g58aY
+         h+A4OPHALjlmsLE5hOSb7DA3fRkWv+ozH09htWuHesWEmOmI819wFipzchBP3z6Ofx
+         OS2U6G+E2q7p79WLI0I517V5nUgP8EqpG+ukOUgwPzhrNhnsaByt0CkuubinWOF22K
+         3vZIDTS7Ho16QRY+OFWEugsF7UFSrDBnP5Fip/0HA+hKKWYdlvtbWN4jCSk7Ayoyty
+         yxgzbW5hh0YzEpEP2vlmGsEWaxx7QZh2dtCu3KuSmie4XQGg7nXMcUBPDcruo/Ecfb
+         ujRhNqlK5Uazg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Yang Li <yang.lee@linux.alibaba.com>,
@@ -39,12 +39,12 @@ Cc:     Yang Li <yang.lee@linux.alibaba.com>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
         daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 10/49] thermal: intel: Fix unsigned comparison with less than zero
-Date:   Sun, 26 Feb 2023 09:46:10 -0500
-Message-Id: <20230226144650.826470-10-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 07/36] thermal: intel: Fix unsigned comparison with less than zero
+Date:   Sun, 26 Feb 2023 09:48:15 -0500
+Message-Id: <20230226144845.827893-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230226144650.826470-1-sashal@kernel.org>
-References: <20230226144650.826470-1-sashal@kernel.org>
+In-Reply-To: <20230226144845.827893-1-sashal@kernel.org>
+References: <20230226144845.827893-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
