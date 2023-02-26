@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9887C6FA8E
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 14:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F963C64ED6
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 15:00:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231373AbjBZO4I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Feb 2023 09:56:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56114 "EHLO
+        id S231193AbjBZPAt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Feb 2023 10:00:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36558 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231345AbjBZOzV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 09:55:21 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B03EA1BAE9;
-        Sun, 26 Feb 2023 06:51:11 -0800 (PST)
+        with ESMTP id S231135AbjBZO60 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 09:58:26 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 874CB1C7F5;
+        Sun, 26 Feb 2023 06:52:24 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 05FCF60C56;
-        Sun, 26 Feb 2023 14:48:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97F3FC4339B;
-        Sun, 26 Feb 2023 14:48:20 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 2D56660C19;
+        Sun, 26 Feb 2023 14:51:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD5A9C433A1;
+        Sun, 26 Feb 2023 14:51:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677422901;
-        bh=qHyBzb5+zGty8cO7BL/qcrPFXMs8pVI2J/iGBv0oU30=;
+        s=k20201202; t=1677423075;
+        bh=OVM5a6S+FXjYx1lYy+zj89/O07ME4c0Ww/3AY5VAy1o=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=aRPmZ70xeK5/o9+NUSZxm+POWlZAiOVeevgI4yVBIttwBxgPJ8+ottj+bmOE1KSQz
-         dHRpCZT18WyPR8gMlgmrQJLM7utFboXhTpYB51jvmPCbj+jY7PmM9ni2uuaPkjFGfR
-         RPKL9Enqvb1O1UU89/GEFq7RlHop1lXz5MYFah/S8ZAMdre0I2vPK6v8jMDImKQSOd
-         1h6SLN2WUaHkeeoChHFJ9YhPfwxkxCnok54eBxIk2P97181K5CIwPlgVPX6i9ts5gr
-         owomd7cKzP9WKby58dZYJMkoZ6u1kiKNI/47HJIyZWTUTDh6ra7+q6O+U6rT76kXw/
-         RTwc/OtK4JpbA==
+        b=OMBRUdY4JoNDH0Ej6jzqCHZuo7yjtPs3+QsFmTX2gaP3B9CjKHCc9Vki1Dr1Gh99w
+         ePa4+hUy+JkjyOfRFtm+5GdZtVHU0qJWgAbfPw4Fdp/lYFOIfTsAF58acSgkTqpj9F
+         DTM/uxzb0LDMWJIjF0xe0908tm6ehCbUtFMqbmnKL+cImSm/tJC/ZTsNg1EUmVMHtf
+         8LhR3mwiQq1mVWIrazJ/jAjdN8UNYMa8QiAJa72gR0ZRo6Fj3Kbz06UbwZnr69+gx/
+         jgDrFmvQRuBNcuXHGhL1XCOGpx+rqkqt5rZXUcfd7XHPyJMxyxrS0azhtGVeSvHznU
+         HO4AZ7GHsvC6g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 40/49] PM: EM: fix memory leak with using debugfs_lookup()
-Date:   Sun, 26 Feb 2023 09:46:40 -0500
-Message-Id: <20230226144650.826470-40-sashal@kernel.org>
+        len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.10 25/27] PM: EM: fix memory leak with using debugfs_lookup()
+Date:   Sun, 26 Feb 2023 09:50:12 -0500
+Message-Id: <20230226145014.828855-25-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230226144650.826470-1-sashal@kernel.org>
-References: <20230226144650.826470-1-sashal@kernel.org>
+In-Reply-To: <20230226145014.828855-1-sashal@kernel.org>
+References: <20230226145014.828855-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -68,10 +68,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index f82111837b8d1..7b44f5b89fa15 100644
+index 119b929dcff0f..334173fe6940e 100644
 --- a/kernel/power/energy_model.c
 +++ b/kernel/power/energy_model.c
-@@ -87,10 +87,7 @@ static void em_debug_create_pd(struct device *dev)
+@@ -72,10 +72,7 @@ static void em_debug_create_pd(struct device *dev)
  
  static void em_debug_remove_pd(struct device *dev)
  {
