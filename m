@@ -2,62 +2,70 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F77FC7EE32
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 22:55:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E6BFC7EE2D
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 22:56:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229530AbjBZWz6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Feb 2023 17:55:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34676 "EHLO
+        id S229773AbjBZW4A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Feb 2023 17:56:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34560 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229841AbjBZWzn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 17:55:43 -0500
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9A8E15153
-        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:16 -0800 (PST)
-Received: by mail-wm1-x32f.google.com with SMTP id t25-20020a1c7719000000b003eb052cc5ccso5504448wmi.4
-        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:16 -0800 (PST)
+        with ESMTP id S229862AbjBZWzv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 17:55:51 -0500
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C28A19691
+        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:19 -0800 (PST)
+Received: by mail-wm1-x333.google.com with SMTP id o11-20020a05600c4fcb00b003eb33ea29a8so2284731wmq.1
+        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2023 14:55:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=2PLESKqLcdlyFOxotfZU1hq7qJ9ZRCDMy4R1xbT74Go=;
-        b=t3fT9qy1TXS8sFM4s0T5OGMJRogHttzdL/RLTWctsvHEvGWqXkkAMlfD/YUZHGZXhc
-         JXvQR38z3UoJqNZBcS5YQysMXqLw9O5Y1t1MLojSdbF79hffoFec+5bPoWwwki0Ae/N7
-         Xs2UBiJRgLrRdbIF/FDD4nlluojuXIqvOxSL1b3ZJq4zduqp24dGXoYi/PR5IKlFa7OJ
-         8YZNOWo5vPShfecsNZbyHWEJm1AZCEKcVxtlQPEWztJAPQv8fP35icaSvu4jVscOYLnB
-         9pfjtd61wAHy1q1Zq2qlDdnitnRsruigHDR8VJnrHrL2cR1hY+ZrVPHpwi8gy9F4EVQZ
-         h4AA==
+        bh=pyXE7dTHWFCFp1MXqwgdHIOsHgvb6Bb+CE7d2W8RwzE=;
+        b=j6cWgriM44yIlkbnJMBl/LIF4DBN7K6sDq72ct5XO1gZhaT3JIxDgnr+g9hYq6D7T0
+         Vyz+spEgxahy83vuWL1RVBGN8w5RXhwOL9XlOts6Fm+PBKePIzzye1/OOUaDEKrKEydi
+         hrpNFPGUHHEiuFh60nTc1FMwGsTsdjyq7Bnx9I0QQg5fA83wsAUmerRnXgbRVUaIS8Sl
+         mHYKa8RNX8+Rayot/nUhsgSj3uJlORnBlF3RODAi5Ab8d75eg92iuz+BjKfF5oGKJ5aD
+         iRCj349olk+3brNKo+p9Od/3XA45oZkFM/gwC9cTj5RnYQHayoOMHCIg+YPziH8rKN3T
+         u8PA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=2PLESKqLcdlyFOxotfZU1hq7qJ9ZRCDMy4R1xbT74Go=;
-        b=ry7DsZt9m1RfqYRKNEmZwZvXO2ZRmhd3huwKKN1AWv1oVdrkkf2JACn2CLYdHBNYV2
-         bKwjvNbDn4UBEGaHepSCxGDmN/nnMChAzUUJGOtd5qb5R2HIVY4WhtmJ5Gl7brvFOOlT
-         omIiQpMiQeJ2tgZ6SKqI+NHzxQqcVQjCyFsHxBd2mezHEgwnvDammqmUpnHoMx7/OufO
-         lSEO5uPwwJEwpCHoA3UpF+OtTzWxCYzZbyIMwX+n7A2Ec32+84nQmh8Rk8PPt6pPa5e2
-         Hhv6zqyZs1964nDYoeM+ixqTyPHpfT118hTREKoinHKRb/S2QXQChd+3wasZ3n4MSUe+
-         MDqQ==
-X-Gm-Message-State: AO0yUKUDaB6pOyofEVmARAVLXdW0O963jkhwXJCDu7QH20JfnE5QlA9O
-        GwzbPgnlDWN3nu7gjRvPQFYaUw==
-X-Google-Smtp-Source: AK7set9k27HgrqEsOfhwiHXkpEu7mk/mCZUPj/glYM0D8NK2+nxdjZk1qfCEbKDlOnwN1Et+WDX0KQ==
-X-Received: by 2002:a05:600c:43ca:b0:3dc:557f:6129 with SMTP id f10-20020a05600c43ca00b003dc557f6129mr11400366wmn.2.1677452116251;
-        Sun, 26 Feb 2023 14:55:16 -0800 (PST)
+        bh=pyXE7dTHWFCFp1MXqwgdHIOsHgvb6Bb+CE7d2W8RwzE=;
+        b=Ymf26NsC3tUh98pLcQ3dv/pJtc74YyGIGJoJsf8b36uf2tjSJstVyt+LAXrEW4N2/C
+         lUtPl1wbe/+XIBNyV9oi1fgYHpLJXVKIOCz4+25thmVJZBoz/8EcIgHJOIQYHUMGQZn6
+         OHTYMel43+xrkaZ1Bxe/q0W7wHqgxtuFVRJrO4a7TNN3rWi1pnrvbtzABYSH6dQxWtQE
+         cytoUb5YK0vNM5wsNtpVAq8Kx3ltGbf73HYzzPNDqh1+kq7FvK3lfV4boGYuHyeMkDw3
+         MP5tzdyt65WZtIrwrzt1EMZrqWLehsufiQFeUK+X1+A57MfXp4GAKLkFwpOncn68nxCk
+         oNFA==
+X-Gm-Message-State: AO0yUKVmHlVDOvhT68b0evqGoAiyRu0NfRnir6fO9fpA3XoJis9Qe8R0
+        miEoz6bZ760dbUuINJ1YRz1u/A==
+X-Google-Smtp-Source: AK7set8ROkTT5C5SAw1A6UPRYb/QJsRqGkDj+cNJXtdB3OYVnq/pN0bK5Nc3GU0CXlIZQ7aXtiPHew==
+X-Received: by 2002:a05:600c:70a:b0:3df:eecc:de2b with SMTP id i10-20020a05600c070a00b003dfeeccde2bmr13952434wmn.11.1677452119106;
+        Sun, 26 Feb 2023 14:55:19 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:8baa:6b32:391b:62de])
-        by smtp.gmail.com with ESMTPSA id d10-20020a05600c3aca00b003eb369abd92sm6138074wms.2.2023.02.26.14.55.15
+        by smtp.gmail.com with ESMTPSA id d10-20020a05600c3aca00b003eb369abd92sm6138074wms.2.2023.02.26.14.55.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Feb 2023 14:55:15 -0800 (PST)
+        Sun, 26 Feb 2023 14:55:18 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rafael@kernel.org, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Support Opensource <support.opensource@diasemi.com>,
         Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v3 14/20] thermal/drivers/da9062: Don't access the thermal zone device fields
-Date:   Sun, 26 Feb 2023 23:54:00 +0100
-Message-Id: <20230226225406.979703-15-daniel.lezcano@linaro.org>
+        Zhang Rui <rui.zhang@intel.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        linux-tegra@vger.kernel.org (open list:TEGRA ARCHITECTURE SUPPORT)
+Subject: [PATCH v3 16/20] thermal/drivers/tegra: Remove unneeded lock when setting a trip point
+Date:   Sun, 26 Feb 2023 23:54:02 +0100
+Message-Id: <20230226225406.979703-17-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230226225406.979703-1-daniel.lezcano@linaro.org>
 References: <20230226225406.979703-1-daniel.lezcano@linaro.org>
@@ -67,65 +75,95 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver is reading the passive polling rate in the thermal zone
-structure. We want to prevent the drivers to rummage around in the
-thermal zone structure.
+The function tegra_tsensor_enable_hw_channel() takes the thermal zone
+lock to prevent "a potential" race with a call to set_trips()
+callback.
 
-On the other side, the delay is what the driver passed to the
-thermal_zone_device_register() function, so it has already the
-information.
+The driver must not play with the thermal framework core code
+internals.
 
-Reuse the information we have instead of reading the information we
-set.
+The tegra_tsensor_enable_hw_channel() is called by:
+
+ - the suspend / resume callbacks
+ - the probe function after the thermal zones are registered
+
+The thermal zone lock taken in this function is supposed to protect
+from a call to the set_trips() callback which writes in the same
+register.
+
+The potential race is when suspend / resume are called at the same
+time as set_trips. This one is called only in
+thermal_zone_device_update().
+
+ - At suspend time, the 'in_suspend' is set, thus the
+   thermal_zone_device_update() bails out immediately and set_trips is
+   not called during this moment.
+
+ - At resume time, the thermal zone is updated at PM_POST_SUSPEND,
+   thus the driver has already set the TH2 temperature.
+
+ - At probe time, we register the thermal zone and then we set the
+   TH2. The only scenario I can see so far is the interrupt fires, the
+   thermal_zone_update() is called exactly at the moment
+   tegra_tsensor_enable_hw_channel() a few lines after registering it.
+
+Disable the interrupt before setting up the hw channels and then
+enable it. We close the potential race window without using the
+thermal zone's lock.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/da9062-thermal.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/thermal/tegra/tegra30-tsensor.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
-index e7097f354750..2d31b1f73423 100644
---- a/drivers/thermal/da9062-thermal.c
-+++ b/drivers/thermal/da9062-thermal.c
-@@ -41,6 +41,8 @@
+diff --git a/drivers/thermal/tegra/tegra30-tsensor.c b/drivers/thermal/tegra/tegra30-tsensor.c
+index 4b2ea17910cd..3506c3f3c474 100644
+--- a/drivers/thermal/tegra/tegra30-tsensor.c
++++ b/drivers/thermal/tegra/tegra30-tsensor.c
+@@ -359,9 +359,6 @@ static int tegra_tsensor_enable_hw_channel(const struct tegra_tsensor *ts,
  
- #define DA9062_MILLI_CELSIUS(t)			((t) * 1000)
+ 	tegra_tsensor_get_hw_channel_trips(tzd, &hot_trip, &crit_trip);
  
-+static unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
+-	/* prevent potential racing with tegra_tsensor_set_trips() */
+-	mutex_lock(&tzd->lock);
+-
+ 	dev_info_once(ts->dev, "ch%u: PMC emergency shutdown trip set to %dC\n",
+ 		      id, DIV_ROUND_CLOSEST(crit_trip, 1000));
+ 
+@@ -404,8 +401,6 @@ static int tegra_tsensor_enable_hw_channel(const struct tegra_tsensor *ts,
+ 	val |= FIELD_PREP(TSENSOR_SENSOR0_CONFIG0_INTR_THERMAL_RST_EN, 1);
+ 	writel_relaxed(val, tsc->regs + TSENSOR_SENSOR0_CONFIG0);
+ 
+-	mutex_unlock(&tzd->lock);
+-
+ 	err = thermal_zone_device_enable(tzd);
+ 	if (err) {
+ 		dev_err(ts->dev, "ch%u: failed to enable zone: %d\n", id, err);
+@@ -592,12 +587,24 @@ static int tegra_tsensor_probe(struct platform_device *pdev)
+ 		return dev_err_probe(&pdev->dev, err,
+ 				     "failed to request interrupt\n");
+ 
++	/*
++	 * Disable the interrupt so set_trips() can not be called
++	 * while we are setting up the register
++	 * TSENSOR_SENSOR0_CONFIG1. With this we close a potential
++	 * race window where we are setting up the TH2 and the
++	 * temperature hits TH1 resulting to an update of the
++	 * TSENSOR_SENSOR0_CONFIG1 register in the ISR.
++	 */
++	disable_irq(irq);
 +
- struct da9062_thermal_config {
- 	const char *name;
- };
-@@ -95,7 +97,10 @@ static void da9062_thermal_poll_on(struct work_struct *work)
- 		thermal_zone_device_update(thermal->zone,
- 					   THERMAL_EVENT_UNSPECIFIED);
- 
--		delay = thermal->zone->passive_delay_jiffies;
-+		/*
-+		 * pp_tmp is between 1s and 10s, so we can round the jiffies
-+		 */
-+		delay = round_jiffies(msecs_to_jiffies(pp_tmp));
- 		queue_delayed_work(system_freezable_wq, &thermal->work, delay);
- 		return;
- 	}
-@@ -155,7 +160,6 @@ static int da9062_thermal_probe(struct platform_device *pdev)
- {
- 	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
- 	struct da9062_thermal *thermal;
--	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
- 	const struct of_device_id *match;
- 	int ret = 0;
- 
-@@ -208,8 +212,7 @@ static int da9062_thermal_probe(struct platform_device *pdev)
+ 	for (i = 0; i < ARRAY_SIZE(ts->ch); i++) {
+ 		err = tegra_tsensor_enable_hw_channel(ts, i);
+ 		if (err)
+ 			return err;
  	}
  
- 	dev_dbg(&pdev->dev,
--		"TJUNC temperature polling period set at %d ms\n",
--		jiffies_to_msecs(thermal->zone->passive_delay_jiffies));
-+		"TJUNC temperature polling period set at %d ms\n", pp_tmp);
++	enable_irq(irq);
++
+ 	return 0;
+ }
  
- 	ret = platform_get_irq_byname(pdev, "THERMAL");
- 	if (ret < 0)
 -- 
 2.34.1
 
