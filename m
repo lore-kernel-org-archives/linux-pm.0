@@ -2,132 +2,91 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E49EBC7EE3A
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 05:40:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AE61C7EE23
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 14:46:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229652AbjBZFkB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Feb 2023 00:40:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56672 "EHLO
+        id S229811AbjBZOqG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Feb 2023 09:46:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229601AbjBZFkA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 00:40:00 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21925136F7;
-        Sat, 25 Feb 2023 21:39:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=EI1aXrE2jWnMQpvhJWCxJ0A1m6hExM8zG6kHodDd/Yk=; b=aj3A5Ot6MEhhd9SZR6hiyed6PQ
-        EdZuqG07G/Vk/F8skIZAfGRc6sNw4DC3faae0Cu3vMc4szUf4tDAjvfhrUYJgE2qrG+wA3gREi+N9
-        PxwHUdCcxP7gl8263NKtViUAcgY2zI6M/LMZBz9lNggC95W1ux6ZsuulZKWLDOGTRoKB45Cn6oWKQ
-        wmRpRz9HJa6rXmn93Yj2Kp+oVd2a57W+8ogtuK5beZyvX1IVvMsN0ws+h4BF3CcUdqyDY6oBTAOxv
-        yxF6SU+Dxy/zjph+VaxFK8u1DqBXUvUKhjqVRXd4V3udKqotaho/14nhEhUecI4IwtIGLrTY08V5M
-        lQmQqocw==;
-Received: from [2601:1c2:980:9ec0::df2f] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pW9lK-006qYL-N4; Sun, 26 Feb 2023 05:39:54 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Andrew Jeffery <andrew@aj.id.au>,
-        Corey Minyard <minyard@acm.org>,
-        openipmi-developer@lists.sourceforge.net,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Riku Voipio <riku.voipio@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        linux-clk@vger.kernel.org, Michael Walle <michael@walle.cc>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        linux-gpio@vger.kernel.org, Dan Murphy <dmurphy@ti.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Lee Jones <lee@kernel.org>, linux-leds@vger.kernel.org,
-        Darren Hart <dvhart@infradead.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Michael Shych <michaelsh@nvidia.com>,
-        Mark Gross <markgross@kernel.org>,
-        Vadim Pasternak <vadimp@nvidia.com>,
-        platform-driver-x86@vger.kernel.org,
-        Yegnesh S Iyer <yegnesh.s.iyer@intel.com>,
-        Bin Gao <bin.gao@intel.com>, Zhang Rui <rui.zhang@intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
-        Oskar Senft <osk@google.com>, linux-serial@vger.kernel.org
-Subject: [PATCH 0/8] drivers: select REGMAP instead of depending on it
-Date:   Sat, 25 Feb 2023 21:39:45 -0800
-Message-Id: <20230226053953.4681-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.39.2
+        with ESMTP id S229643AbjBZOps (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 09:45:48 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F18F2149A0;
+        Sun, 26 Feb 2023 06:45:15 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 8E399B80BA7;
+        Sun, 26 Feb 2023 14:45:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3676DC4339E;
+        Sun, 26 Feb 2023 14:45:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1677422709;
+        bh=pqwBY4Qj32039YQGPewsnivkpgIkhZ1G6WVXK4iMSFo=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=hBWUuX3xjyC1euCkwVGuEKT90z5j2tQj1PCNrqKE41IzODOAqiex0uSCB//4638uf
+         1O41hD7ha2H0Ha5T+Y8S/YeV2j1rgrRBfZmJjKSdi5I6L6NBvUGHrvNoJRGqeE0cvn
+         CLYLlwJUx4GWX9TFQlPLKPkmXZ5G5Bph/kixSjWNbt1xXgJa2SUbyDmWH7yXLtOm8G
+         31JiILBMn9cESUu/BQkiC2czpwciUS04brygZmBonG6djlAGd2Qe3huRy6aIQZUr9u
+         EhGfEUlqDSRtBAnG/W8Ufy0Ww6ymqwYnN4AwB2uWxmwN19ZB71DsHmN/RRfzNrxDBQ
+         Hc1/vlImaFR1Q==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Yang Li <yang.lee@linux.alibaba.com>,
+        Abaci Robot <abaci@linux.alibaba.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
+        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.2 10/53] thermal: intel: Fix unsigned comparison with less than zero
+Date:   Sun, 26 Feb 2023 09:44:02 -0500
+Message-Id: <20230226144446.824580-10-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230226144446.824580-1-sashal@kernel.org>
+References: <20230226144446.824580-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-REGMAP is a hidden (not user visible) symbol. Users cannot set it
-directly thru "make *config", so drivers should select it instead of
-depending on it if they need it.
+From: Yang Li <yang.lee@linux.alibaba.com>
 
-Consistently using "select" or "depends on" can also help reduce
-Kconfig circular dependency issues.
+[ Upstream commit e7fcfe67f9f410736b758969477b17ea285e8e6c ]
 
-REGMAP is selected 94 times and is depended on 11 times in
-current linux-next. Eliminate the uses of "depends on" by
-converting them to "select".
+The return value from the call to intel_tcc_get_tjmax() is int, which can
+be a negative error code. However, the return value is being assigned to
+an u32 variable 'tj_max', so making 'tj_max' an int.
 
- [PATCH 1/8] ipmi: ASPEED_BT_IPMI_BMC: select REGMAP_MMIO instead of depending on it
- [PATCH 2/8] clk: HI655X: select REGMAP instead of depending on it
- [PATCH 3/8] gpio: GPIO_REGMAP: select REGMAP instead of depending on it
- [PATCH 4/8] leds: TI_LMU_COMMON: select REGMAP instead of depending on it
- [PATCH 5/8] platform: mellanox: select REGMAP instead of depending on it
- [PATCH 6/8] platform: x86: MLX_PLATFORM: select REGMAP instead of depending on it
- [PATCH 7/8] thermal: intel: BXT_PMIC: select REGMAP instead of depending on it
- [PATCH 8/8] serial: 8250: ASPEED_VUART: select REGMAP instead of depending on it
+Eliminate the following warning:
+./drivers/thermal/intel/intel_soc_dts_iosf.c:394:5-11: WARNING: Unsigned expression compared with zero: tj_max < 0
 
-diffstat:
- drivers/char/ipmi/Kconfig         |    3 ++-
- drivers/clk/Kconfig               |    2 +-
- drivers/gpio/Kconfig              |    2 +-
- drivers/leds/Kconfig              |    2 +-
- drivers/platform/mellanox/Kconfig |    9 ++++-----
- drivers/platform/x86/Kconfig      |    3 ++-
- drivers/thermal/intel/Kconfig     |    3 ++-
- drivers/tty/serial/8250/Kconfig   |    3 ++-
- 8 files changed, 15 insertions(+), 12 deletions(-)
+Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=3637
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/thermal/intel/intel_soc_dts_iosf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Cc: Andrew Jeffery <andrew@aj.id.au>
-Cc: Corey Minyard <minyard@acm.org>
-Cc: openipmi-developer@lists.sourceforge.net
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Riku Voipio <riku.voipio@linaro.org>
-Cc: Stephen Boyd <sboyd@kernel.org>
-Cc: Michael Turquette <mturquette@baylibre.com>
-Cc: linux-clk@vger.kernel.org
-Cc: Michael Walle <michael@walle.cc>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: linux-gpio@vger.kernel.org
-Cc: Dan Murphy <dmurphy@ti.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Cc: Lee Jones <lee@kernel.org>
-Cc: linux-leds@vger.kernel.org
-Cc: Darren Hart <dvhart@infradead.org>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Michael Shych <michaelsh@nvidia.com>
-Cc: Mark Gross <markgross@kernel.org>
-Cc: Vadim Pasternak <vadimp@nvidia.com>
-Cc: platform-driver-x86@vger.kernel.org
-Cc: Yegnesh S Iyer <yegnesh.s.iyer@intel.com>
-Cc: Bin Gao <bin.gao@intel.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Amit Kucheria <amitk@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Oskar Senft <osk@google.com>
-Cc: linux-serial@vger.kernel.org
+diff --git a/drivers/thermal/intel/intel_soc_dts_iosf.c b/drivers/thermal/intel/intel_soc_dts_iosf.c
+index 342b0bb5a56d9..8651ff1abe754 100644
+--- a/drivers/thermal/intel/intel_soc_dts_iosf.c
++++ b/drivers/thermal/intel/intel_soc_dts_iosf.c
+@@ -405,7 +405,7 @@ struct intel_soc_dts_sensors *intel_soc_dts_iosf_init(
+ {
+ 	struct intel_soc_dts_sensors *sensors;
+ 	bool notification;
+-	u32 tj_max;
++	int tj_max;
+ 	int ret;
+ 	int i;
+ 
+-- 
+2.39.0
+
