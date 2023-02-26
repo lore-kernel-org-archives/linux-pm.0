@@ -2,45 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32CCEC8300C
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 14:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39A60C87FDC
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 14:56:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231314AbjBZO4F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Feb 2023 09:56:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55278 "EHLO
+        id S231337AbjBZO4G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Feb 2023 09:56:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54990 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231142AbjBZOyx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 09:54:53 -0500
+        with ESMTP id S230484AbjBZOyh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 09:54:37 -0500
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA9A51353E;
-        Sun, 26 Feb 2023 06:50:41 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 962875FE8;
+        Sun, 26 Feb 2023 06:50:33 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 1E2C4B80B48;
-        Sun, 26 Feb 2023 14:49:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDA8EC433D2;
-        Sun, 26 Feb 2023 14:49:28 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id A6DBDB80C75;
+        Sun, 26 Feb 2023 14:50:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79C7AC433EF;
+        Sun, 26 Feb 2023 14:50:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677422969;
-        bh=5HBDZ6yNZHO2PX9ypbYP3Y56S3lBzWOLHEyKz21F+QQ=;
+        s=k20201202; t=1677423003;
+        bh=UUm4tSIP2oQ/cNLrwzxPHH7f4fd91DROcezNUsi8aPQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=CJjHgD8ZqPxXyBa4YXUJEPsTNPWM5igNioqf/a/pTTji/NQpXL2UYm8SH5tRAoDfg
-         YWTtkOaLA9cIt7xOvAeAl+SDCBFFkUyCsR61sk197Gs+KNtRjQL3A8rCu4RLLpd0lh
-         doEk1IKm412AM7DMHmXsqdQXrcuQTEZZ8Fw0FT7D/C+HI1IO5p8zdS5JYg93cYItrv
-         7pEg5JyjPnxOgXNLGHgukQtAk/6MVFGIJXyrVgq6y9JU+ooIBnpIM3Iz0y5Uvy99WM
-         x5hB5udkANavzfQ/zCxKGF50xAdXwq9wu8Ig0SV1MVUmqa8eeR085AfZZZUkhmCsEh
-         rA+i3CIcYLleA==
+        b=c0waMukm+Kf3c0/kRqKhIGBL2SegsIamQ6lA4upIvm0WHtjfB78nX2WOP1dC6YEws
+         xU4PYdVdCR2lK+eK3V2qzKZnyQQ0ObxiIgdEjA7cBvCT14Xp65HWdyJytpgWMfOVOz
+         rGi89wfD95q+VLyGG0/00xnN2rkyeBWzx+W3r8I/qiNJ9DOhRglNp9cIOmxZSFomiC
+         qIlfLfAXYRG0nAw7BrDWgjRUS8C+CJFQA+lcpze+a4eTwhfCauFyojRXQY+rIx3dQz
+         84iPO41V7ZDONkxseWluwpbZ7Po5NRM3MnZt8xueIiYYaxP8Mimhgj8lzxGNbYEpFz
+         GEvYu0yVxFLbA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Tim Zimmermann <tim@linux4.de>,
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        daniel.lezcano@linaro.org, rui.zhang@intel.com,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 16/36] thermal: intel: intel_pch: Add support for Wellsburg PCH
-Date:   Sun, 26 Feb 2023 09:48:24 -0500
-Message-Id: <20230226144845.827893-16-sashal@kernel.org>
+        pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.15 32/36] PM: EM: fix memory leak with using debugfs_lookup()
+Date:   Sun, 26 Feb 2023 09:48:40 -0500
+Message-Id: <20230226144845.827893-32-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230226144845.827893-1-sashal@kernel.org>
 References: <20230226144845.827893-1-sashal@kernel.org>
@@ -52,62 +51,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Tim Zimmermann <tim@linux4.de>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-[ Upstream commit 40dc1929089fc844ea06d9f8bdb6211ed4517c2e ]
+[ Upstream commit a0e8c13ccd6a9a636d27353da62c2410c4eca337 ]
 
-Add the PCI ID for the Wellsburg C610 series chipset PCH.
+When calling debugfs_lookup() the result must have dput() called on it,
+otherwise the memory will leak over time.  To make things simpler, just
+call debugfs_lookup_and_remove() instead which handles all of the logic
+at once.
 
-The driver can read the temperature from the Wellsburg PCH with only
-the PCI ID added and no other modifications.
-
-Signed-off-by: Tim Zimmermann <tim@linux4.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/intel/intel_pch_thermal.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ kernel/power/energy_model.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
-index 527c91f5960be..768c66046a599 100644
---- a/drivers/thermal/intel/intel_pch_thermal.c
-+++ b/drivers/thermal/intel/intel_pch_thermal.c
-@@ -29,6 +29,7 @@
- #define PCH_THERMAL_DID_CNL_LP	0x02F9 /* CNL-LP PCH */
- #define PCH_THERMAL_DID_CML_H	0X06F9 /* CML-H PCH */
- #define PCH_THERMAL_DID_LWB	0xA1B1 /* Lewisburg PCH */
-+#define PCH_THERMAL_DID_WBG	0x8D24 /* Wellsburg PCH */
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 97e62469a6b32..1b902f986f91c 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -85,10 +85,7 @@ static void em_debug_create_pd(struct device *dev)
  
- /* Wildcat Point-LP  PCH Thermal registers */
- #define WPT_TEMP	0x0000	/* Temperature */
-@@ -345,6 +346,7 @@ enum board_ids {
- 	board_cnl,
- 	board_cml,
- 	board_lwb,
-+	board_wbg,
- };
+ static void em_debug_remove_pd(struct device *dev)
+ {
+-	struct dentry *debug_dir;
+-
+-	debug_dir = debugfs_lookup(dev_name(dev), rootdir);
+-	debugfs_remove_recursive(debug_dir);
++	debugfs_lookup_and_remove(dev_name(dev), rootdir);
+ }
  
- static const struct board_info {
-@@ -375,6 +377,10 @@ static const struct board_info {
- 		.name = "pch_lewisburg",
- 		.ops = &pch_dev_ops_wpt,
- 	},
-+	[board_wbg] = {
-+		.name = "pch_wellsburg",
-+		.ops = &pch_dev_ops_wpt,
-+	},
- };
- 
- static int intel_pch_thermal_probe(struct pci_dev *pdev,
-@@ -490,6 +496,8 @@ static const struct pci_device_id intel_pch_thermal_id[] = {
- 		.driver_data = board_cml, },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_LWB),
- 		.driver_data = board_lwb, },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_WBG),
-+		.driver_data = board_wbg, },
- 	{ 0, },
- };
- MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
+ static int __init em_debug_init(void)
 -- 
 2.39.0
 
