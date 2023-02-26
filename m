@@ -2,49 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C51B8C7EE2F
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 15:06:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E956C6FA8E
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Feb 2023 15:10:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231475AbjBZPG1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Feb 2023 10:06:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50754 "EHLO
+        id S231840AbjBZPKv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Feb 2023 10:10:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33496 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232130AbjBZPFj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 10:05:39 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E679220552;
-        Sun, 26 Feb 2023 06:56:18 -0800 (PST)
+        with ESMTP id S231843AbjBZPKh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Feb 2023 10:10:37 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53515241E2;
+        Sun, 26 Feb 2023 07:00:35 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C4F2A60C74;
-        Sun, 26 Feb 2023 14:48:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33BBEC433B4;
-        Sun, 26 Feb 2023 14:48:19 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 2D8F2B80BEA;
+        Sun, 26 Feb 2023 14:46:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19C18C433EF;
+        Sun, 26 Feb 2023 14:46:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677422900;
-        bh=zwmTiw4jNGEI+6WAvCEtRzDSNB+DvOn5KyjyWJ48JgU=;
+        s=k20201202; t=1677422789;
+        bh=qHyBzb5+zGty8cO7BL/qcrPFXMs8pVI2J/iGBv0oU30=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=JQdYV6X5LaI0+bKdyID4twOil94hQgzC3oWFh86yOt2KwUEWxuBYvlpDNRGucbOMX
-         bCu2FNXb/TCXDoYOumz6IDImoZ0mvCnYGU+oxh8s2t9GgxZ2QN9blAEcXeOkNeabWE
-         g+WtW/4duAraS/FMs6R4qZBwEuhcJa3nMX1gb7ZInGpQSsB0dEG073d0/mU0bLZdJw
-         OTtaeD9eeLecN6dnHt4HNWKld+7o11NnQmsSpSpI9g/iiKM5rFhMohhf2xqu8+Dqk1
-         R+Y23Srt0DuHyOqQjYVuiTXOPOo8cuMl3G7wgtXN/NrSc5RTuc3Yuwe9Ur84hZrVvy
-         NI/ia46Akg1gA==
+        b=rphGIFLGfvWUy7Fl4bqFjv9Yw7uJZvW80RpRIGqFwm54G/Hs/rBq3N20eWZLlwTuN
+         L4Kz+x4yzt+erNLsn5oJtBvtg0hGTZq69jUno4p/8c10cfgJHRb+1wBpo3ohblYV1X
+         K1F4CUsGkOnhE2/DhSoYeFx2roHJSit9p8HUP+gNSxXsosRZ9nWLyROPyEgOVkNDwP
+         fi4BwAvrqCEjlLOfLsF39Bp0HJzJiKKgavd+bFrsQ8Hf9IYaVNXD4fhJLukvm6jQeD
+         qtpppQ82m3R6sT7t+E8EiFfZTDW8HbxN27BXvQYkDSJ3JniRV5EUdvHvg215vWpjcY
+         vxjoR7wGGvQMQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        khilman@kernel.org, pavel@ucw.cz, len.brown@intel.com,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 39/49] PM: domains: fix memory leak with using debugfs_lookup()
-Date:   Sun, 26 Feb 2023 09:46:39 -0500
-Message-Id: <20230226144650.826470-39-sashal@kernel.org>
+        pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.2 44/53] PM: EM: fix memory leak with using debugfs_lookup()
+Date:   Sun, 26 Feb 2023 09:44:36 -0500
+Message-Id: <20230226144446.824580-44-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230226144650.826470-1-sashal@kernel.org>
-References: <20230226144650.826470-1-sashal@kernel.org>
+In-Reply-To: <20230226144446.824580-1-sashal@kernel.org>
+References: <20230226144446.824580-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -55,7 +53,7 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-[ Upstream commit 0b6200e1e9f53dabdc30d0f6c51af9a5f664d32b ]
+[ Upstream commit a0e8c13ccd6a9a636d27353da62c2410c4eca337 ]
 
 When calling debugfs_lookup() the result must have dput() called on it,
 otherwise the memory will leak over time.  To make things simpler, just
@@ -63,32 +61,28 @@ call debugfs_lookup_and_remove() instead which handles all of the logic
 at once.
 
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/base/power/domain.c | 5 +----
+ kernel/power/energy_model.c | 5 +----
  1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 6471b559230e9..b411201f75bfb 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -220,13 +220,10 @@ static void genpd_debug_add(struct generic_pm_domain *genpd);
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index f82111837b8d1..7b44f5b89fa15 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -87,10 +87,7 @@ static void em_debug_create_pd(struct device *dev)
  
- static void genpd_debug_remove(struct generic_pm_domain *genpd)
+ static void em_debug_remove_pd(struct device *dev)
  {
--	struct dentry *d;
+-	struct dentry *debug_dir;
 -
- 	if (!genpd_debugfs_dir)
- 		return;
- 
--	d = debugfs_lookup(genpd->name, genpd_debugfs_dir);
--	debugfs_remove(d);
-+	debugfs_lookup_and_remove(genpd->name, genpd_debugfs_dir);
+-	debug_dir = debugfs_lookup(dev_name(dev), rootdir);
+-	debugfs_remove_recursive(debug_dir);
++	debugfs_lookup_and_remove(dev_name(dev), rootdir);
  }
  
- static void genpd_update_accounting(struct generic_pm_domain *genpd)
+ static int __init em_debug_init(void)
 -- 
 2.39.0
 
