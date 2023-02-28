@@ -2,107 +2,113 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B8F4C7EE36
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Feb 2023 21:59:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 468A4C64EC4
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Feb 2023 22:33:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229897AbjB1V7H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Feb 2023 16:59:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50822 "EHLO
+        id S230004AbjB1Wd3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Feb 2023 17:33:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229885AbjB1V7D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Feb 2023 16:59:03 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C8E11E9E4;
-        Tue, 28 Feb 2023 13:59:01 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id D907BB80DE7;
-        Tue, 28 Feb 2023 21:58:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AB95C4339B;
-        Tue, 28 Feb 2023 21:58:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1677621538;
-        bh=EApezt/xrKSUqcwtPB/lYFfV3ScYq2GN1UtJeJ9Yc+c=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=cUYRfMKeK+p4AXiL2yRjGGOTvS01vXKugWnhKFkzYTZRH2viq9VagyHHpn9RYO06E
-         7161gTVDpaIwYbqDcrlmVPN0o/cugLq/+gDN1auuBxF/uZPh9OpMPhpNLHF+53h7/f
-         DoT1TtdWlebJgWhfw4OQoDjoiCvi0XiuNGbnLek0xsWC1Yu/OVJnYFJLHZprcXRPiC
-         7v5WbvF/tLxYWQO6MfSWwUmY8KP3GIJ8Wrz1RAHaWryhlvgwMlV6ERJb7McemY4aKl
-         vDe/gg3FPRtgYCN2VZVVoHhp+1BFL8FRLCFU2j+s5qzK8bnhmFkzpbIMlP6wDedOvJ
-         P7W07HuSh0APg==
-Date:   Tue, 28 Feb 2023 21:58:55 +0000
-From:   Mark Brown <broonie@kernel.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        devicetree@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
-        Benson Leung <bleung@chromium.org>,
-        Guenter Roeck <groeck@chromium.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Andrzej Hajda <andrzej.hajda@intel.com>,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        Robert Foss <rfoss@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        with ESMTP id S230001AbjB1Wd1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Feb 2023 17:33:27 -0500
+Received: from sonic304-23.consmr.mail.ir2.yahoo.com (sonic304-23.consmr.mail.ir2.yahoo.com [77.238.179.148])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A894223111
+        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2023 14:33:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1677623603; bh=rgYgcc9eGhp7V36drxg71w602vdE+75teK8NgdiZ6Iw=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=CRGJ7H6PAtl346u8zvRwGPKo7jQVEMDPGSqTtHUMkH0lKRdwzhkhyHtIGp/Uqzcd1BpmpFCJuucawBS0Czu6D6kGGa/58CpQCli0E0o4wGZO0mQFGO6wSKGpVX5iKqn9HQJOyBVuLmoCPx00XhzIzkEOwkVtxn3g2HN2D8HSIRoKCF6pILXPQse8SZIkj08H+QWfwkTgUznETyUYUK/QOYUynDa8HxvGUkp/qwECUJJh8Anddgv+m9+JBlbv3m34HGD+HwCbv3MUUGJ8MkcE7M9jlv4Tm+WlC+cvk6OYpvxzIcN1ShucnZANKLlo7fr9IPetPd5EtraoZ/HXs9BDAA==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1677623603; bh=UTRVPNsZ2Cd9o/aV0fnM4jV84uDsF/xwuVXk/6jysOt=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=jyh+5KqabzeLug1m5NRW7DJbWTT1ClNdbDqKlWFrPcOTaoZHLscwhcWned2B9DHCRXXLbevGdxdhxevx3mcVNeMH/GSRkniY0g55+qTWldCqXEs1UsN0TdTaR7c10A5Pr7fkCd2gMb23JFbqiVuOQELw6h7oiHU4V3z89FIxuhtgRvMH9zbqslTgEqettls4wdPWNoirWI72FThuyv+AENggH1njRKu37TJZB7rKl/at7AbdI5EbdB01eo/K1daUzJyai3nQS1S0HIyVMRlt8v9QdrmhuUpMwT+FB6akilgkxOCc96OXAvWB4ATbpP6Y4GAF2VyL79/mbgjS/Wjhgw==
+X-YMail-OSG: YQstmuwVM1kIxg1F67IVq3V2O.noHClPjupKACfzKpDkDcb5JAyUoJfi0MvGSX2
+ OjDcdtiZS6Ne4j93qJJ41n1n4rnRJRZz2JvGQYnUMmFbtVB.hckpmkHzGARbMd8DKAtTYbTTBOKn
+ 1rev5WrhWmVaNi5IYHikSuZ9n.ZFB4SUct8ZSL2XX34n8wuBWg2.yKEcNyetNmNKJbMGVkVn7TSR
+ uoFe1K9ydBwepKNBmVliArDHG5g17pBT5cSa6s7WpgTueJFKCBy5I9l_978YaXhP_Yh6D8_HchUB
+ Y0ZvRAubAzOadz_Fjg.Ws.iGMoRfyZIhO2kRqjg5.3CGiRKToh2T98O5RqgmjmWNwvEbwjfcnHon
+ Wm9cdAnsqj5ZNZoJlUYUqxcixu9V2g5PokqT1sU5gtoFcCXENj8V5VhX2azepBxHh0sn8CCqSGQ_
+ bpjgmplIs_CMjjJHumAcb1EgC7kXmOoMiIkJk0zQG_Hfj4LQe.WWhwEHC3hcV.EkJRr_5gN9g7kS
+ guK58sGHRzc.4IlBuQAbkrlN7jGDdDm2m0x.GSJkzATC5g8.BduVqsVQnX_nHmaUFulkcTO1VJFt
+ 19wOh7Vp3Ss4dNUxUzDwP3dETSR5WdDxfGXIOQKQP5ukidgfzKvPGkVSj3Um2t56N27HHeQrZMMC
+ J.zzavz1pNqMCCQpkSewNhznsZ56__Fd5jcLlpsPN8zwYRUOmzecAox4VZRynl6zyWVD1gjiisz.
+ oNe0BHF2ZHbuodipg7EaYA.QA9k7nQa7DD74JziH14TKieum9TT3nNyx1DbhWhtbRSATgHsimNCS
+ 69eKaYfiu1AYfoYYKWO8rU.ur5kRjmRSjt9OTOKEMcbUAYYK2_du_cMdjp02EDxcBUHv.E5_gbGW
+ aRGze330ZKke.vJAAypnnvutUSoeAvaQSjHWAx8m6fJ9sYaao81muFOGe7yfnOqNlqlEyNMuB6y6
+ 3Id5swzzVb1OUxMmk.6pMCdo4VDVzfjLS2JSq6kMYNLUNfZrsE7KKbroRE0NpOXRkNw5LL6reOGK
+ yD6lYb2f3VPMc12vJN3Brx.1ZhOXAVpCYI5UQIP2fz0maAs3xJ_muzHyh1ujpnS2QUxl0vDfksPe
+ gvh6DkI5lAWs5zX.EaHPaxMGR_LnXHM1XPvvYSA2kxxduLEZyO4zICsny..I9WBWSG.nOUAQyqvr
+ 8oDgVA_W32eAGuJhKVZNV5GfiJFWdaGm4i_S_Nu81Yu5OIX.N370OSuHkQcDg8.1TAcxs_Jiw5eI
+ Bd4D_YNFlc9AGn2oc6rwnTB1dHz89XSd_gCYzB3jN7zUB8HH8HR.YYg2qcsSMc.._rXBU64nnS3N
+ WjvV7NPrhvQ9XikXXr4dqGbXPeANlRc.1VwUGjJcvpB2GAMVSgxMYurwNf8JRnfOpQiQjt5xq_Yl
+ MmwGxSrsazXp6da7JeItx3ruhV5xbxHrNbhZ9cuL.6qaDnkR5GE.MUabFNjxb.WEKwJwh6EhqubE
+ jXmG29yILvkIPi2vH6DnuFey2.0gfE9eER7j1.b.AFsIIc2bYvC520skr.avl9EM40y9mBjP4KFO
+ X0pUCVh.pCzYfFMSmSZMt161l0cTYO7HKS4qvNgtqy5DqRJGKyPIevtM3C_Trw0FoD_J1j1rtjaU
+ .7lAHbBnSM56lUK6sxY0jJU7h_jWDpHfK5o_AX35xwS4hUMnlwi_EKVuqxTh19rcBQrZGOANJtR.
+ UCXHF9dxoSUac8HU8.LqQ_Gh.tGBv.xeotHQoXx7IG7pfdB2T3_hA6skDsze1mFW0W6RFoPAhDaP
+ SX6ktAs03ip4mPNHJI2pjpRAxH6hKt7WIw3hiW1t2PPzVGYW7vfW4GwWOPz3RDOa2utVyr4q25zY
+ CaQOnpeiwFuoY4B7F21_iDVNGf5H1cz36WA9buXBVEsJEpsEGGsaNJrEshWY4b8bjSdoUDZD8wv_
+ hC_LrYrVEq24jYLTzX6S9nkQptdcBE3CoHLZ1pKeRTKas__Y4Stl23RRrlC6Ptq3zD1jNq79.rNc
+ 8biwnXCmQvpSzUa3LFIENCdu4sVFTcOzpxpBmb9wlD0XHrgxJbWkGe3H6dm1l2.SvIrkO3cP5jQN
+ A3_W36Q_mSG33qti08sqFnYJd_KzfsWmzqdRSD6aUWNCf.zS6gVRitEQW8R8XKN_mQTMt8Dr6wII
+ K_4mdNiHoaKe.gLkkWaagYEj53s56pBuGS0GWo3Alj3AKhDpcDetomGiIL9bhD0JED5HftGKUfJp
+ 754Qt7keMaAGUcP6LyQbk_MNzfmKdWLvxoC78fRs30dLaxOyMsqKZ.TDHgjotazumghCcZCCcbzz
+ MwXehFIdbf5dJQLnwQ7e6HUhF5WYGhQ0xLsH9GQ.CY.YRkXE-
+X-Sonic-MF: <jahau@rocketmail.com>
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic304.consmr.mail.ir2.yahoo.com with HTTP; Tue, 28 Feb 2023 22:33:23 +0000
+Received: by hermes--production-ir2-65c64dfd66-lx9xq (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 4362ede20d54ad479836919fc460cee8;
+          Tue, 28 Feb 2023 22:33:19 +0000 (UTC)
+From:   Jakob Hauser <jahau@rocketmail.com>
+To:     Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc:     Beomho Seo <beomho.seo@samsung.com>,
         Chanwoo Choi <cw00.choi@samsung.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Wolfgang Grandegger <wg@grandegger.com>,
-        Kalle Valo <kvalo@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-        netdev@vger.kernel.org, linux-can@vger.kernel.org,
-        linux-wireless@vger.kernel.org, linux-pm@vger.kernel.org,
-        alsa-devel@alsa-project.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: Fix SPI and I2C bus node names in examples
-Message-ID: <Y/55H2lZZf7a3Xbu@sirena.org.uk>
-References: <20230228215433.3944508-1-robh@kernel.org>
+        Stephan Gerhold <stephan@gerhold.net>,
+        Raymond Hackley <raymondhackley@protonmail.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Lee Jones <lee.jones@linaro.org>,
+        Jakob Hauser <jahau@rocketmail.com>
+Subject: [PATCH 01/10] mfd: rt5033: Drop rt5033-battery sub-device
+Date:   Tue, 28 Feb 2023 23:32:18 +0100
+Message-Id: <31bc00905eb0ae243260abecf0d63d000628123d.1677620677.git.jahau@rocketmail.com>
+X-Mailer: git-send-email 2.39.1
+In-Reply-To: <cover.1677620677.git.jahau@rocketmail.com>
+References: <cover.1677620677.git.jahau@rocketmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="MyLQObbLmZa89Gv8"
-Content-Disposition: inline
-In-Reply-To: <20230228215433.3944508-1-robh@kernel.org>
-X-Cookie: Single tasking: Just Say No.
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Stephan Gerhold <stephan@gerhold.net>
 
---MyLQObbLmZa89Gv8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The fuel gauge in the RT5033 PMIC (rt5033-battery) has its own I2C bus
+and interrupt lines. Therefore, it is not part of the MFD device
+and needs to be specified separately in the device tree.
 
-On Tue, Feb 28, 2023 at 03:54:33PM -0600, Rob Herring wrote:
-> SPI and I2C bus node names are expected to be "spi" or "i2c",
-> respectively, with nothing else, a unit-address, or a '-N' index. A
-> pattern of 'spi0' or 'i2c0' or similar has crept in. Fix all these
-> cases. Mostly scripted with the following commands:
+Cc: Beomho Seo <beomho.seo@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
+Fixes: 0b271258544b ("mfd: rt5033: Add Richtek RT5033 driver core.")
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Jakob Hauser <jahau@rocketmail.com>
+---
+ drivers/mfd/rt5033.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-Acked-by: Mark Brown <broonie@kernel.org>
+diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
+index a5e520fe50a1..8029d444b794 100644
+--- a/drivers/mfd/rt5033.c
++++ b/drivers/mfd/rt5033.c
+@@ -40,9 +40,6 @@ static const struct mfd_cell rt5033_devs[] = {
+ 	{
+ 		.name = "rt5033-charger",
+ 		.of_compatible = "richtek,rt5033-charger",
+-	}, {
+-		.name = "rt5033-battery",
+-		.of_compatible = "richtek,rt5033-battery",
+ 	}, {
+ 		.name = "rt5033-led",
+ 		.of_compatible = "richtek,rt5033-led",
+-- 
+2.39.1
 
---MyLQObbLmZa89Gv8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmP+eR4ACgkQJNaLcl1U
-h9DqWQf/fzAqwVcR5vEvDlZIOyeJ93q74mz/Rl0dA1kXgtn8VCrgOTQv1BlYjrCE
-YSIOVaCA5NiKGfDp99bOWw61eY5vrMwgY1dL8JB2fdMVGhAnk4dN0ewMN2lc2Zxs
-/aZeYDxjeMRJOEv+9UinuEKROblNzSwDJFxyTFoOddlrYg7leB2icMBQRsd3m5+h
-Thr8sNClvv0OyNBx5LchcIvla+hu2AAQSAvLHe/Q0aUCOGooYIUsdfDeNqNJa6vF
-7wjeN3etYc7wp/PyeJKwrO9AhmkCXzazy4OwW4esqLUxQEO88PTJxkHJjNW+tvu3
-lFl5XDtQUMJ9ACGlaRM0sEP28dPf5w==
-=8se/
------END PGP SIGNATURE-----
-
---MyLQObbLmZa89Gv8--
