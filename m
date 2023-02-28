@@ -2,61 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E165BC64ED6
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Feb 2023 11:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18956C7EE31
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Feb 2023 11:24:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231650AbjB1LY0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Feb 2023 06:24:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43752 "EHLO
+        id S231613AbjB1LYa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Feb 2023 06:24:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44552 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231599AbjB1LYI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Feb 2023 06:24:08 -0500
+        with ESMTP id S231531AbjB1LYK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Feb 2023 06:24:10 -0500
 Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 175AD83FF
-        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2023 03:23:30 -0800 (PST)
-Received: by mail-wr1-x434.google.com with SMTP id h14so9339557wru.4
-        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2023 03:23:30 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 872C6CA1A
+        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2023 03:23:37 -0800 (PST)
+Received: by mail-wr1-x434.google.com with SMTP id v16so6529057wrn.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2023 03:23:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1677583409;
+        d=linaro.org; s=google; t=1677583417;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=/h75YgLAzThWP+FOpMQKnxnohte85PKa1jrYzQU01Og=;
-        b=EoPFM3nXOOVR3R9zMG/bqeRFGOggehpwTgel7J0QSyd9r9qjGkmkhXtuT3hSdMaD/n
-         8QCUYF5zzqN3LGiu6czsKP1mNpEoQyT3w025nGAMiVA0RkHThb7QbL6Za2gZExEFb0OP
-         KI1PdtT+75sKVg8TzLFM0WYj/ud2bkxRy7L+pTAY/LH6OvbvbnZPqiYBUUF97HS1EKqP
-         o66HEBOa0s82DwD8H4GNnaW2KF/psP13Crp1FEcrYqqXdSHxingmCYOeDzF5xKXUDTmG
-         U86j7g23P+ZRFEVwjqpTfSCZrfNQRRbKtJ+r6tLPSwIoEcnRrURV28VeHa4w2afSaMR2
-         xDSw==
+        bh=B+RTeMjiH2Yk42W57PYAK6Mb85gdhTfPcaFRy4giwH0=;
+        b=EmQXnQtsDg+56Wuq6ewQRNDc28TLYzPGy1X89Ssg0MochaT9hmPr0KireBQjSDQ6E7
+         bjvuyvug9z81Yd9EbbXOOxBwJg1i3N1ZuXnZgmm+0Upk0EiUbSe5UZTvyAjiPCCohQTx
+         1EPy2RiGpQVVKptvZtAiTydYryNJwyZR8OcG5veCR1GjT8UnWQ5ba0ialhHB+H/0BqEJ
+         bHdStmGGKz34GeGA2WXBKwEO9HSHUmh8FYElsvfQYZPEweZc9I9E7Gf6lM9m6RZS6uu9
+         dRPJHrbvPaJdQureGjN6HrS9w/znb8n6nZaDYcDiRPipyO6tIE47bRCzCMEymz21NUqI
+         FT8A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677583409;
+        d=1e100.net; s=20210112; t=1677583417;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=/h75YgLAzThWP+FOpMQKnxnohte85PKa1jrYzQU01Og=;
-        b=R9U8IWZfxlW1QpCtf9mOmyKJJnPx80+uOoibil6vuh/YyAeMjvdDl+KzlRVEc4KDSi
-         /53l5oDg7nFYm/PU3tlHLBV+av4u7ChezJQFVipVCXlqcE925HnAC3Xza74bAAudnJB4
-         aKvUVFkJf5ikFFZ5pGw69Ng//j2mchK6SWEV35eqC8ZzF16578KK6hq5TbfshnrQcPG/
-         ytokNRk5hZU8KO/I2k91EZvrRw6gG2ZmPhViqxamnAam23BLvI1uz+Jzo4bpLwnhPf39
-         nLwHpQ7z2/nKUOfuhOrwtA4V+4NLzkxQmHvmTvWQsKf1/T5VSkgCM0zmklIfUTS9RvwI
-         7RLA==
-X-Gm-Message-State: AO0yUKVnlfzZcyOfW8S3aBCbxr7K/Xt35buyn6kr86/CemRcW0bqIF4u
-        2I8IGX/ErO7iiKnNsk/wlmanUgBIQ/ZvPr85I9w=
-X-Google-Smtp-Source: AK7set83C+IPXo+v9Py+BS5DoZCn57Ys6WIwQUCbxSOTUvKfKPlYHOKz0RpI7oXIE5//MQ9SN+fkjg==
-X-Received: by 2002:a05:6000:1705:b0:2c6:c9f1:e444 with SMTP id n5-20020a056000170500b002c6c9f1e444mr8212787wrc.16.1677583409540;
-        Tue, 28 Feb 2023 03:23:29 -0800 (PST)
+        bh=B+RTeMjiH2Yk42W57PYAK6Mb85gdhTfPcaFRy4giwH0=;
+        b=SwuEHaPqbP+bxukohEmuYnBIjP7RMHxt7+tXLjYgmoPdxdJncm6k+GJ4zK1m6P3ejp
+         eyxhyPyi6UAbkXdLfgUPNBILwosdrSfuWz+Yeh1oBbhczVnCljax66FjGBCM8oWWEfVI
+         9COwHlRWy7xQ/tQC/4ZFe0VUfcn85RbGFR6k5Pj42xwGYWrm1AkgaaNmPjVPmsoFK8vC
+         0ixmpYmjJJ9V79hSFdlQSatFyk3XxI0wG0KdUEOc927qd60jc+e82A4vfa8ChsFYQIzx
+         FUXhGFV0HaiXjXQZwX62CC5ePk60oZ5dR+wUVJzi7RnCV/OVd+vNLJ+ozb3l1gJMy17w
+         EMiQ==
+X-Gm-Message-State: AO0yUKWWLWetxA4hUxh2EfH3kCdD/ZeQWlRONAAXIiHlI6/vGdhTwIkj
+        GA2GQ6HMO9K00lxKaorgTqcv8w==
+X-Google-Smtp-Source: AK7set/Qza96mNPIlieljNjhA7dJUgVD6toVz9gG/9S+f4QAhjyTiZf47zgTvEnBET9YKnow7SAOjQ==
+X-Received: by 2002:a5d:44cf:0:b0:2c7:107c:e172 with SMTP id z15-20020a5d44cf000000b002c7107ce172mr2119658wrr.41.1677583417089;
+        Tue, 28 Feb 2023 03:23:37 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:6830:6390:2815:b6a5])
-        by smtp.gmail.com with ESMTPSA id z5-20020a5d6545000000b002c5501a5803sm9598130wrv.65.2023.02.28.03.23.28
+        by smtp.gmail.com with ESMTPSA id z5-20020a5d6545000000b002c5501a5803sm9598130wrv.65.2023.02.28.03.23.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Feb 2023 03:23:29 -0800 (PST)
+        Tue, 28 Feb 2023 03:23:36 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rafael@kernel.org, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Adam Ward <DLG-Adam.Ward.opensource@dm.renesas.com>,
+        Support Opensource <support.opensource@diasemi.com>,
         Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v4 10/19] thermal/core: Add thermal_zone_device structure 'type' accessor
-Date:   Tue, 28 Feb 2023 12:22:29 +0100
-Message-Id: <20230228112238.2312273-11-daniel.lezcano@linaro.org>
+Subject: [PATCH v4 14/19] thermal/drivers/da9062: Don't access the thermal zone device fields
+Date:   Tue, 28 Feb 2023 12:22:33 +0100
+Message-Id: <20230228112238.2312273-15-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230228112238.2312273-1-daniel.lezcano@linaro.org>
 References: <20230228112238.2312273-1-daniel.lezcano@linaro.org>
@@ -66,58 +68,66 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal zone device structure is exposed via the exported
-thermal.h header. This structure should stay private the thermal core
-code. In order to encapsulate the structure, let's add an accessor to
-get the 'type' of the thermal zone.
+The driver is reading the passive polling rate in the thermal zone
+structure. We want to prevent the drivers to rummage around in the
+thermal zone structure.
+
+On the other side, the delay is what the driver passed to the
+thermal_zone_device_register() function, so it has already the
+information.
+
+Reuse the information we have instead of reading the information we
+set.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Adam Ward <DLG-Adam.Ward.opensource@dm.renesas.com>
 ---
- drivers/thermal/thermal_core.c | 6 ++++++
- include/linux/thermal.h        | 6 ++++++
- 2 files changed, 12 insertions(+)
+ drivers/thermal/da9062-thermal.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9fa12147fead..913ba9ca9792 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1384,6 +1384,12 @@ void *thermal_zone_device_priv(struct thermal_zone_device *tzd)
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_priv);
+diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
+index e7097f354750..2d31b1f73423 100644
+--- a/drivers/thermal/da9062-thermal.c
++++ b/drivers/thermal/da9062-thermal.c
+@@ -41,6 +41,8 @@
  
-+const char *thermal_zone_device_type(struct thermal_zone_device *tzd)
-+{
-+	return tzd->type;
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_device_type);
+ #define DA9062_MILLI_CELSIUS(t)			((t) * 1000)
+ 
++static unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
 +
- /**
-  * thermal_zone_device_unregister - removes the registered thermal zone device
-  * @tz: the thermal zone device to remove
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 7dbb5712434c..21686e676b3d 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -366,6 +366,7 @@ thermal_zone_device_register_with_trips(const char *, struct thermal_trip *, int
- 					struct thermal_zone_params *, int, int);
+ struct da9062_thermal_config {
+ 	const char *name;
+ };
+@@ -95,7 +97,10 @@ static void da9062_thermal_poll_on(struct work_struct *work)
+ 		thermal_zone_device_update(thermal->zone,
+ 					   THERMAL_EVENT_UNSPECIFIED);
  
- void *thermal_zone_device_priv(struct thermal_zone_device *tzd);
-+const char *thermal_zone_device_type(struct thermal_zone_device *tzd);
+-		delay = thermal->zone->passive_delay_jiffies;
++		/*
++		 * pp_tmp is between 1s and 10s, so we can round the jiffies
++		 */
++		delay = round_jiffies(msecs_to_jiffies(pp_tmp));
+ 		queue_delayed_work(system_freezable_wq, &thermal->work, delay);
+ 		return;
+ 	}
+@@ -155,7 +160,6 @@ static int da9062_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
+ 	struct da9062_thermal *thermal;
+-	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
+ 	const struct of_device_id *match;
+ 	int ret = 0;
  
- int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
- 				     struct thermal_cooling_device *,
-@@ -443,6 +444,11 @@ static inline void *thermal_zone_device_priv(struct thermal_zone_device *tz)
- 	return NULL;
- }
+@@ -208,8 +212,7 @@ static int da9062_thermal_probe(struct platform_device *pdev)
+ 	}
  
-+static inline const char *thermal_zone_device_type(struct thermal_zone_device *tzd)
-+{
-+	return NULL;
-+}
-+
- static inline int thermal_zone_device_enable(struct thermal_zone_device *tz)
- { return -ENODEV; }
+ 	dev_dbg(&pdev->dev,
+-		"TJUNC temperature polling period set at %d ms\n",
+-		jiffies_to_msecs(thermal->zone->passive_delay_jiffies));
++		"TJUNC temperature polling period set at %d ms\n", pp_tmp);
  
+ 	ret = platform_get_irq_byname(pdev, "THERMAL");
+ 	if (ret < 0)
 -- 
 2.34.1
 
