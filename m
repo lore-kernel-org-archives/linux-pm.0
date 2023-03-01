@@ -2,64 +2,70 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA39AC7EE36
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57229C7EE23
 	for <linux-pm@archiver.kernel.org>; Wed,  1 Mar 2023 20:17:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230116AbjCAURA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Mar 2023 15:17:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51716 "EHLO
+        id S229966AbjCAUQ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Mar 2023 15:16:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51908 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229973AbjCAUQU (ORCPT
+        with ESMTP id S230021AbjCAUQU (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2023 15:16:20 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 765B551F84
-        for <linux-pm@vger.kernel.org>; Wed,  1 Mar 2023 12:15:57 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id p16so9366575wmq.5
-        for <linux-pm@vger.kernel.org>; Wed, 01 Mar 2023 12:15:57 -0800 (PST)
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59A6C51F87
+        for <linux-pm@vger.kernel.org>; Wed,  1 Mar 2023 12:15:56 -0800 (PST)
+Received: by mail-wm1-x329.google.com with SMTP id d41-20020a05600c4c2900b003e9e066550fso257509wmp.4
+        for <linux-pm@vger.kernel.org>; Wed, 01 Mar 2023 12:15:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1677701757;
+        d=linaro.org; s=google; t=1677701750;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=FS5MMzUrtYY5N2w5QCadh2L/6Lyuv9jfcaqNKoRqTRU=;
-        b=OePQtLOGe7LDEC9FRQ7V9NVHHpJaS6nf3PuVfwUJDUS7IiBldmApsOZaHqqQCwCxXg
-         QlNTNnxk3BjgSzbPhIksEuI6IXQmlfigT05KUDIUi77jL+mdq4OXGTO1jc/oRehRdFWD
-         1V5jTlEIfV45SPZE1nMmCKWE7PjZ/4J8jYkA+bKzuA//LRY9CtLMhzZbeB2bb3sieGaY
-         AKGEBgvstFbgJI8VNqtqNh2LL9EtvGklrwrX/h2PmHSFSkbinhgUypa70/PUTTwUhAEm
-         yKT3e6Mun+cowZXLiMHAqU+cHD1uN+BDHEZWDY0NQ0g5VECQSmxG6bR+qO5e1y4+x8Pm
-         yIXQ==
+        bh=koJPR2fTStLYORfVp08sS7+PQVK0D33ZKiTZpjngJoo=;
+        b=SBVcWfNmCmLQAwaNijwS/wnXrU1y3WvMrSoMghzjYjl0kvFkNMInBeeJZdFABFHmo0
+         WsBH9PAEK1WyhcG0S2o5GhPdcPflLJvSe3ee72kSNxlc+Avrw3TyI8t6Xc5sBr6WukqD
+         oGttmqKYRrutn8kIbY3fyKh4Sta8TvN38JDZqitiEp00lpU1D0Bwo4DVGnLILMdjSAkz
+         FD0dnmxKFZHG7NPaKfT6Bw104u7ia/tuXSWp+hAWb9QBlDn2HrPr/qsYq+Yb5woR/4pi
+         c6OQ14RqG8CRMqNfe+uZGTKWjurbEHKLw1wigkauculhTEEALJx8tiyOTXCY1geTrL+X
+         1ZhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677701757;
+        d=1e100.net; s=20210112; t=1677701750;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=FS5MMzUrtYY5N2w5QCadh2L/6Lyuv9jfcaqNKoRqTRU=;
-        b=2DgG5IiYBi2Q3kcKBB5z/cbsHr4XT0vxMv9kX65Gu7H/BD6vdACguXLcz4PdXvXa5Y
-         cUz0Xtogra2uehA5+nABNPiNkWNc3+uDxgrhJRL7Cm2ryPsHX5D6kbapg105shzOf/dl
-         TKWiSaWgpYqr6JbWIYf4wEOIx4n5F7rvdEE8YsOjga5u8TeKtDkU32kpbmhgaJ+kJmiT
-         oCmZRkJP0cjjvFCDcgnZWWps5IZ7LJXCy8XR15SV4mtOcE5sEMZCKhVkx6LulMsefY7/
-         +qw4rmQkkbt0bfCQYtMHQIz9SGjqidC5PUxjxm8v32ZCEckC2uYEqJTeEY/0uqFsIllV
-         Gn/Q==
-X-Gm-Message-State: AO0yUKXbe71rOSaYusPS7SGThrgU3Juo8T8q8xU+mTgzTq0U2/ZsK8e6
-        g0745wdeoLeBuKTRNsGqEG/QBw==
-X-Google-Smtp-Source: AK7set9/48B3UkJzRbD9ghUuPOZUq417aVxqF4bZ/zrpzF6PhFApIvpjoxt3GWWtJuYzeCOE4ikdug==
-X-Received: by 2002:a05:600c:1716:b0:3eb:2e66:9 with SMTP id c22-20020a05600c171600b003eb2e660009mr6538243wmn.30.1677701752097;
-        Wed, 01 Mar 2023 12:15:52 -0800 (PST)
+        bh=koJPR2fTStLYORfVp08sS7+PQVK0D33ZKiTZpjngJoo=;
+        b=tiyVAw5HphQ7hs1P1zA0dR+wvRZuxvNM++HidSRkPHtmSW9NSPXDldHSTITT/+1Apc
+         F/CQ4tYrf3UePqfxYW7gFHSeLE1cLGHHbutBODdAxVtxameKJoRxGXVDreQwawo8UvEF
+         wWhiu7YfVK+Z2DZN5YAhWjIX98zmgCYG4L1O+lesRzxl6tU2IN9IGDsst/mZHuCISkKI
+         dQhQBq/UN0Hx/M8gAeNivPZ/dbG01fiHVl7gXIfprIEUvkfgSyK8bM8RokfqvjtLq6uU
+         jYUGbV4DcRO2qrQtx/C1nD0gV/iwKb3/s9r01k1+/qFfs6Q9Nt+aC0o618NtXmLDgHEZ
+         4B/A==
+X-Gm-Message-State: AO0yUKVGbU5hQDgkBeFNfnIxUam5Ml7NABYJ4mPej829da+5dSA47xS1
+        OyxDzP3pfVgn4V0JFPFE8FLujA==
+X-Google-Smtp-Source: AK7set/3sxifAPk6zZfdQQkJo9RNfG+PbYT/A9+2SLhfqM4/LduE3SU0oUGzRKLmJXJkkXU3oNDbhQ==
+X-Received: by 2002:a05:600c:92a:b0:3ea:c100:e974 with SMTP id m42-20020a05600c092a00b003eac100e974mr6557309wmp.26.1677701750119;
+        Wed, 01 Mar 2023 12:15:50 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:6ffe:ce4f:bd31:1e6d])
-        by smtp.gmail.com with ESMTPSA id x16-20020a1c7c10000000b003e70a7c1b73sm576546wmc.16.2023.03.01.12.15.51
+        by smtp.gmail.com with ESMTPSA id x16-20020a1c7c10000000b003e70a7c1b73sm576546wmc.16.2023.03.01.12.15.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Mar 2023 12:15:51 -0800 (PST)
+        Wed, 01 Mar 2023 12:15:49 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rafael@kernel.org, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Peter Kaestle <peter@piie.net>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Mark Gross <markgross@kernel.org>,
-        platform-driver-x86@vger.kernel.org (open list:ACER ASPIRE ONE
-        TEMPERATURE AND FAN DRIVER)
-Subject: [PATCH v5 18/18] thermal/drivers/acerhdf: Remove pointless governor test
-Date:   Wed,  1 Mar 2023 21:14:46 +0100
-Message-Id: <20230301201446.3713334-19-daniel.lezcano@linaro.org>
+        Thierry Reding <thierry.reding@gmail.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        linux-tegra@vger.kernel.org (open list:TEGRA ARCHITECTURE SUPPORT)
+Subject: [PATCH v5 16/18] thermal/drivers/tegra: Remove unneeded lock when setting a trip point
+Date:   Wed,  1 Mar 2023 21:14:44 +0100
+Message-Id: <20230301201446.3713334-17-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230301201446.3713334-1-daniel.lezcano@linaro.org>
 References: <20230301201446.3713334-1-daniel.lezcano@linaro.org>
@@ -69,33 +75,99 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal zone parameter specifies the bang-bang governor.
+The function tegra_tsensor_enable_hw_channel() takes the thermal zone
+lock to prevent "a potential" race with a call to set_trips()
+callback.
 
-The Kconfig selects the bang-bang governor. So it is pointless to test
-if the governor was set for the thermal zone assuming it may not have
-been compiled-in.
+The driver must not play with the thermal framework core code
+internals.
 
-Remove the test and prevent another access into the thermal internals.
+The tegra_tsensor_enable_hw_channel() is called by:
+
+ - the suspend / resume callbacks
+ - the probe function after the thermal zones are registered
+
+The thermal zone lock taken in this function is supposed to protect
+from a call to the set_trips() callback which writes in the same
+register.
+
+The potential race is when suspend / resume are called at the same
+time as set_trips. This one is called only in
+thermal_zone_device_update().
+
+ - At suspend time, the 'in_suspend' is set, thus the
+   thermal_zone_device_update() bails out immediately and set_trips is
+   not called during this moment.
+
+ - At resume time, the thermal zone is updated at PM_POST_SUSPEND,
+   thus the driver has already set the TH2 temperature.
+
+ - At probe time, we register the thermal zone and then we set the
+   TH2. The only scenario I can see so far is the interrupt fires, the
+   thermal_zone_update() is called exactly at the moment
+   tegra_tsensor_enable_hw_channel() a few lines after registering it.
+
+Enable the channels before setting up the interrupt. We close the
+potential race window without using the thermal zone's lock.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Peter Kaestle <peter@piie.net>
+Suggested-by: Thierry Reding <thierry.reding@gmail.com>
 ---
- drivers/platform/x86/acerhdf.c | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/thermal/tegra/tegra30-tsensor.c | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 61f1c3090867..71b9c1f922d9 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -697,13 +697,6 @@ static int __init acerhdf_register_thermal(void)
- 	if (ret)
- 		return ret;
+diff --git a/drivers/thermal/tegra/tegra30-tsensor.c b/drivers/thermal/tegra/tegra30-tsensor.c
+index 4b2ea17910cd..cb584a5735ed 100644
+--- a/drivers/thermal/tegra/tegra30-tsensor.c
++++ b/drivers/thermal/tegra/tegra30-tsensor.c
+@@ -359,9 +359,6 @@ static int tegra_tsensor_enable_hw_channel(const struct tegra_tsensor *ts,
  
--	if (strcmp(thz_dev->governor->name,
--				acerhdf_zone_params.governor_name)) {
--		pr_err("Didn't get thermal governor %s, perhaps not compiled into thermal subsystem.\n",
--				acerhdf_zone_params.governor_name);
--		return -EINVAL;
+ 	tegra_tsensor_get_hw_channel_trips(tzd, &hot_trip, &crit_trip);
+ 
+-	/* prevent potential racing with tegra_tsensor_set_trips() */
+-	mutex_lock(&tzd->lock);
+-
+ 	dev_info_once(ts->dev, "ch%u: PMC emergency shutdown trip set to %dC\n",
+ 		      id, DIV_ROUND_CLOSEST(crit_trip, 1000));
+ 
+@@ -404,8 +401,6 @@ static int tegra_tsensor_enable_hw_channel(const struct tegra_tsensor *ts,
+ 	val |= FIELD_PREP(TSENSOR_SENSOR0_CONFIG0_INTR_THERMAL_RST_EN, 1);
+ 	writel_relaxed(val, tsc->regs + TSENSOR_SENSOR0_CONFIG0);
+ 
+-	mutex_unlock(&tzd->lock);
+-
+ 	err = thermal_zone_device_enable(tzd);
+ 	if (err) {
+ 		dev_err(ts->dev, "ch%u: failed to enable zone: %d\n", id, err);
+@@ -585,6 +580,20 @@ static int tegra_tsensor_probe(struct platform_device *pdev)
+ 			return err;
+ 	}
+ 
++	/*
++	 * Enable the channels before setting the interrupt so
++	 * set_trips() can not be called while we are setting up the
++	 * register TSENSOR_SENSOR0_CONFIG1. With this we close a
++	 * potential race window where we are setting up the TH2 and
++	 * the temperature hits TH1 resulting to an update of the
++	 * TSENSOR_SENSOR0_CONFIG1 register in the ISR.
++	 */
++	for (i = 0; i < ARRAY_SIZE(ts->ch); i++) {
++		err = tegra_tsensor_enable_hw_channel(ts, i);
++		if (err)
++			return err;
++	}
++
+ 	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+ 					tegra_tsensor_isr, IRQF_ONESHOT,
+ 					"tegra_tsensor", ts);
+@@ -592,12 +601,6 @@ static int tegra_tsensor_probe(struct platform_device *pdev)
+ 		return dev_err_probe(&pdev->dev, err,
+ 				     "failed to request interrupt\n");
+ 
+-	for (i = 0; i < ARRAY_SIZE(ts->ch); i++) {
+-		err = tegra_tsensor_enable_hw_channel(ts, i);
+-		if (err)
+-			return err;
 -	}
 -
  	return 0;
