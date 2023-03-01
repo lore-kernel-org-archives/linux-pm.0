@@ -2,64 +2,64 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C459C678D4
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Mar 2023 20:16:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CADD6C7EE30
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Mar 2023 20:16:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230097AbjCAUQs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Mar 2023 15:16:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51902 "EHLO
+        id S230109AbjCAUQ6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Mar 2023 15:16:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229752AbjCAUQU (ORCPT
+        with ESMTP id S230019AbjCAUQU (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2023 15:16:20 -0500
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3426515F4
-        for <linux-pm@vger.kernel.org>; Wed,  1 Mar 2023 12:15:53 -0800 (PST)
-Received: by mail-wm1-x335.google.com with SMTP id d41-20020a05600c4c2900b003e9e066550fso257466wmp.4
-        for <linux-pm@vger.kernel.org>; Wed, 01 Mar 2023 12:15:53 -0800 (PST)
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5072D515DE
+        for <linux-pm@vger.kernel.org>; Wed,  1 Mar 2023 12:15:56 -0800 (PST)
+Received: by mail-wr1-x436.google.com with SMTP id bw19so14466673wrb.13
+        for <linux-pm@vger.kernel.org>; Wed, 01 Mar 2023 12:15:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1677701748;
+        d=linaro.org; s=google; t=1677701751;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=tS0guMTDp+HnyAw7+AQL4Z1IASYNHpKANmt65sLAMFo=;
-        b=eKlbzTcQEFboy8VZXWl8pPk/FXRsZlMf6FKVXjp2UUBsWWWqzXQTW9pnCQ2Vqlmj7D
-         8UjwL8Yw5YHQjMLfOexzhkOlPQk9c0cmI4IfOflMQcA/clY+jtznBFL3m1FYYEbGdiDS
-         XKTaeiR2LXUdz6HcSz6bhszvAR4xTZ9HR6QbubfAgJklixqSnnulZB2Ol8IGCtRU+vDT
-         hMZS3hHRHqesSwndxNEw7nD8ZU9MPL+Va/KpJKAk4Z5Ice7O3RmiQbGXra6a67mERp9j
-         vc+5c7s/r9ombVX9U70Pkc0GWlD7EJ3rY0bJ9MluJ6TYbrXbO0CL4gXWc7VmTwldB0Wn
-         ZQzw==
+        bh=GP9BUpkAAnItZXgZisVn1kO1oz9qmtA+bV8jqWpOtJM=;
+        b=w20389TVo7cyTMlF1uBdGLoV3aG9r8YnIBrEEaUmS9NigcXApbhiu+OjC9ruIiIyfC
+         qNCdf4BKsBXu3pPRYxFsPeKFTm3gYDg3uMAMMVTVEmgan5U/bqXsoEB63X4rxO4Pn3lr
+         STj1QF6J54achUo1iLzZTLul3chly+tXnbQHYT169j5RNdJk3Y6c2r7Xh4gZvAzZ260/
+         HszIq/U4S41qFWXpL71jXGfFIngIdvBLkbXJPomnbPjLWH86lNjdQSlBWb07wjK6vtGl
+         5QAIn0Ux8tUZW/347UD7g6foztFrY++6eH+t7cDjy8ddi5k7jnpowdUOs2fBgR2KDJUs
+         +70w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677701748;
+        d=1e100.net; s=20210112; t=1677701751;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=tS0guMTDp+HnyAw7+AQL4Z1IASYNHpKANmt65sLAMFo=;
-        b=R8BlMxXxbFryIopsGAg6UYE+XFxKlpaLXDzbQZ9pydQQidX0VHsgTpEg00/VYPN++g
-         EkKCDB9UL1bJNVEqHk7kOStDdnCRB1a8gkmRRUUlWdU21UK4CJMqB9laObNrXpBTIhZ4
-         sW4o1ujUqUFAv35yX9JGuN/ObTLavc3mM8wFwarRGG3DdltH3PBVs7d4jYR9QPMJF6b4
-         ZwolpP21folFZjespHAhis/MJXeoJqreX0Y+2HR1QXNZ0k6BbNDQvP2cs7RpCC/mOa+n
-         qw4aoo6zRFZs+w+VBypUKHiZyjj8c+/mB44De2H+/V6eEAkLhPKOL+Ixve6q41lHvGsi
-         3gsw==
-X-Gm-Message-State: AO0yUKVRLM/rKBIhhqZN4kGUIfDr1KTlJ3NR8QOOBt7He92o3PyDcwzr
-        1j+wcj8CP0OqTnEoZo+W3aGwscm3c2yg9U5ZXx2efQ==
-X-Google-Smtp-Source: AK7set8XjOgbxSfKBNwtsRvagJljKV2UG0lSsXcgjMhQzhiTwMigOG6ujpgoQOSfvt1xvuQuKgAQJw==
-X-Received: by 2002:a05:600c:3495:b0:3de:a525:1d05 with SMTP id a21-20020a05600c349500b003dea5251d05mr6246294wmq.8.1677701748312;
-        Wed, 01 Mar 2023 12:15:48 -0800 (PST)
+        bh=GP9BUpkAAnItZXgZisVn1kO1oz9qmtA+bV8jqWpOtJM=;
+        b=t+c59qjHtOX3jaR1EAlrBE+ij5bv2nvwMN0Xbus4u2snr6MsnMyg8dVebYTvQYu4Rn
+         7lX94/W6REhyNY37hwGvs6S5u9rwZlhJlRHKRtx64D4FJ2+GwzvwGAl9w1ACkRr89Dks
+         RdNQDNh1FTveO9Zn+jkbUwRH0ptURNKW2JAEq3vb8Bjl7HiR8BuAS9J5h49E8YzladyH
+         eSSDOqAThD2+tCO0kKQn3rJJcxSmjij50HJ1YwwfR8bNKXI+ec6PexPAqcU7hGNrk1FB
+         gr8vZSVOa9Sx0lKaR46P0DY40rKntCXaCoo56/JO95o8EAKUy30OzslbLZ8B40/VBOLA
+         iNJw==
+X-Gm-Message-State: AO0yUKUjB7+qQDnfrRyCXvd5nobTKVk6tgSC4AUEpn/JUuA6O3cEZz44
+        Qmln9mVJexImq0maTs9RESAShw==
+X-Google-Smtp-Source: AK7set8XUqwRo5r5lojj7sUCgZls1QjoUg3zR+RESxHPeB+d5LlWXJhnxfeLre8oPm3UQJDLA0WWYg==
+X-Received: by 2002:adf:ff8f:0:b0:2c7:1757:3a8e with SMTP id j15-20020adfff8f000000b002c717573a8emr5126686wrr.34.1677701751124;
+        Wed, 01 Mar 2023 12:15:51 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:6ffe:ce4f:bd31:1e6d])
-        by smtp.gmail.com with ESMTPSA id x16-20020a1c7c10000000b003e70a7c1b73sm576546wmc.16.2023.03.01.12.15.47
+        by smtp.gmail.com with ESMTPSA id x16-20020a1c7c10000000b003e70a7c1b73sm576546wmc.16.2023.03.01.12.15.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Mar 2023 12:15:47 -0800 (PST)
+        Wed, 01 Mar 2023 12:15:50 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     rafael@kernel.org, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Jean Delvare <jdelvare@suse.de>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v5 15/18] thermal/hwmon: Use the thermal_core.h header
-Date:   Wed,  1 Mar 2023 21:14:43 +0100
-Message-Id: <20230301201446.3713334-16-daniel.lezcano@linaro.org>
+        Peter Kaestle <peter@piie.net>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Mark Gross <markgross@kernel.org>,
+        platform-driver-x86@vger.kernel.org (open list:ACER ASPIRE ONE
+        TEMPERATURE AND FAN DRIVER)
+Subject: [PATCH v5 17/18] thermal/drivers/acerhdf: Make interval setting only at module load time
+Date:   Wed,  1 Mar 2023 21:14:45 +0100
+Message-Id: <20230301201446.3713334-18-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230301201446.3713334-1-daniel.lezcano@linaro.org>
 References: <20230301201446.3713334-1-daniel.lezcano@linaro.org>
@@ -69,37 +69,66 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal_hwmon is playing with the thermal core code
-internals. Changing the code would be too invasive for now.
+The thermal zone device structure is in the process of being private
+to the thermal framework core code. This driver is directly accessing
+and changing the monitoring polling rate.
 
-We can consider the thermal_hwmon.c is part of the thermal core code
-as it provides a glue to tie the hwmon and the thermal zones.
+After discussing with the maintainers of this driver, having the
+polling interval at module loading time is enough for their purpose.
 
-Let's include the thermal_core.h header.
+Change the code to take into account the interval when the module is
+loaded but restrict the permissions so the value can not be changed
+afterwards.
 
-No functional change intended.
-
-Cc: Jean Delvare <jdelvare@suse.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
-Reviewed-by: Jean Delvare <jdelvare@suse.de>
+Acked-by: Peter Kaestle <peter@piie.net>
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/thermal/thermal_hwmon.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/platform/x86/acerhdf.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index bc02095b314c..c59db17dddd6 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -17,6 +17,7 @@
- #include <linux/thermal.h>
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 1956469c3457..61f1c3090867 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -79,7 +79,6 @@ static unsigned int list_supported;
+ static unsigned int fanstate = ACERHDF_FAN_AUTO;
+ static char force_bios[16];
+ static char force_product[16];
+-static unsigned int prev_interval;
+ static struct thermal_zone_device *thz_dev;
+ static struct thermal_cooling_device *cl_dev;
+ static struct platform_device *acerhdf_dev;
+@@ -346,20 +345,15 @@ static void acerhdf_check_param(struct thermal_zone_device *thermal)
+ 	trips[0].temperature = fanon;
+ 	trips[0].hysteresis  = fanon - fanoff;
  
- #include "thermal_hwmon.h"
-+#include "thermal_core.h"
+-	if (kernelmode && prev_interval != interval) {
++	if (kernelmode) {
+ 		if (interval > ACERHDF_MAX_INTERVAL) {
+ 			pr_err("interval too high, set to %d\n",
+ 			       ACERHDF_MAX_INTERVAL);
+ 			interval = ACERHDF_MAX_INTERVAL;
+ 		}
++
+ 		if (verbose)
+ 			pr_notice("interval changed to: %d\n", interval);
+-
+-		if (thermal)
+-			thermal->polling_delay_jiffies =
+-				round_jiffies(msecs_to_jiffies(interval * 1000));
+-
+-		prev_interval = interval;
+ 	}
+ }
  
- /* hwmon sys I/F */
- /* thermal zone devices with the same type share one hwmon device */
+@@ -807,5 +801,5 @@ static const struct kernel_param_ops interval_ops = {
+ 	.get = param_get_uint,
+ };
+ 
+-module_param_cb(interval, &interval_ops, &interval, 0600);
++module_param_cb(interval, &interval_ops, &interval, 0000);
+ MODULE_PARM_DESC(interval, "Polling interval of temperature check");
 -- 
 2.34.1
 
