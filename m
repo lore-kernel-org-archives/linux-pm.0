@@ -2,65 +2,56 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EACEC7EE36
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 09:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB39FC64EC4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 09:26:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230114AbjCCJZy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Mar 2023 04:25:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52430 "EHLO
+        id S229590AbjCCJ0Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Mar 2023 04:26:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60716 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231201AbjCCJZj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 04:25:39 -0500
+        with ESMTP id S230117AbjCCJZz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 04:25:55 -0500
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02FE657D24;
-        Fri,  3 Mar 2023 01:25:17 -0800 (PST)
-X-UUID: 4be222acb9a511ed945fc101203acc17-20230303
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9D49457C3;
+        Fri,  3 Mar 2023 01:25:36 -0800 (PST)
+X-UUID: 57841836b9a511ed945fc101203acc17-20230303
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=ksYXpcLRpyhSF2BCe6z2U0gcUedKGDwO8T2OIU6P68o=;
-        b=nZkwvpzBLeBHTWsRQGIM2m0jnQeaCbo/drr3iLgfi6ylcl5lvp6/HCCB/Z9+pLkH2JeQtZL0D0jDqIB/9RJ0XNp5pX2QrCSzSsw4tOz1Wd1mrKLIAzRucVV6i9Sw8lj2/fAE1xALggFOOJzGs6V4CTr8cx1UFslxo9sBmprh2E8=;
+        h=Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=vdekVTpo3BnkDXcjiGV3jzfc/4pX+DxY56QvRtM7y5o=;
+        b=bmuRX0ibtm57RW6QySzUKSuB546AW9ChSoM8iJ3xM5WIERPau/+qKJIjU6FJNQB8Rl/6u5yuqEpv1CuRHuHT0kEuf1ZwpIyDzWw8npNdNd7yQyOKOYfBQ4RmcQhMEfkInWmY+BJPD4zFr4VORNosPrG7Eo9FGPU1/Z6ktn4Tapo=;
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.20,REQID:729e9142-281b-4380-bde8-04e35560c591,IP:0,U
-        RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:53,FILE:0,BULK:0,RULE:Release_Ham,ACTI
-        ON:release,TS:28
-X-CID-INFO: VERSION:1.1.20,REQID:729e9142-281b-4380-bde8-04e35560c591,IP:0,URL
-        :0,TC:0,Content:-25,EDM:0,RT:0,SF:53,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-        :release,TS:28
-X-CID-META: VersionHash:25b5999,CLOUDID:ef273d27-564d-42d9-9875-7c868ee415ec,B
-        ulkID:2303031725130DEM1UT0,BulkQuantity:0,Recheck:0,SF:38|29|28|100|17|19|
-        48|101|102,TC:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil,Bulk:nil,QS:nil,B
-        EC:nil,COL:0,OSI:0,OSA:0,AV:0
+X-CID-O-INFO: VERSION:1.1.20,REQID:b757c10e-74e6-41d6-97cf-242deb3f6d5a,IP:0,U
+        RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+        N:release,TS:-25
+X-CID-META: VersionHash:25b5999,CLOUDID:5b2b3d27-564d-42d9-9875-7c868ee415ec,B
+        ulkID:nil,BulkQuantity:0,Recheck:0,SF:102,TC:nil,Content:0,EDM:-3,IP:nil,U
+        RL:1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0
 X-CID-BVR: 0,NGT
-X-UUID: 4be222acb9a511ed945fc101203acc17-20230303
-Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
+X-UUID: 57841836b9a511ed945fc101203acc17-20230303
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
         (envelope-from <cheng-jui.wang@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 860502259; Fri, 03 Mar 2023 17:25:11 +0800
+        with ESMTP id 1425578257; Fri, 03 Mar 2023 17:25:30 +0800
 Received: from mtkmbs11n1.mediatek.inc (172.21.101.186) by
- mtkmbs13n1.mediatek.inc (172.21.101.193) with Microsoft SMTP Server
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.25; Fri, 3 Mar 2023 17:25:10 +0800
+ 15.2.1118.25; Fri, 3 Mar 2023 17:25:29 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
  mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.1118.25 via Frontend Transport; Fri, 3 Mar 2023 17:25:09 +0800
+ 15.2.1118.25 via Frontend Transport; Fri, 3 Mar 2023 17:25:29 +0800
 From:   Cheng-Jui Wang <cheng-jui.wang@mediatek.com>
-To:     <stable@vger.kernel.org>, Anup Patel <anup@brainfault.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>,
+To:     <stable@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Daniel Lezcano" <daniel.lezcano@linaro.org>,
         Matthias Brugger <matthias.bgg@gmail.com>
 CC:     Peter Zijlstra <peterz@infradead.org>,
         Ingo Molnar <mingo@kernel.org>,
         Suren Baghdasaryan <surenb@google.com>,
         Cheng-Jui Wang <cheng-jui.wang@mediatek.com>,
-        <linux-pm@vger.kernel.org>, <linux-riscv@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>
-Subject: [PATCH 02/10] cpuidle, riscv: Push RCU-idle into driver
-Date:   Fri, 3 Mar 2023 17:23:24 +0800
-Message-ID: <20230303092347.4825-3-cheng-jui.wang@mediatek.com>
+Subject: [PATCH 07/10] cpuidle, armada: Push RCU-idle into driver
+Date:   Fri, 3 Mar 2023 17:23:29 +0800
+Message-ID: <20230303092347.4825-8-cheng-jui.wang@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20230303092347.4825-1-cheng-jui.wang@mediatek.com>
 References: <20230303092347.4825-1-cheng-jui.wang@mediatek.com>
@@ -73,70 +64,73 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Peter Zijlstra <peterz@infradead.org>
 
-commit 8e9ab9e8da1eae61fdff35690d998eaf8cd527dc upstream.
+commit 4ce40e9dbe83153f60d7e4ccd24a1eb4f8264f6a upstream.
 
 Doing RCU-idle outside the driver, only to then temporarily enable it
-again, at least twice, before going idle is suboptimal.
+again before going idle is suboptimal.
 
-That is, once implicitly through the cpu_pm_*() calls and once
-explicitly doing ct_irq_*_irqon().
+Notably the cpu_pm_*() calls implicitly re-enable RCU for a bit.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Ingo Molnar <mingo@kernel.org>
 Tested-by: Tony Lindgren <tony@atomide.com>
 Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Anup Patel <anup@brainfault.org>
 Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Link: https://lore.kernel.org/r/20230112195539.637185846@infradead.org
+Link: https://lore.kernel.org/r/20230112195539.946630819@infradead.org
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 Signed-off-by: Cheng-Jui Wang <cheng-jui.wang@mediatek.com>
 ---
- drivers/cpuidle/cpuidle-riscv-sbi.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/cpuidle/cpuidle-mvebu-v7.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/cpuidle/cpuidle-riscv-sbi.c b/drivers/cpuidle/cpuidle-riscv-sbi.c
-index 05fe2902df9a..cbdbb11b972b 100644
---- a/drivers/cpuidle/cpuidle-riscv-sbi.c
-+++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
-@@ -121,12 +121,12 @@ static int __sbi_enter_domain_idle_state(struct cpuidle_device *dev,
- 		return -1;
+diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cpuidle-mvebu-v7.c
+index 01a856971f05..c9568aa9410c 100644
+--- a/drivers/cpuidle/cpuidle-mvebu-v7.c
++++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
+@@ -36,7 +36,10 @@ static int mvebu_v7_enter_idle(struct cpuidle_device *dev,
+ 	if (drv->states[index].flags & MVEBU_V7_FLAG_DEEP_IDLE)
+ 		deepidle = true;
  
- 	/* Do runtime PM to manage a hierarchical CPU toplogy. */
--	ct_irq_enter_irqson();
- 	if (s2idle)
- 		dev_pm_genpd_suspend(pd_dev);
- 	else
- 		pm_runtime_put_sync_suspend(pd_dev);
--	ct_irq_exit_irqson();
-+
 +	ct_idle_enter();
- 
- 	if (sbi_is_domain_state_available())
- 		state = sbi_get_domain_state();
-@@ -135,12 +135,12 @@ static int __sbi_enter_domain_idle_state(struct cpuidle_device *dev,
- 
- 	ret = sbi_suspend(state) ? -1 : idx;
- 
--	ct_irq_enter_irqson();
+ 	ret = mvebu_v7_cpu_suspend(deepidle);
 +	ct_idle_exit();
 +
- 	if (s2idle)
- 		dev_pm_genpd_resume(pd_dev);
- 	else
- 		pm_runtime_get_sync(pd_dev);
--	ct_irq_exit_irqson();
- 
  	cpu_pm_exit();
  
-@@ -251,6 +251,7 @@ static int sbi_dt_cpu_init_topology(struct cpuidle_driver *drv,
- 	 * of a shared state for the domain, assumes the domain states are all
- 	 * deeper states.
- 	 */
-+	drv->states[state_count - 1].flags |= CPUIDLE_FLAG_RCU_IDLE;
- 	drv->states[state_count - 1].enter = sbi_enter_domain_idle_state;
- 	drv->states[state_count - 1].enter_s2idle =
- 					sbi_enter_s2idle_domain_idle_state;
+ 	if (ret)
+@@ -49,6 +52,7 @@ static struct cpuidle_driver armadaxp_idle_driver = {
+ 	.name			= "armada_xp_idle",
+ 	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+ 	.states[1]		= {
++		.flags			= CPUIDLE_FLAG_RCU_IDLE,
+ 		.enter			= mvebu_v7_enter_idle,
+ 		.exit_latency		= 100,
+ 		.power_usage		= 50,
+@@ -57,6 +61,7 @@ static struct cpuidle_driver armadaxp_idle_driver = {
+ 		.desc			= "CPU power down",
+ 	},
+ 	.states[2]		= {
++		.flags			= CPUIDLE_FLAG_RCU_IDLE,
+ 		.enter			= mvebu_v7_enter_idle,
+ 		.exit_latency		= 1000,
+ 		.power_usage		= 5,
+@@ -72,6 +77,7 @@ static struct cpuidle_driver armada370_idle_driver = {
+ 	.name			= "armada_370_idle",
+ 	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+ 	.states[1]		= {
++		.flags			= CPUIDLE_FLAG_RCU_IDLE,
+ 		.enter			= mvebu_v7_enter_idle,
+ 		.exit_latency		= 100,
+ 		.power_usage		= 5,
+@@ -87,6 +93,7 @@ static struct cpuidle_driver armada38x_idle_driver = {
+ 	.name			= "armada_38x_idle",
+ 	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+ 	.states[1]		= {
++		.flags			= CPUIDLE_FLAG_RCU_IDLE,
+ 		.enter			= mvebu_v7_enter_idle,
+ 		.exit_latency		= 10,
+ 		.power_usage		= 5,
 -- 
 2.18.0
 
