@@ -2,62 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72BCBC61DA4
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 22:09:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 558DCC61DA4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 22:17:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233703AbjCCWJl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Mar 2023 17:09:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56818 "EHLO
+        id S232454AbjCCWRU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Mar 2023 17:17:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38268 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230353AbjCCWJT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 17:09:19 -0500
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C1CB65C64
-        for <linux-pm@vger.kernel.org>; Fri,  3 Mar 2023 13:59:48 -0800 (PST)
-Received: by mail-lf1-x133.google.com with SMTP id f18so5418815lfa.3
-        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2023 13:59:48 -0800 (PST)
+        with ESMTP id S232447AbjCCWQ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 17:16:59 -0500
+Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E0FF1EFEF
+        for <linux-pm@vger.kernel.org>; Fri,  3 Mar 2023 14:07:53 -0800 (PST)
+Received: by mail-ed1-x532.google.com with SMTP id x3so15786299edb.10
+        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2023 14:07:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1677880691;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=9zYQ3skwAEHOvompoY+3GuWuwGeQIAvA/EjO/BVgsgY=;
-        b=Z67Fy3fq14qaw6E0zEl1SdaemFW+kbF08bN9RUhou3sTztB42m5YwynmnOG/HHwKBy
-         rS8WcYRPrC4CzdaZOZzv+W5yT7RdidGy4VjsY4Uil0b5r/vJuFj5azNf6XYSujoYxffR
-         gjtUS53iaByGpF18NN3kweBB5edDFSpwMCvSu2rpx6Hh/1nBi4hU+1xHSMIyFnhVGikh
-         PHfWpzbPlaLLXzs8g811RYJHYHUGLcJe1THBTgDrlmKFc+/hjsUskpX964HqHGbiXbeT
-         Ql2OOHUgCMKkbCW8vN9cwEx0GJyAg31yhELo4tE/jfBfKgv3aSs/xHDl0u4paWysSCER
-         ZQWA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677880691;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=linaro.org; s=google; t=1677881183;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=9zYQ3skwAEHOvompoY+3GuWuwGeQIAvA/EjO/BVgsgY=;
-        b=3voNAvN2gg8eIjATFYIXimpA49GXv9HBwfG/l23rI+Rqy1G8BWjv1sidILHH37mS70
-         YG7UFUbJSKgUIl1sDXsC1iutzDn7Z+aRJ2NFO1lJ4wd0Y0RzlOPFo3oQz7NcI6h9yPFY
-         FeRg5JOT5nltCInJ+61HYr4C67G0WfJ+KYo8SmG8NsyvAr9VMXFW3M8kTKztWc4SUwTd
-         EVX08A3zg903+78xWcoL8zjAracF4EucMokIkcG1ldqnrWTaUdtXTD0GYKP6YyJH/KTx
-         30OpVNr/k/zresfNm9mZuOrWNpq81Omxcju4jihZR/6IThIFlntbhIMXsYVXiPyrMD8w
-         kvxg==
-X-Gm-Message-State: AO0yUKXR8+uafnx38GUok5QWqbfc2xWVFMyeXc3PkjPxKAM+7MhlYFTA
-        tdy+0sFmhIdDuYLonCrBHYlO7A==
-X-Google-Smtp-Source: AK7set8f12aonoxUzlpGEG2/nm7YPQGB8a0NJgf3ypQXowEGKP9YToDW510dvym5GNm6WwC0V7JIng==
-X-Received: by 2002:ac2:52a9:0:b0:4db:3877:8176 with SMTP id r9-20020ac252a9000000b004db38778176mr900653lfm.21.1677880691336;
-        Fri, 03 Mar 2023 13:58:11 -0800 (PST)
+        bh=jhGUt/9ikay0wTYED+3dM9XZOHe6xmGcq8vv+hJG3wQ=;
+        b=lQfgjm7UnUtCKFyX36pUpqDVWiQlBCtVht/gEkuh2d6IVYpl95+Wil4bfElT/2ZQtI
+         KcPSQWdl9kEkiOh2yzi9k0/qhrf3Q82rn8Q/e7aPy62KRh0brvlmF32RfF/UOYvf5ccB
+         Qi/mMHTmw9dfQCaF930fF+rUfNu6h2SBJYc4muiPgHod/TuxDEDv02/VHh3LOP6RjXw5
+         60vuAhE5nDqEqYWH1VshcGr3nobd2lOu1N2GIpMINOrOJiHRrSi2kle3b5VdDGNeK++9
+         6QUqzmdlIsehcOqNBJo5t1AwHCM2g6GJq0KqLcLLJD5HJ6oRear+DCPIFak7qlO3BYir
+         E/9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1677881183;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=jhGUt/9ikay0wTYED+3dM9XZOHe6xmGcq8vv+hJG3wQ=;
+        b=rRFfWkrRhIqntqoS8VctvxOcX6kq/a+r5NhGq89kw40MZRsIQAcOOIN51Xxd4mx0G/
+         WUKd2FLarCsyNs/NKL43WwF603jeIFfubAlyczUAZUTyxm9KUZjYIkP0U8gEPbtDRtDf
+         p2crK1KB06UkhC/3Zy4aK2jLWkk7UHUNbNkwWwjLANlAc+4I335sS9Uc9iin9gEW+9WT
+         aUVbg//jRS38AKpVozT06HVgDQ1ScRTcnacaNUT+DdYnom0WXbiZF15unZlv/MnFmCvO
+         G8/Fy7CxzuijOOWzkrex3GSEVdwvzZEQqB5K04bmZERockkNfazjcgpGaImuRBk9SbN2
+         tVjw==
+X-Gm-Message-State: AO0yUKUndVAVwoJRn9M1VmttNU1VIlKKAvw92FWbPY2ZnQmw6e6u2Yl/
+        I6ai8zBjd7kjfOqUWH2PdL8P8T5WxhXRZ49bVfM=
+X-Google-Smtp-Source: AK7set8pPjvldoS8xXTKdDcigJ9ekZ/v6oJanh8BYj0ZKLtRmyIkKc1mwDwannJBT4gGPqDdYCaXpw==
+X-Received: by 2002:ac2:5582:0:b0:4db:2876:f9aa with SMTP id v2-20020ac25582000000b004db2876f9aamr1003092lfg.68.1677880694430;
+        Fri, 03 Mar 2023 13:58:14 -0800 (PST)
 Received: from [192.168.1.101] (abym99.neoplus.adsl.tpnet.pl. [83.9.32.99])
-        by smtp.gmail.com with ESMTPSA id e27-20020ac2547b000000b004cafa01ebbfsm552670lfn.101.2023.03.03.13.58.09
+        by smtp.gmail.com with ESMTPSA id e27-20020ac2547b000000b004cafa01ebbfsm552670lfn.101.2023.03.03.13.58.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Mar 2023 13:58:10 -0800 (PST)
+        Fri, 03 Mar 2023 13:58:14 -0800 (PST)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Subject: [PATCH 00/15] SM6375 feature enablement (round one)
-Date:   Fri, 03 Mar 2023 22:58:00 +0100
-Message-Id: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
+Date:   Fri, 03 Mar 2023 22:58:02 +0100
+Subject: [PATCH 02/15] dt-bindings: interconnect: OSM L3: Add SM6375 CPUCP
+ compatible
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAGhtAmQC/x2NQQrCMBBFr1Jm7UDaaI1eRaSkycQO1LRkUhFK7
- +4gf/X+4r0dhAqTwL3ZodCHhZes0J4aCJPPL0KOytCZzhod1mXlgPLu7fUyJPJ1KyRmiFXQ9eZ
- mzsm2LjpQweiFcCw+h0kVeZtnPddCib//4uN5HD/Dhy8pgQAAAA==
+Message-Id: <20230303-topic-sm6375_features0_dts-v1-2-8c8d94fba6f0@linaro.org>
+References: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
+In-Reply-To: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
 To:     Amit Kucheria <amitk@kernel.org>,
         Thara Gopinath <thara.gopinath@gmail.com>,
         Andy Gross <agross@kernel.org>,
@@ -73,74 +74,38 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1677880689; l=2518;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1677880689; l=926;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=Egy2VKD4mfvEIpdAdK5E3xwo2gNISIBJS/J9ay8jtsU=;
- b=bKfXxUIiQeHXAV25G6OFhYAItp7N3vMhcw90rjLkYsx3VPZGThfxL5ABmEIGmxzzKvtMZgwjFgsm
- AM4vEQLIDP2ZJh1YJY/iGdJ2pO/NHIswBEWmfW01nA5onFWp5u3N
+ bh=3kDftpNu/Ozls1NqMhqLW9oX8DcWVaXf4fhj5FEZN3g=;
+ b=X36jcdTP0r3fGsHBtrklmVLjJUipWiwhCrV1ouBP4WX74fvOr6l46fLr0hR9NdVHr1Z0tc8K9pEO
+ iPI5qPGDB1C/WTTNfpN/J94euo176d2KctXe7SL56uAW+gk9GQd2
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello
-
-This series brings support for a couple of nice things on SM6375, namely:
-
-* 2 TSENS controllers & associated thermal-zones
-* RPM sleep stats
-* IMEM
-* WCN3990 Wi-Fi (Bluetooth doesn't wanna play ball yet)
-* MPSS & RMTFS
-* L3 scaling interconnect (not yet hooked up in this series, but it works,
-  still assessing the best scaling configuration)
-* MPM (big!; also implicitly fixes some interrupt lanes due to my earlier
-  misunderstanding of the downstream MPM<->GIC mapping)
-* Additional CPU sleep state (gated clock, power rail still on)
-* V- key on the Xperia
-
-It does *not* bring support for GPU, MDSS, icc and various other scaling
-parts which are still in progress of being upstreamed.
-
-More PDX225-specific patches, along with Wi-Fi enablement will come after
-that. But hey, we already know it works great ;)
-
-Tested on the only sm6375 device we support, the Xperia 10 IV (PDX225).
-
-Depends on:
-https://lore.kernel.org/lkml/20230109135647.339224-5-konrad.dybcio@linaro.org/
+SM6375 has a CPUCP block (which for all Linux can tell is really rebadged
+EPSS) responsible for scaling L3. Add a compatible for it.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
-Konrad Dybcio (15):
-      dt-bindings: thermal: qcom-tsens: Add compatible for SM6375
-      dt-bindings: interconnect: OSM L3: Add SM6375 CPUCP compatible
-      dt-bindings: sram: qcom,imem: document SM6375 IMEM
-      arm64: dts: qcom: sm6375: Add RPM sleep stats
-      arm64: dts: qcom: sm6375: Add IMEM
-      arm64: dts: qcom: sm6375: Add RMTFS
-      arm64: dts: qcom: sm6375: Add wifi node
-      arm64: dts: qcom: sm6375: Add modem nodes
-      arm64: dts: qcom: sm6375: Add CPUCP L3 node
-      arm64: dts: qcom: sm6375: Add TSENS
-      arm64: dts: qcom: sm6375: Configure TSENS thermal zones
-      arm64: dts: qcom: sm6375: Introduce MPM support
-      arm64: dts: qcom: sm6375: Bump CPU rail power collapse index
-      arm64: dts: qcom: sm6375: Introduce C3 power state for both ARM clusters
-      arm64: dts: qcom: sm6375-pdx225: Add volume down GPIO key
+ Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../bindings/interconnect/qcom,osm-l3.yaml         |   1 +
- .../devicetree/bindings/sram/qcom,imem.yaml        |   1 +
- .../devicetree/bindings/thermal/qcom-tsens.yaml    |   1 +
- .../dts/qcom/sm6375-sony-xperia-murray-pdx225.dts  |  27 +
- arch/arm64/boot/dts/qcom/sm6375.dtsi               | 936 ++++++++++++++++++++-
- 5 files changed, 952 insertions(+), 14 deletions(-)
----
-base-commit: 1acf39ef8f1425cd105f630dc2c7c1d8fff27ed1
-change-id: 20230303-topic-sm6375_features0_dts-860904f318d8
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
+index 576992a6dc5a..9d0a98d77ae9 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
+@@ -29,6 +29,7 @@ properties:
+           - enum:
+               - qcom,sc7280-epss-l3
+               - qcom,sc8280xp-epss-l3
++              - qcom,sm6375-cpucp-l3
+               - qcom,sm8250-epss-l3
+               - qcom,sm8350-epss-l3
+           - const: qcom,epss-l3
 
-Best regards,
 -- 
-Konrad Dybcio <konrad.dybcio@linaro.org>
+2.39.2
 
