@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA376C61DA3
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 22:17:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42C48C61DA3
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 22:20:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233087AbjCCWRw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Mar 2023 17:17:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37064 "EHLO
+        id S230353AbjCCWUD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Mar 2023 17:20:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48504 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231769AbjCCWR0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 17:17:26 -0500
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BECF13C78A
-        for <linux-pm@vger.kernel.org>; Fri,  3 Mar 2023 14:08:24 -0800 (PST)
-Received: by mail-lf1-x129.google.com with SMTP id d36so2262666lfv.8
-        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2023 14:08:24 -0800 (PST)
+        with ESMTP id S232157AbjCCWTs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 17:19:48 -0500
+Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CFD879B2F
+        for <linux-pm@vger.kernel.org>; Fri,  3 Mar 2023 14:11:17 -0800 (PST)
+Received: by mail-ed1-x52c.google.com with SMTP id ay14so12258374edb.11
+        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2023 14:11:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1677881247;
+        d=linaro.org; s=google; t=1677881417;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=kByKMAiyThWhQddTcnHkd5we2tSElWbVAhY9mxsVtno=;
-        b=WBiuvDe4rDN/UwaKkoGSp7440me5p1g4Ali6B2xjq0D19iJCKAjngsYL4RR8fyMpOu
-         BY27sXJw77nXxU/VxgeLJrF1TPZj2ZIbfdmR9LG/rdERIiAbal0MVxPaB4D5JPp4jQXa
-         HgpahpGHmYnR3ExKEiV02oXW/NN81eqU0wq2PxegnSaIOMEoK0W3Yrgla0RNKSka6w1e
-         FMmz/qIjC8hILt8nZVASLA+1nx1BrJ22O4JsEBDuTpv6yXsrgcT6OGdRdlGAYG4+mdaK
-         wldQUZa2ADRleGxtQAbd615duAeGwaHCFbR3ioQgWejpsrP8NKEu4fP0RWYgzcNQkWuN
-         vNGA==
+        bh=N1o/g/RY/F8tw5gI99MfNC1MgutCzKG48oc2MA5z/Ao=;
+        b=mJFchvIlZ8QMjvsvvVeIyM99Nl+hgG4fS+KnaF06ZdktegLxkN+p0lV7yigxmSG8c8
+         KQ1/lkBBjVkgoowCe2TdFPjP9EpNVoyt2OrgCefnlFJ/zjAa/xYE/cB/h3qKwxKCpjMU
+         l2tQdDzJlfnkYyHI1N/Sl6k8wY6xYorkXL+FMbac1DohRdViiW8fF7kwZxy2YgiQGYsa
+         cO8q/AMC9v04rn72osdRcgak0AeT5OKmIYbaKbJXiw9AKzBmAaKg0V1vCDiwR2es8+AJ
+         ID30jqY35CAmsdIGdOaO/09Fd+s19BhCA9H8XStlXl8MnK9RyD4TgNZ1rKTYXciFD5O9
+         n9ww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677881247;
+        d=1e100.net; s=20210112; t=1677881417;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=kByKMAiyThWhQddTcnHkd5we2tSElWbVAhY9mxsVtno=;
-        b=jKeezu2tSWkCnFjTS96Ricbh8nvGNTS3oMHL7ccANNdEpX4N7dvGbVdMRSRW9cS+Ts
-         V7YVV/2eb9snp0Kf8u+oEtKKI2kMNurlEOyvX0Nq70PUVuHuGwDe8jHiP26GHgLGdCxH
-         p2NGt3m9z0+9T2Ibp8iKUyWkPe7My85mmWUxUXm9TWdq94rDgSYY8/hK5SshRp96EBbd
-         2tRZijK7zzmSfyfo20avLFRa74R2l9bUMbZFGjyZJIRgYlR3Fz19zrDQUbFL7m+fHqMT
-         INz7WFDwuCNY0ry5/xj7b03TApkTMxiMqsuWqE5fqqdoOr4p+Yeg5Uz6q4CIrTJYACwG
-         xanQ==
-X-Gm-Message-State: AO0yUKXa9nNyvVkLX5VBk9yJ4CGcH6YzWQagapge9ZTVA3VhGQfrjZ+s
-        kRWGX0oR9dgQ4dMS9lsD12LytfcKqzhpdN0JPDQ=
-X-Google-Smtp-Source: AK7set/GCprVfnv+hPF1Rzfmz6l0SL8mWmBDIe6hyGF2LRIdlIONxmT5k8eDdZCZA4AF4K+IijZHHA==
-X-Received: by 2002:a19:ae13:0:b0:4e1:13fa:bf07 with SMTP id f19-20020a19ae13000000b004e113fabf07mr985985lfc.43.1677880692932;
-        Fri, 03 Mar 2023 13:58:12 -0800 (PST)
+        bh=N1o/g/RY/F8tw5gI99MfNC1MgutCzKG48oc2MA5z/Ao=;
+        b=hR/4xvyrSEpdSH1WmeqikW9JBrMN5Tcs55vmzxtNrIwhvKiwuSLTDGYTTPd2z+S8SV
+         LcMjOT1QCdysuaJaEWnyeaIAdJu95Az+CjR41CdrpSVNQIn4Eqh3yLEKC115FGR37puW
+         pK71pTWymb3rkSRaiXWUf+4DeSrOBFurAfZCufx2OBe9+d9T3M1PFRFF1AOTFYIvhQ/w
+         17hGRZpiLpsO6tIUDxiy6vppXTG9fXgMkDnAzIong2HZk6pFD5LFOC2ufMsT5zsD5kkk
+         6AzhG1ABs5A1DD3r6FhsnkEKF3AaRCyyZ5OYy/5qqL48JeOQZLACqmiIwhPYNhCr3CXi
+         WsKQ==
+X-Gm-Message-State: AO0yUKUaDkhHLKhWIrfqAf+qoJ211aIEz2sequadtU37VznM7hzKq2U3
+        sig6PXC+WNDxJKOblYPyaYpz/WKh5eg7PrrAtnw=
+X-Google-Smtp-Source: AK7set8HY/ZWvMDmsFszJ46x+D2bfFXOLEt62IWqldbD7EeuilM2sEPe1aGzehsz3IInfUfazDl8uQ==
+X-Received: by 2002:a2e:8e8c:0:b0:295:9f20:bf16 with SMTP id z12-20020a2e8e8c000000b002959f20bf16mr834883ljk.51.1677880713790;
+        Fri, 03 Mar 2023 13:58:33 -0800 (PST)
 Received: from [192.168.1.101] (abym99.neoplus.adsl.tpnet.pl. [83.9.32.99])
-        by smtp.gmail.com with ESMTPSA id e27-20020ac2547b000000b004cafa01ebbfsm552670lfn.101.2023.03.03.13.58.11
+        by smtp.gmail.com with ESMTPSA id e27-20020ac2547b000000b004cafa01ebbfsm552670lfn.101.2023.03.03.13.58.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Mar 2023 13:58:12 -0800 (PST)
+        Fri, 03 Mar 2023 13:58:33 -0800 (PST)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Fri, 03 Mar 2023 22:58:01 +0100
-Subject: [PATCH 01/15] dt-bindings: thermal: qcom-tsens: Add compatible for
- SM6375
+Date:   Fri, 03 Mar 2023 22:58:15 +0100
+Subject: [PATCH 15/15] arm64: dts: qcom: sm6375-pdx225: Add volume down
+ GPIO key
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230303-topic-sm6375_features0_dts-v1-1-8c8d94fba6f0@linaro.org>
+Message-Id: <20230303-topic-sm6375_features0_dts-v1-15-8c8d94fba6f0@linaro.org>
 References: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
 In-Reply-To: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
 To:     Amit Kucheria <amitk@kernel.org>,
@@ -74,37 +74,70 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1677880689; l=880;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1677880689; l=1409;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=Xo5r61pKkn5u58scrvwnGxQSvCjXA8+p8ZYAEW/PB+Q=;
- b=7vSyzRro3M1PoiwzyP06k27hDzGfo3oDBQ8Z57zbfmtIIprHmAUCZ2Zdngs2nh9i9s8lrND9j7ZB
- IZhHCq+RAQmdNO0kARatFng3E2coXlwNbizIM1M6h2sKwXxeobOr
+ bh=lUoSxwe6wDxHMv1iTDzFHuYZxKLyt1OMfELUkCo9Rp0=;
+ b=2D1FYt5g9zW3UaMoHWv3uq5a3I+XMRqi4xOdzwph644K+Ge2XkqIHBvdS5lQ6HhN8VB5CAELrLkC
+ Mc12VKGIBVJrmmDYy3Plyso23gn9bU4RYdv5EBTyg4dMyi2kUOIU
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm SM6375 platform has two instances of the tsens v2.8.0 block,
-add a compatible for these instances.
+Add the required nodes to enable the volume down key on the Sony
+Xperia 10 IV.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ .../dts/qcom/sm6375-sony-xperia-murray-pdx225.dts  | 27 ++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 926e9c51c93c..d73b72dafcbc 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -56,6 +56,7 @@ properties:
-               - qcom,sdm845-tsens
-               - qcom,sm6115-tsens
-               - qcom,sm6350-tsens
-+              - qcom,sm6375-tsens
-               - qcom,sm8150-tsens
-               - qcom,sm8250-tsens
-               - qcom,sm8350-tsens
+diff --git a/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts b/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts
+index b691c3834b6b..8220e6f44117 100644
+--- a/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts
++++ b/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts
+@@ -46,6 +46,23 @@ framebuffer: framebuffer@85200000 {
+ 		};
+ 	};
+ 
++	gpio-keys {
++		compatible = "gpio-keys";
++		label = "gpio-keys";
++
++		pinctrl-0 = <&vol_down_n>;
++		pinctrl-names = "default";
++
++		key-volume-down {
++			label = "Volume Down";
++			linux,code = <KEY_VOLUMEDOWN>;
++			gpios = <&pmr735a_gpios 1 GPIO_ACTIVE_LOW>;
++			debounce-interval = <15>;
++			linux,can-disable;
++			wakeup-source;
++		};
++	};
++
+ 	reserved-memory {
+ 		cont_splash_mem: memory@85200000 {
+ 			reg = <0 0x85200000 0 0xc00000>;
+@@ -133,6 +150,16 @@ &pmk8350_rtc {
+ 	status = "okay";
+ };
+ 
++&pmr735a_gpios {
++	vol_down_n: vol-down-n-state {
++		pins = "gpio1";
++		function = "normal";
++		power-source = <1>;
++		bias-pull-up;
++		input-enable;
++	};
++};
++
+ &pon_pwrkey {
+ 	status = "okay";
+ };
 
 -- 
 2.39.2
