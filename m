@@ -2,108 +2,90 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85DAEC61DA4
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 22:49:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFEDEC64EC4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 23:03:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232127AbjCCWtP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Mar 2023 17:49:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38118 "EHLO
+        id S232024AbjCCXDr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Mar 2023 18:03:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232529AbjCCWtL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 17:49:11 -0500
-Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E53315883
-        for <linux-pm@vger.kernel.org>; Fri,  3 Mar 2023 14:48:39 -0800 (PST)
-Received: by mail-ed1-x532.google.com with SMTP id o15so16062960edr.13
-        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2023 14:48:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1677883646;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=abXDj5NltbKSeLRsh9EY7sfm/FxwFg1uajo52uEDqME=;
-        b=O9mo4ZGhoI+GTHVUQqX1pKJAONEVzLRx7IbLFCx1ln4xFuR7DvsiZpfZt527mcqe3k
-         4ANptEsIySkDljltwhXer/D6EwYIFXUO1BrKf4tBxJ9KVdhdKcGjhWWCczLOdccY2pzU
-         oJesbqAq9eS9KADBtOeSbckB2ImqZQ34S2yujcpLiRgPWXll5hygivhBIiv7F+rkEdCC
-         swUc7rJYenSp/RZkxWi67+buRLpVvI1Mi6Ep7f9q/cFQJZiEr1XqZPfDbiSoKVsxqPFq
-         6L5asV2dGiatvYd9/T5B+4pq8oW+ZbhDrIau6JRn793XgvtsllXm2cWhKE8pK/ebTTFV
-         22WQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677883646;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=abXDj5NltbKSeLRsh9EY7sfm/FxwFg1uajo52uEDqME=;
-        b=bVbd+LSXz5FNEm8q0GbjdVjozbKnZRo9SLfYgergY6NPfE1kno4TTcL0BEDCAhXcaB
-         fmkXW7i6gB1vnvmrF1AzXXy6Z016BZyvJzOsimqmKxobpQvXTZ7B8K9/0AxcaAKhw5PJ
-         fD5w5NC5AKLJ2lbdW8XbvUXHg1LWne7umFMdLWM9+QsYkbEVlicLXJ5uXtcFjIPFfoPo
-         VnSUcbv+UZfzBWCTuSszJyK/y3FjBKkQ8DuBc0GOTwzJ8exfX/6EC5HLmrtKW7eiJnyX
-         Yp8xj0T3Ul930P07NQASIzkDigBV3IqFsUxoDiRKM8UAXvh8mrJ68UCazYe5a0MvPFAW
-         ROFw==
-X-Gm-Message-State: AO0yUKXuAKKYF8JhvDT/CpQ1oo4TunBItGucA4PrUBYl+j5I5z++w61S
-        VJ3XtTdFeYfUbQjEM9BDHXjhOZq/OO6Y97xQXIw=
-X-Google-Smtp-Source: AK7set/An1BtrKhxkQaFksrUZJVWeIWfp/ojIAxF8lGpYfv7ksIWNVqKkcwoLr35zkveVmQvfKKuFQ==
-X-Received: by 2002:a05:6512:4da:b0:4dd:a053:3ba1 with SMTP id w26-20020a05651204da00b004dda0533ba1mr808661lfq.28.1677880695801;
-        Fri, 03 Mar 2023 13:58:15 -0800 (PST)
-Received: from [192.168.1.101] (abym99.neoplus.adsl.tpnet.pl. [83.9.32.99])
-        by smtp.gmail.com with ESMTPSA id e27-20020ac2547b000000b004cafa01ebbfsm552670lfn.101.2023.03.03.13.58.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Mar 2023 13:58:15 -0800 (PST)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Fri, 03 Mar 2023 22:58:03 +0100
-Subject: [PATCH 03/15] dt-bindings: sram: qcom,imem: document SM6375 IMEM
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230303-topic-sm6375_features0_dts-v1-3-8c8d94fba6f0@linaro.org>
-References: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
-In-Reply-To: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
-To:     Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
+        with ESMTP id S231938AbjCCXDo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 18:03:44 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 364BD4FA94;
+        Fri,  3 Mar 2023 15:03:38 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id A0D2DB81A3F;
+        Fri,  3 Mar 2023 21:47:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CF67C43446;
+        Fri,  3 Mar 2023 21:47:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1677880076;
+        bh=L0GDlOFJh1U+yOBJ5nphKgt60E01OaTI0l1WVeilfBg=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=fLjQBXwRRMdk3ZmaSt5J4D/fASyLVT+3fysLDdjsfjhtovN3gMpBbO0cZDWjJEu57
+         Nf6LyhVW+Mkd09go5OSgL6j3K+98MJctn/PaCRE14h2kcxiyJRrlv5Ju6RsuzCHQh7
+         +B2z+bnfgNTAzPCPr4EjmnLXInJKEMwRNnfZPYCRMkYID7XMQHPpDJgP1OpNBj3scQ
+         O0glO/Taz30tdECVKmdUwl8kHB0lmoSd2h0HeynQcS/3e5KK5iYijqHRMNHpXXhDTe
+         NAvUQlrixGztyNbarQ2x5KMN+ezp0MaFHLtaLsIshYbPRGNY38QRcH/5kldRryv8b/
+         t7qIiHu7kj1Tw==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Sibi Sankar <quic_sibis@quicinc.com>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1677880689; l=734;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=fRR9bII2e5KK6+z/KcGqOf0XJiIuf0AqBHHO+8le6ck=;
- b=Rg7LgOLNnWhrT917vsmIUzlmNQW7hw5lDELRGk2JR0SaCt5j3pwKUb3IsmWA0sW7HuBq61SJ34eE
- QreEuo27CZV9TdAz4vUqOY4t4LWr36VBhZ7nXEw7wHJ+Y4YUPuOa
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.10 24/30] kernel/power/energy_model.c: fix memory leak with using debugfs_lookup()
+Date:   Fri,  3 Mar 2023 16:47:09 -0500
+Message-Id: <20230303214715.1452256-24-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230303214715.1452256-1-sashal@kernel.org>
+References: <20230303214715.1452256-1-sashal@kernel.org>
+MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a compatible for SM6375 IMEM.
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+[ Upstream commit a0bc3f78d0fffa8be1a73bf945a43bfe1c2871c1 ]
+
+When calling debugfs_lookup() the result must have dput() called on it,
+otherwise the memory will leak over time.  To make things simpler, just
+call debugfs_lookup_and_remove() instead which handles all of the logic
+at once.
+
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>
+Link: https://lore.kernel.org/r/20230202151515.2309543-1-gregkh@linuxfoundation.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- Documentation/devicetree/bindings/sram/qcom,imem.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ kernel/power/energy_model.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/sram/qcom,imem.yaml b/Documentation/devicetree/bindings/sram/qcom,imem.yaml
-index ba694ce4a037..0548e8e0d30b 100644
---- a/Documentation/devicetree/bindings/sram/qcom,imem.yaml
-+++ b/Documentation/devicetree/bindings/sram/qcom,imem.yaml
-@@ -26,6 +26,7 @@ properties:
-           - qcom,sdm845-imem
-           - qcom,sdx55-imem
-           - qcom,sdx65-imem
-+          - qcom,sm6375-imem
-           - qcom,sm8450-imem
-       - const: syscon
-       - const: simple-mfd
-
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 119b929dcff0f..334173fe6940e 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -72,10 +72,7 @@ static void em_debug_create_pd(struct device *dev)
+ 
+ static void em_debug_remove_pd(struct device *dev)
+ {
+-	struct dentry *debug_dir;
+-
+-	debug_dir = debugfs_lookup(dev_name(dev), rootdir);
+-	debugfs_remove_recursive(debug_dir);
++	debugfs_lookup_and_remove(dev_name(dev), rootdir);
+ }
+ 
+ static int __init em_debug_init(void)
 -- 
 2.39.2
 
