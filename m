@@ -2,236 +2,394 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EA65C7EE2F
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 06:55:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E03AAC64EC4
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Mar 2023 09:25:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229518AbjCCGzK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Mar 2023 01:55:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60284 "EHLO
+        id S230519AbjCCJZS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Mar 2023 04:25:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229455AbjCCGzJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 01:55:09 -0500
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41865EFA1;
-        Thu,  2 Mar 2023 22:55:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1677826504; x=1709362504;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=0QjW6tkdRtJOoLbLN87Z7ElWynbVR4HANDk+HL2UB+c=;
-  b=CKcP42EMzhJop3dCtnALZfQYruZ7no5AikbYtiHy4dflMTNI1xmlgocy
-   USIvht+j0pP6CuGlMZ0zP7Z/AipYOxIu71bdQDz5SeeIX7iSPkizzU9Cc
-   poXxpXAZDIdqPrtDHGwx+fIWYVX0CGyO69Ni57iD5pIoWdNw0WDDaXXZp
-   GCOsIJmK1u7Jo3qTrxLbuDh+xtaVNMm/pgcaQ82PCZkIrqPWlE4KotW16
-   n6n126yqRfIJa6V8ZM7i4dQ+p+kszvtHOzNQ6PpGnC/8TeqFCzNnDpJFZ
-   IsZENvqya7/moJwf9yxHZQaZLR7rpjXxADRKzB9QKx/tZYrzSPlXjyqx9
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10637"; a="318796089"
-X-IronPort-AV: E=Sophos;i="5.98,229,1673942400"; 
-   d="scan'208";a="318796089"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Mar 2023 22:54:55 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10637"; a="677534096"
-X-IronPort-AV: E=Sophos;i="5.98,229,1673942400"; 
-   d="scan'208";a="677534096"
-Received: from lkp-server01.sh.intel.com (HELO 776573491cc5) ([10.239.97.150])
-  by fmsmga007.fm.intel.com with ESMTP; 02 Mar 2023 22:54:52 -0800
-Received: from kbuild by 776573491cc5 with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1pXzJc-0001HD-04;
-        Fri, 03 Mar 2023 06:54:52 +0000
-Date:   Fri, 03 Mar 2023 14:53:58 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- a922b2afa144b354c914ade31bd5b0df258f1c94
-Message-ID: <64019986.Iz3/1CtPwPQfcBs8%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S230428AbjCCJZD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2023 04:25:03 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 327975C12B
+        for <linux-pm@vger.kernel.org>; Fri,  3 Mar 2023 01:24:44 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id v16so1647785wrn.0
+        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2023 01:24:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1677835482;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=qZW13a6M4CbKDv+/tbaLjH07R3EIPpeX9wuis9iCl0M=;
+        b=RfgXVuHmkLq5H7QR1aoNvvv2IALanaH0P/POcAYoDGfK0laJjSXiUXMG2kCc40DmBV
+         5ao/QP6HdIAaN6hNk1zsTzmBzkjlvVSzfFS32NfO47ganlGU74uAoAc1ONN+fKkDAW9x
+         PX+j4q4yKvu2RAejYMPqtDX+48X9mtQ1/g9Vf3iteKlk+hgIhFTUB5g2QFY/UIh+osJ0
+         fL6DK+KImynrpdP8OB9rryz08dmc6/+BcNgfGSBVfXMAbbsUaNG2kjFjD85Q95edAEuw
+         Uzo33thMuESwFCv9ZVOxFgln7WLK59Zrhky23WQocCu9bvPQsGwITh3daE7wri7PgkXk
+         2ABg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1677835482;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=qZW13a6M4CbKDv+/tbaLjH07R3EIPpeX9wuis9iCl0M=;
+        b=HeU+N5sTv8esouD5nYgBSpguyND3S7BGGB6A00AhY5/DaQ+V+rO1kxpweh/jvv6cEi
+         aGhcYr3tCEO+WVfMjxzdwn302cfHYxV+oiPKkDEFIV1td1XVPrF2MsCXPW2PkeXeVADY
+         J5GFUjY6Amor5avsqldmyXUBFpdplINsDdVRZAdIOkLyiIdhJFW2Bk7PXJbdgpWOIl59
+         2/3Wyn26NC7holO5XyBSeZFNSQv9HXTj+Lm/4H5BhMSzj0B8yfUWWi8KKoumXM0yTy+U
+         8o+4KmzDuzjAabSRSpnJdnZrXSfB2mWjHp3iT5yqndzzX8R3r6aPrftBqo5++4Uzgemn
+         EQSA==
+X-Gm-Message-State: AO0yUKXpfE61rTzEqzQ8mawE4iYvLfdIO8ZSp2T35ycCQGjxHQ05pzes
+        TziQRnCEpRcb5NoTz7IZZsDpHA==
+X-Google-Smtp-Source: AK7set/TivsVLpZgfVwr7zBuzY0idsigW/sKtrB0Gs+T0bp+j2ltmNPJktyEla4UqtSRdklCLprlWw==
+X-Received: by 2002:adf:e60b:0:b0:2ca:9950:718 with SMTP id p11-20020adfe60b000000b002ca99500718mr890693wrm.52.1677835482554;
+        Fri, 03 Mar 2023 01:24:42 -0800 (PST)
+Received: from ?IPV6:2a05:6e02:1041:c10:e474:bda6:c260:d90b? ([2a05:6e02:1041:c10:e474:bda6:c260:d90b])
+        by smtp.googlemail.com with ESMTPSA id p7-20020a5d48c7000000b002c71d206329sm1631219wrs.55.2023.03.03.01.24.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Mar 2023 01:24:41 -0800 (PST)
+Message-ID: <1d3da42e-2499-7ff6-50fa-048a720e855f@linaro.org>
+Date:   Fri, 3 Mar 2023 10:24:39 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Subject: Re: [PATCH v5 00/18] Self-encapsulate the thermal zone device
+ structure
+Content-Language: en-US
+To:     rafael@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Ido Schimmel <idosch@nvidia.com>,
+        Petr Machata <petrm@nvidia.com>,
+        Gregory Greenman <gregory.greenman@intel.com>,
+        Kalle Valo <kvalo@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Broadcom internal kernel review list 
+        <bcm-kernel-feedback-list@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Markus Mayer <mmayer@broadcom.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang@linux.alibaba.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Talel Shenhar <talel@amazon.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>,
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Stefan Wahren <stefan.wahren@i2se.com>,
+        Zheng Yongjun <zhengyongjun3@huawei.com>,
+        Yang Li <yang.lee@linux.alibaba.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Daniel Golle <daniel@makrotopia.org>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        Mikko Perttunen <mperttunen@nvidia.com>,
+        linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-sunxi@lists.linux.dev,
+        linux-input@vger.kernel.org, netdev@vger.kernel.org,
+        linux-wireless@vger.kernel.org,
+        linux-rpi-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-mediatek@lists.infradead.org
+References: <20230301201446.3713334-1-daniel.lezcano@linaro.org>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20230301201446.3713334-1-daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: a922b2afa144b354c914ade31bd5b0df258f1c94  Merge branch 'thermal-intel' into linux-next
 
-elapsed time: 725m
+Hi Rafael,
 
-configs tested: 160
-configs skipped: 8
+Do we have enough ack to apply this series, is it for you ?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks
 
-tested configs:
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha        buildonly-randconfig-r004-20230303   gcc  
-alpha                               defconfig   gcc  
-alpha                randconfig-r003-20230302   gcc  
-alpha                randconfig-r005-20230302   gcc  
-alpha                randconfig-r036-20230302   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r004-20230302   gcc  
-arc                  randconfig-r014-20230302   gcc  
-arc                  randconfig-r015-20230302   gcc  
-arc                  randconfig-r016-20230303   gcc  
-arc                  randconfig-r043-20230302   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   gcc  
-arm                              allyesconfig   gcc  
-arm          buildonly-randconfig-r004-20230302   gcc  
-arm                                 defconfig   gcc  
-arm                           imxrt_defconfig   gcc  
-arm                      integrator_defconfig   gcc  
-arm                  randconfig-r002-20230302   clang
-arm                  randconfig-r021-20230302   gcc  
-arm                  randconfig-r031-20230302   clang
-arm                  randconfig-r032-20230302   clang
-arm                  randconfig-r046-20230302   gcc  
-arm64                            allyesconfig   gcc  
-arm64        buildonly-randconfig-r002-20230303   clang
-arm64                               defconfig   gcc  
-arm64                randconfig-r014-20230302   clang
-arm64                randconfig-r024-20230302   clang
-arm64                randconfig-r034-20230302   gcc  
-arm64                randconfig-r035-20230302   gcc  
-csky                                defconfig   gcc  
-csky                 randconfig-r001-20230302   gcc  
-csky                 randconfig-r036-20230302   gcc  
-hexagon      buildonly-randconfig-r001-20230302   clang
-hexagon              randconfig-r002-20230302   clang
-hexagon              randconfig-r006-20230302   clang
-hexagon              randconfig-r041-20230302   clang
-hexagon              randconfig-r045-20230302   clang
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   clang
-i386                             allyesconfig   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                          randconfig-a001   gcc  
-i386                          randconfig-a002   clang
-i386                          randconfig-a003   gcc  
-i386                          randconfig-a004   clang
-i386                          randconfig-a005   gcc  
-i386                          randconfig-a006   clang
-i386                          randconfig-a011   clang
-i386                          randconfig-a012   gcc  
-i386                          randconfig-a013   clang
-i386                          randconfig-a014   gcc  
-i386                          randconfig-a015   clang
-i386                          randconfig-a016   gcc  
-i386                          randconfig-c001   gcc  
-ia64                             allmodconfig   gcc  
-ia64                             allyesconfig   gcc  
-ia64                                defconfig   gcc  
-ia64                 randconfig-r013-20230302   gcc  
-ia64                 randconfig-r023-20230302   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r012-20230302   gcc  
-m68k                             allmodconfig   gcc  
-m68k         buildonly-randconfig-r006-20230303   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r001-20230302   gcc  
-m68k                 randconfig-r003-20230302   gcc  
-m68k                 randconfig-r022-20230302   gcc  
-m68k                 randconfig-r033-20230302   gcc  
-m68k                 randconfig-r035-20230302   gcc  
-microblaze   buildonly-randconfig-r001-20230302   gcc  
-microblaze   buildonly-randconfig-r002-20230302   gcc  
-microblaze   buildonly-randconfig-r005-20230303   gcc  
-microblaze           randconfig-r011-20230302   gcc  
-microblaze           randconfig-r012-20230302   gcc  
-microblaze           randconfig-r015-20230302   gcc  
-microblaze           randconfig-r025-20230302   gcc  
-microblaze           randconfig-r026-20230302   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips         buildonly-randconfig-r005-20230302   clang
-mips                     decstation_defconfig   gcc  
-mips                           ip32_defconfig   gcc  
-mips                       lemote2f_defconfig   clang
-mips                      maltasmvp_defconfig   gcc  
-mips                        qi_lb60_defconfig   clang
-mips                 randconfig-r006-20230302   clang
-mips                 randconfig-r013-20230302   gcc  
-mips                           rs90_defconfig   clang
-mips                   sb1250_swarm_defconfig   clang
-mips                           xway_defconfig   gcc  
-nios2        buildonly-randconfig-r006-20230302   gcc  
-nios2                               defconfig   gcc  
-nios2                randconfig-r005-20230302   gcc  
-openrisc             randconfig-r026-20230302   gcc  
-openrisc             randconfig-r032-20230302   gcc  
-parisc       buildonly-randconfig-r003-20230302   gcc  
-parisc                              defconfig   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                        fsp2_defconfig   clang
-powerpc              randconfig-r012-20230303   gcc  
-powerpc                     skiroot_defconfig   clang
-powerpc                     tqm5200_defconfig   clang
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv        buildonly-randconfig-r003-20230302   clang
-riscv                               defconfig   gcc  
-riscv                randconfig-r011-20230303   gcc  
-riscv                randconfig-r022-20230302   clang
-riscv                randconfig-r024-20230302   clang
-riscv                randconfig-r042-20230302   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390         buildonly-randconfig-r002-20230302   clang
-s390                                defconfig   gcc  
-s390                 randconfig-r044-20230302   clang
-sh                               allmodconfig   gcc  
-sh           buildonly-randconfig-r003-20230303   gcc  
-sh           buildonly-randconfig-r006-20230302   gcc  
-sh                                  defconfig   gcc  
-sh                ecovec24-romimage_defconfig   gcc  
-sh                   randconfig-r013-20230303   gcc  
-sh                   randconfig-r021-20230302   gcc  
-sh                          sdk7786_defconfig   gcc  
-sparc        buildonly-randconfig-r001-20230303   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r016-20230302   gcc  
-sparc64              randconfig-r011-20230302   gcc  
-sparc64              randconfig-r023-20230302   gcc  
-sparc64              randconfig-r025-20230302   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64                        randconfig-a001   clang
-x86_64                        randconfig-a002   gcc  
-x86_64                        randconfig-a003   clang
-x86_64                        randconfig-a004   gcc  
-x86_64                        randconfig-a005   clang
-x86_64                        randconfig-a006   gcc  
-x86_64                        randconfig-a011   gcc  
-x86_64                        randconfig-a012   clang
-x86_64                        randconfig-a013   gcc  
-x86_64                        randconfig-a014   clang
-x86_64                        randconfig-a015   gcc  
-x86_64                        randconfig-a016   clang
-x86_64                               rhel-8.3   gcc  
-xtensa               randconfig-r014-20230303   gcc  
-xtensa               randconfig-r034-20230302   gcc  
+   -- Daniel
+
+
+On 01/03/2023 21:14, Daniel Lezcano wrote:
+> The exported thermal headers expose the thermal core structure while those
+> should be private to the framework. The initial idea was the thermal sensor
+> drivers use the thermal zone device structure pointer to pass it around from
+> the ops to the thermal framework API like a handler.
+> 
+> Unfortunately, different drivers are using and abusing the internals of this
+> structure to hook the associated struct device, read the internals values, take
+> the lock, etc ...
+> 
+> In order to fix this situation, let's encapsulate the structure leaking the
+> more in the different drivers: the thermal_zone_device structure.
+> 
+> This series revisit the existing drivers using the thermal zone private
+> structure internals to change the access to something else. For instance, the
+> get_temp() ops is using the tz->dev to write a debug trace. Despite the trace
+> is not helpful, we can check the return value for the get_temp() ops in the
+> call site and show the message in this place.
+> 
+> With this set of changes, the thermal_zone_device is almost self-encapsulated.
+> As usual, the acpi driver needs a more complex changes, so that will come in a
+> separate series along with the structure moved the private core headers.
+> 
+> Changelog:
+> 	- V5:
+> 	   - Dropped patch 19 : "thermal/tegra: Do not enable ... is already enabled"
+> 	   - Changed the init sequence of the hw channels on tegra3 to close
+> 	     the race window
+> 	   - Collected more tags
+> 	- V4:
+> 	   - Collected more tags
+> 	   - Fixed a typo therma_zone_device_priv() for db8500
+> 	   - Remove traces patch [20/20] to be submitted separetely
+> 	- V3:
+> 	   - Split the first patch into three to reduce the number of
+> 	     recipients per change
+> 	   - Collected more tags
+> 	   - Added missing changes for ->devdata in some drivers
+> 	   - Added a 'type' accessor
+> 	   - Replaced the 'type' to 'id' changes by the 'type' accessor
+> 	   - Used the 'type' accessor in the drivers
+> 	- V2:
+> 	   - Collected tags
+> 	   - Added missing changes for ->devdata for the tsens driver
+> 	   - Renamed thermal_zone_device_get_data() to thermal_zone_priv()
+> 	   - Added stubs when CONFIG_THERMAL is not set
+> 	   - Dropped hwmon change where we remove the tz->lock usage
+> 
+> Thank you all for your comments
+> 
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Damien Le Moal <damien.lemoal@opensource.wdc.com>
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> Cc: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+> Cc: Fabio Estevam <festevam@gmail.com>
+> Cc: NXP Linux Team <linux-imx@nxp.com>
+> Cc: Jean Delvare <jdelvare@suse.com>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Jonathan Cameron <jic23@kernel.org>
+> Cc: Lars-Peter Clausen <lars@metafoo.de>
+> Cc: Chen-Yu Tsai <wens@csie.org>
+> Cc: Jernej Skrabec <jernej.skrabec@gmail.com>
+> Cc: Samuel Holland <samuel@sholland.org>
+> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Eric Dumazet <edumazet@google.com>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Paolo Abeni <pabeni@redhat.com>
+> Cc: Ido Schimmel <idosch@nvidia.com>
+> Cc: Petr Machata <petrm@nvidia.com>
+> Cc: Gregory Greenman <gregory.greenman@intel.com>
+> Cc: Kalle Valo <kvalo@kernel.org>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Liam Girdwood <lgirdwood@gmail.com>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Miquel Raynal <miquel.raynal@bootlin.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Amit Kucheria <amitk@kernel.org>
+> Cc: Florian Fainelli <f.fainelli@gmail.com>
+> Cc: Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>
+> Cc: Ray Jui <rjui@broadcom.com>
+> Cc: Scott Branden <sbranden@broadcom.com>
+> Cc: Markus Mayer <mmayer@broadcom.com>
+> Cc: Support Opensource <support.opensource@diasemi.com>
+> Cc: Andy Gross <agross@kernel.org>
+> Cc: Bjorn Andersson <andersson@kernel.org>
+> Cc: Konrad Dybcio <konrad.dybcio@linaro.org>
+> Cc: Thara Gopinath <thara.gopinath@gmail.com>
+> Cc: "Niklas Söderlund" <niklas.soderlund@ragnatech.se>
+> Cc: Heiko Stuebner <heiko@sntech.de>
+> Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Cc: Alim Akhtar <alim.akhtar@samsung.com>
+> Cc: Orson Zhai <orsonzhai@gmail.com>
+> Cc: Baolin Wang <baolin.wang@linux.alibaba.com>
+> Cc: Chunyan Zhang <zhang.lyra@gmail.com>
+> Cc: Vasily Khoruzhick <anarsoul@gmail.com>
+> Cc: Yangtao Li <tiny.windzz@gmail.com>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> Cc: Talel Shenhar <talel@amazon.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Keerthy <j-keerthy@ti.com>
+> Cc: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+> Cc: Masami Hiramatsu <mhiramat@kernel.org>
+> Cc: Matthias Brugger <matthias.bgg@gmail.com>
+> Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+> Cc: Stefan Wahren <stefan.wahren@i2se.com>
+> Cc: Zheng Yongjun <zhengyongjun3@huawei.com>
+> Cc: Yang Li <yang.lee@linux.alibaba.com>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Daniel Golle <daniel@makrotopia.org>
+> Cc: Balsam CHIHI <bchihi@baylibre.com>
+> Cc: Mikko Perttunen <mperttunen@nvidia.com>
+> Cc: linux-acpi@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-ide@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-hwmon@vger.kernel.org
+> Cc: linux-iio@vger.kernel.org
+> Cc: linux-sunxi@lists.linux.dev
+> Cc: linux-input@vger.kernel.org
+> Cc: netdev@vger.kernel.org
+> Cc: linux-wireless@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-rpi-kernel@lists.infradead.org
+> Cc: linux-arm-msm@vger.kernel.org
+> Cc: linux-renesas-soc@vger.kernel.org
+> Cc: linux-rockchip@lists.infradead.org
+> Cc: linux-samsung-soc@vger.kernel.org
+> Cc: linux-tegra@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+> Cc: linux-mediatek@lists.infradead.org
+> 
+> Daniel Lezcano (18):
+>    thermal/core: Add a thermal zone 'devdata' accessor
+>    thermal/core: Use the thermal zone 'devdata' accessor in thermal
+>      located drivers
+>    thermal/core: Use the thermal zone 'devdata' accessor in hwmon located
+>      drivers
+>    thermal/core: Use the thermal zone 'devdata' accessor in remaining
+>      drivers
+>    thermal/core: Show a debug message when get_temp() fails
+>    thermal: Remove debug or error messages in get_temp() ops
+>    thermal/hwmon: Do not set no_hwmon before calling
+>      thermal_add_hwmon_sysfs()
+>    thermal/hwmon: Use the right device for devm_thermal_add_hwmon_sysfs()
+>    thermal: Don't use 'device' internal thermal zone structure field
+>    thermal/core: Add thermal_zone_device structure 'type' accessor
+>    thermal/drivers/spear: Don't use tz->device but pdev->dev
+>    thermal: Add a thermal zone id accessor
+>    thermal: Use thermal_zone_device_type() accessor
+>    thermal/drivers/da9062: Don't access the thermal zone device fields
+>    thermal/hwmon: Use the thermal_core.h header
+>    thermal/drivers/tegra: Remove unneeded lock when setting a trip point
+>    thermal/drivers/acerhdf: Make interval setting only at module load
+>      time
+>    thermal/drivers/acerhdf: Remove pointless governor test
+> 
+>   drivers/acpi/thermal.c                        | 18 +++----
+>   drivers/ata/ahci_imx.c                        |  2 +-
+>   drivers/hwmon/hwmon.c                         |  4 +-
+>   drivers/hwmon/pmbus/pmbus_core.c              |  2 +-
+>   drivers/hwmon/scmi-hwmon.c                    |  4 +-
+>   drivers/hwmon/scpi-hwmon.c                    |  2 +-
+>   drivers/iio/adc/sun4i-gpadc-iio.c             |  2 +-
+>   drivers/input/touchscreen/sun4i-ts.c          |  2 +-
+>   .../ethernet/chelsio/cxgb4/cxgb4_thermal.c    |  2 +-
+>   .../ethernet/mellanox/mlxsw/core_thermal.c    | 16 +++----
+>   drivers/net/wireless/intel/iwlwifi/mvm/tt.c   |  4 +-
+>   drivers/platform/x86/acerhdf.c                | 19 ++------
+>   drivers/power/supply/power_supply_core.c      |  2 +-
+>   drivers/regulator/max8973-regulator.c         |  2 +-
+>   drivers/thermal/amlogic_thermal.c             |  4 +-
+>   drivers/thermal/armada_thermal.c              | 14 ++----
+>   drivers/thermal/broadcom/bcm2711_thermal.c    |  3 +-
+>   drivers/thermal/broadcom/bcm2835_thermal.c    |  3 +-
+>   drivers/thermal/broadcom/brcmstb_thermal.c    |  8 ++--
+>   drivers/thermal/broadcom/ns-thermal.c         |  2 +-
+>   drivers/thermal/broadcom/sr-thermal.c         |  2 +-
+>   drivers/thermal/da9062-thermal.c              | 13 +++--
+>   drivers/thermal/db8500_thermal.c              |  2 +-
+>   drivers/thermal/dove_thermal.c                |  7 +--
+>   drivers/thermal/hisi_thermal.c                |  5 +-
+>   drivers/thermal/imx8mm_thermal.c              |  4 +-
+>   drivers/thermal/imx_sc_thermal.c              |  9 ++--
+>   drivers/thermal/imx_thermal.c                 | 47 +++++--------------
+>   .../intel/int340x_thermal/int3400_thermal.c   |  2 +-
+>   .../int340x_thermal/int340x_thermal_zone.c    |  4 +-
+>   .../processor_thermal_device_pci.c            |  4 +-
+>   drivers/thermal/intel/intel_pch_thermal.c     |  2 +-
+>   .../thermal/intel/intel_quark_dts_thermal.c   |  6 +--
+>   drivers/thermal/intel/intel_soc_dts_iosf.c    | 13 ++---
+>   drivers/thermal/intel/x86_pkg_temp_thermal.c  |  4 +-
+>   drivers/thermal/k3_bandgap.c                  |  4 +-
+>   drivers/thermal/k3_j72xx_bandgap.c            |  2 +-
+>   drivers/thermal/kirkwood_thermal.c            |  7 +--
+>   drivers/thermal/max77620_thermal.c            |  6 +--
+>   drivers/thermal/mediatek/auxadc_thermal.c     |  4 +-
+>   drivers/thermal/mediatek/lvts_thermal.c       | 10 ++--
+>   drivers/thermal/qcom/qcom-spmi-adc-tm5.c      |  6 +--
+>   drivers/thermal/qcom/qcom-spmi-temp-alarm.c   |  6 +--
+>   drivers/thermal/qcom/tsens.c                  |  6 +--
+>   drivers/thermal/qoriq_thermal.c               |  4 +-
+>   drivers/thermal/rcar_gen3_thermal.c           |  5 +-
+>   drivers/thermal/rcar_thermal.c                |  8 +---
+>   drivers/thermal/rockchip_thermal.c            |  8 +---
+>   drivers/thermal/rzg2l_thermal.c               |  3 +-
+>   drivers/thermal/samsung/exynos_tmu.c          |  4 +-
+>   drivers/thermal/spear_thermal.c               | 10 ++--
+>   drivers/thermal/sprd_thermal.c                |  2 +-
+>   drivers/thermal/st/st_thermal.c               |  5 +-
+>   drivers/thermal/st/stm_thermal.c              |  4 +-
+>   drivers/thermal/sun8i_thermal.c               |  4 +-
+>   drivers/thermal/tegra/soctherm.c              |  6 +--
+>   drivers/thermal/tegra/tegra-bpmp-thermal.c    |  6 ++-
+>   drivers/thermal/tegra/tegra30-tsensor.c       | 31 ++++++------
+>   drivers/thermal/thermal-generic-adc.c         |  7 ++-
+>   drivers/thermal/thermal_core.c                | 18 +++++++
+>   drivers/thermal/thermal_helpers.c             |  3 ++
+>   drivers/thermal/thermal_hwmon.c               |  9 ++--
+>   drivers/thermal/thermal_hwmon.h               |  4 +-
+>   drivers/thermal/thermal_mmio.c                |  2 +-
+>   .../ti-soc-thermal/ti-thermal-common.c        | 10 ++--
+>   drivers/thermal/uniphier_thermal.c            |  2 +-
+>   include/linux/thermal.h                       | 19 ++++++++
+>   67 files changed, 218 insertions(+), 246 deletions(-)
+> 
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
