@@ -2,130 +2,95 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A96DFC678D4
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 10:14:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF553C678D4
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 10:47:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230257AbjCFKOO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 05:14:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39032 "EHLO
+        id S229669AbjCFKrd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 05:47:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230283AbjCFKNm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 05:13:42 -0500
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7BA943C29
-        for <linux-pm@vger.kernel.org>; Mon,  6 Mar 2023 02:13:15 -0800 (PST)
-Received: by mail-wm1-x335.google.com with SMTP id c18so5261033wmr.3
-        for <linux-pm@vger.kernel.org>; Mon, 06 Mar 2023 02:13:15 -0800 (PST)
+        with ESMTP id S229535AbjCFKrc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 05:47:32 -0500
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98DC621952
+        for <linux-pm@vger.kernel.org>; Mon,  6 Mar 2023 02:47:30 -0800 (PST)
+Received: by mail-lj1-x22b.google.com with SMTP id b10so9183668ljr.0
+        for <linux-pm@vger.kernel.org>; Mon, 06 Mar 2023 02:47:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=V0dZrCyZVePxq5BUU/YkTwP3QyVp97gUFcbVu16exZQ=;
-        b=VAMbs2MseNBShP/wYO7DA2LAXa9iQlURyyw2UcYxBUWgG1SUSHRAerNFWwn+z0f/o7
-         4W7fCfgIBC4yFyHNbODj7SqT2jgH6Gpx08FaIUvXoLlL8tZt5GwwYstRBNJkevp2ZRxn
-         9X3DpoRzIXo1hZCwoPE7aJpi7fKO1KAiUW9ljeRaDunHB5XhVI6p8h7p+BPco8Gt12+g
-         P/TN8V73RFa/+VbdF6bG5g8ITB3YTiNfDc9fzz1b3u7Dpw9BpT0Vz+rQKUURCnrr/R80
-         KBDgXbBqCtH0lzDe0ThStkYhzA/fgwiS2sAcPzHaNxTHxTiSB3gou5QeJRksi1FwF3VF
-         +3gA==
+        d=linaro.org; s=google; t=1678099649;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FQCRshdQg1v0si9EwPt4TtPtYK6E589Q6hmnpjPICm4=;
+        b=sJQ7h5p47zK/Pls6m/WmYq2eD0pdis9NeiPwQe7r/SnBuV7R7rJQuFOvO5DFiVmboN
+         ZypGPjScBG1NC09CChgOEVSDRCdJOzI3Qg4HdTqPz9W3y4tcv20ohLEaWZ92fv12932K
+         J0Cs/KEov+jIPfJg3o8SoO6HNu8pjtE0hEHvCbHX+r28Fr1qqLr1kr7/cIS10RW0FjGi
+         JtmULfGos2E5BbjrYTW2NEGOPbt5Se709hErNL6qKSKSXlkFDFKl3sM8MaCjXmTDq736
+         FeOxcS2ZlNobxYKOil8NbhrAWTUghZi1LEiYsvoeYunEtNtqyssCaZeytnvcAvnnbaMC
+         GVcQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=V0dZrCyZVePxq5BUU/YkTwP3QyVp97gUFcbVu16exZQ=;
-        b=l13fV+03zUucMJoD5+C+Rw9g17krjP2De86LheTkMwvgFonY0sd7GF6djMPSZZz4hJ
-         KK8Ua6RNG60L1GaYdtHy6ueQZpNj9JrmJ/H/RLuoQa2QldG2an4sXcbe7V29Uu3Ffa9P
-         UeVPgt0zsZ1YUkh9ADVjPDLp+ISFW02e6VKrOmVTKMV/xMlwNTjPpHLJXS0ijGYYQHi/
-         D6xQDtpTtBbzWMk49pjAbBPAAnm29JJlcnFirAuH8pbiva/8FONgLDDlbnXQVCGDPblh
-         NZlqhrTC7lOlPDzTp2p3weOt5Oix2f4AEx6aJYogwrLYCqoHyuHjssUHfAdxg1n81g9N
-         M78Q==
-X-Gm-Message-State: AO0yUKXPMGDQRsnoTBiDt/jx28BORnb7madErR+reltqPbewJ05DMJGR
-        gid8g9P+WwTG/PRYDzFRfP0jFw==
-X-Google-Smtp-Source: AK7set8pw6NSScyjKceJ3BvlYig59ULCK8zSwQcbBmWA6SGBC1dwfoZQ6UoO/+GVzY+PU3FI4YVnqA==
-X-Received: by 2002:a05:600c:4448:b0:3ea:82a9:3644 with SMTP id v8-20020a05600c444800b003ea82a93644mr8323670wmn.34.1678097590052;
-        Mon, 06 Mar 2023 02:13:10 -0800 (PST)
-Received: from [192.168.0.20] (ip-87.net-80-236-117.rev.numericable.fr. [80.236.117.87])
-        by smtp.gmail.com with ESMTPSA id p13-20020a056000018d00b002c5691f13eesm9251879wrx.50.2023.03.06.02.13.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Mar 2023 02:13:09 -0800 (PST)
-Message-ID: <a328c1c5-7cec-4499-8e5f-92d8cc233d38@baylibre.com>
-Date:   Mon, 6 Mar 2023 11:13:08 +0100
+        d=1e100.net; s=20210112; t=1678099649;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FQCRshdQg1v0si9EwPt4TtPtYK6E589Q6hmnpjPICm4=;
+        b=xYL+m5oSHFBSdViKf+GSTNsUBSxhb5aUWiauWywNdsyrY76t+1Ox1yLGGKeuA4Dp/M
+         y5atuCDXGXjs9bZYlYBm8lhSMEtflMcr5MVH/mNArrhmHnhXQuXAg16djXSJv8+5bh3D
+         2SE0pcCRN0dEB10sD/W/eqP0UrJli6ll759+rmljmY8LmOK409zFdBCkJIyRxkqg8src
+         dT2fN/hluCSZbHYnknMMvTGcGCIvXJOGIBXs/Z8rAUA2bPPuW+zoYvGlTEfjPLe6LJBY
+         4dpAOvLNy2yqIlShMhVlkruQG5f7yzMZLtqRmySpBQlmDvq2j0li03itde2R17jefKFG
+         WtSA==
+X-Gm-Message-State: AO0yUKWj4KBdjGW737/1cs7wwc+M73guI2FVyp9KYvKQNb3zQSC6Hc6u
+        yaGSVXsky8frco4PfR0Tlj8pR6K5VkLZNVCutiDLHw==
+X-Google-Smtp-Source: AK7set/OFxw/Sf4dXegmBrjGIG9BKjWy0BEU/Sp7Ch4KHJbWekGeicsrSc5ir8fOPijVjDZuEyFCPbZGFnvS2ni2cuI=
+X-Received: by 2002:a2e:593:0:b0:295:b0cd:523 with SMTP id 141-20020a2e0593000000b00295b0cd0523mr3059795ljf.6.1678099648880;
+ Mon, 06 Mar 2023 02:47:28 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH v9 0/5] thermal: mediatek: Add support for MT8365 SoC
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+References: <cover.1677063656.git.viresh.kumar@linaro.org> <CABymUCMhoKoFHy8K6-ohrcAbyTpDe0Hig3oUM_wH4Db0-9yx+g@mail.gmail.com>
+ <20230224021713.stpcykx2tjkjwyti@vireshk-i7> <Y/hyf+/EqEeTu436@niej-dt-7B47>
+ <20230227042349.3p2ijo6s6yyqc267@vireshk-i7> <CABymUCNBkr_65JHNVfbUGjxs6rhnj=eUyZ+5j6VtiDwqzLYtcA@mail.gmail.com>
+ <20230227092953.ekh72r5h6xcqgusn@vireshk-i7>
+In-Reply-To: <20230227092953.ekh72r5h6xcqgusn@vireshk-i7>
+From:   Jun Nie <jun.nie@linaro.org>
+Date:   Mon, 6 Mar 2023 18:48:09 +0800
+Message-ID: <CABymUCO4Gb-vALx=qa1q=QNfTJWoqNpT2r3J_xHxhGk7FZE0nQ@mail.gmail.com>
+Subject: Re: [PATCH 0/3] OPP: Simplify set_required_opp handling
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     cw00.choi@samsung.com, Nishanth Menon <nm@ti.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org,
-        Fabien Parent <fparent@baylibre.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Rob Herring <robh@kernel.org>,
-        Markus Schneider-Pargmann <msp@baylibre.com>,
-        Hsin-Yi Wang <hsinyi@chromium.org>,
-        Michael Kao <michael.kao@mediatek.com>
-References: <20221018-up-i350-thermal-bringup-v9-0-55a1ae14af74@baylibre.com>
- <afa4aacd-bacf-a545-3973-474286fd4b9c@linaro.org>
-Content-Language: en-US
-From:   Amjad Ouled-Ameur <aouledameur@baylibre.com>
-In-Reply-To: <afa4aacd-bacf-a545-3973-474286fd4b9c@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+        Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+Viresh Kumar <viresh.kumar@linaro.org> =E4=BA=8E2023=E5=B9=B42=E6=9C=8827=
+=E6=97=A5=E5=91=A8=E4=B8=80 17:29=E5=86=99=E9=81=93=EF=BC=9A
+>
+> On 27-02-23, 17:21, Jun Nie wrote:
+> > Sorry for not expressing it accurately. I should say devfreq devices
+> > pointers, just
+> > devfreq_virt_devs vs genpd_virt_devs. Then you know why I add devfreq-d=
+evs
+> > dts nodes below.
+>
+> Won't something like dev_pm_opp_set_clkname() would be enough here too ? =
+We
+> already do this kind of work for clks and regulators.
 
-On 1/27/23 22:59, Daniel Lezcano wrote:
-> On 27/01/2023 16:44, Amjad Ouled-Ameur wrote:
->> This patchset adds thermal support for MT8365 SoC.
->>
->> MT8365 has 4 thermal sensors, one for CPUs and the rest for debug/dev
->> purposes. The CPU thermal zone uses passive cooling device with
->> CPU{0..3}.
->>
->> Changes in v9:
->> - Use delay between bank init and the thermal zone device register.
->> - Link to v8: https://lore.kernel.org/r/20221018-up-i350-thermal-bringup-v8-0-23e8fbb08837@baylibre.com
->>
->> Signed-off-by: Amjad Ouled-Ameur <aouledameur@baylibre.com>
->> ---
->> Amjad Ouled-Ameur (2):
->>        thermal: mediatek: add callback for raw to mcelsius conversion
->>        thermal: mediatek: add delay after thermal banks initialization
->>
->> Fabien Parent (2):
->>        dt-bindings: thermal: mediatek: add binding documentation for MT8365 SoC
->>        thermal: mediatek: add support for MT8365 SoC
->>
->> Markus Schneider-Pargmann (1):
->>        thermal: mediatek: control buffer enablement tweaks
->>
->>   .../bindings/thermal/mediatek-thermal.txt          |   1 +
->>   drivers/thermal/mtk_thermal.c                      | 117 +++++++++++++++++----
->>   2 files changed, 96 insertions(+), 22 deletions(-)
->> ---
->
-> Applied, with some changes and the subject fixed:
->
-Any news about this patchset ?
+Thanks! It is a possible solution. I will try to spare time on this as
+higher priority tasks
+are on my list.
 
-Kindly,
-
-Amjad
-
-> Subject format for thermal is: thermal/drivers/<thedriver>: [A-Z]*.
 >
-> Thanks
+> Having power domain specific information within CPU nodes isn't a require=
+ment of
+> the OPP core, but the general requirement of genpd core instead.
 >
->   -- Daniel
->
+> --
+> viresh
