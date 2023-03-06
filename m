@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B90B1C6FD1A
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:57:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A7A3C6FD1F
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:57:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229913AbjCFH5v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 02:57:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53424 "EHLO
+        id S229922AbjCFH5w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 02:57:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229821AbjCFH5l (ORCPT
+        with ESMTP id S229819AbjCFH5l (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 02:57:41 -0500
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B4791F483;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A52B1F903;
         Sun,  5 Mar 2023 23:57:40 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3C55E60C61;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7764460C6F;
         Mon,  6 Mar 2023 07:57:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFBF1C43618;
-        Mon,  6 Mar 2023 07:57:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78246C4FF06;
+        Mon,  6 Mar 2023 07:57:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1678089456;
-        bh=NeIGcrfnxzuEqQ2lYCaxM49qcQ7dNB/jhVmGyQIzKIE=;
+        s=k20201202; t=1678089457;
+        bh=a3kuHjgYNyulLZAsEDFoN+UatIjlAmI+HwT51CVFQPY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=f3hONoWWhbpyaoBBmlwVc/kR31DanI9Gi/uwvJBfG1l9yI2gdS7Dl9edRWmr8XFkn
-         U49YdSaMMCoxRUxQMqQ6FNWcxLz0cnVR+F0su3OXOlBWUjc7xDnbDDi1OKjhb0kB4l
-         MHbJDd9sAjNpxU3Jo4xXkWWD4tzKuvLcCxXaRnh8REQSbu2uiokzkS5LkgR2kr1K5m
-         YVavmMbBtpqM87Azq01U9+Giz3m0lj4ujiarIKr/65Ama7IJKcs/6/jgX5wj55/Zcx
-         OxgBvru6IwPOg9uhjzI13rPh8PVRe9KlzLx9WjpvX9F9kc6tY03G7PX1M3W1Lfw3fg
-         UJ284z43LK39A==
+        b=nCrGJEX21WXgcEsGAk4UFHACAs4RlkJw1HpncMmUmsbc89kHB6gA8p6ve9V+R0SXS
+         nbdYLPsPtWWVHGRD4xMXnWkddnVD+GefeSJhWh0kjvLhV7igS0oaOZTJUsADKQnizE
+         JBLjdwMO/QSJHMvlMa9qFuOP6amlCqLPtcCsaj7o7e50+kVjErPAkW7UMgfWfiiiJ9
+         Hbb0EiHc/vLTvOkb5U2bp95rGC7vOYP2gB51Ps+M9zjbWXeVXeJzsCYoH+Y5Gubmes
+         8AC4buwsCi7bUG7Xw0Hj5pkhdo4JXVwLB6SRUmNmsmvnIucW3oQSvJafugKh+FmNTP
+         xvmzLcbitTCLg==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pZ5jd-0000iT-02; Mon, 06 Mar 2023 08:58:17 +0100
+        id 1pZ5jd-0000iy-PL; Mon, 06 Mar 2023 08:58:17 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     "Shawn Guo" <shawnguo@kernel.org>,
@@ -53,10 +53,10 @@ Cc:     "Shawn Guo" <shawnguo@kernel.org>,
         linux-arm-kernel@lists.infradead.org,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org
-Subject: [PATCH v2 14/23] interconnect: exynos: fix node leak in probe PM QoS error path
-Date:   Mon,  6 Mar 2023 08:56:42 +0100
-Message-Id: <20230306075651.2449-15-johan+linaro@kernel.org>
+        Johan Hovold <johan+linaro@kernel.org>
+Subject: [PATCH v2 23/23] interconnect: drop unused icc_link_destroy() interface
+Date:   Mon,  6 Mar 2023 08:56:51 +0100
+Message-Id: <20230306075651.2449-24-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306075651.2449-1-johan+linaro@kernel.org>
 References: <20230306075651.2449-1-johan+linaro@kernel.org>
@@ -66,42 +66,97 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make sure to add the newly allocated interconnect node to the provider
-before adding the PM QoS request so that the node is freed on errors.
+Now that the link array is deallocated when destroying nodes and the
+explicit link removal has been dropped from the exynos driver there are
+no further users of and no need for the icc_link_destroy() interface.
 
-Fixes: 2f95b9d5cf0b ("interconnect: Add generic interconnect driver for Exynos SoCs")
-Cc: stable@vger.kernel.org      # 5.11
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/interconnect/samsung/exynos.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/interconnect/core.c           | 46 ---------------------------
+ include/linux/interconnect-provider.h |  6 ----
+ 2 files changed, 52 deletions(-)
 
-diff --git a/drivers/interconnect/samsung/exynos.c b/drivers/interconnect/samsung/exynos.c
-index 6559d8cf8068..e70665899482 100644
---- a/drivers/interconnect/samsung/exynos.c
-+++ b/drivers/interconnect/samsung/exynos.c
-@@ -149,6 +149,9 @@ static int exynos_generic_icc_probe(struct platform_device *pdev)
- 				 &priv->bus_clk_ratio))
- 		priv->bus_clk_ratio = EXYNOS_ICC_DEFAULT_BUS_CLK_RATIO;
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index fd12f109c05e..6315d4256ac1 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -862,52 +862,6 @@ int icc_link_create(struct icc_node *node, const int dst_id)
+ }
+ EXPORT_SYMBOL_GPL(icc_link_create);
  
-+	icc_node->data = priv;
-+	icc_node_add(icc_node, provider);
-+
- 	/*
- 	 * Register a PM QoS request for the parent (devfreq) device.
- 	 */
-@@ -157,9 +160,6 @@ static int exynos_generic_icc_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto err_node_del;
- 
--	icc_node->data = priv;
--	icc_node_add(icc_node, provider);
+-/**
+- * icc_link_destroy() - destroy a link between two nodes
+- * @src: pointer to source node
+- * @dst: pointer to destination node
+- *
+- * Return: 0 on success, or an error code otherwise
+- */
+-int icc_link_destroy(struct icc_node *src, struct icc_node *dst)
+-{
+-	struct icc_node **new;
+-	size_t slot;
+-	int ret = 0;
 -
- 	icc_parent_node = exynos_icc_get_parent(bus_dev->of_node);
- 	if (IS_ERR(icc_parent_node)) {
- 		ret = PTR_ERR(icc_parent_node);
+-	if (IS_ERR_OR_NULL(src))
+-		return -EINVAL;
+-
+-	if (IS_ERR_OR_NULL(dst))
+-		return -EINVAL;
+-
+-	mutex_lock(&icc_lock);
+-
+-	for (slot = 0; slot < src->num_links; slot++)
+-		if (src->links[slot] == dst)
+-			break;
+-
+-	if (WARN_ON(slot == src->num_links)) {
+-		ret = -ENXIO;
+-		goto out;
+-	}
+-
+-	src->links[slot] = src->links[--src->num_links];
+-
+-	new = krealloc(src->links, src->num_links * sizeof(*src->links),
+-		       GFP_KERNEL);
+-	if (new)
+-		src->links = new;
+-	else
+-		ret = -ENOMEM;
+-
+-out:
+-	mutex_unlock(&icc_lock);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(icc_link_destroy);
+-
+ /**
+  * icc_node_add() - add interconnect node to interconnect provider
+  * @node: pointer to the interconnect node
+diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
+index b9af9016a95e..e6d8aca6886d 100644
+--- a/include/linux/interconnect-provider.h
++++ b/include/linux/interconnect-provider.h
+@@ -118,7 +118,6 @@ int icc_std_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+ struct icc_node *icc_node_create(int id);
+ void icc_node_destroy(int id);
+ int icc_link_create(struct icc_node *node, const int dst_id);
+-int icc_link_destroy(struct icc_node *src, struct icc_node *dst);
+ void icc_node_add(struct icc_node *node, struct icc_provider *provider);
+ void icc_node_del(struct icc_node *node);
+ int icc_nodes_remove(struct icc_provider *provider);
+@@ -150,11 +149,6 @@ static inline int icc_link_create(struct icc_node *node, const int dst_id)
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline int icc_link_destroy(struct icc_node *src, struct icc_node *dst)
+-{
+-	return -ENOTSUPP;
+-}
+-
+ static inline void icc_node_add(struct icc_node *node, struct icc_provider *provider)
+ {
+ }
 -- 
 2.39.2
 
