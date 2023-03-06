@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA7DC6FD1A
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:57:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FD87C7619A
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:57:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229829AbjCFH5m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 02:57:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53364 "EHLO
+        id S229843AbjCFH5o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 02:57:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229782AbjCFH5k (ORCPT
+        with ESMTP id S229788AbjCFH5k (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 02:57:40 -0500
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06AFA1A66C;
-        Sun,  5 Mar 2023 23:57:38 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 119FE1F5DC;
+        Sun,  5 Mar 2023 23:57:39 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 8A992B80CA8;
+        by ams.source.kernel.org (Postfix) with ESMTPS id B28BCB80CA7;
         Mon,  6 Mar 2023 07:57:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F959C433D2;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 45DE2C4339B;
         Mon,  6 Mar 2023 07:57:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1678089456;
-        bh=jIxvGcg8R4JnPiV+2ZOLe9PDqfcIqFNohn8cYUw76ns=;
+        bh=Gq0h6KWRJ7+7NQjJFlZM0IIfLOQXyWOu463epBupeVE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=nLgMBLprli7Ul7vTq7CJUfhUoyLCZ57BMb5u7f74sjrik5lQ7NcZHwdtHEoVuO4J8
-         e95ElgAquoOeaTh2Gv591dlk2F/nAcWJ0hBxeGepJ1IkWbjzE5V0LCG2Aw8lqPQ5ns
-         Irx0XLCTPPBbyjLuFnEsaaPvhSMItq744krE5DgPaICVSu38CahIQSdiOR/yYmnEL7
-         /ny9OUBQZw4yL3a1jgJL4JBw7JBtMRANw5Cu4HYNdwezz8oimqdeI4FSOzBYQ5Bodh
-         ftahkMMDqY2G/I5PehhU8z1ZdhYEx9p8XQO5IvQbOE55zmBBU7zRxsl5fXyInwQSNR
-         ucmMWYGQwxNPQ==
+        b=WRVn3Mena1i634HIHPWixQ/g1cfQETDXfXhBJGyPbNQ2zD0uRLBLLdX6lmKQBQRkf
+         0w0PC3EPFc1n7Gfqg6Tt+p005RchBMtNChwFTj+ZAyCoAaZFy0unjM0ozuy9HwFIEQ
+         fJVXcORUbnHtC6JYGafTiUcBCtJcj1Y/rWtvG2qcpuHixgnRcis+MncYc4/RdtuflY
+         KO10M3uLJUpywRlZZvIU9pN9ZeLKNPZS2uvrDkTRjP4AANF8rQhZz8j0DI5j94hyHv
+         ScxbeNuAwSau22/oKtyISv9Joc28MZrW40YPJFc4Wsy5LjMYjfI4QcZSx7r1lrD13c
+         1Y//i9567+Kng==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pZ5jc-0000i3-7R; Mon, 06 Mar 2023 08:58:16 +0100
+        id 1pZ5jb-0000hv-Rs; Mon, 06 Mar 2023 08:58:15 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     "Shawn Guo" <shawnguo@kernel.org>,
@@ -54,9 +54,9 @@ Cc:     "Shawn Guo" <shawnguo@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org
-Subject: [PATCH v2 06/23] interconnect: qcom: rpm: fix probe child-node error handling
-Date:   Mon,  6 Mar 2023 08:56:34 +0100
-Message-Id: <20230306075651.2449-7-johan+linaro@kernel.org>
+Subject: [PATCH v2 02/23] interconnect: fix icc_provider_del() error handling
+Date:   Mon,  6 Mar 2023 08:56:30 +0100
+Message-Id: <20230306075651.2449-3-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306075651.2449-1-johan+linaro@kernel.org>
 References: <20230306075651.2449-1-johan+linaro@kernel.org>
@@ -66,35 +66,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make sure to clean up and release resources properly also in case probe
-fails when populating child devices.
+The interconnect framework currently expects that providers are only
+removed when there are no users and after all nodes have been removed.
 
-Fixes: e39bf2972c6e ("interconnect: icc-rpm: Support child NoC device probe")
-Cc: stable@vger.kernel.org      # 5.17
+There is currently nothing that guarantees this to be the case and the
+framework does not do any reference counting, but refusing to remove the
+provider is never correct as that would leave a dangling pointer to a
+resource that is about to be released in the global provider list (e.g.
+accessible through debugfs).
+
+Replace the current sanity checks with WARN_ON() so that the provider is
+always removed.
+
+Fixes: 11f1ceca7031 ("interconnect: Add generic on-chip interconnect API")
+Cc: stable@vger.kernel.org      # 5.1: 680f8666baf6: interconnect: Make icc_provider_del() return void
 Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/interconnect/qcom/icc-rpm.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/interconnect/core.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index df3196f72536..91778cfcbc65 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -541,8 +541,11 @@ int qnoc_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, qp);
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 5217f449eeec..cabb6f5df83e 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -1065,18 +1065,8 @@ EXPORT_SYMBOL_GPL(icc_provider_add);
+ void icc_provider_del(struct icc_provider *provider)
+ {
+ 	mutex_lock(&icc_lock);
+-	if (provider->users) {
+-		pr_warn("interconnect provider still has %d users\n",
+-			provider->users);
+-		mutex_unlock(&icc_lock);
+-		return;
+-	}
+-
+-	if (!list_empty(&provider->nodes)) {
+-		pr_warn("interconnect provider still has nodes\n");
+-		mutex_unlock(&icc_lock);
+-		return;
+-	}
++	WARN_ON(provider->users);
++	WARN_ON(!list_empty(&provider->nodes));
  
- 	/* Populate child NoC devices if any */
--	if (of_get_child_count(dev->of_node) > 0)
--		return of_platform_populate(dev->of_node, NULL, NULL, dev);
-+	if (of_get_child_count(dev->of_node) > 0) {
-+		ret = of_platform_populate(dev->of_node, NULL, NULL, dev);
-+		if (ret)
-+			goto err;
-+	}
- 
- 	return 0;
- err:
+ 	list_del(&provider->provider_list);
+ 	mutex_unlock(&icc_lock);
 -- 
 2.39.2
 
