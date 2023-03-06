@@ -2,105 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD010C6FD1A
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 06:40:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B17B9C678D4
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:57:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229509AbjCFGkN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 01:40:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51846 "EHLO
+        id S229556AbjCFH5j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 02:57:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229558AbjCFGkM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 01:40:12 -0500
-Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56887CDDC
-        for <linux-pm@vger.kernel.org>; Sun,  5 Mar 2023 22:40:10 -0800 (PST)
-Received: by mail-ed1-x52a.google.com with SMTP id cy23so33963368edb.12
-        for <linux-pm@vger.kernel.org>; Sun, 05 Mar 2023 22:40:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1678084809;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=g0uHF9zbKg9xgGKwpWcbugNvxA7barkTYqPCS14uJCo=;
-        b=VbE4JMgrkkl1MBtWejm+B80EuU0h9oiIsNHafwLTvSN6MDfwod2pHIbSFlOhkxSq5Z
-         InHrMN7yCJvx+qXa0zoSe16OEzVamDvSbfeohWZHc9QRx/rFJ8JAvK9ceYSYasN2t1Sf
-         PlZdn566afyWm6RvagBWWBCUDxPld3nUGPzdk6rVC0ez2Tc5LuADp14mJVt4lRF8hgIH
-         mYMwUI1N7Voe+9VKEKwfgyWkH7AnmRGc5iuLsq22KaEe65km2y3oCe4+kCp3PPJGjCRl
-         kRTpB/Tt6WcHWGH0AF+JGFyvEh4N1gwPaYeZf1BX5HH7nPIuiQIfOwLGtPP48+vv2gVa
-         VrFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678084809;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=g0uHF9zbKg9xgGKwpWcbugNvxA7barkTYqPCS14uJCo=;
-        b=rCxL7Q5MkklDXcFPz2HavMDDzFgby/rCLOe/+I45apiSb6uxyqCJPqmyBVaZz34WGE
-         C26jvvXxSc9Te8hiYWK6zGlSVruY7AzyWUI/s6M/zlf3qJZsywSLpDMHD8mJUtH8T8qS
-         jjJ32Na7WG++8sKvBB+FD3XY8EvTDYdmZb9g/WrLQlJWrBnZ0rKc1eX4y4Rl5FkSYjRx
-         2ZwIlLm3bWMA3mev95ErnNgqc2gNmL0jNwB+fq8hlvuPm3nKbndVYPeb6t11wHqMjqs1
-         7ekFDUt6Zn0WiMauXA4vVtHhxpWwy7RoGVSukwqHlhOb7xUvFYiOmO7j4nrcubL/AoUe
-         fMlg==
-X-Gm-Message-State: AO0yUKWizCOIyr0EZMqAUr7iTAIVLRYIKR2zBkpZ+fA4iu0TVNvI9OwK
-        QEKicOda9Hp6FB4dyNU1dn6Dsg==
-X-Google-Smtp-Source: AK7set+6bC7/gAUXyQTO7c8DnH6zWltFHUoEf51GIWHyj5fNPnCguigPLn4YgHzvAa/+o6mgAp4Lzw==
-X-Received: by 2002:a17:906:9451:b0:8e1:d996:dca2 with SMTP id z17-20020a170906945100b008e1d996dca2mr8961058ejx.64.1678084808873;
-        Sun, 05 Mar 2023 22:40:08 -0800 (PST)
-Received: from ?IPV6:2a02:810d:15c0:828:d85d:5a4b:9830:fcfe? ([2a02:810d:15c0:828:d85d:5a4b:9830:fcfe])
-        by smtp.gmail.com with ESMTPSA id f3-20020a170906738300b008cf377e8795sm4125659ejl.199.2023.03.05.22.40.07
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 05 Mar 2023 22:40:08 -0800 (PST)
-Message-ID: <a5db2529-6f45-1267-bc08-019059cf29d2@linaro.org>
-Date:   Mon, 6 Mar 2023 07:40:07 +0100
+        with ESMTP id S229535AbjCFH5i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 02:57:38 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E0E9193E6;
+        Sun,  5 Mar 2023 23:57:37 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id ED4F960C24;
+        Mon,  6 Mar 2023 07:57:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 431BFC4339C;
+        Mon,  6 Mar 2023 07:57:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1678089456;
+        bh=x7c24nw5EsIIq8C+xhEW9SJzZNdBgRpXVyxPgn2uGaQ=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=RVoRdwHGmeMtMPQ5TjivD9CJFhUo4FyjgJ2AVZn2Q7Ow2PgektAAVOa68GROZsOFy
+         KD2PyEtCXnorEv56biJX1Cbb5swuj6QHkmSatqlDTnz7Cd2lQXOuDDVKCbzZrhTd+F
+         vMx+MP3RAFT4MfHY+ZogmNvwakF4yI7kH3TgKAuMpyM1cbWYPZDIIDij/gAxxvA70E
+         Ed5OMQ5MfyVvBxNzB1VG58DODM9OEd7wNQpY2vOJll6d+3piWYQP8P2Ew+cn6YKlnG
+         aZ45BA9wOVOTCyxa0S89b3ZbXsqTzL+7JDSaPJAS+NLvsnII/Tt+a+gM22cjeHF8W5
+         6PLmvYqBb8w4w==
+Received: from johan by xi.lan with local (Exim 4.94.2)
+        (envelope-from <johan+linaro@kernel.org>)
+        id 1pZ5jc-0000i5-9y; Mon, 06 Mar 2023 08:58:16 +0100
+From:   Johan Hovold <johan+linaro@kernel.org>
+To:     Georgi Djakov <djakov@kernel.org>
+Cc:     "Shawn Guo" <shawnguo@kernel.org>,
+        "Sascha Hauer" <s.hauer@pengutronix.de>,
+        "Pengutronix Kernel Team" <kernel@pengutronix.de>,
+        "Fabio Estevam" <festevam@gmail.com>,
+        "NXP Linux Team" <linux-imx@nxp.com>,
+        "Andy Gross" <agross@kernel.org>,
+        "Bjorn Andersson" <andersson@kernel.org>,
+        "Konrad Dybcio" <konrad.dybcio@linaro.org>,
+        "Sylwester Nawrocki" <s.nawrocki@samsung.com>,
+        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
+        "Krzysztof Kozlowski" <krzysztof.kozlowski@linaro.org>,
+        "Alim Akhtar" <alim.akhtar@samsung.com>,
+        "Thierry Reding" <thierry.reding@gmail.com>,
+        "Jonathan Hunter" <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org,
+        Yassine Oudjana <y.oudjana@protonmail.com>
+Subject: [PATCH v2 07/23] interconnect: qcom: rpm: fix probe PM domain error handling
+Date:   Mon,  6 Mar 2023 08:56:35 +0100
+Message-Id: <20230306075651.2449-8-johan+linaro@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230306075651.2449-1-johan+linaro@kernel.org>
+References: <20230306075651.2449-1-johan+linaro@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH 4/6] ARM: dts: imx6ul: Fix second GPT compatible
-Content-Language: en-US
-To:     Stefan Wahren <stefan.wahren@i2se.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>
-Cc:     linux-imx@nxp.com, Marek Vasut <marex@denx.de>,
-        Alexander Stein <alexander.stein@ew.tq-group.com>,
-        linux-crypto@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-References: <20230305225901.7119-1-stefan.wahren@i2se.com>
- <20230305225901.7119-5-stefan.wahren@i2se.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230305225901.7119-5-stefan.wahren@i2se.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/03/2023 23:58, Stefan Wahren wrote:
-> According to the imxgpt DT schema all i.MX6 GPT IP is
+Make sure to disable clocks also in case attaching the power domain
+fails.
 
-That's not true... you just changed the bindings to say that.
+Fixes: 7de109c0abe9 ("interconnect: icc-rpm: Add support for bus power domain")
+Cc: stable@vger.kernel.org      # 5.17
+Cc: Yassine Oudjana <y.oudjana@protonmail.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+---
+ drivers/interconnect/qcom/icc-rpm.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-> derived from imx6dl. So fix the imx6ul DTS accordingly
-> and avoid dtbs_check warnings.
-> 
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> ---
->  arch/arm/boot/dts/imx6ul.dtsi | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/imx6ul.dtsi b/arch/arm/boot/dts/imx6ul.dtsi
-> index f0a9139748b8..65b2c6c131b3 100644
-> --- a/arch/arm/boot/dts/imx6ul.dtsi
-> +++ b/arch/arm/boot/dts/imx6ul.dtsi
-> @@ -448,7 +448,7 @@ can2: can@2094000 {
->  			};
->  
->  			gpt1: timer@2098000 {
-> -				compatible = "fsl,imx6ul-gpt", "fsl,imx6sx-gpt";
-> +				compatible = "fsl,imx6ul-gpt", "fsl,imx6dl-gpt";
-
-
-Best regards,
-Krzysztof
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 91778cfcbc65..da595059cafd 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -498,8 +498,7 @@ int qnoc_probe(struct platform_device *pdev)
+ 
+ 	if (desc->has_bus_pd) {
+ 		ret = dev_pm_domain_attach(dev, true);
+-		if (ret)
+-			return ret;
++		goto err_disable_clks;
+ 	}
+ 
+ 	provider = &qp->provider;
+@@ -514,8 +513,7 @@ int qnoc_probe(struct platform_device *pdev)
+ 	ret = icc_provider_add(provider);
+ 	if (ret) {
+ 		dev_err(dev, "error adding interconnect provider: %d\n", ret);
+-		clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+-		return ret;
++		goto err_disable_clks;
+ 	}
+ 
+ 	for (i = 0; i < num_nodes; i++) {
+@@ -550,8 +548,9 @@ int qnoc_probe(struct platform_device *pdev)
+ 	return 0;
+ err:
+ 	icc_nodes_remove(provider);
+-	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+ 	icc_provider_del(provider);
++err_disable_clks:
++	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+ 
+ 	return ret;
+ }
+-- 
+2.39.2
 
