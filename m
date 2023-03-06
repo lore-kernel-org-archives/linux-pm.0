@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63F3AC7618E
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D658EC76195
 	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:58:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229842AbjCFH6F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 02:58:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53408 "EHLO
+        id S229983AbjCFH6G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 02:58:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53350 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229809AbjCFH5l (ORCPT
+        with ESMTP id S229811AbjCFH5l (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 02:57:41 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDFB51F5FF;
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDC3E1B54F;
         Sun,  5 Mar 2023 23:57:39 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 2BE4960C50;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 31D8760C5E;
         Mon,  6 Mar 2023 07:57:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CAF4C4332C;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E98EC432C6;
         Mon,  6 Mar 2023 07:57:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1678089456;
-        bh=anovdmL3aAHVJRDfMh2hiULmvFOGTgCUrSJmOs8aado=;
+        bh=WNlDzMAqt5q/CNBKwmZZhn/yDyiT8ouCBiWMDKsMkEU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=m1cZgflFUTaLPjzJmbTYmkLU7kURsoNxkRt6ywFFPd+ZpaogP2CCQKMcBVVvRW9y9
-         QnukezqHBu0zKu9uhIZt3SGtY7OvJ2/gUETuD6vP76+v+doBq9JpT55k1IhQkd44vy
-         xZh6pn0l7gSY89duAXMFDWwxd4sld95XS41knyGTs3GZreDfvmzJapV+zhP32t3GHG
-         GaJWIQvNeM0rAtDRKSzNCyVxU0Og+3dhMjLbA4DReCLWVQqjDee5TfppKWPo0GoMEH
-         JhIszz/BXKL+qAcyeL0BiVj0LZPFhMmZNMrL4hqalMUcluTRYdCjwLAZMSS0rK2sw1
-         77q+QvKBhVfJw==
+        b=TQbeL/TnSrTU74g4MfD1rt07VPxAMBk+NUs+S1f9fzZIoQVrrZcAY+BZx91Pptjpr
+         mXxN7Uy7WIllYAftmRVrEkcgXHfulRRmwVCtUWfUp8krBPzeJSvqi8o+Rt7LKD0rql
+         pVs1we5Pk9g37BUuALHSmMxSkDVRoBGyM8yc0Bag6eMjnz+vLaqjZMkJRKjOigCezk
+         KoK6WyYxgVbRZf8QRJLt2QEY3NKiwghRCkbDmVcS5zIMSnrs5O+9Dbd2XZzEKGylwv
+         Dgt34o2ulc6NX5Df7eQVkqzOhazGvjLfJfpJ+nZ4pBKSHhO2rUb8qmYNwH0+37bcs7
+         sal6o6VVfl8iw==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pZ5jc-0000i9-GE; Mon, 06 Mar 2023 08:58:16 +0100
+        id 1pZ5jc-0000iN-Pm; Mon, 06 Mar 2023 08:58:16 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     "Shawn Guo" <shawnguo@kernel.org>,
@@ -54,10 +54,10 @@ Cc:     "Shawn Guo" <shawnguo@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org,
-        Luca Weiss <luca.weiss@fairphone.com>
-Subject: [PATCH v2 09/23] interconnect: qcom: rpmh: fix probe child-node error handling
-Date:   Mon,  6 Mar 2023 08:56:37 +0100
-Message-Id: <20230306075651.2449-10-johan+linaro@kernel.org>
+        Vinod Koul <vkoul@kernel.org>
+Subject: [PATCH v2 12/23] interconnect: qcom: sm8450: fix registration race
+Date:   Mon,  6 Mar 2023 08:56:40 +0100
+Message-Id: <20230306075651.2449-13-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306075651.2449-1-johan+linaro@kernel.org>
 References: <20230306075651.2449-1-johan+linaro@kernel.org>
@@ -67,36 +67,90 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make sure to clean up and release resources properly also in case probe
-fails when populating child devices.
+The current interconnect provider registration interface is inherently
+racy as nodes are not added until the after adding the provider. This
+can specifically cause racing DT lookups to fail.
 
-Fixes: 57eb14779dfd ("interconnect: qcom: icc-rpmh: Support child NoC device probe")
-Cc: stable@vger.kernel.org      # 6.0
-Cc: Luca Weiss <luca.weiss@fairphone.com>
+Switch to using the new API where the provider is not registered until
+after it has been fully initialised.
+
+Fixes: fafc114a468e ("interconnect: qcom: Add SM8450 interconnect provider driver")
+Cc: stable@vger.kernel.org      # 5.17
 Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Reviewed-by: Vinod Koul <vkoul@kernel.org>
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/interconnect/qcom/icc-rpmh.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/interconnect/qcom/sm8450.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
-index fd17291c61eb..5168bbf3d92f 100644
---- a/drivers/interconnect/qcom/icc-rpmh.c
-+++ b/drivers/interconnect/qcom/icc-rpmh.c
-@@ -235,8 +235,11 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
+diff --git a/drivers/interconnect/qcom/sm8450.c b/drivers/interconnect/qcom/sm8450.c
+index e3a12e3d6e06..c7a8bbf102a3 100644
+--- a/drivers/interconnect/qcom/sm8450.c
++++ b/drivers/interconnect/qcom/sm8450.c
+@@ -1876,9 +1876,10 @@ static int qnoc_probe(struct platform_device *pdev)
+ 	provider->pre_aggregate = qcom_icc_pre_aggregate;
+ 	provider->aggregate = qcom_icc_aggregate;
+ 	provider->xlate_extended = qcom_icc_xlate_extended;
+-	INIT_LIST_HEAD(&provider->nodes);
+ 	provider->data = data;
+ 
++	icc_provider_init(provider);
++
+ 	qp->dev = &pdev->dev;
+ 	qp->bcms = desc->bcms;
+ 	qp->num_bcms = desc->num_bcms;
+@@ -1887,12 +1888,6 @@ static int qnoc_probe(struct platform_device *pdev)
+ 	if (IS_ERR(qp->voter))
+ 		return PTR_ERR(qp->voter);
+ 
+-	ret = icc_provider_add(provider);
+-	if (ret) {
+-		dev_err(&pdev->dev, "error adding interconnect provider\n");
+-		return ret;
+-	}
+-
+ 	for (i = 0; i < qp->num_bcms; i++)
+ 		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
+ 
+@@ -1905,7 +1900,7 @@ static int qnoc_probe(struct platform_device *pdev)
+ 		node = icc_node_create(qnodes[i]->id);
+ 		if (IS_ERR(node)) {
+ 			ret = PTR_ERR(node);
+-			goto err;
++			goto err_remove_nodes;
+ 		}
+ 
+ 		node->name = qnodes[i]->name;
+@@ -1919,12 +1914,17 @@ static int qnoc_probe(struct platform_device *pdev)
+ 	}
+ 	data->num_nodes = num_nodes;
+ 
++	ret = icc_provider_register(provider);
++	if (ret)
++		goto err_remove_nodes;
++
  	platform_set_drvdata(pdev, qp);
  
- 	/* Populate child NoC devices if any */
--	if (of_get_child_count(dev->of_node) > 0)
--		return of_platform_populate(dev->of_node, NULL, NULL, dev);
-+	if (of_get_child_count(dev->of_node) > 0) {
-+		ret = of_platform_populate(dev->of_node, NULL, NULL, dev);
-+		if (ret)
-+			goto err;
-+	}
+ 	return 0;
+-err:
++
++err_remove_nodes:
+ 	icc_nodes_remove(provider);
+-	icc_provider_del(provider);
++
+ 	return ret;
+ }
+ 
+@@ -1932,8 +1932,8 @@ static int qnoc_remove(struct platform_device *pdev)
+ {
+ 	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+ 
++	icc_provider_deregister(&qp->provider);
+ 	icc_nodes_remove(&qp->provider);
+-	icc_provider_del(&qp->provider);
  
  	return 0;
- err:
+ }
 -- 
 2.39.2
 
