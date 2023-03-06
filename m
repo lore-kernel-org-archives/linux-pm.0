@@ -2,153 +2,158 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED938C61DA4
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:58:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AC6FC6FD19
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 08:33:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230027AbjCFH6T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 02:58:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53334 "EHLO
+        id S229998AbjCFIdp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 03:33:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229746AbjCFH5j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 02:57:39 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E33A1F483;
-        Sun,  5 Mar 2023 23:57:38 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B2DFC60C36;
-        Mon,  6 Mar 2023 07:57:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7A23DC43328;
-        Mon,  6 Mar 2023 07:57:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1678089456;
-        bh=41sHnm8Gk66gNaueab+0gD7hJ3ZMMZErdrBEJqMHwTc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=NNxpMUaorJMhr0+2zcZBGfNrOq7pCVxYxqfEzLa+aKxgRrq6Qe8c5roWNb0n0vbku
-         HCLSOSHCtF8zhJ7PFt7YyXAckIJlLZR2Qmi6AcNL5UOYUx8Auu4mm+SlKgz8LZqYfx
-         4oQtYQFwoKhXmOtuVQfGdpdQGNlDmqDYKgVeBdNdHzbZYuYAwLyccRPXyWeOG140Ro
-         t9jkXcmNw5IoWGPsCakFpIgtL9c9+u4KUE/n3Pv+scOANswbLQrRGurd8Ve9N7fbew
-         fiVHUZn7pAdwA2oJ6/DMzuyoXCTFt3bLLxz3kA9QbeodxAkGK/+SlTgw8qBf1s+Z6I
-         zY5zM8nH9c5Hw==
-Received: from johan by xi.lan with local (Exim 4.94.2)
-        (envelope-from <johan+linaro@kernel.org>)
-        id 1pZ5jc-0000iI-NI; Mon, 06 Mar 2023 08:58:16 +0100
-From:   Johan Hovold <johan+linaro@kernel.org>
-To:     Georgi Djakov <djakov@kernel.org>
-Cc:     "Shawn Guo" <shawnguo@kernel.org>,
-        "Sascha Hauer" <s.hauer@pengutronix.de>,
-        "Pengutronix Kernel Team" <kernel@pengutronix.de>,
-        "Fabio Estevam" <festevam@gmail.com>,
-        "NXP Linux Team" <linux-imx@nxp.com>,
-        "Andy Gross" <agross@kernel.org>,
-        "Bjorn Andersson" <andersson@kernel.org>,
-        "Konrad Dybcio" <konrad.dybcio@linaro.org>,
-        "Sylwester Nawrocki" <s.nawrocki@samsung.com>,
-        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
-        "Krzysztof Kozlowski" <krzysztof.kozlowski@linaro.org>,
-        "Alim Akhtar" <alim.akhtar@samsung.com>,
-        "Thierry Reding" <thierry.reding@gmail.com>,
-        "Jonathan Hunter" <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org,
-        Brian Masney <bmasney@redhat.com>
-Subject: [PATCH v2 11/23] interconnect: qcom: msm8974: fix registration race
-Date:   Mon,  6 Mar 2023 08:56:39 +0100
-Message-Id: <20230306075651.2449-12-johan+linaro@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230306075651.2449-1-johan+linaro@kernel.org>
-References: <20230306075651.2449-1-johan+linaro@kernel.org>
+        with ESMTP id S229963AbjCFIdn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 03:33:43 -0500
+X-Greylist: delayed 966 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 06 Mar 2023 00:33:03 PST
+Received: from smtp16.bhosted.nl (smtp16.bhosted.nl [IPv6:2a02:9e0:8000::27])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E3ED1E2A2
+        for <linux-pm@vger.kernel.org>; Mon,  6 Mar 2023 00:33:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=protonic.nl; s=202111;
+        h=message-id:references:in-reply-to:reply-to:subject:cc:to:from:date:
+         content-transfer-encoding:content-type:mime-version:from;
+        bh=iGJBerep9CUnwc0kKc070FLg5wgjahdY5flMGzZYQMs=;
+        b=oDYibHiF3QQbdSnLfVFRXWqS6z3NQmb6kugL8YV+AzvXesLHyr5JzoQv36TlUtoc6W5KCotN1l9wN
+         9LSOB4Bu9Yfgb0XpMplMCVfXibebalo7a5aESxI1lFy0L3DA6RZo6UFgR79W8gl98jQrxQ/tLvd2T2
+         0xEQnuRgzH1ORWF+wpRq+raboR/TqFqi3nosbBYytoNMkARO5GE2FASMRvbgozacXT968pNevzID08
+         kd2Bb6hh7pzuv819gTpRFHFjwmhc4+RnlmqnZW8aNjXY3z24ty79Y1uQG7spYocRbf484LhNNLEwf4
+         6CAVA7hl0v6jQA7FXN1mdH2h85/uHYw==
+X-MSG-ID: 412d5329-bbf7-11ed-829c-0050569d2c73
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
 Content-Transfer-Encoding: 8bit
+Date:   Mon, 06 Mar 2023 09:16:54 +0100
+From:   Robin van der Gracht <robin@protonic.nl>
+To:     Rob Herring <robh@kernel.org>
+Cc:     devicetree@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-i2c@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+        netdev@vger.kernel.org, linux-can@vger.kernel.org,
+        linux-wireless@vger.kernel.org, linux-pm@vger.kernel.org,
+        alsa-devel@alsa-project.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: Fix SPI and I2C bus node names in examples
+Organization: Protonic Holland
+Reply-To: robin@protonic.nl
+Mail-Reply-To: robin@protonic.nl
+In-Reply-To: <CANiq72mm9qX8uuS2y_vvtcza2hAgG3zFEy24koQTfSEOWkKDYQ@mail.gmail.com>
+References: <20230228215433.3944508-1-robh@kernel.org>
+ <CANiq72mm9qX8uuS2y_vvtcza2hAgG3zFEy24koQTfSEOWkKDYQ@mail.gmail.com>
+Message-ID: <61190cb766083d73ef3b1455dcf3ff61@protonic.nl>
+X-Sender: robin@protonic.nl
+User-Agent: Roundcube Webmail/1.3.1 
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The current interconnect provider registration interface is inherently
-racy as nodes are not added until the after adding the provider. This
-can specifically cause racing DT lookups to fail.
+> From: Rob Herring <robh@kernel.org>
+> Date: Tue, Feb 28, 2023 at 10:54 PM
+> Subject: [PATCH] dt-bindings: Fix SPI and I2C bus node names in 
+> examples
+> To: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> Cc: <devicetree@vger.kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
+> Benson Leung <bleung@chromium.org>, Guenter Roeck
+> <groeck@chromium.org>, Stephen Boyd <sboyd@kernel.org>, Andrzej Hajda
+> <andrzej.hajda@intel.com>, Neil Armstrong <neil.armstrong@linaro.org>,
+> Robert Foss <rfoss@kernel.org>, Thierry Reding
+> <thierry.reding@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, MyungJoo
+> Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>,
+> Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski
+> <brgl@bgdev.pl>, Pavel Machek <pavel@ucw.cz>, Lee Jones
+> <lee@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, David S.
+> Miller <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+> Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+> Wolfgang Grandegger <wg@grandegger.com>, Kalle Valo
+> <kvalo@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Brown
+> <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+> <linux-clk@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+> <linux-gpio@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+> <linux-leds@vger.kernel.org>, <linux-media@vger.kernel.org>,
+> <netdev@vger.kernel.org>, <linux-can@vger.kernel.org>,
+> <linux-wireless@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+> <alsa-devel@alsa-project.org>, <linux-usb@vger.kernel.org>
+> 
+> 
+> SPI and I2C bus node names are expected to be "spi" or "i2c",
+> respectively, with nothing else, a unit-address, or a '-N' index. A
+> pattern of 'spi0' or 'i2c0' or similar has crept in. Fix all these
+> cases. Mostly scripted with the following commands:
+> 
+> git grep -l '\si2c[0-9] {' Documentation/devicetree/ | xargs sed -i -e
+> 's/i2c[0-9] {/i2c {/'
+> git grep -l '\sspi[0-9] {' Documentation/devicetree/ | xargs sed -i -e
+> 's/spi[0-9] {/spi {/'
+> 
+> With this, a few errors in examples were exposed and fixed.
+> 
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> Cc: Miguel Ojeda <ojeda@kernel.org>
+> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> Cc: Benson Leung <bleung@chromium.org>
+> Cc: Guenter Roeck <groeck@chromium.org>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: Andrzej Hajda <andrzej.hajda@intel.com>
+> Cc: Neil Armstrong <neil.armstrong@linaro.org>
+> Cc: Robert Foss <rfoss@kernel.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Bartosz Golaszewski <brgl@bgdev.pl>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Lee Jones <lee@kernel.org>
+> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Eric Dumazet <edumazet@google.com>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Paolo Abeni <pabeni@redhat.com>
+> Cc: Wolfgang Grandegger <wg@grandegger.com>
+> Cc: Kalle Valo <kvalo@kernel.org>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-clk@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-gpio@vger.kernel.org
+> Cc: linux-i2c@vger.kernel.org
+> Cc: linux-leds@vger.kernel.org
+> Cc: linux-media@vger.kernel.org
+> Cc: netdev@vger.kernel.org
+> Cc: linux-can@vger.kernel.org
+> Cc: linux-wireless@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: alsa-devel@alsa-project.org
+> Cc: linux-usb@vger.kernel.org
+> ---
+>  .../bindings/auxdisplay/holtek,ht16k33.yaml       |  2 +-
 
-Switch to using the new API where the provider is not registered until
-after it has been fully initialised.
+....
 
-Fixes: 4e60a9568dc6 ("interconnect: qcom: add msm8974 driver")
-Cc: stable@vger.kernel.org      # 5.5
-Reviewed-by: Brian Masney <bmasney@redhat.com>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
----
- drivers/interconnect/qcom/msm8974.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
+>  86 files changed, 110 insertions(+), 103 deletions(-)
+> 
+> diff --git 
+> a/Documentation/devicetree/bindings/auxdisplay/holtek,ht16k33.yaml
+> b/Documentation/devicetree/bindings/auxdisplay/holtek,ht16k33.yaml
+> index fc4873deb76f..286e726cd052 100644
+> --- a/Documentation/devicetree/bindings/auxdisplay/holtek,ht16k33.yaml
+> +++ b/Documentation/devicetree/bindings/auxdisplay/holtek,ht16k33.yaml
+> @@ -72,7 +72,7 @@ examples:
+>      #include <dt-bindings/interrupt-controller/irq.h>
+>      #include <dt-bindings/input/input.h>
+>      #include <dt-bindings/leds/common.h>
+> -    i2c1 {
+> +    i2c {
+>              #address-cells = <1>;
+>              #size-cells = <0>;
 
-diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
-index 5ea192f1141d..1828deaca443 100644
---- a/drivers/interconnect/qcom/msm8974.c
-+++ b/drivers/interconnect/qcom/msm8974.c
-@@ -692,7 +692,6 @@ static int msm8974_icc_probe(struct platform_device *pdev)
- 		return ret;
- 
- 	provider = &qp->provider;
--	INIT_LIST_HEAD(&provider->nodes);
- 	provider->dev = dev;
- 	provider->set = msm8974_icc_set;
- 	provider->aggregate = icc_std_aggregate;
-@@ -700,11 +699,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
- 	provider->data = data;
- 	provider->get_bw = msm8974_get_bw;
- 
--	ret = icc_provider_add(provider);
--	if (ret) {
--		dev_err(dev, "error adding interconnect provider: %d\n", ret);
--		goto err_disable_clks;
--	}
-+	icc_provider_init(provider);
- 
- 	for (i = 0; i < num_nodes; i++) {
- 		size_t j;
-@@ -712,7 +707,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
- 		node = icc_node_create(qnodes[i]->id);
- 		if (IS_ERR(node)) {
- 			ret = PTR_ERR(node);
--			goto err_del_icc;
-+			goto err_remove_nodes;
- 		}
- 
- 		node->name = qnodes[i]->name;
-@@ -729,15 +724,16 @@ static int msm8974_icc_probe(struct platform_device *pdev)
- 	}
- 	data->num_nodes = num_nodes;
- 
-+	ret = icc_provider_register(provider);
-+	if (ret)
-+		goto err_remove_nodes;
-+
- 	platform_set_drvdata(pdev, qp);
- 
- 	return 0;
- 
--err_del_icc:
-+err_remove_nodes:
- 	icc_nodes_remove(provider);
--	icc_provider_del(provider);
--
--err_disable_clks:
- 	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
- 
- 	return ret;
-@@ -747,9 +743,9 @@ static int msm8974_icc_remove(struct platform_device *pdev)
- {
- 	struct msm8974_icc_provider *qp = platform_get_drvdata(pdev);
- 
-+	icc_provider_deregister(&qp->provider);
- 	icc_nodes_remove(&qp->provider);
- 	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
--	icc_provider_del(&qp->provider);
- 
- 	return 0;
- }
--- 
-2.39.2
-
+Acked-by: Robin van der Gracht <robin@protonic.nl>
