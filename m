@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4898EC7619A
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:58:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED938C61DA4
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 07:58:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229897AbjCFH6S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 02:58:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53324 "EHLO
+        id S230027AbjCFH6T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 02:58:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53334 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229744AbjCFH5j (ORCPT
+        with ESMTP id S229746AbjCFH5j (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 02:57:39 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 122D61CACA;
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E33A1F483;
         Sun,  5 Mar 2023 23:57:38 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 9E51B60C20;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B2DFC60C36;
         Mon,  6 Mar 2023 07:57:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5638FC433A7;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7A23DC43328;
         Mon,  6 Mar 2023 07:57:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1678089456;
-        bh=c1W/TkN9vDAtIN9NXAe0tdm9B9W8KbajL+RP2x8pc+A=;
+        bh=41sHnm8Gk66gNaueab+0gD7hJ3ZMMZErdrBEJqMHwTc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=eCaEM2VLx2XY83l08L7XDRRuZ7u94AqS2q2qlBBsoAdhi8pxZGgTC274s4FympNSG
-         RFctAR2TV1Y/o8GwG5h/k+KJNTPjIPY1GOZsffOJQe+Hm/UtsKGOhnoCCrwQGsdKMc
-         vl0WfelGIfvBT5MCZS2V7DP2+ffv0l2Ig9ZW/WMkp1Y8Ai/rpoQBbzNz4coQceScTn
-         IMFEQA5ffWcANiHIJzAeAzI0PcQrGLM1bXRk9300YLNa52rFG0ZQ5mEzzMQ7V3F9T1
-         1eW2Xzx2yxIJDDrUyShgxqdzUm2GYkrgfWXgzFTpxTsrY1zFUaRZyga8/lhBikINKQ
-         gS8TRjVbHLbSQ==
+        b=NNxpMUaorJMhr0+2zcZBGfNrOq7pCVxYxqfEzLa+aKxgRrq6Qe8c5roWNb0n0vbku
+         HCLSOSHCtF8zhJ7PFt7YyXAckIJlLZR2Qmi6AcNL5UOYUx8Auu4mm+SlKgz8LZqYfx
+         4oQtYQFwoKhXmOtuVQfGdpdQGNlDmqDYKgVeBdNdHzbZYuYAwLyccRPXyWeOG140Ro
+         t9jkXcmNw5IoWGPsCakFpIgtL9c9+u4KUE/n3Pv+scOANswbLQrRGurd8Ve9N7fbew
+         fiVHUZn7pAdwA2oJ6/DMzuyoXCTFt3bLLxz3kA9QbeodxAkGK/+SlTgw8qBf1s+Z6I
+         zY5zM8nH9c5Hw==
 Received: from johan by xi.lan with local (Exim 4.94.2)
         (envelope-from <johan+linaro@kernel.org>)
-        id 1pZ5jb-0000hx-UP; Mon, 06 Mar 2023 08:58:15 +0100
+        id 1pZ5jc-0000iI-NI; Mon, 06 Mar 2023 08:58:16 +0100
 From:   Johan Hovold <johan+linaro@kernel.org>
 To:     Georgi Djakov <djakov@kernel.org>
 Cc:     "Shawn Guo" <shawnguo@kernel.org>,
@@ -53,10 +53,11 @@ Cc:     "Shawn Guo" <shawnguo@kernel.org>,
         linux-arm-kernel@lists.infradead.org,
         linux-arm-msm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org
-Subject: [PATCH v2 03/23] interconnect: fix provider registration API
-Date:   Mon,  6 Mar 2023 08:56:31 +0100
-Message-Id: <20230306075651.2449-4-johan+linaro@kernel.org>
+        Johan Hovold <johan+linaro@kernel.org>, stable@vger.kernel.org,
+        Brian Masney <bmasney@redhat.com>
+Subject: [PATCH v2 11/23] interconnect: qcom: msm8974: fix registration race
+Date:   Mon,  6 Mar 2023 08:56:39 +0100
+Message-Id: <20230306075651.2449-12-johan+linaro@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230306075651.2449-1-johan+linaro@kernel.org>
 References: <20230306075651.2449-1-johan+linaro@kernel.org>
@@ -66,146 +67,88 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The current interconnect provider interface is inherently racy as
-providers are expected to be added before being fully initialised.
+The current interconnect provider registration interface is inherently
+racy as nodes are not added until the after adding the provider. This
+can specifically cause racing DT lookups to fail.
 
-Specifically, nodes are currently not added and the provider data is not
-initialised until after registering the provider which can cause racing
-DT lookups to fail.
+Switch to using the new API where the provider is not registered until
+after it has been fully initialised.
 
-Add a new provider API which will be used to fix up the interconnect
-drivers.
-
-The old API is reimplemented using the new interface and will be removed
-once all drivers have been fixed.
-
-Fixes: 11f1ceca7031 ("interconnect: Add generic on-chip interconnect API")
-Fixes: 87e3031b6fbd ("interconnect: Allow endpoints translation via DT")
-Cc: stable@vger.kernel.org      # 5.1
+Fixes: 4e60a9568dc6 ("interconnect: qcom: add msm8974 driver")
+Cc: stable@vger.kernel.org      # 5.5
+Reviewed-by: Brian Masney <bmasney@redhat.com>
 Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
 ---
- drivers/interconnect/core.c           | 52 +++++++++++++++++++--------
- include/linux/interconnect-provider.h | 12 +++++++
- 2 files changed, 50 insertions(+), 14 deletions(-)
+ drivers/interconnect/qcom/msm8974.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index cabb6f5df83e..7a24c1444ace 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -1033,44 +1033,68 @@ int icc_nodes_remove(struct icc_provider *provider)
- EXPORT_SYMBOL_GPL(icc_nodes_remove);
+diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
+index 5ea192f1141d..1828deaca443 100644
+--- a/drivers/interconnect/qcom/msm8974.c
++++ b/drivers/interconnect/qcom/msm8974.c
+@@ -692,7 +692,6 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 		return ret;
  
- /**
-- * icc_provider_add() - add a new interconnect provider
-- * @provider: the interconnect provider that will be added into topology
-+ * icc_provider_init() - initialize a new interconnect provider
-+ * @provider: the interconnect provider to initialize
-+ *
-+ * Must be called before adding nodes to the provider.
-+ */
-+void icc_provider_init(struct icc_provider *provider)
-+{
-+	WARN_ON(!provider->set);
-+
-+	INIT_LIST_HEAD(&provider->nodes);
-+}
-+EXPORT_SYMBOL_GPL(icc_provider_init);
-+
-+/**
-+ * icc_provider_register() - register a new interconnect provider
-+ * @provider: the interconnect provider to register
-  *
-  * Return: 0 on success, or an error code otherwise
-  */
--int icc_provider_add(struct icc_provider *provider)
-+int icc_provider_register(struct icc_provider *provider)
- {
--	if (WARN_ON(!provider->set))
--		return -EINVAL;
- 	if (WARN_ON(!provider->xlate && !provider->xlate_extended))
- 		return -EINVAL;
- 
- 	mutex_lock(&icc_lock);
--
+ 	provider = &qp->provider;
 -	INIT_LIST_HEAD(&provider->nodes);
- 	list_add_tail(&provider->provider_list, &icc_providers);
--
- 	mutex_unlock(&icc_lock);
+ 	provider->dev = dev;
+ 	provider->set = msm8974_icc_set;
+ 	provider->aggregate = icc_std_aggregate;
+@@ -700,11 +699,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 	provider->data = data;
+ 	provider->get_bw = msm8974_get_bw;
  
--	dev_dbg(provider->dev, "interconnect provider added to topology\n");
-+	dev_dbg(provider->dev, "interconnect provider registered\n");
+-	ret = icc_provider_add(provider);
+-	if (ret) {
+-		dev_err(dev, "error adding interconnect provider: %d\n", ret);
+-		goto err_disable_clks;
+-	}
++	icc_provider_init(provider);
+ 
+ 	for (i = 0; i < num_nodes; i++) {
+ 		size_t j;
+@@ -712,7 +707,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 		node = icc_node_create(qnodes[i]->id);
+ 		if (IS_ERR(node)) {
+ 			ret = PTR_ERR(node);
+-			goto err_del_icc;
++			goto err_remove_nodes;
+ 		}
+ 
+ 		node->name = qnodes[i]->name;
+@@ -729,15 +724,16 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 	}
+ 	data->num_nodes = num_nodes;
+ 
++	ret = icc_provider_register(provider);
++	if (ret)
++		goto err_remove_nodes;
++
+ 	platform_set_drvdata(pdev, qp);
+ 
+ 	return 0;
+ 
+-err_del_icc:
++err_remove_nodes:
+ 	icc_nodes_remove(provider);
+-	icc_provider_del(provider);
+-
+-err_disable_clks:
+ 	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+ 
+ 	return ret;
+@@ -747,9 +743,9 @@ static int msm8974_icc_remove(struct platform_device *pdev)
+ {
+ 	struct msm8974_icc_provider *qp = platform_get_drvdata(pdev);
+ 
++	icc_provider_deregister(&qp->provider);
+ 	icc_nodes_remove(&qp->provider);
+ 	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+-	icc_provider_del(&qp->provider);
  
  	return 0;
  }
--EXPORT_SYMBOL_GPL(icc_provider_add);
-+EXPORT_SYMBOL_GPL(icc_provider_register);
- 
- /**
-- * icc_provider_del() - delete previously added interconnect provider
-- * @provider: the interconnect provider that will be removed from topology
-+ * icc_provider_deregister() - deregister an interconnect provider
-+ * @provider: the interconnect provider to deregister
-  */
--void icc_provider_del(struct icc_provider *provider)
-+void icc_provider_deregister(struct icc_provider *provider)
- {
- 	mutex_lock(&icc_lock);
- 	WARN_ON(provider->users);
--	WARN_ON(!list_empty(&provider->nodes));
- 
- 	list_del(&provider->provider_list);
- 	mutex_unlock(&icc_lock);
- }
-+EXPORT_SYMBOL_GPL(icc_provider_deregister);
-+
-+int icc_provider_add(struct icc_provider *provider)
-+{
-+	icc_provider_init(provider);
-+
-+	return icc_provider_register(provider);
-+}
-+EXPORT_SYMBOL_GPL(icc_provider_add);
-+
-+void icc_provider_del(struct icc_provider *provider)
-+{
-+	WARN_ON(!list_empty(&provider->nodes));
-+
-+	icc_provider_deregister(provider);
-+}
- EXPORT_SYMBOL_GPL(icc_provider_del);
- 
- static const struct of_device_id __maybe_unused ignore_list[] = {
-diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
-index cd5c5a27557f..d12cd18aab3f 100644
---- a/include/linux/interconnect-provider.h
-+++ b/include/linux/interconnect-provider.h
-@@ -122,6 +122,9 @@ int icc_link_destroy(struct icc_node *src, struct icc_node *dst);
- void icc_node_add(struct icc_node *node, struct icc_provider *provider);
- void icc_node_del(struct icc_node *node);
- int icc_nodes_remove(struct icc_provider *provider);
-+void icc_provider_init(struct icc_provider *provider);
-+int icc_provider_register(struct icc_provider *provider);
-+void icc_provider_deregister(struct icc_provider *provider);
- int icc_provider_add(struct icc_provider *provider);
- void icc_provider_del(struct icc_provider *provider);
- struct icc_node_data *of_icc_get_from_provider(struct of_phandle_args *spec);
-@@ -167,6 +170,15 @@ static inline int icc_nodes_remove(struct icc_provider *provider)
- 	return -ENOTSUPP;
- }
- 
-+static inline void icc_provider_init(struct icc_provider *provider) { }
-+
-+static inline int icc_provider_register(struct icc_provider *provider)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+static inline void icc_provider_deregister(struct icc_provider *provider) { }
-+
- static inline int icc_provider_add(struct icc_provider *provider)
- {
- 	return -ENOTSUPP;
 -- 
 2.39.2
 
