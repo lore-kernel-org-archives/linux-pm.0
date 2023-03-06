@@ -2,58 +2,159 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 626CBC6FD19
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 09:40:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB22EC678D4
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Mar 2023 09:54:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230104AbjCFJk5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Mar 2023 04:40:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51974 "EHLO
+        id S229651AbjCFJyq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Mar 2023 04:54:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43014 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230115AbjCFJkx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 04:40:53 -0500
-X-Greylist: delayed 1189 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 06 Mar 2023 01:40:49 PST
-Received: from mail.ettrick.pl (mail.ettrick.pl [141.94.21.111])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D453234D0
-        for <linux-pm@vger.kernel.org>; Mon,  6 Mar 2023 01:40:49 -0800 (PST)
-Received: by mail.ettrick.pl (Postfix, from userid 1002)
-        id 7C425A4E02; Mon,  6 Mar 2023 09:01:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ettrick.pl; s=mail;
-        t=1678093376; bh=KHux3km3Civcx5ChslOYQZwQRBjoJa4kWJfGcMIuN6w=;
-        h=Date:From:To:Subject:From;
-        b=DroGVXUn4xYVIhDEmHYc753kClqo+E2YeGiEEuhAyRYvlLAxyiWcjf+sR9vNTLPuR
-         YiUSTJcM60LUEO2bSZF+p9pptYyz+BwSv8n8zIOu/hFn7O5tv1VSFI8bvv9kG6nWDs
-         0bDD1eW91R46Ro6mHxaD8r5Kns0F9Ge0aQs0eNDVAy4DvZYeVAbXJJylEN1YsBiB5s
-         Gr1Nyc1gv6hcJe7L3W+av9AGDX7q8FWqKJQjj7Ml9z0heTw4u3VitYo2bmSFQLtYZD
-         /tqXgkrC6kMmXgylgblyVEXmIE0ed7ksX/EJ0edf+vPxvpGVKmr8zdH9xHucsyx8R9
-         sqBfxm7x2jtxw==
-Received: by mail.ettrick.pl for <linux-pm@vger.kernel.org>; Mon,  6 Mar 2023 09:00:53 GMT
-Message-ID: <20230306074500-0.1.97.36z1p.0.2mmeu7d8qr@ettrick.pl>
-Date:   Mon,  6 Mar 2023 09:00:53 GMT
-From:   "Norbert Karecki" <norbert.karecki@ettrick.pl>
-To:     <linux-pm@vger.kernel.org>
-Subject: Fotowoltaika - nowe warunki
-X-Mailer: mail.ettrick.pl
+        with ESMTP id S229819AbjCFJym (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2023 04:54:42 -0500
+Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D876E2196F
+        for <linux-pm@vger.kernel.org>; Mon,  6 Mar 2023 01:54:40 -0800 (PST)
+Received: by mail-lj1-x235.google.com with SMTP id z5so8966844ljc.8
+        for <linux-pm@vger.kernel.org>; Mon, 06 Mar 2023 01:54:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1678096479;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=kIlgMgx4GC7LDA70SAaD5cK7DGGQZmITxjE2Ge49+kU=;
+        b=vdcts+WbobnyEDJbIN+wXxsZ2qfWdS/GOfLuCC/rmeMZRDAJ7d10ljd1wrvy3CU0y1
+         L+3QGxMvJgVySq27pa2cK5WaUkrVDw9dj10+7BNqlH3d16ZMcNYgWTI6GfxDXfYgn3VT
+         fW0i3qo98cher9ZorHaXHIZdcSBTpV8WRSVb9kvp69ahi113hV9jP2yTLqzqHs1OyD/X
+         Ii+eDuH7WT450rLNSPvlVPtdpwaVXOkxKkBlicyoDFUmpKfHLgWEhSLzbBf7+0Av6nTK
+         JoSY5HNu0NKiDerIuqw4BjQe+jo2KA1xdpX7h3hs3ICMua9Gt1ulDialSjG/xxJf72qK
+         siog==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678096479;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=kIlgMgx4GC7LDA70SAaD5cK7DGGQZmITxjE2Ge49+kU=;
+        b=TgscubelQAPTwG8TtoUQdLTJh4KKBq4czsRhyr5WOeqzf2ZygY/9UOwnuoZxnUGYN0
+         NDxZ5wWfMIs/uyQ2SltQcIZNa13uuT6fdkKiM5bVK88k7zxgMFLlMZKCes+MaAh1fyVV
+         tSLzSfEYNvYwde1ncargfcZDn2MUH+NSHi8sgaYO1ckRFhKJ44TCr/h+2FiR/oLupIhI
+         IchenYpUHbxKboFhdgLlqrWKLykTkMzRr/y6HCxzqEaaIBKqfM1WF2/iecESEbkwKe8h
+         HSittjK9Qrx0T4y0IJE7tApx6bMo+5RanFW6UAjItKXPD2vMcQuoaf2is2TC843UV/wZ
+         ZJcA==
+X-Gm-Message-State: AO0yUKUF7HPtzdTbjDzvJzR9+Alw+705xb5uZS29uWSGBkEAU9uodXzx
+        yrz22j6mRzhGBerRgct/8VwVVA==
+X-Google-Smtp-Source: AK7set/qlPIMi2iBv9G4/ehNBJuY1m0NOP6QMZ7s6Vyfmdsj4JIY0n1S+2F1igceddstYxcbPL9PeQ==
+X-Received: by 2002:a2e:7308:0:b0:293:4e6d:9194 with SMTP id o8-20020a2e7308000000b002934e6d9194mr2733124ljc.24.1678096479180;
+        Mon, 06 Mar 2023 01:54:39 -0800 (PST)
+Received: from [192.168.1.101] (abym99.neoplus.adsl.tpnet.pl. [83.9.32.99])
+        by smtp.gmail.com with ESMTPSA id u28-20020a2ea17c000000b002946a078ad6sm1629709ljl.125.2023.03.06.01.54.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Mar 2023 01:54:38 -0800 (PST)
+Message-ID: <bd4caf3d-3994-da96-2d3f-175d429136d1@linaro.org>
+Date:   Mon, 6 Mar 2023 10:54:37 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH 1/3] dt-bindings: interconnect: qcom,msm8998-bwmon: Add
+ global registers
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20230304-topic-ddr_bwmon-v1-0-e563837dc7d1@linaro.org>
+ <20230304-topic-ddr_bwmon-v1-1-e563837dc7d1@linaro.org>
+ <0e74ad9a-2333-ea9e-b569-1bf8c965b217@linaro.org>
+Content-Language: en-US
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <0e74ad9a-2333-ea9e-b569-1bf8c965b217@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dzie=C5=84 dobry,
-
-chcia=C5=82bym poinformowa=C4=87, i=C5=BC mog=C4=85 Pa=C5=84stwo uzyska=C4=
-=87 dofinansowanie na systemy fotowoltaiczne w ramach nowej edycji progra=
-mu M=C3=B3j Pr=C4=85d.
-
-Program zapewnia 6000 z=C5=82 dofinansowania na instalacj=C4=99 paneli i =
-16 000 z=C5=82 na magazyn energii, ni=C5=BCsze cen pr=C4=85du i mo=C5=BCl=
-iwo=C5=9B=C4=87 odliczenia koszt=C3=B3w zwi=C4=85zanych z instalacj=C4=85=
- fotowoltaiki w ramach rozliczenia PIT (tzw. ulga termomodernizacyjna).
-
-Czy s=C4=85 Pa=C5=84stwo otwarci na wst=C4=99pn=C4=85 rozmow=C4=99 w tym =
-temacie?
 
 
-Pozdrawiam,
-Norbert Karecki
+On 5.03.2023 15:52, Krzysztof Kozlowski wrote:
+> On 04/03/2023 16:39, Konrad Dybcio wrote:
+>> The BWMON has two sets of registers: one for handling the monitor itself
+>> and one called "global", which we didn't care about before, as on newer
+>> SoCs it was made contiguous with (but not the same as) the monitor's
+>> register range. Describe it.
+>>
+>> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+>> ---
+>>  .../bindings/interconnect/qcom,msm8998-bwmon.yaml  | 28 ++++++++++++++++++----
+>>  1 file changed, 24 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+>> index 12a0d3ecbabb..6dd0cb0a1f43 100644
+>> --- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+>> +++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+>> @@ -49,9 +49,13 @@ properties:
+>>      type: object
+>>  
+>>    reg:
+>> -    # BWMON v4 (currently described) and BWMON v5 use one register address
+>> -    # space.  BWMON v2 uses two register spaces - not yet described.
+>> -    maxItems: 1
+>> +    # BWMON v5 uses one register address space, v1-v4 use one or two.
+>> +    minItems: 1
+>> +    maxItems: 2
+>> +
+>> +  reg-names:
+>> +    minItems: 1
+>> +    maxItems: 2
+>>  
+>>  required:
+>>    - compatible
+>> @@ -63,6 +67,21 @@ required:
+>>  
+>>  additionalProperties: false
+>>  
+>> +allOf:
+>> +  - if:
+>> +      properties:
+>> +        compatible:
+>> +          const: qcom,msm8998-bwmon
+>> +    then:
+>> +      properties:
+>> +        reg:
+>> +          minItems: 2
+>> +
+>> +        reg-names:
+>> +          items:
+>> +            - const: monitor
+>> +            - const: global
+> 
+> else:
+>   reg:
+>     maxItems: 1
+> 
+> and either disallow reg-names or move it to the top-level.
+Disallowing makes more sense in this case imo, will do.
+
+> 
+>> +
+>>  examples:
+>>    - |
+>>      #include <dt-bindings/interconnect/qcom,sdm845.h>
+>> @@ -70,7 +89,8 @@ examples:
+>>  
+>>      pmu@1436400 {
+>>          compatible = "qcom,sdm845-bwmon", "qcom,msm8998-bwmon";
+>> -        reg = <0x01436400 0x600>;
+>> +        reg = <0x01436400 0x600>, <0x01436300 0x200>;
+> 
+> That's not correct for sdm845. It's only one address space for sdm845.
+Ack, leftover from an old version again..
+
+Konrad
+> 
+> 
+> Best regards,
+> Krzysztof
+> 
