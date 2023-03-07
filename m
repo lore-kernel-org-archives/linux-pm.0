@@ -2,103 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25F68C678D5
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Mar 2023 13:10:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23893C678D4
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Mar 2023 13:38:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230387AbjCGNKg convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Mar 2023 08:10:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42360 "EHLO
+        id S230274AbjCGNiA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Mar 2023 08:38:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33572 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231293AbjCGNKP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2023 08:10:15 -0500
-Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E16293BDB1;
-        Tue,  7 Mar 2023 05:08:47 -0800 (PST)
-Received: by mail-ed1-x529.google.com with SMTP id a25so52183560edb.0;
-        Tue, 07 Mar 2023 05:08:47 -0800 (PST)
+        with ESMTP id S229833AbjCGNh7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2023 08:37:59 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7E909031
+        for <linux-pm@vger.kernel.org>; Tue,  7 Mar 2023 05:37:57 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id h11so12146234wrm.5
+        for <linux-pm@vger.kernel.org>; Tue, 07 Mar 2023 05:37:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1678196276;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mIjogzcbB9NbNQDtYcUOxd5sO+Lh6rQ2yVngUMiZyBg=;
+        b=YG5ga49pJHXfSemMbf0p1srILRTv58YCHpLvV/P7+8IagzwrOhVhY7ZKGa0EYsmRo/
+         G2CoSa4u0ZEPOC0Vr70fZU1bQ41CO1Y4MMaxwuSbD7SbxOR1Dzpss8lJ/qrzohTOAMFs
+         TWxHtI4ngmaSsg3tMPJcWKwjqdVjAyBsxhGaReWOJlZo4/jUDQVQSh+7eDi7aKiHqvWq
+         Vs/+qJbWZzqKUHoiZSdeKb362nA3ACs5FJymKmMPaLPNbJgJYa34BxAVmMeOvtmasGxV
+         EgAlVDdpg2jnHLSqMEooMAFjtMZYCMpfINVTeqnOeyNAxNeurKrrDromBo23nT+lHimD
+         0F5A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678194403;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20210112; t=1678196276;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=1f7ClQ084fvZPUTez1OLGUFLY9xreFNlpUR04n4znpo=;
-        b=4dO6NSrd2NEMvvBJd9E4Y11kSxUnfRGfPXHx0hcwLrzgQmw7uQGw+Meorfma4UYHCX
-         RMCcjAPIMN6oCorlvofnU0XqXVmHiO57xG5lE/QQYlSpAOcDt6gbMgEmvSnaOOEgZRei
-         7ojtBiLkjL6MLKLZtaIeeWXHgZ3REWCd9YmUW3ufW5yPQdLH+Vd395B7RkGtxWhoI4yH
-         AyU7dcQg1tr3AB2jQbtcBM/g/uxsbyNAehhnof4HporuGfsCFLSXXNsBa1Wdb+8gsZLq
-         nEgIaXrcGSbC6I7HWfnRPXU1eUfWjTNFtzFvtGrOStMyDazgeZUGHroyuTTZGSQXuaMF
-         ujkg==
-X-Gm-Message-State: AO0yUKVLUDjweqW5cVosxzAsf7ZTbd1/AGKkQSW/6aQBUUKH6yt0LozJ
-        fW2XoRP02Akkpb6OV6fysu/6ILqXlZoKYVa89rM=
-X-Google-Smtp-Source: AK7set/6UtZuMIhw4X4hNyGs7b7oDhwrVNtfIeRgKApGBdGrAm2TuHb/nT8hMSOb99IZT95kml+9lST8vgfhgAZe0Lo=
-X-Received: by 2002:a50:9b56:0:b0:4ae:e5db:abfb with SMTP id
- a22-20020a509b56000000b004aee5dbabfbmr7984861edj.3.1678194402638; Tue, 07 Mar
- 2023 05:06:42 -0800 (PST)
+        bh=mIjogzcbB9NbNQDtYcUOxd5sO+Lh6rQ2yVngUMiZyBg=;
+        b=5WU4MNM5Ib36asPAJQFTfnyibvCVg8V2GTky/AnfmMSvd4IJzuwoSwVxzVJYV0+P7R
+         UF7RXPdzQBnVdqM2pB/wDtUu6nJ/6UVCOqepFvP3ASfVFsa/MNX1kq0yTyPT+8A9FXuH
+         daqrH0YK/eRlkbIscZycg0p9u/J537MWYtdR0iNi28WYyHZ1aid4KvzemuEthA73y0l2
+         XbsHOnrTwSGBgcl6uWm2LcRJDeW813JZ5igl9RApHJ5B5/DTEk428I5NbkX1pyAKCT5o
+         2bXSxzco0MjlUONgdh/Wr5dwhQRnwL0eyzklhyerE6VY5tshPve8MLRQ+D3bw1M7s+3n
+         iieA==
+X-Gm-Message-State: AO0yUKXLIy1JwBBKNn8v/FoJ39z7Scm77VCpxvWx04q5/yLuMe4/yu95
+        RCyZVXC7JDG28GF579icjVb6TQ==
+X-Google-Smtp-Source: AK7set/4lXJCmPfCyDhu+dCKKQKbXeAog36vaBFmsPGjAwv5R3tEcPT/BWmWipC6Naeq00anV5N6JA==
+X-Received: by 2002:a5d:5253:0:b0:2c5:5d21:7d4c with SMTP id k19-20020a5d5253000000b002c55d217d4cmr9400374wrc.43.1678196276323;
+        Tue, 07 Mar 2023 05:37:56 -0800 (PST)
+Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:5ab9:1ac6:870d:35c])
+        by smtp.gmail.com with ESMTPSA id v5-20020a5d43c5000000b002c55de1c72bsm12311477wrr.62.2023.03.07.05.37.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Mar 2023 05:37:56 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org
+Cc:     rui.zhang@intel.com, amitk@kernel.org,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Adam Ward <DLG-Adam.Ward.opensource@dm.renesas.com>,
+        Tim Zimmermann <tim@linux4.de>,
+        linux-pm@vger.kernel.org (open list:THERMAL),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH v1 02/11] thermal/drivers/intel_pch_thermal: Use thermal driver device to write a trace
+Date:   Tue,  7 Mar 2023 14:37:26 +0100
+Message-Id: <20230307133735.90772-3-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230307133735.90772-1-daniel.lezcano@linaro.org>
+References: <20230307133735.90772-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-References: <20230304074107.59083-1-shawn.guo@linaro.org>
-In-Reply-To: <20230304074107.59083-1-shawn.guo@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 7 Mar 2023 14:06:31 +0100
-Message-ID: <CAJZ5v0h9=vZwENELK+w7HnTTsayaNb1D7wnBgjsXvgopc_t-cA@mail.gmail.com>
-Subject: Re: [PATCH RESEND] cpuidle: psci: Iterate backwards over list in psci_pd_remove()
-To:     Shawn Guo <shawn.guo@linaro.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Mar 4, 2023 at 8:41 AM Shawn Guo <shawn.guo@linaro.org> wrote:
->
-> In case that psci_pd_init_topology() fails for some reason,
-> psci_pd_remove() will be responsible for deleting provider and removing
-> genpd from psci_pd_providers list.  There will be a failure when removing
-> the cluster PD, because the cpu (child) PDs haven't been removed.
->
-> [    0.050232] CPUidle PSCI: init PM domain cpu0
-> [    0.050278] CPUidle PSCI: init PM domain cpu1
-> [    0.050329] CPUidle PSCI: init PM domain cpu2
-> [    0.050370] CPUidle PSCI: init PM domain cpu3
-> [    0.050422] CPUidle PSCI: init PM domain cpu-cluster0
-> [    0.050475] PM: genpd_remove: unable to remove cpu-cluster0
-> [    0.051412] PM: genpd_remove: removed cpu3
-> [    0.051449] PM: genpd_remove: removed cpu2
-> [    0.051499] PM: genpd_remove: removed cpu1
-> [    0.051546] PM: genpd_remove: removed cpu0
->
-> Fix the problem by iterating the provider list reversely, so that parent
-> PD gets removed after child's PDs like below.
->
-> [    0.029052] CPUidle PSCI: init PM domain cpu0
-> [    0.029076] CPUidle PSCI: init PM domain cpu1
-> [    0.029103] CPUidle PSCI: init PM domain cpu2
-> [    0.029124] CPUidle PSCI: init PM domain cpu3
-> [    0.029151] CPUidle PSCI: init PM domain cpu-cluster0
-> [    0.029647] PM: genpd_remove: removed cpu0
-> [    0.029666] PM: genpd_remove: removed cpu1
-> [    0.029690] PM: genpd_remove: removed cpu2
-> [    0.029714] PM: genpd_remove: removed cpu3
-> [    0.029738] PM: genpd_remove: removed cpu-cluster0
->
-> Fixes: a65a397f2451 ("cpuidle: psci: Add support for PM domains by using genpd")
+The pch_critical() callback accesses the thermal zone device structure
+internals, it dereferences the thermal zone struct device and the 'type'.
 
-So I guess there should be Cc: stable for 5.10 and later?
+For the former, the driver related device should be use instead and
+for the latter an accessor already exists. Use them instead of
+accessing the internals.
 
-> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> ---
-> Hi Rafael,
->
-> This is a resend of the patch [1].  Could you help pick it up or let me
-> know if there is anything need to be improved, thanks!
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/intel/intel_pch_thermal.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Is this regarded as 6.3-rc material, or can it wait for 6.4?
+diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
+index dce50d239357..0de46057db2a 100644
+--- a/drivers/thermal/intel/intel_pch_thermal.c
++++ b/drivers/thermal/intel/intel_pch_thermal.c
+@@ -127,7 +127,10 @@ static int pch_thermal_get_temp(struct thermal_zone_device *tzd, int *temp)
+ 
+ static void pch_critical(struct thermal_zone_device *tzd)
+ {
+-	dev_dbg(&tzd->device, "%s: critical temperature reached\n", tzd->type);
++	struct pch_thermal_device *ptd = thermal_zone_device_priv(tzd);
++
++	dev_dbg(&ptd->pdev->dev, "%s: critical temperature reached\n",
++		thermal_zone_device_type(tzd));
+ }
+ 
+ static struct thermal_zone_device_ops tzd_ops = {
+-- 
+2.34.1
+
