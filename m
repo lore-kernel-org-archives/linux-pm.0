@@ -2,71 +2,74 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A7A4C6FD1E
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Mar 2023 13:38:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3B7EC678D4
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Mar 2023 13:38:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229662AbjCGNiI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Mar 2023 08:38:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33836 "EHLO
+        id S231214AbjCGNiQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Mar 2023 08:38:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34166 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230335AbjCGNiC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2023 08:38:02 -0500
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC2541115B
-        for <linux-pm@vger.kernel.org>; Tue,  7 Mar 2023 05:37:59 -0800 (PST)
-Received: by mail-wr1-x432.google.com with SMTP id v16so12209966wrn.0
-        for <linux-pm@vger.kernel.org>; Tue, 07 Mar 2023 05:37:59 -0800 (PST)
+        with ESMTP id S230482AbjCGNiF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2023 08:38:05 -0500
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43B5D2A6C2
+        for <linux-pm@vger.kernel.org>; Tue,  7 Mar 2023 05:38:03 -0800 (PST)
+Received: by mail-wr1-x42d.google.com with SMTP id j2so12128192wrh.9
+        for <linux-pm@vger.kernel.org>; Tue, 07 Mar 2023 05:38:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1678196279;
+        d=linaro.org; s=google; t=1678196281;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=QFz3DL0wcsZVMgUUsHXDAfK6kJlbLDI4poI1FgV3Faw=;
-        b=o+72SkNnGvUEZIoRxtbUn1yxoMbJK4ejWB7UdQfvn95oxQ1qGBRQkmTuvFIHCKSEQD
-         6V5Sb6way+IpVf1rC8Ts5ep1iztmQ7/B5Y21IzuyFDdX+ydu10oWZgvAd0kfo1C0jFU2
-         NXTAAd8/JNFFoLXX4Rcp6pauvrWKWmbMd1vPw7jlce/er2GgJSWLGuHD0rRIfYnu19Ml
-         4vgQqfv+uSE5DPvKzEY6foTsKhTkpPVp93OodQ6cgqwHb7g2vuwjKwmV3bpdPPwELa5m
-         gZQr4IFv45Lh0vAKTshQ6V6mhjkdZSkHBM2U1mSk8lPzeCubKqrGFKAAhOLrd582PJub
-         NIWQ==
+        bh=fpDMcBBLQyF8LgqHxboWMTUnYVwMKYwzb0k+I2z6s1c=;
+        b=lisF83AxJvSh6DA0RlrtTx09wKFawmHLIpSEn4KF0rznqL5TJpY1E9n2PY4Sfo9+QG
+         uh7WuzJnm7J3PM/cwsJxcDK6N7kD6x+WmDK3pFw9JxOfO+MRb/W88kLm1shD2LHhH8ew
+         cbFDopAM4fsLuhoFCF0IBlPYZMaKmPa9tG7f3tFcwqh9o27n3MaKlgeVmBQXxyYYPvmN
+         OlKzfd+OqgN81HU0s1U95UHmnZ4edFAdq/qvBVaZiaXQAKOnlXa4c7YzUaqYJnkHJZ6J
+         WS5GyHeG6Qk0XMQR9hGfPOtTHvIeRjBuzWz+LNF51lXn9RIEWRppGsn9W+Ya0SJ816mp
+         K7dQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678196279;
+        d=1e100.net; s=20210112; t=1678196281;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=QFz3DL0wcsZVMgUUsHXDAfK6kJlbLDI4poI1FgV3Faw=;
-        b=mduPY8vUs6RkWsw+JfdHPSjHj2eCin4fRbmKeqb2VuPSNossBqfjtPwnYkAuQ5lz5f
-         sVrRKdwf5CxCeVWx0SYtYx1XNEEapqeE5HQsX4avXZwlyZToheGgeufbYPweoS3nasGD
-         2donjFliIxZkqlrlAUKuAe+lnb720BPq6kVrVxCQXYkrxjsAmffOWJnm+R6hM4tAQGz1
-         86drEQ/uXSWh+KX05WGkZSIuKkrTRaZS0whB9NnW9kI39CC5OTMWwQSFbyRyyUuhgr/t
-         rVbm7+MhU+ymzrPz7xhD5uC/zXTVTejiJPlQPCgWcF7XI+NrJj0hvJBuKRG2DPuMZImz
-         lxsQ==
-X-Gm-Message-State: AO0yUKXB+2EcJ0APGt3KbAnRQGY7kV5Cdz6scU4lIKScoVOvDeFScfKx
-        P7yt68qG6+9yljpZ/sBLa2MEzA==
-X-Google-Smtp-Source: AK7set9FSAFaADctvHU6vRmP3wIycBL+2ZqOFueq/Gl1g4rVDNPyVhEDXxA8gJtuA2idcajBArYPsQ==
-X-Received: by 2002:a5d:66ce:0:b0:2c7:8f73:7700 with SMTP id k14-20020a5d66ce000000b002c78f737700mr9276509wrw.39.1678196279346;
-        Tue, 07 Mar 2023 05:37:59 -0800 (PST)
+        bh=fpDMcBBLQyF8LgqHxboWMTUnYVwMKYwzb0k+I2z6s1c=;
+        b=IeYV1JZXwT5UWGxH1rWF6ZgXaoxSN8c/yA8aTFofIf2Ps4mR53VBi8YmuMHKcf0qxA
+         DPyzG9jphZfWpgbVOB3HU/YzxgPJ0c+LzsOKCsoP17dI4I/5Va7YeDy+751xqBetzLjV
+         aXK3EuTtHfMx82qzqx5H/Q9kgufaL8vOtUka9zyjgpsqVp6LjEfs/N1KmEMlaMn7vRS1
+         3fxmgFUnhas33dA5waGayskZCRF1cYMwnweruAbcsDOPH2Ltrz9yNG18omgsTZVHzP6e
+         VCPDzOGmIOV2Tw8Tc6GlMuiDMOc8dpZr8CmkV0w6yOZL2zJm3/kah0Ndj9r0LGWFVyDE
+         Kdqw==
+X-Gm-Message-State: AO0yUKUUGajYrBYE/z9ShYH+HF8EK0sDIvo//4tV1fGlbtUA8j/rwgag
+        FQLtySlofhEfuUinyZ2z5fsTpQ==
+X-Google-Smtp-Source: AK7set8lV3Qtw70a9ky+eOgzFG00YBYwvd9fFWnYlMqkkOwH3u5x7jj9HhyKgtqvVbIPNs7maG344Q==
+X-Received: by 2002:adf:e343:0:b0:2c7:f56:285b with SMTP id n3-20020adfe343000000b002c70f56285bmr9946678wrj.63.1678196281789;
+        Tue, 07 Mar 2023 05:38:01 -0800 (PST)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:5ab9:1ac6:870d:35c])
-        by smtp.gmail.com with ESMTPSA id v5-20020a5d43c5000000b002c55de1c72bsm12311477wrr.62.2023.03.07.05.37.58
+        by smtp.gmail.com with ESMTPSA id v5-20020a5d43c5000000b002c55de1c72bsm12311477wrr.62.2023.03.07.05.38.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Mar 2023 05:37:59 -0800 (PST)
+        Tue, 07 Mar 2023 05:38:01 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, amitk@kernel.org,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Florian Fainelli <f.fainelli@gmail.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Broadcom internal kernel review list 
+        <bcm-kernel-feedback-list@broadcom.com>,
         =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
         <niklas.soderlund+renesas@ragnatech.se>,
-        Minghao Chi <chi.minghao@zte.com.cn>,
-        Mark Brown <broonie@kernel.org>,
+        ye xingchen <ye.xingchen@zte.com.cn>,
+        Thierry Reding <treding@nvidia.com>,
         linux-pm@vger.kernel.org (open list:THERMAL),
-        linux-stm32@st-md-mailman.stormreply.com (moderated list:ARM/STM32
-        ARCHITECTURE),
-        linux-arm-kernel@lists.infradead.org (moderated list:ARM/STM32
-        ARCHITECTURE), linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v1 05/11] thermal/drivers/stm: Don't set no_hwmon to false
-Date:   Tue,  7 Mar 2023 14:37:29 +0100
-Message-Id: <20230307133735.90772-6-daniel.lezcano@linaro.org>
+        linux-rpi-kernel@lists.infradead.org (moderated list:BROADCOM
+        BCM2711/BCM2835 ARM ARCHITECTURE),
+        linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM
+        BCM2711/BCM2835 ARM ARCHITECTURE),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH v1 07/11] thermal/drivers/bcm2835: Remove buggy call to thermal_of_zone_unregister
+Date:   Tue,  7 Mar 2023 14:37:31 +0100
+Message-Id: <20230307133735.90772-8-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230307133735.90772-1-daniel.lezcano@linaro.org>
 References: <20230307133735.90772-1-daniel.lezcano@linaro.org>
@@ -76,34 +79,61 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal->tzp->no_hwmon parameter is only used when calling
-thermal_zone_device_register().
+The driver is using the devm_thermal_of_zone_device_register().
 
-Setting it to 'false' before calling thermal_add_hwmon_sysfs() has no
-effect.
+In the error path of the function calling
+devm_thermal_of_zone_device_register(), the function
+devm_thermal_of_zone_unregister() should be called instead of
+thermal_of_zone_unregister(), otherwise this one will be called twice
+when the device is freed.
 
-Remove the call and again prevent the drivers to access the thermal
-internals.
+The same happens for the remove function where the devm_ guarantee the
+thermal_of_zone_unregister() will be called, so adding this call in
+the remove function will lead to a double free also.
 
-Cc: Maxime Coquelin <mcoquelin.stm32@gmail.com>
-Cc: Alexandre Torgue <alexandre.torgue@foss.st.com>
+Use devm_ variant in the error path of the probe function.
+
+Remove thermal_of_zone_unregister() in the remove function.
+
+Cc: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Ray Jui <rjui@broadcom.com>
+Cc: Scott Branden <sbranden@broadcom.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/st/stm_thermal.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/thermal/broadcom/bcm2835_thermal.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-index 6f2bad8ef82f..903fcf1763f1 100644
---- a/drivers/thermal/st/stm_thermal.c
-+++ b/drivers/thermal/st/stm_thermal.c
-@@ -558,7 +558,6 @@ static int stm_thermal_probe(struct platform_device *pdev)
- 	 * Thermal_zone doesn't enable hwmon as default,
- 	 * enable it here
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index a217d832f24e..ea07152a6d0d 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -269,13 +269,13 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
  	 */
--	sensor->th_dev->tzp->no_hwmon = false;
- 	ret = thermal_add_hwmon_sysfs(sensor->th_dev);
- 	if (ret)
- 		goto err_tz;
+ 	err = thermal_add_hwmon_sysfs(tz);
+ 	if (err)
+-		goto err_tz;
++		goto err_clk;
+ 
+ 	bcm2835_thermal_debugfs(pdev);
+ 
+ 	return 0;
+ err_tz:
+-	thermal_of_zone_unregister(tz);
++	devm_thermal_of_zone_unregister(&pdev->dev, tz);
+ err_clk:
+ 	clk_disable_unprepare(data->clk);
+ 
+@@ -285,10 +285,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ static int bcm2835_thermal_remove(struct platform_device *pdev)
+ {
+ 	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
+-	struct thermal_zone_device *tz = data->tz;
+ 
+ 	debugfs_remove_recursive(data->debugfsdir);
+-	thermal_of_zone_unregister(tz);
+ 	clk_disable_unprepare(data->clk);
+ 
+ 	return 0;
 -- 
 2.34.1
 
