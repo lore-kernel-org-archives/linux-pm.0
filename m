@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2E51C742A7
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:23:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DD07C64EC4
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:23:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231255AbjCHLXF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Mar 2023 06:23:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39852 "EHLO
+        id S231359AbjCHLXH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Mar 2023 06:23:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39858 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230358AbjCHLXD (ORCPT
+        with ESMTP id S231143AbjCHLXD (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 06:23:03 -0500
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A33E0168B8;
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3EAD1F939;
         Wed,  8 Mar 2023 03:23:00 -0800 (PST)
 Received: from jupiter.universe (dyndsl-091-248-211-125.ewe-ip-backbone.de [91.248.211.125])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 54A666602FEF;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 572AC6602FF0;
         Wed,  8 Mar 2023 11:22:58 +0000 (GMT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1678274578;
-        bh=zBbVvDeuWMNfmUh52W1XZgduf0xZ4UgsGRTcx/DthA8=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ZWQXMK4fD5rz7S1SLeS7mPWnuKPUIf/m/+XtfPvn7/5lU4QKPnAdv3sRHnlwUhlio
-         aqUjUQzxat5OU5Bua/a46TEzV8fF0vx1kOaDcHJf+zhl7sNOJUNa1AT9aEPUsUVJJH
-         5ttKoLPbJGI/hLKLqejgGI8zClNmQFV1enXpXEjtmJSyQ6UoCiU1tE1JH/SW31/wqr
-         smvZ8y50RaQAjCq4TcepCETVTS7ky2hbMGel2X3N7LlDxY7Bt49q1/sLpGAmcUQFG5
-         XamejIer7gNy/Xa9qmpJKzABJ1KT6OQ9155GbbTFoSbwGJ/VZO5x3M0WOj61NbPU8N
-         lxxFR4plqhBWg==
+        bh=2C4HJnfnDAEoc5caRpklugf01GZjHVXbn+TxwWV+gzY=;
+        h=From:To:Cc:Subject:Date:From;
+        b=ROHIm+VmXKZWgZhOUQXawvDne46n/lx49mzVgCwwflfO6nMYCM8o0/G/t5c1AOk6z
+         2FT03hmqMMvYJb7al1HJqP6CVugSc0WaBUH/glc/tHSVB3lHQGDy65UaumWZOECSg5
+         tOtM8iaFh/HJxYUStY8ucsvkK/mhAyBAIBvk0MBJjJxfaiq2T41idbZmIkOfpP/bzK
+         0tGnasOT33Xs3BKT3IVPl++BT5CmfFlBzZrl6zIou78IT76mEP8ZAXbZJZ+L4uuJul
+         0TGZ2pszpHO+CEdChf5uzspqbQNms52Y5+nQ53NYrc4cBbql9CgJHFK4LAcjT152Rw
+         IN5W17mRGAz5A==
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 6F161480117; Wed,  8 Mar 2023 12:22:55 +0100 (CET)
+        id 6ADF248010E; Wed,  8 Mar 2023 12:22:55 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Heiko Stuebner <heiko@sntech.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -45,119 +45,60 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [RESEND] [PATCHv3 2/7] thermal: rockchip: Simplify clock logic
-Date:   Wed,  8 Mar 2023 12:22:48 +0100
-Message-Id: <20230308112253.15659-3-sebastian.reichel@collabora.com>
+Subject: [RESEND] [PATCHv3 0/7] RK3588 Thermal Support
+Date:   Wed,  8 Mar 2023 12:22:46 +0100
+Message-Id: <20230308112253.15659-1-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230308112253.15659-1-sebastian.reichel@collabora.com>
-References: <20230308112253.15659-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-By using devm_clk_get_enabled() the clock acquisition and
-enabling can be done in one step with automatic error
-handling.
+Hi,
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/thermal/rockchip_thermal.c | 33 +++++-------------------------
- 1 file changed, 5 insertions(+), 28 deletions(-)
+This adds thermal support for the new RK3588(s) SoC series. The
+series has been tested on the RK3588 EVB1 board.
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 7e88525fe8d0..6235c033995b 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1383,14 +1383,14 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 		return error;
- 	}
- 
--	thermal->clk = devm_clk_get(&pdev->dev, "tsadc");
-+	thermal->clk = devm_clk_get_enabled(&pdev->dev, "tsadc");
- 	if (IS_ERR(thermal->clk)) {
- 		error = PTR_ERR(thermal->clk);
- 		dev_err(&pdev->dev, "failed to get tsadc clock: %d\n", error);
- 		return error;
- 	}
- 
--	thermal->pclk = devm_clk_get(&pdev->dev, "apb_pclk");
-+	thermal->pclk = devm_clk_get_enabled(&pdev->dev, "apb_pclk");
- 	if (IS_ERR(thermal->pclk)) {
- 		error = PTR_ERR(thermal->pclk);
- 		dev_err(&pdev->dev, "failed to get apb_pclk clock: %d\n",
-@@ -1398,26 +1398,13 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 		return error;
- 	}
- 
--	error = clk_prepare_enable(thermal->clk);
--	if (error) {
--		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
--			error);
--		return error;
--	}
--
--	error = clk_prepare_enable(thermal->pclk);
--	if (error) {
--		dev_err(&pdev->dev, "failed to enable pclk: %d\n", error);
--		goto err_disable_clk;
--	}
--
- 	rockchip_thermal_reset_controller(thermal->reset);
- 
- 	error = rockchip_configure_from_dt(&pdev->dev, np, thermal);
- 	if (error) {
- 		dev_err(&pdev->dev, "failed to parse device tree data: %d\n",
- 			error);
--		goto err_disable_pclk;
-+		return error;
- 	}
- 
- 	thermal->chip->initialize(thermal->grf, thermal->regs,
-@@ -1431,7 +1418,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 			dev_err(&pdev->dev,
- 				"failed to register sensor[%d] : error = %d\n",
- 				i, error);
--			goto err_disable_pclk;
-+			return error;
- 		}
- 	}
- 
-@@ -1442,7 +1429,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	if (error) {
- 		dev_err(&pdev->dev,
- 			"failed to request tsadc irq: %d\n", error);
--		goto err_disable_pclk;
-+		return error;
- 	}
- 
- 	thermal->chip->control(thermal->regs, true);
-@@ -1460,13 +1447,6 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, thermal);
- 
- 	return 0;
--
--err_disable_pclk:
--	clk_disable_unprepare(thermal->pclk);
--err_disable_clk:
--	clk_disable_unprepare(thermal->clk);
--
--	return error;
- }
- 
- static int rockchip_thermal_remove(struct platform_device *pdev)
-@@ -1483,9 +1463,6 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
- 
- 	thermal->chip->control(thermal->regs, false);
- 
--	clk_disable_unprepare(thermal->pclk);
--	clk_disable_unprepare(thermal->clk);
--
- 	return 0;
- }
- 
+Can this be applied? The series received absolutely no feedback
+for a full release cycle.
+
+Changes since PATCHv3:
+ * https://lore.kernel.org/all/20230105180340.29140-1-sebastian.reichel@collabora.com/
+ * rebased against v6.3-rc1
+
+Changes since PATCHv2:
+ * https://lore.kernel.org/all/20221031175058.175698-1-sebastian.reichel@collabora.com/
+ * rebased against v6.2-rc1
+ * drop useless cast from patch 1
+ * add Heiko's reviewed-by to patches 1-3 & 5
+ * The discussion around patch 4 died, so I kept it unchanged
+
+Changes since PATCHv1:
+ * https://lore.kernel.org/all/20221021174721.92468-1-sebastian.reichel@collabora.com/
+ * Collect Reviewed-by/Acked-by
+ * Use TRM channel info in commit message (Daniel Lezcano)
+ * Add patch removing channel id lookup table (Daniel Lezcano)
+ * Add patch allocating sensors array dynamiccaly (Daniel Lezcano)
+ * I also added patches simplifying up the probe routine a bit
+
+-- Sebastian
+
+Finley Xiao (1):
+  thermal: rockchip: Support RK3588 SoC in the thermal driver
+
+Sebastian Reichel (6):
+  thermal: rockchip: Simplify getting match data
+  thermal: rockchip: Simplify clock logic
+  thermal: rockchip: Use dev_err_probe
+  thermal: rockchip: Simplify channel id logic
+  thermal: rockchip: Support dynamic sized sensor array
+  dt-bindings: rockchip-thermal: Support the RK3588 SoC compatible
+
+ .../bindings/thermal/rockchip-thermal.yaml    |   1 +
+ drivers/thermal/rockchip_thermal.c            | 322 ++++++++++++------
+ 2 files changed, 226 insertions(+), 97 deletions(-)
+
 -- 
 2.39.2
 
