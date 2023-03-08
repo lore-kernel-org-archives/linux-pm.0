@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C788CC742A7
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:23:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50EE7C64EC4
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:23:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231387AbjCHLXK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Mar 2023 06:23:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39854 "EHLO
+        id S231404AbjCHLXL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Mar 2023 06:23:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229999AbjCHLXD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 06:23:03 -0500
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3C671EFDC;
-        Wed,  8 Mar 2023 03:23:00 -0800 (PST)
+        with ESMTP id S231351AbjCHLXG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 06:23:06 -0500
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F56523670;
+        Wed,  8 Mar 2023 03:23:04 -0800 (PST)
 Received: from jupiter.universe (dyndsl-091-248-211-125.ewe-ip-backbone.de [91.248.211.125])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 7F1A36602FF2;
-        Wed,  8 Mar 2023 11:22:58 +0000 (GMT)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 6AED56602FFA;
+        Wed,  8 Mar 2023 11:23:00 +0000 (GMT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1678274578;
-        bh=qSZu4GeYB35cIFw6Mtc0Jdg9WdkZ5tVGO28WFkq5qBI=;
+        s=mail; t=1678274580;
+        bh=iWR+Ie0iBDfXOU6xkYUhXbfMDnxFsKJg6EnHQJe+oCk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=avtGrxg/xCE4caR877C7vbCOyXwqMwBxyB4V0H6tZ/NE2DqQTLPFDWYgCwjoeSbyg
-         nYg661HXpTxR0gf0Sy1mgXgW3m8Xpc9NC98haeOLzpC/LG3lRzzVQBM2H/U1T1sZ9G
-         JTGwy/Il6+Nrc2unpXszx3q85yvWIUfWr4PFFaESHefcMGc3uPMtJ84eEhkL2paOes
-         di8eVy+FbVxwEYiaKJby/pbDiTcYnDxWxG1yVK9k4PousmzhaivlyYtAyFXlS6LiWE
-         wMG7QAygTh1AhfPDEva88kbFMmiNLHEetD+nx1WcWzcHVhLAhWMo1g/XCBefPF3sw4
-         mg42Wj5jPrVGA==
+        b=a44uYxZ5spjJcG6hvL9PA6l2g24dpX6ghMMsE1n/t2hbWYDTEfiKSws+UQcQukTNc
+         i3Mdv17IC/argWmBEJyZF+A/MSRxQAvhnneQQtjJRgYQX97c0sZ1RQCfF0wjPCM8tf
+         rA1LDu2Eatfxa5bpl6j+RdGKeID5Y4LEWMBWHjZqPpgH22tEJYw/CgA4ZVYvrVXKlh
+         FjOxd7LBbsjdzkLLp+mLxsjkxlm5qi2CQUKOGceEN0a3GI5ySKivDTE+nlxJ2lwA35
+         qfmZcrP2lbAFoyIMJOvXu83AhuFLetKNx+k7P2QL4oyFAz51F7EIh9X5PueTMjurcF
+         Rt7iwWOj9fPOw==
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 7338848011C; Wed,  8 Mar 2023 12:22:55 +0100 (CET)
+        id 79AE648011F; Wed,  8 Mar 2023 12:22:55 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Heiko Stuebner <heiko@sntech.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -44,10 +44,11 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com
-Subject: [RESEND] [PATCHv3 4/7] thermal: rockchip: Simplify channel id logic
-Date:   Wed,  8 Mar 2023 12:22:50 +0100
-Message-Id: <20230308112253.15659-5-sebastian.reichel@collabora.com>
+        kernel@collabora.com,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [RESEND] [PATCHv3 7/7] dt-bindings: rockchip-thermal: Support the RK3588 SoC compatible
+Date:   Wed,  8 Mar 2023 12:22:53 +0100
+Message-Id: <20230308112253.15659-8-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230308112253.15659-1-sebastian.reichel@collabora.com>
 References: <20230308112253.15659-1-sebastian.reichel@collabora.com>
@@ -57,157 +58,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Replace the channel ID lookup table by a simple offset, since
-the channel IDs are consecutive.
+Add a new compatible for the thermal sensor device on RK3588 SoCs.
 
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/thermal/rockchip_thermal.c | 48 +++++++++++++-----------------
- 1 file changed, 21 insertions(+), 27 deletions(-)
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 9ed45b318344..bcbdd618daae 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -39,15 +39,6 @@ enum tshut_polarity {
- 	TSHUT_HIGH_ACTIVE,
- };
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+index f6c1be226aaa..55f8ec0bec01 100644
+--- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+@@ -19,6 +19,7 @@ properties:
+       - rockchip,rk3368-tsadc
+       - rockchip,rk3399-tsadc
+       - rockchip,rk3568-tsadc
++      - rockchip,rk3588-tsadc
+       - rockchip,rv1108-tsadc
  
--/*
-- * The system has two Temperature Sensors.
-- * sensor0 is for CPU, and sensor1 is for GPU.
-- */
--enum sensor_id {
--	SENSOR_CPU = 0,
--	SENSOR_GPU,
--};
--
- /*
-  * The conversion table has the adc value and temperature.
-  * ADC_DECREMENT: the adc value is of diminishing.(e.g. rk3288_code_table)
-@@ -82,7 +73,7 @@ struct chip_tsadc_table {
- 
- /**
-  * struct rockchip_tsadc_chip - hold the private data of tsadc chip
-- * @chn_id: array of sensor ids of chip corresponding to the channel
-+ * @chn_offset: the channel offset of the first channel
-  * @chn_num: the channel number of tsadc chip
-  * @tshut_temp: the hardware-controlled shutdown temperature value
-  * @tshut_mode: the hardware-controlled shutdown mode (0:CRU 1:GPIO)
-@@ -98,7 +89,7 @@ struct chip_tsadc_table {
-  */
- struct rockchip_tsadc_chip {
- 	/* The sensor id of chip correspond to the ADC channel */
--	int chn_id[SOC_MAX_SENSORS];
-+	int chn_offset;
- 	int chn_num;
- 
- 	/* The hardware-controlled tshut property */
-@@ -925,8 +916,8 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
- }
- 
- static const struct rockchip_tsadc_chip px30_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
--	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	/* cpu, gpu */
-+	.chn_offset = 0,
- 	.chn_num = 2, /* 2 channels for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_CRU, /* default TSHUT via CRU */
-@@ -949,7 +940,8 @@ static const struct rockchip_tsadc_chip px30_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rv1108_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	/* cpu */
-+	.chn_offset = 0,
- 	.chn_num = 1, /* one channel for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-@@ -973,7 +965,8 @@ static const struct rockchip_tsadc_chip rv1108_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	/* cpu */
-+	.chn_offset = 0,
- 	.chn_num = 1, /* one channel for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-@@ -997,8 +990,8 @@ static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 1, /* cpu sensor is channel 1 */
--	.chn_id[SENSOR_GPU] = 2, /* gpu sensor is channel 2 */
-+	/* cpu, gpu */
-+	.chn_offset = 1,
- 	.chn_num = 2, /* two channels for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-@@ -1022,7 +1015,8 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rk3328_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	/* cpu */
-+	.chn_offset = 0,
- 	.chn_num = 1, /* one channels for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_CRU, /* default TSHUT via CRU */
-@@ -1045,8 +1039,8 @@ static const struct rockchip_tsadc_chip rk3328_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
--	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	/* cpu, gpu */
-+	.chn_offset = 0,
- 	.chn_num = 2, /* two channels for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-@@ -1070,8 +1064,8 @@ static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
--	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	/* cpu, gpu */
-+	.chn_offset = 0,
- 	.chn_num = 2, /* two channels for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-@@ -1095,8 +1089,8 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
--	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	/* cpu, gpu */
-+	.chn_offset = 0,
- 	.chn_num = 2, /* two channels for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-@@ -1120,8 +1114,8 @@ static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
- };
- 
- static const struct rockchip_tsadc_chip rk3568_tsadc_data = {
--	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
--	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	/* cpu, gpu */
-+	.chn_offset = 0,
- 	.chn_num = 2, /* two channels for tsadc */
- 
- 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-@@ -1404,7 +1398,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		error = rockchip_thermal_register_sensor(pdev, thermal,
- 						&thermal->sensors[i],
--						thermal->chip->chn_id[i]);
-+						thermal->chip->chn_offset + i);
- 		if (error)
- 			return dev_err_probe(&pdev->dev, error,
- 				"failed to register sensor[%d].\n", i);
+   reg:
 -- 
 2.39.2
 
