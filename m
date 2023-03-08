@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DD07C64EC4
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:23:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25BA6C6FD1F
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:23:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231359AbjCHLXH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230186AbjCHLXH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 8 Mar 2023 06:23:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39858 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39856 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231143AbjCHLXD (ORCPT
+        with ESMTP id S230512AbjCHLXD (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 06:23:03 -0500
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3EAD1F939;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3D281F933;
         Wed,  8 Mar 2023 03:23:00 -0800 (PST)
 Received: from jupiter.universe (dyndsl-091-248-211-125.ewe-ip-backbone.de [91.248.211.125])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 572AC6602FF0;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 64C606602FF1;
         Wed,  8 Mar 2023 11:22:58 +0000 (GMT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1678274578;
-        bh=2C4HJnfnDAEoc5caRpklugf01GZjHVXbn+TxwWV+gzY=;
-        h=From:To:Cc:Subject:Date:From;
-        b=ROHIm+VmXKZWgZhOUQXawvDne46n/lx49mzVgCwwflfO6nMYCM8o0/G/t5c1AOk6z
-         2FT03hmqMMvYJb7al1HJqP6CVugSc0WaBUH/glc/tHSVB3lHQGDy65UaumWZOECSg5
-         tOtM8iaFh/HJxYUStY8ucsvkK/mhAyBAIBvk0MBJjJxfaiq2T41idbZmIkOfpP/bzK
-         0tGnasOT33Xs3BKT3IVPl++BT5CmfFlBzZrl6zIou78IT76mEP8ZAXbZJZ+L4uuJul
-         0TGZ2pszpHO+CEdChf5uzspqbQNms52Y5+nQ53NYrc4cBbql9CgJHFK4LAcjT152Rw
-         IN5W17mRGAz5A==
+        bh=s2e12H1E4UhSPpqxDNG9lVL6rQq63K8jTcBFhbky8Dg=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=PWDBwQd7lPom216y2V5hxcOsCbaNr5I4ZREz/oIk/xw/3lmH6sd71T6839LvZ/87A
+         7hObMp9lOWAX+VcSGikHY5tBBNSds6Q+zJYxuTckZVIt7PdpvX1k+bj3c5waE1NHV/
+         3iA5ATYKnA3vzlTrnZ2eUecaf3IUEw0NZ//mkx5BJc7LJkGr9h8TU0xipwQwHka/L8
+         +kisnpikbmL4h+Qnl0bvHn60rRW6wBYRNVX1NsC0Pv0YuOX8YS1qyxfabBT833mmbc
+         vX29t8Tm3ja7lX5vJ/nW2GslMgM30fcjg3TbfPLGkUrmYc923TkJoWUfRnm8MyHaIZ
+         wK18alJ9nTRfQ==
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 6ADF248010E; Wed,  8 Mar 2023 12:22:55 +0100 (CET)
+        id 712CD48011B; Wed,  8 Mar 2023 12:22:55 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Heiko Stuebner <heiko@sntech.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -45,60 +45,109 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [RESEND] [PATCHv3 0/7] RK3588 Thermal Support
-Date:   Wed,  8 Mar 2023 12:22:46 +0100
-Message-Id: <20230308112253.15659-1-sebastian.reichel@collabora.com>
+Subject: [RESEND] [PATCHv3 3/7] thermal: rockchip: Use dev_err_probe
+Date:   Wed,  8 Mar 2023 12:22:49 +0100
+Message-Id: <20230308112253.15659-4-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230308112253.15659-1-sebastian.reichel@collabora.com>
+References: <20230308112253.15659-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Use dev_err_probe to simplify error printing in the driver's probe
+routine.
 
-This adds thermal support for the new RK3588(s) SoC series. The
-series has been tested on the RK3588 EVB1 board.
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
+ drivers/thermal/rockchip_thermal.c | 50 +++++++++++-------------------
+ 1 file changed, 18 insertions(+), 32 deletions(-)
 
-Can this be applied? The series received absolutely no feedback
-for a full release cycle.
-
-Changes since PATCHv3:
- * https://lore.kernel.org/all/20230105180340.29140-1-sebastian.reichel@collabora.com/
- * rebased against v6.3-rc1
-
-Changes since PATCHv2:
- * https://lore.kernel.org/all/20221031175058.175698-1-sebastian.reichel@collabora.com/
- * rebased against v6.2-rc1
- * drop useless cast from patch 1
- * add Heiko's reviewed-by to patches 1-3 & 5
- * The discussion around patch 4 died, so I kept it unchanged
-
-Changes since PATCHv1:
- * https://lore.kernel.org/all/20221021174721.92468-1-sebastian.reichel@collabora.com/
- * Collect Reviewed-by/Acked-by
- * Use TRM channel info in commit message (Daniel Lezcano)
- * Add patch removing channel id lookup table (Daniel Lezcano)
- * Add patch allocating sensors array dynamiccaly (Daniel Lezcano)
- * I also added patches simplifying up the probe routine a bit
-
--- Sebastian
-
-Finley Xiao (1):
-  thermal: rockchip: Support RK3588 SoC in the thermal driver
-
-Sebastian Reichel (6):
-  thermal: rockchip: Simplify getting match data
-  thermal: rockchip: Simplify clock logic
-  thermal: rockchip: Use dev_err_probe
-  thermal: rockchip: Simplify channel id logic
-  thermal: rockchip: Support dynamic sized sensor array
-  dt-bindings: rockchip-thermal: Support the RK3588 SoC compatible
-
- .../bindings/thermal/rockchip-thermal.yaml    |   1 +
- drivers/thermal/rockchip_thermal.c            | 322 ++++++++++++------
- 2 files changed, 226 insertions(+), 97 deletions(-)
-
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 6235c033995b..9ed45b318344 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -1377,35 +1377,26 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 		return PTR_ERR(thermal->regs);
+ 
+ 	thermal->reset = devm_reset_control_array_get(&pdev->dev, false, false);
+-	if (IS_ERR(thermal->reset)) {
+-		error = PTR_ERR(thermal->reset);
+-		dev_err(&pdev->dev, "failed to get tsadc reset: %d\n", error);
+-		return error;
+-	}
++	if (IS_ERR(thermal->reset))
++		return dev_err_probe(&pdev->dev, PTR_ERR(thermal->reset),
++				     "failed to get tsadc reset.\n");
+ 
+ 	thermal->clk = devm_clk_get_enabled(&pdev->dev, "tsadc");
+-	if (IS_ERR(thermal->clk)) {
+-		error = PTR_ERR(thermal->clk);
+-		dev_err(&pdev->dev, "failed to get tsadc clock: %d\n", error);
+-		return error;
+-	}
++	if (IS_ERR(thermal->clk))
++		return dev_err_probe(&pdev->dev, PTR_ERR(thermal->clk),
++				     "failed to get tsadc clock.\n");
+ 
+ 	thermal->pclk = devm_clk_get_enabled(&pdev->dev, "apb_pclk");
+-	if (IS_ERR(thermal->pclk)) {
+-		error = PTR_ERR(thermal->pclk);
+-		dev_err(&pdev->dev, "failed to get apb_pclk clock: %d\n",
+-			error);
+-		return error;
+-	}
++	if (IS_ERR(thermal->pclk))
++		return dev_err_probe(&pdev->dev, PTR_ERR(thermal->pclk),
++				     "failed to get apb_pclk clock.\n");
+ 
+ 	rockchip_thermal_reset_controller(thermal->reset);
+ 
+ 	error = rockchip_configure_from_dt(&pdev->dev, np, thermal);
+-	if (error) {
+-		dev_err(&pdev->dev, "failed to parse device tree data: %d\n",
+-			error);
+-		return error;
+-	}
++	if (error)
++		return dev_err_probe(&pdev->dev, error,
++				"failed to parse device tree data\n");
+ 
+ 	thermal->chip->initialize(thermal->grf, thermal->regs,
+ 				  thermal->tshut_polarity);
+@@ -1414,23 +1405,18 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 		error = rockchip_thermal_register_sensor(pdev, thermal,
+ 						&thermal->sensors[i],
+ 						thermal->chip->chn_id[i]);
+-		if (error) {
+-			dev_err(&pdev->dev,
+-				"failed to register sensor[%d] : error = %d\n",
+-				i, error);
+-			return error;
+-		}
++		if (error)
++			return dev_err_probe(&pdev->dev, error,
++				"failed to register sensor[%d].\n", i);
+ 	}
+ 
+ 	error = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+ 					  &rockchip_thermal_alarm_irq_thread,
+ 					  IRQF_ONESHOT,
+ 					  "rockchip_thermal", thermal);
+-	if (error) {
+-		dev_err(&pdev->dev,
+-			"failed to request tsadc irq: %d\n", error);
+-		return error;
+-	}
++	if (error)
++		return dev_err_probe(&pdev->dev, error,
++				     "failed to request tsadc irq.\n");
+ 
+ 	thermal->chip->control(thermal->regs, true);
+ 
 -- 
 2.39.2
 
