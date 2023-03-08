@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6427FC742A7
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 08:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46D6EC678D5
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 08:44:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229977AbjCHIom (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Mar 2023 03:44:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53778 "EHLO
+        id S229994AbjCHIon (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Mar 2023 03:44:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53786 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229906AbjCHIok (ORCPT
+        with ESMTP id S229851AbjCHIok (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 03:44:40 -0500
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9474E9E67A;
-        Wed,  8 Mar 2023 00:44:37 -0800 (PST)
-Received: by mail-ed1-x535.google.com with SMTP id ec29so31767002edb.6;
-        Wed, 08 Mar 2023 00:44:37 -0800 (PST)
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C6219F067;
+        Wed,  8 Mar 2023 00:44:39 -0800 (PST)
+Received: by mail-ed1-x533.google.com with SMTP id ec29so31767239edb.6;
+        Wed, 08 Mar 2023 00:44:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1678265076;
+        d=gmail.com; s=20210112; t=1678265077;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=E2l9GniXbIObtfjCfu9eYVESux7iZ+E2zlwf2Uly32g=;
-        b=TKjsZuaXBCSYomo6F0IqS68FnNt9dCKTEBnuPPYn8pHMZU/q2jpA9rqmzCmJ2EgHxZ
-         mb4dAQ1fAI1cDUph43gD20kYtBfjthKnw2cvub+Cf23VwFBzT7NILACVbGKe6ZTBm4kt
-         fwyo+ZO2I7ugpQUEZrJOdCpNICYVVDDpn+g3YTT5ACkpWSPfgJu3Dge0LjXZBftGnTSk
-         Cn7o2j1RGgUhs8XJvMwoiTk7traCetguRESZyptgRgmUFWrOps4Pfe+oObxo6I2zOoDV
-         7i1wQVaczBtA37AODdaSS3wxYVg8yLwdQVQlmZewpLbt/4m/kdIL2TbgyXi3gxUzofYi
-         N66Q==
+        bh=bt0rP56ZVICJXZOyWcT1Og4PPdYTw7SSYjSP/fByF9w=;
+        b=q4jDMXjbnN11ZJAbkD1K3MPkAEmb7KJT9Syk3m40F8SthEU/wy5ivzobAFc7jLuLdn
+         Sp+76WjLsufxK8FxW+bqXlr59Us4r3k3qqRIkdxMaeuKQkYHbOP8PfvTxFgns4CYHR3T
+         w5SIXGD7hpHTE6oDLsSSMAn6oZj0pmOtcNboOUr2NAroAWYdDjgxGmd+KnI4WOj4zQyq
+         uHj1w4Y8orQ9y6T28/gMEZAq3SBdZeEKijZ3Qiiv0Zmd4X+w3zb/xGgK8oKgvwz4/Z30
+         VYb6S2UubuL1DicrTTsXYmYCS7TF8kagHYV1DwC/KlxEbqdRb6BV9Og8RX0vBOIcKM1m
+         bkvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678265076;
+        d=1e100.net; s=20210112; t=1678265077;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=E2l9GniXbIObtfjCfu9eYVESux7iZ+E2zlwf2Uly32g=;
-        b=rygeqB0aeMFO0vKFMacpz1N6Cl6/lDJSCDzbPi+5O/Ah5+ipnfi6R7yMhzAthbh4yW
-         pHo8MdSGKpuPPdn/Sl5pVO5w7IPdidXn/99f+oK2SJh0BW6bUjMzli0vvVPdrinxnpiN
-         sutF+S5T3W+iU3RTW1XklmlsdCk3aHY+CbTJe7V5gqW/qWW/tK67eLcXOxTQsFyfwjiY
-         H4tqYHfVsPtX5vX08P46GJQFbRySOwH6qOs5ItU0LtMGx+y2WTjDsUAHuUkBUMQTHOCN
-         NJfK4GJs0fH/KVwY6S64iiep3iJmeeNKLleCWA4DGLNBuWOOOMbJgbjHKRM0GzUeNtot
-         /MJg==
-X-Gm-Message-State: AO0yUKX1Ns0Uxyxm4nNn4QbC9UsMC41Fzz1h6HzMU8emMX63GWO6bnas
-        M9wpsIG1iY7bgWmAPK7Rc6w=
-X-Google-Smtp-Source: AK7set9KP1K02Uv78u/AWya07GL7x/CG3QgyFA+hboC76A00zyPjEPDuGMfXduiVN70esfswId1/8g==
-X-Received: by 2002:a17:907:8686:b0:8f7:5038:9896 with SMTP id qa6-20020a170907868600b008f750389896mr21227842ejc.70.1678265075961;
-        Wed, 08 Mar 2023 00:44:35 -0800 (PST)
+        bh=bt0rP56ZVICJXZOyWcT1Og4PPdYTw7SSYjSP/fByF9w=;
+        b=i3eZLC4EyV1S1gd93D/47vKxE0Nffe5oNugDMOFDhIugtN2Ydsol+TjaDSzeuaOXHT
+         w42nIMHRjQJU3PrKdeQzyXdbvaYLYJhuVWkKc/fUbHLykM42+ATVPHVbgOjXOykn01qv
+         hVocWgKQXrAb6lBfF72Nur5bCZEdI7Ft31S0PJ9NxW2X09f19fLZDl+89WDvU4rj1/Zq
+         VszEWhlikDnS5FSNoMQ1zrtQh+Gp3gFQRa6w1olNwrvdt/iWILHexMGyulvMm2ZtNO0B
+         vyn8mdxQxTvGmp9UmiODY9MYx+uSsY4LciA94X5I5sYUbaYeDNw+k/KUEwF2ahH6KbUp
+         fdEA==
+X-Gm-Message-State: AO0yUKXKQankySWoL82fhbLiu2jM++0Swe0MIge8CPvTbTLQzIhedcx/
+        2WP87kugxTjUJ9HTIscFToE=
+X-Google-Smtp-Source: AK7set9w4xe0l2DA2T2YXSTNptqTRXa6rFYbyI3xApG9MdT2T3iw5Xg1Zl7QA4HyNMWshKpnVCy7iw==
+X-Received: by 2002:a17:906:b1cc:b0:8b1:7684:dfab with SMTP id bv12-20020a170906b1cc00b008b17684dfabmr19005757ejb.38.1678265077771;
+        Wed, 08 Mar 2023 00:44:37 -0800 (PST)
 Received: from xeon.. ([188.163.112.76])
-        by smtp.gmail.com with ESMTPSA id p8-20020a170906838800b008ee95ccfe06sm7163891ejx.119.2023.03.08.00.44.35
+        by smtp.gmail.com with ESMTPSA id p8-20020a170906838800b008ee95ccfe06sm7163891ejx.119.2023.03.08.00.44.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Mar 2023 00:44:35 -0800 (PST)
+        Wed, 08 Mar 2023 00:44:37 -0800 (PST)
 From:   Svyatoslav Ryhel <clamor95@gmail.com>
 To:     Iskren Chernev <me@iskren.info>,
         Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
@@ -59,9 +59,9 @@ To:     Iskren Chernev <me@iskren.info>,
         Svyatoslav Ryhel <clamor95@gmail.com>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v1 2/4] power: max17040: add simple battery cell support
-Date:   Wed,  8 Mar 2023 10:44:17 +0200
-Message-Id: <20230308084419.11934-3-clamor95@gmail.com>
+Subject: [PATCH v1 4/4] power: max17040: get thermal data from adc if available
+Date:   Wed,  8 Mar 2023 10:44:19 +0200
+Message-Id: <20230308084419.11934-5-clamor95@gmail.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230308084419.11934-1-clamor95@gmail.com>
 References: <20230308084419.11934-1-clamor95@gmail.com>
@@ -71,80 +71,90 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Simple battery cell allows to pass some constant data
-about battery controlled by this fuel gauge.
+Since fuel gauge does not support thermal monitoring,
+some vendors may couple this fuel gauge with thermal/adc
+sensor to monitor battery cell exact temperature.
+
+Add this feature by adding optional iio thermal channel.
 
 Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 ---
- drivers/power/supply/max17040_battery.c | 34 +++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/power/supply/max17040_battery.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index d1075959dd46..2778ed5b5c14 100644
+index 6dfce7b1309e..8c743c26dc6e 100644
 --- a/drivers/power/supply/max17040_battery.c
 +++ b/drivers/power/supply/max17040_battery.c
-@@ -141,6 +141,7 @@ struct max17040_chip {
- 	struct regmap			*regmap;
- 	struct delayed_work		work;
+@@ -18,6 +18,7 @@
+ #include <linux/of_device.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
++#include <linux/iio/consumer.h>
+ 
+ #define MAX17040_VCELL	0x02
+ #define MAX17040_SOC	0x04
+@@ -143,6 +144,7 @@ struct max17040_chip {
  	struct power_supply		*battery;
-+	struct power_supply_battery_info	*batt_info;
+ 	struct power_supply_battery_info	*batt_info;
  	struct chip_data		data;
++	struct iio_channel		*channel_temp;
  
  	/* battery capacity */
-@@ -400,6 +401,28 @@ static int max17040_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
- 		val->intval = chip->low_soc_alert;
+ 	int soc;
+@@ -416,6 +418,11 @@ static int max17040_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+ 		val->intval = chip->batt_info->charge_full_design_uah;
  		break;
-+
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		val->intval = chip->batt_info->technology;
++	case POWER_SUPPLY_PROP_TEMP:
++		iio_read_channel_raw(chip->channel_temp,
++				     &val->intval);
++		val->intval *= 10;
 +		break;
-+	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
-+		val->intval = chip->batt_info->energy_full_design_uwh;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		val->intval = chip->batt_info->charge_full_design_uah;
-+		break;
-+	case POWER_SUPPLY_PROP_TEMP_MIN:
-+		if (chip->batt_info->temp_min == INT_MIN)
-+			return -ENODATA;
-+
-+		val->intval = chip->batt_info->temp_min * 10;
-+		break;
-+	case POWER_SUPPLY_PROP_TEMP_MAX:
-+		if (chip->batt_info->temp_max == INT_MAX)
-+			return -ENODATA;
-+
-+		val->intval = chip->batt_info->temp_max * 10;
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -418,6 +441,11 @@ static enum power_supply_property max17040_battery_props[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- 	POWER_SUPPLY_PROP_CAPACITY,
- 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_TEMP_MIN,
-+	POWER_SUPPLY_PROP_TEMP_MAX,
+ 	case POWER_SUPPLY_PROP_TEMP_MIN:
+ 		if (chip->batt_info->temp_min == INT_MIN)
+ 			return -ENODATA;
+@@ -452,6 +459,7 @@ static enum power_supply_property max17040_battery_props[] = {
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
++	POWER_SUPPLY_PROP_TEMP,
+ 	POWER_SUPPLY_PROP_TEMP_MIN,
+ 	POWER_SUPPLY_PROP_TEMP_MAX,
  };
- 
- static const struct power_supply_desc max17040_battery_desc = {
-@@ -470,6 +498,12 @@ static int max17040_probe(struct i2c_client *client)
- 		return PTR_ERR(chip->battery);
+@@ -560,9 +568,24 @@ static int max17040_probe(struct i2c_client *client)
+ 		}
  	}
  
-+	if (client->dev.of_node) {
-+		if (power_supply_get_battery_info(chip->battery, &chip->batt_info))
-+			dev_warn(&client->dev,
-+				 "No monitored battery, some properties will be missing\n");
-+	}
++	if (of_property_read_bool(client->dev.of_node, "io-channels")) {
++		chip->channel_temp = iio_channel_get(&client->dev, "temp");
++		if (IS_ERR(chip->channel_temp))
++			return dev_err_probe(&client->dev, PTR_ERR(chip->channel_temp),
++					     "failed to get temp\n");
++	};
 +
- 	ret = max17040_get_version(chip);
- 	if (ret < 0)
- 		return ret;
+ 	return 0;
+ }
+ 
++static void max17040_remove(struct i2c_client *client)
++{
++	struct max17040_chip *chip = i2c_get_clientdata(client);
++
++	if (chip->channel_temp)
++		iio_channel_release(chip->channel_temp);
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ 
+ static int max17040_suspend(struct device *dev)
+@@ -642,6 +665,7 @@ static struct i2c_driver max17040_i2c_driver = {
+ 		.pm	= MAX17040_PM_OPS,
+ 	},
+ 	.probe_new	= max17040_probe,
++	.remove		= max17040_remove,
+ 	.id_table	= max17040_id,
+ };
+ module_i2c_driver(max17040_i2c_driver);
 -- 
 2.37.2
 
