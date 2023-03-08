@@ -2,171 +2,99 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB221C6FD1F
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:12:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4344C64EC4
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 11:23:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230206AbjCHLMe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Mar 2023 06:12:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53582 "EHLO
+        id S231167AbjCHLXD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Mar 2023 06:23:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229866AbjCHLMc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 06:12:32 -0500
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8EE4BB4F58
-        for <linux-pm@vger.kernel.org>; Wed,  8 Mar 2023 03:12:31 -0800 (PST)
-Received: by mail-ed1-x52c.google.com with SMTP id da10so64278640edb.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Mar 2023 03:12:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1678273950;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=/fPU2tBHNpDiK+ESgZE1NTwFx8PfPKs+ZFdXAJHf1Us=;
-        b=ek4n97I6m7J1I7V8osSw5E/BSUnz2l4DlNr7gyCms2kGkO8VyZDNtvDcxcpsJm0166
-         DVdBRLbmkrcHfYYhPVPam/4UGIB1YXAucMriTobxa4gz230CO7EIM1mTQHwraZ/jEeyp
-         8phE66PcghfaKEBrkaMzseEVZKJRjM3/67TslZ8vyGCoFCeIevd0AsH3n1j2IwgzsF1H
-         pAafVOqSdRtmGMhXHWmtFgq0YpB/S3o3CodXv20J9+XosQd8NFVAP8+AQAlyeI5sS/YG
-         xgUeycolP4MSqyHXF10erja1nHWQRHvpUGf79OlBRwKIGZHbP9QJB/Aqgzir674An66X
-         GCMQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678273950;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=/fPU2tBHNpDiK+ESgZE1NTwFx8PfPKs+ZFdXAJHf1Us=;
-        b=464a9Cs/1/ils79C9x7vh+FDyPFq7yrxI++sAmSAffazRywqzUuEsnLj7FDEuZDL7S
-         XNqASENWXrlR3rOnAxTHLudh9SXs6SIIh78u2JAkr2zdd4BU2IqPC726GxmMCTydbrHt
-         FdUOApUMUfSO4P1CxhfUTxsvfuixPh9cfCpYovDeqSdWZIEzNHK5ePJa1yLN/iIqF3GH
-         5f71koUVyRLpbWikSCMkzSB4gf3lvaV9CLyOYrCbWNpSCjJs/K95L9Sgnnhk6IK+AUkk
-         kmcOlgYjj/jbYUl/Z42ikVZZl8trdUcB97jHt/bZgDqK8nDMxqGFMcedNTErWliZl64U
-         cwJA==
-X-Gm-Message-State: AO0yUKWi2MSj82pASoxMorpHoJdrGe9tiC1KpoMwr+ZMfnGAB83fUxZg
-        aTkZ1YTdGjH8IzBzMB4BjXtxEw==
-X-Google-Smtp-Source: AK7set++rAeeM8NbXauRa/wWHNjpsGMjgc+w2yOa/uMVzR5gQlC86O3rLyVM0FHfN5jqs94GQLPt2A==
-X-Received: by 2002:a17:906:6dd3:b0:878:8249:bef6 with SMTP id j19-20020a1709066dd300b008788249bef6mr17342106ejt.59.1678273949751;
-        Wed, 08 Mar 2023 03:12:29 -0800 (PST)
-Received: from ?IPV6:2a02:810d:15c0:828:ff33:9b14:bdd2:a3da? ([2a02:810d:15c0:828:ff33:9b14:bdd2:a3da])
-        by smtp.gmail.com with ESMTPSA id kt21-20020a170906aad500b008d398a4e687sm7313409ejb.158.2023.03.08.03.12.28
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 08 Mar 2023 03:12:29 -0800 (PST)
-Message-ID: <d3190ecb-76fb-2d57-c4a9-2d65bb0e8d33@linaro.org>
-Date:   Wed, 8 Mar 2023 12:12:28 +0100
+        with ESMTP id S230186AbjCHLXB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 06:23:01 -0500
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3F122004B;
+        Wed,  8 Mar 2023 03:23:00 -0800 (PST)
+Received: from jupiter.universe (dyndsl-091-248-211-125.ewe-ip-backbone.de [91.248.211.125])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: sre)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 544DB6602FEE;
+        Wed,  8 Mar 2023 11:22:58 +0000 (GMT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1678274578;
+        bh=NhlIeCsCb+Aqj/Z0GvEUknpPeB8K45sszWBuWJ+vpjM=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=WeP3q1qmT4HRCK83tiKSa2n9AUmabYwutlhR0iC8X9H7Yy6blpXxXapxgy88Wp3x3
+         OnHyzWAaS5WNRDKwc7waVTzdHEF2KkIdujisb1kM+/PdJkqqgXkjPX6ZylYWcg+fO/
+         kY/IHcv5IYSRre5e3aORPMz1jn4bUJ7JoBCPymp5YnbQvH9snaXpfKswH/B37yR4Vp
+         WAeq9a3HTuE/kQ73LGWG8nV0woVdUtLPqIbFAy54LozZzkiJOyMeDR85l3UB/Rk9AH
+         utBUsyXiKDPWvWNIxotRuorNa4MkW2lpX74GjL+sW7JIsCNzbAqYLvKt6RJuwalfEG
+         5btnK5KotPBmQ==
+Received: by jupiter.universe (Postfix, from userid 1000)
+        id 6CC3B480116; Wed,  8 Mar 2023 12:22:55 +0100 (CET)
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Heiko Stuebner <heiko@sntech.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        kernel@collabora.com
+Subject: [RESEND] [PATCHv3 1/7] thermal: rockchip: Simplify getting match data
+Date:   Wed,  8 Mar 2023 12:22:47 +0100
+Message-Id: <20230308112253.15659-2-sebastian.reichel@collabora.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230308112253.15659-1-sebastian.reichel@collabora.com>
+References: <20230308112253.15659-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH v1 1/4] dt-bindings: power: supply: maxim,max17040: update
- properties
-Content-Language: en-US
-To:     Svyatoslav Ryhel <clamor95@gmail.com>
-Cc:     Iskren Chernev <me@iskren.info>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Matheus Castello <matheus@castello.eng.br>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230308084419.11934-1-clamor95@gmail.com>
- <20230308084419.11934-2-clamor95@gmail.com>
- <95fa5f0f-cf53-7a37-2170-98b81c0982f1@linaro.org>
- <CAPVz0n1QDFyHiGAa7UOuuwPiSH+ELiYNeO9-fxPWrOWkWqEuHg@mail.gmail.com>
- <bbc7c183-3f98-9ea4-d5e5-0d58dd65d416@linaro.org>
- <CAPVz0n3sKH_7x=aNVLaHVN0F1FWLVRW+MGoj9qBO9V=TDuv_jQ@mail.gmail.com>
- <d0d0617d-8a2e-7a71-f4fe-f69896f84ede@linaro.org>
- <CAPVz0n2XTJdSELoE9-P=r6ntAOT0PHEgoFTiyMz577z5wzF1QQ@mail.gmail.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <CAPVz0n2XTJdSELoE9-P=r6ntAOT0PHEgoFTiyMz577z5wzF1QQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 08/03/2023 12:06, Svyatoslav Ryhel wrote:
-> ср, 8 бер. 2023 р. о 12:53 Krzysztof Kozlowski
-> <krzysztof.kozlowski@linaro.org> пише:
->>
->> On 08/03/2023 11:51, Svyatoslav Ryhel wrote:
->>> ср, 8 бер. 2023 р. о 12:44 Krzysztof Kozlowski
->>> <krzysztof.kozlowski@linaro.org> пише:
->>>>
->>>> On 08/03/2023 10:15, Svyatoslav Ryhel wrote:
->>>>
->>>>>> max17040 does not have ADC temperature input... so is it system
->>>>>> configuration?
->>>>>>
->>>>>
->>>>> yes, I own a device (LG Optimus Vu P895) which uses max17043
->>>>> coupled with ADC thermal sensor
->>>>>
->>>>>>> +
->>>>>>> +  io-channel-names:
->>>>>>> +    items:
->>>>>>> +      - const: temp
->>>>>>
->>>>>> Drop the names property, not needed for one item.
->>>>>>
->>>>>
->>>>> Alright, but driver patch expects temp name. I will look if this
->>>>> is adjustable.
->>>>
->>>> I think I saw cases without names.
->>>>
->>>
->>> There is no io-channel without a name. And io-channels are mostly used
->>> by power supply devices.
->>>
->>>>>
->>>>>>> +
->>>>>>>    wakeup-source:
->>>>>>>      type: boolean
->>>>>>>      description: |
->>>>>>> @@ -95,3 +109,26 @@ examples:
->>>>>>>          wakeup-source;
->>>>>>>        };
->>>>>>>      };
->>>>>>> +  - |
->>>>>>> +    #include <dt-bindings/interrupt-controller/irq.h>
->>>>>>> +    i2c0 {
->>>>>>> +      #address-cells = <1>;
->>>>>>> +      #size-cells = <0>;
->>>>>>> +
->>>>>>> +      fuel-gauge@36 {
->>>>>>> +        compatible = "maxim,max17043";
->>>>>>> +        reg = <0x36>;
->>>>>>> +
->>>>>>> +        interrupt-parent = <&gpio>;
->>>>>>> +        interrupts = <144 IRQ_TYPE_EDGE_FALLING>;
->>>>>>> +
->>>>>>> +        monitored-battery = <&battery>;
->>>>>>> +        power-supplies = <&charger>;
->>>>>>
->>>>>> But here you suggests something else than VDD... The hardware does not
->>>>>> take charger as input. It takes power supply - vdd.
->>>>>>
->>>>>
->>>>> Power system allows passing properties from other power devices.
->>>>> In this case battery health and status are passed from charger.
->>>>
->>>> So this is not an input to device? Then it does not really look like
->>>> property of this hardware. Fuel gauge does not control the charger, also
->>>> from system configuration point of view.
->>>>
->>>
->>> It is not controlling charger, the charger provides the status and
->>> health of the battery to the fuel gauge. This option is also used in
->>> other fuel gauges.
->>
->> How regulator provides health and status of the battery? I don't understand.
->>
-> 
-> It is not a regulator, it is a charger! Dedicated chip responsible for
-> controlling charging. And its configuration allows it to get battery
-> health and status, because this fuel gauge does not have this
-> function.
+It's possible to directly get the match data in a generic
+way nowadays.
 
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
+ drivers/thermal/rockchip_thermal.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-Ah, you are right. I confused with power-supply. It is fine.
-
-
-Best regards,
-Krzysztof
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 4b7c43f34d1a..7e88525fe8d0 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -1353,15 +1353,10 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct rockchip_thermal_data *thermal;
+-	const struct of_device_id *match;
+ 	int irq;
+ 	int i;
+ 	int error;
+ 
+-	match = of_match_node(of_rockchip_thermal_match, np);
+-	if (!match)
+-		return -ENXIO;
+-
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0)
+ 		return -EINVAL;
+@@ -1373,7 +1368,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 
+ 	thermal->pdev = pdev;
+ 
+-	thermal->chip = (const struct rockchip_tsadc_chip *)match->data;
++	thermal->chip = device_get_match_data(&pdev->dev);
+ 	if (!thermal->chip)
+ 		return -EINVAL;
+ 
+-- 
+2.39.2
 
