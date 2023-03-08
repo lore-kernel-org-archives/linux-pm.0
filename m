@@ -2,33 +2,33 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C88FAC64EC4
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 13:46:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2F47C678D5
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Mar 2023 13:46:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230322AbjCHNqB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Mar 2023 08:46:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60692 "EHLO
+        id S230060AbjCHNqq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Mar 2023 08:46:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33316 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229911AbjCHNpi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 08:45:38 -0500
+        with ESMTP id S230096AbjCHNou (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2023 08:44:50 -0500
 Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 456EF6C880;
-        Wed,  8 Mar 2023 05:44:58 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFD38898CC;
+        Wed,  8 Mar 2023 05:44:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=kernkonzept.com; s=mx1; h=Content-Transfer-Encoding:MIME-Version:References
         :In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
         Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
         Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
         List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=N1DdDhzRnW4J57Fi8coCDzwHqnrpF2bA5N89Jyh5ZyE=; b=PR/2Uin9/zFhyhJvRAj84pd6Yv
-        bLTL9pJ/vGTbyBuRJdDLQKxk9zUxhxM/wnGX+TB3G2K1N544WIJyw0eWDwdoT5UiasPmAmHrekPct
-        TMw1tb3oUeAXWx9btLbDbM0oYodMZXabELHPhENt4dZ8OPZvnEzRWAFOWnvluQhPW0OJ8Xg//ecPK
-        VWUATayqKT8K7J/zQzQQVv9r/gfBSvkzWnDs/7NTvF2OM2Bq8iFKH1yKJYVJhJv7DXef5bppcTcj6
-        SPB9fs2UYPrKHbrKf8LjX/RUgRZm2M8OnjTRBeYLFeo78ke3PL7/KgkbSrU8rmjtZcECKH3hTGvwJ
-        1MCRMoMA==;
+        bh=/yAr8WnTsTmFONT05onPTxc/3Y+w3nhWYLkR71Mi8LE=; b=MlR+o67BNRE7tZtIOvW1jjrW0m
+        Q2ShMel5nxjaVzYUoZl9cpmPrs9GnCYMnUfGKKK44xPmPsuJEE68qb5HfX27eiFupF+S1GrZSs5jN
+        HkOC/+0pn/FgFTeU5k0D8uMon4fxCr96a1ivOkVxYblXbaPNfGb9ZWj7Y18ZWkEmt7IbPzqEMHv9C
+        EiGf/D57Ro+flOzpHlDIZV6uHuFuvTWl1Ry8qsR8AiWG0M3V939Su2TZhUj7acyqYispUpGNRNt1b
+        Lh3CLESmvJ2UxSALj1IPr5FUqSiyzH8A+/o6EaCF4BBWr8S8qzhiBYnlFIc9WZbSWLqNF6+AIGLtA
+        JneaO7uw==;
 Received: from [10.22.3.24] (helo=kernkonzept.com)
         by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.94.2)
-        id 1pZtZz-00FDCA-JT; Wed, 08 Mar 2023 14:11:39 +0100
+        id 1pZtZs-00FDCA-9C; Wed, 08 Mar 2023 14:11:32 +0100
 From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>
@@ -44,9 +44,9 @@ Cc:     Amit Kucheria <amitk@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, Stephan Gerhold <stephan@gerhold.net>,
         Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Subject: [PATCH v2 4/6] dt-bindings: thermal: qcom-tsens: Drop redundant compatibles
-Date:   Wed,  8 Mar 2023 14:10:39 +0100
-Message-Id: <20230308131041.124482-5-stephan.gerhold@kernkonzept.com>
+Subject: [PATCH v2 1/6] thermal: qcom: tsens: Drop unused legacy structs
+Date:   Wed,  8 Mar 2023 14:10:36 +0100
+Message-Id: <20230308131041.124482-2-stephan.gerhold@kernkonzept.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230308131041.124482-1-stephan.gerhold@kernkonzept.com>
 References: <20230308131041.124482-1-stephan.gerhold@kernkonzept.com>
@@ -56,69 +56,109 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since the SoC compatibles must be followed by the IP version compatible
-(e.g. compatible = "qcom,msm8916-tsens", "qcom,tsens-v0_1";) it is
-redundant to list all the SoC compatibles again in the if statement.
-It will already match the IP-version compatible.
+The old single-cell parsing code was removed for MSM8939, MDM9607 and
+MSM8976 but for some reason the structs defining the bit positions etc
+were kept around (unused). Drop them now.
 
-The list has already become inconsistent since for example
-"qcom,msm8939-tsens" is covered by the if statement but is not listed
-there explicitly like the other SoCs.
-
-Simplify this by dropping the redundant SoC compatibles. ipq8064 and
-msm8960 are still needed because they do not have an IP-version
-compatible.
-
+Cc: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Fixes: 51d78b8b1beb ("thermal/drivers/tsens: Drop single-cell code for mdm9607")
+Fixes: dfadb4599ab0 ("thermal/drivers/tsens: Drop single-cell code for msm8939")
+Fixes: 3a908971f7cb ("thermal/drivers/tsens: Drop single-cell code for msm8976/msm8956")
 Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 ---
-Changes in v2:
-  - Drop new redundant qcom,tsens-v2 compatibles as well (see discussion
-    in https://lore.kernel.org/linux-arm-msm/Y3ZFDRI6ypg18S27@gerhold.net/)
+Changes in v2: New patch
 ---
- .../bindings/thermal/qcom-tsens.yaml          | 22 +------------------
- 1 file changed, 1 insertion(+), 21 deletions(-)
+ drivers/thermal/qcom/tsens-v0_1.c | 36 -------------------------------
+ drivers/thermal/qcom/tsens-v1.c   | 22 -------------------
+ 2 files changed, 58 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 926e9c51c93c..49416e1ec295 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -223,12 +223,7 @@ allOf:
-           contains:
-             enum:
-               - qcom,ipq8064-tsens
--              - qcom,mdm9607-tsens
--              - qcom,msm8916-tsens
-               - qcom,msm8960-tsens
--              - qcom,msm8974-tsens
--              - qcom,msm8976-tsens
--              - qcom,qcs404-tsens
-               - qcom,tsens-v0_1
-               - qcom,tsens-v1
-     then:
-@@ -244,22 +239,7 @@ allOf:
-       properties:
-         compatible:
-           contains:
--            enum:
--              - qcom,msm8953-tsens
--              - qcom,msm8996-tsens
--              - qcom,msm8998-tsens
--              - qcom,sc7180-tsens
--              - qcom,sc7280-tsens
--              - qcom,sc8180x-tsens
--              - qcom,sc8280xp-tsens
--              - qcom,sdm630-tsens
--              - qcom,sdm845-tsens
--              - qcom,sm6350-tsens
--              - qcom,sm8150-tsens
--              - qcom,sm8250-tsens
--              - qcom,sm8350-tsens
--              - qcom,sm8450-tsens
--              - qcom,tsens-v2
-+            const: qcom,tsens-v2
-     then:
-       properties:
-         interrupts:
+diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
+index e89c6f39a3ae..106d26076e3f 100644
+--- a/drivers/thermal/qcom/tsens-v0_1.c
++++ b/drivers/thermal/qcom/tsens-v0_1.c
+@@ -39,26 +39,6 @@ struct tsens_legacy_calibration_format tsens_8916_nvmem = {
+ 	},
+ };
+ 
+-struct tsens_legacy_calibration_format tsens_8939_nvmem = {
+-	.base_len = 8,
+-	.base_shift = 2,
+-	.sp_len = 6,
+-	.mode = { 12, 0 },
+-	.invalid = { 12, 2 },
+-	.base = { { 0, 0 }, { 1, 24 } },
+-	.sp = {
+-		{ { 12, 3 },  { 12, 9 } },
+-		{ { 12, 15 }, { 12, 21 } },
+-		{ { 12, 27 }, { 13, 1 } },
+-		{ { 13, 7 },  { 13, 13 } },
+-		{ { 13, 19 }, { 13, 25 } },
+-		{ { 0, 8 },   { 0, 14 } },
+-		{ { 0, 20 },  { 0, 26 } },
+-		{ { 1, 0 },   { 1, 6 } },
+-		{ { 1, 12 },  { 1, 18 } },
+-	},
+-};
+-
+ struct tsens_legacy_calibration_format tsens_8974_nvmem = {
+ 	.base_len = 8,
+ 	.base_shift = 2,
+@@ -103,22 +83,6 @@ struct tsens_legacy_calibration_format tsens_8974_backup_nvmem = {
+ 	},
+ };
+ 
+-struct tsens_legacy_calibration_format tsens_9607_nvmem = {
+-	.base_len = 8,
+-	.base_shift = 2,
+-	.sp_len = 6,
+-	.mode = { 2, 20 },
+-	.invalid = { 2, 22 },
+-	.base = { { 0, 0 }, { 2, 12 } },
+-	.sp = {
+-		{ { 0, 8 },  { 0, 14 } },
+-		{ { 0, 20 }, { 0, 26 } },
+-		{ { 1, 0 },  { 1, 6 } },
+-		{ { 1, 12 }, { 1, 18 } },
+-		{ { 2, 0 },  { 2, 6 } },
+-	},
+-};
+-
+ static int calibrate_8916(struct tsens_priv *priv)
+ {
+ 	u32 p1[5], p2[5];
+diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+index b822a426066d..51322430f1fe 100644
+--- a/drivers/thermal/qcom/tsens-v1.c
++++ b/drivers/thermal/qcom/tsens-v1.c
+@@ -42,28 +42,6 @@ struct tsens_legacy_calibration_format tsens_qcs404_nvmem = {
+ 	},
+ };
+ 
+-struct tsens_legacy_calibration_format tsens_8976_nvmem = {
+-	.base_len = 8,
+-	.base_shift = 2,
+-	.sp_len = 6,
+-	.mode = { 4, 0 },
+-	.invalid = { 4, 2 },
+-	.base = { { 0, 0 }, { 2, 8 } },
+-	.sp = {
+-		{ { 0, 8 },  { 0, 14 } },
+-		{ { 0, 20 }, { 0, 26 } },
+-		{ { 1, 0 },  { 1, 6 } },
+-		{ { 1, 12 }, { 1, 18 } },
+-		{ { 2, 8 },  { 2, 14 } },
+-		{ { 2, 20 }, { 2, 26 } },
+-		{ { 3, 0 },  { 3, 6 } },
+-		{ { 3, 12 }, { 3, 18 } },
+-		{ { 4, 2 },  { 4, 9 } },
+-		{ { 4, 14 }, { 4, 21 } },
+-		{ { 4, 26 }, { 5, 1 } },
+-	},
+-};
+-
+ static int calibrate_v1(struct tsens_priv *priv)
+ {
+ 	u32 p1[10], p2[10];
 -- 
 2.30.2
 
