@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0235DC6FD1C
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 22:50:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37037C61DA4
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 22:50:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229506AbjCIWux (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Mar 2023 17:50:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56262 "EHLO
+        id S231290AbjCIWuy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Mar 2023 17:50:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230509AbjCIWuw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 17:50:52 -0500
+        with ESMTP id S230093AbjCIWux (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 17:50:53 -0500
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31741F209C;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5684BE841B;
         Thu,  9 Mar 2023 14:50:47 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C294C61D12;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id D4A7B61D0E;
         Thu,  9 Mar 2023 22:50:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2380C433EF;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00744C4339B;
         Thu,  9 Mar 2023 22:50:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1678402246;
-        bh=YniPoXTs7rUu0i27ecAmQDdt91YnlzI00Xc0ywnf1UY=;
+        bh=T2m9FARCQakjOu5gGr8+fVrNfdOmvCfKaWsccO+YD5k=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Wx0vjHLpV930/MkCtPtQ2SgZ7mFaMJppT5NIg6aH0RuEd/E2/6rmJi2gRAft8DmGo
-         52cTBqBf6v3q90PuhM5u07rX0hebzZVuv0Xr6v+MLAcPDyGVN475y0sOkbMXih1Q/e
-         H4JUTiCXgum/1E8cYKIP/DN0roctGIy5eY33yjdEfi+nqTzJPrM3V3C+3BBOcv4SE2
-         bGagRoMkMru3aIP97E1f0Rf6E7l6QMe8lqtaRy0RgdYZgDQXEpFxaiubJ6UolFU3WK
-         NTnFnlerv6tknt2kdfdqclW81rsiyuqOYOI/QXzAXeREtgDn8yh8g0ojei3LKRJ99/
-         j+jBXWJTjm8pQ==
+        b=gb6Gm1T2ILsdxCDVZETBEkU1XPniS+tw2i2tNvRHqWSHCtpDASlciuF7JlasIYztt
+         KvMj1iQqzSILJeO2NLlftJyev3Z5qJsYTw07/Ioe6l+SYLP9+g333TZs9cnQkZn7xu
+         IXPeRG0FM/ROcBW2+kKjJuBL+qXNPtXzCHMlo7+QMD+GySgKM4uO5ReEOCbE0cPSh5
+         OHSO38dbRsxYWThikticoYf6zSAxZO8sU116XvsOHayXMfwhz1RkNGC2cG1MgsOjie
+         lzqpGaz/Cuo5sayivfXpNa7GOuSm9mXqq34nbmtPrLVx6Y2XozqJ/IMr4uKdcG7xtx
+         0RffqHMV4Rm0Q==
 Received: by mercury (Postfix, from userid 1000)
-        id 631D710609CD; Thu,  9 Mar 2023 23:50:43 +0100 (CET)
+        id 6151C106069D; Thu,  9 Mar 2023 23:50:43 +0100 (CET)
 From:   Sebastian Reichel <sre@kernel.org>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Linus Walleij <linus.walleij@linaro.org>,
@@ -41,42 +41,100 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [PATCHv1 04/11] power: supply: generic-adc-battery: fix unit scaling
-Date:   Thu,  9 Mar 2023 23:50:34 +0100
-Message-Id: <20230309225041.477440-5-sre@kernel.org>
+Subject: [PATCHv1 01/11] dt-bindings: power: supply: adc-battery: add binding
+Date:   Thu,  9 Mar 2023 23:50:31 +0100
+Message-Id: <20230309225041.477440-2-sre@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309225041.477440-1-sre@kernel.org>
 References: <20230309225041.477440-1-sre@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-power-supply properties are reported in µV, µA and µW.
-The IIO API provides mV, mA, mW, so the values need to
-be multiplied by 1000.
+Add binding for a battery that is only monitored via ADC
+channels and simple status GPIOs.
 
 Signed-off-by: Sebastian Reichel <sre@kernel.org>
 ---
- drivers/power/supply/generic-adc-battery.c | 3 +++
- 1 file changed, 3 insertions(+)
+ .../bindings/power/supply/adc-battery.yaml    | 67 +++++++++++++++++++
+ 1 file changed, 67 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/adc-battery.yaml
 
-diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
-index 917bd2a6cc52..535972a332b3 100644
---- a/drivers/power/supply/generic-adc-battery.c
-+++ b/drivers/power/supply/generic-adc-battery.c
-@@ -136,6 +136,9 @@ static int read_channel(struct gab *adc_bat, enum power_supply_property psp,
- 			result);
- 	if (ret < 0)
- 		pr_err("read channel error\n");
-+	else
-+		*result *= 1000;
+diff --git a/Documentation/devicetree/bindings/power/supply/adc-battery.yaml b/Documentation/devicetree/bindings/power/supply/adc-battery.yaml
+new file mode 100644
+index 000000000000..9d478bf9d2ee
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/adc-battery.yaml
+@@ -0,0 +1,67 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/adc-battery.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- 	return ret;
- }
- 
++title: ADC battery
++
++maintainers:
++  - Sebastian Reichel <sre@kernel.org>
++
++description: |
++  Basic Battery, which only reports (in circuit) voltage and optionally
++  current via an ADC channel.
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    const: adc-battery
++
++  charged-gpios:
++    description:
++      GPIO which signals that the battery is fully charged.
++    maxItems: 1
++
++  io-channels:
++    minItems: 1
++    maxItems: 3
++
++  io-channel-names:
++    oneOf:
++      - const: voltage
++      - items:
++          - const: voltage
++          - enum:
++              - current
++              - power
++      - items:
++          - const: voltage
++          - const: current
++          - const: power
++
++  monitored-battery: true
++
++required:
++  - compatible
++  - io-channels
++  - io-channel-names
++  - monitored-battery
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    fuel-gauge {
++        compatible = "adc-battery";
++        charged-gpios = <&gpio 42 GPIO_ACTIVE_HIGH>;
++        io-channels = <&adc 13>, <&adc 37>;
++        io-channel-names = "voltage", "current";
++
++        power-supplies = <&charger>;
++        monitored-battery = <&battery>;
++    };
 -- 
 2.39.2
 
