@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84063C6FD1F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5657C74A44
 	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 22:51:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231537AbjCIWvU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Mar 2023 17:51:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56572 "EHLO
+        id S231557AbjCIWvV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Mar 2023 17:51:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231445AbjCIWvA (ORCPT
+        with ESMTP id S231446AbjCIWvA (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 17:51:00 -0500
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB9993C791;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35C2DE6804;
         Thu,  9 Mar 2023 14:50:53 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C824C61D20;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 3EC1E61D1E;
         Thu,  9 Mar 2023 22:50:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8FFDC433A7;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75B4AC4339B;
         Thu,  9 Mar 2023 22:50:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1678402248;
-        bh=B2rIHqE7234kAZRPUOTS1Nsn1bhxYVZgs/rCANZZIM4=;
+        bh=pgooTjpmkH0T4+938WzlRJ0u+gHeFjR0k59+b8+puVU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=K/POFntf5lpb9LQj2VkYsSIlG8RQ3Q/A+qI5ewAi6EX3N1+cz5v5PSseS20Hef/6b
-         k3vhzADdubr1dVbWfpsp+HRZTpuHY5uVtHPIq++0J3FN/jA3X0aOyjmPaoIe2EhLj2
-         vDlO8Mmgo86jiUgDa/5Sw4JZH5Ks91rZrRI6c8/d02Z8jeVanxTWoll8d/QQE//rl+
-         Kyn7+epqDLDNsYCmyTxnBowOpSxTqeuKne/RR7JmjNO6k66oshlh8D2nUcadV121cB
-         Lnn+JToPmWnzZhF67rDlXpg5xc3+lBmYe2LCBTSPQ8Unq29Jk5bZ3BQw0q/mLmg0LK
-         DVsIncTovlZyw==
+        b=GsH0euTea8XbVDNJPjcjtoGVLcP+H6/i0ezskqym3D/VJOpYF99vba96il72ceyE7
+         Z8f/89TntYNQpJtZfJT1QiQjQRLeJHJfCjC5vuHPK5DI2mBEFnvzMy/+llBBGuD0TJ
+         qV74i74QGJpEgi31xRKY6+92kkCmrMf6onKOQZ9D44wzaA2ApmBCzzCzybXjVNCu4V
+         XVGqKiRhM/0IH+7PbRqCoAQRLS5oNR9ZuFsCtP/WGSp8A+NOssZJzbmm6DSwl/2XPc
+         pP/00G06EIo7gmR9lQjkg7k6U8LO8BURT91RDEKknFhDK3WEAxZXlrr5JtzHQXtL5K
+         VA3ihawG6VHqQ==
 Received: by mercury (Postfix, from userid 1000)
-        id 6DFA51061BBE; Thu,  9 Mar 2023 23:50:43 +0100 (CET)
+        id 6536310609DE; Thu,  9 Mar 2023 23:50:43 +0100 (CET)
 From:   Sebastian Reichel <sre@kernel.org>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Linus Walleij <linus.walleij@linaro.org>,
@@ -41,9 +41,9 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [PATCHv1 11/11] power: supply: generic-adc-battery: update copyright info
-Date:   Thu,  9 Mar 2023 23:50:41 +0100
-Message-Id: <20230309225041.477440-12-sre@kernel.org>
+Subject: [PATCHv1 07/11] power: supply: generic-adc-battery: drop memory alloc error message
+Date:   Thu,  9 Mar 2023 23:50:37 +0100
+Message-Id: <20230309225041.477440-8-sre@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309225041.477440-1-sre@kernel.org>
 References: <20230309225041.477440-1-sre@kernel.org>
@@ -53,39 +53,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-jz4740-battery.c and s3c_adc_battery.c have been removed
-from the tree and after all of my restructuring the driver
-is basically no longer based on them.
-
-Thus update the copyright information and switch to SPDX
-license identifier while being at it.
+Error printing happens automatically for memory allocation problems.
 
 Signed-off-by: Sebastian Reichel <sre@kernel.org>
 ---
- drivers/power/supply/generic-adc-battery.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/power/supply/generic-adc-battery.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
-index 436e75d226ed..ac72140dc136 100644
+index d07eeb7d46d3..771e5cfc49c3 100644
 --- a/drivers/power/supply/generic-adc-battery.c
 +++ b/drivers/power/supply/generic-adc-battery.c
-@@ -1,13 +1,8 @@
-+// SPDX-License-Identifier: GPL-2.0
- /*
-- * Generic battery driver code using IIO
-+ * Generic battery driver using IIO
-  * Copyright (C) 2012, Anish Kumar <anish198519851985@gmail.com>
-- * based on jz4740-battery.c
-- * based on s3c_adc_battery.c
-- *
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file COPYING in the main directory of this archive for
-- * more details.
-- *
-+ * Copyright (c) 2023, Sebastian Reichel <sre@kernel.org>
-  */
- #include <linux/interrupt.h>
- #include <linux/platform_device.h>
+@@ -243,10 +243,8 @@ static int gab_probe(struct platform_device *pdev)
+ 	bool any = false;
+ 
+ 	adc_bat = devm_kzalloc(&pdev->dev, sizeof(*adc_bat), GFP_KERNEL);
+-	if (!adc_bat) {
+-		dev_err(&pdev->dev, "failed to allocate memory\n");
++	if (!adc_bat)
+ 		return -ENOMEM;
+-	}
+ 
+ 	psy_cfg.drv_data = adc_bat;
+ 	psy_desc = &adc_bat->psy_desc;
 -- 
 2.39.2
 
