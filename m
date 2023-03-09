@@ -2,187 +2,93 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0D4FC64EC4
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 15:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2353BC64EC4
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 16:27:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229917AbjCIPRe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Mar 2023 10:17:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59712 "EHLO
+        id S229925AbjCIQ1d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Mar 2023 11:27:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48368 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229852AbjCIPRQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 10:17:16 -0500
-Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81588367F9
-        for <linux-pm@vger.kernel.org>; Thu,  9 Mar 2023 07:17:05 -0800 (PST)
+        with ESMTP id S229652AbjCIQ1H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 11:27:07 -0500
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54105F8280
+        for <linux-pm@vger.kernel.org>; Thu,  9 Mar 2023 08:18:40 -0800 (PST)
+Received: by mail-ed1-x529.google.com with SMTP id i34so9147250eda.7
+        for <linux-pm@vger.kernel.org>; Thu, 09 Mar 2023 08:18:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1678375026; x=1709911026;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=MvlD9m+QCKlafLa5Wy43cXPSMfoGnO/HffnSqBmtRbQ=;
-  b=nJyfJBO3zr3jTQR4zwnZqsP3iKxgCQYxMw87Mft2HPWOqSi4b9kvfq7H
-   Vc6QYrW1Gu90E3qxKMMQcYSSRIUz9zzTc8FeikmVDLpU+1XurzDUhZcl/
-   iDEWLueuEN6sPcP0n5w+PGeEcHb2sYQ56AYGG+JJTrxzxIO8nnD3oN34Y
-   xJeYWcIlRh3h1stZf4s8/OxKW2iaIfKZ0VPIN56JgTZD/DUacoJp7PBWC
-   Xoj5B039ex0VeyjKqkfEL4MDzX3S4ysDdTKs1UaN0DuQhlDbmBoY6a50w
-   ZrVBq+GX63i+7HhhhkrxnXPrijvIIEzH2elBag/y3CX61kOETXyNMip7C
-   A==;
-X-IronPort-AV: E=Sophos;i="5.98,246,1673910000"; 
-   d="scan'208";a="29584432"
-Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
-  by mx1-pgp.tq-group.com with ESMTP; 09 Mar 2023 16:17:04 +0100
-Received: from mx1.tq-group.com ([192.168.6.7])
-  by tq-pgp-pr1.tq-net.de (PGP Universal service);
-  Thu, 09 Mar 2023 16:17:03 +0100
-X-PGP-Universal: processed;
-        by tq-pgp-pr1.tq-net.de on Thu, 09 Mar 2023 16:17:03 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1678375024; x=1709911024;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=MvlD9m+QCKlafLa5Wy43cXPSMfoGnO/HffnSqBmtRbQ=;
-  b=YZwWfulnIRGrUtDKKuXjPgOVyi+F+Diy0INOFseV8XCFQdZudroNO0sL
-   TCqd5rYVJWEaPt/xqUVjaoaV+I8s/a/B1GW9+RlIlI455+klpPWD17WoP
-   u7oQG9mydQ+61TvE/+CTy4sXD+1SZINJhHDuWTO6AjpHTnTHy5iuvMq4D
-   +6vhtNUqyXihNbpIZ0273SDl5sqYOup/j5o6KNl75BgK7ngIPxZVpUE7e
-   mc+ICjMiCsMQi/rTr5ggQ2Vu6Q6qtQA13hgYPkTwQ7Dx1GJiji7doB6sp
-   o0CI7a8dNhKyTnncB+LGYiRcUX+4pk62K5q79KqrRBkze4X6j7rNgIpqy
-   A==;
-X-IronPort-AV: E=Sophos;i="5.98,246,1673910000"; 
-   d="scan'208";a="29584431"
-Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 09 Mar 2023 16:17:04 +0100
-Received: from steina-w.localnet (unknown [10.123.53.21])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
-        (No client certificate requested)
-        by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 992A5280056;
-        Thu,  9 Mar 2023 16:17:03 +0100 (CET)
-From:   Alexander Stein <alexander.stein@ew.tq-group.com>
-To:     linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        Ahmad Fatoum <a.fatoum@pengutronix.de>
-Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>
-Subject: Re: NOC (interconnect) lockup on i.MX8MP during resume
-Date:   Thu, 09 Mar 2023 16:17:00 +0100
-Message-ID: <3777249.R56niFO833@steina-w>
-Organization: TQ-Systems GmbH
-In-Reply-To: <700de2ce-36f6-6140-92d5-75175eb709d6@pengutronix.de>
-References: <2176690.usQuhbGJ8B@steina-w> <700de2ce-36f6-6140-92d5-75175eb709d6@pengutronix.de>
+        d=linaro.org; s=google; t=1678378639;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Nfkr47uMkCiXVxXdwdLHVRDx52SBPipOfF4MJ+yNxeQ=;
+        b=f2GNQOaSEYn2K875iDD1m+O+ehA0xtEb0yn0Y3GjyxfPFIVnmb4tThLnnJKqnSaMj8
+         zDHzpMR77KKioLJkBdpLg/PaYCp7Ws33K4MsmI2FEGrvDP3tsZokVnZk5WApoMrNXE7M
+         yPggHYe+D7cqElZgjppZi2/tpChF2SOt7Jd4bMjQ/D5m9zbVC464kiwTsblIXJjsBn6X
+         WPqhPaKdcPtxHoUGn0o+fDAIB+RZwBKO0dphMGn7MybHHohoqL06AXkS9nNmBDGgD+MU
+         QV0pEAaMKMlvDL1d7aLYKg4eHzthZ+X21YrEGjI353q3yfZuOanAv+wYH/TBDb871Zf2
+         Z0Ow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678378639;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Nfkr47uMkCiXVxXdwdLHVRDx52SBPipOfF4MJ+yNxeQ=;
+        b=kNMuOQvAY5OK6Hx8SmiqrF8P/G14f6JyZJFIyXOlbbMUxmqNvtEOpSDSXVezoA/C+x
+         HKCuvE8xWgUJ0GUiEkbiVUUVk6JiFappdGtf5/UPBPB+q51nR13PLHRVCvxYf2QKNenz
+         8rDSHTqUYilM2M0qZKIdtmLs/SSbB1HGYePxwlOYc0kO8LzqH9mfZL8I/uGTAADkOWVE
+         Aqk5nEx2OV0yiuAj3KP7b54OZknIgX07/ghtSjQnSSe/3KrQBlZGFmwURwWFnbVg2sw9
+         S62WU1+3WqGLxjUMbL/eFRR5WPMrkovNg2WRArIG9cDTkJH1mnOGYZNQQpvbNUqw9jCe
+         r/zw==
+X-Gm-Message-State: AO0yUKVCmkgSSzpVEipmX9NMRspTn0ksJ5HQTmKJyGHPGpgcI3A6aH0o
+        C0lga+d3DSAZDyNv0S4yPiGITw==
+X-Google-Smtp-Source: AK7set9tLG7OqxL36Iw+EQSmEvEdnsYuLYCe5O2o6Pafsa9Ob3uXQyp15aFbfmwbSFuiC7AoVMAwgA==
+X-Received: by 2002:a17:907:1c1f:b0:884:930:b014 with SMTP id nc31-20020a1709071c1f00b008840930b014mr28489263ejc.6.1678378638898;
+        Thu, 09 Mar 2023 08:17:18 -0800 (PST)
+Received: from ?IPV6:2a02:810d:15c0:828:7ee2:e73e:802e:45c1? ([2a02:810d:15c0:828:7ee2:e73e:802e:45c1])
+        by smtp.gmail.com with ESMTPSA id dc23-20020a170906c7d700b008b17e55e8f7sm8977100ejb.186.2023.03.09.08.17.17
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 09 Mar 2023 08:17:18 -0800 (PST)
+Message-ID: <1d7f051b-761b-df8d-4407-9c6c3d95cf51@linaro.org>
+Date:   Thu, 9 Mar 2023 17:17:16 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH 1/4] dt-bindings: thermal: mediatek: Add LVTS thermal
+ controller definition for mt8192
+Content-Language: en-US
+To:     bchihi@baylibre.com, daniel.lezcano@linaro.org,
+        angelogioacchino.delregno@collabora.com, rafael@kernel.org,
+        amitk@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        rdunlap@infradead.org, ye.xingchen@zte.com.cn,
+        p.zabel@pengutronix.de
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        khilman@baylibre.com, james.lo@mediatek.com,
+        rex-bc.chen@mediatek.com
+References: <20230307163413.143334-1-bchihi@baylibre.com>
+ <20230307163413.143334-2-bchihi@baylibre.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230307163413.143334-2-bchihi@baylibre.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Ahmad,
+On 07/03/2023 17:34, bchihi@baylibre.com wrote:
+> From: Balsam CHIHI <bchihi@baylibre.com>
+> 
+> Add LVTS thermal controller definition for MT8192.
+> 
+> Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
+> ---
 
-Am Donnerstag, 9. M=E4rz 2023, 16:03:26 CET schrieb Ahmad Fatoum:
-> Hello Alexander,
->=20
-> On 09.03.23 15:57, Alexander Stein wrote:
-> > Hi,
-> >=20
-> > while debugging another issue regarding suspend/resume I noticed that t=
-he
-> > imx interconnect driver locks up the system when writing into registers.
-> > This happens during resume of the 'g2' power domain.
-> > imx8m_blk_ctrl_power_on() will eventually call down to
-> > imx_icc_node_set(). Using the debug diff furthe down I get this output:
-> >=20
-> > [   71.493062] imx_icc_node_set: node: VPU G2
-> > [   71.497163] imx_icc_node_set: peak_bw: 1
-> > [   71.501091] imx_icc_node_set: prio: 0x80000303
-> > <freeze here>
-> >=20
-> > Unfortunately there is absolutely no documentation regarding NOC in the
-> > reference manual, so no idea whats happening here.
-> > This is on next-20230309 using imx8mp-tqma8mpql-mba8mpxl.dts with USB
-> > disabled (prevents suspend) and Ethernet-PHY-IRQ disabled (the issue I'm
-> > tackling).
-> > Is there some idea what do in order to support resume on i.MX8MP?
->=20
-> Could it be that you don't have a fully featured 8MP, but a 8MPUL
-> or 8MPL, which lacks VPUs? In that case, it's not enough to disable
-> the VPU nodes in the DT, but you need to disable the VPU power domains as
-> well.
 
-That's reasonable to question this, but in this case this is a full-fledged=
-=20
-8MP. I just noticed that during boot those settings are done as well and th=
-ere=20
-I get the (expected) output:
-
-[   12.696371] imx_icc_node_set: node: VPU G2
-[   12.700472] imx_icc_node_set: peak_bw: 1
-[   12.704401] imx_icc_node_set: prio: 0x80000303
-[   12.708850] imx_icc_node_set: mode: 0x0
-[   12.712691] imx_icc_node_set: ext_control: #0
-[   12.717053] imx_icc_node_set: node: NOC_VIDEO
-[   12.721419] imx_icc_node_set: peak_bw: 1
-
-So there is something wrong during resume. Both clk_ignore_unused=20
-pd_ignore_unused did not help.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
 Best regards,
-Alexander
-
-> Cheers,
-> Ahmad
->=20
-> > Best regards,
-> > Alexander
-> >=20
-> > ---8<---
-> > diff --git a/drivers/interconnect/imx/imx.c
-> > b/drivers/interconnect/imx/imx.c index 979ed610f704..93ec79cc7c06 100644
-> > --- a/drivers/interconnect/imx/imx.c
-> > +++ b/drivers/interconnect/imx/imx.c
-> > @@ -44,13 +44,18 @@ static int imx_icc_node_set(struct icc_node *node)
-> >=20
-> >         u32 prio;
-> >         u64 freq;
-> >=20
-> > +       pr_info("%s: node: %s\n", __func__, node->name);
-> > +       pr_info("%s: peak_bw: %u\n", __func__, node->peak_bw);
-> >=20
-> >         if (node_data->setting && node->peak_bw) {
-> >        =20
-> >                 base =3D node_data->setting->reg +
-> >                 node_data->imx_provider->noc_base;
-> >                 if (node_data->setting->mode =3D=3D IMX_NOC_MODE_FIXED)=
- {
-> >                =20
-> >                         prio =3D node_data->setting->prio_level;
-> >                         prio =3D PRIORITY_COMP_MARK | (prio << 8) | pri=
-o;
-> >=20
-> > +                       pr_info("%s: prio: %#x\n", __func__, prio);
-> >=20
-> >                         writel(prio, base + IMX_NOC_PRIO_REG);
-> >=20
-> > +                       pr_info("%s: mode: %#x\n", __func__,
-> > node_data->setting->mode);>=20
-> >                         writel(node_data->setting->mode, base +
-> >                         IMX_NOC_MODE_REG);
-> >=20
-> > +                       pr_info("%s: ext_control: #%x\n", __func__,
-> > node_data->setting->ext_control);>=20
-> >                         writel(node_data->setting->ext_control, base +
-> >                         IMX_NOC_EXT_CTL_REG);
-> >                         dev_dbg(dev, "%s: mode: 0x%x, prio: 0x%x,
-> >                         ext_control: 0x%x\n",
-> >                        =20
-> >                                 node_data->desc->name,
-> >                                 node_data->setting->mode, prio,
-> >=20
-> > ---8<---
-
-
-=2D-=20
-TQ-Systems GmbH | M=FChlstra=DFe 2, Gut Delling | 82229 Seefeld, Germany
-Amtsgericht M=FCnchen, HRB 105018
-Gesch=E4ftsf=FChrer: Detlef Schneider, R=FCdiger Stahl, Stefan Schneider
-http://www.tq-group.com/
-
+Krzysztof
 
