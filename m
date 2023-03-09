@@ -2,89 +2,81 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72D68C64EC4
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 18:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0235DC6FD1C
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 22:50:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229636AbjCISK7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Mar 2023 13:10:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57708 "EHLO
+        id S229506AbjCIWux (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Mar 2023 17:50:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56262 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229511AbjCISK7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 13:10:59 -0500
-Received: from m12.mail.163.com (m12.mail.163.com [220.181.12.199])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5B990E8CE3;
-        Thu,  9 Mar 2023 10:10:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=MbP/r
-        M8Rc/DiEdJHJClQCoN2UOe8VkwrD7GNpwsewxM=; b=B1m6xNYnsi2cnw3RSN8k/
-        ULKWcyyr+tyIh4tInDbtjZkJbVzH+/Xyh8nZtYdnmIN49dVOmbPKtK72FHLZUEiS
-        O4ye5R7g74/9Q+Q448PFVr/Z6Dc94LV/+nlu9bA9cOwHoQZ5nXT497PICxUNnT8L
-        ztSVEASiWczKuHDpw9bT/c=
-Received: from leanderwang-LC2.localdomain (unknown [111.206.145.21])
-        by zwqz-smtp-mta-g2-3 (Coremail) with SMTP id _____wC3vyceIQpklqXqCg--.13222S2;
-        Fri, 10 Mar 2023 02:10:38 +0800 (CST)
-From:   Zheng Wang <zyytlz.wz@163.com>
-To:     support.opensource@diasemi.com
-Cc:     sre@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, hackerzheng666@gmail.com,
-        1395428693sheep@gmail.com, alex000young@gmail.com,
-        Zheng Wang <zyytlz.wz@163.com>
-Subject: [PATCH] power: supply: da9150: Fix use after free bug in da9150_charger_remove due to race condition
-Date:   Fri, 10 Mar 2023 02:10:36 +0800
-Message-Id: <20230309181036.262674-1-zyytlz.wz@163.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S230509AbjCIWuw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 17:50:52 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31741F209C;
+        Thu,  9 Mar 2023 14:50:47 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C294C61D12;
+        Thu,  9 Mar 2023 22:50:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2380C433EF;
+        Thu,  9 Mar 2023 22:50:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1678402246;
+        bh=YniPoXTs7rUu0i27ecAmQDdt91YnlzI00Xc0ywnf1UY=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=Wx0vjHLpV930/MkCtPtQ2SgZ7mFaMJppT5NIg6aH0RuEd/E2/6rmJi2gRAft8DmGo
+         52cTBqBf6v3q90PuhM5u07rX0hebzZVuv0Xr6v+MLAcPDyGVN475y0sOkbMXih1Q/e
+         H4JUTiCXgum/1E8cYKIP/DN0roctGIy5eY33yjdEfi+nqTzJPrM3V3C+3BBOcv4SE2
+         bGagRoMkMru3aIP97E1f0Rf6E7l6QMe8lqtaRy0RgdYZgDQXEpFxaiubJ6UolFU3WK
+         NTnFnlerv6tknt2kdfdqclW81rsiyuqOYOI/QXzAXeREtgDn8yh8g0ojei3LKRJ99/
+         j+jBXWJTjm8pQ==
+Received: by mercury (Postfix, from userid 1000)
+        id 631D710609CD; Thu,  9 Mar 2023 23:50:43 +0100 (CET)
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Matti Vaittinen <mazziesaccount@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Subject: [PATCHv1 04/11] power: supply: generic-adc-battery: fix unit scaling
+Date:   Thu,  9 Mar 2023 23:50:34 +0100
+Message-Id: <20230309225041.477440-5-sre@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230309225041.477440-1-sre@kernel.org>
+References: <20230309225041.477440-1-sre@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: _____wC3vyceIQpklqXqCg--.13222S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7AFy7trWftr1kJF1furyUKFg_yoW8GFy5p3
-        98Cr98Kr48tFWUtF1Dtw17WFyUGa43C34Yyr4xGw45Aw13Zr4jqr1rGFnxKFy7Jr4xAF42
-        qFsaq3yIqF98WrDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0ziaiiDUUUUU=
-X-Originating-IP: [111.206.145.21]
-X-CM-SenderInfo: h2113zf2oz6qqrwthudrp/xtbBzgAtU2I0XlTmVAAAse
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In da9150_charger_probe, &charger->otg_work is bound with
-da9150_charger_otg_work. da9150_charger_otg_ncb may be
-called to start the work.
+power-supply properties are reported in µV, µA and µW.
+The IIO API provides mV, mA, mW, so the values need to
+be multiplied by 1000.
 
-If we remove the module which will call da9150_charger_remove
- to make cleanup, there may be a unfinished work. The possible
-  sequence is as follows:
-
-Fix it by canceling the work before cleanup in the mtk_jpeg_remove
-
-CPU0                  CPUc1
-
-                    |da9150_charger_otg_work
-da9150_charger_remove      |
-power_supply_unregister  |
-device_unregister   |
-power_supply_dev_release|
-kfree(psy)          |
-                    |
-                    | 	power_supply_changed(charger->usb);
-                    |   //use
-Fixes: c1a281e34dae ("power: Add support for DA9150 Charger")
-Signed-off-by: Zheng Wang <zyytlz.wz@163.com>
+Signed-off-by: Sebastian Reichel <sre@kernel.org>
 ---
- drivers/power/supply/da9150-charger.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/power/supply/generic-adc-battery.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/power/supply/da9150-charger.c b/drivers/power/supply/da9150-charger.c
-index 14da5c595dd9..41b68f2f6ed8 100644
---- a/drivers/power/supply/da9150-charger.c
-+++ b/drivers/power/supply/da9150-charger.c
-@@ -642,6 +642,7 @@ static int da9150_charger_remove(struct platform_device *pdev)
- 	struct da9150_charger *charger = platform_get_drvdata(pdev);
- 	int irq;
+diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
+index 917bd2a6cc52..535972a332b3 100644
+--- a/drivers/power/supply/generic-adc-battery.c
++++ b/drivers/power/supply/generic-adc-battery.c
+@@ -136,6 +136,9 @@ static int read_channel(struct gab *adc_bat, enum power_supply_property psp,
+ 			result);
+ 	if (ret < 0)
+ 		pr_err("read channel error\n");
++	else
++		*result *= 1000;
++
+ 	return ret;
+ }
  
-+	cancel_work_sync(&charger->otg_work);
- 	/* Make sure IRQs are released before unregistering power supplies */
- 	irq = platform_get_irq_byname(pdev, "CHG_VBUS");
- 	free_irq(irq, charger);
 -- 
-2.25.1
+2.39.2
 
