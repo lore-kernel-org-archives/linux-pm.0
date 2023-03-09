@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5657C74A44
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 22:51:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A73A7C7618A
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Mar 2023 22:51:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231557AbjCIWvV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Mar 2023 17:51:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56574 "EHLO
+        id S231591AbjCIWvW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Mar 2023 17:51:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56582 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231446AbjCIWvA (ORCPT
+        with ESMTP id S231315AbjCIWvA (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2023 17:51:00 -0500
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35C2DE6804;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBEBFE4C5E;
         Thu,  9 Mar 2023 14:50:53 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3EC1E61D1E;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C3A476144D;
         Thu,  9 Mar 2023 22:50:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75B4AC4339B;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A6891C4339C;
         Thu,  9 Mar 2023 22:50:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1678402248;
-        bh=pgooTjpmkH0T4+938WzlRJ0u+gHeFjR0k59+b8+puVU=;
+        bh=z3LXcJW+sEBhmEZPY8ualsCbQ2lqWkL1B6hI4RYGoAU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GsH0euTea8XbVDNJPjcjtoGVLcP+H6/i0ezskqym3D/VJOpYF99vba96il72ceyE7
-         Z8f/89TntYNQpJtZfJT1QiQjQRLeJHJfCjC5vuHPK5DI2mBEFnvzMy/+llBBGuD0TJ
-         qV74i74QGJpEgi31xRKY6+92kkCmrMf6onKOQZ9D44wzaA2ApmBCzzCzybXjVNCu4V
-         XVGqKiRhM/0IH+7PbRqCoAQRLS5oNR9ZuFsCtP/WGSp8A+NOssZJzbmm6DSwl/2XPc
-         pP/00G06EIo7gmR9lQjkg7k6U8LO8BURT91RDEKknFhDK3WEAxZXlrr5JtzHQXtL5K
-         VA3ihawG6VHqQ==
+        b=B/huSY6Tk3xFD3nSML276xY1+bAdQsv1uAJXa4YOLzLXQrq6LLzMdzLyu8+L1+6mI
+         rSt2/P3uwGrYYQEhM2XN8XviPow5lY3kopYU0EIT7RXINO8c6rXHY54IjVQsSOam4y
+         W/kCYw1DJtvdYvB0euDGSc31kRBmh7ZxGILjL6pkd/6zZS2YVDVvKEHu/geofzWHFt
+         TSDJhqYUnihK7KzVRCshCTGR5zDeDH9pUigE4lJW2W6LM29i6VoyV4EPhF9KI7YQHI
+         p75OBuTDkgi2hVY2WaAfepOsM+WI48QgOO+98qMc0Jc7sJOUcreJBL31/GiINr55gO
+         Gb0Da6njfhlUQ==
 Received: by mercury (Postfix, from userid 1000)
-        id 6536310609DE; Thu,  9 Mar 2023 23:50:43 +0100 (CET)
+        id 6C08D1061BBD; Thu,  9 Mar 2023 23:50:43 +0100 (CET)
 From:   Sebastian Reichel <sre@kernel.org>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Linus Walleij <linus.walleij@linaro.org>,
@@ -41,9 +41,9 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [PATCHv1 07/11] power: supply: generic-adc-battery: drop memory alloc error message
-Date:   Thu,  9 Mar 2023 23:50:37 +0100
-Message-Id: <20230309225041.477440-8-sre@kernel.org>
+Subject: [PATCHv1 10/11] power: supply: generic-adc-battery: add DT support
+Date:   Thu,  9 Mar 2023 23:50:40 +0100
+Message-Id: <20230309225041.477440-11-sre@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230309225041.477440-1-sre@kernel.org>
 References: <20230309225041.477440-1-sre@kernel.org>
@@ -53,29 +53,52 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Error printing happens automatically for memory allocation problems.
+This adds full DT support to the driver. Because of the previous
+changes just adding a compatible value is enough.
 
 Signed-off-by: Sebastian Reichel <sre@kernel.org>
 ---
- drivers/power/supply/generic-adc-battery.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/power/supply/generic-adc-battery.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
-index d07eeb7d46d3..771e5cfc49c3 100644
+index 7bc54566664f..436e75d226ed 100644
 --- a/drivers/power/supply/generic-adc-battery.c
 +++ b/drivers/power/supply/generic-adc-battery.c
-@@ -243,10 +243,8 @@ static int gab_probe(struct platform_device *pdev)
- 	bool any = false;
+@@ -22,6 +22,7 @@
+ #include <linux/slab.h>
+ #include <linux/iio/consumer.h>
+ #include <linux/iio/types.h>
++#include <linux/of.h>
+ #include <linux/devm-helpers.h>
  
- 	adc_bat = devm_kzalloc(&pdev->dev, sizeof(*adc_bat), GFP_KERNEL);
--	if (!adc_bat) {
--		dev_err(&pdev->dev, "failed to allocate memory\n");
-+	if (!adc_bat)
+ #define JITTER_DEFAULT 10 /* hope 10ms is enough */
+@@ -170,6 +171,7 @@ static int gab_probe(struct platform_device *pdev)
+ 	if (!adc_bat)
  		return -ENOMEM;
--	}
  
++	psy_cfg.of_node = pdev->dev.of_node;
  	psy_cfg.drv_data = adc_bat;
  	psy_desc = &adc_bat->psy_desc;
+ 	psy_desc->name = dev_name(&pdev->dev);
+@@ -284,10 +286,17 @@ static int __maybe_unused gab_resume(struct device *dev)
+ 
+ static SIMPLE_DEV_PM_OPS(gab_pm_ops, gab_suspend, gab_resume);
+ 
++static const struct of_device_id gab_match[] = {
++	{ .compatible = "adc-battery" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, gab_match);
++
+ static struct platform_driver gab_driver = {
+ 	.driver		= {
+ 		.name	= "generic-adc-battery",
+ 		.pm	= &gab_pm_ops,
++		.of_match_table = gab_match,
+ 	},
+ 	.probe		= gab_probe,
+ };
 -- 
 2.39.2
 
