@@ -2,51 +2,50 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10CA0C76186
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Mar 2023 14:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23D47C6FD1F
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Mar 2023 14:56:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233548AbjCJOxx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Mar 2023 09:53:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50566 "EHLO
+        id S233398AbjCJO43 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Mar 2023 09:56:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56084 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233362AbjCJOx2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Mar 2023 09:53:28 -0500
-Received: from mail-oa1-f45.google.com (mail-oa1-f45.google.com [209.85.160.45])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4ADFC12A177;
-        Fri, 10 Mar 2023 06:49:29 -0800 (PST)
-Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-176b90e14a9so6042731fac.9;
-        Fri, 10 Mar 2023 06:49:29 -0800 (PST)
+        with ESMTP id S233659AbjCJOy4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Mar 2023 09:54:56 -0500
+Received: from mail-oi1-x22e.google.com (mail-oi1-x22e.google.com [IPv6:2607:f8b0:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 821C61223B3;
+        Fri, 10 Mar 2023 06:50:28 -0800 (PST)
+Received: by mail-oi1-x22e.google.com with SMTP id bj30so4390944oib.6;
+        Fri, 10 Mar 2023 06:50:28 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678459710;
+        d=1e100.net; s=20210112; t=1678459696;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=qeturFWI0c03F8rWh31njjpGhdYT8mTfReK2FhO4MIc=;
-        b=qpN68uxFMkAhzOOE2wZuiL6ROS2+ZhJGCmwTi51uEHDOuQhG4Lg1cx2LJurdycqZgA
-         sb8bC/inS+RWh4+GYk+BhWuBY7BXmGtuZCgI1YZavz8L62jvDlwUPHD/yiPl+To6lOuc
-         iHT5iHLLAu+aQtZuVd6TwLrtTSAO+AmZloZCk8uddjP9EzBlSUVXDo8SAj/3AY+2fxOd
-         8qbvVgRuI4xkl7aIX+y78gP0Bj/CilfD2TUsfSEPOcYk4CbH83IyMSP9vkZBWGcMPYWO
-         NPYRcX3sEffuEZmw5/JqYw/mJ0wY9e+JwqKLOtl5GuWAR06dRgsSq692sfPgtbD/ymFN
-         PDiA==
-X-Gm-Message-State: AO0yUKUxCbXbBBOKDYvtngtS6Gv6sfTCgXdCUe/wVbt9P4GLE/ml7ZHy
-        KdqF9RT4HHzxAbkiqmnn0w==
-X-Google-Smtp-Source: AK7set98LW32b1srv6QLeEq6OEp6lxv/K4bgOt8w/1gZLcSEpbdFe61Bs25SuZu0MVlw4ylfQZIqhg==
-X-Received: by 2002:a05:6870:c10e:b0:172:2d0b:6121 with SMTP id f14-20020a056870c10e00b001722d0b6121mr5430915oad.36.1678459709956;
-        Fri, 10 Mar 2023 06:48:29 -0800 (PST)
+        bh=y5TTyXRi55hhSah2PxX/CKxknwUOEhFUDM0k5zozbMo=;
+        b=0Gv+zibgQ90XdkAIAqnl+R8vZDAUSNC7A6YUMTjJRLAKZ7IoHMBvca+FKDKpwv4aAc
+         0piOLy5uEVRt/rINWKGeESIKK1Yco+VuWax7ATtOUFRbAYQfULv4VVVZ16VxvcPPrjL7
+         5sWBAkvyLoFqu32/r5JZdfLu1UrqzXWRk8bafZAjwdhS4lvHIQmurRqpysrfo7mhHZ6O
+         Ah4DWkIyKInpOZITHVXkBILaYSCSPh0mIr3+EfCKhmOOaq7iSO5IYLH2izz0tSWRaOjG
+         pmrfbDHicJO9eZNVsMLJSfTeMNTwxjO8i0i/GX+Ec8XJknlG/OhhnIYFvRSaBdlRAvXO
+         Ekdg==
+X-Gm-Message-State: AO0yUKVBhrQL7yBnKCmRCPSmsCXoh8P2wPn+p2n7FsZv6Hz1a1+pdmPZ
+        Afx7aljUQ8ebLElVOtZbwA==
+X-Google-Smtp-Source: AK7set/LxJpTzvFNPpQdgvphtTIbAbb1FU0vekYAeviqgfSx1aZMwJPTc5jQS0Pp8Xqpt7e1Rjy/Aw==
+X-Received: by 2002:a05:6808:2da:b0:383:f572:2646 with SMTP id a26-20020a05680802da00b00383f5722646mr11335784oid.5.1678459695959;
+        Fri, 10 Mar 2023 06:48:15 -0800 (PST)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id ax16-20020a05687c021000b00176d49bb898sm79608oac.44.2023.03.10.06.48.29
+        by smtp.gmail.com with ESMTPSA id n25-20020a0568080a1900b0037d8dbe4308sm933029oij.48.2023.03.10.06.48.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Mar 2023 06:48:29 -0800 (PST)
-Received: (nullmailer pid 1544400 invoked by uid 1000);
-        Fri, 10 Mar 2023 14:47:19 -0000
+        Fri, 10 Mar 2023 06:48:15 -0800 (PST)
+Received: (nullmailer pid 1546914 invoked by uid 1000);
+        Fri, 10 Mar 2023 14:47:35 -0000
 From:   Rob Herring <robh@kernel.org>
-To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>
+To:     Sebastian Reichel <sre@kernel.org>
 Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH] opp: Use of_property_present() for testing DT property presence
-Date:   Fri, 10 Mar 2023 08:47:18 -0600
-Message-Id: <20230310144719.1544374-1-robh@kernel.org>
+Subject: [PATCH] power: supply: charger-manager: Use of_property_read_bool() for boolean properties
+Date:   Fri, 10 Mar 2023 08:47:35 -0600
+Message-Id: <20230310144735.1546888-1-robh@kernel.org>
 X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -56,38 +55,27 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 It is preferred to use typed property access functions (i.e.
 of_property_read_<type> functions) rather than low-level
-of_get_property/of_find_property functions for reading properties. As
-part of this, convert of_get_property/of_find_property calls to the
-recently added of_property_present() helper when we just want to test
-for presence of a property and nothing more.
+of_get_property/of_find_property functions for reading properties.
+Convert reading boolean properties to to of_property_read_bool().
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/opp/of.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/power/supply/charger-manager.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index e55c6095adf0..bed2b651deb0 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -224,7 +224,7 @@ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
- 	of_property_read_u32(np, "voltage-tolerance",
- 			     &opp_table->voltage_tolerance_v1);
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index c9e8450c646f..5fa6ba7f41e1 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -1331,7 +1331,7 @@ static struct charger_desc *of_cm_parse_desc(struct device *dev)
+ 	of_property_read_string(np, "cm-thermal-zone", &desc->thermal_zone);
  
--	if (of_find_property(np, "#power-domain-cells", NULL))
-+	if (of_property_present(np, "#power-domain-cells"))
- 		opp_table->is_genpd = true;
- 
- 	/* Get OPP table node */
-@@ -536,7 +536,7 @@ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
- 		 * an OPP then the OPP should not be enabled as there is
- 		 * no way to see if the hardware supports it.
- 		 */
--		if (of_find_property(np, "opp-supported-hw", NULL))
-+		if (of_property_present(np, "opp-supported-hw"))
- 			return false;
- 		else
- 			return true;
+ 	of_property_read_u32(np, "cm-battery-cold", &desc->temp_min);
+-	if (of_get_property(np, "cm-battery-cold-in-minus", NULL))
++	if (of_property_read_bool(np, "cm-battery-cold-in-minus"))
+ 		desc->temp_min *= -1;
+ 	of_property_read_u32(np, "cm-battery-hot", &desc->temp_max);
+ 	of_property_read_u32(np, "cm-battery-temp-diff", &desc->temp_diff);
 -- 
 2.39.2
 
