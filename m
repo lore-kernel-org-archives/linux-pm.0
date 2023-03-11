@@ -2,210 +2,93 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29B04C6FD1E
-	for <linux-pm@archiver.kernel.org>; Sat, 11 Mar 2023 06:14:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B629C74A5B
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Mar 2023 11:17:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229932AbjCKGOq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 11 Mar 2023 01:14:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44112 "EHLO
+        id S229967AbjCKLRV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 11 Mar 2023 06:17:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43966 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229743AbjCKGOq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Mar 2023 01:14:46 -0500
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 137131340F1;
-        Fri, 10 Mar 2023 22:14:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1678515285; x=1710051285;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=eWe1fb83b9mTT1dX/B9IPVcaOx5TuTeNbVK3V5DDwc0=;
-  b=kikHjoiVL7Xc3GaYSAfrI9ouh/mrn3G8yzuUux17RhMOaiI4arIaK8gM
-   iQ93IkHXnpimQwxdxpDAFq5O8LNp1YfNPbPwT3t9yt4s4pACltdJyJEjC
-   GC/mpqMqgTnd5Kv8kGcjTVpoiwHWA2khRtkh5OizpzypzwDBbmUt3KYJN
-   WRmgtPfOouoEyzCgMqRffTpsonvzpO5+TDqEaS6M14jTtF+E66RRGNzfh
-   C2DYRlxXMFhP/TCdWb/Wa2rfwM2D0/q2v5y0NoMQzdQ8iBEJIl7MU1uKA
-   l4De3Ylw1AHNPwW4+wqoDhFCvkjPquk1yIlJHIzWTFlGwSOG/I/4pRsA1
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="320731299"
-X-IronPort-AV: E=Sophos;i="5.98,252,1673942400"; 
-   d="scan'208";a="320731299"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Mar 2023 22:14:44 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="742256978"
-X-IronPort-AV: E=Sophos;i="5.98,252,1673942400"; 
-   d="scan'208";a="742256978"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by fmsmga008.fm.intel.com with ESMTP; 10 Mar 2023 22:14:43 -0800
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1pasV8-0004Oj-1Q;
-        Sat, 11 Mar 2023 06:14:42 +0000
-Date:   Sat, 11 Mar 2023 14:14:18 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 687388eb09d318fb319b2771f1ee426afbf03bc3
-Message-ID: <640c1c3a.9VrD8IZOvPI86e5s%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S230360AbjCKLQx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Mar 2023 06:16:53 -0500
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6FB325E2A
+        for <linux-pm@vger.kernel.org>; Sat, 11 Mar 2023 03:15:49 -0800 (PST)
+Received: by mail-ed1-x531.google.com with SMTP id er25so2603595edb.5
+        for <linux-pm@vger.kernel.org>; Sat, 11 Mar 2023 03:15:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1678533338;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CnVytKXzG/PfqmH1YFo44HqQ/pxS3EVtu4JHHtkscVQ=;
+        b=W2cNVSZPzNqiL8DwRdYMZLA+BBMukG08dxRtSpQIT/o1HRRioAgzbrwmQF3xhPJffx
+         2pzuB8hgC6WVtEWtdYQDBWU2+IYETM8+EFi6bQGYt06ikJ9VOQVAkW47Pn6enRbMnyOl
+         rLnxTVKkxx8KGLdy04O2baaEfqst8StaX31t23qnEDp8lXw9i0C7klcr+I0jwDefULoU
+         oe7H/tJ2suaAmTgC0Omu/UOFtrtKo7Z3PFmtY1+w+XveTMlrmxMFQIytf/h5CXYqNN9z
+         FJT7o5oudwRMPAP68syb9qv4M/5F39fo9WghtFXmGgNwC0EPnrWq0o4zKG9l1t9ZPzHv
+         dDZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678533338;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=CnVytKXzG/PfqmH1YFo44HqQ/pxS3EVtu4JHHtkscVQ=;
+        b=ZOL6CZLe1C0lKx/IvAlT4qod3z5m+gifwS4tLsEJ1HknXs0j0ooGcGy0pCqkwzlVzo
+         Kk68h/cZmxpQ0VkLgKYcfov0AVmvh33Cq+za6TYFajvJHQ07Qh0JbirdOsIKUjGIYqhg
+         dnmCXPep1q/3WKFltVvWc28bxvFYpc9CgzSumKQjzyvDi9lV5p/clhMkloJTj2dN28OW
+         MVnQz51GeqSEkS6XoyH10X/z5vIF006SC1RzL09EOe1ir3k6XBN4cbllnckUlJs56j+4
+         fZMU6Nab06leaR9EzJjCHckW6eocU7nnNEQJ3D15+AOXvwa4aNOqnBPDzJ8IkO8GxsSH
+         6KVQ==
+X-Gm-Message-State: AO0yUKVndqo2wryf2ivnMoKW0K0FyQNcRhQ/skNVHIrLHkfWAvJWSAEP
+        eO1d+26MfzOZaa3g5eJmAEJ6Cg==
+X-Google-Smtp-Source: AK7set+WPqvhWN6zo0+j5J849Jl6Kh+GwuoGLiZVKuNdzn6qAMbBsp6RrjA412S51YmdGdQm7SUzuA==
+X-Received: by 2002:a17:906:dd7:b0:87e:a34b:9e2b with SMTP id p23-20020a1709060dd700b0087ea34b9e2bmr28952527eji.28.1678533338677;
+        Sat, 11 Mar 2023 03:15:38 -0800 (PST)
+Received: from krzk-bin.. ([2a02:810d:15c0:828:fa97:2d7c:bdd7:e1b])
+        by smtp.gmail.com with ESMTPSA id w15-20020a50c44f000000b004bf28bfc9absm1064150edf.11.2023.03.11.03.15.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 11 Mar 2023 03:15:38 -0800 (PST)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH 5/6] power: supply: bq24257_charger: mark OF related data as maybe unused
+Date:   Sat, 11 Mar 2023 12:15:31 +0100
+Message-Id: <20230311111532.251604-5-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230311111532.251604-1-krzysztof.kozlowski@linaro.org>
+References: <20230311111532.251604-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 687388eb09d318fb319b2771f1ee426afbf03bc3  Merge branch 'pm-cpuidle' into linux-next
+The driver can be compile tested with !CONFIG_OF making certain data
+unused:
 
-elapsed time: 735m
+  drivers/power/supply/bq24257_charger.c:1143:34: error: ‘bq24257_of_match’ defined but not used [-Werror=unused-const-variable=]
 
-configs tested: 135
-configs skipped: 11
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ drivers/power/supply/bq24257_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                            alldefconfig   gcc  
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha        buildonly-randconfig-r005-20230310   gcc  
-alpha                               defconfig   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r001-20230310   gcc  
-arc                  randconfig-r015-20230310   gcc  
-arc                  randconfig-r026-20230310   gcc  
-arc                  randconfig-r043-20230310   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   gcc  
-arm                              allyesconfig   gcc  
-arm          buildonly-randconfig-r002-20230310   clang
-arm                                 defconfig   gcc  
-arm                          gemini_defconfig   gcc  
-arm                  randconfig-r046-20230310   clang
-arm                        realview_defconfig   gcc  
-arm                         s3c6400_defconfig   gcc  
-arm                           sama7_defconfig   clang
-arm                       spear13xx_defconfig   clang
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r014-20230310   gcc  
-arm64                randconfig-r032-20230310   clang
-csky                                defconfig   gcc  
-csky                 randconfig-r001-20230310   gcc  
-csky                 randconfig-r022-20230310   gcc  
-hexagon              randconfig-r024-20230310   clang
-hexagon              randconfig-r035-20230310   clang
-hexagon              randconfig-r041-20230310   clang
-hexagon              randconfig-r045-20230310   clang
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                          randconfig-a001   gcc  
-i386                          randconfig-a002   clang
-i386                          randconfig-a003   gcc  
-i386                          randconfig-a004   clang
-i386                          randconfig-a005   gcc  
-i386                          randconfig-a006   clang
-i386                          randconfig-a011   clang
-i386                          randconfig-a012   gcc  
-i386                          randconfig-a013   clang
-i386                          randconfig-a014   gcc  
-i386                          randconfig-a015   clang
-i386                          randconfig-a016   gcc  
-i386                          randconfig-c001   gcc  
-ia64                             allmodconfig   gcc  
-ia64                                defconfig   gcc  
-ia64                 randconfig-r016-20230310   gcc  
-ia64                 randconfig-r036-20230310   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch    buildonly-randconfig-r001-20230310   gcc  
-loongarch    buildonly-randconfig-r003-20230310   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r025-20230310   gcc  
-m68k                             allmodconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r005-20230310   gcc  
-m68k                           sun3_defconfig   gcc  
-microblaze   buildonly-randconfig-r001-20230310   gcc  
-microblaze           randconfig-r006-20230310   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips         buildonly-randconfig-r006-20230310   gcc  
-mips                      malta_kvm_defconfig   clang
-nios2                               defconfig   gcc  
-nios2                randconfig-r003-20230310   gcc  
-nios2                randconfig-r005-20230310   gcc  
-openrisc     buildonly-randconfig-r004-20230310   gcc  
-openrisc             randconfig-r003-20230310   gcc  
-openrisc             randconfig-r005-20230310   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r004-20230310   gcc  
-parisc               randconfig-r012-20230310   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                      cm5200_defconfig   gcc  
-powerpc                       eiger_defconfig   gcc  
-powerpc                      makalu_defconfig   gcc  
-powerpc              randconfig-r006-20230310   clang
-powerpc              randconfig-r034-20230310   clang
-powerpc                     tqm8548_defconfig   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r002-20230310   clang
-riscv                randconfig-r003-20230310   clang
-riscv                randconfig-r021-20230310   gcc  
-riscv                randconfig-r042-20230310   gcc  
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r033-20230310   clang
-s390                 randconfig-r044-20230310   gcc  
-sh                               allmodconfig   gcc  
-sh           buildonly-randconfig-r004-20230310   gcc  
-sh           buildonly-randconfig-r005-20230310   gcc  
-sh                          landisk_defconfig   gcc  
-sh                   randconfig-r002-20230310   gcc  
-sh                   randconfig-r004-20230310   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r011-20230310   gcc  
-sparc                       sparc64_defconfig   gcc  
-sparc64              randconfig-r001-20230310   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                           alldefconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64                        randconfig-a001   clang
-x86_64                        randconfig-a002   gcc  
-x86_64                        randconfig-a003   clang
-x86_64                        randconfig-a004   gcc  
-x86_64                        randconfig-a005   clang
-x86_64                        randconfig-a006   gcc  
-x86_64                        randconfig-a011   gcc  
-x86_64                        randconfig-a012   clang
-x86_64                        randconfig-a013   gcc  
-x86_64                        randconfig-a014   clang
-x86_64                        randconfig-a015   gcc  
-x86_64                        randconfig-a016   clang
-x86_64                               rhel-8.3   gcc  
-xtensa               randconfig-r002-20230310   gcc  
-xtensa               randconfig-r006-20230310   gcc  
-xtensa               randconfig-r013-20230310   gcc  
-
+diff --git a/drivers/power/supply/bq24257_charger.c b/drivers/power/supply/bq24257_charger.c
+index 103ddc2b3def..45e4ba30da98 100644
+--- a/drivers/power/supply/bq24257_charger.c
++++ b/drivers/power/supply/bq24257_charger.c
+@@ -1140,7 +1140,7 @@ static const struct i2c_device_id bq24257_i2c_ids[] = {
+ };
+ MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
+ 
+-static const struct of_device_id bq24257_of_match[] = {
++static const struct of_device_id bq24257_of_match[] __maybe_unused = {
+ 	{ .compatible = "ti,bq24250", },
+ 	{ .compatible = "ti,bq24251", },
+ 	{ .compatible = "ti,bq24257", },
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+2.34.1
+
