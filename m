@@ -2,87 +2,116 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00031C74A4B
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Mar 2023 08:54:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7593CC6FD19
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Mar 2023 09:02:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230444AbjCMIyW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Mar 2023 04:54:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32896 "EHLO
+        id S229694AbjCMJCX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Mar 2023 05:02:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230373AbjCMIxr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2023 04:53:47 -0400
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5BBB37562;
-        Mon, 13 Mar 2023 01:51:09 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id F3709CE0EC7;
-        Mon, 13 Mar 2023 08:50:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 321FDC433D2;
-        Mon, 13 Mar 2023 08:50:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1678697456;
-        bh=bxFy0g/YowhzcjpYqA4BX93LeqiKqvaOaDFo5v2nHiI=;
-        h=From:To:Cc:Subject:Date:From;
-        b=bmZlBiGfZQsvWp0xdybp7kstjy/o39a/uhiBPMNL306rvxbvxcH78L1ImqN13yCg3
-         PpQPBoQxVq55fHN9irQB4UWUEjJDqV7AEzq3I5/YPVEYYJch/j37xwR0LNU+9w0/lr
-         6+uWLVUvXOEDfz8NNOe7GVV/ez0eli+qY2he7yPq/fmz1aDZUQNN/8I9tk6XR/eyfq
-         OnNkhUjytB87GQSz+yZV35ORB5QtdvS8GypyQcZBgI1IoKt4jcHrd6TDL6UmozRWPo
-         hp6B6Gm7WU4ssb9wuoAVh6j1j1+B44Sw+fBiU4AQJC4qkk1s6TO0NaRyg+D3poy2lr
-         1Wq67efW5Z42w==
-Received: from johan by xi.lan with local (Exim 4.94.2)
-        (envelope-from <johan+linaro@kernel.org>)
-        id 1pbduN-0006Hs-Re; Mon, 13 Mar 2023 09:51:56 +0100
-From:   Johan Hovold <johan+linaro@kernel.org>
-To:     Georgi Djakov <djakov@kernel.org>
+        with ESMTP id S230451AbjCMJBy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2023 05:01:54 -0400
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B08776152B
+        for <linux-pm@vger.kernel.org>; Mon, 13 Mar 2023 01:57:54 -0700 (PDT)
+Received: by mail-lf1-x12f.google.com with SMTP id n2so14658058lfb.12
+        for <linux-pm@vger.kernel.org>; Mon, 13 Mar 2023 01:57:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1678697868;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=vG2hIsjaOd4MbHUHiVXsu6+98QpgUAMpZAz1HLFBAYw=;
+        b=rLCKnc6LXfF/l+vowgqu+45yxJxvQS6zrLssUXcoNGQL2pM7GLKBgql42hlynGkkZD
+         vGj+6eWu2GmxH0MMpcwK+UE9oKSrPf2LI1UEyyxvkC0XhffB9aBqLKpkTEBb1iHhXrY2
+         OudZZhiB7R8UDeGNreLdHlhVoZVj+Gnj0lD1svZYYO214PcEiS+9Il4OvPwTyHcW2KyY
+         o+engJreIQHPFMxna9ytRVoIaRSGbOI57HIpkAKNT6VYPlsESMypkyb0J6z+pRcEy+fr
+         KrAc/iJ0QVkA/uQj8Gn/mG/zttCfzWQ/QB6BBXILWjVFf6Gg5zcXSPTRIs7n1W8TYmU2
+         JbhA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678697868;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=vG2hIsjaOd4MbHUHiVXsu6+98QpgUAMpZAz1HLFBAYw=;
+        b=e3n6q9FgJHTjDBFtq+OYKKzl4G6SJwI8oCTf3rugVJ/y6j+H+fdJOFqAmqORsA02UZ
+         7pyGSmpuYwilrmgCNfzWd7ipXLTiaXU8MHCZKzQ+E5g6g3NveaTJyi4XoTl1WbfP/kga
+         lxyP1SWaBj4+gEnwRyPUcxhzyPfn9XZfGJ3v17hmSwtsbWajFWdK+pkwVwUKGj7Nh2V0
+         2Rf7wbO/6Nrrljt9ncEB3sd1ZVD3PxKfC0Orhvsi9/97WLfOFcHJQeAuL2o+t09NLeUD
+         lQ7tv3yxEOXXbUUjUGHYGKcio0DFO+xi6N6Q3p1pMHhKtBXT/SBNSxKSNGh6qYvSsvPp
+         itAQ==
+X-Gm-Message-State: AO0yUKUDMzGiyab+9Gk/LwfeIKYrhyOE8RMfheLUTjFNMy/IO/lhbkUk
+        dLFLVq0nwqlqb6Z1ietoaVMId/CIz7Htq2ulwE8=
+X-Google-Smtp-Source: AK7set9EtBcxmlEICRY/EI2PNnRVRF2HUoh341r7FSr8bbFAZ81faYrNhqlaWpezNQf9esZ6fqJUFA==
+X-Received: by 2002:ac2:5fef:0:b0:4db:38aa:a2f4 with SMTP id s15-20020ac25fef000000b004db38aaa2f4mr9423816lfg.14.1678697868197;
+        Mon, 13 Mar 2023 01:57:48 -0700 (PDT)
+Received: from [192.168.1.101] (abyj16.neoplus.adsl.tpnet.pl. [83.9.29.16])
+        by smtp.gmail.com with ESMTPSA id z2-20020a056512376200b004d783b0d310sm892550lft.307.2023.03.13.01.57.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Mar 2023 01:57:47 -0700 (PDT)
+Message-ID: <39ada68d-e294-9602-f3f6-506b9a6645d8@linaro.org>
+Date:   Mon, 13 Mar 2023 09:57:46 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH 1/2] interconnect: qcom: rpm: fix msm8996 interconnect
+ registration
+Content-Language: en-US
+To:     Johan Hovold <johan+linaro@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>
 Cc:     Bjorn Andersson <andersson@kernel.org>,
         Andy Gross <agross@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
         Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         Yassine Oudjana <y.oudjana@protonmail.com>,
         Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Johan Hovold <johan+linaro@kernel.org>
-Subject: [PATCH 0/2] interconnect: qcom: rpm: fix msm8996 interconnect registration
-Date:   Mon, 13 Mar 2023 09:49:51 +0100
-Message-Id: <20230313084953.24088-1-johan+linaro@kernel.org>
-X-Mailer: git-send-email 2.39.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+References: <20230313084953.24088-1-johan+linaro@kernel.org>
+ <20230313084953.24088-2-johan+linaro@kernel.org>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20230313084953.24088-2-johan+linaro@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Christophe noticed that a recent patch adding a missing clock disable to
-one of the Qualcomm rpm driver error paths was broken. This would lead
-to the provider not being registered on msm8996 which is the only
-platform using this code path.
-
-Turns out, however, that the power domain attach during probe is bogus
-and would always succeed as any power domain would already have been
-attached by the platform bus code.
-
-Georgi, the offending commit is currently in your icc-next (and local
-icc-fixes) branch. Perhaps you can fold in the fixup unless you prefer
-applying it on top.
-
-The bogus PM domain lookup is redundant and confusing but should
-otherwise be benign so the removal could be applied to either branch.
-
-Johan
 
 
-Johan Hovold (2):
-  interconnect: qcom: rpm: fix msm8996 interconnect registration
-  interconnect: qcom: rpm: drop bogus pm domain attach
+On 13.03.2023 09:49, Johan Hovold wrote:
+> A recent commit broke interconnect provider registration for the msm8996
+> platform by accidentally removing a conditional when adding the missing
+> clock disable in the power-domain lookup error path.
+> 
+> Fixes: b6edcc7570b2 ("interconnect: qcom: rpm: fix probe PM domain error handling")
+The hash seems to be different:
 
- drivers/interconnect/qcom/icc-rpm.c | 5 -----
- drivers/interconnect/qcom/icc-rpm.h | 1 -
- drivers/interconnect/qcom/msm8996.c | 1 -
- 3 files changed, 7 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git/commit/?h=icc-next&id=9038710161f0f028e36ef383fca59080f48420ee
 
--- 
-2.39.2
+> Reported-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Link: https://lore.kernel.org/r/641d04a3-9236-fe76-a20f-11466a01460e@wanadoo.fr
+> Cc: stable@vger.kernel.org      # 5.17
+> Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+> ---
+>  drivers/interconnect/qcom/icc-rpm.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+> index 4d0997b210f7..3b055cd893ea 100644
+> --- a/drivers/interconnect/qcom/icc-rpm.c
+> +++ b/drivers/interconnect/qcom/icc-rpm.c
+> @@ -498,7 +498,8 @@ int qnoc_probe(struct platform_device *pdev)
+>  
+>  	if (desc->has_bus_pd) {
+>  		ret = dev_pm_domain_attach(dev, true);
+> -		goto err_disable_clks;
+> +		if (ret)
+> +			goto err_disable_clks;
+*wipes glasses*.. right..
 
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+
+Konrad
+>  	}
+>  
+>  	provider = &qp->provider;
