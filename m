@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2335EC6FD1D
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 13:00:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30890C7618D
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 13:05:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231735AbjCNNAQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Mar 2023 09:00:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47118 "EHLO
+        id S231841AbjCNNFS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Mar 2023 09:05:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232494AbjCNM75 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 08:59:57 -0400
-Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E97D9F212
-        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 05:55:42 -0700 (PDT)
-Received: by mail-lf1-f46.google.com with SMTP id s22so19866822lfi.9
-        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 05:55:42 -0700 (PDT)
+        with ESMTP id S232545AbjCNNE4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 09:04:56 -0400
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4AAEA5926
+        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 06:01:14 -0700 (PDT)
+Received: by mail-wr1-x430.google.com with SMTP id r29so6235248wra.13
+        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 06:01:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1678798391;
+        d=linaro.org; s=google; t=1678798846;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=MqZsJOX1El+luUmSocWq2Ruds493hltfIeGTUI/M7s0=;
-        b=lIkufWX2AvnHK4fNhJuBOYWiIE1d7ax7Ul0tokiavFlhjnooN1nfb4KqaMqD6HDoLD
-         /3RZodcM9RiXtXFu2UYCGrNfhhsHndhLd4gRZcAADYOdgF4BZXYHxfgvILjWgzCCs0YE
-         njycuxNMNzCiz0Bjum5rEb/glqUvVOK5OMoQabJJKOcefKOHwe1Uj/O/zFluV0zvxB22
-         0i6tUhrltPOtlXzI7XecJepLkqy+xDWL123KuW6u81cghgQc+9gvISGoD2AtR1PPBS+S
-         B6CsqSYuvKjxXv+aqzX5iNZYs8Vk6v/H6/7Fr7SL3CiZqQIA+s9ab9VZzljEoagbH9wb
-         PMJw==
+        bh=H57htoQkTUg+UFTR1sq6q65W74NoULtO9Zp7Ye5hgiA=;
+        b=AkQ1FaxvlVlPtEGLWVLb/WVCrtFaA8bPHc0eP9GBCfEw4y706R2/zafxWW/JhRKPJ4
+         oSFPiH9BiQBccDebHMSkCKL+PeOXPC6rA5g/O3ekLCjik+WrCBXHrNFWi0BN0l7JIh57
+         sbobisM4Q2gWuj6f/RF3/HqS0K4rc9QFC8yJ7322jVuL5RipkqOs7MIZTYbpiSv4kpA/
+         s2yHegwg56cHmXu5NK7/zXIy54XFmiPg5RgiOEwxmp/8ypflDVO+h8b+wcJON1Y5WIQ0
+         UeB4ArFdsAd+STccJ3oEYrPOedmSmNHMUNfd/cliS6xfd1Rcqnb4JPeVUM/1qVQOYxy1
+         Rs0Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678798391;
+        d=1e100.net; s=20210112; t=1678798846;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=MqZsJOX1El+luUmSocWq2Ruds493hltfIeGTUI/M7s0=;
-        b=XWNIEgYiC2D4Gbm8D/4nU0AkLsOd2c4nsXWtmZMoad3Gk2hNeX3w/nkfMUXqFTSuht
-         EzZZ6twGZNI4qZme8lc2xi0mPa2M/6piGuOXEt54T/XC3j4zwU5QU53SsJmgfkXxkKDt
-         VSfdgI1xQO6l0HuwhBF2msTIEEzjb/19cvVHiICyV5ZEcUXhiJ97CH6gEhkiS82sGvFJ
-         6pq9zP31x4D7I0v6+XhYGKMvCCtANtVEU1g/UezkemHeODssAj/b58USGk2pNGTG5pd6
-         w73JddbCSQP3/sJd6Xb9ipHcEA1FkumaNHFJySy6hriyuSrvvy+4FMG1OVRatByoemk+
-         9wMA==
-X-Gm-Message-State: AO0yUKVKXu/ngiGYo7gxmY5CeXpHt0rnqQ6XCnypxMSV9in75uMuhZWg
-        nwHssu3WBRplGGPIDof+ahThig==
-X-Google-Smtp-Source: AK7set9qOvhwQgOeP4U1McR7yj1LUoKO8eAR6fKuhFRTzvH3/lO2wA88LCnFpHmHEttF3cZT0GEPtg==
-X-Received: by 2002:ac2:5a11:0:b0:4dd:afb4:26b3 with SMTP id q17-20020ac25a11000000b004ddafb426b3mr768141lfn.16.1678798391245;
-        Tue, 14 Mar 2023 05:53:11 -0700 (PDT)
+        bh=H57htoQkTUg+UFTR1sq6q65W74NoULtO9Zp7Ye5hgiA=;
+        b=yeQ/QImyCXT72ztspir+rcgJEyXH/CXV5N/Isbr8rOfmc/TkknbucsDV2XvKrYrsYD
+         XUorOVm3j7tJqQ02UP6cOevwpNZ3VZCAvUM+U66nuYLThRYt2lU+iddofL8b4g4Q/hdt
+         MlI5s4M4A4drlEKwlfnxc3J9PUUdHdm8ILQlXPMniYca0GGp59i+ns+Yldds9Bjw3ANh
+         DIFBInn9Lik5IArJevIFEYxY93KSCKmaXL3/5uTvW7SNHmM9hHeJZ15uLsnWr1okS4Y+
+         qa6cO2G10HBv3X172lJbOO3jL+2jnch6x53FaIx3NS4tyvZwNrGC09EpHBUfIvjlvf11
+         c1jg==
+X-Gm-Message-State: AO0yUKXFluE9lX7peuTP5bU0gTPrxVEJ8tGe6LagZXeRrvcHuwNRXojZ
+        h9PW2TyM1iek/90Axvd/QS1AnnCeTzsdFD5zt+0=
+X-Google-Smtp-Source: AK7set+LGzXnfPO9yxrQ7i+5lJWHJr8ilHoSFFsG62K03rnONrPIjtofPyo8KNV4If/IrFwW1hAinw==
+X-Received: by 2002:ac2:53a6:0:b0:4dd:749b:2d5e with SMTP id j6-20020ac253a6000000b004dd749b2d5emr658238lfh.13.1678798389023;
+        Tue, 14 Mar 2023 05:53:09 -0700 (PDT)
 Received: from [192.168.1.101] (abyj16.neoplus.adsl.tpnet.pl. [83.9.29.16])
-        by smtp.gmail.com with ESMTPSA id s9-20020a19ad49000000b004dda74eccafsm395374lfd.68.2023.03.14.05.53.09
+        by smtp.gmail.com with ESMTPSA id s9-20020a19ad49000000b004dda74eccafsm395374lfd.68.2023.03.14.05.53.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Mar 2023 05:53:10 -0700 (PDT)
+        Tue, 14 Mar 2023 05:53:08 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 14 Mar 2023 13:52:57 +0100
-Subject: [PATCH 2/6] dt-bindings: dmaengine: qcom: gpi: Add QCM2290 GPI DMA
+Date:   Tue, 14 Mar 2023 13:52:56 +0100
+Subject: [PATCH 1/6] dt-bindings: watchdog: qcom-wdt: add QCM2290
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230314-topic-2290_compats-v1-2-47e26c3c0365@linaro.org>
+Message-Id: <20230314-topic-2290_compats-v1-1-47e26c3c0365@linaro.org>
 References: <20230314-topic-2290_compats-v1-0-47e26c3c0365@linaro.org>
 In-Reply-To: <20230314-topic-2290_compats-v1-0-47e26c3c0365@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -82,37 +82,36 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-watchdog@vger.kernel.org,
         linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1678798384; l=817;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1678798384; l=804;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=9mAqu5IGrrdUOaP0PlfWAkH94BH0kiBbnQ1iZWRCDUM=;
- b=Sh44OBUk8yAs+WqMAoK2kFFPM3jib6rHQJUJlUycILo2oU82/iPMiKJDnydXvXJL+YhzIpMEFN+N
- sGnknaghBoSI8VGUuzX1St9M1lXVjwwnkKWcthQp66XIHR9eCzzo
+ bh=5U3ca5wHa6L9Uqd71BtW3lQI84JxQ8icLuw8PMs5taA=;
+ b=NtWhoOCxoiWQoOdiz2KumOaoFLzyepdvtefGrM6rQG0T+1vcJphHx4O58b5FRFhG29N0R0ZWIcA/
+ csWPf2qLAUZbDFmWgOGLjLq3J5a5lAJMwSgks6lRLLJeqrPATjUS
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a compatible for the single GPI DMA controller on QCM2290. It uses
-the same 0x10000 offset as SM6350.
+Document the QCM2290 KPSS watchdog.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- Documentation/devicetree/bindings/dma/qcom,gpi.yaml | 1 +
+ Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/dma/qcom,gpi.yaml b/Documentation/devicetree/bindings/dma/qcom,gpi.yaml
-index fc5de7b6f19e..f61145c91b6d 100644
---- a/Documentation/devicetree/bindings/dma/qcom,gpi.yaml
-+++ b/Documentation/devicetree/bindings/dma/qcom,gpi.yaml
-@@ -24,6 +24,7 @@ properties:
-           - qcom,sm6350-gpi-dma
-       - items:
+diff --git a/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml b/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml
+index 6448b633c970..db3e260fb2ef 100644
+--- a/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml
++++ b/Documentation/devicetree/bindings/watchdog/qcom-wdt.yaml
+@@ -19,6 +19,7 @@ properties:
            - enum:
-+              - qcom,qcm2290-gpi-dma
-               - qcom,qdu1000-gpi-dma
-               - qcom,sc7280-gpi-dma
-               - qcom,sm6115-gpi-dma
+               - qcom,kpss-wdt-ipq4019
+               - qcom,apss-wdt-msm8994
++              - qcom,apss-wdt-qcm2290
+               - qcom,apss-wdt-qcs404
+               - qcom,apss-wdt-sa8775p
+               - qcom,apss-wdt-sc7180
 
 -- 
 2.39.2
