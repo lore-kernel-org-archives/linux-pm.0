@@ -2,37 +2,37 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03BD9C6FD1F
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 22:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FAF2C76195
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 22:55:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231263AbjCNWzn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Mar 2023 18:55:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52658 "EHLO
+        id S231334AbjCNWzo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Mar 2023 18:55:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229720AbjCNWzm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 18:55:42 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 966913771A;
-        Tue, 14 Mar 2023 15:55:41 -0700 (PDT)
+        with ESMTP id S231162AbjCNWzn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 18:55:43 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9278F39287;
+        Tue, 14 Mar 2023 15:55:42 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 8FB8761A4D;
-        Tue, 14 Mar 2023 22:55:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A68ACC433EF;
+        by ams.source.kernel.org (Postfix) with ESMTPS id 29F6CB81BFC;
+        Tue, 14 Mar 2023 22:55:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E536C4339B;
         Tue, 14 Mar 2023 22:55:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1678834539;
-        bh=G7IHTWYU3Hc+755n6/8M/Bh2uOhHrF8UATMy0A1uKCQ=;
-        h=From:To:Cc:Subject:Date:From;
-        b=EhRQFg+fyLNkwy3Bpcsi+mGCiJMx6YnCpAaeNGWAv8+IBINHHNxagygIh98ouTObA
-         CPEaaxuHXUk3TOqK6pSJDLniAP6LjoHqRIvxLugnLj6rttqYuM+9oOx1m3PlzgBcTu
-         kn5ML7wkd9/aL75VH2qB/SAgno0vkJGDNsdPYyY4x76As5pAZkPfLoLIPiXUOrE83+
-         dB+jPbgnhUdS7pL7UhgX/KP2PRnPV2iAAn/c72t/CZbMO4e4MBECHSN1MmPL6Kdxs4
-         aVffBTwnQhQ83ShjScGyptSverJCz8PXgKNVeEFS+2lWS9XyM/3vQkf2f/+cv3vl0E
-         6QyRZ4e47iZ1A==
+        bh=35QN0bzeY/9nc3m2KusNIkEd3B6r2Kv+UZyBrvNelB4=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=mDwGM+G/X24ezRvdHhqJ7xrox/Qhgn526cw5U7Goc9Qjik18wDD96rSQm6LmeEx/O
+         MctH8dMy3Kpa3CNI60F4HUtitObF97gKouMRPSBs9av5Hcjg0h1VEZeAphJughprS+
+         8pRbOe8URkN7RGrJCJwl4I5Yx9z5ITFcwPmx1s3fXPU35i7v2ms96KDCb0B1yXNYTx
+         mIwAhT75MxcrUuG/z67kFrBnbOaZCZmqCmgFi5RcV39+mc6IikyclukC4tM8xvCijN
+         J1YZ01OC7ITgSFKs32fm8wlSLMe4xB+EnpD5FkqaicBxwZHpI3+W5YH2N4ai25fW3G
+         0jAzT3JKRWhQg==
 Received: by mercury (Postfix, from userid 1000)
-        id D176D10620A0; Tue, 14 Mar 2023 23:55:36 +0100 (CET)
+        id D8EB110620A5; Tue, 14 Mar 2023 23:55:36 +0100 (CET)
 From:   Sebastian Reichel <sre@kernel.org>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Linus Walleij <linus.walleij@linaro.org>,
@@ -41,10 +41,12 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [PATCHv2 00/12] Add DT support for generic ADC battery
-Date:   Tue, 14 Mar 2023 23:55:23 +0100
-Message-Id: <20230314225535.1321736-1-sre@kernel.org>
+Subject: [PATCHv2 04/12] power: supply: generic-adc-battery: fix unit scaling
+Date:   Tue, 14 Mar 2023 23:55:27 +0100
+Message-Id: <20230314225535.1321736-5-sre@kernel.org>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230314225535.1321736-1-sre@kernel.org>
+References: <20230314225535.1321736-1-sre@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -52,55 +54,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+power-supply properties are reported in µV, µA and µW.
+The IIO API provides mV, mA, mW, so the values need to
+be multiplied by 1000.
 
-This series cleans up the generic ADC battery driver and adds
-devicetree support. The plan is to use the driver to add upstream
-support for a handheld thermal camera.
+Fixes: e60fea794e6e ("power: battery: Generic battery driver using IIO")
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
+Signed-off-by: Sebastian Reichel <sre@kernel.org>
+---
+ drivers/power/supply/generic-adc-battery.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Instead of reading and exposing the monitored battery data manually
-I started the series with an addition to the power-supply core,
-which allows automatic handling of the static battery information.
-It simplifies the generic-adc-battery driver a lot and should also
-be useful for other battery drivers.
-
-Changes since PATCHv1:
- * collect Reviewed-by
-   (I did not collect them for the auto-exposure because of the
-   code changes)
- * always auto expose battery data (without opt-in)
- * update DT binding according to feedback
- * add temperature support
- * fix issues pointed out by the Intel build bot
-  - move power_supply_battery_info_properties to power_supply_core.c
-  - restore accidently removed EXPORT_SYMBOL for power_supply_get_property
-
--- Sebastian
-
-Sebastian Reichel (12):
-  dt-bindings: power: supply: adc-battery: add binding
-  power: supply: core: auto-exposure of simple-battery data
-  power: supply: generic-adc-battery: convert to managed resources
-  power: supply: generic-adc-battery: fix unit scaling
-  power: supply: generic-adc-battery: drop jitter delay support
-  power: supply: generic-adc-battery: drop charge now support
-  power: supply: generic-adc-battery: drop memory alloc error message
-  power: supply: generic-adc-battery: use simple-battery API
-  power: supply: generic-adc-battery: simplify read_channel logic
-  power: supply: generic-adc-battery: add temperature support
-  power: supply: generic-adc-battery: add DT support
-  power: supply: generic-adc-battery: update copyright info
-
- .../bindings/power/supply/adc-battery.yaml    |  70 ++++++
- drivers/power/supply/generic-adc-battery.c    | 227 +++++-------------
- drivers/power/supply/power_supply_core.c      | 173 +++++++++++--
- drivers/power/supply/power_supply_sysfs.c     |  15 ++
- include/linux/power/generic-adc-battery.h     |  23 --
- include/linux/power_supply.h                  |   8 +
- 6 files changed, 306 insertions(+), 210 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/adc-battery.yaml
- delete mode 100644 include/linux/power/generic-adc-battery.h
-
+diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
+index 917bd2a6cc52..535972a332b3 100644
+--- a/drivers/power/supply/generic-adc-battery.c
++++ b/drivers/power/supply/generic-adc-battery.c
+@@ -136,6 +136,9 @@ static int read_channel(struct gab *adc_bat, enum power_supply_property psp,
+ 			result);
+ 	if (ret < 0)
+ 		pr_err("read channel error\n");
++	else
++		*result *= 1000;
++
+ 	return ret;
+ }
+ 
 -- 
 2.39.2
 
