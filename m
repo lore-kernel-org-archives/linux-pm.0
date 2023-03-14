@@ -2,102 +2,85 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A1AAC6FD1C
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 09:32:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8983CC6FD1D
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 10:35:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229534AbjCNJca (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Mar 2023 05:32:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54470 "EHLO
+        id S229571AbjCNKfY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Mar 2023 06:35:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230094AbjCNJc2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 05:32:28 -0400
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40A94570A5
-        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 02:32:23 -0700 (PDT)
-Received: by mail-pl1-x62a.google.com with SMTP id u5so15914247plq.7
-        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 02:32:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1678786343;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=kQBaP6NNs1+swFBxxR3m2gMTZaTzSsPIhqbxCO9Jwuc=;
-        b=KEUhY5Lnh3J0DfiMK/EIpX4abofPH1BNKrhl7lM+LBfivflYuX7vmODvAnf9+hFFFN
-         1EjfpCxBU+y2SMGhQd0cgFV/41bFJzmo2HvS+s7M4IcOc3KnroS5/27+X9wvRQtfS+5G
-         t5T5t4SGEfzJZHlgULAmcqmwvhNfytBPGmuHU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678786343;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kQBaP6NNs1+swFBxxR3m2gMTZaTzSsPIhqbxCO9Jwuc=;
-        b=mJhdy4OBhV2/brrkfrxWHHo1ZsWRFSZIAXDrZvAXP8zdPfjlQmK1PTEm+IcghU2Y1u
-         ToqdASdh4YKQWlTEIaCqaUupKUrcgY5rYkJ1hHrdSwaSKu74CjZUkZ7SMfT4esx7tP3n
-         3HnSoDWQAgMdatxdwgZtsdPUwIUasG737/bmbx49dfWYaGzbXG1C+tW0zATdhZFA4iLS
-         rJJeVlIjZhb/1pB+JHVpiw9iiyolc3IG2NDrPD0aFOE6h0td907IA1lrjB+uYa/H91+9
-         CSXoHF3Pie88jyMOgzAnX/JgJaZTKnNnHchmEtW3767IWvVNrQ/a2J6qkWzZvd19/BwT
-         3Aog==
-X-Gm-Message-State: AO0yUKUDYv6u9bvSK2DTaBPo05biHTGi7Wto/T9RqMl7YUi0VDoelWsT
-        tL9qx9lPZwAHdNr5cZolUkCHdQ==
-X-Google-Smtp-Source: AK7set/DIpXFg0newybBhwUu3htmas9rXlgHCKNwPgT0x6mYJsVvNIA4lbPT2rnDfNRIEmKjoj8xgg==
-X-Received: by 2002:a05:6a20:bb29:b0:d5:9a0c:ef31 with SMTP id fc41-20020a056a20bb2900b000d59a0cef31mr698214pzb.62.1678786342779;
-        Tue, 14 Mar 2023 02:32:22 -0700 (PDT)
-Received: from wenstp920.tpe.corp.google.com ([2401:fa00:1:10:99b4:e339:ed01:f0c1])
-        by smtp.gmail.com with ESMTPSA id d24-20020aa78e58000000b00593e4e6516csm1158851pfr.124.2023.03.14.02.32.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Mar 2023 02:32:22 -0700 (PDT)
-From:   Chen-Yu Tsai <wenst@chromium.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     Chen-Yu Tsai <wenst@chromium.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Balsam CHIHI <bchihi@baylibre.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal/drivers/mediatek/lvts_thermal: Register thermal zones as hwmon sensors
-Date:   Tue, 14 Mar 2023 17:32:13 +0800
-Message-Id: <20230314093213.2450396-1-wenst@chromium.org>
-X-Mailer: git-send-email 2.40.0.rc1.284.g88254d51c5-goog
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S231382AbjCNKfJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 06:35:09 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 0926A8A3B2;
+        Tue, 14 Mar 2023 03:34:32 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5A33F1042;
+        Tue, 14 Mar 2023 03:35:00 -0700 (PDT)
+Received: from e123648.arm.com (unknown [10.57.19.101])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D46943F71A;
+        Tue, 14 Mar 2023 03:34:13 -0700 (PDT)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        rafael@kernel.org
+Cc:     lukasz.luba@arm.com, dietmar.eggemann@arm.com, rui.zhang@intel.com,
+        amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
+        daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
+        len.brown@intel.com, pavel@ucw.cz, Pierre.Gondois@arm.com,
+        ionela.voinescu@arm.com, rostedt@goodmis.org, mhiramat@kernel.org
+Subject: [PATCH 01/17] PM: EM: Refactor em_cpufreq_update_efficiencies() arguments
+Date:   Tue, 14 Mar 2023 10:33:41 +0000
+Message-Id: <20230314103357.26010-2-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20230314103357.26010-1-lukasz.luba@arm.com>
+References: <20230314103357.26010-1-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Register thermal zones as hwmon sensors to let userspace read
-temperatures using standard hwmon interface.
+In order to prepare the code for the modifiable EM perf_state table,
+refactor existing function em_cpufreq_update_efficiencies().
 
-Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/thermal/mediatek/lvts_thermal.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ kernel/power/energy_model.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index 0557d1c61b9e..15f317c42718 100644
---- a/drivers/thermal/mediatek/lvts_thermal.c
-+++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -19,6 +19,8 @@
- #include <linux/thermal.h>
- #include <dt-bindings/thermal/mediatek,lvts-thermal.h>
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index f82111837b8d..265d51a948d4 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -240,10 +240,10 @@ static int em_create_pd(struct device *dev, int nr_states,
+ 	return 0;
+ }
  
-+#include "../thermal_hwmon.h"
-+
- #define LVTS_MONCTL0(__base)	(__base + 0x0000)
- #define LVTS_MONCTL1(__base)	(__base + 0x0004)
- #define LVTS_MONCTL2(__base)	(__base + 0x0008)
-@@ -996,6 +998,9 @@ static int lvts_ctrl_start(struct device *dev, struct lvts_ctrl *lvts_ctrl)
- 			return PTR_ERR(tz);
- 		}
+-static void em_cpufreq_update_efficiencies(struct device *dev)
++static void
++em_cpufreq_update_efficiencies(struct device *dev, struct em_perf_state *table)
+ {
+ 	struct em_perf_domain *pd = dev->em_pd;
+-	struct em_perf_state *table;
+ 	struct cpufreq_policy *policy;
+ 	int found = 0;
+ 	int i;
+@@ -257,8 +257,6 @@ static void em_cpufreq_update_efficiencies(struct device *dev)
+ 		return;
+ 	}
  
-+		if (devm_thermal_add_hwmon_sysfs(dev, chip->tz_dev))
-+			dev_warn(dev, "zone %d: Failed to add hwmon sysfs attributes\n", dt_id);
-+
- 		/*
- 		 * The thermal zone pointer will be needed in the
- 		 * interrupt handler, we store it in the sensor
+-	table = pd->table;
+-
+ 	for (i = 0; i < pd->nr_perf_states; i++) {
+ 		if (!(table[i].flags & EM_PERF_STATE_INEFFICIENT))
+ 			continue;
+@@ -400,7 +398,7 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
+ 
+ 	dev->em_pd->flags |= flags;
+ 
+-	em_cpufreq_update_efficiencies(dev);
++	em_cpufreq_update_efficiencies(dev, dev->em_pd->table);
+ 
+ 	em_debug_create_pd(dev);
+ 	dev_info(dev, "EM: created perf domain\n");
 -- 
-2.40.0.rc1.284.g88254d51c5-goog
+2.17.1
 
