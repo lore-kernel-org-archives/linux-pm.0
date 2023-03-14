@@ -2,231 +2,171 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35A0AC7618D
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 22:56:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9208C7618B
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Mar 2023 23:57:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231487AbjCNW4D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Mar 2023 18:56:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53244 "EHLO
+        id S230270AbjCNX56 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Mar 2023 19:57:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49430 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231459AbjCNWz4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 18:55:56 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABDEF43937;
-        Tue, 14 Mar 2023 15:55:46 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 3D281B81BFF;
-        Tue, 14 Mar 2023 22:55:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F31DC433A4;
-        Tue, 14 Mar 2023 22:55:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1678834542;
-        bh=7YH4QVgz1Riw28ilrhLvb611eMg8DgBLWjF4R5j+F+k=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uzaj6+L/XgEC68aIwxz2Vl/a7Aj2up35lbcaYzrPztTeuIMoCXypfI4a+3Ge3mKcQ
-         xJclpmvYlkCrvw2X6CQBih4r4bjaLTCyTqq3AXY6yz1yiplLYD646gqtVPOS/OPqEX
-         Jjmqq1QZGxDW8GkghWDX5EPVM0WyKUkHk+2GjtE1SNU/lMXpZn/36lGczDnjun6L2b
-         AyyBHPsiAUXpPSNpIv2boNWDJWATo6ZwDCT0DJORZEUxEGD/Q5ecJhgNWK/onpHxfb
-         HGjyr5k0LxmaqLABKhYY8Gfv2W+8zYPFHBHw7rYZYr8QMUueaJ/UXu6OMFRnlXpoDP
-         V/TeANnfMSacw==
-Received: by mercury (Postfix, from userid 1000)
-        id E33EF10620AB; Tue, 14 Mar 2023 23:55:36 +0100 (CET)
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Linus Walleij <linus.walleij@linaro.org>,
-        Matti Vaittinen <mazziesaccount@gmail.com>,
+        with ESMTP id S229938AbjCNX55 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2023 19:57:57 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EC425AB48
+        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 16:57:55 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id m4so9191035lfj.2
+        for <linux-pm@vger.kernel.org>; Tue, 14 Mar 2023 16:57:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1678838273;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=aN4RFzxPl53NEPH6mcAZ76PnFwWs2sCpg6jdulGDfz4=;
+        b=p1kdN9n8iQ66a3wqyEKOARChYxLd6XFWH2SzWccJluze2vB/0Ng8lfv78xIyfylnIZ
+         iKrjwojzdeICtwuyIivQkme62hqmnZWd8MXSTz9xPv0zom/WDvuUcYmc66W5S/XsRWEs
+         FDQtG67SYZxUcslXIMGn9OW0ga+QJV/i+kbzsM92edJxw0zpRxJ7pWlnEEgAvGRGPjhJ
+         R47yn8w/UexDHdWDfnEcx4rRmFlMewF6w19+VljVv03JnR2ORT3z5TD2uk2qUzbJE04r
+         NsZ0v6KiouFi6soYloc+yZ3om7hc5Jfb+hxGPuP5slR84IFoB7P0lzhvZNM23OaPO4Rr
+         rZIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678838273;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aN4RFzxPl53NEPH6mcAZ76PnFwWs2sCpg6jdulGDfz4=;
+        b=kNGSYaywgKmoFOeySPuDFJpGkgSwumHNwEbp61cFLqHlB7SCnCgsSt1IFFpOvUHeMJ
+         0yeb1hPaxXCnoUtbl6z7bKo5xVi4WwMJLOCpfT8LjXfbYSB97sMqbTCfzKCPzhRuQVrr
+         bgu3I2b8xP0N0hK2xfzASs82cyJlg4xO7HAHF3Nz5qcXuSqctq6X6pi0RcOkapVuM5Qi
+         MzR1KWsHP95IiUhTmjC6fhsI5xn1ziAtX5mtk2oKD117HFX4oHD20AJ6xwPMBQeZVQRa
+         Xl4qsRb93n3KDyak4FyFKnbRIBD2WuaLqcZbPE3BJ24qGocO73cFw3keEsz4+XwG5iUG
+         M/4A==
+X-Gm-Message-State: AO0yUKWI4rEJaIupZpVZZiayQmAQVqVbvEe1JvGgUD3e5QEnhlMi7JmO
+        9w08Qm5lx/4IWmmEUc64eor5vBqIsFWwqUQlGO0=
+X-Google-Smtp-Source: AK7set+puZ2tGimAgVlxw/q4UwXqtRXPDbxxa0kHDBZ0r/f0xE9gPf1dE+rK3zKk05T0XDNH8EwL8w==
+X-Received: by 2002:a05:6512:408:b0:4dc:65c0:c74e with SMTP id u8-20020a056512040800b004dc65c0c74emr1385832lfk.29.1678838273627;
+        Tue, 14 Mar 2023 16:57:53 -0700 (PDT)
+Received: from [192.168.1.101] (abyj16.neoplus.adsl.tpnet.pl. [83.9.29.16])
+        by smtp.gmail.com with ESMTPSA id t16-20020ac24c10000000b004d4d7fb0e07sm585254lfq.216.2023.03.14.16.57.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 14 Mar 2023 16:57:53 -0700 (PDT)
+Message-ID: <adb3a64f-2542-6123-4306-3ed6eac928dc@linaro.org>
+Date:   Wed, 15 Mar 2023 00:57:51 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH 12/15] arm64: dts: qcom: sm6375: Introduce MPM support
+To:     Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: [PATCHv2 08/12] power: supply: generic-adc-battery: use simple-battery API
-Date:   Tue, 14 Mar 2023 23:55:31 +0100
-Message-Id: <20230314225535.1321736-9-sre@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230314225535.1321736-1-sre@kernel.org>
-References: <20230314225535.1321736-1-sre@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Georgi Djakov <djakov@kernel.org>,
+        Sibi Sankar <quic_sibis@quicinc.com>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20230303-topic-sm6375_features0_dts-v1-0-8c8d94fba6f0@linaro.org>
+ <20230303-topic-sm6375_features0_dts-v1-12-8c8d94fba6f0@linaro.org>
+Content-Language: en-US
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20230303-topic-sm6375_features0_dts-v1-12-8c8d94fba6f0@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use standard simple-battery API for constant battery
-information like min and max voltage. This simplifies
-the driver a lot and brings automatic support for DT.
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Sebastian Reichel <sre@kernel.org>
----
- drivers/power/supply/generic-adc-battery.c | 64 ++--------------------
- include/linux/power/generic-adc-battery.h  | 18 ------
- 2 files changed, 4 insertions(+), 78 deletions(-)
- delete mode 100644 include/linux/power/generic-adc-battery.h
 
-diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
-index 771e5cfc49c3..d4f63d945b2c 100644
---- a/drivers/power/supply/generic-adc-battery.c
-+++ b/drivers/power/supply/generic-adc-battery.c
-@@ -22,7 +22,6 @@
- #include <linux/slab.h>
- #include <linux/iio/consumer.h>
- #include <linux/iio/types.h>
--#include <linux/power/generic-adc-battery.h>
- #include <linux/devm-helpers.h>
- 
- #define JITTER_DEFAULT 10 /* hope 10ms is enough */
-@@ -48,9 +47,7 @@ struct gab {
- 	struct power_supply		*psy;
- 	struct power_supply_desc	psy_desc;
- 	struct iio_channel	*channel[GAB_MAX_CHAN_TYPE];
--	struct gab_platform_data	*pdata;
- 	struct delayed_work bat_work;
--	int	level;
- 	int	status;
- 	bool cable_plugged;
- 	struct gpio_desc *charge_finished;
-@@ -70,14 +67,6 @@ static void gab_ext_power_changed(struct power_supply *psy)
- 
- static const enum power_supply_property gab_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
--	POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--	POWER_SUPPLY_PROP_CURRENT_NOW,
--	POWER_SUPPLY_PROP_TECHNOLOGY,
--	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
--	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
--	POWER_SUPPLY_PROP_MODEL_NAME,
- };
- 
- /*
-@@ -97,17 +86,6 @@ static bool gab_charge_finished(struct gab *adc_bat)
- 	return gpiod_get_value(adc_bat->charge_finished);
- }
- 
--static int gab_get_status(struct gab *adc_bat)
--{
--	struct gab_platform_data *pdata = adc_bat->pdata;
--	struct power_supply_info *bat_info;
--
--	bat_info = &pdata->battery_info;
--	if (adc_bat->level == bat_info->charge_full_design)
--		return POWER_SUPPLY_STATUS_FULL;
--	return adc_bat->status;
--}
--
- static enum gab_chan_type gab_prop_to_chan(enum power_supply_property psp)
- {
- 	switch (psp) {
-@@ -144,27 +122,12 @@ static int read_channel(struct gab *adc_bat, enum power_supply_property psp,
- static int gab_get_property(struct power_supply *psy,
- 		enum power_supply_property psp, union power_supply_propval *val)
- {
--	struct gab *adc_bat;
--	struct gab_platform_data *pdata;
--	struct power_supply_info *bat_info;
--	int result = 0;
--	int ret = 0;
--
--	adc_bat = to_generic_bat(psy);
--	if (!adc_bat) {
--		dev_err(&psy->dev, "no battery infos ?!\n");
--		return -EINVAL;
--	}
--	pdata = adc_bat->pdata;
--	bat_info = &pdata->battery_info;
-+	struct gab *adc_bat = to_generic_bat(psy);
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
--		val->intval = gab_get_status(adc_bat);
--		break;
--	case POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN:
--		val->intval = 0;
--		break;
-+		val->intval = adc_bat->status;
-+		return 0;
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 	case POWER_SUPPLY_PROP_POWER_NOW:
-@@ -173,26 +136,9 @@ static int gab_get_property(struct power_supply *psy,
- 			goto err;
- 		val->intval = result;
- 		break;
--	case POWER_SUPPLY_PROP_TECHNOLOGY:
--		val->intval = bat_info->technology;
--		break;
--	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
--		val->intval = bat_info->voltage_min_design;
--		break;
--	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
--		val->intval = bat_info->voltage_max_design;
--		break;
--	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
--		val->intval = bat_info->charge_full_design;
--		break;
--	case POWER_SUPPLY_PROP_MODEL_NAME:
--		val->strval = bat_info->name;
--		break;
- 	default:
- 		return -EINVAL;
- 	}
--err:
--	return ret;
- }
- 
- static void gab_work(struct work_struct *work)
-@@ -235,7 +181,6 @@ static int gab_probe(struct platform_device *pdev)
- 	struct gab *adc_bat;
- 	struct power_supply_desc *psy_desc;
- 	struct power_supply_config psy_cfg = {};
--	struct gab_platform_data *pdata = pdev->dev.platform_data;
- 	enum power_supply_property *properties;
- 	int ret = 0;
- 	int chan;
-@@ -248,7 +193,7 @@ static int gab_probe(struct platform_device *pdev)
- 
- 	psy_cfg.drv_data = adc_bat;
- 	psy_desc = &adc_bat->psy_desc;
--	psy_desc->name = pdata->battery_info.name;
-+	psy_desc->name = dev_name(&pdev->dev);
- 
- 	/* bootup default values for the battery */
- 	adc_bat->cable_plugged = false;
-@@ -256,7 +201,6 @@ static int gab_probe(struct platform_device *pdev)
- 	psy_desc->type = POWER_SUPPLY_TYPE_BATTERY;
- 	psy_desc->get_property = gab_get_property;
- 	psy_desc->external_power_changed = gab_ext_power_changed;
--	adc_bat->pdata = pdata;
- 
- 	/*
- 	 * copying the static properties and allocating extra memory for holding
-diff --git a/include/linux/power/generic-adc-battery.h b/include/linux/power/generic-adc-battery.h
-deleted file mode 100644
-index 54434e4304d3..000000000000
---- a/include/linux/power/generic-adc-battery.h
-+++ /dev/null
-@@ -1,18 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Copyright (C) 2012, Anish Kumar <anish198519851985@gmail.com>
-- */
--
--#ifndef GENERIC_ADC_BATTERY_H
--#define GENERIC_ADC_BATTERY_H
--
--/**
-- * struct gab_platform_data - platform_data for generic adc iio battery driver.
-- * @battery_info:         recommended structure to specify static power supply
-- *			   parameters
-- */
--struct gab_platform_data {
--	struct power_supply_info battery_info;
--};
--
--#endif /* GENERIC_ADC_BATTERY_H */
--- 
-2.39.2
+On 3.03.2023 22:58, Konrad Dybcio wrote:
+> Add a node for MPM and wire it up on consumers that use it. This also
+> fixes a very bad and sad assumption I made when initially porting this
+> SoC that the downstream MPM-TLMM mappings were 1-1. That apparently
+> changed some time ago, so with this patch the MPM consumers will actually
+> be hooked up to the correct interrupt lines.
+> 
+> Fixes: 59d34ca97f91 ("arm64: dts: qcom: Add initial device tree for SM6375")
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+> ---
+As agreed with Krzysztof offline, this one is a no-go.
+Awaiting resolution on RPM MSG RAM bindings.
 
+Konrad
+>  arch/arm64/boot/dts/qcom/sm6375.dtsi | 32 ++++++++++++++++++++++++++------
+>  1 file changed, 26 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm64/boot/dts/qcom/sm6375.dtsi b/arch/arm64/boot/dts/qcom/sm6375.dtsi
+> index 94bb373f8d97..ecb654357288 100644
+> --- a/arch/arm64/boot/dts/qcom/sm6375.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/sm6375.dtsi
+> @@ -315,6 +315,7 @@ CPU_PD7: power-domain-cpu7 {
+>  
+>  		CLUSTER_PD: power-domain-cpu-cluster0 {
+>  			#power-domain-cells = <0>;
+> +			power-domains = <&wakegic>;
+>  			domain-idle-states = <&CLUSTER_SLEEP_0>;
+>  		};
+>  	};
+> @@ -633,7 +634,7 @@ tlmm: pinctrl@500000 {
+>  			reg = <0 0x00500000 0 0x800000>;
+>  			interrupts = <GIC_SPI 227 IRQ_TYPE_LEVEL_HIGH>;
+>  			gpio-ranges = <&tlmm 0 0 157>;
+> -			/* TODO: Hook up MPM as wakeup-parent when it's there */
+> +			wakeup-parent = <&wakegic>;
+>  			interrupt-controller;
+>  			gpio-controller;
+>  			#interrupt-cells = <2>;
+> @@ -755,7 +756,7 @@ spmi_bus: spmi@1c40000 {
+>  			      <0 0x01c0a000 0 0x26000>;
+>  			reg-names = "core", "chnls", "obsrvr", "intr", "cnfg";
+>  			interrupt-names = "periph_irq";
+> -			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+> +			interrupts-extended = <&wakegic 86 IRQ_TYPE_LEVEL_HIGH>;
+>  			qcom,ee = <0>;
+>  			qcom,channel = <0>;
+>  			#address-cells = <2>;
+> @@ -791,6 +792,25 @@ rpm_msg_ram: sram@45f0000 {
+>  			reg = <0 0x045f0000 0 0x7000>;
+>  		};
+>  
+> +		wakegic: interrupt-controller@45f01b8 {
+> +			compatible = "qcom,mpm";
+> +			reg = <0 0x045f01b8 0 0x1000>;
+> +			interrupts = <GIC_SPI 197 IRQ_TYPE_EDGE_RISING>;
+> +			mboxes = <&ipcc IPCC_CLIENT_AOP IPCC_MPROC_SIGNAL_SMP2P>;
+> +			interrupt-controller;
+> +			#interrupt-cells = <2>;
+> +			#power-domain-cells = <0>;
+> +			interrupt-parent = <&intc>;
+> +			qcom,mpm-pin-count = <96>;
+> +			qcom,mpm-pin-map = <5 296>,  /* Soundwire wake_irq */
+> +					   <12 422>, /* DWC3 ss_phy_irq */
+> +					   <86 183>, /* MPM wake, SPMI */
+> +					   <89 314>, /* TSENS0 0C */
+> +					   <90 315>, /* TSENS1 0C */
+> +					   <93 164>, /* DWC3 dm_hs_phy_irq */
+> +					   <94 165>; /* DWC3 dp_hs_phy_irq */
+> +		};
+> +
+>  		sram@4690000 {
+>  			compatible = "qcom,rpm-stats";
+>  			reg = <0 0x04690000 0 0x400>;
+> @@ -1185,10 +1205,10 @@ usb_1: usb@4ef8800 {
+>  					  <&gcc GCC_USB30_PRIM_MASTER_CLK>;
+>  			assigned-clock-rates = <19200000>, <133333333>;
+>  
+> -			interrupts = <GIC_SPI 302 IRQ_TYPE_LEVEL_HIGH>,
+> -				     <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>,
+> -				     <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>,
+> -				     <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>;
+> +			interrupts-extended = <&intc GIC_SPI 302 IRQ_TYPE_LEVEL_HIGH>,
+> +					      <&wakegic 12 IRQ_TYPE_LEVEL_HIGH>,
+> +					      <&wakegic 93 IRQ_TYPE_LEVEL_HIGH>,
+> +					      <&wakegic 94 IRQ_TYPE_LEVEL_HIGH>;
+>  			interrupt-names = "hs_phy_irq",
+>  					  "ss_phy_irq",
+>  					  "dm_hs_phy_irq",
+> 
