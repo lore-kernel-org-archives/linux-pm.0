@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BECA7C77B62
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Mar 2023 10:40:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 425C3C77B6E
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Mar 2023 10:40:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232312AbjCOKkn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S231994AbjCOKkn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 15 Mar 2023 06:40:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36616 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36622 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231994AbjCOKkk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2023 06:40:40 -0400
+        with ESMTP id S232055AbjCOKkl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2023 06:40:41 -0400
 Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 379F31CAF2;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E14061CAFF;
         Wed, 15 Mar 2023 03:40:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=kernkonzept.com; s=mx1; h=Content-Transfer-Encoding:MIME-Version:References
         :In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
         Content-ID:Content-Description;
-        bh=2iouOKUCXEacZVNvIiTpiZsHU98XJcy+jGkFVxqzvlw=; b=hoh48mJaBzv278XB5IfImtB87o
-        ZanhMgdCX4r+RBHCoQNTjJkeb6XYn/mna1jzRIjMkwWKdOR9bVtVLOHZlvwwfj4DX+hrXVRJd60yx
-        IBFn1PFV/HpEQh+0OfJzSbiqkKXR1vrIMwF00VaLFWrO5eTWmkUOyiaGzkm06gy5n3pWlJrp/O9DK
-        qp3p0RV7WyRqTXFuhIybdjI+Cssg4b69TEW+Jk53cRZ/TzFwCLkseGbdcj32jYZYotuLDrCsuw16p
-        DskzVsQhNnJ+rIHzN4V2lCNxVLXrlE9MCtYDkl/0CL5nt8Pqb0p0yvVxrikPJ+dNl2GIDe473KbSK
-        SlvzVtFg==;
+        bh=s27hbL7BsgnXDk8Vx8xDwfWUq+9SDl95yRCwongKFwk=; b=nQSZqG+1za8hLKZYzT9QdYp1qM
+        gc+GekN3MPZqIy50x4IUdPQ02z1f44ULCVNOskK0QmVypKjDwOT36sCaTwlhnLCCpyD3RRH9ORCeb
+        wvMxFkKFTwSMa5Y2uHHJUUrP0wF0Gg/6PNVoDN4BjuQUAP5229IwcxAZviAXaVUQCV/zleFY6x1WA
+        O/o84TXdtMUo2H+nSbsyA+2GZiDCU3JTQR8vffDBmU/VaUKsBiJTZw/Qd2Ff1mcBoFMmgf5tnY/++
+        cU++WY5BZDOaxl4gPj5hvDE2jankTc7cz4gjGp+ea7oqwuZRdeuOjkP2bRML6/182Hi/8zZbK7Io5
+        LxeXnyNw==;
 Received: from [10.22.3.24] (helo=kernkonzept.com)
         by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.94.2)
-        id 1pcOYT-00GsYJ-57; Wed, 15 Mar 2023 11:40:25 +0100
+        id 1pcOYY-00GsYJ-KV; Wed, 15 Mar 2023 11:40:30 +0100
 From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>
@@ -41,10 +41,11 @@ Cc:     Amit Kucheria <amitk@kernel.org>,
         Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, Stephan Gerhold <stephan@gerhold.net>,
-        Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Subject: [PATCH v3 2/6] thermal: qcom: tsens-v0_1: Fix mdm9607 slope values
-Date:   Wed, 15 Mar 2023 11:39:46 +0100
-Message-Id: <20230315103950.2679317-3-stephan.gerhold@kernkonzept.com>
+        Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v3 4/6] dt-bindings: thermal: qcom-tsens: Drop redundant compatibles
+Date:   Wed, 15 Mar 2023 11:39:48 +0100
+Message-Id: <20230315103950.2679317-5-stephan.gerhold@kernkonzept.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230315103950.2679317-1-stephan.gerhold@kernkonzept.com>
 References: <20230315103950.2679317-1-stephan.gerhold@kernkonzept.com>
@@ -54,73 +55,71 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-According to the msm-3.18 vendor kernel from Qualcomm [1], mdm9607 uses
-a non-standard slope value of 3000 (instead of 3200) for all sensors.
-Fill it properly similar to the 8939 code added recently.
+Since the SoC compatibles must be followed by the IP version compatible
+(e.g. compatible = "qcom,msm8916-tsens", "qcom,tsens-v0_1";) it is
+redundant to list all the SoC compatibles again in the if statement.
+It will already match the IP-version compatible.
 
-[1]: https://git.codelinaro.org/clo/la/kernel/msm-3.18/-/blob/LE.UM.4.3.2.r1-04200-9x07/arch/arm/boot/dts/qcom/mdm9607.dtsi#L875
+The list has already become inconsistent since for example
+"qcom,msm8939-tsens" is covered by the if statement but is not listed
+there explicitly like the other SoCs.
 
-Cc: Konrad Dybcio <konrad.dybcio@linaro.org>
-Fixes: a2149ab815fc ("thermal/drivers/qcom/tsens-v0_1: Add support for MDM9607")
+Simplify this by dropping the redundant SoC compatibles. ipq8064 and
+msm8960 are still needed because they do not have an IP-version
+compatible.
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 ---
-Changes in v3: Drop now unused ops_v0_1 definition
-Changes in v2: New patch
+Changes in v3: Add Krzysztof's Reviewed-by
+Changes in v2:
+  - Drop new redundant qcom,tsens-v2 compatibles as well (see discussion
+    in https://lore.kernel.org/linux-arm-msm/Y3ZFDRI6ypg18S27@gerhold.net/)
 ---
- drivers/thermal/qcom/tsens-v0_1.c | 24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+ .../bindings/thermal/qcom-tsens.yaml          | 22 +------------------
+ 1 file changed, 1 insertion(+), 21 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index 106d26076e3f..1b454de3928d 100644
---- a/drivers/thermal/qcom/tsens-v0_1.c
-+++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -222,6 +222,16 @@ static int __init init_8939(struct tsens_priv *priv) {
- 	return init_common(priv);
- }
- 
-+static int __init init_9607(struct tsens_priv *priv)
-+{
-+	int i;
-+
-+	for (i = 0; i < priv->num_sensors; ++i)
-+		priv->sensor[i].slope = 3000;
-+
-+	return init_common(priv);
-+}
-+
- /* v0.1: 8916, 8939, 8974, 9607 */
- 
- static struct tsens_features tsens_v0_1_feat = {
-@@ -271,12 +281,6 @@ static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
- 	[TRDY] = REG_FIELD(TM_TRDY_OFF, 0, 0),
- };
- 
--static const struct tsens_ops ops_v0_1 = {
--	.init		= init_common,
--	.calibrate	= tsens_calibrate_common,
--	.get_temp	= get_temp_common,
--};
--
- static const struct tsens_ops ops_8916 = {
- 	.init		= init_common,
- 	.calibrate	= calibrate_8916,
-@@ -320,9 +324,15 @@ struct tsens_plat_data data_8974 = {
- 	.fields	= tsens_v0_1_regfields,
- };
- 
-+static const struct tsens_ops ops_9607 = {
-+	.init		= init_9607,
-+	.calibrate	= tsens_calibrate_common,
-+	.get_temp	= get_temp_common,
-+};
-+
- struct tsens_plat_data data_9607 = {
- 	.num_sensors	= 5,
--	.ops		= &ops_v0_1,
-+	.ops		= &ops_9607,
- 	.feat		= &tsens_v0_1_feat,
- 	.fields	= tsens_v0_1_regfields,
- };
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 926e9c51c93c..49416e1ec295 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -223,12 +223,7 @@ allOf:
+           contains:
+             enum:
+               - qcom,ipq8064-tsens
+-              - qcom,mdm9607-tsens
+-              - qcom,msm8916-tsens
+               - qcom,msm8960-tsens
+-              - qcom,msm8974-tsens
+-              - qcom,msm8976-tsens
+-              - qcom,qcs404-tsens
+               - qcom,tsens-v0_1
+               - qcom,tsens-v1
+     then:
+@@ -244,22 +239,7 @@ allOf:
+       properties:
+         compatible:
+           contains:
+-            enum:
+-              - qcom,msm8953-tsens
+-              - qcom,msm8996-tsens
+-              - qcom,msm8998-tsens
+-              - qcom,sc7180-tsens
+-              - qcom,sc7280-tsens
+-              - qcom,sc8180x-tsens
+-              - qcom,sc8280xp-tsens
+-              - qcom,sdm630-tsens
+-              - qcom,sdm845-tsens
+-              - qcom,sm6350-tsens
+-              - qcom,sm8150-tsens
+-              - qcom,sm8250-tsens
+-              - qcom,sm8350-tsens
+-              - qcom,sm8450-tsens
+-              - qcom,tsens-v2
++            const: qcom,tsens-v2
+     then:
+       properties:
+         interrupts:
 -- 
 2.30.2
 
