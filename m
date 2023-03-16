@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44E51C6FD19
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Mar 2023 14:14:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A416C7618E
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Mar 2023 14:14:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231205AbjCPOON (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Mar 2023 10:14:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34876 "EHLO
+        id S231213AbjCPOOP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Mar 2023 10:14:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35114 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231220AbjCPONq (ORCPT
+        with ESMTP id S230425AbjCPONq (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Mar 2023 10:13:46 -0400
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79800763C3
+Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C8DEA7A88
         for <linux-pm@vger.kernel.org>; Thu, 16 Mar 2023 07:13:24 -0700 (PDT)
-Received: by mail-lj1-x22b.google.com with SMTP id h9so1856387ljq.2
+Received: by mail-lj1-x22c.google.com with SMTP id y14so1845015ljq.4
         for <linux-pm@vger.kernel.org>; Thu, 16 Mar 2023 07:13:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1678976004;
+        d=linaro.org; s=google; t=1678976000;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=N1o/g/RY/F8tw5gI99MfNC1MgutCzKG48oc2MA5z/Ao=;
-        b=Qrr803nV2RNxyMhr4k1CujiqeMiu6xeEfZDomigDzlgOJ2+LAoow9y4SpnULqM533W
-         JGYU4zjecXMNVzRMcYjhYBo9bJKzgh9fndduUqthz5eV7m0AegygBhQ+m1SwDg1hCTN/
-         rnHE2vUTqT5qun7CkRIHPNhcCN2biGs4H9UjkIKTUfCCMvjN4tOS2/1osalKAkFcJB+S
-         9GXXMgz+BHuHgPrKWIluWCd1qhoHJ6ZiQCleccrZYMrDoQe116QM7kTG4KQKrlbgq3Q3
-         hlL4xAJbs94Mc1ULnoRauUdmiuxvn0lHeBTU3GqdlA7B+wCkZXGaFUvQPY+eoSYTGGD1
-         b6Bw==
+        bh=r6AdYsLFAk7GgkF7fiDDRdxRqmxm5wdSTZ85GRpprjU=;
+        b=L5G4BkcCQQ3qWBx58UenWCH8uRF2KAOucMIWCGobUlnaBxkcCFoYB4fNSmRu4t5R8C
+         qs9tm0HRnf4xUq1jH3CfiLliaYrZR72tFohJ8OYKWjd12EqwGCvWJNfbKsXaXBL9Ju9x
+         COBUN848cCxoLlOie3FI/L5fMQuru9gPFWy+0NtmfcBmTMgRa5Ps43ujMHle7NcK3ILr
+         kgyZd+jo0+FeILXA0S/lWKDhGsoEbCpA2Ys+AV3XfuiNJRTYhojlyOSDrCJuPb81KYs3
+         102i0jMVUR4q5zIvLp9YlV5AcSPkpW+S+hSbnMVFX50u/ri4mGxvo666vmchopDG1zHO
+         NinQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678976004;
+        d=1e100.net; s=20210112; t=1678976000;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=N1o/g/RY/F8tw5gI99MfNC1MgutCzKG48oc2MA5z/Ao=;
-        b=SKorIjI3qwGVLtb1XodcMm3cWD++wdvUVg8CnUserxPnRlCKJUzvPKWwXSdhMCxK90
-         Wnv73wytGplQgvRLjfz3hmoDZ6/9Lv0hNvnAHz2LkaNDLRzFTCr52F26qyT3s0p8jyhD
-         NGSGb8RY9iyUbBZcbz3ei0mF5WCEZjEB7YYGdektaBoilUrdVKVGpr9z+Iwg39Y7QOqe
-         KWd/fA+qTN1L+wAJ8tXCyHZTJvLIIqv/nEsI7tOZP59Wb1l6DdUNz0YZUBoVsd8gvzTn
-         UkZIl9Xvy5PwL6y8UrmG1DxfhESP2+Nb7uYimfcy0ZgzCp5GdTyFCSFZD9NH8WUyWuYT
-         bTiQ==
-X-Gm-Message-State: AO0yUKXHCJVqwah17B6si2pxHeQc1c9fVfCUH2HZa8cGHW6UkYWaA3YG
-        Sm6w5quouX5axNa5OqzhymLm5Q==
-X-Google-Smtp-Source: AK7set/UGvfpSQFBo90NawVNe6QbJ7gg6a+/gN9CBL5rHc7OuxYMSwd/oOp6n4BYEocyNvy2n8HwXA==
-X-Received: by 2002:a2e:be12:0:b0:298:a841:4d0f with SMTP id z18-20020a2ebe12000000b00298a8414d0fmr3091124ljq.52.1678976003979;
-        Thu, 16 Mar 2023 07:13:23 -0700 (PDT)
+        bh=r6AdYsLFAk7GgkF7fiDDRdxRqmxm5wdSTZ85GRpprjU=;
+        b=ejYBe7IxO/gSPOn1+kpzR47ROmyDwPvpikngPZPeIm/6dP+LTfmYq9WLeY/ejRsvXO
+         GWP+gimetRm92cr43hMnszKP0wFZEIK4nf7qlj5e5by3l234Ya/GofuFqtUMW4AvKS0L
+         yjlBnVhCbjvtC9psw3X5GlNsywimGs6KM9QJHwkAwGA7hOBhZ4+hcIayEvuHihZuYWhr
+         ctnqYWmYT4tYtL11a9rHjayCENmsPFrDYE08QKxEXmaU7vUGbI5FByUiysmLzPiuoC7u
+         VIMq/D/CkVdDFbWhQq4UQBiQjaqFJz24IGdqO9AhszVer3nrhgWb9cwD/QD27LJ0Cj2c
+         WMsw==
+X-Gm-Message-State: AO0yUKW/Y7NWL/dxQn++ehx8QjKvz02/0jYldehFjRwzPo07eZ1euoAT
+        pneoouRovM+fWhN+RPtQdB3m0Q==
+X-Google-Smtp-Source: AK7set9adrDurFHD95SWFB+3SSZaYAHxChIhFIrIJ5rk5lDPpP6JAdvgokgCwDLdJynWy8PbWMb3UA==
+X-Received: by 2002:a2e:b619:0:b0:295:8a9b:d8d6 with SMTP id r25-20020a2eb619000000b002958a9bd8d6mr2184422ljn.4.1678976000335;
+        Thu, 16 Mar 2023 07:13:20 -0700 (PDT)
 Received: from [192.168.1.101] (abyj16.neoplus.adsl.tpnet.pl. [83.9.29.16])
-        by smtp.gmail.com with ESMTPSA id a9-20020a2eb549000000b00295735991edsm1261639ljn.38.2023.03.16.07.13.22
+        by smtp.gmail.com with ESMTPSA id a9-20020a2eb549000000b00295735991edsm1261639ljn.38.2023.03.16.07.13.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Mar 2023 07:13:23 -0700 (PDT)
+        Thu, 16 Mar 2023 07:13:19 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Thu, 16 Mar 2023 15:13:03 +0100
-Subject: [PATCH v2 14/14] arm64: dts: qcom: sm6375-pdx225: Add volume down
- GPIO key
+Date:   Thu, 16 Mar 2023 15:13:01 +0100
+Subject: [PATCH v2 12/14] arm64: dts: qcom: sm6375: Bump CPU rail power
+ collapse index
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230303-topic-sm6375_features0_dts-v2-14-708b8191f7eb@linaro.org>
+Message-Id: <20230303-topic-sm6375_features0_dts-v2-12-708b8191f7eb@linaro.org>
 References: <20230303-topic-sm6375_features0_dts-v2-0-708b8191f7eb@linaro.org>
 In-Reply-To: <20230303-topic-sm6375_features0_dts-v2-0-708b8191f7eb@linaro.org>
 To:     Amit Kucheria <amitk@kernel.org>,
@@ -75,70 +75,105 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         Marijn Suijten <marijn.suijten@somainline.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1678975978; l=1409;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1678975978; l=2856;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=lUoSxwe6wDxHMv1iTDzFHuYZxKLyt1OMfELUkCo9Rp0=;
- b=6DAUo0XuzRtK0oppQWVoexEKvP1e3HUzo7m6yHp02zNfdQCZy++x2swjD+iPpuCPGEqXhadgLXw1
- vUFy4zVZC4oEvOr9UIOEQQso+Cesl5GsmGvY9LDCbFthxOsz9AIm
+ bh=bMhMpkixv2gywZqN6GGbDpn43h/PEoR+YDXz/nF/7ns=;
+ b=7rN/tz92CykW7HvECEeCjTrmc2FRqehFj6zUdiN73Ux/RkFwDO4M+LKoIX79pRitRt2U43GpjNOz
+ j6rD+WSTBa9+lU5IZleEnMSG4whRWhPmXCxSUOvP4fvLlxqC1TPU
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the required nodes to enable the volume down key on the Sony
-Xperia 10 IV.
+In preparation for supporting a less-deep sleep state, rename the
+existing rail power off from _0 to _1.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- .../dts/qcom/sm6375-sony-xperia-murray-pdx225.dts  | 27 ++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ arch/arm64/boot/dts/qcom/sm6375.dtsi | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts b/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts
-index b691c3834b6b..8220e6f44117 100644
---- a/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts
-+++ b/arch/arm64/boot/dts/qcom/sm6375-sony-xperia-murray-pdx225.dts
-@@ -46,6 +46,23 @@ framebuffer: framebuffer@85200000 {
+diff --git a/arch/arm64/boot/dts/qcom/sm6375.dtsi b/arch/arm64/boot/dts/qcom/sm6375.dtsi
+index 94bb373f8d97..d9b8c8b921be 100644
+--- a/arch/arm64/boot/dts/qcom/sm6375.dtsi
++++ b/arch/arm64/boot/dts/qcom/sm6375.dtsi
+@@ -207,7 +207,7 @@ core7 {
+ 		idle-states {
+ 			entry-method = "psci";
+ 
+-			LITTLE_CPU_SLEEP_0: cpu-sleep-0-0 {
++			LITTLE_CPU_SLEEP_1: cpu-sleep-0-1 {
+ 				compatible = "arm,idle-state";
+ 				idle-state-name = "silver-rail-power-collapse";
+ 				arm,psci-suspend-param = <0x40000004>;
+@@ -217,7 +217,7 @@ LITTLE_CPU_SLEEP_0: cpu-sleep-0-0 {
+ 				local-timer-stop;
+ 			};
+ 
+-			BIG_CPU_SLEEP_0: cpu-sleep-1-0 {
++			BIG_CPU_SLEEP_1: cpu-sleep-1-1 {
+ 				compatible = "arm,idle-state";
+ 				idle-state-name = "gold-rail-power-collapse";
+ 				arm,psci-suspend-param = <0x40000004>;
+@@ -268,49 +268,49 @@ psci {
+ 		CPU_PD0: power-domain-cpu0 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&LITTLE_CPU_SLEEP_0>;
++			domain-idle-states = <&LITTLE_CPU_SLEEP_1>;
  		};
- 	};
  
-+	gpio-keys {
-+		compatible = "gpio-keys";
-+		label = "gpio-keys";
-+
-+		pinctrl-0 = <&vol_down_n>;
-+		pinctrl-names = "default";
-+
-+		key-volume-down {
-+			label = "Volume Down";
-+			linux,code = <KEY_VOLUMEDOWN>;
-+			gpios = <&pmr735a_gpios 1 GPIO_ACTIVE_LOW>;
-+			debounce-interval = <15>;
-+			linux,can-disable;
-+			wakeup-source;
-+		};
-+	};
-+
- 	reserved-memory {
- 		cont_splash_mem: memory@85200000 {
- 			reg = <0 0x85200000 0 0xc00000>;
-@@ -133,6 +150,16 @@ &pmk8350_rtc {
- 	status = "okay";
- };
+ 		CPU_PD1: power-domain-cpu1 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&LITTLE_CPU_SLEEP_0>;
++			domain-idle-states = <&LITTLE_CPU_SLEEP_1>;
+ 		};
  
-+&pmr735a_gpios {
-+	vol_down_n: vol-down-n-state {
-+		pins = "gpio1";
-+		function = "normal";
-+		power-source = <1>;
-+		bias-pull-up;
-+		input-enable;
-+	};
-+};
-+
- &pon_pwrkey {
- 	status = "okay";
- };
+ 		CPU_PD2: power-domain-cpu2 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&LITTLE_CPU_SLEEP_0>;
++			domain-idle-states = <&LITTLE_CPU_SLEEP_1>;
+ 		};
+ 
+ 		CPU_PD3: power-domain-cpu3 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&LITTLE_CPU_SLEEP_0>;
++			domain-idle-states = <&LITTLE_CPU_SLEEP_1>;
+ 		};
+ 
+ 		CPU_PD4: power-domain-cpu4 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&LITTLE_CPU_SLEEP_0>;
++			domain-idle-states = <&LITTLE_CPU_SLEEP_1>;
+ 		};
+ 
+ 		CPU_PD5: power-domain-cpu5 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&LITTLE_CPU_SLEEP_0>;
++			domain-idle-states = <&LITTLE_CPU_SLEEP_1>;
+ 		};
+ 
+ 		CPU_PD6: power-domain-cpu6 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&BIG_CPU_SLEEP_0>;
++			domain-idle-states = <&BIG_CPU_SLEEP_1>;
+ 		};
+ 
+ 		CPU_PD7: power-domain-cpu7 {
+ 			#power-domain-cells = <0>;
+ 			power-domains = <&CLUSTER_PD>;
+-			domain-idle-states = <&BIG_CPU_SLEEP_0>;
++			domain-idle-states = <&BIG_CPU_SLEEP_1>;
+ 		};
+ 
+ 		CLUSTER_PD: power-domain-cpu-cluster0 {
 
 -- 
 2.39.2
