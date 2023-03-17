@@ -2,91 +2,115 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74ABDC6FD1D
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Mar 2023 16:12:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E8E9C7618A
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Mar 2023 17:04:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229843AbjCQQMt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Mar 2023 12:12:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48600 "EHLO
+        id S229923AbjCQREQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Mar 2023 13:04:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229654AbjCQQMs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2023 12:12:48 -0400
-Received: from mail-ed1-f43.google.com (mail-ed1-f43.google.com [209.85.208.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 289D43FBA1;
-        Fri, 17 Mar 2023 09:12:46 -0700 (PDT)
-Received: by mail-ed1-f43.google.com with SMTP id w9so22491770edc.3;
-        Fri, 17 Mar 2023 09:12:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679069564;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=6+rn1YSZmbdUqRFG/vNEu75EzysOAso/oXOoTMRkq2w=;
-        b=B6UUMH4j7viakkjBSD6DEvk1LFmOYrUFv12LeLCU/Ta+59K0+gN7WUjR7ScsbNKeek
-         Xiw43K6VjOzz4x6B4Y9R+qH7N+eOSwSn1Of1pQ0E6PvGv0Pj8ifEq5oMa6VXOsHpSW8X
-         79FU5aveJU4oZ9RsZOLIuiUelvzBCmFsA+MsXdy2SefC/m8gVFPva5YTvS6bLBSY+Ait
-         QWfF1YB8/0Z3PLb3xKWH/lsm7x1IPt4tN5RUbus6tKAKs22SMJedjPhufN2lynGvyiKV
-         1pE3rtipNce9lt/OCRxGYCtE3yJeG4bIZRn4CtSMeE58Kad7VzLFtjDbV4dCRLBFiD9r
-         4ITA==
-X-Gm-Message-State: AO0yUKW+U+CmIR3+UrpOHjRVPocqA7AmK8XEt1WBWQuFGqXf3VCemDmW
-        evxluayZF89RHEAmdS/aZ/GbFypT6Yay3W7rzxvOyVfd2Dg=
-X-Google-Smtp-Source: AK7set8aTYlTuP/LTjAsV0iYNY7A3KgjsTIJEdAjg5Y1tcfhlkASP5RQjJGoxRvAMJO+ECuTInx4eeR1VEWOSfQhXgM=
-X-Received: by 2002:a50:d0d3:0:b0:4fa:71a2:982b with SMTP id
- g19-20020a50d0d3000000b004fa71a2982bmr1970762edf.0.1679069564593; Fri, 17 Mar
- 2023 09:12:44 -0700 (PDT)
+        with ESMTP id S229770AbjCQREP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2023 13:04:15 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF324EB45;
+        Fri, 17 Mar 2023 10:04:13 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
+ id 2a8ba081e2a3b18a; Fri, 17 Mar 2023 18:04:10 +0100
+Received: from kreacher.localnet (unknown [213.134.163.228])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 402721C52C22;
+        Fri, 17 Mar 2023 18:04:09 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Quanxian Wang <quanxian.wang@intel.com>
+Subject: [PATCH v3 4/4] ACPI: processor: thermal: Update CPU cooling devices on cpufreq policy changes
+Date:   Fri, 17 Mar 2023 18:03:40 +0100
+Message-ID: <8199264.T7Z3S40VBb@kreacher>
+In-Reply-To: <2678096.mvXUDI8C0e@kreacher>
+References: <2678096.mvXUDI8C0e@kreacher>
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 17 Mar 2023 17:12:33 +0100
-Message-ID: <CAJZ5v0haUo_G041D4N7D++MBOHDX=z04sagWMs7BEmV0sjYUDw@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for v6.3-rc3
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.163.228
+X-CLIENT-HOSTNAME: 213.134.163.228
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrvdefvddgleehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepfeduudeutdeugfelffduieegiedtueefledvjeegffdttefhhffhtefhleejgfetnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepvddufedrudefgedrudeifedrvddvkeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrdduieefrddvvdekpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhg
+ vghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull from the tag
+When a cpufreq policy appears or goes away, the CPU cooling devices for
+the CPUs covered by that policy need to be updated so that the new
+processor_get_max_state() value is stored as max_state and the
+statistics in sysfs are rearranged for each of them.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-6.3-rc3
+Do that accordingly in acpi_thermal_cpufreq_init() and
+acpi_thermal_cpufreq_exit().
 
-with top-most commit 1fa9d47baa9e61ff973e03f0ef26f5b78d545e37
+Fixes: a365105c685c("thermal: sysfs: Reuse cdev->max_state")
+Reported-by: Wang, Quanxian <quanxian.wang@intel.com>
+Link: https://lore.kernel.org/linux-pm/53ec1f06f61c984100868926f282647e57ecfb2d.camel@intel.com/
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Tested-by: Zhang Rui <rui.zhang@intel.com>
+Reviewed-by: Zhang Rui <rui.zhang@intel.com>
+---
 
- Merge branch 'pm-cpuidle'
+v2 -> v3: Add tags from Rui.
 
-on top of commit eeac8ede17557680855031c6f305ece2378af326
+v1 -> v2: Remove the now redundant IS_ERR() checks on cdev before calling
+          thermal_cooling_device_update().
 
- Linux 6.3-rc2
+---
+ drivers/acpi/processor_thermal.c |   14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-to receive power management fixes for 6.3-rc3.
+Index: linux-pm/drivers/acpi/processor_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/processor_thermal.c
++++ linux-pm/drivers/acpi/processor_thermal.c
+@@ -140,9 +140,13 @@ void acpi_thermal_cpufreq_init(struct cp
+ 		ret = freq_qos_add_request(&policy->constraints,
+ 					   &pr->thermal_req,
+ 					   FREQ_QOS_MAX, INT_MAX);
+-		if (ret < 0)
++		if (ret < 0) {
+ 			pr_err("Failed to add freq constraint for CPU%d (%d)\n",
+ 			       cpu, ret);
++			continue;
++		}
++
++		thermal_cooling_device_update(pr->cdev);
+ 	}
+ }
+ 
+@@ -153,8 +157,12 @@ void acpi_thermal_cpufreq_exit(struct cp
+ 	for_each_cpu(cpu, policy->related_cpus) {
+ 		struct acpi_processor *pr = per_cpu(processors, cpu);
+ 
+-		if (pr)
+-			freq_qos_remove_request(&pr->thermal_req);
++		if (!pr)
++			continue;
++
++		freq_qos_remove_request(&pr->thermal_req);
++
++		thermal_cooling_device_update(pr->cdev);
+ 	}
+ }
+ #else				/* ! CONFIG_CPU_FREQ */
 
-These fix an error code path issue in a cpuidle driver and make the
-sleepgraph utility more robust against unexpected input.
-
-Specifics:
-
- - Fix the psci_pd_init_topology() failure path in the PSCI cpuidle
-   driver (Shawn Guo).
-
- - Modify the sleepgraph utility so it does not crash on binary data
-   in device names (Todd Brandt).
-
-Thanks!
 
 
----------------
-
-Shawn Guo (1):
-      cpuidle: psci: Iterate backwards over list in psci_pd_remove()
-
-Todd Brandt (1):
-      pm-graph: sleepgraph: Avoid crashing on binary data in device names
-
----------------
-
- drivers/cpuidle/cpuidle-psci-domain.c | 3 ++-
- tools/power/pm-graph/sleepgraph.py    | 5 ++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
