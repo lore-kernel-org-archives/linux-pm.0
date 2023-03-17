@@ -2,62 +2,91 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA0F2C6FD1D
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Mar 2023 08:44:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF99DC6FD1D
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Mar 2023 11:48:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231702AbjCQIn7 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Mar 2023 04:43:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43534 "EHLO
+        id S229621AbjCQLsM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Mar 2023 07:48:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48526 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231450AbjCQIno (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2023 04:43:44 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C99B5DEDD
-        for <linux-pm@vger.kernel.org>; Fri, 17 Mar 2023 01:42:31 -0700 (PDT)
-X-IronPort-AV: E=McAfee;i="6600,9927,10651"; a="338230833"
-X-IronPort-AV: E=Sophos;i="5.98,268,1673942400"; 
-   d="scan'208";a="338230833"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2023 01:42:17 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10651"; a="712669987"
-X-IronPort-AV: E=Sophos;i="5.98,268,1673942400"; 
-   d="scan'208";a="712669987"
-Received: from linux.intel.com ([10.54.29.200])
-  by orsmga001.jf.intel.com with ESMTP; 17 Mar 2023 01:42:17 -0700
-Received: from abityuts-desk1.ger.corp.intel.com (abityuts-desk1.fi.intel.com [10.237.68.150])
-        by linux.intel.com (Postfix) with ESMTP id 2B607580AFF;
-        Fri, 17 Mar 2023 01:42:15 -0700 (PDT)
-Message-ID: <4d94a2e6b0de0c6f07d92f0d34bb6ecc5433bda0.camel@gmail.com>
-Subject: Re: [PATCH 3/3] intel_idle: add C0.2 state for Sapphire Rapids Xeon
-From:   Artem Bityutskiy <dedekind1@gmail.com>
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, x86@kernel.org,
-        Linux PM Mailing List <linux-pm@vger.kernel.org>
-Date:   Fri, 17 Mar 2023 10:42:15 +0200
-In-Reply-To: <20230314122450.GH1845660@hirez.programming.kicks-ass.net>
-References: <20230306123418.720679-1-dedekind1@gmail.com>
-         <20230306123418.720679-4-dedekind1@gmail.com>
-         <20230306153215.GG1267364@hirez.programming.kicks-ass.net>
-         <CAJZ5v0gFrWCdyVNPUoU4tq2vTzcx5WtzvhbXVx1WeyTtt=Gqvg@mail.gmail.com>
-         <20230308123222.GF2017917@hirez.programming.kicks-ass.net>
-         <12e008c7fd280c8abc45f417f64bb782485a40b8.camel@gmail.com>
-         <20230314122450.GH1845660@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.46.3 (3.46.3-1.fc37) 
+        with ESMTP id S229760AbjCQLsM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2023 07:48:12 -0400
+Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23DE9ADC3F
+        for <linux-pm@vger.kernel.org>; Fri, 17 Mar 2023 04:48:01 -0700 (PDT)
+Received: by mail-qt1-x82b.google.com with SMTP id fy17so2615794qtb.2
+        for <linux-pm@vger.kernel.org>; Fri, 17 Mar 2023 04:48:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1679053681;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=86bjnBxGCm0NjFMdjhahRkvyPrfitJ2dq65dYbzGQGE=;
+        b=GfULVuOXYnL8m+Lb2iOwl8z52CS6ftmCFFgEK+f5Mv8B/TdTnvG93nPLj4aaCm2U+/
+         Yn0nmtDT4rHEmTt35RxsU2qIJLdPJFRH7b9S9rzpsNlJiWjNRRJzKG8rM2CrskNb9bf6
+         gssqdxav2kNYqw59VaAFVhCC79xjeDlJFyC8rwhn1WZ9E1a2IprszizTI48uUQHsEcG5
+         SkP4di08f3/0Lna0J0p27Ctj6Pu+K+zjN1KAbChoHWSHUU+/X2P3vEne6XrZMXvxObMz
+         JrjiaC+zudcEnc2iHz3NFjFeuTNzv9L2Pu0+K2Ty4oBD4qirJRBwYxCdMGKuP8UmoYhS
+         sNIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1679053681;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=86bjnBxGCm0NjFMdjhahRkvyPrfitJ2dq65dYbzGQGE=;
+        b=MT6YJwfBp7VANfY7Lder/McR/YeUA7RYmDA8qFH7zSIpnOU6lc3CSvKbkbnJy/NKsk
+         yNrhBFMzIHbRBcL5xzuC5nLah7m33TvDOJqglfs/ZnVhbR8wjqF1UX82Nw3pdTTyD+PJ
+         C9XSJcnUTiK8xRJIiijriZkk/iKKik4IJARpkhwEoQkP+qkoiIGt6a6gzPymFjqQX9+t
+         9rQxUDtnwXxhG5jmNhQ3fsLpwiz4EKl6TcZZdOOcCUVXjwgGu1LnQOYLA16CSJrayu2F
+         I8v947Rcle+izU+DabwUMhv8xy6sZNu9+ni7egM7Yxf9o/D/If/nueA6uNMjTw92ewX6
+         eYNQ==
+X-Gm-Message-State: AO0yUKXMWMgwqqB7ASiTl/SbnM4ZCpiuwgHfcD+41ZceMmcA0N0schA4
+        dOtLX7YDlcmMWY/Aw3wSZB0=
+X-Google-Smtp-Source: AK7set/zCQkWO+dI/Zekg7QMT8MO+asb3mCImfwhLs4bE8HMmvLoCW2/CDmRp6RFNnhw7/QPEeA7dA==
+X-Received: by 2002:ac8:5986:0:b0:3bf:d2ed:ace0 with SMTP id e6-20020ac85986000000b003bfd2edace0mr12925381qte.13.1679053681078;
+        Fri, 17 Mar 2023 04:48:01 -0700 (PDT)
+Received: from ?IPV6:2600:6c56:7d00:582f::64e? ([2600:6c56:7d00:582f::64e])
+        by smtp.googlemail.com with ESMTPSA id h12-20020ac8568c000000b003d75bb8e652sm1141745qta.65.2023.03.17.04.47.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 17 Mar 2023 04:48:00 -0700 (PDT)
+Message-ID: <42aa3ce0-b1a9-5c4c-173a-eb671ea00f71@gmail.com>
+Date:   Fri, 17 Mar 2023 06:47:58 -0500
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH] cpufreq: warn about invalid vals to scaling_max/min_freq
+ interfaces
+Content-Language: en-US
+To:     qinyu <qinyu32@huawei.com>, rafael@kernel.org,
+        viresh.kumar@linaro.org
+Cc:     linux-pm@vger.kernel.org, zhangxiaofeng46@huawei.com,
+        hewenliang4@huawei.com, linfeilong@huawei.com
+References: <20230316031549.1343340-1-qinyu32@huawei.com>
+From:   Russell Haley <yumpusamongus@gmail.com>
+In-Reply-To: <20230316031549.1343340-1-qinyu32@huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 2023-03-14 at 13:24 +0100, Peter Zijlstra wrote:
-> ../scripts/config --enable INTEL_IDLE
-> ../scripts/config --enable DEBUG_ENTRY
-> ../scripts/config --enable IRQSOFF_TRACER
+On 3/15/23 22:15, qinyu wrote:
+> When echo an invalid val to scaling_min_freq:
+>> echo 123abc123 > scaling_min_freq
+> It looks weird to have a return val of 0:
+>> echo $?
+>> 0
+> 
+> Sane people won't echo strings like that into these interfaces but fuzz
+> tests may do. Also, maybe it's better to inform people if input is invalid
+> or out of range.
 
-Thank you! I've checked that v2 of these patches addresses this issue. I've
-added these to my defconfig too.
+AFAICT, the patch doesn't actually cause it to error if the input is out
+of range. So the commit message should not be worded to imply that it does.
 
-Artem.
+It is good that it doesn't, I think, because someone might have a
+fail-on-unhandled-error program (ex: shell script) that writes this file
+deployed on hardware with different cpuinfo_max_freq. A new
+unanticipated error would cause such a program to crash where it hadn't
+before.
+
