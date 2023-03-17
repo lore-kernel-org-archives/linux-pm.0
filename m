@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E8E9C7618A
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Mar 2023 17:04:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 477D4C76195
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Mar 2023 17:04:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229923AbjCQREQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Mar 2023 13:04:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42950 "EHLO
+        id S229962AbjCQRER (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Mar 2023 13:04:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42972 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229770AbjCQREP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2023 13:04:15 -0400
+        with ESMTP id S229842AbjCQREQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2023 13:04:16 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF324EB45;
-        Fri, 17 Mar 2023 10:04:13 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05C6C1F484;
+        Fri, 17 Mar 2023 10:04:14 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.1.0)
- id 2a8ba081e2a3b18a; Fri, 17 Mar 2023 18:04:10 +0100
+ id 91921d84dc82a107; Fri, 17 Mar 2023 18:04:13 +0100
 Received: from kreacher.localnet (unknown [213.134.163.228])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 402721C52C22;
-        Fri, 17 Mar 2023 18:04:09 +0100 (CET)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 9F8EE1C52C22;
+        Fri, 17 Mar 2023 18:04:12 +0100 (CET)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     Zhang Rui <rui.zhang@intel.com>,
@@ -32,9 +32,9 @@ Cc:     Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Quanxian Wang <quanxian.wang@intel.com>
-Subject: [PATCH v3 4/4] ACPI: processor: thermal: Update CPU cooling devices on cpufreq policy changes
-Date:   Fri, 17 Mar 2023 18:03:40 +0100
-Message-ID: <8199264.T7Z3S40VBb@kreacher>
+Subject: [PATCH v3 2/4] thermal: core: Introduce thermal_cooling_device_present()
+Date:   Fri, 17 Mar 2023 17:54:34 +0100
+Message-ID: <2280752.ElGaqSPkdT@kreacher>
 In-Reply-To: <2678096.mvXUDI8C0e@kreacher>
 References: <2678096.mvXUDI8C0e@kreacher>
 MIME-Version: 1.0
@@ -43,8 +43,8 @@ Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.163.228
 X-CLIENT-HOSTNAME: 213.134.163.228
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrvdefvddgleehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepfeduudeutdeugfelffduieegiedtueefledvjeegffdttefhhffhtefhleejgfetnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepvddufedrudefgedrudeifedrvddvkeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrdduieefrddvvdekpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeekpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhg
- vghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghnihgvlhdrlhgviigtrghnoheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrvdefvddgleehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrdduieefrddvvdeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeifedrvddvkedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepkedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthht
+ ohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -52,17 +52,13 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-When a cpufreq policy appears or goes away, the CPU cooling devices for
-the CPUs covered by that policy need to be updated so that the new
-processor_get_max_state() value is stored as max_state and the
-statistics in sysfs are rearranged for each of them.
+Introduce a helper function, thermal_cooling_device_present(), for
+checking if the given cooling device is in the list of registered
+cooling devices to avoid some code duplication in a subsequent
+patch.
 
-Do that accordingly in acpi_thermal_cpufreq_init() and
-acpi_thermal_cpufreq_exit().
+No expected functional impact.
 
-Fixes: a365105c685c("thermal: sysfs: Reuse cdev->max_state")
-Reported-by: Wang, Quanxian <quanxian.wang@intel.com>
-Link: https://lore.kernel.org/linux-pm/53ec1f06f61c984100868926f282647e57ecfb2d.camel@intel.com/
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Tested-by: Zhang Rui <rui.zhang@intel.com>
 Reviewed-by: Zhang Rui <rui.zhang@intel.com>
@@ -70,47 +66,59 @@ Reviewed-by: Zhang Rui <rui.zhang@intel.com>
 
 v2 -> v3: Add tags from Rui.
 
-v1 -> v2: Remove the now redundant IS_ERR() checks on cdev before calling
-          thermal_cooling_device_update().
+v1 -> v2: No changes
 
 ---
- drivers/acpi/processor_thermal.c |   14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_core.c |   21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-Index: linux-pm/drivers/acpi/processor_thermal.c
+Index: linux-pm/drivers/thermal/thermal_core.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/processor_thermal.c
-+++ linux-pm/drivers/acpi/processor_thermal.c
-@@ -140,9 +140,13 @@ void acpi_thermal_cpufreq_init(struct cp
- 		ret = freq_qos_add_request(&policy->constraints,
- 					   &pr->thermal_req,
- 					   FREQ_QOS_MAX, INT_MAX);
--		if (ret < 0)
-+		if (ret < 0) {
- 			pr_err("Failed to add freq constraint for CPU%d (%d)\n",
- 			       cpu, ret);
-+			continue;
-+		}
-+
-+		thermal_cooling_device_update(pr->cdev);
- 	}
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -1045,6 +1045,18 @@ devm_thermal_of_cooling_device_register(
  }
+ EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
  
-@@ -153,8 +157,12 @@ void acpi_thermal_cpufreq_exit(struct cp
- 	for_each_cpu(cpu, policy->related_cpus) {
- 		struct acpi_processor *pr = per_cpu(processors, cpu);
++static bool thermal_cooling_device_present(struct thermal_cooling_device *cdev)
++{
++	struct thermal_cooling_device *pos = NULL;
++
++	list_for_each_entry(pos, &thermal_cdev_list, node) {
++		if (pos == cdev)
++			return true;
++	}
++
++	return false;
++}
++
+ static void __unbind(struct thermal_zone_device *tz, int mask,
+ 		     struct thermal_cooling_device *cdev)
+ {
+@@ -1067,20 +1079,17 @@ void thermal_cooling_device_unregister(s
+ 	int i;
+ 	const struct thermal_zone_params *tzp;
+ 	struct thermal_zone_device *tz;
+-	struct thermal_cooling_device *pos = NULL;
  
--		if (pr)
--			freq_qos_remove_request(&pr->thermal_req);
-+		if (!pr)
-+			continue;
+ 	if (!cdev)
+ 		return;
+ 
+ 	mutex_lock(&thermal_list_lock);
+-	list_for_each_entry(pos, &thermal_cdev_list, node)
+-		if (pos == cdev)
+-			break;
+-	if (pos != cdev) {
+-		/* thermal cooling device not found */
 +
-+		freq_qos_remove_request(&pr->thermal_req);
-+
-+		thermal_cooling_device_update(pr->cdev);
++	if (!thermal_cooling_device_present(cdev)) {
+ 		mutex_unlock(&thermal_list_lock);
+ 		return;
  	}
- }
- #else				/* ! CONFIG_CPU_FREQ */
++
+ 	list_del(&cdev->node);
+ 
+ 	/* Unbind all thermal zones associated with 'this' cdev */
 
 
 
