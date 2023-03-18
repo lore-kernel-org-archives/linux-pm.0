@@ -2,136 +2,125 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E4ACC76195
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Mar 2023 14:47:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C959C76195
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Mar 2023 16:01:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229845AbjCROrD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Mar 2023 10:47:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56158 "EHLO
+        id S229590AbjCRQBF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Mar 2023 12:01:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52458 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229942AbjCROq7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2023 10:46:59 -0400
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01on2109.outbound.protection.outlook.com [40.107.117.109])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4378DCA2F;
-        Sat, 18 Mar 2023 07:46:30 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=JtighpnZeyUCP0N8ueMLoTWZmULKd0IcA8fPSyZC5IzwwebHBwzN31ySC/hUI4zXysm5traLREJNz1di3g/dFXUHRkjGG1FBjXGM3ChqpxPhdguCML6JTrej0OdsAdFhBA51ECHOui1dsNzFl9d9aKqwa17Ev+w2gIkEgtoyfBLMbJsRFVzxN4EKLsBTtyv+1ENowM2sZX5+oJHb6sBg7Pum5ytbKY0nz5dqP11Qb+j+5Dm/+CPOLrUEtEnl5DK/tLQY+FRW3WM3Ds9aCB0B+cH57WtOu3BGKJ2x3zXVLuRdxPSmbCyRxRP79WRw0nSIVZ5d+JDvcowUI3rgCAcLjA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GE3MEtYd/t6m9uX7tsCrsm/xazH/HurMYPLnGfjf41A=;
- b=lSJC1M0lBOvH2H9Sb72AUiUkRFPaH+wkp6cEICkVsfPdgWgH643h4QbMNFiysPSTrfEveFE3Ez4aaOYLPIbsDKFkKfuIyFDdqF7X4Hul4vkstDTeMMTnzyXmggLxmw4fUrHhsaGO1CcTx2zlr9DpQ9xu6M1HKEnvyBa41kt7Ktqv7vmi/VQWXgQoqB/X/v4m5HcxBbhXUB9ZylcLI8C1MbuKUdHC08W50gHvP5crM3QqGFWTHIq3fYnKtWDvTKxA3Cgin4yNL/lyeBGMhz5o7HamisOd1dIVM78VK4tBzk5ocPUZ9w/sig+859Cr88xL+nZLQnXVYA4tLX8NHXf00A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GE3MEtYd/t6m9uX7tsCrsm/xazH/HurMYPLnGfjf41A=;
- b=BstLJmB5qBYfLuP5aQTUGTnLzwbl2c1DKu4G+Bu7rS6d1fcHEyUW5Bv5D2OMOrfcJqtmo5vk+5vTNkQwSYh1mDkM4b/ykwzmcBk4CACWgzK0TsxBQiIn2uoACTEscCWxSfRTK2YJXivhhqV83Rb2Iiyn+7OpzECIFhGuafelVYFy+Sa4WZhmunv2RchGr7YGUUcvQYIo3vy/tgBeYyqWDtZ+kK5dFcv2Ml+4k9Eattc1uFy1iCYiCLGPhi+7VDI+6pV6KWk8hZDcoPENjnDkzdAXTp9npv8ZH3HgI6A7c/aynj3EFb8OOXaOVBnuD5MuQ+GgJUWv69hgwFS190XoSg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SEZPR06MB5269.apcprd06.prod.outlook.com (2603:1096:101:78::6)
- by TY0PR06MB5283.apcprd06.prod.outlook.com (2603:1096:400:210::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.36; Sat, 18 Mar
- 2023 14:45:16 +0000
-Received: from SEZPR06MB5269.apcprd06.prod.outlook.com
- ([fe80::daf6:5ebb:a93f:1869]) by SEZPR06MB5269.apcprd06.prod.outlook.com
- ([fe80::daf6:5ebb:a93f:1869%9]) with mapi id 15.20.6178.036; Sat, 18 Mar 2023
- 14:45:16 +0000
-From:   Yangtao Li <frank.li@vivo.com>
-To:     Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
+        with ESMTP id S229502AbjCRQBE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2023 12:01:04 -0400
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE91B28213;
+        Sat, 18 Mar 2023 09:01:00 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1679155258; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=D5m/uWvsWIYVGsuXnRxfx/byaWI0xEkpV6LE0YB97ZtepML259T4rhMteImj6l5c8u
+    QmEnfWlk6n94XB//UbqHYcDfBalgywdOIR1sbH1EOrXEbUq1pfo31AjLWvun8gED9PtT
+    0X3EEVheli7YYNEc/a9lfJsky+stgqfhF3BXs/PJ9znHqg6fpMCKzgt+fhuNw+mHFdoT
+    NTckZypCbFu7NUQIIoHtUfQTv6aeNijAuziZRwBB2l+iBsLvYAkW6Kjz4yPY7Hn+FL1t
+    AArx2DMAmd6b+q1JmNhugCxXjmi4ND6LPJZHjDvmQ7rVFV65SVljv/GeR9YTzqJ0HRtJ
+    wrQQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1679155258;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=BorzDKph6yDuV2CwRHmTgXwBDb3OTpmSXaYIXiFcQgg=;
+    b=qZihJS76FTxmzJ0oM0Ua4bNjsR3JQRbKAlpd1kjW0AMWNvpIDCfmh5imWh/u3TU2rZ
+    CxbP+RS4Od1hw3JoOqCj2NAnz94XEMmkxKgGOXvRmc72B040jZ4oniklUVAolWpwH0hM
+    SU1dR1aOLc2N/zoxQIOx6U7Te5WjntjlK5kFfcMLm+vxXraTLGXJzRMJkRcdOzXEFsKc
+    q05PQ2kKF285oBw/A2cfEcoWnay+g5jU2GkQjAnM3aUmtjw4Bel3vky089FepwRpu1fX
+    fn0YrBxKxYCKcWfwxEB9j/ubW67c95i/CUYIX5PHCxxC1tFJtGVxyVwDs6zznP8lW4lW
+    I+rA==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1679155258;
+    s=strato-dkim-0002; d=gerhold.net;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=BorzDKph6yDuV2CwRHmTgXwBDb3OTpmSXaYIXiFcQgg=;
+    b=nTozUwD1Yw5ah92CNYNSQkmuhLirYXsDvoHHDWzVNAn3pORlPneka8es67T6gjrDnw
+    M4MwDvzYKwKv4ztKTg5a+x+++jPSoxNFo7P9pLdTGmLdhtGvqUGYQqnsx2BUXnUA4YmY
+    Xc+Dbwpe3fg671YhBUOsbt/TvDS2YHhWKNyduG6GwGrye/rnwCGWz1cx4DWc9p6Xd9Yn
+    9i1UD72GHEeGYz0FcPifmidEsYHW5yl0xGrVvDq9Sakbi+4tIeTHumdGhDCVi2PazH+n
+    q6SS0eEh4BOFw/Ou1Gfz7hm/Z369MwG02UOb+j8RpICj5RHNwnKr0zl0A4GqUVZfaAiI
+    TA5A==
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u267FZF9PwpcNKjWrKs9lg=="
+Received: from gerhold.net
+    by smtp.strato.de (RZmta 49.3.1 AUTH)
+    with ESMTPSA id i40d22z2IG0v812
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+        (Client did not present a certificate);
+    Sat, 18 Mar 2023 17:00:57 +0100 (CET)
+Date:   Sat, 18 Mar 2023 17:00:52 +0100
+From:   Stephan Gerhold <stephan@gerhold.net>
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc:     Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
         Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     Yangtao Li <frank.li@vivo.com>, linux-pm@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 8/9] thermal/drivers/ti-soc: remove redundant msg in ti_thermal_expose_sensor()
-Date:   Sat, 18 Mar 2023 22:44:11 +0800
-Message-Id: <20230318144412.75046-8-frank.li@vivo.com>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20230318144412.75046-1-frank.li@vivo.com>
-References: <20230318144412.75046-1-frank.li@vivo.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SI2PR02CA0032.apcprd02.prod.outlook.com
- (2603:1096:4:195::12) To SEZPR06MB5269.apcprd06.prod.outlook.com
- (2603:1096:101:78::6)
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v3 2/6] thermal: qcom: tsens-v0_1: Fix mdm9607 slope
+ values
+Message-ID: <ZBXgNPg+g6TLP0Zt@gerhold.net>
+References: <20230315103950.2679317-1-stephan.gerhold@kernkonzept.com>
+ <20230315103950.2679317-3-stephan.gerhold@kernkonzept.com>
+ <ad64143c-13c0-63e3-561a-620c44f26b9d@linaro.org>
+ <ZBSCN0f8yC/nkGll@gerhold.net>
+ <2fd76707-9cf5-dbac-3514-89395a4225c2@linaro.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SEZPR06MB5269:EE_|TY0PR06MB5283:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4d6364b3-69d4-46e8-16fa-08db27bf632c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 1BvdNsw6gt6DYeYjrdBU3QtxleLDOZJtls2m8i9BtdZoGolzwC3gtrcLZlCJ+LWEQOG6ibDIJT/RQVi0HEfh5SvfDGBE+q0vveMz7rm/d3aZrghXd+xXW90y+YlZhIpVSA0Vxuok5Voh+3Cd+Jwr3bLVnflM/BAQWcAN3k5XIEgM4jfzUSRDVxvqm0KYKCvZ+tPuulVnnL2h2RQYNWwH/b/UeKUatv2kdi+JubrB26/SyMdyS3etjzNHcMdcmS+WswWV0ZuYUuU9go6N3ODCr78Dde0G4xLQunrbKFQ7fn/QWi+2wEQIz3a06lXi7OIB8vidQ1mc5zH4HynYkOHb1NkPJdC1trHfK5pJYo0kH2kp/Cmf5gFctcg3TzD2Y9N16j2gwajNJ0Zl64Kp8wv+AXz/+6U4R4LYkYWECKjtCchmBbNQE7mItMplUvy5zQiEOqmCN8IoPQfWJblxRNCTPOD/HYhU17fDDrpd8ynU87VkD5DezAGUg5DEh5CHhdcfXISYtgpb+BajRtp84dzAwdbi9DSaVMcdUSk/c/liTp9Z8CDM2C5dnsYndy0Y5vzietQWrvnkTdSZfxYMtsXjg3Ax9EAAq/OVQho/3aIAlCM41ySmxxwR+1t2a9Fnk1oPYsGF/fpyVhINP0iJ4IJnuvfH/qqBqqcODJ0lO7k6hyExGJmIPXe52mn3hnMws/MPKyP5AIDDOEOO5iy6T/ntPw==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5269.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(4636009)(39860400002)(376002)(366004)(346002)(136003)(396003)(451199018)(86362001)(36756003)(52116002)(316002)(66946007)(66556008)(66476007)(8676002)(4326008)(83380400001)(478600001)(110136005)(186003)(6512007)(6506007)(1076003)(26005)(2616005)(6486002)(6666004)(38100700002)(38350700002)(8936002)(41300700001)(4744005)(2906002)(5660300002);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?X+e/OsTX4dDM+4MrTTTOyNlynD2MYhRnTYZXC62RGMWZNC6JpCGZBcAXnE5/?=
- =?us-ascii?Q?MRATcrH1+csMcmAhZXUmgwuvtJtmAeAZ6kfoEZeGYryMNDewWbWWy/F58SG9?=
- =?us-ascii?Q?Pj36WbKZN/5aP1iauhgGSMcIZIRX83hL4Jxir8k2zXb4K24sboHbcUcyDu5m?=
- =?us-ascii?Q?RvHYyUbDABEWv0+xippTXk3opk7Rh94ZTNVjozkgEMoU/1zNu+389BX8nSWj?=
- =?us-ascii?Q?J89PLnuKIMhlYXwAU3W3906ht3vVcmDBxwtmTCn3ox/z3QsCKR8TgEWxLNDP?=
- =?us-ascii?Q?XmxP3jnk84DDuD0DzbUDKdveQklDblzcrkB3954L6I1ijuodgdnBQNMPeknS?=
- =?us-ascii?Q?A57ZZRVdF1OSCJkP97hePZFicpj0Jd7fIpFzgsxafQMsEuJKxnvW671ORqQX?=
- =?us-ascii?Q?FYf6GhKkMFRFn7cYZ73+bcAtXKf1szRNsx20ioJDS2ree69WcbslvD52UTfa?=
- =?us-ascii?Q?h1kBLXZbR01CjusTdTTMkumlEOv8lkNMPa3/gmZgTFWZl7M1QzNemVhYSBK+?=
- =?us-ascii?Q?LXbC4CVGTXlopYaA1vJTzhCKro6BTR+nUCrpCL6+C6qMu+gTiX4Fh9LB/Wyz?=
- =?us-ascii?Q?MGk17/nYWioVeuUAHGTz1sPSWbOFLuSVPMjuuNhb2JDy5cimFZCTaQtEJ/21?=
- =?us-ascii?Q?7656YfE+YBJIJq5BpJb2OgHaWworiEe4mslguuWt9oEXG/GRgNC1S4avdo9w?=
- =?us-ascii?Q?E8bp1ie3rOAjD3zfEgoMApmn4kLN48U7WwXVtepNZdYov6eBEPvnAfkKiKLs?=
- =?us-ascii?Q?VbWP6xFXjjY6o1+WtDp/QK6Plx3HMwSdy6AuDeZUGnN5hZL/r2KzB0bVhR9v?=
- =?us-ascii?Q?h4jWoOs9CDVPtRQdz2VNjHeB+CQD4aYMtyf0VZl3hfHSdqhlUud9aBsB/HS1?=
- =?us-ascii?Q?8NETioCFM9u2Jd5BJykBC79Zf9KUtZkcV4gbhdA5IWFoZDpnE+B6kSR3qkoD?=
- =?us-ascii?Q?HXowRW59alpr+TUouWCWX5sfcKRBamnX0o8s4OP2xyjcsbRbM20p8i7UQyI0?=
- =?us-ascii?Q?j9LGrt/0bkbnpHn6CiQ9oUBnsyj469ITjItMGu0p4L5/V8CBI40wyICniFmc?=
- =?us-ascii?Q?VgipQ5LDzAJFuBgP81xzK+vjEZBXr/dg6WlJ9lToiIGdCAFPEeQoRkFeS0h8?=
- =?us-ascii?Q?VEcrYrJgiyv4RRut352S9mpBfKl8lA/EMlUEE2c1LwtGNGfwyhZZBhFPOgQt?=
- =?us-ascii?Q?0nMLivGqOchdUOPIZ94dbxjUHhiwc7z4+xX3eNn3qILONPm/DDB2c1rg2B7f?=
- =?us-ascii?Q?nMdWWxdY02uIAHAh0JMqy+qyhHjHrd+QozAJGRQxtXBOw0zpTnaDLPQXcRc0?=
- =?us-ascii?Q?3mnP5HATqGS1QL8LxHUPA6ch3/R1ngA+J50Ot4hqotFFE2GnqKJMiFZGn8Es?=
- =?us-ascii?Q?sB0oipEvnTBbYH7FKINNzlBHZQuoDiGjiYEE09PQYoiUrK6PPnJ66iaY8OA6?=
- =?us-ascii?Q?3hvBfCnTVYgymR4hESdvpB7Ha0f2dGYWZW5rUGEHVEmAWvfumvOpAArs7V7q?=
- =?us-ascii?Q?6nWR183hEed7ZoPtNaBWAIId9GAUzaIp1BdRK0brsP3qcDoHavlqiTa2hGDS?=
- =?us-ascii?Q?07rnYylvgY9Q7SvZGaL7z6I6bMKhHYI8MaHVtjjG?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4d6364b3-69d4-46e8-16fa-08db27bf632c
-X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5269.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2023 14:45:16.1314
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: UwANLDm7LTWDQCiym2Jkf7Iy/bWdzdxntgJ1n9sTHLlbpH9P2eDsVL30HZeSBC5wcGXBEqYwrNh24KC2cymBJw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR06MB5283
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2fd76707-9cf5-dbac-3514-89395a4225c2@linaro.org>
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The upper-layer devm_thermal_add_hwmon_sysfs() function can directly
-print error information.
+On Fri, Mar 17, 2023 at 06:37:16PM +0100, Konrad Dybcio wrote:
+> On 17.03.2023 16:07, Stephan Gerhold wrote:
+> > On Fri, Mar 17, 2023 at 01:39:25AM +0100, Konrad Dybcio wrote:
+> >> On 15.03.2023 11:39, Stephan Gerhold wrote:
+> >>> According to the msm-3.18 vendor kernel from Qualcomm [1], mdm9607 uses
+> >>> a non-standard slope value of 3000 (instead of 3200) for all sensors.
+> >>> Fill it properly similar to the 8939 code added recently.
+> >>>
+> >>> [1]: https://git.codelinaro.org/clo/la/kernel/msm-3.18/-/blob/LE.UM.4.3.2.r1-04200-9x07/arch/arm/boot/dts/qcom/mdm9607.dtsi#L875
+> >>>
+> >> FWIW there's a 4.9 release for 9607
+> >>
+> >> https://git.codelinaro.org/clo/la/kernel/msm-3.18/-/blob/LE.UM.2.3.6.c5-03900-9x07/arch/arm/boot/dts/qcom/mdm9607.dtsi
+> > 
+> > You seem to have linked 3.18 too?
+> > 
+> > I don't see tsens support for mdm9607 in msm-4.9, although maybe I'm
+> > looking at the wrong branch. :D
+> Yeah wrong link
+> 
+> and wrong kernel, it's actually 4.14
+> 
+> https://git.codelinaro.org/clo/la/kernel/msm-4.14/-/blob/637e99f66c270385149d1f0041758c24c4f84aaf/arch/arm64/boot/dts/qcom/mdm9607.dtsi
+> 
 
-Signed-off-by: Yangtao Li <frank.li@vivo.com>
----
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Nice, I didn't know there is mdm9607 in msm-4.14. :)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 0c8914017c18..e39091f999d9 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -182,8 +182,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
- 	ti_bandgap_set_sensor_data(bgp, id, data);
- 	ti_bandgap_write_update_interval(bgp, data->sensor_id, interval);
- 
--	if (devm_thermal_add_hwmon_sysfs(bgp->dev, data->ti_thermal))
--		dev_warn(bgp->dev, "failed to add hwmon sysfs attributes\n");
-+	devm_thermal_add_hwmon_sysfs(bgp->dev, data->ti_thermal);
- 
- 	return 0;
- }
--- 
-2.35.1
+Nevertheless I think msm-3.18 is a better reference for the tsens code.
+In 4.9+ Qualcomm originally removed support for tsens v0.1. When porting
+the older targets it seems to have been hacked back in with very little
+thought. Note how it's called tsens 14xx there instead of v0.1, just
+with different register offsets. Personally I wouldn't trust what they
+did there, especially because most mdm9607 devices in the wild use 3.18.
 
+Thanks,
+Stephan
