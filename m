@@ -2,308 +2,82 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C58AC77B60
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 14:46:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C862AC7618A
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 14:52:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232023AbjCTOqy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Mar 2023 10:46:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54250 "EHLO
+        id S231679AbjCTOwv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Mar 2023 10:52:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35340 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231946AbjCTOqR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 10:46:17 -0400
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F132BE3A4;
-        Mon, 20 Mar 2023 07:45:14 -0700 (PDT)
-Received: by mail-pg1-x529.google.com with SMTP id z10so6717574pgr.8;
-        Mon, 20 Mar 2023 07:45:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1679323514;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=59Gn1iYcZ4C/Zt+HL1YxXBv746B3FiPq6mLTMzKnFqI=;
-        b=VFHWbDT/va9ssb48/3WXbEoLQZ8/z5USHfV2w7WirkvR1cl6pry06SKeK54TFyjeKF
-         u752DiUfJuleI6wI6QvuD1FGoBZGJu6G5fLyYnL7LAM7ko0rlw1i/4KZ6yu7ypC0/4oT
-         /DiWwzURYVUFHb0l2ag9mAd9rTEK5fzfKLzN1Bc6k2U7L1qMhzp5oioWUp8T0IFE36dR
-         nEnEItQyfSGQuoNXk7/81UHtNjF8Y4EW0DuSXpmx4OgvAsrclAjCcXrqxBtlNX1M3Hf6
-         6JObTD4VV/sPObGHUQ/Lr9eVtE/UvF9tMvqHXfKP3fqJwgF8QSVdQ8ZVdJamj2DbCLHQ
-         2jFg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679323514;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=59Gn1iYcZ4C/Zt+HL1YxXBv746B3FiPq6mLTMzKnFqI=;
-        b=HzZ0FwpzxhXKFph1pzeeDFlcSO/GFmEGrkGktjf5fVIS5r1U6yEGxQQWIEd4gONtb+
-         ogQxTR6a22tzVmTZVLfVQXj+Tq9ypKX52x0nD6iDE9ItIUkXY8WkP0PGVajH72nNtKnS
-         ReHn+Rvcd1So5Tz+HttFMw+VE/nh4/eeo7AmUdtfjoUrvDyWBpbYGCMtonRxyjlmTTEm
-         +PZpNAqS9aOQ2YjsRBdNDqJOvJSh0wG4MvrszS6FXHPqK+d28wMrk8FZ8owvsfh43NHK
-         pxKs3l3b5oOW7iWjkaoocHt+fTTT4PIpd+SgJKasUvqIBmWbvb46HtZZKxjHzaQ81owJ
-         7cew==
-X-Gm-Message-State: AO0yUKV0VbEnjd3OKQNFVByErUEyZ7+xehJW61qrEKEt78kjoYemUswG
-        1KjROhXN0/rDONKSMEtr9GQ=
-X-Google-Smtp-Source: AK7set+slgDWMjc1bZxbFjmWezaBDy57xF31ml0zQbkl/Y9eQb25jYgJZAiCNEnSgoZqURs65tvgtw==
-X-Received: by 2002:aa7:949c:0:b0:627:e1a5:27b4 with SMTP id z28-20020aa7949c000000b00627e1a527b4mr6902903pfk.33.1679323514351;
-        Mon, 20 Mar 2023 07:45:14 -0700 (PDT)
-Received: from localhost ([2a00:79e1:abd:4a00:61b:48ed:72ab:435b])
-        by smtp.gmail.com with ESMTPSA id j10-20020a63fc0a000000b00503000f0492sm6145458pgi.14.2023.03.20.07.45.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Mar 2023 07:45:14 -0700 (PDT)
-From:   Rob Clark <robdclark@gmail.com>
-To:     dri-devel@lists.freedesktop.org
-Cc:     Daniel Vetter <daniel@ffwll.ch>, freedreno@lists.freedesktop.org,
-        linux-arm-msm@vger.kernel.org, Rob Clark <robdclark@chromium.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        linux-pm@vger.kernel.org (open list:INTERCONNECT API),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v2 21/23] interconnect: Fix locking for runpm vs reclaim
-Date:   Mon, 20 Mar 2023 07:43:43 -0700
-Message-Id: <20230320144356.803762-22-robdclark@gmail.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230320144356.803762-1-robdclark@gmail.com>
-References: <20230320144356.803762-1-robdclark@gmail.com>
+        with ESMTP id S231775AbjCTOw0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 10:52:26 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CCEE25E32
+        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2023 07:50:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=2cVWReUG5GEkCYzV4yscBCxRCAtz4rEYtmBQFB2xWkg=; b=emYa6+uW0DEbCfW2Rw5lCwiE1y
+        ZDDMt4UVCdcTZqWGhvhEhC1T0HAKRnzzhqUUof3nHRbQP5Ev9A7kOc21VD+7MNiD0AIpk8GmIz8rJ
+        1Q6qAxZYjJyeyzM9Ctw/TWYmBPNP/XIgaDABthu8oPdBSkRqiYpcsUxVo09qbmyZysYAOUYKqfoT6
+        PZ91wPrvEvOUwziPJMLzOruQndIkROewvfEsRkQftCYDvwGwnhst0F/HIICOVk8h8QEiBK846Mn0B
+        KhPFxEUxS97JTSVtyKcB+IEosI3BCFCRNa7fIineWIfCT0DfpOecyB26pwCUcQOMAFV47ZIcTjEj+
+        9FKvuzwA==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1peGqL-00181m-DJ; Mon, 20 Mar 2023 14:50:37 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id AB99B300288;
+        Mon, 20 Mar 2023 15:50:34 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 87AE520EEFFC4; Mon, 20 Mar 2023 15:50:34 +0100 (CET)
+Date:   Mon, 20 Mar 2023 15:50:34 +0100
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Artem Bityutskiy <dedekind1@gmail.com>
+Cc:     x86@kernel.org, Linux PM Mailing List <linux-pm@vger.kernel.org>,
+        Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH v2 3/3] intel_idle: add C0.2 state for Sapphire Rapids
+ Xeon
+Message-ID: <20230320145034.GM2194297@hirez.programming.kicks-ass.net>
+References: <20230310122110.895093-1-dedekind1@gmail.com>
+ <20230310122110.895093-4-dedekind1@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230310122110.895093-4-dedekind1@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rob Clark <robdclark@chromium.org>
+On Fri, Mar 10, 2023 at 02:21:10PM +0200, Artem Bityutskiy wrote:
+> +/**
+> + * umwait_limit_init - initialize time limit value for 'umwait'.
+> + *
+> + * C0.1 and C0.2 (later C0.x) idle states are requested via the 'umwait'
+> + * instruction. The 'umwait' instruction requires the "deadline" - the TSC
+> + * counter value to break out of C0.x (unless it broke out because of an
+> + * interrupt or some other event).
+> + *
+> + * The deadline is specified as an absolute TSC value, and it is calculated as
+> + * current TSC value + 'umwait_limit'. This function initializes the
+> + * 'umwait_limit' variable to count of cycles per tick. The motivation is:
+> + *   * the tick is not disabled for shallow states like C0.x so, so idle will
+> + *     not last longer than a tick anyway
+> + *   * limit idle time to give cpuidle a chance to re-evaluate its C-state
+> + *     selection decision and possibly select a deeper C-state.
+> + */
+> +static void __init umwait_limit_init(void)
+> +{
+> +	umwait_limit = (u64)TICK_NSEC * tsc_khz;
+> +	do_div(umwait_limit, MICRO);
+> +}
 
-For cases where icc_bw_set() can be called in callbaths that could
-deadlock against shrinker/reclaim, such as runpm resume, we need to
-decouple the icc locking.  Introduce a new icc_bw_lock for cases where
-we need to serialize bw aggregation and update to decouple that from
-paths that require memory allocation such as node/link creation/
-destruction.
+Would it not make sense to put this limit in the MSR instead? By
+randomly increasing the MSR limit you also change userspace behaviour vs
+NOHZ_FULL.
 
-Fixes this lockdep splat:
-
-   ======================================================
-   WARNING: possible circular locking dependency detected
-   6.2.0-rc8-debug+ #554 Not tainted
-   ------------------------------------------------------
-   ring0/132 is trying to acquire lock:
-   ffffff80871916d0 (&gmu->lock){+.+.}-{3:3}, at: a6xx_pm_resume+0xf0/0x234
-
-   but task is already holding lock:
-   ffffffdb5aee57e8 (dma_fence_map){++++}-{0:0}, at: msm_job_run+0x68/0x150
-
-   which lock already depends on the new lock.
-
-   the existing dependency chain (in reverse order) is:
-
-   -> #4 (dma_fence_map){++++}-{0:0}:
-          __dma_fence_might_wait+0x74/0xc0
-          dma_resv_lockdep+0x1f4/0x2f4
-          do_one_initcall+0x104/0x2bc
-          kernel_init_freeable+0x344/0x34c
-          kernel_init+0x30/0x134
-          ret_from_fork+0x10/0x20
-
-   -> #3 (mmu_notifier_invalidate_range_start){+.+.}-{0:0}:
-          fs_reclaim_acquire+0x80/0xa8
-          slab_pre_alloc_hook.constprop.0+0x40/0x25c
-          __kmem_cache_alloc_node+0x60/0x1cc
-          __kmalloc+0xd8/0x100
-          topology_parse_cpu_capacity+0x8c/0x178
-          get_cpu_for_node+0x88/0xc4
-          parse_cluster+0x1b0/0x28c
-          parse_cluster+0x8c/0x28c
-          init_cpu_topology+0x168/0x188
-          smp_prepare_cpus+0x24/0xf8
-          kernel_init_freeable+0x18c/0x34c
-          kernel_init+0x30/0x134
-          ret_from_fork+0x10/0x20
-
-   -> #2 (fs_reclaim){+.+.}-{0:0}:
-          __fs_reclaim_acquire+0x3c/0x48
-          fs_reclaim_acquire+0x54/0xa8
-          slab_pre_alloc_hook.constprop.0+0x40/0x25c
-          __kmem_cache_alloc_node+0x60/0x1cc
-          __kmalloc+0xd8/0x100
-          kzalloc.constprop.0+0x14/0x20
-          icc_node_create_nolock+0x4c/0xc4
-          icc_node_create+0x38/0x58
-          qcom_icc_rpmh_probe+0x1b8/0x248
-          platform_probe+0x70/0xc4
-          really_probe+0x158/0x290
-          __driver_probe_device+0xc8/0xe0
-          driver_probe_device+0x44/0x100
-          __driver_attach+0xf8/0x108
-          bus_for_each_dev+0x78/0xc4
-          driver_attach+0x2c/0x38
-          bus_add_driver+0xd0/0x1d8
-          driver_register+0xbc/0xf8
-          __platform_driver_register+0x30/0x3c
-          qnoc_driver_init+0x24/0x30
-          do_one_initcall+0x104/0x2bc
-          kernel_init_freeable+0x344/0x34c
-          kernel_init+0x30/0x134
-          ret_from_fork+0x10/0x20
-
-   -> #1 (icc_lock){+.+.}-{3:3}:
-          __mutex_lock+0xcc/0x3c8
-          mutex_lock_nested+0x30/0x44
-          icc_set_bw+0x88/0x2b4
-          _set_opp_bw+0x8c/0xd8
-          _set_opp+0x19c/0x300
-          dev_pm_opp_set_opp+0x84/0x94
-          a6xx_gmu_resume+0x18c/0x804
-          a6xx_pm_resume+0xf8/0x234
-          adreno_runtime_resume+0x2c/0x38
-          pm_generic_runtime_resume+0x30/0x44
-          __rpm_callback+0x15c/0x174
-          rpm_callback+0x78/0x7c
-          rpm_resume+0x318/0x524
-          __pm_runtime_resume+0x78/0xbc
-          adreno_load_gpu+0xc4/0x17c
-          msm_open+0x50/0x120
-          drm_file_alloc+0x17c/0x228
-          drm_open_helper+0x74/0x118
-          drm_open+0xa0/0x144
-          drm_stub_open+0xd4/0xe4
-          chrdev_open+0x1b8/0x1e4
-          do_dentry_open+0x2f8/0x38c
-          vfs_open+0x34/0x40
-          path_openat+0x64c/0x7b4
-          do_filp_open+0x54/0xc4
-          do_sys_openat2+0x9c/0x100
-          do_sys_open+0x50/0x7c
-          __arm64_sys_openat+0x28/0x34
-          invoke_syscall+0x8c/0x128
-          el0_svc_common.constprop.0+0xa0/0x11c
-          do_el0_svc+0xac/0xbc
-          el0_svc+0x48/0xa0
-          el0t_64_sync_handler+0xac/0x13c
-          el0t_64_sync+0x190/0x194
-
-   -> #0 (&gmu->lock){+.+.}-{3:3}:
-          __lock_acquire+0xe00/0x1060
-          lock_acquire+0x1e0/0x2f8
-          __mutex_lock+0xcc/0x3c8
-          mutex_lock_nested+0x30/0x44
-          a6xx_pm_resume+0xf0/0x234
-          adreno_runtime_resume+0x2c/0x38
-          pm_generic_runtime_resume+0x30/0x44
-          __rpm_callback+0x15c/0x174
-          rpm_callback+0x78/0x7c
-          rpm_resume+0x318/0x524
-          __pm_runtime_resume+0x78/0xbc
-          pm_runtime_get_sync.isra.0+0x14/0x20
-          msm_gpu_submit+0x58/0x178
-          msm_job_run+0x78/0x150
-          drm_sched_main+0x290/0x370
-          kthread+0xf0/0x100
-          ret_from_fork+0x10/0x20
-
-   other info that might help us debug this:
-
-   Chain exists of:
-     &gmu->lock --> mmu_notifier_invalidate_range_start --> dma_fence_map
-
-    Possible unsafe locking scenario:
-
-          CPU0                    CPU1
-          ----                    ----
-     lock(dma_fence_map);
-                                  lock(mmu_notifier_invalidate_range_start);
-                                  lock(dma_fence_map);
-     lock(&gmu->lock);
-
-    *** DEADLOCK ***
-
-   2 locks held by ring0/132:
-    #0: ffffff8087191170 (&gpu->lock){+.+.}-{3:3}, at: msm_job_run+0x64/0x150
-    #1: ffffffdb5aee57e8 (dma_fence_map){++++}-{0:0}, at: msm_job_run+0x68/0x150
-
-   stack backtrace:
-   CPU: 7 PID: 132 Comm: ring0 Not tainted 6.2.0-rc8-debug+ #554
-   Hardware name: Google Lazor (rev1 - 2) with LTE (DT)
-   Call trace:
-    dump_backtrace.part.0+0xb4/0xf8
-    show_stack+0x20/0x38
-    dump_stack_lvl+0x9c/0xd0
-    dump_stack+0x18/0x34
-    print_circular_bug+0x1b4/0x1f0
-    check_noncircular+0x78/0xac
-    __lock_acquire+0xe00/0x1060
-    lock_acquire+0x1e0/0x2f8
-    __mutex_lock+0xcc/0x3c8
-    mutex_lock_nested+0x30/0x44
-    a6xx_pm_resume+0xf0/0x234
-    adreno_runtime_resume+0x2c/0x38
-    pm_generic_runtime_resume+0x30/0x44
-    __rpm_callback+0x15c/0x174
-    rpm_callback+0x78/0x7c
-    rpm_resume+0x318/0x524
-    __pm_runtime_resume+0x78/0xbc
-    pm_runtime_get_sync.isra.0+0x14/0x20
-    msm_gpu_submit+0x58/0x178
-    msm_job_run+0x78/0x150
-    drm_sched_main+0x290/0x370
-    kthread+0xf0/0x100
-    ret_from_fork+0x10/0x20
-
-Signed-off-by: Rob Clark <robdclark@chromium.org>
----
- drivers/interconnect/core.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 25debded65a8..f7251784765f 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -29,6 +29,7 @@ static LIST_HEAD(icc_providers);
- static int providers_count;
- static bool synced_state;
- static DEFINE_MUTEX(icc_lock);
-+static DEFINE_MUTEX(icc_bw_lock);
- static struct dentry *icc_debugfs_dir;
- 
- static void icc_summary_show_one(struct seq_file *s, struct icc_node *n)
-@@ -632,7 +633,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
- 	if (WARN_ON(IS_ERR(path) || !path->num_nodes))
- 		return -EINVAL;
- 
--	mutex_lock(&icc_lock);
-+	mutex_lock(&icc_bw_lock);
- 
- 	old_avg = path->reqs[0].avg_bw;
- 	old_peak = path->reqs[0].peak_bw;
-@@ -664,7 +665,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
- 		apply_constraints(path);
- 	}
- 
--	mutex_unlock(&icc_lock);
-+	mutex_unlock(&icc_bw_lock);
- 
- 	trace_icc_set_bw_end(path, ret);
- 
-@@ -963,6 +964,7 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
- 		return;
- 
- 	mutex_lock(&icc_lock);
-+	mutex_lock(&icc_bw_lock);
- 
- 	node->provider = provider;
- 	list_add_tail(&node->node_list, &provider->nodes);
-@@ -988,6 +990,7 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
- 	node->avg_bw = 0;
- 	node->peak_bw = 0;
- 
-+	mutex_unlock(&icc_bw_lock);
- 	mutex_unlock(&icc_lock);
- }
- EXPORT_SYMBOL_GPL(icc_node_add);
-@@ -1111,6 +1114,7 @@ void icc_sync_state(struct device *dev)
- 		return;
- 
- 	mutex_lock(&icc_lock);
-+	mutex_lock(&icc_bw_lock);
- 	synced_state = true;
- 	list_for_each_entry(p, &icc_providers, provider_list) {
- 		dev_dbg(p->dev, "interconnect provider is in synced state\n");
--- 
-2.39.2
-
+That was part of the reason why Andy insisted on having the MSR low.
