@@ -2,129 +2,168 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E9F1C76195
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 13:42:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 379CFC76195
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 14:44:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231396AbjCTNmu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Mar 2023 09:42:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49746 "EHLO
+        id S231811AbjCTOod (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Mar 2023 10:44:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50238 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231544AbjCTNmd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 09:42:33 -0400
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBFFEF747
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2023 06:42:31 -0700 (PDT)
-Received: by mail-ed1-x535.google.com with SMTP id w9so46947353edc.3
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2023 06:42:31 -0700 (PDT)
+        with ESMTP id S231696AbjCTOod (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 10:44:33 -0400
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9B14A27C;
+        Mon, 20 Mar 2023 07:44:31 -0700 (PDT)
+Received: by mail-pl1-x62b.google.com with SMTP id u5so12652277plq.7;
+        Mon, 20 Mar 2023 07:44:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1679319750;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Htzjm9MSCo4/scEOmWkP20tbOGwc7n5xhdN8GyJQ6GQ=;
-        b=bg8QBqEMCU2HBbMjnyK7G8pFNFhcaxlWlgPUkC1vmuTd98atUix3MIbBpG3lJAys+0
-         2OxXvRg04f1/Y4Zw8e3Vi2GHv7C9QlOn47ZCDI6ypkC2t9j4c/68f5X7HfJigdkdE4rU
-         i6r/7Cch0fOo1xTP21OktKc1Onawn+Hn4+yuBsrBwgR0h8M9V2FtKPI82e3hKXiBAOs3
-         0pkDKbVru0PvsTBhhRiwHkOpn+cVCzsC1PdmFNoudWUAkN/Vby253U2/xMXn+Gzbg8yk
-         ZxWg6fRkJz01IddW7B7uWGI0TLzKV5ppQJdre2FTgTZw29WSq37fGZgEi2MlHSxuctke
-         Iqng==
+        d=gmail.com; s=20210112; t=1679323471;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=dMhzaRLYEghDDTaAukUOjdZ/Iik/E0y0uW4UbqJ2TqM=;
+        b=GvrF+RNzmOBxQ+TqsOlzz04B7n9bV2JsKDO3Hw1WGk/9hFpeAK9/oUPYBYeyZwp1A7
+         P7qgFFcG3rtmAU/CB/+CEBhNbJ8BvtmWkG4KDb8MKL02r2dVgp9qkNl+B3Jckp8alNa4
+         naCbB7dsaLkwjhlxp5vfO4EygzOO9n9So/JPXF1e+xNRna5OiBZFge5FtMUcQcDeJvMg
+         RoERbo3dnKPlpZYx39najggHt4DE+SCAEpkNbxGfsDRjC2DGMt3oQT9P/G8vhtTCl1Ih
+         j/oKv2karvzTjIqcDZMQL02/OgaT8AtAYDloCRtsZ2c0xrNcT+5iylz+JmPUvm48SC5R
+         Z0/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679319750;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Htzjm9MSCo4/scEOmWkP20tbOGwc7n5xhdN8GyJQ6GQ=;
-        b=5Ny2CHjUCosB96wK5KsUCiEGuVlXc5jcz7NGCg9u5pC8Sfw2r7jAhjCNty9CSgzuTV
-         N1krSqXOV2FVxc5ek1PdL+OCUqCJEl32XIMA0zw7Z26XcJRGPYR6bgkNXtWb2ecEZeel
-         OMjROwu2GJJ0lO5qXBiYAqUBUYuU0qBArb2f8moTNbpjJyEwuHnA+A7CEs1LIfxF2q1f
-         BsRW+C53J5kXmlVedaPvVT6g/1Dv0Xl+IZEHxuzqaQ1XGnHAi/BsR9W/grzK/knF7Bm/
-         qAKNHmbnBuJ9N9t7SbZT6vzR//X2F05knT5t3I6Wq9xzkomVaoi+pFur2QYPxEv321Ra
-         yNQg==
-X-Gm-Message-State: AO0yUKUtadw+v1UcRNBwI+473FEdbVQ11JSRMpilIRqX3Daf015izwx3
-        f+60KWQ5WOL5h9jROFpBlC998w==
-X-Google-Smtp-Source: AK7set8r62lDWNAku2VSCK32k/4YB9QoETXYmzVcob5j4AQs+mzZFX1MpD0qRD8dnoNReX8JRMdX/Q==
-X-Received: by 2002:a17:906:13cb:b0:925:f542:1a3d with SMTP id g11-20020a17090613cb00b00925f5421a3dmr8999852ejc.25.1679319750345;
-        Mon, 20 Mar 2023 06:42:30 -0700 (PDT)
-Received: from localhost.localdomain ([94.52.112.99])
-        by smtp.gmail.com with ESMTPSA id u23-20020a170906409700b009334a6ef3e8sm2368602ejj.141.2023.03.20.06.42.28
+        d=1e100.net; s=20210112; t=1679323471;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=dMhzaRLYEghDDTaAukUOjdZ/Iik/E0y0uW4UbqJ2TqM=;
+        b=4HgLxbjs/7wvnxf1HrspIPxQ3ALCEGbjr8kfDmCicA5MKKcDOrtyQnQlcxh8Yhnibk
+         js2K2fz9N5+ietKsyJJsntlmtnD2/D/wv4e3messp8K9IBskwx08S+pk8n+9d6kKKtmk
+         JSFHISKVEkcNEWrBk8/pImDNrz/fyxIDtZhLYcDESs+HTZAfnRblr4WpKmQNTxADmFfT
+         BKmCRs84RKaYN9geQHH5ZaCAXMBxbiqL4OM2ret928OUIUtei9XATvMnEvgfZboAvUvA
+         ZZzbw30kxnZ/To5ZNbWu3k+2BmfsvuPsfhCT17xAYKSWgC4Aq7kSvvPg1ilIYjbZeQ6D
+         7o6Q==
+X-Gm-Message-State: AO0yUKW2aJvC4xxxmWlRB0/n33fZfpifyMMVaLMq0WaQQdeVnndQZ5rr
+        AvMCwXxI9/WkIukPpieZ4rs=
+X-Google-Smtp-Source: AK7set9reBYzkV18C2W+fMnszNOS+kEcYoU78TDsvGmMYca/7z3m6tyw8LOHfjrSRkhQVTmz0g94Hw==
+X-Received: by 2002:a17:902:e40d:b0:1a1:a996:feb3 with SMTP id m13-20020a170902e40d00b001a1a996feb3mr8424096ple.26.1679323470941;
+        Mon, 20 Mar 2023 07:44:30 -0700 (PDT)
+Received: from localhost ([2a00:79e1:abd:4a00:61b:48ed:72ab:435b])
+        by smtp.gmail.com with ESMTPSA id g7-20020a170902934700b0019d397b0f18sm6776907plp.214.2023.03.20.07.44.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Mar 2023 06:42:29 -0700 (PDT)
-From:   Abel Vesa <abel.vesa@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Andy Gross <agross@kernel.org>,
+        Mon, 20 Mar 2023 07:44:30 -0700 (PDT)
+From:   Rob Clark <robdclark@gmail.com>
+To:     dri-devel@lists.freedesktop.org
+Cc:     Daniel Vetter <daniel@ffwll.ch>, freedreno@lists.freedesktop.org,
+        linux-arm-msm@vger.kernel.org, Rob Clark <robdclark@chromium.org>,
+        Akhil P Oommen <quic_akhilpo@quicinc.com>,
+        Chia-I Wu <olvaffe@gmail.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Douglas Anderson <dianders@chromium.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        "Joel Fernandes (Google)" <joel@joelfernandes.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Mike Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Saravana Kannan <saravanak@google.com>
-Cc:     linux-pm@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-        Doug Anderson <dianders@chromium.org>,
-        Matthias Kaehlcke <mka@chromium.org>
-Subject: [RFC PATCH v2 4/5] clk: qcom: Add sync state callback to all SC8280XP providers
-Date:   Mon, 20 Mar 2023 15:42:16 +0200
-Message-Id: <20230320134217.1685781-5-abel.vesa@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230320134217.1685781-1-abel.vesa@linaro.org>
-References: <20230320134217.1685781-1-abel.vesa@linaro.org>
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        linaro-mm-sig@lists.linaro.org (moderated list:DMA BUFFER SHARING
+        FRAMEWORK), linux-kernel@vger.kernel.org (open list),
+        linux-media@vger.kernel.org (open list:DMA BUFFER SHARING FRAMEWORK),
+        linux-pm@vger.kernel.org (open list:DEVICE FREQUENCY (DEVFREQ)),
+        Luca Weiss <luca@z3ntu.xyz>,
+        Maximilian Luz <luzmaximilian@gmail.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Sean Paul <sean@poorly.run>
+Subject: [PATCH v2 00/23] drm/msm+PM+icc: Make job_run() reclaim-safe
+Date:   Mon, 20 Mar 2023 07:43:22 -0700
+Message-Id: <20230320144356.803762-1-robdclark@gmail.com>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that we have support for sync state delayed disabling of unused
-power domains and a provided generic gdsc sync state callback, add it to
-all the providers related to the SC8280XP platform.
+From: Rob Clark <robdclark@chromium.org>
 
-Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
----
- drivers/clk/qcom/dispcc-sc8280xp.c | 1 +
- drivers/clk/qcom/gcc-sc8280xp.c    | 1 +
- drivers/clk/qcom/gpucc-sc8280xp.c  | 1 +
- 3 files changed, 3 insertions(+)
+Inspired by https://lore.kernel.org/dri-devel/20200604081224.863494-10-daniel.vetter@ffwll.ch/
+it seemed like a good idea to get rid of memory allocation in job_run()
+fence signaling path, and use lockdep annotations to yell at us about
+anything that could deadlock against shrinker/reclaim.  Anything that
+can trigger reclaim, or block on any other thread that has triggered
+reclaim, can block the GPU shrinker from releasing memory if it is
+waiting the job to complete, causing deadlock.
 
-diff --git a/drivers/clk/qcom/dispcc-sc8280xp.c b/drivers/clk/qcom/dispcc-sc8280xp.c
-index 167470beb369..a64c396b9cc4 100644
---- a/drivers/clk/qcom/dispcc-sc8280xp.c
-+++ b/drivers/clk/qcom/dispcc-sc8280xp.c
-@@ -3199,6 +3199,7 @@ static struct platform_driver disp_cc_sc8280xp_driver = {
- 	.driver = {
- 		.name = "disp_cc-sc8280xp",
- 		.of_match_table = disp_cc_sc8280xp_match_table,
-+		.sync_state = qcom_cc_sync_state,
- 	},
- };
- 
-diff --git a/drivers/clk/qcom/gcc-sc8280xp.c b/drivers/clk/qcom/gcc-sc8280xp.c
-index b3198784e1c3..64d828ba07da 100644
---- a/drivers/clk/qcom/gcc-sc8280xp.c
-+++ b/drivers/clk/qcom/gcc-sc8280xp.c
-@@ -7441,6 +7441,7 @@ static struct platform_driver gcc_sc8280xp_driver = {
- 	.driver = {
- 		.name = "gcc-sc8280xp",
- 		.of_match_table = gcc_sc8280xp_match_table,
-+		.sync_state = qcom_cc_sync_state,
- 	},
- };
- 
-diff --git a/drivers/clk/qcom/gpucc-sc8280xp.c b/drivers/clk/qcom/gpucc-sc8280xp.c
-index ea1e9505c335..46ca242ba427 100644
---- a/drivers/clk/qcom/gpucc-sc8280xp.c
-+++ b/drivers/clk/qcom/gpucc-sc8280xp.c
-@@ -453,6 +453,7 @@ static struct platform_driver gpu_cc_sc8280xp_driver = {
- 	.driver = {
- 		.name = "gpu_cc-sc8280xp",
- 		.of_match_table = gpu_cc_sc8280xp_match_table,
-+		.sync_state = qcom_cc_sync_state,
- 	},
- };
- module_platform_driver(gpu_cc_sc8280xp_driver);
+The first patch pre-allocates the hw_fence, splitting allocation and
+initialization, to avoid allocation in the job_run() path.  The next
+eight decouple the obj lock from job_run(), as the obj lock is required
+to pin/unpin backing pages (ie. holding an obj lock in job_run() could
+deadlock the shrinker by blocking forward progress towards pinned buffers
+becoming idle).  Followed by two so that we could idr_preload() in order
+to avoid memory allocations under locks indirectly connected to the
+shrinker path.
+
+Next are three paths to decouple initialization (where allocations are
+needed) from GPU runpm and devfreq, to avoid allocations in the fence
+signaling path.  Followed by various PM devfreq/qos and interconnect
+locking fixes to decouple initialization (allocation) from runtime.
+
+And finally, the last patch is a modified version of danvet's patch to
+add lockdep annotations to gpu scheduler, but does so conditionally so
+that drivers can opt-in.
+
+v2: Switch from embedding hw_fence in submit/job object to preallocating
+    the hw_fence.  Rework "fenced unpin" locking to drop obj lock from
+    fence signaling path (ie. the part that was still WIP in the first
+    iteration of the patchset).  Adds the final patch to enable fence
+    signaling annotations now that job_run() and job_free() are safe.
+    The PM devfreq/QoS and interconnect patches are unchanged.
+
+Rob Clark (23):
+  drm/msm: Pre-allocate hw_fence
+  drm/msm: Move submit bo flags update from obj lock
+  drm/msm/gem: Tidy up VMA API
+  drm/msm: Decouple vma tracking from obj lock
+  drm/msm/gem: Simplify vmap vs LRU tracking
+  drm/gem: Export drm_gem_lru_move_tail_locked()
+  drm/msm/gem: Move update_lru()
+  drm/msm/gem: Protect pin_count/madv by LRU lock
+  drm/msm/gem: Avoid obj lock in job_run()
+  drm/msm: Switch idr_lock to spinlock
+  drm/msm: Use idr_preload()
+  drm/msm/gpu: Move fw loading out of hw_init() path
+  drm/msm/gpu: Move BO allocation out of hw_init
+  drm/msm/a6xx: Move ioremap out of hw_init path
+  PM / devfreq: Drop unneed locking to appease lockdep
+  PM / devfreq: Teach lockdep about locking order
+  PM / QoS: Fix constraints alloc vs reclaim locking
+  PM / QoS: Decouple request alloc from dev_pm_qos_mtx
+  PM / QoS: Teach lockdep about dev_pm_qos_mtx locking order
+  soc: qcom: smd-rpm: Use GFP_ATOMIC in write path
+  interconnect: Fix locking for runpm vs reclaim
+  interconnect: Teach lockdep about icc_bw_lock order
+  drm/sched: Add (optional) fence signaling annotation
+
+ drivers/base/power/qos.c                   |  83 +++++++++---
+ drivers/devfreq/devfreq.c                  |  52 ++++----
+ drivers/gpu/drm/drm_gem.c                  |  11 +-
+ drivers/gpu/drm/msm/adreno/a5xx_gpu.c      |  48 ++++---
+ drivers/gpu/drm/msm/adreno/a6xx_gmu.c      |  18 ++-
+ drivers/gpu/drm/msm/adreno/a6xx_gpu.c      |  46 ++++---
+ drivers/gpu/drm/msm/adreno/adreno_device.c |   6 +
+ drivers/gpu/drm/msm/adreno/adreno_gpu.c    |   9 +-
+ drivers/gpu/drm/msm/msm_drv.c              |   6 +-
+ drivers/gpu/drm/msm/msm_fence.c            |  12 +-
+ drivers/gpu/drm/msm/msm_fence.h            |   3 +-
+ drivers/gpu/drm/msm/msm_gem.c              | 145 ++++++++++++++-------
+ drivers/gpu/drm/msm/msm_gem.h              |  29 +++--
+ drivers/gpu/drm/msm/msm_gem_submit.c       |  27 ++--
+ drivers/gpu/drm/msm/msm_gem_vma.c          |  91 ++++++++++---
+ drivers/gpu/drm/msm/msm_gpu.h              |   8 +-
+ drivers/gpu/drm/msm/msm_ringbuffer.c       |   9 +-
+ drivers/gpu/drm/msm/msm_submitqueue.c      |   2 +-
+ drivers/gpu/drm/scheduler/sched_main.c     |   9 ++
+ drivers/interconnect/core.c                |  18 ++-
+ drivers/soc/qcom/smd-rpm.c                 |   2 +-
+ include/drm/drm_gem.h                      |   1 +
+ include/drm/gpu_scheduler.h                |   2 +
+ 23 files changed, 416 insertions(+), 221 deletions(-)
+
 -- 
-2.34.1
+2.39.2
 
