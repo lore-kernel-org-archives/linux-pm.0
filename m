@@ -2,65 +2,65 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3554BC76195
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 14:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D5B8C7618D
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 14:46:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231960AbjCTOqT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Mar 2023 10:46:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52070 "EHLO
+        id S231967AbjCTOqZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Mar 2023 10:46:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231913AbjCTOpy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 10:45:54 -0400
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8F301CBC0;
-        Mon, 20 Mar 2023 07:45:06 -0700 (PDT)
-Received: by mail-pj1-x1034.google.com with SMTP id e15-20020a17090ac20f00b0023d1b009f52so16745718pjt.2;
-        Mon, 20 Mar 2023 07:45:06 -0700 (PDT)
+        with ESMTP id S231886AbjCTOp4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 10:45:56 -0400
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19F32EB73;
+        Mon, 20 Mar 2023 07:45:11 -0700 (PDT)
+Received: by mail-pl1-x62b.google.com with SMTP id o11so12681606ple.1;
+        Mon, 20 Mar 2023 07:45:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1679323506;
+        d=gmail.com; s=20210112; t=1679323511;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ETBxoAbrNslCbg8f3yN7x2XxTKk/U7inb50D/YGBCKI=;
-        b=AhmyuHGG/8/igp1P9vAPy7ZPfETRY0TeHFg6mYwFSEp4TLgeIwiFdiaf87Ez+cq6wm
-         C0AW68YtTAXKI9AjPeHGpqoOKDOJViRoc8P16XiAr8I0ETNoavUX0aN2VHu+L3I9EpAx
-         94JZm4mKBNIp2ZQQhCmhmIZ27ex95EPXwwPo+NBFflXpuSJp8pFQ/0voEc1oCOpHxoni
-         8ULQEqZIlQ/lAaBa+oSmDtiumvwxw3FoD1C5KzD46aL5yq6V/jfmsoA6q9c/g0UnjK9Q
-         +ppWuOEEO16lI8FMgRLUeqiUz80fjx84GrCxTDpQrCeJtaFq7ZgM+N/oZ2y/H2BMqU2+
-         UzSg==
+        bh=HW0myZZejO7uNMRvPlac+lbEnpvRrjfPGVZeXhkTeDU=;
+        b=PhP6+MY2gm+VfsWU6J4UMRMOHIYbVs8+vizsPZv168wBOIB9PALpYVfd6ZivPoEngY
+         t/VUJFnA/t4Ix6GsI7xwhIXMkAYpKhhRp3xvngTue6Yr2fFXbtmHtWpAQB/s+naJOTYw
+         IRTZeCf/1OLyWnQopg4LLMR+VeOJW0SWboQWMJmtAUiYKPEyPfrp5RIa7I8htQgDrv7u
+         Id7p9NjiUuVcsJhDDDBEShANjbF6FYb4DklqnEW405YxDUdx+2496YftV81PkBEMAJVb
+         1iddGsKJ7Zt798qVPBcNgXNRq0rx7b3ZiQPIaKcFfUSv7FPK9Xd9DR2vPRCvRDOQgqRi
+         4D2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679323506;
+        d=1e100.net; s=20210112; t=1679323511;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ETBxoAbrNslCbg8f3yN7x2XxTKk/U7inb50D/YGBCKI=;
-        b=KEvqarqcrvlBApjWBE72fLKpENpHDpvn2MVPvp2Hi+64Swsd19Cg6oCfmBSMSUYJ52
-         OS3p266Ztq/vE0tFzr0gQlw1/9pbyi1dqHRR4OSprxH9gdL+fSdi4YSq+Y2MZtqb3X5j
-         wRMAudID0EUcGzqQar3CBTov7Gh3Vd2Zk+r4ukh2gLDkw7jxoL419I0g8qzS+QCIMBhk
-         c6a5vP6C1R6yyuDojzruDyp+mP4gG/DO1K/TCt5ZzNeRNPLNyvexnOyWKDl5mpOGb7m1
-         4q4NSAef2LzHe//Qdz7M8iHVMqwrnl9XcZ2NrQFE/YhMXtwipek6dHWG+D3xni/dvaPe
-         ocSQ==
-X-Gm-Message-State: AO0yUKUa7ihIEq3B9haywr+Bxc9m336hX4xygtAb0AeB7e6iITPNQPxd
-        omzTZKNLKwg92Eil4VNJLiE=
-X-Google-Smtp-Source: AK7set9nBsw0YboqA8HGtkhw/1efSi+yfRsWBIzz4ldlha0ygO0WznYR00bgmoDEmsF5J6m1TLVXgQ==
-X-Received: by 2002:a17:903:280c:b0:1a1:adb0:ed72 with SMTP id kp12-20020a170903280c00b001a1adb0ed72mr9170835plb.4.1679323506157;
-        Mon, 20 Mar 2023 07:45:06 -0700 (PDT)
+        bh=HW0myZZejO7uNMRvPlac+lbEnpvRrjfPGVZeXhkTeDU=;
+        b=i3CyqmY8vAPd+7VRJnahofMHzed8s099n1auEgtIfB4Uyk6R8naGFiG9YxGv8bUV8d
+         EWZuE9kiZafCyNQQEbV/LsrnTmayd/Iy7P4pcYlKDkTUvpGOUzUJM/05uQhTNdCtsOOC
+         TQ8GGnGW7o8vFhCLeQGV6lqnG3GYwIpSMyXxyex1Y5y9/q4vIHzLfr11FJ1LBEdLD13D
+         ORoSwwwhNeK9puSXWADn06E5tnyoHSK5sl7AlULPQP/6cB8PQYyi5fwqK3amIFtPrUDW
+         2pmlYgosfbBmRMEpf79NZBikEObeXjkEkFJKSHa1Z/fuY+3JFg5g/d53rnMk24fIKQds
+         d3Qw==
+X-Gm-Message-State: AO0yUKUs0PIKSDjE9NPz5e98vFbcgisCeSdjKyh/uGaamXgNb147/Nvm
+        91t4hty+BQqEVOoa1bDV7ZM=
+X-Google-Smtp-Source: AK7set8dqJQ+HWWTlRCoB9bVOq+YmX/QlpDsIah5XuQdk5bfZ+gnkND2WAlzEoISE8F1IrVQp/Nnmw==
+X-Received: by 2002:a05:6a20:be09:b0:d6:9e5e:f240 with SMTP id ge9-20020a056a20be0900b000d69e5ef240mr13319951pzb.4.1679323511174;
+        Mon, 20 Mar 2023 07:45:11 -0700 (PDT)
 Received: from localhost ([2a00:79e1:abd:4a00:61b:48ed:72ab:435b])
-        by smtp.gmail.com with ESMTPSA id 17-20020a170902ee5100b0019339f3368asm6853516plo.3.2023.03.20.07.45.05
+        by smtp.gmail.com with ESMTPSA id u15-20020a62ed0f000000b005809d382016sm6433907pfh.74.2023.03.20.07.45.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Mar 2023 07:45:05 -0700 (PDT)
+        Mon, 20 Mar 2023 07:45:10 -0700 (PDT)
 From:   Rob Clark <robdclark@gmail.com>
 To:     dri-devel@lists.freedesktop.org
 Cc:     Daniel Vetter <daniel@ffwll.ch>, freedreno@lists.freedesktop.org,
         linux-arm-msm@vger.kernel.org, Rob Clark <robdclark@chromium.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        linux-pm@vger.kernel.org (open list:DEVICE FREQUENCY (DEVFREQ)),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v2 16/23] PM / devfreq: Teach lockdep about locking order
-Date:   Mon, 20 Mar 2023 07:43:38 -0700
-Message-Id: <20230320144356.803762-17-robdclark@gmail.com>
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org (open list:HIBERNATION (aka Software Suspend,
+        aka swsusp)), linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH v2 19/23] PM / QoS: Teach lockdep about dev_pm_qos_mtx locking order
+Date:   Mon, 20 Mar 2023 07:43:41 -0700
+Message-Id: <20230320144356.803762-20-robdclark@gmail.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230320144356.803762-1-robdclark@gmail.com>
 References: <20230320144356.803762-1-robdclark@gmail.com>
@@ -72,37 +72,33 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rob Clark <robdclark@chromium.org>
 
-This will make it easier to catch places doing allocations that can
-trigger reclaim under devfreq->lock.
-
-Because devfreq->lock is held over various devfreq_dev_profile
-callbacks, there might be some fallout if those callbacks do allocations
-that can trigger reclaim, but I've looked through the various callback
-implementations and don't see anything obvious.  If it does trigger any
-lockdep splats, those should be fixed.
+Annotate dev_pm_qos_mtx to teach lockdep to scream about allocations
+that could trigger reclaim under dev_pm_qos_mtx.
 
 Signed-off-by: Rob Clark <robdclark@chromium.org>
 ---
- drivers/devfreq/devfreq.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/base/power/qos.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 11b774048bd2..5ce3bf9b59e7 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -817,6 +817,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	}
- 
- 	mutex_init(&devfreq->lock);
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 9cba334b3729..d4addda3944a 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -1012,3 +1012,14 @@ void dev_pm_qos_hide_latency_tolerance(struct device *dev)
+ 	pm_runtime_put(dev);
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_hide_latency_tolerance);
 +
++static int __init dev_pm_qos_init(void)
++{
 +	/* Teach lockdep about lock ordering wrt. shrinker: */
 +	fs_reclaim_acquire(GFP_KERNEL);
-+	might_lock(&devfreq->lock);
++	might_lock(&dev_pm_qos_mtx);
 +	fs_reclaim_release(GFP_KERNEL);
 +
- 	devfreq->dev.parent = dev;
- 	devfreq->dev.class = devfreq_class;
- 	devfreq->dev.release = devfreq_dev_release;
++	return 0;
++}
++early_initcall(dev_pm_qos_init);
 -- 
 2.39.2
 
