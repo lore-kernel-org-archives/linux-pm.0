@@ -2,65 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BB0EC761AF
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 14:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CAE9C7618D
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Mar 2023 14:46:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231902AbjCTOqw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Mar 2023 10:46:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52748 "EHLO
+        id S232029AbjCTOqz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Mar 2023 10:46:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52012 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231899AbjCTOqR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 10:46:17 -0400
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3C79D302;
-        Mon, 20 Mar 2023 07:45:10 -0700 (PDT)
-Received: by mail-pj1-x1030.google.com with SMTP id p3-20020a17090a74c300b0023f69bc7a68so8146731pjl.4;
-        Mon, 20 Mar 2023 07:45:10 -0700 (PDT)
+        with ESMTP id S231950AbjCTOqS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2023 10:46:18 -0400
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A47C5FF1F;
+        Mon, 20 Mar 2023 07:45:16 -0700 (PDT)
+Received: by mail-pf1-x429.google.com with SMTP id fd25so7072120pfb.1;
+        Mon, 20 Mar 2023 07:45:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1679323509;
+        d=gmail.com; s=20210112; t=1679323516;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=4LG2BAueGKKjRd5oOzkHW01KAXz7hJtO0YTeAZX7ebQ=;
-        b=JYMfuqbtpiJILVkp0uoqa+oBsFme/4zOTzeVWYi3j3wR1ZQJWuMq7gV27NVroQ4Cof
-         DvrYwJDRdr8vjUe7AoOTjec4wKPvjzpSGWLEwjaFkMJH0s8z+PQvoCMmcpojocLE7ybO
-         oo+/Hl2TVSIoCQa+s4zQECFi1GZGH4VbTC86Yqlf91CDneoARc4TOJ4Z2guCXmZDIpSu
-         /196tgzmV3xQEvnInxfSyu1LNUDP3vSbz96LAF3Eqc21Kvo8zow4uMY7aNpcZ4+NT4Yg
-         MDg9DNeVPHKmg+hxMcvtXfab3OuON64cpe+DAyLDIvSqDWJdJRf7qPJfP/BVFmTravPm
-         rQuw==
+        bh=ZTj6lDaB879i6vS4ZDrKb4b2c9OODf1NGI0zVIt2OIQ=;
+        b=Bj+oH3CQChclMtHQOjFJOIB+Z7POqoHz3M05DrKcE49Bnf7ohSE3pDsx71PYs3ECvr
+         oTHseaJiODm/MyHSlBMBASGteA5HzjOenIVagUXFeZlt7Q+3YFMZoD7rUejgRISy+aVY
+         2odaelScwYvdePOWDQYmQtu9g1I2XR+9uN9ba8aIcs04yVVbk2zqIX1fxAN1D/wbDGbE
+         GKnk4Dos7F1ERtbzl7QoDAY8Tv0VU4CBkNuZAfbMf6wRdovcBhxA0rKvl1ZusIAFOTqG
+         Ji6tDLvUkL6ZHoI/zPauDcA1VF/2Q7lzDyCG6Rg7kTodWzwhyU4JJcSU+8FUk5u7Mgzx
+         O7Ag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679323509;
+        d=1e100.net; s=20210112; t=1679323516;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=4LG2BAueGKKjRd5oOzkHW01KAXz7hJtO0YTeAZX7ebQ=;
-        b=UrNvbjjWzYc5ua1kh5fogAC/kGvNkeEO/mH/8s/RbZZnP5042J0uXChEEoknNxGfyL
-         UH0zwFqJX5eCROH24/M7uqIub0l6hBYTbUytYna8balEm6JVHnQ11PrV41dFdzSDCIY8
-         R0ra9MXwCNmEKUHi231Ff/MMMmnYXA+w2Ohl9AtMfi+iYijV0rdbnsbLxlnJonftPWBi
-         vNQy1B4vI7N7juWymju54QnKUyavLrZlede47FenT4ZvGXRY5U0MPlL2eMJLgFKBylXX
-         pyBojVIwStxyzXRLswXcxcsIJ/XrVDiYBLfNkJTLVGORmOWVQmZBb6I7HPruWKnV38Jb
-         IesA==
-X-Gm-Message-State: AO0yUKWBbmQ1kD6WIYSIHf1CX+ZiTOVHuCM010AlE4lYEfCYVXjrExMj
-        dF4i+Z6WxaAITxPJYwZc1Uw=
-X-Google-Smtp-Source: AK7set8ZMssF9rVaP9Q2tyqSeIvwgvafCYLFB4nuIVnqISbFD6NVpbGZbgq3RCYIRz5Qz1iGPiJ1mg==
-X-Received: by 2002:a17:902:c40a:b0:1a1:b9e0:fa1c with SMTP id k10-20020a170902c40a00b001a1b9e0fa1cmr10839593plk.0.1679323509573;
-        Mon, 20 Mar 2023 07:45:09 -0700 (PDT)
+        bh=ZTj6lDaB879i6vS4ZDrKb4b2c9OODf1NGI0zVIt2OIQ=;
+        b=fvJT19qqknclywQ8N5iPBs4hvjycnTKC7F5IriZQ581YZxPMea6PxZ/g2thCQJZ4iC
+         cUd/DVF2jQTB3+Bt4xAPX3lYGnBaRX5gpPJYXA6oyEK0iU1OFY2FN2gY6j4fOXtnlQDU
+         7yj2/w1Qe2k67XRV2sua+WD1NoFK4nAOEaFyy+dNC44kUuoxszekUKIO7rP707kWZUCu
+         9vmkcwsspFNHKf/c7cVQvTXOB9xxsQWJwRyt5Ts2I2VAgVAjxlc1/abbV6SSGNJOSoUK
+         /r51+/3Eao5L0xO+0lzJP2DhO1GhwYcmqJngWoAzNmBDLDT2mlaybGwVTQTWYkPwgHLz
+         h5Rw==
+X-Gm-Message-State: AO0yUKUUHwpPEzNxKViOLlcC4vgvNTz2Dz3lPlcgNDBonC8oX7N5hSXN
+        o8RaDMMcT1ekio0oaBr7dufZ6TfKbp4=
+X-Google-Smtp-Source: AK7set+YZdGvBmz/yJ5ACJx//DaOCsv2sHayWOfLM7STeuIIzbdJFihoX6ELSY7Jku8dzTLjKv9Llg==
+X-Received: by 2002:a62:7946:0:b0:625:2636:9cd2 with SMTP id u67-20020a627946000000b0062526369cd2mr19429597pfc.18.1679323516022;
+        Mon, 20 Mar 2023 07:45:16 -0700 (PDT)
 Received: from localhost ([2a00:79e1:abd:4a00:61b:48ed:72ab:435b])
-        by smtp.gmail.com with ESMTPSA id io7-20020a17090312c700b001a1ca6dc38csm2920651plb.118.2023.03.20.07.45.08
+        by smtp.gmail.com with ESMTPSA id x48-20020a056a000bf000b005a79596c795sm6428405pfu.29.2023.03.20.07.45.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Mar 2023 07:45:09 -0700 (PDT)
+        Mon, 20 Mar 2023 07:45:15 -0700 (PDT)
 From:   Rob Clark <robdclark@gmail.com>
 To:     dri-devel@lists.freedesktop.org
 Cc:     Daniel Vetter <daniel@ffwll.ch>, freedreno@lists.freedesktop.org,
         linux-arm-msm@vger.kernel.org, Rob Clark <robdclark@chromium.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org (open list:POWER MANAGEMENT CORE),
+        Georgi Djakov <djakov@kernel.org>,
+        linux-pm@vger.kernel.org (open list:INTERCONNECT API),
         linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v2 18/23] PM / QoS: Decouple request alloc from dev_pm_qos_mtx
-Date:   Mon, 20 Mar 2023 07:43:40 -0700
-Message-Id: <20230320144356.803762-19-robdclark@gmail.com>
+Subject: [PATCH v2 22/23] interconnect: Teach lockdep about icc_bw_lock order
+Date:   Mon, 20 Mar 2023 07:43:44 -0700
+Message-Id: <20230320144356.803762-23-robdclark@gmail.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230320144356.803762-1-robdclark@gmail.com>
 References: <20230320144356.803762-1-robdclark@gmail.com>
@@ -72,59 +70,41 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rob Clark <robdclark@chromium.org>
 
-Similar to the previous patch, move the allocation out from under
-dev_pm_qos_mtx, by speculatively doing the allocation and handle
-any race after acquiring dev_pm_qos_mtx by freeing the redundant
-allocation.
+Teach lockdep that icc_bw_lock is needed in code paths that could
+deadlock if they trigger reclaim.
 
 Signed-off-by: Rob Clark <robdclark@chromium.org>
 ---
- drivers/base/power/qos.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/interconnect/core.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index f3e0c6b65635..9cba334b3729 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -922,12 +922,16 @@ s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev)
-  */
- int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index f7251784765f..5619963ee85c 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -1127,13 +1127,21 @@ void icc_sync_state(struct device *dev)
+ 			}
+ 		}
+ 	}
++	mutex_unlock(&icc_bw_lock);
+ 	mutex_unlock(&icc_lock);
+ }
+ EXPORT_SYMBOL_GPL(icc_sync_state);
+ 
+ static int __init icc_init(void)
  {
-+	struct dev_pm_qos_request *req = NULL;
- 	int ret;
- 
- 	ret = dev_pm_qos_constraints_ensure_allocated(dev);
- 	if (ret)
- 		return ret;
- 
-+	if (!dev->power.qos->latency_tolerance_req)
-+		req = kzalloc(sizeof(*req), GFP_KERNEL);
+-	struct device_node *root = of_find_node_by_path("/");
++	struct device_node *root;
 +
- 	mutex_lock(&dev_pm_qos_mtx);
- 
- 	if (!dev->power.qos->latency_tolerance_req) {
-@@ -940,7 +944,6 @@ int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
- 				ret = -EINVAL;
- 			goto out;
- 		}
--		req = kzalloc(sizeof(*req), GFP_KERNEL);
- 		if (!req) {
- 			ret = -ENOMEM;
- 			goto out;
-@@ -952,6 +955,13 @@ int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
- 		}
- 		dev->power.qos->latency_tolerance_req = req;
- 	} else {
-+		/*
-+		 * If we raced with another thread to allocate the request,
-+		 * simply free the redundant allocation and move on.
-+		 */
-+		if (req)
-+			kfree(req);
++	/* Teach lockdep about lock ordering wrt. shrinker: */
++	fs_reclaim_acquire(GFP_KERNEL);
++	might_lock(&icc_bw_lock);
++	fs_reclaim_release(GFP_KERNEL);
 +
- 		if (val < 0) {
- 			__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_LATENCY_TOLERANCE);
- 			ret = 0;
++	root = of_find_node_by_path("/");
+ 
+ 	providers_count = of_count_icc_providers(root);
+ 	of_node_put(root);
 -- 
 2.39.2
 
