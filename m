@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8425CC761AF
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Mar 2023 20:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36A1DC77B61
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Mar 2023 20:09:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231951AbjCVUJe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Mar 2023 16:09:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50980 "EHLO
+        id S231962AbjCVUJf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Mar 2023 16:09:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51064 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231744AbjCVUJN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2023 16:09:13 -0400
+        with ESMTP id S231714AbjCVUJP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2023 16:09:15 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8251E7615E;
-        Wed, 22 Mar 2023 13:02:39 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9B1C7616B;
+        Wed, 22 Mar 2023 13:02:41 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id EFC81B81DE6;
-        Wed, 22 Mar 2023 20:01:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 015E3C4339E;
-        Wed, 22 Mar 2023 20:01:15 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 5EBF3B81DF6;
+        Wed, 22 Mar 2023 20:02:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CA03C4339B;
+        Wed, 22 Mar 2023 20:02:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679515276;
-        bh=UMk1yWcwvsggJJjnaJ9yTLb2WQw1KXCFuCFy3Q+rgHE=;
+        s=k20201202; t=1679515360;
+        bh=reSjqyV7Vx7mxYNpwY6x0nOsVnPeCj6ePppeHMPHC5I=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=t5Bh96moqV7d/+URyqGBIij1OPSCbWRjFnX4ZTn38dWBDKLJCuNDzdRBGABtkiUzc
-         01LTsSt60gomW8BUxmFZ49G/oUGJoWiWPdzxP5cGF6WNJWtngD6oozDeqGLLYUw29z
-         +P3IovNWfSNj3kvYUhVmU/wyn9whrnMn9wd2dYMetva9ltTeq8xezpz2QZt4bC/QVU
-         RyXnRF2bEo/p1K2daBtxkJOOOhg+D9GJ+ft7lwHE8J1la0Qn6+8Z0u00agysBdYfy2
-         ZbTY+f8bM1H9N5I/uEvSKjPIKQBaOVG1D8Nmp6Zsx7CmVEWXem56G6jZNd8+W0ibnq
-         FbNsonEsTh83A==
+        b=tR6Q26DDKg/KoNc1rEfZrPEDs+5whBK4eAWPpaLaFPt20n5mUjEQSl7j9atNfshJX
+         qvz3i8bpCrm9WXZBvXM0E0vg0HvibabQhTIQG39P3GsDkix31PqDJGPDTtBXyCfafL
+         2ojPvhV1wwE57syn1dPGrt9KizY96hQPQ+jj+/WV4V97O0FJ0GeRczPxZFOReX1Kn1
+         WloelIfSi/dgTr2a858KaMZflFmWs3SdnakvNgrEzlhLeAgHb93hD/pRW+XKFzAuTM
+         CVqTjPuodDCf7nVUcPhoEMuYzLcsGaPvTjglW+lWgwl16/CFkYlKVf1dE8fjm7IXWk
+         3evXPn5sHbJoQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Prarit Bhargava <prarit@redhat.com>, linux-pm@vger.kernel.org,
         Len Brown <len.brown@intel.com>,
         Sasha Levin <sashal@kernel.org>, lenb@kernel.org
-Subject: [PATCH AUTOSEL 6.1 32/34] tools/power turbostat: Fix /dev/cpu_dma_latency warnings
-Date:   Wed, 22 Mar 2023 15:59:24 -0400
-Message-Id: <20230322195926.1996699-32-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 11/12] tools/power turbostat: Fix /dev/cpu_dma_latency warnings
+Date:   Wed, 22 Mar 2023 16:02:05 -0400
+Message-Id: <20230322200207.1997367-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230322195926.1996699-1-sashal@kernel.org>
-References: <20230322195926.1996699-1-sashal@kernel.org>
+In-Reply-To: <20230322200207.1997367-1-sashal@kernel.org>
+References: <20230322200207.1997367-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -75,10 +75,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index c7b26a3603afe..3e1a4c4be001a 100644
+index f6b7e85b121ce..71e3f3a68b9df 100644
 --- a/tools/power/x86/turbostat/turbostat.8
 +++ b/tools/power/x86/turbostat/turbostat.8
-@@ -344,6 +344,8 @@ Alternatively, non-root users can be enabled to run turbostat this way:
+@@ -294,6 +294,8 @@ Alternatively, non-root users can be enabled to run turbostat this way:
  
  # chmod +r /dev/cpu/*/msr
  
@@ -88,10 +88,10 @@ index c7b26a3603afe..3e1a4c4be001a 100644
  reads hardware counters, but doesn't write them.
  So it will not interfere with the OS or other programs, including
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index aba460410dbd1..c24054e3ef7ad 100644
+index ef65f7eed1ec9..d33c9d427e573 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -5482,7 +5482,7 @@ void print_dev_latency(void)
+@@ -5004,7 +5004,7 @@ void print_dev_latency(void)
  
  	retval = read(fd, (void *)&value, sizeof(int));
  	if (retval != sizeof(int)) {
