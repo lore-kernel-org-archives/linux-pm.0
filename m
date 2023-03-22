@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15487C7619A
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Mar 2023 20:03:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04A40C6FD1C
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Mar 2023 20:07:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231536AbjCVUDY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Mar 2023 16:03:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59828 "EHLO
+        id S231837AbjCVUHt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Mar 2023 16:07:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231516AbjCVUCn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2023 16:02:43 -0400
+        with ESMTP id S229931AbjCVUHR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2023 16:07:17 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38E8A64B31;
-        Wed, 22 Mar 2023 12:59:25 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1DEF374DE3;
+        Wed, 22 Mar 2023 13:01:36 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 0D22D62294;
-        Wed, 22 Mar 2023 19:59:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ABDA2C433EF;
-        Wed, 22 Mar 2023 19:59:23 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 8CC76622CB;
+        Wed, 22 Mar 2023 20:01:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36937C4339B;
+        Wed, 22 Mar 2023 20:01:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679515164;
+        s=k20201202; t=1679515278;
         bh=jiBHGv/Qc37ebIMDLVhnDSbtaYWP9xZ76vBBWTmM94I=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GDryP8ji//u+b+0nsa8yk4ypB0jk9DyhwGxYErSQHsHvkzHva6bavjxh7wYNJknTv
-         6URkKZMyDDuS8iXj7k6A/4drun1pNKtd7DXhrIFZ3xPtK+gEp0BPp9gjABsO1DuBnl
-         zD6pRl6IC5wMihaaGODLxtXzQ4gNEqJAdaDxIcTFAjYS1OmrgzlcgtLGnGNxv86Oub
-         YlzXAMYKDZLBuWUreKWkwDCa2blLJsX6DtjWbqvd4m+HGmQNUH2Fdc7sT7R0/MiZWT
-         e9vHHA9kDIHsX1MnCyYMb/gsUfK86sfeJE7ULA9WJJJNZIvMrlU7hKMYpHyxCFu9ER
-         6et5qclnp1aRQ==
+        b=JlySb8iSp9kTPfEH5LJUjaLliP3T4Cioayc5256OBdRgH8x+kqJ1EP3CGPBlV/4DK
+         NXQ8T5AfRh8i/fgG7fbXN1Fgi2OfjYZnVL+A+gFSypPiETOQNnwBZcozjL1oi5Hrmy
+         YuAlQvBBjqRnhyhm7q5c7WVsS7/j6Mlo8EsXax98Ss8rG2rn3jKMZw1a849MT3sPsB
+         jdA8n8dDuSDBvu6vTb+Z38VP2+wvpoxZgMjhHvq6tqnmAQ6vU5qoZsY2gUMejwQGYg
+         TFR55GgHg5I1+m8IJg/7NXLQKAw9YRbVDQLWZ117H4pSGsYrDfaxt+tv/UUt2Vg9ja
+         MkrKgclV9KUTw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Antti Laakso <antti.laakso@intel.com>,
@@ -38,12 +38,12 @@ Cc:     Antti Laakso <antti.laakso@intel.com>,
         Len Brown <len.brown@intel.com>,
         Sasha Levin <sashal@kernel.org>, lenb@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.2 44/45] tools/power turbostat: fix decoding of HWP_STATUS
-Date:   Wed, 22 Mar 2023 15:56:38 -0400
-Message-Id: <20230322195639.1995821-44-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 33/34] tools/power turbostat: fix decoding of HWP_STATUS
+Date:   Wed, 22 Mar 2023 15:59:25 -0400
+Message-Id: <20230322195926.1996699-33-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230322195639.1995821-1-sashal@kernel.org>
-References: <20230322195639.1995821-1-sashal@kernel.org>
+In-Reply-To: <20230322195926.1996699-1-sashal@kernel.org>
+References: <20230322195926.1996699-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
