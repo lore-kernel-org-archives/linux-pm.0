@@ -2,85 +2,97 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F414FC77B61
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Mar 2023 20:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2C6AC76196
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Mar 2023 03:30:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231709AbjCVUKW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Mar 2023 16:10:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50124 "EHLO
+        id S229691AbjCWDac (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Mar 2023 23:30:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231982AbjCVUJr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2023 16:09:47 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23D90C15D;
-        Wed, 22 Mar 2023 13:03:04 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 1AF52622C5;
-        Wed, 22 Mar 2023 20:02:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B284CC433A4;
-        Wed, 22 Mar 2023 20:02:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679515324;
-        bh=d2kJloD1m/EvDPqToiYYJTD3x8xotyhjKibguqq2vME=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LATwYJ2jLYJF5W8/sA+9KyUvPHUI6cFoCDm0ojwPFJ5QlDCWaIBTz/68juhZRsg5C
-         Ej0xrIEbAi/5yV+Ugn96FoCqgGRAYMC66WwsPyWWy8+DOBkt7VoWE/ix1HyUVW98Dl
-         koaMAD4VG9qwJqHDjTLd5LYxi64tpTfG5tHeolfavYWSIcMiLdyZtnwf+S79P1Q/de
-         2yHn83orTGJIXQAcifWeQpyaW6fr/CJ1SILctn48Ylw3gLz1Vii5lT2slDm5cWootG
-         ZOOhtWgPmS0ElttoIgbew6WTBZcFdRoqBL8fxbVJ8aV+k9/eh2ikpbY04SSqfs4K5y
-         K+lUEeAJPT4Kw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Antti Laakso <antti.laakso@intel.com>,
-        Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
-        Len Brown <len.brown@intel.com>,
-        Sasha Levin <sashal@kernel.org>, lenb@kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 15/16] tools/power turbostat: fix decoding of HWP_STATUS
-Date:   Wed, 22 Mar 2023 16:01:19 -0400
-Message-Id: <20230322200121.1997157-15-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230322200121.1997157-1-sashal@kernel.org>
-References: <20230322200121.1997157-1-sashal@kernel.org>
+        with ESMTP id S229597AbjCWDab (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2023 23:30:31 -0400
+Received: from smtp2.axis.com (smtp2.axis.com [195.60.68.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CD1F2596C;
+        Wed, 22 Mar 2023 20:30:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=axis.com; q=dns/txt; s=axis-central1; t=1679542229;
+  x=1711078229;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=gq0qyZKNaLBz1ZipLKUy2zilo/3yGKq4flu6j9JgEcA=;
+  b=iRriFXrUbG8ZFhqeHZ1uVjNW+tOz93Ig1Z+TqoibcufxsZlVNH7JOWPC
+   AVosds7ex1B0xjxtBpjWWZDrUsSG9gGrHuTS8WbilIL5uJ0nyXfq+HJ+P
+   0LX9k5I7eEVhLl42X0h1bGNw38NXxxw+00dRLUOqayyiJCthmV8jVqp8c
+   1XTTOPScPqUu5gBD/WvDkLsNwwFcOEg4VwTdEHe0KECRCFhZQ7btfBK+9
+   QU0UxPSV2emv6M3Skcil225+IaJdyN12BcfKnpfSpHAmRvB/fxypMguwL
+   JQ4hVefIsMNkyNPbTHTREEmbQOshZJdByLcn3VgUxdgqD8Lhz/tr37o/G
+   Q==;
+From:   Hermes Zhang <chenhuiz@axis.com>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Andrew Davis <afd@ti.com>
+CC:     <kernel@axis.com>, Hermes Zhang <chenhuiz@axis.com>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 1/2] dt-bindings: power: supply: bq256xx: Add ti,no-thermistor property
+Date:   Thu, 23 Mar 2023 11:30:11 +0800
+Message-ID: <20230323033012.416953-1-chenhuiz@axis.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Antti Laakso <antti.laakso@intel.com>
+Add a new property ti,no-thermistor to indicate that no thermistor is
+connected to the TS pin of the chip.
 
-[ Upstream commit 92c25393586ac799b9b7d9e50434f3c44a7622c4 ]
-
-The "excursion to minimum" information is in bit2
-in HWP_STATUS MSR. Fix the bitmask used for
-decoding the register.
-
-Signed-off-by: Antti Laakso <antti.laakso@intel.com>
-Reviewed-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Hermes Zhang <chenhuiz@axis.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 84b8a35c91972..a3197efe52c63 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -4241,7 +4241,7 @@ int print_hwp(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+Notes:
+    v2: change property name to ti,no-thermistor
+
+ .../bindings/power/supply/bq256xx.yaml        | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/bq256xx.yaml b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
+index 82f382a7ffb3..ab9ae6ca7700 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
++++ b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
+@@ -68,11 +68,30 @@ properties:
+       Interrupt sends an active low, 256 μs pulse to host to report the charger
+       device status and faults.
  
- 	fprintf(outf, "cpu%d: MSR_HWP_STATUS: 0x%08llx "
- 		"(%sGuaranteed_Perf_Change, %sExcursion_Min)\n",
--		cpu, msr, ((msr) & 0x1) ? "" : "No-", ((msr) & 0x2) ? "" : "No-");
-+		cpu, msr, ((msr) & 0x1) ? "" : "No-", ((msr) & 0x4) ? "" : "No-");
++  ti,no-thermistor:
++    type: boolean
++    description: |
++      Indicates that no thermistor is connected to the TS pin
++
+ required:
+   - compatible
+   - reg
+   - monitored-battery
  
- 	return 0;
- }
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - ti,bq25600
++              - ti,bq25601
++              - ti,bq25600d
++              - ti,bq25601d
++    then:
++      properties:
++        ti,no-thermistor: false
++
+ additionalProperties: false
+ 
+ examples:
 -- 
-2.39.2
+2.30.2
 
