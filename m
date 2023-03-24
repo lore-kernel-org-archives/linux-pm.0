@@ -2,93 +2,103 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF3FEC6FD1C
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Mar 2023 10:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38CCBC6FD1C
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Mar 2023 10:11:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230375AbjCXKKU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Mar 2023 06:10:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41488 "EHLO
+        id S231579AbjCXKLx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Mar 2023 06:11:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43856 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229508AbjCXKKU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2023 06:10:20 -0400
-X-Greylist: delayed 563 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 24 Mar 2023 03:10:18 PDT
-Received: from out-28.mta0.migadu.com (out-28.mta0.migadu.com [91.218.175.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB43224BE3
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2023 03:10:18 -0700 (PDT)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-        t=1679652053;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=bSc0WWKCrF67Pi/HwlNZVSesODSTBfnuSU6f64Y3d4A=;
-        b=eZe+OG47+3TlSHWJlYF8pqZJwWOkYm4wcvj+d/U76tHtu84GBZq+4nEYKUT9dYfTrKuoYD
-        ApeYh3GxTNz+v52A0863zXehU83OexBfz7xAOy/hCTPvsBtAjKYa+T5e/+jXbQhsvVbw5S
-        yKKmUb9jbuA9qR/mP/n0vuPfhdtNCZM=
-From:   Yajun Deng <yajun.deng@linux.dev>
-To:     rafael@kernel.org, viresh.kumar@linaro.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        bristot@redhat.com, vschneid@redhat.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Yajun Deng <yajun.deng@linux.dev>
-Subject: [PATCH] cpufreq: schedutil: Combine two loops into one in sugov_start()
-Date:   Fri, 24 Mar 2023 18:00:23 +0800
-Message-Id: <20230324100023.900616-1-yajun.deng@linux.dev>
+        with ESMTP id S231602AbjCXKLu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2023 06:11:50 -0400
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A10A0274B2
+        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2023 03:11:44 -0700 (PDT)
+Received: by mail-wm1-x32c.google.com with SMTP id v4-20020a05600c470400b003ee4f06428fso622068wmo.4
+        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2023 03:11:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1679652703;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=begInB01sukj5RGggFoHNUNKWw4p2fTlflH92RQjtys=;
+        b=HhT1nB29ydzX5PF0bXW52RYVNTs9v6IuqXvD72m0nvfScE2FIMQR8UlgwgNOuDzXAE
+         zIU4NptYFbipst4gm3n2Brq4NesPRdckCLpMQaJfm4bj6o8eNQf1ppjkudLpJhwYmVlI
+         j1MZ5zHTg+uFaTEZJWq5F6UmQhxkQh0QCR4+Qei8X6V1ar0BRu3Y15FkHMM9UU6/BOGE
+         t4WMQ0Dsz8Fj9E3T3gBMkTvzaJ7vV7UBqPtUzfck8lOpxzz9+dCSmeEUL78WkPTtIT47
+         mbsrSgnBRz1yADJw34LQtf4jTvZhwVHkwqoyQWz7YZmRQ0ySlDycLQbDU69s5BqB71W+
+         qMxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1679652703;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=begInB01sukj5RGggFoHNUNKWw4p2fTlflH92RQjtys=;
+        b=6oGXjeIPSyxtThHk/1L/Y8WoEwkCEgFyq+WqlrgBE0i2o/WJ8Izq0WAuMY9uKgscUx
+         8u9bKB9jzeJJpvfvTI6h46qgu9C0ssrtu5XAKyxAeaaRHuTtV0CeRFNsA6C7Ge0iRRdx
+         NnOwxT0abgtAJ8lZIH/qgOfrkU+PksdjAJTz/t1Qj5XLbdl8Q2ZOSIYwNtRuR5UG8QEj
+         99dum3jUcRfEBxskiEaGo9nfOBoA6iP5VNnaHMNyRdTLMMwfH1+aA/5A3nMVl3oQIXjo
+         UevzOci6JFW4wH8I/zLTQSfko4xj8agOeAg2cVGYpZxvYEYeYRNUq/bfAfBq0VRRl50T
+         4Ylg==
+X-Gm-Message-State: AO0yUKUqmlgEK6ytpPxKYqtnrv/p6PaHVEYDwfbS/+7QAQ9atSszJTCO
+        skvKJQnIJOm/JqWZjKW9aE2L+A==
+X-Google-Smtp-Source: AK7set/9fgXTuSp8Lq5Om/uWBWc1ygPFrBf1H4iOs0sxSyWuq5jLXqCdoTLtU1j867CZLG4lhpeziQ==
+X-Received: by 2002:a1c:ed14:0:b0:3e1:374:8b66 with SMTP id l20-20020a1ced14000000b003e103748b66mr1808811wmh.40.1679652703013;
+        Fri, 24 Mar 2023 03:11:43 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:982:cbb0:213f:a579:70af:e4a0? ([2a01:e0a:982:cbb0:213f:a579:70af:e4a0])
+        by smtp.gmail.com with ESMTPSA id fc13-20020a05600c524d00b003ee65e7acbcsm4700489wmb.20.2023.03.24.03.11.42
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 24 Mar 2023 03:11:42 -0700 (PDT)
+Message-ID: <19b78f85-141e-eab7-2f4f-a30db3f8fb7e@linaro.org>
+Date:   Fri, 24 Mar 2023 11:11:41 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Reply-To: neil.armstrong@linaro.org
+Subject: Re: [PATCH] thermal: amlogic: Use dev_err_probe()
+Content-Language: en-US
+To:     ye.xingchen@zte.com.cn, glaroque@baylibre.com
+Cc:     rafael@kernel.org, daniel.lezcano@linaro.org, amitk@kernel.org,
+        rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <202303241020110014476@zte.com.cn>
+From:   Neil Armstrong <neil.armstrong@linaro.org>
+Organization: Linaro Developer Services
+In-Reply-To: <202303241020110014476@zte.com.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The sugov_start() function currently contains two for loops that
-traverse the CPU list and perform some initialization tasks. The first
-loop initializes each sugov_cpu struct and assigns the CPU number and
-sugov_policy pointer. The second loop sets up the update_util hook for
-each CPU based on the policy type.
+On 24/03/2023 03:20, ye.xingchen@zte.com.cn wrote:
+> From: Ye Xingchen <ye.xingchen@zte.com.cn>
+> 
+> Replace the open-code with dev_err_probe() to simplify the code.
+> 
+> Signed-off-by: Ye Xingchen <ye.xingchen@zte.com.cn>
+> ---
+>   drivers/thermal/amlogic_thermal.c | 7 ++-----
+>   1 file changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+> index 4bf36386462f..3abc2dcef408 100644
+> --- a/drivers/thermal/amlogic_thermal.c
+> +++ b/drivers/thermal/amlogic_thermal.c
+> @@ -262,11 +262,8 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
+>   		return PTR_ERR(pdata->regmap);
+> 
+>   	pdata->clk = devm_clk_get(dev, NULL);
+> -	if (IS_ERR(pdata->clk)) {
+> -		if (PTR_ERR(pdata->clk) != -EPROBE_DEFER)
+> -			dev_err(dev, "failed to get clock\n");
+> -		return PTR_ERR(pdata->clk);
+> -	}
+> +	if (IS_ERR(pdata->clk))
+> +		return dev_err_probe(dev, PTR_ERR(pdata->clk), "failed to get clock\n");
+> 
+>   	pdata->sec_ao_map = syscon_regmap_lookup_by_phandle
+>   		(pdev->dev.of_node, "amlogic,ao-secure");
 
-Since both loops operate on the same CPU list, it is possible to combine
-them into a single for loop. This simplifies the code and reduces the
-number of times the CPU list needs to be traversed, which can improve
-performance.
-
-Signed-off-by: Yajun Deng <yajun.deng@linux.dev>
----
- kernel/sched/cpufreq_schedutil.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index e3211455b203..9a28ebbb9c1e 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -766,14 +766,6 @@ static int sugov_start(struct cpufreq_policy *policy)
- 
- 	sg_policy->need_freq_update = cpufreq_driver_test_flags(CPUFREQ_NEED_UPDATE_LIMITS);
- 
--	for_each_cpu(cpu, policy->cpus) {
--		struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
--
--		memset(sg_cpu, 0, sizeof(*sg_cpu));
--		sg_cpu->cpu			= cpu;
--		sg_cpu->sg_policy		= sg_policy;
--	}
--
- 	if (policy_is_shared(policy))
- 		uu = sugov_update_shared;
- 	else if (policy->fast_switch_enabled && cpufreq_driver_has_adjust_perf())
-@@ -784,6 +776,10 @@ static int sugov_start(struct cpufreq_policy *policy)
- 	for_each_cpu(cpu, policy->cpus) {
- 		struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
- 
-+		memset(sg_cpu, 0, sizeof(*sg_cpu));
-+		sg_cpu->cpu			= cpu;
-+		sg_cpu->sg_policy		= sg_policy;
-+
- 		cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util, uu);
- 	}
- 	return 0;
--- 
-2.25.1
-
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
