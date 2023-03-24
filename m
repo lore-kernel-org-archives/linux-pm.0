@@ -2,65 +2,158 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF8F7C6FD20
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Mar 2023 09:39:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 318F4C761AF
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Mar 2023 10:04:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232099AbjCXJi6 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Mar 2023 05:38:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46672 "EHLO
+        id S229830AbjCXKEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Mar 2023 06:04:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59810 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232102AbjCXJik (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2023 05:38:40 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38EE3113C8
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2023 02:37:56 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1pfdrg-0006o0-Qo; Fri, 24 Mar 2023 10:37:40 +0100
-Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1pfdre-006LkT-J6; Fri, 24 Mar 2023 10:37:38 +0100
-Received: from pza by lupine with local (Exim 4.94.2)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1pfdrd-0003FS-Ux; Fri, 24 Mar 2023 10:37:37 +0100
-Message-ID: <37565f5ba3252472040da5bd72e30e8060c128a4.camel@pengutronix.de>
-Subject: Re: [PATCH] thermal/drivers/rockchip:
- =?ISO-8859-1?Q?use=A0devm=5Freset=5Fcontrol=5F?=
- =?ISO-8859-1?Q?array=5Fget=5Fexclusive=28=29?=
-From:   Philipp Zabel <p.zabel@pengutronix.de>
-To:     ye.xingchen@zte.com.cn, rafael@kernel.org
-Cc:     daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
-        heiko@sntech.de, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
-Date:   Fri, 24 Mar 2023 10:37:37 +0100
-In-Reply-To: <202303241108553006227@zte.com.cn>
-References: <202303241108553006227@zte.com.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.38.3-1+deb11u1 
+        with ESMTP id S231254AbjCXKEX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2023 06:04:23 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8BF11A4BF;
+        Fri, 24 Mar 2023 03:04:22 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 8DDCDB82357;
+        Fri, 24 Mar 2023 10:04:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73DCEC433D2;
+        Fri, 24 Mar 2023 10:04:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1679652260;
+        bh=8+n/g8D7fA39riz19Ut1Cr74s9l1rB4rM9KIMmbszOQ=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=cJuAyXXkH9p46rBWBlX4YTit8Ot5+QQH4LlLtMVOsjdpjRUnWTDc+EFM9xJL1OhKe
+         FkJe+v48Vr9XCKvaMg6YoUXF/3dwgQXkzH3Ff7JCEur9AI+fG/acjEXEpkwE5QW939
+         8vR/Ezsbq2/nGAD2ttYxhpgp4T3cxaDe+uAigtlhJ2EMNdRmI2Dz1Ayzt+cGDP2T0c
+         QSc4oYp4aO9OnMMKPnRR8jyTNQjTQeLUt5fhA8KyZUOP1SF1aMzvdCXQc3eEgRmuX8
+         JfZL4keo0VvY02LHg36MUqA8x4qy7PNcloF0vBHVkrvZ0qv9DqJ8q16HpAmGvR5L+p
+         W/M8uO6d2BQ8g==
+Date:   Fri, 24 Mar 2023 15:34:07 +0530
+From:   Manivannan Sadhasivam <mani@kernel.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: qcom-cpufreq-hw: fix double IO unmap and
+ resource release on exit
+Message-ID: <20230324100407.GA4259@thinkpad>
+References: <20230323174026.950622-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: p.zabel@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230323174026.950622-1-krzysztof.kozlowski@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fr, 2023-03-24 at 11:08 +0800, ye.xingchen@zte.com.cn wrote:
-> From: Ye Xingchen <ye.xingchen@zte.com.cn>
+On Thu, Mar 23, 2023 at 06:40:26PM +0100, Krzysztof Kozlowski wrote:
+> Commit 054a3ef683a1 ("cpufreq: qcom-hw: Allocate qcom_cpufreq_data
+> during probe") moved getting memory resource and iomap from
+> qcom_cpufreq_hw_cpu_init() to the probe function, however it left
+> untouched cleanup in qcom_cpufreq_hw_cpu_exit().
 > 
-> Switch devm_reset_control_array_get() to
-> devm_reset_control_array_get_exclusive().
+> During device unbind this will lead to doule release of resource and
+> double iounmap(), first by qcom_cpufreq_hw_cpu_exit() and second via
+> managed resources:
 > 
-> Signed-off-by: Ye Xingchen <ye.xingchen@zte.com.cn>
+>   resource: Trying to free nonexistent resource <0x0000000018593000-0x0000000018593fff>
+>   Trying to vunmap() nonexistent vm area (0000000088a7d4dc)
+>   ...
+>   vunmap (mm/vmalloc.c:2771 (discriminator 1))
+>   iounmap (mm/ioremap.c:60)
+>   devm_ioremap_release (lib/devres.c:19)
+>   devres_release_all (drivers/base/devres.c:506 drivers/base/devres.c:535)
+>   device_unbind_cleanup (drivers/base/dd.c:523)
+>   device_release_driver_internal (drivers/base/dd.c:1248 drivers/base/dd.c:1263)
+>   device_driver_detach (drivers/base/dd.c:1300)
+>   unbind_store (drivers/base/bus.c:243)
+>   drv_attr_store (drivers/base/bus.c:127)
+>   sysfs_kf_write (fs/sysfs/file.c:137)
+>   kernfs_fop_write_iter (fs/kernfs/file.c:334)
+>   vfs_write (include/linux/fs.h:1851 fs/read_write.c:491 fs/read_write.c:584)
+>   ksys_write (fs/read_write.c:637)
+>   __arm64_sys_write (fs/read_write.c:646)
+>   invoke_syscall (arch/arm64/include/asm/current.h:19 arch/arm64/kernel/syscall.c:57)
+>   el0_svc_common.constprop.0 (arch/arm64/include/asm/daifflags.h:28 arch/arm64/kernel/syscall.c:150)
+>   do_el0_svc (arch/arm64/kernel/syscall.c:194)
+>   el0_svc (arch/arm64/include/asm/daifflags.h:28 arch/arm64/kernel/entry-common.c:133 arch/arm64/kernel/entry-common.c:142 arch/arm64/kernel/entry-common.c:638)
+>   el0t_64_sync_handler (arch/arm64/kernel/entry-common.c:656)
+>   el0t_64_sync (arch/arm64/kernel/entry.S:591)
+> 
+> Fixes: 054a3ef683a1 ("cpufreq: qcom-hw: Allocate qcom_cpufreq_data during probe")
+> Cc: <stable@vger.kernel.org>
+> Cc: Manivannan Sadhasivam <mani@kernel.org>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
 
-regards
-Philipp
+Thanks,
+Mani
+
+> ---
+>  drivers/cpufreq/qcom-cpufreq-hw.c | 11 ++---------
+>  1 file changed, 2 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> index 2f581d2d617d..b2d2907200a9 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -43,7 +43,6 @@ struct qcom_cpufreq_soc_data {
+>  
+>  struct qcom_cpufreq_data {
+>  	void __iomem *base;
+> -	struct resource *res;
+>  
+>  	/*
+>  	 * Mutex to synchronize between de-init sequence and re-starting LMh
+> @@ -590,16 +589,12 @@ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
+>  {
+>  	struct device *cpu_dev = get_cpu_device(policy->cpu);
+>  	struct qcom_cpufreq_data *data = policy->driver_data;
+> -	struct resource *res = data->res;
+> -	void __iomem *base = data->base;
+>  
+>  	dev_pm_opp_remove_all_dynamic(cpu_dev);
+>  	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
+>  	qcom_cpufreq_hw_lmh_exit(data);
+>  	kfree(policy->freq_table);
+>  	kfree(data);
+> -	iounmap(base);
+> -	release_mem_region(res->start, resource_size(res));
+>  
+>  	return 0;
+>  }
+> @@ -718,17 +713,15 @@ static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
+>  	for (i = 0; i < num_domains; i++) {
+>  		struct qcom_cpufreq_data *data = &qcom_cpufreq.data[i];
+>  		struct clk_init_data clk_init = {};
+> -		struct resource *res;
+>  		void __iomem *base;
+>  
+> -		base = devm_platform_get_and_ioremap_resource(pdev, i, &res);
+> +		base = devm_platform_ioremap_resource(pdev, i);
+>  		if (IS_ERR(base)) {
+> -			dev_err(dev, "Failed to map resource %pR\n", res);
+> +			dev_err(dev, "Failed to map resource index %d\n", i);
+>  			return PTR_ERR(base);
+>  		}
+>  
+>  		data->base = base;
+> -		data->res = res;
+>  
+>  		/* Register CPU clock for each frequency domain */
+>  		clk_init.name = kasprintf(GFP_KERNEL, "qcom_cpufreq%d", i);
+> -- 
+> 2.34.1
+> 
+
+-- 
+மணிவண்ணன் சதாசிவம்
