@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC48AC77B61
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Mar 2023 19:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29C83C77B6F
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Mar 2023 19:38:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229746AbjC0Tim (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Mar 2023 15:38:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33722 "EHLO
+        id S232548AbjC0Tio (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Mar 2023 15:38:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33784 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231913AbjC0Til (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2023 15:38:41 -0400
-Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com [IPv6:2a00:1450:4864:20::52e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFA1E2D45
-        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2023 12:38:38 -0700 (PDT)
-Received: by mail-ed1-x52e.google.com with SMTP id eh3so40650220edb.11
-        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2023 12:38:38 -0700 (PDT)
+        with ESMTP id S232237AbjC0Tin (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2023 15:38:43 -0400
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 959822D59
+        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2023 12:38:41 -0700 (PDT)
+Received: by mail-ed1-x52d.google.com with SMTP id ew6so40671376edb.7
+        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2023 12:38:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1679945917;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=2QU02QZqcsWxbNIoA4doC7Xt9Nnah2Ywv2Hy8C/OsKs=;
-        b=lo8NIfcYiwKdB1RCkQW37pKPM68hzsBaSC7jKskOPnAavAxa6DBDCTWz+ioo+FbxrG
-         Fnt55dDR23s1B4F+N/vztIcFa3lLX+VGAKvFm1dunuLH/KZb6cwG4TWeXEuKcfpyvJlm
-         phNZ4rhS3elvof5NetxwNCFkBEy/4wHvUXu0tFfTZ5VYag9tWYOlyiez1qK2ACYy33So
-         vbOcmrjHMkz3o8v9XZphdX1Y/IH+JizIGZ4sJnKyVNVUNTf7l8k2kANdafkNLUJ9Loc2
-         D6mZ6AyvSKibq++ecB+KTj28o7NA+f0W3VKRMKq0y6EKlcaFMZes4Ss0x7IsRkiw5TdY
-         HvDg==
+        d=linaro.org; s=google; t=1679945920;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CP7vUwcUfZjT92t57J6/2HFlOi0R4gSQ4bD3Gdxv8EQ=;
+        b=gVYf6k+Q1Hw3tfFAQM3dthxP++izXDBmMYvfyZeGOhZSqGbDx1qu/5ZyiKE43VQTue
+         zPvOP1mwvIB2CxKB/6cmoAngCvHRw0datYLj4+RN5RSnBsXiWmxUbX+b59jUb4MrOMmn
+         ZkDGOUk6rXjH2t0VDphftu05shEtZhH861kbAuDkwdyRyMN7S+8RlaKMtuAz0aacMqFO
+         1tG3Z8mpmrSpAIUeB7NTlPNGuT4vz7PkgMTro3piu8wao26SgAZtlDfqZgjBh7obA3uw
+         CzfiU5guucKSMFYrOAtcjobT1UqiSj3XJ7rnObW8O8Y8Ri5L0ya/cDWZk7t5VVaUzEoS
+         k1lQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679945917;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2QU02QZqcsWxbNIoA4doC7Xt9Nnah2Ywv2Hy8C/OsKs=;
-        b=MluzfjavXJahsxpxf5QmRHQE8LWQOrFsy7hfKDKlauw4QDDeKF5a7S6HB2sDmIX+Ig
-         +m5f8AQ5dRF3xbDAT7hPGS37cy5amXwVAsytDq/d96XQ7w8kekuSVfgH4g3P8UaVkOZ/
-         QMX6A0R3tg7eU87/7zOfEZWznmm5xFMfwAyLzgJZsve1adNolv96+WQMprCf/s+vP4Mb
-         hbLHbFSHoxjormo06KBhk8/CDQGC9h/n56KNLtMHIrNGvz0kTkPbyv6Bh1RBVFT3sqXH
-         WlRW5ltOqD6m7IlwLYGcSxUWffkbdN1AcRvbDlNdZ0FPHWUu+VWp15ijMT1fXTFGKWgX
-         GbrQ==
-X-Gm-Message-State: AAQBX9fpfmT3vt3S6B/6byiyAzQXw7YLx87vXRxkyOrGv2LqgYUqgq2o
-        EN9ZkCC3tlJHLvlt2srXvUU/vg==
-X-Google-Smtp-Source: AKy350Ypsv2QkGJlBje8SS91Xz6ZgGJsh65MgKeyO60yTmdJsae4YAUIYIVnuHHX9X3fqNOWJBQ3jw==
-X-Received: by 2002:a50:ec89:0:b0:4fa:4b1c:5ea3 with SMTP id e9-20020a50ec89000000b004fa4b1c5ea3mr13354358edr.23.1679945917173;
-        Mon, 27 Mar 2023 12:38:37 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1679945920;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=CP7vUwcUfZjT92t57J6/2HFlOi0R4gSQ4bD3Gdxv8EQ=;
+        b=UvJ4Y5G8mNclquEw+40gl1K+uszNHRNTPsxH9/w9Ev/jiLmQnrLDsY4tEsJICbBKC5
+         u7uLDedpxYTpPI4EHv6CPbK8wXvL3p0BO6SjbYMbFJsCMJ67hcdJRVBlOykDHBvX1MAv
+         DZnNI03RDLKTd2GvsEKFTnzyRTMI/dKqHGhz3RsY+4xeO5BzurINOoB0s+XtHoNj5Rm3
+         PsYbjg1pAP+fqk3cIjucMeQVEhIOTjzKpE2JKAj5dzTQXhoE1t/QrCSu4FdrLc+Khol/
+         Zw08juJhjFJ3Svl1zqYzx6o2Tbq2ouxUWlNqlktMge5LTHlpSxhrx2rCJxg7/7CWeZJT
+         /0Ag==
+X-Gm-Message-State: AAQBX9f8TBCvegEXF/GB0HOkQO9BAUAMp8/pFsUzcntQYDexWwG4G0Kv
+        AcbWPLuGn5O8kdas9k6Or3Q8Yg==
+X-Google-Smtp-Source: AKy350adEKdeCdVUqGPyeEv9UeZI/9p7Qn5YWZRwAV/xpSyX1GViLO2pAcu7/Eh5auRkifBQ1iRvHQ==
+X-Received: by 2002:a17:907:76f9:b0:930:fe49:5383 with SMTP id kg25-20020a17090776f900b00930fe495383mr13477287ejc.76.1679945920207;
+        Mon, 27 Mar 2023 12:38:40 -0700 (PDT)
 Received: from localhost.localdomain ([94.52.112.99])
-        by smtp.gmail.com with ESMTPSA id kb1-20020a1709070f8100b00933c4a25735sm11701254ejc.100.2023.03.27.12.38.35
+        by smtp.gmail.com with ESMTPSA id kb1-20020a1709070f8100b00933c4a25735sm11701254ejc.100.2023.03.27.12.38.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Mar 2023 12:38:36 -0700 (PDT)
+        Mon, 27 Mar 2023 12:38:39 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -65,148 +66,77 @@ Cc:     linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
         Doug Anderson <dianders@chromium.org>,
         Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v3 0/4] Allow genpd providers to power off domains on sync state
-Date:   Mon, 27 Mar 2023 22:38:25 +0300
-Message-Id: <20230327193829.3756640-1-abel.vesa@linaro.org>
+Subject: [PATCH v3 2/4] soc: qcom: rpmhpd: Do proper power off when state synced
+Date:   Mon, 27 Mar 2023 22:38:27 +0300
+Message-Id: <20230327193829.3756640-3-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230327193829.3756640-1-abel.vesa@linaro.org>
+References: <20230327193829.3756640-1-abel.vesa@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There have been already a couple of tries to make the genpd "disable
-unused" late initcall skip the powering off of domains that might be
-needed until later on (i.e. until some consumer probes). The conclusion
-was that the provider could return -EBUSY from the power_off callback
-until the provider's sync state has been reached. This patch series tries
-to provide a proof-of-concept that is working on Qualcomm platforms.
+Instead of aggregating different corner values on sync state callback,
+call the genpd API for queuing up the power off. This will also mark the
+domain as powered off in the debugfs genpd summary. Also, until sync
+state has been reached, return busy on power off request, in order to
+allow genpd core to know that the actual domain hasn't been powered of
+from the "disable unused" late initcall.
 
-I've been doing extensive testing on SM8450, but I've also spinned this
-on my X13s (SC8280XP). Both patches that add the sync state callback to
-the SC8280XP and SM8450 are here to provide context. Once we agree on
-the form, I intend to add the sync state callback to all gdsc providers.
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/soc/qcom/rpmhpd.c | 19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
 
-Currently, some of the gdsc providers might not reach sync state due to
-list of consumers not probing yet (or at all). The sync state can be
-enforced by writing 1 to the state_synced sysfs attribute of the
-provider, thanks to Saravana's commit [1] which has been already merged.
-
-[1] https://lore.kernel.org/r/20230304005355.746421-3-saravanak@google.com
-
-V2 (RFC) of this patchset was here:
-https://lore.kernel.org/all/20230320134217.1685781-1-abel.vesa@linaro.org/
-
-Changes since v2:
- * renamed genpd_queue_power_off_work to pm_genpd_queue_power_off and added
-   comment about its purpose w.r.t. it being exported.
- * added the qcom_cc generic sync state callback to all providers that
-   register GDSCs, instead of SM8450 and SC8280XP
-
-Changes since v1:
- * Added the qcom_cc sync state callback which calls in turn the gdsc one
- * dropped extra semicolon from pm_domain.h
-
-Abel Vesa (4):
-  PM: domains: Allow power off queuing from providers
-  soc: qcom: rpmhpd: Do proper power off when state synced
-  clk: qcom: gdsc: Avoid actual power off until sync state
-  clk: qcom: Add sync state callback to all providers
-
- drivers/base/power/domain.c            | 18 ++++++++++--------
- drivers/clk/qcom/apss-ipq6018.c        |  1 +
- drivers/clk/qcom/camcc-sc7180.c        |  1 +
- drivers/clk/qcom/camcc-sc7280.c        |  1 +
- drivers/clk/qcom/camcc-sdm845.c        |  1 +
- drivers/clk/qcom/camcc-sm6350.c        |  1 +
- drivers/clk/qcom/camcc-sm8250.c        |  1 +
- drivers/clk/qcom/camcc-sm8450.c        |  1 +
- drivers/clk/qcom/common.c              | 19 +++++++++++++++++++
- drivers/clk/qcom/common.h              |  2 ++
- drivers/clk/qcom/dispcc-qcm2290.c      |  1 +
- drivers/clk/qcom/dispcc-sc7180.c       |  1 +
- drivers/clk/qcom/dispcc-sc7280.c       |  1 +
- drivers/clk/qcom/dispcc-sc8280xp.c     |  1 +
- drivers/clk/qcom/dispcc-sdm845.c       |  1 +
- drivers/clk/qcom/dispcc-sm6115.c       |  1 +
- drivers/clk/qcom/dispcc-sm6125.c       |  1 +
- drivers/clk/qcom/dispcc-sm6350.c       |  1 +
- drivers/clk/qcom/dispcc-sm6375.c       |  1 +
- drivers/clk/qcom/dispcc-sm8250.c       |  1 +
- drivers/clk/qcom/dispcc-sm8450.c       |  1 +
- drivers/clk/qcom/dispcc-sm8550.c       |  1 +
- drivers/clk/qcom/gcc-apq8084.c         |  1 +
- drivers/clk/qcom/gcc-ipq806x.c         |  1 +
- drivers/clk/qcom/gcc-ipq8074.c         |  1 +
- drivers/clk/qcom/gcc-mdm9615.c         |  1 +
- drivers/clk/qcom/gcc-msm8660.c         |  1 +
- drivers/clk/qcom/gcc-msm8909.c         |  1 +
- drivers/clk/qcom/gcc-msm8916.c         |  1 +
- drivers/clk/qcom/gcc-msm8939.c         |  1 +
- drivers/clk/qcom/gcc-msm8953.c         |  1 +
- drivers/clk/qcom/gcc-msm8960.c         |  1 +
- drivers/clk/qcom/gcc-msm8974.c         |  1 +
- drivers/clk/qcom/gcc-msm8976.c         |  1 +
- drivers/clk/qcom/gcc-msm8994.c         |  1 +
- drivers/clk/qcom/gcc-msm8996.c         |  1 +
- drivers/clk/qcom/gcc-msm8998.c         |  1 +
- drivers/clk/qcom/gcc-qcm2290.c         |  1 +
- drivers/clk/qcom/gcc-qcs404.c          |  1 +
- drivers/clk/qcom/gcc-qdu1000.c         |  1 +
- drivers/clk/qcom/gcc-sa8775p.c         |  1 +
- drivers/clk/qcom/gcc-sc7180.c          |  1 +
- drivers/clk/qcom/gcc-sc7280.c          |  1 +
- drivers/clk/qcom/gcc-sc8180x.c         |  1 +
- drivers/clk/qcom/gcc-sc8280xp.c        |  1 +
- drivers/clk/qcom/gcc-sdm660.c          |  1 +
- drivers/clk/qcom/gcc-sdm845.c          |  1 +
- drivers/clk/qcom/gcc-sdx55.c           |  1 +
- drivers/clk/qcom/gcc-sdx65.c           |  1 +
- drivers/clk/qcom/gcc-sm6115.c          |  1 +
- drivers/clk/qcom/gcc-sm6125.c          |  1 +
- drivers/clk/qcom/gcc-sm6350.c          |  1 +
- drivers/clk/qcom/gcc-sm6375.c          |  1 +
- drivers/clk/qcom/gcc-sm7150.c          |  1 +
- drivers/clk/qcom/gcc-sm8150.c          |  1 +
- drivers/clk/qcom/gcc-sm8250.c          |  1 +
- drivers/clk/qcom/gcc-sm8350.c          |  1 +
- drivers/clk/qcom/gcc-sm8450.c          |  1 +
- drivers/clk/qcom/gcc-sm8550.c          |  1 +
- drivers/clk/qcom/gdsc.c                | 26 ++++++++++++++++++++++++++
- drivers/clk/qcom/gdsc.h                |  6 ++++++
- drivers/clk/qcom/gpucc-msm8998.c       |  1 +
- drivers/clk/qcom/gpucc-sc7180.c        |  1 +
- drivers/clk/qcom/gpucc-sc7280.c        |  1 +
- drivers/clk/qcom/gpucc-sc8280xp.c      |  1 +
- drivers/clk/qcom/gpucc-sdm660.c        |  1 +
- drivers/clk/qcom/gpucc-sdm845.c        |  1 +
- drivers/clk/qcom/gpucc-sm6115.c        |  1 +
- drivers/clk/qcom/gpucc-sm6125.c        |  1 +
- drivers/clk/qcom/gpucc-sm6350.c        |  1 +
- drivers/clk/qcom/gpucc-sm6375.c        |  1 +
- drivers/clk/qcom/gpucc-sm8150.c        |  1 +
- drivers/clk/qcom/gpucc-sm8250.c        |  1 +
- drivers/clk/qcom/gpucc-sm8350.c        |  1 +
- drivers/clk/qcom/lcc-ipq806x.c         |  1 +
- drivers/clk/qcom/lpassaudiocc-sc7280.c |  1 +
- drivers/clk/qcom/lpasscc-sc7280.c      |  1 +
- drivers/clk/qcom/lpasscorecc-sc7180.c  |  2 ++
- drivers/clk/qcom/lpasscorecc-sc7280.c  |  2 ++
- drivers/clk/qcom/mmcc-apq8084.c        |  1 +
- drivers/clk/qcom/mmcc-msm8974.c        |  1 +
- drivers/clk/qcom/mmcc-msm8994.c        |  1 +
- drivers/clk/qcom/mmcc-msm8996.c        |  1 +
- drivers/clk/qcom/mmcc-msm8998.c        |  1 +
- drivers/clk/qcom/mmcc-sdm660.c         |  1 +
- drivers/clk/qcom/videocc-sc7180.c      |  1 +
- drivers/clk/qcom/videocc-sc7280.c      |  1 +
- drivers/clk/qcom/videocc-sdm845.c      |  1 +
- drivers/clk/qcom/videocc-sm8150.c      |  1 +
- drivers/clk/qcom/videocc-sm8250.c      |  1 +
- drivers/soc/qcom/rpmhpd.c              | 19 +++++++------------
- include/linux/pm_domain.h              |  4 ++++
- 92 files changed, 161 insertions(+), 20 deletions(-)
-
+diff --git a/drivers/soc/qcom/rpmhpd.c b/drivers/soc/qcom/rpmhpd.c
+index f20e2a49a669..ec7926820772 100644
+--- a/drivers/soc/qcom/rpmhpd.c
++++ b/drivers/soc/qcom/rpmhpd.c
+@@ -649,8 +649,12 @@ static int rpmhpd_power_off(struct generic_pm_domain *domain)
+ 	mutex_lock(&rpmhpd_lock);
+ 
+ 	ret = rpmhpd_aggregate_corner(pd, 0);
+-	if (!ret)
+-		pd->enabled = false;
++	if (!ret) {
++		if (!pd->state_synced)
++			ret = -EBUSY;
++		else
++			pd->enabled = false;
++	}
+ 
+ 	mutex_unlock(&rpmhpd_lock);
+ 
+@@ -810,10 +814,8 @@ static void rpmhpd_sync_state(struct device *dev)
+ {
+ 	const struct rpmhpd_desc *desc = of_device_get_match_data(dev);
+ 	struct rpmhpd **rpmhpds = desc->rpmhpds;
+-	unsigned int corner;
+ 	struct rpmhpd *pd;
+ 	unsigned int i;
+-	int ret;
+ 
+ 	mutex_lock(&rpmhpd_lock);
+ 	for (i = 0; i < desc->num_pds; i++) {
+@@ -822,14 +824,7 @@ static void rpmhpd_sync_state(struct device *dev)
+ 			continue;
+ 
+ 		pd->state_synced = true;
+-		if (pd->enabled)
+-			corner = max(pd->corner, pd->enable_corner);
+-		else
+-			corner = 0;
+-
+-		ret = rpmhpd_aggregate_corner(pd, corner);
+-		if (ret)
+-			dev_err(dev, "failed to sync %s\n", pd->res_name);
++		pm_genpd_queue_power_off(&pd->pd);
+ 	}
+ 	mutex_unlock(&rpmhpd_lock);
+ }
 -- 
 2.34.1
 
