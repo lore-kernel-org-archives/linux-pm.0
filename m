@@ -2,57 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0EF0C77B61
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71207C77B62
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 15:58:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231247AbjC2Pxv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Mar 2023 11:53:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42822 "EHLO
+        id S231247AbjC2P6o convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Mar 2023 11:58:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47428 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230216AbjC2PxP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 11:53:15 -0400
-Received: from mail-oa1-f52.google.com (mail-oa1-f52.google.com [209.85.160.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C15DA40C6;
-        Wed, 29 Mar 2023 08:53:12 -0700 (PDT)
-Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-17e140619fdso16642603fac.11;
-        Wed, 29 Mar 2023 08:53:12 -0700 (PDT)
+        with ESMTP id S230494AbjC2P62 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 11:58:28 -0400
+Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D99D15BBE;
+        Wed, 29 Mar 2023 08:57:50 -0700 (PDT)
+Received: by mail-ed1-f46.google.com with SMTP id er13so24283845edb.9;
+        Wed, 29 Mar 2023 08:57:50 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105192;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WurTN6TQClVnhKzRVCxCDshUnc0lAKMY5Mp4cC77h0Y=;
-        b=LlWJo46yvB038RnEgWmvn45mZ3/O9Q7tYsM3LVJ24jytgUQMTHtoFQ7GW4KdxLpF5h
-         wYoix5ONNLlZ7YXeM90uhPEj2Kf/B8I0EFb3EqQDyuVrCZdDEoCU6ls5e+sO49A0Wdar
-         syTuIGDMTZuA0jx+XoQTk+bhYkiVYkZAEPo2DSHaQ6UQnV1bbOZF2Do+7AWbweN7Gntp
-         2kDfa/71jaXZ+DYNb4wmDSlB5z7ZrR4FJnMFuj7rmKVbN5MyVz5nFqdWMoPoXUuyw0BQ
-         U1cvQ5gu55cSOfzJjP1iS62GRWr+NII7K2Kzt1fXALEN/HwkyilOOvXfV3ek92XGGZrC
-         o0fw==
-X-Gm-Message-State: AAQBX9ewO/D0ndZVfbJHh/jYn4i/LYOwyFf6eb90Yw0k3u3uvuIqwU9W
-        nCyrYTquEeROCk2VvP0vEg==
-X-Google-Smtp-Source: AKy350Zo9NclgwNBZoANioCGcuLyMicsG3a/5+eN9bgHMpdMdqlYEHn7LZHT8hqlsIh4r2ZmsXlMnw==
-X-Received: by 2002:a05:6870:2194:b0:17e:cb7:29c0 with SMTP id l20-20020a056870219400b0017e0cb729c0mr13838293oae.13.1680105192039;
-        Wed, 29 Mar 2023 08:53:12 -0700 (PDT)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id aw8-20020a0568707f8800b001762d1bf6a9sm11897731oac.45.2023.03.29.08.53.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:11 -0700 (PDT)
-Received: (nullmailer pid 3198075 invoked by uid 1000);
-        Wed, 29 Mar 2023 15:52:45 -0000
-From:   Rob Herring <robh@kernel.org>
-Date:   Wed, 29 Mar 2023 10:52:04 -0500
-Subject: [PATCH 07/19] ARM: cpuidle: Drop of_device.h include
+        d=1e100.net; s=20210112; t=1680105431;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :reply-to:in-reply-to:references:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Mv45vqNNvk7gfjj9ywv5t87xL9EGo+L1vyvtzDS68LU=;
+        b=zneWHeMjHgnz/FlxY9gOdWel+Biu6vY1wIVNBypUud5cFuWy94VgNkIcDMlQshlMC1
+         kSohzem/DqzemmVfmIGPJZcGllbtu79NUk1TL57qBwIkdrYYywC0n5aj0toQG3B2XDWb
+         HDULPB40D7bHs9ihfkasaCJa2joUY7YG4NTeMOGVaPlrVEdzpfro6wBPwDjX15ErEA6k
+         epf4TKCjT2oe/LbqftMpyKMBBf0Ws07rCnQ5POrJZfQKR02lB00N2Vx5UbJPXl6aynjq
+         Y6HfckyT1N2r+FRHYus8JcOxbaXxGVnZRyhI3XYMKTNOodty+Em/LLhTUI4KiGxrWj80
+         laSA==
+X-Gm-Message-State: AAQBX9c1NNl26lM1cCqY0dkxXjKpPvohyKm3pYfdIHThNisOc8vYyZRo
+        p7MuNNMcfbhSaQfrXyqIGIf/QB7ATNIq6/1b
+X-Google-Smtp-Source: AKy350bDNHP9CTNtTgHuTD8bHAM78SJBcIfhWL/xWstN3I5lT2k2VUVe+z1yT6ySAusC85ZuE0Q6RQ==
+X-Received: by 2002:a17:906:3288:b0:8b1:fc58:a4ad with SMTP id 8-20020a170906328800b008b1fc58a4admr21801432ejw.11.1680105431102;
+        Wed, 29 Mar 2023 08:57:11 -0700 (PDT)
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com. [209.85.128.47])
+        by smtp.gmail.com with ESMTPSA id wf4-20020a170907d68400b0093f3d12d64bsm5930422ejc.179.2023.03.29.08.57.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 29 Mar 2023 08:57:11 -0700 (PDT)
+Received: by mail-wm1-f47.google.com with SMTP id q7-20020a05600c46c700b003ef6e809574so6728778wmo.4;
+        Wed, 29 Mar 2023 08:57:10 -0700 (PDT)
+X-Received: by 2002:a5d:591c:0:b0:2ca:4533:5d6a with SMTP id
+ v28-20020a5d591c000000b002ca45335d6amr4154237wrd.7.1680105410028; Wed, 29 Mar
+ 2023 08:56:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-7-581e2605fe47@kernel.org>
-References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
-In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
-To:     "David S. Miller" <davem@davemloft.net>,
+References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org> <20230329-dt-cpu-header-cleanups-v1-6-581e2605fe47@kernel.org>
+In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-6-581e2605fe47@kernel.org>
+Reply-To: wens@csie.org
+From:   Chen-Yu Tsai <wens@csie.org>
+Date:   Wed, 29 Mar 2023 23:56:38 +0800
+X-Gmail-Original-Message-ID: <CAGb2v64tNZa_LCUpHBbBUdpftB_Dms=oHcb7ZAD42qL-ov73hw@mail.gmail.com>
+Message-ID: <CAGb2v64tNZa_LCUpHBbBUdpftB_Dms=oHcb7ZAD42qL-ov73hw@mail.gmail.com>
+Subject: Re: [PATCH 06/19] ARM: sunxi: Drop of_device.h include
+To:     Rob Herring <robh@kernel.org>
+Cc:     "David S. Miller" <davem@davemloft.net>,
         Rob Herring <robh+dt@kernel.org>,
         Frank Rowand <frowand.list@gmail.com>,
         Russell King <linux@armlinux.org.uk>,
-        Chen-Yu Tsai <wens@csie.org>,
         Jernej Skrabec <jernej.skrabec@gmail.com>,
         Samuel Holland <samuel@sholland.org>,
         Paul Walmsley <paul.walmsley@sifive.com>,
@@ -86,42 +90,50 @@ To:     "David S. Miller" <davem@davemloft.net>,
         Jiaxun Yang <jiaxun.yang@flygoat.com>,
         Marc Zyngier <maz@kernel.org>,
         Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-sunxi@lists.linux.dev, linux-riscv@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-tegra@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-mips@vger.kernel.org
-X-Mailer: b4 0.13-dev
+        Stephen Boyd <sboyd@kernel.org>, sparclinux@vger.kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
+        linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+        linux-tegra@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-mips@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
-implicitly including other includes, and is no longer needed. Just drop
-including of_device.h as of.h is already included.
+On Wed, Mar 29, 2023 at 11:53 PM Rob Herring <robh@kernel.org> wrote:
+>
+> Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
+> implicitly including other includes, and is no longer needed. Just drop
+> including of_device.h as of.h is already included.
+>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> Please ack and I will take the series via the DT tree.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-Please ack and I will take the series via the DT tree.
----
- arch/arm/kernel/cpuidle.c | 1 -
- 1 file changed, 1 deletion(-)
+Acked-by: Chen-Yu Tsai <wens@csie.org>
 
-diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
-index 437ff39f7808..fba1f8bb03b5 100644
---- a/arch/arm/kernel/cpuidle.c
-+++ b/arch/arm/kernel/cpuidle.c
-@@ -5,7 +5,6 @@
- 
- #include <linux/cpuidle.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
- #include <asm/cpuidle.h>
- 
- extern struct of_cpuidle_method __cpuidle_method_of_table[];
+I doubt this file would ever see any more changes.
 
--- 
-2.39.2
-
+> ---
+>  arch/arm/mach-sunxi/mc_smp.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/arm/mach-sunxi/mc_smp.c b/arch/arm/mach-sunxi/mc_smp.c
+> index 26cbce135338..cb63921232a6 100644
+> --- a/arch/arm/mach-sunxi/mc_smp.c
+> +++ b/arch/arm/mach-sunxi/mc_smp.c
+> @@ -19,7 +19,6 @@
+>  #include <linux/irqchip/arm-gic.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+> -#include <linux/of_device.h>
+>  #include <linux/smp.h>
+>
+>  #include <asm/cacheflush.h>
+>
+> --
+> 2.39.2
+>
