@@ -2,51 +2,50 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73F05C761AF
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21245C77B6E
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230133AbjC2Pxs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Mar 2023 11:53:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42822 "EHLO
+        id S231145AbjC2Pxu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Mar 2023 11:53:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43280 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231139AbjC2PxT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 11:53:19 -0400
-Received: from mail-ot1-f50.google.com (mail-ot1-f50.google.com [209.85.210.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4AB83114;
-        Wed, 29 Mar 2023 08:53:19 -0700 (PDT)
-Received: by mail-ot1-f50.google.com with SMTP id l39-20020a9d1b2a000000b006a121324abdso6856136otl.7;
-        Wed, 29 Mar 2023 08:53:19 -0700 (PDT)
+        with ESMTP id S231236AbjC2Px1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 11:53:27 -0400
+Received: from mail-oo1-f53.google.com (mail-oo1-f53.google.com [209.85.161.53])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 109B31BEF;
+        Wed, 29 Mar 2023 08:53:26 -0700 (PDT)
+Received: by mail-oo1-f53.google.com with SMTP id f24-20020a4aeb18000000b0053b78077c9dso2494361ooj.12;
+        Wed, 29 Mar 2023 08:53:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105198;
+        d=1e100.net; s=20210112; t=1680105205;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=avhGoClAu60FK+4OH3axA1tPVPlExeBA2pd36OTtZtE=;
-        b=4hmXUkZK1Jo0vkxbQBklysI/LPTAzAR1f9B0fsSTs0g2bQZxaYBRzNA0L5TeEKOuGk
-         tbDegycH8Gc8qcmC7/RmHUxXuWOKlJOJk8VYV/mW0uEqocVoOPm1xS1Pxz+uU+xmsPuC
-         lgz97t+ydmVhxI5SbAqrBylcu/hfzkX/kb3urG+/ixbG5qa8+ad+VEZ9BFI8aldcwwiZ
-         DQ3clKfDXru2LymxqiC8zO+zQbQT4HSB8yiRtnH1R5GRyysb6KJ3k8U+C+igEEX+JyhL
-         ePrLqehyUvCkutqZS0rW4WIjN/xERpD1YZDlq9KVzFO/VHYKR6X+ODu/OA3zOf/inYET
-         33/A==
-X-Gm-Message-State: AO0yUKWv8J8kCVln1j+fiYxMckcjr+1yTde2eB+xSeyDrbRDcwJgmfEh
-        SdzuU+yxG9dfJbzsk82Jpg==
-X-Google-Smtp-Source: AK7set+ZOHjqyI4LzxgjdsE15Cx5pZk+wokjAG0VqGy5aA+Dncm2MiNsSACjR/bJ9bGa9YBaDIKZXg==
-X-Received: by 2002:a9d:67c6:0:b0:697:ef66:e7f4 with SMTP id c6-20020a9d67c6000000b00697ef66e7f4mr9233955otn.24.1680105198532;
-        Wed, 29 Mar 2023 08:53:18 -0700 (PDT)
+        bh=GxrilhvfwDlef/A2YTUefG5k1p916jMGPiiHrDKkFR0=;
+        b=xH5vIBcJaBNymAdRjOriNwPMqSfxAVxavkjk2rSQBqcSz6btyyJqXJvZ/Chccf2ZjQ
+         ULHOgnkaYRzJzWFOkDWs1v3YCH53EQVvOjFmyF0s/pAbjNn5lJbznIR5BS4jefdODydr
+         CbpadiskLAW05rF8AO48+fLXGktVZ7tj8dJBrbqzV9CwW6MnYsq0UqNyNdFvvYWVz3Cs
+         ExXYiuLQsnDuIclh322Q7kztCFU1mZkClj29l8f5Xr0ktKH9eLFgE6Q3FPkOT1fC1m0f
+         VTr+jhYWRr253+pj2V6QaOqU8da4iuRcD1obRnRm5AlLOH9u5f1Zr4QyeJ9zhH/DT/2o
+         QNiw==
+X-Gm-Message-State: AO0yUKUu72R+yE2qOLYEdZfHK0Sm0nej70Wc67uKCu+haFatAhT8CTxo
+        H8P7Tf86J0c13YdvxGU2+Q==
+X-Google-Smtp-Source: AK7set/IvKP58b96RyfRxVRB8Yjm2uXbhHwCU35QLNRLqkqctfQoMFiFz1/Ijy3GHwDVb/O3xlHYvQ==
+X-Received: by 2002:a4a:52d4:0:b0:53b:8b5:48d0 with SMTP id d203-20020a4a52d4000000b0053b08b548d0mr9782179oob.1.1680105205203;
+        Wed, 29 Mar 2023 08:53:25 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id s14-20020a9d758e000000b006a154373578sm2278866otk.39.2023.03.29.08.53.16
+        by smtp.gmail.com with ESMTPSA id 4-20020a4a1704000000b00524faf3d2d7sm13940444ooe.41.2023.03.29.08.53.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:18 -0700 (PDT)
-Received: (nullmailer pid 3198079 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:24 -0700 (PDT)
+Received: (nullmailer pid 3198097 invoked by uid 1000);
         Wed, 29 Mar 2023 15:52:45 -0000
 From:   Rob Herring <robh@kernel.org>
-Date:   Wed, 29 Mar 2023 10:52:06 -0500
-Subject: [PATCH 09/19] riscv: cacheinfo: Adjust includes to remove
- of_device.h
+Date:   Wed, 29 Mar 2023 10:52:15 -0500
+Subject: [PATCH 18/19] OPP: Adjust includes to remove of_device.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-9-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-18-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To:     "David S. Miller" <davem@davemloft.net>,
@@ -108,21 +107,22 @@ Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Please ack and I will take the series via the DT tree.
 ---
- arch/riscv/kernel/cacheinfo.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/opp/of.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kernel/cacheinfo.c b/arch/riscv/kernel/cacheinfo.c
-index 3a13113f1b29..e3829d2de5d9 100644
---- a/arch/riscv/kernel/cacheinfo.c
-+++ b/arch/riscv/kernel/cacheinfo.c
-@@ -5,7 +5,6 @@
- 
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index e55c6095adf0..63b126c6215e 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -13,7 +13,7 @@
  #include <linux/cpu.h>
- #include <linux/of.h>
+ #include <linux/errno.h>
+ #include <linux/device.h>
 -#include <linux/of_device.h>
- #include <asm/cacheinfo.h>
- 
- static struct riscv_cacheinfo_ops *rv_cache_ops;
++#include <linux/of.h>
+ #include <linux/pm_domain.h>
+ #include <linux/slab.h>
+ #include <linux/export.h>
 
 -- 
 2.39.2
