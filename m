@@ -2,50 +2,51 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 031BDC7EE24
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BBB2C7EE25
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231350AbjC2Pxy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Mar 2023 11:53:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42926 "EHLO
+        id S231366AbjC2Px4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Mar 2023 11:53:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230350AbjC2PxR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 11:53:17 -0400
-Received: from mail-oo1-f43.google.com (mail-oo1-f43.google.com [209.85.161.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C4674690;
-        Wed, 29 Mar 2023 08:53:15 -0700 (PDT)
-Received: by mail-oo1-f43.google.com with SMTP id g21-20020a4ad855000000b0053e563c2f72so1297458oov.6;
-        Wed, 29 Mar 2023 08:53:15 -0700 (PDT)
+        with ESMTP id S231156AbjC2Px3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 11:53:29 -0400
+Received: from mail-oi1-f169.google.com (mail-oi1-f169.google.com [209.85.167.169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BE401BEF;
+        Wed, 29 Mar 2023 08:53:28 -0700 (PDT)
+Received: by mail-oi1-f169.google.com with SMTP id f17so11896537oiw.10;
+        Wed, 29 Mar 2023 08:53:28 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105194;
+        d=1e100.net; s=20210112; t=1680105207;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=tOFzIiTcs5glICtXCi7orAKYw6mLzzis64IJ8Etn534=;
-        b=byTZkCQOSIodXP6io1Hl5ciSQS+SwO6jQ8x2IRozl22iN+KZHnaEq4DyyYsZUEanN6
-         QGkppXsiBvu/8IHpmv2H2aQMwutbzgXpF3seS9wzC5dMKh2MUcI8nmuRiunVczSWgfFH
-         giDPH+hT4co3L8lVSH/mB7lyTBAFNN9v+e4eApFlPlgGDxSzCeQx8HE5EItkhmx3anmj
-         yhAtA6VxG13yAD/yzfbY8Vsi19GYoGF5ztFiFekFB+N5IFNyM8vIvxLKPytSKETUNepO
-         wptnL734zHvQNToZ7Ayl09bNNJuqh5fHrrM+vNvHuI7fcOurZB6ucgIPcLRONAxqUKQr
-         ButQ==
-X-Gm-Message-State: AO0yUKVxMOHJrRcDf1CIoefEKZwb5Tv5HhpsF5ODofoVIza4IN2mk+a7
-        vzQVP2LddqstxKI+Edre1g==
-X-Google-Smtp-Source: AK7set9MAD4tg5pc/rHdBuixw1K3iao0K53LrjqhMjiHjl+aL1ahzPwsk7GYhgXBJpfdS1Uabklemg==
-X-Received: by 2002:a4a:41cb:0:b0:537:ad3c:d74f with SMTP id x194-20020a4a41cb000000b00537ad3cd74fmr9577499ooa.9.1680105194254;
-        Wed, 29 Mar 2023 08:53:14 -0700 (PDT)
+        bh=022ntgbo/qozcpOEnF6DlWHlLfWcIn+6VTfzUh5A9FY=;
+        b=E10H5Ql4USSrSqO9s4wDEtERp85yxhNrPdUDzgLMtM9E6HKtur8OqeZR/fsKytYsDE
+         GSdvXDV5kAaAjbbDpUNPzsxw2EmrsbkK0ioYXrHf4a8qpSlY+v7y9eF8EXmeMxHbustq
+         YYqNAvyUabUaZvsF+ReyzO9wcuYrAhE5uefoN8HWfkFuFmy/shbmSieJbzCclR5/5UnW
+         qhOpyhNqVAWhTU1LzsSyt04yKsWg+EpRG2tZx44vrzPTcwSSr2xLpa/a6swiKxedsGZP
+         LE5OLJQXZF/tzSXvNZKYK0s7OgsRKgaP2XcMpE218MStNYJ/xNdPgDkvVHJftF//oL2I
+         enww==
+X-Gm-Message-State: AO0yUKW5Ccyfsu4GjAIAfoxoC+8XTfYGzH+7qNn5VRyl7FJnbfyo2TsM
+        nyPMmEXF0h017kKTRUZGcA==
+X-Google-Smtp-Source: AK7set+mgwqrtp3sj8LCfLB0ZJyIWcTnGcbFer41ylAZRGD0ZYDF+G/GFDHWLU149fBQcrWXcPEKPQ==
+X-Received: by 2002:a05:6808:616:b0:386:db46:f6fb with SMTP id y22-20020a056808061600b00386db46f6fbmr8106850oih.17.1680105207535;
+        Wed, 29 Mar 2023 08:53:27 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id q125-20020a4a4b83000000b0051ffe0fe11bsm14001119ooa.6.2023.03.29.08.53.12
+        by smtp.gmail.com with ESMTPSA id l8-20020a056808020800b003874631e249sm8002092oie.36.2023.03.29.08.53.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:13 -0700 (PDT)
-Received: (nullmailer pid 3198073 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:26 -0700 (PDT)
+Received: (nullmailer pid 3198085 invoked by uid 1000);
         Wed, 29 Mar 2023 15:52:45 -0000
 From:   Rob Herring <robh@kernel.org>
-Date:   Wed, 29 Mar 2023 10:52:03 -0500
-Subject: [PATCH 06/19] ARM: sunxi: Drop of_device.h include
+Date:   Wed, 29 Mar 2023 10:52:09 -0500
+Subject: [PATCH 12/19] thermal: cpuidle_cooling: Adjust includes to remove
+ of_device.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-6-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-12-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To:     "David S. Miller" <davem@davemloft.net>,
@@ -99,28 +100,36 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
-implicitly including other includes, and is no longer needed. Just drop
-including of_device.h as of.h is already included.
+implicitly including other includes, and is no longer needed. Adjust the
+include files with what was implicitly included by of_device.h (cpu.h and
+of.h) and drop including of_device.h.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Please ack and I will take the series via the DT tree.
 ---
- arch/arm/mach-sunxi/mc_smp.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/thermal/cpuidle_cooling.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-sunxi/mc_smp.c b/arch/arm/mach-sunxi/mc_smp.c
-index 26cbce135338..cb63921232a6 100644
---- a/arch/arm/mach-sunxi/mc_smp.c
-+++ b/arch/arm/mach-sunxi/mc_smp.c
-@@ -19,7 +19,6 @@
- #include <linux/irqchip/arm-gic.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
--#include <linux/of_device.h>
- #include <linux/smp.h>
+diff --git a/drivers/thermal/cpuidle_cooling.c b/drivers/thermal/cpuidle_cooling.c
+index 4f41102e8b16..6f6daead485e 100644
+--- a/drivers/thermal/cpuidle_cooling.c
++++ b/drivers/thermal/cpuidle_cooling.c
+@@ -7,12 +7,13 @@
+  */
+ #define pr_fmt(fmt) "cpuidle cooling: " fmt
  
- #include <asm/cacheflush.h>
++#include <linux/cpu.h>
+ #include <linux/cpu_cooling.h>
+ #include <linux/cpuidle.h>
+ #include <linux/device.h>
+ #include <linux/err.h>
+ #include <linux/idle_inject.h>
+-#include <linux/of_device.h>
++#include <linux/of.h>
+ #include <linux/slab.h>
+ #include <linux/thermal.h>
+ 
 
 -- 
 2.39.2
