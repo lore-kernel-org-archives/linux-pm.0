@@ -2,135 +2,108 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0855EC77B6E
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 16:02:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5903DC74A5B
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Mar 2023 16:03:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230133AbjC2QBn convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Mar 2023 12:01:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47302 "EHLO
+        id S230090AbjC2QCq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Mar 2023 12:02:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231680AbjC2QAB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 12:00:01 -0400
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E8406E96;
-        Wed, 29 Mar 2023 08:59:33 -0700 (PDT)
-Received: by mail-ed1-f44.google.com with SMTP id ew6so65252131edb.7;
-        Wed, 29 Mar 2023 08:59:33 -0700 (PDT)
+        with ESMTP id S231319AbjC2QB4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2023 12:01:56 -0400
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E195E3A8E
+        for <linux-pm@vger.kernel.org>; Wed, 29 Mar 2023 09:00:44 -0700 (PDT)
+Received: by mail-wr1-x42d.google.com with SMTP id m2so16279810wrh.6
+        for <linux-pm@vger.kernel.org>; Wed, 29 Mar 2023 09:00:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1680105630;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ArwpNVIf9POAixbklkhIv67If2EwgIZ+QA4ChZDwYgE=;
+        b=Idh5bizNTidzmJWpFEgi4q88BF2+/lO675pVeMaNsr8ygV36SvVkmWzi+QBNiYJKu6
+         tF5oIdEWoj9xksHV/Xh4B2dTuZbzjgbBCTkwp67pEUOiif8JVbwKT2DIsUJd9GVb3CRo
+         47Rj6TldHbceb66V68BIp976mKiukc2vkMUla6L7tV9MGqQ4sf2ibQf0WoYH9bCeSFGq
+         NIOlXf1sFNwfiWODEiK8SIJcHA+NJ8UbpqrP+yLm2t/qnphTwYpc6Chxnlotla+7lUiZ
+         lkvuRshIJgjHnsBbpXYjPnD6tIKAeDfnYY1juoZlKdm7rN1zNc6YRdEEtKEaEyhdGSwf
+         yO0A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105561;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=J5wozgmwB4K3uhtLQG0ELPhsGFHRdp3FOmHAQorjhl0=;
-        b=RB6/hL0xZ1UVrvpwhMNyu6KFniRp6vPhsOVfkm4GbwXRtfdZE7lGDJo6kpaD6oBx6s
-         hPfdaa0noxc0zNjP4rVTqS0DPs9ODnDpKXMOtgmANQRc8ZgGMBk/rcQ7U6TKPPVgcT02
-         j1ANnfA9SWYcEa6Ln41Y4tBCtJT8Ki3Vc+RkjfRLQfgIHG685HivjRt+ESG/5l5oT8K3
-         jgZACbd5pSlsigPBhCXqi9R8QpkfnFQTNI1SKv4uA7KdoxFU7LZmOTeqHplpB5rMLwmr
-         ZPq02PZHrwd+B9qkxp4F+ymSlXLylst446vjUz7aD2rS8qWZhholqx5AYNYlMT3BjdY3
-         kxVQ==
-X-Gm-Message-State: AAQBX9fYxWotQnl5wTjlPPB8jh2cxoVYCiEyqQ1PIm4B6wo78JgForDg
-        8duPJdXPFc6MKx6aWL4Nt3bf0gW03djP5o4XpsU=
-X-Google-Smtp-Source: AKy350aoH0YzB4EGxwWgRtfVzYdwc/jxafoqtAza3yowu+hrkNWR6MYo9KvzVJ1ZAz0kSvIrND9NAtkY2JWrK3waVKA=
-X-Received: by 2002:a50:c34f:0:b0:4fa:71a2:982b with SMTP id
- q15-20020a50c34f000000b004fa71a2982bmr1623255edb.0.1680105560897; Wed, 29 Mar
- 2023 08:59:20 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1680105630;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ArwpNVIf9POAixbklkhIv67If2EwgIZ+QA4ChZDwYgE=;
+        b=RjhUU7oN5mN281+XVLrcC0ApCKsS8rztkZmX5EhvQnh/YgZEiASThaXMi5CTDywQFj
+         9VwOCJSpxB2qdHf16Q87CFYvezdob2MWNiz6WjVyRWa/dVnwCzax44FygGMbMXOJOGtx
+         o942EqzfGlvNHKKyhkMdzvd5ae3lO82adXYyZyEwz+OvuXzGhxpvcOel3Q9IDfBND7lb
+         l7+RUWhb9+3MZJMy4aS3Ee37FowV8l293cmOUTNUNLfX+4glL7cC2eZFlM70bp7m7qqi
+         ZdTSo+jLJlSQp0vGSfwG8LciQHN3OTyuH6jML5RAXtcuLfBnvuCHy5SgdG0pMFlCtET9
+         fI7Q==
+X-Gm-Message-State: AAQBX9fIHZeR8/+b7pjuunDAsapcf1ngTIe89cgYI1G+MO2dIoJryvd/
+        wUsbCKqCnGsY5LRk6VUSbkNRlN5iwQMwZ3sx5rE=
+X-Google-Smtp-Source: AKy350bmfLsfH9MB3jVTmKwHrCdVGLJBaNHbyMMHil+19zF7gmCcgdeO3qEC0rHmFr/2uB1iBH/aJA==
+X-Received: by 2002:a5d:4588:0:b0:2cf:ed87:37c9 with SMTP id p8-20020a5d4588000000b002cfed8737c9mr2251984wrq.11.1680105629985;
+        Wed, 29 Mar 2023 09:00:29 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:7c0e:2838:74e9:d05? ([2a05:6e02:1041:c10:7c0e:2838:74e9:d05])
+        by smtp.googlemail.com with ESMTPSA id b9-20020adfde09000000b002daeb108304sm17446206wrm.33.2023.03.29.09.00.29
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 29 Mar 2023 09:00:29 -0700 (PDT)
+Message-ID: <77da9d68-3cb2-f765-21d2-e427776dca44@linaro.org>
+Date:   Wed, 29 Mar 2023 18:00:28 +0200
 MIME-Version: 1.0
-References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org> <20230329-dt-cpu-header-cleanups-v1-12-581e2605fe47@kernel.org>
-In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-12-581e2605fe47@kernel.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 29 Mar 2023 17:59:09 +0200
-Message-ID: <CAJZ5v0g2g7-M1cuvXNs=t-n6rZD7v=uS_rEPBQtyBBAq1yWJ7w@mail.gmail.com>
-Subject: Re: [PATCH 12/19] thermal: cpuidle_cooling: Adjust includes to remove of_device.h
-To:     Rob Herring <robh@kernel.org>
-Cc:     "David S. Miller" <davem@davemloft.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Frank Rowand <frowand.list@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Samuel Holland <samuel@sholland.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Anup Patel <anup@brainfault.org>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Jiaxun Yang <jiaxun.yang@flygoat.com>,
-        Marc Zyngier <maz@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>, sparclinux@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
-        linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-        linux-tegra@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-mips@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Subject: Re: [PATCH -next] thermal/drivers/thermal_hwmon: Fix a kernel NULL
+ pointer dereference
+Content-Language: en-US
+To:     Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        rafael.j.wysocki@intel.com
+Cc:     linux-kernel@vger.kernel.org
+References: <20230329090055.7537-1-rui.zhang@intel.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20230329090055.7537-1-rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Mar 29, 2023 at 5:53 PM Rob Herring <robh@kernel.org> wrote:
->
-> Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
-> implicitly including other includes, and is no longer needed. Adjust the
-> include files with what was implicitly included by of_device.h (cpu.h and
-> of.h) and drop including of_device.h.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-> Please ack and I will take the series via the DT tree.
+On 29/03/2023 11:00, Zhang Rui wrote:
+> When the hwmon device node of a thermal zone device is not found,
+> using hwmon->device causes a kernel NULL pointer dereference.
+> 
+> Reported-by: Preble Adam C <adam.c.preble@intel.com>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
->  drivers/thermal/cpuidle_cooling.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/cpuidle_cooling.c b/drivers/thermal/cpuidle_cooling.c
-> index 4f41102e8b16..6f6daead485e 100644
-> --- a/drivers/thermal/cpuidle_cooling.c
-> +++ b/drivers/thermal/cpuidle_cooling.c
-> @@ -7,12 +7,13 @@
->   */
->  #define pr_fmt(fmt) "cpuidle cooling: " fmt
->
-> +#include <linux/cpu.h>
->  #include <linux/cpu_cooling.h>
->  #include <linux/cpuidle.h>
->  #include <linux/device.h>
->  #include <linux/err.h>
->  #include <linux/idle_inject.h>
-> -#include <linux/of_device.h>
-> +#include <linux/of.h>
->  #include <linux/slab.h>
->  #include <linux/thermal.h>
->
->
-> --
-> 2.39.2
->
+> Fixes: dec07d399cc8 ("thermal: Don't use 'device' internal thermal zone structure field")
+> dec07d399cc8 is a commit in the linux-next branch of linux-pm repo.
+> I'm not sure if the Fix tag applies to such commit or not.
+> ---
+>   drivers/thermal/thermal_hwmon.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+> index c59db17dddd6..261743f461be 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -229,7 +229,7 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+>   	hwmon = thermal_hwmon_lookup_by_type(tz);
+>   	if (unlikely(!hwmon)) {
+>   		/* Should never happen... */
+> -		dev_dbg(hwmon->device, "hwmon device lookup failed!\n");
+> +		dev_dbg(&tz->device, "hwmon device lookup failed!\n");
+>   		return;
+>   	}
+>   
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
