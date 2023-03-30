@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91153C761A6
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 15:33:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C07EC77B62
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 15:33:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233134AbjC3PdE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Mar 2023 11:33:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60974 "EHLO
+        id S233150AbjC3PdI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Mar 2023 11:33:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233117AbjC3Pcz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 11:32:55 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7AF46E056
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 08:32:31 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id s13so11167683wmr.4
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 08:32:31 -0700 (PDT)
+        with ESMTP id S233045AbjC3PdD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 11:33:03 -0400
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B52448682
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 08:32:35 -0700 (PDT)
+Received: by mail-wr1-x436.google.com with SMTP id e18so19513097wra.9
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 08:32:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680190347; x=1682782347;
+        d=linaro.org; s=google; t=1680190350; x=1682782350;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=eJvFJnvniGp0mqyhPlqKU3t25JZ/J4PuAS7zcipJUK8=;
-        b=JU2EDuI9Jtiy3UPWgwUdjP82KsZQU6Slx/z6CekiyYArfSjYTL6/HNQH3vUWsP0qmT
-         gx20E9q3MRjVd2XXoQQf85szINPN8biuYdMX/5SaSXsGbENqwq/v6RF+gWLGVbTD5hNG
-         5Ixn+J/H3H+uW20Tjy9fSLrMXsqj0BJ6Alhh3MZesj8bjd39CgGqPOIqsJw5y7Di6gtj
-         2bOxd6toWkRAeMPgzkyKy4aHY3Tg4kH5kuWrO7eP9O/aONKd12cFlqNLa7brf1c2UFKm
-         gNKjfS6Nn7m4/rlCC49f1Ye324ztfJ6NUryGwA/vny4JW0G9wGA2WIF5MfZZd2XSo6Ym
-         rd2A==
+        bh=0F5PdgLvylrURdh5hYAlaRFmfzBMWK9DNwfEkmKI090=;
+        b=i4e+RCiN7ln5yTHy6y8bMfukQv5Tj6Bg5QvdrA8tfioX7yZPkGvib0leVX6RU18VoL
+         XAyPqEVy1/i+Ay9MVLQurI1eZ68M19wggofxgnd2wusorpO7HmXERN8+7xLsARxzjBKY
+         M7pT/42O5VIkzpecoeuQo5n1LO2mx8fSJAWva1Caj9LyW7V6ZD4vOO99pJMvJ4yqruKp
+         lVH3zv8t2Nd4tZkxuCW01ls+CjVg/CxaxavrGHj7HdwSKHEExzSod9WsAgI0vVPrmU3z
+         OZU76A7+DEmBIy7ijrtXCz0xxU9CUI0XI81wQxtzXPeMEXNcZ/8OW7NLiMn0YzJOJHQR
+         AAhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680190347; x=1682782347;
+        d=1e100.net; s=20210112; t=1680190350; x=1682782350;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=eJvFJnvniGp0mqyhPlqKU3t25JZ/J4PuAS7zcipJUK8=;
-        b=5Ck2b3T5gDYpZVGtmZcoyy9v6RAo72W5ZD7oEIdiHKk/n2CAs8VEf9szehsJa8Y+tv
-         5RhlkUtP49JhpiTbVsuWGp3FMFthv7HulQ7j2yJIaXaujijC+SDtH/VRyRYjWpyVhTgs
-         lUl+e7nYtDoDFwPW+uqwYrCho+wVpsqgxsNxDvV/+5d4jXkuHvNHrXja/6P7Auv+js6+
-         yoL4p7O5QMGqvQnkquKoSotADPXpSBWEdzzQUREAcUU/Y1MCPj0y5LxIJ9EWo6b1WnDc
-         rTGBrskvWhutUUpjpJO9rHJwuoH9exWwgNofd6y73ujZQiHUREy34fZ0oj07n5Hcffe/
-         N8ow==
-X-Gm-Message-State: AO0yUKVeeTAKJ/mpLWGEDkMfbYNoMIJEJ/iVUNOTJV7XDeCVHDujOU9G
-        r1vuYkl31UCk1vWCopgTzKydRg==
-X-Google-Smtp-Source: AK7set8gqEWaSRxexJRd55u6f3dBkognoejNZ3IZgXn/8mY+C3luS8+jvlx4gDBTTU4WXpu5fwkb3w==
-X-Received: by 2002:a05:600c:2049:b0:3df:e6bb:768 with SMTP id p9-20020a05600c204900b003dfe6bb0768mr17641251wmg.24.1680190347040;
-        Thu, 30 Mar 2023 08:32:27 -0700 (PDT)
+        bh=0F5PdgLvylrURdh5hYAlaRFmfzBMWK9DNwfEkmKI090=;
+        b=jWCrHB403cevLZ9A/R+TOPvbJ/nf8MWREydpsFyJwghmHcc/28bPsZazH/V5Dpzsyb
+         PC4SbeaMtD3vubA1ocTie2WGfxC5X+IWQmW/JPRggkCSwjPJx1Lkwxkgon5XHtnOEKqS
+         uPF8/DsL6EMZE/zAhMf3oi0Vh6bvMjy+uroLkeXdmdN5ZxsTH48B55mrHzyWzIzEzClw
+         vAnCK1HCjYkjBUbGddpq0Nc8TUNOeBh0etKiwP03UaAaKkU4X4Qwa4Dy3IAtIrNvsLhs
+         XJ00dIAqOjck9tp5+PFITHIXeENSHt/CA/w8WjZrdE8t4JtuL8I6R5PttS2lCsnMIkVC
+         jdqA==
+X-Gm-Message-State: AAQBX9fHsBOMnpVHrifjEO+vN2b0TUJTe9G8ZIfvFhwooKNdlcPmfqgh
+        ouDT7OM++Oi4B+2VdfkT8vDGHQ==
+X-Google-Smtp-Source: AKy350YMP4SIEXURx0JeulnjQY3Giw7sndbOUgFG3rNVeviCEb+dgF+e5Hc8eTpT1XwcXhH3qt+lzg==
+X-Received: by 2002:a5d:63c1:0:b0:2cf:e8d2:b550 with SMTP id c1-20020a5d63c1000000b002cfe8d2b550mr18745498wrw.14.1680190350497;
+        Thu, 30 Mar 2023 08:32:30 -0700 (PDT)
 Received: from sagittarius-a.chello.ie (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
-        by smtp.gmail.com with ESMTPSA id b7-20020a5d4b87000000b002cfe0ab1246sm33151794wrt.20.2023.03.30.08.32.25
+        by smtp.gmail.com with ESMTPSA id b7-20020a5d4b87000000b002cfe0ab1246sm33151794wrt.20.2023.03.30.08.32.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Mar 2023 08:32:26 -0700 (PDT)
+        Thu, 30 Mar 2023 08:32:29 -0700 (PDT)
 From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
         djakov@kernel.org, robh+dt@kernel.org,
@@ -57,11 +57,10 @@ Cc:     bryan.odonoghue@linaro.org, linux-arm-msm@vger.kernel.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, benl@squareup.com,
         shawn.guo@linaro.org, fabien.parent@linaro.org, leo.yan@linaro.org,
-        dmitry.baryshkov@linaro.org, stephan@gerhold.net,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v8 1/5] dt-bindings: vendor-prefixes: Add Square
-Date:   Thu, 30 Mar 2023 16:32:18 +0100
-Message-Id: <20230330153222.2875121-2-bryan.odonoghue@linaro.org>
+        dmitry.baryshkov@linaro.org, stephan@gerhold.net
+Subject: [PATCH v8 3/5] arm64: dts: qcom: Add msm8939-pm8916.dtsi include
+Date:   Thu, 30 Mar 2023 16:32:20 +0100
+Message-Id: <20230330153222.2875121-4-bryan.odonoghue@linaro.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230330153222.2875121-1-bryan.odonoghue@linaro.org>
 References: <20230330153222.2875121-1-bryan.odonoghue@linaro.org>
@@ -71,27 +70,109 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add vendor prefix for Square (https://squareup.com).
+From: Stephan Gerhold <stephan@gerhold.net>
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+The msm8939-pm8916.dtsi include configures the regulator supplies of
+MSM8939 used together with PM8916, as recommended by Qualcomm. In rare
+cases where boards deviate from the recommended design they can just
+avoid using this include.
+
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 ---
- Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi | 82 ++++++++++++++++++++
+ 1 file changed, 82 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi
 
-diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-index 5b7795766eab4..bd35c75b97dff 100644
---- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
-+++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-@@ -1257,6 +1257,8 @@ patternProperties:
-     description: SpinalHDL
-   "^sprd,.*":
-     description: Spreadtrum Communications Inc.
-+  "^square,.*":
-+    description: Square
-   "^ssi,.*":
-     description: SSI Computer Corp
-   "^sst,.*":
+diff --git a/arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi
+new file mode 100644
+index 0000000000000..18a1b3cca01d6
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/msm8939-pm8916.dtsi
+@@ -0,0 +1,82 @@
++// SPDX-License-Identifier: GPL-2.0-only
++
++#include "msm8939.dtsi"
++#include "pm8916.dtsi"
++
++&dsi0 {
++	vdda-supply = <&pm8916_l2>;
++	vddio-supply = <&pm8916_l6>;
++};
++
++&dsi1 {
++	vdda-supply = <&pm8916_l2>;
++	vddio-supply = <&pm8916_l6>;
++};
++
++&dsi_phy0 {
++	vddio-supply = <&pm8916_l6>;
++};
++
++&dsi_phy1 {
++	vddio-supply = <&pm8916_l6>;
++};
++
++&mpss {
++	pll-supply = <&pm8916_l7>;
++};
++
++&pronto {
++	vddpx-supply = <&pm8916_l7>;
++
++	iris {
++		vddxo-supply = <&pm8916_l7>;
++		vddrfa-supply = <&pm8916_s3>;
++		vddpa-supply = <&pm8916_l9>;
++		vdddig-supply = <&pm8916_l5>;
++	};
++};
++
++&sdhc_1 {
++	vmmc-supply = <&pm8916_l8>;
++	vqmmc-supply = <&pm8916_l5>;
++};
++
++&sdhc_2 {
++	vmmc-supply = <&pm8916_l11>;
++	vqmmc-supply = <&pm8916_l12>;
++};
++
++&usb_hs_phy {
++	v1p8-supply = <&pm8916_l7>;
++	v3p3-supply = <&pm8916_l13>;
++};
++
++&rpm_requests {
++	smd_rpm_regulators: regulators {
++		compatible = "qcom,rpm-pm8916-regulators";
++
++		/* pm8916_s1 is managed by rpmpd (MSM8939_VDDMDCX) */
++		/* pm8916_s2 is managed by rpmpd (MSM8939_VDDCX) */
++		pm8916_s3: s3 {};
++		pm8916_s4: s4 {};
++
++		pm8916_l1: l1 {};
++		pm8916_l2: l2 {};
++		/* pm8916_l3 is managed by rpmpd (MSM8939_VDDMX) */
++		pm8916_l4: l4 {};
++		pm8916_l5: l5 {};
++		pm8916_l6: l6 {};
++		pm8916_l7: l7 {};
++		pm8916_l8: l8 {};
++		pm8916_l9: l9 {};
++		pm8916_l10: l10 {};
++		pm8916_l11: l11 {};
++		pm8916_l12: l12 {};
++		pm8916_l13: l13 {};
++		pm8916_l14: l14 {};
++		pm8916_l15: l15 {};
++		pm8916_l16: l16 {};
++		pm8916_l17: l17 {};
++		pm8916_l18: l18 {};
++	};
++};
 -- 
 2.39.2
 
