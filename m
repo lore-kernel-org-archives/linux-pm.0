@@ -2,194 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F020C761A6
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 14:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 362F5C6FD1D
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 15:29:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231367AbjC3ONi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Mar 2023 10:13:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37312 "EHLO
+        id S232991AbjC3P3b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Mar 2023 11:29:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53130 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231151AbjC3ONh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 10:13:37 -0400
-Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on2049.outbound.protection.outlook.com [40.107.95.49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6177510F3;
-        Thu, 30 Mar 2023 07:13:36 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=no8/vFkEShT1DlrODsdutv/cfKdaC6DK59NbW0FivukP2Usz/EQdyIx4FZ5EUMi2kNKWdTm7X9idvvvBi8pFLLm8CIhaG2Yw358EidbqsuDpLX2AQMY2DxQ/s7vSGtNDpQrLkMCcvtlszBrki/ibhwn/PjTgtb6wojY6wr4pA689GykZ4W05YaBfg8Mz2YTqBuBqBAbFFU5XYLSMLJsO3ZLYm+nxanJ8d7KUEHWvhpEekJrjd5AoKhamxpwTX68pRUkZSnFHCsr6o3xpuAoXEwTPvusO150dzbX3VeXlKJDrJ7nuSzVLh90pZ4nLCfkQbYte1A/MPw15HR4wv+e2iw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=6J2TrDscKltltWqslsVfweVH44pnBjX/NbaM33yhoss=;
- b=fMNn/F7aB3Qc8ryIPjjBcwWiviMOqKusfd8/po90WtXeu2IHaE63eSYJ6eF4uFfvJJEmjuJh/S6yVUBYNpJrtb66Caps3QIIjCt5nm4gxEtVnbVsLq8NM3N9CCo6GEwZ6M2jZXlBiWDZrMM3ep8uY+pBKLfjjtli6Lvr+9s2/ZADMFovjhlQAI+LBAZiIiWrgZic5AoHIopkcqygnzDXF7V8jZhYFVnTaPImn8Z/bhwXCEHrXhWesY5/Lylt0KqqkzcZoo6wCrQJuUnpp3CGJjZgLUjmTnoNli4/uqas4elfqn1T1E8kBBncvBWr0rLjXrs3oyyrGrIW/BrpQnlINw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=6J2TrDscKltltWqslsVfweVH44pnBjX/NbaM33yhoss=;
- b=QNr6dGQtZfHnk0cUgoJVm7zLx4hE7zcRDAVgDHSOnBTna0gOyRhbk3mg/pUFD5fwVghMCi2qNv/Em8993X/4zw+6gO4M/q/XqKPwr0PmMIuGw8XlRZpbDOxnQBCc45meJ8leiQ+NHrR9YNJCTcrH1F+9QbdHGGPnsDEWX18AgxE=
-Received: from MW4PR04CA0296.namprd04.prod.outlook.com (2603:10b6:303:89::31)
- by DS7PR12MB6261.namprd12.prod.outlook.com (2603:10b6:8:97::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6222.33; Thu, 30 Mar
- 2023 14:13:33 +0000
-Received: from CO1NAM11FT046.eop-nam11.prod.protection.outlook.com
- (2603:10b6:303:89:cafe::a7) by MW4PR04CA0296.outlook.office365.com
- (2603:10b6:303:89::31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.20 via Frontend
- Transport; Thu, 30 Mar 2023 14:13:33 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- CO1NAM11FT046.mail.protection.outlook.com (10.13.174.203) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6254.22 via Frontend Transport; Thu, 30 Mar 2023 14:13:33 +0000
-Received: from beas.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 30 Mar
- 2023 09:13:29 -0500
-From:   Wyes Karny <wyes.karny@amd.com>
-To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>, <ray.huang@amd.com>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        Wyes Karny <wyes.karny@amd.com>,
-        Alexey Kardashevskiy <aik@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Perry Yuan <Perry.Yuan@amd.com>
-Subject: [PATCH] amd-pstate: Fix amd_pstate mode switch
-Date:   Thu, 30 Mar 2023 14:13:14 +0000
-Message-ID: <20230330141314.1364083-1-wyes.karny@amd.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S232867AbjC3P3Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 11:29:24 -0400
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C761E07C
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 08:29:05 -0700 (PDT)
+Received: by mail-wm1-x333.google.com with SMTP id m6-20020a05600c3b0600b003ee6e324b19so12057276wms.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 08:29:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1680190132;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=dGsCmW7EUS3nfy+7BnW+WgqTabyFkZU2nitm+ST7mKI=;
+        b=gfO4wBAMcJ8t0kHqH3xynuzyyJtZvI+YL4+NG4UxqIGIKLSk/xeTl9+QRt0iGEMX78
+         lQuRe1xmTJx/kG4vG/MRGVaWIzpRw4kxDOewTMPZ3zQZOrnYPQUv1elti0HcD6zry7iE
+         QpFJlXVAw/c0/QOdVRskbll0h55wlArViYWeAxqpnFZaq14KttfJuCEzqqL4Ic+KdNeZ
+         vGMKORaRMZUmXug8ZScqebP7bntofChz5sdm1Y8o+Q+ojC8BcpbzprXgt3Zr45HhqhW6
+         Uo51KawFOXgSypTUNxCjaszoGWxh05pyb1jB5kL7NQM7g+ZHZv3Ri7ISt/sK7ZvPadGS
+         xFZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680190132;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dGsCmW7EUS3nfy+7BnW+WgqTabyFkZU2nitm+ST7mKI=;
+        b=Xya9uMeqgswwwQ+O6ASskwUelzVI2jUdmkeCG+Qbu4ychwlSUR9BzLWz6/g7v0HUzR
+         3be9KD0bt3o+IDnPbGMFCZN9rlNcB9JopBlT2JsOph7tP6GzKj3qE3gkMpTBtcYYVc95
+         doCcbLPomb2qyAFM1vW4XhNsKVHQxm7R6OUxgZ8b60+VUnd8d+OfWn4rh6w9eT6givXB
+         Ao+u95B9J0aTdwR2glX5PAkBICLotlu6kS6ck+kSsm9Hg3RPEWhAYgBjDiGDHjW/fz4m
+         qzkKr29XeScUY8hrGSeeIsf8zFF6AShN4ddhaPEOhYKP1KlMfN8GlV2aRN2AELbdsf0M
+         39Gg==
+X-Gm-Message-State: AO0yUKXVeUmrXX0L38lfIHT+S5RNjs+8lVUqqQICOtAC/PIS7jMgV57x
+        2xu8IbyxLisqdACnqiATkAdY/gQ5HwxNLuBF73I=
+X-Google-Smtp-Source: AK7set9JBCqQOXk+u/rw68P8YwukfO3REwzC5Umey4FtmvcIbY6E6CbTxzim81BNiRT8Js8+wSeCng==
+X-Received: by 2002:a7b:cc98:0:b0:3ed:2702:feea with SMTP id p24-20020a7bcc98000000b003ed2702feeamr16821936wma.41.1680190132118;
+        Thu, 30 Mar 2023 08:28:52 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:9ee7:40a0:eee0:62cc? ([2a05:6e02:1041:c10:9ee7:40a0:eee0:62cc])
+        by smtp.googlemail.com with ESMTPSA id s15-20020a05600c45cf00b003eb2e33f327sm13485297wmo.2.2023.03.30.08.28.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 30 Mar 2023 08:28:51 -0700 (PDT)
+Message-ID: <95fce357-87f5-93b2-c57f-f561a79dfc34@linaro.org>
+Date:   Thu, 30 Mar 2023 17:28:50 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [RESEND] [PATCHv3 1/7] thermal: rockchip: Simplify getting match
+ data
+Content-Language: en-US
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Heiko Stuebner <heiko@sntech.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@collabora.com
+References: <20230308112253.15659-1-sebastian.reichel@collabora.com>
+ <20230308112253.15659-2-sebastian.reichel@collabora.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20230308112253.15659-2-sebastian.reichel@collabora.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1NAM11FT046:EE_|DS7PR12MB6261:EE_
-X-MS-Office365-Filtering-Correlation-Id: 30bc3186-53ec-40aa-b1c6-08db3128f22f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: j9FAAWVpw7DVYc+43Pm20YC/4GECdLLD4oFrv7jZtoZuYDUwtOVa+XzbPtmyhbZ7ZDEpaVkn1cRVPcrj87nzsbybvmmUidaQjB07JB1R4HtxD6o48Em7BAHFQb/De/98EEydRbdFeicA01txR+JSg1q+3WvXACd3if1TbyJUQITlQU9ninuiPWBeG1Q22/qfuD3wv+wZLcbgSiqt3hVK8ffHh222Q6Ggx2l/iN5CyFRqLWpk6yfNHN8687tmzztWnlvaC7zcKxmysVg0t2y6b9I5fn3tK+l8p9qCelyLcLxGs4dJ82W0CxfjpZTgvY9zGcmUDgxoXVx+cz+7fNvI/07MGN/XNJzKCMHr0LVMvftg+07uZdpJabjWV2rMnNfvSz4rrZPC6WAzPVmM4AQcB/0VEN+Qw+hWGv3XhE7CdtRYfmxqgIuzE9eT2caLd1PRaKxDjvdv46hr7qOStn1PbmsjYJeDHc1MmC/DN9u/47KNWySF12/aWCN6KirxjvzvK+xpSDJ2l9MVjQOfY62jgNYS2/7Tfh5DdFIhb62Q19JUloqQR4m91foUucBC10pFhDefefpWMdWBbGjo/7dlHaUGEXVESYiIDpfKlb0EC2emvuvRgrhC8MvWGtQnc5+1Zfvd1mOD1zdGZSr22w64aV0EfeaYFjJjKBhTNm/cZ3WOij46+zsaLjhbL1kZjMf5RfOCDK/mNEfJjG1XNTFnp1dyqwi4pj3xvPCW07+GD14=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(136003)(39860400002)(396003)(376002)(346002)(451199021)(40470700004)(36840700001)(46966006)(16526019)(2906002)(5660300002)(44832011)(82310400005)(7696005)(40460700003)(316002)(8676002)(6636002)(110136005)(36756003)(70586007)(70206006)(54906003)(36860700001)(4326008)(478600001)(40480700001)(82740400003)(41300700001)(83380400001)(356005)(81166007)(2616005)(186003)(86362001)(6666004)(1076003)(26005)(8936002)(426003)(336012)(47076005)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Mar 2023 14:13:33.3159
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 30bc3186-53ec-40aa-b1c6-08db3128f22f
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT046.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB6261
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-amd_pstate mode can be changed by writing the mode name to the `status`
-sysfs. But some combinations are not working. Fix this issue by taking
-care of the edge cases.
+On 08/03/2023 12:22, Sebastian Reichel wrote:
+> It's possible to directly get the match data in a generic
+> way nowadays.
+> 
+> Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> ---
 
-Before the fix the mode change combination test fails:
+Applied, thanks
 
- #./pst_test.sh
-Test passed: from: disable, to
-Test passed: from: disable, to disable
-Test failed: 1, From mode: disable, to mode: passive
-Test failed: 1, From mode: disable, to mode: active
-Test failed: 1, From mode: passive, to mode: active
-Test passed: from: passive, to disable
-Test failed: 1, From mode: passive, to mode: passive
-Test failed: 1, From mode: passive, to mode: active
-Test failed: 1, From mode: active, to mode: active
-Test passed: from: active, to disable
-Test failed: 1, From mode: active, to mode: passive
-Test failed: 1, From mode: active, to mode: active
 
-After the fix test passes:
-
- #./pst_test.sh
-Test passed: from: disable, to
-Test passed: from: disable, to disable
-Test passed: from: disable, to passive
-Test passed: from: disable, to active
-Test passed: from: passive, to active
-Test passed: from: passive, to disable
-Test passed: from: passive, to passive
-Test passed: from: passive, to active
-Test passed: from: active, to active
-Test passed: from: active, to disable
-Test passed: from: active, to passive
-Test passed: from: active, to active
-
-Fixes: abd61c08ef349 ("cpufreq: amd-pstate: add driver working mode switch support")
-
-Acked-by: Huang Rui <ray.huang@amd.com>
-Reviewed-by: Alexey Kardashevskiy <aik@amd.com>
-Signed-off-by: Wyes Karny <wyes.karny@amd.com>
-
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mario Limonciello <mario.limonciello@amd.com>
-Cc: Perry Yuan <Perry.Yuan@amd.com>
-
----
- drivers/cpufreq/amd-pstate.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 73c7643b2697..8dd46fad151e 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -840,22 +840,20 @@ static int amd_pstate_update_status(const char *buf, size_t size)
- 
- 	switch(mode_idx) {
- 	case AMD_PSTATE_DISABLE:
--		if (!current_pstate_driver)
--			return -EINVAL;
--		if (cppc_state == AMD_PSTATE_ACTIVE)
--			return -EBUSY;
--		cpufreq_unregister_driver(current_pstate_driver);
--		amd_pstate_driver_cleanup();
-+		if (current_pstate_driver) {
-+			cpufreq_unregister_driver(current_pstate_driver);
-+			amd_pstate_driver_cleanup();
-+		}
- 		break;
- 	case AMD_PSTATE_PASSIVE:
- 		if (current_pstate_driver) {
- 			if (current_pstate_driver == &amd_pstate_driver)
- 				return 0;
- 			cpufreq_unregister_driver(current_pstate_driver);
--			cppc_state = AMD_PSTATE_PASSIVE;
--			current_pstate_driver = &amd_pstate_driver;
- 		}
- 
-+		current_pstate_driver = &amd_pstate_driver;
-+		cppc_state = AMD_PSTATE_PASSIVE;
- 		ret = cpufreq_register_driver(current_pstate_driver);
- 		break;
- 	case AMD_PSTATE_ACTIVE:
-@@ -863,10 +861,10 @@ static int amd_pstate_update_status(const char *buf, size_t size)
- 			if (current_pstate_driver == &amd_pstate_epp_driver)
- 				return 0;
- 			cpufreq_unregister_driver(current_pstate_driver);
--			current_pstate_driver = &amd_pstate_epp_driver;
--			cppc_state = AMD_PSTATE_ACTIVE;
- 		}
- 
-+		current_pstate_driver = &amd_pstate_epp_driver;
-+		cppc_state = AMD_PSTATE_ACTIVE;
- 		ret = cpufreq_register_driver(current_pstate_driver);
- 		break;
- 	default:
 -- 
-2.34.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
