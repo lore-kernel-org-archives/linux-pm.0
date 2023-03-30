@@ -2,188 +2,321 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DD6CC77B70
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 19:45:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95597C6FD1D
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 19:51:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231804AbjC3TpZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Mar 2023 15:45:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45124 "EHLO
+        id S231433AbjC3TvY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Mar 2023 15:51:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231585AbjC3TpC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 15:45:02 -0400
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on2084.outbound.protection.outlook.com [40.107.220.84])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E1FBEFB8;
-        Thu, 30 Mar 2023 12:45:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=LT+DiyOwMHhz5EPWsHvBu9/Rpvv+ue1YpKHddyOFEueDlKZogQUlBsQR6Yashvat0Xi8dfV0kiDH/9bz4YQtr+2AsNjiTtETxJcK4tZGE0gMeIy+m0+hU2NjkFs8YN6+LKGY2WZyyI2ZOUDdw7arOqCrR7zZwlhL/EASkm4T33kgFuAyf6BVludv7CSoJPSetHHqOBB76OKduL9PE6p0EXl1HCLlO4oeTYh/YQu3WsuczChyYpAz1ukabtjJi2oKj5ugBU1KXf5e42zpv/q05+sf1S14raJTLph8TRD3123TewOIyjFEsUd7B/P5RAy1NAfm7YlsnbGmNRAl7czeyA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ufn8iPJCn4WCcxjd+crM3jNLBZ9f/9yk35ufgrRnb5U=;
- b=hXT6hKYvptTL4ChaxS+lBXkJgq6Ls6HagKn1PD5Xp6hJX3jtPs0r3wTEEp0SDaJGrdJHAP98mrDDoSlAfScZ1saYPFgrh9AvEzVeFew+PvD+GPvJ6TAqcYsMz+Gq1zFjAYx9X7I8YSAdfkF00I7mkTKG88W2ikA/1zcv0oyysphua3lADiNcpPCAT41++4SbEJRWRiXDW2ICBwwpyksD6TU1JWcdqzBEiP3sF+BNppE3anPB+f3WKi29rKL5QAy6Bv2DIoQoms9sR4SdM6wyyUYTvxTxbWEilc1rQNnJ3brd8x6GlAJPs8HYz11kLaXlwSNvRY/WVHqiOgHrp5hVOQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=chromium.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ufn8iPJCn4WCcxjd+crM3jNLBZ9f/9yk35ufgrRnb5U=;
- b=1AheRUrUC7r8Pe5/M1UbdagsCdLlbsUTTqX9GwdFM4XWXH3MQt7uX0EQdN8K3ajZ0ujYi+GNtMC9YjW0XikFHXXwoMWsCGx8HA2tYU1bHf1HohIz/a7qfg/FuAMTxg1qcCbglP+OIngpNoLman0NLcKoOOtf/c9cJA4T60x3unQ=
-Received: from DM6PR11CA0048.namprd11.prod.outlook.com (2603:10b6:5:14c::25)
- by DS0PR12MB8502.namprd12.prod.outlook.com (2603:10b6:8:15b::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.22; Thu, 30 Mar
- 2023 19:44:59 +0000
-Received: from DS1PEPF0000E63D.namprd02.prod.outlook.com
- (2603:10b6:5:14c:cafe::bb) by DM6PR11CA0048.outlook.office365.com
- (2603:10b6:5:14c::25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.20 via Frontend
- Transport; Thu, 30 Mar 2023 19:44:59 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- DS1PEPF0000E63D.mail.protection.outlook.com (10.167.17.75) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6178.30 via Frontend Transport; Thu, 30 Mar 2023 19:44:59 +0000
-Received: from AUS-LX-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 30 Mar
- 2023 14:44:57 -0500
-From:   Mario Limonciello <mario.limonciello@amd.com>
-To:     Sven van Ashbrook <svenva@chromium.org>,
-        John Stultz <jstultz@google.com>,
-        Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
-        David E Box <david.e.box@intel.com>
-CC:     Raul Rangel <rrangel@chromium.org>,
-        Rajat Jain <rajatja@google.com>,
-        "S-k Shyam-sundar" <Shyam-sundar.S-k@amd.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        <linux-kernel@vger.kernel.org>,
-        <platform-driver-x86@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Mark Gross <markgross@kernel.org>
-Subject: [PATCH v5 3/4] platform/x86/intel/pmc: core: Always capture counters on suspend
-Date:   Thu, 30 Mar 2023 14:44:37 -0500
-Message-ID: <20230330194439.14361-4-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230330194439.14361-1-mario.limonciello@amd.com>
-References: <20230330194439.14361-1-mario.limonciello@amd.com>
+        with ESMTP id S231417AbjC3TvX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 15:51:23 -0400
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52B2749E3
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 12:51:21 -0700 (PDT)
+Received: by mail-pg1-x532.google.com with SMTP id x37so12069464pga.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2023 12:51:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112; t=1680205881;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=B2KkKqSokarGzXyvNEiBBLEjwsvtzgAMOVE94PKyWD4=;
+        b=jblTpS57i+2qud1N3ZeARD/kLDam7ssMfSuc49oUZusL5RWH3zfQtd4ssUo5hFZ36z
+         1LZx1C4T2zWor2eM4VadNdp7Ir8myhwEhm4y8N5XaOA4bqzz17DUb6OpfQTHi9blehEQ
+         m84ZbM/jU5ws4652ddOnuVLHm/5pmSfUzIXsg46LqxC+i1L2M0PwrmrPc63O4EPC4YRf
+         xBJS54AmX//tZynU4RmqACTh39CRIE8KhlJriX1VDr+Z6g+Ak/Q//93qktcgUxofkDln
+         vzVBbN6mopaR+CZwv4mYwGQ7Nk9oar/8mia54z7qHRbghF1tQ0+Su6olQxga2OGwuAs8
+         0nfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680205881;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=B2KkKqSokarGzXyvNEiBBLEjwsvtzgAMOVE94PKyWD4=;
+        b=T1TCEpj8hauC8S4KgdroLh1Cx7Hf7YCEqgYZQNw4inRiAbM2w2WxsHSlIp2qcUA2kB
+         4ThTBuPQ8+LEbYqYCEWMMQtRgnoNu8LHxLdlBT2Xkz4mrQgylvV9Nki/K+X+6/kj3NzT
+         mgZYJ3zp9wFX82s71TVAKYa0MzNplXdf41txhxUlYNjClJYDQLPP5H2Zsed5rHquWhHU
+         0pJMBys6lZQj/Xy5HsI95MRLh9TGWkvzbz3tTLbAB/DRqvetX9AtnxfkrNLoiOtX/m3h
+         N58NPcqVh7bB/w5/uHew7li7PZn5Gj39snQ4zAH3lmePaWecKkpsyA9kcYE9dlOZ/CDd
+         ZGnw==
+X-Gm-Message-State: AAQBX9ePkHPB8valgd7UeAD4mTSOOIZZcikT1+kMM38cZEFfdyuvSS5i
+        6lLJgJaVdqAm9H6qkZDtF5VKmJDCXLF97+dHp2NsvQ==
+X-Google-Smtp-Source: AKy350YljZg0LAJ1pGauRJH9Ug9x1zpWp1FCNUw1cQIIYVmoHx0TjmmxrQsLPEF80/N7Q2v7bpghrRyPhMXzy8oZRjM=
+X-Received: by 2002:a05:6a00:1a8b:b0:627:d4fa:6a9c with SMTP id
+ e11-20020a056a001a8b00b00627d4fa6a9cmr13061941pfv.6.1680205880504; Thu, 30
+ Mar 2023 12:51:20 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS1PEPF0000E63D:EE_|DS0PR12MB8502:EE_
-X-MS-Office365-Filtering-Correlation-Id: 76967357-d463-461c-26a7-08db31573f04
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: n3pQzI7J/h5HtyWkU693WfbdcbjZCuKh85hPx2ZY/iQVMJhYQgYek/7ysC24LPiyF/x1D7wF76W6+GjE0mGwxfGvmg9U5wCFCGvaLzhdQlWbIcS86WGb9/lx41SSh0d2fFgclroe4PnL8ypmbIzhmR0WVPE++g/jiZeuANqheSv/s1yfG2MEYb1Alc7CN9vb6N38pd4UXnfdCDBRwM7w8+de5mGgAGCS06u0WTrTgfMeMriSIvVZBffWkAqEVKtpT7lmCyd0VEipu46lwrA0uB0velTpgA50ZlLa+fHq2q76xRxuyj4ssqahHa3jyVNIqosgNOK7h+vw8H2JmMTdBcStipFQmi3YJoD5eRKjyOOg4T0Chx7AQ+7kZM/pKsaylVsaMQpNBW00lvEMmlx4/9tgxvmveHWmZUGA/nwVONtlXNbtAWj4izLM/IdrK8D0uxqEZjzHWCtJZDmH3skcn+HBgHWBmjH1VBC81PxhNNJ6CCtIKEGdb1P871Hvc4yXE/w3xqZQOZEPDQMXtMprKU8uMZXLghmakodD+08z+39NEsaCWt9A5koePok1NSxCxyPmEyBs9FoIPpyIOU7azKU8k68V8A4HaQTeIY+oaIk5k7ckcK+Qr4lBzuNQVW8Qb3rfyItQeJa4wWj5JRZWs2C2WiTWce9EKcDpdCZN4I2aedNYEY60EitdreOlTq934RvZSauicNPVj7k2nLG03v1AjNU9PXh4g4M9TOx3jIM=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(136003)(396003)(346002)(376002)(39860400002)(451199021)(40470700004)(36840700001)(46966006)(1076003)(26005)(83380400001)(47076005)(40480700001)(6666004)(40460700003)(16526019)(2616005)(186003)(426003)(54906003)(336012)(316002)(110136005)(36860700001)(82310400005)(15650500001)(478600001)(7416002)(44832011)(2906002)(5660300002)(86362001)(70586007)(8676002)(4326008)(70206006)(8936002)(41300700001)(36756003)(82740400003)(7696005)(81166007)(356005)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Mar 2023 19:44:59.0490
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 76967357-d463-461c-26a7-08db31573f04
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: DS1PEPF0000E63D.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8502
+References: <20230327193829.3756640-1-abel.vesa@linaro.org>
+ <CAGETcx9f1p2esfyzyfU04EAB1FXh=d9-U81DaGyZNjL_Vti3oQ@mail.gmail.com> <ZCVyBuKMvDV0gQPW@linaro.org>
+In-Reply-To: <ZCVyBuKMvDV0gQPW@linaro.org>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Thu, 30 Mar 2023 12:50:44 -0700
+Message-ID: <CAGETcx-mxzzZ_FU6Agju9gMhFOEDhY6Rj78BnvAVJjNtZhif=w@mail.gmail.com>
+Subject: Re: [PATCH v3 0/4] Allow genpd providers to power off domains on sync state
+To:     Abel Vesa <abel.vesa@linaro.org>
+Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+        Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Mike Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        Doug Anderson <dianders@chromium.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Android Kernel Team <kernel-team@android.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently counters are only captured during suspend when the
-warn_on_s0ix_failures module parameter is set.
+On Thu, Mar 30, 2023 at 4:27=E2=80=AFAM Abel Vesa <abel.vesa@linaro.org> wr=
+ote:
+>
+> On 23-03-27 17:17:28, Saravana Kannan wrote:
+> > On Mon, Mar 27, 2023 at 12:38=E2=80=AFPM Abel Vesa <abel.vesa@linaro.or=
+g> wrote:
+> > >
+> > > There have been already a couple of tries to make the genpd "disable
+> > > unused" late initcall skip the powering off of domains that might be
+> > > needed until later on (i.e. until some consumer probes). The conclusi=
+on
+> > > was that the provider could return -EBUSY from the power_off callback
+> > > until the provider's sync state has been reached. This patch series t=
+ries
+> > > to provide a proof-of-concept that is working on Qualcomm platforms.
+> >
+> > I'm giving my thoughts in the cover letter instead of spreading it
+> > around all the patches so that there's context between the comments.
+> >
+> > 1) Why can't all the logic in this patch series be implemented at the
+> > framework level? And then allow the drivers to opt into this behavior
+> > by setting the sync_state() callback.
+> >
+> > That way, you can land it only for QC drivers by setting up
+> > sync_state() callback only for QC drivers, but actually have the same
+> > code function correctly for non-QC drivers too. And then once we have
+> > this functionality working properly for QC drivers for one kernel
+> > version (or two), we'll just have the framework set the device's
+> > driver's sync_state() if it doesn't have one already.
+>
+> I think Ulf has already NACK'ed that approach here:
+> [1] https://lore.kernel.org/lkml/CAPDyKFon35wcQ+5kx3QZb-awN_S_q8y1Sir-G+G=
+oxkCvpN=3DiiA@mail.gmail.com/
 
-In order to relay this counter information to the kernel reporting
-infrastructure adjust it so that the counters are always captured.
+I would have NACK'ed that too because that's an incomplete fix. As I
+said further below, the fix needs to be at the aggregation level where
+you aggregate all the current consumer requests. In there, you need to
+add in the "state at boot" input that gets cleared out after a
+sync_state() call is received for that power domain.
 
-warn_on_s0ix_failures will be utilized solely for messaging by
-the driver instead.
+> And suggested this new approach that this patch series proposes.
+> (Unless I missunderstood his point)
+>
+> >
+> > 2) sync_state() is not just about power on/off. It's also about the
+> > power domain level. Can you handle that too please?
+>
+> Well, this patchset only tries to delay the disabling of unused power
+> domains until all consumers have had a chance to probe. So we use sync
+> state only to queue up a power-off request to make sure those unused
+> ones get disabled.
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
-v4->v5:
- * Squash patches together
- * Add extra pm_suspend_via_firmware() check for resume routine too
----
- drivers/platform/x86/intel/pmc/core.c | 13 +++++--------
- drivers/platform/x86/intel/pmc/core.h |  2 --
- 2 files changed, 5 insertions(+), 10 deletions(-)
+Sure, but the design is completely unusable for a more complete
+sync_state() behavior. I'm okay if you want to improve the
+sync_state() behavior in layers, but don't do it in a way where the
+current design will definitely not work for what you want to add in
+the future.
 
-diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
-index 3a15d32d7644..e2f171fac094 100644
---- a/drivers/platform/x86/intel/pmc/core.c
-+++ b/drivers/platform/x86/intel/pmc/core.c
-@@ -1168,12 +1168,6 @@ static __maybe_unused int pmc_core_suspend(struct device *dev)
- {
- 	struct pmc_dev *pmcdev = dev_get_drvdata(dev);
- 
--	pmcdev->check_counters = false;
--
--	/* No warnings on S0ix failures */
--	if (!warn_on_s0ix_failures)
--		return 0;
--
- 	/* Check if the syspend will actually use S0ix */
- 	if (pm_suspend_via_firmware())
- 		return 0;
-@@ -1186,7 +1180,6 @@ static __maybe_unused int pmc_core_suspend(struct device *dev)
- 	if (pmc_core_dev_state_get(pmcdev, &pmcdev->s0ix_counter))
- 		return -EIO;
- 
--	pmcdev->check_counters = true;
- 	return 0;
- }
- 
-@@ -1222,12 +1215,16 @@ static __maybe_unused int pmc_core_resume(struct device *dev)
- 	const struct pmc_bit_map **maps = pmcdev->map->lpm_sts;
- 	int offset = pmcdev->map->lpm_status_offset;
- 
--	if (!pmcdev->check_counters)
-+	/* Check if the syspend used S0ix */
-+	if (pm_suspend_via_firmware())
- 		return 0;
- 
- 	if (!pmc_core_is_s0ix_failed(pmcdev))
- 		return 0;
- 
-+	if (!warn_on_s0ix_failures)
-+		return 0;
-+
- 	if (pmc_core_is_pc10_failed(pmcdev)) {
- 		/* S0ix failed because of PC10 entry failure */
- 		dev_info(dev, "CPU did not enter PC10!!! (PC10 cnt=0x%llx)\n",
-diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
-index 810204d758ab..51d73efceaf3 100644
---- a/drivers/platform/x86/intel/pmc/core.h
-+++ b/drivers/platform/x86/intel/pmc/core.h
-@@ -319,7 +319,6 @@ struct pmc_reg_map {
-  * @pmc_xram_read_bit:	flag to indicate whether PMC XRAM shadow registers
-  *			used to read MPHY PG and PLL status are available
-  * @mutex_lock:		mutex to complete one transcation
-- * @check_counters:	On resume, check if counters are getting incremented
-  * @pc10_counter:	PC10 residency counter
-  * @s0ix_counter:	S0ix residency (step adjusted)
-  * @num_lpm_modes:	Count of enabled modes
-@@ -338,7 +337,6 @@ struct pmc_dev {
- 	int pmc_xram_read_bit;
- 	struct mutex lock; /* generic mutex lock for PMC Core */
- 
--	bool check_counters; /* Check for counter increments on resume */
- 	u64 pc10_counter;
- 	u64 s0ix_counter;
- 	int num_lpm_modes;
--- 
-2.34.1
+> >
+> > 3) In your GDSC drivers, it's not clear to me if you are preventing
+> > power off until sync_state() only for GDSCs that were already on at
+> > boot. So if an off-at-boot GDSC gets turned on, and then you attempt
+> > to turn it off before all its consumers have probed, it'll fail to
+> > power it off even though that wasn't necessary?
+>
+> I think we can circumvent looking at a GDSC by knowing it there was ever
+> a power on request since boot. I'll try to come up with something in the
+> new version.
 
+Please no. There's nothing wrong with reading the GDSC values. Please
+read them and don't turn on GDSC's that weren't on at boot.
+
+Otherwise you are making it a hassle for the case where there is a
+consumer without a driver for a GDSC that was off at boot. You are now
+forcing the use of timeouts or writing to state_synced file. Those
+should be absolute last resorts, but you are making that a requirement
+with your current implementation. If you implement it correctly by
+reading the GDSC register, things will "just work". And it's not even
+hard to do.
+
+NACK'ed until this is handled correctly.
+
+>
+> >
+> > 4) The returning -EBUSY when a power off is attempted seems to be
+> > quite wasteful. The framework will go through the whole sequence of
+> > trying to power down, send the notifications and then fail and then
+> > send the undo notifications. Combined with point (2) I think this can
+> > be handled better at the aggregation level in the framework to avoid
+> > even going that far into the power off sequence.
+>
+> Again, have a look at [1] (above).
+
+See my reply above. If you do it properly at the framework level, this
+can be done in a clean way and will work for all power domains.
+
+-Saravana
+
+>
+> Ulf, any thoughts on this 4th point?
+>
+> >
+> > -Saravana
+> >
+> > >
+> > > I've been doing extensive testing on SM8450, but I've also spinned th=
+is
+> > > on my X13s (SC8280XP). Both patches that add the sync state callback =
+to
+> > > the SC8280XP and SM8450 are here to provide context. Once we agree on
+> > > the form, I intend to add the sync state callback to all gdsc provide=
+rs.
+> > >
+> > > Currently, some of the gdsc providers might not reach sync state due =
+to
+> > > list of consumers not probing yet (or at all). The sync state can be
+> > > enforced by writing 1 to the state_synced sysfs attribute of the
+> > > provider, thanks to Saravana's commit [1] which has been already merg=
+ed.
+> > >
+> > > [1] https://lore.kernel.org/r/20230304005355.746421-3-saravanak@googl=
+e.com
+> > >
+> > > V2 (RFC) of this patchset was here:
+> > > https://lore.kernel.org/all/20230320134217.1685781-1-abel.vesa@linaro=
+.org/
+> > >
+> > > Changes since v2:
+> > >  * renamed genpd_queue_power_off_work to pm_genpd_queue_power_off and=
+ added
+> > >    comment about its purpose w.r.t. it being exported.
+> > >  * added the qcom_cc generic sync state callback to all providers tha=
+t
+> > >    register GDSCs, instead of SM8450 and SC8280XP
+> > >
+> > > Changes since v1:
+> > >  * Added the qcom_cc sync state callback which calls in turn the gdsc=
+ one
+> > >  * dropped extra semicolon from pm_domain.h
+> > >
+> > > Abel Vesa (4):
+> > >   PM: domains: Allow power off queuing from providers
+> > >   soc: qcom: rpmhpd: Do proper power off when state synced
+> > >   clk: qcom: gdsc: Avoid actual power off until sync state
+> > >   clk: qcom: Add sync state callback to all providers
+> > >
+> > >  drivers/base/power/domain.c            | 18 ++++++++++--------
+> > >  drivers/clk/qcom/apss-ipq6018.c        |  1 +
+> > >  drivers/clk/qcom/camcc-sc7180.c        |  1 +
+> > >  drivers/clk/qcom/camcc-sc7280.c        |  1 +
+> > >  drivers/clk/qcom/camcc-sdm845.c        |  1 +
+> > >  drivers/clk/qcom/camcc-sm6350.c        |  1 +
+> > >  drivers/clk/qcom/camcc-sm8250.c        |  1 +
+> > >  drivers/clk/qcom/camcc-sm8450.c        |  1 +
+> > >  drivers/clk/qcom/common.c              | 19 +++++++++++++++++++
+> > >  drivers/clk/qcom/common.h              |  2 ++
+> > >  drivers/clk/qcom/dispcc-qcm2290.c      |  1 +
+> > >  drivers/clk/qcom/dispcc-sc7180.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sc7280.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sc8280xp.c     |  1 +
+> > >  drivers/clk/qcom/dispcc-sdm845.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sm6115.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sm6125.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sm6350.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sm6375.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sm8250.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sm8450.c       |  1 +
+> > >  drivers/clk/qcom/dispcc-sm8550.c       |  1 +
+> > >  drivers/clk/qcom/gcc-apq8084.c         |  1 +
+> > >  drivers/clk/qcom/gcc-ipq806x.c         |  1 +
+> > >  drivers/clk/qcom/gcc-ipq8074.c         |  1 +
+> > >  drivers/clk/qcom/gcc-mdm9615.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8660.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8909.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8916.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8939.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8953.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8960.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8974.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8976.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8994.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8996.c         |  1 +
+> > >  drivers/clk/qcom/gcc-msm8998.c         |  1 +
+> > >  drivers/clk/qcom/gcc-qcm2290.c         |  1 +
+> > >  drivers/clk/qcom/gcc-qcs404.c          |  1 +
+> > >  drivers/clk/qcom/gcc-qdu1000.c         |  1 +
+> > >  drivers/clk/qcom/gcc-sa8775p.c         |  1 +
+> > >  drivers/clk/qcom/gcc-sc7180.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sc7280.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sc8180x.c         |  1 +
+> > >  drivers/clk/qcom/gcc-sc8280xp.c        |  1 +
+> > >  drivers/clk/qcom/gcc-sdm660.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sdm845.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sdx55.c           |  1 +
+> > >  drivers/clk/qcom/gcc-sdx65.c           |  1 +
+> > >  drivers/clk/qcom/gcc-sm6115.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm6125.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm6350.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm6375.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm7150.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm8150.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm8250.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm8350.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm8450.c          |  1 +
+> > >  drivers/clk/qcom/gcc-sm8550.c          |  1 +
+> > >  drivers/clk/qcom/gdsc.c                | 26 ++++++++++++++++++++++++=
+++
+> > >  drivers/clk/qcom/gdsc.h                |  6 ++++++
+> > >  drivers/clk/qcom/gpucc-msm8998.c       |  1 +
+> > >  drivers/clk/qcom/gpucc-sc7180.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sc7280.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sc8280xp.c      |  1 +
+> > >  drivers/clk/qcom/gpucc-sdm660.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sdm845.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sm6115.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sm6125.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sm6350.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sm6375.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sm8150.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sm8250.c        |  1 +
+> > >  drivers/clk/qcom/gpucc-sm8350.c        |  1 +
+> > >  drivers/clk/qcom/lcc-ipq806x.c         |  1 +
+> > >  drivers/clk/qcom/lpassaudiocc-sc7280.c |  1 +
+> > >  drivers/clk/qcom/lpasscc-sc7280.c      |  1 +
+> > >  drivers/clk/qcom/lpasscorecc-sc7180.c  |  2 ++
+> > >  drivers/clk/qcom/lpasscorecc-sc7280.c  |  2 ++
+> > >  drivers/clk/qcom/mmcc-apq8084.c        |  1 +
+> > >  drivers/clk/qcom/mmcc-msm8974.c        |  1 +
+> > >  drivers/clk/qcom/mmcc-msm8994.c        |  1 +
+> > >  drivers/clk/qcom/mmcc-msm8996.c        |  1 +
+> > >  drivers/clk/qcom/mmcc-msm8998.c        |  1 +
+> > >  drivers/clk/qcom/mmcc-sdm660.c         |  1 +
+> > >  drivers/clk/qcom/videocc-sc7180.c      |  1 +
+> > >  drivers/clk/qcom/videocc-sc7280.c      |  1 +
+> > >  drivers/clk/qcom/videocc-sdm845.c      |  1 +
+> > >  drivers/clk/qcom/videocc-sm8150.c      |  1 +
+> > >  drivers/clk/qcom/videocc-sm8250.c      |  1 +
+> > >  drivers/soc/qcom/rpmhpd.c              | 19 +++++++------------
+> > >  include/linux/pm_domain.h              |  4 ++++
+> > >  92 files changed, 161 insertions(+), 20 deletions(-)
+> > >
+> > > --
+> > > 2.34.1
+> > >
