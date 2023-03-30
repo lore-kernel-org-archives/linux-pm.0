@@ -2,77 +2,105 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60DBEC761A6
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 10:10:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24FBAC761AF
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Mar 2023 10:34:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231189AbjC3KKc convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Mar 2023 06:10:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51044 "EHLO
+        id S229924AbjC3KeG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Mar 2023 06:34:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231191AbjC3KKb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 06:10:31 -0400
-Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C74A676A4;
-        Thu, 30 Mar 2023 03:10:30 -0700 (PDT)
-Received: by mail-ed1-f48.google.com with SMTP id h8so74334222ede.8;
-        Thu, 30 Mar 2023 03:10:30 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680171029;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=BDdNsyWqne+9Tfes3d7A/XkvFVpCBqtgOlpWLUY3XzQ=;
-        b=vl9NL5ZBWVYy6JbiXXan2N9yPA6GThbkaeA3cTA+OwUdXONBHhxVMDqu/DqDdluySf
-         hFOob5pyvZ8PlwoArs5BoPInDSjRMWWdVGVueHRDqnByhhG3pJyqg5zo1YEXEBdLRF78
-         pj8dA5AlWnGVC9ZdmECzxw2IOHiObXnCNEZxQFoHsVbHDOppxaSHgKFlpo8s1Lc0mKX5
-         rM8Ky6Xrm0R2oOORTQTuYKW/stjESxWEaqn6VEvsIYlJ1LU0x5Hvbs5avYnWOFknuf7g
-         MUl9BRTdFeG40gctNHp0Xs8KjMwpyFvficxSKxbgxn1A/jtSmUhhixqeVMgZ/JVqFSZQ
-         +qfA==
-X-Gm-Message-State: AAQBX9dHD68IDZ7Q1QlzLIoxsLvYTwMwOA3WqoAust9AHTP6QaqZXgAH
-        ID3SV46eGwhiDqcfDKACPvWg2lT3sJPMVIeB7E+jVsXD
-X-Google-Smtp-Source: AKy350Y4AcRU/Tt3JhFD3HUel3NqUJEPN/iuQgQP/6Bl3WvR0fmUP0+4R8mGIxxYk11mAyi1toRAAOBQXDL1+LLfczk=
-X-Received: by 2002:a17:907:3e8b:b0:931:ce20:db6e with SMTP id
- hs11-20020a1709073e8b00b00931ce20db6emr12652089ejc.2.1680171029187; Thu, 30
- Mar 2023 03:10:29 -0700 (PDT)
+        with ESMTP id S230401AbjC3KeA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2023 06:34:00 -0400
+Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B0DC240C8;
+        Thu, 30 Mar 2023 03:33:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
+        s=20161220; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:
+        Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
+        Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+        In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+        List-Post:List-Owner:List-Archive;
+        bh=W0nW0vQLM7G/2/2VIeK8J7D28U5u8Jc7f3i4je1IBPI=; b=J+tlZn+jVHSD//mSIQllBB2cQV
+        uC95+Onna9Su0RG4BPi6Zv/0N4pET4/TZzYJkOyDpaj+lM7NKQD4FTn7/AGurFv1YdG0lye8AO247
+        QqM8jChJLdKh3t929x+yc+ZlM04TlwxJnOb2H6JWZQBtXbBBFdUPBmc0iwfLZDO1FKOgTq35Oi38L
+        mbkU8G/L6qpPC3BbO5Dl6gdPKQoN4JjQve8LB+VNDRcMs59lyzdlM8nkc7/WDbMA9nnz5veYg04ak
+        60nSwD3cehekbqDfMw88sEMzWrDUuMq4ecxL47klPOUjjyY1FY9I9j48TYrjsS3f6lmunTSpnzxL9
+        eVlu788g==;
+Received: from 91-158-25-70.elisa-laajakaista.fi ([91.158.25.70] helo=toshino.localdomain)
+        by mail.kapsi.fi with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <cyndis@kapsi.fi>)
+        id 1phouA-0007Ze-AN; Thu, 30 Mar 2023 12:49:14 +0300
+From:   Mikko Perttunen <cyndis@kapsi.fi>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>
+Cc:     Mikko Perttunen <mperttunen@nvidia.com>, linux-pm@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] thermal: tegra-bpmp: Handle offline zones
+Date:   Thu, 30 Mar 2023 12:49:04 +0300
+Message-Id: <20230330094904.2589428-1-cyndis@kapsi.fi>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-References: <CAJZ5v0iWkJw3KP7sfyDOyYsEkdOxxPhkYiYZMvd78geofGEECQ@mail.gmail.com>
- <20230329133600.908723-1-yajun.deng@linux.dev> <b0e52380c54775073d44bc97f823ec4f@linux.dev>
- <20230330035715.hckcbf4xpsi5cwhz@vireshk-i7>
-In-Reply-To: <20230330035715.hckcbf4xpsi5cwhz@vireshk-i7>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 30 Mar 2023 12:10:18 +0200
-Message-ID: <CAJZ5v0inRZgWEYUGaxObn-ZKdN8GUzBVq9xUBgsELWpRUCujuw@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: Fix policy->freq_table is NULL in __cpufreq_driver_target()
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Yajun Deng <yajun.deng@linux.dev>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 91.158.25.70
+X-SA-Exim-Mail-From: cyndis@kapsi.fi
+X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Mar 30, 2023 at 5:57 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 30-03-23, 01:39, Yajun Deng wrote:
-> > March 29, 2023 10:21 PM, "Rafael J. Wysocki" <rafael@kernel.org> wrote:
-> >
-> > > On Wed, Mar 29, 2023 at 3:36 PM Yajun Deng <yajun.deng@linux.dev> wrote:
-> > >
-> > >> __resolve_freq() may be return target_freq if policy->freq_table is
-> > >> NULL. In this case, it should return -EINVAL before __target_index().
-> > >
-> > > Even so, __target_index() itself doesn't dereference freq_table
-> > > AFAICS, so arguably the driver should be prepared to deal with a NULL
-> > > freq_table which comes from it after all.
-> > >
-> >
-> > But there is a statement 'unsigned int newfreq = policy->freq_table[index].frequency;'
-> > in __target_index(), if driver doesn't provide freq_table, __target_index()
-> > will fault before the driver itself.
->
-> Driver must provide a freq table here.
+From: Mikko Perttunen <mperttunen@nvidia.com>
 
-OK, so let's do the check when the driver gets registered.
+Thermal zones located in power domains may not be accessible when
+the domain is powergated. In this situation, reading the temperature
+will return -BPMP_EFAULT. When evaluating trips, BPMP will internally
+use -256C as the temperature for offline zones.
+
+For smooth operation, for offline zones, return -EAGAIN when reading
+the temperature and allow registration of zones even if they are
+offline during probe.
+
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+v2:
+* Adjusted commit message.
+* Patch 2/2 dropped for now since it is more controversial,
+  and this patch is more critical.
+
+ drivers/thermal/tegra/tegra-bpmp-thermal.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/tegra/tegra-bpmp-thermal.c b/drivers/thermal/tegra/tegra-bpmp-thermal.c
+index f5fd4018f72f..4ffc3bb3bf35 100644
+--- a/drivers/thermal/tegra/tegra-bpmp-thermal.c
++++ b/drivers/thermal/tegra/tegra-bpmp-thermal.c
+@@ -52,6 +52,8 @@ static int __tegra_bpmp_thermal_get_temp(struct tegra_bpmp_thermal_zone *zone,
+ 	err = tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
+ 	if (err)
+ 		return err;
++	if (msg.rx.ret == -BPMP_EFAULT)
++		return -EAGAIN;
+ 	if (msg.rx.ret)
+ 		return -EINVAL;
+ 
+@@ -259,7 +261,12 @@ static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
+ 		zone->tegra = tegra;
+ 
+ 		err = __tegra_bpmp_thermal_get_temp(zone, &temp);
+-		if (err < 0) {
++
++		/*
++		 * Sensors in powergated domains may temporarily fail to be read
++		 * (-EAGAIN), but will become accessible when the domain is powered on.
++		 */
++		if (err < 0 && err != -EAGAIN) {
+ 			devm_kfree(&pdev->dev, zone);
+ 			continue;
+ 		}
+-- 
+2.39.2
+
