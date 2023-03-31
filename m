@@ -2,61 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7AF9C77B60
-	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63483C76196
+	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:37:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231881AbjCaIh1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Mar 2023 04:37:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57864 "EHLO
+        id S231915AbjCaIhy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Mar 2023 04:37:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231755AbjCaIgn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:36:43 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B85A91D931
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:19 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id v20-20020a05600c471400b003ed8826253aso4339591wmo.0
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:19 -0700 (PDT)
+        with ESMTP id S231851AbjCaIhD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:37:03 -0400
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8AAB81FD26
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:31 -0700 (PDT)
+Received: by mail-wr1-x433.google.com with SMTP id h17so21571352wrt.8
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680251705;
+        d=linaro.org; s=google; t=1680251708;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=2eM9F2Ux8ijetoy1aUe1DlA6v+PK0BvM3d2NvEyh+tc=;
-        b=gQVJsVy7NCZuVzYpLt8LnlTZ4QiBCAvEtswZR5oJW7Ax0HOgbVCS1q7DduvuSrz3QB
-         pLE1CWF04GtF3enverLrqHldhVlUiSzPI7jrCSXgCi8UbDyMtPe3IkVfZ/GyjLRNwIpm
-         /ujMu4TZMw9sO2KrNxxvotVxPY8pNrd2cZ+rxfIlO1AGdIvXdy/mWIQx2vBfL7KdoUDl
-         0ZqApcxpBmf6hsRwz4UwQhP9pGz9VYRQa9EqPOw/udhpkAp/VDerl/tq65d5+3IX/Zho
-         UMY82QBbst7fDEeY2LrSQCea+YXbhisFv4q8WpzBVbD+tTkWIamYbAGIdiAl8cUCfiN1
-         MdvQ==
+        bh=wyeKmakvQ1hkSbEX4Ij16MupXpQFelz4/2NYVgWuJEU=;
+        b=zClFd5Vlxi7e28KuIdUeqTBp1gtaAf//uuz3h43rioEByZfX20BHjwgCWryxHTo+9i
+         oWtko8Ixqknbs450gQiNdzgPyJimKEQS8qc/dtfvgsqCDKLQqr6yI900pjhX/qGMFZdX
+         E9YiCGD7wJEMaP2livuoEdQ3bY4d1sZa49exj5qQSZvqCNDpuRGe68UZyI6Xua/Z9nt1
+         a5+zKV2l3pR4RD+Kel2t/PZXyj7R7YgcnFPa4uM70rQY8XI8A3moL7BiabGuEw6lZAtT
+         fhJgPmMUIhLlGzDOshxVzvMD+/1i7AaQ78yMnrrXECZVdQNAju2O9I0ysOGtmNk5iTB6
+         qXnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680251705;
+        d=1e100.net; s=20210112; t=1680251708;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=2eM9F2Ux8ijetoy1aUe1DlA6v+PK0BvM3d2NvEyh+tc=;
-        b=GUsG0XbOrvELO9XhzbR7NHiirnXmMikAFXTUs5ROm4YN3m39o7gA334gVaMJGgTogd
-         I7H1E+/uJZfd2FexNykE/zjLHY+kp5NrEGUwXnrzb/93PFDmMbEpmeCcRQ7bkL6e1pAN
-         zzwgnPTmlmCC6bWSQOShNfupQf6S3tkeA7yjEWk/mVpIv52+FEU6SmtmHlUYR8F/DdKo
-         Y1NHzCOCsycV+VC4pyPGfWoelT7p7JEB6l+O5tVFdWpcAy67ZNuNbyxZV0HzkiA83ZHZ
-         ZY6tk70zMxuEXOGQPxyexziP1jWh05BsLS8OwjCRBCIEYOQmGubejqzBHxOsX4Ii9c+c
-         NcPQ==
-X-Gm-Message-State: AO0yUKVbfaJpdGZO0rIUauou2lZ0AL6VF5YVnCBrL1K8WzCx3s2APAi6
-        KjhrksbtYr2Bo84Laphf7o6Raw==
-X-Google-Smtp-Source: AK7set+0JKF+ryMPRRbzb3BibnuUin7VHaHaaeXAUI+4vnrO4VZbOg/l2Mv5uhL3uMmOeMoG9uBNTQ==
-X-Received: by 2002:a05:600c:280e:b0:3ed:551b:b78f with SMTP id m14-20020a05600c280e00b003ed551bb78fmr19188054wmb.4.1680251705130;
-        Fri, 31 Mar 2023 01:35:05 -0700 (PDT)
+        bh=wyeKmakvQ1hkSbEX4Ij16MupXpQFelz4/2NYVgWuJEU=;
+        b=24qXd1ZpJqsCV0eFfCfrrvgbk6d/fQ2reSV58m/Uj2nv2i3Nbn5dlDTmMsK8kfPi2+
+         e1uT3wGr5rD7FuB6qHLDn47oSbXAKJ3CCJ2ND+npSJmMnEk0MQWdsitHNANspXfjsKon
+         opXnnEyYNgwriOQvFGBGyVqxpZfSsysi0MRfMkhi3VAVSo2h0MeX9uUfHgRW22rkgxDv
+         gXVDYLQfo6tfjHhD8NFGucDTdpJ0QLyge+SvS/hKMx9qd6fhAPjk8BPIhmFx0jIu8LUy
+         LOTtiAwdnkztu59hccaCj/VSxZmGRfHoKtBLDnSmzKdAKGBwx1L+2+2qXIF0Q56SCuei
+         MGug==
+X-Gm-Message-State: AAQBX9cUEVq3gAi4eGkXlynN5x+8sR8GkNkiWL+7TwKmbUPJ0BQeZpXf
+        vV1BW/I3VeAWLKHx+JbsV5E+Sw==
+X-Google-Smtp-Source: AKy350ZgpW5+Oe3dbmzsCW6vw7rhJNBdmiyWR1Pp/d0MnEm1IxdpSh8x2o9HxYqyhz/1afKGjly3uQ==
+X-Received: by 2002:a5d:538e:0:b0:2d5:ac9e:cdde with SMTP id d14-20020a5d538e000000b002d5ac9ecddemr18097313wrv.51.1680251707922;
+        Fri, 31 Mar 2023 01:35:07 -0700 (PDT)
 Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id e11-20020a5d4e8b000000b002cde626cd96sm1563153wru.65.2023.03.31.01.35.03
+        by smtp.gmail.com with ESMTPSA id e11-20020a5d4e8b000000b002cde626cd96sm1563153wru.65.2023.03.31.01.35.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Mar 2023 01:35:04 -0700 (PDT)
+        Fri, 31 Mar 2023 01:35:07 -0700 (PDT)
 From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Fri, 31 Mar 2023 10:34:53 +0200
-Subject: [PATCH RFC 15/20] dt-bindings: gpio: gpio_oxnas: remove obsolete
- bindings
+Date:   Fri, 31 Mar 2023 10:34:55 +0200
+Subject: [PATCH RFC 17/20] reset: oxnas: remove obsolete reset driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230331-topic-oxnas-upstream-remove-v1-15-5bd58fd1dd1f@linaro.org>
+Message-Id: <20230331-topic-oxnas-upstream-remove-v1-17-5bd58fd1dd1f@linaro.org>
 References: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
 In-Reply-To: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
@@ -95,67 +94,201 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 Due to lack of maintainance and stall of development for a few years now,
-and since no new features will ever be added upstream, remove the
-OX810 and OX820 gpio bindings.
+and since no new features will ever be added upstream, remove support
+for OX810 and OX820 peripheral reset.
 
 Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
 ---
- .../devicetree/bindings/gpio/gpio_oxnas.txt        | 47 ----------------------
- 1 file changed, 47 deletions(-)
+ .../devicetree/bindings/reset/oxnas,reset.txt      |  32 ------
+ drivers/reset/Kconfig                              |   3 -
+ drivers/reset/Makefile                             |   1 -
+ drivers/reset/reset-oxnas.c                        | 114 ---------------------
+ 4 files changed, 150 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/gpio/gpio_oxnas.txt b/Documentation/devicetree/bindings/gpio/gpio_oxnas.txt
+diff --git a/Documentation/devicetree/bindings/reset/oxnas,reset.txt b/Documentation/devicetree/bindings/reset/oxnas,reset.txt
 deleted file mode 100644
-index 966514744df4..000000000000
---- a/Documentation/devicetree/bindings/gpio/gpio_oxnas.txt
+index d27ccb5d04fc..000000000000
+--- a/Documentation/devicetree/bindings/reset/oxnas,reset.txt
 +++ /dev/null
-@@ -1,47 +0,0 @@
--* Oxford Semiconductor OXNAS SoC GPIO Controller
+@@ -1,32 +0,0 @@
+-Oxford Semiconductor OXNAS SoC Family RESET Controller
+-================================================
 -
--Please refer to gpio.txt for generic information regarding GPIO bindings.
+-Please also refer to reset.txt in this directory for common reset
+-controller binding usage.
 -
 -Required properties:
-- - compatible: "oxsemi,ox810se-gpio" or "oxsemi,ox820-gpio"
-- - reg: Base address and length for the device.
-- - interrupts: The port interrupt shared by all pins.
-- - gpio-controller: Marks the port as GPIO controller.
-- - #gpio-cells: Two. The first cell is the pin number and
--   the second cell is used to specify the gpio polarity as defined in
--   defined in <dt-bindings/gpio/gpio.h>:
--      0 = GPIO_ACTIVE_HIGH
--      1 = GPIO_ACTIVE_LOW
-- - interrupt-controller: Marks the device node as an interrupt controller.
-- - #interrupt-cells: Two. The first cell is the GPIO number and second cell
--   is used to specify the trigger type as defined in
--   <dt-bindings/interrupt-controller/irq.h>:
--      IRQ_TYPE_EDGE_RISING
--      IRQ_TYPE_EDGE_FALLING
--      IRQ_TYPE_EDGE_BOTH
-- - gpio-ranges: Interaction with the PINCTRL subsystem, it also specifies the
--   gpio base and count, should be in the format of numeric-gpio-range as
--   specified in the gpio.txt file.
+-- compatible: For OX810SE, should be "oxsemi,ox810se-reset"
+-	      For OX820, should be "oxsemi,ox820-reset"
+-- #reset-cells: 1, see below
 -
--Example:
+-Parent node should have the following properties :
+-- compatible: For OX810SE, should be :
+-			"oxsemi,ox810se-sys-ctrl", "syscon", "simple-mfd"
+-	      For OX820, should be :
+-			"oxsemi,ox820-sys-ctrl", "syscon", "simple-mfd"
 -
--gpio0: gpio@0 {
--	compatible = "oxsemi,ox810se-gpio";
+-Reset indices are in dt-bindings include files :
+-- For OX810SE: include/dt-bindings/reset/oxsemi,ox810se.h
+-- For OX820: include/dt-bindings/reset/oxsemi,ox820.h
+-
+-example:
+-
+-sys: sys-ctrl@000000 {
+-	compatible = "oxsemi,ox810se-sys-ctrl", "syscon", "simple-mfd";
 -	reg = <0x000000 0x100000>;
--	interrupts = <21>;
--	#gpio-cells = <2>;
--	gpio-controller;
--	interrupt-controller;
--	#interrupt-cells = <2>;
--	gpio-ranges = <&pinctrl 0 0 32>;
--};
 -
--keys {
--	...
--
--	button-esc {
--		label = "ESC";
--		linux,code = <1>;
--		gpios = <&gpio0 12 0>;
+-	reset: reset-controller {
+-		compatible = "oxsemi,ox810se-reset";
+-		#reset-cells = <1>;
 -	};
 -};
+diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
+index 2a52c990d4fe..695419d888ab 100644
+--- a/drivers/reset/Kconfig
++++ b/drivers/reset/Kconfig
+@@ -143,9 +143,6 @@ config RESET_NPCM
+ 	  This enables the reset controller driver for Nuvoton NPCM
+ 	  BMC SoCs.
+ 
+-config RESET_OXNAS
+-	bool
+-
+ config RESET_PISTACHIO
+ 	bool "Pistachio Reset Driver"
+ 	depends on MIPS || COMPILE_TEST
+diff --git a/drivers/reset/Makefile b/drivers/reset/Makefile
+index 3e7e5fd633a8..cb1f229e20a6 100644
+--- a/drivers/reset/Makefile
++++ b/drivers/reset/Makefile
+@@ -20,7 +20,6 @@ obj-$(CONFIG_RESET_MCHP_SPARX5) += reset-microchip-sparx5.o
+ obj-$(CONFIG_RESET_MESON) += reset-meson.o
+ obj-$(CONFIG_RESET_MESON_AUDIO_ARB) += reset-meson-audio-arb.o
+ obj-$(CONFIG_RESET_NPCM) += reset-npcm.o
+-obj-$(CONFIG_RESET_OXNAS) += reset-oxnas.o
+ obj-$(CONFIG_RESET_PISTACHIO) += reset-pistachio.o
+ obj-$(CONFIG_RESET_POLARFIRE_SOC) += reset-mpfs.o
+ obj-$(CONFIG_RESET_QCOM_AOSS) += reset-qcom-aoss.o
+diff --git a/drivers/reset/reset-oxnas.c b/drivers/reset/reset-oxnas.c
+deleted file mode 100644
+index 8209f922dc16..000000000000
+--- a/drivers/reset/reset-oxnas.c
++++ /dev/null
+@@ -1,114 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Oxford Semiconductor Reset Controller driver
+- *
+- * Copyright (C) 2016 Neil Armstrong <narmstrong@baylibre.com>
+- * Copyright (C) 2014 Ma Haijun <mahaijuns@gmail.com>
+- * Copyright (C) 2009 Oxford Semiconductor Ltd
+- */
+-#include <linux/err.h>
+-#include <linux/init.h>
+-#include <linux/of.h>
+-#include <linux/platform_device.h>
+-#include <linux/reset-controller.h>
+-#include <linux/slab.h>
+-#include <linux/delay.h>
+-#include <linux/types.h>
+-#include <linux/regmap.h>
+-#include <linux/mfd/syscon.h>
+-
+-/* Regmap offsets */
+-#define RST_SET_REGOFFSET	0x34
+-#define RST_CLR_REGOFFSET	0x38
+-
+-struct oxnas_reset {
+-	struct regmap *regmap;
+-	struct reset_controller_dev rcdev;
+-};
+-
+-static int oxnas_reset_reset(struct reset_controller_dev *rcdev,
+-			      unsigned long id)
+-{
+-	struct oxnas_reset *data =
+-		container_of(rcdev, struct oxnas_reset, rcdev);
+-
+-	regmap_write(data->regmap, RST_SET_REGOFFSET, BIT(id));
+-	msleep(50);
+-	regmap_write(data->regmap, RST_CLR_REGOFFSET, BIT(id));
+-
+-	return 0;
+-}
+-
+-static int oxnas_reset_assert(struct reset_controller_dev *rcdev,
+-			      unsigned long id)
+-{
+-	struct oxnas_reset *data =
+-		container_of(rcdev, struct oxnas_reset, rcdev);
+-
+-	regmap_write(data->regmap, RST_SET_REGOFFSET, BIT(id));
+-
+-	return 0;
+-}
+-
+-static int oxnas_reset_deassert(struct reset_controller_dev *rcdev,
+-				unsigned long id)
+-{
+-	struct oxnas_reset *data =
+-		container_of(rcdev, struct oxnas_reset, rcdev);
+-
+-	regmap_write(data->regmap, RST_CLR_REGOFFSET, BIT(id));
+-
+-	return 0;
+-}
+-
+-static const struct reset_control_ops oxnas_reset_ops = {
+-	.reset		= oxnas_reset_reset,
+-	.assert		= oxnas_reset_assert,
+-	.deassert	= oxnas_reset_deassert,
+-};
+-
+-static const struct of_device_id oxnas_reset_dt_ids[] = {
+-	 { .compatible = "oxsemi,ox810se-reset", },
+-	 { .compatible = "oxsemi,ox820-reset", },
+-	 { /* sentinel */ },
+-};
+-
+-static int oxnas_reset_probe(struct platform_device *pdev)
+-{
+-	struct oxnas_reset *data;
+-	struct device *parent;
+-
+-	parent = pdev->dev.parent;
+-	if (!parent) {
+-		dev_err(&pdev->dev, "no parent\n");
+-		return -ENODEV;
+-	}
+-
+-	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+-	if (!data)
+-		return -ENOMEM;
+-
+-	data->regmap = syscon_node_to_regmap(parent->of_node);
+-	if (IS_ERR(data->regmap)) {
+-		dev_err(&pdev->dev, "failed to get parent regmap\n");
+-		return PTR_ERR(data->regmap);
+-	}
+-
+-	platform_set_drvdata(pdev, data);
+-
+-	data->rcdev.owner = THIS_MODULE;
+-	data->rcdev.nr_resets = 32;
+-	data->rcdev.ops = &oxnas_reset_ops;
+-	data->rcdev.of_node = pdev->dev.of_node;
+-
+-	return devm_reset_controller_register(&pdev->dev, &data->rcdev);
+-}
+-
+-static struct platform_driver oxnas_reset_driver = {
+-	.probe	= oxnas_reset_probe,
+-	.driver = {
+-		.name		= "oxnas-reset",
+-		.of_match_table	= oxnas_reset_dt_ids,
+-	},
+-};
+-builtin_platform_driver(oxnas_reset_driver);
 
 -- 
 2.34.1
