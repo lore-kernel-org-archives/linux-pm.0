@@ -2,130 +2,114 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED619C77B60
-	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:37:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D1FFC76196
+	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:45:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231859AbjCaIh5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Mar 2023 04:37:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59162 "EHLO
+        id S231714AbjCaIpl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Mar 2023 04:45:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231806AbjCaIhF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:37:05 -0400
+        with ESMTP id S231205AbjCaIpa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:45:30 -0400
 Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44C97D4F8C
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:35 -0700 (PDT)
-Received: by mail-wr1-x433.google.com with SMTP id d17so21571113wrb.11
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:35 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73AF71D928
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:45:06 -0700 (PDT)
+Received: by mail-wr1-x433.google.com with SMTP id r11so21602610wrr.12
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:45:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680251711;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5S8DS7MwX0eSMjECdngcIupXRvdIfBFKmoZZhwAEom0=;
-        b=tnfnYtQdWHkb+imXQ5cdS0qz5r299xH4jhkGPSnNJ2hyhvDgzphIZ+JrRafIpmAM9p
-         AYZ75Po2o2Z0SH8MZ2PJlbzGo/n61VmC8VnuZ2JuYUqUV2XrQWwn3l07chxkJqnSXjPP
-         5f1CEgxiSVpvn2h1nzoHxbtdANfxsiKSj6kGo5Gn+zXB98k4Ll0nq2FYEQMcqg9qKycl
-         SaFHJ31SA4vogcCrvZnJv61gFMikTvHDNS7J+H+by9jPFBPOVQx/EaIZbfwOl1I2Oqqc
-         0h4V53L2ZH7bwDuc5XrqWaqkZAcFFMRby1EyH50XYnZmPSj9SLb8FRQWZxdM2RBBTVHm
-         BCmw==
+        d=linaro.org; s=google; t=1680252290;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=xxyqdIn+bk4QczcFBL4xE02Qvuk54XzxnYqApbWmQ7E=;
+        b=T/C6VRoG0clsKlt9wMakpFmsJW9/eJik5Xxo338Tq2stTAGKoyZqJ6beLQsP5VWvmP
+         dnvxyj9mU8lu8qyu+XXGY6Fyx7sBjawIsbGYMz4LNzyOGlJ4zg5hf9SLtX0BNdWP1BSv
+         /JAgcDA9GTBLjNk7RJBvssxuXZXcTKGC2xEsWmXKM8OflqZC/C7s03VavwsBazeW+fp/
+         VFAn8Anm+CA3IjUlG62nkGRaMFO+uQBHQj+LBuyZoa7Zvmrv74uKnQWuiaYmIGmaoj/5
+         HsCAL59OWnPfxc3crmgdXrBL0cCCvJ8Z6TD5FAXvAjNxaRdyyQGyHm1UNvm6H0lI9Sx3
+         R5qQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680251711;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5S8DS7MwX0eSMjECdngcIupXRvdIfBFKmoZZhwAEom0=;
-        b=TUtTrfgtA2HRBzFLR8adL+Bf0G2HD3j8G3HZTtTpSFbGEyvHCqKxp/fn4ogFloInl+
-         tSzF/g4/Dvh5vvCABsFsNcgyH98n8x72XZNGQyfeRi8rCWJKftMOwynKGCCAEDG0Ip3r
-         zRcB0pWFhiXjY2oD6G2Hp4hnmk6seSNI6BIP0kXi0gAI/aEFAAoJEbddIwZvzDKtZ+Rl
-         jSYr/0Dc8XT3h6k32YilfIwF+e3a+8DBpz1OBxm+mTtAolwuUSgiXmRDmzLvRR9U92+5
-         CZD3O9imHsU20nfV2EGfjrZRatDCJoO6qb7o/wnW/BLp5dMkLkp4+m1tfKftgCK4/Hjp
-         44Sg==
-X-Gm-Message-State: AAQBX9e6nH+XLrTQ9Q0bwECE0r92dG26tF4JxkpgH4KFn/otf2Zlgqfi
-        JaqewtwH1I1//gyWMMQy5zc/eA==
-X-Google-Smtp-Source: AKy350bVO2xvOdcujlPweNogfEF/aS/RwRjRN7oD1rhoaEfLODuiLQvDCF4zUxggrf8oM3l2ae/tZg==
-X-Received: by 2002:adf:fa09:0:b0:2dd:cb8:2299 with SMTP id m9-20020adffa09000000b002dd0cb82299mr20102833wrr.11.1680251710872;
-        Fri, 31 Mar 2023 01:35:10 -0700 (PDT)
-Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id e11-20020a5d4e8b000000b002cde626cd96sm1563153wru.65.2023.03.31.01.35.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Mar 2023 01:35:10 -0700 (PDT)
-From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Fri, 31 Mar 2023 10:34:57 +0200
-Subject: [PATCH RFC 19/20] dt-bindings: interrupt-controller:
- arm,versatile-fpga-irq: mark oxnas compatible as deprecated
+        d=1e100.net; s=20210112; t=1680252290;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=xxyqdIn+bk4QczcFBL4xE02Qvuk54XzxnYqApbWmQ7E=;
+        b=ssFoXj5POBZmA6gkHzOPA/JOuGF9ZWnAvmqBCIz5dAIpIR27C5aKnFHJjbkRfeXw1c
+         V8PX4n50eaiWc01FN0BtyKf0jESwkD7JmrJIMvxAPdcx2wN2tFjQMtwTb6Ihm9H/rl3+
+         iEGST89SoEZNRrHSE7eCRI91LekGukbDtgX4krB0AC3eInEi801EKE13js9VeIF8mNlN
+         GutE8hyaPUQeU0P5wTw/lvSFTbniek3wTgXIR1I+0B046K128DwhofGuXGAxmo2vOGI4
+         /oN6ORoY7ASDj35IlJVxNwbzPfMrgwpAnH/qcv8GU52fgvZ3xnhAsNnictBSSe/LkX5o
+         O4lQ==
+X-Gm-Message-State: AAQBX9f8GABqjIJ6XWBu6L+nrbrGDMDfEdLkGwUfH6NjAOoWY4k6RwO4
+        QlSzak0xRlKDpi41SJmxWQrbBQ==
+X-Google-Smtp-Source: AKy350ZHxE08ANZvF4H7bloNjkiIkHgIWRHOGVefKapS/JJkMMHtS7CHxDmiDoX5QSSpdo+bvMN3Pw==
+X-Received: by 2002:adf:d08e:0:b0:2cf:f312:86dd with SMTP id y14-20020adfd08e000000b002cff31286ddmr17970572wrh.18.1680252290022;
+        Fri, 31 Mar 2023 01:44:50 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:17ff:909e:1b73:8366? ([2a05:6e02:1041:c10:17ff:909e:1b73:8366])
+        by smtp.googlemail.com with ESMTPSA id m7-20020a5d56c7000000b002cea9d931e6sm1590350wrw.78.2023.03.31.01.44.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 31 Mar 2023 01:44:49 -0700 (PDT)
+Message-ID: <f4592c81-af30-8289-d02d-a44e25e0fe26@linaro.org>
+Date:   Fri, 31 Mar 2023 10:44:48 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230331-topic-oxnas-upstream-remove-v1-19-5bd58fd1dd1f@linaro.org>
-References: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
-In-Reply-To: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
-To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
-        soc@kernel.org, Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Richard Weinberger <richard@nod.at>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Giuseppe Cavallaro <peppe.cavallaro@st.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Jose Abreu <joabreu@synopsys.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Sebastian Reichel <sre@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Marc Zyngier <maz@kernel.org>
-Cc:     linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-mtd@lists.infradead.org, netdev@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Neil Armstrong <neil.armstrong@linaro.org>
-X-Mailer: b4 0.12.1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [PATCH] thermal: Use of_property_present() for testing DT
+ property presence
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Herring <robh@kernel.org>
+Cc:     Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-omap@vger.kernel.org
+References: <20230310144726.1545543-1-robh@kernel.org>
+ <CAJZ5v0hAeRa9xsp6-_um9j-9F6nf=PYuOC2mgMAmmUHP+9=RZg@mail.gmail.com>
+ <CAJZ5v0i-Vum+js8c7fZJiQWwTBYByy2O=UtObR6GciLMLt41Nw@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <CAJZ5v0i-Vum+js8c7fZJiQWwTBYByy2O=UtObR6GciLMLt41Nw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Due to lack of maintainance and stall of development for a few years now,
-and since no new features will ever be added upstream, mark the
-OX810 and OX820 IRQ compatible as deprecated.
+On 30/03/2023 19:28, Rafael J. Wysocki wrote:
+> On Mon, Mar 27, 2023 at 7:13 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>
+>> On Fri, Mar 10, 2023 at 3:48 PM Rob Herring <robh@kernel.org> wrote:
+>>>
+>>> It is preferred to use typed property access functions (i.e.
+>>> of_property_read_<type> functions) rather than low-level
+>>> of_get_property/of_find_property functions for reading properties. As
+>>> part of this, convert of_get_property/of_find_property calls to the
+>>> recently added of_property_present() helper when we just want to test
+>>> for presence of a property and nothing more.
+>>>
+>>> Signed-off-by: Rob Herring <robh@kernel.org>
+>>
+>> Daniel, are you going to apply this, or should I take it directly?
+> 
+> Applied as 6.4 material, thanks
 
-Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
----
- .../bindings/interrupt-controller/arm,versatile-fpga-irq.txt          | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Sorry, I forgot to answer. I already applied it.
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/arm,versatile-fpga-irq.txt b/Documentation/devicetree/bindings/interrupt-controller/arm,versatile-fpga-irq.txt
-index 2a1d16bdf834..ea939f54c5eb 100644
---- a/Documentation/devicetree/bindings/interrupt-controller/arm,versatile-fpga-irq.txt
-+++ b/Documentation/devicetree/bindings/interrupt-controller/arm,versatile-fpga-irq.txt
-@@ -6,7 +6,7 @@ controllers are OR:ed together and fed to the CPU tile's IRQ input. Each
- instance can handle up to 32 interrupts.
- 
- Required properties:
--- compatible: "arm,versatile-fpga-irq" or "oxsemi,ox810se-rps-irq"
-+- compatible: "arm,versatile-fpga-irq"
- - interrupt-controller: Identifies the node as an interrupt controller
- - #interrupt-cells: The number of cells to define the interrupts.  Must be 1
-   as the FPGA IRQ controller has no configuration options for interrupt
-@@ -19,6 +19,8 @@ Required properties:
-   the system till not make it possible for devices to request these
-   interrupts.
- 
-+The "oxsemi,ox810se-rps-irq" compatible is deprecated.
-+
- Example:
- 
- pic: pic@14000000 {
+Shall I drop it from my branch ?
 
 -- 
-2.34.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
