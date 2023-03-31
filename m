@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96D6CC6FD18
-	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:36:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22E85C77B6D
+	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:36:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231730AbjCaIgD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Mar 2023 04:36:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57218 "EHLO
+        id S231659AbjCaIgJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Mar 2023 04:36:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57104 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231643AbjCaIfG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:35:06 -0400
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3E7B1B7CB
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:34:55 -0700 (PDT)
-Received: by mail-wr1-x42c.google.com with SMTP id l12so21566761wrm.10
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:34:55 -0700 (PDT)
+        with ESMTP id S230131AbjCaIfc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:35:32 -0400
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4488A1D846
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:34:57 -0700 (PDT)
+Received: by mail-wr1-x436.google.com with SMTP id i9so21597175wrp.3
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:34:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680251694;
+        d=linaro.org; s=google; t=1680251696;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=lbX5AvtH3XQkpXillVC2r4t4ZcO7K1MUGKa8995+UMc=;
-        b=FXPQE0eL9eqATklkjZEYI6FjUYba0uQ/MQ+Nov2T3gJF3W+h3+1jgFcJnDVdHt17UU
-         vhTpGd1CnckRRNR2FMMFJDdlPLcqhq7wVtKtupuheO3qJnU4yi/dnsPI4aZ+Jq7uyo9V
-         g8W//zwz0inADvyoEIMT35Q/6Pbjj1CacqHmhVjcT9k8m14teR64Ytv9umBulZJyn4ye
-         xoFBF0UW0z1k6fwE5uVdc5uPydJLwya3pHrzDxk4wv8JyWGSU8Y5rQ7Y00Eef2fwqvs7
-         lsL6aOkIB4J2tq9HaaGj8W7m89y51dE1sYpZw6c91qmFImmY9Nhokl1z0Wg0jc3YIii2
-         Azvg==
+        bh=9eQd2PRUPObC6vfAXbvz2kWSZ1cGqD24tBtlBu7v0Zk=;
+        b=XT9ECtwlsdWe3o0vMYrNBu+D7NzgbJ564psuhOE+dKhbWFyvXWCZ00wOvDhdwcBTWF
+         48LltN5EjnWWF42U7csY7RNAs8Ln0eounrZktVi46AEN4uvQxMPcnyLlh+rJG9zu8UVq
+         RFkvH1r1JNJn6j6X9lfiDt1vZdo6/1p9ErMChTKM8ftSVmo8G4S5oDlSKT8HzNor2okP
+         GqvO3HCM6OlTOIdQSaa4MigH+oRQil/CqTe9wHVYb+aXYKYiNp/P1tpIS+E8WL8fFrBS
+         ZglAstYH00wmOFh71enLs7n5Hl3l3W/kfLupedHWDuJrVXxjKW29WddmG2mOrnUlLgAH
+         ea1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680251694;
+        d=1e100.net; s=20210112; t=1680251696;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=lbX5AvtH3XQkpXillVC2r4t4ZcO7K1MUGKa8995+UMc=;
-        b=PjURyC843dwAYTYUTNHNERur6dHEIO79RIe5HpbHwLaRwkh699MhhoScBypC+j4q1g
-         u5d58iYNdlJG1JyiLuldbsh4XA2U78i8ifxpDbDROV+Btu0wu9A2YjW4pdHAr3z7Jixx
-         erRsYWj4H1rku+GTqL6pYYosjFWa14Ag8u9IiG0/n3YqBxJJlzLeiuvj1PIIfw3YTuXZ
-         tAB39XTp11ydl4p/68SInjbLUpv53OgMgGyzhJPZ/fb7L6CCNQTA02CudeAi2pRE3nm8
-         xuAlTVF82yJmMXIISYN6nyvw3Zqkg+vnz7HuJekpGyxbfWcdX4XUfBGSJ9/A5+ki/oJQ
-         XI4w==
-X-Gm-Message-State: AAQBX9fuVbyDjmO9Rq3nKtMUjPACu0hyI+yt1XZ19QycDghSZBi/2qNa
-        pAy3+WUOHS8To/UFqqNo/ybe8w==
-X-Google-Smtp-Source: AKy350a6Wf8rj2xwut2Qu0Ukl1DJvimaFjv0cbtV5kR6Di/Cb/RS9MmoOkXKp4Sl7MChLqy4NJUeWA==
-X-Received: by 2002:adf:fa11:0:b0:2c5:510b:8f9c with SMTP id m17-20020adffa11000000b002c5510b8f9cmr20833338wrr.52.1680251693811;
-        Fri, 31 Mar 2023 01:34:53 -0700 (PDT)
+        bh=9eQd2PRUPObC6vfAXbvz2kWSZ1cGqD24tBtlBu7v0Zk=;
+        b=kWxixhvQDycfe5w0mGPLhSErtXhvLKumy9lVsz8bo+lwe5PnmGG6gJ/TMfnOyLL7FI
+         992hHdaBKxvTnLfsjCw2wrZ+zyB09lzGqMVII4UKkHqCeTuuayoeWOZz2FCz0qO6dLcm
+         dvLQvywA5dfK3AkpYeqdj672PSSGjmUJsihZGjm4IpnNyASJDww5mYoOpp9uU0xXBrR1
+         ucWpm07SFj8v98f4Px0OllV6irIy8Ts+9pFVl1xMNn6OfqY1dgNM+iJv2TztatGoWUdf
+         HyYrvQijUMJ+SegaZicDKU2wfjrtPYvCU8oYtrzfqmiXaEAaM57wTzLHlB0dLBWYnMSh
+         2jOQ==
+X-Gm-Message-State: AAQBX9cdKT3TBT8WFUOiD+MrlDCf0bYL0bu9beD2yiB3F4bILpLHdMpo
+        VChRtjVnCdwahqVOkh4/Zn1qLQ==
+X-Google-Smtp-Source: AKy350Yu6u8o68jpMb5+fsfClqUxdCINEEq3588tJZY02FrQB56K1YJR0rbP/jzTvZA6NeFeaYgt9g==
+X-Received: by 2002:a5d:5410:0:b0:2cf:e336:cb14 with SMTP id g16-20020a5d5410000000b002cfe336cb14mr6612840wrv.10.1680251696577;
+        Fri, 31 Mar 2023 01:34:56 -0700 (PDT)
 Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id e11-20020a5d4e8b000000b002cde626cd96sm1563153wru.65.2023.03.31.01.34.52
+        by smtp.gmail.com with ESMTPSA id e11-20020a5d4e8b000000b002cde626cd96sm1563153wru.65.2023.03.31.01.34.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Mar 2023 01:34:53 -0700 (PDT)
+        Fri, 31 Mar 2023 01:34:56 -0700 (PDT)
 From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Fri, 31 Mar 2023 10:34:45 +0200
-Subject: [PATCH RFC 07/20] clksource: timer-oxnas-rps: remove obsolete
- timer driver
+Date:   Fri, 31 Mar 2023 10:34:47 +0200
+Subject: [PATCH RFC 09/20] nand: oxnas_nand: remove obsolete raw nand
+ driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230331-topic-oxnas-upstream-remove-v1-7-5bd58fd1dd1f@linaro.org>
+Message-Id: <20230331-topic-oxnas-upstream-remove-v1-9-5bd58fd1dd1f@linaro.org>
 References: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
 In-Reply-To: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
@@ -96,339 +96,262 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Due to lack of maintainance and stall of development for a few years now,
 and since no new features will ever be added upstream, remove support
-for OX810 and OX820 timer.
+for OX810 and OX820 nand.
 
 Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
 ---
- drivers/clocksource/Kconfig           |   7 -
- drivers/clocksource/Makefile          |   1 -
- drivers/clocksource/timer-oxnas-rps.c | 288 ----------------------------------
- 3 files changed, 296 deletions(-)
+ drivers/mtd/nand/raw/Kconfig      |   7 --
+ drivers/mtd/nand/raw/Makefile     |   1 -
+ drivers/mtd/nand/raw/oxnas_nand.c | 211 --------------------------------------
+ 3 files changed, 219 deletions(-)
 
-diff --git a/drivers/clocksource/Kconfig b/drivers/clocksource/Kconfig
-index 5fc8f0e7fb38..cd494646ebf4 100644
---- a/drivers/clocksource/Kconfig
-+++ b/drivers/clocksource/Kconfig
-@@ -461,13 +461,6 @@ config VF_PIT_TIMER
- 	help
- 	  Support for Periodic Interrupt Timer on Freescale Vybrid Family SoCs.
+diff --git a/drivers/mtd/nand/raw/Kconfig b/drivers/mtd/nand/raw/Kconfig
+index 170f1185ddc4..aae4c56fe1db 100644
+--- a/drivers/mtd/nand/raw/Kconfig
++++ b/drivers/mtd/nand/raw/Kconfig
+@@ -204,13 +204,6 @@ config MTD_NAND_BCM47XXNFLASH
+ 	  registered by bcma as platform devices. This enables driver for
+ 	  NAND flash memories. For now only BCM4706 is supported.
  
--config OXNAS_RPS_TIMER
--	bool "Oxford Semiconductor OXNAS RPS Timers driver" if COMPILE_TEST
--	select TIMER_OF
--	select CLKSRC_MMIO
+-config MTD_NAND_OXNAS
+-	tristate "Oxford Semiconductor NAND controller"
+-	depends on ARCH_OXNAS || COMPILE_TEST
+-	depends on HAS_IOMEM
 -	help
--	  This enables support for the Oxford Semiconductor OXNAS RPS timers.
+-	  This enables the NAND flash controller on Oxford Semiconductor SoCs.
 -
- config SYS_SUPPORTS_SH_CMT
- 	bool
- 
-diff --git a/drivers/clocksource/Makefile b/drivers/clocksource/Makefile
-index 64ab547de97b..a15608cb0ea3 100644
---- a/drivers/clocksource/Makefile
-+++ b/drivers/clocksource/Makefile
-@@ -53,7 +53,6 @@ obj-$(CONFIG_CLKSRC_QCOM)	+= timer-qcom.o
- obj-$(CONFIG_MTK_TIMER)		+= timer-mediatek.o
- obj-$(CONFIG_CLKSRC_PISTACHIO)	+= timer-pistachio.o
- obj-$(CONFIG_CLKSRC_TI_32K)	+= timer-ti-32k.o
--obj-$(CONFIG_OXNAS_RPS_TIMER)	+= timer-oxnas-rps.o
- obj-$(CONFIG_OWL_TIMER)		+= timer-owl.o
- obj-$(CONFIG_MILBEAUT_TIMER)	+= timer-milbeaut.o
- obj-$(CONFIG_SPRD_TIMER)	+= timer-sprd.o
-diff --git a/drivers/clocksource/timer-oxnas-rps.c b/drivers/clocksource/timer-oxnas-rps.c
+ config MTD_NAND_MPC5121_NFC
+ 	tristate "MPC5121 NAND controller"
+ 	depends on PPC_MPC512x
+diff --git a/drivers/mtd/nand/raw/Makefile b/drivers/mtd/nand/raw/Makefile
+index 917cdfb815b9..53cb380122a5 100644
+--- a/drivers/mtd/nand/raw/Makefile
++++ b/drivers/mtd/nand/raw/Makefile
+@@ -26,7 +26,6 @@ obj-$(CONFIG_MTD_NAND_MARVELL)		+= marvell_nand.o
+ obj-$(CONFIG_MTD_NAND_PLATFORM)		+= plat_nand.o
+ obj-$(CONFIG_MTD_NAND_PASEMI)		+= pasemi_nand.o
+ obj-$(CONFIG_MTD_NAND_ORION)		+= orion_nand.o
+-obj-$(CONFIG_MTD_NAND_OXNAS)		+= oxnas_nand.o
+ obj-$(CONFIG_MTD_NAND_FSL_ELBC)		+= fsl_elbc_nand.o
+ obj-$(CONFIG_MTD_NAND_FSL_IFC)		+= fsl_ifc_nand.o
+ obj-$(CONFIG_MTD_NAND_FSL_UPM)		+= fsl_upm.o
+diff --git a/drivers/mtd/nand/raw/oxnas_nand.c b/drivers/mtd/nand/raw/oxnas_nand.c
 deleted file mode 100644
-index d514b44e67dd..000000000000
---- a/drivers/clocksource/timer-oxnas-rps.c
+index cd112d45e0b5..000000000000
+--- a/drivers/mtd/nand/raw/oxnas_nand.c
 +++ /dev/null
-@@ -1,288 +0,0 @@
+@@ -1,211 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * drivers/clocksource/timer-oxnas-rps.c
-- *
-- * Copyright (C) 2009 Oxford Semiconductor Ltd
-- * Copyright (C) 2013 Ma Haijun <mahaijuns@gmail.com>
+- * Oxford Semiconductor OXNAS NAND driver
+-
 - * Copyright (C) 2016 Neil Armstrong <narmstrong@baylibre.com>
+- * Heavily based on plat_nand.c :
+- * Author: Vitaly Wool <vitalywool@gmail.com>
+- * Copyright (C) 2013 Ma Haijun <mahaijuns@gmail.com>
+- * Copyright (C) 2012 John Crispin <blogic@openwrt.org>
 - */
 -
--#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
--
--#include <linux/init.h>
--#include <linux/irq.h>
+-#include <linux/err.h>
 -#include <linux/io.h>
--#include <linux/clk.h>
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
 -#include <linux/slab.h>
--#include <linux/interrupt.h>
--#include <linux/of_irq.h>
--#include <linux/of_address.h>
--#include <linux/clockchips.h>
--#include <linux/sched_clock.h>
+-#include <linux/clk.h>
+-#include <linux/reset.h>
+-#include <linux/mtd/mtd.h>
+-#include <linux/mtd/rawnand.h>
+-#include <linux/mtd/partitions.h>
+-#include <linux/of.h>
 -
--/* TIMER1 used as tick
-- * TIMER2 used as clocksource
-- */
+-/* Nand commands */
+-#define OXNAS_NAND_CMD_ALE		BIT(18)
+-#define OXNAS_NAND_CMD_CLE		BIT(19)
 -
--/* Registers definitions */
+-#define OXNAS_NAND_MAX_CHIPS	1
 -
--#define TIMER_LOAD_REG		0x0
--#define TIMER_CURR_REG		0x4
--#define TIMER_CTRL_REG		0x8
--#define TIMER_CLRINT_REG	0xC
--
--#define TIMER_BITS		24
--
--#define TIMER_MAX_VAL		(BIT(TIMER_BITS) - 1)
--
--#define TIMER_PERIODIC		BIT(6)
--#define TIMER_ENABLE		BIT(7)
--
--#define TIMER_DIV1		(0)
--#define TIMER_DIV16		(1 << 2)
--#define TIMER_DIV256		(2 << 2)
--
--#define TIMER1_REG_OFFSET	0
--#define TIMER2_REG_OFFSET	0x20
--
--/* Clockevent & Clocksource data */
--
--struct oxnas_rps_timer {
--	struct clock_event_device clkevent;
--	void __iomem *clksrc_base;
--	void __iomem *clkevt_base;
--	unsigned long timer_period;
--	unsigned int timer_prescaler;
+-struct oxnas_nand_ctrl {
+-	struct nand_controller base;
+-	void __iomem *io_base;
 -	struct clk *clk;
--	int irq;
+-	struct nand_chip *chips[OXNAS_NAND_MAX_CHIPS];
+-	unsigned int nchips;
 -};
 -
--static irqreturn_t oxnas_rps_timer_irq(int irq, void *dev_id)
+-static uint8_t oxnas_nand_read_byte(struct nand_chip *chip)
 -{
--	struct oxnas_rps_timer *rps = dev_id;
+-	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 -
--	writel_relaxed(0, rps->clkevt_base + TIMER_CLRINT_REG);
--
--	rps->clkevent.event_handler(&rps->clkevent);
--
--	return IRQ_HANDLED;
+-	return readb(oxnas->io_base);
 -}
 -
--static void oxnas_rps_timer_config(struct oxnas_rps_timer *rps,
--				   unsigned long period,
--				   unsigned int periodic)
+-static void oxnas_nand_read_buf(struct nand_chip *chip, u8 *buf, int len)
 -{
--	uint32_t cfg = rps->timer_prescaler;
+-	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 -
--	if (period)
--		cfg |= TIMER_ENABLE;
--
--	if (periodic)
--		cfg |= TIMER_PERIODIC;
--
--	writel_relaxed(period, rps->clkevt_base + TIMER_LOAD_REG);
--	writel_relaxed(cfg, rps->clkevt_base + TIMER_CTRL_REG);
+-	ioread8_rep(oxnas->io_base, buf, len);
 -}
 -
--static int oxnas_rps_timer_shutdown(struct clock_event_device *evt)
+-static void oxnas_nand_write_buf(struct nand_chip *chip, const u8 *buf,
+-				 int len)
 -{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
+-	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 -
--	oxnas_rps_timer_config(rps, 0, 0);
--
--	return 0;
+-	iowrite8_rep(oxnas->io_base, buf, len);
 -}
 -
--static int oxnas_rps_timer_set_periodic(struct clock_event_device *evt)
+-/* Single CS command control */
+-static void oxnas_nand_cmd_ctrl(struct nand_chip *chip, int cmd,
+-				unsigned int ctrl)
 -{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
+-	struct oxnas_nand_ctrl *oxnas = nand_get_controller_data(chip);
 -
--	oxnas_rps_timer_config(rps, rps->timer_period, 1);
--
--	return 0;
+-	if (ctrl & NAND_CLE)
+-		writeb(cmd, oxnas->io_base + OXNAS_NAND_CMD_CLE);
+-	else if (ctrl & NAND_ALE)
+-		writeb(cmd, oxnas->io_base + OXNAS_NAND_CMD_ALE);
 -}
 -
--static int oxnas_rps_timer_set_oneshot(struct clock_event_device *evt)
+-/*
+- * Probe for the NAND device.
+- */
+-static int oxnas_nand_probe(struct platform_device *pdev)
 -{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
+-	struct device_node *np = pdev->dev.of_node;
+-	struct device_node *nand_np;
+-	struct oxnas_nand_ctrl *oxnas;
+-	struct nand_chip *chip;
+-	struct mtd_info *mtd;
+-	int count = 0;
+-	int err = 0;
+-	int i;
 -
--	oxnas_rps_timer_config(rps, rps->timer_period, 0);
--
--	return 0;
--}
--
--static int oxnas_rps_timer_next_event(unsigned long delta,
--				struct clock_event_device *evt)
--{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
--
--	oxnas_rps_timer_config(rps, delta, 0);
--
--	return 0;
--}
--
--static int __init oxnas_rps_clockevent_init(struct oxnas_rps_timer *rps)
--{
--	ulong clk_rate = clk_get_rate(rps->clk);
--	ulong timer_rate;
--
--	/* Start with prescaler 1 */
--	rps->timer_prescaler = TIMER_DIV1;
--	rps->timer_period = DIV_ROUND_UP(clk_rate, HZ);
--	timer_rate = clk_rate;
--
--	if (rps->timer_period > TIMER_MAX_VAL) {
--		rps->timer_prescaler = TIMER_DIV16;
--		timer_rate = clk_rate / 16;
--		rps->timer_period = DIV_ROUND_UP(timer_rate, HZ);
--	}
--	if (rps->timer_period > TIMER_MAX_VAL) {
--		rps->timer_prescaler = TIMER_DIV256;
--		timer_rate = clk_rate / 256;
--		rps->timer_period = DIV_ROUND_UP(timer_rate, HZ);
--	}
--
--	rps->clkevent.name = "oxnas-rps";
--	rps->clkevent.features = CLOCK_EVT_FEAT_PERIODIC |
--				 CLOCK_EVT_FEAT_ONESHOT |
--				 CLOCK_EVT_FEAT_DYNIRQ;
--	rps->clkevent.tick_resume = oxnas_rps_timer_shutdown;
--	rps->clkevent.set_state_shutdown = oxnas_rps_timer_shutdown;
--	rps->clkevent.set_state_periodic = oxnas_rps_timer_set_periodic;
--	rps->clkevent.set_state_oneshot = oxnas_rps_timer_set_oneshot;
--	rps->clkevent.set_next_event = oxnas_rps_timer_next_event;
--	rps->clkevent.rating = 200;
--	rps->clkevent.cpumask = cpu_possible_mask;
--	rps->clkevent.irq = rps->irq;
--	clockevents_config_and_register(&rps->clkevent,
--					timer_rate,
--					1,
--					TIMER_MAX_VAL);
--
--	pr_info("Registered clock event rate %luHz prescaler %x period %lu\n",
--			clk_rate,
--			rps->timer_prescaler,
--			rps->timer_period);
--
--	return 0;
--}
--
--/* Clocksource */
--
--static void __iomem *timer_sched_base;
--
--static u64 notrace oxnas_rps_read_sched_clock(void)
--{
--	return ~readl_relaxed(timer_sched_base);
--}
--
--static int __init oxnas_rps_clocksource_init(struct oxnas_rps_timer *rps)
--{
--	ulong clk_rate = clk_get_rate(rps->clk);
--	int ret;
--
--	/* use prescale 16 */
--	clk_rate = clk_rate / 16;
--
--	writel_relaxed(TIMER_MAX_VAL, rps->clksrc_base + TIMER_LOAD_REG);
--	writel_relaxed(TIMER_PERIODIC | TIMER_ENABLE | TIMER_DIV16,
--			rps->clksrc_base + TIMER_CTRL_REG);
--
--	timer_sched_base = rps->clksrc_base + TIMER_CURR_REG;
--	sched_clock_register(oxnas_rps_read_sched_clock,
--			     TIMER_BITS, clk_rate);
--	ret = clocksource_mmio_init(timer_sched_base,
--				    "oxnas_rps_clocksource_timer",
--				    clk_rate, 250, TIMER_BITS,
--				    clocksource_mmio_readl_down);
--	if (WARN_ON(ret)) {
--		pr_err("can't register clocksource\n");
--		return ret;
--	}
--
--	pr_info("Registered clocksource rate %luHz\n", clk_rate);
--
--	return 0;
--}
--
--static int __init oxnas_rps_timer_init(struct device_node *np)
--{
--	struct oxnas_rps_timer *rps;
--	void __iomem *base;
--	int ret;
--
--	rps = kzalloc(sizeof(*rps), GFP_KERNEL);
--	if (!rps)
+-	/* Allocate memory for the device structure (and zero it) */
+-	oxnas = devm_kzalloc(&pdev->dev, sizeof(*oxnas),
+-			     GFP_KERNEL);
+-	if (!oxnas)
 -		return -ENOMEM;
 -
--	rps->clk = of_clk_get(np, 0);
--	if (IS_ERR(rps->clk)) {
--		ret = PTR_ERR(rps->clk);
--		goto err_alloc;
+-	nand_controller_init(&oxnas->base);
+-
+-	oxnas->io_base = devm_platform_ioremap_resource(pdev, 0);
+-	if (IS_ERR(oxnas->io_base))
+-		return PTR_ERR(oxnas->io_base);
+-
+-	oxnas->clk = devm_clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(oxnas->clk))
+-		oxnas->clk = NULL;
+-
+-	/* Only a single chip node is supported */
+-	count = of_get_child_count(np);
+-	if (count > 1)
+-		return -EINVAL;
+-
+-	err = clk_prepare_enable(oxnas->clk);
+-	if (err)
+-		return err;
+-
+-	device_reset_optional(&pdev->dev);
+-
+-	for_each_child_of_node(np, nand_np) {
+-		chip = devm_kzalloc(&pdev->dev, sizeof(struct nand_chip),
+-				    GFP_KERNEL);
+-		if (!chip) {
+-			err = -ENOMEM;
+-			goto err_release_child;
+-		}
+-
+-		chip->controller = &oxnas->base;
+-
+-		nand_set_flash_node(chip, nand_np);
+-		nand_set_controller_data(chip, oxnas);
+-
+-		mtd = nand_to_mtd(chip);
+-		mtd->dev.parent = &pdev->dev;
+-		mtd->priv = chip;
+-
+-		chip->legacy.cmd_ctrl = oxnas_nand_cmd_ctrl;
+-		chip->legacy.read_buf = oxnas_nand_read_buf;
+-		chip->legacy.read_byte = oxnas_nand_read_byte;
+-		chip->legacy.write_buf = oxnas_nand_write_buf;
+-		chip->legacy.chip_delay = 30;
+-
+-		/* Scan to find existence of the device */
+-		err = nand_scan(chip, 1);
+-		if (err)
+-			goto err_release_child;
+-
+-		err = mtd_device_register(mtd, NULL, 0);
+-		if (err)
+-			goto err_cleanup_nand;
+-
+-		oxnas->chips[oxnas->nchips++] = chip;
 -	}
 -
--	ret = clk_prepare_enable(rps->clk);
--	if (ret)
--		goto err_clk;
--
--	base = of_iomap(np, 0);
--	if (!base) {
--		ret = -ENXIO;
--		goto err_clk_prepare;
+-	/* Exit if no chips found */
+-	if (!oxnas->nchips) {
+-		err = -ENODEV;
+-		goto err_clk_unprepare;
 -	}
 -
--	rps->irq = irq_of_parse_and_map(np, 0);
--	if (!rps->irq) {
--		ret = -EINVAL;
--		goto err_iomap;
--	}
--
--	rps->clkevt_base = base + TIMER1_REG_OFFSET;
--	rps->clksrc_base = base + TIMER2_REG_OFFSET;
--
--	/* Disable timers */
--	writel_relaxed(0, rps->clkevt_base + TIMER_CTRL_REG);
--	writel_relaxed(0, rps->clksrc_base + TIMER_CTRL_REG);
--	writel_relaxed(0, rps->clkevt_base + TIMER_LOAD_REG);
--	writel_relaxed(0, rps->clksrc_base + TIMER_LOAD_REG);
--	writel_relaxed(0, rps->clkevt_base + TIMER_CLRINT_REG);
--	writel_relaxed(0, rps->clksrc_base + TIMER_CLRINT_REG);
--
--	ret = request_irq(rps->irq, oxnas_rps_timer_irq,
--			  IRQF_TIMER | IRQF_IRQPOLL,
--			  "rps-timer", rps);
--	if (ret)
--		goto err_iomap;
--
--	ret = oxnas_rps_clocksource_init(rps);
--	if (ret)
--		goto err_irqreq;
--
--	ret = oxnas_rps_clockevent_init(rps);
--	if (ret)
--		goto err_irqreq;
+-	platform_set_drvdata(pdev, oxnas);
 -
 -	return 0;
 -
--err_irqreq:
--	free_irq(rps->irq, rps);
--err_iomap:
--	iounmap(base);
--err_clk_prepare:
--	clk_disable_unprepare(rps->clk);
--err_clk:
--	clk_put(rps->clk);
--err_alloc:
--	kfree(rps);
+-err_cleanup_nand:
+-	nand_cleanup(chip);
+-err_release_child:
+-	of_node_put(nand_np);
 -
--	return ret;
+-	for (i = 0; i < oxnas->nchips; i++) {
+-		chip = oxnas->chips[i];
+-		WARN_ON(mtd_device_unregister(nand_to_mtd(chip)));
+-		nand_cleanup(chip);
+-	}
+-
+-err_clk_unprepare:
+-	clk_disable_unprepare(oxnas->clk);
+-	return err;
 -}
 -
--TIMER_OF_DECLARE(ox810se_rps,
--		       "oxsemi,ox810se-rps-timer", oxnas_rps_timer_init);
--TIMER_OF_DECLARE(ox820_rps,
--		       "oxsemi,ox820-rps-timer", oxnas_rps_timer_init);
+-static int oxnas_nand_remove(struct platform_device *pdev)
+-{
+-	struct oxnas_nand_ctrl *oxnas = platform_get_drvdata(pdev);
+-	struct nand_chip *chip;
+-	int i;
+-
+-	for (i = 0; i < oxnas->nchips; i++) {
+-		chip = oxnas->chips[i];
+-		WARN_ON(mtd_device_unregister(nand_to_mtd(chip)));
+-		nand_cleanup(chip);
+-	}
+-
+-	clk_disable_unprepare(oxnas->clk);
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id oxnas_nand_match[] = {
+-	{ .compatible = "oxsemi,ox820-nand" },
+-	{},
+-};
+-MODULE_DEVICE_TABLE(of, oxnas_nand_match);
+-
+-static struct platform_driver oxnas_nand_driver = {
+-	.probe	= oxnas_nand_probe,
+-	.remove	= oxnas_nand_remove,
+-	.driver	= {
+-		.name		= "oxnas_nand",
+-		.of_match_table = oxnas_nand_match,
+-	},
+-};
+-
+-module_platform_driver(oxnas_nand_driver);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Neil Armstrong <narmstrong@baylibre.com>");
+-MODULE_DESCRIPTION("Oxnas NAND driver");
+-MODULE_ALIAS("platform:oxnas_nand");
 
 -- 
 2.34.1
