@@ -2,61 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2166C6FD18
-	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:37:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD5BAC77B60
+	for <linux-pm@archiver.kernel.org>; Fri, 31 Mar 2023 08:37:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231710AbjCaIhH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Mar 2023 04:37:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57218 "EHLO
+        id S231865AbjCaIhP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Mar 2023 04:37:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56528 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231709AbjCaIgb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:36:31 -0400
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B06FE1D87D
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:11 -0700 (PDT)
-Received: by mail-wm1-x329.google.com with SMTP id n10-20020a05600c4f8a00b003ee93d2c914so14505086wmq.2
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:11 -0700 (PDT)
+        with ESMTP id S231722AbjCaIgc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 04:36:32 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C53AA1FD09
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:12 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id l12so21567656wrm.10
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2023 01:35:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680251704;
+        d=linaro.org; s=google; t=1680251712;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=DTkJHErpGDJ9v7s3ekjmHN8aO4NJsl7q6Q7QZM8QMbI=;
-        b=UGr6jhzO3hUVTB6rY7/leRAeWl750ZHVMPEYAKeTT4X06mEnwpBCz4Phsf+P7ItSjw
-         TIi62QAKl2i4gwbJZgnixjiWLnYymuWJtQlev/UOTE8L3tTaSoTPelFszUO9MlZAhEBb
-         svJnNSmQ+fTYwJwHOfZ+BnzUQABhVZKyZM2IISk4TAN6KerdE9+u76JqT768MMwy0WrZ
-         hHa30huv6N2SbwamrxfA5MxDt5MO3eFrL7KNDytCeuOyhCtNf98GhPdjDroQkxFbYiio
-         9lM6zhXS3q9g9LP/PSzlqPbEENCEjOSZL6tjJxXO/fNDHiRHf4knVvhNWSfCrnbGAaBR
-         r18g==
+        bh=Lfco65EqQfHZJxTK1kxWA78ZamfCWUWZKPHL0Bp1xH4=;
+        b=SqOTTD4EeiNGBszaNOzDLqviTo9jI0ZhAKSeRT3l5LeAaBvHoV1VbnUiNYxQjrF5S5
+         UUujdXiQCveG/Iy+PsAnxgkKeorfMhJAmQ2J1mYgkX8eg020zgf6nL/f/EExNZqkpRUx
+         XcdDXQ5bnCtHLOcSYFcdnuXeE9b+QxZG2/mH1nfNDIA7j4YtTmk1Al3zY4k3rR5puTQU
+         l2NatRLdUPmY31rjFWxbQkcwmbAI5FXvErZOPP+aB0G/SM/9J1u6rMIIFKuvCVysu2q3
+         VMSa4Jt860AaDpWD2pjM4fb8tv0/a2sxwe3l0seQy7PhpYace6EYCoZskI6VrPmid9Ji
+         W8oQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680251704;
+        d=1e100.net; s=20210112; t=1680251712;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=DTkJHErpGDJ9v7s3ekjmHN8aO4NJsl7q6Q7QZM8QMbI=;
-        b=WSIOfRtwaqklTscAIigjvjVNUh16mMN32FlJPQ6DcgiNQ+6yUdZwItwF8lCq7rxQF9
-         1sgqjKzgahlNnI11w4j/4uqwl4+VDyGOc7tTfw9xQ+hfSNQDtKm5v/eJnI+kr7CdVc9f
-         yb7ZzduVhbqU6O8N/8xuRNTm0xHrnQXUptN8TobiPB1ToZjyHuvq6mBRzrEasgC846Kq
-         kX0GVtT/kyi89NwIBefArMKRsbClAdeAST0alGJYTn2wuxFeW02rTVUXeqxGkaDg0q+h
-         9u8fBC698ataBDxPvzClMLvN4VoqvgtxvYWLdSoI/40MPkAb8k5nh2s+wbm5Rv5F+bE7
-         qtaw==
-X-Gm-Message-State: AO0yUKXZO2s04//rVLxEfPiZ7SkeohbF2kOoyw0tdPZ+rGenCT7gpde4
-        uh17uapDnSQ4q86K05TwnzEiOg==
-X-Google-Smtp-Source: AK7set+EJ3ur6/ee9yCfqdjB5MLNFawGDsn0ZJD+xQ08Aa57oAcgfY47mb3l6TfHxYQ73tsX3o+sPw==
-X-Received: by 2002:a1c:7714:0:b0:3ee:3f7:35aa with SMTP id t20-20020a1c7714000000b003ee03f735aamr21641887wmi.19.1680251703765;
-        Fri, 31 Mar 2023 01:35:03 -0700 (PDT)
+        bh=Lfco65EqQfHZJxTK1kxWA78ZamfCWUWZKPHL0Bp1xH4=;
+        b=rN9m9Mj6VP+6cKDum+SXjEknp3JUS0sEw+OOII7Lnrq/l905YgPev8w6R8puM+E5J0
+         bZuFZroBbBr4TTj0gSb9sMmrhRjSB9pERFrdfPiJvczfpOo8KSFMXu8j5eMNOylVxQnn
+         oZCVW+khzLXxNulodlqG3etFpMerQVf+dNGUs1wIaX738FfY2rYywy18UMRIIEV360Ut
+         YG7r/qb0B28DajI/2YbFDyZq1njcONjxoqWk91xIyb+uZAHCHfh1kB8NnyVK5gPljHSU
+         c2ScasZMAtux5CWsQR0FlgQGCYojs0bJNwNamo3UPVDche7xpNSAJQ7g9HRXBwrBprlq
+         2t7g==
+X-Gm-Message-State: AAQBX9f1mkJmIQVyYCOfkrWyffFfLE3SyPwrBxj3W8eIOP/mbWIRWDnd
+        kI7flMm3XiY9RKOQ0M9tLh8kyw==
+X-Google-Smtp-Source: AKy350YfLJVXZRDyUNg84s43q40a428Zli09J7iKvodwvFp3SatohdxhFRTG46DXiPWYNxkqIkfYZA==
+X-Received: by 2002:adf:f348:0:b0:2d7:9206:488d with SMTP id e8-20020adff348000000b002d79206488dmr20315336wrp.36.1680251712356;
+        Fri, 31 Mar 2023 01:35:12 -0700 (PDT)
 Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id e11-20020a5d4e8b000000b002cde626cd96sm1563153wru.65.2023.03.31.01.35.02
+        by smtp.gmail.com with ESMTPSA id e11-20020a5d4e8b000000b002cde626cd96sm1563153wru.65.2023.03.31.01.35.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Mar 2023 01:35:03 -0700 (PDT)
+        Fri, 31 Mar 2023 01:35:11 -0700 (PDT)
 From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Fri, 31 Mar 2023 10:34:52 +0200
-Subject: [PATCH RFC 14/20] dt-bindings: pinctrl: oxnas,pinctrl: remove
- obsolete bindings
+Date:   Fri, 31 Mar 2023 10:34:58 +0200
+Subject: [PATCH RFC 20/20] MAINTAINERS: remove OXNAS entry
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230331-topic-oxnas-upstream-remove-v1-14-5bd58fd1dd1f@linaro.org>
+Message-Id: <20230331-topic-oxnas-upstream-remove-v1-20-5bd58fd1dd1f@linaro.org>
 References: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
 In-Reply-To: <20230331-topic-oxnas-upstream-remove-v1-0-5bd58fd1dd1f@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
@@ -95,76 +94,35 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 Due to lack of maintainance and stall of development for a few years now,
-and since no new features will ever be added upstream, remove the
-OX810 and OX820 pinctrl bindings.
+and since no new features will ever be added upstream, remove MAINTAINERS
+entry for OXNAS files.
 
 Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
 ---
- .../devicetree/bindings/pinctrl/oxnas,pinctrl.txt  | 56 ----------------------
- 1 file changed, 56 deletions(-)
+ MAINTAINERS | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/pinctrl/oxnas,pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/oxnas,pinctrl.txt
-deleted file mode 100644
-index b1159434f593..000000000000
---- a/Documentation/devicetree/bindings/pinctrl/oxnas,pinctrl.txt
-+++ /dev/null
-@@ -1,56 +0,0 @@
--* Oxford Semiconductor OXNAS SoC Family Pin Controller
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8d5bc223f305..c9a29d839ea2 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2551,16 +2551,6 @@ S:	Maintained
+ W:	http://www.digriz.org.uk/ts78xx/kernel
+ F:	arch/arm/mach-orion5x/ts78xx-*
+ 
+-ARM/OXNAS platform support
+-M:	Neil Armstrong <neil.armstrong@linaro.org>
+-L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+-L:	linux-oxnas@groups.io (moderated for non-subscribers)
+-S:	Maintained
+-F:	arch/arm/boot/dts/ox8*.dts*
+-F:	arch/arm/mach-oxnas/
+-F:	drivers/power/reset/oxnas-restart.c
+-N:	oxnas
 -
--Please refer to pinctrl-bindings.txt, ../gpio/gpio.txt, and
--../interrupt-controller/interrupts.txt for generic information regarding
--pin controller, GPIO, and interrupt bindings.
--
--OXNAS 'pin configuration node' is a node of a group of pins which can be
--used for a specific device or function. This node represents configurations of
--pins, optional function, and optional mux related configuration.
--
--Required properties for pin controller node:
-- - compatible: "oxsemi,ox810se-pinctrl" or "oxsemi,ox820-pinctrl"
-- - oxsemi,sys-ctrl: a phandle to the system controller syscon node
--
--Required properties for pin configuration sub-nodes:
-- - pins: List of pins to which the configuration applies.
--
--Optional properties for pin configuration sub-nodes:
------------------------------------------------------
-- - function: Mux function for the specified pins.
-- - bias-pull-up: Enable weak pull-up.
--
--Example:
--
--pinctrl: pinctrl {
--	compatible = "oxsemi,ox810se-pinctrl";
--
--	/* Regmap for sys registers */
--	oxsemi,sys-ctrl = <&sys>;
--
--	pinctrl_uart2: pinctrl_uart2 {
--		uart2a {
--			pins = "gpio31";
--			function = "fct3";
--		};
--		uart2b {
--			pins = "gpio32";
--			function = "fct3";
--		};
--	};
--};
--
--uart2: serial@900000 {
--	compatible = "ns16550a";
--	reg = <0x900000 0x100000>;
--	clocks = <&sysclk>;
--	interrupts = <29>;
--	reg-shift = <0>;
--	fifo-size = <16>;
--	reg-io-width = <1>;
--	current-speed = <115200>;
--	no-loopback-test;
--	resets = <&reset 22>;
--	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_uart2>;
--};
+ ARM/QUALCOMM SUPPORT
+ M:	Andy Gross <agross@kernel.org>
+ M:	Bjorn Andersson <andersson@kernel.org>
 
 -- 
 2.34.1
