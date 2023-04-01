@@ -2,116 +2,168 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88A90C76196
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 15:08:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0325CC6FD1D
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 19:05:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230090AbjDAPIH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Apr 2023 11:08:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41172 "EHLO
+        id S229780AbjDATFD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Apr 2023 15:05:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230061AbjDAPIG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2023 11:08:06 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC7291EFDF
-        for <linux-pm@vger.kernel.org>; Sat,  1 Apr 2023 08:07:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1680361623;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=3XM0s6Py2s9NABNZsjEwB9EJNT03Us1/96JqO8MWWMA=;
-        b=LnFsUuxIRIS9g6WzD2fXW/3xb7R72K0mf287sXQ4sFOF4MSLH7CRvdQY9Mt2oFFHrsewzS
-        6iJUCGdMTRAq9XL7l+LNgTy4CxunB5x5nBCpNEGHdiWW6DfWO5CtmcOCK/p+TrkICvRqCp
-        JdvmJJaMV3fQXprjklvUfrcTjVZfPDQ=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-640-2V02dPoEPuW97iN-PAzPlA-1; Sat, 01 Apr 2023 11:07:01 -0400
-X-MC-Unique: 2V02dPoEPuW97iN-PAzPlA-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 536F32A59560;
-        Sat,  1 Apr 2023 15:07:01 +0000 (UTC)
-Received: from localhost.localdomain (unknown [10.39.192.49])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id BB5032A68;
-        Sat,  1 Apr 2023 15:07:00 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 1/1] power: supply: axp288_charger: Use alt usb-id extcon on some x86 android tablets
-Date:   Sat,  1 Apr 2023 17:06:51 +0200
-Message-Id: <20230401150651.597155-2-hdegoede@redhat.com>
-In-Reply-To: <20230401150651.597155-1-hdegoede@redhat.com>
-References: <20230401150651.597155-1-hdegoede@redhat.com>
+        with ESMTP id S229450AbjDATFC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2023 15:05:02 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAE76AD18
+        for <linux-pm@vger.kernel.org>; Sat,  1 Apr 2023 12:04:59 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id d17so25502048wrb.11
+        for <linux-pm@vger.kernel.org>; Sat, 01 Apr 2023 12:04:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1680375898;
+        h=content-transfer-encoding:subject:from:cc:to:content-language
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=m98PBJ4u06sVFb+2thOqdSIivC6c7g7mGdj5jNvYhaE=;
+        b=N8jVwiJWykSOq4wihv5KjwnWrisRqU8Bidp4gX+tsyBkNfqmGowG4mG4zKzRKh0tCG
+         nrKLl3ZQEd0apqsRqOTwk1+Otgv/8W7qX9HP4isfP+sU9OemXWsnRDBe/Cw0IBX/anpt
+         MF4ksEBnQdAcfND2LUlOKrCGFbET+Hf9a3haFa4wBCVoztg1C0/sYm0AoQxx2OGj/mJ2
+         dPgIfF61hJbe0OXjtja5gO2Epq37ocSB/K3X8+65NrHirnGrqcdsk3Zaun/FXeDegaMu
+         bmoNdhC+iWAtKp3f+ARzmgcOfTeCQF4tRPGo4zSwUte33xi+6hWeaKGsNDz9TZg5kYLK
+         ByIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680375898;
+        h=content-transfer-encoding:subject:from:cc:to:content-language
+         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=m98PBJ4u06sVFb+2thOqdSIivC6c7g7mGdj5jNvYhaE=;
+        b=EOmpMQEFOU5pPKSDV62M7S8vqo/rhGPjMjZmPBzgMhpsMtv33tWlg9AWMixCemLEKW
+         NlIxk3exZgulNJDdbfvdB4fzQwatwnFBO2B8LXb0ze34SAWrGf1wXohrU0098SaBWQgj
+         E9PaZvMcoDOY3ZTIdrmaoQtj+8bQCDjgf8WfzGkcmlXQqZw1S6jB+NgaWiuDAjVe3RzD
+         b/cSlGd9njhVMfEn6XtFasjzOEQTRyBHmeO5UEWI5/MHAhDM8onLGUPE7hy3KAmH1Nxb
+         szCZ8DOKZyMqHLQ0sajiKKnCf6/Bgb5vwarTRi+DxJRH/XFg1QEDWeIbNZUz7Mggh32u
+         UH6A==
+X-Gm-Message-State: AAQBX9fr/Bspa4FgRQXCZpzDCKKzftDGbA0nQr1GKFC4Ieg7lbiw4qIa
+        /VhbGkr9p7EcDGTLReYT193sq8SNkxDKDdMC60g=
+X-Google-Smtp-Source: AKy350bHmieCk/E+JXDNuyqlg93a0oSgsfoHhnTSq5oZQpaNCvPJ9GsaR9wRh/WemcSxev436nY8vQ==
+X-Received: by 2002:a5d:5601:0:b0:2d2:ac99:a72 with SMTP id l1-20020a5d5601000000b002d2ac990a72mr26085616wrv.46.1680375898029;
+        Sat, 01 Apr 2023 12:04:58 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:b36a:1186:309c:1f9a? ([2a05:6e02:1041:c10:b36a:1186:309c:1f9a])
+        by smtp.googlemail.com with ESMTPSA id r10-20020a056000014a00b002d2f0e23acbsm5534110wrx.12.2023.04.01.12.04.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 01 Apr 2023 12:04:57 -0700 (PDT)
+Message-ID: <ab323c72-61f9-9ac6-48ce-366f62e82091@linaro.org>
+Date:   Sat, 1 Apr 2023 21:04:56 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM mailing list <linux-pm@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amjad Ouled-Ameur <aouledameur@baylibre.com>,
+        Fabien Parent <fparent@baylibre.com>,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Yang Li <yang.lee@linux.alibaba.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [GIT PULL] thermal for v6.4-rc1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-x86 ACPI boards which ship with only Android as their factory image may
-have pretty broken ACPI tables. This includes broken _AEI ACPI GPIO event
-handlers, which are normally used to listen to the micro-USB ID pin and:
+The following changes since commit 2b6db9efa50799fa75ce609f24b355f29504bd9a:
 
-1. Switch the USB-mux to the host / device USB controllers
-2. Disable Vbus path before enabling the 5V boost (AXP reg 0x30 bit 7)
-3. Turn 5V Vboost on / off
+   Merge branch 'thermal-core' into thermal (2023-03-08 14:03:56 +0100)
 
-On non broken systems where this is not done through an ACPI GPIO event
-handler, there is an ACPI INT3496 device describing the involved GPIOs
-which are handled by the extcon-intel-int3496 driver; and axp288-charger.ko
-listens to this extcon-device and disables the Vbus path when necessary.
+are available in the Git repository at:
 
-On x86 Android boards, with broken ACPI GPIO event handlers, these are
-disabled by acpi_quirk_skip_gpio_event_handlers() and an intel-int3496
-extcon device is manually instantiated by x86-android-tablets.ko .
-
-Add support to the axp288-charger code for this setup, so that it
-properly disables the Vbus path when necessary. Note this uses
-acpi_quirk_skip_gpio_event_handlers() to identify these systems,
-to avoid the need to add a separate DMI match table for this.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_charger.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 15219ed43ce9..b5903193e2f9 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -836,6 +836,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
- 	struct power_supply_config charger_cfg = {};
-+	const char *extcon_name = NULL;
- 	unsigned int val;
  
- 	/*
-@@ -872,8 +873,18 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return PTR_ERR(info->cable.edev);
- 	}
- 
--	if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1)) {
--		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
-+	/*
-+	 * On devices with broken ACPI GPIO event handlers there also is no ACPI
-+	 * "INT3496" (USB_HOST_EXTCON_HID) device. x86-android-tablets.ko
-+	 * instantiates an "intel-int3496" extcon on these devs as a workaround.
-+	 */
-+	if (acpi_quirk_skip_gpio_event_handlers())
-+		extcon_name = "intel-int3496";
-+	else if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1))
-+		extcon_name = USB_HOST_EXTCON_NAME;
-+
-+	if (extcon_name) {
-+		info->otg.cable = extcon_get_extcon_dev(extcon_name);
- 		if (IS_ERR(info->otg.cable)) {
- 			dev_err_probe(dev, PTR_ERR(info->otg.cable),
- 				      "extcon_get_extcon_dev(%s) failed\n",
+ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git 
+tags/thermal-v6.4-rc1-1
+
+for you to fetch changes up to 0c492be4002b7411a1587b429e68e0cf3f562488:
+
+   thermal/drivers/ti: Use fixed update interval (2023-04-01 20:51:45 +0200)
+
+----------------------------------------------------------------
+- Add more thermal zone device encapsulation: prevent setting
+   structure field directly, access the sensor device instead the
+   thermal zone's device for trace, relocate the traces in
+   drivers/thermal (Daniel Lezcano)
+
+- Use the generic trip point for the i.MX and remove the get_trip_temp
+   ops (Daniel Lezcano)
+
+- Use the devm_platform_ioremap_resource() in the Hisilicon driver
+   (Yang Li)
+
+- Remove R-Car H3 ES1.* handling as public has only access to the ES2
+   version and the upstream support for the ES1 has been shutdown 
+(Wolfram Sang)
+
+- Add a delay after initializing the bank in order to let the time to
+   the hardware to initialze itself before reading the temperature
+   (Amjad Ouled-Ameur)
+
+- Add MT8365 support (Amjad Ouled-Ameur)
+
+----------------------------------------------------------------
+Amjad Ouled-Ameur (1):
+       thermal/drivers/mediatek: Add delay after thermal banks 
+initialization
+
+Daniel Lezcano (6):
+       thermal/drivers/imx: Remove get_trip_temp ops
+       thermal/drivers/imx: Use the thermal framework for the trip point
+       thermal/core: Relocate the traces definition in thermal directory
+       thermal/drivers/db8500: Use driver dev instead of tz->device
+       thermal/drivers/stm: Don't set no_hwmon to false
+       thermal/drivers/ti: Use fixed update interval
+
+Fabien Parent (2):
+       dt-bindings: thermal: mediatek: Add binding documentation for 
+MT8365 SoC
+       thermal/drivers/mediatek: Add support for MT8365 SoC
+
+Markus Schneider-Pargmann (1):
+       thermal/drivers/mediatek: Control buffer enablement tweaks
+
+Wolfram Sang (1):
+       thermal/drivers/rcar_gen3_thermal: Remove R-Car H3 ES1.* handling
+
+Yang Li (1):
+       thermal/drivers/hisi: Use devm_platform_ioremap_resource()
+
+  .../bindings/thermal/mediatek-thermal.txt          |   1 +
+  drivers/thermal/Makefile                           |   3 +-
+  drivers/thermal/cpufreq_cooling.c                  |   2 +-
+  drivers/thermal/db8500_thermal.c                   |   7 +-
+  drivers/thermal/devfreq_cooling.c                  |   2 +-
+  drivers/thermal/gov_fair_share.c                   |   2 +-
+  drivers/thermal/gov_power_allocator.c              |   2 +-
+  drivers/thermal/gov_step_wise.c                    |   2 +-
+  drivers/thermal/hisi_thermal.c                     |   4 +-
+  drivers/thermal/imx_thermal.c                      |  19 ++--
+  drivers/thermal/mediatek/auxadc_thermal.c          | 107 
++++++++++++++++++----
+  drivers/thermal/rcar_gen3_thermal.c                |  52 +---------
+  drivers/thermal/st/stm_thermal.c                   |   1 -
+  drivers/thermal/thermal_core.c                     |   2 +-
+  drivers/thermal/thermal_helpers.c                  |   3 +-
+  .../thermal.h => drivers/thermal/thermal_trace.h   |   6 ++
+  .../thermal/thermal_trace_ipa.h                    |   6 ++
+  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   8 +-
+  18 files changed, 131 insertions(+), 98 deletions(-)
+  rename include/trace/events/thermal.h => 
+drivers/thermal/thermal_trace.h (97%)
+  rename include/trace/events/thermal_power_allocator.h => 
+drivers/thermal/thermal_trace_ipa.h (96%)
+
 -- 
-2.39.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
