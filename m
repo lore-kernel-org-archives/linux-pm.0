@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02F93C761A6
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 01:47:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80D59C761AF
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 01:48:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233896AbjDABrJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Mar 2023 21:47:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46378 "EHLO
+        id S233926AbjDABsH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Mar 2023 21:48:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49226 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233841AbjDABqi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 21:46:38 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1950325554;
-        Fri, 31 Mar 2023 18:44:49 -0700 (PDT)
+        with ESMTP id S233852AbjDABro (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 21:47:44 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2A22265AB;
+        Fri, 31 Mar 2023 18:45:29 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id B0F3AB83262;
-        Sat,  1 Apr 2023 01:44:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E2EFC4339B;
-        Sat,  1 Apr 2023 01:44:46 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 998ABB8330B;
+        Sat,  1 Apr 2023 01:44:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52D8CC433D2;
+        Sat,  1 Apr 2023 01:44:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1680313487;
-        bh=bc7tp/0HYO/uCoaOARNeHLN2//EvRzv+YWJcqQZ3kFU=;
+        s=k20201202; t=1680313460;
+        bh=w+eQeY8xWmJH+xm58zvXHBkiJC8aAfsMU8f1VaxE4AQ=;
         h=From:To:Cc:Subject:Date:From;
-        b=P/snOpZqG7esADmSOTeOMkzNaoeQW4uPYuFJd4ejO+++56sLzgRnm2jh+Ma5vjRb4
-         NeqAtWoJmeVI38Cj1l+w5g6wyJd2SrR6zviQSBDVp3Uoerz4xnyMoauOWKhziI215w
-         rtS1FjvK/nFAK/CmFazHGgskvObBTDr7XA7yu9uE2sVkN4OIG2s2jQGlLwnGuXqLEq
-         LTPhd+zhIhPMNFt5x42RVngXsBszNnMTnPX3L0OIYCkThJaFzX/X/kgXEuPWxEr42J
-         rIrDt9B+ialViV4XmB+I4XluEDwibw7AmV9oUeBxA2mLRK0a79WahTx1kYn0QU+Oxe
-         hynN08XsFZkFw==
+        b=h5c8U9deAPAQUMONaFcJhgh3gZFuoQH1fc3m+4x9mH02qyQX8HSf2vGEaPKpfAVNl
+         rgh9bGM79KMi785HKaZ2fxoGMgQE+5p+SSkS7pALt3PtzalnFputdKGie/axkf5pYu
+         5p7iUHlH00KL6RUoywbflbCw2pY7gifFDQxzUkUwixu9DlkYiqjNp/uxocXnECGw5V
+         rOHk29f3wS8g4qcSbR6P8Yogd90cwT/b1gJkaNitepDAv93o2hAmXF5S/GZBOmcOE8
+         L/kYVn022dg7ekXg5Si9TEhUUpSqfw+SNmsx0cBeqg/hQZYA/wWN4Vl00Vf8UfT27G
+         Z1y5jHIsDpq+g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Grant Grundler <grundler@chromium.org>,
@@ -39,9 +39,9 @@ Cc:     Grant Grundler <grundler@chromium.org>,
         Sasha Levin <sashal@kernel.org>, bleung@chromium.org,
         sre@kernel.org, chrome-platform@lists.linux.dev,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 1/4] power: supply: cros_usbpd: reclassify "default case!" as debug
-Date:   Fri, 31 Mar 2023 21:44:41 -0400
-Message-Id: <20230401014444.3357427-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 1/7] power: supply: cros_usbpd: reclassify "default case!" as debug
+Date:   Fri, 31 Mar 2023 21:44:11 -0400
+Message-Id: <20230401014417.3357252-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 X-stable: review
@@ -73,10 +73,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
-index 688a16bacfbbd..74b5914abbf7e 100644
+index d89e08efd2ad0..0a4f02e4ae7ba 100644
 --- a/drivers/power/supply/cros_usbpd-charger.c
 +++ b/drivers/power/supply/cros_usbpd-charger.c
-@@ -242,7 +242,7 @@ static int cros_usbpd_charger_get_power_info(struct port_data *port)
+@@ -276,7 +276,7 @@ static int cros_usbpd_charger_get_power_info(struct port_data *port)
  		port->psy_current_max = 0;
  		break;
  	default:
