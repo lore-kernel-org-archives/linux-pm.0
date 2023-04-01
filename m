@@ -2,232 +2,109 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF7D1C6FD1D
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 08:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A22E4C6FD1D
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 11:35:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229536AbjDAI7b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Apr 2023 04:59:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35660 "EHLO
+        id S229708AbjDALf1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Apr 2023 07:35:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46650 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229437AbjDAI7a (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2023 04:59:30 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 985234EC8;
-        Sat,  1 Apr 2023 01:59:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1680339569; x=1711875569;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=Bc7ArXz/vWXFGr5BByH146n6s1vyUE41mjE6rULWOSY=;
-  b=TD5EP3EQuPSsxLrl9IXmI4GVs79I+qFqh0kRkOIQa4lVnojlFU1ANBZV
-   CdC2P2mKbn/0PW4+51gWF9NNhQ5r5tMbU32K+DKxdaGw3GgZ6lesqumXK
-   C8ZZliM4Mw/Irx1Lh0NghJ6tHAtiio+0yz/ew6vYVDGKqSL57JH4HYO7n
-   cRLV8QItCnA8McT50JLgm0I3+30mzeFLyDJ1f5FVdwnMAdGb5A4HWl+K3
-   TFiAnkBVEdbBOQe2kD2C+mLCOo5ByGFbFy2vlb7vD/yW/zWxbmGN7fsWq
-   OGtm+4AlHb2V2I1AR5hAqlEHbY3hiyrK9h7PsPaYemQgxRnS+sHoupu1Q
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10666"; a="343314041"
-X-IronPort-AV: E=Sophos;i="5.98,310,1673942400"; 
-   d="scan'208";a="343314041"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Apr 2023 01:59:29 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10666"; a="635557538"
-X-IronPort-AV: E=Sophos;i="5.98,310,1673942400"; 
-   d="scan'208";a="635557538"
-Received: from chenyu-dev.sh.intel.com ([10.239.158.170])
-  by orsmga003.jf.intel.com with ESMTP; 01 Apr 2023 01:59:26 -0700
-From:   Chen Yu <yu.c.chen@intel.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>
-Cc:     Ye Bin <yebin10@huawei.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>,
-        Yifan Li <yifan2.li@intel.com>
-Subject: [PATCH] PM: hibernate: Do not get block device exclusively in test_resume mode
-Date:   Sun,  2 Apr 2023 00:55:40 +0800
-Message-Id: <20230401165540.322665-1-yu.c.chen@intel.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S229682AbjDALfY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2023 07:35:24 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38D1BB765
+        for <linux-pm@vger.kernel.org>; Sat,  1 Apr 2023 04:34:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1680348877;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=J5VnVhbHSvcA014php78QLEnB2oArEoTP1K4/6SYEVc=;
+        b=Dxre8NhMB+pJpgDxDYmvmJP5JD3Wu2mQzNLQ3SAHQh9MEbvA6m7hggrDoshVbanc0RRUHR
+        YpHLyNIPZbgSVhIvJcKc5EaJDHKZv10lDPV3nLAH2JLTqR5gg+wlVJoGVOCMeX9pzK5JEu
+        4htx79uT6/nWn5MXfJLs0b+qqEXVRho=
+Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
+ [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-640-JZmOpaX4Mg6xdiGaVEQtEw-1; Sat, 01 Apr 2023 07:34:36 -0400
+X-MC-Unique: JZmOpaX4Mg6xdiGaVEQtEw-1
+Received: by mail-qv1-f71.google.com with SMTP id r4-20020ad44044000000b005ad0ce58902so10916864qvp.5
+        for <linux-pm@vger.kernel.org>; Sat, 01 Apr 2023 04:34:36 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680348876;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=J5VnVhbHSvcA014php78QLEnB2oArEoTP1K4/6SYEVc=;
+        b=ppaF5cYNpd7Ei1lUkWnv3YheamgviUYu/DweZyu8yK0dMOyyUKCA8tAd8S/nd2IClk
+         cTnV9CUHtwX5E1RTlshVeyrnr52MmW+LxzPBptb1iYgrTLx4ZhWXONZ8gg7895mmmsFf
+         MgXXBsuBNNmCG37NW0YKAYxCBl8BW44Vt9SJa8G2mMFd5KVjOSJfuJHewhwcqcMVSIlU
+         oSz+UTNs0x6t54qqGFyqOKlGwHCRP4+kX83NtuTgNrn8FFsDNySVkpCV1cCsIO3LdVnd
+         qL6ljmX5q1WcMREF6G23xvwzWU4yCr3UXNA8ldwVcfDVIJyjaTBxNBOAz+gNmKXz+rLq
+         c1Zg==
+X-Gm-Message-State: AAQBX9fTiuhQSPulxiRFG8l+Jl0CufjqHVIX3oX72BqWKnfxRNn1uau9
+        2F7EhqCUQk409SAuVdWM7Zc9KUCxtwjX4b5sAqyQnE+zxLOheQhUi8Z8w2lYlBjY0DX7tjoWj0q
+        BfTbRF9WOiKbX4wX9b9c=
+X-Received: by 2002:a05:6214:501e:b0:584:8c13:3041 with SMTP id jo30-20020a056214501e00b005848c133041mr18549532qvb.24.1680348875816;
+        Sat, 01 Apr 2023 04:34:35 -0700 (PDT)
+X-Google-Smtp-Source: AKy350ZH/PIz9aT1vkMeJPCy77zunA2Q4o1S573i0+gKG+HwMtgD6hdQufuIhPWM0rPxuQRAce5LcQ==
+X-Received: by 2002:a05:6214:501e:b0:584:8c13:3041 with SMTP id jo30-20020a056214501e00b005848c133041mr18549509qvb.24.1680348875582;
+        Sat, 01 Apr 2023 04:34:35 -0700 (PDT)
+Received: from dell-per740-01.7a2m.lab.eng.bos.redhat.com (nat-pool-bos-t.redhat.com. [66.187.233.206])
+        by smtp.gmail.com with ESMTPSA id s11-20020ad4524b000000b005dd8b9345d8sm1230100qvq.112.2023.04.01.04.34.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 01 Apr 2023 04:34:35 -0700 (PDT)
+From:   Tom Rix <trix@redhat.com>
+To:     sre@kernel.org, nathan@kernel.org, ndesaulniers@google.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        llvm@lists.linux.dev, Tom Rix <trix@redhat.com>
+Subject: [PATCH] power: supply: twl4030-charger: remove unused cur_reg variable
+Date:   Sat,  1 Apr 2023 07:34:32 -0400
+Message-Id: <20230401113432.1873847-1-trix@redhat.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The system refused to do a test_resume because it found that the
-swap device has already been taken by someone else. Specificly,
-the swsusp_check()->blkdev_get_by_dev(FMODE_EXCL) is supposed to
-do this check.
+clang with W=1 reports
+drivers/power/supply/twl4030_charger.c:242:16: error: variable
+  'cur_reg' set but not used [-Werror,-Wunused-but-set-variable]
+        unsigned reg, cur_reg;
+                      ^
+This variable is not used so remove it.
 
-Steps to reproduce:
- dd if=/dev/zero of=/swapfile bs=$(cat /proc/meminfo | 
-       awk '/MemTotal/ {print $2}') count=1024 conv=notrunc
- mkswap /swapfile
- swapon /swapfile
- swap-offset /swapfile
- echo 34816 > /sys/power/resume_offset
- echo test_resume > /sys/power/disk
- echo disk > /sys/power/state
-
- PM: Using 3 thread(s) for compression
- PM: Compressing and saving image data (293150 pages)...
- PM: Image saving progress:   0%
- PM: Image saving progress:  10%
- ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
- ata1.00: configured for UDMA/100
- ata2: SATA link down (SStatus 0 SControl 300)
- ata5: SATA link down (SStatus 0 SControl 300)
- ata6: SATA link down (SStatus 0 SControl 300)
- ata3: SATA link down (SStatus 0 SControl 300)
- ata4: SATA link down (SStatus 0 SControl 300)
- PM: Image saving progress:  20%
- PM: Image saving progress:  30%
- PM: Image saving progress:  40%
- PM: Image saving progress:  50%
- pcieport 0000:00:02.5: pciehp: Slot(0-5): No device found
- PM: Image saving progress:  60%
- PM: Image saving progress:  70%
- PM: Image saving progress:  80%
- PM: Image saving progress:  90%
- PM: Image saving done
- PM: hibernation: Wrote 1172600 kbytes in 2.70 seconds (434.29 MB/s)
- PM: S|
- PM: hibernation: Basic memory bitmaps freed
- PM: Image not found (code -16)
-
-This is because when using the swapfile as the hibernation storage,
-the block device where the swapfile is located has already been mounted
-by the OS distribution(usually been mounted as the rootfs). This is not
-an issue for normal hibernation, because software_resume()->swsusp_check()
-happens before the block device(rootfs) mount. But it is a problem for the
-test_resume mode. Because when test_resume happens, the block device has
-been mounted already.
-
-Thus remove the FMODE_EXCL for test_resume mode. This would not be a
-problem because in test_resume stage, the processes have already been
-frozen, and the race condition described in
-Commit 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
-is unlikely to happen.
-
-Fixes: 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
-Reported-by: Yifan Li <yifan2.li@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: Tom Rix <trix@redhat.com>
 ---
- kernel/power/hibernate.c | 18 +++++++++++-------
- kernel/power/power.h     |  2 +-
- kernel/power/swap.c      | 10 +++++++---
- 3 files changed, 19 insertions(+), 11 deletions(-)
+ drivers/power/supply/twl4030_charger.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 793c55a2becb..f50456e72f0a 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -683,22 +683,26 @@ static void power_down(void)
- 		cpu_relax();
- }
- 
--static int load_image_and_restore(void)
-+static int load_image_and_restore(bool safe)
+diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
+index 7adfd69fe649..5fa5b2311330 100644
+--- a/drivers/power/supply/twl4030_charger.c
++++ b/drivers/power/supply/twl4030_charger.c
+@@ -239,7 +239,7 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
  {
-+	fmode_t mode = FMODE_READ;
- 	int error;
- 	unsigned int flags;
- 
- 	pm_pr_dbg("Loading hibernation image.\n");
- 
-+	if (!safe)
-+		mode |= FMODE_EXCL;
-+
- 	lock_device_hotplug();
- 	error = create_basic_memory_bitmaps();
- 	if (error) {
--		swsusp_close(FMODE_READ | FMODE_EXCL);
-+		swsusp_close(mode);
- 		goto Unlock;
- 	}
- 
- 	error = swsusp_read(&flags);
--	swsusp_close(FMODE_READ | FMODE_EXCL);
-+	swsusp_close(mode);
- 	if (!error)
- 		error = hibernation_restore(flags & SF_PLATFORM_MODE);
- 
-@@ -785,9 +789,9 @@ int hibernate(void)
- 	unlock_device_hotplug();
- 	if (snapshot_test) {
- 		pm_pr_dbg("Checking hibernation image\n");
--		error = swsusp_check();
-+		error = swsusp_check(true);
- 		if (!error)
--			error = load_image_and_restore();
-+			error = load_image_and_restore(true);
- 	}
- 	thaw_processes();
- 
-@@ -983,7 +987,7 @@ static int software_resume(void)
- 		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
- 
- 	pm_pr_dbg("Looking for hibernation image.\n");
--	error = swsusp_check();
-+	error = swsusp_check(false);
- 	if (error)
- 		goto Unlock;
- 
-@@ -1011,7 +1015,7 @@ static int software_resume(void)
- 		goto Close_Finish;
- 	}
- 
--	error = load_image_and_restore();
-+	error = load_image_and_restore(false);
- 	thaw_processes();
-  Finish:
- 	pm_notifier_call_chain(PM_POST_RESTORE);
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index b4f433943209..66a7595ad3e7 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -173,7 +173,7 @@ extern int swsusp_swap_in_use(void);
- #define SF_HW_SIG		8
- 
- /* kernel/power/hibernate.c */
--extern int swsusp_check(void);
-+extern int swsusp_check(bool safe);
- extern void swsusp_free(void);
- extern int swsusp_read(unsigned int *flags_p);
- extern int swsusp_write(unsigned int flags);
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 36a1df48280c..1be0257da8ab 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -1514,13 +1514,17 @@ int swsusp_read(unsigned int *flags_p)
-  *      swsusp_check - Check for swsusp signature in the resume device
-  */
- 
--int swsusp_check(void)
-+int swsusp_check(bool safe)
- {
-+	fmode_t mode = FMODE_READ;
- 	int error;
- 	void *holder;
- 
-+	if (!safe)
-+		mode |= FMODE_EXCL;
-+
- 	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
--					    FMODE_READ | FMODE_EXCL, &holder);
-+					    mode, &holder);
- 	if (!IS_ERR(hib_resume_bdev)) {
- 		set_blocksize(hib_resume_bdev, PAGE_SIZE);
- 		clear_page(swsusp_header);
-@@ -1547,7 +1551,7 @@ int swsusp_check(void)
- 
- put:
- 		if (error)
--			blkdev_put(hib_resume_bdev, FMODE_READ | FMODE_EXCL);
-+			blkdev_put(hib_resume_bdev, mode);
- 		else
- 			pr_debug("Image signature found, resuming\n");
- 	} else {
+ 	int status;
+ 	int cur;
+-	unsigned reg, cur_reg;
++	unsigned reg;
+ 	u8 bcictl1, oldreg, fullreg;
+ 	bool cgain = false;
+ 	u8 boot_bci;
+@@ -357,11 +357,9 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
+ 	status = twl4030_bci_read(TWL4030_BCIIREF1, &oldreg);
+ 	if (status < 0)
+ 		return status;
+-	cur_reg = oldreg;
+ 	status = twl4030_bci_read(TWL4030_BCIIREF2, &oldreg);
+ 	if (status < 0)
+ 		return status;
+-	cur_reg |= oldreg << 8;
+ 	if (reg != oldreg) {
+ 		/* disable write protection for one write access for
+ 		 * BCIIREF */
 -- 
-2.25.1
+2.27.0
 
