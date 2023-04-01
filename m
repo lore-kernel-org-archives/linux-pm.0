@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CAD1C77B61
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 01:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C124CC77B61
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 01:44:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233513AbjDABlo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Mar 2023 21:41:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44530 "EHLO
+        id S233750AbjDABo1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Mar 2023 21:44:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233074AbjDABll (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 21:41:41 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F3361EFD6;
-        Fri, 31 Mar 2023 18:41:40 -0700 (PDT)
+        with ESMTP id S233663AbjDABnv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2023 21:43:51 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A015022219;
+        Fri, 31 Mar 2023 18:43:24 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id B96F4B832E8;
-        Sat,  1 Apr 2023 01:41:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 743C4C433EF;
-        Sat,  1 Apr 2023 01:41:36 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 003A562CEF;
+        Sat,  1 Apr 2023 01:42:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B734C4339B;
+        Sat,  1 Apr 2023 01:42:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1680313297;
+        s=k20201202; t=1680313370;
         bh=yERQUqiGn9anUkbxhnMbdjm1L9VY9JBDcH1uL2RINgU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=NYBRqeBkxzG6zhRPtL7m6dWT6EmXiZURuW2VsG/EQNjjVyuQBfP9An6Vxk4O9aYOd
-         hit3JU3PFh3KSZLFa+1KezNmR98VYysoT0vQzihcj9MCgEMXQEDjmgFSLhkXPIcRJ5
-         cPS9Hc3YFL1dw9KV9a3KlXBefO+pyaJnwjWrJSdsmIqWIYgSVW7vZ+hOiCGzk2C8Uc
-         2QdqsiYRYESHH0uwThNb7fktpT0kZ9p6ZlZ4E2wvLioLhGLBz0DvXUzt12W69NAuTV
-         TjF75erLPZLoHhqHFiN2Ispd7NS8OGjeccdBjePDYwYtqvFXXUVIskupjAlXsO5XkY
-         Jqb8Gfrx01KdQ==
+        b=BueEeOiq98ITPYU/b7dWOcB5zp3h8tdFBDA5vEQlyAH66xR1Iq925tFBbs1xF+Z1d
+         B8s4y9QsYZUyZPmm/ZApfPVlzVaoNyhJElqRQCLrBUbTtfxY+ZPPYKEp1LHDqW9kvI
+         WjBSSQqcgE6e+8U2R1JndycPkF+x5ASdk+xhrgOTgo8wGL4wVkZVPgLFKpIY1E7pjn
+         Zr/Urg82bT5VGRqf2WVsevAFtMwk/FfKSVPCh0W9jmujR8U0GECdYVKa8lm7+CEybM
+         ZJk3C4pkYzuV39FeSSbwtOSEemcq0RSqvZPMpoOSXaOOzoNc+0Gt6vYhQkkojI5XVX
+         LxIru2Z0EGdRw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Denis Arefev <arefev@swemel.ru>,
@@ -38,12 +38,12 @@ Cc:     Denis Arefev <arefev@swemel.ru>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org, wens@csie.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.2 06/25] power: supply: axp288_fuel_gauge: Added check for negative values
-Date:   Fri, 31 Mar 2023 21:41:04 -0400
-Message-Id: <20230401014126.3356410-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 05/24] power: supply: axp288_fuel_gauge: Added check for negative values
+Date:   Fri, 31 Mar 2023 21:42:21 -0400
+Message-Id: <20230401014242.3356780-5-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230401014126.3356410-1-sashal@kernel.org>
-References: <20230401014126.3356410-1-sashal@kernel.org>
+In-Reply-To: <20230401014242.3356780-1-sashal@kernel.org>
+References: <20230401014242.3356780-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
