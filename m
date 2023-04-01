@@ -2,264 +2,190 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0097EC76196
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 06:10:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 554D4C76196
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Apr 2023 07:52:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230193AbjDAGKV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Apr 2023 02:10:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41270 "EHLO
+        id S232615AbjDAHwX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Apr 2023 03:52:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43060 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229537AbjDAGKV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2023 02:10:21 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E57A9EFA4;
-        Fri, 31 Mar 2023 23:10:19 -0700 (PDT)
+        with ESMTP id S230092AbjDAHwW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2023 03:52:22 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13E071D2FA;
+        Sat,  1 Apr 2023 00:52:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1680329419; x=1711865419;
-  h=date:from:to:cc:subject:message-id:mime-version:
+  t=1680335541; x=1711871541;
+  h=from:to:cc:subject:date:message-id:mime-version:
    content-transfer-encoding;
-  bh=HOtQD7ZPfsOf7TOI69bCnNRQYpD2YQR1BygyIIRe10c=;
-  b=hevScNG/h36+DUlMkGS9l4d9KlX+/bLMx9tFk+iLXjJ7kr19Z4iGkPWZ
-   IyGT/c2YTb+Vh4Hq5o5moiZeY80MN2+OUJz5y7cUnhD6dHa1m1tkNmIl/
-   KvHtCB7VXI3rC5LtVFOagVgX7VRL2H8qmpzYSHkF0cSdCejvpgT1yf5Qa
-   137BanT7qO40yVXagZg9Wt5FrhP86j4Oh2cu+rraUUtTH7561bTEo6kTf
-   fbf1lBi3PUNkyJFkUv8pQEMJ5Nc7BU6lVp9mt76we5tjk6a9jJq27c6f7
-   iokbGqaNeYRNQvm4vRpsan4VQwklTmLClZkDELxNOO/e4TXqzPF/0sIaa
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10666"; a="330180584"
-X-IronPort-AV: E=Sophos;i="5.98,308,1673942400"; 
-   d="scan'208";a="330180584"
+  bh=a/YXkBYf71djBB8rDZkSEdiLjo6nNWgJccOZOVfbVsU=;
+  b=ETN+c5FHXT1A73tcXpne+hVZ01VExzy1jqHW/NGAKrkjQQd0ZCNVSzgf
+   D1DkBfQ1XmsHi9/oOYG2p6QVRitxRPFMnlxsXa+EOUitNUat6I+9PEtKU
+   Er4DFbHSNzzJ7DimqFFzU3W7d3NYCjRozj6XTD7GxXTgal4szTW9TAQh0
+   LMQycgVrbFuX2Fn2pb4FWtw8I938OJzlorl+fYXu32MQ+Zj37MoVOmH6F
+   R5BRtY437HvRYKACYNdKQFax2vC7N/lfPMZv8m4Y7cf3e3T0y+wZN+QfM
+   xgKRTIhzwQzuPXBH6VoNopwV00TCnJWABTEDBkepzJYBDAmxHYv+aHAgx
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10666"; a="369424953"
+X-IronPort-AV: E=Sophos;i="5.98,310,1673942400"; 
+   d="scan'208";a="369424953"
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2023 23:10:19 -0700
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Apr 2023 00:52:20 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10666"; a="1015084021"
-X-IronPort-AV: E=Sophos;i="5.98,308,1673942400"; 
-   d="scan'208";a="1015084021"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by fmsmga005.fm.intel.com with ESMTP; 31 Mar 2023 23:10:17 -0700
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1piURM-000MYG-2N;
-        Sat, 01 Apr 2023 06:10:16 +0000
-Date:   Sat, 01 Apr 2023 14:10:14 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD REGRESSION
- 56fb1399ba81f8f6db1e9d667538fc0210660e55
-Message-ID: <6427cac6.vwLpuevHHkfpERh1%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+X-IronPort-AV: E=McAfee;i="6600,9927,10666"; a="1015103954"
+X-IronPort-AV: E=Sophos;i="5.98,310,1673942400"; 
+   d="scan'208";a="1015103954"
+Received: from chenyu-dev.sh.intel.com ([10.239.158.170])
+  by fmsmga005.fm.intel.com with ESMTP; 01 Apr 2023 00:52:17 -0700
+From:   Chen Yu <yu.c.chen@intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>
+Cc:     Ye Bin <yebin10@huawei.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>,
+        Yifan Li <yifan2.li@intel.com>
+Subject: [PATCH] PM: hibernate: Do not get block device exclusively in test_resume mode
+Date:   Sat,  1 Apr 2023 23:48:32 +0800
+Message-Id: <20230401154832.320999-1-yu.c.chen@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 56fb1399ba81f8f6db1e9d667538fc0210660e55  Merge branches 'acpi-sbs', 'acpi-thermal', 'acpi-misc' and 'acpi-tables' into linux-next
+The system refused to do a test_resume because it found that the
+swap device has already been taken by someone else. Specificly,
+the swsusp_check()->blkdev_get_by_dev(FMODE_EXCL) is supposed to
+do this check.
 
-Error/Warning: (recently discovered and may have been fixed)
+Steps to reproduce:
+ dd if=/dev/zero of=/swapfile bs=$(cat /proc/meminfo |
+    awk '/MemTotal/ {print $2}') count=1024 conv=notrunc
+ mkswap /swapfile
+ swapon /swapfile
+ swap-offset /swapfile
+ echo 34816 > /sys/power/resume_offset
+ echo test_resume > /sys/power/disk
+ echo disk > /sys/power/state
 
-drivers/ata/pata_ixp4xx_cf.c:254:46: error: invalid use of undefined type 'struct device_node'
-drivers/ata/pata_ixp4xx_cf.c:258:15: error: implicit declaration of function 'of_property_read_u32_index'; did you mean 'fwnode_property_read_u32_array'? [-Werror=implicit-function-declaration]
-drivers/fpga/lattice-sysconfig-spi.c:146:35: error: implicit declaration of function 'of_match_ptr' [-Werror=implicit-function-declaration]
-drivers/fpga/lattice-sysconfig-spi.c:146:35: error: initializer element is not constant
-drivers/virtio/virtio_mmio.c:492:13: error: implicit declaration of function 'of_property_read_bool'; did you mean 'fwnode_property_read_bool'? [-Werror=implicit-function-declaration]
+ PM: Using 3 thread(s) for compression
+ PM: Compressing and saving image data (293150 pages)...
+ PM: Image saving progress:   0%
+ PM: Image saving progress:  10%
+ ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ ata1.00: configured for UDMA/100
+ ata2: SATA link down (SStatus 0 SControl 300)
+ ata5: SATA link down (SStatus 0 SControl 300)
+ ata6: SATA link down (SStatus 0 SControl 300)
+ ata3: SATA link down (SStatus 0 SControl 300)
+ ata4: SATA link down (SStatus 0 SControl 300)
+ PM: Image saving progress:  20%
+ PM: Image saving progress:  30%
+ PM: Image saving progress:  40%
+ PM: Image saving progress:  50%
+ pcieport 0000:00:02.5: pciehp: Slot(0-5): No device found
+ PM: Image saving progress:  60%
+ PM: Image saving progress:  70%
+ PM: Image saving progress:  80%
+ PM: Image saving progress:  90%
+ PM: Image saving done
+ PM: hibernation: Wrote 1172600 kbytes in 2.70 seconds (434.29 MB/s)
+ PM: S|
+ PM: hibernation: Basic memory bitmaps freed
+ PM: Image not found (code -16)
 
-Error/Warning ids grouped by kconfigs:
+This is because when using the swapfile as the hibernation storage,
+the block device where the swapfile is located has already been mounted
+by the OS distribution(usually been mounted as the rootfs). This is not
+an issue for normal hibernation, because software_resume()->swsusp_check()
+happens before the block device(rootfs) mount. But it is a problem for the
+test_resume mode. Because when test_resume happens, the block device has
+been mounted already.
 
-gcc_recent_errors
-|-- arc-randconfig-r043-20230329
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   `-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-|-- csky-randconfig-r004-20230329
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- loongarch-allyesconfig
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   `-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-|-- mips-allyesconfig
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   `-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-`-- sh-allmodconfig
-    |-- drivers-ata-pata_ixp4xx_cf.c:error:implicit-declaration-of-function-of_property_read_u32_index
-    `-- drivers-ata-pata_ixp4xx_cf.c:error:invalid-use-of-undefined-type-struct-device_node
+Thus remove the FMODE_EXCL for test_resume mode. This would not be a
+problem because in test_resume stage, the processes have already been
+frozen, and the race condition described in
+Commit 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
+is unlikely to happen.
 
-elapsed time: 723m
+Fixes: 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
+Reported-by: Yifan Li <yifan2.li@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ kernel/power/hibernate.c |  4 ++--
+ kernel/power/power.h     |  2 +-
+ kernel/power/swap.c      | 10 +++++++---
+ 3 files changed, 10 insertions(+), 6 deletions(-)
 
-configs tested: 166
-configs skipped: 6
-
-tested configs:
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha        buildonly-randconfig-r002-20230329   gcc  
-alpha                               defconfig   gcc  
-alpha                randconfig-r015-20230329   gcc  
-alpha                randconfig-r016-20230329   gcc  
-alpha                randconfig-r036-20230329   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r005-20230329   gcc  
-arc                  randconfig-r033-20230329   gcc  
-arc                  randconfig-r043-20230329   gcc  
-arc                  randconfig-r043-20230331   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   gcc  
-arm                              allyesconfig   gcc  
-arm          buildonly-randconfig-r003-20230329   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r001-20230329   clang
-arm                  randconfig-r002-20230329   clang
-arm                  randconfig-r003-20230329   clang
-arm                  randconfig-r026-20230329   gcc  
-arm                  randconfig-r034-20230329   clang
-arm                  randconfig-r035-20230329   clang
-arm                  randconfig-r046-20230329   gcc  
-arm                  randconfig-r046-20230331   clang
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r001-20230329   gcc  
-arm64                randconfig-r025-20230329   clang
-arm64                randconfig-r036-20230329   gcc  
-csky                                defconfig   gcc  
-csky                 randconfig-r004-20230329   gcc  
-csky                 randconfig-r034-20230329   gcc  
-hexagon      buildonly-randconfig-r002-20230329   clang
-hexagon              randconfig-r041-20230329   clang
-hexagon              randconfig-r041-20230331   clang
-hexagon              randconfig-r045-20230329   clang
-hexagon              randconfig-r045-20230331   clang
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                          randconfig-a001   gcc  
-i386                          randconfig-a002   clang
-i386                          randconfig-a003   gcc  
-i386                          randconfig-a004   clang
-i386                          randconfig-a005   gcc  
-i386                          randconfig-a006   clang
-i386                          randconfig-a011   clang
-i386                          randconfig-a012   gcc  
-i386                          randconfig-a013   clang
-i386                          randconfig-a014   gcc  
-i386                          randconfig-a015   clang
-i386                          randconfig-a016   gcc  
-ia64                             allmodconfig   gcc  
-ia64         buildonly-randconfig-r001-20230329   gcc  
-ia64         buildonly-randconfig-r003-20230329   gcc  
-ia64                                defconfig   gcc  
-ia64                 randconfig-r002-20230329   gcc  
-ia64                 randconfig-r012-20230329   gcc  
-ia64                 randconfig-r023-20230329   gcc  
-ia64                 randconfig-r025-20230329   gcc  
-ia64                 randconfig-r033-20230329   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch    buildonly-randconfig-r004-20230329   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r002-20230330   gcc  
-loongarch            randconfig-r005-20230330   gcc  
-loongarch            randconfig-r013-20230329   gcc  
-loongarch            randconfig-r021-20230329   gcc  
-m68k                             allmodconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r001-20230330   gcc  
-m68k                 randconfig-r004-20230329   gcc  
-m68k                 randconfig-r013-20230329   gcc  
-m68k                 randconfig-r014-20230329   gcc  
-m68k                 randconfig-r031-20230329   gcc  
-microblaze   buildonly-randconfig-r005-20230329   gcc  
-microblaze   buildonly-randconfig-r006-20230329   gcc  
-microblaze           randconfig-r023-20230329   gcc  
-microblaze           randconfig-r024-20230329   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                 randconfig-r012-20230329   gcc  
-mips                 randconfig-r036-20230329   clang
-nios2                               defconfig   gcc  
-nios2                randconfig-r004-20230330   gcc  
-nios2                randconfig-r011-20230329   gcc  
-nios2                randconfig-r031-20230329   gcc  
-nios2                randconfig-r033-20230329   gcc  
-nios2                randconfig-r035-20230329   gcc  
-openrisc     buildonly-randconfig-r002-20230331   gcc  
-openrisc             randconfig-r006-20230330   gcc  
-openrisc             randconfig-r022-20230329   gcc  
-openrisc             randconfig-r034-20230329   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r003-20230330   gcc  
-parisc               randconfig-r006-20230329   gcc  
-parisc               randconfig-r015-20230329   gcc  
-parisc               randconfig-r022-20230329   gcc  
-parisc               randconfig-r025-20230329   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc      buildonly-randconfig-r004-20230331   gcc  
-powerpc              randconfig-r003-20230329   gcc  
-powerpc              randconfig-r032-20230329   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv        buildonly-randconfig-r004-20230329   clang
-riscv        buildonly-randconfig-r006-20230329   clang
-riscv                               defconfig   gcc  
-riscv                randconfig-r006-20230329   gcc  
-riscv                randconfig-r016-20230329   clang
-riscv                randconfig-r021-20230329   clang
-riscv                randconfig-r032-20230329   gcc  
-riscv                randconfig-r035-20230329   gcc  
-riscv                randconfig-r042-20230329   clang
-riscv                randconfig-r042-20230331   gcc  
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390         buildonly-randconfig-r006-20230331   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r005-20230329   gcc  
-s390                 randconfig-r026-20230329   clang
-s390                 randconfig-r044-20230329   clang
-s390                 randconfig-r044-20230331   gcc  
-sh                               allmodconfig   gcc  
-sh           buildonly-randconfig-r005-20230329   gcc  
-sh                   randconfig-r005-20230329   gcc  
-sh                   randconfig-r014-20230329   gcc  
-sh                   randconfig-r024-20230329   gcc  
-sparc        buildonly-randconfig-r001-20230329   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r004-20230329   gcc  
-sparc                randconfig-r006-20230329   gcc  
-sparc                randconfig-r022-20230329   gcc  
-sparc64      buildonly-randconfig-r001-20230331   gcc  
-sparc64              randconfig-r002-20230329   gcc  
-sparc64              randconfig-r003-20230329   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64                        randconfig-a001   clang
-x86_64                        randconfig-a002   gcc  
-x86_64                        randconfig-a003   clang
-x86_64                        randconfig-a004   gcc  
-x86_64                        randconfig-a005   clang
-x86_64                        randconfig-a006   gcc  
-x86_64                        randconfig-a011   gcc  
-x86_64                        randconfig-a012   clang
-x86_64                        randconfig-a013   gcc  
-x86_64                        randconfig-a014   clang
-x86_64                        randconfig-a015   gcc  
-x86_64                        randconfig-a016   clang
-x86_64                               rhel-8.3   gcc  
-xtensa       buildonly-randconfig-r003-20230331   gcc  
-xtensa               randconfig-r026-20230329   gcc  
-xtensa               randconfig-r031-20230329   gcc  
-
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 793c55a2becb..81287bfa7543 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -785,7 +785,7 @@ int hibernate(void)
+ 	unlock_device_hotplug();
+ 	if (snapshot_test) {
+ 		pm_pr_dbg("Checking hibernation image\n");
+-		error = swsusp_check();
++		error = swsusp_check(true);
+ 		if (!error)
+ 			error = load_image_and_restore();
+ 	}
+@@ -983,7 +983,7 @@ static int software_resume(void)
+ 		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
+ 
+ 	pm_pr_dbg("Looking for hibernation image.\n");
+-	error = swsusp_check();
++	error = swsusp_check(false);
+ 	if (error)
+ 		goto Unlock;
+ 
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index b4f433943209..66a7595ad3e7 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -173,7 +173,7 @@ extern int swsusp_swap_in_use(void);
+ #define SF_HW_SIG		8
+ 
+ /* kernel/power/hibernate.c */
+-extern int swsusp_check(void);
++extern int swsusp_check(bool safe);
+ extern void swsusp_free(void);
+ extern int swsusp_read(unsigned int *flags_p);
+ extern int swsusp_write(unsigned int flags);
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 36a1df48280c..1be0257da8ab 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -1514,13 +1514,17 @@ int swsusp_read(unsigned int *flags_p)
+  *      swsusp_check - Check for swsusp signature in the resume device
+  */
+ 
+-int swsusp_check(void)
++int swsusp_check(bool safe)
+ {
++	fmode_t mode = FMODE_READ;
+ 	int error;
+ 	void *holder;
+ 
++	if (!safe)
++		mode |= FMODE_EXCL;
++
+ 	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
+-					    FMODE_READ | FMODE_EXCL, &holder);
++					    mode, &holder);
+ 	if (!IS_ERR(hib_resume_bdev)) {
+ 		set_blocksize(hib_resume_bdev, PAGE_SIZE);
+ 		clear_page(swsusp_header);
+@@ -1547,7 +1551,7 @@ int swsusp_check(void)
+ 
+ put:
+ 		if (error)
+-			blkdev_put(hib_resume_bdev, FMODE_READ | FMODE_EXCL);
++			blkdev_put(hib_resume_bdev, mode);
+ 		else
+ 			pr_debug("Image signature found, resuming\n");
+ 	} else {
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+2.25.1
+
