@@ -2,129 +2,104 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BA3AC76196
-	for <linux-pm@archiver.kernel.org>; Sun,  2 Apr 2023 10:52:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC8FC77B60
+	for <linux-pm@archiver.kernel.org>; Sun,  2 Apr 2023 10:55:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230264AbjDBKwD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 2 Apr 2023 06:52:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58694 "EHLO
+        id S230415AbjDBKzm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 2 Apr 2023 06:55:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60198 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229503AbjDBKwC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Apr 2023 06:52:02 -0400
-X-Greylist: delayed 609 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sun, 02 Apr 2023 03:51:59 PDT
-Received: from smtp26.services.sfr.fr (smtp26.services.sfr.fr [93.17.128.194])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C6D9618B;
-        Sun,  2 Apr 2023 03:51:59 -0700 (PDT)
-X-mail-filterd: {"version":"1.6.0","queueID":"4Pq9Z420W8z1LQQTJ","contextId":
- "82589fd5-e3f4-4fdd-8b54-781f08bdbfdf"}
-Received: from [192.168.1.30] (atoulouse-656-1-945-91.w90-11.abo.wanadoo.fr [90.11.30.91])
-        by msfrf2609.sfr.fr (SMTP Server) with ESMTP id 4Pq9Z420W8z1LQQTJ;
-        Sun,  2 Apr 2023 12:41:48 +0200 (CEST)
-X-mail-filterd: {"version":"1.6.0","queueID":"4Pq9Z23RRyz1LQKdm","contextId":
- "fc67f35d-c3c5-461f-99b6-2acf33930aee"}
-X-sfr-mailing: LEGIT
-X-sfr-spamrating: 36
-X-sfr-spam: not-spam
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cegetel.net; s=202006;
- t=1680432108; h=Date:Subject:To:Cc:References:From:In-Reply-To; bh=xckmOE+w8K
-  q09zdWEw5llLIZulp1y3UB0erw52JQ0Wo=; b=i82tQmqgH1q3/5Dypnha2XB2CMAN9aIRsYX1GR
-  STzG0Flr/WkVe8vyxqFae3sPhxlcr02tfdp1QiEPaRn6OqrZG28ppSvNcKrI/FYDhuDgHOgyngzl
-  FN5gaoGzDHCIJDDEvWi8kcBskLhyqgaOitnvz3vYjGxsgDEwJCtNjyhH6rLjsyK6bbV40pI+i/hc
-  ePCb71Fn8qBUg4sqsWDl3Xcqjx5UlRe1+yuq6aUcnBZJyA2wNcbIDP1KORXH02OD8/oedgbj3R9k
-  ewrrcwEd4manqC/tTu8zMB8dR+MTIJGo8OHnrDuMO46FJSEZvN4EeRYNjtG/6Wtb/7pNGhTHkv1A
-  ==
-Received: from [192.168.1.30] (atoulouse-656-1-945-91.w90-11.abo.wanadoo.fr [90.11.30.91])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: guy.durrieu@cegetel.net)
-        by msfrf2609.sfr.fr (SMTP Server) with ESMTPSA id 4Pq9Z23RRyz1LQKdm;
-        Sun,  2 Apr 2023 12:41:46 +0200 (CEST)
-Authentication-Results: sfr.fr; auth=pass (PLAIN) smtp.auth=guy.durrieu@cegetel.net
-Message-ID: <c02a2a2f-2b40-e13e-ac40-e5d19a66b5ba@cegetel.net>
-Date:   Sun, 2 Apr 2023 12:41:46 +0200
+        with ESMTP id S230365AbjDBKzl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Apr 2023 06:55:41 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 141C91BF72
+        for <linux-pm@vger.kernel.org>; Sun,  2 Apr 2023 03:55:38 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pivMt-0008SR-K8; Sun, 02 Apr 2023 12:55:27 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pivMr-008Qop-Gi; Sun, 02 Apr 2023 12:55:25 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1pivMq-009wlK-S2; Sun, 02 Apr 2023 12:55:24 +0200
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Aaro Koskinen <aaro.koskinen@iki.fi>,
+        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
+        Tony Lindgren <tony@atomide.com>, Vignesh R <vigneshr@ti.com>
+Cc:     linux-omap@vger.kernel.org, linux-i2c@vger.kernel.org,
+        kernel@pengtronix.de, "Rafael J. Wysocki" <rafael@kernel.org>,
+        linux-pm@vger.kernel.org
+Subject: [PATCH] i2c: omap: Don't do pm_runtime_resume in .remove()
+Date:   Sun,  2 Apr 2023 12:55:18 +0200
+Message-Id: <20230402105518.2512541-1-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.1
-Subject: Re: [PATCH v2] x86/acpi/boot: Do not register processors that cannot
- be onlined for x2apic
-To:     Kishon Vijay Abraham I <kvijayab@amd.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>
-Cc:     x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Santosh Shukla <santosh.shukla@amd.com>,
-        Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
-        Borislav Petkov <bpetkov@amd.com>,
-        Leo Duran <leo.duran@amd.com>, 1033732@bugs.debian.org
-References: <20230105041059.39366-1-kvijayab@amd.com>
-Content-Language: fr
-From:   Guy Durrieu <guy.durrieu@cegetel.net>
-In-Reply-To: <20230105041059.39366-1-kvijayab@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1710; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=YuO3xNgH6GPTxtI5VYLq6i5csE6lG+Icg93FwUQ/z2U=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBkKV8VIYZQ26aaizqS1BwvhCK5/Koz/UEgHsQBZ 3D8nAnNaW2JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZClfFQAKCRCPgPtYfRL+ TtWVB/4nKls0puq1UcPdg0iFBHiiJN03d3ido9512BseMSFyy+lTZ6S8cbRf8w6Fq0BDJa3I3BL 7fymnh8VHHP2ZGwar6q6dRQAHATL1vuqR70KWSPtFCLfqF+gcnDAKgwXOSMrScM1w5Lvewr34kn NklZ2CKwMpsfRkWg8nZ7rhaQ7RCi9eHgmGTJfb8rN/R1eIcJoAIQS/XnIiy93CxP7H5eUUyA/0m +epP7yoBuVofi0/zA9kJtDtvEgAdb5JLi76gBQFmtH6/bZFO6l32r0NzxnCWXNXz9Whp7qO5yB5 1I8S+9EG7GZ3mQZyabfGBbTyT5mZb9fC2/oUacadhs3DjNyD
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Le 05/01/2023 à 05:10, Kishon Vijay Abraham I a écrit :
+One of the first things that the driver's pm_runtime_resume callback
+does is to write zero to the OMAP_I2C_CON_REG register.
+So there is no need to have the device resumed just to write to the
+OMAP_I2C_CON_REG register and the call to pm_runtime_resume_and_get()
+can be dropped.
 
-> Section 5.2.12.12 Processor Local x2APIC Structure in the ACPI v6.5
-> spec mandates that both "enabled" and "online capable" Local APIC Flags
-> should be used to determine if the processor is usable or not.
->
-> However, Linux doesn't use the "online capable" flag for x2APIC to
-> determine if the processor is usable. As a result, cpu_possible_mask has
-> incorrect value and results in more memory getting allocated for per_cpu
-> variables than it is going to be used.
->
-> Make sure Linux parses both "enabled" and "online capable" flags for
-> x2APIC to correctly determine if the processor is usable.
->
-> Fixes: aa06e20f1be6 ("x86/ACPI: Don't add CPUs that are not online capable")
-> Reviewed-by: Borislav Petkov (AMD) <bp@alien8.de>
-> Reported-by: Leo Duran <leo.duran@amd.com>
-> Signed-off-by: Kishon Vijay Abraham I <kvijayab@amd.com>
+The intended side effect of this commit is to remove an error path of
+the function resulting in the remove callback returning a mostly ignored
+error code. This prepares changing the prototype of struct
+platform_driver's remove callback to return void.
 
-Hello everyone,
-
-My system worked fine with kernel 6.1.15, but stopped booting after
-upgrading to 6.1.20 and resulted in a kernel panic:
-
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
-[ 0.117782] Kernel panic — not syncing: timer doesn’t work through Interrupt-remapped IO-APIC
-[ 0.117848] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 6.1.0-7-and64 #1 Debian 6.1.20-1
-[ 0.117913] Hardware name: Gigabyte Technology Co., Ltd. ABS50M-Gaming 3/AB350M-Gaming 3-CF, BIOS F50d 07/02/2020
-[ 0.117982] Call Trace:
-[ 0.118634] <TASK>
-[ 0.118685] dump_stack_lvl+0x44/0x5c
-[ 0.118143] panic+0x118/0x2ed
-[ 0.118198] panic_if_irq_remap.cold+0x5/0x5
-[ 0.118256] setup_I0_APIC+0x3db/0x64b
-[ 0.118313] ? _raw_spin_unlock_irqrestore+0x23/0x40
-[ 0.118372] ? clear_IO_APIC_pin+0x169/0x240
-[ 0.118429] apic_intr_node_init+0x101/0x106
-[ 0.118485] x86_late_time_init+0x20/0x34
-[ 0.118542] start_kerne1+0x667/0x727
-[ 0.118598] secondary_startup_64_no_verify+0xe5/0xeb
-[ 0.118658] </TASK>
-[ 0.118711] ---[ end Kernel panic - not syncing: timer doesn’t work through Interrupt-remapped IO-APIC J---
----
-I tried an update of the BIOS up to F51h without any effect.
+Hello,
 
-I sent a bug report to Debian Bug Tracking System. In reply Bjørn Mork 
-identified ce7d894bed1a539a8d6cff42f6f78f9db0c9c26b from the linux-6.1.y 
-branch as the likely culprit.
+I'm not completely sure that the reasing in the commit log is sound.
+There might at least theoretical side effects of the register write
+that are different if the device is fully resumed.
 
-After building a 6.1.20 kernel with just that commit reverted, my system boots normally again.
+Best regards
+Uwe
 
-I reported that all tohttps://bugs.debian.org/1033732  and were asked to report the issue 'upstream' (which is what that mail is).
+ drivers/i2c/busses/i2c-omap.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-Hope it will help!
+diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
+index f9ae520aed22..a572f6d994ca 100644
+--- a/drivers/i2c/busses/i2c-omap.c
++++ b/drivers/i2c/busses/i2c-omap.c
+@@ -1522,16 +1522,12 @@ omap_i2c_probe(struct platform_device *pdev)
+ static int omap_i2c_remove(struct platform_device *pdev)
+ {
+ 	struct omap_i2c_dev	*omap = platform_get_drvdata(pdev);
+-	int ret;
+ 
+ 	i2c_del_adapter(&omap->adapter);
+-	ret = pm_runtime_resume_and_get(&pdev->dev);
+-	if (ret < 0)
+-		return ret;
+ 
+ 	omap_i2c_write_reg(omap, OMAP_I2C_CON_REG, 0);
++
+ 	pm_runtime_dont_use_autosuspend(&pdev->dev);
+-	pm_runtime_put_sync(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	return 0;
+ }
 
-Best regards.
-
--- Guy Durrieu
+base-commit: fe15c26ee26efa11741a7b632e9f23b01aca4cc6
+-- 
+2.39.2
 
