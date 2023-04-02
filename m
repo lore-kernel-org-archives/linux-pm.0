@@ -2,147 +2,149 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D330C76196
-	for <linux-pm@archiver.kernel.org>; Sun,  2 Apr 2023 10:22:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C121C77B6D
+	for <linux-pm@archiver.kernel.org>; Sun,  2 Apr 2023 10:47:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230053AbjDBKWK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 2 Apr 2023 06:22:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47812 "EHLO
+        id S230340AbjDBKrI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 2 Apr 2023 06:47:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56546 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230354AbjDBKWJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Apr 2023 06:22:09 -0400
-Received: from sonic302-20.consmr.mail.ir2.yahoo.com (sonic302-20.consmr.mail.ir2.yahoo.com [87.248.110.83])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7FA986AB
-        for <linux-pm@vger.kernel.org>; Sun,  2 Apr 2023 03:22:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1680430925; bh=m9L6SZ5prf8E0bdWOCcSl1DF9QdE18Gzz3G/D+l45J8=; h=Date:Subject:From:To:Cc:References:In-Reply-To:From:Subject:Reply-To; b=Fe+kUy+FMJHpmtp7EpCHy/c3ZzImzEaC/Oo9vSc5qB3ncql6PrlXp0C+fW9vTybLcL4mAZ3LzcHFdGHU5Y5n6KlxoGICVvfGADcGizX2iXhufeuyU6GJbAu2VmQkWheAlMzQGXIuSoR827SyNVuU3B3JBcA+s2fGogkTutq/prFXbItCroDfZG0DB/ltoZsVhnZTje7r0902xovO/c13PRjj/YYq4A7aMoz/YV8BjvBoFjiXzqSKuVbCF3H+TB8jkb4YZLfLg9YW8fDkif4csmu8ME8Wzu3dowDkntTmm2RTUF58mgPapMH6zZdtcTRyRwADi3iBXLEf57EUVapxUw==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1680430925; bh=F/4Pnn3aSI+X00MBI5dS3hofxq1QFccgzo/Oc3jIODQ=; h=X-Sonic-MF:Date:Subject:From:To:From:Subject; b=kpmTmTGW2wKHaLPmodaipDa/GgEXslY0wigcHsLKpUa5l7csZFSLYgXtLhEa4D8z80i/4y8mDQ2RUTIMbfJ5a8Dmdj91Fjdri5n0dXM9jN4JdqQUl3M24QoKUQyVSQiUtR2gjoy2sPUzI2mbupHZgBLTCquV7tn/p8msF0VRYkoZn6mqkHLBXCUq8jrsvfthFbnBpnFbvP59juNCehr826ZFFpbshoGLrrFvobI6iQ+/rLPHAoA/5EGYFanx3gVMS5W051/PCBscX1BhwUhVL5Mp1miM7K73JSJeUJvRuw2uUDiN2l6aadKk9fTlRigHAO06x61ucdt6BkQew0ty2w==
-X-YMail-OSG: _ZBZPRAVM1kiZGdvFyyB6rIO4OuuH9PrNxvjQlpcSuVNcPVABDhLa3qzWgYdmpE
- UKenx3zafUVP533sF331SGm3GLRB5yTtpVX3CuAQ6QE7s6dgVRfxJeOjCuP9pJGJPVggKsHnrXmD
- OTz4grHGLcDV2WfdbK3DxnXP5YEw11pfMln8QVsj70kBSMlup4HiBFYq8eMt4LuVPzSE3pEeoybl
- 0fZli7rbDRAqq4N7SxaBUk8.phfZwvWsJvhluKX.gGIn1GqpZKA_6zwiDHBVaU5EzZ5KgY1d3VEb
- RZOmmJ0rFoGzvQvHUsxo_OS_10f4ZUQ2sY6nnzGGRf81VOakkamtTprsVi2bcwQKe9kk8yVSJsjb
- VSMzS306amCBPlbI8Ba3N0J.scr9PTfX4l..L_TazxU5Wsnb40IkmCm8ZrA3vcPZuvdW0KkqdIex
- yijQ5oUBbmBGgDMMpnExfh1RByavKv6OJQnqoisL5U68Uge1gmqMUzczuPh2oQMjyhEOVaFQTubK
- HT.0s9Vf.RrW4OJ5TxFLcQu.UGu0_q3ltrgagQWIhido0jYwzRIUt80o95PUqr1msgPsvGdSWw0Z
- vf21Zavc3gwWz16WNppLG82ik0tDXlsrJrFx2em7RhrID6wgu7E3talbr4FcOqcDibwk.cgnsaFz
- YvxzVWJNgqgrdKGneNxuV7t4r4AJlv94lt9EgFtaubOLew6qITfWTGG5nHX00XM5Rap2ntJuT56z
- bUJayNsKBHFVaBPPlCqTmqma3KL1e2CpmrBkNjQ6O5RXLpFOu5INm2J6hGH7Y6JR8G15yc9iNyT3
- t4yxyN1Ize5d8YMoO5_ydnNkDmZwOJSSuTAXv1L7e6DFU2kUDCTQGlrD27R8JEZGG3ZBg69fhJnO
- aauEf.OrQVhNk6OgMcPcJJCU5NyHgj2L3PAww4B4K6DzfnvHSrl.TzDe6UShjbpNvqtxNIDe3qgU
- uo.kDvMD4BKjmdwNnc2ChyqK6ENYRP.BisEgNScuNoefBnEfT8WwVFYDvJSt50_v6qypNL2DmUQA
- W5Rc.eQQ6htI3CGmfgN2HFU8Z1BOpCRBm8sKL0vyWJKCoT09NSCEFusfNebfnIN.gxp31JV_yMEa
- uqnrHbQ5nGGZ2l3HthopDvbPnmcJfy3tDFOpM3_YG6S9XjRk3R1bm3nqT2x5rPEhv8vXg9LCAytN
- m222pGhFysHBrn6fch3Qhj9QW_rl3lZ1YyjBw7XJhvlPGbHgELrQKhwYXNn5cMk7I5Y0far5nh5m
- GLp.o566WbJZVf3v.iFMnX2Ym98J4j7MLyEFv2ygmGYzu7FPHeGcB8d8Ps8IJi1MkijHtAB1qO6w
- L7ftqYE6Bmtm_6HuE7B6Zm1X5ra0jffNcL7Tq6Hc_L4SZQBNLO7CX0p99TiH3cO0hlkDda.KuLnv
- 2skrF8WjpEAfRcxtRGzFGaDhl34E_DqJF4C8XGOz7Uk27zrV4BHuNH0fVLAJ6jDbnm2GjoQBMyoz
- Y4ckI_dA.KqwMWqctwuAvXSVGP2bNQrk4oEabYIpF7a70D7yWsFtOKJRJ.DItn3hKjddatlWR.Te
- PBusFvJspTucYDprMB1dkXh4sdoUWI2Aebd.UWlYnsQWz774rO2i2zI1p0PXTHlpQzAe9Eifg6Sq
- nYdpeYsRS1IzGcxaE4iYUUv1Y87y3dJymq_TuOdSUezq15sXj06xmDcI0uWUuQE5YhCpzUCFvIdK
- 1OsCTBl6gcIt7KUdTid3tsA9Ii.FXB6mcio6mw_xlIPTXa0Tf1sK1mwBGnKHxOlK6qcDG6SdRYq8
- _qYFVD6gVssxIfbR.GSsJYR7AoQixmahWcSfglrQMKmWxTI_uvVIeWy4tcavkaCmBW8.7DM0v7Gr
- UNbDb9kjI93.da1avw7getdxexZPIiGuVV.rg.wEMZC2t188Rc9nowxVVKwXmCuqJ8ZMNro8.IHX
- qltEdL54kDiaAhdorZnb2TV4zPhs5FdCp6N0rvf1FiOzaNm4SDjtFRhZWpaNDmJhSLn1Cn0a51SF
- vHZS6ilpTKrRxNwCXGRhFSCpfzh.VbyACLGTA5gDse66WwCqdxmQCZVzKgS6mvWJv08ud0nTgpL0
- AjDHQL6BVsgRwuWlMI4E64jOAkCY7acYa25OKpMGj3lTuBqlWTCvw9eguPb9pusLiGQErzngZFQ2
- jn7kH8ei3QOQVuUARMrmYDQyn87LzVVZtNCpq4TGkEabMNBYrRKzUb1s7WuJIynsef_jUTX3tOXL
- NL2BgTq86dDGgDACkZxYULnxzIjURM4R5HWr5djjKCPzC_xdH.oxpujKQqkwYi13X_ZwpCb7hAve
- u_mZJ3zZgRBL9j2LlG4.tuSwrJnM1
-X-Sonic-MF: <jahau@rocketmail.com>
-X-Sonic-ID: aa6b6124-f94c-47a7-aced-8e1f47f37f04
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic302.consmr.mail.ir2.yahoo.com with HTTP; Sun, 2 Apr 2023 10:22:05 +0000
-Received: by hermes--production-ir2-74cd8fc864-jl5bm (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 9d737d6ab1f22b3307aa97ae1e45a223;
-          Sun, 02 Apr 2023 10:22:01 +0000 (UTC)
-Message-ID: <b517db01-f60b-bc71-830a-d72c5cfed81f@rocketmail.com>
-Date:   Sun, 2 Apr 2023 12:21:59 +0200
+        with ESMTP id S230348AbjDBKrH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Apr 2023 06:47:07 -0400
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90B841207D
+        for <linux-pm@vger.kernel.org>; Sun,  2 Apr 2023 03:47:04 -0700 (PDT)
+Received: by mail-ed1-x531.google.com with SMTP id b20so106568794edd.1
+        for <linux-pm@vger.kernel.org>; Sun, 02 Apr 2023 03:47:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1680432423;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=boY93jyd6+T4l8iYNZlZE0N095pRX4NnlYNcBxMegqE=;
+        b=KJF9SsfWvwvyR4Yw5C5V1+mHelTyrF51rvwVQmy4cS34/YnHeIMNzaqun0xl6GDRdi
+         yCD7Nxe7hxn7VJgirW/NXE9dHznT7Q4+fQq2Lrp+ZET8RipTCo/T+L8x7zqJN+m/lDh9
+         cZDJjGN5Q7c8bb5MzjB78EtPkDrxHezKhnJPw4d4ZNrsLyWGqZj4D2nf8OSWYTWOTHrY
+         uL7y6P8t3S//PuVzPNZERT9zxrfHouWnW80Yf+LkQM4jLAitXRfilQSjvegdz8c9tle/
+         vKbV8EzMR0n9zSGiX6dptsHQVHJG2nPPYST7+x/N3QFgjovOM+wp/Z5FmHInkWg0snZ+
+         YGFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680432423;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=boY93jyd6+T4l8iYNZlZE0N095pRX4NnlYNcBxMegqE=;
+        b=sCaYbLSGvaurTIPOGldmaspRRBGw2VBuGFN8S6X2Kwg+sdpS/f5tyxZGreYjfOS+Wx
+         aKPILjJEdT4PWjql5DUs5j12npi1B6bkW3rEt6l+ZS6+OtjYj/UbkfK3QYW6stZG/WZl
+         bs3/1JNnkBC4A8k5JpdnV1Wf+KO7ac4JuIfqmRzwvGYXJbRJejzTW/Ae8nIJ+rGssMOX
+         Wjp9BmdvntyOs6Iie6Y4zkymt45xMadTGxgo21puX1HWZ562JSLwI6ABU9liOW+jXPqo
+         nuO01y4JfwecLrRRCoFy75K2ShdocKuBVUosiVhlkfa7dgKI/CfMSWIeU+gB7rpMCWoa
+         OmnA==
+X-Gm-Message-State: AAQBX9e/XpBqapgvvttzJ/K5EBpUwrml8jBb2qecvIA/GUashDk8RhH9
+        ePkMZl6uLYcSNJUfJ9k5AN1VgA==
+X-Google-Smtp-Source: AKy350ZEHhfp/UzJ0URFQoZ1spvf7xAJ6vhppv6/DhrVo837ythU/SyCg9S1R8dhbRGHXfjkskDSVQ==
+X-Received: by 2002:aa7:d885:0:b0:4fd:2155:74ef with SMTP id u5-20020aa7d885000000b004fd215574efmr32584061edq.19.1680432423031;
+        Sun, 02 Apr 2023 03:47:03 -0700 (PDT)
+Received: from ?IPV6:2a02:810d:15c0:828:7f7f:6a30:7a20:94d5? ([2a02:810d:15c0:828:7f7f:6a30:7a20:94d5])
+        by smtp.gmail.com with ESMTPSA id u26-20020a50a41a000000b004fb95f51f54sm3142513edb.12.2023.04.02.03.47.01
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 02 Apr 2023 03:47:02 -0700 (PDT)
+Message-ID: <8a22aea9-5027-e8a4-db80-ce79f3830e10@linaro.org>
+Date:   Sun, 2 Apr 2023 12:47:01 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.9.0
-Subject: Re: [PATCH 10/10] dt-bindings: Add documentation for rt5033 mfd,
- regulator and charger
-From:   Jakob Hauser <jahau@rocketmail.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Beomho Seo <beomho.seo@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Raymond Hackley <raymondhackley@protonmail.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht
-References: <cover.1677620677.git.jahau@rocketmail.com>
- <a698f524106e0eb7db5cbd7e73e77ecd5ac8ad7f.1677620677.git.jahau@rocketmail.com>
- <20230301023545.GA235322-robh@kernel.org>
- <0e008725-66bd-5c3b-e641-1bcf9dcc24e4@rocketmail.com>
+Subject: Re: [Patch v4 01/10] dt-bindings: memory: tegra: add bpmp ref in
+ tegra234-mc node
 Content-Language: en-US
-In-Reply-To: <0e008725-66bd-5c3b-e641-1bcf9dcc24e4@rocketmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
-X-Mailer: WebService/1.1.21365 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
+To:     Sumit Gupta <sumitg@nvidia.com>,
+        Thierry Reding <thierry.reding@gmail.com>
+Cc:     treding@nvidia.com, dmitry.osipenko@collabora.com,
+        viresh.kumar@linaro.org, rafael@kernel.org, jonathanh@nvidia.com,
+        robh+dt@kernel.org, lpieralisi@kernel.org,
+        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pci@vger.kernel.org, mmaddireddy@nvidia.com, kw@linux.com,
+        bhelgaas@google.com, vidyas@nvidia.com, sanjayc@nvidia.com,
+        ksitaraman@nvidia.com, ishah@nvidia.com, bbasu@nvidia.com
+References: <20230327161426.32639-1-sumitg@nvidia.com>
+ <20230327161426.32639-2-sumitg@nvidia.com>
+ <787f656a-223d-5eed-e311-9cc7a6c46452@linaro.org> <ZCLF6ZRH528pu/r3@orome>
+ <79d8044f-ce68-463e-66f7-8755e253bc99@linaro.org> <ZCLiCWRYbO98qwCn@orome>
+ <0b393600-3f08-c2e8-9b02-664c6a984de1@nvidia.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <0b393600-3f08-c2e8-9b02-664c6a984de1@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SGkgUm9iLA0KDQpPbiAwNS4wMy4yMyAxNjo1NCwgSmFrb2IgSGF1c2VyIHdyb3RlOg0KLi4u
-DQo+IE9uIDAxLjAzLjIzIDAzOjM1LCBSb2IgSGVycmluZyB3cm90ZToNCj4+IE9uIFR1ZSwg
-RmViIDI4LCAyMDIzIGF0IDExOjMyOjI3UE0gKzAxMDAsIEpha29iIEhhdXNlciB3cm90ZToN
-Cg0KLi4uDQoNCj4+PiArwqAgcmljaHRlayxwcmUtdGhyZXNob2xkLXV2b2x0Og0KPj4+ICvC
-oMKgwqAgZGVzY3JpcHRpb246IHwNCj4+PiArwqDCoMKgwqDCoCBWb2x0YWdlIG9mIHByZS1j
-aGFyZ2UgbW9kZS4gSWYgdGhlIGJhdHRlcnkgdm9sdGFnZSBpcyBiZWxvdyANCj4+PiB0aGUg
-cHJlLWNoYXJnZQ0KPj4+ICvCoMKgwqDCoMKgIHRocmVzaG9sZCB2b2x0YWdlLCB0aGUgY2hh
-cmdlciBpcyBpbiBwcmUtY2hhcmdlIG1vZGUgd2l0aCANCj4+PiBwcmUtY2hhcmdlIGN1cnJl
-bnQuDQo+Pj4gK8KgwqDCoMKgwqAgSXRzIGxldmVscyBhcmUgMi4zIFYgdG8gMy44IFYgcHJv
-Z3JhbW1lZCBieSBJMkMgcGVyIDAuMSBWLg0KPj4+ICvCoMKgwqAgbWF4SXRlbXM6IDENCj4+
-PiArDQo+Pj4gK8KgIHJpY2h0ZWssY29uc3QtdXZvbHQ6DQo+Pj4gK8KgwqDCoCBkZXNjcmlw
-dGlvbjogfA0KPj4+ICvCoMKgwqDCoMKgIEJhdHRlcnkgcmVndWxhdGlvbiB2b2x0YWdlIG9m
-IGNvbnN0YW50IHZvbHRhZ2UgbW9kZS4gVGhpcyANCj4+PiB2b2x0YWdlIGxldmVscyBmcm9t
-DQo+Pj4gK8KgwqDCoMKgwqAgMy42NSBWIHRvIDQuNCBWIGJ5IEkyQyBwZXIgMC4wMjUgVi4N
-Cj4+PiArwqDCoMKgIG1heEl0ZW1zOiAxDQo+Pj4gKw0KPj4+ICvCoCBleHRjb246DQo+Pg0K
-Pj4gVGhpcyBpcyBkZXByZWNhdGVkLiBUaGVyZSdzIHN0YW5kYXJkIGNvbm5lY3RvciBiaW5k
-aW5ncyBub3cuDQo+IA0KPiBIb3cgZG9lcyB0aGlzIHdvcms/IEkgY291bGRuJ3QgZmluZCBh
-biBleGFtcGxlLg0KPiANCj4gSSBmb3VuZCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvY29ubmVjdG9yL3VzYi1jb25uZWN0b3IueWFtbCANCj4gWzJdIGJ1dCBJIGRvbid0
-IHNlZSBob3cgdGhpcyB3b3VsZCBiZSBhcHBsaWVkIGhlcmUuDQo+IA0KPiBUaGUgZXh0Y29u
-IGRldmljZSBlbnRyeSBpbiB0aGUgc2Ftc3VuZy1zZXJyYW5vdmUgZGV2aWNldHJlZSBbM10g
-bG9va3MgbGlrZToNCj4gDQo+IGkyYy1tdWljIHsNCj4gIMKgwqDCoMKgwqDCoMKgIGNvbXBh
-dGlibGUgPSAiaTJjLWdwaW8iOw0KPiAgwqDCoMKgwqDCoMKgwqAgc2RhLWdwaW9zID0gPCZt
-c21ncGlvIDEwNSAoR1BJT19BQ1RJVkVfSElHSHxHUElPX09QRU5fRFJBSU4pPjsNCj4gIMKg
-wqDCoMKgwqDCoMKgIHNjbC1ncGlvcyA9IDwmbXNtZ3BpbyAxMDYgKEdQSU9fQUNUSVZFX0hJ
-R0h8R1BJT19PUEVOX0RSQUlOKT47DQo+IA0KPiAgwqDCoMKgwqDCoMKgwqAgcGluY3RybC1u
-YW1lcyA9ICJkZWZhdWx0IjsNCj4gIMKgwqDCoMKgwqDCoMKgIHBpbmN0cmwtMCA9IDwmbXVp
-Y19pMmNfZGVmYXVsdD47DQo+IA0KPiAgwqDCoMKgwqDCoMKgwqAgI2FkZHJlc3MtY2VsbHMg
-PSA8MT47DQo+ICDCoMKgwqDCoMKgwqDCoCAjc2l6ZS1jZWxscyA9IDwwPjsNCj4gDQo+ICDC
-oMKgwqDCoMKgwqDCoCBtdWljOiBleHRjb25AMTQgew0KPiAgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgIGNvbXBhdGlibGUgPSAic2lsaWNvbm1pdHVzLHNtNTUwNC1tdWljIjsN
-Cj4gIMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCByZWcgPSA8MHgxND47DQo+IA0K
-PiAgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGludGVycnVwdC1wYXJlbnQgPSA8
-Jm1zbWdwaW8+Ow0KPiAgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGludGVycnVw
-dHMgPSA8MTIgSVJRX1RZUEVfRURHRV9GQUxMSU5HPjsNCj4gDQo+ICDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqAgcGluY3RybC1uYW1lcyA9ICJkZWZhdWx0IjsNCj4gIMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBwaW5jdHJsLTAgPSA8Jm11aWNfaXJxX2RlZmF1
-bHQ+Ow0KPiAgwqDCoMKgwqDCoMKgwqAgfTsNCj4gfTsNCj4gDQo+IFsyXSANCj4gaHR0cHM6
-Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGlu
-dXguZ2l0L3RyZWUvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nvbm5lY3Rv
-ci91c2ItY29ubmVjdG9yLnlhbWw/aD12Ni4yDQo+IFszXSANCj4gaHR0cHM6Ly9naXQua2Vy
-bmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXguZ2l0L3Ry
-ZWUvYXJjaC9hcm02NC9ib290L2R0cy9xY29tL21zbTg5MTYtc2Ftc3VuZy1zZXJyYW5vdmUu
-ZHRzP2g9djYuMiNuMTIzDQoNCkNvdWxkIHlvdSBhZGQgbW9yZSBpbmZvcm1hdGlvbiBvbiB3
-aGF0IHlvdSBtZWFuIGJ5IHN0YW5kYXJkIGNvbm5lY3RvciANCmJpbmRpbmdzPyBJdCdzIG5v
-dCBjbGVhciB0byBtZS4NCg0KPj4+ICvCoMKgwqAgZGVzY3JpcHRpb246IHwNCj4+PiArwqDC
-oMKgwqDCoCBQaGFuZGxlIHRvIHRoZSBleHRjb24gZGV2aWNlLg0KPj4+ICvCoMKgwqAgbWF4
-SXRlbXM6IDENCj4+PiArDQo+Pj4gK3JlcXVpcmVkOg0KPj4+ICvCoCAtIHJpY2h0ZWsscHJl
-LXVhbXANCj4+PiArwqAgLSByaWNodGVrLGZhc3QtdWFtcA0KPj4+ICvCoCAtIHJpY2h0ZWss
-ZW9jLXVhbXANCj4+PiArwqAgLSByaWNodGVrLHByZS10aHJlc2hvbGQtdXZvbHQNCj4+PiAr
-wqAgLSByaWNodGVrLGNvbnN0LXV2b2x0DQo+Pj4gKw0KPj4+ICthZGRpdGlvbmFsUHJvcGVy
-dGllczogZmFsc2UNCj4+PiArDQo+Pj4gK2V4YW1wbGVzOg0KPj4+ICvCoCAtIHwNCj4+PiAr
-wqDCoMKgIGNoYXJnZXIgew0KPj4+ICvCoMKgwqDCoMKgwqDCoCBjb21wYXRpYmxlID0gInJp
-Y2h0ZWsscnQ1MDMzLWNoYXJnZXIiOw0KPj4+ICvCoMKgwqDCoMKgwqDCoCByaWNodGVrLHBy
-ZS11YW1wID0gPDQ1MDAwMD47DQo+Pj4gK8KgwqDCoMKgwqDCoMKgIHJpY2h0ZWssZmFzdC11
-YW1wID0gPDEwMDAwMDA+Ow0KPj4+ICvCoMKgwqDCoMKgwqDCoCByaWNodGVrLGVvYy11YW1w
-ID0gPDE1MDAwMD47DQo+Pj4gK8KgwqDCoMKgwqDCoMKgIHJpY2h0ZWsscHJlLXRocmVzaG9s
-ZC11dm9sdCA9IDwzNTAwMDAwPjsNCj4+PiArwqDCoMKgwqDCoMKgwqAgcmljaHRlayxjb25z
-dC11dm9sdCA9IDw0MzUwMDAwPjsNCj4+PiArwqDCoMKgwqDCoMKgwqAgZXh0Y29uID0gPCZt
-dWljPjsNCj4+PiArwqDCoMKgIH07DQoNCi4uLg0KDQpLaW5kIHJlZ2FyZHMsDQpKYWtvYg0K
+On 29/03/2023 19:12, Sumit Gupta wrote:
+> 
+> 
+> On 28/03/23 18:18, Thierry Reding wrote:
+>> On Tue, Mar 28, 2023 at 01:22:26PM +0200, Krzysztof Kozlowski wrote:
+>>> On 28/03/2023 12:48, Thierry Reding wrote:
+>>>> On Tue, Mar 28, 2023 at 09:23:04AM +0200, Krzysztof Kozlowski wrote:
+>>>>> On 27/03/2023 18:14, Sumit Gupta wrote:
+>>>>>> For Tegra234, add the "nvidia,bpmp" property within the Memory
+>>>>>> Controller (MC) node to reference BPMP node. This is needed in
+>>>>>> the MC driver to pass the client info to the BPMP-FW when memory
+>>>>>> interconnect support is available.
+>>>>>>
+>>>>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>>>>> ---
+>>>>>>   .../bindings/memory-controllers/nvidia,tegra186-mc.yaml    | 7 +++++++
+>>>>>>   1 file changed, 7 insertions(+)
+>>>>>>
+>>>>>> diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra186-mc.yaml b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra186-mc.yaml
+>>>>>> index 935d63d181d9..398d27bb2373 100644
+>>>>>> --- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra186-mc.yaml
+>>>>>> +++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra186-mc.yaml
+>>>>>> @@ -58,6 +58,10 @@ properties:
+>>>>>>     "#interconnect-cells":
+>>>>>>       const: 1
+>>>>>>   
+>>>>>> +  nvidia,bpmp:
+>>>>>> +    $ref: /schemas/types.yaml#/definitions/phandle
+>>>>>> +    description: phandle of the node representing the BPMP
+>>>>>
+>>>>> Why do you need this multiple times? Both in parent and all external-mc
+>>>>> children?
+>>>>
+>>>> We've had nvidia,bpmp in the external memory controller node since
+>>>> basically the beginning because we've always needed it there. For newer
+>>>> chips we now also need it for the memory controller.
+>>>>
+>>>> Ideally I think we would only have this in the MC and have the EMC
+>>>> driver reference it via the EMC's parent (i.e. MC), but that would break
+>>>> backwards-compatibility. Reaching into the EMC's DT node from the MC was
+>>>> another option that we discussed internally, but it didn't look right
+>>>> given how this is also needed by the MC.
+>>>>
+>>>> One thing we could potentially do is deprecate the nvidia,bpmp phandle
+>>>> in the EMC and only keep it as a fallback in the drivers in case the
+>>>> parent MC doesn't find it's own in the DT.
+>>>
+>>> Yes, deprecation would answer to my question.
+>>
+>> Okay, great. Sumit, you can resolve this by adding a "deprecated: true"
+>> to the EMC's nvidia,bpmp property schema. In the driver we can then try
+>> to look at the MC's ->bpmp and if it exists reuse that. If it doesn't
+>> exist, we can keep the existing lookup as a fallback for device trees
+>> that haven't been updated yet.
+> 
+> We can't use MC's->bpmp in the EMC driver's probe as it will be NULL. 
+> This is because MC driver uses "arch_initcall" and gets probed earlier 
+> than BPMP. We can do this in another way as below change. This way we 
+> can use the existing "nvidia,bpmp" property from EMC node and don't need 
+> to move it to the MC node. Please share if this change sounds OK.
+
+Then rather it sounds like time to fix these
+orderings/arch_initcall/missing defer.
+
+
+Best regards,
+Krzysztof
 
