@@ -2,169 +2,283 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DC62C76196
-	for <linux-pm@archiver.kernel.org>; Mon,  3 Apr 2023 21:12:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E74AC76196
+	for <linux-pm@archiver.kernel.org>; Mon,  3 Apr 2023 21:18:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233680AbjDCVMC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 3 Apr 2023 17:12:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53888 "EHLO
+        id S233672AbjDCVSz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 3 Apr 2023 17:18:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233597AbjDCVLx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2023 17:11:53 -0400
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 466E11FC2
-        for <linux-pm@vger.kernel.org>; Mon,  3 Apr 2023 14:11:37 -0700 (PDT)
-Received: by mail-pl1-x62a.google.com with SMTP id kc4so29321578plb.10
-        for <linux-pm@vger.kernel.org>; Mon, 03 Apr 2023 14:11:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=telus.net; s=google; t=1680556296;
-        h=thread-index:content-language:content-transfer-encoding
-         :mime-version:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=MrvB9dLaBUlXb9132dHY3khaWN+MmC+4xODtdYapChQ=;
-        b=YClfDXVMnyD4N/fCkOJ+5VV43bCDFEyC1WQwMYHhnhYIf7C6qaiUXvhRzZcrRvH4yq
-         iw2q93xPIKLX+F4RibdFqKd4d6EB87+Qe2Ior7VTT2MUeVWVeBXTIK/GU9v5uNHsBewS
-         wYjozfd40gTZ/lIdRHaXeUlCcXeyjV6ING3N8rvaIpxgxO03uPihY0RlSdtmw3cWqAn2
-         LhVuaOfgrYWD2u5+7iqx9klGDMlmbhGqWxXA+c0YaV6mfbjTE9NhdmLIctUm9w46U/t7
-         ayfbtWPc6/TBF4VJBqv96J/mTuOwTvWuJF+I/q2uC0iZhEWOBckW0ejA//xiX0t9hmQP
-         j4Qw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680556296;
-        h=thread-index:content-language:content-transfer-encoding
-         :mime-version:message-id:date:subject:cc:to:from:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=MrvB9dLaBUlXb9132dHY3khaWN+MmC+4xODtdYapChQ=;
-        b=rKwhbko0XiK8aOZKftQN/zODKCTCxl9yGSaJWEE1Ravc07Ks3bapm5uOh6aT88Lyp5
-         Tt8PW40s69FYO4qMu/uVl222Q2mJdImpZ6vbUePx1Bj1ZMHW8O8YYuJSksk/Cqf0U2qb
-         EFXK7MGUiXQ/94oTSGu5YdSBXfeenPtPCSnL0Md87vi285+mvIZ73YggYV/sI2bwPg5/
-         3fcpXblU9aODe6RBcwrPYONxjZeDNeJ9HZAkE0NNItNz/H73jtk1YFgfkNlt21iQ11Vd
-         kqm0V7rLLk1PsEbFJHEQ1jbwLyZotgcCUfwbtcNpF9HQy6xVT6kxfktdELNtovc8rKI6
-         6z7g==
-X-Gm-Message-State: AAQBX9d0O2gjTusKbOAi+3ssuJzFZmLnhqLYLLRA3YfRLg8KBEo7coNd
-        Hlrex6l1jSzrAoFB3jE/sM5Fzw==
-X-Google-Smtp-Source: AKy350ZzxDFZgHJ2G4M8Pxq7ivSpG//SCIzPE9kkjUJ8tEoQ90iiNfJXeSTWUFZ8dy2vd+2jwWd+KQ==
-X-Received: by 2002:a17:903:1d1:b0:1a0:76d1:545c with SMTP id e17-20020a17090301d100b001a076d1545cmr19062125plh.10.1680556296542;
-        Mon, 03 Apr 2023 14:11:36 -0700 (PDT)
-Received: from DougS18 (s173-180-45-4.bc.hsia.telus.net. [173.180.45.4])
-        by smtp.gmail.com with ESMTPSA id k5-20020a170902760500b001992fc0a8eesm7090147pll.174.2023.04.03.14.11.35
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 03 Apr 2023 14:11:35 -0700 (PDT)
-From:   "Doug Smythies" <dsmythies@telus.net>
-To:     <lenb@kernel.org>
-Cc:     "Doug Smythies" <dsmythies@telus.net>, <linux-pm@vger.kernel.org>,
-        "'Rafael J. Wysocki'" <rafael@kernel.org>
-Subject: [PATCH] tools/power/x86/turbostat: Fix added raw MSR output
-Date:   Mon, 3 Apr 2023 14:11:38 -0700
-Message-ID: <00d201d96670$e15ab9d0$a4102d70$@telus.net>
+        with ESMTP id S233674AbjDCVSy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2023 17:18:54 -0400
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2071.outbound.protection.outlook.com [40.107.243.71])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFB603AB9;
+        Mon,  3 Apr 2023 14:18:50 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=KnIe7DAirxQQBzWEHS2DtjC6169Gu8Auy9hnyzdIruIlLzowoxtZ7KHbQXTXRgO35emhs6Xg1rxddJfFPOi+dVdD1B6oChMh5+YwvEmoPD0S/0qCdPcg9EsfAiL3C23qp3jzTqbUhX1Ci2Ohg3IgU/2muUEMcae7kVoP3ks3QEVPcyVzfUhkCpOHnh6xpUbhpFTegyQoodvIkyHHrwUqwu3scqRaeXbVtimvIVOIyZ+bAgdT3b4vBsxTFvJRqDKUp7Fy9hoTcmvJJYa/5n4cBbZAwXE8bWU4MqZAj3nkiDhPtFSl2kqJh6KwswVLBgG1Etl4FC+KRa6PcpcLe7MFKA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=X39arzUJ4HO1T4FqdMCbR+xipWwoAq8sO6b5G2BYq3g=;
+ b=lb8e687cJgaG9Xp+Gyz0AkP1r5G86Ya358FqBHFt+vQX6w0mudCCn5O5ook6XffYD270QXD5WYH3ruI5brfLShw3mCw2sVcmxgP9mX3Mj4pQ717Nk22xa3eF8TIA1X/Q+N1rZhnByAHGpnIXvkPQJO1GRhx8XXKucLFy8jnZw4xCwPoWVuEdaCJvVF834MEkLObEr29CS9aEVz/9qf73F6o59PK0zZBf0pJwz0Wi5ZrlLSVypfeMoHptRBtJ+0aTz675VvhjZ6LdvVGe2NaGj7MYRSAQIH4L8KN55ijLrUW8hz7QkUWMKlgVzSQ0+nJKoFNQnXBk+eUgN8l8uLEvLw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=chromium.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=X39arzUJ4HO1T4FqdMCbR+xipWwoAq8sO6b5G2BYq3g=;
+ b=bwjNbJ92cnqbkhuTjmnrYweH/2kDiUwQawNsylUapMFmRB25kdGmZRyah6ACTpn8QgOGk6v/W4XMTH0C/Jm6kAPOyI8ZlV6XD9gE9ikFY2A3lo2FMsg5WLHpZlc5bsQyKV8TI6/xRaSAo1/FAnFXDcOqQUUZP4I7eKeB/a2sMtU=
+Received: from BLAPR03CA0105.namprd03.prod.outlook.com (2603:10b6:208:32a::20)
+ by MN0PR12MB5884.namprd12.prod.outlook.com (2603:10b6:208:37c::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.33; Mon, 3 Apr
+ 2023 21:18:48 +0000
+Received: from BL02EPF000100D0.namprd05.prod.outlook.com
+ (2603:10b6:208:32a:cafe::8c) by BLAPR03CA0105.outlook.office365.com
+ (2603:10b6:208:32a::20) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.20 via Frontend
+ Transport; Mon, 3 Apr 2023 21:18:48 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ BL02EPF000100D0.mail.protection.outlook.com (10.167.241.204) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6178.30 via Frontend Transport; Mon, 3 Apr 2023 21:18:48 +0000
+Received: from AUS-LX-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Mon, 3 Apr
+ 2023 16:18:47 -0500
+From:   Mario Limonciello <mario.limonciello@amd.com>
+To:     Sven van Ashbrook <svenva@chromium.org>,
+        John Stultz <jstultz@google.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+CC:     Raul Rangel <rrangel@chromium.org>,
+        David E Box <david.e.box@intel.com>,
+        Rajat Jain <rajatja@google.com>,
+        S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        <linux-kernel@vger.kernel.org>,
+        <platform-driver-x86@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        "Mario Limonciello" <mario.limonciello@amd.com>
+Subject: [PATCH v6 1/4] PM: Add sysfs files to represent time spent in hardware sleep state
+Date:   Mon, 3 Apr 2023 16:18:27 -0500
+Message-ID: <20230403211831.4010-2-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20230403211831.4010-1-mario.limonciello@amd.com>
+References: <20230403211831.4010-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Outlook 16.0
-Content-Language: en-ca
-Thread-Index: Adlmb4+/+92L5McLQC6ljBs2sqN+CA==
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL02EPF000100D0:EE_|MN0PR12MB5884:EE_
+X-MS-Office365-Filtering-Correlation-Id: b0c8ee78-71e0-4288-3cde-08db348903ed
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: RJ3MwNRvmGXNbSlIYvJaU900Qi173F1hIkSMWVi6GD6TfUfuGV4lBXVzO0zgVxFEZna/uD7PxfKhOs9wfO2rAEb609Jbl11YCcadR0EHj5XW/BxSLid3Gbtw4MDFzvk2bo+PSiGLSGfCEDGtRBl8xyrC1K+uMMDlVKwLruToL15jPvTSJVxL8GynNDFKARTPJl4Ur89nBzwgd5quTUTLIBp0/SIQ67ZuLkCmeqWwk/gLWHabq4RfjvTbSXQkXowx8Bu/zh8ZMMLkGS3C+eX/1GqyiB3rDa4XE57y1byhDAUSSVWDZhueP9uA2AZTh42nAV6m6eT48eHDcxoqH59fY3pwvUTS/94OjSWlnxSdniQ2m/ExOmNQF7PnX7wgE+5Z/JJHjwEKDPuT7Vnu7IIxfY7dgMBLRPvBHsMhjFEPvXj8TS3NNz5mO3LpZp+iWwAmvCiY79WIYr0oglPUkcGiNEUcAikjhPNRnAdWWiBYs9KrTWvZyuzuKDeHZMjEQVhSkE1QjdVd8ZXSmSrn9H9L/HulHc2HLCsAKhJC0SPADOOAaUGZtZ/q/MezNKqq+DoWcjTffAwlzRRW4UvuxrxjQLau1DjUo8LuT7LvWB/9CjSeiIxC3sVDHx0LsGjv/tbjjyxQiGPcWB2hrzj3ecKR4J+3kEkPa/EZTb5UJ90b1KrDNf2bSzDGZCK83ihCvozikgRQssMqmV6x4IUqKavYN/4dLo6tIqB3BVyhHRMJ6fA=
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(39860400002)(396003)(376002)(346002)(136003)(451199021)(46966006)(36840700001)(40470700004)(2906002)(44832011)(81166007)(7416002)(356005)(5660300002)(82740400003)(70206006)(8936002)(70586007)(41300700001)(4326008)(8676002)(36860700001)(1076003)(40460700003)(36756003)(110136005)(54906003)(316002)(2616005)(83380400001)(82310400005)(47076005)(336012)(426003)(86362001)(478600001)(16526019)(186003)(6666004)(26005)(40480700001)(7696005)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Apr 2023 21:18:48.3631
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: b0c8ee78-71e0-4288-3cde-08db348903ed
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: BL02EPF000100D0.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB5884
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Userspace can't easily discover how much of a sleep cycle was spent in a
+hardware sleep state without using kernel tracing and vendor specific sysfs
+or debugfs files.
 
-When using --Summary mode, added MSRs in raw mode always
-print zeros. Print the actual register contents.
+To make this information more discoverable, introduce two new sysfs files:
+1) The time spent in a hw sleep state for last cycle.
+2) The time spent in a hw sleep state since the kernel booted
+Both of these files will be present only if the system supports s2idle.
 
-Example, with patch:
-
-note the added column:
---add msr0x64f,u32,package,raw,REASON
-
-Where:
-
-0x64F is MSR_CORE_PERF_LIMIT_REASONS
-
-# ./turbostat --quiet --Summary --show Busy%,Bzy_MHz,PkgWatt,PkgTmp,CorWatt --add msr0x64f,u32,package,raw,REASON --interval 10
-Busy%   Bzy_MHz PkgTmp  PkgWatt CorWatt     REASON
-0.00    4800    35      1.42    0.76    0x00000000
-0.00    4801    34      1.42    0.76    0x00000000
-80.08   4531    66      108.17  107.52  0x08000000
-98.69   4530    66      133.21  132.54  0x08000000
-99.28   4505    66      128.26  127.60  0x0c000400
-99.65   4486    68      124.91  124.25  0x0c000400
-99.63   4483    68      124.90  124.25  0x0c000400
-79.34   4481    41      99.80   99.13   0x0c000000
-0.00    4801    41      1.40    0.73    0x0c000000
-
-Where, for the test processor (i5-10600K):
-
-PKG Limit #1: 125.000 Watts, 8.000000 sec
-MSR bit 26 = log; bit 10 = status
-
-PKG Limit #2: 136.000 Watts, 0.002441 sec
-MSR bit 27 = log; bit 11 = status
-
-Example, without patch:
-
-# ./turbostat --quiet --Summary --show Busy%,Bzy_MHz,PkgWatt,PkgTmp,CorWatt --add msr0x64f,u32,package,raw,REASON --interval 10
-Busy%   Bzy_MHz PkgTmp  PkgWatt CorWatt     REASON
-0.01    4800    35      1.43    0.77    0x00000000
-0.00    4801    35      1.39    0.73    0x00000000
-83.49   4531    66      112.71  112.06  0x00000000
-98.69   4530    68      133.35  132.69  0x00000000
-99.31   4500    67      127.96  127.30  0x00000000
-99.63   4483    69      124.91  124.25  0x00000000
-99.61   4481    69      124.90  124.25  0x00000000
-99.61   4481    71      124.92  124.25  0x00000000
-59.35   4479    42      75.03   74.37   0x00000000
-0.00    4800    42      1.39    0.73    0x00000000
-0.00    4801    42      1.42    0.76    0x00000000
-
-# rdmsr 0x64f
-c000000
-
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+v5->v6:
+ * Add total attribute as well
+ * Change text for documentation
+ * Adjust flow of is_visible callback.
+ * If overflow was detected in total attribute return -EOVERFLOW
+ * Rename symbol
+ * Add stub for symbol for builds without CONFIG_PM_SLEEP
+v4->v5:
+ * Provide time in microseconds instead of percent. Userspace can convert
+   this if desirable.
+---
+ Documentation/ABI/testing/sysfs-power | 27 ++++++++++++++++
+ include/linux/suspend.h               |  5 +++
+ kernel/power/main.c                   | 45 +++++++++++++++++++++++++++
+ 3 files changed, 77 insertions(+)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 8a36ba5df9f9..d8d667934a23 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1744,8 +1744,9 @@ int sum_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
+index f99d433ff311..37240575d282 100644
+--- a/Documentation/ABI/testing/sysfs-power
++++ b/Documentation/ABI/testing/sysfs-power
+@@ -413,6 +413,33 @@ Description:
+ 		The /sys/power/suspend_stats/last_failed_step file contains
+ 		the last failed step in the suspend/resume path.
  
- 	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
- 		if (mp->format == FORMAT_RAW)
--			continue;
--		average.threads.counter[i] += t->counter[i];
-+			average.threads.counter[i] = t->counter[i];
-+		else
-+			average.threads.counter[i] += t->counter[i];
- 	}
++What:		/sys/power/suspend_stats/last_hw_sleep
++Date:		June 2023
++Contact:	Mario Limonciello <mario.limonciello@amd.com>
++Description:
++		The /sys/power/suspend_stats/last_hw_sleep file
++		contains the duration of time spent in a hardware sleep
++		state in the most recent system suspend-resume cycle.
++		This number is measured in microseconds.
++
++		NOTE: Limitations in the size of the hardware counters may
++		cause this value to be inaccurate in longer sleep cycles.
++
++What:		/sys/power/suspend_stats/total_hw_sleep
++Date:		June 2023
++Contact:	Mario Limonciello <mario.limonciello@amd.com>
++Description:
++		The /sys/power/suspend_stats/total_hw_sleep file
++		contains the aggregate of time spent in a hardware sleep
++		state since the kernel was booted. This number
++		is measured in microseconds.
++
++		NOTE: Limitations in the size of the hardware counters may
++		cause this value to be inaccurate in longer sleep cycles.
++
++		If an overflow has been detected this file will return
++		-EOVERFLOW.
++
+ What:		/sys/power/sync_on_suspend
+ Date:		October 2019
+ Contact:	Jonas Meurer <jonas@freesources.org>
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index cfe19a028918..069ef0c0ae57 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -68,6 +68,8 @@ struct suspend_stats {
+ 	int	last_failed_errno;
+ 	int	errno[REC_FAILED_NUM];
+ 	int	last_failed_step;
++	u64	last_hw_sleep;
++	u64	total_hw_sleep;
+ 	enum suspend_stat_step	failed_steps[REC_FAILED_NUM];
+ };
  
- 	/* sum per-core values only for 1st thread in core */
-@@ -1764,8 +1765,9 @@ int sum_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+@@ -489,6 +491,7 @@ void restore_processor_state(void);
+ extern int register_pm_notifier(struct notifier_block *nb);
+ extern int unregister_pm_notifier(struct notifier_block *nb);
+ extern void ksys_sync_helper(void);
++extern void pm_report_hw_sleep_time(u64 t);
  
- 	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
- 		if (mp->format == FORMAT_RAW)
--			continue;
--		average.cores.counter[i] += c->counter[i];
-+			average.cores.counter[i] = c->counter[i];
-+		else
-+			average.cores.counter[i] += c->counter[i];
- 	}
- 
- 	/* sum per-pkg values only for 1st core in pkg */
-@@ -1812,8 +1814,9 @@ int sum_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 
- 	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
- 		if (mp->format == FORMAT_RAW)
--			continue;
--		average.packages.counter[i] += p->counter[i];
-+			average.packages.counter[i] = p->counter[i];
-+		else
-+			average.packages.counter[i] += p->counter[i];
- 	}
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+@@ -526,6 +529,8 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
  	return 0;
  }
+ 
++static inline void pm_report_hw_sleep_time(u64 t) {};
++
+ static inline void ksys_sync_helper(void) {}
+ 
+ #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 31ec4a9b9d70..ffd4dd43cbdd 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -6,6 +6,7 @@
+  * Copyright (c) 2003 Open Source Development Lab
+  */
+ 
++#include <linux/acpi.h>
+ #include <linux/export.h>
+ #include <linux/kobject.h>
+ #include <linux/string.h>
+@@ -83,6 +84,18 @@ int unregister_pm_notifier(struct notifier_block *nb)
+ }
+ EXPORT_SYMBOL_GPL(unregister_pm_notifier);
+ 
++void pm_report_hw_sleep_time(u64 t)
++{
++	suspend_stats.last_hw_sleep = t;
++	if (suspend_stats.total_hw_sleep == -EOVERFLOW)
++		return;
++	if (suspend_stats.total_hw_sleep + t < suspend_stats.total_hw_sleep)
++		suspend_stats.total_hw_sleep = -EOVERFLOW;
++	else
++		suspend_stats.total_hw_sleep += t;
++}
++EXPORT_SYMBOL_GPL(pm_report_hw_sleep_time);
++
+ int pm_notifier_call_chain_robust(unsigned long val_up, unsigned long val_down)
+ {
+ 	int ret;
+@@ -377,6 +390,22 @@ static ssize_t last_failed_step_show(struct kobject *kobj,
+ }
+ static struct kobj_attribute last_failed_step = __ATTR_RO(last_failed_step);
+ 
++static ssize_t last_hw_sleep_show(struct kobject *kobj,
++		struct kobj_attribute *attr, char *buf)
++{
++	return sysfs_emit(buf, "%llu\n", suspend_stats.last_hw_sleep);
++}
++static struct kobj_attribute last_hw_sleep = __ATTR_RO(last_hw_sleep);
++
++static ssize_t total_hw_sleep_show(struct kobject *kobj,
++		struct kobj_attribute *attr, char *buf)
++{
++	if (suspend_stats.total_hw_sleep == -EOVERFLOW)
++		return suspend_stats.total_hw_sleep;
++	return sysfs_emit(buf, "%llu\n", suspend_stats.total_hw_sleep);
++}
++static struct kobj_attribute total_hw_sleep = __ATTR_RO(total_hw_sleep);
++
+ static struct attribute *suspend_attrs[] = {
+ 	&success.attr,
+ 	&fail.attr,
+@@ -391,12 +420,28 @@ static struct attribute *suspend_attrs[] = {
+ 	&last_failed_dev.attr,
+ 	&last_failed_errno.attr,
+ 	&last_failed_step.attr,
++	&last_hw_sleep.attr,
++	&total_hw_sleep.attr,
+ 	NULL,
+ };
+ 
++static umode_t suspend_attr_is_visible(struct kobject *kobj, struct attribute *attr, int idx)
++{
++	if (attr != &last_hw_sleep.attr &&
++	    attr != &total_hw_sleep.attr)
++		return 0444;
++
++#ifdef CONFIG_ACPI
++	if (acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0)
++		return 0444;
++#endif
++	return 0;
++}
++
+ static const struct attribute_group suspend_attr_group = {
+ 	.name = "suspend_stats",
+ 	.attrs = suspend_attrs,
++	.is_visible = suspend_attr_is_visible,
+ };
+ 
+ #ifdef CONFIG_DEBUG_FS
 -- 
-2.25.1
-
+2.34.1
 
