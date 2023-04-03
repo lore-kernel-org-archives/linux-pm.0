@@ -2,104 +2,107 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92E30C76188
-	for <linux-pm@archiver.kernel.org>; Mon,  3 Apr 2023 14:47:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D73F5C77B6E
+	for <linux-pm@archiver.kernel.org>; Mon,  3 Apr 2023 15:08:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234110AbjDCOra (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 3 Apr 2023 10:47:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38660 "EHLO
+        id S234185AbjDCPIU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 3 Apr 2023 11:08:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234088AbjDCOqv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2023 10:46:51 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 979311697F;
-        Mon,  3 Apr 2023 07:46:33 -0700 (PDT)
+        with ESMTP id S234194AbjDCPIK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2023 11:08:10 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BDA64C35;
+        Mon,  3 Apr 2023 08:08:03 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 10DF9B81D5A;
-        Mon,  3 Apr 2023 14:46:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77376C433D2;
-        Mon,  3 Apr 2023 14:46:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1680533189;
-        bh=UMk1yWcwvsggJJjnaJ9yTLb2WQw1KXCFuCFy3Q+rgHE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=O16ATLFyfIMw7c+EyTL6enJ4jOwImHQq7HxRKxfR/7THplyDW8GvRibyfgwhWkaLb
-         ZtmuM5DH8rgyVazX4mdVwfY1ZpeqdNufkcrmVyk9j1vzZ4CjeqB5MPMLvqy3YE1Z2u
-         LudPJoQ1e6PMZ2DZELhJebdxcCkklavMYg3MbkA0=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     stable@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        patches@lists.linux.dev, Prarit Bhargava <prarit@redhat.com>,
-        linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.2 057/187] tools/power turbostat: Fix /dev/cpu_dma_latency warnings
-Date:   Mon,  3 Apr 2023 16:08:22 +0200
-Message-Id: <20230403140417.838998267@linuxfoundation.org>
-X-Mailer: git-send-email 2.40.0
-In-Reply-To: <20230403140416.015323160@linuxfoundation.org>
-References: <20230403140416.015323160@linuxfoundation.org>
-User-Agent: quilt/0.67
+        by dfw.source.kernel.org (Postfix) with ESMTPS id ADF7561A55;
+        Mon,  3 Apr 2023 15:08:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18A37C4339B;
+        Mon,  3 Apr 2023 15:07:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1680534482;
+        bh=Zvq9Hzpetq9+ZiBrci0/SnW1z0Ndhco9dW2OQzO42bc=;
+        h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+        b=LPSID/hW1iIiGUMdrfSA+O+e5b98RytK7Y34WEdMUQGE3B5wDApQjkEE5j5LWK8IX
+         iuYzO1CRQem0UBb0MQ+yHt7bysq+oQ0HzTXXWSGs9R2uWVdIVfs9zs//X59D67fOTN
+         kkR8fYsJ0VhLg6hSdwaJ5VI3mSZ2hcwWaB7MRGOqNVPFZmJO17v7EvZSXcaKhGrYJf
+         YOsayAmvzQSvVZqafUNir2ALY1AiobPKEfd52C9PVugNvVLiTefUzF8qh3pqLB9yVC
+         OJF12k5hKshsRfEzqU1EqfYrvbkZDZbVBqMlTzMVEA72PlpFMQICPWceC5MK6a/S41
+         X+dDKoQeE4sJg==
+From:   Mark Brown <broonie@kernel.org>
+To:     Bjorn Andersson <andersson@kernel.org>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Vinod Koul <vkoul@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Avri Altman <avri.altman@wdc.com>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Marc Zyngier <maz@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>,
+        linux-pci@vger.kernel.org,
+        Kishon Vijay Abraham I <kishon@kernel.org>,
+        linux-phy@lists.infradead.org,
+        Wesley Cheng <quic_wcheng@quicinc.com>,
+        linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-scsi@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>
+In-Reply-To: <20230325122444.249507-1-vkoul@kernel.org>
+References: <20230325122444.249507-1-vkoul@kernel.org>
+Subject: Re: (subset) [PATCH v2 00/12] Introduce the SC8180x devices
+Message-Id: <168053447680.47740.2062036242012042206.b4-ty@kernel.org>
+Date:   Mon, 03 Apr 2023 16:07:56 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-00303
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Prarit Bhargava <prarit@redhat.com>
+On Sat, 25 Mar 2023 17:54:32 +0530, Vinod Koul wrote:
+> This introduces Qualcomm SC8180x SoC which features in Lenovo Flex 5G
+> laptop. This also adds support for Primus platform as well as Lenovo Flex 5G
+> laptop.
+> 
+> I would be great if submaintainers can ack the binding patch so that
+> everything can go thru qcom tree
+> 
+> [...]
 
-[ Upstream commit 40aafc7d58d3544f152a863a0e9863014b6d5d8c ]
+Applied to
 
-When running as non-root the following error is seen in turbostat:
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
 
-turbostat: fopen /dev/cpu_dma_latency
-: Permission denied
+Thanks!
 
-turbostat and the man page have information on how to avoid other
-permission errors, so these can be fixed the same way.
+[08/12] regulator: dt-bindings: qcom,rpmh: Add compatible for PMC8180
+        commit: fc4fef625decc80cf3a72e884a4e37288bfa0f9b
 
-Provide better /dev/cpu_dma_latency warnings that provide instructions on
-how to avoid the error, and update the man page.
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- tools/power/x86/turbostat/turbostat.8 | 2 ++
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 2 files changed, 3 insertions(+), 1 deletion(-)
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index c7b26a3603afe..3e1a4c4be001a 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -344,6 +344,8 @@ Alternatively, non-root users can be enabled to run turbostat this way:
- 
- # chmod +r /dev/cpu/*/msr
- 
-+# chmod +r /dev/cpu_dma_latency
-+
- .B "turbostat "
- reads hardware counters, but doesn't write them.
- So it will not interfere with the OS or other programs, including
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index aba460410dbd1..c24054e3ef7ad 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -5482,7 +5482,7 @@ void print_dev_latency(void)
- 
- 	retval = read(fd, (void *)&value, sizeof(int));
- 	if (retval != sizeof(int)) {
--		warn("read %s\n", path);
-+		warn("read failed %s\n", path);
- 		close(fd);
- 		return;
- 	}
--- 
-2.39.2
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
+Thanks,
+Mark
 
