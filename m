@@ -2,256 +2,165 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFE08C77B60
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Apr 2023 07:17:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 715E2C7618D
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Apr 2023 07:52:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233345AbjDDHRI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Apr 2023 03:17:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47528 "EHLO
+        id S233935AbjDDHv7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Apr 2023 03:51:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54790 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233352AbjDDHRH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2023 03:17:07 -0400
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F28E21FCB;
-        Tue,  4 Apr 2023 00:17:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1680592626; x=1712128626;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=0GAiw+Kt1h6raWI1YzFMq5fFZ6Qe6qc5kiUP1AxeJ1o=;
-  b=YoOWUWFR9MJitOl8YcJgqIv4TJp1w+3n7D2YiLv9K+jovzHMIkHCSQf7
-   38rXH3FByCWvAfa1tEFWpLfBVuACQaqt6Fg0ss8o5/vVV7zAgM4tcnAqA
-   1plB9rjnuNli58RcHw38wRyZOxT+1kh8iF2d9hbHFC0g9dVIIUwMh6HdT
-   E8QlK4jZptPmV27wVyAY58gOW/5qpZQ1/y725DRqpqbdX1WD0+a9ZsKqs
-   aTfXyjZ79n4hw1ggzxtvmWIj1jG4j23PctF/sFF6FUEOtoar3jEqbVwh9
-   yAwfvEL0whpxZ3xggtzZPhTv/Sj2moWdgNECGF4iedOSTK9X2w6iOdS/5
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="369925396"
-X-IronPort-AV: E=Sophos;i="5.98,317,1673942400"; 
-   d="scan'208";a="369925396"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Apr 2023 00:17:01 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="755535054"
-X-IronPort-AV: E=Sophos;i="5.98,317,1673942400"; 
-   d="scan'208";a="755535054"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by fmsmga004.fm.intel.com with ESMTP; 04 Apr 2023 00:16:59 -0700
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1pjauZ-000PJx-0R;
-        Tue, 04 Apr 2023 07:16:59 +0000
-Date:   Tue, 04 Apr 2023 15:16:46 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD REGRESSION
- d26f8f17a7c10cb922870a72e09166c628166a16
-Message-ID: <642bcede.0npEWY0aQzbqyZg/%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S233828AbjDDHv6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2023 03:51:58 -0400
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41A7710FA
+        for <linux-pm@vger.kernel.org>; Tue,  4 Apr 2023 00:51:54 -0700 (PDT)
+Received: by mail-wr1-x435.google.com with SMTP id e18so31760390wra.9
+        for <linux-pm@vger.kernel.org>; Tue, 04 Apr 2023 00:51:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1680594713;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4eHql4WTN7nTnO54YwymmcHpD/uil9JTue50IFNnQxg=;
+        b=Ou5K8S/Iw2hdb/VMPMb0sZf7Pm0Bn8pCm+9VFVq02Ps67bpwxOO1x781n4tNZqY0Wu
+         rkPk2p/LvEw7LntN9e4NYrjBLc2GrUXI7E8cmPJDGo/pKjRoyF3psxbU33+RhIs5rimj
+         vn1ul8ctxVd10CTS7p0pXTTChuLbQsgBCbq9fzJ4wO0TCCmcP3FkgBdjH3IsRFdQ7F80
+         PekohjtmCtrebl8R5UTgpdBffsXWGqJb57wPxZASXcaCDJTrseLn097uRehiW1gFiWoQ
+         T8jiX3mPV1CgsBlgQmaYliYCZBcg8TwfH9ga+GQr/7ql9aQoW4w22b3yzF0C8MH/gMnx
+         k3Jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680594713;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4eHql4WTN7nTnO54YwymmcHpD/uil9JTue50IFNnQxg=;
+        b=bJCAGYN79OY3WFkYbcKHhH5yCSO1O6/yYV46S00wqZ8DUo70FsI3LI6n3Ff3JYlLx5
+         j3IMS69tLa7sRxEa2KPMVS/xVLHLcvQ1SIXB7xmhuoC4m7fQeogK16fv5utwbKcP29vg
+         xfG+V+guzZcZ38A5vwqF4/6U45OHlv5ZqhpD0MJHIwTtqRbX0Pe1uX/s458HmEheoX8A
+         EgzVNNcI+9QnKfV1olosNiGxBa2ICmw8RQDa4/T5IgWfbqBEyNFSpHYlT6BpVi/xX/hv
+         rjO4VfNy0cyvWgMr+1AaYapJz2nFfjGsyVet/3drnowb+Fkr2r+Ivji+EMWb2CDt65Yb
+         k6Gw==
+X-Gm-Message-State: AAQBX9eyx2PDDU/yDIPkPP0p2qTSEuKh0gvXjIomQ7UX8Cd27IBhbZN7
+        bZuGgluQu1eVGTocYGR/dpP85A==
+X-Google-Smtp-Source: AKy350asUsJa/X7X/Yc+hA/MLWDEPB3vHQxoVFv0EJuSrvEc2HQFhdjrA7/3FGqcDS9/b9HRB1d2VQ==
+X-Received: by 2002:adf:ed81:0:b0:2e6:ba1a:8d8 with SMTP id c1-20020adfed81000000b002e6ba1a08d8mr945588wro.41.1680594712681;
+        Tue, 04 Apr 2023 00:51:52 -0700 (PDT)
+Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:9754:a4ba:a0f5:8937])
+        by smtp.gmail.com with ESMTPSA id r13-20020adff10d000000b002e45f6ffe63sm11591561wro.26.2023.04.04.00.51.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Apr 2023 00:51:52 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org
+Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>
+Subject: [PATCH v2 2/3] thermal/of: Unexport unused OF functions
+Date:   Tue,  4 Apr 2023 09:51:36 +0200
+Message-Id: <20230404075138.2914680-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230404075138.2914680-1-daniel.lezcano@linaro.org>
+References: <20230404075138.2914680-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: d26f8f17a7c10cb922870a72e09166c628166a16  Merge branch 'thermal-next' into bleeding-edge
+The functions thermal_of_zone_register() and
+thermal_of_zone_unregister() are no longer needed from the drivers as
+the devm_ variant is always used.
 
-Error/Warning: (recently discovered and may have been fixed)
+Make them static in the C file and remove their declaration from thermal.h
 
-drivers/ata/pata_ixp4xx_cf.c:254:46: error: invalid use of undefined type 'struct device_node'
-drivers/ata/pata_ixp4xx_cf.c:258:15: error: implicit declaration of function 'of_property_read_u32_index'; did you mean 'fwnode_property_read_u32_array'? [-Werror=implicit-function-declaration]
-drivers/ata/pata_ixp4xx_cf.c:294:34: error: array type has incomplete element type 'struct of_device_id'
-drivers/fpga/lattice-sysconfig-spi.c:146:35: error: implicit declaration of function 'of_match_ptr' [-Werror=implicit-function-declaration]
-drivers/fpga/lattice-sysconfig-spi.c:146:35: error: initializer element is not constant
-drivers/virtio/virtio_mmio.c:492:13: error: implicit declaration of function 'of_property_read_bool'; did you mean 'fwnode_property_read_bool'? [-Werror=implicit-function-declaration]
-drivers/virtio/virtio_mmio.c:492:6: error: call to undeclared function 'of_property_read_bool'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+   V2:
+     - No changes
+---
+ drivers/thermal/thermal_of.c |  8 +++-----
+ include/linux/thermal.h      | 17 -----------------
+ 2 files changed, 3 insertions(+), 22 deletions(-)
 
-Unverified Error/Warning (likely false positive, please contact us if interested):
-
-drivers/perf/alibaba_uncore_drw_pmu.c:758:36: error: array type has incomplete element type 'struct acpi_device_id'
-drivers/perf/arm_dmc620_pmu.c:711:36: error: array type has incomplete element type 'struct acpi_device_id'
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- alpha-allyesconfig
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:array-type-has-incomplete-element-type-struct-of_device_id
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:implicit-declaration-of-function-of_property_read_u32_index
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:invalid-use-of-undefined-type-struct-device_node
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-|   |-- drivers-perf-alibaba_uncore_drw_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   |-- drivers-perf-arm_dmc620_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- arc-allyesconfig
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:array-type-has-incomplete-element-type-struct-of_device_id
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:implicit-declaration-of-function-of_property_read_u32_index
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:invalid-use-of-undefined-type-struct-device_node
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-|   |-- drivers-perf-alibaba_uncore_drw_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   |-- drivers-perf-arm_dmc620_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- arc-randconfig-r043-20230403
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- arm-allmodconfig
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:array-type-has-incomplete-element-type-struct-of_device_id
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:implicit-declaration-of-function-of_property_read_u32_index
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:invalid-use-of-undefined-type-struct-device_node
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-|   |-- drivers-perf-alibaba_uncore_drw_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   |-- drivers-perf-arm_dmc620_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- arm-allyesconfig
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:array-type-has-incomplete-element-type-struct-of_device_id
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:implicit-declaration-of-function-of_property_read_u32_index
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:invalid-use-of-undefined-type-struct-device_node
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-|   |-- drivers-perf-alibaba_uncore_drw_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   |-- drivers-perf-arm_dmc620_pmu.c:error:array-type-has-incomplete-element-type-struct-acpi_device_id
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- arm-defconfig
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- arm64-allyesconfig
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:implicit-declaration-of-function-of_property_read_u32_index
-|   |-- drivers-ata-pata_ixp4xx_cf.c:error:invalid-use-of-undefined-type-struct-device_node
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:implicit-declaration-of-function-of_match_ptr
-|   |-- drivers-fpga-lattice-sysconfig-spi.c:error:initializer-element-is-not-constant
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- arm64-defconfig
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-|-- csky-buildonly-randconfig-r002-20230403
-|   `-- drivers-virtio-virtio_mmio.c:error:implicit-declaration-of-function-of_property_read_bool
-clang_recent_errors
-|-- arm-randconfig-r046-20230403
-|   `-- drivers-virtio-virtio_mmio.c:error:call-to-undeclared-function-of_property_read_bool-ISO-C99-and-later-do-not-support-implicit-function-declarations
-|-- arm64-buildonly-randconfig-r003-20230403
-|   `-- drivers-virtio-virtio_mmio.c:error:call-to-undeclared-function-of_property_read_bool-ISO-C99-and-later-do-not-support-implicit-function-declarations
-|-- hexagon-buildonly-randconfig-r004-20230403
-|   `-- drivers-virtio-virtio_mmio.c:error:call-to-undeclared-function-of_property_read_bool-ISO-C99-and-later-do-not-support-implicit-function-declarations
-`-- hexagon-randconfig-r016-20230403
-    `-- drivers-virtio-virtio_mmio.c:error:call-to-undeclared-function-of_property_read_bool-ISO-C99-and-later-do-not-support-implicit-function-declarations
-
-elapsed time: 722m
-
-configs tested: 106
-configs skipped: 4
-
-tested configs:
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r034-20230403   gcc  
-arc                  randconfig-r043-20230403   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r046-20230403   clang
-arm64                            allyesconfig   gcc  
-arm64        buildonly-randconfig-r003-20230403   clang
-arm64                               defconfig   gcc  
-arm64                randconfig-r004-20230403   clang
-csky         buildonly-randconfig-r002-20230403   gcc  
-csky                                defconfig   gcc  
-csky                 randconfig-r033-20230403   gcc  
-hexagon      buildonly-randconfig-r004-20230403   clang
-hexagon              randconfig-r006-20230403   clang
-hexagon              randconfig-r016-20230403   clang
-hexagon              randconfig-r035-20230403   clang
-hexagon              randconfig-r041-20230403   clang
-hexagon              randconfig-r045-20230403   clang
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                 randconfig-a001-20230403   clang
-i386                 randconfig-a002-20230403   clang
-i386                 randconfig-a003-20230403   clang
-i386                 randconfig-a004-20230403   clang
-i386                 randconfig-a005-20230403   clang
-i386                 randconfig-a006-20230403   clang
-i386                 randconfig-a011-20230403   gcc  
-i386                 randconfig-a012-20230403   gcc  
-i386                 randconfig-a013-20230403   gcc  
-i386                 randconfig-a014-20230403   gcc  
-i386                 randconfig-a015-20230403   gcc  
-i386                 randconfig-a016-20230403   gcc  
-i386                 randconfig-r015-20230403   gcc  
-i386                 randconfig-r022-20230403   gcc  
-i386                 randconfig-r036-20230403   clang
-ia64                             allmodconfig   gcc  
-ia64         buildonly-randconfig-r006-20230403   gcc  
-ia64                                defconfig   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-m68k                             allmodconfig   gcc  
-m68k         buildonly-randconfig-r005-20230403   gcc  
-m68k                                defconfig   gcc  
-microblaze           randconfig-r023-20230403   gcc  
-microblaze           randconfig-r024-20230403   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-nios2                               defconfig   gcc  
-openrisc             randconfig-r013-20230403   gcc  
-openrisc             randconfig-r025-20230403   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r003-20230403   gcc  
-parisc               randconfig-r014-20230403   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc              randconfig-r005-20230403   clang
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r021-20230403   gcc  
-riscv                randconfig-r042-20230403   gcc  
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r012-20230403   gcc  
-s390                 randconfig-r044-20230403   gcc  
-sh                               allmodconfig   gcc  
-sh                   randconfig-r011-20230403   gcc  
-sh                   randconfig-r031-20230403   gcc  
-sparc        buildonly-randconfig-r001-20230403   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r001-20230403   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-a001-20230403   clang
-x86_64               randconfig-a002-20230403   clang
-x86_64               randconfig-a003-20230403   clang
-x86_64               randconfig-a004-20230403   clang
-x86_64               randconfig-a005-20230403   clang
-x86_64               randconfig-a006-20230403   clang
-x86_64               randconfig-a011-20230403   gcc  
-x86_64               randconfig-a012-20230403   gcc  
-x86_64               randconfig-a013-20230403   gcc  
-x86_64               randconfig-a014-20230403   gcc  
-x86_64               randconfig-a015-20230403   gcc  
-x86_64               randconfig-a016-20230403   gcc  
-x86_64               randconfig-r026-20230403   gcc  
-x86_64               randconfig-r032-20230403   clang
-x86_64                               rhel-8.3   gcc  
-
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index ff4d12ef51bc..6fb14e521197 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -439,7 +439,7 @@ static int thermal_of_unbind(struct thermal_zone_device *tz,
+  *
+  * @tz: a pointer to the thermal zone structure
+  */
+-void thermal_of_zone_unregister(struct thermal_zone_device *tz)
++static void thermal_of_zone_unregister(struct thermal_zone_device *tz)
+ {
+ 	struct thermal_trip *trips = tz->trips;
+ 	struct thermal_zone_params *tzp = tz->tzp;
+@@ -451,7 +451,6 @@ void thermal_of_zone_unregister(struct thermal_zone_device *tz)
+ 	kfree(tzp);
+ 	kfree(ops);
+ }
+-EXPORT_SYMBOL_GPL(thermal_of_zone_unregister);
+ 
+ /**
+  * thermal_of_zone_register - Register a thermal zone with device node
+@@ -473,8 +472,8 @@ EXPORT_SYMBOL_GPL(thermal_of_zone_unregister);
+  *	- ENOMEM: if one structure can not be allocated
+  *	- Other negative errors are returned by the underlying called functions
+  */
+-struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor, int id, void *data,
+-						     const struct thermal_zone_device_ops *ops)
++static struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor, int id, void *data,
++							    const struct thermal_zone_device_ops *ops)
+ {
+ 	struct thermal_zone_device *tz;
+ 	struct thermal_trip *trips;
+@@ -550,7 +549,6 @@ struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor,
+ 
+ 	return ERR_PTR(ret);
+ }
+-EXPORT_SYMBOL_GPL(thermal_of_zone_register);
+ 
+ static void devm_thermal_of_zone_release(struct device *dev, void *res)
+ {
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 204116dd97bf..d26b8e2e404e 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -266,25 +266,12 @@ struct thermal_zone_params {
+ 
+ /* Function declarations */
+ #ifdef CONFIG_THERMAL_OF
+-struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor, int id, void *data,
+-						     const struct thermal_zone_device_ops *ops);
+-
+ struct thermal_zone_device *devm_thermal_of_zone_register(struct device *dev, int id, void *data,
+ 							  const struct thermal_zone_device_ops *ops);
+ 
+-void thermal_of_zone_unregister(struct thermal_zone_device *tz);
+-
+ void devm_thermal_of_zone_unregister(struct device *dev, struct thermal_zone_device *tz);
+ 
+-void thermal_of_zone_unregister(struct thermal_zone_device *tz);
+-
+ #else
+-static inline
+-struct thermal_zone_device *thermal_of_zone_register(struct device_node *sensor, int id, void *data,
+-						     const struct thermal_zone_device_ops *ops)
+-{
+-	return ERR_PTR(-ENOTSUPP);
+-}
+ 
+ static inline
+ struct thermal_zone_device *devm_thermal_of_zone_register(struct device *dev, int id, void *data,
+@@ -293,10 +280,6 @@ struct thermal_zone_device *devm_thermal_of_zone_register(struct device *dev, in
+ 	return ERR_PTR(-ENOTSUPP);
+ }
+ 
+-static inline void thermal_of_zone_unregister(struct thermal_zone_device *tz)
+-{
+-}
+-
+ static inline void devm_thermal_of_zone_unregister(struct device *dev,
+ 						   struct thermal_zone_device *tz)
+ {
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+2.34.1
+
