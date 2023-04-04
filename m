@@ -2,131 +2,148 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54627C761A6
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Apr 2023 07:52:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D14BDC7618D
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Apr 2023 07:52:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233782AbjDDHwB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Apr 2023 03:52:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54788 "EHLO
+        id S234000AbjDDHwF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Apr 2023 03:52:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54820 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233880AbjDDHv6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2023 03:51:58 -0400
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73D6C1722
-        for <linux-pm@vger.kernel.org>; Tue,  4 Apr 2023 00:51:53 -0700 (PDT)
-Received: by mail-wr1-x42b.google.com with SMTP id i9so31782144wrp.3
-        for <linux-pm@vger.kernel.org>; Tue, 04 Apr 2023 00:51:53 -0700 (PDT)
+        with ESMTP id S233904AbjDDHv7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2023 03:51:59 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16221198A
+        for <linux-pm@vger.kernel.org>; Tue,  4 Apr 2023 00:51:55 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id h17so31756523wrt.8
+        for <linux-pm@vger.kernel.org>; Tue, 04 Apr 2023 00:51:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680594712;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=BfDShCyKSzYNT7K7OjLzYFiwYG5pbbHJ2o04Zo0MgaA=;
-        b=KprbWEn+q+mpmBmb87FEGrPAz2WkAVoT7fpbaZ4f0snB2Y6J1O/atZ/lRgJ8O3Opjs
-         xumCO42xmTO0ra/iI+bCQn0G3lRy5axMVBTtTI2k7UVM23Waz2vVDhmxn80GXpDlNVrZ
-         G9fxRMsFDkVaLLhWdY+GF+8wkGONn/xC284ndxslugzlNLJmGff2dguueLBQCekPcs/1
-         875mp5IxbohU6kfX8pPSlcqXC8w4rBx7Hc5rd075FGNxsuOAFeoO+sW/ehHlIlGiBJib
-         zVHxrKfP1fAGeVfXFAP4n2VdqO+ewgpviVjfIg/BhhpvP1AWUC3QUrW97qbkW1hOwl3f
-         RiXQ==
+        d=linaro.org; s=google; t=1680594713;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=GFvRLhngTFwxCndBYKnLhBjEwWc0V3/dOnfK/S5B9Y0=;
+        b=u0JxvO1sP+n7h4WyeR6ljLwFEPkS2vuMVXIaSoKYbj1xlkfLpAMW0wGhroLeuG+BOV
+         OLKXK3aB68MQJ2f5NXwj6Y09rI+Lery4AYdd8Jtv027xE5L3ioffli6xH03rx/hpc5fL
+         t39pRnGUxjBN2AcD6n3JMD5BgZvOFoXldcjjkqv+zgvqiTab/+7XPD/4KeshFFwR75Yy
+         /E/hoFyH7fT9J19PGaWkIlUGDvySlrpbvM24vpc3xDUfV4gP6Y8naRYnuf6Nke6Bwm1K
+         fIqD0O1nU1aPoAZ8vm2zCyFoyBexjKKnJziRp3+MctahMcQul6LpWjADxF3szXh2sSgu
+         sH5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680594712;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BfDShCyKSzYNT7K7OjLzYFiwYG5pbbHJ2o04Zo0MgaA=;
-        b=dfgkPHJ11Oo7eYSYah9XH8ASTvhF32LyoUYwAZ/GAVQpEiKsbGlyF8CHOzpq2SEhP9
-         DPb+0vSCu9tHjAa2rUMK+dQh9wh1HEODGFmRMWqh2a73L/vSM49FA+rhoLVvYBGB8ZI0
-         z+nz7vJoQ6LWXlflfT27Ai0XnS6iCmUK3LDs0+WWWRpCM0NE6/rSNLI6TqkBfnbPy+8N
-         YRSvuEaAMW2B3pvlVZdUovpjAXv/D6jiQZCjaj6iOna+aHH1tQzvV8UE4RNJHQ0h8tZ/
-         1V/Oq9cLjEJ/7rLzlusV7W4LnMNlO7qc0wGlv13oSp2IXhGxxmzqQCJ8tFnOwn95ENfj
-         kGiQ==
-X-Gm-Message-State: AAQBX9dYvHkrmg3tsB7tnW0z8hc8RbPdFarBzIhH2WYTyy2zvdZpJFhP
-        BWOagTvm/yT7Ywrl8e5A1WlsGYLJ26mxx0gptOY=
-X-Google-Smtp-Source: AKy350ZfdSirVfqk3NCqaguZT3zdR7XuVIQv0b5pahpoCWEYkqfUdHBUpZ82Eay5owykXLcAb2rJ0Q==
-X-Received: by 2002:adf:e40f:0:b0:2cf:efa5:5322 with SMTP id g15-20020adfe40f000000b002cfefa55322mr14880722wrm.14.1680594711896;
-        Tue, 04 Apr 2023 00:51:51 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1680594713;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=GFvRLhngTFwxCndBYKnLhBjEwWc0V3/dOnfK/S5B9Y0=;
+        b=EPYzlRhRnGYqgWlUlTOUQwaIv9nUJ994S/6Enyi6j5AduyTEKaQNNDdMBIczZplrUL
+         WHpa75aQmDmqQUY9rTGsoCdja/ktxMa/DV7a2GSYxbFsr+ou1hoFYOdfY6zub384p6fD
+         yKrnImAZWyMwHYWjm4ifwcroICs4hLD5uEtl460JhQ3qZGFsEP/Tu10anUBdPeYzVJ8c
+         N7neeijRSTUvS4Esitg4d7onTxiiCXTcGZ8NXZjpiajU09mTY06VUaMnY5Yfkikut4Bg
+         ilZC6NaFXwiF9CEhG/3BoDt9MpDaye7Xjhj8tATZvPzW+cRDwTXIuqJ1AanGf3ZYPqUx
+         PeBQ==
+X-Gm-Message-State: AAQBX9c/Pq+hRLBIrTcm8EKDms57Z0FWXGmQz04OxdtccuICsv3it/MA
+        vvyvYVXYPPOhrOk/JnQROpAOWiasPXQdsufWql8=
+X-Google-Smtp-Source: AKy350YZZhXDp2mXjdnPadGvXRf/NqdHNtmc//rj+7wf8rZdqfiQtYJADyGmyu8GT0Xu6+HfRbG11A==
+X-Received: by 2002:a5d:400a:0:b0:2d8:97c7:713d with SMTP id n10-20020a5d400a000000b002d897c7713dmr813559wrp.38.1680594713477;
+        Tue, 04 Apr 2023 00:51:53 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:9754:a4ba:a0f5:8937])
-        by smtp.gmail.com with ESMTPSA id r13-20020adff10d000000b002e45f6ffe63sm11591561wro.26.2023.04.04.00.51.51
+        by smtp.gmail.com with ESMTPSA id r13-20020adff10d000000b002e45f6ffe63sm11591561wro.26.2023.04.04.00.51.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Apr 2023 00:51:51 -0700 (PDT)
+        Tue, 04 Apr 2023 00:51:53 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-        ye xingchen <ye.xingchen@zte.com.cn>,
-        linux-rpi-kernel@lists.infradead.org (moderated list:BROADCOM
-        BCM2711/BCM2835 ARM ARCHITECTURE),
-        linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM
-        BCM2711/BCM2835 ARM ARCHITECTURE)
-Subject: [PATCH v2 1/3] thermal/drivers/bcm2835: Remove buggy call to thermal_of_zone_unregister
-Date:   Tue,  4 Apr 2023 09:51:35 +0200
-Message-Id: <20230404075138.2914680-1-daniel.lezcano@linaro.org>
+        linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>
+Subject: [PATCH v2 3/3] thermal/core: Alloc-copy-free the thermal zone parameters structure
+Date:   Tue,  4 Apr 2023 09:51:37 +0200
+Message-Id: <20230404075138.2914680-3-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230404075138.2914680-1-daniel.lezcano@linaro.org>
+References: <20230404075138.2914680-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver is using the devm_thermal_of_zone_device_register().
+The caller of the function thermal_zone_device_register_with_trips()
+can pass a thermal_zone_params structure parameter.
 
-In the error path of the function calling
-devm_thermal_of_zone_device_register(), the function
-devm_thermal_of_zone_unregister() should be called instead of
-thermal_of_zone_unregister(), otherwise this one will be called twice
-when the device is freed.
+This one is used by the thermal core code until the thermal zone is
+destroyed. That forces the caller, so the driver, to keep the pointer
+valid until it unregisters the thermal zone if we want to make the
+thermal zone device structure private the core code.
 
-The same happens for the remove function where the devm_ guarantee the
-thermal_of_zone_unregister() will be called, so adding this call in
-the remove function will lead to a double free also.
+As the thermal zone device structure would be private, the driver can
+not access to thermal zone device structure to retrieve the tzp field
+after it passed it to register the thermal zone.
 
-Use devm_ variant in the error path of the probe function.
+So instead of forcing the users of the function to deal with the tzp
+structure life cycle, make the usage easier by allocating our own
+thermal zone params, copying the parameter content and by freeing at
+unregister time. The user can then create the parameters on the stack,
+pass it to the registering function and forget about it.
 
-Remove thermal_of_zone_unregister() in the remove function.
-
-Cc: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Ray Jui <rjui@broadcom.com>
-Cc: Scott Branden <sbranden@broadcom.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
-   V2:
-     - Fixed wrong label call on the error path
+  V2:
+    - Fixed 'result' uninitialized on the error path
 ---
- drivers/thermal/broadcom/bcm2835_thermal.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/thermal/thermal_core.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-index a217d832f24e..3acc9288b310 100644
---- a/drivers/thermal/broadcom/bcm2835_thermal.c
-+++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-@@ -275,7 +275,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 8196d35f4c08..518b87cddaeb 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1170,13 +1170,21 @@ thermal_zone_device_register_with_trips(const char *type, struct thermal_trip *t
+ 	if (!tz)
+ 		return ERR_PTR(-ENOMEM);
  
- 	return 0;
- err_tz:
--	thermal_of_zone_unregister(tz);
-+	devm_thermal_of_zone_unregister(&pdev->dev, tz);
- err_clk:
- 	clk_disable_unprepare(data->clk);
++	if (tzp) {
++		tz->tzp = kmemdup(tzp, sizeof(*tzp), GFP_KERNEL);
++		if (!tz->tzp) {
++			result = -ENOMEM;
++			goto free_tz;
++		}
++	}
++
+ 	INIT_LIST_HEAD(&tz->thermal_instances);
+ 	ida_init(&tz->ida);
+ 	mutex_init(&tz->lock);
+ 	id = ida_alloc(&thermal_tz_ida, GFP_KERNEL);
+ 	if (id < 0) {
+ 		result = id;
+-		goto free_tz;
++		goto free_tzp;
+ 	}
  
-@@ -285,10 +285,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- static int bcm2835_thermal_remove(struct platform_device *pdev)
- {
- 	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
--	struct thermal_zone_device *tz = data->tz;
+ 	tz->id = id;
+@@ -1186,7 +1194,6 @@ thermal_zone_device_register_with_trips(const char *type, struct thermal_trip *t
+ 		ops->critical = thermal_zone_device_critical;
  
- 	debugfs_remove_recursive(data->debugfsdir);
--	thermal_of_zone_unregister(tz);
- 	clk_disable_unprepare(data->clk);
+ 	tz->ops = ops;
+-	tz->tzp = tzp;
+ 	tz->device.class = thermal_class;
+ 	tz->devdata = devdata;
+ 	tz->trips = trips;
+@@ -1284,6 +1291,8 @@ thermal_zone_device_register_with_trips(const char *type, struct thermal_trip *t
+ 	tz = NULL;
+ remove_id:
+ 	ida_free(&thermal_tz_ida, id);
++free_tzp:
++	kfree(tz->tzp);
+ free_tz:
+ 	kfree(tz);
+ 	return ERR_PTR(result);
+@@ -1364,6 +1373,8 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	device_del(&tz->device);
+ 	mutex_unlock(&tz->lock);
  
- 	return 0;
++	kfree(tz->tzp);
++
+ 	put_device(&tz->device);
+ 
+ 	thermal_notify_tz_delete(tz_id);
 -- 
 2.34.1
 
