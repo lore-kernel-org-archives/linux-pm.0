@@ -2,123 +2,99 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B993C77B79
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Apr 2023 20:29:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7F66C76196
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Apr 2023 20:53:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229718AbjDJU3g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 Apr 2023 16:29:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50098 "EHLO
+        id S229849AbjDJUxo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 10 Apr 2023 16:53:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37440 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229741AbjDJU3f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2023 16:29:35 -0400
-Received: from relay07.th.seeweb.it (relay07.th.seeweb.it [IPv6:2001:4b7a:2000:18::168])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F28241712;
-        Mon, 10 Apr 2023 13:29:33 -0700 (PDT)
-Received: from localhost.localdomain (94-211-6-86.cable.dynamic.v4.ziggo.nl [94.211.6.86])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 68F883FAAE;
-        Mon, 10 Apr 2023 22:29:31 +0200 (CEST)
-From:   Marijn Suijten <marijn.suijten@somainline.org>
-To:     phone-devel@vger.kernel.org
-Cc:     ~postmarketos/upstreaming@lists.sr.ht,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Martin Botka <martin.botka@somainline.org>,
-        Jami Kettunen <jami.kettunen@somainline.org>,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v4 3/5] dt-bindings: thermal: Use generic ADC node name in examples
-Date:   Mon, 10 Apr 2023 22:29:15 +0200
-Message-Id: <20230410202917.247666-4-marijn.suijten@somainline.org>
-X-Mailer: git-send-email 2.40.0
-In-Reply-To: <20230410202917.247666-1-marijn.suijten@somainline.org>
-References: <20230410202917.247666-1-marijn.suijten@somainline.org>
+        with ESMTP id S229838AbjDJUxn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2023 16:53:43 -0400
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DBFFED
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 13:53:40 -0700 (PDT)
+Received: by mail-wr1-x42a.google.com with SMTP id j11so9189161wrd.2
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 13:53:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1681160019; x=1683752019;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mIjogzcbB9NbNQDtYcUOxd5sO+Lh6rQ2yVngUMiZyBg=;
+        b=xyL9hMXg0TC02Yn0shvpreWa/MOZ4/qCU40KHDFzbPk+etV+QUJO8sEhYs7Mh+qN5n
+         z5TJ456A6E4aXcNG8guYtLeuTgnNIZoQrAPuWXDhMxF2qi2tDteBqX8XUVWYuxZ4+Z5E
+         zsG/hJcbj7+u8aPTR1PtZFNSRLLs0zNP0atsamdIbWdaqZqX4IQVevcLtf4QYIhoGi+o
+         YeoxsZSweg1dEovNzju9QRZDjaNuqJiRtCXFiv0nGrlYeBNnuLe+HMJtSW7TnZVXIh6C
+         zeqOndIytiIiRGgysHB/uOZiZs+x6LIceOoxamu3W5w2n2avV2dp59Wf9kXToT4NWx57
+         cA8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1681160019; x=1683752019;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=mIjogzcbB9NbNQDtYcUOxd5sO+Lh6rQ2yVngUMiZyBg=;
+        b=ICQjwrISJojA0mdMF3tw8bCVFvgRWoXbSiNrmoYAAfRq1JWeaPpXpVbyCDobyVadA8
+         q5O8J0yRkGUVt74AH3QhEa8C30SIINoUY0S2ExVVdK2zIZxm0iikoqqK7qJhahM4jS8/
+         qrHeBGSLjIIya5x9rfOE2Lqul4j6Un09s0tkzlxwr9/s1TZLD4MMcfUjcEz2QfaVCQR5
+         U5c499sPnfYlc/JZ8PiR4nvgrjo0IKF/bUSEst3sNmtJD+sVXmRHMY2aoJP/g3d3qOyd
+         2aPOtRX4JlQRn6NWcsqPH0Z+BMtV/Q2iMEoMoyrmne4Ked0XeGCUiTzXKE5mZTJ/pmIT
+         orjQ==
+X-Gm-Message-State: AAQBX9cpC2XO/dqwxd18LmUwpRMAsWR4XLdbu45wastL9Boxcy21c1eK
+        4JVHjZLISuTGDKm1uXZy49SDGA==
+X-Google-Smtp-Source: AKy350ZOay8K6RxDMjsDBpOYzrC/EljA9SFrUCAJHArSZtc+GmQNbptL513VsrXmsJ2ZzssVX6SmDQ==
+X-Received: by 2002:a05:6000:1b0c:b0:2ce:ada5:325d with SMTP id f12-20020a0560001b0c00b002ceada5325dmr7589428wrz.37.1681160018690;
+        Mon, 10 Apr 2023 13:53:38 -0700 (PDT)
+Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:2611:592:3b9e:d2ae])
+        by smtp.gmail.com with ESMTPSA id e17-20020adffc51000000b002ef2e148d59sm11966789wrs.16.2023.04.10.13.53.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Apr 2023 13:53:38 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org
+Cc:     rui.zhang@intel.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        Tim Zimmermann <tim@linux4.de>
+Subject: [PATCH v2 1/7] thermal/drivers/intel_pch_thermal: Use thermal driver device to write a trace
+Date:   Mon, 10 Apr 2023 22:52:59 +0200
+Message-Id: <20230410205305.1649678-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230410205305.1649678-1-daniel.lezcano@linaro.org>
+References: <20230410205305.1649678-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Update the examples to reflect a future requirement for the generic
-`channel` node name on ADC channel nodes, while conveying the board name
-of the channel in a label instead.
+The pch_critical() callback accesses the thermal zone device structure
+internals, it dereferences the thermal zone struct device and the 'type'.
 
-Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
+For the former, the driver related device should be use instead and
+for the latter an accessor already exists. Use them instead of
+accessing the internals.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- .../devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml | 4 ++--
- .../devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml   | 9 ++++++---
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ drivers/thermal/intel/intel_pch_thermal.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml
-index 8273ac55b63f..01253d58bf9f 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml
-@@ -124,8 +124,8 @@ examples:
-             #size-cells = <0>;
-             #io-channel-cells = <1>;
+diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
+index dce50d239357..0de46057db2a 100644
+--- a/drivers/thermal/intel/intel_pch_thermal.c
++++ b/drivers/thermal/intel/intel_pch_thermal.c
+@@ -127,7 +127,10 @@ static int pch_thermal_get_temp(struct thermal_zone_device *tzd, int *temp)
  
--            /* Other propreties are omitted */
--            adc-chan@4c {
-+            /* Other properties are omitted */
-+            channel@4c {
-                 reg = <ADC5_XO_THERM_100K_PU>;
-             };
-         };
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-index 52ec18cf1eda..3c81def03c84 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-@@ -178,10 +178,11 @@ examples:
-             #io-channel-cells = <1>;
+ static void pch_critical(struct thermal_zone_device *tzd)
+ {
+-	dev_dbg(&tzd->device, "%s: critical temperature reached\n", tzd->type);
++	struct pch_thermal_device *ptd = thermal_zone_device_priv(tzd);
++
++	dev_dbg(&ptd->pdev->dev, "%s: critical temperature reached\n",
++		thermal_zone_device_type(tzd));
+ }
  
-             /* Other properties are omitted */
--            conn-therm@4f {
-+            channel@4f {
-                 reg = <ADC5_AMUX_THM3_100K_PU>;
-                 qcom,ratiometric;
-                 qcom,hw-settle-time = <200>;
-+                label = "conn_therm";
-             };
-         };
- 
-@@ -217,16 +218,18 @@ examples:
-             #io-channel-cells = <1>;
- 
-             /* Other properties are omitted */
--            xo-therm@44 {
-+            channel@44 {
-                 reg = <PMK8350_ADC7_AMUX_THM1_100K_PU>;
-                 qcom,ratiometric;
-                 qcom,hw-settle-time = <200>;
-+                label = "xo_therm";
-             };
- 
--            conn-therm@147 {
-+            channel@147 {
-                 reg = <PM8350_ADC7_AMUX_THM4_100K_PU(1)>;
-                 qcom,ratiometric;
-                 qcom,hw-settle-time = <200>;
-+                label = "conn_therm";
-             };
-         };
- 
+ static struct thermal_zone_device_ops tzd_ops = {
 -- 
-2.40.0
+2.34.1
 
