@@ -2,158 +2,184 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C72CC7EE21
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Apr 2023 20:59:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89C0DC77B61
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Apr 2023 22:52:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229969AbjDJU7L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 Apr 2023 16:59:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46160 "EHLO
+        id S229771AbjDJWwM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 10 Apr 2023 18:52:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41918 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229708AbjDJU7G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2023 16:59:06 -0400
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D47F31986;
-        Mon, 10 Apr 2023 13:59:03 -0700 (PDT)
-Received: from stefanw-SCHENKER ([37.4.248.58]) by mrelayeu.kundenserver.de
- (mreue011 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1Mbies-1qMxZc4AEY-00dHHu; Mon, 10 Apr 2023 22:58:27 +0200
-From:   Stefan Wahren <stefan.wahren@i2se.com>
-To:     Herbert Xu <herbert@gondor.apana.org.au>,
-        "David S. Miller" <davem@davemloft.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>
-Cc:     kernel@pengutronix.de, Fabio Estevam <festevam@gmail.com>,
-        linux-imx@nxp.com, "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        linux-crypto@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH V2 5/6] ARM: dts: imx: Adjust dma-apbh node name
-Date:   Mon, 10 Apr 2023 22:58:02 +0200
-Message-Id: <20230410205803.45853-6-stefan.wahren@i2se.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230410205803.45853-1-stefan.wahren@i2se.com>
-References: <20230410205803.45853-1-stefan.wahren@i2se.com>
+        with ESMTP id S229624AbjDJWwL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2023 18:52:11 -0400
+Received: from mail-il1-x12e.google.com (mail-il1-x12e.google.com [IPv6:2607:f8b0:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66CD91BF7
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 15:52:09 -0700 (PDT)
+Received: by mail-il1-x12e.google.com with SMTP id e9e14a558f8ab-3287544f0a0so354715ab.1
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 15:52:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1681167128;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=dCML3GJo02sARUkxvxRac8szR5Qx0GytecSMuFd6SAA=;
+        b=KSLa8ViMmYi89N65o0Yb2S2iJIqfk1oDmEi1G2YTQS/ZiNn88L2/qF38e4hVTyqJq3
+         FReKiq72zo5KiQ1SMH7f+TmoiNsCa6eGaonecUMzLu/tGB+rVALNEmv6Get4lUNBzLgi
+         F9wytHwU+xqnVhCldItDFsKsL15huyEPV6scg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1681167128;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dCML3GJo02sARUkxvxRac8szR5Qx0GytecSMuFd6SAA=;
+        b=UoDHYc5GjkU+8eAEPbNqfxdq2liAFxCjXKf0QBzzhrXCe/tqwcKx/RhjCeeqNMAflx
+         vtMA5pc9lX8vhm2sD21oHJhuXhl4PVUirzvGJcr/tB9dyV+2raT1qzL2jiMEVraOSgJ9
+         O/X+09boY8PAvsERAfckQqu9KflmC7Ysm0EXe2FeO1H3np7qdvUGR7nuZUYp+I+r908m
+         2bnx7FoJ2ScPeA6RkyiGqiPgrr76FGl795GThP+pw0Ukwm3UYNrBfXRl1BliyshnAR0M
+         3not17Bf5WB/obiZGfMGJD3PzywYFDi8n6XAZ8XBBS3h2cLe5YC1gp4AVZaSZVD7vDce
+         eZbQ==
+X-Gm-Message-State: AAQBX9fXOVzs2sUk6ptPyWZUvXG7Orp8eaHaoaiMQYLSJ7+HikkE4s2m
+        C6w6s0cDvqrI6XvD/0GBFhaI9tol8pqyF4ROtqU=
+X-Google-Smtp-Source: AKy350ZkD+sGvf5Y8EIkzwr+3AVQrX7AGboJvNIy0Gf8aQFPeYv2t0ztn6JQ83CpFrYnM4YptngO4g==
+X-Received: by 2002:a05:6e02:1182:b0:326:1778:fae3 with SMTP id y2-20020a056e02118200b003261778fae3mr3569097ili.2.1681167128633;
+        Mon, 10 Apr 2023 15:52:08 -0700 (PDT)
+Received: from [192.168.1.128] ([38.15.45.1])
+        by smtp.gmail.com with ESMTPSA id e32-20020a026d60000000b003bf39936d1esm3517089jaf.131.2023.04.10.15.52.07
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 10 Apr 2023 15:52:08 -0700 (PDT)
+Message-ID: <0197f2b8-96a3-22f6-aa14-960afdfd2e8d@linuxfoundation.org>
+Date:   Mon, 10 Apr 2023 16:52:07 -0600
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:dFgTmzeQNO8zmrMdWcR6j1768YcKmhjLtnhqM0x6Xny26HEQOmo
- GV38Wx261D8cXTYuPbkPCQ79QGk0YQoMKlnR7qoiM+aGXVbNL7MGgf9uvLCWS0n4LLlhDlj
- 8dinS22sNnhS5r9lkcsNx5ny6rt8oXJ6OxERSmJjAHvQE5EbqViPLa5ml9j4v4fwgHBDo6g
- JGSVAew/YneAyT10h7Tfg==
-UI-OutboundReport: notjunk:1;M01:P0:nMwNnZNfjPc=;sHCyT8PgYZQuE/55DCBO5aIcaGQ
- XON7AHXAS6nlLtkpUpExmee4BcKAPmmh4lUnOQfpTXcvGDGX2KOOGvfXnNgUeRoy3qG21OL/V
- 151IzrdXt2dK9hZs0/x/NvHwYSs+JJqlnYzW+HDSCRg4oMAY4DiG/tbp7FvVHIU15IPJQh9le
- K6GVxNEQfCP1t8VlUwYr0OCtZNEWpBGOhB3tl6viTRkJcAcTomfCqcE8lGc30wkrxMsIurGu0
- a/OQts95Xf4G7+a3nzMPvt615AQWWRM3QDefkSxVdc9UF+ie6Pm6h7lor8XwzwSmM8pxBfkwN
- yM0m9B1S2xo6MkubUVL2Fj6o4+tTRZCZvZaAvzcLU9crTOQoWEaRvk+sRCmCfc2HqnX0j1iKb
- LKg4ENcKgfTRMWlJcly3ky+wFK79LR6qJOXY//PEoewFZSyF+7J5OTfbW7f4Bu3Dne3W7UY0r
- oIaZRus/XfI8HS+KWWPFE4/RlUYuLk2SMXsVTgzDNxsJG0liqmMQmE+kKBfuOPXZhvzY+F9Pz
- eNOjOGSknF5DQwJ6nssxfrluXQtagEDDrIWLnRotmrBhcT/+IVuefPLxhr72mg827ZEcLTl6p
- cIKJgc9LmB5VBE02RNEZBzS55pHA2t0J+f7AhEja7hAKWhfL9bf7oM78/oKblwniHnYQvwlws
- MqOAXFneLLFGz7QnpIapFEN832gmjHy61Z15Eq2kjw==
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [PATCH v2] cpupower: Fix cpuidle_set to accept only numeric
+ values for idle-set operation.
+Content-Language: en-US
+To:     Korrapati Likhitha <likhitha@linux.ibm.com>, shuah@kernel.org,
+        trenn@suse.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        ricklind@linux.vnet.ibm.com, latha@linux.vnet.ibm.com,
+        srikar@linux.vnet.ibm.com,
+        Pavithra Prakash <pavrampu@linux.vnet.ibm.com>,
+        Shuah Khan <skhan@linuxfoundation.org>
+References: <20230410121054.61622-1-likhitha@linux.ibm.com>
+From:   Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <20230410121054.61622-1-likhitha@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently the dtbs_check generates warnings like this:
+On 4/10/23 06:10, Korrapati Likhitha wrote:
+> From: Likhitha Korrapati <likhitha@linux.ibm.com>
+> 
+> For both the d and e options in 'cpupower idle_set' command, an
+> atoi() conversion is done without checking if the input argument
+> is all numeric. So, an atoi conversion is done on any character
+> provided as input and the CPU idle_set operation continues with
+> that integer value, which may not be what is intended or entirely
+> correct.
+> 
+> The output of cpuidle-set before patch is as follows:
+> 
+> [root@xxx cpupower]# cpupower idle-set -e 1$
+> Idlestate 1 enabled on CPU 0
+> [snip]
+> Idlestate 1 enabled on CPU 47
+> 
+> [root@xxx cpupower]# cpupower idle-set -e 11
+> Idlestate 11 not available on CPU 0
+> [snip]
+> Idlestate 11 not available on CPU 47
+> 
+> [root@xxx cpupower]# cpupower idle-set -d 12
+> Idlestate 12 not available on CPU 0
+> [snip]
+> Idlestate 12 not available on CPU 47
+> 
+> [root@xxx cpupower]# cpupower idle-set -d qw
+> Idlestate 0 disabled on CPU 0
+> [snip]
+> Idlestate 0 disabled on CPU 47
+> 
+> This patch adds a check for both d and e options in cpuidle-set.c
+> to see that the idle_set value is all numeric before doing a
+> string-to-int conversion.
+> 
+> The output of cpuidle-set after the patch is as below:
+> 
+> [root@xxx cpupower]# ./cpupower idle-set -e 1$
+> Bad idle_set value: 1$. Integer expected
+> 
+> [root@xxx cpupower]# ./cpupower idle-set -e 11
+> Idlestate 11 not available on CPU 0
+> [snip]
+> Idlestate 11 not available on CPU 47
+> 
+> [root@xxx cpupower]# ./cpupower idle-set -d 12
+> Idlestate 12 not available on CPU 0
+> [snip]
+> Idlestate 12 not available on CPU 47
+> 
+> [root@xxx cpupower]# ./cpupower idle-set -d qw
+> Bad idle_set value: qw. Integer expected
+> 
+> Signed-off-by: Likhitha Korrapati <likhitha@linux.ibm.com>
+> Signed-off-by: Brahadambal Srinivasan <latha@linux.vnet.ibm.com>
+> Reported-by: Pavithra Prakash <pavrampu@linux.vnet.ibm.com>
+> Reviewed-by: Rick Lindsley <ricklind@linux.vnet.ibm.com>
+> ---
+> 
+> ** changes since v1 [1] **
+> 
+> - Addressed reviewed comments from v1.
+> - Slightly reworded the commit for clarity.
+> 
+> [1] https://lore.kernel.org/all/20210105122452.8687-1-latha@linux.vnet.ibm.com/
+> 
+>   tools/power/cpupower/utils/cpuidle-set.c     | 25 ++++++++++++++++----
+>   tools/power/cpupower/utils/helpers/helpers.h |  8 +++++++
+>   tools/power/cpupower/utils/helpers/misc.c    | 17 +++++++++++++
+>   3 files changed, 45 insertions(+), 5 deletions(-)
+> 
+> diff --git a/tools/power/cpupower/utils/cpuidle-set.c b/tools/power/cpupower/utils/cpuidle-set.c
+> index 46158928f9ad..1bfe16d27c2d 100644
+> --- a/tools/power/cpupower/utils/cpuidle-set.c
+> +++ b/tools/power/cpupower/utils/cpuidle-set.c
+> @@ -47,7 +47,12 @@ int cmd_idle_set(int argc, char **argv)
+>   				break;
+>   			}
+>   			param = ret;
+> -			idlestate = atoi(optarg);
+> +			if (is_stringnumeric(optarg))
+> +				idlestate = atoi(optarg);
+> +			else {
+> +				printf(_("Bad idle_set value: %s. Integer expected\n"), optarg);
+> +				exit(EXIT_FAILURE);
+> +			}
 
-$nodename:0: 'dma-apbh@110000' does not match '^dma-controller(@.*)?$'
+Why can't we do this once instead of duplicating the code under
+'d' and 'e'
 
-So fix all affected dma-apbh node names.
+Also have you tried using isdigit(idlestate) - works just fine
+for me.
 
-Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
----
- arch/arm/boot/dts/imx23.dtsi   | 2 +-
- arch/arm/boot/dts/imx28.dtsi   | 2 +-
- arch/arm/boot/dts/imx6qdl.dtsi | 2 +-
- arch/arm/boot/dts/imx6sx.dtsi  | 2 +-
- arch/arm/boot/dts/imx6ul.dtsi  | 2 +-
- arch/arm/boot/dts/imx7s.dtsi   | 2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+diff --git a/tools/power/cpupower/utils/cpuidle-set.c b/tools/power/cpupower/utils/cpuidle-set.c
+index 46158928f9ad..01b344efc1b1 100644
+--- a/tools/power/cpupower/utils/cpuidle-set.c
++++ b/tools/power/cpupower/utils/cpuidle-set.c
+@@ -95,6 +95,11 @@ int cmd_idle_set(int argc, char **argv)
+  		exit(EXIT_FAILURE);
+  	}
+  
++	if(!isdigit(idlestate)) {
++		printf("invalid idlestate specified\n");
++		exit(EXIT_FAILURE);
++	}
++
+  	get_cpustate();
+  
+  	/* Default is: set all CPUs */
 
-diff --git a/arch/arm/boot/dts/imx23.dtsi b/arch/arm/boot/dts/imx23.dtsi
-index d19508c8f9ed..a3668a0827fc 100644
---- a/arch/arm/boot/dts/imx23.dtsi
-+++ b/arch/arm/boot/dts/imx23.dtsi
-@@ -59,7 +59,7 @@ icoll: interrupt-controller@80000000 {
- 				reg = <0x80000000 0x2000>;
- 			};
- 
--			dma_apbh: dma-apbh@80004000 {
-+			dma_apbh: dma-controller@80004000 {
- 				compatible = "fsl,imx23-dma-apbh";
- 				reg = <0x80004000 0x2000>;
- 				interrupts = <0 14 20 0
-diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
-index a8d3c3113e0f..29e37b1fae66 100644
---- a/arch/arm/boot/dts/imx28.dtsi
-+++ b/arch/arm/boot/dts/imx28.dtsi
-@@ -78,7 +78,7 @@ hsadc: hsadc@80002000 {
- 				status = "disabled";
- 			};
- 
--			dma_apbh: dma-apbh@80004000 {
-+			dma_apbh: dma-controller@80004000 {
- 				compatible = "fsl,imx28-dma-apbh";
- 				reg = <0x80004000 0x2000>;
- 				interrupts = <82 83 84 85
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index b72ec745f6d1..bda182edc589 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -150,7 +150,7 @@ soc: soc {
- 		interrupt-parent = <&gpc>;
- 		ranges;
- 
--		dma_apbh: dma-apbh@110000 {
-+		dma_apbh: dma-controller@110000 {
- 			compatible = "fsl,imx6q-dma-apbh", "fsl,imx28-dma-apbh";
- 			reg = <0x00110000 0x2000>;
- 			interrupts = <0 13 IRQ_TYPE_LEVEL_HIGH>,
-diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-index 93ac2380ca1e..4233943a1cca 100644
---- a/arch/arm/boot/dts/imx6sx.dtsi
-+++ b/arch/arm/boot/dts/imx6sx.dtsi
-@@ -209,7 +209,7 @@ gpu: gpu@1800000 {
- 			power-domains = <&pd_pu>;
- 		};
- 
--		dma_apbh: dma-apbh@1804000 {
-+		dma_apbh: dma-controller@1804000 {
- 			compatible = "fsl,imx6sx-dma-apbh", "fsl,imx28-dma-apbh";
- 			reg = <0x01804000 0x2000>;
- 			interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>,
-diff --git a/arch/arm/boot/dts/imx6ul.dtsi b/arch/arm/boot/dts/imx6ul.dtsi
-index 3d9d0f823568..118764c50d92 100644
---- a/arch/arm/boot/dts/imx6ul.dtsi
-+++ b/arch/arm/boot/dts/imx6ul.dtsi
-@@ -164,7 +164,7 @@ intc: interrupt-controller@a01000 {
- 			      <0x00a06000 0x2000>;
- 		};
- 
--		dma_apbh: dma-apbh@1804000 {
-+		dma_apbh: dma-controller@1804000 {
- 			compatible = "fsl,imx6q-dma-apbh", "fsl,imx28-dma-apbh";
- 			reg = <0x01804000 0x2000>;
- 			interrupts = <0 13 IRQ_TYPE_LEVEL_HIGH>,
-diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
-index efe2525b62fa..54026c2c93fa 100644
---- a/arch/arm/boot/dts/imx7s.dtsi
-+++ b/arch/arm/boot/dts/imx7s.dtsi
-@@ -1257,7 +1257,7 @@ fec1: ethernet@30be0000 {
- 			};
- 		};
- 
--		dma_apbh: dma-apbh@33000000 {
-+		dma_apbh: dma-controller@33000000 {
- 			compatible = "fsl,imx7d-dma-apbh", "fsl,imx28-dma-apbh";
- 			reg = <0x33000000 0x2000>;
- 			interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>,
--- 
-2.34.1
-
+thanks,
+-- Shuah
