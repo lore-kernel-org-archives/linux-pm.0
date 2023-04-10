@@ -2,251 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6477DC77B61
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Apr 2023 12:11:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5832DC77B70
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Apr 2023 16:52:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229872AbjDJML2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 Apr 2023 08:11:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38184 "EHLO
+        id S229973AbjDJQwf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 10 Apr 2023 12:52:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55124 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229862AbjDJML0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2023 08:11:26 -0400
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDE081B9;
-        Mon, 10 Apr 2023 05:11:25 -0700 (PDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33AAWg4Q002478;
-        Mon, 10 Apr 2023 12:11:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=oCX33MHJdVwOcqkM9x30iXp+//dYE8FJsaDB4GyktJM=;
- b=pB7yvr+47tys5sMNhweB7ggoJT62VjE5Xek1+x+hPfOvVcfzwehDbuF6AkiZONlq0YZR
- N22RBcMh4RpkgeEaKITffC11tzYLjwwTp/1ny28KlTYsd7RiH1QqsGRV1uDrJy0VBQjs
- jSzQpwRfowuHR1dN8ZORCZsxvHj0+HQAO4FVyvuerNqvqOqpDBvA3gAfqe+wAfkS9hok
- OqnKe3f0y8CG2DPVAgDs7FXcKlfxS/QA3dc7DRsYsJXmwJpNYdZqCDj+RISQX8kWgVsD
- aL+CiKDl2FBbdfynVHty9fC9UwFzUAgfoaJluHm0HEVYwIIL9+Ja4yZ7UGjm53g0DYhs rQ== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3puj2txjm9-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 10 Apr 2023 12:11:19 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-        by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33A3v8aD003252;
-        Mon, 10 Apr 2023 12:11:17 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-        by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3pu0m191s7-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 10 Apr 2023 12:11:17 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-        by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33ACBEqZ24314374
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 10 Apr 2023 12:11:14 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id AAE6520043;
-        Mon, 10 Apr 2023 12:11:14 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 1052F20040;
-        Mon, 10 Apr 2023 12:11:13 +0000 (GMT)
-Received: from li-a1f1b24c-1ef0-11b2-a85c-b2994f3f6269.in.ibm.com (unknown [9.109.248.124])
-        by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-        Mon, 10 Apr 2023 12:11:12 +0000 (GMT)
-From:   Korrapati Likhitha <likhitha@linux.ibm.com>
-To:     shuah@kernel.org, trenn@suse.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ricklind@linux.vnet.ibm.com, latha@linux.vnet.ibm.com,
-        srikar@linux.vnet.ibm.com,
-        Likhitha Korrapati <likhitha@linux.ibm.com>,
-        Pavithra Prakash <pavrampu@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpupower: Fix cpuidle_set to accept only numeric values for idle-set operation.
-Date:   Mon, 10 Apr 2023 17:40:54 +0530
-Message-Id: <20230410121054.61622-1-likhitha@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: CZ-hDHT6yL7JfOG4XsZ-Hx98efbR4ymQ
-X-Proofpoint-ORIG-GUID: CZ-hDHT6yL7JfOG4XsZ-Hx98efbR4ymQ
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+        with ESMTP id S229887AbjDJQwe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2023 12:52:34 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA5C4199E
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 09:52:32 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id q23so4378122ejz.3
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 09:52:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1681145551;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=eBs67X9hTZahV0d5thlLTSsdpyjHcz4nvl7+G074hsI=;
+        b=R6FF3Mk4AuqNRvUgA2tp9Qp7r7oxi9Ro88Kkze80fE4X1A7J+oDZidRFzIIJMGJMJF
+         o9FHxSQEm8H8skEaCy0tYUxJpKErpAnSaTB9VflmajV+LWoe8LT//noZ+w8TpXZ+tG4p
+         Gvd6Lt8WrI9BAmxKjtXL8P6p0GrT7qGEY3BFfMwDNNFbNjQ9U1qKNhGp0PcU92TpRpYD
+         jCQZNXoCHqcgrDdPVudNWeX+J6QLKirjk2YbfRnvKYyuZ8uobhoP2/fYkktqIvC+MMk2
+         PIkK6KFByIQ3ivqjy4Nk/RrEQRCmMg8mrjcMXw2/SQ96K1F/y3cpapk6gcJKJS2yG530
+         L0/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1681145551;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=eBs67X9hTZahV0d5thlLTSsdpyjHcz4nvl7+G074hsI=;
+        b=1INqWidgXsXVRc/Q8YTHkYYwj+NaNok1ENbDBQB04uXZNoF8FR1gwb055/IZMjnXJp
+         BWfkdFO8oiaVix0WUtNQUCth8WiFuuTyZtw8tuUlJX36q+SPztRSp6XRs32log4SgXyU
+         VItYuCWFlieoOi43JluobKUdwJUnH8uoLYEvsdNXL2LVcK+P2kBGLRqSdW5Jas/6+QE7
+         18g8E8dzKc17xAXBsrswnAKQu9FT45JU7+vatqQMF8mkaTnta1Rom9QEH2yzDi1RlsAB
+         i4+YOa+I+/Ey2mZuVgg12JiYmf73q07LpGp5DI5FgpiULSLZ4irgMrtJDBgywHm/oTrn
+         9PNQ==
+X-Gm-Message-State: AAQBX9fsvE7X4VNUKuLjbXnGuZ39zxFQLXkBO6oeGP2EhHQfFY8g9tzb
+        JCvUBV4AF6A6oG4Pps+j7wId3lBZM4mq+KYdGI83IQ==
+X-Google-Smtp-Source: AKy350ZguZqgdbZKMiOGO2jF6+EokSfXRDYG2x5kIv2H/AlfFVrHUXhtcqwNTQA5txtCoJxknPbwEA==
+X-Received: by 2002:a17:906:234f:b0:94a:798c:712f with SMTP id m15-20020a170906234f00b0094a798c712fmr4375005eja.49.1681145551413;
+        Mon, 10 Apr 2023 09:52:31 -0700 (PDT)
+Received: from ?IPV6:2a02:810d:15c0:828:1a6c:6968:e633:48df? ([2a02:810d:15c0:828:1a6c:6968:e633:48df])
+        by smtp.gmail.com with ESMTPSA id ck13-20020a170906c44d00b0094a8b47d360sm1179864ejb.177.2023.04.10.09.52.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 10 Apr 2023 09:52:30 -0700 (PDT)
+Message-ID: <81e9f590-4814-3b56-5cbf-8f22fb97275f@linaro.org>
+Date:   Mon, 10 Apr 2023 18:52:29 +0200
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-04-10_08,2023-04-06_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 impostorscore=0
- phishscore=0 spamscore=0 clxscore=1011 bulkscore=0 lowpriorityscore=0
- adultscore=0 suspectscore=0 priorityscore=1501 mlxlogscore=999
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303200000 definitions=main-2304100103
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [PATCH v4 2/4] iterconnect: add clk-based icc provider support
+Content-Language: en-US
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc:     Yassine Oudjana <y.oudjana@protonmail.com>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+References: <20230408234932.2363302-1-dmitry.baryshkov@linaro.org>
+ <20230408234932.2363302-3-dmitry.baryshkov@linaro.org>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230408234932.2363302-3-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Likhitha Korrapati <likhitha@linux.ibm.com>
+On 09/04/2023 01:49, Dmitry Baryshkov wrote:
+> For some devices it is useful to export clocks as interconect providers,
 
-For both the d and e options in 'cpupower idle_set' command, an
-atoi() conversion is done without checking if the input argument
-is all numeric. So, an atoi conversion is done on any character
-provided as input and the CPU idle_set operation continues with
-that integer value, which may not be what is intended or entirely
-correct.
+typo
 
-The output of cpuidle-set before patch is as follows:
+> if the clock corresponds to bus bandwidth.
+> 
+> For example, on MSM8996 the cluster interconnect clock should be scaled
+> according to the cluster frequencies. Exporting it as an interconnect
+> allows one to properly describe this as the cluster bandwidth
+> requirements.
+> 
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 
-[root@xxx cpupower]# cpupower idle-set -e 1$
-Idlestate 1 enabled on CPU 0
-[snip]
-Idlestate 1 enabled on CPU 47
+Subject: also typo
 
-[root@xxx cpupower]# cpupower idle-set -e 11
-Idlestate 11 not available on CPU 0
-[snip]
-Idlestate 11 not available on CPU 47
-
-[root@xxx cpupower]# cpupower idle-set -d 12
-Idlestate 12 not available on CPU 0
-[snip]
-Idlestate 12 not available on CPU 47
-
-[root@xxx cpupower]# cpupower idle-set -d qw
-Idlestate 0 disabled on CPU 0
-[snip]
-Idlestate 0 disabled on CPU 47
-
-This patch adds a check for both d and e options in cpuidle-set.c
-to see that the idle_set value is all numeric before doing a
-string-to-int conversion.
-
-The output of cpuidle-set after the patch is as below:
-
-[root@xxx cpupower]# ./cpupower idle-set -e 1$
-Bad idle_set value: 1$. Integer expected
-
-[root@xxx cpupower]# ./cpupower idle-set -e 11
-Idlestate 11 not available on CPU 0
-[snip]
-Idlestate 11 not available on CPU 47
-
-[root@xxx cpupower]# ./cpupower idle-set -d 12
-Idlestate 12 not available on CPU 0
-[snip]
-Idlestate 12 not available on CPU 47
-
-[root@xxx cpupower]# ./cpupower idle-set -d qw
-Bad idle_set value: qw. Integer expected
-
-Signed-off-by: Likhitha Korrapati <likhitha@linux.ibm.com>
-Signed-off-by: Brahadambal Srinivasan <latha@linux.vnet.ibm.com>
-Reported-by: Pavithra Prakash <pavrampu@linux.vnet.ibm.com>
-Reviewed-by: Rick Lindsley <ricklind@linux.vnet.ibm.com>
----
-
-** changes since v1 [1] **
-
-- Addressed reviewed comments from v1.
-- Slightly reworded the commit for clarity.
-
-[1] https://lore.kernel.org/all/20210105122452.8687-1-latha@linux.vnet.ibm.com/
-
- tools/power/cpupower/utils/cpuidle-set.c     | 25 ++++++++++++++++----
- tools/power/cpupower/utils/helpers/helpers.h |  8 +++++++
- tools/power/cpupower/utils/helpers/misc.c    | 17 +++++++++++++
- 3 files changed, 45 insertions(+), 5 deletions(-)
-
-diff --git a/tools/power/cpupower/utils/cpuidle-set.c b/tools/power/cpupower/utils/cpuidle-set.c
-index 46158928f9ad..1bfe16d27c2d 100644
---- a/tools/power/cpupower/utils/cpuidle-set.c
-+++ b/tools/power/cpupower/utils/cpuidle-set.c
-@@ -47,7 +47,12 @@ int cmd_idle_set(int argc, char **argv)
- 				break;
- 			}
- 			param = ret;
--			idlestate = atoi(optarg);
-+			if (is_stringnumeric(optarg))
-+				idlestate = atoi(optarg);
-+			else {
-+				printf(_("Bad idle_set value: %s. Integer expected\n"), optarg);
-+				exit(EXIT_FAILURE);
-+			}
- 			break;
- 		case 'e':
- 			if (param) {
-@@ -56,7 +61,12 @@ int cmd_idle_set(int argc, char **argv)
- 				break;
- 			}
- 			param = ret;
--			idlestate = atoi(optarg);
-+			if (is_stringnumeric(optarg))
-+				idlestate = atoi(optarg);
-+			else {
-+				printf(_("Bad idle_set value: %s. Integer expected\n"), optarg);
-+				exit(EXIT_FAILURE);
-+			}
- 			break;
- 		case 'D':
- 			if (param) {
-@@ -65,9 +75,14 @@ int cmd_idle_set(int argc, char **argv)
- 				break;
- 			}
- 			param = ret;
--			latency = strtoull(optarg, &endptr, 10);
--			if (*endptr != '\0') {
--				printf(_("Bad latency value: %s\n"), optarg);
-+			if (is_stringnumeric(optarg)) {
-+				latency = strtoull(optarg, &endptr, 10);
-+				if (*endptr != '\0') {
-+					printf(_("Bad latency value: %s\n"), optarg);
-+					exit(EXIT_FAILURE);
-+				}
-+			} else {
-+				printf(_("Bad idle_set value: %s. Integer expected\n"), optarg);
- 				exit(EXIT_FAILURE);
- 			}
- 			break;
-diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
-index 96e4bede078b..9977f0773986 100644
---- a/tools/power/cpupower/utils/helpers/helpers.h
-+++ b/tools/power/cpupower/utils/helpers/helpers.h
-@@ -208,3 +208,11 @@ void print_offline_cpus(void);
- void print_speed(unsigned long speed, int no_rounding);
- 
- #endif /* __CPUPOWERUTILS_HELPERS__ */
-+
-+/*
-+ * CPU idle-set
-+ */
-+int is_stringnumeric(char *arg);
-+/*
-+ * CPU idle-set
-+ */
-diff --git a/tools/power/cpupower/utils/helpers/misc.c b/tools/power/cpupower/utils/helpers/misc.c
-index 9547b29254a7..8ec47c3c138e 100644
---- a/tools/power/cpupower/utils/helpers/misc.c
-+++ b/tools/power/cpupower/utils/helpers/misc.c
-@@ -4,6 +4,7 @@
- #include <errno.h>
- #include <stdlib.h>
- #include <string.h>
-+#include <ctype.h>
- 
- #include "helpers/helpers.h"
- #include "helpers/sysfs.h"
-@@ -204,3 +205,19 @@ void print_speed(unsigned long speed, int no_rounding)
- 		}
- 	}
- }
-+
-+/*
-+ * is_stringnumeric
-+ *
-+ * To check if the given string has all numericals
-+ */
-+int is_stringnumeric(char *arg)
-+{
-+	size_t i = 0;
-+
-+	for (i = 0; arg[i] ; i++) {
-+		if (!isdigit(arg[i]))
-+			return 0;
-+	}
-+	return 1;
-+}
--- 
-2.31.1
+Best regards,
+Krzysztof
 
