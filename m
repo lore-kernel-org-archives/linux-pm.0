@@ -2,176 +2,101 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 022BEC76196
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Apr 2023 04:23:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45937C7619A
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Apr 2023 05:31:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229697AbjDKEX2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Apr 2023 00:23:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39654 "EHLO
+        id S229722AbjDKFbJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Apr 2023 01:31:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43058 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230070AbjDKEX0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2023 00:23:26 -0400
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7745C2722;
-        Mon, 10 Apr 2023 21:23:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681187002; x=1712723002;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=iNsCeMH7AuoBioPIEJx2jiuo1QskSURMZ+m/FQDWG+w=;
-  b=cX4dDzq9Kl98pLSkdom+KVugZAiriSyKjBMFCMlydk1KHYX48S+slFPd
-   y76MI81Miibc/C1PJSNZVfkT1oxJfxThyhGeD943IR8AI5fxJtJWU52Rd
-   d5Qv6yO1VggpDjHI3zjozffjgs8Xj95H3vAQgubpoLWJoAKuBvlFKG6V4
-   ZnVWW5qYV42zp9/HTowFpb6seP3Wl2rCHjoGGVpYNlDI45n6q6/Dp49s0
-   ri3BBFUhCxErpEpwxwabyvcmJSpQFp9DbtVa/DgHEgv1wOofcDZnU68Zp
-   h0xtTlDrgarTVnlE+EfurU3fXqvTVgij55vE4YgoqkB4Ni78H7bwQeXJt
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="341010207"
-X-IronPort-AV: E=Sophos;i="5.98,335,1673942400"; 
-   d="scan'208";a="341010207"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2023 21:23:21 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="721045456"
-X-IronPort-AV: E=Sophos;i="5.98,335,1673942400"; 
-   d="scan'208";a="721045456"
-Received: from chenyu-dev.sh.intel.com ([10.239.158.170])
-  by orsmga001.jf.intel.com with ESMTP; 10 Apr 2023 21:23:18 -0700
-From:   Chen Yu <yu.c.chen@intel.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>
-Cc:     Ye Bin <yebin10@huawei.com>,
+        with ESMTP id S229536AbjDKFbI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2023 01:31:08 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D3CF1BF7;
+        Mon, 10 Apr 2023 22:31:07 -0700 (PDT)
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33B4AXWl008192;
+        Tue, 11 Apr 2023 05:30:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
+ cc : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=qcppdkim1; bh=Qh7i/6UPVa9oSp61OPGQ5X/b9iECb5umhdviZt8OscM=;
+ b=RQbpHJ156GrJcEeejCfYCzWC21RIssj/rPa8+g82EPYplu+n7q3FONj/VKxXtaBV9kcA
+ Zlrs4otQONO+OSoqHOw7k95EaPInMqJMs5n6aJc+Qp2oNwQX0aQQvwjagIm4KjoRuUrB
+ mS7sa4Mis5WlBfX2K+YhpY9OuQ8Zm4hZfElENKrLA0f+XtYJd3NfQKPdlGdIvT3HY0QI
+ 1kbcaEwMfKfP6/LlpbS3GJ8rPKcO50jVzHSb43qnHU1lQnpI/wVisujr0jRpiwBerVdB
+ XDqKMrK4LKw46V0JFsDa4/cW0Y7+P/n2brH1zltVaXV+5AhQ3aWKfXtpc0nX38MOJt6t Vg== 
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3pvmb3hhq5-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 11 Apr 2023 05:30:58 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 33B5Uv42020828
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 11 Apr 2023 05:30:57 GMT
+Received: from hu-pkondeti-hyd.qualcomm.com (10.80.80.8) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.42; Mon, 10 Apr 2023 22:30:54 -0700
+Date:   Tue, 11 Apr 2023 11:00:50 +0530
+From:   Pavan Kondeti <quic_pkondeti@quicinc.com>
+To:     Chen Yu <yu.c.chen@intel.com>
+CC:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Ye Bin <yebin10@huawei.com>,
         Pavankumar Kondeti <quic_pkondeti@quicinc.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Chen Yu <yu.c.chen@intel.com>, Yifan Li <yifan2.li@intel.com>
-Subject: [PATCH v2 2/2] PM: hibernate: Do not get block device exclusively in test_resume mode
-Date:   Tue, 11 Apr 2023 20:19:13 +0800
-Message-Id: <8f917ae09c7a09d1841824908107d6c79a6cd090.1681186310.git.yu.c.chen@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1681186310.git.yu.c.chen@intel.com>
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 0/2] Fix test_resume failure by openning swap device
+ non-exclusively
+Message-ID: <20230411053050.GA4099424@hu-pkondeti-hyd.qualcomm.com>
 References: <cover.1681186310.git.yu.c.chen@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <cover.1681186310.git.yu.c.chen@intel.com>
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: IqrAYJ8pFJxLV_OXcWh9oDqdYd4e-3Gx
+X-Proofpoint-ORIG-GUID: IqrAYJ8pFJxLV_OXcWh9oDqdYd4e-3Gx
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-11_02,2023-04-06_03,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ malwarescore=0 mlxlogscore=828 suspectscore=0 spamscore=0
+ lowpriorityscore=0 bulkscore=0 clxscore=1015 adultscore=0 phishscore=0
+ priorityscore=1501 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2303200000 definitions=main-2304110050
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The system refused to do a test_resume because it found that the
-swap device has already been taken by someone else. Specificly,
-the swsusp_check()->blkdev_get_by_dev(FMODE_EXCL) is supposed to
-do this check.
+On Tue, Apr 11, 2023 at 08:18:43PM +0800, Chen Yu wrote:
+> test_resume does not work in current kernel when using swapfile for hibernation.
+> This is because the swap device should be openned non-exclusively in test_resume mode.
+> 
+> Patch 1 is a preparation for patch 2 and it turns snapshot_test into a global variable.
+> Patch 2 opens swap device non-exclusively for test_resume mode, and exclusively for manual
+> hibernation resume.
+> 
+> Change since v1:
+> Turn snapshot_test into global variable and do not introduce parameters for swsusp_check()
+> nor load_image_and_restore().
+> 
+> 
+> Chen Yu (2):
+>   PM: hibernate: Turn snapshot_test into global variable
+>   PM: hibernate: Do not get block device exclusively in test_resume mode
+> 
+>  kernel/power/hibernate.c | 12 +++++++++---
+>  kernel/power/power.h     |  1 +
+>  kernel/power/swap.c      |  5 +++--
+>  3 files changed, 13 insertions(+), 5 deletions(-)
+> 
+Looks good to me.
 
-Steps to reproduce:
- dd if=/dev/zero of=/swapfile bs=$(cat /proc/meminfo |
-       awk '/MemTotal/ {print $2}') count=1024 conv=notrunc
- mkswap /swapfile
- swapon /swapfile
- swap-offset /swapfile
- echo 34816 > /sys/power/resume_offset
- echo test_resume > /sys/power/disk
- echo disk > /sys/power/state
+I have verified test_resume on QEMU arm64 and it worked fine with
+these two patches included.
 
- PM: Using 3 thread(s) for compression
- PM: Compressing and saving image data (293150 pages)...
- PM: Image saving progress:   0%
- PM: Image saving progress:  10%
- ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
- ata1.00: configured for UDMA/100
- ata2: SATA link down (SStatus 0 SControl 300)
- ata5: SATA link down (SStatus 0 SControl 300)
- ata6: SATA link down (SStatus 0 SControl 300)
- ata3: SATA link down (SStatus 0 SControl 300)
- ata4: SATA link down (SStatus 0 SControl 300)
- PM: Image saving progress:  20%
- PM: Image saving progress:  30%
- PM: Image saving progress:  40%
- PM: Image saving progress:  50%
- pcieport 0000:00:02.5: pciehp: Slot(0-5): No device found
- PM: Image saving progress:  60%
- PM: Image saving progress:  70%
- PM: Image saving progress:  80%
- PM: Image saving progress:  90%
- PM: Image saving done
- PM: hibernation: Wrote 1172600 kbytes in 2.70 seconds (434.29 MB/s)
- PM: S|
- PM: hibernation: Basic memory bitmaps freed
- PM: Image not found (code -16)
-
-This is because when using the swapfile as the hibernation storage,
-the block device where the swapfile is located has already been mounted
-by the OS distribution(usually been mounted as the rootfs). This is not
-an issue for normal hibernation, because software_resume()->swsusp_check()
-happens before the block device(rootfs) mount. But it is a problem for the
-test_resume mode. Because when test_resume happens, the block device has
-been mounted already.
-
-Thus remove the FMODE_EXCL for test_resume mode. This would not be a
-problem because in test_resume stage, the processes have already been
-frozen, and the race condition described in
-Commit 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
-is unlikely to happen.
-
-Fixes: 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
-Reported-by: Yifan Li <yifan2.li@intel.com>
-Suggested-by: Pavankumar Kondeti <quic_pkondeti@quicinc.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- kernel/power/hibernate.c | 5 +++--
- kernel/power/swap.c      | 5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index aa551b093c3f..defc2257b052 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -688,18 +688,19 @@ static int load_image_and_restore(void)
- {
- 	int error;
- 	unsigned int flags;
-+	fmode_t mode = snapshot_test ? FMODE_READ : (FMODE_READ | FMODE_EXCL);
- 
- 	pm_pr_dbg("Loading hibernation image.\n");
- 
- 	lock_device_hotplug();
- 	error = create_basic_memory_bitmaps();
- 	if (error) {
--		swsusp_close(FMODE_READ | FMODE_EXCL);
-+		swsusp_close(mode);
- 		goto Unlock;
- 	}
- 
- 	error = swsusp_read(&flags);
--	swsusp_close(FMODE_READ | FMODE_EXCL);
-+	swsusp_close(mode);
- 	if (!error)
- 		error = hibernation_restore(flags & SF_PLATFORM_MODE);
- 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 36a1df48280c..0f699cd96a89 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -1518,9 +1518,10 @@ int swsusp_check(void)
- {
- 	int error;
- 	void *holder;
-+	fmode_t mode = snapshot_test ? FMODE_READ : (FMODE_READ | FMODE_EXCL);
- 
- 	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
--					    FMODE_READ | FMODE_EXCL, &holder);
-+					    mode, &holder);
- 	if (!IS_ERR(hib_resume_bdev)) {
- 		set_blocksize(hib_resume_bdev, PAGE_SIZE);
- 		clear_page(swsusp_header);
-@@ -1547,7 +1548,7 @@ int swsusp_check(void)
- 
- put:
- 		if (error)
--			blkdev_put(hib_resume_bdev, FMODE_READ | FMODE_EXCL);
-+			blkdev_put(hib_resume_bdev, mode);
- 		else
- 			pr_debug("Image signature found, resuming\n");
- 	} else {
--- 
-2.25.1
-
+Thanks,
+Pavan
