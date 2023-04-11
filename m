@@ -2,188 +2,80 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55855C7619A
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Apr 2023 03:31:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF9BEC7619A
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Apr 2023 04:22:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229749AbjDKDbH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 Apr 2023 23:31:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34734 "EHLO
+        id S229814AbjDKEWz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Apr 2023 00:22:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229656AbjDKDbG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2023 23:31:06 -0400
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFB77172C
-        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 20:31:04 -0700 (PDT)
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-1a524c999d9so3122315ad.3
-        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2023 20:31:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1681183864; x=1683775864;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=6ADmYS9mqbZyrMcltEWXh3K5aDlc5Z8KgWrgOoUl3zI=;
-        b=gGkUurv/wo/vQUfZv3sE+Xi4vbIzlG3n8x/gEn3SUgdq2j4i65ZjwSbQlZcOQRT4Af
-         YNVr2I1Ow72/OAKKMTLDD11+jW++DogBZsRL8uAsm828bH4GUGcsl8ST4FBcLsBUzoty
-         ZcEdoJu+LEbyg2M5ccBXDAd2mbdMrc6dhlvfs2EJXwk6yDUH2xdPSs7jPO+KDqveU99Q
-         fUt0K5g4iVFrjMGC481St1abs63lVy2tLYRpqhYgKmJU0RpuNMk9VuXlVOlLNt/5qW9A
-         dKZehyScjRCiHpxhBt1Ij6zOEKFvOBs0KTBccEtYo56afg8J2nMkz2SZw2gT1VuKlKs+
-         l3VQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681183864; x=1683775864;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=6ADmYS9mqbZyrMcltEWXh3K5aDlc5Z8KgWrgOoUl3zI=;
-        b=4ja/BLjbMek2Dzeew99rOTZpzKwBSgaWW/1sI9UTcfPhTND6M7zbiIf9er6B5wlHC3
-         DCQjvAnIdk9XOpHBVC+ukOesiYr3WAVDoQBWqh68N933SuwEFm4t2Cvvc0FrS0PwtyfU
-         nXZWACNHS4KmZ6pgxHDdZeiy4lSPKyS/ejaHG6WI7/qmpWtCiy7af+kwBkEajWYFTc1m
-         IgANKL5Z4EA4VItGJ7CKxd/gjV6jeDL3cQPkRla8I0jI2/BRlzSkKTl3k9rz6TAds4w8
-         vzL0kgPPz27DoQ3sZ355UvJsLuv+dyVgOumvtRsg8XJuaSQ/JLx7Q1In5+j1V/yCSCeP
-         BvTA==
-X-Gm-Message-State: AAQBX9ek+yHiKzRMRXmhNLMbSxiiVlZaux4Ksb24j3e1x2fZ+gtKQcnW
-        AEF46ajil38NLrXqRJABRxDQMA==
-X-Google-Smtp-Source: AKy350bfGCkeIj8TeSGJgc/MzhgkeGbBT5l2AslwrZmk+OnQlaVVFh857DYvS6yyr3gsd8t7iKslkQ==
-X-Received: by 2002:a62:29c1:0:b0:624:7aac:ab7 with SMTP id p184-20020a6229c1000000b006247aac0ab7mr13232757pfp.18.1681183864202;
-        Mon, 10 Apr 2023 20:31:04 -0700 (PDT)
-Received: from localhost ([122.172.85.8])
-        by smtp.gmail.com with ESMTPSA id x5-20020aa79185000000b0062ddcad2cbesm8864100pfa.145.2023.04.10.20.30.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Apr 2023 20:30:52 -0700 (PDT)
-Date:   Tue, 11 Apr 2023 09:00:48 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Markus Elfring <Markus.Elfring@web.de>
-Cc:     linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael@kernel.org>, cocci@inria.fr,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [v2] cpufreq: sparc: Fix exception handling in two functions
-Message-ID: <20230411033048.zwsijlyiksjcmgcc@vireshk-i7>
-References: <f9303bdc-b1a7-be5e-56c6-dfa8232b8b55@web.de>
- <b3cce5b3-2e68-180c-c293-74d4d9d4032c@web.de>
- <2d125f3e-4de6-cfb4-2d21-6e1ec04bc412@web.de>
- <20230403033529.x6n3ihhkypwizq3b@vireshk-i7>
- <39342542-9353-6a7b-0aa9-f9c294b158cb@web.de>
- <20230403230432.xeubpa3cc2gt4mw3@vireshk-i7>
- <68b1988b-987f-fa2b-111e-b1b42f9767ab@web.de>
- <20230409235511.7xxqdxsqtflrhifk@vireshk-i7>
- <f9f40c8a-a392-27e3-b19c-c8985a163159@web.de>
+        with ESMTP id S229694AbjDKEWy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2023 00:22:54 -0400
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35D111BF0;
+        Mon, 10 Apr 2023 21:22:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681186973; x=1712722973;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=hmE/4fx0REVbtNDLwDAGT/41Nij4JlBZargTHRs5SMU=;
+  b=NNLM5lqExyNQdiOXoAQ44/Ux3z5JrwmUaEtRZcW+gUWM/mzPJwjhADmC
+   RmL6k3WHGvcxIOLuIn1L6yoqQ9sJ86dTRMMfDO7iToU4UxKC4GYpDCbqJ
+   yTEHOQYtUEyi50xFQJTf/cH6e4phY/1KQNWfIHTpjBhizap40gNFKSKUM
+   9AzXNITkTo4l7PD4ya3I/lRBK8Nd6oJsudrr0dGVmhRx8anOjLEil6Mzn
+   D8kfV7T4ia7kw0m//rlqtmcnBxH63qGiyMQb9TFXxBA9zbI1EPW8VOMTw
+   3SzjoW34pZw2j4LFJ9OgZzGdthWIeusYvDOrJhbW/id8Oc43KopA9qeaq
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="341010163"
+X-IronPort-AV: E=Sophos;i="5.98,335,1673942400"; 
+   d="scan'208";a="341010163"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2023 21:22:52 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10676"; a="721045362"
+X-IronPort-AV: E=Sophos;i="5.98,335,1673942400"; 
+   d="scan'208";a="721045362"
+Received: from chenyu-dev.sh.intel.com ([10.239.158.170])
+  by orsmga001.jf.intel.com with ESMTP; 10 Apr 2023 21:22:50 -0700
+From:   Chen Yu <yu.c.chen@intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>
+Cc:     Ye Bin <yebin10@huawei.com>,
+        Pavankumar Kondeti <quic_pkondeti@quicinc.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH v2 0/2] Fix test_resume failure by openning swap device non-exclusively
+Date:   Tue, 11 Apr 2023 20:18:43 +0800
+Message-Id: <cover.1681186310.git.yu.c.chen@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <f9f40c8a-a392-27e3-b19c-c8985a163159@web.de>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 10-04-23, 15:08, Markus Elfring wrote:
-> >> @@ -337,21 +337,17 @@ static int __init us2e_freq_init(void)
-> >>  		driver->get = us2e_freq_get;
-> >>  		driver->exit = us2e_freq_cpu_exit;
-> >>  		strcpy(driver->name, "UltraSPARC-IIe");
-> >> -
-> >> -		cpufreq_us2e_driver = driver;
-> >
-> > This changes the behavior of the code here as "cpufreq_us2e_driver"
-> > is used in us2e_freq_cpu_exit(). If some failure occurs after a
-> > policy is initialized, and driver doesn't register successfully, then
-> > we won't set the frequency to the lowest index of the table anymore.
-> 
-> The setting of the variables “cpufreq_us…_driver” influences the need
-> to reset them to null pointers for the desired exception handling,
-> doesn't it?
+test_resume does not work in current kernel when using swapfile for hibernation.
+This is because the swap device should be openned non-exclusively in test_resume mode.
 
-This is what all should be done for these drivers I guess. There is no
-points doing the dance of {de}allocating resources unnecessarily.
+Patch 1 is a preparation for patch 2 and it turns snapshot_test into a global variable.
+Patch 2 opens swap device non-exclusively for test_resume mode, and exclusively for manual
+hibernation resume.
 
-diff --git a/drivers/cpufreq/sparc-us2e-cpufreq.c b/drivers/cpufreq/sparc-us2e-cpufreq.c
-index 92acbb25abb3..b31fb07f3f39 100644
---- a/drivers/cpufreq/sparc-us2e-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
-@@ -20,7 +20,14 @@
- #include <asm/asi.h>
- #include <asm/timer.h>
+Change since v1:
+Turn snapshot_test into global variable and do not introduce parameters for swsusp_check()
+nor load_image_and_restore().
 
--static struct cpufreq_driver *cpufreq_us2e_driver;
-+static struct cpufreq_driver cpufreq_us2e_driver = {
-+       .name = "UltraSPARC-IIe",
-+       .init = us2e_freq_cpu_init,
-+       .verify = cpufreq_generic_frequency_table_verify,
-+       .target_index = us2e_freq_target,
-+       .get = us2e_freq_get,
-+       .exit = us2e_freq_cpu_exit,
-+};
 
- struct us2e_freq_percpu_info {
-        struct cpufreq_frequency_table table[6];
-@@ -300,9 +307,7 @@ static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
+Chen Yu (2):
+  PM: hibernate: Turn snapshot_test into global variable
+  PM: hibernate: Do not get block device exclusively in test_resume mode
 
- static int us2e_freq_cpu_exit(struct cpufreq_policy *policy)
- {
--       if (cpufreq_us2e_driver)
--               us2e_freq_target(policy, 0);
--
-+       us2e_freq_target(policy, 0);
-        return 0;
- }
-
-@@ -319,39 +324,15 @@ static int __init us2e_freq_init(void)
-        impl  = ((ver >> 32) & 0xffff);
-
-        if (manuf == 0x17 && impl == 0x13) {
--               struct cpufreq_driver *driver;
--
--               ret = -ENOMEM;
--               driver = kzalloc(sizeof(*driver), GFP_KERNEL);
--               if (!driver)
--                       goto err_out;
--
-                us2e_freq_table = kzalloc((NR_CPUS * sizeof(*us2e_freq_table)),
-                        GFP_KERNEL);
-                if (!us2e_freq_table)
--                       goto err_out;
-+                       return -ENOMEM;
-
--               driver->init = us2e_freq_cpu_init;
--               driver->verify = cpufreq_generic_frequency_table_verify;
--               driver->target_index = us2e_freq_target;
--               driver->get = us2e_freq_get;
--               driver->exit = us2e_freq_cpu_exit;
--               strcpy(driver->name, "UltraSPARC-IIe");
--
--               cpufreq_us2e_driver = driver;
-                ret = cpufreq_register_driver(driver);
-                if (ret)
--                       goto err_out;
--
--               return 0;
-+                       kfree(us2e_freq_table);
-
--err_out:
--               if (driver) {
--                       kfree(driver);
--                       cpufreq_us2e_driver = NULL;
--               }
--               kfree(us2e_freq_table);
--               us2e_freq_table = NULL;
-                return ret;
-        }
-
-@@ -360,13 +341,8 @@ static int __init us2e_freq_init(void)
-
- static void __exit us2e_freq_exit(void)
- {
--       if (cpufreq_us2e_driver) {
--               cpufreq_unregister_driver(cpufreq_us2e_driver);
--               kfree(cpufreq_us2e_driver);
--               cpufreq_us2e_driver = NULL;
--               kfree(us2e_freq_table);
--               us2e_freq_table = NULL;
--       }
-+       cpufreq_unregister_driver(cpufreq_us2e_driver);
-+       kfree(us2e_freq_table);
- }
-
- MODULE_AUTHOR("David S. Miller <davem@redhat.com>");
+ kernel/power/hibernate.c | 12 +++++++++---
+ kernel/power/power.h     |  1 +
+ kernel/power/swap.c      |  5 +++--
+ 3 files changed, 13 insertions(+), 5 deletions(-)
 
 -- 
-viresh
+2.25.1
+
