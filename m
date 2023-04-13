@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47FFDC77B76
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFD20C77B6E
 	for <linux-pm@archiver.kernel.org>; Thu, 13 Apr 2023 09:55:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230020AbjDMJzJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229888AbjDMJzJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 13 Apr 2023 05:55:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44020 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230056AbjDMJzG (ORCPT
+        with ESMTP id S229989AbjDMJzG (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2023 05:55:06 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFE865FEA
-        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2023 02:54:21 -0700 (PDT)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE0016199
+        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2023 02:54:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1681379661;
+        s=mimecast20190719; t=1681379662;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=T1RNFAKZwRZKzpVC/9sYhPfhe1lzjvgHQBmhnXgWq2U=;
-        b=MZNOBB7Od+92b16xvxbZvlB9DmiquijR7R4yoEHp3uVyEMw1n8MxLgG5eSutLa/v3lSe+o
-        PSivpHjDh81JLlNC/K/QjndxjhawI7YrTYkrY/2L27zewylZyEdfWculPJSCozY7Qe1p1Z
-        5myZWThvqEJEctROjw2ykSM/kEfHXJk=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=R/MPv68sOCq0EapGSENkE21QO+rlkSaK/3y1SR0FFHQ=;
+        b=hl43TREtnzcPP7T9FwIWHnC13cj7QM5D01DxW8taHDd+Z9M36KL5pTOn1Aq9PV+AhT33Ir
+        AzyjuGTNSUibXAk5biqMMtPMNYDdHCrpykEk5HQLhzsVi7QR59m7tAkphyHzJR8L6TvoFV
+        188uohH6k5e0jGkfeGoN+Xb9YuPvxmg=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-397-MLxF-u2DOoiAMoLGmYjPGQ-1; Thu, 13 Apr 2023 05:54:16 -0400
-X-MC-Unique: MLxF-u2DOoiAMoLGmYjPGQ-1
+ us-mta-418-qUmNkdHvORuUDuMmh4WfJA-1; Thu, 13 Apr 2023 05:54:19 -0400
+X-MC-Unique: qUmNkdHvORuUDuMmh4WfJA-1
 Received: from smtp.corp.redhat.com (int-mx09.intmail.prod.int.rdu2.redhat.com [10.11.54.9])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 24F7C101A531;
-        Thu, 13 Apr 2023 09:54:16 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 417373813F4A;
+        Thu, 13 Apr 2023 09:54:19 +0000 (UTC)
 Received: from shalem.redhat.com (unknown [10.39.195.47])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 4BD7E492C13;
-        Thu, 13 Apr 2023 09:54:15 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 696A2492C13;
+        Thu, 13 Apr 2023 09:54:18 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
         Sebastian Reichel <sre@kernel.org>
 Cc:     Hans de Goede <hdegoede@redhat.com>, Marek Vasut <marex@denx.de>,
         laji Xiao <3252204392abc@gmail.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 6/9] power: supply: bq27xxx: Ensure power_supply_changed() is called on current sign changes
-Date:   Thu, 13 Apr 2023 11:54:02 +0200
-Message-Id: <20230413095405.71685-7-hdegoede@redhat.com>
+Subject: [PATCH 9/9] power: supply: bq25890: Call power_supply_changed() after updating input current or voltage
+Date:   Thu, 13 Apr 2023 11:54:05 +0200
+Message-Id: <20230413095405.71685-10-hdegoede@redhat.com>
 In-Reply-To: <20230413095405.71685-1-hdegoede@redhat.com>
 References: <20230413095405.71685-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -54,89 +54,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On gauges where the current register is signed, there is no charging
-flag in the flags register. So only checking flags will not result
-in power_supply_changed() getting called when e.g. a charger is plugged
-in and the current sign changes from negative (discharging) to
-positive (charging).
+The bq25892 model relies on external charger-type detection and once
+that is done the bq25890_charger code will update the input current
+and if pumpexpress is used also the input voltage.
 
-This causes userspace's notion of the status to lag until userspace
-does a poll.
+In this case, when the initial power_supply_changed() call is made
+from the interrupt handler, the input settings are 5V/0.5A which
+on many devices is not enough power to charge (while the device is on).
 
-And when a power_supply_leds.c LED trigger is used to indicate charging
-status with a LED, this LED will lag until the capacity percentage
-changes, which may take many minutes (because the LED trigger only is
-updated on power_supply_changed() calls).
+On many devices the fuel-gauge relies in its external_power_changed
+callback to timely signal userspace about charging <-> discharging
+status changes. Add a power_supply_changed() call after updating
+the input current or voltage. This allows the fuel-gauge driver
+to timely recheck if the battery is charging after the new input
+settings have been applied and then it can immediately notify
+userspace about this.
 
-Fix this by calling bq27xxx_battery_current_and_status() on gauges with
-a signed current register and checking if the status has changed.
-
-Fixes: 297a533b3e62 ("bq27x00: Cache battery registers")
+Fixes: 48f45b094dbb ("power: supply: bq25890: Support higher charging voltages through Pump Express+ protocol")
+Fixes: eab25b4f93aa ("power: supply: bq25890: On the bq25892 set the IINLIM based on external charger detection")
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq27xxx_battery.c | 13 ++++++++++++-
- include/linux/power/bq27xxx_battery.h  |  3 +++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ drivers/power/supply/bq25890_charger.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 8f2995e9850a..f98b51ce19b5 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1836,6 +1836,7 @@ static int bq27xxx_battery_current_and_status(
- 
- static void bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
- {
-+	union power_supply_propval status = di->last_status;
- 	struct bq27xxx_reg_cache cache = {0, };
- 	bool has_singe_flag = di->opts & BQ27XXX_O_ZERO;
- 
-@@ -1860,14 +1861,24 @@ static void bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
- 		if (di->regs[BQ27XXX_REG_CYCT] != INVALID_REG_ADDR)
- 			cache.cycle_count = bq27xxx_battery_read_cyct(di);
- 
-+		/*
-+		 * On gauges with signed current reporting the current must be
-+		 * checked to detect charging <-> discharging status changes.
-+		 */
-+		if (!(di->opts & BQ27XXX_O_ZERO))
-+			bq27xxx_battery_current_and_status(di, NULL, &status, &cache);
-+
- 		/* We only have to read charge design full once */
- 		if (di->charge_design_full <= 0)
- 			di->charge_design_full = bq27xxx_battery_read_dcap(di);
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index bfe08d7bfaf3..794512285629 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -775,6 +775,7 @@ static void bq25890_charger_external_power_changed(struct power_supply *psy)
  	}
  
- 	if ((di->cache.capacity != cache.capacity) ||
--	    (di->cache.flags != cache.flags))
-+	    (di->cache.flags != cache.flags) ||
-+	    (di->last_status.intval != status.intval)) {
-+		di->last_status.intval = status.intval;
- 		power_supply_changed(di->bat);
-+	}
+ 	bq25890_field_write(bq, F_IINLIM, input_current_limit);
++	power_supply_changed(bq->charger);
+ }
  
- 	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
- 		di->cache = cache;
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index e3322dad9c85..7c8d65414a70 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -2,6 +2,8 @@
- #ifndef __LINUX_BQ27X00_BATTERY_H__
- #define __LINUX_BQ27X00_BATTERY_H__
+ static int bq25890_get_chip_state(struct bq25890_device *bq,
+@@ -1106,6 +1107,8 @@ static void bq25890_pump_express_work(struct work_struct *data)
+ 	dev_info(bq->dev, "Hi-voltage charging requested, input voltage is %d mV\n",
+ 		 voltage);
  
-+#include <linux/power_supply.h>
++	power_supply_changed(bq->charger);
 +
- enum bq27xxx_chip {
- 	BQ27000 = 1, /* bq27000, bq27200 */
- 	BQ27010, /* bq27010, bq27210 */
-@@ -70,6 +72,7 @@ struct bq27xxx_device_info {
- 	int charge_design_full;
- 	bool removed;
- 	unsigned long last_update;
-+	union power_supply_propval last_status;
- 	struct delayed_work work;
- 	struct power_supply *bat;
- 	struct list_head list;
+ 	return;
+ error_print:
+ 	bq25890_field_write(bq, F_PUMPX_EN, 0);
 -- 
 2.39.1
 
