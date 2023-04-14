@@ -2,102 +2,82 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50145C77B6E
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Apr 2023 03:09:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51F1CC77B70
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Apr 2023 04:14:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229628AbjDNDJJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Apr 2023 23:09:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39468 "EHLO
+        id S229598AbjDNEOZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Apr 2023 00:14:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53514 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229493AbjDNDJI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2023 23:09:08 -0400
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D5401998;
-        Thu, 13 Apr 2023 20:09:06 -0700 (PDT)
-X-UUID: 12db5403e36046049364e194e7c8e264-20230414
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.22,REQID:5ce2be2d-84dd-428d-ac01-1c1a80930b4b,IP:-32
-        768,URL:-32768,TC:-32768,Content:-32768,EDM:-32768,RT:-32768,SF:-32768,FIL
-        E:-32768,BULK:-32768,RULE:Release_Ham,ACTION:release,TS:0
-X-CID-INFO: VERSION:1.1.22,REQID:5ce2be2d-84dd-428d-ac01-1c1a80930b4b,IP:-3276
-        8,URL:-32768,TC:-32768,Content:-32768,EDM:-32768,RT:-32768,SF:-32768,FILE:
-        -32768,BULK:-32768,RULE:Release_Ham,ACTION:release,TS:0
-X-CID-META: VersionHash:120426c,CLOUDID:nil,BulkID:nil,BulkQuantity:0,Recheck:
-        0,SF:nil,TC:nil,Content:nil,EDM:nil,IP:nil,URL:nil,File:nil,Bulk:nil,QS:ni
-        l,BEC:nil,COL:0,OSI:0,OSA:0,AV:0
-X-CID-BVR: 0,NGT
-X-CID-BAS: 0,NGT,0,_
-X-UUID: 12db5403e36046049364e194e7c8e264-20230414
-X-User: zenghao@kylinos.cn
-Received: from zdzh5-qitianm428-a376.. [(116.128.244.169)] by mailgw
-        (envelope-from <zenghao@kylinos.cn>)
-        (Generic MTA)
-        with ESMTP id 1123143396; Fri, 14 Apr 2023 11:08:32 +0800
-From:   Hao Zeng <zenghao@kylinos.cn>
-To:     skhan@linuxfoundation.org
-Cc:     trenn@suse.com, shuah@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Hao Zeng <zenghao@kylinos.cn>
-Subject: [PATCH v2] cpupower:Fix resource leaks in sysfs_get_enabled()
-Date:   Fri, 14 Apr 2023 11:08:30 +0800
-Message-Id: <20230414030830.3829332-1-zenghao@kylinos.cn>
-X-Mailer: git-send-email 2.37.2
+        with ESMTP id S229540AbjDNEOX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2023 00:14:23 -0400
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC9CE210B;
+        Thu, 13 Apr 2023 21:14:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1681445660; x=1712981660;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=ilHX1TUJOSQR7mRe4+AEDRbkMzycBg1B0YKXxtFmyHw=;
+  b=LchK71ymk2b8Tpsc5NIIb3YqngpYoKXaArF4MSbA/9ZciMU6OQ3wVexg
+   0kJs2Cthj2lRUfgIY6en6oKlRH17WC7GdoIF2UfL6b7eCAMQGb7G7tA0T
+   CxKeQoWOtyw9qotKYalk9Ylin0r4XPsF844z+z/ULu27l7W3do7jRakI1
+   KaByojNSSZvR8/tNC89PjgPPxzX1mNIJk9qQ5b0k5sIWyR+r0XD19LEhg
+   jfrQJN7Re1ST5UUsCS4H1yS3xCCEYZJOAaEwQQ/QNb8f1oUoRWW1GZVfU
+   LkAkk66uGtiA63u1Y/FR2ga246fQvA07uDB9vX8SMdy8x6tuvZrYFXZPZ
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10679"; a="343138350"
+X-IronPort-AV: E=Sophos;i="5.99,195,1677571200"; 
+   d="scan'208";a="343138350"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2023 21:14:20 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10679"; a="683194742"
+X-IronPort-AV: E=Sophos;i="5.99,195,1677571200"; 
+   d="scan'208";a="683194742"
+Received: from chenyu-dev.sh.intel.com ([10.239.158.170])
+  by orsmga007.jf.intel.com with ESMTP; 13 Apr 2023 21:14:18 -0700
+From:   Chen Yu <yu.c.chen@intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>
+Cc:     Ye Bin <yebin10@huawei.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Pavankumar Kondeti <quic_pkondeti@quicinc.com>,
+        Yifan Li <yifan2.li@intel.com>, Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH v3 0/2] Fix test_resume failure by openning swap device non-exclusively
+Date:   Fri, 14 Apr 2023 20:10:11 +0800
+Message-Id: <cover.1681443714.git.yu.c.chen@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When the read return value is equal to 1, a file handle leak will occur
+test_resume does not work in current kernel when using swapfile for hibernation.
+This is because the swap device should be openned non-exclusively in test_resume mode.
 
-Signed-off-by: Hao Zeng <zenghao@kylinos.cn>
-Suggested-by: Shuah Khan <skhan@linuxfoundation.org>
----
- tools/power/cpupower/lib/powercap.c | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+Patch 1 is a preparation to turn snapshot_test into a global variable.
+Patch 2 is the fix to open swap device non-exclusively only for test_resume mode.
 
-diff --git a/tools/power/cpupower/lib/powercap.c b/tools/power/cpupower/lib/powercap.c
-index 0ce29ee4c2e4..02ec5b0bff6b 100644
---- a/tools/power/cpupower/lib/powercap.c
-+++ b/tools/power/cpupower/lib/powercap.c
-@@ -40,7 +40,7 @@ static int sysfs_get_enabled(char *path, int *mode)
- {
- 	int fd;
- 	char yes_no;
--
-+	int ret = 0;
- 	*mode = 0;
- 
- 	fd = open(path, O_RDONLY);
-@@ -48,17 +48,18 @@ static int sysfs_get_enabled(char *path, int *mode)
- 		return -1;
- 
- 	if (read(fd, &yes_no, 1) != 1) {
--		close(fd);
--		return -1;
-+		ret = -1;
-+		goto err;
- 	}
- 
--	if (yes_no == '1') {
--		*mode = 1;
--		return 0;
--	} else if (yes_no == '0') {
--		return 0;
-+	if (yes_no != '1' || yes_no != '0') {
-+		ret = -1;
-+		goto err;
- 	}
--	return -1;
-+	*mode = yes_no - '0';
-+err:
-+	close(fd);
-+	return ret;
- }
- 
- int powercap_get_enabled(int *mode)
+Change since v2:
+Adjust the initialization of fmode and refine the commit message
+per Rafael's suggestion.
+
+Change since v1:
+Turn snapshot_test into global variable and do not introduce parameters for swsusp_check()
+nor load_image_and_restore().
+
+Chen Yu (2):
+  PM: hibernate: Turn snapshot_test into global variable
+  PM: hibernate: Do not get block device exclusively in test_resume mode
+
+ kernel/power/hibernate.c | 15 ++++++++++++---
+ kernel/power/power.h     |  1 +
+ kernel/power/swap.c      |  8 ++++++--
+ 3 files changed, 19 insertions(+), 5 deletions(-)
+
 -- 
-2.37.2
+2.25.1
 
-
-No virus found
-		Checked by Hillstone Network AntiVirus
