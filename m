@@ -2,105 +2,115 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C12F5C77B6E
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Apr 2023 11:12:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3401C77B6E
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Apr 2023 12:57:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230233AbjDNLMZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Apr 2023 07:12:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48732 "EHLO
+        id S229469AbjDNM5t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Apr 2023 08:57:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41948 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229591AbjDNLMZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2023 07:12:25 -0400
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E36A576A7
-        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2023 04:12:23 -0700 (PDT)
-Received: by mail-wm1-x32c.google.com with SMTP id bi22-20020a05600c3d9600b003f0ad935166so2204014wmb.4
-        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2023 04:12:23 -0700 (PDT)
+        with ESMTP id S229964AbjDNM5n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2023 08:57:43 -0400
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4767F1BCE;
+        Fri, 14 Apr 2023 05:57:28 -0700 (PDT)
+Received: by mail-wr1-x435.google.com with SMTP id j12so1153622wrd.2;
+        Fri, 14 Apr 2023 05:57:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1681470742; x=1684062742;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=SEnulhA5VA3I1e5UG7ov0nIRMdi2PjIGPK3ZiIECZ0Y=;
-        b=hYaxh3J4LVdiZZ5grBlmO1PkwCItaOSHE9AcEhaKGDEXo6mHg6ZtWeai7jPoCYBCcu
-         nQ2yfZAm6Pl75BLd+colZl5waBpHA5AVORT1OAUZXUrt1MoU0hIkd//gCfUq8xoLQKMx
-         PXJZ962far8aZDjJgWE/Lst5AJVH47KAgPlrZ7p14WhwyGz2rXUENbUzR6cLN5ick+DK
-         ICle8tBpEPheM+b4CHXSKgEfYuKGvgfKDeFLggzDiTFcV7MtDk1IOVxvqf5T5LK+eraR
-         v0bxZYzJQcS2W9YG48YNsxEJTszWbalpBLhTAbukJ5VntykCnc0xmdemXf/p0qV9gfmI
-         3cZA==
+        d=gmail.com; s=20221208; t=1681477046; x=1684069046;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=h4rbfUVik5xRNzue+ouR9/NTw/dvLCy/S+K2ZW8gQYs=;
+        b=lGMBduVQqBpHez/cPpTpIfKN+1eIMgYKdu3neYEjptDvnhQwd59NywD2aeHzY0nlml
+         2HXftBIIHibxrz047eBJGtpfTJC8OEiOS7EeXIIB88N5Mv87CnIR09r8OZFqn6BSvid5
+         n6lwaWLgEuGPM2WrMoXK4Qk/MLuMB1Lpdi+lV6/r4GiPIInFu9zUVFPur7PhbJUxNsDz
+         lSkpel2DhnISbOs1pPF7eGK+QnAdf2Mj01Zrc+MoLtT/0+2pWOlECj4aCMmicPA0mAgY
+         ud3uyGOwup/pk5JPL4zlSmkSGqFhh65B5rGT8lxQ7gJTJEGMJ/v6C+nuRnlg20ZS7sE2
+         wLbw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681470742; x=1684062742;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=SEnulhA5VA3I1e5UG7ov0nIRMdi2PjIGPK3ZiIECZ0Y=;
-        b=W3EyF4znIzMCXi0mut+vZKiFAUCpPKPfz9nGSeDvsUZTeTrDTUOIgddXivJ+ZSU0lk
-         Dqp7U/DPuvja98h2NPBsXmGVuBOTq2hC5CCa7IUj2T93v18TBljGhhhR90xTPWJ3pAYZ
-         Y1K8FzPbf88+EzGrGIcwQEqr/eHzfx3hR1bjxMcZGJ9KpumLOyoeMn+FZRakf+0XpJdv
-         QFusFqLK+FPDKg1ZuWiwNT1wXyo772iIHIEzd+GT7z1HXScYZaWf/KNfLszHDS6HkYMC
-         YcUVor8qQRDD3MISqjvPNL5E4xB0muEJJt/NxGi0ts9XucflT3OIu6Ks3ngRRwgZjcBU
-         jUqw==
-X-Gm-Message-State: AAQBX9eyXA8wIPney3RMCmzBARc3H3t3aRcnIwyC9lrTJ5KePDWSP6D2
-        96Rc+Zq+4e2Ms/Z+dlDeNch/WKyMK/uoX0/0W4k=
-X-Google-Smtp-Source: AKy350Y7QQKo8+o2lhPzSw/tJZXziB6QYAhasXiaK08d856PPVmWZGdiR+beC4O0oOyBfWYQd99BCw==
-X-Received: by 2002:a1c:7209:0:b0:3f0:9565:3f3f with SMTP id n9-20020a1c7209000000b003f095653f3fmr4614563wmc.3.1681470742293;
-        Fri, 14 Apr 2023 04:12:22 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:7529:f7da:b8df:f1dd? ([2a05:6e02:1041:c10:7529:f7da:b8df:f1dd])
-        by smtp.googlemail.com with ESMTPSA id c11-20020a7bc84b000000b003ed2384566fsm4098856wml.21.2023.04.14.04.12.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 14 Apr 2023 04:12:21 -0700 (PDT)
-Message-ID: <6aad180f-410c-5b11-b30b-c7bc02cbe054@linaro.org>
-Date:   Fri, 14 Apr 2023 13:12:21 +0200
+        d=1e100.net; s=20221208; t=1681477046; x=1684069046;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=h4rbfUVik5xRNzue+ouR9/NTw/dvLCy/S+K2ZW8gQYs=;
+        b=dzmHMKHS1FeOIgoVijwZnf/I9eBgwQgkk1Y0ELN2dnOKRUGorvnhjzd78LCD3MCow2
+         1OVRH7c0dIjqQCJefIKKxHdene7HVzBP5Bciad9k8bBLoeHm0qR4mtRGDpEUs6rAjFGl
+         O1To32zvwwzMEI/O2zSSAWefmWpD7IRzhnjua2Bl6I+6bXvF44dqSyAsf61a7/0xp7x5
+         lkwJwp/+Te/TIartbLIsapei6JrQBXXfL/giAFxi/q/LirYWhW+8duem3oFhc61AGzPo
+         k2asrMvYKpwv9lL14MOWOg7LHb/hT99lU99Xo8o49fiK46gl7wdHs5U5/vvnFbxAQYmM
+         LN/g==
+X-Gm-Message-State: AAQBX9dJD4wYYm1gSfj7vqeGYGI+nZUQIDUT7xM5Q1iPY/yxmqXej9zX
+        7jlNX5WJ/F2gZBJknk3SBww=
+X-Google-Smtp-Source: AKy350bzIUXHvaV/t+ibljk0ZdXFSjIITDL1SzGtv0Da0ZvBQA3Qxje4BgyVJaAuTBD3NrzLyaKxGw==
+X-Received: by 2002:a5d:628e:0:b0:2f4:15f3:271e with SMTP id k14-20020a5d628e000000b002f415f3271emr3435754wru.2.1681477046034;
+        Fri, 14 Apr 2023 05:57:26 -0700 (PDT)
+Received: from localhost (p200300e41f1c0800f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f1c:800:f22f:74ff:fe1f:3a53])
+        by smtp.gmail.com with ESMTPSA id h12-20020a5d4fcc000000b002f22c44e974sm3494575wrw.102.2023.04.14.05.57.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 14 Apr 2023 05:57:25 -0700 (PDT)
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-tegra@vger.kernel.org
+Subject: [PATCH 00/10] thermal: tegra: Do not register cooling device
+Date:   Fri, 14 Apr 2023 14:57:11 +0200
+Message-Id: <20230414125721.1043589-1-thierry.reding@gmail.com>
+X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: Re: [PATCH V3] thermal/core/power_allocator: avoid thermal cdev can
- not be reset
-Content-Language: en-US
-To:     Di Shen <cindygm567@gmail.com>
-Cc:     Lukasz Luba <lukasz.luba@arm.com>, Di Shen <di.shen@unisoc.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        xuewen.yan@unisoc.com, jeson.gao@unisoc.com, zhanglyra@gmail.com,
-        orsonzhai@gmail.com, rui.zhang@intel.com, amitk@kernel.org,
-        rafael@kernel.org
-References: <20230320095620.7480-1-di.shen@unisoc.com>
- <6055bc39-5c00-d12f-b5c3-fa21a9649d63@arm.com>
- <CAHYJL4qL+nJuiN8vXGaiPQuuaPx6BA+yjRq2TRaBgb+qXi8-yw@mail.gmail.com>
- <637a3bb1-ba1c-e707-01b7-06c1358583ca@linaro.org>
- <CAHYJL4rnfVp+X3imbxWzUd9ixTFAPe4ioLyi-t50PwhL0y5v8A@mail.gmail.com>
- <da59b4ef-1532-1b3a-7a73-9a095d8c9390@linaro.org>
- <CAHYJL4qJwKHFsCPUvLzmUEAJtEfHDAO23D5=0zAXOYSCABJ8_g@mail.gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <CAHYJL4qJwKHFsCPUvLzmUEAJtEfHDAO23D5=0zAXOYSCABJ8_g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 13/04/2023 10:40, Di Shen wrote:
-> We have discussed this question in patch-v1:
-> https://lore.kernel.org/all/f6aaa5f1-495d-a158-14d8-ddb2bffbd9c2@arm.com/
-> 
-> Simply put, we use the trip_temp in the Android System; set different
-> trip_temp for thermal control of different scenarios.
+From: Thierry Reding <treding@nvidia.com>
 
-The changes are dealing with the trip points and trying to detect the 
-threshold. That part should be handled in the thermal core or thermal 
-trip side, not in the governor.
+Hi,
 
-AFAICT, if a trip point is changed, then the power allocator should be 
-reset, including the cdev state.
+this set of patches removes the registration of the SOCTHERM internal
+throttling mechanism as cooling device. Since this throttling starts
+automatically once a certain temperature threshold is crossed, it
+doesn't make sense to represent it as a cooling device, which are
+typically "manually" activated by the thermal framework when thermal
+sensors report temperature thresholds being crossed.
 
-It would be more convenient to add an ops to the governor ops structure 
-to reset the governor and then call it when a trip point is changed in 
-thermal_zone_set_trip()
+Instead of using the cooling device mechanism, this statically programs
+the throttling mechanism when it is configured in device tree. In order
+to do this, an additional device tree property is needed to replace the
+information that was previously contained in trip points.
 
+There's a few preparatory patches to make the removal a bit simpler and
+also some follow up cleanups included as well.
+
+Thierry
+
+Thierry Reding (10):
+  dt-bindings: thermal: tegra: Document throttle temperature
+  thermal: tegra: Use driver-private data consistently
+  thermal: tegra: Constify SoC-specific data
+  thermal: tegra: Do not register cooling device
+  thermal: tegra: Use unsigned int where appropriate
+  thermal: tegra: Avoid over-allocation of temporary array
+  thermal: tegra: Remove gratuitous error assignment
+  thermal: tegra: Minor stylistic cleanups
+  arm64: tegra: Rework SOCTHERM on Tegra132 and Tegra210
+  ARM: tegra: Rework SOCTHERM on Tegra124
+
+ .../thermal/nvidia,tegra124-soctherm.yaml     |   7 +
+ arch/arm/boot/dts/tegra124.dtsi               |  65 +--
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi      |  63 +--
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi      |  83 +---
+ drivers/thermal/tegra/soctherm.c              | 392 ++++++------------
+ drivers/thermal/tegra/soctherm.h              |   1 +
+ drivers/thermal/tegra/tegra124-soctherm.c     |   4 +
+ drivers/thermal/tegra/tegra132-soctherm.c     |   4 +
+ drivers/thermal/tegra/tegra210-soctherm.c     |   4 +
+ 9 files changed, 208 insertions(+), 415 deletions(-)
 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.40.0
 
