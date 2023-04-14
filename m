@@ -2,185 +2,123 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD310C77B6E
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Apr 2023 04:15:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9FA1C77B71
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Apr 2023 05:55:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229663AbjDNEPE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Apr 2023 00:15:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53910 "EHLO
+        id S229650AbjDNFzf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Apr 2023 01:55:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229749AbjDNEOx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2023 00:14:53 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90862524B;
-        Thu, 13 Apr 2023 21:14:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681445688; x=1712981688;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=dsi8NCRi2VJpWEZHMlW1fz/LRYWvxDuxdrK0U2M3dMA=;
-  b=IQFo4SIaFAKSDP/D9a1qoTmkwiaHDj3xzBfwSDvT6VJTc24oUpIonaLH
-   m88TcR+nQw5Zufwys9vy4dm4iWuUStsaJX0e3g89pAoFOWWDPucUPECYp
-   HgVLOcXqh1uzVl5ZiC3JCvPM8NQia68+5VcMOkKeqGTdxbKfN+FCadZVW
-   uC5HHVMw3nQSjEQLD3eV5Yi41GoZlFyTnIMTtRK/oCgp5qpR9UwLE/KKk
-   Cg8nF1fOQ78ocFUbGI11vZU+/6FDclXYD65AsBQj/67rrXt5UqJDrfrbR
-   WY8mFVYFNE71MsBi5LGDqyqj5rFbRwdMKNefLqXoQ6rv6UXVoDj+9KMZ2
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10679"; a="333142697"
-X-IronPort-AV: E=Sophos;i="5.99,195,1677571200"; 
-   d="scan'208";a="333142697"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2023 21:14:48 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10679"; a="935863770"
-X-IronPort-AV: E=Sophos;i="5.99,195,1677571200"; 
-   d="scan'208";a="935863770"
-Received: from chenyu-dev.sh.intel.com ([10.239.158.170])
-  by fmsmga006.fm.intel.com with ESMTP; 13 Apr 2023 21:14:45 -0700
-From:   Chen Yu <yu.c.chen@intel.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>
-Cc:     Ye Bin <yebin10@huawei.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Pavankumar Kondeti <quic_pkondeti@quicinc.com>,
-        Yifan Li <yifan2.li@intel.com>, Chen Yu <yu.c.chen@intel.com>,
-        Wendy Wang <wendy.wang@intel.com>
-Subject: [PATCH v3 2/2] PM: hibernate: Do not get block device exclusively in test_resume mode
-Date:   Fri, 14 Apr 2023 20:10:42 +0800
-Message-Id: <7d9e20406c9309abfc077f776881f810c1e6122a.1681443714.git.yu.c.chen@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1681443714.git.yu.c.chen@intel.com>
-References: <cover.1681443714.git.yu.c.chen@intel.com>
+        with ESMTP id S229540AbjDNFze (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2023 01:55:34 -0400
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E423E2729;
+        Thu, 13 Apr 2023 22:55:32 -0700 (PDT)
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33E41Uxw023924;
+        Fri, 14 Apr 2023 05:55:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
+ subject : date : message-id : mime-version : content-type; s=qcppdkim1;
+ bh=3Wh0prCU1ejq7nrX9crPczw2njNZBh3BqT7rNeT2G4U=;
+ b=BUlAbopZAyEcpNdiEk94IZpavyxAe7WBjB/seCVdoy07TtjOPmP4EExYWRs4drjgCvHL
+ O9YqSE4R7zdPN0jQ+0bfmeL4rRiILzOE8Eit10Uf0f8ouuFdOn7cnGnfshawQCsRL1Kr
+ wDOYc8acPf/B8GkOYvw1EVX027IhAfMsu+Rw889v/Dx+44mnwdFckjykVQs54/tnC7eC
+ z4rD4N9EqLfRbYeqU2b4IgUJ+j6ksKu6ot0OwZ+a7bQ38emxAcl9uZ48Apo2RjlCpPaU
+ hX/ZY+vvRZxUYKO+hzgv4y+Oss6JXgD+5QTCPiuPIhy22Xww/c6hL4cO4jG1DFxIbAzJ Jw== 
+Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3pxbx5tmwk-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 14 Apr 2023 05:55:19 +0000
+Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
+        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 33E5tHPt024527
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 14 Apr 2023 05:55:17 GMT
+Received: from hu-mkshah-hyd.qualcomm.com (10.80.80.8) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.42; Thu, 13 Apr 2023 22:55:13 -0700
+From:   Maulik Shah <quic_mkshah@quicinc.com>
+To:     <andersson@kernel.org>, <ulf.hansson@linaro.org>,
+        <dianders@chromium.org>, <swboyd@chromium.org>,
+        <wingers@google.com>
+CC:     <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <sudeep.holla@arm.com>,
+        <jwerner@chromium.org>, <quic_lsrao@quicinc.com>,
+        <quic_rjendra@quicinc.com>, Maulik Shah <quic_mkshah@quicinc.com>
+Subject: [PATCH v3 0/3] Use PSCI OS initiated mode for sc7280
+Date:   Fri, 14 Apr 2023 11:24:59 +0530
+Message-ID: <20230414055502.23920-1-quic_mkshah@quicinc.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: jHrnU84jJHbvG2hrkpNv43WBglTA1OvF
+X-Proofpoint-GUID: jHrnU84jJHbvG2hrkpNv43WBglTA1OvF
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-14_02,2023-04-13_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 mlxlogscore=836 malwarescore=0 bulkscore=0
+ spamscore=0 suspectscore=0 priorityscore=1501 clxscore=1011
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2304140053
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The system refused to do a test_resume because it found that the
-swap device has already been taken by someone else. Specifically,
-the swsusp_check()->blkdev_get_by_dev(FMODE_EXCL) is supposed to
-do this check.
+Changes in v3:
+- Add new change to provide helper function dt_idle_pd_remove_topology()
+- Address ulf's comments for error handling
+- Add reviewed by ulf for devicetree change
 
-Steps to reproduce:
- dd if=/dev/zero of=/swapfile bs=$(cat /proc/meminfo |
-       awk '/MemTotal/ {print $2}') count=1024 conv=notrunc
- mkswap /swapfile
- swapon /swapfile
- swap-offset /swapfile
- echo 34816 > /sys/power/resume_offset
- echo test_resume > /sys/power/disk
- echo disk > /sys/power/state
+Changes in v2:
+- Add new change to Move enabling OSI mode after power domains creation
+- Fix compatible string to domains-idle-states for cluster idle state.
+- Update cover letter with some more details on OSI and PC mode
+  comparision
 
- PM: Using 3 thread(s) for compression
- PM: Compressing and saving image data (293150 pages)...
- PM: Image saving progress:   0%
- PM: Image saving progress:  10%
- ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
- ata1.00: configured for UDMA/100
- ata2: SATA link down (SStatus 0 SControl 300)
- ata5: SATA link down (SStatus 0 SControl 300)
- ata6: SATA link down (SStatus 0 SControl 300)
- ata3: SATA link down (SStatus 0 SControl 300)
- ata4: SATA link down (SStatus 0 SControl 300)
- PM: Image saving progress:  20%
- PM: Image saving progress:  30%
- PM: Image saving progress:  40%
- PM: Image saving progress:  50%
- pcieport 0000:00:02.5: pciehp: Slot(0-5): No device found
- PM: Image saving progress:  60%
- PM: Image saving progress:  70%
- PM: Image saving progress:  80%
- PM: Image saving progress:  90%
- PM: Image saving done
- PM: hibernation: Wrote 1172600 kbytes in 2.70 seconds (434.29 MB/s)
- PM: S|
- PM: hibernation: Basic memory bitmaps freed
- PM: Image not found (code -16)
+The dependency [2] is now merged in trustedfirmware project.
 
-This is because when using the swapfile as the hibernation storage,
-the block device where the swapfile is located has already been mounted
-by the OS distribution(usually mounted as the rootfs). This is not
-an issue for normal hibernation, because software_resume()->swsusp_check()
-happens before the block device(rootfs) mount. But it is a problem for the
-test_resume mode. Because when test_resume happens, the block device has
-been mounted already.
+Stats comparision between OSI and PC mode are captured at [3] with
+usecase
+details, where during multiple CPUs online the residency in cluster idle
+state is better with OSI and also inline with single CPU mode. In PC
+mode
+with multiple CPUs cluster idle state residency is dropping compare to
+single CPU mode.
 
-Thus remove the FMODE_EXCL for test_resume mode. This would not be a
-problem because in test_resume stage, the processes have already been
-frozen, and the race condition described in
-Commit 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
-is unlikely to happen.
+Recording of this meeting is also available at [4].
 
-Fixes: 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
-Reported-by: Yifan Li <yifan2.li@intel.com>
-Suggested-by: Pavankumar Kondeti <quic_pkondeti@quicinc.com>
-Tested-by: Pavankumar Kondeti <quic_pkondeti@quicinc.com>
-Tested-by: Wendy Wang <wendy.wang@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- kernel/power/hibernate.c | 8 ++++++--
- kernel/power/swap.c      | 8 ++++++--
- 2 files changed, 12 insertions(+), 4 deletions(-)
+This change adds power-domains for cpuidle states to use PSCI OS
+initiated mode for sc7280.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index aa551b093c3f..30d1274f03f6 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -688,18 +688,22 @@ static int load_image_and_restore(void)
- {
- 	int error;
- 	unsigned int flags;
-+	fmode_t mode = FMODE_READ;
-+
-+	if (snapshot_test)
-+		mode |= FMODE_EXCL;
- 
- 	pm_pr_dbg("Loading hibernation image.\n");
- 
- 	lock_device_hotplug();
- 	error = create_basic_memory_bitmaps();
- 	if (error) {
--		swsusp_close(FMODE_READ | FMODE_EXCL);
-+		swsusp_close(mode);
- 		goto Unlock;
- 	}
- 
- 	error = swsusp_read(&flags);
--	swsusp_close(FMODE_READ | FMODE_EXCL);
-+	swsusp_close(mode);
- 	if (!error)
- 		error = hibernation_restore(flags & SF_PLATFORM_MODE);
- 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 36a1df48280c..92e41ed292ad 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -1518,9 +1518,13 @@ int swsusp_check(void)
- {
- 	int error;
- 	void *holder;
-+	fmode_t mode = FMODE_READ;
-+
-+	if (snapshot_test)
-+		mode |= FMODE_EXCL;
- 
- 	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
--					    FMODE_READ | FMODE_EXCL, &holder);
-+					    mode, &holder);
- 	if (!IS_ERR(hib_resume_bdev)) {
- 		set_blocksize(hib_resume_bdev, PAGE_SIZE);
- 		clear_page(swsusp_header);
-@@ -1547,7 +1551,7 @@ int swsusp_check(void)
- 
- put:
- 		if (error)
--			blkdev_put(hib_resume_bdev, FMODE_READ | FMODE_EXCL);
-+			blkdev_put(hib_resume_bdev, mode);
- 		else
- 			pr_debug("Image signature found, resuming\n");
- 	} else {
+This change depends on external project changes [1] & [2] which are
+under review/discussion to add PSCI os-initiated support in Arm Trusted
+Firmware.
+
+I can update here once the dependency are in and change is ready to
+merge.
+
+[1] https://review.trustedfirmware.org/q/topic:psci-osi
+[2] https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/19487
+[3] https://www.trustedfirmware.org/docs/PSCI-OS-initiated.pdf
+[4] https://www.trustedfirmware.org/meetings/tf-a-technical-forum
+
+Maulik Shah (3):
+  cpuidle: dt_idle_genpd: Add helper function to remove genpd topology
+  cpuidle: psci: Move enabling OSI mode after power domains creation
+  arm64: dts: qcom: sc7280: Add power-domains for cpuidle states
+
+ arch/arm64/boot/dts/qcom/sc7280.dtsi  | 98 ++++++++++++++++++++-------
+ drivers/cpuidle/cpuidle-psci-domain.c | 37 ++++------
+ drivers/cpuidle/dt_idle_genpd.c       | 24 +++++++
+ drivers/cpuidle/dt_idle_genpd.h       |  7 ++
+ 4 files changed, 116 insertions(+), 50 deletions(-)
+
 -- 
-2.25.1
+2.17.1
 
