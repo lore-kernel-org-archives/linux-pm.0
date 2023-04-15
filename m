@@ -2,48 +2,51 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D42CC77B73
-	for <linux-pm@archiver.kernel.org>; Sat, 15 Apr 2023 18:24:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41855C77B70
+	for <linux-pm@archiver.kernel.org>; Sat, 15 Apr 2023 18:24:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229760AbjDOSYa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 15 Apr 2023 14:24:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60468 "EHLO
+        id S229773AbjDOSYe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 15 Apr 2023 14:24:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229546AbjDOSY3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2023 14:24:29 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F62F1FF7
-        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2023 11:23:46 -0700 (PDT)
+        with ESMTP id S229614AbjDOSYd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2023 14:24:33 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43BD740E9
+        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2023 11:23:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1681583025;
+        s=mimecast20190719; t=1681583028;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=2paejZ9FTiHh9qCuyzM6Jd7BdB0qMiCfyvw18AeYSno=;
-        b=JNrN49HMcyXZurSAsYRyTZFXdDiMWslGwon0FrWZNsHC69EJsJuZh4wS+8I3gRoIQE1soa
-        qr7EbeVc1qfiqlHeubAp0ezcu0tANOqlzA3BvN/Hkaw+hvUrDGZlqz0WoHB71JUFk+ezfn
-        V5IYsfOMxSExws8IFP/PQdrj94+3KdQ=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=06RTC2b5HppJPVJNkv6NlbtDAm2dm/J+xC+Tp+c7PZs=;
+        b=LoNF55B0hYIKLxtHN2BdL1QLPqz94jFfLYv+pjox0G8nQ8HhV0lCj5EFKDyKaukc/HLS2q
+        2Ub4zBoQcLaWVhinEAKTzDRlfxySmro73zGMM8H4liTDMqsPiyNVOvXHAlTOiHVjqysA4K
+        j5/pGqBCGKkSUHSjPl3lZsZoJ7XtVWk=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-427-LZ6PJlhrMjOBorehlaWXkQ-1; Sat, 15 Apr 2023 14:23:43 -0400
-X-MC-Unique: LZ6PJlhrMjOBorehlaWXkQ-1
+ us-mta-20-6bYnI_7CPwGFhi-yEwO_dA-1; Sat, 15 Apr 2023 14:23:46 -0400
+X-MC-Unique: 6bYnI_7CPwGFhi-yEwO_dA-1
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id D8505800B35;
-        Sat, 15 Apr 2023 18:23:42 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 18CF73C0C8B0;
+        Sat, 15 Apr 2023 18:23:46 +0000 (UTC)
 Received: from shalem.redhat.com (unknown [10.39.192.15])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id EB7A3BC88;
-        Sat, 15 Apr 2023 18:23:41 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 3B5E951FF;
+        Sat, 15 Apr 2023 18:23:45 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 Cc:     Hans de Goede <hdegoede@redhat.com>, Marek Vasut <marex@denx.de>,
         laji Xiao <3252204392abc@gmail.com>, linux-pm@vger.kernel.org
-Subject: [PATCH v2 00/10] power: supply: bq27xxx/bq25890 status update fixes
-Date:   Sat, 15 Apr 2023 20:23:31 +0200
-Message-Id: <20230415182341.86916-1-hdegoede@redhat.com>
+Subject: [PATCH v2 03/10] power: supply: bq27xxx: Fix poll_interval handling and races on remove
+Date:   Sat, 15 Apr 2023 20:23:34 +0200
+Message-Id: <20230415182341.86916-4-hdegoede@redhat.com>
+In-Reply-To: <20230415182341.86916-1-hdegoede@redhat.com>
+References: <20230415182341.86916-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
@@ -51,56 +54,93 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+Before this patch bq27xxx_battery_teardown() was setting poll_interval = 0
+to avoid bq27xxx_battery_update() requeuing the delayed_work item.
 
-Here is v2 if my bq* status update fixes series
+There are 2 problems with this:
 
-Changes in v2:
-- Do not use bq->charger in bq25890_external_power_changed(),
-  because it may not be set yet (avoid NULL ptr deref on race)
-- Add "power: supply: bq24190: Call power_supply_changed()
-  after updating input current" to the series
+1. If the driver is unbound through sysfs, rather then the module being
+   rmmod-ed, this changes poll_interval unexpectedly
 
-The main goal of this series is to fix userspace sometimes not
-getting notified in a timely manner of charging <-> discharging
-status changes, causing e.g. battery status icons to lag
-and the lagging of updates also effects power_supply_leds.c .
+2. This is racy, after it being set poll_interval could be changed
+   before bq27xxx_battery_update() checks it through
+   /sys/module/bq27xxx_battery/parameters/poll_interval
 
-While working on this I noticed a number of races surrounding
-bq27xxx_battery_update(), so patches 1-4 fix those first.
+Fix this by added a removed attribute to struct bq27xxx_device_info and
+using that instead of setting poll_interval to 0.
 
-Patches 5-10 take care of the status update lagging issues.
+There also is another poll_interval related race on remove(), writing
+/sys/module/bq27xxx_battery/parameters/poll_interval will requeue
+the delayed_work item for all devices on the bq27xxx_battery_devices
+list and the device being removed was only removed from that list
+after cancelling the delayed_work item.
 
-Regards,
+Fix this by moving the removal from the bq27xxx_battery_devices list
+to before cancelling the delayed_work item.
 
-Hans
+Fixes: 8cfaaa811894 ("bq27x00_battery: Fix OOPS caused by unregistring bq27x00 driver")
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/power/supply/bq27xxx_battery.c | 22 +++++++++-------------
+ include/linux/power/bq27xxx_battery.h  |  1 +
+ 2 files changed, 10 insertions(+), 13 deletions(-)
 
-
-Hans de Goede (10):
-  power: supply: bq27xxx: Fix bq27xxx_battery_update() race condition
-  power: supply: bq27xxx: Fix I2C IRQ race on remove
-  power: supply: bq27xxx: Fix poll_interval handling and races on remove
-  power: supply: bq27xxx: Add cache parameter to
-    bq27xxx_battery_current_and_status()
-  power: supply: bq27xxx: Move bq27xxx_battery_update() down
-  power: supply: bq27xxx: Ensure power_supply_changed() is called on
-    current sign changes
-  power: supply: bq27xxx: After charger plug in/out wait 0.5s for things
-    to stabilize
-  power: supply: bq27xxx: Use mod_delayed_work() instead of cancel() +
-    schedule()
-  power: supply: bq25890: Call power_supply_changed() after updating
-    input current or voltage
-  power: supply: bq24190: Call power_supply_changed() after updating
-    input current
-
- drivers/power/supply/bq24190_charger.c     |   1 +
- drivers/power/supply/bq25890_charger.c     |   3 +
- drivers/power/supply/bq27xxx_battery.c     | 181 +++++++++++----------
- drivers/power/supply/bq27xxx_battery_i2c.c |   3 +-
- include/linux/power/bq27xxx_battery.h      |   4 +
- 5 files changed, 108 insertions(+), 84 deletions(-)
-
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 79aedf83cc8d..7411f1cf741b 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1801,7 +1801,7 @@ static void bq27xxx_battery_update_unlocked(struct bq27xxx_device_info *di)
+ 
+ 	di->last_update = jiffies;
+ 
+-	if (poll_interval > 0)
++	if (!di->removed && poll_interval > 0)
+ 		mod_delayed_work(system_wq, &di->work, poll_interval * HZ);
+ }
+ 
+@@ -2132,22 +2132,18 @@ EXPORT_SYMBOL_GPL(bq27xxx_battery_setup);
+ 
+ void bq27xxx_battery_teardown(struct bq27xxx_device_info *di)
+ {
+-	/*
+-	 * power_supply_unregister call bq27xxx_battery_get_property which
+-	 * call bq27xxx_battery_poll.
+-	 * Make sure that bq27xxx_battery_poll will not call
+-	 * schedule_delayed_work again after unregister (which cause OOPS).
+-	 */
+-	poll_interval = 0;
+-
+-	cancel_delayed_work_sync(&di->work);
+-
+-	power_supply_unregister(di->bat);
+-
+ 	mutex_lock(&bq27xxx_list_lock);
+ 	list_del(&di->list);
+ 	mutex_unlock(&bq27xxx_list_lock);
+ 
++	/* Set removed to avoid bq27xxx_battery_update() re-queuing the work */
++	mutex_lock(&di->lock);
++	di->removed = true;
++	mutex_unlock(&di->lock);
++
++	cancel_delayed_work_sync(&di->work);
++
++	power_supply_unregister(di->bat);
+ 	mutex_destroy(&di->lock);
+ }
+ EXPORT_SYMBOL_GPL(bq27xxx_battery_teardown);
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index a1aa68141d0b..e3322dad9c85 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -68,6 +68,7 @@ struct bq27xxx_device_info {
+ 	struct bq27xxx_access_methods bus;
+ 	struct bq27xxx_reg_cache cache;
+ 	int charge_design_full;
++	bool removed;
+ 	unsigned long last_update;
+ 	struct delayed_work work;
+ 	struct power_supply *bat;
 -- 
 2.39.1
 
