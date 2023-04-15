@@ -2,101 +2,71 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44492C77B71
-	for <linux-pm@archiver.kernel.org>; Sat, 15 Apr 2023 16:08:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 143B7C77B70
+	for <linux-pm@archiver.kernel.org>; Sat, 15 Apr 2023 16:50:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229670AbjDOQIf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 15 Apr 2023 12:08:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43270 "EHLO
+        id S229468AbjDOQuC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 15 Apr 2023 12:50:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56688 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229541AbjDOQIf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2023 12:08:35 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 516483A8D
-        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2023 09:07:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1681574874;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=YThcj2qtTbxSX+mn9TfsRoP5EDyFMjMFMuvOeXi5q+g=;
-        b=Am3pOnS3nu6B5La/qHY5AWxA+8kCt3m+kFipVGj/AsIAy11JD5/A1mv/xTTxk2pMdynRuK
-        o9/0Qs0RYFqgwrkc/NCpDEhg8zyBjf5uE7SoBopH37WqeWlM9Pi90HzeiENGOt2ee0fZbB
-        dqm/cwM2lM0Tyfcms/+oiQIG7SgwAi4=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-482-1Y76vm7EPFenae5BJEOJQQ-1; Sat, 15 Apr 2023 12:07:43 -0400
-X-MC-Unique: 1Y76vm7EPFenae5BJEOJQQ-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 3F179811E7C;
-        Sat, 15 Apr 2023 16:07:43 +0000 (UTC)
-Received: from shalem.redhat.com (unknown [10.39.192.15])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 1417A2166B26;
-        Sat, 15 Apr 2023 16:07:41 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
+        with ESMTP id S229563AbjDOQuC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2023 12:50:02 -0400
+Received: from smtp.smtpout.orange.fr (smtp-25.smtpout.orange.fr [80.12.242.25])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B864044B8
+        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2023 09:49:59 -0700 (PDT)
+Received: from pop-os.home ([86.243.2.178])
+        by smtp.orange.fr with ESMTPA
+        id nj64psmg4JwBhnj64pAfJN; Sat, 15 Apr 2023 18:49:57 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=orange.fr;
+        s=t20230301; t=1681577397;
+        bh=PSevjxPblNgenbQKclhvbfNSF7IweMAlAYEf2CBuRgI=;
+        h=From:To:Cc:Subject:Date;
+        b=KKGBIGhD9lXBIwFZeZKGre86PbiDCK6j+Dc/9AfqcRqevTt08PxsIxkG0YWZBgALF
+         m4swg+MURqZ4W3QDjAxj8djlx7WOggTXQcUsFcM/ZA5Xg1zXw5VioEk3+XN6FwjXLY
+         rEgqcwnTTYsgO7WldbFrn5ppOtoOfNrV2c6bI7lkecNsjk3aQF/85YAoUyxZNw1uRF
+         g/Hr3VeabifR3/dI5L7oe/cIjC6cFfZm6FUbbu8mePCtVmwX/hNOofAjndYipu8kKw
+         sC7dYiDBPzz4JLOEE06Q5HBwwSjGy+99Gr5l7KL49hNOqNk6dDiq7l4bm1NhQKrsnt
+         O0mQEbg9FaBuw==
+X-ME-Helo: pop-os.home
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sat, 15 Apr 2023 18:49:57 +0200
+X-ME-IP: 86.243.2.178
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>,
-        laji Xiao <3252204392abc@gmail.com>, linux-pm@vger.kernel.org,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-        Purism Kernel Team <kernel@puri.sm>
-Subject: [PATCH 5/6] power: supply: max17042_battery: Refactor max17042_external_power_changed()
-Date:   Sat, 15 Apr 2023 18:07:33 +0200
-Message-Id: <20230415160734.70475-6-hdegoede@redhat.com>
-In-Reply-To: <20230415160734.70475-1-hdegoede@redhat.com>
-References: <20230415160734.70475-1-hdegoede@redhat.com>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-pm@vger.kernel.org
+Subject: [PATCH] power: supply: rk817: Simplify an error message
+Date:   Sat, 15 Apr 2023 18:49:55 +0200
+Message-Id: <a9c0820c5af6b315ef3b3c2fd8d7be44008b0086.1681577370.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-max17042_external_power_changed() is a wrapper around
-"power_supply_changed(psy);" and it has the same prototype.
+dev_err_probe() already display the error code. There is no need to
+duplicate it explicitly in the error message.
 
-Remove it, replacing it with making the external_power_changed
-callback directly point to power_supply_changed.
-
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-Cc: Purism Kernel Team <kernel@puri.sm>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/power/supply/max17042_battery.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/power/supply/rk817_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index 89cabe8ed3b0..6a2d00d95a39 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -499,11 +499,6 @@ static int max17042_property_is_writeable(struct power_supply *psy,
- 	return ret;
- }
+diff --git a/drivers/power/supply/rk817_charger.c b/drivers/power/supply/rk817_charger.c
+index 1a2143641e66..8328bcea1a29 100644
+--- a/drivers/power/supply/rk817_charger.c
++++ b/drivers/power/supply/rk817_charger.c
+@@ -1134,7 +1134,7 @@ static int rk817_charger_probe(struct platform_device *pdev)
+ 					    &bat_info);
+ 	if (ret) {
+ 		return dev_err_probe(dev, ret,
+-				     "Unable to get battery info: %d\n", ret);
++				     "Unable to get battery info\n");
+ 	}
  
--static void max17042_external_power_changed(struct power_supply *psy)
--{
--	power_supply_changed(psy);
--}
--
- static int max17042_write_verify_reg(struct regmap *map, u8 reg, u32 value)
- {
- 	int retries = 8;
-@@ -1016,7 +1011,7 @@ static const struct power_supply_desc max17042_psy_desc = {
- 	.get_property	= max17042_get_property,
- 	.set_property	= max17042_set_property,
- 	.property_is_writeable	= max17042_property_is_writeable,
--	.external_power_changed	= max17042_external_power_changed,
-+	.external_power_changed	= power_supply_changed,
- 	.properties	= max17042_battery_props,
- 	.num_properties	= ARRAY_SIZE(max17042_battery_props),
- };
+ 	if ((bat_info->charge_full_design_uah <= 0) ||
 -- 
-2.39.1
+2.34.1
 
