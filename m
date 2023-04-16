@@ -2,83 +2,87 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC1B7C77B70
-	for <linux-pm@archiver.kernel.org>; Sat, 15 Apr 2023 18:25:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18562C77B61
+	for <linux-pm@archiver.kernel.org>; Sun, 16 Apr 2023 07:23:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229764AbjDOSZT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 15 Apr 2023 14:25:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60548 "EHLO
+        id S230294AbjDPHW7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 16 Apr 2023 03:22:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229795AbjDOSZT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2023 14:25:19 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F098E449F
-        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2023 11:23:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1681583035;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=MBjkc5svHGlq0EL372TfPnKKhhNeHUhHI/qULoZdRvM=;
-        b=ZhFUpdFaORGCXQ8zmzetciwcDKZHjIOapMl6Ac4p6TGo49b1HW+XXXitlU7DyJ6TL/pL7L
-        EW/0RAkuTTPSLHgYXf8wQczqJwsyL8l4IExTcs14HTouirP+KVKvEXWFaiT4L92WhceUVz
-        p9UhbUeEx2WJWvqmN6udvBsfU1RLb5c=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-255-VAgFynZyOcWTFWmUa6u9Tg-1; Sat, 15 Apr 2023 14:23:51 -0400
-X-MC-Unique: VAgFynZyOcWTFWmUa6u9Tg-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 725B2830F9E;
-        Sat, 15 Apr 2023 18:23:51 +0000 (UTC)
-Received: from shalem.redhat.com (unknown [10.39.192.15])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 93240BC88;
-        Sat, 15 Apr 2023 18:23:50 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     Sebastian Reichel <sre@kernel.org>,
-        =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>, Marek Vasut <marex@denx.de>,
-        laji Xiao <3252204392abc@gmail.com>, linux-pm@vger.kernel.org
-Subject: [PATCH v2 08/10] power: supply: bq27xxx: Use mod_delayed_work() instead of cancel() + schedule()
-Date:   Sat, 15 Apr 2023 20:23:39 +0200
-Message-Id: <20230415182341.86916-9-hdegoede@redhat.com>
-In-Reply-To: <20230415182341.86916-1-hdegoede@redhat.com>
-References: <20230415182341.86916-1-hdegoede@redhat.com>
+        with ESMTP id S230339AbjDPHWz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2023 03:22:55 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC8361B9
+        for <linux-pm@vger.kernel.org>; Sun, 16 Apr 2023 00:22:40 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-94f3cd32799so33264866b.0
+        for <linux-pm@vger.kernel.org>; Sun, 16 Apr 2023 00:22:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1681629759; x=1684221759;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=aYDxilSTHaRNu/QgbMDlDSeJD/Woe1fa6dDJJoFZChc=;
+        b=hijSW0/rWZhdkjeIw70R1kDpgT14X2TYMccOV+G1GQqVDEfg2VnGZjdT86in8TLPl6
+         qtGAjMmbU5QAx3cZ7hr0BS8X1YrxVnvWvozFVP4IJiqHG1RhbRDwkmHA2L7IV/PH2ozU
+         JcovnjX7t5xMbR5jGa7eKVlnGOhszbrVBCbw5B7Bj83KrfBNypqgqlRo4zUw99T0b8HQ
+         F7Wf4wR+mju6gV3H9wd+fZrBqlPbMGZw/e+kRFgkEHEruCs3fvpks8ip/Iga2IHzQP/Z
+         ZCZT7To6kHQWu5J57sbD9OskkbB3fXwOTahfWKwUY3gQ7dQqHPCVxNVEGCFvl89yz9fY
+         7sWg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681629759; x=1684221759;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aYDxilSTHaRNu/QgbMDlDSeJD/Woe1fa6dDJJoFZChc=;
+        b=GA+bxJ1dQxiYXXnOrbAGH5zMM7piL/Ru64ufuSkSSWmJoZFoF2DU//L4xrWqBWvEc7
+         ynMp+jFm1/c7qf6YA8Qe169lEaSAqg2wjIKDoUgAq7Eqy2rs4CxKGnTWSbS2UajMFyYy
+         Q9JN+J0D13sah3PlPlBbMkWDaOjpyvcJiqtuXhgot8U0ADOrr+HoGaGZMKfXLap64YU2
+         C5FqU5v3lAq2CXSGV/+0j7P9C/wlsX3sRmJW/CPA18eCZSsPHN0FLQ6O/am5IQ6OmWRt
+         dE1R6iV5vzqlltT9ZLG25sM68miQcFuyMbW4CHQIXUkdBAoxgDxJo6seFe9aHI+u/rLY
+         vT/g==
+X-Gm-Message-State: AAQBX9cK3lGXE+x+bUiKv6P2Z3pP6/jPzmTIyWndrFaGtuUX43nez2p5
+        vmbuua8qMWFMCvP9Cp5Q5jCODQ==
+X-Google-Smtp-Source: AKy350ZwvcJakDdiPiyPhnoLn4iEzxClKiG5egL8E5c/oSMmrEKGt/0Rv53gAMAwGErfQMChZfncpg==
+X-Received: by 2002:aa7:dd59:0:b0:506:77e6:c9e5 with SMTP id o25-20020aa7dd59000000b0050677e6c9e5mr8367392edw.8.1681629758946;
+        Sun, 16 Apr 2023 00:22:38 -0700 (PDT)
+Received: from ?IPV6:2a02:810d:15c0:828:29dd:ded4:3ccc:83db? ([2a02:810d:15c0:828:29dd:ded4:3ccc:83db])
+        by smtp.gmail.com with ESMTPSA id x7-20020aa7d387000000b00506a3b5d1e3sm290585edq.13.2023.04.16.00.22.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 16 Apr 2023 00:22:38 -0700 (PDT)
+Message-ID: <8e2fcd4c-893c-b5e7-47dc-d4b87c0bf3bd@linaro.org>
+Date:   Sun, 16 Apr 2023 09:22:37 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH 5/6] power: supply: max17042_battery: Refactor
+ max17042_external_power_changed()
+Content-Language: en-US
+To:     Hans de Goede <hdegoede@redhat.com>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     laji Xiao <3252204392abc@gmail.com>, linux-pm@vger.kernel.org,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+        Purism Kernel Team <kernel@puri.sm>
+References: <20230415160734.70475-1-hdegoede@redhat.com>
+ <20230415160734.70475-6-hdegoede@redhat.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230415160734.70475-6-hdegoede@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use mod_delayed_work() instead of separate cancel_delayed_work_sync() +
-schedule_delayed_work() calls.
+On 15/04/2023 18:07, Hans de Goede wrote:
+> max17042_external_power_changed() is a wrapper around
+> "power_supply_changed(psy);" and it has the same prototype.
+> 
+> Remove it, replacing it with making the external_power_changed
+> callback directly point to power_supply_changed.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/bq27xxx_battery.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 929e813b9c44..4296600e8912 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1083,10 +1083,8 @@ static int poll_interval_param_set(const char *val, const struct kernel_param *k
- 		return ret;
- 
- 	mutex_lock(&bq27xxx_list_lock);
--	list_for_each_entry(di, &bq27xxx_battery_devices, list) {
--		cancel_delayed_work_sync(&di->work);
--		schedule_delayed_work(&di->work, 0);
--	}
-+	list_for_each_entry(di, &bq27xxx_battery_devices, list)
-+		mod_delayed_work(system_wq, &di->work, 0);
- 	mutex_unlock(&bq27xxx_list_lock);
- 
- 	return ret;
--- 
-2.39.1
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+Best regards,
+Krzysztof
 
