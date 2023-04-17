@@ -2,141 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 756F6C77B70
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Apr 2023 13:18:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84244C77B70
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Apr 2023 13:22:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229854AbjDQNSL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Apr 2023 09:18:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45832 "EHLO
+        id S229562AbjDQNW6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Apr 2023 09:22:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50948 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230443AbjDQNR6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 09:17:58 -0400
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E856E47
-        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2023 06:17:55 -0700 (PDT)
-Received: by mail-ej1-x630.google.com with SMTP id dx24so20007655ejb.11
-        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2023 06:17:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1681737474; x=1684329474;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=1p6Wd3OtTb39EZ/VgEOJwXli/x4fybTyhed/6AFKfjw=;
-        b=LtUu9v4os64UQt6hsuF/O5RF3nj2ckXJExiBqGWB7p3yUY24SDVk73mzbkp8eQLNGN
-         Lrtol2kl4M+CDcsd7mHpsr/0DTrPZFq3jo1idYLl436ANsXrnOIRErLznBdZieCVPOpi
-         WEoIFApgx8Oe1koFzTCpGLUKtvN+jOXxi7P6tREtD2zvz+jtPWQkcoR+1UdMf8IQHO9Y
-         Y+kNPEjGVNUoEAWUF9GTIRmqV2IY33cE3xR65/B8/9etQmdBlpPwQj+7XS7jmLomjQHk
-         FlYi4m4pFG5exZq0eb/wmAMg3g1+mqqCJHx+KI9yV7IZPrLcJBETE99SD9JpR7I4YvMk
-         EGfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681737474; x=1684329474;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1p6Wd3OtTb39EZ/VgEOJwXli/x4fybTyhed/6AFKfjw=;
-        b=NUm8jcBhQIPiD7X0AQKi5Dr0LXEAPy97liU+iaLo4BM35CfFvkdbW4ce9k06wVC5vt
-         2qQYscuxavkQLqGxNYDKvsf30Bq0XUBGaa8SmbQSPkbTBTdYyvZ80CgLinNltHLdwv61
-         urbzfYiuuo53yShlMIN/P10+1lqWVyzsyTIb2mJ9dFXSyW+kV1X/94HF+gJLH0fnSP0W
-         7wdKsWcY1TzYmQAfX1Pg82Clnwikqoabemkj8OLbVkepkN3kpM0/MxbAckFZl2TjcrfB
-         o4A4PEwWB5CAQIcmPONzJko+iuwB4Yi1yjTZ2qJn1Au7h3WnFFldPzZvSEXUwghBE3Gx
-         4qWA==
-X-Gm-Message-State: AAQBX9fqeXVLOXJZzgYdunvzVZlH25ttYB3Jh33ZpbHz9t9NOVBdZo8B
-        zKaW9rC67OWKyp9y6lltxZTTow==
-X-Google-Smtp-Source: AKy350YOCgfeLR3XyUJHKCV7mX6kN/oFYItg9qSFTAdGHU4UW6fnrpmNywyvF3YxRYFzT4wFnwKVOg==
-X-Received: by 2002:a17:906:114a:b0:933:be1:8f4f with SMTP id i10-20020a170906114a00b009330be18f4fmr7644115eja.9.1681737473747;
-        Mon, 17 Apr 2023 06:17:53 -0700 (PDT)
-Received: from [10.27.64.40] ([193.205.131.2])
-        by smtp.googlemail.com with ESMTPSA id hu20-20020a170907a09400b0094f432f2429sm2617124ejc.109.2023.04.17.06.17.52
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Apr 2023 06:17:53 -0700 (PDT)
-Message-ID: <b09deeb1-31c8-ba08-86ce-614349f33b92@linaro.org>
-Date:   Mon, 17 Apr 2023 15:17:52 +0200
+        with ESMTP id S229548AbjDQNW6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 09:22:58 -0400
+Received: from hust.edu.cn (mail.hust.edu.cn [202.114.0.240])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0BA50B0;
+        Mon, 17 Apr 2023 06:22:56 -0700 (PDT)
+Received: from passwd123-ThinkStation-P920.. ([222.20.94.23])
+        (user=void0red@hust.edu.cn mech=LOGIN bits=0)
+        by mx1.hust.edu.cn  with ESMTP id 33HCtsCs000971-33HCtsCt000971
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+        Mon, 17 Apr 2023 20:55:54 +0800
+From:   Kang Chen <void0red@hust.edu.cn>
+To:     error27@gmail.com
+Cc:     amitk@kernel.org, angelogioacchino.delregno@collabora.com,
+        bchihi@baylibre.com, daniel.lezcano@linaro.org,
+        daniel@makrotopia.org, dzm91@hust.edu.cn, henry.yen@mediatek.com,
+        hust-os-kernel-patches@googlegroups.com,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+        matthias.bgg@gmail.com, rafael@kernel.org, rdunlap@infradead.org,
+        rui.zhang@intel.com, void0red@gmail.com, void0red@hust.edu.cn
+Subject: [PATCH v4 1/2] thermal: mediatek: use devm_of_iomap to avoid resource leak in mtk_thermal_probe
+Date:   Mon, 17 Apr 2023 20:55:32 +0800
+Message-Id: <20230417125533.3142236-1-void0red@hust.edu.cn>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <48ae0e2e-257d-4ad2-afbc-2eb4b48e516b@kili.mountain>
+References: <48ae0e2e-257d-4ad2-afbc-2eb4b48e516b@kili.mountain>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH v3 0/6] Thermal zone device structure encapsulation
-Content-Language: en-US
-To:     rafael@kernel.org
-Cc:     rui.zhang@intel.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20230413114647.3878792-1-daniel.lezcano@linaro.org>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20230413114647.3878792-1-daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-FEAS-AUTH-USER: void0red@hust.edu.cn
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Smatch reports:
+1. mtk_thermal_probe() warn: 'apmixed_base' from of_iomap() not released.
+2. mtk_thermal_probe() warn: 'auxadc_base' from of_iomap() not released.
 
-Hi Rafael,
+The original code forgets to release iomap resource when handling errors,
+fix it by switch to devm_of_iomap.
 
-I think I addressed your comments from V2.
+Fixes: 89945047b166 ("thermal: mediatek: Add tsensor support for V2 thermal system")
+Signed-off-by: Kang Chen <void0red@hust.edu.cn>
+Reviewed-by: Dongliang Mu <dzm91@hust.edu.cn>
+---
+v4 -> v3: no modify
+v3 -> v2: fix typo and put of_node in error handling
+v2 -> v1: use devm_of_iomap instead.
 
-Is it fine if I merge this series in the thermal/bleeding-branch ?
+ drivers/thermal/mediatek/auxadc_thermal.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-
-On 13/04/2023 13:46, Daniel Lezcano wrote:
-> The thermal zone device structure is defined in the exported thermal
-> header include/linux/thermal.h
-> 
-> Given the definition being public, the structure is exposed to the
-> external components other than the thermal framework core code. It
-> results the drivers are tampering the structure internals like taking
-> the lock or changing the field values.
-> 
-> Obviously that is bad for several reasons as the drivers can hook the
-> thermal framework behavior and makes very difficult the changes in the
-> core code as external components depend on it directly.
-> 
-> Moreover, the thermal trip points being reworked, we don't want the
-> drivers to access the trips array directly in the thermal zone
-> structure and doing assumptions on how they are organized.
-> 
-> This series provides a second set of changes moving to the thermal
-> zone device structure self-encapsulation.
-> 
-> The ACPI and the Menlon drivers are using the thermal zone's device
-> fields to create symlinks and new attributes in the sysfs thermal zone
-> directory. These changes provide a hopefully temporary wrapper to
-> access it in order to allow moving forward in the thermal zone device
-> self-encapsulation and a Kconfig option to disable by default such a
-> extra sysfs information.
-> 
-> Changelog:
-> 	v3:
-> 	- Split the Kconfig option to be driver related when disabling
->            the specific attributes
-> 	- Use the thermal zone's device wrapper to write a trace in
->            the pch intel driver
-> 	v2:
-> 	- Add the Kconfig option to remove specific attributes
-> 	- Add a thermal_zone_device() wrapper to access tz->device
-> 
-> Daniel Lezcano (6):
->    thermal/core: Encapsulate tz->device field
->    thermal/drivers/intel_pch_thermal: Use thermal driver device to write
->      a trace
->    thermal/drivers/acpi: Use thermal_zone_device()
->    thermal/drivers/menlow: Use thermal_zone_device()
->    thermal/drivers/acpi: Make cross dev link optional by configuration
->    thermal/drivers/intel_menlow: Make additionnal sysfs information
->      optional
-> 
->   drivers/acpi/Kconfig                      | 13 ++++++
->   drivers/acpi/thermal.c                    | 57 +++++++++++++++++------
->   drivers/thermal/intel/Kconfig             | 11 +++++
->   drivers/thermal/intel/intel_menlow.c      | 12 +++--
->   drivers/thermal/intel/intel_pch_thermal.c |  3 +-
->   drivers/thermal/thermal_core.c            |  6 +++
->   include/linux/thermal.h                   |  1 +
->   7 files changed, 84 insertions(+), 19 deletions(-)
-> 
-
+diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
+index b6bb9eaafb74..dcc64237ea60 100644
+--- a/drivers/thermal/mediatek/auxadc_thermal.c
++++ b/drivers/thermal/mediatek/auxadc_thermal.c
+@@ -1212,7 +1212,12 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	auxadc_base = of_iomap(auxadc, 0);
++	auxadc_base = devm_of_iomap(&pdev->dev, auxadc, 0, NULL);
++	if (IS_ERR(auxadc_base)) {
++		of_node_put(auxadc);
++		return PTR_ERR(auxadc_base);
++	}
++
+ 	auxadc_phys_base = of_get_phys_base(auxadc);
+ 
+ 	of_node_put(auxadc);
+@@ -1228,7 +1233,12 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	apmixed_base = of_iomap(apmixedsys, 0);
++	apmixed_base = devm_of_iomap(&pdev->dev, apmixedsys, 0, NULL);
++	if (IS_ERR(apmixed_base)) {
++		of_node_put(apmixedsys);
++		return PTR_ERR(apmixed_base);
++	}
++
+ 	apmixed_phys_base = of_get_phys_base(apmixedsys);
+ 
+ 	of_node_put(apmixedsys);
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.34.1
 
