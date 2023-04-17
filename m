@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F19C6C77B76
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Apr 2023 06:39:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECEF0C77B78
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Apr 2023 06:39:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229892AbjDQGj5 convert rfc822-to-8bit (ORCPT
+        id S230106AbjDQGj6 convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Apr 2023 02:39:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36004 "EHLO
+        Mon, 17 Apr 2023 02:39:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36020 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229643AbjDQGj4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 02:39:56 -0400
-Received: from fd01.gateway.ufhost.com (fd01.gateway.ufhost.com [61.152.239.71])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28BA12694;
-        Sun, 16 Apr 2023 23:39:52 -0700 (PDT)
+        with ESMTP id S229726AbjDQGj5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 02:39:57 -0400
+Received: from ex01.ufhost.com (ex01.ufhost.com [61.152.239.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 233CE213A;
+        Sun, 16 Apr 2023 23:39:56 -0700 (PDT)
 Received: from EXMBX166.cuchost.com (unknown [175.102.18.54])
         (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
         (Client CN "EXMBX166", Issuer "EXMBX166" (not verified))
-        by fd01.gateway.ufhost.com (Postfix) with ESMTP id 37D4580C5;
-        Mon, 17 Apr 2023 14:39:45 +0800 (CST)
+        by ex01.ufhost.com (Postfix) with ESMTP id C29A224E217;
+        Mon, 17 Apr 2023 14:39:46 +0800 (CST)
 Received: from EXMBX067.cuchost.com (172.16.6.67) by EXMBX166.cuchost.com
  (172.16.6.76) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Mon, 17 Apr
- 2023 14:39:45 +0800
+ 2023 14:39:46 +0800
 Received: from localhost.localdomain (183.27.97.249) by EXMBX067.cuchost.com
  (172.16.6.67) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Mon, 17 Apr
- 2023 14:39:44 +0800
+ 2023 14:39:45 +0800
 From:   Mason Huo <mason.huo@starfivetech.com>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -40,9 +40,9 @@ CC:     Shengyu Qu <wiagn233@outlook.com>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-riscv@lists.infradead.org>,
         Mason Huo <mason.huo@starfivetech.com>
-Subject: [PATCH v2 1/3] riscv: dts: starfive: Enable axp15060 pmic for cpufreq
-Date:   Mon, 17 Apr 2023 14:39:40 +0800
-Message-ID: <20230417063942.3141-2-mason.huo@starfivetech.com>
+Subject: [PATCH v2 3/3] riscv: dts: starfive: Add cpu scaling for JH7110 SoC
+Date:   Mon, 17 Apr 2023 14:39:42 +0800
+Message-ID: <20230417063942.3141-4-mason.huo@starfivetech.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230417063942.3141-1-mason.huo@starfivetech.com>
 References: <20230417063942.3141-1-mason.huo@starfivetech.com>
@@ -57,40 +57,112 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The VisionFive 2 board has an embedded pmic axp15060,
-which supports the cpu DVFS through the dcdc2 regulator.
-This patch enables axp15060 pmic and configs the dcdc2.
+Add the operating-points-v2 to support cpu scaling on StarFive JH7110 SoC.
+It supports up to 4 cpu frequency loads.
 
 Signed-off-by: Mason Huo <mason.huo@starfivetech.com>
 ---
- .../dts/starfive/jh7110-starfive-visionfive-2.dtsi | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ .../jh7110-starfive-visionfive-2.dtsi         | 17 ++++++++++
+ arch/riscv/boot/dts/starfive/jh7110.dtsi      | 33 +++++++++++++++++++
+ 2 files changed, 50 insertions(+)
 
 diff --git a/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi b/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
-index 2a6d81609284..cca1c8040801 100644
+index cca1c8040801..b25e6d68ce53 100644
 --- a/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
 +++ b/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
-@@ -114,6 +114,20 @@ &i2c5 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&i2c5_pins>;
+@@ -227,3 +227,20 @@ &uart0 {
+ 	pinctrl-0 = <&uart0_pins>;
  	status = "okay";
-+
-+	axp15060: pmic@36 {
-+		compatible = "x-powers,axp15060";
-+		reg = <0x36>;
-+
-+		regulators {
-+			vdd_cpu: dcdc2 {
-+				regulator-always-on;
-+				regulator-min-microvolt = <500000>;
-+				regulator-max-microvolt = <1540000>;
-+				regulator-name = "vdd-cpu";
-+			};
-+		};
-+	};
  };
++
++&U74_1 {
++	cpu-supply = <&vdd_cpu>;
++};
++
++&U74_2 {
++	cpu-supply = <&vdd_cpu>;
++};
++
++&U74_3 {
++	cpu-supply = <&vdd_cpu>;
++};
++
++&U74_4 {
++	cpu-supply = <&vdd_cpu>;
++};
++
+diff --git a/arch/riscv/boot/dts/starfive/jh7110.dtsi b/arch/riscv/boot/dts/starfive/jh7110.dtsi
+index 4c5fdb905da8..7eef88d2cedb 100644
+--- a/arch/riscv/boot/dts/starfive/jh7110.dtsi
++++ b/arch/riscv/boot/dts/starfive/jh7110.dtsi
+@@ -53,6 +53,9 @@ U74_1: cpu@1 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
  
- &i2c6 {
+ 			cpu1_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -79,6 +82,9 @@ U74_2: cpu@2 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
+ 
+ 			cpu2_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -105,6 +111,9 @@ U74_3: cpu@3 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
+ 
+ 			cpu3_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -131,6 +140,9 @@ U74_4: cpu@4 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
+ 
+ 			cpu4_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -164,6 +176,27 @@ core4 {
+ 		};
+ 	};
+ 
++	cpu_opp: opp-table-0 {
++			compatible = "operating-points-v2";
++			opp-shared;
++			opp-375000000 {
++					opp-hz = /bits/ 64 <375000000>;
++					opp-microvolt = <800000>;
++			};
++			opp-500000000 {
++					opp-hz = /bits/ 64 <500000000>;
++					opp-microvolt = <800000>;
++			};
++			opp-750000000 {
++					opp-hz = /bits/ 64 <750000000>;
++					opp-microvolt = <800000>;
++			};
++			opp-1500000000 {
++					opp-hz = /bits/ 64 <1500000000>;
++					opp-microvolt = <1040000>;
++			};
++	};
++
+ 	gmac0_rgmii_rxin: gmac0-rgmii-rxin-clock {
+ 		compatible = "fixed-clock";
+ 		clock-output-names = "gmac0_rgmii_rxin";
 -- 
 2.39.2
 
