@@ -2,146 +2,114 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB707C77B76
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Apr 2023 13:25:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7AB8C77B7C
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Apr 2023 14:04:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229547AbjDQNZA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Apr 2023 09:25:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52422 "EHLO
+        id S230127AbjDQOEj convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Apr 2023 10:04:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230338AbjDQNYf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 09:24:35 -0400
-Received: from hust.edu.cn (mail.hust.edu.cn [202.114.0.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7A815FEB;
-        Mon, 17 Apr 2023 06:24:28 -0700 (PDT)
-Received: from passwd123-ThinkStation-P920.. ([222.20.94.23])
-        (user=void0red@hust.edu.cn mech=LOGIN bits=0)
-        by mx1.hust.edu.cn  with ESMTP id 33HCtsCs000971-33HCtsCu000971
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
-        Mon, 17 Apr 2023 20:55:55 +0800
-From:   Kang Chen <void0red@hust.edu.cn>
-To:     error27@gmail.com
-Cc:     amitk@kernel.org, angelogioacchino.delregno@collabora.com,
-        bchihi@baylibre.com, daniel.lezcano@linaro.org,
-        daniel@makrotopia.org, dzm91@hust.edu.cn, henry.yen@mediatek.com,
-        hust-os-kernel-patches@googlegroups.com,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-        matthias.bgg@gmail.com, rafael@kernel.org, rdunlap@infradead.org,
-        rui.zhang@intel.com, void0red@gmail.com, void0red@hust.edu.cn
-Subject: [PATCH v4 2/2] thermal: mediatek: change clk_prepare_enable to devm_clk_get_enabled in mtk_thermal_probe
-Date:   Mon, 17 Apr 2023 20:55:33 +0800
-Message-Id: <20230417125533.3142236-2-void0red@hust.edu.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230417125533.3142236-1-void0red@hust.edu.cn>
-References: <48ae0e2e-257d-4ad2-afbc-2eb4b48e516b@kili.mountain>
- <20230417125533.3142236-1-void0red@hust.edu.cn>
+        with ESMTP id S230410AbjDQOEf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 10:04:35 -0400
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03BB993F2;
+        Mon, 17 Apr 2023 07:04:07 -0700 (PDT)
+Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-506a44cd9a0so122791a12.0;
+        Mon, 17 Apr 2023 07:04:06 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681740229; x=1684332229;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=HMGdkWPY4wn1qRFSgU+nnMTUSEo599lD2CAXxhYpTLI=;
+        b=a1rTOT1qX/Z8UcKdqK8WCTSzGyY770iQE6SpTciE0D8mOjTQAT3U/HZs/PO0GBuHVZ
+         tW/4uOLYaKcbprr2YrPTSEF4qv40AC41guqXmbVsEAWTtV6PmaHN3Q7JnXurUh4/6Lhf
+         m8tJpMd84+bELi6jxJthNwpGegq5xAgPEYtijiwvc17ce3WOKAuF+XkZuUWpWPfV+ZtU
+         HGnHX9zQPUc7CKLgPuKXmgBfwCJy1xGMxUlNP4EIeQU/0LeLLnv1kuIOfqbobBfLkuUj
+         +iIL269Yc5cXa2OnFbR0N62yyFIjaTYhMdXYmReefXwGR4R5n7Ormj7ZRkXG3Bayyqn3
+         cnag==
+X-Gm-Message-State: AAQBX9eIIu+b2PVux1EQHK+Igajtzuh425iFGh3sTxT4VLYbpS/Qpwfk
+        KEl9AW2aZBO/4MF89WZendeK41pkh7bJV//8vb7D1zBk
+X-Google-Smtp-Source: AKy350Y2btpVArGToWvIHtqD0EvlOz3NQ1/99RCPQ1qWMfJZbBfYxbCe4KdP+ScGBCEY261s9VplDdRcmUWDivOqrtE=
+X-Received: by 2002:a17:906:5d:b0:94e:d688:fc92 with SMTP id
+ 29-20020a170906005d00b0094ed688fc92mr10146132ejg.0.1681740228659; Mon, 17 Apr
+ 2023 07:03:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-FEAS-AUTH-USER: void0red@hust.edu.cn
+References: <43723ee9-f786-b423-b2ce-f4c549581d49@gmail.com>
+In-Reply-To: <43723ee9-f786-b423-b2ce-f4c549581d49@gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 17 Apr 2023 16:03:37 +0200
+Message-ID: <CAJZ5v0ij+kBOCdmAbZFGiPBG0HL3VuFm1-XwqhzHr_qSDhJ_zQ@mail.gmail.com>
+Subject: Re: [GIT PULL] devfreq next for 6.4
+To:     Chanwoo Choi <cwchoi00@gmail.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "open list:DEVICE FREQUENCY (DEVFREQ)" <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-use devm_clk_get_enabled to do automatic resource management.
-Meanwhile, remove error handling labels in the probe function and
-the whole remove function.
+On Sun, Apr 16, 2023 at 4:20 PM Chanwoo Choi <cwchoi00@gmail.com> wrote:
+>
+> Dear Rafael,
+>
+> This is devfreq-next pull request for v6.4. I add detailed description of
+> this pull request on the following tag. Please pull devfreq with
+> following updates.
+>
+> Best Regards,
+> Chanwoo Choi
+>
+>
+> The following changes since commit eeac8ede17557680855031c6f305ece2378af326:
+>
+>   Linux 6.3-rc2 (2023-03-12 16:36:44 -0700)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git tags/devfreq-next-for-6.4
+>
+> for you to fetch changes up to 376b1446153ca67e7028e6b9555d9b17477f568b:
+>
+>   PM / devfreq: exynos-ppmu: Use devm_platform_get_and_ioremap_resource() (2023-04-04 00:09:32 +0900)
+>
+> ----------------------------------------------------------------
+> Update devfreq next for v6.4
+>
+> Detailed description for this pull request:
+> 1. Remove unneeded SRCU selection in Kconfig because it's always set from
+> devfreq core.
+>
+> 2. Fix minor updates of devfreq drivers
+> - Drop of_match_ptr macro from exynos-bus.c because this driver is always using
+> the DT table for driver probe.
+> - Use the preferred of_property_present instead of the low-level of_get_property
+> on exynos-bus.c
+> - Use devm_platform_get_and_ioream_resource on exyno-ppmu.c
+> ----------------------------------------------------------------
+>
+> Krzysztof Kozlowski (1):
+>       PM / devfreq: exyos-bus: drop of_match_ptr for ID table
+>
+> Paul E. McKenney (1):
+>       PM / devfreq: Remove "select SRCU"
+>
+> Rob Herring (1):
+>       PM / devfreq: exynos: Use of_property_present() for testing DT property presence
+>
+> Yang Li (1):
+>       PM / devfreq: exynos-ppmu: Use devm_platform_get_and_ioremap_resource()
+>
+>  drivers/devfreq/Kconfig             | 1 -
+>  drivers/devfreq/event/exynos-ppmu.c | 3 +--
+>  drivers/devfreq/exynos-bus.c        | 4 ++--
+>  3 files changed, 3 insertions(+), 5 deletions(-)
 
-Signed-off-by: Kang Chen <void0red@hust.edu.cn>
-Reviewed-by: Dongliang Mu <dzm91@hust.edu.cn>
----
-v4 -> v3: port to linux-next tree
-v3 -> v2: remove some useles func calls.
-v2 -> v1: init
+Pulled and merged into the linux-next branch on linux-pm.git.
 
- drivers/thermal/mediatek/auxadc_thermal.c | 48 +++++------------------
- 1 file changed, 10 insertions(+), 38 deletions(-)
-
-diff --git a/drivers/thermal/mediatek/auxadc_thermal.c b/drivers/thermal/mediatek/auxadc_thermal.c
-index dcc64237ea60..18c8cce960c3 100644
---- a/drivers/thermal/mediatek/auxadc_thermal.c
-+++ b/drivers/thermal/mediatek/auxadc_thermal.c
-@@ -1186,14 +1186,6 @@ static int mtk_thermal_probe(struct platform_device *pdev)
- 
- 	mt->conf = of_device_get_match_data(&pdev->dev);
- 
--	mt->clk_peri_therm = devm_clk_get(&pdev->dev, "therm");
--	if (IS_ERR(mt->clk_peri_therm))
--		return PTR_ERR(mt->clk_peri_therm);
--
--	mt->clk_auxadc = devm_clk_get(&pdev->dev, "auxadc");
--	if (IS_ERR(mt->clk_auxadc))
--		return PTR_ERR(mt->clk_auxadc);
--
- 	mt->thermal_base = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
- 	if (IS_ERR(mt->thermal_base))
- 		return PTR_ERR(mt->thermal_base);
-@@ -1252,16 +1244,16 @@ static int mtk_thermal_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
--	ret = clk_prepare_enable(mt->clk_auxadc);
--	if (ret) {
--		dev_err(&pdev->dev, "Can't enable auxadc clk: %d\n", ret);
--		return ret;
-+	mt->clk_auxadc = devm_clk_get_enabled(&pdev->dev, "auxadc");
-+	if (IS_ERR(mt->clk_auxadc)) {
-+		dev_err(&pdev->dev, "Can't enable auxadc clk: %d\n", mt->clk_auxadc);
-+		return PTR_ERR(mt->clk_auxadc);
- 	}
- 
--	ret = clk_prepare_enable(mt->clk_peri_therm);
--	if (ret) {
--		dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
--		goto err_disable_clk_auxadc;
-+	mt->clk_peri_therm = devm_clk_get_enabled(&pdev->dev, "therm");
-+	if (IS_ERR(mt->clk_peri_therm)) {
-+		dev_err(&pdev->dev, "Can't enable peri clk: %d\n", mt->clk_peri_therm);
-+		return PTR_ERR(mt->clk_peri_therm);
- 	}
- 
- 	mtk_thermal_turn_on_buffer(mt, apmixed_base);
-@@ -1288,38 +1280,18 @@ static int mtk_thermal_probe(struct platform_device *pdev)
- 
- 	tzdev = devm_thermal_of_zone_register(&pdev->dev, 0, mt,
- 					      &mtk_thermal_ops);
--	if (IS_ERR(tzdev)) {
--		ret = PTR_ERR(tzdev);
--		goto err_disable_clk_peri_therm;
--	}
-+	if (IS_ERR(tzdev))
-+		return PTR_ERR(tzdev);
- 
- 	ret = devm_thermal_add_hwmon_sysfs(&pdev->dev, tzdev);
- 	if (ret)
- 		dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
- 
- 	return 0;
--
--err_disable_clk_peri_therm:
--	clk_disable_unprepare(mt->clk_peri_therm);
--err_disable_clk_auxadc:
--	clk_disable_unprepare(mt->clk_auxadc);
--
--	return ret;
--}
--
--static int mtk_thermal_remove(struct platform_device *pdev)
--{
--	struct mtk_thermal *mt = platform_get_drvdata(pdev);
--
--	clk_disable_unprepare(mt->clk_peri_therm);
--	clk_disable_unprepare(mt->clk_auxadc);
--
--	return 0;
- }
- 
- static struct platform_driver mtk_thermal_driver = {
- 	.probe = mtk_thermal_probe,
--	.remove = mtk_thermal_remove,
- 	.driver = {
- 		.name = "mtk-thermal",
- 		.of_match_table = mtk_thermal_of_match,
--- 
-2.34.1
-
+Thanks!
