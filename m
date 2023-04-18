@@ -2,124 +2,117 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E04C77B7C
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Apr 2023 04:39:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A7C5C77B76
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Apr 2023 07:05:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230113AbjDREjm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Apr 2023 00:39:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42502 "EHLO
+        id S230252AbjDRHE7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Apr 2023 03:04:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229518AbjDREjk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2023 00:39:40 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75C431BDC;
-        Mon, 17 Apr 2023 21:39:39 -0700 (PDT)
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33I1Qn8m013458;
-        Tue, 18 Apr 2023 04:39:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=qcppdkim1;
- bh=3XTWqtZ3w9Eey9pd4PsRb/Fejz/hw3NeUUOaQHLLLss=;
- b=glq8roC9jkCIWGP91biXuYIWmm1AErqmOW1al3+O4uLUbwfguEIEPcJoDJ/pT7nDjZx+
- XPBev/YHr6JNAmm1WMZiUS10NNJ8YSXPlyipv4WBACbjHY0qd63noq6tF72Rq7ys3DiN
- EfkYMwPgLBhKcnMsSHofxwesdueD6KljH0KKwYdE3H6ntTaeRhqKuYJa/HfsaZrmhGkP
- Kpg4mdYKSwsmfGf2ei8cQCOV2lR9rGnAJlgVm2eynR8vA13SluYxUwIi7zQB3Gpy5TGC
- 8gMH8ZEmjufwcuW51R67zxvYElMeXlW19mcOq8lucyZPKw0wrVCRE1xNqCS2QEhC3QBr rA== 
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3q1h0cgbbx-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 18 Apr 2023 04:39:16 +0000
-Received: from nalasex01b.na.qualcomm.com (nalasex01b.na.qualcomm.com [10.47.209.197])
-        by NALASPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 33I4dFBv004298
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 18 Apr 2023 04:39:15 GMT
-Received: from [10.217.217.202] (10.80.80.8) by nalasex01b.na.qualcomm.com
- (10.47.209.197) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.42; Mon, 17 Apr
- 2023 21:39:08 -0700
-Message-ID: <792e1f22-c3eb-80c7-0600-b478b3764f7c@quicinc.com>
-Date:   Tue, 18 Apr 2023 10:09:01 +0530
+        with ESMTP id S229514AbjDRHE6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2023 03:04:58 -0400
+Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 175DB198E
+        for <linux-pm@vger.kernel.org>; Tue, 18 Apr 2023 00:04:56 -0700 (PDT)
+Received: by mail-ej1-x634.google.com with SMTP id xi5so70553860ejb.13
+        for <linux-pm@vger.kernel.org>; Tue, 18 Apr 2023 00:04:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1681801494; x=1684393494;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=2WhHYJYuhXskgCt8P+rWi6MuOTcoPNUz8qBRPdqCUvo=;
+        b=kfEJdGpu4mcY9/ND1iACqI3ApTNBoJQgxiYe4R8Bt0ggC5waO4AOTmqsksRsiIl69z
+         WkOmFKzjWW+M6QEnLPLY5GPtfwclJVQQEGpwIicK0i29UWm3KUF8w7dYqnaBehQSWfBO
+         rcczfJ7SUQ7LxoiNsWQ+4X0LwnztqHRN9JuQeZsEpk7IeEYDfwWgouW7GLL9+MEV0kZj
+         VE122snZI2xMLFfHPNZcSVOoh3qlJ4+JN7QziFK6eWCw+SU/7yUnWDni7yyv+6XnxwMk
+         tltoMjBhRmOndobU5tChMPE7XsKLnjR+odVvpt1vuR9GQ1rSX/b6vL2TXFiPSe0omv5q
+         NsOw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681801494; x=1684393494;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=2WhHYJYuhXskgCt8P+rWi6MuOTcoPNUz8qBRPdqCUvo=;
+        b=YWYJvjz8YotL6JxO0JYmqaRFGKQzwv6CrXx2rj22jXQvaX1A0cjK11NKJMyKK08zlb
+         xl7LDqsVTgryES7/DTNdkojvjpXoOFePcDSnt5Lryy72bd/+sN7da0dJCd89B9EcIgv8
+         t35jI+FQM489FzcIHY2C1WQ/WBQENKQPKH226yW/w2t/e9D9917TOAR/kW7zT5ff+1SR
+         ScoOPnKdCXqX6VNdfd1lf9FEfKb/zH5CaxCwmp5DV1glSe9t4BDBWCAf37/NbnaZfFdv
+         47D6m8D1fKN0nAOl87xFbewjBJidjvjLZNA1Fu/ljIsInVMPzIdaIOJW3LUuZa4XXRsl
+         5N8A==
+X-Gm-Message-State: AAQBX9fjO6oUK/paCHpNfXMzmcc1+IgcBZ9cmToJ+sxdkr59Gi7mIMIj
+        69aIw4MnMkfyB698mZahIAJ/cQ==
+X-Google-Smtp-Source: AKy350bvvxWv0MaXOCX/mRjN7rgY+3X62SrGNyVxmEt7DdeR0qfPOUZz9zMNRmA6wBR9oNJjW7Xbtg==
+X-Received: by 2002:a17:907:1701:b0:933:3a22:8513 with SMTP id le1-20020a170907170100b009333a228513mr11209930ejc.53.1681801494526;
+        Tue, 18 Apr 2023 00:04:54 -0700 (PDT)
+Received: from ?IPV6:2a02:810d:15c0:828:a276:7d35:5226:1c77? ([2a02:810d:15c0:828:a276:7d35:5226:1c77])
+        by smtp.gmail.com with ESMTPSA id gb32-20020a170907962000b0094f34fe27c6sm4122421ejc.170.2023.04.18.00.04.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 18 Apr 2023 00:04:54 -0700 (PDT)
+Message-ID: <6d24511a-69dd-e99c-09d2-53cc3e80bd5e@linaro.org>
+Date:   Tue, 18 Apr 2023 09:04:52 +0200
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
 Subject: Re: [PATCH 1/4] arm64: dts: qcom: sa8775p: pmic: remove the PON modes
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+Content-Language: en-US
+To:     Shazad Hussain <quic_shazhuss@quicinc.com>,
         Bartosz Golaszewski <brgl@bgdev.pl>,
         Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Andy Gross <agross@kernel.org>,
-        "Bjorn Andersson" <andersson@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
         Catalin Marinas <catalin.marinas@arm.com>,
         Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>
-CC:     <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
         Parikshit Pareek <quic_ppareek@quicinc.com>,
         Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 References: <20230413131705.3073911-1-brgl@bgdev.pl>
  <20230413131705.3073911-2-brgl@bgdev.pl>
  <3e361a73-797f-41c7-1ead-ecafee3928e4@linaro.org>
-Content-Language: en-US
-From:   Shazad Hussain <quic_shazhuss@quicinc.com>
-In-Reply-To: <3e361a73-797f-41c7-1ead-ecafee3928e4@linaro.org>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+ <792e1f22-c3eb-80c7-0600-b478b3764f7c@quicinc.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <792e1f22-c3eb-80c7-0600-b478b3764f7c@quicinc.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01b.na.qualcomm.com (10.47.209.197)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: 4fG5p8sFF0XmZEJRWb4HKzAGsKAglQ2H
-X-Proofpoint-GUID: 4fG5p8sFF0XmZEJRWb4HKzAGsKAglQ2H
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-04-17_14,2023-04-17_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 phishscore=0 mlxlogscore=949 malwarescore=0
- clxscore=1011 suspectscore=0 impostorscore=0 spamscore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
- definitions=main-2304180041
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 4/13/2023 9:42 PM, Krzysztof Kozlowski wrote:
-> On 13/04/2023 15:17, Bartosz Golaszewski wrote:
->> From: Parikshit Pareek <quic_ppareek@quicinc.com>
+On 18/04/2023 06:39, Shazad Hussain wrote:
+> 
+> 
+> On 4/13/2023 9:42 PM, Krzysztof Kozlowski wrote:
+>> On 13/04/2023 15:17, Bartosz Golaszewski wrote:
+>>> From: Parikshit Pareek <quic_ppareek@quicinc.com>
+>>>
+>>> Remove the power on reasons with reboot from the pmm8654au_0_pon.
+>>> Instead, the PoN reaons should be part of different sdam_0 mode, to
 >>
->> Remove the power on reasons with reboot from the pmm8654au_0_pon.
->> Instead, the PoN reaons should be part of different sdam_0 mode, to
-> 
-> typo: reasons
-> 
->> be interoduced.
-> 
-> introduced
-> 
-> Anyway it does not say why. Are these power reasons not correct?
-> 
-
-Hi Krzysztof,
-Since sm8350 the PMIC PON peripheral was split into PON_HLOS and PON_PBS
-to avoid security concerns with HLOS APPS being able to trigger a PMIC
-WARM_RESET unilaterally. When the split occurred, the spare registers
-ended up in PON_PBS, not PON_HLOS. Thus at that time, we moved to using
-an SDAM register for Linux “reboot reason” configuration. And bootloader
-also SDAM register to get these reboot region data to get into
-bootloader/edl, so to have this working we need to use SDAM.
-
+>> typo: reasons
 >>
->> Signed-off-by: Parikshit Pareek <quic_ppareek@quicinc.com>
->> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->> ---
+>>> be interoduced.
+>>
+>> introduced
+>>
+>> Anyway it does not say why. Are these power reasons not correct?
+>>
 > 
-> Best regards,
-> Krzysztof
-> 
+> Hi Krzysztof,
+> Since sm8350 the PMIC PON peripheral was split into PON_HLOS and PON_PBS
+> to avoid security concerns with HLOS APPS being able to trigger a PMIC
+> WARM_RESET unilaterally. When the split occurred, the spare registers
+> ended up in PON_PBS, not PON_HLOS. Thus at that time, we moved to using
+> an SDAM register for Linux “reboot reason” configuration. And bootloader
+> also SDAM register to get these reboot region data to get into
+> bootloader/edl, so to have this working we need to use SDAM.
 
--Shazad
+The explanation of their correctness should be in commit msg.
+
+Best regards,
+Krzysztof
+
