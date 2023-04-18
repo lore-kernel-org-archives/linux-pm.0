@@ -2,250 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05F91C77B76
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Apr 2023 22:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AFC5C77B72
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Apr 2023 01:31:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229479AbjDQW6o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Apr 2023 18:58:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42446 "EHLO
+        id S229521AbjDRBbg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Apr 2023 21:31:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229477AbjDQW6m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 18:58:42 -0400
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60FD6B4;
-        Mon, 17 Apr 2023 15:58:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681772321; x=1713308321;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=AIE+CoOGqb1UWeCCkDmWvwKNd1mywZBoxhG2fX96HGY=;
-  b=Xx9Vyy9MiP+GzJYSewU4k2FvnvvJhUN85AtebiauA0cUT3myyQVuqbL8
-   GqmUiMaQPwypjZWyDdB0DQtom4rW8zcG4tmVPYifbu0ck+HEO64qEmwCS
-   44rRA3+NTpeH7n2w+eZDkzlnvPV3/tW/WCBuh36BWKtSRxp4TVtFth2J3
-   XCLHHdwILwrobj6uW1GpQF6ivMiFnCu6nmuXkIPkyjtLkXnzLktrXvM0b
-   FZ0/qeCdy8GNpqmlMm+Yn+vZh4YnM44N0vTApJUrxIoJ20567lPUxnPDv
-   08i23fbHIiF2HdvNq37DkrIOnYkOrcQ9gYNE4wpIQP3BRMlN6Gs/N0F9R
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10683"; a="343777650"
-X-IronPort-AV: E=Sophos;i="5.99,205,1677571200"; 
-   d="scan'208";a="343777650"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 15:58:40 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10683"; a="937027497"
-X-IronPort-AV: E=Sophos;i="5.99,205,1677571200"; 
-   d="scan'208";a="937027497"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga006.fm.intel.com with ESMTP; 17 Apr 2023 15:58:39 -0700
-Date:   Mon, 17 Apr 2023 16:01:43 -0700
-From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To:     Vincent Guittot <vincent.guittot@linaro.org>
-Cc:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Ricardo Neri <ricardo.neri@intel.com>,
-        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
-        Ben Segall <bsegall@google.com>,
-        Daniel Bristot de Oliveira <bristot@redhat.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Len Brown <len.brown@intel.com>, Mel Gorman <mgorman@suse.de>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        Valentin Schneider <vschneid@redhat.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Ionela Voinescu <ionela.voinescu@arm.com>, x86@kernel.org,
-        "Joel Fernandes (Google)" <joel@joelfernandes.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        "Tim C . Chen" <tim.c.chen@intel.com>
-Subject: Re: [PATCH v3 10/24] sched/fair: Use IPCC scores to select a busiest
- runqueue
-Message-ID: <20230417230143.GB6156@ranerica-svr.sc.intel.com>
-References: <20230207051105.11575-1-ricardo.neri-calderon@linux.intel.com>
- <20230207051105.11575-11-ricardo.neri-calderon@linux.intel.com>
- <CAKfTPtAciJr-ZQWcJN3bHZHyHmjmSOuDYZz9UwfK2EnMVPX6aQ@mail.gmail.com>
- <20230330021431.GB26315@ranerica-svr.sc.intel.com>
- <CAKfTPtCUVbiVJxRHx_AcXbfm-SeW1ATE8QZ-jOqyfMh+PLwAjw@mail.gmail.com>
+        with ESMTP id S229510AbjDRBbf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2023 21:31:35 -0400
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3157FEC;
+        Mon, 17 Apr 2023 18:31:31 -0700 (PDT)
+X-UUID: 9a07e4d5f39c4ddcab5b58965412e4d8-20230418
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.22,REQID:08c9f934-2b0b-4ad5-a1a4-fd84f8acc7d8,IP:20,
+        URL:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
+        ON:release,TS:5
+X-CID-INFO: VERSION:1.1.22,REQID:08c9f934-2b0b-4ad5-a1a4-fd84f8acc7d8,IP:20,UR
+        L:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+        :release,TS:5
+X-CID-META: VersionHash:120426c,CLOUDID:a97b6284-cd9c-45f5-8134-710979e3df0e,B
+        ulkID:230418093117RV3XC0OP,BulkQuantity:0,Recheck:0,SF:19|44|24|17|102,TC:
+        nil,Content:0,EDM:-3,IP:-2,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OS
+        I:0,OSA:0,AV:0
+X-CID-BVR: 0,NGT
+X-CID-BAS: 0,NGT,0,_
+X-UUID: 9a07e4d5f39c4ddcab5b58965412e4d8-20230418
+Received: from mail.kylinos.cn [(39.156.73.10)] by mailgw
+        (envelope-from <zenghao@kylinos.cn>)
+        (Generic MTA)
+        with ESMTP id 1882977521; Tue, 18 Apr 2023 09:30:59 +0800
+Received: from mail.kylinos.cn (localhost [127.0.0.1])
+        by mail.kylinos.cn (NSMail) with SMTP id 9E25FE0084A4;
+        Tue, 18 Apr 2023 09:30:59 +0800 (CST)
+X-ns-mid: postfix-643DF2D3-43431154
+Received: from zdzh5-QiTianM428-A376.. (unknown [172.20.12.253])
+        by mail.kylinos.cn (NSMail) with ESMTPA id D603DE0084A4;
+        Tue, 18 Apr 2023 09:30:58 +0800 (CST)
+From:   Hao Zeng <zenghao@kylinos.cn>
+To:     skhan@linuxfoundation.org
+Cc:     trenn@suse.com, shuah@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, zenghao@kylinos.cn
+Subject: [PATCH v4] cpupower:Fix resource leaks in sysfs_get_enabled()
+Date:   Tue, 18 Apr 2023 09:30:56 +0800
+Message-Id: <20230418013056.995478-1-zenghao@kylinos.cn>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAKfTPtCUVbiVJxRHx_AcXbfm-SeW1ATE8QZ-jOqyfMh+PLwAjw@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Mar 31, 2023 at 02:23:58PM +0200, Vincent Guittot wrote:
-> On Thu, 30 Mar 2023 at 04:03, Ricardo Neri
-> <ricardo.neri-calderon@linux.intel.com> wrote:
-> >
-> > On Tue, Mar 28, 2023 at 12:03:58PM +0200, Vincent Guittot wrote:
-> > > On Tue, 7 Feb 2023 at 06:01, Ricardo Neri
-> > > <ricardo.neri-calderon@linux.intel.com> wrote:
-> > > >
-> > > > For two runqueues of equal priority and equal number of running of tasks,
-> > > > select the one whose current task would have the highest IPC class score
-> > > > if placed on the destination CPU.
-> > >
-> > > You failed to explain why it make sense to compare current task score
-> > > whereas we will most probably not pull this task at the end
-> >
-> > Thank you for your feedback Vincent! Please kindly refer to my reply to
-> > your feedback in patch 7.
-> >
-> > > >
-> > > > For now, use IPCC scores only for scheduling domains with the
-> > > > SD_ASYM_PACKING flag.
-> > > >
-> > > > Cc: Ben Segall <bsegall@google.com>
-> > > > Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
-> > > > Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > > > Cc: Ionela Voinescu <ionela.voinescu@arm.com>
-> > > > Cc: Joel Fernandes (Google) <joel@joelfernandes.org>
-> > > > Cc: Len Brown <len.brown@intel.com>
-> > > > Cc: Lukasz Luba <lukasz.luba@arm.com>
-> > > > Cc: Mel Gorman <mgorman@suse.de>
-> > > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > > > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > > > Cc: Tim C. Chen <tim.c.chen@intel.com>
-> > > > Cc: Valentin Schneider <vschneid@redhat.com>
-> > > > Cc: x86@kernel.org
-> > > > Cc: linux-pm@vger.kernel.org
-> > > > Cc: linux-kernel@vger.kernel.org
-> > > > Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> > > > ---
-> > > > Changes since v2:
-> > > >  * Only use IPCC scores to break ties if the sched domain uses
-> > > >    asym_packing. (Ionela)
-> > > >  * Handle errors of arch_get_ipcc_score(). (Ionela)
-> > > >
-> > > > Changes since v1:
-> > > >  * Fixed a bug when selecting a busiest runqueue: when comparing two
-> > > >    runqueues with equal nr_running, we must compute the IPCC score delta
-> > > >    of both.
-> > > >  * Renamed local variables to improve the layout of the code block.
-> > > >    (PeterZ)
-> > > >  * Used the new interface names.
-> > > > ---
-> > > >  kernel/sched/fair.c | 64 +++++++++++++++++++++++++++++++++++++++++++++
-> > > >  1 file changed, 64 insertions(+)
-> > > >
-> > > > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > > > index 72d88270b320..d3c22dc145f7 100644
-> > > > --- a/kernel/sched/fair.c
-> > > > +++ b/kernel/sched/fair.c
-> > > > @@ -9399,6 +9399,37 @@ static bool sched_asym_ipcc_pick(struct sched_group *a,
-> > > >         return sched_asym_ipcc_prefer(a_stats, b_stats);
-> > > >  }
-> > > >
-> > > > +/**
-> > > > + * ipcc_score_delta - Get the IPCC score delta wrt the load balance's dst_cpu
-> > > > + * @p:         A task
-> > > > + * @env:       Load balancing environment
-> > > > + *
-> > > > + * Returns: The IPCC score delta that @p would get if placed in the destination
-> > > > + * CPU of @env. LONG_MIN to indicate that the delta should not be used.
-> > > > + */
-> > > > +static long ipcc_score_delta(struct task_struct *p, struct lb_env *env)
-> > > > +{
-> > > > +       unsigned long score_src, score_dst;
-> > > > +       unsigned short ipcc = p->ipcc;
-> > > > +
-> > > > +       if (!sched_ipcc_enabled())
-> > > > +               return LONG_MIN;
-> > > > +
-> > > > +       /* Only asym_packing uses IPCC scores at the moment. */
-> > > > +       if (!(env->sd->flags & SD_ASYM_PACKING))
-> > > > +               return LONG_MIN;
-> > > > +
-> > > > +       score_dst = arch_get_ipcc_score(ipcc, env->dst_cpu);
-> > > > +       if (IS_ERR_VALUE(score_dst))
-> > > > +               return LONG_MIN;
-> > > > +
-> > > > +       score_src = arch_get_ipcc_score(ipcc, task_cpu(p));
-> > > > +       if (IS_ERR_VALUE(score_src))
-> > > > +               return LONG_MIN;
-> > > > +
-> > > > +       return score_dst - score_src;
-> > > > +}
-> > > > +
-> > > >  #else /* CONFIG_IPC_CLASSES */
-> > > >  static void update_sg_lb_ipcc_stats(int dst_cpu, struct sg_lb_stats *sgs,
-> > > >                                     struct rq *rq)
-> > > > @@ -9429,6 +9460,11 @@ static bool sched_asym_ipcc_pick(struct sched_group *a,
-> > > >         return false;
-> > > >  }
-> > > >
-> > > > +static long ipcc_score_delta(struct task_struct *p, struct lb_env *env)
-> > > > +{
-> > > > +       return LONG_MIN;
-> > > > +}
-> > > > +
-> > > >  #endif /* CONFIG_IPC_CLASSES */
-> > > >
-> > > >  /**
-> > > > @@ -10589,6 +10625,7 @@ static struct rq *find_busiest_queue(struct lb_env *env,
-> > > >  {
-> > > >         struct rq *busiest = NULL, *rq;
-> > > >         unsigned long busiest_util = 0, busiest_load = 0, busiest_capacity = 1;
-> > > > +       long busiest_ipcc_delta = LONG_MIN;
-> > > >         unsigned int busiest_nr = 0;
-> > > >         int i;
-> > > >
-> > > > @@ -10705,8 +10742,35 @@ static struct rq *find_busiest_queue(struct lb_env *env,
-> > > >
-> > > >                 case migrate_task:
-> > > >                         if (busiest_nr < nr_running) {
-> > > > +                               struct task_struct *curr;
-> > > > +
-> > > >                                 busiest_nr = nr_running;
-> > > >                                 busiest = rq;
-> > > > +
-> > > > +                               /*
-> > > > +                                * Remember the IPCC score delta of busiest::curr.
-> > > > +                                * We may need it to break a tie with other queues
-> > > > +                                * with equal nr_running.
-> > > > +                                */
-> > > > +                               curr = rcu_dereference(busiest->curr);
-> > > > +                               busiest_ipcc_delta = ipcc_score_delta(curr, env);
-> > >
-> > > Hmm, i don't like this at all
-> > >
-> > > Also, curr is the least probable task to be pulled which means that
-> > > all this his useless
-> >
-> > but when doing asym_packing balancing nr_running = 1, need_active_balance()
-> > returns true and we will pull the current task, no? This is also true for
-> > fully_busy groups with one task per CPU. These are the only two cases that
-> > currently use IPCC scores.
-> 
-> hmm, for sure it's not true for fully_busy and I don't see anything
-> about asym_packing mandating that  nr_running = 1
+The sysfs_get_enabled() opened file processor not closed,
+may cause a file handle leak.
+Putting error handling and resource cleanup code together
+makes the code easy to maintain and read.
+Removed the unnecessary else if branch from the original
+function, as it should return an error in cases other than '0'.
 
-I meant to say that if nr_running = 1, we would pull the running task
-because there is nothing else to pull.
+Signed-off-by: Hao Zeng <zenghao@kylinos.cn>
+Suggested-by: Shuah Khan <skhan@linuxfoundation.org>
+---
+ tools/power/cpupower/lib/powercap.c | 23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
 
-Just as when identifying the busiest group, we can instead break the tie
-using the task at the back of the runqueue. We will start with this task
-when migrating tasks.
+diff --git a/tools/power/cpupower/lib/powercap.c b/tools/power/cpupower/l=
+ib/powercap.c
+index 0ce29ee4c2e4..a7a59c6bacda 100644
+--- a/tools/power/cpupower/lib/powercap.c
++++ b/tools/power/cpupower/lib/powercap.c
+@@ -40,25 +40,34 @@ static int sysfs_get_enabled(char *path, int *mode)
+ {
+ 	int fd;
+ 	char yes_no;
++	int ret =3D 0;
+=20
+ 	*mode =3D 0;
+=20
+ 	fd =3D open(path, O_RDONLY);
+-	if (fd =3D=3D -1)
+-		return -1;
++	if (fd =3D=3D -1) {
++		ret =3D -1;
++		goto out;
++	}
+=20
+ 	if (read(fd, &yes_no, 1) !=3D 1) {
+-		close(fd);
+-		return -1;
++		ret =3D -1;
++		goto out_close;
+ 	}
+=20
+ 	if (yes_no =3D=3D '1') {
+ 		*mode =3D 1;
+-		return 0;
++		goto out_close;
+ 	} else if (yes_no =3D=3D '0') {
+-		return 0;
++		goto out_close;
++	} else {
++		ret =3D -1;
++		goto out_close;
+ 	}
+-	return -1;
++out_close:
++	close(fd);
++out:
++	return ret;
+ }
+=20
+ int powercap_get_enabled(int *mode)
+--=20
+2.37.2
 
-> 
-> You should have a look at misfit task which seems to better fit your
-> situation where you have one task that doesn't fit  its cpu instead of
-> adding such condition
-
-Thank you for the suggestion! I did take a look. When dealing with misfit
-tasks, we identify one task that is too big for a small CPU. The
-destination CPU is not needed when updating the misfit status.
-
-On the other hand, identifying the “an IPCC-misfit” task (similar to
-update_misfit_status()) would require knowing the destination CPU, of which
-there may be more than one type. We could compute the IPCC-misfit status
-for all prospective destinations CPU types but that may introduce a non-
-trivial overhead and would be too complex for a tie breaker, IMO.
-
-Unlike migrate_misfit, we would not take immediate action but use IPCC
-scores to improve the selection of the busiest runqueue.
