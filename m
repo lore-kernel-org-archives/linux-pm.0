@@ -2,36 +2,36 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9906EC77B73
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF84CC77B7C
 	for <linux-pm@archiver.kernel.org>; Wed, 19 Apr 2023 14:40:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233327AbjDSOke (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S232053AbjDSOke (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 19 Apr 2023 10:40:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41202 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233404AbjDSOkV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2023 10:40:21 -0400
+        with ESMTP id S230256AbjDSOkW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2023 10:40:22 -0400
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E8D54C3A
-        for <linux-pm@vger.kernel.org>; Wed, 19 Apr 2023 07:40:14 -0700 (PDT)
-X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="325079362"
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7DDD659D7
+        for <linux-pm@vger.kernel.org>; Wed, 19 Apr 2023 07:40:15 -0700 (PDT)
+X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="325079374"
 X-IronPort-AV: E=Sophos;i="5.99,208,1677571200"; 
-   d="scan'208";a="325079362"
+   d="scan'208";a="325079374"
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Apr 2023 07:39:53 -0700
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Apr 2023 07:39:56 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="1021232656"
+X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="1021232730"
 X-IronPort-AV: E=Sophos;i="5.99,208,1677571200"; 
-   d="scan'208";a="1021232656"
+   d="scan'208";a="1021232730"
 Received: from powerlab.fi.intel.com ([10.237.71.25])
-  by fmsmga005.fm.intel.com with ESMTP; 19 Apr 2023 07:39:52 -0700
+  by fmsmga005.fm.intel.com with ESMTP; 19 Apr 2023 07:39:55 -0700
 From:   Artem Bityutskiy <dedekind1@gmail.com>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     Linux PM Mailing List <linux-pm@vger.kernel.org>,
         Artem Bityutskiy <dedekind1@gmail.com>
-Subject: [PATCH 3/7] intel_idle: further 'intel_idle_init_cstates_icpu()' cleanup
-Date:   Wed, 19 Apr 2023 17:39:43 +0300
-Message-Id: <20230419143947.1342730-4-dedekind1@gmail.com>
+Subject: [PATCH 5/7] intel_idle: fix confusing message
+Date:   Wed, 19 Apr 2023 17:39:45 +0300
+Message-Id: <20230419143947.1342730-6-dedekind1@gmail.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20230419143947.1342730-1-dedekind1@gmail.com>
 References: <20230419143947.1342730-1-dedekind1@gmail.com>
@@ -43,70 +43,41 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-Introduce a temporary 'state' variable for referencing the currently
-processed C-state in the 'intel_idle_init_cstates_icpu()' function.
+By default, all non-POLL C-states are entered with interrupts disable.
+There are 2 ways to make 'intel_idle' enter C-states with interrupts
+enabled:
+  1. Mark the C-state with the 'CPUIDLE_FLAG_IRQ_ENABLE' flag.
+  2. Use the 'force_irq_on' module parameter.
 
-This makes code lines shorter and easier to read.
+The former is the "proper" way of doing it, it is per-C-state and
+per-platform. The latter is for debugging purposes only.
+
+The problem is that 'intel_idle' prints the "forced intel_idle_irq"
+message in both cases, even though the former case does not needed
+this message, because nothing is forced there. This patch addresses the
+problem.
 
 Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
- drivers/idle/intel_idle.c | 24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+ drivers/idle/intel_idle.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 190410fc9ce5..73ddb1d8cfcf 100644
+index 1de36df15d5a..bff0d17aeda4 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -1871,6 +1871,7 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- 	}
- 
- 	for (cstate = 0; cstate < CPUIDLE_STATE_MAX; ++cstate) {
-+		struct cpuidle_state *state;
- 		unsigned int mwait_hint;
- 
- 		if (intel_idle_max_cstate_reached(cstate))
-@@ -1893,29 +1894,30 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- 
- 		/* Structure copy. */
- 		drv->states[drv->state_count] = cpuidle_state_table[cstate];
-+		state = &drv->states[drv->state_count];
- 
--		if ((drv->states[drv->state_count].flags & CPUIDLE_FLAG_IRQ_ENABLE) || force_irq_on) {
-+		if ((state->flags & CPUIDLE_FLAG_IRQ_ENABLE) || force_irq_on) {
- 			pr_info("forced intel_idle_irq for state %d\n", cstate);
--			drv->states[drv->state_count].enter = intel_idle_irq;
+@@ -1912,8 +1912,9 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
+ 			 */
+ 			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
+ 			state->enter = intel_idle_ibrs;
+-		} else if ((state->flags & CPUIDLE_FLAG_IRQ_ENABLE) ||
+-			   force_irq_on) {
++		} else if (state->flags & CPUIDLE_FLAG_IRQ_ENABLE) {
 +			state->enter = intel_idle_irq;
++		} else if (force_irq_on) {
+ 			pr_info("forced intel_idle_irq for state %d\n", cstate);
+ 			state->enter = intel_idle_irq;
  		}
- 
- 		if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS) &&
--		    drv->states[drv->state_count].flags & CPUIDLE_FLAG_IBRS) {
--			WARN_ON_ONCE(drv->states[drv->state_count].flags & CPUIDLE_FLAG_IRQ_ENABLE);
--			drv->states[drv->state_count].enter = intel_idle_ibrs;
-+		    state->flags & CPUIDLE_FLAG_IBRS) {
-+			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
-+			state->enter = intel_idle_ibrs;
- 		}
- 
--		if (drv->states[drv->state_count].flags & CPUIDLE_FLAG_INIT_XSTATE)
--			drv->states[drv->state_count].enter = intel_idle_xstate;
-+		if (state->flags & CPUIDLE_FLAG_INIT_XSTATE)
-+			state->enter = intel_idle_xstate;
- 
- 		if ((disabled_states_mask & BIT(drv->state_count)) ||
- 		    ((icpu->use_acpi || force_use_acpi) &&
- 		     intel_idle_off_by_default(mwait_hint) &&
--		     !(drv->states[drv->state_count].flags & CPUIDLE_FLAG_ALWAYS_ENABLE)))
--			drv->states[drv->state_count].flags |= CPUIDLE_FLAG_OFF;
-+		     !(state->flags & CPUIDLE_FLAG_ALWAYS_ENABLE)))
-+			state->flags |= CPUIDLE_FLAG_OFF;
- 
--		if (intel_idle_state_needs_timer_stop(&drv->states[drv->state_count]))
--			drv->states[drv->state_count].flags |= CPUIDLE_FLAG_TIMER_STOP;
-+		if (intel_idle_state_needs_timer_stop(state))
-+			state->flags |= CPUIDLE_FLAG_TIMER_STOP;
- 
- 		drv->state_count++;
- 	}
 -- 
 2.38.1
 
