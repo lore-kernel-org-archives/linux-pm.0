@@ -2,116 +2,235 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A659C77B73
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Apr 2023 16:53:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC20BC6FD18
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Apr 2023 20:32:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232588AbjDSQxG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Apr 2023 12:53:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52368 "EHLO
+        id S229847AbjDSUcb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Apr 2023 16:32:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232378AbjDSQxF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2023 12:53:05 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 42996BB;
-        Wed, 19 Apr 2023 09:53:04 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BAD741424;
-        Wed, 19 Apr 2023 09:53:47 -0700 (PDT)
-Received: from [192.168.1.12] (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BE86F3F5A1;
-        Wed, 19 Apr 2023 09:53:02 -0700 (PDT)
-Message-ID: <41ae3b9e-c774-5061-b045-d5ec2a658880@arm.com>
-Date:   Wed, 19 Apr 2023 18:52:47 +0200
+        with ESMTP id S229983AbjDSUc3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2023 16:32:29 -0400
+X-Greylist: delayed 477 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 19 Apr 2023 13:32:20 PDT
+Received: from out-36.mta0.migadu.com (out-36.mta0.migadu.com [IPv6:2001:41d0:1004:224b::24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22BAD2722
+        for <linux-pm@vger.kernel.org>; Wed, 19 Apr 2023 13:32:19 -0700 (PDT)
+Date:   Wed, 19 Apr 2023 22:24:16 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grimler.se; s=key1;
+        t=1681935859;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=V20VJv1TvezaAhFXg1TxVwCOql54YGFqOYPkGP8pazQ=;
+        b=cT8c6lY/bJVW3tUmDsyOXCpLyLqQnkGWUJhsaPyDTQDN+T0llTayhLrryh//uChH+//JHo
+        x17+hr5gXmgXXv214KbPtSXg1i5+Whi6AkB87RxbFU1t5mpoZ5++enCMNkSEDLKNkmnQb6
+        3IMIQH5r+ho1nDTvIw+DjYAL79D8v9M=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From:   Henrik Grimler <henrik@grimler.se>
+To:     Artur Weber <aweber.kernel@gmail.com>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Sylwester Nawrocki <s.nawrocki@samsung.com>,
+        Tomasz Figa <tomasz.figa@gmail.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Olof Johansson <olof@lixom.net>, soc@kernel.org,
+        Russell King <linux@armlinux.org.uk>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Kukjin Kim <kgene@kernel.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Vinod Koul <vkoul@kernel.org>,
+        Kishon Vijay Abraham I <kishon@kernel.org>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-phy@lists.infradead.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: [PATCH v2 03/12] ARM: exynos: Re-introduce Exynos4212 support
+Message-ID: <ZEBN8ImTp/tRdej+@L14.lan>
+References: <20230416133422.1949-1-aweber.kernel@gmail.com>
+ <20230416133422.1949-4-aweber.kernel@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: Re: [PATCH] cpufreq: CPPC: use 10ms delay instead of 2us to avoid
- high error
-Content-Language: en-US
-From:   Pierre Gondois <pierre.gondois@arm.com>
-To:     Yang Shi <yang@os.amperecomputing.com>
-Cc:     viresh.kumar@linaro.org, scott@os.amperecomputing.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-References: <20230328193846.8757-1-yang@os.amperecomputing.com>
- <CAJZ5v0gQ7vak9DaEmLKe6un60Gcpj7VtmxdjPwuXTi=P=KJjbA@mail.gmail.com>
- <d08222bf-fa05-3e3b-18dd-d24ced6c1536@os.amperecomputing.com>
- <4bda6b02-cc50-fa47-c9b6-acda4cf201a8@arm.com>
- <cd79df5b-68c4-4825-6c29-e560989a1130@os.amperecomputing.com>
- <195c95b2-f47c-f3d0-5663-97dd4c929ea4@arm.com>
- <3e239024-91d8-ea06-25a4-631496576319@os.amperecomputing.com>
- <d287eff6-77bd-693c-96d3-87d8981b7f96@arm.com>
- <7b57e680-0ba3-0b8b-851e-7cc369050386@os.amperecomputing.com>
- <a2924821-80b9-e68f-3ae4-7a2c989afc88@arm.com>
-In-Reply-To: <a2924821-80b9-e68f-3ae4-7a2c989afc88@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230416133422.1949-4-aweber.kernel@gmail.com>
+X-Migadu-Flow: FLOW_OUT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-> 
-> Just 2 other comments:
-> a-
-> It might be interesting to change the order in which cpc registers are read
-> just to see if it has an impact, but even if it has, I m not sure how this
-> could be exploitable.
-> Just in case, I mean doing that, but I think that b. might be better to try.
-> 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index c51d3ccb4cca..479b55006020 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -1350,8 +1350,8 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
->                   }
->           }
->    
-> -       cpc_read(cpunum, delivered_reg, &delivered);
->           cpc_read(cpunum, reference_reg, &reference);
-> +       cpc_read(cpunum, delivered_reg, &delivered);
->           cpc_read(cpunum, ref_perf_reg, &ref_perf);
->    
->           /*
-> 
-> b-
-> In the trace that you shared, the cpc_read() calls in the fist
-> cppc_get_perf_ctrs() calls seem to always take a bit more time than in the
-> second cppc_get_perf_ctrs() call.
-> Would it be possible to collect traces similar as above with 3 or 4 calls to
-> cppc_get_perf_ctrs() instead of 2 ? It would allow to check whether in the first
-> call, accessing the cpc registers takes more time than in the following calls,
-> due to cache misses or other reasons.
-> Ideally statistics on the result would be the best, or if you have a trace.dat
-> to share containing a trace with multiple cppc_cpufreq_get_rate() calls.
-> 
-> Example of code where we do 4 calls to cppc_get_perf_ctrs():
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 022e3555407c..6370f2f0bdad 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -853,6 +853,20 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
->    
->           udelay(2); /* 2usec delay between sampling */
->    
-> +       ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t1);
-> +       if (ret)
-> +               return ret;
-> +
-> +       udelay(2); /* 2usec delay between sampling */
-> +
-> +       /* Do a third call. */
-> +       ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t1);
-> +       if (ret)
-> +               return ret;
-> +
-> +       udelay(2); /* 2usec delay between sampling */
-> +
-> +       /* Do a fourth call. */
->           ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t1);
->           if (ret)
->                   return ret;
+Hi Artur,
 
-And also, if the cpc_read() calls in the third/fourth call are actually faster,
-would it be possible to check whether the computed frequency is more accurate
-(i.e. no over/undershoot) ?
+On Sun, Apr 16, 2023 at 03:34:13PM +0200, Artur Weber wrote:
+> The platform was originally dropped in commit bca9085e0ae9 ("ARM:
+> dts: exynos: remove Exynos4212 support (dead code)"), as there were
+> no boards using it.
+> 
+> We will be adding a device that uses it, so add it back.
+> 
+> This effectively reverts commit 9e43eca3c874 ("ARM: EXYNOS: Remove
+> Exynos4212 related dead code").
+> 
+> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
+> ---
+>  arch/arm/mach-exynos/Kconfig    | 5 +++++
+>  arch/arm/mach-exynos/common.h   | 8 ++++++++
+>  arch/arm/mach-exynos/exynos.c   | 2 ++
+>  arch/arm/mach-exynos/firmware.c | 8 +++++++-
+>  arch/arm/mach-exynos/pm.c       | 2 +-
+>  arch/arm/mach-exynos/suspend.c  | 4 ++++
+>  6 files changed, 27 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
+> index 4d3b40e4049a..b3d5df5225fe 100644
+> --- a/arch/arm/mach-exynos/Kconfig
+> +++ b/arch/arm/mach-exynos/Kconfig
+> @@ -78,6 +78,11 @@ config CPU_EXYNOS4210
+>  	default y
+>  	depends on ARCH_EXYNOS4
+>  
+> +config SOC_EXYNOS4212
+> +	bool "Samsung Exynos4212"
+> +	default y
+> +	depends on ARCH_EXYNOS4
+> +
+>  config SOC_EXYNOS4412
+>  	bool "Samsung Exynos4412"
+>  	default y
+> diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+> index 29eb075b24a4..c9e85d33c309 100644
+> --- a/arch/arm/mach-exynos/common.h
+> +++ b/arch/arm/mach-exynos/common.h
+> @@ -15,6 +15,7 @@
+>  #define EXYNOS3_SOC_MASK	0xFFFFF000
+>  
+>  #define EXYNOS4210_CPU_ID	0x43210000
+> +#define EXYNOS4212_CPU_ID	0x43220000
+>  #define EXYNOS4412_CPU_ID	0xE4412200
+>  #define EXYNOS4_CPU_MASK	0xFFFE0000
+>  
+> @@ -34,6 +35,7 @@ static inline int is_samsung_##name(void)	\
+>  
+>  IS_SAMSUNG_CPU(exynos3250, EXYNOS3250_SOC_ID, EXYNOS3_SOC_MASK)
+>  IS_SAMSUNG_CPU(exynos4210, EXYNOS4210_CPU_ID, EXYNOS4_CPU_MASK)
+> +IS_SAMSUNG_CPU(exynos4212, EXYNOS4212_CPU_ID, EXYNOS4_CPU_MASK)
+>  IS_SAMSUNG_CPU(exynos4412, EXYNOS4412_CPU_ID, EXYNOS4_CPU_MASK)
+>  IS_SAMSUNG_CPU(exynos5250, EXYNOS5250_SOC_ID, EXYNOS5_SOC_MASK)
+>  IS_SAMSUNG_CPU(exynos5410, EXYNOS5410_SOC_ID, EXYNOS5_SOC_MASK)
+> @@ -52,6 +54,12 @@ IS_SAMSUNG_CPU(exynos5800, EXYNOS5800_SOC_ID, EXYNOS5_SOC_MASK)
+>  # define soc_is_exynos4210()	0
+>  #endif
+>  
+> +#if defined(CONFIG_SOC_EXYNOS4212)
+> +# define soc_is_exynos4212()	is_samsung_exynos4212()
+> +#else
+> +# define soc_is_exynos4212()	0
+> +#endif
+> +
+>  #if defined(CONFIG_SOC_EXYNOS4412)
+>  # define soc_is_exynos4412()	is_samsung_exynos4412()
+>  #else
+> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> index 51a247ca4da8..5671621f1661 100644
+> --- a/arch/arm/mach-exynos/exynos.c
+> +++ b/arch/arm/mach-exynos/exynos.c
+> @@ -178,6 +178,7 @@ static void __init exynos_dt_machine_init(void)
+>  		exynos_cpuidle.dev.platform_data = &cpuidle_coupled_exynos_data;
+>  #endif
+>  	if (of_machine_is_compatible("samsung,exynos4210") ||
+> +	    of_machine_is_compatible("samsung,exynos4212") ||
+>  	    (of_machine_is_compatible("samsung,exynos4412") &&
+>  	     (of_machine_is_compatible("samsung,trats2") ||
+>  		  of_machine_is_compatible("samsung,midas") ||
+> @@ -192,6 +193,7 @@ static char const *const exynos_dt_compat[] __initconst = {
+>  	"samsung,exynos3250",
+>  	"samsung,exynos4",
+>  	"samsung,exynos4210",
+> +	"samsung,exynos4212",
+>  	"samsung,exynos4412",
+>  	"samsung,exynos5",
+>  	"samsung,exynos5250",
+> diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
+> index 2da5b60b59e2..110c8064ee64 100644
+> --- a/arch/arm/mach-exynos/firmware.c
+> +++ b/arch/arm/mach-exynos/firmware.c
+> @@ -63,12 +63,18 @@ static int exynos_cpu_boot(int cpu)
+>  	 *
+>  	 * On Exynos5 devices the call is ignored by trustzone firmware.
+>  	 */
+> -	if (!soc_is_exynos4210() && !soc_is_exynos4412())
+> +	if (!soc_is_exynos4210() && !soc_is_exynos4412() &&
+> +	    !soc_is_exynos4212())
+
+Seems more logical to have 4212 before 4412 here.
+
+>  		return 0;
+>  
+>  	/*
+>  	 * The second parameter of SMC_CMD_CPU1BOOT command means CPU id.
+> +	 * But, Exynos4212 has only one secondary CPU so second parameter
+> +	 * isn't used for informing secure firmware about CPU id.
+>  	 */
+> +	if (soc_is_exynos4212())
+> +		cpu = 0;
+
+Is it necessary to set cpu = 0?  Are there any obvious issues without
+it (like second cpu not being brought up)?  It seems vendor kernel
+does this for both exynos4210 and exynos4212 [1], but mainline has not
+done this for exynos4210 and there has been no reported issues on for
+that platform as far as I know.
+
+The assembly that handles SMC_CMD_CPU1BOOT in sboot.bin from firmware
+version T310XXSBQB2 is identical to what is found in sboot.bin from
+exynos4412-galaxy-s3, and it uses the cpu arg in both cases, so seems
+likely that we need this and I am mostly asking out of curiosity.
+
+[1] https://github.com/krzk/linux-vendor-backup/blob/mokee/android-3.4-samsung-galaxy-tab-s-10.5-sm-t805-exynos5420/arch/arm/mach-exynos/platsmp.c#L225-L229
+
+Best regards,
+Henrik Grimler
+
+>  	exynos_smc(SMC_CMD_CPU1BOOT, cpu, 0, 0);
+>  	return 0;
+>  }
+> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> index 30f4e55bf39e..9b6db04e4e34 100644
+> --- a/arch/arm/mach-exynos/pm.c
+> +++ b/arch/arm/mach-exynos/pm.c
+> @@ -161,7 +161,7 @@ void exynos_enter_aftr(void)
+>  
+>  	exynos_pm_central_suspend();
+>  
+> -	if (soc_is_exynos4412()) {
+> +	if (soc_is_exynos4412() || soc_is_exynos4212()) {
+>  		/* Setting SEQ_OPTION register */
+>  		pmu_raw_writel(S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0,
+>  			       S5P_CENTRAL_SEQ_OPTION);
+> diff --git a/arch/arm/mach-exynos/suspend.c b/arch/arm/mach-exynos/suspend.c
+> index 3bf14ca78b62..df1e10033f90 100644
+> --- a/arch/arm/mach-exynos/suspend.c
+> +++ b/arch/arm/mach-exynos/suspend.c
+> @@ -231,6 +231,7 @@ static int __init exynos_pmu_irq_init(struct device_node *node,
+>  
+>  EXYNOS_PMU_IRQ(exynos3250_pmu_irq, "samsung,exynos3250-pmu");
+>  EXYNOS_PMU_IRQ(exynos4210_pmu_irq, "samsung,exynos4210-pmu");
+> +EXYNOS_PMU_IRQ(exynos4212_pmu_irq, "samsung,exynos4212-pmu");
+>  EXYNOS_PMU_IRQ(exynos4412_pmu_irq, "samsung,exynos4412-pmu");
+>  EXYNOS_PMU_IRQ(exynos5250_pmu_irq, "samsung,exynos5250-pmu");
+>  EXYNOS_PMU_IRQ(exynos5420_pmu_irq, "samsung,exynos5420-pmu");
+> @@ -640,6 +641,9 @@ static const struct of_device_id exynos_pmu_of_device_ids[] __initconst = {
+>  	}, {
+>  		.compatible = "samsung,exynos4210-pmu",
+>  		.data = &exynos4_pm_data,
+> +	}, {
+> +		.compatible = "samsung,exynos4212-pmu",
+> +		.data = &exynos4_pm_data,
+>  	}, {
+>  		.compatible = "samsung,exynos4412-pmu",
+>  		.data = &exynos4_pm_data,
+> -- 
+> 2.40.0
+> 
