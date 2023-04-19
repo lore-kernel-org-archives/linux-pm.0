@@ -2,1441 +2,878 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2C95C77B7A
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Apr 2023 20:32:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 580D9C6FD18
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Apr 2023 20:40:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229738AbjDSUca (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Apr 2023 16:32:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47926 "EHLO
+        id S229542AbjDSUkk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Apr 2023 16:40:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49716 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230127AbjDSUc3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2023 16:32:29 -0400
-X-Greylist: delayed 499 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 19 Apr 2023 13:32:19 PDT
-Received: from out-19.mta1.migadu.com (out-19.mta1.migadu.com [IPv6:2001:41d0:203:375::13])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 179EA658D
-        for <linux-pm@vger.kernel.org>; Wed, 19 Apr 2023 13:32:18 -0700 (PDT)
-Date:   Wed, 19 Apr 2023 22:23:52 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grimler.se; s=key1;
-        t=1681935836;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=b7kyguLnM5OK92YAthVfhazbErVzCu4Cg5CV/Ko7wv0=;
-        b=FmAKrk7FUt2KE/8e58jVmo128XNV9e8RSy5Bkjq8C0vU1FPSXRlbwVq4JCqIz6eTyvmi5M
-        c75E8zz40kYJq+cekNPIqV6CotvrcJmbjut3qFHffshSJigq1X+JazuE0iS6VcqSTRro6n
-        0Vhsw9Z1WXsDM7uSPc1tPkV9e96RGbc=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From:   Henrik Grimler <henrik@grimler.se>
-To:     Artur Weber <aweber.kernel@gmail.com>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sylwester Nawrocki <s.nawrocki@samsung.com>,
-        Tomasz Figa <tomasz.figa@gmail.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Olof Johansson <olof@lixom.net>, soc@kernel.org,
-        Russell King <linux@armlinux.org.uk>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Kukjin Kim <kgene@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Vinod Koul <vkoul@kernel.org>,
-        Kishon Vijay Abraham I <kishon@kernel.org>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-phy@lists.infradead.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-Subject: Re: [PATCH v2 12/12] ARM: dts: exynos: Add Samsung Galaxy Tab 3 8.0
- boards
-Message-ID: <ZEBN2AciChG03FpM@L14.lan>
-References: <20230416133422.1949-1-aweber.kernel@gmail.com>
- <20230416133422.1949-13-aweber.kernel@gmail.com>
+        with ESMTP id S229461AbjDSUkj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2023 16:40:39 -0400
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2124.outbound.protection.outlook.com [40.107.92.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 624645B89;
+        Wed, 19 Apr 2023 13:40:35 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HQhp0XBT/7NytXAbTBBFJUJ/nd9wPjSdz8g/L2/Eh2QGGnuBRvAycfqaD94MUP/M6gtD/AuJn2d+5QcefDtEI0ihE7ub2Chv3lFCRUKh4ZCS9WwR+M3SSRwhT5gOX9L7yYRm0jPWDhQQcXlOR5AfiVyF/Hw8/Dq0yC+70bs2taCXOUBwLsJJJ87GBX61+1vjCT5kolb7xfkU+hpi13pWIf5ZCgTaYYCbu5iqJORLmunR/o+TmBU50o5cwAucLbSBO94SNzeceJpxGRA1tHz0wq8ehYaXMiXaEqlKacvkivJjDwsDqwn1bIaqcsjqnvn0IUmc1EMPDDA3bhIeZCcPQw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FjUQKycz3NYtOJWOY02+oGhJuQ6/oRwqUvz6yzX9q18=;
+ b=ZNYne3Hv7KoAf8yfLJiDfwG9p4GXZV42BKPbeAZs2uP3wIFBLaUcGxMs3xEfNub/DBahEmdndMoPNK28H4XLUufndiTLQlVpxxaB7AtICs5ifNrG9gX31EM+fTIM1svyh/Fc84SUkROr+wgX3a5hZPqcnkazY1NqwqWLVz+f1CPLgYW/FRZuWYkkxOdG5fMZJNxaF/NWgb4S2vG+cNadvcqeuasbdbT6EZIbobi8/jLP7GO4FMRQOszDqbFW2EFijgBzxvUg+HpEPGTsqG7uR296Rgdrl3Y1DKq3NFXAax+3r2ZdgpZOr25WVWbMmMVuMyqnjpHvTmOX1yejCJkjDg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=os.amperecomputing.com; dmarc=pass action=none
+ header.from=os.amperecomputing.com; dkim=pass
+ header.d=os.amperecomputing.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=os.amperecomputing.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FjUQKycz3NYtOJWOY02+oGhJuQ6/oRwqUvz6yzX9q18=;
+ b=k7rY6V9IOS2iphVvPaMzRpWB5NwzeRY5pjAqkj1XsoLFyPIYqGgXu1oAfZFXQSd7svKpYN2A9b3fJeVr7kg/VeYX2SDkfXVIFjB4DVDzmBEKG3b0QLd8VgvtoBddvR92CXgdIBSmZJOuTJvJZXY8q4FJchLn4+NElLoCrLjjPPI=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=os.amperecomputing.com;
+Received: from BL3PR01MB7027.prod.exchangelabs.com (2603:10b6:208:35a::9) by
+ DM6PR01MB5929.prod.exchangelabs.com (2603:10b6:5:1dc::32) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6319.20; Wed, 19 Apr 2023 20:40:29 +0000
+Received: from BL3PR01MB7027.prod.exchangelabs.com
+ ([fe80::6df9:7381:4788:cc3a]) by BL3PR01MB7027.prod.exchangelabs.com
+ ([fe80::6df9:7381:4788:cc3a%5]) with mapi id 15.20.6319.020; Wed, 19 Apr 2023
+ 20:40:29 +0000
+Message-ID: <1ce09fd7-0c1d-fc46-ce12-01b25fbd4afd@os.amperecomputing.com>
+Date:   Wed, 19 Apr 2023 13:40:23 -0700
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.10.0
+From:   Yang Shi <yang@os.amperecomputing.com>
+Subject: Re: [PATCH] cpufreq: CPPC: use 10ms delay instead of 2us to avoid
+ high error
+To:     Pierre Gondois <pierre.gondois@arm.com>
+Cc:     viresh.kumar@linaro.org, scott@os.amperecomputing.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+References: <20230328193846.8757-1-yang@os.amperecomputing.com>
+ <CAJZ5v0gQ7vak9DaEmLKe6un60Gcpj7VtmxdjPwuXTi=P=KJjbA@mail.gmail.com>
+ <d08222bf-fa05-3e3b-18dd-d24ced6c1536@os.amperecomputing.com>
+ <4bda6b02-cc50-fa47-c9b6-acda4cf201a8@arm.com>
+ <cd79df5b-68c4-4825-6c29-e560989a1130@os.amperecomputing.com>
+ <195c95b2-f47c-f3d0-5663-97dd4c929ea4@arm.com>
+ <3e239024-91d8-ea06-25a4-631496576319@os.amperecomputing.com>
+ <d287eff6-77bd-693c-96d3-87d8981b7f96@arm.com>
+ <7b57e680-0ba3-0b8b-851e-7cc369050386@os.amperecomputing.com>
+ <a2924821-80b9-e68f-3ae4-7a2c989afc88@arm.com>
+Content-Language: en-US
+In-Reply-To: <a2924821-80b9-e68f-3ae4-7a2c989afc88@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: CH2PR17CA0015.namprd17.prod.outlook.com
+ (2603:10b6:610:53::25) To BL3PR01MB7027.prod.exchangelabs.com
+ (2603:10b6:208:35a::9)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230416133422.1949-13-aweber.kernel@gmail.com>
-X-Migadu-Flow: FLOW_OUT
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL3PR01MB7027:EE_|DM6PR01MB5929:EE_
+X-MS-Office365-Filtering-Correlation-Id: 489a889f-2216-45a0-fb0e-08db41164ff0
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 12KZMYh7LhNQh+yxipQ3KJoX6firhaXDQlfUXWTJ5AkQdF9Kfk5Qlyg7afpPPA+sEGd2JPMuSjZ+huenvKfv6E/gfaQpqQCDB6I1URmvs8YI/4SHBiTSYYTVFYLd1ZeotXN8VTP5YivUkORYuVo/9sF+M25mGiNCcAExk8VE46BJ3KpM+1jAL4B+NwwhmfHBSujhtRkDiaZPKUj3PD9+Brp7fp8zOuYoDmNwCGaU2WiX1D8PmB0Bzhwt23ExQjlm3u4BZoH6hJdcD2rK6mPDUYOueWQCrtBpLYgCCt+CkfgXHUxXMUp0U3Bu7RpJe8WUaskq0EqacO0iyZOvGLuF3IIr/jDzN2b8zpd/gRzNToWmjv0ZO9B7jv4xRTrq7V73oK8ACbpULFmmBAcsKvJN+llfbwt+a5N2yA9ryzz4o/uDYrLeXOs9yOF6M5JgDJbqDPnbgi8BciCLVx2ZA0YmV1WNqa6JUn9i3h11F/MZ2FIdihpEXd0dYbFvwJsplCSUcHZq3POspNNRPmvmD9QllkvUuapTULmdTgvL0troa8Ad+WcTkzMhqdqDIWwUViJ7t3CRR5J4zn1Ys/Znuuzd1IzSAERtDH03M/MGgWNvBRpOXdonUxzfqZ3R6SV6LPcJGxNMj5NskX0HBDZX/LJGKA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL3PR01MB7027.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(136003)(376002)(39850400004)(346002)(396003)(366004)(451199021)(186003)(6916009)(4326008)(316002)(66556008)(66946007)(66476007)(6486002)(478600001)(52116002)(6666004)(8936002)(8676002)(5660300002)(41300700001)(30864003)(2906002)(86362001)(38100700002)(38350700002)(2616005)(26005)(6512007)(53546011)(6506007)(83380400001)(31696002)(31686004)(66899021)(43740500002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?MkpiSHhGb1RVKzlva08waUp0UDJLTE1QYWRwWi9HTDRINjJyME9Sb2VyVzBy?=
+ =?utf-8?B?dUFCcUdmODU2b1V0Z3BTSy9sQzhKbkNIZTEvTll4SmRvOG5rUVJVRWVxdTNY?=
+ =?utf-8?B?djZIM0FrYkVnV1VVcjZoWXBvWmNyTGxiNzg4YjJ1VGh2R3d4ZGd0dmUwcjNv?=
+ =?utf-8?B?LzRnWmxTVkg0QktqelVtbUZkUWxGRWtTeWxKWXovR1JYczVRMjFWbTBpL0JT?=
+ =?utf-8?B?OWJ1RndIMTBscGFGU01SU2RIYTlEeVc0RGthbTJDTjEray9tRlMxQm9LNkdv?=
+ =?utf-8?B?b2tkVWJQV0s1MENsVkpqdzhaSmdZQ1JDeE1SUVZZVkZHYTlMeVFVU3FlbXNs?=
+ =?utf-8?B?RzJ4Zjd0emlNTklFR1duaWw0SHBRaUl6eml6MFdRN1Z5UW1KcEl1MjhlMVg5?=
+ =?utf-8?B?bTdXOWtTR2NKYUJiaVg3TXlIV2RhVXFnNk4raUtBRllhdU81dHl2NUVHcHlT?=
+ =?utf-8?B?MllWYlNYbTNWMTJWNmNJSFBvUGE0Sk9xaGpQVFE5ZVlBR09ZbnhKVFFPTktv?=
+ =?utf-8?B?VmhNT21pVWRvRTcwdVU1RFZVOE5vcC93cU1CalZ4MHFtL1RNcE5HUVhQclRC?=
+ =?utf-8?B?VTZMZ0hCUEdMdkFJakxCeWh3UE4zNUZ5cWpXZW13aFRJYWZjOVJIMDZoMnBQ?=
+ =?utf-8?B?OGdxbDdlSllPeXIyMHdBRVVjbkZ2OVVvWk1rNTM0Um1VZzdPM1NQTndySHZB?=
+ =?utf-8?B?eGVrZzliVkJvSFBMVDlqZWpvTGMvNzdDdlBtRU9RYkFpSCtDdG1MWkY4TmRS?=
+ =?utf-8?B?b21uUXN4cjJ3OTYyT0NxbTRTMGRkaUNLZElkaHpOT3RwSjZ0YWYzd3lkMytS?=
+ =?utf-8?B?TDA3WEVHMVVUdDFWdW5zSHlaOG9TQ2V5MGg0TFBjQjRwbEV5MUhxNWVOdHU3?=
+ =?utf-8?B?WkprRUdyV0lsRXNhVkNXejYyYVZ1dEN3MVZhb1pLamQvTW5mZmRncDNLb0dR?=
+ =?utf-8?B?b0FOUGs3TXJzbkhvSUZnK1I2WjAydnB4WDFNcHdGV3pSOFd3dURyaG5UdGJp?=
+ =?utf-8?B?ZDRTNG1VaTRCYldFUDlRVVlUT3NPWUtFN0xwa2dFRWFaeXNpOW5WaTlDbDc5?=
+ =?utf-8?B?ZmxDeVNpQUxHQ2J6L0xNL0hRZm1nU3BjakE2NGVBb1VXL3VjN3V6SzYyUGds?=
+ =?utf-8?B?ckpDellBNnhyZE5DUGk4aXBuVEJTNzZOZklmWXJTbmtTNzZVNTRqeWZVMk91?=
+ =?utf-8?B?cnFUaTB2bHdPR0U5N2s1YVl3dHRDaVBmRnVPM0dGK3R6eFBwOTM0NnVtVFZ2?=
+ =?utf-8?B?STFreWRKaWdSR25LSDdTMnliNUlXS21VdU1sMWR1VkpLQnBQalVtRFJpSEl3?=
+ =?utf-8?B?N3RLVXBXY09FcEF4WFVCUVh3ajI3N1lKbytaTCtMR1NnUmhrRUpYSW83UXY3?=
+ =?utf-8?B?NWpDNys4Y1cxZG1uVkQ5V09POElFUmdsbUhmU1hXUmFNU2k4TzlyanNOc3dm?=
+ =?utf-8?B?eWJvbWg3S2d6cmpzKzNQYjdpQkRvc0hZalppZnFka01SZUd0SGRqUmNwMUFa?=
+ =?utf-8?B?ak5kbGY4bWJDV0xDYVdWSC9TTmtiTUpuQjNnK1BEaTZLd3dpRjYzdmVleWIy?=
+ =?utf-8?B?aVNqZWxJOFZENXgvRE92M1pIL2pxd0p0bFkxQTRXNWFXWWF4TS9QV2Q1SDk5?=
+ =?utf-8?B?K2l0amFYaU1BRXBHWmtGRzFlQm1FdllWV2RiSU94WDdvRjRKMHF3VnlkK1h4?=
+ =?utf-8?B?R0ZURXhaY2RTNWkwSm5sMFVpQVFoWmdvcFBNR2ZCbXZVV05mT21LZlIxMnl1?=
+ =?utf-8?B?TEpwbzYwdTlXRlRtQWdSZDh6WDg3VFFBdm5YdEFLamxwRnYrNWFYeHlFOThT?=
+ =?utf-8?B?ekVsM2V2bjJTcmMxRmpqUFNuaUJDUnU0QjNJazA0ckNmblIyaEZUV3B3ZWdT?=
+ =?utf-8?B?bFVkR3hsQkpSemhLazV5Yk5aeE9zM2RxTG5HOGsvZDcyRUVWSzZQeERQUUZC?=
+ =?utf-8?B?VStaeDA1eC9DbnoyNTN3c0VrTjEwTkI4cndINFFtdWQxc1VQdmRTNnQvN21l?=
+ =?utf-8?B?OWdld1I1Y1JNVUx6S01jT1ZWb2ZCeVlpOXdwU1N2U3FOL0ZxbStGbDhFaW8z?=
+ =?utf-8?B?REhXU2dBakNXandUKys4dVBPSHJLbHlkOHFyZ00yRGxQM281RC9rcUZoL2pz?=
+ =?utf-8?B?SmxpUnI4NGZwOG40bXQ3T1JQUGExbjV4UXRPVTZRemE0TisvM2w4bVAyYUhx?=
+ =?utf-8?Q?tG2rlJRkewEkKlIpm21O7nE=3D?=
+X-OriginatorOrg: os.amperecomputing.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 489a889f-2216-45a0-fb0e-08db41164ff0
+X-MS-Exchange-CrossTenant-AuthSource: BL3PR01MB7027.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Apr 2023 20:40:29.1819
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ZvSPLTbgMzGKVoJXQlKJzSGgFHxIHBAJMtOXmgrkRI+8mA1K9Auqc8EZw7hvpU0zDbiEg0oPnv/Avk48VarAV1phTn6PyRYqcB9/164QiAw=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR01MB5929
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Artur,
 
-Nice to see some more Exynos arm boards!
 
-As Krzysztof already said this does not apply on top of
-https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux.git/log/?h=next/dt,
-but it seems to apply on top of v6.3-rc6.  If you use the --base arg
-of git format-patch it makes it easier to figure out where it applies.
+On 4/19/23 2:45 AM, Pierre Gondois wrote:
+>
+>
+> On 4/18/23 20:24, Yang Shi wrote:
+>>
+>>
+>> On 4/11/23 1:51 AM, Pierre Gondois wrote:
+>>> Hello Yang,
+>>>
+>>>>>>>
+>>>>>>> -
+>>>>>>> According to the same ACPI 6.5 s8.4.6.1.2.5 "Time Window Register"
+>>>>>>> paragraph,
+>>>>>>> and assuming we are in the 'Autonomous Selection is not enabled'
+>>>>>>> case,
+>>>>>>> the OS is supposed to write (not read) the delta between successive
+>>>>>>> reads of the
+>>>>>>> counter, so using this field as is would be bending the 
+>>>>>>> definition I
+>>>>>>> think.
+>>>>>>>
+>>>>>>> -
+>>>>>>> It is correct that the "Time Window Register" field specifies a 
+>>>>>>> value
+>>>>>>> in ms,
+>>>>>>> but it seems a long time to wait for with irqs off.
+>>>>>>
+>>>>>> AFAIK, our platforms don't support "Time Window Register".
+>>>>>>
+>>>>>>>
+>>>>>>> -
+>>>>>>> Theoretically, the perf/ref counters should accumulate to allow
+>>>>>>> computing
+>>>>>>> a correct frequency. Is it possible to know how these counters are
+>>>>>>> accessed ?
+>>>>>>> Is it through PCC channels and there is some undesired delay 
+>>>>>>> between
+>>>>>>> the
+>>>>>>> reads of the perf/ref counters ?
+>>>>>>
+>>>>>> The counters are implemented via mmio instead of PCC channels. So 
+>>>>>> the
+>>>>>> cpc_read() calls should go to ACPI_ADR_SPACE_SYSTEM_MEMORY IIRC.
+>>>>>>
+>>>>>>>
+>>>>>>> -
+>>>>>>> About making the delay:
+>>>>>>>        max(cppc_cpufreq_get_transition_delay_us(), Time Winder
+>>>>>>> Register)
+>>>>>>> I think it would be good to know why the values of the counters
+>>>>>>> don't accumulate correctly, ideally by getting a trace where a
+>>>>>>> frequency
+>>>>>>> above the maximum frequency is computed, and with the timestamps at
+>>>>>>> which
+>>>>>>> the counters are read.
+>>>>>>> If the values are coming from PCC channels / the firmware, it
+>>>>>>> might be
+>>>>>>> difficult
+>>>>>>> to get.
+>>>>>>
+>>>>>> I wrote a bpftrace script to trace the below data:
+>>>>>>         - The CPU number
+>>>>>>         - The frequency
+>>>>>>         - The start and end timestamp of the first 
+>>>>>> cppc_get_perf_ctrs()
+>>>>>> call
+>>>>>>         - The duration/latency of the first cppc_get_perf_ctrs() 
+>>>>>> call
+>>>>>>         - The start and end timestamp of the second
+>>>>>> cppc_get_perf_ctrs() call
+>>>>>>         - The duration/latency of the second cppc_get_perf_ctrs() 
+>>>>>> call
+>>>>>>
+>>>>>> The typical logs look like below.
+>>>>>> Good
+>>>>>> CPU: 1
+>>>>>> Freq: 2801485KHz
+>>>>>> First:  2489382384  2489387084 4700ns
+>>>>>> Second: 2489390824  2489394024  3200ns
+>>>>>> --------------------------------------------------
+>>>>>> CPU:    2
+>>>>>> Freq:   2797956KHz
+>>>>>> First:  2490406524  2490411204  4680ns
+>>>>>> Second: 2490414764  2490417684  2920ns
+>>>>>>
+>>>>>> Bad:
+>>>>>> CPU:    55
+>>>>>> Freq:   3969372KHz
+>>>>>> First:  875659868  875721568  61700ns
+>>>>>> Second: 875725148  875727708  2560ns
+>>>>>> --------------------------------------------------
+>>>>>> CPU: 65
+>>>>>> Freq: 3829744KHz
+>>>>>> First:  3854951136  3854995896 44760ns
+>>>>>> Second: 3854999416  3855002696 3280ns
+>>>>>> --------------------------------------------------
+>>>>>> CPU: 21
+>>>>>> Freq: 4279242KHz
+>>>>>> First:  240834204  240910484 76280ns
+>>>>>> Second: 240914264  240916944  2680ns
+>>>>>>
+>>>>>>
+>>>>>> The first line is cpu number, the second line is frequency 
+>>>>>> returned by
+>>>>>> cppc_cpufreq_get_rate(), the third line is the start and end
+>>>>>> timestamps
+>>>>>> and duration of the first cppc_get_perf_ctrs(), the fourth line 
+>>>>>> is the
+>>>>>> start and end timestamps and duration of the second
+>>>>>> cppc_get_perf_ctrs().
+>>>>>>
+>>>>>> So per the log I think we can tell basically the longer the
+>>>>>> duration the
+>>>>>> higher the error. The 2us delay is not long enough to offset the
+>>>>>> impact
+>>>>>> from unexpected latency of reading the counters.
+>>>>>>
+>>>>>> In the worst case the frequency is 4279242KHz, comparing 2800000KHz
+>>>>>> the
+>>>>>> error is over 50%. So the delay should be 4ms ~ 5ms in order to 
+>>>>>> offset
+>>>>>> the impact from reading the counters if I do the math correctly.
+>>>>>>
+>>>>>> Hope the trace data is helpful to diagnose the problem.
+>>>>>
+>>>>>
+>>>>> Thanks for the data. I was thinking the following was happening:
+>>>>>
+>>>>>    cppc_get_perf_ctrs()[0] cppc_get_perf_ctrs()[1]
+>>>>> /                    \ /                         \
+>>>>> ref[0]    delivered[0]                    ref[1] delivered[1]
+>>>>>     |            | |                  |
+>>>>>     v            v v                  v
+>>>>> ----------------------------------------------------------------------> 
+>>>>>
+>>>>> time
+>>>>>      <-delta[0]-> <-------------2us------------> <----delta[1]---->
+>>>>>
+>>>>> If delta[0] is really different from delta[1] like above, then the
+>>>>> reference and delivered counters would have accumulated during
+>>>>> different
+>>>>> intervals, resulting in a wrong frequency.
+>>>>
+>>>> Yeah, it looks like so.
+>>>>
+>>>>> If more/less than 2us elapse between the two cppc_get_perf_ctrs()
+>>>>> calls,
+>>>>> then it shouldn't have any impact. So waiting ~10ms should
+>>>>> theoretically
+>>>>> not solve the issue.
+>>>>
+>>>> I'm not sure whether the 10ms delay really resolved the issue, but it
+>>>> did reduce the magnitude of the error.
+>>>>
+>>>> BTW, I don't see irq is disabled when reading cpuinfo_cur_freq, so it
+>>>> looks like interrupts could easily result in the difference between
+>>>> delta[0] and delta[1]. And it seems like the difference matters.
+>>>
+>>> Ok, maybe disabling irqs would have an impact ?
+>>
+>> Yes, I ran some tracing to try to capture what happened when we saw high
+>> error. And it seems like IRQs is one of the contributing factors.
+>> Interconnect congestion is also a contributing factor. The below trace
+>> data supported the conclusion.
+>>
+>> 4081929KHz
+>> # tracer: function_graph
+>> #
+>> #     TIME        CPU  DURATION                  FUNCTION CALLS
+>> #      |          |     |   |                     |   |   | |
+>> 13378.411863 |     0)               |  cppc_cpufreq_get_rate
+>> [cppc_cpufreq]() {
+>> 13378.411864 |     0)               |    cpufreq_cpu_get() {
+>> 13378.411865 |     0)               | _raw_read_lock_irqsave() {
+>> 13378.411865 |     0)   0.680 us    | preempt_count_add();
+>> 13378.411867 |     0)   2.020 us    | }
+>> 13378.411868 |     0)               | _raw_read_unlock_irqrestore() {
+>> 13378.411868 |     0)   0.520 us    | preempt_count_sub();
+>> 13378.411869 |     0)   1.340 us    | }
+>> 13378.411869 |     0)   5.160 us    | }
+>> 13378.411870 |     0)   0.440 us    | cpufreq_cpu_put();
+>> 13378.411871 |     0)               |    cppc_get_perf_ctrs() {
+>> 13378.411872 |     0)               |      cpc_read.isra.0() {
+>> 13378.411874 |     0)               |        irq_enter_rcu() {
+>> 13378.411874 |     0)   0.460 us    | preempt_count_add();
+>> 13378.411875 |     0)   0.660 us    | irqtime_account_irq();
+>> 13378.411876 |     0)   2.480 us    | }
+>> 13378.411877 |     0)               | do_interrupt_handler() {
+>> 13378.411877 |     0)   ==========> |
+>> 13378.411877 |     0) + 49.260 us   | gic_handle_irq();
+>> 13378.411877 |     0)   <========== |
+>> 13378.411928 |     0) + 51.000 us   | }
+>> 13378.411928 |     0)               |        irq_exit_rcu() {
+>> 13378.411929 |     0)   0.540 us    | irqtime_account_irq();
+>> 13378.411929 |     0)   0.420 us    | preempt_count_sub();
+>> 13378.411930 |     0)   0.640 us    | ksoftirqd_running();
+>> 13378.411931 |     0) + 16.680 us   | do_softirq_own_stack();
+>> 13378.411948 |     0)   0.440 us    | idle_cpu();
+>> 13378.411949 |     0) + 21.200 us   |        }
+>> 13378.411950 |     0) + 77.480 us   |      }
+>> 13378.411950 |     0)   0.740 us    |      cpc_read.isra.0();
+>> 13378.411951 |     0)   0.440 us    |      cpc_read.isra.0();
+>> 13378.411952 |     0)   0.660 us    |      cpc_read.isra.0();
+>> 13378.411953 |     0) + 81.980 us   |    }
+>> 13378.411954 |     0)               |    __delay() {
+>> 13378.411954 |     0)   0.580 us    | arch_timer_evtstrm_available();
+>> 13378.411956 |     0)   2.460 us    |    }
+>> 13378.411956 |     0)               |    cppc_get_perf_ctrs() {
+>> 13378.411957 |     0)   0.540 us    | cpc_read.isra.0();
+>> 13378.411958 |     0)   0.520 us    | cpc_read.isra.0();
+>> 13378.411959 |     0)   0.420 us    | cpc_read.isra.0();
+>> 13378.411959 |     0)   0.440 us    |      cpc_read.isra.0();
+>>
+>> The above trace data captured IRQ when cppc_cpufreq_get_rate() returns
+>> 4081929KHz.
+>>
+>> 3052367KHz
+>> # tracer: function_graph
+>> #
+>> #     TIME        CPU  DURATION                  FUNCTION CALLS
+>> #      |          |     |   |                     |   |   | |
+>> 19177.226497 |     0)               |  cppc_cpufreq_get_rate
+>> [cppc_cpufreq]() {
+>> 19177.226498 |     0)               |    cpufreq_cpu_get() {
+>> 19177.226499 |     0)               | _raw_read_lock_irqsave() {
+>> 19177.226499 |     0)   0.600 us    | preempt_count_add();
+>> 19177.226500 |     0)   1.820 us    |      }
+>> 19177.226501 |     0)               | _raw_read_unlock_irqrestore() {
+>> 19177.226502 |     0)   0.480 us    | preempt_count_sub();
+>> 19177.226502 |     0)   1.260 us    |      }
+>> 19177.226503 |     0)   4.780 us    |    }
+>> 19177.226503 |     0)   0.420 us    |    cpufreq_cpu_put();
+>> 19177.226504 |     0)               |    cppc_get_perf_ctrs() {
+>> 19177.226505 |     0)   0.720 us    |      cpc_read.isra.0();
+>> 19177.226506 |     0)   1.180 us    |      cpc_read.isra.0();
+>> 19177.226508 |     0)   0.400 us    |      cpc_read.isra.0();
+>> 19177.226508 |     0)   0.600 us    |      cpc_read.isra.0();
+>> 19177.226509 |     0)   5.240 us    |    }
+>> 19177.226510 |     0)               |    __delay() {
+>> 19177.226510 |     0)   0.520 us    | arch_timer_evtstrm_available();
+>> 19177.226512 |     0)   2.420 us    |    }
+>> 19177.226513 |     0)               |    cppc_get_perf_ctrs() {
+>> 19177.226513 |     0)   0.540 us    |      cpc_read.isra.0();
+>> 19177.226514 |     0)   0.540 us    |      cpc_read.isra.0();
+>> 19177.226515 |     0)   0.400 us    |      cpc_read.isra.0();
+>> 19177.226516 |     0)   0.440 us    |      cpc_read.isra.0();
+>> 19177.226516 |     0)   3.660 us    |    }
+>> 19177.226517 |     0)   0.780 us    | cppc_cpufreq_perf_to_khz
+>> [cppc_cpufreq]();
+>> 19177.226518 |     0) + 23.320 us   |  }
+>
+>
+> In cppc_get_perf_ctrs(), the cpc registers are read in this order:
+> 1- delivered
+> 2- reference
+> 3- ref_perf
+> 4- ctr_wrap
+>
+> In the following, cpc_read[first][2] represents the second call to 
+> cpc_read()
+> in the first cppc_get_perf_ctrs() call.
+>
+> The duration between the 2 cpc_read() calls to get the 'delivered' 
+> register
+> should be:
+> = cppc_get_perf_ctrs[first]() - cpc_read[first][1]() + __delay() +
+>   cpc_read[second][1]()
+> = 5.24 - 0.72 + 2.24 + 0.54 us
+> = 7.3 us
+>
+> It is assumed here that in both cppc_get_perf_ctrs() calls:
+> - the duration between the entry cppc_get_perf_ctrs() and the the 
+> first call
+>   to cpc_read() is identical
+> - the duration between each cpc_read() call is identical
+>
+> Similarly for the 'reference' register:
+> = cppc_get_perf_ctrs[first]() - cpc_read[first][1]() - 
+> cpc_read[first][2]() +
+>   __delay() + cpc_read[second][1]() + cpc_read[second][2]()
+> = 5.24 - 0.72 - 1.18 + 2.24 + 0.54 +0.54 us
+> = 6.66 us
+>
+> So assuming the reference counter is at 1GHz and the delivered counter 
+> is at
+> 2.8GHz, the computed_freq is:
+> = ref_cnt_freq * (delta_cnt_delivered() / delta_cnt_ref())
+> = 1GHz * ((2.8GHz * 7.3us) / (1GHz * 6.66us))
+> = 2.8 * (7.3 * 6.66) GHz
+> = 3.07 GHz
+>
+> This is approximately what was obtained in the trace above (3.05GHz).
+>
+> ----
+>
+> You say that the cause of this is a congestion in the interconnect. I 
+> don't
+> see a way to check that right now.
+> However your trace is on the CPU0, so maybe all the other cores were 
+> shutdown
+> in your test. If this is the case, do you think a congestion could 
+> happen with
+> only one CPU ?
 
-Running ./script/checkpatch.pl on the patches also points out two
-typos in exynos4x12.dtsi and exynos4212.dtsi, would probably be nice
-to fix those while you are at it.
+No, other CPUs were not shut down in my test. I just ran "yes" on all 
+cores except CPU 0, then ran the reading freq script. Since all other 
+cores are busy, so the script should be always running on CPU 0.
 
-See some more comments/questions below.
+Since the counters, memory and other devices are on the interconnect, so 
+the congestion may be caused by plenty of factors IIUC.
 
-On Sun, Apr 16, 2023 at 03:34:22PM +0200, Artur Weber wrote:
-> Introduce support for the Galaxy Tab 3 8.0 series of boards:
-> 
->  - Samsung Galaxy Tab 3 8.0 WiFi (SM-T310/lt01wifi)
->  - Samsung Galaxy Tab 3 8.0 3G (SM-T311/lt013g)
->  - Samsung Galaxy Tab 3 8.0 LTE (SM-T315/lt01lte)
-> 
-> What works:
-> 
->  - Display and backlight
->  - Touchscreen (without touchkeys)
->  - GPIO buttons, hall sensor
->  - WiFi and Bluetooth
->  - USB, fuel gauge, charging (partial)
->  - Accelerometer and magnetometer
->  - WiFi model only: light sensor
-> 
-> Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
-> ---
-> Display panel bindings are added by a separate patchset:
-> "[PATCH 0/3] Add Samsung S6D7AA0 panel controller driver"[1]
-> 
-> [1] https://lore.kernel.org/all/20230416131632.31673-1-aweber.kernel@gmail.com/
-> ---
->  arch/arm/boot/dts/Makefile                  |    3 +
->  arch/arm/boot/dts/exynos4212-tab3-3g8.dts   |   30 +
->  arch/arm/boot/dts/exynos4212-tab3-lte8.dts  |   43 +
->  arch/arm/boot/dts/exynos4212-tab3-wifi8.dts |   25 +
->  arch/arm/boot/dts/exynos4212-tab3.dtsi      | 1175 +++++++++++++++++++
->  5 files changed, 1276 insertions(+)
->  create mode 100644 arch/arm/boot/dts/exynos4212-tab3-3g8.dts
->  create mode 100644 arch/arm/boot/dts/exynos4212-tab3-lte8.dts
->  create mode 100644 arch/arm/boot/dts/exynos4212-tab3-wifi8.dts
->  create mode 100644 arch/arm/boot/dts/exynos4212-tab3.dtsi
-> 
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index efe4152e5846..e5f63b636637 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -217,6 +217,9 @@ dtb-$(CONFIG_ARCH_EXYNOS4) += \
->  	exynos4210-smdkv310.dtb \
->  	exynos4210-trats.dtb \
->  	exynos4210-universal_c210.dtb \
-> +	exynos4212-tab3-3g8.dtb \
-> +	exynos4212-tab3-lte8.dtb \
-> +	exynos4212-tab3-wifi8.dtb \
->  	exynos4412-i9300.dtb \
->  	exynos4412-i9305.dtb \
->  	exynos4412-itop-elite.dtb \
-> diff --git a/arch/arm/boot/dts/exynos4212-tab3-3g8.dts b/arch/arm/boot/dts/exynos4212-tab3-3g8.dts
-> new file mode 100644
-> index 000000000000..c503a2d351dd
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/exynos4212-tab3-3g8.dts
-> @@ -0,0 +1,30 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Samsung's Exynos4212 based Galaxy Tab 3 8.0 WiFi board device tree
-> + * source
-> + *
-> + * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-> + *		http://www.samsung.com
-> + */
-> +
-> +/dts-v1/;
-> +#include "exynos4212-tab3.dtsi"
-> +
-> +/ {
-> +	model = "Samsung Galaxy Tab 3 8.0 3G (SM-T311) based on Exynos4212";
-> +	compatible = "samsung,t311", "samsung,tab3", "samsung,exynos4212", "samsung,exynos4";
-> +	chassis-type = "tablet";
-> +};
-> +
-> +/* Pin control sleep state overrides */
-> +
-> +&sleep0 {
-> +		PIN_SLP(gpb-5, INPUT, UP);
-> +};
-> +
-> +&sleep1 {
-> +		PIN_SLP(gpl0-0, OUT0, NONE);
-> +		PIN_SLP(gpl1-0, OUT0, NONE);
-> +		PIN_SLP(gpl2-4, OUT0, NONE);
-> +		PIN_SLP(gpm3-3, OUT1, NONE);
-> +};
-> diff --git a/arch/arm/boot/dts/exynos4212-tab3-lte8.dts b/arch/arm/boot/dts/exynos4212-tab3-lte8.dts
-> new file mode 100644
-> index 000000000000..158c6a2e24bf
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/exynos4212-tab3-lte8.dts
-> @@ -0,0 +1,43 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Samsung's Exynos4212 based Galaxy Tab 3 8.0 WiFi board device tree
-> + * source
-> + *
-> + * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-> + *		http://www.samsung.com
-> + */
-> +
-> +/dts-v1/;
-> +#include "exynos4212-tab3.dtsi"
-> +
-> +/ {
-> +	model = "Samsung Galaxy Tab 3 8.0 LTE (SM-T315) based on Exynos4212";
-> +	compatible = "samsung,t315", "samsung,tab3", "samsung,exynos4212", "samsung,exynos4";
-> +	chassis-type = "tablet";
-> +};
-> +
-> +&sleep0 {
-> +		PIN_SLP(gpa0-4, INPUT, UP);
-> +		PIN_SLP(gpa0-5, INPUT, UP);
-> +
-> +		PIN_SLP(gpb-5, INPUT, UP);
-> +
-> +		PIN_SLP(gpc0-0, PREV, NONE);
-> +		PIN_SLP(gpc1-3, INPUT, NONE);
-> +
-> +		PIN_SLP(gpf1-6, INPUT, NONE);
-> +		PIN_SLP(gpf2-2, PREV, NONE);
-> +};
-> +
-> +&sleep1 {
-> +		PIN_SLP(gpl0-0, PREV, NONE);
-> +
-> +		PIN_SLP(gpl1-0, PREV, NONE);
-> +
-> +		PIN_SLP(gpl2-1, INPUT, DOWN);
-> +		PIN_SLP(gpl2-2, INPUT, DOWN);
-> +		PIN_SLP(gpl2-4, OUT0, NONE);
-> +		PIN_SLP(gpl2-5, PREV, NONE);
-> +
-> +		PIN_SLP(gpm3-3, OUT1, NONE);
-> +};
-> diff --git a/arch/arm/boot/dts/exynos4212-tab3-wifi8.dts b/arch/arm/boot/dts/exynos4212-tab3-wifi8.dts
-> new file mode 100644
-> index 000000000000..0527a75710d8
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/exynos4212-tab3-wifi8.dts
-> @@ -0,0 +1,25 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Samsung's Exynos4212 based Galaxy Tab 3 8.0 WiFi board device tree
-> + * source
-> + *
-> + * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-> + *		http://www.samsung.com
-> + */
-> +
-> +/dts-v1/;
-> +#include "exynos4212-tab3.dtsi"
-> +
-> +/ {
-> +	model = "Samsung Galaxy Tab 3 8.0 WiFi (SM-T310) based on Exynos4212";
-> +	compatible = "samsung,t310", "samsung,tab3", "samsung,exynos4212", "samsung,exynos4";
-> +	chassis-type = "tablet";
-> +};
-> +
-> +&i2c_lightsensor {
-> +	/* Capella Micro CM3323 color light sensor */
-> +	colorsensor@10 {
-> +		compatible = "capella,cm3323";
-> +		reg = <0x10>;
-> +	};
-> +};
-> diff --git a/arch/arm/boot/dts/exynos4212-tab3.dtsi b/arch/arm/boot/dts/exynos4212-tab3.dtsi
-> new file mode 100644
-> index 000000000000..b8ad5497506c
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/exynos4212-tab3.dtsi
-> @@ -0,0 +1,1175 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Samsung's Exynos4212 based Galaxy Tab 3 board common source
-> + *
-> + * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-> + *		http://www.samsung.com
-> + */
-> +
-> +/dts-v1/;
-> +#include "exynos4212.dtsi"
-> +#include "exynos4412-ppmu-common.dtsi"
-> +#include "exynos-mfc-reserved-memory.dtsi"
-> +#include <dt-bindings/clock/samsung,s2mps11.h>
-> +#include <dt-bindings/gpio/gpio.h>
-> +#include <dt-bindings/input/gpio-keys.h>
-> +#include <dt-bindings/input/input.h>
-> +#include <dt-bindings/interrupt-controller/irq.h>
-> +#include "exynos-pinctrl.h"
-> +
-> +/ {
-> +	compatible = "samsung,tab3", "samsung,exynos4212", "samsung,exynos4";
-> +
-> +	memory@40000000 {
-> +		device_type = "memory";
-> +
-> +		/* Technically 2GB, but last 1GB is flaky, so we ignore it for now */
-> +		reg = <0x40000000 0x3FC00000>;
+>
+> Just 2 other comments:
+> a-
+> It might be interesting to change the order in which cpc registers are 
+> read
+> just to see if it has an impact, but even if it has, I m not sure how 
+> this
+> could be exploitable.
+> Just in case, I mean doing that, but I think that b. might be better 
+> to try.
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index c51d3ccb4cca..479b55006020 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1350,8 +1350,8 @@ int cppc_get_perf_ctrs(int cpunum, struct 
+> cppc_perf_fb_ctrs *perf_fb_ctrs)
+>                 }
+>         }
+>
+> -       cpc_read(cpunum, delivered_reg, &delivered);
+>         cpc_read(cpunum, reference_reg, &reference);
+> +       cpc_read(cpunum, delivered_reg, &delivered);
+>         cpc_read(cpunum, ref_perf_reg, &ref_perf);
+>
+>         /*
+>
+> b-
+> In the trace that you shared, the cpc_read() calls in the fist
+> cppc_get_perf_ctrs() calls seem to always take a bit more time than in 
+> the
+> second cppc_get_perf_ctrs() call.
+> Would it be possible to collect traces similar as above with 3 or 4 
+> calls to
+> cppc_get_perf_ctrs() instead of 2 ? It would allow to check whether in 
+> the first
+> call, accessing the cpc registers takes more time than in the 
+> following calls,
+> due to cache misses or other reasons.
 
-Comment says 1GB but you are skipping 1GB+4MB.  Is the entire region
-flaky or perhaps just the 4MB region in the middle?
+Cache miss? The counters should be not cached and reading the counters 
+should not hit cache IIUC.
 
-> +	};
-> +
-> +	chosen {
-> +		stdout-path = &serial_2;
-> +
-> +		/* Default S-BOOT bootloader loads initramfs here */
-> +		linux,initrd-start = <0x42000000>;
-> +		linux,initrd-end = <0x42800000>;
-> +	};
-> +
-> +	firmware@204f000 {
-> +		compatible = "samsung,secure-firmware";
-> +		reg = <0x0204F000 0x1000>;
-> +	};
-> +
-> +	fixed-rate-clocks {
-> +		xxti {
-> +			compatible = "samsung,clock-xxti";
-> +			clock-frequency = <0>;
-> +		};
-> +
-> +		xusbxti {
-> +			compatible = "samsung,clock-xusbxti";
-> +			clock-frequency = <24000000>;
-> +		};
-> +	};
-> +
-> +	gpio-keys {
-> +		compatible = "gpio-keys";
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&gpio_keys>;
-> +
-> +		key-power {
-> +			gpios = <&gpx2 7 GPIO_ACTIVE_LOW>;
-> +			linux,code = <KEY_POWER>;
-> +			label = "power";
-> +			debounce-interval = <10>;
-> +			wakeup-source;
-> +		};
-> +
-> +		key-up {
-> +			gpios = <&gpx2 2 GPIO_ACTIVE_LOW>;
-> +			linux,code = <KEY_VOLUMEUP>;
-> +			label = "volume down";
-> +			debounce-interval = <10>;
-> +		};
-> +
-> +		key-down {
-> +			gpios = <&gpx3 3 GPIO_ACTIVE_LOW>;
-> +			linux,code = <KEY_VOLUMEDOWN>;
-> +			label = "volume up";
-> +			debounce-interval = <10>;
-> +		};
-> +
-> +		key-home {
-> +			gpios = <&gpx1 2 GPIO_ACTIVE_LOW>;
-> +			linux,code = <KEY_HOME>;
-> +			label = "home";
-> +			debounce-interval = <10>;
-> +		};
-> +
-> +		switch-hall-sensor {
-> +			gpios = <&gpx2 4 GPIO_ACTIVE_LOW>;
-> +			linux,input-type = <EV_SW>;
-> +			linux,code = <SW_LID>;
-> +			linux,can-disable;
-> +			label = "hall effect sensor";
-> +			debounce-interval = <10>;
-> +			wakeup-source;
-> +		};
-> +	};
-> +
-> +	vbatt_reg: voltage-regulator-1 {
-> +		compatible = "regulator-fixed";
-> +		regulator-name = "VBATT";
-> +		regulator-min-microvolt = <5000000>;
-> +		regulator-max-microvolt = <5000000>;
-> +		regulator-always-on;
-> +	};
-> +
-> +	backlight_reset_supply: voltage-regulator-2 {
-> +		compatible = "regulator-fixed";
-> +		regulator-name = "BACKLIGHT_ENVDDIO";
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&backlight_reset>;
-> +		gpio = <&gpm0 1 GPIO_ACTIVE_HIGH>;
-> +		enable-active-high;
-> +	};
-> +
-> +	lcd_enable_supply: voltage-regulator-3 {
-> +		compatible = "regulator-fixed";
-> +		regulator-name = "LCD_VDD_2.2V";
-> +		regulator-min-microvolt = <2200000>;
-> +		regulator-max-microvolt = <2200000>;
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&lcd_en>;
-> +		gpio = <&gpc0 1 GPIO_ACTIVE_HIGH>; /* LCD_EN */
-> +		enable-active-high;
-> +	};
-> +
-> +	i2c_max77693: i2c-gpio-1 {
-> +		compatible = "i2c-gpio";
-> +		sda-gpios = <&gpm2 0 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		scl-gpios = <&gpm2 1 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		i2c-gpio,delay-us = <2>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		status = "okay";
-> +
-> +		pmic@66 {
-> +			compatible = "maxim,max77693";
-> +			interrupt-parent = <&gpx1>;
-> +			interrupts = <5 IRQ_TYPE_EDGE_FALLING>;
-> +			pinctrl-names = "default";
-> +			pinctrl-0 = <&max77693_irq>;
-> +			reg = <0x66>;
-> +
-> +			regulators {
-> +				esafeout1_reg: ESAFEOUT1 {
-> +					regulator-name = "ESAFEOUT1";
-> +					regulator-boot-on;
-> +				};
-> +
-> +				esafeout2_reg: ESAFEOUT2 {
-> +					regulator-name = "ESAFEOUT2";
-> +				};
-> +
-> +				charger_reg: CHARGER {
-> +					regulator-name = "CHARGER";
-> +					regulator-min-microamp = <60000>;
-> +					regulator-max-microamp = <2580000>;
-> +					regulator-boot-on;
-> +				};
-> +			};
-> +
-> +			charger {
-> +				compatible = "maxim,max77693-charger";
-> +
-> +				maxim,constant-microvolt = <4350000>;
-> +				maxim,min-system-microvolt = <3600000>;
-> +				maxim,thermal-regulation-celsius = <100>;
-> +				maxim,battery-overcurrent-microamp = <3500000>;
-> +				maxim,charge-input-threshold-microvolt = <4300000>;
-> +			};
-> +		};
-> +	};
-> +
-> +	i2c_max77693_fuel: i2c-gpio-2 {
-> +		compatible = "i2c-gpio";
-> +		sda-gpios = <&gpy0 2 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		scl-gpios = <&gpy0 3 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		i2c-gpio,delay-us = <2>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		status = "okay";
-> +
-> +		fuel-gauge@36 {
-> +			compatible = "maxim,max17050";
-> +			interrupt-parent = <&gpx2>;
-> +			interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
-> +			pinctrl-names = "default";
-> +			pinctrl-0 = <&max77693_fuel_irq>;
-> +			reg = <0x36>;
-> +
-> +			maxim,over-heat-temp = <500>;
-> +			maxim,over-volt = <4500>;
-> +		};
-> +	};
-> +
-> +	i2c_yas532_magnetometer: i2c-gpio-3 {
-> +		compatible = "i2c-gpio";
-> +		sda-gpios = <&gpy2 4 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		scl-gpios = <&gpy2 5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		i2c-gpio,delay-us = <2>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		status = "okay";
-> +
-> +		/* Magnetometer: Yamaha YAS532 */
-> +		magnetometer@2e {
-> +			compatible = "yamaha,yas532";
-> +			reg = <0x2e>;
-> +			iovdd-supply = <&ldo3_reg>; /* VCC_1.8V_AP */
-> +			mount-matrix = "-1", "0", "0",
-> +					  "0", "1", "0",
-> +					  "0", "0", "-1";
-> +		};
-> +	};
-> +
-> +	i2c_lightsensor: i2c-gpio-4 {
-> +		compatible = "i2c-gpio";
-> +		sda-gpios = <&gpl0 2 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		scl-gpios = <&gpl0 1 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		i2c-gpio,delay-us = <2>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		status = "okay";
-> +
-> +		/* WiFi model uses CM3323, 3G/LTE use CM36653 */
-> +	};
-> +
-> +	i2c_bl: i2c-gpio-24 {
-> +		compatible = "i2c-gpio";
-> +		sda-gpios = <&gpm4 3 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		scl-gpios = <&gpm4 2 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		status = "okay";
-> +
-> +		backlight: backlight@2c {
-> +			compatible = "ti,lp8556";
-> +			reg = <0x2c>;
-> +			status = "okay";
-> +
-> +			bl-name = "lcd-bl";
-> +			dev-ctrl = /bits/ 8 <0x80>;
-> +			init-brt = /bits/ 8 <0x78>; /* 120 */
-> +
-> +			power-supply = <&vbatt_reg>;
-> +			enable-supply = <&backlight_reset_supply>;
-> +
-> +			pwms = <&pwm 1 78770 0>;
-> +			pwm-names = "lp8556";
-> +			pwm-period = <78770>;
-> +
-> +			rom_a3h {
-> +				rom-addr = /bits/ 8 <0xa3>;
-> +				rom-val = /bits/ 8 <0x5e>;
-> +			};
-> +
-> +			rom_a5h {
-> +				rom-addr = /bits/ 8 <0xa5>;
-> +				rom-val = /bits/ 8 <0x34>;
-> +			};
-> +
-> +			rom_a7h {
-> +				rom-addr = /bits/ 8 <0xa7>;
-> +				rom-val = /bits/ 8 <0xfa>;
-> +			};
-> +		};
-> +	};
-> +
-> +	wlan_pwrseq: sdhci3-pwrseq {
-> +		compatible = "mmc-pwrseq-simple";
-> +		reset-gpios = <&gpm3 5 GPIO_ACTIVE_LOW>;
-> +	};
-> +};
-> +
-> +&bus_dmc {
-> +	devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
-> +	vdd-supply = <&buck1_reg>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_acp {
-> +	devfreq = <&bus_dmc>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_c2c {
-> +	devfreq = <&bus_dmc>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_leftbus {
-> +	devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
-> +	vdd-supply = <&buck3_reg>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_rightbus {
-> +	devfreq = <&bus_leftbus>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_display {
-> +	devfreq = <&bus_leftbus>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_fsys {
-> +	devfreq = <&bus_leftbus>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_peri {
-> +	devfreq = <&bus_leftbus>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_mfc {
-> +	devfreq = <&bus_leftbus>;
-> +	status = "okay";
-> +};
-> +
-> +&cpu0 {
-> +	cpu0-supply = <&buck2_reg>;
-> +};
-> +
-> +&dsi_0 {
-> +	vddcore-supply = <&ldo8_reg>;
-> +	vddio-supply = <&ldo10_reg>;
-> +	samsung,burst-clock-frequency = <500000000>;
-> +	samsung,esc-clock-frequency = <20000000>;
-> +	samsung,pll-clock-frequency = <24000000>;
-> +	status = "okay";
-> +
-> +	panel@0 {
-> +		compatible = "samsung,s6d7aa0-lsl080al02";
-> +		reg = <0>;
-> +		enable-supply = <&lcd_enable_supply>;
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&lcd_nrst>;
-> +		reset-gpios = <&gpf0 4 GPIO_ACTIVE_LOW>;
-> +		backlight = <&backlight>;
-> +	};
-> +};
-> +
-> +&exynos_usbphy {
-> +	vbus-supply = <&esafeout1_reg>;
-> +	status = "okay";
-> +};
-> +
-> +&fimd {
-> +	status = "okay";
-> +};
-> +
-> +&gpu {
-> +	mali-supply = <&buck4_reg>;
-> +	status = "okay";
-> +};
-> +
-> +&hsotg {
-> +	vusb_d-supply = <&ldo15_reg>;
-> +	vusb_a-supply = <&ldo12_reg>;
-> +	dr_mode = "peripheral";
-> +	status = "okay";
-> +};
-> +
-> +/* Accelerometer: K2DH/K3DH */
-> +&i2c_1 {
-> +	pinctrl-0 = <&i2c1_bus>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +
-> +	lis3dh: accelerometer@19 {
-> +		/* K2DH seems to be the same as lis2dh12 in terms of registers */
-> +		compatible = "st,lis2dh12-accel";
-> +		reg = <0x19>;
-> +
-> +		interrupt-parent = <&gpx0>;
-> +		interrupts = <0 IRQ_TYPE_EDGE_FALLING>;
-> +
-> +		vdd-supply = <&ldo17_reg>; /* VCC_2.8V_AP */
-> +		vddio-supply = <&ldo3_reg>; /* VCC_1.8V_AP */
-> +
-> +		mount-matrix = "-1", "0", "0",
-> +				  "0", "1", "0",
-> +				  "0", "0", "-1";
-> +	};
-> +};
-> +
-> +/* Touchscreen: MMS252 */
-> +&i2c_3 {
-> +	samsung,i2c-sda-delay = <100>;
-> +	samsung,i2c-slave-addr = <0x10>;
-> +	samsung,i2c-max-bus-freq = <400000>;
-> +	pinctrl-0 = <&i2c3_bus>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +
-> +	touchscreen@48 {
-> +		/* Using mms114 compatible for now */
-> +		compatible = "melfas,mms114";
-> +		reg = <0x48>;
-> +		interrupt-parent = <&gpb>;
-> +		interrupts = <4 IRQ_TYPE_EDGE_FALLING>;
-> +		touchscreen-size-x = <800>;
-> +		touchscreen-size-y = <1280>;
-> +		avdd-supply = <&ldo21_reg>;
-> +		vdd-supply = <&ldo25_reg>;
-> +	};
-> +};
-> +
-> +/* PMIC: s5m8767 */
-> +&i2c_7 {
-> +	samsung,i2c-sda-delay = <100>;
-> +	samsung,i2c-slave-addr = <0x10>;
-> +	samsung,i2c-max-bus-freq = <100000>;
-> +	pinctrl-0 = <&i2c7_bus>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +
-> +	s5m8767: pmic@66 {
-> +		compatible = "samsung,s5m8767-pmic";
-> +		reg = <0x66>;
-> +		interrupt-parent = <&gpx0>;
-> +		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&s5m8767_irq &s5m8767_dvs &s5m8767_ds>;
-> +		wakeup-source;
-> +
-> +		s5m8767,pmic-buck2-ramp-enable;
-> +		s5m8767,pmic-buck3-ramp-enable;
-> +		s5m8767,pmic-buck4-ramp-enable;
-> +
-> +		s5m8767,pmic-buck-ramp-delay = <25>;
-> +		s5m8767,pmic-buck-default-dvs-idx = <1>;
-> +
-> +		s5m8767,pmic-buck-dvs-gpios = <&gpm3 0 GPIO_ACTIVE_HIGH>,
-> +						 <&gpm3 1 GPIO_ACTIVE_HIGH>,
-> +						 <&gpm3 2 GPIO_ACTIVE_HIGH>;
-> +
-> +		s5m8767,pmic-buck-ds-gpios = <&gpf3 1 GPIO_ACTIVE_HIGH>,
-> +						 <&gpf3 2 GPIO_ACTIVE_HIGH>,
-> +						 <&gpf3 3 GPIO_ACTIVE_HIGH>;
-> +
-> +		s5m8767,pmic-buck2-dvs-voltage = <1100000>, <1100000>,
-> +						<1100000>, <1100000>,
-> +						<1100000>, <1100000>,
-> +						<1100000>, <1100000>;
-> +
-> +		s5m8767,pmic-buck3-dvs-voltage = <1100000>, <1100000>,
-> +						<1100000>, <1100000>,
-> +						<1100000>, <1100000>,
-> +						<1100000>, <1100000>;
-> +
-> +		s5m8767,pmic-buck4-dvs-voltage = <1100000>, <1100000>,
-> +						<1100000>, <1100000>,
-> +						<1100000>, <1100000>,
-> +						<1100000>, <1100000>;
-> +
-> +		regulators {
-> +			ldo1_reg: LDO1 {
-> +				regulator-name = "VALIVE_1.0V_AP";
-> +				regulator-min-microvolt = <1000000>;
-> +				regulator-max-microvolt = <1000000>;
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo2_reg: LDO2 {
-> +				regulator-name = "VM1M2_1.2V_AP";
-> +				regulator-min-microvolt = <1200000>;
-> +				regulator-max-microvolt = <1200000>;
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo3_reg: LDO3 {
-> +				regulator-name = "VCC_1.8V_AP";
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				regulator-always-on;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo5_reg: LDO5 {
-> +				regulator-name = "VCC_3.3V_MHL";
-> +				regulator-min-microvolt = <3300000>;
-> +				regulator-max-microvolt = <3300000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo8_reg: LDO8 {
-> +				regulator-name = "VMIPI_1.0V";
-> +				regulator-min-microvolt = <1000000>;
-> +				regulator-max-microvolt = <1000000>;
-> +				op_mode = <3>;
-> +			};
-> +
-> +			ldo9_reg: LDO9 {
-> +				regulator-name = "VSIL_1.2V";
-> +				regulator-min-microvolt = <1200000>;
-> +				regulator-max-microvolt = <1200000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo10_reg: LDO10 {
-> +				regulator-name = "VMIPI_1.8V";
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				op_mode = <3>;
-> +			};
-> +
-> +			ldo12_reg: LDO12 {
-> +				regulator-name = "VUOTG_3.0V";
-> +				regulator-min-microvolt = <3000000>;
-> +				regulator-max-microvolt = <3000000>;
-> +				op_mode = <1>;
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			ldo13_reg: LDO13 {
-> +				regulator-name = "VCC_1.8V_MHL";
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo15_reg: LDO15 {
-> +				regulator-name = "VHSIC_1.0V";
-> +				regulator-min-microvolt = <1000000>;
-> +				regulator-max-microvolt = <1000000>;
-> +				op_mode = <1>;
-> +				regulator-state-mem {
-> +					regulator-on-in-suspend;
-> +				};
-> +			};
-> +
-> +			ldo17_reg: LDO17 {
-> +				regulator-name = "VCC_2.8V_AP";
-> +				regulator-min-microvolt = <2800000>;
-> +				regulator-max-microvolt = <2800000>;
-> +				op_mode = <1>;
-> +				regulator-always-on;
-> +			};
-> +
-> +			ldo19_reg: LDO19 {
-> +				regulator-name = "VLED_IC_1.9V";
-> +				regulator-min-microvolt = <1900000>;
-> +				regulator-max-microvolt = <1900000>;
-> +				op_mode = <1>;
-> +				regulator-always-on;
-> +			};
-> +
-> +			ldo20_reg: LDO20 {
-> +				regulator-name = "VTOUCH_3.3V";
-> +				regulator-min-microvolt = <3300000>;
-> +				regulator-max-microvolt = <3300000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo21_reg: LDO21 {
-> +				regulator-name = "TSP_VDD_3.3V";
-> +				regulator-min-microvolt = <3300000>;
-> +				regulator-max-microvolt = <3300000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo22_reg: LDO22 {
-> +				regulator-name = "5M_AF_2.8V";
-> +				regulator-min-microvolt = <2800000>;
-> +				regulator-max-microvolt = <2800000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo23_reg: LDO23 {
-> +				regulator-name = "VTF_2.8V";
-> +				regulator-min-microvolt = <2800000>;
-> +				regulator-max-microvolt = <2800000>;
-> +				op_mode = <3>;
-> +			};
-> +
-> +			ldo24_reg: LDO24 {
-> +				regulator-name = "LEDA_2.8V";
-> +				regulator-min-microvolt = <2800000>;
-> +				regulator-max-microvolt = <2800000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo25_reg: LDO25 {
-> +				regulator-name = "TSP_VDD_1.8V";
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo26_reg: LDO26 {
-> +				regulator-name = "CAM_IO_1.8V";
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			ldo27_reg: LDO27 {
-> +				regulator-name = "VTCAM_1.8V";
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			buck1_reg: BUCK1 {
-> +				regulator-name = "VDD_MIF";
-> +				regulator-min-microvolt = <850000>;
-> +				regulator-max-microvolt = <1100000>;
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				op_mode = <3>;
-> +			};
-> +
-> +			buck2_reg: BUCK2 {
-> +				regulator-name = "VDD_ARM";
-> +				regulator-min-microvolt = <850000>;
-> +				regulator-max-microvolt = <1500000>;
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				op_mode = <3>;
-> +			};
-> +
-> +			buck3_reg: BUCK3 {
-> +				regulator-name = "VDD_INT";
-> +				regulator-min-microvolt = <850000>;
-> +				regulator-max-microvolt = <1300000>;
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				op_mode = <3>;
-> +			};
-> +
-> +			buck4_reg: BUCK4 {
-> +				regulator-name = "VDD_G3D";
-> +				regulator-min-microvolt = <850000>;
-> +				regulator-max-microvolt = <1150000>;
-> +				regulator-boot-on;
-> +				op_mode = <3>;
-> +			};
-> +
-> +			buck5_reg: BUCK5 {
-> +				regulator-name = "VMEM_1.2V_AP";
-> +				regulator-min-microvolt = <1200000>;
-> +				regulator-max-microvolt	= <1200000>;
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				op_mode = <1>;
-> +			};
-> +
-> +			buck6_reg: BUCK6 {
-> +				regulator-name = "CAM_ISP_CORE_1.2V";
-> +				regulator-min-microvolt = <1200000>;
-> +				regulator-max-microvolt = <1200000>;
-> +				op_mode = <1>;
-> +
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +		};
-> +
-> +		s5m8767_osc: clocks {
-> +			compatible = "samsung,s5m8767-clk";
-> +			#clock-cells = <1>;
-> +			clock-output-names = "en32khz_ap",
-> +						 "en32khz_cp",
-> +						 "en32khz_bt";
-> +		};
-> +	};
-> +};
-> +
-> +&mshc_0 {
-> +	broken-cd;
-> +	non-removable;
-> +	card-detect-delay = <200>;
-> +	vmmc-supply = <&ldo22_reg>;
-> +	clock-frequency = <400000000>;
-> +	samsung,dw-mshc-ciu-div = <0>;
-> +	samsung,dw-mshc-sdr-timing = <2 3>;
-> +	samsung,dw-mshc-ddr-timing = <1 2>;
-> +	pinctrl-0 = <&sd4_clk &sd4_cmd &sd4_bus4 &sd4_bus8>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +	bus-width = <8>;
-> +	cap-mmc-highspeed;
+> Ideally statistics on the result would be the best, or if you have a 
+> trace.dat
+> to share containing a trace with multiple cppc_cpufreq_get_rate() calls.
 
-Please add mmc-ddr-1_8v; here as well.  It was added to the other
-Exynos devices in commit 37f9514e618f ("ARM: dts: exynos: replace
-mshc0 alias with mmc-ddr-1_8v property") which can be found in
-Krzysztof's tree.
+Tried option b, I managed to get histogram:
 
-Best regards,
-Henrik Grimler
+@hist_first_ns[cat]:
+[4K, 8K)          112321 
+|@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@|
+[8K, 16K)            212 
+|                                                    |
+[16K, 32K)            25 
+|                                                    |
+[32K, 64K)            59 
+|                                                    |
+[64K, 128K)            6 
+|                                                    |
+[128K, 256K)           9 
+|                                                    |
 
-> +};
-> +
-> +&pinctrl_0 {
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&sleep0>;
-> +
-> +	s5m8767_ds: s5m8767-ds {
-> +		samsung,pins = "gpf3-1", "gpf3-2", "gpf3-3";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_INPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_DOWN>;
-> +		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
-> +	};
-> +
-> +	lcd_en: lcd-en {
-> +		samsung,pins = "gpc0-1";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +	};
-> +
-> +	lcd_nrst: lcd-nrst {
-> +		samsung,pins = "gpf0-4";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +	};
-> +
-> +	sleep0: sleep-state {
-> +		PIN_SLP(gpa0-0, INPUT, NONE);
-> +		PIN_SLP(gpa0-1, OUT0, NONE);
-> +		PIN_SLP(gpa0-2, INPUT, NONE);
-> +		PIN_SLP(gpa0-3, INPUT, UP);
-> +		PIN_SLP(gpa0-4, INPUT, DOWN); /* UP on LTE model */
-> +		PIN_SLP(gpa0-5, INPUT, DOWN); /* UP on LTE model */
-> +		PIN_SLP(gpa0-6, INPUT, DOWN);
-> +		PIN_SLP(gpa0-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpa1-0, INPUT, DOWN);
-> +		PIN_SLP(gpa1-1, INPUT, DOWN);
-> +		PIN_SLP(gpa1-2, INPUT, DOWN);
-> +		PIN_SLP(gpa1-3, INPUT, DOWN);
-> +		PIN_SLP(gpa1-4, INPUT, DOWN);
-> +		PIN_SLP(gpa1-5, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpb-0, INPUT, NONE);
-> +		PIN_SLP(gpb-1, INPUT, NONE);
-> +		PIN_SLP(gpb-2, INPUT, NONE);
-> +		PIN_SLP(gpb-3, INPUT, NONE);
-> +		PIN_SLP(gpb-4, INPUT, DOWN);
-> +		PIN_SLP(gpb-5, INPUT, DOWN); /* UP on all models with modem */
-> +		PIN_SLP(gpb-6, INPUT, DOWN);
-> +		PIN_SLP(gpb-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpc0-0, INPUT, DOWN); /* PREV, NONE on LTE model */
-> +		PIN_SLP(gpc0-1, INPUT, DOWN);
-> +		PIN_SLP(gpc0-2, INPUT, DOWN);
-> +		PIN_SLP(gpc0-3, INPUT, DOWN);
-> +		PIN_SLP(gpc0-4, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpc1-0, INPUT, DOWN);
-> +		PIN_SLP(gpc1-1, INPUT, DOWN);
-> +		PIN_SLP(gpc1-2, INPUT, DOWN);
-> +		PIN_SLP(gpc1-3, INPUT, DOWN); /* NONE on LTE model */
-> +		PIN_SLP(gpc1-4, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpd0-0, INPUT, DOWN);
-> +		PIN_SLP(gpd0-1, OUT0, NONE);
-> +		PIN_SLP(gpd0-2, INPUT, NONE);
-> +		PIN_SLP(gpd0-3, INPUT, NONE);
-> +
-> +		PIN_SLP(gpd1-0, INPUT, DOWN);
-> +		PIN_SLP(gpd1-1, INPUT, DOWN);
-> +		PIN_SLP(gpd1-2, INPUT, NONE);
-> +		PIN_SLP(gpd1-3, INPUT, NONE);
-> +
-> +		PIN_SLP(gpf0-0, INPUT, DOWN);
-> +		PIN_SLP(gpf0-1, INPUT, DOWN);
-> +		PIN_SLP(gpf0-2, INPUT, DOWN);
-> +		PIN_SLP(gpf0-3, INPUT, DOWN);
-> +		PIN_SLP(gpf0-4, OUT0, NONE);
-> +		PIN_SLP(gpf0-5, OUT0, NONE);
-> +		PIN_SLP(gpf0-6, INPUT, DOWN);
-> +		PIN_SLP(gpf0-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpf1-0, INPUT, DOWN);
-> +		PIN_SLP(gpf1-1, INPUT, DOWN);
-> +		PIN_SLP(gpf1-2, INPUT, DOWN);
-> +		PIN_SLP(gpf1-3, INPUT, DOWN);
-> +		PIN_SLP(gpf1-4, INPUT, DOWN);
-> +		PIN_SLP(gpf1-5, INPUT, DOWN);
-> +		PIN_SLP(gpf1-6, INPUT, DOWN); /* NONE on LTE model */
-> +		PIN_SLP(gpf1-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpf2-0, INPUT, DOWN);
-> +		PIN_SLP(gpf2-1, INPUT, DOWN);
-> +		PIN_SLP(gpf2-2, INPUT, DOWN); /* PREV, NONE on LTE model */
-> +		PIN_SLP(gpf2-3, INPUT, DOWN);
-> +		PIN_SLP(gpf2-4, INPUT, DOWN);
-> +		PIN_SLP(gpf2-5, INPUT, DOWN);
-> +		PIN_SLP(gpf2-6, INPUT, DOWN);
-> +		PIN_SLP(gpf2-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpf3-0, INPUT, DOWN);
-> +		PIN_SLP(gpf3-1, INPUT, DOWN);
-> +		PIN_SLP(gpf3-2, INPUT, DOWN);
-> +		PIN_SLP(gpf3-3, INPUT, DOWN);
-> +		PIN_SLP(gpf3-4, PREV, NONE);
-> +		PIN_SLP(gpf3-5, OUT0, DOWN);
-> +
-> +		PIN_SLP(gpj0-0, INPUT, DOWN);
-> +		PIN_SLP(gpj0-1, INPUT, DOWN);
-> +		PIN_SLP(gpj0-2, INPUT, DOWN);
-> +		PIN_SLP(gpj0-3, OUT0, NONE);
-> +		PIN_SLP(gpj0-4, INPUT, DOWN);
-> +		PIN_SLP(gpj0-5, INPUT, DOWN);
-> +		PIN_SLP(gpj0-6, OUT0, NONE);
-> +		PIN_SLP(gpj0-7, OUT0, NONE);
-> +
-> +		PIN_SLP(gpj1-0, OUT0, NONE);
-> +		PIN_SLP(gpj1-1, INPUT, DOWN);
-> +		PIN_SLP(gpj1-2, PREV, NONE);
-> +		PIN_SLP(gpj1-3, INPUT, DOWN);
-> +		PIN_SLP(gpj1-4, INPUT, DOWN);
-> +	};
-> +};
-> +
-> +&pinctrl_1 {
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&sleep1>;
-> +
-> +	max77693_irq: max77693-irq {
-> +		samsung,pins = "gpx1-5";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_INPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
-> +	};
-> +
-> +	max77693_fuel_irq: max77693-fuel-irq {
-> +		samsung,pins = "gpx2-3";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_INPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
-> +	};
-> +
-> +	s5m8767_dvs: s5m8767-dvs {
-> +		samsung,pins = "gpm3-0", "gpm3-1", "gpm3-2";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
-> +	};
-> +
-> +	s5m8767_irq: s5m8767-irq {
-> +		samsung,pins = "gpx0-7";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_EINT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
-> +	};
-> +
-> +	sdhci2_cd: sdhci2-cd-irq {
-> +		samsung,pins = "gpx3-4";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_INPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +		samsung,pin-drv = <EXYNOS4_PIN_DRV_LV1>;
-> +	};
-> +
-> +	bt_shutdown: bt-shutdown-pins {
-> +		samsung,pins = "gpl0-6";
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +	};
-> +
-> +	bt_host_wakeup: bt-host-wakeup-pins {
-> +		samsung,pins = "gpx2-6";
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +	};
-> +
-> +	bt_device_wakeup: bt-device-wakeup-pins {
-> +		samsung,pins = "gpx3-1";
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +	};
-> +
-> +	backlight_reset: backlight-reset {
-> +		samsung,pins = "gpm0-1";
-> +		samsung,pin-function = <EXYNOS_PIN_FUNC_OUTPUT>;
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +	};
-> +
-> +	gpio_keys: gpio-keys-pins {
-> +		samsung,pins = "gpx1-2", "gpx2-2", "gpx2-4", "gpx2-7", "gpx3-3";
-> +		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> +	};
-> +
-> +	sleep1: sleep-state {
-> +		PIN_SLP(gpk0-0, PREV, NONE);
-> +		PIN_SLP(gpk0-1, PREV, NONE);
-> +		PIN_SLP(gpk0-2, PREV, NONE);
-> +		PIN_SLP(gpk0-3, PREV, NONE);
-> +		PIN_SLP(gpk0-4, PREV, NONE);
-> +		PIN_SLP(gpk0-5, PREV, NONE);
-> +		PIN_SLP(gpk0-6, PREV, NONE);
-> +
-> +		PIN_SLP(gpk1-0, INPUT, DOWN);
-> +		PIN_SLP(gpk1-1, INPUT, DOWN);
-> +		PIN_SLP(gpk1-2, INPUT, DOWN);
-> +		PIN_SLP(gpk1-3, PREV, NONE);
-> +		PIN_SLP(gpk1-4, PREV, NONE);
-> +		PIN_SLP(gpk1-5, PREV, NONE);
-> +		PIN_SLP(gpk1-6, PREV, NONE);
-> +
-> +		PIN_SLP(gpk2-0, INPUT, DOWN);
-> +		PIN_SLP(gpk2-1, INPUT, DOWN);
-> +		PIN_SLP(gpk2-2, INPUT, DOWN);
-> +		PIN_SLP(gpk2-3, INPUT, DOWN);
-> +		PIN_SLP(gpk2-4, INPUT, DOWN);
-> +		PIN_SLP(gpk2-5, INPUT, DOWN);
-> +		PIN_SLP(gpk2-6, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpk3-0, OUT0, NONE);
-> +		PIN_SLP(gpk3-1, INPUT, NONE);
-> +		PIN_SLP(gpk3-2, INPUT, DOWN);
-> +		PIN_SLP(gpk3-3, INPUT, NONE);
-> +		PIN_SLP(gpk3-4, INPUT, NONE);
-> +		PIN_SLP(gpk3-5, INPUT, NONE);
-> +		PIN_SLP(gpk3-6, INPUT, NONE);
-> +
-> +		PIN_SLP(gpl0-0, INPUT, DOWN); /* OUT0 on 3G, PREV on LTE; NONE on both */
-> +		PIN_SLP(gpl0-1, INPUT, NONE);
-> +		PIN_SLP(gpl0-2, INPUT, NONE);
-> +		PIN_SLP(gpl0-3, INPUT, DOWN);
-> +		PIN_SLP(gpl0-4, INPUT, DOWN);
-> +		PIN_SLP(gpl0-6, PREV, NONE);
-> +
-> +		PIN_SLP(gpl1-0, INPUT, DOWN); /* OUT0 on 3G, PREV on LTE; NONE on both */
-> +		PIN_SLP(gpl1-1, OUT0, NONE);
-> +		PIN_SLP(gpl2-0, INPUT, DOWN);
-> +		PIN_SLP(gpl2-1, PREV, NONE); /* INPUT, DOWN on LTE */
-> +		PIN_SLP(gpl2-2, PREV, NONE); /* INPUT, DOWN on LTE */
-> +		PIN_SLP(gpl2-3, INPUT, DOWN);
-> +		PIN_SLP(gpl2-4, INPUT, DOWN); /* OUT0, NONE on models with modem */
-> +		PIN_SLP(gpl2-5, INPUT, DOWN); /* PREV, NONE on LTE */
-> +		PIN_SLP(gpl2-6, INPUT, DOWN);
-> +		PIN_SLP(gpl2-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpm0-0, PREV, NONE);
-> +		PIN_SLP(gpm0-1, OUT0, NONE);
-> +		PIN_SLP(gpm0-2, INPUT, DOWN);
-> +		PIN_SLP(gpm0-3, INPUT, DOWN);
-> +		PIN_SLP(gpm0-4, INPUT, DOWN);
-> +		PIN_SLP(gpm0-5, INPUT, DOWN);
-> +		PIN_SLP(gpm0-6, INPUT, DOWN);
-> +		PIN_SLP(gpm0-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpm1-0, INPUT, DOWN);
-> +		PIN_SLP(gpm1-1, INPUT, DOWN);
-> +		PIN_SLP(gpm1-2, INPUT, NONE);
-> +		PIN_SLP(gpm1-3, INPUT, NONE);
-> +		PIN_SLP(gpm1-4, INPUT, NONE);
-> +		PIN_SLP(gpm1-5, INPUT, NONE);
-> +		PIN_SLP(gpm1-6, OUT0, NONE);
-> +
-> +		PIN_SLP(gpm2-0, INPUT, NONE);
-> +		PIN_SLP(gpm2-1, INPUT, NONE);
-> +		PIN_SLP(gpm2-2, OUT0, NONE);
-> +		PIN_SLP(gpm2-3, INPUT, DOWN);
-> +		PIN_SLP(gpm2-4, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpm3-0, PREV, NONE);
-> +		PIN_SLP(gpm3-1, PREV, NONE);
-> +		PIN_SLP(gpm3-2, PREV, NONE);
-> +		PIN_SLP(gpm3-3, INPUT, DOWN); /* OUT1, NONE for 3G */
-> +		PIN_SLP(gpm3-4, INPUT, DOWN);
-> +		PIN_SLP(gpm3-5, PREV, NONE);
-> +		PIN_SLP(gpm3-6, INPUT, DOWN);
-> +		PIN_SLP(gpm3-7, OUT0, NONE);
-> +
-> +		PIN_SLP(gpm4-0, INPUT, DOWN);
-> +		PIN_SLP(gpm4-1, INPUT, DOWN);
-> +		PIN_SLP(gpm4-2, INPUT, DOWN);
-> +		PIN_SLP(gpm4-3, INPUT, DOWN);
-> +		PIN_SLP(gpm4-4, PREV, NONE);
-> +		PIN_SLP(gpm4-5, INPUT, NONE);
-> +		PIN_SLP(gpm4-6, INPUT, DOWN);
-> +		PIN_SLP(gpm4-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpy0-0, INPUT, DOWN);
-> +		PIN_SLP(gpy0-1, INPUT, DOWN);
-> +		PIN_SLP(gpy0-2, INPUT, NONE);
-> +		PIN_SLP(gpy0-3, INPUT, NONE);
-> +		PIN_SLP(gpy0-4, INPUT, DOWN);
-> +		PIN_SLP(gpy0-5, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpy1-0, INPUT, DOWN);
-> +		PIN_SLP(gpy1-1, INPUT, DOWN);
-> +		PIN_SLP(gpy1-2, INPUT, DOWN);
-> +		PIN_SLP(gpy1-3, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpy2-0, PREV, NONE);
-> +		PIN_SLP(gpy2-1, INPUT, DOWN);
-> +		PIN_SLP(gpy2-2, INPUT, NONE);
-> +		PIN_SLP(gpy2-3, INPUT, NONE);
-> +		PIN_SLP(gpy2-4, INPUT, NONE);
-> +		PIN_SLP(gpy2-5, INPUT, NONE);
-> +
-> +		PIN_SLP(gpy3-0, INPUT, DOWN);
-> +		PIN_SLP(gpy3-1, INPUT, DOWN);
-> +		PIN_SLP(gpy3-2, INPUT, DOWN);
-> +		PIN_SLP(gpy3-3, INPUT, DOWN);
-> +		PIN_SLP(gpy3-4, INPUT, DOWN);
-> +		PIN_SLP(gpy3-5, INPUT, DOWN);
-> +		PIN_SLP(gpy3-6, INPUT, DOWN);
-> +		PIN_SLP(gpy3-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpy4-0, INPUT, DOWN);
-> +		PIN_SLP(gpy4-1, INPUT, DOWN);
-> +		PIN_SLP(gpy4-2, INPUT, DOWN);
-> +		PIN_SLP(gpy4-3, INPUT, DOWN);
-> +		PIN_SLP(gpy4-4, INPUT, DOWN);
-> +		PIN_SLP(gpy4-5, INPUT, DOWN);
-> +		PIN_SLP(gpy4-6, INPUT, DOWN);
-> +		PIN_SLP(gpy4-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpy5-0, INPUT, DOWN);
-> +		PIN_SLP(gpy5-1, INPUT, DOWN);
-> +		PIN_SLP(gpy5-2, INPUT, DOWN);
-> +		PIN_SLP(gpy5-3, INPUT, DOWN);
-> +		PIN_SLP(gpy5-4, INPUT, DOWN);
-> +		PIN_SLP(gpy5-5, INPUT, DOWN);
-> +		PIN_SLP(gpy5-6, INPUT, DOWN);
-> +		PIN_SLP(gpy5-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpy6-0, INPUT, DOWN);
-> +		PIN_SLP(gpy6-1, INPUT, DOWN);
-> +		PIN_SLP(gpy6-2, INPUT, DOWN);
-> +		PIN_SLP(gpy6-3, INPUT, DOWN);
-> +		PIN_SLP(gpy6-4, INPUT, DOWN);
-> +		PIN_SLP(gpy6-5, INPUT, DOWN);
-> +		PIN_SLP(gpy6-6, INPUT, DOWN);
-> +		PIN_SLP(gpy6-7, INPUT, DOWN);
-> +	};
-> +};
-> +
-> +&pinctrl_2 {
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&sleep2>;
-> +
-> +	sleep2: sleep-state {
-> +		PIN_SLP(gpz-0, INPUT, DOWN);
-> +		PIN_SLP(gpz-1, INPUT, DOWN);
-> +		PIN_SLP(gpz-2, INPUT, DOWN);
-> +		PIN_SLP(gpz-3, INPUT, DOWN);
-> +		PIN_SLP(gpz-4, INPUT, DOWN);
-> +		PIN_SLP(gpz-5, INPUT, DOWN);
-> +		PIN_SLP(gpz-6, INPUT, DOWN);
-> +	};
-> +};
-> +
-> +&pinctrl_3 {
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&sleep3>;
-> +
-> +	sleep3: sleep-state {
-> +		PIN_SLP(gpv0-0, INPUT, DOWN);
-> +		PIN_SLP(gpv0-1, INPUT, DOWN);
-> +		PIN_SLP(gpv0-2, INPUT, DOWN);
-> +		PIN_SLP(gpv0-3, INPUT, DOWN);
-> +		PIN_SLP(gpv0-4, INPUT, DOWN);
-> +		PIN_SLP(gpv0-5, INPUT, DOWN);
-> +		PIN_SLP(gpv0-6, INPUT, DOWN);
-> +		PIN_SLP(gpv0-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpv1-0, INPUT, DOWN);
-> +		PIN_SLP(gpv1-1, INPUT, DOWN);
-> +		PIN_SLP(gpv1-2, INPUT, DOWN);
-> +		PIN_SLP(gpv1-3, INPUT, DOWN);
-> +		PIN_SLP(gpv1-4, INPUT, DOWN);
-> +		PIN_SLP(gpv1-5, INPUT, DOWN);
-> +		PIN_SLP(gpv1-6, INPUT, DOWN);
-> +		PIN_SLP(gpv1-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpv2-0, INPUT, DOWN);
-> +		PIN_SLP(gpv2-1, INPUT, DOWN);
-> +		PIN_SLP(gpv2-2, INPUT, DOWN);
-> +		PIN_SLP(gpv2-3, INPUT, DOWN);
-> +		PIN_SLP(gpv2-4, INPUT, DOWN);
-> +		PIN_SLP(gpv2-5, INPUT, DOWN);
-> +		PIN_SLP(gpv2-6, INPUT, DOWN);
-> +		PIN_SLP(gpv2-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpv3-0, INPUT, DOWN);
-> +		PIN_SLP(gpv3-1, INPUT, DOWN);
-> +		PIN_SLP(gpv3-2, INPUT, DOWN);
-> +		PIN_SLP(gpv3-3, INPUT, DOWN);
-> +		PIN_SLP(gpv3-4, INPUT, DOWN);
-> +		PIN_SLP(gpv3-5, INPUT, DOWN);
-> +		PIN_SLP(gpv3-6, INPUT, DOWN);
-> +		PIN_SLP(gpv3-7, INPUT, DOWN);
-> +
-> +		PIN_SLP(gpv4-0, INPUT, DOWN);
-> +		PIN_SLP(gpv4-1, INPUT, DOWN);
-> +	};
-> +};
-> +
-> +&pmu_system_controller {
-> +	assigned-clocks = <&pmu_system_controller 0>;
-> +	assigned-clock-parents = <&clock CLK_XUSBXTI>;
-> +};
-> +
-> +&pwm {
-> +	pinctrl-0 = <&pwm1_out>;
-> +	pinctrl-names = "default";
-> +	samsung,pwm-outputs = <1>;
-> +	status = "okay";
-> +};
-> +
-> +&rtc {
-> +	status = "okay";
-> +	clocks = <&clock CLK_RTC>, <&s5m8767_osc S2MPS11_CLK_AP>;
-> +	clock-names = "rtc", "rtc_src";
-> +};
-> +
-> +&sdhci_2 {
-> +	bus-width = <4>;
-> +	cd-gpios = <&gpx3 4 GPIO_ACTIVE_LOW>;
-> +	pinctrl-0 = <&sd2_clk &sd2_cmd &sd2_bus4 &sdhci2_cd>;
-> +	pinctrl-names = "default";
-> +	vmmc-supply = <&ldo23_reg>;
-> +	status = "okay";
-> +};
-> +
-> +&sdhci_3 {
-> +	#address-cells = <1>;
-> +	#size-cells = <0>;
-> +	non-removable;
-> +	bus-width = <4>;
-> +
-> +	mmc-pwrseq = <&wlan_pwrseq>;
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&sd3_clk &sd3_cmd &sd3_bus4>;
-> +	status = "okay";
-> +
-> +	/* BCM4334 Wi-Fi */
-> +	brcmf: wifi@1 {
-> +		compatible = "brcm,bcm4334-fmac", "brcm,bcm4329-fmac";
-> +		reg = <1>;
-> +
-> +		interrupt-parent = <&gpx2>;
-> +		interrupts = <5 IRQ_TYPE_LEVEL_HIGH>;
-> +		interrupt-names = "host-wake";
-> +	};
-> +};
-> +
-> +&serial_0 {
-> +	pinctrl-0 = <&uart0_data &uart0_fctl>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +
-> +	/* BCM4334B0 Bluetooth */
-> +	bluetooth {
-> +		compatible = "brcm,bcm4330-bt";
-> +		pinctrl-0 = <&bt_shutdown &bt_device_wakeup &bt_host_wakeup>;
-> +		pinctrl-names = "default";
-> +		max-speed = <3000000>;
-> +		shutdown-gpios = <&gpl0 6 GPIO_ACTIVE_HIGH>;
-> +		device-wakeup-gpios = <&gpx3 1 GPIO_ACTIVE_HIGH>;
-> +		host-wakeup-gpios = <&gpx2 6 GPIO_ACTIVE_HIGH>;
-> +		clocks = <&s5m8767_osc S2MPS11_CLK_BT>;
-> +	};
-> +};
-> +
-> +&serial_1 {
-> +	status = "okay";
-> +};
-> +
-> +&serial_2 {
-> +	status = "okay";
-> +};
-> +
-> +&serial_3 {
-> +	status = "okay";
-> +};
-> +
-> +&tmu {
-> +	vtmu-supply = <&ldo10_reg>;
-> +	status = "okay";
-> +};
-> -- 
-> 2.40.0
-> 
+@hist_second_ns[cat]:
+[2K, 4K)          112590 
+|@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@|
+[4K, 8K)               4 
+|                                                    |
+[8K, 16K)              0 
+|                                                    |
+[16K, 32K)            15 
+|                                                    |
+[32K, 64K)            18 
+|                                                    |
+[64K, 128K)            1 
+|                                                    |
+[128K, 256K)           4 
+|                                                    |
+
+The "first" means the first cppc_get_perf_ctrs() call. But the bpftrace 
+script can't tell the second, the third and the fourth, so all them are 
+shown as "second". Anyway it seems fine. We can tell the first read took 
+longer than the later ones for the most time.
+
+And a typical func_graph trace shows:
+
+# tracer: function_graph
+#
+#     TIME        CPU  DURATION                  FUNCTION CALLS
+#      |          |     |   |                     |   |   | |
+  4447.171333 |     0)               |  cppc_cpufreq_get_rate 
+[cppc_cpufreq]() {
+  4447.171334 |     0)               |    cpufreq_cpu_get() {
+  4447.171334 |     0)   1.060 us    | _raw_read_lock_irqsave();
+  4447.171336 |     0)   0.560 us    | _raw_read_unlock_irqrestore();
+  4447.171337 |     0)   3.480 us    | }
+  4447.171338 |     0)   0.400 us    | cpufreq_cpu_put();
+  4447.171338 |     0)               |    cppc_get_perf_ctrs() {
+  4447.171339 |     0)   0.720 us    | cpc_read.isra.0();
+  4447.171341 |     0)   0.700 us    | cpc_read.isra.0();
+  4447.171342 |     0)   0.380 us    | cpc_read.isra.0();
+  4447.171342 |     0)   0.600 us    | cpc_read.isra.0();
+  4447.171343 |     0)   4.900 us    | }
+  4447.171344 |     0)               |    __delay() {
+  4447.171344 |     0)   0.540 us    | arch_timer_evtstrm_available();
+  4447.171346 |     0)   2.420 us    | }
+  4447.171347 |     0)               |    cppc_get_perf_ctrs() {
+  4447.171347 |     0)   0.540 us    | cpc_read.isra.0();
+  4447.171348 |     0)   0.520 us    | cpc_read.isra.0();
+  4447.171349 |     0)   0.400 us    | cpc_read.isra.0();
+  4447.171350 |     0)   0.440 us    | cpc_read.isra.0();
+  4447.171350 |     0)   3.660 us    | }
+  4447.171351 |     0)               |    __delay() {
+  4447.171351 |     0)   0.400 us    | arch_timer_evtstrm_available();
+  4447.171353 |     0)   2.400 us    | }
+  4447.171353 |     0)               |    cppc_get_perf_ctrs() {
+  4447.171354 |     0)   0.540 us    | cpc_read.isra.0();
+  4447.171355 |     0)   0.540 us    | cpc_read.isra.0();
+  4447.171356 |     0)   0.380 us    | cpc_read.isra.0();
+  4447.171356 |     0)   0.420 us    | cpc_read.isra.0();
+  4447.171357 |     0)   3.640 us    | }
+  4447.171357 |     0)               |    __delay() {
+  4447.171358 |     0)   0.380 us    | arch_timer_evtstrm_available();
+  4447.171360 |     0)   2.380 us    |    }
+  4447.171360 |     0)               |    cppc_get_perf_ctrs() {
+  4447.171361 |     0)   0.520 us    |      cpc_read.isra.0();
+  4447.171361 |     0)   0.520 us    |      cpc_read.isra.0();
+  4447.171362 |     0)   0.400 us    |      cpc_read.isra.0();
+  4447.171363 |     0)   0.440 us    |      cpc_read.isra.0();
+  4447.171364 |     0)   3.640 us    |    }
+  4447.171364 |     0)   0.520 us    |    cppc_cpufreq_perf_to_khz 
+[cppc_cpufreq]();
+  4447.171365 |     0) + 34.240 us   |  }
+
+It also shows the first reading typically took longer than the later 
+ones. The second, the third and the fourth actually took almost same time.
+
+I also tried to read perf_fb_ctrs_t0 twice (so total 3 reads, 2 for t0, 
+1 for t1, 2us delay between each read), but I didn't see noticeable 
+improvement. 4 reads (2 for t0, 2 for t1) does show some noticeable 
+improvement.
+
+>
+> Example of code where we do 4 calls to cppc_get_perf_ctrs():
+>
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c 
+> b/drivers/cpufreq/cppc_cpufreq.c
+> index 022e3555407c..6370f2f0bdad 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -853,6 +853,20 @@ static unsigned int 
+> cppc_cpufreq_get_rate(unsigned int cpu)
+>
+>         udelay(2); /* 2usec delay between sampling */
+>
+> +       ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t1);
+> +       if (ret)
+> +               return ret;
+> +
+> +       udelay(2); /* 2usec delay between sampling */
+> +
+> +       /* Do a third call. */
+> +       ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t1);
+> +       if (ret)
+> +               return ret;
+> +
+> +       udelay(2); /* 2usec delay between sampling */
+> +
+> +       /* Do a fourth call. */
+>         ret = cppc_get_perf_ctrs(cpu, &fb_ctrs_t1);
+>         if (ret)
+>                 return ret;
+>
+>>
+>> The above trace data shows some cpc reading took a little bit longer
+>> than usual. I suspected it was caused by interconnect congestion.
+>>
+>>
+>> So it looks like IRQ is the major contributing factor of high error
+>> (4xxxxxx KHz), interconnect congestion is the major contributing factor
+>> of low error (3xxxxxx KHz).
+>>
+>> So I did the below test:
+>> 1. Disable IRQ: The high errors were gone (> 3700000KHz), but low errors
+>> were still seen.
+>> 2.10us delay: The high errors were still seen.
+>> 3. Disable IRQ + 10us delay: all the errors were gone.
+>>
+>> I think the test result also supports the tracing data.
+>>
+>>
+>> I also got some confusion about calling cppc_cpufreq_get_rate() with irq
+>> disabled. Rafael thought 10ms delay is too long because the function may
+>> be called with irq disabled. But a deeper look at the function shows it
+>> should *NOT* be called with irq disabled at all.
+>>
+>> First, if pcc channel is used, cpc reading may take over 100ms, it is
+>> way larger the proposed 10ms delay.
+>> Second, reading from cpc channel needs to take a semaphore, so it may
+>> sleep. But sleep with IRQ disabled is not allowed.
+>
+> Yes right, however the semaphore is not taken in between the sequence of
+> cpc_read() calls in cppc_get_perf_ctrs(). So maybe the change below 
+> should
+> be acceptable:
+
+Yeah, we should be able to find a smaller irq disable section.
+
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index c51d3ccb4cca..105a7e2ffffa 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1315,6 +1315,7 @@ int cppc_get_perf_ctrs(int cpunum, struct 
+> cppc_perf_fb_ctrs *perf_fb_ctrs)
+>         struct cppc_pcc_data *pcc_ss_data = NULL;
+>         u64 delivered, reference, ref_perf, ctr_wrap_time;
+>         int ret = 0, regs_in_pcc = 0;
+> +       unsigned long flags;
+>
+>         if (!cpc_desc) {
+>                 pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
+> @@ -1350,10 +1351,14 @@ int cppc_get_perf_ctrs(int cpunum, struct 
+> cppc_perf_fb_ctrs *perf_fb_ctrs)
+>                 }
+>         }
+>
+> +       local_irq_save(flags);
+> +
+>         cpc_read(cpunum, delivered_reg, &delivered);
+>         cpc_read(cpunum, reference_reg, &reference);
+>         cpc_read(cpunum, ref_perf_reg, &ref_perf);
+>
+> +       local_irq_restore(flags);
+> +
+
+cpc_read_ffh() would return -EPERM if irq is disabled.
+
+So, the irq disabling must happen for mmio only in cpc_read(), for example:
+
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index c51d3ccb4cca..f3c92d844074 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -982,6 +982,7 @@ static int cpc_read(int cpu, struct 
+cpc_register_resource *reg_res, u64 *val)
+         void __iomem *vaddr = NULL;
+         int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpu);
+         struct cpc_reg *reg = &reg_res->cpc_entry.reg;
++       unsigned long flags;
+
+         if (reg_res->type == ACPI_TYPE_INTEGER) {
+                 *val = reg_res->cpc_entry.int_value;
+@@ -1015,6 +1016,7 @@ static int cpc_read(int cpu, struct 
+cpc_register_resource *reg_res, u64 *val)
+                 return 
+acpi_os_read_memory((acpi_physical_address)reg->address,
+                                 val, reg->bit_width);
+
++       local_irq_save(flags);
+         switch (reg->bit_width) {
+         case 8:
+                 *val = readb_relaxed(vaddr);
+@@ -1029,10 +1031,12 @@ static int cpc_read(int cpu, struct 
+cpc_register_resource *reg_res, u64 *val)
+                 *val = readq_relaxed(vaddr);
+                 break;
+         default:
++               local_irq_restore(flags);
+                 pr_debug("Error: Cannot read %u bit width from PCC for 
+ss: %d\n",
+                          reg->bit_width, pcc_ss_id);
+                 return -EFAULT;
+         }
++       local_irq_restore(flags);
+
+         return 0;
+  }
+
+>         /*
+>          * Per spec, if ctr_wrap_time optional register is 
+> unsupported, then the
+>          * performance counters are assumed to never wrap during the 
+> lifetime of
+>
+>> Third, if the counters are implemented by AMU, cpc_read_ffh() needs to
+>> send IPI so it requires IRQ enabled.
+>
+> If I'm not mistaken, the CPU calling cpc_read_ffh() might have IRQs 
+> disabled,
+> it should not prevent it to send IPIs no ?
+
+It can't work with irq disabled. The comment in counters_read_on_cpu() 
+says "Abort call on counterless CPU or when interrupts are disabled - 
+can lead to deadlock in smp sync call."
+
+
+And it just returns -EPERM and raise a warning if irq is disabled.
+
+>
+>>
+>>>
+>>>>
+>>>> And the counters are accessed through an interconnect on our platform,
+>>>> so the interconnect congestion may result in the difference as well.
+>>>>
+>>>>>
+>>>>> freq = ref_freq * (delivered[1] - delivered[0]) / (ref[1] - ref[0])
+>>>>>
+>>>>> If the counters are accessed through mmio, I don't see anything that
+>>>>> would
+>>>>> make delta[x] vary when calling cppc_get_perf_ctrs(), cf. cpc_read().
+>>>>> Do you know if the address represents real counters or a place in
+>>>>> memory
+>>>>> representing something else ?
+>>>>
+>>>> The address does represent real counters.
+>>>
+>>> Oh ok, is it possible to know what is there ?
+>>
+>> AFAIK, it is memory mapped access to the core's AMU counters.
+>>
+>>>
+>>>>
+>>>>>
+>>>>> Would it be possible to try setting the CPU frequency to one unique
+>>>>> value
+>>>>> and get a serie of values like:
+>>>>> [timestamp, ref_counter_value, deliverd_counter_value]
+>>>>
+>>>> Could you please elaborate regarding "setting the CPU frequency to one
+>>>> unique value"? What value is unique?
+>>>
+>>> I meant having the CPUs using only on frequency. The following should
+>>> work:
+>>> cat /sys/devices/system/cpu/cpu[X]/cpufreq/scaling_min_freq >
+>>> /sys/devices/system/cpu/cpu[X]/cpufreq/scaling_max_freq
+>>>
+>>>>
+>>>>>
+>>>>> This would allow to check that the counters are accumulating at a 
+>>>>> valid
+>>>>> pace. Also you said there were frequencies above the maximum 
+>>>>> value, but
+>>>>> are there also frequencies below the minimum value ?
+>>>>
+>>>> I've never seen the frequency below the minimum value.
+>>>
+>>> Maybe this is because the CPUs are running at their maximum frequency,
+>>> so when the computed frequency is below the actual running frequency,
+>>> it still doesn't go below the minimum frequency.
+>>> Meaning that if the CPUs were limited to their lowest frequency (with
+>>> the command above), maybe the get_rate() function would return values
+>>> in a range [[1]:[2]]:
+>>> - [1]: frequency below the lowest frequency
+>>> - [2]: frequency above the lowest frequency, but below the maximum
+>>>    frequency of 2.8GHz
+>>
+>> Yes, with writing scaling_min_freq to scaling_max_freq, I can see the
+>> frequency was lower than min freq (1000000KHz) occasionally.
+>>
+>>>
+>>> Would it be possible to do the following:
+>>>
+>>> # Shut down all the CPUs except the last one just to have less logs
+>>> for i in /sys/devices/system/cpu/cpu[0-9]* ; do echo 0 > $i/online ; 
+>>> done
+>>>
+>>> cd /sys/kernel/debug/tracing
+>>>
+>>> # Add a kprobe to cppc_cpufreq_get_rate to get the computed freq
+>>> echo 'r:myretprobe cppc_cpufreq_get_rate $retval:u32' >>
+>>> /sys/kernel/debug/tracing/kprobe_events
+>>> echo 1 > events/kprobes/enable
+>>>
+>>> # Setup ftrace to trace cppc_cpufreq_get_rate() calls
+>>> # (and maybe see if something undesired happens in the call)
+>>> echo function_graph > current_tracer
+>>> echo funcgraph-abstime > trace_options
+>>> echo cppc_cpufreq_get_rate > set_graph_function
+>>>
+>>> # Do the tracing
+>>> echo 1 > tracing_on
+>>> # Wait a bit for a call to cppc_cpufreq_get_rate() to happen
+>>> echo 0 > tracing_on
+>>>
+>>> Also adding the following in cppc_perf_from_fbctrs() should allow
+>>> tracking the counter values:
+>>> trace_printk("get_cntrs: ref0=%lx ref1=%lx del0=%lx del1=%lx",
+>>>      fb_ctrs_t0->reference, fb_ctrs_t1->reference,
+>>>      fb_ctrs_t0->delivered, fb_ctrs_t1->delivered);
+>>
+>> Sorry I forgot to ask whether I shall run the tracing for the lower than
+>> min frequency case or not? Since the latency of reading cpc is quite
+>> small (sub microsecond), so it is quite sensitive to extra
+>> latency/delay. It seems like the overhead of tracing is not negligible.
+>>
+>> I got some data with higher than max frequency.
+>>
+>> Good:
+>>    159.077799 |     0)               |  /* get_cntrs: ref0=1513476688
+>> ref1=1513482268 del0=329890515 del1=329905431 */
+>>    159.607913 |     0)               |  /* get_cntrs: ref0=1137490668
+>> ref1=1137496188 del0=3198347141 del1=3198362993 */
+>>
+>> Bad:
+>> 4965.786566 |     0)               |  /* get_cntrs: ref0=766025872
+>> ref1=766034192 del0=2288598970 del1=2288624170 */
+>> 5251.933966 |     0)               |  /* get_cntrs: ref0=2472241696
+>> ref1=2472250376 del0=1156772954 del1=1156799208 */
+>>
+>> Hopefully this is helpful.
+>
+> Yes, thanks a lot. Using the min or max frequency was not important IMO,
+> it was just to avoid having the possibility to have a CPU with a changing
+> frequency.
+> Just a comment, the first trace was really helpfull, but I think it is
+> possible to have a function graph and the counter values as above in
+> the same trace.
+
+I wish I could trace more. But the tracing overhead is more noticeable 
+and may impact the result. With the trace_printk() I actually already 
+saw much fewer high error happened. The higher the error the more useful 
+the trace.
+
+>
+>
+> Thanks again for the experiments,
+
+Thanks for guiding me debug this problem.
+
+> Regards,
+> Pierre
+
