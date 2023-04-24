@@ -2,125 +2,166 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 255FAC77B76
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Apr 2023 09:00:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CAACC77B61
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Apr 2023 09:55:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230329AbjDXJAU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Apr 2023 05:00:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41762 "EHLO
+        id S231558AbjDXJzt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Apr 2023 05:55:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231145AbjDXJAS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2023 05:00:18 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 161AD10CC;
-        Mon, 24 Apr 2023 02:00:18 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id A6A806137C;
-        Mon, 24 Apr 2023 09:00:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 862C3C433EF;
-        Mon, 24 Apr 2023 08:59:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1682326817;
-        bh=wR67sHnfAWD61UY2/6LLn6GjwksJh2dH/l18sPo/gNM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=dxxTN6KccHqX2+mFxLZ1vSCpxC1nO2QkKA2kc4n5lhUlWDIR4LFiw+81LRYw52Ad5
-         66gQS+ujD5w53YNGywPXDVpusW2cgJk9OnfSH4Gyn6CaYFSmi9npcdwjSgyaI4AeZ+
-         UOWF3SSjQPJ4oIQk5Ry6RFkpFLZVOwO7SGbOpXko1ATzqbvVSx2+PfXHRtUCtwLszk
-         AG8OQOZ/59/TcEJJApKe3KdHb3+HBbt3Qwl/sKFiEXDuARaxGismV+1swYRLvgLpGq
-         62gqS17MHOiAScB8lTe6V1RTEkGjfXUlgF30qQFdjkX/5YNCKmJIbc5Y4UTNsltZzV
-         m0TbFWtPG4sVw==
-Date:   Mon, 24 Apr 2023 09:59:42 +0100
-From:   Lee Jones <lee@kernel.org>
-To:     "Arslanbenzer, Zeynep" <Zeynep.Arslanbenzer@analog.com>
-Cc:     "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "krzysztof.kozlowski+dt@linaro.org" 
-        <krzysztof.kozlowski+dt@linaro.org>,
-        "sre@kernel.org" <sre@kernel.org>,
-        "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
-        "broonie@kernel.org" <broonie@kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v2 8/8] mfd: max77658: Add ADI MAX77643/54/58/59 MFD
- Support
-Message-ID: <20230424085942.GA8035@google.com>
-References: <20230322055628.4441-1-Zeynep.Arslanbenzer@analog.com>
- <20230322055628.4441-9-Zeynep.Arslanbenzer@analog.com>
- <20230330123136.GF434339@google.com>
- <DM6PR03MB519577728975E086D8EB20F38B669@DM6PR03MB5195.namprd03.prod.outlook.com>
+        with ESMTP id S231523AbjDXJzr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2023 05:55:47 -0400
+X-Greylist: delayed 465 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 24 Apr 2023 02:55:24 PDT
+Received: from forward502c.mail.yandex.net (forward502c.mail.yandex.net [178.154.239.210])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C320340EE;
+        Mon, 24 Apr 2023 02:55:23 -0700 (PDT)
+Received: from mail-nwsmtp-smtp-production-main-39.myt.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-39.myt.yp-c.yandex.net [IPv6:2a02:6b8:c12:261e:0:640:2e3d:0])
+        by forward502c.mail.yandex.net (Yandex) with ESMTP id 161E15EC77;
+        Mon, 24 Apr 2023 12:35:48 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-39.myt.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id JZBb1pbWwKo0-ZrhHlrZZ;
+        Mon, 24 Apr 2023 12:35:47 +0300
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=maquefel.me; s=mail; t=1682328947;
+        bh=70tk1h+wgeQTaLaqiB2qLFxkPdeNb1mwGKko+ahe0Pk=;
+        h=Message-Id:Date:In-Reply-To:Cc:Subject:References:To:From;
+        b=KmrSjPINTOPndFgRIQ/9jPYIMPspzIV+4nqN8RLXqz1aylvrv9zoL74k3w4hDfY5S
+         n15pcFYLcyijQH2T21QEheg3x+KlT69ReXXDWuwe52eRgCR6M+wV7A4W0DKAu8WCSJ
+         EdOGa09/CODJabDPTbjDwGAj6+FDq7gunwru1BmE=
+Authentication-Results: mail-nwsmtp-smtp-production-main-39.myt.yp-c.yandex.net; dkim=pass header.i=@maquefel.me
+From:   Nikita Shubin <nikita.shubin@maquefel.me>
+Cc:     Arnd Bergmann <arnd@kernel.org>, Linus Walleij <linusw@kernel.org>,
+        Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH 13/43] power: reset: Add a driver for the ep93xx reset
+Date:   Mon, 24 Apr 2023 15:34:29 +0300
+Message-Id: <20230424123522.18302-14-nikita.shubin@maquefel.me>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230424123522.18302-1-nikita.shubin@maquefel.me>
+References: <20230424123522.18302-1-nikita.shubin@maquefel.me>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <DM6PR03MB519577728975E086D8EB20F38B669@DM6PR03MB5195.namprd03.prod.outlook.com>
+To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 23 Apr 2023, Arslanbenzer, Zeynep wrote:
+Implement the reset behaviour of the various EP93xx SoCS in drivers/power/reset.
 
-> On Thu, 30 Mar 2023, Lee Jones wrote:
-> 
-> >On Wed, 22 Mar 2023, Zeynep Arslanbenzer wrote:
-> >
-> >> MFD driver for MAX77643/MAX77654/MAX77658/MAX77659 to enable its sub
-> >
-> >Please drop all references to 'MFD'.
-> >
-> >What are these devices, really?  I suspect they are PMICs?
-> >
-> >> devices.
-> >>
-> >> The MAX77643 is a multi-function devices. It includes regulator.
-> >>
-> >> The MAX77654 is a multi-function devices. It includes regulator and 
-> >> charger.
-> >>
-> >> The MAX77658 is a multi-function devices. It includes regulator, 
-> >> charger and battery.
-> >>
-> >> The MAX77659 is a multi-function devices. It includes regulator and 
-> >> charger.
-> >>
-> >> Signed-off-by: Nurettin Bolucu <Nurettin.Bolucu@analog.com>
-> >> Signed-off-by: Zeynep Arslanbenzer <Zeynep.Arslanbenzer@analog.com>
-> >> ---
-> >>  drivers/mfd/Kconfig          |  15 ++
-> >>  drivers/mfd/Makefile         |   1 +
-> >>  drivers/mfd/max77658.c       | 448 +++++++++++++++++++++++++++++++++++
-> >>  include/linux/mfd/max77658.h |  88 +++++++
-> >>  4 files changed, 552 insertions(+)
-> >>  create mode 100644 drivers/mfd/max77658.c  create mode 100644 
-> >> include/linux/mfd/max77658.h
-> >>
-> >> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig index 
-> >> 8b93856de432..7b4be7fb8662 100644
-> >> --- a/drivers/mfd/Kconfig
-> >> +++ b/drivers/mfd/Kconfig
-> >> @@ -821,6 +821,21 @@ config MFD_MAX77650
-> >>  	  the following functionalities of the device: GPIO, regulator,
-> >>  	  charger, LED, onkey.
-> >>
-> >> +config MFD_MAX77658
-> >> +	tristate "Analog Devices MAX77643/MAX77654/MAX77658/MAX77659 PMIC Support"
-> >> +	depends on I2C
-> >> +	depends on OF
-> >> +	select MFD_CORE
-> >> +	select REGMAP_I2C
-> >> +	select REGMAP_IRQ
-> >> +	help
-> >> +	  Say Y here to add support for Analog Devices
-> >> +	  MAX77643/MAX77654/MAX77658/MAX77659 Power Management IC.
-> >
-> >"MAX776xx series"?
-> 
-> As I realized later, max77620, max77650, max77686, and max77693 drivers were merged to Linux before our patch. They are also PMIC devices and our patch does not cover them. Therefore, I think it would not be appropriate to use MAX776xx.
+It used to be located in arch/arm/mach-ep93xx.
 
-Perhaps you can come up with something a little more scalable then.
+Signed-off-by: Nikita Shubin <nikita.shubin@maquefel.me>
+---
+ drivers/power/reset/Kconfig          | 10 +++++
+ drivers/power/reset/Makefile         |  1 +
+ drivers/power/reset/ep93xx-restart.c | 65 ++++++++++++++++++++++++++++
+ 3 files changed, 76 insertions(+)
+ create mode 100644 drivers/power/reset/ep93xx-restart.c
 
-What if you added support for another 10 devices?
-
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index 8c87eeda0fec..2a61afbb047b 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -75,6 +75,16 @@ config POWER_RESET_BRCMSTB
+ 	  Say Y here if you have a Broadcom STB board and you wish
+ 	  to have restart support.
+ 
++config POWER_RESET_EP93XX
++	bool "Cirrus EP93XX reset driver" if COMPILE_TEST
++	depends on MFD_SYSCON
++	default ARCH_EP93XX
++	help
++	  This driver provides restart support for Cirrus EP93XX SoC.
++
++	  Say Y here if you have a Cirrus EP93XX SoC and you wish
++	  to have restart support.
++
+ config POWER_RESET_GEMINI_POWEROFF
+ 	bool "Cortina Gemini power-off driver"
+ 	depends on ARCH_GEMINI || COMPILE_TEST
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index d763e6735ee3..61f4e11619b2 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -7,6 +7,7 @@ obj-$(CONFIG_POWER_RESET_ATC260X) += atc260x-poweroff.o
+ obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
+ obj-$(CONFIG_POWER_RESET_BRCMKONA) += brcm-kona-reset.o
+ obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
++obj-$(CONFIG_POWER_RESET_EP93XX) += ep93xx-restart.o
+ obj-$(CONFIG_POWER_RESET_GEMINI_POWEROFF) += gemini-poweroff.o
+ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
+ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
+diff --git a/drivers/power/reset/ep93xx-restart.c b/drivers/power/reset/ep93xx-restart.c
+new file mode 100644
+index 000000000000..0dab09d4fd3c
+--- /dev/null
++++ b/drivers/power/reset/ep93xx-restart.c
+@@ -0,0 +1,65 @@
++// SPDX-License-Identifier: (GPL-2.0)
++/*
++ * Cirrus EP93xx SoC reset driver
++ *
++ * Copyright (C) 2021 Nikita Shubin <nikita.shubin@maquefel.me>
++ */
++
++#include <linux/delay.h>
++#include <linux/notifier.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/reboot.h>
++
++#include <linux/soc/cirrus/ep93xx.h>
++
++#define EP93XX_SYSCON_DEVCFG_SWRST	BIT(31)
++
++static int ep93xx_restart_handle(struct notifier_block *this,
++				 unsigned long mode, void *cmd)
++{
++	/* Issue the reboot */
++	ep93xx_devcfg_set_clear(EP93XX_SYSCON_DEVCFG_SWRST, 0x00);
++	ep93xx_devcfg_set_clear(0x00, EP93XX_SYSCON_DEVCFG_SWRST);
++
++	mdelay(1000);
++
++	pr_emerg("Unable to restart system\n");
++	return NOTIFY_DONE;
++}
++
++static int ep93xx_reboot_probe(struct platform_device *pdev)
++{
++	struct notifier_block *res_han;
++	struct device *dev = &pdev->dev;
++	int err;
++
++	res_han = devm_kzalloc(&pdev->dev, sizeof(*res_han), GFP_KERNEL);
++	if (!res_han)
++		return -ENOMEM;
++
++	res_han->notifier_call = ep93xx_restart_handle;
++	res_han->priority = 128;
++
++	err = register_restart_handler(res_han);
++	if (err)
++		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
++
++	return err;
++}
++
++static const struct of_device_id ep93xx_reboot_of_match[] = {
++	{
++		.compatible = "cirrus,ep9301-reboot",
++	},
++	{}
++};
++
++static struct platform_driver ep93xx_reboot_driver = {
++	.probe = ep93xx_reboot_probe,
++	.driver = {
++		.name = "ep9301-reboot",
++		.of_match_table = ep93xx_reboot_of_match,
++	},
++};
++builtin_platform_driver(ep93xx_reboot_driver);
 -- 
-Lee Jones [李琼斯]
+2.39.2
+
