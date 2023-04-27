@@ -2,119 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04F24C77B73
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Apr 2023 20:53:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDFF5C77B61
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Apr 2023 23:30:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344053AbjD0Uxw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Apr 2023 16:53:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46404 "EHLO
+        id S1344408AbjD0Xan (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Apr 2023 19:30:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37250 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229750AbjD0Uxv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2023 16:53:51 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A55B4E56
-        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2023 13:53:47 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-3f173af665fso60079425e9.3
-        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2023 13:53:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1682628826; x=1685220826;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=xD786TZT7B+/3S4wzJgEnZTLWsTRx10unO92/z5CZGc=;
-        b=azCUsh6921oUgHNRyfqO5FxwrJoviUyl7ZwWzqkMETiUgEFKwDsNBbFg8S1Gt0NXTb
-         IGJS/yps0R6b3f3LrWeXIFIpH/68i+amTZYzApkLKMjRZi2M2vywnpPubCuI+G9DWxil
-         d520ZYFUy8llub9eQ9lomnW9eCqPwOx8UmXUejcTJuXzYG6bLXLh4100x614KXVrZnNE
-         LpSc8qHZMAN6UrZCgZvOpjA6Btf1nvCFoRhUOhtIs2nqH44oQTk0Q3ZSsKw1CNfsV/0t
-         XoTO+m7tIBeKEh6Sf/H/mN81A7CsU8nY5JbJhXvxU4Ddnu45W65pc+VyAYwG5dyWn+8k
-         d60A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682628826; x=1685220826;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xD786TZT7B+/3S4wzJgEnZTLWsTRx10unO92/z5CZGc=;
-        b=Zr7QSFOQKCra2QviNNdXKSLD8KBnwR02D7gUHeyfMLDn078lsn687IfQTNGjr9s3mJ
-         OKZBzODnTppVqW5nlXXkDOtJWBijzOExIFAmWkKJC+CJ9EGMsfYzNfICE9wIukSXjXFX
-         FasaN3J9zOkRunMnSMub7zhlhUrtEn0nkb1ys+U/twvLUkB9mYn5s1gVHc49iX7M4o/E
-         BlzJWVh/jxF+kfG3Vsbj0WitzOInK47RYLLXD83Lm6F+VTW7j3PGf6vUs6ENkHjs6xzz
-         OPyCCzetQDCVeZtoVWADRDiqKydtJtIAPWT2zxCSvnbRFoSxpgW0X8hInOsYjZv8TeAA
-         A7AA==
-X-Gm-Message-State: AC+VfDxugg7BN6qjUun6jcae9u1U6MUYsOx5FwuOyzxn3vJjps903wtH
-        0KQpTpbXWOUxAY6AYWZsL1BBQA==
-X-Google-Smtp-Source: ACHHUZ5s+2AVbZ7GKUo6usOUQ4yRJYhHyyrpGJYDTK9r1qH0dGog9PlLpihu9NJZ9VsCjwEgfuZVUQ==
-X-Received: by 2002:a7b:c7d0:0:b0:3f1:75b3:60df with SMTP id z16-20020a7bc7d0000000b003f175b360dfmr2300008wmk.41.1682628826054;
-        Thu, 27 Apr 2023 13:53:46 -0700 (PDT)
-Received: from [172.23.3.48] ([31.221.30.162])
-        by smtp.googlemail.com with ESMTPSA id h15-20020a05600c314f00b003f1978bbcd6sm23530408wmo.3.2023.04.27.13.53.45
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 27 Apr 2023 13:53:45 -0700 (PDT)
-Message-ID: <93fcee42-0157-52e2-d694-83307f0eadaf@linaro.org>
-Date:   Thu, 27 Apr 2023 22:53:43 +0200
+        with ESMTP id S1344413AbjD0Xal (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2023 19:30:41 -0400
+Received: from sonic307-7.consmr.mail.ir2.yahoo.com (sonic307-7.consmr.mail.ir2.yahoo.com [87.248.110.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E1864232
+        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2023 16:30:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1682638234; bh=tWxmac8mwRjMj71krRu9An5Rypa20FdRhR7NzHl2dAk=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=qyl5QOZKJR1uJ5cJEQdHB6GQivVff1J1Re7SpKiZs6yBFpa95G4NtVX1ySYMgih4uiIZTmxBvKs8Tu8w6DIfE/vtJjxiw0C+qi0lkPIReBF+C85iHFZzJz+NIu7go2St/iQeveq7HiXeCz15F/Yw8lpc0uDu0uWPSn+0KWfekmKbTtpmwoW1awr7PsSrnB4S8+9sK3YCoCh01Upsa/A82Vi5wwGtDrwkgraz1QjZM11+E5pf6+YlRDU9zQlSEJ0Y8xAtphat0CnPAJWuc57nSM69dChryY7F8hkB2FHUdDIFoajDQdS8DK1ADxxmCyLZyAtiqC9tRmzChAwRtWIXKw==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1682638234; bh=E8shyK6oiWaHIQoUePMgE24PvumwHbB6imJB7heussg=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=F7TF9x2rMD0s5KHd7+SMmFgrI+BpZ+SyT4XRSoquWuqcG1b/eR0c6SRo+PwBN7UQ1ivBiUG2uImeSc4RwhNl0fwk9fnPXqCBTKcInZxJcaoaooEBrVIeEbrNh/2/6NlglWf4smuvLMUWOorIs+gulm5KLQCcat5I0RulRl/WPANndzTe1GkE2wBEcePmmZfteHj6fbJKqjGfL83jrBpjnanW9uVvwRmfjvbE6MhnlDStuudhaFJ52jMSvmc3rA/uqI3fVFrvOQHqAAH2DXfBYznEkrO0HiwvolXia/Gz88vNXxIc+/DtTYllDaj3axiaHrr0w4vHJqvg+ucyKUQGRg==
+X-YMail-OSG: sOLyiosVM1lcjUTFeP3Q_IEVUmN8ewO53k7X3CH7xzYDdJ_9VgCynVyeNPyDF.V
+ ZZH5ybd.dJpCXQhGRTGfm3.oN7.iJ5glWpWncdfwNZv5Z9czOn3RJ5ML9xv0UanBRTSaQgwbS5np
+ 3yCLG_JLcb.b_6XvoEsUOlNPdYZZrwFREumItDgRz35w30l.ETL_RN0Id.5l2xpXBej6kWnQ9w.A
+ _KKru5dod9Av.1Q9x33DgaTXbYaxcEi0I4cc5PTIiP2_BbwNfRrlUL5R.ehxG.ZTp7jwsawH7Nkf
+ K_dO34yr0mhR2obHtfi9PXmWp1hb7yvdkGtY.ROtcAf2M4Fahaxs5x4so39S1xrglI5aXs5KqiUk
+ FDIDpzPXkhU4p7hRd.KVbtq6dIW0m1DH_ntjZfM2d.gGpCpIog_GxeyxuH37OZ_s7C46ekmA79p.
+ pSs4zoKmuME1DzjCUSP953Vm.7kViina4o2_06OGYU_aPXrjk2hcSY617sMvg273p0NGcN84yqz2
+ uctWozqThHNdJZSzy_6gIVo4T4KntLlaiAA5d5H3k.C2DYdqYKdjo4sZiJToVew6SADpHiHBY3fv
+ gaA7pYiJy_7dMHN97fqWtmJGZ9zuBmz1WcdXbAyXR868DcVEKBuDbiJGL6I9VNRnF86AswKxRMkD
+ UQOVdCTANfyFz8V1cQRix_.pPsBVaCEhy5JQ6tffB3eZ2kGi6G37sagI4kOF4zWvsRm7xm6CSkX.
+ qFPct23dl2p5u7.xZ.UKmAyuTkuzgVQq3rzSwyslISMHC3fixG4vEk658YXC.kMkhg2cobSpMRF9
+ CoAcEAf_uXpEhojX8c5UwQDW.zpL9t8gMl7jZ7VZH9QTCBPwken7dKvdREvsr8g.I..8wPkJEFCV
+ AVJHgvCWDLmgUtDmk.PtEG.jLjyrx9DkIRH.RQ6f5FmQNyy1Smc88csblF66XQhn9Su4LEyUp4Yt
+ 56L1LZf6n8hKBasvIU0BRX4aDsxciOzs0_PF4a0qR.EGJBWwmow4zf5MlbXhZ7UFQqar.G0Pew3G
+ q8mTtNtwRFLAo9lCICdJ9jG99mbkkuT764l.G9qHIgFhOIRsRfgYf1FejzNgEKWE6p35HCtcgRwB
+ wt3xleRCmzLms5GueICvEgtbDwQzkiwyKM9pveWGzfeGOnq8uwEmLr7LpA_eY7c9OKig7ETLnsbX
+ xvFBxP6ye0LpboXF9AhHQuuuoDDiY5MhKvOuHagJp_2mjqKUz_q5A2FlvWEbx0fJtTFymhiQ355Z
+ 9Iw__ynjKwm9Hse7G2nPsLZZdN5.VhD4HoHFFHvkLgx6hCKJrBqHwstddodFY_lm9dKQRpu72axj
+ W_jFXe9IGLxM_L_AIPRCi4bpoiFOjumoKBrvwch8MQuUqVzR73Ek0keJx8DBb6mmWHTgUb48BCUq
+ kYvc.w5.Hpywp1ZaGqFRbBlQ7S_OMyuPd27a2RVuomBpk5WXzT6XbNUCF.IiJqSCb9VjDmYuTGlv
+ GKmjVpPVAZCxLWgcYm1cH6MN97kcZCIzzSJItE3otQaWLN11purSLD_TfN7JKlzBwCh0Et9smrXa
+ D9y2Aeh6pZSuEWYMvVNoZmoRPyPQNDshEA6W_8Qd1V_pInWZWnzCLJ_D0AuV2S4PIL9P5cEIM1oI
+ fJnxWEcB0rVpbsFt3mimIwvCkBcyPHuMaEIgC76f38TUYRJqyIo4TB18zueTM7KBqsf.4KO.q7im
+ fGWA2kKVRRea1_pBqlDfr9M9i4uFH7YkKwhmlXf.3Nb6duQ1xsOASFL3FLYk_uvhVIAQ00LGFDrT
+ vNLA1F3HV_PJi1qWbl3S6UQwIBVdrmeWtbVkJzcXJl2b9Ab3JaxN3QGKOmlGFRDeCTe._bRRVTMD
+ xJ7h3jxk9yVyujki8SCtFv7BNTHP2f8F2fZsLdhgdpokFZQYBaQhA3vlpM4wCDj_9apPG6ZuIgxF
+ 6mkRsv1Oabrk8HHU1XsyWVT_bJI8FiwfAdEimgMwtasf2gBDOarZpCmlvjOmbaYoI3kdR_OqgkE4
+ TVYNOQzzjdP0tTmxywirhGz_4JxDO6dwj60Y0GMsp3mfuJk1RLIZOBFNmS_UPG_9DdEDARTtdSn7
+ ju6IYdn62uAAHDqq1gNK1DEpTjenUw6prM_tOmT1OV1MhsSXLtCAgq0GLlmr0L8wPlH6k0vqG62a
+ Ln_MHUGf9Jtz5NauZ_c2OlecPZiWOv4ccMQRCdW.e.0Q.MDns.Ylj7Ue03YbVgE94Sn8LyUY88Jb
+ dFThK6QC42S99QYxnrXkGg1zS9Z1GEYBjI9udhrTQxvEnrbj.zKLNdYDmg1cS1Ck88EOQvy_e7il
+ 56ISKOAe29mHZVhlZjU6X10A-
+X-Sonic-MF: <jahau@rocketmail.com>
+X-Sonic-ID: 496de9a9-910d-43ca-9817-720c78d0d241
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic307.consmr.mail.ir2.yahoo.com with HTTP; Thu, 27 Apr 2023 23:30:34 +0000
+Received: by hermes--production-ir2-74cd8fc864-9w846 (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 912b1d1a256b22e43f453e00130c1256;
+          Thu, 27 Apr 2023 23:30:33 +0000 (UTC)
+From:   Jakob Hauser <jahau@rocketmail.com>
+To:     Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc:     Beomho Seo <beomho.seo@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Raymond Hackley <raymondhackley@protonmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Axel Lin <axel.lin@ingics.com>,
+        ChiYuan Huang <cy_huang@richtek.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Lee Jones <lee.jones@linaro.org>,
+        Jakob Hauser <jahau@rocketmail.com>
+Subject: [PATCH v3 1/8] mfd: rt5033: Drop rt5033-battery sub-device
+Date:   Fri, 28 Apr 2023 01:30:04 +0200
+Message-Id: <16f1dabc331513ba69162d0b2496cee0961276fc.1682636929.git.jahau@rocketmail.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <cover.1682636929.git.jahau@rocketmail.com>
+References: <cover.1682636929.git.jahau@rocketmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v4 0/6] Thermal zone device structure encapsulation
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     rui.zhang@intel.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20230419083343.505780-1-daniel.lezcano@linaro.org>
- <CAJZ5v0jKRew48KNXXBJjENxpOhEE5jxwfAcmiuu_4nvhQL-FGA@mail.gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <CAJZ5v0jKRew48KNXXBJjENxpOhEE5jxwfAcmiuu_4nvhQL-FGA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 27/04/2023 19:23, Rafael J. Wysocki wrote:
-> On Wed, Apr 19, 2023 at 10:33 AM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> The thermal zone device structure is defined in the exported thermal
->> header include/linux/thermal.h
->>
->> Given the definition being public, the structure is exposed to the
->> external components other than the thermal framework core code. It
->> results the drivers are tampering the structure internals like taking
->> the lock or changing the field values.
->>
->> Obviously that is bad for several reasons as the drivers can hook the
->> thermal framework behavior and makes very difficult the changes in the
->> core code as external components depend on it directly.
->>
->> Moreover, the thermal trip points being reworked, we don't want the
->> drivers to access the trips array directly in the thermal zone
->> structure and doing assumptions on how they are organized.
->>
->> This series provides a second set of changes moving to the thermal
->> zone device structure self-encapsulation.
->>
->> The ACPI and the Menlon drivers are using the thermal zone's device
->> fields to create symlinks and new attributes in the sysfs thermal zone
->> directory. These changes provide a hopefully temporary wrapper to
->> access it in order to allow moving forward in the thermal zone device
->> self-encapsulation and a Kconfig option to disable by default such a
->> extra sysfs information.
->>
+From: Stephan Gerhold <stephan@gerhold.net>
 
-[ ... ]
+The fuel gauge in the RT5033 PMIC (rt5033-battery) has its own I2C bus
+and interrupt lines. Therefore, it is not part of the MFD device
+and needs to be specified separately in the device tree.
 
-> Patches [4/6] and [6/6] were superseded by the Menlow driver removal.
-> 
-> I've applied the rest as 6.4-rc material, with some subject
-> adjustments and after removing some trailing white space in a few
-> places.
+Cc: Beomho Seo <beomho.seo@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
+Fixes: 0b271258544b ("mfd: rt5033: Add Richtek RT5033 driver core.")
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Jakob Hauser <jahau@rocketmail.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ drivers/mfd/rt5033.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-
-Thanks!
-
+diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
+index a5e520fe50a1..8029d444b794 100644
+--- a/drivers/mfd/rt5033.c
++++ b/drivers/mfd/rt5033.c
+@@ -40,9 +40,6 @@ static const struct mfd_cell rt5033_devs[] = {
+ 	{
+ 		.name = "rt5033-charger",
+ 		.of_compatible = "richtek,rt5033-charger",
+-	}, {
+-		.name = "rt5033-battery",
+-		.of_compatible = "richtek,rt5033-battery",
+ 	}, {
+ 		.name = "rt5033-led",
+ 		.of_compatible = "richtek,rt5033-led",
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.39.2
 
