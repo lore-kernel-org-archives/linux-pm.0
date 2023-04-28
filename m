@@ -2,41 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05FC0C77B61
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Apr 2023 14:53:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C506C77B60
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Apr 2023 14:53:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230366AbjD1OxP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Apr 2023 10:53:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49088 "EHLO
+        id S1346151AbjD1OxV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Apr 2023 10:53:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49122 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229671AbjD1OxO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2023 10:53:14 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 374CE2122;
-        Fri, 28 Apr 2023 07:53:13 -0700 (PDT)
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33S6eDJI032672;
-        Fri, 28 Apr 2023 14:53:02 GMT
+        with ESMTP id S230502AbjD1OxR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2023 10:53:17 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D71CA213A;
+        Fri, 28 Apr 2023 07:53:16 -0700 (PDT)
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33S7GJop002989;
+        Fri, 28 Apr 2023 14:53:12 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-type; s=qcppdkim1;
- bh=5oeIbV8UvlJ5JROKNH6686U+PKzEtgZIdR3pU3FMn7g=;
- b=Tm/rq5mfA7kLimWJqoNa+4We5G74jG+KZJWL0NKUiVKJQJ5EgkzKAbSqXMrlGVmYmTtH
- Slm7XepXoG7ofqycrdPFdOBJXb5noNNwWPWmwSLpwjS+RSCk3HPP5hVev+i5A/WrzjCi
- 2QY+bXFC98EIlaS+anfisKFNFOFB/8PnAnRv73jlh65SB12pxcyJepeijiidMcxHDW/e
- Tadu//h/emLMCcMn9+nYumX4vjw2dq97S1abRf8OT1iF8y85G+nyZfrrXxqKqM9JJrrb
- db8s3nPjJVBQ06PjnRZU3c0Zo/MthyAVXMQN0PAxWcx4JTBH3MO08mTl9RSn6mOJth/X OA== 
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type; s=qcppdkim1;
+ bh=ZNnbYavv2uT96ywFml2/+NG8q3f4n1FmuxGTKopRGoY=;
+ b=AtGPSdWJ4HkqJqIFFznUhsn3F2Dtw1vRW8RG5m7OowWZHepklousPe05O7LIA0o0+DgL
+ skQohxUFW8+HmO5SMw1s7EyoIKmQd5Cip92uBarK77b0PiycYlmGqaT5Ot87QxpckvyL
+ k+HJZdWM9h7rSX/FV2i4Z8p/Rbjlk6ppbIqNOBaLETxnUj/HmjRKyjfWQ0GVUK3EsBba
+ 2OSJS3n5lVj0X1GyAdU/jhJSjn4k+NqX7nc0OKvix+lY98Cfw77wcOjHaUkNtXf8ljSh
+ vvTg1HTp1dVFnVM7hyOrhTj5yYsrIUIG9rSyyow2x/0YHkrhsaduevxQJAnkFvTJj4Aw GQ== 
 Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3q7thv3bnr-1
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3q89kssces-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 28 Apr 2023 14:53:02 +0000
+        Fri, 28 Apr 2023 14:53:11 +0000
 Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 33SEr0IB007151
+        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 33SErBPm007336
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 28 Apr 2023 14:53:00 GMT
+        Fri, 28 Apr 2023 14:53:11 GMT
 Received: from varda-linux.qualcomm.com (10.80.80.8) by
  nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.42; Fri, 28 Apr 2023 07:52:56 -0700
+ 15.2.986.42; Fri, 28 Apr 2023 07:53:06 -0700
 From:   Varadarajan Narayanan <quic_varada@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <amitk@kernel.org>,
@@ -45,11 +46,14 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
         <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC:     Varadarajan Narayanan <quic_varada@quicinc.com>
-Subject: [PATCH 0/4] Enable IPQ9574 TSENS support
-Date:   Fri, 28 Apr 2023 20:22:30 +0530
-Message-ID: <cover.1682682753.git.quic_varada@quicinc.com>
+CC:     Praveenkumar I <quic_ipkumar@quicinc.com>,
+        Varadarajan Narayanan <quic_varada@quicinc.com>
+Subject: [PATCH 2/4] thermal/drivers/tsens: Add IPQ9574 support
+Date:   Fri, 28 Apr 2023 20:22:32 +0530
+Message-ID: <b45d33d38a334aabbd52c83b0d6028af1f4c74c8.1682682753.git.quic_varada@quicinc.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1682682753.git.quic_varada@quicinc.com>
+References: <cover.1682682753.git.quic_varada@quicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.80.80.8]
@@ -57,38 +61,45 @@ X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
  nasanex01a.na.qualcomm.com (10.52.223.231)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: VJ-Bi3OhTMsb8ynlKJVe9HryL0SRDtPB
-X-Proofpoint-ORIG-GUID: VJ-Bi3OhTMsb8ynlKJVe9HryL0SRDtPB
+X-Proofpoint-GUID: se5uJO9PrH0rmP5ZgMwJDQ6oZERTMMvi
+X-Proofpoint-ORIG-GUID: se5uJO9PrH0rmP5ZgMwJDQ6oZERTMMvi
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-04-28_04,2023-04-27_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 bulkscore=0
- malwarescore=0 lowpriorityscore=0 suspectscore=0 mlxscore=0 phishscore=0
- spamscore=0 adultscore=0 priorityscore=1501 mlxlogscore=764
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 spamscore=0
+ priorityscore=1501 adultscore=0 clxscore=1015 bulkscore=0 mlxlogscore=999
+ impostorscore=0 malwarescore=0 mlxscore=0 lowpriorityscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2303200000 definitions=main-2304280119
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch set enables tsens in IPQ9574
+From: Praveenkumar I <quic_ipkumar@quicinc.com>
 
-Depends on
-	https://lore.kernel.org/linux-arm-msm/20230406061314.10916-1-quic_devipriy@quicinc.com/
+Qualcomm IPQ9574 uses tsens v2.3.1 IP, which is similar to IPQ8074 tsens.
+Hence reusing the data_ipq8074 for IPQ9574.
 
-Praveenkumar I (2):
-  dt-bindings: thermal: tsens: Add ipq9574 compatible
-  thermal/drivers/tsens: Add IPQ9574 support
+Signed-off-by: Praveenkumar I <quic_ipkumar@quicinc.com>
+Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+---
+ drivers/thermal/qcom/tsens.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Varadarajan Narayanan (2):
-  arm64: dts: qcom: ipq9574: add tsens node
-  arm64: dts: qcom: ipq9574: add thermal zone nodes
-
- .../devicetree/bindings/thermal/qcom-tsens.yaml    |   3 +
- arch/arm64/boot/dts/qcom/ipq9574.dtsi              | 217 +++++++++++++++++++++
- drivers/thermal/qcom/tsens.c                       |   3 +
- 3 files changed, 223 insertions(+)
-
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index d321812..e752b7d 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -1093,6 +1093,9 @@ static const struct of_device_id tsens_table[] = {
+ 		.compatible = "qcom,ipq8074-tsens",
+ 		.data = &data_ipq8074,
+ 	}, {
++		.compatible = "qcom,ipq9574-tsens",
++		.data = &data_ipq8074,
++	}, {
+ 		.compatible = "qcom,mdm9607-tsens",
+ 		.data = &data_9607,
+ 	}, {
 -- 
 2.7.4
 
