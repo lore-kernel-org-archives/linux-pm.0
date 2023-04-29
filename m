@@ -2,123 +2,210 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A45D0C77B7F
-	for <linux-pm@archiver.kernel.org>; Sat, 29 Apr 2023 18:25:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE0E2C77B60
+	for <linux-pm@archiver.kernel.org>; Sat, 29 Apr 2023 20:07:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229878AbjD2SY6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 29 Apr 2023 14:24:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50950 "EHLO
+        id S230016AbjD2UHF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 29 Apr 2023 16:07:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40720 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230009AbjD2SYy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Apr 2023 14:24:54 -0400
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1CA8D1FCA
-        for <linux-pm@vger.kernel.org>; Sat, 29 Apr 2023 11:24:51 -0700 (PDT)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-64115eef620so19283528b3a.1
-        for <linux-pm@vger.kernel.org>; Sat, 29 Apr 2023 11:24:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=dabbelt-com.20221208.gappssmtp.com; s=20221208; t=1682792690; x=1685384690;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HCZIXMPhuJUf80scSK3agzn9QDDKa0LblR7ePMqe91Q=;
-        b=osIreuhFqrOaZAAl/27+IK5Hi1AB1StDT3MQB4UJdmyvLv00XqfYnZDOR5DEup+Zbc
-         EMMhztAPOHm+IIUb2Jko/Ql1Qxequoi14q5q6ioXxwV6ONNbTHbCpppQsquBotBv7NZA
-         0xsoGYgWKOy6+E6yOM0QJd1lS7m7Gz/d+GxIdfE4O363XFxvr58OuzUA8yahfjRkgl76
-         daFFl6DyngHfFxsVeUlgdYpwovv5SK9w21aq217ZLhFo3Y8jm5Njv+T6oNvGK4lJj/ES
-         nDCkxSdKHcKkITKghp2NRdG/dKj2tCryrSlZDF5O3eK56lzP0kExP10+gizADZGE0dho
-         uu6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682792690; x=1685384690;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HCZIXMPhuJUf80scSK3agzn9QDDKa0LblR7ePMqe91Q=;
-        b=gVNyctRbz5dv3opr1HHwdWseEg2dCUP7JOEdhKJgSEsNjC5hbjq/gOgETtALK1wyMU
-         DZik0+Wn44I8TykMkSoNqMLDEXD75d5TIEuWK+06EgGsZg9poq1xXPelYz8kW4XegLCr
-         xSEowFVYwVttinR066IJKFWyeQVf11Fj5OvNfX2MW+fyrFiW2gu2Mn0n0Aw3Sc3PYeb8
-         NSr2DPWnPmPbbuxTS6zDYu7vZW1aPV5m3q4Iz41rrHlXlpXbobsnVmK8J+e62spSzr0S
-         olqaI7eLspDRzrPI7x9m7pETkDOHMWxnNoZ2wq3Olq07bazZFvf5waVsW+l7mHQe6Vqb
-         Ar9A==
-X-Gm-Message-State: AC+VfDw7biWqkTgnPPOhzA9PfCyZVQUscbBsWoDD9lLxrO9kfF1ftVzE
-        Jbs3X7r8xkS3NshHeJTYRyLmUQ==
-X-Google-Smtp-Source: ACHHUZ56+SNdXMph8Hdac6/dfoFg0Vhv/AYaUOOmwxyPYiHuY8kgDpOram8U+gPi6EA5PyHcO2u8+w==
-X-Received: by 2002:a17:903:41cf:b0:1a6:d0a8:c70f with SMTP id u15-20020a17090341cf00b001a6d0a8c70fmr11307108ple.5.1682792690325;
-        Sat, 29 Apr 2023 11:24:50 -0700 (PDT)
-Received: from localhost ([50.221.140.188])
-        by smtp.gmail.com with ESMTPSA id l4-20020a170902eb0400b001960706141fsm15126026plb.149.2023.04.29.11.24.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 29 Apr 2023 11:24:49 -0700 (PDT)
-Date:   Sat, 29 Apr 2023 11:24:49 -0700 (PDT)
-X-Google-Original-Date: Sat, 29 Apr 2023 11:24:22 PDT (-0700)
-Subject:     Re: [PATCH 08/19] riscv: Add explicit include for cpu.h
-In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-8-581e2605fe47@kernel.org>
-CC:     davem@davemloft.net, robh+dt@kernel.org, frowand.list@gmail.com,
-        linux@armlinux.org.uk, wens@csie.org, jernej.skrabec@gmail.com,
-        samuel@sholland.org, Paul Walmsley <paul.walmsley@sifive.com>,
-        aou@eecs.berkeley.edu, Greg KH <gregkh@linuxfoundation.org>,
-        rafael@kernel.org, daniel.lezcano@linaro.org, tglx@linutronix.de,
-        amit.kachhap@gmail.com, viresh.kumar@linaro.org,
-        lukasz.luba@arm.com, amitk@kernel.org, rui.zhang@intel.com,
-        matthias.bgg@gmail.com, angelogioacchino.delregno@collabora.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        thierry.reding@gmail.com, jonathanh@nvidia.com,
-        tiny.windzz@gmail.com, lpieralisi@kernel.org, sudeep.holla@arm.com,
-        agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
-        anup@brainfault.org, chenhuacai@kernel.org,
-        jiaxun.yang@flygoat.com, Marc Zyngier <maz@kernel.org>,
-        vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
-        sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-sunxi@lists.linux.dev, linux-riscv@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-tegra@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-mips@vger.kernel.org
-From:   Palmer Dabbelt <palmer@dabbelt.com>
-To:     robh@kernel.org
-Message-ID: <mhng-3fdcd7ba-9d00-4521-a55f-367cf53f5f12@palmer-ri-x1c9a>
-Mime-Version: 1.0 (MHng)
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S229532AbjD2UHF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Apr 2023 16:07:05 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 504771BE4;
+        Sat, 29 Apr 2023 13:07:04 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id DCCE8611F6;
+        Sat, 29 Apr 2023 20:07:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C9749C433D2;
+        Sat, 29 Apr 2023 20:07:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1682798823;
+        bh=3Tk09UQ1hIbxVg7uFnuOI3FKwaPBq7Zi+L3y4wmvTr8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=qTeFnrRK16KIUWJZEiqYJ34YnUmXoCbXCEtVa7ei5dlYVRtVyokrWX1D6vHVCGHFC
+         vVEo7d02AqFk2g7g8aPiEW7AvybvcKkP75Z8dyE/E7MeBMJqwmD/S/XdGSMonxHP7Z
+         YlPbKKYXzzmmxtzU3o9Xjggv/YXJWIx6kHn9R4mtk7ZVGcyhIeLXiBsE+P64nsJ9wx
+         fG0uEYYhMQm5j1dmZPZ64DfAD5dJZsQFFlNogi1WAr2wKLCVjzsYNxbM8E6BNMaFfE
+         InwGUOjIl2i+13W4y3OWg11Rw+0Q33rBv1pp1wwO/PZbXN3Eacj9+Bs3CbXzGnUbgV
+         STZznZC6/agig==
+Received: by mercury (Postfix, from userid 1000)
+        id EA42E1066F88; Sat, 29 Apr 2023 22:06:59 +0200 (CEST)
+Date:   Sat, 29 Apr 2023 22:06:59 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Nikita Shubin <nikita.shubin@maquefel.me>
+Cc:     Arnd Bergmann <arnd@kernel.org>, Linus Walleij <linusw@kernel.org>,
+        Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 13/43] power: reset: Add a driver for the ep93xx reset
+Message-ID: <20230429200659.36utkzfevcj45qce@mercury.elektranox.org>
+References: <20230424123522.18302-1-nikita.shubin@maquefel.me>
+ <20230424123522.18302-14-nikita.shubin@maquefel.me>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="t4qfw5plufhgux5w"
+Content-Disposition: inline
+In-Reply-To: <20230424123522.18302-14-nikita.shubin@maquefel.me>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 29 Mar 2023 08:52:05 PDT (-0700), robh@kernel.org wrote:
-> Removing the include of cpu.h from of_device.h (included by
-> of_platform.h) causes an error in setup.c:
->
-> arch/riscv/kernel/setup.c:313:22: error: arithmetic on a pointer to an incomplete type 'typeof(struct cpu)' (aka 'struct cpu')
->
-> The of_platform.h header is not necessary either, so it can be dropped.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-> Please ack and I will take the series via the DT tree.
-> ---
->  arch/riscv/kernel/setup.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-> index 376d2827e736..dcfa4b6fa4b1 100644
-> --- a/arch/riscv/kernel/setup.c
-> +++ b/arch/riscv/kernel/setup.c
-> @@ -8,6 +8,7 @@
->   *  Nick Kossifidis <mick@ics.forth.gr>
->   */
->
-> +#include <linux/cpu.h>
->  #include <linux/init.h>
->  #include <linux/mm.h>
->  #include <linux/memblock.h>
-> @@ -15,7 +16,6 @@
->  #include <linux/console.h>
->  #include <linux/screen_info.h>
->  #include <linux/of_fdt.h>
-> -#include <linux/of_platform.h>
->  #include <linux/sched/task.h>
->  #include <linux/smp.h>
->  #include <linux/efi.h>
 
-Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+--t4qfw5plufhgux5w
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Mon, Apr 24, 2023 at 03:34:29PM +0300, Nikita Shubin wrote:
+> Implement the reset behaviour of the various EP93xx SoCS in drivers/power=
+/reset.
+>=20
+> It used to be located in arch/arm/mach-ep93xx.
+>=20
+> Signed-off-by: Nikita Shubin <nikita.shubin@maquefel.me>
+> ---
+
+Acked-by: Sebastian Reichel <sre@kernel.org>
+
+-- Sebastian
+
+>  drivers/power/reset/Kconfig          | 10 +++++
+>  drivers/power/reset/Makefile         |  1 +
+>  drivers/power/reset/ep93xx-restart.c | 65 ++++++++++++++++++++++++++++
+>  3 files changed, 76 insertions(+)
+>  create mode 100644 drivers/power/reset/ep93xx-restart.c
+>=20
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index 8c87eeda0fec..2a61afbb047b 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -75,6 +75,16 @@ config POWER_RESET_BRCMSTB
+>  	  Say Y here if you have a Broadcom STB board and you wish
+>  	  to have restart support.
+> =20
+> +config POWER_RESET_EP93XX
+> +	bool "Cirrus EP93XX reset driver" if COMPILE_TEST
+> +	depends on MFD_SYSCON
+> +	default ARCH_EP93XX
+> +	help
+> +	  This driver provides restart support for Cirrus EP93XX SoC.
+> +
+> +	  Say Y here if you have a Cirrus EP93XX SoC and you wish
+> +	  to have restart support.
+> +
+>  config POWER_RESET_GEMINI_POWEROFF
+>  	bool "Cortina Gemini power-off driver"
+>  	depends on ARCH_GEMINI || COMPILE_TEST
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index d763e6735ee3..61f4e11619b2 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -7,6 +7,7 @@ obj-$(CONFIG_POWER_RESET_ATC260X) +=3D atc260x-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_AXXIA) +=3D axxia-reset.o
+>  obj-$(CONFIG_POWER_RESET_BRCMKONA) +=3D brcm-kona-reset.o
+>  obj-$(CONFIG_POWER_RESET_BRCMSTB) +=3D brcmstb-reboot.o
+> +obj-$(CONFIG_POWER_RESET_EP93XX) +=3D ep93xx-restart.o
+>  obj-$(CONFIG_POWER_RESET_GEMINI_POWEROFF) +=3D gemini-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_GPIO) +=3D gpio-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restart.o
+> diff --git a/drivers/power/reset/ep93xx-restart.c b/drivers/power/reset/e=
+p93xx-restart.c
+> new file mode 100644
+> index 000000000000..0dab09d4fd3c
+> --- /dev/null
+> +++ b/drivers/power/reset/ep93xx-restart.c
+> @@ -0,0 +1,65 @@
+> +// SPDX-License-Identifier: (GPL-2.0)
+> +/*
+> + * Cirrus EP93xx SoC reset driver
+> + *
+> + * Copyright (C) 2021 Nikita Shubin <nikita.shubin@maquefel.me>
+> + */
+> +
+> +#include <linux/delay.h>
+> +#include <linux/notifier.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/reboot.h>
+> +
+> +#include <linux/soc/cirrus/ep93xx.h>
+> +
+> +#define EP93XX_SYSCON_DEVCFG_SWRST	BIT(31)
+> +
+> +static int ep93xx_restart_handle(struct notifier_block *this,
+> +				 unsigned long mode, void *cmd)
+> +{
+> +	/* Issue the reboot */
+> +	ep93xx_devcfg_set_clear(EP93XX_SYSCON_DEVCFG_SWRST, 0x00);
+> +	ep93xx_devcfg_set_clear(0x00, EP93XX_SYSCON_DEVCFG_SWRST);
+> +
+> +	mdelay(1000);
+> +
+> +	pr_emerg("Unable to restart system\n");
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static int ep93xx_reboot_probe(struct platform_device *pdev)
+> +{
+> +	struct notifier_block *res_han;
+> +	struct device *dev =3D &pdev->dev;
+> +	int err;
+> +
+> +	res_han =3D devm_kzalloc(&pdev->dev, sizeof(*res_han), GFP_KERNEL);
+> +	if (!res_han)
+> +		return -ENOMEM;
+> +
+> +	res_han->notifier_call =3D ep93xx_restart_handle;
+> +	res_han->priority =3D 128;
+> +
+> +	err =3D register_restart_handler(res_han);
+> +	if (err)
+> +		dev_err(dev, "can't register restart notifier (err=3D%d)\n", err);
+> +
+> +	return err;
+> +}
+> +
+> +static const struct of_device_id ep93xx_reboot_of_match[] =3D {
+> +	{
+> +		.compatible =3D "cirrus,ep9301-reboot",
+> +	},
+> +	{}
+> +};
+> +
+> +static struct platform_driver ep93xx_reboot_driver =3D {
+> +	.probe =3D ep93xx_reboot_probe,
+> +	.driver =3D {
+> +		.name =3D "ep9301-reboot",
+> +		.of_match_table =3D ep93xx_reboot_of_match,
+> +	},
+> +};
+> +builtin_platform_driver(ep93xx_reboot_driver);
+> --=20
+> 2.39.2
+>=20
+
+--t4qfw5plufhgux5w
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRNeOAACgkQ2O7X88g7
++pqywA/9EILO3MqSurbHWBGdc+ayGbftXXbSnmG4gl9oYirO1rBghdyTgYBlbqpj
+pZHpqgsaGMEyjfu8oXTt6kml6HJaTqMgeyrRUnwmKsj2li9DI36ogO/Zan62cqGW
+Z1p3FK41y0aAvmzB0EFlt6az9GGo5oPXwOgjvUD3GOaJKPaHorZAu1fBRhAsAPaE
+1MWcGEI7NPz9VSBnx0yCxbTpBEFpD2yEfjqHgLjaNlgKtCwYWEFJLOqDuWqUsQWB
+vL6mHcbRwAKsuVv9VsBDpHS4Tbhu8WTEd9Qb6tJFa6MDeEws49/TNAL5ag5ygT69
+WJpS7THCeoggj+mu7mr1XX6G1BDCoPIZ06/QEB32mxYKS/FvyME85GwP+Zj5PUyI
+c6Cf0nOBp7i9/ZE4hUY/JDRn6YGFR27RpasYnguurXx0vuEyep0oEJrM62NZ/mKm
+48MeA3jyySCCjXD2AqJoR1bYD1N1gZFKILxstRQq2DDKkO/mKsV7a5R/J7eUrkym
+ZkX9XcswQkzvkaCgU19SFrszODA3DZ4HHPo+yq3yGeucK5qxNfa60sew1IvYS7zG
+CweZiHVGBqBC9BPDBP/LKkQLEqIdHxs9U2YIbQQngZ20SFljhguWJty/1/pT2nwH
+7Q25/3vGVRklve4tMYSDOtY4M3S2RQBXwaauMztqh0kOZQZT/48=
+=5rTD
+-----END PGP SIGNATURE-----
+
+--t4qfw5plufhgux5w--
