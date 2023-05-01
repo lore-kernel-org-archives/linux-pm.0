@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0C7AC77B7C
-	for <linux-pm@archiver.kernel.org>; Mon,  1 May 2023 19:56:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 243B3C77B7C
+	for <linux-pm@archiver.kernel.org>; Mon,  1 May 2023 19:56:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233240AbjEAT4L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 May 2023 15:56:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41934 "EHLO
+        id S233348AbjEAT4Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 May 2023 15:56:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41896 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232739AbjEATzy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2023 15:55:54 -0400
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B028D3595;
-        Mon,  1 May 2023 12:55:40 -0700 (PDT)
-Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-50bc37e1525so3232419a12.1;
-        Mon, 01 May 2023 12:55:40 -0700 (PDT)
+        with ESMTP id S232494AbjEAT4J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2023 15:56:09 -0400
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06B8E3A84;
+        Mon,  1 May 2023 12:55:45 -0700 (PDT)
+Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-95369921f8eso475302666b.0;
+        Mon, 01 May 2023 12:55:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1682970939; x=1685562939;
+        d=gmail.com; s=20221208; t=1682970943; x=1685562943;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=bLSZpIAboHzgVbT7Sw0USchSefiPMjo/APH/aRCJgwc=;
-        b=kvNa1cCQSsyShGbcmSY9LtTR/ubbhUC58zLuiuiIxvmZM0CntKrxcRvuVC2Ys3Cord
-         uZU1v5xy2iggLb8nXB4c1gkkXMjs0XysxwuLz1OxaUEZ5Np1FvfLTPnYZbOiLLJLSDgH
-         9VF7pb2fyZpmvaVBkpRjpkK/m1Bt0jSbU5m5BWynuQxYvPa6HZF5nm+pwpma+AQ4vf2u
-         dZ0AsZZukBTz4gn3Z6o1cbsy/92VFHYaJ5LcEioERsRxzojKhtta/S43docCpH4Kfu6N
-         FhD6rAYp5z9Ie5VTrmysUyfiSJcfuX0xtWWiRaFTWXX0G54Re78DcanjBvgsBxYRqcbu
-         pSDA==
+        bh=ChXDXvD9oa1nT7FjTj6IjKhQZIRzkLX7veyXr+vgLzQ=;
+        b=gDVxXrsPCK+V9P66LLpXfR8DL7uC2PAusk/6z+2H0G8Q0cwBjVBZFc8LTcPr5wgJHL
+         /eL4gXYpvVKZHKJmrMPSERhJ37qqKt/RSPHcpVBz+gT8AS6dewX8YJn2VTg8nGcpbnjQ
+         AWHpbq/THMu+HY1qgtSuITPgYMMqfD7sWDhOpcgb3ab/FI3V0Y4GrHoS/3sG/u2Wa65p
+         jlFfOTZsrPF9BHPTW8hbGgimV3Caq/MngwNvVW8fccq7yhr8WuvGlwoqnrLZA3o7nkcU
+         0eVQr414Y2PW5ZwjHa6/uSAOPKocV6/Lt0JZ17iReUEuWDdYDgaqCYLhovMOEb2sOLX5
+         alnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682970939; x=1685562939;
+        d=1e100.net; s=20221208; t=1682970943; x=1685562943;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=bLSZpIAboHzgVbT7Sw0USchSefiPMjo/APH/aRCJgwc=;
-        b=b0H3wFsCqZiuKwIi6kEYN/HIf2JNRDS1QYC5ZW0MRwbL5C1RxqR2GAvOrk+nuiYgnZ
-         aDSOEH52Cdah0Bgx70bOJS8ixrSPCH2ZgnYo0gm766t6NwaeYAM0Ylyr+R+E+sR7+NBG
-         5Y28A7fascJIFrYvsROVEeepDHRhVxuL86VkTcOse/5UfiTVpN0LoZV2Aku20zl2EcDb
-         zguvZPJGtky9S2ar1LnAa5Pfd9S6H9cptbwdq0HHbNgr+tL6eD2fYIRH+07gSs6bz/6D
-         P16oN0X7GnqpvHkeBAd/cSbCzpu3uc5oTfEj8zZBM4QiDtxwL2jXmjMw8s5Sf9EurSJx
-         n9Ug==
-X-Gm-Message-State: AC+VfDxD7nEOQamZourC/MOYzD6rft0Bdtj0tx+EiZeiM1kiTZU8H22h
-        lgaCeOpkJdx2sNY+CJMFsdY=
-X-Google-Smtp-Source: ACHHUZ5ZCGOrq9T2/dMqh+EebCYn41HBamo7hGHDONnr9quhO7MswQKOIIb0fUuOgrvewpALqyEN9w==
-X-Received: by 2002:a17:906:99c5:b0:94e:9a73:1637 with SMTP id s5-20020a17090699c500b0094e9a731637mr13471342ejn.75.1682970938918;
-        Mon, 01 May 2023 12:55:38 -0700 (PDT)
+        bh=ChXDXvD9oa1nT7FjTj6IjKhQZIRzkLX7veyXr+vgLzQ=;
+        b=lheW32UzjM+gn85bKbCT4NturWsR3cjuIoNN1C2wbB0Ve6r9EAbhZKoczzxQngPwIN
+         B5CJcGVjb+YfeEIAMahuULP9YWYNdStY00rPZ3IZ6CY/8R1jow+cYawQQA5jpJ9WdRoF
+         nX03aLmI6H/Vgy46IS04H1Fsuwe2tI9BO/IY2kaJE11fxMeNPCl54DizX5jDtHilsNt+
+         9Q83kcaZE7qWu5k88sYdtoRqKyvaU+JPbPYmSPIpxtlag0QjQXpP60bHcd0efCIT5x1t
+         nd+r3oHtMIBz9NhOOTNATYT1BZ6meILUt5m8PK9kk6cse6pfpVzH4DK/YDqveJ6fnJwR
+         wtTw==
+X-Gm-Message-State: AC+VfDwpCnQGgh44D0Q3iQeqwXUVIjOu6FxY0rKz6r3C/rqbg3qfM5Lm
+        HXqLnswNcRqMq8KdYA/E/Ds=
+X-Google-Smtp-Source: ACHHUZ6Xk79jwZCnt8z7nsNkQBg1P138XiajNc3xtynaYmyLDmigvMwYYPzT884GkMZEjoUC04rpoQ==
+X-Received: by 2002:a17:907:3faa:b0:94f:695e:b0c9 with SMTP id hr42-20020a1709073faa00b0094f695eb0c9mr14199342ejc.5.1682970943116;
+        Mon, 01 May 2023 12:55:43 -0700 (PDT)
 Received: from localhost.my.domain (83.8.115.30.ipv4.supernova.orange.pl. [83.8.115.30])
-        by smtp.gmail.com with ESMTPSA id og36-20020a1709071de400b009600ce4fb53sm6333650ejc.37.2023.05.01.12.55.36
+        by smtp.gmail.com with ESMTPSA id og36-20020a1709071de400b009600ce4fb53sm6333650ejc.37.2023.05.01.12.55.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 May 2023 12:55:38 -0700 (PDT)
+        Mon, 01 May 2023 12:55:42 -0700 (PDT)
 From:   Artur Weber <aweber.kernel@gmail.com>
 To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Cc:     Alim Akhtar <alim.akhtar@samsung.com>,
@@ -72,9 +72,9 @@ Cc:     Alim Akhtar <alim.akhtar@samsung.com>,
         linux-phy@lists.infradead.org,
         ~postmarketos/upstreaming@lists.sr.ht,
         Artur Weber <aweber.kernel@gmail.com>
-Subject: [PATCH v3 04/13] soc: samsung: Re-introduce Exynos4212 support
-Date:   Mon,  1 May 2023 21:55:16 +0200
-Message-Id: <20230501195525.6268-5-aweber.kernel@gmail.com>
+Subject: [PATCH v3 06/13] clk: samsung: Re-add support for Exynos4212 CPU clock
+Date:   Mon,  1 May 2023 21:55:18 +0200
+Message-Id: <20230501195525.6268-7-aweber.kernel@gmail.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230501195525.6268-1-aweber.kernel@gmail.com>
 References: <20230501195525.6268-1-aweber.kernel@gmail.com>
@@ -88,99 +88,103 @@ Support for the Exynos4212 SoC was originally dropped as there were
 no boards using it. We will be adding a device that uses it, so add
 it back.
 
-This reverts commit c40610198f35e8264f9175dafe74db6288a07eda.
+This reverts commit c9194fb623b0158029a268376df09fe28a2a2b05.
 
 Signed-off-by: Artur Weber <aweber.kernel@gmail.com>
 ---
- drivers/soc/samsung/exynos-pmu.c  |  9 +++++++++
- drivers/soc/samsung/exynos-pmu.h  |  2 ++
- drivers/soc/samsung/exynos4-pmu.c | 13 +++++++++++--
- 3 files changed, 22 insertions(+), 2 deletions(-)
+Changed in v3:
+ - Reordered enum and if statement conditionals (Exynos4212 comes before
+   4412)
+---
+ drivers/clk/samsung/clk-exynos4.c | 44 +++++++++++++++++++++++++++----
+ 1 file changed, 39 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
-index 732c86ce2be8..f3437db2fbdc 100644
---- a/drivers/soc/samsung/exynos-pmu.c
-+++ b/drivers/soc/samsung/exynos-pmu.c
-@@ -57,6 +57,12 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
+diff --git a/drivers/clk/samsung/clk-exynos4.c b/drivers/clk/samsung/clk-exynos4.c
+index 22009cb53428..8379dd187bc7 100644
+--- a/drivers/clk/samsung/clk-exynos4.c
++++ b/drivers/clk/samsung/clk-exynos4.c
+@@ -138,7 +138,8 @@
+ /* the exynos4 soc type */
+ enum exynos4_soc {
+ 	EXYNOS4210,
+-	EXYNOS4X12,
++	EXYNOS4212,
++	EXYNOS4412,
+ };
  
- 	if (pmu_data->powerdown_conf_extra)
- 		pmu_data->powerdown_conf_extra(mode);
+ /* list of PLLs to be registered */
+@@ -1205,6 +1206,24 @@ static const struct exynos_cpuclk_cfg_data e4210_armclk_d[] __initconst = {
+ 	{  0 },
+ };
+ 
++static const struct exynos_cpuclk_cfg_data e4212_armclk_d[] __initconst = {
++	{ 1500000, E4210_CPU_DIV0(2, 1, 6, 0, 7, 3), E4210_CPU_DIV1(2, 6), },
++	{ 1400000, E4210_CPU_DIV0(2, 1, 6, 0, 7, 3), E4210_CPU_DIV1(2, 6), },
++	{ 1300000, E4210_CPU_DIV0(2, 1, 5, 0, 7, 3), E4210_CPU_DIV1(2, 5), },
++	{ 1200000, E4210_CPU_DIV0(2, 1, 5, 0, 7, 3), E4210_CPU_DIV1(2, 5), },
++	{ 1100000, E4210_CPU_DIV0(2, 1, 4, 0, 6, 3), E4210_CPU_DIV1(2, 4), },
++	{ 1000000, E4210_CPU_DIV0(1, 1, 4, 0, 5, 2), E4210_CPU_DIV1(2, 4), },
++	{  900000, E4210_CPU_DIV0(1, 1, 3, 0, 5, 2), E4210_CPU_DIV1(2, 3), },
++	{  800000, E4210_CPU_DIV0(1, 1, 3, 0, 5, 2), E4210_CPU_DIV1(2, 3), },
++	{  700000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  600000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  500000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  400000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  300000, E4210_CPU_DIV0(1, 1, 2, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  200000, E4210_CPU_DIV0(1, 1, 1, 0, 3, 1), E4210_CPU_DIV1(2, 3), },
++	{  0 },
++};
 +
-+	if (pmu_data->pmu_config_extra) {
-+		for (i = 0; pmu_data->pmu_config_extra[i].offset != PMU_TABLE_END; i++)
-+			pmu_raw_writel(pmu_data->pmu_config_extra[i].val[mode],
-+					pmu_data->pmu_config_extra[i].offset);
-+	}
+ #define E4412_CPU_DIV1(cores, hpm, copy)				\
+ 		(((cores) << 8) | ((hpm) << 4) | ((copy) << 0))
+ 
+@@ -1233,6 +1252,11 @@ static const struct samsung_cpu_clock exynos4210_cpu_clks[] __initconst = {
+ 			CLK_CPU_NEEDS_DEBUG_ALT_DIV | CLK_CPU_HAS_DIV1, 0x14200, e4210_armclk_d),
+ };
+ 
++static const struct samsung_cpu_clock exynos4212_cpu_clks[] __initconst = {
++	CPU_CLK(CLK_ARM_CLK, "armclk", CLK_MOUT_APLL, CLK_MOUT_MPLL_USER_C,
++			CLK_CPU_NEEDS_DEBUG_ALT_DIV | CLK_CPU_HAS_DIV1, 0x14200, e4212_armclk_d),
++};
++
+ static const struct samsung_cpu_clock exynos4412_cpu_clks[] __initconst = {
+ 	CPU_CLK(CLK_ARM_CLK, "armclk", CLK_MOUT_APLL, CLK_MOUT_MPLL_USER_C,
+ 			CLK_CPU_NEEDS_DEBUG_ALT_DIV | CLK_CPU_HAS_DIV1, 0x14200, e4412_armclk_d),
+@@ -1326,11 +1350,15 @@ static void __init exynos4_clk_init(struct device_node *np,
+ 		samsung_clk_register_fixed_factor(ctx,
+ 			exynos4x12_fixed_factor_clks,
+ 			ARRAY_SIZE(exynos4x12_fixed_factor_clks));
+-		samsung_clk_register_cpu(ctx, exynos4412_cpu_clks,
+-				ARRAY_SIZE(exynos4412_cpu_clks));
++		if (soc == EXYNOS4412)
++			samsung_clk_register_cpu(ctx, exynos4412_cpu_clks,
++					ARRAY_SIZE(exynos4412_cpu_clks));
++		else
++			samsung_clk_register_cpu(ctx, exynos4212_cpu_clks,
++					ARRAY_SIZE(exynos4212_cpu_clks));
+ 	}
+ 
+-	if (soc == EXYNOS4X12)
++	if (soc == EXYNOS4212 || soc == EXYNOS4412)
+ 		exynos4x12_core_down_clock();
+ 
+ 	samsung_clk_extended_sleep_init(reg_base,
+@@ -1363,8 +1391,14 @@ static void __init exynos4210_clk_init(struct device_node *np)
  }
+ CLK_OF_DECLARE(exynos4210_clk, "samsung,exynos4210-clock", exynos4210_clk_init);
  
- /*
-@@ -79,6 +85,9 @@ static const struct of_device_id exynos_pmu_of_device_ids[] = {
- 	}, {
- 		.compatible = "samsung,exynos4210-pmu",
- 		.data = exynos_pmu_data_arm_ptr(exynos4210_pmu_data),
-+	}, {
-+		.compatible = "samsung,exynos4212-pmu",
-+		.data = exynos_pmu_data_arm_ptr(exynos4212_pmu_data),
- 	}, {
- 		.compatible = "samsung,exynos4412-pmu",
- 		.data = exynos_pmu_data_arm_ptr(exynos4412_pmu_data),
-diff --git a/drivers/soc/samsung/exynos-pmu.h b/drivers/soc/samsung/exynos-pmu.h
-index 5e851f32307e..1c652ffd79b4 100644
---- a/drivers/soc/samsung/exynos-pmu.h
-+++ b/drivers/soc/samsung/exynos-pmu.h
-@@ -20,6 +20,7 @@ struct exynos_pmu_conf {
- 
- struct exynos_pmu_data {
- 	const struct exynos_pmu_conf *pmu_config;
-+	const struct exynos_pmu_conf *pmu_config_extra;
- 
- 	void (*pmu_init)(void);
- 	void (*powerdown_conf)(enum sys_powerdown);
-@@ -32,6 +33,7 @@ extern void __iomem *pmu_base_addr;
- /* list of all exported SoC specific data */
- extern const struct exynos_pmu_data exynos3250_pmu_data;
- extern const struct exynos_pmu_data exynos4210_pmu_data;
-+extern const struct exynos_pmu_data exynos4212_pmu_data;
- extern const struct exynos_pmu_data exynos4412_pmu_data;
- extern const struct exynos_pmu_data exynos5250_pmu_data;
- extern const struct exynos_pmu_data exynos5420_pmu_data;
-diff --git a/drivers/soc/samsung/exynos4-pmu.c b/drivers/soc/samsung/exynos4-pmu.c
-index cb35103565a6..f8092190b938 100644
---- a/drivers/soc/samsung/exynos4-pmu.c
-+++ b/drivers/soc/samsung/exynos4-pmu.c
-@@ -86,7 +86,7 @@ static const struct exynos_pmu_conf exynos4210_pmu_config[] = {
- 	{ PMU_TABLE_END,},
- };
- 
--static const struct exynos_pmu_conf exynos4412_pmu_config[] = {
-+static const struct exynos_pmu_conf exynos4x12_pmu_config[] = {
- 	{ S5P_ARM_CORE0_LOWPWR,			{ 0x0, 0x0, 0x2 } },
- 	{ S5P_DIS_IRQ_CORE0,			{ 0x0, 0x0, 0x0 } },
- 	{ S5P_DIS_IRQ_CENTRAL0,			{ 0x0, 0x0, 0x0 } },
-@@ -191,6 +191,10 @@ static const struct exynos_pmu_conf exynos4412_pmu_config[] = {
- 	{ S5P_GPS_ALIVE_LOWPWR,			{ 0x7, 0x0, 0x0 } },
- 	{ S5P_CMU_SYSCLK_ISP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
- 	{ S5P_CMU_SYSCLK_GPS_LOWPWR,		{ 0x1, 0x0, 0x0 } },
-+	{ PMU_TABLE_END,},
-+};
++static void __init exynos4212_clk_init(struct device_node *np)
++{
++	exynos4_clk_init(np, EXYNOS4212);
++}
++CLK_OF_DECLARE(exynos4212_clk, "samsung,exynos4212-clock", exynos4212_clk_init);
 +
-+static const struct exynos_pmu_conf exynos4412_pmu_config[] = {
- 	{ S5P_ARM_CORE2_LOWPWR,			{ 0x0, 0x0, 0x2 } },
- 	{ S5P_DIS_IRQ_CORE2,			{ 0x0, 0x0, 0x0 } },
- 	{ S5P_DIS_IRQ_CENTRAL2,			{ 0x0, 0x0, 0x0 } },
-@@ -204,6 +208,11 @@ const struct exynos_pmu_data exynos4210_pmu_data = {
- 	.pmu_config	= exynos4210_pmu_config,
- };
- 
-+const struct exynos_pmu_data exynos4212_pmu_data = {
-+	.pmu_config	= exynos4x12_pmu_config,
-+};
-+
- const struct exynos_pmu_data exynos4412_pmu_data = {
--	.pmu_config		= exynos4412_pmu_config,
-+	.pmu_config		= exynos4x12_pmu_config,
-+	.pmu_config_extra	= exynos4412_pmu_config,
- };
+ static void __init exynos4412_clk_init(struct device_node *np)
+ {
+-	exynos4_clk_init(np, EXYNOS4X12);
++	exynos4_clk_init(np, EXYNOS4412);
+ }
+ CLK_OF_DECLARE(exynos4412_clk, "samsung,exynos4412-clock", exynos4412_clk_init);
 -- 
 2.40.1
 
