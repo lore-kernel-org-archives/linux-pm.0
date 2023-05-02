@@ -2,112 +2,120 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57ED5C7EE29
-	for <linux-pm@archiver.kernel.org>; Tue,  2 May 2023 15:05:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D460C7EE22
+	for <linux-pm@archiver.kernel.org>; Tue,  2 May 2023 17:13:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233196AbjEBPFs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 May 2023 11:05:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59394 "EHLO
+        id S233897AbjEBRNx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 May 2023 13:13:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52848 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233271AbjEBPFr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 May 2023 11:05:47 -0400
-Received: from smtp-relay-canonical-1.canonical.com (smtp-relay-canonical-1.canonical.com [185.125.188.121])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7E03269F;
-        Tue,  2 May 2023 08:05:35 -0700 (PDT)
-Received: from localhost.localdomain (unknown [10.101.196.174])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 981283F185;
-        Tue,  2 May 2023 15:05:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1683039934;
-        bh=VB9hMQWMzRLIIDW3WhppjAcEXDe8NJXeG8KQlrCIq40=;
-        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
-        b=BD0BUxf2D4ry487a1QZvHKdnyMuQfV442Hd4DVuNK93stOWlN7zknjWzt5QFxWPbn
-         iBYnJsaeDjwPqaruEVpDiOWshHVnA7GRMVg0ePzgNPHi+wiIP02LZTsf2nDC0elhfm
-         sLJCD/w11dqMRcEXAUghJIevNrSm4nxbhHbEsOoAITwX87GmfMO+Sg66L5iqBIXtQS
-         /BILWQLPd2aVgbFhWaz2liV+QWgwsgl+zSnmc0Z2IMgsOimWd5DpMkOKw3BQ+qIgXA
-         2k0jYZengOylZLIaNguOZMmsZGQq8gV5cHPc1wmonCF08bKr53eTv9fofK/+XFx4St
-         2gcyXaNVdWWDA==
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-To:     jejb@linux.ibm.com, martin.petersen@oracle.com
-Cc:     bblock@linux.ibm.com, acelan.kao@canonical.com,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/2] PM: suspend: Define pm_suspend_target_state
-Date:   Tue,  2 May 2023 17:04:34 +0200
-Message-Id: <20230502150435.423770-1-kai.heng.feng@canonical.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S233759AbjEBRNw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 May 2023 13:13:52 -0400
+Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B352AC0
+        for <linux-pm@vger.kernel.org>; Tue,  2 May 2023 10:13:50 -0700 (PDT)
+Received: by mail-ed1-x532.google.com with SMTP id 4fb4d7f45d1cf-50bceaf07b8so2737645a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 02 May 2023 10:13:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1683047629; x=1685639629;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=8c7YTMrMqO6NiIk6aRyvvE9OvrnJpW6uZRx0Qb7U3uQ=;
+        b=zgnIXfrpmrq8W4s5EAIhf5gir1yUUW0Rx0zxLklNwXeuXbpmB0SdDfZCVD+E7FPEd9
+         6BhmsZ8/TcTnHL/BRfxgeQsmwDzUlStLP6i6H4vYmaH1ucMz1rchhg7qraphC84lkE6h
+         qxYtaHUSHhRC9026P2XwfrfhVy+80eLLtV6CG2d2jkv+K0r22dU0VkYbvBgTqcbvOKLu
+         3ZlHQvmP+ei9HoEBBcypNWv54MqVWa1WN56hjGrukmu+RnchIxiQV2L+crzXA0scMgm3
+         g90zJp+CSjAvRhguupJW9Yt085pjePwHvk3JL7sZB6FgOnpG+CzZJ96j6TBTOsTPdYph
+         ce0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683047629; x=1685639629;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=8c7YTMrMqO6NiIk6aRyvvE9OvrnJpW6uZRx0Qb7U3uQ=;
+        b=TSj494c4cKNnD7pN5D6hnrdC58dbtbqIGYMZtAejBsxpmT9PjAquOfVzdcEjZkz5jl
+         cbLeDVkm4/tNog/LGLNT0U3sBroM3Sb9NDwbWm6zXE3BjzBGY5jnvBRMuwadcONt1px5
+         bITq3Mz+2LHXAnwbWHzEtA7OvObc+2ovTtuf0bWa96XwQHQ/YX89umcS86ZzPMSTwvPO
+         Vf7LugbJxWolkdIlhNlgauqh3MTQph8alR18nXPit2DlpFzH8y6Teg2277R6nSqUTyCt
+         x4JMuzTqsCZIufpN4JodKgBc/OLJLoAh3fhaAQgg/NOC9MVbZ/oXjDxtbY6mAsZnA3i+
+         4F6w==
+X-Gm-Message-State: AC+VfDySpGn/dXY6d4Q3F2l/0qhfx8yPBd0np/GxWHr5oe73QpGgNToy
+        7JOhLIwsWvww/5uczqog/kdw/w==
+X-Google-Smtp-Source: ACHHUZ6e7VBIhBT7ojisZ4f6uNBoZ8irQ8thLSU1xgomR8S5YlRCSGV/kFmz1qTvVSqYSp9UjDOPng==
+X-Received: by 2002:a17:907:608b:b0:88f:a236:69e6 with SMTP id ht11-20020a170907608b00b0088fa23669e6mr596274ejc.7.1683047629100;
+        Tue, 02 May 2023 10:13:49 -0700 (PDT)
+Received: from ?IPV6:2a02:810d:15c0:828:37be:eda5:e303:19e0? ([2a02:810d:15c0:828:37be:eda5:e303:19e0])
+        by smtp.gmail.com with ESMTPSA id cw22-20020a170906479600b0095f06c0247asm8879918ejc.209.2023.05.02.10.13.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 02 May 2023 10:13:48 -0700 (PDT)
+Message-ID: <96feebd6-ce0c-576d-0747-647706692846@linaro.org>
+Date:   Tue, 2 May 2023 19:13:47 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.1
+Subject: Re: [PATCH v2 5/8] dt-bindings: power: supply: max77658: Add ADI
+ MAX77658 Battery
+To:     "Arslanbenzer, Zeynep" <Zeynep.Arslanbenzer@analog.com>
+Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "lee@kernel.org" <lee@kernel.org>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "krzysztof.kozlowski+dt@linaro.org" 
+        <krzysztof.kozlowski+dt@linaro.org>,
+        "sre@kernel.org" <sre@kernel.org>,
+        "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+        "broonie@kernel.org" <broonie@kernel.org>
+References: <20230322055628.4441-1-Zeynep.Arslanbenzer@analog.com>
+ <20230322055628.4441-6-Zeynep.Arslanbenzer@analog.com>
+ <afeecd42-ecda-4d92-bbb5-6dcff84fca7d@linaro.org>
+ <MN2PR03MB5197BC6AEE58EFE098AF08358B6E9@MN2PR03MB5197.namprd03.prod.outlook.com>
+ <1f520e8a-7785-f4dc-2f9b-d6afd1e3f671@linaro.org>
+ <MN2PR03MB5197EB4B34DC82C62EF5A3798B6F9@MN2PR03MB5197.namprd03.prod.outlook.com>
+Content-Language: en-US
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <MN2PR03MB5197EB4B34DC82C62EF5A3798B6F9@MN2PR03MB5197.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Define pm_suspend_target_state so it can still be used when
-CONFIG_SUSPEND is not set.
+On 02/05/2023 17:05, Arslanbenzer, Zeynep wrote:
+> On Tue, 2 May 2023, Krzysztof Kozlowski wrote:
+>> On 01/05/2023 22:20, Arslanbenzer, Zeynep wrote:
+>>
+>>>> You already said it above.
+>>>>
+>>>>> +      in battery.yaml, with the following properties being required:
+>>>>> +      - alert-celsius
+>>>>> +
+>>>>> +required:
+>>>>> +  - compatible
+>>>>
+>>>> Why reg and monitored-batter are not required?
+>>>>
+>>> If no monitored-battery information is supplied, we set default values for alert-celsius.
+>>
+>> So the device can operate without battery? Interesting... are you sure, you can physically remove battery and device will work?
+>>
+> 
+> I mean if battery info is not supplied, we use default values.
+> 
+> ret = power_supply_get_battery_info(fg->battery, &info);
+> if (ret) {
+>     dev_err(fg->dev, "Unable to get battery info\n");
+>     fg->temp_alert_min = info->temp_alert_min;
+>     fg->temp_alert_max = info->temp_alert_max;
+> } else {
+>     fg->temp_alert_min = -128;
+>     fg->temp_alert_max = 127;
+> }
 
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
-v4:
- - Move pm_suspend_target_state to CONFIG_SUSPEND block.
+You speak about driver, but I speak about hardware. The bindings are for
+the latter.
 
-v3:
- - New patch to resolve undefined pm_suspend_target_state.
-
- drivers/base/power/wakeup.c | 5 -----
- include/linux/suspend.h     | 4 +++-
- 2 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 7cc0c0cf8eaa..a917219feea6 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -19,11 +19,6 @@
- 
- #include "power.h"
- 
--#ifndef CONFIG_SUSPEND
--suspend_state_t pm_suspend_target_state;
--#define pm_suspend_target_state	(PM_SUSPEND_ON)
--#endif
--
- #define list_for_each_entry_rcu_locked(pos, head, member) \
- 	list_for_each_entry_rcu(pos, head, member, \
- 		srcu_read_lock_held(&wakeup_srcu))
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index d0d4598a7b3f..474ecfbbaa62 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -202,6 +202,7 @@ struct platform_s2idle_ops {
- };
- 
- #ifdef CONFIG_SUSPEND
-+extern suspend_state_t pm_suspend_target_state;
- extern suspend_state_t mem_sleep_current;
- extern suspend_state_t mem_sleep_default;
- 
-@@ -337,6 +338,8 @@ extern bool sync_on_suspend_enabled;
- #else /* !CONFIG_SUSPEND */
- #define suspend_valid_only_mem	NULL
- 
-+#define pm_suspend_target_state	(PM_SUSPEND_ON)
-+
- static inline void pm_suspend_clear_flags(void) {}
- static inline void pm_set_suspend_via_firmware(void) {}
- static inline void pm_set_resume_via_firmware(void) {}
-@@ -503,7 +506,6 @@ extern void pm_report_max_hw_sleep(u64 t);
- 
- /* drivers/base/power/wakeup.c */
- extern bool events_check_enabled;
--extern suspend_state_t pm_suspend_target_state;
- 
- extern bool pm_wakeup_pending(void);
- extern void pm_system_wakeup(void);
--- 
-2.34.1
+Best regards,
+Krzysztof
 
