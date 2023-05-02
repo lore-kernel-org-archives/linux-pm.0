@@ -2,97 +2,74 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2A87C7EE21
-	for <linux-pm@archiver.kernel.org>; Mon,  1 May 2023 22:45:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8E38C77B7E
+	for <linux-pm@archiver.kernel.org>; Tue,  2 May 2023 04:28:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232490AbjEAWpC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 May 2023 18:45:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36460 "EHLO
+        id S233282AbjEBE2y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 May 2023 00:28:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232467AbjEAWpB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2023 18:45:01 -0400
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 610061FDD
-        for <linux-pm@vger.kernel.org>; Mon,  1 May 2023 15:45:00 -0700 (PDT)
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-528dd896165so1502023a12.2
-        for <linux-pm@vger.kernel.org>; Mon, 01 May 2023 15:45:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20221208.gappssmtp.com; s=20221208; t=1682981100; x=1685573100;
-        h=to:from:cc:content-transfer-encoding:mime-version:date:message-id
-         :subject:references:in-reply-to:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/OQB6iNKkO4+y/9ieUCeGj1Y58XqXg5k4s4FKmjy7sc=;
-        b=4KDaiO6LisTYLT/TMV+oW0SlgxHJuKfLtpmqI92q2ZRpt4enwVBFhEDSKsuv5bhoLS
-         fOGzlpM359VrlHKC86rq5jD4shsPMnm2QEFNdXVZ52oacbI3u8Ld+v3eeVfv7mlF/beV
-         Io5Zp1RXghjwmd4bCP9KS+Z3NCInXlMqcLIYfz5fBA0OHV0tX4BFL0NB3LxjNmcTx53Q
-         YDiu7icXGBhsbgQ299UJ+udPCmd6qNnk4elkz3jpRtF4PUV/WmzRjsULt7PRDRvexNsE
-         rjRa87S6ZzSESGtFLtmtx6NEAm+rp/2ixnPeTMKo8RTpYSlJR+ParJtAK9HVDSvvVFC9
-         C/aQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1682981100; x=1685573100;
-        h=to:from:cc:content-transfer-encoding:mime-version:date:message-id
-         :subject:references:in-reply-to:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/OQB6iNKkO4+y/9ieUCeGj1Y58XqXg5k4s4FKmjy7sc=;
-        b=co+aEnFva3FsPruOFpuatgWJ6aakK/htoUfFcnQbgtwA1Y5EJJmbzqw1ZEl/b7UwWN
-         s2/bg2x/OfyzpnGriBIezFvDXKfFX6i+/66GUJ+KYyyDEcO9g3b+K2+FGrJM4zkyrgea
-         V9EHDY/t/OANQVvNfyNHTpp5MjS7H8soIWIJOfKc6mLLE6LnpzE3VHGTsb+5Dz9wmBy1
-         hLYVOpikCz8PlSBw67Kjle2lO5Ug6JPEuTAhrXjxZEBwo4oZWA1oxces8ZlKZOP/I4uS
-         bhhqa0AXSnf8wmpr1xx6AJIHJk7H7P1FWdnZUy96Jc+3gXmVHqBWtcSeNPVdEf57ZiLg
-         55mA==
-X-Gm-Message-State: AC+VfDw+lCRl5NrILPdCXYhLMVgmTeZrNpLUOrRdFU2K/5I+W2z2nygz
-        MSzHhN70eBB6LikQk3YowAxjKw==
-X-Google-Smtp-Source: ACHHUZ7uy00k2USN1lzmV5AsdHPtzc5Q0FuQEmXxK9cV9XA1tn/I1mSKAP4YeiluCRIOkTtjzeEmVw==
-X-Received: by 2002:a17:903:22c9:b0:1a8:1867:1f71 with SMTP id y9-20020a17090322c900b001a818671f71mr18923506plg.41.1682981099840;
-        Mon, 01 May 2023 15:44:59 -0700 (PDT)
-Received: from localhost ([50.221.140.188])
-        by smtp.gmail.com with ESMTPSA id q23-20020a170902789700b0019ee045a2b3sm18262780pll.308.2023.05.01.15.44.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 May 2023 15:44:59 -0700 (PDT)
-In-Reply-To: <20230427163626.101042-1-ajones@ventanamicro.com>
-References: <20230427163626.101042-1-ajones@ventanamicro.com>
-Subject: Re: [PATCH v2] RISC-V: Align SBI probe implementation with spec
-Message-Id: <168298107617.32296.1350302899241039554.b4-ty@rivosinc.com>
-Date:   Mon, 01 May 2023 15:44:36 -0700
+        with ESMTP id S233151AbjEBE2y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 May 2023 00:28:54 -0400
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5F5F273A;
+        Mon,  1 May 2023 21:28:50 -0700 (PDT)
+From:   =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+        s=mail; t=1683001728;
+        bh=qFEajWvVlStRcKllCItBDHDpRzStSprf9+KoOJV74tA=;
+        h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+        b=PM+IzfIt5/Z2JTAhnSub3LQITSndz4ruxbPKfwrIFZ7az2Bp0KLnzt6RLUznuMU7k
+         NlFW+t+LCfEuYJCOo7UdXkNXpPKw9md+feY4pBnwJIo1Za1bFXgk5mYohPVbC0dwQJ
+         I+trX8tC524rxT9j0ImOOsj1KriZNWRIVKp+YrNA=
+Date:   Tue, 02 May 2023 06:28:44 +0200
+Subject: [PATCH v2 1/2] HID: lg4ff: explicitly include linux/leds.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.13-dev-901c5
-Cc:     "'Rafael J . Wysocki '" <rafael@kernel.org>,
-        'Atish Patra ' <atishp@atishpatra.org>,
-        'Mark Rutland ' <mark.rutland@arm.com>,
-        'Conor Dooley ' <conor.dooley@microchip.com>,
-        'Albert Ou ' <aou@eecs.berkeley.edu>,
-        'Palmer Dabbelt ' <palmer@dabbelt.com>,
-        'Will Deacon ' <will@kernel.org>,
-        'Daniel Lezcano ' <daniel.lezcano@linaro.org>,
-        'Paul Walmsley ' <paul.walmsley@sifive.com>,
-        'Anup Patel ' <anup@brainfault.org>
-From:   Palmer Dabbelt <palmer@rivosinc.com>
-To:     linux-riscv@lists.infradead.org, linux-pm@vger.kernel.org,
-        kvm-riscv@lists.infradead.org,
-        Andrew Jones <ajones@ventanamicro.com>
+Content-Transfer-Encoding: 8bit
+Message-Id: <20230212-include-power_supply-leds-v2-1-e9910a3f5837@weissschuh.net>
+References: <20230212-include-power_supply-leds-v2-0-e9910a3f5837@weissschuh.net>
+In-Reply-To: <20230212-include-power_supply-leds-v2-0-e9910a3f5837@weissschuh.net>
+To:     Sebastian Reichel <sre@kernel.org>, Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-input@vger.kernel.org, kernel test robot <lkp@intel.com>,
+        =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1683001727; l=714;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=qFEajWvVlStRcKllCItBDHDpRzStSprf9+KoOJV74tA=;
+ b=YdHBbqFXjpQWMH67rf1otRSXNwuxB4SQ0KuepjxAIZMcH3bNVcaxs2Sg7kLD0ZUEtrDGFsGbX
+ 8nYgxhwkz/RDHA52ziJiCIZ5kCogsQviBCw+UQ/ShkS+Gb+dPxVQ4rJ
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Instead of relying on an accidental, transitive inclusion of linux/leds.h
+use it directly.
 
-On Thu, 27 Apr 2023 18:36:26 +0200, Andrew Jones wrote:
-> sbi_probe_extension() is specified with "Returns 0 if the given SBI
-> extension ID (EID) is not available, or 1 if it is available unless
-> defined as any other non-zero value by the implementation."
-> Additionally, sbiret.value is a long. Fix the implementation to
-> ensure any nonzero long value is considered a success, rather
-> than only positive int values.
-> 
-> [...]
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202304301551.baBXvI9d-lkp@intel.com/
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+---
+ drivers/hid/hid-lg4ff.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Applied, thanks!
+diff --git a/drivers/hid/hid-lg4ff.c b/drivers/hid/hid-lg4ff.c
+index e3fcf1353fb3..d55d04c140b9 100644
+--- a/drivers/hid/hid-lg4ff.c
++++ b/drivers/hid/hid-lg4ff.c
+@@ -15,6 +15,7 @@
+ #include <linux/input.h>
+ #include <linux/usb.h>
+ #include <linux/hid.h>
++#include <linux/leds.h>
+ 
+ #include "usbhid/usbhid.h"
+ #include "hid-lg.h"
 
-[1/1] RISC-V: Align SBI probe implementation with spec
-      https://git.kernel.org/palmer/c/41cad8284d5e
-
-Best regards,
 -- 
-Palmer Dabbelt <palmer@rivosinc.com>
+2.40.1
 
