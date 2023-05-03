@@ -2,135 +2,253 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C120C7EE21
-	for <linux-pm@archiver.kernel.org>; Wed,  3 May 2023 19:34:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A46A6C77B75
+	for <linux-pm@archiver.kernel.org>; Wed,  3 May 2023 20:59:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229747AbjECTeG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 May 2023 15:34:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53048 "EHLO
+        id S229484AbjECU7m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 May 2023 16:59:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34452 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229585AbjECTeE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2023 15:34:04 -0400
-Received: from sonic303-21.consmr.mail.ir2.yahoo.com (sonic303-21.consmr.mail.ir2.yahoo.com [77.238.178.202])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6FFC1981
-        for <linux-pm@vger.kernel.org>; Wed,  3 May 2023 12:33:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1683142434; bh=ey9VVE3Uq687XRWPjw9xJG0+/i9NqHt1pJf3+QQYMkU=; h=Date:Subject:To:Cc:References:From:In-Reply-To:From:Subject:Reply-To; b=dUrwv+E18P+1nqMvWWwiLyhz3vFaqYAUyJ4qQlquWBDPa2XITjS8mQAmnYGT/ADw7R6D9Y6Rn61nFaeyw5uQrUPsuh0P93Dof6VsMluYMDU0HgL9xKb7FqpEZlm6mrdoOZ8s5FOhGYZkohxFuhM1kFfljA3VxH5OHX9QMseeuMT+u1xLnFuBDm5CWoQ2KUEdxnHSRyrJCAev1mfLK3IA6dMPrl+rWbfSIyLcWVE3IJUv/N/CyfcEuNHxf0di1thyJhTf6uRSv1yCfM4pZBTxDVQOuRZmVcOGXW+RVCun5TdLZA9Gh4RwF/ndRapAPQX5IHPmjK0QhCf7F3ibc+Horg==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1683142434; bh=yA9jaGS7se1Bezm4p7uzrd4/l/t5BDw8oa/i6BT6E8G=; h=X-Sonic-MF:Date:Subject:To:From:From:Subject; b=AG/gDbiLeZIp3xw1A1vd1kB5tyaAwgrdmqVLsHwkQVsJ2gfWoXGuTM8973huaKr9GJMra9il+20iRxQdBwKvUSp0B1yEg1/wq/pXYGt/FdrVfg9UH56Mn0jTuuqympWWuxEUe9fKTKtX07gSzDBYpAikv+d+ozMcfm25WXm/JiFpuDHTD/3QTqGgptsPzyZ9uIDhH4WgkjTDge8XBHC4c8ZBITOclahq5xPizu9b3C3+TvY6F/q77k6HFj5HlyBMyozYdUuOlbFkAEBop86Nu6fcsYwrRGQ9LHyiPR2wL0f73iICv4SjtWxpamzEQqHOUUhviLNJGyv32DA+m+DuRQ==
-X-YMail-OSG: 9KVGGWEVM1mUcFY.b6obNje.xO7veIhWrPxAqQWlA0AFXwl2.j85fOQA86M62FV
- Goj7ryIWdOmpUeQ.n3zxZ5A4wIyFBWO02E79EBymFgGKCRaKmD9nAn3dcNlIzRfshFid6X9r5b2Z
- 8x1RdNQiRjtWiY2zUswMqfWCnedDdu6goEKCWM.tWAGXpGQkxZuoFLgfaKhAJqQrlRiME9ZdXxOo
- b77if20wBzS1gvq33jnPdf5BZJBPg.m_PXlZsXNLLIUMHroUIfmeqvZrm1yxhVmHhv.K5bBt8EyZ
- t0kzaOU8vQA1Rbs_74HTrXjoImqFC4dTlZT1QIWEHeuU5Qf20.mEZNfFARGok6g4sUTXLMGBOmGX
- cegJEe.5tboUcF1h2Mbv3JXb9W2pGvaISXWOp2dLvud6F11S6rFvimm5xzstt5AyfkC_i8sD2RdW
- 29_wNx5fR8e3fVlcEfn6uz9fcI4ozgNtwfwNxwkM41TAaG5Uy6TaSi48zFYx_Gfjdw6eeWmAH4fx
- TrOsO4J.RNA6SfrqketVgloMmbZkvJ_acws3kJ8Sr66wcT92VRoNubaIrqsFRF_y8KvZkpshVAYV
- vqQpGVQyY62ALLM7o4dmgv8AFm7gJELBE2Q.2PdFTrNMI5sXOe7UBbA.03ltFavKQWrfOCj7lxBO
- us0jJgQVl8ik4ehJzsCrYi1VrkqibrU4VgpzQVRcxoM75P5SnJiyfErNN7qKBkExNm8De37lxsuT
- 9iodJ1BZAxR7zo0SGUFQnOks4W8g0oKkbIupRj4pMoX6zQiMM4SSf4obNHhPrR.IXzLrBh4fgbaA
- aiFxX9UelEk5GLSkw5I6vS8XjGv8AhngaN7M.14asWPsNB9NBgnvKz26cPI1r5Jh3LwTXtDGQMYB
- BvfsvvsrXW.xBASsA6MXY9J5pMEtCZYVbRVyVHHGkb0T0b4u8Rz1zJpTlqmN_NdBz14TKkPWScEo
- 1LYnVh2bMom5_xurrJMEO7OumOVCLAdKgQ6I.t693ujbEIHDN62gKjPZCG.3CiAnkYZha86muEDy
- wNu_2FO4Xcg_J10TXFolzXhv9Or6EC.OrjQtZhTJwVjRkW_LlMPemXYwFH1gtypi9tL4sUyt0kIt
- ANxusOtpZ5H_8v9uqPkgr5Zx8ULJ_AaEkPOoWMuKWFOyqOm3Ap0mTvC2pZfh8hhXUvctEkhLSIGU
- MbUW0nrtbu.f_IZeoJHRDC9FK1cdVItE6H4ojroSKLZNJnmVasm.fEp8NcBcZ9b9t909FBjvTEkX
- ySmeRbOBW.tQ1hx1IydY2Ys1RZfZUR_FaLJ50cPnTk74mpyJbZj1PopNquUTO1p9iTLQNgLZrXK1
- k5bYMgVX23KrG6D86cbyAIHWulPoVWKWfB_VQlBp6CxtUabT87Hi5qolxPzqJKlUSQsIvzeiELZD
- .2o.6ho9gULDWNnKm8ULyam7beoS9aNffPlMi63o0sQ_pwmY5fjTLCXki4k9SzfRV7tLPpZ9ana3
- 5uiiYEiK7FGk8sP.6uKZbK2QTjpUFOmRf2Xp3SUeqpQOfdag_cE7JNgh.TgJxFt7RACgBDZzo5kP
- o.U1cNuoaQLFarncmN8Z.LkuXFyu2kwWS2nXgMvSpWnMX6bQBvbXNqiG2nQefLi1StpNozMNS7AV
- DwsbfEUeIX0tN7i7wJUYodVw1OWDnateeTDXYZ_bLsQ4XQu6wdRWidk5R6khV8bqZJeXgBNImkQj
- kxSEnQ_qcN5tvnHkDmuC9hocfJzLI1w48W_1mpqG1_wWAnMemBVU2vZdwNiyafSe4uQAfuruWWPt
- bK3yRZ3QiXA6Y8aZ4X0OmQTwQ8u6Gsy4RmtsQ6xt8Q4JVdG5z88M0iNMQ4Fr2lAIcFNCmLbX83Fu
- rd5uQ1SngxL2FeAfts4ihqQlIascOYO0IwtUmwNU1wdZbKfk_y8.Vvhcg68MlnAnXCQCBuiG0AXX
- XpwE1OjWJXfkDpInnYgcCNTndXPyqqSR_S0_TjQVidjyMEqaRGGoZllvcmS8z05BIgJCE5N2dyId
- 9CNUylSSfzEM8kJldkLgNkIexz0bPkhSj3pyUPLzYwLuAJHh2yI6T_dt6svL3lMFuYANyjNM5l1r
- 9wEK.6ot5OT6XPfy.tu.rN6C2BuY2g_s7XBWUfQRgPOpVCTNKPk6g5IpmkvU6nZAiGpeHNMnTmwo
- hO5SXyW2pzO5JlGk10_lgC4bvU94S_osHG8HlCM5.xDZ1OUZSCm82M4TgmAu..qJM.HFZXzXe8kj
- csPgokK5PvoyJ1ATARcAkBM8XMWbgIQvGvXguVo03nHwWCKWEIo5P.8KIvIT_YYJtZ0hYxTlzGcn
- 3Xt33wKyWn2O6MzMs
-X-Sonic-MF: <jahau@rocketmail.com>
-X-Sonic-ID: 0780ab79-d664-433a-92c4-ec9a24601688
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic303.consmr.mail.ir2.yahoo.com with HTTP; Wed, 3 May 2023 19:33:54 +0000
-Received: by hermes--production-ir2-74cd8fc864-qfvhg (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID c1dcf3a945446660b55a441263fb7e62;
-          Wed, 03 May 2023 19:33:52 +0000 (UTC)
-Message-ID: <73c02d98-c306-5e9d-2737-ff2d4a7393d1@rocketmail.com>
-Date:   Wed, 3 May 2023 21:33:49 +0200
+        with ESMTP id S229461AbjECU7l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2023 16:59:41 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 574D44684;
+        Wed,  3 May 2023 13:59:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1683147556; x=1714683556;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=+VUBpjIflHIZ6BkhxsKFrSLNBkeBDDE+dMqP74XAxBE=;
+  b=E+1BDoe94FZOaIQsyhko4E9hCt4pIUJHEenqyFM+IJ+E8Z322Si5Gv5w
+   7/+KvSHIobToQYwHagke9Jg8OKEYnF6L3isp7SAGfnz8xRcMw2NPL2jmX
+   LTtK4t1xbK7L9VIkc7qxMbvOC/dt19So0RJeeUWAqxhJHerLuWSs/DuQS
+   62iiDvAQthMWMKuhI71B83Km3C6nNU+gSC0mH81lEmHZmlMqnz5qAgPUY
+   4AAOYi6D+dC1dghWiMde22nB9G5HV1sR2B4xasu9rGVkrekl2b6iVe0ie
+   7bbChb13gdXEfY7OgPsSqqmsh88rG6nzzcfPmbbouTDwhjNV3wVeGKHpn
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10699"; a="329126246"
+X-IronPort-AV: E=Sophos;i="5.99,248,1677571200"; 
+   d="scan'208";a="329126246"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 May 2023 13:59:12 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10699"; a="699569603"
+X-IronPort-AV: E=Sophos;i="5.99,248,1677571200"; 
+   d="scan'208";a="699569603"
+Received: from jrath-mobl2.amr.corp.intel.com (HELO spandruv-desk1.amr.corp.intel.com) ([10.209.115.67])
+  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 May 2023 13:59:12 -0700
+Message-ID: <c029b85ad2c26ce37683d6e15406b7a90564ceb8.camel@linux.intel.com>
+Subject: Re: [regression] Bug 217386 - intel_powerclamp null pointer
+ dereference in Linux 6.3.x
+From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux regressions mailing list <regressions@lists.linux.dev>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Date:   Wed, 03 May 2023 13:59:11 -0700
+In-Reply-To: <CAJZ5v0hZXJYU6Maz39u2EyV=tqm-JZ9OErcByMD+=C8YgTKXpA@mail.gmail.com>
+References: <0fd55257-5b26-1969-18b7-97b39c3f620b@leemhuis.info>
+         <CAJZ5v0hZXJYU6Maz39u2EyV=tqm-JZ9OErcByMD+=C8YgTKXpA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.42.4 (3.42.4-2.fc35) 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v3 8/8] dt-bindings: Add rt5033 mfd, regulator and charger
-To:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc:     Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Beomho Seo <beomho.seo@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Raymond Hackley <raymondhackley@protonmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Axel Lin <axel.lin@ingics.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-References: <cover.1682636929.git.jahau@rocketmail.com>
- <5bd8b90713a61129acf292a941eb7fb5ccaa3db4.1682636929.git.jahau@rocketmail.com>
- <1d187f41-ad9a-4e82-8557-20694a8294d0@linaro.org>
- <e9d75e57-bdea-593d-7b05-136c9ad2e2fe@rocketmail.com>
- <14daa006-5260-81a8-8ba0-4122e0c0509a@rocketmail.com>
- <a0f4252d-7f27-6dd9-dea0-f8d242011f70@linaro.org>
-Content-Language: en-US
-From:   Jakob Hauser <jahau@rocketmail.com>
-In-Reply-To: <a0f4252d-7f27-6dd9-dea0-f8d242011f70@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailer: WebService/1.1.21417 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof, Hi all,
+Hi All,
 
-On 02.05.23 12:59, Krzysztof Kozlowski wrote:
-...
-> Apologies for this, just very busy times. :)
+On Wed, 2023-05-03 at 14:34 +0200, Rafael J. Wysocki wrote:
+> CC: Srinivas
 > 
+> On Tue, May 2, 2023 at 12:26 PM Linux regression tracking (Thorsten
+> Leemhuis) <regressions@leemhuis.info> wrote:
+> > 
+> > 
+> > Hi, Thorsten here, the Linux kernel's regression tracker.
+> > 
+> > I noticed a regression report in bugzilla.kernel.org. As many
+> > (most?)
+> > kernel developers don't keep an eye on it, I decided to forward it
+> > by mail.
+> > 
+> > Note, you have to use bugzilla to reach the reporter, as I sadly[1]
+> > can
+> > not CCed them in mails like this.
+> > 
+> > Quoting from https://bugzilla.kernel.org/show_bug.cgi?id=217386 :
+> > 
 
-Thanks for letting me know. Take the time you need.
+I have added the fix to
+https://bugzilla.kernel.org/show_bug.cgi?id=217386
 
-Writing towards the list:
+Please check.
 
-I think there is a misunderstanding here.
+Thanks,
+Srinivas
 
-The connector node provides information about the installed USB 
-hardware. E.g. property "usb-role-switch" means "Indicates that the 
-device is capable of assigning the USB data role (USB host or USB 
-device) for a given USB connector [...]" [5]. To my understanding, in 
-relation with a port node this actually says that this port has this 
-capability. This is not relevant to the rt5033-charger driver.
 
-The rt5033-charger driver needs to pair with the extcon chip because it 
-needs the information about *external* connectors being attached [6].
+> > >  Risto A. Paju 2023-05-01 09:49:03 UTC
+> > > 
+> > > Created attachment 304199 [details]
+> > > dmesg-6.3.1
+> > > 
+> > > I use intel_powerclamp on a Thinkpad X220i via a custom script
+> > > for
+> > > thermal management, and it triggers a kernel bug in Linux 6.3.0
+> > > and
+> > > 6.3.1. The script has a part
+> > > 
+> > > awk something > /sys/class/thermal/cooling_device4/cur_state
+> > > 
+> > > and the awk process hangs, with the null pointer bug reported in
+> > > dmesg.
+> > > 
+> > > The script has worked fine for years, and for now I've switched
+> > > back to
+> > > the 6.2 series for this laptop.
+> > > 
+> > > [tag] [reply] [−]
+> > > Private
+> > > Comment 1 Risto A. Paju 2023-05-01 12:23:15 UTC
+> > > 
+> > > The affected CPU is an i3-2310M. I tested the same on a newer
+> > > Intel
+> > > laptop with an i5-7300HQ, and there's no sign of the bug there.
+> > 
+> > From the dmesg:
+> > 
+> > > [   16.495596] Oops: 0002 [#1] PREEMPT SMP PTI
+> > > [   16.496084] CPU: 0 PID: 2792 Comm: awk Not tainted 6.3.1 #2
+> > > [   16.496589] Hardware name: LENOVO 428737G/428737G, BIOS
+> > > 8DET76WW (1.46 ) 06/21/2018
+> > > [   16.497095] RIP: 0010:idle_inject_set_duration+0x6/0x20
+> > > [   16.497607] Code: 00 49 c7 c4 f4 ff ff ff eb 92 49 c7 c4 f4 ff
+> > > ff ff eb 91 cc 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 89
+> > > f0 01 d0 74 06 <89> 77 44 89 57 40 c3 cc cc cc cc 66 66 2e 0f 1f
+> > > 84 00 00 00 00 00
+> > > [   16.498824] RSP: 0018:ffffc900005e7de8 EFLAGS: 00010206
+> > > [   16.499461] RAX: 00000000000927c0 RBX: 0000000000000000 RCX:
+> > > 0000000000001770
+> > > [   16.500103] RDX: 0000000000001770 RSI: 0000000000091050 RDI:
+> > > 0000000000000000
+> > > [   16.500752] RBP: 0000000000000002 R08: 0000000000000001 R09:
+> > > 000000000000000a
+> > > [   16.501405] R10: 000000000000000a R11: f000000000000000 R12:
+> > > 0000000000000000
+> > > [   16.502071] R13: ffff8881064bd720 R14: ffffc900005e7ea0 R15:
+> > > ffff8881022283e0
+> > > [   16.502745] FS:  00007fe494782b80(0000)
+> > > GS:ffff888216200000(0000) knlGS:0000000000000000
+> > > [   16.503421] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > > [   16.504095] CR2: 0000000000000044 CR3: 000000010f94c006 CR4:
+> > > 00000000000606f0
+> > > [   16.504783] Call Trace:
+> > > [   16.505456]  <TASK>
+> > > [   16.506124]  powerclamp_set_cur_state+0x56/0x200
+> > > [intel_powerclamp]
+> > > [   16.506810]  cur_state_store+0x74/0xd0
+> > > [   16.507497]  kernfs_fop_write_iter+0x128/0x1c0
+> > > [   16.508193]  vfs_write+0x2be/0x3f0
+> > > [   16.508897]  ksys_write+0x5a/0xe0
+> > > [   16.509794]  do_syscall_64+0x3b/0x90
+> > > [   16.510607]  entry_SYSCALL_64_after_hwframe+0x72/0xdc
+> > > [   16.511444] RIP: 0033:0x7fe4948c0be0
+> > > [   16.512247] Code: 40 00 48 8b 15 49 c2 0d 00 f7 d8 64 89 02 48
+> > > c7 c0 ff ff ff ff eb b7 0f 1f 00 80 3d 01 4a 0e 00 00 74 17 b8 01
+> > > 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 58 c3 0f 1f 80 00 00 00 00
+> > > 48 83 ec 28 48 89
+> > > [   16.514025] RSP: 002b:00007ffc045bd0d8 EFLAGS: 00000202
+> > > ORIG_RAX: 0000000000000001
+> > > [   16.515180] RAX: ffffffffffffffda RBX: 0000000000000002 RCX:
+> > > 00007fe4948c0be0
+> > > [   16.516346] RDX: 0000000000000002 RSI: 0000562bc4d50990 RDI:
+> > > 0000000000000001
+> > > [   16.517543] RBP: 00007fe49499e780 R08: 0000000000000007 R09:
+> > > 0000562bc4d46da0
+> > > [   16.518751] R10: 00007fe4947d5f50 R11: 0000000000000202 R12:
+> > > 0000000000000002
+> > > [   16.519977] R13: 0000562bc4d50990 R14: 0000000000000002 R15:
+> > > 00007fe494999d60
+> > > [   16.521234]  </TASK>
+> > > [   16.522479] Modules linked in:
+> > > [...]
+> > > [   16.534416] CR2: 0000000000000044
+> > > [   16.536059] ---[ end trace 0000000000000000 ]---
+> > > [   16.537819] RIP: 0010:idle_inject_set_duration+0x6/0x20
+> > > [   16.537827] Code: 00 49 c7 c4 f4 ff ff ff eb 92 49 c7 c4 f4 ff
+> > > ff ff eb 91 cc 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 89
+> > > f0 01 d0 74 06 <89> 77 44 89 57 40 c3 cc cc cc cc 66 66 2e 0f 1f
+> > > 84 00 00 00 00 00
+> > > [   16.543180] RSP: 0018:ffffc900005e7de8 EFLAGS: 00010206
+> > > [   16.543189] RAX: 00000000000927c0 RBX: 0000000000000000 RCX:
+> > > 0000000000001770
+> > > [   16.543193] RDX: 0000000000001770 RSI: 0000000000091050 RDI:
+> > > 0000000000000000
+> > > [   16.549435] RBP: 0000000000000002 R08: 0000000000000001 R09:
+> > > 000000000000000a
+> > > [   16.551087] R10: 000000000000000a R11: f000000000000000 R12:
+> > > 0000000000000000
+> > > [   16.551091] R13: ffff8881064bd720 R14: ffffc900005e7ea0 R15:
+> > > ffff8881022283e0
+> > > [   16.554264] FS:  00007fe494782b80(0000)
+> > > GS:ffff888216200000(0000) knlGS:0000000000000000
+> > > [   16.554270] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > > [   16.554281] CR2: 0000560363a98298 CR3: 000000010f94c006 CR4:
+> > > 00000000000606f0
+> > > [   17.635258] memfd_create() without MFD_EXEC nor
+> > > MFD_NOEXEC_SEAL, pid=2842 'X'
+> > 
+> > 
+> > See the ticket for more details.
+> > 
+> > 
+> > [TLDR for the rest of this mail: I'm adding this report to the list
+> > of
+> > tracked Linux kernel regressions; the text you find below is based
+> > on a
+> > few templates paragraphs you might have encountered already in
+> > similar
+> > form.]
+> > 
+> > BTW, let me use this mail to also add the report to the list of
+> > tracked
+> > regressions to ensure it's doesn't fall through the cracks:
+> > 
+> > #regzbot introduced: v6.2..v6.3
+> > https://bugzilla.kernel.org/show_bug.cgi?id=217386
+> > #regzbot title: pm: thermal: intel_powerclamp null pointer
+> > dereference
+> > #regzbot ignore-activity
+> > 
+> > This isn't a regression? This issue or a fix for it are already
+> > discussed somewhere else? It was fixed already? You want to clarify
+> > when
+> > the regression started to happen? Or point out I got the title or
+> > something else totally wrong? Then just reply and tell me --
+> > ideally
+> > while also telling regzbot about it, as explained by the page
+> > listed in
+> > the footer of this mail.
+> > 
+> > Developers: When fixing the issue, remember to add 'Link:' tags
+> > pointing
+> > to the report (e.g. the buzgzilla ticket and maybe this mail as
+> > well, if
+> > this thread sees some discussion). See page linked in footer for
+> > details.
+> > 
+> > Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker'
+> > hat)
+> > --
+> > Everything you wanna know about Linux kernel regression tracking:
+> > https://linux-regtracking.leemhuis.info/about/#tldr
+> > If I did something stupid, please tell me, as explained on that
+> > page.
+> > 
+> > [1] because bugzilla.kernel.org tells users upon registration their
+> > "email address will never be displayed to logged out users"
 
-Extcon devices like SM5502 or SM5504 are real hardware. I'm not adding 
-new properties. The way of getting an excton device from the devicetree 
-by phandle is part of the extcon subsystem:
-  - function to get the excton device by phandle: [7]
-  - line that's looking for the property "extcon": [8]
-
-The connector node is the wrong approach, as far as I can tell on my 
-current state of knowledge. It doesn't provide the information needed by 
-the rt5033-charger driver.
-
-[5] 
-https://github.com/torvalds/linux/blob/v6.3/Documentation/devicetree/bindings/usb/usb-drd.yaml#L51-L55
-[6] 
-https://github.com/torvalds/linux/blob/v6.3/include/linux/extcon.h#L32-L60
-[7] 
-https://github.com/torvalds/linux/blob/v6.3/drivers/extcon/extcon.c#L1361-L1392
-[8] 
-https://github.com/torvalds/linux/blob/v6.3/drivers/extcon/extcon.c#L1381
-
-Kind regards,
-Jakob
