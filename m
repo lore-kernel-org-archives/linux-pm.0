@@ -2,67 +2,65 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77A07C7EE26
-	for <linux-pm@archiver.kernel.org>; Wed,  3 May 2023 19:28:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 253B3C77B78
+	for <linux-pm@archiver.kernel.org>; Wed,  3 May 2023 19:28:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229911AbjECT2e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 May 2023 15:28:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49122 "EHLO
+        id S230101AbjECT2r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 May 2023 15:28:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230034AbjECT2d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2023 15:28:33 -0400
+        with ESMTP id S230070AbjECT2p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2023 15:28:45 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B44976A0;
-        Wed,  3 May 2023 12:28:32 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0817083FA;
+        Wed,  3 May 2023 12:28:41 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 8778362F42;
-        Wed,  3 May 2023 19:28:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id EB02FC433D2;
-        Wed,  3 May 2023 19:28:30 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7DBAA62EE1;
+        Wed,  3 May 2023 19:28:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E1018C433EF;
+        Wed,  3 May 2023 19:28:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1683142111;
-        bh=sPaIfdEpJIxGgVU7FmpRmRlGcrUsImMC4vpTygWZa2o=;
+        s=k20201202; t=1683142119;
+        bh=2+6//41UnsZ0NRb+M6VfjLkslk9hY8QGID7aNF7/OwM=;
         h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=PkASVbYgchDpKfbBtkEti2V7jZWxnS9yGFnl5WoWyaoNQ1Y/+QnNGGVSGpIBP98jS
-         uD1F3pujxijbE4oNLj8qlxQ4R1Eu7lJoKUfAMtj2ccHFL4uP9PaNK+89SXNCr4iaLC
-         KiFZBUPOpcuDhkZYqDXrzvCbNllY9xKSV4qQWaVDHl3WMw/8//4OaUBwxdxyONVhEG
-         iuPPEkON4nWcRfeB8bd7y6slweMbSVfQRbcr5ZkCZCUbAcKGxI/NTSTUG/LtvqJn+u
-         Gppvk5Tp/VHvzFAG/2Lyl4tarkXDI1uU8kPr52loYZnCBgZ6RcmbamP6OHAifpTNt+
-         h8XyjLOd+sVAA==
+        b=FjY4H3uv8iF4SbIoXgEVfsfN4fbrrf2OlUUKmdfrwEg1H022EDnaswgn0d/UF/890
+         BNmKWHK2N/xc8jEoY7/+ZtDLq2uGAtrCry7v7XaeTlt8Ri8Qccqs8M8IHb5DxZKhW+
+         I6WQ26IsS1R3B1U6Mi5tojwav6IreiPyC1IaTbyyaenlSUQJrLz8Uttjtvxpg7jV9s
+         caXMnUAQRCJ4EmlamCD6fNhOKJUCjEsxbqIFXU3STy9NXJyYsjnMHOBJb8V4qLt8v8
+         mIvAOiG//rF1GS9IBzk2d7pOhk/377Su2+gLQ4W8TCbSTDYJSEtx8E19Jjom04hkAe
+         1jTCid9W8hjSw==
 Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id D0399E5FFC9;
-        Wed,  3 May 2023 19:28:30 +0000 (UTC)
-Subject: Re: [GIT PULL] More thermal control updates for v6.4-rc1
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id C2BA5E5FFC9;
+        Wed,  3 May 2023 19:28:39 +0000 (UTC)
+Subject: Re: [GIT PULL] More power management updates for v6.4-rc1
 From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0hv3CrvnrY=7NrpxMeUyoupB43Bu2Cv_4CD7asPFTU-cw@mail.gmail.com>
-References: <CAJZ5v0hv3CrvnrY=7NrpxMeUyoupB43Bu2Cv_4CD7asPFTU-cw@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-acpi.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0hv3CrvnrY=7NrpxMeUyoupB43Bu2Cv_4CD7asPFTU-cw@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.4-rc1-2
-X-PR-Tracked-Commit-Id: 53389edd4020514b876b01d05e851fb7d46eb51f
+In-Reply-To: <CAJZ5v0jVsrTH6=-YaXfqy3T8Q_mdZ_bDKHigtPXQqLFag8JBug@mail.gmail.com>
+References: <CAJZ5v0jVsrTH6=-YaXfqy3T8Q_mdZ_bDKHigtPXQqLFag8JBug@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0jVsrTH6=-YaXfqy3T8Q_mdZ_bDKHigtPXQqLFag8JBug@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-6.4-rc1-2
+X-PR-Tracked-Commit-Id: 57ea3ab21c14e6f04db2b0878e8a5be644fa3769
 X-PR-Merge-Tree: torvalds/linux.git
 X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 667de5c68440732373f571f7eac4ff44b1b93ee7
-Message-Id: <168314211084.24310.16316351220410969419.pr-tracker-bot@kernel.org>
-Date:   Wed, 03 May 2023 19:28:30 +0000
+X-PR-Merge-Commit-Id: fa31fc82fb775445c176e576304c4098222f47f2
+Message-Id: <168314211979.24310.16231360508944159172.pr-tracker-bot@kernel.org>
+Date:   Wed, 03 May 2023 19:28:39 +0000
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Wed, 3 May 2023 16:25:38 +0200:
+The pull request you sent on Wed, 3 May 2023 16:27:36 +0200:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.4-rc1-2
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-6.4-rc1-2
 
 has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/667de5c68440732373f571f7eac4ff44b1b93ee7
+https://git.kernel.org/torvalds/c/fa31fc82fb775445c176e576304c4098222f47f2
 
 Thank you!
 
