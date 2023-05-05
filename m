@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B40CEC77B7F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 May 2023 15:03:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1336DC7EE2C
+	for <linux-pm@archiver.kernel.org>; Fri,  5 May 2023 15:03:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232349AbjEEPDB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 May 2023 11:03:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44192 "EHLO
+        id S232033AbjEEPDC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 May 2023 11:03:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44212 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232307AbjEEPDA (ORCPT
+        with ESMTP id S232340AbjEEPDA (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 5 May 2023 11:03:00 -0400
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E77BF17DDF
-        for <linux-pm@vger.kernel.org>; Fri,  5 May 2023 08:02:54 -0700 (PDT)
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-3f1763ee8f8so13298425e9.1
-        for <linux-pm@vger.kernel.org>; Fri, 05 May 2023 08:02:54 -0700 (PDT)
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5921517FDC
+        for <linux-pm@vger.kernel.org>; Fri,  5 May 2023 08:02:58 -0700 (PDT)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-3f195b164c4so13385005e9.1
+        for <linux-pm@vger.kernel.org>; Fri, 05 May 2023 08:02:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1683298973; x=1685890973;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vPNq8x+5scNFhOFrThr9eIX+i+ZsMqOnHs2M2WuTbwo=;
-        b=HXFrxhMereJ9btfSr9LxY3tv7rLs1IZj2Y5p6GppNwkQL0rTuRjQ1aGa1QtIHlDQym
-         NY5t1Zd7kQ1gQLP3VNwDy9Ao+KRFl7fF8HYGiL35hod2478geb2zgUGfKv1gzgJep6Fk
-         tujA4+981qIlsSMRnf23zTeTr5zYZzluG2l2nRK8kAVBpW6kHOoMDrG4tPeUpvFkOMRR
-         t7ItPb6OHykWBQv4naa9H606Ek3Jui0zlv0GmsIi2/esY3kznHKlKsbuQfb7FmbVxtGv
-         v+HErHrwMniE74ui+UyeFpmesevJKE8oO9gm4x0h4k1pAK7yXaH1TKPnXdK+ErJFdyR3
-         ag+Q==
+        d=linaro.org; s=google; t=1683298977; x=1685890977;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wnwRc6d0+9EWZZzimRgYOvHwHdEA2vECtr+bww8AbFg=;
+        b=FibUsG3XI9Lq7wQ10qHYw/Bvt6sUQW4LEEw3nWXXvzewtyxloN0yZOkBzvfttujGim
+         vFuP0GcJta/xmjbRYfKkiefgfPljvOLCmDY+0Tgsdsp19o9n5gEKo1Gj1zbWYg7Nf2tZ
+         UCrzqRNmkJMrp7xnq9s9QSQ/LnF+qK7X/2Jh6eNcQxEdIEL/sVMzTsHZ57nTC/44lee1
+         p2eCF1D9kOyvOCrc0QSM1K23acPCaZeJAuKMf4omicQI9iSY8qLbrYMEfImx8ioyAKxe
+         W1OfYq9B+1cLYhMFilkzud3FPlXJD9hk2esMl5kBpPXhYS0V/WTtByoTE7bcB+wBw1tJ
+         mcBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683298973; x=1685890973;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vPNq8x+5scNFhOFrThr9eIX+i+ZsMqOnHs2M2WuTbwo=;
-        b=C2ghUMbvEU+Lp4L57cLFdeRn03BeWh0HTsQ4tiGCEUOgobJVteBz0hbr3nzS7z/sdt
-         3NNCYL235ssbdzDevq3dQq+sPZIgXPiFd2dGOUsmTmt/43sjz5w1tPEGeBzMXZb8ukXg
-         c4Yeye3Y5g1HAPk1M7wAAC0RIcjqDT4f3iMcEMR43Ust0sTZjZasBbFw91+9R4YYc9PR
-         sljdeHWJCbVtbXiCllmsClTl3NBwzEHcGjmeZZoiWFXmsSnDhjNAXWST6rDBz+Ol+tQc
-         +lgYTWqiCUmg/797IHvqmsURpkn+6PrIg1fAiMRp/r1IwCkShnHsbVCvxIByGU761CjG
-         UZTQ==
-X-Gm-Message-State: AC+VfDxfiWus0Plv2SLaUTyl8VJ58nr1PRZq1ZRXW3zFGZTpWz/7nYa+
-        qxWBSpLRTIjUHBXYBrNJz7s9qQ==
-X-Google-Smtp-Source: ACHHUZ552E1HSInQA+Wp1DS9m2O1OdUxQcw0FYXMFthsx50dEaV8iStUKJeF34SrXnWHI3zE6ZawpA==
-X-Received: by 2002:a1c:ed03:0:b0:3f1:e5f2:5e86 with SMTP id l3-20020a1ced03000000b003f1e5f25e86mr1300889wmh.23.1683298973330;
-        Fri, 05 May 2023 08:02:53 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1683298977; x=1685890977;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wnwRc6d0+9EWZZzimRgYOvHwHdEA2vECtr+bww8AbFg=;
+        b=eoniOKpSS/C+FOut4RDFun67xh9fIRoaeJUXxAX4EsyNo0Qk2kIJ79eo4GLwBT32c7
+         d2ehA4W/QbiNtwjmz030oNjsh5K7YPy4ADz2tOLyA2v6XcYeXUC1y1jnnzZPar+ZYJot
+         TjyXlO1E4rVkTKy4jClD3k7HolKl3sgsWJhS+cuiMAvJUeBdx+akt+QtOQxn4FTXP2T0
+         DHqQ/1C9UuuF22XB9orSMjPzWaWE7pGXvYj1dPXFs1LwY5/3wbh9ly0mlCL7rjNBlP4E
+         tbybGGwTHshMTzDuJcU5G0IpWg8YHp4/1ViyZGFqlYkvbnbq+C0UfpslEbomY/p9Q4RM
+         0+HQ==
+X-Gm-Message-State: AC+VfDxVCjj+9xFvwWCh+sQkz/zt3oItB7GgTfSK9G9BqntxpLV2awss
+        nVQcCGyU9k4AU1EmhXtsmA16Vw==
+X-Google-Smtp-Source: ACHHUZ4orA7JAVJkHC48E6ikDofmVT5wSbQFY3BgobWZT+r3BuhvDX8LQwhPbFjsUaNlsygGnWg7Fg==
+X-Received: by 2002:a05:600c:2293:b0:3f3:1fa6:d2a8 with SMTP id 19-20020a05600c229300b003f31fa6d2a8mr1436996wmf.25.1683298976745;
+        Fri, 05 May 2023 08:02:56 -0700 (PDT)
 Received: from hackbox.lan ([86.121.163.20])
-        by smtp.gmail.com with ESMTPSA id a6-20020a1cf006000000b003f0aefcc457sm8262189wmb.45.2023.05.05.08.02.51
+        by smtp.gmail.com with ESMTPSA id a6-20020a1cf006000000b003f0aefcc457sm8262189wmb.45.2023.05.05.08.02.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 May 2023 08:02:52 -0700 (PDT)
+        Fri, 05 May 2023 08:02:56 -0700 (PDT)
 From:   Abel Vesa <abel.vesa@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
@@ -64,87 +65,166 @@ To:     "Rafael J . Wysocki" <rafael@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org,
         Doug Anderson <dianders@chromium.org>
-Subject: [RFC PATCH v4 0/2] PM: domain: Support skiping disabling unused domains until sync state
-Date:   Fri,  5 May 2023 18:02:39 +0300
-Message-Id: <20230505150241.3469424-1-abel.vesa@linaro.org>
+Subject: [RFC PATCH v4 2/2] PM: domains: Skip disabling unused until sync state
+Date:   Fri,  5 May 2023 18:02:41 +0300
+Message-Id: <20230505150241.3469424-3-abel.vesa@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230505150241.3469424-1-abel.vesa@linaro.org>
+References: <20230505150241.3469424-1-abel.vesa@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is another try at making the unused domain remain enabled until
-sync state of the provider. There have been already few attempts.
-Last one is [1]. This new approach comes after a discussion on the
-mentioned mail thread with Saravana and Ulf. The suggestion there was to
-move this to the genpd core. This new approach, first is adding the
-support for 'unknown' initial state of a domain, then uses 'boot status'
-to make decisions whether to power off a unused domain on late initcall
-or assume it will be powered off on the provider's sync state callback,
-if it has one registered. In order to make use of the newly added
-'unknown' state, we need to update all the calls to pm_genpd_init to
-pass one of the 'on', 'off' or 'unknown' states.
+By storing the status of the domain at boot, specified by the provider,
+we can decide to skip powering 'off' the domain on the late initcall,
+strictly based on the status boot being 'on' or 'unknown', and then
+assume the provider will disable it from its sync state callback.
+Also, provide a generic genpd sync state callback for those providers
+that only need that when they state synced.
 
-[1] https://lore.kernel.org/r/20230327193829.3756640-1-abel.vesa@linaro.org
+Signed-off-by: Abel Vesa <abel.vesa@linaro.org>
+---
+ drivers/base/power/domain.c | 51 +++++++++++++++++++++++++++++++++++--
+ include/linux/pm_domain.h   |  5 ++++
+ 2 files changed, 54 insertions(+), 2 deletions(-)
 
-Abel Vesa (2):
-  PM: domains: Expand initial state of domain to support unknown state
-  PM: domains: Skip disabling unused until sync state
-
- arch/arm/mach-s3c/pm-s3c64xx.c             |  4 +-
- arch/arm/mach-ux500/pm_domains.c           |  2 +-
- drivers/base/power/domain.c                | 62 +++++++++++++++++++---
- drivers/clk/davinci/psc.c                  |  3 +-
- drivers/clk/mmp/pwr-island.c               |  2 +-
- drivers/clk/qcom/gdsc.c                    |  2 +-
- drivers/clk/renesas/clk-mstp.c             |  2 +-
- drivers/clk/renesas/r9a06g032-clocks.c     |  2 +-
- drivers/clk/renesas/renesas-cpg-mssr.c     |  2 +-
- drivers/clk/renesas/rzg2l-cpg.c            |  2 +-
- drivers/cpuidle/cpuidle-psci-domain.c      |  2 +-
- drivers/cpuidle/cpuidle-riscv-sbi.c        |  2 +-
- drivers/firmware/arm_scmi/scmi_pm_domain.c |  2 +-
- drivers/firmware/imx/scu-pd.c              |  3 +-
- drivers/firmware/scpi_pm_domain.c          |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_acp.c    |  2 +-
- drivers/irqchip/irq-qcom-mpm.c             |  2 +-
- drivers/soc/actions/owl-sps.c              |  2 +-
- drivers/soc/amlogic/meson-ee-pwrc.c        |  7 +--
- drivers/soc/amlogic/meson-gx-pwrc-vpu.c    |  3 +-
- drivers/soc/amlogic/meson-secure-pwrc.c    |  5 +-
- drivers/soc/apple/apple-pmgr-pwrstate.c    |  2 +-
- drivers/soc/bcm/bcm2835-power.c            |  2 +-
- drivers/soc/bcm/bcm63xx/bcm-pmb.c          |  2 +-
- drivers/soc/bcm/bcm63xx/bcm63xx-power.c    |  3 +-
- drivers/soc/bcm/raspberrypi-power.c        |  2 +-
- drivers/soc/dove/pmu.c                     |  4 +-
- drivers/soc/imx/gpc.c                      |  4 +-
- drivers/soc/imx/gpcv2.c                    |  2 +-
- drivers/soc/imx/imx8m-blk-ctrl.c           |  2 +-
- drivers/soc/imx/imx8mp-blk-ctrl.c          |  2 +-
- drivers/soc/imx/imx93-blk-ctrl.c           |  2 +-
- drivers/soc/imx/imx93-pd.c                 |  3 +-
- drivers/soc/mediatek/mtk-pm-domains.c      |  4 +-
- drivers/soc/mediatek/mtk-scpsys.c          |  2 +-
- drivers/soc/qcom/cpr.c                     |  2 +-
- drivers/soc/qcom/rpmhpd.c                  |  2 +-
- drivers/soc/qcom/rpmpd.c                   |  2 +-
- drivers/soc/renesas/rcar-gen4-sysc.c       |  2 +-
- drivers/soc/renesas/rcar-sysc.c            |  2 +-
- drivers/soc/renesas/rmobile-sysc.c         |  2 +-
- drivers/soc/rockchip/pm_domains.c          |  3 +-
- drivers/soc/samsung/pm_domains.c           |  2 +-
- drivers/soc/starfive/jh71xx_pmu.c          |  3 +-
- drivers/soc/sunxi/sun20i-ppu.c             |  6 ++-
- drivers/soc/tegra/pmc.c                    |  5 +-
- drivers/soc/tegra/powergate-bpmp.c         |  3 +-
- drivers/soc/ti/omap_prm.c                  |  2 +-
- drivers/soc/ti/ti_sci_pm_domains.c         |  2 +-
- drivers/soc/xilinx/zynqmp_pm_domains.c     |  2 +-
- include/linux/pm_domain.h                  | 12 ++++-
- 51 files changed, 140 insertions(+), 63 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 33a3945c023e..9cc0ce43b47b 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -125,6 +125,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+ #define genpd_unlock(p)			p->lock_ops->unlock(p)
+ 
+ #define genpd_status_on(genpd)		(genpd->status == GENPD_STATE_ON)
++#define genpd_boot_keep_on(genpd)	(!(genpd->boot_status == GENPD_STATE_OFF))
+ #define genpd_is_irq_safe(genpd)	(genpd->flags & GENPD_FLAG_IRQ_SAFE)
+ #define genpd_is_always_on(genpd)	(genpd->flags & GENPD_FLAG_ALWAYS_ON)
+ #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+@@ -654,6 +655,29 @@ static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
+ 	queue_work(pm_wq, &genpd->power_off_work);
+ }
+ 
++/**
++ * pm_genpd_power_off_unused_sync_state - Power off all domains for provider.
++ * @dev: Provider's device.
++ *
++ * Request power off for all unused domains of the provider.
++ * This should be used exclusively as sync state callback for genpd providers.
++ */
++void pm_genpd_power_off_unused_sync_state(struct device *dev)
++{
++	struct generic_pm_domain *genpd;
++
++	mutex_lock(&gpd_list_lock);
++
++	list_for_each_entry(genpd, &gpd_list, gpd_list_node)
++		if (genpd->provider->dev == dev && genpd_boot_keep_on(genpd)) {
++			genpd->boot_status = GENPD_STATE_OFF;
++			genpd_queue_power_off_work(genpd);
++		}
++
++	mutex_unlock(&gpd_list_lock);
++}
++EXPORT_SYMBOL_GPL(pm_genpd_power_off_unused_sync_state);
++
+ /**
+  * genpd_power_off - Remove power from a given PM domain.
+  * @genpd: PM domain to power down.
+@@ -674,6 +698,12 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+ 	unsigned int not_suspended = 0;
+ 	int ret;
+ 
++	/*
++	 * If the domain was left enabled at boot stage,
++	 * abort power off until sync state is reached.
++	 */
++	if (genpd_boot_keep_on(genpd))
++		return -EBUSY;
+ 	/*
+ 	 * Do not try to power off the domain in the following situations:
+ 	 * (1) The domain is already in the "power off" state.
+@@ -763,6 +793,12 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
+ 	struct gpd_link *link;
+ 	int ret = 0;
+ 
++	/*
++	 * Just in case this is the first power on request, mark the boot
++	 * status of it as 'off'.
++	 */
++	genpd->boot_status = GENPD_STATE_OFF;
++
+ 	if (genpd_status_on(genpd))
+ 		return 0;
+ 
+@@ -1095,8 +1131,16 @@ static int __init genpd_power_off_unused(void)
+ 
+ 	mutex_lock(&gpd_list_lock);
+ 
++	/*
++	 * If the provider has registered a 'sync state' callback,
++	 * assume that callback will power off its registered unused domains,
++	 * otherwise we power them off from here.
++	 */
+ 	list_for_each_entry(genpd, &gpd_list, gpd_list_node)
+-		genpd_queue_power_off_work(genpd);
++		if (!dev_has_sync_state(&genpd->dev)) {
++			genpd->boot_status = GENPD_STATE_OFF;
++			genpd_queue_power_off_work(genpd);
++		}
+ 
+ 	mutex_unlock(&gpd_list_lock);
+ 
+@@ -1124,6 +1168,9 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
+ {
+ 	struct gpd_link *link;
+ 
++	if (genpd_boot_keep_on(genpd))
++		return;
++
+ 	if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
+ 		return;
+ 
+@@ -2064,7 +2111,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 	genpd->gov = gov;
+ 	INIT_WORK(&genpd->power_off_work, genpd_power_off_work_fn);
+ 	atomic_set(&genpd->sd_count, 0);
+-	genpd->status = boot_status;
++	genpd->status = genpd->boot_status = boot_status;
+ 	genpd->device_count = 0;
+ 	genpd->provider = NULL;
+ 	genpd->has_provider = false;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index c545e44ee52b..86bb531a319c 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -132,6 +132,7 @@ struct generic_pm_domain {
+ 	const char *name;
+ 	atomic_t sd_count;	/* Number of subdomains with power "on" */
+ 	enum gpd_status status;	/* Current state of the domain */
++	enum gpd_status boot_status;	/* Boot state of the domain */
+ 	unsigned int device_count;	/* Number of devices */
+ 	unsigned int suspended_count;	/* System suspend device counter */
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
+@@ -233,6 +234,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 		  struct dev_power_governor *gov,
+ 		  enum gpd_status boot_status);
+ int pm_genpd_remove(struct generic_pm_domain *genpd);
++void pm_genpd_power_off_unused_sync_state(struct device *dev);
+ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
+ int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb);
+ int dev_pm_genpd_remove_notifier(struct device *dev);
+@@ -281,6 +283,9 @@ static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
+ 	return -EOPNOTSUPP;
+ }
+ 
++static inline void pm_genpd_power_off_unused_sync_state(struct device *dev)
++{ }
++
+ static inline int dev_pm_genpd_set_performance_state(struct device *dev,
+ 						     unsigned int state)
+ {
 -- 
 2.34.1
 
