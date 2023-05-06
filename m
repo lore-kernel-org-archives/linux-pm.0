@@ -2,156 +2,139 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11D4FC77B75
-	for <linux-pm@archiver.kernel.org>; Sat,  6 May 2023 10:48:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57752C7EE2A
+	for <linux-pm@archiver.kernel.org>; Sat,  6 May 2023 15:55:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231675AbjEFKsh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 6 May 2023 06:48:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43726 "EHLO
+        id S232624AbjEFPzH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 6 May 2023 11:55:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59398 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231343AbjEFKsg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 May 2023 06:48:36 -0400
-Received: from sonic313-20.consmr.mail.ir2.yahoo.com (sonic313-20.consmr.mail.ir2.yahoo.com [77.238.179.187])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 307A144A0
-        for <linux-pm@vger.kernel.org>; Sat,  6 May 2023 03:48:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1683370112; bh=34POWJfYWl8FSDgSOXM7AEN6MSN18FWEKbOGON9u4j8=; h=Date:Subject:To:Cc:References:From:In-Reply-To:From:Subject:Reply-To; b=Zutrm/IV9A1MpuFwX9SN0Jr7OogIyb54kRnrHDqSZMb7HXbooZfbtOLR7kCQbwVTxWXBpZMDiYecISoYGoZrTiJCnF20oCK/RcS4qwfPAU5x6Z4WDrwuBIrUUADU0JsdmR9s0llG7byw9RSBhioiAeEd3SAn/wC7NfLbspdYTFhWUlZG7FxA9C6eckMR0JSXEhbYUJurt5aivQJkfhL0OjTX7Lw/CnTe/qbhqHYYBY/ZGHf8g/TdLvKZb72I6Q5mNRXooecCvaytD33biX6QQmbwdmHmTjTcmOsLd/r6yzyTpHn0yebgoSbF7vNzXpJ8Otq2r4saoSTJjir27ixvNg==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1683370112; bh=TIWkndNT70CXVpf6Mu0SgJ7Uwic1X4aMTtTtqzRqMNH=; h=X-Sonic-MF:Date:Subject:To:From:From:Subject; b=RVmAEPRFn6Gi6U5t8V3KOsUhIiRADO+mdwPi/pawvcK/3DRTymnK1JOOQrrxnG12dh2cRR7P1HaRfLFfutC3yAQWTKssZQM+IUjgi0M5Twbv7su7CLuSMKMvNKFYfb+AOmY9S8msD93TQD7WkFnf46JEIjQbSof5axYkDyY6V0D6fowPgGDZVXKqn7wPM3doBtiFXc3/53v7PdQjTCdKUTQcfKXf4p7tQS5zbSgdnps5pUoiHYTo0ekrMNTMD4fSgZ9FZp2q/pAXfmMc96DrRycVA03mj3EXwYNBke9wZgGHRl/H6iRbgSwTnBRwkSnoWDxnUwC+7V8GRN3MSoU+3w==
-X-YMail-OSG: CIBSjdkVM1kniNdyxwVcFNGw.KZ13EWraHHyR7IJgWxBLDDRck5.HssO5C5kwXu
- q_XSn6djpihEoRrLVipaiPbgXJqtW3p0xPYMklY.MwqnTLT3cCXh3UvRnePp2IVVXCXVfBkP95FP
- J5fTV6RWybkqR0_LAzkaMay9ZmOeq.cUDKUHfaWssl4Wmcd7LcJSxujXy9HSbxVVfrjiUTtmylmw
- 867RAX9y6KFsqQSBg93xheo9cddjkoD3U1_3y.jLKvjFtoD0ohlonV5HiDt1t8kk8Mc.UJeuKX07
- o4KXWBgENp7cYfn1.cKwBl8VEYG0wPIeRT4oHxuSLp.TOizu9OeGzr2c1_gHqlMzHATavbxhRPi5
- RRzgGumlM7RKVkj7VHjj4NcgDKl1ZRFbQAI3gUc316.BDS9y4_b7TIfkhDnf7bvXA4CvQzId0Hc0
- soAZdXpxkMG4WginqbqhWfakRmxcl6uO2dBG4DFxvZ4314Hqo145k0G0RukwOWeY5tQWnlHwsy0I
- 4iauBktQOZJpU24zvcCvVi3N7UwW00Wmxera3WntaeqlwCtZJJ15DQ4CpVbilFlGcB2HT4U.jW4K
- cI0GiWoqB70TvUrWFZroErTRHAJXKS9_kjTiovW0WQoPHgcFxFU.5hiK.4sN4LV0xg5L_GGvzPbN
- SJWHsyDzB5VMpnfLspM8sYn1VEui.ZGWd76.vvqdyIJBttGaWW3v4aEQ0v6CaEMQHRNn_xpx6OY6
- AjaZIafEgqIyEbXIVAu28bOk9SpqEacn8uONqMKL0el18BjXHRAoC2E1.wI5yRh0J7rD.e.swaXv
- riBtVxyrXD3FMqJ9iGORGt4kZ9J5G32THeRxegzbwIdEvv0ZfOoK0owQNfwdBbDP8_nvzCBZab3N
- 3OhnFKDao0Dwkq7WsS8FvacD6fENjGE0hO4rQawE5W8hlqjzEurHVKMi0L0JSwW1bjby0O6rR65a
- z0B2saLBOnvLlfLyQGJ6907mEUqigLIHJKvBf6W9liLuM7mtzWUvKPFTVP87QjYZT65LLNx0x6MP
- 8HTgHwkTHcIKLU1yGlklibv9x2Vc6jbbNq6B0JbHjyfvPiCTc.uut4xCwCYx.2.7lWPPovya7opn
- tXqJPr8gEL49xZq0CuY1DIsTSa6FGHCTBzVNG0whneb6ZpPrASli95qBNKOrg0._.38A3iU3x_xX
- 2GP2gw8VMSGLn1ZymKYlfteN7cnFQJazumALNjtZ3GrQBDCFvUBLHm_9MdBDTVBTU8KsBSFkwc_.
- V3DVkQqArVaaJTOIALfNuuCoG2cR.lxZFk0eWqPBiCjliv1IODE49c71z.zF8DOrEdbGJaxw9DVp
- Q7aQZG.oOLE2zdosFdPWLydj9JyZEsUWyCl4bSvGkJjz2opj6yS3ykvB2woBpkjK0BpdSzGbkTkB
- Zs5.pmwQFXBO9UNJsxyP7nLd7f2NYtvR6PstAqCSVhtYzgtd_RS_9f0BngVe9D_TFc9GWwcj9IAH
- gcmLYzrzvpt4.ZdNpEV4lQiMY_.ZrncA79Dp9ADr0MQHkQfJw67miVWmEyoR7MGkQ3wpPurYYXsK
- Pg_Sxu50mN6arYB7_jQY8oBMe6CwJHCwe9RowVqLATXP03w7KdQrgyWpYr.kmLdwPPqAadgBbHp6
- IC_B0m_FGT6x.yJNY2RpBmF7QdblTr8yveyX92LU2D_T5umjSCKcmaXXVK_gp3GvA80fSCQlmyWB
- AqH.AGC51mXqm4f4fWyMYUjXxpUjDOgY.mpdjHps0.n5q1PfGQmYIp7g28zjwr0rr9Gqpj.2ZLvj
- oU.9V0b0RyiBvRuW4anmRk1LK.YgBKkTGq30RVIIPs.UnYl6Yzl1notaIM8RrtSoddufmFqdJO7i
- OxyORgRPue1DUT5wvJ69H9Mkel7K86_LrJ46X.XUaFquSKOuSdjF5T5QNjN2rzZxhTOrPtH9NnAd
- cJE2SI.K0_dji1YuHIz._rKurnVjRtbhGBZrA9Xx3lhtI_KjlYmzG4.A_CskzjXFORH3TUuPX_Vm
- U7ORxVFgLibsj9GV4CbywEDyKpjsh1PK4FCDRz96hkQT6ENeTpwN9ZIdB51yXKllPxal4tcQoypB
- Ft6R_FpNYYn_InDkEnx4Lbn9dw.Pg3iv.6Q5fIBBWYD4drTUeXW_xkJmHuD8F3lJHUQcN7qAvj67
- 4e.ObN3tBUSwYDdcBL5FYXfxJ3TQC0C8pe9GpuD1zRNYZVJNKiPQxdfOY1uG1.Jp86iA4qPNdxy8
- nSsb_uBQKQtLTViKgCDxv4hraWHK7Ge5oFbsv5g1kMdOZeUJZtI8tEQ07UaT.5xMWqsPi6ijhO7M
- Hbd32BsJUAZUz_ctqsyMgfs6K
+        with ESMTP id S232975AbjEFPzF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 May 2023 11:55:05 -0400
+Received: from sonic301-21.consmr.mail.ir2.yahoo.com (sonic301-21.consmr.mail.ir2.yahoo.com [77.238.176.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 468431386C
+        for <linux-pm@vger.kernel.org>; Sat,  6 May 2023 08:55:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1683388502; bh=Fg8O9S7CQWLvLBXMCmKEFeFmz8DxFrOra+7NQGOwBwo=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=WtGiBPKHGCT0HmYAeS8TELZZJXgmj7WLRFkllJt5AglvwejdrVRYMC9G2iooy30rnVVBRHYUbvLDZbfvWm9zYRlOSYaaYdfH3kjKbVy7FTv5f7MCY/2Jn2uyZQNi02qO/f+15jzvt5hGxjxyxYRkaXH9SBEqDvwM6QHK3vzl9XDhTdg5jSEE4rD+tVqy8YLkShrW48MP/S9LQ//GkAJHI4LYKJHjeejpCWAlzI4KQ7DMieBN5/1axOtHaKF+YJKLSIuzv2Yd00V6/iqyUNEE/uXQp1vjfNTFG44ouaoYKHiMCbf/oo/9UZrjwILzoV2jcwQx9ipoZ5ZpQDPb716JNA==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1683388502; bh=HcogkcjV6csE5kF3G7NBXQpCiQjolSIP0mAnyuRaTot=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=LUD8AEtoQH1I8yKJ0XAbrjklj/vLQX1Jb0zJ1nx14Ry8o5YwVSSJtLC8fp7be/SBr1lCAgRPp0mzpLl3Hmq8f8AHYyZtVXW+DVIqzH0Wp5phm4faYEaqungw5wFPNyqywS/QEsuhRMGv8pvAM0pzi8wAVOx3nfxa+iBj8sXsCRZarW25lvEpXVxnjLDuEQbGjabTXT+D2z+bStLMYmw9couD14MkIJF4+Gx4UsNJXU63ppJhUTFEtSKTJW7aZHv5a46OBCPte6IyJbZvDAX6w0UN8JD42z5+QkMdoph13XtzRgeguLzh/IrcGiG1lM66KtKCz2Fq0IjbKWbM/D61UQ==
+X-YMail-OSG: vD2KDVcVM1mWcJSp.KFF7CpJSyLSk9dVuRvaLSvo6gJY9sA44Rc5i2fLas_pd7L
+ pAdxQTmaN2rS_0tmepduHGWT84sCAh.WSaYTviHz26I79l6c7nCIZB2D650_mtBnwNM5vMlcUYGB
+ kWt_is5mlrXw.HvSlEVh7kHEwVMnUb9O192KEBR4G.FNalwNIpXloav8HhsgJFUY8NjglT4dgave
+ ign5IBggcsbzFGQVQ4x1SoicjIpmjhbNEzJwnFpH5ydo8A48Q7jYrkDdCWWM6oBJDyyJpTTzQXN0
+ Dwq4e4a6_npEOWe1tlJ4NQugNTpi062TqogtBR0l8nPHBizVUByHbkAL2_F.50x8ufFh08O.5FHv
+ 7fYLSvgNmQ3wg2iWTfEFkVPuvlC64Dg61C.GQge6S.PwOhKne5xcru34G35fyqexOoKFurl4wLKD
+ 8t2HHxdmDst0JDf6OSHhnLWU9a.oukrSs9mOm3jgDU6BTKCUOoTY_8nw2v8BS4nCSJOQidRjwI99
+ 0FoQiJjbts6vNZ63O47pwJfmjs3WPJCp45nppqi32giC7gQmpPBhJ8v9rucVurxyJIEukOeKgzII
+ UI8TtjYYc_rbS2jLMvwOYRdx6MDIXpjZLI.PzAo9VAix58ATDu1zKHI4nQQiq2bKiy.0GfwIoyYk
+ XXiaGwwFUF7t5ZFzhsskmTgEcTDC8rJHe5TL9aT7L.4I_Lg81SxYhja36euD0t7KZXcRqZWsRFT7
+ neaHcPf1uKRMhqXFujJ9ADYFC0YPrDq4GpBzPlRXE6u8qJ9l5PJ7c4gosulTuqq.1C4QzZOWYi4s
+ bEN9hl.4UIE.Q5OAzYWrFc0as_8qimz1MwWpiM5QC5e_u_EnEXb5LRwcWlPlZG2kQ7zQLzN.Kcv4
+ vwy8zIDCLvtzSqKV9.ONkxwP0uXrd09.v8CKnBLTFS_hy68jFw6KIb_B12S36vmyDvhEuvrqob2Y
+ vtCpwZQ7BLpr24A9zKxegdb51OvawXr54hEnuzYXRIOZOUN_PWzQZ3stf18AyxZe.upSQ_tpHt2_
+ 2ysVW6fLIL.peZPf5prbw3HBnVPJuQCC2Sbg4pkyNkIYvW7xOE0sntATyE.vj00hSsriAXNF25ZU
+ mH5iSHiscepr6a6hysEADJgGZvZHYj92Yr0VOqlm2U4EcTQD8cgT.y5rgqvIrkbexkcso57JoRZT
+ XW3THstLb37GzhOQ8cc_KTslCykfO6y8ol8MI5lJvshUR7Q6y8XtuB6d8_e6FlVkC8.lOK8sS2vX
+ KID06J3l9vbqLmHIWSd22XHf1MOBp5NJQ6nG_.iqDBBGL9c0Hlo3la9uBXEmjT62wjUwP2y6VaIB
+ LihVSizT_n2Qwq0qF8lUN6Kjy7d5g77VsBrMT6JUpY9NG3Ne1snzPGIkkn55aLWvP4xiI8WYnEXk
+ 1JphvwsP4ppnDBKkhFa.1qJYkcsJWYJzIXbIvSiPGDhufiufHD4jGRiq7kVoT50Oew3_5L3AhJOC
+ gkoyQRaYDJy7llMt7m4sV2g8Vz3c..XCYt5jkmXiVknsBh08mtphM5xn9tBCmC41XgKnmSQamq6w
+ WaU8ySlT_5IkfJKxeHnhkvFKxRnsVw8RhGcd3Fp9YgMDarOXw2UZ1F83M5dXzrzRRy2xofT4OymG
+ YHwULZ33w4c_z3_qEGzPfDABaBADpV.cdZQyu40ww5xHxy4_SXMfTAclVpPqVK4ltvY50NF0lp3c
+ BYrpQGUxjquZh4PktHGQVeElJIxDfaRBo8KYYyPuKESr7CDx4Ihy2ollpShs6k8PkkJG4AQfYjkh
+ pXZIVTGaz.dWpjq0eS1Uo6sHZvEChASCvtfCy142L9As8sO3Ss0Ei6RnOX1V1uzpRownnKU2JO2Y
+ isnOYXNufHaPbVbMlsBKdHuX8ZIFeZhqyGcUcRhggeoQO1I7t.cfTeMda9HASXPfsdPcJP2.koka
+ wyZ7oJWOLl3YzchA0G70spnBvroJee35ooDk2QH0SJD2m73n5MYVd5Ybcsi02nSMwGx8FWz3V43N
+ 0BRizYAAsufXqv3T2ARIQkSLUdfrc5nd5VKRpfzwk.Wu7eh5xvxhsshYuZv9gCglhI3BxDD6mQQe
+ uI7xXkVOp2Q5tfb11GLydO4rVIor.E8VOIbFkvYXYM5GdQkxuK3pUUPys_YXQD_WDiyK_lPpctxP
+ T228NG2c6wt5599a3k7p.jinrdT7e.i_EOXfrNpQ5lewa6S5BNsgG7BjVUaeaWS7POxq8TWa.Y_x
+ 1vUgfEWSderhctimFrL_dv_SDRcn78hpUwgxqPPmjWyVpq6i04I7jCtpEaBabdann.B_5253FnHf
+ TlPbTCO39g9M_RVIjKrD9pPo-
 X-Sonic-MF: <jahau@rocketmail.com>
-X-Sonic-ID: 5c1a8a68-86df-492d-aee9-94ebdef5cd72
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic313.consmr.mail.ir2.yahoo.com with HTTP; Sat, 6 May 2023 10:48:32 +0000
-Received: by hermes--production-ir2-74cd8fc864-db5p9 (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 9a7e9e2dbdf1abecded434fe1bb5c8d4;
-          Sat, 06 May 2023 10:48:28 +0000 (UTC)
-Message-ID: <295bb56a-bd40-abe2-4469-c38827ea3069@rocketmail.com>
-Date:   Sat, 6 May 2023 12:48:26 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Subject: Re: [PATCH v3 8/8] dt-bindings: Add rt5033 mfd, regulator and charger
-To:     Rob Herring <robh@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
+X-Sonic-ID: b30200dc-da37-46dc-8f33-94c317adaca2
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic301.consmr.mail.ir2.yahoo.com with HTTP; Sat, 6 May 2023 15:55:02 +0000
+Received: by hermes--production-ir2-74cd8fc864-s5qrx (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 2f796affa0781b2e3002453351a4dea5;
+          Sat, 06 May 2023 15:55:02 +0000 (UTC)
+From:   Jakob Hauser <jahau@rocketmail.com>
+To:     Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
         Liam Girdwood <lgirdwood@gmail.com>,
         Mark Brown <broonie@kernel.org>,
-        Beomho Seo <beomho.seo@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+Cc:     Beomho Seo <beomho.seo@samsung.com>,
         Chanwoo Choi <cw00.choi@samsung.com>,
         Stephan Gerhold <stephan@gerhold.net>,
         Raymond Hackley <raymondhackley@protonmail.com>,
         Pavel Machek <pavel@ucw.cz>, Axel Lin <axel.lin@ingics.com>,
         ChiYuan Huang <cy_huang@richtek.com>,
         Linus Walleij <linus.walleij@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-References: <cover.1682636929.git.jahau@rocketmail.com>
- <5bd8b90713a61129acf292a941eb7fb5ccaa3db4.1682636929.git.jahau@rocketmail.com>
- <1d187f41-ad9a-4e82-8557-20694a8294d0@linaro.org>
- <e9d75e57-bdea-593d-7b05-136c9ad2e2fe@rocketmail.com>
- <14daa006-5260-81a8-8ba0-4122e0c0509a@rocketmail.com>
- <a0f4252d-7f27-6dd9-dea0-f8d242011f70@linaro.org>
- <73c02d98-c306-5e9d-2737-ff2d4a7393d1@rocketmail.com>
- <20230505201334.GA3459327-robh@kernel.org>
-Content-Language: en-US
-From:   Jakob Hauser <jahau@rocketmail.com>
-In-Reply-To: <20230505201334.GA3459327-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailer: WebService/1.1.21417 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
+        Henrik Grimler <henrik@grimler.se>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht
+Subject: [PATCH v4 2/8] mfd: rt5033: Fix chip revision readout
+Date:   Sat,  6 May 2023 17:54:29 +0200
+Message-Id: <20230506155435.3005-3-jahau@rocketmail.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230506155435.3005-1-jahau@rocketmail.com>
+References: <20230506155435.3005-1-jahau@rocketmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rob,
+After reading the data from the DEVICE_ID register, mask 0x0f needs to be
+applied to extract the revision of the chip [1].
 
-On 05.05.23 22:13, Rob Herring wrote:
-> On Wed, May 03, 2023 at 09:33:49PM +0200, Jakob Hauser wrote:
->> Hi Krzysztof, Hi all,
->>
->> On 02.05.23 12:59, Krzysztof Kozlowski wrote:
->> ...
->>> Apologies for this, just very busy times. :)
->>>
->>
->> Thanks for letting me know. Take the time you need.
->>
->> Writing towards the list:
->>
->> I think there is a misunderstanding here.
->>
->> The connector node provides information about the installed USB hardware.
->> E.g. property "usb-role-switch" means "Indicates that the device is capable
->> of assigning the USB data role (USB host or USB device) for a given USB
->> connector [...]" [5]. To my understanding, in relation with a port node this
->> actually says that this port has this capability. This is not relevant to
->> the rt5033-charger driver.
->>
->> The rt5033-charger driver needs to pair with the extcon chip because it
->> needs the information about *external* connectors being attached [6].
->>
->> Extcon devices like SM5502 or SM5504 are real hardware. I'm not adding new
->> properties. The way of getting an excton device from the devicetree by
->> phandle is part of the extcon subsystem:
->>   - function to get the excton device by phandle: [7]
->>   - line that's looking for the property "extcon": [8]
-> 
-> extcon as a binding is inadequate for handling the increasing
-> complexities of connectors. Whether we need another property to link
-> things to connector nodes, perhaps.
+The other part of the DEVICE_ID register, mask 0xf0, is a vendor identification
+code. That's how it is set up at similar products of Richtek, e.g. RT9455 [2]
+page 21 top.
 
-Thanks for clarifying.
+[1] https://github.com/msm8916-mainline/linux-downstream/blob/GT-I9195I/drivers/mfd/rt5033_core.c#L484
+[2] https://www.richtek.com/assets/product_file/RT9455/DS9455-00.pdf
 
->> The connector node is the wrong approach, as far as I can tell on my current
->> state of knowledge. It doesn't provide the information needed by the
->> rt5033-charger driver.
-> 
-> What information is that?
-> 
-> You need information from the DT or run-time information from the
-> 'extcon chip driver'? In the latter case, I'd expect the charger driver
-> to get its connector node (either TBD phandle or search the DT if
-> there's only 1 possible connector), and from that get the driver
-> controlling the connector.
+Signed-off-by: Jakob Hauser <jahau@rocketmail.com>
+---
+ drivers/mfd/rt5033.c               | 5 +++--
+ include/linux/mfd/rt5033-private.h | 4 ++++
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-Yes, the latter case: run-time information from the 'extcon chip driver'.
+diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
+index 8029d444b794..3eee4242ee02 100644
+--- a/drivers/mfd/rt5033.c
++++ b/drivers/mfd/rt5033.c
+@@ -55,7 +55,7 @@ static const struct regmap_config rt5033_regmap_config = {
+ static int rt5033_i2c_probe(struct i2c_client *i2c)
+ {
+ 	struct rt5033_dev *rt5033;
+-	unsigned int dev_id;
++	unsigned int dev_id, chip_rev;
+ 	int ret;
+ 
+ 	rt5033 = devm_kzalloc(&i2c->dev, sizeof(*rt5033), GFP_KERNEL);
+@@ -78,7 +78,8 @@ static int rt5033_i2c_probe(struct i2c_client *i2c)
+ 		dev_err(&i2c->dev, "Device not found\n");
+ 		return -ENODEV;
+ 	}
+-	dev_info(&i2c->dev, "Device found Device ID: %04x\n", dev_id);
++	chip_rev = dev_id & RT5033_CHIP_REV_MASK;
++	dev_info(&i2c->dev, "Device found (rev. %d)\n", chip_rev);
+ 
+ 	ret = regmap_add_irq_chip(rt5033->regmap, rt5033->irq,
+ 			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+diff --git a/include/linux/mfd/rt5033-private.h b/include/linux/mfd/rt5033-private.h
+index 6bb432f6a96c..b035a67cec73 100644
+--- a/include/linux/mfd/rt5033-private.h
++++ b/include/linux/mfd/rt5033-private.h
+@@ -71,6 +71,10 @@ enum rt5033_reg {
+ /* RT5033 CHGCTRL2 register */
+ #define RT5033_CHGCTRL2_CV_MASK		0xfc
+ 
++/* RT5033 DEVICE_ID register */
++#define RT5033_VENDOR_ID_MASK		0xf0
++#define RT5033_CHIP_REV_MASK		0x0f
++
+ /* RT5033 CHGCTRL3 register */
+ #define RT5033_CHGCTRL3_CFO_EN_MASK	0x40
+ #define RT5033_CHGCTRL3_TIMER_MASK	0x38
+-- 
+2.39.2
 
-Hm, so I need to add a connector node below the extcon node, search for 
-that connector and go one level up to get the extcon. In the specific 
-case that's an unnecessary detour, I'm not too happy about it :/ Though 
-I understand that in a broader perspective the connector thing can be 
-more stringent.
-
-I'll prepare something like this for v4 then...
-
-Kind regard,
-Jakob
