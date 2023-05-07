@@ -2,143 +2,246 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36276C7EE2D
-	for <linux-pm@archiver.kernel.org>; Sat,  6 May 2023 16:01:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F29B6C7EE2C
+	for <linux-pm@archiver.kernel.org>; Sun,  7 May 2023 09:11:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233049AbjEFQBC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 6 May 2023 12:01:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34570 "EHLO
+        id S230452AbjEGJLO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 May 2023 05:11:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233119AbjEFQAk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 May 2023 12:00:40 -0400
-Received: from sonic307-54.consmr.mail.ir2.yahoo.com (sonic307-54.consmr.mail.ir2.yahoo.com [87.248.110.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F0441386D
-        for <linux-pm@vger.kernel.org>; Sat,  6 May 2023 09:00:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rocketmail.com; s=s2048; t=1683388834; bh=TVyy9/b03N8nbazd1B41Q2wdYfTHpwuv2C4n1t0mm1Q=; h=From:To:Cc:Subject:Date:In-Reply-To:References:From:Subject:Reply-To; b=cIEPWwpXOlt1jTqYWCsC4oCdtRewMPi6jLSaoNbXpB8wBoi9J6KyghdaGgsVPuBqc09/BlR5a8pEWx4Y7WObYoHkco48nHJpN2qEm3i7a16TMfRCBKggEZ2fcdqcCU52juGM+3+Mr+VNaGYd/474O4QebXByS5kesTtCDKUKGfDaTf3NZMo5jescGJAjFGrDwDSgLL+sgTx3Yaf2bqmXYw6SyQrApAtdn2dWeRDkoZABqKWKrPlwfIAy77+cOEywxfUompPAEaPTaQMWXsjurG4ipIXzDydM3RDjONNjJcQOaqG7vX5SutMaYMTDzDIzliWj9XPz1lVsk9uJ5mvVCQ==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1683388834; bh=ILkRoX3qoIYySx9+AaDdPHj7oz4zrb4LO33mjV167BI=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=DgzfpaMJk20VjZKOr3C/BHEgA7oIGIiCaqkMM8R1Z4tuxwOLCIJR0kSIZ+X7KKIsQRNfrgnNPK5l8ZPoZvu6vKYXrZXFupEzYxXH7t+7FwaEJrYgWGnFN9QorIWxN6+jMKSD7BfYDuKM1HETillY9iz5v10tp+I7iEpw9DF1fCOdedt0vNfTp5vZN0YZHl0ZHc5fID5+uCKxOsvBNGKWz764prh4OEazuE5yuZv4XjJyP9WGHJT8Swdr3Ng2OKChJPxQY+8dEstpjYj8/aY7P3lKh5QO/MVa3sW58kh7UaNyQoYaP9jy2k5VsnuEiQWaMFwih5m5DdZu/SqtQAwtdA==
-X-YMail-OSG: 4sHSO4oVM1kTvtoGOnBOHkG0QTJRHYCftL8CltIYnHoeXH_FKLVAzPjGQWw7hCV
- 1khRi83bpAGEjaSCRZhSDQgwBNED3t_uJ9J41f.cIxBO5gcNQeMNgvHdjOO2ryzP_3mDD5PTUeCJ
- v9W_kuW4jXvM_X_uW39GbE5r0u.q2b8OlnSektTucYYK57K98YPS6ICphJ5jBOVAEWzQ63roMiXf
- D_adBxmtWrzzDXc0Vt.ZLda54eqi.uTJ4fK_kr2zQ4ho37U7nXY1w0MsevdfpQ12gocIaaubEyew
- BH3Sg4K8Sap0LC0_TIhlgSDMCbA4blPo8ilW6Tu8jhpFu.tVfbsVR4bRlx8feMLTqAnmQgR7Z0dU
- uE3jytqxN0TYzeZyKsl2H1Qy4dBvkzu5jmsXwmpyTmqBlS2VWm5.6vz0djQsCXHW.b6hHc0ACPQm
- BmDbcajA6aSij_49x8D4WrgCdfBm_9Do1SiCDQfAjK1LX4vbVcc7QBudGifSGpJEA9DkafkbgBQY
- amWX0MHPoCdZGAEApLyaNuV1Hd6ayL5DgH8Am3edtPpCoRHxMY9z9QMMLn9bUEdQJGgBrVDmS07a
- Xyi7eX02j3hDZghuHhbm1QiPXWpqMWod0xWxWZpDKqOg_.t4QRq5tH0u5kUJ20CWR5ybWeks_0NT
- HDyCeiTw.thk9p5XogYdKox.iyM1.QljrcK9VybN2IK5k_LYHXE_e_O.St3CDJZIkPbfOnidESbf
- creG_1zziB5FK_3Sr50ECriRXD55MlgrMk32z.GwsaoaHxaplICLwTclsv8zICN2MUrt0GNU_S7G
- 1idiXz7ntyK31Bh83Ko1So.fllzP63QNWqtH0tjWFzMfJbgRPbckHU.c73f6yTZ5ZYLpZONTHdXR
- JTqyuZqnh87NDuaaEXtEEQW95wpkqJevuVpzJSY9CrbgN98g7VWmgXj83IrOc7m7wH1DOZDx5VZG
- 0rjR4wBnmDuULRvdWKcEiRWAw_b8g0MITKp1J6EIfV64Qx8w.0wzZVSUZt1cC8D3MWLBNMQ1GKFH
- mxadGIEadyyIILD2LVtO_BDsC8rVKHSC1XjSlm4tDhQJjqgJ2ny9XyqUetbb2UfBdReZN7nphpGa
- tlAINHeF95SlNbjbFZKJCTARqzAQAP.ZjZdfRiEG1cFUfZO1UC40uXRQ6dOMfSq.6NOaRVtkeuuU
- BILl3bQVf25fmsuWJ0CYFDoMiExHP3_S8Xey.HfFkoWxyUF7lW.SPBq9AUjovFSgGs5wRxcb0qqS
- F55f6c3xqCYQ4hYjpfVcqu5bm2gEG_WXvR2Vw0yvuaxJNhV_7XFH5F_zoSVbDnaZCKl.j46t0CVQ
- AGjSc7FJzvtsVHqsZcoBfZDfoPcIbZd3PO8QGIaS0bJ6f31pvZAdd6wCC5gRhX5Bi8ORlicYZJfc
- usiV_Tihn_NeIspS27vHSi3JlvPj7NzpO30XO2T3QsKBGCBSqeooUaCYwzUgfZKhu0.lf2hOZbuY
- 1ugiLHlLRa50yru5i66s8G5OP25JV3RS5FiSWaptmvVvw1dtQw2V9lv.zlmNx2_Gms3BVI8Oeojh
- PTqaQm1tEeQzhDP0LOMPxQhv_nRJpuMpXyBlQsvWtWL0vLxzCqfJJtOsJbMG3CL.d.C3WltPNEqo
- ihiEQ5s.KsWipEW3Bk.USx_G0kjDflQzG3EAfydVlbGe2dYxaf6BKCwINWS4njnGJ0sk6cOWsUNf
- 6ucDdv2ScaQEOK242FlM5Ialu8jPvDOPAjj6oAt29soV6Tvg4DTjZJDNApAZRe7LH88iZvYFq4bU
- X44TfdjKGhwEjHxyxjKXesN1Sq.V7lWJ3uHzOGp8D7E.X6Vty8tjI__aj33cdgWoGH1nJ2lmwlvj
- mKeAv4_p5fRiQvhaU.w5BWeMa0vHuSaR2xC_foNsAjMaSSApQh_wHMAZrm1PdylIknk64NP9FqEx
- jE0vmWsHfQSLB9Lq.rArkCvxEDRMOscsO_GM4L2xvMNTgF7ZQTLrG2G8PJqow6rCTo1oZzVbXfgR
- pyIoUAmlaE0gCUBbfOM7fTmF6u0_ZQfzz7Hjdp5Fils2JOcy0SbfutH8gLiibP_F.a4XyNG3poke
- BxntG0pXz5EfbH0MFQqqwQwjK6iOJJHU2rJM._i9n5PEMskSLnvKAh12YHXlA2WWBek0T7lsQ.Zg
- AiXJchcqBGpAJDktPxExf_0xVhyuubGyH_yzm66UMzAaxc1HnorAdw.ZJEVzrejyYGX0VrAXDthq
- 0PF2HKb1F7K1vSOH.QZf9e.ke5p0_RXWAq1c5nVQgqC87VTEF.BYOy1j7fBrgo4k1wQQUmksdy0s
- 5JcP3Ypp37ItH3uldIPUS6DViIIGK
-X-Sonic-MF: <jahau@rocketmail.com>
-X-Sonic-ID: 4c1167fc-06de-4df9-8b24-0f0d3fc2a041
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic307.consmr.mail.ir2.yahoo.com with HTTP; Sat, 6 May 2023 16:00:34 +0000
-Received: by hermes--production-ir2-74cd8fc864-j696l (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID b71ff572232817f95ac730737b6b2406;
-          Sat, 06 May 2023 16:00:30 +0000 (UTC)
-From:   Jakob Hauser <jahau@rocketmail.com>
-To:     Sebastian Reichel <sre@kernel.org>, Lee Jones <lee@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Cc:     Beomho Seo <beomho.seo@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Raymond Hackley <raymondhackley@protonmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Axel Lin <axel.lin@ingics.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Henrik Grimler <henrik@grimler.se>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht
-Subject: [PATCH v4 7/8] power: supply: rt5033_battery: Adopt status property from charger
-Date:   Sat,  6 May 2023 17:54:34 +0200
-Message-Id: <20230506155435.3005-8-jahau@rocketmail.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230506155435.3005-1-jahau@rocketmail.com>
-References: <20230506155435.3005-1-jahau@rocketmail.com>
+        with ESMTP id S230381AbjEGJLN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 May 2023 05:11:13 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 423475240
+        for <linux-pm@vger.kernel.org>; Sun,  7 May 2023 02:11:11 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-94ef0a8546fso549880466b.1
+        for <linux-pm@vger.kernel.org>; Sun, 07 May 2023 02:11:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1683450670; x=1686042670;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=WJVeF+6z9/ggAVBD2uz3HdoqI651ez6nvvs/Z94Hn3E=;
+        b=ge34Tv1nacy0JlU4TMCDkcjgWKAcwLxMPJ2dqttvd5QDmlGBDNjo3SDaU8jS089GVp
+         97aXexc5Ub/WBVBLBKqwau9eKg4cPpITPJiu9XBXVv4sWtFkODGN+fZRYn0+Lwj78Wr9
+         fOCcWeplDjReFtG1ZWY+8Gg2ComYyfme+ZItmqx1XGp1d+YGrInfxG3ssasguj6Cmj4I
+         UTuYDaGVfumJ4RzEE9sZ+/IqtW0M5spGQAofcgx5AzDbXSrirbcMKLuMiR+Wcl3xBsCV
+         HiX+k/H4PkUKmHdfKesGyx5UbqayeiVibn5DjwZLthhz+4P6ExoNcTFTN5AuH7Pamixs
+         JCxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683450670; x=1686042670;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=WJVeF+6z9/ggAVBD2uz3HdoqI651ez6nvvs/Z94Hn3E=;
+        b=VkF0w5MeOCIuAal3kaCRqsnesBz1s/QzV6O/IUAoQ04mLNaZABA8LsxgSOrApOwcMZ
+         /HWxlBXKwFpSnAQsTXY/tu4trUThMej66s13BxmuKCa/y2iKRJc6mU2acfghti+83C6n
+         hNPvb5nHl9+e24363859BuWt8ca/+BePNnHYPZvg1wxdx5bUJXAedfzl6fTvWRYAaSkk
+         RBb9jjXl8OB5XZQuncWxCuzSMbYPyKNd8294uUAgMz+/aMAs9cEGesro5fxUyswTnw4p
+         yVqZrJ8KzgcM36Nu2MTVztBx5NLdruBzI67FiHicu7Ajg36gQv0P/3WOu1I7zMjnMo+g
+         Zmjw==
+X-Gm-Message-State: AC+VfDwEnq0RIfPhvHt1/X+t6M7zZA+pjt7cHpmIb7z6VAqmSY1OhEyL
+        BX8en+Qhg1qx+y7M+PpxLKM6Zg==
+X-Google-Smtp-Source: ACHHUZ56Cj45M5bkDI2Qkj+cfrrqHrRXimMDzax69r9LP0DJegFaXQGg0XWQuxCR+n66BEZ9LerK4Q==
+X-Received: by 2002:a17:907:6d01:b0:957:29e5:1695 with SMTP id sa1-20020a1709076d0100b0095729e51695mr5594140ejc.65.1683450669593;
+        Sun, 07 May 2023 02:11:09 -0700 (PDT)
+Received: from ?IPV6:2a02:810d:15c0:828:183b:950f:b4d5:135a? ([2a02:810d:15c0:828:183b:950f:b4d5:135a])
+        by smtp.gmail.com with ESMTPSA id ze16-20020a170906ef9000b00965ec1faf27sm3024164ejb.74.2023.05.07.02.11.07
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 07 May 2023 02:11:08 -0700 (PDT)
+Message-ID: <10b32e55-4d28-5405-035e-c73a514c95e4@linaro.org>
+Date:   Sun, 7 May 2023 11:11:07 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.1
+Subject: Re: [Patch v7 1/8] memory: tegra: add interconnect support for DRAM
+ scaling in Tegra234
+Content-Language: en-US
+To:     Sumit Gupta <sumitg@nvidia.com>, treding@nvidia.com,
+        dmitry.osipenko@collabora.com, viresh.kumar@linaro.org,
+        rafael@kernel.org, jonathanh@nvidia.com, robh+dt@kernel.org,
+        lpieralisi@kernel.org, helgaas@kernel.org
+Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pci@vger.kernel.org, mmaddireddy@nvidia.com, kw@linux.com,
+        bhelgaas@google.com, vidyas@nvidia.com, sanjayc@nvidia.com,
+        ksitaraman@nvidia.com, ishah@nvidia.com, bbasu@nvidia.com
+References: <20230424131337.20151-1-sumitg@nvidia.com>
+ <20230424131337.20151-2-sumitg@nvidia.com>
+ <7c6c6584-204a-ada1-d669-2e8bef50e5e5@linaro.org>
+ <3071273b-b03b-5fc8-ffa1-9b18311a3a5d@nvidia.com>
+ <5ab9687e-756d-f94b-b085-931d4ea534c1@nvidia.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <5ab9687e-756d-f94b-b085-931d4ea534c1@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The rt5033-battery fuelgauge can't get a status by itself. The rt5033-charger
-can, let's get this value.
+On 24/04/2023 17:21, Sumit Gupta wrote:
+> 
+> 
+> On 24/04/23 20:30, Sumit Gupta wrote:
+>>
+>>
+>> On 24/04/23 19:18, Krzysztof Kozlowski wrote:
+>>> External email: Use caution opening links or attachments
+>>>
+>>>
+>>> On 24/04/2023 15:13, Sumit Gupta wrote:
+>>>> Add Interconnect framework support to dynamically set the DRAM
+>>>> bandwidth from different clients. Both the MC and EMC drivers are
+>>>> added as ICC providers. The path for any request is:
+>>>>   MC-Client[1-n] -> MC -> EMC -> EMEM/DRAM
+>>>>
+>>> Thank you for your patch. There is something to discuss/improve.
+>>>
+>>>
+>>>> +static int tegra_emc_interconnect_init(struct tegra186_emc *emc)
+>>>> +{
+>>>> +     struct tegra_mc *mc = dev_get_drvdata(emc->dev->parent);
+>>>> +     const struct tegra_mc_soc *soc = mc->soc;
+>>>> +     struct icc_node *node;
+>>>> +     int err;
+>>>> +
+>>>> +     emc->provider.dev = emc->dev;
+>>>> +     emc->provider.set = tegra_emc_icc_set_bw;
+>>>> +     emc->provider.data = &emc->provider;
+>>>> +     emc->provider.aggregate = soc->icc_ops->aggregate;
+>>>> +     emc->provider.xlate = tegra_emc_of_icc_xlate;
+>>>> +     emc->provider.get_bw = tegra_emc_icc_get_init_bw;
+>>>> +
+>>>> +     icc_provider_init(&emc->provider);
+>>>> +
+>>>> +     /* create External Memory Controller node */
+>>>> +     node = icc_node_create(TEGRA_ICC_EMC);
+>>>> +     if (IS_ERR(node)) {
+>>>> +             err = PTR_ERR(node);
+>>>> +             goto err_msg;
+>>>> +     }
+>>>> +
+>>>> +     node->name = "External Memory Controller";
+>>>> +     icc_node_add(node, &emc->provider);
+>>>> +
+>>>> +     /* link External Memory Controller to External Memory (DRAM) */
+>>>> +     err = icc_link_create(node, TEGRA_ICC_EMEM);
+>>>> +     if (err)
+>>>> +             goto remove_nodes;
+>>>> +
+>>>> +     /* create External Memory node */
+>>>> +     node = icc_node_create(TEGRA_ICC_EMEM);
+>>>> +     if (IS_ERR(node)) {
+>>>> +             err = PTR_ERR(node);
+>>>> +             goto remove_nodes;
+>>>> +     }
+>>>> +
+>>>> +     node->name = "External Memory (DRAM)";
+>>>> +     icc_node_add(node, &emc->provider);
+>>>> +
+>>>> +     err = icc_provider_register(&emc->provider);
+>>>> +     if (err)
+>>>> +             goto remove_nodes;
+>>>> +
+>>>> +     return 0;
+>>>> +
+>>>> +remove_nodes:
+>>>> +     icc_nodes_remove(&emc->provider);
+>>>> +err_msg:
+>>>> +     dev_err(emc->dev, "failed to initialize ICC: %d\n", err);
+>>>> +
+>>>> +     return err;
+>>>> +}
+>>>> +
+>>>>   static int tegra186_emc_probe(struct platform_device *pdev)
+>>>>   {
+>>>> +     struct tegra_mc *mc = dev_get_drvdata(pdev->dev.parent);
+>>>>        struct mrq_emc_dvfs_latency_response response;
+>>>>        struct tegra_bpmp_message msg;
+>>>>        struct tegra186_emc *emc;
+>>>> @@ -236,6 +339,29 @@ static int tegra186_emc_probe(struct 
+>>>> platform_device *pdev)
+>>>>        debugfs_create_file("max_rate", S_IRUGO | S_IWUSR, 
+>>>> emc->debugfs.root,
+>>>>                            emc, &tegra186_emc_debug_max_rate_fops);
+>>>>
+>>>> +     if (mc && mc->soc->icc_ops) {
+>>>> +             /*
+>>>> +              * Initialize the ICC even if BPMP-FW doesn't support 
+>>>> 'MRQ_BWMGR_INT'.
+>>>> +              * Use the flag 'mc->bwmgr_mrq_supported' within MC 
+>>>> driver and return
+>>>> +              * EINVAL instead of passing the request to BPMP-FW 
+>>>> later when the BW
+>>>> +              * request is made by client with 'icc_set_bw()' call.
+>>>> +              */
+>>>> +             err = tegra_emc_interconnect_init(emc);
+>>>> +             if (err)
+>>>> +                     goto put_bpmp;
+>>>> +
+>>>> +             if (tegra_bpmp_mrq_is_supported(emc->bpmp, 
+>>>> MRQ_BWMGR_INT)) {
+>>>> +                     mc->bwmgr_mrq_supported = true;
+>>>> +
+>>>> +                     /*
+>>>> +                      * MC driver probe can't get BPMP reference as 
+>>>> it gets probed
+>>>> +                      * earlier than BPMP. So, save the BPMP ref got 
+>>>> from the EMC
+>>>> +                      * DT node in the mc->bpmp and use it in MC's 
+>>>> icc_set hook.
+>>>> +                      */
+>>>> +                     mc->bpmp = emc->bpmp;
+>>>
+>>> This (and ()) are called without any locking. You register first the
+>>> interconnect, so set() callback can be used, right? Then set() could be
+>>> called anytime between tegra_emc_interconnect_init() and assignment
+>>> above. How do you synchronize these?
+>>>
+>>> Best regards,
+>>> Krzysztof
+>>>
+>>
+>> Currently, the tegra234_mc_icc_set() has NULL check. So, it will give 
+>> this error.
+>>   if (!mc->bpmp) {
 
-Tested-by: Raymond Hackley <raymondhackley@protonmail.com>
-Signed-off-by: Jakob Hauser <jahau@rocketmail.com>
----
- drivers/power/supply/rt5033_battery.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+How does it solve concurrent accesses and re-ordering of instructions by
+compiler or CPU?
 
-diff --git a/drivers/power/supply/rt5033_battery.c b/drivers/power/supply/rt5033_battery.c
-index 5c04cf305219..a6520716d813 100644
---- a/drivers/power/supply/rt5033_battery.c
-+++ b/drivers/power/supply/rt5033_battery.c
-@@ -12,6 +12,26 @@
- #include <linux/mfd/rt5033-private.h>
- #include <linux/mfd/rt5033.h>
- 
-+static int rt5033_battery_get_status(struct i2c_client *client)
-+{
-+	struct power_supply *charger;
-+	union power_supply_propval val;
-+	int ret;
-+
-+	charger = power_supply_get_by_name("rt5033-charger");
-+	if (!charger)
-+		return POWER_SUPPLY_STATUS_UNKNOWN;
-+
-+	ret = power_supply_get_property(charger, POWER_SUPPLY_PROP_STATUS, &val);
-+	if (ret) {
-+		power_supply_put(charger);
-+		return POWER_SUPPLY_STATUS_UNKNOWN;
-+	}
-+
-+	power_supply_put(charger);
-+	return val.intval;
-+}
-+
- static int rt5033_battery_get_capacity(struct i2c_client *client)
- {
- 	struct rt5033_battery *battery = i2c_get_clientdata(client);
-@@ -84,6 +104,9 @@ static int rt5033_battery_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		val->intval = rt5033_battery_get_capacity(battery->client);
- 		break;
-+	case POWER_SUPPLY_PROP_STATUS:
-+		val->intval = rt5033_battery_get_status(battery->client);
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -96,6 +119,7 @@ static enum power_supply_property rt5033_battery_props[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_OCV,
- 	POWER_SUPPLY_PROP_PRESENT,
- 	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_STATUS,
- };
- 
- static const struct regmap_config rt5033_battery_regmap_config = {
--- 
-2.39.2
+>>           dev_err(mc->dev, "BPMP reference NULL\n");
+>>           return -ENOENT;
+>>   }
+>>
+>> To fix, we can do the below change and swap the order. Please let me 
+>> know if this sounds fine ?
+>>   if (mc && mc->soc->icc_ops) {
+>>           if (tegra_bpmp_mrq_is_supported(emc->bpmp, MRQ_BWMGR_INT)) {
+>>                   mc->bwmgr_mrq_supported = true;
+>>                   mc->bpmp = emc->bpmp;
+>>           }
+>>
+>>           err = tegra_emc_interconnect_init(emc);
+>>           if (err)
+>>                   goto put_bpmp;
+>>
+>>   }
+> Sorry, replied too soon. Missed setting "mc->bpmp" to NULL. Sharing new 
+> proposed change. Please let me know if this looks OK.
+> 
+>   if (mc && mc->soc->icc_ops) {
+>      if (tegra_bpmp_mrq_is_supported(emc->bpmp, MRQ_BWMGR_INT)) {
+>              mc->bwmgr_mrq_supported = true;
+>              mc->bpmp = emc->bpmp;
+>      }
+> 
+>      err = tegra_emc_interconnect_init(emc);
+>      if (err) {
+>              mc->bpmp = NULL;
+>              goto put_bpmp;
+
+Sorry, I didn't check the code. I assume you should do it...
+
+Best regards,
+Krzysztof
 
