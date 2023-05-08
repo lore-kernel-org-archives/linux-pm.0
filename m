@@ -2,115 +2,99 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 169FEC7EE2A
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 06:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7968EC77B73
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 06:54:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232838AbjEHG2l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 02:28:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50948 "EHLO
+        id S232416AbjEHGyu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 02:54:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37116 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232428AbjEHG2i (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 02:28:38 -0400
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8050526E
-        for <linux-pm@vger.kernel.org>; Sun,  7 May 2023 23:28:33 -0700 (PDT)
-Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-50bc0117683so7565437a12.1
-        for <linux-pm@vger.kernel.org>; Sun, 07 May 2023 23:28:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1683527312; x=1686119312;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=PQjnNOO8BB5bP1FBeXaARhBVIx0Gxl1xygzkHI4CtA4=;
-        b=mxikMzT3JpDYt02scuY8Hx+p1fR78YfEnEuuEHgeXf7uPrn2HFYT7pwz7zNGaX5zF1
-         XPuvhOwDtgoRFBa94BSLHKc6Q6Q21Src9F7N5NI2y96v35EHCBx1P83lRgJVSu60Ojwb
-         uuuwkS7Lhd9J14mvI/IJ5z5MzE9ixn1j7NqEgrOKoZPQ+yB97eZwfbadH6GDq9tWTeIP
-         NbDb57FJA5y/7uREE7aTdEluBWIbH+bkDwQoLQE/PtFR4XuadBlukE3mvdRgnLKjq+bi
-         EFiyzFYXS7SkNKTBqUY9jSLPuc/wJfz1I2QzPUuLzT9cGpV/M5BprRhGjIRyt0XZmQVB
-         iO5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683527312; x=1686119312;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=PQjnNOO8BB5bP1FBeXaARhBVIx0Gxl1xygzkHI4CtA4=;
-        b=dqcUM6vizjBn6/pLc2dE2vVBXrmQBHG4Sh19S7DqZQCNvm+s73rHCVFNv4cgwloT2w
-         k8EgaBRgVzwvIyHiE71AnUXoXe2BpW3Hydw5MElTonp+/Qy0sDy3J8HLmFeJTjVQW/xH
-         /Z5aDSWU+WgdMJpdb31xD/aGua8byQcehNMQboev+IUOZJADGZQr9eIDVS+v4RrhjOO7
-         3z3URR3Ck50bC/DNqRcRLH5s7A5rh9gFwogVnQGp3b0/mEtFkKSkoc3fWLMtYap8s2gQ
-         JonSrOfPfuGRTL412rVNyD8cdiU/BZHsrF2Aehv93wR7d5xQRCDg/hAbV/r1lpxKBlHO
-         u1dA==
-X-Gm-Message-State: AC+VfDwCv4p/U3E4isAvTfgM+SrdPK0ms31QEccevXHP1/mEhYce2R/m
-        vdMwOpcudg7cv3vfN7VnOQUtug==
-X-Google-Smtp-Source: ACHHUZ4p8mpjVy0cqAqWdS/0JPsaDIUuGYt7YCGkityC0XXPE9PJ8U0Lblf3KFwE1nKxqbLriWs6Cw==
-X-Received: by 2002:a17:907:2d0c:b0:966:5c04:2c5a with SMTP id gs12-20020a1709072d0c00b009665c042c5amr2289584ejc.69.1683527312460;
-        Sun, 07 May 2023 23:28:32 -0700 (PDT)
-Received: from ?IPV6:2a02:810d:15c0:828:50e0:ebdf:b755:b300? ([2a02:810d:15c0:828:50e0:ebdf:b755:b300])
-        by smtp.gmail.com with ESMTPSA id 22-20020a170906301600b00965b416585bsm4593498ejz.118.2023.05.07.23.28.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 07 May 2023 23:28:31 -0700 (PDT)
-Message-ID: <cdf26b5b-79d3-3818-1676-4e2be204a0ee@linaro.org>
-Date:   Mon, 8 May 2023 08:28:29 +0200
+        with ESMTP id S229577AbjEHGyt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 02:54:49 -0400
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96983A5DE;
+        Sun,  7 May 2023 23:54:48 -0700 (PDT)
+Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.55])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4QFBkj5rRmzpSyw;
+        Mon,  8 May 2023 14:50:37 +0800 (CST)
+Received: from localhost.localdomain.localdomain (10.175.113.25) by
+ dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Mon, 8 May 2023 14:54:45 +0800
+From:   Kefeng Wang <wangkefeng.wang@huawei.com>
+To:     Andrew Morton <akpm@linux-foundation.org>,
+        Mike Rapoport <rppt@kernel.org>, <linux-mm@kvack.org>
+CC:     David Hildenbrand <david@redhat.com>,
+        Oscar Salvador <osalvador@suse.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Luis Chamberlain <mcgrof@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Iurii Zaikin <yzaikin@google.com>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-fsdevel@vger.kernel.org>,
+        Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: [PATCH 01/12] mm: page_alloc: move mirrored_kernelcore into mm_init.c
+Date:   Mon, 8 May 2023 15:11:49 +0800
+Message-ID: <20230508071200.123962-2-wangkefeng.wang@huawei.com>
+X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20230508071200.123962-1-wangkefeng.wang@huawei.com>
+References: <20230508071200.123962-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.1
-Subject: Re: [PATCH v2 1/3] dt-bindings: thermal: tsens: Add ipq9574
- compatible
-Content-Language: en-US
-To:     Varadarajan Narayanan <quic_varada@quicinc.com>, agross@kernel.org,
-        andersson@kernel.org, konrad.dybcio@linaro.org, amitk@kernel.org,
-        thara.gopinath@gmail.com, rafael@kernel.org,
-        daniel.lezcano@linaro.org, rui.zhang@intel.com, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     Praveenkumar I <quic_ipkumar@quicinc.com>
-References: <cover.1683523370.git.quic_varada@quicinc.com>
- <345a61f6cd56e504e1f82ac2328ffa6d89e2d510.1683523370.git.quic_varada@quicinc.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <345a61f6cd56e504e1f82ac2328ffa6d89e2d510.1683523370.git.quic_varada@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.113.25]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ dggpemm500001.china.huawei.com (7.185.36.107)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 08/05/2023 07:32, Varadarajan Narayanan wrote:
-> From: Praveenkumar I <quic_ipkumar@quicinc.com>
-> 
-> Qualcomm IPQ9574 has tsens v2.3.1 block, which is similar to IPQ8074 tsens.
-> 
-> Acked-by: Rob Herring <robh@kernel.org>
+Since commit 9420f89db2dd ("mm: move most of core MM initialization
+to mm/mm_init.c"), mirrored_kernelcore should be moved into mm_init.c,
+as most related codes are already there.
 
-Drop the ack, it's a bigger change.
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
+ mm/mm_init.c    | 2 ++
+ mm/page_alloc.c | 3 ---
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-> Signed-off-by: Praveenkumar I <quic_ipkumar@quicinc.com>
-> Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
-> ---
-> [v2]:
-> 	Thanks to Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> 	for the tip to make qcom,ipq8074-tsens as fallback.
-> ---
->  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> index d1ec963..ea67cf9 100644
-> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> @@ -64,8 +64,11 @@ properties:
->            - const: qcom,tsens-v2
->  
->        - description: v2 of TSENS with combined interrupt
-> -        enum:
-> -          - qcom,ipq8074-tsens
-> +        - const: qcom,ipq8074-tsens
-> +        - items:
-> +          - enum:
-
-Please test the patch after changes and before sending. Missing indent
-which test would point out.
-
-Best regards,
-Krzysztof
+diff --git a/mm/mm_init.c b/mm/mm_init.c
+index 7f7f9c677854..da162b7a044c 100644
+--- a/mm/mm_init.c
++++ b/mm/mm_init.c
+@@ -259,6 +259,8 @@ static int __init cmdline_parse_core(char *p, unsigned long *core,
+ 	return 0;
+ }
+ 
++bool mirrored_kernelcore __initdata_memblock;
++
+ /*
+  * kernelcore=size sets the amount of memory for use for allocations that
+  * cannot be reclaimed or migrated.
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index af9c995d3c1e..d1086aeca8f2 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -23,7 +23,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/pagemap.h>
+ #include <linux/jiffies.h>
+-#include <linux/memblock.h>
+ #include <linux/compiler.h>
+ #include <linux/kernel.h>
+ #include <linux/kasan.h>
+@@ -374,8 +373,6 @@ int user_min_free_kbytes = -1;
+ int watermark_boost_factor __read_mostly = 15000;
+ int watermark_scale_factor = 10;
+ 
+-bool mirrored_kernelcore __initdata_memblock;
+-
+ /* movable_zone is the "real" zone pages in ZONE_MOVABLE are taken from */
+ int movable_zone;
+ EXPORT_SYMBOL(movable_zone);
+-- 
+2.35.3
 
