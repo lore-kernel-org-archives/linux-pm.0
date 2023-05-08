@@ -2,122 +2,165 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE1EFC7EE22
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:37:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DE9CC7EE2C
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:37:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234227AbjEHQhf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S234278AbjEHQhf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 8 May 2023 12:37:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36098 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36104 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229616AbjEHQhe (ORCPT
+        with ESMTP id S234221AbjEHQhe (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:34 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46EB26E99;
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 266A9468A;
         Mon,  8 May 2023 09:37:32 -0700 (PDT)
 Received: from mercury (195-23-45-170.net.novis.pt [195.23.45.170])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 358DC6603276;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 456586603292;
         Mon,  8 May 2023 17:37:30 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1683563850;
-        bh=pgMe58YDF/1fybSqPvqx1h0XQQrqUXowvHVjfvSaVoM=;
+        bh=CCTMG9S48FOICrW7oByihp55ltBGahowZHQ6Dc+tADY=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=h89/IDcBvVGjoWpbEpaZUuG+yk+FNAOFpN3jqgNZTqklpI+K/gn14YCAciahuKnjd
-         Gy2Ku/kIF7v691I1l7z+lq9CGtun+tJDjUSl7gCdWhSMk2CBFsMi7q6LeLROwnnp9o
-         gQ46kfXjYzfeQkCuwpLdPC7og9+Ri29xgmHpieT+olbsEkC4AgiOqTDqrjJl7m2wTm
-         IlAsXE8Z9hxOanyfIP8Xl5GCtROR1yTA0Z/SrCYdtqsXgsUoKdry4/KyN4D5iFt0vb
-         b2CpK1YRChcAjGJvsR7GaS0cboDBFbflfisy0H1NJg1M2WcJtuWDZ7tSAw/t28YgA5
-         chr+olS2pxoHQ==
+        b=jP8nL1KBWJHRUeQz+kuxlya76aei1fHiyX0drCrNNchccAmscEEvDz18vzATyme7M
+         MZKYZKrhh/yFPKbyBG7U6etGotyGPDiLE5z8dz2GxaLM1qSF4vnKD1AYpa+mfR3DD7
+         s77Gu2S8XV1P+XXxKw1wILypD+rC5jEszPrmcN+Gpqnfc9me6Pe6TFFrz+QGTNY/h0
+         WMtz3xwERgCVeyCJzERgkuTe449/+D+SWqTUjBwgZFqZTuSORn6KBcEWSboBub4CqK
+         9Qi2rE+7fTwLXZVKcHXZxyVwXVVeNEm/R0i245KBk6nYbVSY96hh6ziVtH2oG5c8rj
+         7gZzL33tljwcg==
 Received: by mercury (Postfix, from userid 1000)
-        id 1225C1066FB6; Mon,  8 May 2023 14:22:13 +0200 (CEST)
-Date:   Mon, 8 May 2023 14:22:13 +0200
+        id 199481066FBB; Mon,  8 May 2023 14:32:28 +0200 (CEST)
+Date:   Mon, 8 May 2023 14:32:28 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc:     Jiri Kosina <jikos@kernel.org>,
-        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-input@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] power: supply: remove unneeded include of
- linux/leds.h
-Message-ID: <20230508122213.2fj4kinuxr2ntoob@mercury.elektranox.org>
-References: <20230212-include-power_supply-leds-v2-0-e9910a3f5837@weissschuh.net>
- <20230212-include-power_supply-leds-v2-2-e9910a3f5837@weissschuh.net>
+To:     Daisuke Nojiri <dnojiri@chromium.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cros_pchg: Sync port status on resume
+Message-ID: <20230508123228.pduxcrwylbq73iuj@mercury.elektranox.org>
+References: <20230417221610.1507341-1-dnojiri@chromium.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="exsjkieiclz3e4to"
+        protocol="application/pgp-signature"; boundary="43uxwucv7neurdot"
 Content-Disposition: inline
-In-Reply-To: <20230212-include-power_supply-leds-v2-2-e9910a3f5837@weissschuh.net>
+In-Reply-To: <20230417221610.1507341-1-dnojiri@chromium.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---exsjkieiclz3e4to
-Content-Type: text/plain; charset=iso-8859-1
+--43uxwucv7neurdot
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, May 02, 2023 at 06:28:45AM +0200, Thomas Wei=DFschuh wrote:
-> Instead of including the full linux/leds.h header file a single
-> forward-declaration is enough.
+On Mon, Apr 17, 2023 at 03:16:10PM -0700, Daisuke Nojiri wrote:
+> When a stylus is removed (or attached) during suspend, the device detach
+> (or attach) events can be lost. This patch makes the peripheral device
+> charge driver retrieve the latest status from the EC on resume.
 >=20
-> Signed-off-by: Thomas Wei=DFschuh <linux@weissschuh.net>
+> BUG=3Db:276414488
+> TEST=3DRedrix
+>=20
+> Signed-off-by: Daisuke Nojiri <dnojiri@chromium.org>
 > ---
 
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Thanks, queued.
 
 -- Sebastian
 
->  include/linux/power_supply.h | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  .../power/supply/cros_peripheral_charger.c    | 25 ++++++++++++++++---
+>  1 file changed, 22 insertions(+), 3 deletions(-)
 >=20
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index a427f13c757f..dc5e17e8c919 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -14,10 +14,11 @@
+> diff --git a/drivers/power/supply/cros_peripheral_charger.c b/drivers/pow=
+er/supply/cros_peripheral_charger.c
+> index 1379afd9698d..a204f2355be4 100644
+> --- a/drivers/power/supply/cros_peripheral_charger.c
+> +++ b/drivers/power/supply/cros_peripheral_charger.c
+> @@ -227,8 +227,7 @@ static int cros_pchg_get_prop(struct power_supply *ps=
+y,
+>  	return 0;
+>  }
 > =20
->  #include <linux/device.h>
->  #include <linux/workqueue.h>
-> -#include <linux/leds.h>
->  #include <linux/spinlock.h>
->  #include <linux/notifier.h>
+> -static int cros_pchg_event(const struct charger_data *charger,
+> -			   unsigned long host_event)
+> +static int cros_pchg_event(const struct charger_data *charger)
+>  {
+>  	int i;
 > =20
-> +struct led_trigger;
+> @@ -256,7 +255,7 @@ static int cros_ec_notify(struct notifier_block *nb,
+>  	if (!(host_event & EC_MKBP_PCHG_DEVICE_EVENT))
+>  		return NOTIFY_DONE;
+> =20
+> -	return cros_pchg_event(charger, host_event);
+> +	return cros_pchg_event(charger);
+>  }
+> =20
+>  static int cros_pchg_probe(struct platform_device *pdev)
+> @@ -281,6 +280,8 @@ static int cros_pchg_probe(struct platform_device *pd=
+ev)
+>  	charger->ec_dev =3D ec_dev;
+>  	charger->ec_device =3D ec_device;
+> =20
+> +	platform_set_drvdata(pdev, charger);
 > +
->  /*
->   * All voltages, currents, charges, energies, time and temperatures in u=
-V,
->   * =B5A, =B5Ah, =B5Wh, seconds and tenths of degree Celsius unless other=
-wise
->=20
+>  	ret =3D cros_pchg_port_count(charger);
+>  	if (ret <=3D 0) {
+>  		/*
+> @@ -349,9 +350,27 @@ static int cros_pchg_probe(struct platform_device *p=
+dev)
+>  	return 0;
+>  }
+> =20
+> +#ifdef CONFIG_PM_SLEEP
+> +static int __maybe_unused cros_pchg_resume(struct device *dev)
+> +{
+> +	struct charger_data *charger =3D dev_get_drvdata(dev);
+> +
+> +	/*
+> +	 * Sync all ports on resume in case reports from EC are lost during
+> +	 * the last suspend.
+> +	 */
+> +	cros_pchg_event(charger);
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+> +static SIMPLE_DEV_PM_OPS(cros_pchg_pm_ops, NULL, cros_pchg_resume);
+> +
+>  static struct platform_driver cros_pchg_driver =3D {
+>  	.driver =3D {
+>  		.name =3D DRV_NAME,
+> +		.pm =3D &cros_pchg_pm_ops,
+>  	},
+>  	.probe =3D cros_pchg_probe
+>  };
 > --=20
-> 2.40.1
+> 2.39.2
 >=20
 
---exsjkieiclz3e4to
+--43uxwucv7neurdot
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY6XQACgkQ2O7X88g7
-+prQDA/9EVN7uHo6O4SftuS1Iddi+3AFTrCvpQTI4/91dMKsMFsVdXcJfWZu5Qcy
-sIiGosUUym6S58Or+WakBLA8CRE1KiK42ZUm9KNviHQhwyYHTiIFdJCfLf3mzUqQ
-X+emDKJu1XaY5xeTCkcNJ0bGEiZ0W1PnWji8IHWu+lD5VDI5FyTP3gtBltSE9PXA
-tbrUyuZ8jOcJ/2oJ7mYeU7ULshkbfTuQCUMocx7b7Q+wvimn0KHsdJaxKkTDT4HO
-LW1YfYN/yAXmhbslB2yly/N5tKkHxd+PQ6SMMHqMRb0zbHEv0jFIi6h2BuZfyOmc
-fQgsmSLVewfi9XaPbIMjRUlVlY3+JXK1oxKLHd5cMaaH1jQ1DKqooocve4y+LPft
-xvgwvNEipNGu6m2S6OnqW/WU66R9cjRf7o1kCeKDFYAIQRZ+DVLm78/JU21QqDa5
-CrioDehsd4DoizLNDWMJO69TCdmuHNTL4ys7j+irWSBietFpMdWG3GQ0EWqjrTGP
-MRyKclO1aQaQ6CnPCQ4tALa1RuGRWcO1wK5+xg9H3D5wguzw7mwDl/N2njGc/pFD
-xMxi20SRVAjO6Q/Gh/O+eqtmpGAEcVT2+PlfDtLShOLtlNjoIjnU+PsfwN0+MU3W
-YmfI+QRu9rjdLZYi+kgCKlg4RgAHLYOj32Jfi9E2BCD0gu0Vrig=
-=NG8+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY69sACgkQ2O7X88g7
++pqwdhAAgxvO7qCqrafIX/xYJZEzUpBTHCD3ngN2jisQNJo028wzvG1n627Jd6sF
+OogUbiWtYSN3hC9tn9umQAHW564GtxQEsohXtMYsLtwn4nAXOMdxqmXmg2+s/mYX
+GcNGs6xO8245Uq0gX3qMUmf9zkxyDHw7qsS8kNX9Qvjsft4tnGHWxAuy05TnOyDg
+r3M2E2zMkZo4uHz5H4ehsmsXwRMj+FdvSgmXNxD3g/McrS4Dz0zu+SsVHdIGFqGo
+UfqoloAFKnktMgunOCnnHwBdSMyFiKB/sw9qtV3Lit0QIEOsX5SqS4xUKRUWV/mw
+cflemZHVotncwG3W6OVgjMFQwycjkcH9hsFwhybPyvh1VpENr1xacJuWFPHwpMTy
+2iA9k3I62TahA5MnWq9YwPlUF3l9z5cze13xdfhwKx8UvXXIhtzkkth/3wilgCpL
+DuMjMt1XXuQBjuVFeBNDxjbwu6KoCYbXiPnFXSgBKvo5BimMcdJoBEEww+4x6ctI
+c5Ck345+PgukLFzbBx2jwNG9eWnX04c1+RbjNDDCKnL4Ovy4Bs3vcdVN4OiPhbcs
+bt+sSw1RYB0yyyrBzhKz9Xz9o5nAs4qTUjcNMhOIr461ZqDx0ZHjXinbHnlfxXWX
++w9MMZKAgKWBCcM7faKVc4bqAjgdNAgp6I0tQoJwamS2O1/6Nwg=
+=iRPE
 -----END PGP SIGNATURE-----
 
---exsjkieiclz3e4to--
+--43uxwucv7neurdot--
