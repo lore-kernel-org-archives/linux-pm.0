@@ -2,66 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DB44C77B7C
-	for <linux-pm@archiver.kernel.org>; Wed, 10 May 2023 08:49:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7213BC77B7D
+	for <linux-pm@archiver.kernel.org>; Wed, 10 May 2023 10:57:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236724AbjEJIta (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 May 2023 04:49:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38752 "EHLO
+        id S230365AbjEJK5p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 May 2023 06:57:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57396 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236732AbjEJIt2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 May 2023 04:49:28 -0400
-Received: from m1564.mail.126.com (m1564.mail.126.com [220.181.15.64])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 65F5C1BEA;
-        Wed, 10 May 2023 01:49:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-        s=s110527; h=Date:From:Subject:Content-Type:MIME-Version:
-        Message-ID; bh=laBzUBuY99rTCcA9sQMQ+5Qw29Kos5L9LHYh4Tc7P+c=; b=E
-        ieJRNE46xy03YCPlYyzc/vDmCWR+vQMfxLqtUM/9f93Or9gup74tDKDg+xwCg7Si
-        KEXVEvkH0J3+2DpfHIz3t3bqNar3jiyHrMuhW2WZxAcSPngQQqnrTGb+kZ4Op4rg
-        wXBQI0k9dX47xEJWMeQjxTvz+D7dsVhkdzVEOhcR5s=
-Received: from wangyouwan$126.com ( [103.163.180.46] ) by
- ajax-webmail-wmsvr64 (Coremail) ; Wed, 10 May 2023 16:48:07 +0800 (CST)
-X-Originating-IP: [103.163.180.46]
-Date:   Wed, 10 May 2023 16:48:07 +0800 (CST)
-From:   wangyouwan <wangyouwan@126.com>
-To:     "Dhruva Gole" <d-gole@ti.com>
-Cc:     rafael@kernel.org, viresh.kumar@linaro.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re:Re: [PATCH] cpufreq: create cooling device based on ACPI
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version XT5.0.14 build 20230109(dcb5de15)
- Copyright (c) 2002-2023 www.mailtech.cn 126com
-In-Reply-To: <aa8386f8-6dce-0caf-a09f-a14347abf391@ti.com>
-References: <20230428070314.225560-1-wangyouwan@126.com>
- <aa8386f8-6dce-0caf-a09f-a14347abf391@ti.com>
-X-NTES-SC: AL_QuyTAfubt0wj4SeeYulS/T1E/LZbI7jC0pRmlcYUXM0QuiLqxwcORnBBJmb84PsR+KGO3r7iyuDGfPK4wq0j
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+        with ESMTP id S236330AbjEJK5Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 May 2023 06:57:16 -0400
+X-Greylist: delayed 4199 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 10 May 2023 03:57:04 PDT
+Received: from mail.rawlinsfis.com (mail.rawlinsfis.com [89.40.118.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1830876B1
+        for <linux-pm@vger.kernel.org>; Wed, 10 May 2023 03:57:03 -0700 (PDT)
+Received: by mail.rawlinsfis.com (Postfix, from userid 1001)
+        id B4EC37F11B; Mon,  8 May 2023 08:31:14 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rawlinsfis.com;
+        s=mail; t=1683531076;
+        bh=lDo1OjfzzJ3sOfR9tSDg5RMmT4aDyBP45hIVJCLtIrE=;
+        h=Date:From:To:Subject:From;
+        b=BLBGfWlAu9NMEpmg8At9efhn6YDSNQC7Sb4ytKlX3Rhoffm+O+9FhS+gSldbyMvgU
+         Z/L4Q7E1BX5X5KA6yF2bfKGjXgdqmmt3FscXsGAZwUjSDYAIZWTli2MI09Zi7xaZGD
+         tB+iizKwM1XXvC1seqv368RVz7sAZ0an+8mYgIchBeYa/83PVWJzOj1Zj+y7CIe3LI
+         PoI3UykrWpmyuKcsUeC7594NAjb+KUlKCyfR1PoWmzbFpOaqf0xg4zN1l1za5aqoMF
+         V3km5YwUorvV4NfWfanxVkkiGhAbCf8qrCrq4r+kvOIKz+9zqQgLmAslouZLL/elGY
+         HYfpCk6JqJjuQ==
+Received: by mail.rawlinsfis.com for <linux-pm@vger.kernel.org>; Mon,  8 May 2023 07:31:13 GMT
+Message-ID: <20230508074500-0.1.3d.5lde.0.u7n724812o@rawlinsfis.com>
+Date:   Mon,  8 May 2023 07:31:13 GMT
+From:   "Damian Hordych" <damian.hordych@rawlinsfis.com>
+To:     <linux-pm@vger.kernel.org>
+Subject: =?UTF-8?Q?Pompy_ciep=C5=82a_-_nowe_warunki_?=
+X-Mailer: mail.rawlinsfis.com
 MIME-Version: 1.0
-Message-ID: <3cf25b19.65d3.18804d8a859.Coremail.wangyouwan@126.com>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID: QMqowAAn50RHWltkoCMaAA--.49155W
-X-CM-SenderInfo: 5zdqw5prxzt0a6rslhhfrp/1tbiHgJrFWIxqYnqAwACs6
-X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CgpJJ20gc29ycnksIGJ1dCBJJ20gdXNpbmcgdGhlIDUuNCBrZXJuZWwsIGFuZCB0aGUgInNjcGkt
-Y3B1ZnJlcSIgZnVuY3Rpb24gaXMgdXNlZCBpbiB0aGUgc2NwaV9jbG9ja3NfcHJvYmVfYWNwaSBm
-dW5jdGlvbi4KCgoKQXQgMjAyMy0wNC0yOCAxNzo1NjowNywgIkRocnV2YSBHb2xlIiA8ZC1nb2xl
-QHRpLmNvbT4gd3JvdGU6Cj5IaSwKPgo+T24gMjgvMDQvMjMgMTI6MzMsIHdhbmd5b3V3YW5AMTI2
-LmNvbSB3cm90ZToKPj4gRnJvbTogeW91d2FuIFdhbmcgPHdhbmd5b3V3YW5AMTI2LmNvbT4KPj4g
-Cj4+IFdoZW4gdXNpbmcgdGhlICJzY3BpX2NwdWZyZXEiIGRyaXZlciwgYW4gZXJyb3IKPgo+UGFy
-ZG9uLCBkbyB5b3UgbWVhbiBkcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVmcmVxLmMgPwo+Cj4+IG9j
-Y3VyczpjcHVmcmVxX2Nvb2xpbmc6IE9GIG5vZGUgbm90IGF2YWlsYWJsZSBmb3IgY3B1Ki4KPgo+
-Cj5JZiB0aGlzIGlzIGZpeGluZyBzb21lIGVycm9ycy8gYnVncywgbWF5YmUgYWRkIGFuIGFwcHJv
-cHJpYXRlIGZpeGVzCj50YWc/Cj4KPj4gVGhlIGN1cnJlbnQgY29tcHV0ZXIgbW90aGVyYm9hcmQg
-aXMgdXNpbmcgQUNQSSBmaXJtd2FyZS4KPj4gR28gdG8gc2VlIHRoYXQgdGhlIGVycm9yIGlzIGNh
-dXNlZCBieSBjYWxsaW5nIHRoZQo+PiAib2ZfY3B1ZnJlcV9jb29saW5nX3JlZ2lzdGVyIiBpbnRl
-cmZhY2UuCj4+IGNvbW1lbnQ6Y3JlYXRlIGNwdWZyZXEgY29vbGluZyBkZXZpY2UgYmFzZWQgb24g
-RFQuCj4+IAo+PiBTaWduZWQtb2ZmLWJ5OiB5b3V3YW4gV2FuZyA8d2FuZ3lvdXdhbkAxMjYuY29t
-Pgo+PiAtLS0KPj4gICBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgNyArKysrKystCj4+ICAg
-MSBmaWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQo+Wy4uLl0KPj4g
-ICAKPgo+LS0gCj5UaGFua3MgYW5kIFJlZ2FyZHMsCj5EaHJ1dmEgR29sZQo=
+Dzie=C5=84 dobry,
+
+w ramach nowej edycji programu Czyste Powietrze dla klient=C3=B3w indywid=
+ualnych mog=C4=85 otrzyma=C4=87 Pa=C5=84stwo do 135 tys. z=C5=82 wsparcia=
+ na zakup pompy ciep=C5=82a.
+
+Pr=C3=B3cz wy=C5=BCszego dofinansowania program zak=C5=82ada m.in. podwy=C5=
+=BCszenie prog=C3=B3w dochodowych oraz mo=C5=BCliwo=C5=9B=C4=87 z=C5=82o=C5=
+=BCenia kolejnego wniosku o dofinansowanie dla tych, kt=C3=B3rzy ju=C5=BC=
+ wcze=C5=9Bniej skorzystali z Programu.
+
+Jako firma specjalizuj=C4=85ca si=C4=99 w dostawie, monta=C5=BCu i serwis=
+ie pomp ciep=C5=82a pomo=C5=BCemy Pa=C5=84stwu w uzyskaniu dofinansowania=
+ wraz z kompleksow=C4=85 realizacj=C4=85 ca=C5=82ego projektu.
+
+S=C4=85 Pa=C5=84stwo zainteresowani?
+
+Pozdrawiam
+Damian Hordych
