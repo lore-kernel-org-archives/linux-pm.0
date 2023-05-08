@@ -2,214 +2,333 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCE8DC7EE24
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:38:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEED3C77B75
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 17:42:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234510AbjEHQiJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 12:38:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36240 "EHLO
+        id S232416AbjEHRmn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 13:42:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48960 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234382AbjEHQhp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:45 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA1146E87;
-        Mon,  8 May 2023 09:37:36 -0700 (PDT)
-Received: from mercury (195-23-45-170.net.novis.pt [195.23.45.170])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (No client certificate requested)
-        (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 16749660574D;
-        Mon,  8 May 2023 17:37:33 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1683563853;
-        bh=es+2Vg5vpbSoOm58wIOQnVTmBCiV+CnwrUUXaKbUTLY=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=iUdnBvZrUQkwiAEIWZdSWd6P6yq+4KdNH+/saBQkhQjrfCrIQYTreHqGaD6h+iRtD
-         S9geDZl9fP1waE7OTdWixXuAhB3KOr4mwMqNiaHX3hO1Fl6+X43FXAahRVsaVSMwMY
-         334UbpWXdW8b0lwm1/3ML2/jc70kkBhtkHJ3xdEVrk+IwUhYU70AQZc6XyyUZyzf6B
-         uJymUPGtBQsqoJtPBLdL0WXyo9AlYD1GzKwEZJHiaiLIm589jFIo85bWEZ60o5IPov
-         ZZX589b0YrwbfdBizAIntCAJ5liQ0rqSeTUYW/M3GHtvoSX+rgsS5/KglCMb+lgCVb
-         n0SCrf+mg/7pw==
-Received: by mercury (Postfix, from userid 1000)
-        id 5C3E61066FBE; Mon,  8 May 2023 14:39:34 +0200 (CEST)
-Date:   Mon, 8 May 2023 14:39:34 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Bartosz Golaszewski <brgl@bgdev.pl>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: Re: [PATCH v2 2/3] dt-bindings: power: reset: convert
- nvmem-reboot-mode bindings to YAML
-Message-ID: <20230508123934.om25c73xuprqviwq@mercury.elektranox.org>
-References: <20230417145536.414490-1-brgl@bgdev.pl>
- <20230417145536.414490-3-brgl@bgdev.pl>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="mdqi6q4wcgrzti64"
-Content-Disposition: inline
-In-Reply-To: <20230417145536.414490-3-brgl@bgdev.pl>
+        with ESMTP id S229523AbjEHRmm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 13:42:42 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 105A8423B;
+        Mon,  8 May 2023 10:42:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1683567761; x=1715103761;
+  h=date:from:to:cc:subject:message-id;
+  bh=QzdlXeXG2PkEMSx0QmeEs0hg6hbVV4dFWxpgxeJRpyE=;
+  b=UGs5qI9TRM4iE498MDCkcSuZ7AH48Fu+XnxpaOfKT/yG5weN+HS2tzYl
+   n87r7NL57ZygXoUAW4gn046LOFZw5ZbfMzQlLHsgw9YLk34lgYVw+wG/+
+   8OnOGSpoG9CJGeT6TAGQfc+SXu+gqqZLuP6dc/y17y09U6Qkz5yZuIHcH
+   kDowSzbbCmH0+HHYWgg2XplvDkn+NEVkNvtZ2x49lG6T2wd8xPWowQvmx
+   edETwcakZYS6T+E1rpD2kBrXLIvqS8MBMURDpUgw9Uoc0U5Q0mewtr2Lp
+   cDEyz86y1mt8r/EXl0ZX8Zo/o+AVwqBbs0ajrwqKSHfB8llHTsfRTQtRO
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10704"; a="330072670"
+X-IronPort-AV: E=Sophos;i="5.99,259,1677571200"; 
+   d="scan'208";a="330072670"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2023 10:42:40 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10704"; a="692676913"
+X-IronPort-AV: E=Sophos;i="5.99,259,1677571200"; 
+   d="scan'208";a="692676913"
+Received: from lkp-server01.sh.intel.com (HELO dea6d5a4f140) ([10.239.97.150])
+  by orsmga007.jf.intel.com with ESMTP; 08 May 2023 10:42:38 -0700
+Received: from kbuild by dea6d5a4f140 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pw4sf-0001Lt-2k;
+        Mon, 08 May 2023 17:42:37 +0000
+Date:   Tue, 09 May 2023 01:42:06 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Andrew Morton <akpm@linux-foundation.org>
+Cc:     Linux Memory Management List <linux-mm@kvack.org>,
+        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-pm@vger.kernel.org, linux-xfs@vger.kernel.org
+Subject: [linux-next:master] BUILD SUCCESS WITH WARNING
+ 52025ebbb518a2d876b8aba191b348ffb1cf368b
+Message-ID: <20230508174206.ZBMZq%lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+branch HEAD: 52025ebbb518a2d876b8aba191b348ffb1cf368b  Add linux-next specific files for 20230508
 
---mdqi6q4wcgrzti64
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Warning reports:
 
-Hi,
+https://lore.kernel.org/oe-kbuild-all/202304230014.YbScpx20-lkp@intel.com
 
-On Mon, Apr 17, 2023 at 04:55:35PM +0200, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->=20
-> Convert the DT binding document for nvmem-reboot-mode from .txt to YAML.
->=20
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
+Warning: (recently discovered and may have been fixed)
 
-Thanks, queued.
+drivers/accel/habanalabs/gaudi/gaudi.c:117:19: warning: unused variable 'gaudi_irq_name' [-Wunused-const-variable]
+drivers/base/regmap/regcache-maple.c:113:23: warning: 'lower_index' is used uninitialized [-Wuninitialized]
+drivers/base/regmap/regcache-maple.c:113:36: warning: 'lower_last' is used uninitialized [-Wuninitialized]
+drivers/gpu/drm/amd/amdgpu/../display/amdgpu_dm/amdgpu_dm.c:6395:21: warning: variable 'count' set but not used [-Wunused-but-set-variable]
+drivers/gpu/drm/amd/amdgpu/amdgpu_gfx.c:499:13: warning: variable 'j' set but not used [-Wunused-but-set-variable]
+drivers/gpu/drm/amd/amdgpu/gfx_v9_4_3.c:48:38: warning: unused variable 'golden_settings_gc_9_4_3' [-Wunused-const-variable]
 
--- Sebastian
+Unverified Warning (likely false positive, please contact us if interested):
 
->  .../power/reset/nvmem-reboot-mode.txt         | 26 ----------
->  .../power/reset/nvmem-reboot-mode.yaml        | 52 +++++++++++++++++++
->  2 files changed, 52 insertions(+), 26 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/power/reset/nvmem-r=
-eboot-mode.txt
->  create mode 100644 Documentation/devicetree/bindings/power/reset/nvmem-r=
-eboot-mode.yaml
->=20
-> diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-m=
-ode.txt b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.t=
-xt
-> deleted file mode 100644
-> index 752d6126d5da..000000000000
-> --- a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt
-> +++ /dev/null
-> @@ -1,26 +0,0 @@
-> -NVMEM reboot mode driver
-> -
-> -This driver gets reboot mode magic value from reboot-mode driver
-> -and stores it in a NVMEM cell named "reboot-mode". Then the bootloader
-> -can read it and take different action according to the magic
-> -value stored.
-> -
-> -Required properties:
-> -- compatible: should be "nvmem-reboot-mode".
-> -- nvmem-cells: A phandle to the reboot mode provided by a nvmem device.
-> -- nvmem-cell-names: Should be "reboot-mode".
-> -
-> -The rest of the properties should follow the generic reboot-mode descrip=
-tion
-> -found in reboot-mode.txt
-> -
-> -Example:
-> -	reboot-mode {
-> -		compatible =3D "nvmem-reboot-mode";
-> -		nvmem-cells =3D <&reboot_mode>;
-> -		nvmem-cell-names =3D "reboot-mode";
-> -
-> -		mode-normal     =3D <0xAAAA5501>;
-> -		mode-bootloader =3D <0xBBBB5500>;
-> -		mode-recovery   =3D <0xCCCC5502>;
-> -		mode-test       =3D <0xDDDD5503>;
-> -	};
-> diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-m=
-ode.yaml b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.=
-yaml
-> new file mode 100644
-> index 000000000000..14a262bcbf7c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
-> @@ -0,0 +1,52 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/power/reset/nvmem-reboot-mode.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Generic NVMEM reboot mode
-> +
-> +maintainers:
-> +  - Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> +
-> +description:
-> +  This driver gets the reboot mode magic value from the reboot-mode driv=
-er
-> +  and stores it in the NVMEM cell named "reboot-mode". The bootloader can
-> +  then read it and take different action according to the value.
-> +
-> +properties:
-> +  compatible:
-> +    const: nvmem-reboot-mode
-> +
-> +  nvmem-cells:
-> +    description:
-> +      A phandle pointing to the nvmem-cells node where the vendor-specif=
-ic
-> +      magic value representing the reboot mode is stored.
-> +    maxItems: 1
-> +
-> +  nvmem-cell-names:
-> +    items:
-> +      - const: reboot-mode
-> +
-> +patternProperties:
-> +  "^mode-.+":
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    description: Vendor-specific mode value written to the mode register
-> +
-> +required:
-> +  - compatible
-> +  - nvmem-cells
-> +  - nvmem-cell-names
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    reboot-mode {
-> +        compatible =3D "nvmem-reboot-mode";
-> +        nvmem-cells =3D <&reboot_reason>;
-> +        nvmem-cell-names =3D "reboot-mode";
-> +        mode-recovery =3D <0x01>;
-> +        mode-bootloader =3D <0x02>;
-> +    };
-> +...
-> --=20
-> 2.37.2
->=20
+drivers/cpufreq/pcc-cpufreq.c: linux/platform_device.h is included more than once.
+drivers/gpu/drm/amd/amdgpu/amdgpu_gfx.c:495:2-8: preceding lock on line 491
+fs/xfs/scrub/fscounters.c:459 xchk_fscounters() warn: ignoring unreachable code.
 
---mdqi6q4wcgrzti64
-Content-Type: application/pgp-signature; name="signature.asc"
+Warning ids grouped by kconfigs:
 
------BEGIN PGP SIGNATURE-----
+gcc_recent_errors
+|-- alpha-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- alpha-randconfig-c042-20230507
+|   |-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:preceding-lock-on-line
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- alpha-randconfig-c043-20230507
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arc-allyesconfig
+|   |-- drivers-base-regmap-regcache-maple.c:warning:lower_index-is-used-uninitialized
+|   |-- drivers-base-regmap-regcache-maple.c:warning:lower_last-is-used-uninitialized
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm-randconfig-c033-20230507
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm-randconfig-c041-20230507
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm-randconfig-r024-20230507
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm-randconfig-r025-20230507
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm64-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- arm64-randconfig-m041-20230507
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- csky-buildonly-randconfig-r001-20230508
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- i386-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- ia64-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- ia64-randconfig-m031-20230507
+|   `-- fs-xfs-scrub-fscounters.c-xchk_fscounters()-warn:ignoring-unreachable-code.
+|-- ia64-randconfig-r003-20230508
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- ia64-randconfig-r012-20230507
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- loongarch-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- loongarch-defconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- loongarch-randconfig-r023-20230507
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- mips-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- mips-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- openrisc-randconfig-r005-20230507
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- parisc-buildonly-randconfig-r004-20230507
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- powerpc-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- riscv-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- riscv-randconfig-r042-20230508
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- s390-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- s390-randconfig-r044-20230508
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- s390-randconfig-s051-20230507
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- sparc-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+|-- x86_64-allnoconfig
+|   `-- drivers-cpufreq-pcc-cpufreq.c:linux-platform_device.h-is-included-more-than-once.
+`-- x86_64-allyesconfig
+    |-- drivers-gpu-drm-amd-amdgpu-..-display-amdgpu_dm-amdgpu_dm.c:warning:variable-count-set-but-not-used
+    `-- drivers-gpu-drm-amd-amdgpu-amdgpu_gfx.c:warning:variable-j-set-but-not-used
+clang_recent_errors
+|-- arm-randconfig-r046-20230508
+|   `-- drivers-gpu-drm-amd-amdgpu-gfx_v9_4_3.c:warning:unused-variable-golden_settings_gc_9_4_3
+|-- powerpc-allyesconfig
+|   `-- drivers-gpu-drm-amd-amdgpu-gfx_v9_4_3.c:warning:unused-variable-golden_settings_gc_9_4_3
+`-- x86_64-randconfig-a006-20230508
+    `-- drivers-accel-habanalabs-gaudi-gaudi.c:warning:unused-variable-gaudi_irq_name
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY7YUACgkQ2O7X88g7
-+pqliA/+PTCQsQ+tMps+bNbGAcfRdYA0vzp4XVryQtM8fDKsYjHPbIVNbo6m1Jzj
-m8M0JG97Rv4vtAxAaAShGGRwmt0siViFBMHF3+rY0MMoXEDqyu1mgo3DUo31oglY
-cguJUCXyGonf+jCtPKjDiMAiszKUhGzbp7HLlAPNlajPse3H08fOpIf7+4YK3ejy
-4UecDxLoHwk2dWxH68unPODaHvoDCAF7hW5kTd6Czz8A6Z3x46IMF0J9/5Zn2vzU
-ia2IdAHhjd7/PHdf7ehJaG7dcYn53cnjy2ADSjM5nl9Q5Nw1iBn8ZcBuktEYp7gZ
-wKDV4U0zMlgpzSaAYe9RXElUJygJ+2BrNauEm8OJuD9FqW+mtPtlZOmLevmkDW4U
-Xu9zEK2xDx5cN3DBydlxdoy2e2wmHkAZCCuoqJh9bC4RIKCraLVNLg2MjJWVK4R6
-iixAIqkJPfS+JW94eXLYTFq89PC7gvDzWye5uP47dp+8f1Y2+qQ09VGPn4UQwCkM
-+URv6OuH7kNMoFlFk9BJPBbyUxkjXlATIXj8OuZptVNl5l9/RS1fV2moy6otk0qm
-/lVokTTJpp0JvmeqA+Et4imrKQA9rCkfFTHsHNcTCLlZxMpuY9+jiySVGEfnzB4G
-/SoHiG4BPeb69Rn1JcTPkvvRONZvxgCTrdLh3POtVYfvxR82Fas=
-=HEcC
------END PGP SIGNATURE-----
+elapsed time: 720m
 
---mdqi6q4wcgrzti64--
+configs tested: 141
+configs skipped: 7
+
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r032-20230507   gcc  
+arc                              allyesconfig   gcc  
+arc          buildonly-randconfig-r004-20230508   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r043-20230507   gcc  
+arc                  randconfig-r043-20230508   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                       imx_v4_v5_defconfig   clang
+arm                      integrator_defconfig   gcc  
+arm                  randconfig-r004-20230508   gcc  
+arm                  randconfig-r024-20230507   gcc  
+arm                  randconfig-r025-20230507   gcc  
+arm                  randconfig-r046-20230507   gcc  
+arm                  randconfig-r046-20230508   clang
+arm                         s3c6400_defconfig   gcc  
+arm64                            allyesconfig   gcc  
+arm64        buildonly-randconfig-r002-20230508   clang
+arm64                               defconfig   gcc  
+arm64                randconfig-r031-20230507   gcc  
+csky         buildonly-randconfig-r001-20230508   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r021-20230507   gcc  
+hexagon      buildonly-randconfig-r006-20230508   clang
+hexagon              randconfig-r024-20230508   clang
+hexagon              randconfig-r034-20230507   clang
+hexagon              randconfig-r041-20230507   clang
+hexagon              randconfig-r041-20230508   clang
+hexagon              randconfig-r045-20230507   clang
+hexagon              randconfig-r045-20230508   clang
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r005-20230508   clang
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                          randconfig-a001   gcc  
+i386                          randconfig-a002   clang
+i386                          randconfig-a003   gcc  
+i386                          randconfig-a004   clang
+i386                          randconfig-a005   gcc  
+i386                          randconfig-a006   clang
+i386                 randconfig-a011-20230508   gcc  
+i386                 randconfig-a012-20230508   gcc  
+i386                 randconfig-a013-20230508   gcc  
+i386                 randconfig-a014-20230508   gcc  
+i386                 randconfig-a015-20230508   gcc  
+i386                 randconfig-a016-20230508   gcc  
+i386                 randconfig-r002-20230508   clang
+ia64                             allmodconfig   gcc  
+ia64         buildonly-randconfig-r003-20230507   gcc  
+ia64                                defconfig   gcc  
+ia64                 randconfig-r003-20230508   gcc  
+ia64                 randconfig-r012-20230507   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch            randconfig-r016-20230507   gcc  
+loongarch            randconfig-r023-20230507   gcc  
+m68k                             allmodconfig   gcc  
+m68k         buildonly-randconfig-r006-20230507   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r013-20230507   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                         db1xxx_defconfig   gcc  
+mips                    maltaup_xpa_defconfig   gcc  
+mips                 randconfig-r001-20230507   clang
+mips                 randconfig-r002-20230507   clang
+mips                 randconfig-r003-20230507   clang
+mips                 randconfig-r006-20230508   gcc  
+mips                 randconfig-r015-20230507   gcc  
+nios2                               defconfig   gcc  
+nios2                randconfig-r004-20230507   gcc  
+nios2                randconfig-r006-20230507   gcc  
+nios2                randconfig-r023-20230508   gcc  
+nios2                randconfig-r033-20230507   gcc  
+nios2                randconfig-r036-20230507   gcc  
+openrisc     buildonly-randconfig-r002-20230507   gcc  
+openrisc             randconfig-r005-20230507   gcc  
+parisc       buildonly-randconfig-r004-20230507   gcc  
+parisc       buildonly-randconfig-r005-20230507   gcc  
+parisc                              defconfig   gcc  
+parisc               randconfig-r014-20230507   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   clang
+powerpc                     ksi8560_defconfig   clang
+powerpc                       maple_defconfig   gcc  
+powerpc                       ppc64_defconfig   gcc  
+powerpc              randconfig-r005-20230508   clang
+powerpc                    socrates_defconfig   clang
+powerpc                     tqm8560_defconfig   clang
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r026-20230508   gcc  
+riscv                randconfig-r042-20230507   clang
+riscv                randconfig-r042-20230508   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r044-20230507   clang
+s390                 randconfig-r044-20230508   gcc  
+sh                               allmodconfig   gcc  
+sh                         apsh4a3a_defconfig   gcc  
+sh                   randconfig-r022-20230508   gcc  
+sh                   randconfig-r025-20230508   gcc  
+sh                   randconfig-r026-20230507   gcc  
+sh                           se7712_defconfig   gcc  
+sh                           se7780_defconfig   gcc  
+sh                        sh7763rdp_defconfig   gcc  
+sh                             shx3_defconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r035-20230507   gcc  
+sparc64              randconfig-r021-20230508   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-r003-20230508   clang
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-a001-20230508   clang
+x86_64               randconfig-a002-20230508   clang
+x86_64               randconfig-a003-20230508   clang
+x86_64               randconfig-a004-20230508   clang
+x86_64               randconfig-a005-20230508   clang
+x86_64               randconfig-a006-20230508   clang
+x86_64               randconfig-a011-20230508   gcc  
+x86_64               randconfig-a012-20230508   gcc  
+x86_64               randconfig-a013-20230508   gcc  
+x86_64               randconfig-a014-20230508   gcc  
+x86_64               randconfig-a015-20230508   gcc  
+x86_64               randconfig-a016-20230508   gcc  
+x86_64                        randconfig-k001   clang
+x86_64                               rhel-8.3   gcc  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
