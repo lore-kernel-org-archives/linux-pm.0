@@ -2,173 +2,147 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55193C7EE2C
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:37:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B62FAC7EE22
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:38:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234460AbjEHQh4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 12:37:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36378 "EHLO
+        id S234478AbjEHQiH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 12:38:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36210 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229616AbjEHQhk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:40 -0400
+        with ESMTP id S234359AbjEHQhp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:45 -0400
 Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D28A36A71;
-        Mon,  8 May 2023 09:37:35 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC6836EA9
+        for <linux-pm@vger.kernel.org>; Mon,  8 May 2023 09:37:36 -0700 (PDT)
 Received: from mercury (195-23-45-170.net.novis.pt [195.23.45.170])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 7FD3E66056CE;
-        Mon,  8 May 2023 17:37:32 +0100 (BST)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 22ED56605769;
+        Mon,  8 May 2023 17:37:33 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1683563852;
-        bh=fO5izScTRyVHPTwMk7OYZEtF1VDwquhA8HkOV2kHXhc=;
+        s=mail; t=1683563853;
+        bh=/ClvrZdhdE8THodrv3yD82g7ckIdcHTZUUsKera7uY4=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Ftpf01dKkf7sbhbMyc2k9a9Mt2fNy1kkx9WJil8XtjzEuP4lHtiQk2a8VKW0DtZZb
-         tcFIqaB5xLmyvY8uSFfoTiKfPsJ0spZ7g6LmDMltzX+yvkpf0zTyVj36xkrnv0MLFy
-         YrsNRhVmTYgcxsZvCLbZLU4KMfNuMrMwTeYV+r9OzhB/78itYSZz5UEC6G5RJUizt9
-         AShnXFEfrXcKR4wrRaa6FrsCW860lfVKYgmWKqXE7FwBb+K4rntFX9Ga+pm0E4ID9W
-         kXENeoe6A6GKengjGktbwjqORKGsyLTVmAo2kAMqlABHIGEqnCc0NquhW+oGkA+2a3
-         PKHpmMjn55ihg==
+        b=M9cDvHsqckHOXgFPsrTAGnP7o4aQGCnTh3Uo1zjKVN3yxE7B2dEI5gYS15tyZGfGg
+         s/sQfjGwlS5MJzAgIpPlPD8NfPmy+JLNFV1GLeoinhznqLnS9h3Q2r/+CrcYrY+Tyc
+         E7qS9r2a+shLqlcebAJKRuHvreHh8MTXk66XjnaRa1sKkkuU5cyyTEbsagLxTwC84I
+         zq9Vmi2O4Lyxy3+16Q1Dv3Xgb6JbgIpInBVC5tHkDEpFnW9kVvDfVDpc0KJBwBYw/R
+         MRzyuGKaKrFTpzN0qFXhcmxIRfpwcKEynW+BgWhLYTS6jM2woPbaFoLF81Ynrwev7y
+         eGBlzS0IdVg1Q==
 Received: by mercury (Postfix, from userid 1000)
-        id BF2471066FA0; Mon,  8 May 2023 13:35:18 +0200 (CEST)
-Date:   Mon, 8 May 2023 13:35:18 +0200
+        id E87E41067081; Mon,  8 May 2023 15:14:33 +0200 (CEST)
+Date:   Mon, 8 May 2023 15:14:33 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Jakob Hauser <jahau@rocketmail.com>
-Cc:     Lee Jones <lee@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Beomho Seo <beomho.seo@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Raymond Hackley <raymondhackley@protonmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Axel Lin <axel.lin@ingics.com>,
-        ChiYuan Huang <cy_huang@richtek.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Henrik Grimler <henrik@grimler.se>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht
-Subject: Re: [PATCH v4 7/8] power: supply: rt5033_battery: Adopt status
- property from charger
-Message-ID: <20230508113518.nfwchl5wusmnkjp6@mercury.elektranox.org>
-References: <20230506155435.3005-1-jahau@rocketmail.com>
- <20230506155435.3005-8-jahau@rocketmail.com>
+To:     Vasily Khoruzhick <anarsoul@gmail.com>
+Cc:     Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] power: supply: leds: Fix blink to LED on transition
+Message-ID: <20230508131433.yqqeqr2nf62zgzkt@mercury.elektranox.org>
+References: <20230413100941.115529-1-hdegoede@redhat.com>
+ <CA+E=qVd70a2kJvfdPdssiwMwS0PHHb1C06sgK9G6MjQwG+C5+A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="62exsovixfg2cfix"
+        protocol="application/pgp-signature"; boundary="iaxjji6cusyrxt43"
 Content-Disposition: inline
-In-Reply-To: <20230506155435.3005-8-jahau@rocketmail.com>
+In-Reply-To: <CA+E=qVd70a2kJvfdPdssiwMwS0PHHb1C06sgK9G6MjQwG+C5+A@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---62exsovixfg2cfix
-Content-Type: text/plain; charset=us-ascii
+--iaxjji6cusyrxt43
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, May 06, 2023 at 05:54:34PM +0200, Jakob Hauser wrote:
-> The rt5033-battery fuelgauge can't get a status by itself. The rt5033-cha=
-rger
-> can, let's get this value.
+On Thu, Apr 13, 2023 at 09:40:44AM -0700, Vasily Khoruzhick wrote:
+> On Thu, Apr 13, 2023 at 3:09=E2=80=AFAM Hans de Goede <hdegoede@redhat.co=
+m> wrote:
+> >
+> > When a battery's status changes from charging to full then
+> > the charging-blink-full-solid trigger tries to change
+> > the LED from blinking to solid/on.
+> >
+> > As is documented in include/linux/leds.h to deactivate blinking /
+> > to make the LED solid a LED_OFF must be send:
+> >
+> > """
+> >          * Deactivate blinking again when the brightness is set to LED_=
+OFF
+> >          * via the brightness_set() callback.
+> > """
+> >
+> > led_set_brighness() calls with a brightness value other then 0 / LED_OFF
+> > merely change the brightness of the LED in its on state while it is
+> > blinking.
+> >
+> > So power_supply_update_bat_leds() must first send a LED_OFF event
+> > before the LED_FULL to disable blinking.
+> >
+> > Fixes: 6501f728c56f ("power_supply: Add new LED trigger charging-blink-=
+solid-full")
 >=20
-> Tested-by: Raymond Hackley <raymondhackley@protonmail.com>
-> Signed-off-by: Jakob Hauser <jahau@rocketmail.com>
-> ---
->  drivers/power/supply/rt5033_battery.c | 24 ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
+> Wow, it's a commit from 2011 :)
 >=20
-> diff --git a/drivers/power/supply/rt5033_battery.c b/drivers/power/supply=
-/rt5033_battery.c
-> index 5c04cf305219..a6520716d813 100644
-> --- a/drivers/power/supply/rt5033_battery.c
-> +++ b/drivers/power/supply/rt5033_battery.c
-> @@ -12,6 +12,26 @@
->  #include <linux/mfd/rt5033-private.h>
->  #include <linux/mfd/rt5033.h>
-> =20
-> +static int rt5033_battery_get_status(struct i2c_client *client)
-> +{
-> +	struct power_supply *charger;
-> +	union power_supply_propval val;
-> +	int ret;
-> +
-> +	charger =3D power_supply_get_by_name("rt5033-charger");
-> +	if (!charger)
-> +		return POWER_SUPPLY_STATUS_UNKNOWN;
-> +
-> +	ret =3D power_supply_get_property(charger, POWER_SUPPLY_PROP_STATUS, &v=
-al);
-> +	if (ret) {
-> +		power_supply_put(charger);
-> +		return POWER_SUPPLY_STATUS_UNKNOWN;
-> +	}
-
-struct rt5033_battery *battery =3D i2c_get_clientdata(client);
-ret =3D power_supply_get_property_from_supplier(battery->psy, POWER_SUPPLY_=
-PROP_STATUS, &val);
-if (ret)
-    val.intval =3D POWER_SUPPLY_STATUS_UNKNOWN;
-
-> +
-> +	power_supply_put(charger);
-> +	return val.intval;
-> +}
-> +
->  static int rt5033_battery_get_capacity(struct i2c_client *client)
->  {
->  	struct rt5033_battery *battery =3D i2c_get_clientdata(client);
-> @@ -84,6 +104,9 @@ static int rt5033_battery_get_property(struct power_su=
-pply *psy,
->  	case POWER_SUPPLY_PROP_CAPACITY:
->  		val->intval =3D rt5033_battery_get_capacity(battery->client);
->  		break;
-> +	case POWER_SUPPLY_PROP_STATUS:
-> +		val->intval =3D rt5033_battery_get_status(battery->client);
-> +		break;
->  	default:
->  		return -EINVAL;
->  	}
-> @@ -96,6 +119,7 @@ static enum power_supply_property rt5033_battery_props=
-[] =3D {
->  	POWER_SUPPLY_PROP_VOLTAGE_OCV,
->  	POWER_SUPPLY_PROP_PRESENT,
->  	POWER_SUPPLY_PROP_CAPACITY,
-> +	POWER_SUPPLY_PROP_STATUS,
->  };
-> =20
->  static const struct regmap_config rt5033_battery_regmap_config =3D {
-> --=20
-> 2.39.2
+> > Cc: Vasily Khoruzhick <anarsoul@gmail.com>
+> > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 >=20
+> Reviewed-by: Vasily Khoruzhick <anarsoul@gmail.com>
 
-Otherwise LGTM.
+Thanks, queued to my fixes branch.
 
 -- Sebastian
 
---62exsovixfg2cfix
+> > ---
+> >  drivers/power/supply/power_supply_leds.c | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/power/supply/power_supply_leds.c b/drivers/power/s=
+upply/power_supply_leds.c
+> > index e2f554e4e4e6..c7db29d5fcb8 100644
+> > --- a/drivers/power/supply/power_supply_leds.c
+> > +++ b/drivers/power/supply/power_supply_leds.c
+> > @@ -33,8 +33,9 @@ static void power_supply_update_bat_leds(struct power=
+_supply *psy)
+> >                 led_trigger_event(psy->charging_full_trig, LED_FULL);
+> >                 led_trigger_event(psy->charging_trig, LED_OFF);
+> >                 led_trigger_event(psy->full_trig, LED_FULL);
+> > -               led_trigger_event(psy->charging_blink_full_solid_trig,
+> > -                       LED_FULL);
+> > +               /* Going from blink to LED on requires a LED_OFF event =
+to stop blink */
+> > +               led_trigger_event(psy->charging_blink_full_solid_trig, =
+LED_OFF);
+> > +               led_trigger_event(psy->charging_blink_full_solid_trig, =
+LED_FULL);
+> >                 break;
+> >         case POWER_SUPPLY_STATUS_CHARGING:
+> >                 led_trigger_event(psy->charging_full_trig, LED_FULL);
+> > --
+> > 2.39.1
+> >
+
+--iaxjji6cusyrxt43
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY3nMACgkQ2O7X88g7
-+ppbow/+Jb4FCPWzC6F8Q70mCz+KMOZJtpuJD1RsXNBzsnYaI5lcQjbBZJZbSbi2
-ojoT8X2yOaqtpMejD9eAqjWO6xXUDge161AojcuiBo7c5Fs7v5WMU/+QrhWn3moG
-kSAGxS2FI+0YhduSXNqm++MuTVTmYvNVkLRcX2lDGtSOEbx8Wb9kYiKsqDFCf3Af
-JsorEUTCqB6HCPip3I3YfgOcYRps/DFKgcggeZIXNiNwYEpza+vcE5oHXLXzzk+R
-HBQcvg9HPC1iCbFYIb79wgtOzKd3t9qrVJDL579zy8620cfDytm/soIZcFBqQEZV
-GM8MtyL8VvMQk7qujXY7V9PDoFTNWhY5fAX41hJkw6LCvPIfgzSEMWSSlZgdR4bc
-m8yctkujP4rvSe1dsaZzwI+d4+Yer1e4ECYG6p8jOalkMzwjTZNUVmNdTUH+i4oO
-dfmi2uxIvdW3xl5Uhd4/Mnobzi+z8WEGkfkRhrOd4UKmyUFP3s6hZ0lIniZMiqnF
-iF5AlorDb3ExNVOH3hWNGUyKlmPr/JKCh0vgRinQ47IDFxyynMtOPU9NHwKarF9J
-uQGvwQaPnpyRwXw9fqWLyW42NjKtKdIn9H8A1aQqLq3LlYPGWOes38kgqW1+coaV
-WIB2J/rhlHiT8hHTbQ8tI0vDpryg8Q1RvTrF8LITUXGgEU+7tcA=
-=OyXU
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY9bkACgkQ2O7X88g7
++pofhg//ZtXYZhydgIA6Y51yvg+WvNwWHIn5pQoJThQfCWWHUsG/9bQhEQq+/VoZ
+kyjHDg5dTBIfz9qryfLXQiTjGXChHvnhYfy0awWrt6I0GBf6yLBu7N8IQ8a7Tjfl
+E7RRrrDd/7bL/WRIirZdXDFvqsPPULTNv8S8mitEuAF0CPpUsAn6fS7At/S3ypyB
+eax6u+K92QDXsNtzkRFeIVcOVHyA8SBHK2RJuqwxjODE2mETt+GgEkPmPf4y+jI+
+JaOCQW8H+0yBAAD+drVNuMG2Zi/wBQeM1JTLLDXJBOyaJ9APPllXtsHpiuA0FZGs
++4I2CSYC2jc3Z8s9bCf233vOa+rySOGMRC7H9y3UczXZTyR5b1ZSWq2tgiAUXfh8
+bdunVV5dV46INxswrGs9+5fVe0DKeKywILjPgM/nF7iWEJfxbGQ2itfaiywcOkO+
+F24QgPCqNRV+LkmZRwtr5CoWcWGOBIYqcMDD7wgj6Ph7XQ0QmFICGwzmh/wP3FUS
+HXpg2V0Z8Ny8XRKSemiNpuz5WuNgsulHes9NXmeyFnFaNm7EQ8eVI9I0kOzOl0Jk
+G+zpiKYPfiF+nKts1xII06aIEoR8o523zV2EbtaNHeqnDCvKrr7apNo6OZykfcRH
+lafTb8pMD7j+blnwtPVUaK8jQkl/grhdUvv21N6nU8msDVmtxcg=
+=lKk8
 -----END PGP SIGNATURE-----
 
---62exsovixfg2cfix--
+--iaxjji6cusyrxt43--
