@@ -2,116 +2,145 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D85D4C7EE31
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C546FC7EE2E
 	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:37:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234285AbjEHQhg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 12:37:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36092 "EHLO
+        id S234265AbjEHQhh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 12:37:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36108 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234246AbjEHQhd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:33 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46E3F6E96;
-        Mon,  8 May 2023 09:37:32 -0700 (PDT)
+        with ESMTP id S234256AbjEHQhe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:34 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B4026A68
+        for <linux-pm@vger.kernel.org>; Mon,  8 May 2023 09:37:32 -0700 (PDT)
 Received: from mercury (195-23-45-170.net.novis.pt [195.23.45.170])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 358016602216;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 3AAE46603283;
         Mon,  8 May 2023 17:37:30 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1683563850;
-        bh=OVnU4RGXd9knyLIxgJfq9vW/dYCOMkfNwHLTLBsjP4k=;
+        bh=SB3m52QouABeP4O6nD1ltP+DS95dkfei67Audxhqbzc=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=bNj089CzYsmxkxvkweUxqmPLc5zDYy+tdaJPUvGdpUvejup3sWCH/paCb5Eba+Sar
-         MgscPPivkUgZDR+CC/HwAMSafY+yZ6cPuqK4ADXwDHU9bvMPD4wUzv/r2anlWOyVg/
-         Tf9RFFvbiF05lhz17Q7odoX6wJrMhCNDXvrbF3MvfM8K+wnQZKZ0pjWN6jQtp/i1OZ
-         qXvpe3B+oNYne2i15ein1LqS+L5apjjv9fcRRoNqYIh7K+uPuVRSM++pBedpSKOd9z
-         sGGccQcZx5s4ml0eKlh0Q3drxFBfWgQ0xwa/4ZSMZj1BECSE2Vs1wKc/ilBw+akt8k
-         EZoxD0yMjPQzQ==
+        b=HwAF8La3rsTS9oCls2lNksQFX4eCUujPGqJPp735d7DrzMerqhfdiBr1ZncxQVcq/
+         X1V+fJhYh6DOjaj3Ql74UHUiVzyNa2UfdtwCpleIgwMKk+YOa38/XXm1S/zFW03ggB
+         XKQyNAYsUfBcpIX/YrEzDw5k2VF4Sz4i+CWwwpcIns+WVLbWS9adL9vjxn4vu1DyAr
+         aKS1uLh1oBI7IsM0dAF/8P/3vVrsqRSdaxTomBBcK6bYx1TbKwY2iQi4O8+XkKyOu/
+         S5xjYqo2ZDRxLL6mon0k/Kxh9Q8K81+CJBOOPUMLBz+c8ap/Iz+ytCk4afHa0ImTbH
+         HLyTA31bYOGqQ==
 Received: by mercury (Postfix, from userid 1000)
-        id 08DD61066FB7; Mon,  8 May 2023 14:29:06 +0200 (CEST)
-Date:   Mon, 8 May 2023 14:29:06 +0200
+        id 071021067074; Mon,  8 May 2023 15:09:46 +0200 (CEST)
+Date:   Mon, 8 May 2023 15:09:45 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Anjelique Melendez <quic_amelende@quicinc.com>,
-        David Collins <quic_collinsd@quicinc.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        devicetree@vger.kernel.org,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>,
-        Vinod Koul <vkoul@kernel.org>,
-        Marijn Suijten <marijn.suijten@somainline.org>
-Subject: Re: [PATCH] dt-bindings: power: reset: qcom-pon: Only allow
- reboot-mode pre-pmk8350
-Message-ID: <20230508122906.qlb4z46s7ygnaggb@mercury.elektranox.org>
-References: <20230419-topic-pmic_pon_bindings-v1-1-ea233dae0117@linaro.org>
- <168210403110.1629611.9828460888076350953.robh@kernel.org>
+To:     Hans de Goede <hdegoede@redhat.com>
+Cc:     laji Xiao <3252204392abc@gmail.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 0/6] power: supply: Fix external_power_changed race in
+ several drivers
+Message-ID: <20230508130945.okud2hn47jplrlaw@mercury.elektranox.org>
+References: <20230415160734.70475-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="jdoyh5mkhiee46ot"
+        protocol="application/pgp-signature"; boundary="qzu24yx6zlmbvfra"
 Content-Disposition: inline
-In-Reply-To: <168210403110.1629611.9828460888076350953.robh@kernel.org>
+In-Reply-To: <20230415160734.70475-1-hdegoede@redhat.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---jdoyh5mkhiee46ot
+--qzu24yx6zlmbvfra
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Hans,
 
-On Fri, Apr 21, 2023 at 02:07:11PM -0500, Rob Herring wrote:
-> On Wed, 19 Apr 2023 12:41:06 +0200, Konrad Dybcio wrote:
-> > As pointed out by Shazad [1], PMICs using a separate HLOS+PBS scheme
-> > (so PMK8350 and newer) are expected to pass reboot mode data through SD=
-AM,
-> > as the reboot mode registers are absent in the HLOS reg space.
-> >=20
-> > Limit the reboot-mode.yaml inclusion to PMICs without a separate PBS
-> > region.
-> >=20
-> > [1] https://lore.kernel.org/linux-arm-msm/12f13183-c381-25f7-459e-62e0c=
-2b19498@quicinc.com/
-> >=20
-> > Fixes: 03fccdc76dce ("dt-bindings: power: reset: qcom-pon: Add new comp=
-atible "qcom,pmk8350-pon"")
-> > Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-> > ---
-> >  Documentation/devicetree/bindings/power/reset/qcom,pon.yaml | 4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
+On Sat, Apr 15, 2023 at 06:07:28PM +0200, Hans de Goede wrote:
+> I hit this issue where a Lenovo Yoga Book yb1-x90f would hang on boot
+> every couple of boots.
 >=20
-> Acked-by: Rob Herring <robh@kernel.org>
+> The problem was that bq25890_charger_external_power_changed() dereferences
+> bq->charger, which gets sets in bq25890_power_supply_init() like this:
+>    =20
+>   bq->charger =3D devm_power_supply_register(bq->dev, &bq->desc, &psy_cfg=
+);
+>    =20
+> As soon as devm_power_supply_register() has called device_add()
+> the external_power_changed callback can get called. So there is a window
+> where bq25890_charger_external_power_changed() may get called while
+> bq->charger has not been set yet leading to a NULL pointer dereference.
+>=20
+> This race hits on the yb1-x90f when the cht_wcove_pwrsrc (extcon) psy is
+> done with detecting the charger, which happens to exactly hit the window:
+>=20
+>       BUG: kernel NULL pointer dereference, address: 0000000000000018
+>       <snip>
+>       RIP: 0010:__power_supply_is_supplied_by+0xb/0xb0
+>       <snip>
+>       Call Trace:
+>        <TASK>
+>        __power_supply_get_supplier_property+0x19/0x50
+>        class_for_each_device+0xb1/0xe0
+>        power_supply_get_property_from_supplier+0x2e/0x50
+>        bq25890_charger_external_power_changed+0x38/0x1b0 [bq25890_charger]
+>        __power_supply_changed_work+0x30/0x40
+>        class_for_each_device+0xb1/0xe0
+>        power_supply_changed_work+0x5f/0xe0
+>       <snip>
+>=20
+> This series fixes this issue in the bq25890 + 3 other drivers with
+> the same issue. Patches 5-6 are small cleanup patches for 2 other
+> drivers which I audited for the same issue.
 
-Thanks, queued.
+Thanks, I queued the first 4 patches to my fixes branch and the 2
+cleanups to for-next.
 
 -- Sebastian
 
---jdoyh5mkhiee46ot
+> Hans de Goede (6):
+>   power: supply: ab8500: Fix external_power_changed race
+>   power: supply: axp288_fuel_gauge: Fix external_power_changed race
+>   power: supply: bq25890: Fix external_power_changed race
+>   power: supply: sc27xx: Fix external_power_changed race
+>   power: supply: max17042_battery: Refactor
+>     max17042_external_power_changed()
+>   power: supply: twl4030_madc_battery: Refactor
+>     twl4030_madc_bat_ext_changed()
+>=20
+>  drivers/power/supply/ab8500_btemp.c         | 6 ++----
+>  drivers/power/supply/ab8500_fg.c            | 6 ++----
+>  drivers/power/supply/axp288_fuel_gauge.c    | 2 +-
+>  drivers/power/supply/bq25890_charger.c      | 2 +-
+>  drivers/power/supply/max17042_battery.c     | 7 +------
+>  drivers/power/supply/sc27xx_fuel_gauge.c    | 9 +--------
+>  drivers/power/supply/twl4030_madc_battery.c | 8 +-------
+>  7 files changed, 9 insertions(+), 31 deletions(-)
+>=20
+> --=20
+> 2.39.1
+>=20
+
+--qzu24yx6zlmbvfra
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY6xEACgkQ2O7X88g7
-+pqUtA/9G4KFD90qBL3rgN6ZUxtZyVrZTHx2LCk6SFAkQyprCC34z+H1uxcPrRZl
-Vg2vOzAgEhy3zgHY+ECwmHBIReeXaNsrbLV79T9vmzs3N2NhFOFfzRKgokg8q4zO
-T+1/opSoidLm4q5jDb/569wyhTsCOgZ+ARO1PgaxMxHl3P6R5iNqQvPbB8JsmB+x
-5hl70rxFG2Mgi1HFlKI2lgXRkWGLiPZTTl5G1W22ySNE9yftaN7PkAKS2r+e0CTG
-e7xDAbILvhZGa0v0iaM3aYr9LWaqf9navf6Fh1BD3IdSDt9NBiy+z7/5yynqT4Uj
-mWxlF2Okz5PBd9DrF1NcOfs80w2RxRg83gHeaZP6VT6ooPvJrQj7bbq6G04W+bs/
-g4AR8vJItjVnQAHVaXNdoB+8FXRlSug61DKjgZCLm9bGt8MlzbI9mkt+KGIwNf+Y
-Rhvw+UIK1xl4cXIeW/cD+tX3UviPoOK3ucc4DMcL17PZ1CKsX34dOSlYzbwEDvO7
-TV68ZYo5ZXAuszEefeJ3BwC1bGKju00U/7QVOTqpxvsWPkogFC0i2SKj+NR0j/Cl
-JzghP7ApsD9LVcxY1Q8geTx+Jqti8bpHHSeDd9hRauwj3qyZDJYyJH1iyUANrZPO
-ZQErG9joCB4xxC/PLYPa7KVJtqCJLV8bgqS9VR+qVVYPfVBp5Ws=
-=Mwn+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY9JUACgkQ2O7X88g7
++prMCw//UVITfJiL5L9R6omlJccJBFqzG111AJ98Qy4sZlyfFo6zLlQ53kh2vpk8
+tBZEoCwno0XGWXChxEhbpBBa/s0FKKHUz0Gi4scWZtTS3k8As0ZAFi9d+whFAjQa
+hJXIwGMeUl4YxEcDRc7z+ihOiT6pwx218ktqf9ohjcf8n95F030uZY3wLvxssRJd
+AJEQWa/hyCZrswTHVyInPbutBYLWZplVU7+QTw9AdIkshyvseSUcJZc59xwDwv0S
+oBOuu99xvLNx2a8NUDpvK7+k6hI5smtjUeA0de8InYNs+bRcS4g3hD62nHqKKC0w
+gq+bDXONd3VdCuzv+GUZ9sEaNgLZhxk4zLUURs4rTGFKoGVB1JpeeiIMQFRI6aSw
+8stWI3sO3gZuf3IRWR5i6A0OWyNSV3Z24GZgeMj+5fKW0LJ8DUUfw8FReIGyl/Ht
+/XEpUgUhOKzetA1Dk+MyJwNr0YQ4yxDHo8yIwdFCC4GLqHLGWSOSeHDsUBekhkTC
+/v6f87MMwX1KTF5P1NE+ADWaJW/Ml7ahIZrLSaIydZyaE1A7x4qPHnqfI8qT/bly
+ObZ87yzbdXoj3YJRApxLsz20QoXwm1Blj/sq4o8lq5jUF5lcYBT0+Mw2FXchPFKW
+H6PMt2GtU7NWMjvOTL3Ig3osnwTb0qBXi1RuZiuejeepbfphF4A=
+=RCWT
 -----END PGP SIGNATURE-----
 
---jdoyh5mkhiee46ot--
+--qzu24yx6zlmbvfra--
