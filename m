@@ -2,53 +2,52 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0F3FC7EE22
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 00:33:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18BAEC77B75
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 00:33:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232131AbjEHAdS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 May 2023 20:33:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51248 "EHLO
+        id S232195AbjEHAdT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 May 2023 20:33:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51292 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231879AbjEHAdO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 May 2023 20:33:14 -0400
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A2DB8A77
+        with ESMTP id S229814AbjEHAdR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 May 2023 20:33:17 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 816EA9032
         for <linux-pm@vger.kernel.org>; Sun,  7 May 2023 17:33:13 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id 2adb3069b0e04-4ecb137af7eso4409115e87.2
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f122ff663eso4380971e87.2
         for <linux-pm@vger.kernel.org>; Sun, 07 May 2023 17:33:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1683505991; x=1686097991;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=M8of//y9tmokmOnW15e6yt8zqMt9fsDSSEcIh47rbdE=;
-        b=ukzmHOvAzKhbsC+vRRu8jnk5KuhLDT8OPvpzT7L5H1KT2yrZ18KyLdRB0g1SL9AuNi
-         uoz6lT90CVsqvoovRcDnDHXtZFT3X3eQTz0uLXELkImq6Rx8HqMYOKTQXg3kmmvsORoF
-         AWNlV3tWPggfh9hlG/lrTX0ZN4WzP7lCkqFhn4H3RHlgz34OoF4+7tePiQZ2z19ZJNAC
-         Qn2ymMC4nVLPSD9nVo+tLO4r+05Ce3fj7rAyL8TKMFIxlYeQG5ZMkP8feUNV6xFhB/8c
-         r7RjYXeFT6C0xs6xUncjF68l9OXx674isYnZw+NyWUsCaobOaniuCGydHYLyq/6eri4k
-         5KQw==
+        d=linaro.org; s=google; t=1683505990; x=1686097990;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=d89H4uk7bZPbaOYXNlYZ9sQ+vDG47E+ZIce5rUW25ws=;
+        b=KVn0ktt4JiY4v/EjZ1+utNPIEvZav/xwefP8yQxzQs1x0Evjx54MpAP7mXzSbRUSTD
+         Dloy3KOzPJlQs+wX1XtxOAIiiIhKYWmANs41xZDKQhZlu12yDN5CrUtf8eKfdRVuudUB
+         MktetROrUsB+m+9boaqYVUNx7MbJqfy1UokJz+w81O+0jCUDAtS4G2Tkrv/uDFZRySlJ
+         KBcWnUcg4yIsDO4m+9OcIvNvDgjV4e29WrYXiZ+n47Blkq9k/zmb1qjVMT33mishpO9L
+         KBnn0DXrQneuKXkm98smliWOVPaGlDo5Na06MaKHV2/YiR5sg6gW/NW5KWdeAupKTAwq
+         n9pA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683505991; x=1686097991;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=M8of//y9tmokmOnW15e6yt8zqMt9fsDSSEcIh47rbdE=;
-        b=BCVnhFtohyk86luE8tc/ggNmomLP4d4yhp6lGZHbxJDtZjW1Ah3pFuOOerhATvI04G
-         hmbuCiJ6tzdcSSlv/aRIZw8t38kIpRthHVEn+LKjNlIOGFKa26gJ+yujrWzTe0KzleUO
-         WcliaNwFVOh6oBTLhshslivIooODaPsFhTPW7stSj7V2oJdTclDStYccGpuF2DdjRpM3
-         EkRucEPcrON/iJxmo7/eVEz61twjp7WLsWSi7lbSDKLEWxTB7Y0hTW3cclOcW6A2vxIE
-         U5GK4hR+rhrfi74JLqlmRVD8+1Lb8lPnQ9/NusmpdSMgScxAgzZut3IGpsz8TgN8jizo
-         +bXQ==
-X-Gm-Message-State: AC+VfDzgzqn6pVI/w89ZJ4MvbRzTtgzc7wBZm79FZ4G5wzcpmrVFve4c
-        lx86FXhNIg/n3M6GaduR1AoC7w==
-X-Google-Smtp-Source: ACHHUZ44NqiQ1895aRzXNFMIqcgVMZnXUn1OTYCnD9yL63LfBMUD/9kIqLcMvXZ3h5jGYN74eZ4msA==
-X-Received: by 2002:ac2:4907:0:b0:4ee:c134:8220 with SMTP id n7-20020ac24907000000b004eec1348220mr2187824lfi.30.1683505991620;
-        Sun, 07 May 2023 17:33:11 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1683505990; x=1686097990;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=d89H4uk7bZPbaOYXNlYZ9sQ+vDG47E+ZIce5rUW25ws=;
+        b=XauS7VGd+Glvwiq89Yvv4d88rJzdh2jnuFCdWsHP7/ayPzlHb0Mj3lVlJCti4ZgnY8
+         y5UV6jHzIEtHRtHcTZdliyd08mFPaopPMnusAWQvCrNcCurdD1wEevmRdhO1e+4jxuwZ
+         F0AsBAzTDvfmsPKTu9F05ofvrbfVGIOfVwW4Dnze3FCce6MzJWdy+a9zdlEt5lxTEYvV
+         e43DuOPJ0025Z8IGUURtXL7l4fp3m69peGojoMahL+eLIVhP8Lp3c0wR+I9IhDk56PxL
+         wrRZTNNdueiRBJYFZATQ1cv0mjdZYCvvEKARiDgOPwiZp7E0GFA3sbYeddpFO7QbYHyL
+         Nalw==
+X-Gm-Message-State: AC+VfDw/YvplYd9h0h37oxEo4Q1lcjh/DAQQ+X6OGHc3wS4cHL5rXYq5
+        NvLHghzrgJXc393KNOeJFl4iQTLp3+0DDgpa+ik=
+X-Google-Smtp-Source: ACHHUZ7mczR1LcKSBlOe7unt+TZDzcFjB1mfG7PstMZxl74dL8qRAxf5yG/WlCuIEPHfXP5ZPXwWbw==
+X-Received: by 2002:ac2:5ec4:0:b0:4e8:893f:8079 with SMTP id d4-20020ac25ec4000000b004e8893f8079mr2286943lfq.64.1683505990150;
+        Sun, 07 May 2023 17:33:10 -0700 (PDT)
 Received: from lothlorien.lan (dzdqv0yyyyyyyyyyybm5y-3.rev.dnainternet.fi. [2001:14ba:a0db:1f00::ab2])
-        by smtp.gmail.com with ESMTPSA id m22-20020ac24256000000b004eca2b8b6bdsm1114807lfl.4.2023.05.07.17.33.10
+        by smtp.gmail.com with ESMTPSA id m22-20020ac24256000000b004eca2b8b6bdsm1114807lfl.4.2023.05.07.17.33.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 May 2023 17:33:11 -0700 (PDT)
+        Sun, 07 May 2023 17:33:09 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -59,81 +58,37 @@ To:     Sebastian Reichel <sre@kernel.org>,
         Vinod Koul <vkoul@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-msm@vger.kernel.org
-Subject: [PATCH 2/6] power: reset: qcom-pon: add support for pm8941-pon
-Date:   Mon,  8 May 2023 03:33:05 +0300
-Message-Id: <20230508003309.2363787-3-dmitry.baryshkov@linaro.org>
+Subject: [PATCH 0/6] ARM: dts: qcom: apq8074-dragonboard: enable additional devices
+Date:   Mon,  8 May 2023 03:33:03 +0300
+Message-Id: <20230508003309.2363787-1-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230508003309.2363787-1-dmitry.baryshkov@linaro.org>
-References: <20230508003309.2363787-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Add support for buttons, LEDs and coincell charger found on the APQ8074
+dragonboard device.
+
 For PM8941 we don't have a defined field to store the reset reason.
 Support wrapping pwrkey and resin, but without writing the reset
 reason.
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- drivers/power/reset/qcom-pon.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+Dmitry Baryshkov (6):
+  dt-bindings: power: reset: qcom-pon: define pm8941-pon
+  power: reset: qcom-pon: add support for pm8941-pon
+  ARM: dts: qcom-pm8941: add resin support
+  ARM: dts: qcom: apq8074-dragonboard: add resin and gpio keys
+  ARM: dts: qcom: apq8074-dragonboard: add onboard leds
+  ARM: dts: qcom: apq8074-dragonboard: enable coincell charger
 
-diff --git a/drivers/power/reset/qcom-pon.c b/drivers/power/reset/qcom-pon.c
-index 16bc01738be9..d42475bc0ee6 100644
---- a/drivers/power/reset/qcom-pon.c
-+++ b/drivers/power/reset/qcom-pon.c
-@@ -17,6 +17,8 @@
- #define GEN1_REASON_SHIFT		2
- #define GEN2_REASON_SHIFT		1
- 
-+#define NO_REASON_SHIFT			0
-+
- struct pm8916_pon {
- 	struct device *dev;
- 	struct regmap *regmap;
-@@ -45,6 +47,7 @@ static int pm8916_reboot_mode_write(struct reboot_mode_driver *reboot,
- static int pm8916_pon_probe(struct platform_device *pdev)
- {
- 	struct pm8916_pon *pon;
-+	long reason_shift;
- 	int error;
- 
- 	pon = devm_kzalloc(&pdev->dev, sizeof(*pon), GFP_KERNEL);
-@@ -64,13 +67,17 @@ static int pm8916_pon_probe(struct platform_device *pdev)
- 	if (error)
- 		return error;
- 
--	pon->reboot_mode.dev = &pdev->dev;
--	pon->reason_shift = (long)of_device_get_match_data(&pdev->dev);
--	pon->reboot_mode.write = pm8916_reboot_mode_write;
--	error = devm_reboot_mode_register(&pdev->dev, &pon->reboot_mode);
--	if (error) {
--		dev_err(&pdev->dev, "can't register reboot mode\n");
--		return error;
-+	reason_shift = (long)of_device_get_match_data(&pdev->dev);
-+
-+	if (reason_shift != NO_REASON_SHIFT) {
-+		pon->reboot_mode.dev = &pdev->dev;
-+		pon->reason_shift = reason_shift;
-+		pon->reboot_mode.write = pm8916_reboot_mode_write;
-+		error = devm_reboot_mode_register(&pdev->dev, &pon->reboot_mode);
-+		if (error) {
-+			dev_err(&pdev->dev, "can't register reboot mode\n");
-+			return error;
-+		}
- 	}
- 
- 	platform_set_drvdata(pdev, pon);
-@@ -80,6 +87,7 @@ static int pm8916_pon_probe(struct platform_device *pdev)
- 
- static const struct of_device_id pm8916_pon_id_table[] = {
- 	{ .compatible = "qcom,pm8916-pon", .data = (void *)GEN1_REASON_SHIFT },
-+	{ .compatible = "qcom,pm8941-pon", .data = (void *)NO_REASON_SHIFT },
- 	{ .compatible = "qcom,pms405-pon", .data = (void *)GEN1_REASON_SHIFT },
- 	{ .compatible = "qcom,pm8998-pon", .data = (void *)GEN2_REASON_SHIFT },
- 	{ .compatible = "qcom,pmk8350-pon", .data = (void *)GEN2_REASON_SHIFT },
+ .../bindings/power/reset/qcom,pon.yaml        |  2 +
+ .../arm/boot/dts/qcom-apq8074-dragonboard.dts | 71 +++++++++++++++++++
+ arch/arm/boot/dts/qcom-pm8941.dtsi            | 22 ++++--
+ drivers/power/reset/qcom-pon.c                | 22 ++++--
+ 4 files changed, 105 insertions(+), 12 deletions(-)
+
 -- 
 2.39.2
 
