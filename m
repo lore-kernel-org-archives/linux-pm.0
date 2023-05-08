@@ -2,42 +2,40 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5373AC77B7F
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 13:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67A9CC77B7F
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 13:37:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234334AbjEHNhi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 09:37:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53914 "EHLO
+        id S234347AbjEHNhz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 09:37:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54536 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234304AbjEHNhh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 09:37:37 -0400
+        with ESMTP id S234379AbjEHNht (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 09:37:49 -0400
 Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 127703488B;
-        Mon,  8 May 2023 06:37:31 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29E2A33865;
+        Mon,  8 May 2023 06:37:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kernkonzept.com; s=mx1; h=Cc:To:Content-Transfer-Encoding:Content-Type:
-        MIME-Version:Message-Id:Date:Subject:From:References:In-Reply-To:Sender:
+        d=kernkonzept.com; s=mx1; h=Cc:To:In-Reply-To:References:Message-Id:
+        Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:Sender:
         Reply-To:Content-ID:Content-Description;
-        bh=ZiYNyYZW2PX1GsawJ1pBHCOLh0RTEIYbhy7d/KLFVEs=; b=XS1W6sPzQaVo5Lfz5EtL1xaUX2
-        tZ7EapKk+HCmadsMPS0I8CsdL/oFQjRa44ngulQvMOdTa94/73FemElK/o7MyrFYdiSPThIl/Nruf
-        n7onJn8/cJXeu5QM9HzsexpMBGTylIx4QgeB8/dyVgLRb+kTUsnd5zAuGTiVUd17ulQoLU+clQGHo
-        8YF9XK7gj8gj5W9wRAwWz3shTijUQCNwaKXvW2Z3c5RaW20hAvXinPE++TW0t/c+FuvCIzxukL+3m
-        AoDqQRWS2HvfmkRsw1PiJ5goj/MI9GxYDiczdNBnvdhWghYMRlG9OYnNvY9qXcvC2BDR7A1vE0a71
-        oHRjbwCQ==;
+        bh=NOkAIQUPJO28ZJg22Jb1eVbFAiUIZlNRpNU5m2FRP5E=; b=EE5V4tWpDwtjBnTfbVkN+3p7ci
+        sg2A6hiutkktUQSXBF8ueZMosQDNH4Qfw1SyG359v5u3w32dPJh2y6jepyG/+uWPfQoWmT7RHPHAp
+        SXE3SWmC6c2CYP/4hQSl0NSSu2XMjxtFZMAmXQTOFcP3wocr/otRM1XOQm83zSCN/pyOFnIWvQS/y
+        TlWmY1ZZidMDAxZbqFAk8gIf0AN3AUD8OUPYKuDOp4QuPDwHHqORG3/wunnCa5LJ/hGaFEuTG7cE4
+        YZ+DAvCVpA+rhYLAJUJKBrizMjqnVUM2Z93nih58AM+ckZLORRYF3uSLi999il+h0yxJijI6x2ztr
+        G+CH5APA==;
 Received: from [10.22.3.24] (helo=serv1.dd1.int.kernkonzept.com)
         by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.94.2)
-        id 1pw0hF-009LZn-85; Mon, 08 May 2023 15:14:33 +0200
+        id 1pw0hW-009LZn-Bf; Mon, 08 May 2023 15:14:50 +0200
 From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Subject: [PATCH v4 0/6] thermal: qcom: tsens: Fix MDM9607, add MSM8909
-Date:   Mon, 08 May 2023 15:13:37 +0200
-Message-Id: <20230508-msm8909-tsens-v4-0-d9119622cb19@kernkonzept.com>
+Date:   Mon, 08 May 2023 15:13:43 +0200
+Subject: [PATCH v4 6/6] thermal: qcom: tsens-v0_1: Add MSM8909 data
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAIL1WGQC/52Oyw6CMBREf8V0bUlLeYgr/8OwKHClDdCSeytRC
- f9uYePe5Zlk5szKCNACsetpZQiLJetdhOx8Yq3Rrgduu8gsFakSubjwiaZLJSoeCBzxolRKF10
- m8wZY7DSagDeoXWtiyz3HMYYzwsO+Dsm9jvxAP/FgEPRvWslcClXlIkmLslKy5JJTgDl+SHpA4
- 8fuNgC6wbsPzCFp/bT7jKXg8X3cX7Jd8P9cvW3bF1438jcQAQAA
+Message-Id: <20230508-msm8909-tsens-v4-6-d9119622cb19@kernkonzept.com>
+References: <20230508-msm8909-tsens-v4-0-d9119622cb19@kernkonzept.com>
+In-Reply-To: <20230508-msm8909-tsens-v4-0-d9119622cb19@kernkonzept.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Amit Kucheria <amitk@kernel.org>,
         Thara Gopinath <thara.gopinath@gmail.com>,
@@ -52,51 +50,117 @@ Cc:     Amit Kucheria <amitk@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+        Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 X-Mailer: b4 0.12.2
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make the MDM9607 thermal sensor support consistent with Qualcomm's
-vendor kernel (msm-3.18) by applying the correct default slope values
-and adding "correction factors" to the factory calibration values in the
-fuses. Use the same functionality to add the very similar MSM8909 SoC to
-the tsens driver.
+The MSM8909 SoC has 5 thermal sensors in a TSENS v0.1 block. Like
+MDM9607 it uses a non-standard default slope value of 3000 [1] and needs
+per-sensor "correction factors" to workaround issues with the factory
+calibration [2].
 
+[1]: https://git.codelinaro.org/clo/la/kernel/msm-3.18/-/blob/LA.UM.7.7.c26-09100-8x09.0/arch/arm/boot/dts/qcom/msm8909.dtsi#L476
+[2]: https://git.codelinaro.org/clo/la/kernel/msm-3.18/-/commit/6df022c6d0c2c1b4a5a6c2124dba4d57910c0911
+
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
 ---
-Changes in v4:
-- Mostly just resend, explicitly initialize zero values for
-  the MSM8909 p1/p2_calib_offset for better clarity (Konrad)
-- Link to v3: https://lore.kernel.org/r/20230315103950.2679317-1-stephan.gerhold@kernkonzept.com
-Changes in v3:
-- Drop now unused definition reported by kernel test robot
-Changes in v2:
-- Rewrite on top of per-sensor nvmem cell changes that landed in 6.3
-- Add patches to fix existing support for MDM9607
+ drivers/thermal/qcom/tsens-v0_1.c | 36 +++++++++++++++++++++++++++++++++++-
+ drivers/thermal/qcom/tsens.c      |  3 +++
+ drivers/thermal/qcom/tsens.h      |  2 +-
+ 3 files changed, 39 insertions(+), 2 deletions(-)
 
----
-Stephan Gerhold (6):
-      thermal: qcom: tsens: Drop unused legacy structs
-      thermal: qcom: tsens-v0_1: Fix mdm9607 slope values
-      thermal: qcom: tsens-v0_1: Add mdm9607 correction offsets
-      dt-bindings: thermal: qcom-tsens: Drop redundant compatibles
-      dt-bindings: thermal: qcom-tsens: Add MSM8909 compatible
-      thermal: qcom: tsens-v0_1: Add MSM8909 data
+diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
+index e69889dd524a..f97d313f0536 100644
+--- a/drivers/thermal/qcom/tsens-v0_1.c
++++ b/drivers/thermal/qcom/tsens-v0_1.c
+@@ -207,6 +207,27 @@ static int calibrate_8974(struct tsens_priv *priv)
+ 	return 0;
+ }
+ 
++static int __init init_8909(struct tsens_priv *priv)
++{
++	int i;
++
++	for (i = 0; i < priv->num_sensors; ++i)
++		priv->sensor[i].slope = 3000;
++
++	priv->sensor[0].p1_calib_offset = 0;
++	priv->sensor[0].p2_calib_offset = 0;
++	priv->sensor[1].p1_calib_offset = -10;
++	priv->sensor[1].p2_calib_offset = -6;
++	priv->sensor[2].p1_calib_offset = 0;
++	priv->sensor[2].p2_calib_offset = 0;
++	priv->sensor[3].p1_calib_offset = -9;
++	priv->sensor[3].p2_calib_offset = -9;
++	priv->sensor[4].p1_calib_offset = -8;
++	priv->sensor[4].p2_calib_offset = -10;
++
++	return init_common(priv);
++}
++
+ static int __init init_8939(struct tsens_priv *priv) {
+ 	priv->sensor[0].slope = 2911;
+ 	priv->sensor[1].slope = 2789;
+@@ -243,7 +264,7 @@ static int __init init_9607(struct tsens_priv *priv)
+ 	return init_common(priv);
+ }
+ 
+-/* v0.1: 8916, 8939, 8974, 9607 */
++/* v0.1: 8909, 8916, 8939, 8974, 9607 */
+ 
+ static struct tsens_features tsens_v0_1_feat = {
+ 	.ver_major	= VER_0_1,
+@@ -292,6 +313,19 @@ static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
+ 	[TRDY] = REG_FIELD(TM_TRDY_OFF, 0, 0),
+ };
+ 
++static const struct tsens_ops ops_8909 = {
++	.init		= init_8909,
++	.calibrate	= tsens_calibrate_common,
++	.get_temp	= get_temp_common,
++};
++
++struct tsens_plat_data data_8909 = {
++	.num_sensors	= 5,
++	.ops		= &ops_8909,
++	.feat		= &tsens_v0_1_feat,
++	.fields	= tsens_v0_1_regfields,
++};
++
+ static const struct tsens_ops ops_8916 = {
+ 	.init		= init_common,
+ 	.calibrate	= calibrate_8916,
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 065d0f9728a5..1d7c149038e0 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -1109,6 +1109,9 @@ static const struct of_device_id tsens_table[] = {
+ 	}, {
+ 		.compatible = "qcom,mdm9607-tsens",
+ 		.data = &data_9607,
++	}, {
++		.compatible = "qcom,msm8909-tsens",
++		.data = &data_8909,
+ 	}, {
+ 		.compatible = "qcom,msm8916-tsens",
+ 		.data = &data_8916,
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 880be6be5c3f..c88287dede96 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -639,7 +639,7 @@ int get_temp_common(const struct tsens_sensor *s, int *temp);
+ extern struct tsens_plat_data data_8960;
+ 
+ /* TSENS v0.1 targets */
+-extern struct tsens_plat_data data_8916, data_8939, data_8974, data_9607;
++extern struct tsens_plat_data data_8909, data_8916, data_8939, data_8974, data_9607;
+ 
+ /* TSENS v1 targets */
+ extern struct tsens_plat_data data_tsens_v1, data_8976, data_8956;
 
- .../devicetree/bindings/thermal/qcom-tsens.yaml    | 23 +----
- drivers/thermal/qcom/tsens-v0_1.c                  | 99 +++++++++++++---------
- drivers/thermal/qcom/tsens-v1.c                    | 22 -----
- drivers/thermal/qcom/tsens.c                       | 19 ++++-
- drivers/thermal/qcom/tsens.h                       |  6 +-
- 5 files changed, 84 insertions(+), 85 deletions(-)
----
-base-commit: ac9a78681b921877518763ba0e89202254349d1b
-change-id: 20230508-msm8909-tsens-6733a6d415be
-
-Best regards,
 -- 
-Stephan Gerhold
-Kernkonzept GmbH at Dresden, Germany, HRB 31129, CEO Dr.-Ing. Michael Hohmuth
+2.30.2
 
