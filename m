@@ -2,98 +2,104 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C672C77B7D
-	for <linux-pm@archiver.kernel.org>; Sun,  7 May 2023 22:49:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BA0EC7EE2C
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 00:33:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232057AbjEGWtY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 May 2023 18:49:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38076 "EHLO
+        id S231879AbjEHAdT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 May 2023 20:33:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231641AbjEGWtY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 May 2023 18:49:24 -0400
-Received: from mail-yw1-x1132.google.com (mail-yw1-x1132.google.com [IPv6:2607:f8b0:4864:20::1132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 629014696
-        for <linux-pm@vger.kernel.org>; Sun,  7 May 2023 15:49:22 -0700 (PDT)
-Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-55a00da4e53so70208137b3.0
-        for <linux-pm@vger.kernel.org>; Sun, 07 May 2023 15:49:22 -0700 (PDT)
+        with ESMTP id S231882AbjEHAdQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 May 2023 20:33:16 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97E0A8A63
+        for <linux-pm@vger.kernel.org>; Sun,  7 May 2023 17:33:12 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-4f24ceae142so900842e87.3
+        for <linux-pm@vger.kernel.org>; Sun, 07 May 2023 17:33:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1683499761; x=1686091761;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1683505991; x=1686097991;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=zIFWcITnES4kO3k5Am147YdQK59kPsgWed9C46TTqwc=;
-        b=dJkQEOmkAvSu1nEqxOAKAYKOSOp9qaVFsiupZkwk1wMzwyHeamA3opCnH93grcjX4Q
-         e9o60Jox4/7y/kht7QGWiOKHdcyJt/xIvc+7J8Z8ALccjXpLz6+TMR9UAsI/EIca0p2H
-         SmSESABnRzoI8GkupqEh3TsJHzrgjU2CmHCUXy8F0KrzVcdJ+162spSEJxXh1QGNa6vf
-         msYEXWBST/UaoHRjMdYP2DKeXD6twop64eMfDLz4QdCNqpD+Lpgk8a2dZmgJZdMkE33A
-         EMLbKrcHVNLfsQDHIOWftFEp9vJdFH+TrvfkfVMvD+bUX+0014Z/6ZmU3NmizS+gLY/G
-         4YdA==
+        bh=kDKMbXnJIvuQzh8ILfzPlhqGHSGT1sdNjiXjnJAa1jI=;
+        b=aOemtY/voHimGspIjk8noHBn5hdmmzfEOdTHyeecc1aXVlP+fmw9Fip+qw2awvUiCq
+         AQ+46uiFRlP4pdjzKl2vGzV2gd9ySyzZcDyJ19FabROYOCNvxxD7/97uSaWZIbMLSHGV
+         KB+GibLShnJfFndq8WzhJCdGs+W6G6HJr4FoQ4IehX3D0KhFMsKN0FKVfmRfVF5/IFQK
+         bArQy0hcEGjIVTI2NpJnm9mA1cnUfHB0fYa8REK4Kg8dGo9XOOnUuTXbBWldmArWTChi
+         aP3TQPZ7rDAcvdYTa5tw3TezJTK3a1nCvrN3iaI599pEX0b2DJUBFPsLfgQbH2VjIxI8
+         hUnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683499761; x=1686091761;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1683505991; x=1686097991;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=zIFWcITnES4kO3k5Am147YdQK59kPsgWed9C46TTqwc=;
-        b=lOHsO2OVELF8yWBCf/Ux6legJWo4n/SPZREqN0NCv2oANQLU1stl+K7hs4HMVuN3Qp
-         A6mAn63dSzv+VnlQFjNI44QFA6CZaws+riuOjQF3LNk+nNG4rOFz9W3BqHiQoeoM7QCG
-         EASAgilgvOIPVJPUgBzcu6lQpkjYSWH5toDps/UP74JxiVMijHW7cA0/SmjHRASs34st
-         oo2/QsJLAgOwxxvpQFgRlXtsHi5waBQ8FEpN5zlzp52M28bbzQX1B0NH3/eVMpfRDA6t
-         5oGQDm0tgGj4iFecJUOx3/QKlAIUhwrbpQSjhlz8h4SOMfWkaw57jI+1XWECAy1KSqCL
-         7lKQ==
-X-Gm-Message-State: AC+VfDy/xCZfiMBMt1KmnnxcTbae6XtxN9vHho/WsxHkV/rBT/4gsSeF
-        7Ij89xOQ75tbv2Jn66/6jH17zul38oRJ0TFtT//FPQ==
-X-Google-Smtp-Source: ACHHUZ4vx48X7XD+Su6KTcZ7JqhGg7w4c5CySJnLDf9RYPc6ICNwliEgA02dFk6W8BZ00lVk7mPhVyBDDO8IfPh1auk=
-X-Received: by 2002:a81:6dcc:0:b0:55a:1c79:8eab with SMTP id
- i195-20020a816dcc000000b0055a1c798eabmr8830777ywc.32.1683499761045; Sun, 07
- May 2023 15:49:21 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230507201225.89694-1-matti.lehtimaki@gmail.com>
- <20230507201225.89694-4-matti.lehtimaki@gmail.com> <33d373fa-91cc-2ab6-b59b-34967dff1109@linaro.org>
- <1e02c292-f3c6-f67d-0e25-d22a00bcf6ad@gmail.com>
-In-Reply-To: <1e02c292-f3c6-f67d-0e25-d22a00bcf6ad@gmail.com>
+        bh=kDKMbXnJIvuQzh8ILfzPlhqGHSGT1sdNjiXjnJAa1jI=;
+        b=RrVwjT5HBpmAeG+p/8Oi/DgRPiz2domu5aHlbc+aE05seJdijWU2fQcifBexbItUmD
+         vGVSs7s2ct9BUFRIySOD0SbfHOA671i4NCtfVOjDEsJ5UlmFoiQL8Kuu0vuMAm2t+tLk
+         hvKbGJXBs2QUog1dxiZTRVUjuRxP0Qol6VmWITkQIrFevEt9dVouSg0lGypA0MBMiu66
+         3x6+yOsvWr2RqGmS+JRo5hZLekyGoJTGi0bKRafAs6SRE9YCAGg2vBRRAHcjEgIXnnV1
+         uZBlnNnBbJKXZaAzaRfDAUVVAcNri/QxGfx2B1e77joGQPQfRv3cch1xyM28o3P2M4Oa
+         Z+gg==
+X-Gm-Message-State: AC+VfDzT+lh8DWp2aQ2v4oNXUIPZXzPyR8WxE4Be/W1OgWEfVdf/WEkq
+        q66tNzvKL7Xh+XIKDPjwRfidlA==
+X-Google-Smtp-Source: ACHHUZ5L5mYXfYEX4glhtdoGY9YXd7EcX8HGqt297P7fo7SQRPt2pynB4Zuto+fc42F00r+NP1ofgw==
+X-Received: by 2002:a05:6512:983:b0:4ec:8d50:d124 with SMTP id w3-20020a056512098300b004ec8d50d124mr1811831lft.48.1683505990904;
+        Sun, 07 May 2023 17:33:10 -0700 (PDT)
+Received: from lothlorien.lan (dzdqv0yyyyyyyyyyybm5y-3.rev.dnainternet.fi. [2001:14ba:a0db:1f00::ab2])
+        by smtp.gmail.com with ESMTPSA id m22-20020ac24256000000b004eca2b8b6bdsm1114807lfl.4.2023.05.07.17.33.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 07 May 2023 17:33:10 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Date:   Mon, 8 May 2023 01:49:10 +0300
-Message-ID: <CAA8EJpqhaQhuhYpZwAaobCTGONMMo5g3bCmPh2117jan72kRzg@mail.gmail.com>
-Subject: Re: [PATCH 3/6] thermal/drivers/qcom/tsens-v0_1: Add support for MSM8226
-To:     =?UTF-8?Q?Matti_Lehtim=C3=A4ki?= <matti.lehtimaki@gmail.com>
-Cc:     linux-arm-msm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        Vinod Koul <vkoul@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Subject: [PATCH 1/6] dt-bindings: power: reset: qcom-pon: define pm8941-pon
+Date:   Mon,  8 May 2023 03:33:04 +0300
+Message-Id: <20230508003309.2363787-2-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230508003309.2363787-1-dmitry.baryshkov@linaro.org>
+References: <20230508003309.2363787-1-dmitry.baryshkov@linaro.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 8 May 2023 at 00:11, Matti Lehtim=C3=A4ki <matti.lehtimaki@gmail.co=
-m> wrote:
->
-> On 7.5.2023 23.40, Dmitry Baryshkov wrote:
-> > On 07/05/2023 23:12, Matti Lehtim=C3=A4ki wrote:
-> >> The MSM8226 TSENS IP has 6 thermal sensors in a TSENS v0.1 block.
-> >> The thermal sensors use non-standard slope values.
-> >
-> > Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-> >
-> > Note, the driver from 3.10 also provides custom data for non-calibrated=
- mode. We can either ignore that (in the hope that all devices leaving the =
-factory are calibrated), or fix it in the manner close to 8x74.
->
-> That is true, 3.10 kernel does support non-calibrated mode. I can add sup=
-port for that in a new version if that is wanted.
+On PM8941 pon doesn't store the reset reason. However we still need the
+wrapping node for pwrkey and resin nodes. Add bindings for pm8941-pon
+device.
 
-If there are no other comments, I'd suggest sending that as a follow
-up (if sending it at all). The tsens driver provides some default
-values for non-calibrated mode, so it is a minor issue.
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ Documentation/devicetree/bindings/power/reset/qcom,pon.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
---=20
-With best wishes
-Dmitry
+diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+index d96170eecbd2..0f4f55dd4eac 100644
+--- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
++++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+@@ -19,6 +19,7 @@ properties:
+   compatible:
+     enum:
+       - qcom,pm8916-pon
++      - qcom,pm8941-pon
+       - qcom,pms405-pon
+       - qcom,pm8998-pon
+       - qcom,pmk8350-pon
+@@ -63,6 +64,7 @@ allOf:
+           contains:
+             enum:
+               - qcom,pm8916-pon
++              - qcom,pm8941-pon
+               - qcom,pms405-pon
+               - qcom,pm8998-pon
+     then:
+-- 
+2.39.2
+
