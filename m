@@ -2,114 +2,122 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B651C7EE22
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE1EFC7EE22
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:37:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234148AbjEHQfb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 12:35:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35000 "EHLO
+        id S234227AbjEHQhf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 12:37:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36098 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234114AbjEHQfa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:35:30 -0400
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0487E5BA9
-        for <linux-pm@vger.kernel.org>; Mon,  8 May 2023 09:35:29 -0700 (PDT)
-Received: by mail-ed1-x52f.google.com with SMTP id 4fb4d7f45d1cf-50bc075d6b2so9079750a12.0
-        for <linux-pm@vger.kernel.org>; Mon, 08 May 2023 09:35:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1683563727; x=1686155727;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=QUEcs1Xi1xeQy3sb8mO7FcLmtClbP8Nvb3I3pqaSRzk=;
-        b=uxj7FzIQt2huhDQKebHOAM0KoBjTNYYtsr5GTdJFWqy4cuXaBspKqAN7C/32SDFPaE
-         e5wgqnBude0Ntl5qIJvM2Nj1mrjkEtgIyXqkg0lXVu6Ur/6GMn6ypcBQSFTmpcYHLExw
-         x0IDah4hQnOm+g3xYGldP7RK3gsqqlNgvU4Cek3uDioS3NaXTR3q6hxgosGGrGAa4sqp
-         cxEoSEZVhCK0ZAxbUHVTiIOtnaq3syB91qDsoftb+GRA4xLJp7c6JtGNTsMWfbaNMPUG
-         cwJ4GjCrX/IEsEWvuPkkgon29lGSQKGfyLuD69qRaH6422/GPrajcJBlTGBFZQb3a+h6
-         f4cw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1683563727; x=1686155727;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=QUEcs1Xi1xeQy3sb8mO7FcLmtClbP8Nvb3I3pqaSRzk=;
-        b=iuiDSobc02IjHncR/zUDrncluC0Z4tqvSV1J4ZZiddKXiz0lXOBuXL+mqaZ5FqYc+z
-         qGHI8iG6kNS9HtM4U1EJoCR4fxvMHGD/x3GYl2M5E2Al/PPZkJEnuc6Pe/oN5eE5D2L2
-         09PtPmx221rQ8xwQKSpFjG7JeyCXaj8HFYefcWCPuWLzlJhREMLsj6fdM4Sjx63jAa/l
-         X949MLEwNoA10XRryU6GmaNu7CGxv/d/arEhpmgXC+rj+zNRLoDqbYVJLzRjM32Zkefy
-         Vn6VTmheNFACaHfAdVGjXU/uhuAi9+0WiNPY6ZD/HM3wNYxDkT4Q2GUKLEM/cgNnO3aq
-         Y3eQ==
-X-Gm-Message-State: AC+VfDwJVNYQg5rkx73BQmBPIxtJi8qbLuzmbi1EpCTNNw5mN2uToRw9
-        7ylHK7PxC3lY92OLMlgExqLmsQ==
-X-Google-Smtp-Source: ACHHUZ6JxK1GLPRkiwjpCYkPcMT+crbT6/Dx1pkt5m2S3nIS0wjuRzuTyipDzsrF9lzIoDU7ldHjoQ==
-X-Received: by 2002:a17:907:96a3:b0:94e:d17f:eacf with SMTP id hd35-20020a17090796a300b0094ed17feacfmr10203368ejc.23.1683563727469;
-        Mon, 08 May 2023 09:35:27 -0700 (PDT)
-Received: from ?IPV6:2a02:810d:15c0:828:50e0:ebdf:b755:b300? ([2a02:810d:15c0:828:50e0:ebdf:b755:b300])
-        by smtp.gmail.com with ESMTPSA id ml18-20020a170906cc1200b0094f124a37c4sm184504ejb.18.2023.05.08.09.35.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 08 May 2023 09:35:26 -0700 (PDT)
-Message-ID: <8880cccc-aed2-1517-eb41-60ac43c3bef1@linaro.org>
-Date:   Mon, 8 May 2023 18:35:25 +0200
+        with ESMTP id S229616AbjEHQhe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:34 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46EB26E99;
+        Mon,  8 May 2023 09:37:32 -0700 (PDT)
+Received: from mercury (195-23-45-170.net.novis.pt [195.23.45.170])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: sre)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 358DC6603276;
+        Mon,  8 May 2023 17:37:30 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1683563850;
+        bh=pgMe58YDF/1fybSqPvqx1h0XQQrqUXowvHVjfvSaVoM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=h89/IDcBvVGjoWpbEpaZUuG+yk+FNAOFpN3jqgNZTqklpI+K/gn14YCAciahuKnjd
+         Gy2Ku/kIF7v691I1l7z+lq9CGtun+tJDjUSl7gCdWhSMk2CBFsMi7q6LeLROwnnp9o
+         gQ46kfXjYzfeQkCuwpLdPC7og9+Ri29xgmHpieT+olbsEkC4AgiOqTDqrjJl7m2wTm
+         IlAsXE8Z9hxOanyfIP8Xl5GCtROR1yTA0Z/SrCYdtqsXgsUoKdry4/KyN4D5iFt0vb
+         b2CpK1YRChcAjGJvsR7GaS0cboDBFbflfisy0H1NJg1M2WcJtuWDZ7tSAw/t28YgA5
+         chr+olS2pxoHQ==
+Received: by mercury (Postfix, from userid 1000)
+        id 1225C1066FB6; Mon,  8 May 2023 14:22:13 +0200 (CEST)
+Date:   Mon, 8 May 2023 14:22:13 +0200
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Cc:     Jiri Kosina <jikos@kernel.org>,
+        Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-input@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] power: supply: remove unneeded include of
+ linux/leds.h
+Message-ID: <20230508122213.2fj4kinuxr2ntoob@mercury.elektranox.org>
+References: <20230212-include-power_supply-leds-v2-0-e9910a3f5837@weissschuh.net>
+ <20230212-include-power_supply-leds-v2-2-e9910a3f5837@weissschuh.net>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v2 5/6] ARM: dts: qcom: apq8074-dragonboard: add onboard
- leds
-Content-Language: en-US
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Vinod Koul <vkoul@kernel.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-References: <20230508160446.2374438-1-dmitry.baryshkov@linaro.org>
- <20230508160446.2374438-6-dmitry.baryshkov@linaro.org>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230508160446.2374438-6-dmitry.baryshkov@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="exsjkieiclz3e4to"
+Content-Disposition: inline
+In-Reply-To: <20230212-include-power_supply-leds-v2-2-e9910a3f5837@weissschuh.net>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 08/05/2023 18:04, Dmitry Baryshkov wrote:
-> The dragonboard as three LEDs: red, green and blue. Add corresponding
-> description.
-> 
-> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+
+--exsjkieiclz3e4to
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Tue, May 02, 2023 at 06:28:45AM +0200, Thomas Wei=DFschuh wrote:
+> Instead of including the full linux/leds.h header file a single
+> forward-declaration is enough.
+>=20
+> Signed-off-by: Thomas Wei=DFschuh <linux@weissschuh.net>
 > ---
->  .../arm/boot/dts/qcom-apq8074-dragonboard.dts | 24 +++++++++++++++++++
->  1 file changed, 24 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/qcom-apq8074-dragonboard.dts b/arch/arm/boot/dts/qcom-apq8074-dragonboard.dts
-> index 630180edecfd..07db6451f273 100644
-> --- a/arch/arm/boot/dts/qcom-apq8074-dragonboard.dts
-> +++ b/arch/arm/boot/dts/qcom-apq8074-dragonboard.dts
-> @@ -1,6 +1,7 @@
->  // SPDX-License-Identifier: GPL-2.0
->  #include <dt-bindings/gpio/gpio.h>
->  #include <dt-bindings/input/input.h>
-> +#include <dt-bindings/leds/common.h>
->  #include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
->  #include "qcom-msm8974.dtsi"
->  #include "qcom-pm8841.dtsi"
-> @@ -69,6 +70,29 @@ msm_keys_default: pm8941-gpio-keys-state {
->          };
->  };
->  
-> +&pm8941_lpg {
-> +        qcom,power-source = <1>;
-> +	status = "okay";
 
-Broken indentation.
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
+-- Sebastian
 
+>  include/linux/power_supply.h | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index a427f13c757f..dc5e17e8c919 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -14,10 +14,11 @@
+> =20
+>  #include <linux/device.h>
+>  #include <linux/workqueue.h>
+> -#include <linux/leds.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/notifier.h>
+> =20
+> +struct led_trigger;
+> +
+>  /*
+>   * All voltages, currents, charges, energies, time and temperatures in u=
+V,
+>   * =B5A, =B5Ah, =B5Wh, seconds and tenths of degree Celsius unless other=
+wise
+>=20
+> --=20
+> 2.40.1
+>=20
 
-Best regards,
-Krzysztof
+--exsjkieiclz3e4to
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY6XQACgkQ2O7X88g7
++prQDA/9EVN7uHo6O4SftuS1Iddi+3AFTrCvpQTI4/91dMKsMFsVdXcJfWZu5Qcy
+sIiGosUUym6S58Or+WakBLA8CRE1KiK42ZUm9KNviHQhwyYHTiIFdJCfLf3mzUqQ
+X+emDKJu1XaY5xeTCkcNJ0bGEiZ0W1PnWji8IHWu+lD5VDI5FyTP3gtBltSE9PXA
+tbrUyuZ8jOcJ/2oJ7mYeU7ULshkbfTuQCUMocx7b7Q+wvimn0KHsdJaxKkTDT4HO
+LW1YfYN/yAXmhbslB2yly/N5tKkHxd+PQ6SMMHqMRb0zbHEv0jFIi6h2BuZfyOmc
+fQgsmSLVewfi9XaPbIMjRUlVlY3+JXK1oxKLHd5cMaaH1jQ1DKqooocve4y+LPft
+xvgwvNEipNGu6m2S6OnqW/WU66R9cjRf7o1kCeKDFYAIQRZ+DVLm78/JU21QqDa5
+CrioDehsd4DoizLNDWMJO69TCdmuHNTL4ys7j+irWSBietFpMdWG3GQ0EWqjrTGP
+MRyKclO1aQaQ6CnPCQ4tALa1RuGRWcO1wK5+xg9H3D5wguzw7mwDl/N2njGc/pFD
+xMxi20SRVAjO6Q/Gh/O+eqtmpGAEcVT2+PlfDtLShOLtlNjoIjnU+PsfwN0+MU3W
+YmfI+QRu9rjdLZYi+kgCKlg4RgAHLYOj32Jfi9E2BCD0gu0Vrig=
+=NG8+
+-----END PGP SIGNATURE-----
+
+--exsjkieiclz3e4to--
