@@ -2,81 +2,100 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77496C7EE2F
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 14:42:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E06BC7EE2C
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:05:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234421AbjEHOmH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 10:42:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49880 "EHLO
+        id S232911AbjEHQE6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 12:04:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43256 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234407AbjEHOmB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 10:42:01 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B6707DAF;
-        Mon,  8 May 2023 07:41:59 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7D185640A6;
-        Mon,  8 May 2023 14:41:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8673BC43321;
-        Mon,  8 May 2023 14:41:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1683556916;
-        bh=MQ5DoJA1f5DU0Jx7eqFBYGiVwF/uh9yVBMTNrxYMYIE=;
-        h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-        b=tZJut4FMcHrALPqDh2zYAwVmSSL7WEktSeQju/lInVcIKyJV3YQxdELZDXzE/4FcV
-         a+xdEVih12ZS09iwE4Cm7uDi5XAkYq2iaNyHIVbmZXEboLjmZ8cfdXhzq7+UaIdf8A
-         DNjVewcBH3R4CnX5tKmHoahlkyC4jKqL9T2bRbUtUwHvowwtM2nCZTnTdPw9k/8O4i
-         ENIVVieYaTy45YyTku7vFGBJ2EDIStmGZRYki8YIU44aoVgcZQ1VuyQ15DT0HCDLzZ
-         QNXcq/0bYs0XsBzoDkPjcOkopq37LnQAwMfOEBznR8/TLD3KGAT0LxllTbmXO2tSbm
-         Hvrxnly9AVAaQ==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 6A92FE4F0A1;
-        Mon,  8 May 2023 14:41:56 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+        with ESMTP id S232527AbjEHQEw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:04:52 -0400
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F281C5B84
+        for <linux-pm@vger.kernel.org>; Mon,  8 May 2023 09:04:49 -0700 (PDT)
+Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-4f11d267d8bso5268383e87.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 May 2023 09:04:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1683561888; x=1686153888;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=38AF8nxzOttpxjGEqN4XiKny+LIjfNIP7wF2d4kn7Y8=;
+        b=E5vNHeWDkMnvrPEDlrca3wB2OK03eO31HFXQhFGg9xXk1TpMVQVTpKK1+EETWkQuLb
+         ONXMtG97Y9R9cexLAVh3vuei7SVsZ5mS/Tvl3nKwS8oNd9CcYxrA4KLUxq+2WPp0C9rx
+         Wws/71xPGXLGs/VCuLr1LhBRmMkpo4tmFYfk9NJqiF7XzDo2G6bHIQCSklOpLVmMAbr3
+         wmn4UXlTDnexPxUdEfTpc7k5ENgrb2wrFbOST16H/DT/7zxINl51L2ue9CJ7UuvHajow
+         wINK9asyWr1DxMbslPqUV68AffAX4P5NShrjkvRFZk48ncINuSrbjZtnXMT/7FwZYrSC
+         iaWA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1683561888; x=1686153888;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=38AF8nxzOttpxjGEqN4XiKny+LIjfNIP7wF2d4kn7Y8=;
+        b=PmAEyD8jXsWUTk5i885/csCppReLKQQ3YdQ64r5kOHoTOGtDJvamJV5fM+o1jJQ4t6
+         KZ/uf2TA2dpLaBhQiPklNuyGgmHFVTiTnFegSjLk9b/UYIp3ySoV9mgaBaVOB1k3AvTq
+         r7fqBlMXy1DRjsYkHbW5D6Ov4PIxao6RMqcSSzUfK7eJ1niuG0zORt3wFrH5WOu+d4dY
+         qzgo1kCe99WLYSD8ZdgnpxRnZh1RtvxYdKERcSKvckIwRZFSnsBymFQsL/cOxLup2AaM
+         yfAWysQRcbo14SEe3M9MiWXw6hUBsFKA/+8Wjl2n69wgOPuMEaYBclU6rKsVBc5YhnXw
+         8fFQ==
+X-Gm-Message-State: AC+VfDyZTk4OkKW8snk2EKPrCwomd14ORfODWBKtu3SrtX4tQsb2W0jc
+        X2jvBWPKK7YQtvls08qzbj5rZw==
+X-Google-Smtp-Source: ACHHUZ66YitfnJd8D2n3isV7TMX2yXp5JnKySLqANxS/X11ZnVoFFFoBeUeSuCjBDXw2UxGRmWiQzA==
+X-Received: by 2002:a19:f80c:0:b0:4d5:ae35:b221 with SMTP id a12-20020a19f80c000000b004d5ae35b221mr2433424lff.34.1683561888223;
+        Mon, 08 May 2023 09:04:48 -0700 (PDT)
+Received: from lothlorien.lan (dzdqv0yyyyyyyyyyybm5y-3.rev.dnainternet.fi. [2001:14ba:a0db:1f00::ab2])
+        by smtp.gmail.com with ESMTPSA id h3-20020ac25963000000b004eff4ea8dd3sm32372lfp.76.2023.05.08.09.04.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 May 2023 09:04:47 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Vinod Koul <vkoul@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Subject: [PATCH v2 0/6] ARM: dts: qcom: apq8074-dragonboard: enable additional devices
+Date:   Mon,  8 May 2023 19:04:40 +0300
+Message-Id: <20230508160446.2374438-1-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH] cpuidle: Use of_property_present() for testing DT property
- presence
-From:   patchwork-bot+linux-riscv@kernel.org
-Message-Id: <168355691642.25692.10503148227988680423.git-patchwork-notify@kernel.org>
-Date:   Mon, 08 May 2023 14:41:56 +0000
-References: <20230310144703.1541888-1-robh@kernel.org>
-In-Reply-To: <20230310144703.1541888-1-robh@kernel.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     linux-riscv@lists.infradead.org, ulf.hansson@linaro.org,
-        rafael@kernel.org, daniel.lezcano@linaro.org, anup@brainfault.org,
-        paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello:
+Add support for buttons, LEDs and coincell charger found on the APQ8074
+dragonboard device.
 
-This patch was applied to riscv/linux.git (fixes)
-by Rafael J. Wysocki <rafael.j.wysocki@intel.com>:
+For PM8941 we don't have a defined field to store the reset reason.
+Support wrapping pwrkey and resin, but without writing the reset
+reason.
 
-On Fri, 10 Mar 2023 08:47:03 -0600 you wrote:
-> It is preferred to use typed property access functions (i.e.
-> of_property_read_<type> functions) rather than low-level
-> of_get_property/of_find_property functions for reading properties. As
-> part of this, convert of_get_property/of_find_property calls to the
-> recently added of_property_present() helper when we just want to test
-> for presence of a property and nothing more.
-> 
-> [...]
+Changes since v1 (noted by Konrad):
+ - Changed to use freshly defined qcom,pm8941-pon compat
+ - Fixed indentiation for LEDs definition
+ - Reverted the order of pinctrl fields
+ - Moved status field to the last position
+ - Removed unnecessary pinconf indirection
 
-Here is the summary with links:
-  - cpuidle: Use of_property_present() for testing DT property presence
-    https://git.kernel.org/riscv/c/f914bfdd7f84
+Dmitry Baryshkov (6):
+  dt-bindings: power: reset: qcom-pon: define pm8941-pon
+  power: reset: qcom-pon: add support for pm8941-pon
+  ARM: dts: qcom-pm8941: add resin support
+  ARM: dts: qcom: apq8074-dragonboard: add resin and gpio keys
+  ARM: dts: qcom: apq8074-dragonboard: add onboard leds
+  ARM: dts: qcom: apq8074-dragonboard: enable coincell charger
 
-You are awesome, thank you!
+ .../bindings/power/reset/qcom,pon.yaml        |  2 +
+ .../arm/boot/dts/qcom-apq8074-dragonboard.dts | 69 +++++++++++++++++++
+ arch/arm/boot/dts/qcom-pm8941.dtsi            | 22 ++++--
+ drivers/power/reset/qcom-pon.c                | 22 ++++--
+ 4 files changed, 103 insertions(+), 12 deletions(-)
+
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.39.2
 
