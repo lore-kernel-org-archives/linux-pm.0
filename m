@@ -2,147 +2,214 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B62FAC7EE22
-	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:38:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCE8DC7EE24
+	for <linux-pm@archiver.kernel.org>; Mon,  8 May 2023 16:38:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234478AbjEHQiH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 May 2023 12:38:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36210 "EHLO
+        id S234510AbjEHQiJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 May 2023 12:38:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234359AbjEHQhp (ORCPT
+        with ESMTP id S234382AbjEHQhp (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2023 12:37:45 -0400
-Received: from madras.collabora.co.uk (madras.collabora.co.uk [46.235.227.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC6836EA9
-        for <linux-pm@vger.kernel.org>; Mon,  8 May 2023 09:37:36 -0700 (PDT)
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA1146E87;
+        Mon,  8 May 2023 09:37:36 -0700 (PDT)
 Received: from mercury (195-23-45-170.net.novis.pt [195.23.45.170])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (No client certificate requested)
         (Authenticated sender: sre)
-        by madras.collabora.co.uk (Postfix) with ESMTPSA id 22ED56605769;
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 16749660574D;
         Mon,  8 May 2023 17:37:33 +0100 (BST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
         s=mail; t=1683563853;
-        bh=/ClvrZdhdE8THodrv3yD82g7ckIdcHTZUUsKera7uY4=;
+        bh=es+2Vg5vpbSoOm58wIOQnVTmBCiV+CnwrUUXaKbUTLY=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=M9cDvHsqckHOXgFPsrTAGnP7o4aQGCnTh3Uo1zjKVN3yxE7B2dEI5gYS15tyZGfGg
-         s/sQfjGwlS5MJzAgIpPlPD8NfPmy+JLNFV1GLeoinhznqLnS9h3Q2r/+CrcYrY+Tyc
-         E7qS9r2a+shLqlcebAJKRuHvreHh8MTXk66XjnaRa1sKkkuU5cyyTEbsagLxTwC84I
-         zq9Vmi2O4Lyxy3+16Q1Dv3Xgb6JbgIpInBVC5tHkDEpFnW9kVvDfVDpc0KJBwBYw/R
-         MRzyuGKaKrFTpzN0qFXhcmxIRfpwcKEynW+BgWhLYTS6jM2woPbaFoLF81Ynrwev7y
-         eGBlzS0IdVg1Q==
+        b=iUdnBvZrUQkwiAEIWZdSWd6P6yq+4KdNH+/saBQkhQjrfCrIQYTreHqGaD6h+iRtD
+         S9geDZl9fP1waE7OTdWixXuAhB3KOr4mwMqNiaHX3hO1Fl6+X43FXAahRVsaVSMwMY
+         334UbpWXdW8b0lwm1/3ML2/jc70kkBhtkHJ3xdEVrk+IwUhYU70AQZc6XyyUZyzf6B
+         uJymUPGtBQsqoJtPBLdL0WXyo9AlYD1GzKwEZJHiaiLIm589jFIo85bWEZ60o5IPov
+         ZZX589b0YrwbfdBizAIntCAJ5liQ0rqSeTUYW/M3GHtvoSX+rgsS5/KglCMb+lgCVb
+         n0SCrf+mg/7pw==
 Received: by mercury (Postfix, from userid 1000)
-        id E87E41067081; Mon,  8 May 2023 15:14:33 +0200 (CEST)
-Date:   Mon, 8 May 2023 15:14:33 +0200
+        id 5C3E61066FBE; Mon,  8 May 2023 14:39:34 +0200 (CEST)
+Date:   Mon, 8 May 2023 14:39:34 +0200
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Vasily Khoruzhick <anarsoul@gmail.com>
-Cc:     Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] power: supply: leds: Fix blink to LED on transition
-Message-ID: <20230508131433.yqqeqr2nf62zgzkt@mercury.elektranox.org>
-References: <20230413100941.115529-1-hdegoede@redhat.com>
- <CA+E=qVd70a2kJvfdPdssiwMwS0PHHb1C06sgK9G6MjQwG+C5+A@mail.gmail.com>
+To:     Bartosz Golaszewski <brgl@bgdev.pl>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: [PATCH v2 2/3] dt-bindings: power: reset: convert
+ nvmem-reboot-mode bindings to YAML
+Message-ID: <20230508123934.om25c73xuprqviwq@mercury.elektranox.org>
+References: <20230417145536.414490-1-brgl@bgdev.pl>
+ <20230417145536.414490-3-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="iaxjji6cusyrxt43"
+        protocol="application/pgp-signature"; boundary="mdqi6q4wcgrzti64"
 Content-Disposition: inline
-In-Reply-To: <CA+E=qVd70a2kJvfdPdssiwMwS0PHHb1C06sgK9G6MjQwG+C5+A@mail.gmail.com>
+In-Reply-To: <20230417145536.414490-3-brgl@bgdev.pl>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---iaxjji6cusyrxt43
-Content-Type: text/plain; charset=utf-8
+--mdqi6q4wcgrzti64
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Apr 13, 2023 at 09:40:44AM -0700, Vasily Khoruzhick wrote:
-> On Thu, Apr 13, 2023 at 3:09=E2=80=AFAM Hans de Goede <hdegoede@redhat.co=
-m> wrote:
-> >
-> > When a battery's status changes from charging to full then
-> > the charging-blink-full-solid trigger tries to change
-> > the LED from blinking to solid/on.
-> >
-> > As is documented in include/linux/leds.h to deactivate blinking /
-> > to make the LED solid a LED_OFF must be send:
-> >
-> > """
-> >          * Deactivate blinking again when the brightness is set to LED_=
-OFF
-> >          * via the brightness_set() callback.
-> > """
-> >
-> > led_set_brighness() calls with a brightness value other then 0 / LED_OFF
-> > merely change the brightness of the LED in its on state while it is
-> > blinking.
-> >
-> > So power_supply_update_bat_leds() must first send a LED_OFF event
-> > before the LED_FULL to disable blinking.
-> >
-> > Fixes: 6501f728c56f ("power_supply: Add new LED trigger charging-blink-=
-solid-full")
+On Mon, Apr 17, 2023 at 04:55:35PM +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 >=20
-> Wow, it's a commit from 2011 :)
+> Convert the DT binding document for nvmem-reboot-mode from .txt to YAML.
 >=20
-> > Cc: Vasily Khoruzhick <anarsoul@gmail.com>
-> > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->=20
-> Reviewed-by: Vasily Khoruzhick <anarsoul@gmail.com>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
 
-Thanks, queued to my fixes branch.
+Thanks, queued.
 
 -- Sebastian
 
-> > ---
-> >  drivers/power/supply/power_supply_leds.c | 5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/power/supply/power_supply_leds.c b/drivers/power/s=
-upply/power_supply_leds.c
-> > index e2f554e4e4e6..c7db29d5fcb8 100644
-> > --- a/drivers/power/supply/power_supply_leds.c
-> > +++ b/drivers/power/supply/power_supply_leds.c
-> > @@ -33,8 +33,9 @@ static void power_supply_update_bat_leds(struct power=
-_supply *psy)
-> >                 led_trigger_event(psy->charging_full_trig, LED_FULL);
-> >                 led_trigger_event(psy->charging_trig, LED_OFF);
-> >                 led_trigger_event(psy->full_trig, LED_FULL);
-> > -               led_trigger_event(psy->charging_blink_full_solid_trig,
-> > -                       LED_FULL);
-> > +               /* Going from blink to LED on requires a LED_OFF event =
-to stop blink */
-> > +               led_trigger_event(psy->charging_blink_full_solid_trig, =
-LED_OFF);
-> > +               led_trigger_event(psy->charging_blink_full_solid_trig, =
-LED_FULL);
-> >                 break;
-> >         case POWER_SUPPLY_STATUS_CHARGING:
-> >                 led_trigger_event(psy->charging_full_trig, LED_FULL);
-> > --
-> > 2.39.1
-> >
+>  .../power/reset/nvmem-reboot-mode.txt         | 26 ----------
+>  .../power/reset/nvmem-reboot-mode.yaml        | 52 +++++++++++++++++++
+>  2 files changed, 52 insertions(+), 26 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/power/reset/nvmem-r=
+eboot-mode.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/nvmem-r=
+eboot-mode.yaml
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-m=
+ode.txt b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.t=
+xt
+> deleted file mode 100644
+> index 752d6126d5da..000000000000
+> --- a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt
+> +++ /dev/null
+> @@ -1,26 +0,0 @@
+> -NVMEM reboot mode driver
+> -
+> -This driver gets reboot mode magic value from reboot-mode driver
+> -and stores it in a NVMEM cell named "reboot-mode". Then the bootloader
+> -can read it and take different action according to the magic
+> -value stored.
+> -
+> -Required properties:
+> -- compatible: should be "nvmem-reboot-mode".
+> -- nvmem-cells: A phandle to the reboot mode provided by a nvmem device.
+> -- nvmem-cell-names: Should be "reboot-mode".
+> -
+> -The rest of the properties should follow the generic reboot-mode descrip=
+tion
+> -found in reboot-mode.txt
+> -
+> -Example:
+> -	reboot-mode {
+> -		compatible =3D "nvmem-reboot-mode";
+> -		nvmem-cells =3D <&reboot_mode>;
+> -		nvmem-cell-names =3D "reboot-mode";
+> -
+> -		mode-normal     =3D <0xAAAA5501>;
+> -		mode-bootloader =3D <0xBBBB5500>;
+> -		mode-recovery   =3D <0xCCCC5502>;
+> -		mode-test       =3D <0xDDDD5503>;
+> -	};
+> diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-m=
+ode.yaml b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.=
+yaml
+> new file mode 100644
+> index 000000000000..14a262bcbf7c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.yaml
+> @@ -0,0 +1,52 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/power/reset/nvmem-reboot-mode.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Generic NVMEM reboot mode
+> +
+> +maintainers:
+> +  - Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> +
+> +description:
+> +  This driver gets the reboot mode magic value from the reboot-mode driv=
+er
+> +  and stores it in the NVMEM cell named "reboot-mode". The bootloader can
+> +  then read it and take different action according to the value.
+> +
+> +properties:
+> +  compatible:
+> +    const: nvmem-reboot-mode
+> +
+> +  nvmem-cells:
+> +    description:
+> +      A phandle pointing to the nvmem-cells node where the vendor-specif=
+ic
+> +      magic value representing the reboot mode is stored.
+> +    maxItems: 1
+> +
+> +  nvmem-cell-names:
+> +    items:
+> +      - const: reboot-mode
+> +
+> +patternProperties:
+> +  "^mode-.+":
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: Vendor-specific mode value written to the mode register
+> +
+> +required:
+> +  - compatible
+> +  - nvmem-cells
+> +  - nvmem-cell-names
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    reboot-mode {
+> +        compatible =3D "nvmem-reboot-mode";
+> +        nvmem-cells =3D <&reboot_reason>;
+> +        nvmem-cell-names =3D "reboot-mode";
+> +        mode-recovery =3D <0x01>;
+> +        mode-bootloader =3D <0x02>;
+> +    };
+> +...
+> --=20
+> 2.37.2
+>=20
 
---iaxjji6cusyrxt43
+--mdqi6q4wcgrzti64
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY9bkACgkQ2O7X88g7
-+pofhg//ZtXYZhydgIA6Y51yvg+WvNwWHIn5pQoJThQfCWWHUsG/9bQhEQq+/VoZ
-kyjHDg5dTBIfz9qryfLXQiTjGXChHvnhYfy0awWrt6I0GBf6yLBu7N8IQ8a7Tjfl
-E7RRrrDd/7bL/WRIirZdXDFvqsPPULTNv8S8mitEuAF0CPpUsAn6fS7At/S3ypyB
-eax6u+K92QDXsNtzkRFeIVcOVHyA8SBHK2RJuqwxjODE2mETt+GgEkPmPf4y+jI+
-JaOCQW8H+0yBAAD+drVNuMG2Zi/wBQeM1JTLLDXJBOyaJ9APPllXtsHpiuA0FZGs
-+4I2CSYC2jc3Z8s9bCf233vOa+rySOGMRC7H9y3UczXZTyR5b1ZSWq2tgiAUXfh8
-bdunVV5dV46INxswrGs9+5fVe0DKeKywILjPgM/nF7iWEJfxbGQ2itfaiywcOkO+
-F24QgPCqNRV+LkmZRwtr5CoWcWGOBIYqcMDD7wgj6Ph7XQ0QmFICGwzmh/wP3FUS
-HXpg2V0Z8Ny8XRKSemiNpuz5WuNgsulHes9NXmeyFnFaNm7EQ8eVI9I0kOzOl0Jk
-G+zpiKYPfiF+nKts1xII06aIEoR8o523zV2EbtaNHeqnDCvKrr7apNo6OZykfcRH
-lafTb8pMD7j+blnwtPVUaK8jQkl/grhdUvv21N6nU8msDVmtxcg=
-=lKk8
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmRY7YUACgkQ2O7X88g7
++pqliA/+PTCQsQ+tMps+bNbGAcfRdYA0vzp4XVryQtM8fDKsYjHPbIVNbo6m1Jzj
+m8M0JG97Rv4vtAxAaAShGGRwmt0siViFBMHF3+rY0MMoXEDqyu1mgo3DUo31oglY
+cguJUCXyGonf+jCtPKjDiMAiszKUhGzbp7HLlAPNlajPse3H08fOpIf7+4YK3ejy
+4UecDxLoHwk2dWxH68unPODaHvoDCAF7hW5kTd6Czz8A6Z3x46IMF0J9/5Zn2vzU
+ia2IdAHhjd7/PHdf7ehJaG7dcYn53cnjy2ADSjM5nl9Q5Nw1iBn8ZcBuktEYp7gZ
+wKDV4U0zMlgpzSaAYe9RXElUJygJ+2BrNauEm8OJuD9FqW+mtPtlZOmLevmkDW4U
+Xu9zEK2xDx5cN3DBydlxdoy2e2wmHkAZCCuoqJh9bC4RIKCraLVNLg2MjJWVK4R6
+iixAIqkJPfS+JW94eXLYTFq89PC7gvDzWye5uP47dp+8f1Y2+qQ09VGPn4UQwCkM
++URv6OuH7kNMoFlFk9BJPBbyUxkjXlATIXj8OuZptVNl5l9/RS1fV2moy6otk0qm
+/lVokTTJpp0JvmeqA+Et4imrKQA9rCkfFTHsHNcTCLlZxMpuY9+jiySVGEfnzB4G
+/SoHiG4BPeb69Rn1JcTPkvvRONZvxgCTrdLh3POtVYfvxR82Fas=
+=HEcC
 -----END PGP SIGNATURE-----
 
---iaxjji6cusyrxt43--
+--mdqi6q4wcgrzti64--
