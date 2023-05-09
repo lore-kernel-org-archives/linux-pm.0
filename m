@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E843CC77B75
-	for <linux-pm@archiver.kernel.org>; Tue,  9 May 2023 21:24:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CC2AC77B75
+	for <linux-pm@archiver.kernel.org>; Tue,  9 May 2023 21:25:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236237AbjEIVYk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 May 2023 17:24:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37528 "EHLO
+        id S236324AbjEIVY7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 May 2023 17:24:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235757AbjEIVYJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2023 17:24:09 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B58FF6A64;
-        Tue,  9 May 2023 14:21:38 -0700 (PDT)
+        with ESMTP id S236175AbjEIVYh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2023 17:24:37 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7DFEB49C1;
+        Tue,  9 May 2023 14:21:57 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 985066375D;
-        Tue,  9 May 2023 21:20:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1498C433A4;
-        Tue,  9 May 2023 21:20:38 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id A474163752;
+        Tue,  9 May 2023 21:20:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 945F1C433AE;
+        Tue,  9 May 2023 21:20:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1683667238;
-        bh=3kq19NGPAGANm2mDx5FnD8IA4XA59hAw2umhEq1N1WM=;
+        s=k20201202; t=1683667213;
+        bh=hVu+a8jVOMe7QOMCNpFFNUq9ZPHGBxRr2Ltzkk0kQoA=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=VJs9+DDr0kOEWAOQ4qOD4ZeJ7NbDEZs594JT6NYOx6s1JHHzPocIxpFY6ZsYp1tiU
-         IwXRAvtm/U/4vtY0wsFvOO+VN44LTLJHo4Rnim3B2uuI+L0y50d9kIgSkPW89CBG7I
-         +utnmva79T6Cb1bVO5qGVDJUiq2aCEooJ7MAHq5diJfiw0uXHpTIyJsPewPPkchN7F
-         cr10fo1Pj1eq4eNNnASscp0rTrIzI75jaJ8vKrytEMw/LJHqwViyULbjhbZ8KA9rIp
-         QcpLUIejMt4fOULwVuQWqLHZRevim/eU3Jjgf+IIMmMxKKN941jEnq+TxBGrXdJ+4E
-         o1X8SEyqYt2mg==
+        b=uEUqnmdseHC2Bo0sAb0mFn251PJ66WbqvQ2I3KPQw7mHu08aXcWuDxQkI2WR4p3Pq
+         wRl5msceRno2sk/csgbp/uMijklx5H0EG4bu10eGzF06ZKdybBY/slG9rv/XVpHe/n
+         NnNjDJ/WfE72YJ8aWJOag2xM20pd5GMuk5Gycmh7HBDuIWSBjWqeHnNdjF9CibI4KJ
+         MIcxhpB0j71zwLpxg6Arg6STkf7TzsS2JWJyYidqlAOm1nWRYPH9Fpv6cSRn+iyTYa
+         SJGdkNrMDvRh6UN6FE239RhltT5mzNYb62wshQgsOHe0DFpfM7hsRr/2rUQdJ0MB3N
+         KI0ZtebBMabdg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Hans de Goede <hdegoede@redhat.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org, wens@csie.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 12/13] power: supply: axp288_charger: Use alt usb-id extcon on some x86 android tablets
-Date:   Tue,  9 May 2023 17:20:20 -0400
-Message-Id: <20230509212023.22105-12-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.2 14/18] power: supply: axp288_charger: Use alt usb-id extcon on some x86 android tablets
+Date:   Tue,  9 May 2023 17:19:52 -0400
+Message-Id: <20230509211958.21596-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230509212023.22105-1-sashal@kernel.org>
-References: <20230509212023.22105-1-sashal@kernel.org>
+In-Reply-To: <20230509211958.21596-1-sashal@kernel.org>
+References: <20230509211958.21596-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -85,10 +85,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 22378dad4d9fc..a52e01676fbcc 100644
+index 15219ed43ce95..b5903193e2f96 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -811,6 +811,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
+@@ -836,6 +836,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
  	struct device *dev = &pdev->dev;
  	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
  	struct power_supply_config charger_cfg = {};
@@ -96,7 +96,7 @@ index 22378dad4d9fc..a52e01676fbcc 100644
  	unsigned int val;
  
  	/*
-@@ -839,8 +840,18 @@ static int axp288_charger_probe(struct platform_device *pdev)
+@@ -872,8 +873,18 @@ static int axp288_charger_probe(struct platform_device *pdev)
  		return PTR_ERR(info->cable.edev);
  	}
  
