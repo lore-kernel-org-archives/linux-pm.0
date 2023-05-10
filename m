@@ -2,128 +2,151 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1D5EC7EE23
-	for <linux-pm@archiver.kernel.org>; Wed, 10 May 2023 13:23:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 504CFC77B7C
+	for <linux-pm@archiver.kernel.org>; Wed, 10 May 2023 13:36:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236961AbjEJNXl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 May 2023 09:23:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58800 "EHLO
+        id S237147AbjEJNgA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 May 2023 09:36:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42496 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236778AbjEJNXk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 May 2023 09:23:40 -0400
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A04135BBB
-        for <linux-pm@vger.kernel.org>; Wed, 10 May 2023 06:23:35 -0700 (PDT)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed30:cc75:d8ef:4074:8af9])
-        by michel.telenet-ops.be with bizsmtp
-        id v1PG290093l7qvk061PGka; Wed, 10 May 2023 15:23:33 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtp (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1pwjme-001nDj-DC;
-        Wed, 10 May 2023 15:23:16 +0200
-Received: from geert by rox.of.borg with local (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1pwjmm-00F6qH-2e;
-        Wed, 10 May 2023 15:23:16 +0200
-From:   Geert Uytterhoeven <geert+renesas@glider.be>
-To:     Stephen Boyd <sboyd@kernel.org>,
-        Tomasz Figa <tomasz.figa@gmail.com>,
-        Sylwester Nawrocki <s.nawrocki@samsung.com>,
-        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        Dejin Zheng <zhengdejin5@gmail.com>,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Russell King <linux@armlinux.org.uk>,
-        John Stultz <jstultz@google.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Tony Lindgren <tony@atomide.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Tero Kristo <tero.kristo@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
+        with ESMTP id S235752AbjEJNf7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 May 2023 09:35:59 -0400
+Received: from new1-smtp.messagingengine.com (new1-smtp.messagingengine.com [66.111.4.221])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DB0298;
+        Wed, 10 May 2023 06:35:58 -0700 (PDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+        by mailnew.nyi.internal (Postfix) with ESMTP id A1D425803F9;
+        Wed, 10 May 2023 09:35:56 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Wed, 10 May 2023 09:35:56 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+        :cc:content-type:content-type:date:date:from:from:in-reply-to
+        :in-reply-to:message-id:mime-version:references:reply-to:sender
+        :subject:subject:to:to; s=fm3; t=1683725756; x=1683732956; bh=Ot
+        QRh15NAW2fKN6rYhRVoaA9NIjXRriGi0juhcP02Nk=; b=Fei60N3N1IRxNekLDz
+        LlNakjV6mxlgcp+mcjsPCqDoGkhdYbgZAhm4AALdN30Rod8nRMpHC0cNU5jXYuyK
+        UG8hF4Rt60A2eKOivls83Axn1EallgBdvgo48zEtswWI2Qnao/3GLCf9eV5U+5Ok
+        MSYBCjVB0OAItrUDOt3jTvymHnf9qu40cf1TvL7VQgQSpYqD3eaiovc6KdjxPFx/
+        ZbcuBOKpDa547E+GgpylHyouViTgpOUCBkBNBVyeqgfu+awEM+UV8riMIEnypIcX
+        gLY9fA2wp3HIDkXP3lLk8/XO+L1kwXadHUjrNyRH4uTwUNxibzEmKTQtT8kBx8lM
+        8vjw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:content-type:date:date
+        :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm3; t=1683725756; x=1683732956; bh=OtQRh15NAW2fK
+        N6rYhRVoaA9NIjXRriGi0juhcP02Nk=; b=az8ZNx2lXpcCEt9HJiIiSMtLujspS
+        zL+7doBWdbPbYzFHretQkcpDdjKlIVnLafTQEuEVeKIRK3tVvgsbZj14J7LbGSao
+        Shwfx5FhCtTgoSxt+Ge4ZcFA4cwWGKfzIS2/N1CBSmIuLwrO87hlSOYxecVaE5un
+        NUdNaWMwYbqFQvO2vZ5oIxTe4g24VJly6SDNDJYRmW8fPviILc8YapMJcDl0iiw3
+        ME1oq4u02A3x9OCr+MXxDMhGrl4WwibcMq3qP5+aJv4Yi135vec2p9873HFJlXrC
+        L5jHY4//HIF18PkL8CS+nPVtg+8ec31Kym8IP9/JI1QW6p5mC8Ee6svzQ==
+X-ME-Sender: <xms:u51bZEC1mqpxG3NfJIKjLtexI_Odbousdgu_Pqys5U6DJa98HkbLkA>
+    <xme:u51bZGjIrIFp1rBTRgvjrlUaycqSZ2oM9V5ZRBbqoaaO_xha1PAzRbwruUrm44Orj
+    lu6eGtd_53MXmtYPlo>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrfeegiedggeehucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:u51bZHkc31ns5dYrPTasRmjl4bhobgb9wZWBI9T-ijbtqcVFgPhqOg>
+    <xmx:u51bZKxBAypEvGab2_acadu6LfLHlfOxIz0Exgiy2mXjngFS8LSTBQ>
+    <xmx:u51bZJRCN78u3OKzWITTd3Xg6zMi_ROCD7FLAB2RWEImjCn6l3IJyQ>
+    <xmx:vJ1bZFJi68EsJLW6hltzVHGaxr-i1Wx0vzUbgc8kgsZa4XKXmgv7RQ>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+        id 254FCB60086; Wed, 10 May 2023 09:35:55 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-415-gf2b17fe6c3-fm-20230503.001-gf2b17fe6
+Mime-Version: 1.0
+Message-Id: <02ce0541-08cf-4e14-a9b1-c53efea85178@app.fastmail.com>
+In-Reply-To: <8db63020d18fc22e137e4a8f0aa15e6b9949a6f6.1683722688.git.geert+renesas@glider.be>
+References: <cover.1683722688.git.geert+renesas@glider.be>
+ <8db63020d18fc22e137e4a8f0aa15e6b9949a6f6.1683722688.git.geert+renesas@glider.be>
+Date:   Wed, 10 May 2023 15:35:32 +0200
+From:   "Arnd Bergmann" <arnd@arndb.de>
+To:     "Geert Uytterhoeven" <geert+renesas@glider.be>,
+        "Stephen Boyd" <sboyd@kernel.org>,
+        "Tomasz Figa" <tomasz.figa@gmail.com>,
+        "Sylwester Nawrocki" <s.nawrocki@samsung.com>,
+        "Will Deacon" <will@kernel.org>,
+        "Wolfram Sang" <wsa+renesas@sang-engineering.com>,
+        "Dejin Zheng" <zhengdejin5@gmail.com>,
+        "Kai-Heng Feng" <kai.heng.feng@canonical.com>,
+        "Nicholas Piggin" <npiggin@gmail.com>,
+        "Heiko Carstens" <hca@linux.ibm.com>,
+        "Peter Zijlstra" <peterz@infradead.org>,
+        "Russell King" <linux@armlinux.org.uk>,
+        "John Stultz" <jstultz@google.com>,
+        "Thomas Gleixner" <tglx@linutronix.de>,
+        "Tony Lindgren" <tony@atomide.com>,
+        "Krzysztof Kozlowski" <krzk@kernel.org>,
+        "Tero Kristo" <tero.kristo@linux.intel.com>,
+        "Ulf Hansson" <ulf.hansson@linaro.org>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        "Vincent Guittot" <vincent.guittot@linaro.org>
 Cc:     linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 0/2] iopoll: Busy loop and timeout improvements
-Date:   Wed, 10 May 2023 15:23:12 +0200
-Message-Id: <cover.1683722688.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] iopoll: Do not use timekeeping in
+ read_poll_timeout_atomic()
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-	Hi all,
+On Wed, May 10, 2023, at 15:23, Geert Uytterhoeven wrote:
+> read_poll_timeout_atomic() uses ktime_get() to implement the timeout
+> feature, just like its non-atomic counterpart.  However, there are
+> several issues with this, due to its use in atomic contexts:
+>
+>   1. When called in the s2ram path (as typically done by clock or PM
+>      domain drivers), timekeeping may be suspended, triggering the
+>      WARN_ON(timekeeping_suspended) in ktime_get():
+>
+> 	WARNING: CPU: 0 PID: 654 at kernel/time/timekeeping.c:843 ktime_get+0x28/0x78
+>
+>      Calling ktime_get_mono_fast_ns() instead of ktime_get() would get
+>      rid of that warning.  However, that would break timeout handling,
+>      as (at least on systems with an ARM architectured timer), the time
+>      returned by ktime_get_mono_fast_ns() does not advance while
+>      timekeeping is suspended.
+>      Interestingly, (on the same ARM systems) the time returned by
+>      ktime_get() does advance while timekeeping is suspended, despite
+>      the warning.
+>
+>   2. Depending on the actual clock source, and especially before a
+>      high-resolution clocksource (e.g. the ARM architectured timer)
+>      becomes available, time may not advance in atomic contexts, thus
+>      breaking timeout handling.
+>
+> Fix this by abandoning the idea that one can rely on timekeeping to
+> implement timeout handling in all atomic contexts, and switch from a
+> global time-based to a locally-estimated timeout handling.  In most
+> (all?) cases the timeout condition is exceptional and an error
+> condition, hence any additional delays due to underestimating wall clock
+> time are irrelevant.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-When implementing a polling loop, a common review comment is to use one
-of the read*_poll_timeout*() helpers.  Unfortunately this is not always
-possible, or might introduce subtle bugs.  This patch series aims to
-improve these helpers, so they can gain wider use.
+This looks reasonable to me,
 
-  1. The first patch improves busy-looping behavior of both the atomic
-     and non-atomic read*_poll_timeout*() helpers.
-     The issue addressed by this patch was discussed before[1-2], but I
-     am not aware of any patches moving forward.
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-  2. The second patch fixes timeout handling of the atomic variants.
-     Some of the issues addressed by this patch were mitigated in
-     various places[3-5], and some of these findings may of interest to
-     the authors of [6-8].
+I assume you sent this because you ran into the bug on a
+particular driver. It might help to be more specific about
+how this can be reproduced.
 
-The first patch was sent before, and already received some acks, but I
-hadn't queued it yet as a depedency for more read*_poll_timeout*() use,
-because I ran into the issue fixed by the second patch.
+> ---
+> Alternatively, one could use a mixed approach (use both
+> ktime_get_mono_fast_ns() and a local (under)estimate, and timeout on the
+> earliest occasion), but I think that would complicate things without
+> much gain.
 
-Changes compared to v1[9]:
-  - Add Acked-by,
-  - Add compiler barrier and inlining explanation (thanks, Peter!),
-  - Add patch [2/2].
+Agreed.
 
-Thanks for your comments!
-
-[1] "Re: [PATCH 6/7] clk: renesas: rcar-gen3: Add custom clock for PLLs"
-    https://lore.kernel.org/all/CAMuHMdWUEhs=nwP+a0vO2jOzkq-7FEOqcJ+SsxAGNXX1PQ2KMA@mail.gmail.com
-[2] "Re: [PATCH v2] clk: samsung: Prevent potential endless loop in the
-    PLL set_rate ops"
-    https://lore.kernel.org/all/20200811164628.GA7958@kozik-lap
-[3] b3e9431854e8f305 ("bus: ti-sysc: Fix timekeeping_suspended warning
-		       on resume")
-[4] 44a9e78f9242872c ("clk: samsung: Prevent potential endless loop in
-		       the PLL ops")
-[5] 3d8598fb9c5a7783 ("clk: ti: clkctrl: use fallback udelay approach if
-		      timekeeping is suspended")
-[6] bd40cbb0e3b37a4d ("PM: domains: Move genpd's time-accounting to
-		       ktime_get_mono_fast_ns()")
-[7] c155f6499f9797f2 ("PM-runtime: Switch accounting over to
-		       ktime_get_mono_fast_ns()")
-[8] 15efb47dc560849d ("PM-runtime: Fix deadlock with ktime_get()")
-
-[9] https://lore.kernel.org/r/8d492ee4a391bd089a01c218b0b4e05cf8ea593c.1674729407.git.geert+renesas@glider.be/
-
-Geert Uytterhoeven (2):
-  iopoll: Call cpu_relax() in busy loops
-  iopoll: Do not use timekeeping in read_poll_timeout_atomic()
-
- include/linux/iopoll.h | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
-
--- 
-2.34.1
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+     Arnd
