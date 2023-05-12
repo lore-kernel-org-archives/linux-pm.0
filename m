@@ -2,24 +2,24 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5981BC77B7C
-	for <linux-pm@archiver.kernel.org>; Fri, 12 May 2023 09:59:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2540C7EE24
+	for <linux-pm@archiver.kernel.org>; Fri, 12 May 2023 09:59:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240630AbjELJ7a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 May 2023 05:59:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53508 "EHLO
+        id S240691AbjELJ7s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 May 2023 05:59:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53654 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240653AbjELJ7C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 May 2023 05:59:02 -0400
+        with ESMTP id S240692AbjELJ7H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 May 2023 05:59:07 -0400
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D00551208E;
-        Fri, 12 May 2023 02:58:33 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 28A95124BE;
+        Fri, 12 May 2023 02:58:40 -0700 (PDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 182EC16A3;
-        Fri, 12 May 2023 02:59:18 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 347E1139F;
+        Fri, 12 May 2023 02:59:24 -0700 (PDT)
 Received: from e123648.arm.com (unknown [10.57.22.28])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id CF6D93F5A1;
-        Fri, 12 May 2023 02:58:30 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id EB5643F5A1;
+        Fri, 12 May 2023 02:58:36 -0700 (PDT)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         rafael@kernel.org
@@ -28,9 +28,9 @@ Cc:     lukasz.luba@arm.com, dietmar.eggemann@arm.com, rui.zhang@intel.com,
         daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
         len.brown@intel.com, pavel@ucw.cz, Pierre.Gondois@arm.com,
         ionela.voinescu@arm.com, rostedt@goodmis.org, mhiramat@kernel.org
-Subject: [PATCH v2 12/17] PM: EM: Add argument to get_cost() for runtime modification
-Date:   Fri, 12 May 2023 10:57:38 +0100
-Message-Id: <20230512095743.3393563-13-lukasz.luba@arm.com>
+Subject: [PATCH v2 14/17] Documentation: EM: Add a new section about the design
+Date:   Fri, 12 May 2023 10:57:40 +0100
+Message-Id: <20230512095743.3393563-15-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230512095743.3393563-1-lukasz.luba@arm.com>
 References: <20230512095743.3393563-1-lukasz.luba@arm.com>
@@ -40,107 +40,100 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Energy Model (EM) supports runtime modifications. Let also the
-artificial EM use this new feature and allow to update the 'cost' values
-at runtime. When the artificial EM is used there is a need to provide
-two callbacks: get_cost() and update_power(), not only the last one.
-
-Update also CPPC driver code, since the new argument is needed there
-to compile properly and register EM.
+Add a new section 'Design' which covers the information about Energy
+Model. It contains the design decisions, describes models and how they
+reflect the reality. Add description of the basic const. EM. Change the
+other section IDs.
 
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/cpufreq/cppc_cpufreq.c | 2 +-
- include/linux/energy_model.h   | 7 ++++++-
- kernel/power/energy_model.c    | 9 +++++----
- 3 files changed, 12 insertions(+), 6 deletions(-)
+ Documentation/power/energy-model.rst | 36 +++++++++++++++++++++-------
+ 1 file changed, 27 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 022e3555407c..f5353c10552b 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -574,7 +574,7 @@ static int cppc_get_cpu_power(struct device *cpu_dev,
- }
+diff --git a/Documentation/power/energy-model.rst b/Documentation/power/energy-model.rst
+index ef341be2882b..e97c7f18d8bd 100644
+--- a/Documentation/power/energy-model.rst
++++ b/Documentation/power/energy-model.rst
+@@ -72,16 +72,34 @@ required to have the same micro-architecture. CPUs in different performance
+ domains can have different micro-architectures.
  
- static int cppc_get_cpu_cost(struct device *cpu_dev, unsigned long KHz,
--		unsigned long *cost)
-+		unsigned long *cost, void *priv)
- {
- 	unsigned long perf_step, perf_prev;
- 	struct cppc_perf_caps *perf_caps;
-diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-index 8e3fa2b6bf28..b8506df9af2d 100644
---- a/include/linux/energy_model.h
-+++ b/include/linux/energy_model.h
-@@ -162,6 +162,8 @@ struct em_data_callback {
- 	 * @freq	: Frequency at the performance state in kHz
- 	 * @cost	: The cost value for the performance state
- 	 *		(modified)
-+	 * @priv	: Pointer to private data useful for tracking context
-+	 *		during run-time modifications of EM.
- 	 *
- 	 * In case of CPUs, the cost is the one of a single CPU in the domain.
- 	 * It is expected to fit in the [0, EM_MAX_POWER] range due to internal
-@@ -170,7 +172,7 @@ struct em_data_callback {
- 	 * Return 0 on success, or appropriate error value in case of failure.
- 	 */
- 	int (*get_cost)(struct device *dev, unsigned long freq,
--			unsigned long *cost);
-+			unsigned long *cost, void *priv);
  
- 	/**
- 	 * update_power() - Provide new power at the given performance state of
-@@ -199,6 +201,9 @@ struct em_data_callback {
- #define EM_DATA_CB(_active_power_cb)			\
- 		EM_ADV_DATA_CB(_active_power_cb, NULL)
- #define EM_UPDATE_CB(_update_power_cb) { .update_power = &_update_power_cb }
-+#define EM_ADV_UPDATE_CB(_update_power_cb, _cost_cb)	\
-+	{ .update_power = &_update_power_cb,		\
-+	  .get_cost = _cost_cb }
+-2. Core APIs
++2. Design
++-----------------
++
++2.1 Basic EM
++^^^^^^^^^^^^
++
++The basic EM is built around const. power information for each performance
++state. This model can be derived based on power measurements of the device
++e.g. CPU while running some benchmark. The benchmark might be integer heavy
++or floating point computation with a data set fitting into the CPU cache or
++registers. Bare in mind that this model might not be covering all possible
++workloads running on CPUs. Thus, please run a few different benchmarks and
++verify with some real workloads your power model values. The power variation
++due to the workload instruction mix and data set is not modeled.
++Also static power which can change during runtime due to variation of SOC
++temperature is not modeled in EM.
++
++
++3. Core APIs
+ ------------
  
- struct em_perf_domain *em_cpu_get(int cpu);
- struct em_perf_domain *em_pd_get(struct device *dev);
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index b5675dda00e1..456d9f2b4370 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -165,7 +165,7 @@ static void em_perf_runtime_table_set(struct device *dev,
+-2.1 Config options
++3.1 Config options
+ ^^^^^^^^^^^^^^^^^^
  
- static int em_compute_costs(struct device *dev, struct em_perf_state *table,
- 			    struct em_data_callback *cb, int nr_states,
--			    unsigned long flags)
-+			    unsigned long flags, void *priv)
- {
- 	unsigned long prev_cost = ULONG_MAX;
- 	u64 fmax;
-@@ -177,7 +177,8 @@ static int em_compute_costs(struct device *dev, struct em_perf_state *table,
- 		unsigned long power_res, cost;
+ CONFIG_ENERGY_MODEL must be enabled to use the EM framework.
  
- 		if (flags & EM_PERF_DOMAIN_ARTIFICIAL && cb->get_cost) {
--			ret = cb->get_cost(dev, table[i].frequency, &cost);
-+			ret = cb->get_cost(dev, table[i].frequency, &cost,
-+					   priv);
- 			if (ret || !cost || cost > EM_MAX_POWER) {
- 				dev_err(dev, "EM: invalid cost %lu %d\n",
- 					cost, ret);
-@@ -277,7 +278,7 @@ int em_dev_update_perf_domain(struct device *dev, struct em_data_callback *cb,
- 	}
  
- 	ret = em_compute_costs(dev, runtime_table->state, cb,
--			       pd->nr_perf_states, pd->flags);
-+			       pd->nr_perf_states, pd->flags, priv);
- 	if (ret)
- 		goto free_runtime_state_table;
+-2.2 Registration of performance domains
++3.2 Registration of performance domains
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  
-@@ -347,7 +348,7 @@ static int em_create_perf_table(struct device *dev, struct em_perf_domain *pd,
- 		table[i].frequency = prev_freq = freq;
- 	}
+ Registration of 'advanced' EM
+@@ -110,8 +128,8 @@ The last argument 'microwatts' is important to set with correct value. Kernel
+ subsystems which use EM might rely on this flag to check if all EM devices use
+ the same scale. If there are different scales, these subsystems might decide
+ to return warning/error, stop working or panic.
+-See Section 3. for an example of driver implementing this
+-callback, or Section 2.4 for further documentation on this API
++See Section 4. for an example of driver implementing this
++callback, or Section 3.4 for further documentation on this API
  
--	ret = em_compute_costs(dev, table, cb, nr_states, flags);
-+	ret = em_compute_costs(dev, table, cb, nr_states, flags, NULL);
- 	if (ret)
- 		goto free_ps_table;
+ Registration of EM using DT
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@@ -156,7 +174,7 @@ The EM which is registered using this method might not reflect correctly the
+ physics of a real device, e.g. when static power (leakage) is important.
  
+ 
+-2.3 Accessing performance domains
++3.3 Accessing performance domains
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 
+ There are two API functions which provide the access to the energy model:
+@@ -175,10 +193,10 @@ CPUfreq governor is in use in case of CPU device. Currently this calculation is
+ not provided for other type of devices.
+ 
+ More details about the above APIs can be found in ``<linux/energy_model.h>``
+-or in Section 2.4
++or in Section 3.4
+ 
+ 
+-2.4 Description details of this API
++3.4 Description details of this API
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ .. kernel-doc:: include/linux/energy_model.h
+    :internal:
+@@ -187,7 +205,7 @@ or in Section 2.4
+    :export:
+ 
+ 
+-3. Example driver
++4. Example driver
+ -----------------
+ 
+ The CPUFreq framework supports dedicated callback for registering
 -- 
 2.25.1
 
