@@ -2,112 +2,217 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E4D0C77B75
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 11:54:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83F02C7EE2C
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 12:04:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233194AbjEPLy0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 07:54:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50428 "EHLO
+        id S232676AbjEPMEt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 08:04:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58562 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233121AbjEPLyP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 07:54:15 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E1E66A42
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2023 04:54:09 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-4f122ff663eso16067959e87.2
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2023 04:54:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1684238047; x=1686830047;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=U/U9AOMWIVpnC8ZJ/nG62G/TxmeU88Cq42ECjWaNDuc=;
-        b=xxzf+tcELx3E0yLhL1kMvPFLIC9HxKkT2Dz6mG5MDFEj/jmjFgawVW19wfGBEFzvLY
-         /dtS1p2p80akvBQaXa44MvhYXUpLzqRagcWuWz75tXe0fzZBrBmUyJNM7oRW4k3V3Dg7
-         bv33zY88jiVdSGIal1dcSoDLQHxCEpCUy9HXb/2lzjT29N3RrPNLFLyNDmE44vpQFIzR
-         M6HTlTdK155eFsjZMoQhe6JY4T5bFqgjIZZ0N1k78clJGdvZRhieBQsCEGaWn2H5+p3L
-         p8rE6oSZ1f8+Nun8CTg0+RK2qH0g3NemkWTzlAAiOWWBGBSUI1mcmFcNiLh0lNBum4n7
-         /7Ng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684238047; x=1686830047;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=U/U9AOMWIVpnC8ZJ/nG62G/TxmeU88Cq42ECjWaNDuc=;
-        b=CCQdk7mfR0PnPw/T5l11LBDWUZu3AgA/AakGwBv4+5Nj7GLKU+U8nU+Q/+j48UsPdK
-         gfi7KfXSpDktibescc0/ZUnATlKDDPT6RmqJTHkRc5BAMdmiubgjtKuybGgRUjTpKttv
-         784kIQADeFl7ikwx4LWuF09El2qz3e8yjwhuLEsW56SdQAtL5w/AfujM1216MfoNCRa1
-         KL9xTF80XmdApMOWZbm3iojLaTQuIV144nkrq7FhO5IeR91pvILuxyXXTdU5olNdOATm
-         tQMofRRvB6tJlemk6RgQeluo8IWLPNp3g7fwiWna+s8PNji9FGGJjht6NZ2mfeeyOfrp
-         mvbA==
-X-Gm-Message-State: AC+VfDx/mQi3AiVrEphzX3gAWEgUN19b2SNxyyDG8dDEhvEO6o2XeIgt
-        IdF8mUXdrdMrGggP9VzDTfJnKA==
-X-Google-Smtp-Source: ACHHUZ7al8ZSgMAfnhYMhVtIW3R1XeM4K9+1jw+RmmTpUlYvv6Iej0HkqaAvyKF4li93f6eg81YRVQ==
-X-Received: by 2002:ac2:5d26:0:b0:4dd:afd7:8f1 with SMTP id i6-20020ac25d26000000b004ddafd708f1mr6589759lfb.52.1684238047178;
-        Tue, 16 May 2023 04:54:07 -0700 (PDT)
-Received: from [192.168.1.101] (abxi58.neoplus.adsl.tpnet.pl. [83.9.2.58])
-        by smtp.gmail.com with ESMTPSA id z13-20020a056512376d00b004f019d3eab4sm2951410lft.23.2023.05.16.04.54.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 May 2023 04:54:06 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 16 May 2023 13:53:59 +0200
-Subject: [PATCH RESEND 2/2] dt-bindings: thermal: tsens: Add compatible for
- SM6375
+        with ESMTP id S232894AbjEPMEr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 08:04:47 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4897C30FE;
+        Tue, 16 May 2023 05:04:42 -0700 (PDT)
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34GAcDsi015268;
+        Tue, 16 May 2023 12:04:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=date : from : to :
+ cc : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=qcppdkim1; bh=pY0yj58hPlHBY9cauW2Ttf8YI3LqWC5Y7iGKqTrGPuU=;
+ b=BylNkX9FKHmH26cNJix/WlUwnlCWc5DAh+nqIc7L0WEXGW65JeEBHNUqCEZ2Z1P+dVEq
+ ekmVVvF2QR5Yygq4ieKZBVRq3bcc5kP2q26ZHG040fXw/rG76eUIh3yHPydE4dmv3+md
+ ay0qCNEIfMp+iHXdjmMr+vV23Mfbyqo/7eNq1wocN/46l+rn7yvGLbo3C03LFkJsN2iK
+ ud3Afr+mTeAg3QckPLZGNgLeT8RFVL11qdkpmRoTPUhxuRPF+AavwnvYkUrIYeoRDJff
+ /5fodlAGA4HvfDdoPm05NohySdsOQiRDwd5YZT5BJuviUpsfqeGe72DMMHlmQEObkidK Gg== 
+Received: from nasanppmta04.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3qkkde2xfc-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 16 May 2023 12:04:37 +0000
+Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
+        by NASANPPMTA04.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 34GC4a7o003529
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 16 May 2023 12:04:36 GMT
+Received: from varda-linux.qualcomm.com (10.80.80.8) by
+ nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.42; Tue, 16 May 2023 05:04:31 -0700
+Date:   Tue, 16 May 2023 17:34:27 +0530
+From:   Varadarajan Narayanan <quic_varada@quicinc.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+CC:     <agross@kernel.org>, <andersson@kernel.org>,
+        <konrad.dybcio@linaro.org>, <amitk@kernel.org>,
+        <thara.gopinath@gmail.com>, <rafael@kernel.org>,
+        <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
+        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
+        <conor+dt@kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        Praveenkumar I <quic_ipkumar@quicinc.com>
+Subject: Re: [PATCH v3 2/4] dt-bindings: thermal: tsens: Add ipq9574
+ compatible
+Message-ID: <20230516120426.GA1679@varda-linux.qualcomm.com>
+References: <cover.1684140883.git.quic_varada@quicinc.com>
+ <37adcf5d8d545a076e8ed971a4fb6c6c2833ef3c.1684140883.git.quic_varada@quicinc.com>
+ <b7e749ff-f4f0-0e61-9aae-876db4278fbc@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230516-topic-lost_tsens_bindings-v1-2-99715746ddb1@linaro.org>
-References: <20230516-topic-lost_tsens_bindings-v1-0-99715746ddb1@linaro.org>
-In-Reply-To: <20230516-topic-lost_tsens_bindings-v1-0-99715746ddb1@linaro.org>
-To:     Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1684238042; l=944;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=I+wiNgFNMuppuk+Q4In4BSan/9TRWGs892V/JtEHGx0=;
- b=wy7N//zkdjcEG/NypauPBu9XBdEQ0ByzG+WNhTP55JUZcGBwa7+tfKQ+/VPfUSeWWzOTiEnvE
- azlPvtSZHC4DAcNvhLJZrf6c8HK5EYBGT2QEVoOJ8Tv9EJVBxgyesgq
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <b7e749ff-f4f0-0e61-9aae-876db4278fbc@linaro.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Originating-IP: [10.80.80.8]
+X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
+ nasanex01a.na.qualcomm.com (10.52.223.231)
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-GUID: QvkZWJduGUlbTGZSluXhlCVCd_QCTVML
+X-Proofpoint-ORIG-GUID: QvkZWJduGUlbTGZSluXhlCVCd_QCTVML
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-05-16_05,2023-05-16_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ phishscore=0 suspectscore=0 bulkscore=0 clxscore=1015 impostorscore=0
+ mlxscore=0 mlxlogscore=999 malwarescore=0 spamscore=0 adultscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2304280000 definitions=main-2305160103
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm SM6375 platform has two instances of the tsens v2.8.0 block,
-add a compatible for these instances.
+On Mon, May 15, 2023 at 06:10:29PM +0200, Krzysztof Kozlowski wrote:
+> On 15/05/2023 12:13, Varadarajan Narayanan wrote:
+> > From: Praveenkumar I <quic_ipkumar@quicinc.com>
+> >
+> > Qualcomm IPQ9574 has tsens v2.3.1 block, which is similar to IPQ8074 tsens.
+> >
+> > Signed-off-by: Praveenkumar I <quic_ipkumar@quicinc.com>
+> > Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
+> > ---
+> > [v3]:
+> > 	Fix dt_binding_check & dtbs_check errors (Used
+> > 	Documentation/devicetree/bindings/display/allwinner,sun4i-a10-tcon.yaml
+> > 	as reference/example)
+> >
+> > 	Drop 'Acked-by: Rob Herring' as suggested in review
+> >
+> > [v2]:
+> > 	Thanks to Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> > 	for the tip to make qcom,ipq8074-tsens as fallback.
+> > ---
+> >  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 13 +++++++++++--
+> >  1 file changed, 11 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> > index d9aa54c..57e3908 100644
+> > --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> > +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> > @@ -19,6 +19,11 @@ description: |
+> >  properties:
+> >    compatible:
+> >      oneOf:
+> > +      - const: qcom,tsens-v0_1
+> > +      - const: qcom,tsens-v1
+> > +      - const: qcom,tsens-v2
+>
+> Nope, these are not correct.
+>
+> > +      - const: qcom,ipq8074-tsens
+>
+> Also nope, this is already there.
+>
+> > +
+> >        - description: msm8960 TSENS based
+> >          items:
+> >            - enum:
+> > @@ -66,8 +71,10 @@ properties:
+> >            - const: qcom,tsens-v2
+> >
+> >        - description: v2 of TSENS with combined interrupt
+> > -        enum:
+> > -          - qcom,ipq8074-tsens
+>
+> Why?
+>
+> > +        items:
+> > +          - enum:
+> > +              - qcom,ipq9574-tsens
+> > +          - const: qcom,ipq8074-tsens
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Without changing it like this either dtbs_check or
+dt_binding_check kept failing.
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 2739b2bead7b..d9aa54c11663 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -57,6 +57,7 @@ properties:
-               - qcom,sdm845-tsens
-               - qcom,sm6115-tsens
-               - qcom,sm6350-tsens
-+              - qcom,sm6375-tsens
-               - qcom,sm8150-tsens
-               - qcom,sm8250-tsens
-               - qcom,sm8350-tsens
+	- description: v2 of TSENS with combined interrupt
+	  enum:
+	    - qcom,ipq8074-tsens
+	    - qcom,ipq9574-tsens
 
--- 
-2.40.1
+dtbs_check gave this kind of error
+	['qcom,ipq9574-tsens', 'qcom,ipq8074-tsens'] is too long
 
+After changing it like in https://elixir.bootlin.com/linux/v6.3-rc6/source/Documentation/devicetree/bindings/sound/nvidia,tegra210-ope.yaml#L31
+
+	- description: v2 of TSENS with combined interrupt
+	  const: qcom,ipq8074-tsens
+	  - enum:
+	      - qcom,ipq9574-tsens
+	  - const: qcom,ipq8074-tsens
+
+dt_binding_check gives the following error
+
+	Documentation/devicetree/bindings/thermal/qcom-tsens.yaml:70:9: did not find expected key
+
+and dtbs_check gives
+
+	./Documentation/devicetree/bindings/thermal/qcom-tsens.yaml:70:9: [error] syntax error: expected <block end>, but found '-' (syntax)
+	  CHKDT   Documentation/devicetree/bindings/processed-schema.json
+	./Documentation/devicetree/bindings/clock/qcom,gcc-ipq8064.yaml: Unable to find schema file matching $id: http://devicetree.org/schemas/thermal/qcom-tsens.yaml
+	./Documentation/devicetree/bindings/clock/qcom,gcc-apq8064.yaml: Unable to find schema file matching $id: http://devicetree.org/schemas/thermal/qcom-tsens.yaml
+	./Documentation/devicetree/bindings/thermal/qcom-tsens.yaml:70:9: did not find expected key
+	  SCHEMA  Documentation/devicetree/bindings/processed-schema.json
+	/local/mnt/workspace/varada/v3/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml: ignoring, error parsing file
+
+If i change it like below,
+
+	- description: v2 of TSENS with combined interrupt
+	  enum:
+	    - qcom,ipq9574-tsens
+	  - const: qcom,ipq8074-tsens
+
+dt_binding_check and dtbs_check gives same error as above.
+
+Looked around and found Documentation/devicetree/bindings/display/allwinner,sun4i-a10-tcon.yaml
+which seemed to do something similar to what is wanted in this
+case. Hence changed qcom-tsens.yaml similar to the allwinner yaml
+file. After which dt_binding_check and dtbs_check passed. Please
+let me know if there is a better way to solve this. Will go with
+that.
+
+Thanks
+Varada
+
+> >
+> >    reg:
+> >      items:
+> > @@ -279,6 +286,7 @@ allOf:
+> >            contains:
+> >              enum:
+> >                - qcom,ipq8074-tsens
+> > +              - qcom,ipq9574-tsens
+>
+> Not needed, drop.
+>
+> >      then:
+> >        properties:
+> >          interrupts:
+> > @@ -294,6 +302,7 @@ allOf:
+> >            contains:
+> >              enum:
+> >                - qcom,ipq8074-tsens
+> > +              - qcom,ipq9574-tsens
+>
+> Ditto.
+>
+>
+> Best regards,
+> Krzysztof
+>
