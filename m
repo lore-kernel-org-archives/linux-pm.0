@@ -2,465 +2,142 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35D39C7EE26
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 06:22:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B70A3C7EE26
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 07:38:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230206AbjEPGWC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 02:22:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39398 "EHLO
+        id S231403AbjEPHiT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 03:38:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38528 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230156AbjEPGV4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 02:21:56 -0400
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90F4B448F;
-        Mon, 15 May 2023 23:21:39 -0700 (PDT)
-Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.57])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4QL5fF05WWzLq2s;
-        Tue, 16 May 2023 14:18:45 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Tue, 16 May 2023 14:21:37 +0800
-From:   Kefeng Wang <wangkefeng.wang@huawei.com>
-To:     Andrew Morton <akpm@linux-foundation.org>,
-        Mike Rapoport <rppt@kernel.org>, <linux-mm@kvack.org>
-CC:     David Hildenbrand <david@redhat.com>,
-        Oscar Salvador <osalvador@suse.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Luis Chamberlain <mcgrof@kernel.org>,
-        Kees Cook <keescook@chromium.org>,
-        Iurii Zaikin <yzaikin@google.com>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-fsdevel@vger.kernel.org>, <ying.huang@intel.com>,
-        Kefeng Wang <wangkefeng.wang@huawei.com>
-Subject: [PATCH v2 12/13] mm: page_alloc: move sysctls into it own fils
-Date:   Tue, 16 May 2023 14:38:20 +0800
-Message-ID: <20230516063821.121844-13-wangkefeng.wang@huawei.com>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20230516063821.121844-1-wangkefeng.wang@huawei.com>
-References: <20230516063821.121844-1-wangkefeng.wang@huawei.com>
+        with ESMTP id S231387AbjEPHiM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 03:38:12 -0400
+Received: from forward501b.mail.yandex.net (forward501b.mail.yandex.net [178.154.239.145])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB29D3581;
+        Tue, 16 May 2023 00:38:09 -0700 (PDT)
+Received: from mail-nwsmtp-smtp-production-main-91.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-91.sas.yp-c.yandex.net [IPv6:2a02:6b8:c14:2991:0:640:bb47:0])
+        by forward501b.mail.yandex.net (Yandex) with ESMTP id 6695D5F29E;
+        Tue, 16 May 2023 10:38:03 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-91.sas.yp-c.yandex.net (smtp/Yandex) with ESMTPSA id rbVsqF6Wo4Y0-UkaxrYJI;
+        Tue, 16 May 2023 10:38:01 +0300
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=maquefel.me; s=mail; t=1684222681;
+        bh=R3NyR73k7IhF7nI84HX4UghfXKGpid2SwwTSfXwtO70=;
+        h=References:Date:In-Reply-To:Cc:To:From:Subject:Message-ID;
+        b=QotG58g6dFkLdzg/jCTCPqPNHWfIFJSnx9H8OHC12M2roLLuxVWKx6W2h25dkjVSe
+         HRwtXoqfClom0cLuEY16ejoh6MbeEy+uPI8UAhwOs+j0NQ/gw1AVexLnYUBpraFKDp
+         l0egQl1rEQANggrBncTSCi4j3ZinsQfxms2ylvX4=
+Authentication-Results: mail-nwsmtp-smtp-production-main-91.sas.yp-c.yandex.net; dkim=pass header.i=@maquefel.me
+Message-ID: <4f81a96b826344f45d0994539e3b3fe94fe7eb50.camel@maquefel.me>
+Subject: Re: [PATCH 00/43] ep93xx device tree conversion
+From:   Nikita Shubin <nikita.shubin@maquefel.me>
+To:     Florian Fainelli <f.fainelli@gmail.com>
+Cc:     Arnd Bergmann <arnd@kernel.org>, Linus Walleij <linusw@kernel.org>,
+        Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Jonathan =?ISO-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+        "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
+        Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Brian Norris <briannorris@chromium.org>,
+        Chuanhong Guo <gch981213@gmail.com>,
+        Conor Dooley <conor.dooley@microchip.com>,
+        Damien Le Moal <dlemoal@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Emil Renner Berthing <kernel@esmil.dk>,
+        Eric Dumazet <edumazet@google.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Hartley Sweeten <hsweeten@visionengravers.com>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Hitomi Hasegawa <hasegawa-hitomi@fujitsu.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Jean Delvare <jdelvare@suse.de>, Joel Stanley <joel@jms.id.au>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Le Moal <damien.lemoal@opensource.wdc.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Liang Yang <liang.yang@amlogic.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lukasz Majewski <lukma@denx.de>, Lv Ruyi <lv.ruyi@zte.com.cn>,
+        Mark Brown <broonie@kernel.org>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Nicolas Saenz Julienne <nsaenz@kernel.org>,
+        Olof Johansson <olof@lixom.net>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Qin Jian <qinjian@cqplus1.com>,
+        Richard Weinberger <richard@nod.at>,
+        Rob Herring <robh+dt@kernel.org>,
+        Robert Jarzmik <robert.jarzmik@free.fr>,
+        Russell King <linux@armlinux.org.uk>,
+        Sebastian Reichel <sre@kernel.org>,
+        Sergey Shtylyov <s.shtylyov@omp.ru>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Sumanth Korikkar <sumanthk@linux.ibm.com>,
+        Sven Peter <sven@svenpeter.dev>, Takashi Iwai <tiwai@suse.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Vinod Koul <vkoul@kernel.org>,
+        Walker Chen <walker.chen@starfivetech.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>, alsa-devel@alsa-project.org,
+        devicetree@vger.kernel.org, dmaengine@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-ide@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        netdev@vger.kernel.org, soc@kernel.org
+Date:   Tue, 16 May 2023 13:37:54 +0300
+In-Reply-To: <1ff2333a-8f78-c066-0158-9c8a1a17684f@gmail.com>
+References: <20230424123522.18302-1-nikita.shubin@maquefel.me>
+         <1ff2333a-8f78-c066-0158-9c8a1a17684f@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.3 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.175.113.25]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- dggpemm500001.china.huawei.com (7.185.36.107)
-X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This moves all page alloc related sysctls to its own file,
-as part of the kernel/sysctl.c spring cleaning, also move
-some functions declarations from mm.h into internal.h.
+Hello Florian!
 
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- include/linux/mm.h     |  11 -----
- include/linux/mmzone.h |  21 ---------
- kernel/sysctl.c        |  67 ---------------------------
- mm/internal.h          |  11 +++++
- mm/mm_init.c           |   2 +
- mm/page_alloc.c        | 103 +++++++++++++++++++++++++++++++++++------
- 6 files changed, 102 insertions(+), 113 deletions(-)
+On Mon, 2023-05-15 at 20:47 -0700, Florian Fainelli wrote:
+>=20
+>=20
+> On 4/24/2023 5:34 AM, Nikita Shubin wrote:
+> > This series aims to convert ep93xx from platform to full device
+> > tree support.
+> >=20
+> > Tested on ts7250 64 RAM/128 MiB Nand flash, edb9302.
+> >=20
+> > Thank you Linus and Arnd for your support, review and comments,
+> > sorry if i missed something -
+> > these series are quite big for me.
+> >=20
+> > Big thanks to Alexander Sverdlin for his testing, support, review,
+> > fixes and patches.
+>=20
+> If anyone is interested I still have a TS-7300 board [1] that is
+> fully=20
+> functional and could be sent out to a new home.
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index d3241f4ac903..eabe520139ef 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -3008,12 +3008,6 @@ extern int __meminit early_pfn_to_nid(unsigned long pfn);
- #endif
- 
- extern void set_dma_reserve(unsigned long new_dma_reserve);
--extern void memmap_init_range(unsigned long, int, unsigned long,
--		unsigned long, unsigned long, enum meminit_context,
--		struct vmem_altmap *, int migratetype);
--extern void setup_per_zone_wmarks(void);
--extern void calculate_min_free_kbytes(void);
--extern int __meminit init_per_zone_wmark_min(void);
- extern void mem_init(void);
- extern void __init mmap_init(void);
- 
-@@ -3034,11 +3028,6 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
- 
- extern void setup_per_cpu_pageset(void);
- 
--/* page_alloc.c */
--extern int min_free_kbytes;
--extern int watermark_boost_factor;
--extern int watermark_scale_factor;
--
- /* nommu.c */
- extern atomic_long_t mmap_pages_allocated;
- extern int nommu_shrink_inode_mappings(struct inode *, size_t, size_t);
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index a4889c9d4055..3a68326c9989 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -1512,27 +1512,6 @@ static inline bool has_managed_dma(void)
- }
- #endif
- 
--/* These two functions are used to setup the per zone pages min values */
--struct ctl_table;
--
--int min_free_kbytes_sysctl_handler(struct ctl_table *, int, void *, size_t *,
--		loff_t *);
--int watermark_scale_factor_sysctl_handler(struct ctl_table *, int, void *,
--		size_t *, loff_t *);
--extern int sysctl_lowmem_reserve_ratio[MAX_NR_ZONES];
--int lowmem_reserve_ratio_sysctl_handler(struct ctl_table *, int, void *,
--		size_t *, loff_t *);
--int percpu_pagelist_high_fraction_sysctl_handler(struct ctl_table *, int,
--		void *, size_t *, loff_t *);
--int sysctl_min_unmapped_ratio_sysctl_handler(struct ctl_table *, int,
--		void *, size_t *, loff_t *);
--int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
--		void *, size_t *, loff_t *);
--int numa_zonelist_order_handler(struct ctl_table *, int,
--		void *, size_t *, loff_t *);
--extern int percpu_pagelist_high_fraction;
--extern char numa_zonelist_order[];
--#define NUMA_ZONELIST_ORDER_LEN	16
- 
- #ifndef CONFIG_NUMA
- 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index bfe53e835524..a57de67f032f 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -2119,13 +2119,6 @@ static struct ctl_table vm_table[] = {
- 		.extra2		= SYSCTL_ONE,
- 	},
- #endif
--	{
--		.procname	= "lowmem_reserve_ratio",
--		.data		= &sysctl_lowmem_reserve_ratio,
--		.maxlen		= sizeof(sysctl_lowmem_reserve_ratio),
--		.mode		= 0644,
--		.proc_handler	= lowmem_reserve_ratio_sysctl_handler,
--	},
- 	{
- 		.procname	= "drop_caches",
- 		.data		= &sysctl_drop_caches,
-@@ -2135,39 +2128,6 @@ static struct ctl_table vm_table[] = {
- 		.extra1		= SYSCTL_ONE,
- 		.extra2		= SYSCTL_FOUR,
- 	},
--	{
--		.procname	= "min_free_kbytes",
--		.data		= &min_free_kbytes,
--		.maxlen		= sizeof(min_free_kbytes),
--		.mode		= 0644,
--		.proc_handler	= min_free_kbytes_sysctl_handler,
--		.extra1		= SYSCTL_ZERO,
--	},
--	{
--		.procname	= "watermark_boost_factor",
--		.data		= &watermark_boost_factor,
--		.maxlen		= sizeof(watermark_boost_factor),
--		.mode		= 0644,
--		.proc_handler	= proc_dointvec_minmax,
--		.extra1		= SYSCTL_ZERO,
--	},
--	{
--		.procname	= "watermark_scale_factor",
--		.data		= &watermark_scale_factor,
--		.maxlen		= sizeof(watermark_scale_factor),
--		.mode		= 0644,
--		.proc_handler	= watermark_scale_factor_sysctl_handler,
--		.extra1		= SYSCTL_ONE,
--		.extra2		= SYSCTL_THREE_THOUSAND,
--	},
--	{
--		.procname	= "percpu_pagelist_high_fraction",
--		.data		= &percpu_pagelist_high_fraction,
--		.maxlen		= sizeof(percpu_pagelist_high_fraction),
--		.mode		= 0644,
--		.proc_handler	= percpu_pagelist_high_fraction_sysctl_handler,
--		.extra1		= SYSCTL_ZERO,
--	},
- 	{
- 		.procname	= "page_lock_unfairness",
- 		.data		= &sysctl_page_lock_unfairness,
-@@ -2223,24 +2183,6 @@ static struct ctl_table vm_table[] = {
- 		.proc_handler	= proc_dointvec_minmax,
- 		.extra1		= SYSCTL_ZERO,
- 	},
--	{
--		.procname	= "min_unmapped_ratio",
--		.data		= &sysctl_min_unmapped_ratio,
--		.maxlen		= sizeof(sysctl_min_unmapped_ratio),
--		.mode		= 0644,
--		.proc_handler	= sysctl_min_unmapped_ratio_sysctl_handler,
--		.extra1		= SYSCTL_ZERO,
--		.extra2		= SYSCTL_ONE_HUNDRED,
--	},
--	{
--		.procname	= "min_slab_ratio",
--		.data		= &sysctl_min_slab_ratio,
--		.maxlen		= sizeof(sysctl_min_slab_ratio),
--		.mode		= 0644,
--		.proc_handler	= sysctl_min_slab_ratio_sysctl_handler,
--		.extra1		= SYSCTL_ZERO,
--		.extra2		= SYSCTL_ONE_HUNDRED,
--	},
- #endif
- #ifdef CONFIG_SMP
- 	{
-@@ -2267,15 +2209,6 @@ static struct ctl_table vm_table[] = {
- 		.proc_handler	= mmap_min_addr_handler,
- 	},
- #endif
--#ifdef CONFIG_NUMA
--	{
--		.procname	= "numa_zonelist_order",
--		.data		= &numa_zonelist_order,
--		.maxlen		= NUMA_ZONELIST_ORDER_LEN,
--		.mode		= 0644,
--		.proc_handler	= numa_zonelist_order_handler,
--	},
--#endif
- #if (defined(CONFIG_X86_32) && !defined(CONFIG_UML))|| \
-    (defined(CONFIG_SUPERH) && defined(CONFIG_VSYSCALL))
- 	{
-diff --git a/mm/internal.h b/mm/internal.h
-index 79324b7f2bc8..5fdf930a87b5 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -213,6 +213,13 @@ static inline bool is_check_pages_enabled(void)
- 	return static_branch_unlikely(&check_pages_enabled);
- }
- 
-+extern int min_free_kbytes;
-+
-+void setup_per_zone_wmarks(void);
-+void calculate_min_free_kbytes(void);
-+int __meminit init_per_zone_wmark_min(void);
-+void page_alloc_sysctl_init(void);
-+
- /*
-  * Structure for holding the mostly immutable allocation parameters passed
-  * between functions involved in allocations, including the alloc_pages*
-@@ -423,6 +430,10 @@ extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
- 			  phys_addr_t min_addr,
- 			  int nid, bool exact_nid);
- 
-+void memmap_init_range(unsigned long, int, unsigned long, unsigned long,
-+		unsigned long, enum meminit_context, struct vmem_altmap *, int);
-+
-+
- int split_free_page(struct page *free_page,
- 			unsigned int order, unsigned long split_pfn_offset);
- 
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index 0fd4ddfdfb2e..10bf560302c4 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -2392,6 +2392,8 @@ void __init page_alloc_init_late(void)
- 	/* Initialize page ext after all struct pages are initialized. */
- 	if (deferred_struct_pages)
- 		page_ext_init();
-+
-+	page_alloc_sysctl_init();
- }
- 
- #ifndef __HAVE_ARCH_RESERVED_KERNEL_PAGES
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 2a95e095bb2a..5e8680669388 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -206,7 +206,6 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
- };
- EXPORT_SYMBOL(node_states);
- 
--int percpu_pagelist_high_fraction;
- gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
- 
- /*
-@@ -302,8 +301,8 @@ compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
- 
- int min_free_kbytes = 1024;
- int user_min_free_kbytes = -1;
--int watermark_boost_factor __read_mostly = 15000;
--int watermark_scale_factor = 10;
-+static int watermark_boost_factor __read_mostly = 15000;
-+static int watermark_scale_factor = 10;
- 
- /* movable_zone is the "real" zone pages in ZONE_MOVABLE are taken from */
- int movable_zone;
-@@ -4917,12 +4916,12 @@ static int __parse_numa_zonelist_order(char *s)
- 	return 0;
- }
- 
--char numa_zonelist_order[] = "Node";
--
-+static char numa_zonelist_order[] = "Node";
-+#define NUMA_ZONELIST_ORDER_LEN	16
- /*
-  * sysctl handler for numa_zonelist_order
-  */
--int numa_zonelist_order_handler(struct ctl_table *table, int write,
-+static int numa_zonelist_order_handler(struct ctl_table *table, int write,
- 		void *buffer, size_t *length, loff_t *ppos)
- {
- 	if (write)
-@@ -4930,7 +4929,6 @@ int numa_zonelist_order_handler(struct ctl_table *table, int write,
- 	return proc_dostring(table, write, buffer, length, ppos);
- }
- 
--
- static int node_load[MAX_NUMNODES];
- 
- /**
-@@ -5333,6 +5331,7 @@ static int zone_batchsize(struct zone *zone)
- #endif
- }
- 
-+static int percpu_pagelist_high_fraction;
- static int zone_highsize(struct zone *zone, int batch, int cpu_online)
- {
- #ifdef CONFIG_MMU
-@@ -5862,7 +5861,7 @@ postcore_initcall(init_per_zone_wmark_min)
-  *	that we can call two helper functions whenever min_free_kbytes
-  *	changes.
-  */
--int min_free_kbytes_sysctl_handler(struct ctl_table *table, int write,
-+static int min_free_kbytes_sysctl_handler(struct ctl_table *table, int write,
- 		void *buffer, size_t *length, loff_t *ppos)
- {
- 	int rc;
-@@ -5878,7 +5877,7 @@ int min_free_kbytes_sysctl_handler(struct ctl_table *table, int write,
- 	return 0;
- }
- 
--int watermark_scale_factor_sysctl_handler(struct ctl_table *table, int write,
-+static int watermark_scale_factor_sysctl_handler(struct ctl_table *table, int write,
- 		void *buffer, size_t *length, loff_t *ppos)
- {
- 	int rc;
-@@ -5908,7 +5907,7 @@ static void setup_min_unmapped_ratio(void)
- }
- 
- 
--int sysctl_min_unmapped_ratio_sysctl_handler(struct ctl_table *table, int write,
-+static int sysctl_min_unmapped_ratio_sysctl_handler(struct ctl_table *table, int write,
- 		void *buffer, size_t *length, loff_t *ppos)
- {
- 	int rc;
-@@ -5935,7 +5934,7 @@ static void setup_min_slab_ratio(void)
- 						     sysctl_min_slab_ratio) / 100;
- }
- 
--int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *table, int write,
-+static int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *table, int write,
- 		void *buffer, size_t *length, loff_t *ppos)
- {
- 	int rc;
-@@ -5959,8 +5958,8 @@ int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *table, int write,
-  * minimum watermarks. The lowmem reserve ratio can only make sense
-  * if in function of the boot time zone sizes.
-  */
--int lowmem_reserve_ratio_sysctl_handler(struct ctl_table *table, int write,
--		void *buffer, size_t *length, loff_t *ppos)
-+static int lowmem_reserve_ratio_sysctl_handler(struct ctl_table *table,
-+		int write, void *buffer, size_t *length, loff_t *ppos)
- {
- 	int i;
- 
-@@ -5980,7 +5979,7 @@ int lowmem_reserve_ratio_sysctl_handler(struct ctl_table *table, int write,
-  * cpu. It is the fraction of total pages in each zone that a hot per cpu
-  * pagelist can have before it gets flushed back to buddy allocator.
-  */
--int percpu_pagelist_high_fraction_sysctl_handler(struct ctl_table *table,
-+static int percpu_pagelist_high_fraction_sysctl_handler(struct ctl_table *table,
- 		int write, void *buffer, size_t *length, loff_t *ppos)
- {
- 	struct zone *zone;
-@@ -6013,6 +6012,82 @@ int percpu_pagelist_high_fraction_sysctl_handler(struct ctl_table *table,
- 	return ret;
- }
- 
-+static struct ctl_table page_alloc_sysctl_table[] = {
-+	{
-+		.procname	= "min_free_kbytes",
-+		.data		= &min_free_kbytes,
-+		.maxlen		= sizeof(min_free_kbytes),
-+		.mode		= 0644,
-+		.proc_handler	= min_free_kbytes_sysctl_handler,
-+		.extra1		= SYSCTL_ZERO,
-+	},
-+	{
-+		.procname	= "watermark_boost_factor",
-+		.data		= &watermark_boost_factor,
-+		.maxlen		= sizeof(watermark_boost_factor),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dointvec_minmax,
-+		.extra1		= SYSCTL_ZERO,
-+	},
-+	{
-+		.procname	= "watermark_scale_factor",
-+		.data		= &watermark_scale_factor,
-+		.maxlen		= sizeof(watermark_scale_factor),
-+		.mode		= 0644,
-+		.proc_handler	= watermark_scale_factor_sysctl_handler,
-+		.extra1		= SYSCTL_ONE,
-+		.extra2		= SYSCTL_THREE_THOUSAND,
-+	},
-+	{
-+		.procname	= "percpu_pagelist_high_fraction",
-+		.data		= &percpu_pagelist_high_fraction,
-+		.maxlen		= sizeof(percpu_pagelist_high_fraction),
-+		.mode		= 0644,
-+		.proc_handler	= percpu_pagelist_high_fraction_sysctl_handler,
-+		.extra1		= SYSCTL_ZERO,
-+	},
-+	{
-+		.procname	= "lowmem_reserve_ratio",
-+		.data		= &sysctl_lowmem_reserve_ratio,
-+		.maxlen		= sizeof(sysctl_lowmem_reserve_ratio),
-+		.mode		= 0644,
-+		.proc_handler	= lowmem_reserve_ratio_sysctl_handler,
-+	},
-+#ifdef CONFIG_NUMA
-+	{
-+		.procname	= "numa_zonelist_order",
-+		.data		= &numa_zonelist_order,
-+		.maxlen		= NUMA_ZONELIST_ORDER_LEN,
-+		.mode		= 0644,
-+		.proc_handler	= numa_zonelist_order_handler,
-+	},
-+	{
-+		.procname	= "min_unmapped_ratio",
-+		.data		= &sysctl_min_unmapped_ratio,
-+		.maxlen		= sizeof(sysctl_min_unmapped_ratio),
-+		.mode		= 0644,
-+		.proc_handler	= sysctl_min_unmapped_ratio_sysctl_handler,
-+		.extra1		= SYSCTL_ZERO,
-+		.extra2		= SYSCTL_ONE_HUNDRED,
-+	},
-+	{
-+		.procname	= "min_slab_ratio",
-+		.data		= &sysctl_min_slab_ratio,
-+		.maxlen		= sizeof(sysctl_min_slab_ratio),
-+		.mode		= 0644,
-+		.proc_handler	= sysctl_min_slab_ratio_sysctl_handler,
-+		.extra1		= SYSCTL_ZERO,
-+		.extra2		= SYSCTL_ONE_HUNDRED,
-+	},
-+#endif
-+	{}
-+};
-+
-+void __init page_alloc_sysctl_init(void)
-+{
-+	register_sysctl_init("vm", page_alloc_sysctl_table);
-+}
-+
- #ifdef CONFIG_CONTIG_ALLOC
- /* Usage: See admin-guide/dynamic-debug-howto.rst */
- static void alloc_contig_dump_pages(struct list_head *page_list)
--- 
-2.35.3
+Thank you kindly, i'll keep this in mind !
+
+>=20
+> https://www.embeddedts.com/products/TS-7300
 
