@@ -2,85 +2,39 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1CDAC77B75
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E63DC77B75
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 17:52:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234482AbjEPPuG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 11:50:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42240 "EHLO
+        id S231144AbjEPRwB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 13:52:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42642 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234362AbjEPPtT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:49:19 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6DEF903B;
-        Tue, 16 May 2023 08:48:19 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id BAE1B63BA0;
-        Tue, 16 May 2023 15:47:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC25EC433A4;
-        Tue, 16 May 2023 15:47:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684252024;
-        bh=ukkcZIi3rJQFXBZ+gAriRZey/Vj4dRVkg8uSR9+fmpc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TjYro4Jxqr2dc8uNfkbZR0YX17V/6dDi6Z2CqqKR6hDNo8Z/9tATqiR/kGvB/zI7L
-         AC/NrRNyUUeR5MCHYu+8OKvpBW2ic6tGVm98MAOEgi+JJ2B3mHUHv8IwdgasHvPtet
-         z0zGjoC/wdgfpqjgfgBV+X+UrHIrkvjwD4tL1KFgwGvVYp10z8VsW/C21iYUj3RdQI
-         4+4iIMxm2jxDWTfPMmT7VuVQHoaeJTHHxn2vdg0tsuczx5LjPUZzJTQkKT74dOXRwP
-         uhvWYhhj53dwW9OVJz1Vgp/0T6HFI9pWOpCC8CKtMIpd6FyVBv+lP56JnslHxHVBiX
-         ZDLfw0lhn13bA==
-From:   Arnd Bergmann <arnd@kernel.org>
-To:     Russell King <linux@armlinux.org.uk>
-Cc:     Arnd Bergmann <arnd@arndb.de>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Oleg Nesterov <oleg@redhat.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Kees Cook <keescook@chromium.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 13/16] ARM: vfp: add vfp_entry prototype
-Date:   Tue, 16 May 2023 17:46:02 +0200
-Message-Id: <20230516154605.517690-14-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230516154605.517690-1-arnd@kernel.org>
-References: <20230516154605.517690-1-arnd@kernel.org>
+        with ESMTP id S229852AbjEPRwA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 13:52:00 -0400
+X-Greylist: delayed 14069 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 16 May 2023 10:51:55 PDT
+Received: from cp.ydms.co.nz (unknown [112.109.78.122])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D13BE30F9
+        for <linux-pm@vger.kernel.org>; Tue, 16 May 2023 10:51:55 -0700 (PDT)
+Received: by cp.ydms.co.nz (Postfix, from userid 10007)
+        id 893F82EF90B; Wed, 17 May 2023 00:06:18 +1200 (NZST)
+To:     linux-pm@vger.kernel.org
+Subject: Your urgent feedback is highly appreciated.
+X-PHP-Originating-Script: 10007:ISY7DTO2vwW.php
+Date:   Wed, 17 May 2023 00:06:18 +1200
+From:   Eun-ji Ha <supporte@nzcu.co.nz>
+Reply-To: in123c@daum.net
+Message-ID: <02f198286b587784b02fd43ce193686b@www.nzcu.co.nz>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-
-vfp_entry is only called from assembler code, so it does not
-need a declaration. Since gcc complains when extra warnings
-are enabled, add one anyway to avoid:
-
-arch/arm/vfp/vfpmodule.c:657:17: warning: no previous prototype for function 'vfp_entry' [-Wmissing-prototypes]
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/arm/vfp/vfp.h | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/arm/vfp/vfp.h b/arch/arm/vfp/vfp.h
-index 5cd6d5053271..10d9c0da0fd4 100644
---- a/arch/arm/vfp/vfp.h
-+++ b/arch/arm/vfp/vfp.h
-@@ -375,3 +375,6 @@ struct op {
- };
- 
- asmlinkage void vfp_save_state(void *location, u32 fpexc);
-+struct thread_info;
-+asmlinkage void vfp_entry(u32 trigger, struct thread_info *ti, u32 resume_pc,
-+			  u32 resume_return_address);
--- 
-2.39.2
+Good day,
+My name is Mrs. Eun-ji Ha.
+I would like to get in touch with you.
+Did you receive my previous email for investment purposes?
+Please send your telephone number to enhance communication.
+Have a great day!
+Best regards,
 
