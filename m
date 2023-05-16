@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D83E5C7EE25
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:49:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADC30C77B75
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:49:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234252AbjEPPtJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 11:49:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41998 "EHLO
+        id S234281AbjEPPtR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 11:49:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42180 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234249AbjEPPsK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:48:10 -0400
+        with ESMTP id S234123AbjEPPsU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:48:20 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 08BB49EEB;
-        Tue, 16 May 2023 08:47:52 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94B819012;
+        Tue, 16 May 2023 08:47:59 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 16A5663BAF;
-        Tue, 16 May 2023 15:47:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47E2EC433D2;
-        Tue, 16 May 2023 15:46:57 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 194BE63B7B;
+        Tue, 16 May 2023 15:47:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51836C4339C;
+        Tue, 16 May 2023 15:47:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684252020;
-        bh=Npxydn52yNm/V36pPXxMeglIGETaw+vXx4GeRAC3zdI=;
+        s=k20201202; t=1684252031;
+        bh=flMIm7rrA3GwPRe1i4A+2+g3vRYY++3FaIonU0BJ0lo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=nxtqi0WvFSlHGYKBv/f3fm7o9hL3K1bNtnja2ASbeAJIlcaB8frJ16v2Tr5vxA72j
-         QIS2ucqJFlN3AvvuNr8oWbDkrwt3zlx+O/pDzwLuCC1X9AGzOcn1QOLG5uEq/scTET
-         4OBbIcE4bPK+GoIgPoPRvQUY0iB4N7WNY98jlmvm4V05vrUT+Y2pV11HVT9na/eaNl
-         XYSOnhzIijZvTI7jf5VXiZbCSY4NSqPqqJX5v9LtKgjUtrvu9n0IOTyZy9o6h0y8FB
-         iRaAiSUG88ROpRuVU2V2rWeA/jn3gSomOm3+LFP3uG+HNumJ4SH3FmP8QxJFPmCAq/
-         cls4GlKSlcD3g==
+        b=Mg4jI0Qd1iMhwE7fFVWVtYXkJ/ZmjPeoPxAQBiXAa/Kg12YaAUl/K8P8ZDSEGhWo8
+         CJ/aKo6+JP0nyYIbZxQWh2U43kSkjDxtQG9PUoaiZhDkB+kZCFmiU8ES7TERNlH86g
+         cWstm4OIHk3rZ78BVNVccqtYurBxSr51ZxSW0BhdgVScP0gp6JdR6vVpXvViPvuWXQ
+         CxJQZZYSeDy6eYleVtK859sxJeUKrWLl0FZKbv2mXmchibDykofKpyolkyI63CD4BL
+         5pcOEKp0vPQ46j+18pF9LRf6OgVKbyENHhiH3GbxSqP3+EiLeX5pia9CDovm3A74s/
+         riMie3u5rsiRQ==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     Russell King <linux@armlinux.org.uk>
 Cc:     Arnd Bergmann <arnd@arndb.de>,
@@ -45,9 +45,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         Kees Cook <keescook@chromium.org>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 12/16] ARM: fiq: include asm/mach/irq.h for prototypes
-Date:   Tue, 16 May 2023 17:46:01 +0200
-Message-Id: <20230516154605.517690-13-arnd@kernel.org>
+Subject: [PATCH 15/16] ARM: decompressor: move function prototypes to misc.h
+Date:   Tue, 16 May 2023 17:46:04 +0200
+Message-Id: <20230516154605.517690-16-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230516154605.517690-1-arnd@kernel.org>
 References: <20230516154605.517690-1-arnd@kernel.org>
@@ -59,30 +59,95 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-There are two global functions in fiq.c that get called from
-other files through an extern declaration, but a W=1 build
-warns about the header not being included before the definition:
+A number of prototypes are missing for the decompressor, some
+of them are in the .c files that contain the callers, but are
+invisible at the function definition:
 
-arch/arm/kernel/fiq.c:85:5: error: no previous prototype for 'show_fiq_list' [-Werror=missing-prototypes]
-arch/arm/kernel/fiq.c:159:13: error: no previous prototype for 'init_FIQ' [-Werror=missing-prototypes]
+arch/arm/boot/compressed/misc.c:129:17: error: no previous prototype for '__div0' [-Werror=missing-prototypes]
+arch/arm/boot/compressed/misc.c:138:1: error: no previous prototype for 'decompress_kernel' [-Werror=missing-prototypes]
+arch/arm/boot/compressed/misc.c:163:6: error: no previous prototype for 'fortify_panic' [-Werror=missing-prototypes]
+arch/arm/boot/compressed/decompress.c:63:5: error: no previous prototype for 'do_decompress' [-Werror=missing-prototypes]
+arch/arm/boot/compressed/fdt_check_mem_start.c:63:10: error: no previous prototype for 'fdt_check_mem_start' [-Werror=missing-prototypes]
+
+Move these all to misc.h so they are visible by the callee as well.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/kernel/fiq.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/compressed/atags_to_fdt.c        |  1 +
+ arch/arm/boot/compressed/fdt_check_mem_start.c |  1 +
+ arch/arm/boot/compressed/misc.c                |  6 ------
+ arch/arm/boot/compressed/misc.h                | 11 +++++++++++
+ 4 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/kernel/fiq.c b/arch/arm/kernel/fiq.c
-index 98ca3e3fa847..d2c8e5313539 100644
---- a/arch/arm/kernel/fiq.c
-+++ b/arch/arm/kernel/fiq.c
-@@ -45,6 +45,7 @@
- #include <asm/cacheflush.h>
- #include <asm/cp15.h>
- #include <asm/fiq.h>
-+#include <asm/mach/irq.h>
- #include <asm/irq.h>
- #include <asm/traps.h>
+diff --git a/arch/arm/boot/compressed/atags_to_fdt.c b/arch/arm/boot/compressed/atags_to_fdt.c
+index c579d9c42fd4..b584e091f702 100644
+--- a/arch/arm/boot/compressed/atags_to_fdt.c
++++ b/arch/arm/boot/compressed/atags_to_fdt.c
+@@ -2,6 +2,7 @@
+ #include <linux/libfdt_env.h>
+ #include <asm/setup.h>
+ #include <libfdt.h>
++#include "misc.h"
  
+ #if defined(CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_EXTEND)
+ #define do_extend_cmdline 1
+diff --git a/arch/arm/boot/compressed/fdt_check_mem_start.c b/arch/arm/boot/compressed/fdt_check_mem_start.c
+index 9291a2661bdf..aa856567fd33 100644
+--- a/arch/arm/boot/compressed/fdt_check_mem_start.c
++++ b/arch/arm/boot/compressed/fdt_check_mem_start.c
+@@ -3,6 +3,7 @@
+ #include <linux/kernel.h>
+ #include <linux/libfdt.h>
+ #include <linux/sizes.h>
++#include "misc.h"
+ 
+ static const void *get_prop(const void *fdt, const char *node_path,
+ 			    const char *property, int minlen)
+diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
+index abfed1aa2baa..6b4baa6a9a50 100644
+--- a/arch/arm/boot/compressed/misc.c
++++ b/arch/arm/boot/compressed/misc.c
+@@ -103,9 +103,6 @@ static void putstr(const char *ptr)
+ /*
+  * gzip declarations
+  */
+-extern char input_data[];
+-extern char input_data_end[];
+-
+ unsigned char *output_data;
+ 
+ unsigned long free_mem_ptr;
+@@ -131,9 +128,6 @@ asmlinkage void __div0(void)
+ 	error("Attempting division by 0!");
+ }
+ 
+-extern int do_decompress(u8 *input, int len, u8 *output, void (*error)(char *x));
+-
+-
+ void
+ decompress_kernel(unsigned long output_start, unsigned long free_mem_ptr_p,
+ 		unsigned long free_mem_ptr_end_p,
+diff --git a/arch/arm/boot/compressed/misc.h b/arch/arm/boot/compressed/misc.h
+index c958dccd1d97..6da00a26ac08 100644
+--- a/arch/arm/boot/compressed/misc.h
++++ b/arch/arm/boot/compressed/misc.h
+@@ -6,5 +6,16 @@
+ void error(char *x) __noreturn;
+ extern unsigned long free_mem_ptr;
+ extern unsigned long free_mem_end_ptr;
++void __div0(void);
++void
++decompress_kernel(unsigned long output_start, unsigned long free_mem_ptr_p,
++		  unsigned long free_mem_ptr_end_p, int arch_id);
++void fortify_panic(const char *name);
++int atags_to_fdt(void *atag_list, void *fdt, int total_space);
++uint32_t fdt_check_mem_start(uint32_t mem_start, const void *fdt);
++int do_decompress(u8 *input, int len, u8 *output, void (*error)(char *x));
++
++extern char input_data[];
++extern char input_data_end[];
+ 
+ #endif
 -- 
 2.39.2
 
