@@ -2,102 +2,132 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C08C8C77B75
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 07:42:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3084C77B7F
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 08:33:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230468AbjEPHm2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 03:42:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41524 "EHLO
+        id S231659AbjEPIdE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 04:33:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51212 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230325AbjEPHm1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 03:42:27 -0400
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A1E82738
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2023 00:42:25 -0700 (PDT)
-Received: by mail-ed1-x530.google.com with SMTP id 4fb4d7f45d1cf-50bc070c557so25408474a12.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2023 00:42:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1684222944; x=1686814944;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=wT9vEBARYlzoyqav/Bfp/YFl2e8W1BObF8CGOiHOKy4=;
-        b=WwT2BjMphUwRKOeT/+eYUURK9gwn8xK8AUtWRCkrqwtYVDg3Hk/XYgoIGamnkdyC9a
-         3yaCKXgBz1CysMMfqaZ1WN32/bqMB7I10Smig+KJ4ienRpRendk21bhy1xaiW11ih7kx
-         GRLjp+U/llS+WxU0/VSZDLnEbzLex4otbJne6+iivUYTSVAPwPEyUBkCHW5Y8q67IJrv
-         z/IfQ1cR+jUIxOSIQcKa5kVbZRuZllT8GsEAwbh+zmVK6rDRC9vuIRy3Y9e/OVWXy6pH
-         Jm+ZSkNf0OcpUuwWQkzBFZR5o8Fuuc955fJYEn/zN5TfedMVHt3hKCWA859lXpa/uuV1
-         NMEQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684222944; x=1686814944;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=wT9vEBARYlzoyqav/Bfp/YFl2e8W1BObF8CGOiHOKy4=;
-        b=I+tA6GQUWWzcKJEb4R+FHQp2W7yw9/I/sqhjBTv84jp6qfgdmKvkl/zzEGORrED1ko
-         tILdVjOrowZrnbThkutlM70UX/3zrIPOEYI7PCBei3PvAoId8bo/D04Qx4cEEC2/aUvF
-         9ESQCmm5UWWd+cVZAnooXjc4Fw/3nRs/Trx0nZrAMc2t7SmjVur99qU8A3z4sedA6mE+
-         Rozm8sQGiT6xCTWX3lfLrax+fnee49RAI+rCeM0bDfeQ+4EwcTu4HfHCFkHLOz1JVGP1
-         neKekrEpUBcigO8drY8NcP43OZwTMAcsXE2MiJOz/qVTANxNgKGsYjwSE7oIWoqogQrm
-         Q6qQ==
-X-Gm-Message-State: AC+VfDwJrS+fLsgntR7UNEOrFRxBWweGaTGcvLKbhnNUr6Gl7gWgDabh
-        A6mrJDJgQ0TMSBgV7CPwNRiyFg==
-X-Google-Smtp-Source: ACHHUZ41rZpwyAv2MXNX+Q4IKTyHWkRMEdgRFD5tGwCM3R6jjHDCnCwfn1963nWD8p6xkzC0uniNqw==
-X-Received: by 2002:a17:907:701:b0:94a:82ca:12e5 with SMTP id xb1-20020a170907070100b0094a82ca12e5mr34345044ejb.45.1684222944059;
-        Tue, 16 May 2023 00:42:24 -0700 (PDT)
-Received: from ?IPV6:2a02:810d:15c0:828:4d4a:9b97:62e:1439? ([2a02:810d:15c0:828:4d4a:9b97:62e:1439])
-        by smtp.gmail.com with ESMTPSA id e26-20020a170906845a00b00965cd15c9bbsm10623606ejy.62.2023.05.16.00.42.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 16 May 2023 00:42:23 -0700 (PDT)
-Message-ID: <226964d1-4c98-73a5-ccd1-6b718897fcc8@linaro.org>
-Date:   Tue, 16 May 2023 09:42:22 +0200
+        with ESMTP id S231658AbjEPIdD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 04:33:03 -0400
+Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03on2089.outbound.protection.outlook.com [40.107.105.89])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D86E1FE9;
+        Tue, 16 May 2023 01:32:59 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=jv2YNweVHEDHsm5FUIgORwy3EuWikFjne+B802BXgo9wLNxiVnR61vORI3u4PB7umi3gEyGKd6r5OTrldqc9zSAIkU2fhcONUlylSsPW22T8wPJwuWIjLhWszEsxj3EcLdF3mvktEA3gC6AaJsPUJy+H7OthiePc3uc3XFk+oqy5VJWiWEYn9L7vSCDHexravwmVQeLCo21dSWhmK3jTRpZpiNVPF9HN+EiexSSD35wuvVdMsi7k70oXpAMK49X6ARTGOE3FD345mqk41DjN3Cs+8zfVIlEZ6r7i86ulouzquWtstYqQJ7pAbFcO8tbTnGLg6WXGk18Vhx9e8q0PTQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=+uEbUWdVOB7cvQ313rvHf/jWacp0flkUcbe6vHJat24=;
+ b=SGSn+npLDwk1VJHivfNdGwDb4lFCepHFlsDlFD8/NGbJUak5PZ4l+0VB9JMKUV2Al+GotN9gQOTuRIwcYhj+AObWONGeNwKJgITt+xk0UKtxbTi6h17W/mxzXDsw2qJeOSEhBXvgrZNrrjz0cYkdatZ31aq1EBrcb8N0whZwyEvPp9c/wsXlKXqo1Jo2OZdob7LymYWJFcF9vAuMqyUFOpkHAC+paZ8A4eEKe8CcvsqnHVj1FAjOzpZ9F3HRT/LIBVeGsyiwpOx5JiKoyNkGOheYbXExbcphkUdz+QqGt9malH35VxAlC+X+MQIbZCQNltDmJU97XhF9lGBLJJpIIQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector2-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=+uEbUWdVOB7cvQ313rvHf/jWacp0flkUcbe6vHJat24=;
+ b=j5BzxH768mOq08iaYO0Rsw0hCFSDODIVc4VCxKHbRDsCecY4k6lFQtNw+R8WDH4yFTylj3AGaEpF5MOTZmeo346eXsEEj6vbfT5Qrz9ITgyGwYyT7ZjpfNOUmGgVLf4WOH3pwUPZH4ZT2WkaYTWIZmUWWAIxZLfspYoAYAi99X4=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from DU0PR04MB9417.eurprd04.prod.outlook.com (2603:10a6:10:358::11)
+ by DB8PR04MB7002.eurprd04.prod.outlook.com (2603:10a6:10:119::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6387.33; Tue, 16 May
+ 2023 08:32:55 +0000
+Received: from DU0PR04MB9417.eurprd04.prod.outlook.com
+ ([fe80::b999:f2c6:a8cc:7b4]) by DU0PR04MB9417.eurprd04.prod.outlook.com
+ ([fe80::b999:f2c6:a8cc:7b4%6]) with mapi id 15.20.6387.030; Tue, 16 May 2023
+ 08:32:55 +0000
+From:   "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+To:     rafael@kernel.org, daniel.lezcano@linaro.org, shawnguo@kernel.org,
+        s.hauer@pengutronix.de
+Cc:     amitk@kernel.org, rui.zhang@intel.com, andrew.smirnov@gmail.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com,
+        linux-arm-kernel@lists.infradead.org, alice.guo@nxp.com,
+        Peng Fan <peng.fan@nxp.com>
+Subject: [PATCH 0/3] thermal: qoriq_thermal: support TMU 2.1
+Date:   Tue, 16 May 2023 16:37:43 +0800
+Message-Id: <20230516083746.63436-1-peng.fan@oss.nxp.com>
+X-Mailer: git-send-email 2.37.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SG2PR03CA0099.apcprd03.prod.outlook.com
+ (2603:1096:4:7c::27) To DU0PR04MB9417.eurprd04.prod.outlook.com
+ (2603:10a6:10:358::11)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [Patch v8 1/8] memory: tegra: add interconnect support for DRAM
- scaling in Tegra234
-Content-Language: en-US
-To:     Sumit Gupta <sumitg@nvidia.com>, treding@nvidia.com,
-        dmitry.osipenko@collabora.com, viresh.kumar@linaro.org,
-        rafael@kernel.org, jonathanh@nvidia.com, robh+dt@kernel.org,
-        lpieralisi@kernel.org, helgaas@kernel.org
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pci@vger.kernel.org, mmaddireddy@nvidia.com, kw@linux.com,
-        bhelgaas@google.com, vidyas@nvidia.com, sanjayc@nvidia.com,
-        ksitaraman@nvidia.com, ishah@nvidia.com, bbasu@nvidia.com
-References: <20230511173211.9127-1-sumitg@nvidia.com>
- <20230511173211.9127-2-sumitg@nvidia.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230511173211.9127-2-sumitg@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DU0PR04MB9417:EE_|DB8PR04MB7002:EE_
+X-MS-Office365-Filtering-Correlation-Id: e1017040-be59-4678-1845-08db55e82504
+X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: OLMCTCG/b1TLDNbBZaYzq95afArpPBEsJG74orClEqo8KOutTvd6VTA62czR5F8eXjl0+3nu8DMpV1Pr6F4H5rsKc9mptLyHO1oY/JLMw6WGUU5O9leG+Z7ImE9wgngnIatArRMJsXnZmK8SO4NqyS5cwluBjt6Si0keomU5Wgb+s4jScqulLVKQr9pLVxJLl8XwaGk65dDg6YT25g52ITe9tUqaFha95m0fhunHLaWQKzQHDd+6bNLlTL86qDjtzRY8TEgAMnD8ptqojYR0+PmBppI2KMXt/GcAsx3AepPTlftYiJ4fAo1LjloRqI9xEvrh+4c1FSlsemZ47jk8AGChQdJ3CR5lGnNnpmvNuE6tn6T+rYEC5Hj6+Wj4BSd65IwUBiSX6n1x1JvcEid7vOuncKdubAd7dbkDHIErfEnHy/x2JRGr0ylowaskBL5BlP0S43nV25s6C8GjNz9iCqxGe0lNpOOdUXo4F7XeHIPrP8mhabwANDRNNXcIZj7GHXXZ7wAof0jWx1fER7Jp1F9jXMg9vGUZBY9oAPEUEA1A2Mp7zvc3xTwJSkq3TqGz3qpUB+Pct8K13LjxV2PBhruWu4BAKquJ0zXkAULFsH7ChZUARH3xyg0Jl3gxYf5U
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9417.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(136003)(376002)(366004)(39860400002)(396003)(346002)(451199021)(86362001)(41300700001)(316002)(38350700002)(5660300002)(38100700002)(7416002)(66476007)(478600001)(2906002)(4744005)(4326008)(8936002)(66556008)(66946007)(8676002)(52116002)(6486002)(6666004)(6512007)(26005)(6506007)(1076003)(186003)(2616005)(83380400001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?1iNT51jvMibCyN6kqJIVTuypmngWjfLvN/O73IgrjHWJA7W395ceHL8MIU6p?=
+ =?us-ascii?Q?PeJVuB+ykyT4IWkHOkD6xg+eh/+mBHYMZCqQxEn1WpGIfMQCC9gvendy4QvF?=
+ =?us-ascii?Q?hVFh6ZCZ8xgdD84ddncRCyYhzZR5qvrD2ei3KLAQCv+VfJT07D1Yx0D46nAy?=
+ =?us-ascii?Q?DXghiLZz7Qnhk4LQ2VotNGYXEgIW4WchCKZdavY3gtc1m7btJ+wpyPlbe6Np?=
+ =?us-ascii?Q?aHOWPCW2qeIxmWjU3wO/4dqVlkJQNc7N6TUpApNnkFEDyS/ct7XXvgWaZldw?=
+ =?us-ascii?Q?SV6p3wFrZLaRO0tL5B4fY2e4RbeLoLQ+2fXnfbxo1Qg9/xtYup/Uk1UY7HEV?=
+ =?us-ascii?Q?vNxHN8lHlBvFzbvLICCw8mjHfODhUclghej+nP9dooqgz2C0G6DJQYJIKJad?=
+ =?us-ascii?Q?+NKA3S9wMrjNXZAj/59j1cyISpET3/wfKrxuGDqUGTzYvchwWSl2KIfkhxit?=
+ =?us-ascii?Q?FsMGm50Nxx/zKsRsg+cWrRUGHnL//CzTiem4MsAwA8iwP+3JVI80Rs71IpIE?=
+ =?us-ascii?Q?ntFG2ocBOv6Cv3t8GjM/YBp3LiWdm8SiAZG4becIgIoX/3dfK6KnCbO0TV4g?=
+ =?us-ascii?Q?agpHptaVzy+mfZ8JBDXl8ZWGwFKmfyKLnXpqXV4Abg5L+b9SPPA+OAB3thq3?=
+ =?us-ascii?Q?EKNyDCGdueEINBrIg1esLittlO3Vb/WSNRUgOumc27WKolX1y17Niur/4p0F?=
+ =?us-ascii?Q?UgaAkjrchyTa15JBuz09qT0O4W74NNjXh6dUjWwlhG3MnfjcuXLqcebGknl4?=
+ =?us-ascii?Q?p+YAYlla088REU3qBKlFD9e27G/BWonDan8JqVKNRo6N87ABwZWuZwgwSeDP?=
+ =?us-ascii?Q?zp9QAh/k6a+20P0MKinFIoSj2HJvs5m0xGZHNtI9LhzpG5+C26fRFkZOgBCg?=
+ =?us-ascii?Q?K4ptaxPwZH/1i5swsbQe455Z8bAo/7Y0YILzWxSbX5GAUheYkpYAq6EOabso?=
+ =?us-ascii?Q?Sl+Qxy8k+1AlwcwW/jVHGIAWOd963r20yvKrEruCb69PGKkVl4VdYXoFSB1c?=
+ =?us-ascii?Q?oAt/48gcw0f7B3P4HnP6NHE48IXgAWJdJEV6EV7KZRzr7dT73wX9b5vz4v81?=
+ =?us-ascii?Q?V06BUHpJVMZrlAjNGyMuXwOzUSnvS5xy342EMYM65CFbzY1wbcnNR6m+QV8J?=
+ =?us-ascii?Q?b92f2b/ElON1+JA2bvDkGiAyPDoiVHcI3fsDHTwz6h0lWqD/TzG3OplJTDb/?=
+ =?us-ascii?Q?avKFIiIL7q62p1JKBLMuUDKDGmp7WEAklUSYP6GxPF0j1Ef8Yp8d6bqROwFg?=
+ =?us-ascii?Q?mpBnv0RLc8JKrsfrBRGSja9VB/XQFUwTI6pOiBpKHzRXb2eCpILJqNcOhNuh?=
+ =?us-ascii?Q?WB3zNB43X8DKi65r16AiTnD0GuY4ERtS3C160WIp6kUg5jxQmxm6p/yrNcoQ?=
+ =?us-ascii?Q?o43l0jbMblt5vGF+B8A360g+h1kqwSp5jpflaouImKO+aU/vlvhFX+SP06Md?=
+ =?us-ascii?Q?pMmM8I7a7cVeiBh4KB7jYauuRwblP23WWD0N2HwopucQp56isUhEN5w9y5LR?=
+ =?us-ascii?Q?3n42ihXsfMumSP3MEwCa3lFSA13458KHDumtr9nopEtl/96W0aKnjb0zpbR9?=
+ =?us-ascii?Q?eZgDK6lR+tXJnnTffW9Q3hUpYvPf/aL5AJ386rMp?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e1017040-be59-4678-1845-08db55e82504
+X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9417.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 May 2023 08:32:55.0040
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: u2T7M8Xc470ZDxArINImzk5IYpkjes5vxrCLqvzDFSaEXdAZdp1kTiT8MF+mUkxs6/K2raVVuoxFBJEZl/8kCQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB8PR04MB7002
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11/05/2023 19:32, Sumit Gupta wrote:
-> Add Interconnect framework support to dynamically set the DRAM
-> bandwidth from different clients. Both the MC and EMC drivers are
-> added as ICC providers. The path for any request is:
->  MC-Client[1-n] -> MC -> EMC -> EMEM/DRAM
-> 
-> MC client's request for bandwidth will go to the MC driver which
-> passes the client request info like BPMP Client ID, Client type
-> and the Bandwidth to the BPMP-FW. The final DRAM freq to achieve
-> the requested bandwidth is set by the BPMP-FW based on the passed
-> parameters.
-> 
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->  drivers/memory/tegra/mc.c           |   5 +
->  drivers/memory/tegra/tegra186-emc.c | 133 +++++++++++++++++++++++++++
->  drivers/memory/tegra/tegra234.c     | 138 +++++++++++++++++++++++++++-
->  include/linux/tegra-icc.h           |  65 +++++++++++++
->  include/soc/tegra/mc.h              |   7 ++
+From: Peng Fan <peng.fan@nxp.com>
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+i.MX93 use same TMU IP as Qoriq, but with version 2.1, so update
+the driver to support 2.1.
 
-Best regards,
-Krzysztof
+This patch also includes a fix for i.MX8MQ
+
+Pankit Garg (1):
+  thermal: qoriq_thermal: No need to program site adjustment register
+
+Peng Fan (2):
+  thermal: qoriq_thermal: only enable supported sensors
+  thermal: qoriq: support version 2.1
+
+ drivers/thermal/qoriq_thermal.c | 48 ++++++++++++++++++++-------------
+ 1 file changed, 29 insertions(+), 19 deletions(-)
+
+-- 
+2.37.1
 
