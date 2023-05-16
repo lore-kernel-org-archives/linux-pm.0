@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D8F3C77B75
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:48:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62393C7EE2C
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:48:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234178AbjEPPsV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 11:48:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41690 "EHLO
+        id S234335AbjEPPsZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 11:48:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234205AbjEPPsC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:48:02 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81A84A24D;
-        Tue, 16 May 2023 08:47:37 -0700 (PDT)
+        with ESMTP id S234297AbjEPPsD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:48:03 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 770F2A5D7;
+        Tue, 16 May 2023 08:47:45 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id BDB6663B93;
-        Tue, 16 May 2023 15:47:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0070AC433A1;
-        Tue, 16 May 2023 15:47:11 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B164C63BA1;
+        Tue, 16 May 2023 15:46:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF635C433A1;
+        Tue, 16 May 2023 15:46:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684252035;
-        bh=bjHzaX1S/XmMHS+pzx/BBsDEPRhhS8ndqsq/8qSoq9A=;
+        s=k20201202; t=1684252013;
+        bh=Cpt8gD1DG91vSJDrfbt4Hrl17RTrQOpd+8m0dG4DdQo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=f2bOGMmanyE84V2/AE41WTMs80qf9pTZsHsD9F+/Ran0Loq1XnTWD9T1Xe/lEKv2Y
-         26KXijopJ1VoF2HSPy2rDYc4XU/QPS+Zund7IVhGRxHNHw9vNTL86eH4s8XWVe+esJ
-         GHxnqexAf5xknWy4Yonsml33IdsEstRyKq9sdNqaIejoDb1g5MSmONOYCsanOthNKJ
-         D+QslLecnNSqmq1ph9lvme/E4S0LiZmiQg9qzXyrdadHTL+NCJjLLu6zxCWjXyvqVt
-         4V5sahVD0mThIJeYsb2Qctrjw2FfeAYZ7OWb+ewqVNJiWbDv2ZF8YlLIH2bOXWAWg3
-         rAlpSAzcEWEKg==
+        b=cFT7/bXodGtbqNhpbxA6rLR7H1Ne7v2c2QMRA6uuV1m+dtzvyi75WbAjVRMg99NqS
+         o2ceMU63IhrPRo0CcVXXeGF2Hv3n8lhgD3ahh1EWLou27UjIcjkS0H3jDAivSRKdLs
+         6Aftg255gYT4bl976C5uxerdFY9f94joSJux3id1TJ44D2uoMoeu+hOpaUYOktvdC4
+         il8SGAa58aUJN9ehp7ezXkDm1ox8DesMBqNmQvf0XKZymPlK3Ici78OFBfZVAQJnR9
+         8V2d593UtJAyx9p6KtrFHVGNy8oq2UifngtIjXdibQ4VOHf1hjA0Z617i8Gd//dknq
+         U3dNTlQCB/9uA==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     Russell King <linux@armlinux.org.uk>
 Cc:     Arnd Bergmann <arnd@arndb.de>,
@@ -45,9 +45,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         Kees Cook <keescook@chromium.org>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 16/16] ARM: xip-kernel: add __inflate_kernel_data prototype
-Date:   Tue, 16 May 2023 17:46:05 +0200
-Message-Id: <20230516154605.517690-17-arnd@kernel.org>
+Subject: [PATCH 10/16] ARM: nommu: include asm/idmap.h
+Date:   Tue, 16 May 2023 17:45:59 +0200
+Message-Id: <20230516154605.517690-11-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230516154605.517690-1-arnd@kernel.org>
 References: <20230516154605.517690-1-arnd@kernel.org>
@@ -59,57 +59,28 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The kernel .data decompression is called from assembler, so it does
-not need a prototype, but adding one avoids this W=1 warning:
+setup_mm_for_reboot() is declared in asm/idmap.h but that is not included
+for the definition, causing a W=1 warning:
 
-arch/arm/kernel/head-inflate-data.c:35:12: error: no previous prototype for '__inflate_kernel_data' [-Werror=missing-prototypes]
-
-The same file contains a few extern declarations for assembler
-symbols, move those into the header as well for consistency.
+arch/arm/mm/nommu.c:178:6: error: no previous prototype for 'setup_mm_for_reboot' [-Werror=missing-prototypes]
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/kernel/head-inflate-data.c | 5 +----
- arch/arm/kernel/head.h              | 8 ++++++++
- 2 files changed, 9 insertions(+), 4 deletions(-)
- create mode 100644 arch/arm/kernel/head.h
+ arch/arm/mm/nommu.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/kernel/head-inflate-data.c b/arch/arm/kernel/head-inflate-data.c
-index 89a52104d32a..225c0699a12c 100644
---- a/arch/arm/kernel/head-inflate-data.c
-+++ b/arch/arm/kernel/head-inflate-data.c
-@@ -8,16 +8,13 @@
+diff --git a/arch/arm/mm/nommu.c b/arch/arm/mm/nommu.c
+index 53f2d8774fdb..43cfd06bbeba 100644
+--- a/arch/arm/mm/nommu.c
++++ b/arch/arm/mm/nommu.c
+@@ -21,6 +21,7 @@
+ #include <asm/cputype.h>
+ #include <asm/mpu.h>
+ #include <asm/procinfo.h>
++#include <asm/idmap.h>
  
- #include <linux/init.h>
- #include <linux/zutil.h>
-+#include "head.h"
+ #include "mm.h"
  
- /* for struct inflate_state */
- #include "../../../lib/zlib_inflate/inftrees.h"
- #include "../../../lib/zlib_inflate/inflate.h"
- #include "../../../lib/zlib_inflate/infutil.h"
- 
--extern char __data_loc[];
--extern char _edata_loc[];
--extern char _sdata[];
--
- /*
-  * This code is called very early during the boot process to decompress
-  * the .data segment stored compressed in ROM. Therefore none of the global
-diff --git a/arch/arm/kernel/head.h b/arch/arm/kernel/head.h
-new file mode 100644
-index 000000000000..6eccf98fc2cc
---- /dev/null
-+++ b/arch/arm/kernel/head.h
-@@ -0,0 +1,8 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+
-+extern char __data_loc[];
-+extern char _edata_loc[];
-+extern char _sdata[];
-+
-+int __init __inflate_kernel_data(void);
-+
 -- 
 2.39.2
 
