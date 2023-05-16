@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC73AC7EE2A
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:48:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D8F3C77B75
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:48:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234146AbjEPPsM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 11:48:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41520 "EHLO
+        id S234178AbjEPPsV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 11:48:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41690 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234262AbjEPPr6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:47:58 -0400
+        with ESMTP id S234205AbjEPPsC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:48:02 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3972819B0;
-        Tue, 16 May 2023 08:47:30 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81A84A24D;
+        Tue, 16 May 2023 08:47:37 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 67E8363B8E;
-        Tue, 16 May 2023 15:47:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1167C433EF;
-        Tue, 16 May 2023 15:47:04 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id BDB6663B93;
+        Tue, 16 May 2023 15:47:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0070AC433A1;
+        Tue, 16 May 2023 15:47:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684252027;
-        bh=uSZFgOHv66zf2ErLT4Tl0oonO69PeMRAH5tXtTaemjQ=;
+        s=k20201202; t=1684252035;
+        bh=bjHzaX1S/XmMHS+pzx/BBsDEPRhhS8ndqsq/8qSoq9A=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=rt+0T6iwCqnI2DBJU+G1SPBWeanZBPT/dGs+wqihGalu5OX13iSDeaqKgDGb5pFPa
-         U7Z1uOuF4dSBL0xetsta1vCyca14RNIUruKFekUByNfK26cGrqgP0LajoCoMH8GzLO
-         MEvHHuJ5ti2rfPGF5FP54BuAyUw5j6KYXo8t5CpnwV5poHm3aiqC0o3lJuLDPYnTwj
-         W5/513T1c50zUPEnx8CERIcFObNqM5dIfgHUezSPmK4+Y1iaa4Pid/cwkt/OOWTwD8
-         hAxlWZIx+Om6TMEjQenC4JZ7MdgY8qo9AAvYXKs+ncVkKht30TZ+Exd1jNqzTMej0R
-         OOY/Y0jtpz/4g==
+        b=f2bOGMmanyE84V2/AE41WTMs80qf9pTZsHsD9F+/Ran0Loq1XnTWD9T1Xe/lEKv2Y
+         26KXijopJ1VoF2HSPy2rDYc4XU/QPS+Zund7IVhGRxHNHw9vNTL86eH4s8XWVe+esJ
+         GHxnqexAf5xknWy4Yonsml33IdsEstRyKq9sdNqaIejoDb1g5MSmONOYCsanOthNKJ
+         D+QslLecnNSqmq1ph9lvme/E4S0LiZmiQg9qzXyrdadHTL+NCJjLLu6zxCWjXyvqVt
+         4V5sahVD0mThIJeYsb2Qctrjw2FfeAYZ7OWb+ewqVNJiWbDv2ZF8YlLIH2bOXWAWg3
+         rAlpSAzcEWEKg==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     Russell King <linux@armlinux.org.uk>
 Cc:     Arnd Bergmann <arnd@arndb.de>,
@@ -45,9 +45,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         Kees Cook <keescook@chromium.org>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 14/16] ARM: add missing syscall prototypes
-Date:   Tue, 16 May 2023 17:46:03 +0200
-Message-Id: <20230516154605.517690-15-arnd@kernel.org>
+Subject: [PATCH 16/16] ARM: xip-kernel: add __inflate_kernel_data prototype
+Date:   Tue, 16 May 2023 17:46:05 +0200
+Message-Id: <20230516154605.517690-17-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230516154605.517690-1-arnd@kernel.org>
 References: <20230516154605.517690-1-arnd@kernel.org>
@@ -59,121 +59,57 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-All architecture-independent system calls have prototypes in
-include/linux/syscalls.h, but there are a few that only exist
-on arm or that take the pt_regs directly. These cause a W=1
-warning such as:
+The kernel .data decompression is called from assembler, so it does
+not need a prototype, but adding one avoids this W=1 warning:
 
-arch/arm/kernel/signal.c:186:16: error: no previous prototype for 'sys_sigreturn' [-Werror=missing-prototypes]
-arch/arm/kernel/signal.c:216:16: error: no previous prototype for 'sys_rt_sigreturn' [-Werror=missing-prototypes]
-arch/arm/kernel/sys_arm.c:32:17: error: no previous prototype for 'sys_arm_fadvise64_64' [-Werror=missing-prototypes]
+arch/arm/kernel/head-inflate-data.c:35:12: error: no previous prototype for '__inflate_kernel_data' [-Werror=missing-prototypes]
 
-Add prototypes for all custom syscalls on arm and add them
-to asm/syscalls.h.
+The same file contains a few extern declarations for assembler
+symbols, move those into the header as well for consistency.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/include/asm/syscalls.h   | 51 +++++++++++++++++++++++++++++++
- arch/arm/kernel/signal.c          |  1 +
- arch/arm/kernel/sys_arm.c         |  1 +
- arch/arm/kernel/sys_oabi-compat.c |  2 ++
- 4 files changed, 55 insertions(+)
- create mode 100644 arch/arm/include/asm/syscalls.h
+ arch/arm/kernel/head-inflate-data.c | 5 +----
+ arch/arm/kernel/head.h              | 8 ++++++++
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+ create mode 100644 arch/arm/kernel/head.h
 
-diff --git a/arch/arm/include/asm/syscalls.h b/arch/arm/include/asm/syscalls.h
+diff --git a/arch/arm/kernel/head-inflate-data.c b/arch/arm/kernel/head-inflate-data.c
+index 89a52104d32a..225c0699a12c 100644
+--- a/arch/arm/kernel/head-inflate-data.c
++++ b/arch/arm/kernel/head-inflate-data.c
+@@ -8,16 +8,13 @@
+ 
+ #include <linux/init.h>
+ #include <linux/zutil.h>
++#include "head.h"
+ 
+ /* for struct inflate_state */
+ #include "../../../lib/zlib_inflate/inftrees.h"
+ #include "../../../lib/zlib_inflate/inflate.h"
+ #include "../../../lib/zlib_inflate/infutil.h"
+ 
+-extern char __data_loc[];
+-extern char _edata_loc[];
+-extern char _sdata[];
+-
+ /*
+  * This code is called very early during the boot process to decompress
+  * the .data segment stored compressed in ROM. Therefore none of the global
+diff --git a/arch/arm/kernel/head.h b/arch/arm/kernel/head.h
 new file mode 100644
-index 000000000000..5912e7cffa6a
+index 000000000000..6eccf98fc2cc
 --- /dev/null
-+++ b/arch/arm/include/asm/syscalls.h
-@@ -0,0 +1,51 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef __ASM_SYSCALLS_H
-+#define __ASM_SYSCALLS_H
++++ b/arch/arm/kernel/head.h
+@@ -0,0 +1,8 @@
++// SPDX-License-Identifier: GPL-2.0-only
 +
-+#include <linux/linkage.h>
-+#include <linux/types.h>
++extern char __data_loc[];
++extern char _edata_loc[];
++extern char _sdata[];
 +
-+struct pt_regs;
-+asmlinkage int sys_sigreturn(struct pt_regs *regs);
-+asmlinkage int sys_rt_sigreturn(struct pt_regs *regs);
-+asmlinkage long sys_arm_fadvise64_64(int fd, int advice,
-+				     loff_t offset, loff_t len);
++int __init __inflate_kernel_data(void);
 +
-+struct oldabi_stat64;
-+asmlinkage long sys_oabi_stat64(const char __user * filename,
-+				struct oldabi_stat64 __user * statbuf);
-+asmlinkage long sys_oabi_lstat64(const char __user * filename,
-+				 struct oldabi_stat64 __user * statbuf);
-+asmlinkage long sys_oabi_fstat64(unsigned long fd,
-+				 struct oldabi_stat64 __user * statbuf);
-+asmlinkage long sys_oabi_fstatat64(int dfd,
-+				   const char __user *filename,
-+				   struct oldabi_stat64  __user *statbuf,
-+				   int flag);
-+asmlinkage long sys_oabi_fcntl64(unsigned int fd, unsigned int cmd,
-+				 unsigned long arg);
-+struct oabi_epoll_event;
-+asmlinkage long sys_oabi_epoll_ctl(int epfd, int op, int fd,
-+				   struct oabi_epoll_event __user *event);
-+struct oabi_sembuf;
-+struct old_timespec32;
-+asmlinkage long sys_oabi_semtimedop(int semid,
-+				    struct oabi_sembuf __user *tsops,
-+				    unsigned nsops,
-+				    const struct old_timespec32 __user *timeout);
-+asmlinkage long sys_oabi_semop(int semid, struct oabi_sembuf __user *tsops,
-+			       unsigned nsops);
-+asmlinkage int sys_oabi_ipc(uint call, int first, int second, int third,
-+			    void __user *ptr, long fifth);
-+struct sockaddr;
-+asmlinkage long sys_oabi_bind(int fd, struct sockaddr __user *addr, int addrlen);
-+asmlinkage long sys_oabi_connect(int fd, struct sockaddr __user *addr, int addrlen);
-+asmlinkage long sys_oabi_sendto(int fd, void __user *buff,
-+				size_t len, unsigned flags,
-+				struct sockaddr __user *addr,
-+				int addrlen);
-+struct user_msghdr;
-+asmlinkage long sys_oabi_sendmsg(int fd, struct user_msghdr __user *msg, unsigned flags);
-+asmlinkage long sys_oabi_socketcall(int call, unsigned long __user *args);
-+
-+#endif
-diff --git a/arch/arm/kernel/signal.c b/arch/arm/kernel/signal.c
-index e07f359254c3..8d0afa11bed5 100644
---- a/arch/arm/kernel/signal.c
-+++ b/arch/arm/kernel/signal.c
-@@ -18,6 +18,7 @@
- #include <asm/traps.h>
- #include <asm/unistd.h>
- #include <asm/vfp.h>
-+#include <asm/syscalls.h>
- 
- #include "signal.h"
- 
-diff --git a/arch/arm/kernel/sys_arm.c b/arch/arm/kernel/sys_arm.c
-index a5f183cfecb1..0141e9bb02e8 100644
---- a/arch/arm/kernel/sys_arm.c
-+++ b/arch/arm/kernel/sys_arm.c
-@@ -24,6 +24,7 @@
- #include <linux/ipc.h>
- #include <linux/uaccess.h>
- #include <linux/slab.h>
-+#include <asm/syscalls.h>
- 
- /*
-  * Since loff_t is a 64 bit type we avoid a lot of ABI hassle
-diff --git a/arch/arm/kernel/sys_oabi-compat.c b/arch/arm/kernel/sys_oabi-compat.c
-index 006163195d67..d00f4040a9f5 100644
---- a/arch/arm/kernel/sys_oabi-compat.c
-+++ b/arch/arm/kernel/sys_oabi-compat.c
-@@ -10,6 +10,8 @@
-  *  Copyright:	MontaVista Software, Inc.
-  */
- 
-+#include <asm/syscalls.h>
-+
- /*
-  * The legacy ABI and the new ARM EABI have different rules making some
-  * syscalls incompatible especially with structure arguments.
 -- 
 2.39.2
 
