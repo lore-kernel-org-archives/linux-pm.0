@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59C51C7EE24
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 19:38:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95DA1C7EE2C
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 19:38:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230191AbjEPTij (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 15:38:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58786 "EHLO
+        id S230223AbjEPTi5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 15:38:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57902 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230223AbjEPTi3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 15:38:29 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35B7244A5;
-        Tue, 16 May 2023 12:38:08 -0700 (PDT)
+        with ESMTP id S230397AbjEPTir (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 15:38:47 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B6D08A58;
+        Tue, 16 May 2023 12:38:25 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 4096563EC3;
-        Tue, 16 May 2023 19:38:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05AE9C433A0;
-        Tue, 16 May 2023 19:37:57 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E945D63E22;
+        Tue, 16 May 2023 19:37:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5BB4C433D2;
+        Tue, 16 May 2023 19:37:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684265883;
-        bh=j24rSNRgDIgmGiT2yXwRSRo4ZogPVSrZkif28sPhRnU=;
+        s=k20201202; t=1684265865;
+        bh=ePOLp5lrYksDFnI5SruvVtfGvFIosnERaoYqbpISZdc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=AeITFFPyf4T1O9Bk8T43ZhPjTAAH6Vi8ipARvhqNOYnVJGtz4HnVAYe+g/BzZ7026
-         fDFAQ+Kwic0E1tpyAEjk9jRaCFQp+kn6j5QUapAXkZVr+cEC/j8Xd57pjknKmNJ40L
-         YYnEhKGr6uzcXrPYT/H7qqH1VyhkhaztOT4kZMMxyyb3x1FoZRxS3qYbRHji3EIhxJ
-         GIf04p+6OuzTuprxdmvEFq7KckfwLT/GHmqgM9hv9SmOoyBUuMT0F5NhocTm6xphV4
-         BngR4+JYE7FOd9LAO6LyB06VqLeGQ76wR+h5GIBrwd5zRDNTjAQuZi2Pu27xvTgXI9
-         pzCAFRefSXgnA==
+        b=QzHHLwTINJvvcADDWDAFD53gb0rzvbfM+9frChQz9nOeJdPvDbN96AuXaWQc9Zvxr
+         aIMvdYvF3T+QNbI/k5wpwc6MSujK2ulBi7AB+gIW4MAFtORYIB6dloPpaU3136n4im
+         28e0oQ/gFuMmWEVqE32GvMwA8QC1R8ZOSDj5aB75yht+WU7UenY2JSg291k/G5ntiU
+         9aBuw8l68CYZc+TZWL+A0oDAj4k2nTmi3WAfSETq8X/lpMsTNhdlRU1e3qXY/DCjc8
+         kbTXiAG5OAPFlElt+nbApNzKv5CT7DQpkoHI/Mebhyj1HGkKmozLCY+jMgkk1Bebd7
+         De/Gp233G0FBg==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     x86@kernel.org
 Cc:     Arnd Bergmann <arnd@arndb.de>,
@@ -56,9 +56,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-pm@vger.kernel.org,
         linux-mm@kvack.org
-Subject: [PATCH 19/20] x86: purgatory: include header for warn() declaration
-Date:   Tue, 16 May 2023 21:35:48 +0200
-Message-Id: <20230516193549.544673-20-arnd@kernel.org>
+Subject: [PATCH 16/20] x86: vdso: include vdso/processor.h
+Date:   Tue, 16 May 2023 21:35:45 +0200
+Message-Id: <20230516193549.544673-17-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230516193549.544673-1-arnd@kernel.org>
 References: <20230516193549.544673-1-arnd@kernel.org>
@@ -70,59 +70,29 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The purgatory code has uses parts of the decompressor and provides
-its own warn() function, but has to include the corresponding
-header file to avoid a -Wmissing-prototypes warning.
+__vdso_getcpu is declared in a header but this is not included
+before the definition, causing a W=1 warning:
 
-It turns out that this the function prototype actually differs
-from the declaration, so change it to get a constant pointer
-in the declaration and the other definition as well.
+arch/x86/entry/vdso/vgetcpu.c:13:1: error: no previous prototype for '__vdso_getcpu' [-Werror=missing-prototypes]
+arch/x86/entry/vdso/vdso32/../vgetcpu.c:13:1: error: no previous prototype for '__vdso_getcpu' [-Werror=missing-prototypes]
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/x86/boot/compressed/error.c | 2 +-
- arch/x86/boot/compressed/error.h | 2 +-
- arch/x86/purgatory/purgatory.c   | 1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
+ arch/x86/entry/vdso/vgetcpu.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/x86/boot/compressed/error.c b/arch/x86/boot/compressed/error.c
-index c881878e56d3..ce5ed7d8265e 100644
---- a/arch/x86/boot/compressed/error.c
-+++ b/arch/x86/boot/compressed/error.c
-@@ -7,7 +7,7 @@
- #include "misc.h"
- #include "error.h"
+diff --git a/arch/x86/entry/vdso/vgetcpu.c b/arch/x86/entry/vdso/vgetcpu.c
+index 0a9007c24056..e4640306b2e3 100644
+--- a/arch/x86/entry/vdso/vgetcpu.c
++++ b/arch/x86/entry/vdso/vgetcpu.c
+@@ -8,6 +8,7 @@
+ #include <linux/kernel.h>
+ #include <linux/getcpu.h>
+ #include <asm/segment.h>
++#include <vdso/processor.h>
  
--void warn(char *m)
-+void warn(const char *m)
- {
- 	error_putstr("\n\n");
- 	error_putstr(m);
-diff --git a/arch/x86/boot/compressed/error.h b/arch/x86/boot/compressed/error.h
-index 1de5821184f1..87062dea9a20 100644
---- a/arch/x86/boot/compressed/error.h
-+++ b/arch/x86/boot/compressed/error.h
-@@ -4,7 +4,7 @@
- 
- #include <linux/compiler.h>
- 
--void warn(char *m);
-+void warn(const char *m);
- void error(char *m) __noreturn;
- 
- #endif /* BOOT_COMPRESSED_ERROR_H */
-diff --git a/arch/x86/purgatory/purgatory.c b/arch/x86/purgatory/purgatory.c
-index 7558139920f8..aea47e793963 100644
---- a/arch/x86/purgatory/purgatory.c
-+++ b/arch/x86/purgatory/purgatory.c
-@@ -14,6 +14,7 @@
- #include <crypto/sha2.h>
- #include <asm/purgatory.h>
- 
-+#include "../boot/compressed/error.h"
- #include "../boot/string.h"
- 
- u8 purgatory_sha256_digest[SHA256_DIGEST_SIZE] __section(".kexec-purgatory");
+ notrace long
+ __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
 -- 
 2.39.2
 
