@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C872C7EE25
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:47:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D677C77B75
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:47:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234257AbjEPPr5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 11:47:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41122 "EHLO
+        id S234264AbjEPPr6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 11:47:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41270 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234201AbjEPPrj (ORCPT
+        with ESMTP id S234205AbjEPPrj (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:47:39 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0004F7EC4;
-        Tue, 16 May 2023 08:47:14 -0700 (PDT)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 586847EDD;
+        Tue, 16 May 2023 08:47:15 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id CF61163BA3;
-        Tue, 16 May 2023 15:46:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17F63C4331D;
-        Tue, 16 May 2023 15:46:27 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 6C09463B9D;
+        Tue, 16 May 2023 15:46:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB8BDC433A0;
+        Tue, 16 May 2023 15:46:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684251991;
-        bh=6a4E3hOiBRNKm/YMm19jLYIBcL0Rao1gaj6adOyNw3g=;
+        s=k20201202; t=1684252005;
+        bh=1m6Ec7twcC2NaPKOcuVM9lqODfTf5Y70mYt0kY6b7Xc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=sxSO5s1RLwegkfthAeCa+WE9I4fFrht8PmKA36QXkndW/TCG288ZCdOB08/bAT4vG
-         GmclOMl9Z2rdOGDS2k7j/tSZ93+cbrmb6yvIcTFP1Bum86FrHxdQEZgpODOflL2Q46
-         tyfSk0Oc65tXezH+YTfDQY6nXIURh8n7qCHYaq65FtXKX43DlE9b2yOpIkStHO/eoD
-         fB7dnQjIsF/Y01PffnYMc4OChQWX17gfK4kOR2kWc5Zj8xwsPS0rNzl3/idXx/CLYs
-         GAMMBMMCMkBObjh5gv8Wjh3YDKb5pBPmW613+YuEo9Ci7L+xaeNzU67YbxH86PszAM
-         F2jOvpboazMhg==
+        b=kzAdBbWlRCx5TDu2jFFXn3n3DHysi9+vGwC0OBd7f12eUbKsSemdnlSDW3q6NrJGx
+         Sx1LPRHBbeaaOIGPV5Oqn4wHxc9Wy+tYfs5RtyzErb6id1wcUuT6v87ecvr23dchZc
+         3nqiENT39Md26RlUzH+95As0vTZcHfmJn+NuGWomLfwdG/9BranS8XX98YuzvfMB9V
+         sdAVg1wVi5/qeBf8CYTB+VHKQfI+VRnnVOehKeLaGk5QS6VrzNnXggzacrI7WO3M6k
+         VurEaGGym4T17vwJ7/3+mb0OxWk2rD1XpLWU6JFQMC34XlrQvpGLhuBjj1n/wwozc0
+         rS1sgWSyPmm/g==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     Russell King <linux@armlinux.org.uk>
 Cc:     Arnd Bergmann <arnd@arndb.de>,
@@ -45,9 +45,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         Kees Cook <keescook@chromium.org>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 04/16] ARM: vdso: add missing prototypes
-Date:   Tue, 16 May 2023 17:45:53 +0200
-Message-Id: <20230516154605.517690-5-arnd@kernel.org>
+Subject: [PATCH 08/16] ARM: add clear/copy_user_highpage declarations
+Date:   Tue, 16 May 2023 17:45:57 +0200
+Message-Id: <20230516154605.517690-9-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230516154605.517690-1-arnd@kernel.org>
 References: <20230516154605.517690-1-arnd@kernel.org>
@@ -59,56 +59,55 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The __vdso_clock_* functions have no prototype, and the
-__eabi_unwind_cpp_pr* functions have a prototype in a header that is
-not included before the definition:
+The CPU specific helpers have to be global functions when building
+a kernel for just one CPU, but are called through indirect function
+pointers in a multi-CPU kernel. This config currently lacks the
+declarations for the individual helpers, e.g.:
 
-arch/arm/vdso/vgettimeofday.c:10:5: error: no previous prototype for '__vdso_clock_gettime' [-Werror=missing-prototypes]
-arch/arm/vdso/vgettimeofday.c:16:5: error: no previous prototype for '__vdso_clock_gettime64' [-Werror=missing-prototypes]
-arch/arm/vdso/vgettimeofday.c:22:5: error: no previous prototype for '__vdso_gettimeofday' [-Werror=missing-prototypes]
-arch/arm/vdso/vgettimeofday.c:28:5: error: no previous prototype for '__vdso_clock_getres' [-Werror=missing-prototypes]
-arch/arm/vdso/vgettimeofday.c:36:6: error: no previous prototype for '__aeabi_unwind_cpp_pr0' [-Werror=missing-prototypes]
-arch/arm/vdso/vgettimeofday.c:40:6: error: no previous prototype for '__aeabi_unwind_cpp_pr1' [-Werror=missing-prototypes]
-arch/arm/vdso/vgettimeofday.c:44:6: error: no previous prototype for '__aeabi_unwind_cpp_pr2' [-Werror=missing-prototypes]
+arch/arm/mm/copypage-v4wb.c:47:6: error: no previous prototype for 'v4wb_copy_user_highpage' [-Werror=missing-prototypes]
+arch/arm/mm/copypage-v4wb.c:65:6: error: no previous prototype for 'v4wb_clear_user_highpage' [-Werror=missing-prototypes]
 
-Add the prototypes in an appropriate header and ensure that
-both are included here.
+Add the complete set of prototypes in asm/page.h to allow
+building iwth -Wmissing-prototypes.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/include/asm/vdso.h   | 5 +++++
- arch/arm/vdso/vgettimeofday.c | 2 ++
- 2 files changed, 7 insertions(+)
+ arch/arm/include/asm/page.h | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/arch/arm/include/asm/vdso.h b/arch/arm/include/asm/vdso.h
-index 5b85889f82ee..422c3afa806a 100644
---- a/arch/arm/include/asm/vdso.h
-+++ b/arch/arm/include/asm/vdso.h
-@@ -24,6 +24,11 @@ static inline void arm_install_vdso(struct mm_struct *mm, unsigned long addr)
+diff --git a/arch/arm/include/asm/page.h b/arch/arm/include/asm/page.h
+index 74bb5947b387..28c63d172a96 100644
+--- a/arch/arm/include/asm/page.h
++++ b/arch/arm/include/asm/page.h
+@@ -113,6 +113,28 @@ struct cpu_user_fns {
+ 			unsigned long vaddr, struct vm_area_struct *vma);
+ };
  
- #endif /* CONFIG_VDSO */
- 
-+int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
-+int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts);
-+int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
-+int __vdso_clock_getres(clockid_t clock_id, struct old_timespec32 *res);
++void fa_copy_user_highpage(struct page *to, struct page *from,
++	unsigned long vaddr, struct vm_area_struct *vma);
++void fa_clear_user_highpage(struct page *page, unsigned long vaddr);
++void feroceon_copy_user_highpage(struct page *to, struct page *from,
++	unsigned long vaddr, struct vm_area_struct *vma);
++void feroceon_clear_user_highpage(struct page *page, unsigned long vaddr);
++void v4_mc_copy_user_highpage(struct page *to, struct page *from,
++	unsigned long vaddr, struct vm_area_struct *vma);
++void v4_mc_clear_user_highpage(struct page *page, unsigned long vaddr);
++void v4wb_copy_user_highpage(struct page *to, struct page *from,
++	unsigned long vaddr, struct vm_area_struct *vma);
++void v4wb_clear_user_highpage(struct page *page, unsigned long vaddr);
++void v4wt_copy_user_highpage(struct page *to, struct page *from,
++	unsigned long vaddr, struct vm_area_struct *vma);
++void v4wt_clear_user_highpage(struct page *page, unsigned long vaddr);
++void xsc3_mc_copy_user_highpage(struct page *to, struct page *from,
++	unsigned long vaddr, struct vm_area_struct *vma);
++void xsc3_mc_clear_user_highpage(struct page *page, unsigned long vaddr);
++void xscale_mc_copy_user_highpage(struct page *to, struct page *from,
++	unsigned long vaddr, struct vm_area_struct *vma);
++void xscale_mc_clear_user_highpage(struct page *page, unsigned long vaddr);
 +
- #endif /* __ASSEMBLY__ */
+ #ifdef MULTI_USER
+ extern struct cpu_user_fns cpu_user;
  
- #endif /* __KERNEL__ */
-diff --git a/arch/arm/vdso/vgettimeofday.c b/arch/arm/vdso/vgettimeofday.c
-index 1976c6f325a4..a003beacac76 100644
---- a/arch/arm/vdso/vgettimeofday.c
-+++ b/arch/arm/vdso/vgettimeofday.c
-@@ -6,6 +6,8 @@
-  */
- #include <linux/time.h>
- #include <linux/types.h>
-+#include <asm/vdso.h>
-+#include <asm/unwind.h>
- 
- int __vdso_clock_gettime(clockid_t clock,
- 			 struct old_timespec32 *ts)
 -- 
 2.39.2
 
