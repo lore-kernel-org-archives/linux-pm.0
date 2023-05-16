@@ -2,125 +2,99 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82DCAC77B7F
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:33:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7070CC7EE25
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:46:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233119AbjEPPdI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 11:33:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54096 "EHLO
+        id S233884AbjEPPq5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 11:46:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232900AbjEPPct (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:32:49 -0400
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBC1D72BD
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2023 08:32:42 -0700 (PDT)
-Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-50bcb229adaso26001825a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2023 08:32:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1684251161; x=1686843161;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=+WfDmrqy+QvMst4XEpE/xoK4sak7nQ3C4hjNO9HTTG0=;
-        b=xDEJo0SLmGVlDXhX/NOriVq2mlAqG47xuhR/5aeirsLGvc7tkTl9nINt7oJZhqwU6o
-         koJhGF/IIzflE+YEoTP50NrniSiBi0YiQRxPW6iLxHejXOiDzRaDMgTVxhbW3e3EL5Dh
-         nuUQkhfOcADYBv3spwgyGfSZLOlDBU5J9PVGl3aATwbkjucWdrAxzPZuYLZBn9iDJm3S
-         A4/nurYAYt32tYoLTewVmH9oXggLmJ74/ynZ9y3ksrgZnbZQn4MOm6osU8cZ8D/XK7VR
-         hAvXQejna4ki7fOPorsJxh03h+xg2xP5CaH1XM+RGR4AjYLWCKw6LgH0+fhVeMYnrItR
-         LOvg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684251161; x=1686843161;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+WfDmrqy+QvMst4XEpE/xoK4sak7nQ3C4hjNO9HTTG0=;
-        b=bkaGdEsuWuPfBl5E4j/uhjefSENQQkBotw6ZmBfc4FGqs2VQCbOoOjaN6mGBrjsTFy
-         wP0MZzILb38OMQzfQKEdo0ZcUe6Q8IPjMAh0ryZG+pZHrndHxwQIThCSjO2yyeVG7MBP
-         fmHH1iy+iER7DlXrF08S1Eb30+O26rAoamuS7C9lVrfStwPiQysoykafkwxITidA4SgK
-         L1I+5tCN/IWEOmTSvKP3PZOkREy+lhj25eyVbny/lQlUtWjU2qwHCdX7aJiHJ6dxBQ0u
-         XNKl8I7RBkbjOtnvAIB7ZeTukYO63M9IgBGKwmrlqFx9zNzouegf41o0TGVRsLfLsMza
-         0xgg==
-X-Gm-Message-State: AC+VfDx52n3WQzeUpzCqU9gN3ZzEWadlYo0EEuT4qvzQY3fdD+YL+rCd
-        TRFXFJZZscNvPbfqrrFArgWakA==
-X-Google-Smtp-Source: ACHHUZ7x0LFHxkX8C01IljtyBknQMJkvvH2qc+W3wIiGMrH81XlGSgasoeiOPj4uhkFFeOaCs2aTJg==
-X-Received: by 2002:a50:ed99:0:b0:50b:c41b:25d with SMTP id h25-20020a50ed99000000b0050bc41b025dmr27405434edr.7.1684251161319;
-        Tue, 16 May 2023 08:32:41 -0700 (PDT)
-Received: from ?IPV6:2a02:810d:15c0:828:77d1:16a1:abe1:84fc? ([2a02:810d:15c0:828:77d1:16a1:abe1:84fc])
-        by smtp.gmail.com with ESMTPSA id w15-20020a50fa8f000000b0050d89daaa70sm8389780edr.2.2023.05.16.08.32.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 16 May 2023 08:32:40 -0700 (PDT)
-Message-ID: <5b818f32-33c4-3f89-ce02-eb803d34ea48@linaro.org>
-Date:   Tue, 16 May 2023 17:32:38 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH] dt-bindings: xilinx: Switch xilinx.com emails to amd.com
-Content-Language: en-US
-To:     Michal Simek <michal.simek@amd.com>, piyush.mehta@amd.com,
-        nava.kishore.manne@amd.com, sai.krishna.potthuri@amd.com,
-        shubhrajyoti.datta@amd.com, vishal.sagar@amd.com,
-        kalyani.akula@amd.com, bharat.kumar.gogada@amd.com,
-        linux-kernel@vger.kernel.org, monstr@monstr.eu,
-        michal.simek@xilinx.com, git@xilinx.com
-Cc:     Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Damien Le Moal <dlemoal@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Jassi Brar <jassisinghbrar@gmail.com>,
-        Jolly Shah <jolly.shah@xilinx.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        =?UTF-8?Q?Krzysztof_Wilczy=c5=84ski?= <kw@linux.com>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        with ESMTP id S233481AbjEPPq5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:46:57 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B067F8A6A;
+        Tue, 16 May 2023 08:46:25 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 87F1C63B8E;
+        Tue, 16 May 2023 15:46:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8394C4339E;
+        Tue, 16 May 2023 15:46:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1684251984;
+        bh=QS657WnsM8vdXz+21VxN72PAoIydoXyXYs6qMuHutIE=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=htRLSIukiytswKjvEU7b5krt5Y3Y7ljURy8QF8CGb+x2h1ssvwjVk6Pwqv4ut3Esw
+         CB1OiulX7s10M9KVGVETJOiHcuxpyhee8hUZkmO5UEaMi+KR8LO8hYWzalhm3RlHqo
+         09xGWJMYFj2+fN7HqZvVXQrPQTX7Y7qmuRJ61d3Y/JHUn94ohkbZ4djv+Oyi/Mtl+w
+         XedetTwh9Y23tsy+DfBDvhPwgSkMUwAXkk+Ad6STis8PVcvL9li3Po/5JkWHc9yLNX
+         Yq2AjCQlVGQybK9eMHfvOn6iETC5ttftvRPasbRn7XnG8UUlUFRX/e9rR3DVFZu0bl
+         cIvS1mbMNeQRw==
+From:   Arnd Bergmann <arnd@kernel.org>
+To:     Russell King <linux@armlinux.org.uk>
+Cc:     Arnd Bergmann <arnd@arndb.de>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Oleg Nesterov <oleg@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
         Linus Walleij <linus.walleij@linaro.org>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Manish Narani <manish.narani@xilinx.com>,
-        Mark Brown <broonie@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Moritz Fischer <mdf@kernel.org>,
-        Rajan Vaja <rajan.vaja@xilinx.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Srinivas Neeli <srinivas.neeli@amd.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Tom Rix <trix@redhat.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Wu Hao <hao.wu@intel.com>, Xu Yilun <yilun.xu@intel.com>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-clk@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-fpga@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-i2c@vger.kernel.org, linux-ide@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-watchdog@vger.kernel.org
-References: <f5b2bd1e78407e4128fc8f0b5874ba723e710a88.1684245058.git.michal.simek@amd.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <f5b2bd1e78407e4128fc8f0b5874ba723e710a88.1684245058.git.michal.simek@amd.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Ard Biesheuvel <ardb@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH 02/16] ARM: traps: hide unused functions on NOMMU
+Date:   Tue, 16 May 2023 17:45:51 +0200
+Message-Id: <20230516154605.517690-3-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230516154605.517690-1-arnd@kernel.org>
+References: <20230516154605.517690-1-arnd@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 16/05/2023 15:51, Michal Simek wrote:
-> @xilinx.com is still working but better to switch to new amd.com after
-> AMD/Xilinx acquisition.
-> 
-> Signed-off-by: Michal Simek <michal.simek@amd.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
+A couple of functions in this file are only used on MMU-enabled
+builds, and never even declared otherwise, causing these build
+warnings:
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+arch/arm/kernel/traps.c:759:6: error: no previous prototype for '__pte_error' [-Werror=missing-prototypes]
+arch/arm/kernel/traps.c:764:6: error: no previous prototype for '__pmd_error' [-Werror=missing-prototypes]
+arch/arm/kernel/traps.c:769:6: error: no previous prototype for '__pgd_error' [-Werror=missing-prototypes]
 
-Best regards,
-Krzysztof
+Protect these in an #ifdef to avoid the warnings and save a little
+bit of .text space.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/arm/kernel/traps.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
+index 40c7c807d67f..3bad79db5d6e 100644
+--- a/arch/arm/kernel/traps.c
++++ b/arch/arm/kernel/traps.c
+@@ -756,6 +756,7 @@ void __readwrite_bug(const char *fn)
+ }
+ EXPORT_SYMBOL(__readwrite_bug);
+ 
++#ifdef CONFIG_MMU
+ void __pte_error(const char *file, int line, pte_t pte)
+ {
+ 	pr_err("%s:%d: bad pte %08llx.\n", file, line, (long long)pte_val(pte));
+@@ -770,6 +771,7 @@ void __pgd_error(const char *file, int line, pgd_t pgd)
+ {
+ 	pr_err("%s:%d: bad pgd %08llx.\n", file, line, (long long)pgd_val(pgd));
+ }
++#endif
+ 
+ asmlinkage void __div0(void)
+ {
+-- 
+2.39.2
 
