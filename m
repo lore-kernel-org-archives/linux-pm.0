@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA98C7EE2E
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 19:38:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E7FCC7EE24
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 19:39:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229898AbjEPTi5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 15:38:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59318 "EHLO
+        id S229508AbjEPTjO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 15:39:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59796 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230283AbjEPTiq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 15:38:46 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF8909ED0;
-        Tue, 16 May 2023 12:38:24 -0700 (PDT)
+        with ESMTP id S229454AbjEPTjN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 15:39:13 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C46ABD2DD;
+        Tue, 16 May 2023 12:38:45 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7D40863ED9;
-        Tue, 16 May 2023 19:38:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28787C433EF;
-        Tue, 16 May 2023 19:38:03 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 1C3E563E87;
+        Tue, 16 May 2023 19:37:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E563AC433EF;
+        Tue, 16 May 2023 19:37:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684265889;
-        bh=xg0nY/5XuAoC5Y+aT1n09akQv/zFSJ5XVH0JIB0YwTQ=;
+        s=k20201202; t=1684265877;
+        bh=BMgSzYPnqUEEoyY2VRZWSxLxvLKRRE/JigFmOP6CVm8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=lJHg8XNuGiy8jTFn+IFpgUXTvuRIAwq7VY4K/2aG+9oDXR9V6HWZw9BoV/Iby3Y3D
-         ciQJCcSCN88ZGK79OW2jW+p1Mcr53FymRzsq3aD57yhmrL6X5s0JHYpe2CHPA22HlU
-         vtyjpMlDJ94LuFullCZvqENjJQpN0VpNDcwlo9gDKsPudVss3sLnvUVGlKZDHrWJKC
-         9hYO4n8OiF35vwW0mCeLD6vxQ51+sc9aB2SOI5vmH0t/cuFzcMA5Ms2ki0dFUhjZ6z
-         F+j0NZXOgRpsDihxxL0McykAWvZ3icJuNiaB3wLMzOKImpSeGeJaJv64l87FCV2Wpu
-         UeiC9WTSfPICw==
+        b=NpGBW3oQfGokP+EqO9HPXqgBNDkoc36H1oosSB5XjEzBOg7yBtWPUSvXBHiX4Rn4Q
+         nPdmLvbLNil6YudLmIUT16A//m5E1l/d5GoNjyYA+FGYUUcB0t2DXV/Y8FzJPsCm/g
+         WSjrQhVBlok700vqB4usp49fWyRCAVJCMtG/hOkniDZfEqspZMur4GNXocMx9PVPyv
+         JJe6IYAyEollD++tusMr4MFE1ysVhpCHJNBmX4uqv8rrV1pvWM156/dMfMSZOF9/ow
+         oYS4tnWysUdqiVHzAJ2DPP9MsHPpjO23QeTGlMaWQS4Y+XN+rqnjj3iE0utAy7m/f2
+         S+exm0cd8OABA==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     x86@kernel.org
 Cc:     Arnd Bergmann <arnd@arndb.de>,
@@ -56,9 +56,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-pm@vger.kernel.org,
         linux-mm@kvack.org
-Subject: [PATCH 20/20] x86: olpc: avoid missing-prototype warnings
-Date:   Tue, 16 May 2023 21:35:49 +0200
-Message-Id: <20230516193549.544673-21-arnd@kernel.org>
+Subject: [PATCH 18/20] x86: ioremap: add early_memremap_pgprot_adjust prototype
+Date:   Tue, 16 May 2023 21:35:47 +0200
+Message-Id: <20230516193549.544673-19-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230516193549.544673-1-arnd@kernel.org>
 References: <20230516193549.544673-1-arnd@kernel.org>
@@ -70,48 +70,53 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-There are two functions in the olpc platform that have no prototype:
+early_memremap_pgprot_adjust() is a __weak function with a local
+prototype, but x86 has a custom implementation that does not
+see the prototype, causing a W=1 warning:
 
-arch/x86/platform/olpc/olpc_dt.c:237:13: error: no previous prototype for 'olpc_dt_fixup' [-Werror=missing-prototypes]
-arch/x86/platform/olpc/olpc-xo1-pm.c:73:26: error: no previous prototype for 'xo1_do_sleep' [-Werror=missing-prototypes]
+arch/x86/mm/ioremap.c:785:17: error: no previous prototype for 'early_memremap_pgprot_adjust' [-Werror=missing-prototypes]
 
-The first one should just be marked 'static' as there are no other
-callers, while the second one is called from assembler and is
-just a false-positive warning that can be silenced by adding a
-prototype.
+Move the declaration into the global linux/io.h header to avoid this.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/x86/platform/olpc/olpc_dt.c | 2 +-
- include/linux/olpc-ec.h          | 2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ include/linux/io.h | 5 +++++
+ mm/internal.h      | 6 ------
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/platform/olpc/olpc_dt.c b/arch/x86/platform/olpc/olpc_dt.c
-index 75e3319e8bee..74ebd6882690 100644
---- a/arch/x86/platform/olpc/olpc_dt.c
-+++ b/arch/x86/platform/olpc/olpc_dt.c
-@@ -234,7 +234,7 @@ static int __init olpc_dt_compatible_match(phandle node, const char *compat)
- 	return 0;
- }
+diff --git a/include/linux/io.h b/include/linux/io.h
+index 308f4f0cfb93..7304f2a69960 100644
+--- a/include/linux/io.h
++++ b/include/linux/io.h
+@@ -68,6 +68,11 @@ void *devm_memremap(struct device *dev, resource_size_t offset,
+ 		size_t size, unsigned long flags);
+ void devm_memunmap(struct device *dev, void *addr);
  
--void __init olpc_dt_fixup(void)
-+static void __init olpc_dt_fixup(void)
- {
- 	phandle node;
- 	u32 board_rev;
-diff --git a/include/linux/olpc-ec.h b/include/linux/olpc-ec.h
-index c4602364e909..3c2891d85c41 100644
---- a/include/linux/olpc-ec.h
-+++ b/include/linux/olpc-ec.h
-@@ -56,6 +56,8 @@ extern int olpc_ec_sci_query(u16 *sci_value);
- 
- extern bool olpc_ec_wakeup_available(void);
- 
-+asmlinkage int xo1_do_sleep(u8 sleep_state);
++/* architectures can override this */
++pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
++					unsigned long size, pgprot_t prot);
 +
- #else
++
+ #ifdef CONFIG_PCI
+ /*
+  * The PCI specifications (Rev 3.0, 3.2.5 "Transaction Ordering and
+diff --git a/mm/internal.h b/mm/internal.h
+index 68410c6d97ac..e6029d94bdb2 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -178,12 +178,6 @@ extern unsigned long highest_memmap_pfn;
+  */
+ #define MAX_RECLAIM_RETRIES 16
  
- static inline int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 *outbuf,
+-/*
+- * in mm/early_ioremap.c
+- */
+-pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
+-					unsigned long size, pgprot_t prot);
+-
+ /*
+  * in mm/vmscan.c:
+  */
 -- 
 2.39.2
 
