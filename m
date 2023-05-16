@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7070CC7EE25
-	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCC3BC77B75
+	for <linux-pm@archiver.kernel.org>; Tue, 16 May 2023 15:47:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233884AbjEPPq5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 May 2023 11:46:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40364 "EHLO
+        id S234076AbjEPPrP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 May 2023 11:47:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40834 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233481AbjEPPq5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:46:57 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B067F8A6A;
-        Tue, 16 May 2023 08:46:25 -0700 (PDT)
+        with ESMTP id S233481AbjEPPrO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2023 11:47:14 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DAA97EDD;
+        Tue, 16 May 2023 08:46:51 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 87F1C63B8E;
-        Tue, 16 May 2023 15:46:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8394C4339E;
-        Tue, 16 May 2023 15:46:20 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 23F3D63B7C;
+        Tue, 16 May 2023 15:46:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 536B2C4339B;
+        Tue, 16 May 2023 15:46:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684251984;
-        bh=QS657WnsM8vdXz+21VxN72PAoIydoXyXYs6qMuHutIE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=htRLSIukiytswKjvEU7b5krt5Y3Y7ljURy8QF8CGb+x2h1ssvwjVk6Pwqv4ut3Esw
-         CB1OiulX7s10M9KVGVETJOiHcuxpyhee8hUZkmO5UEaMi+KR8LO8hYWzalhm3RlHqo
-         09xGWJMYFj2+fN7HqZvVXQrPQTX7Y7qmuRJ61d3Y/JHUn94ohkbZ4djv+Oyi/Mtl+w
-         XedetTwh9Y23tsy+DfBDvhPwgSkMUwAXkk+Ad6STis8PVcvL9li3Po/5JkWHc9yLNX
-         Yq2AjCQlVGQybK9eMHfvOn6iETC5ttftvRPasbRn7XnG8UUlUFRX/e9rR3DVFZu0bl
-         cIvS1mbMNeQRw==
+        s=k20201202; t=1684251976;
+        bh=HVMOSVBRtRWuvJiKuo6QBNcBWtc5UfnuPAacEuJdnH8=;
+        h=From:To:Cc:Subject:Date:From;
+        b=TXUqyuaWUan4sgxVkh+q9nw6WB4VKvsFJYDbi/5NVFQNyZO2rmxm7u5NqoMACYmiv
+         UEHy3KL9h28gXCgfIrVdJ350UaPLjpBsqm4PsvmtT6nCBQncl6Po8e8hz56o/71aeI
+         2FkdidLD6DXwvxqL8W/EKuby9Q7ggMuXCMz/ejLCZRP1GO4farriOFQrJX62SoJz55
+         oA1puvIJkcEJx+nxz+epdsGLg3xvYPcb2B7sE156jzMRJEqYIuF8tWa8P2xh4tsOns
+         6wufUcj0DvYREXR3SdjIf9UTgu5ylkyZ/8gVkI7zoiCM38BIPJj5qJJBXzcE3r+Y0Y
+         nlpXP/cESnu4Q==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     Russell King <linux@armlinux.org.uk>
 Cc:     Arnd Bergmann <arnd@arndb.de>,
@@ -45,12 +45,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         Kees Cook <keescook@chromium.org>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-trace-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 02/16] ARM: traps: hide unused functions on NOMMU
-Date:   Tue, 16 May 2023 17:45:51 +0200
-Message-Id: <20230516154605.517690-3-arnd@kernel.org>
+Subject: [PATCH 00/16] ARM: address -Wmissing-prototype warnings
+Date:   Tue, 16 May 2023 17:45:49 +0200
+Message-Id: <20230516154605.517690-1-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230516154605.517690-1-arnd@kernel.org>
-References: <20230516154605.517690-1-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -59,42 +57,104 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-A couple of functions in this file are only used on MMU-enabled
-builds, and never even declared otherwise, causing these build
-warnings:
+This addresses all arm specific warnings outside of the mach-*/ code,
+which I've submitted separately. The majority of the patches should be
+straightforward, either adding an #include statement to get the right
+header, or ensuring that an unused global function is left out of the
+build when the prototype is hidden.
 
-arch/arm/kernel/traps.c:759:6: error: no previous prototype for '__pte_error' [-Werror=missing-prototypes]
-arch/arm/kernel/traps.c:764:6: error: no previous prototype for '__pmd_error' [-Werror=missing-prototypes]
-arch/arm/kernel/traps.c:769:6: error: no previous prototype for '__pgd_error' [-Werror=missing-prototypes]
+The ones that are a bit awkward are those that just add a prototype to
+shut up the warning, but the prototypes are never used for calling the
+function because the only caller is in assembler code. I tried to come
+up with other ways to shut up the compiler, and ideally this would be
+triggered by the 'asmlinkage' keyword as Ard suggested in the past, but
+I could not come up with a way to do this.
 
-Protect these in an #ifdef to avoid the warnings and save a little
-bit of .text space.
+All of the warnings have to be addressed in some form before the
+warning can be enabled by default.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/arm/kernel/traps.c | 2 ++
- 1 file changed, 2 insertions(+)
+    Arnd
 
-diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
-index 40c7c807d67f..3bad79db5d6e 100644
---- a/arch/arm/kernel/traps.c
-+++ b/arch/arm/kernel/traps.c
-@@ -756,6 +756,7 @@ void __readwrite_bug(const char *fn)
- }
- EXPORT_SYMBOL(__readwrite_bug);
- 
-+#ifdef CONFIG_MMU
- void __pte_error(const char *file, int line, pte_t pte)
- {
- 	pr_err("%s:%d: bad pte %08llx.\n", file, line, (long long)pte_val(pte));
-@@ -770,6 +771,7 @@ void __pgd_error(const char *file, int line, pgd_t pgd)
- {
- 	pr_err("%s:%d: bad pgd %08llx.\n", file, line, (long long)pgd_val(pgd));
- }
-+#endif
- 
- asmlinkage void __div0(void)
- {
+Link: https://people.kernel.org/arnd/missing-prototype-warnings-in-the-kernel
+
+Arnd Bergmann (16):
+  ARM: dma-mapping: hide unused dma_contiguous_early_fixup function
+  ARM: traps: hide unused functions on NOMMU
+  ARM: vfp: include asm/neon.h in vfpmodule.c
+  ARM: vdso: add missing prototypes
+  ARM: kprobes: avoid missing-declaration warnings
+  ARM: tcm: move tcm_init() prototype to asm/tcm.h
+  ARM: add prototype for function called only from asm
+  ARM: add clear/copy_user_highpage declarations
+  ARM: cacheflush: avoid __flush_anon_page() missing-prototype warning
+  ARM: nommu: include asm/idmap.h
+  ARM: move setup functions to header
+  ARM: fiq: include asm/mach/irq.h for prototypes
+  ARM: vfp: add vfp_entry prototype
+  ARM: add missing syscall prototypes
+  ARM: decompressor: move function prototypes to misc.h
+  ARM: xip-kernel: add __inflate_kernel_data prototype
+
+ arch/arm/boot/compressed/atags_to_fdt.c       |  1 +
+ .../arm/boot/compressed/fdt_check_mem_start.c |  1 +
+ arch/arm/boot/compressed/misc.c               |  6 ---
+ arch/arm/boot/compressed/misc.h               | 11 ++++
+ arch/arm/include/asm/ftrace.h                 |  4 ++
+ arch/arm/include/asm/page.h                   | 22 ++++++++
+ arch/arm/include/asm/ptrace.h                 |  3 ++
+ arch/arm/include/asm/setup.h                  |  7 +++
+ arch/arm/include/asm/signal.h                 |  5 ++
+ arch/arm/include/asm/spectre.h                |  4 ++
+ arch/arm/include/asm/suspend.h                |  1 +
+ arch/arm/include/asm/syscalls.h               | 51 +++++++++++++++++++
+ arch/arm/include/asm/tcm.h                    | 11 ++--
+ arch/arm/include/asm/traps.h                  |  9 ++++
+ arch/arm/include/asm/unwind.h                 |  4 ++
+ arch/arm/include/asm/vdso.h                   |  5 ++
+ arch/arm/include/asm/vfp.h                    |  1 +
+ arch/arm/kernel/fiq.c                         |  1 +
+ arch/arm/kernel/head-inflate-data.c           |  5 +-
+ arch/arm/kernel/head.h                        |  8 +++
+ arch/arm/kernel/setup.c                       |  7 ---
+ arch/arm/kernel/signal.c                      |  1 +
+ arch/arm/kernel/sys_arm.c                     |  1 +
+ arch/arm/kernel/sys_oabi-compat.c             |  2 +
+ arch/arm/kernel/traps.c                       |  2 +
+ arch/arm/mm/dma-mapping.c                     |  2 +
+ arch/arm/mm/fault.h                           |  4 ++
+ arch/arm/mm/flush.c                           |  1 +
+ arch/arm/mm/mmu.c                             |  2 +-
+ arch/arm/mm/nommu.c                           |  1 +
+ arch/arm/mm/tcm.h                             | 17 -------
+ arch/arm/probes/kprobes/checkers-common.c     |  2 +-
+ arch/arm/probes/kprobes/core.c                |  2 +-
+ arch/arm/probes/kprobes/opt-arm.c             |  2 -
+ arch/arm/probes/kprobes/test-core.c           |  2 +-
+ arch/arm/probes/kprobes/test-core.h           |  4 ++
+ arch/arm/vdso/vgettimeofday.c                 |  2 +
+ arch/arm/vfp/vfp.h                            |  3 ++
+ arch/arm/vfp/vfpmodule.c                      |  1 +
+ 39 files changed, 175 insertions(+), 43 deletions(-)
+ create mode 100644 arch/arm/include/asm/syscalls.h
+ create mode 100644 arch/arm/kernel/head.h
+ delete mode 100644 arch/arm/mm/tcm.h
+
+To: Russell King <linux@armlinux.org.uk>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Ard Biesheuvel <ardb@kernel.org>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-trace-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+
+
 -- 
 2.39.2
 
