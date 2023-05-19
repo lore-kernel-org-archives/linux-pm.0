@@ -2,71 +2,102 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF237C77B75
-	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 09:25:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3F9EC7EE23
+	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 09:52:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230040AbjESJZa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 May 2023 05:25:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34878 "EHLO
+        id S230492AbjESJwJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 May 2023 05:52:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54898 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229932AbjESJZ3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2023 05:25:29 -0400
-X-Greylist: delayed 101 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 19 May 2023 02:25:16 PDT
-Received: from hosting.gsystem.sk (hosting.gsystem.sk [212.5.213.30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C228B10D2;
-        Fri, 19 May 2023 02:25:15 -0700 (PDT)
-Received: from gsql.ggedos.sk (off-20.infotel.telecom.sk [212.5.213.20])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by hosting.gsystem.sk (Postfix) with ESMTPSA id 5C6AF7A025C;
-        Fri, 19 May 2023 10:59:23 +0200 (CEST)
-From:   Ondrej Zary <linux@zary.sk>
-To:     rjw@rjwysocki.net
-Cc:     gottwald@igel.com, helgaas@kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, mika.westerberg@linux.intel.com
-Subject: [PATCH] PCI: PM: Extend Elo i2 quirk to all systems using Continental Z2 board
-Date:   Fri, 19 May 2023 10:58:53 +0200
-Message-Id: <20230519085853.1079-1-linux@zary.sk>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <11980172.O9o76ZdvQC@kreacher>
-References: <11980172.O9o76ZdvQC@kreacher>
+        with ESMTP id S230469AbjESJwJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2023 05:52:09 -0400
+Received: from mail-qk1-x730.google.com (mail-qk1-x730.google.com [IPv6:2607:f8b0:4864:20::730])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3282C19A;
+        Fri, 19 May 2023 02:52:03 -0700 (PDT)
+Received: by mail-qk1-x730.google.com with SMTP id af79cd13be357-7576deacbd6so157946785a.3;
+        Fri, 19 May 2023 02:52:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1684489922; x=1687081922;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lYlFoKtA5IkPlUC08PPhE1HRAZ9SjNGPuMwfpP8csYw=;
+        b=nYxSjSYcaXL9wBLYYxr18nPzFhoS6t/XMYh9wWv4olQ5Ajdh0ltDPhpnV6tMT0kw2L
+         7PVzfD8g+760Xthp7t3msGPUjuZ59gQw4rwzaEmCtQ8hyGpsue8N+xUoLitFBMGgdB9W
+         jVGc5vSq1XyykVvXwliYjJhs52PRT3SjBYJ7iwE5d7/KP6vVYRumAVbxhCiJ5soKreN4
+         brAcrHDbctTGfUlLlmhxftAZM3pPIDGyFEnEQC4iY77FwsJnKWjlVhqa4CFYiyr2O4Qf
+         7YR2QIMjUYV5AhK5aiXR9mtSexGX2S4hbthpMwYW3yJ58fFaMoJ96fz6odyG79IA5mY6
+         tJ0Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684489922; x=1687081922;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=lYlFoKtA5IkPlUC08PPhE1HRAZ9SjNGPuMwfpP8csYw=;
+        b=jzs4CRdNuMvvpVjlEsvABhNf/hd/SQOozSPbu7zEhjHJsXaSTgEY1NVRbcn32kQVMd
+         r4NFT0N+Z83rCfQpL5qrTdFS0whkD9GLpXf7XiUoG58wLRwNNlJSH7jnMw1R7u5ORLB0
+         /kDjQQE31Dj1VHUQX3OLnVUtXlFH82OExycj41hUIgpM2JhBdkljk2p4FplgcdYNKGVd
+         x8AjpaJp1kXbkyBVRSXUBZNS2kfT/vZUEQwoUVOs5NXR/dF1qQdfdnDNSlXj9qy5imk5
+         T47F8d44zEI0STbX4bHKeWqxRCWmuK1sZhVLOurVn73nWCO1dXxqsXlHlpq1VeB83vLf
+         fARQ==
+X-Gm-Message-State: AC+VfDzvpE66CBK9U06xNWbHF+UNFIqy7k5DzX4f4eW6dacblK2nG5wQ
+        +JbBo/BM8JtE3UqJkjyDyPtvk0pewktLgM8BZqos4ia5u/wBBQ==
+X-Google-Smtp-Source: ACHHUZ5LXB2GGpTth50QwGaF1r9ATLp3VHmm5/m7EW57RPp9upvSN9LQS14BGDeYC2Kr+/Vi0wX8BeWxerm5Q629S9k=
+X-Received: by 2002:a05:6214:5183:b0:61a:fe65:4481 with SMTP id
+ kl3-20020a056214518300b0061afe654481mr2595650qvb.51.1684489921968; Fri, 19
+ May 2023 02:52:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230516193549.544673-1-arnd@kernel.org> <a78d9dcd-0bc1-7e98-a8f1-e5d6cd0c09a3@intel.com>
+In-Reply-To: <a78d9dcd-0bc1-7e98-a8f1-e5d6cd0c09a3@intel.com>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Fri, 19 May 2023 12:51:25 +0300
+Message-ID: <CAHp75VeX9=1+apLMZsidudUziO_s4WUb=HOd0mraRHL17DN+cw@mail.gmail.com>
+Subject: Re: [PATCH 00/20] x86: address -Wmissing-prototype warnings
+To:     Dave Hansen <dave.hansen@intel.com>
+Cc:     Arnd Bergmann <arnd@kernel.org>, x86@kernel.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Andy Lutomirski <luto@kernel.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Juergen Gross <jgross@suse.com>,
+        "Srivatsa S. Bhat (VMware)" <srivatsa@csail.mit.edu>,
+        Alexey Makhalov <amakhalov@vmware.com>,
+        VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+        xen-devel@lists.xenproject.org, linux-pm@vger.kernel.org,
+        linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The quirk for Elo i2 is also needed by EloPOS E2/S2/H2 which uses the
-same Continental Z2 board. Change the quirk to match the board instead
-of system.
----
- drivers/pci/pci.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+On Fri, May 19, 2023 at 12:56=E2=80=AFAM Dave Hansen <dave.hansen@intel.com=
+> wrote:
+> On 5/16/23 12:35, Arnd Bergmann wrote:
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 5ede93222bc1..c779eb4d7fb8 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2949,13 +2949,13 @@ static const struct dmi_system_id bridge_d3_blacklist[] = {
- 	{
- 		/*
- 		 * Downstream device is not accessible after putting a root port
--		 * into D3cold and back into D0 on Elo i2.
-+		 * into D3cold and back into D0 on Elo Continental Z2 board
- 		 */
--		.ident = "Elo i2",
-+		.ident = "Elo Continental Z2",
- 		.matches = {
--			DMI_MATCH(DMI_SYS_VENDOR, "Elo Touch Solutions"),
--			DMI_MATCH(DMI_PRODUCT_NAME, "Elo i2"),
--			DMI_MATCH(DMI_PRODUCT_VERSION, "RevB"),
-+			DMI_MATCH(DMI_BOARD_VENDOR, "Elo Touch Solutions"),
-+			DMI_MATCH(DMI_BOARD_NAME, "Geminilake"),
-+			DMI_MATCH(DMI_BOARD_VERSION, "Continental Z2"),
- 		},
- 	},
- #endif
--- 
-2.39.2
+> I picked up the ones that were blatantly obvious, but left out 03, 04,
+> 10, 12 and 19 for the moment.
 
+Btw, there is series that went unnoticed
+
+https://lore.kernel.org/all/20211119110017.48510-1-andriy.shevchenko@linux.=
+intel.com/
+
+I dunno why.
+
+--=20
+With Best Regards,
+Andy Shevchenko
