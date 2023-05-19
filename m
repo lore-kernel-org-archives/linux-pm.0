@@ -2,201 +2,202 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CF26C77B75
-	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 08:12:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ECBBC77B7A
+	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 09:16:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230044AbjESIMR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 May 2023 04:12:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51006 "EHLO
+        id S230467AbjESJQQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 May 2023 05:16:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229658AbjESIMR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2023 04:12:17 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F273810D;
-        Fri, 19 May 2023 01:12:15 -0700 (PDT)
+        with ESMTP id S230026AbjESJQP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2023 05:16:15 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B57B8125;
+        Fri, 19 May 2023 02:16:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1684483936; x=1716019936;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=4bgHycw+4TuqtIcTMbm9M3yRYkHNr5v/H0XL3uZPuGU=;
-  b=Ik+FWS3rww8t4rM/oB75ojIR46v++Po/IOMyt7BSOzREvFlgZu1gIN5i
-   uHVGmJ7xxbJEoRpybVsahtDAfAC6vg8q10bsR5AL5kp3bA6h6HNinL8TY
-   tCC7crjyQNL0zD76Wy6Gaw7de8a6k5/bJrGSUMikVSMZl099jJrZZRPky
-   PMpf+Sf8NKJdkWggy1+XsBHOuY2mO1+8cfEM0FbA6rnHs4xo/cax3p9FT
-   9GtEh/Nj01uMUFyibvZED7KImCt0GfQaGjwLc2+8pwgZqv6erz956MpbM
-   5rYCgMV7VkHQERIahDH21agq3qF7ANgzQ7Y1D7ftpVU1eeFOGyh2crMw8
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10714"; a="341748532"
+  t=1684487773; x=1716023773;
+  h=date:from:to:cc:subject:message-id;
+  bh=2YhrVlL4FZOpjVcFPhJDwXoO8LpS8gLXgkECnRCFB04=;
+  b=cAq59fO7DeqbpYEB5hWDprkTP7HUA7vIBOns+W0qBSuKDr4FRDbppKw8
+   do+z540NH3tAg31NUD6LNve+2o6/C73c1CQZ/MbB8tJy+ZZ9WSbqATjdm
+   OgQfuUzjE+G3O4/uJoZHJqyfq8SdxhBR8YkcdDm2aSQZbWFpxmtO23D8y
+   u1KumaejBRiXpNbHysUNJ/sVUgxmSwHeLb7GSQ6UnA9UG1ljfjDoO0jdV
+   O6LaQKTzrbkv5t0E76H8u+Ta3QlXar+Jzt8s2R3Lve31q9J6rbvPIVUPS
+   5AGpgy+EagA9m77Cx19c3ZVpctBgIQiPa+/LitmXp4ESOA2L7MgKKKth/
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10714"; a="352345043"
 X-IronPort-AV: E=Sophos;i="6.00,176,1681196400"; 
-   d="scan'208";a="341748532"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2023 01:12:15 -0700
+   d="scan'208";a="352345043"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2023 02:16:06 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10714"; a="846808764"
+X-IronPort-AV: E=McAfee;i="6600,9927,10714"; a="792305631"
 X-IronPort-AV: E=Sophos;i="6.00,176,1681196400"; 
-   d="scan'208";a="846808764"
-Received: from kuha.fi.intel.com ([10.237.72.185])
-  by fmsmga001.fm.intel.com with SMTP; 19 May 2023 01:12:12 -0700
-Received: by kuha.fi.intel.com (sSMTP sendmail emulation); Fri, 19 May 2023 11:12:11 +0300
-Date:   Fri, 19 May 2023 11:12:11 +0300
-From:   Heikki Krogerus <heikki.krogerus@linux.intel.com>
-To:     Mario Limonciello <mario.limonciello@amd.com>
-Cc:     ajayg@nvidia.com, andriy.shevchenko@linux.intel.com,
-        linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-        Evan.Quan@amd.com, Lijo.Lazar@amd.com, Sanket.Goswami@amd.com
-Subject: Re: [PATCH v2] usb: typec: ucsi: Mark dGPUs as DEVICE scope
-Message-ID: <ZGcvW1fQIBofXGzk@kuha.fi.intel.com>
-References: <20230518161150.92959-1-mario.limonciello@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230518161150.92959-1-mario.limonciello@amd.com>
+   d="scan'208";a="792305631"
+Received: from lkp-server01.sh.intel.com (HELO dea6d5a4f140) ([10.239.97.150])
+  by FMSMGA003.fm.intel.com with ESMTP; 19 May 2023 02:16:05 -0700
+Received: from kbuild by dea6d5a4f140 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1pzwDU-000AjG-0u;
+        Fri, 19 May 2023 09:16:04 +0000
+Date:   Fri, 19 May 2023 17:15:17 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-acpi@vger.kernel.org, devel@acpica.org,
+        linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 27d75d398f66b653fe4f3a6f17fc5652b7837c5a
+Message-ID: <20230519091517.llzIn%lkp@intel.com>
+User-Agent: s-nail v14.9.24
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Mario,
+tree/branch: INFO setup_repo_specs: /db/releases/20230519164737/lkp-src/repo/*/rafael-pm
+https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 27d75d398f66b653fe4f3a6f17fc5652b7837c5a  Merge branch 'acpi-video' into bleeding-edge
 
-On Thu, May 18, 2023 at 11:11:50AM -0500, Mario Limonciello wrote:
-> power_supply_is_system_supplied() checks whether any power
-> supplies are present that aren't batteries to decide whether
-> the system is running on DC or AC.  Downstream drivers use
-> this to make performance decisions.
-> 
-> Navi dGPUs include an UCSI function that has been exported
-> since commit 17631e8ca2d3 ("i2c: designware: Add driver
-> support for AMD NAVI GPU").
-> 
-> This UCSI function registers a power supply since commit
-> 992a60ed0d5e ("usb: typec: ucsi: register with power_supply class")
-> but this is not a system power supply.
-> 
-> As the power supply for a dGPU is only for powering devices connected
-> to dGPU, create a device property to indicate that the UCSI endpoint
-> is only for the scope of `POWER_SUPPLY_SCOPE_DEVICE`.
-> 
-> Link: https://lore.kernel.org/lkml/20230516182541.5836-2-mario.limonciello@amd.com/
-> Reviewed-by: Evan Quan <evan.quan@amd.com>
-> Tested-by: Evan Quan <evan.quan@amd.com>
-> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+elapsed time: 875m
 
-Look good to me, but if there is anything else that has to be changed,
-please consider modifying the ucsi driver part in its own patch.
-Otherwise, FWIW:
+configs tested: 129
+configs skipped: 7
 
-Reviewed-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> ---
-> v1->v2:
->  * Drop patch 1, merged into a maintainers tree
->  * Fix title
->  * Add tags
->  * Fix terminators
-> ---
->  drivers/i2c/busses/i2c-designware-pcidrv.c | 13 ++++++++++++-
->  drivers/i2c/busses/i2c-nvidia-gpu.c        |  3 +++
->  drivers/usb/typec/ucsi/psy.c               | 14 ++++++++++++++
->  3 files changed, 29 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-designware-pcidrv.c b/drivers/i2c/busses/i2c-designware-pcidrv.c
-> index 782fe1ef3ca1..61d7a27aa070 100644
-> --- a/drivers/i2c/busses/i2c-designware-pcidrv.c
-> +++ b/drivers/i2c/busses/i2c-designware-pcidrv.c
-> @@ -20,6 +20,7 @@
->  #include <linux/module.h>
->  #include <linux/pci.h>
->  #include <linux/pm_runtime.h>
-> +#include <linux/power_supply.h>
->  #include <linux/sched.h>
->  #include <linux/slab.h>
->  
-> @@ -234,6 +235,16 @@ static const struct dev_pm_ops i2c_dw_pm_ops = {
->  	SET_RUNTIME_PM_OPS(i2c_dw_pci_runtime_suspend, i2c_dw_pci_runtime_resume, NULL)
->  };
->  
-> +static const struct property_entry dgpu_properties[] = {
-> +	/* USB-C doesn't power the system */
-> +	PROPERTY_ENTRY_U8("scope", POWER_SUPPLY_SCOPE_DEVICE),
-> +	{}
-> +};
-> +
-> +static const struct software_node dgpu_node = {
-> +	.properties = dgpu_properties,
-> +};
-> +
->  static int i2c_dw_pci_probe(struct pci_dev *pdev,
->  			    const struct pci_device_id *id)
->  {
-> @@ -325,7 +336,7 @@ static int i2c_dw_pci_probe(struct pci_dev *pdev,
->  	}
->  
->  	if ((dev->flags & MODEL_MASK) == MODEL_AMD_NAVI_GPU) {
-> -		dev->slave = i2c_new_ccgx_ucsi(&dev->adapter, dev->irq, NULL);
-> +		dev->slave = i2c_new_ccgx_ucsi(&dev->adapter, dev->irq, &dgpu_node);
->  		if (IS_ERR(dev->slave))
->  			return dev_err_probe(dev->dev, PTR_ERR(dev->slave),
->  					     "register UCSI failed\n");
-> diff --git a/drivers/i2c/busses/i2c-nvidia-gpu.c b/drivers/i2c/busses/i2c-nvidia-gpu.c
-> index a8b99e7f6262..26622d24bb1b 100644
-> --- a/drivers/i2c/busses/i2c-nvidia-gpu.c
-> +++ b/drivers/i2c/busses/i2c-nvidia-gpu.c
-> @@ -14,6 +14,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/pm.h>
->  #include <linux/pm_runtime.h>
-> +#include <linux/power_supply.h>
->  
->  #include <asm/unaligned.h>
->  
-> @@ -261,6 +262,8 @@ MODULE_DEVICE_TABLE(pci, gpu_i2c_ids);
->  static const struct property_entry ccgx_props[] = {
->  	/* Use FW built for NVIDIA GPU only */
->  	PROPERTY_ENTRY_STRING("firmware-name", "nvidia,gpu"),
-> +	/* USB-C doesn't power the system */
-> +	PROPERTY_ENTRY_U8("scope", POWER_SUPPLY_SCOPE_DEVICE),
->  	{ }
->  };
->  
-> diff --git a/drivers/usb/typec/ucsi/psy.c b/drivers/usb/typec/ucsi/psy.c
-> index 56bf56517f75..384b42267f1f 100644
-> --- a/drivers/usb/typec/ucsi/psy.c
-> +++ b/drivers/usb/typec/ucsi/psy.c
-> @@ -27,8 +27,20 @@ static enum power_supply_property ucsi_psy_props[] = {
->  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
->  	POWER_SUPPLY_PROP_CURRENT_MAX,
->  	POWER_SUPPLY_PROP_CURRENT_NOW,
-> +	POWER_SUPPLY_PROP_SCOPE,
->  };
->  
-> +static int ucsi_psy_get_scope(struct ucsi_connector *con,
-> +			      union power_supply_propval *val)
-> +{
-> +	u8 scope = POWER_SUPPLY_SCOPE_UNKNOWN;
-> +	struct device *dev = con->ucsi->dev;
-> +
-> +	device_property_read_u8(dev, "scope", &scope);
-> +	val->intval = scope;
-> +	return 0;
-> +}
-> +
->  static int ucsi_psy_get_online(struct ucsi_connector *con,
->  			       union power_supply_propval *val)
->  {
-> @@ -194,6 +206,8 @@ static int ucsi_psy_get_prop(struct power_supply *psy,
->  		return ucsi_psy_get_current_max(con, val);
->  	case POWER_SUPPLY_PROP_CURRENT_NOW:
->  		return ucsi_psy_get_current_now(con, val);
-> +	case POWER_SUPPLY_PROP_SCOPE:
-> +		return ucsi_psy_get_scope(con, val);
->  	default:
->  		return -EINVAL;
->  	}
-> -- 
-> 2.34.1
-
-thanks,
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r012-20230517   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                     haps_hs_smp_defconfig   gcc  
+arc                  randconfig-r043-20230517   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                         at91_dt_defconfig   gcc  
+arm                                 defconfig   gcc  
+arm                          pxa3xx_defconfig   gcc  
+arm                             pxa_defconfig   gcc  
+arm                  randconfig-r046-20230517   clang
+arm                        vexpress_defconfig   clang
+arm64                            allyesconfig   gcc  
+arm64        buildonly-randconfig-r003-20230517   clang
+arm64                               defconfig   gcc  
+csky         buildonly-randconfig-r005-20230517   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r006-20230517   gcc  
+csky                 randconfig-r013-20230517   gcc  
+csky                 randconfig-r024-20230517   gcc  
+csky                 randconfig-r025-20230517   gcc  
+csky                 randconfig-r032-20230517   gcc  
+hexagon              randconfig-r041-20230517   clang
+hexagon              randconfig-r045-20230517   clang
+i386                             allyesconfig   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                          randconfig-a001   gcc  
+i386                          randconfig-a002   clang
+i386                          randconfig-a003   gcc  
+i386                          randconfig-a004   clang
+i386                          randconfig-a005   gcc  
+i386                          randconfig-a006   clang
+i386                          randconfig-a011   clang
+i386                          randconfig-a012   gcc  
+i386                          randconfig-a013   clang
+i386                          randconfig-a014   gcc  
+i386                          randconfig-a015   clang
+i386                          randconfig-a016   gcc  
+ia64                             allmodconfig   gcc  
+ia64         buildonly-randconfig-r004-20230517   gcc  
+ia64                                defconfig   gcc  
+ia64                 randconfig-r005-20230517   gcc  
+ia64                 randconfig-r023-20230517   gcc  
+ia64                 randconfig-r031-20230517   gcc  
+ia64                 randconfig-r036-20230517   gcc  
+loongarch                        alldefconfig   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch            randconfig-r003-20230517   gcc  
+m68k                             allmodconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                       m5275evb_defconfig   gcc  
+m68k                        m5407c3_defconfig   gcc  
+m68k                 randconfig-r011-20230517   gcc  
+microblaze           randconfig-r034-20230517   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                           ci20_defconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                randconfig-r004-20230517   gcc  
+parisc                              defconfig   gcc  
+parisc               randconfig-r002-20230517   gcc  
+parisc64                            defconfig   gcc  
+powerpc                    adder875_defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                      arches_defconfig   gcc  
+powerpc                        cell_defconfig   gcc  
+powerpc                     ksi8560_defconfig   clang
+powerpc                 linkstation_defconfig   gcc  
+powerpc                     mpc83xx_defconfig   gcc  
+powerpc                      pcm030_defconfig   gcc  
+powerpc              randconfig-r014-20230517   gcc  
+powerpc              randconfig-r016-20230517   gcc  
+powerpc              randconfig-r035-20230517   clang
+powerpc                    sam440ep_defconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r042-20230517   gcc  
+riscv                          rv32_defconfig   clang
+riscv                          rv32_defconfig   gcc  
+s390                             alldefconfig   clang
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r044-20230517   gcc  
+sh                               allmodconfig   gcc  
+sh                   randconfig-r022-20230517   gcc  
+sh                   secureedge5410_defconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r001-20230517   gcc  
+sparc64              randconfig-r015-20230517   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64                        randconfig-a001   clang
+x86_64                        randconfig-a002   gcc  
+x86_64                        randconfig-a003   clang
+x86_64                        randconfig-a004   gcc  
+x86_64                        randconfig-a005   clang
+x86_64                        randconfig-a006   gcc  
+x86_64                        randconfig-a011   gcc  
+x86_64                        randconfig-a012   clang
+x86_64                        randconfig-a013   gcc  
+x86_64                        randconfig-a014   clang
+x86_64                        randconfig-a015   gcc  
+x86_64                        randconfig-a016   clang
+x86_64                        randconfig-x051   gcc  
+x86_64                        randconfig-x052   clang
+x86_64                        randconfig-x053   gcc  
+x86_64                        randconfig-x054   clang
+x86_64                        randconfig-x055   gcc  
+x86_64                        randconfig-x056   clang
+x86_64                        randconfig-x061   gcc  
+x86_64                        randconfig-x062   clang
+x86_64                        randconfig-x063   gcc  
+x86_64                        randconfig-x064   clang
+x86_64                        randconfig-x065   gcc  
+x86_64                        randconfig-x066   clang
+x86_64                               rhel-8.3   gcc  
+xtensa       buildonly-randconfig-r002-20230517   gcc  
 
 -- 
-heikki
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
