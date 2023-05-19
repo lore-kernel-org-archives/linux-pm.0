@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC5FAC7EE2F
-	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 10:34:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C7ECC7EE31
+	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 10:34:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231938AbjESKeT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S231947AbjESKeT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 19 May 2023 06:34:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53616 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231934AbjESKeM (ORCPT
+        with ESMTP id S231932AbjESKeM (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2023 06:34:12 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC095E5D;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9358A10F5;
         Fri, 19 May 2023 03:34:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=F/mEORQVn/+4FFZhPg8/YI2Izvfuw/wjd2XHaIHu63c=; b=RQvJGHl7hs/c26EgGOOxBfA1ZE
-        6+KGuvrUPjs780d7PXxU6bwNrzHVnz9fCXgmM3BpqqzCjVA6jNewNvV6IUd8dJOXkhIfnBouxqDj4
-        uOVNr2JroX1RRyfRLoJPpg9gluHuCVpC0mmAmL7vtY3A+3q6vd+LJES12G1glmDMPGNIppY/2QXRb
-        dqy/+R0WtN/pSGnyiBcsWwdMYoXFpLw1X6+zrR+swdT2c06Hh5c8Q5eqUXJjjaEz5CazxOOVVUGdo
-        3bFbmYg4lY8hq9lnu6KvwljgKfbo7BfLDB6wqkGd7xnnR51imRULkwmSfCl1G8qPAC0efg6wtzMTO
-        An9fkUzQ==;
+        bh=YKwqF+BUvFX/eM4sVo4oYqYCF/ZGTA0lXMxYZ5TRTwg=; b=nThm858ZrHzNO23eD6wR31ciwE
+        x58F2HwKZ7dRAXG6f+BjqKOAdxpfqCDGfd4O+9QOYCETZe6KwTkDvdcS+urMnFoDb0XAFn5cZf5Jb
+        USmR2+R7fZRNW+sAUJOz8Qr7tfOZwBvKcJplaAvug3uZrKLsOVlJY1RLCfFVvjW022AFyKU60blBK
+        /NYfGaPir9Wm8y6qd2NdN74E7cmTt19yBte5ieU75rebcHtSVqpFrNafD8uMhJKc9OdXa+OtkCRgK
+        H+ZoX5Z72bDBHvE6ZQNpn5rZSXXufP8PR+5eAzIjGIZri6Qcz/K6n6SFWo1Wht92C2G7fBe18aXuB
+        32XxWojg==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1pzxPw-00FrWa-0B;
-        Fri, 19 May 2023 10:33:00 +0000
+        id 1pzxPv-00FrWQ-07;
+        Fri, 19 May 2023 10:32:59 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 06EA230340F;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 2B57C306146;
         Fri, 19 May 2023 12:32:56 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id BF2F1235EF097; Fri, 19 May 2023 12:32:55 +0200 (CEST)
-Message-ID: <20230519102715.435618812@infradead.org>
+        id D8C6A235EF0B1; Fri, 19 May 2023 12:32:55 +0200 (CEST)
+Message-ID: <20230519102715.704767397@infradead.org>
 User-Agent: quilt/0.66
-Date:   Fri, 19 May 2023 12:21:02 +0200
+Date:   Fri, 19 May 2023 12:21:06 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     bigeasy@linutronix.de
 Cc:     mark.rutland@arm.com, maz@kernel.org, catalin.marinas@arm.com,
@@ -61,7 +61,7 @@ Cc:     mark.rutland@arm.com, maz@kernel.org, catalin.marinas@arm.com,
         loongarch@lists.linux.dev, linux-s390@vger.kernel.org,
         kvm@vger.kernel.org, linux-hyperv@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 04/13] arm64/arch_timer: Provide noinstr sched_clock_read() functions
+Subject: [PATCH v2 08/13] x86/vdso: Fix gettimeofday masking
 References: <20230519102058.581557770@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -69,167 +69,109 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-With the intent to provide local_clock_noinstr(), a variant of
-local_clock() that's safe to be called from noinstr code (with the
-assumption that any such code will already be non-preemptible),
-prepare for things by providing a noinstr sched_clock_read() function.
+Because of how the virtual clocks use U64_MAX as an exception value
+instead of a valid time, the clocks can no longer be assumed to wrap
+cleanly. This is then compounded by arch_vdso_cycles_ok() rejecting
+everything with the MSB/Sign-bit set.
 
-Specifically, preempt_enable_*() calls out to schedule(), which upsets
-noinstr validation efforts.
+Therefore, the effective mask becomes S64_MAX, and the comment with
+vdso_calc_delta() that states the mask is U64_MAX and isn't optimized
+out is just plain silly.
+
+Now, the code has a negative filter -- to deal with TSC wobbles:
+
+	if (cycles > last)
+
+which is just plain wrong, because it should've been written as:
+
+	if ((s64)(cycles - last) > 0)
+
+to take wrapping into account, but per all the above, we don't
+actually wrap on u64 anymore.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/arm64/include/asm/arch_timer.h  |    8 ----
- drivers/clocksource/arm_arch_timer.c |   60 ++++++++++++++++++++++++++---------
- 2 files changed, 47 insertions(+), 21 deletions(-)
+ arch/x86/include/asm/vdso/gettimeofday.h |   39 ++++++++++++++++++++++---------
+ 1 file changed, 28 insertions(+), 11 deletions(-)
 
---- a/arch/arm64/include/asm/arch_timer.h
-+++ b/arch/arm64/include/asm/arch_timer.h
-@@ -88,13 +88,7 @@ static inline notrace u64 arch_timer_rea
+--- a/arch/x86/include/asm/vdso/gettimeofday.h
++++ b/arch/x86/include/asm/vdso/gettimeofday.h
+@@ -231,14 +231,17 @@ static u64 vread_pvclock(void)
+ 		ret = __pvclock_read_cycles(pvti, rdtsc_ordered());
+ 	} while (pvclock_read_retry(pvti, version));
  
- #define arch_timer_reg_read_stable(reg)					\
- 	({								\
--		u64 _val;						\
--									\
--		preempt_disable_notrace();				\
--		_val = erratum_handler(read_ ## reg)();			\
--		preempt_enable_notrace();				\
--									\
--		_val;							\
-+		erratum_handler(read_ ## reg)();			\
- 	})
- 
- /*
---- a/drivers/clocksource/arm_arch_timer.c
-+++ b/drivers/clocksource/arm_arch_timer.c
-@@ -191,22 +191,40 @@ u32 arch_timer_reg_read(int access, enum
- 	return val;
+-	return ret;
++	return ret & S64_MAX;
  }
+ #endif
  
--static notrace u64 arch_counter_get_cntpct_stable(void)
-+static noinstr u64 _arch_counter_get_cntpct_stable(void)
+ #ifdef CONFIG_HYPERV_TIMER
+ static u64 vread_hvclock(void)
  {
- 	return __arch_counter_get_cntpct_stable();
+-	return hv_read_tsc_page(&hvclock_page);
++	u64 ret = hv_read_tsc_page(&hvclock_page);
++	if (likely(ret != U64_MAX))
++		ret &= S64_MAX;
++	return ret;
  }
+ #endif
  
--static notrace u64 arch_counter_get_cntpct(void)
-+static notrace u64 arch_counter_get_cntpct_stable(void)
-+{
-+	u64 val;
-+	preempt_disable_notrace();
-+	val = __arch_counter_get_cntpct_stable();
-+	preempt_enable_notrace();
-+	return val;
-+}
-+
-+static noinstr u64 arch_counter_get_cntpct(void)
+@@ -246,7 +249,7 @@ static inline u64 __arch_get_hw_counter(
+ 					const struct vdso_data *vd)
  {
- 	return __arch_counter_get_cntpct();
- }
- 
--static notrace u64 arch_counter_get_cntvct_stable(void)
-+static noinstr u64 _arch_counter_get_cntvct_stable(void)
+ 	if (likely(clock_mode == VDSO_CLOCKMODE_TSC))
+-		return (u64)rdtsc_ordered();
++		return (u64)rdtsc_ordered() & S64_MAX;
+ 	/*
+ 	 * For any memory-mapped vclock type, we need to make sure that gcc
+ 	 * doesn't cleverly hoist a load before the mode check.  Otherwise we
+@@ -284,6 +287,9 @@ static inline bool arch_vdso_clocksource
+  * which can be invalidated asynchronously and indicate invalidation by
+  * returning U64_MAX, which can be effectively tested by checking for a
+  * negative value after casting it to s64.
++ *
++ * This effectively forces a S64_MAX mask on the calculations, unlike the
++ * U64_MAX mask normally used by x86 clocksources.
+  */
+ static inline bool arch_vdso_cycles_ok(u64 cycles)
  {
- 	return __arch_counter_get_cntvct_stable();
- }
- 
--static notrace u64 arch_counter_get_cntvct(void)
-+static notrace u64 arch_counter_get_cntvct_stable(void)
-+{
-+	u64 val;
-+	preempt_disable_notrace();
-+	val = __arch_counter_get_cntvct_stable();
-+	preempt_enable_notrace();
-+	return val;
-+}
-+
-+static noinstr u64 arch_counter_get_cntvct(void)
+@@ -303,18 +309,29 @@ static inline bool arch_vdso_cycles_ok(u
+  * @last. If not then use @last, which is the base time of the current
+  * conversion period.
+  *
+- * This variant also removes the masking of the subtraction because the
+- * clocksource mask of all VDSO capable clocksources on x86 is U64_MAX
+- * which would result in a pointless operation. The compiler cannot
+- * optimize it away as the mask comes from the vdso data and is not compile
+- * time constant.
++ * This variant also uses a custom mask because while the clocksource mask of
++ * all the VDSO capable clocksources on x86 is U64_MAX, the above code uses
++ * U64_MASK as an exception value, additionally arch_vdso_cycles_ok() above
++ * declares everything with the MSB/Sign-bit set as invalid. Therefore the
++ * effective mask is S64_MAX.
+  */
+ static __always_inline
+ u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)
  {
- 	return __arch_counter_get_cntvct();
- }
-@@ -753,14 +771,14 @@ static int arch_timer_set_next_event_phy
- 	return 0;
- }
- 
--static u64 arch_counter_get_cnt_mem(struct arch_timer *t, int offset_lo)
-+static noinstr u64 arch_counter_get_cnt_mem(struct arch_timer *t, int offset_lo)
- {
- 	u32 cnt_lo, cnt_hi, tmp_hi;
- 
- 	do {
--		cnt_hi = readl_relaxed(t->base + offset_lo + 4);
--		cnt_lo = readl_relaxed(t->base + offset_lo);
--		tmp_hi = readl_relaxed(t->base + offset_lo + 4);
-+		cnt_hi = __raw_readl(t->base + offset_lo + 4);
-+		cnt_lo = __raw_readl(t->base + offset_lo);
-+		tmp_hi = __raw_readl(t->base + offset_lo + 4);
- 	} while (cnt_hi != tmp_hi);
- 
- 	return ((u64) cnt_hi << 32) | cnt_lo;
-@@ -1060,7 +1078,7 @@ bool arch_timer_evtstrm_available(void)
- 	return cpumask_test_cpu(raw_smp_processor_id(), &evtstrm_available);
- }
- 
--static u64 arch_counter_get_cntvct_mem(void)
-+static noinstr u64 arch_counter_get_cntvct_mem(void)
- {
- 	return arch_counter_get_cnt_mem(arch_timer_mem, CNTVCT_LO);
- }
-@@ -1074,6 +1092,13 @@ struct arch_timer_kvm_info *arch_timer_g
- 
- static void __init arch_counter_register(unsigned type)
- {
+-	if (cycles > last)
+-		return (cycles - last) * mult;
+-	return 0;
 +	/*
-+	 * Default to cp15 based access because arm64 uses this function for
-+	 * sched_clock() before DT is probed and the cp15 method is guaranteed
-+	 * to exist on arm64. arm doesn't use this before DT is probed so even
-+	 * if we don't have the cp15 accessors we won't have a problem.
++	 * Due to the MSB/Sign-bit being used as invald marker (see
++	 * arch_vdso_cycles_valid() above), the effective mask is S64_MAX.
 +	 */
-+	u64 (*scr)(void) = arch_counter_get_cntvct;
- 	u64 start_count;
- 	int width;
- 
-@@ -1083,21 +1108,28 @@ static void __init arch_counter_register
- 
- 		if ((IS_ENABLED(CONFIG_ARM64) && !is_hyp_mode_available()) ||
- 		    arch_timer_uses_ppi == ARCH_TIMER_VIRT_PPI) {
--			if (arch_timer_counter_has_wa())
-+			if (arch_timer_counter_has_wa()) {
- 				rd = arch_counter_get_cntvct_stable;
--			else
-+				scr = _arch_counter_get_cntvct_stable;
-+			} else {
- 				rd = arch_counter_get_cntvct;
-+				scr = arch_counter_get_cntvct;
-+			}
- 		} else {
--			if (arch_timer_counter_has_wa())
-+			if (arch_timer_counter_has_wa()) {
- 				rd = arch_counter_get_cntpct_stable;
--			else
-+				scr = _arch_counter_get_cntpct_stable;
-+			} else {
- 				rd = arch_counter_get_cntpct;
-+				scr = arch_counter_get_cntpct;
-+			}
- 		}
- 
- 		arch_timer_read_counter = rd;
- 		clocksource_counter.vdso_clock_mode = vdso_default;
- 	} else {
- 		arch_timer_read_counter = arch_counter_get_cntvct_mem;
-+		scr = arch_counter_get_cntvct_mem;
- 	}
- 
- 	width = arch_counter_get_width();
-@@ -1113,7 +1145,7 @@ static void __init arch_counter_register
- 	timecounter_init(&arch_timer_kvm_info.timecounter,
- 			 &cyclecounter, start_count);
- 
--	sched_clock_register(arch_timer_read_counter, width, arch_timer_rate);
-+	sched_clock_register(scr, width, arch_timer_rate);
++	u64 delta = (cycles - last) & S64_MAX;
++
++	/*
++	 * Due to the above mentioned TSC wobbles, filter out negative motion.
++	 * Per the above masking, the effective sign bit is now bit 62.
++	 */
++	if (unlikely(delta & (1ULL << 62)))
++		return 0;
++
++	return delta * mult;
  }
+ #define vdso_calc_delta vdso_calc_delta
  
- static void arch_timer_stop(struct clock_event_device *clk)
 
 
