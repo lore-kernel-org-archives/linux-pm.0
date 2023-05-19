@@ -2,43 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21C7CC7EE26
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85B5DC7EE2E
 	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 10:34:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231874AbjESKeU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 May 2023 06:34:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53760 "EHLO
+        id S231853AbjESKej (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 May 2023 06:34:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231920AbjESKeS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2023 06:34:18 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E571610D9;
-        Fri, 19 May 2023 03:34:13 -0700 (PDT)
+        with ESMTP id S231963AbjESKeV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2023 06:34:21 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE47B10E9;
+        Fri, 19 May 2023 03:34:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
+        d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=q8KX/nmGPO6A9N1mK4qTgAMVm27t7iwShesZJrnat4g=; b=RUkLbIsJVPK/qLcIE1IdakqBHq
-        VlobrljSWru4F3SJO5gMX7c7PZIX1pB8sUkaYe50E7aHq3d+yyKPHzkGio/P8TWpAKfciEdoPxtnc
-        KFZ2sVG/B370biDNoG3HePiHHXT7Yx9Y2B007XJnAEISMPp+Ho6Y2i9489Y6GDqopu057qwAbbAYU
-        WbHY+vozrxyGh6JapKw0khAbEJaQ2oOrvICif05nNEW+CzocVAN9T1Esij5670JeY4Yfnr2fxw/pS
-        oFXMcQ+q42zF3VDJjPv3I1aXwqPimtcc73By5nS8BkQMH4auTMutFdCpmVk3lhJEhlVKu3oKukt5H
-        Y3MGXwAA==;
+        bh=jRlOPCiGZ1QUnD3ip/ciK1dDyTis2uNLJ5A1APQzhgQ=; b=Dzv1GYHGnPXTBnG4o/Xs2ei8aB
+        Q4Q6AnwKkhA4/hEfC+CyMGueM2yEEVQV5k5/e+DpKX7iQH+uIsaifb3r5hun1Lb7Ut3RbjPW/FK3q
+        7GgHVmd0difqEDkcOUBcHAAh5c6uRhVnesPdDrMRNy/o6AnRENKyjOblNglpALQqDQc/2Nn6ie6+b
+        ucFkxiKZvHRfSu80GKiNvsUh8ymS2G3cSlbSyOZ+URcvm9aZHO7ZGRSM/eu5b4omZrZLj+4rqNVY9
+        AKoPw+lovjejVC3kt7P8jMHh8B13s8koFqJH7ULD9r3B+YQXXFeiaQspwGhIId5AKB0TqQ/qGFkBs
+        ApoGTrcA==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1pzxPv-00FrWV-2D;
-        Fri, 19 May 2023 10:32:59 +0000
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1pzxPv-006UqQ-LP; Fri, 19 May 2023 10:33:00 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id F24813033CB;
-        Fri, 19 May 2023 12:32:55 +0200 (CEST)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3C81430614C;
+        Fri, 19 May 2023 12:32:56 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id BADF1235EF095; Fri, 19 May 2023 12:32:55 +0200 (CEST)
-Message-ID: <20230519102715.368919762@infradead.org>
+        id E61E9235EF0B3; Fri, 19 May 2023 12:32:55 +0200 (CEST)
+Message-ID: <20230519102715.843039089@infradead.org>
 User-Agent: quilt/0.66
-Date:   Fri, 19 May 2023 12:21:01 +0200
+Date:   Fri, 19 May 2023 12:21:08 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     bigeasy@linutronix.de
 Cc:     mark.rutland@arm.com, maz@kernel.org, catalin.marinas@arm.com,
@@ -60,8 +59,8 @@ Cc:     mark.rutland@arm.com, maz@kernel.org, catalin.marinas@arm.com,
         sboyd@kernel.org, linux-kernel@vger.kernel.org,
         loongarch@lists.linux.dev, linux-s390@vger.kernel.org,
         kvm@vger.kernel.org, linux-hyperv@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2 03/13] arm64/io: Always inline all of __raw_{read,write}[bwlq]()
+        linux-pm@vger.kernel.org, Michael Kelley <mikelley@microsoft.com>
+Subject: [PATCH v2 10/13] clocksource: hyper-v: Provide noinstr sched_clock()
 References: <20230519102058.581557770@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -69,70 +68,108 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The next patch will want to use __raw_readl() from a noinstr section
-and as such that needs to be marked __always_inline to avoid the
-compiler being a silly bugger.
-
-Turns out it already is, but its siblings are not. Finish the work
-started in commit e43f1331e2ef913b ("arm64: Ask the compiler to
-__always_inline functions used by KVM at HYP") for consistenies sake.
+With the intent to provide local_clock_noinstr(), a variant of
+local_clock() that's safe to be called from noinstr code (with the
+assumption that any such code will already be non-preemptible),
+prepare for things by making the Hyper-V TSC and MSR sched_clock
+implementations noinstr.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Co-developed-by: Michael Kelley <mikelley@microsoft.com>
+Signed-off-by: Michael Kelley <mikelley@microsoft.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/arm64/include/asm/io.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/mshyperv.h    |    5 +++++
+ drivers/clocksource/hyperv_timer.c |   32 ++++++++++++++++++--------------
+ 2 files changed, 23 insertions(+), 14 deletions(-)
 
---- a/arch/arm64/include/asm/io.h
-+++ b/arch/arm64/include/asm/io.h
-@@ -22,13 +22,13 @@
-  * Generic IO read/write.  These perform native-endian accesses.
-  */
- #define __raw_writeb __raw_writeb
--static inline void __raw_writeb(u8 val, volatile void __iomem *addr)
-+static __always_inline void __raw_writeb(u8 val, volatile void __iomem *addr)
+--- a/arch/x86/include/asm/mshyperv.h
++++ b/arch/x86/include/asm/mshyperv.h
+@@ -257,6 +257,11 @@ void hv_set_register(unsigned int reg, u
+ u64 hv_get_non_nested_register(unsigned int reg);
+ void hv_set_non_nested_register(unsigned int reg, u64 value);
+ 
++static __always_inline u64 hv_raw_get_register(unsigned int reg)
++{
++	return __rdmsr(reg);
++}
++
+ #else /* CONFIG_HYPERV */
+ static inline void hyperv_init(void) {}
+ static inline void hyperv_setup_mmu_ops(void) {}
+--- a/drivers/clocksource/hyperv_timer.c
++++ b/drivers/clocksource/hyperv_timer.c
+@@ -365,6 +365,20 @@ void hv_stimer_global_cleanup(void)
+ }
+ EXPORT_SYMBOL_GPL(hv_stimer_global_cleanup);
+ 
++static __always_inline u64 read_hv_clock_msr(void)
++{
++	/*
++	 * Read the partition counter to get the current tick count. This count
++	 * is set to 0 when the partition is created and is incremented in 100
++	 * nanosecond units.
++	 *
++	 * Use hv_raw_get_register() because this function is used from
++	 * noinstr. Notable; while HV_REGISTER_TIME_REF_COUNT is a synthetic
++	 * register it doesn't need the GHCB path.
++	 */
++	return hv_raw_get_register(HV_REGISTER_TIME_REF_COUNT);
++}
++
+ /*
+  * Code and definitions for the Hyper-V clocksources.  Two
+  * clocksources are defined: one that reads the Hyper-V defined MSR, and
+@@ -393,7 +407,7 @@ struct ms_hyperv_tsc_page *hv_get_tsc_pa
+ }
+ EXPORT_SYMBOL_GPL(hv_get_tsc_page);
+ 
+-static notrace u64 read_hv_clock_tsc(void)
++static __always_inline u64 read_hv_clock_tsc(void)
  {
- 	asm volatile("strb %w0, [%1]" : : "rZ" (val), "r" (addr));
+ 	u64 cur_tsc, time;
+ 
+@@ -404,7 +418,7 @@ static notrace u64 read_hv_clock_tsc(voi
+ 	 * to the MSR in case the TSC page indicates unavailability.
+ 	 */
+ 	if (!hv_read_tsc_page_tsc(tsc_page, &cur_tsc, &time))
+-		time = hv_get_register(HV_REGISTER_TIME_REF_COUNT);
++		time = read_hv_clock_msr();
+ 
+ 	return time;
+ }
+@@ -414,7 +428,7 @@ static u64 notrace read_hv_clock_tsc_cs(
+ 	return read_hv_clock_tsc();
  }
  
- #define __raw_writew __raw_writew
--static inline void __raw_writew(u16 val, volatile void __iomem *addr)
-+static __always_inline void __raw_writew(u16 val, volatile void __iomem *addr)
+-static u64 notrace read_hv_sched_clock_tsc(void)
++static u64 noinstr read_hv_sched_clock_tsc(void)
  {
- 	asm volatile("strh %w0, [%1]" : : "rZ" (val), "r" (addr));
- }
-@@ -40,13 +40,13 @@ static __always_inline void __raw_writel
- }
+ 	return (read_hv_clock_tsc() - hv_sched_clock_offset) *
+ 		(NSEC_PER_SEC / HV_CLOCK_HZ);
+@@ -466,22 +480,12 @@ static struct clocksource hyperv_cs_tsc
+ #endif
+ };
  
- #define __raw_writeq __raw_writeq
--static inline void __raw_writeq(u64 val, volatile void __iomem *addr)
-+static __always_inline void __raw_writeq(u64 val, volatile void __iomem *addr)
+-static u64 notrace read_hv_clock_msr(void)
+-{
+-	/*
+-	 * Read the partition counter to get the current tick count. This count
+-	 * is set to 0 when the partition is created and is incremented in
+-	 * 100 nanosecond units.
+-	 */
+-	return hv_get_register(HV_REGISTER_TIME_REF_COUNT);
+-}
+-
+ static u64 notrace read_hv_clock_msr_cs(struct clocksource *arg)
  {
- 	asm volatile("str %x0, [%1]" : : "rZ" (val), "r" (addr));
- }
- 
- #define __raw_readb __raw_readb
--static inline u8 __raw_readb(const volatile void __iomem *addr)
-+static __always_inline u8 __raw_readb(const volatile void __iomem *addr)
- {
- 	u8 val;
- 	asm volatile(ALTERNATIVE("ldrb %w0, [%1]",
-@@ -57,7 +57,7 @@ static inline u8 __raw_readb(const volat
- }
- 
- #define __raw_readw __raw_readw
--static inline u16 __raw_readw(const volatile void __iomem *addr)
-+static __always_inline u16 __raw_readw(const volatile void __iomem *addr)
- {
- 	u16 val;
- 
-@@ -80,7 +80,7 @@ static __always_inline u32 __raw_readl(c
+ 	return read_hv_clock_msr();
  }
  
- #define __raw_readq __raw_readq
--static inline u64 __raw_readq(const volatile void __iomem *addr)
-+static __always_inline u64 __raw_readq(const volatile void __iomem *addr)
+-static u64 notrace read_hv_sched_clock_msr(void)
++static u64 noinstr read_hv_sched_clock_msr(void)
  {
- 	u64 val;
- 	asm volatile(ALTERNATIVE("ldr %0, [%1]",
+ 	return (read_hv_clock_msr() - hv_sched_clock_offset) *
+ 		(NSEC_PER_SEC / HV_CLOCK_HZ);
 
 
