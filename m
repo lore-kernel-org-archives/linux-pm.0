@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2785BC7EE2D
-	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 03:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AB0AC77B7F
+	for <linux-pm@archiver.kernel.org>; Fri, 19 May 2023 03:27:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229940AbjESD1u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 May 2023 23:27:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60506 "EHLO
+        id S229945AbjESD1w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 May 2023 23:27:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60520 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229701AbjESD1o (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 May 2023 23:27:44 -0400
+        with ESMTP id S229789AbjESD1p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 May 2023 23:27:45 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7FBC12F;
-        Thu, 18 May 2023 20:27:42 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CF5910D8;
+        Thu, 18 May 2023 20:27:44 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 853F465262;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 9F457653CA;
+        Fri, 19 May 2023 03:27:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A83B9C433D2;
         Fri, 19 May 2023 03:27:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81C28C4339C;
-        Fri, 19 May 2023 03:27:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1684466861;
-        bh=XfBSJ+X/hBSEcMCTITGsqxEQnjkEMITopqVn93fGedI=;
+        s=k20201202; t=1684466863;
+        bh=HdWlDRXipx3TpYgWVO+5t2tBpNikk3svror7f2vLIJ4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=hijIT/G4cLMoceAMJWoOax1lD38yWOlDuanQf/5Ma0JVzn2fFW4GBC1lrKQ0kZdfJ
-         Q7i3LuOemSgKNuOmgPPYhYyFR8q0B+vA9MbwKdcTNT4czkEYIr1FSi37HxeriQTYTh
-         9/vgHtutRSXXI3x6aFTn1z1WAVLb3L/g6/839lfRTL/GJVzgzpN2/M4wM9esQHX1QS
-         MOTMqj1nuC3PHe+iSiDnziqmZa/i95kTvycmAOjKWxAxKrk/4XFR57ngSS2fxHRqxz
-         VT4OXnOaC2510i/VMGW8vGAuO9xK66hM0u8MXOOac+42+SIQu/NcrjaQzk4Pm+hsPa
-         4icRWTquW9U7A==
+        b=mGLvwm9S2HUt+CyrnOTyMXhDZ/Kdo5rDHzNg4qkW5J5/oGt/tQrUYdoBYyOxtBTQc
+         aBDFlWd+aur0KEkcIBs+4nXKSS9bM8EusrvgClZO+eSf1MCff/rAZaYgR8igZiSgyR
+         pn9siByJIJb1lzgUOWkefklJkdkWPNoPZ/zOAyhLGfY0JP2mHYM2OKoci/Wgp296or
+         FEoL1lk7+KOyo2T3qKAXZF7wqOBGRa0Mn9s13j10kf6GVwZnAvf1sYzu5nrFhDtUw7
+         bhTFTL074RdcEgnewdfe2qTST91YUXtfbn7i/pVTIZ9EpBglvFuLdHXWX0Vez92rzK
+         iH5oZnht9Fshg==
 From:   Eduardo Valentin <evalenti@kernel.org>
 To:     eduval@amazon.com, linux-pm@vger.kernel.org
 Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -39,9 +39,9 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 4/7] thermal: stats: introduce thermal zone stats/min_gradient
-Date:   Thu, 18 May 2023 20:27:16 -0700
-Message-Id: <20230519032719.2581689-5-evalenti@kernel.org>
+Subject: [PATCH 6/7] ythermal: core: report errors to governors
+Date:   Thu, 18 May 2023 20:27:18 -0700
+Message-Id: <20230519032719.2581689-7-evalenti@kernel.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230519032719.2581689-1-evalenti@kernel.org>
 References: <20230519032719.2581689-1-evalenti@kernel.org>
@@ -53,19 +53,14 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Eduardo Valentin <eduval@amazon.com>
 
-The patch adds a statistic to track
-the minimum gradient (dT/dt) to the thermal zone
-stats/ folder.
+Currently the thermal governors are not allowed to
+react on temperature error events as the thermal core
+skips the handling and logs an error on kernel buffer.
+This patch adds the opportunity to report the errors
+when they happen to governors.
 
-Samples:
-
-$ echo 1000 > emul_temp
-$ cat stats/min_gradient
-0
-$ echo 2000 > emul_temp
-$ echo 1000 > emul_temp
-$ cat stats/min_gradient
--3460
+Now, if a governor wants to react on temperature read
+errors, they can implement the .check_error() callback.
 
 Cc: "Rafael J. Wysocki" <rafael@kernel.org> (supporter:THERMAL)
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org> (supporter:THERMAL)
@@ -78,88 +73,58 @@ Cc: linux-kernel@vger.kernel.org (open list)
 
 Signed-off-by: Eduardo Valentin <eduval@amazon.com>
 ---
- .../driver-api/thermal/sysfs-api.rst          |  1 +
- drivers/thermal/thermal_sysfs.c               | 23 +++++++++++++++++++
- 2 files changed, 24 insertions(+)
+ drivers/thermal/thermal_core.c | 9 +++++++++
+ include/linux/thermal.h        | 3 +++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/Documentation/driver-api/thermal/sysfs-api.rst b/Documentation/driver-api/thermal/sysfs-api.rst
-index 18140dbb1ce1..ed5e6ba4e0d7 100644
---- a/Documentation/driver-api/thermal/sysfs-api.rst
-+++ b/Documentation/driver-api/thermal/sysfs-api.rst
-@@ -358,6 +358,7 @@ Thermal zone device sys I/F, created once it's registered::
-     |---stats:			Directory containing thermal zone device's stats
-     |---stats/reset_tz_stats:	Writes to this file resets the statistics.
-     |---stats/max_gradient:	The maximum recorded dT/dt in uC/ms.
-+    |---stats/min_gradient:	The minimum recorded dT/dt in uC/ms.
- 
- Thermal cooling device sys I/F, created once it's registered::
- 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index aa28c1cae916..f89ec9a7e8c8 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -542,6 +542,7 @@ static void destroy_trip_attrs(struct thermal_zone_device *tz)
- struct thermal_zone_device_stats {
- 	spinlock_t lock; /* protects this struct */
- 	s64 max_gradient;
-+	s64 min_gradient;
- 	ktime_t last_time;
- };
- 
-@@ -569,6 +570,10 @@ static void temperature_stats_update(struct thermal_zone_device *tz)
- 	/* update fastest temperature rise from our perspective */
- 	if (cur_gradient > stats->max_gradient)
- 		stats->max_gradient = cur_gradient;
-+
-+	/* update fastest temperature decay from our perspective */
-+	if (cur_gradient < stats->min_gradient)
-+		stats->min_gradient = cur_gradient;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 3ba970c0744f..2ff7d9c7c973 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -313,6 +313,12 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz, int trip)
+ 		       def_governor->throttle(tz, trip);
  }
  
- void thermal_zone_device_stats_update(struct thermal_zone_device *tz)
-@@ -595,6 +600,21 @@ static ssize_t max_gradient_show(struct device *dev,
- 	return ret;
- }
- 
-+static ssize_t min_gradient_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
++static void handle_error_temperature(struct thermal_zone_device *tz, int error)
 +{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	struct thermal_zone_device_stats *stats = tz->stats;
-+	int ret;
-+
-+	spin_lock(&stats->lock);
-+	temperature_stats_update(tz);
-+	ret = snprintf(buf, PAGE_SIZE, "%lld\n", stats->min_gradient);
-+	spin_unlock(&stats->lock);
-+
-+	return ret;
++	if (tz->governor && tz->governor->check_error)
++		tz->governor->check_error(tz, error);
 +}
 +
- static ssize_t
- reset_tz_stats_store(struct device *dev, struct device_attribute *attr,
- 		     const char *buf, size_t count)
-@@ -604,6 +624,7 @@ reset_tz_stats_store(struct device *dev, struct device_attribute *attr,
+ void thermal_zone_device_critical(struct thermal_zone_device *tz)
+ {
+ 	/*
+@@ -380,6 +386,9 @@ static void update_temperature(struct thermal_zone_device *tz)
+ 			dev_warn(&tz->device,
+ 				 "failed to read out thermal zone (%d)\n",
+ 				 ret);
++		/* tell the governor its source is hosed */
++		handle_error_temperature(tz, ret);
++
+ 		return;
+ 	}
  
- 	spin_lock(&stats->lock);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 9dc8292f0314..82c8e09a63e0 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -199,6 +199,8 @@ struct thermal_zone_device {
+  *			thermal zone.
+  * @throttle:	callback called for every trip point even if temperature is
+  *		below the trip point temperature
++ * @check_error:	callback called whenever temperature updates fail.
++ *		Opportunity for the governor to react on errors.
+  * @governor_list:	node in thermal_governor_list (in thermal_core.c)
+  */
+ struct thermal_governor {
+@@ -206,6 +208,7 @@ struct thermal_governor {
+ 	int (*bind_to_tz)(struct thermal_zone_device *tz);
+ 	void (*unbind_from_tz)(struct thermal_zone_device *tz);
+ 	int (*throttle)(struct thermal_zone_device *tz, int trip);
++	void (*check_error)(struct thermal_zone_device *tz, int error);
+ 	struct list_head	governor_list;
+ };
  
-+	stats->min_gradient = 0;
- 	stats->max_gradient = 0;
- 	stats->last_time = ktime_get();
- 
-@@ -612,10 +633,12 @@ reset_tz_stats_store(struct device *dev, struct device_attribute *attr,
- 	return count;
- }
- 
-+static DEVICE_ATTR_RO(min_gradient);
- static DEVICE_ATTR_RO(max_gradient);
- static DEVICE_ATTR_WO(reset_tz_stats);
- 
- static struct attribute *thermal_zone_device_stats_attrs[] = {
-+	&dev_attr_min_gradient.attr,
- 	&dev_attr_max_gradient.attr,
- 	&dev_attr_reset_tz_stats.attr,
- 	NULL
 -- 
 2.34.1
 
