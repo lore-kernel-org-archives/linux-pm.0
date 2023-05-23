@@ -2,119 +2,179 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C29FC7EE23
-	for <linux-pm@archiver.kernel.org>; Tue, 23 May 2023 07:37:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2856EC77B75
+	for <linux-pm@archiver.kernel.org>; Tue, 23 May 2023 07:46:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235581AbjEWHhM convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 May 2023 03:37:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35174 "EHLO
+        id S235330AbjEWHqL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 May 2023 03:46:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235583AbjEWHgn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2023 03:36:43 -0400
-Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C6051BB;
-        Tue, 23 May 2023 00:35:36 -0700 (PDT)
-Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-ba82956d3e0so6567097276.0;
-        Tue, 23 May 2023 00:35:36 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684827335; x=1687419335;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5+dC08pX0/tIIqa2IQ59EpZ+jAMVvJj02nvq1d4VL18=;
-        b=X9ZHL/bniT61HdavOItx+T1WIquKJrexE+DFjGxu/p6nlPWX3NuBK3onVOvHX8sNW1
-         hs+KmnluB2DuJBlZg5BGRYPDKalmMA+k7GRhj8nKYXdbj3AG5KcDxEmL5oboc7XW5tHB
-         X1wpDylGO6k7A69xLe7gg6w9UZEUw6E6L5+DoO3pIdifvXNaalj2FeR+GbegYS8M8m2E
-         a6HA2lQoplGz0uXwfaxIYmHBJYWZpWYD6SYZ87wKjDOc0cG8b1sbiGiRBP0TdpnXQy5X
-         8U41Yw+bltCQlEoQ7WZuopOU5PWnzZQSsCLvEL9KSUkdMK2jC+UmLomb9RQyH8R0U8/S
-         dUxA==
-X-Gm-Message-State: AC+VfDxjRd0JEXdsnnguebfWS6VZwDc02Jt3GIcfezn9s4wyFbEmWzYW
-        S7zOfVGW/Pa1E+iRubBi0sJSyQj0R/U/dg==
-X-Google-Smtp-Source: ACHHUZ63dGDl+mcVAAI9TRP8BVbsNuq+ha2aSaR+g1PrhopXLYfg/alKwcZYYasC6CmbR787jepwcA==
-X-Received: by 2002:a25:328e:0:b0:b9d:88a7:dbf with SMTP id y136-20020a25328e000000b00b9d88a70dbfmr14953535yby.4.1684827335335;
-        Tue, 23 May 2023 00:35:35 -0700 (PDT)
-Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com. [209.85.219.182])
-        by smtp.gmail.com with ESMTPSA id c12-20020a25880c000000b00ba7da8f72ebsm1946195ybl.0.2023.05.23.00.35.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 23 May 2023 00:35:34 -0700 (PDT)
-Received: by mail-yb1-f182.google.com with SMTP id 3f1490d57ef6-ba8cf3cb34fso6554631276.1;
-        Tue, 23 May 2023 00:35:34 -0700 (PDT)
-X-Received: by 2002:a25:211:0:b0:b25:a1e1:5b65 with SMTP id
- 17-20020a250211000000b00b25a1e15b65mr13676838ybc.5.1684827004960; Tue, 23 May
- 2023 00:30:04 -0700 (PDT)
+        with ESMTP id S235013AbjEWHqC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2023 03:46:02 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 541E7CD;
+        Tue, 23 May 2023 00:46:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+        :Reply-To:Content-Type:Content-ID:Content-Description;
+        bh=+++eV3dLaGt8IEBdyg5CHDQE9ogzEs+MDMxb35FMKqY=; b=SDnINhBzsN7UmTGsL5ViTmK4tA
+        B1cXtPRxCSGQfoUbW3czmQYFCika2QezYO/bnMfHRFR6yxVQveCybfd28KuO0eGptenByY3HeLpsq
+        s5plgimSG73N+kI3sWGF6r5nx7QMSnxDKMhggThvKiHsASImI2CEDeezXb1DN5LnNrD9mR4vgg1Ft
+        TtrYRv3MVCe1bPoOhLkKhukUYkIzsqHGwprKlJCqLG/MxUQQOCagACadDFuZ0K7Q+9hbNXzkXTG0l
+        lsAkwLGv0iuEjytkvJuEYQQPyUGc09w96R9jO5AG5rlJyY+SyiqYFZYhUOFr79uXNqLVNwIiYLQND
+        MhNVBYUQ==;
+Received: from [2001:4bb8:188:23b2:6ade:85c9:530f:6eb0] (helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1q1MiH-009GVg-31;
+        Tue, 23 May 2023 07:45:46 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Mike Snitzer <snitzer@kernel.org>,
+        Joern Engel <joern@lazybastard.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
+        linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org
+Subject: [PATCH 03/24] PM: hibernate: remove the global snapshot_test variable
+Date:   Tue, 23 May 2023 09:45:14 +0200
+Message-Id: <20230523074535.249802-4-hch@lst.de>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230523074535.249802-1-hch@lst.de>
+References: <20230523074535.249802-1-hch@lst.de>
 MIME-Version: 1.0
-References: <cover.1683722688.git.geert+renesas@glider.be> <fe235a1f65bb6c86d2afcdf52d85f80ae728dcc5.1683722688.git.geert+renesas@glider.be>
- <20230511064839.GG14287@atomide.com> <494a000774b546e4aae00ae0a7dfeae4@AcuMS.aculab.com>
-In-Reply-To: <494a000774b546e4aae00ae0a7dfeae4@AcuMS.aculab.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 23 May 2023 09:29:53 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXttS3mkA+BNC69e6MYniRyGtR2vde35BYgBZ_+SuYs_Q@mail.gmail.com>
-Message-ID: <CAMuHMdXttS3mkA+BNC69e6MYniRyGtR2vde35BYgBZ_+SuYs_Q@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] iopoll: Call cpu_relax() in busy loops
-To:     David Laight <David.Laight@aculab.com>
-Cc:     Tony Lindgren <tony@atomide.com>, Stephen Boyd <sboyd@kernel.org>,
-        Tomasz Figa <tomasz.figa@gmail.com>,
-        Sylwester Nawrocki <s.nawrocki@samsung.com>,
-        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        Dejin Zheng <zhengdejin5@gmail.com>,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Russell King <linux@armlinux.org.uk>,
-        John Stultz <jstultz@google.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Tero Kristo <tero.kristo@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-renesas-soc@vger.kernel.org" 
-        <linux-renesas-soc@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi David,
+Passing call dependent variable in global variables is a huge
+antipattern.  Fix it up.
 
-On Thu, May 11, 2023 at 12:49 PM David Laight <David.Laight@aculab.com> wrote:
-> > * Geert Uytterhoeven <geert+renesas@glider.be> [230510 13:23]:
-> > > It is considered good practice to call cpu_relax() in busy loops, see
-> > > Documentation/process/volatile-considered-harmful.rst.  This can not
-> > > only lower CPU power consumption or yield to a hyperthreaded twin
-> > > processor, but also allows an architecture to mitigate hardware issues
-> > > (e.g. ARM Erratum 754327 for Cortex-A9 prior to r2p0) in the
-> > > architecture-specific cpu_relax() implementation.
->
-> Don't you also need to call cond_resched() (at least some times).
-> Otherwise the process can't be pre-empted and a RT process
-> that last ran on that cpu will never be scheduled.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ kernel/power/hibernate.c | 17 ++++++-----------
+ kernel/power/power.h     |  3 +--
+ kernel/power/swap.c      |  2 +-
+ 3 files changed, 8 insertions(+), 14 deletions(-)
 
-According to [1], cond_resched() must be called at least once per few
-tens of milliseconds.
-
-read_poll_timeout() uses usleep_range(), which calls schedule_hrtimeout_range().
-read_poll_timeout_atomic() should not be used with multi-ms timeouts anyway.
-
-So I guess we're OK?
-
-[1] https://elixir.bootlin.com/linux/latest/source/Documentation/RCU/Design/Requirements/Requirements.rst#L2348
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 07279506366255..78696aa04f5ca3 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -64,7 +64,6 @@ enum {
+ static int hibernation_mode = HIBERNATION_SHUTDOWN;
+ 
+ bool freezer_test_done;
+-bool snapshot_test;
+ 
+ static const struct platform_hibernation_ops *hibernation_ops;
+ 
+@@ -684,7 +683,7 @@ static void power_down(void)
+ 		cpu_relax();
+ }
+ 
+-static int load_image_and_restore(void)
++static int load_image_and_restore(bool snapshot_test)
+ {
+ 	int error;
+ 	unsigned int flags;
+@@ -721,6 +720,7 @@ static int load_image_and_restore(void)
+  */
+ int hibernate(void)
+ {
++	bool snapshot_test = false;
+ 	unsigned int sleep_flags;
+ 	int error;
+ 
+@@ -748,9 +748,6 @@ int hibernate(void)
+ 	if (error)
+ 		goto Exit;
+ 
+-	/* protected by system_transition_mutex */
+-	snapshot_test = false;
+-
+ 	lock_device_hotplug();
+ 	/* Allocate memory management structures */
+ 	error = create_basic_memory_bitmaps();
+@@ -792,9 +789,9 @@ int hibernate(void)
+ 	unlock_device_hotplug();
+ 	if (snapshot_test) {
+ 		pm_pr_dbg("Checking hibernation image\n");
+-		error = swsusp_check();
++		error = swsusp_check(snapshot_test);
+ 		if (!error)
+-			error = load_image_and_restore();
++			error = load_image_and_restore(snapshot_test);
+ 	}
+ 	thaw_processes();
+ 
+@@ -982,8 +979,6 @@ static int software_resume(void)
+ 	 */
+ 	mutex_lock_nested(&system_transition_mutex, SINGLE_DEPTH_NESTING);
+ 
+-	snapshot_test = false;
+-
+ 	if (!swsusp_resume_device) {
+ 		error = find_resume_device();
+ 		if (error)
+@@ -994,7 +989,7 @@ static int software_resume(void)
+ 		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
+ 
+ 	pm_pr_dbg("Looking for hibernation image.\n");
+-	error = swsusp_check();
++	error = swsusp_check(false);
+ 	if (error)
+ 		goto Unlock;
+ 
+@@ -1022,7 +1017,7 @@ static int software_resume(void)
+ 		goto Close_Finish;
+ 	}
+ 
+-	error = load_image_and_restore();
++	error = load_image_and_restore(false);
+ 	thaw_processes();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_RESTORE);
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index b83c8d5e188dec..978189fcafd124 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -59,7 +59,6 @@ asmlinkage int swsusp_save(void);
+ 
+ /* kernel/power/hibernate.c */
+ extern bool freezer_test_done;
+-extern bool snapshot_test;
+ 
+ extern int hibernation_snapshot(int platform_mode);
+ extern int hibernation_restore(int platform_mode);
+@@ -174,7 +173,7 @@ extern int swsusp_swap_in_use(void);
+ #define SF_HW_SIG		8
+ 
+ /* kernel/power/hibernate.c */
+-extern int swsusp_check(void);
++int swsusp_check(bool snapshot_test);
+ extern void swsusp_free(void);
+ extern int swsusp_read(unsigned int *flags_p);
+ extern int swsusp_write(unsigned int flags);
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 92e41ed292ada8..efed11568bfc72 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -1514,7 +1514,7 @@ int swsusp_read(unsigned int *flags_p)
+  *      swsusp_check - Check for swsusp signature in the resume device
+  */
+ 
+-int swsusp_check(void)
++int swsusp_check(bool snapshot_test)
+ {
+ 	int error;
+ 	void *holder;
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.39.2
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
