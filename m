@@ -2,106 +2,92 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A6DC7EE26
-	for <linux-pm@archiver.kernel.org>; Tue, 23 May 2023 07:48:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75362C7EE2E
+	for <linux-pm@archiver.kernel.org>; Tue, 23 May 2023 08:13:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235774AbjEWHsW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 May 2023 03:48:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43328 "EHLO
+        id S235795AbjEWINT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 May 2023 04:13:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235792AbjEWHrn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2023 03:47:43 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0D0D133;
-        Tue, 23 May 2023 00:46:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
-        :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=rB1XU3Q8mH+jzryPymiOq8Z/Y0ZEGIxvnUDI5lAUFnE=; b=IR3nBxbwuu4MvPChQwEdKu7V2t
-        xvTbSx8RpoJmbaknVJE3FRJUB6ZAhXcsqBq6+bDaCYEso5zOtbKW4kdNUovGSy1cTwV7uWaC76p3N
-        8K5EiUbtIqL48X/CNwd2ZD9JxfiMbTKmQlkwf/vshQJzaNFKR/QG41jChIm2cCdWwlHGWrUkQqRm0
-        z649ZBBMXxltpSAY9YfGkv0KEDD1np48IkIbTBbgUIM9snFv/mWKs4QgQqLg3BOvgiT2qN3oycCI9
-        C9mn8cH/4bGVSXIcLByijq5fhix9QwhCzaWWsqA5BChrcJ5ojWsbTmGp/OTc23+aAP9hq/duaKrzg
-        S4lHoyCg==;
-Received: from [2001:4bb8:188:23b2:6ade:85c9:530f:6eb0] (helo=localhost)
-        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1q1MjD-009HOR-0Y;
-        Tue, 23 May 2023 07:46:43 +0000
-From:   Christoph Hellwig <hch@lst.de>
-To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Mike Snitzer <snitzer@kernel.org>,
-        Joern Engel <joern@lazybastard.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Richard Weinberger <richard@nod.at>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
-        linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: [PATCH 23/24] mtd: block2mtd: don't call early_lookup_bdev after the system is running
-Date:   Tue, 23 May 2023 09:45:34 +0200
-Message-Id: <20230523074535.249802-24-hch@lst.de>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230523074535.249802-1-hch@lst.de>
-References: <20230523074535.249802-1-hch@lst.de>
+        with ESMTP id S236162AbjEWIMo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2023 04:12:44 -0400
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4419E1FC2
+        for <linux-pm@vger.kernel.org>; Tue, 23 May 2023 01:11:23 -0700 (PDT)
+Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-30a892c45c4so1708932f8f.3
+        for <linux-pm@vger.kernel.org>; Tue, 23 May 2023 01:11:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1684829473; x=1687421473;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=dGUDGH7rhz14YCB1cVpAZLKAtrf81F9TTztogU96Cm0=;
+        b=EvnGzmJUPfQ8KdtpEigUXryImN6v0v/3K7eIiy7Ar6Nv7RtCwMROvVxOUOAALvft7s
+         g8flhowqXn1kaqGSjamvwA16iTu8BIR29qrnUQ5Fx0hXpDWI19+U9rDrOt6ZXpV4it2n
+         xVjPiehnMvYulSHcDUNmztqZM0+ImwrMimMPE7o/PoAlvyI6+GFbKjVO2nJmimvP3Tkr
+         EHHixinnO8VmqTlKt1jOKf2yfsNJLFO1ohhWiLvvbK32GmG0zLTnU9f8EXj+zORGCq33
+         0pO/LtCHjw9Ycy1k2km2jN8HMHCTGBcrZDmFyxAB+lMMu6MRjtRcEFsT/RVgpR7ZnqeG
+         rsoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684829473; x=1687421473;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dGUDGH7rhz14YCB1cVpAZLKAtrf81F9TTztogU96Cm0=;
+        b=Nh9/3mXRUoyVk/vaqi9muTNvaen+T5uZR/GtoRYys7StUcIB3moAv+Nh+qeKvmq1gQ
+         QdfK6kxGlX06TxFjnnuTytoDH//xaQeWlbj3vxfzRLCnTti9mTrZwnJhWfUvU0PBD5+M
+         QTWUIBjvtZfx9N5jf2HxIECNCjYTv/gnYfYRW2egSSVIFDOGY9Xzk8qcH4JJWd6m9WwM
+         MeXXcFXj+K5B03iWbaH/rVBG9eMAztSGeYTkpVQrxumxUNw+/f5FeNQKX0YXEdZPVBaG
+         TJVsffIiw1+6JTyEKgqIgsxSR0OBbDqds66x6388xCwua/Xxg+Iu0X+JVpb27fTGzxin
+         4zuA==
+X-Gm-Message-State: AC+VfDzY7E8GU4yYkmnbMyvO9KbKrBLxvsLX03XIktEjiQSbtOa1tUTX
+        mZLMWS9aM3rL8f2SOWQPOnFznQ==
+X-Google-Smtp-Source: ACHHUZ74BDXgDTVesfh4PK5yfNReO97zBxk9tr7IB8NXqFzhBagMkPdIOkquK4+vZRWk9dR79qOjzQ==
+X-Received: by 2002:adf:f1ce:0:b0:306:64b7:5413 with SMTP id z14-20020adff1ce000000b0030664b75413mr8935653wro.71.1684829472945;
+        Tue, 23 May 2023 01:11:12 -0700 (PDT)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id o16-20020a5d62d0000000b002fb60c7995esm10343562wrv.8.2023.05.23.01.11.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 May 2023 01:11:11 -0700 (PDT)
+Date:   Tue, 23 May 2023 11:11:08 +0300
+From:   Dan Carpenter <dan.carpenter@linaro.org>
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        kernel-janitors@vger.kernel.org
+Subject: [PATCH] interconnect: qcom: rpm: allocate enough data in probe()
+Message-ID: <a0f6184c-c2b5-4e8d-9b8a-867ae83f3094@kili.mountain>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-early_lookup_bdev is supposed to only be called from the early boot
-code, but mdtblock_early_get_bdev is called as a general fallback when
-lookup_bdev fails, which is problematic because early_lookup_bdev
-bypasses all normal path based permission checking, and might cause
-problems with certain container environments renaming devices.
+This was allocating "sizeof(qp->intf_clks)" which is the size of a
+pointer instead of "sizeof(*qp->intf_clks)" which is the size of the
+struct (8 bytes vs 16 bytes on a 64bit system).
 
-Switch to only call early_lookup_bdev when dm is built-in and the system
-state in not running yet.
-
-Note that this strictly speaking changes the kernel ABI as the PARTUUID=
-and PARTLABEL= style syntax is now not available during a running
-systems.  They never were intended for that, but this breaks things
-we'll have to figure out a way to make them available again.  But if
-avoidable in any way I'd rather avoid that.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Fixes: 2e2113c8a64f ("interconnect: qcom: rpm: Handle interface clocks")
+Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
 ---
- drivers/mtd/devices/block2mtd.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/interconnect/qcom/icc-rpm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/mtd/devices/block2mtd.c b/drivers/mtd/devices/block2mtd.c
-index 182eed68c75634..59e4c71cfc6f53 100644
---- a/drivers/mtd/devices/block2mtd.c
-+++ b/drivers/mtd/devices/block2mtd.c
-@@ -215,13 +215,23 @@ static void block2mtd_free_device(struct block2mtd_dev *dev)
- 	kfree(dev);
- }
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index f4627c4a1bdd..7a21a03a0382 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -436,7 +436,7 @@ int qnoc_probe(struct platform_device *pdev)
+ 	if (!qp)
+ 		return -ENOMEM;
  
--static struct block_device *mdtblock_early_get_bdev(const char *devname,
-+/*
-+ * This function is marked __ref because it calls the __init marked
-+ * early_lookup_bdev when called from the early boot code.
-+ */
-+static struct block_device __ref *mdtblock_early_get_bdev(const char *devname,
- 		fmode_t mode, int timeout, struct block2mtd_dev *dev)
- {
- 	struct block_device *bdev = ERR_PTR(-ENODEV);
- #ifndef MODULE
- 	int i;
+-	qp->intf_clks = devm_kzalloc(dev, sizeof(qp->intf_clks), GFP_KERNEL);
++	qp->intf_clks = devm_kzalloc(dev, sizeof(*qp->intf_clks), GFP_KERNEL);
+ 	if (!qp->intf_clks)
+ 		return -ENOMEM;
  
-+	/*
-+	 * We can't use early_lookup_bdev from a running system.
-+	 */
-+	if (system_state >= SYSTEM_RUNNING)
-+		return bdev;
-+
- 	/*
- 	 * We might not have the root device mounted at this point.
- 	 * Try to resolve the device name by other means.
 -- 
 2.39.2
 
