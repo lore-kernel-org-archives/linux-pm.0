@@ -2,32 +2,32 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25DDEC7EE23
-	for <linux-pm@archiver.kernel.org>; Tue, 23 May 2023 07:48:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1525C77B75
+	for <linux-pm@archiver.kernel.org>; Tue, 23 May 2023 07:48:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235427AbjEWHrx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 May 2023 03:47:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42372 "EHLO
+        id S235700AbjEWHsU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 May 2023 03:48:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42738 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235742AbjEWHrU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2023 03:47:20 -0400
+        with ESMTP id S235814AbjEWHrp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2023 03:47:45 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDAE21B1;
-        Tue, 23 May 2023 00:46:47 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A391E5C;
+        Tue, 23 May 2023 00:46:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=4p5sa23zp651hB7qk2JiIaA7eX4JAqtNGdSL+Z6QwaA=; b=ggMWThfMQmAceRvr6onfS2llfO
-        KbXpVileDx18p1lJK8gf2+ZUiUuEeE3bHNlnrb3fOeI12UNsUz9mNwjIolYCazTeMKJ92APqpAcva
-        v2TqMxviArdInuPll1U0twBRNvM9Qgp1QG3iz7IGOYCJz/3nijzzoaPkBoLzgyPQH5E5K84M8RWl1
-        ++tigqx/Wc6cbswnzRWlEgWh5eB0GKZDO26mvWBzm8SVL5Vr2ZCU7x6bfWY2aP4UwlDLeofCr1fbU
-        ItD62UDj6lJWYgAMcQD+TxpsogHgsMxYktATtigprtEWhH6tkfd2f64ZnZoFLPiEw3gi1incjYIM9
-        HX63dFOg==;
+        bh=9B9Q5RDcOkQVHhQcbSUKb6IuqOR/HrhtGX8DsjrEY38=; b=Np9j14NJ3gyLQvNx0tekwf7Ovf
+        uQnoq7NH4MC7d2AAqT1B+qQNaq73b06tsCSBmoNWRNfBW6F0BTzu5oePtSiUmH8+E3PWScBXuzlLS
+        M8kGgMKX6BxZmy5iUngyne92c3aF0Y5Dbm6S7XdV37mN1ihXYho4P4LCOELU/xbQU+eKlD/aFMQk8
+        jxn1CchGb8AgZSMCDZjfvL/NoOOrv0aLZQ3LDUPLSl6YOd30I5Phg/xONcm8hWqY/FWhUvx35IgjW
+        6Hb26MVfy3n+1S0oPfv03VjKucGProqJJrY3NcUzIBfp1Z80xEHEIXNWttkaz+L26SAMYKor/7QPN
+        ZVduL80Q==;
 Received: from [2001:4bb8:188:23b2:6ade:85c9:530f:6eb0] (helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1q1Mj7-009HHx-1N;
-        Tue, 23 May 2023 07:46:37 +0000
+        id 1q1MjF-009HS4-3A;
+        Tue, 23 May 2023 07:46:46 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -40,9 +40,9 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
         linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
         linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: [PATCH 21/24] PM: hibernate: don't use early_lookup_bdev in resume_store
-Date:   Tue, 23 May 2023 09:45:32 +0200
-Message-Id: <20230523074535.249802-22-hch@lst.de>
+Subject: [PATCH 24/24] block: mark early_lookup_bdev as __init
+Date:   Tue, 23 May 2023 09:45:35 +0200
+Message-Id: <20230523074535.249802-25-hch@lst.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230523074535.249802-1-hch@lst.de>
 References: <20230523074535.249802-1-hch@lst.de>
@@ -53,55 +53,121 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-resume_store is a sysfs attribute written during normal kernel runtime,
-and it should not use the early_lookup_bdev API that bypasses all normal
-path based permission checking, and might cause problems with certain
-container environments renaming devices.
-
-Switch to lookup_bdev, which does a normal path lookup instead, and fall
-back to trying to parse a numeric dev_t just like early_lookup_bdev did.
-
-Note that this strictly speaking changes the kernel ABI as the PARTUUID=
-and PARTLABEL= style syntax is now not available during a running
-systems.  They never were intended for that, but this breaks things
-we'll have to figure out a way to make them available again.  But if
-avoidable in any way I'd rather avoid that.
+early_lookup_bdev is now only used during the early boot code as it
+should, so mark it __init to not waste run time memory on it.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Fixes: 421a5fa1a6cf ("PM / hibernate: use name_to_dev_t to parse resume")
 ---
- kernel/power/hibernate.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ block/early-lookup.c   | 19 +++++++++----------
+ include/linux/blkdev.h |  2 +-
+ 2 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index c52dedb9f7c8e8..7ae95ec72f9902 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -1178,7 +1178,23 @@ static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
- 	if (!name)
- 		return -ENOMEM;
+diff --git a/block/early-lookup.c b/block/early-lookup.c
+index 6016e781b6a0e2..3ff0d2e4dcbfb8 100644
+--- a/block/early-lookup.c
++++ b/block/early-lookup.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+  * Code for looking up block devices in the early boot code before mounting the
+- * root file system.  Unfortunately currently also abused in a few other places.
++ * root file system.
+  */
+ #include <linux/blkdev.h>
+ #include <linux/ctype.h>
+@@ -18,7 +18,7 @@ struct uuidcmp {
+  *
+  * Returns 1 if the device matches, and 0 otherwise.
+  */
+-static int match_dev_by_uuid(struct device *dev, const void *data)
++static int __init match_dev_by_uuid(struct device *dev, const void *data)
+ {
+ 	struct block_device *bdev = dev_to_bdev(dev);
+ 	const struct uuidcmp *cmp = data;
+@@ -42,7 +42,7 @@ static int match_dev_by_uuid(struct device *dev, const void *data)
+  *
+  * Returns the matching dev_t on success or 0 on failure.
+  */
+-static int devt_from_partuuid(const char *uuid_str, dev_t *devt)
++static int __init devt_from_partuuid(const char *uuid_str, dev_t *devt)
+ {
+ 	struct uuidcmp cmp;
+ 	struct device *dev = NULL;
+@@ -98,7 +98,7 @@ static int devt_from_partuuid(const char *uuid_str, dev_t *devt)
+  *
+  * Returns 1 if the device matches, and 0 otherwise.
+  */
+-static int match_dev_by_label(struct device *dev, const void *data)
++static int __init match_dev_by_label(struct device *dev, const void *data)
+ {
+ 	struct block_device *bdev = dev_to_bdev(dev);
+ 	const char *label = data;
+@@ -108,7 +108,7 @@ static int match_dev_by_label(struct device *dev, const void *data)
+ 	return 1;
+ }
  
--	error = early_lookup_bdev(name, &dev);
-+	error = lookup_bdev(name, &dev);
-+	if (error) {
-+		unsigned maj, min, offset;
-+		char *p, dummy;
-+
-+		if (sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2 ||
-+		    sscanf(name, "%u:%u:%u:%c", &maj, &min, &offset,
-+				&dummy) == 3) {
-+			dev = MKDEV(maj, min);
-+			if (maj != MAJOR(dev) || min != MINOR(dev))
-+				error = -EINVAL;
-+		} else {
-+			dev = new_decode_dev(simple_strtoul(name, &p, 16));
-+			if (*p)
-+				error = -EINVAL;
-+		}
-+	}
- 	kfree(name);
- 	if (error)
- 		return error;
+-static int devt_from_partlabel(const char *label, dev_t *devt)
++static int __init devt_from_partlabel(const char *label, dev_t *devt)
+ {
+ 	struct device *dev;
+ 
+@@ -120,7 +120,7 @@ static int devt_from_partlabel(const char *label, dev_t *devt)
+ 	return 0;
+ }
+ 
+-static dev_t blk_lookup_devt(const char *name, int partno)
++static dev_t __init blk_lookup_devt(const char *name, int partno)
+ {
+ 	dev_t devt = MKDEV(0, 0);
+ 	struct class_dev_iter iter;
+@@ -149,7 +149,7 @@ static dev_t blk_lookup_devt(const char *name, int partno)
+ 	return devt;
+ }
+ 
+-static int devt_from_devname(const char *name, dev_t *devt)
++static int __init devt_from_devname(const char *name, dev_t *devt)
+ {
+ 	int part;
+ 	char s[32];
+@@ -193,7 +193,7 @@ static int devt_from_devname(const char *name, dev_t *devt)
+ 	return -EINVAL;
+ }
+ 
+-static int devt_from_devnum(const char *name, dev_t *devt)
++static int __init devt_from_devnum(const char *name, dev_t *devt)
+ {
+ 	unsigned maj, min, offset;
+ 	char *p, dummy;
+@@ -240,7 +240,7 @@ static int devt_from_devnum(const char *name, dev_t *devt)
+  *	name contains slashes, the device name has them replaced with
+  *	bangs.
+  */
+-int early_lookup_bdev(const char *name, dev_t *devt)
++int __init early_lookup_bdev(const char *name, dev_t *devt)
+ {
+ 	if (strncmp(name, "PARTUUID=", 9) == 0)
+ 		return devt_from_partuuid(name + 9, devt);
+@@ -250,7 +250,6 @@ int early_lookup_bdev(const char *name, dev_t *devt)
+ 		return devt_from_devname(name + 5, devt);
+ 	return devt_from_devnum(name, devt);
+ }
+-EXPORT_SYMBOL_GPL(early_lookup_bdev);
+ 
+ static char __init *bdevt_str(dev_t devt, char *buf)
+ {
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 361341aea82ce5..a07776e5b27940 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -1493,7 +1493,7 @@ int sync_blockdev_nowait(struct block_device *bdev);
+ void sync_bdevs(bool wait);
+ void bdev_statx_dioalign(struct inode *inode, struct kstat *stat);
+ void printk_all_partitions(void);
+-int early_lookup_bdev(const char *pathname, dev_t *dev);
++int __init early_lookup_bdev(const char *pathname, dev_t *dev);
+ #else
+ static inline void invalidate_bdev(struct block_device *bdev)
+ {
 -- 
 2.39.2
 
