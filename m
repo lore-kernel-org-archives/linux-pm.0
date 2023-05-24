@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C50AC7EE32
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 09:37:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5C51C7EE2C
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 09:37:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230197AbjEXJhP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 05:37:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53268 "EHLO
+        id S230404AbjEXJhX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 05:37:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229566AbjEXJgz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 05:36:55 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B9EBA7;
-        Wed, 24 May 2023 02:36:54 -0700 (PDT)
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34O7lGw1002007;
-        Wed, 24 May 2023 09:36:40 GMT
+        with ESMTP id S230006AbjEXJhF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 05:37:05 -0400
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A03A3184;
+        Wed, 24 May 2023 02:37:04 -0700 (PDT)
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34O5gvEb032600;
+        Wed, 24 May 2023 09:36:29 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=qcppdkim1;
- bh=KO04TejNcw+K1nlzoaCwibJTPYCBLhl01pLzVmpMwK8=;
- b=B9Hg1Blpb2zA7DE/mAMdj6tYe5BoVFaiVp4Ep1rvk7tQ9IxpS2gbpFPdgBlmjTwQNPI8
- YLtMbSTQXykc8JKRU6SPiLHjMzIZJH7ormOJ28Y/5Y9qy/g5szffkxmT0eU+WaDcIPcB
- /G5sRUYi5obM+XXfC9GmhFEJxqlPNYn9c7H5W/00YEUHJ/iC66gkXSXUb0hIoPSZoHDN
- J3ZMVzhLhFCdQyZ4iJkz7uCxgp8FStjGQCrfZWG2JbyzXCgotRjYKU9Z7Q0mP0vogusw
- l4UrZlkNggwV4P2iGsUrl053i4dDW2Lz2vbk1nB2ycxXrNb2XHG54zxgiP6IUGL7u7dE jQ== 
-Received: from nasanppmta01.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3qs805h044-1
+ bh=lTgEoLEClly75ZaPY/LxUJAjr1KveL9eAdClMXWG1iU=;
+ b=KOafFjsFRgIMHx9DBNQfv28PbqKUYAHuaItWHzDBPjKzvrVzZU12jkW/GlZ8AwTuWb+f
+ WOn6xC2zRQ7a5Nn5O9/en+QLEFzF8ehrtXMEvVETCYSVR2Pc3gUgqLs/HycA6Ef9aHWn
+ 3HEAhbCV5vIbneBQly5gYvvbR+Gu5tjhhPPmmmSoLlPVTfXa4/iSbZZZC0OZRdqjP0Xn
+ r1gQ9SEo9MtK+i+oeChyzcojFpNo9f5DXrMXF+Y8hBu4anF1vVSQdsaFQ/jOgABkH5vl
+ rkks6hCvKK1rxRXwDyGm8gAQrcKure2OQIcbV4j1dl2d6Ryzk1DquGt4goot7RJmSfKq PQ== 
+Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3qs4df9c1b-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 24 May 2023 09:36:40 +0000
+        Wed, 24 May 2023 09:36:29 +0000
 Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 34O9adLE011777
+        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 34O9aSUi002064
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 24 May 2023 09:36:39 GMT
+        Wed, 24 May 2023 09:36:28 GMT
 Received: from varda-linux.qualcomm.com (10.80.80.8) by
  nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.42; Wed, 24 May 2023 02:36:33 -0700
+ 15.2.986.42; Wed, 24 May 2023 02:36:23 -0700
 From:   Varadarajan Narayanan <quic_varada@quicinc.com>
 To:     <agross@kernel.org>, <andersson@kernel.org>,
         <konrad.dybcio@linaro.org>, <amitk@kernel.org>,
@@ -47,11 +47,11 @@ To:     <agross@kernel.org>, <andersson@kernel.org>,
         <conor+dt@kernel.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
-CC:     Varadarajan Narayanan <quic_varada@quicinc.com>,
-        Praveenkumar I <quic_ipkumar@quicinc.com>
-Subject: [PATCH v4 3/3] arm64: dts: qcom: ipq9574: add thermal zone nodes
-Date:   Wed, 24 May 2023 15:06:11 +0530
-Message-ID: <e95b1413d825b1131c9b0bd1bffde1e0b3bb497b.1684920389.git.quic_varada@quicinc.com>
+CC:     Praveenkumar I <quic_ipkumar@quicinc.com>,
+        Varadarajan Narayanan <quic_varada@quicinc.com>
+Subject: [PATCH v4 1/3] dt-bindings: thermal: tsens: Add ipq9574 compatible
+Date:   Wed, 24 May 2023 15:06:09 +0530
+Message-ID: <cb26ad4a6550c18b1a70104c6b75c10946766944.1684920389.git.quic_varada@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <cover.1684920389.git.quic_varada@quicinc.com>
 References: <cover.1684920389.git.quic_varada@quicinc.com>
@@ -62,250 +62,76 @@ X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
  nasanex01a.na.qualcomm.com (10.52.223.231)
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: StEralnYJLPvI1gyZ6G20ph9wnlWQhFf
-X-Proofpoint-GUID: StEralnYJLPvI1gyZ6G20ph9wnlWQhFf
+X-Proofpoint-GUID: dwiKsLY2MstIBf8KaXp76hAgLRfpbC7w
+X-Proofpoint-ORIG-GUID: dwiKsLY2MstIBf8KaXp76hAgLRfpbC7w
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-05-24_05,2023-05-23_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 bulkscore=0
- mlxlogscore=967 phishscore=0 spamscore=0 malwarescore=0 priorityscore=1501
- lowpriorityscore=0 impostorscore=0 mlxscore=0 adultscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2304280000
- definitions=main-2305240081
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
+ suspectscore=0 impostorscore=0 phishscore=0 malwarescore=0 spamscore=0
+ lowpriorityscore=0 adultscore=0 bulkscore=0 priorityscore=1501
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2304280000 definitions=main-2305240081
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds thermal zone nodes for the various
-sensors present in IPQ9574
+From: Praveenkumar I <quic_ipkumar@quicinc.com>
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Co-developed-by: Praveenkumar I <quic_ipkumar@quicinc.com>
+Qualcomm IPQ9574 has tsens v2.3.1 block, which is similar to IPQ8074 tsens.
+
 Signed-off-by: Praveenkumar I <quic_ipkumar@quicinc.com>
 Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
 ---
- arch/arm64/boot/dts/qcom/ipq9574.dtsi | 208 ++++++++++++++++++++++++++++++++++
- 1 file changed, 208 insertions(+)
+[v4]:
+	Add description about IPQ9574 and remove unnecessary
+	additions to the file
+[v3]:
+	Fix dt_binding_check & dtbs_check errors (Used
+	Documentation/devicetree/bindings/display/allwinner,sun4i-a10-tcon.yaml
+	as reference/example)
 
-diff --git a/arch/arm64/boot/dts/qcom/ipq9574.dtsi b/arch/arm64/boot/dts/qcom/ipq9574.dtsi
-index 15c9447..d162851 100644
---- a/arch/arm64/boot/dts/qcom/ipq9574.dtsi
-+++ b/arch/arm64/boot/dts/qcom/ipq9574.dtsi
-@@ -969,6 +969,214 @@
- 		};
- 	};
+	Drop 'Acked-by: Rob Herring' as suggested in review
+
+[v2]:
+	Thanks to Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+	for the tip to make qcom,ipq8074-tsens as fallback.
+---
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index d1ec963..1a752e0 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -16,9 +16,14 @@ description: |
+   The IP versions are named v0.1, v1 and v2 in the driver, where v0.1 captures
+   everything before v1 when there was no versioning information.
  
-+	thermal-zones {
-+		nss-top-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 3>;
++  Since IPQ9574 is similar to IPQ8074, mapping it to IPQ8074 without
++  introducing a new compatible.
 +
-+			trips {
-+				nss-top-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
+ properties:
+   compatible:
+     oneOf:
++      - const: qcom,ipq8074-tsens
 +
-+		ubi-0-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 4>;
-+
-+			trips {
-+				ubi_0-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		ubi-1-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 5>;
-+
-+			trips {
-+				ubi_1-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		ubi-2-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 6>;
-+
-+			trips {
-+				ubi_2-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		ubi-3-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 7>;
-+
-+			trips {
-+				ubi_3-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpuss0-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 8>;
-+
-+			trips {
-+				cpu-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpuss1-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 9>;
-+
-+			trips {
-+				cpu-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu0-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 10>;
-+
-+			trips {
-+				cpu-critical {
-+					temperature = <120000>;
-+					hysteresis = <10000>;
-+					type = "critical";
-+				};
-+
-+				cpu-passive {
-+					temperature = <110000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		cpu1-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 11>;
-+
-+			trips {
-+				cpu-critical {
-+					temperature = <120000>;
-+					hysteresis = <10000>;
-+					type = "critical";
-+				};
-+
-+				cpu-passive {
-+					temperature = <110000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		cpu2-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 12>;
-+
-+			trips {
-+				cpu-critical {
-+					temperature = <120000>;
-+					hysteresis = <10000>;
-+					type = "critical";
-+				};
-+
-+				cpu-passive {
-+					temperature = <110000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		cpu3-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 13>;
-+
-+			trips {
-+				cpu-critical {
-+					temperature = <120000>;
-+					hysteresis = <10000>;
-+					type = "critical";
-+				};
-+
-+				cpu-passive {
-+					temperature = <110000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		wcss-phyb-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 14>;
-+
-+			trips {
-+				wcss_phyb-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		top-glue-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&tsens 15>;
-+
-+			trips {
-+				top_glue-critical {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
-+
- 	timer {
- 		compatible = "arm,armv8-timer";
- 		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+       - description: msm8960 TSENS based
+         items:
+           - enum:
+@@ -64,8 +69,10 @@ properties:
+           - const: qcom,tsens-v2
+ 
+       - description: v2 of TSENS with combined interrupt
+-        enum:
+-          - qcom,ipq8074-tsens
++        items:
++          - enum:
++              - qcom,ipq9574-tsens
++          - const: qcom,ipq8074-tsens
+ 
+   reg:
+     items:
 -- 
 2.7.4
 
