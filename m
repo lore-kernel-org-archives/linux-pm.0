@@ -2,52 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 671EFC77B7C
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 16:56:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 284A5C7EE2D
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 17:00:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230195AbjEXQ41 convert rfc822-to-8bit (ORCPT
+        id S234429AbjEXRAZ convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 12:56:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57756 "EHLO
+        Wed, 24 May 2023 13:00:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60478 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234385AbjEXQ4C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 12:56:02 -0400
-Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3737F13E;
-        Wed, 24 May 2023 09:56:01 -0700 (PDT)
-Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-50d897af77bso298196a12.1;
-        Wed, 24 May 2023 09:56:00 -0700 (PDT)
+        with ESMTP id S234385AbjEXRAY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 13:00:24 -0400
+Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C7F0BB;
+        Wed, 24 May 2023 10:00:23 -0700 (PDT)
+Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-513debc49e8so351795a12.0;
+        Wed, 24 May 2023 10:00:23 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684947359; x=1687539359;
+        d=1e100.net; s=20221208; t=1684947621; x=1687539621;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=k71AaKPH+PKMyjKj9rRd3a33/dwSoj0nZEwywN8KLBk=;
-        b=eiwk9lWovS4bVkyYfCGwd1C7ITCS/HzX1u8y2V6ve8WEUSjon88H6Sw2v0fBDN/prb
-         h5KmSmLzgFxNXZgLBTZKOcWoA0MP82Ly/0lC3OPrX4jcV+hAGF4iJG8Qex5msJ2f9TFQ
-         TLRlpX2/09jBShECusOyF9gQbeoXbo85iT87ZaXoHC8k1HhJrfXABRoeSAbYF9yyk7AH
-         bCw9U3rsn9ZTRLIzzMrLlF9jjaLThy725DfV0eJE3oRyvtyzAduUH+n0o8Rpla6KfNos
-         hQZ1oqW2/T091SCVUEy5Y4lTYIlv76NRYgpmfSa8i36h+Z/apsgXENoRoZvpg2nIadyu
-         Y5RQ==
-X-Gm-Message-State: AC+VfDwe3OZflFgYbv0oaORxgsa1Ryibupr+6MzGNLoqWrqGMq7pF8g7
-        +xrgWnlhBOACJzmaFca7LJlhRJvOlXvlxyt/qvg=
-X-Google-Smtp-Source: ACHHUZ4tFT+T7dpzQdI8IrNhlNCDrWw+hRlNVd/dZe5o2/a0BdoFWWMjqgLP+2sQyJx+x9LbHGcVWlwpWoMFR6zouuo=
-X-Received: by 2002:a17:906:7a52:b0:965:b73d:592c with SMTP id
- i18-20020a1709067a5200b00965b73d592cmr16017501ejo.4.1684947359345; Wed, 24
- May 2023 09:55:59 -0700 (PDT)
+        bh=0bnQ7iWZQ9Jgvf512BdDOCo0y+67JuQ0Mc0pXfe99S4=;
+        b=bkb+29sADvojIJnB36/puHOiamt4HEBAzQdtaKdeD2frt8wl5eG44/Ih2Sey3afQnR
+         5IDNFAmbMFs1HHi5joiwA8MR0xaAxAUeA4VpCOGiTa0JgSw3dygSNWb/ihjF/hl+DEDa
+         YDY0D0DxesRxBbIixbEdNqrOVUM3Qx+aIuISxi6NF+jvhdeteEzja4rj4Vs8n6uixDxU
+         oZmSwcOL5t44Zs+sWe0g1SXQQyBSSbeXQ6Oeu5wVJl159J2isQL7anb6t4fxzo2MqF5L
+         9o2iow6XVi9WLQ4hixZa48eowDoyej8096ARg0gxEgZgJsDvvklyNifBujBpZ68chqyJ
+         WnSQ==
+X-Gm-Message-State: AC+VfDyCITap/7BBWNOBalwF7hkvbeK8LstywVFdeZyKBRz5XNR3vCi8
+        sYRaQuTLslQZYxm8gkQf3HOCiHb33kAghV7t4UW91X7m
+X-Google-Smtp-Source: ACHHUZ4zkXKoUIMbblySJMWLINU/pl5/h3yyKDdTQWWlkhCs93xq4sjxh/rMtUgwAzPHZ7HQS3AENyEL3Bjc8E9o9Tw=
+X-Received: by 2002:a17:906:72d4:b0:96f:da08:d451 with SMTP id
+ m20-20020a17090672d400b0096fda08d451mr9559930ejl.6.1684947621587; Wed, 24 May
+ 2023 10:00:21 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230502150435.423770-1-kai.heng.feng@canonical.com>
-In-Reply-To: <20230502150435.423770-1-kai.heng.feng@canonical.com>
+References: <A393097506CB918E+ZFN4YOkubdwQvONz@TP-P15V>
+In-Reply-To: <A393097506CB918E+ZFN4YOkubdwQvONz@TP-P15V>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 24 May 2023 18:55:48 +0200
-Message-ID: <CAJZ5v0gYMLopZuTr1nE9GDMJ_r8O-+YWz+SLAKm9-muBVrk8+A@mail.gmail.com>
-Subject: Re: [PATCH v4 1/2] PM: suspend: Define pm_suspend_target_state
-To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc:     jejb@linux.ibm.com, martin.petersen@oracle.com,
-        bblock@linux.ibm.com, acelan.kao@canonical.com,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Date:   Wed, 24 May 2023 19:00:10 +0200
+Message-ID: <CAJZ5v0ja0FBakV7ERdVdB0bckaG9t+K6rz8qgPJDGG7bMNvaSQ@mail.gmail.com>
+Subject: Re: [PATCH] strcut: Correct spelling mistakes in comments
+To:     Wang Honghui <honghui.wang@ucas.com.cn>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
@@ -55,72 +52,30 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, May 2, 2023 at 5:05 PM Kai-Heng Feng
-<kai.heng.feng@canonical.com> wrote:
+On Thu, May 4, 2023 at 11:19 AM Wang Honghui <honghui.wang@ucas.com.cn> wrote:
 >
-> Define pm_suspend_target_state so it can still be used when
-> CONFIG_SUSPEND is not set.
+> Signed-off-by: Wang Honghui <honghui.wang@ucas.com.cn>
 >
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> strcut: Correct spelling mistakes in comments.
+>
 > ---
-> v4:
->  - Move pm_suspend_target_state to CONFIG_SUSPEND block.
+>  kernel/power/snapshot.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> v3:
->  - New patch to resolve undefined pm_suspend_target_state.
->
->  drivers/base/power/wakeup.c | 5 -----
->  include/linux/suspend.h     | 4 +++-
->  2 files changed, 3 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index 7cc0c0cf8eaa..a917219feea6 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -19,11 +19,6 @@
->
->  #include "power.h"
->
-> -#ifndef CONFIG_SUSPEND
-> -suspend_state_t pm_suspend_target_state;
-> -#define pm_suspend_target_state        (PM_SUSPEND_ON)
-> -#endif
-> -
->  #define list_for_each_entry_rcu_locked(pos, head, member) \
->         list_for_each_entry_rcu(pos, head, member, \
->                 srcu_read_lock_held(&wakeup_srcu))
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index d0d4598a7b3f..474ecfbbaa62 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -202,6 +202,7 @@ struct platform_s2idle_ops {
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index cd8b7b35f1e8..b27affb7503f 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -398,7 +398,7 @@ struct mem_zone_bm_rtree {
+>         unsigned int blocks;            /* Number of Bitmap Blocks     */
 >  };
 >
->  #ifdef CONFIG_SUSPEND
-> +extern suspend_state_t pm_suspend_target_state;
->  extern suspend_state_t mem_sleep_current;
->  extern suspend_state_t mem_sleep_default;
+> -/* strcut bm_position is used for browsing memory bitmaps */
+> +/* struct bm_position is used for browsing memory bitmaps */
 >
-> @@ -337,6 +338,8 @@ extern bool sync_on_suspend_enabled;
->  #else /* !CONFIG_SUSPEND */
->  #define suspend_valid_only_mem NULL
->
-> +#define pm_suspend_target_state        (PM_SUSPEND_ON)
-> +
->  static inline void pm_suspend_clear_flags(void) {}
->  static inline void pm_set_suspend_via_firmware(void) {}
->  static inline void pm_set_resume_via_firmware(void) {}
-> @@ -503,7 +506,6 @@ extern void pm_report_max_hw_sleep(u64 t);
->
->  /* drivers/base/power/wakeup.c */
->  extern bool events_check_enabled;
-> -extern suspend_state_t pm_suspend_target_state;
->
->  extern bool pm_wakeup_pending(void);
->  extern void pm_system_wakeup(void);
+>  struct bm_position {
+>         struct mem_zone_bm_rtree *zone;
 > --
 
-Applied as 6.5 material under an edited subject and with some edits in
-the changelog.
-
-Thanks!
+Applied as 6.5 material under an edited subject and with a new
+changelog, thanks!
