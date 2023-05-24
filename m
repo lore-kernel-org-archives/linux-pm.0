@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE799C7EE2C
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:32:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6412BC77B7A
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:32:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229531AbjEXIcp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 04:32:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44090 "EHLO
+        id S240230AbjEXIcs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 04:32:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44280 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240212AbjEXIck (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:32:40 -0400
+        with ESMTP id S240211AbjEXIcl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:32:41 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC41B1A4
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC7331A7
         for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:32:36 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juY-0002l9-Rd; Wed, 24 May 2023 10:31:58 +0200
+        id 1q1juY-0002lD-UF; Wed, 24 May 2023 10:31:58 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juX-002RZO-8Q; Wed, 24 May 2023 10:31:57 +0200
+        id 1q1juY-002RZc-0T; Wed, 24 May 2023 10:31:58 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juW-009j7E-At; Wed, 24 May 2023 10:31:56 +0200
+        id 1q1juW-009j9f-JA; Wed, 24 May 2023 10:31:56 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,9 +41,9 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v5 07/25] PM / devfreq: rockchip-dfi: introduce channel mask
-Date:   Wed, 24 May 2023 10:31:35 +0200
-Message-Id: <20230524083153.2046084-8-s.hauer@pengutronix.de>
+Subject: [PATCH v5 10/25] PM / devfreq: rockchip-dfi: Add RK3568 support
+Date:   Wed, 24 May 2023 10:31:38 +0200
+Message-Id: <20230524083153.2046084-11-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230524083153.2046084-1-s.hauer@pengutronix.de>
 References: <20230524083153.2046084-1-s.hauer@pengutronix.de>
@@ -57,87 +57,77 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Different Rockchip SoC variants have a different number of channels.
-Introduce a channel mask to make the number of channels configurable
-from SoC initialization code.
+This adds RK3568 support to the DFI driver.  Only iniitialization
+differs from the currently supported RK3399.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 21 +++++++++++++++++++++
+ include/soc/rockchip/rk3568_grf.h    | 12 ++++++++++++
+ 2 files changed, 33 insertions(+)
+ create mode 100644 include/soc/rockchip/rk3568_grf.h
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 126bb744645b6..82de24a027579 100644
+index 6b3ef97b3be09..261d112580c9e 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -18,10 +18,11 @@
- #include <linux/list.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-+#include <linux/bits.h>
+@@ -23,6 +23,7 @@
  
+ #include <soc/rockchip/rockchip_grf.h>
  #include <soc/rockchip/rk3399_grf.h>
++#include <soc/rockchip/rk3568_grf.h>
  
--#define RK3399_DMC_NUM_CH	2
-+#define DMC_MAX_CHANNELS	2
+ #define DMC_MAX_CHANNELS	2
  
- /* DDRMON_CTRL */
- #define DDRMON_CTRL	0x04
-@@ -44,7 +45,7 @@ struct dmc_count_channel {
- };
- 
- struct dmc_count {
--	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
-+	struct dmc_count_channel c[DMC_MAX_CHANNELS];
- };
- 
- /*
-@@ -61,6 +62,7 @@ struct rockchip_dfi {
- 	struct regmap *regmap_pmu;
- 	struct clk *clk;
- 	u32 ddr_type;
-+	unsigned int channel_mask;
- };
- 
- static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
-@@ -95,7 +97,9 @@ static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dm
- 	u32 i;
- 	void __iomem *dfi_regs = dfi->regs;
- 
--	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
-+	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
-+		if (!(dfi->channel_mask & BIT(i)))
-+			continue;
- 		count->c[i].access = readl_relaxed(dfi_regs +
- 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
- 		count->c[i].total = readl_relaxed(dfi_regs +
-@@ -145,9 +149,14 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 	rockchip_dfi_read_counters(edev, &count);
- 
- 	/* We can only report one channel, so find the busiest one */
--	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
--		u32 a = count.c[i].access - last->c[i].access;
--		u32 t = count.c[i].total - last->c[i].total;
-+	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
-+		u32 a, t;
-+
-+		if (!(dfi->channel_mask & BIT(i)))
-+			continue;
-+
-+		a = count.c[i].access - last->c[i].access;
-+		t = count.c[i].total - last->c[i].total;
- 
- 		if (a > access) {
- 			access = a;
-@@ -185,6 +194,8 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
- 	dfi->ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
- 			RK3399_PMUGRF_DDRTYPE_MASK;
- 
-+	dfi->channel_mask = GENMASK(1, 0);
-+
+@@ -209,10 +210,30 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
  	return 0;
  };
  
++static int rk3568_dfi_init(struct rockchip_dfi *dfi)
++{
++	struct regmap *regmap_pmu = dfi->regmap_pmu;
++	u32 reg2, reg3;
++
++	regmap_read(regmap_pmu, RK3568_PMUGRF_OS_REG2, &reg2);
++	regmap_read(regmap_pmu, RK3568_PMUGRF_OS_REG3, &reg3);
++
++	dfi->ddr_type = FIELD_GET(RK3568_PMUGRF_OS_REG2_DRAMTYPE_INFO, reg2);
++
++	if (FIELD_GET(RK3568_PMUGRF_OS_REG3_SYSREG_VERSION, reg3) >= 0x3)
++		dfi->ddr_type |= FIELD_GET(RK3568_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3, reg3) << 3;
++
++	dfi->channel_mask = 1;
++
++	return 0;
++};
++
+ static const struct of_device_id rockchip_dfi_id_match[] = {
+ 	{ .compatible = "rockchip,rk3399-dfi", .data = rk3399_dfi_init },
++	{ .compatible = "rockchip,rk3568-dfi", .data = rk3568_dfi_init },
+ 	{ },
+ };
++
+ MODULE_DEVICE_TABLE(of, rockchip_dfi_id_match);
+ 
+ static int rockchip_dfi_probe(struct platform_device *pdev)
+diff --git a/include/soc/rockchip/rk3568_grf.h b/include/soc/rockchip/rk3568_grf.h
+new file mode 100644
+index 0000000000000..575584e9d8834
+--- /dev/null
++++ b/include/soc/rockchip/rk3568_grf.h
+@@ -0,0 +1,12 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++#ifndef __SOC_RK3568_GRF_H
++#define __SOC_RK3568_GRF_H
++
++#define RK3568_PMUGRF_OS_REG2		0x208
++#define RK3568_PMUGRF_OS_REG2_DRAMTYPE_INFO		GENMASK(15, 13)
++
++#define RK3568_PMUGRF_OS_REG3		0x20c
++#define RK3568_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3		GENMASK(13, 12)
++#define RK3568_PMUGRF_OS_REG3_SYSREG_VERSION		GENMASK(31, 28)
++
++#endif /* __SOC_RK3568_GRF_H */
 -- 
 2.39.2
 
