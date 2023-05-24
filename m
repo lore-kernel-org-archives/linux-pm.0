@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94285C77B73
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3384CC7EE3A
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:32:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240197AbjEXIcj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S240203AbjEXIcj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 24 May 2023 04:32:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43920 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44138 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240198AbjEXIce (ORCPT
+        with ESMTP id S240201AbjEXIce (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:32:34 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 035771BD
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBA4BE44
         for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:32:32 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juY-0002l7-Rl; Wed, 24 May 2023 10:31:58 +0200
+        id 1q1jub-0002r6-DN; Wed, 24 May 2023 10:32:01 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juW-002RZ9-Jo; Wed, 24 May 2023 10:31:56 +0200
+        id 1q1jua-002RaX-H5; Wed, 24 May 2023 10:32:00 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juV-009j0k-Ql; Wed, 24 May 2023 10:31:55 +0200
+        id 1q1juX-009jM7-KR; Wed, 24 May 2023 10:31:57 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,9 +41,9 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v5 01/25] PM / devfreq: rockchip-dfi: Make pmu regmap mandatory
-Date:   Wed, 24 May 2023 10:31:29 +0200
-Message-Id: <20230524083153.2046084-2-s.hauer@pengutronix.de>
+Subject: [PATCH v5 21/25] dt-bindings: devfreq: event: rockchip,dfi: Add rk3568 support
+Date:   Wed, 24 May 2023 10:31:49 +0200
+Message-Id: <20230524083153.2046084-22-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230524083153.2046084-1-s.hauer@pengutronix.de>
 References: <20230524083153.2046084-1-s.hauer@pengutronix.de>
@@ -57,50 +57,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As a matter of fact the regmap_pmu already is mandatory because
-it is used unconditionally in the driver. Bail out gracefully in
-probe() rather than crashing later.
+This adds the rockchip,rk3568-dfi compatible to the binding. Make clocks
+optional for this SoC as the RK3568 doesn't have a kernel controllable
+PCLK.
 
-Fixes: b9d1262bca0af ("PM / devfreq: event: support rockchip dfi controller")
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
+ .../bindings/devfreq/event/rockchip,dfi.yaml      | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Notes:
-    Changes since v4:
-    - move to beginning of the series to make it easier to backport to stable
-    - Add a Fixes: tag
-    - add missing of_node_put()
-
- drivers/devfreq/event/rockchip-dfi.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 39ac069cabc75..74893c06aa087 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -193,14 +193,15 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(data->clk),
- 				     "Cannot get the clk pclk_ddr_mon\n");
+diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+index 7a82f6ae0701e..e8b64494ee8bd 100644
+--- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
++++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+@@ -13,6 +13,7 @@ properties:
+   compatible:
+     enum:
+       - rockchip,rk3399-dfi
++      - rockchip,rk3568-dfi
  
--	/* try to find the optional reference to the pmu syscon */
- 	node = of_parse_phandle(np, "rockchip,pmu", 0);
--	if (node) {
--		data->regmap_pmu = syscon_node_to_regmap(node);
--		of_node_put(node);
--		if (IS_ERR(data->regmap_pmu))
--			return PTR_ERR(data->regmap_pmu);
--	}
-+	if (!node)
-+		return dev_err_probe(&pdev->dev, -ENODEV, "Can't find pmu_grf registers\n");
-+
-+	data->regmap_pmu = syscon_node_to_regmap(node);
-+	of_node_put(node);
-+	if (IS_ERR(data->regmap_pmu))
-+		return PTR_ERR(data->regmap_pmu);
-+
- 	data->dev = dev;
+   clocks:
+     maxItems: 1
+@@ -34,11 +35,21 @@ properties:
  
- 	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
+ required:
+   - compatible
+-  - clocks
+-  - clock-names
+   - interrupts
+   - reg
+ 
++if:
++  properties:
++    compatible:
++      contains:
++        enum:
++          - rockchip,rk3399-dfi
++
++then:
++  required:
++    - clocks
++    - clock-names
++
+ additionalProperties: false
+ 
+ examples:
 -- 
 2.39.2
 
