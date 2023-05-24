@@ -2,205 +2,310 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94A0CC7EE2E
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 19:07:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 785D5C7EE2D
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 19:19:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232131AbjEXTHx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 15:07:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39256 "EHLO
+        id S229954AbjEXTTQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 15:19:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44220 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229630AbjEXTHw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 15:07:52 -0400
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2043.outbound.protection.outlook.com [40.107.94.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA6EB12E;
-        Wed, 24 May 2023 12:07:50 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Ubap98wO65k5/9CnZSUilxkgCeOYr6tA2xfUSRuyuDrXqWraAxv3jQ1LyfGZ7eOgLJmlOgj/Y/c7UqRfyFMbONjTwwZuQK0YhBuEeMX1jk/S8p9Ag1kMPNdfwUVoOKevhdmQI2zP56+u36rIvnJUzYYNqWg6yC2Nze+T5C9EzfjScmhEuQg89H7hwdyncs5EsL0DI4WJ/lKKTu3c+4dTPNFp8DtH8O6WJiRLuREmFKt0V5CbXlDGZChbLpIYQZqNps7h9cQL13LgNfEpAWYV7bdCSZJLjZlFi/AJEW1JP06+nmzxWPQ0przlZyMlnC+C/54C96NGAcvKQ/U2uwIL7g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oSYWzcp8wMhvhiUJASaUrK3knaPwcQTaxUWCltf0ZYQ=;
- b=fKy/PC8YONQcTvJTKGzUEN3yEcX5jiaq1d/a7LpFzVNhlXk6A4qgy7JBK77NrY5296MuyNfBhGP/pz075m/lQPYji4Bhu3uWUZ0cX3ZQq6juo/qGgUINHhw63KwapFHjp0PdoSGaJ11oUYtkEArhsBVtaDugORzMbhALWU0bk936StvvDMfBAg2zr8caXvmzzFmKO+f+HX2GryZ3ZT0r3in6lKYR+pVfkwBgDusbDtWUPL3qoUOEFp4pwnRYZwWT3VzAu0Bny+JKeb7U/5Dqxwo+IW7BnJANyF7qyev9Sn6+SHT+3ebWHWg3NZSFYta0drWqFwNHwbhINoUEwlHlVQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=google.com smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oSYWzcp8wMhvhiUJASaUrK3knaPwcQTaxUWCltf0ZYQ=;
- b=HhaJ1Ggf73BgSRMFr/azOMYy5VuxhlJfowVX9ZXMoNIzP9KQvbhbYOTKnQlkTrTA6hCVMwJ4NAyYGucygNjJw5FmziXNrvP9FFdN1L+2NpgsySJJ6JYTYRVjdIyb/sdnKnoSZQjfkz9lMwbNl7PB6mCUXWQPTKhYXDJBfFpqkpA=
-Received: from MW4P222CA0030.NAMP222.PROD.OUTLOOK.COM (2603:10b6:303:114::35)
- by BL1PR12MB5078.namprd12.prod.outlook.com (2603:10b6:208:313::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6433.15; Wed, 24 May
- 2023 19:07:46 +0000
-Received: from CO1NAM11FT006.eop-nam11.prod.protection.outlook.com
- (2603:10b6:303:114:cafe::d3) by MW4P222CA0030.outlook.office365.com
- (2603:10b6:303:114::35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6411.28 via Frontend
- Transport; Wed, 24 May 2023 19:07:46 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- CO1NAM11FT006.mail.protection.outlook.com (10.13.174.246) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6433.16 via Frontend Transport; Wed, 24 May 2023 19:07:46 +0000
-Received: from SITE-L-T34-2.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Wed, 24 May
- 2023 14:07:44 -0500
-From:   Mario Limonciello <mario.limonciello@amd.com>
-To:     Bjorn Helgaas <bhelgaas@google.com>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-CC:     <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        "S-k Shyam-sundar" <Shyam-sundar.S-k@amd.com>,
-        Natikar Basavaraj <Basavaraj.Natikar@amd.com>,
-        Deucher Alexander <Alexander.Deucher@amd.com>,
-        <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>,
-        Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v4 1/2] PCI: Refactor pci_bridge_d3_possible()
-Date:   Wed, 24 May 2023 14:07:25 -0500
-Message-ID: <20230524190726.17012-1-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S229459AbjEXTTP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 15:19:15 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCF9DA4;
+        Wed, 24 May 2023 12:19:13 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 5BF486402C;
+        Wed, 24 May 2023 19:19:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7FE12C433EF;
+        Wed, 24 May 2023 19:19:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1684955952;
+        bh=UrGuYtn1xPI8m/h89y7lPAigXIpFhTgc56VT/0n00Yw=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=gSvvRmFT8sf4ysJEpWdOTFQzO5zkbZgEGg9DwPrl2WUntNM/dg5xnM2VEzqb02P+j
+         c6iVycvwtfLZRdyYTPsD+Z6OScIfCb5kFn8JlDs1D03THeABrXy9ipWXmbc6AR5/Ts
+         hLwBr907o8jGHEP50RfI8bGIyYEnMzDDYcFS7ZG+zT9F7ZowfYwqI6+bs7kMA7MaPS
+         C0NaD+A36TyXhujq1L+/YIM8Jn2c70+Uu2bKbUekgzz59miuoBkBIfMw4dIZPKZVAl
+         a2AxEL38VG1ALqm+vTY1kUpGFDrN88QxJ4AQV920UTva2reAsoyD02UJPM27wACrii
+         qt0DuaNHwoZ9A==
+Date:   Wed, 24 May 2023 20:19:08 +0100
+From:   Conor Dooley <conor@kernel.org>
+To:     Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        conor+dt@kernel.org, nicolas.ferre@microchip.com,
+        alexandre.belloni@bootlin.com, sre@kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 3/4] dt-bindings: power: reset: atmel,sama5d2-shdwc:
+ convert to yaml
+Message-ID: <20230524-blizzard-hunting-4da815e634e2@spud>
+References: <20230524123528.439082-1-claudiu.beznea@microchip.com>
+ <20230524123528.439082-4-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1NAM11FT006:EE_|BL1PR12MB5078:EE_
-X-MS-Office365-Filtering-Correlation-Id: eaadf609-5a8a-4df9-6c60-08db5c8a28e4
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: eevwNxqVm41Sf+A+jT7xOtfccVDjJJZBzGhyUVpNFrcCh1Zwxdn54vU7a6/DivEoVb84p86vqGqLlu9qgJsBQdpixcT3w/CS7REpwOSNvx3qWuJTPFn4xVQNG9b3KWpNl3WXzYX+r4elEBVEjI/hQe9rLXCfikDn8Pk9MQdFF5WUY8IPSY4gkYwcMJu853vuitTT9ci34QlnwYvNdf6wdcyss+17DTtVOWNYRmCFmLwB9VMMXheX85ayMSuasapmG9Erg84aSmwg9ZSfyc1/9Us0N5gq4ring3WlZYijv7co6IGzPX5I/+LX/SGHXFCc1Ltq5ajX4QdYoPD68vH6bf2vaLfRqfwcIrAiWzjJCEDdoCZdzntAh9rlhzGvK1Rmn9S9G8Mci0BBACxgNvRzW6K7BrpmCfcbvOvoo7dLSpHwF9Xmtf3HWsOoafXYnGxMUlqEnp1g8yxedX2VFrKynlTi+3ZctaS+77tnnYi/GLXWTSsA7a1iqo090FKBk/jLDqYYIzzAjJagjP3UZPwup59e2anXqOu6OJtW/O3HSRAETYDUl99jrAsH8T+Uj9OIoqz4Le7E06ZUDIYidmU7RACKpiXB2GOBppv3bHN0VERt7gbWQYRDxh+og0JB/jLe8feyZERzn/ybkDCx5mCYIPEd9QPhK+jU3g3W1xcx6QDwrgxaoEc1yP4p6OF3GfIGTjUnnxBkpp2lWR9l45NrVFN3W4iNMjkKQIrhpdkbtuF441ZDQ53SlO+dsoEur8eRkMp2cLPeuMddhkkuXhQ+3g==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(396003)(346002)(136003)(376002)(39860400002)(451199021)(40470700004)(36840700001)(46966006)(478600001)(1076003)(82310400005)(186003)(16526019)(54906003)(2616005)(26005)(7696005)(6666004)(426003)(336012)(356005)(81166007)(82740400003)(40460700003)(4326008)(47076005)(83380400001)(36756003)(110136005)(8676002)(316002)(36860700001)(5660300002)(70586007)(2906002)(70206006)(44832011)(8936002)(41300700001)(86362001)(40480700001)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 May 2023 19:07:46.2951
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: eaadf609-5a8a-4df9-6c60-08db5c8a28e4
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT006.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR12MB5078
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="wk90yo5YHkHmxCdc"
+Content-Disposition: inline
+In-Reply-To: <20230524123528.439082-4-claudiu.beznea@microchip.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-All of the cases handled by pci_bridge_d3_possible() are specific
-to these branches:
-```
-	case PCI_EXP_TYPE_ROOT_PORT:
-	case PCI_EXP_TYPE_UPSTREAM:
-	case PCI_EXP_TYPE_DOWNSTREAM:
-```
-Drop a level of indentation by returning false in the default case
-instead.  No intended functional changes.
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
-v3->v4:
- * New patch
----
- drivers/pci/pci.c | 68 +++++++++++++++++++++++------------------------
- 1 file changed, 34 insertions(+), 34 deletions(-)
+--wk90yo5YHkHmxCdc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 5ede93222bc1..d1fa040bcea7 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2978,48 +2978,48 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
- 	case PCI_EXP_TYPE_ROOT_PORT:
- 	case PCI_EXP_TYPE_UPSTREAM:
- 	case PCI_EXP_TYPE_DOWNSTREAM:
--		if (pci_bridge_d3_disable)
--			return false;
-+		break;
-+	default:
-+		return false;
-+	}
- 
--		/*
--		 * Hotplug ports handled by firmware in System Management Mode
--		 * may not be put into D3 by the OS (Thunderbolt on non-Macs).
--		 */
--		if (bridge->is_hotplug_bridge && !pciehp_is_native(bridge))
--			return false;
-+	if (pci_bridge_d3_disable)
-+		return false;
- 
--		if (pci_bridge_d3_force)
--			return true;
-+	/*
-+	 * Hotplug ports handled by firmware in System Management Mode
-+	 * may not be put into D3 by the OS (Thunderbolt on non-Macs).
-+	 */
-+	if (bridge->is_hotplug_bridge && !pciehp_is_native(bridge))
-+		return false;
- 
--		/* Even the oldest 2010 Thunderbolt controller supports D3. */
--		if (bridge->is_thunderbolt)
--			return true;
-+	if (pci_bridge_d3_force)
-+		return true;
- 
--		/* Platform might know better if the bridge supports D3 */
--		if (platform_pci_bridge_d3(bridge))
--			return true;
-+	/* Even the oldest 2010 Thunderbolt controller supports D3. */
-+	if (bridge->is_thunderbolt)
-+		return true;
- 
--		/*
--		 * Hotplug ports handled natively by the OS were not validated
--		 * by vendors for runtime D3 at least until 2018 because there
--		 * was no OS support.
--		 */
--		if (bridge->is_hotplug_bridge)
--			return false;
-+	/* Platform might know better if the bridge supports D3 */
-+	if (platform_pci_bridge_d3(bridge))
-+		return true;
- 
--		if (dmi_check_system(bridge_d3_blacklist))
--			return false;
-+	/*
-+	 * Hotplug ports handled natively by the OS were not validated
-+	 * by vendors for runtime D3 at least until 2018 because there
-+	 * was no OS support.
-+	 */
-+	if (bridge->is_hotplug_bridge)
-+		return false;
- 
--		/*
--		 * It should be safe to put PCIe ports from 2015 or newer
--		 * to D3.
--		 */
--		if (dmi_get_bios_year() >= 2015)
--			return true;
--		break;
--	}
-+	if (dmi_check_system(bridge_d3_blacklist))
-+		return false;
- 
--	return false;
-+	/*
-+	 * It should be safe to put PCIe ports from 2015 or newer
-+	 * to D3.
-+	 */
-+	return dmi_get_bios_year() >= 2015;
- }
- 
- static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
--- 
-2.34.1
+On Wed, May 24, 2023 at 03:35:27PM +0300, Claudiu Beznea wrote:
+> Convert Atmel SAMA5D2 shutdown controller to YAML. SAMA7G5 SHDWC DT node
+> (available in arch/arm/boot/dts/sama7g5.dtsi) has syscon along with its
+> compatible. There is no usage of this syscon in the current code but it
+> may be necessary in future as some registers of SHDWC are accessed in
+> different drivers (at91-sama5d2_shdwc.c and arch/arm/mach-at91/pm.c).
+> Thus update the YAML with it to make DT checkers happy.
+>=20
+> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
 
+Modulo the license thing that I mentioned on v1,
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+
+Thanks,
+Conor.
+> ---
+>  .../devicetree/bindings/arm/atmel-sysregs.txt |  63 ----------
+>  .../power/reset/atmel,sama5d2-shdwc.yaml      | 115 ++++++++++++++++++
+>  2 files changed, 115 insertions(+), 63 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/atmel,s=
+ama5d2-shdwc.yaml
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Do=
+cumentation/devicetree/bindings/arm/atmel-sysregs.txt
+> index e6b2fb291b45..67a66bf74895 100644
+> --- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+> +++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+> @@ -52,69 +52,6 @@ Example:
+>  		reg =3D <0xe3804000 0x1000>;
+>  };
+> =20
+> -SHDWC SAMA5D2-Compatible Shutdown Controller
+> -
+> -1) shdwc node
+> -
+> -required properties:
+> -- compatible: should be "atmel,sama5d2-shdwc", "microchip,sam9x60-shdwc"=
+ or
+> -  "microchip,sama7g5-shdwc"
+> -- reg: should contain registers location and length
+> -- clocks: phandle to input clock.
+> -- #address-cells: should be one. The cell is the wake-up input index.
+> -- #size-cells: should be zero.
+> -
+> -optional properties:
+> -
+> -- debounce-delay-us: minimum wake-up inputs debouncer period in
+> -  microseconds. It's usually a board-related property.
+> -- atmel,wakeup-rtc-timer: boolean to enable Real-Time Clock wake-up.
+> -
+> -optional microchip,sam9x60-shdwc or microchip,sama7g5-shdwc properties:
+> -- atmel,wakeup-rtt-timer: boolean to enable Real-time Timer Wake-up.
+> -
+> -The node contains child nodes for each wake-up input that the platform u=
+ses.
+> -
+> -2) input nodes
+> -
+> -Wake-up input nodes are usually described in the "board" part of the Dev=
+ice
+> -Tree. Note also that input 0 is linked to the wake-up pin and is frequen=
+tly
+> -used.
+> -
+> -Required properties:
+> -- reg: should contain the wake-up input index [0 - 15].
+> -
+> -Optional properties:
+> -- atmel,wakeup-active-high: boolean, the corresponding wake-up input des=
+cribed
+> -  by the child, forces the wake-up of the core power supply on a high le=
+vel.
+> -  The default is to be active low.
+> -
+> -Example:
+> -
+> -On the SoC side:
+> -	shdwc@f8048010 {
+> -		compatible =3D "atmel,sama5d2-shdwc";
+> -		reg =3D <0xf8048010 0x10>;
+> -		clocks =3D <&clk32k>;
+> -		#address-cells =3D <1>;
+> -		#size-cells =3D <0>;
+> -		atmel,wakeup-rtc-timer;
+> -	};
+> -
+> -On the board side:
+> -	shdwc@f8048010 {
+> -		debounce-delay-us =3D <976>;
+> -
+> -		input@0 {
+> -			reg =3D <0>;
+> -		};
+> -
+> -		input@1 {
+> -			reg =3D <1>;
+> -			atmel,wakeup-active-high;
+> -		};
+> -	};
+> -
+>  Special Function Registers (SFR)
+> =20
+>  Special Function Registers (SFR) manage specific aspects of the integrat=
+ed
+> diff --git a/Documentation/devicetree/bindings/power/reset/atmel,sama5d2-=
+shdwc.yaml b/Documentation/devicetree/bindings/power/reset/atmel,sama5d2-sh=
+dwc.yaml
+> new file mode 100644
+> index 000000000000..31a16a354a3a
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/atmel,sama5d2-shdwc.y=
+aml
+> @@ -0,0 +1,115 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/power/reset/atmel,sama5d2-shdwc.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Atmel SAMA5D2 SHDWC Shutdown Controller
+> +
+> +maintainers:
+> +  - Claudiu Beznea <claudiu.beznea@microchip.com>
+> +
+> +description:
+> +  Atmel SHDWC shutdown controller controls the power supplies VDDIO and =
+VDDCORE
+> +  and the wake-up detection on debounced input lines.
+> +
+> +properties:
+> +  compatible:
+> +    oneOf:
+> +      - items:
+> +          - const: microchip,sama7g5-shdwc
+> +          - const: syscon
+> +      - items:
+> +          enum:
+> +            - atmel,sama5d2-shdwc
+> +            - microchip,sam9x60-shdwc
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 0
+> +
+> +  debounce-delay-us:
+> +    description:
+> +      Minimum wake-up inputs debouncer period in microseconds. It is usu=
+ally a
+> +      board-related property.
+> +
+> +  atmel,wakeup-rtc-timer:
+> +    description: enable real-time clock wake-up
+> +    type: boolean
+> +
+> +patternProperties:
+> +  "^input@[0-15]$":
+> +    description:
+> +      Wake-up input nodes. These are usually described in the "board" pa=
+rt of
+> +      the Device Tree. Note also that input 0 is linked to the wake-up p=
+in and
+> +      is frequently used.
+> +    type: object
+> +    properties:
+> +      reg:
+> +        description: contains the wake-up input index
+> +        minimum: 0
+> +        maximum: 15
+> +
+> +      atmel,wakeup-active-high:
+> +        description:
+> +          The corresponding wake-up input described by the child forces =
+the
+> +          wake-up of the core power supply on a high level. The default =
+is to
+> +          be active low.
+> +        type: boolean
+> +
+> +    required:
+> +      - reg
+> +
+> +    additionalProperties: false
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - clocks
+> +
+> +allOf:
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            enum:
+> +              - microchip,sam9x60-shdwc
+> +              - microchip,sama7g5-shdwc
+> +    then:
+> +      properties:
+> +        atmel,wakeup-rtt-timer:
+> +          description: enable real-time timer wake-up
+> +          type: boolean
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    shdwc: poweroff@f8048010 {
+> +        compatible =3D "atmel,sama5d2-shdwc";
+> +        reg =3D <0xf8048010 0x10>;
+> +        clocks =3D <&clk32k>;
+> +        #address-cells =3D <1>;
+> +        #size-cells =3D <0>;
+> +        atmel,wakeup-rtc-timer;
+> +        debounce-delay-us =3D <976>;
+> +
+> +        input@0 {
+> +            reg =3D <0>;
+> +        };
+> +
+> +        input@1 {
+> +            reg =3D <1>;
+> +            atmel,wakeup-active-high;
+> +        };
+> +    };
+> +
+> +...
+> --=20
+> 2.34.1
+>=20
+
+--wk90yo5YHkHmxCdc
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZG5jKwAKCRB4tDGHoIJi
+0p9OAQDaa+pUPo20aynlsVZ+ZkT1qKrlrMyJEBUl4ZP+2YwgCgEArC5r7v2+ddus
+dDpEvz6OUd7qIXJhVBt7zYHGf3oeuAc=
+=WmUB
+-----END PGP SIGNATURE-----
+
+--wk90yo5YHkHmxCdc--
