@@ -2,118 +2,79 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D5DFC7EE37
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 16:23:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26D4AC77B7C
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 16:38:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234022AbjEXQXo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 12:23:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44196 "EHLO
+        id S230332AbjEXQi4 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 12:38:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229461AbjEXQXj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 12:23:39 -0400
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F3831AC;
-        Wed, 24 May 2023 09:23:36 -0700 (PDT)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-96fffe11714so191986366b.0;
-        Wed, 24 May 2023 09:23:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1684945414; x=1687537414;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=OpOWhP8DxFONC41kTCdHjaq2c0kscoG17qr+mKyv86Y=;
-        b=UItT9vYrEv/kfnpRB7ymoq0pbO0X+WFATR5duxybpApV0VslX3wEkhOt49PvRhdhyH
-         u2wxN4RUq3UCMP+DOzHnZKVbrzBvh5CxrBoaAGHuE2X1s5Zjk/bXJXHQL1b+oEmzwbjf
-         IbqXXFCzyy9KqgOeiDV2WwpPmZImQmC69uZoIZJWAzdyxvC+d6bQsMYVVbgMIOUp+Q9C
-         tFtcaIJM7ucEQHYRswFkiIlHepIYbL49QO+qVBRXOU3mjkJzdaZ+R8xA35cwTCC58T8G
-         llrimVok27IyOFYUYic1L0tnKYI1lTbNHi0K4FHrB8mh1jGoA8z5Vk3x90WV4gGNzDZo
-         Jr4w==
+        with ESMTP id S229912AbjEXQiz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 12:38:55 -0400
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A31FE9;
+        Wed, 24 May 2023 09:38:53 -0700 (PDT)
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-9739440b60bso7890966b.0;
+        Wed, 24 May 2023 09:38:53 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1684945414; x=1687537414;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1684946332; x=1687538332;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=OpOWhP8DxFONC41kTCdHjaq2c0kscoG17qr+mKyv86Y=;
-        b=gO9/VbgN5SVnXWS/dFqCFusIQUWRhCWW/ZzpuWZN9IWYBvU/LCUoWGY3klbKmaiC89
-         HVYF4ygQ1r35NUPNG8oqe/22HhNtFXtoPkqNyduzp0YxJtLXqIBQ4NaODG2vsagnafZZ
-         hSSAckvWK8TgkraSV5iWoljIkLxqXWZvLnXdSsFfwe+0UsW16Q5ZGE9MqeXt9p9ZYb53
-         E4yHaxpHxQO8fJNbaUNrnLs7tFhImkdBxOnVl6eC6kY856rnt/wB22v1WRQ5qzXq1tPT
-         WnYQDK+SqulmC9eG8FtBRYkHVrDGncunmfEYrR7eQOk/i6RrvQQFabd3qR5blULAen2M
-         FFFQ==
-X-Gm-Message-State: AC+VfDxkxpQa/buPmoWOmGmoLviQqCybQNlAklhJrFuQjncah7FVXxRj
-        AG0JR3DpOTjnPl4eVs3E0NU=
-X-Google-Smtp-Source: ACHHUZ7MDPXXXXYo4DbsGUwSu0EzM1l4sfqZg9xWYeIw0Hj8LtCnDU0xtGqR9WUvxkNsDNqEQGjYxg==
-X-Received: by 2002:a17:907:9494:b0:96a:30b5:cfb0 with SMTP id dm20-20020a170907949400b0096a30b5cfb0mr16826339ejc.22.1684945414459;
-        Wed, 24 May 2023 09:23:34 -0700 (PDT)
-Received: from fedora.. ([213.149.38.146])
-        by smtp.googlemail.com with ESMTPSA id p19-20020a170906229300b0096f5b48fe43sm5913793eja.47.2023.05.24.09.23.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 May 2023 09:23:34 -0700 (PDT)
-From:   Robert Marko <robimarko@gmail.com>
-To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
-        ilia.lin@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Cc:     ansuelsmth@gmail.com, Robert Marko <robimarko@gmail.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH v2 3/4] cpufreq: qcom-nvmem: use SoC ID-s from bindings
-Date:   Wed, 24 May 2023 18:23:28 +0200
-Message-Id: <20230524162329.819770-3-robimarko@gmail.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230524162329.819770-1-robimarko@gmail.com>
-References: <20230524162329.819770-1-robimarko@gmail.com>
+        bh=C02MeIwQdNrwFQOvJ+pcAUppiGgc5dW7CdevAd4vdUk=;
+        b=BsjwOJLIryTIyvXhJuOuw90G8QRzlNlPJsMsoG5Gyv5LTz1WeCac43aEtfmVWkd/vc
+         EIu379W3uqPHZYalAvWWasnv8IqkJAlxohGf7EppHJ2z+Al4jKfGL1OOyAd3XemijNdf
+         hMgmPdQ9CpTpyfW+xR/5I9bNPYYHMC1LXG2cHyo+lGJdvAPPRQ6GK2mvFEY4DVX2a+f0
+         7Sjqvaao1saTpsWwE5jRb6MX7MwcWvz8A8T61UXUqfulDP9EQDwa6PwXwtx5XrOsq2J0
+         X2pFNt2bXjQL5XskS6Yn61NSWKGrUGjtHkAC9Mm88ktxvvBJnstIBFjJYKgvrvt/VA+j
+         6+xQ==
+X-Gm-Message-State: AC+VfDwiY6o/wQakwM4RH6y0RJq4yipBVDswQ5/733e7Eqhhk6yABTfm
+        BCHG7rAUXCkoeZuiykfTNjYDAy9ZW9VmJARt+pU=
+X-Google-Smtp-Source: ACHHUZ7E0a2P+VolsTST++i+uFAwZwlCSQUa6OiN8Tdhq5fOeJaXxi9FQM3qOnqgxQqZBURXj3cbAkPmJXlgoZCxa+8=
+X-Received: by 2002:a17:906:5199:b0:965:9602:3ee1 with SMTP id
+ y25-20020a170906519900b0096596023ee1mr15583280ejk.2.1684946331935; Wed, 24
+ May 2023 09:38:51 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230418130743.67024-1-n.zhandarovich@fintech.ru> <CAPDyKFqC6eCMCjg4n_pRi9oJrkBfJuUT3Hpm=3C93dmU5E1muA@mail.gmail.com>
+In-Reply-To: <CAPDyKFqC6eCMCjg4n_pRi9oJrkBfJuUT3Hpm=3C93dmU5E1muA@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 24 May 2023 18:38:40 +0200
+Message-ID: <CAJZ5v0gx7bD9EZKPQWyAAZ6hSKjK4hr-nkrJu84HEK-g2AMAaw@mail.gmail.com>
+Subject: Re: [PATCH] PM: domains: fix integer overflow issues in genpd_parse_state()
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Nikita Zhandarovich <n.zhandarovich@fintech.ru>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        lvc-project@linuxtesting.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SMEM SoC ID-s are now stored in DT bindings so lets use those instead of
-defining them in the driver again.
+On Mon, May 8, 2023 at 12:37 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Tue, 18 Apr 2023 at 15:07, Nikita Zhandarovich
+> <n.zhandarovich@fintech.ru> wrote:
+> >
+> > Currently, while calculating residency and latency values, right
+> > operands may overflow if resulting values are big enough.
+> >
+> > To prevent this, albeit unlikely case, play it safe and convert
+> > right operands to left ones' type s64.
+> >
+> > Found by Linux Verification Center (linuxtesting.org) with static
+> > analysis tool SVACE.
+> >
+> > Fixes: 30f604283e05 ("PM / Domains: Allow domain power states to be read from DT")
+> > Signed-off-by: Nikita Zhandarovich <n.zhandarovich@fintech.ru>
+>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Signed-off-by: Robert Marko <robimarko@gmail.com>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/qcom-cpufreq-nvmem.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+Applied as 6.5 material, thanks!
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-index a577586b23be..60e99be2d3db 100644
---- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-@@ -31,12 +31,7 @@
- 
- #define MSM_ID_SMEM	137
- 
--enum _msm_id {
--	MSM8996V3 = 0xF6ul,
--	APQ8096V3 = 0x123ul,
--	MSM8996SG = 0x131ul,
--	APQ8096SG = 0x138ul,
--};
-+#include <dt-bindings/arm/qcom,ids.h>
- 
- enum _msm8996_version {
- 	MSM8996_V3,
-@@ -154,12 +149,12 @@ static enum _msm8996_version qcom_cpufreq_get_msm_id(void)
- 	msm_id++;
- 
- 	switch ((enum _msm_id)*msm_id) {
--	case MSM8996V3:
--	case APQ8096V3:
-+	case QCOM_ID_MSM8996:
-+	case QCOM_ID_APQ8096:
- 		version = MSM8996_V3;
- 		break;
--	case MSM8996SG:
--	case APQ8096SG:
-+	case QCOM_ID_MSM8996SG:
-+	case QCOM_ID_APQ8096SG:
- 		version = MSM8996_SG;
- 		break;
- 	default:
--- 
-2.40.1
-
+And sorry for the delay.
