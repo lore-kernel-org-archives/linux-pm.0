@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60D78C7EE2C
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:32:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4644C77B73
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:32:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229998AbjEXIcl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 04:32:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43960 "EHLO
+        id S240218AbjEXIcm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 04:32:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240181AbjEXIcg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:32:36 -0400
+        with ESMTP id S240189AbjEXIcj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:32:39 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63CC21A2
-        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:32:35 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EDA5184
+        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:32:36 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1jua-0002nZ-Mv; Wed, 24 May 2023 10:32:00 +0200
+        id 1q1juc-0002su-6B; Wed, 24 May 2023 10:32:02 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juZ-002RaI-SH; Wed, 24 May 2023 10:31:59 +0200
+        id 1q1jub-002Ram-4N; Wed, 24 May 2023 10:32:01 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juW-009j5x-6l; Wed, 24 May 2023 10:31:56 +0200
+        id 1q1juX-009jEs-13; Wed, 24 May 2023 10:31:57 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -40,11 +40,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v5 05/25] PM / devfreq: rockchip-dfi: dfi store raw values in counter struct
-Date:   Wed, 24 May 2023 10:31:33 +0200
-Message-Id: <20230524083153.2046084-6-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v5 15/25] PM / devfreq: rockchip-dfi: give variable a better name
+Date:   Wed, 24 May 2023 10:31:43 +0200
+Message-Id: <20230524083153.2046084-16-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230524083153.2046084-1-s.hauer@pengutronix.de>
 References: <20230524083153.2046084-1-s.hauer@pengutronix.de>
@@ -58,38 +57,80 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When adding perf support to the DFI driver the perf part will
-need the raw counter values, so move the fixed * 4 factor to
-rockchip_dfi_get_event().
+struct dmc_count_channel::total counts the clock cycles of the DDR
+controller. Rename it accordingly to give the reader a better idea
+what this is about. While at it, at some documentation to struct
+dmc_count_channel.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/devfreq/event/rockchip-dfi.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 6b1ef29df7048..680f629da64fc 100644
+index 8a7af7c32ae0d..50e497455dc69 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -97,7 +97,7 @@ static int rockchip_dfi_get_busier_ch(struct devfreq_event_dev *edev)
- 	/* Find out which channel is busier */
- 	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
- 		dfi->ch_usage[i].access = readl_relaxed(dfi_regs +
--				DDRMON_CH0_DFI_ACCESS_NUM + i * 20) * 4;
-+				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
- 		dfi->ch_usage[i].total = readl_relaxed(dfi_regs +
+@@ -46,9 +46,14 @@
+ #define DDRMON_CH1_COUNT_NUM		0x3c
+ #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
+ 
++/**
++ * struct dmc_count_channel - structure to hold counter values from the DDR controller
++ * @access:       Number of read and write accesses
++ * @clock_cycles: DDR clock cycles
++ */
+ struct dmc_count_channel {
+ 	u32 access;
+-	u32 total;
++	u32 clock_cycles;
+ };
+ 
+ struct dmc_count {
+@@ -150,7 +155,7 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
+ 			continue;
+ 		count->c[i].access = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+-		count->c[i].total = readl_relaxed(dfi_regs +
++		count->c[i].clock_cycles = readl_relaxed(dfi_regs +
  				DDRMON_CH0_COUNT_NUM + i * 20);
- 		tmp = dfi->ch_usage[i].access;
-@@ -149,7 +149,7 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 	}
+ }
+@@ -182,29 +187,29 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+ 	struct dmc_count count;
+ 	struct dmc_count *last = &dfi->last_event_count;
+-	u32 access = 0, total = 0;
++	u32 access = 0, clock_cycles = 0;
+ 	int i;
  
- 	busier_ch = rockchip_dfi_get_busier_ch(edev);
+ 	rockchip_dfi_read_counters(dfi, &count);
  
--	edata->load_count = dfi->ch_usage[busier_ch].access;
-+	edata->load_count = dfi->ch_usage[busier_ch].access * 4;
- 	edata->total_count = dfi->ch_usage[busier_ch].total;
+ 	/* We can only report one channel, so find the busiest one */
+ 	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
+-		u32 a, t;
++		u32 a, c;
  
- 	return 0;
+ 		if (!(dfi->channel_mask & BIT(i)))
+ 			continue;
+ 
+ 		a = count.c[i].access - last->c[i].access;
+-		t = count.c[i].total - last->c[i].total;
++		c = count.c[i].clock_cycles - last->c[i].clock_cycles;
+ 
+ 		if (a > access) {
+ 			access = a;
+-			total = t;
++			clock_cycles = c;
+ 		}
+ 	}
+ 
+ 	edata->load_count = access * 4;
+-	edata->total_count = total;
++	edata->total_count = clock_cycles;
+ 
+ 	dfi->last_event_count = count;
+ 
 -- 
 2.39.2
 
