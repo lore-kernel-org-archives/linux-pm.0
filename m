@@ -2,131 +2,136 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 445B3C7EE23
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 07:36:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F787C77B7A
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:06:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239979AbjEXHg2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 03:36:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38378 "EHLO
+        id S239963AbjEXIGj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 04:06:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239981AbjEXHgY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 03:36:24 -0400
-Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03on2079.outbound.protection.outlook.com [40.107.105.79])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E57D18B;
-        Wed, 24 May 2023 00:36:20 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=nBWJeXdTNnj7Xj9BU1+139ZHkSZHpLhpWwAZW4FdKIgmgk80hPs/LNoIMuOBUHM2EmPmabpZULebWIUwzcnvWiluBt6udNuRO6ygaYpSwWuDTAyEo/IXcZjcnHJ1fuBl2oTm2zEOUqEdwe+AILmGk/3Av5DYsbZAFvkPwD1bkIbe/d4sEEysokhBTOW40BO8jhioYA7k4jOyaGpVIf6SQVIC5k5rLpf6GTuIUkng0KpKx2zgi75Vnpq2oMVDcnjgvVyHJ9tpQJDkG3Qe+/19K1Hnungp1Ozuo78rxaqmfBHN4CG3nCvv2/T3rPl2oTjCAdd1vDzM4JopGkwN7fTmbQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ICMWYqxW5Z7/xfQsP1bXewCDneNCVCy++tTraZ73VvU=;
- b=Ad48MfnxTQbZTwFYPmisSpFD8fXpMxMCuHk+XdYtMwjcxbsU6UQcyVVK7TPghshPcmeNgr469REW2qdrayNZi2KLcPIZRsbq3dzzDkz4TT6thO36gkNXQAZWuH8LA+aNIrU3+C/kXAQpBLB017e75zFkjwz5k027/AloiISS9qUBK1E/iP80m1as39Hvhl+DGdLFCJjW6Nzm6rZAaMNin8vaJBHOIITTgnqV7btKAKmFQV1TbAd0zpxUTDixazXTcJLCaQrICGfWaW7w1qjSDLYArflwUI/GpyTfSqmQBv0boDb8MEMvR/8zfziV90W3J6KsdZ/IdrSuKDQwMLvLzw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ICMWYqxW5Z7/xfQsP1bXewCDneNCVCy++tTraZ73VvU=;
- b=ZabL9nb28LcHPbVl0NA8uZ+Hmz1l1BsFYLLasr+YeobkYmXN08m5BYeps0UA5V2vmH176Bjx1Ss6Fz0mdD6vnCzSrr5s3/vATv/Eo45VWoR7PA9w7ARb1OZT5nzvCyvsLmtbI8zz7Q5lQjBHGcJ+oc/EAY3SUDUYslenjtHwOPY=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from PAXPR04MB8304.eurprd04.prod.outlook.com (2603:10a6:102:1bc::10)
- by PAXPR04MB9375.eurprd04.prod.outlook.com (2603:10a6:102:2b3::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6411.29; Wed, 24 May
- 2023 07:36:18 +0000
-Received: from PAXPR04MB8304.eurprd04.prod.outlook.com
- ([fe80::513b:76ce:48c9:f9f2]) by PAXPR04MB8304.eurprd04.prod.outlook.com
- ([fe80::513b:76ce:48c9:f9f2%6]) with mapi id 15.20.6411.028; Wed, 24 May 2023
- 07:36:18 +0000
-From:   Zhipeng Wang <zhipeng.wang_1@nxp.com>
-To:     rafael@kernel.org, viresh.kumar@linaro.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] cpufreq: dt-platdev: Support building cpufreq platdev driver as module
-Date:   Wed, 24 May 2023 15:34:17 +0000
-Message-Id: <20230524153417.2738448-2-zhipeng.wang_1@nxp.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230524153417.2738448-1-zhipeng.wang_1@nxp.com>
-References: <20230524153417.2738448-1-zhipeng.wang_1@nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SI2PR01CA0001.apcprd01.prod.exchangelabs.com
- (2603:1096:4:191::13) To PAXPR04MB8304.eurprd04.prod.outlook.com
- (2603:10a6:102:1bc::10)
+        with ESMTP id S236097AbjEXIGi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:06:38 -0400
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FD42132
+        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:06:33 -0700 (PDT)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-3f42ba32e24so5481985e9.3
+        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:06:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1684915592; x=1687507592;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=HwbNoKB5p2KN5UId3Q0LMqV7ovAxqYQAJR4c7Ml8rDk=;
+        b=qDVj+No7I+Ps3m58gE0IADmUr4Qzh2MxHm8us4RF7UfMEeMX1Y3ET6HYNXKv1rKbxf
+         ZTPyxw8zFG+N++mEjM4+nsqjXDaDjDd3im4eeFf1ksHe9/hlHb//Q4AZ6nbp/hQBxerb
+         4VqCB6aGZnA1wiuWH4gX8Kvz8WgHrSBaEDD8T3u3U6fwcT0Ew6HGGLIR/DtQVj7LjZzy
+         i4fw5E1gcOjoYam4z9nwTJd8oXnS+tm2C/bgA755N0DxVbOjj0DVhHqs191n7ecyiLbQ
+         8M/JnldkoesjV4YPbm5xj2FSAGagmGy5BIcQaaKkv4PZTd/bFzv10cNhNvpeTeMwS1wL
+         tOKw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684915592; x=1687507592;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=HwbNoKB5p2KN5UId3Q0LMqV7ovAxqYQAJR4c7Ml8rDk=;
+        b=WxmHs6xuYzA8bWGsuYoYWg25lXa7lKMCuH0t7L/hynkdLrFczY8S4KwD+NTQqoKTUs
+         GEVJaHVahcS5BNMSvYumPMO8xeBR7n9onv0NPxEq0AmC4xvC4KWAZN2CTFSFInQy2SSL
+         Eg4mr0Em+ybyxJQFf1AzpQspUHCzBpqtwpC3qeGuxodOENpn/g0E6tApOvhpT8agkK90
+         njFs1vFEs3Zfwgqr+A5n6qXnfhwcEcnCwWDSmn0Wq+hZy/IOk7lPqtmuBVjn59wIaRLX
+         bdCR3sLg+Fso7Ma01pqkw5YRuyKxNmJ2SkD4HvprkHKmQFKho9b8Mbatrs8CzA6WI0Zs
+         MfgA==
+X-Gm-Message-State: AC+VfDxnUdDPUMtizTpZQI66pnkK1xi9VehQTJ7g52dkYTKr/0C0YM9w
+        MfMze/ZEGsQHdq0jh8hK0ykCdg==
+X-Google-Smtp-Source: ACHHUZ7t8gpOOx0CHrHzvgUooc6H0QeQPcutqofSnkvpUXer1qV+jq1pKkXvoZolz9hSXed9ObeBNg==
+X-Received: by 2002:a7b:c412:0:b0:3f4:2267:10cf with SMTP id k18-20020a7bc412000000b003f4226710cfmr12186809wmi.32.1684915591711;
+        Wed, 24 May 2023 01:06:31 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:4b66:e1c1:7cd0:485e? ([2a05:6e02:1041:c10:4b66:e1c1:7cd0:485e])
+        by smtp.googlemail.com with ESMTPSA id v7-20020a05600c214700b003f4f89bc48dsm1455679wml.15.2023.05.24.01.06.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 24 May 2023 01:06:31 -0700 (PDT)
+Message-ID: <745b8b17-af4d-e8e1-83c1-89d600e7cd19@linaro.org>
+Date:   Wed, 24 May 2023 10:06:30 +0200
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB8304:EE_|PAXPR04MB9375:EE_
-X-MS-Office365-Filtering-Correlation-Id: 20728707-c5d7-4a54-f6b9-08db5c299002
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: pL36Sx6NAix8KW3bgHn5E73qRTzIpaD1pidaHnTAf0RhS2SZZkUeR0d2zJ4FyGhSuH+himCWeR5euDQmHlGOoiLBbmnW/GQLOcdV7FmCVMexClnFy/47FfTppzd0FOX1fF2/WSDYjy2pc/GxXksS9LURUo95v8sPkr55UbZnLLftzHB9lL0U6WjWBzWmThpaGdEY/ZTyNeI5tttK8gKpcbRDD4TljCkLvG/vqi++M4j/eXbJZEkyV5Iia2HqtqfeXsTD+y8enhAb7fV4w6WH+RzuK5pa0QGuhsK4KVpauF+L7Z+fYVxAkR7zzdzhh+PK/3CVRgJwc6h9gj2gi7ducyKjDcDqCUSJIcunYYGMLuOIo/jH6Qm7hyWCU5XYnxlmb8Y1BlUD1vrv56p0hdbTSpzAYk8TkI8usIFoFmO1A0GNMXsSvNZb9+Iz6BG3knkCuV7+TdK613aRuLV+GmrQiaGQpFjrLNNXqfCUdlxmok9Q9CGPoEx2dxKh5QdfMKxtulDM8WpArRo4LTmRwtOX/OkGuNmkEMMCCSM7pYXwHUcygC/kU40KUlqVfRqRcCzc40LxNwCm2do3jmUqk416hKB19GAP2F12se5bPJQqPrIu7AV/owRVVoy/WsByrCqZ
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8304.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(136003)(396003)(39860400002)(346002)(366004)(376002)(451199021)(26005)(6512007)(1076003)(6506007)(83380400001)(2616005)(186003)(2906002)(4744005)(36756003)(4326008)(316002)(66476007)(66556008)(66946007)(41300700001)(52116002)(38100700002)(6486002)(38350700002)(478600001)(8676002)(86362001)(8936002)(5660300002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?IYn0huOhF1i/KRxeOd1WqE3XUm/o10HPPcddhP1lh8kimImqVwhfRoJu1IP9?=
- =?us-ascii?Q?hh2Cc1DCHvD92OqjIKpFYPSB6ejMlJLWfj0ujaQJFp8c917tN7C2sFEZ5++e?=
- =?us-ascii?Q?bbRcAVKCZMMWXFi3KBt4h/0sF1bczq6m8mvIXE7Ejv4xaeLdiJ98EVoHkz6P?=
- =?us-ascii?Q?7W21rh5VtaaZJC6uZblJj/XMW2oSVij/Lfw+nKjnYKifJwNFnByy5HeM2hc/?=
- =?us-ascii?Q?Lyg5a+jCoscOraEE5j/jOBo5D8eku8gI/GuvpTK70O6nkWQiWuYiHXpjlLde?=
- =?us-ascii?Q?q6K/7mIENnHANlKe89Le+CvIz/d4NWvJTQc2tkTmznjA5NLD/bSNvainbEur?=
- =?us-ascii?Q?xq64cvKhsIzbtwWySQ56TpAI42Kazp8vJPrGxWihKetbwoDpR4OaUcqbfewb?=
- =?us-ascii?Q?/HLM9nduy9IjlQOC9ExCk4idSBI1+tC6TB6Ft5uuOdw0OfrZNLI0Cg6hx6k+?=
- =?us-ascii?Q?VVS8s67OhbXjBwUitUCSn8YeG6zfhi51lE663kpkhyRs63AR+sfQlvMXoTyf?=
- =?us-ascii?Q?uCnGzmyi0Au5qi93LroYwn3TF/whIMuSS8u381D1A7ZmKKTmYMYt+C8tXphk?=
- =?us-ascii?Q?6UHlRMYmgK02dShWI980wuZfQaD/Lr8ysf9zK/8XQk4c0pgmpbaeFHUO358a?=
- =?us-ascii?Q?Q2Ca3Os8Wku1S40XEwbBuXpCIL9Vg+3HD0caXh39Ucmrs/Lq3bjpZmrC4X4s?=
- =?us-ascii?Q?ch4AU/R9F7GtCCy1OJLd2bRv/HTj+jITVqUMUuZGsAS//yOJU1JufcQIIGd6?=
- =?us-ascii?Q?EWL7EncMtS2h1fr6tzAW0IGTJvQmvfBoCsEdBub7CkV/cWlhKqGtYixNwtNH?=
- =?us-ascii?Q?T75WJAnIVb6D2sB90c1g6UKxh7zntzYo4R5kUVw4TZESig+/18fG+sjsWBxs?=
- =?us-ascii?Q?TKekBShJOUD3xTg+Plty1SYLshrnonkTJE6h13xyVzHM1Z2uA1Jd+4r8LDSZ?=
- =?us-ascii?Q?sM8nNZI7/PKcIm8+F87FZyR0JUbTmXkTZMeC3nSlF/UtCKfFwDFnYeLCxGBk?=
- =?us-ascii?Q?2h8M0tsFxh5pF6ta3kMb1x1WTgaQTf4KbJcKDLsWKkGMsETmru4mkZ7dHHJx?=
- =?us-ascii?Q?MOeDthke4UuKPo71IInQJLBZP789Xz606HFtoemNOczgVXM1zy3Lu+COfTJp?=
- =?us-ascii?Q?O9Gf7dav0RCvCBe1Ro7OAiSAJC7Sg0msoFWlBUXXPGgBdZfLUHq7J5Hg8zOY?=
- =?us-ascii?Q?9OPUeKQQJDg1P9E702cyElXBQjaXPJQ9ReZwIFx95r6/aqDpiL/biRKxSN4K?=
- =?us-ascii?Q?aWe0D78Swj/gjC24AJZ/Xx8VWa8789IeUTr0MC3EVl9S1wtBcf1FG+K2eBQG?=
- =?us-ascii?Q?9Bhz8EbRFFyK05sTahI6K6optzHuc/0K7AmckbgiDt+foXYftpXWUGUhG+K1?=
- =?us-ascii?Q?6l2t65Wl0qXymzlZxhJkZEGwJV7CS46ZbPIYRrZBXOJm4Mwx/6npWarvb6QR?=
- =?us-ascii?Q?cgQLPdQk1gH6EnL3/wfa4MPZ9MIaJllq9yRKL7lzWwo7HtGJxDC3mKOosBee?=
- =?us-ascii?Q?CaqrhEu9bPqhoP/PYC6fCpXPFZ/lM74QcVHDUfOX0cW56IHozneHWU+HNk49?=
- =?us-ascii?Q?/pqFJyDmfkunealzPIdHQYP37vFN+t0oyq9S/QND5SoPxYa1vYsaWpIbfbeq?=
- =?us-ascii?Q?+w=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 20728707-c5d7-4a54-f6b9-08db5c299002
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8304.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 May 2023 07:36:18.5661
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: EkkgwOWPIs6hrn30CK/60l7E9aIEWsh8hpK2oWbmMOC5w60DQqb8wNpmkYh126H3/1Y5qIaAGWD88qMefh31Xw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB9375
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [CfP] Power Management and Thermal Control MC (LPC2023)
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Mario Limonciello <mario.limonciello@amd.com>
+References: <CAJZ5v0juUuy2xKZHMXAKSRtfQxMyL6z12AFdU8_ZbdFRKKrR=Q@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <CAJZ5v0juUuy2xKZHMXAKSRtfQxMyL6z12AFdU8_ZbdFRKKrR=Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make the cpufreq platdev driver as tristate so that it can be built
-as loadable module.
+On 22/05/2023 19:12, Rafael J. Wysocki wrote:
+> Hi Folks,
+> 
+> I'm going to submit a Power Management and Thermal Control
+> micro-conference proposal for LPC2023 along the lines of what happened
+> in the previous iterations of it.
+> 
+> If you have topics that you'd like to be discussed there, please let
+> me know by Friday, May 26.
+> 
+> Please note that LPC MC topics are expected to cover work in progress
+> or at the concept stage.  They are not supposed to be about work that
+> has been done already.
 
-Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
----
- drivers/cpufreq/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+* Create a relevant debugfs thermal infrastructure + cleanup the sysfs 
+debug related information.
+    -> average temperature (overall / moving)
+    -> mitigation episodes (duration, temperature max, min, avg, average 
+performance througput)
+    -> thermal zone behavior (temperature slope dT/dt vs performance 
+througput)
+    -> more TBD at LPC
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 2c839bd2b051..dda3a78bfd5c 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -218,7 +218,7 @@ config CPUFREQ_DT
- 	  If in doubt, say N.
- 
- config CPUFREQ_DT_PLATDEV
--	bool
-+	tristate "Generic DT based cpufreq platdev driver"
- 	help
- 	  This adds a generic DT based cpufreq platdev driver for frequency
- 	  management.  This creates a 'cpufreq-dt' platform device, on the
+[ RFC series ready but depends on the generic trip point ]
+
+* New thermal trip types. Currently we have 'hot', 'passive', 'active', 
+'critical' trip points. The userspace needs to deal with the thermal 
+also but in a different manner. Currently, it has to poll the thermal 
+zone to get the temperature, thus introducing more wakes up on the 
+system. However the sensors have now a programmable register to trigger 
+an interrupt and the userspace may benefit that. By adding one or 
+several writable 'custom' trip points, the userspace can program a point 
+to be notified and do an action. So we separate the actions from the 
+kernel to protect the silicon and the ones from userspace to manage the 
+overall thermal behavior in the system at lower temperatures.
+
+[ depends on the generic trip points ]
+
+* Thermal management without the time dimension taken into account is 
+too simplistic. Add this dimension in the thermal information for better 
+decision (eg. notification when a temperature is above a temperature 
+after a duration)
+
+* Improve the step wise governor. The step wise governor may take too 
+much time to react when there are many cooling device states as it will 
+increment with one step at each update (eg. idle cooling device has 100 
+states). That may result on overshoots. Depending on the temperature 
+slope we should increase the number of steps for the cooling action. The 
+result should be some kind of PID regulation loop but simplified 
+regarding the power allocator.
+
+
+
 -- 
-2.25.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
