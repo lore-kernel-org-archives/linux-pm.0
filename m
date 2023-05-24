@@ -2,136 +2,129 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5C51C7EE2C
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 09:37:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B15BC7EE23
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 09:57:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230404AbjEXJhX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 05:37:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52838 "EHLO
+        id S231735AbjEXJ5K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 05:57:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230006AbjEXJhF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 05:37:05 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A03A3184;
-        Wed, 24 May 2023 02:37:04 -0700 (PDT)
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34O5gvEb032600;
-        Wed, 24 May 2023 09:36:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=qcppdkim1;
- bh=lTgEoLEClly75ZaPY/LxUJAjr1KveL9eAdClMXWG1iU=;
- b=KOafFjsFRgIMHx9DBNQfv28PbqKUYAHuaItWHzDBPjKzvrVzZU12jkW/GlZ8AwTuWb+f
- WOn6xC2zRQ7a5Nn5O9/en+QLEFzF8ehrtXMEvVETCYSVR2Pc3gUgqLs/HycA6Ef9aHWn
- 3HEAhbCV5vIbneBQly5gYvvbR+Gu5tjhhPPmmmSoLlPVTfXa4/iSbZZZC0OZRdqjP0Xn
- r1gQ9SEo9MtK+i+oeChyzcojFpNo9f5DXrMXF+Y8hBu4anF1vVSQdsaFQ/jOgABkH5vl
- rkks6hCvKK1rxRXwDyGm8gAQrcKure2OQIcbV4j1dl2d6Ryzk1DquGt4goot7RJmSfKq PQ== 
-Received: from nasanppmta05.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3qs4df9c1b-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 24 May 2023 09:36:29 +0000
-Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 34O9aSUi002064
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 24 May 2023 09:36:28 GMT
-Received: from varda-linux.qualcomm.com (10.80.80.8) by
- nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.42; Wed, 24 May 2023 02:36:23 -0700
-From:   Varadarajan Narayanan <quic_varada@quicinc.com>
-To:     <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <amitk@kernel.org>,
-        <thara.gopinath@gmail.com>, <rafael@kernel.org>,
-        <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
-        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <conor+dt@kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     Praveenkumar I <quic_ipkumar@quicinc.com>,
-        Varadarajan Narayanan <quic_varada@quicinc.com>
-Subject: [PATCH v4 1/3] dt-bindings: thermal: tsens: Add ipq9574 compatible
-Date:   Wed, 24 May 2023 15:06:09 +0530
-Message-ID: <cb26ad4a6550c18b1a70104c6b75c10946766944.1684920389.git.quic_varada@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <cover.1684920389.git.quic_varada@quicinc.com>
-References: <cover.1684920389.git.quic_varada@quicinc.com>
+        with ESMTP id S230227AbjEXJ5H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 05:57:07 -0400
+Received: from mail-yb1-xb30.google.com (mail-yb1-xb30.google.com [IPv6:2607:f8b0:4864:20::b30])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1CABD130
+        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 02:57:05 -0700 (PDT)
+Received: by mail-yb1-xb30.google.com with SMTP id 3f1490d57ef6-b9e27684b53so692653276.0
+        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 02:57:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1684922224; x=1687514224;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=vH2+XRfLbLSg7dX3ECLEuFafMqGcT0nmYiMVQ0VO/PQ=;
+        b=iOEW2/dj0DCI7mcTXMDXrLv+AO07KE9MkpVYnkH81hXbJ6cXQRNIVP3lE3INLp8FPc
+         BigpxgYT8Md1dDGHyDIUmFA4vG28TXl1inmwRqaODbWcX1vok0M/XdW4X8EwqxS/veNL
+         yy3SVWB9ZkTu5r68coUC7ubnxT3zweVbl9u7wEztcCHHkySZlUKQ28+kT8q8qx4aI5ND
+         kgPqvxpr/StwubC+NmjOg+usoBLi9r7GCBNPG4U8W7si/W8byF0xJi7vgvKCa8v9RsKX
+         n4NP7ua7JiDxWL8Iv4uSc6eAFKfhEoWmPsk15EOzV4hWx2b1Zc1cNqL43XFGpYdRp+LH
+         gMEQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684922224; x=1687514224;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=vH2+XRfLbLSg7dX3ECLEuFafMqGcT0nmYiMVQ0VO/PQ=;
+        b=TUr35/HPTVincEFAC+uwEGOhf6NO5zY6TthjEXalA0D0lfuPlPFUHpC7+WlOCYMkgM
+         yB3cUatHxJoYVjwZyikcMpuEVrnK2fatxFWA/FE6bm+hH+vzb1QFcADxp4znlg0sdPAx
+         32l/O0iODhVlJ7Y+MYqRshyR/Z9D0/JYudZfp/d8cuQzBzZYgjak+5yDvZXP7kSsskKV
+         fPJoE1kMFbhuaqPZuDDtOmM+hnvl0LmtDoRLFSTs281e/lunnaGAGMduZJHnufM/ZreY
+         g8czwUjB16zRum6Lm2NpL8Bv6Fv1fmG29YbQPdfGETM2DE53Bo5aogf8SqxeQ7T91apd
+         VTww==
+X-Gm-Message-State: AC+VfDz8vWRb2mj1wRQuHFHPOEsqZ6z/4VrgLOHLyCQysKtBKAnmF387
+        AY8Zap9SijVhX6T/EgeLlpSHPPrLi/CPWAZqupV6/A==
+X-Google-Smtp-Source: ACHHUZ5g3w1b7BDAEbgQDZk9MGbN4UM4FbejYnoo/ZcxSc23w+cGK0C5F6MQyriujIDtYDLoCJamTLG9MfMQCDMK+lY=
+X-Received: by 2002:a25:73c5:0:b0:b8c:54d:c60c with SMTP id
+ o188-20020a2573c5000000b00b8c054dc60cmr16230310ybc.34.1684922224229; Wed, 24
+ May 2023 02:57:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nasanex01a.na.qualcomm.com (10.52.223.231)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: dwiKsLY2MstIBf8KaXp76hAgLRfpbC7w
-X-Proofpoint-ORIG-GUID: dwiKsLY2MstIBf8KaXp76hAgLRfpbC7w
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-05-24_05,2023-05-23_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
- suspectscore=0 impostorscore=0 phishscore=0 malwarescore=0 spamscore=0
- lowpriorityscore=0 adultscore=0 bulkscore=0 priorityscore=1501
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2304280000 definitions=main-2305240081
+References: <20230424110933.3908-1-quic_mkshah@quicinc.com>
+In-Reply-To: <20230424110933.3908-1-quic_mkshah@quicinc.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Wed, 24 May 2023 11:56:28 +0200
+Message-ID: <CAPDyKFqSY9HJgKwuOqJPU5aA=wcAtDp91s0hkQye+dm=Wk=YDQ@mail.gmail.com>
+Subject: Re: [PATCH v4 0/3] Use PSCI OS initiated mode for sc7280
+To:     andersson@kernel.org, Maulik Shah <quic_mkshah@quicinc.com>
+Cc:     dianders@chromium.org, swboyd@chromium.org, wingers@google.com,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, sudeep.holla@arm.com,
+        jwerner@chromium.org, quic_lsrao@quicinc.com,
+        quic_rjendra@quicinc.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Praveenkumar I <quic_ipkumar@quicinc.com>
+On Mon, 24 Apr 2023 at 13:09, Maulik Shah <quic_mkshah@quicinc.com> wrote:
+>
+> Changes in v4:
+> - Add missing s-o-b line and reviewed by in patch 1
+> - Address ulf's comments for error handling in patch 2
+>
+> Changes in v3:
+> - Add new change to provide helper function dt_idle_pd_remove_topology()
+> - Address ulf's comments for error handling
+> - Add reviewed by ulf for devicetree change
+>
+> Changes in v2:
+> - Add new change to Move enabling OSI mode after power domains creation
+> - Fix compatible string to domains-idle-states for cluster idle state.
+> - Update cover letter with some more details on OSI and PC mode
+>   comparision
+>
+> The dependency [2] is now merged in trustedfirmware project.
+>
+> Stats comparision between OSI and PC mode are captured at [3] with
+> usecase
+> details, where during multiple CPUs online the residency in cluster idle
+> state is better with OSI and also inline with single CPU mode. In PC
+> mode
+> with multiple CPUs cluster idle state residency is dropping compare to
+> single CPU mode.
+>
+> Recording of this meeting is also available at [4].
+>
+> This change adds power-domains for cpuidle states to use PSCI OS
+> initiated mode for sc7280.
+>
+> This change depends on external project changes [1] & [2] which are
+> under review/discussion to add PSCI os-initiated support in Arm Trusted
+> Firmware.
+>
+> I can update here once the dependency are in and change is ready to
+> merge.
+>
+> [1] https://review.trustedfirmware.org/q/topic:psci-osi
+> [2] https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/19487
+> [3] https://www.trustedfirmware.org/docs/PSCI-OS-initiated.pdf
+> [4] https://www.trustedfirmware.org/meetings/tf-a-technical-forum
+>
+> Maulik Shah (3):
+>   cpuidle: dt_idle_genpd: Add helper function to remove genpd topology
+>   cpuidle: psci: Move enabling OSI mode after power domains creation
+>   arm64: dts: qcom: sc7280: Add power-domains for cpuidle states
+>
+>  arch/arm64/boot/dts/qcom/sc7280.dtsi  | 98 ++++++++++++++++++++-------
+>  drivers/cpuidle/cpuidle-psci-domain.c | 39 ++++-------
+>  drivers/cpuidle/dt_idle_genpd.c       | 24 +++++++
+>  drivers/cpuidle/dt_idle_genpd.h       |  7 ++
+>  4 files changed, 117 insertions(+), 51 deletions(-)
+>
 
-Qualcomm IPQ9574 has tsens v2.3.1 block, which is similar to IPQ8074 tsens.
+Looks like this series has not been queued up yet. Note that patch1
+and patch2 are needed for stable kernels too. Moreover, patch3 (Qcom
+DTS change) is dependent on patch 1 and patch2.
 
-Signed-off-by: Praveenkumar I <quic_ipkumar@quicinc.com>
-Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
----
-[v4]:
-	Add description about IPQ9574 and remove unnecessary
-	additions to the file
-[v3]:
-	Fix dt_binding_check & dtbs_check errors (Used
-	Documentation/devicetree/bindings/display/allwinner,sun4i-a10-tcon.yaml
-	as reference/example)
+Therefore I suggest Bjorn to pick this up via the Qcom SoC tree.
+Bjorn, is that okay for you?
 
-	Drop 'Acked-by: Rob Herring' as suggested in review
-
-[v2]:
-	Thanks to Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-	for the tip to make qcom,ipq8074-tsens as fallback.
----
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index d1ec963..1a752e0 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -16,9 +16,14 @@ description: |
-   The IP versions are named v0.1, v1 and v2 in the driver, where v0.1 captures
-   everything before v1 when there was no versioning information.
- 
-+  Since IPQ9574 is similar to IPQ8074, mapping it to IPQ8074 without
-+  introducing a new compatible.
-+
- properties:
-   compatible:
-     oneOf:
-+      - const: qcom,ipq8074-tsens
-+
-       - description: msm8960 TSENS based
-         items:
-           - enum:
-@@ -64,8 +69,10 @@ properties:
-           - const: qcom,tsens-v2
- 
-       - description: v2 of TSENS with combined interrupt
--        enum:
--          - qcom,ipq8074-tsens
-+        items:
-+          - enum:
-+              - qcom,ipq9574-tsens
-+          - const: qcom,ipq8074-tsens
- 
-   reg:
-     items:
--- 
-2.7.4
-
+Kind regards
+Uffe
