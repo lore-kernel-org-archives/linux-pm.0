@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABB1AC77B7A
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:36:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C49C0C77B7C
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:36:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240106AbjEXIgj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 04:36:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44838 "EHLO
+        id S240362AbjEXIgl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 04:36:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45624 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239914AbjEXIgF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:36:05 -0400
+        with ESMTP id S240480AbjEXIgD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:36:03 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E124C12B
-        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:34:35 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E8D110CA
+        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:34:34 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1jua-0002l8-Jw; Wed, 24 May 2023 10:32:00 +0200
+        id 1q1jua-0002nC-9A; Wed, 24 May 2023 10:32:00 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juW-002RZA-L3; Wed, 24 May 2023 10:31:56 +0200
+        id 1q1juZ-002RaB-FS; Wed, 24 May 2023 10:31:59 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juV-009j1E-T7; Wed, 24 May 2023 10:31:55 +0200
+        id 1q1juX-009jMa-Mg; Wed, 24 May 2023 10:31:57 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -40,11 +40,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v5 02/25] PM / devfreq: rockchip-dfi: Embed desc into private data struct
-Date:   Wed, 24 May 2023 10:31:30 +0200
-Message-Id: <20230524083153.2046084-3-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v5 22/25] dt-bindings: devfreq: event: rockchip,dfi: Add rk3588 support
+Date:   Wed, 24 May 2023 10:31:50 +0200
+Message-Id: <20230524083153.2046084-23-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230524083153.2046084-1-s.hauer@pengutronix.de>
 References: <20230524083153.2046084-1-s.hauer@pengutronix.de>
@@ -58,45 +57,53 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-No need for an extra allocation, just embed the struct
-devfreq_event_desc into the private data struct.
+This adds rockchip,rk3588-dfi to the list of compatibles. Unlike ealier
+SoCs the rk3588 has four interrupts (one for each channel) instead of
+only one, so increase the number of allowed interrupts to four and also
+add interrupt-names.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 74893c06aa087..467f9f42d38f7 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -49,7 +49,7 @@ struct dmc_usage {
-  */
- struct rockchip_dfi {
- 	struct devfreq_event_dev *edev;
--	struct devfreq_event_desc *desc;
-+	struct devfreq_event_desc desc;
- 	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
- 	struct device *dev;
- 	void __iomem *regs;
-@@ -204,14 +204,10 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+Notes:
+    Changes since v4:
+    - new patch
+
+ .../bindings/devfreq/event/rockchip,dfi.yaml       | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+index e8b64494ee8bd..4e647a9560560 100644
+--- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
++++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+@@ -14,6 +14,7 @@ properties:
+     enum:
+       - rockchip,rk3399-dfi
+       - rockchip,rk3568-dfi
++      - rockchip,rk3588-dfi
  
- 	data->dev = dev;
+   clocks:
+     maxItems: 1
+@@ -23,7 +24,18 @@ properties:
+       - const: pclk_ddr_mon
  
--	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
--	if (!desc)
--		return -ENOMEM;
--
-+	desc = &data->desc;
- 	desc->ops = &rockchip_dfi_ops;
- 	desc->driver_data = data;
- 	desc->name = np->name;
--	data->desc = desc;
+   interrupts:
+-    maxItems: 1
++    minItems: 1
++    maxItems: 4
++
++  interrupt-names:
++    oneOf:
++      - items:
++          - const: ch0
++      - items:
++          - const: ch0
++          - const: ch1
++          - const: ch2
++          - const: ch3
  
- 	data->edev = devm_devfreq_event_add_edev(&pdev->dev, desc);
- 	if (IS_ERR(data->edev)) {
+   reg:
+     maxItems: 1
 -- 
 2.39.2
 
