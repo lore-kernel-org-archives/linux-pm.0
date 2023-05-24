@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BDF6C77B7C
-	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:33:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CA54C77B73
+	for <linux-pm@archiver.kernel.org>; Wed, 24 May 2023 08:33:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240322AbjEXIdP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 May 2023 04:33:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44624 "EHLO
+        id S240331AbjEXIdT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 May 2023 04:33:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240249AbjEXIc7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:32:59 -0400
+        with ESMTP id S240257AbjEXIdA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2023 04:33:00 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E530C184
-        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:32:39 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A5751BC
+        for <linux-pm@vger.kernel.org>; Wed, 24 May 2023 01:32:40 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juY-0002lC-Ut; Wed, 24 May 2023 10:31:58 +0200
+        id 1q1juY-0002lA-Rc; Wed, 24 May 2023 10:31:58 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juY-002RZd-0X; Wed, 24 May 2023 10:31:58 +0200
+        id 1q1juX-002RZU-LG; Wed, 24 May 2023 10:31:57 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1q1juW-009j7o-Cn; Wed, 24 May 2023 10:31:56 +0200
+        id 1q1juW-009j6e-8l; Wed, 24 May 2023 10:31:56 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,9 +41,9 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v5 08/25] PM / devfreq: rk3399_dmc,dfi: generalize DDRTYPE defines
-Date:   Wed, 24 May 2023 10:31:36 +0200
-Message-Id: <20230524083153.2046084-9-s.hauer@pengutronix.de>
+Subject: [PATCH v5 06/25] PM / devfreq: rockchip-dfi: Use free running counter
+Date:   Wed, 24 May 2023 10:31:34 +0200
+Message-Id: <20230524083153.2046084-7-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230524083153.2046084-1-s.hauer@pengutronix.de>
 References: <20230524083153.2046084-1-s.hauer@pengutronix.de>
@@ -57,133 +57,131 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The DDRTYPE defines are named to be RK3399 specific, but they can be
-used for other Rockchip SoCs as well, so replace the RK3399_PMUGRF_
-prefix with ROCKCHIP_. They are defined in a SoC specific header
-file, so when generalizing the prefix also move the new defines to
-a SoC agnostic header file. While at it use GENMASK to define the
-DDRTYPE bitfield and give it a name including the full register name.
+The DDR_MON counters are free running counters. These are resetted to 0
+when starting them over like currently done when reading the current
+counter values.
+
+Resetting the counters becomes a problem with perf support we want to
+add later, because perf needs counters that are not modified elsewhere.
+
+This patch removes resetting the counters and keeps them running
+instead. That means we no longer use the absolute counter values but
+instead compare them with the counter values we read last time. Not
+stopping the counters also has the impact that they are running while
+we are reading them. We cannot read multiple timers atomically, so
+the values do not exactly fit together. The effect should be negligible
+though as the time between two measurements is some orders of magnitude
+bigger than the time we need to read multiple registers.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c |  9 +++++----
- drivers/devfreq/rk3399_dmc.c         | 10 +++++-----
- include/soc/rockchip/rk3399_grf.h    |  7 +------
- include/soc/rockchip/rockchip_grf.h  | 17 +++++++++++++++++
- 4 files changed, 28 insertions(+), 15 deletions(-)
- create mode 100644 include/soc/rockchip/rockchip_grf.h
+
+Notes:
+    Changes since v4:
+    - rephrase commit message
+    - Drop unused variable
+
+ drivers/devfreq/event/rockchip-dfi.c | 52 ++++++++++++++++------------
+ 1 file changed, 30 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 82de24a027579..6bccb6fbcfc0c 100644
+index 680f629da64fc..126bb744645b6 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -18,8 +18,10 @@
- #include <linux/list.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-+#include <linux/bitfield.h>
- #include <linux/bits.h>
+@@ -38,11 +38,15 @@
+ #define DDRMON_CH1_COUNT_NUM		0x3c
+ #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
  
-+#include <soc/rockchip/rockchip_grf.h>
- #include <soc/rockchip/rk3399_grf.h>
+-struct dmc_usage {
++struct dmc_count_channel {
+ 	u32 access;
+ 	u32 total;
+ };
  
- #define DMC_MAX_CHANNELS	2
-@@ -74,9 +76,9 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
- 
- 	/* set ddr type to dfi */
--	if (dfi->ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
-+	if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR3)
- 		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
--	else if (dfi->ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
-+	else if (dfi->ddr_type == ROCKCHIP_DDRTYPE_LPDDR4)
- 		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
- 
- 	/* enable count, use software mode */
-@@ -191,8 +193,7 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
- 
- 	/* get ddr type */
- 	regmap_read(regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
--	dfi->ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
--			RK3399_PMUGRF_DDRTYPE_MASK;
-+	dfi->ddr_type = FIELD_GET(RK3399_PMUGRF_OS_REG2_DDRTYPE, val);
- 
- 	dfi->channel_mask = GENMASK(1, 0);
- 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index daff407026157..fd2c5ffedf41e 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -22,6 +22,7 @@
- #include <linux/suspend.h>
- 
- #include <soc/rockchip/pm_domains.h>
-+#include <soc/rockchip/rockchip_grf.h>
- #include <soc/rockchip/rk3399_grf.h>
- #include <soc/rockchip/rockchip_sip.h>
- 
-@@ -381,17 +382,16 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 	}
- 
- 	regmap_read(data->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
--	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
--		    RK3399_PMUGRF_DDRTYPE_MASK;
-+	ddr_type = FIELD_GET(RK3399_PMUGRF_OS_REG2_DDRTYPE, val);
- 
- 	switch (ddr_type) {
--	case RK3399_PMUGRF_DDRTYPE_DDR3:
-+	case ROCKCHIP_DDRTYPE_DDR3:
- 		data->odt_dis_freq = data->ddr3_odt_dis_freq;
- 		break;
--	case RK3399_PMUGRF_DDRTYPE_LPDDR3:
-+	case ROCKCHIP_DDRTYPE_LPDDR3:
- 		data->odt_dis_freq = data->lpddr3_odt_dis_freq;
- 		break;
--	case RK3399_PMUGRF_DDRTYPE_LPDDR4:
-+	case ROCKCHIP_DDRTYPE_LPDDR4:
- 		data->odt_dis_freq = data->lpddr4_odt_dis_freq;
- 		break;
- 	default:
-diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
-index 3eebabcb28123..775f8444bea8d 100644
---- a/include/soc/rockchip/rk3399_grf.h
-+++ b/include/soc/rockchip/rk3399_grf.h
-@@ -11,11 +11,6 @@
- 
- /* PMU GRF Registers */
- #define RK3399_PMUGRF_OS_REG2		0x308
--#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
--#define RK3399_PMUGRF_DDRTYPE_MASK	7
--#define RK3399_PMUGRF_DDRTYPE_DDR3	3
--#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
--#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
--#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
-+#define RK3399_PMUGRF_OS_REG2_DDRTYPE		GENMASK(15, 13)
- 
- #endif
-diff --git a/include/soc/rockchip/rockchip_grf.h b/include/soc/rockchip/rockchip_grf.h
-new file mode 100644
-index 0000000000000..dde1a9796ccb5
---- /dev/null
-+++ b/include/soc/rockchip/rockchip_grf.h
-@@ -0,0 +1,17 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Rockchip General Register Files definitions
-+ */
-+
-+#ifndef __SOC_ROCKCHIP_GRF_H
-+#define __SOC_ROCKCHIP_GRF_H
-+
-+/* Rockchip DDRTYPE defines */
-+enum {
-+	ROCKCHIP_DDRTYPE_DDR3	= 3,
-+	ROCKCHIP_DDRTYPE_LPDDR2	= 5,
-+	ROCKCHIP_DDRTYPE_LPDDR3	= 6,
-+	ROCKCHIP_DDRTYPE_LPDDR4	= 7,
++struct dmc_count {
++	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
 +};
 +
-+#endif /* __SOC_ROCKCHIP_GRF_H */
+ /*
+  * The dfi controller can monitor DDR load. It has an upper and lower threshold
+  * for the operating points. Whenever the usage leaves these bounds an event is
+@@ -51,7 +55,7 @@ struct dmc_usage {
+ struct rockchip_dfi {
+ 	struct devfreq_event_dev *edev;
+ 	struct devfreq_event_desc desc;
+-	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
++	struct dmc_count last_event_count;
+ 	struct device *dev;
+ 	void __iomem *regs;
+ 	struct regmap *regmap_pmu;
+@@ -85,30 +89,18 @@ static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
+ 	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
+ }
+ 
+-static int rockchip_dfi_get_busier_ch(struct devfreq_event_dev *edev)
++static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+-	u32 tmp, max = 0;
+-	u32 i, busier_ch = 0;
++	u32 i;
+ 	void __iomem *dfi_regs = dfi->regs;
+ 
+-	rockchip_dfi_stop_hardware_counter(edev);
+-
+-	/* Find out which channel is busier */
+ 	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
+-		dfi->ch_usage[i].access = readl_relaxed(dfi_regs +
++		count->c[i].access = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+-		dfi->ch_usage[i].total = readl_relaxed(dfi_regs +
++		count->c[i].total = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_COUNT_NUM + i * 20);
+-		tmp = dfi->ch_usage[i].access;
+-		if (tmp > max) {
+-			busier_ch = i;
+-			max = tmp;
+-		}
+ 	}
+-	rockchip_dfi_start_hardware_counter(edev);
+-
+-	return busier_ch;
+ }
+ 
+ static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
+@@ -145,12 +137,28 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 				  struct devfreq_event_data *edata)
+ {
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+-	int busier_ch;
++	struct dmc_count count;
++	struct dmc_count *last = &dfi->last_event_count;
++	u32 access = 0, total = 0;
++	int i;
++
++	rockchip_dfi_read_counters(edev, &count);
++
++	/* We can only report one channel, so find the busiest one */
++	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
++		u32 a = count.c[i].access - last->c[i].access;
++		u32 t = count.c[i].total - last->c[i].total;
++
++		if (a > access) {
++			access = a;
++			total = t;
++		}
++	}
+ 
+-	busier_ch = rockchip_dfi_get_busier_ch(edev);
++	edata->load_count = access * 4;
++	edata->total_count = total;
+ 
+-	edata->load_count = dfi->ch_usage[busier_ch].access * 4;
+-	edata->total_count = dfi->ch_usage[busier_ch].total;
++	dfi->last_event_count = count;
+ 
+ 	return 0;
+ }
 -- 
 2.39.2
 
