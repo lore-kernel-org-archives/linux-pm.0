@@ -2,148 +2,119 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 328CFC77B7A
-	for <linux-pm@archiver.kernel.org>; Thu, 25 May 2023 12:07:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29CACC77B7E
+	for <linux-pm@archiver.kernel.org>; Thu, 25 May 2023 12:10:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233263AbjEYMHD convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 May 2023 08:07:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46242 "EHLO
+        id S241120AbjEYMKH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 May 2023 08:10:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47012 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233511AbjEYMHC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 May 2023 08:07:02 -0400
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4720E7;
-        Thu, 25 May 2023 05:07:00 -0700 (PDT)
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-9739440b60bso29999766b.0;
-        Thu, 25 May 2023 05:07:00 -0700 (PDT)
+        with ESMTP id S233431AbjEYMKF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 May 2023 08:10:05 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 306CE10B;
+        Thu, 25 May 2023 05:10:03 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-970028cfb6cso102191866b.1;
+        Thu, 25 May 2023 05:10:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1685016601; x=1687608601;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FqHt/Go8RthQVhVjmmrUcvTjDhA8Lt3EQbNyl9cwF7Y=;
+        b=S3GoNPHLbgYnGsdrSNuL6+UlC1JIuKVF9MpiMN4jRcFF7V/CzmwFAg2c9va1jd81Sd
+         /Lrou9b+Vy6SKu6FUKz7LsdzGpe2YNdMgBnFVTksylJYs7emkgcB60VNp9KhLNwK87R8
+         KS4CxbGUd0VkbGEPhIhfDTDvWKyIU8jcEuooWSH5KuWmShhKustnKVr0lJv2ihAStIWY
+         oC5EN5HBo751bZ+xiguCGBJISUX8p1mt5AsJihzbJF8fvY/BXB/WX3xwT/Sur1q2uRNz
+         /gFSNjYti9J1c4fdUPk62Mgt4syJzcjTQu8TQfB9Oj6KdgvEHwJZvWtElGy7a1ekIJpk
+         ZecA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685016419; x=1687608419;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20221208; t=1685016601; x=1687608601;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=hKW6nh3Stu7+N3Kp7mLlmvutOp3dc9cSfF1cRxfu1tI=;
-        b=dbJi4YeDCBVWMp0fZp5TjHNoAK96oqYvbW5U7hLpWC7p/7P5IfxcUlOjRK6/W7uP2G
-         +gWBDfIFoGN5KaxM4+UyaI92yaPUOztuXwuU0xAhZZP/49ttsRebSZ91LObmCb+HKwjO
-         VehSSQVJl/MeL4uLx2K97h/CF4TUvSUT5/kbLX02bbAzAOkyCxWD8SGblLquIVdY4Vah
-         oejrCvIyAvvs0ehjSYJlICjQVIKNzbLsam0I2VYiU+MQtZf2TjDunAOKSBYm4OSpldyv
-         JStpHhZc4u3vbsyahLJQh5lW+0lHCD5lPY48/KQZDfQcaNw+2B+EAajhiZ+Y4i8Ns6hw
-         7Xyw==
-X-Gm-Message-State: AC+VfDwvExtrFkiqSjXDU014hkUNscncI5UNDfkph3gPjltLHyagARm+
-        VyeAtclv7ljagQ+pHHw5X2YHPPP5Vi9NVwQlWFs=
-X-Google-Smtp-Source: ACHHUZ6IRQ/SnBgyfpCgayrSbirvIindZHWRMc+FngvXIzH25Iu+YuHgvlryIKQiaIxUsbTuhF1Hvdfb9QDAWtg1VY4=
-X-Received: by 2002:a17:906:72d4:b0:96f:da08:d451 with SMTP id
- m20-20020a17090672d400b0096fda08d451mr11519029ejl.6.1685016418720; Thu, 25
- May 2023 05:06:58 -0700 (PDT)
+        bh=FqHt/Go8RthQVhVjmmrUcvTjDhA8Lt3EQbNyl9cwF7Y=;
+        b=OZfvNTQbrXLketKx1ci0czCxK05e1L5L4/QGg8dv2mnxtfFeG6VKZcPrDekH/UsGz7
+         GZCxLplbF0vzIlwItCQfq7UP8lq4NK9tZt8N7r4K5W6qL8ZYuDCnPqdWJY3frJ5YNqZs
+         SjgN58HBG1j6IFDT6Pe/kuRfQrAoVWsj3he5yjM3a5JN/hCYLEZxujKSiWPRY0YezYYn
+         9KFCcu0KUnOHkj1YOnCR0Jzm8ncSWjCzRrqluNCJWeUoeZPqKnINoCWx+bykb58eCDHU
+         acdlcEzp7F+PWpzAeJBA5AhxG/8ZRa6OEAATo4Kh3NJCy8gn7pWHVzki4SYCFTLdPYrc
+         /7sQ==
+X-Gm-Message-State: AC+VfDy838y6B25nvNdjPQDm6kLJcwuPLaFKhoQZuzCHr5XxCuNJkh3E
+        o71ZSXPwnb2uqBd/P7AEx/JO5UiIuf68kg==
+X-Google-Smtp-Source: ACHHUZ6MJNlxGAqqb96I+VPFic8OwNKvy5L6sJPUXDcV7pa2lWtzSibuhR2g6mx5IvFhMJdwJpXL3Q==
+X-Received: by 2002:a17:907:3da9:b0:966:7a0a:28ae with SMTP id he41-20020a1709073da900b009667a0a28aemr1581658ejc.22.1685016601102;
+        Thu, 25 May 2023 05:10:01 -0700 (PDT)
+Received: from fedora.. ([213.149.38.146])
+        by smtp.googlemail.com with ESMTPSA id d5-20020a170906640500b0094ef923a6ccsm765216ejm.219.2023.05.25.05.09.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 25 May 2023 05:10:00 -0700 (PDT)
+From:   Robert Marko <robimarko@gmail.com>
+To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        ilia.lin@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Cc:     ansuelsmth@gmail.com, Robert Marko <robimarko@gmail.com>
+Subject: [PATCH v3 2/5] soc: qcom: smem: Switch to EXPORT_SYMBOL_GPL()
+Date:   Thu, 25 May 2023 14:09:53 +0200
+Message-Id: <20230525120956.3095317-2-robimarko@gmail.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230525120956.3095317-1-robimarko@gmail.com>
+References: <20230525120956.3095317-1-robimarko@gmail.com>
 MIME-Version: 1.0
-References: <20230522200033.2605-1-mario.limonciello@amd.com>
- <20230522200033.2605-4-mario.limonciello@amd.com> <e9eb526d-84fe-b814-67a3-6f7977aa0078@redhat.com>
- <MN0PR12MB6101AF7606A3547EC5AA42A7E2409@MN0PR12MB6101.namprd12.prod.outlook.com>
- <dcdb3d12-e0af-5e4d-119e-d4fbe9a9495b@redhat.com>
-In-Reply-To: <dcdb3d12-e0af-5e4d-119e-d4fbe9a9495b@redhat.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 25 May 2023 14:06:46 +0200
-Message-ID: <CAJZ5v0h=tSKjZxQJECZCQqzWDMAwY8cKf7F_xyLQSBG8TPyzrg@mail.gmail.com>
-Subject: Re: [PATCH v2 4/4] platform/x86/amd: pmc: Use pm_pr_dbg() for suspend
- related messages
-To:     Hans de Goede <hdegoede@redhat.com>
-Cc:     "Limonciello, Mario" <Mario.Limonciello@amd.com>,
-        "rafael@kernel.org" <rafael@kernel.org>,
-        "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
-        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
-        "platform-driver-x86@vger.kernel.org" 
-        <platform-driver-x86@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "S-k, Shyam-sundar" <Shyam-sundar.S-k@amd.com>,
-        "Natikar, Basavaraj" <Basavaraj.Natikar@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, May 25, 2023 at 12:13 PM Hans de Goede <hdegoede@redhat.com> wrote:
->
-> Hi Mario,
->
-> On 5/23/23 18:21, Limonciello, Mario wrote:
-> > [AMD Official Use Only - General]
-> >
-> >> -----Original Message-----
-> >> From: Hans de Goede <hdegoede@redhat.com>
-> >> Sent: Tuesday, May 23, 2023 6:08 AM
-> >> To: Limonciello, Mario <Mario.Limonciello@amd.com>; rafael@kernel.org;
-> >> linus.walleij@linaro.org
-> >> Cc: linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
-> >> gpio@vger.kernel.org; platform-driver-x86@vger.kernel.org; linux-
-> >> pm@vger.kernel.org; S-k, Shyam-sundar <Shyam-sundar.S-k@amd.com>;
-> >> Natikar, Basavaraj <Basavaraj.Natikar@amd.com>
-> >> Subject: Re: [PATCH v2 4/4] platform/x86/amd: pmc: Use pm_pr_dbg() for
-> >> suspend related messages
-> >>
-> >> Hi Mario,
-> >>
-> >> On 5/22/23 22:00, Mario Limonciello wrote:
-> >>> Using pm_pr_dbg() allows users to toggle
-> >> `/sys/power/pm_debug_messages`
-> >>> as a single knob to turn on messages that amd-pmc can emit to aid in
-> >>> any s2idle debugging.
-> >>>
-> >>> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-> >>> ---
-> >>>  drivers/platform/x86/amd/pmc.c | 4 ++--
-> >>>  1 file changed, 2 insertions(+), 2 deletions(-)
-> >>>
-> >>> diff --git a/drivers/platform/x86/amd/pmc.c
-> >> b/drivers/platform/x86/amd/pmc.c
-> >>> index 427905714f79..1304cd6f13f6 100644
-> >>> --- a/drivers/platform/x86/amd/pmc.c
-> >>> +++ b/drivers/platform/x86/amd/pmc.c
-> >>> @@ -543,7 +543,7 @@ static int amd_pmc_idlemask_read(struct
-> >> amd_pmc_dev *pdev, struct device *dev,
-> >>>     }
-> >>>
-> >>>     if (dev)
-> >>> -           dev_dbg(pdev->dev, "SMU idlemask s0i3: 0x%x\n", val);
-> >>> +           pm_pr_dbg("SMU idlemask s0i3: 0x%x\n", val);
-> >>>
-> >>>     if (s)
-> >>>             seq_printf(s, "SMU idlemask : 0x%x\n", val);
-> >>
-> >> This does not compile, amd/pmc.c may be build as an amd-pmc.ko module
-> >> and currently the pm_debug_messages_on flag used by pm_pr_dbg()
-> >> is not exported to modules:
-> >>
-> >>   CC [M]  drivers/platform/x86/amd/pmc.o
-> >>   LD [M]  drivers/platform/x86/amd/amd-pmc.o
-> >>   MODPOST Module.symvers
-> >> ERROR: modpost: "pm_debug_messages_on"
-> >> [drivers/platform/x86/amd/amd-pmc.ko] undefined!
-> >> make[1]: *** [scripts/Makefile.modpost:136: Module.symvers] Error 1
-> >> make: *** [Makefile:1978: modpost] Error 2
-> >>
-> >> Regards,
-> >>
-> >> Hans
-> >>
-> >
-> > My apologies, yes I was compiling in when testing.  Let me ask if this
-> > series makes sense and is "generally" agreeable though.
->
-> I have no objections against this series, otherwise I don't really
-> have a strong opinion on this series.
->
-> If this makes sense and if exporting pm_debug_messages_on is ok
-> is Rafael's call to make IMHO.
->
-> Rafael ?
+SMEM has been GPL licensed from the start, and there is no reason to use
+EXPORT_SYMBOL() so switch to the GPL version.
 
-I have no strong opinion.
+Signed-off-by: Robert Marko <robimarko@gmail.com>
+---
+ drivers/soc/qcom/smem.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-I would do it slightly differently as mentioned in my reply to patch
-[1/4] (and then the new function could be used in patch [2/4] I
-think).
+diff --git a/drivers/soc/qcom/smem.c b/drivers/soc/qcom/smem.c
+index 6be7ea93c78c..bc98520c4969 100644
+--- a/drivers/soc/qcom/smem.c
++++ b/drivers/soc/qcom/smem.c
+@@ -500,7 +500,7 @@ int qcom_smem_alloc(unsigned host, unsigned item, size_t size)
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL(qcom_smem_alloc);
++EXPORT_SYMBOL_GPL(qcom_smem_alloc);
+ 
+ static void *qcom_smem_get_global(struct qcom_smem *smem,
+ 				  unsigned item,
+@@ -674,7 +674,7 @@ void *qcom_smem_get(unsigned host, unsigned item, size_t *size)
+ 	return ptr;
+ 
+ }
+-EXPORT_SYMBOL(qcom_smem_get);
++EXPORT_SYMBOL_GPL(qcom_smem_get);
+ 
+ /**
+  * qcom_smem_get_free_space() - retrieve amount of free space in a partition
+@@ -719,7 +719,7 @@ int qcom_smem_get_free_space(unsigned host)
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL(qcom_smem_get_free_space);
++EXPORT_SYMBOL_GPL(qcom_smem_get_free_space);
+ 
+ static bool addr_in_range(void __iomem *base, size_t size, void *addr)
+ {
+@@ -770,7 +770,7 @@ phys_addr_t qcom_smem_virt_to_phys(void *p)
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL(qcom_smem_virt_to_phys);
++EXPORT_SYMBOL_GPL(qcom_smem_virt_to_phys);
+ 
+ static int qcom_smem_get_sbl_version(struct qcom_smem *smem)
+ {
+-- 
+2.40.1
 
-Otherwise this is fine with me if it helps to debug failures in the field.
