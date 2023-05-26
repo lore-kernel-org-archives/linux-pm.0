@@ -2,110 +2,76 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60455C7EE23
-	for <linux-pm@archiver.kernel.org>; Fri, 26 May 2023 10:59:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9509C77B7C
+	for <linux-pm@archiver.kernel.org>; Fri, 26 May 2023 12:13:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236875AbjEZK7Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 May 2023 06:59:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50340 "EHLO
+        id S236881AbjEZMNA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 May 2023 08:13:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51538 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230177AbjEZK7W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2023 06:59:22 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4246113A
-        for <linux-pm@vger.kernel.org>; Fri, 26 May 2023 03:59:20 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f3b9755961so621703e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 26 May 2023 03:59:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1685098758; x=1687690758;
-        h=content-transfer-encoding:in-reply-to:subject:from:references:cc:to
-         :content-language:user-agent:mime-version:date:message-id:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+LLFdqd+rVHftP7KktFiZcZEDAD0B2e7kG5B77pkw5s=;
-        b=o9herHqQ/9FWu/DSD5/J3kEJkhEXcm0eH2LMgnJYUcmqsXsntWzhX3Lr3/qVfVHuJK
-         zw3TpJyi6e461XCUuMMASnEUaXZd5mM5W2t0tQWVLJ537zTiC3bC/KzjsVK71eV9Eebw
-         VV4bJISV7k0GrVy3p8zenxczvhkrUlAB/YhuD07V7qy0tnGrcuxQHwr/EcEa+Fhmvr6H
-         WK/MvtJli0flVUC1B2KeKzKrdr1UVUZaOigci/g3EuUxnj3+siy+/l4H1nFly3KLf96V
-         QZ10kKRwty+ccAhsWvUHimMfrltqPn1X5huhIK7p29tDTmHIrl6TPggYeFyVEku9kASx
-         RmrA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685098758; x=1687690758;
-        h=content-transfer-encoding:in-reply-to:subject:from:references:cc:to
-         :content-language:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+LLFdqd+rVHftP7KktFiZcZEDAD0B2e7kG5B77pkw5s=;
-        b=LzcaWNTjJRvdlLi2bnnzC8O9PJaqJHw72XHy0gUJKrQiZIn8r4mTVvxOYb/rScXO7g
-         2R8v/SczKUwvyQdklfI9oDWyqa8vX3DZOw1KoaiDwlvX06w5vtGzbFEYIMXEz/4pnOJV
-         +TB1KmMcSZA9KUoX7lnoPPQsI8MNDdRjCzKRG639aDJ9Lk8eFp3iB2VJya2lB1GhUV6K
-         d/IDaJ9PbO23ouJf0Lw5YmR0beBE7q0VUPT4fTtPxPb5JCgq7a0mZzHsPy7icYfvUeQZ
-         vDhDt04GyquGPQLw+uEJ9ICYXwAT/x8RXqX1RETWrRo1nXQtIJl9hpa1CBqe+maFjUHb
-         rPUg==
-X-Gm-Message-State: AC+VfDyHwnoEkFRIGeWtIG/8qqiRjNEa8q6C+mEq6CJyIYlThF47gBXe
-        jNF2syNkEocc1jzfVONJ+W5mjw==
-X-Google-Smtp-Source: ACHHUZ4ZaO9iWHBRYZOP/LlcS89s3yySWEsbhb7NkehJl+M4JeEn45RY8HM1kD6/VMB3QEGfjvsH4g==
-X-Received: by 2002:ac2:596e:0:b0:4f4:b3eb:80f8 with SMTP id h14-20020ac2596e000000b004f4b3eb80f8mr462729lfp.3.1685098758514;
-        Fri, 26 May 2023 03:59:18 -0700 (PDT)
-Received: from [192.168.1.101] (abyj77.neoplus.adsl.tpnet.pl. [83.9.29.77])
-        by smtp.gmail.com with ESMTPSA id u14-20020ac248ae000000b004f387e3b376sm572437lfg.150.2023.05.26.03.59.17
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 26 May 2023 03:59:18 -0700 (PDT)
-Message-ID: <f8731d93-b335-6d9a-183c-34a652f45455@linaro.org>
-Date:   Fri, 26 May 2023 12:59:17 +0200
+        with ESMTP id S231270AbjEZMM7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2023 08:12:59 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2121A4;
+        Fri, 26 May 2023 05:12:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1685103178; x=1716639178;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=3mF6zurg5dlS4/06LH1kw8Ah/Zk773sNRWv9o+cBqOA=;
+  b=YAgA8Lfe4wIO0aqhFink1Fbq2FkRg+EgJ0+WLBmull2koXjqd5zXyyJX
+   CF/Br24jilWAuf2jOqHM3YeXq4xHLOjzlP1t/Q99LFE54upTqPQ2Sl1CY
+   JWN6Xg9fL2/Ql/cu9amiYemQN7DwPZ8azyruj4o0N6BV6eGpd/cIkt3dm
+   swyStxP9SVT46FTXP1+Hp++wytOw/qEK88qAXIIcFRknnGX51hs27CJFA
+   AuKSd6s6Orel8i3Dkd2VmUMdWj+3nDsSrhaCC2NPIUtu1MYAGWDc72QLo
+   AOccGyUczBkfo2+feQmCHHCQeAThkX+pJhauvh8Td0+lNhAK2IUAjImzp
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10721"; a="357441214"
+X-IronPort-AV: E=Sophos;i="6.00,194,1681196400"; 
+   d="scan'208";a="357441214"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 May 2023 05:12:40 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10721"; a="655611684"
+X-IronPort-AV: E=Sophos;i="6.00,194,1681196400"; 
+   d="scan'208";a="655611684"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orsmga003.jf.intel.com with ESMTP; 26 May 2023 05:12:37 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1001)
+        id 85068413; Fri, 26 May 2023 15:12:41 +0300 (EEST)
+Date:   Fri, 26 May 2023 15:12:41 +0300
+From:   Mika Westerberg <mika.westerberg@linux.intel.com>
+To:     Mario Limonciello <mario.limonciello@amd.com>
+Cc:     Bjorn Helgaas <bhelgaas@google.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
+        Natikar Basavaraj <Basavaraj.Natikar@amd.com>,
+        Deucher Alexander <Alexander.Deucher@amd.com>,
+        linux-pm@vger.kernel.org, Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v4 1/2] PCI: Refactor pci_bridge_d3_possible()
+Message-ID: <20230526121241.GU45886@black.fi.intel.com>
+References: <20230524190726.17012-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Content-Language: en-US
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230526-topic-opp_bw-v1-1-e881091363af@linaro.org>
- <20230526105320.pfnu3oxl2cm37ot7@vireshk-i7>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Subject: Re: [PATCH] opp: Provide a function for just setting bandwidth
-In-Reply-To: <20230526105320.pfnu3oxl2cm37ot7@vireshk-i7>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230524190726.17012-1-mario.limonciello@amd.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 26.05.2023 12:53, Viresh Kumar wrote:
-> On 26-05-23, 11:17, Konrad Dybcio wrote:
->> Currently it's not possible to set just the bandwidth if the OPP
->> describes other properties (required-opps, opp-hz etc.).
->>
->> Introduce dev_pm_opp_set_bw() to solve this problem.
+On Wed, May 24, 2023 at 02:07:25PM -0500, Mario Limonciello wrote:
+> All of the cases handled by pci_bridge_d3_possible() are specific
+> to these branches:
+> ```
+> 	case PCI_EXP_TYPE_ROOT_PORT:
+> 	case PCI_EXP_TYPE_UPSTREAM:
+> 	case PCI_EXP_TYPE_DOWNSTREAM:
+> ```
+> Drop a level of indentation by returning false in the default case
+> instead.  No intended functional changes.
 > 
-> The OPP core (intentionally) doesn't provide any such interface for
-> freq, volt, bw, level, etc.
-> 
-> Setting just one of the properties for a device is potentially harmful and the
-> OPP must be set as a whole and so this isn't allowed. There is
-> dev_pm_opp_set_freq(), but it uses freq to just find the OPP and sets entire OPP
-> only.
-> 
-> Why should be break this for bw ?
-> 
-There are some users which have tight power sequencing requirements,
-like the Qualcomm Adreno GPU.
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 
-Dropping the entire OPP kills clocks, bw and required-opps at once,
-but on certain Adrenos we need something like:
-
-
-disable memory clock (clk)
-disable all other clocks, including the opp-managed core clock (clk_bulk)
-kill one, fully manually controlled genpd (manual runtime pm)
-remove bus vote (func proposed in this patch)
-kill another genpd (manual runtime pm)
-kill the opp-managed genpd (automatic pm calls)
-
-Changing the order kills the chip until you reboot the whole board and
-setting freq=0 using dev_pm_opp_set_rate doesn't drop the bw vote.
-
-Konrad
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
