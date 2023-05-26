@@ -2,105 +2,85 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9DC0C77B7A
-	for <linux-pm@archiver.kernel.org>; Fri, 26 May 2023 12:17:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EA5EC7EE23
+	for <linux-pm@archiver.kernel.org>; Fri, 26 May 2023 14:45:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242934AbjEZMRt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 May 2023 08:17:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53550 "EHLO
+        id S243814AbjEZOpN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 May 2023 10:45:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231378AbjEZMRs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2023 08:17:48 -0400
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C10B6A4;
-        Fri, 26 May 2023 05:17:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1685103467; x=1716639467;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=SC394MjXAyrqe3bKzmS1W+BXidwEdrV5wN/hm3izlwI=;
-  b=YIliS6CFEUUVfgXkOoSlPkPYGnsqAtXzlmQhSddZr6zCFUc3AlysXWZT
-   H2DknxzHFGK5nW9XTuJygcPRfCt6IlwEvzHQQ9m4KdzXmNQzoe6C77O9L
-   FB82GrW2UsaCzwYZpw3dwPmggSgNyWvioFqCL0NRLHZj+PAmEogm0kqRI
-   jfaHvtzLOQMlEbdFQ4d1ZjeoinHxmh6kzC7O1u3MxTJUHGJ73eTb5/hnP
-   86zxb2Fw9v7ZdWZDiMOyIVbev6fFCeSTib5vmJgoThqgD5B6VJ7RtR4gn
-   8rAB6QSnhZes4EucCOPfytn88z94XFZEVxxFWT/u9K7EMy0yjU4AOSzRF
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10721"; a="353031196"
-X-IronPort-AV: E=Sophos;i="6.00,194,1681196400"; 
-   d="scan'208";a="353031196"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 May 2023 05:17:47 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10721"; a="682700451"
-X-IronPort-AV: E=Sophos;i="6.00,194,1681196400"; 
-   d="scan'208";a="682700451"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga006.jf.intel.com with ESMTP; 26 May 2023 05:17:44 -0700
-Received: by black.fi.intel.com (Postfix, from userid 1001)
-        id 3723A413; Fri, 26 May 2023 15:17:48 +0300 (EEST)
-Date:   Fri, 26 May 2023 15:17:48 +0300
-From:   Mika Westerberg <mika.westerberg@linux.intel.com>
-To:     Mario Limonciello <mario.limonciello@amd.com>
-Cc:     Bjorn Helgaas <bhelgaas@google.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
-        Natikar Basavaraj <Basavaraj.Natikar@amd.com>,
-        Deucher Alexander <Alexander.Deucher@amd.com>,
-        linux-pm@vger.kernel.org, Lukas Wunner <lukas@wunner.de>,
-        Iain Lane <iain@orangesquash.org.uk>
-Subject: Re: [PATCH v4 2/2] PCI: Don't assume root ports from > 2015 are
- power manageable
-Message-ID: <20230526121748.GV45886@black.fi.intel.com>
-References: <20230524190726.17012-1-mario.limonciello@amd.com>
- <20230524190726.17012-2-mario.limonciello@amd.com>
+        with ESMTP id S243378AbjEZOpJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2023 10:45:09 -0400
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F31F1B3;
+        Fri, 26 May 2023 07:44:39 -0700 (PDT)
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 34QEhvt8089398;
+        Fri, 26 May 2023 09:43:57 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1685112237;
+        bh=aoK2zrwLIUIVvYEd+uhdHS3nYy34mVCPAKcC9wrjbAA=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=u4rBB30hz+nf6BZy6VSSCNsWubEi6oQct/d5T3WdR8VpEmDCEcf7qXLbHmoup6ETN
+         xycaNwHqKeNL241apHM/jGmGrPKyC8xyl9zJSx74WQpD5qnk1N5iOhIeJS3CjLeikR
+         vx3f1owy2n3frFHS5V8SJiHdfVhGAhM7D2E305Ck=
+Received: from DLEE101.ent.ti.com (dlee101.ent.ti.com [157.170.170.31])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 34QEhvpF007247
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Fri, 26 May 2023 09:43:57 -0500
+Received: from DLEE103.ent.ti.com (157.170.170.33) by DLEE101.ent.ti.com
+ (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23; Fri, 26
+ May 2023 09:43:57 -0500
+Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE103.ent.ti.com
+ (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2507.23 via
+ Frontend Transport; Fri, 26 May 2023 09:43:57 -0500
+Received: from udb0866455.dhcp.ti.com (ileaxei01-snat.itg.ti.com [10.180.69.5])
+        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 34QEhvYE030934;
+        Fri, 26 May 2023 09:43:57 -0500
+From:   Vibhore Vardhan <vibhore@ti.com>
+To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <vigneshr@ti.com>, <d-gole@ti.com>,
+        Vibhore Vardhan <vibhore@ti.com>
+Subject: [PATCH 1/2] cpufreq: ti-cpufreq: Add support for AM62A7
+Date:   Fri, 26 May 2023 09:43:53 -0500
+Message-ID: <20230526144354.38478-2-vibhore@ti.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230526144354.38478-1-vibhore@ti.com>
+References: <20230526144354.38478-1-vibhore@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20230524190726.17012-2-mario.limonciello@amd.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, May 24, 2023 at 02:07:26PM -0500, Mario Limonciello wrote:
-> Using a USB keyboard or mouse to wakeup the system from s2idle fails when
-> that XHCI device is connected to a USB-C port for an AMD USB4 router.
+Add support for TI K3 AM62A7 SoC to read speed and revision values from
+hardware and pass to OPP layer. AM62A7 has the same A53 and efuse 
+configuration as AM625. Thus, soc_data from AM625 is reused.
 
-nit: I think the correct is "xHCI" but no need to spin a new version
-just for that.
+Based on AM625 CPUFreq patch series by Dave Gerlach.
 
-> Due to commit 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
-> all PCIe ports go into D3 during s2idle.
-> 
-> When specific root ports are put into D3 over s2idle on some AMD platforms
-> it is not possible for the platform to properly identify wakeup sources.
-> This happens whether the root port goes into D3hot or D3cold.
-> 
-> Comparing registers between Linux and Windows 11 this behavior to put
-> these specific root ports into D3 at suspend is unique to Linux. On an
-> affected system Windows does not put those specific root ports into D3
-> over Modern Standby.
-> 
-> Windows doesn't put the root ports into D3 because root ports are not
-> power manageable.
+Signed-off-by: Vibhore Vardhan <vibhore@ti.com>
+---
+ drivers/cpufreq/ti-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Probably better is to say:
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index be4209d97cb3..d5cd2fd25cad 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -337,6 +337,7 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
+ 	{ .compatible = "ti,omap34xx", .data = &omap34xx_soc_data, },
+ 	{ .compatible = "ti,omap36xx", .data = &omap36xx_soc_data, },
+ 	{ .compatible = "ti,am625", .data = &am625_soc_data, },
++	{ .compatible = "ti,am62a7", .data = &am625_soc_data, },
+ 	/* legacy */
+ 	{ .compatible = "ti,omap3430", .data = &omap34xx_soc_data, },
+ 	{ .compatible = "ti,omap3630", .data = &omap36xx_soc_data, },
+-- 
+2.34.1
 
- Windows avoids putting Root Ports that are not power manageable (e.g do
- not have platform firmware support) into low power states.
-
-but again no need to respin just for that.
-
-> Linux shouldn't assume root ports support D3 just because they're on a
-> machine newer than 2015, the ports should also be deemed power manageable.
-> Add an extra check explicitly for root ports to ensure D3 isn't selected
-> for these ports.
-> 
-> Fixes: 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
-> Reported-by: Iain Lane <iain@orangesquash.org.uk>
-> Closes: https://forums.lenovo.com/t5/Ubuntu/Z13-can-t-resume-from-suspend-with-external-USB-keyboard/m-p/5217121
-> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
