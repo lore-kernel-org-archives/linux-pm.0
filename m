@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2729CC77B7E
-	for <linux-pm@archiver.kernel.org>; Mon, 29 May 2023 15:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 786D2C7EE23
+	for <linux-pm@archiver.kernel.org>; Mon, 29 May 2023 15:35:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229997AbjE2Pfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 May 2023 11:35:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34646 "EHLO
+        id S230011AbjE2Pfs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 May 2023 11:35:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34730 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229932AbjE2Pfk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2023 11:35:40 -0400
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 171C3C4
-        for <linux-pm@vger.kernel.org>; Mon, 29 May 2023 08:35:39 -0700 (PDT)
-Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-30a8fa6e6fcso2098474f8f.1
-        for <linux-pm@vger.kernel.org>; Mon, 29 May 2023 08:35:39 -0700 (PDT)
+        with ESMTP id S229991AbjE2Pfo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2023 11:35:44 -0400
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 077B0C4
+        for <linux-pm@vger.kernel.org>; Mon, 29 May 2023 08:35:43 -0700 (PDT)
+Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-30ad458f085so2244715f8f.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 May 2023 08:35:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20221208.gappssmtp.com; s=20221208; t=1685374537; x=1687966537;
+        d=baylibre-com.20221208.gappssmtp.com; s=20221208; t=1685374541; x=1687966541;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=GZ1Pw000YHwunl4UOYUIH6XIIpBvLCqm0y/k6ZseuYk=;
-        b=4mZai65JwnIG31lGL2FdgRbna5ZX+1vQfraelVx+zO93D0FR0QuDbiNo8FaYCM2xYJ
-         SOnD9umdATXRVthXkkARqZIMPkDTQy23NIHNmbGkqswDme5R2INWw/exCro7K8Q3odVt
-         O/qbxxy3w9JYMmbv7BJUfS1o1B4GzJZjRi4Eh7pRT+xpItAMYaqURjelrCQvlpwDs2c+
-         l9Yg2bfb0aOxWERFNunADa2qvLxt/4fPWMpqf2K4i5L+tWFhVM++jki+iXq55Z37IRZA
-         KAv6NStIoaqaxTMRch67UfZBCoxRLLhUpwGY3w3PUBSENfUMiHfasMUFzFs9PRGbjeZU
-         CjMQ==
+        bh=o6KztWxfOQw7uIdLc2nfQ4eiSQgNkopQmfDWyk3B1pA=;
+        b=Z/5vpH68gfM2Ty2Ec0/olSNrF62z+MjGSGvYcxO/T5RFeSI7y4z78JOiOkT8C5lHvu
+         odfYG21AkP/qg7t/V39xpytr/gb43qVoeMiNbwqIqOnBfPNlC0/pRWen2T4OIkGcpAfn
+         Nc6elGSJRgGhppzsrffnFHBNlMy62eCnshaj4bpIKVeewTOQBgGjAwXUZyVj82LWgAP1
+         s+NgSJ50l6j2vMNi3Gdb2tOeklNDF/FuuWVpvoKBSG/i0G1CN7sqplEsoGKWQJZVHFlZ
+         OoHZG0JuFHiC5U5MH7VKcYwXPQxX2sQ5+cmO+HgeHgLJnbnOBmY0DWaqbODWWO+OZu4/
+         wSrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685374537; x=1687966537;
+        d=1e100.net; s=20221208; t=1685374541; x=1687966541;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=GZ1Pw000YHwunl4UOYUIH6XIIpBvLCqm0y/k6ZseuYk=;
-        b=evi75l4U3EYS8reDmRfoRfDpqTl8z90ARYW5iftPr6wzwOvKxpt8XoD5FGIM1I5QCI
-         4y1SBKGa6oaYNyJFdAaLXulrp+oLz33mpBU3OselpRmUp0h5OGMXvk3/RrGxVN3Ol2na
-         xnh8kaVHa/D/bHKGG37cUJ+KYuHZ5wqXUa4KH2rYyMRVuPji4Kn0t+9MFjD/NBJNNY74
-         ig8MCR1H44B8o4Pd/qOpmNCIFNWyLSOkUr7/hHkv2akuISQT87rQDXMypmjHoDASX8Bn
-         Vd4SyWB4vvI6aqRXw6vse0RaITMhuxN/hCY7KStHWh6HKSfuUYx1+WYtCJEr831zGmh8
-         tcRQ==
-X-Gm-Message-State: AC+VfDz9MgqF9JGTQ5KfAbKFoaM12P3q1Htq8mRrwxrgKzYKKDO4F/2d
-        mcw3SEDzPsZFX6YrzJoi/rwVTg==
-X-Google-Smtp-Source: ACHHUZ6G0aBAtC/cPLbBBLlra6lcIfNV54GneoMynv4vOLmsZoj4L7CcHXrSU5ONQmISmgw+w6krYQ==
-X-Received: by 2002:a5d:67c5:0:b0:30a:e3da:efe5 with SMTP id n5-20020a5d67c5000000b0030ae3daefe5mr8296777wrw.32.1685374537501;
-        Mon, 29 May 2023 08:35:37 -0700 (PDT)
+        bh=o6KztWxfOQw7uIdLc2nfQ4eiSQgNkopQmfDWyk3B1pA=;
+        b=kkimFpffKxvIjZe8ne8reSy6Wt5XlN2PGIgWJs6oeARxEYVosI7p80CrMRgXDxrAT5
+         Parr4XrIiNWVmutMC/zvWFEqGNONQZJo+hmGQSejmTTFiTyMXRHpQ5QS1zfjDjiCkxKL
+         7zdbplRMlMxpTM0JCJqZHneMwJ75rmppSXxHonEcAi76JyxVu1gLjiEtliy5JvUVx8CK
+         X2IslqP0WlQo7pTCujVhQeLwEXsdrPQRZ2kxwOWglQ+6LgMqhCrDSWZ+Wgs+CP9UBWrU
+         vF8wRV1pUl74IjzKbxIboBFdxJB/KIh8R4PS+8XLyYO6k+ibN2TMEqlgr2TzRpqAJM25
+         sTrQ==
+X-Gm-Message-State: AC+VfDxSXhk/d9FU7ZcEUA9gt9z3sUdB3Zns96xuFOm8TFpbFDkXePlk
+        oWYragzHH9r6/GlKvQgjxLOLlQ==
+X-Google-Smtp-Source: ACHHUZ4iluD/nMcdT4wH1pwxlqw2W2qqyXc2nIq400406PfuiYEVls27Yxb0nakKynMHxLpe0DI2cw==
+X-Received: by 2002:a05:6000:1050:b0:30a:aeb3:f3b0 with SMTP id c16-20020a056000105000b0030aaeb3f3b0mr6698603wrx.17.1685374541302;
+        Mon, 29 May 2023 08:35:41 -0700 (PDT)
 Received: from ph18.baylibre (laubervilliers-658-1-213-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id j27-20020a5d453b000000b003095a329e90sm269781wra.97.2023.05.29.08.35.35
+        by smtp.gmail.com with ESMTPSA id j27-20020a5d453b000000b003095a329e90sm269781wra.97.2023.05.29.08.35.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 May 2023 08:35:36 -0700 (PDT)
+        Mon, 29 May 2023 08:35:40 -0700 (PDT)
 From:   =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@baylibre.com>
 To:     daniel.lezcano@linaro.org, angelogioacchino.delregno@collabora.com,
         rafael@kernel.org, amitk@kernel.org, rui.zhang@intel.com,
@@ -61,9 +61,9 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         wenst@chromium.org, james.lo@mediatek.com,
         rex-bc.chen@mediatek.com, nfraprado@collabora.com,
         abailon@baylibre.com, amergnat@baylibre.com, khilman@baylibre.com
-Subject: [PATCH v3 2/5] thermal/drivers/mediatek/lvts_thermal: Add suspend and resume
-Date:   Mon, 29 May 2023 17:35:29 +0200
-Message-ID: <20230529153532.3541327-3-bero@baylibre.com>
+Subject: [PATCH v3 5/5] thermal/drivers/mediatek/lvts_thermal: Update calibration data documentation
+Date:   Mon, 29 May 2023 17:35:32 +0200
+Message-ID: <20230529153532.3541327-6-bero@baylibre.com>
 X-Mailer: git-send-email 2.41.0.rc2
 In-Reply-To: <20230529153532.3541327-1-bero@baylibre.com>
 References: <20230529153532.3541327-1-bero@baylibre.com>
@@ -76,66 +76,72 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Balsam CHIHI <bchihi@baylibre.com>
 
-Add suspend and resume support to LVTS driver.
+Update LVTS calibration data documentation for mt8192 and mt8195.
 
 Signed-off-by: Balsam CHIHI <bchihi@baylibre.com>
+Reviewed-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+[bero@baylibre.com: Fix issues pointed out by Nícolas F. R. A. Prado <nfraprado@collabora.com>]
 Signed-off-by: Bernhard Rosenkränzer <bero@baylibre.com>
 ---
- drivers/thermal/mediatek/lvts_thermal.c | 34 +++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/thermal/mediatek/lvts_thermal.c | 31 +++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
-index d0a3f95b7884b..5ea8a9d569ea6 100644
+index d5e5214784ece..9185d02003633 100644
 --- a/drivers/thermal/mediatek/lvts_thermal.c
 +++ b/drivers/thermal/mediatek/lvts_thermal.c
-@@ -1169,6 +1169,38 @@ static int lvts_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int lvts_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct lvts_domain *lvts_td;
-+	int i;
-+
-+	lvts_td = platform_get_drvdata(pdev);
-+
-+	for (i = 0; i < lvts_td->num_lvts_ctrl; i++)
-+		lvts_ctrl_set_enable(&lvts_td->lvts_ctrl[i], false);
-+
-+	clk_disable_unprepare(lvts_td->clk);
-+
-+	return 0;
-+}
-+
-+static int lvts_resume(struct platform_device *pdev)
-+{
-+	struct lvts_domain *lvts_td;
-+	int i, ret;
-+
-+	lvts_td = platform_get_drvdata(pdev);
-+
-+	ret = clk_prepare_enable(lvts_td->clk);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < lvts_td->num_lvts_ctrl; i++)
-+		lvts_ctrl_set_enable(&lvts_td->lvts_ctrl[i], true);
-+
-+	return 0;
-+}
-+
- static const struct lvts_ctrl_data mt8195_lvts_mcu_data_ctrl[] = {
- 	{
- 		.cal_offset = { 0x04, 0x07 },
-@@ -1268,6 +1300,8 @@ MODULE_DEVICE_TABLE(of, lvts_of_match);
- static struct platform_driver lvts_driver = {
- 	.probe = lvts_probe,
- 	.remove = lvts_remove,
-+	.suspend = lvts_suspend,
-+	.resume = lvts_resume,
- 	.driver = {
- 		.name = "mtk-lvts-thermal",
- 		.of_match_table = lvts_of_match,
+@@ -531,7 +531,8 @@ static int lvts_sensor_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
+  * The efuse blob values follows the sensor enumeration per thermal
+  * controller. The decoding of the stream is as follow:
+  *
+- * stream index map for MCU Domain :
++ * MT8195 :
++ * Stream index map for MCU Domain mt8195 :
+  *
+  * <-----mcu-tc#0-----> <-----sensor#0-----> <-----sensor#1----->
+  *  0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09
+@@ -542,7 +543,7 @@ static int lvts_sensor_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
+  * <-----mcu-tc#2-----> <-----sensor#4-----> <-----sensor#5-----> <-----sensor#6-----> <-----sensor#7----->
+  *  0x13 | 0x14 | 0x15 | 0x16 | 0x17 | 0x18 | 0x19 | 0x1A | 0x1B | 0x1C | 0x1D | 0x1E | 0x1F | 0x20 | 0x21
+  *
+- * stream index map for AP Domain :
++ * Stream index map for AP Domain mt8195 :
+  *
+  * <-----ap--tc#0-----> <-----sensor#0-----> <-----sensor#1----->
+  *  0x22 | 0x23 | 0x24 | 0x25 | 0x26 | 0x27 | 0x28 | 0x29 | 0x2A
+@@ -556,6 +557,32 @@ static int lvts_sensor_init(struct device *dev, struct lvts_ctrl *lvts_ctrl,
+  * <-----ap--tc#3-----> <-----sensor#7-----> <-----sensor#8----->
+  *  0x40 | 0x41 | 0x42 | 0x43 | 0x44 | 0x45 | 0x46 | 0x47 | 0x48
+  *
++ * MT8192 :
++ * Stream index map for MCU Domain mt8192 :
++ *
++ * <-----mcu-tc#0-----> <-----sensor#0----->        <-----sensor#1----->
++ *  0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x08 | 0x09 | 0x0A | 0x0B
++ *
++ * <-----sensor#2----->        <-----sensor#3----->
++ *  0x0C | 0x0D | 0x0E | 0x0F | 0x10 | 0x11 | 0x12 | 0x13
++ *
++ * <-----sensor#4----->        <-----sensor#5----->        <-----sensor#6----->        <-----sensor#7----->
++ *  0x14 | 0x15 | 0x16 | 0x17 | 0x18 | 0x19 | 0x1A | 0x1B | 0x1C | 0x1D | 0x1E | 0x1F | 0x20 | 0x21 | 0x22 | 0x23
++ *
++ * Stream index map for AP Domain mt8192 :
++ *
++ * <-----sensor#0----->        <-----sensor#1----->
++ *  0x24 | 0x25 | 0x26 | 0x27 | 0x28 | 0x29 | 0x2A | 0x2B
++ *
++ * <-----sensor#2----->        <-----sensor#3----->
++ *  0x2C | 0x2D | 0x2E | 0x2F | 0x30 | 0x31 | 0x32 | 0x33
++ *
++ * <-----sensor#4----->        <-----sensor#5----->
++ *  0x34 | 0x35 | 0x36 | 0x37 | 0x38 | 0x39 | 0x3A | 0x3B
++ *
++ * <-----sensor#6----->        <-----sensor#7----->        <-----sensor#8----->
++ *  0x3C | 0x3D | 0x3E | 0x3F | 0x40 | 0x41 | 0x42 | 0x43 | 0x44 | 0x45 | 0x46 | 0x47
++ *
+  * The data description gives the offset of the calibration data in
+  * this bytes stream for each sensor.
+  */
 -- 
 2.41.0.rc2
 
