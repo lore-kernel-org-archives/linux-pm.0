@@ -2,61 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7239FC77B73
-	for <linux-pm@archiver.kernel.org>; Tue, 30 May 2023 10:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 702BDC7EE23
+	for <linux-pm@archiver.kernel.org>; Tue, 30 May 2023 10:20:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231430AbjE3KUZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 May 2023 06:20:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52064 "EHLO
+        id S231389AbjE3KU0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 May 2023 06:20:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231214AbjE3KUT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2023 06:20:19 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6869F1
-        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:09 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id 2adb3069b0e04-4f4f3ac389eso3272642e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:09 -0700 (PDT)
+        with ESMTP id S231402AbjE3KUU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2023 06:20:20 -0400
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0ED9EFC
+        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:12 -0700 (PDT)
+Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-4f50a8f6dd7so1114080e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1685442008; x=1688034008;
+        d=linaro.org; s=google; t=1685442010; x=1688034010;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=TQdA0JC5EnJw6b4/CowUYq8tfMxhXnCwzG8pO7Pd+ew=;
-        b=vsYVBrJPStxb9CH+u9gkEPcTWKxG/5oNdZ1/7is+m5LKmGlObhsH08h/ys1GaqAvwA
-         M/nmLPc0W/ihCSuouDnCJ5eZ7HX3zZThqbtCTH8ASPUWGOSkHtigpb0wIdZv1mk4F31J
-         R7l5FrDuFxY+4whMK+lRTkboJlSBlp8d4Pv7Qp2AMTsNyVB6nDmPzRWxMl5Gpte0teuU
-         XBzo1u63ix3sEsJ9us/S12E/LkWaEg44IgBJyVW4GvBQoKpMZ8Iw0EMwaTpwS0gBQul5
-         gYLNcHSNSsFe3p8emqfk7o+zb4XIwzjFXakLzRyeVVw1sTzDW76M8uIRDBIr2MSWwkn6
-         TrNg==
+        bh=1aF5NzyLnKl7zoihaKOQABOmTLo7g2FiY8plhOqJWWE=;
+        b=KL18hG5ZcSfHdXMU8nINo0ozNDShQjM5vzvdQuBSHtY8YnyCUBmK0JZYp92oSvzksz
+         PJQqas3ZWqa4uYoee36tPlrt6K10lXQHtVKYF2cW3gyGaV6CugK3HNjqBlEcjSbgyvhN
+         BYPG0i2uXOVmHQYzYj2RmSu1sonzGpZobIdCyRq+Jwd8GauYG6o2hoq0OYgs8uyr9hl9
+         U7VB8/H3ET0xjVi+EcWBz/ldjf7CGA/Su/bH6nPnABwYhBT9ZymCpfSm/xqOZnuKqmHU
+         DASloBUVF60q3Tw0cOG29oGQt9JmVyRg1kl/hmZpMueKIBgjlFNf0UYTO1VtgUIZKcca
+         apjg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685442008; x=1688034008;
+        d=1e100.net; s=20221208; t=1685442010; x=1688034010;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=TQdA0JC5EnJw6b4/CowUYq8tfMxhXnCwzG8pO7Pd+ew=;
-        b=cybacGEoaVOlfGY1R39UPZXp3NqvD27PuBxazhGQ+ETMfnw71ENmAfZabbuGEKYASs
-         4mTSsNO345tI4ihgoWS5DBGoFuhZIH9rrKmI8W1dZwBZJj4YRAjoWQUNuxIYD4vJF9Ap
-         cOz7sdrV+cmV+GFjaAWix97UTmjnA9pF7BmEgTcEYIvA+vE85BZMibssyDJdVSz5EYWH
-         PQD/ZRfEWMdfkLV3SZQRgYs96cahaIUWOH1QacUkyPsWe3pGm+q61W6sJtcwlfr4fWYT
-         HNvkL0eyfY+ZvFUpw8+orSjaXWpNbXboVvrP+8/EeWNSyCMHNeSs1TwtqC9rFTiR75iF
-         t9kw==
-X-Gm-Message-State: AC+VfDw0sp53hJq6WWblmf2eeG8B1yrJTCQFaHn8rkn96lntLXSddvwo
-        8N6IpGQLNNhB5QTvQQ7ZEo1Wpg==
-X-Google-Smtp-Source: ACHHUZ6ogkVSQTBoCRKXEoJ+PYlWey9GZ0r1JaxRRcGZtTsMESaxqNol+J9WUJRi4xQr13IkMk84fA==
-X-Received: by 2002:ac2:5443:0:b0:4f4:cacb:4b4b with SMTP id d3-20020ac25443000000b004f4cacb4b4bmr513337lfn.18.1685442007844;
-        Tue, 30 May 2023 03:20:07 -0700 (PDT)
+        bh=1aF5NzyLnKl7zoihaKOQABOmTLo7g2FiY8plhOqJWWE=;
+        b=aWn/6K9om5fBQyBptyslHWMfBsc0bkeVALd+3p18x9Y7WJZu7eotfKzNNTv2AOet/W
+         XMAaI/pMCeW2KZFjkJ9IdJ8gDxqS6XklcxhDpZPzp5yKC5BWPD+ndU88PIFvq2QEDxmX
+         RknmDtFDuxj2Tz3YyLFJuDPhMbu63NyerT4yx7JwHhmlRzVe0kvYwkqlJxNybt0zt4tn
+         ITcjqSeaqGlXh/YnlgNDXcPYX9GVOBKh+P4jCSxzjhmoiooW2D1QDsQWIntdS73YBJdA
+         Z8buweAsV3A13LvszOSXp3eDCLMdCKMj3y8kOk1TKa7LFOQo+K/GvTTf33P8Bw1VL7Eq
+         wgKQ==
+X-Gm-Message-State: AC+VfDyrkHX8CDNS2sTdKytVRWM8taIR6n1YUBQa2A2p+CsErUiMpO91
+        Iv7mqoD3aTaMRKc8DC66LkAUBA==
+X-Google-Smtp-Source: ACHHUZ49jO4ej62nC5LYtMBcBGYeMuH4h/3xvYCghtPsS/zki7108GVeiL90tpIWHuwylPCqgq+a0A==
+X-Received: by 2002:a05:6512:243:b0:4f3:a485:919a with SMTP id b3-20020a056512024300b004f3a485919amr532930lfo.57.1685442010378;
+        Tue, 30 May 2023 03:20:10 -0700 (PDT)
 Received: from [192.168.1.101] (abyj77.neoplus.adsl.tpnet.pl. [83.9.29.77])
-        by smtp.gmail.com with ESMTPSA id c25-20020ac24159000000b004cc8196a308sm290902lfi.98.2023.05.30.03.20.06
+        by smtp.gmail.com with ESMTPSA id c25-20020ac24159000000b004cc8196a308sm290902lfi.98.2023.05.30.03.20.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 May 2023 03:20:07 -0700 (PDT)
+        Tue, 30 May 2023 03:20:10 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 30 May 2023 12:20:02 +0200
-Subject: [PATCH 03/20] clk: qcom: smd-rpm: Separate out interconnect bus
- clocks
+Date:   Tue, 30 May 2023 12:20:04 +0200
+Subject: [PATCH 05/20] interconnect: qcom: icc-rpm: Introduce keep_alive
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v1-3-1bf8e6663c4e@linaro.org>
+Message-Id: <20230526-topic-smd_icc-v1-5-1bf8e6663c4e@linaro.org>
 References: <20230526-topic-smd_icc-v1-0-1bf8e6663c4e@linaro.org>
 In-Reply-To: <20230526-topic-smd_icc-v1-0-1bf8e6663c4e@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -70,609 +69,108 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1685442001; l=26677;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1685442001; l=3600;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=1s4s6hkrW5B4osLz3KedAVfbb5KJ4YfvuzI93qhExGI=;
- b=1bV0X9tjsqoPy7P/v9pLNeXJ8uv/WXgpgcPaCdcKBrGHgm8ccWQ071NMJlqT8yFaiYtlRAuS3
- QQlKQzyCGcRANgFqf0z/em/xvzM631Ibe/3VBzzlD/oTi++CKsT2oTv
+ bh=k3FKq4hsanyAIvzotN0m6bauADNeL2Fo1rigqnJlDac=;
+ b=hvFTnD/dH0Sj2ysZovpz3wr8bDb7GQWdzjJvH/HBaWZIqENeiuglNUMKjH8ib2RYdbqm3Aj/e
+ ZPbjZA4ZiqTDbcPF408eXt58YEsIIk+Y0RIP/mR78KKzxnrjj8nlfwg
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The interconnect bus clocks are now handled within the ICC framework.
-They still however need to get a kickstart *before* we call
-clk_smd_rpm_enable_scaling(), or RPM will assume that they should all
-be running at 0 kHz and the system will inevitably die.
+The downstream kernel employs the concept of "keeping the bus alive"
+by voting for the minimum (XO/19.2MHz) rate at all times on certain
+(well, most) buses. This is a very important thing to have, as if we
+either have a lackluster/wrong DT that doesn't specify a (high enough)
+vote on a certain bus, we may lose access to the entire bus altogether.
+This is very apparent when we only start introducing interconnect
+support on a given platform and haven't yet introduced voting on all
+peripherals.
 
-Separate them out to ensure such a kickstart can still take place.
+The same can happen if we only have a single driver casting a vote on
+a certain bus and that driver exits/crashes/suspends.
 
-As a happy accident, the file got smaller:
+The keepalive vote is limited to the ACTIVE bucket, as keeping a
+permanent vote on the SLEEP one could prevent the platform from properly
+entering low power mode states.
 
-Total: Before=41951, After=41555, chg -0.94%
+Introduce the very same concept, with a slight twist: the vendor
+kernel checks whether the rate is zero before setting the minimum
+vote, but that's rather silly, as in doing so we're at the mercy
+of CCF. Instead, explicitly clamp the rates to always be >= 19.2 MHz
+for providers with keep_alive=true.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/clk/qcom/clk-smd-rpm.c | 278 +++++++++++++++++------------------------
- 1 file changed, 115 insertions(+), 163 deletions(-)
+ drivers/interconnect/qcom/icc-rpm.c | 10 ++++++++++
+ drivers/interconnect/qcom/icc-rpm.h |  3 +++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/drivers/clk/qcom/clk-smd-rpm.c b/drivers/clk/qcom/clk-smd-rpm.c
-index 937cb1515968..b63f946e4520 100644
---- a/drivers/clk/qcom/clk-smd-rpm.c
-+++ b/drivers/clk/qcom/clk-smd-rpm.c
-@@ -167,6 +167,14 @@ struct clk_smd_rpm {
- struct rpm_smd_clk_desc {
- 	struct clk_smd_rpm **clks;
- 	size_t num_clks;
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 6acc7686ed38..863e8ba1daa2 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -50,6 +50,8 @@
+ #define NOC_QOS_MODE_FIXED_VAL		0x0
+ #define NOC_QOS_MODE_BYPASS_VAL		0x2
+ 
++#define ICC_BUS_CLK_MIN_RATE		19200000ULL
 +
-+	/*
-+	 * Interconnect clocks are managed by the icc framework, this driver
-+	 * only kickstarts them so that they don't get gated between
-+	 * clk_smd_rpm_enable_scaling() and interconnect driver initialization.
-+	 */
-+	struct clk_smd_rpm **icc_clks;
-+	size_t num_icc_clks;
- 	bool scaling_before_handover;
- };
+ static int qcom_icc_set_qnoc_qos(struct icc_node *src)
+ {
+ 	struct icc_provider *provider = src->provider;
+@@ -380,6 +382,13 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 		do_div(rate, src_qn->buswidth);
+ 		rate = min_t(u64, rate, LONG_MAX);
  
-@@ -498,13 +506,69 @@ DEFINE_CLK_SMD_RPM_XO_BUFFER(div_clk1, 11, 19200000);
- DEFINE_CLK_SMD_RPM_XO_BUFFER(div_clk2, 12, 19200000);
- DEFINE_CLK_SMD_RPM_XO_BUFFER(div_clk3, 13, 19200000);
- 
-+static struct clk_smd_rpm *bimc_pcnoc_icc_clks[] = {
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_bus_0_pcnoc_clk,
-+};
++		/*
++		 * Downstream checks whether the requested rate is zero, but it makes little sense
++		 * to vote for a value that's below the lower threshold, so let's not do so.
++		 */
++		if (bucket == QCOM_ICC_BUCKET_WAKE && qp->keep_alive)
++			rate = max(ICC_BUS_CLK_MIN_RATE, rate);
 +
-+static struct clk_smd_rpm *bimc_pcnoc_snoc_icc_clks[] = {
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_bus_0_pcnoc_clk,
-+	&clk_smd_rpm_bus_1_snoc_clk,
-+};
-+
-+static struct clk_smd_rpm *bimc_pcnoc_snoc_smmnoc_icc_clks[] = {
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_bus_0_pcnoc_clk,
-+	&clk_smd_rpm_bus_1_snoc_clk,
-+	&clk_smd_rpm_bus_2_sysmmnoc_clk,
-+};
-+
-+static struct clk_smd_rpm *bimc_pcnoc_snoc_cnoc_ocmem_icc_clks[] = {
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_bus_0_pcnoc_clk,
-+	&clk_smd_rpm_bus_1_snoc_clk,
-+	&clk_smd_rpm_bus_2_cnoc_clk,
-+	&clk_smd_rpm_ocmemgx_clk,
-+};
-+
-+static struct clk_smd_rpm *msm8996_icc_clks[] = {
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_branch_aggre1_noc_clk,
-+	&clk_smd_rpm_branch_aggre2_noc_clk,
-+	&clk_smd_rpm_bus_0_pcnoc_clk,
-+	&clk_smd_rpm_bus_1_snoc_clk,
-+	&clk_smd_rpm_bus_2_cnoc_clk,
-+	&clk_smd_rpm_mmssnoc_axi_rpm_clk,
-+};
-+
-+static struct clk_smd_rpm *msm8998_icc_clks[] = {
-+	&clk_smd_rpm_aggre1_noc_clk,
-+	&clk_smd_rpm_aggre2_noc_clk,
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_bus_1_snoc_clk,
-+	&clk_smd_rpm_bus_2_cnoc_clk,
-+	&clk_smd_rpm_mmssnoc_axi_rpm_clk,
-+};
-+
-+static struct clk_smd_rpm *sdm660_icc_clks[] = {
-+	&clk_smd_rpm_aggre2_noc_clk,
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_bus_1_snoc_clk,
-+	&clk_smd_rpm_bus_2_cnoc_clk,
-+	&clk_smd_rpm_mmssnoc_axi_rpm_clk,
-+};
-+
-+static struct clk_smd_rpm *sm_qnoc_icc_clks[] = {
-+	&clk_smd_rpm_bimc_clk,
-+	&clk_smd_rpm_bus_1_cnoc_clk,
-+	&clk_smd_rpm_mmnrt_clk,
-+	&clk_smd_rpm_mmrt_clk,
-+	&clk_smd_rpm_qup_clk,
-+	&clk_smd_rpm_bus_2_snoc_clk,
-+};
-+
- static struct clk_smd_rpm *msm8909_clks[] = {
--	[RPM_SMD_PCNOC_CLK]		= &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PCNOC_A_CLK]		= &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK]		= &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK]		= &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK]		= &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK]		= &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_QPIC_CLK]		= &clk_smd_rpm_qpic_clk,
- 	[RPM_SMD_QPIC_CLK_A]		= &clk_smd_rpm_qpic_a_clk,
- 	[RPM_SMD_QDSS_CLK]		= &clk_smd_rpm_qdss_clk,
-@@ -530,15 +594,11 @@ static struct clk_smd_rpm *msm8909_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8909 = {
- 	.clks = msm8909_clks,
- 	.num_clks = ARRAY_SIZE(msm8909_clks),
-+	.icc_clks = bimc_pcnoc_snoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_icc_clks),
+ 		if (qp->bus_clk_rate[i] == rate)
+ 			continue;
+ 
+@@ -453,6 +462,7 @@ int qnoc_probe(struct platform_device *pdev)
+ 	for (i = 0; i < qp->num_bus_clks; i++)
+ 		qp->bus_clks[i].id = bus_clocks[i];
+ 
++	qp->keep_alive = desc->keep_alive;
+ 	qp->type = desc->type;
+ 	qp->qos_offset = desc->qos_offset;
+ 
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index ee705edf19dd..d2c04c400cad 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -33,6 +33,7 @@ enum qcom_icc_type {
+  * @bus_clk_rate: bus clock rate in Hz
+  * @bus_clks: the clk_bulk_data table of bus clocks
+  * @intf_clks: a clk_bulk_data array of interface clocks
++ * @keep_alive: whether to always keep a minimum vote on the bus clocks
+  * @is_on: whether the bus is powered on
+  */
+ struct qcom_icc_provider {
+@@ -45,6 +46,7 @@ struct qcom_icc_provider {
+ 	u64 bus_clk_rate[NUM_BUS_CLKS];
+ 	struct clk_bulk_data bus_clks[NUM_BUS_CLKS];
+ 	struct clk_bulk_data *intf_clks;
++	bool keep_alive;
+ 	bool is_on;
  };
  
- static struct clk_smd_rpm *msm8916_clks[] = {
--	[RPM_SMD_PCNOC_CLK]		= &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PCNOC_A_CLK]		= &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK]		= &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK]		= &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK]		= &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK]		= &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_QDSS_CLK]		= &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK]		= &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_BB_CLK1]		= &clk_smd_rpm_bb_clk1,
-@@ -562,21 +622,15 @@ static struct clk_smd_rpm *msm8916_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8916 = {
- 	.clks = msm8916_clks,
- 	.num_clks = ARRAY_SIZE(msm8916_clks),
-+	.icc_clks = bimc_pcnoc_snoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8917_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PNOC_CLK]		= &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PNOC_A_CLK]		= &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK]		= &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK]		= &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK]		= &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK]		= &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_BIMC_GPU_CLK]		= &clk_smd_rpm_bimc_gpu_clk,
- 	[RPM_SMD_BIMC_GPU_A_CLK]	= &clk_smd_rpm_bimc_gpu_a_clk,
--	[RPM_SMD_SYSMMNOC_CLK]		= &clk_smd_rpm_bus_2_sysmmnoc_clk,
--	[RPM_SMD_SYSMMNOC_A_CLK]	= &clk_smd_rpm_bus_2_sysmmnoc_a_clk,
- 	[RPM_SMD_QDSS_CLK]		= &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK]		= &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_BB_CLK1]		= &clk_smd_rpm_bb_clk1,
-@@ -596,19 +650,13 @@ static struct clk_smd_rpm *msm8917_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8917 = {
- 	.clks = msm8917_clks,
- 	.num_clks = ARRAY_SIZE(msm8917_clks),
-+	.icc_clks = bimc_pcnoc_snoc_smmnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_smmnoc_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8936_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PCNOC_CLK]		= &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PCNOC_A_CLK]		= &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK]		= &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK]		= &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK]		= &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK]		= &clk_smd_rpm_bimc_a_clk,
--	[RPM_SMD_SYSMMNOC_CLK]		= &clk_smd_rpm_bus_2_sysmmnoc_clk,
--	[RPM_SMD_SYSMMNOC_A_CLK]	= &clk_smd_rpm_bus_2_sysmmnoc_a_clk,
- 	[RPM_SMD_QDSS_CLK]		= &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK]		= &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_BB_CLK1]		= &clk_smd_rpm_bb_clk1,
-@@ -632,25 +680,17 @@ static struct clk_smd_rpm *msm8936_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8936 = {
- 		.clks = msm8936_clks,
- 		.num_clks = ARRAY_SIZE(msm8936_clks),
-+		.icc_clks = bimc_pcnoc_snoc_smmnoc_icc_clks,
-+		.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_smmnoc_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8974_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PNOC_CLK]		= &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PNOC_A_CLK]		= &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK]		= &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK]		= &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_CNOC_CLK]		= &clk_smd_rpm_bus_2_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK]		= &clk_smd_rpm_bus_2_cnoc_a_clk,
- 	[RPM_SMD_MMSSNOC_AHB_CLK]	= &clk_smd_rpm_bus_3_mmssnoc_ahb_clk,
- 	[RPM_SMD_MMSSNOC_AHB_A_CLK]	= &clk_smd_rpm_bus_3_mmssnoc_ahb_a_clk,
--	[RPM_SMD_BIMC_CLK]		= &clk_smd_rpm_bimc_clk,
- 	[RPM_SMD_GFX3D_CLK_SRC]		= &clk_smd_rpm_gfx3d_clk_src,
- 	[RPM_SMD_GFX3D_A_CLK_SRC]	= &clk_smd_rpm_gfx3d_a_clk_src,
--	[RPM_SMD_BIMC_A_CLK]		= &clk_smd_rpm_bimc_a_clk,
--	[RPM_SMD_OCMEMGX_CLK]		= &clk_smd_rpm_ocmemgx_clk,
--	[RPM_SMD_OCMEMGX_A_CLK]		= &clk_smd_rpm_ocmemgx_a_clk,
- 	[RPM_SMD_QDSS_CLK]		= &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK]		= &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_CXO_D0]		= &clk_smd_rpm_cxo_d0,
-@@ -684,20 +724,14 @@ static struct clk_smd_rpm *msm8974_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8974 = {
- 	.clks = msm8974_clks,
- 	.num_clks = ARRAY_SIZE(msm8974_clks),
-+	.icc_clks = bimc_pcnoc_snoc_cnoc_ocmem_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_cnoc_ocmem_icc_clks),
- 	.scaling_before_handover = true,
- };
- 
- static struct clk_smd_rpm *msm8976_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PCNOC_CLK] = &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PCNOC_A_CLK] = &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
--	[RPM_SMD_SYSMMNOC_CLK]	= &clk_smd_rpm_bus_2_sysmmnoc_clk,
--	[RPM_SMD_SYSMMNOC_A_CLK] = &clk_smd_rpm_bus_2_sysmmnoc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_BB_CLK1] = &clk_smd_rpm_bb_clk1,
-@@ -718,24 +752,15 @@ static struct clk_smd_rpm *msm8976_clks[] = {
- 
- static const struct rpm_smd_clk_desc rpm_clk_msm8976 = {
- 	.clks = msm8976_clks,
--	.num_clks = ARRAY_SIZE(msm8976_clks),
-+	.icc_clks = bimc_pcnoc_snoc_smmnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_smmnoc_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8992_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PNOC_CLK] = &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PNOC_A_CLK] = &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_OCMEMGX_CLK] = &clk_smd_rpm_ocmemgx_clk,
--	[RPM_SMD_OCMEMGX_A_CLK] = &clk_smd_rpm_ocmemgx_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_2_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_2_cnoc_a_clk,
- 	[RPM_SMD_GFX3D_CLK_SRC] = &clk_smd_rpm_gfx3d_clk_src,
- 	[RPM_SMD_GFX3D_A_CLK_SRC] = &clk_smd_rpm_gfx3d_a_clk_src,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_1_snoc_a_clk,
- 	[RPM_SMD_BB_CLK1] = &clk_smd_rpm_bb_clk1,
- 	[RPM_SMD_BB_CLK1_A] = &clk_smd_rpm_bb_clk1_a,
- 	[RPM_SMD_BB_CLK1_PIN] = &clk_smd_rpm_bb_clk1_pin,
-@@ -777,23 +802,15 @@ static struct clk_smd_rpm *msm8992_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8992 = {
- 	.clks = msm8992_clks,
- 	.num_clks = ARRAY_SIZE(msm8992_clks),
-+	.icc_clks = bimc_pcnoc_snoc_cnoc_ocmem_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_cnoc_ocmem_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8994_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PNOC_CLK] = &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PNOC_A_CLK] = &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_OCMEMGX_CLK] = &clk_smd_rpm_ocmemgx_clk,
--	[RPM_SMD_OCMEMGX_A_CLK] = &clk_smd_rpm_ocmemgx_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_2_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_2_cnoc_a_clk,
- 	[RPM_SMD_GFX3D_CLK_SRC] = &clk_smd_rpm_gfx3d_clk_src,
- 	[RPM_SMD_GFX3D_A_CLK_SRC] = &clk_smd_rpm_gfx3d_a_clk_src,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_1_snoc_a_clk,
- 	[RPM_SMD_BB_CLK1] = &clk_smd_rpm_bb_clk1,
- 	[RPM_SMD_BB_CLK1_A] = &clk_smd_rpm_bb_clk1_a,
- 	[RPM_SMD_BB_CLK1_PIN] = &clk_smd_rpm_bb_clk1_pin,
-@@ -837,29 +854,17 @@ static struct clk_smd_rpm *msm8994_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8994 = {
- 	.clks = msm8994_clks,
- 	.num_clks = ARRAY_SIZE(msm8994_clks),
-+	.icc_clks = bimc_pcnoc_snoc_cnoc_ocmem_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_cnoc_ocmem_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8996_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PCNOC_CLK] = &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PCNOC_A_CLK] = &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_2_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_2_cnoc_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
--	[RPM_SMD_MMAXI_CLK] = &clk_smd_rpm_mmssnoc_axi_rpm_clk,
--	[RPM_SMD_MMAXI_A_CLK] = &clk_smd_rpm_mmssnoc_axi_rpm_a_clk,
- 	[RPM_SMD_IPA_CLK] = &clk_smd_rpm_ipa_clk,
- 	[RPM_SMD_IPA_A_CLK] = &clk_smd_rpm_ipa_a_clk,
- 	[RPM_SMD_CE1_CLK] = &clk_smd_rpm_ce1_clk,
- 	[RPM_SMD_CE1_A_CLK] = &clk_smd_rpm_ce1_a_clk,
--	[RPM_SMD_AGGR1_NOC_CLK] = &clk_smd_rpm_branch_aggre1_noc_clk,
--	[RPM_SMD_AGGR1_NOC_A_CLK] = &clk_smd_rpm_branch_aggre1_noc_a_clk,
--	[RPM_SMD_AGGR2_NOC_CLK] = &clk_smd_rpm_branch_aggre2_noc_clk,
--	[RPM_SMD_AGGR2_NOC_A_CLK] = &clk_smd_rpm_branch_aggre2_noc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_BB_CLK1] = &clk_smd_rpm_bb_clk1,
-@@ -891,6 +896,8 @@ static struct clk_smd_rpm *msm8996_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8996 = {
- 	.clks = msm8996_clks,
- 	.num_clks = ARRAY_SIZE(msm8996_clks),
-+	.icc_clks = msm8996_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(msm8996_icc_clks),
- };
- 
- static struct clk_smd_rpm *qcs404_clks[] = {
-@@ -919,19 +926,15 @@ static struct clk_smd_rpm *qcs404_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_qcs404 = {
- 	.clks = qcs404_clks,
- 	.num_clks = ARRAY_SIZE(qcs404_clks),
-+	.icc_clks = bimc_pcnoc_snoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8998_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_PCNOC_CLK] = &clk_smd_rpm_bus_0_pcnoc_clk,
- 	[RPM_SMD_PCNOC_A_CLK] = &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_2_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_2_cnoc_a_clk,
- 	[RPM_SMD_CE1_CLK] = &clk_smd_rpm_ce1_clk,
- 	[RPM_SMD_CE1_A_CLK] = &clk_smd_rpm_ce1_a_clk,
- 	[RPM_SMD_DIV_CLK1] = &clk_smd_rpm_div_clk1,
-@@ -954,12 +957,6 @@ static struct clk_smd_rpm *msm8998_clks[] = {
- 	[RPM_SMD_LN_BB_CLK2_A_PIN] = &clk_smd_rpm_ln_bb_clk2_a_pin,
- 	[RPM_SMD_LN_BB_CLK3_PIN] = &clk_smd_rpm_ln_bb_clk3_pin,
- 	[RPM_SMD_LN_BB_CLK3_A_PIN] = &clk_smd_rpm_ln_bb_clk3_a_pin,
--	[RPM_SMD_MMAXI_CLK] = &clk_smd_rpm_mmssnoc_axi_rpm_clk,
--	[RPM_SMD_MMAXI_A_CLK] = &clk_smd_rpm_mmssnoc_axi_rpm_a_clk,
--	[RPM_SMD_AGGR1_NOC_CLK] = &clk_smd_rpm_aggre1_noc_clk,
--	[RPM_SMD_AGGR1_NOC_A_CLK] = &clk_smd_rpm_aggre1_noc_a_clk,
--	[RPM_SMD_AGGR2_NOC_CLK] = &clk_smd_rpm_aggre2_noc_clk,
--	[RPM_SMD_AGGR2_NOC_A_CLK] = &clk_smd_rpm_aggre2_noc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_RF_CLK1] = &clk_smd_rpm_rf_clk1,
-@@ -979,27 +976,19 @@ static struct clk_smd_rpm *msm8998_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8998 = {
- 	.clks = msm8998_clks,
- 	.num_clks = ARRAY_SIZE(msm8998_clks),
-+	.icc_clks = msm8998_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(msm8998_icc_clks),
- };
- 
- static struct clk_smd_rpm *sdm660_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_2_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_2_cnoc_a_clk,
- 	[RPM_SMD_CNOC_PERIPH_CLK] = &clk_smd_rpm_bus_0_pcnoc_clk,
- 	[RPM_SMD_CNOC_PERIPH_A_CLK] = &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
--	[RPM_SMD_MMSSNOC_AXI_CLK] = &clk_smd_rpm_mmssnoc_axi_rpm_clk,
--	[RPM_SMD_MMSSNOC_AXI_CLK_A] = &clk_smd_rpm_mmssnoc_axi_rpm_a_clk,
- 	[RPM_SMD_IPA_CLK] = &clk_smd_rpm_ipa_clk,
- 	[RPM_SMD_IPA_A_CLK] = &clk_smd_rpm_ipa_a_clk,
- 	[RPM_SMD_CE1_CLK] = &clk_smd_rpm_ce1_clk,
- 	[RPM_SMD_CE1_A_CLK] = &clk_smd_rpm_ce1_a_clk,
--	[RPM_SMD_AGGR2_NOC_CLK] = &clk_smd_rpm_aggre2_noc_clk,
--	[RPM_SMD_AGGR2_NOC_A_CLK] = &clk_smd_rpm_aggre2_noc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_RF_CLK1] = &clk_smd_rpm_rf_clk1,
-@@ -1025,15 +1014,13 @@ static struct clk_smd_rpm *sdm660_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_sdm660 = {
- 	.clks = sdm660_clks,
- 	.num_clks = ARRAY_SIZE(sdm660_clks),
-+	.icc_clks = sdm660_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(sdm660_icc_clks),
- };
- 
- static struct clk_smd_rpm *mdm9607_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PCNOC_CLK]		= &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PCNOC_A_CLK]		= &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_BIMC_CLK]		= &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK]		= &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_QPIC_CLK]		= &clk_smd_rpm_qpic_clk,
- 	[RPM_SMD_QPIC_CLK_A]		= &clk_smd_rpm_qpic_a_clk,
- 	[RPM_SMD_QDSS_CLK]		= &clk_smd_rpm_qdss_clk,
-@@ -1047,21 +1034,15 @@ static struct clk_smd_rpm *mdm9607_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_mdm9607 = {
- 	.clks = mdm9607_clks,
- 	.num_clks = ARRAY_SIZE(mdm9607_clks),
-+	.icc_clks = bimc_pcnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_icc_clks),
- };
- 
- static struct clk_smd_rpm *msm8953_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC]		= &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_PCNOC_CLK]		= &clk_smd_rpm_bus_0_pcnoc_clk,
--	[RPM_SMD_PCNOC_A_CLK]		= &clk_smd_rpm_bus_0_pcnoc_a_clk,
--	[RPM_SMD_SNOC_CLK]		= &clk_smd_rpm_bus_1_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK]		= &clk_smd_rpm_bus_1_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK]		= &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK]		= &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_IPA_CLK]		= &clk_smd_rpm_ipa_clk,
- 	[RPM_SMD_IPA_A_CLK]		= &clk_smd_rpm_ipa_a_clk,
--	[RPM_SMD_SYSMMNOC_CLK]		= &clk_smd_rpm_bus_2_sysmmnoc_clk,
--	[RPM_SMD_SYSMMNOC_A_CLK]	= &clk_smd_rpm_bus_2_sysmmnoc_a_clk,
- 	[RPM_SMD_QDSS_CLK]		= &clk_smd_rpm_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK]		= &clk_smd_rpm_qdss_a_clk,
- 	[RPM_SMD_BB_CLK1]		= &clk_smd_rpm_bb_clk1,
-@@ -1083,23 +1064,19 @@ static struct clk_smd_rpm *msm8953_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_msm8953 = {
- 	.clks = msm8953_clks,
- 	.num_clks = ARRAY_SIZE(msm8953_clks),
-+	.icc_clks = bimc_pcnoc_snoc_smmnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(bimc_pcnoc_snoc_smmnoc_icc_clks),
- };
- 
- static struct clk_smd_rpm *sm6125_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_2_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_2_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_branch_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_branch_qdss_a_clk,
- 	[RPM_SMD_RF_CLK1] = &clk_smd_rpm_rf_clk1,
- 	[RPM_SMD_RF_CLK1_A] = &clk_smd_rpm_rf_clk1_a,
- 	[RPM_SMD_RF_CLK2] = &clk_smd_rpm_rf_clk2,
- 	[RPM_SMD_RF_CLK2_A] = &clk_smd_rpm_rf_clk2_a,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_1_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_1_cnoc_a_clk,
- 	[RPM_SMD_IPA_CLK] = &clk_smd_rpm_ipa_clk,
- 	[RPM_SMD_IPA_A_CLK] = &clk_smd_rpm_ipa_a_clk,
- 	[RPM_SMD_CE1_CLK] = &clk_smd_rpm_ce1_clk,
-@@ -1110,12 +1087,6 @@ static struct clk_smd_rpm *sm6125_clks[] = {
- 	[RPM_SMD_LN_BB_CLK2_A] = &clk_smd_rpm_ln_bb_clk2_a,
- 	[RPM_SMD_LN_BB_CLK3] = &clk_smd_rpm_ln_bb_clk3,
- 	[RPM_SMD_LN_BB_CLK3_A] = &clk_smd_rpm_ln_bb_clk3_a,
--	[RPM_SMD_QUP_CLK] = &clk_smd_rpm_qup_clk,
--	[RPM_SMD_QUP_A_CLK] = &clk_smd_rpm_qup_a_clk,
--	[RPM_SMD_MMRT_CLK] = &clk_smd_rpm_mmrt_clk,
--	[RPM_SMD_MMRT_A_CLK] = &clk_smd_rpm_mmrt_a_clk,
--	[RPM_SMD_MMNRT_CLK] = &clk_smd_rpm_mmnrt_clk,
--	[RPM_SMD_MMNRT_A_CLK] = &clk_smd_rpm_mmnrt_a_clk,
- 	[RPM_SMD_SNOC_PERIPH_CLK] = &clk_smd_rpm_bus_0_snoc_periph_clk,
- 	[RPM_SMD_SNOC_PERIPH_A_CLK] = &clk_smd_rpm_bus_0_snoc_periph_a_clk,
- 	[RPM_SMD_SNOC_LPASS_CLK] = &clk_smd_rpm_bus_5_snoc_lpass_clk,
-@@ -1125,34 +1096,24 @@ static struct clk_smd_rpm *sm6125_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_sm6125 = {
- 	.clks = sm6125_clks,
- 	.num_clks = ARRAY_SIZE(sm6125_clks),
-+	.icc_clks = sm_qnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(sm_qnoc_icc_clks)
- };
- 
- /* SM6115 */
- static struct clk_smd_rpm *sm6115_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_2_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_2_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_branch_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_branch_qdss_a_clk,
- 	[RPM_SMD_RF_CLK1] = &clk_smd_rpm_rf_clk1,
- 	[RPM_SMD_RF_CLK1_A] = &clk_smd_rpm_rf_clk1_a,
- 	[RPM_SMD_RF_CLK2] = &clk_smd_rpm_rf_clk2,
- 	[RPM_SMD_RF_CLK2_A] = &clk_smd_rpm_rf_clk2_a,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_1_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_1_cnoc_a_clk,
- 	[RPM_SMD_IPA_CLK] = &clk_smd_rpm_ipa_clk,
- 	[RPM_SMD_IPA_A_CLK] = &clk_smd_rpm_ipa_a_clk,
- 	[RPM_SMD_CE1_CLK] = &clk_smd_rpm_ce1_clk,
- 	[RPM_SMD_CE1_A_CLK] = &clk_smd_rpm_ce1_a_clk,
--	[RPM_SMD_QUP_CLK] = &clk_smd_rpm_qup_clk,
--	[RPM_SMD_QUP_A_CLK] = &clk_smd_rpm_qup_a_clk,
--	[RPM_SMD_MMRT_CLK] = &clk_smd_rpm_mmrt_clk,
--	[RPM_SMD_MMRT_A_CLK] = &clk_smd_rpm_mmrt_a_clk,
--	[RPM_SMD_MMNRT_CLK] = &clk_smd_rpm_mmnrt_clk,
--	[RPM_SMD_MMNRT_A_CLK] = &clk_smd_rpm_mmnrt_a_clk,
- 	[RPM_SMD_SNOC_PERIPH_CLK] = &clk_smd_rpm_bus_0_snoc_periph_clk,
- 	[RPM_SMD_SNOC_PERIPH_A_CLK] = &clk_smd_rpm_bus_0_snoc_periph_a_clk,
- 	[RPM_SMD_SNOC_LPASS_CLK] = &clk_smd_rpm_bus_5_snoc_lpass_clk,
-@@ -1166,27 +1127,17 @@ static struct clk_smd_rpm *sm6115_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_sm6115 = {
- 	.clks = sm6115_clks,
- 	.num_clks = ARRAY_SIZE(sm6115_clks),
-+	.icc_clks = sm_qnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(sm_qnoc_icc_clks)
- };
- 
- static struct clk_smd_rpm *sm6375_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_2_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_2_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_branch_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_branch_qdss_a_clk,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_1_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_1_cnoc_a_clk,
- 	[RPM_SMD_IPA_CLK] = &clk_smd_rpm_ipa_clk,
- 	[RPM_SMD_IPA_A_CLK] = &clk_smd_rpm_ipa_a_clk,
--	[RPM_SMD_QUP_CLK] = &clk_smd_rpm_qup_clk,
--	[RPM_SMD_QUP_A_CLK] = &clk_smd_rpm_qup_a_clk,
--	[RPM_SMD_MMRT_CLK] = &clk_smd_rpm_mmrt_clk,
--	[RPM_SMD_MMRT_A_CLK] = &clk_smd_rpm_mmrt_a_clk,
--	[RPM_SMD_MMNRT_CLK] = &clk_smd_rpm_mmnrt_clk,
--	[RPM_SMD_MMNRT_A_CLK] = &clk_smd_rpm_mmnrt_a_clk,
- 	[RPM_SMD_SNOC_PERIPH_CLK] = &clk_smd_rpm_bus_0_snoc_periph_clk,
- 	[RPM_SMD_SNOC_PERIPH_A_CLK] = &clk_smd_rpm_bus_0_snoc_periph_a_clk,
- 	[RPM_SMD_SNOC_LPASS_CLK] = &clk_smd_rpm_bus_5_snoc_lpass_clk,
-@@ -1203,31 +1154,21 @@ static struct clk_smd_rpm *sm6375_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_sm6375 = {
- 	.clks = sm6375_clks,
- 	.num_clks = ARRAY_SIZE(sm6375_clks),
-+	.icc_clks = sm_qnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(sm_qnoc_icc_clks)
- };
- 
- static struct clk_smd_rpm *qcm2290_clks[] = {
- 	[RPM_SMD_XO_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo,
- 	[RPM_SMD_XO_A_CLK_SRC] = &clk_smd_rpm_branch_bi_tcxo_a,
--	[RPM_SMD_SNOC_CLK] = &clk_smd_rpm_bus_2_snoc_clk,
--	[RPM_SMD_SNOC_A_CLK] = &clk_smd_rpm_bus_2_snoc_a_clk,
--	[RPM_SMD_BIMC_CLK] = &clk_smd_rpm_bimc_clk,
--	[RPM_SMD_BIMC_A_CLK] = &clk_smd_rpm_bimc_a_clk,
- 	[RPM_SMD_QDSS_CLK] = &clk_smd_rpm_branch_qdss_clk,
- 	[RPM_SMD_QDSS_A_CLK] = &clk_smd_rpm_branch_qdss_a_clk,
- 	[RPM_SMD_LN_BB_CLK2] = &clk_smd_rpm_ln_bb_clk2,
- 	[RPM_SMD_LN_BB_CLK2_A] = &clk_smd_rpm_ln_bb_clk2_a,
- 	[RPM_SMD_RF_CLK3] = &clk_smd_rpm_38m4_rf_clk3,
- 	[RPM_SMD_RF_CLK3_A] = &clk_smd_rpm_38m4_rf_clk3_a,
--	[RPM_SMD_CNOC_CLK] = &clk_smd_rpm_bus_1_cnoc_clk,
--	[RPM_SMD_CNOC_A_CLK] = &clk_smd_rpm_bus_1_cnoc_a_clk,
- 	[RPM_SMD_IPA_CLK] = &clk_smd_rpm_ipa_clk,
- 	[RPM_SMD_IPA_A_CLK] = &clk_smd_rpm_ipa_a_clk,
--	[RPM_SMD_QUP_CLK] = &clk_smd_rpm_qup_clk,
--	[RPM_SMD_QUP_A_CLK] = &clk_smd_rpm_qup_a_clk,
--	[RPM_SMD_MMRT_CLK] = &clk_smd_rpm_mmrt_clk,
--	[RPM_SMD_MMRT_A_CLK] = &clk_smd_rpm_mmrt_a_clk,
--	[RPM_SMD_MMNRT_CLK] = &clk_smd_rpm_mmnrt_clk,
--	[RPM_SMD_MMNRT_A_CLK] = &clk_smd_rpm_mmnrt_a_clk,
- 	[RPM_SMD_SNOC_PERIPH_CLK] = &clk_smd_rpm_bus_0_snoc_periph_clk,
- 	[RPM_SMD_SNOC_PERIPH_A_CLK] = &clk_smd_rpm_bus_0_snoc_periph_a_clk,
- 	[RPM_SMD_SNOC_LPASS_CLK] = &clk_smd_rpm_bus_5_snoc_lpass_clk,
-@@ -1249,6 +1190,8 @@ static struct clk_smd_rpm *qcm2290_clks[] = {
- static const struct rpm_smd_clk_desc rpm_clk_qcm2290 = {
- 	.clks = qcm2290_clks,
- 	.num_clks = ARRAY_SIZE(qcm2290_clks),
-+	.icc_clks = sm_qnoc_icc_clks,
-+	.num_icc_clks = ARRAY_SIZE(sm_qnoc_icc_clks)
- };
- 
- static const struct of_device_id rpm_smd_clk_match_table[] = {
-@@ -1324,6 +1267,15 @@ static int rpm_smd_clk_probe(struct platform_device *pdev)
- 			goto err;
- 	}
- 
-+	for (i = 0; i < desc->num_icc_clks; i++) {
-+		if (!desc->icc_clks[i])
-+			continue;
-+
-+		ret = clk_smd_rpm_handoff(desc->icc_clks[i]);
-+		if (ret)
-+			goto err;
-+	}
-+
- 	if (!desc->scaling_before_handover) {
- 		ret = clk_smd_rpm_enable_scaling();
- 		if (ret)
+@@ -102,6 +104,7 @@ struct qcom_icc_desc {
+ 	const char * const *bus_clocks;
+ 	const char * const *intf_clocks;
+ 	size_t num_intf_clocks;
++	bool keep_alive;
+ 	bool no_clk_scaling;
+ 	enum qcom_icc_type type;
+ 	const struct regmap_config *regmap_cfg;
 
 -- 
 2.40.1
