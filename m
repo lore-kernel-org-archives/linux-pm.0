@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2DB0C7EE29
-	for <linux-pm@archiver.kernel.org>; Tue, 30 May 2023 10:20:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA986C7EE31
+	for <linux-pm@archiver.kernel.org>; Tue, 30 May 2023 10:20:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230021AbjE3KUN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 May 2023 06:20:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51866 "EHLO
+        id S231183AbjE3KUW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 May 2023 06:20:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230459AbjE3KUL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2023 06:20:11 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B107F9
-        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:08 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id 2adb3069b0e04-4f4e71a09a7so4724880e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:07 -0700 (PDT)
+        with ESMTP id S231222AbjE3KUO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2023 06:20:14 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C176BF7
+        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:10 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-4f4f3ac389eso3272666e87.1
+        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 03:20:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1685442006; x=1688034006;
+        d=linaro.org; s=google; t=1685442009; x=1688034009;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=VvXpNIbHmqtd4lG8jcv7ZzbkoIqN9kOw2a/0JaApzvg=;
-        b=nm8S0ICs/LpwJ5/vDr0fd5IwjPwej8X5egeLTLnaOEyL+sObY7zIlZUwD0wCwzw5Ra
-         YMLO7XxpAo6jltNKhmLabdHmu+OOPDT0T8R4rB00vqaSSp0uO1sWQUfJbZUJeIoSkJGc
-         c3qVoYHkIxs+oQMJ7crPlm3Mdp723q8c4aXdBTaggGPRZHyjYrAxVGYhTVuCzaTsYbcH
-         chhgfNV626FRO8m8PFCEAHbrHIV6yFhCFGwsbX6uqdeICuonE6RsGUWNS0I2IDqCDfRy
-         e+HrJA+TxU1iaLyJ6/ojVjBVrNmdltUSckZqayHVhOnEThXlKDweEPhUQ/7rHlzKnJc6
-         ZXCw==
+        bh=K2kIraAUGywb2+d2U4eiUZYtYMrjO65pXPVCKxcFzAQ=;
+        b=FXLaLTk0DnaJqBKJCU01rRK0ZsoXEA9e8UpGSsALNLu8ghDb+E6k6aWSyNSyVC6lPa
+         ilZz6vEWkOsaRlzIs9sC3ObchnfoWlO5XhSKc7ZGkKVZalmFGQkZWEmLghC4O/5l36xI
+         FzrQATVKeWmyc60EN/bypsWM/feyiHYmvVDEB7FXmpg+LeDlqC5hnyvTEHPYqvYcx7B0
+         3gtj57XsHk+bb1gs0hniq3yVlPQK21vbSXtr2WmQGEtx3+AEQ5jV7LkzjXduyRJaKwu2
+         rdij/JhgaI3sB8nupnRZSkyceBSsbbCSqXfQry0BOShYN2wmi7xlDdhavkdqwEsm0Jyc
+         LNmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685442006; x=1688034006;
+        d=1e100.net; s=20221208; t=1685442009; x=1688034009;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=VvXpNIbHmqtd4lG8jcv7ZzbkoIqN9kOw2a/0JaApzvg=;
-        b=Qj/3Lq0E2SoLrNsmBWjYLgp6I0KGanlisxWhiorPCOzr164cMXUsRs2khVseSRT/hY
-         JiX6EVTXfa0Hh/HiSDYK8Ue/ezcHC9uykE3l8VOdgmmFdo5wc7tVbAJygWbxA1lNH5IV
-         CqDVpt6JR8cND6LA8+nz7Ya3AvOu45Sd2ocercseDzMkjvBzsVSAoSkVTeP+A2/xES2a
-         cJKsODBAKMD77NBhoDTHc+ODGudSzTgFa/pM9yL+HGNnC0Leb9YaR7ghigz4MJ1JsS+T
-         E1uuk+Gz9URcIQUun2XQ4s2+cCVm6kv+egGtpqFP29G7qNe8pYWvnKgE3NXq7S3BRIan
-         9zCw==
-X-Gm-Message-State: AC+VfDxdAUFPQUeTqh4SwsQ5pJvBgceup+LUEyd7RaaJN8okINiEa4bi
-        ILW8pjgiJMLxli4QmRug7kBodw==
-X-Google-Smtp-Source: ACHHUZ5+zKi+lgYEbZ1esDpzoBfTLPxmkNqynE9WjjmRdGWq94hAmEPOF3K7nDXeSyVqyzjcalxqFg==
-X-Received: by 2002:a05:6512:968:b0:4e8:487a:7c2e with SMTP id v8-20020a056512096800b004e8487a7c2emr501857lft.14.1685442006314;
-        Tue, 30 May 2023 03:20:06 -0700 (PDT)
+        bh=K2kIraAUGywb2+d2U4eiUZYtYMrjO65pXPVCKxcFzAQ=;
+        b=OG/0fXPndPPMFJJnNlXirJNnCD2DlJ2Y55XsQlbhBXUozQKJDIOyGsQnYOQCatx6hh
+         3ynMb5hZw1ISSeDMb7dG69fVMMvyW+w5NIiT+NXzxD58EAUP/YEOVK/vD1ailN7Qe2zv
+         r9L3QhyVUvqf+3RVuv7dFId/Cn8qz8PlVH7t2oxjyXu2iSG0Ti1LV+jn5oP9F+05KRKR
+         u/HmnOovfDP4xy5lxtF8RHJ1HAw73/5Qm2H24ksjNakp7+VL0BcVjBoGipxsuEKsXHwV
+         Gs32YPRR8jX2OOWWW1Mvz6WWmST/iUeNKez/NAWaz/yIRBD/67oz5ER2ag3RpDdTvOal
+         eQPA==
+X-Gm-Message-State: AC+VfDwtQyARD9PesNqzjmhAClYo4ttYBvNznEbLRFI6z8CMhXbV7p6O
+        V4d183bCfntswBFSqXxtNDuFAQ==
+X-Google-Smtp-Source: ACHHUZ6V9aiyPB1rEZrvr74Gq50/5rPQenYEg+WViShIap4NPP1ErYCPYs2dr4eVPFn7guUzBNEeSQ==
+X-Received: by 2002:ac2:5393:0:b0:4f2:5007:bd7f with SMTP id g19-20020ac25393000000b004f25007bd7fmr567797lfh.36.1685442009111;
+        Tue, 30 May 2023 03:20:09 -0700 (PDT)
 Received: from [192.168.1.101] (abyj77.neoplus.adsl.tpnet.pl. [83.9.29.77])
-        by smtp.gmail.com with ESMTPSA id c25-20020ac24159000000b004cc8196a308sm290902lfi.98.2023.05.30.03.20.05
+        by smtp.gmail.com with ESMTPSA id c25-20020ac24159000000b004cc8196a308sm290902lfi.98.2023.05.30.03.20.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 May 2023 03:20:06 -0700 (PDT)
+        Tue, 30 May 2023 03:20:08 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 30 May 2023 12:20:01 +0200
-Subject: [PATCH 02/20] clk: qcom: smd-rpm: Move some RPM resources to the
- common header
+Date:   Tue, 30 May 2023 12:20:03 +0200
+Subject: [PATCH 04/20] clk: qcom: smd-rpm: Export clock scaling
+ availability
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v1-2-1bf8e6663c4e@linaro.org>
+Message-Id: <20230526-topic-smd_icc-v1-4-1bf8e6663c4e@linaro.org>
 References: <20230526-topic-smd_icc-v1-0-1bf8e6663c4e@linaro.org>
 In-Reply-To: <20230526-topic-smd_icc-v1-0-1bf8e6663c4e@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -70,90 +70,76 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1685442001; l=2376;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1685442001; l=1931;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=ApK/VPfTmld07UKzNhGBat7UaI7zSF3PDIl2T4HqloY=;
- b=rSjHIbUA7ZHfYPhT2WvjHFRqSyeNfPKb8oZvSP/GEIX6r6PpXXzQLHMrQUZnUjUmiAQcskOnF
- GkrinvwTeNDD7nra0QIM6+AOf0Nu7SwerMpzW2LOHwnb0E4QHAWiNBa
+ bh=vv9ovaVfudhM+q+5bDTICrg6LSXL32E3dDhuR4rNt6k=;
+ b=/ynbR+DidbffM3nQVfBIlotgJXYyM7xDfgIAvWguD3MbX/y+Tz21Z3ModMTfX2ZnhmxTxTZmY
+ rGXg7qPFu4TDYEbz++ruI7IA9iK9AGtL+ClI+4WyA6KXMk6XcLlm/Be
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In preparation for handling the bus clocks in the icc driver, carve out
-some defines and a struct definition to the common rpm header.
+Before we issue a call to RPM through clk_smd_rpm_enable_scaling() the
+clock rate requests will not be commited in hardware. This poses a
+race threat since we're accessing the bus clocks directly from within
+the interconnect framework.
+
+Add a marker to indicate that we're good to go with sending new requests
+and export it so that it can be referenced from icc.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/clk/qcom/clk-smd-rpm.c   | 13 -------------
- include/linux/soc/qcom/smd-rpm.h | 15 +++++++++++++++
- 2 files changed, 15 insertions(+), 13 deletions(-)
+ drivers/clk/qcom/clk-smd-rpm.c   | 9 +++++++++
+ include/linux/soc/qcom/smd-rpm.h | 2 ++
+ 2 files changed, 11 insertions(+)
 
 diff --git a/drivers/clk/qcom/clk-smd-rpm.c b/drivers/clk/qcom/clk-smd-rpm.c
-index e4de74b68797..937cb1515968 100644
+index b63f946e4520..f8f5977408e0 100644
 --- a/drivers/clk/qcom/clk-smd-rpm.c
 +++ b/drivers/clk/qcom/clk-smd-rpm.c
-@@ -18,13 +18,6 @@
+@@ -151,6 +151,7 @@
+ #define to_clk_smd_rpm(_hw) container_of(_hw, struct clk_smd_rpm, hw)
  
- #include <dt-bindings/clock/qcom,rpmcc.h>
+ static struct qcom_smd_rpm *rpmcc_smd_rpm;
++static bool smd_rpm_clk_scaling;
  
--#define QCOM_RPM_KEY_SOFTWARE_ENABLE			0x6e657773
--#define QCOM_RPM_KEY_PIN_CTRL_CLK_BUFFER_ENABLE_KEY	0x62636370
--#define QCOM_RPM_SMD_KEY_RATE				0x007a484b
--#define QCOM_RPM_SMD_KEY_ENABLE				0x62616e45
--#define QCOM_RPM_SMD_KEY_STATE				0x54415453
--#define QCOM_RPM_SCALING_ENABLE_ID			0x2
--
- #define __DEFINE_CLK_SMD_RPM_PREFIX(_prefix, _name, _active,		      \
- 				    type, r_id, key)			      \
- 	static struct clk_smd_rpm clk_smd_rpm_##_prefix##_active;	      \
-@@ -171,12 +164,6 @@ struct clk_smd_rpm {
- 	unsigned long rate;
- };
+ struct clk_smd_rpm {
+ 	const int rpm_res_type;
+@@ -393,6 +394,12 @@ static unsigned long clk_smd_rpm_recalc_rate(struct clk_hw *hw,
+ 	return r->rate;
+ }
  
--struct clk_smd_rpm_req {
--	__le32 key;
--	__le32 nbytes;
--	__le32 value;
--};
--
- struct rpm_smd_clk_desc {
- 	struct clk_smd_rpm **clks;
- 	size_t num_clks;
++bool qcom_smd_rpm_scaling_available(void)
++{
++	return smd_rpm_clk_scaling;
++}
++EXPORT_SYMBOL_GPL(qcom_smd_rpm_scaling_available);
++
+ static int clk_smd_rpm_enable_scaling(void)
+ {
+ 	int ret;
+@@ -418,6 +425,8 @@ static int clk_smd_rpm_enable_scaling(void)
+ 		return ret;
+ 	}
+ 
++	smd_rpm_clk_scaling = true;
++
+ 	pr_debug("%s: RPM clock scaling is enabled\n", __func__);
+ 	return 0;
+ }
 diff --git a/include/linux/soc/qcom/smd-rpm.h b/include/linux/soc/qcom/smd-rpm.h
-index 99499e4b080e..8190878645f9 100644
+index 8190878645f9..420f6c79d535 100644
 --- a/include/linux/soc/qcom/smd-rpm.h
 +++ b/include/linux/soc/qcom/smd-rpm.h
-@@ -2,6 +2,8 @@
- #ifndef __QCOM_SMD_RPM_H__
- #define __QCOM_SMD_RPM_H__
- 
-+#include <linux/types.h>
-+
- struct qcom_smd_rpm;
- 
- #define QCOM_SMD_RPM_ACTIVE_STATE	0
-@@ -45,6 +47,19 @@ struct qcom_smd_rpm;
- #define QCOM_SMD_RPM_PKA_CLK	0x616b70
- #define QCOM_SMD_RPM_MCFG_CLK	0x6766636d
- 
-+#define QCOM_RPM_KEY_SOFTWARE_ENABLE			0x6e657773
-+#define QCOM_RPM_KEY_PIN_CTRL_CLK_BUFFER_ENABLE_KEY	0x62636370
-+#define QCOM_RPM_SMD_KEY_RATE				0x007a484b
-+#define QCOM_RPM_SMD_KEY_ENABLE				0x62616e45
-+#define QCOM_RPM_SMD_KEY_STATE				0x54415453
-+#define QCOM_RPM_SCALING_ENABLE_ID			0x2
-+
-+struct clk_smd_rpm_req {
-+	__le32 key;
-+	__le32 nbytes;
-+	__le32 value;
-+};
-+
- int qcom_rpm_smd_write(struct qcom_smd_rpm *rpm,
- 		       int state,
+@@ -65,4 +65,6 @@ int qcom_rpm_smd_write(struct qcom_smd_rpm *rpm,
  		       u32 resource_type, u32 resource_id,
+ 		       void *buf, size_t count);
+ 
++bool qcom_smd_rpm_scaling_available(void);
++
+ #endif
 
 -- 
 2.40.1
