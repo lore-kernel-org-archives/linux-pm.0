@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C50EC7EE23
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20793C7EE33
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237189AbjEaNv0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:51:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60312 "EHLO
+        id S237218AbjEaNvU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:51:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237177AbjEaNt5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:49:57 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD4811BD8;
-        Wed, 31 May 2023 06:45:32 -0700 (PDT)
+        with ESMTP id S237440AbjEaNuh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:50:37 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4C8C3591;
+        Wed, 31 May 2023 06:46:09 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 4DEF763B22;
-        Wed, 31 May 2023 13:44:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9E20C4339B;
-        Wed, 31 May 2023 13:44:16 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 8685A63AEF;
+        Wed, 31 May 2023 13:46:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3585EC4339B;
+        Wed, 31 May 2023 13:46:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540657;
-        bh=a4agFHeHv3LUURie+04g3677uYkw0LGl6UHrB/kX5I4=;
+        s=k20201202; t=1685540769;
+        bh=N4srQR9OZBgSCwNEzl/+0LuTOtskbuyIIi8sxgsCfrU=;
         h=From:To:Cc:Subject:Date:From;
-        b=CboGZTnMlxYo5dwFzgS7yNxnX1u3amN9wVEnmzJ1SCHMaKVe23kN45kACHVzdcTmd
-         w5FNZUhAmaUjqH37Qht34yqvXDHUp+ZCKEuqhSRv9vwRBmKuvtoifID4K+Y0Uj9PWV
-         KKvP46avRhulSRfB9l4/2b8aRV9imUFkBitxX2ixO7qt0FjXjtfnqIpgT/Q4NmJ5KJ
-         L6DM7lmSj0766ORid2rZk+2Y6FpdvWYE+/y6UDoVRjTjyATYxCRO3Ohj1aiI0Rvn2d
-         gdwVqwbdb2y5JputFdymtDye0QiTlEkhS98H5Diobe7SA2WNljIGSVSqs3naLqPh8r
-         26YiQspEr0YGg==
+        b=gZRU15Z0xBbhkm0YKM5XOrnLX1Z6OhU5c5TD5QcaFT76Uo+E+jOs9971Rh/RdbZNa
+         djifW5fY8mb1y1B/t85MOig+RV2ft8Mx6V/V3TJU4BHqoa5zO7ZcrT3yYJubyPjqvH
+         2EGbxX/ZVCNL24MykNkWaY6VLZaah17QcvrC+Fzq6WpIQGrBPV7rvxP1Vz+sOkp5P5
+         UpFtOPDRxzfrDsNu0ouMWnW6IdfIAAj8eexarq3zaQWRQ1HMzRVmDMl5ke8NzhUag9
+         xGTwMNbhhOdKFbwgc9Zum4flkiYdhFRkLorqxglpcBB+/Kb9sf7BuporMRfFm5XOxg
+         Q46JavJxPlkPw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Hans de Goede <hdegoede@redhat.com>,
@@ -38,9 +38,9 @@ Cc:     Hans de Goede <hdegoede@redhat.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 01/21] power: supply: ab8500: Fix external_power_changed race
-Date:   Wed, 31 May 2023 09:43:54 -0400
-Message-Id: <20230531134415.3384458-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 01/10] power: supply: ab8500: Fix external_power_changed race
+Date:   Wed, 31 May 2023 09:45:57 -0400
+Message-Id: <20230531134606.3385210-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 X-stable: review
@@ -82,10 +82,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 4 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
-index 4417d64c31f97..5a1adceb6974d 100644
+index 97423a04fc0f0..c58644a3345ce 100644
 --- a/drivers/power/supply/ab8500_btemp.c
 +++ b/drivers/power/supply/ab8500_btemp.c
-@@ -921,10 +921,8 @@ static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
+@@ -976,10 +976,8 @@ static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
   */
  static void ab8500_btemp_external_power_changed(struct power_supply *psy)
  {
@@ -99,10 +99,10 @@ index 4417d64c31f97..5a1adceb6974d 100644
  
  /* ab8500 btemp driver interrupts and their respective isr */
 diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
-index a6b4a94c27662..a88590563647e 100644
+index b00844103a07a..f99e248f6aed3 100644
 --- a/drivers/power/supply/ab8500_fg.c
 +++ b/drivers/power/supply/ab8500_fg.c
-@@ -2380,10 +2380,8 @@ static int ab8500_fg_init_hw_registers(struct ab8500_fg *di)
+@@ -2384,10 +2384,8 @@ static int ab8500_fg_init_hw_registers(struct ab8500_fg *di)
   */
  static void ab8500_fg_external_power_changed(struct power_supply *psy)
  {
