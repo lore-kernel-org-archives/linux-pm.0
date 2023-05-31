@@ -2,47 +2,48 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5ECF9C7EE2E
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 128BEC83003
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237137AbjEaNvN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:51:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60634 "EHLO
+        id S237187AbjEaNvP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:51:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237450AbjEaNui (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:50:38 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3526F359A;
-        Wed, 31 May 2023 06:46:10 -0700 (PDT)
+        with ESMTP id S237347AbjEaNu0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:50:26 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01DDA30D8;
+        Wed, 31 May 2023 06:45:58 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C29D963B1F;
-        Wed, 31 May 2023 13:46:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7740AC433D2;
-        Wed, 31 May 2023 13:46:09 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 6F9D663B8F;
+        Wed, 31 May 2023 13:45:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03786C4339C;
+        Wed, 31 May 2023 13:45:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540770;
-        bh=SM3Nevq5DvLP1zlH19ftRQb5shdQEmMmQZCivmPXyvg=;
+        s=k20201202; t=1685540751;
+        bh=nD1t/E19GvuM185RwEMXumOUXDzA4+3FRbzJrA/BCOg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=MUeT3uTBBx0W26MLqyygjdbMwzTjvoYAKJAe+QN0OpZusSvG3C2MnwAC7FUemlMVN
-         G0kKwoatat00VKdWtlYOmGUMmfCvVhg8QKPik3H24t/A1Eb6kauX3HEv12EEQ2uZNK
-         TpNwDoCnpR9MPSJlIihndARU8JjFrykK6oT4wBiTLFWXbFntSv6ZfIhGOUNeOh1acX
-         ULCfVJrzfdXZr90v35A3zcFl+aqos5pYDZTGV0bgOR+zZ1BV8r/Q29arpJRG4f6RoM
-         0KS/KsR6r2Jc2BbtLqQOxcIGZSrc/nIuquckwSuki+czAjbPXU676ZJ1AfHWh85qY/
-         /vCaB4jiRTFYQ==
+        b=Iv7oUAn4kVHxXpCm1hI93SHedeTy0IUSUzWrC4wjZ5nZuOvDAhbwH9U6j69GO1Mdj
+         /JqQpQkcDebL+JzBMIkj8NSHTQ3xsduYm/VgBwVAuEn9wSZgboaoJaWrwtOewNKV77
+         NL5Tqo3z0GoeYB2leqaVGtixaHbIacZv25+4EPZ1OfzhfGJJ6L48mLKHNK3YbWyg7m
+         EApW5ipboUd88AqG2904entXFki+xyCSR93cPke7sS6iDNAPBqxyudcjVVa8w1GZfC
+         mHLzr86VdjlxPWScijVIJEcg0Y/4aNaDbodQ452DK9UTb4V0e+2I6amXpa2r2dSLL+
+         u7EV0lNi77qUg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Hans de Goede <hdegoede@redhat.com>,
+Cc:     Mario Limonciello <mario.limonciello@amd.com>,
+        Evan Quan <Evan.Quan@amd.com>, Lijo Lazar <Lijo.Lazar@amd.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 02/10] power: supply: bq27xxx: Use mod_delayed_work() instead of cancel() + schedule()
-Date:   Wed, 31 May 2023 09:45:58 -0400
-Message-Id: <20230531134606.3385210-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 07/13] power: supply: Fix logic checking if system is running from battery
+Date:   Wed, 31 May 2023 09:45:35 -0400
+Message-Id: <20230531134541.3385043-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531134606.3385210-1-sashal@kernel.org>
-References: <20230531134606.3385210-1-sashal@kernel.org>
+In-Reply-To: <20230531134541.3385043-1-sashal@kernel.org>
+References: <20230531134541.3385043-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -51,37 +52,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Hans de Goede <hdegoede@redhat.com>
+From: Mario Limonciello <mario.limonciello@amd.com>
 
-[ Upstream commit 59dddea9879713423c7b2ade43c423bb71e0d216 ]
+[ Upstream commit 95339f40a8b652b5b1773def31e63fc53c26378a ]
 
-Use mod_delayed_work() instead of separate cancel_delayed_work_sync() +
-schedule_delayed_work() calls.
+The logic used for power_supply_is_system_supplied() counts all power
+supplies and assumes that the system is running from AC if there is
+either a non-battery power-supply reporting to be online or if no
+power-supplies exist at all.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+The second rule is for desktop systems, that don't have any
+battery/charger devices. These systems will incorrectly report to be
+powered from battery once a device scope power-supply is registered
+(e.g. a HID device), since these power-supplies increase the counter.
+
+Apart from HID devices, recent dGPUs provide UCSI power supplies on a
+desktop systems. The dGPU by default doesn't have anything plugged in so
+it's 'offline'. This makes power_supply_is_system_supplied() return 0
+with a count of 1 meaning all drivers that use this get a wrong judgement.
+
+To fix this case adjust the logic to also examine the scope of the power
+supply. If the power supply is deemed a device power supply, then don't
+count it.
+
+Cc: Evan Quan <Evan.Quan@amd.com>
+Suggested-by: Lijo Lazar <Lijo.Lazar@amd.com>
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/bq27xxx_battery.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/power/supply/power_supply_core.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 3e8466064bb2c..a4c21eeb780b8 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -832,10 +832,8 @@ static int poll_interval_param_set(const char *val, const struct kernel_param *k
- 		return ret;
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 9b98921a3b16a..1d1a095569e91 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -350,6 +350,10 @@ static int __power_supply_is_system_supplied(struct device *dev, void *data)
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	unsigned int *count = data;
  
- 	mutex_lock(&bq27xxx_list_lock);
--	list_for_each_entry(di, &bq27xxx_battery_devices, list) {
--		cancel_delayed_work_sync(&di->work);
--		schedule_delayed_work(&di->work, 0);
--	}
-+	list_for_each_entry(di, &bq27xxx_battery_devices, list)
-+		mod_delayed_work(system_wq, &di->work, 0);
- 	mutex_unlock(&bq27xxx_list_lock);
++	if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_SCOPE, &ret))
++		if (ret.intval == POWER_SUPPLY_SCOPE_DEVICE)
++			return 0;
++
+ 	(*count)++;
+ 	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
+ 		if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_ONLINE,
+@@ -368,8 +372,8 @@ int power_supply_is_system_supplied(void)
+ 				      __power_supply_is_system_supplied);
  
- 	return ret;
+ 	/*
+-	 * If no power class device was found at all, most probably we are
+-	 * running on a desktop system, so assume we are on mains power.
++	 * If no system scope power class device was found at all, most probably we
++	 * are running on a desktop system, so assume we are on mains power.
+ 	 */
+ 	if (count == 0)
+ 		return 1;
 -- 
 2.39.2
 
