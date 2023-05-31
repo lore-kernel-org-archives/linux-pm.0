@@ -2,46 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8353C7EE45
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5ECF9C7EE2E
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237122AbjEaNvM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:51:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60308 "EHLO
+        id S237137AbjEaNvN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:51:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237307AbjEaNuV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:50:21 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1DE9E1BF2;
-        Wed, 31 May 2023 06:45:50 -0700 (PDT)
+        with ESMTP id S237450AbjEaNui (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:50:38 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3526F359A;
+        Wed, 31 May 2023 06:46:10 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 86B3863B94;
-        Wed, 31 May 2023 13:45:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30360C433D2;
-        Wed, 31 May 2023 13:45:43 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C29D963B1F;
+        Wed, 31 May 2023 13:46:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7740AC433D2;
+        Wed, 31 May 2023 13:46:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540744;
-        bh=2JLfz6tfQEPJb7CnVemWAmMS6q+Kz6PN2Zzsfl1N9Jc=;
-        h=From:To:Cc:Subject:Date:From;
-        b=cxX1S7ygL+wsnSq/yTRLwqmhyUhGKis9lse7fFE4zj4BB2PoNFJfmB1fGKRSAub8C
-         PwtOA/ae/cIMwhINjyCyccGNlBpWxOqI3NxLaZYaUROrTlBE9g236rSomj7I8343vS
-         2I143XLzWq9sDrHVGj1OSGeC/FTHQntb/6jBbRQUwG3q8QpnS+p5jAvMQIvBsKKsV7
-         QzOsGfXkMt3CNU6+OnGF/mwHHkkuGtiid2tPYlodaDABoGZhapR/MwSa4fFSzpIw8L
-         4iNOTul502VUaDvlmyHrbPftEnO2RHoG6r4qDaVzUqmj0PZZ7/X+Zge8Ljan5yveaf
-         IX3pfqb8wmAsw==
+        s=k20201202; t=1685540770;
+        bh=SM3Nevq5DvLP1zlH19ftRQb5shdQEmMmQZCivmPXyvg=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=MUeT3uTBBx0W26MLqyygjdbMwzTjvoYAKJAe+QN0OpZusSvG3C2MnwAC7FUemlMVN
+         G0kKwoatat00VKdWtlYOmGUMmfCvVhg8QKPik3H24t/A1Eb6kauX3HEv12EEQ2uZNK
+         TpNwDoCnpR9MPSJlIihndARU8JjFrykK6oT4wBiTLFWXbFntSv6ZfIhGOUNeOh1acX
+         ULCfVJrzfdXZr90v35A3zcFl+aqos5pYDZTGV0bgOR+zZ1BV8r/Q29arpJRG4f6RoM
+         0KS/KsR6r2Jc2BbtLqQOxcIGZSrc/nIuquckwSuki+czAjbPXU676ZJ1AfHWh85qY/
+         /vCaB4jiRTFYQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Hans de Goede <hdegoede@redhat.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 01/13] power: supply: ab8500: Fix external_power_changed race
-Date:   Wed, 31 May 2023 09:45:29 -0400
-Message-Id: <20230531134541.3385043-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 02/10] power: supply: bq27xxx: Use mod_delayed_work() instead of cancel() + schedule()
+Date:   Wed, 31 May 2023 09:45:58 -0400
+Message-Id: <20230531134606.3385210-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230531134606.3385210-1-sashal@kernel.org>
+References: <20230531134606.3385210-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,69 +53,35 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Hans de Goede <hdegoede@redhat.com>
 
-[ Upstream commit a5299ce4e96f3e8930e9c051b28d8093ada87b08 ]
+[ Upstream commit 59dddea9879713423c7b2ade43c423bb71e0d216 ]
 
-ab8500_btemp_external_power_changed() dereferences di->btemp_psy,
-which gets sets in ab8500_btemp_probe() like this:
-
-        di->btemp_psy = devm_power_supply_register(dev, &ab8500_btemp_desc,
-                                                   &psy_cfg);
-
-As soon as devm_power_supply_register() has called device_add()
-the external_power_changed callback can get called. So there is a window
-where ab8500_btemp_external_power_changed() may get called while
-di->btemp_psy has not been set yet leading to a NULL pointer dereference.
-
-Fixing this is easy. The external_power_changed callback gets passed
-the power_supply which will eventually get stored in di->btemp_psy,
-so ab8500_btemp_external_power_changed() can simply directly use
-the passed in psy argument which is always valid.
-
-And the same applies to ab8500_fg_external_power_changed().
+Use mod_delayed_work() instead of separate cancel_delayed_work_sync() +
+schedule_delayed_work() calls.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/ab8500_btemp.c | 6 ++----
- drivers/power/supply/ab8500_fg.c    | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/power/supply/bq27xxx_battery.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
-index 0fd24577112eb..0bec8b90667c8 100644
---- a/drivers/power/supply/ab8500_btemp.c
-+++ b/drivers/power/supply/ab8500_btemp.c
-@@ -919,10 +919,8 @@ static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
-  */
- static void ab8500_btemp_external_power_changed(struct power_supply *psy)
- {
--	struct ab8500_btemp *di = power_supply_get_drvdata(psy);
--
--	class_for_each_device(power_supply_class, NULL,
--		di->btemp_psy, ab8500_btemp_get_ext_psy_data);
-+	class_for_each_device(power_supply_class, NULL, psy,
-+			      ab8500_btemp_get_ext_psy_data);
- }
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 3e8466064bb2c..a4c21eeb780b8 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -832,10 +832,8 @@ static int poll_interval_param_set(const char *val, const struct kernel_param *k
+ 		return ret;
  
- /* ab8500 btemp driver interrupts and their respective isr */
-diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
-index 675f9d0e8471e..d0cbd7189a622 100644
---- a/drivers/power/supply/ab8500_fg.c
-+++ b/drivers/power/supply/ab8500_fg.c
-@@ -2380,10 +2380,8 @@ static int ab8500_fg_init_hw_registers(struct ab8500_fg *di)
-  */
- static void ab8500_fg_external_power_changed(struct power_supply *psy)
- {
--	struct ab8500_fg *di = power_supply_get_drvdata(psy);
--
--	class_for_each_device(power_supply_class, NULL,
--		di->fg_psy, ab8500_fg_get_ext_psy_data);
-+	class_for_each_device(power_supply_class, NULL, psy,
-+			      ab8500_fg_get_ext_psy_data);
- }
+ 	mutex_lock(&bq27xxx_list_lock);
+-	list_for_each_entry(di, &bq27xxx_battery_devices, list) {
+-		cancel_delayed_work_sync(&di->work);
+-		schedule_delayed_work(&di->work, 0);
+-	}
++	list_for_each_entry(di, &bq27xxx_battery_devices, list)
++		mod_delayed_work(system_wq, &di->work, 0);
+ 	mutex_unlock(&bq27xxx_list_lock);
  
- /**
+ 	return ret;
 -- 
 2.39.2
 
