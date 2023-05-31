@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 532CEC7EE23
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41079C7EE32
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237013AbjEaNva (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:51:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60504 "EHLO
+        id S237259AbjEaNvc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:51:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237314AbjEaNuW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:50:22 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 539E41BF5;
-        Wed, 31 May 2023 06:45:53 -0700 (PDT)
+        with ESMTP id S237142AbjEaNtw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:49:52 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F782272E;
+        Wed, 31 May 2023 06:45:26 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B23B963B45;
-        Wed, 31 May 2023 13:45:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 708CEC4339B;
-        Wed, 31 May 2023 13:45:44 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 0D88B63B60;
+        Wed, 31 May 2023 13:45:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C34D2C433D2;
+        Wed, 31 May 2023 13:45:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540745;
-        bh=jGT0wa0bpRdZdJH2PPUkmPt6NzzL059nbaf9hn/z5tw=;
+        s=k20201202; t=1685540707;
+        bh=TjxJqD0DkPjHGoisM68MtQw2MJoUgIVUc7f9djlk6iQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ZpZBlU0Xsy3dL5lFwI6SFDPyPa4sM5Anqz/Gr0UvYVH2MLeXQOF9X+kTEohWE8B12
-         wp1Q5IAXEKTorLpeBVDdp/zm+ieKhBaU5BNlKo1M6fUAIokpK8kn/MyIA9FA8YMYX8
-         FvYkbhiOuFnLKSfIhbSrkhkfHNPHS1/SwKGyct+GtWgGeBVay8ohiPdGmwEadWtbNY
-         J8BdU6CJH0QQT3ugLxAwSf2Ms9EGrYOL0aO9zz6y+kAhWMV+T28rXcEp1utJjdX4Yv
-         MF5tqV+8FUg78M+hWP8ZpcvhD1cVO3fZm4JJq7KmKzyefajE+DYRWP+Nr/GynV7S9U
-         YhGGShIhDXgFw==
+        b=Q5Zejjzmhx0OKGHAGFxgoYfvNzHuUUTogrhUwg9eIQ1fWbCq2RBlqD5B1bB1Gsfyt
+         /Nd6xlw5UG2yG++7grqIFID6IfvaucRvwVjVemGsOXd6vQSIg9QUZMI566uokpTCpX
+         M6IrflIq9en238d89gfe7ZxFdNpU912FaueXfW3daGb4EDFIRAWWkQatd3ZIkPViZ+
+         W3j3nG936TvL4NUhF8d7/zTpPhEhJkj0zJ6OhIeLdxaEYI1uMPsyze7JVBdj7Hd53G
+         48od/yRJZIMWDsG4XswaWXVMJGvX1eCanx6hIJadc+NDrZ0SHCjPSYt6ZYORgcdxYe
+         B17ljzHIlzQJw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Hans de Goede <hdegoede@redhat.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 02/13] power: supply: bq27xxx: Use mod_delayed_work() instead of cancel() + schedule()
-Date:   Wed, 31 May 2023 09:45:30 -0400
-Message-Id: <20230531134541.3385043-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 03/17] power: supply: bq27xxx: Use mod_delayed_work() instead of cancel() + schedule()
+Date:   Wed, 31 May 2023 09:44:47 -0400
+Message-Id: <20230531134502.3384828-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531134541.3385043-1-sashal@kernel.org>
-References: <20230531134541.3385043-1-sashal@kernel.org>
+In-Reply-To: <20230531134502.3384828-1-sashal@kernel.org>
+References: <20230531134502.3384828-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -66,10 +66,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index b7dc881268666..b3a0c2e22a5f4 100644
+index b1a37aa388800..f30f80f0a7c6e 100644
 --- a/drivers/power/supply/bq27xxx_battery.c
 +++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -877,10 +877,8 @@ static int poll_interval_param_set(const char *val, const struct kernel_param *k
+@@ -886,10 +886,8 @@ static int poll_interval_param_set(const char *val, const struct kernel_param *k
  		return ret;
  
  	mutex_lock(&bq27xxx_list_lock);
