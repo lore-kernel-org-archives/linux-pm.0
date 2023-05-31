@@ -2,47 +2,45 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FD9BC7EE2E
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:45:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B8F4C7EE37
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:45:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236706AbjEaNop (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:44:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54642 "EHLO
+        id S236349AbjEaNpM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:45:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236624AbjEaNoH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:44:07 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 539CA1B8;
-        Wed, 31 May 2023 06:42:32 -0700 (PDT)
+        with ESMTP id S236657AbjEaNoS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:44:18 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01E74E53;
+        Wed, 31 May 2023 06:42:43 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id EB3E463B56;
-        Wed, 31 May 2023 13:42:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59585C433EF;
-        Wed, 31 May 2023 13:42:08 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 527EE63436;
+        Wed, 31 May 2023 13:42:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF90BC433A0;
+        Wed, 31 May 2023 13:42:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540529;
-        bh=PsRJJ5ZxMa7cs8GT5ohChX59MmmNPMIucMA3Mt/cmNs=;
+        s=k20201202; t=1685540544;
+        bh=FMWsSiYerd3VpLtJ0RL80ScgmPJ4SpAcn+LdzIeVyV4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=g2oCwmg/QrPsNCboPb3x4oHCjz33r4bMagGjVMIKvD5Dr/NmGmCpinFbgG+XElUMN
-         hL+jqRQtee/osc6i5TUMz8qHSHckZSHCFH8t6T8yU0PxRv4U9+ZBMzoK1tIHPXv90P
-         L1EIJDXFfDVaed+H09VcjS5tBIQJpYbPeA900DOjbv7OPM0RIhlFE6mF9yUnP+mDeb
-         mogWft4CM7xWzBpZVgUP63otHSkes+D6IqszHLSulw2Unb7WjBVNxVxcURKOwPsBl1
-         qrlIA0YAWNZgSPXimDH9nIp0hC1v3/kyEH+JvjHqTge8CEF53Sj/szx0tcO4gmYNeu
-         ThuVeUEYinDVw==
+        b=Of3TjQoUJiWfvVk3HlVcNzMbOPlVkQahUPGD3+Ik4v+TMQUD0YYQ6OdHnJZ1d9YtT
+         F7ny8tFShk8w6M3hIQ5uN3Jrv8VXRSEErtM1VvJQde50u+LF3KtJLh9eo/qSWtmLn3
+         E5HYj9TwFuulDaYmqH87At33IFqvBEQB81OdUsp47TePaLBjpvLh7pwgRlvupRFLvX
+         ufr370yL3+Vc6WlBF/mVdE17n098bB9ry61U9/1zVRXznwhXdZyv0tbr7R/33ktfMs
+         S4GsBP9zye5nZ7IzmS5TC8rBTXJIDVN39G+V5VILnZmwOmGwAdSWE7kdd0/eNoimaw
+         h8dbu6v/bTY8w==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Hans de Goede <hdegoede@redhat.com>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Baolin Wang <baolin.wang@linux.alibaba.com>,
+Cc:     Mario Limonciello <mario.limonciello@amd.com>,
+        Evan Quan <Evan.Quan@amd.com>, Lijo Lazar <Lijo.Lazar@amd.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 02/33] power: supply: sc27xx: Fix external_power_changed race
-Date:   Wed, 31 May 2023 09:41:28 -0400
-Message-Id: <20230531134159.3383703-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 13/33] power: supply: Fix logic checking if system is running from battery
+Date:   Wed, 31 May 2023 09:41:39 -0400
+Message-Id: <20230531134159.3383703-13-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230531134159.3383703-1-sashal@kernel.org>
 References: <20230531134159.3383703-1-sashal@kernel.org>
@@ -54,68 +52,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Hans de Goede <hdegoede@redhat.com>
+From: Mario Limonciello <mario.limonciello@amd.com>
 
-[ Upstream commit 4d5c129d6c8993fe96e9ae712141eedcb9ca68c2 ]
+[ Upstream commit 95339f40a8b652b5b1773def31e63fc53c26378a ]
 
-sc27xx_fgu_external_power_changed() dereferences data->battery,
-which gets sets in ab8500_btemp_probe() like this:
+The logic used for power_supply_is_system_supplied() counts all power
+supplies and assumes that the system is running from AC if there is
+either a non-battery power-supply reporting to be online or if no
+power-supplies exist at all.
 
-	data->battery = devm_power_supply_register(dev, &sc27xx_fgu_desc,
-                                                   &fgu_cfg);
+The second rule is for desktop systems, that don't have any
+battery/charger devices. These systems will incorrectly report to be
+powered from battery once a device scope power-supply is registered
+(e.g. a HID device), since these power-supplies increase the counter.
 
-As soon as devm_power_supply_register() has called device_add()
-the external_power_changed callback can get called. So there is a window
-where sc27xx_fgu_external_power_changed() may get called while
-data->battery has not been set yet leading to a NULL pointer dereference.
+Apart from HID devices, recent dGPUs provide UCSI power supplies on a
+desktop systems. The dGPU by default doesn't have anything plugged in so
+it's 'offline'. This makes power_supply_is_system_supplied() return 0
+with a count of 1 meaning all drivers that use this get a wrong judgement.
 
-Fixing this is easy. The external_power_changed callback gets passed
-the power_supply which will eventually get stored in data->battery,
-so sc27xx_fgu_external_power_changed() can simply directly use
-the passed in psy argument which is always valid.
+To fix this case adjust the logic to also examine the scope of the power
+supply. If the power supply is deemed a device power supply, then don't
+count it.
 
-After this change sc27xx_fgu_external_power_changed() is reduced to just
-"power_supply_changed(psy);" and it has the same prototype. While at it
-simply replace it with making the external_power_changed callback
-directly point to power_supply_changed.
-
-Cc: Orson Zhai <orsonzhai@gmail.com>
-Cc: Chunyan Zhang <zhang.lyra@gmail.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Cc: Evan Quan <Evan.Quan@amd.com>
+Suggested-by: Lijo Lazar <Lijo.Lazar@amd.com>
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/sc27xx_fuel_gauge.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/power/supply/power_supply_core.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/supply/sc27xx_fuel_gauge.c
-index 632977f84b954..bd23c4d9fed43 100644
---- a/drivers/power/supply/sc27xx_fuel_gauge.c
-+++ b/drivers/power/supply/sc27xx_fuel_gauge.c
-@@ -733,13 +733,6 @@ static int sc27xx_fgu_set_property(struct power_supply *psy,
- 	return ret;
- }
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 8382be867d274..7871ab5e979c0 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -348,6 +348,10 @@ static int __power_supply_is_system_supplied(struct device *dev, void *data)
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	unsigned int *count = data;
  
--static void sc27xx_fgu_external_power_changed(struct power_supply *psy)
--{
--	struct sc27xx_fgu_data *data = power_supply_get_drvdata(psy);
--
--	power_supply_changed(data->battery);
--}
--
- static int sc27xx_fgu_property_is_writeable(struct power_supply *psy,
- 					    enum power_supply_property psp)
- {
-@@ -774,7 +767,7 @@ static const struct power_supply_desc sc27xx_fgu_desc = {
- 	.num_properties		= ARRAY_SIZE(sc27xx_fgu_props),
- 	.get_property		= sc27xx_fgu_get_property,
- 	.set_property		= sc27xx_fgu_set_property,
--	.external_power_changed	= sc27xx_fgu_external_power_changed,
-+	.external_power_changed	= power_supply_changed,
- 	.property_is_writeable	= sc27xx_fgu_property_is_writeable,
- 	.no_thermal		= true,
- };
++	if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_SCOPE, &ret))
++		if (ret.intval == POWER_SUPPLY_SCOPE_DEVICE)
++			return 0;
++
+ 	(*count)++;
+ 	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
+ 		if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_ONLINE,
+@@ -366,8 +370,8 @@ int power_supply_is_system_supplied(void)
+ 				      __power_supply_is_system_supplied);
+ 
+ 	/*
+-	 * If no power class device was found at all, most probably we are
+-	 * running on a desktop system, so assume we are on mains power.
++	 * If no system scope power class device was found at all, most probably we
++	 * are running on a desktop system, so assume we are on mains power.
+ 	 */
+ 	if (count == 0)
+ 		return 1;
 -- 
 2.39.2
 
