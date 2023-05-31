@@ -2,98 +2,89 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94488C7EE2D
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 15:17:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A888FC77B7A
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 15:22:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231947AbjEaPRN convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 11:17:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44516 "EHLO
+        id S234400AbjEaPVa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 11:21:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46764 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234401AbjEaPQ6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 11:16:58 -0400
-Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10B5712B
-        for <linux-pm@vger.kernel.org>; Wed, 31 May 2023 08:16:56 -0700 (PDT)
-Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-30ad48957f5so934242f8f.1
-        for <linux-pm@vger.kernel.org>; Wed, 31 May 2023 08:16:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685546214; x=1688138214;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=XRVUCKm5G4TE5Z1Y3aznNHFOc4m5Kox+GeF/qSbtCqg=;
-        b=j0dCIUsGHmGPpsp0grA0tmJWQ8R3JEc7z6V00rfPrzvGSmYRBxNnFOqHwltvrXH/l4
-         Uo72D3n2p7TaGGj+/6+uGMPoCOpIXnTqeDfRWdKMrH6AGj46GMHQpjSskDfWsHuZt15e
-         Odp0PvvtdK2sFYURpJqrmeUrWJzJt3r7EpeF+pLpdi2+VPsnELuJVlfEzny1N7MFmN7I
-         8zZMeKN2Oa4XmpanhRK2bzsYtYarQVXTdrhrIhlbFaW8xrVZgKhZe138SuezCA3DFf5A
-         TNNCcAppBd2LU83fhriI76J0uXcbpLGSUfgxlfDIlE+3yT/ceiYO/OsvXJniWwWe/0c8
-         7B4A==
-X-Gm-Message-State: AC+VfDwFwpc9y6YuYPrahlEc7vmj5Pik4UYFiopC6d+MgiDZGHdfHXF1
-        JRD+xj0qAFf/L2LSDu8yjY6w2pKDQZLVYXODWBENhl4A
-X-Google-Smtp-Source: ACHHUZ4obhYWMuZet9sft+oENxOEVmscgDm/Ch4cnysJaTjAuhPgjkFSm7MVFBvn9+aJI0L8kf8CLtiqSBfG/eT3MTU=
-X-Received: by 2002:a5d:4805:0:b0:307:cf5e:28a9 with SMTP id
- l5-20020a5d4805000000b00307cf5e28a9mr1906610wrq.5.1685546214238; Wed, 31 May
- 2023 08:16:54 -0700 (PDT)
+        with ESMTP id S234420AbjEaPVR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 11:21:17 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B7E07C0;
+        Wed, 31 May 2023 08:21:16 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D675B1756;
+        Wed, 31 May 2023 08:22:01 -0700 (PDT)
+Received: from e120937-lin.. (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8537A3F663;
+        Wed, 31 May 2023 08:21:14 -0700 (PDT)
+From:   Cristian Marussi <cristian.marussi@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
+Cc:     sudeep.holla@arm.com, james.quinlan@broadcom.com,
+        Jonathan.Cameron@Huawei.com, f.fainelli@gmail.com,
+        vincent.guittot@linaro.org, tarek.el-sherbiny@arm.com,
+        nicola.mazzucato@arm.com, souvik.chakravarty@arm.com,
+        wleavitt@marvell.com, wbartczak@marvell.com,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Subject: [PATCH v3 3/3] powercap: arm_scmi: Add support for disabling powercaps on a zone
+Date:   Wed, 31 May 2023 16:20:39 +0100
+Message-Id: <20230531152039.2363181-4-cristian.marussi@arm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230531152039.2363181-1-cristian.marussi@arm.com>
+References: <20230531152039.2363181-1-cristian.marussi@arm.com>
 MIME-Version: 1.0
-References: <CAJZ5v0juUuy2xKZHMXAKSRtfQxMyL6z12AFdU8_ZbdFRKKrR=Q@mail.gmail.com>
- <ZHcebApf6WCPMxPa@R5WKVNH4JW>
-In-Reply-To: <ZHcebApf6WCPMxPa@R5WKVNH4JW>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 31 May 2023 17:16:41 +0200
-Message-ID: <CAJZ5v0hNEHFutnceMY5wG0Z6+GHTKSuT_MsjoJyOyZWahyBtRw@mail.gmail.com>
-Subject: Re: [CfP] Power Management and Thermal Control MC (LPC2023)
-To:     Morten Rasmussen <morten.rasmussen@arm.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "Zhang, Rui" <rui.zhang@intel.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Mario Limonciello <mario.limonciello@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Morten,
+Add support to disable/enable powercapping on a zone.
 
-On Wed, May 31, 2023 at 12:16 PM Morten Rasmussen
-<morten.rasmussen@arm.com> wrote:
->
-> Hi Rafael,
->
-> Thanks for organizing the micro-conference at LPC again this year.
->
-> On Mon, May 22, 2023 at 07:12:39PM +0200, Rafael J. Wysocki wrote:
-> > Hi Folks,
-> >
-> > I'm going to submit a Power Management and Thermal Control
-> > micro-conference proposal for LPC2023 along the lines of what happened
-> > in the previous iterations of it.
-> >
-> > If you have topics that you'd like to be discussed there, please let
-> > me know by Friday, May 26.
-> >
-> > Please note that LPC MC topics are expected to cover work in progress
-> > or at the concept stage.  They are not supposed to be about work that
-> > has been done already.
->
-> A late proposal, if the agenda isn't already full, is to discuss the
-> deeper implications of uclamp in CFS relating to fairness, latency, and
-> energy savings. uclamp is being adopted in the Android community for
-> controlling performance/energy savings but alignment with upstream is
-> lacking behind.
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+Signed-off-by: Cristian Marussi <cristian.marussi@arm.com>
+---
+v2 --> v3
+- rebased on v6.4-rc4
+- added Acked-by
+---
+ drivers/powercap/arm_scmi_powercap.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-There will be a proper CfP just for the MC later I think (at least
-that was the case previously), at this time it's just a collection of
-topics.
+diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+index 05d0e516176a..5231f6d52ae3 100644
+--- a/drivers/powercap/arm_scmi_powercap.c
++++ b/drivers/powercap/arm_scmi_powercap.c
+@@ -70,10 +70,26 @@ static int scmi_powercap_get_power_uw(struct powercap_zone *pz,
+ 	return 0;
+ }
+ 
++static int scmi_powercap_zone_enable_set(struct powercap_zone *pz, bool mode)
++{
++	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
++
++	return powercap_ops->cap_enable_set(spz->ph, spz->info->id, mode);
++}
++
++static int scmi_powercap_zone_enable_get(struct powercap_zone *pz, bool *mode)
++{
++	struct scmi_powercap_zone *spz = to_scmi_powercap_zone(pz);
++
++	return powercap_ops->cap_enable_get(spz->ph, spz->info->id, mode);
++}
++
+ static const struct powercap_zone_ops zone_ops = {
+ 	.get_max_power_range_uw = scmi_powercap_get_max_power_range_uw,
+ 	.get_power_uw = scmi_powercap_get_power_uw,
+ 	.release = scmi_powercap_zone_release,
++	.set_enable = scmi_powercap_zone_enable_set,
++	.get_enable = scmi_powercap_zone_enable_get,
+ };
+ 
+ static void scmi_powercap_normalize_cap(const struct scmi_powercap_zone *spz,
+-- 
+2.34.1
 
-> "uclamp in CFS: Fairness, latency, and energy efficiency."
-
-OK, I'll add it.  It can be moved to the "RT and scheduling" MC later
-or submitted there when the MCs get accepted.
