@@ -2,44 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8D0EC7EE33
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:44:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FD9BC7EE2E
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:45:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236665AbjEaNoT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:44:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54600 "EHLO
+        id S236706AbjEaNop (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:44:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54642 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236100AbjEaNnv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:43:51 -0400
+        with ESMTP id S236624AbjEaNoH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:44:07 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FB2F19D;
-        Wed, 31 May 2023 06:42:20 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 539CA1B8;
+        Wed, 31 May 2023 06:42:32 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3355A63B51;
-        Wed, 31 May 2023 13:42:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2445C433A7;
-        Wed, 31 May 2023 13:42:15 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id EB3E463B56;
+        Wed, 31 May 2023 13:42:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59585C433EF;
+        Wed, 31 May 2023 13:42:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540536;
-        bh=OLDhhT5qpFUeH3U2U09c/h5uBzwtuxiQ6N7R4v2aKuM=;
+        s=k20201202; t=1685540529;
+        bh=PsRJJ5ZxMa7cs8GT5ohChX59MmmNPMIucMA3Mt/cmNs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=KRkSDmKBjEW2XHVvzgPYMTZHUpnZqgiNqYVSVddf7dT+6EJwcV5Hg8uLhJvUnET/c
-         LHhHmg7XZ9oNr8Ru+W56DNHnm3qcCTHnt3JBZ3oM/yWnbqGsS0Gug69TTIbpNJiBDr
-         n7DgArA75sexrIH6t9IUBTOz2MR888KAawMkXHaRWeYXPYkzn/9oWl7aSdF5PZJPcI
-         SAf7WridDpCge7/Smdk6Ox9Z6JyCfrtzFaR/gDxKL9qQwBuMcrXsY5OeaJ6XCkbeSZ
-         e22a30nbAEMLt8+UFOYJZle3XriHs4bdz2dFjVUdhIEu4EedBXyph5MeSxm2mRN1Eu
-         +mOEt2fOtdDIw==
+        b=g2oCwmg/QrPsNCboPb3x4oHCjz33r4bMagGjVMIKvD5Dr/NmGmCpinFbgG+XElUMN
+         hL+jqRQtee/osc6i5TUMz8qHSHckZSHCFH8t6T8yU0PxRv4U9+ZBMzoK1tIHPXv90P
+         L1EIJDXFfDVaed+H09VcjS5tBIQJpYbPeA900DOjbv7OPM0RIhlFE6mF9yUnP+mDeb
+         mogWft4CM7xWzBpZVgUP63otHSkes+D6IqszHLSulw2Unb7WjBVNxVxcURKOwPsBl1
+         qrlIA0YAWNZgSPXimDH9nIp0hC1v3/kyEH+JvjHqTge8CEF53Sj/szx0tcO4gmYNeu
+         ThuVeUEYinDVw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Marek Vasut <marex@denx.de>, Hans de Goede <hdegoede@redhat.com>,
+Cc:     Hans de Goede <hdegoede@redhat.com>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Baolin Wang <baolin.wang@linux.alibaba.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 07/33] power: supply: Ratelimit no data debug output
-Date:   Wed, 31 May 2023 09:41:33 -0400
-Message-Id: <20230531134159.3383703-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.1 02/33] power: supply: sc27xx: Fix external_power_changed race
+Date:   Wed, 31 May 2023 09:41:28 -0400
+Message-Id: <20230531134159.3383703-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230531134159.3383703-1-sashal@kernel.org>
 References: <20230531134159.3383703-1-sashal@kernel.org>
@@ -51,41 +54,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Marek Vasut <marex@denx.de>
+From: Hans de Goede <hdegoede@redhat.com>
 
-[ Upstream commit 155c45a25679f571c2ae57d10db843a9dfc63430 ]
+[ Upstream commit 4d5c129d6c8993fe96e9ae712141eedcb9ca68c2 ]
 
-Reduce the amount of output this dev_dbg() statement emits into logs,
-otherwise if system software polls the sysfs entry for data and keeps
-getting -ENODATA, it could end up filling the logs up.
+sc27xx_fgu_external_power_changed() dereferences data->battery,
+which gets sets in ab8500_btemp_probe() like this:
 
-This does in fact make systemd journald choke, since during boot the
-sysfs power supply entries are polled and if journald starts at the
-same time, the journal is just being repeatedly filled up, and the
-system stops on trying to start journald without booting any further.
+	data->battery = devm_power_supply_register(dev, &sc27xx_fgu_desc,
+                                                   &fgu_cfg);
 
-Signed-off-by: Marek Vasut <marex@denx.de>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+As soon as devm_power_supply_register() has called device_add()
+the external_power_changed callback can get called. So there is a window
+where sc27xx_fgu_external_power_changed() may get called while
+data->battery has not been set yet leading to a NULL pointer dereference.
+
+Fixing this is easy. The external_power_changed callback gets passed
+the power_supply which will eventually get stored in data->battery,
+so sc27xx_fgu_external_power_changed() can simply directly use
+the passed in psy argument which is always valid.
+
+After this change sc27xx_fgu_external_power_changed() is reduced to just
+"power_supply_changed(psy);" and it has the same prototype. While at it
+simply replace it with making the external_power_changed callback
+directly point to power_supply_changed.
+
+Cc: Orson Zhai <orsonzhai@gmail.com>
+Cc: Chunyan Zhang <zhang.lyra@gmail.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/power_supply_sysfs.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/power/supply/sc27xx_fuel_gauge.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 5369abaceb5cc..7abd916d005a6 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -285,7 +285,8 @@ static ssize_t power_supply_show_property(struct device *dev,
+diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/supply/sc27xx_fuel_gauge.c
+index 632977f84b954..bd23c4d9fed43 100644
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -733,13 +733,6 @@ static int sc27xx_fgu_set_property(struct power_supply *psy,
+ 	return ret;
+ }
  
- 		if (ret < 0) {
- 			if (ret == -ENODATA)
--				dev_dbg(dev, "driver has no data for `%s' property\n",
-+				dev_dbg_ratelimited(dev,
-+					"driver has no data for `%s' property\n",
- 					attr->attr.name);
- 			else if (ret != -ENODEV && ret != -EAGAIN)
- 				dev_err_ratelimited(dev,
+-static void sc27xx_fgu_external_power_changed(struct power_supply *psy)
+-{
+-	struct sc27xx_fgu_data *data = power_supply_get_drvdata(psy);
+-
+-	power_supply_changed(data->battery);
+-}
+-
+ static int sc27xx_fgu_property_is_writeable(struct power_supply *psy,
+ 					    enum power_supply_property psp)
+ {
+@@ -774,7 +767,7 @@ static const struct power_supply_desc sc27xx_fgu_desc = {
+ 	.num_properties		= ARRAY_SIZE(sc27xx_fgu_props),
+ 	.get_property		= sc27xx_fgu_get_property,
+ 	.set_property		= sc27xx_fgu_set_property,
+-	.external_power_changed	= sc27xx_fgu_external_power_changed,
++	.external_power_changed	= power_supply_changed,
+ 	.property_is_writeable	= sc27xx_fgu_property_is_writeable,
+ 	.no_thermal		= true,
+ };
 -- 
 2.39.2
 
