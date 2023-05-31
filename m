@@ -2,183 +2,103 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D69EC7EE24
-	for <linux-pm@archiver.kernel.org>; Tue, 30 May 2023 22:12:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62FBDC77B7A
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 01:42:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233650AbjE3WMI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 May 2023 18:12:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40816 "EHLO
+        id S233561AbjEaBmz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 May 2023 21:42:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43762 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233637AbjE3WMH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2023 18:12:07 -0400
-Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com [IPv6:2607:f8b0:4864:20::112a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB6B9116
-        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 15:12:03 -0700 (PDT)
-Received: by mail-yw1-x112a.google.com with SMTP id 00721157ae682-561b7729a12so4608757b3.1
-        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 15:12:03 -0700 (PDT)
+        with ESMTP id S231417AbjEaBmy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2023 21:42:54 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6DB510B
+        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 18:42:51 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-4f004cc54f4so6017116e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 30 May 2023 18:42:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1685484723; x=1688076723;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZoikQ24IRuw8V1bI3fB4AXs6Vt9clGgETJMS8PTWY9M=;
-        b=JBzFXe43yEA4MwmyXbJnIuAFPI8KpiMlBqNMHsO2FeR3Ft/gGq5DHeLD42vmi46CAJ
-         NYA371x5lbnH8TageYKekHMJ4vBUs7x5f3obZBjAcII13fdnYV0x95rbqC3imJXNooFe
-         M5oSATtvlNl/LPUEliC12Pv7NOHRg3N8Ktnlmls9oO+DxJTz9UqRoZKn7A/Idv8nKChW
-         0+mo6XuvAy9YIMD7nmuUEuuF1mQ3gKa/WbguOrsPmKbwsALuvEEKUocdrIxrY0WkphFa
-         PBSTmnYCJRxAlW9ZjMQAJ8dtojYQRnLQPUl3ORTRC8GTK6Ia+4t9CSxbw+Lqw21S8+/4
-         /rfw==
+        d=linaro.org; s=google; t=1685497370; x=1688089370;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xljCA29YsIP0+Y8LXCa8pJbogsbieLDmlx+5/VMZqTY=;
+        b=SWqiVEQwq8FHaTqPlNJFfKiJZyzqNaGU/zfCjJgd7azcScFpxSZrpzGNhNCYs1uWlE
+         9WJdMY5CZH+/IU1R3GjgtRAjcPuRpyc+opEiJJ5d5LkoxYdZrugdFjWZYNaGWeaY1+l0
+         +tcEwi7LbSiyyekWSBEtRHzS3jsaM4l1YfcxykTLqQG4dAYGfxED3oQgnvWoxWfgmCCf
+         8xDbio3HFhtdOZWK+bTomv38VVj7v26vPGiK6iJMZEgu290vgZwWvoE8BmOaQQPMNH92
+         hr3ifiEDv3Bu3Uj/msaiFup9Kt/1p/jdk4rlQpg1m7o70S8kOVQEYrcWMJz6TWYqt0wM
+         W/tA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685484723; x=1688076723;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20221208; t=1685497370; x=1688089370;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ZoikQ24IRuw8V1bI3fB4AXs6Vt9clGgETJMS8PTWY9M=;
-        b=GvkkG3YKUfX9lY7tx+gdHS3hVSgh4BLk5MY3gvMadf8yORc+Ggmndq/R1gUCmQrvga
-         LZfyLXgesIbWISf0llJnKbF6Zbi5zz4iWD8M6193A9ng6klWmd6Wl5QeCHxhAHBEifEQ
-         crsl9wzJcppCAtkDQJMd/SsFRStu9KFEhcQobJ58gVh3zyNimsbNGqvVS1KrOHUX+uG1
-         9ea4rp4Spf4nYOAjPOWGOdSwpO5eiPI8+TjMbrXohpUiC7me4as4e+HjCWXiWT0KNi1a
-         mMFisaHksUmabgxGQYYaNrOuV7IfqtrQ+Ix74TkNTwZGXexNxmgGyZfmxRpNfLCl5b8d
-         /k8A==
-X-Gm-Message-State: AC+VfDw/63xDAHuxR/+qPTLBVeEJkq+VZnAF0gjuaOl3AmLLxaQRIW/F
-        CuyrU6E4fSR+0//VKboiTkpPGY9DRw7rsfI0RM0VVQ==
-X-Google-Smtp-Source: ACHHUZ51M7z6vLdDuU6YnJV8hHa71g3G6VR7IR1jzPsgmFsx8wxq7CUQyYcHGRFbiY1FORhFgrlnHoQ+C4gsvM2GB1A=
-X-Received: by 2002:a05:690c:80d:b0:565:85b0:c128 with SMTP id
- bx13-20020a05690c080d00b0056585b0c128mr14929653ywb.6.1685484723087; Tue, 30
- May 2023 15:12:03 -0700 (PDT)
+        bh=xljCA29YsIP0+Y8LXCa8pJbogsbieLDmlx+5/VMZqTY=;
+        b=P+MexJX7UgflWqKAW6Bxjp8AujGZXAqejAAT1k+nG4iZvyHfyXHaOc3+tIVvZcmxZ/
+         aM08HbAy5xe4GBXBhLsR27IlnCitqnWE47scvdAmSFXrz4SxrOFfH5hEeEaXxfVzpUU/
+         ZXxcChQfHj3CeUEN2zNJbZHc5fng7ruhAUY4yPPHYAAI2lj1glkbOm6B9jiqoE1No6Hx
+         3+tCDrjrPmt0LSFod8FQIxt4z/w72KR7UF7Iel9B4bH3MvjEUlHI25y57CcNZHqjdmJl
+         i/5fbvhpjzrF9sT1a9Dsifaq5ekdp/nDisndWKls4qy+Ac/kXE7kXTR/j1WTBYdAmPMx
+         Uk6Q==
+X-Gm-Message-State: AC+VfDxo7xZelFQXs7CUgJPOSsyjZ5KbgUJZ//wEOK0jFz/ICQKtM8gd
+        Rlc4jKejFwLBQUn+3UtkFx18aQ==
+X-Google-Smtp-Source: ACHHUZ4MedO+Nhhc9D9iy3fSvGi45ICLjQmEmMfqx1wmxIVXvGC2pI5+Wp/ab5tm+1MKgPkT2OYXqg==
+X-Received: by 2002:ac2:4461:0:b0:4f0:345:6ceb with SMTP id y1-20020ac24461000000b004f003456cebmr1536886lfl.14.1685497370018;
+        Tue, 30 May 2023 18:42:50 -0700 (PDT)
+Received: from lothlorien.lan (dzdqv0yyyyyyyyyyybm5y-3.rev.dnainternet.fi. [2001:14ba:a0db:1f00::ab2])
+        by smtp.gmail.com with ESMTPSA id q20-20020ac25294000000b004f3945751b2sm515994lfm.43.2023.05.30.18.42.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 May 2023 18:42:49 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Vinod Koul <vkoul@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Subject: [PATCH v3 0/4] ARM: dts: qcom: apq8074-dragonboard: enable resin device
+Date:   Wed, 31 May 2023 04:42:44 +0300
+Message-Id: <20230531014248.3824043-1-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-References: <20230424110933.3908-1-quic_mkshah@quicinc.com>
- <CAPDyKFqSY9HJgKwuOqJPU5aA=wcAtDp91s0hkQye+dm=Wk=YDQ@mail.gmail.com>
- <20230525024546.ug6nbrmkgx2alerc@ripper> <CAPDyKFrzHHz+c_y787TVKLGizA3vVfKvnu+uJ1JC+itgryfdSQ@mail.gmail.com>
- <20230529160848.ujthfuuj3zblkq4b@ripper>
-In-Reply-To: <20230529160848.ujthfuuj3zblkq4b@ripper>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Wed, 31 May 2023 00:11:26 +0200
-Message-ID: <CAPDyKFo1rsm5gk_eKESa_WMFn6bSicH1UV1vJ7CU_64jZ5Uj-Q@mail.gmail.com>
-Subject: Re: [PATCH v4 0/3] Use PSCI OS initiated mode for sc7280
-To:     Bjorn Andersson <andersson@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Maulik Shah <quic_mkshah@quicinc.com>, dianders@chromium.org,
-        swboyd@chromium.org, wingers@google.com,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, sudeep.holla@arm.com,
-        jwerner@chromium.org, quic_lsrao@quicinc.com,
-        quic_rjendra@quicinc.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-+ Rafael
+Add support for buttons, LEDs and coincell charger found on the APQ8074
+dragonboard device.
 
-On Mon, 29 May 2023 at 18:05, Bjorn Andersson <andersson@kernel.org> wrote:
->
-> On Mon, May 29, 2023 at 10:58:23AM +0200, Ulf Hansson wrote:
-> > On Thu, 25 May 2023 at 04:41, Bjorn Andersson <andersson@kernel.org> wrote:
-> > >
-> > > On Wed, May 24, 2023 at 11:56:28AM +0200, Ulf Hansson wrote:
-> > > > On Mon, 24 Apr 2023 at 13:09, Maulik Shah <quic_mkshah@quicinc.com> wrote:
-> > > > >
-> > > > > Changes in v4:
-> > > > > - Add missing s-o-b line and reviewed by in patch 1
-> > > > > - Address ulf's comments for error handling in patch 2
-> > > > >
-> > > > > Changes in v3:
-> > > > > - Add new change to provide helper function dt_idle_pd_remove_topology()
-> > > > > - Address ulf's comments for error handling
-> > > > > - Add reviewed by ulf for devicetree change
-> > > > >
-> > > > > Changes in v2:
-> > > > > - Add new change to Move enabling OSI mode after power domains creation
-> > > > > - Fix compatible string to domains-idle-states for cluster idle state.
-> > > > > - Update cover letter with some more details on OSI and PC mode
-> > > > >   comparision
-> > > > >
-> > > > > The dependency [2] is now merged in trustedfirmware project.
-> > > > >
-> > > > > Stats comparision between OSI and PC mode are captured at [3] with
-> > > > > usecase
-> > > > > details, where during multiple CPUs online the residency in cluster idle
-> > > > > state is better with OSI and also inline with single CPU mode. In PC
-> > > > > mode
-> > > > > with multiple CPUs cluster idle state residency is dropping compare to
-> > > > > single CPU mode.
-> > > > >
-> > > > > Recording of this meeting is also available at [4].
-> > > > >
-> > > > > This change adds power-domains for cpuidle states to use PSCI OS
-> > > > > initiated mode for sc7280.
-> > > > >
-> > > > > This change depends on external project changes [1] & [2] which are
-> > > > > under review/discussion to add PSCI os-initiated support in Arm Trusted
-> > > > > Firmware.
-> > > > >
-> > > > > I can update here once the dependency are in and change is ready to
-> > > > > merge.
-> > > > >
-> > > > > [1] https://review.trustedfirmware.org/q/topic:psci-osi
-> > > > > [2] https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/19487
-> > > > > [3] https://www.trustedfirmware.org/docs/PSCI-OS-initiated.pdf
-> > > > > [4] https://www.trustedfirmware.org/meetings/tf-a-technical-forum
-> > > > >
-> > > > > Maulik Shah (3):
-> > > > >   cpuidle: dt_idle_genpd: Add helper function to remove genpd topology
-> > > > >   cpuidle: psci: Move enabling OSI mode after power domains creation
-> > > > >   arm64: dts: qcom: sc7280: Add power-domains for cpuidle states
-> > > > >
-> > > > >  arch/arm64/boot/dts/qcom/sc7280.dtsi  | 98 ++++++++++++++++++++-------
-> > > > >  drivers/cpuidle/cpuidle-psci-domain.c | 39 ++++-------
-> > > > >  drivers/cpuidle/dt_idle_genpd.c       | 24 +++++++
-> > > > >  drivers/cpuidle/dt_idle_genpd.h       |  7 ++
-> > > > >  4 files changed, 117 insertions(+), 51 deletions(-)
-> > > > >
-> > > >
-> > > > Looks like this series has not been queued up yet. Note that patch1
-> > > > and patch2 are needed for stable kernels too. Moreover, patch3 (Qcom
-> > > > DTS change) is dependent on patch 1 and patch2.
-> > > >
-> > > > Therefore I suggest Bjorn to pick this up via the Qcom SoC tree.
-> > > > Bjorn, is that okay for you?
-> > > >
-> > >
-> > > Sorry, this fell between the chairs after you pointed me to it...
-> > >
-> > > I can certainly pick the 3 patches through my tree, but are they fixing
-> > > any current regressions, or is it just that we need the first two
-> > > patches to land before the 3rd patch?
-> >
-> > I am not aware of any current regressions.
-> >
->
-> Okay, that confirms my understanding. So not -rc material.
->
-> > >
-> > > I also presume the 3rd patch is only needed when paired with the new
-> > > ATF?
-> >
-> > Patch3 is beneficial to use with a new TF-A, but works with an old
-> > TF-A too. Anyway, forget what I said about patch3 earlier, as that was
-> > just not the complete information.
-> >
-> > The problem is that we can't be using a new TF-A (supporting both PSCI
-> > OSI and PC mode) without patch1 and patch2, unless we are using
-> > patch3.
-> >
-> > Thus, I strongly suggest we tag patch1 and patch2 for stable kernels,
-> > to avoid any potential conflicts of TF-A versions that may be used.
-> >
->
-> So you're suggesting that I pick them for v6.5 and add a Cc: stable?
->
-> An alternative would be that you take the cpuidle patches for v6.4-rc
-> and I pick the dt for v6.5 - given that the cpuidle patches actually
-> resolves a problem, while the dts just introduces "new functionality".
+For PM8941 we don't have a defined field to store the reset reason.
+Support wrapping pwrkey and resin, but without writing the reset
+reason.
 
-Right, that's probably the best option. Although I don't have a tree
-to take these patches through, let's ask Rafael if he can help with
-this.
+Changes since v2:
+- Split non-pon patches to separate patchset
+- Changed schema to disallow reboot modes for pm8941-pon (Konrad)
 
-Rafael, can you pick patch 1 and patch 2 from $subject series for
-v6.4-rc and tag them for stable? Then Bjorn can pick patch3 for v6.5.
+Changes since v1 (noted by Konrad):
+ - Changed to use freshly defined qcom,pm8941-pon compat
+ - Fixed indentiation for LEDs definition
+ - Reverted the order of pinctrl fields
+ - Moved status field to the last position
+ - Removed unnecessary pinconf indirection
 
-Kind regards
-Uffe
+Dmitry Baryshkov (4):
+  dt-bindings: power: reset: qcom-pon: define pm8941-pon
+  power: reset: qcom-pon: add support for pm8941-pon
+  ARM: dts: qcom-pm8941: add resin support
+  ARM: dts: qcom: apq8074-dragonboard: add resin
+
+ .../bindings/power/reset/qcom,pon.yaml        | 12 +++++++++-
+ .../arm/boot/dts/qcom-apq8074-dragonboard.dts |  5 +++++
+ arch/arm/boot/dts/qcom-pm8941.dtsi            | 22 ++++++++++++++-----
+ drivers/power/reset/qcom-pon.c                | 22 +++++++++++++------
+ 4 files changed, 48 insertions(+), 13 deletions(-)
+
+-- 
+2.39.2
+
