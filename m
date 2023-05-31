@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0276EC7EE23
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:49:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5303FC87FDD
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:51:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236947AbjEaNtG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:49:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60796 "EHLO
+        id S237057AbjEaNvK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:51:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236949AbjEaNsc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:48:32 -0400
+        with ESMTP id S237141AbjEaNtw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:49:52 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2D9426A9;
-        Wed, 31 May 2023 06:44:46 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA4942733;
+        Wed, 31 May 2023 06:45:26 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 5A88F63B60;
-        Wed, 31 May 2023 13:44:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E8392C433D2;
-        Wed, 31 May 2023 13:44:23 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id DA05163B8B;
+        Wed, 31 May 2023 13:45:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84D75C433D2;
+        Wed, 31 May 2023 13:45:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540664;
-        bh=+cMElBBJhY9KNkK/KmzLM6xQtVeUTAK2C+IsTD/53KM=;
+        s=k20201202; t=1685540710;
+        bh=6rJCrLQ0Ki9e+ieM67cun1HapIPKB5enjh301jmWabs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=aD62urD339QFX2YkdndVWnvBxB2kSuisZQfl1ClSGEKaDsfFi54ulObLsoSb52uge
-         QaefpdcZIYroARIKqh7t8icacAVz8Dt39HTcZt+ofC9a2Y2m+TFoDdH21Ydw7d/jBj
-         AxfmJofdINXZIclDZC3ZqILa4Eej/YwbFE2k7KVx3v8uMWs9Os2oYwLAatGC2ERere
-         qNeuBj+F7CAWHt6O3i2+VMFFGK+KM3VK7AUJRE1dKEETVxzXVhOu8oRsrIAV+ioqjO
-         lX7oXIY0/+idBvnfY8UGSL+sVd0Li6RU5EiskXfPN+Q6dXQku7QBdCDWcwWQ/CKiTS
-         f0epAWzhX/lMg==
+        b=QRJIY/eGZ1h/qXnzaJEysuj3mbgYEQ2UfVA3G1ojAffyPKZiV8apmB/ZXv1NHPvnY
+         Dqv7HXh3xMkfSCsYq489t6mtEe34uKIAn2/ofsCYJ14vrxBXT0M5FVk1ZZgcNj8hqC
+         g8C+nMvXBkR5NoUiHwx2va5aUXxQIgvP2YBNe26zxfRSuiJ0R2tqQcQfi9W9w5xdWh
+         kp1LN3WjAxwgIxqKCIWzwbbKTfmHPJQVFvZB+w1z4bbh2wmA5VIXISpuMq0XZ4Nt4I
+         ghwSvOXjxp+3txb0QzcHeL9i2cbiQzYeT26hd1WbY/1jx0vHdcyKlImh6aU2vuCcNu
+         koUmukqB7keYg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Marek Vasut <marex@denx.de>, Hans de Goede <hdegoede@redhat.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 06/21] power: supply: Ratelimit no data debug output
-Date:   Wed, 31 May 2023 09:43:59 -0400
-Message-Id: <20230531134415.3384458-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 05/17] power: supply: Ratelimit no data debug output
+Date:   Wed, 31 May 2023 09:44:49 -0400
+Message-Id: <20230531134502.3384828-5-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531134415.3384458-1-sashal@kernel.org>
-References: <20230531134415.3384458-1-sashal@kernel.org>
+In-Reply-To: <20230531134502.3384828-1-sashal@kernel.org>
+References: <20230531134502.3384828-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,10 +73,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index a616b9d8f43c5..2b1df9c339699 100644
+index f37ad4eae60b9..d6c47ea27010c 100644
 --- a/drivers/power/supply/power_supply_sysfs.c
 +++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -276,7 +276,8 @@ static ssize_t power_supply_show_property(struct device *dev,
+@@ -127,7 +127,8 @@ static ssize_t power_supply_show_property(struct device *dev,
  
  		if (ret < 0) {
  			if (ret == -ENODATA)
