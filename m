@@ -2,114 +2,98 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CC36C7EE2E
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 14:11:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94488C7EE2D
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 15:17:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236707AbjEaOL3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 10:11:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51408 "EHLO
+        id S231947AbjEaPRN convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 11:17:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236749AbjEaOLI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 10:11:08 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1524710FF;
-        Wed, 31 May 2023 07:07:48 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B4F6963B4D;
-        Wed, 31 May 2023 13:43:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4CC56C4339E;
-        Wed, 31 May 2023 13:43:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540615;
-        bh=J9uOMK4EFeJR2DVzUbJzzdNZdJDvgsqN+k489B1wJok=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SjE+cUi1EcP9MYIU2mQkq4Vvf8z9xvODf5jjmDIX3/MkiMYD7Xsqh37OF+Nynr2B9
-         D+9gqig+nsm8LAf++BEFcJlKSXPYVj8y7FHRzWcziXInQ1A9kRXMHqKSGVaXvY5Q0+
-         m3bC3uZxINa6hI06sh9U/NW3DHIaM7qr/RJGzhkb809ilITrLKqsdbQsYy7SdY4Rpf
-         wVyztpn9PssBw49rJffyhndgXo9QPQYntTORV7qQvM/gpbAlMgnnoVhizqVMsc4B5w
-         T/eXk9UbvtRlSgEQwgICJI0lRxRBMMvrkMAoxr21ay/0k6fqXDGmLf4isJxPCu8Fcl
-         EHBrZde4vJ5pw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Mario Limonciello <mario.limonciello@amd.com>,
-        Evan Quan <Evan.Quan@amd.com>, Lijo Lazar <Lijo.Lazar@amd.com>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, sre@kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 10/24] power: supply: Fix logic checking if system is running from battery
-Date:   Wed, 31 May 2023 09:43:06 -0400
-Message-Id: <20230531134320.3384102-10-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531134320.3384102-1-sashal@kernel.org>
-References: <20230531134320.3384102-1-sashal@kernel.org>
+        with ESMTP id S234401AbjEaPQ6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 11:16:58 -0400
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10B5712B
+        for <linux-pm@vger.kernel.org>; Wed, 31 May 2023 08:16:56 -0700 (PDT)
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-30ad48957f5so934242f8f.1
+        for <linux-pm@vger.kernel.org>; Wed, 31 May 2023 08:16:55 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685546214; x=1688138214;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XRVUCKm5G4TE5Z1Y3aznNHFOc4m5Kox+GeF/qSbtCqg=;
+        b=j0dCIUsGHmGPpsp0grA0tmJWQ8R3JEc7z6V00rfPrzvGSmYRBxNnFOqHwltvrXH/l4
+         Uo72D3n2p7TaGGj+/6+uGMPoCOpIXnTqeDfRWdKMrH6AGj46GMHQpjSskDfWsHuZt15e
+         Odp0PvvtdK2sFYURpJqrmeUrWJzJt3r7EpeF+pLpdi2+VPsnELuJVlfEzny1N7MFmN7I
+         8zZMeKN2Oa4XmpanhRK2bzsYtYarQVXTdrhrIhlbFaW8xrVZgKhZe138SuezCA3DFf5A
+         TNNCcAppBd2LU83fhriI76J0uXcbpLGSUfgxlfDIlE+3yT/ceiYO/OsvXJniWwWe/0c8
+         7B4A==
+X-Gm-Message-State: AC+VfDwFwpc9y6YuYPrahlEc7vmj5Pik4UYFiopC6d+MgiDZGHdfHXF1
+        JRD+xj0qAFf/L2LSDu8yjY6w2pKDQZLVYXODWBENhl4A
+X-Google-Smtp-Source: ACHHUZ4obhYWMuZet9sft+oENxOEVmscgDm/Ch4cnysJaTjAuhPgjkFSm7MVFBvn9+aJI0L8kf8CLtiqSBfG/eT3MTU=
+X-Received: by 2002:a5d:4805:0:b0:307:cf5e:28a9 with SMTP id
+ l5-20020a5d4805000000b00307cf5e28a9mr1906610wrq.5.1685546214238; Wed, 31 May
+ 2023 08:16:54 -0700 (PDT)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+References: <CAJZ5v0juUuy2xKZHMXAKSRtfQxMyL6z12AFdU8_ZbdFRKKrR=Q@mail.gmail.com>
+ <ZHcebApf6WCPMxPa@R5WKVNH4JW>
+In-Reply-To: <ZHcebApf6WCPMxPa@R5WKVNH4JW>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 31 May 2023 17:16:41 +0200
+Message-ID: <CAJZ5v0hNEHFutnceMY5wG0Z6+GHTKSuT_MsjoJyOyZWahyBtRw@mail.gmail.com>
+Subject: Re: [CfP] Power Management and Thermal Control MC (LPC2023)
+To:     Morten Rasmussen <morten.rasmussen@arm.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Mario Limonciello <mario.limonciello@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Mario Limonciello <mario.limonciello@amd.com>
+Hi Morten,
 
-[ Upstream commit 95339f40a8b652b5b1773def31e63fc53c26378a ]
+On Wed, May 31, 2023 at 12:16 PM Morten Rasmussen
+<morten.rasmussen@arm.com> wrote:
+>
+> Hi Rafael,
+>
+> Thanks for organizing the micro-conference at LPC again this year.
+>
+> On Mon, May 22, 2023 at 07:12:39PM +0200, Rafael J. Wysocki wrote:
+> > Hi Folks,
+> >
+> > I'm going to submit a Power Management and Thermal Control
+> > micro-conference proposal for LPC2023 along the lines of what happened
+> > in the previous iterations of it.
+> >
+> > If you have topics that you'd like to be discussed there, please let
+> > me know by Friday, May 26.
+> >
+> > Please note that LPC MC topics are expected to cover work in progress
+> > or at the concept stage.  They are not supposed to be about work that
+> > has been done already.
+>
+> A late proposal, if the agenda isn't already full, is to discuss the
+> deeper implications of uclamp in CFS relating to fairness, latency, and
+> energy savings. uclamp is being adopted in the Android community for
+> controlling performance/energy savings but alignment with upstream is
+> lacking behind.
 
-The logic used for power_supply_is_system_supplied() counts all power
-supplies and assumes that the system is running from AC if there is
-either a non-battery power-supply reporting to be online or if no
-power-supplies exist at all.
+There will be a proper CfP just for the MC later I think (at least
+that was the case previously), at this time it's just a collection of
+topics.
 
-The second rule is for desktop systems, that don't have any
-battery/charger devices. These systems will incorrectly report to be
-powered from battery once a device scope power-supply is registered
-(e.g. a HID device), since these power-supplies increase the counter.
+> "uclamp in CFS: Fairness, latency, and energy efficiency."
 
-Apart from HID devices, recent dGPUs provide UCSI power supplies on a
-desktop systems. The dGPU by default doesn't have anything plugged in so
-it's 'offline'. This makes power_supply_is_system_supplied() return 0
-with a count of 1 meaning all drivers that use this get a wrong judgement.
-
-To fix this case adjust the logic to also examine the scope of the power
-supply. If the power supply is deemed a device power supply, then don't
-count it.
-
-Cc: Evan Quan <Evan.Quan@amd.com>
-Suggested-by: Lijo Lazar <Lijo.Lazar@amd.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/power/supply/power_supply_core.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 8161fad081a96..ee95016910727 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -347,6 +347,10 @@ static int __power_supply_is_system_supplied(struct device *dev, void *data)
- 	struct power_supply *psy = dev_get_drvdata(dev);
- 	unsigned int *count = data;
- 
-+	if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_SCOPE, &ret))
-+		if (ret.intval == POWER_SUPPLY_SCOPE_DEVICE)
-+			return 0;
-+
- 	(*count)++;
- 	if (psy->desc->type != POWER_SUPPLY_TYPE_BATTERY)
- 		if (!psy->desc->get_property(psy, POWER_SUPPLY_PROP_ONLINE,
-@@ -365,8 +369,8 @@ int power_supply_is_system_supplied(void)
- 				      __power_supply_is_system_supplied);
- 
- 	/*
--	 * If no power class device was found at all, most probably we are
--	 * running on a desktop system, so assume we are on mains power.
-+	 * If no system scope power class device was found at all, most probably we
-+	 * are running on a desktop system, so assume we are on mains power.
- 	 */
- 	if (count == 0)
- 		return 1;
--- 
-2.39.2
-
+OK, I'll add it.  It can be moved to the "RT and scheduling" MC later
+or submitted there when the MCs get accepted.
