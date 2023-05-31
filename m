@@ -2,47 +2,46 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AF25C7EE31
-	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F81BC7EE31
+	for <linux-pm@archiver.kernel.org>; Wed, 31 May 2023 13:48:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236907AbjEaNrA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 May 2023 09:47:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55246 "EHLO
+        id S236940AbjEaNsr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 May 2023 09:48:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236809AbjEaNqO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:46:14 -0400
+        with ESMTP id S236836AbjEaNsV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2023 09:48:21 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 976381FD8;
-        Wed, 31 May 2023 06:43:30 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB9172686;
+        Wed, 31 May 2023 06:44:35 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 7669963709;
-        Wed, 31 May 2023 13:43:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24963C4339C;
-        Wed, 31 May 2023 13:43:29 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C6C5863B1B;
+        Wed, 31 May 2023 13:43:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52221C433D2;
+        Wed, 31 May 2023 13:43:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1685540609;
-        bh=mLRlGAcTvXXi1UOBAXpF7kAvBTmM5Fpn8vy5W4FBDKA=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=fpD/UzOdgBmvA2FZnuL1+kjcfqJZtqzVh2yFZdyqgkGCAad5fqXWVxB12kPOX3rwP
-         2cUe8ixUw8CuWZw/98tmTAumKPeyuvwda4ZxkXvKpY5hXFIrkJEVxTeUi2lsvo/uxM
-         GAw/hv1HmvJrlfMmrAcZWHq5xCIgMRtDFkMZaQEge7NKPtHMkHw/XVXQXR45izyERj
-         GPo4LLVvZxdY/xnuj33ZUFbBFdAP3+gc1MA4pjH8PWBVH6X3qes9dXkZxOpWvDh8en
-         7CVyYvTuqiX10qZ/7Xc19Z/gE7eSbpsKcACXCZlNC2nH8VMybzzwVfKJ35cS5J045O
-         w69yOO9xVnHUw==
+        s=k20201202; t=1685540603;
+        bh=ll0vE8kIeS0vOprbv+35WOxuWa6YWtWpGEHFAHrLAfk=;
+        h=From:To:Cc:Subject:Date:From;
+        b=N8Qmne9wdYwZzjKAc4HbmvdKaGhhnSpNUrRNy0MoGf9wcOPeUGjE31fqaL79Q7ugK
+         8pbhyFfBInKD4iKOKRzO8wdSHXKHfnTOc7Wo2cxQVARSPYa4HPfJ343M+8jF30DR/E
+         yeUsn3y8iRVDFPU3Z/BtzM0t4Bjf0+cWrG+RGem4BRk6Ruv1FFZ8AWd8QcpyEcw3DV
+         +rS0Ia6K03+cE/2ZrQJOOt81a0qgduJR+Q2RhRbWKl0Lj0Tatjgs7+qrC1UdyUfBmt
+         2AaIotpoV47INGdhMYCwVBCalNik2KSBlp7YjjA43pm0EKRNu54NqCAt4lUMilIYBk
+         5GoY86TCKnb+g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Marek Vasut <marex@denx.de>, Hans de Goede <hdegoede@redhat.com>,
+Cc:     Hans de Goede <hdegoede@redhat.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 06/24] power: supply: Ratelimit no data debug output
-Date:   Wed, 31 May 2023 09:43:02 -0400
-Message-Id: <20230531134320.3384102-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 01/24] power: supply: ab8500: Fix external_power_changed race
+Date:   Wed, 31 May 2023 09:42:57 -0400
+Message-Id: <20230531134320.3384102-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230531134320.3384102-1-sashal@kernel.org>
-References: <20230531134320.3384102-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -51,41 +50,71 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Marek Vasut <marex@denx.de>
+From: Hans de Goede <hdegoede@redhat.com>
 
-[ Upstream commit 155c45a25679f571c2ae57d10db843a9dfc63430 ]
+[ Upstream commit a5299ce4e96f3e8930e9c051b28d8093ada87b08 ]
 
-Reduce the amount of output this dev_dbg() statement emits into logs,
-otherwise if system software polls the sysfs entry for data and keeps
-getting -ENODATA, it could end up filling the logs up.
+ab8500_btemp_external_power_changed() dereferences di->btemp_psy,
+which gets sets in ab8500_btemp_probe() like this:
 
-This does in fact make systemd journald choke, since during boot the
-sysfs power supply entries are polled and if journald starts at the
-same time, the journal is just being repeatedly filled up, and the
-system stops on trying to start journald without booting any further.
+        di->btemp_psy = devm_power_supply_register(dev, &ab8500_btemp_desc,
+                                                   &psy_cfg);
 
-Signed-off-by: Marek Vasut <marex@denx.de>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+As soon as devm_power_supply_register() has called device_add()
+the external_power_changed callback can get called. So there is a window
+where ab8500_btemp_external_power_changed() may get called while
+di->btemp_psy has not been set yet leading to a NULL pointer dereference.
+
+Fixing this is easy. The external_power_changed callback gets passed
+the power_supply which will eventually get stored in di->btemp_psy,
+so ab8500_btemp_external_power_changed() can simply directly use
+the passed in psy argument which is always valid.
+
+And the same applies to ab8500_fg_external_power_changed().
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/power_supply_sysfs.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/power/supply/ab8500_btemp.c | 6 ++----
+ drivers/power/supply/ab8500_fg.c    | 6 ++----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index c3d7cbcd4fad5..7a0485c35ba9d 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -276,7 +276,8 @@ static ssize_t power_supply_show_property(struct device *dev,
+diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
+index b6c9111d77d7d..896309d3cadfe 100644
+--- a/drivers/power/supply/ab8500_btemp.c
++++ b/drivers/power/supply/ab8500_btemp.c
+@@ -902,10 +902,8 @@ static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
+  */
+ static void ab8500_btemp_external_power_changed(struct power_supply *psy)
+ {
+-	struct ab8500_btemp *di = power_supply_get_drvdata(psy);
+-
+-	class_for_each_device(power_supply_class, NULL,
+-		di->btemp_psy, ab8500_btemp_get_ext_psy_data);
++	class_for_each_device(power_supply_class, NULL, psy,
++			      ab8500_btemp_get_ext_psy_data);
+ }
  
- 		if (ret < 0) {
- 			if (ret == -ENODATA)
--				dev_dbg(dev, "driver has no data for `%s' property\n",
-+				dev_dbg_ratelimited(dev,
-+					"driver has no data for `%s' property\n",
- 					attr->attr.name);
- 			else if (ret != -ENODEV && ret != -EAGAIN)
- 				dev_err_ratelimited(dev,
+ /* ab8500 btemp driver interrupts and their respective isr */
+diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
+index 57799a8079d44..eb7eac23da70f 100644
+--- a/drivers/power/supply/ab8500_fg.c
++++ b/drivers/power/supply/ab8500_fg.c
+@@ -2384,10 +2384,8 @@ static int ab8500_fg_init_hw_registers(struct ab8500_fg *di)
+  */
+ static void ab8500_fg_external_power_changed(struct power_supply *psy)
+ {
+-	struct ab8500_fg *di = power_supply_get_drvdata(psy);
+-
+-	class_for_each_device(power_supply_class, NULL,
+-		di->fg_psy, ab8500_fg_get_ext_psy_data);
++	class_for_each_device(power_supply_class, NULL, psy,
++			      ab8500_fg_get_ext_psy_data);
+ }
+ 
+ /**
 -- 
 2.39.2
 
