@@ -2,42 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08744C77B7A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93A34C7EE33
 	for <linux-pm@archiver.kernel.org>; Thu,  1 Jun 2023 23:29:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232071AbjFAX3x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jun 2023 19:29:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37326 "EHLO
+        id S232923AbjFAX3y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jun 2023 19:29:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37330 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231700AbjFAX3q (ORCPT
+        with ESMTP id S231863AbjFAX3q (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2023 19:29:46 -0400
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2049.outbound.protection.outlook.com [40.107.223.49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBDF7132;
-        Thu,  1 Jun 2023 16:29:44 -0700 (PDT)
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2055.outbound.protection.outlook.com [40.107.244.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E42A136;
+        Thu,  1 Jun 2023 16:29:45 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=jP5QnPQDlRh4HCozYq9Vh9XOok/Z1xDN0mbXpzGn7+x/fClHI+2eFF9m9BE3kSFuxORU+bovDFbTqWonECTgZonUzCWphJ1A60bIKUHAX3YI66cuAigNVBaC05YnlTNsX0wvMWUBZIIccO+NURjcaSeZRgvDaUEYB+Lv/mUKnKmPUWb7m9GdUSj+Uya8gUEx0z9v0QOFseqyMoqA2JSTDPzblPi1fy0VghgD8/XXAjVOgW+918Kiq1YhmWYb6OV932fQiWqIhZitvOHyRSMbRzmg/GRrFa/6eFq5bGOQjx9VxU3j6yueT4xhFDTUBI+dUJt6bwOcO4FKYVzaDGJtqA==
+ b=dizkZMI5ZJVWcuf0tPAvS9K53vnBKc2o2yM9ellUiSkwpQuc00NfG2x3nC6z/EpccuCUmmhC90rlJ9SdhNzVtSPrGln0CL8XXfNWfiJ8hr9shzz1vSq6Xe4twOQi1V4G2j7xR6LiftGneaAf8XlDIZChgIDKqj780rnN5xomgpGQZ8I2OEcxKpGWsxoxIO3ZjJde5CGOy54Kw8TO+NGXrLDZS2/KyQ3u3nPDEJ22sh0jtf9P3/kWZLMtD3KUeu3knuIY4TbmAHQYck8Pov09OpWjFZSBJVCIAkV9Y//EKNBbv8mGcoIm59QqhRilaHLw7a3cTh6xZsNp4BkUaPlFzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NeoHFlJ4HX4hZtRkOHcQEXnwYMnU3F+8KWm89Ri2Sg4=;
- b=NJosYzfAp2axGLkHg3xh5wm//DcBIp0nuI7vsUV1OXzHvrfUlKW9LFnzslVt1VOVmOx/iN0GHwGYdoFBFQzS35Af8WDUllptwN695A6z5v75kpFabiU/9RLnrdl/oCK331aLcEt66O9l0ZvWkGK7aloTiOGAkqhR3YRvbbFdeiBKuGIqNi4vXyq5fWdPFb/YRttZDF2azs9G4PXC0ap9s+2HLctpV2XM8SfMYXVN8naDchkRfGtlpYsKmisMkL9/PRr6RWBQdCaAMO9+0IV7NOyuGX9m6CJvluE+KJxO0jw8CgtxgefNc8oFz/P4T9SfZNFrJ/1qa54Ds8x9CoHTcQ==
+ bh=HCtaCSh2xp3TLU3Jn9duTu+a0ilJ5rZJIXMRb1Vd+cU=;
+ b=Cxj1EkoTB5xr2Wt7gkGm1SaqMKlyGBWGMIhA7GJr7Qs4iSuSt7MXr0C41MWIiKRpWZa1bDQ4KDrLJAKt/OpfZXF2SR1coWZQd5CRQYHi27Ix30180+fPhJSiftQOuT+2qeLfs5yhh3ZIu2AkZUUCQN4UDbYtubLntYSCd0Rzaoar1tpefp5zFmfyaJZaBPM+8dhHvV26Pi2mXaULsgYeCvs7BOBSZ3k4kppYNMqZUiv/yn8T0I+z7MrQ2nXINlG6L7uCUDXC3F6/cTfx0UCn7/lU0R/cnPn3GCSprITbVrherMeOnN1Zf8HRtgAPi/29XXo8nqP20j3DL8Bt8I0EPQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NeoHFlJ4HX4hZtRkOHcQEXnwYMnU3F+8KWm89Ri2Sg4=;
- b=vOg14xP72WYOsWQH4cN0rt/DTmWzLs4Sz7vAOZOnLPqDRsiVtBLe7r52stdvSO3WhRVQp97QmxDRDOZR9pqOYb9yqP3Cthhbey1dHeH40Qu1eLua0MEayTg12mzbLFo70wmoKekcgvWl1/5ffVun0N2LzFJAxyz/0i/AyorIqxo=
-Received: from DM6PR21CA0029.namprd21.prod.outlook.com (2603:10b6:5:174::39)
- by DS7PR12MB8084.namprd12.prod.outlook.com (2603:10b6:8:ef::5) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6455.22; Thu, 1 Jun 2023 23:29:42 +0000
+ bh=HCtaCSh2xp3TLU3Jn9duTu+a0ilJ5rZJIXMRb1Vd+cU=;
+ b=ORWt2kzztJm9REpBfs1fLP1Z5FkZhbG/qauYKzMhvoDvOn0/CMM1JVG7g9v9SFdjFT42lk2/gGvttCsH3hLDeKTSQccaSZ115RCSQG4YBL8HQtagp+4kiULy6jv2YPxP/PBrsxrpzTpy4ySgRPmrpVhZUyvXzPaYiHMNFVRhJxM=
+Received: from DM6PR21CA0010.namprd21.prod.outlook.com (2603:10b6:5:174::20)
+ by CY8PR12MB7337.namprd12.prod.outlook.com (2603:10b6:930:53::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6411.25; Thu, 1 Jun
+ 2023 23:29:43 +0000
 Received: from DM6NAM11FT053.eop-nam11.prod.protection.outlook.com
- (2603:10b6:5:174:cafe::a9) by DM6PR21CA0029.outlook.office365.com
- (2603:10b6:5:174::39) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:5:174:cafe::4f) by DM6PR21CA0010.outlook.office365.com
+ (2603:10b6:5:174::20) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.9 via Frontend
- Transport; Thu, 1 Jun 2023 23:29:42 +0000
+ Transport; Thu, 1 Jun 2023 23:29:43 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -47,11 +48,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  DM6NAM11FT053.mail.protection.outlook.com (10.13.173.74) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6455.24 via Frontend Transport; Thu, 1 Jun 2023 23:29:42 +0000
+ 15.20.6455.24 via Frontend Transport; Thu, 1 Jun 2023 23:29:43 +0000
 Received: from SITE-L-T34-2.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 1 Jun
- 2023 18:29:41 -0500
+ 2023 18:29:42 -0500
 From:   Mario Limonciello <mario.limonciello@amd.com>
 To:     Rafael Wysocki <rafael@kernel.org>, <hdegoede@redhat.com>,
         <linus.walleij@linaro.org>
@@ -61,10 +62,12 @@ CC:     <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
         Natikar Basavaraj <Basavaraj.Natikar@amd.com>,
         Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v3 1/4] include/linux/suspend.h: Only show pm_pr_dbg messages at suspend/resume
-Date:   Thu, 1 Jun 2023 18:29:20 -0500
-Message-ID: <20230601232923.1248-1-mario.limonciello@amd.com>
+Subject: [PATCH v3 3/4] pinctrl: amd: Use pm_pr_dbg to show debugging messages
+Date:   Thu, 1 Jun 2023 18:29:22 -0500
+Message-ID: <20230601232923.1248-3-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230601232923.1248-1-mario.limonciello@amd.com>
+References: <20230601232923.1248-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -73,108 +76,60 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM6NAM11FT053:EE_|DS7PR12MB8084:EE_
-X-MS-Office365-Filtering-Correlation-Id: 43970db9-82e1-4c1e-65ea-08db62f81389
+X-MS-TrafficTypeDiagnostic: DM6NAM11FT053:EE_|CY8PR12MB7337:EE_
+X-MS-Office365-Filtering-Correlation-Id: 77336892-228a-420d-972a-08db62f8141f
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: uB5mbJZlEXRgpKjZzm+qsLJTf8bTy808opSMEtxja8okn17IuQX869YhGhPtUdfSN29yTJTwfY8gp1aO1HqYxYnoWqrFf9wE62FX1jChan7J9JRJ9us2S9+O3dzvI2skDU3iRDTObZAwsLbbsfQTkKARBOkj3BAc4sbafNVJ3aaxQ9CwXTsGqtdAn9S1Bj8lGMs4/T69OI9uutfsWsYOzISDAwc2ic8EcPtl98Q9oqwLzgbEA0Z1abwaeerdHmw1832AjmIvsOqWCmJmG/833ZA3V4dhvNB6GIsN1oFnKTe1jarT2hj8P4afvHRpppAOEUFx2RTb5Bk6RSM6B2R6NOf+IOq/En7BU2GK1224siO2XUbRpLVMPmUSwQu7LCj8GdlDMWohmuKoy3Vsez3MhJArSAAi3+5m4zGRcKTybl/wd7owJbJ890YgIiVQCn+XKVS7wTsPQCMRJR3M4xn1qFsVoNOjlD2aLnjYXeNyikbXiocMAaJUxsGH6Bx5r0CgaE9dm0D8uQRnaTkh8d1RZyWBrOtFp+Rq/yXG0HGrLZ1ZD0AhRH/9SzNUBwhUF8HyKsbZj4eBJEVTqhNhJxQ2k8m59JLkldKWI+xq5Wp8Pgu9L2u7ZKL8/Qivy4oMUZgrRmTJ5bU8XQsvHei67goZ9KVo5B6jrdUE2nMJ9/aTMSx+HJYvJVtfXuXG0oswmhHJXf1r0+jjPKdHDYDKOrq78G9c5o5y62iV586TLn4rlgvhadYSQp9Xq2FxXDPYDXScWb7t3LNNHqU/kePBMeVnlA==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(136003)(376002)(39860400002)(346002)(396003)(451199021)(36840700001)(40470700004)(46966006)(16526019)(6666004)(82740400003)(82310400005)(356005)(81166007)(478600001)(40480700001)(47076005)(83380400001)(2616005)(426003)(336012)(36860700001)(26005)(186003)(36756003)(1076003)(7696005)(40460700003)(316002)(70206006)(70586007)(41300700001)(86362001)(4326008)(44832011)(8676002)(8936002)(54906003)(15650500001)(5660300002)(2906002)(110136005)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: RTMcIr/8bHc99V113LydJUuy0CiOT6Ii1qiI2Q9Oqc9NTGKfnhAb+d520z8wU7gmsxibgDccusa+w0qO0e6hnXO6SPnW1ky2JLsCLv9A7vLN/vb9adOxS4dXTkiCAz1Ad3+NdBeEi5/KIDjlf05U4A/vUfqaqNve1LZkBl+VeJ+loPMqApHKggfuXcaqsO1i7hEGXITmFjKLsHSJjnVdBKl8kzNajmrFMfmPYnCqx9mI9Pi9pX36CjF5ex8mS/X7fMDjNIpNQPTQb0F8gvwE3koyNdvPXKEr2jX5MZb2WsNxWomjtaMFKHLgzzHuQbmy4Q0KQr2Qqlx/1tlQCTYmkfnMpq9BbG5QGk0C7P1xlWHhJD/oArV/dgts56LSkDBCIPV3C5ld6j5I04Emaoj3vHbueagO1REpzS7F8BWjckmwQ3PnM6R9VK4uniqz/xz5dZeFliVNxhkTdQDXaLSGq1YNEFT9H6XGyyXYAnWISou2L/2cqtNt2WHWQfVnnOFVk4voOtaJ7bzezW7x8yazT+FTE3wzmSvlCZAz+Qptb3cnXN4nwTt9DuxInN1o1ms0crIvaXAVtyzyvniO9ILWTXUMIfpusieTvBIwoQcQkqfQwj6Q0DFQ7FnPcj921WrfEUMZnCJtULPbLAZThJ1yhMYO+NhpnxO8BgJMUgamb+gQnVurs5K3px/vpVhXXrXLHvJ2RoRPv+Aq51A0G0PPKwQym1b310prslxBK+iGLWMNCxStlhrRFJvAMaMeH6U7j2DqlMkF7asNfQno7l/xiA==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(376002)(346002)(39860400002)(136003)(396003)(451199021)(40470700004)(36840700001)(46966006)(110136005)(186003)(4326008)(83380400001)(70586007)(47076005)(54906003)(36756003)(15650500001)(2906002)(70206006)(478600001)(16526019)(1076003)(2616005)(40460700003)(26005)(8936002)(336012)(356005)(82740400003)(8676002)(426003)(82310400005)(81166007)(316002)(44832011)(36860700001)(40480700001)(5660300002)(7696005)(6666004)(86362001)(41300700001)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2023 23:29:42.1459
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2023 23:29:43.1302
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 43970db9-82e1-4c1e-65ea-08db62f81389
+X-MS-Exchange-CrossTenant-Network-Message-Id: 77336892-228a-420d-972a-08db62f8141f
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT053.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB8084
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB7337
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-All uses in the kernel are currently already oriented around
-suspend/resume. As some other parts of the kernel may also use these
-messages in functions that could also be used outside of
-suspend/resume, only enable in suspend/resume path.
+To make the GPIO tracking around suspend easier for end users to
+use, link it with pm_debug_messages.  This will make discovering
+sources of spurious GPIOs around suspend easier.
 
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
-v1->v2:
- * Remove pointless do/while
- * Add a function pm_debug_messages_should_print
- * Export pm_debug_messages_should_print so modules can use it too.
----
- include/linux/suspend.h | 20 +++++++++-----------
- kernel/power/main.c     |  6 ++++++
- 2 files changed, 15 insertions(+), 11 deletions(-)
+ drivers/pinctrl/pinctrl-amd.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 1a0426e6761c..9a3cc0b89208 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -555,6 +555,7 @@ static inline void unlock_system_sleep(unsigned int flags) {}
- #ifdef CONFIG_PM_SLEEP_DEBUG
- extern bool pm_print_times_enabled;
- extern bool pm_debug_messages_on;
-+extern bool pm_debug_messages_should_print(void);
- static inline int pm_dyn_debug_messages_on(void)
- {
- #ifdef CONFIG_DYNAMIC_DEBUG
-@@ -567,17 +568,13 @@ static inline int pm_dyn_debug_messages_on(void)
- #define pr_fmt(fmt) "PM: " fmt
- #endif
- #define __pm_pr_dbg(fmt, ...)					\
--	do {							\
--		if (pm_debug_messages_on)			\
--			printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);	\
--		else if (pm_dyn_debug_messages_on())		\
--			pr_debug(fmt, ##__VA_ARGS__);	\
--	} while (0)
-+	if (pm_debug_messages_should_print())			\
-+		printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);	\
-+	else if (pm_dyn_debug_messages_on())			\
-+		pr_debug(fmt, ##__VA_ARGS__);
- #define __pm_deferred_pr_dbg(fmt, ...)				\
--	do {							\
--		if (pm_debug_messages_on)			\
--			printk_deferred(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);	\
--	} while (0)
-+	if (pm_debug_messages_should_print())			\
-+		printk_deferred(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);
- #else
- #define pm_print_times_enabled	(false)
- #define pm_debug_messages_on	(false)
-@@ -593,7 +590,8 @@ static inline int pm_dyn_debug_messages_on(void)
- /**
-  * pm_pr_dbg - print pm sleep debug messages
-  *
-- * If pm_debug_messages_on is enabled, print message.
-+ * If pm_debug_messages_on is enabled and the system is entering/leaving
-+ *      suspend, print message.
-  * If pm_debug_messages_on is disabled and CONFIG_DYNAMIC_DEBUG is enabled,
-  *	print message only from instances explicitly enabled on dynamic debug's
-  *	control.
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 3113ec2f1db4..daa535012e51 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -556,6 +556,12 @@ power_attr_ro(pm_wakeup_irq);
+diff --git a/drivers/pinctrl/pinctrl-amd.c b/drivers/pinctrl/pinctrl-amd.c
+index f279b360c20d..43d3530bab48 100644
+--- a/drivers/pinctrl/pinctrl-amd.c
++++ b/drivers/pinctrl/pinctrl-amd.c
+@@ -30,6 +30,7 @@
+ #include <linux/pinctrl/pinconf.h>
+ #include <linux/pinctrl/pinconf-generic.h>
+ #include <linux/pinctrl/pinmux.h>
++#include <linux/suspend.h>
  
- bool pm_debug_messages_on __read_mostly;
+ #include "core.h"
+ #include "pinctrl-utils.h"
+@@ -636,9 +637,8 @@ static bool do_amd_gpio_irq_handler(int irq, void *dev_id)
+ 			regval = readl(regs + i);
  
-+bool pm_debug_messages_should_print(void)
-+{
-+	return pm_debug_messages_on && pm_suspend_target_state != PM_SUSPEND_ON;
-+}
-+EXPORT_SYMBOL_GPL(pm_debug_messages_should_print);
-+
- static ssize_t pm_debug_messages_show(struct kobject *kobj,
- 				      struct kobj_attribute *attr, char *buf)
- {
-
-base-commit: 7736c431466abb54a2679dc257f739fddfa84295
+ 			if (regval & PIN_IRQ_PENDING)
+-				dev_dbg(&gpio_dev->pdev->dev,
+-					"GPIO %d is active: 0x%x",
+-					irqnr + i, regval);
++				pm_pr_dbg("GPIO %d is active: 0x%x",
++					  irqnr + i, regval);
+ 
+ 			/* caused wake on resume context for shared IRQ */
+ 			if (irq < 0 && (regval & BIT(WAKE_STS_OFF)))
 -- 
 2.34.1
 
