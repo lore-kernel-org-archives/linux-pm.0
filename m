@@ -2,50 +2,50 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A933C77B7A
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jun 2023 18:30:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D41AC7EE23
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jun 2023 18:31:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229672AbjFASaw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jun 2023 14:30:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35890 "EHLO
+        id S232984AbjFASbI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jun 2023 14:31:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35672 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232674AbjFASao (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2023 14:30:44 -0400
+        with ESMTP id S231279AbjFASar (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2023 14:30:47 -0400
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3EF66193
-        for <linux-pm@vger.kernel.org>; Thu,  1 Jun 2023 11:30:42 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6035F1B7
+        for <linux-pm@vger.kernel.org>; Thu,  1 Jun 2023 11:30:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1685644242; x=1717180242;
+  t=1685644246; x=1717180246;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=mBO1UNUmkqWGbAWUvgXaq7kgcyWPB2AxPCN7VsVrLJM=;
-  b=XUNOecTeuPTx+3BOmRtBZeGDmopDMEvEZyEgyCP6znshrWvdHcWwBIR4
-   vAzZqGnMe6EnVISFZW5VkSl4OuOYLFDqdXrp4PAJlC2bVq/pruxZa/a5m
-   aM0neTIiWTPgZdDeRHRGGQ4izGImiaGTDEXfuGk5y4uekOKmx7N1bZhRz
-   7SLU/M+Ig7m5/3+tRblotiJx0EMGG74ESJ0XayD2LzS41LI1XZewYIanK
-   X81J0qaZxh6GQJZHKbnk4DG7Psi22bopa0wQJ7CIfem/zszEH4XVz9wiJ
-   V1VKgJerQAyDWuwHt45ZamOQGs1r/+a+x8wWwla6jguK6TB7HN7uJ+6DA
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="383921612"
+  bh=GKdhPPBYvkATBkf66MVCgik12brZChNrB577n2CaSSo=;
+  b=ByTVkmxGUbgUkirfal2rpPCa+kZ31LYUU/30ps40lYoYnNErsuoflbcY
+   j/fHb/q09Tq3lhbwVS91V0j8Duk5PqOIo59KeYjWXOW8Qi3E3hQTv0JLb
+   jmGjYduz32WyThV64VnpZIvBDtjcsQ+PjVE4e28Zc56j99lQ54S/8txaG
+   fNpfPSBXYMWriRq9yy7epqSYlGvRHdXZkD0QC8EerfFRNo6P9xGzr/cLK
+   dKDNNXgmxuk+USPh26cfQ5sq9tdUlbPsGpm6sTgIaWWqv3Lx/5moO8efd
+   MA7hSWi0huaaRDH3rlR354PUdkC5Gq+6gb6KEFmJvlm7ZBQ9bQdhFzh6i
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="383921641"
 X-IronPort-AV: E=Sophos;i="6.00,210,1681196400"; 
-   d="scan'208";a="383921612"
+   d="scan'208";a="383921641"
 Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2023 11:28:17 -0700
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2023 11:28:21 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="657900905"
+X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="657900922"
 X-IronPort-AV: E=Sophos;i="6.00,210,1681196400"; 
-   d="scan'208";a="657900905"
+   d="scan'208";a="657900922"
 Received: from arjan-box.jf.intel.com ([10.54.74.119])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2023 11:28:17 -0700
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Jun 2023 11:28:21 -0700
 From:   arjan@linux.intel.com
 To:     linux-pm@vger.kernel.org
 Cc:     artem.bityutskiy@linux.intel.com, rafael@kernel.org,
         Arjan van de Ven <arjan.van.de.ven@intel.com>,
         Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 1/7] intel_idle: refactor state->enter manipulation into its own function
-Date:   Thu,  1 Jun 2023 18:27:55 +0000
-Message-Id: <20230601182801.2622044-2-arjan@linux.intel.com>
+Subject: [PATCH 5/7] intel_idle: Add a way to skip the mwait check on all states
+Date:   Thu,  1 Jun 2023 18:27:59 +0000
+Message-Id: <20230601182801.2622044-6-arjan@linux.intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230601182801.2622044-1-arjan@linux.intel.com>
 References: <20230601182801.2622044-1-arjan@linux.intel.com>
@@ -57,86 +57,42 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arjan van de Ven <arjan.van.de.ven@intel.com>
 
-Since the 6.4 kernel, the logic for updating a state's enter method
-based on "environmental conditions" (command line options, cpu sidechannel
-workarounds etc etc) has gotten pretty complex.
-This patch refactors this into a seperate small, self contained function
-(no behavior changes) for improved readability and to make future
-changes to this logic easier to do and understand.
+Currently, intel_idle verifies that the cpuid instruction enumerates
+that the mwait value for a state is actually supported by the CPU.
+
+Going forward, when running in a VM guest, that check will not work
+and we're going to need a way to turn it off.
+
+Add a global bool for this, and uses this in the check
+function to short circuit this cpuid check.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- drivers/idle/intel_idle.c | 50 ++++++++++++++++++++++-----------------
- 1 file changed, 28 insertions(+), 22 deletions(-)
+ drivers/idle/intel_idle.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index aa2d19db2b1d..c351b21c0875 100644
+index 66d262fd267e..55c3e6ece3dd 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -1839,6 +1839,32 @@ static bool __init intel_idle_verify_cstate(unsigned int mwait_hint)
- 	return true;
- }
+@@ -69,6 +69,7 @@ static int max_cstate = CPUIDLE_STATE_MAX - 1;
+ static unsigned int disabled_states_mask __read_mostly;
+ static unsigned int preferred_states_mask __read_mostly;
+ static bool force_irq_on __read_mostly;
++static bool skip_mwait_check __read_mostly;
  
-+static void state_update_enter_method(struct cpuidle_state *state, int cstate)
-+{
-+	if (state->flags & CPUIDLE_FLAG_INIT_XSTATE) {
-+		/*
-+		 * Combining with XSTATE with IBRS or IRQ_ENABLE flags
-+		 * is not currently supported but this driver.
-+		 */
-+		WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IBRS);
-+		WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
-+		state->enter = intel_idle_xstate;
-+	} else if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS) &&
-+			   state->flags & CPUIDLE_FLAG_IBRS) {
-+		/*
-+		 * IBRS mitigation requires that C-states are entered
-+		 * with interrupts disabled.
-+		 */
-+		WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
-+		state->enter = intel_idle_ibrs;
-+	} else if (state->flags & CPUIDLE_FLAG_IRQ_ENABLE) {
-+		state->enter = intel_idle_irq;
-+	} else if (force_irq_on) {
-+		pr_info("forced intel_idle_irq for state %d\n", cstate);
-+		state->enter = intel_idle_irq;
-+	}
-+}
+ static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+ 
+@@ -1866,6 +1867,9 @@ static bool __init intel_idle_verify_cstate(unsigned int mwait_hint)
+ 	unsigned int num_substates = (mwait_substates >> mwait_cstate * 4) &
+ 					MWAIT_SUBSTATE_MASK;
+ 
++	if (skip_mwait_check)
++		return true;
 +
- static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- {
- 	int cstate;
-@@ -1894,28 +1920,8 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- 		drv->states[drv->state_count] = cpuidle_state_table[cstate];
- 		state = &drv->states[drv->state_count];
- 
--		if (state->flags & CPUIDLE_FLAG_INIT_XSTATE) {
--			/*
--			 * Combining with XSTATE with IBRS or IRQ_ENABLE flags
--			 * is not currently supported but this driver.
--			 */
--			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IBRS);
--			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
--			state->enter = intel_idle_xstate;
--		} else if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS) &&
--			   state->flags & CPUIDLE_FLAG_IBRS) {
--			/*
--			 * IBRS mitigation requires that C-states are entered
--			 * with interrupts disabled.
--			 */
--			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
--			state->enter = intel_idle_ibrs;
--		} else if (state->flags & CPUIDLE_FLAG_IRQ_ENABLE) {
--			state->enter = intel_idle_irq;
--		} else if (force_irq_on) {
--			pr_info("forced intel_idle_irq for state %d\n", cstate);
--			state->enter = intel_idle_irq;
--		}
-+		state_update_enter_method(state, cstate);
-+
- 
- 		if ((disabled_states_mask & BIT(drv->state_count)) ||
- 		    ((icpu->use_acpi || force_use_acpi) &&
+ 	/* Ignore the C-state if there are NO sub-states in CPUID for it. */
+ 	if (num_substates == 0)
+ 		return false;
 -- 
 2.40.1
 
