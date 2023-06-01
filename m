@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 289D9C8300C
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jun 2023 23:29:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2C42C7EE43
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jun 2023 23:29:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233037AbjFAX34 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jun 2023 19:29:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37342 "EHLO
+        id S233011AbjFAX3z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jun 2023 19:29:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232984AbjFAX3u (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2023 19:29:50 -0400
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com (mail-sn1nam02on2054.outbound.protection.outlook.com [40.107.96.54])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 560CCF2;
-        Thu,  1 Jun 2023 16:29:49 -0700 (PDT)
+        with ESMTP id S232885AbjFAX3s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2023 19:29:48 -0400
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2049.outbound.protection.outlook.com [40.107.93.49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C7B4F2;
+        Thu,  1 Jun 2023 16:29:47 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=luHQpck6Emh/JtA6vkjzzwoZyYI1pQizy7/1Se/dWHMbdi4d1ENHDFvmVk/9h0C+dqVj3vkWVw/4SAm4eQiD8F8HDwJz8lyN9mNxJaafKXhwGdzaphyQwsulsVAdpwLFzBoDICr/r3I28y6gi5iwjvJLtsgglcu66nbtS7D2BWEcuY2A+3NcAejcnhjibOVJ4iqsR9CrWTjvSVwdzqm+cR5ozIGDGf7ROVxEaNgxhCrzoMl6KfSZjzAzkA894i8VW02vV50HVeSMWOm2eNKkePetmeJPDe+PSp1Yp1v3FoFwCMhG88GdvOfHI/oOyn2fbzE5EwwnOEIt6wvIguFyEg==
+ b=YpH+uCrjOsMVZWQ5wRNmxSlrwXEIopQjemwbYSH9iKEjXuXUu22PVFKYMV7Rlb9yTyxCAOky8jqJXskOjeXu+PIM3xe5dzm/QCkDaOupOcxSItq7xnl+Bbb+ZzeixKkuTk++mzHH0bcPmFEKbax7N0KZqYsZaafNmks9qwzo6Ac/BURijFomiWIuDLUwKfDCdDRI+m/Fx+UqNKf2DzDj3qn8w2pWDHBTgDDbfgn7L06OykR+Us8f88G0YQ4wJ3the8n1JSCd1OaCvgMEKGqTbu5wuol9v+GNPYJvUF1OkW1win98is6jUblBaSwHvloWJG1XsWF2ynNaWNdUnmfJbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=CrHATCoFhmN6yg/azbKKFkcA0h9V7q/tjG0BF8LbZ5Q=;
- b=j/qNntrcnl4R7RxbqsmigFjvKKaRvp8/7hL+kRKnyy90kThNHE6pWstJBXqwm3PTCMO/UHnDnBDGA5IkrMNuklllbL1buHeZ4v2HfXjmy/cmlI6q2P7bs5Wjdq3a+airKBajqvsMWK1UGZecNl/+xKosfJuOSTYpgMgkJvHYE1Evjd6JPfvAzU6b3ssy1ngIGyW4BUAtfkCPydvR/3UVBRtDmhdJqi2Jr1te2J16FHX0GlEmfK7i8HrPIyk0stqHYRzrJN2l44pOu5+ooMUfkH6kO1zoTWTQDpK1Tp16jON8qnk5rsiR1XRQ/uuWDZwnAJeoVzWqg5TYt7Py182kpg==
+ bh=WIGYex2gmnwg9s/SxVexBqG3eOxNY8IcDlv1varSqJM=;
+ b=krnV1rYHVR5k/N/STagDDcCvmLVO8RDJNfC4RM/62S+RlVKrR4bODPBIX9q0ol70weCv4soYvQC345wkEJIKE3YD81A1TTjfuuEd1wYvVhhtMkDmx6No8opE3PPQOCmnXTSrpcqKKyoMeapmwCMJLf7pKl4Z/Aht8H2Nh0h8Pf/fVY3ExtDemZr31/rZJlx7noRcxgv6ZTrS++M5s3x4OoPwOZLHWwv6pvjYNyEMMhZhtfdOEtaw/24PYeaXblmtdkxYDYn6ROIWxF2gLOkRxalAUk8pm4m20jjZ3Nxj0Dni92sx+cy5N5HOgYCzsqe1oyKWMCTorgstX3+DihCzrA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CrHATCoFhmN6yg/azbKKFkcA0h9V7q/tjG0BF8LbZ5Q=;
- b=XZGcsTcjgIS6mVtNGkHNL3EAMHcWOlGdIxmiYhAc162vqgGEry47FIY+FbDrzR1hbN2qf9Wtis4jXU6TxOGJo20gfHeF4yrqnLJ88z19E4U9NUw8c4P6621f6BdQ2359PcYUMdPCcgsv2EqTI5qTA/ezXMnado4fRTlCPgIFSD4=
-Received: from DM6PR21CA0005.namprd21.prod.outlook.com (2603:10b6:5:174::15)
- by SJ2PR12MB9243.namprd12.prod.outlook.com (2603:10b6:a03:578::7) with
+ bh=WIGYex2gmnwg9s/SxVexBqG3eOxNY8IcDlv1varSqJM=;
+ b=DsMnM2OIyWoklNeF8vIqFes2IqstMCSg3zBnR3NbMJ0y50m/LpAuP+KJ1UGcz696gFzqlJCh/dU4vv43Uz3Bmn7ucn2qr+5+WebKVQwfg6bCuBDjBUBcrgWdMLELzL2iRrX+dHNZKOn6oTgfET/xCDiytW2EKSd5txBhTnoa8/Y=
+Received: from DM6PR21CA0017.namprd21.prod.outlook.com (2603:10b6:5:174::27)
+ by MN0PR12MB5906.namprd12.prod.outlook.com (2603:10b6:208:37a::10) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6433.24; Thu, 1 Jun
- 2023 23:29:44 +0000
-Received: from DM6NAM11FT104.eop-nam11.prod.protection.outlook.com
- (2603:10b6:5:174:cafe::14) by DM6PR21CA0005.outlook.office365.com
- (2603:10b6:5:174::15) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6433.26; Thu, 1 Jun
+ 2023 23:29:42 +0000
+Received: from DM6NAM11FT053.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:5:174:cafe::c1) by DM6PR21CA0017.outlook.office365.com
+ (2603:10b6:5:174::27) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.9 via Frontend
- Transport; Thu, 1 Jun 2023 23:29:44 +0000
+ Transport; Thu, 1 Jun 2023 23:29:42 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -46,13 +46,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- DM6NAM11FT104.mail.protection.outlook.com (10.13.173.232) with Microsoft SMTP
+ DM6NAM11FT053.mail.protection.outlook.com (10.13.173.74) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6455.24 via Frontend Transport; Thu, 1 Jun 2023 23:29:43 +0000
+ 15.20.6455.24 via Frontend Transport; Thu, 1 Jun 2023 23:29:42 +0000
 Received: from SITE-L-T34-2.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 1 Jun
- 2023 18:29:42 -0500
+ 2023 18:29:41 -0500
 From:   Mario Limonciello <mario.limonciello@amd.com>
 To:     Rafael Wysocki <rafael@kernel.org>, <hdegoede@redhat.com>,
         <linus.walleij@linaro.org>
@@ -62,9 +62,9 @@ CC:     <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
         Natikar Basavaraj <Basavaraj.Natikar@amd.com>,
         Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v3 4/4] platform/x86/amd: pmc: Use pm_pr_dbg() for suspend related messages
-Date:   Thu, 1 Jun 2023 18:29:23 -0500
-Message-ID: <20230601232923.1248-4-mario.limonciello@amd.com>
+Subject: [PATCH v3 2/4] ACPI: x86: Add pm_debug_messages for LPS0 _DSM state tracking
+Date:   Thu, 1 Jun 2023 18:29:21 -0500
+Message-ID: <20230601232923.1248-2-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230601232923.1248-1-mario.limonciello@amd.com>
 References: <20230601232923.1248-1-mario.limonciello@amd.com>
@@ -76,58 +76,115 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM6NAM11FT104:EE_|SJ2PR12MB9243:EE_
-X-MS-Office365-Filtering-Correlation-Id: caffb3d7-43cf-4025-038c-08db62f81490
+X-MS-TrafficTypeDiagnostic: DM6NAM11FT053:EE_|MN0PR12MB5906:EE_
+X-MS-Office365-Filtering-Correlation-Id: 43636962-3cae-4cfc-11fa-08db62f813d8
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: Fa1/CyFJGEav/EEXKkEqhLs5D4Y/KTG/TfqWQTC/yxiiPA1iw05FOHT0FbdbitRNgkzWpEg0VVasERLBGWmc6nwdRoMTNWX4FRSwf/EKSScfis3ge9dHptqvHcY1pesnoIDEUucgGtscggUz7m6ml4VpyFcFAtmC+pcaN9adwAKJ4AeWfmYTIC3U3V3sEyCtLNEORm9eBZeKONst48F8jn1yR/QLrqcpxrZjX9xUOdEYxc5bzg/Ua4wP2E4eHqyHbmxzvVcK6HKUT21yayQbK0nAGc4RyZNklKhH4AmaImAaUnXL5J6jxy4Laq5AaahF2385Qx4qfyXFnHhD1n7tu2oPxgacn7o8XWSxudoNTa0adD/ZPlPLSep+E1TT0mF0s154QDY4udR6+abLPhKJUNSs58qU4Rn7kK49t3vwEZcsR9YRdWvOj0dQ59Xql5wCo0M0avB7HyfgTEmoyFBdxg0bPKhgBOu8lNhi7bATQ449TO8xOgcMeL4YzwP1aTjTaGwupNbkVV47kksLn/mUtDdRy8wkfgLY1GQloyBm7gL0zDrYiv/lTTL15oDMzb34E56F28mynDjYGDxZT4ucxZGxAqzf7B0FMFPrwuugux0EDkTEJ/Z4ZuGABj0FtV6U1l7UHGElYGc6n4k4mehnyWd4F8ygwL5+sNJwFbVc8/qErjABpL0rTPLOSPQCiWb1Ekv4zXvb9PHKkeOXDFjiqV3qqgfQ8p0B7Vacm2bqlfShampY4MCYDfx5oZuxtJuiV8VGA4C24hB3vkKRnPteOg==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(376002)(346002)(136003)(396003)(39860400002)(451199021)(40470700004)(46966006)(36840700001)(40460700003)(7696005)(6666004)(36860700001)(86362001)(426003)(36756003)(336012)(83380400001)(2616005)(47076005)(82310400005)(356005)(81166007)(1076003)(40480700001)(82740400003)(26005)(186003)(16526019)(15650500001)(70586007)(2906002)(70206006)(4326008)(54906003)(110136005)(8936002)(8676002)(44832011)(5660300002)(41300700001)(478600001)(316002)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: jVo+aK7RPjTAGF4SpCX9Nd5F6z6o2p3wasZ0JCgyU0nUcPK0oiSekaDfYVfFi03cuUka6MgK4fpsurYAPgev1q+M9hHJJO6XVs73xSpuL7NR8c7n7mNdSuZLhL+Y3OD4iU0s3Esv+DyHcfa97BeY8h7XOYc5Fy4XNiiWX2VyFFOst6ldEzoRH+c/ml1/YD1hhBBc58SF9Kdz72eghKIRrqKo3BmlrPPU2VdZTuYwaRnXtu36fnDYAHtABIIWgCxd9Utac1Ex7n0JWsGTT34pEhti7mwj/s5lXVoFQOdpyHSXbMjv67V6AGKlMGe3dQo/kTV708OIKDZqN3oPMYtPZEKiGHSiOVkb87CGk4KPeMH5DFcQ7zu3CRsyDdlqeb2Gcfq0uMjbYlky1mnjQp7M5zOJpBChEApEahp6YJsuv8g/G3yHkvE0Z9ILswmLUxxKNnR/tHDXYVyZGMLk9c6xgG/7wA8QaLBt0xhMNl3fazWzfO4fXPOam2DKJR+i5m50GzqJzlK3KH3caa+8GnPyihHsyogey/5kGBozTPqnxeKDbb2y+ActNRv7/hh2k5JeUpH1ZRbRBqAU0cW6dmgLfwpKEe81JxGPNgR+pJAXipQ5C4usG5jjpavAJRymQY/nb+oSCPgdcbumlhoWqB4Lv50aipId59pwzptIKl9smKvo/B05LkW9KK/9j02Vgnb2RBQBazrhd3WxvbVzu2La2tB2BIild1gyplfVGRu57Pjxd8N4CJGXqWl6ke33mXtQLX4LgErO5HjDZe2t7ra+NA==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(376002)(136003)(396003)(346002)(39860400002)(451199021)(46966006)(40470700004)(36840700001)(356005)(82740400003)(8676002)(8936002)(2906002)(16526019)(41300700001)(86362001)(82310400005)(81166007)(7696005)(186003)(2616005)(316002)(110136005)(54906003)(1076003)(26005)(478600001)(6666004)(336012)(426003)(83380400001)(5660300002)(36756003)(4326008)(47076005)(45080400002)(70206006)(70586007)(40460700003)(44832011)(36860700001)(40480700001)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2023 23:29:43.8669
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2023 23:29:42.6614
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: caffb3d7-43cf-4025-038c-08db62f81490
+X-MS-Exchange-CrossTenant-Network-Message-Id: 43636962-3cae-4cfc-11fa-08db62f813d8
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT104.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT053.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB9243
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB5906
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Using pm_pr_dbg() allows users to toggle `/sys/power/pm_debug_messages`
-as a single knob to turn on messages that amd-pmc can emit to aid in
-any s2idle debugging.
+Enabling debugging messages for the state requires turning on dynamic
+debugging for the file. To make it more accessible, use
+`pm_debug_messages` and clearer strings for what is happening.
 
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
- drivers/platform/x86/amd/pmc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/x86/s2idle.c | 52 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 46 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/platform/x86/amd/pmc.c b/drivers/platform/x86/amd/pmc.c
-index 427905714f79..1304cd6f13f6 100644
---- a/drivers/platform/x86/amd/pmc.c
-+++ b/drivers/platform/x86/amd/pmc.c
-@@ -543,7 +543,7 @@ static int amd_pmc_idlemask_read(struct amd_pmc_dev *pdev, struct device *dev,
+diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
+index e499c60c4579..7681f6ecab67 100644
+--- a/drivers/acpi/x86/s2idle.c
++++ b/drivers/acpi/x86/s2idle.c
+@@ -59,6 +59,7 @@ static int lps0_dsm_func_mask;
+ 
+ static guid_t lps0_dsm_guid_microsoft;
+ static int lps0_dsm_func_mask_microsoft;
++static int lps0_dsm_state;
+ 
+ /* Device constraint entry structure */
+ struct lpi_device_info {
+@@ -320,6 +321,44 @@ static void lpi_check_constraints(void)
  	}
- 
- 	if (dev)
--		dev_dbg(pdev->dev, "SMU idlemask s0i3: 0x%x\n", val);
-+		pm_pr_dbg("SMU idlemask s0i3: 0x%x\n", val);
- 
- 	if (s)
- 		seq_printf(s, "SMU idlemask : 0x%x\n", val);
-@@ -769,7 +769,7 @@ static int amd_pmc_verify_czn_rtc(struct amd_pmc_dev *pdev, u32 *arg)
- 
- 	*arg |= (duration << 16);
- 	rc = rtc_alarm_irq_enable(rtc_device, 0);
--	dev_dbg(pdev->dev, "wakeup timer programmed for %lld seconds\n", duration);
-+	pm_pr_dbg("wakeup timer programmed for %lld seconds\n", duration);
- 
- 	return rc;
  }
+ 
++static bool acpi_s2idle_vendor_amd(void)
++{
++	return boot_cpu_data.x86_vendor == X86_VENDOR_AMD;
++}
++
++static const char *acpi_sleep_dsm_state_to_str(unsigned int state)
++{
++	if (lps0_dsm_func_mask_microsoft || !acpi_s2idle_vendor_amd()) {
++		switch (state) {
++		case ACPI_LPS0_SCREEN_OFF:
++			return "screen off";
++		case ACPI_LPS0_SCREEN_ON:
++			return "screen on";
++		case ACPI_LPS0_ENTRY:
++			return "lps0 entry";
++		case ACPI_LPS0_EXIT:
++			return "lps0 exit";
++		case ACPI_LPS0_MS_ENTRY:
++			return "lps0 ms entry";
++		case ACPI_LPS0_MS_EXIT:
++			return "lps0 ms exit";
++		}
++	} else {
++		switch (state) {
++		case ACPI_LPS0_SCREEN_ON_AMD:
++			return "screen on";
++		case ACPI_LPS0_SCREEN_OFF_AMD:
++			return "screen off";
++		case ACPI_LPS0_ENTRY_AMD:
++			return "lps0 entry";
++		case ACPI_LPS0_EXIT_AMD:
++			return "lps0 exit";
++		}
++	}
++
++	return "unknown";
++}
++
+ static void acpi_sleep_run_lps0_dsm(unsigned int func, unsigned int func_mask, guid_t dsm_guid)
+ {
+ 	union acpi_object *out_obj;
+@@ -331,14 +370,15 @@ static void acpi_sleep_run_lps0_dsm(unsigned int func, unsigned int func_mask, g
+ 					rev_id, func, NULL);
+ 	ACPI_FREE(out_obj);
+ 
+-	acpi_handle_debug(lps0_device_handle, "_DSM function %u evaluation %s\n",
+-			  func, out_obj ? "successful" : "failed");
++	lps0_dsm_state = func;
++	if (pm_debug_messages_on) {
++		acpi_handle_info(lps0_device_handle,
++				"%s transitioned to state %s\n",
++				 out_obj ? "Successfully" : "Failed to",
++				 acpi_sleep_dsm_state_to_str(lps0_dsm_state));
++	}
+ }
+ 
+-static bool acpi_s2idle_vendor_amd(void)
+-{
+-	return boot_cpu_data.x86_vendor == X86_VENDOR_AMD;
+-}
+ 
+ static int validate_dsm(acpi_handle handle, const char *uuid, int rev, guid_t *dsm_guid)
+ {
 -- 
 2.34.1
 
