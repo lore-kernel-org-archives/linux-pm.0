@@ -2,70 +2,75 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88A55C7EE24
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:56:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99DDBC7EE24
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:58:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234717AbjFBI4I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Jun 2023 04:56:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55718 "EHLO
+        id S234401AbjFBI6R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Jun 2023 04:58:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55332 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234730AbjFBIzg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:55:36 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72941E69
-        for <linux-pm@vger.kernel.org>; Fri,  2 Jun 2023 01:54:33 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f611ac39c5so457817e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 02 Jun 2023 01:54:33 -0700 (PDT)
+        with ESMTP id S234629AbjFBI5q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:57:46 -0400
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FB6E10DC
+        for <linux-pm@vger.kernel.org>; Fri,  2 Jun 2023 01:57:33 -0700 (PDT)
+Received: by mail-lf1-x12f.google.com with SMTP id 2adb3069b0e04-4f50a8f6dd7so2405957e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 02 Jun 2023 01:57:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1685696071; x=1688288071;
+        d=linaro.org; s=google; t=1685696251; x=1688288251;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=h/K5d07Ai5xBTSHj+4m9+Mu0PCCcMTAitKgXkZjqnoo=;
-        b=v3Y9MWXvJoO2KFDBFAr9XfYehYzj+8qojfNEHgk7w4BJ2Ve0lPt7IcPZBstjJNmRGl
-         oFSaSjRlnK1M3XkvgMrGRFJY5AqvSTOtPUQoJOjtq47vK7zBkxsGUEDklEU1DIvt8rTN
-         99Y7DykZMADbznsAoOwdwZni6005w6Ej3dBigtfP9utbU4OqVm7BnRfSscGT7jEqPMmj
-         jfvD5Ai6efUas/1aFSfHoagUT+BxUXOvbX/aHH9d3ZKWfPu4xwFxi8p0+gxtl+QWrn77
-         nmuPO2ToL/CnCas5nna/L9VpcZBoR1TWjU2bpu9CBt8bsE1J53l4EO4ZrmNy7VbG05zo
-         vf3g==
+        bh=eaozavS8Dw9G07q3WIthaz1oxPUnWkRUgVfQ/uWKK+o=;
+        b=k+L76lILkvNpMK5eJwtttR1ZvSPzVJjxvKM2Uf6nqssGPPfOz3NLOtmL75ANFbc53R
+         DlX2NzD2i1CraPX/uYoKH6qnECz9eU1Z8pbQhl6DBpA6YRZuSzQh/YKaqfPYRQwiKI6P
+         SE6S4mV6cOWjRibdDHXVhVTadG0O4BmMZ5pr9ir9Fvh260aUzngk9xM6Ao60QAD0Ej6r
+         mhiJds4K3j/QaeW+CRqGZX60SsXq1nIN/hcGjwv/UpwyiM9iIr7h5Ym3uBq2VcBal+F7
+         nXMpo9rrWgMsMW6AytdRAMQYqXcWtGgd59xS5K/CA0EbgepAo5GyAp8YPgKbzo2TP8Fn
+         p2Rw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685696071; x=1688288071;
+        d=1e100.net; s=20221208; t=1685696251; x=1688288251;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=h/K5d07Ai5xBTSHj+4m9+Mu0PCCcMTAitKgXkZjqnoo=;
-        b=Yi2ltCCd9IYp8uh9MOvJ5LSRyqIrlLShL6SQ/zagVe2szS24uYVlbWuOalsfQNwQsc
-         BEzvlESofVJnlPEWBd/b3QVebrmKH+xJ+nSdDOOd/CBe5WnEvfCYfMEo9fptCNXikddr
-         BZOtuy5zseSMvFYcX3JWD29VKA4gi83U36DqF6xeOrfJIJsvAyhCM111Y/uEMOLF9f9q
-         400W2LJXQoDmtfyOShJFOH7INse5yWFlEH6bUYu7UK2Hs7hBQoWr8IV2JkF1/QyaJ7Fp
-         dpUKaRopGwvzngpw1/IcV+j5+iKTootlhfXMjPUQTNZ530YeiOpKRyQZNdf7ek7JfGg1
-         RZ1Q==
-X-Gm-Message-State: AC+VfDyPAMMdt3q770sSTbkPfyjp4/vreiGjgcJNaEezbpMraU5cmwww
-        CAM5wv+bugOaQ9+DQSqtIUzoDg==
-X-Google-Smtp-Source: ACHHUZ5FsE78Qq21/c3s1WU+/VE5y4o6fVrH9MjwLufB6XedwCo/HmrIrTOSLq7FTIVr5E3cg23C9Q==
-X-Received: by 2002:ac2:518f:0:b0:4f3:aa73:562 with SMTP id u15-20020ac2518f000000b004f3aa730562mr1505757lfi.2.1685696071078;
-        Fri, 02 Jun 2023 01:54:31 -0700 (PDT)
+        bh=eaozavS8Dw9G07q3WIthaz1oxPUnWkRUgVfQ/uWKK+o=;
+        b=Nq7Q82hro/FKjHsRFtdf+IjyE+hS4F5gDXsfYkQHy9cagJCwjBRI4Zzq3+tqOCGj8H
+         E6RHnI+vOSNmnomqGcsDK9aaCJVbHHrY7izy+WeOflmVMvvAzE2ZSw9JyTSGMlkgoWgg
+         kZdrDl30Z90jzZRwvRunN4isfp9kGWFfbR7+qfd3uVkB1b4ArufKoEeuIztap/qBXN2I
+         jTm1o9fszWHQp38LJc2c9rf6s/cGhfjuH5KxKm2tJI5xDu7cQ21UQJ+ww+npyNVP1yPs
+         uC82J9WSdlRFOUk4WZVXUVazWwCcyHHoi6VPhvzXZHvfgLF6yaV5lbJdM3h9oysy8iIr
+         lrUQ==
+X-Gm-Message-State: AC+VfDyy7nS0XeMb02Zxu3c4042fHbfDCXIc+lpRZHNFmmAZT3o/FdUU
+        PEpZZbhw9txUHP051EZQ/DSpgQ==
+X-Google-Smtp-Source: ACHHUZ5eY5OrhtEFe+ABmF8b5ll+9yOH8otZRhdWVPdyaCx97VYsne4VKioFkB97qFTdvzfJMaOylQ==
+X-Received: by 2002:ac2:4246:0:b0:4f4:d538:3450 with SMTP id m6-20020ac24246000000b004f4d5383450mr1182657lfl.49.1685696251372;
+        Fri, 02 Jun 2023 01:57:31 -0700 (PDT)
 Received: from [192.168.1.101] (abyj77.neoplus.adsl.tpnet.pl. [83.9.29.77])
-        by smtp.gmail.com with ESMTPSA id c24-20020ac25318000000b004eefdd8b37fsm94626lfh.194.2023.06.02.01.54.30
+        by smtp.gmail.com with ESMTPSA id w13-20020a05651203cd00b004ef11b30a17sm94809lfp.91.2023.06.02.01.57.30
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 02 Jun 2023 01:54:30 -0700 (PDT)
-Message-ID: <ab8d7a2d-e2db-39cd-dbac-bb5535cb8c19@linaro.org>
-Date:   Fri, 2 Jun 2023 10:54:29 +0200
+        Fri, 02 Jun 2023 01:57:30 -0700 (PDT)
+Message-ID: <5ab92f01-720d-1a27-3ab5-1af1d63bd139@linaro.org>
+Date:   Fri, 2 Jun 2023 10:57:29 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.11.2
-Subject: Re: [PATCH 1/2] cpufreq: qcom-nvmem: add support for IPQ8074
+Subject: Re: [RESEND PATCH v2 1/2] cpufreq: qcom-nvmem: add support for
+ IPQ8074
 Content-Language: en-US
-To:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Robert Marko <robimarko@gmail.com>
-Cc:     rafael@kernel.org, ilia.lin@kernel.org, agross@kernel.org,
-        andersson@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        ansuelsmth@gmail.com
-References: <20230530165409.641661-1-robimarko@gmail.com>
- <20230602041327.klyjs4cevmzn6vs7@vireshk-i7>
+To:     Robert Marko <robimarko@gmail.com>,
+        Kathiravan T <quic_kathirav@quicinc.com>
+Cc:     rafael@kernel.org, viresh.kumar@linaro.org, agross@kernel.org,
+        andersson@kernel.org, ilia.lin@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, ansuelsmth@gmail.com
+References: <20230530165807.642084-1-robimarko@gmail.com>
+ <b565b9b5-d7c1-7779-532e-565c3f5c5cd3@quicinc.com>
+ <CAOX2RU6ay_Bc0JYQ6rBcTRadm-71Jie5YH9B0J_1UywkcyqZ8g@mail.gmail.com>
+ <70de3314-766d-4c7f-5b1a-41740cfeac8c@quicinc.com>
+ <2a78c9ce-f631-53fd-581f-2e8c906be989@quicinc.com>
+ <CAOX2RU4k4bDvtU8m4cxA=9x6b2B0mwiKsBWXFV3TY+jvk49vwg@mail.gmail.com>
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-In-Reply-To: <20230602041327.klyjs4cevmzn6vs7@vireshk-i7>
+In-Reply-To: <CAOX2RU4k4bDvtU8m4cxA=9x6b2B0mwiKsBWXFV3TY+jvk49vwg@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -74,24 +79,188 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 
-On 2.06.2023 06:13, Viresh Kumar wrote:
-> On 30-05-23, 18:54, Robert Marko wrote:
->> IPQ8074 comes in 2 families:
->> * IPQ8070A/IPQ8071A (Acorn) up to 1.4GHz
->> * IPQ8072A/IPQ8074A/IPQ8076A/IPQ8078A (Hawkeye) up to 2.2GHz
+On 1.06.2023 16:55, Robert Marko wrote:
+> On Thu, 1 Jun 2023 at 16:49, Kathiravan T <quic_kathirav@quicinc.com> wrote:
 >>
->> So, in order to be able to share one OPP table lets add support for IPQ8074
->> family based of SMEM SoC ID-s as speedbin fuse is always 0 on IPQ8074.
 >>
->> IPQ8074 compatible is blacklisted from DT platdev as the cpufreq device
->> will get created by NVMEM CPUFreq driver.
+>> On 6/1/2023 6:54 PM, Kathiravan T wrote:
+>>>
+>>> On 6/1/2023 6:40 PM, Robert Marko wrote:
+>>>> On Thu, 1 Jun 2023 at 14:57, Kathiravan T <quic_kathirav@quicinc.com>
+>>>> wrote:
+>>>>>
+>>>>> On 5/30/2023 10:28 PM, Robert Marko wrote:
+>>>>>> IPQ8074 comes in 2 families:
+>>>>>> * IPQ8070A/IPQ8071A (Acorn) up to 1.4GHz
+>>>>>> * IPQ8072A/IPQ8074A/IPQ8076A/IPQ8078A (Hawkeye) up to 2.2GHz
+>>>>>>
+>>>>>> So, in order to be able to share one OPP table lets add support for
+>>>>>> IPQ8074
+>>>>>> family based of SMEM SoC ID-s as speedbin fuse is always 0 on IPQ8074.
+>>>>>>
+>>>>>> IPQ8074 compatible is blacklisted from DT platdev as the cpufreq
+>>>>>> device
+>>>>>> will get created by NVMEM CPUFreq driver.
+>>>>>>
+>>>>>> Signed-off-by: Robert Marko <robimarko@gmail.com>
+>>>>>> ---
+>>>>>> Changes in v2:
+>>>>>> * Print an error if SMEM ID is not part of the IPQ8074 family
+>>>>>> and restrict the speed to Acorn variant (1.4GHz)
+>>>>>> ---
+>>>>>>    drivers/cpufreq/cpufreq-dt-platdev.c |  1 +
+>>>>>>    drivers/cpufreq/qcom-cpufreq-nvmem.c | 43
+>>>>>> ++++++++++++++++++++++++++++
+>>>>>>    2 files changed, 44 insertions(+)
+>>>>>>
+>>>>>> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c
+>>>>>> b/drivers/cpufreq/cpufreq-dt-platdev.c
+>>>>>> index ea86c9f3ed7a..78f6ff933f93 100644
+>>>>>> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+>>>>>> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+>>>>>> @@ -170,6 +170,7 @@ static const struct of_device_id blocklist[]
+>>>>>> __initconst = {
+>>>>>>        { .compatible = "ti,am62a7", },
+>>>>>>
+>>>>>>        { .compatible = "qcom,ipq8064", },
+>>>>>> +     { .compatible = "qcom,ipq8074", },
+>>>>>>        { .compatible = "qcom,apq8064", },
+>>>>>>        { .compatible = "qcom,msm8974", },
+>>>>>>        { .compatible = "qcom,msm8960", },
+>>>>>> diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c
+>>>>>> b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+>>>>>> index a88b6fe5db50..ce444b5962f2 100644
+>>>>>> --- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
+>>>>>> +++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+>>>>>> @@ -31,6 +31,9 @@
+>>>>>>
+>>>>>>    #include <dt-bindings/arm/qcom,ids.h>
+>>>>>>
+>>>>>> +#define IPQ8074_HAWKEYE_VERSION              BIT(0)
+>>>>>> +#define IPQ8074_ACORN_VERSION                BIT(1)
+>>>>>> +
+>>>>>>    struct qcom_cpufreq_drv;
+>>>>>>
+>>>>>>    struct qcom_cpufreq_match_data {
+>>>>>> @@ -204,6 +207,41 @@ static int
+>>>>>> qcom_cpufreq_krait_name_version(struct device *cpu_dev,
+>>>>>>        return ret;
+>>>>>>    }
+>>>>>>
+>>>>>> +static int qcom_cpufreq_ipq8074_name_version(struct device *cpu_dev,
+>>>>>> +                                          struct nvmem_cell
+>>>>>> *speedbin_nvmem,
+>>>>>> +                                          char **pvs_name,
+>>>>>> +                                          struct qcom_cpufreq_drv
+>>>>>> *drv)
+>>>>>
+>>>>> Most of the IPQ SoCs also supports the fuse based frequency selection.
+>>>>> Can we rename the function name to generic so that all the IPQ chips
+>>>>> can
+>>>>> use the same function?
+>>>> Well, the only speedbin fuse I was able to dig from downstream is the
+>>>> one from
+>>>> CPR driver and that one is 0 on all devices so it's not helpful.
+>>>> Do you maybe know if there is one in the IPQ8074 family?
+>>>
+>>>
+>>> Let me check on this and get back to you probably by tomorrow...
 >>
->> Signed-off-by: Robert Marko <robimarko@gmail.com>
+>>
+>> Robert, checked with the team and IPQ807x doesn't use fuse to determine
+>> the CPU freq limits. Current approach (SoC ID based) should be fine.
+>> BTW, are the DTS changes already posted or yet to be posted?
 > 
-> I am waiting for someone from Qcom to review this stuff.
-We're on v2 and it looks like there will be a v3
-
-https://lore.kernel.org/linux-arm-msm/20230530165807.642084-1-robimarko@gmail.com/
+> Thanks for checking,
+> DTS changes are not posted as CPR support is required in order for scaling to
+> properly work, otherwise, all I could do is try and guess some safe voltages.
+> There was an effort to get CPR upstreamed, but I think that stalled out for now.
+As much as I don't like it, yes it's stalled.. I have to get some bigger
+fish out of my queue first.
 
 Konrad
 > 
+> Regards,
+> Robert
+>>
+>>
+>>>
+>>>
+>>>>
+>>>> Function is not supposed to be shared between SoC-s, so I dont see a
+>>>> point in it
+>>>> having a generic name cause for example IPQ6018 has a working fuse
+>>>> and its logic
+>>>> is completely different for setting the versioning than IPQ8074, I
+>>>> dont think having a
+>>>> catch-all would work here.
+>>>
+>>>
+>>> Makes sense, thanks Robert and Konrad.
+>>>
+>>>
+>>>>
+>>>>>
+>>>>>> +{
+>>>>>> +     u32 msm_id;
+>>>>>
+>>>>> soc_id please...?
+>>>> Sure, that is more suitable.
+>>>>
+>>>> Regards,
+>>>> Robert
+>>>>>
+>>>>>> +     int ret;
+>>>>>> +     *pvs_name = NULL;
+>>>>>> +
+>>>>>> +     ret = qcom_smem_get_soc_id(&msm_id);
+>>>>>> +     if (ret)
+>>>>>> +             return ret;
+>>>>>> +
+>>>>>> +     switch (msm_id) {
+>>>>>> +     case QCOM_ID_IPQ8070A:
+>>>>>> +     case QCOM_ID_IPQ8071A:
+>>>>>> +             drv->versions = IPQ8074_ACORN_VERSION;
+>>>>>> +             break;
+>>>>>> +     case QCOM_ID_IPQ8072A:
+>>>>>> +     case QCOM_ID_IPQ8074A:
+>>>>>> +     case QCOM_ID_IPQ8076A:
+>>>>>> +     case QCOM_ID_IPQ8078A:
+>>>>>> +             drv->versions = IPQ8074_HAWKEYE_VERSION;
+>>>>>> +             break;
+>>>>>> +     default:
+>>>>>> +             dev_err(cpu_dev,
+>>>>>> +                     "SoC ID %u is not part of IPQ8074 family,
+>>>>>> limiting to 1.4GHz!\n",
+>>>>>> +                     msm_id);
+>>>>>> +             drv->versions = IPQ8074_ACORN_VERSION;
+>>>>>> +             break;
+>>>>>> +     }
+>>>>>> +
+>>>>>> +     return 0;
+>>>>>> +}
+>>>>>> +
+>>>>>>    static const struct qcom_cpufreq_match_data match_data_kryo = {
+>>>>>>        .get_version = qcom_cpufreq_kryo_name_version,
+>>>>>>    };
+>>>>>> @@ -218,6 +256,10 @@ static const struct qcom_cpufreq_match_data
+>>>>>> match_data_qcs404 = {
+>>>>>>        .genpd_names = qcs404_genpd_names,
+>>>>>>    };
+>>>>>>
+>>>>>> +static const struct qcom_cpufreq_match_data match_data_ipq8074 = {
+>>>>>> +     .get_version = qcom_cpufreq_ipq8074_name_version,
+>>>>>> +};
+>>>>>> +
+>>>>>>    static int qcom_cpufreq_probe(struct platform_device *pdev)
+>>>>>>    {
+>>>>>>        struct qcom_cpufreq_drv *drv;
+>>>>>> @@ -363,6 +405,7 @@ static const struct of_device_id
+>>>>>> qcom_cpufreq_match_list[] __initconst = {
+>>>>>>        { .compatible = "qcom,msm8996", .data = &match_data_kryo },
+>>>>>>        { .compatible = "qcom,qcs404", .data = &match_data_qcs404 },
+>>>>>>        { .compatible = "qcom,ipq8064", .data = &match_data_krait },
+>>>>>> +     { .compatible = "qcom,ipq8074", .data = &match_data_ipq8074 },
+>>>>>>        { .compatible = "qcom,apq8064", .data = &match_data_krait },
+>>>>>>        { .compatible = "qcom,msm8974", .data = &match_data_krait },
+>>>>>>        { .compatible = "qcom,msm8960", .data = &match_data_krait },
