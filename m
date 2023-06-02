@@ -2,101 +2,163 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C3AAC7EE24
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84B95C7EE32
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:52:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234928AbjFBIva (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Jun 2023 04:51:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51380 "EHLO
+        id S234964AbjFBIwT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Jun 2023 04:52:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234942AbjFBIvB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:51:01 -0400
-Received: from smtp-relay-canonical-0.canonical.com (smtp-relay-canonical-0.canonical.com [185.125.188.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9296C10EF;
-        Fri,  2 Jun 2023 01:50:48 -0700 (PDT)
-Received: from localhost.localdomain (unknown [10.101.196.174])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id ED5803F181;
-        Fri,  2 Jun 2023 08:50:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1685695846;
-        bh=9iDW23eSDGpAU5YPcKTOrXKlERG4X+SdChKCH7zHRoE=;
-        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
-        b=YeXM7zAYzGpv/Tgh19segV9F0cuncXXVEmaobPJ0MIVMdrRkhjpcmeW2nS1F00BlO
-         lJO2gfE5ZwyDtZQDtlryH4uEzhlsulbaUDjWR/xAioOseUVily8cZkUWHHnxEY829O
-         IZLMWXfBKirAz0Lnc809TPdds3niGmrg0eotgcqptRTf2d95GPxiqrnGacQmBcruGa
-         bTaWkXlW+/VlvlnOPfigL7s2zLXEm6LuyPSB6RdU4fWJ53LIj2HTt5z/CFZjVHDdeY
-         DOZDv4c/CnjpHBJ3mpYW3MWdFnoOsF1geOhhwSVm+Nm6YGCJi04fQ8bqaGCFhF2HC7
-         VA07WFU6wvUDA==
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-To:     jejb@linux.ibm.com, martin.petersen@oracle.com
-Cc:     dlemoal@kernel.org, bblock@linux.ibm.com, acelan.kao@canonical.com,
-        linux-pm@vger.kernel.org,
+        with ESMTP id S234401AbjFBIvw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:51:52 -0400
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7135D1720
+        for <linux-pm@vger.kernel.org>; Fri,  2 Jun 2023 01:51:15 -0700 (PDT)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed30:158c:2ccf:1f70:e136])
+        by xavier.telenet-ops.be with bizsmtp
+        id 48qo2A0061tRZS8018qoDG; Fri, 02 Jun 2023 10:51:12 +0200
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtp (Exim 4.95)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1q50UO-00BhYG-TJ;
+        Fri, 02 Jun 2023 10:50:48 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1q50Ui-00APxY-0T;
+        Fri, 02 Jun 2023 10:50:48 +0200
+From:   Geert Uytterhoeven <geert+renesas@glider.be>
+To:     Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        Joerg Roedel <joro@8bytes.org>,
+        Robin Murphy <robin.murphy@arm.com>
+Cc:     Tomasz Figa <tomasz.figa@gmail.com>,
+        Sylwester Nawrocki <s.nawrocki@samsung.com>,
+        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Dejin Zheng <zhengdejin5@gmail.com>,
         Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v6] scsi: core: Wait until device is fully resumed before doing rescan
-Date:   Fri,  2 Jun 2023 16:49:56 +0800
-Message-Id: <20230602084956.1299001-1-kai.heng.feng@canonical.com>
+        Nicholas Piggin <npiggin@gmail.com>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Russell King <linux@armlinux.org.uk>,
+        John Stultz <jstultz@google.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Tony Lindgren <tony@atomide.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Tero Kristo <tero.kristo@linux.intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v3 3/7] clk: renesas: cpg-mssr: Convert to readl_poll_timeout_atomic()
+Date:   Fri,  2 Jun 2023 10:50:38 +0200
+Message-Id: <832d29fd9aa3239ea949535309d2bdb003d40c9e.1685692810.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1685692810.git.geert+renesas@glider.be>
+References: <cover.1685692810.git.geert+renesas@glider.be>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-During system resuming process, the resuming order is from top to down.
-Namely, the ATA host is resumed before disks connected to it.
+Use readl_poll_timeout_atomic() instead of open-coding the same
+operation.
 
-When an EH is scheduled while ATA host is resumed and disk device is
-still suspended, the device_lock hold by scsi_rescan_device() is never
-released so the dpm_resume() of the disk is blocked forerver, therefore
-the system can never be resumed back.
+As typically no retries are needed, 10 µs is a suitable timeout value.
 
-That's because scsi_attach_vpd() is expecting the disk device is in
-operational state, as it doesn't work on suspended device.
-
-To avoid such deadlock, wait until the scsi device is fully resumed,
-before continuing the rescan process.
-
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-v6:
- - Fix !CONFIG_PM_SLEEP compilation error.
-
-v5:
- - Use a different approach. Wait until the disk device is resumed.
-
-v4: 
- - No change.
+Polling measurements done on R-Car M2-W, H3 ES2.0, M3-W, M3-N, E3, and
+V4H.
 
 v3:
- - New patch to resolve undefined pm_suspend_target_state.
+  - New.
+---
+ drivers/clk/renesas/renesas-cpg-mssr.c | 31 +++++++++-----------------
+ 1 file changed, 11 insertions(+), 20 deletions(-)
 
-v2:
- - Schedule rescan task at the end of system resume phase.
- - Wording.
-
- drivers/scsi/scsi_scan.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index d217be323cc6..092f37464101 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -1621,6 +1621,11 @@ void scsi_rescan_device(struct device *dev)
+diff --git a/drivers/clk/renesas/renesas-cpg-mssr.c b/drivers/clk/renesas/renesas-cpg-mssr.c
+index e9c0e341380e8f55..2772499d20165127 100644
+--- a/drivers/clk/renesas/renesas-cpg-mssr.c
++++ b/drivers/clk/renesas/renesas-cpg-mssr.c
+@@ -17,6 +17,7 @@
+ #include <linux/device.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
++#include <linux/iopoll.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+@@ -196,8 +197,8 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
+ 	struct device *dev = priv->dev;
+ 	u32 bitmask = BIT(bit);
+ 	unsigned long flags;
+-	unsigned int i;
+ 	u32 value;
++	int error;
+ 
+ 	dev_dbg(dev, "MSTP %u%02u/%pC %s\n", reg, bit, hw->clk,
+ 		enable ? "ON" : "OFF");
+@@ -228,19 +229,13 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
+ 	if (!enable || priv->reg_layout == CLK_REG_LAYOUT_RZ_A)
+ 		return 0;
+ 
+-	for (i = 1000; i > 0; --i) {
+-		if (!(readl(priv->base + priv->status_regs[reg]) & bitmask))
+-			break;
+-		cpu_relax();
+-	}
+-
+-	if (!i) {
++	error = readl_poll_timeout_atomic(priv->base + priv->status_regs[reg],
++					  value, !(value & bitmask), 0, 10);
++	if (error)
+ 		dev_err(dev, "Failed to enable SMSTP %p[%d]\n",
+ 			priv->base + priv->control_regs[reg], bit);
+-		return -ETIMEDOUT;
+-	}
+ 
+-	return 0;
++	return error;
+ }
+ 
+ static int cpg_mstp_clock_enable(struct clk_hw *hw)
+@@ -896,8 +891,9 @@ static int cpg_mssr_suspend_noirq(struct device *dev)
+ static int cpg_mssr_resume_noirq(struct device *dev)
  {
- 	struct scsi_device *sdev = to_scsi_device(dev);
+ 	struct cpg_mssr_priv *priv = dev_get_drvdata(dev);
+-	unsigned int reg, i;
++	unsigned int reg;
+ 	u32 mask, oldval, newval;
++	int error;
  
-+#ifdef CONFIG_PM_SLEEP
-+	if (dev->power.is_suspended)
-+		wait_for_completion(&dev->power.completion);
-+#endif
-+
- 	device_lock(dev);
+ 	/* This is the best we can do to check for the presence of PSCI */
+ 	if (!psci_ops.cpu_suspend)
+@@ -935,14 +931,9 @@ static int cpg_mssr_resume_noirq(struct device *dev)
+ 		if (!mask)
+ 			continue;
  
- 	scsi_attach_vpd(sdev);
+-		for (i = 1000; i > 0; --i) {
+-			oldval = readl(priv->base + priv->status_regs[reg]);
+-			if (!(oldval & mask))
+-				break;
+-			cpu_relax();
+-		}
+-
+-		if (!i)
++		error = readl_poll_timeout_atomic(priv->base + priv->status_regs[reg],
++						oldval, !(oldval & mask), 0, 10);
++		if (error)
+ 			dev_warn(dev, "Failed to enable SMSTP%u[0x%x]\n", reg,
+ 				 oldval & mask);
+ 	}
 -- 
 2.34.1
 
