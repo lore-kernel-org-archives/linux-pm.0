@@ -2,29 +2,29 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84B95C7EE32
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:52:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 207FAC77B7A
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:52:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234964AbjFBIwT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Jun 2023 04:52:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51288 "EHLO
+        id S234953AbjFBIwR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Jun 2023 04:52:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51652 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234401AbjFBIvw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:51:52 -0400
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7135D1720
+        with ESMTP id S234872AbjFBIvv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:51:51 -0400
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DFE1172A
         for <linux-pm@vger.kernel.org>; Fri,  2 Jun 2023 01:51:15 -0700 (PDT)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed30:158c:2ccf:1f70:e136])
-        by xavier.telenet-ops.be with bizsmtp
-        id 48qo2A0061tRZS8018qoDG; Fri, 02 Jun 2023 10:51:12 +0200
+        by andre.telenet-ops.be with bizsmtp
+        id 48qo2A00L1tRZS8018qoWZ; Fri, 02 Jun 2023 10:51:13 +0200
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtp (Exim 4.95)
         (envelope-from <geert@linux-m68k.org>)
-        id 1q50UO-00BhYG-TJ;
+        id 1q50UO-00BhYR-Vj;
         Fri, 02 Jun 2023 10:50:48 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
         (envelope-from <geert@linux-m68k.org>)
-        id 1q50Ui-00APxY-0T;
+        id 1q50Ui-00APxl-2q;
         Fri, 02 Jun 2023 10:50:48 +0200
 From:   Geert Uytterhoeven <geert+renesas@glider.be>
 To:     Michael Turquette <mturquette@baylibre.com>,
@@ -55,9 +55,9 @@ Cc:     Tomasz Figa <tomasz.figa@gmail.com>,
         linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
         iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 3/7] clk: renesas: cpg-mssr: Convert to readl_poll_timeout_atomic()
-Date:   Fri,  2 Jun 2023 10:50:38 +0200
-Message-Id: <832d29fd9aa3239ea949535309d2bdb003d40c9e.1685692810.git.geert+renesas@glider.be>
+Subject: [PATCH v3 6/7] soc: renesas: rmobile-sysc: Convert to readl_poll_timeout_atomic()
+Date:   Fri,  2 Jun 2023 10:50:41 +0200
+Message-Id: <ae4bf03ab8fd5a557c683086958d6764babc0723.1685692810.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1685692810.git.geert+renesas@glider.be>
 References: <cover.1685692810.git.geert+renesas@glider.be>
@@ -71,94 +71,103 @@ X-Mailing-List: linux-pm@vger.kernel.org
 Use readl_poll_timeout_atomic() instead of open-coding the same
 operation.
 
-As typically no retries are needed, 10 µs is a suitable timeout value.
+  1. rmobile_pd_power_down(): as typically less than 20 retries are
+     needed, PSTR_RETRIES (100) µs is a suitable timeout value.
+
+  2. __rmobile_pd_power_up(): the old method of first polling some
+     cycles with a 1 µs delay, followed by more polling cycles without
+     any delay didn't make much sense, as the latter was insignificant
+     compared to the former.  Furthermore, typically no retries are
+     needed.  Hence just retain the polling with delay.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Polling measurements done on R-Car M2-W, H3 ES2.0, M3-W, M3-N, E3, and
-V4H.
+Polling measurements done on R-Mobile APE6 and A1, and SH-Mobile AG5.
 
 v3:
   - New.
 ---
- drivers/clk/renesas/renesas-cpg-mssr.c | 31 +++++++++-----------------
- 1 file changed, 11 insertions(+), 20 deletions(-)
+ drivers/soc/renesas/rmobile-sysc.c | 31 ++++++++++--------------------
+ 1 file changed, 10 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/clk/renesas/renesas-cpg-mssr.c b/drivers/clk/renesas/renesas-cpg-mssr.c
-index e9c0e341380e8f55..2772499d20165127 100644
---- a/drivers/clk/renesas/renesas-cpg-mssr.c
-+++ b/drivers/clk/renesas/renesas-cpg-mssr.c
-@@ -17,6 +17,7 @@
- #include <linux/device.h>
- #include <linux/init.h>
- #include <linux/io.h>
+diff --git a/drivers/soc/renesas/rmobile-sysc.c b/drivers/soc/renesas/rmobile-sysc.c
+index 728ebac98e14a5cc..5d621c35fba1116a 100644
+--- a/drivers/soc/renesas/rmobile-sysc.c
++++ b/drivers/soc/renesas/rmobile-sysc.c
+@@ -12,6 +12,8 @@
+ #include <linux/clk/renesas.h>
+ #include <linux/console.h>
+ #include <linux/delay.h>
++#include <linux/io.h>
 +#include <linux/iopoll.h>
- #include <linux/mod_devicetable.h>
- #include <linux/module.h>
+ #include <linux/of.h>
  #include <linux/of_address.h>
-@@ -196,8 +197,8 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
- 	struct device *dev = priv->dev;
- 	u32 bitmask = BIT(bit);
- 	unsigned long flags;
--	unsigned int i;
- 	u32 value;
-+	int error;
+ #include <linux/pm.h>
+@@ -19,8 +21,6 @@
+ #include <linux/pm_domain.h>
+ #include <linux/slab.h>
  
- 	dev_dbg(dev, "MSTP %u%02u/%pC %s\n", reg, bit, hw->clk,
- 		enable ? "ON" : "OFF");
-@@ -228,19 +229,13 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
- 	if (!enable || priv->reg_layout == CLK_REG_LAYOUT_RZ_A)
- 		return 0;
- 
--	for (i = 1000; i > 0; --i) {
--		if (!(readl(priv->base + priv->status_regs[reg]) & bitmask))
--			break;
--		cpu_relax();
--	}
+-#include <asm/io.h>
 -
--	if (!i) {
-+	error = readl_poll_timeout_atomic(priv->base + priv->status_regs[reg],
-+					  value, !(value & bitmask), 0, 10);
-+	if (error)
- 		dev_err(dev, "Failed to enable SMSTP %p[%d]\n",
- 			priv->base + priv->control_regs[reg], bit);
--		return -ETIMEDOUT;
--	}
- 
--	return 0;
-+	return error;
- }
- 
- static int cpg_mstp_clock_enable(struct clk_hw *hw)
-@@ -896,8 +891,9 @@ static int cpg_mssr_suspend_noirq(struct device *dev)
- static int cpg_mssr_resume_noirq(struct device *dev)
+ /* SYSC */
+ #define SPDCR		0x08	/* SYS Power Down Control Register */
+ #define SWUCR		0x14	/* SYS Wakeup Control Register */
+@@ -47,6 +47,7 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
  {
- 	struct cpg_mssr_priv *priv = dev_get_drvdata(dev);
--	unsigned int reg, i;
-+	unsigned int reg;
- 	u32 mask, oldval, newval;
-+	int error;
+ 	struct rmobile_pm_domain *rmobile_pd = to_rmobile_pd(genpd);
+ 	unsigned int mask = BIT(rmobile_pd->bit_shift);
++	u32 val;
  
- 	/* This is the best we can do to check for the presence of PSCI */
- 	if (!psci_ops.cpu_suspend)
-@@ -935,14 +931,9 @@ static int cpg_mssr_resume_noirq(struct device *dev)
- 		if (!mask)
- 			continue;
+ 	if (rmobile_pd->suspend) {
+ 		int ret = rmobile_pd->suspend();
+@@ -56,14 +57,10 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
+ 	}
  
--		for (i = 1000; i > 0; --i) {
--			oldval = readl(priv->base + priv->status_regs[reg]);
--			if (!(oldval & mask))
+ 	if (readl(rmobile_pd->base + PSTR) & mask) {
+-		unsigned int retry_count;
+ 		writel(mask, rmobile_pd->base + SPDCR);
+ 
+-		for (retry_count = PSTR_RETRIES; retry_count; retry_count--) {
+-			if (!(readl(rmobile_pd->base + SPDCR) & mask))
 -				break;
 -			cpu_relax();
 -		}
--
--		if (!i)
-+		error = readl_poll_timeout_atomic(priv->base + priv->status_regs[reg],
-+						oldval, !(oldval & mask), 0, 10);
-+		if (error)
- 			dev_warn(dev, "Failed to enable SMSTP%u[0x%x]\n", reg,
- 				 oldval & mask);
++		readl_poll_timeout_atomic(rmobile_pd->base + SPDCR, val,
++					  !(val & mask), 0, PSTR_RETRIES);
  	}
+ 
+ 	pr_debug("%s: Power off, 0x%08x -> PSTR = 0x%08x\n", genpd->name, mask,
+@@ -74,25 +71,17 @@ static int rmobile_pd_power_down(struct generic_pm_domain *genpd)
+ 
+ static int __rmobile_pd_power_up(struct rmobile_pm_domain *rmobile_pd)
+ {
+-	unsigned int mask = BIT(rmobile_pd->bit_shift);
+-	unsigned int retry_count;
+-	int ret = 0;
++	unsigned int val, mask = BIT(rmobile_pd->bit_shift);
++	int ret;
+ 
+ 	if (readl(rmobile_pd->base + PSTR) & mask)
+ 		return ret;
+ 
+ 	writel(mask, rmobile_pd->base + SWUCR);
+ 
+-	for (retry_count = 2 * PSTR_RETRIES; retry_count; retry_count--) {
+-		if (!(readl(rmobile_pd->base + SWUCR) & mask))
+-			break;
+-		if (retry_count > PSTR_RETRIES)
+-			udelay(PSTR_DELAY_US);
+-		else
+-			cpu_relax();
+-	}
+-	if (!retry_count)
+-		ret = -EIO;
++	ret = readl_poll_timeout_atomic(rmobile_pd->base + SWUCR, val,
++					(val & mask), PSTR_DELAY_US,
++					PSTR_RETRIES * PSTR_DELAY_US);
+ 
+ 	pr_debug("%s: Power on, 0x%08x -> PSTR = 0x%08x\n",
+ 		 rmobile_pd->genpd.name, mask,
 -- 
 2.34.1
 
