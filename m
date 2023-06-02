@@ -2,117 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD0BAC7EE2A
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88A55C7EE24
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 08:56:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235031AbjFBIwt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Jun 2023 04:52:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51112 "EHLO
+        id S234717AbjFBI4I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Jun 2023 04:56:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234933AbjFBIwC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:52:02 -0400
-Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72B56E51
-        for <linux-pm@vger.kernel.org>; Fri,  2 Jun 2023 01:51:16 -0700 (PDT)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed30:158c:2ccf:1f70:e136])
-        by laurent.telenet-ops.be with bizsmtp
-        id 48qo2A00F1tRZS8018qoyb; Fri, 02 Jun 2023 10:51:14 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtp (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1q50UP-00BhYW-0P;
-        Fri, 02 Jun 2023 10:50:48 +0200
-Received: from geert by rox.of.borg with local (Exim 4.95)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1q50Ui-00APxr-3g;
-        Fri, 02 Jun 2023 10:50:48 +0200
-From:   Geert Uytterhoeven <geert+renesas@glider.be>
-To:     Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Joerg Roedel <joro@8bytes.org>,
-        Robin Murphy <robin.murphy@arm.com>
-Cc:     Tomasz Figa <tomasz.figa@gmail.com>,
-        Sylwester Nawrocki <s.nawrocki@samsung.com>,
-        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        Dejin Zheng <zhengdejin5@gmail.com>,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Russell King <linux@armlinux.org.uk>,
-        John Stultz <jstultz@google.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Tony Lindgren <tony@atomide.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Tero Kristo <tero.kristo@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 7/7] iommu/ipmmu-vmsa: Convert to read_poll_timeout_atomic()
-Date:   Fri,  2 Jun 2023 10:50:42 +0200
-Message-Id: <dd0ba3ebc63a4b2ef1b59b798a0a7ef445af4b3b.1685692810.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1685692810.git.geert+renesas@glider.be>
-References: <cover.1685692810.git.geert+renesas@glider.be>
+        with ESMTP id S234730AbjFBIzg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 04:55:36 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72941E69
+        for <linux-pm@vger.kernel.org>; Fri,  2 Jun 2023 01:54:33 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f611ac39c5so457817e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 02 Jun 2023 01:54:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1685696071; x=1688288071;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=h/K5d07Ai5xBTSHj+4m9+Mu0PCCcMTAitKgXkZjqnoo=;
+        b=v3Y9MWXvJoO2KFDBFAr9XfYehYzj+8qojfNEHgk7w4BJ2Ve0lPt7IcPZBstjJNmRGl
+         oFSaSjRlnK1M3XkvgMrGRFJY5AqvSTOtPUQoJOjtq47vK7zBkxsGUEDklEU1DIvt8rTN
+         99Y7DykZMADbznsAoOwdwZni6005w6Ej3dBigtfP9utbU4OqVm7BnRfSscGT7jEqPMmj
+         jfvD5Ai6efUas/1aFSfHoagUT+BxUXOvbX/aHH9d3ZKWfPu4xwFxi8p0+gxtl+QWrn77
+         nmuPO2ToL/CnCas5nna/L9VpcZBoR1TWjU2bpu9CBt8bsE1J53l4EO4ZrmNy7VbG05zo
+         vf3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685696071; x=1688288071;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=h/K5d07Ai5xBTSHj+4m9+Mu0PCCcMTAitKgXkZjqnoo=;
+        b=Yi2ltCCd9IYp8uh9MOvJ5LSRyqIrlLShL6SQ/zagVe2szS24uYVlbWuOalsfQNwQsc
+         BEzvlESofVJnlPEWBd/b3QVebrmKH+xJ+nSdDOOd/CBe5WnEvfCYfMEo9fptCNXikddr
+         BZOtuy5zseSMvFYcX3JWD29VKA4gi83U36DqF6xeOrfJIJsvAyhCM111Y/uEMOLF9f9q
+         400W2LJXQoDmtfyOShJFOH7INse5yWFlEH6bUYu7UK2Hs7hBQoWr8IV2JkF1/QyaJ7Fp
+         dpUKaRopGwvzngpw1/IcV+j5+iKTootlhfXMjPUQTNZ530YeiOpKRyQZNdf7ek7JfGg1
+         RZ1Q==
+X-Gm-Message-State: AC+VfDyPAMMdt3q770sSTbkPfyjp4/vreiGjgcJNaEezbpMraU5cmwww
+        CAM5wv+bugOaQ9+DQSqtIUzoDg==
+X-Google-Smtp-Source: ACHHUZ5FsE78Qq21/c3s1WU+/VE5y4o6fVrH9MjwLufB6XedwCo/HmrIrTOSLq7FTIVr5E3cg23C9Q==
+X-Received: by 2002:ac2:518f:0:b0:4f3:aa73:562 with SMTP id u15-20020ac2518f000000b004f3aa730562mr1505757lfi.2.1685696071078;
+        Fri, 02 Jun 2023 01:54:31 -0700 (PDT)
+Received: from [192.168.1.101] (abyj77.neoplus.adsl.tpnet.pl. [83.9.29.77])
+        by smtp.gmail.com with ESMTPSA id c24-20020ac25318000000b004eefdd8b37fsm94626lfh.194.2023.06.02.01.54.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 02 Jun 2023 01:54:30 -0700 (PDT)
+Message-ID: <ab8d7a2d-e2db-39cd-dbac-bb5535cb8c19@linaro.org>
+Date:   Fri, 2 Jun 2023 10:54:29 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.2
+Subject: Re: [PATCH 1/2] cpufreq: qcom-nvmem: add support for IPQ8074
+Content-Language: en-US
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Robert Marko <robimarko@gmail.com>
+Cc:     rafael@kernel.org, ilia.lin@kernel.org, agross@kernel.org,
+        andersson@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        ansuelsmth@gmail.com
+References: <20230530165409.641661-1-robimarko@gmail.com>
+ <20230602041327.klyjs4cevmzn6vs7@vireshk-i7>
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+In-Reply-To: <20230602041327.klyjs4cevmzn6vs7@vireshk-i7>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use read_poll_timeout_atomic() instead of open-coding the same
-operation.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-v3:
-  - New.
----
- drivers/iommu/ipmmu-vmsa.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/iommu/ipmmu-vmsa.c b/drivers/iommu/ipmmu-vmsa.c
-index 9f64c5c9f5b90ace..3b58a8ea3bdef190 100644
---- a/drivers/iommu/ipmmu-vmsa.c
-+++ b/drivers/iommu/ipmmu-vmsa.c
-@@ -14,6 +14,7 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
-+#include <linux/iopoll.h>
- #include <linux/io-pgtable.h>
- #include <linux/iommu.h>
- #include <linux/of.h>
-@@ -253,17 +254,13 @@ static void ipmmu_imuctr_write(struct ipmmu_vmsa_device *mmu,
- /* Wait for any pending TLB invalidations to complete */
- static void ipmmu_tlb_sync(struct ipmmu_vmsa_domain *domain)
- {
--	unsigned int count = 0;
-+	u32 val;
- 
--	while (ipmmu_ctx_read_root(domain, IMCTR) & IMCTR_FLUSH) {
--		cpu_relax();
--		if (++count == TLB_LOOP_TIMEOUT) {
--			dev_err_ratelimited(domain->mmu->dev,
-+	if (read_poll_timeout_atomic(ipmmu_ctx_read_root, val,
-+				     !(val & IMCTR_FLUSH), 1, TLB_LOOP_TIMEOUT,
-+				     false, domain, IMCTR))
-+		dev_err_ratelimited(domain->mmu->dev,
- 			"TLB sync timed out -- MMU may be deadlocked\n");
--			return;
--		}
--		udelay(1);
--	}
- }
- 
- static void ipmmu_tlb_invalidate(struct ipmmu_vmsa_domain *domain)
--- 
-2.34.1
+On 2.06.2023 06:13, Viresh Kumar wrote:
+> On 30-05-23, 18:54, Robert Marko wrote:
+>> IPQ8074 comes in 2 families:
+>> * IPQ8070A/IPQ8071A (Acorn) up to 1.4GHz
+>> * IPQ8072A/IPQ8074A/IPQ8076A/IPQ8078A (Hawkeye) up to 2.2GHz
+>>
+>> So, in order to be able to share one OPP table lets add support for IPQ8074
+>> family based of SMEM SoC ID-s as speedbin fuse is always 0 on IPQ8074.
+>>
+>> IPQ8074 compatible is blacklisted from DT platdev as the cpufreq device
+>> will get created by NVMEM CPUFreq driver.
+>>
+>> Signed-off-by: Robert Marko <robimarko@gmail.com>
+> 
+> I am waiting for someone from Qcom to review this stuff.
+We're on v2 and it looks like there will be a v3
 
+https://lore.kernel.org/linux-arm-msm/20230530165807.642084-1-robimarko@gmail.com/
+
+Konrad
+> 
