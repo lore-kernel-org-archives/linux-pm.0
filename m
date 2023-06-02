@@ -2,130 +2,157 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94D4EC7EE24
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 19:33:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70D6DC77B7A
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Jun 2023 22:20:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235797AbjFBTdC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Jun 2023 15:33:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38350 "EHLO
+        id S235994AbjFBWUg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Jun 2023 18:20:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234300AbjFBTc7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 15:32:59 -0400
-Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on2073.outbound.protection.outlook.com [40.107.95.73])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A52D1CE;
-        Fri,  2 Jun 2023 12:32:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=eE0EzxJu2hlFbKBtenbzr7x5v4Pjesy88Ial9Ij/9fYOZ2EUE789hi+vUKdytoOjmifNyi6P9hDLYiyKNeLw4wpVuKdmBgJrFJRc5aWRN6tNGJvSL1lAld9tkgOjh/pOtoQ90WNNtu4pfKhDiacZCVXeAwo2WWpeEDDaVO3z/+JhrD2OUVi+0kKDnKjRhwIY1GWHJthJwjgXcHgtgU+qFGx+gKli+ivSKu66B+NWvS5JihichiK8LhU6mG53GyeL5EoZlKXHv+ah4OMdfqFaU9YeJ1xPcHd1M+DXwv5Fp4A2jvsTCs5qYnvopiwd3p7aC+3nefpSIXwZNVdT+f3Ufg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=CrHATCoFhmN6yg/azbKKFkcA0h9V7q/tjG0BF8LbZ5Q=;
- b=U0zxVCWnj7yzgCtMTysxpHGglwZ88rddDmdrXGEkMiv8HBsd4i69pa/PoogiD2yHm+BEkHce+3KBc1ELMtR9vnWOuUylWkIGw1CLEsJEDlKL6wpP03jNwy0ccNHzjAiMjfNwNEUj2fZ1BkL8z5vWfKeDJF+JOPpt0tDQPEe4BUZO1sv3gVojG34mNeSq4u96Tpvu7NJeVBb0qgRsEtFVrFoFxP77UWjvND+bkdH7aRyLsmIJR7fQ8Bf/BI9RCHEcQ/t87cYkKaH+8mQRf0KvczCT8yfI2H7T6pamGu3gHn7ugT8ctnxJuk+G5abUeyUWc1kKmBZdV4qvqRIGZ6b8Gg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CrHATCoFhmN6yg/azbKKFkcA0h9V7q/tjG0BF8LbZ5Q=;
- b=CTbhX+wnnwRat98xzO+JYGe+emPFKmu9L8Cr30mE/LU922cC+sGRxspDYBJ4r0VVotRgF2n6EyU7lJp68voQGuuYJG79cWMqGfMRBC4nz0r/KCy+ZU5+Nkbp9b5GR8+dxw7As8SLxhiLjDmBVx25Jt7+n6WG1FIE/ippwlFGoKE=
-Received: from MW4PR02CA0025.namprd02.prod.outlook.com (2603:10b6:303:16d::11)
- by DM4PR12MB6638.namprd12.prod.outlook.com (2603:10b6:8:b5::5) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6433.24; Fri, 2 Jun 2023 19:32:56 +0000
-Received: from CO1NAM11FT026.eop-nam11.prod.protection.outlook.com
- (2603:10b6:303:16d:cafe::e7) by MW4PR02CA0025.outlook.office365.com
- (2603:10b6:303:16d::11) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.25 via Frontend
- Transport; Fri, 2 Jun 2023 19:32:55 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- CO1NAM11FT026.mail.protection.outlook.com (10.13.175.67) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6455.24 via Frontend Transport; Fri, 2 Jun 2023 19:32:55 +0000
-Received: from SITE-L-T34-2.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Fri, 2 Jun
- 2023 14:32:53 -0500
-From:   Mario Limonciello <mario.limonciello@amd.com>
-To:     Rafael Wysocki <rafael@kernel.org>, <hdegoede@redhat.com>,
-        <linus.walleij@linaro.org>
-CC:     <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <platform-driver-x86@vger.kernel.org>,
-        <linux-gpio@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Basavaraj.Natikar@amd.com>, <Shyam-sundar.S-k@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>
-Subject: [PATCH v4 4/4] platform/x86/amd: pmc: Use pm_pr_dbg() for suspend related messages
-Date:   Fri, 2 Jun 2023 02:30:25 -0500
-Message-ID: <20230602073025.22884-4-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230602073025.22884-1-mario.limonciello@amd.com>
-References: <20230602073025.22884-1-mario.limonciello@amd.com>
+        with ESMTP id S235208AbjFBWUg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2023 18:20:36 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1DCE1BB;
+        Fri,  2 Jun 2023 15:20:34 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7E1E161EF1;
+        Fri,  2 Jun 2023 22:20:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DDE4C433D2;
+        Fri,  2 Jun 2023 22:20:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1685744433;
+        bh=ARyPoi7kYarpVw7JYT8TRHRJ03CAZL5ro3FtDi8lX58=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=epc/06WTuFNz6XULfL2XX0PsRI7mMHpwrvq9vk/lI9/Ap4q6iEOtMrFkojjUcelfR
+         5ceSMIgZdv07ut21nQw8DZLQQsnPfUF7FufXmCYhTXx7e0Ll6CtMLx3cViEkiJTCn1
+         USlkzO0tO8ptJvrr+0DBbmWBRYCMLLA/+zb/6lXppzCcxI4X6gZLjcCb+DfEWA9N0J
+         6kH2V38VXgpTyKs4bVD9lr+5a+F0COuf94Vu1FLvG5g8nwBsCJMkQY7Idl2h+Kqi29
+         cLts9IDmtU2zYPPAKm4ix7Evpv2svgnBAStyHAkozZ9IyCrg5x6a4ymMjZDp9qfCAe
+         slU6E11r5hyyA==
+Date:   Fri, 2 Jun 2023 17:20:31 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Mario Limonciello <mario.limonciello@amd.com>
+Cc:     Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
+        Natikar Basavaraj <Basavaraj.Natikar@amd.com>,
+        Deucher Alexander <Alexander.Deucher@amd.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+        Lukas Wunner <lukas@wunner.de>,
+        Iain Lane <iain@orangesquash.org.uk>,
+        Kuppuswamy Sathyanarayanan 
+        <sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: Re: [PATCH v5 2/2] PCI: Don't assume root ports are power manageable
+Message-ID: <ZHprL3oavxW+tUsX@bhelgaas>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1NAM11FT026:EE_|DM4PR12MB6638:EE_
-X-MS-Office365-Filtering-Correlation-Id: c83ef4ba-0437-42c6-0383-08db63a02a20
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: /Wjnx4LGAUzrWwUcH5Iwxayk0HtWp7sUL5ANjvlUW64CyV5H0mdBjdR0qhwoXFbg8XPrUPjWUgvFqMmlffKhmMZFU9Q18O88E9SkYlEtEnVoeRLVd416Wfcp3xIViki6jywQbpBEomJr7hFumNGxcVcExER0Jqd4hfcIm62ucONF6wG12nSm69X7P9Ieurm+bkD9HWXhvBEz+xTlImAnp5GkMClayoSRTsWT2eL+sfXkby07SAWb3b925Rt3xsiHuOWN9nURmW1D8k+3rcKE/JwVgIUmCEORPWx9LZmIkqNkMgSLX/MuZWqWrtj/utOwRRFFhbn00GsfpVdDtBZ+v2JNbk5LTKR+ZZMHJwNAs1IHE5eHWWhFMG+7s6fbzjp0Q3C1jqghocRQpypp7ujNa33AaxU5SHPEq5Dgs4P43KZ+XIrg84XxoQ6qvdmREd3DJeZ6eqcZAmy4JOQMWpB6Uc0dbN9SkXnDNp2TMoEdNhjplpMx0ra100faNzM12Y+jiqa0BpcOoPU0ZRtDRkwTTxHGky8xLdwmsViPuA7MxBhvplTPHx7Rjte1fKsFJxcuhxSdFS3PI5BE/DKbVJSE9o74a138hOVThLEWOS1ljSZaeRAMou5ziixxsKCBMO+ap2KByKvH2LciozImEcZ9eeI/dcYds3u/JEHErauRDqAHwXmrrymFKk3gfAT8ekaL8yEz5lAQ52fkWYLXqBhN0sGKvhcIZtJQ8bu9nO3WkpMGfgMdMxYEt7+5WjxqjXRXJBA5zShnD0V0hnOBfVyPhQ==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(396003)(346002)(136003)(376002)(39860400002)(451199021)(36840700001)(46966006)(40470700004)(40460700003)(7696005)(478600001)(6666004)(36860700001)(186003)(36756003)(336012)(426003)(47076005)(16526019)(86362001)(82310400005)(2616005)(81166007)(40480700001)(356005)(82740400003)(26005)(1076003)(83380400001)(41300700001)(316002)(4326008)(70586007)(44832011)(70206006)(8676002)(15650500001)(5660300002)(2906002)(110136005)(54906003)(8936002)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Jun 2023 19:32:55.3528
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: c83ef4ba-0437-42c6-0383-08db63a02a20
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT026.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6638
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230530163947.230418-2-mario.limonciello@amd.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Using pm_pr_dbg() allows users to toggle `/sys/power/pm_debug_messages`
-as a single knob to turn on messages that amd-pmc can emit to aid in
-any s2idle debugging.
+Hi Mario,
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
- drivers/platform/x86/amd/pmc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+The patch itself looks fine, but since I don't have all the power
+management details in my head, it would help me a lot to make the
+description more concrete.
 
-diff --git a/drivers/platform/x86/amd/pmc.c b/drivers/platform/x86/amd/pmc.c
-index 427905714f79..1304cd6f13f6 100644
---- a/drivers/platform/x86/amd/pmc.c
-+++ b/drivers/platform/x86/amd/pmc.c
-@@ -543,7 +543,7 @@ static int amd_pmc_idlemask_read(struct amd_pmc_dev *pdev, struct device *dev,
- 	}
- 
- 	if (dev)
--		dev_dbg(pdev->dev, "SMU idlemask s0i3: 0x%x\n", val);
-+		pm_pr_dbg("SMU idlemask s0i3: 0x%x\n", val);
- 
- 	if (s)
- 		seq_printf(s, "SMU idlemask : 0x%x\n", val);
-@@ -769,7 +769,7 @@ static int amd_pmc_verify_czn_rtc(struct amd_pmc_dev *pdev, u32 *arg)
- 
- 	*arg |= (duration << 16);
- 	rc = rtc_alarm_irq_enable(rtc_device, 0);
--	dev_dbg(pdev->dev, "wakeup timer programmed for %lld seconds\n", duration);
-+	pm_pr_dbg("wakeup timer programmed for %lld seconds\n", duration);
- 
- 	return rc;
- }
--- 
-2.34.1
+On Tue, May 30, 2023 at 11:39:47AM -0500, Mario Limonciello wrote:
+> Using a USB keyboard or mouse to wakeup the system from s2idle fails when
+> that xHCI device is connected to a USB-C port for an AMD USB4 router.
 
+It sounds like the real issue is that "Root Ports in D3hot/D3cold may
+not support wakeup", and the USB, xHCI, USB-C, AMD USB4 router bits
+are probably not really relevant.  And hopefully even the "AMD
+platforms" mentioned below is not relevant.
+
+> Due to commit 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
+> all PCIe ports go into D3 during s2idle.
+> 
+> When specific root ports are put into D3 over s2idle on some AMD platforms
+> it is not possible for the platform to properly identify wakeup sources.
+> This happens whether the root port goes into D3hot or D3cold.
+
+Can we connect this to a spec so it's not just the empirical "some AMD
+platforms work like X" observation?
+
+"s2idle" is meaningful on the power management side of the house, but
+it doesn't appear in PCI or ACPI specs, so I don't know what it means
+here.  I assume the D3hot/D3cold state of the Root Port is the
+critical factor, regardless of how it got there.
+
+> Comparing registers between Linux and Windows 11 this behavior to put
+> these specific root ports into D3 at suspend is unique to Linux. On an
+> affected system Windows does not put those specific root ports into D3
+> over Modern Standby.
+> 
+> Windows avoids putting Root Ports that are not power manageable (e.g do
+> not have platform firmware support) into low power states.
+
+The Windows behavior was probably useful to you in debugging, but I
+don't really care about these Windows details because I don't think
+they help us maintain this in the future.
+
+> Linux shouldn't assume root ports support D3 just because they're on a
+> machine newer than 2015, the ports should also be deemed power manageable.
+> Add an extra check explicitly for root ports to ensure D3 isn't selected
+> for them if they are not power-manageable through platform firmware.
+
+But I *would* like to know specifically what "power manageable" means
+here.  I might naively assume that a device with the PCI Power
+Management Capability is "power manageable", and that if PME_Support
+includes D3hot and D3cold, we're good to go.  But obviously it's more
+complicated than that, and I'd like to cite the spec that mentions the
+actual things we need here.
+
+> Fixes: 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
+> Reported-by: Iain Lane <iain@orangesquash.org.uk>
+> Closes: https://forums.lenovo.com/t5/Ubuntu/Z13-can-t-resume-from-suspend-with-external-USB-keyboard/m-p/5217121
+> Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+> Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+> ---
+> v4->v5:
+>  * Add tags
+>  * Fix title
+>  * Adjust commit message
+> v3->v4:
+>  * Move after refactor
+> ---
+>  drivers/pci/pci.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index d1fa040bcea7..d293db963327 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -3015,6 +3015,14 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+>  	if (dmi_check_system(bridge_d3_blacklist))
+>  		return false;
+>  
+> +	/*
+> +	 * It's not safe to put root ports that don't support power
+> +	 * management into D3.
+
+I assume "it's not safe" really means "Root Ports in D3hot/D3cold may
+not be able to signal PME interrupts unless ... <mumble> platform
+firmware <mumble> e.g., ACPI method <mumble> ..."
+
+Can we include some of those hints here?
+
+> +	 */
+> +	if (pci_pcie_type(bridge) == PCI_EXP_TYPE_ROOT_PORT &&
+> +	    !platform_pci_power_manageable(bridge))
+> +		return false;
+> +
+>  	/*
+>  	 * It should be safe to put PCIe ports from 2015 or newer
+>  	 * to D3.
+> -- 
+> 2.34.1
+> 
