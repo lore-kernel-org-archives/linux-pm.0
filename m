@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF6A1C7EE2D
-	for <linux-pm@archiver.kernel.org>; Sat,  3 Jun 2023 20:08:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C231C7EE39
+	for <linux-pm@archiver.kernel.org>; Sat,  3 Jun 2023 20:08:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231175AbjFCUIx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 3 Jun 2023 16:08:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51512 "EHLO
+        id S232651AbjFCUIy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 3 Jun 2023 16:08:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51552 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231557AbjFCUIo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2023 16:08:44 -0400
+        with ESMTP id S231881AbjFCUIq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2023 16:08:46 -0400
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DB42E54;
-        Sat,  3 Jun 2023 13:07:49 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B53FDE6F;
+        Sat,  3 Jun 2023 13:07:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1685822869; x=1717358869;
+  t=1685822875; x=1717358875;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=bl59niu4BQLHWyyeQNT+LI53PT6v7NXue5SZuEPsj7w=;
-  b=JuWpvHXHrwAdbzrxzQH1eAeTOjeXXleOAjOjr0qyYhyQmZtxXwYOvGCI
-   9U9cQFuhtrI/Nj+QgN2UT3gomzStBjtnySTrQ2Np8EyVfTxkYTmLqfDMI
-   M2R8hLobDQYYBhfgMnAYSQOYr7NYxkmgAR8brkST7gSaGh5Terkm0qffu
-   P3UcVltnwQYF+PLH+5eZ0dwuoKTKL3i3nXZrBOrhmksZuUST3B4hEP5f4
-   Un986AZl196IIBdVfkEPyJ9Jrxc7p1fs5YvYaCmBn6fz54hmc4Fok+YdE
-   rH0+4W9YymSjf2cXNf7wvkLks5SKjO0bSBUKpXJJ9jv44XSfYl6vs/pgn
+  bh=ZuPBRofcCh4+XxwWxNtafOL6nLRGQWKw7s1CYB0iMX4=;
+  b=pj61gaq8411KE5xN35inJlgBXphmAOIFeGI4RupHoaAnDl/f+kHpAZey
+   Bo9yYbE1ZwYXR0cw40odgOMXmfr8t5G4pchzDIVA645+kMC/uLbmqvcVq
+   ip/7oDMSelhecGICjYMY2jEYu5NiJYdGyUfkSp+5SHOFqJDbjXTCIc4lu
+   9+eVAsqctR/LDsB8gQpVYF5gvIfzT+uXDwPJsCixhWjaNI/Uh7vcjpgFV
+   uDJVmXlBHo0+UO06vYfrrcjsgapRGnOGDCvWy9Ra0raDGUFvzRPkAtOmp
+   HouTib/VuZCG23iaPQ5zyjoY2d0gm2SbmMSbm/d00R+dGzCkW94sRjmfh
    w==;
 X-IronPort-AV: E=Sophos;i="6.00,216,1681196400"; 
-   d="scan'208";a="228308061"
+   d="scan'208";a="228308098"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 03 Jun 2023 13:07:01 -0700
+  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 03 Jun 2023 13:07:41 -0700
 Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Sat, 3 Jun 2023 13:07:01 -0700
+ 15.1.2507.21; Sat, 3 Jun 2023 13:07:41 -0700
 Received: from che-lt-i67070.amer.actel.com (10.10.115.15) by
  chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.2507.21 via Frontend Transport; Sat, 3 Jun 2023 13:06:48 -0700
+ 15.1.2507.21 via Frontend Transport; Sat, 3 Jun 2023 13:07:27 -0700
 From:   Varshini Rajendran <varshini.rajendran@microchip.com>
 To:     <tglx@linutronix.de>, <maz@kernel.org>, <robh+dt@kernel.org>,
         <krzysztof.kozlowski+dt@linaro.org>, <conor+dt@kernel.org>,
@@ -59,9 +59,9 @@ CC:     <Hari.PrasathGE@microchip.com>, <cristian.birsan@microchip.com>,
         <durai.manickamkr@microchip.com>, <manikandan.m@microchip.com>,
         <dharma.b@microchip.com>, <nayabbasha.sayed@microchip.com>,
         <balakrishnan.s@microchip.com>
-Subject: [PATCH 18/21] power: reset: at91-reset: add reset support for sam9x7 soc
-Date:   Sun, 4 Jun 2023 01:32:40 +0530
-Message-ID: <20230603200243.243878-19-varshini.rajendran@microchip.com>
+Subject: [PATCH 21/21] net: macb: add support for gmac to sam9x7
+Date:   Sun, 4 Jun 2023 01:32:43 +0530
+Message-ID: <20230603200243.243878-22-varshini.rajendran@microchip.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230603200243.243878-1-varshini.rajendran@microchip.com>
 References: <20230603200243.243878-1-varshini.rajendran@microchip.com>
@@ -72,26 +72,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add power reset support for SAM9X7 SoC
+From: Nicolas Ferre <nicolas.ferre@microchip.com>
+
+Add support for GMAC in sam9x7 SoC family
 
 Signed-off-by: Varshini Rajendran <varshini.rajendran@microchip.com>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 ---
- drivers/power/reset/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/cadence/macb_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 8c87eeda0fec..6c4ad81a0059 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -26,7 +26,7 @@ config POWER_RESET_AT91_POWEROFF
- config POWER_RESET_AT91_RESET
- 	tristate "Atmel AT91 reset driver"
- 	depends on ARCH_AT91
--	default SOC_AT91SAM9 || SOC_SAM9X60 || SOC_SAMA5
-+	default SOC_AT91SAM9 || SOC_SAM9X60 || SOC_SAM9X7 || SOC_SAMA5
- 	help
- 	  This driver supports restart for Atmel AT91SAM9 and SAMA5
- 	  SoCs
+diff --git a/drivers/net/ethernet/cadence/macb_main.c b/drivers/net/ethernet/cadence/macb_main.c
+index 29a1199dad14..609c8e9305ba 100644
+--- a/drivers/net/ethernet/cadence/macb_main.c
++++ b/drivers/net/ethernet/cadence/macb_main.c
+@@ -4913,6 +4913,7 @@ static const struct of_device_id macb_dt_ids[] = {
+ 	{ .compatible = "microchip,mpfs-macb", .data = &mpfs_config },
+ 	{ .compatible = "microchip,sama7g5-gem", .data = &sama7g5_gem_config },
+ 	{ .compatible = "microchip,sama7g5-emac", .data = &sama7g5_emac_config },
++	{ .compatible = "microchip,sam9x7-gem", .data = &sama7g5_gem_config },
+ 	{ .compatible = "xlnx,zynqmp-gem", .data = &zynqmp_config},
+ 	{ .compatible = "xlnx,zynq-gem", .data = &zynq_config },
+ 	{ .compatible = "xlnx,versal-gem", .data = &versal_config},
 -- 
 2.25.1
 
