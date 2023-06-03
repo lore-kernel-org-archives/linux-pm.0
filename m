@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C231C7EE39
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A562AC7EE3A
 	for <linux-pm@archiver.kernel.org>; Sat,  3 Jun 2023 20:08:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232651AbjFCUIy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 3 Jun 2023 16:08:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51552 "EHLO
+        id S232884AbjFCUIz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 3 Jun 2023 16:08:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52280 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231881AbjFCUIq (ORCPT
+        with ESMTP id S231981AbjFCUIq (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2023 16:08:46 -0400
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B53FDE6F;
-        Sat,  3 Jun 2023 13:07:55 -0700 (PDT)
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 209A5E72;
+        Sat,  3 Jun 2023 13:07:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1685822875; x=1717358875;
+  t=1685822876; x=1717358876;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=ZuPBRofcCh4+XxwWxNtafOL6nLRGQWKw7s1CYB0iMX4=;
-  b=pj61gaq8411KE5xN35inJlgBXphmAOIFeGI4RupHoaAnDl/f+kHpAZey
-   Bo9yYbE1ZwYXR0cw40odgOMXmfr8t5G4pchzDIVA645+kMC/uLbmqvcVq
-   ip/7oDMSelhecGICjYMY2jEYu5NiJYdGyUfkSp+5SHOFqJDbjXTCIc4lu
-   9+eVAsqctR/LDsB8gQpVYF5gvIfzT+uXDwPJsCixhWjaNI/Uh7vcjpgFV
-   uDJVmXlBHo0+UO06vYfrrcjsgapRGnOGDCvWy9Ra0raDGUFvzRPkAtOmp
-   HouTib/VuZCG23iaPQ5zyjoY2d0gm2SbmMSbm/d00R+dGzCkW94sRjmfh
-   w==;
+  bh=I/f1jUObFYFCHIeGN6WM/0hia6nhdguPMCI/ZjYAFVo=;
+  b=rejHNRNuFgMzZpl1+RRg417UgHmrftDhw5UdMN6tH6xPUKXWVb5LMmhL
+   QBTeHEGQvi74/z1qT3tVfkTg1OTrpyOQECSUKfZ0rVpY4sObOxhOp7SrA
+   y+nMPqViIqTgwckNiEgz+oDsYhGOsrMEx9jvuP9gmt5EuqW6YRIIEycZp
+   ILhEt1kiZpaKHGSIdUwnPFwQW+po7oXHFamNh6XNPZ8Spdc+ZJH+ZAL7H
+   jZ6tB5Y97INhrP/mfqEzvLKNx2GiXyJKP4A+sGANdThrm5TEP16XhCrdP
+   iqYgr9iHgU6ZgOwaoA5TKTrbGnxNiKqAwN38KqNpYbgB5K8xT5MrYJecs
+   g==;
 X-IronPort-AV: E=Sophos;i="6.00,216,1681196400"; 
-   d="scan'208";a="228308098"
+   d="scan'208";a="155388408"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 03 Jun 2023 13:07:41 -0700
+  by esa6.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 03 Jun 2023 13:06:48 -0700
 Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
  chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Sat, 3 Jun 2023 13:07:41 -0700
+ 15.1.2507.21; Sat, 3 Jun 2023 13:06:48 -0700
 Received: from che-lt-i67070.amer.actel.com (10.10.115.15) by
  chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.2507.21 via Frontend Transport; Sat, 3 Jun 2023 13:07:27 -0700
+ 15.1.2507.21 via Frontend Transport; Sat, 3 Jun 2023 13:06:36 -0700
 From:   Varshini Rajendran <varshini.rajendran@microchip.com>
 To:     <tglx@linutronix.de>, <maz@kernel.org>, <robh+dt@kernel.org>,
         <krzysztof.kozlowski+dt@linaro.org>, <conor+dt@kernel.org>,
@@ -59,9 +59,9 @@ CC:     <Hari.PrasathGE@microchip.com>, <cristian.birsan@microchip.com>,
         <durai.manickamkr@microchip.com>, <manikandan.m@microchip.com>,
         <dharma.b@microchip.com>, <nayabbasha.sayed@microchip.com>,
         <balakrishnan.s@microchip.com>
-Subject: [PATCH 21/21] net: macb: add support for gmac to sam9x7
-Date:   Sun, 4 Jun 2023 01:32:43 +0530
-Message-ID: <20230603200243.243878-22-varshini.rajendran@microchip.com>
+Subject: [PATCH 17/21] power: reset: at91-poweroff: lookup for proper pmc dt node for sam9x7
+Date:   Sun, 4 Jun 2023 01:32:39 +0530
+Message-ID: <20230603200243.243878-18-varshini.rajendran@microchip.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230603200243.243878-1-varshini.rajendran@microchip.com>
 References: <20230603200243.243878-1-varshini.rajendran@microchip.com>
@@ -72,28 +72,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Nicolas Ferre <nicolas.ferre@microchip.com>
-
-Add support for GMAC in sam9x7 SoC family
+Use sam9x7 pmc's compatible to lookup for in the SHDWC driver
 
 Signed-off-by: Varshini Rajendran <varshini.rajendran@microchip.com>
-Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 ---
- drivers/net/ethernet/cadence/macb_main.c | 1 +
+ drivers/power/reset/at91-sama5d2_shdwc.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/cadence/macb_main.c b/drivers/net/ethernet/cadence/macb_main.c
-index 29a1199dad14..609c8e9305ba 100644
---- a/drivers/net/ethernet/cadence/macb_main.c
-+++ b/drivers/net/ethernet/cadence/macb_main.c
-@@ -4913,6 +4913,7 @@ static const struct of_device_id macb_dt_ids[] = {
- 	{ .compatible = "microchip,mpfs-macb", .data = &mpfs_config },
- 	{ .compatible = "microchip,sama7g5-gem", .data = &sama7g5_gem_config },
- 	{ .compatible = "microchip,sama7g5-emac", .data = &sama7g5_emac_config },
-+	{ .compatible = "microchip,sam9x7-gem", .data = &sama7g5_gem_config },
- 	{ .compatible = "xlnx,zynqmp-gem", .data = &zynqmp_config},
- 	{ .compatible = "xlnx,zynq-gem", .data = &zynq_config },
- 	{ .compatible = "xlnx,versal-gem", .data = &versal_config},
+diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/reset/at91-sama5d2_shdwc.c
+index d8ecffe72f16..d0f29b99f25e 100644
+--- a/drivers/power/reset/at91-sama5d2_shdwc.c
++++ b/drivers/power/reset/at91-sama5d2_shdwc.c
+@@ -326,6 +326,7 @@ static const struct of_device_id at91_pmc_ids[] = {
+ 	{ .compatible = "atmel,sama5d2-pmc" },
+ 	{ .compatible = "microchip,sam9x60-pmc" },
+ 	{ .compatible = "microchip,sama7g5-pmc" },
++	{ .compatible = "microchip,sam9x7-pmc" },
+ 	{ /* Sentinel. */ }
+ };
+ 
 -- 
 2.25.1
 
