@@ -2,95 +2,110 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E063C77B7A
-	for <linux-pm@archiver.kernel.org>; Sat,  3 Jun 2023 20:09:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7733CC7EE24
+	for <linux-pm@archiver.kernel.org>; Sat,  3 Jun 2023 20:24:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232250AbjFCUJ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 3 Jun 2023 16:09:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51458 "EHLO
+        id S231856AbjFCUY6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 3 Jun 2023 16:24:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32796 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232334AbjFCUIt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2023 16:08:49 -0400
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1852610FA;
-        Sat,  3 Jun 2023 13:08:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1685822893; x=1717358893;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=ckwb7C/ObR0uOQ3Mcarmvv2Gqnc2rITKWQmy9lDAB4M=;
-  b=iUFt2heNUh8mXhLC1hP37qRBFL6rUIbNKi9wNVU/FxZFLrP4OHr6b5Ur
-   Eo1xhH6gqX6f125VEK+3bXrQis+slhSrM5c7sGDxglgDg+Q1MmtGpr+5l
-   dq0PVPehhFou6YyyDWup2CZ9NO2WBNiV5THOPzVSH0HsRFWp7A+qLjUaC
-   PmqqPplACneygUv5QuBMes2MZ6+oRxax0V93SsZswmo+JMrzuRu0IoACl
-   h4YDmpQj10qHkM9Xay82cuWH8ru9ZvD1qHi398eqv2TG+j8tC3PljVnjd
-   XLhQl35OF+Hd3Pobhihwrl2WJ30Q07HMsfo+S1puyvnJ2o+EtNwhRyK80
-   Q==;
-X-IronPort-AV: E=Sophos;i="6.00,216,1681196400"; 
-   d="scan'208";a="216104679"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa3.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 03 Jun 2023 13:07:27 -0700
-Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Sat, 3 Jun 2023 13:07:27 -0700
-Received: from che-lt-i67070.amer.actel.com (10.10.115.15) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.2507.21 via Frontend Transport; Sat, 3 Jun 2023 13:07:14 -0700
-From:   Varshini Rajendran <varshini.rajendran@microchip.com>
-To:     <tglx@linutronix.de>, <maz@kernel.org>, <robh+dt@kernel.org>,
-        <krzysztof.kozlowski+dt@linaro.org>, <conor+dt@kernel.org>,
-        <nicolas.ferre@microchip.com>, <alexandre.belloni@bootlin.com>,
-        <claudiu.beznea@microchip.com>, <davem@davemloft.net>,
-        <edumazet@google.com>, <kuba@kernel.org>, <pabeni@redhat.com>,
-        <gregkh@linuxfoundation.org>, <linux@armlinux.org.uk>,
-        <mturquette@baylibre.com>, <sboyd@kernel.org>, <sre@kernel.org>,
-        <broonie@kernel.org>, <varshini.rajendran@microchip.com>,
-        <arnd@arndb.de>, <gregory.clement@bootlin.com>,
-        <sudeep.holla@arm.com>, <balamanikandan.gunasundar@microchip.com>,
-        <mihai.sain@microchip.com>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <netdev@vger.kernel.org>,
-        <linux-usb@vger.kernel.org>, <linux-clk@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>
-CC:     <Hari.PrasathGE@microchip.com>, <cristian.birsan@microchip.com>,
-        <durai.manickamkr@microchip.com>, <manikandan.m@microchip.com>,
-        <dharma.b@microchip.com>, <nayabbasha.sayed@microchip.com>,
-        <balakrishnan.s@microchip.com>
-Subject: [PATCH 20/21] dt-bindings: net: cdns,macb: add documentation for sam9x7 ethernet interface
-Date:   Sun, 4 Jun 2023 01:32:42 +0530
-Message-ID: <20230603200243.243878-21-varshini.rajendran@microchip.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230603200243.243878-1-varshini.rajendran@microchip.com>
-References: <20230603200243.243878-1-varshini.rajendran@microchip.com>
+        with ESMTP id S229919AbjFCUY5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2023 16:24:57 -0400
+Received: from fgw21-7.mail.saunalahti.fi (fgw21-7.mail.saunalahti.fi [62.142.5.82])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE0FD123
+        for <linux-pm@vger.kernel.org>; Sat,  3 Jun 2023 13:24:56 -0700 (PDT)
+Received: from localhost (88-113-26-95.elisa-laajakaista.fi [88.113.26.95])
+        by fgw21.mail.saunalahti.fi (Halon) with ESMTP
+        id b367a8af-024c-11ee-abf4-005056bdd08f;
+        Sat, 03 Jun 2023 23:24:54 +0300 (EEST)
+From:   andy.shevchenko@gmail.com
+Date:   Sat, 3 Jun 2023 23:24:54 +0300
+To:     Nikita Shubin <nikita.shubin@maquefel.me>
+Cc:     Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Michael Peters <mpeters@embeddedts.com>,
+        Kris Bahnsen <kris@embeddedts.com>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v1 14/43] power: reset: Add a driver for the ep93xx reset
+Message-ID: <ZHuhlguJxvBzPFUp@surfacebook>
+References: <20230424123522.18302-1-nikita.shubin@maquefel.me>
+ <20230601053546.9574-15-nikita.shubin@maquefel.me>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230601053546.9574-15-nikita.shubin@maquefel.me>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add documentation for sam9x7 ethernet interface
+Thu, Jun 01, 2023 at 08:34:05AM +0300, Nikita Shubin kirjoitti:
+> Implement the reset behaviour of the various EP93xx SoCS in drivers/power/reset.
+> 
+> It used to be located in arch/arm/mach-ep93xx.
 
-Signed-off-by: Varshini Rajendran <varshini.rajendran@microchip.com>
----
- Documentation/devicetree/bindings/net/cdns,macb.yaml | 1 +
- 1 file changed, 1 insertion(+)
+...
 
-diff --git a/Documentation/devicetree/bindings/net/cdns,macb.yaml b/Documentation/devicetree/bindings/net/cdns,macb.yaml
-index bef5e0f895be..e4f9e9b353e5 100644
---- a/Documentation/devicetree/bindings/net/cdns,macb.yaml
-+++ b/Documentation/devicetree/bindings/net/cdns,macb.yaml
-@@ -54,6 +54,7 @@ properties:
-           - cdns,np4-macb             # NP4 SoC devices
-           - microchip,sama7g5-emac    # Microchip SAMA7G5 ethernet interface
-           - microchip,sama7g5-gem     # Microchip SAMA7G5 gigabit ethernet interface
-+          - microchip,sam9x7-gem      # Microchip SAM9X7 gigabit ethernet interface
-           - sifive,fu540-c000-gem     # SiFive FU540-C000 SoC
-           - cdns,emac                 # Generic
-           - cdns,gem                  # Generic
+> +config POWER_RESET_EP93XX
+> +	bool "Cirrus EP93XX reset driver" if COMPILE_TEST
+
+Can you elaborate this construction, please?
+
+> +	depends on MFD_SYSCON
+> +	default ARCH_EP93XX
+> +	help
+> +	  This driver provides restart support for Cirrus EP93XX SoC.
+> +
+> +	  Say Y here if you have a Cirrus EP93XX SoC and you wish
+> +	  to have restart support.
+
+...
+
+Missing bits.h
+
+> +#include <linux/delay.h>
+> +#include <linux/notifier.h>
+
+> +#include <linux/of_device.h>
+
+Wrong header. One is mod_devicetable.h, dunno what other implicit dependencies
+you have in mind when added this.
+
+> +#include <linux/platform_device.h>
+> +#include <linux/reboot.h>
+
+> +#include <linux/soc/cirrus/ep93xx.h>
+
+...
+
+> +	struct notifier_block *res_han;
+> +	struct device *dev = &pdev->dev;
+
+Longer lines first?
+
+> +	int err;
+> +
+> +	res_han = devm_kzalloc(&pdev->dev, sizeof(*res_han), GFP_KERNEL);
+
+You have dev, use it.
+
+> +	if (!res_han)
+> +		return -ENOMEM;
+
+...
+
+> +	err = register_restart_handler(res_han);
+> +	if (err)
+> +		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
+
+		return dev_err_probe(...);
+
+> +	return err;
+> +}
+
 -- 
-2.25.1
+With Best Regards,
+Andy Shevchenko
+
 
