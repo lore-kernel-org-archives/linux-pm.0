@@ -2,21 +2,21 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1781C88C8D
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jun 2023 12:13:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30CCEC88C97
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jun 2023 12:13:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231768AbjFDMNa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 4 Jun 2023 08:13:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43642 "EHLO
+        id S231841AbjFDMNb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 4 Jun 2023 08:13:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43632 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231282AbjFDMN1 (ORCPT
+        with ESMTP id S231779AbjFDMN1 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jun 2023 08:13:27 -0400
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3547DB;
-        Sun,  4 Jun 2023 05:13:25 -0700 (PDT)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BB0BFA;
+        Sun,  4 Jun 2023 05:13:23 -0700 (PDT)
 Received: from stefanw-SCHENKER ([37.4.248.58]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MLhwM-1po7By0Ya0-00HjUJ; Sun, 04 Jun 2023 14:12:50 +0200
+ 1MI4cT-1psFYU0nYt-00F8Q0; Sun, 04 Jun 2023 14:12:49 +0200
 From:   Stefan Wahren <stefan.wahren@i2se.com>
 To:     Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -38,121 +38,143 @@ Cc:     linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org,
         linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org,
         bcm-kernel-feedback-list@broadcom.com,
         Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH 10/10] dt-bindings: timer: convert bcm2835-system-timer bindings to YAML
-Date:   Sun,  4 Jun 2023 14:12:23 +0200
-Message-Id: <20230604121223.9625-11-stefan.wahren@i2se.com>
+Subject: [PATCH 09/10] dt-bindings: thermal: convert bcm2835-thermal bindings to YAML
+Date:   Sun,  4 Jun 2023 14:12:22 +0200
+Message-Id: <20230604121223.9625-10-stefan.wahren@i2se.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230604121223.9625-1-stefan.wahren@i2se.com>
 References: <20230604121223.9625-1-stefan.wahren@i2se.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:oMr1lTfefQ7XSyP/6XiPy6FpM+TVqfrRR0B16B0MUjm0fmnsWJ9
- tXpqm4A8tBbCHLxJpHHVJam+o9XaRneH/yvew6r3hok0Oln6lu/xjV0oeAZYuwvBmg6Q3Og
- Yw9s7SjyFl5sAsxTyW4l2GJOER0A/jGMj13s2Bk2a7BkPNysFRc5ADTze+J+SR6UijgLaUJ
- CjXVFOYus+JCSVK6Zickg==
-UI-OutboundReport: notjunk:1;M01:P0:3fgNAr6VTfc=;0X5GpLSO88Vwv0T2LGOU/vv/rFC
- apzcUSG1Umg593oEieEHm1Cspgd9S2BGndtOWJ8jTS0udRb9zbiQCt93rT/oSFv2ZB8hWhoP1
- ligzgL35FqamqGJ14zITAFDkWmcUycEEVrnArVkPhuBES+WFA+tgETzWWor6Ty1yyIoqAmKgD
- 5EW1UqzI4FPaDy5jo0tCkyYdq+aCymSDTTQQl48XNCYAHyXfCRs75CFUTvo4cGD0QqvI8OoZS
- ZzBff+wrS2TknYHK6tzbvW4GJ0Uh7fV0Nq+qe1UjzXgzsIPyivRw5E6rBaxLEyp7Evmkc0sIA
- NyCVuy1qyb7KaUNe2mZos5GryPirvuceUjgPCItg6wddGxjLu7M94nLFeieq4kJ/1Ee27dLRA
- GvHKCS6bZhyynA0E8ncn8SY0ob+jl6eMIezQmRmOhygA/z9RHHVbH983iFygs2PYs9AGUwZ+P
- 5M7SojbIWflmDMzpdySxIhBNDJPdPQDRDX4+s1iLY7AXbsGYqYL6/MVMBx96g5aWqOBgmxpOV
- dPf0qedK+gt2kotQCeZovS0651yTOYDdnTdiJDTuSahcz623FkV0jxemZMmiWqP7jEw90k7kC
- dkmjYL52sgz0rvWJs4PtAoNQpdYPK+E/Ky46ya+CTTQk+4+ngH41L0pkfQa+1deo+4LZ1A1ZZ
- pJ0nrEH15l2gen6cxgH0vco6jBe1pJEBRCSNEl+GPA==
+X-Provags-ID: V03:K1:nMYk1gRGD+2AiImzkO6DtPOxKPY+MYA5ImlbZwhx4QpHbydnjwi
+ sFqFSyvDUR+sI4OmmfBzssR2ybgas4BCOwvRshfr5mAz4rH/ZPsXIBe0MikVM0aRNTbhgjH
+ 34ndg/Gfi2TtUZrqMz9Oo4xR146EK/e1IQY0giLEQggJQAF3ogRwJBrdbNmVVC6W7Tf+CmQ
+ 3CEzDZjUQmwU9w6//7x9Q==
+UI-OutboundReport: notjunk:1;M01:P0:AFBIMyp3Zyw=;qMpPxv3dGa4DbTK46rNrQprBpkF
+ QHEiLJ3yBaYzi330gDjoYrsdsRzCvZdh0FmRbzELpn0pIJYYsapD6B4cHe9DzYg0ILeSrC2Tv
+ d8RJmbv5GjPHsS8agmhchDhBoiEvIPlwZOUIAcCzryUlqx6BryQwNVEMK189HC9mbS5mV/lmZ
+ FiqlpO3wwWW/4xZx0aeVN1+Z3PP6uz+riYr3WYjUWP5Go+lsM4SeErLYr4r2dJ2BGPUqhtHv6
+ 922VC4V8NroIiB9slXXaetiCnLtRBmcW+3XBA02YxCm7cpcGlqk+SXnWpYZVNaazNzelEKIYh
+ MpmY8uQ4bLr9JFDWaSGp2pFRboqey14VyBwG9DemKcMnyy9QvhVumXXUgRcXiD/r4PR2l/f5x
+ UcKW8ArZT5Hujnez4FYEv+dHdyipoE6TqONYz95dTJxM8XYWsMWQuqtF57uw/ym1xI1gTxWLr
+ 7Nbv89/hElqLUqpz1sLW/+OYS7i0KFgOShHED/V9OWaItxJdl9B4hcBCOIOihedH2Pr4qTe3W
+ 0sEyFKnBOY0bK/jHo6rJuZhXyl6Cy2bBOVWVyg+mwL3R2IYsYvZGn+/RlQH5ZGDCneOrE6WLP
+ Cw08ETMd+Oa8FceXrFS8a0XDMt1APk/Uxg822co3FGblw0nedjBnB8gHMG/gWiXYkSwQUtNPK
+ OH3JR6dpvnD3QBGoSL1Swk9tOF4LxMP7BUdCmfhMkQ==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the DT binding document for bcm2835-system-timer from .txt
-to YAML.
+Convert the DT binding document for bcm2835-thermal from .txt to YAML.
 
 Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 ---
- .../timer/brcm,bcm2835-system-timer.txt       | 22 ----------
- .../timer/brcm,bcm2835-system-timer.yaml      | 44 +++++++++++++++++++
- 2 files changed, 44 insertions(+), 22 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.txt
- create mode 100644 Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.yaml
+ .../bindings/thermal/brcm,bcm2835-thermal.txt | 41 ----------------
+ .../thermal/brcm,bcm2835-thermal.yaml         | 48 +++++++++++++++++++
+ 2 files changed, 48 insertions(+), 41 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.yaml
 
-diff --git a/Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.txt b/Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.txt
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
 deleted file mode 100644
-index 844bd5fbd04c..000000000000
---- a/Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.txt
+index a3e9ec5dc7ac..000000000000
+--- a/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
 +++ /dev/null
-@@ -1,22 +0,0 @@
--BCM2835 System Timer
+@@ -1,41 +0,0 @@
+-Binding for Thermal Sensor driver for BCM2835 SoCs.
 -
--The System Timer peripheral provides four 32-bit timer channels and a
--single 64-bit free running counter. Each channel has an output compare
--register, which is compared against the 32 least significant bits of the
--free running counter values, and generates an interrupt.
+-Required parameters:
+--------------------
 -
--Required properties:
--
--- compatible : should be "brcm,bcm2835-system-timer"
--- reg : Specifies base physical address and size of the registers.
--- interrupts : A list of 4 interrupt sinks; one per timer channel.
--- clock-frequency : The frequency of the clock that drives the counter, in Hz.
+-compatible: 		should be one of: "brcm,bcm2835-thermal",
+-			"brcm,bcm2836-thermal" or "brcm,bcm2837-thermal"
+-reg:			Address range of the thermal registers.
+-clocks: 		Phandle of the clock used by the thermal sensor.
+-#thermal-sensor-cells:	should be 0 (see Documentation/devicetree/bindings/thermal/thermal-sensor.yaml)
 -
 -Example:
 -
--timer {
--	compatible = "brcm,bcm2835-system-timer";
--	reg = <0x7e003000 0x1000>;
--	interrupts = <1 0>, <1 1>, <1 2>, <1 3>;
--	clock-frequency = <1000000>;
+-thermal-zones {
+-	cpu_thermal: cpu-thermal {
+-		polling-delay-passive = <0>;
+-		polling-delay = <1000>;
+-
+-		thermal-sensors = <&thermal>;
+-
+-		trips {
+-			cpu-crit {
+-				temperature	= <80000>;
+-				hysteresis	= <0>;
+-				type		= "critical";
+-			};
+-		};
+-
+-		coefficients = <(-538)	407000>;
+-
+-		cooling-maps {
+-		};
+-	};
 -};
-diff --git a/Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.yaml b/Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.yaml
+-
+-thermal: thermal@7e212000 {
+-	compatible = "brcm,bcm2835-thermal";
+-	reg = <0x7e212000 0x8>;
+-	clocks = <&clocks BCM2835_CLOCK_TSENS>;
+-	#thermal-sensor-cells = <0>;
+-};
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.yaml b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.yaml
 new file mode 100644
-index 000000000000..555fca4897e7
+index 000000000000..2b6026d9fbcf
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/timer/brcm,bcm2835-system-timer.yaml
-@@ -0,0 +1,44 @@
++++ b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.yaml
+@@ -0,0 +1,48 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/timer/brcm,bcm2835-system-timer.yaml#
++$id: http://devicetree.org/schemas/thermal/brcm,bcm2835-thermal.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: BCM2835 System Timer
++title: Broadcom BCM2835 thermal sensor
 +
 +maintainers:
 +  - Stefan Wahren <stefan.wahren@i2se.com>
 +
-+description:
-+  The System Timer peripheral provides four 32-bit timer channels and a
-+  single 64-bit free running counter. Each channel has an output compare
-+  register, which is compared against the 32 least significant bits of the
-+  free running counter values, and generates an interrupt.
++allOf:
++  - $ref: thermal-sensor.yaml#
 +
 +properties:
 +  compatible:
-+    const: brcm,bcm2835-system-timer
++    enum:
++      - brcm,bcm2835-thermal
++      - brcm,bcm2836-thermal
++      - brcm,bcm2837-thermal
 +
 +  reg:
 +    maxItems: 1
 +
-+  interrupts:
-+    maxItems: 4
++  clocks:
++    maxItems: 1
 +
-+  clock-frequency: true
++  "#thermal-sensor-cells":
++    const: 0
++
++unevaluatedProperties: false
 +
 +required:
 +  - compatible
 +  - reg
-+  - interrupts
-+
-+additionalProperties: false
++  - clocks
++  - '#thermal-sensor-cells'
 +
 +examples:
 +  - |
-+    timer@7e003000 {
-+      compatible = "brcm,bcm2835-system-timer";
-+      reg = <0x7e003000 0x1000>;
-+      interrupts = <1 0>, <1 1>, <1 2>, <1 3>;
-+      clock-frequency = <1000000>;
++    #include <dt-bindings/clock/bcm2835.h>
++
++    thermal@7e212000 {
++      compatible = "brcm,bcm2835-thermal";
++      reg = <0x7e212000 0x8>;
++      clocks = <&clocks BCM2835_CLOCK_TSENS>;
++      #thermal-sensor-cells = <0>;
 +    };
 -- 
 2.34.1
