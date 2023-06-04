@@ -2,21 +2,21 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 759F3C7EE29
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jun 2023 12:13:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BF5BC7EE37
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jun 2023 12:13:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231789AbjFDMN1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 4 Jun 2023 08:13:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43598 "EHLO
+        id S231819AbjFDMN3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 4 Jun 2023 08:13:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43628 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231748AbjFDMNZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jun 2023 08:13:25 -0400
+        with ESMTP id S231768AbjFDMN0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jun 2023 08:13:26 -0400
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AE1CE0;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AD9ADF;
         Sun,  4 Jun 2023 05:13:22 -0700 (PDT)
 Received: from stefanw-SCHENKER ([37.4.248.58]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MY6P5-1pXpGD14MX-00YRQM; Sun, 04 Jun 2023 14:12:44 +0200
+ 1MORVA-1pgvvi1H4g-00PxEL; Sun, 04 Jun 2023 14:12:48 +0200
 From:   Stefan Wahren <stefan.wahren@i2se.com>
 To:     Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -38,92 +38,132 @@ Cc:     linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org,
         linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org,
         bcm-kernel-feedback-list@broadcom.com,
         Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH 04/10] ARM: dts: bcm2835: adjust DMA nodes
-Date:   Sun,  4 Jun 2023 14:12:17 +0200
-Message-Id: <20230604121223.9625-5-stefan.wahren@i2se.com>
+Subject: [PATCH 08/10] dt-bindings: mmc: convert bcm2835-sdhost bindings to YAML
+Date:   Sun,  4 Jun 2023 14:12:21 +0200
+Message-Id: <20230604121223.9625-9-stefan.wahren@i2se.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230604121223.9625-1-stefan.wahren@i2se.com>
 References: <20230604121223.9625-1-stefan.wahren@i2se.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:MlCIRO9pga208xxruv+F0H86jIzbBCoc9x+fOZ2eGZ2WniNufy7
- 192tUzznPMa6Hhsu0FfCQMa3h6BTG0u62e8mkasHZcTrJWYG63mAhQwoOjmLAGORe7HyeaK
- wIa31cUeHV/9IKX3o8Cr8yT35ZJI486R3/+Cx69A0ytMonG90cvHbESnCpTfpEAE05tHNMi
- BpdDJ6ftElBO/E02n3fXQ==
-UI-OutboundReport: notjunk:1;M01:P0:O+MH+gDO2dY=;z0hesc/5QyYxSW+vBB08V6bSOfC
- JqNpomBhLzTp/JbbmCpzvFIvnHRH2KfsvWDdegB1lC6gjatYyi+EgZuSi636cCMnlkkht0QNy
- Zgre4pa7j+4yhUe1eZuZJt+JOa+jXnjI27+wG/vK19YXcC5C6HzAGlLapN1kZs6DOYFIvhGtN
- N6KYe9/nlLN53DzNCyTih9AuGJbwevI4nfE0kfM5Zoh3n8SKHs2xis3HJ26trEpSQ4ftSiw/K
- OE7wJ3GSE8by6+vmM3XAi5Hjm08mMyrVe8bXr/YLifs4MIu0DRj3ObmNzeNFqBHSHFeE1c8hu
- bwayWRJoYmtRNT9bjeuIowRCDFeCJzyeYf1T//OKF4cUTUILGopEjj3Fe4+GbkumQdy/a/aV8
- FL9Gw42jPVRNq/E5lzIsupvlEDomoaXdDbtavKk97mww1pqOPWPbrJxbUKXAaBh30H01x24bR
- 3Q4M3UDjskcGSfvJ9w2S41L+zqm22Oghfg+XVllzuyIqV7OLsb3uN2U1yUx4ECuiclezmz5kq
- T0nDsIefWnvzlr08Mh4nHQvQ3ukvnslBDeNYy8S0IT21o/3wrc4a6uvE/ctFFD9NH3t8jUQcp
- ffd5CACOSwcbqGo9urmVMzSzMvFkKjzszXlQvuusgzjivWgwPexdaD2N0VF3tk6dDkhwvh82q
- Ko4LGNBOb1xZHR28TChK3on5F01WzLO3tdeaqyiA3w==
+X-Provags-ID: V03:K1:foogFTxftYvxx0yiHrFE16uks19QrCnC8HH3ae90EqYe99lsUrJ
+ 0V1Ex5ERGkktRr5VKMfruARlqiTli4OCKIgdmgyyKGDyMDGmtiNRqvsC7zh4v1lCkeDzOgg
+ dRL0KiBp28PmlWQX0cK9C12X7tVsj5Wr8UIBmSH04Z0w+QtkfZmiRRd0MplQX6P6GvxiOmC
+ skP4ftc3f1GmijzExRr8w==
+UI-OutboundReport: notjunk:1;M01:P0:FYmh3L5uoWE=;+L6An8kNOoyMWyRK1uZ2fyOwVVi
+ x7rg4AZbBz/oFY77feJ0cDnQeVECPvGSZzRyuOCoAWPnLPKXNkV1TlfOY7hQYjJxb1v1gJgzl
+ Wc+V4OUWocJbyzyXP/lon16MVPCRyiveYvONFVv3lnBGGxFjnRhVY2929AHRImEt2AbPh6fBz
+ 9AcSjJ/Ah0+Liec7qhp4Ae7noFbuiDsOiDN0jOmcw+mReRxl/1lUhzYohGFFtX3eGN0tE1cAX
+ h6POHKSN5HuyAO/tn7c3LpwU1kkLfC7XmWMEWVRJNJAaWo2NXKQkM1h3pxISJWlwqnNjwiQmF
+ IeFBcHQRB38SWTJ1yTGyh1UBajqWUydyszbQq4BeyNffHeJ7xO1VhxnOpvRIkqE/W041TAA+H
+ 5VEEMIbRH1SWiso/urkCdPVft1dKpze8WjefqWcOwUhdNFuCv/kk0u1D342KErklWJIJB/Uls
+ s6WwzOg7VU/VI3RqErSL4RuVOVXt3nXRf9v0HcQIgIAAp2hnD0Lkykd8RIGkyPM0uyKaNmFVM
+ yBkjifKX7JtvMh+qxt+iXqsmvk/hmHo6tPv7FuVma2lnwlH1HZJZ9Ibn3oEFbo1SRfKPk8Sqx
+ 1Ew2DhLHjExfWKYDeCLXzUWhACCucwjJcsCDzmKzugkwvuWZm5DfK6B0qKMCyL3MMSbP7xCO0
+ A0LUSpgVXoUPhrg+Ph/PhCcYwwpegDySaeEkiX/Lsg==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-After converting the bcm2835-dma DT binding to YAML, the DT schema
-checks gave warnings like:
-
-$nodename:0: 'dma@7e007000' does not match '^dma-controller(@.*)?$'
-'dma-channel-mask' is a required property
-Unevaluated properties are not allowed ('brcm,dma-channel-mask' was unexpected)
-
-So fix them accordingly.
+Convert the DT binding document for bcm2835-sdhost from .txt to YAML.
 
 Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 ---
- arch/arm/boot/dts/bcm2711.dtsi        | 4 ++--
- arch/arm/boot/dts/bcm2835-common.dtsi | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ .../bindings/mmc/brcm,bcm2835-sdhost.txt      | 23 --------
+ .../bindings/mmc/brcm,bcm2835-sdhost.yaml     | 54 +++++++++++++++++++
+ 2 files changed, 54 insertions(+), 23 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt
+ create mode 100644 Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml
 
-diff --git a/arch/arm/boot/dts/bcm2711.dtsi b/arch/arm/boot/dts/bcm2711.dtsi
-index 097e9f252235..83745672a120 100644
---- a/arch/arm/boot/dts/bcm2711.dtsi
-+++ b/arch/arm/boot/dts/bcm2711.dtsi
-@@ -76,7 +76,7 @@ thermal: thermal {
- 			};
- 		};
- 
--		dma: dma@7e007000 {
-+		dma: dma-controller@7e007000 {
- 			compatible = "brcm,bcm2835-dma";
- 			reg = <0x7e007000 0xb00>;
- 			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
-@@ -103,7 +103,7 @@ dma: dma@7e007000 {
- 					  "dma9",
- 					  "dma10";
- 			#dma-cells = <1>;
--			brcm,dma-channel-mask = <0x07f5>;
-+			dma-channel-mask = <0x07f5>;
- 		};
- 
- 		pm: watchdog@7e100000 {
-diff --git a/arch/arm/boot/dts/bcm2835-common.dtsi b/arch/arm/boot/dts/bcm2835-common.dtsi
-index bb7e8f7facaf..3ba8db8eed0f 100644
---- a/arch/arm/boot/dts/bcm2835-common.dtsi
-+++ b/arch/arm/boot/dts/bcm2835-common.dtsi
-@@ -8,7 +8,7 @@ / {
- 	interrupt-parent = <&intc>;
- 
- 	soc {
--		dma: dma@7e007000 {
-+		dma: dma-controller@7e007000 {
- 			compatible = "brcm,bcm2835-dma";
- 			reg = <0x7e007000 0xf00>;
- 			interrupts = <1 16>,
-@@ -46,7 +46,7 @@ dma: dma@7e007000 {
- 					  "dma14",
- 					  "dma-shared-all";
- 			#dma-cells = <1>;
--			brcm,dma-channel-mask = <0x7f35>;
-+			dma-channel-mask = <0x7f35>;
- 		};
- 
- 		intc: interrupt-controller@7e00b200 {
+diff --git a/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt b/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt
+deleted file mode 100644
+index d876580ae3b8..000000000000
+--- a/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt
++++ /dev/null
+@@ -1,23 +0,0 @@
+-Broadcom BCM2835 SDHOST controller
+-
+-This file documents differences between the core properties described
+-by mmc.txt and the properties that represent the BCM2835 controller.
+-
+-Required properties:
+-- compatible: Should be "brcm,bcm2835-sdhost".
+-- clocks: The clock feeding the SDHOST controller.
+-
+-Optional properties:
+-- dmas: DMA channel for read and write.
+-          See Documentation/devicetree/bindings/dma/dma.txt for details
+-
+-Example:
+-
+-sdhost: mmc@7e202000 {
+-	compatible = "brcm,bcm2835-sdhost";
+-	reg = <0x7e202000 0x100>;
+-	interrupts = <2 24>;
+-	clocks = <&clocks BCM2835_CLOCK_VPU>;
+-	dmas = <&dma 13>;
+-	dma-names = "rx-tx";
+-};
+diff --git a/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml b/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml
+new file mode 100644
+index 000000000000..3a5a44800675
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml
+@@ -0,0 +1,54 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mmc/brcm,bcm2835-sdhost.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Broadcom BCM2835 SDHOST controller
++
++maintainers:
++  - Stefan Wahren <stefan.wahren@i2se.com>
++
++allOf:
++  - $ref: mmc-controller.yaml
++
++properties:
++  compatible:
++    const: brcm,bcm2835-sdhost
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  dmas:
++    maxItems: 1
++
++  dma-names:
++    const: rx-tx
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/bcm2835.h>
++
++    sdhost: mmc@7e202000 {
++      compatible = "brcm,bcm2835-sdhost";
++      reg = <0x7e202000 0x100>;
++      interrupts = <2 24>;
++      clocks = <&clocks BCM2835_CLOCK_VPU>;
++      dmas = <&dma 13>;
++      dma-names = "rx-tx";
++      bus-width = <4>;
++    };
 -- 
 2.34.1
 
