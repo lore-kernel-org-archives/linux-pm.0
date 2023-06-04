@@ -2,187 +2,113 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87F39C7EE29
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jun 2023 11:40:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADC41C7EE32
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jun 2023 12:13:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229892AbjFDLk4 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 4 Jun 2023 07:40:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37226 "EHLO
+        id S231731AbjFDMNZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 4 Jun 2023 08:13:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43576 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229670AbjFDLkz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jun 2023 07:40:55 -0400
-Received: from mail-ej1-f42.google.com (mail-ej1-f42.google.com [209.85.218.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 196B5CD;
-        Sun,  4 Jun 2023 04:40:54 -0700 (PDT)
-Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-977c963041dso17390966b.1;
-        Sun, 04 Jun 2023 04:40:54 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685878852; x=1688470852;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+hPyATbScLhd1Ux5VdZrCgqoxiG2kNtepUPYKFFp83Y=;
-        b=RXI+yPYqQ4DXmXWtG9dgrm5U8dKy8HvsZfYSdJx/zqhGzZ8Nf4qdHQrKMe5fOm2dQG
-         eWsqcoZ1FYep6Oy02gk3e9URgBt38sBh8V+OozrIE+fh1T8SK9IC93h8BpEZ7YvI4nWr
-         X0FvXBMHY/hVH8oOSiR+/RyZbZuwLOK8m6M0DZ3WvT54mCsoOi8LulQ8Cj1qBk61Z4GK
-         txpP2Hedis3Z5izz5H2rJOyd9aFHhZOk8+q9rYVkiQij8RVXKFeJFl7NVuPUvJQgeJ7v
-         Rg3Q4TtedXX+uq3ZTi9o5WBK/D8B+pY6Tko95n1IZXUF2jgHuBicXIHBUTGcP84zHNkp
-         vtkA==
-X-Gm-Message-State: AC+VfDxHzNcGoUlFndWeK4SqWhiI2rrFpfjYxCweX0SbDrHbQRlhg0Il
-        4v/PD9ZHpy2NsT587775GxqMsGtxnTmBRyenBDs=
-X-Google-Smtp-Source: ACHHUZ7QnNU+FbrNuimuy8IFPogOJ6RW3cP4uqCSkGhdbhb+uXX6dm95eaOJikHCKcGztKS4gC50P06UbxLsKbexkWs=
-X-Received: by 2002:a17:906:7496:b0:976:50a4:ac49 with SMTP id
- e22-20020a170906749600b0097650a4ac49mr4246569ejl.6.1685878852229; Sun, 04 Jun
- 2023 04:40:52 -0700 (PDT)
+        with ESMTP id S229903AbjFDMNY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jun 2023 08:13:24 -0400
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98484CA;
+        Sun,  4 Jun 2023 05:13:21 -0700 (PDT)
+Received: from stefanw-SCHENKER ([37.4.248.58]) by mrelayeu.kundenserver.de
+ (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1Mcp7M-1qffJY2DxK-00Zx5t; Sun, 04 Jun 2023 14:12:42 +0200
+From:   Stefan Wahren <stefan.wahren@i2se.com>
+To:     Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Jassi Brar <jassisinghbrar@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>
+Cc:     linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org,
+        bcm-kernel-feedback-list@broadcom.com,
+        Stefan Wahren <stefan.wahren@i2se.com>,
+        John Stultz <john.stultz@linaro.org>
+Subject: [PATCH 02/10] dmaengine: bcm2835: also support generic dma-channel-mask
+Date:   Sun,  4 Jun 2023 14:12:15 +0200
+Message-Id: <20230604121223.9625-3-stefan.wahren@i2se.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230604121223.9625-1-stefan.wahren@i2se.com>
+References: <20230604121223.9625-1-stefan.wahren@i2se.com>
 MIME-Version: 1.0
-References: <ZHprL3oavxW+tUsX@bhelgaas> <af1bbb31-36d4-4924-e02a-bc22b938c7e4@amd.com>
-In-Reply-To: <af1bbb31-36d4-4924-e02a-bc22b938c7e4@amd.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Sun, 4 Jun 2023 13:40:38 +0200
-Message-ID: <CAJZ5v0hz2B3Y1HFE9Rvo4B+YHZR5CeoTSLhTc0GO9mZKrwykPA@mail.gmail.com>
-Subject: Re: [PATCH v5 2/2] PCI: Don't assume root ports are power manageable
-To:     "Limonciello, Mario" <mario.limonciello@amd.com>
-Cc:     Bjorn Helgaas <helgaas@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        S-k Shyam-sundar <Shyam-sundar.S-k@amd.com>,
-        Natikar Basavaraj <Basavaraj.Natikar@amd.com>,
-        Deucher Alexander <Alexander.Deucher@amd.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-        Lukas Wunner <lukas@wunner.de>,
-        Iain Lane <iain@orangesquash.org.uk>,
-        Kuppuswamy Sathyanarayanan 
-        <sathyanarayanan.kuppuswamy@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V03:K1:KxozCg8oOnQt3q5mPq0HbQmy7gi7fAIS5EtgBua5Q0tEKepPwM4
+ ThwXX6hVibrvtiDk4KSOo1i5qFwNGWAgDBCECMdgx99Cz2gDbAB22klR7Ok4sC5IRkIUeEM
+ mmTaqvDKrjvtDo4JxaeHOtZaxmXJKxbDLbNa1x5uRrtE11Qm5okqHnknE4MvezqO+3byol4
+ tHPvCKsEZCFDD4h+F4nDA==
+UI-OutboundReport: notjunk:1;M01:P0:+kYEE+ZQyz4=;RtH81khKORI85HByj5ZYkPReo/I
+ STW/PQS3ERuAkrJh/N2ZQABRkZDVuLch7HQ6MCtKykWAxd1wELzuk9EplU7RFQ58M59EnCaSu
+ ZEAggFm5MO6eIRKXEekcgRwRJz9Ncsw0z5OKIIlI/LBCAKwezdC3g6mzfR8RdBu/5m3/0Lece
+ kmdPP5dvwhEGlrYO4HfH5z1Fj+qqsnYNZHJohJbVXBGVFOAo9chTmQeR0L0ST3vTYLRFQ+S5J
+ WDkI2UKcbc2wrw1eJ32v+47ub0Y2N5wIuh1U94q5ulMP+wLYO8G/fxWc/tzl3grAdal93CwKZ
+ Ote7f5Jvx9TjWNiJjYMNrPN7wdjy3EjWSAlf6yXXpEYhlmOnHW7CwI/Ob/VX5cgFqmXFEkCbr
+ aPU3w2z7vy/rPYLJ4QEGqThrxQFABDZwn4Ld+MiyrhMlJ/lvFzaN36owiksOSGlOvEzZJvG5h
+ pTLqv36TvzWaxLSndGSbuICmbdHw1wtcDPkvxvUEqklUkPhutcQQTGIyvC9vXTQ//IBgO3Tnb
+ Wi8CX4+LaqRpcEUeYbwp9/UvsRV8UZuZXjWUwOlq/yBqMPzfJ7Nkp1vGah+kDKi1T0Ea8sLNn
+ +cZ2rio0AAizNtEACKzu2NC5Pg3SEJvNpSGXkmm5rxf0u//UcAfndWokWSk2GqprNrWyKdbIL
+ Ry+CFeqzsNb1afwQbjZr2jLgFaHlMkaqS2QSgtxP3g==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Jun 3, 2023 at 12:38 AM Limonciello, Mario
-<mario.limonciello@amd.com> wrote:
->
->
-> On 6/2/2023 5:20 PM, Bjorn Helgaas wrote:
-> > Hi Mario,
-> >
-> > The patch itself looks fine, but since I don't have all the power
-> > management details in my head, it would help me a lot to make the
-> > description more concrete.
-> OK, please let me know if after reviewing my responses you
-> would prefer me to take an attempt at rewriting the commit
-> message or if you can handle changing it.
-> >
-> > On Tue, May 30, 2023 at 11:39:47AM -0500, Mario Limonciello wrote:
-> >> Using a USB keyboard or mouse to wakeup the system from s2idle fails when
-> >> that xHCI device is connected to a USB-C port for an AMD USB4 router.
-> > It sounds like the real issue is that "Root Ports in D3hot/D3cold may
-> > not support wakeup", and the USB, xHCI, USB-C, AMD USB4 router bits
-> > are probably not really relevant.  And hopefully even the "AMD
-> > platforms" mentioned below is not relevant.
-> Yeah.  It comes down to how much you want in the commit
-> about how we got to this conclusion versus a generic
-> fix.  I generally like to be verbose about a specific case
-> something fixes so that when distros decide what to pull
-> in to their older maintenance kernels they can understand
-> what's important.
-> >> Due to commit 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
-> >> all PCIe ports go into D3 during s2idle.
-> >>
-> >> When specific root ports are put into D3 over s2idle on some AMD platforms
-> >> it is not possible for the platform to properly identify wakeup sources.
-> >> This happens whether the root port goes into D3hot or D3cold.
-> > Can we connect this to a spec so it's not just the empirical "some AMD
-> > platforms work like X" observation?
-> >
-> > "s2idle" is meaningful on the power management side of the house, but
-> > it doesn't appear in PCI or ACPI specs, so I don't know what it means
-> > here.  I assume the D3hot/D3cold state of the Root Port is the
-> > critical factor, regardless of how it got there.
->
-> Unfortunately (?) for this particular issue it's only a
-> critical factor when the system is in s2idle.
->
-> PME works fine to wake up the device if the root port is
-> in either D3hot or D3cold when the system isn't in s2idle.
+Since commit e2d896c08ca3 ("Documentation: bindings: dma: Add
+binding for dma-channel-mask") there is a generic property to list
+available DMA channels for the kernel to use. The generic property
+has been implemented by some other platforms.
+So implement support for the generic one and consider the
+vendor specific one as deprecated. This also simplifies the YAML
+conversion of the BCM2835 DMA DT bindings a little bit.
 
-Why doesn't it work fine when the system is in s2idle then?
+Cc: John Stultz <john.stultz@linaro.org>
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+---
+ drivers/dma/bcm2835-dma.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-Getting to the root of this would be really helpful here IMO.
+diff --git a/drivers/dma/bcm2835-dma.c b/drivers/dma/bcm2835-dma.c
+index 0807fb9eb262..a0573977a373 100644
+--- a/drivers/dma/bcm2835-dma.c
++++ b/drivers/dma/bcm2835-dma.c
+@@ -941,12 +941,18 @@ static int bcm2835_dma_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* Request DMA channel mask from device tree */
+-	if (of_property_read_u32(pdev->dev.of_node,
+-			"brcm,dma-channel-mask",
+-			&chans_available)) {
+-		dev_err(&pdev->dev, "Failed to get channel mask\n");
+-		rc = -EINVAL;
+-		goto err_no_dma;
++	if (of_property_read_u32(pdev->dev.of_node, "dma-channel-mask",
++				 &chans_available)) {
++		if (of_property_read_u32(pdev->dev.of_node,
++					 "brcm,dma-channel-mask",
++					 &chans_available)) {
++			dev_err(&pdev->dev, "Failed to get channel mask\n");
++			rc = -EINVAL;
++			goto err_no_dma;
++		} else {
++			dev_warn(&pdev->dev,
++				 "brcm,dma-channel-mask is deprecated, update your device-tree\n");
++		}
+ 	}
+ 
+ 	/* get irqs for each channel that we support */
+-- 
+2.34.1
 
-> >
-> >> Comparing registers between Linux and Windows 11 this behavior to put
-> >> these specific root ports into D3 at suspend is unique to Linux. On an
-> >> affected system Windows does not put those specific root ports into D3
-> >> over Modern Standby.
-> >>
-> >> Windows avoids putting Root Ports that are not power manageable (e.g do
-> >> not have platform firmware support) into low power states.
-> > The Windows behavior was probably useful to you in debugging, but I
-> > don't really care about these Windows details because I don't think
-> > they help us maintain this in the future.
-> OK.
-> >> Linux shouldn't assume root ports support D3 just because they're on a
-> >> machine newer than 2015, the ports should also be deemed power manageable.
-> >> Add an extra check explicitly for root ports to ensure D3 isn't selected
-> >> for them if they are not power-manageable through platform firmware.
-> > But I *would* like to know specifically what "power manageable" means
-> > here.  I might naively assume that a device with the PCI Power
-> > Management Capability is "power manageable", and that if PME_Support
-> > includes D3hot and D3cold, we're good to go.  But obviously it's more
-> > complicated than that, and I'd like to cite the spec that mentions the
-> > actual things we need here.
-> Power manageable through platform firmware means the device
-> has ACPI methods like like _PR0, _PS0.
-> >> Fixes: 9d26d3a8f1b0 ("PCI: Put PCIe ports into D3 during suspend")
-> >> Reported-by: Iain Lane <iain@orangesquash.org.uk>
-> >> Closes: https://forums.lenovo.com/t5/Ubuntu/Z13-can-t-resume-from-suspend-with-external-USB-keyboard/m-p/5217121
-> >> Acked-by: Rafael J. Wysocki <rafael@kernel.org>
-> >> Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-> >> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> >> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
-> >> ---
-> >> v4->v5:
-> >>   * Add tags
-> >>   * Fix title
-> >>   * Adjust commit message
-> >> v3->v4:
-> >>   * Move after refactor
-> >> ---
-> >>   drivers/pci/pci.c | 8 ++++++++
-> >>   1 file changed, 8 insertions(+)
-> >>
-> >> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> >> index d1fa040bcea7..d293db963327 100644
-> >> --- a/drivers/pci/pci.c
-> >> +++ b/drivers/pci/pci.c
-> >> @@ -3015,6 +3015,14 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
-> >>      if (dmi_check_system(bridge_d3_blacklist))
-> >>              return false;
-> >>
-> >> +    /*
-> >> +     * It's not safe to put root ports that don't support power
-> >> +     * management into D3.
-> > I assume "it's not safe" really means "Root Ports in D3hot/D3cold may
-> > not be able to signal PME interrupts unless ... <mumble> platform
-> > firmware <mumble> e.g., ACPI method <mumble> ..."
-> >
-> > Can we include some of those hints here?
->
-> I'm cautious about hardcoding logic used by
-> acpi_bus_get_power_flags() in a comment in case it changes.
->
-> How about:
->
-> "Root ports in D3 may not be able to reliably signal wakeup
-> events unless platform firmware signals power management
-> capabilities".
-
-I would rather write "unless then can be power-managed with the help
-of the platform firmware".
-
-The meaning of "signaling" is unclear in this context and even if it
-was clear, the platform firmware support actually needs to be used
-here, its mere existence is not sufficient AFAICS.
