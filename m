@@ -2,144 +2,140 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A282BC77B73
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Jun 2023 15:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECC06C7EE2F
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Jun 2023 15:13:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233103AbjFEPJM convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Jun 2023 11:09:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48184 "EHLO
+        id S233223AbjFEPNX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Jun 2023 11:13:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234356AbjFEPIs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jun 2023 11:08:48 -0400
-Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5FC7E8;
-        Mon,  5 Jun 2023 08:08:47 -0700 (PDT)
-Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-652d76be8c2so4031464b3a.3;
-        Mon, 05 Jun 2023 08:08:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1685977727; x=1688569727;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Aiwp/bDLmwSr5erFDhpBQgGpKXSsi00J2xGn70rauW0=;
-        b=i/t6YyMlsjxqkrnXcHZz40E0tIOs/MX1dkTUnkQFq3Whz5BuqPrf8MmlMlfTUTIeq5
-         GzgzH6ufZFkL8dUCo86PsKTMhdtrki3W8CWh6JmdrFxKh+Tmve4A9RrKYgXkelwFFRPV
-         05JQHomJITaILvFidLUhVK7fLCbtTe0jCbQn2D18vcqrn9LtD3qnMFy7xQnj/SGQESIT
-         G8ckZm8GVVpLogGt1Nf65lCfZQiUVroc/Muf6Stka0dTMEltCgABJ2/1eVehkOT406W0
-         t0sg41pWIQcd3sQMALvLyygMJUHjP2jtild2HauQlIty+Af4Q5VWE1v92N/a+TYQj82E
-         O9UQ==
-X-Gm-Message-State: AC+VfDz7JqZcupCyyg8bHRmkBkhgsw/iX7sW9c87/IEUK9eqWbOm2jvp
-        OCani0oj7Wb0BoANli1zgm5Jlxu5fkuFlQ==
-X-Google-Smtp-Source: ACHHUZ4MY6YnuUEHDcUmTbFEAZ6SSspWqZ1lBBkbZm3P116kLzJ54SkD8Rf/7C8YgiKfKUsZ330efg==
-X-Received: by 2002:a05:6a20:7490:b0:109:c161:a679 with SMTP id p16-20020a056a20749000b00109c161a679mr9141445pzd.19.1685977726567;
-        Mon, 05 Jun 2023 08:08:46 -0700 (PDT)
-Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com. [209.85.210.173])
-        by smtp.gmail.com with ESMTPSA id q16-20020a62e110000000b0063d29df1589sm5302851pfh.136.2023.06.05.08.08.46
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 05 Jun 2023 08:08:46 -0700 (PDT)
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-6532671ccc7so3740863b3a.2;
-        Mon, 05 Jun 2023 08:08:46 -0700 (PDT)
-X-Received: by 2002:a05:6870:3e4:b0:19e:86e4:55b0 with SMTP id
- h36-20020a05687003e400b0019e86e455b0mr54853oaf.1.1685977705560; Mon, 05 Jun
- 2023 08:08:25 -0700 (PDT)
+        with ESMTP id S233071AbjFEPNL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jun 2023 11:13:11 -0400
+Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam04on2070.outbound.protection.outlook.com [40.107.101.70])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0194CE8;
+        Mon,  5 Jun 2023 08:12:27 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=YYU8TQdtODqQI75lRA7JqdoIfFdnuioavtgCbyP7bzUoEwZB46Zj41B8wU1AGe1aL+yosczzA3ah3AKOjr3atPVQiwzpDy/oiQEOE1Bm4dgjZp/DxCGpWyM8I/1FgqLjteZSBj9uzOKXA8KGPNd5gel+Z5kyYzWM9VT92D0h3AU4q4G7bu/cybATYPV2TUQbg+Lm3u5wez962ANV/MkshqKtZCoRPlrdkEcexZmZng3wJfIn3YfRibMvxHb9jFtSXzvC8mkfH+CIl+LPMISg3RR1H7aC+qSoJ+RQvMVy3sFghoYBqGSxEq3tFH8Tt2yZa0akcKUvQpCiijuCWEdV/g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ChaQ9lNPtNyKNnZV71xB2tlKUgQQktowOWEwvfHQxDQ=;
+ b=iQEyaK5VEC/UQ2dmNZsjf5trCJ+94qJBa9+gZ+6O7QBuXWLYMBmiIJDmPYvW/TPbTqmjC8KFYxU0sGfP0D01UqngKWPCy/aLHDTfmKNJ4TTg1BYew5ZYh2VS8vqLlXOtTnXe55wzbaK6PdZWAyPAL2w4JKEsx9VUYFxlJ0qXkI49cHi2ScOD4LlEURE1pnUwol5CixTxCEyoxkZqM6zBqf4C71Iw3Xuz7UW/GTzq6KO5NE2oBdGwwuMksn6UY0MzEl3ClRRzNWSsEjXNGP1vBvrbfctfHxrAtaR6UI254HZ4nSS6AfaposJPVks2gRHdiwQMJOuf7sFsUVqN8URD7g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=linux.intel.com smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ChaQ9lNPtNyKNnZV71xB2tlKUgQQktowOWEwvfHQxDQ=;
+ b=z0ywWqvV1XamHcfFkKNoL12SZ3U/Dm4u+yJvIoJuuO6SzOzkRBf+bbrQjed5wLmPPtBL+5UPM5FaaFaZQY8aVqzFqcxvbBrDojWy0VGL9xfDLpgkfs0QEQf8954A3e+V7E1m1Scyur2NZ9RHXKJX6Uz7GmINJ03o34kivUzcuEA=
+Received: from BN0PR10CA0025.namprd10.prod.outlook.com (2603:10b6:408:143::22)
+ by LV3PR12MB9117.namprd12.prod.outlook.com (2603:10b6:408:195::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.32; Mon, 5 Jun
+ 2023 15:12:06 +0000
+Received: from BN8NAM11FT007.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:143:cafe::cc) by BN0PR10CA0025.outlook.office365.com
+ (2603:10b6:408:143::22) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.33 via Frontend
+ Transport; Mon, 5 Jun 2023 15:12:06 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ BN8NAM11FT007.mail.protection.outlook.com (10.13.177.109) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6455.33 via Frontend Transport; Mon, 5 Jun 2023 15:12:06 +0000
+Received: from SITE-L-T34-2.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Mon, 5 Jun
+ 2023 10:12:05 -0500
+From:   Mario Limonciello <mario.limonciello@amd.com>
+To:     Huang Rui <ray.huang@amd.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+CC:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Robert Moore <robert.moore@intel.com>,
+        <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devel@acpica.org>,
+        Gautham Ranjal Shenoy <gautham.shenoy@amd.com>,
+        "Wyes Karny" <Wyes.Karny@amd.com>, Perry Yuan <perry.yuan@amd.com>,
+        "Mario Limonciello" <mario.limonciello@amd.com>
+Subject: [PATCH 2/4] cpufreq: amd-pstate: Set a fallback policy based on preferred_profile
+Date:   Mon, 5 Jun 2023 10:11:31 -0500
+Message-ID: <20230605151133.2615-3-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230605151133.2615-1-mario.limonciello@amd.com>
+References: <20230605151133.2615-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
-References: <cover.1685692810.git.geert+renesas@glider.be>
-In-Reply-To: <cover.1685692810.git.geert+renesas@glider.be>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 5 Jun 2023 17:08:14 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXrgyWT=RtS6cuUP6sT-Ta9Oa4cU2kHP10ah-U50DOSsg@mail.gmail.com>
-Message-ID: <CAMuHMdXrgyWT=RtS6cuUP6sT-Ta9Oa4cU2kHP10ah-U50DOSsg@mail.gmail.com>
-Subject: Re: [PATCH v3 0/7] iopoll: Busy loop and timeout improvements + conversions
-To:     Geert Uytterhoeven <geert+renesas@glider.be>
-Cc:     Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Joerg Roedel <joro@8bytes.org>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Tomasz Figa <tomasz.figa@gmail.com>,
-        Sylwester Nawrocki <s.nawrocki@samsung.com>,
-        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        Dejin Zheng <zhengdejin5@gmail.com>,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Russell King <linux@armlinux.org.uk>,
-        John Stultz <jstultz@google.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Tony Lindgren <tony@atomide.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Tero Kristo <tero.kristo@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux.dev, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN8NAM11FT007:EE_|LV3PR12MB9117:EE_
+X-MS-Office365-Filtering-Correlation-Id: 50eba676-5bee-4bf9-ec79-08db65d739e3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: usBS75djn7c3byEiLIEfHBeOZ3Nj6jsAIc44AUFg4Nt1oWk50Trw3jjv3VihqXiBfPXAIW0AcB/y3nCv9B4VzKGCW9VkSE5ljnZe+WOCPsrUsBsn6oiILVgORG8CRjakX2t+/Wx0dxsBPCIUkqQ4TN4UqvOl6/lsh5j1RBW8LsB2Rz8GS8m/H1By+UUj3YhW/FGgF+egqT+Ez0HyZY7HK+t/SNz+Jbs90JxPxmplqsQJPPVymzEndXE+1iOBXSu5QhRrCa6xX0AcQRrMUtJBCGuo5ABsoPFhR8Et2Wt7HEtAlx/47qUbJr/2/OWoR3Kv1gyJl2Azn3q4kAwrB2Y3mfQzJI93iFCoOlS9xNCaZMOq97DblUSGu6DQ7Uokqgk65gcBoEKbd5R394JipGKl8nUKQ3Uip0rS0Nr8M0D5vzJ22v2oWcG/G9tmNW9CP04lDOoqxJ8CzZk/FAHbuBTmPQ/097HRvYc9F2BQ5WAJv1PawOvPUxvIXtks8PbH6kITAfmaBYTVUDPc18zTQ6UuGhAQwcPfmLu1mJss2hqobI5+8qVgY/0pHKw+Pzl+0EhoFGNm5QUtu3yLJruIAGk6mQbyC3fSp68FJtpLGcjxVbzVqIuB4nJ33u0AyzwdrQviD7FoLtlvlhkeV+9tN75XscNZ2ILVmLS2OE0WmhrIdMbCTV78LBIfqNVOlJ+pqCK1lURUE1nOra1rwYOrfqofelFumynr7sTHgtMV3XD41xTgIkdPp4/wbP0jH+mfTKG8qVvJK+b7AXCaI2PBgRaVXw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(376002)(39860400002)(396003)(346002)(136003)(451199021)(46966006)(40470700004)(36840700001)(70586007)(70206006)(2906002)(478600001)(316002)(4326008)(8936002)(8676002)(41300700001)(54906003)(110136005)(44832011)(5660300002)(6666004)(7696005)(40460700003)(1076003)(26005)(966005)(16526019)(82740400003)(356005)(2616005)(40480700001)(186003)(47076005)(83380400001)(426003)(336012)(81166007)(36860700001)(36756003)(82310400005)(86362001)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Jun 2023 15:12:06.6357
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 50eba676-5bee-4bf9-ec79-08db65d739e3
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT007.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9117
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jun 2, 2023 at 10:51 AM Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> When implementing a polling loop, a common review comment is to use one
-> of the read*_poll_timeout*() helpers.  Unfortunately this is not always
-> possible, or might introduce subtle bugs.  This patch series aims to
-> improve these helpers, so they can gain wider use.
->
->   1. The first patch improves busy-looping behavior of both the atomic
->      and non-atomic read*_poll_timeout*() helpers.
->      The issue addressed by this patch was discussed before[1-2], but I
->      am not aware of any patches moving forward.
->
->   2. The second patch fixes timeout handling of the atomic variants.
->      Some of the issues addressed by this patch were mitigated in
->      various places[3-5], and some of these findings may be of interest
->      to the authors of [6-8].
->
-> The first two patches were sent before, and already received some acks
-> and reviews.  I plan to queue these in an immutable and tagged branch
-> after the weekend, for consumption by myself, and by other interested
-> parties.
+If a user's configuration doesn't explicitly specify the cpufreq
+scaling governor then the code currently explicitly falls back to
+'powersave'. This default is fine for notebooks and desktops, but
+servers and undefined machines should default to 'performance'.
 
-FTR...
-The following changes since commit ac9a78681b921877518763ba0e89202254349d1b:
+Look at the 'preferred_profile' field from the FADT to set this
+policy accordingly.
 
-  Linux 6.4-rc1 (2023-05-07 13:34:35 -0700)
+Link: https://uefi.org/htmlspecs/ACPI_Spec_6_4_html/05_ACPI_Software_Programming_Model/ACPI_Software_Programming_Model.html#fixed-acpi-description-table-fadt
+Suggested-by: Wyes Karny <Wyes.Karny@amd.com>
+Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ drivers/cpufreq/amd-pstate.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
-tags/iopoll-busy-loop-timeout-tag
-
-for you to fetch changes up to 7349a69cf3125e92d48e442d9f400ba446fa314f:
-
-  iopoll: Do not use timekeeping in read_poll_timeout_atomic()
-(2023-06-05 15:35:27 +0200)
-
-----------------------------------------------------------------
-iopoll: Busy loop and timeout improvements
-
-----------------------------------------------------------------
-Geert Uytterhoeven (2):
-      iopoll: Call cpu_relax() in busy loops
-      iopoll: Do not use timekeeping in read_poll_timeout_atomic()
-
- include/linux/iopoll.h | 24 +++++++++++++++++++-----
- 1 file changed, 19 insertions(+), 5 deletions(-)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index ddd346a239e0..c9d296ebf81e 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -1102,10 +1102,13 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
+ 	policy->max = policy->cpuinfo.max_freq;
+ 
+ 	/*
+-	 * Set the policy to powersave to provide a valid fallback value in case
++	 * Set the policy to provide a valid fallback value in case
+ 	 * the default cpufreq governor is neither powersave nor performance.
+ 	 */
+-	policy->policy = CPUFREQ_POLICY_POWERSAVE;
++	if (acpi_pm_profile_server() || acpi_pm_profile_undefined())
++		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
++	else
++		policy->policy = CPUFREQ_POLICY_POWERSAVE;
+ 
+ 	if (boot_cpu_has(X86_FEATURE_CPPC)) {
+ 		ret = rdmsrl_on_cpu(cpudata->cpu, MSR_AMD_CPPC_REQ, &value);
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.34.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
