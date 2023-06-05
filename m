@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5270FC7EE24
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Jun 2023 16:30:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 182BAC7EE32
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Jun 2023 16:30:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232459AbjFEQ3n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Jun 2023 12:29:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43242 "EHLO
+        id S230326AbjFEQaA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Jun 2023 12:30:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230326AbjFEQ3m (ORCPT
+        with ESMTP id S232240AbjFEQ3m (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jun 2023 12:29:42 -0400
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAB6AD2;
-        Mon,  5 Jun 2023 09:29:41 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC136E6;
+        Mon,  5 Jun 2023 09:29:40 -0700 (PDT)
 Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 355EnxhX029435;
-        Mon, 5 Jun 2023 16:29:25 GMT
+        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 355DoNhJ027701;
+        Mon, 5 Jun 2023 16:29:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references; s=qcppdkim1;
- bh=Um0jXPmzfz8X6AlUexSS8hFBMbgin25gC7YTQI7fI5k=;
- b=OsJxfc/WiYkHAfJnLxEYhpiwai3dewUlK57T7ld2+ZLakcaBUNqYtn/MqilWE809ktcS
- Wejn2IvfaPaBmHI8Zx0ydvB9mzWIKHz/LU/PYjWnPXDNVrgAqJUyZPTM4XXIvqSTjWiZ
- JK1QBx3zssghSl+iNVi4WOjPvCf0Lq5oCl6OSx9w9NShsp+sMiBZH8Z0dU41+GhtX/fk
- aE+oyF2ZQi71qjAV0Hp8ja3lv4CTSZoWadVa2gmPjGHezb47PPxwwRMgbzKsHDaQ61ja
- 2HAU202rLbw2YpDWkw6Qhu0QUcEIw9oMOSDDCNgN4xHwdd2kERwVCHXTvJJKm1lwss9v Tw== 
+ bh=LoBnKgvysdT+V4O8hQXbPDYfeH3Q/JFfF53Y9lxzhxE=;
+ b=fX1sVB9qxAIWvl+dpBnBTQScHW1AzHLaXNF0Ufr4IVmbHg+P9LiRhDT3s4Z5Ai0jlFC7
+ x5etpnYdN+HVqiavLAcVsMP5saWFn/0AOGEwuyvgkqLemNBnHfnDFP32W7JnugMlOZVd
+ JHRBbQqsaxE7pHmqb8BgR5t2x8UULA1M2fE6Z3cyMt4xO/L0W0jtOn/5mVOs0RdU9Zzx
+ 66S0LAONmGLvG1QihGWLoyQt9/AuGWIS0ZewatoAgV4C2P6eHjblyH6SewLkOy7MqUgo
+ HYDQf0eP6ey6tapvAeyVKAJXxs8ipR8vg0XfiU6AZtFnA00/nZ6VdTbAtqaneKcBhe3h uQ== 
 Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3qyxtdm7js-1
+        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3qyxtdm7jq-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
         Mon, 05 Jun 2023 16:29:24 +0000
 Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-        by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 355GTLYO030415;
-        Mon, 5 Jun 2023 16:29:21 GMT
+        by APBLRPPMTA01.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 355GTK1k030367;
+        Mon, 5 Jun 2023 16:29:20 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 3qyxkkq42k-1;
-        Mon, 05 Jun 2023 16:29:21 +0000
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 3qyxkkq427-1;
+        Mon, 05 Jun 2023 16:29:20 +0000
 Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 355GTKB7030358;
-        Mon, 5 Jun 2023 16:29:21 GMT
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 355GTKB3030358;
+        Mon, 5 Jun 2023 16:29:20 GMT
 Received: from hu-sgudaval-hyd.qualcomm.com (hu-rohiagar-hyd.qualcomm.com [10.213.106.138])
-        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 355GTJrY030350;
-        Mon, 05 Jun 2023 16:29:21 +0000
+        by APBLRPPMTA01.qualcomm.com (PPS) with ESMTP id 355GTJrU030350;
+        Mon, 05 Jun 2023 16:29:20 +0000
 Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 3970568)
-        id 938A85F1F; Mon,  5 Jun 2023 21:59:20 +0530 (+0530)
+        id 51E0D5F1F; Mon,  5 Jun 2023 21:59:19 +0530 (+0530)
 From:   Rohit Agarwal <quic_rohiagar@quicinc.com>
 To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
         robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
@@ -54,9 +54,9 @@ Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, iommu@lists.linux.dev,
         Rohit Agarwal <quic_rohiagar@quicinc.com>
-Subject: [PATCH v2 09/10] arm64: dts: qcom: Enable the QUPv3 UART console for SDX75
-Date:   Mon,  5 Jun 2023 21:59:16 +0530
-Message-Id: <1685982557-28326-10-git-send-email-quic_rohiagar@quicinc.com>
+Subject: [PATCH v2 05/10] dt-bindings: cpufreq: cpufreq-qcom-hw: Add SDX75 compatible
+Date:   Mon,  5 Jun 2023 21:59:12 +0530
+Message-Id: <1685982557-28326-6-git-send-email-quic_rohiagar@quicinc.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1685982557-28326-1-git-send-email-quic_rohiagar@quicinc.com>
 References: <1685982557-28326-1-git-send-email-quic_rohiagar@quicinc.com>
@@ -64,13 +64,13 @@ X-QCInternal: smtphost
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: c0d7Rc81nBMCymIXBxjh4hJB0TviOA_x
-X-Proofpoint-ORIG-GUID: c0d7Rc81nBMCymIXBxjh4hJB0TviOA_x
+X-Proofpoint-GUID: Uvcd389TVAz9CkO5LWyEhC8GkeQrlpJ0
+X-Proofpoint-ORIG-GUID: Uvcd389TVAz9CkO5LWyEhC8GkeQrlpJ0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
  definitions=2023-06-05_31,2023-06-02_02,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- impostorscore=0 priorityscore=1501 mlxscore=0 mlxlogscore=727 bulkscore=0
+ impostorscore=0 priorityscore=1501 mlxscore=0 mlxlogscore=812 bulkscore=0
  adultscore=0 clxscore=1015 spamscore=0 phishscore=0 lowpriorityscore=0
  suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2304280000 definitions=main-2306050142
@@ -78,41 +78,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable the debug uart console for the SDX75 IDP board.
+Add compatible for EPSS CPUFREQ-HW on SDX75.
 
 Signed-off-by: Rohit Agarwal <quic_rohiagar@quicinc.com>
 ---
- arch/arm64/boot/dts/qcom/sdx75-idp.dts | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sdx75-idp.dts b/arch/arm64/boot/dts/qcom/sdx75-idp.dts
-index 1e08f25..cbe5cdf 100644
---- a/arch/arm64/boot/dts/qcom/sdx75-idp.dts
-+++ b/arch/arm64/boot/dts/qcom/sdx75-idp.dts
-@@ -11,8 +11,23 @@
- 	model = "Qualcomm Technologies, Inc. SDX75 IDP";
- 	compatible = "qcom,sdx75-idp", "qcom,sdx75";
- 
-+	aliases {
-+		serial0 = &uart1;
-+	};
-+};
-+
-+&chosen {
-+	stdout-path = "serial0:115200n8";
-+};
-+
-+&qupv3_id_0 {
-+	status = "okay";
- };
- 
- &tlmm {
- 	gpio-reserved-ranges = <110 6>;
- };
-+
-+&uart1 {
-+	status = "okay";
-+};
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+index a6b3bb8..866ed2d 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+@@ -36,6 +36,7 @@ properties:
+               - qcom,sa8775p-cpufreq-epss
+               - qcom,sc7280-cpufreq-epss
+               - qcom,sc8280xp-cpufreq-epss
++              - qcom,sdx75-cpufreq-epss
+               - qcom,sm6375-cpufreq-epss
+               - qcom,sm8250-cpufreq-epss
+               - qcom,sm8350-cpufreq-epss
 -- 
 2.7.4
 
