@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C15D7C77B7A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFDA4C7EE2C
 	for <linux-pm@archiver.kernel.org>; Tue,  6 Jun 2023 10:58:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235977AbjFFK6J convert rfc822-to-8bit (ORCPT
+        id S236041AbjFFK6K convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Jun 2023 06:58:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38766 "EHLO
+        Tue, 6 Jun 2023 06:58:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37902 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235908AbjFFK5Q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2023 06:57:16 -0400
+        with ESMTP id S235920AbjFFK5R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2023 06:57:17 -0400
 Received: from fd01.gateway.ufhost.com (fd01.gateway.ufhost.com [61.152.239.71])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5868E5D;
-        Tue,  6 Jun 2023 03:57:00 -0700 (PDT)
-Received: from EXMBX165.cuchost.com (unknown [175.102.18.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B9B6170C;
+        Tue,  6 Jun 2023 03:57:01 -0700 (PDT)
+Received: from EXMBX166.cuchost.com (unknown [175.102.18.54])
         (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-        (Client CN "EXMBX165", Issuer "EXMBX165" (not verified))
-        by fd01.gateway.ufhost.com (Postfix) with ESMTP id DCC6B80B6;
-        Tue,  6 Jun 2023 18:56:57 +0800 (CST)
-Received: from EXMBX067.cuchost.com (172.16.6.67) by EXMBX165.cuchost.com
- (172.16.6.75) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Tue, 6 Jun
- 2023 18:56:58 +0800
+        (Client CN "EXMBX166", Issuer "EXMBX166" (not verified))
+        by fd01.gateway.ufhost.com (Postfix) with ESMTP id 41B3781DC;
+        Tue,  6 Jun 2023 18:57:00 +0800 (CST)
+Received: from EXMBX067.cuchost.com (172.16.6.67) by EXMBX166.cuchost.com
+ (172.16.6.76) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Tue, 6 Jun
+ 2023 18:57:00 +0800
 Received: from localhost.localdomain (183.27.98.75) by EXMBX067.cuchost.com
  (172.16.6.67) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Tue, 6 Jun
- 2023 18:56:56 +0800
+ 2023 18:56:59 +0800
 From:   Mason Huo <mason.huo@starfivetech.com>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -40,10 +40,12 @@ CC:     Shengyu Qu <wiagn233@outlook.com>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-riscv@lists.infradead.org>,
         Mason Huo <mason.huo@starfivetech.com>
-Subject: [PATCH v4 0/3] Add JH7110 cpufreq support
-Date:   Tue, 6 Jun 2023 18:56:53 +0800
-Message-ID: <20230606105656.124355-1-mason.huo@starfivetech.com>
+Subject: [PATCH v4 3/3] riscv: dts: starfive: Add cpu scaling for JH7110 SoC
+Date:   Tue, 6 Jun 2023 18:56:56 +0800
+Message-ID: <20230606105656.124355-4-mason.huo@starfivetech.com>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230606105656.124355-1-mason.huo@starfivetech.com>
+References: <20230606105656.124355-1-mason.huo@starfivetech.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [183.27.98.75]
@@ -55,42 +57,111 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The StarFive JH7110 SoC has four RISC-V cores,
-and it supports up to 4 cpu frequency loads.
+Add the operating-points-v2 to support cpu scaling on StarFive JH7110 SoC.
+It supports up to 4 cpu frequency loads.
 
-This patchset adds the compatible strings into the allowlist
-for supporting the generic cpufreq driver on JH7110 SoC.
-Also, it enables the axp15060 pmic for the cpu power source.
-
-The series has been tested on the VisionFive 2 boards which
-are equipped with JH7110 SoC and axp15060 pmic.
-
+Signed-off-by: Mason Huo <mason.huo@starfivetech.com>
 ---
-This patchset is based on v6.4-rc4 with these patches applied:
-[1] ("regulator: Add X-Powers AXP15060/AXP313a PMIC support")
-    https://lore.kernel.org/lkml/20230524000012.15028-1-andre.przywara@arm.com/
-
-Changes since v3:
-- Fix the dtb_check issues for axp15060 pmic dts configuration.
-
-Changes since v2:
-- Fix the new blank line at EOF issue in dtsi.
-
-Changes since v1:
-- Fix dts node naming issues.
-- Move clock properties of cpu node from <board>.dtsi to <soc>.dtsi.
-- Follow the alphabetical order to place the cpufreq dt allowlist.
-
-Mason Huo (3):
-  riscv: dts: starfive: Enable axp15060 pmic for cpufreq
-  cpufreq: dt-platdev: Add JH7110 SOC to the allowlist
-  riscv: dts: starfive: Add cpu scaling for JH7110 SoC
-
- .../jh7110-starfive-visionfive-2.dtsi         | 33 +++++++++++++++++++
+ .../jh7110-starfive-visionfive-2.dtsi         | 16 +++++++++
  arch/riscv/boot/dts/starfive/jh7110.dtsi      | 33 +++++++++++++++++++
- drivers/cpufreq/cpufreq-dt-platdev.c          |  2 ++
- 3 files changed, 68 insertions(+)
+ 2 files changed, 49 insertions(+)
 
+diff --git a/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi b/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
+index 9714da5550d7..fa0061eb33a7 100644
+--- a/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
++++ b/arch/riscv/boot/dts/starfive/jh7110-starfive-visionfive-2.dtsi
+@@ -230,3 +230,19 @@ &uart0 {
+ 	pinctrl-0 = <&uart0_pins>;
+ 	status = "okay";
+ };
++
++&U74_1 {
++	cpu-supply = <&vdd_cpu>;
++};
++
++&U74_2 {
++	cpu-supply = <&vdd_cpu>;
++};
++
++&U74_3 {
++	cpu-supply = <&vdd_cpu>;
++};
++
++&U74_4 {
++	cpu-supply = <&vdd_cpu>;
++};
+diff --git a/arch/riscv/boot/dts/starfive/jh7110.dtsi b/arch/riscv/boot/dts/starfive/jh7110.dtsi
+index 4c5fdb905da8..7eef88d2cedb 100644
+--- a/arch/riscv/boot/dts/starfive/jh7110.dtsi
++++ b/arch/riscv/boot/dts/starfive/jh7110.dtsi
+@@ -53,6 +53,9 @@ U74_1: cpu@1 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
+ 
+ 			cpu1_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -79,6 +82,9 @@ U74_2: cpu@2 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
+ 
+ 			cpu2_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -105,6 +111,9 @@ U74_3: cpu@3 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
+ 
+ 			cpu3_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -131,6 +140,9 @@ U74_4: cpu@4 {
+ 			next-level-cache = <&ccache>;
+ 			riscv,isa = "rv64imafdc_zba_zbb";
+ 			tlb-split;
++			operating-points-v2 = <&cpu_opp>;
++			clocks = <&syscrg JH7110_SYSCLK_CPU_CORE>;
++			clock-names = "cpu";
+ 
+ 			cpu4_intc: interrupt-controller {
+ 				compatible = "riscv,cpu-intc";
+@@ -164,6 +176,27 @@ core4 {
+ 		};
+ 	};
+ 
++	cpu_opp: opp-table-0 {
++			compatible = "operating-points-v2";
++			opp-shared;
++			opp-375000000 {
++					opp-hz = /bits/ 64 <375000000>;
++					opp-microvolt = <800000>;
++			};
++			opp-500000000 {
++					opp-hz = /bits/ 64 <500000000>;
++					opp-microvolt = <800000>;
++			};
++			opp-750000000 {
++					opp-hz = /bits/ 64 <750000000>;
++					opp-microvolt = <800000>;
++			};
++			opp-1500000000 {
++					opp-hz = /bits/ 64 <1500000000>;
++					opp-microvolt = <1040000>;
++			};
++	};
++
+ 	gmac0_rgmii_rxin: gmac0-rgmii-rxin-clock {
+ 		compatible = "fixed-clock";
+ 		clock-output-names = "gmac0_rgmii_rxin";
 -- 
 2.39.2
 
