@@ -2,114 +2,125 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB553C7EE29
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 12:47:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C1D3C83005
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 12:48:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238604AbjFGMr6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Jun 2023 08:47:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55024 "EHLO
+        id S240941AbjFGMsC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Jun 2023 08:48:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240754AbjFGMr2 (ORCPT
+        with ESMTP id S241045AbjFGMr2 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 08:47:28 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C44F1FF9
-        for <linux-pm@vger.kernel.org>; Wed,  7 Jun 2023 05:47:15 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f505aace48so9204413e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 07 Jun 2023 05:47:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686142033; x=1688734033;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4b5Qrnd5i2zJnrU79sLpQmCBr/qGSSDn3CP8EHjD6U4=;
-        b=XpdKTgk1cDCNQQWTJx9Ik39EP7iB/XP9x8fLotqVKs5E477dudxeo7Fsr2smRNd8+T
-         xIYKUBjmq1dI7sWLCfrfhPLDSEoSUdIig2/ZWCafAOVvs9avBLCodWD/W6kc+9MNfo4Q
-         p5FaAOor/pyoO4fd1HWKz1rMMRIQil0+8oNeVFXaoAgEDtgyj0xtVjDjfJjcuHf3BEvb
-         nXZbmt3RkadgB8PHOSDl0q5p45JA+ZMqI+gSVLy9HwjIVlv+87yDk0vDIMsqkEQ+eD7E
-         5bPMSpYlkZXG8tibzBW8nrKec3MR+meotBXU985AI1YPcZ1rZfzCt6yOoGM8axVAApmC
-         0DHA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686142033; x=1688734033;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=4b5Qrnd5i2zJnrU79sLpQmCBr/qGSSDn3CP8EHjD6U4=;
-        b=D/r88lSxFwZjmM/1BumXGjTM+8a2hvQAUQg2CegT7pdsHReCuCOOCKODju5lbbzw/u
-         4F9Uyv4cRdv1wGbEF7mkCiVCjZe44AVcIObMUsu7Nlpdi5F2tcmtddZV8rC4mTHfhkQA
-         ZCLrzAlNY0LGLwNCFBSvA5EFzPOkRO5+nJf560xbI6gan4Us7QlGKQDx0fmFjuRWZSIh
-         8SdZlKElj2NllypF3MDbn5x4rMKq3Y9ItXgRhHoZiYjpwse8RoNiDHWlBVFK302ybFeK
-         KrIactOvh5uCSvl835aXcodGdJso60clxhEMO+YPYHWDzILnTU/vjAOgwbhQhWnsjMwz
-         5Nsg==
-X-Gm-Message-State: AC+VfDxopaMxn1X3eYieksxhRICqEw9wN15kD25SvBUS4EK4pIk4I+Bf
-        3lqWB2LYdtsQczhwiRO4XND5aA==
-X-Google-Smtp-Source: ACHHUZ45w/pMhCdOU/CVe1mplFe8QafWFzLTdhmjb+KE2CxVl3xwpMAAlcS0iGJO0TlLTV/h13ehaA==
-X-Received: by 2002:a19:6756:0:b0:4f6:47a2:7bb4 with SMTP id e22-20020a196756000000b004f647a27bb4mr133291lfj.60.1686142033767;
-        Wed, 07 Jun 2023 05:47:13 -0700 (PDT)
-Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id z7-20020a19f707000000b004f4b3e9e0cesm1781708lfe.297.2023.06.07.05.47.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jun 2023 05:47:13 -0700 (PDT)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     Sudeep Holla <sudeep.holla@arm.com>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 14/16] firmware: arm_scmi: Simplify error path in scmi_dvfs_device_opps_add()
-Date:   Wed,  7 Jun 2023 14:46:26 +0200
-Message-Id: <20230607124628.157465-15-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230607124628.157465-1-ulf.hansson@linaro.org>
-References: <20230607124628.157465-1-ulf.hansson@linaro.org>
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7FF482100;
+        Wed,  7 Jun 2023 05:47:16 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id CC44063EC7;
+        Wed,  7 Jun 2023 12:47:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F576C4339B;
+        Wed,  7 Jun 2023 12:47:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1686142035;
+        bh=yQwyPVuAGoNHQWOMctts7HBR5pbTnomidetU1VDq7mo=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=KY16ohuxDUXf8jhwatNYz+c9Rc4twpyKWnQ7ldIraz/oidrRhEkgKjDaCyV7fu+/D
+         hyPEXDLCndSEKQzmdg0sd7RtJsiVXZkKH9YZD/rZPdkgDjEfakY63lgFslkki2sVId
+         9aw42j6uL8oCpHNIXRMF+V8IaaIdwDSR9Lo2IhWB34MF3i5ImLcmOTYcFE8YqPxQZy
+         vs7oB2HoHfPekk9Wo0uu34t8cgoDOIABPz67CJlm5dSZc8w51ypbNJGMVTv0G8WUu1
+         ficc1osgWKt3z27CzmGiEUD/rWC+VhJRlyKTAeZUUWmkZq8ur2sbvHeLvycrfjH5AS
+         qC1hC1l2dB0UA==
+Date:   Wed, 7 Jun 2023 14:47:06 +0200
+From:   Christian Brauner <brauner@kernel.org>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Jens Axboe <axboe@kernel.dk>, Richard Weinberger <richard@nod.at>,
+        Josef Bacik <josef@toxicpanda.com>,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Coly Li <colyli@suse.de>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
+        linux-block@vger.kernel.org, linux-um@lists.infradead.org,
+        linux-scsi@vger.kernel.org, linux-bcache@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+        linux-btrfs@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net,
+        linux-nilfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 28/31] block: replace fmode_t with a block-specific type
+ for block open flags
+Message-ID: <20230607-bekannt-sonnig-c881b3228862@brauner>
+References: <20230606073950.225178-1-hch@lst.de>
+ <20230606073950.225178-29-hch@lst.de>
+ <20230607-kocht-kornfeld-a249c6740e38@brauner>
+ <20230607121658.GA13632@lst.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230607121658.GA13632@lst.de>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Let's simplify the code in scmi_dvfs_device_opps_add() by using
-dev_pm_opp_remove_all_dynamic() in its error path.
+On Wed, Jun 07, 2023 at 02:16:58PM +0200, Christoph Hellwig wrote:
+> On Wed, Jun 07, 2023 at 11:21:14AM +0200, Christian Brauner wrote:
+> > On Tue, Jun 06, 2023 at 09:39:47AM +0200, Christoph Hellwig wrote:
+> > > The only overlap between the block open flags mapped into the fmode_t and
+> > > other uses of fmode_t are FMODE_READ and FMODE_WRITE.  Define a new
+> > 
+> > and FMODE_EXCL afaict
+> 
+> FMODE_EXCL isn't used outside the block layer and removed in the last
+> patch.
+> 
+> > > +blk_mode_t file_to_blk_mode(struct file *file)
+> > > +{
+> > > +	blk_mode_t mode = 0;
+> > > +
+> > > +	if (file->f_mode & FMODE_READ)
+> > > +		mode |= BLK_OPEN_READ;
+> > > +	if (file->f_mode & FMODE_WRITE)
+> > > +		mode |= BLK_OPEN_WRITE;
+> > > +	if (file->f_mode & FMODE_EXCL)
+> > > +		mode |= BLK_OPEN_EXCL;
+> > > +	if ((file->f_flags & O_ACCMODE) == 3)
+> > 
+> > I really don't like magic numbers like this.
+> 
+> I don't like them either, but this is just moved around and not new.
+> 
+> > Groan, O_RDONLY being defined as 0 strikes again...
+> > Becuase of this quirk we internally map
+> > 
+> > O_RDONLY(0) -> FMODE_READ(1)
+> > O_WRONLY(1) -> FMODE_WRITE(2)
+> > O_RDWR(3)   -> (FMODE_READ | FMODE_WRITE)
+> 
+> O_RDWR is 2.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/firmware/arm_scmi/perf.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Yeah, that was a typo. See the other mail I sent right after:
+https://lore.kernel.org/all/20230607-kribbeln-dilettanten-b901b57dd962@brauner
 
-diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index 9c5340f590e4..03a496ccc603 100644
---- a/drivers/firmware/arm_scmi/perf.c
-+++ b/drivers/firmware/arm_scmi/perf.c
-@@ -585,23 +585,18 @@ static int scmi_dvfs_device_opps_add(const struct scmi_protocol_handle *ph,
- {
- 	int idx, ret;
- 	unsigned long freq;
--	struct scmi_opp *opp;
- 	struct perf_dom_info *dom;
- 	struct scmi_perf_info *pi = ph->get_priv(ph);
- 
- 	dom = pi->dom_info + domain;
- 
--	for (opp = dom->opp, idx = 0; idx < dom->opp_count; idx++, opp++) {
--		freq = opp->perf * dom->mult_factor;
-+	for (idx = 0; idx < dom->opp_count; idx++) {
-+		freq = dom->opp[idx].perf * dom->mult_factor;
- 
- 		ret = dev_pm_opp_add(dev, freq, 0);
- 		if (ret) {
- 			dev_warn(dev, "failed to add opp %luHz\n", freq);
--
--			while (idx-- > 0) {
--				freq = (--opp)->perf * dom->mult_factor;
--				dev_pm_opp_remove(dev, freq);
--			}
-+			dev_pm_opp_remove_all_dynamic(dev);
- 			return ret;
- 		}
- 	}
--- 
-2.34.1
+> 
+> > so checking for the raw 3 here is confusing in addition to being a magic
+> > number as it could give the impression that what's checked here is
+> > (O_WRONLY | O_RDWR) which doesn't make sense...
+> 
+> Well, that is exactly what we check for.  This is a 30-ish year old
+> quirk only used in the floppy driver.
 
+Ugh, it's f_flags. I misread that as f_mode...
+
+This is rather ugly. Then please, make it explicit and check for
+== (O_WRONLY | O_RDWR) and leave a brief comment.
+
+Anything's better than that raw 3 in there. We just had fun with
+figuring out why there was a raw coredump in fs/coredump.c 30 years
+later.
