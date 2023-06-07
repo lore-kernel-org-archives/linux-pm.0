@@ -2,42 +2,62 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EED54C8300C
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 10:48:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32065C7EE29
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 11:09:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239714AbjFGKsd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Jun 2023 06:48:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57856 "EHLO
+        id S239378AbjFGLJ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Jun 2023 07:09:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239378AbjFGKs2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 06:48:28 -0400
-Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53C691BEC;
-        Wed,  7 Jun 2023 03:48:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kernkonzept.com; s=mx1; h=Cc:To:In-Reply-To:References:Message-Id:
-        Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:
-        Reply-To:Content-ID:Content-Description;
-        bh=m/m3GNG5btyZLcdgz7M/oh1QiNI+Caj/wVSUN2s9dRs=; b=OqGEw6wmJukeS+Z1mPVvx5f4Uf
-        1xLmwq2No+M4uLGmFiepO42WJoqYcLzT3f4DV2Ji4ybkPN7dUn6uuuNf26J2QDjvG+JQDl30ivTK0
-        s7y71haYbFzVRou/aioAH9DCusO0HNet5w8QbkRbP4LbasoZtvIYSTk+bYobUjFHWLJRVuuZujXXT
-        VQk4TylNTeOP3WRebJiPcu8o68lKiB5pe5xxexgV40eOPTr75zRIYc9jT5VZi7KrFjaY4hsnKisAJ
-        s2X+r5K340LgMB5P7DrrS9Riyc7KLWmP7D6RPG5MHeuXugkZzCSvWikR+0NlECbyIS4HQAqy5dHv3
-        WZ5ek/Bw==;
-Received: from [10.22.3.24] (helo=serv1.dd1.int.kernkonzept.com)
-        by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.94.2)
-        id 1q6qi5-0069NL-SA; Wed, 07 Jun 2023 12:48:13 +0200
-From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-Date:   Wed, 07 Jun 2023 12:47:48 +0200
-Subject: [PATCH v5 5/6] dt-bindings: thermal: qcom-tsens: Add MSM8909
- compatible
+        with ESMTP id S240198AbjFGLJU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 07:09:20 -0400
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBC0C10FB
+        for <linux-pm@vger.kernel.org>; Wed,  7 Jun 2023 04:08:55 -0700 (PDT)
+Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-4f6148f9679so6662979e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 07 Jun 2023 04:08:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1686136131; x=1688728131;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=5KFnEHxnHsY5ORT5+vCk7re0Z/SbzSvLlr7u70HouNM=;
+        b=mYSSEIwoK0ohHCQN7sWH+G63YxZ9c6gvfwTapMO8sZ5t1PhYpZ34LUwboM+lXoTPNJ
+         2HDuiMgM9IJmHaJRIOLGTWptYTCvfmdu843n9KwZBw9c+I3/VMhw4IAebsUbcWSH6fvH
+         fvO/9WdCXHv1/8g5vMrtpDdATQYClGKY2aWnHF5XzH9CftipP6lHV4zhniHJ/X395IFp
+         1/g3cfeJtkZb73uu/9Jr75T/UyEEgjZDdkuu2PW1egQuLDCstB7DmKqSg82EIAAK4+sq
+         4EDXk6EEpVVkMKazN8ZJupHFTNCistQDm9XYXmrTW1gPcA9Z9d8WNTpC5C2VDt6CxC89
+         zjnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686136131; x=1688728131;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=5KFnEHxnHsY5ORT5+vCk7re0Z/SbzSvLlr7u70HouNM=;
+        b=Lphu1Z0hfrMIF06xj0tsLM9tVRHHx3IlJhVH4n/J3fX3GP2r/3NqIMSn6VSjUjb4NX
+         UD00p28AvI9caxDVHck6KQ/cPL3W+npbeINcXYFZ2YpJedF+T90DblhdDkLicrSuyF5/
+         XYb1+oJSYZZe+rk2dsJrc3bJkz/g+NZOK28obB3L2BquCrhYHH+gON0Bg2ac5UDn5MJA
+         igITy/7Bs/XBKfplvAFwZDjAh8YbVR/B1waEjYJ9llrV4nZtCe/7vNho5mFZfunzCrsm
+         5eLCj8o/eX8cvyVqSvrRGLcEK5MS+pq0bcDxLn16Se4WCHx7tPYPNDIfeiY6VjHdMNEd
+         jWag==
+X-Gm-Message-State: AC+VfDzqhbETEFjYWU+zWkhbkPzrgPLQck5BPEfS9xAZhyEE2/mpKNi+
+        m4sEg/5McvBVszdgpST/hNbWzQ==
+X-Google-Smtp-Source: ACHHUZ5FU7gfJqgR6Bbf9okouulqzQ/fg4hH+NUBnT1B9xe4An7hHPqqYOoHE38MR8eh9M7iMp8TFw==
+X-Received: by 2002:ac2:52b4:0:b0:4f2:5d38:2c37 with SMTP id r20-20020ac252b4000000b004f25d382c37mr2204352lfm.15.1686136130920;
+        Wed, 07 Jun 2023 04:08:50 -0700 (PDT)
+Received: from ?IPV6:2001:14ba:a0db:1f00::8a5? (dzdqv0yyyyyyyyyyybcwt-3.rev.dnainternet.fi. [2001:14ba:a0db:1f00::8a5])
+        by smtp.gmail.com with ESMTPSA id b17-20020ac247f1000000b004f139712835sm1778576lfp.293.2023.06.07.04.08.48
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 07 Jun 2023 04:08:50 -0700 (PDT)
+Message-ID: <8e5e7bc4-1767-8179-b6ac-f09ac0b5361d@linaro.org>
+Date:   Wed, 7 Jun 2023 14:08:47 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230508-msm8909-tsens-v5-5-5eb632235ba7@kernkonzept.com>
-References: <20230508-msm8909-tsens-v5-0-5eb632235ba7@kernkonzept.com>
-In-Reply-To: <20230508-msm8909-tsens-v5-0-5eb632235ba7@kernkonzept.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: [PATCH v5 1/6] thermal: qcom: tsens: Drop unused legacy structs
+Content-Language: en-GB
+To:     Stephan Gerhold <stephan.gerhold@kernkonzept.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Amit Kucheria <amitk@kernel.org>,
         Thara Gopinath <thara.gopinath@gmail.com>,
         Andy Gross <agross@kernel.org>,
@@ -45,42 +65,41 @@ Cc:     Amit Kucheria <amitk@kernel.org>,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-X-Mailer: b4 0.12.2
+        Stephan Gerhold <stephan@gerhold.net>
+References: <20230508-msm8909-tsens-v5-0-5eb632235ba7@kernkonzept.com>
+ <20230508-msm8909-tsens-v5-1-5eb632235ba7@kernkonzept.com>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+In-Reply-To: <20230508-msm8909-tsens-v5-1-5eb632235ba7@kernkonzept.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MSM8909 uses the TSENS v0.1 block similar to other SoCs like MDM9607.
-Document the "qcom,msm8909-tsens" compatible in the existing schema.
+On 07/06/2023 13:47, Stephan Gerhold wrote:
+> The old single-cell parsing code was removed for MSM8939, MDM9607 and
+> MSM8976 but for some reason the structs defining the bit positions etc
+> were kept around (unused). Drop them now.
+> 
+> Cc: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> Fixes: 51d78b8b1beb ("thermal/drivers/tsens: Drop single-cell code for mdm9607")
+> Fixes: dfadb4599ab0 ("thermal/drivers/tsens: Drop single-cell code for msm8939")
+> Fixes: 3a908971f7cb ("thermal/drivers/tsens: Drop single-cell code for msm8976/msm8956")
+> Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+> Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+> ---
+>   drivers/thermal/qcom/tsens-v0_1.c | 36 ------------------------------------
+>   drivers/thermal/qcom/tsens-v1.c   | 22 ----------------------
+>   2 files changed, 58 deletions(-)
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
----
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 8cc9488686d7..f95aae81ba69 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -30,6 +30,7 @@ properties:
-           - enum:
-               - qcom,mdm9607-tsens
-               - qcom,msm8226-tsens
-+              - qcom,msm8909-tsens
-               - qcom,msm8916-tsens
-               - qcom,msm8939-tsens
-               - qcom,msm8974-tsens
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 
 -- 
-2.30.2
+With best wishes
+Dmitry
 
