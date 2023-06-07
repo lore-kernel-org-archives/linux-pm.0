@@ -2,76 +2,164 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE9F5C77B7A
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 09:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64286C7EE2F
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 10:48:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239435AbjFGJ7E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Jun 2023 05:59:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37544 "EHLO
+        id S238595AbjFGKsN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Jun 2023 06:48:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57558 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234789AbjFGJ7D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 05:59:03 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C83221BC3;
-        Wed,  7 Jun 2023 02:59:00 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BA853AB6;
-        Wed,  7 Jun 2023 02:59:45 -0700 (PDT)
-Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BE3E13F587;
-        Wed,  7 Jun 2023 02:58:58 -0700 (PDT)
-Date:   Wed, 7 Jun 2023 10:58:56 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Beata Michalska <beata.michalska@arm.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, catalin.marinas@arm.com,
-        mark.rutland@arm.com, will@kernel.org, rafael@kernel.org,
-        viresh.kumar@linaro.org, ionela.voinescu@arm.com,
-        sumitg@nvidia.com, Sudeep Holla <sudeep.holla@arm.com>,
-        yang@os.amperecomputing.com
-Subject: Re: [PATCH] arm64: Provide an AMU-based version of
- arch_freq_get_on_cpu
-Message-ID: <20230607095856.7nyv7vzuehceudnl@bogus>
-References: <20230606155754.245998-1-beata.michalska@arm.com>
+        with ESMTP id S235733AbjFGKsI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 06:48:08 -0400
+Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 544FFAA;
+        Wed,  7 Jun 2023 03:48:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=kernkonzept.com; s=mx1; h=Cc:To:In-Reply-To:References:Message-Id:
+        Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:
+        Reply-To:Content-ID:Content-Description;
+        bh=xA/WZLvijjFlvE45qCUeYVjUps02xc70J/Efe21HAXk=; b=HTcCDKcGZGiK1VyddVWVgfFT5A
+        0zj4yoN1aO27dms6nz1tUKCOTRS/okXhjRRFD5aqXWzvG+qkUXX023hvWbUKYTCbXENRhYA6XyehT
+        CDjeaAu9tUDS7OPZbOV63PAOew1umvfY742tsZFOkyIMe/1Y6tkvTxjGYCCFKVDqJ/VZGhn2iPhnG
+        2eVmLmlI/0bFxNLvzK5HAdbd8JS8Y7gtIsa4MnhMJdwGfDmnwWrD9Kc5kaRObi/V3VMoALarrpQ+8
+        mEyKnTmivvqZaDIKuqRhMXODO9WEwLSjPiKwixn+Sn5na224yELupdX6+r+pJX8mA+A/opcJ7yaHm
+        Au4GaddA==;
+Received: from [10.22.3.24] (helo=serv1.dd1.int.kernkonzept.com)
+        by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.94.2)
+        id 1q6qhp-0069NL-AJ; Wed, 07 Jun 2023 12:47:57 +0200
+From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+Date:   Wed, 07 Jun 2023 12:47:44 +0200
+Subject: [PATCH v5 1/6] thermal: qcom: tsens: Drop unused legacy structs
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230606155754.245998-1-beata.michalska@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230508-msm8909-tsens-v5-1-5eb632235ba7@kernkonzept.com>
+References: <20230508-msm8909-tsens-v5-0-5eb632235ba7@kernkonzept.com>
+In-Reply-To: <20230508-msm8909-tsens-v5-0-5eb632235ba7@kernkonzept.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+X-Mailer: b4 0.12.2
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jun 06, 2023 at 04:57:54PM +0100, Beata Michalska wrote:
-> With the Frequency Invariance Engine (FIE) being already wired up with
-> sched tick and making use of relevant (core counter and constant
-> counter) AMU counters, getting the current frequency for a given CPU
-> on supported platforms, can be achieved by utilizing the frequency scale
-> factor which reflects an average CPU frequency for the last tick period
-> length.
-> 
-> With that at hand, arch_freq_get_on_cpu dedicated implementation
-> gets enrolled into cpuinfo_cur_freq policy sysfs attribute handler,
-> which is expected to represent the current frequency of a given CPU,
-> as obtained by the hardware. This is exactly the type of feedback that
-> cycle counters provide.
-> 
-> In order to avoid calling arch_freq_get_on_cpu from the scaling_cur_freq
-> attribute handler for platforms that do provide cpuinfo_cur_freq, and
-> yet keeping things intact for those platform that do not, its use gets
-> conditioned on the presence of cpufreq_driver (*get) callback (which also
-> seems to be the case for creating cpuinfo_cur_freq attribute).
->
+The old single-cell parsing code was removed for MSM8939, MDM9607 and
+MSM8976 but for some reason the structs defining the bit positions etc
+were kept around (unused). Drop them now.
 
-LGTM,
+Cc: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Fixes: 51d78b8b1beb ("thermal/drivers/tsens: Drop single-cell code for mdm9607")
+Fixes: dfadb4599ab0 ("thermal/drivers/tsens: Drop single-cell code for msm8939")
+Fixes: 3a908971f7cb ("thermal/drivers/tsens: Drop single-cell code for msm8976/msm8956")
+Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+Signed-off-by: Stephan Gerhold <stephan.gerhold@kernkonzept.com>
+---
+ drivers/thermal/qcom/tsens-v0_1.c | 36 ------------------------------------
+ drivers/thermal/qcom/tsens-v1.c   | 22 ----------------------
+ 2 files changed, 58 deletions(-)
 
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
-
-However I fail to understand if both the changes are dependent ?
-Can this be split into 2 patches ? I fail to see the dependency, what
-am I missing ? Even if there is some dependency to get arch value
-(arch_freq_get_on_cpu() from show_cpuinfo_cur_freq()), you can push
-that change first followed by the arm64 change as 2 different change.
+diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
+index ad57ab94546b..a65f58264122 100644
+--- a/drivers/thermal/qcom/tsens-v0_1.c
++++ b/drivers/thermal/qcom/tsens-v0_1.c
+@@ -39,26 +39,6 @@ struct tsens_legacy_calibration_format tsens_8916_nvmem = {
+ 	},
+ };
+ 
+-struct tsens_legacy_calibration_format tsens_8939_nvmem = {
+-	.base_len = 8,
+-	.base_shift = 2,
+-	.sp_len = 6,
+-	.mode = { 12, 0 },
+-	.invalid = { 12, 2 },
+-	.base = { { 0, 0 }, { 1, 24 } },
+-	.sp = {
+-		{ { 12, 3 },  { 12, 9 } },
+-		{ { 12, 15 }, { 12, 21 } },
+-		{ { 12, 27 }, { 13, 1 } },
+-		{ { 13, 7 },  { 13, 13 } },
+-		{ { 13, 19 }, { 13, 25 } },
+-		{ { 0, 8 },   { 0, 14 } },
+-		{ { 0, 20 },  { 0, 26 } },
+-		{ { 1, 0 },   { 1, 6 } },
+-		{ { 1, 12 },  { 1, 18 } },
+-	},
+-};
+-
+ struct tsens_legacy_calibration_format tsens_8974_nvmem = {
+ 	.base_len = 8,
+ 	.base_shift = 2,
+@@ -103,22 +83,6 @@ struct tsens_legacy_calibration_format tsens_8974_backup_nvmem = {
+ 	},
+ };
+ 
+-struct tsens_legacy_calibration_format tsens_9607_nvmem = {
+-	.base_len = 8,
+-	.base_shift = 2,
+-	.sp_len = 6,
+-	.mode = { 2, 20 },
+-	.invalid = { 2, 22 },
+-	.base = { { 0, 0 }, { 2, 12 } },
+-	.sp = {
+-		{ { 0, 8 },  { 0, 14 } },
+-		{ { 0, 20 }, { 0, 26 } },
+-		{ { 1, 0 },  { 1, 6 } },
+-		{ { 1, 12 }, { 1, 18 } },
+-		{ { 2, 0 },  { 2, 6 } },
+-	},
+-};
+-
+ static int calibrate_8916(struct tsens_priv *priv)
+ {
+ 	u32 p1[5], p2[5];
+diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+index b822a426066d..51322430f1fe 100644
+--- a/drivers/thermal/qcom/tsens-v1.c
++++ b/drivers/thermal/qcom/tsens-v1.c
+@@ -42,28 +42,6 @@ struct tsens_legacy_calibration_format tsens_qcs404_nvmem = {
+ 	},
+ };
+ 
+-struct tsens_legacy_calibration_format tsens_8976_nvmem = {
+-	.base_len = 8,
+-	.base_shift = 2,
+-	.sp_len = 6,
+-	.mode = { 4, 0 },
+-	.invalid = { 4, 2 },
+-	.base = { { 0, 0 }, { 2, 8 } },
+-	.sp = {
+-		{ { 0, 8 },  { 0, 14 } },
+-		{ { 0, 20 }, { 0, 26 } },
+-		{ { 1, 0 },  { 1, 6 } },
+-		{ { 1, 12 }, { 1, 18 } },
+-		{ { 2, 8 },  { 2, 14 } },
+-		{ { 2, 20 }, { 2, 26 } },
+-		{ { 3, 0 },  { 3, 6 } },
+-		{ { 3, 12 }, { 3, 18 } },
+-		{ { 4, 2 },  { 4, 9 } },
+-		{ { 4, 14 }, { 4, 21 } },
+-		{ { 4, 26 }, { 5, 1 } },
+-	},
+-};
+-
+ static int calibrate_v1(struct tsens_priv *priv)
+ {
+ 	u32 p1[10], p2[10];
 
 -- 
-Regards,
-Sudeep
+2.30.2
+
