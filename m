@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4CA5C7EE2F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 052BDC83005
 	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 12:47:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241030AbjFGMrb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Jun 2023 08:47:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54466 "EHLO
+        id S235852AbjFGMra (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Jun 2023 08:47:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54652 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239432AbjFGMrY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 08:47:24 -0400
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 818221BE5
-        for <linux-pm@vger.kernel.org>; Wed,  7 Jun 2023 05:47:08 -0700 (PDT)
-Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-4f4b384c09fso8859631e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 07 Jun 2023 05:47:08 -0700 (PDT)
+        with ESMTP id S235396AbjFGMrJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 08:47:09 -0400
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC4821BD6
+        for <linux-pm@vger.kernel.org>; Wed,  7 Jun 2023 05:47:06 -0700 (PDT)
+Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-4f60a27c4a2so8475902e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 07 Jun 2023 05:47:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686142028; x=1688734028;
+        d=linaro.org; s=google; t=1686142025; x=1688734025;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=W/gi1wYyuTGyxRPCnXy/W6dl0ztApfjNz5N46Tr334c=;
-        b=iAk48snIpP5FAUcrOXKzaso2EfYDoBqaGWM3B8Qdt+hejNMFNiyGWiUY7ipuqdhcIG
-         YkRLuIzAv35XMuOwamJpKqrl8yKzF7KvysKf8JPh3nYZ2AUeWurkxIAYvk40xMRLw1Py
-         r/N02dBKTh2IPq5oDDSKk+8nakTeTFMVBBS5LnpjxlojC/1YvyBV73zW1ur7QkC162oo
-         PlyMV34cjVQ11mvjWMdfYjItPVRo9di3kX2R/ee3FSob0LVlZpyBLuMqInEotACmxtiC
-         IzY5yfSEQ3WodR5SirsXRXi4fWLkxZPObgIMk9GOCHyKy3xWZ5HdN5pwG2IBh7udVHQP
-         abTg==
+        bh=vlN3puumXl98HZqEEgwOfFzKMHFxb3yG/jJp+Fhyp4M=;
+        b=tihrD1ZPx4XtIuP6jos1gyNcy2O0ErgPJVg/oRr6QlGzYhr1sZvo3Krr8HWxufoB/E
+         bu7nG1I0VZvuCE+eR24HJzgCQ8hJZtgDAbKYUi22oGBxxCgAfu6MDHgvC0IzcNc113JD
+         qj8We12FvXAT/7HGoEJDnySZYh6Iz9IwnULfOtkaSQGXdeQhBa23Tu9M87g9yqB+rENU
+         i9uQ2pmFqnHO5Fzpc+Z+X4EEUCtNPGxLfM62w4dYrPIPFsCw4vEmxdUmT8lKMuNwzj/9
+         aDEBU6zFJdzpRQIgzsAbgtK0Joj4Y1jqc/sUuOGi71H+F9XJuu9mBIVz24Cu0iO7xVkZ
+         FxkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686142028; x=1688734028;
+        d=1e100.net; s=20221208; t=1686142025; x=1688734025;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=W/gi1wYyuTGyxRPCnXy/W6dl0ztApfjNz5N46Tr334c=;
-        b=eOU5kBfQ6NnLR3ch82D1pQSa4CUXahF7a0WfUO+detNI63UtH/rQEyeJft8nv+L3nk
-         CAJRakIqAGFBxvhQfv+uIfNsW+dqyMVqm3GNqUiAB4cZ68Qk0duMm4KEtJ/KAkNFqW7D
-         LKfUPi5RhTw84rG2YtpmVg/GC0Ih5Rc2IZxY4pl/OmUTWJq/F0qvJkThbSPqZ8n23GBg
-         lmonPOlalcDZxPQ+xTi/2tDQzxuQqfPJfd3Le0FePCqkwPsEWLzMKzeVgG7fD6hDr+74
-         5kaLNVju4ZdUJYlvzQ9GtI2qX/+JmA9RrVJ+JYDoeXaPGPcTo45d6VotCfg15VMmIX3k
-         qecw==
-X-Gm-Message-State: AC+VfDyPiC4/FbfquQta+tf76yFvyATQLZqzog/KfEgi6PTQG37Uij99
-        vm1KIdE1Z8Khd/+leqwiXgaZFj1kbYPGzaFY5ZQ=
-X-Google-Smtp-Source: ACHHUZ6bmAujPPGUaE0p6wW6yTU2QtF+4D5UiiKNAqQSVwwLLD5tdqR7H3fNEKvFf2vmeP/ZqqmnYQ==
-X-Received: by 2002:ac2:59db:0:b0:4f3:aa29:b672 with SMTP id x27-20020ac259db000000b004f3aa29b672mr2008947lfn.30.1686142028046;
-        Wed, 07 Jun 2023 05:47:08 -0700 (PDT)
+        bh=vlN3puumXl98HZqEEgwOfFzKMHFxb3yG/jJp+Fhyp4M=;
+        b=eJY+2SmoqhyLFBkgW0A8rqEJaQ6PGexmpBe/FU5jTp3UbJo/9Z6vXm+9uLzfh7rud3
+         LsOzMZEuU7goXJ7bRHC1NFAwisa6ZqBFiRK2nguZSstTrBNHqoyfd8NS6orCbJ5ApeJd
+         bcVvlOUbbpjaaKq992YUIthS3BC3ju6oOG+8678OP/20o7oID3cg6g+EgZmMKHah0fXl
+         LbAvdpJN75LxBdWhDp9P5q32CVFciztIKBTL8xAal/jRwYWUSqDbPJuVtN8Ys1+zOy/U
+         4Q4HyQRDmJsgFfVsNnWdaV01JTbqaN/cmZxFfY6AkcDw8udxOENiRE7XuNKHi9A50DDv
+         Ui7g==
+X-Gm-Message-State: AC+VfDwX+DmJbxDWLwg6vsQ+ugXNKf1eaOs69fbs5ozV57MBB+JOq5Mo
+        kv/UlnbvNoxsPuBLr8DjHjoqShbu45yx2142WUA=
+X-Google-Smtp-Source: ACHHUZ6v8QXNHYkt2lFcE9klDUW8Xlnt5LZgbqYnNRFBjulymMuINKZ/K7uEZW1MgCAieIjxBaO4NA==
+X-Received: by 2002:a19:7402:0:b0:4f6:3677:552 with SMTP id v2-20020a197402000000b004f636770552mr1747794lfe.38.1686142025090;
+        Wed, 07 Jun 2023 05:47:05 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id z7-20020a19f707000000b004f4b3e9e0cesm1781708lfe.297.2023.06.07.05.47.06
+        by smtp.gmail.com with ESMTPSA id z7-20020a19f707000000b004f4b3e9e0cesm1781708lfe.297.2023.06.07.05.47.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jun 2023 05:47:07 -0700 (PDT)
+        Wed, 07 Jun 2023 05:47:04 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -59,9 +59,9 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 10/16] firmware: arm_scmi: Add the SCMI performance domain
-Date:   Wed,  7 Jun 2023 14:46:22 +0200
-Message-Id: <20230607124628.157465-11-ulf.hansson@linaro.org>
+Subject: [PATCH 08/16] PM: domains: Allow genpd providers to manage OPP tables directly by its FW
+Date:   Wed,  7 Jun 2023 14:46:20 +0200
+Message-Id: <20230607124628.157465-9-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230607124628.157465-1-ulf.hansson@linaro.org>
 References: <20230607124628.157465-1-ulf.hansson@linaro.org>
@@ -71,222 +71,96 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To enable support for performance scaling (DVFS) for generic devices with
-the SCMI performance protocol, let's add an SCMI performance domain. This
-is being modelled as a genpd provider, with support for performance scaling
-through genpd's ->set_performance_state() callback.
-
-Note that, this adds the initial support that allows consumer drivers for
-attached devices, to vote for a new performance state via calling the
-dev_pm_genpd_set_performance_state(). However, this should be avoided as
-it's in most cases preferred to use the OPP library to vote for a new OPP
-instead. The support using the OPP library is implemented from subsequent
-changes.
+In some cases the OPP tables aren't specified in device tree, but rather
+encoded in the FW. To allow a genpd provider to specify them dynamically
+instead, let's add a new genpd flag, GENPD_FLAG_OPP_TABLE_FW.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/arm_scmi/Kconfig            |  12 ++
- drivers/firmware/arm_scmi/Makefile           |   1 +
- drivers/firmware/arm_scmi/scmi_perf_domain.c | 155 +++++++++++++++++++
- 3 files changed, 168 insertions(+)
- create mode 100644 drivers/firmware/arm_scmi/scmi_perf_domain.c
+ drivers/base/power/domain.c | 11 ++++++-----
+ include/linux/pm_domain.h   |  5 +++++
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/firmware/arm_scmi/Kconfig b/drivers/firmware/arm_scmi/Kconfig
-index ea0f5083ac47..706d1264d038 100644
---- a/drivers/firmware/arm_scmi/Kconfig
-+++ b/drivers/firmware/arm_scmi/Kconfig
-@@ -181,6 +181,18 @@ config ARM_SCMI_POWER_DOMAIN
- 	  will be called scmi_pm_domain. Note this may needed early in boot
- 	  before rootfs may be available.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 32084e38b73d..cb35c040216a 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -130,6 +130,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+ #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+ #define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
+ #define genpd_is_rpm_always_on(genpd)	(genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
++#define genpd_is_opp_table_fw(genpd)	(genpd->flags & GENPD_FLAG_OPP_TABLE_FW)
  
-+config ARM_SCMI_PERF_DOMAIN
-+	tristate "SCMI performance domain driver"
-+	depends on ARM_SCMI_PROTOCOL || (COMPILE_TEST && OF)
-+	default y
-+	select PM_GENERIC_DOMAINS if PM
-+	help
-+	  This enables support for the SCMI performance domains which can be
-+	  enabled or disabled via the SCP firmware.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called scmi_perf_domain.
-+
- config ARM_SCMI_POWER_CONTROL
- 	tristate "SCMI system power control driver"
- 	depends on ARM_SCMI_PROTOCOL || (COMPILE_TEST && OF)
-diff --git a/drivers/firmware/arm_scmi/Makefile b/drivers/firmware/arm_scmi/Makefile
-index b31d78fa66cc..afee66a65dcb 100644
---- a/drivers/firmware/arm_scmi/Makefile
-+++ b/drivers/firmware/arm_scmi/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-core.o
- obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-module.o
+ static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
+ 		const struct generic_pm_domain *genpd)
+@@ -2328,7 +2329,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ 	genpd->dev.of_node = np;
  
- obj-$(CONFIG_ARM_SCMI_POWER_DOMAIN) += scmi_pm_domain.o
-+obj-$(CONFIG_ARM_SCMI_PERF_DOMAIN) += scmi_perf_domain.o
- obj-$(CONFIG_ARM_SCMI_POWER_CONTROL) += scmi_power_control.o
+ 	/* Parse genpd OPP table */
+-	if (genpd->set_performance_state) {
++	if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 		ret = dev_pm_opp_of_add_table(&genpd->dev);
+ 		if (ret)
+ 			return dev_err_probe(&genpd->dev, ret, "Failed to add OPP table\n");
+@@ -2343,7 +2344,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
  
- ifeq ($(CONFIG_THUMB2_KERNEL)$(CONFIG_CC_IS_CLANG),yy)
-diff --git a/drivers/firmware/arm_scmi/scmi_perf_domain.c b/drivers/firmware/arm_scmi/scmi_perf_domain.c
-new file mode 100644
-index 000000000000..9be90a7d94de
---- /dev/null
-+++ b/drivers/firmware/arm_scmi/scmi_perf_domain.c
-@@ -0,0 +1,155 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * SCMI performance domain support.
+ 	ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
+ 	if (ret) {
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			dev_pm_opp_put_opp_table(genpd->opp_table);
+ 			dev_pm_opp_of_remove_table(&genpd->dev);
+ 		}
+@@ -2387,7 +2388,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 		genpd->dev.of_node = np;
+ 
+ 		/* Parse genpd OPP table */
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			ret = dev_pm_opp_of_add_table_indexed(&genpd->dev, i);
+ 			if (ret) {
+ 				dev_err_probe(&genpd->dev, ret,
+@@ -2423,7 +2424,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 		genpd->provider = NULL;
+ 		genpd->has_provider = false;
+ 
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			dev_pm_opp_put_opp_table(genpd->opp_table);
+ 			dev_pm_opp_of_remove_table(&genpd->dev);
+ 		}
+@@ -2455,7 +2456,7 @@ void of_genpd_del_provider(struct device_node *np)
+ 				if (gpd->provider == &np->fwnode) {
+ 					gpd->has_provider = false;
+ 
+-					if (!gpd->set_performance_state)
++					if (genpd_is_opp_table_fw(gpd) || !gpd->set_performance_state)
+ 						continue;
+ 
+ 					dev_pm_opp_put_opp_table(gpd->opp_table);
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index f776fb93eaa0..05ad8cefdff1 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -61,6 +61,10 @@
+  * GENPD_FLAG_MIN_RESIDENCY:	Enable the genpd governor to consider its
+  *				components' next wakeup when determining the
+  *				optimal idle state.
 + *
-+ * Copyright (C) 2023 Linaro Ltd.
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/pm_domain.h>
-+#include <linux/scmi_protocol.h>
-+#include <linux/slab.h>
-+
-+struct scmi_perf_domain {
-+	struct generic_pm_domain genpd;
-+	const struct scmi_perf_proto_ops *perf_ops;
-+	const struct scmi_protocol_handle *ph;
-+	u32 domain_id;
-+	bool can_level_set;
-+};
-+
-+#define to_scmi_pd(pd) container_of(pd, struct scmi_perf_domain, genpd)
-+
-+static int
-+scmi_pd_set_perf_state(struct generic_pm_domain *genpd, unsigned int state)
-+{
-+	struct scmi_perf_domain *pd = to_scmi_pd(genpd);
-+	int ret;
-+
-+	if (!pd->can_level_set)
-+		return 0;
-+
-+	ret = pd->perf_ops->level_set(pd->ph, pd->domain_id, state, true);
-+	if (ret)
-+		dev_warn(&genpd->dev, "Failed with %d when trying to set %d perf level",
-+			 ret, state);
-+
-+	return ret;
-+}
-+
-+static int scmi_perf_domain_probe(struct scmi_device *sdev)
-+{
-+	struct device *dev = &sdev->dev;
-+	const struct scmi_handle *handle = sdev->handle;
-+	const struct scmi_perf_proto_ops *perf_ops;
-+	struct scmi_protocol_handle *ph;
-+	struct scmi_perf_domain *scmi_pd;
-+	struct genpd_onecell_data *scmi_pd_data;
-+	struct generic_pm_domain **domains;
-+	int num_domains, i, ret = 0;
-+	u32 perf_level;
-+
-+	if (!handle)
-+		return -ENODEV;
-+
-+	/* The OF node must specify us as a power-domain provider. */
-+	if (!of_find_property(dev->of_node, "#power-domain-cells", NULL))
-+		return 0;
-+
-+	perf_ops = handle->devm_protocol_get(sdev, SCMI_PROTOCOL_PERF, &ph);
-+	if (IS_ERR(perf_ops))
-+		return PTR_ERR(perf_ops);
-+
-+	num_domains = perf_ops->num_domains_get(ph);
-+	if (num_domains < 0) {
-+		dev_warn(dev, "Failed with %d when getting num perf domains\n",
-+			 num_domains);
-+		return num_domains;
-+	} else if (!num_domains) {
-+		return 0;
-+	}
-+
-+	scmi_pd = devm_kcalloc(dev, num_domains, sizeof(*scmi_pd), GFP_KERNEL);
-+	if (!scmi_pd)
-+		return -ENOMEM;
-+
-+	scmi_pd_data = devm_kzalloc(dev, sizeof(*scmi_pd_data), GFP_KERNEL);
-+	if (!scmi_pd_data)
-+		return -ENOMEM;
-+
-+	domains = devm_kcalloc(dev, num_domains, sizeof(*domains), GFP_KERNEL);
-+	if (!domains)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num_domains; i++, scmi_pd++) {
-+		scmi_pd->domain_id = i;
-+		scmi_pd->perf_ops = perf_ops;
-+		scmi_pd->ph = ph;
-+		scmi_pd->can_level_set = perf_ops->can_level_set(ph, i);
-+
-+		scmi_pd->genpd.name = perf_ops->name_get(ph, i);
-+		scmi_pd->genpd.flags = GENPD_FLAG_OPP_TABLE_FW;
-+		scmi_pd->genpd.set_performance_state = scmi_pd_set_perf_state;
-+
-+		ret = perf_ops->level_get(ph, i, &perf_level, false);
-+		if (ret) {
-+			dev_dbg(dev, "Failed to get perf level for %s",
-+				 scmi_pd->genpd.name);
-+			perf_level = 0;
-+		}
-+
-+		/* Let the perf level indicate the power-state too. */
-+		ret = pm_genpd_init(&scmi_pd->genpd, NULL, perf_level == 0);
-+		if (ret)
-+			goto err;
-+
-+		domains[i] = &scmi_pd->genpd;
-+	}
-+
-+	scmi_pd_data->domains = domains;
-+	scmi_pd_data->num_domains = num_domains;
-+
-+	ret = of_genpd_add_provider_onecell(dev->of_node, scmi_pd_data);
-+	if (ret)
-+		goto err;
-+
-+	dev_set_drvdata(dev, scmi_pd_data);
-+	dev_info(dev, "Initialized %d performance domains", num_domains);
-+	return 0;
-+err:
-+	for (i--; i >= 0; i--)
-+		pm_genpd_remove(domains[i]);
-+	return ret;
-+}
-+
-+static void scmi_perf_domain_remove(struct scmi_device *sdev)
-+{
-+	struct device *dev = &sdev->dev;
-+	struct genpd_onecell_data *scmi_pd_data = dev_get_drvdata(dev);
-+	int i;
-+
-+	of_genpd_del_provider(dev->of_node);
-+
-+	for (i = 0; i < scmi_pd_data->num_domains; i++)
-+		pm_genpd_remove(scmi_pd_data->domains[i]);
-+}
-+
-+static const struct scmi_device_id scmi_id_table[] = {
-+	{ SCMI_PROTOCOL_PERF, "perf" },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(scmi, scmi_id_table);
-+
-+static struct scmi_driver scmi_perf_domain_driver = {
-+	.name		= "scmi-perf-domain",
-+	.probe		= scmi_perf_domain_probe,
-+	.remove		= scmi_perf_domain_remove,
-+	.id_table	= scmi_id_table,
-+};
-+module_scmi_driver(scmi_perf_domain_driver);
-+
-+MODULE_AUTHOR("Ulf Hansson <ulf.hansson@linaro.org>");
-+MODULE_DESCRIPTION("ARM SCMI perf domain driver");
-+MODULE_LICENSE("GPL v2");
++ * GENPD_FLAG_OPP_TABLE_FW:	The genpd provider supports performance states,
++ *				but its corresponding OPP tables are not
++ *				described in DT, but are given directly by FW.
+  */
+ #define GENPD_FLAG_PM_CLK	 (1U << 0)
+ #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
+@@ -69,6 +73,7 @@
+ #define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
+ #define GENPD_FLAG_RPM_ALWAYS_ON (1U << 5)
+ #define GENPD_FLAG_MIN_RESIDENCY (1U << 6)
++#define GENPD_FLAG_OPP_TABLE_FW	 (1U << 7)
+ 
+ enum gpd_status {
+ 	GENPD_STATE_ON = 0,	/* PM domain is on */
 -- 
 2.34.1
 
