@@ -2,120 +2,76 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 125B5C83005
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 08:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3086BC77B7A
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jun 2023 08:56:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238663AbjFGIzf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Jun 2023 04:55:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51334 "EHLO
+        id S239690AbjFGI4t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Jun 2023 04:56:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54118 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239817AbjFGIzM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 04:55:12 -0400
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F30141BF0;
-        Wed,  7 Jun 2023 01:54:31 -0700 (PDT)
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3575gEMh002502;
-        Wed, 7 Jun 2023 08:53:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=qcppdkim1;
- bh=f8BSLcZS6gE6MlN/hm9NJ0drd2r7we/IP56QRsmdf9M=;
- b=KO/2LiVOf/8L9y3yP4eR6Py6s2mbN0w0aAzTM1aZAT/uuNlTbFolYPzcni5L/iy9xEFT
- LT0iLyc+Fn2SGKNcRHKJjcye7YC5gxK6d0IUyljwTI4xIwnryZqgPdCNPvfiSIGviP/W
- Yd5EwMYf6FIRI44d0p0MllPbil6EclOuUpNWw3TbPN4hQ+qhxCUUAQcXH3HqxuycN8ow
- d16tQEZuQomvhmD+QM44rUpE8ogFSeYZ4Cj3s5vQMtv/UKwhUxTsbUTrUXHB4W+Udo9/
- ZXrnDJls81G4wt0eiN8nXaXYwn0KZL5CF8dSzDWfCboCCPZudZKLxB48AqvSXwfN6rgh XQ== 
-Received: from nasanppmta02.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3r2a719dtq-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 07 Jun 2023 08:53:37 +0000
-Received: from nasanex01a.na.qualcomm.com (nasanex01a.na.qualcomm.com [10.52.223.231])
-        by NASANPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 3578raKm003114
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 7 Jun 2023 08:53:36 GMT
-Received: from varda-linux.qualcomm.com (10.80.80.8) by
- nasanex01a.na.qualcomm.com (10.52.223.231) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.42; Wed, 7 Jun 2023 01:53:30 -0700
-From:   Varadarajan Narayanan <quic_varada@quicinc.com>
-To:     <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <amitk@kernel.org>,
-        <thara.gopinath@gmail.com>, <rafael@kernel.org>,
-        <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
-        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <conor+dt@kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     Varadarajan Narayanan <quic_varada@quicinc.com>,
-        Praveenkumar I <quic_ipkumar@quicinc.com>
-Subject: [PATCH v6 2/3] arm64: dts: qcom: ipq9574: add tsens node
-Date:   Wed, 7 Jun 2023 14:23:09 +0530
-Message-ID: <00fa16039db78dcb919bd15444bbf86ff3a340d6.1686125196.git.quic_varada@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <cover.1686125196.git.quic_varada@quicinc.com>
-References: <cover.1686125196.git.quic_varada@quicinc.com>
+        with ESMTP id S239687AbjFGI4S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2023 04:56:18 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 560041FCF;
+        Wed,  7 Jun 2023 01:55:29 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id E57A761D25;
+        Wed,  7 Jun 2023 08:55:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6A3BC433EF;
+        Wed,  7 Jun 2023 08:55:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1686128128;
+        bh=FoyjSRZZap6QVtk4PUjAg/56aVYmk7Q/bKSVf+qsCpE=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=lbLPSEzx5CHmJxbGbMCZtSL+WOgA+Ir+19+KzebHBOcStdriYooqRFCT5Z85L5SBQ
+         26HQ8bhocu6wvemqw13N0fGcVjMBRXTDOwCQLDmfzOEmX7ULrDVKcbEwQ6RgCJokv1
+         LwwrPIPH7Dy4Dqq3Z1/wJFPI+nCdq9XhVYQv9lER7EKMRobBVVmCazkd0VI6FPwQYd
+         0aqANlbYbCCg4IAbUW/09Y1bmFZmnmzbyNy0/ajwIsz0dA7ufP/Yer8+FEBJ0alkmD
+         C7h1CsWGU6uOFwKET7Igjn6D9mKWpSspjotrIzNqf/5Wvwq23wfp2KPy2h5RhLAsAf
+         pjxzISbJRmiew==
+Date:   Wed, 7 Jun 2023 10:55:20 +0200
+From:   Christian Brauner <brauner@kernel.org>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Jens Axboe <axboe@kernel.dk>, Richard Weinberger <richard@nod.at>,
+        Josef Bacik <josef@toxicpanda.com>,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Coly Li <colyli@suse.de>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
+        linux-block@vger.kernel.org, linux-um@lists.infradead.org,
+        linux-scsi@vger.kernel.org, linux-bcache@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+        linux-btrfs@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net,
+        linux-nilfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 17/31] block: add a sb_open_mode helper
+Message-ID: <20230607-ballverlust-notstand-c4f9b36c6af4@brauner>
+References: <20230606073950.225178-1-hch@lst.de>
+ <20230606073950.225178-18-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nasanex01a.na.qualcomm.com (10.52.223.231)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: 2gUqDi2SPIeDjuJS_rgjgsMsej-wOQUO
-X-Proofpoint-ORIG-GUID: 2gUqDi2SPIeDjuJS_rgjgsMsej-wOQUO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-07_06,2023-06-06_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- impostorscore=0 bulkscore=0 phishscore=0 spamscore=0 adultscore=0
- priorityscore=1501 mlxlogscore=906 suspectscore=0 malwarescore=0
- clxscore=1015 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306070072
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230606073950.225178-18-hch@lst.de>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IPQ9574 has a tsens v2.3.1 peripheral which monitors temperatures
-around the various subsystems on the die.
+On Tue, Jun 06, 2023 at 09:39:36AM +0200, Christoph Hellwig wrote:
+> Add a helper to return the open flags for blkdev_get_by* for passed in
+> super block flags instead of open coding the logic in many places.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Co-developed-by: Praveenkumar I <quic_ipkumar@quicinc.com>
-Signed-off-by: Praveenkumar I <quic_ipkumar@quicinc.com>
-Signed-off-by: Varadarajan Narayanan <quic_varada@quicinc.com>
----
-[v6]:
-	Remove comments from tsens node
-[v5]:
-	Pad "reg" address value to 8 digits
-
-[v2]:
-	Add "qcom,ipq8074-tsens" as fallback compatible
----
- arch/arm64/boot/dts/qcom/ipq9574.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/qcom/ipq9574.dtsi b/arch/arm64/boot/dts/qcom/ipq9574.dtsi
-index 0baeb10..a436bf2 100644
---- a/arch/arm64/boot/dts/qcom/ipq9574.dtsi
-+++ b/arch/arm64/boot/dts/qcom/ipq9574.dtsi
-@@ -206,6 +206,16 @@
- 			#size-cells = <1>;
- 		};
- 
-+		tsens: thermal-sensor@4a9000 {
-+			compatible = "qcom,ipq9574-tsens", "qcom,ipq8074-tsens";
-+			reg = <0x004a9000 0x1000>,
-+			      <0x004a8000 0x1000>;
-+			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "combined";
-+			#qcom,sensors = <16>;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		tlmm: pinctrl@1000000 {
- 			compatible = "qcom,ipq9574-tlmm";
- 			reg = <0x01000000 0x300000>;
--- 
-2.7.4
-
+Looks good to me,
+Acked-by: Christian Brauner <brauner@kernel.org>
