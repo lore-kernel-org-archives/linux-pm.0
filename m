@@ -2,88 +2,131 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAACAC7EE45
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 16:50:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF9BAC7EE23
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 17:19:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235685AbjFHQuN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Jun 2023 12:50:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59250 "EHLO
+        id S236984AbjFHRTq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Jun 2023 13:19:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44794 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237023AbjFHQt4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 12:49:56 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 780561FFA;
-        Thu,  8 Jun 2023 09:49:51 -0700 (PDT)
+        with ESMTP id S236934AbjFHRTo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 13:19:44 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65A762733;
+        Thu,  8 Jun 2023 10:19:40 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 06EDE64F78;
-        Thu,  8 Jun 2023 16:49:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 336F9C433D2;
-        Thu,  8 Jun 2023 16:49:47 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id D19ED64FCD;
+        Thu,  8 Jun 2023 17:19:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DFDFC433EF;
+        Thu,  8 Jun 2023 17:19:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1686242990;
-        bh=3ekp8A+Jx8UMxm6h0EHMSByRFgboVvf7rSt82JDLZjc=;
+        s=k20201202; t=1686244779;
+        bh=jVlKyMFufGCHlZkmMNuunClFNKP+T7ofi0jXzgtrTD0=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=c883ILcA2qpCKMGLCoX0/KSUxb+Y3s8fa/N2Iz0EXZlNjoPrGx6CJI7VrvUU9n05z
-         UGhZ4c02+/vEARbd2aLyOfNQZzX82HdlukfNKZFs0zRPMoF6MbmvoLKG7US/lhPOmL
-         aceQz/xc+l923q7iYdmTn9IhACBg52PDulL7FekxvLpIA25Z+YFXMwnpdtOdemkAN0
-         LzCAzYs4gDMH33+rJV6mdZL+NPhtCxHLribA1hgDTUfuGk9Ql1JkgEwmEJjJ+K2seX
-         UVxe3BD0LirD9O78mj2T4h6VKHMYjJxxiRHV0mwtn14DZmrzAXTxwrMHfJaGmUPDjb
-         hkY9UeXSLhRZQ==
-Date:   Thu, 8 Jun 2023 17:49:45 +0100
-From:   Conor Dooley <conor@kernel.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Claudiu Beznea <claudiu.beznea@microchip.com>,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com,
-        sre@kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 3/4] dt-bindings: power: reset: atmel,sama5d2-shdwc:
- convert to yaml
-Message-ID: <20230608-tiptop-unfold-66c4b8f4e620@spud>
-References: <20230524123528.439082-1-claudiu.beznea@microchip.com>
- <20230524123528.439082-4-claudiu.beznea@microchip.com>
- <20230524-blizzard-hunting-4da815e634e2@spud>
- <20230607204351.GA3984668-robh@kernel.org>
- <20230607-refute-acrobat-3b3f645da71b@spud>
- <CAL_JsqLyLs3Vfsd8LRd5_dUbzjE9LgMNnWa+8uP88Ab+E1oLfw@mail.gmail.com>
+        b=doce8hIRJB6dZQNaJxkYXuCr8PvIPHT5XfQXwRvtsRKUrt6mSENxR9smISl9Qts37
+         YoWdffdY0CRrwSqxAoYTby1eMN2kKHmepYtgzCU5z/5wXxH7FsvqCmH3lbZ3hP7C/+
+         DtBDFV7iKL7sa3qqtytcNN74IuWeIvED0beA2QQ0pED0JECCcne+y9MIOWPa2D6zEf
+         SJg+T/ZOJvm7kjhWCnvvxkWZFB7GbU+9nTqa+kYhFM+CY1q+PJse7qam2riRrUVyMX
+         6k82RPM+ce7LT8A7fR0fFK0plbvuS+DQg7YrsnFMwFLOHSPEC4bfIkPja/ixTE/y4U
+         twSDGNiDululA==
+Date:   Thu, 8 Jun 2023 18:19:32 +0100
+From:   Lee Jones <lee@kernel.org>
+To:     Jakob Hauser <jahau@rocketmail.com>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Beomho Seo <beomho.seo@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Raymond Hackley <raymondhackley@protonmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Axel Lin <axel.lin@ingics.com>,
+        ChiYuan Huang <cy_huang@richtek.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Henrik Grimler <henrik@grimler.se>,
+        Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: [PATCH v6 00/10 RESEND] Add RT5033 charger device driver
+Message-ID: <20230608171932.GG3572061@google.com>
+References: <cover.1684182964.git.jahau.ref@rocketmail.com>
+ <cover.1684182964.git.jahau@rocketmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="3OP8EDElDDSK71VF"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAL_JsqLyLs3Vfsd8LRd5_dUbzjE9LgMNnWa+8uP88Ab+E1oLfw@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1684182964.git.jahau@rocketmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Mon, 15 May 2023, Jakob Hauser wrote:
 
---3OP8EDElDDSK71VF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> This patchset adds the charger driver "rt5033-charger". It is part of the
+> multifunction device rt5033. The patchset is based on an older version by
+> Beomho Seo of March 2015. For more information on the history and setup of
+> the patchset see the cover sheet of version v1, there is a link further down
+> below the changelog.
+> 
+> RESEND: Sorry for spamming. The first try of sending v6 got interrupted and
+> was split into two threads on the lore list. Therefore sending it again.
+> 
+> Changes in v6:
+>  - Patch 5: In function rt5033_charger_probe() after
+>    calling rt5033_charger_dt_init() replaced the return value from "-ENODEV"
+>    to "PTR_ERR(charger->chg)", as suggested by Christophe.
+>  - Patch 9: Changed the patch from adding "power-supplies: true" to replacing
+>    "additionalProperties: false" by "unevaluatedProperties: false", as
+>    suggested by Krzysztof.
+> 
+> v1: https://lore.kernel.org/linux-pm/cover.1677620677.git.jahau@rocketmail.com/T/#t
+> v2: https://lore.kernel.org/linux-pm/cover.1681646904.git.jahau@rocketmail.com/T/#t
+> v3: https://lore.kernel.org/linux-pm/cover.1682636929.git.jahau@rocketmail.com/T/#t
+> v4: https://lore.kernel.org/linux-pm/20230506155435.3005-1-jahau@rocketmail.com/T/#t
+> v5: https://lore.kernel.org/linux-pm/20230514123130.41172-1-jahau@rocketmail.com/T/#t
+> 
+> The result of the patchset v6 can be seen at:
+> https://github.com/Jakko3/linux/blob/rt5033-charger_v6/drivers/power/supply/rt5033_charger.c
+> 
+> Jakob Hauser (9):
+>   mfd: rt5033: Fix chip revision readout
+>   mfd: rt5033: Fix STAT_MASK, HZ_MASK and AICR defines
+>   mfd: rt5033: Apply preparatory changes before adding rt5033-charger
+>     driver
+>   power: supply: rt5033_charger: Add RT5033 charger device driver
+>   power: supply: rt5033_charger: Add cable detection and USB OTG supply
+>   power: supply: rt5033_battery: Move struct rt5033_battery to battery
+>     driver
+>   power: supply: rt5033_battery: Adopt status property from charger
+>   dt-bindings: power: supply: rt5033-battery: Apply
+>     unevaluatedProperties
+>   dt-bindings: Add rt5033 mfd, regulator and charger
+> 
+> Stephan Gerhold (1):
+>   mfd: rt5033: Drop rt5033-battery sub-device
+> 
+>  .../bindings/mfd/richtek,rt5033.yaml          | 138 ++++
+>  .../power/supply/richtek,rt5033-battery.yaml  |   2 +-
+>  .../power/supply/richtek,rt5033-charger.yaml  |  65 ++
+>  drivers/mfd/rt5033.c                          |   8 +-
+>  drivers/power/supply/Kconfig                  |   8 +
+>  drivers/power/supply/Makefile                 |   1 +
+>  drivers/power/supply/rt5033_battery.c         |  38 +-
+>  drivers/power/supply/rt5033_charger.c         | 744 ++++++++++++++++++
+>  include/linux/mfd/rt5033-private.h            |  64 +-
+>  include/linux/mfd/rt5033.h                    |  24 -
+>  10 files changed, 1034 insertions(+), 58 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/richtek,rt5033.yaml
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/richtek,rt5033-charger.yaml
+>  create mode 100644 drivers/power/supply/rt5033_charger.c
 
-On Thu, Jun 08, 2023 at 08:38:10AM -0600, Rob Herring wrote:
+All applied.  Sent for build testing.
 
-> For reference, anything done by Arm, Linaro or NVIDIA employees is
-> okay to relicense to dual license.
+I'll follow-up with a PR soon.
 
-Ah cool, that's good to know, thanks.
-Perhaps I should try to get a similar edict issued for Microchip ones.
-@Nicolas, does that sound reasonable?
-
-Cheers,
-Conor.
-
---3OP8EDElDDSK71VF
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZIIGqQAKCRB4tDGHoIJi
-0pR8AP9d4cw6E/ufo8t618IGZahirOpz4CHysPhwG5LPV9YlqgD9Fb+VtXbxG+YU
-VTaH0RxhkUyE9w4emQ+vy5uI4J+1wgs=
-=MS3R
------END PGP SIGNATURE-----
-
---3OP8EDElDDSK71VF--
+-- 
+Lee Jones [李琼斯]
