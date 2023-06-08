@@ -2,32 +2,32 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85099C7EE23
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 11:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F5C3C87FDC
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 11:07:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236172AbjFHLHc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Jun 2023 07:07:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36444 "EHLO
+        id S236231AbjFHLHd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Jun 2023 07:07:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35860 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236223AbjFHLGV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 07:06:21 -0400
+        with ESMTP id S236123AbjFHLGX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 07:06:23 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99CE53A9E;
-        Thu,  8 Jun 2023 04:04:45 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCE1F3AAA;
+        Thu,  8 Jun 2023 04:04:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=JnEZBxpd2iUKCnqrsQaQGHDIV4p1RmH878R1N81xJjM=; b=pZ4XF2/n72/mbO31WhivxrLYcu
-        GtcTZrvrcpfAq+MGkxTLX6EdYUwdNWG0BVsKgYkpmt+Pdx3x11RwyB83sUHEqcNRgwPnnMQhCGxh6
-        C2DN6rU83Vt3I5R63x2hLwDyR7cDnisqMKEk+Q7xLJOAjWb+LKKoGzenqaJ57Kpur8Ah+d6+if95o
-        t6bjwLRmidGwAwvV8YRm3AHc/ZQw88GrdrHoJ0VW53P//sRM/RdwkxBlzhVYwkrkk1MqGRb1ULkA4
-        NP3QLqCZIzrDqdRTk+2hifhAxMkkNRKiQhVF4xFYRIRSMW7tLDDqCT92VpqEBJwsydxibafYKTtXO
-        4XtUc0NQ==;
+        bh=d1qoGjkPozWQoERQWNO6oRm0vDiGAX9ruSKuYqYCTmk=; b=UBhwv6q5nwz6kIVHHUvGdge5x1
+        LN4p34WeIV4Xtu0tQLYdNoagvbxLEVlibfWS6Z8JoEXQJFYWnQDx9vi4dLFZYXlo2iSndo43uia8K
+        41YZnXLq4w0t9F1He0XGIdH8JIU2qaKY+Q12n2eTboggepOqy1af7u3SZ1Nz2UCa5x1ao9TjYwhHL
+        U4Nylniu61uWgkxg/RcG6hJOkIQCiW/0tRzPTkYt58gH65GKRL+gtI+Nmqtx8eWH9TBKrU7A6WA/Y
+        kF5WLY+PnO3X6CIjCM/m9E6lHA4vBST9YnPdPDqomL2/noHfHhw30VMExNOY6Tj20ZzVa4BVsJqUS
+        L5T6ftGQ==;
 Received: from 2a02-8389-2341-5b80-39d3-4735-9a3c-88d8.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:39d3:4735:9a3c:88d8] helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1q7DRF-0092vE-2z;
-        Thu, 08 Jun 2023 11:04:22 +0000
+        id 1q7DRK-0092zc-2h;
+        Thu, 08 Jun 2023 11:04:27 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
 Cc:     Richard Weinberger <richard@nod.at>,
@@ -51,9 +51,9 @@ Cc:     Richard Weinberger <richard@nod.at>,
         linux-f2fs-devel@lists.sourceforge.net,
         linux-nilfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
         linux-pm@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: [PATCH 28/30] block: always use I_BDEV on file->f_mapping->host to find the bdev
-Date:   Thu,  8 Jun 2023 13:02:56 +0200
-Message-Id: <20230608110258.189493-29-hch@lst.de>
+Subject: [PATCH 30/30] fs: remove the now unused FMODE_* flags
+Date:   Thu,  8 Jun 2023 13:02:58 +0200
+Message-Id: <20230608110258.189493-31-hch@lst.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230608110258.189493-1-hch@lst.de>
 References: <20230608110258.189493-1-hch@lst.de>
@@ -64,94 +64,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Always use I_BDEV(file->f_mapping->host) to find the bdev for a file to
-free up file->private_data for other uses.
+FMODE_NDELAY, FMODE_EXCL and FMODE_WRITE_IOCTL were only used for
+block internal purposed and are now entirely unused, so remove them.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Reviewed-by: Hannes Reinecke <hare@suse.de>
-Acked-by: Christian Brauner <brauner@kernel.org>
+Reviewed-by: Christian Brauner <brauner@kernel.org>
 ---
- block/fops.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ include/linux/fs.h | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/block/fops.c b/block/fops.c
-index 086612103b9dd9..0d714d050a462c 100644
---- a/block/fops.c
-+++ b/block/fops.c
-@@ -54,7 +54,7 @@ static bool blkdev_dio_unaligned(struct block_device *bdev, loff_t pos,
- static ssize_t __blkdev_direct_IO_simple(struct kiocb *iocb,
- 		struct iov_iter *iter, unsigned int nr_pages)
- {
--	struct block_device *bdev = iocb->ki_filp->private_data;
-+	struct block_device *bdev = I_BDEV(iocb->ki_filp->f_mapping->host);
- 	struct bio_vec inline_vecs[DIO_INLINE_BIO_VECS], *vecs;
- 	loff_t pos = iocb->ki_pos;
- 	bool should_dirty = false;
-@@ -170,7 +170,7 @@ static void blkdev_bio_end_io(struct bio *bio)
- static ssize_t __blkdev_direct_IO(struct kiocb *iocb, struct iov_iter *iter,
- 		unsigned int nr_pages)
- {
--	struct block_device *bdev = iocb->ki_filp->private_data;
-+	struct block_device *bdev = I_BDEV(iocb->ki_filp->f_mapping->host);
- 	struct blk_plug plug;
- 	struct blkdev_dio *dio;
- 	struct bio *bio;
-@@ -310,7 +310,7 @@ static ssize_t __blkdev_direct_IO_async(struct kiocb *iocb,
- 					struct iov_iter *iter,
- 					unsigned int nr_pages)
- {
--	struct block_device *bdev = iocb->ki_filp->private_data;
-+	struct block_device *bdev = I_BDEV(iocb->ki_filp->f_mapping->host);
- 	bool is_read = iov_iter_rw(iter) == READ;
- 	blk_opf_t opf = is_read ? REQ_OP_READ : dio_bio_write_op(iocb);
- 	struct blkdev_dio *dio;
-@@ -451,7 +451,7 @@ static loff_t blkdev_llseek(struct file *file, loff_t offset, int whence)
- static int blkdev_fsync(struct file *filp, loff_t start, loff_t end,
- 		int datasync)
- {
--	struct block_device *bdev = filp->private_data;
-+	struct block_device *bdev = I_BDEV(filp->f_mapping->host);
- 	int error;
- 
- 	error = file_write_and_wait_range(filp, start, end);
-@@ -516,7 +516,6 @@ static int blkdev_open(struct inode *inode, struct file *filp)
- 	if (IS_ERR(bdev))
- 		return PTR_ERR(bdev);
- 
--	filp->private_data = bdev;
- 	filp->f_mapping = bdev->bd_inode->i_mapping;
- 	filp->f_wb_err = filemap_sample_wb_err(filp->f_mapping);
- 	return 0;
-@@ -524,9 +523,8 @@ static int blkdev_open(struct inode *inode, struct file *filp)
- 
- static int blkdev_release(struct inode *inode, struct file *filp)
- {
--	struct block_device *bdev = filp->private_data;
--
--	blkdev_put(bdev, (filp->f_mode & FMODE_EXCL) ? filp : NULL);
-+	blkdev_put(I_BDEV(filp->f_mapping->host),
-+		   (filp->f_mode & FMODE_EXCL) ? filp : NULL);
- 	return 0;
- }
- 
-@@ -539,7 +537,7 @@ static int blkdev_release(struct inode *inode, struct file *filp)
-  */
- static ssize_t blkdev_write_iter(struct kiocb *iocb, struct iov_iter *from)
- {
--	struct block_device *bdev = iocb->ki_filp->private_data;
-+	struct block_device *bdev = I_BDEV(iocb->ki_filp->f_mapping->host);
- 	struct inode *bd_inode = bdev->bd_inode;
- 	loff_t size = bdev_nr_bytes(bdev);
- 	size_t shorted = 0;
-@@ -575,7 +573,7 @@ static ssize_t blkdev_write_iter(struct kiocb *iocb, struct iov_iter *from)
- 
- static ssize_t blkdev_read_iter(struct kiocb *iocb, struct iov_iter *to)
- {
--	struct block_device *bdev = iocb->ki_filp->private_data;
-+	struct block_device *bdev = I_BDEV(iocb->ki_filp->f_mapping->host);
- 	loff_t size = bdev_nr_bytes(bdev);
- 	loff_t pos = iocb->ki_pos;
- 	size_t shorted = 0;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index ad1d2c9afb3fa4..8045c7ef4000c2 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -119,13 +119,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
+ #define FMODE_PWRITE		((__force fmode_t)0x10)
+ /* File is opened for execution with sys_execve / sys_uselib */
+ #define FMODE_EXEC		((__force fmode_t)0x20)
+-/* File is opened with O_NDELAY (only set for block devices) */
+-#define FMODE_NDELAY		((__force fmode_t)0x40)
+-/* File is opened with O_EXCL (only set for block devices) */
+-#define FMODE_EXCL		((__force fmode_t)0x80)
+-/* File is opened using open(.., 3, ..) and is writeable only for ioctls
+-   (specialy hack for floppy.c) */
+-#define FMODE_WRITE_IOCTL	((__force fmode_t)0x100)
+ /* 32bit hashes as llseek() offset (for directories) */
+ #define FMODE_32BITHASH         ((__force fmode_t)0x200)
+ /* 64bit hashes as llseek() offset (for directories) */
 -- 
 2.39.2
 
