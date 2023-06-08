@@ -2,302 +2,122 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93CF9C7EE23
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 17:44:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB703C7EE29
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 17:54:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233053AbjFHRoJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Jun 2023 13:44:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56548 "EHLO
+        id S234342AbjFHRyq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Jun 2023 13:54:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33404 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229593AbjFHRoJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 13:44:09 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 518B42D42;
-        Thu,  8 Jun 2023 10:44:07 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id A336E64FE7;
-        Thu,  8 Jun 2023 17:44:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B588CC433EF;
-        Thu,  8 Jun 2023 17:44:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1686246246;
-        bh=YstqgG53D47PFgySbwoE/KQwDnk0tCtYtYZ0CFGnAGY=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=tB2u9MZN916VwO2e0ppWQDmdM6ZL0ZlziPTv2rxAGR6hZg0VaeR/1HNJb+Kd8W/9K
-         tMnFyRHuDiu31nSONnHh5n8erTuHqd0TpzRy3UPLCERxxbdYHMLVbPbD6wBNrUCo52
-         yu4HF8M4XhGGGu2NG6xvatYhYveh8ACNr/o2TjwOlAGiGUNUAFRnxc63D7FdN3V5Ui
-         hJItKNY4npTsBMG/L9pJ9ado01m6uec3LRraiwlgApWyv96uKXTugSdhmfrQhFx5I4
-         XyNy3OqC6PanYCKRgC1TUWymgVSlNLHi+bZlh1FjcTgmIUu3WJHrZW3MYaN4bPFw4C
-         gmfrKw50zan0w==
-Date:   Thu, 8 Jun 2023 10:44:04 -0700
-From:   Eduardo Valentin <evalenti@kernel.org>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Eduardo Valentin <evalenti@kernel.org>, eduval@amazon.com,
-        rafael@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 1/1] thermal: sysfs: avoid actual readings from sysfs
-Message-ID: <ZIITZINvtPfjuhS6@uf8f119305bce5e.ant.amazon.com>
-References: <20230607003721.834038-1-evalenti@kernel.org>
- <f26ac9a9-60af-a0fe-fccc-25bcd306f5a1@linaro.org>
- <ZICybSuZELhR1Ni5@uf8f119305bce5e.ant.amazon.com>
- <b2e93db5-e6f8-a9d8-53de-af5ea750f0f0@linaro.org>
+        with ESMTP id S231336AbjFHRyp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 13:54:45 -0400
+Received: from NAM04-BN8-obe.outbound.protection.outlook.com (mail-bn8nam04on2071.outbound.protection.outlook.com [40.107.100.71])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B04982D6A;
+        Thu,  8 Jun 2023 10:54:43 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=FQ/pMA7c3/Mi+7Xp/E6OdvN0hswgnlVEtUgGilgI6YA22gHvIutp6IrIADllg9VE633cijDd8Q632kV8baZArcU+1VIriU1o4/8eC/flhTQIMlTTiU8A4HJcNmnELSgdWs+uoAd7emMxRzw1Zve8tratsyDhs51gvbzMf9Dj5kFMeCbk/Wc72OBDkJYBKIVzpyL8iQ+pviuC7WARDO9BTokVNC/YGAJEOBb+1dLrjbqxHA+CjY0GSZ2khlvsrVXLNGOISOTj/0+LD1lJMAB0ZGJx3eIKqFwALFRnS00I77oVqQTl5T83Z3SkoX87mlPKRqwlQtBsvBscAXWvmf/vDQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=d7sD+ORmXuDzPDkIJLGJ/J8tSBiUuS6MFTbvVMoF0Ng=;
+ b=VLKCG9nXEr9ZAkxkcYtzmxrezEVor1eEVTIoIMg63HXuh1yVqtlvrKkidXK2m4o2fKJ4nym8nVr7ZIhkvhW8Sb52sPFtAK8TlyXQXK5m9bcGOOA2VnDjft0bC3Shy8f7QKPXVuXlqUtI+VWi36WxoZ9+iY5OEqy2+ktXggBSVLo5V4bNWkuSsAgfcbgEYfHhp8a2btS8shJv0De1cnMXo3E7kL/aYRUwnCmqiOTzbOa3PnULTMOWTqRnRhONGfU+O7QkWyctoewqGa1+Ku19d60aibZUE+WlG+a5GKulzQVsNhavX13Kpmd7bVNgkeLaHd3+kAH7eRll+8/HtAL/Xg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=d7sD+ORmXuDzPDkIJLGJ/J8tSBiUuS6MFTbvVMoF0Ng=;
+ b=ZBJD6gbmWrMC69KodwSDoL1MbknCO0SuyawViWeukZ/IUYTwv7rB2PTEnlIIVtCFgnuAbjhi/7ufEceOP2X3/fpOs1yIMtheg7/9N941ynzoESB3Sne6m0WB6jihHB9ZK5uvn2x0kH9NAoL64FOJB0MeM7C1Py7Pdso4RsC7sdY=
+Received: from MW3PR05CA0003.namprd05.prod.outlook.com (2603:10b6:303:2b::8)
+ by CH3PR12MB9148.namprd12.prod.outlook.com (2603:10b6:610:19d::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.33; Thu, 8 Jun
+ 2023 17:54:39 +0000
+Received: from CO1NAM11FT073.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:303:2b:cafe::f5) by MW3PR05CA0003.outlook.office365.com
+ (2603:10b6:303:2b::8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.25 via Frontend
+ Transport; Thu, 8 Jun 2023 17:54:38 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ CO1NAM11FT073.mail.protection.outlook.com (10.13.174.196) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6477.24 via Frontend Transport; Thu, 8 Jun 2023 17:54:38 +0000
+Received: from SITE-L-T34-2.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 8 Jun
+ 2023 12:54:37 -0500
+From:   Mario Limonciello <mario.limonciello@amd.com>
+To:     <rafael@kernel.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <perry.yuan@amd.com>, <Ray.Huang@amd.com>, <Wyes.Karny@amd.com>,
+        <gautham.shenoy@amd.com>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        "Sun Peng Li" <sunpeng.li@amd.com>
+Subject: [PATCH] cpufreq: amd-pstate: Set default governor to schedutil
+Date:   Thu, 8 Jun 2023 04:53:58 -0500
+Message-ID: <20230608095358.30548-1-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <b2e93db5-e6f8-a9d8-53de-af5ea750f0f0@linaro.org>
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1NAM11FT073:EE_|CH3PR12MB9148:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1560cdee-c71a-4410-79cb-08db68496dc7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: puGc0q1FcbiLU/MY7KsZd7haGnHmJ/i5ubpRtzS7qg9iBe+SNYZWFlbwKee8LwNvicmjfaKuZEn0a5zxIH57RSEbnd9wNd+5bmx/S7QiVex1YOykUbPvOJXhBiYGWL7j4jxnJn+6yuYrZ/NaqKzP7TVcrKw+mPv4TSMr9LW9CDoyVLjxFt+IXQd8rTMg6ZtKnok53yfQ0Ot7HawPOtFEmIaVhxQmS6ESccpFIuMud26z5zgncMlvbYl20/zQQ9/jX5b/HAo3P3MxqcxLudaOKTZrq4y7vPPhBWQCLYbngPG3tVrbNh7NOiSk3e9CCHV1S2kdQCZcH1lUpzM0gzQhnIaL40coT6YLA7rCI1ebt0Pz5Ls3e4RDPpj5ZfovH/Ri7lq8eNz2oBJK7mZnwX0e/JkYyCgBbFjc+vAwNwTVw7q/NPp27liKKM4l93isoy/dUxrPPKpcVgnRWEOBTLNczXgiuV6FktZT0ZlL1O2LSlTfg3jaP0gqNcAmNBiqUsFSKfPKpk6icxDAalru+Xe/C380u+lLBy4U9X1tpyB5LK8anXgtoFGYSeO3YiCROaxAFlfrsAGspd7+8Gkk5uEgAAUZYekmxO6kshXn8roTyIKYOAyswPokPoq4x1dyweDYosRQSqAa7qgMmdp+FXzOAoK5WD5ylBsNhPtbmPWUPZweTq2C+kTm6G/SFn/LfcB9D4CBaj7jTqxVhTC+FEkZNBMOWRs3WKQZMh4wSoq/X405eehfCBVJdSwDP2tw78I4t3eLN5KqL/V9Ok62Wa9gag==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(376002)(136003)(396003)(39860400002)(346002)(451199021)(46966006)(36840700001)(40470700004)(40460700003)(70586007)(70206006)(316002)(6916009)(4326008)(54906003)(478600001)(86362001)(36756003)(6666004)(47076005)(83380400001)(36860700001)(1076003)(26005)(426003)(336012)(16526019)(186003)(41300700001)(8936002)(82310400005)(8676002)(5660300002)(44832011)(2906002)(7696005)(40480700001)(356005)(81166007)(82740400003)(2616005)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Jun 2023 17:54:38.5185
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1560cdee-c71a-4410-79cb-08db68496dc7
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT073.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB9148
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello Daniel,
+The Kconfig currently defaults the governor to schedutil on x86_64
+only when intel-pstate and SMP have been selected.
 
-On Wed, Jun 07, 2023 at 08:23:08PM +0200, Daniel Lezcano wrote:
-> 
-> 
-> 
-> On 07/06/2023 18:38, Eduardo Valentin wrote:
-> > Hey Daniel,
-> > 
-> > Thanks for taking the time to read the patch.
-> > 
-> > On Wed, Jun 07, 2023 at 11:24:21AM +0200, Daniel Lezcano wrote:
-> > > 
-> > > 
-> > > 
-> > > Hi Eduardo,
-> > > 
-> > > On 07/06/2023 02:37, Eduardo Valentin wrote:
-> > > > From: Eduardo Valentin <eduval@amazon.com>
-> > > > 
-> > > > As the thermal zone caches the current and last temperature
-> > > > value, the sysfs interface can use that instead of
-> > > > forcing an actual update or read from the device.
-> > > 
-> > > If the read fails, userspace can handle that by using the previous
-> > > value. Do we really want to hide driver dysfunctions?
-> > 
-> > Good point.
-> > 
-> > In fact I thought of this exact problem. I sent only this patch,
-> > but it has more changes to come.
-> > 
-> > The next changes will replicate the current design of
-> > storing last_temperature in the thermal zone to also store
-> > the last return value, success or error, on the thermal zone
-> > too so that we can use here at the front end to report back
-> > to userspace when the reads are failing.
-> >
-> > But yes, you are right, we do not want to keep reporting
-> > a successful read when the thermal zone thread has been
-> > failing to update the value, that needs to be reported
-> > up back to userspace.
-> 
-> IIUC, you want the temperature to be updated only by the polling thread
-> and when the userspace reads the temperature, it reads a cached value,
-> is that correct ?
+If the kernel is built only with amd-pstate, the default governor
+should also be schedutil.
 
-That is correct. I want to minimize the amount of actual driver / device accesses.
+Cc: Sun Peng (Leo) Li <sunpeng.li@amd.com>
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+---
+ drivers/cpufreq/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> 
-> > > > This way, if multiple userspace requests are coming
-> > > > in, we avoid storming the device with multiple reads
-> > > > and potentially clogging the timing requirement
-> > > > for the governors.
-> 
-> Sorry, I'm not convinced :/
-> 
-> > > Can you elaborate 'the timing requirement for the governors' ? I'm
-> > > missing the point
-> > 
-> > 
-> > The point is to avoid contention on the device update path.
-> > Governor that use differential equations on temperature over time
-> > will be very time sensitive. Step wise, power allocator, or any
-> > PID will be very sensitive to time. So, If userspace is hitting
-> > this API too often we can see cases where the updates needed to
-> > service userspace may defer/delay the execution of the governor
-> > logic.
-> 
-> AFAIK, reading a temperature value is usually between less than 1us and
-> 10us (depending on the sampling configuration in the driver).
-> 
-> I've done some measurements to read a temperature through sysfs and
-> netlink. It is between 2us and 7us on a platforms where reading a 900ns
-> latency sensor, sysfs being faster.
-> 
-> The time sensitive governor is the power allocator and usually, the
-> sampling period is between 100ms and 250ms.
-> 
-> The thermal zones with fast thermal transitions may need faster sampling
-> period but the hardware offloads the mitigation in this case by sampling
-> every 100*us*, IIRC.
-> 
-> Given that, I'm not sure we are facing a design issue with thermal
-> framework.
-
-The numbers above works well for memory IO devices, like a on DIE bandgap.
-In that case, I agree, the concern is less of a factual issue.
-The numbers becomes completely different if you have a monitor
-based on a I2C that shares a bus with multiple other devices :-)
-and you have multiple userspace requests coming in.
-
-In that case there are more than one contention. One is the simple
-fact that it is going to contend on thermal zone thread and userspace access.
-The other contention is the I2C bus lock itself. All of that adds up.
-
-
-> 
-> Do you have a use case with some measurements to spot an issue or is it
-> a potential issue you identified ?
-
-
-yes, a governor that is using I2C device as input, behind I2C fast mode (100KHz)
-and needs to update the zone every 100ms. Each read in this bus, if done alone
-would be around 500us, takes 10bytes to read the device, it is 10 clocks per byte,
-well technically 9, but rounding for the sake of the example, which gets you
-50 / 100KHz = 500 us. That is for a single read. You add one single extra 
-userspace read triggering an unused device update, that is already a 1ms drift.
-Basically you looking at 0.5% for each extra userspace read competing in this
-sysfs node. You add extra devices in the same I2C bus, your governor is looking
-at more than 1% overhead. And I am talking also about a main CPU of ~800MHz.
-I did not even include the lock overhead considered for this CPU ;-)
-
-Again, this is not about controlling the DIE temperature of the CPU you
-are running the thermal subsystem. This is about controlling
-a target device.
-
-> 
-> > Despite that, there is really no point to have more updates than
-> > what was configured for the thermal zone to support. Say that
-> > we configure a thermal zone to update itself every 500ms, yet
-> > userspace keeps sending reads every 100ms, we do not need necessarily
-> > to do a trip to the device every single time to update the temperature,
-> > as per the design for the thermal zone.
-> 
-> Sorry, I do not agree. The thermal zone is configured with a monitoring
-> sampling period to detect trip point crossing and it can be configured
-> without sampling period at all, just basing on trip point crossing
-> interrupt.
-
-That is right, one can derive a working policy solely based on
-IRQ. But not true for all cases is it? The stepwise and power allocator
-will need to have intermediate checks before actual trip crossing. 
-Specially for the allocator case, which is more time bound. Situation
-becomes even more time sensitive when the cooling effect of your
-cooling device is on the hundreds of milliseconds to seconds, like a fan,
-not on nano or microseconds, like throttling.
-
-> 
-> The userspace has the right to read the current temperature it is
-> interested in. For instance, the 'thermometer' in
-> tools/thermal/thermometer may want to read the temperature at a high
-> rate in order to profile the thermal zones with/without the mitigation
-> kicking in.
-> 
-> Caching the values just break the current behavior.
-
-I see your concern here. Yeah, let's make sure we dont break this tool.
-
-Does the tool need to have the thermal zone in kernel mode?
-
-The thermal zone will still behave the same way while reading
-/temp after this patch if the thermal zone is set to non kernel mode.
-
-
-Alternatively we can make the caching behavior non-default/optional too. 
-
-> 
-> > > > Cc: "Rafael J. Wysocki" <rafael@kernel.org> (supporter:THERMAL)
-> > > > Cc: Daniel Lezcano <daniel.lezcano@linaro.org> (supporter:THERMAL)
-> > > > Cc: Amit Kucheria <amitk@kernel.org> (reviewer:THERMAL)
-> > > > Cc: Zhang Rui <rui.zhang@intel.com> (reviewer:THERMAL)
-> > > > Cc: linux-pm@vger.kernel.org (open list:THERMAL)
-> > > > Cc: linux-kernel@vger.kernel.org (open list)
-> > > > 
-> > > > Signed-off-by: Eduardo Valentin <eduval@amazon.com>
-> > > > ---
-> > > >    drivers/thermal/thermal_sysfs.c | 21 ++++++++++++++++-----
-> > > >    1 file changed, 16 insertions(+), 5 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-> > > > index b6daea2398da..a240c58d9e08 100644
-> > > > --- a/drivers/thermal/thermal_sysfs.c
-> > > > +++ b/drivers/thermal/thermal_sysfs.c
-> > > > @@ -35,12 +35,23 @@ static ssize_t
-> > > >    temp_show(struct device *dev, struct device_attribute *attr, char *buf)
-> > > >    {
-> > > >        struct thermal_zone_device *tz = to_thermal_zone(dev);
-> > > > -     int temperature, ret;
-> > > > -
-> > > > -     ret = thermal_zone_get_temp(tz, &temperature);
-> > > > +     int temperature;
-> > > > 
-> > > > -     if (ret)
-> > > > -             return ret;
-> > > > +     /*
-> > > > +      * don't force new update from external reads
-> > > > +      * This way we avoid messing up with time constraints.
-> > > > +      */
-> > > > +     if (tz->mode == THERMAL_DEVICE_DISABLED) {
-> > > > +             int r;
-> > > > +
-> > > > +             r = thermal_zone_get_temp(tz, &temperature); /* holds tz->lock*/
-> > > > +             if (r)
-> > > > +                     return r;
-> > > > +     } else {
-> > > > +             mutex_lock(&tz->lock);
-> > > > +             temperature = tz->temperature;
-> > > > +             mutex_unlock(&tz->lock);
-> > > > +     }
-> > > 
-> > > No please, we are pushing since several weeks a lot of changes to
-> > > encapsulate the thermal zone device structure and prevent external core
-> > > components to use the internals directly. Even if we can consider the
-> > > thermal_sysfs as part of the core code, that changes is not sysfs related.
-> > 
-> > Can you clarify your concern, is it the direct access ? The lock ?
-> > what is the concern?
-> > 
-> > What is your suggestion here? Do you want me to write a helper
-> > function that gets tz->temperature without doing a ops->get_temp()?
-> 
-> The concern is the thermal framework code is not really in a good shape
-> and the internals leaked around in the different drivers all around the
-> subsystems, that led to drivers tampering with the thermal zone device
-> structure data (including taking locks).
-> 
-> There are ongoing efforts to do some house cleaning around the thermal
-> zone device structure encapsulation as well as getting ride of the
-> different ops get_trip* by replacing that with a generic trip point
-> structure to deal with in the thermal core code.
-> 
-> Those with the final objective to have the trip points ordered and
-> handle the trip point crossing correctly detected (it is currently
-> somehow broken).
-> 
-> Here the code does directly access tz->*.
-> 
-> Even not being convinced by the change proposal, I would have handle
-> this value cache in the thermal_zone_get_temp() function directly in
-> order to preserve the code self-encapsulation.
-
-Ok. So, is your proposal to simply get rid of the direct access? So long the
-code is kept self encapsulated, this concern would be addressed?
-
-> 
-> 
-> --
-> <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-> 
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
-> 
-
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 2c839bd2b051..a1c51abddbc5 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -38,7 +38,7 @@ choice
+ 	prompt "Default CPUFreq governor"
+ 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1110_CPUFREQ
+ 	default CPU_FREQ_DEFAULT_GOV_SCHEDUTIL if ARM64 || ARM
+-	default CPU_FREQ_DEFAULT_GOV_SCHEDUTIL if X86_INTEL_PSTATE && SMP
++	default CPU_FREQ_DEFAULT_GOV_SCHEDUTIL if (X86_INTEL_PSTATE || X86_AMD_PSTATE) && SMP
+ 	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+ 	help
+ 	  This option sets which CPUFreq governor shall be loaded at
 -- 
-All the best,
-Eduardo Valentin
+2.34.1
+
