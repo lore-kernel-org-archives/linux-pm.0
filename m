@@ -2,140 +2,150 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 106CBC7EE29
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 09:54:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22612C7EE29
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 10:07:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234268AbjFHJyZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Jun 2023 05:54:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51692 "EHLO
+        id S233222AbjFHKHA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Jun 2023 06:07:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60670 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235017AbjFHJyZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 05:54:25 -0400
-Received: from mail-yb1-xb34.google.com (mail-yb1-xb34.google.com [IPv6:2607:f8b0:4864:20::b34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C885E62
-        for <linux-pm@vger.kernel.org>; Thu,  8 Jun 2023 02:54:24 -0700 (PDT)
-Received: by mail-yb1-xb34.google.com with SMTP id 3f1490d57ef6-ba8afcc82c0so470570276.2
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jun 2023 02:54:24 -0700 (PDT)
+        with ESMTP id S230033AbjFHKG7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 06:06:59 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9259C2D6B
+        for <linux-pm@vger.kernel.org>; Thu,  8 Jun 2023 03:06:37 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-3f6e13940daso3524235e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 08 Jun 2023 03:06:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686218063; x=1688810063;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=o0ba9DNkSY4/DucgUWvAeaHUG2A2JOR/Yvq1EwvyCGo=;
-        b=PvrqaK1/kX1GZWYJfA7CicJo63zMlQ6/mCMec4FvBwqcpI23YdywuXvaYywxpXoVAt
-         fh+jOZqYZ/YwptXtLy+cR0dVNTruCXj0dQMldKBD49hQ4ZyxPkxkMkVMp5vJhV4kB58V
-         X2nOulJrWA/WpAOmg8EmidVRjaUHdL6w7vd1al+jmlqHcALAlFpXlxIiyuoLVI7oHPjD
-         dBK82ifo17E+pFRt4GbQN4CA7jy75ipE922hLl7V2V4Xcg0eNlwSgv673SEwq9YOEKDw
-         nI/U9R2Rwj/XvfEKcaBw7f+RlemPwY4n+uCHUpf2LvxIG7PHX9ZfP4RYnhxtz9ClrZMK
-         yVvg==
+        d=linaro.org; s=google; t=1686218793; x=1688810793;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=8gI0fKfzakee3UsQiGKM6OVjsfWkCZv8+SIDHGZOJ4w=;
+        b=UWuxe0O24P69fQg0yj/SPM6qxaViIUYXWVsqJmDkn0vVeKI82+dh+9djqbFUtfdBD4
+         iqlel9jF1FDq3OwY+iJ02KF82HPEvHLZqs0RvZRDeqCjAUCay8mQxF8dWYN1Egs/a0Ck
+         9+Gw5r5IbETzI7eVrEyGIBPChEXxzZBGYj5qbZeT05GSKqashwzh9C3I+wkT+BFb0Cqq
+         BbZT8cnPxoZStIcnN6BoEHbolB7GR4CSs6pbj1nufGErFgIwCnibJwrNTxi787nVFmYb
+         lo1kt9aTzSpDjdid/CQCuC1xsr52VOtkLJahNDmStC7XXo7ue9ylCB2pbU89wc4ULhK/
+         suxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686218063; x=1688810063;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=o0ba9DNkSY4/DucgUWvAeaHUG2A2JOR/Yvq1EwvyCGo=;
-        b=OCvZfjklTRja59K/1tbWZ3E2VjgPVm8BuchNH9cJJo6kyLdW2Zmma2x8TxlgR+WH99
-         lr03ED8UX4rEYC5my8Qt81AC/Ys0u1BkY0HACPeNaYjvq8Kclb2J7+pWAL5kMHutSdkK
-         gRy5/JBamHg7i40CGVFQkrsQK7w6kJunyDQhnROzl3bL0BdvCxoIyNctATXPprZlgPbm
-         fs4PkH3OgF95Ygt8KfWdnf1QVBD8cj83QoAVN7KK7PfNYHHYApg7h7SgNlCLo/Jk2C/G
-         je3pG+WMuXO8V6NDS9RNjNeINgEmRyZbJm8BsuAuYomwMg+lullW6Cpktj5aH5N+EntO
-         W7eQ==
-X-Gm-Message-State: AC+VfDyVMu+OxLApDA9/lR/p6wL4BRnGt1ikat/mmg7CrBWGwe7+DEh2
-        fkzLhObcbHDSAUaMpEODnh6M84EE3aG+l6lW6FQiBg==
-X-Google-Smtp-Source: ACHHUZ5a1sWdYHtcKgG2yKf8VeE8kNtZPQc7G/LZ+GLdMKmpWFnaDoLh/zKdSQaBoJ7nTto8hrjlXqozJ7J92leT9lo=
-X-Received: by 2002:a81:86c7:0:b0:561:429e:acd2 with SMTP id
- w190-20020a8186c7000000b00561429eacd2mr10650706ywf.35.1686218063254; Thu, 08
- Jun 2023 02:54:23 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1686218793; x=1688810793;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=8gI0fKfzakee3UsQiGKM6OVjsfWkCZv8+SIDHGZOJ4w=;
+        b=K2aIsre3c8uf6oPTFIDuFsALjnweMmLtIEBYycFD01QlMIWl+kQ0aSvBrny6+QliyP
+         vDlPqrWZJtgFAD3i6HXrtiIYDCxJ6Bckey2XoP1sNL4gkLLLAq++oeqQDfdcg5gWYBfA
+         TLQJ7vgrNL2pSOcNDglKmymoqi1O8kBSgRfXc0vsrcGpqx0KwD9OfOzHztQOVYbwBI60
+         +TMEJwUH6HwCjt+bjt4vL2n0zFRbaqThJuda9Dwsa+fluxSLkc1LhWZEPOQDiCRFoc0m
+         7kzzE/flU6SOBfX/KHECxxSxyt3BJcWiqgHr0oVIpN5vcHez3QbbCN7O53Y5A6bSnkeF
+         +BHA==
+X-Gm-Message-State: AC+VfDwMq0ODhds+Q9V7vLDU7RTrhYgEhFe8zoVPMOnW8Yq+hy0byDJQ
+        jxmiugAi9bwVYyq0jbPilsa4IA==
+X-Google-Smtp-Source: ACHHUZ5p+rzWdm6UEkkaehf/5TJoZVuIXCAqfyzj+sBEwOp5zet5JMZcogn3/cNi4rWlyI7HvjlKFg==
+X-Received: by 2002:a7b:ce87:0:b0:3f7:f584:5792 with SMTP id q7-20020a7bce87000000b003f7f5845792mr1170848wmj.0.1686218792992;
+        Thu, 08 Jun 2023 03:06:32 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:35fa:41a8:60f5:b00b? ([2a05:6e02:1041:c10:35fa:41a8:60f5:b00b])
+        by smtp.googlemail.com with ESMTPSA id n6-20020a1c7206000000b003f7aad8c160sm4740214wmc.11.2023.06.08.03.06.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 08 Jun 2023 03:06:32 -0700 (PDT)
+Message-ID: <eb9e97d8-4983-b2be-6b52-0af362d17005@linaro.org>
+Date:   Thu, 8 Jun 2023 12:06:31 +0200
 MIME-Version: 1.0
-References: <20230607124628.157465-1-ulf.hansson@linaro.org> <ZICXjExmCRwcQ3BA@e120937-lin>
-In-Reply-To: <ZICXjExmCRwcQ3BA@e120937-lin>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 8 Jun 2023 11:53:47 +0200
-Message-ID: <CAPDyKFoQv1wue122umZo4W3YNTQb4ic8bnJq_nrWZ7bu8dzKUQ@mail.gmail.com>
-Subject: Re: [PATCH 00/16] arm_scmi/opp/dvfs: Add generic performance scaling support
-To:     Cristian Marussi <cristian.marussi@arm.com>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: [PATCH v4 0/5] Add LVTS support for mt8192
+Content-Language: en-US
+To:     =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= 
+        <nfraprado@collabora.com>, Chen-Yu Tsai <wenst@chromium.org>
+Cc:     =?UTF-8?Q?Bernhard_Rosenkr=c3=a4nzer?= <bero@baylibre.com>,
+        angelogioacchino.delregno@collabora.com, rafael@kernel.org,
+        amitk@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com,
+        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        rdunlap@infradead.org, ye.xingchen@zte.com.cn,
+        p.zabel@pengutronix.de, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        james.lo@mediatek.com, rex-bc.chen@mediatek.com,
+        abailon@baylibre.com, amergnat@baylibre.com, khilman@baylibre.com
+References: <20230530195132.2286163-1-bero@baylibre.com>
+ <CAGXv+5EVfgEBDm=7MmQ=OsP322KmE23PwycJ-0LjU+3dEZygUQ@mail.gmail.com>
+ <572f5a88-8c2e-4324-b477-836a5024ec67@notapiano>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <572f5a88-8c2e-4324-b477-836a5024ec67@notapiano>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 7 Jun 2023 at 16:43, Cristian Marussi <cristian.marussi@arm.com> wrote:
->
-> On Wed, Jun 07, 2023 at 02:46:12PM +0200, Ulf Hansson wrote:
-> > The current SCMI performance scaling support is limited to cpufreq. This series
-> > extends the support, so it can be used for all kind of devices and not only for
-> > CPUs.
-> >
-> > The changes are spread over a couple of different subsystems, although the
-> > changes that affects the other subsystems than the arm_scmi directory are
-> > mostly smaller. The series is based upon v6.4-rc5. That said, let's figure out
-> > on how to best move forward with this. I am of course happy to help in any way.
-> >
-> > Note that, so far this is only be tested on the Qemu virt platform with Optee
-> > running an SCMI server. If you want some more details about my test setup, I am
-> > certainly open to share that with you!
-> >
-> > Looking forward to get your feedback!
-> >
->
-> Hi Ulf,
->
-> thanks for this first of all.
->
-> I'll have a look at this properly in the next weeks, in the meantime
-> just a small minor remark after having had a quick look.
->
-> You expose a few new perf_ops to fit your needs and in fact PERF was
-> still not exposing those data for (apparent) lack of users needing
-> those. (and/or historical reason I think)
->
-> My concern is that this would lead to a growing number of ops as soon as
-> more data will be needed by future users; indeed other protocols do
-> expose more data but use a different approach: instead of custom ops
-> they let the user access a common static info structure like
->
->
-> +       int (*num_domains_get)(const struct scmi_protocol_handle *ph);
-> +       const struct scmi_perf_dom_info __must_check *(*info_get)
-> +               (const struct scmi_protocol_handle *ph, u32 domain);
->
-> and expose the related common info struct in scmi_protocol.h too.
-> Another reason to stick to this aproach would be consistency with other
-> protos (even though I think PERF is not the only lacking info_get)
->
-> Now, since really there was already a hidden user for this perf data
-> (that would be me :P ... in terms of an unpublished SCMI test-driver),
-> I happen to have a tested patch that just expose those 2 above ops and
-> exports scmi_perf_dom_info and related structures to scmi_protocol.h
->
-> If you (and Sudeep) agree with this approach of limiting the number of
-> exposed ops in favour of sharing upfront some static info data, I can
-> quickly cleanup and post this patch for you to pick it up in your next
-> iteration.
+On 01/06/2023 19:09, Nícolas F. R. A. Prado wrote:
+> On Wed, May 31, 2023 at 12:49:43PM +0800, Chen-Yu Tsai wrote:
+>> On Wed, May 31, 2023 at 3:51 AM Bernhard Rosenkränzer <bero@baylibre.com> wrote:
+>>>
+>>> From: Balsam CHIHI <bchihi@baylibre.com>
+>>>
+>>> Add full LVTS support (MCU thermal domain + AP thermal domain) to MediaTek MT8192 SoC.
+>>> Also, add Suspend and Resume support to LVTS Driver (all SoCs),
+>>> and update the documentation that describes the Calibration Data Offsets.
+>>>
+>>> Changelog:
+>>>      v4 :
+>>>          - Shrink the lvts_ap thermal sensor I/O range to 0xc00 to make
+>>>            room for SVS support, pointed out by
+>>>            AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+>>>
+>>>      v3 :
+>>>          - Rebased :
+>>>              base-commit: 6a3d37b4d885129561e1cef361216f00472f7d2e
+>>>          - Fix issues in v2 pointed out by Nícolas F. R. A. Prado <nfraprado@collabora.com>:
+>>>            Use filtered mode to make sure threshold interrupts are triggered,
+>>
+>> I'm seeing sensor readout (either through sysfs/thermal/<x>/temp or hwmon)
+>> fail frequently on MT8192. If I run `sensors` (lm-sensors), at least a couple
+>> of the LVTS sensors would be N/A. Not sure if this is related to this change.
+> 
+> Yes, it is. Filtered mode has some delay associated with reading, meaning most
+> of the time the value isn't ready, while immediate mode is, well, pretty much
+> immediate and the read always succeeds.
+> 
+> For temperature monitoring, filtered mode should be used. 
 
-I think your suggestions make perfect sense to me too.
+Why?
 
-While I was adding the new ops in scmi_perf_proto_ops, I was merely
-trying to get inspiration from the scmi_power_proto_ops, it seems like
-those need an update too.
+> As far as the thermal framework goes, it's ok that filtered mode doesn't always
+> return a value, as it will keep the old one.
 
-Although, there is no need for you to send a patch for "perf" at this
-moment - as this piece of code is easy for me to put together myself.
-I will simply replace a few of the patches in the series with a new
-one, no problem at all.
+It is not by design but just the code not returning the error when 
+updating the thermal zone as it should so the side effect is giving the 
+illusion everything is all right.
 
->
-> (really I'd have more conversion of this kind also for other remaining
->  protos but these are unrelated to your series and I'd post it later)
+> But of course, having the
+> temperature readout always work would be a desired improvement.
 
-Yes, that can be handled separately, and I leave that for you to manage.
+More than a desired improvement, it is mandatory. How can the thermal 
+framework protect and mitigate the temperature with a twisted vision of 
+the thermal situation?
 
-Kind regards
-Uffe
+> As for ways to achieve that, I think the intended way would be to enable the
+> interrupts that signal data ready on filtered mode (bits 19, 20, 21, 28), read
+> the temperature and cache it so it is always available when the get_temp()
+> callback is called.
+
+It sounds very strange how the filtered mode is working. We setup the 
+filtered mode, then we shall receive an interrupt telling the data is 
+ready so we can read it?
+
+> The issue with this is that it would cause *a lot* of
+> interrupts, which doesn't seem worth it.
+
+Why not use the immediate mode + interrupts ?
+
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
