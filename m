@@ -2,98 +2,138 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B502C7EE29
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 10:45:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D788C83003
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 11:03:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233553AbjFHKpq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Jun 2023 06:45:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53674 "EHLO
+        id S235844AbjFHLDa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Jun 2023 07:03:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35458 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234210AbjFHKpp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 06:45:45 -0400
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C54412710
-        for <linux-pm@vger.kernel.org>; Thu,  8 Jun 2023 03:45:43 -0700 (PDT)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-655fce0f354so223461b3a.0
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jun 2023 03:45:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686221143; x=1688813143;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=rUyy/GrqGNRxuHb6z4wBkLlQC/O2oYYKUkcrhwukrc4=;
-        b=eRlfkc2n7TFxfGl8Z0Fzj64L0T4w2SUykEQ1FAf1HkZq0XDyjS3rwpby2CkqakBvtX
-         iXYwMO7yS8eDQjdiEHTh8zHSD5i8oyw/6fL5vAe2IcYshU1MCcjHNTLso/9OTy87hjTU
-         pOSOgGwD62rUDXB+ohYNazwHQ5DuIyHhrnXD43x6Glpq218XglL5Lt2XCndOW5akS2Db
-         gE0tAGseqDNmz05Hsve/ueQumW+pq7jLDYg31IBRtEZZovl+wrS10uHWqAHV6m77G3M2
-         7R1DeoCm5Qv2V349Vm6W6fm8xlPdyn5axcdPgAU6MXCY43JI7nwLNMe917X3WOm0Xrru
-         Yw/g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686221143; x=1688813143;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=rUyy/GrqGNRxuHb6z4wBkLlQC/O2oYYKUkcrhwukrc4=;
-        b=M/w/HeRfYGERJTR8lzyEHds1zwonj/HNmf7wHsZyINxcWZoYg56AmQtlJkA+6PrS5K
-         kB+4MH6byeAiVbppTLVnzFxj85S1Rf6NhkCwLxy5UQL5lHb++eViAVEbdMiVNAqQ7Dmc
-         7Ec4ZGrPCFsJoyAjOLZlZaxzY9MRFDqIdvvJROTUV/o93iqF+4tY6uXfr4+piPK58nsI
-         d4zgahWUa+QQDwBb1a90ERnlVBBBg4t8JqpLrJG0KuIN9YHIWjmIhXzUtwHDkTJHeydX
-         OjM/Bm6Ik26Sdr4DkndSfGDfxaGnBB0ycRsINa+XYHEhnb5h9zgmdSRv1ZA52lKqWB3Q
-         AImw==
-X-Gm-Message-State: AC+VfDyxh+NxQXEeWw6eurGptFAGoCww6IMFkU4d/g8/Ld3UTPpNgV5C
-        NaZGdCrKpo4NCQgG4Z8Re6TtPw==
-X-Google-Smtp-Source: ACHHUZ4+g9lBm0jyZ+3Jf2CFgzBqBNWh8+iBo/nATUyparPSQqNxu9ZH4hyWpHoj9rAQSr4CC8Kz1Q==
-X-Received: by 2002:a05:6a00:3988:b0:662:c4ca:65c2 with SMTP id fi8-20020a056a00398800b00662c4ca65c2mr2793489pfb.0.1686221143266;
-        Thu, 08 Jun 2023 03:45:43 -0700 (PDT)
-Received: from localhost ([122.172.87.195])
-        by smtp.gmail.com with ESMTPSA id j1-20020aa78001000000b0064d6f4c8b05sm876301pfi.93.2023.06.08.03.45.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Jun 2023 03:45:42 -0700 (PDT)
-Date:   Thu, 8 Jun 2023 16:15:40 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/16] OPP: Extend dev_pm_opp_data with OPP provider
- support
-Message-ID: <20230608104540.tykxtvwhoyogthw5@vireshk-i7>
-References: <20230607124628.157465-1-ulf.hansson@linaro.org>
- <20230607124628.157465-14-ulf.hansson@linaro.org>
- <20230608053446.ngoxh7zo7drnr32z@vireshk-i7>
- <CAPDyKFqUWhdmctKRpQoqwZ2nsx_P2FiWvLzfm_d39QdECWoytA@mail.gmail.com>
+        with ESMTP id S232139AbjFHLDZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 07:03:25 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4527A2134;
+        Thu,  8 Jun 2023 04:03:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+        :Reply-To:Content-Type:Content-ID:Content-Description;
+        bh=FYQsICe+jkO2yrGbgRzbumctJVKnV4wWIZUy1tv1p54=; b=oucg3Pp/rKcskrh+Hb+2MAm4oh
+        CAxirj8/J8boUvG5KuKH4XNEziwGZWCBFdjLkSPuAUYn9sLXGhsGXcPg2M6lmVYYC1OxeFi4XX36Q
+        mX6ufS/9I1nDuIHYRLJpnpVCMycipoqj5pJDMjncVmj7ncRPeNeQdCfoC1C+XghtjX90w4hi7Cse9
+        WqJiXO1TpgvnDBjtOlTfsZXa+pPttbNa1Qk3YLwmNPxsJ0ApRlEg2FfQvwoShtptcHJJ/EHBK67bZ
+        riO/Gx/2T4VFi3othQU0kqoY1H9RFVaLIpHIcFoekDpe1RzqiRE6QCfLa+tpzrRlyc+jZL1+KdS5R
+        ywv3NawA==;
+Received: from 2a02-8389-2341-5b80-39d3-4735-9a3c-88d8.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:39d3:4735:9a3c:88d8] helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1q7DPz-0091cl-2t;
+        Thu, 08 Jun 2023 11:03:04 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Richard Weinberger <richard@nod.at>,
+        Josef Bacik <josef@toxicpanda.com>,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Coly Li <colyli@suse.de>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        Christian Brauner <brauner@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
+        linux-block@vger.kernel.org, linux-um@lists.infradead.org,
+        linux-scsi@vger.kernel.org, linux-bcache@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+        linux-btrfs@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net,
+        linux-nilfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Hannes Reinecke <hare@suse.de>
+Subject: [PATCH 01/30] block: also call ->open for incremental partition opens
+Date:   Thu,  8 Jun 2023 13:02:29 +0200
+Message-Id: <20230608110258.189493-2-hch@lst.de>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230608110258.189493-1-hch@lst.de>
+References: <20230608110258.189493-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFqUWhdmctKRpQoqwZ2nsx_P2FiWvLzfm_d39QdECWoytA@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 08-06-23, 11:37, Ulf Hansson wrote:
-> The required opps are also different, as it's getting parsed from DT
-> both for the genpd provider and the consumer. The point is, there are
-> more code involved but just _set_required_opps().
-> 
-> For example, _set_performance_state() (which is the one that calls
-> dev_pm_genpd_set_performance_state()) is designed to be used for
-> required opps. Does it really make sense to rework
-> _set_performance_state() so it can be used for this case too, just to
-> avoid another call to dev_pm_genpd_set_performance_state() somewhere
-> in the code?
+For whole devices ->open is called for each open, but for partitions it
+is only called on the first open of a partition, e.g.:
 
-What we need here, in you case, is really the required-opp thing, without the
-DT parsing. The genpd will have an OPP table here, and devices (you are adding
-OPP table dynamically for) shall have the genpd's OPPs as their required OPPs,
-since for setting OPPs of the device, it is *required* to have OPP of the genpd
-set too. Just like how it happens with DT. No special handling will be required
-in dev_pm_opp_set_opp() path in this case and existing code will just work. You
-just need to set the required-opp tables properly.
+  open("/dev/vdb", ...)
+  open("/dev/vdb", ...)
+    - 2 call to ->open
 
+  open("/dev/vdb1", ...)
+  open("/dev/vdb", ...)
+    - 2 call to ->open
+
+  open("/dev/vdb", ...)
+  open("/dev/vdb", ...)
+    - just open call to ->open
+
+This is problematic as various block drivers look at open flags and
+might not do all the required setup if the earlier open was with an
+odd flag like O_NDELAY or the magic 3 ioctl-only open mode.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Phillip Potter <phil@philpotter.co.uk>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+Acked-by: Christian Brauner <brauner@kernel.org>
+---
+ block/bdev.c | 18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/block/bdev.c b/block/bdev.c
+index 5c46ff10770638..981f6135795138 100644
+--- a/block/bdev.c
++++ b/block/bdev.c
+@@ -683,9 +683,6 @@ static int blkdev_get_part(struct block_device *part, fmode_t mode)
+ 	struct gendisk *disk = part->bd_disk;
+ 	int ret;
+ 
+-	if (atomic_read(&part->bd_openers))
+-		goto done;
+-
+ 	ret = blkdev_get_whole(bdev_whole(part), mode);
+ 	if (ret)
+ 		return ret;
+@@ -694,9 +691,10 @@ static int blkdev_get_part(struct block_device *part, fmode_t mode)
+ 	if (!bdev_nr_sectors(part))
+ 		goto out_blkdev_put;
+ 
+-	disk->open_partitions++;
+-	set_init_blocksize(part);
+-done:
++	if (!atomic_read(&part->bd_openers)) {
++		disk->open_partitions++;
++		set_init_blocksize(part);
++	}
+ 	atomic_inc(&part->bd_openers);
+ 	return 0;
+ 
+@@ -709,10 +707,10 @@ static void blkdev_put_part(struct block_device *part, fmode_t mode)
+ {
+ 	struct block_device *whole = bdev_whole(part);
+ 
+-	if (!atomic_dec_and_test(&part->bd_openers))
+-		return;
+-	blkdev_flush_mapping(part);
+-	whole->bd_disk->open_partitions--;
++	if (atomic_dec_and_test(&part->bd_openers)) {
++		blkdev_flush_mapping(part);
++		whole->bd_disk->open_partitions--;
++	}
+ 	blkdev_put_whole(whole, mode);
+ }
+ 
 -- 
-viresh
+2.39.2
+
