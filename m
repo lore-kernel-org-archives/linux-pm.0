@@ -2,32 +2,32 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D788C83003
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 11:03:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E7B6C88C83
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Jun 2023 11:03:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235844AbjFHLDa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Jun 2023 07:03:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35458 "EHLO
+        id S235059AbjFHLDb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Jun 2023 07:03:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232139AbjFHLDZ (ORCPT
+        with ESMTP id S232125AbjFHLDZ (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2023 07:03:25 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4527A2134;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 400F22129;
         Thu,  8 Jun 2023 04:03:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=FYQsICe+jkO2yrGbgRzbumctJVKnV4wWIZUy1tv1p54=; b=oucg3Pp/rKcskrh+Hb+2MAm4oh
-        CAxirj8/J8boUvG5KuKH4XNEziwGZWCBFdjLkSPuAUYn9sLXGhsGXcPg2M6lmVYYC1OxeFi4XX36Q
-        mX6ufS/9I1nDuIHYRLJpnpVCMycipoqj5pJDMjncVmj7ncRPeNeQdCfoC1C+XghtjX90w4hi7Cse9
-        WqJiXO1TpgvnDBjtOlTfsZXa+pPttbNa1Qk3YLwmNPxsJ0ApRlEg2FfQvwoShtptcHJJ/EHBK67bZ
-        riO/Gx/2T4VFi3othQU0kqoY1H9RFVaLIpHIcFoekDpe1RzqiRE6QCfLa+tpzrRlyc+jZL1+KdS5R
-        ywv3NawA==;
+        bh=eGImU7RddjAi80e+tW424dPAVsMSpId5HtotbM4PBXg=; b=QKoakhTg4fLiP0bDEva9VVDSHF
+        PoMBZ8+2TZOm6zqZZZbysdmTGb0yc9nnFw6clZtx37HM3Xse3adwly95AZxbBY1ySSJgA8HA67iRn
+        eFV+iFsVsN2LDA9OYWGge7BK/aQOICH/cCGdQwmGwpXDtZ2C9goXDM/g0Anr3ib1UehMzci70pj/c
+        1iUfv3NEM/9DSaVrFRoJ0WTbVxqrrIvihx4Na5Zz+kh4TjKYbgTjY+8ywcaQrPWxmiifoF5xz8Sji
+        NfHF8ccPi5btIbYCZxAgOPoAfNOorZLKLMq1GGa7914qlDNbq0ngSD9scqJVd+NIwYP55iXOJWqBX
+        sDrYuk7w==;
 Received: from 2a02-8389-2341-5b80-39d3-4735-9a3c-88d8.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:39d3:4735:9a3c:88d8] helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1q7DPz-0091cl-2t;
-        Thu, 08 Jun 2023 11:03:04 +0000
+        id 1q7DQ4-0091eW-27;
+        Thu, 08 Jun 2023 11:03:09 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
 Cc:     Richard Weinberger <richard@nod.at>,
@@ -51,9 +51,9 @@ Cc:     Richard Weinberger <richard@nod.at>,
         linux-f2fs-devel@lists.sourceforge.net,
         linux-nilfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
         linux-pm@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: [PATCH 01/30] block: also call ->open for incremental partition opens
-Date:   Thu,  8 Jun 2023 13:02:29 +0200
-Message-Id: <20230608110258.189493-2-hch@lst.de>
+Subject: [PATCH 03/30] cdrom: remove the unused mode argument to cdrom_ioctl
+Date:   Thu,  8 Jun 2023 13:02:31 +0200
+Message-Id: <20230608110258.189493-4-hch@lst.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230608110258.189493-1-hch@lst.de>
 References: <20230608110258.189493-1-hch@lst.de>
@@ -64,75 +64,70 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For whole devices ->open is called for each open, but for partitions it
-is only called on the first open of a partition, e.g.:
-
-  open("/dev/vdb", ...)
-  open("/dev/vdb", ...)
-    - 2 call to ->open
-
-  open("/dev/vdb1", ...)
-  open("/dev/vdb", ...)
-    - 2 call to ->open
-
-  open("/dev/vdb", ...)
-  open("/dev/vdb", ...)
-    - just open call to ->open
-
-This is problematic as various block drivers look at open flags and
-might not do all the required setup if the earlier open was with an
-odd flag like O_NDELAY or the magic 3 ioctl-only open mode.
-
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Reviewed-by: Phillip Potter <phil@philpotter.co.uk>
 Reviewed-by: Hannes Reinecke <hare@suse.de>
 Acked-by: Christian Brauner <brauner@kernel.org>
 ---
- block/bdev.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ drivers/cdrom/cdrom.c | 2 +-
+ drivers/cdrom/gdrom.c | 2 +-
+ drivers/scsi/sr.c     | 2 +-
+ include/linux/cdrom.h | 4 ++--
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/block/bdev.c b/block/bdev.c
-index 5c46ff10770638..981f6135795138 100644
---- a/block/bdev.c
-+++ b/block/bdev.c
-@@ -683,9 +683,6 @@ static int blkdev_get_part(struct block_device *part, fmode_t mode)
- 	struct gendisk *disk = part->bd_disk;
+diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+index e3eab319cb0474..245e5bbb05d41c 100644
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -3336,7 +3336,7 @@ static int mmc_ioctl(struct cdrom_device_info *cdi, unsigned int cmd,
+  * ATAPI / SCSI specific code now mainly resides in mmc_ioctl().
+  */
+ int cdrom_ioctl(struct cdrom_device_info *cdi, struct block_device *bdev,
+-		fmode_t mode, unsigned int cmd, unsigned long arg)
++		unsigned int cmd, unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+ 	int ret;
+diff --git a/drivers/cdrom/gdrom.c b/drivers/cdrom/gdrom.c
+index eaa2d5a90bc82f..14922403983e9e 100644
+--- a/drivers/cdrom/gdrom.c
++++ b/drivers/cdrom/gdrom.c
+@@ -505,7 +505,7 @@ static int gdrom_bdops_ioctl(struct block_device *bdev, fmode_t mode,
  	int ret;
  
--	if (atomic_read(&part->bd_openers))
--		goto done;
--
- 	ret = blkdev_get_whole(bdev_whole(part), mode);
- 	if (ret)
- 		return ret;
-@@ -694,9 +691,10 @@ static int blkdev_get_part(struct block_device *part, fmode_t mode)
- 	if (!bdev_nr_sectors(part))
- 		goto out_blkdev_put;
+ 	mutex_lock(&gdrom_mutex);
+-	ret = cdrom_ioctl(gd.cd_info, bdev, mode, cmd, arg);
++	ret = cdrom_ioctl(gd.cd_info, bdev, cmd, arg);
+ 	mutex_unlock(&gdrom_mutex);
  
--	disk->open_partitions++;
--	set_init_blocksize(part);
--done:
-+	if (!atomic_read(&part->bd_openers)) {
-+		disk->open_partitions++;
-+		set_init_blocksize(part);
-+	}
- 	atomic_inc(&part->bd_openers);
- 	return 0;
+ 	return ret;
+diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+index 61b83880e395a4..444c7efc14cba7 100644
+--- a/drivers/scsi/sr.c
++++ b/drivers/scsi/sr.c
+@@ -539,7 +539,7 @@ static int sr_block_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
+ 	scsi_autopm_get_device(sdev);
  
-@@ -709,10 +707,10 @@ static void blkdev_put_part(struct block_device *part, fmode_t mode)
- {
- 	struct block_device *whole = bdev_whole(part);
- 
--	if (!atomic_dec_and_test(&part->bd_openers))
--		return;
--	blkdev_flush_mapping(part);
--	whole->bd_disk->open_partitions--;
-+	if (atomic_dec_and_test(&part->bd_openers)) {
-+		blkdev_flush_mapping(part);
-+		whole->bd_disk->open_partitions--;
-+	}
- 	blkdev_put_whole(whole, mode);
- }
+ 	if (cmd != CDROMCLOSETRAY && cmd != CDROMEJECT) {
+-		ret = cdrom_ioctl(&cd->cdi, bdev, mode, cmd, arg);
++		ret = cdrom_ioctl(&cd->cdi, bdev, cmd, arg);
+ 		if (ret != -ENOSYS)
+ 			goto put;
+ 	}
+diff --git a/include/linux/cdrom.h b/include/linux/cdrom.h
+index cc5717cb0fa8a8..4aea8c82d16971 100644
+--- a/include/linux/cdrom.h
++++ b/include/linux/cdrom.h
+@@ -103,8 +103,8 @@ int cdrom_read_tocentry(struct cdrom_device_info *cdi,
+ /* the general block_device operations structure: */
+ int cdrom_open(struct cdrom_device_info *cdi, fmode_t mode);
+ extern void cdrom_release(struct cdrom_device_info *cdi, fmode_t mode);
+-extern int cdrom_ioctl(struct cdrom_device_info *cdi, struct block_device *bdev,
+-		       fmode_t mode, unsigned int cmd, unsigned long arg);
++int cdrom_ioctl(struct cdrom_device_info *cdi, struct block_device *bdev,
++		unsigned int cmd, unsigned long arg);
+ extern unsigned int cdrom_check_events(struct cdrom_device_info *cdi,
+ 				       unsigned int clearing);
  
 -- 
 2.39.2
