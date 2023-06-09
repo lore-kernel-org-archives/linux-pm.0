@@ -2,100 +2,120 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A72BCC7EE43
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Jun 2023 11:51:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17418C7EE43
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Jun 2023 12:44:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238795AbjFILvm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Jun 2023 07:51:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42602 "EHLO
+        id S239939AbjFIMoR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Jun 2023 08:44:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48870 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239266AbjFILvg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jun 2023 07:51:36 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2629B3ABB;
-        Fri,  9 Jun 2023 04:51:13 -0700 (PDT)
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 359BS26m018993;
-        Fri, 9 Jun 2023 11:51:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references; s=qcppdkim1;
- bh=MIV3rmjMcZyaUTjM7aikjgAiSTVyfL8WSe1C+6FmZIs=;
- b=K/5Y6rF4Oo1kc0Yx45UTjYZVFwn+XmkRZgxiSSkF1tiR/BSSGZI9tmAsnvNUQdEBc5DL
- kfufni5lRBCyAfeh7Lw8MlxD7lOyeWfbNxj+6tX1DqBKdJ5GZrftKKZGleD/wBLwHoKu
- IDqB7FC8IqUKRP6RLvwbIWueuSFH/Cj7Smg+VQIMX9eb67P6nUDCQySXDaXaWWqDvxmt
- +7fmQpNVHF/2heKk6WdBI+ci/OPVP7EJG19xIM6Jj1i+CFKg4nw2cdWANG7ISX7ezsYQ
- GvbSE2HxVg+eT+COmOqOO+nKDsDJDoU5QpTTxI5x/Hdx81bAMZMMG3EAklcPiGnwY5Ph Dg== 
-Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3r3w7drqhb-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 09 Jun 2023 11:51:07 +0000
-Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-        by APBLRPPMTA02.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTP id 359Boed5019489;
-        Fri, 9 Jun 2023 11:50:41 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 3r2g35rh5a-1;
-        Fri, 09 Jun 2023 11:50:41 +0000
-Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 359BofE0019511;
-        Fri, 9 Jun 2023 11:50:41 GMT
-Received: from hu-sgudaval-hyd.qualcomm.com (hu-rohiagar-hyd.qualcomm.com [10.213.106.138])
-        by APBLRPPMTA02.qualcomm.com (PPS) with ESMTP id 359BoeTF019494;
-        Fri, 09 Jun 2023 11:50:41 +0000
-Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 3970568)
-        id 399375F3D; Fri,  9 Jun 2023 17:20:40 +0530 (+0530)
-From:   Rohit Agarwal <quic_rohiagar@quicinc.com>
-To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        conor+dt@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org,
-        tglx@linutronix.de, maz@kernel.org, mani@kernel.org,
-        robimarko@gmail.com
-Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Rohit Agarwal <quic_rohiagar@quicinc.com>
-Subject: [PATCH v4 3/5] dt-bindings: interrupt-controller: Add SDX75 PDC compatible
-Date:   Fri,  9 Jun 2023 17:20:36 +0530
-Message-Id: <1686311438-24177-4-git-send-email-quic_rohiagar@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1686311438-24177-1-git-send-email-quic_rohiagar@quicinc.com>
-References: <1686311438-24177-1-git-send-email-quic_rohiagar@quicinc.com>
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: 43i6W_CfFPX4C4KevFeUdGUGijLxcNkk
-X-Proofpoint-ORIG-GUID: 43i6W_CfFPX4C4KevFeUdGUGijLxcNkk
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-06-09_08,2023-06-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 bulkscore=0
- spamscore=0 impostorscore=0 phishscore=0 adultscore=0 mlxlogscore=637
- lowpriorityscore=0 suspectscore=0 clxscore=1015 priorityscore=1501
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306090100
+        with ESMTP id S239055AbjFIMoP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jun 2023 08:44:15 -0400
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DFC8270F;
+        Fri,  9 Jun 2023 05:44:14 -0700 (PDT)
+Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-977cc662f62so260120566b.3;
+        Fri, 09 Jun 2023 05:44:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1686314652; x=1688906652;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=b7QDAQq/Yt+bFUin4zRriBZQwbZHATNCIDd2rGGW2qI=;
+        b=RzAm0uMFzvRDdUqfG+0xGODQ94FDzGMPjIqzTf59CLjHZRlRY5iSj8X/LK7WNOs1LO
+         wrarbRpZ3OeOpR86HiqfQnOLkOCFLI9+CwuTVIGhWIp1HRKfEyP6Zqcywt7rxzdsLwAv
+         LGFjC2Gg/D9qNeeSrOOHkyG4m6VkXlxRtwVrNkVLtFKzJlPB3q5a4+99gynrn4ZH63UP
+         MSFKmSoKlmlMHEnAhe1L1gbnqfL6Wo1uGu7nngTFgpwhE75KiX0oyntLUeZANfR4yCGG
+         5IKML+XopTH/7Dl87+TbL98+AE/65c1gqOZRwDKbtwxyizHcrtW+hthN91kIeH7MxqqX
+         zaLQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686314652; x=1688906652;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=b7QDAQq/Yt+bFUin4zRriBZQwbZHATNCIDd2rGGW2qI=;
+        b=P3VkTXu3tG+Mb/n0udW8hFJtBR0KTIWNnJzdRHjThpLr/9nFAK/LhNVkK0Sg/KC61x
+         QHmUWz57xou6GQWJ/j6gnLxQshQbLolC1DTVBgarrlZcjPHGAMuIBpSnWd7KbY3bO181
+         hZyALUFvf9+XXjM9APgWW2pH86H4+pwzNdewePBxSY61lLZgEwkfWBWT+myUS5cbqcLV
+         3b1KZXLoWTEWTJYNj8tCIghesS6tgVgHKi2C/PTmAOz/M8cp46WVFD1fJHqz1iW0At3F
+         LNOiK/YDQwKN5mrUYmEjEEqT8IW2RHpR1kvQWHdeA8hzmXKw/6qS1+yBbHGk6ZKZQIXz
+         Xkuw==
+X-Gm-Message-State: AC+VfDxjP4RgHcS0N5jvTHhEPQCPmugcyinLgnRWCz4vlIHzeS4IepN1
+        n7np4NBofJI283fQOKNJ7CDgR+NXFqU=
+X-Google-Smtp-Source: ACHHUZ4hsONfFw870igCx5XZ0nUCRMTK7zGjIfceAO6CPKtu1YJA02DGNKkAdNtIFnb0ipXfWr4C3w==
+X-Received: by 2002:a17:906:6a15:b0:973:e349:43c8 with SMTP id qw21-20020a1709066a1500b00973e34943c8mr1805852ejc.69.1686314652317;
+        Fri, 09 Jun 2023 05:44:12 -0700 (PDT)
+Received: from localhost (p200300e41f305300f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f30:5300:f22f:74ff:fe1f:3a53])
+        by smtp.gmail.com with ESMTPSA id ke3-20020a17090798e300b00977cf84c42dsm1245584ejc.43.2023.06.09.05.44.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 09 Jun 2023 05:44:11 -0700 (PDT)
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal: Allow selecting the bang-bang governor as default
+Date:   Fri,  9 Jun 2023 14:44:08 +0200
+Message-Id: <20230609124408.3788680-1-thierry.reding@gmail.com>
+X-Mailer: git-send-email 2.40.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device tree bindings for PDC on SDX75 SOC.
+From: Thierry Reding <treding@nvidia.com>
 
-Signed-off-by: Rohit Agarwal <quic_rohiagar@quicinc.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+For many setups the bang-bang governor is exactly what we want. Many
+ARM SoC-based devices use fans to cool down the entire SoC and that
+works well only with the bang-bang governor because it uses the
+hysteresis in order to let the fan run for a while to cool the SoC
+down below the trip point before switching it off again.
+
+The step-wise governor will behave strangely in these situations. It
+doesn't use the hysteresis, so it can lead to situations where the fan
+is turned on for only a very brief period and then is switched back off,
+only to get switched back on again very quickly because the SoC hasn't
+cooled down very much.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
- Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/Kconfig        | 8 ++++++++
+ drivers/thermal/thermal_core.h | 2 ++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
-index a106ba6..24ec69a 100644
---- a/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
-+++ b/Documentation/devicetree/bindings/interrupt-controller/qcom,pdc.yaml
-@@ -34,6 +34,7 @@ properties:
-           - qcom,sdm845-pdc
-           - qcom,sdx55-pdc
-           - qcom,sdx65-pdc
-+          - qcom,sdx75-pdc
-           - qcom,sm6350-pdc
-           - qcom,sm8150-pdc
-           - qcom,sm8250-pdc
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 4cd7ab707315..19a4b33cb564 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -130,6 +130,14 @@ config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
+ 	  system and device power allocation. This governor can only
+ 	  operate on cooling devices that implement the power API.
+ 
++config THERMAL_DEFAULT_GOV_BANG_BANG
++	bool "bang_bang"
++	depends on THERMAL_GOV_BANG_BANG
++	help
++	  Use the bang_bang governor as default. This throttles the
++	  devices one step at the time, taking into account the trip
++	  point hysteresis.
++
+ endchoice
+ 
+ config THERMAL_GOV_FAIR_SHARE
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 3d4a787c6b28..17c1bbed734d 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -23,6 +23,8 @@
+ #define DEFAULT_THERMAL_GOVERNOR       "user_space"
+ #elif defined(CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR)
+ #define DEFAULT_THERMAL_GOVERNOR       "power_allocator"
++#elif defined(CONFIG_THERMAL_DEFAULT_GOV_BANG_BANG)
++#define DEFAULT_THERMAL_GOVERNOR       "bang_bang"
+ #endif
+ 
+ /* Initial state of a cooling device during binding */
 -- 
-2.7.4
+2.40.1
 
