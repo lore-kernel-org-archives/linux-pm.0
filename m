@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 607DEC87FE4
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Jun 2023 20:20:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31BF8C7EE2E
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Jun 2023 20:20:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232257AbjFIUUH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Jun 2023 16:20:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32916 "EHLO
+        id S232287AbjFIUUI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Jun 2023 16:20:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232027AbjFIUTq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jun 2023 16:19:46 -0400
+        with ESMTP id S232335AbjFIUTv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jun 2023 16:19:51 -0400
 Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E8C93AA6
-        for <linux-pm@vger.kernel.org>; Fri,  9 Jun 2023 13:19:27 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f6170b1486so2804227e87.0
-        for <linux-pm@vger.kernel.org>; Fri, 09 Jun 2023 13:19:27 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D2BB4204
+        for <linux-pm@vger.kernel.org>; Fri,  9 Jun 2023 13:19:34 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f62d93f38aso2809337e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 09 Jun 2023 13:19:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686341965; x=1688933965;
+        d=linaro.org; s=google; t=1686341972; x=1688933972;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=SfrxuCryRwNruY8M45Wu3RJX+ovLhKu0IcVWJCqPsxA=;
-        b=KP3A7+9FBIecqU615cEw0NVUU7OZT2ysrAuA3GWbLrqAPv2q2um9rzZ9rE7wrLB0C3
-         LmuTLt3juXN8Ppiz8vxzUtdKH3bZ7cM6gnVEF3H/ikoRPwi0pX7qUOW3Vh4Yu0CX278F
-         MCLAz17EOt2i+00pCEo0JaZeRc/qp5dE3HLJyWMjoqVuSrxGN3pv5CDX0ydcde1DhuOI
-         O7nbNMkI4aWEcNAngz62MgmaqsMbOiBKDBlw1sOlNAElaihzwJeqrGVqYkGk9j7b38gC
-         ysjsoTznvLK5uIDcIw+xk6X0rqRco6GxK+b9ToBjqF1sKtdOCTIZhr48QRT4Gmmfd5E3
-         CmpA==
+        bh=oxwAlvsxTG2NJKirdi7L920nJWliszLcfh8qb5HaEiU=;
+        b=Pu1eMhlvtx2syAfk6O/Kew64LxKcAeWFOSBhLgK+EkjXBWO9dDhA2hUvZR94D4GyVc
+         zNyAXWqtcjDID4K8OmwgtVsL1WSrZKwB0ZS0+rFkt/cHJL+HdUgFMJUDbFYhqNOu8aUC
+         jwPX5/3tDo9n2xndATcljDJYnzQwtUNY5kVJdGVjH6sh1L9C33ymuNtp1so7mxmATK2q
+         7hcOWJ5i0j+6E1JKAVqUtUIh1o3fcV9bKHkVqI0911138jIF5ZP9pm87T+kJY9wcskfH
+         GiQFzGGwAZ4rGNbp4AXWHM+ToE5VMYdHVoGLSREPvBzF/ey1f9Mzzwso8SeN7CEuxjTT
+         Xtkg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686341965; x=1688933965;
+        d=1e100.net; s=20221208; t=1686341972; x=1688933972;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=SfrxuCryRwNruY8M45Wu3RJX+ovLhKu0IcVWJCqPsxA=;
-        b=KM5V0S+JD+E+lpeOPmx4ctiwTS+t/KtzqdoTY9BIbr7O5pWiqjJN3BZgcUk6yrFi/F
-         EgYzTMoBZALzUBxRp9eRuOrSTwPBgvQCFDSSYOEzNkNNSJ3S+o35120FmKLfrFD5NxUS
-         a5TEQ9BilhjwXQEyUm0geh3YgHBn66OkSRXRBZdVqcaJ/N1zyFnPY07MQQHh88EyaJH3
-         6Q0HNE6nL2xryPFhGBlwS8KHM25rtYwf/Dg4hLMrWJ/FGp/dFdkxGjQXDG6fhFBgfB2w
-         m0nEIcs+Y/bBh+zQTzHi2GTzplaet3RehmprWjzwyO3PuvHMk3HkOmdZe4DfHkodsmOZ
-         R7EA==
-X-Gm-Message-State: AC+VfDzMW6m/QlqKuHvC7nXY7cDX1hODr3+lUdHjXpSSU3O2Ll78dz+D
-        p91836p8NcdMyXRhc0dpElITv+ujVO1Hh2Majls=
-X-Google-Smtp-Source: ACHHUZ57mtvh0Fc3MOodhaPBpI9c+k4zhwvL0O8bCEslmW59IgvvJBqXfyROP6dh646bawhPQGXjBA==
-X-Received: by 2002:a05:6512:1189:b0:4f6:29b1:c872 with SMTP id g9-20020a056512118900b004f629b1c872mr993739lfr.34.1686341965479;
-        Fri, 09 Jun 2023 13:19:25 -0700 (PDT)
+        bh=oxwAlvsxTG2NJKirdi7L920nJWliszLcfh8qb5HaEiU=;
+        b=Nr7VmrlMCoeEMmkYgtTizBiwGzFUaDFO5Orftf7diGnOXChb/YlWv3a2Spc6Jhbe2Y
+         22Mmt88hjP2y9b13oG3exR7fUCV6aDebKNYiDMbxkv/xABOu/BvyPLzqjVmuhcygXFmS
+         ogSkD8CsQpuvIgHUDx6wB8jizXHSbtKdwzeRyC8jTOtXIdMpatajo9UQHzB3Aj7SEXbZ
+         wtW52oEPfBrQFdmkN/DQflhEzf3Z+cZNWFEaObwtnfmWI0wm2i3oayaS7FCk9XdqjG30
+         axBX/dGOhqvC/gAGwNyfMAw9/mM6HIKSgQ7QjHZplXULRnxgw2+vfWm/UJDdjeDqN+MS
+         EzEQ==
+X-Gm-Message-State: AC+VfDz8hm39AYemYrW1hw4HQIctOLnkPAxcMnTiusiDrHoqpW1Mh6/8
+        UTuVYOFnztVJK/DYLSpv/y7Vvw4xUFTV5/0/3t4=
+X-Google-Smtp-Source: ACHHUZ4/Mlbad/Bz5Ye4ghUR+Ks8t1P3RipWOIYwo+g0JIb9jCoqD7/4hsUVpAYSxmcGvVndfscrew==
+X-Received: by 2002:ac2:5bca:0:b0:4ec:8853:136 with SMTP id u10-20020ac25bca000000b004ec88530136mr1760276lfn.12.1686341971890;
+        Fri, 09 Jun 2023 13:19:31 -0700 (PDT)
 Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
-        by smtp.gmail.com with ESMTPSA id b18-20020ac25632000000b004f628eb7884sm641349lff.232.2023.06.09.13.19.24
+        by smtp.gmail.com with ESMTPSA id b18-20020ac25632000000b004f628eb7884sm641349lff.232.2023.06.09.13.19.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Jun 2023 13:19:25 -0700 (PDT)
+        Fri, 09 Jun 2023 13:19:31 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Fri, 09 Jun 2023 22:19:13 +0200
-Subject: [PATCH v2 08/22] interconnect: qcom: smd-rpm: Add rpmcc handling
- skeleton code
+Date:   Fri, 09 Jun 2023 22:19:18 +0200
+Subject: [PATCH v2 13/22] interconnect: qcom: qcs404: Hook up RPM bus clk
+ definitions
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v2-8-e5934b07d813@linaro.org>
+Message-Id: <20230526-topic-smd_icc-v2-13-e5934b07d813@linaro.org>
 References: <20230526-topic-smd_icc-v2-0-e5934b07d813@linaro.org>
 In-Reply-To: <20230526-topic-smd_icc-v2-0-e5934b07d813@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -68,140 +68,57 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686341953; l=3840;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1686341953; l=1291;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=Be0qL+ODrjCDl44ro/wrhtm3D8xnErJxyrWWn+SRhEI=;
- b=7lsJVMnla/ctq1ICQUEQZnHZ5G+do1MXvq8+atVp+X9Wj7lkLh6SSBUpc/FVjWwAeOPlKXWkW
- oe4s086HNvSAU9FRarNzMqepczduiogllgwdRJB3hoKtaWyTL6kVf7u
+ bh=NibH4RmX92w9jFbYbYmeVzyLtbX9fV3dfXE9S9JnGAI=;
+ b=TCpechMBmNATG7KGeUW31PLFuqm3NZxW7uiHDhtr0yC1lY68iIT1yDQ3b2mP4m5p+HjRj8PFP
+ 4THtWoa3TEfBvWcVHk9/g8MjWvcFHHyCbJQFsbMvcjEKwPK6x9asXqQ
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce qcom_icc_rpm_set_bus_rate() in preparation for handling RPM
-clock resources within the interconnect framework. This lets us greatly
-simplify all of the code handling, as setting the rate comes down to:
+Assign the necessary definitions to migrate to the new bus clock
+handling mechanism.
 
-u32 rate_khz = max(clk.sleep_rate, clk.active_rate, clk_a.active_rate)
-write_to_rpm(clock.description, rate_khz);
-
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/icc-rpm.h | 15 +++++++++++++++
- drivers/interconnect/qcom/smd-rpm.c | 37 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 52 insertions(+)
+ drivers/interconnect/qcom/qcs404.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index 9b4ea4e39b9f..aec192321411 100644
---- a/drivers/interconnect/qcom/icc-rpm.h
-+++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -22,6 +22,18 @@ enum qcom_icc_type {
- 	QCOM_ICC_QNOC,
+diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+index 938283ddd0e3..9deb4d81104e 100644
+--- a/drivers/interconnect/qcom/qcs404.c
++++ b/drivers/interconnect/qcom/qcs404.c
+@@ -984,6 +984,7 @@ static struct qcom_icc_node * const qcs404_bimc_nodes[] = {
  };
  
-+/**
-+ * struct rpm_clk_resource - RPM bus clock resource
-+ * @resource_type: RPM resource type of the clock resource
-+ * @clock_id: index of the clock resource of a specific resource type
-+ * @branch: whether the resource represents a branch clock
-+*/
-+struct rpm_clk_resource {
-+	u32 resource_type;
-+	u32 clock_id;
-+	bool branch;
-+};
-+
- #define NUM_BUS_CLKS	2
+ static const struct qcom_icc_desc qcs404_bimc = {
++	.bus_clk_desc = &bimc_clk,
+ 	.nodes = qcs404_bimc_nodes,
+ 	.num_nodes = ARRAY_SIZE(qcs404_bimc_nodes),
+ };
+@@ -1038,6 +1039,7 @@ static struct qcom_icc_node * const qcs404_pcnoc_nodes[] = {
+ };
  
- /**
-@@ -47,6 +59,7 @@ struct qcom_icc_provider {
- 	int qos_offset;
- 	u64 bus_clk_rate[NUM_BUS_CLKS];
- 	struct clk_bulk_data bus_clks[NUM_BUS_CLKS];
-+	const struct rpm_clk_resource *bus_clk_desc;
- 	struct clk_bulk_data *intf_clks;
- 	bool keep_alive;
- 	bool is_on;
-@@ -104,6 +117,7 @@ struct qcom_icc_desc {
- 	struct qcom_icc_node * const *nodes;
- 	size_t num_nodes;
- 	const char * const *bus_clocks;
-+	const struct rpm_clk_resource *bus_clk_desc;
- 	const char * const *intf_clocks;
- 	size_t num_intf_clocks;
- 	bool keep_alive;
-@@ -125,5 +139,6 @@ int qnoc_remove(struct platform_device *pdev);
+ static const struct qcom_icc_desc qcs404_pcnoc = {
++	.bus_clk_desc = &bus_0_clk,
+ 	.nodes = qcs404_pcnoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(qcs404_pcnoc_nodes),
+ };
+@@ -1066,6 +1068,7 @@ static struct qcom_icc_node * const qcs404_snoc_nodes[] = {
+ };
  
- bool qcom_icc_rpm_smd_available(void);
- int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
-+int qcom_icc_rpm_set_bus_rate(const struct rpm_clk_resource *clk, u32 active_rate, u32 sleep_rate);
- 
- #endif
-diff --git a/drivers/interconnect/qcom/smd-rpm.c b/drivers/interconnect/qcom/smd-rpm.c
-index b0183262ba66..6c51e346b326 100644
---- a/drivers/interconnect/qcom/smd-rpm.c
-+++ b/drivers/interconnect/qcom/smd-rpm.c
-@@ -16,6 +16,7 @@
- #include "icc-rpm.h"
- 
- #define RPM_KEY_BW		0x00007762
-+#define QCOM_RPM_SMD_KEY_RATE	0x007a484b
- 
- static struct qcom_smd_rpm *icc_smd_rpm;
- 
-@@ -44,6 +45,38 @@ int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val)
- }
- EXPORT_SYMBOL_GPL(qcom_icc_rpm_smd_send);
- 
-+int qcom_icc_rpm_set_bus_rate(const struct rpm_clk_resource *clk, u32 active_rate, u32 sleep_rate)
-+{
-+	struct clk_smd_rpm_req req = {
-+		.key = cpu_to_le32(QCOM_RPM_SMD_KEY_RATE),
-+		.nbytes = cpu_to_le32(sizeof(u32)),
-+	};
-+	int ret;
-+
-+	/* Branch clocks are only on/off */
-+	if (clk->branch) {
-+		active_rate = !!active_rate;
-+		sleep_rate = !!sleep_rate;
-+	}
-+
-+	req.value = cpu_to_le32(active_rate);
-+	ret = qcom_rpm_smd_write(icc_smd_rpm,
-+				 QCOM_SMD_RPM_ACTIVE_STATE,
-+				 clk->resource_type,
-+				 clk->clock_id,
-+				 &req, sizeof(req));
-+	if (ret)
-+		return ret;
-+
-+	req.value = cpu_to_le32(sleep_rate);
-+	return qcom_rpm_smd_write(icc_smd_rpm,
-+				  QCOM_SMD_RPM_SLEEP_STATE,
-+				  clk->resource_type,
-+				  clk->clock_id,
-+				  &req, sizeof(req));
-+}
-+EXPORT_SYMBOL_GPL(qcom_icc_rpm_set_bus_rate);
-+
- static int qcom_icc_rpm_smd_remove(struct platform_device *pdev)
- {
- 	icc_smd_rpm = NULL;
-@@ -60,6 +93,10 @@ static int qcom_icc_rpm_smd_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
-+	/* We need the clock driver to kick things off first to avoid ugly races */
-+	if (!qcom_smd_rpm_scaling_available())
-+		return -EPROBE_DEFER;
-+
- 	return 0;
- }
- 
+ static const struct qcom_icc_desc qcs404_snoc = {
++	.bus_clk_desc = &bus_1_clk,
+ 	.nodes = qcs404_snoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(qcs404_snoc_nodes),
+ };
 
 -- 
 2.41.0
