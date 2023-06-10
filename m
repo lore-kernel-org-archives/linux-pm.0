@@ -2,147 +2,122 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80ED6C7EE43
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Jun 2023 18:35:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2566C7EE45
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Jun 2023 18:44:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231156AbjFJSfb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Jun 2023 14:35:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50696 "EHLO
+        id S231287AbjFJSn7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Jun 2023 14:43:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229772AbjFJSf3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Jun 2023 14:35:29 -0400
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C00130ED
-        for <linux-pm@vger.kernel.org>; Sat, 10 Jun 2023 11:35:28 -0700 (PDT)
-X-IronPort-AV: E=McAfee;i="6600,9927,10737"; a="356683690"
-X-IronPort-AV: E=Sophos;i="6.00,232,1681196400"; 
-   d="scan'208";a="356683690"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2023 11:35:22 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10737"; a="688116115"
-X-IronPort-AV: E=Sophos;i="6.00,232,1681196400"; 
-   d="scan'208";a="688116115"
-Received: from powerlab.fi.intel.com ([10.237.71.25])
-  by orsmga006.jf.intel.com with ESMTP; 10 Jun 2023 11:35:21 -0700
-From:   Artem Bityutskiy <dedekind1@gmail.com>
-To:     x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM Mailing List <linux-pm@vger.kernel.org>,
-        Arjan van de Ven <arjan@linux.intel.com>,
-        Artem Bityutskiy <dedekind1@gmail.com>
-Subject: [PATCH v3 1/2] x86/mwait: Add support for idle via umwait
-Date:   Sat, 10 Jun 2023 21:35:17 +0300
-Message-Id: <20230610183518.4061159-2-dedekind1@gmail.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230610183518.4061159-1-dedekind1@gmail.com>
-References: <20230610183518.4061159-1-dedekind1@gmail.com>
+        with ESMTP id S229710AbjFJSn6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Jun 2023 14:43:58 -0400
+Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [81.169.146.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF4213A80;
+        Sat, 10 Jun 2023 11:43:56 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1686422634; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=asBfk+JTn3kmbbKzvLwZZkt+t+hUl+8Rp9teCSFRKkXTcfJdAAne0bD+ZZHeQNv9XB
+    yBEgmD4tsX0nfh/CCMk5MK9FtsQdvEV1uQr4tDX3EV5l0MibytA5FhJ8zGv7V6syb4aT
+    QbcQo4AJfRACV1A1hyvPsW5UiPyLMXpC7R9IbtAl2+TWXe/nvm+SEpNB8NrM8rDkp4kk
+    EszIpfeygxlyjbrPmXaHwg1GOZ2/WQxUI1XwavVvlqLBiAoxbrmx/AFNAXF1tjKYEjIM
+    JBdqlfdZ8c2pDRND5w6e3ZN0M2D5CLJRp7uaXjbt7a6kjhwP09WECc5Rr2L+zSe2EXHF
+    r7OA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1686422634;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=S7/IDhnf4V6vN7TW7QvV+Hg95m/AA8lfZgRn14G6IEk=;
+    b=Wu6p/he0znPWIGktuHRwwvwzm+7fn8v7N/wOCXeoE0uoM30pT7iIJx1kSbFJOsmIif
+    cJWqSX/ZSFFZRafxyxj+RYH28opYp9GvmsoF/ZSU/kDmSjHi4N1XLi8YB1tA3YuGTLhX
+    /cqmej4zu66Q7eQwAKuDlPQsH9lyMFQsZ29hZtV0pJPjH+9fZoYS9UzoDnvEBL6Fi43u
+    Uv2I3Pwh6ovT8DhBAu4HVN+W7AtPADiwBQ8T+ejIwdip0Sm1Y0MY1QqkyUrhp5lvO5Wo
+    K+Ti+8g3bha/q4fT3LDwMMWhQNiR64S5z9uBk6tkNoN9J0ZZmADnApGwDRaqwqJuilch
+    9D/w==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo02
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1686422634;
+    s=strato-dkim-0002; d=gerhold.net;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=S7/IDhnf4V6vN7TW7QvV+Hg95m/AA8lfZgRn14G6IEk=;
+    b=FHa2iAmKqKH5gj8F1eho5DxAm03wIs3t1/NJMQ5HuB7lv+Y+Iyn1nJSOvsMeSjvmiB
+    WqvCEm/MUF2jfp+OXYEdfyv1WiBcV/gItaiSYi2wKNxNGH1yTxEGSNU6K03fW6Z6Qot4
+    /YSvkNMqZJSN+kTEnX5KYa9bkmBxN/Io2jdTLj5EhVriXBP7IfHEJ3BHay9EYdvNnfp4
+    Axv7wgnxuK+8S7IeWVrURuvogZgoe3qAqJJABpO724B67mgVZvVYvmLSQnhAQBuvU21z
+    GQWH9Jyo42BLIghcPMRWdR8bxS9QH1goWnQ1+y6zNWXcQqehYLqmjAgvrYrzKTlm8DVl
+    D72g==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1686422634;
+    s=strato-dkim-0003; d=gerhold.net;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=S7/IDhnf4V6vN7TW7QvV+Hg95m/AA8lfZgRn14G6IEk=;
+    b=a9p/de1o9mg/6v1sNoU8iqn58cKzLRWecUKhbUAw0FQJE85HAHKOfbwIJ1FGsRhNsq
+    eST8dmACihnRPd2oCfBw==
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u261EJF5OxJD4paA9J/h"
+Received: from gerhold.net
+    by smtp.strato.de (RZmta 49.5.3 DYNA|AUTH)
+    with ESMTPSA id Z82ec2z5AIhsQd1
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+        (Client did not present a certificate);
+    Sat, 10 Jun 2023 20:43:54 +0200 (CEST)
+Date:   Sat, 10 Jun 2023 20:43:53 +0200
+From:   Stephan Gerhold <stephan@gerhold.net>
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Leo Yan <leo.yan@linaro.org>,
+        Evan Green <evgreen@chromium.org>,
+        Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 20/22] interconnect: qcom: icc-rpm: Set bandwidth on
+ both contexts
+Message-ID: <ZITEacAtcaZRY6ib@gerhold.net>
+References: <20230526-topic-smd_icc-v2-0-e5934b07d813@linaro.org>
+ <20230526-topic-smd_icc-v2-20-e5934b07d813@linaro.org>
+ <ZIS6LK2lnlnNygX7@gerhold.net>
+ <e9855fca-cd90-202f-aab3-caa323c33ec0@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9855fca-cd90-202f-aab3-caa323c33ec0@linaro.org>
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+On Sat, Jun 10, 2023 at 08:28:22PM +0200, Konrad Dybcio wrote:
+> 
+> 
+> On 10.06.2023 20:00, Stephan Gerhold wrote:
+> > On Fri, Jun 09, 2023 at 10:19:25PM +0200, Konrad Dybcio wrote:
+> >> Up until now, for some reason we've only been setting bandwidth values
+> >> on the active-only context. That pretty much meant that RPM could lift
+> >> all votes when entering sleep mode. Or never sleep at all.
+> >>
+> >> That in turn could potentially break things like USB wakeup, as the
+> >> connection between APSS and SNoC/PNoC would simply be dead.
+> >>
+> > 
+> > Nitpick: Apparently an "active" vote is applied during both active+sleep
+> > until the first "sleep" vote is sent. It's documented only for
+> > regulators [1] but I would expect the same applies to the bandwidths.
+> > This means actual breakage shouldn't have been possible.
+> ..unless some part of the boot chain voted for the sleep set!
+> 
+> I'm not sure whether the regulator comment also holds for bw, but I
+> also don't really have a great way to check it.. Would you want me to
+> alter this commit message somehow?
+> 
 
-On Intel platforms, C-states are requested using the 'monitor/mwait'
-instructions pair, as implemented in 'mwait_idle_with_hints()'. This
-mechanism allows for entering C1 and deeper C-states.
+Hm. Well, on a second look you used "could" instead of "definitely does"
+everywhere in your commit message. There is a indeed a slight chance
+so feel free to just keep it as-is. :D
 
-Sapphire Rapids Xeon supports new idle states - C0.1 and C0.2 (later C0.x).
-These idle states have lower latency comparing to C1, and can be requested
-with either 'tpause' and 'umwait' instructions.
-
-Linux already uses the 'tpause' instruction in delay functions like
-'udelay()'. This patch adds 'umwait' and 'umonitor' instructions support.
-
-'umwait' and 'tpause' instructions are very similar - both send the CPU to
-C0.x and have the same break out rules. But unlike 'tpause', 'umwait' works
-together with 'umonitor' and exits the C0.x when the monitored memory
-address is modified (similar idea as with 'monitor/mwait').
-
-This patch implements the 'umwait_idle()' function, which works very
-similarly to existing 'mwait_idle_with_hints()', but requests C0.x. The
-intention is to use it from the 'intel_idle' driver.
-
-Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
----
- arch/x86/include/asm/mwait.h | 65 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
-
-diff --git a/arch/x86/include/asm/mwait.h b/arch/x86/include/asm/mwait.h
-index 778df05f8539..681c281eeaa7 100644
---- a/arch/x86/include/asm/mwait.h
-+++ b/arch/x86/include/asm/mwait.h
-@@ -141,4 +141,69 @@ static inline void __tpause(u32 ecx, u32 edx, u32 eax)
- 	#endif
- }
- 
-+#ifdef CONFIG_X86_64
-+/*
-+ * Monitor a memory address at 'rcx' using the 'umonitor' instruction.
-+ */
-+static inline void __umonitor(const void *rcx)
-+{
-+	/* "umonitor %rcx" */
-+#ifdef CONFIG_AS_TPAUSE
-+	asm volatile("umonitor %%rcx\n"
-+		     :
-+		     : "c"(rcx));
-+#else
-+	asm volatile(".byte 0xf3, 0x0f, 0xae, 0xf1\t\n"
-+		     :
-+		     : "c"(rcx));
-+#endif
-+}
-+
-+/*
-+ * Same as '__tpause()', but uses the 'umwait' instruction. It is very
-+ * similar to 'tpause', but also breaks out if the data at the address
-+ * monitored with 'umonitor' is modified.
-+ */
-+static inline void __umwait(u32 ecx, u32 edx, u32 eax)
-+{
-+	/* "umwait %ecx, %edx, %eax;" */
-+#ifdef CONFIG_AS_TPAUSE
-+	asm volatile("umwait %%ecx\n"
-+		     :
-+		     : "c"(ecx), "d"(edx), "a"(eax));
-+#else
-+	asm volatile(".byte 0xf2, 0x0f, 0xae, 0xf1\t\n"
-+		     :
-+		     : "c"(ecx), "d"(edx), "a"(eax));
-+#endif
-+}
-+
-+/*
-+ * Enter C0.1 or C0.2 state and stay there until an event happens (an interrupt
-+ * or the 'need_resched()'), the explicit deadline is reached, or the implicit
-+ * global limit is reached.
-+ *
-+ * The deadline is the absolute TSC value to exit the idle state at. If it
-+ * exceeds the global limit in the 'IA32_UMWAIT_CONTROL' register, the global
-+ * limit prevails, and the idle state is exited earlier than the deadline.
-+ */
-+static inline void umwait_idle(u64 deadline, u32 state)
-+{
-+	if (!current_set_polling_and_test()) {
-+		u32 eax, edx;
-+
-+		eax = lower_32_bits(deadline);
-+		edx = upper_32_bits(deadline);
-+
-+		__umonitor(&current_thread_info()->flags);
-+		if (!need_resched())
-+			__umwait(state, edx, eax);
-+	}
-+	current_clr_polling();
-+}
-+#else
-+#define umwait_idle(deadline, state) \
-+		WARN_ONCE(1, "umwait CPU instruction is not supported")
-+#endif /* CONFIG_X86_64 */
-+
- #endif /* _ASM_X86_MWAIT_H */
--- 
-2.40.1
-
+Thanks,
+Stephan
