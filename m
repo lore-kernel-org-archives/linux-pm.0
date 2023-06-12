@@ -2,60 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA830C88CB7
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 18:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43181CA9EC9
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 18:30:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237616AbjFLSa4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 14:30:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44664 "EHLO
+        id S237650AbjFLSa5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 14:30:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44662 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237628AbjFLSYo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 14:24:44 -0400
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 07740EC
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 11:24:42 -0700 (PDT)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4f658a17aa4so4648400e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 11:24:42 -0700 (PDT)
+        with ESMTP id S237714AbjFLSYu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 14:24:50 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F9DCE69
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 11:24:49 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id 2adb3069b0e04-4f6283d0d84so5516629e87.1
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 11:24:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686594281; x=1689186281;
+        d=linaro.org; s=google; t=1686594287; x=1689186287;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Ak6pJEE70i86/FySUfYrSS2au3HzGmo13oLp85+Of0E=;
-        b=PCvP9cs17qBaf62as9MDWOKExq7NCk5ON/MclnOAlvR4MUsiKiLbRegl6cuDGcfKQi
-         T5tq69pg6qUlvK6kj5HEUzIYb6+tbp+02qYR8VHLqXm9g6ZqYwMPfgJjPUV+dQXgNOup
-         h93xhIXi1A0Fet8PTwla8vBS2Bsf2e+PekPjeAakLX+eBGcr+Oop5UUiGwPTRCZ2Yb6X
-         eBZ/4q5qAN4Hv8p+h96JUV6HHuFrwo2SV16vAuzYFHjIksSfERjY2KDR6ciIgcm58ER0
-         xrEaatG2RNwHw8D+SofCr5C1tjArvG3vB1O7is3D9hHJnldAoVui7flfJG5v712gd70J
-         oZlw==
+        bh=FsjjWN/3ExrWWr4Y2ppq6JQGmoO1NTS4jkjNM8tw+cY=;
+        b=K54KstXCd6kINZFUtZ3Smsy8fneDRssP9Duv/nwy9dWQ1mXbMw0Q3xn6fqjKVhyoRW
+         UbP7QxyL4lzL2aiI4funWx4hQgIvgF1V6h3uBe2mC0aYxzG3AGgCocZpqXGrSZmvs9LY
+         vlMIs6saA8UijChiRSWqs/UGCdQtuvgjdp4N7XXAEEmHQ7fUWyYSJu95z3E05avM+Imy
+         KQgWoI13E96ZiKo6Kc+aAtb4KPHSdxxhMufzksEc272v5eA0/AAQLtbSnJPbIuZqGU8m
+         dN3+gcPe3Wt0DSJhacABEX51q8dZWDNty7clvVR6d45SQ2zlBRZj5dp2WTPyuIlvDa2A
+         Qq2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686594281; x=1689186281;
+        d=1e100.net; s=20221208; t=1686594287; x=1689186287;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Ak6pJEE70i86/FySUfYrSS2au3HzGmo13oLp85+Of0E=;
-        b=eo+gqKPt5UWWs6d40xIbq6qv84JcnlbKcG1/SaHgw7SuFXR5t5+sx+qanBWwMV99jA
-         vkKnsUQO+lqGTofjynteZBAJpNJr4ytu6+tVvxJsEdaw3cvYFM9hOJRrTu3rxx8/Jqn+
-         C+4coyxNWEfn7A63YLmhyzNlV+OOJB0OdTtETzEH251adsgdPlKiLrOktAWKacXJKGme
-         HM7oWL0shChI3DVfmDIqoyuXun/lw7mM4RUzbzjf1I5R24KrCIgijl5OzHpAjV3YqSp8
-         BggFjTihqhEMf3G9U0xI+i5DlpCGWz9f+CexyBnrysBIAdl8aQ+V/lvjl/ND/IyybNuG
-         vbUw==
-X-Gm-Message-State: AC+VfDzFCybd97RQw+OO5xiD9cT25LUnTfycGUH0tJkAo6Om5SEwqkeY
-        5cqFRM1Uhc5Kebk1tyQhy07Fwg9vuj4IF05WpvM=
-X-Google-Smtp-Source: ACHHUZ6PqidP4GLrAVRUdLTktHPgs8WgB/iWRzTjZRTImTQ2uKyXgb6jcmCiP+PXOFMPRVCwEalReQ==
-X-Received: by 2002:a19:4357:0:b0:4f6:20a8:2656 with SMTP id m23-20020a194357000000b004f620a82656mr4018758lfj.29.1686594280772;
-        Mon, 12 Jun 2023 11:24:40 -0700 (PDT)
+        bh=FsjjWN/3ExrWWr4Y2ppq6JQGmoO1NTS4jkjNM8tw+cY=;
+        b=fYpdHH0us85QZDZAhlNAW5gQ9eQUyl+UmdL6JjC4IGiaEpeakY9tMU680wAJxL7HaM
+         d+yz6TZf+wNIar7tY7AZp8wNjfutCbBt5KEUe2HQ6NHxh4/AiYbz3PEAkY6Y9100lNAO
+         kLoMU0la0jD+4125S8bhshDdI6eByRYkgHQS50Iu4GtrNs1HBD4c31lbv2U6r/Skszax
+         I7vINTe+2Q3LY9WbzkEydA3301VjOof7bOn0K/Pubr8tTvOZVjW6oyYEqDZ/6IA6hqAm
+         jerInuhceL3L5yNOGeksXWpRZr5fAg6PDLYfCXWJ4PMYFEibEiKydqvqBNHMYFWEOff3
+         lyMQ==
+X-Gm-Message-State: AC+VfDxgyjZdkk7UoSfuMT+sNSexSzoEtEskgZQwpkg6P0Ghf5E5cMD1
+        wmDAdIcU3vZTyBnY0Fpev0VJcg==
+X-Google-Smtp-Source: ACHHUZ5gh2WUgM3aKwlGzRs6m3JPDYp0MPUlhlGg74/eA25lZuz77rG1nbz0YBbUX9rHLBusN3lBYQ==
+X-Received: by 2002:a19:9101:0:b0:4f6:1863:6b47 with SMTP id t1-20020a199101000000b004f618636b47mr4603716lfd.42.1686594287470;
+        Mon, 12 Jun 2023 11:24:47 -0700 (PDT)
 Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
-        by smtp.gmail.com with ESMTPSA id v24-20020ac25938000000b004f64073a252sm1502035lfi.96.2023.06.12.11.24.39
+        by smtp.gmail.com with ESMTPSA id v24-20020ac25938000000b004f64073a252sm1502035lfi.96.2023.06.12.11.24.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Jun 2023 11:24:40 -0700 (PDT)
+        Mon, 12 Jun 2023 11:24:47 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Mon, 12 Jun 2023 20:24:19 +0200
-Subject: [PATCH v3 02/23] soc: qcom: smd-rpm: Add QCOM_SMD_RPM_STATE_NUM
+Date:   Mon, 12 Jun 2023 20:24:24 +0200
+Subject: [PATCH v3 07/23] interconnect: qcom: icc-rpm: Allow negative QoS
+ offset
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v3-2-5fb7d39b874f@linaro.org>
+Message-Id: <20230526-topic-smd_icc-v3-7-5fb7d39b874f@linaro.org>
 References: <20230526-topic-smd_icc-v3-0-5fb7d39b874f@linaro.org>
 In-Reply-To: <20230526-topic-smd_icc-v3-0-5fb7d39b874f@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -74,36 +75,65 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         devicetree@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686594276; l=664;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1686594276; l=1945;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=XHE1WQYZzaLo+c3xD4ALM/GRb1VwY7GuxNqpdL0mBnk=;
- b=UgnSsD/ZMCPV95S+X937A3q269KBqm/jPKgp4HLyljIdENs8MSPHoc98VlbXAKg+6mjm3UeWx
- SX3SBk8iMfaBtfRbHi3/sbsb+8X86VtsXx3bgt8nMvFePsn1CSjlbV2
+ bh=rgTDM+URKWJ36SFNnllBnyQwiFYuxKTtmuTacUJ+85U=;
+ b=7UiBzS0n4xsdfHTqQtldUSL1Fr4X4ozDE1+IvyrfLr7nbeJycdVlDkurmHFJcs6oCBEdTQKJS
+ fsyt6fTKUY8DDiVa5bFEWu8qEZXRBe/GT8V7EuZ9RnxlbiJiTJftXed
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a preprocessor define to indicate the number of RPM contexts/states.
+In some very very very very unfortunate cases, the correct offset of
+the QoS registers will be.. negative. One such case is MSM8998, where
+The DDR BWMON occupies what-would-be-the-BIMC-base which we usually
+take into account with the register calculation, making the actual
+BIMC node start at what-would-be-the-BIMC-base+0x300.
+
+In order to keep the calculation code sane, the simplest - however
+ugly it may be - solution is to allow the offset to be negative.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- include/linux/soc/qcom/smd-rpm.h | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/interconnect/qcom/icc-rpm.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/soc/qcom/smd-rpm.h b/include/linux/soc/qcom/smd-rpm.h
-index 2990f425fdef..e468f94fa323 100644
---- a/include/linux/soc/qcom/smd-rpm.h
-+++ b/include/linux/soc/qcom/smd-rpm.h
-@@ -6,6 +6,7 @@ struct qcom_smd_rpm;
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index d2c04c400cad..ba840a436cc0 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -29,10 +29,10 @@ enum qcom_icc_type {
+  * @num_intf_clks: the total number of intf_clks clk_bulk_data entries
+  * @type: the ICC provider type
+  * @regmap: regmap for QoS registers read/write access
+- * @qos_offset: offset to QoS registers
+  * @bus_clk_rate: bus clock rate in Hz
+  * @bus_clks: the clk_bulk_data table of bus clocks
+  * @intf_clks: a clk_bulk_data array of interface clocks
++ * @qos_offset: offset to QoS registers
+  * @keep_alive: whether to always keep a minimum vote on the bus clocks
+  * @is_on: whether the bus is powered on
+  */
+@@ -42,7 +42,7 @@ struct qcom_icc_provider {
+ 	int num_intf_clks;
+ 	enum qcom_icc_type type;
+ 	struct regmap *regmap;
+-	unsigned int qos_offset;
++	int qos_offset;
+ 	u64 bus_clk_rate[NUM_BUS_CLKS];
+ 	struct clk_bulk_data bus_clks[NUM_BUS_CLKS];
+ 	struct clk_bulk_data *intf_clks;
+@@ -108,7 +108,7 @@ struct qcom_icc_desc {
+ 	bool no_clk_scaling;
+ 	enum qcom_icc_type type;
+ 	const struct regmap_config *regmap_cfg;
+-	unsigned int qos_offset;
++	int qos_offset;
+ };
  
- #define QCOM_SMD_RPM_ACTIVE_STATE        0
- #define QCOM_SMD_RPM_SLEEP_STATE         1
-+#define QCOM_SMD_RPM_STATE_NUM		2
- 
- /*
-  * Constants used for addressing resources in the RPM.
+ /* Valid for all bus types */
 
 -- 
 2.41.0
