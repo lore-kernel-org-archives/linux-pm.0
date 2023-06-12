@@ -2,251 +2,159 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80E89C88CB6
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 14:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE572C88CB4
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 14:35:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238895AbjFLO2N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 10:28:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37704 "EHLO
+        id S238148AbjFLOfj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 10:35:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238886AbjFLO1t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 10:27:49 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B0111FD9;
-        Mon, 12 Jun 2023 07:26:01 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-3f730c1253fso32875905e9.1;
-        Mon, 12 Jun 2023 07:26:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1686579959; x=1689171959;
-        h=in-reply-to:content-disposition:mime-version:references:subject:cc
-         :to:from:date:message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=RjtSEA7DuOPBkcYthmOn7vURof3lAlYXKY7QmKw3HkY=;
-        b=Cwt8/EH1kDYTNz09VG4PrLvKE4Vjat0/KE85BrlKV5AzkkxI2MrMsU6Ee4FXxw6pkI
-         QehfdZgVRW8OUYq6ch0FzmGsloii12FBSnhvyFUZRZZZOUlZ799TeQPPshjIZgXSgjwb
-         OjMG07aw22Llo//b9xxnFVqiAaLA9acC/obL/Zcay9vJqmM1KqxMRJroFiS5+i+lFHy6
-         2xo+YbRUi8yjOGJAV7BFsFsEj7S7o41FrovPWQlp/8RL7SADp9MHfFzPxSrw5jIVVkbS
-         pw+YorK9pv6oHkr3k3W0SCipwnDrJLyHSz6KjefW/hMgvVSaZgbbGPtcT6E6LYmwriW2
-         0BGQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686579959; x=1689171959;
-        h=in-reply-to:content-disposition:mime-version:references:subject:cc
-         :to:from:date:message-id:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=RjtSEA7DuOPBkcYthmOn7vURof3lAlYXKY7QmKw3HkY=;
-        b=Y/70NrmSd9Jwi/ETn4fRIr/3JcV3OIoYylH8lgl8oLNBwqQ6sSTG9dRgWF4vUSFSMW
-         m8dR9QXbQgGoXc3ZwcfnsEC6TJD9zXPApah12lobq7JfILZGC58tSX4sF6GL58U4PPVD
-         Hka8fg7/GaZ1PDTrBQDAGtYwsjiTxABC1ygdM6odCOR0Cg3wLKISCOuH2WavS9sszu3M
-         zWGEMo3A2hbT+Ex2yGGcmfSCMKWO0kMYtj4oHFa2eTVuhtQxcrFitJbPvKp6gsW2006w
-         uw7SXxl2g5bYRpznYbjCquYwk5Az/Dq5Wxh9MKfjt2OAtf8pyS2U26x9KKJJKa6DrSGF
-         CU+A==
-X-Gm-Message-State: AC+VfDyp2TzBIPr7ptCAvFipxkUsGwG166Xdg4wik/n/GkR9CFNaqP7/
-        TQFJrfiPmA5U+DcIUQdl6JU=
-X-Google-Smtp-Source: ACHHUZ7Omyn97pOg8e3cGLPeeyE8qSbQSLg1G/lz5tM5DYso6n8pXS79Aq6p5zBQ9so0adBrOJ4W8Q==
-X-Received: by 2002:adf:e310:0:b0:306:3912:a7f0 with SMTP id b16-20020adfe310000000b003063912a7f0mr4144949wrj.50.1686579958579;
-        Mon, 12 Jun 2023 07:25:58 -0700 (PDT)
-Received: from Ansuel-xps. (93-34-93-173.ip49.fastwebnet.it. [93.34.93.173])
-        by smtp.gmail.com with ESMTPSA id q7-20020adff947000000b0030af72bca98sm12584038wrr.103.2023.06.12.07.25.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Jun 2023 07:25:58 -0700 (PDT)
-Message-ID: <64872af6.df0a0220.53d8a.9284@mx.google.com>
-X-Google-Original-Message-ID: <ZIZHoO0e6gZtRP2B@Ansuel-xps.>
-Date:   Mon, 12 Jun 2023 00:16:00 +0200
-From:   Christian Marangi <ansuelsmth@gmail.com>
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Cc:     Stephan Gerhold <stephan@gerhold.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
+        with ESMTP id S238911AbjFLOem (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 10:34:42 -0400
+Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
+        by lindbergh.monkeyblade.net (Postfix) with SMTP id 4B6521718
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 07:34:27 -0700 (PDT)
+Received: (qmail 394521 invoked by uid 1000); 12 Jun 2023 10:33:35 -0400
+Date:   Mon, 12 Jun 2023 10:33:35 -0400
+From:   Alan Stern <stern@rowland.harvard.edu>
+To:     Damien Le Moal <dlemoal@kernel.org>
+Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Hannes Reinecke <hare@suse.de>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Bagas Sanjaya <bagasdotme@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: Re: [PATCH 15/18] ARM: dts: qcom: apq8064: provide voltage scaling
- tables
-References: <20230612053922.3284394-1-dmitry.baryshkov@linaro.org>
- <20230612053922.3284394-16-dmitry.baryshkov@linaro.org>
- <ZIbez4RA0OoVfHzt@gerhold.net>
- <8c1085fd-8a73-d192-6624-d4f35728e68a@linaro.org>
+        Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Tony Luck <tony.luck@intel.com>,
+        "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+        Thorsten Leemhuis <linux@leemhuis.info>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Joe Breuer <linux-kernel@jmbreuer.net>,
+        Linux Power Management <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Hardening <linux-hardening@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux SCSI <linux-scsi@vger.kernel.org>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Martin Kepplinger <martin.kepplinger@puri.sm>
+Subject: Re: Fwd: Waking up from resume locks up on sr device
+Message-ID: <1bc3eff1-6f86-4546-9360-19b6d0236bc4@rowland.harvard.edu>
+References: <2d1fdf6d-682c-a18d-2260-5c5ee7097f7d@gmail.com>
+ <5513e29d-955a-f795-21d6-ec02a2e2e128@gmail.com>
+ <ZIQ6bkau3j6qGef8@duo.ucw.cz>
+ <07d6e2e7-a50a-8cf4-5c5d-200551bd6687@gmail.com>
+ <02e4f87a-80e8-dc5d-0d6e-46939f2c74ac@acm.org>
+ <4005a768-9e45-0707-509d-98ce0d2769bd@kernel.org>
+ <0505654c-e487-6b91-57cf-fa7996f5c738@suse.de>
+ <6957a93c-b933-9b08-2f9f-901c4782cd40@kernel.org>
+ <CAAd53p5CsAAX5G1J2WH5N5JT5dZB_BD2AW8WL-S=pHZtGXr1sw@mail.gmail.com>
+ <433015f6-9ca6-e4ce-e070-a75378419564@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <8c1085fd-8a73-d192-6624-d4f35728e68a@linaro.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <433015f6-9ca6-e4ce-e070-a75378419564@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jun 12, 2023 at 04:33:09PM +0300, Dmitry Baryshkov wrote:
-> On 12/06/2023 12:01, Stephan Gerhold wrote:
-> > On Mon, Jun 12, 2023 at 08:39:19AM +0300, Dmitry Baryshkov wrote:
-> > > APQ8064 has 4 speed bins, each of them having from 4 to 6 categorization
-> > > kinds. Provide tables necessary to handle voltage scaling on this SoC.
-> > > 
-> > > Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-> > > ---
-> > >   arch/arm/boot/dts/qcom-apq8064.dtsi | 1017 +++++++++++++++++++++++++++
-> > >   1 file changed, 1017 insertions(+)
-> > > 
-> > > diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
-> > > index 4ef13f3d702b..f35853b59544 100644
-> > > --- a/arch/arm/boot/dts/qcom-apq8064.dtsi
-> > > +++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
-> > > @@ -49,6 +49,9 @@ CPU0: cpu@0 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_0>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw0_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -66,6 +69,9 @@ CPU1: cpu@1 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_1>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw1_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -83,6 +89,9 @@ CPU2: cpu@2 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_2>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw2_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -100,6 +109,9 @@ CPU3: cpu@3 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_3>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw3_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -132,6 +144,81 @@ cpu_opp_table: opp-table-cpu {
-> > >   		opp-384000000 {
-> > >   			opp-hz = /bits/ 64 <384000000>;
-> > >   			opp-peak-kBps = <384000>;
-> > > +			opp-microvolt-speed0-pvs0 = <1050000 1050000 1150000>,
-> > > +						    <950000 950000 1150000>,
-> > > +						    <950000 950000 975000>;
+On Mon, Jun 12, 2023 at 04:47:09PM +0900, Damien Le Moal wrote:
+> On 6/12/23 16:36, Kai-Heng Feng wrote:
+> > On Mon, Jun 12, 2023 at 3:22 PM Damien Le Moal <dlemoal@kernel.org> wrote:
+> >>
+> >> On 6/12/23 15:09, Hannes Reinecke wrote:
+> >>> On 6/12/23 05:09, Damien Le Moal wrote:
+> >>>> On 6/11/23 00:03, Bart Van Assche wrote:
+> >>>>> On 6/10/23 06:27, Bagas Sanjaya wrote:
+> >>>>>> On 6/10/23 15:55, Pavel Machek wrote:
+> >>>>>>>>> #regzbot introduced: v5.0..v6.4-rc5 https://bugzilla.kernel.org/show_bug.cgi?id=217530
+> >>>>>>>>> #regzbot title: Waking up from resume locks up on SCSI CD/DVD drive
+> >>>>>>>>>
+> >>>>>>>> The reporter had found the culprit (via bisection), so:
+> >>>>>>>>
+> >>>>>>>> #regzbot introduced: a19a93e4c6a98c
+> >>>>>>> Maybe cc the authors of that commit?
+> >>>>>>
+> >>>>>> Ah! I forgot to do that! Thanks anyway.
+> >>>>>
+> >>>>> Hi Damien,
+> >>>>>
+> >>>>> Why does the ATA code call scsi_rescan_device() before system resume has
+> >>>>> finished? Would ATA devices still work with the patch below applied?
+> >>>>
+> >>>> I do not know the PM code well at all, need to dig into it. But your patch
+> >>>> worries me as it seems it would prevent rescan of the device on a resume, which
+> >>>> can be an issue if the device has changed.
+> >>>>
+> >>>> I am not yet 100% clear on the root cause for this, but I think it comes from
+> >>>> the fact that ata_port_pm_resume() runs before the sci device resume is done, so
+> >>>> with scsi_dev->power.is_suspended still true. And ata_port_pm_resume() calls
+> >>>> ata_port_resume_async() which triggers EH (which will do reset + rescan)
+> >>>> asynchronously. So it looks like we have scsi device resume and libata EH for
+> >>>> rescan fighting each others for the scan mutex and device lock, leading to deadlock.
+> >>>>
+> >>>> Trying to recreate this issue now to confirm and debug further. But I suspect
+> >>>> the solution to this may be best implemented in libata, not in scsi.
+> >>>> This looks definitely related to this thread:
+> >>>>
+> >>>> https://lore.kernel.org/linux-scsi/7b553268-69d3-913a-f9de-28f8d45bdb1e@acm.org/
+> >>>>
+> >>>> Similaraly to your comment on that thread, having to look at
+> >>>> dev->power.is_suspended is not ideal I think. What we need is to have ata and
+> >>>> scsi pm resume be synchronized, but I am not yet 100% clear on the scsi layer side.
+> >>>>
+> >>> Which is my feeling, too.
+> >>> libata runs rescan as part of the device discovery, so really it will
+> >>> run after resume. And consequently resume really cannot wait for rescan
+> >>> to finish.
+> >>>
+> >>> What I would be looking at is to decouple resume from libata device
+> >>> rescan, and have resume to complete before libata EH runs.
+> >>
+> >> That is the case now, for the ata port at least, even though that is not super
+> >> explicit, and not reliable. See ata_port_pm_resume(): I think that the call to
+> >> EH in ata_port_pm_resume() -> ata_port_resume_async() -> ata_port_request_pm()
+> >> -> ata_port_schedule_eh() should instead use a sync resume, leading to a sync EH
+> >> call.
+> >>
+> >> That EH execution essentially does ata_eh_handle_port_resume(), which calls into
+> >> the adapter resume operation. That in itself does not do much beside some
+> >> registers accesses to wakeup the port. There should be no issues doing that
+> >> synchronously.
+> >>
+> >> The problem is that after that is done, ata EH calls ata_std_error_handler() ->
+> >> ata_do_eh() -> ata_eh_recover() -> ata_eh_revalidate_and_attach() ->
+> >> schedule_work(&(ap->scsi_rescan_task)). And the rescan work calls
+> >> scsi_rescan_device() (yet in another context than EH) which causes the problem
+> >> when the scsi disk device has not been resumed yet (dev->power_is_suspended
+> >> still true).
+> >>
+> >> So it really looks like the solution should be to have ata_scsi_dev_rescan()
+> >> wait for the scsi device to resume first, but not sure how to do that with the
+> >> pm API. Digging...
 > > 
-> > I think this won't result in the correct switch order without making
-> > some changes to the OPP core. In _set_opp() the OPP core does
-> > 
-> > 	/* Scaling up? Configure required OPPs before frequency */
-> > 	if (!scaling_down) {
-> > 		_set_required_opps();
-> > 		_set_opp_bw();
-> > 		opp_table->config_regulators();
-> > 	}
-> > 
-> > 	opp_table->config_clks();
-> > 
-> > 	/* Scaling down? Configure required OPPs after frequency */
-> > 	if (scaling_down) {
-> > 		opp_table->config_regulators();
-> > 		_set_opp_bw();
-> > 		_set_required_opps();
-> > 	}
-> > 
-> > Since the "bandwidth" for the L2 cache is set before the regulators
-> > there is a short window where the L2 clock is running at a high
-> > frequency with too low voltage, which could potentially cause
-> > instability. On downstream this seems to be done in the proper order [1].
-> > 
-> > I'm not sure if the order in the OPP core is on purpose. If not, you
-> > could propose moving the config_regulators() first (for scaling up)
-> > and last (for scaling down). This would resolve the problem.
+> > Probably use dpm_wait_for_children()? Right now it's an internal PM API.
 > 
-> Nice catch, I missed this ordering point.
-> 
+> But I am not sure if there is a relationship between ata_device and its
+> scsi_device (dev->sdev)... Need to clarify that.
 > > 
-> > The alternative that I've already argued for on IRC in #linux-msm a
-> > couple of days ago would be to give the L2 cache (here: "interconnect")
-> > an own OPP table where it can describe its voltage requirements,
-> > independent from the CPU. That way the icc_set_bw() would be guaranteed
-> > to apply the correct voltage before adjusting the L2 cache clock. It
-> > looks like the "l2_level" voltages for vdd_dig and vdd_mem are not
-> > speedbin/PVS-specific [2] so this would also significantly reduce the DT
-> > size, since you wouldn't need to repeat the same vdd_dig/vdd_mem
-> > voltages for all of them.
-> 
-> Yes. I fact our discussion triggered me to do this patchset.
-> 
-> So, another option would be to have something like the following snippet. Do
-> you know if we are allowed to squish additional data into the L2 cache DT
-> node?
->
+> > Rafael,
+> > What do you think?
 
-I have a similar implementation with the l2 devfreq driver where I need
-to put a compatible in the l2-cache node. From what I observed, keeping
-the l2-cache node in the cpus node makes the extra compile not work
-(nothing is probed) but moving the l2-cache node in the soc node and
-referencing the phandle makes the compatible correctly works and that
-doesn't seems to cause any problem. IMHO it would be better to have a
-separate opp table for l2, should keep things more organized.
+Look into the device_pm_wait_for_dev() API.  It's the appropriate thing 
+to use when you want to wait for another device to complete a system PM 
+transition.  (However, it's not appropriate for runtime PM.)
 
-> CPU0: cpu@0 {
->     vdd-core-supply = <&saw0_vreg>;
->     interconnects = <&L2 MASTER_KRAIT_L2 &L2 SLAVE_KRAIT_L2>;
->     operating-points-v2 = <&cpu_opp_table>;
-> };
-> 
-> L2: l2-cache {
->     compatible = "qcom,apq8064-l2-cache", "cache";
-> 
->     clocks = <&kraitcc KRAIT_L2>;
->     vdd-mem-supply = <&pm8921_l24>;
->     vdd-dig-supply = <&pm8921_s3>;
->     operating-points-v2 = <&l2_opp_table>;
-> 
->     l2_opp_table {
->         compatible = "operating-points-v2";
->         opp-384000000 {
->             opp-hz = /bits/ 64 <384000000>;
->             opp-microvolt = <1050000 1050000 1150000>,
->                             <950000 950000 1150000>;
->         };
-> 
->         opp-648000000 {
->             opp-hz = /bits/ 64 <648000000>;
->             opp-microvolt = <1050000 1050000 1150000>,
->                             <1050000 1050000 1150000>;
->         };
-> 
->         opp-1134000000 {
->             opp-hz = /bits/ 64 <1134000000>;
->             opp-microvolt = <1150000 1150000 1150000>,
->                             <1150000 1150000 1150000>;
->         };
->     };
-> };
-> 
-> > 
-> > Thanks,
-> > Stephan
-> > 
-> > [1]: https://git.codelinaro.org/clo/la/kernel/msm/-/blob/LA.AF.1.2.1-08410-8064.0/arch/arm/mach-msm/acpuclock-krait.c#L529-588
-> > [2]: https://git.codelinaro.org/clo/la/kernel/msm/-/blob/LA.AF.1.2.1-08410-8064.0/arch/arm/mach-msm/acpuclock-8064.c#L118-135
-> 
-> -- 
-> With best wishes
-> Dmitry
-> 
+Of course, if there is a parent-child relationship between two devices 
+then waiting is never necessary.  The PM core guarantees that a parent 
+will always be at full power when a child changes its power state, 
+unless pm_suspend_ignore_children() has been called for the parent 
+device.
 
--- 
-	Ansuel
+Alan Stern
