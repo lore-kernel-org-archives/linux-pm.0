@@ -2,117 +2,190 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23D52C88CB7
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 14:15:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DC3BC88CB2
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 14:21:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237439AbjFLOPH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 10:15:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55718 "EHLO
+        id S238046AbjFLOVS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 10:21:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237573AbjFLOO0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 10:14:26 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1CD41739;
-        Mon, 12 Jun 2023 07:14:07 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 2711120303;
-        Mon, 12 Jun 2023 14:14:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686579246; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=0tu/JKMGLiCEE+vfj8wBgGdw9lM3UZPxyBeIhMkARs8=;
-        b=YW7dZ701TvOnqlMR8gFBysNuPUbYNTelX9vLjKSzornfYYZqF0nH4BOrftKaBX8W2D9qOs
-        5mVyk6TbL1FlvxhtHq7WEHfSW/x4FItGyUgHHaDAz0IFqQXtJAuw8umiJJrosUJ2byDdsN
-        vR8D1ePBy4GbOwa2TG5pluvK+sSnIR0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686579246;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=0tu/JKMGLiCEE+vfj8wBgGdw9lM3UZPxyBeIhMkARs8=;
-        b=Pts4tHT1iMgkfuxBHUYSUhjmjw1VJOQj7Qpj5Mr2WWwSa4WQ+of8NRUgYpCN0dKaI7HfoN
-        6DWUpN6gVZewJ1Bw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B88181357F;
-        Mon, 12 Jun 2023 14:14:05 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id UCENLC0oh2RwGQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 12 Jun 2023 14:14:05 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     daniel@ffwll.ch, javierm@redhat.com, sam@ravnborg.org,
-        deller@gmx.de, geert+renesas@glider.be, lee@kernel.org,
-        daniel.thompson@linaro.org, jingoohan1@gmail.com,
-        dan.carpenter@linaro.org, michael.j.ruhl@intel.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-sh@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Subject: [PATCH v2 32/38] fbdev/core: Pass Linux device to pm_vt_switch_*() functions
-Date:   Mon, 12 Jun 2023 16:08:10 +0200
-Message-ID: <20230612141352.29939-33-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230612141352.29939-1-tzimmermann@suse.de>
-References: <20230612141352.29939-1-tzimmermann@suse.de>
+        with ESMTP id S240009AbjFLOUs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 10:20:48 -0400
+Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6D48422A
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 07:18:23 -0700 (PDT)
+Received: by mail-ot1-x330.google.com with SMTP id 46e09a7af769-6b16cbe4fb6so2930029a34.1
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 07:18:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1686579407; x=1689171407;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=3KEZk+7J6jH+5aotS2FyIOrhqYERHH/vUHWmZ4rNxhg=;
+        b=bZn+CTs4P4E4qcCwjLB17/HmQbPIV+EwRKaOn23NbrEuaKywaKECFGxeDgst7oqsry
+         8E98zn+lshy2NuH5ncrt0TPX773Fh3BUnKyZOJXTrb+aI0PfHvf5qUCxUFJbVl/XslS3
+         +gsKNRFIbTVDnRADz5urtCDpqGMxa28zNgdKG1Vxj70c2LJ2QFJEBwG8LMn7suVLP8iw
+         LefKkfedKJhJ1lcUFm17eU5OqV/HvYn0aTLy/+6upZJjMMvC+fq6eZd6oul8eY67Zpam
+         5zmZR76yLa/RmoORuZOeTP+DANNTQeXifYt5BiW1xK381d+qJbG6Ejvl6fUWnQ1ivCzC
+         QIug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686579407; x=1689171407;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=3KEZk+7J6jH+5aotS2FyIOrhqYERHH/vUHWmZ4rNxhg=;
+        b=VEan548RpVbvPtQxYts3jRvAqrb6kosd3W9ie9gTlhgYqouBYjSFYETIaZttzIihKZ
+         Y88vxakn7U73ENYkt41MgJ9xKj07CWxWiuQbA7NKcgUhUwitYZtV8dcAUsXaMPau1iuO
+         AxwS+Jn/TV8nE6NQsXiw5XE1r7dH2vMGkEfTe81dUw7fMHS8v7Syjo83C8fdnVsfkBrJ
+         vyveFWjCpH5OZOVN1hYlBKgiOHCoGULJd0cSrypHY0rVCqIyDyke2SIEqpbuWPtVQy1Y
+         PXKZ99ZhuMcXH2862aRV5R/CfVNmiBKMMYJcZ6/h3A/mhMltO94uq/i5JoQPqEP8TL+l
+         fnzQ==
+X-Gm-Message-State: AC+VfDx6HmElsuqcV584Z8ckZhU2xJw8HMUW1gNDF78X1WvNm6AFHL44
+        vYCWUfd4BvWwP40j13bGO4IDGu6x6xoUNwkR5821vg==
+X-Google-Smtp-Source: ACHHUZ57+N2fxPaYk1KsjJ78p5skxj4sQPHQWMVRz384v60dInqhXhnP1Xd2BZXxN8RcGnafD1Ct7EAMdvyTUPuUwhE=
+X-Received: by 2002:a05:6359:679d:b0:123:4e5e:d65 with SMTP id
+ sq29-20020a056359679d00b001234e5e0d65mr4491115rwb.10.1686579406844; Mon, 12
+ Jun 2023 07:16:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20230604121223.9625-1-stefan.wahren@i2se.com> <20230604121223.9625-9-stefan.wahren@i2se.com>
+In-Reply-To: <20230604121223.9625-9-stefan.wahren@i2se.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Mon, 12 Jun 2023 16:16:10 +0200
+Message-ID: <CAPDyKFpfcWifMwWHrFzKg+o8hD860x+eB5hT5ZUKyO6uc75Sug@mail.gmail.com>
+Subject: Re: [PATCH 08/10] dt-bindings: mmc: convert bcm2835-sdhost bindings
+ to YAML
+To:     Stefan Wahren <stefan.wahren@i2se.com>
+Cc:     Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Jassi Brar <jassisinghbrar@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org,
+        bcm-kernel-feedback-list@broadcom.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Pass the Linux device to pm_vt_switch_*() instead of the virtual
-fbdev device. Prepares fbdev for making struct fb_info.dev optional.
+On Sun, 4 Jun 2023 at 14:13, Stefan Wahren <stefan.wahren@i2se.com> wrote:
+>
+> Convert the DT binding document for bcm2835-sdhost from .txt to YAML.
+>
+> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 
-The type of device that is passed to the PM functions does not matter
-much. It is only a token within the internal list of known devices.
-The PM functions do not refer to any of the device's properties or its
-type.
+Applied for next, thanks!
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
----
- drivers/video/fbdev/core/fbmem.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Kind regards
+Uffe
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 329d16e49a900..f91ae7d4c94d6 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1478,9 +1478,9 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 		INIT_LIST_HEAD(&fb_info->modelist);
- 
- 	if (fb_info->skip_vt_switch)
--		pm_vt_switch_required(fb_info->dev, false);
-+		pm_vt_switch_required(fb_info->device, false);
- 	else
--		pm_vt_switch_required(fb_info->dev, true);
-+		pm_vt_switch_required(fb_info->device, true);
- 
- 	fb_var_to_videomode(&mode, &fb_info->var);
- 	fb_add_videomode(&mode, &fb_info->modelist);
-@@ -1520,7 +1520,7 @@ static void unlink_framebuffer(struct fb_info *fb_info)
- 
- 	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 
--	pm_vt_switch_unregister(fb_info->dev);
-+	pm_vt_switch_unregister(fb_info->device);
- 
- 	unbind_console(fb_info);
- 
--- 
-2.41.0
 
+> ---
+>  .../bindings/mmc/brcm,bcm2835-sdhost.txt      | 23 --------
+>  .../bindings/mmc/brcm,bcm2835-sdhost.yaml     | 54 +++++++++++++++++++
+>  2 files changed, 54 insertions(+), 23 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt
+>  create mode 100644 Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml
+>
+> diff --git a/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt b/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt
+> deleted file mode 100644
+> index d876580ae3b8..000000000000
+> --- a/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.txt
+> +++ /dev/null
+> @@ -1,23 +0,0 @@
+> -Broadcom BCM2835 SDHOST controller
+> -
+> -This file documents differences between the core properties described
+> -by mmc.txt and the properties that represent the BCM2835 controller.
+> -
+> -Required properties:
+> -- compatible: Should be "brcm,bcm2835-sdhost".
+> -- clocks: The clock feeding the SDHOST controller.
+> -
+> -Optional properties:
+> -- dmas: DMA channel for read and write.
+> -          See Documentation/devicetree/bindings/dma/dma.txt for details
+> -
+> -Example:
+> -
+> -sdhost: mmc@7e202000 {
+> -       compatible = "brcm,bcm2835-sdhost";
+> -       reg = <0x7e202000 0x100>;
+> -       interrupts = <2 24>;
+> -       clocks = <&clocks BCM2835_CLOCK_VPU>;
+> -       dmas = <&dma 13>;
+> -       dma-names = "rx-tx";
+> -};
+> diff --git a/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml b/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml
+> new file mode 100644
+> index 000000000000..3a5a44800675
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mmc/brcm,bcm2835-sdhost.yaml
+> @@ -0,0 +1,54 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/mmc/brcm,bcm2835-sdhost.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Broadcom BCM2835 SDHOST controller
+> +
+> +maintainers:
+> +  - Stefan Wahren <stefan.wahren@i2se.com>
+> +
+> +allOf:
+> +  - $ref: mmc-controller.yaml
+> +
+> +properties:
+> +  compatible:
+> +    const: brcm,bcm2835-sdhost
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +  dmas:
+> +    maxItems: 1
+> +
+> +  dma-names:
+> +    const: rx-tx
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +  - clocks
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/bcm2835.h>
+> +
+> +    sdhost: mmc@7e202000 {
+> +      compatible = "brcm,bcm2835-sdhost";
+> +      reg = <0x7e202000 0x100>;
+> +      interrupts = <2 24>;
+> +      clocks = <&clocks BCM2835_CLOCK_VPU>;
+> +      dmas = <&dma 13>;
+> +      dma-names = "rx-tx";
+> +      bus-width = <4>;
+> +    };
+> --
+> 2.34.1
+>
