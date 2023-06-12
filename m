@@ -2,154 +2,112 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BE44C7EE23
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 06:10:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97F89C7EE2F
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 06:43:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229604AbjFLGJ4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 02:09:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50356 "EHLO
+        id S232721AbjFLGnZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 02:43:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56942 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229477AbjFLGJz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 02:09:55 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4ABD11B;
-        Sun, 11 Jun 2023 23:09:53 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 0E49522760;
-        Mon, 12 Jun 2023 06:09:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1686550192; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=kCw5nk0F5PqPIo3UlZE9ej6dRXUskeYlSz5XihTrsDs=;
-        b=n1BQblxLy3G4bdU8Qhp0vWHnY2GqWSV6Nj26ZpZkbBclZAEUb9ggkckAs3Cgi/apdCN1iS
-        Shh4tCx0bqRfFEvWJrlsyj4lsU0lYWn+2pHMANp+eMS/l4LYvjjwbn0219DwmW5HYOwfL5
-        XkTuAZyRlU9zoHCWvTuKlpjHZ4P7U/g=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1686550192;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=kCw5nk0F5PqPIo3UlZE9ej6dRXUskeYlSz5XihTrsDs=;
-        b=JhqVRkLMrpetbd4musbzi1+eymg3KPxuPiMyYVZUqmkw5Y+zMkWftAEYMHs4Jxy5OJJOrN
-        swtsgJLmLXVSoBBg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3FC02138EC;
-        Mon, 12 Jun 2023 06:09:51 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id X9joC6+2hmTSSAAAMHmgww
-        (envelope-from <hare@suse.de>); Mon, 12 Jun 2023 06:09:51 +0000
-Message-ID: <0505654c-e487-6b91-57cf-fa7996f5c738@suse.de>
-Date:   Mon, 12 Jun 2023 08:09:50 +0200
+        with ESMTP id S233001AbjFLGnY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 02:43:24 -0400
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A58361997;
+        Sun, 11 Jun 2023 23:38:23 -0700 (PDT)
+Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-30fc6b513afso68008f8f.1;
+        Sun, 11 Jun 2023 23:38:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1686551678; x=1689143678;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=0Wat54lnLjucqBUhCyCz2jjA942pDQtZohk+myr2KU4=;
+        b=c2zzRyWDsD9NA/NQkSWJl9TYXJpYTRoWVyrQJIqWKkJge3T4w4eXHIbyqIM227yTDD
+         +82SXmmwVQlQOmgWR0fmPw0cshkPbniT7JJ282anh1Ucg1zljdtJh5LL9zMrMN5n80tM
+         AXtaE8Y2ghuoVNoX2CQoQGov2jouSHTdP7O3OA+ijRzjnObWic7xtk9O99Vidl0H3ik5
+         2wbGJ5RZy0rhlIpYnv3LgmC5R1Sri99aLUaUOl9wGxyHLFWX9hQiAEf3LXV2GIjNuMM7
+         BvboEyN7Uc1FJZAU2O84iaBhVClYWnI4aXlHjDkuGHm0XAxibzcrSeOh3w0zxyhD8pHP
+         z4iw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686551678; x=1689143678;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=0Wat54lnLjucqBUhCyCz2jjA942pDQtZohk+myr2KU4=;
+        b=H5S2Uk6uw4zIiuTHgvkr0iyW483cYBWRjasydcYCEFflJ9ZL+PTTA2ZDDtgT7kCoNc
+         1Ocd0wcrxOKywlKFS/BvD1exf6W0WovH9Il5Lct84iLfjLmsr7UzpTcSWwre3bLErkX5
+         F/0Wy93M6WHZrnb41oo19uqxkscr6N04yZRWdr6DSPSrlx4LCbihW2P/P4tRG5OO3BRr
+         WSMkHdSAJ1S7hXTbJg9WjnY8CYyNAIXAdpov/XC1Z7G599dKhQWSnXkFHu69e/o+Foi8
+         JQe67lzlIW0WJ+Z3LuN+ugD4PLNITwFAmYtt2Xpmo34v+X0jW0ltu00R2kJo9aM7ELtU
+         38Dg==
+X-Gm-Message-State: AC+VfDyARvljZ1uuZvCJxIboJRrZkpb4xyc6Rsg+kf5Kj+wQJGLF9avN
+        wxo5bI+yB666sIHi1jNl/hL1ugbeigSXae45
+X-Google-Smtp-Source: ACHHUZ4U/ycWnSfITPfKvps91ZElflobta8YYppwQmKfPG5h9wzmgirJll+nMPk5Wu6GeYuJqEpRtw==
+X-Received: by 2002:a5d:5704:0:b0:30f:bc21:1ce4 with SMTP id a4-20020a5d5704000000b0030fbc211ce4mr2153510wrv.14.1686551677565;
+        Sun, 11 Jun 2023 23:34:37 -0700 (PDT)
+Received: from user-PC.. ([178.134.198.138])
+        by smtp.gmail.com with ESMTPSA id o7-20020adfeac7000000b002fed865c55esm11484811wrn.56.2023.06.11.23.34.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 11 Jun 2023 23:34:37 -0700 (PDT)
+From:   Maksim Kiselev <bigunclemax@gmail.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Maksim Kiselev <bigunclemax@gmail.com>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
+        Heiko Stuebner <heiko.stuebner@vrull.eu>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
+        linux-riscv@lists.infradead.org
+Subject: Add D1/T113s thermal sensor controller support
+Date:   Mon, 12 Jun 2023 09:34:16 +0300
+Message-Id: <20230612063429.3343061-1-bigunclemax@gmail.com>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: Fwd: Waking up from resume locks up on sr device
-Content-Language: en-US
-To:     Damien Le Moal <dlemoal@kernel.org>,
-        Bart Van Assche <bvanassche@acm.org>,
-        Bagas Sanjaya <bagasdotme@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kees Cook <keescook@chromium.org>,
-        Tony Luck <tony.luck@intel.com>,
-        "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
-        Thorsten Leemhuis <linux@leemhuis.info>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Joe Breuer <linux-kernel@jmbreuer.net>,
-        Linux Power Management <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Hardening <linux-hardening@vger.kernel.org>,
-        Linux Regressions <regressions@lists.linux.dev>,
-        Linux SCSI <linux-scsi@vger.kernel.org>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Hannes Reinecke <hare@suse.com>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Martin Kepplinger <martin.kepplinger@puri.sm>,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>
-References: <2d1fdf6d-682c-a18d-2260-5c5ee7097f7d@gmail.com>
- <5513e29d-955a-f795-21d6-ec02a2e2e128@gmail.com>
- <ZIQ6bkau3j6qGef8@duo.ucw.cz>
- <07d6e2e7-a50a-8cf4-5c5d-200551bd6687@gmail.com>
- <02e4f87a-80e8-dc5d-0d6e-46939f2c74ac@acm.org>
- <4005a768-9e45-0707-509d-98ce0d2769bd@kernel.org>
-From:   Hannes Reinecke <hare@suse.de>
-In-Reply-To: <4005a768-9e45-0707-509d-98ce0d2769bd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 6/12/23 05:09, Damien Le Moal wrote:
-> On 6/11/23 00:03, Bart Van Assche wrote:
->> On 6/10/23 06:27, Bagas Sanjaya wrote:
->>> On 6/10/23 15:55, Pavel Machek wrote:
->>>>>> #regzbot introduced: v5.0..v6.4-rc5 https://bugzilla.kernel.org/show_bug.cgi?id=217530
->>>>>> #regzbot title: Waking up from resume locks up on SCSI CD/DVD drive
->>>>>>
->>>>> The reporter had found the culprit (via bisection), so:
->>>>>
->>>>> #regzbot introduced: a19a93e4c6a98c
->>>> Maybe cc the authors of that commit?
->>>
->>> Ah! I forgot to do that! Thanks anyway.
->>
->> Hi Damien,
->>
->> Why does the ATA code call scsi_rescan_device() before system resume has
->> finished? Would ATA devices still work with the patch below applied?
-> 
-> I do not know the PM code well at all, need to dig into it. But your patch
-> worries me as it seems it would prevent rescan of the device on a resume, which
-> can be an issue if the device has changed.
-> 
-> I am not yet 100% clear on the root cause for this, but I think it comes from
-> the fact that ata_port_pm_resume() runs before the sci device resume is done, so
-> with scsi_dev->power.is_suspended still true. And ata_port_pm_resume() calls
-> ata_port_resume_async() which triggers EH (which will do reset + rescan)
-> asynchronously. So it looks like we have scsi device resume and libata EH for
-> rescan fighting each others for the scan mutex and device lock, leading to deadlock.
-> 
-> Trying to recreate this issue now to confirm and debug further. But I suspect
-> the solution to this may be best implemented in libata, not in scsi.
-> This looks definitely related to this thread:
-> 
-> https://lore.kernel.org/linux-scsi/7b553268-69d3-913a-f9de-28f8d45bdb1e@acm.org/
-> 
-> Similaraly to your comment on that thread, having to look at
-> dev->power.is_suspended is not ideal I think. What we need is to have ata and
-> scsi pm resume be synchronized, but I am not yet 100% clear on the scsi layer side.
-> 
-Which is my feeling, too.
-libata runs rescan as part of the device discovery, so really it will 
-run after resume. And consequently resume really cannot wait for rescan 
-to finish.
+This series adds support for Allwinner D1/T113s thermal sensor controller.
+THIS controller is similar to the one on H6, but with only one sensor and
+uses a different scale and offset values.
 
-What I would be looking at is to decouple resume from libata device 
-rescan, and have resume to complete before libata EH runs.
+v4:
+- Dropeed DT bindings example
 
-Cheers,
+v3:
+- Fixed SoB tag again
 
-Hannes
+v2:
+- Fixed SoB tag
+- Moved binding patch before driver changes
+
+v1:
+- Initial version
+
+Maxim Kiselev (3):
+  dt-bindings: thermal: sun8i: Add binding for D1/T113s THS controller
+  thermal: sun8i: Add D1/T113s THS controller support
+  riscv: dts: allwinner: d1: Add thermal sensor and thermal zone
+
+ .../thermal/allwinner,sun8i-a83t-ths.yaml     |  7 ++++-
+ .../boot/dts/allwinner/sunxi-d1s-t113.dtsi    | 26 +++++++++++++++++++
+ drivers/thermal/sun8i_thermal.c               | 13 ++++++++++
+ 3 files changed, 45 insertions(+), 1 deletion(-)
+
 -- 
-Dr. Hannes Reinecke                Kernel Storage Architect
-hare@suse.de                              +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Ivo Totev, Andrew
-Myers, Andrew McDonald, Martje Boudien Moerman
+2.39.2
 
