@@ -2,223 +2,169 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64A0BC88CB2
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 14:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 966B2C7EE2F
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 14:11:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235495AbjFLOAu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 10:00:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46374 "EHLO
+        id S237168AbjFLOLv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 10:11:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53650 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237076AbjFLOAB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 10:00:01 -0400
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.165])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5683A10F6;
-        Mon, 12 Jun 2023 06:59:54 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1686578391; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=Mlfzmd2FMLldsvA1EwRP6cESOsJLcBT7JxRj91giCTat9/Vb43akk9GlFEykjuA2CU
-    KlmP/neVv0tjBfxMlJh/JuMAJXipVsftO3BMtI8ruxW6AcxPRz6dQBJUpaAY4o+0pbP8
-    rztgN4Eh5AymKBZtn50slxFN7A02veOmJ1QKFd+FANMz9hcVGYiEb8T0N2EqKguLLLbr
-    PXeTLUHEaXZEOIduGEco5ikpmjmluul1bAq1Q75LzoZRnYisAJxXdWBMj0dX6WgkuckX
-    VB6GAsnlE1CcR0rSzmMtjcfxbkFR82Lr3kVqmecm3jMwDG98+AcgESpUWjWN5UhCG3B4
-    TgnA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1686578391;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=ma+8RmGyl039YHh+kLX83fD91U9pajDEzK6ztviFVqA=;
-    b=XrKhYnirYxLcu1uH6OINJiu+2pV4+Zz/q5RnjBSamlZs8GpNCCoCPwjhARxf1M4CPi
-    4K3yZycNpeaRdDfjzEu47dl4kFG2CR1HsDt0Rnf0iD2FkgyhH+5qYr/nTxHiEs2qE2V0
-    +kjmyNpkyo8cPO+17cnE3G45xs3dpFKA4LeCp6WYt6AIQlihlN30cS44AvBtIoHmM78r
-    pAK88KmPrqAAy9uEGjC4yFLHslDHnosOphD48G5rrF06d+cAkyt3wtLTN156gz0HK99S
-    gI2OVbMcuu6YdEqzkwH8t47wQPEVm69DP2ysluWcb/pC/GhJsnSXBZunv2/Km0zK9P9h
-    FHBg==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1686578391;
-    s=strato-dkim-0002; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=ma+8RmGyl039YHh+kLX83fD91U9pajDEzK6ztviFVqA=;
-    b=VYsNbyCiSkqAqPmA85Fm96V9cCVASIjkXVqjK+NyvZjZ5ZTBRC0VSQZycIsIVAnVZC
-    mEdaWATOHiDC9AGzcP71c5yXQ6IPZw98BN3aS1WSo0UmIYtkyfLCTOFRwYiH8ZJJnuyb
-    2yJzqYJ7WFQzxPJd4asD0LAQ+0w3Gvs4tk3qyOvgI7A3Jv40LbA9hOFXIE6r0oJQ2ZNL
-    4OEHHO7rSYOsxWPtQjzQJC6QbN6ucDIAYfyua5+LEqFfUy7uRdFx1+dnJuWP3iRPdFzp
-    QmBlR28kdRw0HCABP7ph3bpnoI+ziFkWthRRzixgNDWFvek6RcHoKWfI8ailjrlzrUZU
-    D+Wg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1686578391;
-    s=strato-dkim-0003; d=gerhold.net;
-    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
-    From:Subject:Sender;
-    bh=ma+8RmGyl039YHh+kLX83fD91U9pajDEzK6ztviFVqA=;
-    b=d1voIuA7EbU2Zp1su+LmU7Ch2DgDkclFE+V43X4r+hlppKhrl1xg/8nMmWr9kNx7pp
-    xDOW+NXE79VXg7wTO0AQ==
-X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u261EJF5OxJD4peA8peN1A=="
-Received: from gerhold.net
-    by smtp.strato.de (RZmta 49.5.3 DYNA|AUTH)
-    with ESMTPSA id Z82ec2z5CDxpV99
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-        (Client did not present a certificate);
-    Mon, 12 Jun 2023 15:59:51 +0200 (CEST)
-Date:   Mon, 12 Jun 2023 15:59:44 +0200
-From:   Stephan Gerhold <stephan@gerhold.net>
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Ilia Lin <ilia.lin@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
+        with ESMTP id S237093AbjFLOLu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 10:11:50 -0400
+Received: from mail-io1-xd2b.google.com (mail-io1-xd2b.google.com [IPv6:2607:f8b0:4864:20::d2b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9295E10D3
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 07:11:48 -0700 (PDT)
+Received: by mail-io1-xd2b.google.com with SMTP id ca18e2360f4ac-7748ca56133so36785739f.0
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 07:11:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernel-dk.20221208.gappssmtp.com; s=20221208; t=1686579108; x=1689171108;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4muTChvfXbyFleywXuJztp663UoDJyd/b1njxzLhqy8=;
+        b=sLZGHozVNiyKe7ZdVW/Izn1P7sgaQShCFq8nFxDEUw2HPGtUJB2+ZAyPMlipviAeTp
+         k3uQ8FI/e0eQenGUZnHNrzUL6Ik3G0IXm+GRBayvvLbMzgaY+UXyhfCpD4GOrVPEdTJv
+         IcIkIA09lG9xzyFYUO5JzJkmOBfAprST6Rp9IHrO/jxkuWSRx8pvHMOooqILGwgI/Lo6
+         1VEW0UpTP7V9T32ew0hLYFEC4JqpDUjaCB9j68pNjawpUBhqZ7JS8ocpEabGbvX3LMxh
+         84vjMA0Z3WUKqubPW8wvoXypai5o3n5GNzihnbK3f7nqUGYlTvpK/lKsx4hWnhA+HiQE
+         ZgZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686579108; x=1689171108;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4muTChvfXbyFleywXuJztp663UoDJyd/b1njxzLhqy8=;
+        b=dS2MQSCzIU5k4huC4uxLT4ggVzNu1KK5EL0cY2fip8qeBGHMZYbQealLjijv/ipf/F
+         Bh3uYHHS1YGtfKpQWRyQbzI6WeZtJkjtd2/48/gBV3PpbQQlSqakai7Q0dykEMwQSRAY
+         LLVbIyM9g5gqHr6uPVpb4OMEB8mgir3w9E8H6lwFoM1AfZLbObrNcAXqnQHd1DjQGpDF
+         tWnbLTg8Vw2wH7+nAAstul53jNzIQDA5jHokI7b5GBdMQFw8B0TviZ9aEC+ODQfLXKZJ
+         t5kBHaes4CAChYUxIftw69IZv6ZTJGfL63D5NlyxLFghGAXiYLvOBVDcrE8JaS11j+FN
+         Qq+A==
+X-Gm-Message-State: AC+VfDwREgwQ1IuayI8ecn5aY4tYYxGqWLAVZY2uO711sFItJGqXE9Yb
+        ZyqduVieMF1u085Q56jYKMnfsQ==
+X-Google-Smtp-Source: ACHHUZ7oss5Q4qEAESR1LIaLJkD7ZwONVfsRpFehVo9Ss1V9OTMOTrOh14yI7Krm7Ivy+/EbDcrm4g==
+X-Received: by 2002:a6b:690a:0:b0:77a:ee79:652 with SMTP id e10-20020a6b690a000000b0077aee790652mr4231482ioc.1.1686579107952;
+        Mon, 12 Jun 2023 07:11:47 -0700 (PDT)
+Received: from [127.0.0.1] ([96.43.243.2])
+        by smtp.gmail.com with ESMTPSA id i19-20020a02cc53000000b0041408b79f1esm2793007jaq.111.2023.06.12.07.11.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jun 2023 07:11:47 -0700 (PDT)
+From:   Jens Axboe <axboe@kernel.dk>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Richard Weinberger <richard@nod.at>,
+        Josef Bacik <josef@toxicpanda.com>,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Coly Li <colyli@suse.de>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        Christian Brauner <brauner@kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-        Christian Marangi <ansuelsmth@gmail.com>
-Subject: Re: [PATCH 15/18] ARM: dts: qcom: apq8064: provide voltage scaling
- tables
-Message-ID: <ZIck0L-gK_a_jCtc@gerhold.net>
-References: <20230612053922.3284394-1-dmitry.baryshkov@linaro.org>
- <20230612053922.3284394-16-dmitry.baryshkov@linaro.org>
- <ZIbez4RA0OoVfHzt@gerhold.net>
- <8c1085fd-8a73-d192-6624-d4f35728e68a@linaro.org>
+        Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
+        linux-block@vger.kernel.org, linux-um@lists.infradead.org,
+        linux-scsi@vger.kernel.org, linux-bcache@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+        linux-btrfs@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net,
+        linux-nilfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+In-Reply-To: <20230608110258.189493-1-hch@lst.de>
+References: <20230608110258.189493-1-hch@lst.de>
+Subject: Re: decouple block open flags from fmode_t v2
+Message-Id: <168657910650.933808.4041515037046679285.b4-ty@kernel.dk>
+Date:   Mon, 12 Jun 2023 08:11:46 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8c1085fd-8a73-d192-6624-d4f35728e68a@linaro.org>
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-c6835
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jun 12, 2023 at 04:33:09PM +0300, Dmitry Baryshkov wrote:
-> On 12/06/2023 12:01, Stephan Gerhold wrote:
-> > On Mon, Jun 12, 2023 at 08:39:19AM +0300, Dmitry Baryshkov wrote:
-> > > APQ8064 has 4 speed bins, each of them having from 4 to 6 categorization
-> > > kinds. Provide tables necessary to handle voltage scaling on this SoC.
-> > > 
-> > > Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-> > > ---
-> > >   arch/arm/boot/dts/qcom-apq8064.dtsi | 1017 +++++++++++++++++++++++++++
-> > >   1 file changed, 1017 insertions(+)
-> > > 
-> > > diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
-> > > index 4ef13f3d702b..f35853b59544 100644
-> > > --- a/arch/arm/boot/dts/qcom-apq8064.dtsi
-> > > +++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
-> > > @@ -49,6 +49,9 @@ CPU0: cpu@0 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_0>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw0_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -66,6 +69,9 @@ CPU1: cpu@1 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_1>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw1_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -83,6 +89,9 @@ CPU2: cpu@2 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_2>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw2_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -100,6 +109,9 @@ CPU3: cpu@3 {
-> > >   			clocks = <&kraitcc KRAIT_CPU_3>;
-> > >   			clock-names = "cpu";
-> > >   			clock-latency = <100000>;
-> > > +			vdd-mem-supply = <&pm8921_l24>;
-> > > +			vdd-dig-supply = <&pm8921_s3>;
-> > > +			vdd-core-supply = <&saw3_vreg>;
-> > >   			interconnects = <&kraitcc MASTER_KRAIT_L2 &kraitcc SLAVE_KRAIT_L2>;
-> > >   			operating-points-v2 = <&cpu_opp_table>;
-> > >   			#cooling-cells = <2>;
-> > > @@ -132,6 +144,81 @@ cpu_opp_table: opp-table-cpu {
-> > >   		opp-384000000 {
-> > >   			opp-hz = /bits/ 64 <384000000>;
-> > >   			opp-peak-kBps = <384000>;
-> > > +			opp-microvolt-speed0-pvs0 = <1050000 1050000 1150000>,
-> > > +						    <950000 950000 1150000>,
-> > > +						    <950000 950000 975000>;
-> > 
-> > I think this won't result in the correct switch order without making
-> > some changes to the OPP core. In _set_opp() the OPP core does
-> > 
-> > 	/* Scaling up? Configure required OPPs before frequency */
-> > 	if (!scaling_down) {
-> > 		_set_required_opps();
-> > 		_set_opp_bw();
-> > 		opp_table->config_regulators();
-> > 	}
-> > 
-> > 	opp_table->config_clks();
-> > 
-> > 	/* Scaling down? Configure required OPPs after frequency */
-> > 	if (scaling_down) {
-> > 		opp_table->config_regulators();
-> > 		_set_opp_bw();
-> > 		_set_required_opps();
-> > 	}
-> > 
-> > Since the "bandwidth" for the L2 cache is set before the regulators
-> > there is a short window where the L2 clock is running at a high
-> > frequency with too low voltage, which could potentially cause
-> > instability. On downstream this seems to be done in the proper order [1].
-> > 
-> > I'm not sure if the order in the OPP core is on purpose. If not, you
-> > could propose moving the config_regulators() first (for scaling up)
-> > and last (for scaling down). This would resolve the problem.
-> 
-> Nice catch, I missed this ordering point.
-> 
-> > 
-> > The alternative that I've already argued for on IRC in #linux-msm a
-> > couple of days ago would be to give the L2 cache (here: "interconnect")
-> > an own OPP table where it can describe its voltage requirements,
-> > independent from the CPU. That way the icc_set_bw() would be guaranteed
-> > to apply the correct voltage before adjusting the L2 cache clock. It
-> > looks like the "l2_level" voltages for vdd_dig and vdd_mem are not
-> > speedbin/PVS-specific [2] so this would also significantly reduce the DT
-> > size, since you wouldn't need to repeat the same vdd_dig/vdd_mem
-> > voltages for all of them.
-> 
-> Yes. I fact our discussion triggered me to do this patchset.
-> 
-> So, another option would be to have something like the following snippet. Do
-> you know if we are allowed to squish additional data into the L2 cache DT
-> node?
-> 
 
-I suspect no one has tried this before, so only the DT maintainers could
-answer this. I would say that it just follows the existing design of
-clocks/-supply/OPPs on the CPU nodes. vdd-mem-supply isn't a property of
-the CPU, it's a property of the L2 cache so it actually fits better there.
+On Thu, 08 Jun 2023 13:02:28 +0200, Christoph Hellwig wrote:
+> this series adds a new blk_mode_t for block open flags instead of abusing
+> fmode_t.  The block open flags work very different from the normal use of
+> fmode_t and only share the basic READ/WRITE flags with it.  None of the
+> other normal FMODE_* flags is used, but instead there are three
+> block-specific ones not used by anyone else, which can now be removed.
+> 
+> Note that I've only CCed maintainers and lists for drivers and file systems
+> that have non-trivial changes, as otherwise the series would spam literally
+> everyone in the block and file system world.
+> 
+> [...]
 
-I think the more controversial questions might be:
+Applied, thanks!
 
-  - Is a L2 cache really an "interconnect"? I suppose one could argue it
-    connects multiple CPU cores to a cluster (similar how a CCI connects
-    multiple clusters to a system).
+[01/30] block: also call ->open for incremental partition opens
+        commit: 9d1c92872e7082f100f629a58b32fa0214aa1aec
+[02/30] cdrom: remove the unused bdev argument to cdrom_open
+        commit: 764b83100b9aff52f950e408539c22a37cdedae8
+[03/30] cdrom: remove the unused mode argument to cdrom_ioctl
+        commit: 473399b50de1fdc12606254351273c71d1786251
+[04/30] cdrom: remove the unused cdrom_close_write release code
+        commit: a4cec8bc14c02e15006a71f02b0e1bbc72b9f796
+[05/30] cdrom: track if a cdrom_device_info was opened for data
+        commit: 8cdf433e2b8e4fc6c7b4393deb93fb258175d537
+[06/30] cdrom: remove the unused mode argument to cdrom_release
+        commit: 7ae24fcee9929f9002b84d8121144b2b3590b58c
+[07/30] block: pass a gendisk on bdev_check_media_change
+        commit: 444aa2c58cb3b6cfe3b7cc7db6c294d73393a894
+[08/30] block: pass a gendisk to ->open
+        commit: d32e2bf83791727a84ad5d3e3d713e82f9adbe30
+[09/30] block: remove the unused mode argument to ->release
+        commit: ae220766d87cd6799dbf918fea10613ae14c0654
+[10/30] block: rename blkdev_close to blkdev_release
+        commit: 7ee34cbc291a28134b60683b246ba58b4b676ec3
+[11/30] swsusp: don't pass a stack address to blkdev_get_by_path
+        commit: c889d0793d9dc07e94a5fddcc05356157fab00b7
+[12/30] bcache: don't pass a stack address to blkdev_get_by_path
+        commit: 29499ab060fec044161be73fb0e448eab97b4813
+[13/30] rnbd-srv: don't pass a holder for non-exclusive blkdev_get_by_path
+        commit: 5ee607675debef509946f8a251d4c30a21493ec2
+[14/30] btrfs: don't pass a holder for non-exclusive blkdev_get_by_path
+        commit: 2ef789288afd365f4245ba97e56189062de5148e
+[15/30] block: use the holder as indication for exclusive opens
+        commit: 2736e8eeb0ccdc71d1f4256c9c9a28f58cc43307
+[16/30] block: add a sb_open_mode helper
+        commit: 3f0b3e785e8b54a40c530fa77b7ab37bec925c57
+[17/30] fs: remove sb->s_mode
+        commit: 81b1fb7d17c0110df839e13468ada9e99bb6e5f4
+[18/30] scsi: replace the fmode_t argument to scsi_cmd_allowed with a simple bool
+        commit: 5f4eb9d5413fdfc779c099fdaf0ff417eb163145
+[19/30] scsi: replace the fmode_t argument to scsi_ioctl with a simple bool
+        commit: 2e80089c18241699c41d0af0669cb93844ff0dc1
+[20/30] scsi: replace the fmode_t argument to ->sg_io_fn with a simple bool
+        commit: 1991299e49fa58c3ba7e91599932f84bf537d592
+[21/30] nvme: replace the fmode_t argument to the nvme ioctl handlers with a simple bool
+        commit: 7d9d7d59d44b7e9236d168472aa222b6543fae25
+[22/30] mtd: block: use a simple bool to track open for write
+        commit: 658afed19ceed54a52b9e9e69c0791c8868ff55d
+[23/30] rnbd-srv: replace sess->open_flags with a "bool readonly"
+        commit: 99b07780814e89f16bec2773c237eb25121f8502
+[24/30] ubd: remove commented out code in ubd_open
+        commit: bd6abfc8e7898ce2163a1ffdbb9ec71a0a081267
+[25/30] block: move a few internal definitions out of blkdev.h
+        commit: cfb425761c79b6056ae5bb73f8d400f03b513959
+[26/30] block: remove unused fmode_t arguments from ioctl handlers
+        commit: 5e4ea834676e3b8965344ca61d36e1ae236249eb
+[27/30] block: replace fmode_t with a block-specific type for block open flags
+        commit: 05bdb9965305bbfdae79b31d22df03d1e2cfcb22
+[28/30] block: always use I_BDEV on file->f_mapping->host to find the bdev
+        commit: 4e762d8623448bb9d32711832ce977a65ff7636a
+[29/30] block: store the holder in file->private_data
+        commit: ee3249a8ce78ef014a71b05157a43fba8dc764e3
+[30/30] fs: remove the now unused FMODE_* flags
+        commit: 0733ad8002916b9dbbbcfe6e92ad44d2657de1c1
 
-  - What would bind to the l2-cache node? A separate driver? Does that
-    work if it sits below the /cpus node?
+Best regards,
+-- 
+Jens Axboe
 
-Thanks,
-Stephan
+
+
