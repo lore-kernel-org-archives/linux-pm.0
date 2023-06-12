@@ -2,56 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 556FEC7EE45
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 07:56:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5034C7EE23
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 07:57:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236140AbjFLH4D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 03:56:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34070 "EHLO
+        id S236127AbjFLH47 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 03:56:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34152 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237134AbjFLHzs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 03:55:48 -0400
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00140421A;
-        Mon, 12 Jun 2023 00:54:51 -0700 (PDT)
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-30c4c1fd511so3640664f8f.1;
-        Mon, 12 Jun 2023 00:54:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1686556437; x=1689148437;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=++GIztv4naBcPicwbwUH4k+fuc5iv8tnHanmi3MA+54=;
-        b=kUPOkj4q6YKPAUU8Rse/9HP8nmYqFqpgILE56nG+Qxi1el0VRWTvLHFp7vNfK117B+
-         XWMMQnueiey7TL4NN8/PvYFfs1xodyQToOkEBSZowwJZLxUBSSCXSbGjzET0X5DTf3z2
-         UKybYw83/Qa8HLT3vpX6q+w3lmaZBeog5/WeZvsJJvRN6EvWmuH3FPkLBmxqme/d5Wny
-         8Fj7f7VNyWggSuRDHZx+t1nHBgdCutexs1yODbxFsJkRTFaN6r0wu+fjlycG7UPGyXId
-         gXHXWe5HgFAeda+9gaVP2SmEbaG4AAOPN9D/dNNtrwouzpvBXbTKxNhDnPzCid6LUBlq
-         3j2Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686556437; x=1689148437;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=++GIztv4naBcPicwbwUH4k+fuc5iv8tnHanmi3MA+54=;
-        b=EEuIJoCApm618KMz9c9oBB+Y1f/poC1Hu29PGcF2UFV4tBf/crqCWyL9XhMn7/H8ez
-         1t+kLbtL5Y0B0lMg3ljSOIYgXW5YnCXCFT/W4LrUVgLkbXBifxYKUgkcyRprQpld52Oj
-         j6Kja5SX+L26xtRlKsLBiGLPXPG42RsNRxEyEMAbxTegqQUaAl5nodQzjhnoTp9t9VSY
-         reJvqVErECXzXF7Or25Hm+hh8RFsGbJncE8EYVpVGnvaZXgx/v4yuJ79z9TCEAXiOhhf
-         MJfvGoNFJ1k4bC/rqY0JfuEkdAvwTJ4qHlLo+a+jbarvqBt2f9eInfMbAHGmKD3tisLx
-         182w==
-X-Gm-Message-State: AC+VfDxDAZMOtjC+kXpvpabjndF0jaDzGqNFURtAfUDa37+uMHKSp3XN
-        WYmgqmP8yysh/Op8YU/fteOeWzGTW5Q6hWIO
-X-Google-Smtp-Source: ACHHUZ70Cj57LU8Ff8JQkoBSv0RL9hBJhhZSL6SwIfAD8toe6gVQ7t4REqheKzJzanSnq6DqIrnN6A==
-X-Received: by 2002:a5d:53cc:0:b0:30f:b341:79ef with SMTP id a12-20020a5d53cc000000b0030fb34179efmr3851473wrw.71.1686551712345;
-        Sun, 11 Jun 2023 23:35:12 -0700 (PDT)
-Received: from user-PC.. ([178.134.198.138])
-        by smtp.gmail.com with ESMTPSA id o7-20020adfeac7000000b002fed865c55esm11484811wrn.56.2023.06.11.23.35.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 11 Jun 2023 23:35:12 -0700 (PDT)
-From:   Maksim Kiselev <bigunclemax@gmail.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Maxim Kiselev <bigunclemax@gmail.com>,
+        with ESMTP id S236162AbjFLH4e (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 03:56:34 -0400
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65DDFD7;
+        Mon, 12 Jun 2023 00:55:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1686556545; x=1718092545;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=jA7o0JwUUEMJ7PGR+QxIapP6oJQeu3JEWSvSB5PLVFc=;
+  b=QWSEEmcmDtvqKK0SVzq5Xgn82KAdXipA3pgdMj40AYeNdFXU5trIQozl
+   yErMsqC3cBqCIarp6dvtcAJg0kOvlgZYL69Afn7TS2fqa9W3uNzIHJ6WT
+   V1IMaHCnsvX2z1QA5PtSe9JexrSVrecQIaVlgMBOlVsHvVzt1hioOhtzt
+   Mlr1e+5Oev03wW0ihat/TEFsQAHiH9GutEyrHRgXjwEl95kqCYXISx/oe
+   WdzhkvOpwJGwW1KXlC20kwGACgpXDsFCKPDhtI4KCheWmiJi6vMFWIyqK
+   RHCV3gGQNcKtIornqIRvrOBtWJnI+IF9J2CCDmAzmsrzIVUDrKbCxmv/M
+   A==;
+X-IronPort-AV: E=Sophos;i="6.00,236,1681196400"; 
+   d="asc'?scan'208";a="229595197"
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 12 Jun 2023 00:55:05 -0700
+Received: from chn-vm-ex02.mchp-main.com (10.10.87.72) by
+ chn-vm-ex02.mchp-main.com (10.10.87.72) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Mon, 12 Jun 2023 00:55:05 -0700
+Received: from wendy (10.10.115.15) by chn-vm-ex02.mchp-main.com
+ (10.10.85.144) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.21 via Frontend
+ Transport; Mon, 12 Jun 2023 00:55:02 -0700
+Date:   Mon, 12 Jun 2023 08:54:36 +0100
+From:   Conor Dooley <conor.dooley@microchip.com>
+To:     Maksim Kiselev <bigunclemax@gmail.com>
+CC:     <linux-kernel@vger.kernel.org>,
         Vasily Khoruzhick <anarsoul@gmail.com>,
         Yangtao Li <tiny.windzz@gmail.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -68,87 +61,55 @@ Cc:     Maxim Kiselev <bigunclemax@gmail.com>,
         Palmer Dabbelt <palmer@dabbelt.com>,
         Albert Ou <aou@eecs.berkeley.edu>,
         Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
-        linux-riscv@lists.infradead.org
-Subject: [PATCH v4 3/3] riscv: dts: allwinner: d1: Add thermal sensor and thermal zone
-Date:   Mon, 12 Jun 2023 09:34:19 +0300
-Message-Id: <20230612063429.3343061-4-bigunclemax@gmail.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230612063429.3343061-1-bigunclemax@gmail.com>
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-sunxi@lists.linux.dev>, <linux-riscv@lists.infradead.org>
+Subject: Re: [PATCH v4 3/3] riscv: dts: allwinner: d1: Add thermal sensor and
+ thermal zone
+Message-ID: <20230612-wriggle-remindful-89d5105c94ee@wendy>
 References: <20230612063429.3343061-1-bigunclemax@gmail.com>
+ <20230612063429.3343061-4-bigunclemax@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="VdbpNF3ZZ/nmLTbI"
+Content-Disposition: inline
+In-Reply-To: <20230612063429.3343061-4-bigunclemax@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Maxim Kiselev <bigunclemax@gmail.com>
+--VdbpNF3ZZ/nmLTbI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch adds a thermal sensor controller node for the D1/T113s.
-Also it adds a THS calibration data cell and thermal zone.
+On Mon, Jun 12, 2023 at 09:34:19AM +0300, Maksim Kiselev wrote:
+> From: Maxim Kiselev <bigunclemax@gmail.com>
+>=20
+> This patch adds a thermal sensor controller node for the D1/T113s.
+> Also it adds a THS calibration data cell and thermal zone.
+>=20
+> Signed-off-by: Maxim Kiselev <bigunclemax@gmail.com>
 
-Signed-off-by: Maxim Kiselev <bigunclemax@gmail.com>
----
- .../boot/dts/allwinner/sunxi-d1s-t113.dtsi    | 26 +++++++++++++++++++
- 1 file changed, 26 insertions(+)
+The RISC-V patchwork automation is complaining about this patch while
+running dtbs_check:
+arch/riscv/boot/dts/allwinner/sun20i-d1s-mangopi-mq.dtb: thermal-zones: cpu=
+-thermal: 'trips' is a required property
+	From schema: Documentation/devicetree/bindings/thermal/thermal-zones.yaml
 
-diff --git a/arch/riscv/boot/dts/allwinner/sunxi-d1s-t113.dtsi b/arch/riscv/boot/dts/allwinner/sunxi-d1s-t113.dtsi
-index 922e8e0e2c09..b893f3325554 100644
---- a/arch/riscv/boot/dts/allwinner/sunxi-d1s-t113.dtsi
-+++ b/arch/riscv/boot/dts/allwinner/sunxi-d1s-t113.dtsi
-@@ -10,6 +10,7 @@
- #include <dt-bindings/reset/sun8i-de2.h>
- #include <dt-bindings/reset/sun20i-d1-ccu.h>
- #include <dt-bindings/reset/sun20i-d1-r-ccu.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	#address-cells = <1>;
-@@ -138,6 +139,19 @@ ccu: clock-controller@2001000 {
- 			#reset-cells = <1>;
- 		};
- 
-+		ths: thermal-sensor@2009400 {
-+			compatible = "allwinner,sun20i-d1-ths";
-+			reg = <0x02009400 0x400>;
-+			interrupts = <SOC_PERIPHERAL_IRQ(58) IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_THS>;
-+			clock-names = "bus";
-+			resets = <&ccu RST_BUS_THS>;
-+			nvmem-cells = <&ths_calibration>;
-+			nvmem-cell-names = "calibration";
-+			status = "disabled";
-+			#thermal-sensor-cells = <0>;
-+		};
-+
- 		dmic: dmic@2031000 {
- 			compatible = "allwinner,sun20i-d1-dmic",
- 				     "allwinner,sun50i-h6-dmic";
-@@ -365,6 +379,10 @@ sid: efuse@3006000 {
- 			reg = <0x3006000 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-+
-+			ths_calibration: thermal-sensor-calibration@14 {
-+				reg = <0x14 0x4>;
-+			};
- 		};
- 
- 		crypto: crypto@3040000 {
-@@ -843,4 +861,12 @@ rtc: rtc@7090000 {
- 			#clock-cells = <1>;
- 		};
- 	};
-+
-+	thermal-zones {
-+		cpu_thermal: cpu-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&ths 0>;
-+		};
-+	};
- };
--- 
-2.39.2
 
+Cheers,
+Conor.
+
+--VdbpNF3ZZ/nmLTbI
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZIbPPAAKCRB4tDGHoIJi
+0ibyAQCc2Wg5AsmDCSijdOu5bt0CIG4+oV84B4Zg3GCvq/B54QEAxeQLtUBX8gk3
+dSYcrQQGLBN0lJ0DSEYtSDsFq2awGQU=
+=36LZ
+-----END PGP SIGNATURE-----
+
+--VdbpNF3ZZ/nmLTbI--
