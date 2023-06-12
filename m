@@ -2,133 +2,215 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 108CFC7EE2E
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 08:18:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBDB0C7EE2E
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 08:26:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231560AbjFLIS3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 04:18:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54276 "EHLO
+        id S233978AbjFLIZr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 04:25:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59670 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230054AbjFLISO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 04:18:14 -0400
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBA491FDE
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 01:17:54 -0700 (PDT)
-Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-3f7ebb2b82cso42075135e9.2
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 01:17:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686557873; x=1689149873;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=/BLdKV6ydqTF5FF9wuUDahLeHWRQMuZz0P9EBbaIRdk=;
-        b=twR2vTInGL8pHkStNJy5NRmM+Wca1Y/S3lt6RVZyWVxtSYFclxfkNUCZfK69Xg2Y1T
-         YRM5Ap8g6gFmuyLVhj/YfTe/Wo5ArRei/EPJJsaF32bfcWKorSwGDsNIvM1h3YC+fv0r
-         YlnIcEf3qC1jx7iCr+Jxweq9DU80U5CSwHoRCbGothCClZWUlc7HYVRqRfQopRPGVjD4
-         EP8aaxpcLigGPOnEXUjsw0ho1F1RQ5mH0zdKolCsoKfiPGsHeJZ6xn6oOTnlylsbWuXm
-         JXdbinv7zF/7Eq3Y42sl56hQ0YwpAzFBAD1jh6oW6RKU2juC9LJMsAHuylEIwQefFePh
-         wF3w==
+        with ESMTP id S232239AbjFLIYK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 04:24:10 -0400
+Received: from smtp-relay-internal-0.canonical.com (smtp-relay-internal-0.canonical.com [185.125.188.122])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F039C2108
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 01:23:56 -0700 (PDT)
+Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id 004C23F484
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 07:37:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+        s=20210705; t=1686555429;
+        bh=SARDuX0ozM1dSrw1r+XdZ1aSpyhQuZmUUG6i83rAkzc=;
+        h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+         To:Cc:Content-Type;
+        b=dv7qEN2/+WBE3GlPnw4MQ3232hxQg4S0dQyNzEJPE6PQFKPP7962beOG33up0ALs8
+         /Ap/VIWHJUUla0gxKWN4OkiT2+R2OxiPkTu0v66NuNNXT+Mmbho+ARfL4/d7KiS8Ae
+         34QqowCwT1HW35PR1fU8YhsOeqnjPmHUDgc0S5VlbJ9b44WQsO83EdOqBvbVK7BRdy
+         Zf+E7KNmRlrgNuq46leC58Ix/uY0k/neBMAh2A29WQ5EfK//sxxDd5gbQiyMgNeGgm
+         fSe18FZgPMDD7mwA4SwbzI178qhXt07DF6XncR2piZsfSCMjaNeUcHpRtI4dCwl6C7
+         sVrjltHaT779A==
+Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-528ab71c95cso1716337a12.0
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 00:37:08 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686557873; x=1689149873;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=/BLdKV6ydqTF5FF9wuUDahLeHWRQMuZz0P9EBbaIRdk=;
-        b=DdGwJlogfdjDneG/qKtKBMXGlGh8claTO8RCtBVENaZsVqEueF/YThlHC5Ah3VuHNF
-         EC8xQUehUWfMVjcXMWsSG5L+lyEc0qiUyug+qn+/fVY7j6CYmE9uYW/GGYet1vtFxt7X
-         fUTFuPLOCKe9IfqTzvn12yjQkVqEFvWzVbjGrm97rVp32171/TZVysLZcVfgfUTaI4Me
-         qw9wVmsIr/m36FvNwQcVi6aAcFejdca4+kKUrQzwcpzzjpIiRE3PS7FFYBY9I5/yTS8d
-         NKZNE+QuQh9k5XKg9HWDbCijqro6mBZKfLiilseU+tviXNETyaiG0sjGBau74qunSvkQ
-         wEfA==
-X-Gm-Message-State: AC+VfDyvK+fWDJZvK+Q4HaKsz55BRqDFQaxU8/fdoOfhAN0GTXqvs5Oa
-        z+qCbzXuEU61oxSgiNQqeI9ypwzP0gwOvyNPt2I=
-X-Google-Smtp-Source: ACHHUZ7LLAVAmKum5VLuS9SWmtAfP4UMrs+AF2aFcR0Uh72RFfwgJ7NWUfMQBdCfiMl35JHr/MTF+Q==
-X-Received: by 2002:a5d:522b:0:b0:30f:c1f5:e91e with SMTP id i11-20020a5d522b000000b0030fc1f5e91emr1381133wra.27.1686557873141;
-        Mon, 12 Jun 2023 01:17:53 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:bb02:9baa:82d1:2486? ([2a05:6e02:1041:c10:bb02:9baa:82d1:2486])
-        by smtp.googlemail.com with ESMTPSA id m11-20020a5d6a0b000000b0030b5d203e7esm11695296wru.97.2023.06.12.01.17.52
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Jun 2023 01:17:52 -0700 (PDT)
-Message-ID: <7616fd9d-aa0d-2ecd-8751-894b1c9073c0@linaro.org>
-Date:   Mon, 12 Jun 2023 10:17:51 +0200
+        d=1e100.net; s=20221208; t=1686555427; x=1689147427;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=SARDuX0ozM1dSrw1r+XdZ1aSpyhQuZmUUG6i83rAkzc=;
+        b=LVtz0waBbYhLMG+uYKsd/S9qMQclOn12oufBJh+jgY0gEa2eYGPMCHc/VtykY0reX3
+         MgK7xkNbu4QPqGCRlfg2MoqFvmbalDq6kzltugaSF82VDApWmPN5vo3JyZ2qVeQKfDB2
+         NDihRQQuEokcpg6tJkmYSvU0jYuVnCuhb+8QZmna+PT7jo7qCiDDt7KXBPX6Zyqp2fCw
+         rnvlVoIuXDY6eFyj5nYurWlBJB+pa3+ktX2ir8c3XN77tivAC+Fy0ILr90U6vfU7uJ8Z
+         8DOS6kT5N1f49OUBAMNSx2olq4Mgil1PeBPbCz0Z7i5YKxu8s7PLNSG369QMfujbx9pV
+         2AHQ==
+X-Gm-Message-State: AC+VfDy186fOToh4329/E/hRobsjxTZ60PN9rK5PnEqDYpRNM7WGGz1n
+        XE8iLWuFRwTClu2/BayKx4a96z4ei+cewkp3EHn9AT548Ps6N0vmO/fkmInSE8LGoDhqbPXGnU7
+        LdH7/WERXp6694YcYkOfaMDOUquu35Aaa2+rT4VRdowpIj/ch42ud
+X-Received: by 2002:a17:90a:1a0a:b0:258:996c:a2e8 with SMTP id 10-20020a17090a1a0a00b00258996ca2e8mr7314697pjk.5.1686555427237;
+        Mon, 12 Jun 2023 00:37:07 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ6Yj42CeU0uWY/ySQzUq50P4dnzJCgR3Qa5gLWoMOBy2SUVIWUXgk6mm5OGuSpj2WelHyVYhxK439rub4Zew/w=
+X-Received: by 2002:a17:90a:1a0a:b0:258:996c:a2e8 with SMTP id
+ 10-20020a17090a1a0a00b00258996ca2e8mr7314672pjk.5.1686555426671; Mon, 12 Jun
+ 2023 00:37:06 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH 1/1] thermal: sysfs: avoid actual readings from sysfs
-Content-Language: en-US
-To:     Eduardo Valentin <evalenti@kernel.org>
-Cc:     eduval@amazon.com, rafael@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-References: <20230607003721.834038-1-evalenti@kernel.org>
- <f26ac9a9-60af-a0fe-fccc-25bcd306f5a1@linaro.org>
- <ZICybSuZELhR1Ni5@uf8f119305bce5e.ant.amazon.com>
- <b2e93db5-e6f8-a9d8-53de-af5ea750f0f0@linaro.org>
- <ZIITZINvtPfjuhS6@uf8f119305bce5e.ant.amazon.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <ZIITZINvtPfjuhS6@uf8f119305bce5e.ant.amazon.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <2d1fdf6d-682c-a18d-2260-5c5ee7097f7d@gmail.com>
+ <5513e29d-955a-f795-21d6-ec02a2e2e128@gmail.com> <ZIQ6bkau3j6qGef8@duo.ucw.cz>
+ <07d6e2e7-a50a-8cf4-5c5d-200551bd6687@gmail.com> <02e4f87a-80e8-dc5d-0d6e-46939f2c74ac@acm.org>
+ <4005a768-9e45-0707-509d-98ce0d2769bd@kernel.org> <0505654c-e487-6b91-57cf-fa7996f5c738@suse.de>
+ <6957a93c-b933-9b08-2f9f-901c4782cd40@kernel.org>
+In-Reply-To: <6957a93c-b933-9b08-2f9f-901c4782cd40@kernel.org>
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date:   Mon, 12 Jun 2023 15:36:55 +0800
+Message-ID: <CAAd53p5CsAAX5G1J2WH5N5JT5dZB_BD2AW8WL-S=pHZtGXr1sw@mail.gmail.com>
+Subject: Re: Fwd: Waking up from resume locks up on sr device
+To:     Damien Le Moal <dlemoal@kernel.org>
+Cc:     Hannes Reinecke <hare@suse.de>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Bagas Sanjaya <bagasdotme@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Tony Luck <tony.luck@intel.com>,
+        "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+        Thorsten Leemhuis <linux@leemhuis.info>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Joe Breuer <linux-kernel@jmbreuer.net>,
+        Linux Power Management <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Hardening <linux-hardening@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux SCSI <linux-scsi@vger.kernel.org>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Martin Kepplinger <martin.kepplinger@puri.sm>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Mon, Jun 12, 2023 at 3:22=E2=80=AFPM Damien Le Moal <dlemoal@kernel.org>=
+ wrote:
+>
+> On 6/12/23 15:09, Hannes Reinecke wrote:
+> > On 6/12/23 05:09, Damien Le Moal wrote:
+> >> On 6/11/23 00:03, Bart Van Assche wrote:
+> >>> On 6/10/23 06:27, Bagas Sanjaya wrote:
+> >>>> On 6/10/23 15:55, Pavel Machek wrote:
+> >>>>>>> #regzbot introduced: v5.0..v6.4-rc5 https://bugzilla.kernel.org/s=
+how_bug.cgi?id=3D217530
+> >>>>>>> #regzbot title: Waking up from resume locks up on SCSI CD/DVD dri=
+ve
+> >>>>>>>
+> >>>>>> The reporter had found the culprit (via bisection), so:
+> >>>>>>
+> >>>>>> #regzbot introduced: a19a93e4c6a98c
+> >>>>> Maybe cc the authors of that commit?
+> >>>>
+> >>>> Ah! I forgot to do that! Thanks anyway.
+> >>>
+> >>> Hi Damien,
+> >>>
+> >>> Why does the ATA code call scsi_rescan_device() before system resume =
+has
+> >>> finished? Would ATA devices still work with the patch below applied?
+> >>
+> >> I do not know the PM code well at all, need to dig into it. But your p=
+atch
+> >> worries me as it seems it would prevent rescan of the device on a resu=
+me, which
+> >> can be an issue if the device has changed.
+> >>
+> >> I am not yet 100% clear on the root cause for this, but I think it com=
+es from
+> >> the fact that ata_port_pm_resume() runs before the sci device resume i=
+s done, so
+> >> with scsi_dev->power.is_suspended still true. And ata_port_pm_resume()=
+ calls
+> >> ata_port_resume_async() which triggers EH (which will do reset + resca=
+n)
+> >> asynchronously. So it looks like we have scsi device resume and libata=
+ EH for
+> >> rescan fighting each others for the scan mutex and device lock, leadin=
+g to deadlock.
+> >>
+> >> Trying to recreate this issue now to confirm and debug further. But I =
+suspect
+> >> the solution to this may be best implemented in libata, not in scsi.
+> >> This looks definitely related to this thread:
+> >>
+> >> https://lore.kernel.org/linux-scsi/7b553268-69d3-913a-f9de-28f8d45bdb1=
+e@acm.org/
+> >>
+> >> Similaraly to your comment on that thread, having to look at
+> >> dev->power.is_suspended is not ideal I think. What we need is to have =
+ata and
+> >> scsi pm resume be synchronized, but I am not yet 100% clear on the scs=
+i layer side.
+> >>
+> > Which is my feeling, too.
+> > libata runs rescan as part of the device discovery, so really it will
+> > run after resume. And consequently resume really cannot wait for rescan
+> > to finish.
+> >
+> > What I would be looking at is to decouple resume from libata device
+> > rescan, and have resume to complete before libata EH runs.
+>
+> That is the case now, for the ata port at least, even though that is not =
+super
+> explicit, and not reliable. See ata_port_pm_resume(): I think that the ca=
+ll to
+> EH in ata_port_pm_resume() -> ata_port_resume_async() -> ata_port_request=
+_pm()
+> -> ata_port_schedule_eh() should instead use a sync resume, leading to a =
+sync EH
+> call.
+>
+> That EH execution essentially does ata_eh_handle_port_resume(), which cal=
+ls into
+> the adapter resume operation. That in itself does not do much beside some
+> registers accesses to wakeup the port. There should be no issues doing th=
+at
+> synchronously.
+>
+> The problem is that after that is done, ata EH calls ata_std_error_handle=
+r() ->
+> ata_do_eh() -> ata_eh_recover() -> ata_eh_revalidate_and_attach() ->
+> schedule_work(&(ap->scsi_rescan_task)). And the rescan work calls
+> scsi_rescan_device() (yet in another context than EH) which causes the pr=
+oblem
+> when the scsi disk device has not been resumed yet (dev->power_is_suspend=
+ed
+> still true).
+>
+> So it really looks like the solution should be to have ata_scsi_dev_resca=
+n()
+> wait for the scsi device to resume first, but not sure how to do that wit=
+h the
+> pm API. Digging...
 
-Hi Eduardo,
+Probably use dpm_wait_for_children()? Right now it's an internal PM API.
 
-On 08/06/2023 19:44, Eduardo Valentin wrote:
+Rafael,
+What do you think?
 
-[ ... ]
+Kai-Heng
 
->> Do you have a use case with some measurements to spot an issue or is it
->> a potential issue you identified ?
-> 
-> 
-> yes, a governor that is using I2C device as input, behind I2C fast mode (100KHz)
-> and needs to update the zone every 100ms. Each read in this bus, if done alone
-> would be around 500us, takes 10bytes to read the device, it is 10 clocks per byte,
-> well technically 9, but rounding for the sake of the example, which gets you
-> 50 / 100KHz = 500 us. That is for a single read. You add one single extra
-> userspace read triggering an unused device update, that is already a 1ms drift.
-> Basically you looking at 0.5% for each extra userspace read competing in this
-> sysfs node. You add extra devices in the same I2C bus, your governor is looking
-> at more than 1% overhead. And I am talking also about a main CPU of ~800MHz.
-> I did not even include the lock overhead considered for this CPU ;-)
-> 
-> Again, this is not about controlling the DIE temperature of the CPU you
-> are running the thermal subsystem. This is about controlling
-> a target device.
-
-Ok. The target device is on a bus which is slow and prone to contention.
-
-This hardware is not designed to be monitored with a high precision, so 
-reading the temperature at a high rate does not really make sense.
-
-Moreover (putting apart a potential contention), the delayed read does 
-not change the time interval, which remains the same from the governor 
-point of view.
-
-In addition, i2c sensors are usually handled in the hwmon subsystem 
-which are registered in the thermal framework from there. Those have 
-most of their 'read' callback with a cached value in a jiffies based way 
-eg. [1].
-
-So the feature already exists for slow devices and are handled in the 
-drivers directly via the hwmon subsystem.
-
- From my POV, the feature is not needed in the thermal framework.
-
-
-
-[1] 
-https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git/tree/drivers/hwmon/lm95234.c#n163
-
-
-
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+>
+> >
+> > Cheers,
+> >
+> > Hannes
+>
+> --
+> Damien Le Moal
+> Western Digital Research
+>
