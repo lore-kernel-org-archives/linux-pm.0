@@ -2,90 +2,104 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16574C7EE23
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 07:09:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3A52C7EE23
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jun 2023 07:38:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233543AbjFLHJY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Jun 2023 03:09:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37676 "EHLO
+        id S231936AbjFLHiN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Jun 2023 03:38:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48160 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231424AbjFLHJX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 03:09:23 -0400
-Received: from comms.puri.sm (comms.puri.sm [159.203.221.185])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D7E21988;
-        Mon, 12 Jun 2023 00:04:22 -0700 (PDT)
-Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 9B0CCEBEE9;
-        Sun, 11 Jun 2023 23:23:49 -0700 (PDT)
-Received: from comms.puri.sm ([127.0.0.1])
-        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id qNkXHMKsc_bt; Sun, 11 Jun 2023 23:23:48 -0700 (PDT)
-From:   Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=puri.sm; s=comms;
-        t=1686551028; bh=5WdmsNcfnfJhZlcRD/AABB3BQ/Q/V4x0NfhKyYWvdOs=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=pZrs4NYHksUe2cl7XbAEerstNlOYmsYefC5/fD5zoqRbR5YTSTOPQb4SSt5JWlgZn
-         RKnkF8zjiqAoCCRdI9H7mcpjQ67pxAwOi8UZggmmlkohain1f6AZeqN3Zzi1ei6yJ9
-         LSEN6hIbSE6w4/VPZaGwU287566rR4cluYqFehVMle/t71wBYGKOhXb39hWDOxoSou
-         flLO37GBD8ue+lVNW2c8rv6ivngWKbabIKDAbg8fPYI35uIUem6giHmW1HP76k2ROh
-         +sUAHrPNZ2O9Ocz9v23sV0P54buaOQ+F6z4PdynRIMZwzX7DPG8Us9EjlRmGHSZ+ZN
-         YAy9yhATC+4/Q==
-To:     Peng Fan <peng.fan@nxp.com>,
-        "Peng Fan (OSS)" <peng.fan@oss.nxp.com>,
-        "rafael@kernel.org" <rafael@kernel.org>,
-        "shawnguo@kernel.org" <shawnguo@kernel.org>,
-        "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "amitk@kernel.org" <amitk@kernel.org>,
-        "rui.zhang@intel.com" <rui.zhang@intel.com>,
-        "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        "festevam@gmail.com" <festevam@gmail.com>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        Alice Guo <alice.guo@nxp.com>
-Subject: Re: [PATCH 2/3] thermal: qoriq_thermal: only enable supported sensors
-Date:   Mon, 12 Jun 2023 08:23:34 +0200
-Message-ID: <23120696.6Emhk5qWAg@pliszka>
-In-Reply-To: <507b5daa-73e7-8d21-4f73-c56f88c6bf77@linaro.org>
-References: <20230516083746.63436-1-peng.fan@oss.nxp.com> <1966575.usQuhbGJ8B@pliszka>
- <507b5daa-73e7-8d21-4f73-c56f88c6bf77@linaro.org>
+        with ESMTP id S234634AbjFLHiL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2023 03:38:11 -0400
+Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A278B10E6
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 00:37:21 -0700 (PDT)
+Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-56cf6f4211aso19314937b3.1
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2023 00:37:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1686555220; x=1689147220;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZM8cSNzatRt7iVDLhS9loK+hrwWt39XACb17rH3wM/U=;
+        b=A5iqi7eDMfsR11wBrVQ3xDUG4wrXOFIb8FWkS/iuiJET3uBbwXH0qEtFkGf88b0BQQ
+         FhKKDxy77SoLu/xE/Fa9xuh9kBwOjRSEtglgEdKL/Ii+O0AydAJCrSkjG/E2HF2ZFKyO
+         HVKACR/TchHmdPZiMTKdgxuFGKjrODjxOR7IoChG/ZPoaXx/8Q1PW6qC3fSHRO7u+yUl
+         2oaTalH715J88KZzzjYX2H4u7gwtD/ejvge28Y+rFq0m45GUkLgIEv9jMUXjquqdM5+J
+         dWrBk/weo0fjhbAy/lVEIBsk6eaPNdMRq6uZkypzWMXV2cCh4NncxRO1mBTus39TLRZ/
+         Gp4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686555220; x=1689147220;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ZM8cSNzatRt7iVDLhS9loK+hrwWt39XACb17rH3wM/U=;
+        b=QtWXrKT9sqY76aEVho3MlVXUgerEjKx52pMDKcCCDKBk0RbQak5Irs2loUThjhToqW
+         4iq/UCcaW12AcZ/Hxl2xt/8bQ6kWzbp28DqhA781iDlC4K+dUYXgh4wqmsJLNE8t+aoQ
+         Ov5M4jpgCpUz67xS0pglY+de8KKIoipF3QUZdNJQpvrZfrSHFJimHo7L6NJVSUx7//wH
+         YX+fFP/aSqzwv9uRBnN0xuEFq6Ty8KCrkkcz0hp9iRKxZmNyFyiMWu1iziK5G2fMk5MM
+         E02twnpl54ly++CM/3jqF1nMznLGnTiVvDAv6N21G+Fi87koUxP34HGWjx8yqU/K0w88
+         pIfg==
+X-Gm-Message-State: AC+VfDwwj2ahUfXP07tcx9BQ1Y1lJTxA3damuLQ1eMfcQfyxa4PPV+NT
+        N0BxeULyhX7Z4pSF6E02Ut94ihfaKKxdjH2E034=
+X-Google-Smtp-Source: ACHHUZ6WULGFh7chtEHb1ZkZQmmJTBWrb+YD5bXXWBH3s//Zr0f4h/gIzkRgc7zjKizyLWEJh8ckSg==
+X-Received: by 2002:a05:6a20:a20d:b0:10b:d70d:f96b with SMTP id u13-20020a056a20a20d00b0010bd70df96bmr6884057pzk.3.1686554790361;
+        Mon, 12 Jun 2023 00:26:30 -0700 (PDT)
+Received: from localhost ([122.172.87.195])
+        by smtp.gmail.com with ESMTPSA id j1-20020aa78d01000000b0065418efa5ebsm6259308pfe.155.2023.06.12.00.26.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jun 2023 00:26:29 -0700 (PDT)
+Date:   Mon, 12 Jun 2023 12:56:27 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Perry Yuan <perry.yuan@amd.com>
+Cc:     rafael.j.wysocki@intel.com, Ray.Huang@amd.com,
+        Mario.Limonciello@amd.com, Deepak.Sharma@amd.com,
+        Wyes.Karny@amd.com, gautham.shenoy@amd.com, Sunpeng.Li@amd.com,
+        Xinmei.Huang@amd.com, Xiaojian.Du@amd.com, Li.Meng@amd.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] cpufreq: amd-pstate: Set default governor to schedutil
+Message-ID: <20230612072627.5wzmsfp64jho3bdj@vireshk-i7>
+References: <20230612030321.3097627-1-perry.yuan@amd.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230612030321.3097627-1-perry.yuan@amd.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On =C5=9Broda, 7 czerwca 2023 21:10:18 CEST Daniel Lezcano wrote:
-> On 07/06/2023 19:42, Sebastian Krzyszkowiak wrote:
->=20
-> [ ... ]
->=20
-> >> Hence, the thermal_zone_device_register_with_trips() is not called, the
-> >> thermal zone is not created neither updated.
-> >=20
-> > Again - that's not the case the check is there for. It's there for zones
-> > that do exist and that do get registered, because REGS_TMR only gets set
-> > *after* all the zones are already registered (the driver as it is right
-> > now does not know which sites it should enable before registering the
-> > zones). Because of that, the first value a zone gets after being
-> > registered is always bogus, because no monitoring site has been enabled
-> > yet at all.
->=20
-> Ok, I misunderstood. I thought that was for failing registered thermal zo=
-ne.
->=20
-> Would enabling the site in ops->change_mode do the trick ?
+On 11-06-23, 23:03, Perry Yuan wrote:
+> From: Mario Limonciello <mario.limonciello@amd.com>
+> 
+> The Kconfig currently defaults the governor to schedutil on x86_64
+> only when intel-pstate and SMP have been selected.
+> 
+> If the kernel is built only with amd-pstate, the default governor
+> should also be schedutil.
+> 
+> Cc: Sun Peng (Leo) Li <sunpeng.li@amd.com>
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+> Reviewed-by: Leo Li <sunpeng.li@amd.com>
+> Acked-by: Huang Rui <ray.huang@amd.com>
+> Tested-by: Perry Yuan <Perry.Yuan@amd.com>
+> ---
+>  drivers/cpufreq/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 2c839bd2b051..a1c51abddbc5 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -38,7 +38,7 @@ choice
+>  	prompt "Default CPUFreq governor"
+>  	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1110_CPUFREQ
+>  	default CPU_FREQ_DEFAULT_GOV_SCHEDUTIL if ARM64 || ARM
+> -	default CPU_FREQ_DEFAULT_GOV_SCHEDUTIL if X86_INTEL_PSTATE && SMP
+> +	default CPU_FREQ_DEFAULT_GOV_SCHEDUTIL if (X86_INTEL_PSTATE || X86_AMD_PSTATE) && SMP
+>  	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+>  	help
+>  	  This option sets which CPUFreq governor shall be loaded at
 
-Haven't tested, but from a quick glance at the core I believe it should!
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Peng, would you like to try that approach out and update this patch?
-
-Thanks,
-Sebastian
-
-
+-- 
+viresh
