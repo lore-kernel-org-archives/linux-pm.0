@@ -2,93 +2,155 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D52B4C88CB8
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Jun 2023 11:33:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C44BC88CB4
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Jun 2023 11:49:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234660AbjFMLdE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Jun 2023 07:33:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38516 "EHLO
+        id S241164AbjFMLtf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Jun 2023 07:49:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230183AbjFMLdD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2023 07:33:03 -0400
-X-Greylist: delayed 1241 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 13 Jun 2023 04:32:59 PDT
-Received: from mx.kernkonzept.com (serv1.kernkonzept.com [IPv6:2a01:4f8:1c1c:b490::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DAA86CA;
-        Tue, 13 Jun 2023 04:32:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kernkonzept.com; s=mx1; h=In-Reply-To:Content-Type:MIME-Version:References:
-        Message-ID:Subject:Cc:To:From:Date:Content-Transfer-Encoding:Reply-To:
-        Content-ID:Content-Description;
-        bh=tgIF/0cV3jzRQsm+ETxVbgy42xpfIw8aPttpqREa1ws=; b=dg4TNTqc+XsZQGvqQ9sFHH/WUC
-        DftqlpPwSPrwBU5Be7hzDIDWj8uJVxHAKJtwEjeKiw+ln4Yq7+yvUYSszHuxv2Hzrp6R39Gt2kqw1
-        iNfvXU1k1cVyKOCJODoKuKvJPqW/MXdVPp+8x6cPx0EWYdD64RrClPJPWgGISDNrNl/k4JYq/97+x
-        LDzUpq2AoFMVozm/ZA1Mes1sxI7gQCd6dBKjo2ysLDI85Z2vGrVJ/bm1lOe7opzvoDkubvdQxS152
-        o3MuEkiS675Cob7C0sV+wOorSh3RCS83MpupV/JHe6vGiBKIf1b7XAM7bSrB070pTMNynx+MOLXkD
-        XQDHm85Q==;
-Received: from [10.22.3.24] (helo=kernkonzept.com)
-        by mx.kernkonzept.com with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim 4.94.2)
-        id 1q91vt-000yDF-BI; Tue, 13 Jun 2023 13:11:28 +0200
-Date:   Tue, 13 Jun 2023 13:11:21 +0200
-From:   Stephan Gerhold <stephan.gerhold@kernkonzept.com>
-To:     Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Leo Yan <leo.yan@linaro.org>,
-        Evan Green <evgreen@chromium.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: Re: [PATCH v3 01/23] dt-bindings: interconnect: Add Qcom RPM ICC
- bindings
-Message-ID: <ZIhO2Tgh5q4heBi6@kernkonzept.com>
-References: <20230526-topic-smd_icc-v3-0-5fb7d39b874f@linaro.org>
- <20230526-topic-smd_icc-v3-1-5fb7d39b874f@linaro.org>
+        with ESMTP id S233271AbjFMLtd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2023 07:49:33 -0400
+Received: from APC01-PSA-obe.outbound.protection.outlook.com (mail-psaapc01on2117.outbound.protection.outlook.com [40.107.255.117])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC081E4A;
+        Tue, 13 Jun 2023 04:49:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=GzKZOoLXbsvmkynOQ+ivJe0j/oPTef8CtPslzBt/HYEpyNCy+TQQtpkJrbX+VpxMV9HpzUDbSpI/bCqOsJVkRIH4GgWk0fF3WYhBfVl2NTFUxtd9S7W+tlV+wuF/8oDQBBADhOeX4qaTnZEqhhdIbmWjxMM9QKTBUpjlb+sffGWUBz2IZ2NA7GCQkBcuq48g/3G/vOU2TnmmO7sB8FckDDH1StLD9S+OnPyOSN4N1r68k4nW1hEffrg/BMlL4zaO2cixbEyYlWRMyZalR4gO5g5OTLj4jg+vlaL1ZH170EYvtXmz8rloDmBdE2T/n8uTiZekN3NttiUVauYxaMCY7Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=4Xll6dkaotIJib1dizrzisPzHCkyQLaUn0rr/oFaGt4=;
+ b=WtSTCJylNKdOheFReKs+7IknrVSaEWvvMar98mr7Qtq1AYKl9av1XGhdV9HhATwa9UjyXwpEuUY5LFUFJBqQdCfMvMe/ADVToR+cgR3YcDxks1Xy2RHTzy3slAfq/5/JGjCK+8ADUVu5K8ozNgaVPQFmUtM1qTqH1YDDskTN6v14aBGPriXfAZm62tKKUawgM+x6oIakwqqfDPYA3yjBjVBqRGOGY4tkXz7xN4U4Z9Pzw520JgadTJ87D3RnRfMeGNFJK/LXKNj8Ln4J2D+PFde1rMjzskqmB0nEurG/8Q4co9kOQGYXmiuASbcPsQlffuNl3eLwSx8fFGnuu0tH0g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=4Xll6dkaotIJib1dizrzisPzHCkyQLaUn0rr/oFaGt4=;
+ b=CSmgihR2we7WIpanRL1cI9xp728SiCK91xDZux+1WD9M19VQyfyaCqYKtE5od5nkzA0roFuZpEp+ZKsQgJDinkG/mhJtfMUnJ660OGzHxtV57QQad4n5tWhhM/aMdtPW9VAFWDDnlxYei+nIABrFVw8bSWmd/l7KcOAHPMKwhGC4k3aqt4wk8SX6tXyeUf3fjEK6QuhMfIsiaj24JutsnD6nj/WdGh1cP4BcCNQp1l5defvWvmd4QQxhKMgYq1XCApEOafeDJ/gpbbR2L1k8uJSKbIn2Z2wzyVBq2JNuAQKuxY/C/syN2Km9ux4o88BNJKww0nZuqEal6l/jupTN+w==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SEZPR06MB5269.apcprd06.prod.outlook.com (2603:1096:101:78::6)
+ by SI2PR06MB5315.apcprd06.prod.outlook.com (2603:1096:4:1ea::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.33; Tue, 13 Jun
+ 2023 11:49:21 +0000
+Received: from SEZPR06MB5269.apcprd06.prod.outlook.com
+ ([fe80::76d6:4828:7e80:2965]) by SEZPR06MB5269.apcprd06.prod.outlook.com
+ ([fe80::76d6:4828:7e80:2965%3]) with mapi id 15.20.6455.039; Tue, 13 Jun 2023
+ 11:49:20 +0000
+From:   Yangtao Li <frank.li@vivo.com>
+To:     glaroque@baylibre.com, rafael@kernel.org,
+        daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
+        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
+        festevam@gmail.com, linux-imx@nxp.com, thara.gopinath@gmail.com,
+        agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
+        anarsoul@gmail.com, tiny.windzz@gmail.com, wens@csie.org,
+        jernej.skrabec@gmail.com, samuel@sholland.org,
+        thierry.reding@gmail.com, jonathanh@nvidia.com,
+        edubezval@gmail.com, j-keerthy@ti.com, matthias.bgg@gmail.com,
+        angelogioacchino.delregno@collabora.com, bchihi@baylibre.com,
+        niklas.soderlund+renesas@ragnatech.se, wenst@chromium.org
+Cc:     linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-sunxi@lists.linux.dev,
+        linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, Yangtao Li <frank.li@vivo.com>
+Subject: [PATCH v3 01/12] thermal/hwmon: Add error information printing for devm_thermal_add_hwmon_sysfs()
+Date:   Tue, 13 Jun 2023 19:48:53 +0800
+Message-Id: <20230613114904.15749-1-frank.li@vivo.com>
+X-Mailer: git-send-email 2.39.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2PR01CA0038.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:193::20) To SEZPR06MB5269.apcprd06.prod.outlook.com
+ (2603:1096:101:78::6)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230526-topic-smd_icc-v3-1-5fb7d39b874f@linaro.org>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SEZPR06MB5269:EE_|SI2PR06MB5315:EE_
+X-MS-Office365-Filtering-Correlation-Id: bdc97a70-4063-44a2-f4b5-08db6c04396d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: ij0O+cN+uGtcmbLMwgRKUARSnX2qcpAArxKp6nEqK4fo7qz21vRKyCyt8HRENzV2yIb0KcmfTGhQdCuN3/D8/AO5JAP42jEEj7aaJMM7hPi4gUL6uCcwIsJ0FbhjiCenXhz0zqn48wWrEQ29gufBGt4ttgnaW/cG2johVVoQ3TexCcY8PKwbRX9kYPW7a5AK3DnX/xvtdQDdAdwKO+mX1kxfOzc/arH9136Fzfit7NxfH++OXPRjCrm1jc9E0j/FXg83zZjP/VbMIyEWpxdvrXkOua5KG/jgG51n4LJp3KNhztoBIoBHdzArXRCUCup25Ikx/vYcprWe3WWwvIN3hPFZET0AtpmVvtUeCim/bRtQw5BUFAGMSD7eLtgmtDWwaHMmAQ01OqVRxIwn+ksOZnoFAsucOojm3t1EVfbBH0D6F9AD6Qafoka9my4e17fYzGNflaVjhF9tmQClaIEh06iYYtxqTUNAHKJFgtzVN8uh8c0SX+uRzUr6XKhtAsgAmWejenh7HiTNwyBRJGSfnbz1iaGuF4BeIJWCLF++8L5PyEB7TcvAbB8oZFx+e79ftGS2RhHMw72fWLTNphuJHvuXtWG4Z9c5MDK0JKRpwLnSiDJqaJOvDtnWfScyJ2dfvB4DFpCSJOVWowo/o1Avtw==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5269.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(376002)(39860400002)(396003)(346002)(136003)(366004)(451199021)(4326008)(8936002)(316002)(7406005)(7416002)(66476007)(41300700001)(478600001)(186003)(2906002)(66946007)(8676002)(66556008)(5660300002)(6666004)(107886003)(52116002)(6486002)(1076003)(6506007)(6512007)(921005)(26005)(83380400001)(36756003)(86362001)(2616005)(38100700002)(38350700002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?KheE1p7wc23dVwyjNGQi86QOGLBHK3bDnYVYTMXNHuZBYeQFJ5tJMmqh9grO?=
+ =?us-ascii?Q?01EJe3ACiKZM57VksagYo8+X1ADK/hGkQ6kbOiT6triXmN/2Kr5+KiiVe5YF?=
+ =?us-ascii?Q?734CVr8emYbtDqmvuiUL3utcvjOdgV99ihWe+i/oCSPzOHHuDsWoYpYfTdrG?=
+ =?us-ascii?Q?qJbNTT5MkHR85XqlFg1yNcpUv3U00gIkconCGur3oAxLN4/v+1CqKA4xT3d5?=
+ =?us-ascii?Q?eMZr5Md7Cf4KBPOQqmuNJn27xxQnqawJ8BrcA3B53d0PHbZBBHMOSdY13YWv?=
+ =?us-ascii?Q?6QJobMKr4wRh2SnRDELQbYTaUNqx4hLZyJKEKD1Zp3Kgk77kGm9/FmFdK6BK?=
+ =?us-ascii?Q?pEjX1MfwwU7jGGFijHYlOmnBqw0x6FEw1u5W2BW594LMAIFpxFW4sZ+6PbyH?=
+ =?us-ascii?Q?RcFV6x1VFqSLCmb1XM+8YvcotHxkR0t1lm1SH36YM/WSNQMpGJi0T8+iGHZK?=
+ =?us-ascii?Q?Dn6IRwWAAL66UeuQtxSrNF3595fFWJ+JYl+rf03E5gB8wtA9r/JYlAnQfHhf?=
+ =?us-ascii?Q?6Zt7vC7H+KsTY+JCzTfquC5l2OsuyTb/5zsbt0DRu0Y6L86JmEO34eVE+kkw?=
+ =?us-ascii?Q?UjABaxE/g62Vu1Y+slt3C3iZqsj/lrlfH+i/zT73KhbinYPkQpjUOtTWZYqR?=
+ =?us-ascii?Q?4Ij78Ke+wn81vzLDw1XSg/SlRYphcG7wCghIJtp3f0Q+e8n0/UeDAQJdU+V+?=
+ =?us-ascii?Q?UH5wLxhX4kax32NiUCjnLCdLgYpTX2/qhiPovXL14S9rLbNxgNwTXKt64F5g?=
+ =?us-ascii?Q?LSmEcKgE0FtzR3Tq0kaJT/R8/a0oqmCE0YgbCYlNW0J8NP6I32xaalXReHgh?=
+ =?us-ascii?Q?ecmVlyHaTlA8vWlNQR9Hqmhbcl3ZsmMoA4gbkeQtrCwdrKgPHdgIhihamNJY?=
+ =?us-ascii?Q?tl9ApQ8WY3beKvN1ElZ+ZjOhPCJ9d769fYjGIUnmdUukr36riO70OR7vNbGp?=
+ =?us-ascii?Q?/zDkG5NhaZd6RiWyrBhrpifLpElzD6iFiq4qiWqhFFdvr0YIBJqoIGjPIxrC?=
+ =?us-ascii?Q?QyWqC7N3MJe2HBmnY1ZPpGTYF0U+IUEKwEIotMcTX0k0Up27JQAvWgRALVTa?=
+ =?us-ascii?Q?FLlNWw/Klje82XfogyWByoNyxBrSbBP6WPuw9kyznY2adgWiK5g9EnxghN26?=
+ =?us-ascii?Q?hDsY1X54DI/NePgTqVks6n8RRx/mqkyG/pLFNQLHl+m6vl4FocuWrffBQfn5?=
+ =?us-ascii?Q?LgxD8MrYvtAycJAC1pMmAttPEwfO1r/tcHcVJTvr2qDqiHg9gs0NtrRgk2D5?=
+ =?us-ascii?Q?NbAt5Y683USut336cRsWzu/kgEj5UX/1A1Uk2CR1IaMlJB3prxtaR3hv+1tB?=
+ =?us-ascii?Q?+hV2XxT7RejJbFAmd0zpsSpr6HmjQ7T0uQv9YShiQYP3VkO0mjRq+42XOfdN?=
+ =?us-ascii?Q?2jym6O3OYv8Vysl4s0PiaErvv8t+Tcc0JjH0veiFOSTME9QLpB1Lfzym3HBF?=
+ =?us-ascii?Q?zGyGGwtETSugSIo9fYB41JC8pNiqyYXG0t7/KHk3hwZFWZ2rCfmW8bT9PRHQ?=
+ =?us-ascii?Q?gdsR/ztMdHccNYwpxPPT909LWbfqtkK1ou2DkvEnt+SibUx7mZDRrNvwRBFc?=
+ =?us-ascii?Q?I3mOMDDzF8BlNhNZFaN6dp3+aJP4nXrohIoQwJ4f?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bdc97a70-4063-44a2-f4b5-08db6c04396d
+X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5269.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jun 2023 11:49:20.4608
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: UreJ3tJMPRqREwRqMDS1wPpdLbJ2TVvmeByTnFUgPM3rrvOuU/I0bEzsXaIDDtEhC5E58bfAfEzE2eake+nKMw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR06MB5315
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jun 12, 2023 at 08:24:18PM +0200, Konrad Dybcio wrote:
-> The SMD RPM interconnect driver requires different icc tags to the
-> RPMh driver. Add bindings to reflect that.
-> 
-> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-> ---
->  include/dt-bindings/interconnect/qcom,rpm-icc.h | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/include/dt-bindings/interconnect/qcom,rpm-icc.h b/include/dt-bindings/interconnect/qcom,rpm-icc.h
-> new file mode 100644
-> index 000000000000..ef61006c9c58
-> --- /dev/null
-> +++ b/include/dt-bindings/interconnect/qcom,rpm-icc.h
-> @@ -0,0 +1,13 @@
-> +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-> +/*
-> + * Copyright (c) 2023, Linaro Limited
-> + */
-> +
-> +#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_RPM_ICC_H
-> +#define __DT_BINDINGS_INTERCONNECT_QCOM_RPM_ICC_H
-> +
-> +#define RPM_ACTIVE_TAG		BIT(0)
-> +#define RPM_SLEEP_TAG		BIT(1)
+Ensure that all error handling branches print error information. In this
+way, when this function fails, the upper-layer functions can directly
+return an error code without missing debugging information. Otherwise,
+the error message will be printed redundantly or missing.
 
-BIT(n) doesn't work in dt-bindings (syntax error), can you change this
-to (1 << 0) / (1 << 1)?
+Signed-off-by: Yangtao Li <frank.li@vivo.com>
+---
+v3:
+-cleanup lvts_thermal
+v2:
+-convert to dev_warn
+ drivers/thermal/thermal_hwmon.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Thanks!
-
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index fbe55509e307..c3ae44659b81 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -271,11 +271,14 @@ int devm_thermal_add_hwmon_sysfs(struct device *dev, struct thermal_zone_device
+ 
+ 	ptr = devres_alloc(devm_thermal_hwmon_release, sizeof(*ptr),
+ 			   GFP_KERNEL);
+-	if (!ptr)
++	if (!ptr) {
++		dev_warn(dev, "Failed to allocate device resource data\n");
+ 		return -ENOMEM;
++	}
+ 
+ 	ret = thermal_add_hwmon_sysfs(tz);
+ 	if (ret) {
++		dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
+ 		devres_free(ptr);
+ 		return ret;
+ 	}
 -- 
-Stephan Gerhold
-Kernkonzept GmbH at Dresden, Germany, HRB 31129, CEO Dr.-Ing. Michael Hohmuth
+2.39.0
+
