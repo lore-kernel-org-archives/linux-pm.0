@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 505C6C001DC
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Jun 2023 23:47:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7984C001DE
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Jun 2023 23:47:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240275AbjFMXrm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Jun 2023 19:47:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38564 "EHLO
+        id S241708AbjFMXro (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Jun 2023 19:47:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38572 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233152AbjFMXrY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2023 19:47:24 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A84DB2D52;
-        Tue, 13 Jun 2023 16:46:29 -0700 (PDT)
+        with ESMTP id S232646AbjFMXrZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2023 19:47:25 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CFA72D54;
+        Tue, 13 Jun 2023 16:46:31 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 9DCB163C89;
-        Tue, 13 Jun 2023 23:45:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 406CCC433C8;
-        Tue, 13 Jun 2023 23:45:48 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 03C0562EF7;
+        Tue, 13 Jun 2023 23:45:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 514A5C433D9;
+        Tue, 13 Jun 2023 23:45:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1686699949;
-        bh=z+m2w7UiSSaJX/OwF3qDeUFbm6UG/urVuxrQGCfidRw=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LO+V93ICx1HwMwWHEBH/0j7Ux1MkZXoOm2+800vsCbav/XKQvETwEfX7YhnrfOe7W
-         qN6tQFZYj3tTkRQdHXkEpAk9TvJtB6g9PBX3nlxikIXhMJE0tdosPyLGckQTMDuMua
-         iQR3FByH1msDH91hfRxWp63DKqAcD+dzWjJ+LYEBc00sWHI1tUVkU3H+sh4v0N0x1o
-         04SBHZVRg777diNwZx6bBov7RJ1Cl6iOo8vr57CxFHtpY8iFuJtZsax+03SYBbWO8j
-         5RteReqO6IvhaaHkMMJzCCKtOGCSVoEgGoRkc9+WvStU5Azu8SH10sRnoQqHvbgDmw
-         lRq9ZFF45OJIw==
+        s=k20201202; t=1686699955;
+        bh=o4AIqGTNBOdVmrdJEKcPDcLQEjkhm6E0B/4K9xnHkXs=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=eosRzgDdP+haRL72z9fUoaHVfLIx1OH1dJk8pCA0eP+OBH/rP17wWMgfCDk3nkAUw
+         M8rFIC0cjhQ0xecllgjAXq7LdU4hQ/G1rkuyYDTXEcXsshVAgr+vStSx0UfqF+9WrY
+         lvLRi/aqEBscRrkX3+o01/EPW0XyI/Mo1wn5nMcYmPAXMaT0z4iWKCvfbxYGWXbI07
+         fiATR/EriokFHQPZXaNQI2SLWbzUe/lueyOYIfetHlKYTwbIoKlnHADc/8+80w4hN1
+         dZcdfOyrq6JLL2rBBT1a6tirR+3B0eN8K3T81erFT7csNeblYWo0gZ75RgtCCArDKs
+         mBuB/jrQ0GaBQ==
 From:   Bjorn Andersson <andersson@kernel.org>
-To:     linux-arm-msm@vger.kernel.org,
-        =?UTF-8?q?Matti=20Lehtim=C3=A4ki?= <matti.lehtimaki@gmail.com>
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        phone-devel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
-Subject: Re: (subset) [PATCH 0/6] Enable MSM8226 TSENS support
-Date:   Tue, 13 Jun 2023 16:48:52 -0700
-Message-Id: <168670013503.1400697.16167294323493822570.b4-ty@kernel.org>
+To:     devicetree@vger.kernel.org, rafael@kernel.org,
+        konrad.dybcio@linaro.org, linux-kernel@vger.kernel.org,
+        Varadarajan Narayanan <quic_varada@quicinc.com>,
+        thara.gopinath@gmail.com, linux-arm-msm@vger.kernel.org,
+        conor+dt@kernel.org, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, robh+dt@kernel.org, rui.zhang@intel.com,
+        amitk@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+        agross@kernel.org
+Subject: Re: (subset) [PATCH v6 0/3] Enable IPQ9574 TSENS support
+Date:   Tue, 13 Jun 2023 16:48:57 -0700
+Message-Id: <168670013501.1400697.3289506817774430976.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230507201225.89694-1-matti.lehtimaki@gmail.com>
-References: <20230507201225.89694-1-matti.lehtimaki@gmail.com>
+In-Reply-To: <cover.1686125196.git.quic_varada@quicinc.com>
+References: <cover.1686125196.git.quic_varada@quicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -54,28 +54,24 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 7 May 2023 23:12:18 +0300, Matti Lehtimäki wrote:
-> Add support for tsens in MSM8226. Add qfprom compatible for MSM8226.
-> Add device tree nodes for qfprom, tsens and thermal zones for MSM8226.
+On Wed, 7 Jun 2023 14:23:07 +0530, Varadarajan Narayanan wrote:
+> This patch set enables tsens in IPQ9574
 > 
-> Matti Lehtimäki (6):
->   dt-bindings: nvmem: qfprom: Add compatible for MSM8226
->   dt-bindings: thermal: tsens: Add compatible for MSM8226
->   thermal/drivers/qcom/tsens-v0_1: Add support for MSM8226
->   ARM: dts: msm8226: Add qfprom node
->   ARM: dts: msm8226: Add tsens node and related nvmem cells
->   ARM: dts: msm8226: Add thermal zones node
+> Depends on
+> 	https://lore.kernel.org/linux-arm-msm/20230406061314.10916-1-quic_devipriy@quicinc.com/
+> [v6]:
+> 	Remove comments from tsens node in dtsi
+> [v5]:
+> 	Fix make DT_CHECKER_FLAGS=-m dt_binding_check and make dtbs_check errors without removing existing entries
 > 
 > [...]
 
 Applied, thanks!
 
-[4/6] ARM: dts: msm8226: Add qfprom node
-      commit: 16a9fa7ab27b69be3a34b97ff8c7b034fcc73b88
-[5/6] ARM: dts: msm8226: Add tsens node and related nvmem cells
-      commit: 0f8861c9fc7cc9af6d6f65d6657aa9cf2531b29c
-[6/6] ARM: dts: msm8226: Add thermal zones node
-      commit: 8d4236f62f3acbc6a0def79106c13fe7344d8238
+[2/3] arm64: dts: qcom: ipq9574: add tsens node
+      commit: 2e0580e10e919b544d7be1b2b8fc48fc7dff1322
+[3/3] arm64: dts: qcom: ipq9574: add thermal zone nodes
+      commit: 581dcbe60b6390c633f318a29db41d1df642e6d8
 
 Best regards,
 -- 
