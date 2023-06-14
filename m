@@ -2,61 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBC54EB64DB
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 10:22:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04BF3EB64DB
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 10:22:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243076AbjFNKWj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jun 2023 06:22:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35126 "EHLO
+        id S243614AbjFNKWo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jun 2023 06:22:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243279AbjFNKW3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 06:22:29 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C78E11BEC
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:25 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id 2adb3069b0e04-4f74cda5f1dso3849850e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:25 -0700 (PDT)
+        with ESMTP id S243381AbjFNKWm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 06:22:42 -0400
+Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8F211FC8
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:28 -0700 (PDT)
+Received: by mail-lj1-x229.google.com with SMTP id 38308e7fff4ca-2b1a7e31dcaso6624711fa.2
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686738144; x=1689330144;
+        d=linaro.org; s=google; t=1686738147; x=1689330147;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=lt52lJ7IAYpZyo39NdZRaisuqAyx1l+kNW12PnaKg2U=;
-        b=IWFvEkxe8V8zKzjnnK6wW+jAr93l1PemF4j+i2UrmK+I7Gei6TtLUzJiNBz+pByN3b
-         PXRzObiM4QboZuEu9XysQV8QYGX3rc/LoOSidqNxSiXwoFPvzlkkGh/w+J7Y8vbmQ2mx
-         7U+6Za+OsgBW4Qn4bWAYfqFJkMje8lhv7VwG+e0CsflXsQwwkQj4Zjdp/xARO4v5RvKD
-         RiPbY3ndfUzy7w9FHiorAtwF8QYzlOBUqeBAEDq1L4bNJbYazMAyXitLOkC+NqqNvJ16
-         916VFJ41WWmTRDF3tHoIY192hN7Sq/IBI+/Yh2RElHUUehDNRv1zxpqv9bkeJUuJya62
-         XB9Q==
+        bh=KGqdYljk/BXQOSadkDKenWACuVWkhdGMQVPkOQZa/PU=;
+        b=iiwazeLR8igv9xFuMHoFoLI2OId5w/jSMbJG/DWsN3kqxWU1BDkqsOymYMTAY0KB8/
+         zcdW8tjL2bxfXq5+wrUXhXsWWSloV/6Jp/WmGcA5x4vo2VW5cvQVjv1J5g8762o4r5PH
+         79pQELwi4GBJqyvt0Ds52ufkL4uCOhbEJqyCA6zJOBJr60UUpgc03AiKyGfqkAiSmgSj
+         ODmUMWZNTZcbY19bO4gxS0BzIefUgnb7c+K1na9HfmBHA6Ti4pwzY8ABAMK64O9hctOf
+         3I5NVPR8VWu0V4Znvc25WxcmLkSqXRQuLLw3uWH9JPgtxQ9thbixfSNHxH+QHm4SI+5W
+         LgEw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686738144; x=1689330144;
+        d=1e100.net; s=20221208; t=1686738147; x=1689330147;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=lt52lJ7IAYpZyo39NdZRaisuqAyx1l+kNW12PnaKg2U=;
-        b=QcEajs3jNXLWBItIwPevtf8BDfokrCUpqK1eWukAgMgUaULYTsQKq5oVNBo6wR9lAL
-         o+RFJw8FjZHjd6vkKCX3vdV60nNP21gAJL4d8IIy9yckTGIiU9hW1V/paXRV/W2TTSsj
-         gCrS6w19CcBuOaG/JL+rkKRRcz2OBS3gXkCzZ4+7fB+2aM4HcgX6RUFFNvoMLjnEsboP
-         X3CWaMNG6O/SDd1snbMLCmhZoL8R0+uVn4b7Rp05nSk0LqX5eQKud8s0zblLLgUnguSo
-         FXLhl0+y4IFumdFThmc5NqWdgyAiC6Rce7pWjjmpi/Kpg6vxSkVHNB6g79/XYn39CoMk
-         9cvg==
-X-Gm-Message-State: AC+VfDzEyPZnnwsHcIWif3ZmUUYrunmruclVVSGPyPOti87xOy19173s
-        xMeSAIxK+5itcucI0tzQZyGcaA==
-X-Google-Smtp-Source: ACHHUZ4VezIuskLSbrb+fOlN7xQco37hP8aam7VCpAwQfhQvHQWA9dX62n0x2dnYtGK6JWkATL+IJg==
-X-Received: by 2002:a2e:90da:0:b0:2b3:4ef9:34cd with SMTP id o26-20020a2e90da000000b002b34ef934cdmr109628ljg.8.1686738144056;
-        Wed, 14 Jun 2023 03:22:24 -0700 (PDT)
+        bh=KGqdYljk/BXQOSadkDKenWACuVWkhdGMQVPkOQZa/PU=;
+        b=jyYvbXe0VbVLkivleMGtvJwH4vGCM4X0yPrSmS0OiXc4iSsujpywJ4PrR+M/cByPuP
+         pA+qkywe9twpMfJtOtsXXBs6i+DxaB7zxXc5p/4KXRW1YGzAaG1VSMxv7DYUFM0sgM1k
+         rOaGrXivT1eeBPb6GeTcH+lq77VybuJi5vnTLsShunowoab6rn9jHxQZ16BYzHYIzkKq
+         zECoD0Nfgv50ApABHiwWUZhSJsnmvIvTo1uujTB/u/i9X1PO7MZBcHyC7zZo4+rKs4kQ
+         J/6bbJssC6imRqaD/NjdZP67z/Itw4eUGEGQNK84ES/BiE13SkVn+3sFs/LTaPnpCwOh
+         ZF3g==
+X-Gm-Message-State: AC+VfDxSvJhadEdUz7f22+Elt3EfShok5+x19LFgH4M2FsywROZCznOS
+        lUnO8t1c3htKFU+w2JyRQccJFw==
+X-Google-Smtp-Source: ACHHUZ6y37TFtTr/+lOpYIuYHEYCQE+evMrk7CU3AT+KaJLUEQ1wBqS3SGkMNYDvJuLOWPTOv9Hs7Q==
+X-Received: by 2002:a2e:84d7:0:b0:2a7:a393:a438 with SMTP id q23-20020a2e84d7000000b002a7a393a438mr5748256ljh.24.1686738147034;
+        Wed, 14 Jun 2023 03:22:27 -0700 (PDT)
 Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
-        by smtp.gmail.com with ESMTPSA id m2-20020a2eb6c2000000b002b20d8f270asm2520057ljo.74.2023.06.14.03.22.22
+        by smtp.gmail.com with ESMTPSA id m2-20020a2eb6c2000000b002b20d8f270asm2520057ljo.74.2023.06.14.03.22.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jun 2023 03:22:23 -0700 (PDT)
+        Wed, 14 Jun 2023 03:22:26 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Wed, 14 Jun 2023 12:22:16 +0200
-Subject: [PATCH v5 05/22] soc: qcom: smd-rpm: Move icc_smd_rpm registration
- to clk-smd-rpm
+Date:   Wed, 14 Jun 2023 12:22:18 +0200
+Subject: [PATCH v5 07/22] interconnect: qcom: Fold smd-rpm.h into icc-rpm.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v5-5-eeaa09d0082e@linaro.org>
+Message-Id: <20230526-topic-smd_icc-v5-7-eeaa09d0082e@linaro.org>
 References: <20230526-topic-smd_icc-v5-0-eeaa09d0082e@linaro.org>
 In-Reply-To: <20230526-topic-smd_icc-v5-0-eeaa09d0082e@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -74,138 +73,190 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686738135; l=3949;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1686738135; l=5451;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=jmhJvBjqUtAAd9ogN4BP2RfilLnjEO+h94MD5RIqO5E=;
- b=C7Zf8dxJHhKoxq3DzVEAJLS5fWwU2dRq5+c6kwnVzrY2vCnoAwUDNrji5EHAXmo3aZH0zHMot
- dnZhMt77TAfA3UsL+HYb8jcjPi080ROKfKnCaeGkQPwS6XIto02TFv/
+ bh=ylF4JrhNb4QpLR63mLl/kyJvmecazdKn76bHZ9DX7ks=;
+ b=SNwPY5zwZ31Y+j08qInd2HvsdnJyhvW87yLfkSoyt/YOGKoLFub3DKnq9bxIYc0zAg0G07YgJ
+ KgvQfknKvhCBUhjXcZyj4OP+5F/64EeUWaVKOkoT3K3Iuptk21TNtI2
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Stephan Gerhold <stephan@gerhold.net>
+smd-rpm.h is not very useful as-is and both files are always included
+anyway.. Combine them.
 
-icc_smd_rpm will do bus clock votes itself rather than taking the
-unnecessary detour through the clock subsystem. However, it can only
-do that after the clocks have been handed off and scaling has been
-enabled in the RPM in clk-smd-rpm.
-
-Move the icc_smd_rpm registration from smd-rpm.c to clk-smd-rpm.c
-to avoid any possible races. icc_smd_rpm gets the driver data from
-the smd-rpm device, so still register the platform device on the
-smd-rpm parent device.
-
-Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
-[Konrad: remove unrelated cleanups]
-Acked-by: Stephen Boyd <sboyd@kernel.org>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/clk/qcom/clk-smd-rpm.c | 21 +++++++++++++++++++++
- drivers/soc/qcom/smd-rpm.c     | 17 +----------------
- 2 files changed, 22 insertions(+), 16 deletions(-)
+ drivers/interconnect/qcom/icc-rpm.c |  1 -
+ drivers/interconnect/qcom/icc-rpm.h |  5 +++++
+ drivers/interconnect/qcom/msm8916.c |  1 -
+ drivers/interconnect/qcom/msm8939.c |  1 -
+ drivers/interconnect/qcom/msm8974.c |  2 +-
+ drivers/interconnect/qcom/msm8996.c |  1 -
+ drivers/interconnect/qcom/qcm2290.c |  1 -
+ drivers/interconnect/qcom/qcs404.c  |  1 -
+ drivers/interconnect/qcom/sdm660.c  |  1 -
+ drivers/interconnect/qcom/smd-rpm.c |  2 +-
+ drivers/interconnect/qcom/smd-rpm.h | 15 ---------------
+ 11 files changed, 7 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/clk/qcom/clk-smd-rpm.c b/drivers/clk/qcom/clk-smd-rpm.c
-index 937cb1515968..6e7f0438e8b8 100644
---- a/drivers/clk/qcom/clk-smd-rpm.c
-+++ b/drivers/clk/qcom/clk-smd-rpm.c
-@@ -1289,12 +1289,20 @@ static struct clk_hw *qcom_smdrpm_clk_hw_get(struct of_phandle_args *clkspec,
- 	return desc->clks[idx] ? &desc->clks[idx]->hw : ERR_PTR(-ENOENT);
- }
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 863e8ba1daa2..b8ecf9538ab9 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -14,7 +14,6 @@
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
  
-+static void rpm_smd_unregister_icc(void *data)
-+{
-+	struct platform_device *icc_pdev = data;
-+
-+	platform_device_unregister(icc_pdev);
-+}
-+
- static int rpm_smd_clk_probe(struct platform_device *pdev)
- {
- 	int ret;
- 	size_t num_clks, i;
- 	struct clk_smd_rpm **rpm_smd_clks;
- 	const struct rpm_smd_clk_desc *desc;
-+	struct platform_device *icc_pdev;
+-#include "smd-rpm.h"
+ #include "icc-common.h"
+ #include "icc-rpm.h"
  
- 	rpmcc_smd_rpm = dev_get_drvdata(pdev->dev.parent);
- 	if (!rpmcc_smd_rpm) {
-@@ -1344,6 +1352,19 @@ static int rpm_smd_clk_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err;
+diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
+index d2c04c400cad..9ec90e13bfbd 100644
+--- a/drivers/interconnect/qcom/icc-rpm.h
++++ b/drivers/interconnect/qcom/icc-rpm.h
+@@ -6,6 +6,8 @@
+ #ifndef __DRIVERS_INTERCONNECT_QCOM_ICC_RPM_H
+ #define __DRIVERS_INTERCONNECT_QCOM_ICC_RPM_H
  
-+	icc_pdev = platform_device_register_data(pdev->dev.parent,
-+						 "icc_smd_rpm", -1, NULL, 0);
-+	if (IS_ERR(icc_pdev)) {
-+		dev_err(&pdev->dev, "Failed to register icc_smd_rpm device: %pE\n",
-+			icc_pdev);
-+		/* No need to unregister clocks because of this */
-+	} else {
-+		ret = devm_add_action_or_reset(&pdev->dev, rpm_smd_unregister_icc,
-+					       icc_pdev);
-+		if (ret)
-+			goto err;
-+	}
++#include <linux/soc/qcom/smd-rpm.h>
 +
- 	return 0;
- err:
- 	dev_err(&pdev->dev, "Error registering SMD clock driver (%d)\n", ret);
-diff --git a/drivers/soc/qcom/smd-rpm.c b/drivers/soc/qcom/smd-rpm.c
-index 0c1aa809cc4e..577f1f25ab10 100644
---- a/drivers/soc/qcom/smd-rpm.c
-+++ b/drivers/soc/qcom/smd-rpm.c
+ #include <dt-bindings/interconnect/qcom,icc.h>
+ 
+ #define RPM_BUS_MASTER_REQ	0x73616d62
+@@ -121,4 +123,7 @@ enum qos_mode {
+ int qnoc_probe(struct platform_device *pdev);
+ int qnoc_remove(struct platform_device *pdev);
+ 
++bool qcom_icc_rpm_smd_available(void);
++int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
++
+ #endif
+diff --git a/drivers/interconnect/qcom/msm8916.c b/drivers/interconnect/qcom/msm8916.c
+index 5c4ba2f37c8e..196b05879896 100644
+--- a/drivers/interconnect/qcom/msm8916.c
++++ b/drivers/interconnect/qcom/msm8916.c
+@@ -15,7 +15,6 @@
+ 
+ #include <dt-bindings/interconnect/qcom,msm8916.h>
+ 
+-#include "smd-rpm.h"
+ #include "icc-rpm.h"
+ 
+ enum {
+diff --git a/drivers/interconnect/qcom/msm8939.c b/drivers/interconnect/qcom/msm8939.c
+index caf0aefad668..639566dce45a 100644
+--- a/drivers/interconnect/qcom/msm8939.c
++++ b/drivers/interconnect/qcom/msm8939.c
+@@ -16,7 +16,6 @@
+ 
+ #include <dt-bindings/interconnect/qcom,msm8939.h>
+ 
+-#include "smd-rpm.h"
+ #include "icc-rpm.h"
+ 
+ enum {
+diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
+index 1828deaca443..968162213d40 100644
+--- a/drivers/interconnect/qcom/msm8974.c
++++ b/drivers/interconnect/qcom/msm8974.c
+@@ -38,7 +38,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+ 
+-#include "smd-rpm.h"
++#include "icc-rpm.h"
+ 
+ enum {
+ 	MSM8974_BIMC_MAS_AMPSS_M0 = 1,
+diff --git a/drivers/interconnect/qcom/msm8996.c b/drivers/interconnect/qcom/msm8996.c
+index 20340fb62fe6..1f7e88a37acd 100644
+--- a/drivers/interconnect/qcom/msm8996.c
++++ b/drivers/interconnect/qcom/msm8996.c
+@@ -18,7 +18,6 @@
+ #include <dt-bindings/interconnect/qcom,msm8996.h>
+ 
+ #include "icc-rpm.h"
+-#include "smd-rpm.h"
+ #include "msm8996.h"
+ 
+ static const char * const mm_intf_clocks[] = {
+diff --git a/drivers/interconnect/qcom/qcm2290.c b/drivers/interconnect/qcom/qcm2290.c
+index a29cdb4fac03..cb636e67a5a4 100644
+--- a/drivers/interconnect/qcom/qcm2290.c
++++ b/drivers/interconnect/qcom/qcm2290.c
 @@ -19,7 +19,6 @@
- /**
-  * struct qcom_smd_rpm - state of the rpm device driver
-  * @rpm_channel:	reference to the smd channel
-- * @icc:		interconnect proxy device
-  * @dev:		rpm device
-  * @ack:		completion for acks
-  * @lock:		mutual exclusion around the send/complete pair
-@@ -27,7 +26,6 @@
-  */
- struct qcom_smd_rpm {
- 	struct rpmsg_endpoint *rpm_channel;
--	struct platform_device *icc;
- 	struct device *dev;
+ #include <linux/slab.h>
  
- 	struct completion ack;
-@@ -197,7 +195,6 @@ static int qcom_smd_rpm_callback(struct rpmsg_device *rpdev,
- static int qcom_smd_rpm_probe(struct rpmsg_device *rpdev)
- {
- 	struct qcom_smd_rpm *rpm;
--	int ret;
+ #include "icc-rpm.h"
+-#include "smd-rpm.h"
  
- 	rpm = devm_kzalloc(&rpdev->dev, sizeof(*rpm), GFP_KERNEL);
- 	if (!rpm)
-@@ -210,23 +207,11 @@ static int qcom_smd_rpm_probe(struct rpmsg_device *rpdev)
- 	rpm->rpm_channel = rpdev->ept;
- 	dev_set_drvdata(&rpdev->dev, rpm);
+ enum {
+ 	QCM2290_MASTER_APPSS_PROC = 1,
+diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+index fae155344332..938283ddd0e3 100644
+--- a/drivers/interconnect/qcom/qcs404.c
++++ b/drivers/interconnect/qcom/qcs404.c
+@@ -13,7 +13,6 @@
+ #include <linux/of_device.h>
  
--	rpm->icc = platform_device_register_data(&rpdev->dev, "icc_smd_rpm", -1,
--						 NULL, 0);
--	if (IS_ERR(rpm->icc))
--		return PTR_ERR(rpm->icc);
+ 
+-#include "smd-rpm.h"
+ #include "icc-rpm.h"
+ 
+ enum {
+diff --git a/drivers/interconnect/qcom/sdm660.c b/drivers/interconnect/qcom/sdm660.c
+index 7ffaf70d62d3..003fc7d110a7 100644
+--- a/drivers/interconnect/qcom/sdm660.c
++++ b/drivers/interconnect/qcom/sdm660.c
+@@ -17,7 +17,6 @@
+ #include <linux/slab.h>
+ 
+ #include "icc-rpm.h"
+-#include "smd-rpm.h"
+ 
+ enum {
+ 	SDM660_MASTER_IPA = 1,
+diff --git a/drivers/interconnect/qcom/smd-rpm.c b/drivers/interconnect/qcom/smd-rpm.c
+index dc8ff8d133a9..b0183262ba66 100644
+--- a/drivers/interconnect/qcom/smd-rpm.c
++++ b/drivers/interconnect/qcom/smd-rpm.c
+@@ -13,7 +13,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/soc/qcom/smd-rpm.h>
+ 
+-#include "smd-rpm.h"
++#include "icc-rpm.h"
+ 
+ #define RPM_KEY_BW		0x00007762
+ 
+diff --git a/drivers/interconnect/qcom/smd-rpm.h b/drivers/interconnect/qcom/smd-rpm.h
+deleted file mode 100644
+index ca9d0327b8ac..000000000000
+--- a/drivers/interconnect/qcom/smd-rpm.h
++++ /dev/null
+@@ -1,15 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- * Copyright (c) 2019, Linaro Ltd.
+- * Author: Georgi Djakov <georgi.djakov@linaro.org>
+- */
 -
--	ret = of_platform_populate(rpdev->dev.of_node, NULL, NULL, &rpdev->dev);
--	if (ret)
--		platform_device_unregister(rpm->icc);
+-#ifndef __DRIVERS_INTERCONNECT_QCOM_SMD_RPM_H
+-#define __DRIVERS_INTERCONNECT_QCOM_SMD_RPM_H
 -
--	return ret;
-+	return of_platform_populate(rpdev->dev.of_node, NULL, NULL, &rpdev->dev);
- }
- 
- static void qcom_smd_rpm_remove(struct rpmsg_device *rpdev)
- {
--	struct qcom_smd_rpm *rpm = dev_get_drvdata(&rpdev->dev);
+-#include <linux/soc/qcom/smd-rpm.h>
 -
--	platform_device_unregister(rpm->icc);
- 	of_platform_depopulate(&rpdev->dev);
- }
- 
+-bool qcom_icc_rpm_smd_available(void);
+-int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
+-
+-#endif
 
 -- 
 2.41.0
