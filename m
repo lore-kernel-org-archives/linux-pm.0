@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5153EC04A94
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 18:05:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5B06C001DD
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 18:05:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240554AbjFNSFa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jun 2023 14:05:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37866 "EHLO
+        id S240660AbjFNSFb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jun 2023 14:05:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240426AbjFNSE6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 14:04:58 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35507211F
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:04:54 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-4f122ff663eso9119039e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:04:54 -0700 (PDT)
+        with ESMTP id S241568AbjFNSFO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 14:05:14 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D035D213A
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:05:05 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-4f660e57123so6916740e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:05:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686765892; x=1689357892;
+        d=linaro.org; s=google; t=1686765904; x=1689357904;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=AGw2C5vkxiY4wctjycR/LXyEjdyTIKRRhbkUxP7hBTM=;
-        b=BvWUFQOMwUAw+799RcIFhdkQkYEA6nhpj5raefBstGMyuak6gmzcmsnn7Gs7VRS/xN
-         hXU10yT6epQMsBmGM8xeAbxkWYOz9lweVMKqiMsN5o3OydSoSCFILVnAJof9Ahbjwxra
-         edk/x1FR4RACuMenE258Kq2Gp0/PdBWoPkXbseB00DNkF102wKxUfb1dQIYfnTUTLi/g
-         XhIeLO4sJdItbLUefu4IiPNy1feqntFYkAiFqVeraPY8S4ZelHcGqmudTw3kyeGJDAao
-         OPWS+kjgfXPB7NUxuw1vMndBAfyMnJ9C3OE5kCMaOws3oILhmpsIBqK+7sTN68W330Lo
-         YQfw==
+        bh=p7wfrKtOuiG3iOR2rZXazcj4Xb5KmwKNQQmAN1Tw0Tc=;
+        b=dtaa1qLdBJn9FVCuq6V7om4iAj14TdzP2WZ15HKihThdEmIg0Dew2TaKK0g/4z5YgA
+         XyEf6BzRjNqWyTVrYX1cRiOEBuLQsRm0lJ/CyniRtH72K/HoBzVOrhzQ+ZlPm0YiuZPe
+         sScQZhRE5d03EFjnGm1HUIP9SdkaYAs2W3YqdcD0XJvEbks3hejQ1aDgQ2aKiEFzwtXm
+         NYqdcb2PWedk3+/m3OJNe3IvYPfLG4LEysaGxwvoGNd9+Kv5gIWcJGxtFMNFDBY/8KSw
+         Wbkcij3KZwrvRQ98GKYfk33eEkx4bzltiltZlffupHSmzlFoBXgwiZ2YCjcwAio1pVRJ
+         UBPw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686765892; x=1689357892;
+        d=1e100.net; s=20221208; t=1686765904; x=1689357904;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=AGw2C5vkxiY4wctjycR/LXyEjdyTIKRRhbkUxP7hBTM=;
-        b=duozSxaL7SQuv7XSLcQsYfbgJ0LTgiiGryNdC6ZuSlzwn6ox77vv1MtY1wr9LtYVjM
-         iVbpEYVtq8v3tv7iO1CkwAGtU+tFVCjW77pU6UY+tL/l7ZuLijx5Bfay0+NCJbEA1gto
-         9xmR2vMOICo3/UO+xnFnRIVJ+VTe9XTySwrircgtQGt1508XO1jRo+R7tvQI0eOYpqd2
-         013WR0PBsVUkmxkIyCgARFKA1Hw9iQGUe54P9uBvrM/n7uaAAWPOOhygo7/MIWQ0CGj6
-         i4bUm01tRIW6YsdkDA8o+nATjWIJj7tFioL1wyQvq2KH+OrlWognFr9f8QaV37fcvCRO
-         XPYQ==
-X-Gm-Message-State: AC+VfDwU5vlUquMEC8NI9MiXFRjX84PAOIFotiJyAANBaOtZ1qvx2H52
-        gN7mjx0oogDnPTmDrYC9IILMLA==
-X-Google-Smtp-Source: ACHHUZ4/LvVs+wlMI7h0NrxPtnCt54xv9IMn/KBKcEzdHKLNVfMGWnrxSx+E1Dma2gNDLU3coa3vpA==
-X-Received: by 2002:a19:7915:0:b0:4f6:13f1:38a4 with SMTP id u21-20020a197915000000b004f613f138a4mr7924026lfc.41.1686765892390;
-        Wed, 14 Jun 2023 11:04:52 -0700 (PDT)
+        bh=p7wfrKtOuiG3iOR2rZXazcj4Xb5KmwKNQQmAN1Tw0Tc=;
+        b=guwCNHhsyDQWGyqY2JaKxPJCUXFci/+MpdoBZ4upsfZ3lfZAH93ckMr0hR9PH2pzpW
+         l6O8KTtjm95vdIQ8sdrkzgFg0rJq7cLsRqmVwkGqX4HK4Wr8ZBUeFI1shEnC8s5jODqs
+         MCDEOln2GonWMIEBydy7GulEtbB+kEFHOFTnd2UtDyeMp2B94swcGnAgbvqFi7jciRvT
+         6VI/Vo242EpBK7y/G49kNhv3tnSxXKJ77vgXI6GqKoucU3spUbqVNSrieVgXuvGX0IPM
+         q+mymLYv4QWoowHo9WpvHauVvEHtu+Clz8vLH1mYfVMYROpRldFS1JpH02Go3Vmn1KU4
+         9wrg==
+X-Gm-Message-State: AC+VfDwmk3HLAXFlKE8J5Ow62GtVPN4jkF+BfW7qhB4jsMWAqN041DdF
+        xm0ji1f0N/Otbatu+Y1hJG5frA==
+X-Google-Smtp-Source: ACHHUZ6dKvyH6/m+39Etyfh2a9L3GhAFyNq56dd4BqFEX0pgEWJN5WZHlWA5uivBgUuyyk5lYpOTag==
+X-Received: by 2002:a19:4316:0:b0:4f1:866d:9b01 with SMTP id q22-20020a194316000000b004f1866d9b01mr7179579lfa.3.1686765904196;
+        Wed, 14 Jun 2023 11:05:04 -0700 (PDT)
 Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
-        by smtp.gmail.com with ESMTPSA id l18-20020a19c212000000b004eff1f7f206sm2224053lfc.9.2023.06.14.11.04.51
+        by smtp.gmail.com with ESMTPSA id l18-20020a19c212000000b004eff1f7f206sm2224053lfc.9.2023.06.14.11.05.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jun 2023 11:04:52 -0700 (PDT)
+        Wed, 14 Jun 2023 11:05:03 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Wed, 14 Jun 2023 20:04:31 +0200
-Subject: [PATCH v6 12/22] interconnect: qcom: msm8996: Hook up RPM bus clk
- definitions
+Date:   Wed, 14 Jun 2023 20:04:39 +0200
+Subject: [PATCH v6 20/22] interconnect: qcom: icc-rpm: Set bandwidth on
+ both contexts
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v6-12-263283111e66@linaro.org>
+Message-Id: <20230526-topic-smd_icc-v6-20-263283111e66@linaro.org>
 References: <20230526-topic-smd_icc-v6-0-263283111e66@linaro.org>
 In-Reply-To: <20230526-topic-smd_icc-v6-0-263283111e66@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -73,87 +73,126 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686765872; l=2380;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1686765873; l=3364;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=4G5XsIopPXChuGS66XojsbOsXrnNNj++E+3+a47uogk=;
- b=y/PW+xEjCSkoU+i8wWXoJLlt1BYerNuvA5JwKj+8SQKFX1QQ4dcxvKpaWzV2BHKtLj7aDZFFR
- 5fDHwfBfAakByzyoCP94VKOsuHq8wVPt+aWkgU8NRGL+APp+A5qgDfF
+ bh=bsPoz7/6rYieWdNaInRGuWSci4TnSHDkv7Qn8EyapGs=;
+ b=S0bXzGhxJVHt1NWjywKU1NnF7/fNUBDhII8jxTuDH6VA+zH5Zm1LDmj068/IUYsd6DdIrd4FG
+ GYcLSuL+QrUDfnyyuftgMnVilv4IAXYPfvduTC+q2qceBw+I/oBsgdB
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Assign the necessary definitions to migrate to the new bus clock
-handling mechanism.
+Up until now, for some reason we've only been setting bandwidth values
+on the active-only context. That pretty much meant that RPM could lift
+all votes when entering sleep mode. Or never sleep at all.
 
+That in turn could potentially break things like USB wakeup, as the
+connection between APSS and SNoC/PNoC would simply be dead.
+
+Set the values appropriately.
+
+Fixes: 30c8fa3ec61a ("interconnect: qcom: Add MSM8916 interconnect provider driver")
+Reviewed-by: Stephan Gerhold <stephan@gerhold.net>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/msm8996.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/interconnect/qcom/icc-rpm.c | 54 +++++++++++++++++++------------------
+ 1 file changed, 28 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/msm8996.c b/drivers/interconnect/qcom/msm8996.c
-index b03b1d454a41..42722681b4ce 100644
---- a/drivers/interconnect/qcom/msm8996.c
-+++ b/drivers/interconnect/qcom/msm8996.c
-@@ -1839,6 +1839,7 @@ static const struct qcom_icc_desc msm8996_a1noc = {
- 	.type = QCOM_ICC_NOC,
- 	.nodes = a1noc_nodes,
- 	.num_nodes = ARRAY_SIZE(a1noc_nodes),
-+	.bus_clk_desc = &aggre1_branch_clk,
- 	.regmap_cfg = &msm8996_a1noc_regmap_config
- };
+diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
+index 5f3bbe7e6a0d..928dc27c1d93 100644
+--- a/drivers/interconnect/qcom/icc-rpm.c
++++ b/drivers/interconnect/qcom/icc-rpm.c
+@@ -204,34 +204,39 @@ static int qcom_icc_qos_set(struct icc_node *node)
+ 	}
+ }
  
-@@ -1860,6 +1861,7 @@ static const struct qcom_icc_desc msm8996_a2noc = {
- 	.type = QCOM_ICC_NOC,
- 	.nodes = a2noc_nodes,
- 	.num_nodes = ARRAY_SIZE(a2noc_nodes),
-+	.bus_clk_desc = &aggre2_branch_clk,
- 	.intf_clocks = a2noc_intf_clocks,
- 	.num_intf_clocks = ARRAY_SIZE(a2noc_intf_clocks),
- 	.regmap_cfg = &msm8996_a2noc_regmap_config
-@@ -1888,6 +1890,7 @@ static const struct qcom_icc_desc msm8996_bimc = {
- 	.type = QCOM_ICC_BIMC,
- 	.nodes = bimc_nodes,
- 	.num_nodes = ARRAY_SIZE(bimc_nodes),
-+	.bus_clk_desc = &bimc_clk,
- 	.regmap_cfg = &msm8996_bimc_regmap_config
- };
+-static int qcom_icc_rpm_set(struct qcom_icc_node *qn, u64 sum_bw)
++static int qcom_icc_rpm_set(struct qcom_icc_node *qn, u64 *bw)
+ {
+-	int ret = 0;
++	int ret, rpm_ctx = 0;
++	u64 bw_bps;
  
-@@ -1946,6 +1949,7 @@ static const struct qcom_icc_desc msm8996_cnoc = {
- 	.type = QCOM_ICC_NOC,
- 	.nodes = cnoc_nodes,
- 	.num_nodes = ARRAY_SIZE(cnoc_nodes),
-+	.bus_clk_desc = &bus_2_clk,
- 	.regmap_cfg = &msm8996_cnoc_regmap_config
- };
+ 	if (qn->qos.ap_owned)
+ 		return 0;
  
-@@ -1999,6 +2003,7 @@ static const struct qcom_icc_desc msm8996_mnoc = {
- 	.type = QCOM_ICC_NOC,
- 	.nodes = mnoc_nodes,
- 	.num_nodes = ARRAY_SIZE(mnoc_nodes),
-+	.bus_clk_desc = &mmaxi_0_clk,
- 	.intf_clocks = mm_intf_clocks,
- 	.num_intf_clocks = ARRAY_SIZE(mm_intf_clocks),
- 	.regmap_cfg = &msm8996_mnoc_regmap_config
-@@ -2037,6 +2042,7 @@ static const struct qcom_icc_desc msm8996_pnoc = {
- 	.type = QCOM_ICC_NOC,
- 	.nodes = pnoc_nodes,
- 	.num_nodes = ARRAY_SIZE(pnoc_nodes),
-+	.bus_clk_desc = &bus_0_clk,
- 	.regmap_cfg = &msm8996_pnoc_regmap_config
- };
+-	if (qn->mas_rpm_id != -1) {
+-		ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
+-					    RPM_BUS_MASTER_REQ,
+-					    qn->mas_rpm_id,
+-					    sum_bw);
+-		if (ret) {
+-			pr_err("qcom_icc_rpm_smd_send mas %d error %d\n",
+-			       qn->mas_rpm_id, ret);
+-			return ret;
++	for (rpm_ctx = 0; rpm_ctx < QCOM_SMD_RPM_STATE_NUM; rpm_ctx++) {
++		bw_bps = icc_units_to_bps(bw[rpm_ctx]);
++
++		if (qn->mas_rpm_id != -1) {
++			ret = qcom_icc_rpm_smd_send(rpm_ctx,
++						    RPM_BUS_MASTER_REQ,
++						    qn->mas_rpm_id,
++						    bw_bps);
++			if (ret) {
++				pr_err("qcom_icc_rpm_smd_send mas %d error %d\n",
++				qn->mas_rpm_id, ret);
++				return ret;
++			}
+ 		}
+-	}
  
-@@ -2081,6 +2087,7 @@ static const struct qcom_icc_desc msm8996_snoc = {
- 	.type = QCOM_ICC_NOC,
- 	.nodes = snoc_nodes,
- 	.num_nodes = ARRAY_SIZE(snoc_nodes),
-+	.bus_clk_desc = &bus_1_clk,
- 	.regmap_cfg = &msm8996_snoc_regmap_config
- };
+-	if (qn->slv_rpm_id != -1) {
+-		ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
+-					    RPM_BUS_SLAVE_REQ,
+-					    qn->slv_rpm_id,
+-					    sum_bw);
+-		if (ret) {
+-			pr_err("qcom_icc_rpm_smd_send slv %d error %d\n",
+-			       qn->slv_rpm_id, ret);
+-			return ret;
++		if (qn->slv_rpm_id != -1) {
++			ret = qcom_icc_rpm_smd_send(rpm_ctx,
++						    RPM_BUS_SLAVE_REQ,
++						    qn->slv_rpm_id,
++						    bw_bps);
++			if (ret) {
++				pr_err("qcom_icc_rpm_smd_send slv %d error %d\n",
++				qn->slv_rpm_id, ret);
++				return ret;
++			}
+ 		}
+ 	}
  
+@@ -336,7 +341,6 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	struct qcom_icc_provider *qp;
+ 	struct qcom_icc_node *src_qn = NULL, *dst_qn = NULL;
+ 	struct icc_provider *provider;
+-	u64 sum_bw;
+ 	u64 active_rate, sleep_rate;
+ 	u64 agg_avg[QCOM_SMD_RPM_STATE_NUM], agg_peak[QCOM_SMD_RPM_STATE_NUM];
+ 	u64 max_agg_avg;
+@@ -350,14 +354,12 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 
+ 	qcom_icc_bus_aggregate(provider, agg_avg, agg_peak, &max_agg_avg);
+ 
+-	sum_bw = icc_units_to_bps(max_agg_avg);
+-
+-	ret = qcom_icc_rpm_set(src_qn, sum_bw);
++	ret = qcom_icc_rpm_set(src_qn, agg_avg);
+ 	if (ret)
+ 		return ret;
+ 
+ 	if (dst_qn) {
+-		ret = qcom_icc_rpm_set(dst_qn, sum_bw);
++		ret = qcom_icc_rpm_set(dst_qn, agg_avg);
+ 		if (ret)
+ 			return ret;
+ 	}
 
 -- 
 2.41.0
