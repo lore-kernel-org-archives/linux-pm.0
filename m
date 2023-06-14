@@ -2,87 +2,122 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1441EB64DB
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 08:24:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E140AEB64DA
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 08:47:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243466AbjFNIYW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jun 2023 04:24:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53270 "EHLO
+        id S234817AbjFNIrl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jun 2023 04:47:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39114 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243454AbjFNIYS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 04:24:18 -0400
-Received: from mail-yb1-xb34.google.com (mail-yb1-xb34.google.com [IPv6:2607:f8b0:4864:20::b34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A710F11F
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 01:24:15 -0700 (PDT)
-Received: by mail-yb1-xb34.google.com with SMTP id 3f1490d57ef6-bd77424c886so449585276.0
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 01:24:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686731055; x=1689323055;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=BmxrYYgO090N0quqU8Zir/MR9T+5qqVRSNHL5BET6QE=;
-        b=u8Zm2d/xrBZlWAPeKti+YmyFmi1blCKu7MxNRmgIC+ZRuFCxR/kr35WQAXtEpEdzlx
-         gUN1W+Jvo7kBmvyy5n5MdQWxqr1c3BMDqp3LRAvQkLqOLBq8E3rOENDtT294c3opyic3
-         2hRu1e1cVpXvwz8T4Os4kfbSUrivUcWDyU7XmSZYnXzZWO3j1rCY6ckYuDv9P4EsgT6V
-         ELL+w3JZg7O/VKBAT9r0KMWFlb2K5ooCV0A43YnV4ExVZb9LHEnwxnF7EqV7hbuT9vbr
-         sUWIQgmHbJuTczpJpLvWYBiZe8S8t62/bQG7BwJ6orNTGbJOlwtjblT7f6pB/eMbqbUG
-         PhsA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686731055; x=1689323055;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=BmxrYYgO090N0quqU8Zir/MR9T+5qqVRSNHL5BET6QE=;
-        b=R3GM3BEFRbA+HpToaI3b9psNrWfwGktUnFKHPtERYhyCiismHgrNKZ+hDAcyPbqSos
-         wa8XoNu5p2Cj/QzSOR6pthzmGlO6KXnwX+EMKG6oIhWJb9WmaAeb3I2PuCjLGM22foix
-         e7vuzG45TcrkYhc5XLcrtb9ULjiecmxYh11kwtJ+AfqFXxK5Be5yogxglBx2LMXE+DnM
-         6gC7c9Qlc59SlshwP+njKqRkKACXfDNUOgjAj0LIN2hgb2M0K7i5qeADBJb46IiOFzmg
-         /KTC2SjYDns+shoV0Cgg5wK7pjER/sZvyZaSsCYEdOjgHI7nxsQKRbd4oLEopV8yupnL
-         V6zA==
-X-Gm-Message-State: AC+VfDxANuYTHc9UaRIPHZYnovkUvHkBb655hEIGs1+byKTz+Ek4bLox
-        Jz0SSZVmGctJGeV3jVlsvaWHif+dYpj8PibDzRxBJA==
-X-Google-Smtp-Source: ACHHUZ4eWgDFgxqRFaloRBccOZ5sNdUKgStnj6PgUQ3FPqkMpuHTkCJNNHZ0lWqYRY9ONIBJlh0oieBdgVwd0o4u+t8=
-X-Received: by 2002:a25:b096:0:b0:bac:69be:9494 with SMTP id
- f22-20020a25b096000000b00bac69be9494mr1759609ybj.36.1686731054806; Wed, 14
- Jun 2023 01:24:14 -0700 (PDT)
+        with ESMTP id S230195AbjFNIrk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 04:47:40 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 254211BE3;
+        Wed, 14 Jun 2023 01:47:40 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id AEC0B634FF;
+        Wed, 14 Jun 2023 08:47:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A82FC433C0;
+        Wed, 14 Jun 2023 08:47:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1686732459;
+        bh=EonwKTfvGBWUrWdkjSl/Hvyv/pxtwYTpGoA5Jhcqmcc=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=eV6KXAXup4egROqTSse9iEDQHwGF5LWq65xhk3wTj+kP6IQShwIVOraRODAoPhZlS
+         /1j/Nh3IO7MA/VFbJeYYHdaBoOJarRzRy1WifxlCw5V/CjAAW2i7KC10fZJWeq5z4R
+         ehITcxS9mh9oS1vWRUmEDX4y+6lp10gAR83ybtedyH5D7rfReCaBPf8Zrt14LUUMLN
+         Z+fUJ0k4qg2g+6MO0UucnDtYJoPOrl6vykqjDm8BBW6PRzUf5r7ThdRS3ZKdNL/GWo
+         Zmtwfzvrmc3Ms7xJKa/Hg2oIV991LAd/mS14+WPJ0057ctvSwpIsnP9lx3qYpyrrSP
+         bkyYJsFPcVPDQ==
+Date:   Wed, 14 Jun 2023 10:47:35 +0200
+From:   Wolfram Sang <wsa@kernel.org>
+To:     Andi Shyti <andi.shyti@kernel.org>
+Cc:     Mario Limonciello <mario.limonciello@amd.com>,
+        heikki.krogerus@linux.intel.com, ajayg@nvidia.com,
+        andriy.shevchenko@linux.intel.com, linux-i2c@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-usb@vger.kernel.org, Evan.Quan@amd.com, Lijo.Lazar@amd.com,
+        Sanket.Goswami@amd.com
+Subject: Re: [PATCH v2] usb: typec: ucsi: Mark dGPUs as DEVICE scope
+Message-ID: <ZIl+pyKgFdQuYCKm@shikoro>
+Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
+        Andi Shyti <andi.shyti@kernel.org>,
+        Mario Limonciello <mario.limonciello@amd.com>,
+        heikki.krogerus@linux.intel.com, ajayg@nvidia.com,
+        andriy.shevchenko@linux.intel.com, linux-i2c@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-usb@vger.kernel.org, Evan.Quan@amd.com, Lijo.Lazar@amd.com,
+        Sanket.Goswami@amd.com
+References: <20230518161150.92959-1-mario.limonciello@amd.com>
+ <20230614001621.iyxi2khz4hmcbl3x@intel.intel>
 MIME-Version: 1.0
-References: <20230613213150.908462-1-linus.walleij@linaro.org> <9c1c00a5-0360-09ae-56fe-4431632f0302@disroot.org>
-In-Reply-To: <9c1c00a5-0360-09ae-56fe-4431632f0302@disroot.org>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Wed, 14 Jun 2023 10:24:03 +0200
-Message-ID: <CACRpkdZz55B-dF3+sGGmkMtTMLTcUbmFmk9aajPPV=u0=igZYg@mail.gmail.com>
-Subject: Re: [PATCH] power: supply: ab8500: Set typing and props
-To:     Stefan Hansson <newbyte@disroot.org>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        Marcus Cooper <codekipper@gmail.com>, linux-pm@vger.kernel.org,
-        stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="N3hmTNEv+0p6gy+q"
+Content-Disposition: inline
+In-Reply-To: <20230614001621.iyxi2khz4hmcbl3x@intel.intel>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 14, 2023 at 9:54=E2=80=AFAM Stefan Hansson <newbyte@disroot.org=
-> wrote:
-> On 2023-06-13 23:31, Linus Walleij wrote:
 
-> > I had the following weird phenomena on a mobile phone: while
-> > the capacity in /sys/class/power_supply/ab8500_fg/capacity
-> > would reflect the actual charge and capacity of the battery,
-> > only 1/3 of the value was shown on the battery status
-> > indicator and warnings for low battery appeared.
-> >
-> > It turns out that utemp, the Freedesktop temperature daemon,
-> > will average all the power supplies of type "battery" in
-> > /sys/class/power_supply/* if there is more than one battery.
->
-> I assume you meant to say UPower rather than utemp here?
+--N3hmTNEv+0p6gy+q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yeah of course. Maybe Sebastian can fix with a bit of
-git commit --amend when applying?
+On Wed, Jun 14, 2023 at 02:16:21AM +0200, Andi Shyti wrote:
+> Hi Mario,
+>=20
+> On Thu, May 18, 2023 at 11:11:50AM -0500, Mario Limonciello wrote:
+> > power_supply_is_system_supplied() checks whether any power
+> > supplies are present that aren't batteries to decide whether
+> > the system is running on DC or AC.  Downstream drivers use
+> > this to make performance decisions.
+> >=20
+> > Navi dGPUs include an UCSI function that has been exported
+> > since commit 17631e8ca2d3 ("i2c: designware: Add driver
+> > support for AMD NAVI GPU").
+> >=20
+> > This UCSI function registers a power supply since commit
+> > 992a60ed0d5e ("usb: typec: ucsi: register with power_supply class")
+> > but this is not a system power supply.
+> >=20
+> > As the power supply for a dGPU is only for powering devices connected
+> > to dGPU, create a device property to indicate that the UCSI endpoint
+> > is only for the scope of `POWER_SUPPLY_SCOPE_DEVICE`.
+> >=20
+> > Link: https://lore.kernel.org/lkml/20230516182541.5836-2-mario.limoncie=
+llo@amd.com/
+> > Reviewed-by: Evan Quan <evan.quan@amd.com>
+> > Tested-by: Evan Quan <evan.quan@amd.com>
+> > Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+>=20
+> Acked-by: Andi Shyti <andi.shyti@kernel.org>=20
 
-Thanks!
+Applied to for-next, thanks!
 
-Yours,
-Linus Walleij
+
+--N3hmTNEv+0p6gy+q
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmSJfqcACgkQFA3kzBSg
+KbYnohAArgvNkEGbXn5NtNA8ohC3nHYuc6qKRmlC8yFTsp0TaIQhjD6lhJwkisLD
+KE3tIXJI00g8S5lpM85jo9SlsZCOWdaWZ6bhGRu0alVxt7KLhFp+ot6fe+W/W5S3
+vYgamUpjQakE6tX61qmUlrD/YJq6kzz3990W/rfrMwexK3AfPQcli01MO2ugK9oq
+sxHK68s7GoaQ7oAPCE0HlKBl7wx3JlF0lTHyyiQSPTjkznbZOHcFi0Bt0Fm3fzHR
+MqJEDDNpGYFXxozK2th0lskKIHXtag9W/nnJef7tgF7Sx2BjQv0J2VfQj2eUOWcY
+jh1+NQeik95us167/EhmOmSna+wi58VyM1DblI1TOKFbkQOk1kgtezQg3kX29Mcl
+TzLhsXZ0Dh33+ggQl1xVDRYGDnuRGlU7Rm18YOPOZ9/FBlk/EKOdDhmUV7dCo1K8
+jeLruBAMXdMlOrMBJkHimRrXnjSA7ldplLfmzgVxnm0jK3Ma/uF8aSHleKqaHwiZ
+izKOJzt7SKvdzjnsbfKpZn42eX8qnhWa/MidSPbA/cI5zjPmN2ht2Xe4pIG5wcEs
+PMO9T5ZHr20QF7u9QpODvnHbSp+pY5og6NxUwPCt80n8IDIl8RlySSbUmsfoZF3h
+Ewamf98QQf0OUEQHzuyacGhUBNdRWiQFAC1XQsMJTBJCd8tBJJ4=
+=w58G
+-----END PGP SIGNATURE-----
+
+--N3hmTNEv+0p6gy+q--
