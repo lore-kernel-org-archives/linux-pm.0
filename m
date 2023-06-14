@@ -2,201 +2,115 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA0F9EB64DC
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 18:06:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BCE7EB64D9
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 18:06:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235283AbjFNSFx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jun 2023 14:05:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38098 "EHLO
+        id S231723AbjFNSF5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jun 2023 14:05:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37694 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241384AbjFNSFN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 14:05:13 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7F5732125
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:05:04 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id 2adb3069b0e04-4f74cda5f1dso4680231e87.3
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:05:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686765903; x=1689357903;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=99eTqcvgBaxUe9wKghnaXt5XusNnY2akCNbpdNNpTEY=;
-        b=KM8mzwJJLTIOXAdX+zo6TJQ7C4krxBOV8/7YVT5ywpIS4pBNpzlABXAgyRhkL8As7Y
-         qQWRe4lsCGeQr5tP8UjHd3L9qyd8BxAwYJ7SsWj/WpFTWcC6oKd1o7EFBU+FSmj5kgNX
-         ICuxNHHLrJPqG/YmtYexL1xjJuCJCxy5rHXVgKtBJL7z3QTY+oiMTy+YwAL9eFLFn+vw
-         i10JgIL409eRLge5tApqDZ/qtq7Rd7PEo2g87fSE77ZGJPVD1urQqd74i6XZVu0Yi5jW
-         doGv3GiG8vCr7mf7NrX1doQToyEB75boWxUj2w6eR6qmNhKtSgi/rWw0BADjA4GuSqwY
-         QDSw==
+        with ESMTP id S241026AbjFNSFG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 14:05:06 -0400
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44E6426B5;
+        Wed, 14 Jun 2023 11:04:59 -0700 (PDT)
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-6666d5f9803so548872b3a.0;
+        Wed, 14 Jun 2023 11:04:59 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686765903; x=1689357903;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=99eTqcvgBaxUe9wKghnaXt5XusNnY2akCNbpdNNpTEY=;
-        b=DwoZdGzVz1SazCMYk5cDO2AriST9fwrkB0QExtdvGCaxCzm2fUj8RkSG2gb7KzYX50
-         e9oaeRFKb4OyDVlV5zGQtlcyUZbqWkcBbOVzlWTRTH5ADGGhyopm93+JSjHlmR+GK5Ba
-         RI7WZphQEhQfBftCT9WtMOqH36W5eqeJJf/mu0KQ1yt8RqbZcWTeyhA1KdDHZkjmXl0K
-         im4hTgoa4i3HurDezzoSDiztBnyOLLn+EV5E9OSZQaXFonxmjZmcwt2UHdWJNxvPBmFu
-         z8PrVb7g82O4OeY2w7fLzJ2CtWEyq32bxrcv4HyoiO4RAX9AOaiK43rHEovv5UKpLVP4
-         q20g==
-X-Gm-Message-State: AC+VfDzfCD4DVv8ZXcz8bffUM8IJkUa/hU3cEmtu0XfXl0wLTdG5ru15
-        9Dj2d9TXLwZLU8JoCraa+5964g==
-X-Google-Smtp-Source: ACHHUZ5JxwrPXlITisajET4KEUTM8goA4wa0QSIoC8b7kFUU17AEf42Eu6hZAEV7UweOhGGD4iC17Q==
-X-Received: by 2002:a05:6512:458:b0:4f3:a0f5:92e5 with SMTP id y24-20020a056512045800b004f3a0f592e5mr9019503lfk.31.1686765902837;
-        Wed, 14 Jun 2023 11:05:02 -0700 (PDT)
-Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
-        by smtp.gmail.com with ESMTPSA id l18-20020a19c212000000b004eff1f7f206sm2224053lfc.9.2023.06.14.11.05.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jun 2023 11:05:02 -0700 (PDT)
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Wed, 14 Jun 2023 20:04:38 +0200
-Subject: [PATCH v6 19/22] interconnect: qcom: icc-rpm: Fix bucket number
+        d=1e100.net; s=20221208; t=1686765899; x=1689357899;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Bfg7Pd8Qi4XV2mpEzR1AaDAP2KYNRF3glqHqxSDiUr8=;
+        b=EK0GrTKzHBbYTWp9usma6Nf+LfgCBhR+6T5R33A8OJW/J0oIFUFCsKOowVV9UaNlst
+         UWNhXItTM7eS3KhhwsHipRSuygE1rBdcRKMSIbwP0M4GDqGsqyrZXy7J52RPNwlX2L9I
+         On1gOyjjfIXAxDHfNu7oYuEh+o8rbC1Vn/Eo8440lTzVfoxq7isntagC4XVGzXzJ7thX
+         p4uv6TXWtzKxeVvZehzisjyM0D2I3zylQ3nTRLPlVSWMb+unITO4mnlWQwxKTAZmXk37
+         jCbzIMYhyqRa39qOu+sbU6Dy0bvASrr0X14AOOnHU9YNsCuPmCyV/uPXBEMzgGanSWPp
+         N7SQ==
+X-Gm-Message-State: AC+VfDyt9NSCl5hdQAci5/4MwAD4juiTOe2Ipi9UHHTv78NiTT8ho+zr
+        qP18vdvtM1tv+kxir6/WHps=
+X-Google-Smtp-Source: ACHHUZ508hquoDPA8b1+rAI5xOdbxD25gvcdJEa+YPdfH/GWCtVoyJJzwmdFY/bbOKj3msllkxqV3A==
+X-Received: by 2002:a05:6a20:4424:b0:11a:ce33:563a with SMTP id ce36-20020a056a20442400b0011ace33563amr3161528pzb.15.1686765898436;
+        Wed, 14 Jun 2023 11:04:58 -0700 (PDT)
+Received: from [192.168.51.14] ([98.51.102.78])
+        by smtp.gmail.com with ESMTPSA id a12-20020aa780cc000000b0063d24fcc2besm1595325pfn.125.2023.06.14.11.04.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 14 Jun 2023 11:04:57 -0700 (PDT)
+Message-ID: <3f85cb4a-8b14-623f-eb4e-40baab1ed888@acm.org>
+Date:   Wed, 14 Jun 2023 11:04:55 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: Fwd: Waking up from resume locks up on sr device
+Content-Language: en-US
+To:     Alan Stern <stern@rowland.harvard.edu>,
+        Damien Le Moal <dlemoal@kernel.org>
+Cc:     Hannes Reinecke <hare@suse.de>,
+        Joe Breuer <linux-kernel@jmbreuer.net>,
+        Bagas Sanjaya <bagasdotme@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Tony Luck <tony.luck@intel.com>,
+        "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+        Thorsten Leemhuis <linux@leemhuis.info>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Linux Power Management <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Hardening <linux-hardening@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux SCSI <linux-scsi@vger.kernel.org>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Martin Kepplinger <martin.kepplinger@puri.sm>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>
+References: <2d1fdf6d-682c-a18d-2260-5c5ee7097f7d@gmail.com>
+ <5513e29d-955a-f795-21d6-ec02a2e2e128@gmail.com>
+ <ZIQ6bkau3j6qGef8@duo.ucw.cz>
+ <07d6e2e7-a50a-8cf4-5c5d-200551bd6687@gmail.com>
+ <02e4f87a-80e8-dc5d-0d6e-46939f2c74ac@acm.org>
+ <b2cf6d96-a55a-d444-d22e-e9b3945ba43f@jmbreuer.net>
+ <84f1c51c-86f9-04b3-0cd1-f685ebee7592@kernel.org>
+ <37ed36f0-6f72-115c-85fb-62ef5ad72e76@suse.de>
+ <b0fdf454-b2f7-c273-66f5-efe42fbc2807@kernel.org>
+ <859f0eda-4984-4489-9851-c9f6ec454a88@rowland.harvard.edu>
+From:   Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <859f0eda-4984-4489-9851-c9f6ec454a88@rowland.harvard.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v6-19-263283111e66@linaro.org>
-References: <20230526-topic-smd_icc-v6-0-263283111e66@linaro.org>
-In-Reply-To: <20230526-topic-smd_icc-v6-0-263283111e66@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Leo Yan <leo.yan@linaro.org>,
-        Evan Green <evgreen@chromium.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686765873; l=4064;
- i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=mN8q2qvO4mMd/JKi78DO37g2U1aTQESNDTlLHNHgtNU=;
- b=lNsPsigredB7X48DopX1qYkaLDR7R22vZUUdwIzHmM5rhhxEPZG3XkthhwVRWGtZcTl8SMXCF
- /bieo0wE1r3ClaB2Kqx9dyrMME1uC7hU72A9gD6MNyT0KA0J/FegPK/
-X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
- pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SMD RPM only provides two buckets, one each for the active-only and
-active-sleep RPM contexts. Use the correct constant to allocate and
-operate on them.
+On 6/14/23 07:26, Alan Stern wrote:
+> On Wed, Jun 14, 2023 at 04:35:50PM +0900, Damien Le Moal wrote:
+>> Or... Why the heck scsi_rescan_device() is calling device_lock() ? This
+>> is the only place in scsi code I can see that takes this lock. I suspect
+>> this is to serialize either rescans, or serialize with resume, or both.
+>> For serializing rescans, we can use another lock. For serializing with
+>> PM, we should wait for PM transitions...
+>> Something is not right here.
+> 
+> Here's what commit e27829dc92e5 ("scsi: serialize ->rescan against
+> ->remove", written by Christoph Hellwig) says:
+> 
+>      Lock the device embedded in the scsi_device to protect against
+>      concurrent calls to ->remove.
+> 
+> That's the commit which added the device_lock() call.
 
-This will make the qcom,icc.h header no longer work with this driver,
-mostly because.. it was never meant to! The commit that introduced
-bucket support to SMD RPM was trying to shove a square into a round
-hole and it did not work out very well. That said, there are no
-active users of SMD RPM ICC + qcom,icc.h, so that doesn't hurt.
+Even if scsi_rescan_device() would use another mechanism for 
+serialization against sd_remove() and sr_remove(), we still need to 
+solve the issue that the ATA code calls scsi_rescan_device() before 
+resuming has finished. scsi_rescan_device() issues I/O. Issuing I/O to a 
+device is not allowed before that device has been resumed.
 
-Fixes: dcbce7b0a79c ("interconnect: qcom: icc-rpm: Support multiple buckets")
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Reviewed-by: Stephan Gerhold <stephan@gerhold.net>
-Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
----
- drivers/interconnect/qcom/icc-rpm.c | 16 ++++++++--------
- drivers/interconnect/qcom/icc-rpm.h |  6 +++---
- 2 files changed, 11 insertions(+), 11 deletions(-)
+Thanks,
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 60e4eab8855a..5f3bbe7e6a0d 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -248,7 +248,7 @@ static void qcom_icc_pre_bw_aggregate(struct icc_node *node)
- 	size_t i;
- 
- 	qn = node->data;
--	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+	for (i = 0; i < QCOM_SMD_RPM_STATE_NUM; i++) {
- 		qn->sum_avg[i] = 0;
- 		qn->max_peak[i] = 0;
- 	}
-@@ -272,9 +272,9 @@ static int qcom_icc_bw_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
- 	qn = node->data;
- 
- 	if (!tag)
--		tag = QCOM_ICC_TAG_ALWAYS;
-+		tag = RPM_ALWAYS_TAG;
- 
--	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+	for (i = 0; i < QCOM_SMD_RPM_STATE_NUM; i++) {
- 		if (tag & BIT(i)) {
- 			qn->sum_avg[i] += avg_bw;
- 			qn->max_peak[i] = max_t(u32, qn->max_peak[i], peak_bw);
-@@ -299,11 +299,11 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider,
- {
- 	struct icc_node *node;
- 	struct qcom_icc_node *qn;
--	u64 sum_avg[QCOM_ICC_NUM_BUCKETS];
-+	u64 sum_avg[QCOM_SMD_RPM_STATE_NUM];
- 	int i;
- 
- 	/* Initialise aggregate values */
--	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+	for (i = 0; i < QCOM_SMD_RPM_STATE_NUM; i++) {
- 		agg_avg[i] = 0;
- 		agg_peak[i] = 0;
- 	}
-@@ -316,7 +316,7 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider,
- 	 */
- 	list_for_each_entry(node, &provider->nodes, node_list) {
- 		qn = node->data;
--		for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
-+		for (i = 0; i < QCOM_SMD_RPM_STATE_NUM; i++) {
- 			if (qn->channels)
- 				sum_avg[i] = div_u64(qn->sum_avg[i], qn->channels);
- 			else
-@@ -327,7 +327,7 @@ static void qcom_icc_bus_aggregate(struct icc_provider *provider,
- 	}
- 
- 	/* Find maximum values across all buckets */
--	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++)
-+	for (i = 0; i < QCOM_SMD_RPM_STATE_NUM; i++)
- 		*max_agg_avg = max_t(u64, *max_agg_avg, agg_avg[i]);
- }
- 
-@@ -338,7 +338,7 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- 	struct icc_provider *provider;
- 	u64 sum_bw;
- 	u64 active_rate, sleep_rate;
--	u64 agg_avg[QCOM_ICC_NUM_BUCKETS], agg_peak[QCOM_ICC_NUM_BUCKETS];
-+	u64 agg_avg[QCOM_SMD_RPM_STATE_NUM], agg_peak[QCOM_SMD_RPM_STATE_NUM];
- 	u64 max_agg_avg;
- 	int ret;
- 
-diff --git a/drivers/interconnect/qcom/icc-rpm.h b/drivers/interconnect/qcom/icc-rpm.h
-index e3b0aa9fff3e..eed3451af3e6 100644
---- a/drivers/interconnect/qcom/icc-rpm.h
-+++ b/drivers/interconnect/qcom/icc-rpm.h
-@@ -8,7 +8,7 @@
- 
- #include <linux/soc/qcom/smd-rpm.h>
- 
--#include <dt-bindings/interconnect/qcom,icc.h>
-+#include <dt-bindings/interconnect/qcom,rpm-icc.h>
- #include <linux/clk.h>
- #include <linux/interconnect-provider.h>
- #include <linux/platform_device.h>
-@@ -106,8 +106,8 @@ struct qcom_icc_node {
- 	u16 num_links;
- 	u16 channels;
- 	u16 buswidth;
--	u64 sum_avg[QCOM_ICC_NUM_BUCKETS];
--	u64 max_peak[QCOM_ICC_NUM_BUCKETS];
-+	u64 sum_avg[QCOM_SMD_RPM_STATE_NUM];
-+	u64 max_peak[QCOM_SMD_RPM_STATE_NUM];
- 	int mas_rpm_id;
- 	int slv_rpm_id;
- 	struct qcom_icc_qos qos;
-
--- 
-2.41.0
-
+Bart.
