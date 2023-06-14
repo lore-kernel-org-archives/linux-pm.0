@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A68C9C0015E
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 18:05:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8CEEEB64DC
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 18:05:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235927AbjFNSFm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jun 2023 14:05:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38160 "EHLO
+        id S240613AbjFNSFq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jun 2023 14:05:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37712 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241744AbjFNSFP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 14:05:15 -0400
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32E5C2688
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:05:07 -0700 (PDT)
-Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-4f4b2bc1565so9036611e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:05:07 -0700 (PDT)
+        with ESMTP id S240752AbjFNSFB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 14:05:01 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFB26268A
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:04:55 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4f62cf9755eso9015594e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 11:04:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686765905; x=1689357905;
+        d=linaro.org; s=google; t=1686765893; x=1689357893;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=0jK7Krh6d5glAjoREUgnuuxQiDYi3CDuObLr2ly9o6k=;
-        b=OwIo8UKwEUo7vVB7txLULtay3a4jAcrT3MWK1c0iP3ThbEN+IkQFegbRMvtdp2SGuX
-         AKlDiOz+EpNzqor1YyEoSPmAuj1xCvgS8VRe1U6SF+YO8yVfiqYBTH1LcnUkuYg6j3aT
-         QU4Tqk+2qXErCsH8Ofbm817Sze7cbMGQsBqhlYFHUuWUif/AS3/zoQBHjlJpicHhrh1t
-         CuazJ3hxtfkqcYQ4DFLvmAuo31qV4HVx8Fr0hwN//bycN7YzLPwsjmMNuhYTQqcFHpvz
-         DNP5mAztMtI2VJQKXaKXSumZU9QRsItbuLJvAh7JNNiaQ2UqYNoi6v8aaJjAv+HvkfYb
-         xoHg==
+        bh=KhmMqJgELFXlAh9h3uttQVzjp1sKHmXWUeh3OQH1oaw=;
+        b=Pi+e/0JbEBc6rc9x2oF6ycpVpx+yrCqjvYDiE105zydnRh1JAq00FZBCItzHPjlSLB
+         sl22fSXnSGFb3XoARQeRkxBR9ykrDtwGkMSa5f6yq7c3KIvBWRSZxwD8UTIgEVgZbOeZ
+         CrWuWsxhaMemy+KSBMOlBTaqyN2MBIMUsIYPkSbjz8ggq0+xGXXH8CmgRWshxKdWGvm7
+         ewaF/kKiAgBr/6Gg3RGHXrag2PQN2v2RxdFQUWHuwdAw1NWsr51Vg1FM3c0cRpgZBzjw
+         EpM9lcMpv63/9e0eRShZZJHW0mOv7GgJEVvBcKYun7+A6V9SUsV0lT91tMN8uQjZL1Oo
+         pFnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686765905; x=1689357905;
+        d=1e100.net; s=20221208; t=1686765893; x=1689357893;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=0jK7Krh6d5glAjoREUgnuuxQiDYi3CDuObLr2ly9o6k=;
-        b=L9rRxEB3Kyr5yegfXMwJOB/29dM1qh+BnQsWhxkjmJakJEtgc6R+OCxzST/C91YhZi
-         oTPNoLkuDhmqZFktwRkjb8bcut5eHHZi5XALg6fAZRn+VEgBxZwDVF7Ct82hGpP6Uyi9
-         /xEwe+4LwNqff38YCfpEcvpnBOGB8lv4O2t4l/GlwhboCEcAGevT690G4g1u8Qw5iQUV
-         NfT+7tdWJ9XOOGj4U6fCqD4ZDtBs/U4xj65dilKF4Edp6HxIV36xc7dTA4V0XcNvJhIu
-         a7OuKHLzUziyb62SYAZME2x217Kgr0e5lRdVORkQt7Wsxf+uRPlIJH1z8Pl2Of1X0Esk
-         zNHw==
-X-Gm-Message-State: AC+VfDzXaAGSGfnaQ9c9+IWPjlIuA45cekGCavi6gSNh98PnarEQZ9pP
-        aeKLgo5u+YvkqWYZyIY0fNFfkg==
-X-Google-Smtp-Source: ACHHUZ79SFUlXngqD6+wdEGvXFP7Gt9ySja/c0ks4vmeRgBojOREk6Du7K2W+aIyDkce9mJ+87gJcQ==
-X-Received: by 2002:a19:ab02:0:b0:4f5:1418:e230 with SMTP id u2-20020a19ab02000000b004f51418e230mr8526746lfe.52.1686765905514;
-        Wed, 14 Jun 2023 11:05:05 -0700 (PDT)
+        bh=KhmMqJgELFXlAh9h3uttQVzjp1sKHmXWUeh3OQH1oaw=;
+        b=hGQ/eyXLoesEsG1ORULBKNGZa3wLpyylAZz8Lt/kEAMzf1W2Eh13rZxwZQcmCCzUBX
+         UNc7f3O+BdwW7QLWWXRrwRWLdi13L0ltxTvBo0VNnvq3QCEFXb8uNATIOrorc8nqJZpY
+         eXw5fwMVLPf7e579L64TKuGxgsIuRILqzdvwuz0UHK8tcQqEPSOZF9hkF69Sv6+JSuTP
+         bvHKOu8EN1PkIoWM6c1lStkCFb8ZbRxpbaux3WIIAtSQERTRInMJhDXs+5q9zm3Gkp77
+         EhfLepi4/pH/2qc2EMKUBazAaaFmIFRh0Kl+c9ynPsApisAXPytybFyRvJsBXEZln8iC
+         1U/w==
+X-Gm-Message-State: AC+VfDx/2dMJC7bEnnneVT9aVGCC3ZIKy2uk1/L7j7PClehM9HvsRb7O
+        NX0RDT50iNRPMHDt9q3I85PusQ==
+X-Google-Smtp-Source: ACHHUZ46Xypjs0BrwGKM4RnH0dBLszdfzW4nO2vBplYiPIlV4EJO7exKV49gq1+V/PzqYAL/O9eAjw==
+X-Received: by 2002:ac2:5b11:0:b0:4f1:30cc:3dae with SMTP id v17-20020ac25b11000000b004f130cc3daemr11180460lfn.10.1686765893783;
+        Wed, 14 Jun 2023 11:04:53 -0700 (PDT)
 Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
-        by smtp.gmail.com with ESMTPSA id l18-20020a19c212000000b004eff1f7f206sm2224053lfc.9.2023.06.14.11.05.04
+        by smtp.gmail.com with ESMTPSA id l18-20020a19c212000000b004eff1f7f206sm2224053lfc.9.2023.06.14.11.04.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jun 2023 11:05:05 -0700 (PDT)
+        Wed, 14 Jun 2023 11:04:53 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Wed, 14 Jun 2023 20:04:40 +0200
-Subject: [PATCH v6 21/22] interconnect: qcom: icc-rpm: Set correct
- bandwidth through RPM bw req
+Date:   Wed, 14 Jun 2023 20:04:32 +0200
+Subject: [PATCH v6 13/22] interconnect: qcom: qcs404: Hook up RPM bus clk
+ definitions
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v6-21-263283111e66@linaro.org>
+Message-Id: <20230526-topic-smd_icc-v6-13-263283111e66@linaro.org>
 References: <20230526-topic-smd_icc-v6-0-263283111e66@linaro.org>
 In-Reply-To: <20230526-topic-smd_icc-v6-0-263283111e66@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -74,50 +74,56 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686765873; l=1241;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1686765872; l=1291;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=kbfzjw5doxXBVvXaQEAjOvlD1+VtGE/glxgCqrLn1Ec=;
- b=W1bC3r65t6nqniIfPxVvYWPx6IUPsJ8nB6cXGnLHWP9BPmWYGhSkPSt3L9gHWS2stPilvmxQS
- Jat4lkIfYasDBkekfuBzrvMHkRqqu12tS9rd9LNQmUF9RBWHUT1SU1U
+ bh=lGCEkIFx3Ro52nqp/0xgEzhtJm6XAu+5tICY6AP6scg=;
+ b=GnkaJ6PJfJFJ+U9D7aBXdtV2MToXO8a11ZO+RlxPzks9VSY2QScKNUzv9n8sie0GHv6FifFlM
+ Q3tdS7702caDM+8AU0pN6g5oC4c23C1hZAdvu+mfUf2m7WTu7LjeTqI
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, we're setting the aggregated-on-provider bandwidth on each
-node, individually. That is of course incorrect and results in far too
-high votes. Use the correct values to ensure we're not wasting power.
+Assign the necessary definitions to migrate to the new bus clock
+handling mechanism.
 
-Fixes: 30c8fa3ec61a ("interconnect: qcom: Add MSM8916 interconnect provider driver")
-Reported-by: Stephan Gerhold <stephan@gerhold.net>
-Reviewed-by: Stephan Gerhold <stephan@gerhold.net>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/icc-rpm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/interconnect/qcom/qcs404.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/interconnect/qcom/icc-rpm.c b/drivers/interconnect/qcom/icc-rpm.c
-index 928dc27c1d93..5733261d9407 100644
---- a/drivers/interconnect/qcom/icc-rpm.c
-+++ b/drivers/interconnect/qcom/icc-rpm.c
-@@ -354,12 +354,12 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+index 1faec0af74e7..82fe905b74a9 100644
+--- a/drivers/interconnect/qcom/qcs404.c
++++ b/drivers/interconnect/qcom/qcs404.c
+@@ -983,6 +983,7 @@ static struct qcom_icc_node * const qcs404_bimc_nodes[] = {
+ };
  
- 	qcom_icc_bus_aggregate(provider, agg_avg, agg_peak, &max_agg_avg);
+ static const struct qcom_icc_desc qcs404_bimc = {
++	.bus_clk_desc = &bimc_clk,
+ 	.nodes = qcs404_bimc_nodes,
+ 	.num_nodes = ARRAY_SIZE(qcs404_bimc_nodes),
+ };
+@@ -1037,6 +1038,7 @@ static struct qcom_icc_node * const qcs404_pcnoc_nodes[] = {
+ };
  
--	ret = qcom_icc_rpm_set(src_qn, agg_avg);
-+	ret = qcom_icc_rpm_set(src_qn, src_qn->sum_avg);
- 	if (ret)
- 		return ret;
+ static const struct qcom_icc_desc qcs404_pcnoc = {
++	.bus_clk_desc = &bus_0_clk,
+ 	.nodes = qcs404_pcnoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(qcs404_pcnoc_nodes),
+ };
+@@ -1065,6 +1067,7 @@ static struct qcom_icc_node * const qcs404_snoc_nodes[] = {
+ };
  
- 	if (dst_qn) {
--		ret = qcom_icc_rpm_set(dst_qn, agg_avg);
-+		ret = qcom_icc_rpm_set(dst_qn, dst_qn->sum_avg);
- 		if (ret)
- 			return ret;
- 	}
+ static const struct qcom_icc_desc qcs404_snoc = {
++	.bus_clk_desc = &bus_1_clk,
+ 	.nodes = qcs404_snoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(qcs404_snoc_nodes),
+ };
 
 -- 
 2.41.0
