@@ -2,63 +2,64 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F29D0EB64D9
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 10:22:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A951C00528
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 10:22:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235705AbjFNKW3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jun 2023 06:22:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35076 "EHLO
+        id S242806AbjFNKWZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jun 2023 06:22:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34938 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239213AbjFNKW1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 06:22:27 -0400
-Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81BB71BD4
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:24 -0700 (PDT)
-Received: by mail-lj1-x22f.google.com with SMTP id 38308e7fff4ca-2b3451b3ea9so7019501fa.1
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:24 -0700 (PDT)
+        with ESMTP id S238956AbjFNKWW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 06:22:22 -0400
+Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D5CB1BC3
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:19 -0700 (PDT)
+Received: by mail-lj1-x22c.google.com with SMTP id 38308e7fff4ca-2b349703e90so6000181fa.0
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686738142; x=1689330142;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=43WXKM//3PGv9o6RwF8pM2BvmgRQSkW/hfnQEDsAZP4=;
-        b=U8fQiWmr9bxoRWfffAbcaVo2R89LciNBj3wVxa3iiD+ujbrqjLzJQvCXle1rPA/da7
-         0vWRCDgCciZdydIA1Azy6jQZfIdUitToR19SExMljjXGw67M0gLBNjTyJaaqXV1N7Cqs
-         oE9HBSCsdkhIsqZP4k9GztO+NepcSgZsDT4Fn56fKu9HJIhdisGSKS4zvTNQNJKGyLOZ
-         PR8+rmo0AdiuDJVHxnW43+CbZuKT1jDnfp5QrpQ9XC4UONngDUJBhq2CnoJ+lNtlUw1q
-         2TQriGMyCx3aE7F96qEtH1RfbdzX88Uou6hM5k5s1LHrJF7ZkorfJDmrf8Ww1WSr1g0m
-         25oQ==
+        d=linaro.org; s=google; t=1686738137; x=1689330137;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=szSQucIK3ncRKPsQw9RYLfCbPW0KNM9RYtqOhVqKhe4=;
+        b=skOijsAw7vxYIUOFNFRQc05GDc53ZBkZe16t9R0wONa9Hy2tV6iVL0ABzGQ5x21HhA
+         8DkmtIFlMxr4cljzZ6CYq22ojYR62zCogBc3n6mn8O8FlcbNMRXV3R2uQE49vVs8pTtj
+         hTwoRDDlWCp8Ox3CYBUbyVP5jD60AiM4WP/3sCibDvxvvRP38tzYYS1et7eSrnpLLrYr
+         0uG//CV7EDDfR3LT+rASjFxaOUAPTdJB6YuSSgcr+M4QNubSz0B1b1kQgsfm4tUc9GkR
+         jkOJwF3n/VKvXDOPUvwpPjuLHKTm/l3ZcNSYNeCwgOMi3oswT1jqRePwZ2+RK/WqdM1v
+         ub3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686738142; x=1689330142;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=43WXKM//3PGv9o6RwF8pM2BvmgRQSkW/hfnQEDsAZP4=;
-        b=kHFjBKCgID0k/zm576NM4flmbIyhwNQ5sThS9NarCXPi25VIhMeojrHr3Ba17aC361
-         ai7+K4+UTI68J6NkeIGv05WvCbHOlRkuzBlHfHbL72S3ca2cRcu6YdDgx4cjSLQJh0hF
-         VNNXQ/wc0mY55b5p3WqDAqgwpgiprk0tHZ7p1KXs3fKjxHr58/wS8jdyueENRULBllXo
-         pIFyIsHkyNS9cpjlvOjv+odlfip/ROcbjwU6ciSrdkgcCslGTl+sZm46MT7NwEcuyn57
-         rQUBbCROUEMl2xs8ScgdNXjs2VuqhxeePDv+d8aSNNsS4jpW2s49uFbqN+kZuveWOYSE
-         +4Tw==
-X-Gm-Message-State: AC+VfDxy23rVWpXpSmGslBUOgjBgezm8myHps8XUXIbZfjSZyZ/Q7Jw1
-        d2oX9SvwCvZyiJeYj4PBsdP2Yyj70e2aXvnLIhU=
-X-Google-Smtp-Source: ACHHUZ52hNa9pY3ARsvP3IiMeTf5Vwef/LVUBObb3b+Dg6p1+N7pTNKu5uUe1p8MGRv20CtzQgU+vA==
-X-Received: by 2002:a2e:998f:0:b0:2af:19dd:ecda with SMTP id w15-20020a2e998f000000b002af19ddecdamr5822287lji.45.1686738142658;
-        Wed, 14 Jun 2023 03:22:22 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1686738137; x=1689330137;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=szSQucIK3ncRKPsQw9RYLfCbPW0KNM9RYtqOhVqKhe4=;
+        b=le6swYUzkDv/1EWdUmvb3aH/8x0PozVmzWibULDkv539i8P/hMPSdMXlOQA+NPMoy4
+         8uzO+HNhhaLSy0/7aL1AggqETr4hJaQ27O2nZSxt3TvuOQH8WOji1x81GCnx8cd0ERZy
+         3ceU+4Rnq4VA583g+ukEzxr8FIP8Bc9Np38w0ol10Hd7rLyM30K7SVRxYBf1DI9cz4We
+         Hg1ov9hBClhLW6epkP6XKEPXO8xZXlgsrf4KlHaZH+Cc9hoXK/9myOwtTGeJ1Vs3t9iO
+         P6OH4aZjIhT2XAt+kVePNFCvDaWsMWw9hwXwqh0JaM0QXEnwGsQHIlHJngF49acYIv3c
+         nLyg==
+X-Gm-Message-State: AC+VfDzJB4AW3mmX5fTlcplikQowvOJ6ppDFOFqdxcDWCYejLF4klYWl
+        O62Z3gwqz6+Bz62PfmnUK54Bgw==
+X-Google-Smtp-Source: ACHHUZ4ZGVnY9riBZLKM8y2Gv+54qTynM3Jva+aCMsBwj4FWJM1oHbl8p8CVb5FKRBdc/JA0HnCdOw==
+X-Received: by 2002:a2e:9056:0:b0:2b3:4c4b:4472 with SMTP id n22-20020a2e9056000000b002b34c4b4472mr543640ljg.47.1686738137330;
+        Wed, 14 Jun 2023 03:22:17 -0700 (PDT)
 Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
-        by smtp.gmail.com with ESMTPSA id m2-20020a2eb6c2000000b002b20d8f270asm2520057ljo.74.2023.06.14.03.22.21
+        by smtp.gmail.com with ESMTPSA id m2-20020a2eb6c2000000b002b20d8f270asm2520057ljo.74.2023.06.14.03.22.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jun 2023 03:22:22 -0700 (PDT)
+        Wed, 14 Jun 2023 03:22:17 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Wed, 14 Jun 2023 12:22:15 +0200
-Subject: [PATCH v5 04/22] clk: qcom: smd-rpm: Move some RPM resources to
- the common header
+Subject: [PATCH v5 00/22] Restructure RPM SMD ICC
+Date:   Wed, 14 Jun 2023 12:22:11 +0200
+Message-Id: <20230526-topic-smd_icc-v5-0-eeaa09d0082e@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230526-topic-smd_icc-v5-4-eeaa09d0082e@linaro.org>
-References: <20230526-topic-smd_icc-v5-0-eeaa09d0082e@linaro.org>
-In-Reply-To: <20230526-topic-smd_icc-v5-0-eeaa09d0082e@linaro.org>
+X-B4-Tracking: v=1; b=H4sIANOUiWQC/33NzWrDMBAE4FcJOlfF+rXcU9+jlKKVVvGCKwUpN
+ S3B7145txLq4wx8MzfWsBI29nK6sYorNSq5B/N0YmH2+YycYs9MDlINRlp+LRcKvH3GDwqBg5N
+ CTdp5g5F1A74hh+pzmLvKX8vSy0vFRN/3k7f3nmdq11J/7p+r2Nv/5lfBBy4gObTWqqDxdaHsa
+ 3ku9cz2qVUectk5mklpGMbohHrg6pCrzk2CMaoJ3KjTA9eHXO8cvJNgE4CXf/i2bb9Tt50LfQE
+ AAA==
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
         Michael Turquette <mturquette@baylibre.com>,
@@ -74,95 +75,147 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1686738135; l=2480;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1686738135; l=6341;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=htdvXfCYU07v6+YNPv56ef+1cDlrbXu+3LbOKbiWsm8=;
- b=7DZPhtfi+3xUTEhhu1RVqIbrM6ksdtqrUcEvjTisfKACROd9aNUzbsvdFv9HoXuwsQUytfRrK
- puS7GeVEFAPBe0hnYe3QLCyOkk6NRJpVKDLSgpI4wzD57iqDzB75XsW
+ bh=CNEGFScbum+K4IB2q7UcAHiJ+m57fesNvbD3iZfECoQ=;
+ b=FfFoOdYP/+LcgUZcj6qhsIkyOy09MqmocdvHR1A6F6h/g3rQO6LMe+EmxaPLi7wZXV+Wy54pn
+ +YvA6g2mYUQD5m9wcZWnGLpTHpjf5/oggDMsEGzoDM/z3ZgFdLbE+N/
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In preparation for handling the bus clocks in the icc driver, carve out
-some defines and a struct definition to the common rpm header.
+This series reshuffles things around, moving the management of SMD RPM
+bus clocks to the interconnect framework where they belong. This helps
+us solve a couple of issues:
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Acked-by: Stephen Boyd <sboyd@kernel.org>
+1. We can work towards unused clk cleanup of RPMCC without worrying
+   about it killing some NoC bus, resulting in the SoC dying.
+   Deasserting actually unused RPM clocks (among other things) will
+   let us achieve "true SoC-wide power collapse states", also known as
+   VDD_LOW and VDD_MIN.
+
+2. We no longer have to keep tons of quirky bus clock ifs in the icc
+   driver. You either have a RPM clock and call "rpm set rate" or you
+   have a single non-RPM clock (like AHB_CLK_SRC) or you don't have any.
+
+3. There's less overhead - instead of going through layers and layers of
+   the CCF, ratesetting comes down to calling max() and sending a single
+   RPM message. ICC is very very dynamic so that's a big plus.
+
+The clocks still need to be vaguely described in the clk-smd-rpm driver,
+as it gives them an initial kickoff, before actually telling RPM to
+enable DVFS scaling.  After RPM receives that command, all clocks that
+have not been assigned a rate are considered unused and are shut down
+in hardware, leading to the same issue as described in point 1.
+
+We can consider marking them __initconst in the future, but this series
+is very fat even without that..
+
+Apart from that, it squashes a couple of bugs that really need fixing..
+
+--- MERGING STRATEGY ---
+If Stephen and Georgi agree, it would be best to take all of this through
+the qcom tree, as it touches on heavily intertwined components and
+introduces compile-time dependencies between icc and clk drivers.
+
+Tested on SM6375 (OOT), MSM8998 (OOT), MSM8996.
+
+MSM8974 conversion to common code and modernization will be handled separately.
+
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/clk/qcom/clk-smd-rpm.c   | 13 -------------
- include/linux/soc/qcom/smd-rpm.h | 15 +++++++++++++++
- 2 files changed, 15 insertions(+), 13 deletions(-)
+Changes in v5:
+- Pass RPM context id to qcom_icc_rpm_set_bus_rate()
+- Fix min_t call cutting off bits 32-63 in set() path
+- Pick up tags
+- Link to v4: https://lore.kernel.org/r/20230526-topic-smd_icc-v4-0-5ba82b6fbba2@linaro.org
 
-diff --git a/drivers/clk/qcom/clk-smd-rpm.c b/drivers/clk/qcom/clk-smd-rpm.c
-index e4de74b68797..937cb1515968 100644
---- a/drivers/clk/qcom/clk-smd-rpm.c
-+++ b/drivers/clk/qcom/clk-smd-rpm.c
-@@ -18,13 +18,6 @@
- 
- #include <dt-bindings/clock/qcom,rpmcc.h>
- 
--#define QCOM_RPM_KEY_SOFTWARE_ENABLE			0x6e657773
--#define QCOM_RPM_KEY_PIN_CTRL_CLK_BUFFER_ENABLE_KEY	0x62636370
--#define QCOM_RPM_SMD_KEY_RATE				0x007a484b
--#define QCOM_RPM_SMD_KEY_ENABLE				0x62616e45
--#define QCOM_RPM_SMD_KEY_STATE				0x54415453
--#define QCOM_RPM_SCALING_ENABLE_ID			0x2
--
- #define __DEFINE_CLK_SMD_RPM_PREFIX(_prefix, _name, _active,		      \
- 				    type, r_id, key)			      \
- 	static struct clk_smd_rpm clk_smd_rpm_##_prefix##_active;	      \
-@@ -171,12 +164,6 @@ struct clk_smd_rpm {
- 	unsigned long rate;
- };
- 
--struct clk_smd_rpm_req {
--	__le32 key;
--	__le32 nbytes;
--	__le32 value;
--};
--
- struct rpm_smd_clk_desc {
- 	struct clk_smd_rpm **clks;
- 	size_t num_clks;
-diff --git a/include/linux/soc/qcom/smd-rpm.h b/include/linux/soc/qcom/smd-rpm.h
-index 99499e4b080e..8190878645f9 100644
---- a/include/linux/soc/qcom/smd-rpm.h
-+++ b/include/linux/soc/qcom/smd-rpm.h
-@@ -2,6 +2,8 @@
- #ifndef __QCOM_SMD_RPM_H__
- #define __QCOM_SMD_RPM_H__
- 
-+#include <linux/types.h>
-+
- struct qcom_smd_rpm;
- 
- #define QCOM_SMD_RPM_ACTIVE_STATE	0
-@@ -45,6 +47,19 @@ struct qcom_smd_rpm;
- #define QCOM_SMD_RPM_PKA_CLK	0x616b70
- #define QCOM_SMD_RPM_MCFG_CLK	0x6766636d
- 
-+#define QCOM_RPM_KEY_SOFTWARE_ENABLE			0x6e657773
-+#define QCOM_RPM_KEY_PIN_CTRL_CLK_BUFFER_ENABLE_KEY	0x62636370
-+#define QCOM_RPM_SMD_KEY_RATE				0x007a484b
-+#define QCOM_RPM_SMD_KEY_ENABLE				0x62616e45
-+#define QCOM_RPM_SMD_KEY_STATE				0x54415453
-+#define QCOM_RPM_SCALING_ENABLE_ID			0x2
-+
-+struct clk_smd_rpm_req {
-+	__le32 key;
-+	__le32 nbytes;
-+	__le32 value;
-+};
-+
- int qcom_rpm_smd_write(struct qcom_smd_rpm *rpm,
- 		       int state,
- 		       u32 resource_type, u32 resource_id,
+Changes in v4:
+- Only set clk rate on a context if necessary
+- Mention qcom,icc.h is not the correct header in "Control bus rpmcc form icc"
+- Fix the bindings (BIT vs 1<<)
+- Fix one more wrong use of qcom,icc.h in "Fix bucket numer" and uninclude it
+- Drop "Allow negative QoS offset" (will be handled separately)
+- Export icc clocks descriptions to unbreak =m builds
+- Pick up tags
+- Link to v3: https://lore.kernel.org/r/20230526-topic-smd_icc-v3-0-5fb7d39b874f@linaro.org
 
+Changes in v3:
+- Use devm_clk_get_optional and only get() the clock once
+- Drop unnecessary NULL-checks for qp->bus_clk
+- Handle ARM32 CCF limitations, add an explicit comment about them
+- Use Stephan's alternative rpmcc readiness check
+- Fix one more wrong usage of QCOM_ICC_NUM_BUCKETS in icc-rpm.h
+- Introduce new dt-bindings for icc rpm tags
+- Mention the rpm tags situation in the commit message of
+  "Fix bucket number"
+- Pick up tags
+- Link to v2: https://lore.kernel.org/r/20230526-topic-smd_icc-v2-0-e5934b07d813@linaro.org
+
+Changes in v2:
+- Sort entries properly in "Add missing headers in icc-rpm.h"
+- Fix the check for no clocks on a given provider
+- Replace "Divide clk rate by src node bus width" with a proper fix
+- Add "Set correct bandwidth through RPM bw req"
+- Split "Add QCOM_SMD_RPM_STATE_NUM" into 2 logical changes
+- Move "Separate out interconnect bus clocks" a bit later in the series
+- Link to v1: https://lore.kernel.org/r/20230526-topic-smd_icc-v1-0-1bf8e6663c4e@linaro.org
+
+---
+Konrad Dybcio (21):
+      dt-bindings: interconnect: Add Qcom RPM ICC bindings
+      soc: qcom: smd-rpm: Add QCOM_SMD_RPM_STATE_NUM
+      soc: qcom: smd-rpm: Use tabs for defines
+      clk: qcom: smd-rpm: Move some RPM resources to the common header
+      interconnect: qcom: icc-rpm: Introduce keep_alive
+      interconnect: qcom: Fold smd-rpm.h into icc-rpm.h
+      interconnect: qcom: smd-rpm: Add rpmcc handling skeleton code
+      interconnect: qcom: Add missing headers in icc-rpm.h
+      interconnect: qcom: Define RPM bus clocks
+      interconnect: qcom: sdm660: Hook up RPM bus clk definitions
+      interconnect: qcom: msm8996: Hook up RPM bus clk definitions
+      interconnect: qcom: qcs404: Hook up RPM bus clk definitions
+      interconnect: qcom: msm8939: Hook up RPM bus clk definitions
+      interconnect: qcom: msm8916: Hook up RPM bus clk definitions
+      interconnect: qcom: qcm2290: Hook up RPM bus clk definitions
+      interconnect: qcom: icc-rpm: Control bus rpmcc from icc
+      clk: qcom: smd-rpm: Separate out interconnect bus clocks
+      interconnect: qcom: icc-rpm: Fix bucket number
+      interconnect: qcom: icc-rpm: Set bandwidth on both contexts
+      interconnect: qcom: icc-rpm: Set correct bandwidth through RPM bw req
+      interconnect: qcom: icc-rpm: Fix bandwidth calculations
+
+Stephan Gerhold (1):
+      soc: qcom: smd-rpm: Move icc_smd_rpm registration to clk-smd-rpm
+
+ drivers/clk/qcom/clk-smd-rpm.c                  | 312 +++++++++++-------------
+ drivers/interconnect/qcom/Makefile              |   2 +-
+ drivers/interconnect/qcom/icc-rpm-clocks.c      |  77 ++++++
+ drivers/interconnect/qcom/icc-rpm.c             | 219 +++++++++--------
+ drivers/interconnect/qcom/icc-rpm.h             |  55 ++++-
+ drivers/interconnect/qcom/msm8916.c             |   4 +-
+ drivers/interconnect/qcom/msm8939.c             |   5 +-
+ drivers/interconnect/qcom/msm8974.c             |   2 +-
+ drivers/interconnect/qcom/msm8996.c             |   9 +-
+ drivers/interconnect/qcom/qcm2290.c             |   7 +-
+ drivers/interconnect/qcom/qcs404.c              |   4 +-
+ drivers/interconnect/qcom/sdm660.c              |   7 +-
+ drivers/interconnect/qcom/smd-rpm.c             |  23 +-
+ drivers/interconnect/qcom/smd-rpm.h             |  15 --
+ drivers/soc/qcom/smd-rpm.c                      |  17 +-
+ include/dt-bindings/interconnect/qcom,rpm-icc.h |  13 +
+ include/linux/soc/qcom/smd-rpm.h                |  20 +-
+ 17 files changed, 454 insertions(+), 337 deletions(-)
+---
+base-commit: 1f6ce8392d6ff486af5ca96df9ded5882c4b6977
+change-id: 20230526-topic-smd_icc-b8213948a5ed
+
+Best regards,
 -- 
-2.41.0
+Konrad Dybcio <konrad.dybcio@linaro.org>
 
