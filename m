@@ -2,92 +2,118 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF770EB64DA
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 10:08:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A40AEB64DC
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jun 2023 10:22:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234209AbjFNKI6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jun 2023 06:08:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59160 "EHLO
+        id S241089AbjFNKWY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jun 2023 06:22:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34946 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234921AbjFNKIz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 06:08:55 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDBE81BC6
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:08:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1686737289;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=ECLt4MQqsZaUqdVLVd32V9JuvnwGyQKanHPSvRz66bs=;
-        b=UJVNqbJTTq6RWNXneJNzTjDxbZF5VRBvBAxIw9z3u5BdqH9YzT5tCOpKu5haEBa8GGqwUc
-        Wlwo3o8PlkNLBHxgrGcaytS1a/nGJGKDTrBtnu64mzzSXGfxZmtAewTq1BITB7FqxUXQ83
-        jSakz7OFco7aAcHgzfayeg/1Xz8DQi8=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-292-0Si8CIIrMQ-khoOpU0YGkA-1; Wed, 14 Jun 2023 06:08:05 -0400
-X-MC-Unique: 0Si8CIIrMQ-khoOpU0YGkA-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5727585A58A;
-        Wed, 14 Jun 2023 10:08:05 +0000 (UTC)
-Received: from localhost.localdomain (unknown [10.39.193.102])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 4A3461121314;
-        Wed, 14 Jun 2023 10:08:04 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        Bernhard Krug <b.krug@elektronenpumpe.de>,
-        stable@vger.kernel.org
-Subject: [PATCH] thermal/intel/intel_soc_dts_iosf: Fix reporting wrong temperatures
-Date:   Wed, 14 Jun 2023 12:07:56 +0200
-Message-Id: <20230614100756.437606-1-hdegoede@redhat.com>
+        with ESMTP id S231408AbjFNKWX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2023 06:22:23 -0400
+Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54E461BC9
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:20 -0700 (PDT)
+Received: by mail-lj1-x22d.google.com with SMTP id 38308e7fff4ca-2b1af9ef7a9so6852371fa.1
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2023 03:22:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1686738138; x=1689330138;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=X4gn37z49ZtWSh9ik86q07lLH6vDKJpjqwf/xsIE+Io=;
+        b=Ryc35p875lLcHPJrD9S6+7gFFAFOSUEhVhptXHrotGZat5oVYZq3TqLRtCn0EtHO0j
+         MM7m1mILkkSmzHEctANxoyJY8DG1Ci3u/YG2UCWwjyM/YR5CxlSjBgSB4ECUI09/N6qr
+         lkw4OvM7MxCJDkbzJRq5tpScfE63OX6gDMbpl5R/s8zkjAXExlAo41peCBLr9SvfJjc6
+         qZ7xPK1XSIX8ove6EZP49SfyPeQJSGUy40JPq3Abyw5qBWNNUSMFOBzlrXd5WAJ29Pk7
+         Oi5duosxB/72Lugc5GlPKhe23mcSF4yB8sa8i3Fo0nhrxmsReYrxDvj+kiikGsMeWZ+F
+         usAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686738138; x=1689330138;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=X4gn37z49ZtWSh9ik86q07lLH6vDKJpjqwf/xsIE+Io=;
+        b=Hs07EVV0HRr9Sl9Vdf1N3T9dpThQa3HiyrJcNMeZZ6Z0cHCU8jgiDRZuqVCX1n2sQQ
+         m7sHHdV0P9LIuZGjGvTw9QeqbBK/xxpKZwTLL6bj4gpSPbAzZoEQNQxbMcw2A3Ga4eba
+         FHh/qhPfrN1ShA0DUsjzcie9lpNqNHYUtwp39ZP7tYLOxy4fsoS1cc9nbxIHM6BK5oZP
+         4ns+176jHDPBz46zJLvyzbzZu6UiZggvG53CJjyF+X2lL75Mlb+cDDLjJJ2WhvRtflXB
+         OUTRQhu6ymR/7zX0pV5ur/nkBVr4kkhL87fxhXqUOzoUTLkFX4BAuaDRFY1PYCfqd5sJ
+         Y70Q==
+X-Gm-Message-State: AC+VfDyXnvpHN6tfNoG6bt2hEDjPOgD3NhRXRCtl/RuhVPGs9Hj7bCxV
+        ywgTMeGKhKuj+NXiSquAOpC/ow==
+X-Google-Smtp-Source: ACHHUZ5/F2x9lcbPjaBMfEWIFbcML+1ePQSsIKZaeqF5d14HESsSJncC5mociIWlcLc4Vr7/VzfhJA==
+X-Received: by 2002:a2e:9c5a:0:b0:2b1:ae75:2781 with SMTP id t26-20020a2e9c5a000000b002b1ae752781mr5752793ljj.27.1686738138600;
+        Wed, 14 Jun 2023 03:22:18 -0700 (PDT)
+Received: from [192.168.1.101] (abyj190.neoplus.adsl.tpnet.pl. [83.9.29.190])
+        by smtp.gmail.com with ESMTPSA id m2-20020a2eb6c2000000b002b20d8f270asm2520057ljo.74.2023.06.14.03.22.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 14 Jun 2023 03:22:18 -0700 (PDT)
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Date:   Wed, 14 Jun 2023 12:22:12 +0200
+Subject: [PATCH v5 01/22] dt-bindings: interconnect: Add Qcom RPM ICC
+ bindings
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.3
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230526-topic-smd_icc-v5-1-eeaa09d0082e@linaro.org>
+References: <20230526-topic-smd_icc-v5-0-eeaa09d0082e@linaro.org>
+In-Reply-To: <20230526-topic-smd_icc-v5-0-eeaa09d0082e@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Leo Yan <leo.yan@linaro.org>,
+        Evan Green <evgreen@chromium.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@linaro.org>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1686738135; l=918;
+ i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
+ bh=1W+eH+8wPS6dtSY8tNN5L1cSWMudrCjAT7V4K+wZK5I=;
+ b=K5yI5GOz9/EYW/rU6Z/1pBrZFVzgVtqSaGNUWpOM5WiIOB3NcVaIkmxJNWkg17CRf2QkUSwqh
+ TaoSM2GY0AvCxibvZs27IydvgyV19IewSE52+rxW8KnGx/ZvDEyuI5k
+X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
+ pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since commit 955fb8719efb ("thermal/intel/intel_soc_dts_iosf: Use Intel
-TCC library") intel_soc_dts_iosf is reporting the wrong temperature.
+The SMD RPM interconnect driver requires different icc tags to the
+RPMh driver. Add bindings to reflect that.
 
-The driver expects tj_max to be in milli-degrees-celcius but after
-the switch to the TCC library this is now in degrees celcius so
-instead of e.g. 90000 it is set to 90 causing a temperature 45
-degrees below tj_max to be reported as -44910 milli-degrees
-instead of as 45000 milli-degrees.
-
-Fix this by adding back the lost factor of 1000.
-
-Fixes: 955fb8719efb ("thermal/intel/intel_soc_dts_iosf: Use Intel TCC library")
-Reported-by: Bernhard Krug <b.krug@elektronenpumpe.de>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: stable@vger.kernel.org
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
-Note reported by private email, so no Closes: tag
----
- drivers/thermal/intel/intel_soc_dts_iosf.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/dt-bindings/interconnect/qcom,rpm-icc.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/thermal/intel/intel_soc_dts_iosf.c b/drivers/thermal/intel/intel_soc_dts_iosf.c
-index f99dc7e4ae89..db97499f4f0a 100644
---- a/drivers/thermal/intel/intel_soc_dts_iosf.c
-+++ b/drivers/thermal/intel/intel_soc_dts_iosf.c
-@@ -398,7 +398,7 @@ struct intel_soc_dts_sensors *intel_soc_dts_iosf_init(
- 	spin_lock_init(&sensors->intr_notify_lock);
- 	mutex_init(&sensors->dts_update_lock);
- 	sensors->intr_type = intr_type;
--	sensors->tj_max = tj_max;
-+	sensors->tj_max = tj_max * 1000;
- 	if (intr_type == INTEL_SOC_DTS_INTERRUPT_NONE)
- 		notification = false;
- 	else
+diff --git a/include/dt-bindings/interconnect/qcom,rpm-icc.h b/include/dt-bindings/interconnect/qcom,rpm-icc.h
+new file mode 100644
+index 000000000000..2cd56f91e5c5
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,rpm-icc.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Copyright (c) 2023, Linaro Limited
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_RPM_ICC_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_RPM_ICC_H
++
++#define RPM_ACTIVE_TAG		(1 << 0)
++#define RPM_SLEEP_TAG		(1 << 1)
++#define RPM_ALWAYS_TAG		(RPM_ACTIVE_TAG | RPM_SLEEP_TAG)
++
++#endif
+
 -- 
-2.40.1
+2.41.0
 
