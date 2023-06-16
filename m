@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE669EB64D8
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:22:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE5F8EB64DA
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:22:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232406AbjFPGWN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Jun 2023 02:22:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55024 "EHLO
+        id S233252AbjFPGWP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Jun 2023 02:22:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229969AbjFPGWM (ORCPT
+        with ESMTP id S231452AbjFPGWM (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 02:22:12 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 998B0269E
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:22:10 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 844BD26B8
+        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:22:11 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q7-0006nW-VS; Fri, 16 Jun 2023 08:21:44 +0200
+        id 1qA2q8-0006nX-74; Fri, 16 Jun 2023 08:21:44 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q4-007kx7-Vu; Fri, 16 Jun 2023 08:21:40 +0200
+        id 1qA2q5-007kxD-4f; Fri, 16 Jun 2023 08:21:41 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q4-003FTv-7U; Fri, 16 Jun 2023 08:21:40 +0200
+        id 1qA2q4-003FU1-Aj; Fri, 16 Jun 2023 08:21:40 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,11 +41,14 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v6 00/26] Add perf support to the rockchip-dfi driver
-Date:   Fri, 16 Jun 2023 08:20:35 +0200
-Message-Id: <20230616062101.601837-1-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v6 02/26] PM / devfreq: rockchip-dfi: Embed desc into private data struct
+Date:   Fri, 16 Jun 2023 08:20:37 +0200
+Message-Id: <20230616062101.601837-3-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230616062101.601837-1-s.hauer@pengutronix.de>
+References: <20230616062101.601837-1-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
@@ -56,90 +59,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This contains only small changes to the last version, but in one case
-a really important one: As Sebastian noted there is sometimes wrong data
-reported. This is fixed in this version.
+No need for an extra allocation, just embed the struct
+devfreq_event_desc into the private data struct.
 
-Other than that there are only small changes, see below in the changelog.
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Link: https://lore.kernel.org/r/20230524083153.2046084-3-s.hauer@pengutronix.de
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/devfreq/event/rockchip-dfi.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Overall I think this series this series is ready for primetime now.
-
-Sascha
-
-Changes since v5:
-- Add missing initialization of &dfi->last_perf_count which resulted
-  in wrong data sometimes
-- Drop interrupt-names property from binding
-- Add patch to add rockchip,rk3588-pmugrf to dt-bindings
-- Add more reviewed-by tags
-
-Changes since v4:
-- Add device tree changes for RK3588
-- Use seqlock to protect perf counter values from hrtimer
-- Unconditionally enable DFI when perf is enabled
-- Bring back changes to dts/binding patches that were lost in v4
-
-Changes since v3:
-- Add RK3588 support
-
-Changes since v2:
-- Fix broken reference to binding
-- Add Reviewed-by from Rob
-
-Changes since v1:
-- Fix example to actually match the binding and fix the warnings resulted thereof
-- Make addition of rockchip,rk3568-dfi an extra patch
-
-Sascha Hauer (26):
-  PM / devfreq: rockchip-dfi: Make pmu regmap mandatory
-  PM / devfreq: rockchip-dfi: Embed desc into private data struct
-  PM / devfreq: rockchip-dfi: use consistent name for private data
-    struct
-  PM / devfreq: rockchip-dfi: Add SoC specific init function
-  PM / devfreq: rockchip-dfi: dfi store raw values in counter struct
-  PM / devfreq: rockchip-dfi: Use free running counter
-  PM / devfreq: rockchip-dfi: introduce channel mask
-  PM / devfreq: rk3399_dmc,dfi: generalize DDRTYPE defines
-  PM / devfreq: rockchip-dfi: Clean up DDR type register defines
-  PM / devfreq: rockchip-dfi: Add RK3568 support
-  PM / devfreq: rockchip-dfi: Handle LPDDR2 correctly
-  PM / devfreq: rockchip-dfi: Handle LPDDR4X
-  PM / devfreq: rockchip-dfi: Pass private data struct to internal
-    functions
-  PM / devfreq: rockchip-dfi: Prepare for multiple users
-  PM / devfreq: rockchip-dfi: give variable a better name
-  PM / devfreq: rockchip-dfi: Add perf support
-  PM / devfreq: rockchip-dfi: make register stride SoC specific
-  PM / devfreq: rockchip-dfi: account for multiple DDRMON_CTRL registers
-  PM / devfreq: rockchip-dfi: add support for RK3588
-  dt-bindings: devfreq: event: convert Rockchip DFI binding to yaml
-  dt-bindings: devfreq: event: rockchip,dfi: Add rk3568 support
-  dt-bindings: devfreq: event: rockchip,dfi: Add rk3588 support
-  dt-bindings: soc: rockchip: grf: add rockchip,rk3588-pmugrf
-  arm64: dts: rockchip: rk3399: Enable DFI
-  arm64: dts: rockchip: rk356x: Add DFI
-  arm64: dts: rockchip: rk3588s: Add DFI
-
- .../bindings/devfreq/event/rockchip,dfi.yaml  |  74 ++
- .../bindings/devfreq/event/rockchip-dfi.txt   |  18 -
- .../rockchip,rk3399-dmc.yaml                  |   2 +-
- .../devicetree/bindings/soc/rockchip/grf.yaml |   1 +
- arch/arm64/boot/dts/rockchip/rk3399.dtsi      |   1 -
- arch/arm64/boot/dts/rockchip/rk356x.dtsi      |   7 +
- arch/arm64/boot/dts/rockchip/rk3588s.dtsi     |  16 +
- drivers/devfreq/event/rockchip-dfi.c          | 799 +++++++++++++++---
- drivers/devfreq/rk3399_dmc.c                  |  10 +-
- include/soc/rockchip/rk3399_grf.h             |   9 +-
- include/soc/rockchip/rk3568_grf.h             |  13 +
- include/soc/rockchip/rk3588_grf.h             |  18 +
- include/soc/rockchip/rockchip_grf.h           |  18 +
- 13 files changed, 848 insertions(+), 138 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
- delete mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
- create mode 100644 include/soc/rockchip/rk3568_grf.h
- create mode 100644 include/soc/rockchip/rk3588_grf.h
- create mode 100644 include/soc/rockchip/rockchip_grf.h
-
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 74893c06aa087..467f9f42d38f7 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -49,7 +49,7 @@ struct dmc_usage {
+  */
+ struct rockchip_dfi {
+ 	struct devfreq_event_dev *edev;
+-	struct devfreq_event_desc *desc;
++	struct devfreq_event_desc desc;
+ 	struct dmc_usage ch_usage[RK3399_DMC_NUM_CH];
+ 	struct device *dev;
+ 	void __iomem *regs;
+@@ -204,14 +204,10 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+ 
+ 	data->dev = dev;
+ 
+-	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
+-	if (!desc)
+-		return -ENOMEM;
+-
++	desc = &data->desc;
+ 	desc->ops = &rockchip_dfi_ops;
+ 	desc->driver_data = data;
+ 	desc->name = np->name;
+-	data->desc = desc;
+ 
+ 	data->edev = devm_devfreq_event_add_edev(&pdev->dev, desc);
+ 	if (IS_ERR(data->edev)) {
 -- 
 2.39.2
 
