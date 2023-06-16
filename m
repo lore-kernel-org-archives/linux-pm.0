@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2511EEB64D7
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:23:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5904AEB64D8
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:24:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244151AbjFPGXs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Jun 2023 02:23:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55616 "EHLO
+        id S232488AbjFPGYF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Jun 2023 02:24:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55132 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243795AbjFPGXE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 02:23:04 -0400
+        with ESMTP id S243383AbjFPGXa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 02:23:30 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 175FD35AC
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:22:28 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B6AC3A98
+        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:22:34 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q9-0006qr-Mz; Fri, 16 Jun 2023 08:21:45 +0200
+        id 1qA2q8-0006pP-W3; Fri, 16 Jun 2023 08:21:45 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q8-007kyb-Rx; Fri, 16 Jun 2023 08:21:44 +0200
+        id 1qA2q8-007kxw-5Y; Fri, 16 Jun 2023 08:21:44 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q5-003FVp-LV; Fri, 16 Jun 2023 08:21:41 +0200
+        id 1qA2q5-003FVM-Dv; Fri, 16 Jun 2023 08:21:41 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,10 +41,11 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v6 24/26] arm64: dts: rockchip: rk3399: Enable DFI
-Date:   Fri, 16 Jun 2023 08:20:59 +0200
-Message-Id: <20230616062101.601837-25-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v6 19/26] PM / devfreq: rockchip-dfi: add support for RK3588
+Date:   Fri, 16 Jun 2023 08:20:54 +0200
+Message-Id: <20230616062101.601837-20-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230616062101.601837-1-s.hauer@pengutronix.de>
 References: <20230616062101.601837-1-s.hauer@pengutronix.de>
@@ -58,28 +59,96 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-the DFI unit can provide useful data for measuring DDR utilization
-and works without any configuration from the board, so enable it in the
-dtsi file directly.
+Add support for the RK3588 to the driver. The RK3588 has four DDR
+channels with a register stride of 0x4000 between the channel
+registers, also it has a DDRMON_CTRL register per channel.
 
-Link: https://lore.kernel.org/r/20230524083153.2046084-24-s.hauer@pengutronix.de
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Link: https://lore.kernel.org/r/20230524083153.2046084-20-s.hauer@pengutronix.de
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- arch/arm64/boot/dts/rockchip/rk3399.dtsi | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/devfreq/event/rockchip-dfi.c | 30 +++++++++++++++++++++++++++-
+ include/soc/rockchip/rk3588_grf.h    | 18 +++++++++++++++++
+ 2 files changed, 47 insertions(+), 1 deletion(-)
+ create mode 100644 include/soc/rockchip/rk3588_grf.h
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-index 928948e7c7bbb..fa0a5dbd1b0ec 100644
---- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-@@ -1331,7 +1331,6 @@ dfi: dfi@ff630000 {
- 		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
- 		clocks = <&cru PCLK_DDR_MON>;
- 		clock-names = "pclk_ddr_mon";
--		status = "disabled";
- 	};
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 2362d3953ba40..9854d4093e186 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -26,8 +26,9 @@
+ #include <soc/rockchip/rockchip_grf.h>
+ #include <soc/rockchip/rk3399_grf.h>
+ #include <soc/rockchip/rk3568_grf.h>
++#include <soc/rockchip/rk3588_grf.h>
  
- 	vpu: video-codec@ff650000 {
+-#define DMC_MAX_CHANNELS	2
++#define DMC_MAX_CHANNELS	4
+ 
+ #define HIWORD_UPDATE(val, mask)	((val) | (mask) << 16)
+ 
+@@ -714,9 +715,36 @@ static int rk3568_dfi_init(struct rockchip_dfi *dfi)
+ 	return 0;
+ };
+ 
++static int rk3588_dfi_init(struct rockchip_dfi *dfi)
++{
++	struct regmap *regmap_pmu = dfi->regmap_pmu;
++	u32 reg2, reg3, reg4;
++
++	regmap_read(regmap_pmu, RK3588_PMUGRF_OS_REG2, &reg2);
++	regmap_read(regmap_pmu, RK3588_PMUGRF_OS_REG3, &reg3);
++	regmap_read(regmap_pmu, RK3588_PMUGRF_OS_REG4, &reg4);
++
++	dfi->ddr_type = FIELD_GET(RK3588_PMUGRF_OS_REG2_DRAMTYPE_INFO, reg2);
++
++	if (FIELD_GET(RK3588_PMUGRF_OS_REG3_SYSREG_VERSION, reg3) >= 0x3)
++		dfi->ddr_type |= FIELD_GET(RK3588_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3, reg3) << 3;
++
++	dfi->buswidth[0] = FIELD_GET(RK3588_PMUGRF_OS_REG2_BW_CH0, reg2) == 0 ? 4 : 2;
++	dfi->buswidth[1] = FIELD_GET(RK3588_PMUGRF_OS_REG2_BW_CH1, reg2) == 0 ? 4 : 2;
++	dfi->buswidth[2] = FIELD_GET(RK3568_PMUGRF_OS_REG2_BW_CH0, reg4) == 0 ? 4 : 2;
++	dfi->buswidth[3] = FIELD_GET(RK3588_PMUGRF_OS_REG2_BW_CH1, reg4) == 0 ? 4 : 2;
++	dfi->channel_mask = FIELD_GET(RK3588_PMUGRF_OS_REG2_CH_INFO, reg2) |
++			    FIELD_GET(RK3588_PMUGRF_OS_REG2_CH_INFO, reg4) << 2;
++
++	dfi->ddrmon_stride = 0x4000;
++
++	return 0;
++};
++
+ static const struct of_device_id rockchip_dfi_id_match[] = {
+ 	{ .compatible = "rockchip,rk3399-dfi", .data = rk3399_dfi_init },
+ 	{ .compatible = "rockchip,rk3568-dfi", .data = rk3568_dfi_init },
++	{ .compatible = "rockchip,rk3588-dfi", .data = rk3588_dfi_init },
+ 	{ },
+ };
+ 
+diff --git a/include/soc/rockchip/rk3588_grf.h b/include/soc/rockchip/rk3588_grf.h
+new file mode 100644
+index 0000000000000..630b35a550640
+--- /dev/null
++++ b/include/soc/rockchip/rk3588_grf.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++#ifndef __SOC_RK3588_GRF_H
++#define __SOC_RK3588_GRF_H
++
++#define RK3588_PMUGRF_OS_REG2		0x208
++#define RK3588_PMUGRF_OS_REG2_DRAMTYPE_INFO		GENMASK(15, 13)
++#define RK3588_PMUGRF_OS_REG2_BW_CH0			GENMASK(3, 2)
++#define RK3588_PMUGRF_OS_REG2_BW_CH1                    GENMASK(19, 18)
++#define RK3588_PMUGRF_OS_REG2_CH_INFO                   GENMASK(29, 28)
++
++#define RK3588_PMUGRF_OS_REG3		0x20c
++#define RK3588_PMUGRF_OS_REG3_DRAMTYPE_INFO_V3		GENMASK(13, 12)
++#define RK3588_PMUGRF_OS_REG3_SYSREG_VERSION		GENMASK(31, 28)
++
++#define RK3588_PMUGRF_OS_REG4           0x210
++#define RK3588_PMUGRF_OS_REG5           0x214
++
++#endif /* __SOC_RK3588_GRF_H */
 -- 
 2.39.2
 
