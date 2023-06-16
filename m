@@ -2,141 +2,100 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE340EB64D7
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:18:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96B6AEB64D7
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:20:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242991AbjFPGSf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Jun 2023 02:18:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53476 "EHLO
+        id S243255AbjFPGU5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Jun 2023 02:20:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54458 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229526AbjFPGSe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 02:18:34 -0400
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 460F610E9
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:18:33 -0700 (PDT)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-6667a2c1ab3so373291b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:18:33 -0700 (PDT)
+        with ESMTP id S230480AbjFPGU4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 02:20:56 -0400
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B543B10E9
+        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:20:55 -0700 (PDT)
+Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-666933f66cfso459188b3a.3
+        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:20:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1686896313; x=1689488313;
+        d=linaro.org; s=google; t=1686896455; x=1689488455;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=33axWVpAdkybJSty7OAw0pClQ78I+2x7otiVEbb6t44=;
-        b=ZnfE0GV4mcmm7BP3JOS+Ma0UW+aZBWS0f8J1N4j3bZnOPgsK1X7zTehNC6OJMuJr52
-         2rfqpjXI7MlNp6IevG5WE5WuiO/RvLI+VRD2elw3ZUtoPp8fk+TJOHaH+tQm1K8JlOY7
-         ig4+bQ5sO3EakzS6U1jie8BdEDZzlR7ElAIwW68V214j+SdiA2J802W80wK65Z0R2zsr
-         572JiurWUWq83O+KPH9SDHvE776a+12lIz5zIH2YX1BsVLszkZRoLbretycn4VLFgsi2
-         6n5dp+U4S9eH3bB0C7fq8BAhtSbNh5fTVMvjgtQF7JXejfPi9NbmqyAE++ctVkecU+Sx
-         D38Q==
+        bh=jT5QJMHUlKyOi0ccezfwrtf5oaRbI1qxEANvrycJT+E=;
+        b=AzXs/l5asQk/BullAh/Lyuva2zkfgzHlfR8TTF8OwZCq44joG3RcFFZlNe1iJZCSSF
+         aedI5SLk+p2XWh4UEKBGrvog8j+AGezFjdgIvS3qJlOinTTjd8vqmEE7QPkSIid4D4C4
+         IMeSgRutMcL08902HDvgOo6/aU3Al158EhcgUlYLP6LkFaQQmkDqH1CSt//0/PrpNzOh
+         oRuihxeS0K2nzE4Dij2H03itPP4i5ybWqFsqOMLHbzQvLId5fHyywRdijPPIh8UUINEC
+         AvlXLsK0tJLkcFaVBfLqTf/W2x2TETMmp8RS0VVCy4YoapdsoOibnfNyAgSelvSCkHN5
+         gfYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1686896313; x=1689488313;
+        d=1e100.net; s=20221208; t=1686896455; x=1689488455;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=33axWVpAdkybJSty7OAw0pClQ78I+2x7otiVEbb6t44=;
-        b=UnkKCMWX+cPn4wAXTF8jBEygWUwLz0SjjRnplBLDhYPOKFhHCOnbIamX+zZRBVmsln
-         OOL/k9zMHzW/r34tKhp8Vz5aJ7WEIc3DbytPcMBKH+3nhx50wGMRSGBMRM5DPS74PU3C
-         fha37R7oGxce6zZiuGNEgiTL9h6Cf2oOHZhTGVwDtoowwSXtVr+MsXnNgF9CmtpqL4dE
-         KSE0e3Gu/1SBR/NaKRFUIY7Hza77rvBKnjupgwj6ZLS1FWhK4MGQpt1bFIXF/CzQPbhP
-         m8WzqLT/x2G/vx9k8Q/Dmo7C/cBU3hFbjKgTY1geNDj81K8N8QVRVpAc5mFzjGUCsQXc
-         Vklg==
-X-Gm-Message-State: AC+VfDzKpGCnwUapUXlhVUfDnAX5GF9qOqfS9IsRcc3m3smtXv1+40Bp
-        jNtP566fwNTTUpvkpKGMmUYWCJ8qO9HtDX+uZ5o=
-X-Google-Smtp-Source: ACHHUZ75bqm5EWIC3SKzc9Dh4zfPc3BeEpOPtZp+Ot3ohaui5+DjVGihPR2W5pqWl2nsHyzIwRiJXA==
-X-Received: by 2002:a05:6a00:1ace:b0:634:7ba3:d142 with SMTP id f14-20020a056a001ace00b006347ba3d142mr1077339pfv.10.1686896312736;
-        Thu, 15 Jun 2023 23:18:32 -0700 (PDT)
+        bh=jT5QJMHUlKyOi0ccezfwrtf5oaRbI1qxEANvrycJT+E=;
+        b=PxbnTf2w4ZyA7fcH0dUsSEWE9oUyz2wCqSFkb0MRzmSmDRyviM6M1cDvKvBR8AHaoA
+         8egR9O/Q0bdVQpBXHTKv4jXPy7frDXalZhhDgOX3cOfhZpqD0jBCjuSP2DBOJYNYdZUH
+         +mK283zz5zJSLInNrINrd5a26snlDHpo4VGcSvp6ADSNHhNT2Zuv+rFtN/BsjNh1hCzh
+         qTzRZuQu0JJVIc5qNjhpzvmbh3UVg3yo1UoyL8SwyvUhZIp7nDR6RtH243U1gU0b+/Lh
+         3uTXcueZRqfJgYW/fU512MR1JW7CTw5mLJxEKRj1siIzF3kuEVchUBJIa8F5Gx4N8AP6
+         KaSg==
+X-Gm-Message-State: AC+VfDwN60eaOP+Ejrfbyin0Qdq0t8CAVqWDfOKPWuYfq40vd4GbtxwP
+        XifofwSDwK5UhrxPGhnrDY4VZQ==
+X-Google-Smtp-Source: ACHHUZ5qq6stex9qWvMjJHuCyLv5KnNj9STgCB64id8p2WAJxx+1Fi5yN8JaFku201SQwfcVrBukSQ==
+X-Received: by 2002:a05:6a00:2d84:b0:650:d9c:cfca with SMTP id fb4-20020a056a002d8400b006500d9ccfcamr1673553pfb.5.1686896455214;
+        Thu, 15 Jun 2023 23:20:55 -0700 (PDT)
 Received: from localhost ([122.172.87.195])
-        by smtp.gmail.com with ESMTPSA id m13-20020aa7900d000000b0064d2ad04cccsm511264pfo.175.2023.06.15.23.18.31
+        by smtp.gmail.com with ESMTPSA id 5-20020aa79245000000b0065a1b05193asm11302090pfp.185.2023.06.15.23.20.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Jun 2023 23:18:32 -0700 (PDT)
-Date:   Fri, 16 Jun 2023 11:48:30 +0530
+        Thu, 15 Jun 2023 23:20:54 -0700 (PDT)
+Date:   Fri, 16 Jun 2023 11:50:52 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Bjorn Andersson <andersson@kernel.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
 Cc:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
         Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] OPP: pstate is only valid for genpd OPP tables
-Message-ID: <20230616061830.fysc7l7jxymmhb3m@vireshk-i7>
+Subject: Re: [PATCH 2/2] OPP: Simplify the over-designed pstate <-> level
+ dance
+Message-ID: <20230616062052.orvudxqfwirv3eqj@vireshk-i7>
 References: <5437756c65c79f9520886bc54321d39c022c8638.1686739018.git.viresh.kumar@linaro.org>
- <lmdbpkttrawedkozfo5exh27jlj3hisulnk4zj6s2mv66yzr6n@zegr4pdzz3pn>
+ <af0fd0fd64f33809875335a9cc2761085c3bd66f.1686739018.git.viresh.kumar@linaro.org>
+ <CAPDyKFpA2+-aCYGfRQa3PokuYLTCKHufxSUXpktap43aoRu4NA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <lmdbpkttrawedkozfo5exh27jlj3hisulnk4zj6s2mv66yzr6n@zegr4pdzz3pn>
+In-Reply-To: <CAPDyKFpA2+-aCYGfRQa3PokuYLTCKHufxSUXpktap43aoRu4NA@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 15-06-23, 18:35, Bjorn Andersson wrote:
-> On Wed, Jun 14, 2023 at 04:07:25PM +0530, Viresh Kumar wrote:
-> > It is not very clear right now that the `pstate` field is only valid for
-> > genpd OPP tables and not consumer tables. And there is no checking for
-> > the same at various places.
-> > 
-> > Add checks in place to verify that and make it clear to the reader.
-> > 
+On 14-06-23, 14:37, Ulf Hansson wrote:
+> On Wed, 14 Jun 2023 at 12:37, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > While adding support for "performance states" in the OPP and genpd core,
+> > it was decided to set the `pstate` field via genpd's
+> > pm_genpd_opp_to_performance_state() helper, to allow platforms to set
+> > `pstate` even if they don't have a corresponding `level` field in the DT
+> > OPP tables (More details are present in commit 6e41766a6a50 ("PM /
+> > Domain: Implement of_genpd_opp_to_performance_state()")).
+> >
+> > Revisiting that five years later clearly suggests that it was
+> > over-designed as all current users are eventually using the `level`
+> > value only.
+> >
+> > The previous commit already added necessary checks to make sure pstate
+> > is only used for genpd tables. Lets now simplify this a little, and use
+> > `level` directly and remove `pstate` field altogether.
+> >
+> > Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
 > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/opp/core.c    | 18 ++++++++++++++++--
-> >  drivers/opp/debugfs.c |  4 +++-
-> >  drivers/opp/of.c      |  6 ++++++
-> >  3 files changed, 25 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> [..]
-> > @@ -2686,6 +2694,12 @@ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
-> >  	int dest_pstate = -EINVAL;
-> >  	int i;
-> >  
-> > +	/* Both OPP tables must belong to genpds */
-> > +	if (unlikely(!src_table->is_genpd || !dst_table->is_genpd)) {
 > 
-> I have a platform_device, with a required-opps and with an associated
-> genpd which does not implement set_performance_state(), but its parent
-> genpd does.
+> Again, thanks for improving this code!
 > 
-> This results in me arriving here with src_table of NULL, and boom...
-> 
-> 
-> Looking at the very next statement in this function, it seems arriving
-> here without src_table was valid up until this change.
+> Only a minor thing below and after that, feel free to add:
 
-Fixed as:
-
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 48ddd72d2c71..3f46e499d615 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -2694,12 +2694,6 @@ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
-        int dest_pstate = -EINVAL;
-        int i;
-
--       /* Both OPP tables must belong to genpds */
--       if (unlikely(!src_table->is_genpd || !dst_table->is_genpd)) {
--               pr_err("%s: Performance state is only valid for genpds.\n", __func__);
--               return -EINVAL;
--       }
--
-        /*
-         * Normally the src_table will have the "required_opps" property set to
-         * point to one of the OPPs in the dst_table, but in some cases the
-@@ -2710,6 +2704,12 @@ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
-        if (!src_table || !src_table->required_opp_count)
-                return pstate;
-
-+       /* Both OPP tables must belong to genpds */
-+       if (unlikely(!src_table->is_genpd || !dst_table->is_genpd)) {
-+               pr_err("%s: Performance state is only valid for genpds.\n", __func__);
-+               return -EINVAL;
-+       }
-+
-        /* required-opps not fully initialized yet */
-        if (lazy_linking_pending(src_table))
-                return -EBUSY;
-
-Thanks.
+Done.
 
 -- 
 viresh
