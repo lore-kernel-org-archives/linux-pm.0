@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E109DEB64D8
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:23:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2511EEB64D7
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Jun 2023 06:23:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243664AbjFPGXm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Jun 2023 02:23:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55898 "EHLO
+        id S244151AbjFPGXs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Jun 2023 02:23:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230159AbjFPGWr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 02:22:47 -0400
+        with ESMTP id S243795AbjFPGXE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 02:23:04 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DC0D359D
-        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:22:27 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 175FD35AC
+        for <linux-pm@vger.kernel.org>; Thu, 15 Jun 2023 23:22:28 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q9-0006qV-GP; Fri, 16 Jun 2023 08:21:45 +0200
+        id 1qA2q9-0006qr-Mz; Fri, 16 Jun 2023 08:21:45 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q8-007kyP-Le; Fri, 16 Jun 2023 08:21:44 +0200
+        id 1qA2q8-007kyb-Rx; Fri, 16 Jun 2023 08:21:44 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qA2q4-003FUm-Vw; Fri, 16 Jun 2023 08:21:40 +0200
+        id 1qA2q5-003FVp-LV; Fri, 16 Jun 2023 08:21:41 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,11 +41,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v6 12/26] PM / devfreq: rockchip-dfi: Handle LPDDR4X
-Date:   Fri, 16 Jun 2023 08:20:47 +0200
-Message-Id: <20230616062101.601837-13-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v6 24/26] arm64: dts: rockchip: rk3399: Enable DFI
+Date:   Fri, 16 Jun 2023 08:20:59 +0200
+Message-Id: <20230616062101.601837-25-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230616062101.601837-1-s.hauer@pengutronix.de>
 References: <20230616062101.601837-1-s.hauer@pengutronix.de>
@@ -59,42 +58,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In the DFI driver LPDDR4X can be handled in the same way as LPDDR4. Add
-the missing case.
+the DFI unit can provide useful data for measuring DDR utilization
+and works without any configuration from the board, so enable it in the
+dtsi file directly.
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Link: https://lore.kernel.org/r/20230524083153.2046084-13-s.hauer@pengutronix.de
+Link: https://lore.kernel.org/r/20230524083153.2046084-24-s.hauer@pengutronix.de
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 1 +
- include/soc/rockchip/rockchip_grf.h  | 1 +
- 2 files changed, 2 insertions(+)
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 16cd5365671f7..0a568c5551699 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -89,6 +89,7 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 			       dfi_regs + DDRMON_CTRL);
- 		break;
- 	case ROCKCHIP_DDRTYPE_LPDDR4:
-+	case ROCKCHIP_DDRTYPE_LPDDR4X:
- 		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR4, DDRMON_CTRL_DDR_TYPE_MASK),
- 			       dfi_regs + DDRMON_CTRL);
- 		break;
-diff --git a/include/soc/rockchip/rockchip_grf.h b/include/soc/rockchip/rockchip_grf.h
-index dde1a9796ccb5..e46fd72aea8d1 100644
---- a/include/soc/rockchip/rockchip_grf.h
-+++ b/include/soc/rockchip/rockchip_grf.h
-@@ -12,6 +12,7 @@ enum {
- 	ROCKCHIP_DDRTYPE_LPDDR2	= 5,
- 	ROCKCHIP_DDRTYPE_LPDDR3	= 6,
- 	ROCKCHIP_DDRTYPE_LPDDR4	= 7,
-+	ROCKCHIP_DDRTYPE_LPDDR4X = 8,
- };
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+index 928948e7c7bbb..fa0a5dbd1b0ec 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -1331,7 +1331,6 @@ dfi: dfi@ff630000 {
+ 		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
+ 		clocks = <&cru PCLK_DDR_MON>;
+ 		clock-names = "pclk_ddr_mon";
+-		status = "disabled";
+ 	};
  
- #endif /* __SOC_ROCKCHIP_GRF_H */
+ 	vpu: video-codec@ff650000 {
 -- 
 2.39.2
 
