@@ -2,105 +2,251 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55DFBEB64D9
-	for <linux-pm@archiver.kernel.org>; Sat, 17 Jun 2023 11:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F922EB64DD
+	for <linux-pm@archiver.kernel.org>; Sat, 17 Jun 2023 13:37:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234374AbjFQLja (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 17 Jun 2023 07:39:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43262 "EHLO
+        id S235287AbjFQNhI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 17 Jun 2023 09:37:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40688 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233465AbjFQLj3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Jun 2023 07:39:29 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF6331BF8
-        for <linux-pm@vger.kernel.org>; Sat, 17 Jun 2023 04:38:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687001923;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=e4oaFvu+oLj9clZTX2+t/9r2R/dvlWv5GxKJkZqu9ZE=;
-        b=fzcx5UiN6Gt9YSWLG7K8CU//PFGhBgEvvwL9E6OGpKq/A1szHHlPr7fJVdhAr7iBJPiJqf
-        e2MbhMnxcBPANV9qXjVdnHvi23h3xWRXrqFJQe3KkatLXpgzBKd/7ajmdFSMeCSctxnL65
-        AWBxtZmThUf/8xzfIqBJlBVt7i381BA=
-Received: from mail-qv1-f69.google.com (mail-qv1-f69.google.com
- [209.85.219.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-133-b0qIhLH6ObGH8BdgodyPWw-1; Sat, 17 Jun 2023 07:38:41 -0400
-X-MC-Unique: b0qIhLH6ObGH8BdgodyPWw-1
-Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-62ffc101d72so22850916d6.3
-        for <linux-pm@vger.kernel.org>; Sat, 17 Jun 2023 04:38:41 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687001921; x=1689593921;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=e4oaFvu+oLj9clZTX2+t/9r2R/dvlWv5GxKJkZqu9ZE=;
-        b=J0xpUzfIzMkK49H+h+ClC3IdM6CenoHXs7snipuV0CuIfnNz11ECsnmYS03/gKGOQy
-         lzg/6POOlyKX+LD9BAo2aoozg1ul2BH3VWkb7VcEp8uJG6pT8C4VLKlDImuAJ/6W2NIW
-         g6luFBrC7gmgYjE+arrWaL3LvEp2k5yWoR58r955DORseBo+YelO+LdjSkImeM31X4ip
-         +tyXCuRHiKjl2zQaVlNRU8Q3SQ7FjopuxNd2RSihKJSqRfZx+RwCTYVLlmdIezQFGv+M
-         tsNABSP1nU/dKQFEhxI+a9eIwCH1zBZQRCrn0w80Fqv+v7oYqxQ6WxdzsYcI0D+3Y41K
-         +fNw==
-X-Gm-Message-State: AC+VfDwmzzAm+4SCBsuZaR4Uy3/GhR8h2mtUAR87QbrtH5KugnmNVupc
-        BQFpCSASCb03sTAv/z9Qlb+8FzMKAUgS3v2vpD1y9diLDgAp/oqOn2yJZ0uXd7uXCVAEcaUOC71
-        TqLV9LMo7xsRDz1SH0Ec=
-X-Received: by 2002:a05:6214:2484:b0:62f:ff5c:6b3e with SMTP id gi4-20020a056214248400b0062fff5c6b3emr5080933qvb.34.1687001921374;
-        Sat, 17 Jun 2023 04:38:41 -0700 (PDT)
-X-Google-Smtp-Source: ACHHUZ7kAPxY0P/+pHsf5eYAttHB/VT0n+7jpgTnH2PyzRpW3fTXbo/JyZj81xki2cMCorIp/25kfQ==
-X-Received: by 2002:a05:6214:2484:b0:62f:ff5c:6b3e with SMTP id gi4-20020a056214248400b0062fff5c6b3emr5080918qvb.34.1687001921169;
-        Sat, 17 Jun 2023 04:38:41 -0700 (PDT)
-Received: from dell-per740-01.7a2m.lab.eng.bos.redhat.com (nat-pool-bos-t.redhat.com. [66.187.233.206])
-        by smtp.gmail.com with ESMTPSA id s15-20020a0cdc0f000000b006300e1db3ecsm363670qvk.141.2023.06.17.04.38.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 17 Jun 2023 04:38:40 -0700 (PDT)
-From:   Tom Rix <trix@redhat.com>
-To:     agross@kernel.org, andersson@kernel.org, konrad.dybcio@linaro.org,
-        amitk@kernel.org, thara.gopinath@gmail.com, rafael@kernel.org,
-        daniel.lezcano@linaro.org, rui.zhang@intel.com
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Tom Rix <trix@redhat.com>
-Subject: [PATCH] thermal/drivers/tsens: remove unused variable ops_v0_1
-Date:   Sat, 17 Jun 2023 07:38:37 -0400
-Message-Id: <20230617113837.3224912-1-trix@redhat.com>
-X-Mailer: git-send-email 2.27.0
+        with ESMTP id S232091AbjFQNhH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Jun 2023 09:37:07 -0400
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9067B5;
+        Sat, 17 Jun 2023 06:37:05 -0700 (PDT)
+Received: from stefanw-SCHENKER ([37.4.248.58]) by mrelayeu.kundenserver.de
+ (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis) id
+ 1N49Yn-1q1L6f0zC5-0108qe; Sat, 17 Jun 2023 15:36:40 +0200
+From:   Stefan Wahren <stefan.wahren@i2se.com>
+To:     Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Jassi Brar <jassisinghbrar@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Thomas Gleixner <tglx@linutronix.de>
+Cc:     linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org,
+        bcm-kernel-feedback-list@broadcom.com,
+        Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH V2 1/7] ARM: dts: bcm283x: Fix pinctrl groups
+Date:   Sat, 17 Jun 2023 15:36:14 +0200
+Message-Id: <20230617133620.53129-2-stefan.wahren@i2se.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230617133620.53129-1-stefan.wahren@i2se.com>
+References: <20230617133620.53129-1-stefan.wahren@i2se.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Provags-ID: V03:K1:IY3M0xwlJcn1MHHWzufLssN2h75OOWkxST7zRVe3Aze71fo0TWI
+ AizeCsOGFtCvGGHrVqALKQoNzZh067DQ1DvzT1zXzcOkvCHzqSXS2n3CZov4nF+NF2J+YRB
+ Lf9MvTXQnWdMhfolPqD34KHbxjxPBsyXT27TiMBlPm1XXMc/5R0VQwoA2YocbR6BZ1m9CbU
+ p9IlT0LhX6SryE7po8d6g==
+UI-OutboundReport: notjunk:1;M01:P0:X6pAvDBu4OQ=;zyoofsDWMG++GvPo1YfB/u8FFOH
+ HlE1XYcUeGzAusqDKVYGThsSfTkS9xjxIQcRw50iNYNdDN/kwNgK2pmuUhNIQCs1AsMtM7BXz
+ +7uddUuEklqA6gG5ok3rvcgyHV2Nl+XDIjdSvXc8P3pPZyodcYgsIrLD/7ZvzG91wYRcWIM9q
+ p3QIDfbwcgwNJeNnActWD8MNfDfA8bqTmAm7kNlwvw39dzUagkymZ9ciqwbmUKZxssGLO5Doj
+ r++nwI2Wti96Mcaphs9bU9ry9SaEkGCD9kgvgOPvSkmkwHjSJ0wtLQNhqhL6UTT5/ghM5ehK+
+ KwoEw+FmgJ+vsbRiMX+KbA8D8aeSXMMIWhyX1Kbwiy4c9Khswwd99NmKutPeCUcXoCvNX8If6
+ YcUOadgz665HIVmLER4kbYCIb7m6p/Td2vLGydxLC4z7GGQl/EVVnbFeKTq+QHy/2Wa2ZFQve
+ Er4vqaRHGKiB/SflZvVw/8zyF+C3PKA7dcmb4fcNIyQd3VFYBm4hqRWOV2UrO2YAqj9ksBUSn
+ JMsREY2bMHUBW1LqNIC36cVy9yesGlJISGFcCG2ljK7/VFDaWTEoGDY82pmGnOSzE3aWZWGni
+ BXq62Uj36JM2AMtYwEizaK/fkowddq20TUfJEwBguWREi8PClZjJuvUYU0SjC+a/MIqznRsys
+ +Na6/QOos0m7OL5wWRAUvkpYsTtyh6E61nUks5YQ1A==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-gcc with W=1 reports
-drivers/thermal/qcom/tsens-v0_1.c:328:31: error:
-  ‘ops_v0_1’ defined but not used [-Werror=unused-const-variable=]
-  328 | static const struct tsens_ops ops_v0_1 = {
-      |                               ^~~~~~~~
+Currently the dtbs_check for bcm2837 generates warnings like this:
 
-This variable is not used, so remove it.
+gpio@7e200000: 'pinctrl-0' is a dependency of 'pinctrl-names'
 
-Signed-off-by: Tom Rix <trix@redhat.com>
+This is caused by the definition of pinctrl-names without matching
+pinctrl group and vice versa. So defining both at the same place
+make the dts files easier to review.
+
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 ---
- drivers/thermal/qcom/tsens-v0_1.c | 6 ------
- 1 file changed, 6 deletions(-)
+ arch/arm/boot/dts/bcm2835-rpi-a-plus.dts   | 1 +
+ arch/arm/boot/dts/bcm2835-rpi-a.dts        | 1 +
+ arch/arm/boot/dts/bcm2835-rpi-b-plus.dts   | 1 +
+ arch/arm/boot/dts/bcm2835-rpi-b-rev2.dts   | 1 +
+ arch/arm/boot/dts/bcm2835-rpi-b.dts        | 1 +
+ arch/arm/boot/dts/bcm2835-rpi-cm1-io1.dts  | 1 +
+ arch/arm/boot/dts/bcm2835-rpi-zero-w.dts   | 2 ++
+ arch/arm/boot/dts/bcm2835-rpi-zero.dts     | 1 +
+ arch/arm/boot/dts/bcm2835-rpi.dtsi         | 2 --
+ arch/arm/boot/dts/bcm2836-rpi-2-b.dts      | 1 +
+ arch/arm/boot/dts/bcm2837-rpi-cm3-io3.dts  | 1 +
+ arch/arm/boot/dts/bcm2837-rpi-zero-2-w.dts | 2 ++
+ 12 files changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index a941b4241b0a..0caf4628582c 100644
---- a/drivers/thermal/qcom/tsens-v0_1.c
-+++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -325,12 +325,6 @@ static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
- 	[TRDY] = REG_FIELD(TM_TRDY_OFF, 0, 0),
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-a-plus.dts b/arch/arm/boot/dts/bcm2835-rpi-a-plus.dts
+index 02ce817868ba..069b48272aa5 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-a-plus.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-a-plus.dts
+@@ -81,6 +81,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0 &i2s_alt0>;
+ 
+ 	/* I2S interface */
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-a.dts b/arch/arm/boot/dts/bcm2835-rpi-a.dts
+index 3fdf60eb11dc..2726c00431e8 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-a.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-a.dts
+@@ -83,6 +83,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0 &i2s_alt2>;
+ 
+ 	/* I2S interface */
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-b-plus.dts b/arch/arm/boot/dts/bcm2835-rpi-b-plus.dts
+index 9956fd06a4b6..c57b999a4520 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-b-plus.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-b-plus.dts
+@@ -83,6 +83,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0 &i2s_alt0>;
+ 
+ 	/* I2S interface */
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-b-rev2.dts b/arch/arm/boot/dts/bcm2835-rpi-b-rev2.dts
+index 4e1770afb145..ae6d3a9586ab 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-b-rev2.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-b-rev2.dts
+@@ -83,6 +83,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0 &i2s_alt2>;
+ 
+ 	/* I2S interface */
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-b.dts b/arch/arm/boot/dts/bcm2835-rpi-b.dts
+index eec1d0892d33..72764be75a79 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-b.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-b.dts
+@@ -83,6 +83,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0>;
  };
  
--static const struct tsens_ops ops_v0_1 = {
--	.init		= init_common,
--	.calibrate	= tsens_calibrate_common,
--	.get_temp	= get_temp_common,
--};
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-cm1-io1.dts b/arch/arm/boot/dts/bcm2835-rpi-cm1-io1.dts
+index 87958a96c3e0..3f9d198ac3ab 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-cm1-io1.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-cm1-io1.dts
+@@ -73,6 +73,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0>;
+ };
+ 
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-zero-w.dts b/arch/arm/boot/dts/bcm2835-rpi-zero-w.dts
+index dbf825985ec0..1f0b163e400c 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-zero-w.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-zero-w.dts
+@@ -97,6 +97,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0>;
+ };
+ 
+@@ -111,6 +112,7 @@ &led_act {
+ };
+ 
+ &sdhci {
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_gpio34 &gpclk2_gpio43>;
+ };
+ 
+diff --git a/arch/arm/boot/dts/bcm2835-rpi-zero.dts b/arch/arm/boot/dts/bcm2835-rpi-zero.dts
+index f80e65a825fd..539c19c10946 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi-zero.dts
++++ b/arch/arm/boot/dts/bcm2835-rpi-zero.dts
+@@ -85,6 +85,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0 &i2s_alt0>;
+ 
+ 	/* I2S interface */
+diff --git a/arch/arm/boot/dts/bcm2835-rpi.dtsi b/arch/arm/boot/dts/bcm2835-rpi.dtsi
+index ee9ee9d1fe65..f0acc9390f31 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi.dtsi
++++ b/arch/arm/boot/dts/bcm2835-rpi.dtsi
+@@ -26,8 +26,6 @@ vchiq: mailbox@7e00b840 {
+ };
+ 
+ &gpio {
+-	pinctrl-names = "default";
 -
- static const struct tsens_ops ops_8226 = {
- 	.init		= init_8226,
- 	.calibrate	= tsens_calibrate_common,
+ 	gpioout: gpioout {
+ 		brcm,pins = <6>;
+ 		brcm,function = <BCM2835_FSEL_GPIO_OUT>;
+diff --git a/arch/arm/boot/dts/bcm2836-rpi-2-b.dts b/arch/arm/boot/dts/bcm2836-rpi-2-b.dts
+index 6068ec390081..79918033750e 100644
+--- a/arch/arm/boot/dts/bcm2836-rpi-2-b.dts
++++ b/arch/arm/boot/dts/bcm2836-rpi-2-b.dts
+@@ -82,6 +82,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0 &i2s_alt0>;
+ 
+ 	/* I2S interface */
+diff --git a/arch/arm/boot/dts/bcm2837-rpi-cm3-io3.dts b/arch/arm/boot/dts/bcm2837-rpi-cm3-io3.dts
+index cf84e69fced8..72d26d130efa 100644
+--- a/arch/arm/boot/dts/bcm2837-rpi-cm3-io3.dts
++++ b/arch/arm/boot/dts/bcm2837-rpi-cm3-io3.dts
+@@ -72,6 +72,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0>;
+ };
+ 
+diff --git a/arch/arm/boot/dts/bcm2837-rpi-zero-2-w.dts b/arch/arm/boot/dts/bcm2837-rpi-zero-2-w.dts
+index b9cc4594398b..85cf594724ef 100644
+--- a/arch/arm/boot/dts/bcm2837-rpi-zero-2-w.dts
++++ b/arch/arm/boot/dts/bcm2837-rpi-zero-2-w.dts
+@@ -95,6 +95,7 @@ &gpio {
+ 			  "SD_DATA2_R",
+ 			  "SD_DATA3_R";
+ 
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&gpioout &alt0>;
+ };
+ 
+@@ -109,6 +110,7 @@ &led_act {
+ };
+ 
+ &sdhci {
++	pinctrl-names = "default";
+ 	pinctrl-0 = <&emmc_gpio34 &gpclk2_gpio43>;
+ };
+ 
 -- 
-2.27.0
+2.34.1
 
