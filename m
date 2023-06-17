@@ -2,46 +2,51 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF974EB64D8
-	for <linux-pm@archiver.kernel.org>; Sat, 17 Jun 2023 01:52:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 280E5EB64DA
+	for <linux-pm@archiver.kernel.org>; Sat, 17 Jun 2023 01:57:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232199AbjFQBw5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Jun 2023 21:52:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46404 "EHLO
+        id S230198AbjFQB5R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Jun 2023 21:57:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232186AbjFQBw5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 21:52:57 -0400
+        with ESMTP id S229585AbjFQB5Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2023 21:57:16 -0400
 Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8EB163ABE;
-        Fri, 16 Jun 2023 18:52:54 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 2F90F2965;
+        Fri, 16 Jun 2023 18:57:13 -0700 (PDT)
 Received: from loongson.cn (unknown [10.20.42.35])
-        by gateway (Coremail) with SMTP id _____8CxtOj1EY1kXS4GAA--.2780S3;
-        Sat, 17 Jun 2023 09:52:53 +0800 (CST)
+        by gateway (Coremail) with SMTP id _____8BxLuv4Eo1kkS4GAA--.13339S3;
+        Sat, 17 Jun 2023 09:57:12 +0800 (CST)
 Received: from [10.20.42.35] (unknown [10.20.42.35])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8Bxjcr0EY1kf84dAA--.10655S3;
-        Sat, 17 Jun 2023 09:52:52 +0800 (CST)
-Subject: Re: [PATCH] thermal/drivers/loongson2: Fix thermal zone private data
- access
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rafael@kernel.org, loongson-kernel@lists.loongnix.cn,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        zhanghongchen <zhanghongchen@loongson.cn>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, zhuyinbo@loongson.cn
-References: <8ca44091-35fd-cc24-9896-0317772c5620@loongson.cn>
- <20230616143407.689515-1-daniel.lezcano@linaro.org>
- <9c12ece8-3a85-105b-d8d3-208fe816734a@linaro.org>
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8Bxjcr2Eo1kVs8dAA--.10667S3;
+        Sat, 17 Jun 2023 09:57:11 +0800 (CST)
+Subject: Re: [PATCH v3 2/3] soc: dt-bindings: add loongson-2 pm
+To:     Rob Herring <robh@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Huacai Chen <chenhuacai@kernel.org>,
+        WANG Xuerui <kernel@xen0n.name>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Marc Zyngier <maz@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        loongarch@lists.linux.dev, Jianmin Lv <lvjianmin@loongson.cn>,
+        wanghongliang@loongson.cn, Liu Peibao <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn, zhuyinbo@loongson.cn
+References: <20230615091757.24686-1-zhuyinbo@loongson.cn>
+ <20230615091757.24686-3-zhuyinbo@loongson.cn>
+ <20230616151736.GA296030-robh@kernel.org>
 From:   zhuyinbo <zhuyinbo@loongson.cn>
-Message-ID: <323267b7-3dbc-8982-7f16-08672b19039b@loongson.cn>
-Date:   Sat, 17 Jun 2023 09:52:52 +0800
+Message-ID: <9e9274f7-414a-4ede-bb1d-f863626d13d5@loongson.cn>
+Date:   Sat, 17 Jun 2023 09:57:10 +0800
 User-Agent: Mozilla/5.0 (X11; Linux loongarch64; rv:68.0) Gecko/20100101
  Thunderbird/68.7.0
 MIME-Version: 1.0
-In-Reply-To: <9c12ece8-3a85-105b-d8d3-208fe816734a@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20230616151736.GA296030-robh@kernel.org>
+Content-Type: text/plain; charset=gbk; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8Bxjcr0EY1kf84dAA--.10655S3
+X-CM-TRANSID: AQAAf8Bxjcr2Eo1kVs8dAA--.10667S3
 X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
 X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
         ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
@@ -52,18 +57,65 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 
-åœ¨ 2023/6/16 ä¸‹åˆ10:35, Daniel Lezcano å†™é“:
-> On 16/06/2023 16:34, Daniel Lezcano wrote:
->> The thermal zone device won't be accessible directly anymore.
+ÔÚ 2023/6/16 ÏÂÎç11:17, Rob Herring Ð´µÀ:
+> On Thu, Jun 15, 2023 at 05:17:56PM +0800, Yinbo Zhu wrote:
+>> Add the Loongson-2 SoC Power Management Controller binding with DT
+>> schema format using json-schema.
 >>
->> Use the private data accessor.
+>> Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+>> ---
+>>   .../soc/loongson/loongson,ls2k-pmc.yaml       | 53 +++++++++++++++++++
+>>   MAINTAINERS                                   |  6 +++
+>>   2 files changed, 59 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml b/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
+>> new file mode 100644
+>> index 000000000000..32499bd10f8c
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/soc/loongson/loongson,ls2k-pmc.yaml
+>> @@ -0,0 +1,53 @@
+>> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/soc/loongson/loongson,ls2k-pmc.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Loongson-2 Power Manager controller
+>> +
+>> +maintainers:
+>> +  - Yinbo Zhu <zhuyinbo@loongson.cn>
+>> +
+>> +properties:
+>> +  compatible:
+>> +    oneOf:
+>> +      - items:
+>> +          - enum:
+>> +              - loongson,ls2k1000-pmc
+>> +              - loongson,ls2k0500-pmc
+>> +          - const: syscon
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +  suspend-address:
 > 
-> To be folded with your next version
-> 
+> loongson,suspend-address
 
 
-okay, If I understand correctly, I will make this patch as a independent
-[3/3] patch of the v15 series patch.
+okay, I will use it.
+
+> 
+>> +    $ref: /schemas/types.yaml#/definitions/uint32
+> 
+> Isn't this a 64-bit platform? Probably better if this is a 64-bit value
+> in case that's needed in the future.
+
+
+okay, I got it.
 
 Thanks,
 Yinbo
