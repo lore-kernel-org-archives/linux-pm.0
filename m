@@ -2,137 +2,243 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 975CAEB64DA
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jun 2023 08:10:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BF04EB64D9
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Jun 2023 08:26:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230053AbjFSIK6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jun 2023 04:10:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52498 "EHLO
+        id S229492AbjFSI0s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jun 2023 04:26:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60596 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230187AbjFSIKd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 04:10:33 -0400
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8905E7D
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 01:10:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1687162226; x=1718698226;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=5RLQM3xUpr9GqCaneuDTYz/ymBlFLtLlT1OGK3DqPRw=;
-  b=QET6SpDRjvFnUiFqz2nOvMmbr5cPVve0J3T0ocSsIz29FR8oGOPIDiuo
-   bXgR5qXPKt95+l69all/NYyE0/K+4L2ceT+1czQNpl546tJinVgjsSi8v
-   mA33eIAhfPhc5rKjSfwuiWYW6PIRUrxhpY07Z0pyLSbLkVkK/jjkwAGUW
-   oIBll8r8hA4uH/XgkOuxzelJFjoHVoMvvbxryxK3Xyj2jWV5Qdn0A50Wu
-   X4SdDgvNyzSd+xcJaI8je8yzQV3ZnhffjU9CHzFeAiv6qP3jXu1pc3nVl
-   MlIQ2u/lnrENIjpDcHeJb+cl1MA9zb+VCgOz7WTEczyKQtBnpG9hei2sq
-   Q==;
-X-IronPort-AV: E=Sophos;i="6.00,254,1681196400"; 
-   d="scan'208";a="220875485"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa2.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 19 Jun 2023 01:10:25 -0700
-Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Mon, 19 Jun 2023 01:10:25 -0700
-Received: from [10.159.245.112] (10.10.115.15) by chn-vm-ex04.mchp-main.com
- (10.10.85.152) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
- Transport; Mon, 19 Jun 2023 01:10:23 -0700
-Message-ID: <9cb6cebf-80ff-7ca1-6acf-41f58fd831f8@microchip.com>
-Date:   Mon, 19 Jun 2023 10:10:05 +0200
+        with ESMTP id S230298AbjFSIYw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 04:24:52 -0400
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42E68E61
+        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 01:24:47 -0700 (PDT)
+Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-30af56f5f52so2255144f8f.1
+        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 01:24:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1687163086; x=1689755086;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=dHbeGiy67UyCnv7xUd7e5L5v4opOjGa7V1cKA3irBoI=;
+        b=LaYmDi6DMwM3sfRV/Z4WyxN8uju+TlzZnLXxpTubfYqpWqAJ/bWSVd8sHZ4cl7m/7k
+         HOD6VlmS2T87jfQT+pXLo4ONzuI7enuJI2X6c2uFphQgogL+rYRDgE59m44Fa+Ebfg8H
+         sAzZ73Kfg1Lu6sOGEL7/bsuUBWgmealHPtBDYUiOqZ9KnMGbxZ+Dj0mpsISf1B4SLglO
+         mrImMsxLbOCLGl0U3lMQUOESXVQn9z+BAx/0aKqdFyypdgtEogiZFE5Msz/dusl6/jcE
+         CAc+e80FyiWSQKzr9cPzgmN42OKhkcJaag7w0KCpbQ6XBAPsRau46d3ItrpwE+JuwlC9
+         RS2Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1687163086; x=1689755086;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dHbeGiy67UyCnv7xUd7e5L5v4opOjGa7V1cKA3irBoI=;
+        b=ioVV/k/wJD6zSh3HYm5ueit3yTn4XBzscX3ZZcAzjYRJikusu8PGw0wckcoWjIQ+g5
+         SZhnu8DC5pKojQEfcgbZTrTAa3Zjf0VIx6uLyFGBYRRtjo+rUYeSEIClfMwIlLcy6WRV
+         JW+9oXWsosgL5PHZzIvB4SyHRpmeEeFhwi7DSiopuCK+dLub1HuhqH/fgGC4EW0hXEFu
+         zLysOtp8CzgUYYBNMIBEHGAs3BlgEWkpzGEwQqAIDKmbDm9OCSy14uN155M4vatQDkQi
+         iMh3UxcjGqKm5XXkrdCFBQ8vsoCqb5kUExxDwiFYyA4wLj3inJ5zbvSGp0uBZ6d2djfE
+         Tu1Q==
+X-Gm-Message-State: AC+VfDzNw4cs55a/Z4MD2I4E55V8la+aP+vHAOzcTQlAyrQidY3k+bOI
+        Vf/rJp2hL/T2NDMKX+YbnaE2BQ==
+X-Google-Smtp-Source: ACHHUZ6sqMEuw/lSjs1zFYAnVAfqxpwYi9RGi/eqBNKRm+xCYthzer57Y28pwkdJRlPdHC67kr99ZA==
+X-Received: by 2002:a5d:4a51:0:b0:309:419b:925d with SMTP id v17-20020a5d4a51000000b00309419b925dmr5685615wrs.70.1687163086318;
+        Mon, 19 Jun 2023 01:24:46 -0700 (PDT)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id i1-20020adff301000000b002f28de9f73bsm30781262wro.55.2023.06.19.01.24.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 19 Jun 2023 01:24:45 -0700 (PDT)
+From:   Neil Armstrong <neil.armstrong@linaro.org>
+Date:   Mon, 19 Jun 2023 10:24:41 +0200
+Subject: [PATCH 2/2] interconnect: qcom: sm8550: add enable_mask for bcm
+ nodes
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH v3 1/2] power: reset: at91-reset: change the power on
- reason prototype
-Content-Language: en-US
-To:     Miquel Raynal <miquel.raynal@bootlin.com>,
-        Sebastian Reichel <sre@kernel.org>
-CC:     Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-        Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-References: <20230616135252.2787679-1-miquel.raynal@bootlin.com>
- <20230616135252.2787679-2-miquel.raynal@bootlin.com>
-From:   Nicolas Ferre <nicolas.ferre@microchip.com>
-Organization: microchip
-In-Reply-To: <20230616135252.2787679-2-miquel.raynal@bootlin.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20230619-topic-sm8550-upstream-interconnect-mask-vote-v1-2-66663c0aa592@linaro.org>
+References: <20230619-topic-sm8550-upstream-interconnect-mask-vote-v1-0-66663c0aa592@linaro.org>
+In-Reply-To: <20230619-topic-sm8550-upstream-interconnect-mask-vote-v1-0-66663c0aa592@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4864;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=uIHdrS4LyC51s+N5izPggR2Uy3XcHfTE+9d4aVoV1QI=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBkkBDLQdRob7w9vaGY5x7J+Xplj9H1IJNgfJ+LmDUd
+ 174ZHMCJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZJAQywAKCRB33NvayMhJ0RDbEA
+ CdTc8N3b7YocBH+QETbvesSXQWMtOUl+rmPgdcnoJzqUXSVxuTAVdYG/hdHbgjN028CYXt4H5hnmal
+ DTqbsTZFrbx39xC1R+W/zbJ8r8uWhn9SR5uWeGB7mJEIctUO3xcSWXcUfNsyczmJ3NF4Xqi6x0D57Z
+ 0+O7OanbARofMedbTetNdXyYlGF7MUxRocLsl9QTDE9ssVksKFRBQqwAWV5LhkrGAxC5QIrprRmEo6
+ QpcnfRJvo6HfXEiof+iWzN/1FPtdgrhf4wd1eZ3Z21x1vtWnrNzlg6orf/H9mDo9d2Nl/8+qOI2RCC
+ M/4pYiAkk/xeTTupq21nkSZtQKXTr1U1UvIBQIbmGsPj2kUywjcmnr+EA54aEApCPK+MXmZ6VK6jxt
+ eVzLeUYVI+lmwcu3JNXBQe/Bwno/dh4kZuy9pd8ZiRm0y9DbFrVTiH8nbKskaydQYsfbyF22MQlRpC
+ eIbTfL+9M7nj0TU5N8HggDQdKXTIQM4nGJ84SI9OJSsX1ZIe0cV0D+VY/LVCT4o5fxiWyX38HmlXV/
+ EgUDQqTAd7OlOwVAGGvhuMJTuOKJLtGeNMnIBMvp3fpuzxBBUaGynalTS7m57hX86rMJ4SDypICzgC
+ 86CQS+LgM7K0KYnSg+dp0XwEc2q52P/grfz6Wl8V8PRGazhyh3qYwKFVvkmw==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 16/06/2023 at 15:52, Miquel Raynal wrote:
-> EXTERNAL EMAIL: Do not click links or open attachments unless you know the content is safe
-> 
-> It is quite uncommon to use a driver helper with parameters like *pdev
-> and __iomem *base. It is much cleaner and close to today's standards to
-> provide the per-device driver structure and then access its
-> internals. Let's do this with the helper which returns the power on
-> reason. While we change the parameters, we can as well rename the
-> function from at91_reset_status() to at91_reset_reason() to be more
-> accurate with what the helper actually does, and finally because we don't
-> really need the pdev argument in this helper besides for printing the
-> reset reason, we can move the dev_info() call into the probe.
-> 
-> All these modifications prepare the introduction of a sysfs entry to
-> access this information. This way the diff will be much smaller. Thus,
-> there is no intended functional change.
-> 
-> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Set the proper enable_mask to needs requiring such value
+to be used instead of a bandwidth when voting.
 
-Thanks Miquel:
-Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+The masks were copied from the downstream implementation at [1].
 
-Best regards,
-   Nicolas
+[1] https://git.codelinaro.org/clo/la/kernel/msm-5.15/-/blob/kernel.lnx.5.15.r1-rel/drivers/interconnect/qcom/kalama.c
 
-> ---
->   drivers/power/reset/at91-reset.c | 9 ++++-----
->   1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-> index 741e44a017c3..d6884841a6dc 100644
-> --- a/drivers/power/reset/at91-reset.c
-> +++ b/drivers/power/reset/at91-reset.c
-> @@ -149,11 +149,10 @@ static int at91_reset(struct notifier_block *this, unsigned long mode,
->          return NOTIFY_DONE;
->   }
-> 
-> -static void __init at91_reset_status(struct platform_device *pdev,
-> -                                    void __iomem *base)
-> +static const char * __init at91_reset_reason(struct at91_reset *reset)
->   {
-> +       u32 reg = readl(reset->rstc_base + AT91_RSTC_SR);
->          const char *reason;
-> -       u32 reg = readl(base + AT91_RSTC_SR);
-> 
->          switch ((reg & AT91_RSTC_RSTTYP) >> 8) {
->          case RESET_TYPE_GENERAL:
-> @@ -185,7 +184,7 @@ static void __init at91_reset_status(struct platform_device *pdev,
->                  break;
->          }
-> 
-> -       dev_info(&pdev->dev, "Starting after %s\n", reason);
-> +       return reason;
->   }
-> 
->   static const struct of_device_id at91_ramc_of_match[] = {
-> @@ -392,7 +391,7 @@ static int __init at91_reset_probe(struct platform_device *pdev)
->          if (ret)
->                  goto disable_clk;
-> 
-> -       at91_reset_status(pdev, reset->rstc_base);
-> +       dev_info(&pdev->dev, "Starting after %s\n", at91_reset_reason(reset));
-> 
->          return 0;
-> 
-> --
-> 2.34.1
-> 
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ drivers/interconnect/qcom/sm8550.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/drivers/interconnect/qcom/sm8550.c b/drivers/interconnect/qcom/sm8550.c
+index d823ba988ef6..0864ed285375 100644
+--- a/drivers/interconnect/qcom/sm8550.c
++++ b/drivers/interconnect/qcom/sm8550.c
+@@ -1473,6 +1473,7 @@ static struct qcom_icc_node qns_mem_noc_sf_cam_ife_2 = {
+ 
+ static struct qcom_icc_bcm bcm_acv = {
+ 	.name = "ACV",
++	.enable_mask = 0x8,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi },
+ };
+@@ -1485,6 +1486,7 @@ static struct qcom_icc_bcm bcm_ce0 = {
+ 
+ static struct qcom_icc_bcm bcm_cn0 = {
+ 	.name = "CN0",
++	.enable_mask = 0x1,
+ 	.keepalive = true,
+ 	.num_nodes = 54,
+ 	.nodes = { &qsm_cfg, &qhs_ahb2phy0,
+@@ -1524,6 +1526,7 @@ static struct qcom_icc_bcm bcm_cn1 = {
+ 
+ static struct qcom_icc_bcm bcm_co0 = {
+ 	.name = "CO0",
++	.enable_mask = 0x1,
+ 	.num_nodes = 2,
+ 	.nodes = { &qxm_nsp, &qns_nsp_gemnoc },
+ };
+@@ -1549,6 +1552,7 @@ static struct qcom_icc_bcm bcm_mm0 = {
+ 
+ static struct qcom_icc_bcm bcm_mm1 = {
+ 	.name = "MM1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 8,
+ 	.nodes = { &qnm_camnoc_hf, &qnm_camnoc_icp,
+ 		   &qnm_camnoc_sf, &qnm_vapss_hcp,
+@@ -1589,6 +1593,7 @@ static struct qcom_icc_bcm bcm_sh0 = {
+ 
+ static struct qcom_icc_bcm bcm_sh1 = {
+ 	.name = "SH1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 13,
+ 	.nodes = { &alm_gpu_tcu, &alm_sys_tcu,
+ 		   &chm_apps, &qnm_gpu,
+@@ -1608,6 +1613,7 @@ static struct qcom_icc_bcm bcm_sn0 = {
+ 
+ static struct qcom_icc_bcm bcm_sn1 = {
+ 	.name = "SN1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 3,
+ 	.nodes = { &qhm_gic, &xm_gic,
+ 		   &qns_gemnoc_gc },
+@@ -1633,6 +1639,7 @@ static struct qcom_icc_bcm bcm_sn7 = {
+ 
+ static struct qcom_icc_bcm bcm_acv_disp = {
+ 	.name = "ACV",
++	.enable_mask = 0x1,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_disp },
+ };
+@@ -1657,12 +1664,14 @@ static struct qcom_icc_bcm bcm_sh0_disp = {
+ 
+ static struct qcom_icc_bcm bcm_sh1_disp = {
+ 	.name = "SH1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 2,
+ 	.nodes = { &qnm_mnoc_hf_disp, &qnm_pcie_disp },
+ };
+ 
+ static struct qcom_icc_bcm bcm_acv_cam_ife_0 = {
+ 	.name = "ACV",
++	.enable_mask = 0x0,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_0 },
+ };
+@@ -1681,6 +1690,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_0 = {
+ 
+ static struct qcom_icc_bcm bcm_mm1_cam_ife_0 = {
+ 	.name = "MM1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 4,
+ 	.nodes = { &qnm_camnoc_hf_cam_ife_0, &qnm_camnoc_icp_cam_ife_0,
+ 		   &qnm_camnoc_sf_cam_ife_0, &qns_mem_noc_sf_cam_ife_0 },
+@@ -1694,6 +1704,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_0 = {
+ 
+ static struct qcom_icc_bcm bcm_sh1_cam_ife_0 = {
+ 	.name = "SH1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 3,
+ 	.nodes = { &qnm_mnoc_hf_cam_ife_0, &qnm_mnoc_sf_cam_ife_0,
+ 		   &qnm_pcie_cam_ife_0 },
+@@ -1701,6 +1712,7 @@ static struct qcom_icc_bcm bcm_sh1_cam_ife_0 = {
+ 
+ static struct qcom_icc_bcm bcm_acv_cam_ife_1 = {
+ 	.name = "ACV",
++	.enable_mask = 0x0,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_1 },
+ };
+@@ -1719,6 +1731,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_1 = {
+ 
+ static struct qcom_icc_bcm bcm_mm1_cam_ife_1 = {
+ 	.name = "MM1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 4,
+ 	.nodes = { &qnm_camnoc_hf_cam_ife_1, &qnm_camnoc_icp_cam_ife_1,
+ 		   &qnm_camnoc_sf_cam_ife_1, &qns_mem_noc_sf_cam_ife_1 },
+@@ -1732,6 +1745,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_1 = {
+ 
+ static struct qcom_icc_bcm bcm_sh1_cam_ife_1 = {
+ 	.name = "SH1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 3,
+ 	.nodes = { &qnm_mnoc_hf_cam_ife_1, &qnm_mnoc_sf_cam_ife_1,
+ 		   &qnm_pcie_cam_ife_1 },
+@@ -1739,6 +1753,7 @@ static struct qcom_icc_bcm bcm_sh1_cam_ife_1 = {
+ 
+ static struct qcom_icc_bcm bcm_acv_cam_ife_2 = {
+ 	.name = "ACV",
++	.enable_mask = 0x0,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_2 },
+ };
+@@ -1757,6 +1772,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_2 = {
+ 
+ static struct qcom_icc_bcm bcm_mm1_cam_ife_2 = {
+ 	.name = "MM1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 4,
+ 	.nodes = { &qnm_camnoc_hf_cam_ife_2, &qnm_camnoc_icp_cam_ife_2,
+ 		   &qnm_camnoc_sf_cam_ife_2, &qns_mem_noc_sf_cam_ife_2 },
+@@ -1770,6 +1786,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_2 = {
+ 
+ static struct qcom_icc_bcm bcm_sh1_cam_ife_2 = {
+ 	.name = "SH1",
++	.enable_mask = 0x1,
+ 	.num_nodes = 3,
+ 	.nodes = { &qnm_mnoc_hf_cam_ife_2, &qnm_mnoc_sf_cam_ife_2,
+ 		   &qnm_pcie_cam_ife_2 },
 
 -- 
-Nicolas Ferre
+2.34.1
 
