@@ -2,140 +2,93 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8250FEB64DB
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jun 2023 08:26:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02CFCEB64DA
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Jun 2023 09:44:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230174AbjFSI0t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jun 2023 04:26:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60700 "EHLO
+        id S231386AbjFSJoZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jun 2023 05:44:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34770 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230291AbjFSIYv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 04:24:51 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 108A31B0
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 01:24:47 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-3f90a1aa204so21970935e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 01:24:46 -0700 (PDT)
+        with ESMTP id S231244AbjFSJoZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 05:44:25 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7CC5110
+        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 02:44:23 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-31126037f41so2884316f8f.2
+        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 02:44:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1687163085; x=1689755085;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=VjnRSHazNP8DobZeaiT8Ue6LLZ8Gvl8GEQVM9lAqiGU=;
-        b=MxuFNIujsOhZovl2Eonyic2jOI5llgiuTImhx8d3YwADFtJPOlxkOy+dwMDysOVksd
-         6JwelaRxBoyMc8YBrVxNO5I8qG/xR5WDIcJenYgOF88JcsHlsGx0tP/8bSk24/4cHpVe
-         76hTTgu60djIOgma3mdrMs/Vls1PFG836jKk8B/7AetMc4bm504RtfRSFaAVZ9OWZbVB
-         +NLKUgf5eMlyKXx0BnMn+dx9i55veL08v/LgBkp5kxEaSvHRwnh1YInjEVwutF++5zQu
-         Yyw/aaLqlM8pABu5oMVrz5aKep74pQGw4r+xv8JHSRQkcXq2kUaQJJtoj+iOBXG5OYog
-         F3Nw==
+        d=linaro.org; s=google; t=1687167862; x=1689759862;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=2bH2JT5shA1ZCFvcaglwjqW7UABD2qxQkB1KrAzjhl8=;
+        b=S0wMhyjgBOGreIIxEfZAfOkUYsWWm56FbYluy+MS0mHDnGqEmORtrD1sILTTPkJYjC
+         TCE2oCwWwx2C5A6DKnYH2sTKxBcyxTTaTXnviNSueMoHfe1B5f4FVJ4CbUEZDgibOxO8
+         VzeOXer6JBwIyFV2r4wQcPHPX+HBCwElGNZudZt7nPYSIfVza4yQ2Wms1q8qYqPXc+Kh
+         SKSASspv/IdZ/Tr2z7V9R+pZIKj79tfWblTRdBIprWygn+C/1/mmdJVAW+ygtU3lxCB+
+         AL7x5JHSNfgCoE5Ov3YKmMMRwmJzHuS0pkVFXmCQXS7tQHNlz7UX1pSh0wGOOW3TB3eJ
+         Q49A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687163085; x=1689755085;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=VjnRSHazNP8DobZeaiT8Ue6LLZ8Gvl8GEQVM9lAqiGU=;
-        b=AMnuscUKC78aVXxRAiPsncqzxQYjcQoeZvI6l6hvZupv0VHFsOCPdqpb1v0yZqpvXO
-         stI3JOXmHxc+j4YISDoc3s60fTDmfXfkyWtM76Fis1QkUggsxb+x/xemiUSQatvDOsEM
-         WAaNGL7R1elOG7W6nBtigKC7/TTiKFUP9VMmetbPi+FVZp5cYE2eZkON5tiJCAmIZJqk
-         wmuotQdfN3eAy6D21Ujn0WQqJoahr1bGSYbyQkT1Di9wwXvlJdWniVccmH7BHz05t4w3
-         xJ2NRMyfEZMKd2BOZgBsByq/aH2Tk1k/DnWf4aw/+G4VQvD1FFRG8kCh5RulwIQW1956
-         wFiQ==
-X-Gm-Message-State: AC+VfDxkIwm94pk6Yj8akdsWCIGaEkPp0iORGcMK1O1OkECFdyTJ/X6B
-        q6Ts2IX/No7FlMt5bdKKSlk53w==
-X-Google-Smtp-Source: ACHHUZ6AWUE7nvHDqozqzOVMDX6oF+d4bGgNfRxtK2PwgKS22LD54bXJdtjjOh7NfYRr7zPEPoWVjg==
-X-Received: by 2002:a7b:c051:0:b0:3f6:1474:905 with SMTP id u17-20020a7bc051000000b003f614740905mr9049573wmc.29.1687163085515;
-        Mon, 19 Jun 2023 01:24:45 -0700 (PDT)
-Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id i1-20020adff301000000b002f28de9f73bsm30781262wro.55.2023.06.19.01.24.44
+        d=1e100.net; s=20221208; t=1687167862; x=1689759862;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=2bH2JT5shA1ZCFvcaglwjqW7UABD2qxQkB1KrAzjhl8=;
+        b=NYn6TQV14eqZZHDRg2/72vWotyvzS2FfbVJIQMyy+++YizJRKSZ2Td6rvFQmABJUXE
+         3csXFwOBiFQpCeQ+53DoeAOd45AFuaG2h9jgxvig8JDQwSmv7IerSR5fN1Q6+jkgMxvm
+         Qfhgg6VMCeoWVzv0ptnG8cVe6VBMdNT4cGamIRe71qCN+9D3+Zi5V1iZM4+kOfG9MFE3
+         FHErnQcZD8CW8whrxk/obKp7CZmgo6Mjpltf8qr6U9+sOqjorccc/cUgc7X63ULyAZby
+         7K2/+LdrN1a7gQtuECd/UUMu/WV11E1FR5SKnndeqoLapwVqiHEDcd4MO5G1NjnrPf1Z
+         65eA==
+X-Gm-Message-State: AC+VfDzsjD65krVySDyf/jAcN31InnF1B3NkLGvNq1lcwc7/aPGjZXIY
+        I0D8M34VYjTG+S/LRX74Yx6aRw==
+X-Google-Smtp-Source: ACHHUZ5MCCrMybm9Rw8Luk/2SxvFgO16uZEWMQ1yDMM964v2WNceij9RJswUQNdSdPnMz0KwY26Ojg==
+X-Received: by 2002:a5d:590c:0:b0:30a:8995:1dbc with SMTP id v12-20020a5d590c000000b0030a89951dbcmr6605706wrd.26.1687167862345;
+        Mon, 19 Jun 2023 02:44:22 -0700 (PDT)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id m6-20020adfdc46000000b0030e5bd253aasm31035025wrj.39.2023.06.19.02.44.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Jun 2023 01:24:45 -0700 (PDT)
-From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Mon, 19 Jun 2023 10:24:40 +0200
-Subject: [PATCH 1/2] interconnect: qcom: rpmh: add optional mask to send as
- vote
+        Mon, 19 Jun 2023 02:44:21 -0700 (PDT)
+Date:   Mon, 19 Jun 2023 12:44:17 +0300
+From:   Dan Carpenter <dan.carpenter@linaro.org>
+To:     Lucas Stach <l.stach@pengutronix.de>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        kernel-janitors@vger.kernel.org
+Subject: [PATCH] power: supply: ucs1002: fix error code in
+ ucs1002_get_property()
+Message-ID: <687f64a4-4c6e-4536-8204-98ad1df934e5@moroto.mountain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230619-topic-sm8550-upstream-interconnect-mask-vote-v1-1-66663c0aa592@linaro.org>
-References: <20230619-topic-sm8550-upstream-interconnect-mask-vote-v1-0-66663c0aa592@linaro.org>
-In-Reply-To: <20230619-topic-sm8550-upstream-interconnect-mask-vote-v1-0-66663c0aa592@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Neil Armstrong <neil.armstrong@linaro.org>
-X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2036;
- i=neil.armstrong@linaro.org; h=from:subject:message-id;
- bh=McG7Xaz+SPLEJvALMH62I+CFHxe1OtZw2rdfvt/tQBU=;
- b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBkkBDLWGDVf57U6dMfdw3e1jzxd2L8NGj4tDo2w8jD
- 2t3KZIuJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZJAQywAKCRB33NvayMhJ0fvuD/
- 95QTjrK8eRawsCgiIAQC/XJH21bKJ/jQnSwXRUVmfNWs/O2u0uTB51sIq/2814U6usVvR384CDhbvx
- +QLrK+MDmi7IKHx+Zh9ID4X1TnuQjYTBmc48g28XJ9iwSy6OJ0K+QvqSKguYfqwV2SLZG3UnRHj8B+
- yjCFbk2rNZX+fyt/M3wTfOdEgwbVywAhJewbrPW1HY7mL7BqEcbjSLAm1Pjq7pixgk+PJLuImFt+Gr
- 2zBIkOQk8q1kMKktWFkGU9/uWIEOo50/GI9z3j6UL+sIXJjyBlnAfK0fDMJBfo7whIgHC2RN0ZZX8l
- DvWvrHOW9xlGSLN1aY8enFH/HOHHNFoHsJ6sj4vKefPNyHJstAI0u1lEVn9qB1SMg6St4/IgdVApaW
- 89QaXki9M+9w30kT1WUKge6OvNPv77h1xa4XvONDRqL6etcJaqGuj8lywWsnFZ4BpFs17jbB2Qbc9h
- njZpoLKb0LdK0Z00yGI/853NQoFgk+NscShXJAXpe0elLUj/TfHQ/gpFGMLlZMH77SAAfHqGpPP6La
- H48xmeUrQOXBE/W5TyJdr/oHGAkO0GnsH8X/K2oDEggS6Wq32uuLeQzrkuR0CobR20G/BAQveI0sy+
- Uwl7klLE9T8dcUhiVxWZVQQ+IW79sTagPUDxtPpmk+H0VrAu3XMJkv8KFk4Q==
-X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
- fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On the SM8550 SoC, some nodes requires a specific bit mark
-instead of a bandwidth when voting.
+This function is supposed to return 0 for success instead of returning
+the val->intval.  This makes it the same as the other case statements
+in this function.
 
-Add an enable_mask variable to be used to vote when a node
-is enabled in an aggregate loop.
-
-Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+Fixes: 81196e2e57fc ("power: supply: ucs1002: fix some health status issues")
+Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
 ---
- drivers/interconnect/qcom/bcm-voter.c | 5 +++++
- drivers/interconnect/qcom/icc-rpmh.h  | 2 ++
- 2 files changed, 7 insertions(+)
+From code review.  Untested.
 
-diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
-index 8f385f9c2dd3..d5f2a6b5376b 100644
---- a/drivers/interconnect/qcom/bcm-voter.c
-+++ b/drivers/interconnect/qcom/bcm-voter.c
-@@ -83,6 +83,11 @@ static void bcm_aggregate(struct qcom_icc_bcm *bcm)
- 
- 		temp = agg_peak[bucket] * bcm->vote_scale;
- 		bcm->vote_y[bucket] = bcm_div(temp, bcm->aux_data.unit);
-+
-+		if (bcm->enable_mask && (bcm->vote_x[bucket] || bcm->vote_y[bucket])) {
-+			bcm->vote_x[bucket] = 0;
-+			bcm->vote_y[bucket] = bcm->enable_mask;
-+		}
- 	}
- 
- 	if (bcm->keepalive && bcm->vote_x[QCOM_ICC_BUCKET_AMC] == 0 &&
-diff --git a/drivers/interconnect/qcom/icc-rpmh.h b/drivers/interconnect/qcom/icc-rpmh.h
-index 04391c1ba465..7843d8864d6b 100644
---- a/drivers/interconnect/qcom/icc-rpmh.h
-+++ b/drivers/interconnect/qcom/icc-rpmh.h
-@@ -81,6 +81,7 @@ struct qcom_icc_node {
-  * @vote_x: aggregated threshold values, represents sum_bw when @type is bw bcm
-  * @vote_y: aggregated threshold values, represents peak_bw when @type is bw bcm
-  * @vote_scale: scaling factor for vote_x and vote_y
-+ * @enable_mask: optional mask to send as vote instead of vote_x/vote_y
-  * @dirty: flag used to indicate whether the bcm needs to be committed
-  * @keepalive: flag used to indicate whether a keepalive is required
-  * @aux_data: auxiliary data used when calculating threshold values and
-@@ -97,6 +98,7 @@ struct qcom_icc_bcm {
- 	u64 vote_x[QCOM_ICC_NUM_BUCKETS];
- 	u64 vote_y[QCOM_ICC_NUM_BUCKETS];
- 	u64 vote_scale;
-+	u32 enable_mask;
- 	bool dirty;
- 	bool keepalive;
- 	struct bcm_db aux_data;
+ drivers/power/supply/ucs1002_power.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/power/supply/ucs1002_power.c b/drivers/power/supply/ucs1002_power.c
+index 954feba6600b..7970843a4f48 100644
+--- a/drivers/power/supply/ucs1002_power.c
++++ b/drivers/power/supply/ucs1002_power.c
+@@ -384,7 +384,8 @@ static int ucs1002_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_USB_TYPE:
+ 		return ucs1002_get_usb_type(info, val);
+ 	case POWER_SUPPLY_PROP_HEALTH:
+-		return val->intval = info->health;
++		val->intval = info->health;
++		return 0;
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 		val->intval = info->present;
+ 		return 0;
 -- 
-2.34.1
+2.39.2
 
