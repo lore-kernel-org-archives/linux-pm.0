@@ -2,96 +2,169 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D2CBEB64DA
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jun 2023 22:49:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E33BEB64D9
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 01:29:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229749AbjFSWtV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jun 2023 18:49:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38268 "EHLO
+        id S229571AbjFTB3z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jun 2023 21:29:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56564 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229462AbjFSWtU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 18:49:20 -0400
-Received: from mail-io1-f47.google.com (mail-io1-f47.google.com [209.85.166.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E68B2E55;
-        Mon, 19 Jun 2023 15:49:19 -0700 (PDT)
-Received: by mail-io1-f47.google.com with SMTP id ca18e2360f4ac-77797beb42dso143980439f.2;
-        Mon, 19 Jun 2023 15:49:19 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687214959; x=1689806959;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XC5lpbRInQ/+5gWZrsaA+KqscUlYl6sjL8GyEzFCglg=;
-        b=AdZhKelKh/g8u40VH6vVJymf5NCG1IzEnDiO/6+7Mj3/7jtrUaGxjjHChsMsFrciJ2
-         754nOfGunzAV+VwT7DPwNofUlztqoPSTheUYHw2vV4RINONZjBlY9z23e7M9+Br/HiBD
-         DJN17atoa7YKyO6KRPYiK9XOGJXdeGQR5mIpEuX9m4R7msx13m2fZxqe51Uz2hb+YYpz
-         IQnqcjWBiaVwehHSh9w/PhDnJJhn3jCh8fmiuBg8iJrqQ2yF0H63JNYppdhDxmPkIFmH
-         FiMkqEdofW/acAsuom520r/W8IEdqAc8lpZiRQ+q0dN1IKRlEdi/Helr7RivhjttZR3z
-         2dgg==
-X-Gm-Message-State: AC+VfDzFOuWJv/fx6eEwcrlqHHtkf2rLtsXhJOmK3mygt9AP5A5RB5ad
-        8iALzJw4URet3sbl1CIx4Q==
-X-Google-Smtp-Source: ACHHUZ6aHzKiHI6j0pGyABhICGpFbZYq4LbWxeN/Z7bW9EdQkXxO4vMuOqgS+UoLXk9bYuI+u4Zypw==
-X-Received: by 2002:a5e:9802:0:b0:77a:c315:75b6 with SMTP id s2-20020a5e9802000000b0077ac31575b6mr2055139ioj.5.1687214959178;
-        Mon, 19 Jun 2023 15:49:19 -0700 (PDT)
-Received: from robh_at_kernel.org ([64.188.179.250])
-        by smtp.gmail.com with ESMTPSA id y22-20020a5ec816000000b0077ac32a5de8sm213979iol.26.2023.06.19.15.49.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Jun 2023 15:49:18 -0700 (PDT)
-Received: (nullmailer pid 1675447 invoked by uid 1000);
-        Mon, 19 Jun 2023 22:49:16 -0000
-Date:   Mon, 19 Jun 2023 16:49:16 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Stefan Wahren <stefan.wahren@i2se.com>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        bcm-kernel-feedback-list@broadcom.com, dmaengine@vger.kernel.org,
-        Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org,
-        Jassi Brar <jassisinghbrar@gmail.com>,
-        devicetree@vger.kernel.org,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Vinod Koul <vkoul@kernel.org>,
+        with ESMTP id S229471AbjFTB3y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 21:29:54 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7C14D1A8;
+        Mon, 19 Jun 2023 18:29:51 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.35])
+        by gateway (Coremail) with SMTP id _____8Cxc+gOAZFkJAMHAA--.371S3;
+        Tue, 20 Jun 2023 09:29:50 +0800 (CST)
+Received: from user-pc.202.106.0.20 (unknown [10.20.42.35])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8DxFOQJAZFkEQIhAA--.27139S3;
+        Tue, 20 Jun 2023 09:29:49 +0800 (CST)
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
         Rob Herring <robh+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, linux-mmc@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-arm-kernel@lists.infradead.org, Ray Jui <rjui@broadcom.com>,
-        linux-pwm@vger.kernel.org
-Subject: Re: [PATCH V2 2/7] dt-bindings: dma: convert bcm2835-dma bindings to
- YAML
-Message-ID: <168721491312.1673983.7120570846265839418.robh@kernel.org>
-References: <20230617133620.53129-1-stefan.wahren@i2se.com>
- <20230617133620.53129-3-stefan.wahren@i2se.com>
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Jianmin Lv <lvjianmin@loongson.cn>, wanghongliang@loongson.cn,
+        Liu Peibao <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn,
+        zhanghongchen <zhanghongchen@loongson.cn>,
+        Yinbo Zhu <zhuyinbo@loongson.cn>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v15 2/2] thermal: dt-bindings: add loongson-2 thermal
+Date:   Tue, 20 Jun 2023 09:29:44 +0800
+Message-Id: <20230620012944.28877-2-zhuyinbo@loongson.cn>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20230620012944.28877-1-zhuyinbo@loongson.cn>
+References: <20230620012944.28877-1-zhuyinbo@loongson.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230617133620.53129-3-stefan.wahren@i2se.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8DxFOQJAZFkEQIhAA--.27139S3
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
+        ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
+        nUUI43ZEXa7xR_UUUUUUUUU==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 17 Jun 2023 15:36:15 +0200, Stefan Wahren wrote:
-> Convert the DT binding document for bcm2835-dma from .txt to YAML.
-> 
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> ---
->  .../bindings/dma/brcm,bcm2835-dma.txt         |  83 --------------
->  .../bindings/dma/brcm,bcm2835-dma.yaml        | 102 ++++++++++++++++++
->  2 files changed, 102 insertions(+), 83 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/dma/brcm,bcm2835-dma.txt
->  create mode 100644 Documentation/devicetree/bindings/dma/brcm,bcm2835-dma.yaml
-> 
+Add the Loongson-2 thermal binding with DT schema format using
+json-schema.
 
+Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+Change in v15:
+		1. Use the specific compatible.
+Change in v14:
+		1. NO change, but other patch in this series of patches set
+		   has changes.
+Change in v13:
+		1. Drop the sensor id.
+Change in v12:
+		1. NO change, but other patch in this series of patches set
+		   has changes.
+Change in v11:
+		1. NO change, but other patch in this series of patches set
+		   has changes.
+Change in v10:
+		1. Add all history change log information.
+Change in v9:
+		1. NO change, but other patch in this series of patches set
+		   has changes.
+Change in v8:
+                1. Replace string Loongson2/loongson2 with Loongson-2/loongson-2.
+Change in v7:
+		1. Split the modification of patch 3 and merge it into this patch.
+Change in v6:
+		1. Fix the warning "reg: [[0, 534779136], [0, 48]] is too long"
+		   when compile the yaml.
+Change in v5:
+		1. Keep use same quotes "'" in all places. 
+Change in v4:
+		1. Fixup the compatible.
+		2. Update the binding file name.
+		3. Include irq.h to fix compile issue.
+Change in v3:
+		1. Remove the sensor id.
+		2. Remove the interrupt-parent in thermal required property.
+		3. Update the thermal binding file name.
+		4. Fixup the commit log information.
+Change in v2:
+		1. Add description and type about the "id".	
+		2. Make the filename was based on compatible.
 
-Please add Acked-by/Reviewed-by tags when posting new versions. However,
-there's no need to repost patches *only* to add the tags. The upstream
-maintainer will do that for acks received on the version they apply.
+ .../thermal/loongson,ls2k-thermal.yaml        | 44 +++++++++++++++++++
+ MAINTAINERS                                   |  1 +
+ 2 files changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
 
-If a tag was not added on purpose, please state why and what changed.
-
-Missing tags:
-
-Reviewed-by: Rob Herring <robh@kernel.org>
-
-
+diff --git a/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+new file mode 100644
+index 000000000000..7538469997f9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/loongson,ls2k-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Thermal sensors on Loongson-2 SoCs
++
++maintainers:
++  - zhanghongchen <zhanghongchen@loongson.cn>
++  - Yinbo Zhu <zhuyinbo@loongson.cn>
++
++properties:
++  compatible:
++    oneOf:
++      - enum:
++          - loongson,ls2k1000-thermal
++      - items:
++          - enum:
++              - loongson,ls2k2000-thermal
++          - const: loongson,ls2k1000-thermal
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++    thermal: thermal-sensor@1fe01500 {
++        compatible = "loongson,ls2k1000-thermal";
++        reg = <0x1fe01500 0x30>;
++        interrupt-parent = <&liointc0>;
++        interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f9277fa2a728..0833eb09b2e4 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12203,6 +12203,7 @@ M:	zhanghongchen <zhanghongchen@loongson.cn>
+ M:	Yinbo Zhu <zhuyinbo@loongson.cn>
+ L:	linux-pm@vger.kernel.org
+ S:	Maintained
++F:	Documentation/devicetree/bindings/thermal/loongson,ls2k-thermal.yaml
+ F:	drivers/thermal/loongson2_thermal.c
+ 
+ LOONGSON GPIO DRIVER
+-- 
+2.20.1
 
