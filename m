@@ -2,41 +2,41 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DFF7EB64D7
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACA8EEB64DB
 	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 14:10:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232144AbjFTOJx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Jun 2023 10:09:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59320 "EHLO
+        id S233056AbjFTOJw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Jun 2023 10:09:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59286 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233205AbjFTOJt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 10:09:49 -0400
+        with ESMTP id S233179AbjFTOJq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 10:09:46 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20880E68
-        for <linux-pm@vger.kernel.org>; Tue, 20 Jun 2023 07:09:08 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31F5EE60
+        for <linux-pm@vger.kernel.org>; Tue, 20 Jun 2023 07:08:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687270147;
+        s=mimecast20190719; t=1687270137;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=+LliIS9GzKVY7r+2Pd1dAZaFc5KbOmlOofBoCL5VmAU=;
-        b=Uxrnv2+DdKsm5B12CJO9YlS2w5bgKV/Y/gMvEi2fOzenDCdrUIC+/OaGfnVdXfgBI4pvEE
-        S8S3QmU5LrQJx70Qu6rB5QuBC4jHzK1b7rrV7rB7K6IDKlXI4COvRYiTWsdxHIk7iW/rdY
-        QiAZzzvyH39sZt5UJk8hRxiJ63+o/O4=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=+DkmE6hETltBu3bPa+S3gxCm/8V55tvpJfZg0jQ8Gvw=;
+        b=RbrYDQodAoRTDl7yNfYx9xXnJVfCT8r5+HNJ88d801pVpe+zgwgApyDUuStl3SiViQQSYc
+        4PBdGmJHsIgvTQVrYuNlnxSU1J1of2FPYSYntJ74j3vy8RhQPcD4RI8HHjgUAor5ORBi82
+        j9et0ziX2lL1fc9IuASSYKk73JpewSY=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-9-uWgs1p_OOFmaIFWneI7weA-1; Tue, 20 Jun 2023 10:08:56 -0400
-X-MC-Unique: uWgs1p_OOFmaIFWneI7weA-1
+ us-mta-37-2A_wpEtmMHKKyXq6jJXqlg-1; Tue, 20 Jun 2023 10:08:34 -0400
+X-MC-Unique: 2A_wpEtmMHKKyXq6jJXqlg-1
 Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com [10.11.54.10])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id EC30F28EA71F;
-        Tue, 20 Jun 2023 14:06:34 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5130888711B;
+        Tue, 20 Jun 2023 14:06:33 +0000 (UTC)
 Received: from llong.com (unknown [10.22.34.46])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 2A712425356;
-        Tue, 20 Jun 2023 14:06:34 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 91537425356;
+        Tue, 20 Jun 2023 14:06:32 +0000 (UTC)
 From:   Waiman Long <longman@redhat.com>
 To:     Peter Zijlstra <peterz@infradead.org>,
         Thomas Gleixner <tglx@linutronix.de>,
@@ -50,9 +50,9 @@ To:     Peter Zijlstra <peterz@infradead.org>,
 Cc:     linux-kernel@vger.kernel.org, x86@kernel.org,
         linux-pm@vger.kernel.org, Robin Jarry <rjarry@redhat.com>,
         Joe Mario <jmario@redhat.com>, Waiman Long <longman@redhat.com>
-Subject: [PATCH v2 4/5] intel_idle: Add no_ibrs module parameter to force disable IBRS
-Date:   Tue, 20 Jun 2023 10:06:24 -0400
-Message-Id: <20230620140625.1001886-5-longman@redhat.com>
+Subject: [PATCH v2 2/5] x86/idle: Disable IBRS when cpu is offline
+Date:   Tue, 20 Jun 2023 10:06:22 -0400
+Message-Id: <20230620140625.1001886-3-longman@redhat.com>
 In-Reply-To: <20230620140625.1001886-1-longman@redhat.com>
 References: <20230620140625.1001886-1-longman@redhat.com>
 MIME-Version: 1.0
@@ -63,62 +63,55 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 Commit bf5835bcdb96 ("intel_idle: Disable IBRS during long idle")
-disables IBRS when the cstate is 6 or lower. However, there are
-some use cases where a customer may want to use max_cstate=1 to
-lower latency. Such use cases will suffer from the performance
-degradation caused by the enabling of IBRS in the sibling idle thread.
-Add a "no_ibrs" module parameter to force disable IBRS and the
-CPUIDLE_FLAG_IRQ_ENABLE flag if set.
-
-In the case of a Skylake server with max_cstate=1, this new no_ibrs
-option will increase the IRQ response latency as IRQ will now be
-disabled.
+disables IBRS when the CPU enters long idle. However, when a CPU becomes
+offline, the IBRS bit is still set when X86_FEATURE_KERNEL_IBRS is
+enabled. That will impact the performance of a sibling CPU. Mitigate
+this performance impact by clearing all the mitigation bits in SPEC_CTRL
+MSR when offline and restoring the value of the MSR when it becomes
+online again.
 
 Signed-off-by: Waiman Long <longman@redhat.com>
 ---
- drivers/idle/intel_idle.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ arch/x86/kernel/smpboot.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 07fa23707b3c..366dacccc971 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -69,6 +69,7 @@ static int max_cstate = CPUIDLE_STATE_MAX - 1;
- static unsigned int disabled_states_mask __read_mostly;
- static unsigned int preferred_states_mask __read_mostly;
- static bool force_irq_on __read_mostly;
-+static bool no_ibrs __read_mostly;
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 352f0ce1ece4..5ff82fef413c 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -84,6 +84,7 @@
+ #include <asm/hw_irq.h>
+ #include <asm/stackprotector.h>
+ #include <asm/sev.h>
++#include <asm/nospec-branch.h>
  
- static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+ /* representing HT siblings of each logical CPU */
+ DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
+@@ -1838,12 +1839,24 @@ void __noreturn hlt_play_dead(void)
  
-@@ -1907,12 +1908,15 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- 			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
- 			state->enter = intel_idle_xstate;
- 		} else if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS) &&
--			   state->flags & CPUIDLE_FLAG_IBRS) {
-+			  ((state->flags & CPUIDLE_FLAG_IBRS) || no_ibrs)) {
- 			/*
- 			 * IBRS mitigation requires that C-states are entered
- 			 * with interrupts disabled.
- 			 */
--			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
-+			if (no_ibrs && (state->flags & CPUIDLE_FLAG_IRQ_ENABLE))
-+				state->flags &= ~CPUIDLE_FLAG_IRQ_ENABLE;
-+			else
-+				WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
- 			state->enter = intel_idle_ibrs;
- 		} else if (state->flags & CPUIDLE_FLAG_IRQ_ENABLE) {
- 			state->enter = intel_idle_irq;
-@@ -2165,3 +2169,9 @@ MODULE_PARM_DESC(preferred_cstates, "Mask of preferred idle states");
-  * 'CPUIDLE_FLAG_INIT_XSTATE' and 'CPUIDLE_FLAG_IBRS' flags.
-  */
- module_param(force_irq_on, bool, 0444);
-+/*
-+ * Force the disabling of IBRS when X86_FEATURE_KERNEL_IBRS is on and
-+ * CPUIDLE_FLAG_IRQ_ENABLE isn't set.
-+ */
-+module_param(no_ibrs, bool, 0444);
-+MODULE_PARM_DESC(no_ibrs, "Disable IBRS when idle");
+ void native_play_dead(void)
+ {
++	u64 spec_ctrl = spec_ctrl_current();
++
++	if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS)) {
++		this_cpu_write(x86_spec_ctrl_current, 0);
++		native_wrmsrl(MSR_IA32_SPEC_CTRL, 0);
++	}
++
+ 	play_dead_common();
+ 	tboot_shutdown(TB_SHUTDOWN_WFS);
+ 
+ 	mwait_play_dead();
+ 	if (cpuidle_play_dead())
+ 		hlt_play_dead();
++
++	if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS)) {
++		native_wrmsrl(MSR_IA32_SPEC_CTRL, spec_ctrl);
++		this_cpu_write(x86_spec_ctrl_current, spec_ctrl);
++	}
+ }
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
 -- 
 2.31.1
 
