@@ -2,366 +2,277 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F951EB64DC
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 01:30:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EFD0EB64DB
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 03:07:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229605AbjFTB3z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jun 2023 21:29:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56566 "EHLO
+        id S229655AbjFTDHi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jun 2023 23:07:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229473AbjFTB3y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 21:29:54 -0400
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 48D4B1A7;
-        Mon, 19 Jun 2023 18:29:51 -0700 (PDT)
-Received: from loongson.cn (unknown [10.20.42.35])
-        by gateway (Coremail) with SMTP id _____8DxTusNAZFkHwMHAA--.14343S3;
-        Tue, 20 Jun 2023 09:29:49 +0800 (CST)
-Received: from user-pc.202.106.0.20 (unknown [10.20.42.35])
-        by localhost.localdomain (Coremail) with SMTP id AQAAf8DxFOQJAZFkEQIhAA--.27139S2;
-        Tue, 20 Jun 2023 09:29:48 +0800 (CST)
-From:   Yinbo Zhu <zhuyinbo@loongson.cn>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     Jianmin Lv <lvjianmin@loongson.cn>, wanghongliang@loongson.cn,
-        Liu Peibao <liupeibao@loongson.cn>,
-        loongson-kernel@lists.loongnix.cn,
-        zhanghongchen <zhanghongchen@loongson.cn>,
-        Yinbo Zhu <zhuyinbo@loongson.cn>
-Subject: [PATCH v15 1/2] thermal: loongson-2: add thermal management support
-Date:   Tue, 20 Jun 2023 09:29:43 +0800
-Message-Id: <20230620012944.28877-1-zhuyinbo@loongson.cn>
-X-Mailer: git-send-email 2.20.1
+        with ESMTP id S229462AbjFTDHg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2023 23:07:36 -0400
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2071.outbound.protection.outlook.com [40.107.94.71])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBCD3E42;
+        Mon, 19 Jun 2023 20:07:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ArlAwTe/lVALxGTb6NyJrWXPFjOWUeyy0hIGTnqm03U8ajeRchOjULtb7k0wOLnEZovQo/NW8JzvTJG9VeRgWUATWzwhy10sx/XdMW2g5r3MHFtGphCe9aCzuxvXvNib63sTP17n429b1iqwl/uBV9KRDgGzDch5mVCwmKRxxXT+IdKpiZjlAeT2y5EUE66laISdDMqnRqQsAiCDkdHfkW17/zTIhfIYoViXrCdZbb1zTuBNPb7ELNkLkMM7EK+BT0JZVFBXw46m3KKuG+3rs6M8NKhwQ6x11NGqaNw8Z0t4Jwmv7N7o3IUTQdrTHWUbsTjqwbrFsHkRMGSOkm/y0A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=PwZ9UozItZ4ymu4j7SSJS7dviSIRqee/0IptJ+5DhG8=;
+ b=SZ+yJEEKOviYEfsHXsscoTyLwl5nKj5Flo0YuRgIXHOPaRJ/7uiwC9ZHE8v3y2kSnIyz30Zep5rIEfH2YWUZe5P3lLMzydKmSUmyGBUHYSQvI18yGVx+6Shst5U6iSVzeq3lDHZ6mF2opYqKqAVnNdj5KMwlvkd0EASBJObt0uaA/5ZiqmKLDHuHZo96jvCjDCmsJnZ2p7j2FXQ9Scx9FjzyDaqyCdmwIiA0UGkyes/nT6WufhZwOKsc4cVr2f0BfdSgCS7H7raQeaI3NUJTOZvCkattJsY1LGlAbOF1GetoRs/lZyAM8nP/5EOg9MTufieV5GPU+nLqQzCZzZHVtA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PwZ9UozItZ4ymu4j7SSJS7dviSIRqee/0IptJ+5DhG8=;
+ b=itl8wgEbL3reV5K/hpESn6gbgFVN8QJD7kMPfTK6hH1ZI1CotZ6YjG08LFQ0G5NAN6HGyDSFsQb7nFVIU/BTNSDYRgI02EI8JEb/8F3z8cv7kYpi/ZQUCVAAQrgoQVrRE1GAcJ6hyiecHzIAVEJyvjMqVy8eeg5QsQ21FcSyGS8=
+Received: from CYYPR12MB8655.namprd12.prod.outlook.com (2603:10b6:930:c4::19)
+ by DM4PR12MB7742.namprd12.prod.outlook.com (2603:10b6:8:102::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6500.37; Tue, 20 Jun
+ 2023 03:07:31 +0000
+Received: from CYYPR12MB8655.namprd12.prod.outlook.com
+ ([fe80::8d99:5e7c:3ab:a882]) by CYYPR12MB8655.namprd12.prod.outlook.com
+ ([fe80::8d99:5e7c:3ab:a882%7]) with mapi id 15.20.6500.036; Tue, 20 Jun 2023
+ 03:07:30 +0000
+From:   "Yuan, Perry" <Perry.Yuan@amd.com>
+To:     "Karny, Wyes" <Wyes.Karny@amd.com>,
+        "trenn@suse.com" <trenn@suse.com>,
+        "shuah@kernel.org" <shuah@kernel.org>
+CC:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "rafael@kernel.org" <rafael@kernel.org>,
+        "Shenoy, Gautham Ranjal" <gautham.shenoy@amd.com>,
+        "Limonciello, Mario" <Mario.Limonciello@amd.com>,
+        "Huang, Ray" <Ray.Huang@amd.com>, "Huang, Ray" <Ray.Huang@amd.com>,
+        "Limonciello, Mario" <Mario.Limonciello@amd.com>,
+        "Yuan, Perry" <Perry.Yuan@amd.com>
+Subject: RE: [PATCH v3 5/5] cpupower: Add turbo-boost support in cpupower
+Thread-Topic: [PATCH v3 5/5] cpupower: Add turbo-boost support in cpupower
+Thread-Index: AQHZouFRjOy6xTecCkO9qiVWJ8xGJ6+TAj+w
+Date:   Tue, 20 Jun 2023 03:07:30 +0000
+Message-ID: <CYYPR12MB865590E3567FC552308B75549C5CA@CYYPR12MB8655.namprd12.prod.outlook.com>
+References: <20230619190503.4061-1-wyes.karny@amd.com>
+ <20230619190503.4061-6-wyes.karny@amd.com>
+In-Reply-To: <20230619190503.4061-6-wyes.karny@amd.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_ActionId=db1e38d3-52f3-4411-9c99-d8c774e0910c;MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_ContentBits=0;MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_Enabled=true;MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_Method=Standard;MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_Name=General;MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_SetDate=2023-06-20T03:05:01Z;MSIP_Label_4342314e-0df4-4b58-84bf-38bed6170a0f_SiteId=3dd8961f-e488-4e60-8e11-a82d994e183d;
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: CYYPR12MB8655:EE_|DM4PR12MB7742:EE_
+x-ms-office365-filtering-correlation-id: 6f6d1113-4c2f-4c89-51c7-08db713b7c23
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: wfNPAl5ZgqLggFN7tocy9Pn3LwByshUa16E9qMBf9ud2iuTgYd5GF7eg0+Sv9uuNBlACWnDmbxe9LMdvQoAU/qPd13KpeXjQicVie8MoHGQK2KJRfm20oH1MUzfFzn/achqOxoz9F5XBq+/BwGySqGtV1txnjcz6bXGFPtKPLNykkMie3w7n1CjaMBu2B6ndp+QPXmY+Du6MQ5iZIx1KEATPkiK859RH2cvW9/yDn3/qbLVNJxYZoZZYk4mXIvXPaQxolV3GeqhDGLTKB/MLX/xE+NFlhBLDW3Jdq5u7sf29EEgZNCZIhZgldPFBLbM3QxZSRO0QMHdgo5dTLz3o4NDJMnwlUEFc1XWk0zc+vuWIoL8UBLfnNODRoMVvhZr56g6yTWCHosQE5UJWeBuVHAo0gRc7G9vpv/aewL6+IP/Ch3GVbxXy6xsxvqIZQD2jcC3IJIZ64scY8Mc7sWiJDHTpuTcaMVx7/xp/MVQXLMHWxuB3d6aRTpF8QDCALr1PC3yZcPH8D4HBGHSib1DYDJdpWFt+ZUj12J/d98IoWq0B88Picz7JJO/X2JoRRPBQhiBraQD94R3XtI/A6f7hmKdE32qsP+7xtf652pD1jIuDPNjxDOYx6Lup/C3evmCs
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CYYPR12MB8655.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(346002)(39860400002)(366004)(376002)(396003)(136003)(451199021)(8936002)(41300700001)(8676002)(478600001)(38100700002)(122000001)(71200400001)(83380400001)(26005)(9686003)(186003)(6506007)(53546011)(7696005)(55016003)(54906003)(110136005)(38070700005)(86362001)(316002)(4326008)(76116006)(66946007)(33656002)(66446008)(66476007)(66556008)(64756008)(5660300002)(52536014)(2906002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?W3RAoc4P+ExsFLr794TIfQXSutJPs0OkVJor75twue+Qbft5U0Zn+WlVyiVc?=
+ =?us-ascii?Q?hkA7vSc+dlMESWcPFMfYgwp/Kcg44bqIDH210hZswwK7j04QU40zObT0g647?=
+ =?us-ascii?Q?A5q/zI5glZwifqEG6nWMFHQlU0tlu5c7mjNLgv835BIzUxjOIzw0bTnKzdLY?=
+ =?us-ascii?Q?IXDVXbKePzp4E6wS1A90Kp6xQoNm3t3DJ/nmCDnSePQA6Yf6+gY/QTfh3p4T?=
+ =?us-ascii?Q?Lg+e7CsYGwRcchZwz1BsLytkGN9XRVJoxtIg3QvJpYYWL7u6EMLNnQt52Iuy?=
+ =?us-ascii?Q?+bGAl3myz6dZv/L3xDSzCJWUyvrzWRTFMWCq9fD+PP4hov5rey+NC1yRxrd6?=
+ =?us-ascii?Q?rQHUtwpxWAWUqGNQXKowa2nHcxPnWYh6rqiD2qWIp8SReck9vMhaO129PMS8?=
+ =?us-ascii?Q?5XfJ64M2dgoFf4yWBlN5k2ynQ/ymjbKPnqMvKf8PcspoTKliJmJhAGGgw2mW?=
+ =?us-ascii?Q?u8Csa0PXb9FdT6ZpDURKrvkNxN2A5sywmzuFR1PPXwyZBFCFgSVgdwKrgmtS?=
+ =?us-ascii?Q?XE7af/qSZaeREwKicjujZwqu9AmQnzFbiRuvjYTl0BmmrXvX640YKJhlimDF?=
+ =?us-ascii?Q?Xb5gO7W5MrD0vZWgtLTU2ZIlJ4CHSA4LblNDy4+QlWePtNGYIEi24lMdQ740?=
+ =?us-ascii?Q?adilQA4bbPJzUHJ3Sm4JOGOlZBFdtu8xFBkxC4aeMm2/xA6DQzo0UFKqSOOh?=
+ =?us-ascii?Q?jK8kR/4FjcIF4Vl1jL+blxojzFdQMO5bNCnVYmYBUePn8qxAaXxheQXFHXVa?=
+ =?us-ascii?Q?P80S2s/ui7jnz0hBRB2apcXdk11qQlOgrPy0DQuYWHooz8F2nF92qIgHEme6?=
+ =?us-ascii?Q?DVM3DvuLVjq0wk5HKMFokGp7vGVhDiagVO6nxq+ZZM4CxQnLr3NflMpiYS1D?=
+ =?us-ascii?Q?kP/FGKb3S+hRJa2iTIaNFbmY9lHr5mv/koGfryhd5rETEeg/WEDHQlBLiwia?=
+ =?us-ascii?Q?SaF9DfeR8SutdVF1OSfq7P5bofkFmDSTY0mJnwvNkpll6u24rmeH5KIpoNVF?=
+ =?us-ascii?Q?yVx2310B7UgvxrRGbksBCH1sMeolGbQXfd10GtDr+22bkU8SIN5X35p5bAXi?=
+ =?us-ascii?Q?jkLN/0UvJy/o44kJLIJY6lUaO2Z8RNKSJZG8NReKa32nXGKbC8woI3e8/xNN?=
+ =?us-ascii?Q?942tveqL31vhnt01QdwkqIgmenFgq/Mn4RJGsMkGzqs0jzdFJg7T2f3t2F+h?=
+ =?us-ascii?Q?4F2gkPvMLZezLza9qc3Ksvhdi1Yx9yK4F0MQBWzmlSmjz36nbiCS1NEnHPTF?=
+ =?us-ascii?Q?BSZYxQUj33S5Ca9faBSeJp3oXtGVaLADbuWRghtzTbSYQRIjTKITNmHNCH8M?=
+ =?us-ascii?Q?Uuj/V9gOOzq8OZT25Fssh/uzOx07Q2ogEsVfMDu2FfewbNnQnZj3Plnhc06q?=
+ =?us-ascii?Q?P1rti5osCbqOiL0WrTyaPeWvLbCqV78yS9pXQxuqz0yfrptwKpieifu8dMOY?=
+ =?us-ascii?Q?Bfjw5bta2SeZAUXfui6RXnwSp2638WDseJ6zFyQBryuJyBlsMkbrK1lD2cQq?=
+ =?us-ascii?Q?GyUuMPAuaKD32jwkdk7Enb43787BPGmxws8Idym7w2tNWq4pn1NpHN3/JIBd?=
+ =?us-ascii?Q?G/VqPev17UPxI7u6oE8=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: AQAAf8DxFOQJAZFkEQIhAA--.27139S2
-X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
-X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
-        ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
-        nUUI43ZEXa7xR_UUUUUUUUU==
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: CYYPR12MB8655.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6f6d1113-4c2f-4c89-51c7-08db713b7c23
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Jun 2023 03:07:30.2632
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: NcDMcxC/4SX5ZNl3Hj0rom/uC7eNbysQg2Wl3gurPn+8bBT/hNtUuWT0r+jL1ULQpnPX0qTqsb5MioqW2MdfYQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB7742
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds the support for Loongson-2 thermal sensor controller,
-which can support maximum four sensor selectors that corresponding to four
-sets of thermal control registers and one set of sampling register. The
-sensor selector can selector a speific thermal sensor as temperature input.
-The sampling register is used to obtain the temperature in real time, the
-control register GATE field is used to set the threshold of high or low
-temperature, when the input temperature is higher than the high temperature
-threshold or lower than the low temperature threshold, an interrupt will
-occur.
+[AMD Official Use Only - General]
 
-Signed-off-by: zhanghongchen <zhanghongchen@loongson.cn>
-Signed-off-by: Yinbo Zhu <zhuyinbo@loongson.cn>
----
-Change in v15:
-		1. Remove the unused head file.
-		2. Remove the invalid conditions that such as (low > high).
-		3. Use the clamp() to replace max() and min().
-		4. Use the macros to replace some constant.
-		5. Use the struct data point as data field of of_device_id.
-		6. Use the thermal_sensor_sel to replace the sensor id.
-		7. Use the thermal_zone_device_priv to replace tz->devdata.
-		8. Reword the commit log information.
-Change in v14:
-		1. Add back depends on COMPILE_TEST.
-		2. The implementation of devm_thermal_add_hwmon_sysfs has changed in
-		   recent community code that cause compile fail issue and this verison
-		   add a dev args in devm_thermal_add_hwmon_sysfs to fix compile issue.
-Change in v13:
-		1. Add a description about that how works the sensor.
-		2. Drop the COMPILE_TEST.
-		3. Rework the help prograph in LOONGSON2_THERMAL Kconfig.
-		4. Drop the 'tzd' 'irq' and 'pdev' element in loongson2_thermal_data.
-		5. Drop the reset of variable in loongson2_thermal_set.
-		6. Drop the function loongson2_thermal_get_sensor_id.
-		7. Drop the function loongson2_thermal_alarm_irq.
-		8. Rework the devm_thermal_of_zone_register.
-		9. Pass 'tzd' instead of 'data' in devm_request_threaded_irq.
-		10. Drop the "data->tzd->tzp->no_hwmon = false".
-		11. Drop the loongson2_thermal_remove.
-		12. Add the sensor id in the of_device_id data field.
-		13. Drop the save and restore function.
-Change in v12:
-		1. Fixup it about min and max.
-		2. Use dev_err_probe replace dev_err in devm_request_threaded_irq context.
-Change in v11:
-		1. Add min() and max() to replace related code in function
-		   loongson2_thermal_set.
-		2. Add dev_err_probe to to replace related code for function
-		   return value use devm_thermal_of_zone_register.
-		3. Replace thermal_add_hwmon_sysfs with devm_thermal_add_hwmon_sysfs
-		   and use dev_warn replace dev_err in this context.
-Change in v10:
-		1. Add all history change log information.
-Change in v9:
-		1. Switch new API that use devm_thermal_of_zone_register
-		   to replace previous interfaces.
-		2. Add depend on LOONGARCH || COMPILE_TEST.
-Change in v8:
-                1. Replace string loongson2/Loongson2/LOONGSON2 with loongson-2/
-                   Loongson-2/LOONGSON-2 in Kconfig and commit log and MAINTAINERS
-		   files.
-Change in v7:
-		1. Split the modification of patch 3 and merge it into this patch.
-		2. Remove the unless code annotation to fix the compile warning
-		   when compile C code with W=1.
-Change in v6:
-		1. NO change, but other patch in this series of patches set has
-		   changes.
-Change in v5:
-		1. NO change, but other patch in this series of patches set has
-		   changes.
-Change in v4:
-		1. Fixup the compatible.
-Change in v3:
-		1. Add a function to gain sensor id an remove dts id.
-Change in v2:
-		1. Remove error msg printing when addr ioremap has error.
-		2. Make loongson2 thermal driver was built-in by default.
-		3. Replace ls2k with loongson2.
-		4. Remove CONFIG_PM_SLEEP and set pm function type was
-		   __maybe_unused.
+ Hi Wyes.
 
- MAINTAINERS                         |   7 ++
- drivers/thermal/Kconfig             |  12 ++
- drivers/thermal/Makefile            |   1 +
- drivers/thermal/loongson2_thermal.c | 170 ++++++++++++++++++++++++++++
- 4 files changed, 190 insertions(+)
- create mode 100644 drivers/thermal/loongson2_thermal.c
+> -----Original Message-----
+> From: Karny, Wyes <Wyes.Karny@amd.com>
+> Sent: Tuesday, June 20, 2023 3:05 AM
+> To: trenn@suse.com; shuah@kernel.org
+> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; rafael@kernel=
+.org;
+> Shenoy, Gautham Ranjal <gautham.shenoy@amd.com>; Limonciello, Mario
+> <Mario.Limonciello@amd.com>; Huang, Ray <Ray.Huang@amd.com>; Yuan,
+> Perry <Perry.Yuan@amd.com>; Karny, Wyes <Wyes.Karny@amd.com>; Huang,
+> Ray <Ray.Huang@amd.com>; Limonciello, Mario
+> <Mario.Limonciello@amd.com>
+> Subject: [PATCH v3 5/5] cpupower: Add turbo-boost support in cpupower
+>
+> If boost sysfs (/sys/devices/system/cpu/cpufreq/boost) file is present tu=
+rbo-
+> boost is feature is supported in the hardware. By default this feature sh=
+ould be
+> enabled. But to disable/enable it write to the sysfs file. Use the same t=
+o control
+> this feature via cpupower.
+>
+> To enable:
+> cpupower set --turbo-boost 1
+>
+> To disable:
+> cpupower set --turbo-boost 0
+>
+> Acked-by: Huang Rui <ray.huang@amd.com>
+> Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+> Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+> Signed-off-by: Wyes Karny <wyes.karny@amd.com>
+> ---
+>  tools/power/cpupower/utils/cpupower-set.c    | 22 +++++++++++++++++++-
+>  tools/power/cpupower/utils/helpers/helpers.h |  3 +++
+>  tools/power/cpupower/utils/helpers/misc.c    | 18 ++++++++++++++++
+>  3 files changed, 42 insertions(+), 1 deletion(-)
+>
+> diff --git a/tools/power/cpupower/utils/cpupower-set.c
+> b/tools/power/cpupower/utils/cpupower-set.c
+> index c2ba69b7ea54..0677b58374ab 100644
+> --- a/tools/power/cpupower/utils/cpupower-set.c
+> +++ b/tools/power/cpupower/utils/cpupower-set.c
+> @@ -20,6 +20,7 @@ static struct option set_opts[] =3D {
+>       {"perf-bias", required_argument, NULL, 'b'},
+>       {"epp", required_argument, NULL, 'e'},
+>       {"amd-pstate-mode", required_argument, NULL, 'm'},
+> +     {"turbo-boost", required_argument, NULL, 't'},
+>       { },
+>  };
+>
+> @@ -41,10 +42,11 @@ int cmd_set(int argc, char **argv)
+>                       int perf_bias:1;
+>                       int epp:1;
+>                       int mode:1;
+> +                     int turbo_boost:1;
+>               };
+>               int params;
+>       } params;
+> -     int perf_bias =3D 0;
+> +     int perf_bias =3D 0, turbo_boost =3D 1;
+>       int ret =3D 0;
+>       char epp[30], mode[20];
+>
+> @@ -94,6 +96,18 @@ int cmd_set(int argc, char **argv)
+>                       }
+>                       params.mode =3D 1;
+>                       break;
+> +             case 't':
+> +                     if (params.turbo_boost)
+> +                             print_wrong_arg_exit();
+> +                     turbo_boost =3D atoi(optarg);
+> +                     if (turbo_boost < 0 || turbo_boost > 1) {
+> +                             printf("--turbo-boost param out of range [0=
+-
+> 1]\n");
+> +                             print_wrong_arg_exit();
+> +                     }
+> +                     params.turbo_boost =3D 1;
+> +                     break;
+> +
+> +
+>               default:
+>                       print_wrong_arg_exit();
+>               }
+> @@ -108,6 +122,12 @@ int cmd_set(int argc, char **argv)
+>                       fprintf(stderr, "Error setting mode\n");
+>       }
+>
+> +     if (params.turbo_boost) {
+> +             ret =3D cpupower_set_turbo_boost(turbo_boost);
+> +             if (ret)
+> +                     fprintf(stderr, "Error setting turbo-boost\n");
+> +     }
+> +
+>       /* Default is: set all CPUs */
+>       if (bitmask_isallclear(cpus_chosen))
+>               bitmask_setall(cpus_chosen);
+> diff --git a/tools/power/cpupower/utils/helpers/helpers.h
+> b/tools/power/cpupower/utils/helpers/helpers.h
+> index d35596631eef..95749b8ee475 100644
+> --- a/tools/power/cpupower/utils/helpers/helpers.h
+> +++ b/tools/power/cpupower/utils/helpers/helpers.h
+> @@ -118,6 +118,7 @@ extern unsigned long long
+> msr_intel_get_turbo_ratio(unsigned int cpu);
+>
+>  extern int cpupower_set_epp(unsigned int cpu, char *epp);  extern int
+> cpupower_set_amd_pstate_mode(char *mode);
+> +extern int cpupower_set_turbo_boost(int turbo_boost);
+>
+>  /* Read/Write msr ****************************/
+>
+> @@ -180,6 +181,8 @@ static inline int cpupower_set_epp(unsigned int cpu,
+> char *epp)  { return -1; };  static inline int
+> cpupower_set_amd_pstate_mode(char *mode)  { return -1; };
+> +static inline int cpupower_set_turbo_boost(int turbo_boost) { return
+> +-1; };
+>
+>  /* Read/Write msr ****************************/
+>
+> diff --git a/tools/power/cpupower/utils/helpers/misc.c
+> b/tools/power/cpupower/utils/helpers/misc.c
+> index 075c136a100c..76e461ff4f74 100644
+> --- a/tools/power/cpupower/utils/helpers/misc.c
+> +++ b/tools/power/cpupower/utils/helpers/misc.c
+> @@ -124,6 +124,24 @@ int cpupower_set_amd_pstate_mode(char *mode)
+>       return 0;
+>  }
+>
+> +int cpupower_set_turbo_boost(int turbo_boost) {
+> +     char path[SYSFS_PATH_MAX];
+> +     char linebuf[2] =3D {};
+> +
+> +     snprintf(path, sizeof(path), PATH_TO_CPU "cpufreq/boost");
+> +
+> +     if (!is_valid_path(path))
+> +             return -1;
+> +
+> +     snprintf(linebuf, sizeof(linebuf), "%d", turbo_boost);
+> +
+> +     if (cpupower_write_sysfs(path, linebuf, 2) <=3D 0)
+> +             return -1;
+> +
+> +     return 0;
+> +}
+> +
+>  bool cpupower_amd_pstate_enabled(void)
+>  {
+>       char *driver =3D cpufreq_get_driver(0);
+> --
+> 2.34.1
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7a91f14cad2e..f9277fa2a728 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12198,6 +12198,13 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/pinctrl/loongson,ls2k-pinctrl.yaml
- F:	drivers/pinctrl/pinctrl-loongson2.c
- 
-+LOONGSON-2 SOC SERIES THERMAL DRIVER
-+M:	zhanghongchen <zhanghongchen@loongson.cn>
-+M:	Yinbo Zhu <zhuyinbo@loongson.cn>
-+L:	linux-pm@vger.kernel.org
-+S:	Maintained
-+F:	drivers/thermal/loongson2_thermal.c
-+
- LOONGSON GPIO DRIVER
- M:	Yinbo Zhu <zhuyinbo@loongson.cn>
- L:	linux-gpio@vger.kernel.org
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 4cd7ab707315..c4de94e972f4 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -502,4 +502,16 @@ config KHADAS_MCU_FAN_THERMAL
- 	  If you say yes here you get support for the FAN controlled
- 	  by the Microcontroller found on the Khadas VIM boards.
- 
-+config LOONGSON2_THERMAL
-+	tristate "Loongson-2 SoC series thermal driver"
-+	depends on LOONGARCH || COMPILE_TEST
-+	depends on OF
-+	help
-+	  Support for Thermal driver found on Loongson-2 SoC series platforms.
-+	  The thermal driver realizes get_temp and set_trips function, which
-+	  are used to obtain the temperature of the current node and set the
-+	  temperature range to trigger the interrupt. When the input temperature
-+	  is higher than the high temperature threshold or lower than the low
-+	  temperature threshold, the interrupt will occur.
-+
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 058664bc3ec0..c934cab309ae 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -63,3 +63,4 @@ obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
- obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
- obj-$(CONFIG_SPRD_THERMAL)	+= sprd_thermal.o
- obj-$(CONFIG_KHADAS_MCU_FAN_THERMAL)	+= khadas_mcu_fan.o
-+obj-$(CONFIG_LOONGSON2_THERMAL)	+= loongson2_thermal.o
-diff --git a/drivers/thermal/loongson2_thermal.c b/drivers/thermal/loongson2_thermal.c
-new file mode 100644
-index 000000000000..2be8e0f5fea3
---- /dev/null
-+++ b/drivers/thermal/loongson2_thermal.c
-@@ -0,0 +1,170 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Author: zhanghongchen <zhanghongchen@loongson.cn>
-+ *         Yinbo Zhu <zhuyinbo@loongson.cn>
-+ * Copyright (C) 2022-2023 Loongson Technology Corporation Limited
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/minmax.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/thermal.h>
-+#include <linux/units.h>
-+#include "thermal_hwmon.h"
-+
-+#define LOONGSON2_MAX_SENSOR_SEL_NUM			3
-+
-+#define LOONGSON2_THSENS_CTRL_HI_REG			0x0
-+#define LOONGSON2_THSENS_CTRL_LOW_REG			0x8
-+#define LOONGSON2_THSENS_STATUS_REG			0x10
-+#define LOONGSON2_THSENS_OUT_REG			0x14
-+
-+#define LOONGSON2_THSENS_INT_LO				BIT(0)
-+#define LOONGSON2_THSENS_INT_HIGH			BIT(1)
-+#define LOONGSON2_THSENS_OUT_MASK			0xFF
-+
-+struct loongson2_thermal_chip_data {
-+	unsigned int	thermal_sensor_sel;
-+};
-+
-+struct loongson2_thermal_data {
-+	void __iomem	*regs;
-+	const struct loongson2_thermal_chip_data *chip_data;
-+};
-+
-+static int loongson2_thermal_set(struct loongson2_thermal_data *data,
-+					int low, int high, bool enable)
-+{
-+	u64 reg_ctrl = 0;
-+	int reg_off = data->chip_data->thermal_sensor_sel * 2;
-+
-+	low = clamp(-40, low, high);
-+	high = clamp(125, low, high);
-+
-+	low += HECTO;
-+	high += HECTO;
-+
-+	reg_ctrl = low;
-+	reg_ctrl |= enable ? 0x100 : 0;
-+	writew(reg_ctrl, data->regs + LOONGSON2_THSENS_CTRL_LOW_REG + reg_off);
-+
-+	reg_ctrl = high;
-+	reg_ctrl |= enable ? 0x100 : 0;
-+	writew(reg_ctrl, data->regs + LOONGSON2_THSENS_CTRL_HI_REG + reg_off);
-+
-+	return 0;
-+}
-+
-+static int loongson2_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
-+{
-+	u32 reg_val;
-+	struct loongson2_thermal_data *data = thermal_zone_device_priv(tz);
-+
-+	reg_val = readl(data->regs + LOONGSON2_THSENS_OUT_REG);
-+	*temp = ((reg_val & LOONGSON2_THSENS_OUT_MASK) - HECTO) * KILO;
-+
-+	return 0;
-+}
-+
-+static irqreturn_t loongson2_thermal_irq_thread(int irq, void *dev)
-+{
-+	struct thermal_zone_device *tzd = dev;
-+	struct loongson2_thermal_data *data = thermal_zone_device_priv(tzd);
-+
-+	writeb(LOONGSON2_THSENS_INT_LO | LOONGSON2_THSENS_INT_HIGH, data->regs +
-+		LOONGSON2_THSENS_STATUS_REG);
-+
-+	thermal_zone_device_update(tzd, THERMAL_EVENT_UNSPECIFIED);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int loongson2_thermal_set_trips(struct thermal_zone_device *tz, int low, int high)
-+{
-+	struct loongson2_thermal_data *data = thermal_zone_device_priv(tz);
-+
-+	return loongson2_thermal_set(data, low/MILLI, high/MILLI, true);
-+}
-+
-+static const struct thermal_zone_device_ops loongson2_of_thermal_ops = {
-+	.get_temp = loongson2_thermal_get_temp,
-+	.set_trips = loongson2_thermal_set_trips,
-+};
-+
-+static int loongson2_thermal_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct loongson2_thermal_data *data;
-+	struct thermal_zone_device *tzd;
-+	int ret, irq, i;
-+
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->chip_data = device_get_match_data(dev);
-+
-+	data->regs = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(data->regs))
-+		return PTR_ERR(data->regs);
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
-+	writeb(LOONGSON2_THSENS_INT_LO | LOONGSON2_THSENS_INT_HIGH, data->regs +
-+		LOONGSON2_THSENS_STATUS_REG);
-+
-+	loongson2_thermal_set(data, 0, 0, false);
-+
-+	for (i = 0; i <= LOONGSON2_MAX_SENSOR_SEL_NUM; i++) {
-+		tzd = devm_thermal_of_zone_register(dev, i, data,
-+			&loongson2_of_thermal_ops);
-+
-+		if (!IS_ERR(tzd))
-+			break;
-+
-+		if (PTR_ERR(tzd) != ENODEV)
-+			continue;
-+
-+		return dev_err_probe(dev, PTR_ERR(tzd), "failed to register");
-+	}
-+
-+	ret = devm_request_threaded_irq(dev, irq, NULL, loongson2_thermal_irq_thread,
-+			IRQF_ONESHOT, "loongson2_thermal", tzd);
-+	if (ret < 0)
-+		return dev_err_probe(dev, ret, "failed to request alarm irq\n");
-+
-+	if (devm_thermal_add_hwmon_sysfs(dev, tzd))
-+		dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
-+
-+	return 0;
-+}
-+
-+static const struct loongson2_thermal_chip_data loongson2_thermal_ls2k1000_data = {
-+	.thermal_sensor_sel = 0,
-+};
-+
-+static const struct of_device_id of_loongson2_thermal_match[] = {
-+	{
-+		.compatible = "loongson,ls2k1000-thermal",
-+		.data = &loongson2_thermal_ls2k1000_data,
-+	},
-+	{ /* end */ }
-+};
-+MODULE_DEVICE_TABLE(of, of_loongson2_thermal_match);
-+
-+static struct platform_driver loongson2_thermal_driver = {
-+	.driver = {
-+		.name		= "loongson2_thermal",
-+		.of_match_table = of_loongson2_thermal_match,
-+	},
-+	.probe	= loongson2_thermal_probe,
-+};
-+module_platform_driver(loongson2_thermal_driver);
-+
-+MODULE_DESCRIPTION("Loongson2 thermal driver");
-+MODULE_LICENSE("GPL");
--- 
-2.20.1
+Thanks for the  new commands for pstate driver
 
+Tested-by: Perry Yuan <Perry.Yuan@amd.com>
