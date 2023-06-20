@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E817EB64D8
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 23:01:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 347B5EB64D7
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 23:01:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229490AbjFTXB5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230012AbjFTXB5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 20 Jun 2023 19:01:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53480 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53496 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229927AbjFTXBz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 19:01:55 -0400
+        with ESMTP id S229984AbjFTXB4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 19:01:56 -0400
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3EC31A8;
-        Tue, 20 Jun 2023 16:01:53 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99E6019B;
+        Tue, 20 Jun 2023 16:01:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1687302113; x=1718838113;
+  t=1687302115; x=1718838115;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=gGpDiM9bWj9bntYZQruCdvhXBOOoc52WSEV/glzF/vQ=;
-  b=U66D3E1J6aARG5nO2ZvFAyjmHzkr2bz7TD98D3fA8gXI/HjaEVQNLpvL
-   90B2xS1WQsWFjFKA9MJ973lbjWvDd80pvXWy/vtfFtkPoJnL5zc/STNr8
-   O3WzbUvS/5rd6uRapmvo16MfUTS7ZJxRmttpXRrHIIZsns2UdRtAsHwvs
-   5S/dq/+segZRDWJxCxpMDph3KjX2IsjWuD8UCEaTvV/PfzBDBZ7Qt8UHs
-   TbWKs5y1Ac9DhhjreWgnynOj4kQ9XOkd73XJROmQvIy6GCO/6PVcMpZG7
-   5IziW1GsA5pX/J55FW44UVk/PKjPcn9Yl+DKV0noMmxzb9h9HTquZnMFx
+  bh=CEYJChC6OvSO8x/YfH7LNbtmj//EuKold9s1r0acTp8=;
+  b=fVVErAIbLReqPQ/oFsaLqwL1e5WAIv5rVSLyuZCADy2T4ZiPw4e+XIxk
+   wGvAfpJ+O3IhBYIgIKuZhPT9szxjq96QRV+i0gGMcyRZ5d0HagGFyg5XN
+   CvNmTvR0SFH1Lcz82LT0is5jlqsXnlKwExutbF74scopB9/u4V4pp0QpZ
+   ZfFQhEH7Y9NHVyb0aGVusalNG5UqtXQMtebF3PWAaDLERwsh9g1rwLcfC
+   Y/Tw7EyQwz6WQ16E3Au0ejKHsRvPW/eFoNabwN4Nf8q6EoFnjmii3njbA
+   hqAMl1sJPpqBzvBSyGH6imCmJySn72BApjniRP+pe8Tel8XVZsqLkpCIa
    A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="340347272"
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="340347281"
 X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; 
-   d="scan'208";a="340347272"
+   d="scan'208";a="340347281"
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2023 16:01:53 -0700
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2023 16:01:54 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="1044465309"
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="1044465323"
 X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; 
-   d="scan'208";a="1044465309"
+   d="scan'208";a="1044465323"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
-  by fmsmga005.fm.intel.com with ESMTP; 20 Jun 2023 16:01:52 -0700
+  by fmsmga005.fm.intel.com with ESMTP; 20 Jun 2023 16:01:53 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 1/7] thermal: int340x: processor_thermal: Move mailbox code to common module
-Date:   Tue, 20 Jun 2023 16:01:44 -0700
-Message-Id: <20230620230150.3068704-2-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 3/7] thermal: int340x: processor_thermal: Use non MSI interrupts
+Date:   Tue, 20 Jun 2023 16:01:46 -0700
+Message-Id: <20230620230150.3068704-4-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230620230150.3068704-1-srinivas.pandruvada@linux.intel.com>
 References: <20230620230150.3068704-1-srinivas.pandruvada@linux.intel.com>
@@ -54,435 +54,85 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The processor thermal mailbox is used for workload type request and
-also in the processor thermal RFIM module. So, move the workload type
-request code to its own module from the current processor thermal
-mailbox module.
+There are issues in using MSI interrupts for processor thermal device.
+The support is not consistent, across generations. Even in the same
+generation, there are issue in getting interrupts via MSI.
 
-processor_thermal_mailbox.c contains only mailbox read/write related
-source code. The source related to workload_types requests is moved to
-a module processor_thermal_wlt_req.c.
-
-In addition
--Rename PROC_THERMAL_FEATURE_MBOX to PROC_THERMAL_FEATURE_WLT_REQ.
-- proc_thermal_mbox_add(), which adds workload type sysfs attribute group
-is renamed to proc_thermal_wlt_req_add().
--proc_thermal_mbox_remove() is renamed to proc_thermal_wlt_req_remove().
-
-While here, resolve check patch warnings for 100 columns for only modified
-lines.
-
-No functional changes are expected.
+Hence always use legacy PCI interrupts by default, instead of MSI.
+Add a module param to use of MSI, so that MSI can be still used.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- .../thermal/intel/int340x_thermal/Makefile    |   1 +
- .../processor_thermal_device.c                |   8 +-
- .../processor_thermal_device.h                |  12 +-
- .../processor_thermal_device_pci.c            |  10 +-
- .../processor_thermal_device_pci_legacy.c     |   3 +-
- .../int340x_thermal/processor_thermal_mbox.c  | 130 -----------------
- .../processor_thermal_wlt_req.c               | 137 ++++++++++++++++++
- 7 files changed, 160 insertions(+), 141 deletions(-)
- create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_wlt_req.c
+ .../processor_thermal_device_pci.c            | 33 ++++++++++++-------
+ 1 file changed, 22 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/Makefile b/drivers/thermal/intel/int340x_thermal/Makefile
-index 4e852ce4a5d5..76e053e541f0 100644
---- a/drivers/thermal/intel/int340x_thermal/Makefile
-+++ b/drivers/thermal/intel/int340x_thermal/Makefile
-@@ -10,5 +10,6 @@ obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_device_pci.o
- obj-$(CONFIG_PROC_THERMAL_MMIO_RAPL) += processor_thermal_rapl.o
- obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_rfim.o
- obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_mbox.o
-+obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_wlt_req.o
- obj-$(CONFIG_INT3406_THERMAL)	+= int3406_thermal.o
- obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index 3ca0a2f5937f..48f6c72b05f6 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -346,8 +346,8 @@ int proc_thermal_mmio_add(struct pci_dev *pdev,
- 		}
- 	}
- 
--	if (feature_mask & PROC_THERMAL_FEATURE_MBOX) {
--		ret = proc_thermal_mbox_add(pdev, proc_priv);
-+	if (feature_mask & PROC_THERMAL_FEATURE_WLT_REQ) {
-+		ret = proc_thermal_wlt_req_add(pdev, proc_priv);
- 		if (ret) {
- 			dev_err(&pdev->dev, "failed to add MBOX interface\n");
- 			goto err_rem_rfim;
-@@ -374,8 +374,8 @@ void proc_thermal_mmio_remove(struct pci_dev *pdev, struct proc_thermal_device *
- 	    proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_DVFS)
- 		proc_thermal_rfim_remove(pdev);
- 
--	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_MBOX)
--		proc_thermal_mbox_remove(pdev);
-+	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_WLT_REQ)
-+		proc_thermal_wlt_req_remove(pdev);
- }
- EXPORT_SYMBOL_GPL(proc_thermal_mmio_remove);
- 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-index 7acaa8f1b896..7cdeca2edc21 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-@@ -59,7 +59,7 @@ struct rapl_mmio_regs {
- #define PROC_THERMAL_FEATURE_RAPL	0x01
- #define PROC_THERMAL_FEATURE_FIVR	0x02
- #define PROC_THERMAL_FEATURE_DVFS	0x04
--#define PROC_THERMAL_FEATURE_MBOX	0x08
-+#define PROC_THERMAL_FEATURE_WLT_REQ	0x08
- #define PROC_THERMAL_FEATURE_DLVR	0x10
- 
- #if IS_ENABLED(CONFIG_PROC_THERMAL_MMIO_RAPL)
-@@ -80,8 +80,14 @@ static void __maybe_unused proc_thermal_rapl_remove(void)
- int proc_thermal_rfim_add(struct pci_dev *pdev, struct proc_thermal_device *proc_priv);
- void proc_thermal_rfim_remove(struct pci_dev *pdev);
- 
--int proc_thermal_mbox_add(struct pci_dev *pdev, struct proc_thermal_device *proc_priv);
--void proc_thermal_mbox_remove(struct pci_dev *pdev);
-+int proc_thermal_wlt_req_add(struct pci_dev *pdev, struct proc_thermal_device *proc_priv);
-+void proc_thermal_wlt_req_remove(struct pci_dev *pdev);
-+
-+#define MBOX_CMD_WORKLOAD_TYPE_READ	0x0E
-+#define MBOX_CMD_WORKLOAD_TYPE_WRITE	0x0F
-+
-+#define MBOX_DATA_BIT_AC_DC		30
-+#define MBOX_DATA_BIT_VALID		31
- 
- int processor_thermal_send_mbox_read_cmd(struct pci_dev *pdev, u16 id, u64 *resp);
- int processor_thermal_send_mbox_write_cmd(struct pci_dev *pdev, u16 id, u32 data);
 diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-index 0d1e98007270..5a2bcfff0a68 100644
+index 5a2bcfff0a68..057778f7bece 100644
 --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
 +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -350,9 +350,13 @@ static SIMPLE_DEV_PM_OPS(proc_thermal_pci_pm, proc_thermal_pci_suspend,
- 			 proc_thermal_pci_resume);
+@@ -15,6 +15,11 @@
  
- static const struct pci_device_id proc_thermal_pci_ids[] = {
--	{ PCI_DEVICE_DATA(INTEL, ADL_THERMAL, PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_MBOX) },
--	{ PCI_DEVICE_DATA(INTEL, MTLP_THERMAL, PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_MBOX | PROC_THERMAL_FEATURE_DLVR) },
--	{ PCI_DEVICE_DATA(INTEL, RPL_THERMAL, PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_MBOX) },
-+	{ PCI_DEVICE_DATA(INTEL, ADL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
-+	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WLT_REQ) },
-+	{ PCI_DEVICE_DATA(INTEL, MTLP_THERMAL, PROC_THERMAL_FEATURE_RAPL |
-+	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WLT_REQ |
-+	  PROC_THERMAL_FEATURE_DLVR) },
-+	{ PCI_DEVICE_DATA(INTEL, RPL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
-+	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WLT_REQ) },
- 	{ },
- };
+ #define DRV_NAME "proc_thermal_pci"
  
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c
-index 09e032f822f3..b8c58a44fb93 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c
-@@ -137,7 +137,8 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
- 	{ PCI_DEVICE_DATA(INTEL, ICL_THERMAL, PROC_THERMAL_FEATURE_RAPL) },
- 	{ PCI_DEVICE_DATA(INTEL, JSL_THERMAL, 0) },
- 	{ PCI_DEVICE_DATA(INTEL, SKL_THERMAL, PROC_THERMAL_FEATURE_RAPL) },
--	{ PCI_DEVICE_DATA(INTEL, TGL_THERMAL, PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_MBOX) },
-+	{ PCI_DEVICE_DATA(INTEL, TGL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
-+	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_WLT_REQ) },
- 	{ },
- };
++static int msi_enabled;
++module_param(msi_enabled, int, 0644);
++MODULE_PARM_DESC(msi_enabled,
++	"Use PCI MSI based interrupts for processor thermal device.");
++
+ struct proc_thermal_pci {
+ 	struct pci_dev *pdev;
+ 	struct proc_thermal_device *proc_priv;
+@@ -219,8 +224,6 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 		return ret;
+ 	}
  
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_mbox.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_mbox.c
-index 0b89a4340ff4..ec766c5615b7 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_mbox.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_mbox.c
-@@ -10,18 +10,12 @@
- #include <linux/io-64-nonatomic-lo-hi.h>
- #include "processor_thermal_device.h"
+-	pci_set_master(pdev);
+-
+ 	INIT_DELAYED_WORK(&pci_info->work, proc_thermal_threshold_work_fn);
  
--#define MBOX_CMD_WORKLOAD_TYPE_READ	0x0E
--#define MBOX_CMD_WORKLOAD_TYPE_WRITE	0x0F
--
- #define MBOX_OFFSET_DATA		0x5810
- #define MBOX_OFFSET_INTERFACE		0x5818
+ 	ret = proc_thermal_add(&pdev->dev, proc_priv);
+@@ -248,16 +251,23 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 		goto err_ret_mmio;
+ 	}
  
- #define MBOX_BUSY_BIT			31
- #define MBOX_RETRY_COUNT		100
+-	/* request and enable interrupt */
+-	ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "Failed to allocate vectors!\n");
+-		goto err_ret_tzone;
+-	}
+-	if (!pdev->msi_enabled && !pdev->msix_enabled)
++	if (msi_enabled) {
++		pci_set_master(pdev);
++		/* request and enable interrupt */
++		ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
++		if (ret < 0) {
++			dev_err(&pdev->dev, "Failed to allocate vectors!\n");
++			goto err_ret_tzone;
++		}
++		if (!pdev->msi_enabled && !pdev->msix_enabled)
++			irq_flag = IRQF_SHARED;
++
++		irq =  pci_irq_vector(pdev, 0);
++	} else {
+ 		irq_flag = IRQF_SHARED;
++		irq = pdev->irq;
++	}
  
--#define MBOX_DATA_BIT_VALID		31
--#define MBOX_DATA_BIT_AC_DC		30
--
- static DEFINE_MUTEX(mbox_lock);
+-	irq =  pci_irq_vector(pdev, 0);
+ 	ret = devm_request_threaded_irq(&pdev->dev, irq,
+ 					proc_thermal_irq_handler, NULL,
+ 					irq_flag, KBUILD_MODNAME, pci_info);
+@@ -273,7 +283,8 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 	return 0;
  
- static int wait_for_mbox_ready(struct proc_thermal_device *proc_priv)
-@@ -114,128 +108,4 @@ int processor_thermal_send_mbox_write_cmd(struct pci_dev *pdev, u16 id, u32 data
- }
- EXPORT_SYMBOL_NS_GPL(processor_thermal_send_mbox_write_cmd, INT340X_THERMAL);
- 
--/* List of workload types */
--static const char * const workload_types[] = {
--	"none",
--	"idle",
--	"semi_active",
--	"bursty",
--	"sustained",
--	"battery_life",
--	NULL
--};
--
--static ssize_t workload_available_types_show(struct device *dev,
--					       struct device_attribute *attr,
--					       char *buf)
--{
--	int i = 0;
--	int ret = 0;
--
--	while (workload_types[i] != NULL)
--		ret += sprintf(&buf[ret], "%s ", workload_types[i++]);
--
--	ret += sprintf(&buf[ret], "\n");
--
--	return ret;
--}
--
--static DEVICE_ATTR_RO(workload_available_types);
--
--static ssize_t workload_type_store(struct device *dev,
--				    struct device_attribute *attr,
--				    const char *buf, size_t count)
--{
--	struct pci_dev *pdev = to_pci_dev(dev);
--	char str_preference[15];
--	u32 data = 0;
--	ssize_t ret;
--
--	ret = sscanf(buf, "%14s", str_preference);
--	if (ret != 1)
--		return -EINVAL;
--
--	ret = match_string(workload_types, -1, str_preference);
--	if (ret < 0)
--		return ret;
--
--	ret &= 0xff;
--
--	if (ret)
--		data = BIT(MBOX_DATA_BIT_VALID) | BIT(MBOX_DATA_BIT_AC_DC);
--
--	data |= ret;
--
--	ret = send_mbox_write_cmd(pdev, MBOX_CMD_WORKLOAD_TYPE_WRITE, data);
--	if (ret)
--		return false;
--
--	return count;
--}
--
--static ssize_t workload_type_show(struct device *dev,
--				   struct device_attribute *attr,
--				   char *buf)
--{
--	struct pci_dev *pdev = to_pci_dev(dev);
--	u64 cmd_resp;
--	int ret;
--
--	ret = send_mbox_read_cmd(pdev, MBOX_CMD_WORKLOAD_TYPE_READ, &cmd_resp);
--	if (ret)
--		return false;
--
--	cmd_resp &= 0xff;
--
--	if (cmd_resp > ARRAY_SIZE(workload_types) - 1)
--		return -EINVAL;
--
--	return sprintf(buf, "%s\n", workload_types[cmd_resp]);
--}
--
--static DEVICE_ATTR_RW(workload_type);
--
--static struct attribute *workload_req_attrs[] = {
--	&dev_attr_workload_available_types.attr,
--	&dev_attr_workload_type.attr,
--	NULL
--};
--
--static const struct attribute_group workload_req_attribute_group = {
--	.attrs = workload_req_attrs,
--	.name = "workload_request"
--};
--
--static bool workload_req_created;
--
--int proc_thermal_mbox_add(struct pci_dev *pdev, struct proc_thermal_device *proc_priv)
--{
--	u64 cmd_resp;
--	int ret;
--
--	/* Check if there is a mailbox support, if fails return success */
--	ret = send_mbox_read_cmd(pdev, MBOX_CMD_WORKLOAD_TYPE_READ, &cmd_resp);
--	if (ret)
--		return 0;
--
--	ret = sysfs_create_group(&pdev->dev.kobj, &workload_req_attribute_group);
--	if (ret)
--		return ret;
--
--	workload_req_created = true;
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(proc_thermal_mbox_add);
--
--void proc_thermal_mbox_remove(struct pci_dev *pdev)
--{
--	if (workload_req_created)
--		sysfs_remove_group(&pdev->dev.kobj, &workload_req_attribute_group);
--
--	workload_req_created = false;
--
--}
--EXPORT_SYMBOL_GPL(proc_thermal_mbox_remove);
--
- MODULE_LICENSE("GPL v2");
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_wlt_req.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_wlt_req.c
-new file mode 100644
-index 000000000000..d22c86fad231
---- /dev/null
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_wlt_req.c
-@@ -0,0 +1,137 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * processor thermal device for Workload type hints
-+ * update from user space
-+ *
-+ * Copyright (c) 2020-2023, Intel Corporation.
-+ */
-+
-+#include <linux/pci.h>
-+#include "processor_thermal_device.h"
-+
-+/* List of workload types */
-+static const char * const workload_types[] = {
-+	"none",
-+	"idle",
-+	"semi_active",
-+	"bursty",
-+	"sustained",
-+	"battery_life",
-+	NULL
-+};
-+
-+static ssize_t workload_available_types_show(struct device *dev,
-+					       struct device_attribute *attr,
-+					       char *buf)
-+{
-+	int i = 0;
-+	int ret = 0;
-+
-+	while (workload_types[i] != NULL)
-+		ret += sprintf(&buf[ret], "%s ", workload_types[i++]);
-+
-+	ret += sprintf(&buf[ret], "\n");
-+
-+	return ret;
-+}
-+
-+static DEVICE_ATTR_RO(workload_available_types);
-+
-+static ssize_t workload_type_store(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t count)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	char str_preference[15];
-+	u32 data = 0;
-+	ssize_t ret;
-+
-+	ret = sscanf(buf, "%14s", str_preference);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	ret = match_string(workload_types, -1, str_preference);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret &= 0xff;
-+
-+	if (ret)
-+		data = BIT(MBOX_DATA_BIT_VALID) | BIT(MBOX_DATA_BIT_AC_DC);
-+
-+	data |= ret;
-+
-+	ret = processor_thermal_send_mbox_write_cmd(pdev, MBOX_CMD_WORKLOAD_TYPE_WRITE, data);
-+	if (ret)
-+		return false;
-+
-+	return count;
-+}
-+
-+static ssize_t workload_type_show(struct device *dev,
-+				   struct device_attribute *attr,
-+				   char *buf)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	u64 cmd_resp;
-+	int ret;
-+
-+	ret = processor_thermal_send_mbox_read_cmd(pdev, MBOX_CMD_WORKLOAD_TYPE_READ, &cmd_resp);
-+	if (ret)
-+		return false;
-+
-+	cmd_resp &= 0xff;
-+
-+	if (cmd_resp > ARRAY_SIZE(workload_types) - 1)
-+		return -EINVAL;
-+
-+	return sprintf(buf, "%s\n", workload_types[cmd_resp]);
-+}
-+
-+static DEVICE_ATTR_RW(workload_type);
-+
-+static struct attribute *workload_req_attrs[] = {
-+	&dev_attr_workload_available_types.attr,
-+	&dev_attr_workload_type.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group workload_req_attribute_group = {
-+	.attrs = workload_req_attrs,
-+	.name = "workload_request"
-+};
-+
-+static bool workload_req_created;
-+
-+int proc_thermal_wlt_req_add(struct pci_dev *pdev, struct proc_thermal_device *proc_priv)
-+{
-+	u64 cmd_resp;
-+	int ret;
-+
-+	/* Check if there is a mailbox support, if fails return success */
-+	ret = processor_thermal_send_mbox_read_cmd(pdev, MBOX_CMD_WORKLOAD_TYPE_READ, &cmd_resp);
-+	if (ret)
-+		return 0;
-+
-+	ret = sysfs_create_group(&pdev->dev.kobj, &workload_req_attribute_group);
-+	if (ret)
-+		return ret;
-+
-+	workload_req_created = true;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(proc_thermal_wlt_req_add);
-+
-+void proc_thermal_wlt_req_remove(struct pci_dev *pdev)
-+{
-+	if (workload_req_created)
-+		sysfs_remove_group(&pdev->dev.kobj, &workload_req_attribute_group);
-+
-+	workload_req_created = false;
-+
-+}
-+EXPORT_SYMBOL_GPL(proc_thermal_wlt_req_remove);
-+
-+MODULE_IMPORT_NS(INT340X_THERMAL);
-+MODULE_LICENSE("GPL");
+ err_free_vectors:
+-	pci_free_irq_vectors(pdev);
++	if (msi_enabled)
++		pci_free_irq_vectors(pdev);
+ err_ret_tzone:
+ 	thermal_zone_device_unregister(pci_info->tzone);
+ err_ret_mmio:
 -- 
 2.38.1
 
