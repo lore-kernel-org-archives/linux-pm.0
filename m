@@ -2,70 +2,90 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 758DAEB64D7
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 22:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03039EB64D7
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 23:01:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229987AbjFTWyB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Jun 2023 18:54:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49140 "EHLO
+        id S229740AbjFTXBy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Jun 2023 19:01:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230050AbjFTWxz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 18:53:55 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7376310FB;
-        Tue, 20 Jun 2023 15:53:54 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 0729C61236;
-        Tue, 20 Jun 2023 22:53:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 677ECC433C8;
-        Tue, 20 Jun 2023 22:53:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1687301633;
-        bh=DYOYjPlSbQzXxNe29cAO4SrS8OWRou7BUvM3i0H7qDI=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=A+yr30052SoI3c5NQogTvRHULd31WhPXSapzN7LXeuPhQZEECkcD/7IOjNbQ4yyZl
-         sNWZRwfsF5MrU+Brnw5i4zB9Js4JtejAErifnLL+MasXCgpFmNjjIvctiqWXdWgwjv
-         Zq31zWTspozn7XoKutD0o2SJsBFBZTfBBaoEehIlZYJFmzR0M1GERCV6KnSAkJOi+b
-         K4QgMoVNss7yQ46I6gY/EQlyY4LTzU5ixkz99G1G9FSFopRLunnodfqnSwS+JYX+hx
-         +jTUnhppg+ceiXqy5DMRk8Nwnl1SKL2vYck+RzmNUGPfIH191+S7bAspt5MUHWaou+
-         xYLticSvtWL+Q==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 4E2F4E301FA;
-        Tue, 20 Jun 2023 22:53:53 +0000 (UTC)
-Subject: Re: [GIT PULL] Thermal control fix for v6.4-rc8
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0irirNR8h5JNkdsKTZACpBYXa7mLv55F-i6cYa03jZD1g@mail.gmail.com>
-References: <CAJZ5v0irirNR8h5JNkdsKTZACpBYXa7mLv55F-i6cYa03jZD1g@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0irirNR8h5JNkdsKTZACpBYXa7mLv55F-i6cYa03jZD1g@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.4-rc8
-X-PR-Tracked-Commit-Id: 0bb619f9227aa370330d2b309733d74750705053
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: c74e2ac2383fd687bf2f8dd3f29f674cbd0cdaea
-Message-Id: <168730163331.29619.2128765180034365688.pr-tracker-bot@kernel.org>
-Date:   Tue, 20 Jun 2023 22:53:53 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
+        with ESMTP id S229490AbjFTXBx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 19:01:53 -0400
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1369DCD;
+        Tue, 20 Jun 2023 16:01:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1687302113; x=1718838113;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=3scmrHiO9Vv1GlTgKaHXVhjTGp+yDjWKCxzKgtQ9CBo=;
+  b=em8Bvp1+sR1/lj2BeIGdGBJ1MOZjKWAQKNULhedM3cFIx3QGZl6kHU9i
+   kXPP5nIhsJjHYxEFi1B5O2N+76JIEqsqEnW+7rgkq/fXlHjzXU49nIMTo
+   +AlRHnKh9fAj57T8U5qNUdS5KZpK2Lb9dvChrNZu7sO8UhTKYiu/8Twk/
+   nQANR2ZJHn/25ezcZN5KSxcixqNjw3e3WrlfG8ZssqP3Q1bRSCf6IyVx5
+   pzTf51mM8LvSb1br4SgGufMfvWfHYENUotx9F6JDzwi+p6IL9qI8d9C0h
+   WiQjfBdO4XobZhNFHMApU/s4H9cel/uDULcXupVVLPhai5JAn6Qm88qqQ
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="340347267"
+X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; 
+   d="scan'208";a="340347267"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2023 16:01:52 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="1044465303"
+X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; 
+   d="scan'208";a="1044465303"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
+  by fmsmga005.fm.intel.com with ESMTP; 20 Jun 2023 16:01:52 -0700
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 0/7] thermal: processor_thermal: Suport workload hint
+Date:   Tue, 20 Jun 2023 16:01:43 -0700
+Message-Id: <20230620230150.3068704-1-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.39.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Tue, 20 Jun 2023 18:11:41 +0200:
+Add support for Meteor Lake workload hints. Before adding this support,
+some reorganization and clean up is required.
+First four changes are for clean up and to reorganize code to add
+support for workload hint. The last patch adds a test program as part
+of self tests.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-6.4-rc8
+Srinivas Pandruvada (7):
+  thermal: int340x: processor_thermal: Move mailbox code to common
+    module
+  thermal: int340x: processor_thermal: Add interrupt configuration
+  thermal: int340x: processor_thermal: Use non MSI interrupts
+  thermal/drivers/int340x: Remove PROC_THERMAL_FEATURE_WLT_REQ for
+    Meteor Lake
+  thermal: int340x: processor_thermal: Add workload type hint
+  thermal/drivers/int340x: Support workload hint interrupts
+  selftests/thermel/intel: Add test to read workload hint
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/c74e2ac2383fd687bf2f8dd3f29f674cbd0cdaea
-
-Thank you!
+ .../driver-api/thermal/intel_dptf.rst         |  38 +++
+ .../thermal/intel/int340x_thermal/Makefile    |   2 +
+ .../processor_thermal_device.c                |  17 +-
+ .../processor_thermal_device.h                |  21 +-
+ .../processor_thermal_device_pci.c            |  76 ++++--
+ .../processor_thermal_device_pci_legacy.c     |   3 +-
+ .../int340x_thermal/processor_thermal_mbox.c  | 179 ++++---------
+ .../processor_thermal_wlt_hint.c              | 239 ++++++++++++++++++
+ .../processor_thermal_wlt_req.c               | 137 ++++++++++
+ .../testing/selftests/thermal/intel/Makefile  |  16 ++
+ .../thermal/intel/workload_hint_test.c        | 114 +++++++++
+ 11 files changed, 680 insertions(+), 162 deletions(-)
+ create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_wlt_hint.c
+ create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_wlt_req.c
+ create mode 100644 tools/testing/selftests/thermal/intel/Makefile
+ create mode 100644 tools/testing/selftests/thermal/intel/workload_hint_test.c
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.38.1
+
