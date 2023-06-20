@@ -2,226 +2,93 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AEBF3EB64D7
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 06:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E456EB64D7
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 09:08:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229731AbjFTG1C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Jun 2023 02:27:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41690 "EHLO
+        id S231649AbjFTJIZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Jun 2023 05:08:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229597AbjFTG1C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 02:27:02 -0400
-Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A93B81A5
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jun 2023 23:27:00 -0700 (PDT)
-X-GND-Sasl: miquel.raynal@bootlin.com
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-        t=1687242419;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=7pl6qCNBQeotbXsdQRYataHay2+MrATT6vr5AKa1Xc8=;
-        b=n0DLBu/0zLrq8qT4ZF0wn6HAIyqtn4wQMCPiYIDg+qNZcEkLArU7QPCOWAcUrxng5u+k8e
-        0DsaH6TPnKLn9WqeNxmG+UEBNsID/fpHmRgGX1fdPX2n2PzXTs+C9l3BiZs5b5tifWyv9i
-        KYyFVqVMNd2GLPWMB3BW+3swrHAnx/3eWdst7C5nFZnAsGag6bpLDXVAd80W3Z/GO6zVqj
-        gWOIvkxXdvUWpczm0oo3epTKFCWpnXk18lJ+nDx/q+FTZCSXMsyIO4E9zxJB4KdsP5t11J
-        qZip9iV/yQ/NkOiPNCZlWXcsyn/HnQDiW+MPEvpmKnFVRjQoOwBqAzEsvUAQsg==
-X-GND-Sasl: miquel.raynal@bootlin.com
-X-GND-Sasl: miquel.raynal@bootlin.com
-X-GND-Sasl: miquel.raynal@bootlin.com
-X-GND-Sasl: miquel.raynal@bootlin.com
-X-GND-Sasl: miquel.raynal@bootlin.com
-X-GND-Sasl: miquel.raynal@bootlin.com
-X-GND-Sasl: miquel.raynal@bootlin.com
-X-GND-Sasl: miquel.raynal@bootlin.com
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 6FD6D40007;
-        Tue, 20 Jun 2023 06:26:58 +0000 (UTC)
-From:   Miquel Raynal <miquel.raynal@bootlin.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        linux-pm@vger.kernel.org, <linux-arm-kernel@lists.infradead.org>,
-        Kamel Bouhara <kamel.bouhara@bootlin.com>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v4] power: reset: at91-reset: add sysfs interface to the power on reason
-Date:   Tue, 20 Jun 2023 08:26:57 +0200
-Message-Id: <20230620062657.3127468-1-miquel.raynal@bootlin.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S230037AbjFTJIW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 05:08:22 -0400
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E908AC2;
+        Tue, 20 Jun 2023 02:08:19 -0700 (PDT)
+Received: from loongson.cn (unknown [10.20.42.35])
+        by gateway (Coremail) with SMTP id _____8Cxd+mCbJFkkSMHAA--.12734S3;
+        Tue, 20 Jun 2023 17:08:18 +0800 (CST)
+Received: from user-pc.202.106.0.20 (unknown [10.20.42.35])
+        by localhost.localdomain (Coremail) with SMTP id AQAAf8BxTMp8bJFkG30hAA--.19516S2;
+        Tue, 20 Jun 2023 17:08:16 +0800 (CST)
+From:   Yinbo Zhu <zhuyinbo@loongson.cn>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Liu Yun <liuyun@loongson.cn>
+Cc:     Jianmin Lv <lvjianmin@loongson.cn>, wanghongliang@loongson.cn,
+        Liu Peibao <liupeibao@loongson.cn>,
+        loongson-kernel@lists.loongnix.cn, Yinbo Zhu <zhuyinbo@loongson.cn>
+Subject: [PATCH v4 0/2] soc: loongson2_pm: add power management support
+Date:   Tue, 20 Jun 2023 17:08:09 +0800
+Message-Id: <20230620090811.721-1-zhuyinbo@loongson.cn>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: AQAAf8BxTMp8bJFkG30hAA--.19516S2
+X-CM-SenderInfo: 52kx5xhqerqz5rrqw2lrqou0/
+X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
+        ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
+        nUUI43ZEXa7xR_UUUUUUUUU==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Kamel Bouhara <kamel.bouhara@bootlin.com>
+Loongson-2 platform support Power Management Controller (ACPI) and this
+series patch was to add PM driver that base on dts and PM binding support.
 
-Introduce a list of generic reset sources and use them to export the
-power on reason through sysfs. Update the ABI documentation to describe
-this new interface.
+Change in v4:
+		1. The patch "[PATCH v3 1/3] loongarch: export some arch-specific
+		   pm interfaces" had been merged into linux-next tree thus this
+		   v4 series patch need drop it and need depend on it and it's
+		   patch link was:
+https://lore.kernel.org/all/20230615091757.24686-2-zhuyinbo@loongson.cn/
+		2. Remove the pmc label in dt-binding patch.
+		3. Add the Co-developed-by for driver patch.
+		4. Simplify the loongson2_suspend_valid_state that "return
+		   (state == PM_SUSPEND_MEM)".
+		5. Use Using loongson2_pm_irq_enable() to replace.
+		   loongson2_power_button_irq_enable().
+		6. Remove the "oneOf" in dt-bindings patch.
+		7. Replace "suspend-address" that use "loongson,suspend-address".
+		8. Use u64 type that for "loongson,suspend-address".
+		9. Rename "pm" to "power-mangement" in dt-bindings patch.
+		10. Add the reivewed-by for dt-bindings patch.
+Change in v3:
+		1. Reword the [1/3] patch commit log and title.
+		2. Use the old naming for suspend interface for the [1/3] and
+		   [3/3] patch.
+		3. Combine some small function in the driver patch.
+		4. Rename 'pwrbt' to 'button' in the driver patch.
+		5. Use the specific compatible in yaml file.
+Change in v2:
+		1. Fixup the "suspend-address" description.
+		2. Remove the "return -EINVAL" in PM driver probe when firmware
+		   no configure "suspend-address" property in dts in oder to
+		   other PM state to work.
 
-Signed-off-by: Kamel Bouhara <kamel.bouhara@bootlin.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-[Miquel Raynal: Follow-up on Kamel's work, 4 years later]
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
+Yinbo Zhu (2):
+  soc: dt-bindings: add loongson-2 pm
+  soc: loongson2_pm: add power management support
 
-Changes in v4:
-* Patch 1/2 was merged.
-* Changed the "low-power condition" into a "brown-out reset" as
-  suggested by Sebastian.
+ .../soc/loongson/loongson,ls2k-pmc.yaml       |  52 +++++
+ MAINTAINERS                                   |   7 +
+ drivers/soc/loongson/Kconfig                  |  10 +
+ drivers/soc/loongson/Makefile                 |   1 +
+ drivers/soc/loongson/loongson2_pm.c           | 215 ++++++++++++++++++
+ 5 files changed, 285 insertions(+)
 
-Changes in v3:
-* Made the series bisectable.
-* Updated the date and kernel version for this new feature.
-* Changed a few definitions as discussed with Sebastian.
-
-Changes in v2:
-* Collected Nicolas' Acked-by
-* Dropped the Xtal frequency information (as this may change between
-  platforms of course).
-
- .../testing/sysfs-platform-power-on-reason    | 12 ++++++
- drivers/power/reset/at91-reset.c              | 37 ++++++++++++++-----
- include/linux/power/power_on_reason.h         | 19 ++++++++++
- 3 files changed, 58 insertions(+), 10 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-platform-power-on-reason
- create mode 100644 include/linux/power/power_on_reason.h
-
-diff --git a/Documentation/ABI/testing/sysfs-platform-power-on-reason b/Documentation/ABI/testing/sysfs-platform-power-on-reason
-new file mode 100644
-index 000000000000..c3b29dbc64bf
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-platform-power-on-reason
-@@ -0,0 +1,12 @@
-+What:		/sys/devices/platform/.../power_on_reason
-+Date:		June 2023
-+KernelVersion:	6.5
-+Contact:	Kamel Bouhara <kamel.bouhara@bootlin.com>
-+Description:	Shows system power on reason. The following strings/reasons can
-+		be read (the list can be extended):
-+		"regular power-up", "RTC wakeup", "watchdog timeout",
-+		"software reset", "reset button action", "CPU clock failure",
-+		"crystal oscillator failure", "brown-out reset",
-+		"unknown reason".
-+
-+		The file is read only.
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index d6884841a6dc..aa9b012d3d00 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -18,6 +18,7 @@
- #include <linux/platform_device.h>
- #include <linux/reboot.h>
- #include <linux/reset-controller.h>
-+#include <linux/power/power_on_reason.h>
- 
- #include <soc/at91/at91sam9_ddrsdr.h>
- #include <soc/at91/at91sam9_sdramc.h>
-@@ -149,44 +150,54 @@ static int at91_reset(struct notifier_block *this, unsigned long mode,
- 	return NOTIFY_DONE;
- }
- 
--static const char * __init at91_reset_reason(struct at91_reset *reset)
-+static const char *at91_reset_reason(struct at91_reset *reset)
- {
- 	u32 reg = readl(reset->rstc_base + AT91_RSTC_SR);
- 	const char *reason;
- 
- 	switch ((reg & AT91_RSTC_RSTTYP) >> 8) {
- 	case RESET_TYPE_GENERAL:
--		reason = "general reset";
-+		reason = POWER_ON_REASON_REGULAR;
- 		break;
- 	case RESET_TYPE_WAKEUP:
--		reason = "wakeup";
-+		reason = POWER_ON_REASON_RTC;
- 		break;
- 	case RESET_TYPE_WATCHDOG:
--		reason = "watchdog reset";
-+		reason = POWER_ON_REASON_WATCHDOG;
- 		break;
- 	case RESET_TYPE_SOFTWARE:
--		reason = "software reset";
-+		reason = POWER_ON_REASON_SOFTWARE;
- 		break;
- 	case RESET_TYPE_USER:
--		reason = "user reset";
-+		reason = POWER_ON_REASON_RST_BTN;
- 		break;
- 	case RESET_TYPE_CPU_FAIL:
--		reason = "CPU clock failure detection";
-+		reason = POWER_ON_REASON_CPU_CLK_FAIL;
- 		break;
- 	case RESET_TYPE_XTAL_FAIL:
--		reason = "32.768 kHz crystal failure detection";
-+		reason = POWER_ON_REASON_XTAL_FAIL;
- 		break;
- 	case RESET_TYPE_ULP2:
--		reason = "ULP2 reset";
-+		reason = POWER_ON_REASON_BROWN_OUT;
- 		break;
- 	default:
--		reason = "unknown reset";
-+		reason = POWER_ON_REASON_UNKNOWN;
- 		break;
- 	}
- 
- 	return reason;
- }
- 
-+static ssize_t power_on_reason_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct at91_reset *reset = platform_get_drvdata(pdev);
-+
-+	return sprintf(buf, "%s\n", at91_reset_reason(reset));
-+}
-+static DEVICE_ATTR_RO(power_on_reason);
-+
- static const struct of_device_id at91_ramc_of_match[] = {
- 	{
- 		.compatible = "atmel,at91sam9260-sdramc",
-@@ -391,6 +402,12 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto disable_clk;
- 
-+	ret = device_create_file(&pdev->dev, &dev_attr_power_on_reason);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Could not create sysfs entry\n");
-+		return ret;
-+	}
-+
- 	dev_info(&pdev->dev, "Starting after %s\n", at91_reset_reason(reset));
- 
- 	return 0;
-diff --git a/include/linux/power/power_on_reason.h b/include/linux/power/power_on_reason.h
-new file mode 100644
-index 000000000000..95a1ec0c403c
---- /dev/null
-+++ b/include/linux/power/power_on_reason.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Author: Kamel Bouhra <kamel.bouhara@bootlin.com>
-+ */
-+
-+#ifndef POWER_ON_REASON_H
-+#define POWER_ON_REASON_H
-+
-+#define POWER_ON_REASON_REGULAR "regular power-up"
-+#define POWER_ON_REASON_RTC "RTC wakeup"
-+#define POWER_ON_REASON_WATCHDOG "watchdog timeout"
-+#define POWER_ON_REASON_SOFTWARE "software reset"
-+#define POWER_ON_REASON_RST_BTN "reset button action"
-+#define POWER_ON_REASON_CPU_CLK_FAIL "CPU clock failure"
-+#define POWER_ON_REASON_XTAL_FAIL "crystal oscillator failure"
-+#define POWER_ON_REASON_BROWN_OUT "brown-out reset"
-+#define POWER_ON_REASON_UNKNOWN "unknown reason"
-+
-+#endif /* POWER_ON_REASON_H */
 -- 
-2.34.1
+2.20.1
 
