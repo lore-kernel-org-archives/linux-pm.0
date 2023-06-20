@@ -2,127 +2,70 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 831E8EB64D7
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 21:57:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2596CEB64DB
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 22:54:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229637AbjFTV5v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Jun 2023 17:57:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59840 "EHLO
+        id S230076AbjFTWyC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Jun 2023 18:54:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49130 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229490AbjFTV5u (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 17:57:50 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3FDC107;
-        Tue, 20 Jun 2023 14:57:49 -0700 (PDT)
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35KLvMo5004932;
-        Tue, 20 Jun 2023 21:57:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=qcppdkim1;
- bh=19TJ2pJemAtAw7vnSuSEyq+CEd+TRYUzI0XXaVONu3c=;
- b=J8VpndoeW6mOiNe9WhmKjn9euyTSmvWwvWq1XoT3KajYxM2xzgCbcT3fLqYi9LL1newo
- FxXSnfSIFPg97gPplQcLdNDQ7WR11ChA2LgPipE4RkUpW/ikO/sw1Ab3aqpxPnEi2nRI
- 0ne4qbsnslRwc45SmWcRfywoztyb7/sEqRfv/5hihsPYvF+yjij7ubcBAeUFXPIUBDrK
- dXzkOdK4erT7KiJnuTH3Wzs9CsPdZD3rR/owxUi7v2vPBxnJ8BYpIjzSqNgpFmPa9l5x
- tjHRZcfE7sCMho+kSU7XoDhX0CEGgdlaJOqk6VY6Gz3xRTWRDWMxM2QwwS0NTU3T/mIK Mw== 
-Received: from nalasppmta05.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3rb8f6hv7h-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 20 Jun 2023 21:57:45 +0000
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-        by NALASPPMTA05.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 35KLvikK017749
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 20 Jun 2023 21:57:44 GMT
-Received: from [10.111.161.191] (10.80.80.8) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.42; Tue, 20 Jun
- 2023 14:57:43 -0700
-Message-ID: <37dcbd3c-1e41-023c-8bbd-19cf9c9f151b@quicinc.com>
-Date:   Tue, 20 Jun 2023 14:57:17 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH RESEND v2] interconnect: drop unused icc_get() interface
-To:     Johan Hovold <johan+linaro@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>
-CC:     Bjorn Andersson <andersson@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Odelu Kukatla <quic_okukatla@quicinc.com>
-References: <20230523095248.25211-1-johan+linaro@kernel.org>
-Content-Language: en-US
-From:   Mike Tipton <quic_mdtipton@quicinc.com>
-In-Reply-To: <20230523095248.25211-1-johan+linaro@kernel.org>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: c6bC6S3MzGJ0YvHkFxWGjUPqzwGhnWS-
-X-Proofpoint-ORIG-GUID: c6bC6S3MzGJ0YvHkFxWGjUPqzwGhnWS-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-06-20_16,2023-06-16_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 malwarescore=0
- mlxlogscore=626 mlxscore=0 lowpriorityscore=0 suspectscore=0
- priorityscore=1501 impostorscore=0 adultscore=0 clxscore=1011 bulkscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2306200198
+        with ESMTP id S230062AbjFTWxz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 18:53:55 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7DBF21703;
+        Tue, 20 Jun 2023 15:53:54 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 1AAC8611C3;
+        Tue, 20 Jun 2023 22:53:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7DFAFC433C0;
+        Tue, 20 Jun 2023 22:53:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1687301633;
+        bh=18D5H1CVm5fG49x3b5x0COSDfPeJXztZr/SJmmS1t8U=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=NPeRBXgKLn7zz3VMdMWxTC/pO9pYLtOrxTfwSPMUf9qQgaAwV1ZHCJr+3TDK4sod/
+         McgH7cMWE5tI/eDrV03/IxWPTtfz4gHNkkhKEGW4JpT2lvqk4wviklkbU6b4LRVgnp
+         ICnjEZok4rp8+o1djS458KKPs4RQOU4jStAeSw+djo8IvN5tf6b9i8jRQFJ0/d9kXb
+         /liA6ReAmNbX6mpXdeayQEObL2i+DrRSup6mW1OpB4Q3KwlyaRPIwUQjSrncr8bRVA
+         ffIO8pS9Z5I5V0ZSl4yiPK0zLqjJUvhJelcf3r1ieFd1+WoY59H81YTpQ8m28AGmqG
+         DwhYX53TnOfJA==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 60590C395D9;
+        Tue, 20 Jun 2023 22:53:53 +0000 (UTC)
+Subject: Re: [GIT PULL] ACPI fix for v6.4-rc8
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0h7dfsyHq14pYkgWAq=chG6WWWEjU1fwe_7OCbyjKKVqA@mail.gmail.com>
+References: <CAJZ5v0h7dfsyHq14pYkgWAq=chG6WWWEjU1fwe_7OCbyjKKVqA@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0h7dfsyHq14pYkgWAq=chG6WWWEjU1fwe_7OCbyjKKVqA@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.4-rc8
+X-PR-Tracked-Commit-Id: 22db06337f590d01d79f60f181d8dfe5a9ef9085
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: e660abd551f1172e428b4e4003de887176a8a1fd
+Message-Id: <168730163338.29619.18364694365099157329.pr-tracker-bot@kernel.org>
+Date:   Tue, 20 Jun 2023 22:53:53 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 5/23/2023 2:52 AM, Johan Hovold wrote:
-> The icc_get() interface can be used to lookup an interconnect path based
-> on global node ids. There has never been any users of this interface and
-> all lookups are currently done from the devicetree.
-> 
-> Remove the unused icc_get() interface.
-> 
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-> Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
-> ---
-> 
-> Hi Georgi,
-> 
-> I just noticed that this patch never made it into 6.4 along with the
-> rest of the series:
-> 
-> 	https://lore.kernel.org/lkml/20230306075651.2449-23-johan+linaro@kernel.org/
-> 
-> This interface is still unused in mainline and should be removed so
-> resending the patch again.
-> 
-> Johan
-> 
-> 
->   drivers/interconnect/core.c  | 52 ++----------------------------------
->   include/linux/interconnect.h |  8 ------
->   2 files changed, 2 insertions(+), 58 deletions(-)
-> 
+The pull request you sent on Tue, 20 Jun 2023 18:12:57 +0200:
 
-We have downstream debug/test modules that removing icc_get() will 
-break. I'd like to get equivalent debug support in mainline, but until 
-then I'd prefer we not remove this.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-6.4-rc8
 
-Our debug module adds debugfs files for requesting a path and voting BW 
-to it. The path is defined by supplying the raw src_id / dst_id and 
-calling icc_get() for them. This allows us to issue any request to any 
-path from debugfs without needing to recompile or reflash devicetree. We 
-use this extensively.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/e660abd551f1172e428b4e4003de887176a8a1fd
 
-That said, I don't like the current implementation of icc_get(). It 
-should take strings for src/dst rather than integer IDs. This would be 
-similar to other interfaces like clk_get() and regulator_get(). And 
-would allow users to specify their path in debugfs using logical names 
-rather than raw integers.
+Thank you!
 
-I suspect having a mainline approach for voting paths from debugfs would 
-be useful to others as well. There are similar debugfs control 
-mechanisms in other frameworks already, e.g. clock.
-
-Instead of removing icc_get() immediately, can we wait for a future 
-patch series that adds debugfs as a consumer?
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
