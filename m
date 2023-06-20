@@ -2,41 +2,41 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACA8EEB64DB
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 14:10:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62541EB64DB
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 14:10:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233056AbjFTOJw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Jun 2023 10:09:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59286 "EHLO
+        id S231710AbjFTOKf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Jun 2023 10:10:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59532 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233179AbjFTOJq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 10:09:46 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31F5EE60
-        for <linux-pm@vger.kernel.org>; Tue, 20 Jun 2023 07:08:58 -0700 (PDT)
+        with ESMTP id S233008AbjFTOK0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 10:10:26 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94CD610D0
+        for <linux-pm@vger.kernel.org>; Tue, 20 Jun 2023 07:09:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687270137;
+        s=mimecast20190719; t=1687270181;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=+DkmE6hETltBu3bPa+S3gxCm/8V55tvpJfZg0jQ8Gvw=;
-        b=RbrYDQodAoRTDl7yNfYx9xXnJVfCT8r5+HNJ88d801pVpe+zgwgApyDUuStl3SiViQQSYc
-        4PBdGmJHsIgvTQVrYuNlnxSU1J1of2FPYSYntJ74j3vy8RhQPcD4RI8HHjgUAor5ORBi82
-        j9et0ziX2lL1fc9IuASSYKk73JpewSY=
+        bh=VrByPcLlZJlbrBKqAsdOzQ0Sy0EOhnQ6P87fZxDadIk=;
+        b=i6OHoRugFlYo9CT4soGMlAxmnqbZa1omNDrw4yMiL75n+YOKZZ94enHs95UtBm6Kquwd7b
+        EPcoDFwBE09PWh3ETHDQ2ArvauxDlRmBXEThUvumZMrxoxie3MSG4GjaX7EB9jI2OsdDaP
+        wfqzHR1QHIF3XjKE7SsLH7v8RUmLGkw=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-37-2A_wpEtmMHKKyXq6jJXqlg-1; Tue, 20 Jun 2023 10:08:34 -0400
-X-MC-Unique: 2A_wpEtmMHKKyXq6jJXqlg-1
+ us-mta-466-rhmpZFmgOz-Gw5i0hq2awQ-1; Tue, 20 Jun 2023 10:09:26 -0400
+X-MC-Unique: rhmpZFmgOz-Gw5i0hq2awQ-1
 Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com [10.11.54.10])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5130888711B;
-        Tue, 20 Jun 2023 14:06:33 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id BC295104D984;
+        Tue, 20 Jun 2023 14:06:35 +0000 (UTC)
 Received: from llong.com (unknown [10.22.34.46])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 91537425356;
-        Tue, 20 Jun 2023 14:06:32 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 078BD425357;
+        Tue, 20 Jun 2023 14:06:34 +0000 (UTC)
 From:   Waiman Long <longman@redhat.com>
 To:     Peter Zijlstra <peterz@infradead.org>,
         Thomas Gleixner <tglx@linutronix.de>,
@@ -50,9 +50,9 @@ To:     Peter Zijlstra <peterz@infradead.org>,
 Cc:     linux-kernel@vger.kernel.org, x86@kernel.org,
         linux-pm@vger.kernel.org, Robin Jarry <rjarry@redhat.com>,
         Joe Mario <jmario@redhat.com>, Waiman Long <longman@redhat.com>
-Subject: [PATCH v2 2/5] x86/idle: Disable IBRS when cpu is offline
-Date:   Tue, 20 Jun 2023 10:06:22 -0400
-Message-Id: <20230620140625.1001886-3-longman@redhat.com>
+Subject: [PATCH v2 5/5] x86/idle: Disable IBRS entering mwait idle and enable it on wakeup
+Date:   Tue, 20 Jun 2023 10:06:25 -0400
+Message-Id: <20230620140625.1001886-6-longman@redhat.com>
 In-Reply-To: <20230620140625.1001886-1-longman@redhat.com>
 References: <20230620140625.1001886-1-longman@redhat.com>
 MIME-Version: 1.0
@@ -62,56 +62,55 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Commit bf5835bcdb96 ("intel_idle: Disable IBRS during long idle")
-disables IBRS when the CPU enters long idle. However, when a CPU becomes
-offline, the IBRS bit is still set when X86_FEATURE_KERNEL_IBRS is
-enabled. That will impact the performance of a sibling CPU. Mitigate
-this performance impact by clearing all the mitigation bits in SPEC_CTRL
-MSR when offline and restoring the value of the MSR when it becomes
-online again.
+When a user sets "intel_idle.max_cstate=0", it will disable
+intel_idle and fall back to acpi_idle instead. The acpi_idle code
+will then call mwait_idle_with_hints() to enter idle state. So when
+X86_FEATURE_KERNEL_IBRS is enabled, it is necessary to disable IBRS
+within mwait_idle_with_hints() when IRQ was disabled to avoid performance
+degradation on silbing thread running user workload.
 
 Signed-off-by: Waiman Long <longman@redhat.com>
 ---
- arch/x86/kernel/smpboot.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/x86/include/asm/mwait.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 352f0ce1ece4..5ff82fef413c 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -84,6 +84,7 @@
- #include <asm/hw_irq.h>
- #include <asm/stackprotector.h>
- #include <asm/sev.h>
-+#include <asm/nospec-branch.h>
- 
- /* representing HT siblings of each logical CPU */
- DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
-@@ -1838,12 +1839,24 @@ void __noreturn hlt_play_dead(void)
- 
- void native_play_dead(void)
+diff --git a/arch/x86/include/asm/mwait.h b/arch/x86/include/asm/mwait.h
+index 778df05f8539..1e36cdc21661 100644
+--- a/arch/x86/include/asm/mwait.h
++++ b/arch/x86/include/asm/mwait.h
+@@ -108,15 +108,32 @@ static __always_inline void __sti_mwait(unsigned long eax, unsigned long ecx)
+ static __always_inline void mwait_idle_with_hints(unsigned long eax, unsigned long ecx)
  {
-+	u64 spec_ctrl = spec_ctrl_current();
+ 	if (static_cpu_has_bug(X86_BUG_MONITOR) || !current_set_polling_and_test()) {
++		bool ibrs_disabled = false;
++		u64 spec_ctrl;
 +
-+	if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS)) {
-+		this_cpu_write(x86_spec_ctrl_current, 0);
-+		native_wrmsrl(MSR_IA32_SPEC_CTRL, 0);
-+	}
-+
- 	play_dead_common();
- 	tboot_shutdown(TB_SHUTDOWN_WFS);
+ 		if (static_cpu_has_bug(X86_BUG_CLFLUSH_MONITOR)) {
+ 			mb();
+ 			clflush((void *)&current_thread_info()->flags);
+ 			mb();
+ 		}
  
- 	mwait_play_dead();
- 	if (cpuidle_play_dead())
- 		hlt_play_dead();
++		if (irqs_disabled() &&
++		    cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS)) {
++			/* NMI always enable IBRS on exception entry */
++			ibrs_disabled = true;
++			spec_ctrl = spec_ctrl_current();
++			__this_cpu_write(x86_spec_ctrl_current, 0);
++			native_wrmsrl(MSR_IA32_SPEC_CTRL, 0);
++		}
 +
-+	if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS)) {
-+		native_wrmsrl(MSR_IA32_SPEC_CTRL, spec_ctrl);
-+		this_cpu_write(x86_spec_ctrl_current, spec_ctrl);
-+	}
+ 		__monitor((void *)&current_thread_info()->flags, 0, 0);
+ 		if (!need_resched())
+ 			__mwait(eax, ecx);
++
++		if (ibrs_disabled) {
++			native_wrmsrl(MSR_IA32_SPEC_CTRL, spec_ctrl);
++			__this_cpu_write(x86_spec_ctrl_current, spec_ctrl);
++		}
+ 	}
+ 	current_clr_polling();
  }
- 
- #else /* ... !CONFIG_HOTPLUG_CPU */
 -- 
 2.31.1
 
