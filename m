@@ -2,49 +2,49 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E57D7C0015E
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 23:01:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0944EB64DD
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jun 2023 23:02:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230031AbjFTXB6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Jun 2023 19:01:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53502 "EHLO
+        id S230042AbjFTXB7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Jun 2023 19:01:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229989AbjFTXB5 (ORCPT
+        with ESMTP id S229999AbjFTXB5 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2023 19:01:57 -0400
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C7FB10DA;
-        Tue, 20 Jun 2023 16:01:55 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 887BECD;
+        Tue, 20 Jun 2023 16:01:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1687302115; x=1718838115;
+  t=1687302116; x=1718838116;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=aHAH3gbVtLE8GRguVc1WMS2QGhQBERba7NOQ9xfAKEE=;
-  b=k2XToIDEQsCbcvWIVMVqeQNkeQb2BiVmB0TtY7kklFcZePbolA7ST3dK
-   onN47k8dmWQaO7DExDbFcoENqKcxGX8pdoxRd5gyO8cmaYmgL8hDxmbzQ
-   Gz+gyaL8ynGiBeryv9eh7N0A5Rk78BZifJc5H+vKiiaj0EingyV/4anIm
-   eTHbvGFtNCNLyynEPAJbFYdn26gvTOL3P+cDxxzQPCn9iCH3s1VxKesDU
-   B1Y/Z2pi3vuaiFwSqGg8K79NqHT9HkiiD9joV349sHYg0HDb05oWQoqMR
-   SQXgnIHvo5Ngihf4zKs5Vha9nxEerQmb11oJvjO2dKPnJG780fGfbYE3c
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="340347288"
+  bh=LKmNt3HszQmb/54iu3mxg6VlucMYA5OmGJY2K1UUMO0=;
+  b=FeyaMbY40thCB9Sy2YuK5r1REbMf5+QJ4z5f95UNMDIpmCUrx2OIyWPd
+   M/pimQkiNCV0ygVTeCfKeAzz4fH8rzSfIDx6HWWx/2AvMCqgOc13FBbZY
+   h+bcUMbXW8N/Z6qmOf0G+bAdLqI/EV4quPjDn5C+NqH/JVpqD4pHlOkTC
+   Nn7Ef/B6jQUfvb2XGia99JJI5ulWnTgzLE1KTJCVii0mc1N/63PtInMJI
+   u1UH4b6TO3ETafFioenYjn4ipmz1ZVf2G5r4vD9DMKhRycrYprcdXIhRt
+   6SPYrOuEB3LDHeu5KIp9OgGxYYjhawdlTvLJmU7yx77t1SgKX/bcyoe5+
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="340347301"
 X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; 
-   d="scan'208";a="340347288"
+   d="scan'208";a="340347301"
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2023 16:01:54 -0700
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2023 16:01:55 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="1044465328"
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="1044465338"
 X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; 
-   d="scan'208";a="1044465328"
+   d="scan'208";a="1044465338"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
   by fmsmga005.fm.intel.com with ESMTP; 20 Jun 2023 16:01:54 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 4/7] thermal/drivers/int340x: Remove PROC_THERMAL_FEATURE_WLT_REQ for Meteor Lake
-Date:   Tue, 20 Jun 2023 16:01:47 -0700
-Message-Id: <20230620230150.3068704-5-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 6/7] thermal/drivers/int340x: Support workload hint interrupts
+Date:   Tue, 20 Jun 2023 16:01:49 -0700
+Message-Id: <20230620230150.3068704-7-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230620230150.3068704-1-srinivas.pandruvada@linux.intel.com>
 References: <20230620230150.3068704-1-srinivas.pandruvada@linux.intel.com>
@@ -54,28 +54,94 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Meteor Lake processor supports firmware hints for predicting workload
-type. So, remove support for passing workload hints to the firmware.
+On thermal device interrupt, if the interrupt is generated for passing
+workload hint, call the callback to pass notification to the user
+space.
+
+First call proc_thermal_check_wlt_intr() to check interrupt, if this
+callback returns true, wake IRQ thread. Call
+proc_thermal_wlt_intr_callback() to notify user space.
+
+While here remove function pkg_thermal_schedule_work() and move the
+processing to the caller. The function pkg_thermal_schedule_work() just
+called schedule_delayed_work().
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- .../intel/int340x_thermal/processor_thermal_device_pci.c       | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ .../processor_thermal_device_pci.c            | 33 ++++++++++++++-----
+ 1 file changed, 24 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-index 057778f7bece..3dab3dbdbbc6 100644
+index edddebedf42e..7fa5c3d459bd 100644
 --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
 +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -364,8 +364,7 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
- 	{ PCI_DEVICE_DATA(INTEL, ADL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
- 	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WLT_REQ) },
- 	{ PCI_DEVICE_DATA(INTEL, MTLP_THERMAL, PROC_THERMAL_FEATURE_RAPL |
--	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WLT_REQ |
--	  PROC_THERMAL_FEATURE_DLVR) },
-+	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_DLVR) },
- 	{ PCI_DEVICE_DATA(INTEL, RPL_THERMAL, PROC_THERMAL_FEATURE_RAPL |
- 	  PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_WLT_REQ) },
- 	{ },
+@@ -115,27 +115,40 @@ static void proc_thermal_threshold_work_fn(struct work_struct *work)
+ 	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 1);
+ }
+ 
+-static void pkg_thermal_schedule_work(struct delayed_work *work)
++static irqreturn_t proc_thermal_irq_thread_handler(int irq, void *devid)
+ {
+-	unsigned long ms = msecs_to_jiffies(notify_delay_ms);
++	struct proc_thermal_pci *pci_info = devid;
++
++	proc_thermal_wlt_intr_callback(pci_info->pdev, pci_info->proc_priv);
+ 
+-	schedule_delayed_work(work, ms);
++	return IRQ_HANDLED;
+ }
+ 
+ static irqreturn_t proc_thermal_irq_handler(int irq, void *devid)
+ {
+ 	struct proc_thermal_pci *pci_info = devid;
++	struct proc_thermal_device *proc_priv;
++	int ret = IRQ_HANDLED;
+ 	u32 status;
+ 
++	proc_priv = pci_info->proc_priv;
++
++	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_WLT_HINT) {
++		if (proc_thermal_check_wlt_intr(pci_info->proc_priv))
++			ret = IRQ_WAKE_THREAD;
++	}
++
+ 	proc_thermal_mmio_read(pci_info, PROC_THERMAL_MMIO_INT_STATUS_0, &status);
++	if (status) {
++		unsigned long ms = msecs_to_jiffies(notify_delay_ms);
+ 
+-	/* Disable enable interrupt flag */
+-	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
++		/* Disable enable interrupt flag */
++		proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
++		schedule_delayed_work(&pci_info->work, ms);
++	}
+ 	pci_write_config_byte(pci_info->pdev, 0xdc, 0x01);
+ 
+-	pkg_thermal_schedule_work(&pci_info->work);
+-
+-	return IRQ_HANDLED;
++	return ret;
+ }
+ 
+ static int sys_get_curr_temp(struct thermal_zone_device *tzd, int *temp)
+@@ -269,7 +282,7 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
+ 	}
+ 
+ 	ret = devm_request_threaded_irq(&pdev->dev, irq,
+-					proc_thermal_irq_handler, NULL,
++					proc_thermal_irq_handler, proc_thermal_irq_thread_handler,
+ 					irq_flag, KBUILD_MODNAME, pci_info);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Request IRQ %d failed\n", pdev->irq);
+@@ -383,6 +396,8 @@ static struct pci_driver proc_thermal_pci_driver = {
+ 
+ module_pci_driver(proc_thermal_pci_driver);
+ 
++MODULE_IMPORT_NS(INT340X_THERMAL);
++
+ MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>");
+ MODULE_DESCRIPTION("Processor Thermal Reporting Device Driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 2.38.1
 
