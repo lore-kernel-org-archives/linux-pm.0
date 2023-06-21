@@ -2,90 +2,186 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F76BEB64D8
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Jun 2023 15:09:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D7E1EB64D7
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Jun 2023 15:09:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233241AbjFUPJc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Jun 2023 11:09:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49682 "EHLO
+        id S233202AbjFUPJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Jun 2023 11:09:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46108 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232818AbjFUPJN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2023 11:09:13 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DAED35B1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2023 08:03:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687359741;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=QoQ+QeYRZBI9jaQiyXxbczTZh6h+sWjH6QRN7ho9+3I=;
-        b=RiiYi5vYAVESv5pOJ+xhxjagGKUKImH3kEOxny476SZMh9sP7/ZRFj+LkNZlRju+LMqGUz
-        L2DnNCgVbTLqD0vOAQ1Xa4k6RQ62usQE66yrl47GFZEbMsn6GBcGRigtWkxtVJbZRzLhG9
-        qV/vfffQyoZhqCqyEMxDrljogq6tzzI=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-635-ndiTCmUYMs-tAoTQ-IEshw-1; Wed, 21 Jun 2023 10:51:35 -0400
-X-MC-Unique: ndiTCmUYMs-tAoTQ-IEshw-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 43F7B185A7AD;
-        Wed, 21 Jun 2023 14:51:34 +0000 (UTC)
-Received: from [10.22.17.140] (unknown [10.22.17.140])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 8112B1121330;
-        Wed, 21 Jun 2023 14:51:33 +0000 (UTC)
-Message-ID: <309d15f5-0dd8-aee8-14a6-621a071bc363@redhat.com>
-Date:   Wed, 21 Jun 2023 10:51:33 -0400
+        with ESMTP id S233237AbjFUPJZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2023 11:09:25 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8BCC2975;
+        Wed, 21 Jun 2023 08:04:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1687359867; x=1718895867;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=UoFFhTqq8EUjbkCCMDbaEV6mCDWIMtiTF+GBEJ5VlN0=;
+  b=kiVv/9jX9hEgMUsScVV4wZkLHvepGP/GGN7Iy/AtBNZH7wbyHaoVQ59g
+   0vney8kScQlaZaLiLtlrqU0oY4u7KgBuuNRNPL2GfUHfioDUZiXV4Wfqv
+   7sDCS4lJpbJE0H2Z6eBDoqLcdSNofy7cNDmApAsA/uB15CifZIvTtBYTi
+   QIeC4iv95UFnpk9ijn7U4PFdp9kyZ1X3HUUHEHL57Jnmg82eCVeFXYV0N
+   HgytC5tNbb5ep6n6V7MkC6SBrui4ul9muQGxFuIbfJaCLYibRHsz51fT4
+   s209pVdidGkElrg+lbty+ocnAGg3cnd1tVJpmzJ2DE33vUgCAFaHo7iJu
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10748"; a="360214176"
+X-IronPort-AV: E=Sophos;i="6.00,260,1681196400"; 
+   d="scan'208";a="360214176"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2023 08:02:47 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10748"; a="744197820"
+X-IronPort-AV: E=Sophos;i="6.00,260,1681196400"; 
+   d="scan'208";a="744197820"
+Received: from lfrecald-mobl2.amr.corp.intel.com (HELO spandruv-desk1.amr.corp.intel.com) ([10.209.26.147])
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2023 08:02:46 -0700
+Message-ID: <1540593f20b69aaa1a3fc344fb1a3fcd36fca1cc.camel@linux.intel.com>
+Subject: Re: [PATCH 3/7] thermal: int340x: processor_thermal: Use non MSI
+ interrupts
+From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     "Zhang, Rui" <rui.zhang@intel.com>,
+        "rafael@kernel.org" <rafael@kernel.org>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>
+Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date:   Wed, 21 Jun 2023 08:02:46 -0700
+In-Reply-To: <b692f9a983d45a50aeae43dce3082551059f6bfe.camel@intel.com>
+References: <20230620230150.3068704-1-srinivas.pandruvada@linux.intel.com>
+         <20230620230150.3068704-4-srinivas.pandruvada@linux.intel.com>
+         <b692f9a983d45a50aeae43dce3082551059f6bfe.camel@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.42.4 (3.42.4-2.fc35) 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH v2 2/5] x86/idle: Disable IBRS when cpu is offline
-Content-Language: en-US
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
-        x86@kernel.org, linux-pm@vger.kernel.org,
-        Robin Jarry <rjarry@redhat.com>, Joe Mario <jmario@redhat.com>
-References: <20230620140625.1001886-1-longman@redhat.com>
- <20230620140625.1001886-3-longman@redhat.com>
- <20230621072313.GA2046280@hirez.programming.kicks-ass.net>
- <7f2424df-1846-6c38-e446-b3d5aa693ecd@redhat.com>
- <20230621143602.GI2053369@hirez.programming.kicks-ass.net>
- <5cb81f3b-45a0-d566-3d63-569b5706e9fe@redhat.com>
- <20230621144848.GJ2053369@hirez.programming.kicks-ass.net>
-From:   Waiman Long <longman@redhat.com>
-In-Reply-To: <20230621144848.GJ2053369@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.3
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Wed, 2023-06-21 at 14:53 +0000, Zhang, Rui wrote:
+> On Tue, 2023-06-20 at 16:01 -0700, Srinivas Pandruvada wrote:
+> > There are issues in using MSI interrupts for processor thermal
+> > device.
+> > The support is not consistent, across generations. Even in the same
+> > generation, there are issue in getting interrupts via MSI.
+> > 
+> > Hence always use legacy PCI interrupts by default, instead of MSI.
+> > Add a module param to use of MSI, so that MSI can be still used.
+> > 
+> > Signed-off-by: Srinivas Pandruvada
+> > <srinivas.pandruvada@linux.intel.com>
+> > ---
+> >  .../processor_thermal_device_pci.c            | 33 ++++++++++++---
+> > --
+> > --
+> >  1 file changed, 22 insertions(+), 11 deletions(-)
+> > 
+> > diff --git
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pc
+> > i.
+> > c
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pc
+> > i.
+> > c
+> > index 5a2bcfff0a68..057778f7bece 100644
+> > ---
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pc
+> > i.
+> > c
+> > +++
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pc
+> > i.
+> > c
+> > @@ -15,6 +15,11 @@
+> >  
+> >  #define DRV_NAME "proc_thermal_pci"
+> >  
+> > +static int msi_enabled;
+> > +module_param(msi_enabled, int, 0644);
+> 
+> why not use
+> 
+> static bool msi_enabled;
+> module_params(msi_enabled, bool, 0644);
+> 
+Sure.
 
-On 6/21/23 10:48, Peter Zijlstra wrote:
-> On Wed, Jun 21, 2023 at 10:44:23AM -0400, Waiman Long wrote:
->
->> Well, hlt_play_dead() is only called if cpuidle_play_dead() returns an error
->> which is not the typical case. My testing does confirm that this patch is
->> able to keep the IBRS bit off when a CPU is offline via its online sysfs
->> file.
-> The point is; your re-enable IBRS hunk at the end is dead-code. It
-> should never ever run and having it is confusing.
+Thanks,
+Srinivas
 
-What I meant is that hlt_play_dead() should never be called unless there 
-is some serious problem with the system and native_play_dead() does 
-return in normal usage.
-
-Cheers,
-Longman
+> thanks,
+> rui
+> 
+> > +MODULE_PARM_DESC(msi_enabled,
+> > +       "Use PCI MSI based interrupts for processor thermal
+> > device.");
+> > +
+> >  struct proc_thermal_pci {
+> >         struct pci_dev *pdev;
+> >         struct proc_thermal_device *proc_priv;
+> > @@ -219,8 +224,6 @@ static int proc_thermal_pci_probe(struct
+> > pci_dev
+> > *pdev, const struct pci_device_
+> >                 return ret;
+> >         }
+> >  
+> > -       pci_set_master(pdev);
+> > -
+> >         INIT_DELAYED_WORK(&pci_info->work,
+> > proc_thermal_threshold_work_fn);
+> >  
+> >         ret = proc_thermal_add(&pdev->dev, proc_priv);
+> > @@ -248,16 +251,23 @@ static int proc_thermal_pci_probe(struct
+> > pci_dev *pdev, const struct pci_device_
+> >                 goto err_ret_mmio;
+> >         }
+> >  
+> > -       /* request and enable interrupt */
+> > -       ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
+> > -       if (ret < 0) {
+> > -               dev_err(&pdev->dev, "Failed to allocate
+> > vectors!\n");
+> > -               goto err_ret_tzone;
+> > -       }
+> > -       if (!pdev->msi_enabled && !pdev->msix_enabled)
+> > +       if (msi_enabled) {
+> > +               pci_set_master(pdev);
+> > +               /* request and enable interrupt */
+> > +               ret = pci_alloc_irq_vectors(pdev, 1, 1,
+> > PCI_IRQ_ALL_TYPES);
+> > +               if (ret < 0) {
+> > +                       dev_err(&pdev->dev, "Failed to allocate
+> > vectors!\n");
+> > +                       goto err_ret_tzone;
+> > +               }
+> > +               if (!pdev->msi_enabled && !pdev->msix_enabled)
+> > +                       irq_flag = IRQF_SHARED;
+> > +
+> > +               irq =  pci_irq_vector(pdev, 0);
+> > +       } else {
+> >                 irq_flag = IRQF_SHARED;
+> > +               irq = pdev->irq;
+> > +       }
+> >  
+> > -       irq =  pci_irq_vector(pdev, 0);
+> >         ret = devm_request_threaded_irq(&pdev->dev, irq,
+> >                                         proc_thermal_irq_handler,
+> > NULL,
+> >                                         irq_flag, KBUILD_MODNAME,
+> > pci_info);
+> > @@ -273,7 +283,8 @@ static int proc_thermal_pci_probe(struct
+> > pci_dev
+> > *pdev, const struct pci_device_
+> >         return 0;
+> >  
+> >  err_free_vectors:
+> > -       pci_free_irq_vectors(pdev);
+> > +       if (msi_enabled)
+> > +               pci_free_irq_vectors(pdev);
+> >  err_ret_tzone:
+> >         thermal_zone_device_unregister(pci_info->tzone);
+> >  err_ret_mmio:
+> 
 
