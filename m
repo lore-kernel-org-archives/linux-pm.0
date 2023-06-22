@@ -2,114 +2,132 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3C49EB64D7
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Jun 2023 00:38:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 156E7EB64D8
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Jun 2023 00:51:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229830AbjFVAiK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Jun 2023 20:38:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60412 "EHLO
+        id S229544AbjFVAv4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Jun 2023 20:51:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229889AbjFVAiJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2023 20:38:09 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99A151997
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2023 17:36:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687394208;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=JClsVInx+SfJQwVlXcLVSsPnUQ6NqCBnYMZfU8zrapQ=;
-        b=H5217mcVJ6cf2JO2feUfRdB67a+Y8vg1UkV3L/lTikVCK0tK6dhWZUpHaiDF7G4nGF8xiy
-        tX+bXKBP0aRau5/boQn0hRvsQy45ttkcXFGUT3Ka+qCf01QtaK2zi81VMvYmn/ET/fi4Cc
-        EgB6ETMa8JPGYpO+ITmIUIgMYe/Aagc=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-468-h3nYqPbcM1-QS6yb3y4lTg-1; Wed, 21 Jun 2023 20:36:43 -0400
-X-MC-Unique: h3nYqPbcM1-QS6yb3y4lTg-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id ECB4E8C5868;
-        Thu, 22 Jun 2023 00:36:41 +0000 (UTC)
-Received: from llong.com (unknown [10.22.33.143])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 033EE112132C;
-        Thu, 22 Jun 2023 00:36:23 +0000 (UTC)
-From:   Waiman Long <longman@redhat.com>
-To:     Peter Zijlstra <peterz@infradead.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        Len Brown <lenb@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, x86@kernel.org,
-        linux-pm@vger.kernel.org, Robin Jarry <rjarry@redhat.com>,
-        Joe Mario <jmario@redhat.com>, Waiman Long <longman@redhat.com>
-Subject: [PATCH v3 0/3] x86/speculation: Disable IBRS when idle
-Date:   Wed, 21 Jun 2023 20:36:00 -0400
-Message-Id: <20230622003603.1188364-1-longman@redhat.com>
+        with ESMTP id S229501AbjFVAvz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2023 20:51:55 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50F29197
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2023 17:51:54 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4f004cc54f4so9029809e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2023 17:51:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1687395112; x=1689987112;
+        h=content-transfer-encoding:in-reply-to:subject:from:content-language
+         :references:cc:to:user-agent:mime-version:date:message-id:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=JpH450RlcCBag58hjq7lxrqN2fInkuZLNQWzOYqCTD4=;
+        b=hcMVMZxr3AZmAsjOEMtaDKs1BAyffyed833lUzAWODc+ovtjuJnYZLxkY+42oIEZAk
+         g7m5ght45cAE4HpsEarBfPkPQbTJA9Y7bzRNolCz6i7SggEG8MbRygrwARgUjIziYFxN
+         BILDyzX2sAoY7G+BYa5TDmWs1iQsT0QXuUWg3lSCkT/2VIDvyX7ONLGCsPyqVA2NuhK4
+         QN/mz+GDeeu/aNQyIoyx9VsWTl/RYGVmXQd/5SQaqS3aZ2mmNtEyLsty/VQ63xd5tkrj
+         X9o0ixOlKvzjsLJ3XR2lZPoGCJjt4msI6+T82At5mC++svcB7bgLFDrTLKDSufzRizzM
+         YuFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1687395112; x=1689987112;
+        h=content-transfer-encoding:in-reply-to:subject:from:content-language
+         :references:cc:to:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=JpH450RlcCBag58hjq7lxrqN2fInkuZLNQWzOYqCTD4=;
+        b=DbaURvxRC0TtLqMqazRUkfJieTAEKx1VfpyhXv875uMIhIic5DYRK26D/mVgU2eOew
+         XRMfLKjuoTukufXGVylO93nP3uGWM1nIkZnM4xHVrybE7ycKpk/7yBsmrvMdH1smP7W0
+         rdCtKakLVyiX0hGPzIXD/UdQCO/qQVR87CauVBEj70pDYi4y5FwM9CQk1wd0vEtlSOzV
+         RZWYXL1l0aBRRomyGgG9ucqp8eXYg6HDtQ6Qxm1KNsZilmpHUyunz1nTh+bdIYKQSyy9
+         zyQ5byfK+XaFMpBSZkE8n4MHaiLgMRESgGN7ftJv6y9ez5cT1NmCCvVStdncPyLMdAiL
+         M3+g==
+X-Gm-Message-State: AC+VfDw4t1j3iKW+vNfbkzsHTCX3zaWidSCVg3KVdqafPEy4SE/VEfxx
+        d1a4Hu5fIVLi0Ptff9wiHNm9kQ==
+X-Google-Smtp-Source: ACHHUZ65QyPqBn4GlqwjOoSz+PSJNfvplML9UAIrdeTW08mFQ/X0fteOjnBCdjYy51tpPWPIo4EPKQ==
+X-Received: by 2002:a05:6512:3f0c:b0:4f9:58ed:7bba with SMTP id y12-20020a0565123f0c00b004f958ed7bbamr2736659lfa.16.1687395112337;
+        Wed, 21 Jun 2023 17:51:52 -0700 (PDT)
+Received: from [192.168.1.101] (abxj193.neoplus.adsl.tpnet.pl. [83.9.3.193])
+        by smtp.gmail.com with ESMTPSA id a9-20020a19f809000000b004f3a71a9e72sm928156lff.102.2023.06.21.17.51.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 21 Jun 2023 17:51:51 -0700 (PDT)
+Message-ID: <dc5ffed0-555b-18e5-cf96-d6a4263357af@linaro.org>
+Date:   Thu, 22 Jun 2023 02:51:50 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.3
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
+        Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20230621-topic-mm8013-v1-0-4407c6260053@linaro.org>
+ <20230621-topic-mm8013-v1-2-4407c6260053@linaro.org>
+ <da300402-d417-5646-d4c9-7c100c351db1@linaro.org>
+Content-Language: en-US
+From:   Konrad Dybcio <konrad.dybcio@linaro.org>
+Subject: Re: [PATCH 2/3] dt-bindings: power: supply: Document Mitsumi MM8013
+ fuel gauge
+In-Reply-To: <da300402-d417-5646-d4c9-7c100c351db1@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
- v3:
-  - Drop patches 1 ("x86/speculation: Provide a debugfs file to dump
-    SPEC_CTRL MSRs") and 5 ("x86/idle: Disable IBRS entering mwait idle
-    and enable it on wakeup") for now.
-  - Drop the MSR restoration code in ("x86/idle: Disable IBRS when cpu
-    is offline") as native_play_dead() does not return.
-  - For patch ("intel_idle: Add ibrs_off module parameter to force
-    disable IBRS"), change the name from "no_ibrs" to "ibrs_off" and
-    document the new parameter in intel_idle.rst.
+On 21.06.2023 18:38, Krzysztof Kozlowski wrote:
+> On 21/06/2023 17:39, Konrad Dybcio wrote:
+>> The Mitsumie MM8013 is an I2C fuel gauge for Li-Ion cells. The partial
+> 
+> Mitsumi
+> 
+>> datasheet is available at [1]. Add bindings for this chip.
+>>
+>> [1] https://www.mitsumi.co.jp/latest-M/Catalog/pdf/battery_mm_8013_e.pdf
+>> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
+>> ---
+>>  .../bindings/power/supply/mitsumi,mm8013.yaml      | 35 ++++++++++++++++++++++
+>>  1 file changed, 35 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/mitsumi,mm8013.yaml b/Documentation/devicetree/bindings/power/supply/mitsumi,mm8013.yaml
+>> new file mode 100644
+>> index 000000000000..080fd44083ac
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/mitsumi,mm8013.yaml
+>> @@ -0,0 +1,35 @@
+>> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/power/supply/mitsumi,mm8013.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Mitsumi MM8013 fuel gauge
+>> +
+>> +maintainers:
+>> +  - Konrad Dybcio <konradybcio@kernel.org>
+>> +
+>> +properties:
+>> +  compatible:
+>> +    const: mitsumi,mm8013
+>> +
+>> +  reg:
+>> +    maxItems: 1
+> 
+> 
+> I think you miss several properties: three power supplies (although not
+> all might be needed) and most likely monitored-battery. One regulator
+> output and output GPIO probably can be skipped.
+Looking at the example circuit, it seems like the chip's power lines are
+hardwired to the battery cell.
 
-For Intel processors that need to turn on IBRS to protect against
-Spectre v2 and Retbleed, the IBRS bit in the SPEC_CTRL MSR affects
-the performance of the whole core even if only one thread is turning
-it on when running in the kernel. For user space heavy applications,
-the performance impact of occasionally turning IBRS on during syscalls
-shouldn't be significant. Unfortunately, that is not the case when the
-sibling thread is idling in the kernel. In that case, the performance
-impact can be significant.
+monitored-battery does not seem useful today, as we don't have any
+information about writing values onto the chip :/ And I'm not willing
+to experiment with that! :P
 
-When DPDK is running on an isolated CPU thread processing network packets
-in user space while its sibling thread is idle. The performance of the
-busy DPDK thread with IBRS on and off in the sibling idle thread are:
-
-                                IBRS on         IBRS off
-                                -------         --------
-  packets/second:                  7.8M           10.4M
-  avg tsc cycles/packet:         282.26          209.86
-
-This is a 25% performance degradation. The test system is a Intel Xeon
-4114 CPU @ 2.20GHz.
-
-Commit bf5835bcdb96 ("intel_idle: Disable IBRS during long idle")
-disables IBRS when the CPU enters long idle (C6 or below). However, there
-are existing users out there who have set "intel_idle.max_cstate=1"
-to decrease latency. Those users won't be able to benefit from this
-commit. This patch series extends this commit by providing a new
-"intel_idle.ibrs_off" module parameter to force disable IBRS even when
-"intel_idle.max_cstate=1" at the expense of increased IRQ response
-latency. It also includes a commit to allow the disabling of IBRS when
-a CPU becomes offline.
-
-Waiman Long (3):
-  x86/idle: Disable IBRS when cpu is offline
-  intel_idle: Sync up the SPEC_CTRL MSR value to x86_spec_ctrl_current
-  intel_idle: Add ibrs_off module parameter to force disable IBRS
-
- Documentation/admin-guide/pm/intel_idle.rst | 17 +++++++++++++++-
- arch/x86/kernel/smpboot.c                   | 10 ++++++++++
- drivers/idle/intel_idle.c                   | 22 +++++++++++++++++----
- 3 files changed, 44 insertions(+), 5 deletions(-)
-
--- 
-2.31.1
-
+Konrad
+> 
+> Best regards,
+> Krzysztof
+> 
