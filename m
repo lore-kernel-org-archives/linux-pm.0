@@ -2,151 +2,175 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49855EB64D7
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Jun 2023 21:07:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28910EB64D7
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Jun 2023 00:37:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229733AbjFUVHV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Jun 2023 17:07:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39942 "EHLO
+        id S229893AbjFVAh3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Jun 2023 20:37:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60376 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229513AbjFUVHU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2023 17:07:20 -0400
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9818E1713;
-        Wed, 21 Jun 2023 14:07:16 -0700 (PDT)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-666e97fcc60so3070880b3a.3;
-        Wed, 21 Jun 2023 14:07:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1687381636; x=1689973636;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=zxmHl6BRr4PCuqTmBRiO+tAEIgtNXslvgtPUDDYEk5g=;
-        b=oaaQAD9cGxPEmmAEmp3xGt7xjEDHAjuq0ULgnSRpME/0jfp5uei/cX5bL8V/aTAfhH
-         hGFWO3YeJ3zlpyqmhNTJ05nkVcTO1M/HDS0v2QoCyMuns2gymjr1mbs6jmFOyRyil0qq
-         vcyzj1o2Ck1X3aVmQGLz4L9hkX9lfx6AQT24lQNjfNxQH9R4tS/AEunlf++n1awxctia
-         qJ98y1ah/MBR2KqBgpSJJANu16QO+OsiafXzPlFT+YT6hqPWe/wpX4qzCQbp6I2b6Z0s
-         6kPlRQHCX37mmmjg0xxMV8lxc1ZMwpW5fT9QS8opCIJ2BIJNlD/MCDUvxyl65Iqcm/gB
-         mk0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687381636; x=1689973636;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=zxmHl6BRr4PCuqTmBRiO+tAEIgtNXslvgtPUDDYEk5g=;
-        b=PRqbGXj+tPzeooTWfTT9v9jKXFF1IulAnwKM+YOJjSb28x3AFfborShfy1ewIUqDBB
-         hbiqt6Fm50mNpoUzE8zuMCCAXDMfLe0nIlWbA8pSYzMv/QIXZvEdaiEjfjH1VdjxEDXb
-         K78m7F/dwSkwzn/dYCCgbKfglRQuyS1Q1CWcIHohxPJlEWFKdS26aGtMLxWcP/7BOQ9H
-         TfEyFFCTZNRruVnW0ktXTvygq8hTMqPiwzNvkmJ1GmZJY5oPG9vUQJTTgmlh2Kr2BKHA
-         ZKLIYwA6IrZW/S1g2D2vlZZRiBXwf6oa7wYzsOQNjVA4O/FKQ8mu2jWtmMoRSP+SJFir
-         la5w==
-X-Gm-Message-State: AC+VfDx+ZGToYJptkKs5n1VSnsRYUIjBfPICexcZP4KPWvKV8xLo0Tbi
-        5p22qfbPqqA+0HxWxVLHLBs=
-X-Google-Smtp-Source: ACHHUZ7UDAN/DUH7d080Yzd19oIbDx6FPfqIcDrxG092wrfQR3eJP0wA81oUirDnxYC5Jt9r4xQd0w==
-X-Received: by 2002:a05:6a20:3d88:b0:10e:96b5:45fa with SMTP id s8-20020a056a203d8800b0010e96b545famr13704285pzi.43.1687381635960;
-        Wed, 21 Jun 2023 14:07:15 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id g7-20020a635207000000b00528db73ed70sm3529775pgb.3.2023.06.21.14.07.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Jun 2023 14:07:15 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date:   Wed, 21 Jun 2023 14:07:13 -0700
-From:   Guenter Roeck <linux@roeck-us.net>
-To:     Christoph Hellwig <hch@lst.de>
-Cc:     Jens Axboe <axboe@kernel.dk>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Mike Snitzer <snitzer@kernel.org>,
-        Joern Engel <joern@lazybastard.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Richard Weinberger <richard@nod.at>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com,
-        linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 14/24] init: clear root_wait on all invalid root= strings
-Message-ID: <8c1992bc-110a-4dad-8643-766c14bf6fd4@roeck-us.net>
-References: <20230523074535.249802-1-hch@lst.de>
- <20230523074535.249802-15-hch@lst.de>
+        with ESMTP id S229784AbjFVAh2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2023 20:37:28 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46EA51981
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2023 17:36:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1687394206;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=1r3PzJd7BfuII/LkCpH6/mpfYzdtX6yj52D21WLcU08=;
+        b=Fa6s3/82zSqlQLElrUZDKgzdIbL0dFU+80QxjfvagWhAVlce23NZt/GbILI4YRLNnSS3zN
+        kcvC4EAivNnBa2rDwGIDInsixXQ6Dk9t9YHYyhvWKnfUOWk5s2FYqGtwlgT7MMef77rRtK
+        +W94UeXvZL/rVGetD8UbPUlF/W4aGog=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-433-Wf_xTA3DNyOMMsljI4GqDw-1; Wed, 21 Jun 2023 20:36:45 -0400
+X-MC-Unique: Wf_xTA3DNyOMMsljI4GqDw-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 66929800193;
+        Thu, 22 Jun 2023 00:36:44 +0000 (UTC)
+Received: from llong.com (unknown [10.22.33.143])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id A8FA8112132C;
+        Thu, 22 Jun 2023 00:36:43 +0000 (UTC)
+From:   Waiman Long <longman@redhat.com>
+To:     Peter Zijlstra <peterz@infradead.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Josh Poimboeuf <jpoimboe@kernel.org>,
+        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Len Brown <lenb@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, x86@kernel.org,
+        linux-pm@vger.kernel.org, Robin Jarry <rjarry@redhat.com>,
+        Joe Mario <jmario@redhat.com>, Waiman Long <longman@redhat.com>
+Subject: [PATCH v3 3/3] intel_idle: Add ibrs_off module parameter to force disable IBRS
+Date:   Wed, 21 Jun 2023 20:36:03 -0400
+Message-Id: <20230622003603.1188364-4-longman@redhat.com>
+In-Reply-To: <20230622003603.1188364-1-longman@redhat.com>
+References: <20230622003603.1188364-1-longman@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230523074535.249802-15-hch@lst.de>
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Commit bf5835bcdb96 ("intel_idle: Disable IBRS during long idle")
+disables IBRS when the cstate is 6 or lower. However, there are
+some use cases where a customer may want to use max_cstate=1 to
+lower latency. Such use cases will suffer from the performance
+degradation caused by the enabling of IBRS in the sibling idle thread.
+Add a "ibrs_off" module parameter to force disable IBRS and the
+CPUIDLE_FLAG_IRQ_ENABLE flag if set.
 
-On Tue, May 23, 2023 at 09:45:25AM +0200, Christoph Hellwig wrote:
-> Instead of only clearing root_wait in devt_from_partuuid when the UUID
-> format was invalid, do that in parse_root_device for all strings that
-> failed to parse.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+In the case of a Skylake server with max_cstate=1, this new ibrs_off
+option will likely increase the IRQ response latency as IRQ will now
+be disabled.
 
-In linux-next, almost all of my boot tests from usb drives as well
-as a few others fail with "Disabling rootwait; root= is invalid."
-in the log. Bisect points to this patch.
+When running SPECjbb2015 with cstates set to C1 on a Skylake system.
 
-It can not easily be reverted, but the following change fixes the problem.
+First test when the kernel is booted with: "intel_idle.ibrs_off"
+  max-jOPS = 117828, critical-jOPS = 66047
 
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -413,10 +413,12 @@ static dev_t __init parse_root_device(char *root_device_name)
- 
-        error = early_lookup_bdev(root_device_name, &dev);
-        if (error) {
-+#if 0
-                if (error == -EINVAL && root_wait) {
-                        pr_err("Disabling rootwait; root= is invalid.\n");
-                        root_wait = 0;
-                }
-+#endif
-                return 0;
-        }
-        return dev;
+Then retest when the kernel is booted without the "intel_idle.ibrs_off"
+added.
+  max-jOPS = 116408, critical-jOPS = 58958
 
-Debugging shows that early_lookup_bdev() indeed returns -EINVAL.
-Looking into it further, it turns out that devt_from_devname() returns
--EINVAL for root devices such as
-	root=/dev/sda
-if the device is not found, making it impossible to rootwait for such
-a device (this might for example be a raw USB drive without partitions,
-or any qemu drive with format=raw).
+That means booting with "intel_idle.ibrs_off" improves performance by:
+  max-jOPS:   1.2%, which could be considered noise range.
+  critical-jOPS: 12%, which is definitely a solid improvement.
 
-Guenter
+The admin-guide/pm/intel_idle.rst file is updated to add a description
+about the new "ibrs_off" module parameter.
 
+Signed-off-by: Waiman Long <longman@redhat.com>
 ---
-# bad: [15e71592dbae49a674429c618a10401d7f992ac3] Add linux-next specific files for 20230621
-# good: [45a3e24f65e90a047bef86f927ebdc4c710edaa1] Linux 6.4-rc7
-git bisect start 'HEAD' 'v6.4-rc7'
-# good: [e867e67cd55ae460c860ffd896c7fc96add2821c] Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/herbert/cryptodev-2.6.git
-git bisect good e867e67cd55ae460c860ffd896c7fc96add2821c
-# bad: [0ab4015a11182e2a19c3dd52db85418f370cef39] Merge branch 'for-next' of git://git.kernel.dk/linux-block.git
-git bisect bad 0ab4015a11182e2a19c3dd52db85418f370cef39
-# good: [901bdf5ea1a836400ee69aa32b04e9c209271ec7] Merge tag 'amd-drm-next-6.5-2023-06-09' of https://gitlab.freedesktop.org/agd5f/linux into drm-next
-git bisect good 901bdf5ea1a836400ee69aa32b04e9c209271ec7
-# good: [07164956fbc26eff280f3a044a489460ae36413c] Merge branch 'for-next' of https://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394.git
-git bisect good 07164956fbc26eff280f3a044a489460ae36413c
-# good: [3067e020d361ed346957eb5e253911f7a3e18f59] add snd_soc_{of_}get_dlc()
-git bisect good 3067e020d361ed346957eb5e253911f7a3e18f59
-# bad: [0dbbd269fb6a8799f312dfc9b1ae1244a144cfc6] Merge branch 'for-6.5/block' into for-next
-git bisect bad 0dbbd269fb6a8799f312dfc9b1ae1244a144cfc6
-# good: [6c500000af037f74b66dd01b565c8ee1b501cc1b] block: mark bio_add_folio as __must_check
-git bisect good 6c500000af037f74b66dd01b565c8ee1b501cc1b
-# bad: [1a0ddd56e545b743af510b5a1b8dbdfe7d35cd3b] pktcdvd: replace sscanf() by kstrtoul()
-git bisect bad 1a0ddd56e545b743af510b5a1b8dbdfe7d35cd3b
-# good: [e3102722ffe77094ba9e7e46380792b3dd8a7abd] init: rename mount_block_root to mount_root_generic
-git bisect good e3102722ffe77094ba9e7e46380792b3dd8a7abd
-# bad: [d4a28d7defe79006e59293a4b43d518ba8483fb0] dm: remove dm_get_dev_t
-git bisect bad d4a28d7defe79006e59293a4b43d518ba8483fb0
-# good: [c0c1a7dcb6f5db4500e6574294674213bc24940c] init: move the nfs/cifs/ram special cases out of name_to_dev_t
-git bisect good c0c1a7dcb6f5db4500e6574294674213bc24940c
-# bad: [702f3189e454b3c3c2f3c99dbf30acf41aab707c] block: move the code to do early boot lookup of block devices to block/
-git bisect bad 702f3189e454b3c3c2f3c99dbf30acf41aab707c
-# bad: [079caa35f7863cd9958b4555ae873ea4d352a502] init: clear root_wait on all invalid root= strings
-git bisect bad 079caa35f7863cd9958b4555ae873ea4d352a502
-# good: [cf056a43121559d3642419917d405c3237ded90a] init: improve the name_to_dev_t interface
-git bisect good cf056a43121559d3642419917d405c3237ded90a
-# first bad commit: [079caa35f7863cd9958b4555ae873ea4d352a502] init: clear root_wait on all invalid root= strings
+ Documentation/admin-guide/pm/intel_idle.rst | 17 ++++++++++++++++-
+ drivers/idle/intel_idle.c                   | 14 ++++++++++++--
+ 2 files changed, 28 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/admin-guide/pm/intel_idle.rst b/Documentation/admin-guide/pm/intel_idle.rst
+index b799a43da62e..8604e6d1fe2c 100644
+--- a/Documentation/admin-guide/pm/intel_idle.rst
++++ b/Documentation/admin-guide/pm/intel_idle.rst
+@@ -170,7 +170,7 @@ and ``idle=nomwait``.  If any of them is present in the kernel command line, the
+ ``MWAIT`` instruction is not allowed to be used, so the initialization of
+ ``intel_idle`` will fail.
+ 
+-Apart from that there are four module parameters recognized by ``intel_idle``
++Apart from that there are five module parameters recognized by ``intel_idle``
+ itself that can be set via the kernel command line (they cannot be updated via
+ sysfs, so that is the only way to change their values).
+ 
+@@ -216,6 +216,21 @@ are ignored).
+ The idle states disabled this way can be enabled (on a per-CPU basis) from user
+ space via ``sysfs``.
+ 
++The ``ibrs_off`` module parameter is a boolean flag (default to false). It is
++used to control if IBRS (Indirect Branch Restricted Speculation) should be
++turned off, if set, when the CPU enters an idle state.  This flag will not
++affect CPUs that are using Enhanced IBRS which can remain on with little
++performance impact.
++
++For some CPUs, IBRS will be selected as mitigation for Spectre v2 and Retbleed
++security vulnerabilities by default.  Leaving the IBRS mode on while idling may
++have a performance impact on its sibling CPU.  The IBRS mode will be turned off
++by default when the CPU enters into a deep idle state, but not in some
++shallower ones.  Setting the ``ibrs_off`` module parameter will force the IBRS
++mode to off when the CPU is in any one of the available idle states.  This may
++help performance of a sibling CPU at the expense of a slightly higher wakeup
++latency for the idle CPU.
++
+ 
+ .. _intel-idle-core-and-package-idle-states:
+ 
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 07fa23707b3c..8bbf1e6d845c 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -69,6 +69,7 @@ static int max_cstate = CPUIDLE_STATE_MAX - 1;
+ static unsigned int disabled_states_mask __read_mostly;
+ static unsigned int preferred_states_mask __read_mostly;
+ static bool force_irq_on __read_mostly;
++static bool ibrs_off __read_mostly;
+ 
+ static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+ 
+@@ -1907,12 +1908,15 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
+ 			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
+ 			state->enter = intel_idle_xstate;
+ 		} else if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS) &&
+-			   state->flags & CPUIDLE_FLAG_IBRS) {
++			  ((state->flags & CPUIDLE_FLAG_IBRS) || ibrs_off)) {
+ 			/*
+ 			 * IBRS mitigation requires that C-states are entered
+ 			 * with interrupts disabled.
+ 			 */
+-			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
++			if (ibrs_off && (state->flags & CPUIDLE_FLAG_IRQ_ENABLE))
++				state->flags &= ~CPUIDLE_FLAG_IRQ_ENABLE;
++			else
++				WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
+ 			state->enter = intel_idle_ibrs;
+ 		} else if (state->flags & CPUIDLE_FLAG_IRQ_ENABLE) {
+ 			state->enter = intel_idle_irq;
+@@ -2165,3 +2169,9 @@ MODULE_PARM_DESC(preferred_cstates, "Mask of preferred idle states");
+  * 'CPUIDLE_FLAG_INIT_XSTATE' and 'CPUIDLE_FLAG_IBRS' flags.
+  */
+ module_param(force_irq_on, bool, 0444);
++/*
++ * Force the disabling of IBRS when X86_FEATURE_KERNEL_IBRS is on and
++ * CPUIDLE_FLAG_IRQ_ENABLE isn't set.
++ */
++module_param(ibrs_off, bool, 0444);
++MODULE_PARM_DESC(ibrs_off, "Disable IBRS when idle");
+-- 
+2.31.1
+
