@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAEBCEB64DC
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Jun 2023 20:26:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C57F4C07CA9
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Jun 2023 20:26:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230164AbjFYU0B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Jun 2023 16:26:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60294 "EHLO
+        id S230179AbjFYU0D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Jun 2023 16:26:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60232 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230088AbjFYUZ6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jun 2023 16:25:58 -0400
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 57A3F1BD
-        for <linux-pm@vger.kernel.org>; Sun, 25 Jun 2023 13:25:55 -0700 (PDT)
-Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-4f95bf5c493so2953615e87.3
-        for <linux-pm@vger.kernel.org>; Sun, 25 Jun 2023 13:25:55 -0700 (PDT)
+        with ESMTP id S230192AbjFYUZ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jun 2023 16:25:59 -0400
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F926E6B
+        for <linux-pm@vger.kernel.org>; Sun, 25 Jun 2023 13:25:57 -0700 (PDT)
+Received: by mail-lf1-x132.google.com with SMTP id 2adb3069b0e04-4f4b2bc1565so3185393e87.2
+        for <linux-pm@vger.kernel.org>; Sun, 25 Jun 2023 13:25:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1687724753; x=1690316753;
+        d=linaro.org; s=google; t=1687724755; x=1690316755;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=P6IQl2jydqEVzMHgyvXGKi5dP1nmhqYFToeW0usGn04=;
-        b=cCnMP6hgg80Wv1iohEYrspwKCL/eAfWkw4IHVVj4IbDRWAwtE4drLYNKdJyMNqtKen
-         C90le5J112H8WfyG7Ej5c6n5+SaVfltC3Kn0heIh5PNwI/NAcr0Qnhwh2xSnshbpjz4A
-         pChJxPAKHNiFs/DX48jFnLQhpHDjtZTrIDVvRGVPnk+ZFekdo9op3Ec19OYXJ+MQCl3h
-         3LnQ78ymAU9vRQxfId8yeg/eQtVMYT1QKiyxjNppSxceADNil98RxR9GkOPDH20g1lmk
-         IAutLklX6PPG012cyZERYCQTb2CZg0q+5eHfxZFgKRbjaoepVtc/pSfDL3cFhtaD9n6D
-         /naQ==
+        bh=YCEB400wiwuGaLoRWnnc0v8VJxlf3ONSbs27qRslkuQ=;
+        b=Wc9cfmtKTj9cko1ECIvp4duG7/V4TPqN7K+1UdlcWKaprQykCl9QH9bkCIoZ8CPrDp
+         1I1ANFyx5ZGSU4irTbxv6ve/35WUoSGaCxjS/rABJ2/OYujb89Hdc5YE3/3+ns2SqEvV
+         nwvvZPuEB2FdK6R4oMWOGEyMsqgyqmEmX3lIMAVLhUxRiCeEjQbJdw3e1wPChMpapIEL
+         xUWisHJUqD9n/RzYUvCO0+bwaZNfFlmu7NXCAP2M9G5RWbXUt652k+8rRtQIhvY1VOd1
+         vhjl8LqKkmVcnT1VMfNIqINcUDKQsGtwHTw/ovsxac4ty7i+LTnrAThpSCxt/HokhOse
+         SRmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687724753; x=1690316753;
+        d=1e100.net; s=20221208; t=1687724755; x=1690316755;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=P6IQl2jydqEVzMHgyvXGKi5dP1nmhqYFToeW0usGn04=;
-        b=JWPnVE3uBKlj7HDbtnMVUgnUaxGIMsHjUzkVPV9RyhrE1SeKB6NMYb87vKNf3N10xy
-         OSoY4U2Pb6QU5DFE5ptQYT3hSYcZ1tB3mHgSJnchKl97vypCid3xX56DcCj6UMuJUV++
-         WEkTuKAdA7SKMh3sNm04vwuaVrVr4Q8GXpLKuvPxcOhxmtWD404aydxUf2DkGlT9xpYr
-         EvwOt50v2+OQ/8OAnD04UYY2aAFFeGzXxlUydjeUAwCmhJD3pEr5xE0v1IDdvjWvXWP6
-         322ftIEEsKqwQg4obu5MNuF15I3nX4p8bi89KdJ/wF0iL+9nioJ98xrwB3OuDCs4fa6o
-         0Jxw==
-X-Gm-Message-State: AC+VfDz9qD8BevBwXdNU66Tlf85d1fVfkGUpB/IrgyhZbuhcz8HDJeU5
-        QQY+IWlA5vq6xOorCmHTvavWAA==
-X-Google-Smtp-Source: ACHHUZ7sdpONkCT0uFv1glG3RaUylMcRYeZ1VbX8RY+p/4zKS2XBEMJP4IeGiit/8MnyK9a4R4EpxQ==
-X-Received: by 2002:ac2:4db7:0:b0:4f8:5f19:4b49 with SMTP id h23-20020ac24db7000000b004f85f194b49mr13400874lfe.64.1687724753721;
-        Sun, 25 Jun 2023 13:25:53 -0700 (PDT)
+        bh=YCEB400wiwuGaLoRWnnc0v8VJxlf3ONSbs27qRslkuQ=;
+        b=drA/ytB8pw36hki9W5bf//4omOMH4nqTJd89pfDlKELmqVUvepvGsrzL4pg3J32Jex
+         KgaGN/w3CYWepo7pIA8lxhkNu8cISr6fZLInhj01Pead6F41UMFV6YUyznwAzN9ofvcD
+         fi0ypSEyng2Oam7Ak/FqnjjZsyQQMa+Aqx9H4O/coLDJFvpwd/uG3YtNxLmverlY6h08
+         4IcvYzvj3X4mTTUWYv8DHx2vzddcaeFZCDxnB3mMrOsqUQhztCWbpIYau9uazfDkyPGd
+         +c9bdwoBuHTIPWtUOBCwf2iTgy9ERGZJRUT2afSBLklMbk1GKhl/BiDX8t756MicG3Kw
+         XTEQ==
+X-Gm-Message-State: AC+VfDxRQ2TypQUR/kjZfDYo6KDLjnCVedYN5SsahqyS2ERm7AMIzHZF
+        KNECDysjYj4h2mlSpcTr1JfGZQ==
+X-Google-Smtp-Source: ACHHUZ5GmN6LZ5td/fCJgLxIxn8P/62zdAmKB39UIDhovcXkSdFpcP+m0Z9XjERJAEPIXwO2ce4JWQ==
+X-Received: by 2002:a05:6512:15aa:b0:4fb:74d6:6154 with SMTP id bp42-20020a05651215aa00b004fb74d66154mr304763lfb.37.1687724755629;
+        Sun, 25 Jun 2023 13:25:55 -0700 (PDT)
 Received: from umbar.unikie.fi ([192.130.178.91])
-        by smtp.gmail.com with ESMTPSA id m21-20020a195215000000b004f8427f8716sm787537lfb.262.2023.06.25.13.25.52
+        by smtp.gmail.com with ESMTPSA id m21-20020a195215000000b004f8427f8716sm787537lfb.262.2023.06.25.13.25.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Jun 2023 13:25:53 -0700 (PDT)
+        Sun, 25 Jun 2023 13:25:55 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -66,9 +66,9 @@ Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
         Christian Marangi <ansuelsmth@gmail.com>,
         Stephan Gerhold <stephan@gerhold.net>
-Subject: [PATCH v2 05/26] dt-bindings: cache: describe L2 cache on Qualcomm Krait platforms
-Date:   Sun, 25 Jun 2023 23:25:26 +0300
-Message-Id: <20230625202547.174647-6-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v2 07/26] clk: qcom: krait-cc: rewrite driver to use clk_hw instead of clk
+Date:   Sun, 25 Jun 2023 23:25:28 +0300
+Message-Id: <20230625202547.174647-8-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230625202547.174647-1-dmitry.baryshkov@linaro.org>
 References: <20230625202547.174647-1-dmitry.baryshkov@linaro.org>
@@ -78,117 +78,221 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The L2 cache device on Qualcomm Krait platforms controls the supplying
-voltages and the cache frequency. Add corresponding bindings for this
-device.
+The krait-cc driver still uses struct clk internally. Rewrite it to
+allocate and register struct clk_hw instead.
 
+Reviewed-by: Stephen Boyd <sboyd@kernel.org>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- .../bindings/cache/qcom,krait-l2-cache.yaml   | 75 +++++++++++++++++++
- include/dt-bindings/soc/qcom,krait-l2-cache.h | 12 +++
- 2 files changed, 87 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cache/qcom,krait-l2-cache.yaml
- create mode 100644 include/dt-bindings/soc/qcom,krait-l2-cache.h
+ drivers/clk/qcom/krait-cc.c | 141 ++++++++++++++++--------------------
+ 1 file changed, 63 insertions(+), 78 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/cache/qcom,krait-l2-cache.yaml b/Documentation/devicetree/bindings/cache/qcom,krait-l2-cache.yaml
-new file mode 100644
-index 000000000000..1dcf8165135b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cache/qcom,krait-l2-cache.yaml
-@@ -0,0 +1,75 @@
-+# SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/cache/qcom,krait-l2-cache.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/clk/qcom/krait-cc.c b/drivers/clk/qcom/krait-cc.c
+index 410ae8390f1c..a37abbd31f50 100644
+--- a/drivers/clk/qcom/krait-cc.c
++++ b/drivers/clk/qcom/krait-cc.c
+@@ -13,17 +13,9 @@
+ #include <linux/clk-provider.h>
+ #include <linux/slab.h>
+ 
+-#include "clk-krait.h"
+-
+-enum {
+-	cpu0_mux = 0,
+-	cpu1_mux,
+-	cpu2_mux,
+-	cpu3_mux,
+-	l2_mux,
++#include <dt-bindings/clock/qcom,krait-cc.h>
+ 
+-	clks_max,
+-};
++#include "clk-krait.h"
+ 
+ static unsigned int sec_mux_map[] = {
+ 	2,
+@@ -235,7 +227,7 @@ krait_add_pri_mux(struct device *dev, struct clk_hw *hfpll_div, struct clk_hw *s
+ 		.parent_data = p_data,
+ 		.num_parents = ARRAY_SIZE(p_data),
+ 		.ops = &krait_mux_clk_ops,
+-		.flags = CLK_SET_RATE_PARENT,
++		.flags = CLK_SET_RATE_PARENT | CLK_IS_CRITICAL,
+ 	};
+ 	struct clk_hw *clk;
+ 	char *hfpll_name;
+@@ -324,19 +316,6 @@ static struct clk_hw *krait_add_clks(struct device *dev, int id, bool unique_aux
+ 	return pri_mux;
+ }
+ 
+-static struct clk *krait_of_get(struct of_phandle_args *clkspec, void *data)
+-{
+-	unsigned int idx = clkspec->args[0];
+-	struct clk **clks = data;
+-
+-	if (idx >= clks_max) {
+-		pr_err("%s: invalid clock index %d\n", __func__, idx);
+-		return ERR_PTR(-EINVAL);
+-	}
+-
+-	return clks[idx] ? : ERR_PTR(-ENODEV);
+-}
+-
+ static const struct of_device_id krait_cc_match_table[] = {
+ 	{ .compatible = "qcom,krait-cc-v1", (void *)1UL },
+ 	{ .compatible = "qcom,krait-cc-v2" },
+@@ -344,60 +323,84 @@ static const struct of_device_id krait_cc_match_table[] = {
+ };
+ MODULE_DEVICE_TABLE(of, krait_cc_match_table);
+ 
++static int krait_clk_reinit(struct clk_hw *hw, int cpu)
++{
++	struct clk *clk;
++	unsigned long cur_rate, aux_rate;
++	char name[5]; /* CPUn */
 +
-+title: Qualcomm Krait L2 Cache
++	if (cpu == -1)
++		strcpy(name, "L2");
++	else
++		snprintf(name, sizeof(name), "CPU%d", cpu);
 +
-+maintainers:
-+  - Bjorn Andersson <andersson@kernel.org>
++	clk = clk_hw_get_clk(hw, clk_hw_get_name(hw));
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
 +
-+description:
-+  L2 cache on Qualcomm Krait platforms is shared between all CPU cores. L2
-+  cache frequency and voltages should be scaled according to the needs of the
-+  cores.
++	aux_rate = 384000000;
 +
-+allOf:
-+  - $ref: ../cache-controller.yaml#
++	cur_rate = clk_get_rate(clk);
++	if (cur_rate < aux_rate) {
++		pr_info("%s @ Undefined rate %lu. Forcing new rate.\n",
++			name, cur_rate / 1000);
++		cur_rate = aux_rate;
++	}
 +
-+properties:
-+  compatible:
-+    items:
-+      - const: qcom,krait-l2-cache
-+      - const: cache
++	clk_set_rate(clk, aux_rate);
++	clk_set_rate(clk, 2);
++	clk_set_rate(clk, cur_rate);
++	pr_info("%s @ %lu KHz\n", name, clk_get_rate(clk) / 1000);
 +
-+  clocks:
-+    maxItems: 1
++	clk_put(clk);
 +
-+  '#interconnect-cells':
-+    const: 1
++	return 0;
++}
 +
-+  vdd-mem-supply:
-+    description: suppling regulator for the memory cells of the cache
++/* Krait configurations have at most 4 CPUs and one L2 */
++#define KRAIT_NUM_CLOCKS 5
 +
-+  vdd-dig-supply:
-+    description: suppling regulator for the digital logic of the cache
+ static int krait_cc_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	const struct of_device_id *id;
+-	unsigned long cur_rate, aux_rate;
+-	int cpu;
+-	struct clk_hw *mux, *l2_pri_mux;
+-	struct clk *clk, **clks;
++	int cpu, ret;
++	struct clk_hw *clk;
++	struct clk_hw_onecell_data *clks;
+ 
+ 	id = of_match_device(krait_cc_match_table, dev);
+ 	if (!id)
+ 		return -ENODEV;
+ 
+ 	/* Rate is 1 because 0 causes problems for __clk_mux_determine_rate */
+-	clk = clk_register_fixed_rate(dev, "qsb", NULL, 0, 1);
++	clk = clk_hw_register_fixed_rate(dev, "qsb", NULL, 0, 1);
+ 	if (IS_ERR(clk))
+ 		return PTR_ERR(clk);
+ 
+ 	if (!id->data) {
+-		clk = clk_register_fixed_factor(dev, "acpu_aux",
+-						"gpll0_vote", 0, 1, 2);
++		clk = clk_hw_register_fixed_factor(dev, "acpu_aux", "gpll0_vote", 0, 1, 2);
+ 		if (IS_ERR(clk))
+ 			return PTR_ERR(clk);
+ 	}
+ 
+-	/* Krait configurations have at most 4 CPUs and one L2 */
+-	clks = devm_kcalloc(dev, clks_max, sizeof(*clks), GFP_KERNEL);
++	clks = devm_kzalloc(dev, struct_size(clks, hws, KRAIT_NUM_CLOCKS), GFP_KERNEL);
+ 	if (!clks)
+ 		return -ENOMEM;
+ 
++	clks->num = KRAIT_NUM_CLOCKS;
++	BUILD_BUG_ON(KRAIT_L2 >= KRAIT_NUM_CLOCKS);
 +
-+  operating-points-v2: true
-+  opp-table-l2: true
-+
-+required:
-+  - compatible
-+  - cache-level
-+  - cache-unified
-+  - clocks
-+  - '#interconnect-cells'
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/soc/qcom,krait-l2-cache.h>
-+
-+    l2-cache {
-+        compatible = "qcom,krait-l2-cache", "cache";
-+        cache-level = <2>;
-+        cache-unified;
-+        vdd-mem-supply = <&pm8921_l24>;
-+        vdd-dig-supply = <&pm8921_s3>;
-+        clocks = <&kraitcc 4>;
-+        #interconnect-cells = <1>;
-+        operating-points-v2 = <&l2_opp_table>;
-+
-+        l2_opp_table: opp-table-l2 {
-+            compatible = "operating-points-v2";
-+
-+            opp-384000000 {
-+                opp-hz = /bits/ 64 <384000000>;
-+                opp-microvolt = <1050000 1050000 1150000>,
-+                                <950000 950000 1150000>;
-+            };
-+        };
-+    };
-+...
-+
-diff --git a/include/dt-bindings/soc/qcom,krait-l2-cache.h b/include/dt-bindings/soc/qcom,krait-l2-cache.h
-new file mode 100644
-index 000000000000..c9a38d368111
---- /dev/null
-+++ b/include/dt-bindings/soc/qcom,krait-l2-cache.h
-@@ -0,0 +1,12 @@
-+/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-+/*
-+ * Copyright (C) 2023 Linaro Ltd. All rights reserved.
-+ */
-+
-+#ifndef __DT_BINDINGS_SOC_QCOM_KRAIT_L2_CACHE_H
-+#define __DT_BINDINGS_SOC_QCOM_KRAIT_L2_CACHE_H
-+
-+#define MASTER_KRAIT_L2		0
-+#define SLAVE_KRAIT_L2		1
-+
-+#endif
+ 	for_each_possible_cpu(cpu) {
+-		mux = krait_add_clks(dev, cpu, id->data);
+-		if (IS_ERR(mux))
+-			return PTR_ERR(mux);
+-		clks[cpu] = mux->clk;
++		clk = krait_add_clks(dev, cpu, id->data);
++		if (IS_ERR(clk))
++			return PTR_ERR(clk);
++		clks->hws[cpu] = clk;
+ 	}
+ 
+-	l2_pri_mux = krait_add_clks(dev, -1, id->data);
+-	if (IS_ERR(l2_pri_mux))
+-		return PTR_ERR(l2_pri_mux);
+-	clks[l2_mux] = l2_pri_mux->clk;
+-
+-	/*
+-	 * We don't want the CPU or L2 clocks to be turned off at late init
+-	 * if CPUFREQ or HOTPLUG configs are disabled. So, bump up the
+-	 * refcount of these clocks. Any cpufreq/hotplug manager can assume
+-	 * that the clocks have already been prepared and enabled by the time
+-	 * they take over.
+-	 */
+-	for_each_online_cpu(cpu) {
+-		clk_prepare_enable(clks[l2_mux]);
+-		WARN(clk_prepare_enable(clks[cpu]),
+-		     "Unable to turn on CPU%d clock", cpu);
+-	}
++	clk = krait_add_clks(dev, -1, id->data);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
++	clks->hws[KRAIT_L2] = clk;
+ 
+ 	/*
+ 	 * Force reinit of HFPLLs and muxes to overwrite any potential
+@@ -410,31 +413,13 @@ static int krait_cc_probe(struct platform_device *pdev)
+ 	 * two different rates to force a HFPLL reinit under all
+ 	 * circumstances.
+ 	 */
+-	cur_rate = clk_get_rate(clks[l2_mux]);
+-	aux_rate = 384000000;
+-	if (cur_rate < aux_rate) {
+-		pr_info("L2 @ Undefined rate. Forcing new rate.\n");
+-		cur_rate = aux_rate;
+-	}
+-	clk_set_rate(clks[l2_mux], aux_rate);
+-	clk_set_rate(clks[l2_mux], 2);
+-	clk_set_rate(clks[l2_mux], cur_rate);
+-	pr_info("L2 @ %lu KHz\n", clk_get_rate(clks[l2_mux]) / 1000);
+-	for_each_possible_cpu(cpu) {
+-		clk = clks[cpu];
+-		cur_rate = clk_get_rate(clk);
+-		if (cur_rate < aux_rate) {
+-			pr_info("CPU%d @ Undefined rate. Forcing new rate.\n", cpu);
+-			cur_rate = aux_rate;
+-		}
++	krait_clk_reinit(clks->hws[KRAIT_L2], -1);
++	for_each_possible_cpu(cpu)
++		krait_clk_reinit(clks->hws[cpu], cpu);
+ 
+-		clk_set_rate(clk, aux_rate);
+-		clk_set_rate(clk, 2);
+-		clk_set_rate(clk, cur_rate);
+-		pr_info("CPU%d @ %lu KHz\n", cpu, clk_get_rate(clk) / 1000);
+-	}
+-
+-	of_clk_add_provider(dev->of_node, krait_of_get, clks);
++	ret = devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, clks);
++	if (ret)
++		return ret;
+ 
+ 	return 0;
+ }
 -- 
 2.39.2
 
