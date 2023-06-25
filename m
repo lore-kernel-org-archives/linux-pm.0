@@ -2,164 +2,135 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFC13EB64DC
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Jun 2023 20:20:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF3EEEB64DD
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Jun 2023 20:25:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229846AbjFYUUv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Jun 2023 16:20:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58050 "EHLO
+        id S230104AbjFYUZy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Jun 2023 16:25:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60174 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229654AbjFYUUu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jun 2023 16:20:50 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F2161B1;
-        Sun, 25 Jun 2023 13:20:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1687724449; x=1719260449;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=GiM0x6n+PqQfGg3R0eLSBMyCIkszbQdYpYQsIp4mBnw=;
-  b=aOujkTv6IYpi6Sj6/U0eJax/JRwIhUZ0M1MAQYUJIu2m+FZ3VZGNgdHv
-   vH06KlZ3ZmchhVUffL3uCdmUzDJ2/T18bjkG+mqhyqLfaPCfs9Cv3BMaa
-   6Ik3ikXJFnzrDaUlVGZBKCt9aSdMwAs1pD4COE10mbo+OBUBKh2QrHALY
-   +rRqfyF4EaMMir5LazMh3L60JRxb64Cse4i+ezpMm4R3orvZeHtwAmAh2
-   vtAUpsw6/BeApz+NL5a6TGqChVayp/BHj77aCyISm8aDDS+90b4WC7abc
-   Sf/npAjO48hfBmwCk16qaDeQqcE2/PWGRU/Cj6lldhB4SQw5D5wxh1m9/
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10752"; a="345867306"
-X-IronPort-AV: E=Sophos;i="6.01,158,1684825200"; 
-   d="scan'208";a="345867306"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jun 2023 13:20:32 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10752"; a="962543776"
-X-IronPort-AV: E=Sophos;i="6.01,158,1684825200"; 
-   d="scan'208";a="962543776"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmsmga006.fm.intel.com with ESMTP; 25 Jun 2023 13:20:32 -0700
-Date:   Sun, 25 Jun 2023 13:23:18 -0700
-From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To:     Ionela Voinescu <ionela.voinescu@arm.com>
-Cc:     "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Ricardo Neri <ricardo.neri@intel.com>,
-        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
-        Ben Segall <bsegall@google.com>,
-        Daniel Bristot de Oliveira <bristot@redhat.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Len Brown <len.brown@intel.com>, Mel Gorman <mgorman@suse.de>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        Valentin Schneider <vschneid@redhat.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Zhao Liu <zhao1.liu@intel.com>,
-        "Yuan, Perry" <Perry.Yuan@amd.com>, x86@kernel.org,
-        "Joel Fernandes (Google)" <joel@joelfernandes.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        "Tim C . Chen" <tim.c.chen@intel.com>,
-        Zhao Liu <zhao1.liu@linux.intel.com>
-Subject: Re: [PATCH v4 18/24] sched/task_struct: Add helpers for IPC
- classification
-Message-ID: <20230625202318.GB3902@ranerica-svr.sc.intel.com>
-References: <20230613042422.5344-1-ricardo.neri-calderon@linux.intel.com>
- <20230613042422.5344-19-ricardo.neri-calderon@linux.intel.com>
- <ZJQgf1PtrHWLA9q1@arm.com>
+        with ESMTP id S230044AbjFYUZx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Jun 2023 16:25:53 -0400
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBDEF1BD
+        for <linux-pm@vger.kernel.org>; Sun, 25 Jun 2023 13:25:51 -0700 (PDT)
+Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-4f766777605so3138836e87.1
+        for <linux-pm@vger.kernel.org>; Sun, 25 Jun 2023 13:25:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1687724750; x=1690316750;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=z1S1is2cOz63gQMr+iNsqA7cGkmzXDgvApekIDI21n4=;
+        b=IPkhDeBtv1Tnpg8MFffJbkZe8Qw0dogWowNIkFifoqYVxDORKYIYYPlyb6F6IfHPeP
+         tr3QK9AaGNI+LbULrFXO6N0Cp2To2JnkHWl3XvalPdZMTmCCn7Qo8L5wlMMQxF6TZ7lD
+         j5qI3nZbEw/Q+xu3PrAyFsMTF252S7iA3kodH+Cu+LCw0muhGCaYyCTlronFEDokJA58
+         taQCRPi+jMxeSZO7qcOOlfl1zatPcatOwzdKQz94qZPMkJSRYVkvbnO7lnv3mK2yxe1F
+         zINrIda5b29EP0ktnx+TnmUc+USWclm6G+iC2SHiLSjXvE3cDedNFUv/Zn4hIq25L26O
+         edqA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1687724750; x=1690316750;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=z1S1is2cOz63gQMr+iNsqA7cGkmzXDgvApekIDI21n4=;
+        b=Chxgk6LNX3e52WezmQtIXKvj+625zjjo6TAo5XBsPJdJXhuBfZAjOnPmcmNJEDU6rq
+         Km81dn+5vTx8x2COHxRziwz+RHdB6wa97IKA271OiF5OBKITjR7QbSmMsZZr3F/sqlM9
+         dyEh0jSgXxfLswL3Qyb/5z0xzZCaa4fkFg5h+jg6NdfQkwV0uQX8lK6N6Wv3lpXmuhg8
+         PtFWqrbdd0hwFjvOcFL7e+AYhLBuzoC63WuD/3dlDtGkSiKdXVEodPXbD3VGE3yshcfW
+         kStvnOTaP+pucJweU0py9Fzw3xpp6RKdcuengweojzoJJnIriiLZxRDeUFFaiyhX0T3W
+         Mf5Q==
+X-Gm-Message-State: AC+VfDz7KL3j9fMDdgumL8lE/J2Xvnaf3kbmstiQSI+FE21xNgkOd5IX
+        ux2VOl3N0Immbn5i58aL2mYeXg==
+X-Google-Smtp-Source: ACHHUZ5CC8puO7GbHdrVgRG7ffiHWCvaGNAWdqGja/m0zKO+WEDCYC8YY0TOxxarPk33O5HZVXHo5Q==
+X-Received: by 2002:a19:ca50:0:b0:4f8:578f:ace1 with SMTP id h16-20020a19ca50000000b004f8578face1mr13971019lfj.21.1687724749873;
+        Sun, 25 Jun 2023 13:25:49 -0700 (PDT)
+Received: from umbar.unikie.fi ([192.130.178.91])
+        by smtp.gmail.com with ESMTPSA id m21-20020a195215000000b004f8427f8716sm787537lfb.262.2023.06.25.13.25.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 25 Jun 2023 13:25:49 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Ilia Lin <ilia.lin@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
+        Christian Marangi <ansuelsmth@gmail.com>,
+        Stephan Gerhold <stephan@gerhold.net>
+Subject: [PATCH v2 01/26] dt-bindings: opp: opp-v2-kryo-cpu: support Qualcomm Krait SoCs
+Date:   Sun, 25 Jun 2023 23:25:22 +0300
+Message-Id: <20230625202547.174647-2-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230625202547.174647-1-dmitry.baryshkov@linaro.org>
+References: <20230625202547.174647-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZJQgf1PtrHWLA9q1@arm.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 22, 2023 at 11:20:47AM +0100, Ionela Voinescu wrote:
-> Hi,
-> 
-> On Monday 12 Jun 2023 at 21:24:16 (-0700), Ricardo Neri wrote:
-> > The raw classification that hardware provides for a task may not
-> > be directly usable by the scheduler: the classification may change too
-> > frequently or architecture-specific implementations may need to consider
-> > additional factors. For instance, some processors with Intel Thread
-> > Director need to consider the state of the SMT siblings of a core.
-> > 
-> > Provide per-task helper variables that architectures can use to
-> > postprocess the classification that hardware provides.
-> > 
-> > Cc: Ben Segall <bsegall@google.com>
-> > Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
-> > Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > Cc: Ionela Voinescu <ionela.voinescu@arm.com>
-> > Cc: Joel Fernandes (Google) <joel@joelfernandes.org>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Lukasz Luba <lukasz.luba@arm.com>
-> > Cc: Mel Gorman <mgorman@suse.de>
-> > Cc: Perry Yuan <Perry.Yuan@amd.com>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > Cc: Tim C. Chen <tim.c.chen@intel.com>
-> > Cc: Valentin Schneider <vschneid@redhat.com>
-> > Cc: Zhao Liu <zhao1.liu@linux.intel.com>
-> > Cc: x86@kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> > ---
-> > Changes since v3:
-> >  * None
-> > 
-> > Changes since v2:
-> >  * None
-> > 
-> > Changes since v1:
-> >  * Used bit-fields to fit all the IPC class data in 4 bytes. (PeterZ)
-> >  * Shortened names of the helpers.
-> >  * Renamed helpers with the ipcc_ prefix.
-> >  * Reworded commit message for clarity
-> > ---
-> >  include/linux/sched.h | 12 +++++++++++-
-> >  1 file changed, 11 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > index 0e1c38ad09c2..719147460ca8 100644
-> > --- a/include/linux/sched.h
-> > +++ b/include/linux/sched.h
-> > @@ -1541,7 +1541,17 @@ struct task_struct {
-> >  	 * A hardware-defined classification of task that reflects but is
-> >  	 * not identical to the number of instructions per cycle.
-> >  	 */
-> > -	unsigned short			ipcc;
-> > +	unsigned int			ipcc : 9;
-> > +	/*
-> > +	 * A candidate classification that arch-specific implementations
-> > +	 * qualify for correctness.
-> > +	 */
-> > +	unsigned int			ipcc_tmp : 9;
-> > +	/*
-> > +	 * Counter to filter out transient candidate classifications
-> > +	 * of a task.
-> > +	 */
-> > +	unsigned int			ipcc_cntr : 14;
-> >  #endif
-> >  
-> 
-> Why does this need to be split in task_struct? Isn't this architecture
-> specific? IMO the scheduler should never make use of class information
-> itself. It only receives the value though the call of an arch function
-> and passes it as an argument to an arch function to get a performance
-> score. So the way one interprets the class value (splits it in relevant
-> and helper bits) should be defined and considered in the architecture
-> specific code.
+Exted the opp-v2-kryo-cpu.yaml to support defining OPP tables for the
+previous generation of Qualcomm CPUs, 32-bit Krait-based platforms.
 
-This is an excellent observation. The scheduler is unconcerned with what
-the classes mean. I'll remove these auxiliary members.
+It makes no sense to use 'operating-points-v2-kryo-cpu' compatibility
+node for the Krait cores. Add support for the Krait-specific
+'operating-points-v2-krait-cpu' compatibility string and the relevant
+opp-microvolt subclasses properties.
 
-This also removes 2 patches from the series.
+The listed opp-supported-hw values are applicable only to msm8996 /
+msm8996pro platforms. Remove the enum as other platforms will use other
+bit values. It makes little sense to list all possible values for all
+the platforms here.
 
-Thanks and BR,
-Ricardo
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ .../devicetree/bindings/opp/opp-v2-kryo-cpu.yaml     | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml b/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml
+index bbbad31ae4ca..4e84d06d5ff9 100644
+--- a/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml
++++ b/Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml
+@@ -26,7 +26,9 @@ description: |
+ 
+ properties:
+   compatible:
+-    const: operating-points-v2-kryo-cpu
++    enum:
++      - operating-points-v2-krait-cpu
++      - operating-points-v2-kryo-cpu
+ 
+   nvmem-cells:
+     description: |
+@@ -63,14 +65,16 @@ patternProperties:
+           5:  MSM8996SG, speedbin 1
+           6:  MSM8996SG, speedbin 2
+           7-31:  unused
+-        enum: [0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+-               0x9, 0xd, 0xe, 0xf,
+-               0x10, 0x20, 0x30, 0x70]
++
++          Other platforms use bits directly corresponding to speedbin index.
+ 
+       clock-latency-ns: true
+ 
+       required-opps: true
+ 
++    patternProperties:
++      '^opp-microvolt-speed[0-9]+-pvs[0-9]+$': true
++
+     required:
+       - opp-hz
+ 
+-- 
+2.39.2
+
