@@ -2,151 +2,158 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBD15EB64DD
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Jun 2023 07:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFF74C001B0
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Jun 2023 07:31:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231172AbjF0HXD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Jun 2023 03:23:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56208 "EHLO
+        id S230206AbjF0Hb3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Jun 2023 03:31:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231213AbjF0HWe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 03:22:34 -0400
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01on2122.outbound.protection.outlook.com [40.107.117.122])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D58C2950;
-        Tue, 27 Jun 2023 00:21:47 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=KozvCwT0Lzox/yVWGwCFD6kNBW5z/FtI3JLFN2eyYf0oZdt2SMHm9RZrxYh8r8DAEQBOJ5H4jQgGAzqUOUtj/8uoQZbyeX3jpyT2zAcaGPljy6NTuywnIdhhcrAxtkhrV8fFKAtvDggKWc9G3VfF3jVdDXUgwviLS8cYWHwRo72mXSDOTMfrWu4/coH1kWOPN7uOpmj7Fc1EMiXTSB2X/IIhOLxn1OXFK375REmRKmS9UU471nNnfOIFuqKqGpWixW/vFQPoIsh+nU8y+zf0xxr7wtglWitBYOw3VNbmbfBMRTEEnClBHk7Ah3Qgps3UomYQsBYm4NkO/vJ5UzKDuA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=OUTBeRR7HOpprFxmVjklLNxaPINBXQ4D0vNvhK25J0s=;
- b=OneaE9zcsr7/BU5qMQlDY3q7fvhoHHYnacYv178Y37WUCQx9O4S/da5/QerCHHE9GSRIz3GBdKFjA/C3u/UT+smw+7LAKeNKLoE+3DrsnNH/UcKiu79BzPo4UZL02AatUfGidrHUh/Aep6TnN17wh4YypuKh4HTYhhqgueyMAIXUM5cvW5BAdq61NmHe85amP8E8HZvK+9kqDasQELwtvQqqpmXu04U13vH1YGLyt5GMRI5d7f+JVzFBqU5+/VoQ402I42cyITHo4zS8WSg6dnZ7bMHu9XEX9dsD4D4qibDfczB85J+CitrIuIzaoIz2lmSMjhTjtCOwVb/FRnCS/g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=OUTBeRR7HOpprFxmVjklLNxaPINBXQ4D0vNvhK25J0s=;
- b=Fvl4lRKrq3qzD+CU0wOTwx6JNElpwQdnJc1tAgEh1H1yta+m1gKgxsXf9T+Wgz9pgB/7JwuqAdQaTj/IddsNHSWshWq6AnV1LI4lR83BBaJIly7SKghXzdj3aAnq/IYu7m2oDmQ3zgFdfvCQ8jMHJ/nNPLPaGsoFpAq5Qx0EaeIg7KZ7CKg5Y32j5i6bsChlqKuRaGDgfCex4ngNWl7I4k4P0kFOGwpw1pGSpUEnBk8aMnWh/isGmf3rhFHGBaUIb34tlMNu2pDDpOs+CCqrQT83ohxBVunMydAoPbEQrHFCp+1Wq4oZtzjAPlvsqu/y7qMbv/OGB4bPoaTNLT90hw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SEZPR06MB5269.apcprd06.prod.outlook.com (2603:1096:101:78::6)
- by KL1PR0601MB4289.apcprd06.prod.outlook.com (2603:1096:820:78::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6521.24; Tue, 27 Jun
- 2023 07:19:45 +0000
-Received: from SEZPR06MB5269.apcprd06.prod.outlook.com
- ([fe80::fa0e:6c06:7474:285c]) by SEZPR06MB5269.apcprd06.prod.outlook.com
- ([fe80::fa0e:6c06:7474:285c%5]) with mapi id 15.20.6521.023; Tue, 27 Jun 2023
- 07:19:45 +0000
-From:   Yangtao Li <frank.li@vivo.com>
-To:     miquel.raynal@bootlin.com, rafael@kernel.org,
-        daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
-        mmayer@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
-        florian.fainelli@broadcom.com, shawnguo@kernel.org,
-        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
-        linux-imx@nxp.com, agross@kernel.org, andersson@kernel.org,
-        konrad.dybcio@linaro.org, thara.gopinath@gmail.com,
-        heiko@sntech.de, mcoquelin.stm32@gmail.com,
-        alexandre.torgue@foss.st.com, thierry.reding@gmail.com,
-        jonathanh@nvidia.com, tglx@linutronix.de, matthias.bgg@gmail.com,
-        angelogioacchino.delregno@collabora.com,
-        srinivas.pandruvada@linux.intel.com,
-        DLG-Adam.Ward.opensource@dm.renesas.com, frank.li@vivo.com,
-        shangxiaojing@huawei.com, bchihi@baylibre.com, wenst@chromium.org,
-        u.kleine-koenig@pengutronix.de, hayashi.kunihiko@socionext.com,
-        niklas.soderlund+renesas@ragnatech.se, chi.minghao@zte.com.cn,
-        johan+linaro@kernel.org, jernej.skrabec@gmail.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-tegra@vger.kernel.org, linux-mediatek@lists.infradead.org
-Subject: [PATCH 13/15] thermal/drivers/rockchip: remove redundant msg
-Date:   Tue, 27 Jun 2023 15:17:04 +0800
-Message-Id: <20230627071707.77659-13-frank.li@vivo.com>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230627071707.77659-1-frank.li@vivo.com>
-References: <20230627071707.77659-1-frank.li@vivo.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SG2PR02CA0098.apcprd02.prod.outlook.com
- (2603:1096:4:92::14) To SEZPR06MB5269.apcprd06.prod.outlook.com
- (2603:1096:101:78::6)
+        with ESMTP id S229727AbjF0Hb0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 03:31:26 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2FEF1FCD;
+        Tue, 27 Jun 2023 00:31:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
+        Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+        Sender:Reply-To:Content-ID:Content-Description;
+        bh=XQpa9c5hGVf8V5MZIB+d15K6Y/YiH5GoQw4fpAih31c=; b=KrtBPNpF+/+Tvnv2Z7JXUi4f/S
+        nZb2l3/seqDyn86tl2FfkGPi5EPd2K4TCsiUhgXLfa1O9f+TTU+cLhuR74Muo9mDVrhsXZAWmYx8l
+        VyVdZhRJYhA+3dbd4lrfj4lWkGpHr+gPXdQjB/csHH88IEv1EpdjmCizemHKD4PY5MEGQHo/pRjwL
+        igyxgnZXRGwnad91S1V0f+pKr+LYehCS9U319UfqfDStSJeIkz1AgvLxUluSzRGzYADOb76MRx3Su
+        lyXeV2eaNAyEvYBq8j0X3JkoaPXEIICJRsp+0383NqG35INqi7T6Aoxo6nIXOgq1Zt9p+nsO15H7p
+        YbR8by3g==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qE39r-004ZqJ-2r;
+        Tue, 27 Jun 2023 07:30:40 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 33F733002D6;
+        Tue, 27 Jun 2023 09:30:35 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 14A37248044D4; Tue, 27 Jun 2023 09:30:35 +0200 (CEST)
+Date:   Tue, 27 Jun 2023 09:30:35 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Bagas Sanjaya <bagasdotme@gmail.com>
+Cc:     "Steven Rostedt (Google)" <rostedt@goodmis.org>,
+        Pablo Neira Ayuso <pablo@netfilter.org>,
+        Jozsef Kadlecsik <kadlec@netfilter.org>,
+        Florian Westphal <fw@strlen.de>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Lingutla Chandrasekhar <clingutla@codeaurora.org>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        "J. Avila" <elavila@google.com>,
+        Vivek Anand <vivekanand754@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Thomas Renninger <trenn@suse.com>,
+        Shuah Khan <shuah@kernel.org>, Borislav Petkov <bp@alien8.de>,
+        Josh Poimboeuf <jpoimboe@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Regressions <regressions@lists.linux.dev>,
+        Linux Netfilter Development <netfilter-devel@vger.kernel.org>,
+        Netfilter Core Developers <coreteam@netfilter.org>,
+        Linux Networking <netdev@vger.kernel.org>,
+        Linux Power Management <linux-pm@vger.kernel.org>,
+        x86@kernel.org
+Subject: Re: Fwd: High cpu usage caused by kernel process when upgraded to
+ linux 5.19.17 or later
+Message-ID: <20230627073035.GV4253@hirez.programming.kicks-ass.net>
+References: <01ac399d-f793-49d4-844b-72cd8e0034df@gmail.com>
+ <ZJpJkL3dPXxgw6RK@debian.me>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SEZPR06MB5269:EE_|KL1PR0601MB4289:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7a3247a1-99a1-465f-1c88-08db76dee25e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: SaVBky6Q8Gpz1YO3/MaXPvmzu4zoldqWarh+7hGDYoa5Dxli0MI9QowHnESa8r4gH+qe9z3zHq4gOANS4R7mO4bJHn74HkIPVZEP+KzVHkNQoMqpsdFXTtWwrNcdTn83ecG/4tMbPISyhY8IP0D5rHmc4sJ7K6BexgRjxR7TNoy4Ft63LoE9NKMILwGUuSl6oGhkIc+v2PcNaEJC2YandQIVi3cArmNdKiJWx0//fGsH5u70orA1/IHx5R1OdYKXrqD8ruon6ufSYZ/SrQOlxKQwFCig75md2h7AAlMlFkS18m0A5r4z26YZuHUEQfXRfBCZdDQDhrIh3kdqAMgvyCwZFRXIGw5nwxJQgjQy2EZ8m4bmOQ4DJUKB5RNVf4Ee5l7VtmUh8H12QlJLEV5Wb2taImTYm98Ig6Ovdz74ll6eTAUHA+1Fqa8XjNBA0ojAHdvfSfoFuWFlZUKdB6z5alEs3hwFxKRMn2k0wuxB+87bKBj8pmJ54stZ/GBhtlKMvfo6mWdoww5RXPVorp8qCkGpR8VpqB/BO1WrSFGRjSkthiv01pBTLVyqbWDdWYU9Kp/pemhvZdREgQsXcNNvPhB/eaGznMXIT9zDt6TR8r3qBazooYlvkDyp5VxWdsXNlAD0diMvVFpdW2F5PMk5ew==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5269.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(376002)(136003)(366004)(396003)(346002)(39860400002)(451199021)(6506007)(36756003)(6486002)(478600001)(52116002)(2616005)(6666004)(83380400001)(2906002)(1076003)(26005)(6512007)(186003)(4744005)(5660300002)(316002)(86362001)(7416002)(7406005)(921005)(66476007)(38100700002)(38350700002)(66946007)(41300700001)(8936002)(4326008)(8676002)(66556008);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?PSMAeV8n/ZUTQvwDPVEYR/+ZxVeak+mn6ArfNswihtETSY3NNUvnZj0f2OcI?=
- =?us-ascii?Q?4MarRCfx+ySEvVYxSn/09jEzW2juYSrGwg4IWGaBOyOpQXVJlyoOz1O9cZjC?=
- =?us-ascii?Q?0lCd7tFDgX7+FHUVbf2bDncxJcnSG7DBNOl8qB8hYsjkqrtl/vKh3tEfG96W?=
- =?us-ascii?Q?urvYcRsfLZHT11vW1447ByrvEaaaEOpY5hjdLUb3ZygzTwEoAiqinc2pK/mn?=
- =?us-ascii?Q?jcCPRBNp7AwNxpEp8cRXS3jTkJ3lGOgWjcM/qOjlIoT19qu9ZGd2vMNsULNZ?=
- =?us-ascii?Q?3IUkckuOpl/HMuBlJZrfxwzIY0nP9h6i5HquSTcjgj+SyjzSMVPpnKJWEd02?=
- =?us-ascii?Q?khBr2LItYFllnlJ1vtgYtbPPa/jtsnS9pEa7uIuMAAaJLdr+50ZuM8HZi1Hu?=
- =?us-ascii?Q?eEyAlhgJHmPEbW6f8lbTMcHSOwpblc3pFD2V1uMgczBczEjBcWmiIxBgeQPH?=
- =?us-ascii?Q?rU9e/Speafv3jvB79gs0ccrK8G551O0hLHtTE6skNkeYRAyFoDtuaFYXOjKk?=
- =?us-ascii?Q?u6rN89LtizRKUyz5MEqeeq9SJHggeN/dYl0dOUyHQBtYNPXwcPKEZcefrpta?=
- =?us-ascii?Q?GXrNfPVGQ7fRxSwfGXFnhkuqk5kdlfpP3scTuLKpdcV7gwyRT6kYIjkHTmrk?=
- =?us-ascii?Q?Om9f9YdCoHT5hbnD+mh/EJO3wupWf/uhuQO1WzM0cLLi7tnWAyp8tkwtohpc?=
- =?us-ascii?Q?2QJ76YkDsLA+cza19Tvg8eRlbh4nieX5a/O1GpYfJJtDTZqzuNaMxlMEVaM7?=
- =?us-ascii?Q?uNknH65Eirwjrebr3nu/yIcZoBHk5OMLBxQlQ8EVyK14a63XTkWC2tmmgKYN?=
- =?us-ascii?Q?8Q2j6Zpxg8unwTzOjgMbaN8fOYMOJcz9ym13CjLYOxerHSJKSlfSodRC4ld4?=
- =?us-ascii?Q?HVrVfiED3YSpBl7MrRNBuRxKYWvnI3i/geKhzYV0M1pzC9YGKQeORK5ipbLG?=
- =?us-ascii?Q?xrw/HEqK+78FvSPq5i8UHUjgSnuQGIEA2EvJyX16bI4gZW1Ozgj/QegmYh9d?=
- =?us-ascii?Q?/Hp3bsSQpoUoR5CsJA6YAGYseH0YWNE8Ps1jaOIvnK4W1O6LlJkpfizIFk17?=
- =?us-ascii?Q?7K57PjlNwFZaxIlhnsU9iN8cbbOj04fBZJUJKmxaheCv0EyDLGtr1K/hziN2?=
- =?us-ascii?Q?isIjMiYhQEPeNi1keF3x+SIIw3RMzP0FClFqtmvJmxR2T8THRjoMbmEV1NVD?=
- =?us-ascii?Q?knufk4Ktmc4kOipNj7VTdrVlGk/Oxs1H8eu08NhQk19IpyuC871vc2rk12pE?=
- =?us-ascii?Q?nhcz7MfEBh261VvD/JXlX6CXMhqRzSB3CkK6y9FWxRJq9eliwL6puQJv49tQ?=
- =?us-ascii?Q?Hguk0Wnh2sxzxw77o351QVQlEwWQEHEPe/371eovvutqqAKYVy4XrGc6m2vx?=
- =?us-ascii?Q?3NDWwgzt5N7xJHC+1W4ZzSl8aTx8zKxfeBoJCWcmQabpRwND5wgXRvVTTUyJ?=
- =?us-ascii?Q?rqJNr74R2kZoscogyZjPo/NprPlae5aPDpOWh6Rb2O84+SAF77bimlguCfjm?=
- =?us-ascii?Q?PbzTwBKH4NZfeRweqGatlJj28/4dfpal+NEzURK/DCWCfcR/bKJH/W0LWDvp?=
- =?us-ascii?Q?wdTBenWAoh0zUtpB4KPCh1cYUn8u6qBJLDAx2PV+?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7a3247a1-99a1-465f-1c88-08db76dee25e
-X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5269.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jun 2023 07:19:45.7476
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: tiZBkFUjolTHXGzX7+Mwt+puZi/vwqZ/cEepWWwT+daO/FiWC0z3bEx9on5MyYCkuIz9pLww7RiqvV3isk63Ww==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1PR0601MB4289
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <ZJpJkL3dPXxgw6RK@debian.me>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The upper-layer devm_request_threaded_irq() function can directly
-print error information.
+On Tue, Jun 27, 2023 at 09:29:36AM +0700, Bagas Sanjaya wrote:
+> On Fri, Jun 23, 2023 at 07:58:51AM +0700, Bagas Sanjaya wrote:
+> > Hi,
+> >=20
+> > I notice a regression report on Bugzilla [1]. Quoting from it:
+> >=20
+> > > kernel process "kworker/events_power_efficient" uses a lot of cpu pow=
+er (100% on ESXI 6.7, ~30% on ESXI 7.0U3 or later) after upgrading from 5.1=
+7.3 to 5.19.17 or later.
+> > >=20
+> > > dmesg log:
+> > > [ 2430.973102]  </TASK>
+> > > [ 2430.973131] Sending NMI from CPU 1 to CPUs 0:
+> > > [ 2430.973241] NMI backtrace for cpu 0
+> > > [ 2430.973247] CPU: 0 PID: 22 Comm: kworker/0:1 Not tainted 6.3.3 #1
+> > > [ 2430.973254] Hardware name: VMware, Inc. VMware Virtual Platform/44=
+0BX Desktop Reference Platform, BIOS 6.00 11/12/2020
+> > > [ 2430.973258] Workqueue: events_power_efficient htable_gc [xt_hashli=
+mit]
+> > > [ 2430.973275] RIP: 0010:preempt_count_sub+0x2e/0xa0
+> > > [ 2430.973289] Code: 36 01 85 c9 75 1b 65 8b 15 a7 da f8 5e 89 d1 81 =
+e1 ff ff ff 7f 39 f9 7c 16 81 ff fe 00 00 00 76 3b f7 df 65 01 3d 8a da f8 =
+5e <c3> cc cc cc cc e8 98 aa 25 00 85 c0 74 f2 8b 15 da 71 ed 00 85 d2
+> > > [ 2430.973294] RSP: 0018:ffffb15ec00dbe58 EFLAGS: 00000297
+> > > [ 2430.973299] RAX: 0000000000000000 RBX: ffffb15ec12ad000 RCX: 00000=
+00000000001
+> > > [ 2430.973302] RDX: 0000000080000001 RSI: ffffffffa1c3313b RDI: 00000=
+000ffffffff
+> > > [ 2430.973306] RBP: dead000000000122 R08: 0000000000000010 R09: 00007=
+46e65696369
+> > > [ 2430.973309] R10: 8080808080808080 R11: 0000000000000018 R12: 00000=
+00000000000
+> > > [ 2430.973312] R13: 0000000000001e2b R14: ffffb15ec12ad048 R15: ffff9=
+1c279c26a05
+> > > [ 2430.973316] FS:  0000000000000000(0000) GS:ffff91c279c00000(0000) =
+knlGS:0000000000000000
+> > > [ 2430.973320] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > > [ 2430.973324] CR2: 000055fc138890e0 CR3: 000000010810e002 CR4: 00000=
+000001706f0
+> > > [ 2430.973374] Call Trace:
+> > > [ 2430.973388]  <TASK>
+> > > [ 2430.973390]  __local_bh_enable_ip+0x32/0x70
+> > > [ 2430.973413]  htable_selective_cleanup+0x95/0xc0 [xt_hashlimit]
+> > > [ 2430.973428]  htable_gc+0xf/0x30 [xt_hashlimit]
+> > > [ 2430.973440]  process_one_work+0x1d4/0x360
+> > > [ 2430.973459]  ? process_one_work+0x360/0x360
+> > > [ 2430.973467]  worker_thread+0x25/0x3b0
+> > > [ 2430.973476]  ? process_one_work+0x360/0x360
+> > > [ 2430.973483]  kthread+0xe1/0x110
+> > > [ 2430.973499]  ? kthread_complete_and_exit+0x20/0x20
+> > > [ 2430.973507]  ret_from_fork+0x1f/0x30
+> > > [ 2430.973526]  </TASK>
+> >=20
+> > See Bugzilla for the full thread and perf output.
+> >=20
+> > Anyway, I'm tracking it in regzbot so that it doesn't fall through
+> > cracks unnoticed:
+> >=20
+> > #regzbot introduced: v5.17.3..v5.19.17 https://bugzilla.kernel.org/show=
+_bug.cgi?id=3D217586
+> > #regzbot title: kworker/events_power_efficient utilizes full CPU power =
+after kernel upgrade
+> >=20
+>=20
+> The reporter had found the culprit (see Bugzilla for more information), t=
+hus
+> telling regzbot:
+>=20
+> #regzbot introduced: 6ad0ad2bf8a67e
+> #regzbot title: retbleed reporting causes high cpu utilization due to kwo=
+rker/events_power_efficient
+> #regzbot link: https://lore.kernel.org/all/PH0PR05MB8448A203A909959FAC754=
+B7AAF439@PH0PR05MB8448.namprd05.prod.outlook.com/
+> #regzbot link: 6ad0ad2bf8a67e
 
-Signed-off-by: Yangtao Li <frank.li@vivo.com>
----
- drivers/thermal/rockchip_thermal.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Is there a problem other than that IBRS is slow and slower still on
+shitty virt?
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 77231a9d28ff..e741f5539389 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1582,8 +1582,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 					  IRQF_ONESHOT,
- 					  "rockchip_thermal", thermal);
- 	if (error)
--		return dev_err_probe(&pdev->dev, error,
--				     "failed to request tsadc irq.\n");
-+		return error;
- 
- 	thermal->chip->control(thermal->regs, true);
- 
--- 
-2.39.0
+Does booting with: "spectre_v2=3Dretpoline retbleed=3Doff" make it go away?
 
+I can't tell from this. Also, please don't use bugzilla.
