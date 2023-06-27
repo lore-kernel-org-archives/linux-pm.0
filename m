@@ -2,109 +2,154 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FC03EB64D9
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Jun 2023 07:18:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE60CC001B3
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Jun 2023 07:18:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229800AbjF0HSF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Jun 2023 03:18:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53648 "EHLO
+        id S230167AbjF0HSd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Jun 2023 03:18:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53978 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229568AbjF0HSE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 03:18:04 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1DF911FCC;
-        Tue, 27 Jun 2023 00:18:02 -0700 (PDT)
-X-UUID: bf4cab2014ba11ee9cb5633481061a41-20230627
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=c9mFKbpihQFZgh8rmxAPEAkbMBe/YaOXmlWN7xitB5Y=;
-        b=kQlo0u8LL2sXtJUjvpA12E9wFjy6CgcHj4Bpfy0m+DiaPK1EB1m2MyD6o4jQ/cQYSCUMubmqoJBhVkSs+GYbRmBkI/lMIYPpOB1a64EeMm0fT3Pw27F2rFApFYyDmBMzhU0r6NSAj89Q75zQ1twISBalHKxze0yvXmNtVnIsV+A=;
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.27,REQID:1d78ccee-830f-4680-aaa0-ed1872936913,IP:0,U
-        RL:0,TC:0,Content:0,EDM:0,RT:0,SF:100,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-        N:release,TS:100
-X-CID-INFO: VERSION:1.1.27,REQID:1d78ccee-830f-4680-aaa0-ed1872936913,IP:0,URL
-        :0,TC:0,Content:0,EDM:0,RT:0,SF:100,FILE:0,BULK:0,RULE:Spam_GS981B3D,ACTIO
-        N:quarantine,TS:100
-X-CID-META: VersionHash:01c9525,CLOUDID:bce9850d-c22b-45ab-8a43-3004e9216b56,B
-        ulkID:23062715180025QT4PPM,BulkQuantity:0,Recheck:0,SF:38|29|28|17|19|48,T
-        C:nil,Content:0,EDM:-3,IP:nil,URL:1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0
-        ,OSI:0,OSA:0,AV:0,LES:1,SPR:NO
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_SDM,TF_CID_SPAM_ASC,TF_CID_SPAM_FAS,
-        TF_CID_SPAM_FSD,TF_CID_SPAM_ULS
-X-UUID: bf4cab2014ba11ee9cb5633481061a41-20230627
-Received: from mtkmbs14n2.mediatek.inc [(172.21.101.76)] by mailgw01.mediatek.com
-        (envelope-from <chung-kai.yang@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1497756027; Tue, 27 Jun 2023 15:18:00 +0800
-Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.26; Tue, 27 Jun 2023 15:17:59 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
- mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
- 15.2.1118.26 via Frontend Transport; Tue, 27 Jun 2023 15:17:59 +0800
-From:   Chungkai Yang <Chung-kai.Yang@mediatek.com>
-To:     <rafael@kernel.org>, <len.brown@intel.com>, <pavel@ucw.cz>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <Chung-kai.Yang@mediatek.com>, <ccj.yeh@mediatek.com>
-Subject: [PATCH v2] PM: QoS: Restore support for default value on frequency QoS
-Date:   Tue, 27 Jun 2023 15:17:27 +0800
-Message-ID: <20230627071727.16646-1-Chung-kai.Yang@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-MIME-Version: 1.0
+        with ESMTP id S229459AbjF0HSa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 03:18:30 -0400
+Received: from APC01-PSA-obe.outbound.protection.outlook.com (mail-psaapc01on2129.outbound.protection.outlook.com [40.107.255.129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95F181BEC;
+        Tue, 27 Jun 2023 00:18:29 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=h+T0drXMnWBkgKTC34AquPqsw3SKVwnB8q8CvFKGkkzTJPOBoZIbutnIx+1GbrVqJojGioh0/93ekeu2DOc2QfAi7ysRdTQHVu/aBRJ0dEvBgqzkFpolq7//FCTBmY/yfBMwlGI7kSQ/TIOPBRuKTEdGxwvIu+E7wRQKZi74tkStlX6Sjs+qkb5eh80Ck0SApjAo3nSM5JrBDUSPhbASF5osRM37VrE5hkxKsxBU0BICI/CTdN0NBJ+I7hcO27xRTSGWvxohHcxfrYiVN+OlCa4epRxrns6fFiU2LhjtTF8b3Zdhf8JUZL2dMxvJiAQbeJhKWypOWo7Ej4pgtVGa8A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=bKSCwtpw3raL+I80x74ps1+sIAYiMdFVosX+0ajPZMI=;
+ b=TjdFr68tEu5cQnz02qJxdC/irlgqYf5eR6gIe3KHFCwweJutjz6dN1jkT2aqgIHF7FeLIS4b4TF5xjAHhefgtWry3C8q6MrdCsbNdaaFh8JpZEhh63SLuWH30aaTrFv6KFfCgriME6DFj/34J00J/7VjIL29XKIlJ8gDT9uSwLVPLJI17kA2mEZOxZI70WfeWCt9nMjETROTvT+x2+PDHCLDGS7xkXTIoIm2DdAqW54kttTku6COsE8D00o4FyAXkFnow6jfjRLhuou60z2FfBDYFh0HHVU6mOSMbhlsjbLI0uw+pgOLqMYr2gbU6GxK+UuOIZSjAXLlNBqsu4Agpw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bKSCwtpw3raL+I80x74ps1+sIAYiMdFVosX+0ajPZMI=;
+ b=CbA4PBK8b5S9lXTR5zkxVZxOwgaLpA1GZ4zOu2ubtCtn4t4EYEJNnXgjDH+MsVYnK3SY5vEbC2wSLS0L5C0M/EM/b0B5JL3WlY0fyOO0QXbLJmJ8ljbdGl5M27baJHbM6/tCLiOJ08QAlW56Wt8iIdfSIVxTeQbotsGvJzniiHcHARyTMp+GjKd7GjQCBzgGwfpxHuIt3+P+Hwz165GDEuFL+jaTc+nC8/rmnW46zH726RmOiRQtmHh82PWPJlbfCLQDb7YRAp1czrIz1Ye8yj+q2A5Wn7YblaAA4OOHcSqR4eH9e1Wb6TueNZref5jflJKnz8/EeQynnn4k8+qILQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SEZPR06MB5269.apcprd06.prod.outlook.com (2603:1096:101:78::6)
+ by SI2PR06MB5137.apcprd06.prod.outlook.com (2603:1096:4:1ac::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6500.27; Tue, 27 Jun
+ 2023 07:18:26 +0000
+Received: from SEZPR06MB5269.apcprd06.prod.outlook.com
+ ([fe80::fa0e:6c06:7474:285c]) by SEZPR06MB5269.apcprd06.prod.outlook.com
+ ([fe80::fa0e:6c06:7474:285c%5]) with mapi id 15.20.6521.023; Tue, 27 Jun 2023
+ 07:18:26 +0000
+From:   Yangtao Li <frank.li@vivo.com>
+To:     miquel.raynal@bootlin.com, rafael@kernel.org,
+        daniel.lezcano@linaro.org, amitk@kernel.org, rui.zhang@intel.com,
+        mmayer@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
+        florian.fainelli@broadcom.com, shawnguo@kernel.org,
+        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
+        linux-imx@nxp.com, agross@kernel.org, andersson@kernel.org,
+        konrad.dybcio@linaro.org, thara.gopinath@gmail.com,
+        heiko@sntech.de, mcoquelin.stm32@gmail.com,
+        alexandre.torgue@foss.st.com, thierry.reding@gmail.com,
+        jonathanh@nvidia.com, tglx@linutronix.de, matthias.bgg@gmail.com,
+        angelogioacchino.delregno@collabora.com,
+        srinivas.pandruvada@linux.intel.com,
+        DLG-Adam.Ward.opensource@dm.renesas.com, frank.li@vivo.com,
+        shangxiaojing@huawei.com, bchihi@baylibre.com, wenst@chromium.org,
+        u.kleine-koenig@pengutronix.de, hayashi.kunihiko@socionext.com,
+        niklas.soderlund+renesas@ragnatech.se, chi.minghao@zte.com.cn,
+        johan+linaro@kernel.org, jernej.skrabec@gmail.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-tegra@vger.kernel.org, linux-mediatek@lists.infradead.org
+Subject: [PATCH 02/15] thermal/drivers/armada: remove redundant msg
+Date:   Tue, 27 Jun 2023 15:16:53 +0800
+Message-Id: <20230627071707.77659-2-frank.li@vivo.com>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230627071707.77659-1-frank.li@vivo.com>
+References: <20230627071707.77659-1-frank.li@vivo.com>
+Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-MTK:  N
+X-ClientProxiedBy: SG2PR02CA0098.apcprd02.prod.outlook.com
+ (2603:1096:4:92::14) To SEZPR06MB5269.apcprd06.prod.outlook.com
+ (2603:1096:101:78::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SEZPR06MB5269:EE_|SI2PR06MB5137:EE_
+X-MS-Office365-Filtering-Correlation-Id: c2e1f1ff-0a8a-4532-e106-08db76deb317
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Hjq9ZrtCgIHTwlYnuyhbpwmmX3Hy8e9jgMt3LsPGAohZbaHoDLGtEcnosuuTdGUFHMAzFXkyIWwj92VUHdB+q5UoIrPmRmIK1g85h0jsvmho8aXT+TshJ9VPAJ/+OeAQ8Zzv83W9I7UdwaT/uhWTA4gGfPUc2y8SEV29Cj/WyeXGaZP9IZ+T21ziHymMc0NZsg4Fx3NT6jeSYGU1xGjQ5zjnNZdUBkar452QkzGH14XlkHcqutQR30Zypmf23NuO0K7LjqWnTlexQ4zBNhQ6ACuhPK46zx1Avtc6X3xRdjP6+cjToFywROJaHRpCyl5T0cWq81E21PEO72D9OrAIziO2PB9QIWb2cenx/G8ddr/DmKasAugsXubWFJcw8ulcL+GICaigZCpzmtm9sTKblfW4ikWafQNZPBNxg3exsi0DK88dLv3nPQFGuH8RLb+DtCrJaFklAfmiuzBgAddpLi0AOmDIGOpsPjVdaLZqKVpvnAXXvLUb/uJdAuCLpoPKWYKLG6C2pte0XRbf6LPlXJIyuhcUGMwG4rDg7RVuhNGVpNtpQeHMVwcl7vCIcG8HS6zeLgV/fXan6uupstCazAR7vy1Wtc0ABHxchRMzeyqs+PB9bc9ptPiviHWTd8/v2NIBzNnLFENFkuG/uNgdsg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5269.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(376002)(136003)(346002)(39860400002)(396003)(366004)(451199021)(52116002)(478600001)(6666004)(6486002)(1076003)(4744005)(6506007)(2906002)(26005)(186003)(66476007)(6512007)(66556008)(5660300002)(66946007)(4326008)(7416002)(38350700002)(41300700001)(316002)(8676002)(8936002)(38100700002)(921005)(36756003)(7406005)(2616005)(86362001)(83380400001);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?G/alEVjG7EBds2SD9EQXgdQWv2cZCeZgCFj4/WJ7/PmsKAzkyKzQEwjW1vHK?=
+ =?us-ascii?Q?xGqZisXQ7akUvQAdmVFHPWcmn1qj2HUITRQ1aC4m0gRdwxJzBBtvn+X299aJ?=
+ =?us-ascii?Q?UXCL+4uwyyNOip7+Xa5sZjcOPqliNi1FniDDstOYioO8KSelMdEaZrjp1VcC?=
+ =?us-ascii?Q?jPSVQSd6+8WaVdlg3JbW4GlNMoTm/o17ztKy1H0Tmry7YJO505Sid8xIDZKD?=
+ =?us-ascii?Q?pdWdGt35n/iDOtZ4n44tZPE4pqw4PPqWhvukLUqQBPxitbGaxMD52wldW/ub?=
+ =?us-ascii?Q?VZp2UNivXmYes+dHAShGTXwLIbuqtiMEvPSkbBFxU8TqUzx4lQuLpWCGipLz?=
+ =?us-ascii?Q?ybgestd5apbqJDpj0oIRQNYMmmF25FempRKHn7J29QIlbuAnaj2t1O5cl6La?=
+ =?us-ascii?Q?78Ux7muvyiXEZgQ61azWFe+ozVSWvWI3DvB1EomsDfHyVY9eeZ7cqg90ogPy?=
+ =?us-ascii?Q?RnBZkEerPiOw8EuGMELxAQ0pZhVtg8st60ilTN/BffKFponmOAiVp+09sYT5?=
+ =?us-ascii?Q?oMQtMpARW18qZ9WAdhHkB9rv78gvmwWOXkM88Yhxk0T2EFnyR/zMf5V0+U9j?=
+ =?us-ascii?Q?crKhwkrjtn/WPoaHKAvT5qR22x7w8nXO1dgUsTjUJetUkqKLrTSaYNheRw8k?=
+ =?us-ascii?Q?cNLYzfo4Gdy3aFv/2fLesUzqxrSRHs0skMx6F6Yl3kwyOywDQ+X+Jw1NMJzx?=
+ =?us-ascii?Q?J8bDJ9LKKLPgi6VKW6BEXs7KdB37r12Ttg+ZEwada4kIm4ympd4ttBnJER7l?=
+ =?us-ascii?Q?bCc3iLVAhSAhuMVNmLh6jbptacjywuYheWviKVJFzFKb5rip6mc+M5ney9rS?=
+ =?us-ascii?Q?bCs/tWEFvc3aMMAFRFlCwFuy2OGp+4cm7yO3gK5FYjryCkrv2NN+NKN+z9Be?=
+ =?us-ascii?Q?tS9W05YlQw7TGgbZat7pbX0JU176fbz+Yi31ql6z7l1r1Q794e/Y2yfQbJi9?=
+ =?us-ascii?Q?iFUmTt7qOiPNYgtqBCTJ7qd27lv70fufrffeclEqolcWxC/Hddhx1szqJ4SG?=
+ =?us-ascii?Q?VK0gFcfR3kmVv3edjjhUzVk2OBtk57xTkZlb+2snTvmtUKjlPQ9KD+Kj7Hlo?=
+ =?us-ascii?Q?XUT18ocWVWJSRy0TvgQSmDEG9iG8yuXCFIL9KcfC5fwCXC1sHQFSLINg2Pj/?=
+ =?us-ascii?Q?QudL4NhPU38UwhHfwBNvyIltQc8eJx1XGj3DzTD85qCaHWgaukuZ9LK+eB7N?=
+ =?us-ascii?Q?THc+mK/KXo5wiigTIR6YhjjkvkhqJ+7f1X8Q19MqCqd/AnSfzMOqz1PAq5n/?=
+ =?us-ascii?Q?27vS1pT0lxEJU7MfVmLp3jrk60O/YtrjCpKlKhcwiCRKOkKe2rXeLdC6FHEb?=
+ =?us-ascii?Q?KOSwXgY7Vofp0TLKVy4Pz3mrNn2+BpzPfESsaaAxVnhMRV2hUFsD2z8g7XVj?=
+ =?us-ascii?Q?U3ZV05fiMlU6GuMTTjtbfdIKS0Vfmamvzi4Vll5gUTIBQalaNeDtKQADGqlF?=
+ =?us-ascii?Q?j3064e7pMhxPqJGW6yL51UpAqDbwd++XwR2R0elMgDMttCKyvakHvtn9UD9q?=
+ =?us-ascii?Q?Y4OGFzkUSoqtixkoVk6A9T2CZWFDsNSyAVCMo8j405UVcoRj5rMsgyfSvMVb?=
+ =?us-ascii?Q?FJyoQ0u0tYkyWfQASjGuAVHUGwiOpCPWwc+o0+6K?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c2e1f1ff-0a8a-4532-e106-08db76deb317
+X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5269.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jun 2023 07:18:26.4364
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hXtJovZyPA+7fsFMszM4FAXRqiXCHulZLsisgZf/xVot9mwnTY8t4+kbkXujeuRaZX+JH6LifdbvuCE6PvMNEw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR06MB5137
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-PM_QOS_DEFAULT_VALUE case is not covered.
+The upper-layer devm_request_threaded_irq() function can directly
+print error information.
 
-Commit 8d36694245f2 ("PM: QoS: Add check to make sure CPU freq is
-non-negative") makes sure CPU freq is non-negative to avoid negative
-value converting to unsigned data type. However, when the value is
-PM_QOS_DEFAULT_VALUE, pm_qos_update_target specifically uses
-c->default_value which is set to FREQ_QOS_MIN/MAX_DEFAULT_VALUE when
-cpufreq_policy_alloc is executed, for this case handling.
-
-Adding check for PM_QOS_DEFAULT_VALUE to let default setting work will
-fix this problem.
-
-Signed-off-by: Chungkai Yang <Chung-kai.Yang@mediatek.com>
-
+Signed-off-by: Yangtao Li <frank.li@vivo.com>
 ---
-V1 -> V2: Check both freq_qos_add/update_request.
+ drivers/thermal/armada_thermal.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-Link:
-  https://lore.kernel.org/lkml/20230626035144.19717-1-Chung-kai.Yang@mediatek.com/
----
- kernel/power/qos.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index af51ed6d45ef..260aca45c681 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -531,7 +531,7 @@ int freq_qos_add_request(struct freq_constraints *qos,
- {
- 	int ret;
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 9f6dc4fc9112..98b04158f06e 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -917,11 +917,8 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 						armada_overheat_isr,
+ 						armada_overheat_isr_thread,
+ 						0, NULL, priv);
+-		if (ret) {
+-			dev_err(&pdev->dev, "Cannot request threaded IRQ %d\n",
+-				irq);
++		if (ret)
+ 			return ret;
+-		}
+ 	}
  
--	if (IS_ERR_OR_NULL(qos) || !req || value < 0)
-+	if (IS_ERR_OR_NULL(qos) || !req || (value < 0 && value != PM_QOS_DEFAULT_VALUE))
- 		return -EINVAL;
- 
- 	if (WARN(freq_qos_request_active(req),
-@@ -563,7 +563,7 @@ EXPORT_SYMBOL_GPL(freq_qos_add_request);
-  */
- int freq_qos_update_request(struct freq_qos_request *req, s32 new_value)
- {
--	if (!req || new_value < 0)
-+	if (!req || (new_value < 0 && new_value != PM_QOS_DEFAULT_VALUE))
- 		return -EINVAL;
- 
- 	if (WARN(!freq_qos_request_active(req),
+ 	/*
 -- 
-2.18.0
+2.39.0
 
