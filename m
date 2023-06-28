@@ -2,41 +2,40 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72D81EB64DC
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Jun 2023 02:27:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5733EB64D9
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Jun 2023 02:27:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229718AbjF1C1T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Jun 2023 22:27:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37598 "EHLO
+        id S230451AbjF1C1V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Jun 2023 22:27:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230093AbjF1C1R (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 22:27:17 -0400
+        with ESMTP id S231166AbjF1C1T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 22:27:19 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94DC730D7
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jun 2023 19:26:11 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 800452D7E
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jun 2023 19:26:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687919170;
+        s=mimecast20190719; t=1687919169;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=8muOLQZOqYIt0AXw5AwHSZNzvtGahSAcJ6J89ycjrQY=;
-        b=RY2BkXOrev2o6EFWwe7z6r5z7cyNfA/fzHCDuEK7yed9UlOt55ztd6cO0RVE2Pr8hPuK4q
-        1PrEI7rX0DSfsa2WXj1+PF+1L4QX3ufpDbHQuI44qWwb/jLfAXXrmV5RRGav7X/Ak9FLOw
-        6FdQm6ej0kzfVTXsxl+rYQJp0AA14ng=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+         content-transfer-encoding:content-transfer-encoding;
+        bh=1Mwd2RHHbNwY1uNDBHOZHgn4cZFBmD9G4gGlkOLHa0o=;
+        b=imIrsdyTbq8keTpQ2AL0VVFs5uIIrUcLCCsBP/T6IugaWH4rSgVMGsWtGsenxI6bDaqBWU
+        4LkPENfNKz+7YYlK2vz6o0WQ6u+Wuo7TlaPcv2twJegvSd6qDckQrKIutZxuwlMM3lwOhQ
+        5lIkk8ko/uyK3Osv+0G7XYLASwSKfRc=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-367-dHO9L9VOPSKr01eVYl-oxg-1; Tue, 27 Jun 2023 22:26:06 -0400
-X-MC-Unique: dHO9L9VOPSKr01eVYl-oxg-1
+ us-mta-613-4Rmmy0hCPcOfWehKADoQLw-1; Tue, 27 Jun 2023 22:26:04 -0400
+X-MC-Unique: 4Rmmy0hCPcOfWehKADoQLw-1
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C2467380662D;
-        Wed, 28 Jun 2023 02:26:05 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 339551044589;
+        Wed, 28 Jun 2023 02:26:03 +0000 (UTC)
 Received: from llong.com (unknown [10.22.33.155])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id F129B200BA86;
-        Wed, 28 Jun 2023 02:26:04 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 19334207B2C3;
+        Wed, 28 Jun 2023 02:26:02 +0000 (UTC)
 From:   Waiman Long <longman@redhat.com>
 To:     Peter Zijlstra <peterz@infradead.org>,
         Thomas Gleixner <tglx@linutronix.de>,
@@ -52,11 +51,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
         x86@kernel.org, linux-pm@vger.kernel.org,
         Robin Jarry <rjarry@redhat.com>, Joe Mario <jmario@redhat.com>,
         Waiman Long <longman@redhat.com>
-Subject: [PATCH v4 3/4] intel_idle: Use __update_spec_ctrl() in intel_idle_ibrs()
-Date:   Tue, 27 Jun 2023 22:25:53 -0400
-Message-Id: <20230628022554.1638318-4-longman@redhat.com>
-In-Reply-To: <20230628022554.1638318-1-longman@redhat.com>
-References: <20230628022554.1638318-1-longman@redhat.com>
+Subject: [PATCH v4 0/4] x86/speculation: Disable IBRS when idle
+Date:   Tue, 27 Jun 2023 22:25:50 -0400
+Message-Id: <20230628022554.1638318-1-longman@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.4
@@ -64,36 +61,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When intel_idle_ibrs() is called, it modifies the SPEC_CTRL MSR to 0
-in order disable IBRS. However, the new MSR value isn't reflected in
-x86_spec_ctrl_current which is at odd with the other code that keep track
-of its state in that percpu variable.  Use the new __update_spec_ctrl()
-to have the x86_spec_ctrl_current percpu value properly updated.
+ v4:
+  - Add a new __update_spec_ctrl() helper in patch 1.
+  - Rebased to the latest linux kernel.
 
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- drivers/idle/intel_idle.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ v3:
+  - Drop patches 1 ("x86/speculation: Provide a debugfs file to dump
+    SPEC_CTRL MSRs") and 5 ("x86/idle: Disable IBRS entering mwait idle
+    and enable it on wakeup") for now.
+  - Drop the MSR restoration code in ("x86/idle: Disable IBRS when cpu
+    is offline") as native_play_dead() does not return.
+  - For patch ("intel_idle: Add ibrs_off module parameter to force
+    disable IBRS"), change the name from "no_ibrs" to "ibrs_off" and
+    document the new parameter in intel_idle.rst.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 34201d7ef33e..e32ff09051af 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -182,12 +182,12 @@ static __cpuidle int intel_idle_ibrs(struct cpuidle_device *dev,
- 	int ret;
- 
- 	if (smt_active)
--		native_wrmsrl(MSR_IA32_SPEC_CTRL, 0);
-+		__update_spec_ctrl(0);
- 
- 	ret = __intel_idle(dev, drv, index);
- 
- 	if (smt_active)
--		native_wrmsrl(MSR_IA32_SPEC_CTRL, spec_ctrl);
-+		__update_spec_ctrl(spec_ctrl);
- 
- 	return ret;
- }
+For Intel processors that need to turn on IBRS to protect against
+Spectre v2 and Retbleed, the IBRS bit in the SPEC_CTRL MSR affects
+the performance of the whole core even if only one thread is turning
+it on when running in the kernel. For user space heavy applications,
+the performance impact of occasionally turning IBRS on during syscalls
+shouldn't be significant. Unfortunately, that is not the case when the
+sibling thread is idling in the kernel. In that case, the performance
+impact can be significant.
+
+When DPDK is running on an isolated CPU thread processing network packets
+in user space while its sibling thread is idle. The performance of the
+busy DPDK thread with IBRS on and off in the sibling idle thread are:
+
+                                IBRS on         IBRS off
+                                -------         --------
+  packets/second:                  7.8M           10.4M
+  avg tsc cycles/packet:         282.26          209.86
+
+This is a 25% performance degradation. The test system is a Intel Xeon
+4114 CPU @ 2.20GHz.
+
+Commit bf5835bcdb96 ("intel_idle: Disable IBRS during long idle")
+disables IBRS when the CPU enters long idle (C6 or below). However, there
+are existing users out there who have set "intel_idle.max_cstate=1"
+to decrease latency. Those users won't be able to benefit from this
+commit. This patch series extends this commit by providing a new
+"intel_idle.ibrs_off" module parameter to force disable IBRS even when
+"intel_idle.max_cstate=1" at the expense of increased IRQ response
+latency. It also includes a commit to allow the disabling of IBRS when
+a CPU becomes offline.
+
+
+Waiman Long (4):
+  x86/speculation: Add __update_spec_ctrl() helper
+  x86/idle: Disable IBRS when cpu is offline
+  intel_idle: Use __update_spec_ctrl() in intel_idle_ibrs()
+  intel_idle: Add ibrs_off module parameter to force disable IBRS
+
+ Documentation/admin-guide/pm/intel_idle.rst | 17 ++++++++++++++++-
+ arch/x86/include/asm/nospec-branch.h        | 11 ++++++++++-
+ arch/x86/kernel/smpboot.c                   |  8 ++++++++
+ drivers/idle/intel_idle.c                   | 18 ++++++++++++++----
+ 4 files changed, 48 insertions(+), 6 deletions(-)
+
 -- 
 2.31.1
 
