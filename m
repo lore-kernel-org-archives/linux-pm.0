@@ -2,43 +2,42 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1270EEB64D9
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Jun 2023 02:27:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 715E4EB64DC
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Jun 2023 02:58:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231352AbjF1C1g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Jun 2023 22:27:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37576 "EHLO
+        id S229835AbjF1C6f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Jun 2023 22:58:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50118 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231221AbjF1C1W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 22:27:22 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF4C430F4
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jun 2023 19:26:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687919168;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=F18k+mntQmN9vVKT4EOv8wCEJcty06xb97UiAtGilis=;
-        b=Xkd0WCXkgK9QqTIw/hrbz7xR00+jQrAAfamqvdyJ1lcMLcjlYWWRsm6hdBdBWa2BpKSIvo
-        /phOv6QOZim92wPJkUHV19uJXVdWSJLboWQcXhA6gxKrLyVGMMEs/+CWEGV82idb0+EEwQ
-        PHToZM7DeR/Adk16T0Z6jdUJyP+fZCI=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-522-zy83BFjpPeWHmQUm4ihduw-1; Tue, 27 Jun 2023 22:26:05 -0400
-X-MC-Unique: zy83BFjpPeWHmQUm4ihduw-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 14207800159;
-        Wed, 28 Jun 2023 02:26:04 +0000 (UTC)
-Received: from llong.com (unknown [10.22.33.155])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 44CA0200B677;
-        Wed, 28 Jun 2023 02:26:03 +0000 (UTC)
-From:   Waiman Long <longman@redhat.com>
-To:     Peter Zijlstra <peterz@infradead.org>,
+        with ESMTP id S229680AbjF1C6e (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2023 22:58:34 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13C55171A;
+        Tue, 27 Jun 2023 19:58:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+        bh=MsaI243O9PZkSjKSry7NpW1aTGFmRyGy2dSgztR5u+g=; b=RFU69fkkeTJYbx6VUb59ELLKf5
+        lIlzoiR1mZGIeDllX0sQtJib/di/rpB4r9qiJovIJfgK4co/BmiC6WffTtn0DlLryDGRANeybHTrI
+        aM74623gxlE+/t1lJG0JbHcCXSjWUGnJgKX1Vl5766sptv7x5Duqw8jJN+S0D8ZKaAFGvz+GOJ6I7
+        0mmXGg3ZzTflHnYzCPS4uuej+GnLenLUo4tkaNDPhj1GsSIyznvU4NHirTSTw/YSsDsJI+EmcXaUa
+        FJDgJmKzh/RrMZ0oLA70WBC9zs7ZJ33pkh4UMCcJuI0JMopdYpTZbntiggbKdTd9mmDyOzrAwFUJO
+        WcOteIQw==;
+Received: from [2601:1c2:980:9ec0::2764]
+        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+        id 1qELNp-00EdzB-0C;
+        Wed, 28 Jun 2023 02:58:17 +0000
+Message-ID: <24b34b27-d2eb-e287-ffbb-29ffde66790d@infradead.org>
+Date:   Tue, 27 Jun 2023 19:58:15 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.2
+Subject: Re: [PATCH v4 4/4] intel_idle: Add ibrs_off module parameter to force
+ disable IBRS
+Content-Language: en-US
+To:     Waiman Long <longman@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
         Dave Hansen <dave.hansen@linux.intel.com>,
@@ -50,58 +49,58 @@ To:     Peter Zijlstra <peterz@infradead.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 Cc:     linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
         x86@kernel.org, linux-pm@vger.kernel.org,
-        Robin Jarry <rjarry@redhat.com>, Joe Mario <jmario@redhat.com>,
-        Waiman Long <longman@redhat.com>
-Subject: [PATCH v4 1/4] x86/speculation: Add __update_spec_ctrl() helper
-Date:   Tue, 27 Jun 2023 22:25:51 -0400
-Message-Id: <20230628022554.1638318-2-longman@redhat.com>
-In-Reply-To: <20230628022554.1638318-1-longman@redhat.com>
+        Robin Jarry <rjarry@redhat.com>, Joe Mario <jmario@redhat.com>
 References: <20230628022554.1638318-1-longman@redhat.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.4
+ <20230628022554.1638318-5-longman@redhat.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20230628022554.1638318-5-longman@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a new __update_spec_ctrl() helper which is a variant of
-update_spec_ctrl() that can be used in a noinstr function.
+Hi,
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- arch/x86/include/asm/nospec-branch.h | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+On 6/27/23 19:25, Waiman Long wrote:
+>  Documentation/admin-guide/pm/intel_idle.rst | 17 ++++++++++++++++-
+>  drivers/idle/intel_idle.c                   | 14 ++++++++++++--
+>  2 files changed, 28 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/admin-guide/pm/intel_idle.rst b/Documentation/admin-guide/pm/intel_idle.rst
+> index b799a43da62e..8604e6d1fe2c 100644
+> --- a/Documentation/admin-guide/pm/intel_idle.rst
+> +++ b/Documentation/admin-guide/pm/intel_idle.rst
 
-diff --git a/arch/x86/include/asm/nospec-branch.h b/arch/x86/include/asm/nospec-branch.h
-index 55388c9f7601..1d363fcea207 100644
---- a/arch/x86/include/asm/nospec-branch.h
-+++ b/arch/x86/include/asm/nospec-branch.h
-@@ -9,7 +9,7 @@
- 
- #include <asm/alternative.h>
- #include <asm/cpufeatures.h>
--#include <asm/msr-index.h>
-+#include <asm/msr.h>
- #include <asm/unwind_hints.h>
- #include <asm/percpu.h>
- #include <asm/current.h>
-@@ -488,6 +488,15 @@ DECLARE_PER_CPU(u64, x86_spec_ctrl_current);
- extern void update_spec_ctrl_cond(u64 val);
- extern u64 spec_ctrl_current(void);
- 
-+/*
-+ * This can be used in noinstr function.
-+ */
-+static __always_inline void __update_spec_ctrl(u64 val)
-+{
-+	__this_cpu_write(x86_spec_ctrl_current, val);
-+	native_wrmsrl(MSR_IA32_SPEC_CTRL, val);
-+}
-+
- /*
-  * With retpoline, we must use IBRS to restrict branch prediction
-  * before calling into firmware.
+You may take or leave these comments as you choose.
+
+> @@ -216,6 +216,21 @@ are ignored).
+>  The idle states disabled this way can be enabled (on a per-CPU basis) from user
+>  space via ``sysfs``.
+>  
+> +The ``ibrs_off`` module parameter is a boolean flag (default to false). It is
+
+                                                       (default false).
+or
+                                                       (defaults to false).
+
+Then I think it reads better if the next sentence begins with: "If set,"
+instead of having it in the middle of the sentence.
+
+> +used to control if IBRS (Indirect Branch Restricted Speculation) should be
+> +turned off, if set, when the CPU enters an idle state.  This flag will not
+> +affect CPUs that are using Enhanced IBRS which can remain on with little
+> +performance impact.
+> +
+> +For some CPUs, IBRS will be selected as mitigation for Spectre v2 and Retbleed
+> +security vulnerabilities by default.  Leaving the IBRS mode on while idling may
+> +have a performance impact on its sibling CPU.  The IBRS mode will be turned off
+> +by default when the CPU enters into a deep idle state, but not in some
+> +shallower ones.  Setting the ``ibrs_off`` module parameter will force the IBRS
+> +mode to off when the CPU is in any one of the available idle states.  This may
+> +help performance of a sibling CPU at the expense of a slightly higher wakeup
+> +latency for the idle CPU.
+
+thanks.
 -- 
-2.31.1
-
+~Randy
