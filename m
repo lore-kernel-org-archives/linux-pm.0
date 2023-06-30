@@ -2,165 +2,209 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22CB3EB64DC
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Jun 2023 12:37:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D686EEB64DC
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Jun 2023 13:25:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231657AbjF3Mhc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 30 Jun 2023 08:37:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34650 "EHLO
+        id S232667AbjF3NZW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 30 Jun 2023 09:25:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230506AbjF3Mhb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2023 08:37:31 -0400
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on2073.outbound.protection.outlook.com [40.107.223.73])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 281501B4;
-        Fri, 30 Jun 2023 05:37:29 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bt245ibCfjZqVop8VQNlf2yxYf/vplLGuYeM+hMxt5a1V1UFkxBSfZGzNdBtBbmVf95ssURSK2YkLOgTjkpDxt+nh5mPTMaq83jDm/ZrxMc3djpSF0Q43sgJKpsOWlC3L8cvpuLOGzR5Yv9j9nAhHLN2PlLX3l7GTvlLL0p0vcSkbPimkUU+AAycz8Q4WW5mK1yl9WL7kvehn0+cCamH7b2wA+pDkYZ9K9lat914bJNsV7iMRRcIHxjpClTdWid/4GiW5y4g483jdDU+hOr6FqOhZwgUoEcrmlY+3BDaHl6Q7SOjN4S8Yq1KLoTfAF3xxMjwXoJfMEv4TjpMmmpqFw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fvU+4emVaOWoXWU/Y5gen1tfKdOurL2XUOUgchr6ZYY=;
- b=oEVI1moCp8w0w5O2VYt5Pze5hz11coe3Xdytl4zDR8m2cFQ0g4Kk3ggg7hkJI6j+i/yAHURGGKmFnN1M59HeLm2YMVnzJ+GF0bWwBFsHwbwUxR6/TD4Jy9EGpnrsHwwZAUa1ufb/dWMQrjP5976vuyLh7jYKte/LKeTTrTZx/A3Xua6/PY2i8MIggp7y+Cpc+cvzEaojvfg82PONoi1YwcUK6cCGA9CGIvPogwy+3C5cmOZbZhEcBleHA4XMpEjtQgaX1xJMqvZdubhHJjZ+sv7OU0WoFxDN7EZdIm112LT6HqUf2cOFb9lhmOVymuCyULb7Z351kONx+qFgGatprQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fvU+4emVaOWoXWU/Y5gen1tfKdOurL2XUOUgchr6ZYY=;
- b=cuWXpxBd/6m0DlzfDFt3R8Q/BwvXs/XyqKhfmfcU3k58SCkFLhU2dNICXEHbJs+nMIudQWPwaJkM4pBfJ9fLSzS5atKDXIDLX7kJqP/t9YFQZR6C8RECOExKQpqq/A48taMlGvMOoCEUIMHlmqtSBngMa8mjHff0LEN7AMxfS6g=
-Received: from BN8PR03CA0030.namprd03.prod.outlook.com (2603:10b6:408:94::43)
- by PH7PR12MB7187.namprd12.prod.outlook.com (2603:10b6:510:203::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6521.24; Fri, 30 Jun
- 2023 12:37:26 +0000
-Received: from BN8NAM11FT016.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:94:cafe::3b) by BN8PR03CA0030.outlook.office365.com
- (2603:10b6:408:94::43) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6544.22 via Frontend
- Transport; Fri, 30 Jun 2023 12:37:25 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN8NAM11FT016.mail.protection.outlook.com (10.13.176.97) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6500.49 via Frontend Transport; Fri, 30 Jun 2023 12:37:24 +0000
-Received: from SITE-L-T34-2.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Fri, 30 Jun
- 2023 07:37:23 -0500
-From:   Mario Limonciello <mario.limonciello@amd.com>
-To:     <ray.huang@amd.com>, <rafael@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-doc@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Wyes Karny <wyes.karny@amd.com>,
-        Perry Yuan <perry.yuan@amd.com>
-Subject: [PATCH] cpufreq: amd-pstate: Add sysfs file for base frequency
-Date:   Thu, 29 Jun 2023 08:54:54 -0500
-Message-ID: <20230629135454.177421-1-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S232285AbjF3NZU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2023 09:25:20 -0400
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C82223A8E
+        for <linux-pm@vger.kernel.org>; Fri, 30 Jun 2023 06:25:13 -0700 (PDT)
+Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-4f95bf5c493so2887082e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 30 Jun 2023 06:25:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=layalina-io.20221208.gappssmtp.com; s=20221208; t=1688131512; x=1690723512;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Qk/29pUWn0vGiMuP9Cfi3/EYqLftvL8xXi5fIA2JMrc=;
+        b=j+mHcNT0pkueAkNDWn7hm9eltY0NULS+J2NyiRE9ZLAh+KhRE7usnmg68+2I5JRgTy
+         0PL/HWtrOw/Pc3hhmE1FoYMWYkYKR13Wgy7vWcaqc0ujgZN5PwvXkbzgFhcZwpbUYrPa
+         JHZf4Otfur/p+BpVsSRlscKUY3dhWBuKbY0DIeoF1hb7TXh/48xIv3ygo+tbtHmo71b/
+         Sg1rEHUQvfI+3lI7DZX788Ln9+FIg2kfDisV06CoBI5zx3VKIIrLAKPA2BsK5rMz4buV
+         fzfvAztbyZjB9cpZOPwP6SYu2X7/UdDdloLWi+GoMOfFAm1GcOeyjdjf8dXtLyJiSyJn
+         a8kw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1688131512; x=1690723512;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Qk/29pUWn0vGiMuP9Cfi3/EYqLftvL8xXi5fIA2JMrc=;
+        b=DiGznInxTNtsbT85uEv95MeV0i6B+EiRfiKVhLq8A+KluhT1N19G3CiXf9NSIUFd+P
+         cR3uxjGBfbV515UexyS3kL7pIeS2h5isxBrd7VYzO25nBOxS5iHsU6Chm+lDDoJlJOGz
+         zSQQEK6A8iBfYsp0EMFVHtjvWNt0AEcdQGUhh1SqtTQDySlkUbQO24JTp9MjQ/9pwBuq
+         pbRYENwy0dFU/R+C7/UL16QsG+RQKhkJmr83JgCqFBwjEG2qccvopknLBID+6acGltoV
+         ez2i5+Z+WX9cQ/BTtFMaQZiDTw8K2w+DVC2ftZwfT+mqWA9jBNH3F5cIkpuJXPcpEgTZ
+         gQqg==
+X-Gm-Message-State: ABy/qLa5mMKPzYZ3CgIYAGmupfAi4JzSu3K6tqN5BoG1BSot9vSPUSd3
+        Ni72suNisef82BLKaYKLdVvOIw==
+X-Google-Smtp-Source: APBJJlFAg/rPCVEk3WXaVAiwSdndbFcfE5OcjnvsY8jXMLH02zphj9zIfobyZothbq+hgt0ET9b+4A==
+X-Received: by 2002:a05:6512:455:b0:4fa:9dc3:1d41 with SMTP id y21-20020a056512045500b004fa9dc31d41mr2182003lfk.51.1688131511950;
+        Fri, 30 Jun 2023 06:25:11 -0700 (PDT)
+Received: from airbuntu (host86-163-217-97.range86-163.btcentralplus.com. [86.163.217.97])
+        by smtp.gmail.com with ESMTPSA id q20-20020a1cf314000000b003f90b9b2c31sm22251634wmq.28.2023.06.30.06.25.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 30 Jun 2023 06:25:11 -0700 (PDT)
+Date:   Fri, 30 Jun 2023 14:25:07 +0100
+From:   Qais Yousef <qyousef@layalina.io>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+        rafael@kernel.org, linux-pm@vger.kernel.org, rostedt@goodmis.org,
+        mhiramat@kernel.org, mingo@redhat.com, peterz@infradead.org,
+        juri.lelli@redhat.com, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, vschneid@redhat.com, delyank@fb.com,
+        qyousef@google.com, kernel test robot <lkp@intel.com>
+Subject: Re: [RESEND][PATCH v2 3/3] schedutil: trace: Add tracing to capture
+ filter out requests
+Message-ID: <20230630132507.hggzz5g2odrabii6@airbuntu>
+References: <20230522145702.2419654-1-lukasz.luba@arm.com>
+ <20230522145702.2419654-4-lukasz.luba@arm.com>
+ <20230531183105.r5tqpdx5axoogkzp@airbuntu>
+ <a0101269-1d8b-d4e1-52b4-250a99b395fa@arm.com>
+ <20230630120122.oqy4q42bl5gy6bfd@airbuntu>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN8NAM11FT016:EE_|PH7PR12MB7187:EE_
-X-MS-Office365-Filtering-Correlation-Id: a7a3fc03-5868-4ba4-411d-08db7966c1e8
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: HLYF5Mu2mlXM3IA/uVSV/sySXKywfTgnek9V4goeaf6r9GBt3jNGuIGRbMig2GP5ulnLuktHs9lJo368pd5VxU3TrMXtFAUHlpjrUksiG4iLa2JIwCxT0sme2/OvMVI5zawCGTTD1jSXW+oUslvD1BolTLQIiJF8HWpNue6rmsJAO6R9yLj4uapFurQKaTqX/K84+DZeq7C0y+tcbgaq8pHejj3Kl6m9sR/5PGLs8me4LYAE50E9b8mZZt3o1yRGLjnHIkHhxD/+O1BUSxj8afXzUjRoGji5LY8CZ5MC8hfl9nxYvBTNF1vwuL2dCCeUl+5Ys/dMQL8TzI28kOyl1y/1oLjTi7l1lZehFJ16KY4x7KpqGYJyqAkjLIYs4Rdwl0ljdQ9RuwytIOgT96zawc1CGy4/3BLoy3VIiLMytpje09ETN9H6nVr9q72U79bjv5ODoezOWFtx09hVO5QzMbpFo7oulX6Wgih500JtEExGq58Wz46Mi8eppI9GL+fSl1rV5jvCte+WbOsKFJLnbDLTJLtkwgq7uxJPpjBzTJ6A2ySVbM0uPgfmv5HnOvG8cxjggNi4z/UNSG4ChXBYV2uRNtEjvtKfHN6D0UFVB2eLDhglyS8vaDfHOjNo6PlCHPnBdG97+Iklc8zdVkGHIud9rLywXdANNZNnprWFUSNbaIng+HS2SqTlcpETAfMO+QyMjfPa3v9geeAzvxv5vMregPO538IGt9fQhV1l8ZIUAwKsYZeq+fDaWouGS4s2XYSVmxRxJjt6DPkA+I/p1dRRMoZllrhGyiwZckLowss=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(396003)(376002)(136003)(346002)(39860400002)(451199021)(36840700001)(46966006)(40470700004)(82310400005)(1076003)(36860700001)(36756003)(5660300002)(44832011)(356005)(86362001)(47076005)(41300700001)(8676002)(316002)(81166007)(4326008)(70586007)(8936002)(40480700001)(82740400003)(40460700003)(70206006)(2906002)(478600001)(186003)(26005)(16526019)(2616005)(7696005)(336012)(6666004)(426003)(83380400001)(110136005)(54906003)(2101003)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jun 2023 12:37:24.9437
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: a7a3fc03-5868-4ba4-411d-08db7966c1e8
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT016.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB7187
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230630120122.oqy4q42bl5gy6bfd@airbuntu>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some applications may want to query the base frequency to tell when
-a processor is operating in boost.
+On 06/30/23 13:01, Qais Yousef wrote:
+> On 06/20/23 18:52, Lukasz Luba wrote:
+> > Hi Qais,
+> > 
+> > I have somehow missed your feedback on this series.
+> > 
+> > On 5/31/23 19:31, Qais Yousef wrote:
+> > > On 05/22/23 15:57, Lukasz Luba wrote:
+> > > > Some of the frequency update requests coming form the task scheduler
+> > > > might be filter out. It can happen when the previous request was served
+> > > > not that long ago (in a period smaller than provided by the cpufreq driver
+> > > > as minimum for frequency update). In such case, we want to know if some of
+> > > > the frequency updates cannot make through.
+> > > > Export the new tracepoint as well. That would allow to handle it by a
+> > > > toolkit for trace analyzes.
+> > > > 
+> > > > Reported-by: kernel test robot <lkp@intel.com> # solved tricky build
+> > > > Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> > > > ---
+> > > >   include/trace/events/sched.h     |  4 ++++
+> > > >   kernel/sched/cpufreq_schedutil.c | 10 ++++++++--
+> > > >   2 files changed, 12 insertions(+), 2 deletions(-)
+> > > > 
+> > > > diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
+> > > > index dbfb30809f15..e34b7cd5de73 100644
+> > > > --- a/include/trace/events/sched.h
+> > > > +++ b/include/trace/events/sched.h
+> > > > @@ -739,6 +739,10 @@ DECLARE_TRACE(uclamp_update_tsk_tp,
+> > > >   	TP_PROTO(struct task_struct *tsk, int uclamp_id,  unsigned int value),
+> > > >   	TP_ARGS(tsk, uclamp_id, value));
+> > > > +DECLARE_TRACE(schedutil_update_filtered_tp,
+> > > > +	TP_PROTO(int cpu),
+> > > > +	TP_ARGS(cpu));
+> > > > +
+> > > >   #endif /* _TRACE_SCHED_H */
+> > > >   /* This part must be outside protection */
+> > > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > > > index f462496e5c07..4f9daf258a65 100644
+> > > > --- a/kernel/sched/cpufreq_schedutil.c
+> > > > +++ b/kernel/sched/cpufreq_schedutil.c
+> > > > @@ -6,6 +6,8 @@
+> > > >    * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >    */
+> > > > +EXPORT_TRACEPOINT_SYMBOL_GPL(schedutil_update_filtered_tp);
+> > > > +
+> > > >   #define IOWAIT_BOOST_MIN	(SCHED_CAPACITY_SCALE / 8)
+> > > >   struct sugov_tunables {
+> > > > @@ -318,8 +320,10 @@ static inline bool sugov_update_single_common(struct sugov_cpu *sg_cpu,
+> > > >   	ignore_dl_rate_limit(sg_cpu);
+> > > > -	if (!sugov_should_update_freq(sg_cpu->sg_policy, time))
+> > > > +	if (!sugov_should_update_freq(sg_cpu->sg_policy, time)) {
+> > > > +		trace_schedutil_update_filtered_tp(sg_cpu->cpu);
+> > > >   		return false;
+> > > > +	}
+> > > 
+> > > Can't we have something more generic here too? Are you interested to count
+> > > these events? How do you plan to use it?
+> > 
+> > The plan is to record those events, count them and maybe adjust the FW
+> > if the frequency switching capabilities are too low, e.g. 4ms...
+> 
+> You mean as part of tuning step for the system or at runtime? The latter seems
+> to indicate for a proper interface instead.
+> 
+> IMHO I think the current filtering mechanism needs a bit of a massage.
+> 
+> One thing I think we must do is to ignore the filter if there's a big sudden
+> change in requested frequency. Like for instance if a big task migrates. Then
+> prev_cpu should go to lower freq sooner, and new_cpu should change to higher
+> frequency sooner too. The filtering makes sense only in steady state situation
+> where we are ramping up or down gradually.
+> 
+> If no one beats me to it, I'll propose something in that regard.
+> 
+> > 
+> > We need those numbers to point out that there is a need for faster
+> > FW micro-controller to serve those incoming requests.
+> 
+> I think there's a big assumption here that the filter is always set correctly
+> ;-)
+> 
+> > 
+> > > 
+> > > I think this will be a very noisy event by the way.
+> > 
+> > Could be, but on the other hand for those statistical analysis
+> > 'the more the better'. It will also depend on number of
+> > CPUs in the cluster, e.g. 4 CPUs vs 1 CPU.
+> > 
+> > I don't know when we will switch to this per-cpu cpufreq mode
+> > when all CPUs behave like independent DVFS. Juno mainline kernel and FW
+> > supports that mode. We would have to compare those two modes and
+> > measure how much we gain/loose when using one and not the other.
+> > 
+> > Furthermore, we already suspect some of our integration testing for
+> > EAS-mainline (on Juno) failing due to filtered out requests. How much
+> > that would impact other boards - it would be nice to see in traces.
+> 
+> Another problem I think we have is that the DVFS headroom value should be
+> a function of this filter. At the moment it is hardcoded to a random value
+> which causes power issue.
+> 
+> So to summarize I think there are two improvements required (and if anyone has
+> the time to try them out go ahead otherwise I'll get to it):
+> 
+>  1. The filter should only be applied if the history hasn't changed. ie: we are
+>     gradually increasing or decreasing PELT. Otherwise we should honour sudden
+>     changes ASAP.
+>  2. DVFS headroom should be a function of the filter. 25% is too high for
+>     500us. It could be too low for 10ms (I don't know).
 
-Tested-by: Wyes Karny <wyes.karny@amd.com>
-Reviewed-by: Wyes Karny <wyes.karny@amd.com>
-Co-developed-by: Perry Yuan <perry.yuan@amd.com>
-Signed-off-by: Perry Yuan <perry.yuan@amd.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
- Documentation/admin-guide/pm/amd-pstate.rst |  4 ++++
- drivers/cpufreq/amd-pstate.c                | 15 +++++++++++++++
- 2 files changed, 19 insertions(+)
+To expand a bit more since it's related. Our  migration margins should depend
+on the tick value instead of random magic numbers they are today. More
+precisely the balance_interval. If there's a misfit task, then we should
+upmigrate it at wake up only if we think it'll become misfit before the load
+balancer kicks in. Otherwise the load balancer should do the correction if it
+becomes long running/misfit. If the sys admin wants to speed up/slow down
+migration it should be throw controlling PELT IMO and not these magic margin
+values - which are hardcoded to random values at the moment anyway that are not
+suitable for every system.
 
-diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-index 1cf40f69278cd..e68267857e859 100644
---- a/Documentation/admin-guide/pm/amd-pstate.rst
-+++ b/Documentation/admin-guide/pm/amd-pstate.rst
-@@ -281,6 +281,10 @@ integer values defined between 0 to 255 when EPP feature is enabled by platform
- firmware, if EPP feature is disabled, driver will ignore the written value
- This attribute is read-write.
- 
-+``base_frequency``
-+	Shows the base frequency of the CPU. Frequencies above this will be in the
-+  ``boost`` range. This attribute is read-only.
-+
- Other performance and frequency values can be read back from
- ``/sys/devices/system/cpu/cpuX/acpi_cppc/``, see :ref:`cppc_sysfs`.
- 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 81fba0dcbee99..0fec66b3f7241 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1037,6 +1037,19 @@ static ssize_t store_status(struct kobject *a, struct kobj_attribute *b,
- 	return ret < 0 ? ret : count;
- }
- 
-+static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
-+{
-+	struct amd_cpudata *cpudata = policy->driver_data;
-+	u32 nominal_freq;
-+
-+	nominal_freq = amd_get_nominal_freq(cpudata);
-+	if (nominal_freq < 0)
-+		return nominal_freq;
-+
-+	return sysfs_emit(buf, "%d\n", nominal_freq);
-+}
-+
-+cpufreq_freq_attr_ro(base_frequency);
- cpufreq_freq_attr_ro(amd_pstate_max_freq);
- cpufreq_freq_attr_ro(amd_pstate_lowest_nonlinear_freq);
- 
-@@ -1049,6 +1062,7 @@ static struct freq_attr *amd_pstate_attr[] = {
- 	&amd_pstate_max_freq,
- 	&amd_pstate_lowest_nonlinear_freq,
- 	&amd_pstate_highest_perf,
-+	&base_frequency,
- 	NULL,
- };
- 
-@@ -1058,6 +1072,7 @@ static struct freq_attr *amd_pstate_epp_attr[] = {
- 	&amd_pstate_highest_perf,
- 	&energy_performance_preference,
- 	&energy_performance_available_preferences,
-+	&base_frequency,
- 	NULL,
- };
- 
--- 
-2.34.1
+And since we decoupled overutilized from misfit lb; I think our definition
+should improve to better detect when the system needs to disable packing and
+starts spreading. Current check for overutilized based on misfit is no longer
+adequate IMO. Especially when there's a single misfit task in the system.
 
+Again, just sharing thoughts in case someone interested to work on this before
+I get a chance to share any patches ;-)
+
+
+Cheers
+
+--
+Qais Yousef
