@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5398EB64DA
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Jun 2023 16:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4699FEB64DC
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Jun 2023 16:59:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232584AbjF3Q6z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 30 Jun 2023 12:58:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54362 "EHLO
+        id S232759AbjF3Q66 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 30 Jun 2023 12:58:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54462 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232641AbjF3Q6q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2023 12:58:46 -0400
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7BCE3C17
-        for <linux-pm@vger.kernel.org>; Fri, 30 Jun 2023 09:58:42 -0700 (PDT)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-3fbc1218262so19147195e9.3
-        for <linux-pm@vger.kernel.org>; Fri, 30 Jun 2023 09:58:42 -0700 (PDT)
+        with ESMTP id S232673AbjF3Q6u (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2023 12:58:50 -0400
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB69A3ABD
+        for <linux-pm@vger.kernel.org>; Fri, 30 Jun 2023 09:58:47 -0700 (PDT)
+Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-3fbc0981733so19151415e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 30 Jun 2023 09:58:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688144321; x=1690736321;
+        d=linaro.org; s=google; t=1688144326; x=1690736326;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=dmOMajD2YZSE+eel7VcvLzIVOnwOse/rnS6+x3C70yU=;
-        b=FyShIEE8ur0fhetXt5zPzBSidrR54AJP5/e2Lw//yreQyw4erZQfmV8a+V/FjlusBq
-         w8I0pbS/rPj775Mz6f2JIvefOIDOXJ5nZDkbsxuiYNYm82CliA0Fe4T5CMTPe+4pj6m9
-         H0RAW3JW8o5zTswmguMhgLlexP1RDfrlWXQvTK9/l5rWtLXfmNBGk/eb2PqgKRI0y1Bt
-         KCdEqNdhgr5mUpeFZvuyZyhqWLRO8uV6NbbCtwYx3KtXO1iaFUnjCWu61m0zQLORIRua
-         P4sHQFpSstj8NE5tkZ8I6XQnGgrW5O+J2M1Pnmihjo/DOXizWAgltrSKlRNBjh2vtCdu
-         RD/Q==
+        bh=YODS5EdidiMqfLgv+cP+/rbRFBcpTpOT0mtC9T2xjaQ=;
+        b=dA2yCv2NZ72e+wHH9SORhU04cJvJPzsV6as6SCcKplgrM/qbmCh0lwzaHw9dUXaL6b
+         mcGptOvELZ+aB8LWxO+IVF6U3kvxAWhsltw/B1PHXOVWpWLMcChUcBLLlhX5ljIP/duB
+         cUe3X89BZMnACgmde0D+xGTgdf4AgI+VX5eRY5lyG7AsR3BbJ+YHGSqpG4UX3tGEEmc3
+         PcTRBxHt9h40rEpd4f2UJi7bOF8MIHnl/X+u31AivrVCBh9urFQ7+UaQrZY07I8rFs9s
+         DuNjry4zxdY0x6eZNraAjT3GQqP6XTAoJ6rnCOHRWPhC3rRsCMZerfuBQlGKgmOViVP7
+         zGnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688144321; x=1690736321;
+        d=1e100.net; s=20221208; t=1688144326; x=1690736326;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=dmOMajD2YZSE+eel7VcvLzIVOnwOse/rnS6+x3C70yU=;
-        b=DN5rSiFxKNyhMhyZJBGstpsrBQy3ydyMd5cfINcfD87IwYFdPHBxQu/PlMzrLChWnY
-         rvcX0Dw45ikuTjxGlCA/bjgEqnQ7v5FPF9FurSHCk9fIWg76bpFNt913LVMREtkKHYqU
-         5/ldtiZ9X0jFF42K08/RHPELJBeHToPpkan0rDK1jdr5+AMw10qRJLBvjJtbronk5s90
-         yQTJky8CsU4tT++I6G6I7yExHAr4Y/KqBkRx633x7FFKR0qXDCtfDsP0t3rcOvN8YoOV
-         dVizsaqQ9qdVj4JLNPYJHHkj+4wyjUfG2bGhJAkOuRy1qk8g7Cq5/BO5qW/8VpP46/Wl
-         TRcg==
-X-Gm-Message-State: ABy/qLY/6Ws9GGoeGzgUaQuDgTyNQbzBWderm/xhz59dQ9e/G/FpJaVM
-        65C3YavxMAf6sAUpMBmRGN8giw==
-X-Google-Smtp-Source: APBJJlH+WLO58Dsl5GTbdy9kidf6z2vq4lgBCLoHMljM4mx0veKMawVUIe+m9zc/05aH2be2DXGCOw==
-X-Received: by 2002:adf:dc84:0:b0:313:e591:94ec with SMTP id r4-20020adfdc84000000b00313e59194ecmr2412436wrj.67.1688144320967;
-        Fri, 30 Jun 2023 09:58:40 -0700 (PDT)
+        bh=YODS5EdidiMqfLgv+cP+/rbRFBcpTpOT0mtC9T2xjaQ=;
+        b=PAF/n0yHUr9tT9pqoTbgKhGo7gK04/MShSWYYCHEGi+42seVO9UQRWGj7Ta5SqVyhb
+         8+Gc0CVAUgnBS5Co9csP/pH039/C3sVdOrH9qgpE5xKB2IwKlji9LaYPp2UCs5fd5Cq+
+         soypaZ1pa+ABX2n3ZyGSWwt3rY7WPkVdCV58twMp6gPOJ5qvmbgKTRH07W6sU5dOEvRr
+         fEJHxdXdXtUwr3z83xt7oDgLmuE5+7BG7ve6mowuGUDHaKzD37waXmknapIIloR4fohZ
+         iG+j0xH2qGSriKs10XptI/o4cViXNvix1L73siagKSkNiQ0pHcrVpbe4k5IR7fEgkebj
+         aH/A==
+X-Gm-Message-State: AC+VfDzueeoS5KR1NwqExE12Kr4IWHtS42VokeElVUXFRCgNzSTp8qWC
+        r2pN6qgfeYAeJI/gLsRJkfdhww==
+X-Google-Smtp-Source: ACHHUZ7LMrMA78ocv3Tff31XW7n3ukSVcuxlhHrPo8yNKeKKvHDiMykie0NMER5g/1Kygz1grYs10w==
+X-Received: by 2002:a05:600c:2243:b0:3fa:9d0f:f1e1 with SMTP id a3-20020a05600c224300b003fa9d0ff1e1mr2902423wmm.35.1688144326214;
+        Fri, 30 Jun 2023 09:58:46 -0700 (PDT)
 Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:52eb:f6ff:feb3:451a])
-        by smtp.gmail.com with ESMTPSA id u14-20020adfdb8e000000b003112ab916cdsm18913772wri.73.2023.06.30.09.58.39
+        by smtp.gmail.com with ESMTPSA id u14-20020adfdb8e000000b003112ab916cdsm18913772wri.73.2023.06.30.09.58.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Jun 2023 09:58:40 -0700 (PDT)
+        Fri, 30 Jun 2023 09:58:45 -0700 (PDT)
 From:   Neil Armstrong <neil.armstrong@linaro.org>
-Date:   Fri, 30 Jun 2023 18:58:28 +0200
-Subject: [PATCH v2 03/15] clksource: timer-oxnas-rps: remove obsolete timer
- driver
+Date:   Fri, 30 Jun 2023 18:58:31 +0200
+Subject: [PATCH v2 06/15] dt-bindings: mtd: oxnas-nand: remove obsolete
+ bindings
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230630-topic-oxnas-upstream-remove-v2-3-fb6ab3dea87c@linaro.org>
+Message-Id: <20230630-topic-oxnas-upstream-remove-v2-6-fb6ab3dea87c@linaro.org>
 References: <20230630-topic-oxnas-upstream-remove-v2-0-fb6ab3dea87c@linaro.org>
 In-Reply-To: <20230630-topic-oxnas-upstream-remove-v2-0-fb6ab3dea87c@linaro.org>
 To:     Michael Turquette <mturquette@baylibre.com>,
@@ -88,23 +88,24 @@ Cc:     linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-oxnas@groups.io,
         Neil Armstrong <neil.armstrong@linaro.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Arnd Bergmann <arnd@arndb.de>,
         Daniel Golle <daniel@makrotopia.org>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9387;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1834;
  i=neil.armstrong@linaro.org; h=from:subject:message-id;
- bh=OS+eBvSlx7DwBmhrfLY6QF+vMfbdyLJj8rLmG2ne3WQ=;
- b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBknwm1abamxIw9Q1cu56fLZ7ZrcsS8fTUVPjdmIPHm
- 8tI36nqJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZJ8JtQAKCRB33NvayMhJ0Ug+D/
- 9iCGhYuRWDonKOcmDlJ5tRofvt7eO4c5xe+WnpQD0GlxL98f4NbqpB+vI+jQ0hBN6gP5apCF2fNze+
- DbTRJZ1XVv44EbFpJ60Hcf95zAF3x4aYpNv0hBC4M/bNZ3FILAkVhPxVxWIIZuaTBNxRmycnLTB10r
- S81L9sUzDXhmHUSjM9XiDMsNf76LOSt6o2/VMz6becHzPBhy27MptVdUdET3CBa2ZSZHSKs32LBE0k
- 6L9UJ7QiX3RnZ25PrfUucLceECUeCutDAvoJXB1FMm1tsBBzLK0aQCXLk+b351leW4VJNBoIjgPmj6
- 2q0HkmSwAhnLgzEZGQZ/ISzLHj+hrc2fNxfx2Bvxk/mKHDsllz0u9s0FBVI77cGxhoza3yxLv48XZp
- vAw3m46ZiOzFBiaHsnNSCwvP3Y8q6rcTHgHJgUQDV7LkCt6UnNvT9BCXeo/GMHbzthYPIQPlKvTavN
- pP6uCdH3OvGh6d7Z3+k51mL6s0aEEypFNT6RRHnRbWjDLpt9MthqUiJcq9LUIL+0CjKYq8mRR2tTlx
- DCgE0wddZ2pIKF1LpncBc+TiRHtVT/lCOWqwQFb9NeDF49v3HlG9A4jK1oRH7AKsswGD9TluRtbIDi
- euhdRsyZH+fi+P7TeyHZlj5EGlr3kc/MHtKW2fXGj269nr0qVt8PuO2FURyQ==
+ bh=38rvOQ5JzytmoL2e8XQMRnUMzYw1/Raq4YBpYNRm4dw=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBknwm2BW8UwSX3d9Pq718ni0310vOQ0HNcYv2IvLHm
+ CF9ZdzKJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZJ8JtgAKCRB33NvayMhJ0Z6yEA
+ DQB8ET5EMV67bFiwvw6CHMW/yDZltqA2FQRkT6U0VMXkLspqXbvM5YCSVAJhE0aCOEuSp86cn+sn6B
+ fWYyhHNqZR/5Y90GsYVlPN/uNgiwV7djdZJcv8Hr7dPiSDl9hpicmk/oMOjbbFk2/KsZEk4/D8hL52
+ m4IUWBoCJlfxhDkSxtZFzKva3EJAGRdSXqKgBs6YFkjMklmRCCde69vPew6/N3svQGqbofvbgY1pcx
+ qEn3jwLXNAv/R3f8+pMwEnhekYBxCSGhJZ0QKi2x1b4NC2YUnXjuF96hUl5KnjeNbekLihkL+Zixgl
+ qNIiEuLWuFXKNCqbzpVgy3DM+VAkjyQ42Hc3PG31OYbYWTnLSrdi9m4LOcuBUEcETWUuBEIdKz8qgn
+ uIIfwD/QwhkEqppN4NSnquwiHhfE/O0qsSOVji2MLteguNXuK2nFacu8zRElULaoSvez4BkfP3E0Hx
+ 6Qk6g08mNZi9io9R1ZtfGcNJ59QnSZPgbu/iCZpDuGGufzmA0BMF7Hv9Y/aDSO51z947Gg9kG8gxD6
+ 5/7/Li9DDTGcigSq41lgglOTJqSnGHn/8GoZIqTpQyxBSiJa/VRJv0Fp6XxxEee8EmIUwV12YGJgmk
+ xB17WN5EDw0VCkcayM+CD9hpDPnRn8ZJCsjJ3wabBHR4HQ8BcT8pvuxHAm5A==
 X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
  fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
 Precedence: bulk
@@ -112,343 +113,65 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 Due to lack of maintenance and stall of development for a few years now,
-and since no new features will ever be added upstream, remove support
-for OX810 and OX820 timer.
+and since no new features will ever be added upstream, remove the
+for OX810 and OX820 nand bindings.
 
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Acked-by: Linus Walleij <linus.walleij@linaro.org>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 Acked-by: Daniel Golle <daniel@makrotopia.org>
 Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
 ---
- drivers/clocksource/Kconfig           |   7 -
- drivers/clocksource/Makefile          |   1 -
- drivers/clocksource/timer-oxnas-rps.c | 288 ----------------------------------
- 3 files changed, 296 deletions(-)
+ .../devicetree/bindings/mtd/oxnas-nand.txt         | 41 ----------------------
+ 1 file changed, 41 deletions(-)
 
-diff --git a/drivers/clocksource/Kconfig b/drivers/clocksource/Kconfig
-index c4d671a5a13d..0ba0dc4ecf06 100644
---- a/drivers/clocksource/Kconfig
-+++ b/drivers/clocksource/Kconfig
-@@ -461,13 +461,6 @@ config VF_PIT_TIMER
- 	help
- 	  Support for Periodic Interrupt Timer on Freescale Vybrid Family SoCs.
- 
--config OXNAS_RPS_TIMER
--	bool "Oxford Semiconductor OXNAS RPS Timers driver" if COMPILE_TEST
--	select TIMER_OF
--	select CLKSRC_MMIO
--	help
--	  This enables support for the Oxford Semiconductor OXNAS RPS timers.
--
- config SYS_SUPPORTS_SH_CMT
- 	bool
- 
-diff --git a/drivers/clocksource/Makefile b/drivers/clocksource/Makefile
-index 5d93c9e3fc55..368c3461dab8 100644
---- a/drivers/clocksource/Makefile
-+++ b/drivers/clocksource/Makefile
-@@ -54,7 +54,6 @@ obj-$(CONFIG_MTK_TIMER)		+= timer-mediatek.o
- obj-$(CONFIG_MTK_CPUX_TIMER)	+= timer-mediatek-cpux.o
- obj-$(CONFIG_CLKSRC_PISTACHIO)	+= timer-pistachio.o
- obj-$(CONFIG_CLKSRC_TI_32K)	+= timer-ti-32k.o
--obj-$(CONFIG_OXNAS_RPS_TIMER)	+= timer-oxnas-rps.o
- obj-$(CONFIG_OWL_TIMER)		+= timer-owl.o
- obj-$(CONFIG_MILBEAUT_TIMER)	+= timer-milbeaut.o
- obj-$(CONFIG_SPRD_TIMER)	+= timer-sprd.o
-diff --git a/drivers/clocksource/timer-oxnas-rps.c b/drivers/clocksource/timer-oxnas-rps.c
+diff --git a/Documentation/devicetree/bindings/mtd/oxnas-nand.txt b/Documentation/devicetree/bindings/mtd/oxnas-nand.txt
 deleted file mode 100644
-index d514b44e67dd..000000000000
---- a/drivers/clocksource/timer-oxnas-rps.c
+index 2ba07fc8b79c..000000000000
+--- a/Documentation/devicetree/bindings/mtd/oxnas-nand.txt
 +++ /dev/null
-@@ -1,288 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * drivers/clocksource/timer-oxnas-rps.c
-- *
-- * Copyright (C) 2009 Oxford Semiconductor Ltd
-- * Copyright (C) 2013 Ma Haijun <mahaijuns@gmail.com>
-- * Copyright (C) 2016 Neil Armstrong <narmstrong@baylibre.com>
-- */
+@@ -1,41 +0,0 @@
+-* Oxford Semiconductor OXNAS NAND Controller
 -
--#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
+-Please refer to nand-controller.yaml for generic information regarding MTD NAND bindings.
 -
--#include <linux/init.h>
--#include <linux/irq.h>
--#include <linux/io.h>
--#include <linux/clk.h>
--#include <linux/slab.h>
--#include <linux/interrupt.h>
--#include <linux/of_irq.h>
--#include <linux/of_address.h>
--#include <linux/clockchips.h>
--#include <linux/sched_clock.h>
+-Required properties:
+- - compatible: "oxsemi,ox820-nand"
+- - reg: Base address and length for NAND mapped memory.
 -
--/* TIMER1 used as tick
-- * TIMER2 used as clocksource
-- */
+-Optional Properties:
+- - clocks: phandle to the NAND gate clock if needed.
+- - resets: phandle to the NAND reset control if needed.
 -
--/* Registers definitions */
+-Example:
 -
--#define TIMER_LOAD_REG		0x0
--#define TIMER_CURR_REG		0x4
--#define TIMER_CTRL_REG		0x8
--#define TIMER_CLRINT_REG	0xC
+-nandc: nand-controller@41000000 {
+-	compatible = "oxsemi,ox820-nand";
+-	reg = <0x41000000 0x100000>;
+-	clocks = <&stdclk CLK_820_NAND>;
+-	resets = <&reset RESET_NAND>;
+-	#address-cells = <1>;
+-	#size-cells = <0>;
 -
--#define TIMER_BITS		24
+-	nand@0 {
+-		reg = <0>;
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		nand-ecc-mode = "soft";
+-		nand-ecc-algo = "hamming";
 -
--#define TIMER_MAX_VAL		(BIT(TIMER_BITS) - 1)
+-		partition@0 {
+-			label = "boot";
+-			reg = <0x00000000 0x00e00000>;
+-			read-only;
+-		};
 -
--#define TIMER_PERIODIC		BIT(6)
--#define TIMER_ENABLE		BIT(7)
--
--#define TIMER_DIV1		(0)
--#define TIMER_DIV16		(1 << 2)
--#define TIMER_DIV256		(2 << 2)
--
--#define TIMER1_REG_OFFSET	0
--#define TIMER2_REG_OFFSET	0x20
--
--/* Clockevent & Clocksource data */
--
--struct oxnas_rps_timer {
--	struct clock_event_device clkevent;
--	void __iomem *clksrc_base;
--	void __iomem *clkevt_base;
--	unsigned long timer_period;
--	unsigned int timer_prescaler;
--	struct clk *clk;
--	int irq;
+-		partition@e00000 {
+-			label = "ubi";
+-			reg = <0x00e00000 0x07200000>;
+-		};
+-	};
 -};
--
--static irqreturn_t oxnas_rps_timer_irq(int irq, void *dev_id)
--{
--	struct oxnas_rps_timer *rps = dev_id;
--
--	writel_relaxed(0, rps->clkevt_base + TIMER_CLRINT_REG);
--
--	rps->clkevent.event_handler(&rps->clkevent);
--
--	return IRQ_HANDLED;
--}
--
--static void oxnas_rps_timer_config(struct oxnas_rps_timer *rps,
--				   unsigned long period,
--				   unsigned int periodic)
--{
--	uint32_t cfg = rps->timer_prescaler;
--
--	if (period)
--		cfg |= TIMER_ENABLE;
--
--	if (periodic)
--		cfg |= TIMER_PERIODIC;
--
--	writel_relaxed(period, rps->clkevt_base + TIMER_LOAD_REG);
--	writel_relaxed(cfg, rps->clkevt_base + TIMER_CTRL_REG);
--}
--
--static int oxnas_rps_timer_shutdown(struct clock_event_device *evt)
--{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
--
--	oxnas_rps_timer_config(rps, 0, 0);
--
--	return 0;
--}
--
--static int oxnas_rps_timer_set_periodic(struct clock_event_device *evt)
--{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
--
--	oxnas_rps_timer_config(rps, rps->timer_period, 1);
--
--	return 0;
--}
--
--static int oxnas_rps_timer_set_oneshot(struct clock_event_device *evt)
--{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
--
--	oxnas_rps_timer_config(rps, rps->timer_period, 0);
--
--	return 0;
--}
--
--static int oxnas_rps_timer_next_event(unsigned long delta,
--				struct clock_event_device *evt)
--{
--	struct oxnas_rps_timer *rps =
--		container_of(evt, struct oxnas_rps_timer, clkevent);
--
--	oxnas_rps_timer_config(rps, delta, 0);
--
--	return 0;
--}
--
--static int __init oxnas_rps_clockevent_init(struct oxnas_rps_timer *rps)
--{
--	ulong clk_rate = clk_get_rate(rps->clk);
--	ulong timer_rate;
--
--	/* Start with prescaler 1 */
--	rps->timer_prescaler = TIMER_DIV1;
--	rps->timer_period = DIV_ROUND_UP(clk_rate, HZ);
--	timer_rate = clk_rate;
--
--	if (rps->timer_period > TIMER_MAX_VAL) {
--		rps->timer_prescaler = TIMER_DIV16;
--		timer_rate = clk_rate / 16;
--		rps->timer_period = DIV_ROUND_UP(timer_rate, HZ);
--	}
--	if (rps->timer_period > TIMER_MAX_VAL) {
--		rps->timer_prescaler = TIMER_DIV256;
--		timer_rate = clk_rate / 256;
--		rps->timer_period = DIV_ROUND_UP(timer_rate, HZ);
--	}
--
--	rps->clkevent.name = "oxnas-rps";
--	rps->clkevent.features = CLOCK_EVT_FEAT_PERIODIC |
--				 CLOCK_EVT_FEAT_ONESHOT |
--				 CLOCK_EVT_FEAT_DYNIRQ;
--	rps->clkevent.tick_resume = oxnas_rps_timer_shutdown;
--	rps->clkevent.set_state_shutdown = oxnas_rps_timer_shutdown;
--	rps->clkevent.set_state_periodic = oxnas_rps_timer_set_periodic;
--	rps->clkevent.set_state_oneshot = oxnas_rps_timer_set_oneshot;
--	rps->clkevent.set_next_event = oxnas_rps_timer_next_event;
--	rps->clkevent.rating = 200;
--	rps->clkevent.cpumask = cpu_possible_mask;
--	rps->clkevent.irq = rps->irq;
--	clockevents_config_and_register(&rps->clkevent,
--					timer_rate,
--					1,
--					TIMER_MAX_VAL);
--
--	pr_info("Registered clock event rate %luHz prescaler %x period %lu\n",
--			clk_rate,
--			rps->timer_prescaler,
--			rps->timer_period);
--
--	return 0;
--}
--
--/* Clocksource */
--
--static void __iomem *timer_sched_base;
--
--static u64 notrace oxnas_rps_read_sched_clock(void)
--{
--	return ~readl_relaxed(timer_sched_base);
--}
--
--static int __init oxnas_rps_clocksource_init(struct oxnas_rps_timer *rps)
--{
--	ulong clk_rate = clk_get_rate(rps->clk);
--	int ret;
--
--	/* use prescale 16 */
--	clk_rate = clk_rate / 16;
--
--	writel_relaxed(TIMER_MAX_VAL, rps->clksrc_base + TIMER_LOAD_REG);
--	writel_relaxed(TIMER_PERIODIC | TIMER_ENABLE | TIMER_DIV16,
--			rps->clksrc_base + TIMER_CTRL_REG);
--
--	timer_sched_base = rps->clksrc_base + TIMER_CURR_REG;
--	sched_clock_register(oxnas_rps_read_sched_clock,
--			     TIMER_BITS, clk_rate);
--	ret = clocksource_mmio_init(timer_sched_base,
--				    "oxnas_rps_clocksource_timer",
--				    clk_rate, 250, TIMER_BITS,
--				    clocksource_mmio_readl_down);
--	if (WARN_ON(ret)) {
--		pr_err("can't register clocksource\n");
--		return ret;
--	}
--
--	pr_info("Registered clocksource rate %luHz\n", clk_rate);
--
--	return 0;
--}
--
--static int __init oxnas_rps_timer_init(struct device_node *np)
--{
--	struct oxnas_rps_timer *rps;
--	void __iomem *base;
--	int ret;
--
--	rps = kzalloc(sizeof(*rps), GFP_KERNEL);
--	if (!rps)
--		return -ENOMEM;
--
--	rps->clk = of_clk_get(np, 0);
--	if (IS_ERR(rps->clk)) {
--		ret = PTR_ERR(rps->clk);
--		goto err_alloc;
--	}
--
--	ret = clk_prepare_enable(rps->clk);
--	if (ret)
--		goto err_clk;
--
--	base = of_iomap(np, 0);
--	if (!base) {
--		ret = -ENXIO;
--		goto err_clk_prepare;
--	}
--
--	rps->irq = irq_of_parse_and_map(np, 0);
--	if (!rps->irq) {
--		ret = -EINVAL;
--		goto err_iomap;
--	}
--
--	rps->clkevt_base = base + TIMER1_REG_OFFSET;
--	rps->clksrc_base = base + TIMER2_REG_OFFSET;
--
--	/* Disable timers */
--	writel_relaxed(0, rps->clkevt_base + TIMER_CTRL_REG);
--	writel_relaxed(0, rps->clksrc_base + TIMER_CTRL_REG);
--	writel_relaxed(0, rps->clkevt_base + TIMER_LOAD_REG);
--	writel_relaxed(0, rps->clksrc_base + TIMER_LOAD_REG);
--	writel_relaxed(0, rps->clkevt_base + TIMER_CLRINT_REG);
--	writel_relaxed(0, rps->clksrc_base + TIMER_CLRINT_REG);
--
--	ret = request_irq(rps->irq, oxnas_rps_timer_irq,
--			  IRQF_TIMER | IRQF_IRQPOLL,
--			  "rps-timer", rps);
--	if (ret)
--		goto err_iomap;
--
--	ret = oxnas_rps_clocksource_init(rps);
--	if (ret)
--		goto err_irqreq;
--
--	ret = oxnas_rps_clockevent_init(rps);
--	if (ret)
--		goto err_irqreq;
--
--	return 0;
--
--err_irqreq:
--	free_irq(rps->irq, rps);
--err_iomap:
--	iounmap(base);
--err_clk_prepare:
--	clk_disable_unprepare(rps->clk);
--err_clk:
--	clk_put(rps->clk);
--err_alloc:
--	kfree(rps);
--
--	return ret;
--}
--
--TIMER_OF_DECLARE(ox810se_rps,
--		       "oxsemi,ox810se-rps-timer", oxnas_rps_timer_init);
--TIMER_OF_DECLARE(ox820_rps,
--		       "oxsemi,ox820-rps-timer", oxnas_rps_timer_init);
 
 -- 
 2.34.1
