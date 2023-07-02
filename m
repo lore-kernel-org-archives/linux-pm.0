@@ -2,53 +2,52 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A7CFC001E0
-	for <linux-pm@archiver.kernel.org>; Sun,  2 Jul 2023 17:43:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BF06C001B1
+	for <linux-pm@archiver.kernel.org>; Sun,  2 Jul 2023 17:50:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230205AbjGBRnm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 2 Jul 2023 13:43:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41396 "EHLO
+        id S229837AbjGBRuu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 2 Jul 2023 13:50:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43170 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230197AbjGBRnP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Jul 2023 13:43:15 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D8BDE62
-        for <linux-pm@vger.kernel.org>; Sun,  2 Jul 2023 10:43:14 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-2b6a662b9adso53816341fa.2
-        for <linux-pm@vger.kernel.org>; Sun, 02 Jul 2023 10:43:14 -0700 (PDT)
+        with ESMTP id S229816AbjGBRuu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Jul 2023 13:50:50 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FBD1E60
+        for <linux-pm@vger.kernel.org>; Sun,  2 Jul 2023 10:50:48 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4f4b2bc1565so5830134e87.2
+        for <linux-pm@vger.kernel.org>; Sun, 02 Jul 2023 10:50:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688319792; x=1690911792;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=opGMkE+RmDE5zkyZAa1LQgTvHH68ZBwvMhZI5dpXRoc=;
-        b=WMVRoFPOH0oYuKrpEfqVgY7AixffovubRFVREzpvwkeL3p1FFB/78nSebso2Q6y10X
-         y0L1rTbstwJr+sZbiRUliDK6PFSQ8p0CXevpodFxywVBN8s4jHU9OUBeVNik6G1gnqe/
-         Gp3eYoH4dZa6DH3T1uClg13yiXKsjOLhm30sVuVZz5RYWQlChQFzFcmIBwdgg1zvtqlf
-         xJNH5wECAVPQhEaJT+kX8aWsjSSYkmy67MmOcm91FWFglT8uPIhdCZBpMccqOhyFS6Pc
-         g8nNNF/A3Lt7eyXAIop7m4CSE9V4Fe0i5pu02nvc/o/Daj3aoUHJFLiFTDFUiWuSFl0U
-         L+jQ==
+        d=linaro.org; s=google; t=1688320246; x=1690912246;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=p7QLIcJhGf6roTEV5uHjocZCiVQtMN4WpmTTSqh8Iu8=;
+        b=IutP9H0Sl0plLlVVtqrMV2uur1iEdtzwdcHgeEwjPOZA93yfivwNa7PnYmEgVZ5zq/
+         bULbRNBr9UG1Xz1uDbBLrEk8oSHXOKusr4gintsV6013Zt2DGwtwL3eA7c4/B3cUQeEd
+         l8xCrEiK3AL9MiOgMZpCZzbod9Jq7Ty5YFHiJG7vYhlOI80DLiuMiYDqUpMBZQxU/m9g
+         KV6XmgON6zvKZsuHPeUQo2u5VOSjVfEe7HEBO11ElnRjnGBYizrI+nTmUMrSsuaEGTdk
+         A28ylp67+Rb0SHXIWuGbdayFIQbjS3yVuQ+U4Ual6EUtJRJh4DhHE9ooKLRwJiXJ2VHq
+         RlyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688319792; x=1690911792;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=opGMkE+RmDE5zkyZAa1LQgTvHH68ZBwvMhZI5dpXRoc=;
-        b=JhMs2OZk92UXi07D+BJPyuA88NfxMPOPG5UKUVRoyPxu/G0v3N/d60QyfY1qziQGfx
-         dwOEGG9IlZyK4k7ANx/xd8ruYiFW4PWvf3/Ork7BRC/WuPaXfHmrqSU34tNI4zyY0+Go
-         4IuVVHWT0KAadYXMReUF1HBAHIOZFqK8hoLcLmhE0ae+lLtaNw7w3YTQITfWtiLhFfO5
-         Y+bDZDbtJztIp1Wg0v/BElMHZfZjs5nU1KMEHWWzO+tvZXPcIuUCLCzEFqt1AlgQyz0J
-         j9fVVGbe511c4cE+fYOj65YRvAo5RCzdSvbmmlp+1ex1x8JsQePuUz97Bctz7/NK10vV
-         zhPQ==
-X-Gm-Message-State: ABy/qLarsrG45iuv0MWR0nE2Vbsdefkf2nXqIFj1lCTaIgP/VvVQOv/B
-        9Thdiz2pdsV2F68eamTVLBuwXQ==
-X-Google-Smtp-Source: APBJJlFEVtDlhA4Fop6XZKOVXJZ2gSWDSS2y34nlny7yuuVdgDbyQzPDFwBypd2gHJ6Lq2aU5U//RA==
-X-Received: by 2002:a2e:9785:0:b0:2b6:d536:1bba with SMTP id y5-20020a2e9785000000b002b6d5361bbamr4061940lji.18.1688319792802;
-        Sun, 02 Jul 2023 10:43:12 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1688320246; x=1690912246;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=p7QLIcJhGf6roTEV5uHjocZCiVQtMN4WpmTTSqh8Iu8=;
+        b=S7VinoOsPxbemvGaCQuzQBksTBYJ33co1rIa7m331EY9H6kBkiWBOk+OX0mzypboHF
+         ee10CfHS9NzATDLBs4KevhTsFclcZvZQhxcpkzw3QeM9twTJjlJKifg9sn6sZTUIfmNH
+         tXijOJ1v0gtOfjPMEyJvyse8tdl+KmKWeB155Zem/Dd7PikaDqD76Chv9wIlpOsqI7L+
+         K8sRA0PJZJQlJNzvSxULPdD03Oi9HMKu6BdFzbPZbDNyiIUTe8mtuGGcfahpMX/PIJdb
+         bhDJryOShB2PMWSrs5XtX3iiOromVoOhjANQo7nFB6Bcntm1WOuA+KFGhY5lr8xOwo0u
+         bVHA==
+X-Gm-Message-State: ABy/qLY+Aesnfm+2qyWbWN1XqpUAY88e9Ja6E29a/n9fF2sFIRcHXZB5
+        9ZaufWijM/AYsbT4UFLNQXifGw==
+X-Google-Smtp-Source: APBJJlEEGJ19yefzJjPgvbVD3Vwt8o0hpwITPKpxhrZ6qfTncXtXmPc/2czBK22ojn0BWVp4pHLe1g==
+X-Received: by 2002:ac2:4a66:0:b0:4fa:9817:c1da with SMTP id q6-20020ac24a66000000b004fa9817c1damr4180775lfp.21.1688320246289;
+        Sun, 02 Jul 2023 10:50:46 -0700 (PDT)
 Received: from umbar.unikie.fi ([192.130.178.91])
-        by smtp.gmail.com with ESMTPSA id v23-20020a2e9917000000b002b6daa3fa2csm1372550lji.69.2023.07.02.10.43.12
+        by smtp.gmail.com with ESMTPSA id d1-20020ac24c81000000b004fb759964a9sm3354130lfl.168.2023.07.02.10.50.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 02 Jul 2023 10:43:12 -0700 (PDT)
+        Sun, 02 Jul 2023 10:50:45 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -66,67 +65,46 @@ Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
         Christian Marangi <ansuelsmth@gmail.com>,
         Stephan Gerhold <stephan@gerhold.net>
-Subject: [PATCH v3 27/28] ARM: dts: qcom: ipq4019: drop 'regulator' property from SAW2 devices
-Date:   Sun,  2 Jul 2023 20:42:45 +0300
-Message-Id: <20230702174246.121656-28-dmitry.baryshkov@linaro.org>
+Subject: [RFC PATCH 0/8] ARM: qcom: msm8960: support CPU frequency scaling
+Date:   Sun,  2 Jul 2023 20:50:37 +0300
+Message-Id: <20230702175045.122041-1-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230702174246.121656-1-dmitry.baryshkov@linaro.org>
-References: <20230702174246.121656-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The SAW2 device should describe the regulator constraints rather than
-just declaring that it has the regulator.
+This is an RFC (or maybe it should be RFT), as I did not test this on
+the actual hardware. The actual core and L2 setup is mostly the same as
+APQ8064, so this is just a port of APQ8064 code and adaptation for small
+MSM8960 peculiarities.
 
-Drop the 'regulator' property. If/when CPU voltage scaling is
-implemented for this platform, proper regulator nodes show be added
-instead.
+Note, msm-3.4 had separate optional AVS code for MSM8960, but as I don't
+have the actual hardware, it is left untouched for now.
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@linaro.org>
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi | 5 -----
- 1 file changed, 5 deletions(-)
+Dependencies: [1].
 
-diff --git a/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi b/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi
-index f0ef86fadc9d..ad3c922843c7 100644
---- a/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi
-+++ b/arch/arm/boot/dts/qcom/qcom-ipq4019.dtsi
-@@ -350,31 +350,26 @@ acc3: power-manager@b0b8000 {
- 		saw0: regulator@b089000 {
- 			compatible = "qcom,saw2";
- 			reg = <0x0b089000 0x1000>, <0x0b009000 0x1000>;
--			regulator;
- 		};
- 
- 		saw1: regulator@b099000 {
- 			compatible = "qcom,saw2";
- 			reg = <0x0b099000 0x1000>, <0x0b009000 0x1000>;
--			regulator;
- 		};
- 
- 		saw2: regulator@b0a9000 {
- 			compatible = "qcom,saw2";
- 			reg = <0x0b0a9000 0x1000>, <0x0b009000 0x1000>;
--			regulator;
- 		};
- 
- 		saw3: regulator@b0b9000 {
- 			compatible = "qcom,saw2";
- 			reg = <0x0b0b9000 0x1000>, <0x0b009000 0x1000>;
--			regulator;
- 		};
- 
- 		saw_l2: regulator@b012000 {
- 			compatible = "qcom,saw2";
- 			reg = <0xb012000 0x1000>;
--			regulator;
- 		};
- 
- 		blsp1_uart1: serial@78af000 {
+[1] https://lore.kernel.org/linux-arm-msm/20230702174246.121656-1-dmitry.baryshkov@linaro.org/
+
+Dmitry Baryshkov (8):
+  dt-bindings: nvmem: qfprom: add compatible for MSM8960
+  cpufreq: qcom-nvmem: enable core voltage scaling for MSM8960
+  cpufreq: qcom-nvmem: provide vmin constraint for early Kraits
+  ARM: dts: qcom: msm8960-cdp: constraint cpufreq regulators
+  ARM: dts: qcom: msm8960-samsung-expressatt: constraint cpufreq
+    regulators
+  ARM: dts: qcom: msm8960: add Krait clock controller
+  ARM: dts: qcom: msm8960: add L2 cache scaling
+  ARM: dts: qcom: apq8064: add simple CPUFreq support
+
+ .../bindings/nvmem/qcom,qfprom.yaml           |   1 +
+ arch/arm/boot/dts/qcom/qcom-msm8960-cdp.dts   |   9 +-
+ .../qcom/qcom-msm8960-samsung-expressatt.dts  |   9 +-
+ arch/arm/boot/dts/qcom/qcom-msm8960.dtsi      | 289 +++++++++++++++++-
+ drivers/cpufreq/qcom-cpufreq-nvmem.c          |  69 ++++-
+ 5 files changed, 370 insertions(+), 7 deletions(-)
+
 -- 
 2.39.2
 
