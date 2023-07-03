@@ -2,113 +2,80 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC11EEB64DD
-	for <linux-pm@archiver.kernel.org>; Mon,  3 Jul 2023 15:10:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB139EB64DC
+	for <linux-pm@archiver.kernel.org>; Mon,  3 Jul 2023 15:30:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231381AbjGCPKK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 3 Jul 2023 11:10:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49086 "EHLO
+        id S231219AbjGCPaE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 3 Jul 2023 11:30:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59334 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231299AbjGCPKJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jul 2023 11:10:09 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6442210C0
-        for <linux-pm@vger.kernel.org>; Mon,  3 Jul 2023 08:09:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688396960;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=6g4SgMrAx5lx8sYPsFEruVMXFbKKSUycENj60N3/Gvk=;
-        b=HHjQBcdMYJs1cI3sN9TNQinEKLKRW0J+CaV38hEVyq5yn9uabsPZ8V5F4iPJmqXPizOMRG
-        evwXoxMkzxmUtG70fM7IrR8XoMKElULv8I4AsxtDO4ecOSAug25/rRT+nbXo+VHk0Bweta
-        iO/vrVBkWAB7ePUNvSczOPRRPjkK0HY=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-288-JZofT6OTOEG7gcU8sMfiFQ-1; Mon, 03 Jul 2023 11:09:14 -0400
-X-MC-Unique: JZofT6OTOEG7gcU8sMfiFQ-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9662790EEA5;
-        Mon,  3 Jul 2023 15:09:13 +0000 (UTC)
-Received: from [10.22.17.92] (unknown [10.22.17.92])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id CB2C714682F9;
-        Mon,  3 Jul 2023 15:09:12 +0000 (UTC)
-Message-ID: <0a4f1738-dd0e-efdb-b137-7a7c9875786d@redhat.com>
-Date:   Mon, 3 Jul 2023 11:09:12 -0400
+        with ESMTP id S229793AbjGCP37 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jul 2023 11:29:59 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4022AE49;
+        Mon,  3 Jul 2023 08:29:58 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B76132F4;
+        Mon,  3 Jul 2023 08:30:40 -0700 (PDT)
+Received: from [10.57.27.93] (unknown [10.57.27.93])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7AEAA3F663;
+        Mon,  3 Jul 2023 08:29:55 -0700 (PDT)
+Message-ID: <18b1a981-79a0-13d7-bfba-2f1c0e554da9@arm.com>
+Date:   Mon, 3 Jul 2023 16:30:13 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH v4 4/4] intel_idle: Add ibrs_off module parameter to force
- disable IBRS
+ Thunderbird/102.11.0
+Subject: Re: [PATCH v2 12/17] PM: EM: Add argument to get_cost() for runtime
+ modification
 Content-Language: en-US
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Josh Poimboeuf <jpoimboe@kernel.org>,
-        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        Len Brown <lenb@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-        x86@kernel.org, linux-pm@vger.kernel.org,
-        Robin Jarry <rjarry@redhat.com>, Joe Mario <jmario@redhat.com>
-References: <20230628022554.1638318-1-longman@redhat.com>
- <20230628022554.1638318-5-longman@redhat.com>
- <20230703103255.GE4253@hirez.programming.kicks-ass.net>
-From:   Waiman Long <longman@redhat.com>
-In-Reply-To: <20230703103255.GE4253@hirez.programming.kicks-ass.net>
+To:     Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
+        amit.kachhap@gmail.com, daniel.lezcano@linaro.org,
+        viresh.kumar@linaro.org, len.brown@intel.com, pavel@ucw.cz,
+        Pierre.Gondois@arm.com, ionela.voinescu@arm.com,
+        rostedt@goodmis.org, mhiramat@kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        rafael@kernel.org
+References: <20230512095743.3393563-1-lukasz.luba@arm.com>
+ <20230512095743.3393563-13-lukasz.luba@arm.com>
+ <93afb0fd-6226-4b0d-380a-182ecf028b34@arm.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <93afb0fd-6226-4b0d-380a-182ecf028b34@arm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On 7/3/23 06:32, Peter Zijlstra wrote:
-> On Tue, Jun 27, 2023 at 10:25:54PM -0400, Waiman Long wrote:
->
->> @@ -69,6 +69,7 @@ static int max_cstate = CPUIDLE_STATE_MAX - 1;
->>   static unsigned int disabled_states_mask __read_mostly;
->>   static unsigned int preferred_states_mask __read_mostly;
->>   static bool force_irq_on __read_mostly;
->> +static bool ibrs_off __read_mostly;
->>   
->>   static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
->>   
->> @@ -1919,12 +1920,15 @@ static void state_update_enter_method(struct cpuidle_state *state, int cstate)
->>   	}
->>   
->>   	if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS) &&
->> -			   state->flags & CPUIDLE_FLAG_IBRS) {
->> +			((state->flags & CPUIDLE_FLAG_IBRS) || ibrs_off)) {
->>   		/*
->>   		 * IBRS mitigation requires that C-states are entered
->>   		 * with interrupts disabled.
->>   		 */
->> -		WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
->> +		if (ibrs_off && (state->flags & CPUIDLE_FLAG_IRQ_ENABLE))
->> +			state->flags &= ~CPUIDLE_FLAG_IRQ_ENABLE;
->> +		else
->> +			WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
-> If you're respinning this, you can leave out the else and avoid the
-> indent on the WARN:
->
-> +		if (ibrs_off && (state->flags & CPUIDLE_FLAG_IRQ_ENABLE))
-> +			state->flags &= ~CPUIDLE_FLAG_IRQ_ENABLE;
-> 		WARN_ON_ONCE(state->flags & CPUIDLE_FLAG_IRQ_ENABLE);
->
-> Same effect, simpler code and all that.
 
-That is true. I can certainly respin that as there is another suggested 
-doc change that is pending.
+On 5/30/23 10:53, Dietmar Eggemann wrote:
+> On 12/05/2023 11:57, Lukasz Luba wrote:
+>> The Energy Model (EM) supports runtime modifications. Let also the
+>> artificial EM use this new feature and allow to update the 'cost' values
+>> at runtime. When the artificial EM is used there is a need to provide
+>> two callbacks: get_cost() and update_power(), not only the last one.
+>>
+>> Update also CPPC driver code, since the new argument is needed there
+>> to compile properly and register EM.
+> 
+> Is there a real use case behind this? It can't be mobile which IMHO
+> drivers the rest of the 'Runtime modifiable EM' feature.
 
-Cheers,
-Longman
+Correct, CPPC+EM is not for mobile phones, but notebooks. For now
+the notebooks are not tested with that feature and were not in
+requirement scope.
 
+> 
+> Do we know of any machine using the artificial EM. And do they care
+> about EM matching workload or static power?
+> 
+> [...]
+
+For now we don't know about such notebook which uses CPPC + EM
+and if it's a candidate for this feature.
+
+I thought, since it's just one patch w/ small change, it would be
+consistent to not 'forget' about that notebooks angle. I know
+that there are some folks who 'run'/'are willing to run' Arm laptop with
+CPPC w/ artificial EM. They might pick that feature as well.
