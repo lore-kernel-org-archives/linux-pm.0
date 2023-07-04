@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2981DEB64DA
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:34:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C49FC001B0
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:34:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232006AbjGDJeK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 05:34:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51010 "EHLO
+        id S231462AbjGDJeX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 05:34:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232102AbjGDJdf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:33:35 -0400
+        with ESMTP id S232141AbjGDJdy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:33:54 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE3FB10F9
-        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:20 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5A2D171D
+        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:23 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOx-0006yZ-Fd; Tue, 04 Jul 2023 11:32:51 +0200
+        id 1qGcOx-0006xy-7N; Tue, 04 Jul 2023 11:32:51 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOw-00C0Ay-Oa; Tue, 04 Jul 2023 11:32:50 +0200
+        id 1qGcOw-00C0Aq-HX; Tue, 04 Jul 2023 11:32:50 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOr-002TyF-6d; Tue, 04 Jul 2023 11:32:45 +0200
+        id 1qGcOr-002Tz0-FC; Tue, 04 Jul 2023 11:32:45 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -42,10 +42,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v7 12/26] PM / devfreq: rockchip-dfi: Handle LPDDR4X
-Date:   Tue,  4 Jul 2023 11:32:28 +0200
-Message-Id: <20230704093242.583575-13-s.hauer@pengutronix.de>
+        Conor Dooley <conor.dooley@microchip.com>
+Subject: [PATCH v7 22/26] dt-bindings: devfreq: event: rockchip,dfi: Add rk3588 support
+Date:   Tue,  4 Jul 2023 11:32:38 +0200
+Message-Id: <20230704093242.583575-23-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230704093242.583575-1-s.hauer@pengutronix.de>
 References: <20230704093242.583575-1-s.hauer@pengutronix.de>
@@ -59,41 +59,49 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In the DFI driver LPDDR4X can be handled in the same way as LPDDR4. Add
-the missing case.
+This adds rockchip,rk3588-dfi to the list of compatibles. Unlike ealier
+SoCs the rk3588 has four interrupts (one for each channel) instead of
+only one, so increase the number of allowed interrupts to four.
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 1 +
- include/soc/rockchip/rockchip_grf.h  | 1 +
- 2 files changed, 2 insertions(+)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 16cd5365671f7..0a568c5551699 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -89,6 +89,7 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 			       dfi_regs + DDRMON_CTRL);
- 		break;
- 	case ROCKCHIP_DDRTYPE_LPDDR4:
-+	case ROCKCHIP_DDRTYPE_LPDDR4X:
- 		writel_relaxed(HIWORD_UPDATE(DDRMON_CTRL_LPDDR4, DDRMON_CTRL_DDR_TYPE_MASK),
- 			       dfi_regs + DDRMON_CTRL);
- 		break;
-diff --git a/include/soc/rockchip/rockchip_grf.h b/include/soc/rockchip/rockchip_grf.h
-index dde1a9796ccb5..e46fd72aea8d1 100644
---- a/include/soc/rockchip/rockchip_grf.h
-+++ b/include/soc/rockchip/rockchip_grf.h
-@@ -12,6 +12,7 @@ enum {
- 	ROCKCHIP_DDRTYPE_LPDDR2	= 5,
- 	ROCKCHIP_DDRTYPE_LPDDR3	= 6,
- 	ROCKCHIP_DDRTYPE_LPDDR4	= 7,
-+	ROCKCHIP_DDRTYPE_LPDDR4X = 8,
- };
+Notes:
+    Changes since v4:
+    - new patch
+    
+    Changes since v5:
+    - drop interrupt-names property
+    
+    Changes since v4:
+    - new patch
+
+ .../devicetree/bindings/devfreq/event/rockchip,dfi.yaml       | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+index e8b64494ee8bd..50d3fabe958d5 100644
+--- a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
++++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
+@@ -14,6 +14,7 @@ properties:
+     enum:
+       - rockchip,rk3399-dfi
+       - rockchip,rk3568-dfi
++      - rockchip,rk3588-dfi
  
- #endif /* __SOC_ROCKCHIP_GRF_H */
+   clocks:
+     maxItems: 1
+@@ -23,7 +24,8 @@ properties:
+       - const: pclk_ddr_mon
+ 
+   interrupts:
+-    maxItems: 1
++    minItems: 1
++    maxItems: 4
+ 
+   reg:
+     maxItems: 1
 -- 
 2.39.2
 
