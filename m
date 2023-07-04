@@ -2,186 +2,74 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5539DEB64D9
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:36:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8EB1EB64DA
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 11:04:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232146AbjGDJg1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 05:36:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50354 "EHLO
+        id S231316AbjGDLET (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 07:04:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231847AbjGDJgC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:36:02 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 512A11703
-        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:34:14 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <sha@pengutronix.de>)
-        id 1qGcOx-0006xf-3v; Tue, 04 Jul 2023 11:32:51 +0200
-Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <sha@pengutronix.de>)
-        id 1qGcOw-00C0Ah-Ah; Tue, 04 Jul 2023 11:32:50 +0200
-Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <sha@pengutronix.de>)
-        id 1qGcOr-002Tys-Dd; Tue, 04 Jul 2023 11:32:45 +0200
-From:   Sascha Hauer <s.hauer@pengutronix.de>
-To:     linux-rockchip@lists.infradead.org
-Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Will Deacon <will@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
-        Michael Riesch <michael.riesch@wolfvision.net>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Vincent Legoll <vincent.legoll@gmail.com>,
+        with ESMTP id S230385AbjGDLES (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 07:04:18 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83E2EA3;
+        Tue,  4 Jul 2023 04:04:17 -0700 (PDT)
+Received: from [IPV6:2001:b07:2ed:14ed:c5f8:7372:f042:90a2] (unknown [IPv6:2001:b07:2ed:14ed:c5f8:7372:f042:90a2])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: kholk11)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id 3418266018CF;
+        Tue,  4 Jul 2023 12:04:15 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1688468656;
+        bh=g9fpBwzmmxZyfKY6sgTFm+2amQjq86tk1fvz17dQUl4=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=FRuatuby77tNcxZSxVDTH03bWGJwByCsT6Hb2gZ5y8G74zDCqn85uZL6x2NJRwmou
+         5deKeFimLsJ2sdt7eklWDWjz6/yvYhViFFxr4IFYHkuW7H9aR9HOe2cmCAoGHnpF+u
+         98fD4l2wK8X1AY6N8PY377oKuMvy07MPfzH8a6laSNAYFwxTfVY0yIEEEGYRDZv31R
+         0ZWtveLpALW6Mee55sfmlge99s/6tXjbfgyuNUBVP55Zg34jhL8aTWMCpEp3jl968w
+         ZOXybuMCEAg4iQH1K4HmnDB+5Ns+cSbEQl0bNa9VaEIR2eh373l6jwN9TLDx7B6pIz
+         b3daF4EMnxAsw==
+Message-ID: <d3b8faf2-2d60-1a91-2cc2-1fec5d25d69e@collabora.com>
+Date:   Tue, 4 Jul 2023 13:04:12 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Subject: Re: [PATCH v12 07/10] soc: qcom: cpr: Use u64 for frequency
+Content-Language: en-US
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Rob Herring <robh@kernel.org>
-Subject: [PATCH v7 20/26] dt-bindings: devfreq: event: convert Rockchip DFI binding to yaml
-Date:   Tue,  4 Jul 2023 11:32:36 +0200
-Message-Id: <20230704093242.583575-21-s.hauer@pengutronix.de>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230704093242.583575-1-s.hauer@pengutronix.de>
-References: <20230704093242.583575-1-s.hauer@pengutronix.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Niklas Cassel <nks@flawful.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc:     Robert Marko <robimarko@gmail.com>, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, Jeffrey Hugo <quic_jhugo@quicinc.com>,
+        Marijn Suijten <marijn.suijten@somainline.org>
+References: <20230217-topic-cpr3h-v12-0-1a4d050e1e67@linaro.org>
+ <20230217-topic-cpr3h-v12-7-1a4d050e1e67@linaro.org>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20230217-topic-cpr3h-v12-7-1a4d050e1e67@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the Rockchip DFI binding to yaml.
+Il 28/06/23 16:00, Konrad Dybcio ha scritto:
+> 32 bits is not enough for over-2.changeGHz frequencies. Move all variables
+> that operate on Hz to u64 to avoid overflows.
+> 
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 
-Reviewed-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 
-Notes:
-    Changes since v4:
-    
-    - Revert to state of v3 (changes were lost in v4)
-
- .../bindings/devfreq/event/rockchip,dfi.yaml  | 61 +++++++++++++++++++
- .../bindings/devfreq/event/rockchip-dfi.txt   | 18 ------
- .../rockchip,rk3399-dmc.yaml                  |  2 +-
- 3 files changed, 62 insertions(+), 19 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
- delete mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-
-diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-new file mode 100644
-index 0000000000000..7a82f6ae0701e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml
-@@ -0,0 +1,61 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/devfreq/event/rockchip,dfi.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Rockchip DFI
-+
-+maintainers:
-+  - Sascha Hauer <s.hauer@pengutronix.de>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - rockchip,rk3399-dfi
-+
-+  clocks:
-+    maxItems: 1
-+
-+  clock-names:
-+    items:
-+      - const: pclk_ddr_mon
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  reg:
-+    maxItems: 1
-+
-+  rockchip,pmu:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description:
-+      Phandle to the syscon managing the "PMU general register files".
-+
-+required:
-+  - compatible
-+  - clocks
-+  - clock-names
-+  - interrupts
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/rk3308-cru.h>
-+
-+    bus {
-+      #address-cells = <2>;
-+      #size-cells = <2>;
-+
-+      dfi: dfi@ff630000 {
-+        compatible = "rockchip,rk3399-dfi";
-+        reg = <0x00 0xff630000 0x00 0x4000>;
-+        interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
-+        rockchip,pmu = <&pmugrf>;
-+        clocks = <&cru PCLK_DDR_MON>;
-+        clock-names = "pclk_ddr_mon";
-+      };
-+    };
-diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-deleted file mode 100644
-index 148191b0fc158..0000000000000
---- a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-+++ /dev/null
-@@ -1,18 +0,0 @@
--
--* Rockchip rk3399 DFI device
--
--Required properties:
--- compatible: Must be "rockchip,rk3399-dfi".
--- reg: physical base address of each DFI and length of memory mapped region
--- rockchip,pmu: phandle to the syscon managing the "pmu general register files"
--- clocks: phandles for clock specified in "clock-names" property
--- clock-names : the name of clock used by the DFI, must be "pclk_ddr_mon";
--
--Example:
--	dfi: dfi@ff630000 {
--		compatible = "rockchip,rk3399-dfi";
--		reg = <0x00 0xff630000 0x00 0x4000>;
--		rockchip,pmu = <&pmugrf>;
--		clocks = <&cru PCLK_DDR_MON>;
--		clock-names = "pclk_ddr_mon";
--	};
-diff --git a/Documentation/devicetree/bindings/memory-controllers/rockchip,rk3399-dmc.yaml b/Documentation/devicetree/bindings/memory-controllers/rockchip,rk3399-dmc.yaml
-index fb4920397d08e..aba8649aaeb10 100644
---- a/Documentation/devicetree/bindings/memory-controllers/rockchip,rk3399-dmc.yaml
-+++ b/Documentation/devicetree/bindings/memory-controllers/rockchip,rk3399-dmc.yaml
-@@ -18,7 +18,7 @@ properties:
-     $ref: /schemas/types.yaml#/definitions/phandle
-     description:
-       Node to get DDR loading. Refer to
--      Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt.
-+      Documentation/devicetree/bindings/devfreq/event/rockchip,dfi.yaml.
- 
-   clocks:
-     maxItems: 1
--- 
-2.39.2
 
