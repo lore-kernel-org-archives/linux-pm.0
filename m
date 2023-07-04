@@ -2,107 +2,144 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF13EEB64DD
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E424EB64D9
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:33:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231955AbjGDJW0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 05:22:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44954 "EHLO
+        id S231819AbjGDJdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 05:33:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50260 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231486AbjGDJV6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:21:58 -0400
-Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46BB6136
-        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:21:52 -0700 (PDT)
-Received: by mail-ot1-x336.google.com with SMTP id 46e09a7af769-6b8baa72c71so2044389a34.2
-        for <linux-pm@vger.kernel.org>; Tue, 04 Jul 2023 02:21:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688462511; x=1691054511;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Qb0k7Tk9sBjBH9U8D1AVIvcapp3wGCXnlEAXFhkWArA=;
-        b=J5J1X9MFOY1XlVJ3akSpgRFCykSF5urpV4lGc2C+0tjgLkmaKvVKeK2sY7aNE/AtMV
-         6djhgBA8gM1f8dt1NTTm0VW5b92ZyuEF4foqBB0V5DH1XUdYZelDmWPBS94DpRbPlKz0
-         QNxY2DfSWzH8EAWbzv5uc2EWXxnu7t9qbwmjb07Z6vyfebPHmXcNFN6KpPMGuhmnazNq
-         j0rRv/HXlouYxZ2fr+vlKwkP3HTDQtqVH4Xh9dBLj41kuL1afpH2IinjK4BVfrj0Wf4b
-         x3dfoRc9umC6CzHAwTaEtWqdRkhq+I52iAIw24xWoNOPqeG+BRUhcDqLp5bOxLGJSNa1
-         C88Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688462511; x=1691054511;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Qb0k7Tk9sBjBH9U8D1AVIvcapp3wGCXnlEAXFhkWArA=;
-        b=Sick+i/aJUZ/R/cXMUEpF93Vc06zWAuLg491qL9o5cpEWVA6HhxuWtk5EhdMp7w0tP
-         i9SSCiexSxgFmcxc6JdXs3p9QUY4Q85N27oSGAEi4Kq7M8u4FOEhEOxfUelfDHh5XRRp
-         athYOpBJ5VSvcqHWlzQL8g7YNTJ06imBwx9GUYM1AZdk0/IwnhtbgM3je9AvSdnSRzUB
-         1h+PLzrSHhbcNKuuKMDhXkEPbR0n4jwyPpTdXNKH+4pEfIN0/OaJP+D8MWRzaxB+g9GQ
-         8ROkPlaNnwJvZY55iPnfBoZBAX9BJ4V8VkGk5+kQW4ENeju0r0eIU0sgrm+0hJle//cD
-         6lsg==
-X-Gm-Message-State: AC+VfDyiDTSPrr4IZ0fV1OKovYdgEEz3NsI9pZplC8Vl2DivF7EILr0i
-        4iYkFECX0M+e/WMDO6ArJOSVRg==
-X-Google-Smtp-Source: ACHHUZ7IVwxQXfJq0vODWWLrpPS2yRDRI6ukM2UsLM5BcltZnCkJkcv99U/KbY0fLyDVlAK6Az/mtw==
-X-Received: by 2002:a05:6830:2099:b0:6b5:c9c5:3e6e with SMTP id y25-20020a056830209900b006b5c9c53e6emr10758596otq.19.1688462511541;
-        Tue, 04 Jul 2023 02:21:51 -0700 (PDT)
-Received: from localhost ([122.172.87.195])
-        by smtp.gmail.com with ESMTPSA id n189-20020a6327c6000000b0055387ffef10sm16209158pgn.24.2023.07.04.02.21.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Jul 2023 02:21:51 -0700 (PDT)
-Date:   Tue, 4 Jul 2023 14:51:48 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     Rob Herring <robh@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
+        with ESMTP id S231667AbjGDJdJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:33:09 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4247FFB
+        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:08 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <sha@pengutronix.de>)
+        id 1qGcOv-0006tu-RM; Tue, 04 Jul 2023 11:32:49 +0200
+Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <sha@pengutronix.de>)
+        id 1qGcOt-00C09f-DO; Tue, 04 Jul 2023 11:32:47 +0200
+Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <sha@pengutronix.de>)
+        id 1qGcOr-002Txv-2W; Tue, 04 Jul 2023 11:32:45 +0200
+From:   Sascha Hauer <s.hauer@pengutronix.de>
+To:     linux-rockchip@lists.infradead.org
+Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Will Deacon <will@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, kernel@pengutronix.de,
+        Michael Riesch <michael.riesch@wolfvision.net>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Vincent Legoll <vincent.legoll@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Niklas Cassel <nks@flawful.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Robert Marko <robimarko@gmail.com>,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        Jeffrey Hugo <quic_jhugo@quicinc.com>,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-Subject: Re: [PATCH v12 01/10] cpufreq: blacklist MSM8998 in
- cpufreq-dt-platdev
-Message-ID: <20230704092148.eh2yla64uo74dggk@vireshk-i7>
-References: <20230217-topic-cpr3h-v12-0-1a4d050e1e67@linaro.org>
- <20230217-topic-cpr3h-v12-1-1a4d050e1e67@linaro.org>
- <20230628155656.GA542106-robh@kernel.org>
- <20230703041701.ntv2f2h7z2welmvn@vireshk-i7>
- <7299b735-d613-1306-796c-291f03f3b361@linaro.org>
+        Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v7 07/26] PM / devfreq: rockchip-dfi: introduce channel mask
+Date:   Tue,  4 Jul 2023 11:32:23 +0200
+Message-Id: <20230704093242.583575-8-s.hauer@pengutronix.de>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230704093242.583575-1-s.hauer@pengutronix.de>
+References: <20230704093242.583575-1-s.hauer@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7299b735-d613-1306-796c-291f03f3b361@linaro.org>
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 04-07-23, 10:07, Krzysztof Kozlowski wrote:
-> On 03/07/2023 06:17, Viresh Kumar wrote:
-> > On 28-06-23, 09:56, Rob Herring wrote:
-> >> On Wed, Jun 28, 2023 at 04:00:40PM +0200, Konrad Dybcio wrote:
-> >>> From: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-> >>>
-> >>> Add the MSM8998 to the blacklist since the CPU scaling is handled
-> >>
-> >> s/blacklist/denylist/ or s/blacklist/blocklist/
-> > 
-> > They are already named allowlist and blocklist.
-> 
-> This was about commit msg and subject. They are not named like this.
+Different Rockchip SoC variants have a different number of channels.
+Introduce a channel mask to make the number of channels configurable
+from SoC initialization code.
 
-Yeah, I was just saying we have proper names in the code and they must be used
-here in commit.  Sorry for not being clear earlier :)
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/devfreq/event/rockchip-dfi.c | 23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 126bb744645b6..82de24a027579 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -18,10 +18,11 @@
+ #include <linux/list.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
++#include <linux/bits.h>
+ 
+ #include <soc/rockchip/rk3399_grf.h>
+ 
+-#define RK3399_DMC_NUM_CH	2
++#define DMC_MAX_CHANNELS	2
+ 
+ /* DDRMON_CTRL */
+ #define DDRMON_CTRL	0x04
+@@ -44,7 +45,7 @@ struct dmc_count_channel {
+ };
+ 
+ struct dmc_count {
+-	struct dmc_count_channel c[RK3399_DMC_NUM_CH];
++	struct dmc_count_channel c[DMC_MAX_CHANNELS];
+ };
+ 
+ /*
+@@ -61,6 +62,7 @@ struct rockchip_dfi {
+ 	struct regmap *regmap_pmu;
+ 	struct clk *clk;
+ 	u32 ddr_type;
++	unsigned int channel_mask;
+ };
+ 
+ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
+@@ -95,7 +97,9 @@ static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dm
+ 	u32 i;
+ 	void __iomem *dfi_regs = dfi->regs;
+ 
+-	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
++	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
++		if (!(dfi->channel_mask & BIT(i)))
++			continue;
+ 		count->c[i].access = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+ 		count->c[i].total = readl_relaxed(dfi_regs +
+@@ -145,9 +149,14 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 	rockchip_dfi_read_counters(edev, &count);
+ 
+ 	/* We can only report one channel, so find the busiest one */
+-	for (i = 0; i < RK3399_DMC_NUM_CH; i++) {
+-		u32 a = count.c[i].access - last->c[i].access;
+-		u32 t = count.c[i].total - last->c[i].total;
++	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
++		u32 a, t;
++
++		if (!(dfi->channel_mask & BIT(i)))
++			continue;
++
++		a = count.c[i].access - last->c[i].access;
++		t = count.c[i].total - last->c[i].total;
+ 
+ 		if (a > access) {
+ 			access = a;
+@@ -185,6 +194,8 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
+ 	dfi->ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
+ 			RK3399_PMUGRF_DDRTYPE_MASK;
+ 
++	dfi->channel_mask = GENMASK(1, 0);
++
+ 	return 0;
+ };
+ 
 -- 
-viresh
+2.39.2
+
