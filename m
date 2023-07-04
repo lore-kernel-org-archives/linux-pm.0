@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE4B4EB64DD
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:34:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3468FC001B3
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:34:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231958AbjGDJeY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 05:34:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51334 "EHLO
+        id S231571AbjGDJeZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 05:34:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50410 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232144AbjGDJdy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:33:54 -0400
+        with ESMTP id S232146AbjGDJdz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:33:55 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C1AC1722
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25EE41723
         for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:23 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOv-0006tw-RL; Tue, 04 Jul 2023 11:32:49 +0200
+        id 1qGcOv-0006tv-RH; Tue, 04 Jul 2023 11:32:49 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOu-00C09s-8Y; Tue, 04 Jul 2023 11:32:48 +0200
+        id 1qGcOt-00C09i-Hp; Tue, 04 Jul 2023 11:32:47 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOr-002TzG-I0; Tue, 04 Jul 2023 11:32:45 +0200
+        id 1qGcOr-002TyW-8y; Tue, 04 Jul 2023 11:32:45 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -42,9 +42,9 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v7 26/26] arm64: dts: rockchip: rk3588s: Add DFI
-Date:   Tue,  4 Jul 2023 11:32:42 +0200
-Message-Id: <20230704093242.583575-27-s.hauer@pengutronix.de>
+Subject: [PATCH v7 15/26] PM / devfreq: rockchip-dfi: give variable a better name
+Date:   Tue,  4 Jul 2023 11:32:31 +0200
+Message-Id: <20230704093242.583575-16-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230704093242.583575-1-s.hauer@pengutronix.de>
 References: <20230704093242.583575-1-s.hauer@pengutronix.de>
@@ -58,56 +58,81 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The DFI unit can be used to measure DRAM utilization using perf. Add the
-node to the device tree. The DFI needs a rockchip,pmu phandle to the pmu
-containing registers for SDRAM configuration details. This is added in
-this patch as well.
+struct dmc_count_channel::total counts the clock cycles of the DDR
+controller. Rename it accordingly to give the reader a better idea
+what this is about. While at it, at some documentation to struct
+dmc_count_channel.
 
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
+ drivers/devfreq/event/rockchip-dfi.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-Notes:
-    Changes since v4:
-    - new patch
-
- arch/arm64/boot/dts/rockchip/rk3588s.dtsi | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
-index a3124bd2e092c..723a17ec04361 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
-@@ -397,6 +397,11 @@ scmi_shmem: sram@0 {
- 		};
- 	};
+diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+index 8a7af7c32ae0d..50e497455dc69 100644
+--- a/drivers/devfreq/event/rockchip-dfi.c
++++ b/drivers/devfreq/event/rockchip-dfi.c
+@@ -46,9 +46,14 @@
+ #define DDRMON_CH1_COUNT_NUM		0x3c
+ #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
  
-+	pmu1grf: syscon@fd58a000 {
-+		compatible = "rockchip,rk3588-pmugrf", "syscon", "simple-mfd";
-+		reg = <0x0 0xfd58a000 0x0 0x10000>;
-+	};
-+
- 	sys_grf: syscon@fd58c000 {
- 		compatible = "rockchip,rk3588-sys-grf", "syscon";
- 		reg = <0x0 0xfd58c000 0x0 0x1000>;
-@@ -1121,6 +1126,17 @@ qos_vop_m1: qos@fdf82200 {
- 		reg = <0x0 0xfdf82200 0x0 0x20>;
- 	};
++/**
++ * struct dmc_count_channel - structure to hold counter values from the DDR controller
++ * @access:       Number of read and write accesses
++ * @clock_cycles: DDR clock cycles
++ */
+ struct dmc_count_channel {
+ 	u32 access;
+-	u32 total;
++	u32 clock_cycles;
+ };
  
-+	dfi: dfi@fe060000 {
-+		reg = <0x00 0xfe060000 0x00 0x10000>;
-+		compatible = "rockchip,rk3588-dfi";
-+		interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH 0>,
-+			     <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH 0>,
-+			     <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH 0>,
-+			     <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH 0>;
-+		interrupt-names = "ch0", "ch1", "ch2", "ch3";
-+		rockchip,pmu = <&pmu1grf>;
-+	};
-+
- 	gmac1: ethernet@fe1c0000 {
- 		compatible = "rockchip,rk3588-gmac", "snps,dwmac-4.20a";
- 		reg = <0x0 0xfe1c0000 0x0 0x10000>;
+ struct dmc_count {
+@@ -150,7 +155,7 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
+ 			continue;
+ 		count->c[i].access = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
+-		count->c[i].total = readl_relaxed(dfi_regs +
++		count->c[i].clock_cycles = readl_relaxed(dfi_regs +
+ 				DDRMON_CH0_COUNT_NUM + i * 20);
+ 	}
+ }
+@@ -182,29 +187,29 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
+ 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
+ 	struct dmc_count count;
+ 	struct dmc_count *last = &dfi->last_event_count;
+-	u32 access = 0, total = 0;
++	u32 access = 0, clock_cycles = 0;
+ 	int i;
+ 
+ 	rockchip_dfi_read_counters(dfi, &count);
+ 
+ 	/* We can only report one channel, so find the busiest one */
+ 	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
+-		u32 a, t;
++		u32 a, c;
+ 
+ 		if (!(dfi->channel_mask & BIT(i)))
+ 			continue;
+ 
+ 		a = count.c[i].access - last->c[i].access;
+-		t = count.c[i].total - last->c[i].total;
++		c = count.c[i].clock_cycles - last->c[i].clock_cycles;
+ 
+ 		if (a > access) {
+ 			access = a;
+-			total = t;
++			clock_cycles = c;
+ 		}
+ 	}
+ 
+ 	edata->load_count = access * 4;
+-	edata->total_count = total;
++	edata->total_count = clock_cycles;
+ 
+ 	dfi->last_event_count = count;
+ 
 -- 
 2.39.2
 
