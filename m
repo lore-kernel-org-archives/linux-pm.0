@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1357DEB64D9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE4B4EB64DD
 	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:34:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232049AbjGDJeX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 05:34:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51292 "EHLO
+        id S231958AbjGDJeY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 05:34:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51334 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231778AbjGDJdw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:33:52 -0400
+        with ESMTP id S232144AbjGDJdy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:33:54 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C66E811F
-        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:22 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C1AC1722
+        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:23 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOv-0006tr-RY; Tue, 04 Jul 2023 11:32:49 +0200
+        id 1qGcOv-0006tw-RL; Tue, 04 Jul 2023 11:32:49 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOt-00C09Z-6L; Tue, 04 Jul 2023 11:32:47 +0200
+        id 1qGcOu-00C09s-8Y; Tue, 04 Jul 2023 11:32:48 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOr-002TyJ-7N; Tue, 04 Jul 2023 11:32:45 +0200
+        id 1qGcOr-002TzG-I0; Tue, 04 Jul 2023 11:32:45 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,11 +41,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v7 13/26] PM / devfreq: rockchip-dfi: Pass private data struct to internal functions
-Date:   Tue,  4 Jul 2023 11:32:29 +0200
-Message-Id: <20230704093242.583575-14-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v7 26/26] arm64: dts: rockchip: rk3588s: Add DFI
+Date:   Tue,  4 Jul 2023 11:32:42 +0200
+Message-Id: <20230704093242.583575-27-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230704093242.583575-1-s.hauer@pengutronix.de>
 References: <20230704093242.583575-1-s.hauer@pengutronix.de>
@@ -59,80 +58,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The internal functions do not need the struct devfreq_event_dev *,
-so pass them the struct rockchip_dfi *. This is a preparation for
-adding perf support later which doesn't have a struct devfreq_event_dev *.
+The DFI unit can be used to measure DRAM utilization using perf. Add the
+node to the device tree. The DFI needs a rockchip,pmu phandle to the pmu
+containing registers for SDRAM configuration details. This is added in
+this patch as well.
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 0a568c5551699..d39db5de7f19c 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -72,9 +72,8 @@ struct rockchip_dfi {
- 	unsigned int channel_mask;
- };
+Notes:
+    Changes since v4:
+    - new patch
+
+ arch/arm64/boot/dts/rockchip/rk3588s.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
+index a3124bd2e092c..723a17ec04361 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
+@@ -397,6 +397,11 @@ scmi_shmem: sram@0 {
+ 		};
+ 	};
  
--static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
-+static void rockchip_dfi_start_hardware_counter(struct rockchip_dfi *dfi)
- {
--	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 	void __iomem *dfi_regs = dfi->regs;
++	pmu1grf: syscon@fd58a000 {
++		compatible = "rockchip,rk3588-pmugrf", "syscon", "simple-mfd";
++		reg = <0x0 0xfd58a000 0x0 0x10000>;
++	};
++
+ 	sys_grf: syscon@fd58c000 {
+ 		compatible = "rockchip,rk3588-sys-grf", "syscon";
+ 		reg = <0x0 0xfd58c000 0x0 0x1000>;
+@@ -1121,6 +1126,17 @@ qos_vop_m1: qos@fdf82200 {
+ 		reg = <0x0 0xfdf82200 0x0 0x20>;
+ 	};
  
- 	/* clear DDRMON_CTRL setting */
-@@ -102,18 +101,16 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 		       dfi_regs + DDRMON_CTRL);
- }
- 
--static void rockchip_dfi_stop_hardware_counter(struct devfreq_event_dev *edev)
-+static void rockchip_dfi_stop_hardware_counter(struct rockchip_dfi *dfi)
- {
--	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 	void __iomem *dfi_regs = dfi->regs;
- 
- 	writel_relaxed(HIWORD_UPDATE(0, DDRMON_CTRL_SOFTWARE_EN),
- 		       dfi_regs + DDRMON_CTRL);
- }
- 
--static void rockchip_dfi_read_counters(struct devfreq_event_dev *edev, struct dmc_count *count)
-+static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_count *count)
- {
--	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 	u32 i;
- 	void __iomem *dfi_regs = dfi->regs;
- 
-@@ -131,7 +128,7 @@ static int rockchip_dfi_disable(struct devfreq_event_dev *edev)
- {
- 	struct rockchip_dfi *dfi = devfreq_event_get_drvdata(edev);
- 
--	rockchip_dfi_stop_hardware_counter(edev);
-+	rockchip_dfi_stop_hardware_counter(dfi);
- 	clk_disable_unprepare(dfi->clk);
- 
- 	return 0;
-@@ -148,7 +145,7 @@ static int rockchip_dfi_enable(struct devfreq_event_dev *edev)
- 		return ret;
- 	}
- 
--	rockchip_dfi_start_hardware_counter(edev);
-+	rockchip_dfi_start_hardware_counter(dfi);
- 	return 0;
- }
- 
-@@ -166,7 +163,7 @@ static int rockchip_dfi_get_event(struct devfreq_event_dev *edev,
- 	u32 access = 0, total = 0;
- 	int i;
- 
--	rockchip_dfi_read_counters(edev, &count);
-+	rockchip_dfi_read_counters(dfi, &count);
- 
- 	/* We can only report one channel, so find the busiest one */
- 	for (i = 0; i < DMC_MAX_CHANNELS; i++) {
++	dfi: dfi@fe060000 {
++		reg = <0x00 0xfe060000 0x00 0x10000>;
++		compatible = "rockchip,rk3588-dfi";
++		interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH 0>,
++			     <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH 0>,
++			     <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH 0>,
++			     <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH 0>;
++		interrupt-names = "ch0", "ch1", "ch2", "ch3";
++		rockchip,pmu = <&pmu1grf>;
++	};
++
+ 	gmac1: ethernet@fe1c0000 {
+ 		compatible = "rockchip,rk3588-gmac", "snps,dwmac-4.20a";
+ 		reg = <0x0 0xfe1c0000 0x0 0x10000>;
 -- 
 2.39.2
 
