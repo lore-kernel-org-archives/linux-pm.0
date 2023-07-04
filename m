@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 958E9EB64DA
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CF24EB64DA
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:35:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230243AbjGDJfK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 05:35:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50638 "EHLO
+        id S231720AbjGDJfO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 05:35:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232130AbjGDJeY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:34:24 -0400
+        with ESMTP id S231608AbjGDJed (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:34:33 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 697A61BCD
-        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:33 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DAB3C1BD6
+        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:34 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOv-0006tz-RR; Tue, 04 Jul 2023 11:32:49 +0200
+        id 1qGcOx-0006xi-3x; Tue, 04 Jul 2023 11:32:51 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOu-00C09y-Jg; Tue, 04 Jul 2023 11:32:48 +0200
+        id 1qGcOw-00C0Aj-C0; Tue, 04 Jul 2023 11:32:50 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOq-002TxX-U5; Tue, 04 Jul 2023 11:32:44 +0200
+        id 1qGcOr-002Tz4-Fw; Tue, 04 Jul 2023 11:32:45 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,10 +41,11 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v7 01/26] PM / devfreq: rockchip-dfi: Make pmu regmap mandatory
-Date:   Tue,  4 Jul 2023 11:32:17 +0200
-Message-Id: <20230704093242.583575-2-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Conor Dooley <conor.dooley@microchip.com>
+Subject: [PATCH v7 23/26] dt-bindings: soc: rockchip: grf: add rockchip,rk3588-pmugrf
+Date:   Tue,  4 Jul 2023 11:32:39 +0200
+Message-Id: <20230704093242.583575-24-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230704093242.583575-1-s.hauer@pengutronix.de>
 References: <20230704093242.583575-1-s.hauer@pengutronix.de>
@@ -58,51 +59,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As a matter of fact the regmap_pmu already is mandatory because
-it is used unconditionally in the driver. Bail out gracefully in
-probe() rather than crashing later.
+Add rockchip,rk3588-pmugrf compatible string.
 
-Fixes: b9d1262bca0af ("PM / devfreq: event: support rockchip dfi controller")
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
 
 Notes:
-    Changes since v4:
-    - move to beginning of the series to make it easier to backport to stable
-    - Add a Fixes: tag
-    - add missing of_node_put()
+    Changes since v5:
+    - new patch
 
- drivers/devfreq/event/rockchip-dfi.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ Documentation/devicetree/bindings/soc/rockchip/grf.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 39ac069cabc75..74893c06aa087 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -193,14 +193,15 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, PTR_ERR(data->clk),
- 				     "Cannot get the clk pclk_ddr_mon\n");
- 
--	/* try to find the optional reference to the pmu syscon */
- 	node = of_parse_phandle(np, "rockchip,pmu", 0);
--	if (node) {
--		data->regmap_pmu = syscon_node_to_regmap(node);
--		of_node_put(node);
--		if (IS_ERR(data->regmap_pmu))
--			return PTR_ERR(data->regmap_pmu);
--	}
-+	if (!node)
-+		return dev_err_probe(&pdev->dev, -ENODEV, "Can't find pmu_grf registers\n");
-+
-+	data->regmap_pmu = syscon_node_to_regmap(node);
-+	of_node_put(node);
-+	if (IS_ERR(data->regmap_pmu))
-+		return PTR_ERR(data->regmap_pmu);
-+
- 	data->dev = dev;
- 
- 	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
+diff --git a/Documentation/devicetree/bindings/soc/rockchip/grf.yaml b/Documentation/devicetree/bindings/soc/rockchip/grf.yaml
+index 65a2d5a4f28d8..12f8fe4435584 100644
+--- a/Documentation/devicetree/bindings/soc/rockchip/grf.yaml
++++ b/Documentation/devicetree/bindings/soc/rockchip/grf.yaml
+@@ -52,6 +52,7 @@ properties:
+               - rockchip,rk3399-pmugrf
+               - rockchip,rk3568-grf
+               - rockchip,rk3568-pmugrf
++              - rockchip,rk3588-pmugrf
+               - rockchip,rv1108-grf
+               - rockchip,rv1108-pmugrf
+               - rockchip,rv1126-grf
 -- 
 2.39.2
 
