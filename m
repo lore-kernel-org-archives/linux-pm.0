@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0179CEB64DA
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 958E9EB64DA
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 09:35:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232144AbjGDJel (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 05:34:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51058 "EHLO
+        id S230243AbjGDJfK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 05:35:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50638 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232179AbjGDJeK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:34:10 -0400
+        with ESMTP id S232130AbjGDJeY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 05:34:24 -0400
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 151F0173F
-        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:25 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 697A61BCD
+        for <linux-pm@vger.kernel.org>; Tue,  4 Jul 2023 02:33:33 -0700 (PDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
         by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
         (Exim 4.92)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOw-0006u1-0c; Tue, 04 Jul 2023 11:32:50 +0200
+        id 1qGcOv-0006tz-RR; Tue, 04 Jul 2023 11:32:49 +0200
 Received: from [2a0a:edc0:0:1101:1d::28] (helo=dude02.red.stw.pengutronix.de)
         by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOv-00C0A7-3d; Tue, 04 Jul 2023 11:32:49 +0200
+        id 1qGcOu-00C09y-Jg; Tue, 04 Jul 2023 11:32:48 +0200
 Received: from sha by dude02.red.stw.pengutronix.de with local (Exim 4.94.2)
         (envelope-from <sha@pengutronix.de>)
-        id 1qGcOr-002Tye-BB; Tue, 04 Jul 2023 11:32:45 +0200
+        id 1qGcOq-002TxX-U5; Tue, 04 Jul 2023 11:32:44 +0200
 From:   Sascha Hauer <s.hauer@pengutronix.de>
 To:     linux-rockchip@lists.infradead.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
@@ -41,11 +41,10 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
         Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v7 17/26] PM / devfreq: rockchip-dfi: make register stride SoC specific
-Date:   Tue,  4 Jul 2023 11:32:33 +0200
-Message-Id: <20230704093242.583575-18-s.hauer@pengutronix.de>
+        Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v7 01/26] PM / devfreq: rockchip-dfi: Make pmu regmap mandatory
+Date:   Tue,  4 Jul 2023 11:32:17 +0200
+Message-Id: <20230704093242.583575-2-s.hauer@pengutronix.de>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230704093242.583575-1-s.hauer@pengutronix.de>
 References: <20230704093242.583575-1-s.hauer@pengutronix.de>
@@ -59,59 +58,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The currently supported RK3399 has a stride of 20 between the channel
-specific registers. Upcoming RK3588 has a different stride, so put
-the stride into driver data to make it configurable.
-While at it convert decimal 20 to hex 0x14 for consistency with RK3588
-which has a register stride 0x4000 and we want to write that in hex
-as well.
+As a matter of fact the regmap_pmu already is mandatory because
+it is used unconditionally in the driver. Bail out gracefully in
+probe() rather than crashing later.
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Fixes: b9d1262bca0af ("PM / devfreq: event: support rockchip dfi controller")
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/devfreq/event/rockchip-dfi.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+
+Notes:
+    Changes since v4:
+    - move to beginning of the series to make it easier to backport to stable
+    - Add a Fixes: tag
+    - add missing of_node_put()
+
+ drivers/devfreq/event/rockchip-dfi.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 969b62f071b83..85ec93fd41858 100644
+index 39ac069cabc75..74893c06aa087 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -112,6 +112,7 @@ struct rockchip_dfi {
- 	int active_events;
- 	int burst_len;
- 	int buswidth[DMC_MAX_CHANNELS];
-+	int ddrmon_stride;
- };
+@@ -193,14 +193,15 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+ 		return dev_err_probe(dev, PTR_ERR(data->clk),
+ 				     "Cannot get the clk pclk_ddr_mon\n");
  
- static int rockchip_dfi_enable(struct rockchip_dfi *dfi)
-@@ -189,13 +190,13 @@ static void rockchip_dfi_read_counters(struct rockchip_dfi *dfi, struct dmc_coun
- 		if (!(dfi->channel_mask & BIT(i)))
- 			continue;
- 		c->c[i].read_access = readl_relaxed(dfi_regs +
--				DDRMON_CH0_RD_NUM + i * 20);
-+				DDRMON_CH0_RD_NUM + i * dfi->ddrmon_stride);
- 		c->c[i].write_access = readl_relaxed(dfi_regs +
--				DDRMON_CH0_WR_NUM + i * 20);
-+				DDRMON_CH0_WR_NUM + i * dfi->ddrmon_stride);
- 		c->c[i].access = readl_relaxed(dfi_regs +
--				DDRMON_CH0_DFI_ACCESS_NUM + i * 20);
-+				DDRMON_CH0_DFI_ACCESS_NUM + i * dfi->ddrmon_stride);
- 		c->c[i].clock_cycles = readl_relaxed(dfi_regs +
--				DDRMON_CH0_COUNT_NUM + i * 20);
-+				DDRMON_CH0_COUNT_NUM + i * dfi->ddrmon_stride);
- 	}
- }
- 
-@@ -664,6 +665,8 @@ static int rk3399_dfi_init(struct rockchip_dfi *dfi)
- 	dfi->buswidth[0] = FIELD_GET(RK3399_PMUGRF_OS_REG2_BW_CH0, val) == 0 ? 4 : 2;
- 	dfi->buswidth[1] = FIELD_GET(RK3399_PMUGRF_OS_REG2_BW_CH1, val) == 0 ? 4 : 2;
- 
-+	dfi->ddrmon_stride = 0x14;
+-	/* try to find the optional reference to the pmu syscon */
+ 	node = of_parse_phandle(np, "rockchip,pmu", 0);
+-	if (node) {
+-		data->regmap_pmu = syscon_node_to_regmap(node);
+-		of_node_put(node);
+-		if (IS_ERR(data->regmap_pmu))
+-			return PTR_ERR(data->regmap_pmu);
+-	}
++	if (!node)
++		return dev_err_probe(&pdev->dev, -ENODEV, "Can't find pmu_grf registers\n");
 +
- 	return 0;
- };
++	data->regmap_pmu = syscon_node_to_regmap(node);
++	of_node_put(node);
++	if (IS_ERR(data->regmap_pmu))
++		return PTR_ERR(data->regmap_pmu);
++
+ 	data->dev = dev;
  
+ 	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
 -- 
 2.39.2
 
