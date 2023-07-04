@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 498B9EB64DD
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 08:28:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FC43EB64DD
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jul 2023 08:32:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231528AbjGDI2p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jul 2023 04:28:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48810 "EHLO
+        id S231796AbjGDIcT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jul 2023 04:32:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230145AbjGDI2n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 04:28:43 -0400
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0FD8B1;
-        Tue,  4 Jul 2023 01:28:40 -0700 (PDT)
+        with ESMTP id S229793AbjGDIbf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2023 04:31:35 -0400
+Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::223])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6C3FDC;
+        Tue,  4 Jul 2023 01:31:31 -0700 (PDT)
 X-GND-Sasl: miquel.raynal@bootlin.com
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-        t=1688459318;
+        t=1688459489;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=TtTNsVLOJ1m9cODrkVK0gfCj4MpOrmQEjXjQjzvPOq8=;
-        b=Ue9HOwCdm2WwblZXd4hpI5ezd9fD9uauiv6dbwEDRLXGeUt3K5x5d5drm3LI8/l83RFRq/
-        GQz9i7k0OSVpFv+/hoJQHVrp/aae8LAz3QwEnzvDX4sm+AEGU1TgD6u5XkSE9F2OK3DwY9
-        xWzZ7+BMvKF5JhfAsjZQgjA+CVnZmnnnB4mpYnU48V0u5aVFVf1WpV9lPeq/YbnZpqfma9
-        nMsHauFIG7w0N+GUmKjobmYDL02uaZDZrAk079Gc/xIO7Om0gJlypBoN2pUfxggT8bUTzj
-        RAd1N74ZHsvGJaF/xYacsFo6sdZde/+GwWDLbj5jeJTQCpBmaP8/6SV0TUyC9Q==
+        bh=C/2nxspQ98fwNJAu0SjHz3G4mz9iwCTkXgxHl1xUEiQ=;
+        b=l7RebWX60EbI/s4YPsMUh6Ly4U5Tigled8rWGTkd2NfIhz5Smw5HXzAVucxqs8LK4H3BJS
+        7hj2xaPPyqT0qySLVr0wgcerksXJLZuBMcrmjp+Df/17szZzo/x0sEfv6c42QHaYlhR62w
+        nV0QPdDsJZ7IwJu2RHHX5mc85kislZlYZKl3nV4rEHljBvnK4lgGhX1g8YE0earPmi5/cH
+        +xO3wUf5ilERm8EIrj81OVSbuq6MT2KXap0C+AfbQNKnyB5p1z8swNoSDXR/9/gekBwpJH
+        kzjZMaN/ShOEzVuRKDThZ8+yzkSt5rRzbt5LDU/iWzgA0hqm20gPkJGj5AKZ9g==
 X-GND-Sasl: miquel.raynal@bootlin.com
 X-GND-Sasl: miquel.raynal@bootlin.com
 X-GND-Sasl: miquel.raynal@bootlin.com
@@ -61,9 +61,10 @@ X-GND-Sasl: miquel.raynal@bootlin.com
 X-GND-Sasl: miquel.raynal@bootlin.com
 X-GND-Sasl: miquel.raynal@bootlin.com
 X-GND-Sasl: miquel.raynal@bootlin.com
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 8775A1C000D;
-        Tue,  4 Jul 2023 08:28:31 +0000 (UTC)
-Date:   Tue, 4 Jul 2023 10:28:30 +0200
+X-GND-Sasl: miquel.raynal@bootlin.com
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 1682C60013;
+        Tue,  4 Jul 2023 08:30:27 +0000 (UTC)
+Date:   Tue, 4 Jul 2023 10:30:26 +0200
 From:   Miquel Raynal <miquel.raynal@bootlin.com>
 To:     Neil Armstrong <neil.armstrong@linaro.org>
 Cc:     Michael Turquette <mturquette@baylibre.com>,
@@ -93,14 +94,15 @@ Cc:     Michael Turquette <mturquette@baylibre.com>,
         linux-stm32@st-md-mailman.stormreply.com,
         linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-oxnas@groups.io,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Arnd Bergmann <arnd@arndb.de>,
         Daniel Golle <daniel@makrotopia.org>
-Subject: Re: [PATCH v2 05/15] nand: oxnas_nand: remove obsolete raw nand
- driver
-Message-ID: <20230704102830.2c6db540@xps-13>
-In-Reply-To: <20230630-topic-oxnas-upstream-remove-v2-5-fb6ab3dea87c@linaro.org>
+Subject: Re: [PATCH v2 06/15] dt-bindings: mtd: oxnas-nand: remove obsolete
+ bindings
+Message-ID: <20230704103026.6db56915@xps-13>
+In-Reply-To: <20230630-topic-oxnas-upstream-remove-v2-6-fb6ab3dea87c@linaro.org>
 References: <20230630-topic-oxnas-upstream-remove-v2-0-fb6ab3dea87c@linaro.org>
-        <20230630-topic-oxnas-upstream-remove-v2-5-fb6ab3dea87c@linaro.org>
+        <20230630-topic-oxnas-upstream-remove-v2-6-fb6ab3dea87c@linaro.org>
 Organization: Bootlin
 X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
@@ -112,18 +114,23 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Hi Neil,
 
-neil.armstrong@linaro.org wrote on Fri, 30 Jun 2023 18:58:30 +0200:
+neil.armstrong@linaro.org wrote on Fri, 30 Jun 2023 18:58:31 +0200:
 
 > Due to lack of maintenance and stall of development for a few years now,
-> and since no new features will ever be added upstream, remove support
-> for OX810 and OX820 nand.
+> and since no new features will ever be added upstream, remove the
+> for OX810 and OX820 nand bindings.
 >=20
+> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > Acked-by: Linus Walleij <linus.walleij@linaro.org>
 > Acked-by: Arnd Bergmann <arnd@arndb.de>
 > Acked-by: Daniel Golle <daniel@makrotopia.org>
 > Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
 
 Acked-by: Miquel Raynal <miquel.raynal@bootlin.com>
+
+I assume these two mtd related patches will be picked-up through the
+soc tree as well, if that's not the case just ping me and I'll take
+them.
 
 Thanks,
 Miqu=C3=A8l
