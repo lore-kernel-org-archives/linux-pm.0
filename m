@@ -2,99 +2,137 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CC7FEB64DC
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Jul 2023 15:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33DE7C0015E
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Jul 2023 15:39:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233781AbjGFPir (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 6 Jul 2023 11:38:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41602 "EHLO
+        id S233560AbjGFPjD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 6 Jul 2023 11:39:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233200AbjGFPiq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2023 11:38:46 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 400D11BC2;
-        Thu,  6 Jul 2023 08:38:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=YwAEpZO7Vu5hoax5tz5QpnX5k8pjtsK6yDO/dOzPntw=; b=LJt1aHPpR1VtNNU97F662mFcBQ
-        04pv5pjmhELPxcfY8IU2J9oyhfgQvItd1fUo/P+Wom3ADKBICTxeaU2ubravoUlJ9bJKThqcbtmZO
-        YHZ6Bq5JNF5Oy1kZk0vGrojv9a9LNU4bL+WXTD5k/gljEqzdXg69aNBObe/lnHCHtRlMc6Ppc7Hqe
-        +NefvxaKjDH4eBZ/aYpgK8N4uyEQGVFSG36iqC/zjMjHjPuCdtgFFvp4F+STCUxI3HsTMMx8Jecfh
-        X5dQPxytEjbEWkMaTy11b/rkROV7wOirXDfTif06nI996QOXUgedgb0owSphnlvJb3u4X61SBTklq
-        DymCsIxA==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.96 #2 (Red Hat Linux))
-        id 1qHR44-0021w3-0C;
-        Thu, 06 Jul 2023 15:38:40 +0000
-Date:   Thu, 6 Jul 2023 08:38:40 -0700
-From:   Christoph Hellwig <hch@infradead.org>
-To:     Jan Kara <jack@suse.cz>
-Cc:     linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        Jens Axboe <axboe@kernel.dk>,
-        Christoph Hellwig <hch@infradead.org>,
-        Alasdair Kergon <agk@redhat.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        "Darrick J. Wong" <djwong@kernel.org>,
-        Dave Kleikamp <shaggy@kernel.org>,
-        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
-        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
-        Jack Wang <jinpu.wang@ionos.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        jfs-discussion@lists.sourceforge.net,
-        Joern Engel <joern@lazybastard.org>,
-        Joseph Qi <joseph.qi@linux.alibaba.com>,
-        Kent Overstreet <kent.overstreet@gmail.com>,
-        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
-        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
-        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-xfs@vger.kernel.org,
-        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
-        Mike Snitzer <snitzer@kernel.org>,
-        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
-        reiserfs-devel@vger.kernel.org,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Song Liu <song@kernel.org>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        xen-devel@lists.xenproject.org
-Subject: Re: [PATCH 01/32] block: Provide blkdev_get_handle_* functions
-Message-ID: <ZKbgAG5OoHVyUKOG@infradead.org>
-References: <20230629165206.383-1-jack@suse.cz>
- <20230704122224.16257-1-jack@suse.cz>
+        with ESMTP id S233787AbjGFPit (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2023 11:38:49 -0400
+Received: from madras.collabora.co.uk (madras.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e5ab])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76F7F19B7;
+        Thu,  6 Jul 2023 08:38:47 -0700 (PDT)
+Received: from notapiano.myfiosgateway.com (zone.collabora.co.uk [167.235.23.81])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: nfraprado)
+        by madras.collabora.co.uk (Postfix) with ESMTPSA id BC1106606FD9;
+        Thu,  6 Jul 2023 16:38:42 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1688657926;
+        bh=aPgoUi/+QUCf96kwnPphxcT4zrPIaJAdJ/Os47P4liE=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=fs5thJ4JWoekCvvCkvl5zqxEhPHJfQbXAXZmLiVmQ6u8sCtHzWLqE+j/Sj34a2hZ0
+         G+2Xs1vXGQfoOuTzZZcXKendJ+Alg86ubKoWGvQt3Aul7xcBO4wJIlQqzijCDF9uHb
+         b1/scgVxVcu9qzV/EK8oKPmXh5qRn2B+KZuSuZnZj9EeCxRrS4vX5NKWWn4OVAeIWn
+         K9V5ABdd3b9wFvBsguXgN0vgXms7FsVEbDt9bbyWHC0Cc8lwebPezlyx+UE5silFDi
+         wRfoRffK14OOXaQ1dLOpioedu9XhtT2cJocpw0cYEBtU9CLjwo85lQsZ/ML/cEp1pq
+         UOjqmYrrlPtBQ==
+From:   =?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= 
+        <nfraprado@collabora.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Alexandre Bailon <abailon@baylibre.com>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Chen-Yu Tsai <wenst@chromium.org>,
+        Alexandre Mergnat <amergnat@baylibre.com>,
+        kernel@collabora.com,
+        =?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= 
+        <nfraprado@collabora.com>, Amit Kucheria <amitk@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org
+Subject: [PATCH v3 3/6] thermal/drivers/mediatek/lvts_thermal: Use offset threshold for IRQ
+Date:   Thu,  6 Jul 2023 11:37:34 -0400
+Message-ID: <20230706153823.201943-4-nfraprado@collabora.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230706153823.201943-1-nfraprado@collabora.com>
+References: <20230706153823.201943-1-nfraprado@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230704122224.16257-1-jack@suse.cz>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 04, 2023 at 02:21:28PM +0200, Jan Kara wrote:
-> Create struct bdev_handle that contains all parameters that need to be
-> passed to blkdev_put() and provide blkdev_get_handle_* functions that
-> return this structure instead of plain bdev pointer. This will
-> eventually allow us to pass one more argument to blkdev_put() without
-> too much hassle.
+There are two kinds of temperature monitoring interrupts available:
+* High Offset, Low Offset
+* Hot, Hot to normal, Cold
 
-Can we use the opportunity to come up with better names?  blkdev_get_*
-was always a rather horrible naming convention for something that
-ends up calling into ->open.
+The code currently uses the hot/h2n/cold interrupts, however in a way
+that doesn't work: the cold threshold is left uninitialized, which
+prevents the other thresholds from ever triggering, and the h2n
+interrupt is used as the lower threshold, which prevents the hot
+interrupt from triggering again after the thresholds are updated by the
+thermal framework, since a hot interrupt can only trigger again after
+the hot to normal interrupt has been triggered.
 
-What about:
+But better yet than addressing those issues, is to use the high/low
+offset interrupts instead. This way only two thresholds need to be
+managed, which have a simpler state machine, making them a better match
+to the thermal framework's high and low thresholds.
 
-struct bdev_handle *bdev_open_by_dev(dev_t dev, blk_mode_t mode, void *holder,
-		const struct blk_holder_ops *hops);
-struct bdev_handle *bdev_open_by_path(dev_t dev, blk_mode_t mode,
-		void *holder, const struct blk_holder_ops *hops);
-void bdev_release(struct bdev_handle *handle);
+Fixes: f5f633b18234 ("thermal/drivers/mediatek: Add the Low Voltage Thermal Sensor driver")
+Signed-off-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
 
-?
+---
+
+(no changes since v2)
+
+Changes in v2:
+- Added this commit
+
+ drivers/thermal/mediatek/lvts_thermal.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/mediatek/lvts_thermal.c
+index 8082195f53ae..e7cbfe0426b5 100644
+--- a/drivers/thermal/mediatek/lvts_thermal.c
++++ b/drivers/thermal/mediatek/lvts_thermal.c
+@@ -298,9 +298,9 @@ static int lvts_set_trips(struct thermal_zone_device *tz, int low, int high)
+ 	u32 raw_high = lvts_temp_to_raw(high);
+ 
+ 	/*
+-	 * Hot to normal temperature threshold
++	 * Low offset temperature threshold
+ 	 *
+-	 * LVTS_H2NTHRE
++	 * LVTS_OFFSETL
+ 	 *
+ 	 * Bits:
+ 	 *
+@@ -309,13 +309,13 @@ static int lvts_set_trips(struct thermal_zone_device *tz, int low, int high)
+ 	if (low != -INT_MAX) {
+ 		pr_debug("%s: Setting low limit temperature interrupt: %d\n",
+ 			 thermal_zone_device_type(tz), low);
+-		writel(raw_low, LVTS_H2NTHRE(base));
++		writel(raw_low, LVTS_OFFSETL(base));
+ 	}
+ 
+ 	/*
+-	 * Hot temperature threshold
++	 * High offset temperature threshold
+ 	 *
+-	 * LVTS_HTHRE
++	 * LVTS_OFFSETH
+ 	 *
+ 	 * Bits:
+ 	 *
+@@ -323,7 +323,7 @@ static int lvts_set_trips(struct thermal_zone_device *tz, int low, int high)
+ 	 */
+ 	pr_debug("%s: Setting high limit temperature interrupt: %d\n",
+ 		 thermal_zone_device_type(tz), high);
+-	writel(raw_high, LVTS_HTHRE(base));
++	writel(raw_high, LVTS_OFFSETH(base));
+ 
+ 	return 0;
+ }
+-- 
+2.41.0
+
