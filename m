@@ -2,103 +2,142 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11FC3EB64D9
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Jul 2023 20:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16CC0EB64DA
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Jul 2023 20:38:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231316AbjGGUhx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 Jul 2023 16:37:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50834 "EHLO
+        id S230145AbjGGUh7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 Jul 2023 16:37:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50902 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230145AbjGGUhw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2023 16:37:52 -0400
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8266E1986
-        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2023 13:37:51 -0700 (PDT)
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-3141c8a6f30so2409619f8f.1
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2023 13:37:51 -0700 (PDT)
+        with ESMTP id S232560AbjGGUh5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2023 16:37:57 -0400
+Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A350A1994
+        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2023 13:37:56 -0700 (PDT)
+Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-3fbf1b82dc7so25040295e9.2
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2023 13:37:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688762270; x=1691354270;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=g4HspQwLyN/0KAF6AN2JANGXDGJX10XlJGv3FkdFNB0=;
-        b=Ba1f/ZqrWpPeZua5hrhiX1yu+18Aq/SUp2ZUZdpBJ9lbeMsUD1LejL8c4xqHz6oJhA
-         Sl3MPw3LaQ/r4Uit3N7tIILLyCcUQ+5bnpQHEhHYKnm01O4xNYg88/8QuqfKcFm8K18R
-         lBVLbMceymzB8wFF4PFMP0gJCiOfJz7PVNFg/VJExJuv1ZAjEW6w7ciu7TNMddiWk8Tv
-         nRkCaSHa8eKcHmtvjuk1vONVTJrWPITKZzlEnoHtbBUYFNvtKmjvhjaOn4lN32ErSU5W
-         9ivpVJHLkaDUtJSBn+xqNdDYEGxGjNJ7lSaRl9v0R46kxU4UNbvFP8W7Q37Pjg/T9h1B
-         wqpA==
+        d=linaro.org; s=google; t=1688762275; x=1691354275;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=INi3JugwL05IgttziwnbGPvMFEJjhzc+9jyw1opOkqE=;
+        b=ARupnTbks4h3FT95+Y36hjBDayLzdEXaLdFPPyr+ek3g+mJSB/XJYX++SAyGlBMAb/
+         jMfh1kQ1dMnmOwlxCYORpntRz6a6D/j5C9kxQXyv8STSihhLMggreKVFyIoh8b0QFI6j
+         gOxVQ2XqTMrmwEybx7nUyYG67ccuGB9YL3qp9GVxZSBcGQyGqISD+h7r6O86bztPtrab
+         woGGaQfuANLzpBnzv5Y2yTEZLYbKnJI3JxG1tsAsASUixNLJwFUMrjl9PVkTf0TvbWJe
+         JGmMA3SmmkylQsYK1qwa6i7SVb1C0Ikl5qsXyb0wUHiBtwbOsCsL+yqIYY0wA/FdBj8E
+         EOaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688762270; x=1691354270;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=g4HspQwLyN/0KAF6AN2JANGXDGJX10XlJGv3FkdFNB0=;
-        b=bvNT0Qx+woj3Xba8bHz1s9GPAE6cPa2fAfgLEMRig/cQF4FwlrzcdXJRQaw380J9X7
-         8lQ7AF6TOh7TYdGf2Qe++Ingfu+ybpdCe2IEwsIRg66MMP40XL29j12DWsTf5K4Pjp1W
-         WaFAn3blWr4AsjMILW37gQCfHt2qZtXl2cv3ea8APteZzHTdDMROs4JxffJuC7KQ9sHC
-         n5C5iLaBeQ3MJXAJVTjJ66CQDp+ZDhpBWwg0+y7f3jPeGm//+gAFxzZUHdf2/LEkmGC5
-         tBYO1FrZqM7tYcBQ+POfb/lK3ab6cW9xPLtB3Tim9IUEcByXOnVvVbKWfW0LhOSH2sW5
-         6BJw==
-X-Gm-Message-State: ABy/qLbEBzsAbYrdg1eFryzDgT+b97PlZcZYSkUXjuOt8+S927Z7SkAX
-        bX+V7r1aTY9KAp/ZPpvGHICxiV5kU2QG2E0ixiY=
-X-Google-Smtp-Source: APBJJlF47znCRWOhugTz/uinATCfMNp8DhqRHIDR/KHzbL3FP/enIaX40ctSi4pY9QKXNw62dK9fEg==
-X-Received: by 2002:adf:ee51:0:b0:314:25d:c8f4 with SMTP id w17-20020adfee51000000b00314025dc8f4mr4949402wro.2.1688762269939;
-        Fri, 07 Jul 2023 13:37:49 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1688762275; x=1691354275;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=INi3JugwL05IgttziwnbGPvMFEJjhzc+9jyw1opOkqE=;
+        b=g+24SGwWVUaC3UkQQYj23wUWhkhhcomEcPg0qnrKZBBmjX01csqGGGtV+jQb/zufGb
+         8ug9EKOJWcp4epO4u5K6sZ8oDKRjwX827102RltCpp3ajGTERsMmAE8rWnGIpbYxBBiE
+         iZvfQM7OQuRGsiau32up9ae+Fs4e0jbL6XhDZVwXzPN7hmEU9QTJkYGdDVXTNhhNUGot
+         7dQUUQlBN3GUj5e7fc4p+5rPBCQsWycc4qHC/VSINne/9ILM0EdQByjHGFIr8MbXKmKn
+         hN+S+s8j4HuD0AYY/zWsl4ogrv28vUk1rCg9Juo33vgc0zQ/lXGkboSfOmYl2v3LFFSb
+         v4Ag==
+X-Gm-Message-State: ABy/qLbRadVAO1RMPfBzJqAywtb8as3VU/VRGnhI2oE171tIBhOcei9v
+        F3XwGYvmpglUhjBR4j33GYW75Q==
+X-Google-Smtp-Source: APBJJlE3ves+dG+pjqCsX+JqO34D54faHcVRS3DfpFlTo0Qi/49l4OTkpixz/vyc/5OcmUfGCN7guA==
+X-Received: by 2002:a05:6000:887:b0:313:f4b9:99cc with SMTP id cs7-20020a056000088700b00313f4b999ccmr5156584wrb.68.1688762275135;
+        Fri, 07 Jul 2023 13:37:55 -0700 (PDT)
 Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id i4-20020adfefc4000000b003143be36d99sm5260674wrp.58.2023.07.07.13.37.49
+        by smtp.gmail.com with ESMTPSA id i4-20020adfefc4000000b003143be36d99sm5260674wrp.58.2023.07.07.13.37.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Jul 2023 13:37:49 -0700 (PDT)
+        Fri, 07 Jul 2023 13:37:54 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     linux-pm@vger.kernel.org, thierry.reding@gmail.com,
-        linux-kernel@vger.kernel.org, srinivas.pandruvada@linux.intel.com
-Subject: [PATCH v2 0/4] One more step to the thermal zone structure encapsulation
-Date:   Fri,  7 Jul 2023 22:37:27 +0200
-Message-Id: <20230707203731.848188-1-daniel.lezcano@linaro.org>
+        linux-kernel@vger.kernel.org, srinivas.pandruvada@linux.intel.com,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Dhruva Gole <d-gole@ti.com>,
+        Heiko Stuebner <heiko@sntech.de>,
+        "Lee, Chun-Yi" <joeyli.kernel@gmail.com>,
+        ye xingchen <ye.xingchen@zte.com.cn>
+Subject: [PATCH v2 4/4] thermal/drivers/int340x: Do not check the thermal zone state
+Date:   Fri,  7 Jul 2023 22:37:31 +0200
+Message-Id: <20230707203731.848188-5-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230707203731.848188-1-daniel.lezcano@linaro.org>
+References: <20230707203731.848188-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The series provides more changes to self-encapsulate the thermal zone device
-structure in order to protect wild accesses to the thermal zone device
-internals, especially the trip points and the locks.
+The driver is accessing the thermal zone state to ensure the state is
+different from the one we want to set.
 
-The first patch adds a macro to warn at compilation time if the
-thermal_core.h is included in a file not belonging to the thermal core
-code. One warning will happen with the nvidia drivers but this is in
-the way to be solved.
+We don't want the driver to access the thermal zone device internals.
 
-The second patch reorders the headers inclusion in the core code.
+Actually, the thermal core code already checks if the thermal zone's
+state is different before calling this function, thus this check is
+duplicate.
 
-The next patches makes the int340x drivers to use the thermal trip
-update above and the different accessors for thermal zone structure.
+Remove it.
 
-Daniel Lezcano (4):
-  thermal/core: Hardening the self-encapsulation
-  thermal/core: Reorder the headers inclusion
-  thermal/drivers/int3400: Use thermal zone device wrappers
-  thermal/drivers/int340x: Do not check the thermal zone state
+Acked-by: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ .../intel/int340x_thermal/int3400_thermal.c   | 32 ++++++++-----------
+ 1 file changed, 14 insertions(+), 18 deletions(-)
 
- drivers/thermal/gov_bang_bang.c               |  1 +
- drivers/thermal/gov_fair_share.c              |  1 +
- drivers/thermal/gov_power_allocator.c         |  7 +--
- drivers/thermal/gov_step_wise.c               |  1 +
- drivers/thermal/gov_user_space.c              |  1 +
- .../intel/int340x_thermal/int3400_thermal.c   | 44 +++++++++----------
- drivers/thermal/thermal_acpi.c                |  1 +
- drivers/thermal/thermal_core.c                |  7 +--
- drivers/thermal/thermal_core.h                |  4 ++
- drivers/thermal/thermal_helpers.c             |  1 +
- drivers/thermal/thermal_hwmon.c               |  1 +
- drivers/thermal/thermal_netlink.c             |  1 +
- drivers/thermal/thermal_of.c                  |  1 +
- drivers/thermal/thermal_sysfs.c               |  1 +
- drivers/thermal/thermal_trip.c                |  1 +
- 15 files changed, 45 insertions(+), 28 deletions(-)
-
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index 72a6e28ded2e..c40b03d6c29f 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -503,32 +503,28 @@ static int int3400_thermal_change_mode(struct thermal_zone_device *thermal,
+ {
+ 	struct int3400_thermal_priv *priv = thermal_zone_device_priv(thermal);
+ 	int result = 0;
++	int enabled;
+ 
+ 	if (!priv)
+ 		return -EINVAL;
+ 
+-	if (mode != thermal->mode) {
+-		int enabled;
++	enabled = mode == THERMAL_DEVICE_ENABLED;
+ 
+-		enabled = mode == THERMAL_DEVICE_ENABLED;
+-
+-		if (priv->os_uuid_mask) {
+-			if (!enabled) {
+-				priv->os_uuid_mask = 0;
+-				result = set_os_uuid_mask(priv, priv->os_uuid_mask);
+-			}
+-			goto eval_odvp;
++	if (priv->os_uuid_mask) {
++		if (!enabled) {
++			priv->os_uuid_mask = 0;
++			result = set_os_uuid_mask(priv, priv->os_uuid_mask);
+ 		}
+-
+-		if (priv->current_uuid_index < 0 ||
+-		    priv->current_uuid_index >= INT3400_THERMAL_MAXIMUM_UUID)
+-			return -EINVAL;
+-
+-		result = int3400_thermal_run_osc(priv->adev->handle,
+-						 int3400_thermal_uuids[priv->current_uuid_index],
+-						 &enabled);
++		goto eval_odvp;
+ 	}
+ 
++	if (priv->current_uuid_index < 0 ||
++	    priv->current_uuid_index >= INT3400_THERMAL_MAXIMUM_UUID)
++		return -EINVAL;
++
++	result = int3400_thermal_run_osc(priv->adev->handle,
++					 int3400_thermal_uuids[priv->current_uuid_index],
++					 &enabled);
+ eval_odvp:
+ 	evaluate_odvp(priv);
+ 
 -- 
 2.34.1
 
