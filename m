@@ -2,65 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16CC0EB64DA
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8316CC001DF
 	for <linux-pm@archiver.kernel.org>; Fri,  7 Jul 2023 20:38:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230145AbjGGUh7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 Jul 2023 16:37:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50902 "EHLO
+        id S232314AbjGGUiA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 Jul 2023 16:38:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50862 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232560AbjGGUh5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2023 16:37:57 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A350A1994
-        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2023 13:37:56 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-3fbf1b82dc7so25040295e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2023 13:37:56 -0700 (PDT)
+        with ESMTP id S232322AbjGGUhy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2023 16:37:54 -0400
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D27261FF9
+        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2023 13:37:52 -0700 (PDT)
+Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-313f1085ac2so2332331f8f.1
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2023 13:37:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1688762275; x=1691354275;
+        d=linaro.org; s=google; t=1688762271; x=1691354271;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=INi3JugwL05IgttziwnbGPvMFEJjhzc+9jyw1opOkqE=;
-        b=ARupnTbks4h3FT95+Y36hjBDayLzdEXaLdFPPyr+ek3g+mJSB/XJYX++SAyGlBMAb/
-         jMfh1kQ1dMnmOwlxCYORpntRz6a6D/j5C9kxQXyv8STSihhLMggreKVFyIoh8b0QFI6j
-         gOxVQ2XqTMrmwEybx7nUyYG67ccuGB9YL3qp9GVxZSBcGQyGqISD+h7r6O86bztPtrab
-         woGGaQfuANLzpBnzv5Y2yTEZLYbKnJI3JxG1tsAsASUixNLJwFUMrjl9PVkTf0TvbWJe
-         JGmMA3SmmkylQsYK1qwa6i7SVb1C0Ikl5qsXyb0wUHiBtwbOsCsL+yqIYY0wA/FdBj8E
-         EOaw==
+        bh=yUcFRaFpRqekh1XutoF5FSJVV/l/MywjnadXba/M7Ls=;
+        b=N6kGPoHEYocK0GLv1K4DMPcmhTN9rJUEJYHQDBpPnfUl7IyxvK6/Ta+cmCpT9vbujb
+         T8ySrUdHyECVCmx17VBkSNP2xyH84fTiKPMpFn/JRSzACYvPlQnUpN3eEvAWTuEek4NE
+         Z3lzcFeqAnlPOyN6Or0QhPdZaxYXvknAIfZUBMVtEqMYAt/Qs6sRoRCd+XYxvpTa97Tq
+         SWA4fCtMO3gUqH5BCbR1BpSspfdsaT7hzX57Lf8ZTNmZJjw+T9GNI/fcPgmMCsJNoeTM
+         K0VryCKVNLk0E6BTgEOa5sU7t3oDtI/hGZOfeLzup+iHj1SR3LVw/uUfP3dgODdRdBrB
+         g2vQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1688762275; x=1691354275;
+        d=1e100.net; s=20221208; t=1688762271; x=1691354271;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=INi3JugwL05IgttziwnbGPvMFEJjhzc+9jyw1opOkqE=;
-        b=g+24SGwWVUaC3UkQQYj23wUWhkhhcomEcPg0qnrKZBBmjX01csqGGGtV+jQb/zufGb
-         8ug9EKOJWcp4epO4u5K6sZ8oDKRjwX827102RltCpp3ajGTERsMmAE8rWnGIpbYxBBiE
-         iZvfQM7OQuRGsiau32up9ae+Fs4e0jbL6XhDZVwXzPN7hmEU9QTJkYGdDVXTNhhNUGot
-         7dQUUQlBN3GUj5e7fc4p+5rPBCQsWycc4qHC/VSINne/9ILM0EdQByjHGFIr8MbXKmKn
-         hN+S+s8j4HuD0AYY/zWsl4ogrv28vUk1rCg9Juo33vgc0zQ/lXGkboSfOmYl2v3LFFSb
-         v4Ag==
-X-Gm-Message-State: ABy/qLbRadVAO1RMPfBzJqAywtb8as3VU/VRGnhI2oE171tIBhOcei9v
-        F3XwGYvmpglUhjBR4j33GYW75Q==
-X-Google-Smtp-Source: APBJJlE3ves+dG+pjqCsX+JqO34D54faHcVRS3DfpFlTo0Qi/49l4OTkpixz/vyc/5OcmUfGCN7guA==
-X-Received: by 2002:a05:6000:887:b0:313:f4b9:99cc with SMTP id cs7-20020a056000088700b00313f4b999ccmr5156584wrb.68.1688762275135;
-        Fri, 07 Jul 2023 13:37:55 -0700 (PDT)
+        bh=yUcFRaFpRqekh1XutoF5FSJVV/l/MywjnadXba/M7Ls=;
+        b=j8Gso6sdhjtbVLw4FRPz9OI3GZ5DzXB6lgCzZyA1+km1D0oOyOspA6VPKT8GagbEwG
+         NSLNUOE3tOeLdwheaTjLKKISVLMzBBsoxWA/uVmDdHVrNrcZEGPL6/lwWJzXR9tu2/Pr
+         tfGKCI1kBYY+/50XWunyXk751q4SQhsDpuHgeGHkf5l7Ir4j80lXmTPF8AE7fVDUHUgi
+         byZzcmCvLohdImoDqhKxmUML8RWDgHxwATz/Dnyz6OTXqZo7cBjVyoTSltWYXCOvPwNk
+         uNYI1Y3XjYS+XJgv+eRD8acS3jBuJm1qeBTN1A03jfZCKLSircRLLPdIjixYOzzHSQmZ
+         75xQ==
+X-Gm-Message-State: ABy/qLb3AJlSFMLuyOgDgnGE9y9E5//GTfBt0c64r9ECnUzCPZCAAe9T
+        DO3Juygk02Bfqv3pfZnVJU98LA==
+X-Google-Smtp-Source: APBJJlGUPPMDg0BAP/ewPfJ5t0eKHzjC40OAub6ONAm9mN5qz2r2Pjv2SffMR8kpntYaWX+Ue7TP8A==
+X-Received: by 2002:adf:ee03:0:b0:314:15b7:1fb4 with SMTP id y3-20020adfee03000000b0031415b71fb4mr4868023wrn.52.1688762271183;
+        Fri, 07 Jul 2023 13:37:51 -0700 (PDT)
 Received: from mai.. (146725694.box.freepro.com. [130.180.211.218])
-        by smtp.gmail.com with ESMTPSA id i4-20020adfefc4000000b003143be36d99sm5260674wrp.58.2023.07.07.13.37.54
+        by smtp.gmail.com with ESMTPSA id i4-20020adfefc4000000b003143be36d99sm5260674wrp.58.2023.07.07.13.37.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Jul 2023 13:37:54 -0700 (PDT)
+        Fri, 07 Jul 2023 13:37:50 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     linux-pm@vger.kernel.org, thierry.reding@gmail.com,
         linux-kernel@vger.kernel.org, srinivas.pandruvada@linux.intel.com,
         Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Dhruva Gole <d-gole@ti.com>,
-        Heiko Stuebner <heiko@sntech.de>,
-        "Lee, Chun-Yi" <joeyli.kernel@gmail.com>,
-        ye xingchen <ye.xingchen@zte.com.cn>
-Subject: [PATCH v2 4/4] thermal/drivers/int340x: Do not check the thermal zone state
-Date:   Fri,  7 Jul 2023 22:37:31 +0200
-Message-Id: <20230707203731.848188-5-daniel.lezcano@linaro.org>
+        Zhang Rui <rui.zhang@intel.com>,
+        Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH v2 1/4] thermal/core: Hardening the self-encapsulation
+Date:   Fri,  7 Jul 2023 22:37:28 +0200
+Message-Id: <20230707203731.848188-2-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230707203731.848188-1-daniel.lezcano@linaro.org>
 References: <20230707203731.848188-1-daniel.lezcano@linaro.org>
@@ -70,74 +68,226 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver is accessing the thermal zone state to ensure the state is
-different from the one we want to set.
+The thermal private header has leaked all around the drivers which
+interacted with the core internals. The thermal zone structure which
+was part of the exported header led also to a leakage of the fields
+into the different drivers, making very difficult to improve the core
+code without having to change the drivers.
 
-We don't want the driver to access the thermal zone device internals.
+Now we fixed how the thermal drivers were interacting with the thermal
+zones (actually fixed how they should not interact). The thermal zone
+structure has been moved to the private thermal core header. This
+header has been removed from the different drivers and must belong to
+the core code only. In order to prevent this private header to be
+included again in the drivers, make explicit only the core code can
+include this header by defining a THERMAL_CORE_SUBSYS macro. The
+private header will contain a check against this macro.
 
-Actually, the thermal core code already checks if the thermal zone's
-state is different before calling this function, thus this check is
-duplicate.
+The Tegra SoCtherm driver needs to access thermal_core.h to have the
+get_thermal_instance() function definition. It is the only one
+remaining driver which need to access the thermal_core.h header, so
+the check will emit a warning at compilation time.
 
-Remove it.
+Thierry Reding is reworking the driver to get rid of this function [1]
+and thus when the changes will be merged, the compilation warning will
+be converted to a compilation error, closing definitively the door to
+the drivers willing to play with the thermal zone device internals.
 
-Acked-by: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+No functional changes intended.
+
+[1] https://lore.kernel.org/all/20230414125721.1043589-1-thierry.reding@gmail.com/
+
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- .../intel/int340x_thermal/int3400_thermal.c   | 32 ++++++++-----------
- 1 file changed, 14 insertions(+), 18 deletions(-)
+ drivers/thermal/gov_bang_bang.c       | 1 +
+ drivers/thermal/gov_fair_share.c      | 1 +
+ drivers/thermal/gov_power_allocator.c | 1 +
+ drivers/thermal/gov_step_wise.c       | 1 +
+ drivers/thermal/gov_user_space.c      | 1 +
+ drivers/thermal/thermal_acpi.c        | 1 +
+ drivers/thermal/thermal_core.c        | 1 +
+ drivers/thermal/thermal_core.h        | 4 ++++
+ drivers/thermal/thermal_helpers.c     | 1 +
+ drivers/thermal/thermal_hwmon.c       | 1 +
+ drivers/thermal/thermal_netlink.c     | 1 +
+ drivers/thermal/thermal_of.c          | 1 +
+ drivers/thermal/thermal_sysfs.c       | 1 +
+ drivers/thermal/thermal_trip.c        | 1 +
+ 14 files changed, 17 insertions(+)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 72a6e28ded2e..c40b03d6c29f 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -503,32 +503,28 @@ static int int3400_thermal_change_mode(struct thermal_zone_device *thermal,
- {
- 	struct int3400_thermal_priv *priv = thermal_zone_device_priv(thermal);
- 	int result = 0;
-+	int enabled;
+diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
+index 1b121066521f..752c627075ba 100644
+--- a/drivers/thermal/gov_bang_bang.c
++++ b/drivers/thermal/gov_bang_bang.c
+@@ -11,6 +11,7 @@
  
- 	if (!priv)
- 		return -EINVAL;
+ #include <linux/thermal.h>
  
--	if (mode != thermal->mode) {
--		int enabled;
-+	enabled = mode == THERMAL_DEVICE_ENABLED;
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
  
--		enabled = mode == THERMAL_DEVICE_ENABLED;
--
--		if (priv->os_uuid_mask) {
--			if (!enabled) {
--				priv->os_uuid_mask = 0;
--				result = set_os_uuid_mask(priv, priv->os_uuid_mask);
--			}
--			goto eval_odvp;
-+	if (priv->os_uuid_mask) {
-+		if (!enabled) {
-+			priv->os_uuid_mask = 0;
-+			result = set_os_uuid_mask(priv, priv->os_uuid_mask);
- 		}
--
--		if (priv->current_uuid_index < 0 ||
--		    priv->current_uuid_index >= INT3400_THERMAL_MAXIMUM_UUID)
--			return -EINVAL;
--
--		result = int3400_thermal_run_osc(priv->adev->handle,
--						 int3400_thermal_uuids[priv->current_uuid_index],
--						 &enabled);
-+		goto eval_odvp;
- 	}
+ static int thermal_zone_trip_update(struct thermal_zone_device *tz, int trip_id)
+diff --git a/drivers/thermal/gov_fair_share.c b/drivers/thermal/gov_fair_share.c
+index 03c2daeb6ee8..108cb5074594 100644
+--- a/drivers/thermal/gov_fair_share.c
++++ b/drivers/thermal/gov_fair_share.c
+@@ -13,6 +13,7 @@
+ #include <linux/thermal.h>
+ #include "thermal_trace.h"
  
-+	if (priv->current_uuid_index < 0 ||
-+	    priv->current_uuid_index >= INT3400_THERMAL_MAXIMUM_UUID)
-+		return -EINVAL;
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ /**
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index 8642f1096b91..d1c6ad92e5b4 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -14,6 +14,7 @@
+ #define CREATE_TRACE_POINTS
+ #include "thermal_trace_ipa.h"
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ #define INVALID_TRIP -1
+diff --git a/drivers/thermal/gov_step_wise.c b/drivers/thermal/gov_step_wise.c
+index 1050fb4d94c2..1c844004afe5 100644
+--- a/drivers/thermal/gov_step_wise.c
++++ b/drivers/thermal/gov_step_wise.c
+@@ -14,6 +14,7 @@
+ #include <linux/minmax.h>
+ #include "thermal_trace.h"
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ /*
+diff --git a/drivers/thermal/gov_user_space.c b/drivers/thermal/gov_user_space.c
+index 8bc1c22aaf03..8883c9ca930f 100644
+--- a/drivers/thermal/gov_user_space.c
++++ b/drivers/thermal/gov_user_space.c
+@@ -13,6 +13,7 @@
+ #include <linux/slab.h>
+ #include <linux/thermal.h>
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ static int user_space_bind(struct thermal_zone_device *tz)
+diff --git a/drivers/thermal/thermal_acpi.c b/drivers/thermal/thermal_acpi.c
+index 0e5698818f69..556c9f0cc40d 100644
+--- a/drivers/thermal/thermal_acpi.c
++++ b/drivers/thermal/thermal_acpi.c
+@@ -9,6 +9,7 @@
+ #include <linux/acpi.h>
+ #include <linux/units.h>
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ /*
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 842f678c1c3e..6bca97e27d59 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -24,6 +24,7 @@
+ #define CREATE_TRACE_POINTS
+ #include "thermal_trace.h"
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ #include "thermal_hwmon.h"
+ 
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 17c1bbed734d..2f58eb9854ff 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -14,6 +14,10 @@
+ 
+ #include "thermal_netlink.h"
+ 
++#ifndef THERMAL_CORE_SUBSYS
++#warning This header can only be included by the thermal core code
++#endif
 +
-+	result = int3400_thermal_run_osc(priv->adev->handle,
-+					 int3400_thermal_uuids[priv->current_uuid_index],
-+					 &enabled);
- eval_odvp:
- 	evaluate_odvp(priv);
+ /* Default Thermal Governor */
+ #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
+ #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index cfba0965a22d..164c4627949e 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -19,6 +19,7 @@
+ #include <linux/string.h>
+ #include <linux/sysfs.h>
  
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ #include "thermal_trace.h"
+ 
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index c3ae44659b81..ba2ae5be0c23 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -17,6 +17,7 @@
+ #include <linux/thermal.h>
+ 
+ #include "thermal_hwmon.h"
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ /* hwmon sys I/F */
+diff --git a/drivers/thermal/thermal_netlink.c b/drivers/thermal/thermal_netlink.c
+index 08bc46c3ec7b..f3ac6432bf5f 100644
+--- a/drivers/thermal/thermal_netlink.c
++++ b/drivers/thermal/thermal_netlink.c
+@@ -11,6 +11,7 @@
+ #include <net/genetlink.h>
+ #include <uapi/linux/thermal.h>
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ static const struct genl_multicast_group thermal_genl_mcgrps[] = {
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 6fb14e521197..0f2aca2d1dea 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -17,6 +17,7 @@
+ #include <linux/types.h>
+ #include <linux/string.h>
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ /***   functions parsing device tree nodes   ***/
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 6c20c9f90a05..ccda2579ae82 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -19,6 +19,7 @@
+ #include <linux/string.h>
+ #include <linux/jiffies.h>
+ 
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ /* sys I/F for thermal zone */
+diff --git a/drivers/thermal/thermal_trip.c b/drivers/thermal/thermal_trip.c
+index 907f3a4d7bc8..61d927c35776 100644
+--- a/drivers/thermal/thermal_trip.c
++++ b/drivers/thermal/thermal_trip.c
+@@ -7,6 +7,7 @@
+  *
+  * Thermal trips handling
+  */
++#define THERMAL_CORE_SUBSYS
+ #include "thermal_core.h"
+ 
+ int __for_each_thermal_trip(struct thermal_zone_device *tz,
 -- 
 2.34.1
 
