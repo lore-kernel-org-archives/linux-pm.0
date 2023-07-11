@@ -2,60 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D90BC001DC
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 12:22:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF900EB64DC
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 12:22:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232626AbjGKMWU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 08:22:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52890 "EHLO
+        id S232355AbjGKMWd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 08:22:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232137AbjGKMVm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 08:21:42 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C6271FD3
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:23 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-2b6b98ac328so85975511fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:23 -0700 (PDT)
+        with ESMTP id S232516AbjGKMV4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 08:21:56 -0400
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16B142D4B
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:29 -0700 (PDT)
+Received: by mail-lj1-x231.google.com with SMTP id 38308e7fff4ca-2b6f52e1c5cso88517851fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689077965; x=1691669965;
+        d=linaro.org; s=google; t=1689077972; x=1691669972;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=tO2vJbTBxTqUwo+iDtN9cED0N0PugFhOskIkVSgcZoE=;
-        b=ARJRelBnGAIxZG/YEANwQNEnyS0nMcYoLuFxcfOEOapi3eL8cokkVKDT3OToGBPvcZ
-         HHnqekREF7h2yFqOQDhfMkIFxsVa13mvPcW1Njit6OZ0hDCa8QIVvAdBt/W1e2Bx2NiZ
-         PXnDzZwGSjq7ZeuTZrVyk2UDWLR6KMq8cxxNOu24yy2J616if0LNkGrgFMk+FsM/CuLC
-         IiNiD5kuJqCqjcY7RhVuW747wRTwiL2z6SHnlaKeqdKIjQe+tJbtHrHW1NHZAfB0Qmmr
-         rHX27X/HMNqCDTNfwbCQ/GO2bXmj6GIWXqJ9ykuqATgFKblcoMQaNAIUitVX9OtvUS1C
-         De9w==
+        bh=/asgZ03NiEjGsv4yFwqtkX/wMZgRigqk79OQqEY/FpA=;
+        b=hCpfqLd/vx3JOsEpmrJXLGzzXybtv+LRYxi+h82MiJ/qjN8JRURSOuDN3mSd8QSGXv
+         mGm85+F+w5pTBox1tnm6Qyu3TXgZtgLGS8xw8Rrzzd9K0U4Op132J+eptkFEcTFqX+dJ
+         ub3IvrGz8bPuqYRFspKOHujpDwTh7HciqFoRmyLckyezZqb5sVQ4jwQ8G8tdzwkbdtXA
+         mH2fGxNfFdD+/jw4LGILvnRWI8tmVkv49YRvrDIm0n4vpygk5PZJSDBUQS31KNLOc90O
+         4zs1LFTcjh3lGauXF1nOQvHPXuycCbKYgwam2pL1L2HHxcdm1sjgQx/ESfAdk25xRWjQ
+         T9fw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689077965; x=1691669965;
+        d=1e100.net; s=20221208; t=1689077972; x=1691669972;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=tO2vJbTBxTqUwo+iDtN9cED0N0PugFhOskIkVSgcZoE=;
-        b=NKECmgRQ3bgeF+qRr3pguGhbIca+nJm7H/EMM1fZ7H1oCntUHjX/Zjx1KsMioe6/DJ
-         ItbUlTAnQ/eSNG9bf8UNvmQU/GiFeDMt9btCkj8BBl8YpWs8cxt8HexSzvAdCSyhaBTn
-         x9t6Iti2ZfPQT63oo5wXVDfmJnVFj6XFTud+nqFKCfD8bQvtmGdfnsu3FAQmSqQOKBr0
-         c1l+yb4kV0M37sDtaR2zbUE5M77NcOKTNQGuKet7VMTLNCi3nWH5y7kQwtcVHaRsX7d/
-         oxRUg9wGsysACJ8TZNe/3XPIqjp6iJSoGS5/SDgs2HUYwrkO2jMPcB8h/jyc2cxVsll/
-         dCQA==
-X-Gm-Message-State: ABy/qLavI5/tWZq2aDhLtu0tXW7q5+aJ3VslSzB+mgWDr/a6vDJL3dBz
-        Ee2zfOmypANLBj3msP6/2ZdLWw==
-X-Google-Smtp-Source: APBJJlHNsNXP3jQQq1fy4YfORvSV68I8r5L1JF7OUxsZTSrTBKxKrW5XrMOsxibOaatxVd9HmtLFGQ==
-X-Received: by 2002:a2e:8784:0:b0:2b4:7f2e:a42d with SMTP id n4-20020a2e8784000000b002b47f2ea42dmr13840703lji.41.1689077965633;
-        Tue, 11 Jul 2023 05:19:25 -0700 (PDT)
+        bh=/asgZ03NiEjGsv4yFwqtkX/wMZgRigqk79OQqEY/FpA=;
+        b=ERHSnlS2tQBBXLawjwMSqwO8+WS04Fr/xXXLwt3rHGTkqSsvtQLMJi1WThuUzur2AK
+         awxZ+Yn81TZJ+6OJi1TyTlQ+oN+BIn1YvsRY8cmgfvZ1EUa1IY1BKWB//XMXkxTFyXhT
+         6ztKojdqgmzf1+AR7ddzme5MDIgMioLJebFLDNF5NFR5O4fpuDsfYqW1bBN/a1JdZlqJ
+         Iv2YiovzGH9aUSSLCYrj3c1rRIX5eR5UGBkQFd0hYpuim7B5m+msrhMvW7zJIR9fXKiM
+         AR/vsJSF77A2YdbPEtDqA723TU90lEXLnfHCIiRFJ0HDXp5PHnHyWRX+ag//IzA51gHC
+         yT4Q==
+X-Gm-Message-State: ABy/qLZfG97zvFxWhtsHftu+oZQmwgSlAzrCG/WbBDncymE/jWdvlHP3
+        XoUdGST27uU1TTTxWPCT5uGVyQ==
+X-Google-Smtp-Source: APBJJlGydSY5p6okL4PaU6GFDJfbxqkpBMjvgZKcHal05MTStl5cNcj28rvD3wzeEz2DDLdvr8RZag==
+X-Received: by 2002:a05:651c:102f:b0:2b5:85a9:7e9b with SMTP id w15-20020a05651c102f00b002b585a97e9bmr14905048ljm.33.1689077972306;
+        Tue, 11 Jul 2023 05:19:32 -0700 (PDT)
 Received: from [192.168.1.101] (abyl96.neoplus.adsl.tpnet.pl. [83.9.31.96])
-        by smtp.gmail.com with ESMTPSA id d18-20020a2e96d2000000b002b708450951sm435563ljj.88.2023.07.11.05.19.24
+        by smtp.gmail.com with ESMTPSA id d18-20020a2e96d2000000b002b708450951sm435563ljj.88.2023.07.11.05.19.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jul 2023 05:19:25 -0700 (PDT)
+        Tue, 11 Jul 2023 05:19:31 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 11 Jul 2023 14:18:44 +0200
-Subject: [PATCH 45/53] arm64: dts: qcom: sm8350: add qcom,bcm-voter-idx
+Date:   Tue, 11 Jul 2023 14:18:49 +0200
+Subject: [PATCH 50/53] interconnect: qcom: sm8350: Point display paths to
+ the display RSC
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230708-topic-rpmh_icc_rsc-v1-45-b223bd2ac8dd@linaro.org>
+Message-Id: <20230708-topic-rpmh_icc_rsc-v1-50-b223bd2ac8dd@linaro.org>
 References: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
 In-Reply-To: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -70,44 +71,93 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1689077904; l=921;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689077904; l=2325;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=zd8n6/BI+I7iSUydn8vszsfz3OyuMkqkyuxPFIRsJhE=;
- b=E57CxKs72PQD3kiuEmwIYLAntDVsPXBSfYzwul/8gYNvLIixxKL1h9182RVK5JNqZz+6KgOal
- yDZg5Nh7opvDSGBwll1qr94NW+/GRz5K7PzqECKnGB2muUSSiDiiq8n
+ bh=4cN3u17a4Tjp9KwmLVHyYCuynLOUrKPYJniM89DUm8c=;
+ b=TCiw8Gn5E+kROybJ7eM9HDAHOFyDwfav4mFNcXKQuvK0+BeKxlWbuCdcJLWAdcb6awXlEbvSA
+ 6TqOK3Ni0LHAsoY4ARc1sb+WTzVrou+euI5hOGVp7EXrDzsuyVwnFNu
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To improve the representation and ease handling, identify each BCM voter
+The _DISP paths are expected to go through the DISP RSC. Point them to the
+correct place.
 
+Fixes: d26a56674497 ("interconnect: qcom: Add SM8350 interconnect provider driver")
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/sm8350.dtsi | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/interconnect/qcom/sm8350.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8350.dtsi b/arch/arm64/boot/dts/qcom/sm8350.dtsi
-index 557a3d8e889b..fc8779a2fa96 100644
---- a/arch/arm64/boot/dts/qcom/sm8350.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8350.dtsi
-@@ -3,6 +3,7 @@
-  * Copyright (c) 2020, Linaro Limited
-  */
- 
-+#include <dt-bindings/interconnect/qcom,icc.h>
- #include <dt-bindings/interconnect/qcom,sm8350.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/clock/qcom,dispcc-sm8350.h>
-@@ -3397,6 +3398,7 @@ rpmhpd_opp_turbo_l1: opp10 {
- 
- 			apps_bcm_voter: bcm-voter {
- 				compatible = "qcom,bcm-voter";
-+				qcom,bcm-voter-idx = <ICC_BCM_VOTER_APPS>;
- 			};
- 		};
- 
+diff --git a/drivers/interconnect/qcom/sm8350.c b/drivers/interconnect/qcom/sm8350.c
+index c48f96ff8575..0466ba5d939a 100644
+--- a/drivers/interconnect/qcom/sm8350.c
++++ b/drivers/interconnect/qcom/sm8350.c
+@@ -1609,7 +1609,7 @@ static struct qcom_icc_bcm bcm_sn14 = {
+ static struct qcom_icc_bcm bcm_acv_disp = {
+ 	.name = "ACV",
+ 	.keepalive = false,
+-	.voter_idx = 0,
++	.voter_idx = 1,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_disp },
+ };
+@@ -1617,7 +1617,7 @@ static struct qcom_icc_bcm bcm_acv_disp = {
+ static struct qcom_icc_bcm bcm_mc0_disp = {
+ 	.name = "MC0",
+ 	.keepalive = false,
+-	.voter_idx = 0,
++	.voter_idx = 1,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_disp },
+ };
+@@ -1625,7 +1625,7 @@ static struct qcom_icc_bcm bcm_mc0_disp = {
+ static struct qcom_icc_bcm bcm_mm0_disp = {
+ 	.name = "MM0",
+ 	.keepalive = false,
+-	.voter_idx = 0,
++	.voter_idx = 1,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_mem_noc_hf_disp },
+ };
+@@ -1633,7 +1633,7 @@ static struct qcom_icc_bcm bcm_mm0_disp = {
+ static struct qcom_icc_bcm bcm_mm1_disp = {
+ 	.name = "MM1",
+ 	.keepalive = false,
+-	.voter_idx = 0,
++	.voter_idx = 1,
+ 	.num_nodes = 2,
+ 	.nodes = { &qxm_mdp0_disp, &qxm_mdp1_disp },
+ };
+@@ -1641,7 +1641,7 @@ static struct qcom_icc_bcm bcm_mm1_disp = {
+ static struct qcom_icc_bcm bcm_mm4_disp = {
+ 	.name = "MM4",
+ 	.keepalive = false,
+-	.voter_idx = 0,
++	.voter_idx = 1,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_mem_noc_sf_disp },
+ };
+@@ -1649,7 +1649,7 @@ static struct qcom_icc_bcm bcm_mm4_disp = {
+ static struct qcom_icc_bcm bcm_mm5_disp = {
+ 	.name = "MM5",
+ 	.keepalive = false,
+-	.voter_idx = 0,
++	.voter_idx = 1,
+ 	.num_nodes = 1,
+ 	.nodes = { &qxm_rot_disp },
+ };
+@@ -1657,7 +1657,7 @@ static struct qcom_icc_bcm bcm_mm5_disp = {
+ static struct qcom_icc_bcm bcm_sh0_disp = {
+ 	.name = "SH0",
+ 	.keepalive = false,
+-	.voter_idx = 0,
++	.voter_idx = 1,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_llcc_disp },
+ };
 
 -- 
 2.41.0
