@@ -2,61 +2,60 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CFA1C0015E
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BDBCEB64DD
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:35:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232985AbjGKOfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 10:35:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45110 "EHLO
+        id S232295AbjGKOf5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 10:35:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45382 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230180AbjGKOfo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:35:44 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9246619BE
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:35:22 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-2b6fdaf6eefso90363281fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:35:22 -0700 (PDT)
+        with ESMTP id S233257AbjGKOfu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:35:50 -0400
+Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3ABB91724
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:35:27 -0700 (PDT)
+Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-4fba03becc6so8602219e87.0
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:35:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689086119; x=1691678119;
+        d=linaro.org; s=google; t=1689086122; x=1691678122;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Oyco5JDx037j3CC/5Ihu7xd9SFL7i1B5RPFit6DU5NA=;
-        b=w23R4XLZWoALYIhRhp+TogWJwABOEn2vt1cbkdZ2tGM9PHf4528vjlapChg8/xYAPt
-         tCMP9c1NZ+Ro/pahFhbg6iIlrdHgeRj7HIwJksVEskQnIMoWVlMT1gmEChCnbODahxfa
-         /DGRtrHzhG9JNGIG6PV4Gqsfj6h+T+wQWqsmCw02FQfOdgB4jU1SdNgb1rMJoEZIiriG
-         GXEBlcgZUl17w/zrEDTfG73ff87Val3pFLoks29DV+UzjE8ODKUgP6dU8QMwsXm9bf02
-         eQ3DNvACQuEe0KUE2PMEwfPH15Yb2tvH/0Vpr/MkK4Rz3wmlZQPhzKMYrLDj5YqTH/FK
-         R+HQ==
+        bh=WsIqWYC9/diWISQr1ELVqdM7UPfiMlya6fflWvKUqUc=;
+        b=C9HzQSY7qbYF7DQrVuV45BdThQ1q7mr6ajP4SxckGWTD0eWJ+QSt+I0Fv/eEFc8XVe
+         VW9bt2f04Bcim7GKBHcXOEevpWjaqZa8X8vhAGaIlARtDX55Ac7XRpHXqCMbO9wnO3jq
+         o8w8l6Vmabu9PBVWHH7DaIvIyZ96KwN3fKG35lccrxL2LZKuonKvrZ12wPxpzMjrMzM1
+         SQfPLL+3DhtimYBTWJO4qOT/LcwFWYXUjOA1pru7wtc7Wn9Qx1ktPHgpqaSR1MxzDvR+
+         sFTDcTfIaggOYegxgW8fsa05dIwLR1i1dMZ92GicSU8vKbQWBF24y6gpvNdEJBhMPjMO
+         dW0A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689086119; x=1691678119;
+        d=1e100.net; s=20221208; t=1689086122; x=1691678122;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Oyco5JDx037j3CC/5Ihu7xd9SFL7i1B5RPFit6DU5NA=;
-        b=Hbgh0sg8PKMen1wDatmgf+EAhThW4G981BWXiPhDY1koPMCWyz3LfJzmD+Z3SvHHV9
-         TAhkVb99tM4qpslzS/nkpQZ4jiKhO+ExmrsCq0hVtd8Q6tH4eP8LgLzZ0g3O52/1DP/A
-         R/gNRopAlq4622InYpIEFm1QaEMGnr+f2YcZB8ioleJ+dthz0PKl8TqMN9BnCPjnFbl/
-         qmnI8Glvr62bNIvSx+pTJipnOx6GO7zYD7jOeEOh4sYAdeORVotzIhsME/RH39fYfGat
-         l27CMVnNZy0wzNxq8VW3nH7arCNbM8pQSUitlowN+3ebAF4ODloAItxsT9AkywSGZgB5
-         huPw==
-X-Gm-Message-State: ABy/qLaldEM2xDAQUtQd1xUsbZKw+D6nh48f7YYJYYkW5yQ8KV0Lpbl4
-        6ThS8VMpK4lpcls2007p78YMgg==
-X-Google-Smtp-Source: APBJJlGEYQVfM84jtfrOqvF4dt3dPWC/ym7m72/wY+N6vRgRd3QwMLpt5h8S7fF1Mx3QEV2CJJYb3g==
-X-Received: by 2002:a2e:8eca:0:b0:2b6:fa92:479e with SMTP id e10-20020a2e8eca000000b002b6fa92479emr14208937ljl.42.1689086119325;
-        Tue, 11 Jul 2023 07:35:19 -0700 (PDT)
+        bh=WsIqWYC9/diWISQr1ELVqdM7UPfiMlya6fflWvKUqUc=;
+        b=jUW9xkJC6SvFuTnG9NWIU04hjdAXmqc+cKuTwVkV7inoGMGECNYeoSSsABie/42X5F
+         g6ISROijY+jFmjAprKwM8gkgGy5FBw4ehACKnBeAQJ8FocZ4f4L8GRXeBpSTV2jQGCzQ
+         Qy2bWqQnFHR//Ew1TZ7W3fl+gAAXrmPQbPBflRlzBV+qXPlWZ+7YqGbn/TDW9YRWT3Ym
+         YxeMHWSDbjcjiS1JUNVlnZAOUncmUpdfLnHmVRMCvOJy8cSrJRxBC4Uxkd2OxxjIwD4L
+         La5TvZf6FYaQbC52u3KNzVS7Z0HEVuH/JUG9000RO31zqkcDaQh8QoFP3dgz471/hy0b
+         litg==
+X-Gm-Message-State: ABy/qLaddTJsl9C8HfGu0AVgkJDGoDamgXkUCOOMpF0FJmo9fNI03Qhi
+        PnCHmWkuYIBWcVti6S3vHbyQEw==
+X-Google-Smtp-Source: APBJJlHMrPzRYvNus54mewrCEndyYiWMbpP50sNu4jQM87SbQ5c2iO3a0v5YJmfbwRuMml6nyEau2A==
+X-Received: by 2002:a2e:7c1a:0:b0:2b6:f85a:20af with SMTP id x26-20020a2e7c1a000000b002b6f85a20afmr6512049ljc.4.1689086121846;
+        Tue, 11 Jul 2023 07:35:21 -0700 (PDT)
 Received: from [192.168.1.101] (abyl96.neoplus.adsl.tpnet.pl. [83.9.31.96])
-        by smtp.gmail.com with ESMTPSA id o11-20020a2e90cb000000b002b71c128ea0sm484221ljg.117.2023.07.11.07.35.18
+        by smtp.gmail.com with ESMTPSA id o11-20020a2e90cb000000b002b71c128ea0sm484221ljg.117.2023.07.11.07.35.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jul 2023 07:35:18 -0700 (PDT)
+        Tue, 11 Jul 2023 07:35:21 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 11 Jul 2023 16:35:14 +0200
-Subject: [PATCH 2/4] dt-bindings: interconnect: qcom,msm8998-bwmon: Add
- SM6350 bwmon instances
+Date:   Tue, 11 Jul 2023 16:35:16 +0200
+Subject: [PATCH 4/4] arm64: dts: qcom: sm6350: Add BWMONs
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230711-topic-sm638250_bwmon-v1-2-bd4bb96b0673@linaro.org>
+Message-Id: <20230711-topic-sm638250_bwmon-v1-4-bd4bb96b0673@linaro.org>
 References: <20230711-topic-sm638250_bwmon-v1-0-bd4bb96b0673@linaro.org>
 In-Reply-To: <20230711-topic-sm638250_bwmon-v1-0-bd4bb96b0673@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -71,44 +70,134 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1689086115; l=1271;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689086115; l=2717;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=y8JreLdLXyJLqMWdu1OHC8XLto0h/XQOLRW3FKQUVDc=;
- b=TJkZnuVQFZcromYVHOBquze+DCg5ojW6C/LKh3G/LeyhIhmrHFfzWKs/5+qpl4uzyUR4QwoXf
- iz/D0silT+1Bfh+PBV4hINAYh4XsIK925W+Rrn4S8jOBTObnPbfPnNQ
+ bh=0XE3+DwbePvBDrBAILTBPGuFKg1IJ0tvtE/4fmfHL3g=;
+ b=Q1Ph6t4Tb0bPztBcT/QeOqbjmwx1KKiJJz4quBT8sWaMCl4zkOn81Q9Au3JxmbebyjiRSxBFU
+ LwH7Ic5riwzA7p80kIXPOIMHQUT3c1Gcop6wzfXssnCfhrH1P3LjOao
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SM6350 has a BWMONv4 for LLCC and a BWMONv5 for CPU. Document them.
+Add the CPU and LLC BWMONs (skip the NPU ones for now) on sm6350.
+
+There are 3 more NPU BWMONs, but these are skipped for now.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm64/boot/dts/qcom/sm6350.dtsi | 97 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 97 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
-index 51ba6490c951..73f809cdb783 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
-@@ -29,6 +29,7 @@ properties:
-               - qcom,sc7280-cpu-bwmon
-               - qcom,sc8280xp-cpu-bwmon
-               - qcom,sdm845-cpu-bwmon
-+              - qcom,sm6350-llcc-bwmon
-               - qcom,sm8250-cpu-bwmon
-               - qcom,sm8550-cpu-bwmon
-           - const: qcom,sdm845-bwmon    # BWMON v4, unified register space
-@@ -36,6 +37,7 @@ properties:
-           - enum:
-               - qcom,sc7180-llcc-bwmon
-               - qcom,sc8280xp-llcc-bwmon
-+              - qcom,sm6350-cpu-bwmon
-               - qcom,sm8250-llcc-bwmon
-               - qcom,sm8550-llcc-bwmon
-           - const: qcom,sc7280-llcc-bwmon
+diff --git a/arch/arm64/boot/dts/qcom/sm6350.dtsi b/arch/arm64/boot/dts/qcom/sm6350.dtsi
+index c2b5d56ba242..8f66306d1de3 100644
+--- a/arch/arm64/boot/dts/qcom/sm6350.dtsi
++++ b/arch/arm64/boot/dts/qcom/sm6350.dtsi
+@@ -1723,6 +1723,103 @@ npu_noc: interconnect@9990000 {
+ 			qcom,bcm-voters = <&apps_bcm_voter>;
+ 		};
+ 
++		pmu@90b6300 {
++			compatible = "qcom,sm6350-llcc-bwmon", "qcom,sdm845-bwmon";
++			reg = <0x0 0x090b6300 0x0 0x600>;
++			interrupts = <GIC_SPI 581 IRQ_TYPE_LEVEL_HIGH>;
++
++			operating-points-v2 = <&llcc_bwmon_opp_table>;
++			interconnects = <&clk_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
++					 &clk_virt SLAVE_EBI_CH0 QCOM_ICC_TAG_ACTIVE_ONLY>;
++
++			llcc_bwmon_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-0 {
++					opp-peak-kBps = <2288000>;
++				};
++
++				opp-1 {
++					opp-peak-kBps = <4577000>;
++				};
++
++				opp-2 {
++					opp-peak-kBps = <7110000>;
++				};
++
++				opp-3 {
++					opp-peak-kBps = <9155000>;
++				};
++
++				opp-4 {
++					opp-peak-kBps = <12298000>;
++				};
++
++				opp-5 {
++					opp-peak-kBps = <14236000>;
++				};
++
++			};
++		};
++
++		pmu@90cd000 {
++			compatible = "qcom,sm6350-cpu-bwmon", "qcom,sc7280-llcc-bwmon";
++			reg = <0x0 0x090cd000 0x0 0x1000>;
++			interrupts = <GIC_SPI 241 IRQ_TYPE_LEVEL_HIGH>;
++
++			operating-points-v2 = <&cpu_bwmon_opp_table>;
++			interconnects = <&gem_noc MASTER_AMPSS_M0 QCOM_ICC_TAG_ACTIVE_ONLY
++					 &clk_virt SLAVE_EBI_CH0 QCOM_ICC_TAG_ACTIVE_ONLY>;
++
++			cpu_bwmon_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-0 {
++					opp-peak-kBps = <762000>;
++				};
++
++				opp-1 {
++					opp-peak-kBps = <1144000>;
++				};
++
++				opp-2 {
++					opp-peak-kBps = <1720000>;
++				};
++
++				opp-3 {
++					opp-peak-kBps = <2086000>;
++				};
++
++				opp-4 {
++					opp-peak-kBps = <2597000>;
++				};
++
++				opp-5 {
++					opp-peak-kBps = <2929000>;
++				};
++
++				opp-6 {
++					opp-peak-kBps = <3879000>;
++				};
++
++				opp-7 {
++					opp-peak-kBps = <5161000>;
++				};
++
++				opp-8 {
++					opp-peak-kBps = <5931000>;
++				};
++
++				opp-9 {
++					opp-peak-kBps = <6881000>;
++				};
++
++				opp-10 {
++					opp-peak-kBps = <7980000>;
++				};
++			};
++		};
++
+ 		usb_1: usb@a6f8800 {
+ 			compatible = "qcom,sm6350-dwc3", "qcom,dwc3";
+ 			reg = <0 0x0a6f8800 0 0x400>;
 
 -- 
 2.41.0
