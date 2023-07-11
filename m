@@ -2,63 +2,62 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5482DEB64DC
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FBD5C001DC
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:21:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231664AbjGKOVf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 10:21:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59106 "EHLO
+        id S232071AbjGKOVg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 10:21:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231932AbjGKOVd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:21:33 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E45B10FA
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:21:11 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id 2adb3069b0e04-4fb94b1423eso8655939e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:21:10 -0700 (PDT)
+        with ESMTP id S231330AbjGKOVf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:21:35 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 89518127
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:21:12 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4f95bf5c493so8620364e87.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:21:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689085269; x=1691677269;
+        d=linaro.org; s=google; t=1689085270; x=1691677270;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=RT59kaXTgg5sgTQpdgoEwntc5E3q29hk2GymBQEqefk=;
-        b=AQPWUshV2DPhAH6FtxoBop1FDYTgaHN5JKSl2ydch4oMjUqPUez+s5K439puSFRJWR
-         thALx5tssRdd+6BSRtAiTazZn9vVi6XzEjh5XXWcjjvz7rZ6huduI81XvhlXuAyQtfdi
-         ldRcruREpgzVfKsubvo5h7D2eZxr1L+OuEUzjLeEBjdnNqrnTGwkBGRbf3DbeTSBaov1
-         jmYMxMqMcX9zZbC0W24P2e/I2d4sT4KLYVVNXuqUb4gKZ2u9LUyyiFPyFtuBuA4rbfF/
-         a8OcHVfd6oPl4aI+Ehc4Wo3RYXEQRJWvS8CX+Bz9trDx+XC5yEwG4EAj//48FgxeWCH4
-         3QnA==
+        bh=SXan3BQLOGVU26VVDfqibPbUTvNWRP/07Lp3Hf/FNck=;
+        b=lqdOYmJum9lMmusdABBEDrPfyUPjmg1sjbjSj1BPzNzMuneGmo7eOt4BUjUfk8hsLF
+         c9ZYo51BCaW/v/SVJqECrHEprdjqX5DqAMt/j0ehhKlz1fKlPyfdy2lyQ4AmTHUsruVm
+         JUmhwfyQq7rfOy41Z/YBktXAS41K89LRxtSYcfkgitdjoSuN0YSvBGSYYUUvw0IgkCym
+         xdDWrSZyl4UdR00HIApafCR54d+zWGEtz686I7ufoGIsv4v+0fedXk+RySVdqPAPSY6c
+         r/SOS0gtdeUgiGvZU4gcpv+Q3XffdjBock02DcNDzVhPd3e4pHyQv0Q8A8MpKxG+oy4M
+         0KLg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689085269; x=1691677269;
+        d=1e100.net; s=20221208; t=1689085270; x=1691677270;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=RT59kaXTgg5sgTQpdgoEwntc5E3q29hk2GymBQEqefk=;
-        b=JWW5U5zs0m9n7z/QA/DXjKmm50HLSoX5i2MMi8JApRviPli3PVbG/PpaQ2zMPP2bqD
-         zDucGwHhpb871j+YO/23qir1UkwDhESzcwhB1aZV7H78Id7ZtkUjlUca23DoOmD+jrMN
-         ykYQPy6knpiTxayaqzw3mibGvsAMtAKdsSTA1keouZk+4hRXHa7T/BrdPgd0/fI3hZFM
-         cYHYawb+jHy7uYmp7xH7kCFOvgtTsRVvV2J55iMie+PnDjJuaj1iW7HFUXpmKlUStG/A
-         rcdly5ETbrLlyfRn2rqoPOakEHyBe4zBmm+d5QWPaazhhVRY+auu9ysJMLyT0D76A7Mo
-         YODA==
-X-Gm-Message-State: ABy/qLZwsdXAAfL39nRXKDe8x1O/CsUAnxO1tLTMtVFTvFRDJDv8gtTC
-        zmIQfczBpxm1+sD8pEcBXKMRpQ==
-X-Google-Smtp-Source: APBJJlERTWUt1nW1R3qthtM4b3NkqQF+8nog8fJNhfRAzWktGBzBiTc3eX6IscM8Ccgn5kp0ki4mwg==
-X-Received: by 2002:ac2:505b:0:b0:4f8:5886:1868 with SMTP id a27-20020ac2505b000000b004f858861868mr12413967lfm.24.1689085268998;
-        Tue, 11 Jul 2023 07:21:08 -0700 (PDT)
+        bh=SXan3BQLOGVU26VVDfqibPbUTvNWRP/07Lp3Hf/FNck=;
+        b=fUctKbySxCbLV48TAcFnjbMvbQgLdal/MoKdIkcbTbi4ZBUf85aY/5aBds2q0vvb2q
+         HswIhPjekYqNw8VV5BrjuKgdRh21u128WFNE0wXv7K9MYs7ceBSUoMGZgVEnFUFGPfSR
+         wNT7l4Pmx/Uj1JiS3rRtPewxqTGw0212R2os5Q1spXoZ6V0he+IZTCkbK+p5So4UnXPW
+         4bylDAJsP5v2Y80/rfYYCSjkfp1qh5GTZPJpF4QiW2f21SE7IUOVV9ttbREttVkYDaUL
+         6YjqY3/WahIsInDUWfXgqyXRSHDUR1t6HaOmB5KD93WBx9gpiz0JKBM/SA9YecZ5asIB
+         oHBg==
+X-Gm-Message-State: ABy/qLZmU0N3cMDsaYmxgtBQSqsM26YkwK2Nz5kmiOGbelHnHXCSacqJ
+        /b7ii8sAuLSraQRfwK3XL9eNiM8jZfz1jvbJ4UI=
+X-Google-Smtp-Source: APBJJlF/tD2PTLs1zZYNjcNoPQ6bP2DE1k5mx9xYe5Ulksm+zK79IQNLAEUlrHt6/v+3TKR4FlVmoQ==
+X-Received: by 2002:a05:6512:b99:b0:4f8:68a3:38d5 with SMTP id b25-20020a0565120b9900b004f868a338d5mr16890335lfv.66.1689085249578;
+        Tue, 11 Jul 2023 07:20:49 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id m23-20020ac24297000000b004fbdd19c926sm336482lfh.284.2023.07.11.07.21.07
+        by smtp.gmail.com with ESMTPSA id j14-20020ac2550e000000b004f9fdb0ed8esm333145lfk.304.2023.07.11.07.20.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jul 2023 07:21:08 -0700 (PDT)
+        Tue, 11 Jul 2023 07:20:49 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
 Cc:     Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>, kernel@pengutronix.de,
-        linux-imx@nxp.com
-Subject: [PATCH v2 06/18] soc: imx: Move power-domain drivers to the genpd dir
-Date:   Tue, 11 Jul 2023 16:21:05 +0200
-Message-Id: <20230711142105.751611-1-ulf.hansson@linaro.org>
+        Hector Martin <marcan@marcan.st>,
+        Sven Peter <sven@svenpeter.dev>,
+        Alyssa Rosenzweig <alyssa@rosenzweig.io>, asahi@lists.linux.dev
+Subject: [PATCH v2 04/18] soc: apple: Move power-domain driver to the genpd dir
+Date:   Tue, 11 Jul 2023 16:20:45 +0200
+Message-Id: <20230711142045.751570-1-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -66,88 +65,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To simplify with maintenance let's move the imx power-domain drivers to the
-new genpd directory. Going forward, patches are intended to be managed
+To simplify with maintenance let's move the apple power-domain driver to
+the new genpd directory. Going forward, patches are intended to be managed
 through a separate git tree, according to MAINTAINERS.
 
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Fabio Estevam <festevam@gmail.com>
-Cc: <kernel@pengutronix.de>
-Cc: <linux-imx@nxp.com>
-Reviewed-by: Fabio Estevam <festevam@gmail.com>
+Cc: Hector Martin <marcan@marcan.st>
+Cc: Sven Peter <sven@svenpeter.dev>
+Cc: Alyssa Rosenzweig <alyssa@rosenzweig.io>
+Cc: <asahi@lists.linux.dev>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/genpd/imx/Makefile                   | 7 +++++++
- drivers/{soc => genpd}/imx/gpc.c             | 0
- drivers/{soc => genpd}/imx/gpcv2.c           | 0
- drivers/{soc => genpd}/imx/imx8m-blk-ctrl.c  | 0
- drivers/{soc => genpd}/imx/imx8mp-blk-ctrl.c | 0
- drivers/{soc => genpd}/imx/imx93-blk-ctrl.c  | 0
- drivers/{soc => genpd}/imx/imx93-pd.c        | 0
- drivers/soc/imx/Makefile                     | 7 +------
- 8 files changed, 8 insertions(+), 6 deletions(-)
- create mode 100644 drivers/genpd/imx/Makefile
- rename drivers/{soc => genpd}/imx/gpc.c (100%)
- rename drivers/{soc => genpd}/imx/gpcv2.c (100%)
- rename drivers/{soc => genpd}/imx/imx8m-blk-ctrl.c (100%)
- rename drivers/{soc => genpd}/imx/imx8mp-blk-ctrl.c (100%)
- rename drivers/{soc => genpd}/imx/imx93-blk-ctrl.c (100%)
- rename drivers/{soc => genpd}/imx/imx93-pd.c (100%)
+ MAINTAINERS                                                     | 1 +
+ drivers/genpd/Makefile                                          | 1 +
+ drivers/genpd/apple/Makefile                                    | 2 ++
+ .../apple/apple-pmgr-pwrstate.c => genpd/apple/pmgr-pwrstate.c} | 0
+ drivers/soc/apple/Makefile                                      | 2 --
+ 5 files changed, 4 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/genpd/apple/Makefile
+ rename drivers/{soc/apple/apple-pmgr-pwrstate.c => genpd/apple/pmgr-pwrstate.c} (100%)
 
-diff --git a/drivers/genpd/imx/Makefile b/drivers/genpd/imx/Makefile
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ab583b8c5b97..caa221fd0c11 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1904,6 +1904,7 @@ F:	drivers/bluetooth/hci_bcm4377.c
+ F:	drivers/clk/clk-apple-nco.c
+ F:	drivers/cpufreq/apple-soc-cpufreq.c
+ F:	drivers/dma/apple-admac.c
++F:	drivers/genpd/apple/
+ F:	drivers/i2c/busses/i2c-pasemi-core.c
+ F:	drivers/i2c/busses/i2c-pasemi-platform.c
+ F:	drivers/iommu/apple-dart.c
+diff --git a/drivers/genpd/Makefile b/drivers/genpd/Makefile
+index cdba3b9f0c75..91d4a3808981 100644
+--- a/drivers/genpd/Makefile
++++ b/drivers/genpd/Makefile
+@@ -1,3 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ obj-y					+= actions/
+ obj-y					+= amlogic/
++obj-y					+= apple/
+diff --git a/drivers/genpd/apple/Makefile b/drivers/genpd/apple/Makefile
 new file mode 100644
-index 000000000000..5f012717a666
+index 000000000000..53665af630be
 --- /dev/null
-+++ b/drivers/genpd/imx/Makefile
-@@ -0,0 +1,7 @@
++++ b/drivers/genpd/apple/Makefile
+@@ -0,0 +1,2 @@
 +# SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_HAVE_IMX_GPC) += gpc.o
-+obj-$(CONFIG_IMX_GPCV2_PM_DOMAINS) += gpcv2.o
-+obj-$(CONFIG_IMX8M_BLK_CTRL) += imx8m-blk-ctrl.o
-+obj-$(CONFIG_IMX8M_BLK_CTRL) += imx8mp-blk-ctrl.o
-+obj-$(CONFIG_SOC_IMX9) += imx93-pd.o
-+obj-$(CONFIG_IMX9_BLK_CTRL) += imx93-blk-ctrl.o
-diff --git a/drivers/soc/imx/gpc.c b/drivers/genpd/imx/gpc.c
++obj-$(CONFIG_APPLE_PMGR_PWRSTATE)	+= pmgr-pwrstate.o
+diff --git a/drivers/soc/apple/apple-pmgr-pwrstate.c b/drivers/genpd/apple/pmgr-pwrstate.c
 similarity index 100%
-rename from drivers/soc/imx/gpc.c
-rename to drivers/genpd/imx/gpc.c
-diff --git a/drivers/soc/imx/gpcv2.c b/drivers/genpd/imx/gpcv2.c
-similarity index 100%
-rename from drivers/soc/imx/gpcv2.c
-rename to drivers/genpd/imx/gpcv2.c
-diff --git a/drivers/soc/imx/imx8m-blk-ctrl.c b/drivers/genpd/imx/imx8m-blk-ctrl.c
-similarity index 100%
-rename from drivers/soc/imx/imx8m-blk-ctrl.c
-rename to drivers/genpd/imx/imx8m-blk-ctrl.c
-diff --git a/drivers/soc/imx/imx8mp-blk-ctrl.c b/drivers/genpd/imx/imx8mp-blk-ctrl.c
-similarity index 100%
-rename from drivers/soc/imx/imx8mp-blk-ctrl.c
-rename to drivers/genpd/imx/imx8mp-blk-ctrl.c
-diff --git a/drivers/soc/imx/imx93-blk-ctrl.c b/drivers/genpd/imx/imx93-blk-ctrl.c
-similarity index 100%
-rename from drivers/soc/imx/imx93-blk-ctrl.c
-rename to drivers/genpd/imx/imx93-blk-ctrl.c
-diff --git a/drivers/soc/imx/imx93-pd.c b/drivers/genpd/imx/imx93-pd.c
-similarity index 100%
-rename from drivers/soc/imx/imx93-pd.c
-rename to drivers/genpd/imx/imx93-pd.c
-diff --git a/drivers/soc/imx/Makefile b/drivers/soc/imx/Makefile
-index a28c44a1f16a..3ad321ca608a 100644
---- a/drivers/soc/imx/Makefile
-+++ b/drivers/soc/imx/Makefile
-@@ -2,10 +2,5 @@
- ifeq ($(CONFIG_ARM),y)
- obj-$(CONFIG_ARCH_MXC) += soc-imx.o
- endif
--obj-$(CONFIG_HAVE_IMX_GPC) += gpc.o
--obj-$(CONFIG_IMX_GPCV2_PM_DOMAINS) += gpcv2.o
- obj-$(CONFIG_SOC_IMX8M) += soc-imx8m.o
--obj-$(CONFIG_IMX8M_BLK_CTRL) += imx8m-blk-ctrl.o
--obj-$(CONFIG_IMX8M_BLK_CTRL) += imx8mp-blk-ctrl.o
--obj-$(CONFIG_SOC_IMX9) += imx93-src.o imx93-pd.o
--obj-$(CONFIG_IMX9_BLK_CTRL) += imx93-blk-ctrl.o
-+obj-$(CONFIG_SOC_IMX9) += imx93-src.o
+rename from drivers/soc/apple/apple-pmgr-pwrstate.c
+rename to drivers/genpd/apple/pmgr-pwrstate.c
+diff --git a/drivers/soc/apple/Makefile b/drivers/soc/apple/Makefile
+index e293770cf66d..b241e6a65e5b 100644
+--- a/drivers/soc/apple/Makefile
++++ b/drivers/soc/apple/Makefile
+@@ -1,6 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-obj-$(CONFIG_APPLE_PMGR_PWRSTATE)	+= apple-pmgr-pwrstate.o
+-
+ obj-$(CONFIG_APPLE_RTKIT) += apple-rtkit.o
+ apple-rtkit-y = rtkit.o rtkit-crashlog.o
+ 
 -- 
 2.34.1
 
