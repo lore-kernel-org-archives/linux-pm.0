@@ -2,61 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 116A4EB64DC
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 12:22:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3C35C001DC
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 12:22:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232473AbjGKMWp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 08:22:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52900 "EHLO
+        id S232274AbjGKMVA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 08:21:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232475AbjGKMWW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 08:22:22 -0400
-Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4A87170E
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:45 -0700 (PDT)
-Received: by mail-lj1-x22a.google.com with SMTP id 38308e7fff4ca-2b6f52e1c5cso88519101fa.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:45 -0700 (PDT)
+        with ESMTP id S232140AbjGKMU2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 08:20:28 -0400
+Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3ABC31984
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:19:34 -0700 (PDT)
+Received: by mail-lj1-x233.google.com with SMTP id 38308e7fff4ca-2b6a6f224a1so92183131fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:19:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689077976; x=1691669976;
+        d=linaro.org; s=google; t=1689077944; x=1691669944;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=hSHC4l0gplSJLLulVhlWKIZdx5+fKnKYFEmJEyGDU+A=;
-        b=foJDSaBicnp7FQezuElZP030n0/FHiLPO9Fb9DgJh3gvHDsN4ZzbB8v0voLZ5iMeGs
-         Qcd0tb880CQOtwLeCPMGv69H30FrFJuXxr03VgECOk5Z/AJkkWQ0zFF4qIh8CwOVZaqO
-         Fc8xciynpGkbZbzdsWxDZukLIk49LO65y/9rYUjCG/gpRIeFUlK67IujuMqvTQK9kQJG
-         PNrXavuemFDYZ+E8xqZ2cWe/hS2ImNg15AK/sAG4QyMJozRzbaYIklRs3g4mBnEx1Mdj
-         ZwMdn8IcsY/aY4qjkUkh+DAbvApgYvXuGaOIF7k09F/BPEzzQiEiUc7o6FdMD7PFzxRq
-         LEfg==
+        bh=NRzxUcdMoRzU/LXIG+2IxlKEBjvc8egBZ1+dv+HI/9k=;
+        b=KNwsSgSJ0RCWerTq2l0NgpZIRuuw7PsBTxI5c6Ndgf26vdQdCPgwqaLrGbrX7gi7u/
+         hd6Gmb1L2OYsin016iRytfvd4ELO6QJiZl3HllKMwx86BxR4GFzFZXfYMcPrOife6SeO
+         VCgkDYZNpYC/YOkN3cmsGAxkBwqSw5mNpwz5fM+cPwJsX74Dp4a0UmODRDKYExvGgc02
+         i/unQuEdbkohioW7+sBJSMGCUlpg2coM+ypDrc932FXGHVtofY6nVjNLUPZwYBucO8ju
+         XFqRIwUf86VYUBcisAsTg9Rp/qCjZZSSgJf0Vpb9uvLgXllsCkvzqECDHM8oTqXLm51a
+         RTPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689077976; x=1691669976;
+        d=1e100.net; s=20221208; t=1689077944; x=1691669944;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=hSHC4l0gplSJLLulVhlWKIZdx5+fKnKYFEmJEyGDU+A=;
-        b=QIq3gPKT1nQZ8lubIGI+uLFW9XZndw2X36oCcVjUtS6+FFLVebZbIjNtNJatKUk8fm
-         7WdeM5wHh29+AEnEvrULW6nj9cb6cWrBVTj8H49CMuX16PN8nV+ZnJFOTR7a4GEG4NlP
-         7whVkMsLLx04Ab85cSmRjK0EjveO/zbvEJ05Y08oGNsZS5mtZ3ZnaNUDHteZ+BIMehEs
-         P000HA09cIksDb4rOkfG1K7ftuzeFC8y1xtFGu6VkdDrik0JOHRmaf3h0xfw0XCD94/F
-         HbBGCI1BqWBFwN66d7bmzT6fv0NEM0l/fNlFHQRWf3sp7MUDgkgsh1OVfoFCDLzq+2Zc
-         bK0w==
-X-Gm-Message-State: ABy/qLY3EVBgC8B4R0pS+G+eWVEv+KQEIWefetWME7DfXOEeE+5KnUkt
-        R8R9bzaonpxDeDdYu+zHkY0KUg==
-X-Google-Smtp-Source: APBJJlEU9I11aEXrAvD0lMzre2JXwbJszN+iFqWDfzBtJ6UCVwR0/JRGXW5+TgQ8uUK8clcH2V8gUQ==
-X-Received: by 2002:a2e:990f:0:b0:2b7:1c0f:f215 with SMTP id v15-20020a2e990f000000b002b71c0ff215mr6566247lji.2.1689077976203;
-        Tue, 11 Jul 2023 05:19:36 -0700 (PDT)
+        bh=NRzxUcdMoRzU/LXIG+2IxlKEBjvc8egBZ1+dv+HI/9k=;
+        b=B+oeBGeb146Ye2FxX7UZ1GSD6HUub+psG0Qav4jgYkLia4WSpu3NbQdUk8AHwsdgA2
+         pp991De9t7fUj/pdxfiXx3uKhfXLfDwhUYh9Zts+ybbP3giPSWpw6N/yt7Kkh68kOT+M
+         8cm/wZOtVqFEHb8g9qpY0GPuuj7SabmISESmuWV1OdxHHEdniplXANCn0e7LePeDYOLv
+         5NZZzfNiIgA/TOqibg4ICwiHDgNpDVnglC4u5la0x4ledMteplUxmTxYvYfnz9YiwDVx
+         +VCj2AAmiIGrEvx4+JBQhKJWEXQdZqvw420EPUuuDqMVxD9qBMqltAwAM4Do8hat6403
+         bGvQ==
+X-Gm-Message-State: ABy/qLar2/DJVc7W/p+1KpISLkK/7daScI6c4L25EYKUklNkJCE65ExL
+        XgGX1BxGNk5Vr/Y+rGPL+VyIiA==
+X-Google-Smtp-Source: APBJJlGm4l3SDY3FAD1xMbvG78kbxLaZxFbnK1Hc/KGD1onAb8jdyRkMROx7sIOthEkHnHs9C+VP9A==
+X-Received: by 2002:a2e:b166:0:b0:2b7:117:e54 with SMTP id a6-20020a2eb166000000b002b701170e54mr13803718ljm.4.1689077944002;
+        Tue, 11 Jul 2023 05:19:04 -0700 (PDT)
 Received: from [192.168.1.101] (abyl96.neoplus.adsl.tpnet.pl. [83.9.31.96])
-        by smtp.gmail.com with ESMTPSA id d18-20020a2e96d2000000b002b708450951sm435563ljj.88.2023.07.11.05.19.35
+        by smtp.gmail.com with ESMTPSA id d18-20020a2e96d2000000b002b708450951sm435563ljj.88.2023.07.11.05.19.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jul 2023 05:19:35 -0700 (PDT)
+        Tue, 11 Jul 2023 05:19:03 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 11 Jul 2023 14:18:52 +0200
-Subject: [PATCH 53/53] interconnect: qcom: sm8550: Point camera paths to
- the camera RSC
+Date:   Tue, 11 Jul 2023 14:18:27 +0200
+Subject: [PATCH 28/53] interconnect: qcom: sc7280: Explicitly assign
+ voter_idx
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230708-topic-rpmh_icc_rsc-v1-53-b223bd2ac8dd@linaro.org>
+Message-Id: <20230708-topic-rpmh_icc_rsc-v1-28-b223bd2ac8dd@linaro.org>
 References: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
 In-Reply-To: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -71,186 +71,230 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1689077904; l=5762;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689077904; l=5586;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=W6na5tQubESsXoW9+LUn1M9R9sjGfLBb8AasT+sD/gg=;
- b=LJKdtd94KUc+CXD5JNWf2ab3MiRf13typSRJvQgEbZhLudJiAhYDUF0t9U94EeCcSdhQdDg6d
- QOliq5sd1MMASebL8OKCdJ1d1h0gofCmuRajrDkEZu5wA0dZ9sXu5ii
+ bh=nax1GmT400+SDmWYx677ggaJz8Q417oAUImc//sqRBI=;
+ b=QZfN5DzZ+sQyvhBt7DAVOOwH1qwd9tG7nKc4auZp5i3QPCjza8KgAr17dKeTznGx/lQwfE2k4
+ gz3cbp2Cj8GB79VtLFoHEG9heBFxwEzRP59H5YWT+IFj7RrJXX/vZaj
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The _CAM_n paths are expected to go through the respective channels of
-the CAM RSC. Point them to the correct places.
+To avoid confusion, explicitly assign the BCM voter index.
 
-Fixes: e6f0d6a30f73 ("interconnect: qcom: Add SM8550 interconnect provider driver")
+Note the assignment may be incorrect, but this commit brings no
+functional change.
+
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- drivers/interconnect/qcom/sm8550.c | 36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ drivers/interconnect/qcom/sc7280.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/drivers/interconnect/qcom/sm8550.c b/drivers/interconnect/qcom/sm8550.c
-index 41314b214cbe..8970fd6505f5 100644
---- a/drivers/interconnect/qcom/sm8550.c
-+++ b/drivers/interconnect/qcom/sm8550.c
-@@ -1696,21 +1696,21 @@ static struct qcom_icc_bcm bcm_sh1_disp = {
- static struct qcom_icc_bcm bcm_acv_cam_ife_0 = {
+diff --git a/drivers/interconnect/qcom/sc7280.c b/drivers/interconnect/qcom/sc7280.c
+index 971f538bc98a..bb8b31612501 100644
+--- a/drivers/interconnect/qcom/sc7280.c
++++ b/drivers/interconnect/qcom/sc7280.c
+@@ -1284,12 +1284,14 @@ static struct qcom_icc_node srvc_snoc = {
+ 
+ static struct qcom_icc_bcm bcm_acv = {
  	.name = "ACV",
- 	.enable_mask = 0x0,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM0,
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &ebi_cam_ife_0 },
+ 	.nodes = { &ebi },
  };
  
- static struct qcom_icc_bcm bcm_mc0_cam_ife_0 = {
+ static struct qcom_icc_bcm bcm_ce0 = {
+ 	.name = "CE0",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qxm_crypto },
+ };
+@@ -1297,12 +1299,14 @@ static struct qcom_icc_bcm bcm_ce0 = {
+ static struct qcom_icc_bcm bcm_cn0 = {
+ 	.name = "CN0",
+ 	.keepalive = true,
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 2,
+ 	.nodes = { &qnm_gemnoc_cnoc, &qnm_gemnoc_pcie },
+ };
+ 
+ static struct qcom_icc_bcm bcm_cn1 = {
+ 	.name = "CN1",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 47,
+ 	.nodes = { &qnm_cnoc3_cnoc2, &xm_qdss_dap,
+ 		   &qhs_ahb2phy0, &qhs_ahb2phy1,
+@@ -1331,6 +1335,7 @@ static struct qcom_icc_bcm bcm_cn1 = {
+ 
+ static struct qcom_icc_bcm bcm_cn2 = {
+ 	.name = "CN2",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 6,
+ 	.nodes = { &qhs_lpass_cfg, &qhs_pdm,
+ 		   &qhs_qspi, &qhs_sdc1,
+@@ -1339,12 +1344,14 @@ static struct qcom_icc_bcm bcm_cn2 = {
+ 
+ static struct qcom_icc_bcm bcm_co0 = {
+ 	.name = "CO0",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_nsp_gemnoc },
+ };
+ 
+ static struct qcom_icc_bcm bcm_co3 = {
+ 	.name = "CO3",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qxm_nsp },
+ };
+@@ -1352,6 +1359,7 @@ static struct qcom_icc_bcm bcm_co3 = {
+ static struct qcom_icc_bcm bcm_mc0 = {
  	.name = "MC0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.keepalive = true,
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &ebi_cam_ife_0 },
+ 	.nodes = { &ebi },
  };
- 
- static struct qcom_icc_bcm bcm_mm0_cam_ife_0 = {
+@@ -1359,24 +1367,28 @@ static struct qcom_icc_bcm bcm_mc0 = {
+ static struct qcom_icc_bcm bcm_mm0 = {
  	.name = "MM0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.keepalive = true,
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &qns_mem_noc_hf_cam_ife_0 },
+ 	.nodes = { &qns_mem_noc_hf },
  };
-@@ -1718,7 +1718,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_0 = {
- static struct qcom_icc_bcm bcm_mm1_cam_ife_0 = {
+ 
+ static struct qcom_icc_bcm bcm_mm1 = {
  	.name = "MM1",
- 	.enable_mask = 0x1,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM0,
- 	.num_nodes = 4,
- 	.nodes = { &qnm_camnoc_hf_cam_ife_0, &qnm_camnoc_icp_cam_ife_0,
- 		   &qnm_camnoc_sf_cam_ife_0, &qns_mem_noc_sf_cam_ife_0 },
-@@ -1726,7 +1726,7 @@ static struct qcom_icc_bcm bcm_mm1_cam_ife_0 = {
- 
- static struct qcom_icc_bcm bcm_sh0_cam_ife_0 = {
- 	.name = "SH0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM0,
- 	.num_nodes = 1,
- 	.nodes = { &qns_llcc_cam_ife_0 },
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 2,
+ 	.nodes = { &qxm_camnoc_hf, &qxm_mdp0 },
  };
-@@ -1734,7 +1734,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_0 = {
- static struct qcom_icc_bcm bcm_sh1_cam_ife_0 = {
- 	.name = "SH1",
- 	.enable_mask = 0x1,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 
+ static struct qcom_icc_bcm bcm_mm4 = {
+ 	.name = "MM4",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_mem_noc_sf },
+ };
+ 
+ static struct qcom_icc_bcm bcm_mm5 = {
+ 	.name = "MM5",
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 3,
- 	.nodes = { &qnm_mnoc_hf_cam_ife_0, &qnm_mnoc_sf_cam_ife_0,
- 		   &qnm_pcie_cam_ife_0 },
-@@ -1743,21 +1743,21 @@ static struct qcom_icc_bcm bcm_sh1_cam_ife_0 = {
- static struct qcom_icc_bcm bcm_acv_cam_ife_1 = {
- 	.name = "ACV",
- 	.enable_mask = 0x0,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.nodes = { &qnm_video0, &qxm_camnoc_icp,
+ 		   &qxm_camnoc_sf },
+@@ -1385,6 +1397,7 @@ static struct qcom_icc_bcm bcm_mm5 = {
+ static struct qcom_icc_bcm bcm_qup0 = {
+ 	.name = "QUP0",
+ 	.vote_scale = 1,
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &ebi_cam_ife_1 },
+ 	.nodes = { &qup0_core_slave },
  };
- 
- static struct qcom_icc_bcm bcm_mc0_cam_ife_1 = {
- 	.name = "MC0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM1,
+@@ -1392,6 +1405,7 @@ static struct qcom_icc_bcm bcm_qup0 = {
+ static struct qcom_icc_bcm bcm_qup1 = {
+ 	.name = "QUP1",
+ 	.vote_scale = 1,
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &ebi_cam_ife_1 },
+ 	.nodes = { &qup1_core_slave },
  };
- 
- static struct qcom_icc_bcm bcm_mm0_cam_ife_1 = {
- 	.name = "MM0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM1,
- 	.num_nodes = 1,
- 	.nodes = { &qns_mem_noc_hf_cam_ife_1 },
- };
-@@ -1765,7 +1765,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_1 = {
- static struct qcom_icc_bcm bcm_mm1_cam_ife_1 = {
- 	.name = "MM1",
- 	.enable_mask = 0x1,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM1,
- 	.num_nodes = 4,
- 	.nodes = { &qnm_camnoc_hf_cam_ife_1, &qnm_camnoc_icp_cam_ife_1,
- 		   &qnm_camnoc_sf_cam_ife_1, &qns_mem_noc_sf_cam_ife_1 },
-@@ -1773,7 +1773,7 @@ static struct qcom_icc_bcm bcm_mm1_cam_ife_1 = {
- 
- static struct qcom_icc_bcm bcm_sh0_cam_ife_1 = {
+@@ -1399,24 +1413,28 @@ static struct qcom_icc_bcm bcm_qup1 = {
+ static struct qcom_icc_bcm bcm_sh0 = {
  	.name = "SH0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.keepalive = true,
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &qns_llcc_cam_ife_1 },
- };
-@@ -1781,7 +1781,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_1 = {
- static struct qcom_icc_bcm bcm_sh1_cam_ife_1 = {
- 	.name = "SH1",
- 	.enable_mask = 0x1,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM1,
- 	.num_nodes = 3,
- 	.nodes = { &qnm_mnoc_hf_cam_ife_1, &qnm_mnoc_sf_cam_ife_1,
- 		   &qnm_pcie_cam_ife_1 },
-@@ -1790,21 +1790,21 @@ static struct qcom_icc_bcm bcm_sh1_cam_ife_1 = {
- static struct qcom_icc_bcm bcm_acv_cam_ife_2 = {
- 	.name = "ACV",
- 	.enable_mask = 0x0,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM2,
- 	.num_nodes = 1,
- 	.nodes = { &ebi_cam_ife_2 },
+ 	.nodes = { &qns_llcc },
  };
  
- static struct qcom_icc_bcm bcm_mc0_cam_ife_2 = {
- 	.name = "MC0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM2,
- 	.num_nodes = 1,
- 	.nodes = { &ebi_cam_ife_2 },
+ static struct qcom_icc_bcm bcm_sh2 = {
+ 	.name = "SH2",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 2,
+ 	.nodes = { &alm_gpu_tcu, &alm_sys_tcu },
  };
  
- static struct qcom_icc_bcm bcm_mm0_cam_ife_2 = {
- 	.name = "MM0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM2,
+ static struct qcom_icc_bcm bcm_sh3 = {
+ 	.name = "SH3",
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &qns_mem_noc_hf_cam_ife_2 },
+ 	.nodes = { &qnm_cmpnoc },
  };
-@@ -1812,7 +1812,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_2 = {
- static struct qcom_icc_bcm bcm_mm1_cam_ife_2 = {
- 	.name = "MM1",
- 	.enable_mask = 0x1,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM2,
- 	.num_nodes = 4,
- 	.nodes = { &qnm_camnoc_hf_cam_ife_2, &qnm_camnoc_icp_cam_ife_2,
- 		   &qnm_camnoc_sf_cam_ife_2, &qns_mem_noc_sf_cam_ife_2 },
-@@ -1820,7 +1820,7 @@ static struct qcom_icc_bcm bcm_mm1_cam_ife_2 = {
  
- static struct qcom_icc_bcm bcm_sh0_cam_ife_2 = {
- 	.name = "SH0",
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM2,
+ static struct qcom_icc_bcm bcm_sh4 = {
+ 	.name = "SH4",
++	.voter_idx = ICC_BCM_VOTER_APPS,
  	.num_nodes = 1,
- 	.nodes = { &qns_llcc_cam_ife_2 },
+ 	.nodes = { &chm_apps },
  };
-@@ -1828,7 +1828,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_2 = {
- static struct qcom_icc_bcm bcm_sh1_cam_ife_2 = {
- 	.name = "SH1",
- 	.enable_mask = 0x1,
--	.voter_idx = ICC_BCM_VOTER_APPS,
-+	.voter_idx = ICC_BCM_VOTER_CAM2,
- 	.num_nodes = 3,
- 	.nodes = { &qnm_mnoc_hf_cam_ife_2, &qnm_mnoc_sf_cam_ife_2,
- 		   &qnm_pcie_cam_ife_2 },
+@@ -1424,54 +1442,63 @@ static struct qcom_icc_bcm bcm_sh4 = {
+ static struct qcom_icc_bcm bcm_sn0 = {
+ 	.name = "SN0",
+ 	.keepalive = true,
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_gemnoc_sf },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn2 = {
+ 	.name = "SN2",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_gemnoc_gc },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn3 = {
+ 	.name = "SN3",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qxs_pimem },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn4 = {
+ 	.name = "SN4",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &xs_qdss_stm },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn5 = {
+ 	.name = "SN5",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &xm_pcie3_0 },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn6 = {
+ 	.name = "SN6",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &xm_pcie3_1 },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn7 = {
+ 	.name = "SN7",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qnm_aggre1_noc },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn8 = {
+ 	.name = "SN8",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qnm_aggre2_noc },
+ };
+ 
+ static struct qcom_icc_bcm bcm_sn14 = {
+ 	.name = "SN14",
++	.voter_idx = ICC_BCM_VOTER_APPS,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_pcie_mem_noc },
+ };
 
 -- 
 2.41.0
