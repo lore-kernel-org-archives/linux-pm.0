@@ -2,119 +2,243 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D3BAEB64DC
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:20:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1CB9EB64DD
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:21:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232179AbjGKOUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 10:20:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58348 "EHLO
+        id S230296AbjGKOVZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 10:21:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59118 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232330AbjGKOUj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:20:39 -0400
+        with ESMTP id S230119AbjGKOVY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:21:24 -0400
 Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C4D719B7
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:20:19 -0700 (PDT)
-Received: by mail-lj1-x234.google.com with SMTP id 38308e7fff4ca-2b708e49059so89924021fa.3
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:20:19 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF72B1728
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:21:04 -0700 (PDT)
+Received: by mail-lj1-x234.google.com with SMTP id 38308e7fff4ca-2b701e41cd3so94685351fa.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:21:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689085217; x=1691677217;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=LmcufVla96gj7QBJok4aNFrwvp3Z+1MnOpTkxYvPgM0=;
-        b=AiyVL1P+nFlMzdXz54/ydk5itbcOeOvCUs/nZ6yXjVDQ9ADROy8QVgjiKBI/4ZoLj2
-         otv4M4yyqZ/ePDpTR9Xxbq0FRFvkOubznLlJP9nAiz2fwZCJ6YItZYovJzu6tJ0dO7R8
-         JJhf8Cw55EqF7f1cPAFaUzJD9oeczpsLPbvYbJ/WexFm+p1hxua9pKJvVu4Ei4P4GvAz
-         Y9ExbgAyMrUM6DAl+oOt7lnV1YszZkZP2z3ApUF8m3w0RdjBgZkc/k1q2UbamYRnbYUd
-         G8gH86kv2NS/2NSLRD5dhKjOQOw4dRbCKVi26G6O1ynEy2BtN96ARTQdX2m5PQ7ppj+S
-         MPlg==
+        d=linaro.org; s=google; t=1689085260; x=1691677260;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=YSKTBplafBxn9qBTvU+oX8v93f247AJHKPJqc+tN6+8=;
+        b=Ey+zgeTXJXrgW1S8K0Df2HHB93lSYF8p6K4gY0bfDIeiDHTT4Ul7iZ020Vm0rg06go
+         4O8Vw04ajtp0lRaoICRhBBtw/Ony3neabsw0ldmgxkc3WCpJ4iBzxSOO8DR+YdyURz6F
+         gH7ky71KyC0EBC+ZkYebGpLKjNlcnEeqPkZ7HerY7+osh7f5G5KNtui+mziGRaBKD1hC
+         BU2WuleBZJHMzShZ55MNLksXGmpWjvIQmAX0cX3oSLIaVNH6QGGqZe06137GIUbCMzrZ
+         w+fltn9sHuNOgc4TAYY0FdgYOF2166JZLcj1CEFpn09n0Z9uz1+KaeFSaGalnsAByZH+
+         75Ng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689085217; x=1691677217;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=LmcufVla96gj7QBJok4aNFrwvp3Z+1MnOpTkxYvPgM0=;
-        b=YEq9ymyYqEfZZjT2erX7Or6JgTqgRDgDELXRAJE3u5P5nIRDYWhwwweCQ0Uj15QMtJ
-         VfYnmZO6xzduSXDJwwg1SFoUG5wuPqbX+p6DUKKbYAMyxSFHOA6MBCIwaz5LkC9Xfsm4
-         S+S3HRQW52KsIYzuC6YIVfNPJF5+t8N5Mg0WOM/aQ707/R6hmr2B2m1z4Rz7Il6UvpYJ
-         6aAm2dkLGU6XLVEuG1NzOdv3eWKjlUn+I1keR5a7Khc5OFcCYTob30LHgQjMzSiFwoG0
-         spj9U7VJkh21AX5Dn9nsLGz/tkfWNysq+ErSUnA13BNUYBmD5nC2/9hjS6bgKVQCgxyf
-         vHUQ==
-X-Gm-Message-State: ABy/qLYRzyEOHbUauu2/6Sk8vD5lk2EUifHYkcD31+RFC3q3ezmMtfYr
-        vrijZkAqVD9w9p7vrYPYw95IjA==
-X-Google-Smtp-Source: APBJJlELlXzsP+JtZBpVTcOFtfxcqaydUXrEFc8Vn+nHWRGhQPaqD8CkyIhFl1SlVeN41gB6zgLtig==
-X-Received: by 2002:a2e:b0e4:0:b0:2b6:dd78:2a8e with SMTP id h4-20020a2eb0e4000000b002b6dd782a8emr12445939ljl.50.1689085217077;
-        Tue, 11 Jul 2023 07:20:17 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1689085260; x=1691677260;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=YSKTBplafBxn9qBTvU+oX8v93f247AJHKPJqc+tN6+8=;
+        b=BMhlIxSQV9f5Y1b8czrtIelhZEqO5Nq4UxOrnh6w0FLZ0leFaAGneOuzXgNZhZlO2o
+         bbE8oFMx1hAV41Kx26ixGGQPrSElImf4P6y3J1pf4WBevZB82CpOMghtI576NRW1go3u
+         eK8OQXXF9MlLKvhf3lJa/XzvJtAD1LXw22ZgkyLF6BcRpodxgyVSOdEA6ZJo7B+pmZdZ
+         6+QQtsl8JyQsKhR3QsOi05QCEDFDCQHAMPL7Km+yfLZLMTz5R/UyIRJlKX6ZWtTSvWkG
+         byBJL50VE0gU0LDXHn2tBRpwk3NxwZojh6bpSKLUFNR9cyKAo1mmcJSCNk7uSGdhAqrV
+         RVXg==
+X-Gm-Message-State: ABy/qLbl+sR6Q2eoGEXwv5tN3cEbmsfT0HXqTDEh8sQPpIV5dHPujziV
+        USow5PKGfvV+sGc3Azxr+yK0uA==
+X-Google-Smtp-Source: APBJJlG+GC2YoALaqzoQBZEEmGwybOkfQoxBAGxVlcX2RBUiIPLaL+TYohG34JVuyxo45xSfKka+nw==
+X-Received: by 2002:a2e:924e:0:b0:2b6:cecb:2f0f with SMTP id v14-20020a2e924e000000b002b6cecb2f0fmr13641040ljg.2.1689085259858;
+        Tue, 11 Jul 2023 07:20:59 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id p2-20020a2ea402000000b002b6daa3fa2csm466233ljn.69.2023.07.11.07.20.15
+        by smtp.gmail.com with ESMTPSA id a6-20020a2e9806000000b002b6bb68c7eesm480090ljj.110.2023.07.11.07.20.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jul 2023 07:20:16 -0700 (PDT)
+        Tue, 11 Jul 2023 07:20:59 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
 Cc:     Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        =?UTF-8?q?Andreas=20F=C3=A4rber?= <afaerber@suse.de>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        linux-actions@lists.infradead.org
-Subject: [PATCH v2 02/18] soc: actions: Move power-domain driver to the genpd dir
-Date:   Tue, 11 Jul 2023 16:20:13 +0200
-Message-Id: <20230711142013.751550-1-ulf.hansson@linaro.org>
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        linux-mips@vger.kernel.org, linux-rpi-kernel@lists.infradead.org
+Subject: [PATCH v2 05/18] soc: bcm: Move power-domain drivers to the genpd dir
+Date:   Tue, 11 Jul 2023 16:20:56 +0200
+Message-Id: <20230711142056.751590-1-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <v2/0003-soc-amlogic-Move-power-domain-drivers-to-the-genpd-d.patch>
-References: <v2/0003-soc-amlogic-Move-power-domain-drivers-to-the-genpd-d.patch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To simplify with maintenance let's move the action power-domain driver to
-the new genpd directory. Going forward, patches are intended to be managed
+To simplify with maintenance let's move the bcm power-domain drivers to the
+new genpd directory. Going forward, patches are intended to be managed
 through a separate git tree, according to MAINTAINERS.
 
-Cc: "Andreas Färber" <afaerber@suse.de>
-Cc: Manivannan Sadhasivam <mani@kernel.org>
-Cc: <linux-actions@lists.infradead.org>
-Acked-by: Manivannan Sadhasivam <mani@kernel.org>
+While moving the drivers, we end up with a directory for bcm63xx that only
+contains a Kconfig file, which seems a bit silly. Let's therefore also move
+the Kconfig options into the Kconfig file a directory above, as it allows
+us to drop the directory too.
+
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>
+Cc: Ray Jui <rjui@broadcom.com>
+Cc: Scott Branden <sbranden@broadcom.com>
+Cc: <linux-mips@vger.kernel.org>
+Cc: <linux-rpi-kernel@lists.infradead.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/genpd/Makefile                   | 1 +
- drivers/genpd/actions/Makefile           | 2 ++
- drivers/{soc => genpd}/actions/owl-sps.c | 0
- drivers/soc/actions/Makefile             | 1 -
- 4 files changed, 3 insertions(+), 1 deletion(-)
- create mode 100644 drivers/genpd/actions/Makefile
- rename drivers/{soc => genpd}/actions/owl-sps.c (100%)
+ MAINTAINERS                                   |  4 ++--
+ drivers/genpd/Makefile                        |  1 +
+ drivers/genpd/bcm/Makefile                    |  5 +++++
+ .../{soc/bcm/bcm63xx => genpd/bcm}/bcm-pmb.c  |  0
+ drivers/{soc => genpd}/bcm/bcm2835-power.c    |  0
+ .../bcm/bcm63xx => genpd/bcm}/bcm63xx-power.c |  0
+ .../{soc => genpd}/bcm/raspberrypi-power.c    |  0
+ drivers/soc/bcm/Kconfig                       | 22 ++++++++++++++++++-
+ drivers/soc/bcm/Makefile                      |  3 ---
+ drivers/soc/bcm/bcm63xx/Kconfig               | 21 ------------------
+ drivers/soc/bcm/bcm63xx/Makefile              |  3 ---
+ 11 files changed, 29 insertions(+), 30 deletions(-)
+ create mode 100644 drivers/genpd/bcm/Makefile
+ rename drivers/{soc/bcm/bcm63xx => genpd/bcm}/bcm-pmb.c (100%)
+ rename drivers/{soc => genpd}/bcm/bcm2835-power.c (100%)
+ rename drivers/{soc/bcm/bcm63xx => genpd/bcm}/bcm63xx-power.c (100%)
+ rename drivers/{soc => genpd}/bcm/raspberrypi-power.c (100%)
+ delete mode 100644 drivers/soc/bcm/bcm63xx/Kconfig
+ delete mode 100644 drivers/soc/bcm/bcm63xx/Makefile
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index caa221fd0c11..77629ab4a5f0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4009,7 +4009,7 @@ F:	arch/mips/kernel/*bmips*
+ F:	drivers/irqchip/irq-bcm63*
+ F:	drivers/irqchip/irq-bcm7*
+ F:	drivers/irqchip/irq-brcmstb*
+-F:	drivers/soc/bcm/bcm63xx
++F:	drivers/genpd/bcm/bcm63xx-power.c
+ F:	include/linux/bcm963xx_nvram.h
+ F:	include/linux/bcm963xx_tag.h
+ 
+@@ -4224,7 +4224,7 @@ R:	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>
+ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ T:	git https://github.com/broadcom/stblinux.git
+-F:	drivers/soc/bcm/bcm63xx/bcm-pmb.c
++F:	drivers/genpd/bcm/bcm-pmb.c
+ F:	include/dt-bindings/soc/bcm-pmb.h
+ 
+ BROADCOM SPECIFIC AMBA DRIVER (BCMA)
 diff --git a/drivers/genpd/Makefile b/drivers/genpd/Makefile
-index a4e40e534e6a..a2d5b2095915 100644
+index 91d4a3808981..6b9e9fe907f3 100644
 --- a/drivers/genpd/Makefile
 +++ b/drivers/genpd/Makefile
-@@ -1 +1,2 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+obj-y					+= actions/
-diff --git a/drivers/genpd/actions/Makefile b/drivers/genpd/actions/Makefile
+@@ -2,3 +2,4 @@
+ obj-y					+= actions/
+ obj-y					+= amlogic/
+ obj-y					+= apple/
++obj-y					+= bcm/
+diff --git a/drivers/genpd/bcm/Makefile b/drivers/genpd/bcm/Makefile
 new file mode 100644
-index 000000000000..e78c420a2454
+index 000000000000..6bfbe4e4db13
 --- /dev/null
-+++ b/drivers/genpd/actions/Makefile
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0+
-+obj-$(CONFIG_OWL_PM_DOMAINS)		+= owl-sps.o
-diff --git a/drivers/soc/actions/owl-sps.c b/drivers/genpd/actions/owl-sps.c
++++ b/drivers/genpd/bcm/Makefile
+@@ -0,0 +1,5 @@
++# SPDX-License-Identifier: GPL-2.0-only
++obj-$(CONFIG_BCM_PMB)			+= bcm-pmb.o
++obj-$(CONFIG_BCM2835_POWER)		+= bcm2835-power.o
++obj-$(CONFIG_BCM63XX_POWER)		+= bcm63xx-power.o
++obj-$(CONFIG_RASPBERRYPI_POWER)		+= raspberrypi-power.o
+diff --git a/drivers/soc/bcm/bcm63xx/bcm-pmb.c b/drivers/genpd/bcm/bcm-pmb.c
 similarity index 100%
-rename from drivers/soc/actions/owl-sps.c
-rename to drivers/genpd/actions/owl-sps.c
-diff --git a/drivers/soc/actions/Makefile b/drivers/soc/actions/Makefile
-index 4db9e7b050e5..4ac88fec2050 100644
---- a/drivers/soc/actions/Makefile
-+++ b/drivers/soc/actions/Makefile
-@@ -1,4 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0+
+rename from drivers/soc/bcm/bcm63xx/bcm-pmb.c
+rename to drivers/genpd/bcm/bcm-pmb.c
+diff --git a/drivers/soc/bcm/bcm2835-power.c b/drivers/genpd/bcm/bcm2835-power.c
+similarity index 100%
+rename from drivers/soc/bcm/bcm2835-power.c
+rename to drivers/genpd/bcm/bcm2835-power.c
+diff --git a/drivers/soc/bcm/bcm63xx/bcm63xx-power.c b/drivers/genpd/bcm/bcm63xx-power.c
+similarity index 100%
+rename from drivers/soc/bcm/bcm63xx/bcm63xx-power.c
+rename to drivers/genpd/bcm/bcm63xx-power.c
+diff --git a/drivers/soc/bcm/raspberrypi-power.c b/drivers/genpd/bcm/raspberrypi-power.c
+similarity index 100%
+rename from drivers/soc/bcm/raspberrypi-power.c
+rename to drivers/genpd/bcm/raspberrypi-power.c
+diff --git a/drivers/soc/bcm/Kconfig b/drivers/soc/bcm/Kconfig
+index 24f92a6e882a..f96906795fa6 100644
+--- a/drivers/soc/bcm/Kconfig
++++ b/drivers/soc/bcm/Kconfig
+@@ -42,7 +42,27 @@ config SOC_BRCMSTB
  
- obj-$(CONFIG_OWL_PM_DOMAINS_HELPER) += owl-sps-helper.o
--obj-$(CONFIG_OWL_PM_DOMAINS) += owl-sps.o
+ 	  If unsure, say N.
+ 
+-source "drivers/soc/bcm/bcm63xx/Kconfig"
++config BCM_PMB
++	bool "Broadcom PMB (Power Management Bus) driver"
++	depends on ARCH_BCMBCA || (COMPILE_TEST && OF)
++	default ARCH_BCMBCA
++	select PM_GENERIC_DOMAINS if PM
++	help
++	  This enables support for the Broadcom's PMB (Power Management Bus) that
++	  is used for disabling and enabling SoC devices.
++
++if SOC_BCM63XX
++
++config BCM63XX_POWER
++	bool "BCM63xx power domain driver"
++	depends on BMIPS_GENERIC || (COMPILE_TEST && OF)
++	select PM_GENERIC_DOMAINS if PM
++	help
++	  This enables support for the BCM63xx power domains controller on
++	  BCM6318, BCM6328, BCM6362 and BCM63268 SoCs.
++
++endif # SOC_BCM63XX
++
+ source "drivers/soc/bcm/brcmstb/Kconfig"
+ 
+ endmenu
+diff --git a/drivers/soc/bcm/Makefile b/drivers/soc/bcm/Makefile
+index 0f0efa28d92b..32424b1032c7 100644
+--- a/drivers/soc/bcm/Makefile
++++ b/drivers/soc/bcm/Makefile
+@@ -1,5 +1,2 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-obj-$(CONFIG_BCM2835_POWER)	+= bcm2835-power.o
+-obj-$(CONFIG_RASPBERRYPI_POWER)	+= raspberrypi-power.o
+-obj-y				+= bcm63xx/
+ obj-$(CONFIG_SOC_BRCMSTB)	+= brcmstb/
+diff --git a/drivers/soc/bcm/bcm63xx/Kconfig b/drivers/soc/bcm/bcm63xx/Kconfig
+deleted file mode 100644
+index 355c34482076..000000000000
+--- a/drivers/soc/bcm/bcm63xx/Kconfig
++++ /dev/null
+@@ -1,21 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0-only
+-if SOC_BCM63XX
+-
+-config BCM63XX_POWER
+-	bool "BCM63xx power domain driver"
+-	depends on BMIPS_GENERIC || (COMPILE_TEST && OF)
+-	select PM_GENERIC_DOMAINS if PM
+-	help
+-	  This enables support for the BCM63xx power domains controller on
+-	  BCM6318, BCM6328, BCM6362 and BCM63268 SoCs.
+-
+-endif # SOC_BCM63XX
+-
+-config BCM_PMB
+-	bool "Broadcom PMB (Power Management Bus) driver"
+-	depends on ARCH_BCMBCA || (COMPILE_TEST && OF)
+-	default ARCH_BCMBCA
+-	select PM_GENERIC_DOMAINS if PM
+-	help
+-	  This enables support for the Broadcom's PMB (Power Management Bus) that
+-	  is used for disabling and enabling SoC devices.
+diff --git a/drivers/soc/bcm/bcm63xx/Makefile b/drivers/soc/bcm/bcm63xx/Makefile
+deleted file mode 100644
+index 557eed3d67bd..000000000000
+--- a/drivers/soc/bcm/bcm63xx/Makefile
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0-only
+-obj-$(CONFIG_BCM63XX_POWER) += bcm63xx-power.o
+-obj-$(CONFIG_BCM_PMB)		+= bcm-pmb.o
 -- 
 2.34.1
 
