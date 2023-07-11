@@ -2,60 +2,63 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E5FBC00528
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DC14EB64DD
 	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:23:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233568AbjGKOXv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 10:23:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59680 "EHLO
+        id S233578AbjGKOXw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 10:23:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233994AbjGKOX0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:23:26 -0400
-Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDC8C19BE
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:22:59 -0700 (PDT)
-Received: by mail-lj1-x22f.google.com with SMTP id 38308e7fff4ca-2b6ef64342aso92097501fa.3
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:22:59 -0700 (PDT)
+        with ESMTP id S233706AbjGKOXD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:23:03 -0400
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 374B92704
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:22:30 -0700 (PDT)
+Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-4f4b2bc1565so9129703e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:22:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689085369; x=1691677369;
+        d=linaro.org; s=google; t=1689085343; x=1691677343;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=k3HkS8n/DHjLJ9CSnu0btooLeG2USC/O5hAcB+zQHR0=;
-        b=YFzpDs4qddfLuT2Ja47Tie8E9U6WSvRiitw3Rl6fvE7ZRbRoJ/B1O7jT+omGz2Zkoo
-         Psieekd+8Hyx64OQnlvvI62//QvgBAYh+forEFEZlWdq6K0ex3Fk4oK/XuogaHW4O2RQ
-         KAhZAe/mXovdHvRxuM0igb/7yg/9gPrZwWfcpVg2S6K3ceqZV3rQx1mHdYj1mZYZ1P1X
-         o7nF3oFkjdaKskPFUFPENSh7AVinLMokMVPv7/uFZ56fMFDsJqiZvNPm226qBD8+LE7a
-         D2Z29Jh6edFJJT5FZYRmny/D3dq0IbZ7ylCIMd0ZNN9/F9GaGvkbI1T0A1XG7LZduV36
-         LZXw==
+        bh=iwIBZ05Ys45I978D50ldwhR/Cf6WfL00p93qangrY3Q=;
+        b=Iou84qTwZTWHyUC5ueKdQedZumyQQXVVqADsXy14PIsu47h1UECAkc/MAemCiToZ6n
+         rKEGK5lCL5LD5stpmMGK2sCBV2ZuW/aDPw274rORL1tFEVb7MjlEGt4CmZw9A3mkGcGu
+         DvcDU8Q43Zo+xE7VAHNHNRzaYsm+MIznNQMPhSV8Z5BKMrtHXEipR/tr+7BaJb73fZHN
+         qOZCCqL01iOZCqx97LB1oFQFQ+M+3nL2CW2knHH/eGy6nOTJqmpNJQyF2aZdXi8lj9gG
+         xImxCRawYhLeEqe9PgOFYhuLAW9oRNqQEdORDzp6P9ixb9knA3Dy7AsaIt9C0BpYitsx
+         7ZnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689085369; x=1691677369;
+        d=1e100.net; s=20221208; t=1689085343; x=1691677343;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=k3HkS8n/DHjLJ9CSnu0btooLeG2USC/O5hAcB+zQHR0=;
-        b=K8g35/lc1mleutk0JDOR8v+puPooB8tQfJy6wgd0eLCWFrpduWw6s2IX1pgY/lynjo
-         zJSCrhM5f0NpDVKFoAVR3oyvdyYikD4k5z0431csHLBoocsgBv306daQT1E9zjLPF0dH
-         XRydlqT3zzfghREXd4SRjHl19f6orX7N5RTpta3Z0LsBJRszvGPCOMmY/Aukz+TDYszb
-         XlwSfWTmSi9A5SDiyvNbgKhdRkfYkY7NNgXGKLtJt6FYLtHCnywLOu5xbli/mbeHLYGm
-         dUDnzs7mSkIZVtl85gUZMxumCzI//Xw8EGJj9TDhyOXLSLZEpsm4rBdt3fI7aaUPALpk
-         Y84Q==
-X-Gm-Message-State: ABy/qLbxltBPMOPbZiPgUNVoeCmDPJuvtBohRjtHQkaNERGk5nO2eDmX
-        y4Awq5zt84yTjAtw+J66/iBKnw==
-X-Google-Smtp-Source: APBJJlHeyQA/rrTBRnhHmFHAQ9RkvQirevuuq4l+s9FWvVcIYzcJfIjCrcqTAVLnbDxJIqDqRKtRxQ==
-X-Received: by 2002:a2e:b0c7:0:b0:2b6:ec69:7c3b with SMTP id g7-20020a2eb0c7000000b002b6ec697c3bmr12314784ljl.46.1689085369756;
-        Tue, 11 Jul 2023 07:22:49 -0700 (PDT)
+        bh=iwIBZ05Ys45I978D50ldwhR/Cf6WfL00p93qangrY3Q=;
+        b=d0IEZ2bL4ual1q9jF3baENAcdUTgBoOkApMJAc6++efIUT9o6OSVMv0SzqR1HCNWFx
+         z7sHVn84nEW/Tzqr2Hwp3IRlp1pCjvKEe7i2UTdpQBBktK6V71u0ITeYImtfCnzj9LJd
+         u2ivhZI17kAE5xQSZQL1Xf0ZQtbSadD5I8utIJD9Mr5EKWMDzZ5vd3bWBzoJIPhlgWKK
+         5gIPO/gahr30F/CxA4KMKRxTa8RvAdLslu2nvL1QLzgVn4/TXHRvomM7M1LTi3sdzlzv
+         fbmagMHaTXVGjAO2gQ2D5DEjcZEPbiJWpxAy5uiQCmD6Uewf13iPqT3PbnNPnqR1N0pn
+         +nbg==
+X-Gm-Message-State: ABy/qLarpGHHlByvuEB3xZHVe6xtnQ2Gbm5yBfz/aV56BYOk6NMO0qMP
+        ViiuggOePT1OZn6aOGX2u6k0Eg==
+X-Google-Smtp-Source: APBJJlGEMYUOHgBlD4JB4xGY34paEiDQr3XVU9HTTGAP9qFTytewgj5cPGx3DY7erboJDQ9LoHVwog==
+X-Received: by 2002:ac2:5f01:0:b0:4fa:6d62:9219 with SMTP id 1-20020ac25f01000000b004fa6d629219mr11328781lfq.62.1689085343456;
+        Tue, 11 Jul 2023 07:22:23 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id q6-20020a2e84c6000000b002b69b44fd52sm488065ljh.5.2023.07.11.07.22.48
+        by smtp.gmail.com with ESMTPSA id w12-20020ac2598c000000b004fbbf5db0a5sm339232lfn.100.2023.07.11.07.22.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jul 2023 07:22:49 -0700 (PDT)
+        Tue, 11 Jul 2023 07:22:23 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
 Cc:     Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH v2 18/18] ARM: ux500: Move power-domain driver to the genpd dir
-Date:   Tue, 11 Jul 2023 16:22:47 +0200
-Message-Id: <20230711142247.751857-1-ulf.hansson@linaro.org>
+        Nishanth Menon <nm@ti.com>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Tero Kristo <kristo@kernel.org>,
+        Tony Lindgren <tony@atomide.com>
+Subject: [PATCH v2 15/18] soc: ti: Mover power-domain drivers to the genpd dir
+Date:   Tue, 11 Jul 2023 16:22:20 +0200
+Message-Id: <20230711142220.751795-1-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -63,67 +66,89 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To simplify with maintenance let's move the ux500 power-domain driver to
-the new genpd directory. Going forward, patches are intended to be managed
+To simplify with maintenance let's move the ti power-domain drivers to the
+new genpd directory. Going forward, patches are intended to be managed
 through a separate git tree, according to MAINTAINERS.
 
-Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>
+Cc: Santosh Shilimkar <ssantosh@kernel.org>
+Cc: Tero Kristo <kristo@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>
+Reviewed-by: Nishanth Menon <nm@ti.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- MAINTAINERS                                                     | 1 +
- arch/arm/mach-ux500/Makefile                                    | 1 -
- drivers/genpd/Makefile                                          | 1 +
- drivers/genpd/st/Makefile                                       | 2 ++
- .../pm_domains.c => drivers/genpd/st/ste-ux500-pm-domain.c      | 0
- 5 files changed, 4 insertions(+), 1 deletion(-)
- create mode 100644 drivers/genpd/st/Makefile
- rename arch/arm/mach-ux500/pm_domains.c => drivers/genpd/st/ste-ux500-pm-domain.c (100%)
+ MAINTAINERS                                   | 3 ++-
+ drivers/genpd/Makefile                        | 1 +
+ drivers/genpd/ti/Makefile                     | 3 +++
+ drivers/{soc => genpd}/ti/omap_prm.c          | 0
+ drivers/{soc => genpd}/ti/ti_sci_pm_domains.c | 0
+ drivers/soc/ti/Makefile                       | 2 --
+ 6 files changed, 6 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/genpd/ti/Makefile
+ rename drivers/{soc => genpd}/ti/omap_prm.c (100%)
+ rename drivers/{soc => genpd}/ti/ti_sci_pm_domains.c (100%)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 633bc6767cd5..377f68e66fb4 100644
+index 4be5dc3fd6dd..633bc6767cd5 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2421,6 +2421,7 @@ F:	arch/arm/mach-ux500/
- F:	drivers/clk/clk-nomadik.c
- F:	drivers/clocksource/clksrc-dbx500-prcmu.c
- F:	drivers/dma/ste_dma40*
-+F:	drivers/genpd/st/ste-ux500-pm-domain.c
- F:	drivers/hwspinlock/u8500_hsem.c
- F:	drivers/i2c/busses/i2c-nomadik.c
- F:	drivers/iio/adc/ab8500-gpadc.c
-diff --git a/arch/arm/mach-ux500/Makefile b/arch/arm/mach-ux500/Makefile
-index 5e903241bded..270e5676fa02 100644
---- a/arch/arm/mach-ux500/Makefile
-+++ b/arch/arm/mach-ux500/Makefile
-@@ -6,4 +6,3 @@
- obj-y				:= pm.o
- obj-$(CONFIG_UX500_SOC_DB8500)	+= cpu-db8500.o
- obj-$(CONFIG_SMP)		+= platsmp.o
--obj-$(CONFIG_PM_GENERIC_DOMAINS) += pm_domains.o
+@@ -21107,7 +21107,7 @@ F:	drivers/irqchip/irq-ti-sci-inta.c
+ F:	drivers/irqchip/irq-ti-sci-intr.c
+ F:	drivers/reset/reset-ti-sci.c
+ F:	drivers/soc/ti/ti_sci_inta_msi.c
+-F:	drivers/soc/ti/ti_sci_pm_domains.c
++F:	drivers/genpd/ti/ti_sci_pm_domains.c
+ F:	include/dt-bindings/soc/ti,sci_pm_domain.h
+ F:	include/linux/soc/ti/ti_sci_inta_msi.h
+ F:	include/linux/soc/ti/ti_sci_protocol.h
+@@ -21341,6 +21341,7 @@ L:	linux-kernel@vger.kernel.org
+ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+ S:	Maintained
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ti/linux.git
++F:	drivers/genpd/ti/omap_prm.c
+ F:	drivers/soc/ti/*
+ 
+ TI LM49xxx FAMILY ASoC CODEC DRIVERS
 diff --git a/drivers/genpd/Makefile b/drivers/genpd/Makefile
-index efd955f586e9..c429485c13f6 100644
+index e6f34d82e6a8..193892189f0d 100644
 --- a/drivers/genpd/Makefile
 +++ b/drivers/genpd/Makefile
-@@ -8,6 +8,7 @@ obj-y					+= qcom/
- obj-y					+= renesas/
- obj-y					+= rockchip/
- obj-y					+= samsung/
-+obj-y					+= st/
+@@ -11,3 +11,4 @@ obj-y					+= samsung/
  obj-y					+= starfive/
  obj-y					+= sunxi/
  obj-y					+= tegra/
-diff --git a/drivers/genpd/st/Makefile b/drivers/genpd/st/Makefile
++obj-y					+= ti/
+diff --git a/drivers/genpd/ti/Makefile b/drivers/genpd/ti/Makefile
 new file mode 100644
-index 000000000000..8fa5f9855460
+index 000000000000..69580afbb436
 --- /dev/null
-+++ b/drivers/genpd/st/Makefile
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_ARCH_U8500)		+= ste-ux500-pm-domain.o
-diff --git a/arch/arm/mach-ux500/pm_domains.c b/drivers/genpd/st/ste-ux500-pm-domain.c
++++ b/drivers/genpd/ti/Makefile
+@@ -0,0 +1,3 @@
++# SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_ARCH_OMAP2PLUS)		+= omap_prm.o
++obj-$(CONFIG_TI_SCI_PM_DOMAINS)		+= ti_sci_pm_domains.o
+diff --git a/drivers/soc/ti/omap_prm.c b/drivers/genpd/ti/omap_prm.c
 similarity index 100%
-rename from arch/arm/mach-ux500/pm_domains.c
-rename to drivers/genpd/st/ste-ux500-pm-domain.c
+rename from drivers/soc/ti/omap_prm.c
+rename to drivers/genpd/ti/omap_prm.c
+diff --git a/drivers/soc/ti/ti_sci_pm_domains.c b/drivers/genpd/ti/ti_sci_pm_domains.c
+similarity index 100%
+rename from drivers/soc/ti/ti_sci_pm_domains.c
+rename to drivers/genpd/ti/ti_sci_pm_domains.c
+diff --git a/drivers/soc/ti/Makefile b/drivers/soc/ti/Makefile
+index cc3c972fad2e..cb800a745e66 100644
+--- a/drivers/soc/ti/Makefile
++++ b/drivers/soc/ti/Makefile
+@@ -6,9 +6,7 @@ obj-$(CONFIG_KEYSTONE_NAVIGATOR_QMSS)	+= knav_qmss.o
+ knav_qmss-y := knav_qmss_queue.o knav_qmss_acc.o
+ obj-$(CONFIG_KEYSTONE_NAVIGATOR_DMA)	+= knav_dma.o
+ obj-$(CONFIG_AMX3_PM)			+= pm33xx.o
+-obj-$(CONFIG_ARCH_OMAP2PLUS)		+= omap_prm.o
+ obj-$(CONFIG_WKUP_M3_IPC)		+= wkup_m3_ipc.o
+-obj-$(CONFIG_TI_SCI_PM_DOMAINS)		+= ti_sci_pm_domains.o
+ obj-$(CONFIG_TI_SCI_INTA_MSI_DOMAIN)	+= ti_sci_inta_msi.o
+ obj-$(CONFIG_TI_K3_RINGACC)		+= k3-ringacc.o
+ obj-$(CONFIG_TI_K3_SOCINFO)		+= k3-socinfo.o
 -- 
 2.34.1
 
