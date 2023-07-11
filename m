@@ -2,60 +2,61 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA362EB64DD
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 12:22:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 116A4EB64DC
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 12:22:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231704AbjGKMWi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 08:22:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52854 "EHLO
+        id S232473AbjGKMWp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 08:22:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52900 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232587AbjGKMWH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 08:22:07 -0400
-Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABFC82D5E
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:33 -0700 (PDT)
-Received: by mail-lj1-x234.google.com with SMTP id 38308e7fff4ca-2b69e6d324aso89591821fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:33 -0700 (PDT)
+        with ESMTP id S232475AbjGKMWW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 08:22:22 -0400
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4A87170E
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:45 -0700 (PDT)
+Received: by mail-lj1-x22a.google.com with SMTP id 38308e7fff4ca-2b6f52e1c5cso88519101fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 05:20:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689077964; x=1691669964;
+        d=linaro.org; s=google; t=1689077976; x=1691669976;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=F+HpM+HCeMpSefmXK16C9YcJaoau/C3nDGJIkf8i7cM=;
-        b=CwAdfORGkFA26br71Jzt54Ul1bfX4ar1+m6NVBPcPGiKuANkgW5//GCXZCHiy1bIqu
-         xnqV3+Y+5V+zQqKZiB3TFbeqAiftTg+itRMrnRpj6sJEX0mMJ04rjAmmCj4S59Yh7ixn
-         LdvqeEp9wzkCviMwePckTG9N/wDlssLWcdmVBiL39RK8SGmI1vHtJPzflgWAkfEoh9eE
-         mTqEc263t3gsrBTGoLMHhC8CM+Lc101MBPwNczT58OabZJtctIepB88hZG1vxJ0iFtkz
-         hwF3Ex/Im5dTKxrqUQAQ8qMRszX011b6myOwwbIyBeuNnLyct8ruAy98cVjTEV0jGKc8
-         YYDg==
+        bh=hSHC4l0gplSJLLulVhlWKIZdx5+fKnKYFEmJEyGDU+A=;
+        b=foJDSaBicnp7FQezuElZP030n0/FHiLPO9Fb9DgJh3gvHDsN4ZzbB8v0voLZ5iMeGs
+         Qcd0tb880CQOtwLeCPMGv69H30FrFJuXxr03VgECOk5Z/AJkkWQ0zFF4qIh8CwOVZaqO
+         Fc8xciynpGkbZbzdsWxDZukLIk49LO65y/9rYUjCG/gpRIeFUlK67IujuMqvTQK9kQJG
+         PNrXavuemFDYZ+E8xqZ2cWe/hS2ImNg15AK/sAG4QyMJozRzbaYIklRs3g4mBnEx1Mdj
+         ZwMdn8IcsY/aY4qjkUkh+DAbvApgYvXuGaOIF7k09F/BPEzzQiEiUc7o6FdMD7PFzxRq
+         LEfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689077964; x=1691669964;
+        d=1e100.net; s=20221208; t=1689077976; x=1691669976;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=F+HpM+HCeMpSefmXK16C9YcJaoau/C3nDGJIkf8i7cM=;
-        b=aNYikgnZl+ONuODwmMl6FHwEYmVDcSY/Zh1KcVr23Kg07TPhNkMUEVgvmtxIS4aw0w
-         DhpLz+0p2tpy8cmacZAc/8Z/WabVtUXhFPxuQn0JuKG0Xd28L7TvU/8jWWfT6zewSBEx
-         fLjiZPYnlV2raNEuyHDAOqc+qwnkqOioKQN0GBLR1nZYKhQtQp/bO95hKJGwTkvo/05l
-         ohkK3x7HDV5VDcDkHjQMIopMsz4d+jnL+XM6J00UMGiYEqZ80f9tnQ6ilCrEyRIqVgWV
-         33GVTGlCtTuba5cUbEUWj7oftpCJ1oghbBGW75K4oJZQpJHwEl8C8QllHkyFmx3rULuo
-         Nhcg==
-X-Gm-Message-State: ABy/qLbl8bx4TT1JfQjg3QjWmt/BYQOO6gmSCDElVnLmwcPQ8kH1QRsr
-        0lrFCUzWuUMuPVa5HVf6PstQwA==
-X-Google-Smtp-Source: APBJJlEQupFlCuRT7R8SseW9Y2wdzGnv9aFcooCUZ4hnjXBLeIT4wGij8HdFQ5+TYBuRWwliDkKCtg==
-X-Received: by 2002:a05:651c:211:b0:2b6:da64:321 with SMTP id y17-20020a05651c021100b002b6da640321mr12309325ljn.45.1689077964399;
-        Tue, 11 Jul 2023 05:19:24 -0700 (PDT)
+        bh=hSHC4l0gplSJLLulVhlWKIZdx5+fKnKYFEmJEyGDU+A=;
+        b=QIq3gPKT1nQZ8lubIGI+uLFW9XZndw2X36oCcVjUtS6+FFLVebZbIjNtNJatKUk8fm
+         7WdeM5wHh29+AEnEvrULW6nj9cb6cWrBVTj8H49CMuX16PN8nV+ZnJFOTR7a4GEG4NlP
+         7whVkMsLLx04Ab85cSmRjK0EjveO/zbvEJ05Y08oGNsZS5mtZ3ZnaNUDHteZ+BIMehEs
+         P000HA09cIksDb4rOkfG1K7ftuzeFC8y1xtFGu6VkdDrik0JOHRmaf3h0xfw0XCD94/F
+         HbBGCI1BqWBFwN66d7bmzT6fv0NEM0l/fNlFHQRWf3sp7MUDgkgsh1OVfoFCDLzq+2Zc
+         bK0w==
+X-Gm-Message-State: ABy/qLY3EVBgC8B4R0pS+G+eWVEv+KQEIWefetWME7DfXOEeE+5KnUkt
+        R8R9bzaonpxDeDdYu+zHkY0KUg==
+X-Google-Smtp-Source: APBJJlEU9I11aEXrAvD0lMzre2JXwbJszN+iFqWDfzBtJ6UCVwR0/JRGXW5+TgQ8uUK8clcH2V8gUQ==
+X-Received: by 2002:a2e:990f:0:b0:2b7:1c0f:f215 with SMTP id v15-20020a2e990f000000b002b71c0ff215mr6566247lji.2.1689077976203;
+        Tue, 11 Jul 2023 05:19:36 -0700 (PDT)
 Received: from [192.168.1.101] (abyl96.neoplus.adsl.tpnet.pl. [83.9.31.96])
-        by smtp.gmail.com with ESMTPSA id d18-20020a2e96d2000000b002b708450951sm435563ljj.88.2023.07.11.05.19.23
+        by smtp.gmail.com with ESMTPSA id d18-20020a2e96d2000000b002b708450951sm435563ljj.88.2023.07.11.05.19.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jul 2023 05:19:24 -0700 (PDT)
+        Tue, 11 Jul 2023 05:19:35 -0700 (PDT)
 From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-Date:   Tue, 11 Jul 2023 14:18:43 +0200
-Subject: [PATCH 44/53] arm64: dts: qcom: sm8250: add qcom,bcm-voter-idx
+Date:   Tue, 11 Jul 2023 14:18:52 +0200
+Subject: [PATCH 53/53] interconnect: qcom: sm8550: Point camera paths to
+ the camera RSC
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230708-topic-rpmh_icc_rsc-v1-44-b223bd2ac8dd@linaro.org>
+Message-Id: <20230708-topic-rpmh_icc_rsc-v1-53-b223bd2ac8dd@linaro.org>
 References: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
 In-Reply-To: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
@@ -70,44 +71,186 @@ Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Konrad Dybcio <konrad.dybcio@linaro.org>
 X-Mailer: b4 0.12.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1689077904; l=999;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1689077904; l=5762;
  i=konrad.dybcio@linaro.org; s=20230215; h=from:subject:message-id;
- bh=ebMrQjKmDTgpWjkINs/Atf2PQmSY9dkU3TIUUbwBPoQ=;
- b=2OP9+lUs6pA/83Z+vE3WXtNyqzqPquNrM8XqK7DknAXmP1+1Lj4UX4sVKsct2f4C6r3LDSIVi
- Etb83M3eBHhC59EcuJBb6ILh6z46QOGZc8myu/aS85weLkvbSCKm7x7
+ bh=W6na5tQubESsXoW9+LUn1M9R9sjGfLBb8AasT+sD/gg=;
+ b=LJKdtd94KUc+CXD5JNWf2ab3MiRf13typSRJvQgEbZhLudJiAhYDUF0t9U94EeCcSdhQdDg6d
+ QOliq5sd1MMASebL8OKCdJ1d1h0gofCmuRajrDkEZu5wA0dZ9sXu5ii
 X-Developer-Key: i=konrad.dybcio@linaro.org; a=ed25519;
  pk=iclgkYvtl2w05SSXO5EjjSYlhFKsJ+5OSZBjOkQuEms=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To improve the representation and ease handling, identify each BCM voter
+The _CAM_n paths are expected to go through the respective channels of
+the CAM RSC. Point them to the correct places.
 
+Fixes: e6f0d6a30f73 ("interconnect: qcom: Add SM8550 interconnect provider driver")
 Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/sm8250.dtsi | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/interconnect/qcom/sm8550.c | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8250.dtsi b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-index e03007e23e91..29994aae897c 100644
---- a/arch/arm64/boot/dts/qcom/sm8250.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-@@ -12,6 +12,7 @@
- #include <dt-bindings/clock/qcom,sm8250-lpass-audiocc.h>
- #include <dt-bindings/dma/qcom-gpi.h>
- #include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/interconnect/qcom,icc.h>
- #include <dt-bindings/interconnect/qcom,osm-l3.h>
- #include <dt-bindings/interconnect/qcom,sm8250.h>
- #include <dt-bindings/mailbox/qcom-ipcc.h>
-@@ -5674,6 +5675,7 @@ rpmhpd_opp_turbo_l1: opp10 {
+diff --git a/drivers/interconnect/qcom/sm8550.c b/drivers/interconnect/qcom/sm8550.c
+index 41314b214cbe..8970fd6505f5 100644
+--- a/drivers/interconnect/qcom/sm8550.c
++++ b/drivers/interconnect/qcom/sm8550.c
+@@ -1696,21 +1696,21 @@ static struct qcom_icc_bcm bcm_sh1_disp = {
+ static struct qcom_icc_bcm bcm_acv_cam_ife_0 = {
+ 	.name = "ACV",
+ 	.enable_mask = 0x0,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_0 },
+ };
  
- 			apps_bcm_voter: bcm-voter {
- 				compatible = "qcom,bcm-voter";
-+				qcom,bcm-voter-idx = <ICC_BCM_VOTER_APPS>;
- 			};
- 		};
+ static struct qcom_icc_bcm bcm_mc0_cam_ife_0 = {
+ 	.name = "MC0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_0 },
+ };
  
+ static struct qcom_icc_bcm bcm_mm0_cam_ife_0 = {
+ 	.name = "MM0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_mem_noc_hf_cam_ife_0 },
+ };
+@@ -1718,7 +1718,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_0 = {
+ static struct qcom_icc_bcm bcm_mm1_cam_ife_0 = {
+ 	.name = "MM1",
+ 	.enable_mask = 0x1,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.num_nodes = 4,
+ 	.nodes = { &qnm_camnoc_hf_cam_ife_0, &qnm_camnoc_icp_cam_ife_0,
+ 		   &qnm_camnoc_sf_cam_ife_0, &qns_mem_noc_sf_cam_ife_0 },
+@@ -1726,7 +1726,7 @@ static struct qcom_icc_bcm bcm_mm1_cam_ife_0 = {
+ 
+ static struct qcom_icc_bcm bcm_sh0_cam_ife_0 = {
+ 	.name = "SH0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_llcc_cam_ife_0 },
+ };
+@@ -1734,7 +1734,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_0 = {
+ static struct qcom_icc_bcm bcm_sh1_cam_ife_0 = {
+ 	.name = "SH1",
+ 	.enable_mask = 0x1,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM0,
+ 	.num_nodes = 3,
+ 	.nodes = { &qnm_mnoc_hf_cam_ife_0, &qnm_mnoc_sf_cam_ife_0,
+ 		   &qnm_pcie_cam_ife_0 },
+@@ -1743,21 +1743,21 @@ static struct qcom_icc_bcm bcm_sh1_cam_ife_0 = {
+ static struct qcom_icc_bcm bcm_acv_cam_ife_1 = {
+ 	.name = "ACV",
+ 	.enable_mask = 0x0,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_1 },
+ };
+ 
+ static struct qcom_icc_bcm bcm_mc0_cam_ife_1 = {
+ 	.name = "MC0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_1 },
+ };
+ 
+ static struct qcom_icc_bcm bcm_mm0_cam_ife_1 = {
+ 	.name = "MM0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_mem_noc_hf_cam_ife_1 },
+ };
+@@ -1765,7 +1765,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_1 = {
+ static struct qcom_icc_bcm bcm_mm1_cam_ife_1 = {
+ 	.name = "MM1",
+ 	.enable_mask = 0x1,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.num_nodes = 4,
+ 	.nodes = { &qnm_camnoc_hf_cam_ife_1, &qnm_camnoc_icp_cam_ife_1,
+ 		   &qnm_camnoc_sf_cam_ife_1, &qns_mem_noc_sf_cam_ife_1 },
+@@ -1773,7 +1773,7 @@ static struct qcom_icc_bcm bcm_mm1_cam_ife_1 = {
+ 
+ static struct qcom_icc_bcm bcm_sh0_cam_ife_1 = {
+ 	.name = "SH0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_llcc_cam_ife_1 },
+ };
+@@ -1781,7 +1781,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_1 = {
+ static struct qcom_icc_bcm bcm_sh1_cam_ife_1 = {
+ 	.name = "SH1",
+ 	.enable_mask = 0x1,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM1,
+ 	.num_nodes = 3,
+ 	.nodes = { &qnm_mnoc_hf_cam_ife_1, &qnm_mnoc_sf_cam_ife_1,
+ 		   &qnm_pcie_cam_ife_1 },
+@@ -1790,21 +1790,21 @@ static struct qcom_icc_bcm bcm_sh1_cam_ife_1 = {
+ static struct qcom_icc_bcm bcm_acv_cam_ife_2 = {
+ 	.name = "ACV",
+ 	.enable_mask = 0x0,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM2,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_2 },
+ };
+ 
+ static struct qcom_icc_bcm bcm_mc0_cam_ife_2 = {
+ 	.name = "MC0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM2,
+ 	.num_nodes = 1,
+ 	.nodes = { &ebi_cam_ife_2 },
+ };
+ 
+ static struct qcom_icc_bcm bcm_mm0_cam_ife_2 = {
+ 	.name = "MM0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM2,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_mem_noc_hf_cam_ife_2 },
+ };
+@@ -1812,7 +1812,7 @@ static struct qcom_icc_bcm bcm_mm0_cam_ife_2 = {
+ static struct qcom_icc_bcm bcm_mm1_cam_ife_2 = {
+ 	.name = "MM1",
+ 	.enable_mask = 0x1,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM2,
+ 	.num_nodes = 4,
+ 	.nodes = { &qnm_camnoc_hf_cam_ife_2, &qnm_camnoc_icp_cam_ife_2,
+ 		   &qnm_camnoc_sf_cam_ife_2, &qns_mem_noc_sf_cam_ife_2 },
+@@ -1820,7 +1820,7 @@ static struct qcom_icc_bcm bcm_mm1_cam_ife_2 = {
+ 
+ static struct qcom_icc_bcm bcm_sh0_cam_ife_2 = {
+ 	.name = "SH0",
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM2,
+ 	.num_nodes = 1,
+ 	.nodes = { &qns_llcc_cam_ife_2 },
+ };
+@@ -1828,7 +1828,7 @@ static struct qcom_icc_bcm bcm_sh0_cam_ife_2 = {
+ static struct qcom_icc_bcm bcm_sh1_cam_ife_2 = {
+ 	.name = "SH1",
+ 	.enable_mask = 0x1,
+-	.voter_idx = ICC_BCM_VOTER_APPS,
++	.voter_idx = ICC_BCM_VOTER_CAM2,
+ 	.num_nodes = 3,
+ 	.nodes = { &qnm_mnoc_hf_cam_ife_2, &qnm_mnoc_sf_cam_ife_2,
+ 		   &qnm_pcie_cam_ife_2 },
 
 -- 
 2.41.0
