@@ -2,166 +2,164 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A624BEB64DD
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:19:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C229EB64DC
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jul 2023 14:20:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232073AbjGKOTi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jul 2023 10:19:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57042 "EHLO
+        id S230281AbjGKOUd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jul 2023 10:20:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57844 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231618AbjGKOTf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:19:35 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93A5B1FD8
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:19:06 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-4fb863edcb6so9149720e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:19:06 -0700 (PDT)
+        with ESMTP id S230078AbjGKOU3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2023 10:20:29 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A99B1722
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:20:07 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4fbc0314a7bso9297613e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2023 07:20:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689085138; x=1691677138;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=aAR8uoRS5FeFiCTajslFQAyUKPeFFZ/CN3B41KSltDw=;
-        b=d97S4hLpnXjrFoFoU/AkOiO/qJHeFCC1aynsEjVDi766PeqLIi8fwV7cZ82DLR+ZvL
-         JtWpigPKYaAugw9CJXp2eFifoLcjkyHRWRWJRCYmoKV0R8kokLBsuWrSs2lexYPCmlfw
-         0oIrCZJyxD64wfa2+nKEhMhfj1bALpL4jkIpR9poK/SCrIZd3KKJ7Nw/yK6r3gjwOiI5
-         thCf3WP+HWYsD/jcSO1i/6KBS2vzi298aUGb+rDr2U+Ch6nF5jtLWIVKNW3+gV3k4UFJ
-         idOMkQ/maXZxXbxUJPctnZbbxVxARJz5vmHKQliV8DHCUGkG6pcby5Z7ZpsyTZieVuDo
-         FwrA==
+        d=linaro.org; s=google; t=1689085202; x=1691677202;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zd0pHiLE6JiFccsytA2KY34kSaVCJDH+B0AfS4SxX7w=;
+        b=X3AsMMwIW8ixJYsIYYiApCkGubDFVXJiqmDb339aGy5wae37TEvGpUdy/RrY0hj2PX
+         47AjLJYbMBohDdbFUasrWvP/AHxjhtpp1TRMxiWSRn2wpxFtXo5BokFoM+m4wOQxSLPX
+         8We8cTIUGXY6FRpm8CiLM7z9NOzPC3SOCeuiGUmqvMRcml0zqQSa37NzxNn0lEWBRFE6
+         jQllWGDXsLFtEHXI1qq3wX4uTYRBslhHynP227y03GDhxn81jNuKspyWDsMXD0mUxFyU
+         2MHXnpWAoK+8jRZWEzDHNcWOhaJJevfaCR+j3dLhXEn+GxTriHAL77t9PdZMIVhe2rJS
+         V9EQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689085138; x=1691677138;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=aAR8uoRS5FeFiCTajslFQAyUKPeFFZ/CN3B41KSltDw=;
-        b=iN441YgmrWHoqmYp9KfiqiUUs65qpcHmANvQh52Rb1iITnzdzQ9P0M5H8LEEk8b94H
-         LAb/br996/7sjmqJRw71smAU/fdfuAPR/CJWkGJpt8JmZfRrIBsqq4YEOHUc9TKWAuMP
-         aBzJ4whSJx6l5Bz4r+QYaoiAufLg9csTuHqPOXvHKH3Rns58goeoF1iPsEeVYzZZ3rF+
-         pYNX9hedugfmfDu8FwKxeK9wo0nrQBto+vxxYEl+L2dEsoOz9tx+hp8s9Aay9sphXES/
-         FklWsA3M1g8fa3tOMwc0IpdOINizsl7ekFKYhe457eMisrwg40wodqaJRMxIUwwPyyEH
-         MeTA==
-X-Gm-Message-State: ABy/qLYHCcgzHPb1Xwo1Nht8tZ+hrpOwr0jYD6nd6CX63B4BM5xG1xlE
-        4lLV7w9U64C2J6YPnPrbPkn7Og==
-X-Google-Smtp-Source: APBJJlFXsE/uy86CosdLvo54rOBzSktc/fDik9wZm3dUuDKADi1O/apOggUYPfXWuFdwxjK5WWHlhA==
-X-Received: by 2002:a05:6512:3d0f:b0:4f8:58ae:8ea8 with SMTP id d15-20020a0565123d0f00b004f858ae8ea8mr14672133lfv.58.1689085138276;
-        Tue, 11 Jul 2023 07:18:58 -0700 (PDT)
-Received: from [192.168.1.101] (abyl96.neoplus.adsl.tpnet.pl. [83.9.31.96])
-        by smtp.gmail.com with ESMTPSA id j7-20020ac25507000000b004fb8fa4c7easm333584lfk.302.2023.07.11.07.18.57
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 11 Jul 2023 07:18:57 -0700 (PDT)
-Message-ID: <94c17171-0d97-35f0-d876-c705bf3ed864@linaro.org>
-Date:   Tue, 11 Jul 2023 16:18:56 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH 50/53] interconnect: qcom: sm8350: Point display paths to
- the display RSC
-Content-Language: en-US
-To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Andy Gross <agross@kernel.org>,
+        d=1e100.net; s=20221208; t=1689085202; x=1691677202;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zd0pHiLE6JiFccsytA2KY34kSaVCJDH+B0AfS4SxX7w=;
+        b=A3fi2fCjcJTMU1csvIDhzaZGd+xOCZRemtJLRCihJg9NDPsjHXkmZsgz8MVFxC6WVp
+         73mWgiFfnTSsFj2lzYs+XCSgkUDHUfh/gCxZiGTlvNgejTKRaqxPKOGYiBg/uHAr9bRG
+         XGlBsdWxuB9pOa3MN+UGrHzgFn/qi8SjX0pPTecaz5BMK9wbiszVLyWVJwWyS5sKWB2r
+         UrBJMJurnh2N1qXQ/xE4QqxKt3vZD/zYYctvoFigqTGiWtdmjp5YoGRilH6Qs9+6WKCi
+         JtAlQwuPbCeqVbvK1y1i8f5Lf099lJSOzD12+Du+971erERhfc+QjvZkK5w3j0PauXkM
+         8lUA==
+X-Gm-Message-State: ABy/qLY2Waye/NOPXr40XjBTXTexx2h37LxjwML3A1nURCt6ddlVabOy
+        E6w9QYE6Fzdd3oECZOulRU6teQ==
+X-Google-Smtp-Source: APBJJlH3CWGuj8eKXxQfrQR1Iyitul4Rnmz45Tbf2YH59TpieCawjjXXSA27O0nHY/Yj4CUChKOOGg==
+X-Received: by 2002:a05:6512:32d0:b0:4f8:6dfd:faa0 with SMTP id f16-20020a05651232d000b004f86dfdfaa0mr12537046lfg.2.1689085202092;
+        Tue, 11 Jul 2023 07:20:02 -0700 (PDT)
+Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
+        by smtp.gmail.com with ESMTPSA id f13-20020ac251ad000000b004f37bd02a89sm335827lfk.287.2023.07.11.07.20.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 11 Jul 2023 07:20:01 -0700 (PDT)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Michal Simek <michal.simek@amd.com>,
+        Nishanth Menon <nm@ti.com>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Tero Kristo <kristo@kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Mikko Perttunen <mperttunen@nvidia.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Walker Chen <walker.chen@starfivetech.com>,
+        Conor Dooley <conor@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Magnus Damm <magnus.damm@gmail.com>,
         Bjorn Andersson <andersson@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        cros-qcom-dts-watchers@chromium.org
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20230708-topic-rpmh_icc_rsc-v1-0-b223bd2ac8dd@linaro.org>
- <20230708-topic-rpmh_icc_rsc-v1-50-b223bd2ac8dd@linaro.org>
- <849dcb13-8059-f50b-4f5c-d8946f7c598c@linaro.org>
-From:   Konrad Dybcio <konrad.dybcio@linaro.org>
-In-Reply-To: <849dcb13-8059-f50b-4f5c-d8946f7c598c@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Hector Martin <marcan@marcan.st>,
+        Sven Peter <sven@svenpeter.dev>,
+        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        Andreas Farber <afaerber@suse.de>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 01/18] genpd: Create a new subsystem directory to host genpd providers
+Date:   Tue, 11 Jul 2023 16:19:56 +0200
+Message-Id: <20230711141956.751529-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11.07.2023 16:17, Dmitry Baryshkov wrote:
-> On 11/07/2023 15:18, Konrad Dybcio wrote:
->> The _DISP paths are expected to go through the DISP RSC. Point them to the
->> correct place.
->>
->> Fixes: d26a56674497 ("interconnect: qcom: Add SM8350 interconnect provider driver")
->> Signed-off-by: Konrad Dybcio <konrad.dybcio@linaro.org>
->> ---
->>   drivers/interconnect/qcom/sm8350.c | 14 +++++++-------
->>   1 file changed, 7 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/interconnect/qcom/sm8350.c b/drivers/interconnect/qcom/sm8350.c
->> index c48f96ff8575..0466ba5d939a 100644
->> --- a/drivers/interconnect/qcom/sm8350.c
->> +++ b/drivers/interconnect/qcom/sm8350.c
->> @@ -1609,7 +1609,7 @@ static struct qcom_icc_bcm bcm_sn14 = {
->>   static struct qcom_icc_bcm bcm_acv_disp = {
->>       .name = "ACV",
->>       .keepalive = false,
->> -    .voter_idx = 0,
->> +    .voter_idx = 1,
-> 
-> Shouldn't this value come from a enum? Otherwise a magic '1' is... a magic.
-Yep, rebase mess!
+There are currently ~60 users of the genpd provider interface, which
+implementations are sprinkled across various subsystems. To simplify with
+maintenance let's create a new subsystem (drivers/genpd) and start moving
+the providers in there.
 
-Konrad
-> 
->>       .num_nodes = 1,
->>       .nodes = { &ebi_disp },
->>   };
->> @@ -1617,7 +1617,7 @@ static struct qcom_icc_bcm bcm_acv_disp = {
->>   static struct qcom_icc_bcm bcm_mc0_disp = {
->>       .name = "MC0",
->>       .keepalive = false,
->> -    .voter_idx = 0,
->> +    .voter_idx = 1,
->>       .num_nodes = 1,
->>       .nodes = { &ebi_disp },
->>   };
->> @@ -1625,7 +1625,7 @@ static struct qcom_icc_bcm bcm_mc0_disp = {
->>   static struct qcom_icc_bcm bcm_mm0_disp = {
->>       .name = "MM0",
->>       .keepalive = false,
->> -    .voter_idx = 0,
->> +    .voter_idx = 1,
->>       .num_nodes = 1,
->>       .nodes = { &qns_mem_noc_hf_disp },
->>   };
->> @@ -1633,7 +1633,7 @@ static struct qcom_icc_bcm bcm_mm0_disp = {
->>   static struct qcom_icc_bcm bcm_mm1_disp = {
->>       .name = "MM1",
->>       .keepalive = false,
->> -    .voter_idx = 0,
->> +    .voter_idx = 1,
->>       .num_nodes = 2,
->>       .nodes = { &qxm_mdp0_disp, &qxm_mdp1_disp },
->>   };
->> @@ -1641,7 +1641,7 @@ static struct qcom_icc_bcm bcm_mm1_disp = {
->>   static struct qcom_icc_bcm bcm_mm4_disp = {
->>       .name = "MM4",
->>       .keepalive = false,
->> -    .voter_idx = 0,
->> +    .voter_idx = 1,
->>       .num_nodes = 1,
->>       .nodes = { &qns_mem_noc_sf_disp },
->>   };
->> @@ -1649,7 +1649,7 @@ static struct qcom_icc_bcm bcm_mm4_disp = {
->>   static struct qcom_icc_bcm bcm_mm5_disp = {
->>       .name = "MM5",
->>       .keepalive = false,
->> -    .voter_idx = 0,
->> +    .voter_idx = 1,
->>       .num_nodes = 1,
->>       .nodes = { &qxm_rot_disp },
->>   };
->> @@ -1657,7 +1657,7 @@ static struct qcom_icc_bcm bcm_mm5_disp = {
->>   static struct qcom_icc_bcm bcm_sh0_disp = {
->>       .name = "SH0",
->>       .keepalive = false,
->> -    .voter_idx = 0,
->> +    .voter_idx = 1,
->>       .num_nodes = 1,
->>       .nodes = { &qns_llcc_disp },
->>   };
->>
-> 
+My intention is also to host a git tree to collect and to get the patches
+tested/integrated through the linux-next tree. Ideally this should release
+some of the burden on the soc maintainers.
+
+Note that, I will of course require acks/reviews from the current platform
+maintainers, hence the MAINTAINERS file needs to be updated accordingly for
+each genpd provider that is moved into the new genpd subsystem.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ MAINTAINERS            | 7 +++++++
+ drivers/Makefile       | 1 +
+ drivers/genpd/Makefile | 1 +
+ 3 files changed, 9 insertions(+)
+ create mode 100644 drivers/genpd/Makefile
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3be1bdfe8ecc..38eebcc97aa2 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8665,6 +8665,13 @@ F:	Documentation/devicetree/bindings/power/power?domain*
+ F:	drivers/base/power/domain*.c
+ F:	include/linux/pm_domain.h
+ 
++GENERIC PM DOMAIN PROVIDERS
++M:	Ulf Hansson <ulf.hansson@linaro.org>
++L:	linux-pm@vger.kernel.org
++S:	Supported
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git
++F:	drivers/genpd/
++
+ GENERIC RESISTIVE TOUCHSCREEN ADC DRIVER
+ M:	Eugen Hristev <eugen.hristev@microchip.com>
+ L:	linux-input@vger.kernel.org
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 7241d80a7b29..cffac5b8c092 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -45,6 +45,7 @@ obj-$(CONFIG_DMADEVICES)	+= dma/
+ 
+ # SOC specific infrastructure drivers.
+ obj-y				+= soc/
++obj-$(CONFIG_PM_GENERIC_DOMAINS)	+= genpd/
+ 
+ obj-y				+= virtio/
+ obj-$(CONFIG_VDPA)		+= vdpa/
+diff --git a/drivers/genpd/Makefile b/drivers/genpd/Makefile
+new file mode 100644
+index 000000000000..a4e40e534e6a
+--- /dev/null
++++ b/drivers/genpd/Makefile
+@@ -0,0 +1 @@
++# SPDX-License-Identifier: GPL-2.0-only
+-- 
+2.34.1
+
