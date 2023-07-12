@@ -2,103 +2,96 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE975EB64D9
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Jul 2023 11:37:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E339EB64D9
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Jul 2023 11:43:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232743AbjGLLg7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Jul 2023 07:36:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55470 "EHLO
+        id S230360AbjGLLnp convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Jul 2023 07:43:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35132 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231773AbjGLLgo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2023 07:36:44 -0400
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31341173C;
-        Wed, 12 Jul 2023 04:36:43 -0700 (PDT)
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-        by mx0a-0031df01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 36C8foUA008681;
-        Wed, 12 Jul 2023 11:36:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding :
- content-type; s=qcppdkim1;
- bh=WMaHetkUT0AA1H//qau1sBZbxkTNUXPfs2DvkqOOYuU=;
- b=H6h79yVK3FzyNwXA0pdI0lm8tZL26Ppq3efwwZq1lLkUGnJGfCP1QayNUZNGMCCmIHFI
- 99SPLfB3BrlrYwZW8IB9xPHGm2K0vSmx+azLRUM+QfJQLwlFV+YgGiYFQBfJmCfDHFCz
- 3UT59jPwT+aMLEUOnQeVDyCoDSh0fR+lGCMm5IqM8jXFpq2o8mOP8Ufhhus920fayzPi
- 55lO0b+mYh5LqgTnvO5ml5jhc0iVtjaRRMm1+0GTcCQbBNihtjYu1uqGn7zSgKraPeJo
- o2o4oZSILYRg5xiqwg5XYzchWI9mV2Zgoze2eKEsuWqyrffa1phpb/MEltlWx8LbNO8S IA== 
-Received: from nalasppmta03.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 3rse45heac-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 12 Jul 2023 11:36:33 +0000
-Received: from nalasex01c.na.qualcomm.com (nalasex01c.na.qualcomm.com [10.47.97.35])
-        by NALASPPMTA03.qualcomm.com (8.17.1.5/8.17.1.5) with ESMTPS id 36CBaWph007983
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 12 Jul 2023 11:36:32 GMT
-Received: from hu-ipkumar-blr.qualcomm.com (10.80.80.8) by
- nalasex01c.na.qualcomm.com (10.47.97.35) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.30; Wed, 12 Jul 2023 04:35:56 -0700
-From:   Praveenkumar I <quic_ipkumar@quicinc.com>
-To:     <amitk@kernel.org>, <thara.gopinath@gmail.com>,
-        <agross@kernel.org>, <andersson@kernel.org>,
-        <konrad.dybcio@linaro.org>, <rafael@kernel.org>,
-        <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
-        <robh+dt@kernel.org>, <krzysztof.kozlowski+dt@linaro.org>,
-        <conor+dt@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-arm-msm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     <quic_varada@quicinc.com>
-Subject: [PATCH v2 0/5] Add IPQ5332 TSENS support
-Date:   Wed, 12 Jul 2023 17:05:34 +0530
-Message-ID: <20230712113539.4029941-1-quic_ipkumar@quicinc.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S230229AbjGLLnp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2023 07:43:45 -0400
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D08D1980;
+        Wed, 12 Jul 2023 04:43:44 -0700 (PDT)
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-57712d00cc1so80686747b3.3;
+        Wed, 12 Jul 2023 04:43:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689162223; x=1691754223;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ZFaa1eey2gFBEkQTz4+FvOqjiuJjKAg/tTkqzXxKkMw=;
+        b=AxMhJcDjOzPhmC8jTZE4lggCg763BS+rLs49ypbyQLRgnl4CCboi+S0WsrbwE9Zdow
+         Y2goESZX6RVk7Gst5+m4eHW+uAczxPq1TKKBMKdbUMqIpgpLgZ/XB043h6UbV1ZeGfS9
+         4ZCxAB5p5UgSf2p0QV45oU0rm2ahLesM4JDRWQ/VjWW4RqJidTpDviMnBsVpDC2FDLNV
+         OH3YYXOYcgPJaHgBHfElJlKGbqvZ/wi3A8YMjRaAfdqhERenwCyaarkoUS1Czr414Utf
+         4jwpY5mIA8UsesEHcakviOoNZZFJmALp4pkVLR/IFimfdq7+F2RZFflQ9oq+y2NWT5V7
+         vNIw==
+X-Gm-Message-State: ABy/qLZGwMy4vnbL5TCzb6XHfZpnyznicrdE96kBT5aQd4iFw3oEtmcK
+        D68b8Xe+sSDHFYJigdOuYFKO16RWvW1EHQ==
+X-Google-Smtp-Source: APBJJlGMIyJ2PM9Ugkvat2OdD8kl7nbkrUSZTKe+vV0IuzVh3mUiWX4qcTm1eQ/TYxVFXlAssSuvbg==
+X-Received: by 2002:a0d:ce43:0:b0:57a:f72:ebf8 with SMTP id q64-20020a0dce43000000b0057a0f72ebf8mr22549179ywd.28.1689162223181;
+        Wed, 12 Jul 2023 04:43:43 -0700 (PDT)
+Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com. [209.85.219.172])
+        by smtp.gmail.com with ESMTPSA id o123-20020a0dfe81000000b0057069c60799sm1116366ywf.53.2023.07.12.04.43.42
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 12 Jul 2023 04:43:42 -0700 (PDT)
+Received: by mail-yb1-f172.google.com with SMTP id 3f1490d57ef6-c49777d6e7aso7876166276.1;
+        Wed, 12 Jul 2023 04:43:42 -0700 (PDT)
+X-Received: by 2002:a25:68ca:0:b0:c85:a84:d87e with SMTP id
+ d193-20020a2568ca000000b00c850a84d87emr8445978ybc.10.1689162221895; Wed, 12
+ Jul 2023 04:43:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01c.na.qualcomm.com (10.47.97.35)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: kr5tTN3mhODXF4OSCzz-wgAPrLcZFR2m
-X-Proofpoint-ORIG-GUID: kr5tTN3mhODXF4OSCzz-wgAPrLcZFR2m
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-12_06,2023-07-11_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 impostorscore=0
- phishscore=0 priorityscore=1501 lowpriorityscore=0 bulkscore=0
- suspectscore=0 mlxscore=0 spamscore=0 malwarescore=0 mlxlogscore=714
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2305260000 definitions=main-2307120103
+References: <20230712081258.29254-1-frank.li@vivo.com> <20230712081258.29254-21-frank.li@vivo.com>
+In-Reply-To: <20230712081258.29254-21-frank.li@vivo.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 12 Jul 2023 13:43:27 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWiAnN0a3wKGekvLSR7Gxh2kp-Bvmyb9o8EaxFWK8GC+Q@mail.gmail.com>
+Message-ID: <CAMuHMdWiAnN0a3wKGekvLSR7Gxh2kp-Bvmyb9o8EaxFWK8GC+Q@mail.gmail.com>
+Subject: Re: [PATCH 21/27] thermal/drivers/rcar_thermal: Convert to platform
+ remove callback returning void
+To:     Yangtao Li <frank.li@vivo.com>
+Cc:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IPQ5332 uses tsens v2.3.3 IP with combined interrupt for
-upper/lower and critical. IPQ5332 does not have RPM and
-kernel has to take care of TSENS enablement and calibration.
-This patch series adds the sensor enablement and calibration
-support. On top, adds IPQ5332 TSENS support.
+On Wed, Jul 12, 2023 at 10:23 AM Yangtao Li <frank.li@vivo.com> wrote:
+> The .remove() callback for a platform driver returns an int which makes
+> many driver authors wrongly assume it's possible to do error handling by
+> returning an error code. However the value returned is (mostly) ignored
+> and this typically results in resource leaks. To improve here there is a
+> quest to make the remove callback return void. In the first step of this
+> quest all drivers are converted to .remove_new() which already returns
+> void.
+>
+> Trivially convert this driver from always returning zero in the remove
+> callback to the void returning variant.
+>
+> Cc: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Signed-off-by: Yangtao Li <frank.li@vivo.com>
 
-[v2]:
-	Dropped [v1 1/6] dt-bindings change and added nvmem-cell-names
-	as part of [v2 2/5] ipq5332 dt-bindings
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Praveenkumar I (5):
-  thermal/drivers/tsens: Add TSENS enable and calibration support for V2
-  dt-bindings: thermal: tsens: Add ipq5332 compatible
-  arm64: dts: qcom: ipq5332: Add tsens node
-  arm64: dts: qcom: ipq5332: Add thermal zone nodes
-  thermal/drivers/tsens: Add IPQ5332 support
+Gr{oetje,eeting}s,
 
- .../bindings/thermal/qcom-tsens.yaml          |  12 ++
- arch/arm64/boot/dts/qcom/ipq5332.dtsi         | 144 +++++++++++++++
- drivers/thermal/qcom/tsens-v2.c               | 169 ++++++++++++++++++
- drivers/thermal/qcom/tsens.c                  |   5 +-
- drivers/thermal/qcom/tsens.h                  |   5 +-
- 5 files changed, 333 insertions(+), 2 deletions(-)
+                        Geert
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
