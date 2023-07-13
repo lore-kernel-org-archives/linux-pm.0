@@ -2,53 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDBC7C001DF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0854C00528
 	for <linux-pm@archiver.kernel.org>; Thu, 13 Jul 2023 14:18:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229633AbjGMOSb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jul 2023 10:18:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35772 "EHLO
+        id S230441AbjGMOSa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jul 2023 10:18:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35746 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229897AbjGMOSY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 10:18:24 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F0D81BE3
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:23 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4fb7b2e3dacso1397324e87.0
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:23 -0700 (PDT)
+        with ESMTP id S235359AbjGMOSX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 10:18:23 -0400
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 940C4212D
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:20 -0700 (PDT)
+Received: by mail-lf1-x12f.google.com with SMTP id 2adb3069b0e04-4fb7b2e3dacso1397197e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689257901; x=1691849901;
+        d=linaro.org; s=google; t=1689257899; x=1691849899;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Wg9EddzRzHTbuaah4rEsbuvldd37lcTULk63OCghvz0=;
-        b=sRupa9nPdIbMWXYR9MCQvdEIulLVqLZzb83+phUYqZ7V0BNqtYwpqb0E/sKibMuPxY
-         roudsnBWyk9D/3eQJ/qWrj+pfW+lssaxpIg3lPzPuaWit/aq1F//KfdQCJgaGtZjowLN
-         jKTKEaouaN+KhdTSH5KUjDpOmzMo4B32MIJ3Ckz64HW0XZ3qiGZUT61eNxB4l2jHIaHs
-         rcKi4Sgyt8Iu9rl8yYt8bc+/EvLW+4beqqrvGRzA+3bay3pCB8IdcRhTLgQcfAs5qPG/
-         c+p0IvV5siP6cNE1MpWLIEo2VJSm8JJNppj/NPsrz5Za99OSC32JU+6NMgkeoJ1G4i5t
-         lJNQ==
+        bh=s9WwOZgUsyJ02O9xqcLk3mdDSESLPPhW2QI/gJYTOt4=;
+        b=M9raO96SgvoCm/JdBkRP8p6TPpuau6B/ZZDiNXGA+DBegEy+waxHEtlwO67t6/YEUk
+         +20Zk6X3Cw4kka6owf2PGYcHQOVnTeaLlbgRJto3goP2SXvbasyhQ+P5alTBD2KwhUrc
+         dxooYiYRBwV5ekx2sKC1GyWWbzqP1BEauktRwCCTzqeDwXN0umkn01WXAbvUFgSOyGwJ
+         63AxlKSIg9kGIq+aX3YV9LPiZAC0Yft0OfOxHLFM/20ljy1herti3SwtJNqi4erGHVlt
+         fypDbPxXhKjY7mbQ807E9513sbvmNXYlzBX/D1cQuIRUnfWLxHmlFre7mhbsUxqWYZ/P
+         3WZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689257901; x=1691849901;
+        d=1e100.net; s=20221208; t=1689257899; x=1691849899;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Wg9EddzRzHTbuaah4rEsbuvldd37lcTULk63OCghvz0=;
-        b=FY+LR2Omn9nzNs2W4npjlMl3wCWJ5F47LRXOcatob7IAzim17gs+KJbqvWw4OW0Uq2
-         3JjM/Vcg0z51IAcyj0h8r9xiirdQ6paCuMSW0Y/i9qCkT0HRXanuRjRbadL2HQoMA8qx
-         temq48XKTsL0IqJT4o/zx3W8DoOsPfMEsCets+xnMZuX6ctV67f3CWNeUKAI6gmxarK7
-         4IEkZAB9aYWT/gsZKodAIEfxh/47q1xuQ/n0CXD5OWWIo8pE0BXvBwc6LkbdG/obolv8
-         EII5lXqaKb/PH/9wpqo8/SeifefYiASx8wvxViYaZlskDIaoQ/zg/6vnkSQXDBCb1zin
-         ooew==
-X-Gm-Message-State: ABy/qLbZieNHbPdgY7lxadG+mi3UhqClpk+h7QPHf8W4d6SJwt0rCYfh
-        vwD0qvnRnPg5mkakwscNrtT7UQ==
-X-Google-Smtp-Source: APBJJlHHHzCAd2s4FvXf9+E1P9nGND6+Ni1aJCIrFXUvM3sjBMcA/3X27DJnYsEzQEjeYqNLhjz6Vg==
-X-Received: by 2002:a05:6512:2251:b0:4f8:7568:e948 with SMTP id i17-20020a056512225100b004f87568e948mr1473269lfu.51.1689257901695;
-        Thu, 13 Jul 2023 07:18:21 -0700 (PDT)
+        bh=s9WwOZgUsyJ02O9xqcLk3mdDSESLPPhW2QI/gJYTOt4=;
+        b=ieH39pOtjD/VuRY5ib5fppgEll0KAmjhMs0kzq7yb2AtrfwAfNVwegFonyctSjfd+t
+         ZuR1nS6LvQ4p2QsiVVp66TAPdAJjQnBEp2RH3P+NbSDSX746kuyEReUk5kwWaQBY5A2t
+         Q5sOosBSbQs9DyYV6KASnAubrhChnvRjNiaCojlWV0YV8SdZFSNQwjlgjY/GomBgIPt7
+         o8Ke1NVUpomWCQl3xY1YjHlCVTdJIDW7Fhn1YjwLTr10rWlk/WOrnWJxySzb+4Cwvsji
+         8GVsYU3u14HiF+SHH3ffit4pJtQo1fupIHOr4VD+WwAiL7VvOyEieNnsXyRDjwGe4MS9
+         ZEdQ==
+X-Gm-Message-State: ABy/qLZd52KV8kvjOlXw/YuDV3D+IvyjlSfc76AOmvPaSUPT793KDq0h
+        NEzK3wOH1aKxmChZKle093UOVA==
+X-Google-Smtp-Source: APBJJlGgCqPIPmApdnaooF6IBIyRZ7qe+5G0jNMJZ7HhyLs4btRaT1BD2DZjIb1cl2EZokOwHOa5zQ==
+X-Received: by 2002:ac2:58c5:0:b0:4fb:8ff2:f2d7 with SMTP id u5-20020ac258c5000000b004fb8ff2f2d7mr1240019lfo.45.1689257898720;
+        Thu, 13 Jul 2023 07:18:18 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id w28-20020ac2599c000000b004fb759964a9sm1132426lfn.168.2023.07.13.07.18.20
+        by smtp.gmail.com with ESMTPSA id w28-20020ac2599c000000b004fb759964a9sm1132426lfn.168.2023.07.13.07.18.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Jul 2023 07:18:21 -0700 (PDT)
+        Thu, 13 Jul 2023 07:18:17 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -59,9 +59,9 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 09/11] cpufreq: scmi: Add support to parse domain-id using #power-domain-cells
-Date:   Thu, 13 Jul 2023 16:17:36 +0200
-Message-Id: <20230713141738.23970-10-ulf.hansson@linaro.org>
+Subject: [PATCH v2 07/11] PM: domains: Allow genpd providers to manage OPP tables directly by its FW
+Date:   Thu, 13 Jul 2023 16:17:34 +0200
+Message-Id: <20230713141738.23970-8-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230713141738.23970-1-ulf.hansson@linaro.org>
 References: <20230713141738.23970-1-ulf.hansson@linaro.org>
@@ -71,48 +71,101 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The performance domain-id can be described in DT using the power-domains
-property or the clock property. The latter is already supported, so let's
-add support for the power-domains too.
+In some cases the OPP tables aren't specified in device tree, but rather
+encoded in the FW. To allow a genpd provider to specify them dynamically
+instead, let's add a new genpd flag, GENPD_FLAG_OPP_TABLE_FW.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v2:
-	- New patch.
+	- None.
 
 ---
- drivers/cpufreq/scmi-cpufreq.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/base/power/domain.c | 11 ++++++-----
+ include/linux/pm_domain.h   |  5 +++++
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index 78f53e388094..b42f43d9bd89 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -72,13 +72,19 @@ static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 5cb2023581d4..c74edf80417f 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -130,6 +130,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+ #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+ #define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
+ #define genpd_is_rpm_always_on(genpd)	(genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
++#define genpd_is_opp_table_fw(genpd)	(genpd->flags & GENPD_FLAG_OPP_TABLE_FW)
  
- static int scmi_cpu_domain_id(struct device *cpu_dev)
- {
--	struct of_phandle_args clkspec;
-+	struct of_phandle_args domain_id;
+ static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
+ 		const struct generic_pm_domain *genpd)
+@@ -2328,7 +2329,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ 	genpd->dev.of_node = np;
  
- 	if (of_parse_phandle_with_args(cpu_dev->of_node, "clocks",
--				       "#clock-cells", 0, &clkspec))
--		return -EINVAL;
-+				       "#clock-cells", 0, &domain_id)) {
+ 	/* Parse genpd OPP table */
+-	if (genpd->set_performance_state) {
++	if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 		ret = dev_pm_opp_of_add_table(&genpd->dev);
+ 		if (ret)
+ 			return dev_err_probe(&genpd->dev, ret, "Failed to add OPP table\n");
+@@ -2343,7 +2344,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
  
--	return clkspec.args[0];
-+		if (of_parse_phandle_with_args(cpu_dev->of_node,
-+					       "power-domains",
-+					       "#power-domain-cells", 0,
-+					       &domain_id))
-+			return -EINVAL;
-+	}
-+
-+	return domain_id.args[0];
- }
+ 	ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
+ 	if (ret) {
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			dev_pm_opp_put_opp_table(genpd->opp_table);
+ 			dev_pm_opp_of_remove_table(&genpd->dev);
+ 		}
+@@ -2387,7 +2388,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 		genpd->dev.of_node = np;
  
- static int
+ 		/* Parse genpd OPP table */
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			ret = dev_pm_opp_of_add_table_indexed(&genpd->dev, i);
+ 			if (ret) {
+ 				dev_err_probe(&genpd->dev, ret,
+@@ -2423,7 +2424,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 		genpd->provider = NULL;
+ 		genpd->has_provider = false;
+ 
+-		if (genpd->set_performance_state) {
++		if (!genpd_is_opp_table_fw(genpd) && genpd->set_performance_state) {
+ 			dev_pm_opp_put_opp_table(genpd->opp_table);
+ 			dev_pm_opp_of_remove_table(&genpd->dev);
+ 		}
+@@ -2455,7 +2456,7 @@ void of_genpd_del_provider(struct device_node *np)
+ 				if (gpd->provider == &np->fwnode) {
+ 					gpd->has_provider = false;
+ 
+-					if (!gpd->set_performance_state)
++					if (genpd_is_opp_table_fw(gpd) || !gpd->set_performance_state)
+ 						continue;
+ 
+ 					dev_pm_opp_put_opp_table(gpd->opp_table);
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index f776fb93eaa0..05ad8cefdff1 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -61,6 +61,10 @@
+  * GENPD_FLAG_MIN_RESIDENCY:	Enable the genpd governor to consider its
+  *				components' next wakeup when determining the
+  *				optimal idle state.
++ *
++ * GENPD_FLAG_OPP_TABLE_FW:	The genpd provider supports performance states,
++ *				but its corresponding OPP tables are not
++ *				described in DT, but are given directly by FW.
+  */
+ #define GENPD_FLAG_PM_CLK	 (1U << 0)
+ #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
+@@ -69,6 +73,7 @@
+ #define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
+ #define GENPD_FLAG_RPM_ALWAYS_ON (1U << 5)
+ #define GENPD_FLAG_MIN_RESIDENCY (1U << 6)
++#define GENPD_FLAG_OPP_TABLE_FW	 (1U << 7)
+ 
+ enum gpd_status {
+ 	GENPD_STATE_ON = 0,	/* PM domain is on */
 -- 
 2.34.1
 
