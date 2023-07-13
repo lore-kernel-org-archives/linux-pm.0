@@ -2,92 +2,105 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E4B9C001DC
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jul 2023 08:02:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1975C001B0
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jul 2023 09:06:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233891AbjGMICh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jul 2023 04:02:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43724 "EHLO
+        id S234372AbjGMJGY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jul 2023 05:06:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232547AbjGMICM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 04:02:12 -0400
-Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::226])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C9933C30;
-        Thu, 13 Jul 2023 01:00:37 -0700 (PDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 47F8AC000C;
-        Thu, 13 Jul 2023 07:59:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-        t=1689235151;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=0r7ogdmgCqQZyvfvesUVl72YF6nI4bT74X6FmO2pwNE=;
-        b=Tt6DqdaTIvYJ03V43HEvPKPDFqzSMtWdMKUop9m5dy5BbdUosmCowZL7y+hm+tjpr6UA4F
-        RSF6yw6aIowvCkb8PvT/ALygCJ3NxMH3pgtXwh/RAQ2Swq2lApbErshp8KEP9iHGXOmH7Q
-        G/ZQ1/Y105arzbg/4xwndgPZ4HKmuEfoxp565iGu9EamAwMe5pFmvfoPiqcVS30msNY/hv
-        li8GDHBRySKlEgbuz1c5g/UlXdZbC4BaSvhfE1BOuc7mJzKiiXNJAYzGjsX53i/Vj5yyF7
-        TMtcUyZz8uJ9mW63iWmmzkX1oDqfn92lioTTvV9yjWo10SqjdPJzXtzQI7tojg==
-From:   Miquel Raynal <miquel.raynal@bootlin.com>
-To:     Neil Armstrong <neil.armstrong@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Richard Weinberger <richard@nod.at>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Giuseppe Cavallaro <peppe.cavallaro@st.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Jose Abreu <joabreu@synopsys.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Andy Shevchenko <andy@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Marc Zyngier <maz@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-mtd@lists.infradead.org,
-        netdev@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
-        linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-oxnas@groups.io,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Daniel Golle <daniel@makrotopia.org>
-Subject: Re: [PATCH v2 06/15] dt-bindings: mtd: oxnas-nand: remove obsolete bindings
-Date:   Thu, 13 Jul 2023 09:59:05 +0200
-Message-Id: <20230713075905.486684-1-miquel.raynal@bootlin.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To:  <20230630-topic-oxnas-upstream-remove-v2-6-fb6ab3dea87c@linaro.org>
-References: 
+        with ESMTP id S234462AbjGMJFh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 05:05:37 -0400
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C729A30FB
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 02:04:39 -0700 (PDT)
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-31297125334so257010f8f.0
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 02:04:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1689239078; x=1691831078;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=dU5KDiUEXkqyxb1dz2x3HHUapbhudnVUKqik8C6tDVE=;
+        b=dBd1WsIUF22756YKeYlcfQiSg5UUZ2nn+zJ4H3l3KTqOJl7Sr01C28kmD2ZhSs1dGh
+         boEnVOOrZ728+wluWVHunLyVWEdfGyUzceI+ObwQrPKv+a0Jc+r+7MUe/htY9+ovc3+X
+         awlZkv51RfM9NJWEiPe5iZl4RydZWvoWOeciRVJEuUz+XYROd5E//KRl9sI4mZrgrx53
+         KubgJEYQ7IghTzGezX406O7ROHs8ZK5L6/NZEIEavLb05mDLfDFYSr6EeFed8q0m+odF
+         qibIRMfQanAGk6O+UbXNX8EVkREtFxRfwSeRBw9iluB5wshx/YneefAfpiY8YXQt7G6M
+         KVzg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1689239078; x=1691831078;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dU5KDiUEXkqyxb1dz2x3HHUapbhudnVUKqik8C6tDVE=;
+        b=covXZPip7C1pbk7dug6Vn+YYyNIqgmNvMgTKluFuIC29GPUy2if+gJdFewASotKJRX
+         iG5ifGxGrDIwnGjXd14nHPU5zNJc5rCKnfPES4JdTkgiOZNrHO0c5eJjsw/9vXH4ntJX
+         LAyoyxVe5tzNGcaUo2Yn+/07WIiNzcT+AXeG9HIEy2eJW00WCheFhXkv2iXjyiZkqzHq
+         uun7vLObxy2oGJsl9ZQxgBph289JxdAfgwKkKEIUjdopwKYy15X3CYooeuHCXusWUxxy
+         5MIYjeS0ce8y9U0HFEXFoxez/Rm044qXQqjQP96zrMGbuv25EpPmkP8AXcRFcQp2RA5Z
+         +dtQ==
+X-Gm-Message-State: ABy/qLagvFizhSzUmUq2R4SsST2ECPm6EQLUvTTQxV5Ez1YRUsZ1HA9a
+        AS+8YEVcy1HGPFedImp7phIj9A==
+X-Google-Smtp-Source: APBJJlHa7eA3YGzLEKLvvgvkWg8/+bqmncsrH8kSNAoE1KnD5WGcimF+bQJ6Yl3CogySwfzwhjQmbQ==
+X-Received: by 2002:adf:d0c3:0:b0:314:323b:9d3b with SMTP id z3-20020adfd0c3000000b00314323b9d3bmr3684448wrh.32.1689239077829;
+        Thu, 13 Jul 2023 02:04:37 -0700 (PDT)
+Received: from [192.168.10.46] (146725694.box.freepro.com. [130.180.211.218])
+        by smtp.googlemail.com with ESMTPSA id q14-20020a1cf30e000000b003fbb25da65bsm7235763wmq.30.2023.07.13.02.04.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 13 Jul 2023 02:04:37 -0700 (PDT)
+Message-ID: <58acd4bd-8694-9bdc-0e61-400120d8c14e@linaro.org>
+Date:   Thu, 13 Jul 2023 11:04:36 +0200
 MIME-Version: 1.0
-X-linux-mtd-patch-notification: thanks
-X-linux-mtd-patch-commit: b'b7c9b576b5f61fe4b8705bf419a1fb09541e4be8'
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+Subject: Re: [PATCH v3 0/6] thermal/drivers/mediatek/lvts_thermal: Fixes to
+ the interrupt handling
+Content-Language: en-US
+To:     =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= 
+        <nfraprado@collabora.com>
+Cc:     Alexandre Bailon <abailon@baylibre.com>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Chen-Yu Tsai <wenst@chromium.org>,
+        Alexandre Mergnat <amergnat@baylibre.com>,
+        kernel@collabora.com, Amit Kucheria <amitk@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org
+References: <20230706153823.201943-1-nfraprado@collabora.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20230706153823.201943-1-nfraprado@collabora.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-GND-Sasl: miquel.raynal@bootlin.com
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 2023-06-30 at 16:58:31 UTC, Neil Armstrong wrote:
-> Due to lack of maintenance and stall of development for a few years now,
-> and since no new features will ever be added upstream, remove the
-> for OX810 and OX820 nand bindings.
+On 06/07/2023 17:37, Nícolas F. R. A. Prado wrote:
 > 
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Daniel Golle <daniel@makrotopia.org>
-> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
-> Acked-by: Miquel Raynal <miquel.raynal@bootlin.com>
+> This series fixes interrupt handling in the LVTS thermal driver. It not
+> only solves the interrupt storms currently happening, but also allows
+> the temperature monitoring interrupts to trigger when the thermal trip
+> temperature is reached.
+> 
+> This series was tested together with the MT8192 support series [1] on
+> the Spherion Chromebook (mt8192-asurada-spherion).
+> 
+> These are standalone fixes and don't depend on anything else.
+> 
+> [1] https://lore.kernel.org/all/20230530195132.2286163-1-bero@baylibre.com
 
-Applied to https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git nand/next, thanks.
+Applied, thanks
 
-Miquel
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
