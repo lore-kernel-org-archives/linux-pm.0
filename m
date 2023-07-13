@@ -2,52 +2,53 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99469C001DF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89C72C001B0
 	for <linux-pm@archiver.kernel.org>; Thu, 13 Jul 2023 14:18:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229454AbjGMOSZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jul 2023 10:18:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35580 "EHLO
+        id S229504AbjGMOSX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jul 2023 10:18:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35618 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235135AbjGMOSL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 10:18:11 -0400
+        with ESMTP id S235247AbjGMOSO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 10:18:14 -0400
 Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7FC8A268D
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:10 -0700 (PDT)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4f122ff663eso1362873e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:10 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36B1A26B2
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:13 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-4fb960b7c9dso1420909e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2023 07:18:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689257889; x=1691849889;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ClKt2dqGr90pfJCDEIL5kBqRNqWrFunM9K2+lWl18hs=;
-        b=NAj+jbiM9Tu8MCcU1PxC+4e3LRO6omJn8LCyx/dBLFTyE8OUFBYmRF50ww0iVxvayg
-         fe1ZCuKEmCZEvhGiJ2mkjrfDfyaWlRiN5Zbncm73VFIEGrXvbwJPcUqLS7kpjE+BTf2s
-         E/NfyAdJAQkJM9jVer6opth2ysJ1JJqWwG78PwsFs4TqCbf3agpNiGrjCbTJLWArl+e+
-         7dwSvmpg89Y1qnZjsCZ5eNDuQFeLrq+0MccYzdfbOmKBvEiaxPtVYY70CJcRi+u7foIx
-         7+AHyjtgCQPqP15l5OHGXRre1KP3u7DYUWy/r7ZO+OS1GnyHiqJi35SEQhwtw5CWaEu9
-         aljg==
+        d=linaro.org; s=google; t=1689257891; x=1691849891;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Gh+gKUS7IMi6ThhGwyG8WEdTRY9eZfCeAwrMiJcy0S0=;
+        b=B4jDt0oDMLMSH/SjCfe9veKB/wikJeVpnaVVOr6QY/R3rdXFS1mrBMk5ZkOtzakvu5
+         LefhbCwCV9iVSCUImQ2+4PWSNcF4pqxTFnBUw6AsgGL8PvyEv24iA6JhcUO274GySsT0
+         FG3sHH75BKWfeeydaEXIl0L4ONvf6US5UTE/kF3HDBC2SmagQD4I7iqAQ4pQUe/pCffk
+         iwFWefirSXoFAmEgbuYynMzK+/Viogj/kAIUlk68+SwsoFMboK9K9pfFLjLsol1tc4yl
+         AKlk8kTJ3MM1OmWVV4c6mGeH9b7lE2eEJOcDdvwgdc2Icic6MsEEkVsOi/+/XBsq7Ssf
+         3DSg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689257889; x=1691849889;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ClKt2dqGr90pfJCDEIL5kBqRNqWrFunM9K2+lWl18hs=;
-        b=l4lZnKsHMDzPCuLHOY9MMsw4QSNgudUS+BIcRH2HWBCsaEiqnBxjrh+NqrtFJg8074
-         DhH7CQJyFSqwBoyXOPwNX1FrEuVgevrLV2XBu7fRutvNaen7cRe8MRjfd4eZHnmfoVGR
-         QLtYWD2niODiKpKcXGCduC9RDXqdaPwLJtOyvSjgYI3TekO9zklstmBWIVcuqd3M+AHH
-         TEOzvAyVihy8zxn/w0CieMiDgvmLPxPgtP9lOsf+V2zJC90C3SFvCNJmqh0+1T+YRdqF
-         BUtfvtm79m4uw3vE5cRM6E6SDuCme+Gi8M06XJpBEJvf0jLKFAwYglHr/Y6x9v2MjltU
-         jq0g==
-X-Gm-Message-State: ABy/qLY8TI3jXJp264JNC8ppMPrpCwilHSKFeQsA4Qc42OA4wLsX7A9R
-        RcDUqUIjfBIqFzThhYb2NVF+QQ==
-X-Google-Smtp-Source: APBJJlENcUAaIeNwgSOtgl6xNx6O2vsFm/Y12z+f41X65o7DgK13iulXHR6f0m0EzwNjn8xuzHvfaQ==
-X-Received: by 2002:ac2:5984:0:b0:4fb:82d8:994d with SMTP id w4-20020ac25984000000b004fb82d8994dmr1223532lfn.42.1689257888710;
-        Thu, 13 Jul 2023 07:18:08 -0700 (PDT)
+        d=1e100.net; s=20221208; t=1689257891; x=1691849891;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Gh+gKUS7IMi6ThhGwyG8WEdTRY9eZfCeAwrMiJcy0S0=;
+        b=RaLSWdzvNqoikgH6uO/rpuPg861mwfV/S9MFaQoT9WuyRnEkYr+NVsM5j8PfT1wqTt
+         83oxirY8inpbZnkQEGVIP3/9PAuIrHjGKGOp0+wGcNyOB4iTcSZIKZqk+Tu0Kw2mhk0v
+         T2JCPs8dwAUMeJno/QtZtvBJu7OaF3y5AfCYY5h6Nezeu79OAVe6J2Fk8ODjdRlH+iOU
+         3zur2PenQ5IiO13jOPILKnqYlqNMFA+e9bmSv4ZvpxuOHSpEW24H64h6v5GGylbhafrQ
+         viDhiIBGbmjMJHUdquXxH+LkWyFtN2spw0B8G4S0Nu/2lnI8XYM5b/WKvePM6HQgj0qH
+         Gc1w==
+X-Gm-Message-State: ABy/qLY0K0nwUgyI9lG2bR30TJEMUzjLFk1DsBdtil8yKms0JdzM9VEw
+        C1AHD/B8lUWoa39G03pY4oMUjQ==
+X-Google-Smtp-Source: APBJJlEz8giuIUF+FvZp4ShicPkXlGdGQnC1pcMvCg2XE1TwdbGx42cyBaN6G3kevsVYkpBLwkDfvg==
+X-Received: by 2002:a19:6419:0:b0:4f8:5bf7:db05 with SMTP id y25-20020a196419000000b004f85bf7db05mr1256418lfb.27.1689257891550;
+        Thu, 13 Jul 2023 07:18:11 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-94-254-63-18.NA.cust.bahnhof.se. [94.254.63.18])
-        by smtp.gmail.com with ESMTPSA id w28-20020ac2599c000000b004fb759964a9sm1132426lfn.168.2023.07.13.07.18.07
+        by smtp.gmail.com with ESMTPSA id w28-20020ac2599c000000b004fb759964a9sm1132426lfn.168.2023.07.13.07.18.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Jul 2023 07:18:07 -0700 (PDT)
+        Thu, 13 Jul 2023 07:18:11 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Cristian Marussi <cristian.marussi@arm.com>,
@@ -58,69 +59,141 @@ Cc:     Nikunj Kela <nkela@quicinc.com>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 00/11] arm_scmi/cpufreq: Add generic performance scaling support
-Date:   Thu, 13 Jul 2023 16:17:27 +0200
-Message-Id: <20230713141738.23970-1-ulf.hansson@linaro.org>
+Subject: [PATCH v2 02/11] firmware: arm_scmi: Extend perf protocol ops to get information of a domain
+Date:   Thu, 13 Jul 2023 16:17:29 +0200
+Message-Id: <20230713141738.23970-3-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230713141738.23970-1-ulf.hansson@linaro.org>
+References: <20230713141738.23970-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Similar to other protocol ops, it's useful for an scmi module driver to get
+some generic information of a performance domain. Therefore, let's add a
+new callback to provide this information. The information is currently
+limited to the name of the performance domain and whether the set-level
+operation is supported, although this can easily be extended if we find the
+need for it.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
 Changes in v2:
-	- Split up the series, to get the basic support in place as the first
-	step. The part that remains is the integration with the OPP library, to
-	allow consumer drivers to change performance level using the OPP lib.
-	- Re-based on top v6.5-rc1.
-	- Other changes will be described for each patch.
+	- New patch (replacing two earlier patches).
 
-The current SCMI performance scaling support is limited to cpufreq. This series
-extends the support, so it can be used for all kind of devices and not only for
-CPUs.
+---
+ drivers/firmware/arm_scmi/perf.c | 21 ++++++++++++++++-----
+ include/linux/scmi_protocol.h    |  8 ++++++++
+ 2 files changed, 24 insertions(+), 5 deletions(-)
 
-The changes are spread over a couple of different subsystems, although the
-changes that affects the other subsystems than the arm_scmi directory are
-mostly smaller. The series is based upon v6.5-rc1.
-
-Note that, I am runing this on the Qemu virt platform with Optee running an SCMI
-server. If you want some more details about my test setup, I am certainly open
-to share that with you!
-
-Looking forward to your feedback!
-
-Kind regards
-Ulf Hansson
-
-
-Ulf Hansson (11):
-  firmware: arm_scmi: Extend perf protocol ops to get number of domains
-  firmware: arm_scmi: Extend perf protocol ops to get information of a
-    domain
-  cpufreq: scmi: Prepare to move OF parsing of domain-id to cpufreq
-  firmware: arm_scmi: Align perf ops to use domain-id as in-parameter
-  firmware: arm_scmi: Drop redundant ->device_domain_id() from perf ops
-  cpufreq: scmi: Avoid one OF parsing in scmi_get_sharing_cpus()
-  PM: domains: Allow genpd providers to manage OPP tables directly by
-    its FW
-  dt-bindings: firmware: arm,scmi: Extend bindings for protocol@13
-  cpufreq: scmi: Add support to parse domain-id using
-    #power-domain-cells
-  firmware: arm_scmi: Add the SCMI performance domain
-  cpufreq: scmi: Drop redundant ifdef in scmi_cpufreq_probe()
-
- .../bindings/firmware/arm,scmi.yaml           |  11 +-
- drivers/base/power/domain.c                   |  11 +-
- drivers/cpufreq/scmi-cpufreq.c                |  48 ++++--
- drivers/firmware/arm_scmi/Kconfig             |  12 ++
- drivers/firmware/arm_scmi/Makefile            |   1 +
- drivers/firmware/arm_scmi/perf.c              |  60 ++++---
- drivers/firmware/arm_scmi/scmi_perf_domain.c  | 155 ++++++++++++++++++
- include/linux/pm_domain.h                     |   5 +
- include/linux/scmi_protocol.h                 |  18 +-
- 9 files changed, 262 insertions(+), 59 deletions(-)
- create mode 100644 drivers/firmware/arm_scmi/scmi_perf_domain.c
-
+diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
+index cf7f0de4d6db..f3ea96dd845c 100644
+--- a/drivers/firmware/arm_scmi/perf.c
++++ b/drivers/firmware/arm_scmi/perf.c
+@@ -124,7 +124,6 @@ struct scmi_msg_resp_perf_describe_levels {
+ 
+ struct perf_dom_info {
+ 	bool set_limits;
+-	bool set_perf;
+ 	bool perf_limit_notify;
+ 	bool perf_level_notify;
+ 	bool perf_fastchannels;
+@@ -132,7 +131,7 @@ struct perf_dom_info {
+ 	u32 sustained_freq_khz;
+ 	u32 sustained_perf_level;
+ 	u32 mult_factor;
+-	char name[SCMI_MAX_STR_SIZE];
++	struct scmi_perf_domain_info info;
+ 	struct scmi_opp opp[MAX_OPPS];
+ 	struct scmi_fc_info *fc_info;
+ };
+@@ -209,7 +208,7 @@ scmi_perf_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 		flags = le32_to_cpu(attr->flags);
+ 
+ 		dom_info->set_limits = SUPPORTS_SET_LIMITS(flags);
+-		dom_info->set_perf = SUPPORTS_SET_PERF_LVL(flags);
++		dom_info->info.set_perf = SUPPORTS_SET_PERF_LVL(flags);
+ 		dom_info->perf_limit_notify = SUPPORTS_PERF_LIMIT_NOTIFY(flags);
+ 		dom_info->perf_level_notify = SUPPORTS_PERF_LEVEL_NOTIFY(flags);
+ 		dom_info->perf_fastchannels = SUPPORTS_PERF_FASTCHANNELS(flags);
+@@ -225,7 +224,8 @@ scmi_perf_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 			dom_info->mult_factor =
+ 					(dom_info->sustained_freq_khz * 1000) /
+ 					dom_info->sustained_perf_level;
+-		strscpy(dom_info->name, attr->name, SCMI_SHORT_NAME_MAX_SIZE);
++		strscpy(dom_info->info.name, attr->name,
++			SCMI_SHORT_NAME_MAX_SIZE);
+ 	}
+ 
+ 	ph->xops->xfer_put(ph, t);
+@@ -237,7 +237,8 @@ scmi_perf_domain_attributes_get(const struct scmi_protocol_handle *ph,
+ 	if (!ret && PROTOCOL_REV_MAJOR(version) >= 0x3 &&
+ 	    SUPPORTS_EXTENDED_NAMES(flags))
+ 		ph->hops->extended_name_get(ph, PERF_DOMAIN_NAME_GET, domain,
+-					    dom_info->name, SCMI_MAX_STR_SIZE);
++					    dom_info->info.name,
++					    SCMI_MAX_STR_SIZE);
+ 
+ 	return ret;
+ }
+@@ -340,6 +341,15 @@ static int scmi_perf_num_domains_get(const struct scmi_protocol_handle *ph)
+ 	return pi->num_domains;
+ }
+ 
++static const struct scmi_perf_domain_info *
++scmi_perf_domain_info_get(const struct scmi_protocol_handle *ph, u32 domain)
++{
++	struct scmi_perf_info *pi = ph->get_priv(ph);
++	struct perf_dom_info *dom = pi->dom_info + domain;
++
++	return &dom->info;
++}
++
+ static int scmi_perf_mb_limits_set(const struct scmi_protocol_handle *ph,
+ 				   u32 domain, u32 max_perf, u32 min_perf)
+ {
+@@ -695,6 +705,7 @@ scmi_power_scale_get(const struct scmi_protocol_handle *ph)
+ 
+ static const struct scmi_perf_proto_ops perf_proto_ops = {
+ 	.num_domains_get = scmi_perf_num_domains_get,
++	.domain_info_get = scmi_perf_domain_info_get,
+ 	.limits_set = scmi_perf_limits_set,
+ 	.limits_get = scmi_perf_limits_get,
+ 	.level_set = scmi_perf_level_set,
+diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
+index 71b39cbbdace..ed032fe83c28 100644
+--- a/include/linux/scmi_protocol.h
++++ b/include/linux/scmi_protocol.h
+@@ -97,11 +97,17 @@ struct scmi_clk_proto_ops {
+ 			      u32 clk_id);
+ };
+ 
++struct scmi_perf_domain_info {
++	char name[SCMI_MAX_STR_SIZE];
++	bool set_perf;
++};
++
+ /**
+  * struct scmi_perf_proto_ops - represents the various operations provided
+  *	by SCMI Performance Protocol
+  *
+  * @num_domains_get: gets the number of supported performance domains
++ * @domain_info_get: get the information of a performance domain
+  * @limits_set: sets limits on the performance level of a domain
+  * @limits_get: gets limits on the performance level of a domain
+  * @level_set: sets the performance level of a domain
+@@ -122,6 +128,8 @@ struct scmi_clk_proto_ops {
+  */
+ struct scmi_perf_proto_ops {
+ 	int (*num_domains_get)(const struct scmi_protocol_handle *ph);
++	const struct scmi_perf_domain_info __must_check *(*domain_info_get)
++		(const struct scmi_protocol_handle *ph, u32 domain);
+ 	int (*limits_set)(const struct scmi_protocol_handle *ph, u32 domain,
+ 			  u32 max_perf, u32 min_perf);
+ 	int (*limits_get)(const struct scmi_protocol_handle *ph, u32 domain,
 -- 
 2.34.1
 
