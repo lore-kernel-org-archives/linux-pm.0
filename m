@@ -2,111 +2,90 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A0EFC001E0
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jul 2023 07:38:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3ADBC001E0
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jul 2023 08:00:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231609AbjGMHiJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jul 2023 03:38:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53982 "EHLO
+        id S233639AbjGMIA4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jul 2023 04:00:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39756 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229455AbjGMHiI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 03:38:08 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BC80C1;
-        Thu, 13 Jul 2023 00:38:07 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id D48B161A3F;
-        Thu, 13 Jul 2023 07:38:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D53BC433C8;
-        Thu, 13 Jul 2023 07:37:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1689233886;
-        bh=M/Ep5iSr1YSGj+qt83vK1Al8zsiF7h1z2MTiQXaepbk=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=PEP+VEsDCj3gwsVKfQmpeJ0zAHgcBRD8She7CRG2jnTKWkGkAcjcZ0VvY09tJzZhq
-         BHjPICtKxXhvW6/aIyhFavYhtPEpLuyqfpNsO+b2Gu8AUvsM3DX9xJCtcuiIukdmAI
-         3yX5Vx8UwRJfV1guMrH7X8bPUbpJdZHaNu2kbyYObfIDFt4D/kbn7fnWlTb9m+vpyr
-         xrsn+vbZW/GACKhglRa/uipXvmH+N9p/gpxJGPx+Js02F8jCz09NCiiGjQisF19mwM
-         JJ6X+46bo5EME8mY0S8wgKHRPyu5/99dM1lPTZVrzHnWvvTv+mO8+7PE3Gwjzg5uuR
-         oAwbvXHUTn1Nw==
-Date:   Thu, 13 Jul 2023 13:07:50 +0530
-From:   Manivannan Sadhasivam <mani@kernel.org>
-To:     Eric Biggers <ebiggers@kernel.org>
-Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        cw00.choi@samsung.com, andersson@kernel.org,
-        konrad.dybcio@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        quic_asutoshd@quicinc.com, quic_cang@quicinc.com,
-        quic_nitirawa@quicinc.com, quic_narepall@quicinc.com,
-        quic_bhaskarv@quicinc.com, quic_richardp@quicinc.com,
-        quic_nguyenb@quicinc.com, quic_ziqichen@quicinc.com,
-        bmasney@redhat.com, krzysztof.kozlowski@linaro.org
-Subject: Re: [PATCH 04/14] arm64: dts: qcom: sdm845: Fix the min frequency of
- "ice_core_clk"
-Message-ID: <20230713073750.GI3047@thinkpad>
-References: <20230712103213.101770-1-manivannan.sadhasivam@linaro.org>
- <20230712103213.101770-5-manivannan.sadhasivam@linaro.org>
- <20230713073003.GE2199@sol.localdomain>
+        with ESMTP id S233746AbjGMIAa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2023 04:00:30 -0400
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::222])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77F663A96;
+        Thu, 13 Jul 2023 00:59:28 -0700 (PDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 0898640003;
+        Thu, 13 Jul 2023 07:59:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+        t=1689235159;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Ns0g2x/HP1fLB+xSQBeMwCrjXfs2Pl1Rj64uL455UgE=;
+        b=EldaKwafz3O/wp0uatKayVJ96yu26PsAdFvBGj0+bcjNbmPvmYTzOBBZp97PX+ginQDyNb
+        Ir5iLYF/wI12ZM9iyNDeVFSY4xO9GqlPxA8ZtwgzNl3Rx8dz7D3uOGwtlJPSN8OY5saRP4
+        SK8PXkrOQzYkf3DmNi7XNPRwEn9+8mZJPGIuLWRn3Wxa00EpzGkcGbAeOjlsDcZH0eNlb0
+        HyAPWrQpPsJQwSiTSzbHOqWXsP8JZJOOtF2LGOCpkjT1jilP6XvaK48kVDi0QgeA3VNDt6
+        Ry9wPnR3AXn7DGDDWz+IIX71OAbsUsR9heCmTECyR7xNIj/dPSh3hp66QCUrxw==
+From:   Miquel Raynal <miquel.raynal@bootlin.com>
+To:     Neil Armstrong <neil.armstrong@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        Jose Abreu <joabreu@synopsys.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Andy Shevchenko <andy@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Marc Zyngier <maz@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
+        linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-oxnas@groups.io,
+        Arnd Bergmann <arnd@arndb.de>,
+        Daniel Golle <daniel@makrotopia.org>
+Subject: Re: [PATCH v2 05/15] nand: oxnas_nand: remove obsolete raw nand driver
+Date:   Thu, 13 Jul 2023 09:59:13 +0200
+Message-Id: <20230713075913.486714-1-miquel.raynal@bootlin.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To:  <20230630-topic-oxnas-upstream-remove-v2-5-fb6ab3dea87c@linaro.org>
+References: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-linux-mtd-patch-notification: thanks
+X-linux-mtd-patch-commit: b'ecdaf0ee79156ce0c103cc1a7e38634fa0de6a5a'
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230713073003.GE2199@sol.localdomain>
+X-GND-Sasl: miquel.raynal@bootlin.com
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jul 13, 2023 at 12:30:03AM -0700, Eric Biggers wrote:
-> On Wed, Jul 12, 2023 at 04:01:59PM +0530, Manivannan Sadhasivam wrote:
-> > Minimum frequency of the "ice_core_clk" should be 75MHz as specified in the
-> > downstream vendor devicetree. So fix it!
-> > 
-> > https://git.codelinaro.org/clo/la/kernel/msm-4.9/-/blob/LA.UM.7.3.r1-09300-sdm845.0/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> > 
-> > Fixes: cc16687fbd74 ("arm64: dts: qcom: sdm845: add UFS controller")
-> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-> > ---
-> >  arch/arm64/boot/dts/qcom/sdm845.dtsi | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> > index 9ed74bf72d05..89520a9fe1e3 100644
-> > --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> > +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> > @@ -2614,7 +2614,7 @@ ufs_mem_hc: ufshc@1d84000 {
-> >  				<0 0>,
-> >  				<0 0>,
-> >  				<0 0>,
-> > -				<0 300000000>;
-> > +				<75000000 300000000>;
+On Fri, 2023-06-30 at 16:58:30 UTC, Neil Armstrong wrote:
+> Due to lack of maintenance and stall of development for a few years now,
+> and since no new features will ever be added upstream, remove support
+> for OX810 and OX820 nand.
 > 
-> Thanks for fixing this!  What was the visible effect of this bug, if any?
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Daniel Golle <daniel@makrotopia.org>
+> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+> Acked-by: Miquel Raynal <miquel.raynal@bootlin.com>
 
-No, this was just based on inspection.
+Applied to https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git nand/next, thanks.
 
-> Do you know why the minimum has that particular value?
-> 
-
-Min and max frequencies come from the Qcom's internal documentation where they
-have calculated the freq range based on RPMh performance states.
-
-> The Fixes tag is wrong; it should be:
-> 
-> Fixes: 433f9a57298f ("arm64: dts: sdm845: add Inline Crypto Engine registers and clock")
-> 
-
-Yikes! Thanks for noticing, will fix it.
-
-- Mani
-
-> - Eric
-
--- 
-மணிவண்ணன் சதாசிவம்
+Miquel
