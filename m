@@ -2,236 +2,134 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97FEBEB64DC
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 19:01:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 862D6C001DC
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 19:43:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236637AbjGNTBn convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jul 2023 15:01:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58984 "EHLO
+        id S235997AbjGNTnt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jul 2023 15:43:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45952 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235873AbjGNTBm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 15:01:42 -0400
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E170A2D4B;
-        Fri, 14 Jul 2023 12:01:40 -0700 (PDT)
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-3fa99b4f71fso4387895e9.1;
-        Fri, 14 Jul 2023 12:01:40 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689361299; x=1689966099;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dCSKhEEwFxtZc44vFjegpd2e4UjCV+0u8Bi/ih1l7lo=;
-        b=VOizt0TrX/act/a8lT7d/iAwl+9bP1LOn/k6nuARIdt07TpWQ7rfCOYOT96lgj1ZZK
-         T+19RGq6NPotR+YfApfOQjjqVz4TirYvTudewO8MYIvUCuwPyuxX+/PKZQUMEVoBW+A7
-         jWwPDQj/VtZeIqwgdbDrgmud989HbgK/x83hJAwht/WZWmMW8VGdjGA2sgfXdUGKN9ys
-         7aaZcxPW0ZTNYY7ofWxz8aXoi0TaMwfFipCg4S21DrZCaIdjxnyCSZauoFtXqHxp5BTI
-         vWhD8oU8rF+xHqFNBxGUqtYyVoFS12HOyRNPSXvLnyAB16dkJZYD9lPbqzSeihubd6GW
-         Jo7A==
-X-Gm-Message-State: ABy/qLZESxsUTc+ahP7sFpIsumeWN8MWyBpHvpXiVYaPcAT89b7gPjBm
-        7Mtlu+yOgRsjstYfB/4XefHBdgPSZAgF2NDJPYw=
-X-Google-Smtp-Source: APBJJlEk4dSowlcEHuKJWTAji6jfja+Ys/2z4tz24oer1kVW/20RnuoSbRV5G9Ys1DkgRR1Xx1TaOBtb8hR0sC++YqA=
-X-Received: by 2002:a05:600c:3111:b0:3f6:8a3:8e59 with SMTP id
- g17-20020a05600c311100b003f608a38e59mr5102421wmo.1.1689361299261; Fri, 14 Jul
- 2023 12:01:39 -0700 (PDT)
+        with ESMTP id S235922AbjGNTns (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 15:43:48 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B980C2D57;
+        Fri, 14 Jul 2023 12:43:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1689363825; x=1720899825;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=H7eyJndGnUt348f7s7o8iqHlYa+xyplfFs8/CMNRnLw=;
+  b=emjTAvIhM0MKtxxk/WHGFjGA94e6J0Af47JWCRgd1EAMCI/dD+KE8QK9
+   Fx0jeMlsPLZiCgAb05kO825cIAWd/FWt0HwQAuYxcbcw7zMwCUhLbq7d3
+   E40YeGpQLII3itLdqjDB1DWxsO7mWi9jopzr8g9MF5QEizmBjyeX/q0yl
+   RfQYsJLPLNo3PzIcl3dRI8+p57VFPeqn30+UcrgAQuLIPRiRM3AczG5Im
+   jztCu9qjpPi+UsHHi52vFt1NjkL6gkrXw38rFOtwK5Jt2TK0BkGmEUIVY
+   sAtxqFTVQ6DZltSEr+vwf9PIhwdtVf1OJkmNsLQ/uZWHL0PsM6bx2lwr2
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10771"; a="429322679"
+X-IronPort-AV: E=Sophos;i="6.01,206,1684825200"; 
+   d="scan'208";a="429322679"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jul 2023 12:43:45 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10771"; a="812566665"
+X-IronPort-AV: E=Sophos;i="6.01,206,1684825200"; 
+   d="scan'208";a="812566665"
+Received: from lkp-server01.sh.intel.com (HELO c544d7fc5005) ([10.239.97.150])
+  by FMSMGA003.fm.intel.com with ESMTP; 14 Jul 2023 12:43:42 -0700
+Received: from kbuild by c544d7fc5005 with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1qKOha-0007en-0O;
+        Fri, 14 Jul 2023 19:43:42 +0000
+Date:   Sat, 15 Jul 2023 03:43:23 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Michal Wilczynski <michal.wilczynski@intel.com>
+Cc:     oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
+        devel@acpica.org, linux-pm@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [rafael-pm:bleeding-edge 33/47] osi.c:(.text+0x158): multiple
+ definition of `acpi_early_processor_control_setup';
+ drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+Message-ID: <202307150306.FvaBEkzg-lkp@intel.com>
 MIME-Version: 1.0
-References: <20230712081258.29254-1-frank.li@vivo.com> <20230712081258.29254-27-frank.li@vivo.com>
-In-Reply-To: <20230712081258.29254-27-frank.li@vivo.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 14 Jul 2023 21:01:28 +0200
-Message-ID: <CAJZ5v0gw=vddN9kHMSECwCye9q3qbN0Hr=DL6EC=fQ9eHF9faA@mail.gmail.com>
-Subject: Re: [PATCH 27/27] thermal: intel: int340x: Convert to platform remove
- callback returning void
-To:     Yangtao Li <frank.li@vivo.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jul 12, 2023 at 10:14 AM Yangtao Li <frank.li@vivo.com> wrote:
->
-> The .remove() callback for a platform driver returns an int which makes
-> many driver authors wrongly assume it's possible to do error handling by
-> returning an error code. However the value returned is (mostly) ignored
-> and this typically results in resource leaks. To improve here there is a
-> quest to make the remove callback return void. In the first step of this
-> quest all drivers are converted to .remove_new() which already returns
-> void.
->
-> Trivially convert this driver from always returning zero in the remove
-> callback to the void returning variant.
->
-> Cc: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Signed-off-by: Yangtao Li <frank.li@vivo.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   92048b818603a7bcc2e52484d14d5a736de27e3a
+commit: ca805e0f04a5f9a773875ad6de914e54e41d43c7 [33/47] ACPI: processor: Use _OSC to convey OSPM processor support information
+config: loongarch-randconfig-r014-20230714 (https://download.01.org/0day-ci/archive/20230715/202307150306.FvaBEkzg-lkp@intel.com/config)
+compiler: loongarch64-linux-gcc (GCC) 12.3.0
+reproduce: (https://download.01.org/0day-ci/archive/20230715/202307150306.FvaBEkzg-lkp@intel.com/reproduce)
 
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202307150306.FvaBEkzg-lkp@intel.com/
 
-or please let me know if you want me to pick this up.
+All errors (new ones prefixed by >>):
 
-Thanks!
+   loongarch64-linux-ld: drivers/acpi/osi.o: in function `acpi_early_processor_control_setup':
+>> osi.c:(.text+0x158): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/osl.o: in function `acpi_early_processor_control_setup':
+   osl.c:(.text+0x298): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/utils.o: in function `acpi_early_processor_control_setup':
+   utils.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/nvs.o: in function `acpi_early_processor_control_setup':
+   nvs.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/wakeup.o: in function `acpi_early_processor_control_setup':
+   wakeup.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/sleep.o: in function `acpi_early_processor_control_setup':
+   sleep.c:(.text+0x6a0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/device_sysfs.o: in function `acpi_early_processor_control_setup':
+   drivers/acpi/internal.h:161: multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/device_pm.o: in function `acpi_early_processor_control_setup':
+   drivers/acpi/internal.h:161: multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/proc.o: in function `acpi_early_processor_control_setup':
+   proc.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/bus.o: in function `acpi_early_processor_control_setup':
+   bus.c:(.text+0x6c8): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/glue.o: in function `acpi_early_processor_control_setup':
+   drivers/acpi/internal.h:161: multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/scan.o: in function `acpi_early_processor_control_setup':
+   scan.c:(.text+0xef4): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/acpi_processor.o: in function `acpi_early_processor_control_setup':
+   acpi_processor.c:(.text+0xb0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/ec.o: in function `acpi_early_processor_control_setup':
+   ec.c:(.text+0x1fec): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/pci_root.o: in function `acpi_early_processor_control_setup':
+   pci_root.c:(.text+0x4a8): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/pci_link.o: in function `acpi_early_processor_control_setup':
+   pci_link.c:(.text+0xa00): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/acpi_lpss.o: in function `acpi_early_processor_control_setup':
+   acpi_lpss.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/acpi_apd.o: in function `acpi_early_processor_control_setup':
+   acpi_apd.c:(.text+0xdc): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/acpi_platform.o: in function `acpi_early_processor_control_setup':
+   acpi_platform.c:(.text+0x90): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/acpi_pnp.o: in function `acpi_early_processor_control_setup':
+   acpi_pnp.c:(.text+0x168): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/power.o: in function `acpi_early_processor_control_setup':
+   drivers/acpi/internal.h:161: multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/event.o: in function `acpi_early_processor_control_setup':
+   event.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/sysfs.o: in function `acpi_early_processor_control_setup':
+   sysfs.c:(.text+0x87c): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/property.o: in function `acpi_early_processor_control_setup':
+   drivers/acpi/internal.h:161: multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/debugfs.o: in function `acpi_early_processor_control_setup':
+   debugfs.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/container.o: in function `acpi_early_processor_control_setup':
+   container.c:(.text+0x170): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/acpi_memhotplug.o: in function `acpi_early_processor_control_setup':
+   acpi_memhotplug.c:(.text+0x0): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
+   loongarch64-linux-ld: drivers/acpi/dptf/int340x_thermal.o: in function `acpi_early_processor_control_setup':
+   int340x_thermal.c:(.text+0x8): multiple definition of `acpi_early_processor_control_setup'; drivers/acpi/tables.o:tables.c:(.text+0x284): first defined here
 
-> ---
->  drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 5 ++---
->  drivers/thermal/intel/int340x_thermal/int3401_thermal.c | 6 ++----
->  drivers/thermal/intel/int340x_thermal/int3402_thermal.c | 6 ++----
->  drivers/thermal/intel/int340x_thermal/int3403_thermal.c | 6 ++----
->  drivers/thermal/intel/int340x_thermal/int3406_thermal.c | 5 ++---
->  5 files changed, 10 insertions(+), 18 deletions(-)
->
-> diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> index 5e1164226ada..8fbc97641740 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-> @@ -674,7 +674,7 @@ static int int3400_thermal_probe(struct platform_device *pdev)
->         return result;
->  }
->
-> -static int int3400_thermal_remove(struct platform_device *pdev)
-> +static void int3400_thermal_remove(struct platform_device *pdev)
->  {
->         struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
->
-> @@ -698,7 +698,6 @@ static int int3400_thermal_remove(struct platform_device *pdev)
->         kfree(priv->trts);
->         kfree(priv->arts);
->         kfree(priv);
-> -       return 0;
->  }
->
->  static const struct acpi_device_id int3400_thermal_match[] = {
-> @@ -714,7 +713,7 @@ MODULE_DEVICE_TABLE(acpi, int3400_thermal_match);
->
->  static struct platform_driver int3400_thermal_driver = {
->         .probe = int3400_thermal_probe,
-> -       .remove = int3400_thermal_remove,
-> +       .remove_new = int3400_thermal_remove,
->         .driver = {
->                    .name = "int3400 thermal",
->                    .acpi_match_table = ACPI_PTR(int3400_thermal_match),
-> diff --git a/drivers/thermal/intel/int340x_thermal/int3401_thermal.c b/drivers/thermal/intel/int340x_thermal/int3401_thermal.c
-> index 217786fba185..714f4cb59cfd 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int3401_thermal.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int3401_thermal.c
-> @@ -36,11 +36,9 @@ static int int3401_add(struct platform_device *pdev)
->         return ret;
->  }
->
-> -static int int3401_remove(struct platform_device *pdev)
-> +static void int3401_remove(struct platform_device *pdev)
->  {
->         proc_thermal_remove(platform_get_drvdata(pdev));
-> -
-> -       return 0;
->  }
->
->  #ifdef CONFIG_PM_SLEEP
-> @@ -62,7 +60,7 @@ static SIMPLE_DEV_PM_OPS(int3401_proc_thermal_pm, int3401_thermal_suspend,
->
->  static struct platform_driver int3401_driver = {
->         .probe = int3401_add,
-> -       .remove = int3401_remove,
-> +       .remove_new = int3401_remove,
->         .driver = {
->                 .name = "int3401 thermal",
->                 .acpi_match_table = int3401_device_ids,
-> diff --git a/drivers/thermal/intel/int340x_thermal/int3402_thermal.c b/drivers/thermal/intel/int340x_thermal/int3402_thermal.c
-> index 43fa351e2b9e..ab8bfb5a3946 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int3402_thermal.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int3402_thermal.c
-> @@ -71,15 +71,13 @@ static int int3402_thermal_probe(struct platform_device *pdev)
->         return 0;
->  }
->
-> -static int int3402_thermal_remove(struct platform_device *pdev)
-> +static void int3402_thermal_remove(struct platform_device *pdev)
->  {
->         struct int3402_thermal_data *d = platform_get_drvdata(pdev);
->
->         acpi_remove_notify_handler(d->handle,
->                                    ACPI_DEVICE_NOTIFY, int3402_notify);
->         int340x_thermal_zone_remove(d->int340x_zone);
-> -
-> -       return 0;
->  }
->
->  static const struct acpi_device_id int3402_thermal_match[] = {
-> @@ -91,7 +89,7 @@ MODULE_DEVICE_TABLE(acpi, int3402_thermal_match);
->
->  static struct platform_driver int3402_thermal_driver = {
->         .probe = int3402_thermal_probe,
-> -       .remove = int3402_thermal_remove,
-> +       .remove_new = int3402_thermal_remove,
->         .driver = {
->                    .name = "int3402 thermal",
->                    .acpi_match_table = int3402_thermal_match,
-> diff --git a/drivers/thermal/intel/int340x_thermal/int3403_thermal.c b/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-> index e418d270bc76..9b33fd3a66da 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-> @@ -262,7 +262,7 @@ static int int3403_add(struct platform_device *pdev)
->         return result;
->  }
->
-> -static int int3403_remove(struct platform_device *pdev)
-> +static void int3403_remove(struct platform_device *pdev)
->  {
->         struct int3403_priv *priv = platform_get_drvdata(pdev);
->
-> @@ -277,8 +277,6 @@ static int int3403_remove(struct platform_device *pdev)
->         default:
->                 break;
->         }
-> -
-> -       return 0;
->  }
->
->  static const struct acpi_device_id int3403_device_ids[] = {
-> @@ -293,7 +291,7 @@ MODULE_DEVICE_TABLE(acpi, int3403_device_ids);
->
->  static struct platform_driver int3403_driver = {
->         .probe = int3403_add,
-> -       .remove = int3403_remove,
-> +       .remove_new = int3403_remove,
->         .driver = {
->                 .name = "int3403 thermal",
->                 .acpi_match_table = int3403_device_ids,
-> diff --git a/drivers/thermal/intel/int340x_thermal/int3406_thermal.c b/drivers/thermal/intel/int340x_thermal/int3406_thermal.c
-> index f5e42fc2acc0..1c266493c1aa 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int3406_thermal.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int3406_thermal.c
-> @@ -178,13 +178,12 @@ static int int3406_thermal_probe(struct platform_device *pdev)
->         return -ENODEV;
->  }
->
-> -static int int3406_thermal_remove(struct platform_device *pdev)
-> +static void int3406_thermal_remove(struct platform_device *pdev)
->  {
->         struct int3406_thermal_data *d = platform_get_drvdata(pdev);
->
->         thermal_cooling_device_unregister(d->cooling_dev);
->         kfree(d->br);
-> -       return 0;
->  }
->
->  static const struct acpi_device_id int3406_thermal_match[] = {
-> @@ -196,7 +195,7 @@ MODULE_DEVICE_TABLE(acpi, int3406_thermal_match);
->
->  static struct platform_driver int3406_thermal_driver = {
->         .probe = int3406_thermal_probe,
-> -       .remove = int3406_thermal_remove,
-> +       .remove_new = int3406_thermal_remove,
->         .driver = {
->                    .name = "int3406 thermal",
->                    .acpi_match_table = int3406_thermal_match,
-> --
-> 2.39.0
->
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
