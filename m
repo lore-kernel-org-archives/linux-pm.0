@@ -2,53 +2,56 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9FFEC001DC
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 05:30:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9DDDEB64DC
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 05:30:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234729AbjGNFan (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jul 2023 01:30:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58788 "EHLO
+        id S234877AbjGNFau (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jul 2023 01:30:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58812 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234817AbjGNFam (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 01:30:42 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B76319B4;
-        Thu, 13 Jul 2023 22:30:41 -0700 (PDT)
+        with ESMTP id S234842AbjGNFao (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 01:30:44 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04A0B2683;
+        Thu, 13 Jul 2023 22:30:44 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 1FDB161C12;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 96EC061B91;
+        Fri, 14 Jul 2023 05:30:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02B25C43395;
         Fri, 14 Jul 2023 05:30:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A6FBBC433C7;
-        Fri, 14 Jul 2023 05:30:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1689312640;
-        bh=wH70BvdhLEtr/N+gonp/uuTZjF4Md0BD9RWyGOD2yI0=;
+        s=k20201202; t=1689312643;
+        bh=3neIBRMgcQIdTGXRmMgsboGgicFF7ol+XVWepa/uG2E=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=bIF/uJwhkn9WjRAtBOOvk289sd4pQ8joRiMXwwWTxVIvYs4eKb+QzsKWDIdV+pEsD
-         h7SqT+Zz7PoFVYGVpTWqBsElMIDklCj7qwpBmKFWiWC+M6XRmyxHysp/MoeNS0wzdC
-         jCkrt2CwHOTkJkTnowgsyhccxA8zpxiGkRlG4OPHgkq8gv4ggJ0vs1cHjArLgsl33T
-         evtDeJ+3uA81sSVkDCSIk4YPaz4tek7oO7jHXj6d1EBa3n1yZ+N7ES/kGF+SyGek7f
-         k09Ykv9W3Hl77bIda3mn2/7hVhODyrB9y+p0S0Q+j58Eo4ozywblO3syKQWGwLKDA9
-         18nenzYD1puig==
+        b=P+4jEB/dAmx6h/Vv60ZkxkDZNkKjv07DTZPhJPp0awCZaP699HMdxZ1abcDDQcGsW
+         wPf8tHoR4mcQfenQzTCs0uDDPRtrUtrdQm96QpYmHbB2u04pikts+RFvBQqq4ln4L+
+         VGwrDEHDtru9CfEqjloKHH96HKXyo4W7UM9bLmz90XgsHI8fY/fYOI/uzI1Cf3e1qm
+         eAQvJHWpnInyEehG6Rr3+wXQo5Tsh01aAAOBDhi8m/l2B5sB60jyyySqrPa7zkOK/O
+         AQt+vgpyQHexOEFvqI14Y+pZa7POoxG2wUvDo7J/s58QvHmsLfwZEBS6WYVEFYdkGa
+         ZWrfEZYA1ie5w==
 From:   Bjorn Andersson <andersson@kernel.org>
-To:     Sebastian Reichel <sre@kernel.org>,
+To:     Andy Gross <agross@kernel.org>,
+        Konrad Dybcio <konrad.dybcio@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
         Rob Herring <robh+dt@kernel.org>,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@linaro.org>,
-        Vinod Koul <vkoul@kernel.org>,
+        Taniya Das <quic_tdas@quicinc.com>,
+        Georgi Djakov <djakov@kernel.org>,
         Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Subject: Re: (subset) [PATCH v4 0/4] ARM: dts: qcom: apq8074-dragonboard: enable resin device
-Date:   Thu, 13 Jul 2023 22:33:56 -0700
-Message-ID: <168931284125.1538684.17945028830332180125.b4-ty@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Yassine Oudjana <y.oudjana@protonmail.com>,
+        linux-pm@vger.kernel.org
+Subject: Re: (subset) [PATCH v6 4/4] arm64: dts: qcom: msm8996: scale CBF clock according to the CPUfreq
+Date:   Thu, 13 Jul 2023 22:33:58 -0700
+Message-ID: <168931284119.1538684.15045851319853728549.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230609022553.1775844-1-dmitry.baryshkov@linaro.org>
-References: <20230609022553.1775844-1-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20230512001334.2983048-5-dmitry.baryshkov@linaro.org>
+References: <20230512001334.2983048-1-dmitry.baryshkov@linaro.org> <20230512001334.2983048-5-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -57,22 +60,16 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On Fri, 09 Jun 2023 05:25:49 +0300, Dmitry Baryshkov wrote:
-> Add support for reset / volume-down button found on the APQ8074
-> dragonboard device.
+On Fri, 12 May 2023 03:13:34 +0300, Dmitry Baryshkov wrote:
+> Turn CBF into the interconnect provider. Scale CBF frequency (bandwidth)
+> according to CPU frequencies.
 > 
-> For PM8941 we don't have a defined field to store the reset reason.
-> Support wrapping pwrkey and resin, but without writing the reset
-> reason.
 > 
-> [...]
 
 Applied, thanks!
 
-[3/4] ARM: dts: qcom-pm8941: add resin support
-      commit: de57328b1c9da0f30ccca4925ed6d5615b1a72b3
-[4/4] ARM: dts: qcom: apq8074-dragonboard: add resin
-      commit: a9037f330e9d6faeba6f5663ca05f525aa1954f4
+[4/4] arm64: dts: qcom: msm8996: scale CBF clock according to the CPUfreq
+      commit: 8bb8688c1d73f21f413e4ea2a37fbbb90997f2bd
 
 Best regards,
 -- 
