@@ -2,92 +2,83 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CE7AEB64DC
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 20:02:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C56FEB64DC
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 21:01:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235752AbjGNUCB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jul 2023 16:02:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51716 "EHLO
+        id S233912AbjGNVBp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jul 2023 17:01:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39694 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233193AbjGNUCA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 16:02:00 -0400
-X-Greylist: delayed 1377 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 14 Jul 2023 13:01:56 PDT
-Received: from vern.gendns.com (vern.gendns.com [98.142.107.122])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97B5E30CB
-        for <linux-pm@vger.kernel.org>; Fri, 14 Jul 2023 13:01:56 -0700 (PDT)
+        with ESMTP id S229579AbjGNVBo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 17:01:44 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A7CB213C
+        for <linux-pm@vger.kernel.org>; Fri, 14 Jul 2023 14:01:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=Fu2v2ZknbSYqYlR712W9GiqrG+kuSMyi/wnVvYy0El0=; b=ACPao1VaSoNAzSB1iaedLJ7Dwu
-        KWUcWOQHm3UVzwAaGNi6JsA+r8lBhWbuaZwoyNCBFs4x2XxPa+HPF2tZC+v+cBpjqO2vOMcgf0qcY
-        n/5d/EKa1A85pVkwh0t/c2ELD/mJ+gYYuiUCYxyX82vUJnI3QGDJzew8S+xIULAHkMyKPVbnmfjP+
-        VXbZafYl0ZvxCX0DZB9iUCGAp/sWIqCSsgVrZk7EoUp19vR2Dc1N+W0wsxIiLUJDJU1xY5Vs4sehQ
-        RyntiGzeTzWGQdzHx0L2Fl91bFa4yc6e5bq2WpuYnNC0TOWn4yMaBkzmVNn5GOO4Nkv1IwGEnPcoF
-        XY7BW7rQ==;
-Received: from ip98-183-112-42.ok.ok.cox.net ([98.183.112.42]:51022 helo=[192.168.0.142])
-        by vern.gendns.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.96)
-        (envelope-from <david@lechnology.com>)
-        id 1qKOci-0004Qk-37;
-        Fri, 14 Jul 2023 15:38:55 -0400
-Message-ID: <22df2c05-165b-c24a-b32b-bd4d74563230@lechnology.com>
-Date:   Fri, 14 Jul 2023 14:38:50 -0500
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Transfer-Encoding:
+        Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+        Sender:Reply-To:Content-ID:Content-Description;
+        bh=LEGwiRpA+dxASTbn24Hm/jT/cS+Pgru7YSUIxTFLyYc=; b=vlHST921tZ97DNJDeHVm7ddTLW
+        nDTl7zJZCv3nScXDpmmOILyxq/xawGnCSNfm7XhCJsCWFQR22qaT4ZXTTTDwVlbupjbtKyLHIdvIj
+        aYLqsRPpsNvXAee+Jke2ORrk4tIRnBapih0FPZxECu8YjDUdp7fYTMfQAYqRMFKvgtZPa9RAl/nHl
+        axNpEPKQJ4j1Z8XzFvpag2OBOkOyrgKouF79+Fg7scDpbZP4ovAFXze43ZMMIA4/yKSzCFt4n+Gx4
+        y7YjcF5GpyXf+EvnOuu6IJ53qndAASO7jKTw07prVUhAmu/n5Z7su4pobjvq9WdUsUQ+zcaJZcgE7
+        fc/L8DDA==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1qKPuw-001O9C-Uu; Fri, 14 Jul 2023 21:01:35 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 169D03001FD;
+        Fri, 14 Jul 2023 23:01:33 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id E789221372899; Fri, 14 Jul 2023 23:01:32 +0200 (CEST)
+Date:   Fri, 14 Jul 2023 23:01:32 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Artem Bityutskiy <dedekind1@gmail.com>, x86@kernel.org,
+        Linux PM Mailing List <linux-pm@vger.kernel.org>,
+        Arjan van de Ven <arjan@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v4 3/4] intel_idle: rename 'intel_idle_hlt_irq_on()'
+Message-ID: <20230714210132.GA3275140@hirez.programming.kicks-ass.net>
+References: <20230710093100.918337-1-dedekind1@gmail.com>
+ <20230710093100.918337-4-dedekind1@gmail.com>
+ <CAJZ5v0hb9ns2yZ==n83viqniCr4QqupY+FKR2Dy0jE0Obahq_g@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Subject: Re: [PATCH] power: Explicitly include correct DT includes
-Content-Language: en-US
-To:     Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Broadcom internal kernel review list 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        Santosh Shilimkar <ssantosh@kernel.org>,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Iskren Chernev <me@iskren.info>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Matheus Castello <matheus@castello.eng.br>
-Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-oxnas@groups.io
-References: <20230714174919.4062992-1-robh@kernel.org>
-From:   David Lechner <david@lechnology.com>
-In-Reply-To: <20230714174919.4062992-1-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - vern.gendns.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lechnology.com
-X-Get-Message-Sender-Via: vern.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
-X-Authenticated-Sender: vern.gendns.com: davidmain@lechnology.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJZ5v0hb9ns2yZ==n83viqniCr4QqupY+FKR2Dy0jE0Obahq_g@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 7/14/23 12:49 PM, Rob Herring wrote:
-> The DT of_device.h and of_platform.h date back to the separate
-> of_platform_bus_type before it as merged into the regular platform bus.
-> As part of that merge prepping Arm DT support 13 years ago, they
-> "temporarily" include each other. They also include platform_device.h
-> and of.h. As a result, there's a pretty much random mix of those include
-> files used throughout the tree. In order to detangle these headers and
-> replace the implicit includes with struct declarations, users need to
-> explicitly include the correct includes.
+On Fri, Jul 14, 2023 at 05:34:43PM +0200, Rafael J. Wysocki wrote:
+> On Mon, Jul 10, 2023 at 11:31 AM Artem Bityutskiy <dedekind1@gmail.com> wrote:
+> >
+> > From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+> >
+> > Rename 'intel_idle_hlt_irq_on()' to 'intel_idle_hlt_irq()' for consistency with
+> > 'intel_idle_irq()'.
+> >
+> > While on it, fix indentation in 'intel_idle_hlt_irq()' declaration to use tabs
+> > instead of white-spaces.
+> >
+> > Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 > 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-Acked-by: David Lechner <david@lechnology.com>
+> I think I can apply this right away without the rest of the series as
+> it doesn't seem to depend on the other patches.
+> 
+> Any concerns regarding this?
 
+Yeah, as per:
 
+  https://lkml.kernel.org/r/20230711132553.GN3062772%40hirez.programming.kicks-ass.net
+
+that function is complete drivel, renaming it isn't going to help.
+
+In fact, I don't buy the whole premise of that intel_idle guest mode
+stuff, can we please just delete all of that and start over?
