@@ -2,112 +2,54 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F00AEB64DC
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 18:07:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D0F2EB64DC
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jul 2023 18:12:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235749AbjGNSHC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jul 2023 14:07:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53866 "EHLO
+        id S236597AbjGNSMg convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jul 2023 14:12:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236339AbjGNSHC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 14:07:02 -0400
-Received: from mx0b-001ae601.pphosted.com (mx0a-001ae601.pphosted.com [67.231.149.25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54DB23C00;
-        Fri, 14 Jul 2023 11:06:33 -0700 (PDT)
-Received: from pps.filterd (m0077473.ppops.net [127.0.0.1])
-        by mx0a-001ae601.pphosted.com (8.17.1.22/8.17.1.22) with ESMTP id 36EEsO8q013531;
-        Fri, 14 Jul 2023 12:45:39 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirrus.com; h=
-        from:to:cc:subject:date:message-id:mime-version
-        :content-transfer-encoding:content-type; s=PODMain02222019; bh=B
-        OxRHechdVLR5k0+UUuRMHYDBE3nu3fbPTbGYx6BRL8=; b=nsU+tywlpG5pgo2Ed
-        SKR0pvLcvX6jsqMq/WUlA+o3GMNNhmrQDc/+MM/LG2CHVUzatyr6C1Q2MV3InolO
-        2/DB5IZgQcrvyM0Yp9ZkiA5f2GNbgG1h5taqiY669pmWVj5mWh4GUvWpSrMmQ+uI
-        JlMy1rNH9tSijC/N1yDFUYNThZ2R6laPMbbELGXCwAL0fDfFj60RyPkgVpZbtcLN
-        737AielPTu+xUIHCf9gDmYf0/hCvce2WJOCXOGYlcdv92Zna8X+/2k4TNJmXqZ+G
-        oiPSazujzE6I1xNKJS2iFOMR+EBFcLDwUq/5W8b/JmNuBlXrE790sIpv/F6nMhbe
-        eFBUw==
-Received: from ediex01.ad.cirrus.com ([84.19.233.68])
-        by mx0a-001ae601.pphosted.com (PPS) with ESMTPS id 3rtpuu14yb-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 14 Jul 2023 12:45:38 -0500 (CDT)
-Received: from ediex01.ad.cirrus.com (198.61.84.80) by ediex01.ad.cirrus.com
- (198.61.84.80) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.30; Fri, 14 Jul
- 2023 18:45:36 +0100
-Received: from ediswmail.ad.cirrus.com (198.61.86.93) by ediex01.ad.cirrus.com
- (198.61.84.80) with Microsoft SMTP Server id 15.2.1118.30 via Frontend
- Transport; Fri, 14 Jul 2023 18:45:36 +0100
-Received: from ricardo-lws.crystal.cirrus.com (ricardo-lws.ad.cirrus.com [141.131.206.127])
-        by ediswmail.ad.cirrus.com (Postfix) with ESMTP id 8B98215B9;
-        Fri, 14 Jul 2023 17:45:35 +0000 (UTC)
-From:   Ricardo Rivera-Matos <rriveram@opensource.cirrus.com>
-To:     Sebastian Reichel <sre@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        Ricardo Rivera-Matos <rriveram@opensource.cirrus.com>,
-        David Rhodes <drhodes@opensource.cirrus.com>
-Subject: [PATCH] power: supply: bq24190: Considers FORCE_20PCT when getting IPRECHG
-Date:   Fri, 14 Jul 2023 12:45:29 -0500
-Message-ID: <20230714174529.287045-1-rriveram@opensource.cirrus.com>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S235350AbjGNSMc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2023 14:12:32 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 357512690
+        for <linux-pm@vger.kernel.org>; Fri, 14 Jul 2023 11:12:09 -0700 (PDT)
+X-IronPort-AV: E=McAfee;i="6600,9927,10771"; a="350411952"
+X-IronPort-AV: E=Sophos;i="6.01,206,1684825200"; 
+   d="scan'208";a="350411952"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jul 2023 11:11:50 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10771"; a="1053151307"
+X-IronPort-AV: E=Sophos;i="6.01,206,1684825200"; 
+   d="scan'208";a="1053151307"
+Received: from linux.intel.com ([10.54.29.200])
+  by fmsmga005.fm.intel.com with ESMTP; 14 Jul 2023 11:11:49 -0700
+Received: from abityuts-desk1.ger.corp.intel.com (abityuts-desk1.fi.intel.com [10.237.68.150])
+        by linux.intel.com (Postfix) with ESMTP id 278D9580AFF;
+        Fri, 14 Jul 2023 11:11:47 -0700 (PDT)
+Message-ID: <d879fbfdd621239c278d3b306f99d93de03d4078.camel@gmail.com>
+Subject: Re: [PATCH v4 3/4] intel_idle: rename 'intel_idle_hlt_irq_on()'
+From:   Artem Bityutskiy <dedekind1@gmail.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     x86@kernel.org, Linux PM Mailing List <linux-pm@vger.kernel.org>,
+        Arjan van de Ven <arjan@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>
+Date:   Fri, 14 Jul 2023 21:11:47 +0300
+In-Reply-To: <CAJZ5v0hb9ns2yZ==n83viqniCr4QqupY+FKR2Dy0jE0Obahq_g@mail.gmail.com>
+References: <20230710093100.918337-1-dedekind1@gmail.com>
+         <20230710093100.918337-4-dedekind1@gmail.com>
+         <CAJZ5v0hb9ns2yZ==n83viqniCr4QqupY+FKR2Dy0jE0Obahq_g@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Proofpoint-GUID: 6pcGFg4A4HQaluY1_rVFShDbL1dYt0jy
-X-Proofpoint-ORIG-GUID: 6pcGFg4A4HQaluY1_rVFShDbL1dYt0jy
-X-Proofpoint-Spam-Reason: safe
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Adds a check of the FORCE_20PCT bit when getting the precharge
-current value.
+On Fri, 2023-07-14 at 17:34 +0200, Rafael J. Wysocki wrote:
+> Any concerns regarding this?
 
-According to the bit description for the FORCE_20PCT bit, when
-FORCE_20PCT is true, the precharge current target is 50% of
-what is configured in the IPRECHG bit field.
-
-Signed-off-by: Ricardo Rivera-Matos <rriveram@opensource.cirrus.com>
-Reviewed-by: David Rhodes <drhodes@opensource.cirrus.com>
----
- drivers/power/supply/bq24190_charger.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index ef8235848f56..3f99cb9590ba 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -965,7 +965,7 @@ static int bq24190_charger_get_precharge(struct bq24190_dev_info *bdi,
- 		union power_supply_propval *val)
- {
- 	u8 v;
--	int ret;
-+	int curr, ret;
- 
- 	ret = bq24190_read_mask(bdi, BQ24190_REG_PCTCC,
- 			BQ24190_REG_PCTCC_IPRECHG_MASK,
-@@ -973,7 +973,20 @@ static int bq24190_charger_get_precharge(struct bq24190_dev_info *bdi,
- 	if (ret < 0)
- 		return ret;
- 
--	val->intval = ++v * 128 * 1000;
-+	curr = ++v * 128 * 1000;
-+
-+	ret = bq24190_read_mask(bdi, BQ24190_REG_CCC,
-+			BQ24190_REG_CCC_FORCE_20PCT_MASK,
-+			BQ24190_REG_CCC_FORCE_20PCT_SHIFT, &v);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* If FORCE_20PCT is enabled, then current is 50% of IPRECHG value */
-+	if (v)
-+		curr /= 2;
-+
-+	val->intval = curr;
-+
- 	return 0;
- }
- 
--- 
-2.34.1
-
+No concerns, thanks!
