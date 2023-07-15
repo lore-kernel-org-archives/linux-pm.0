@@ -2,143 +2,74 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 483FDC00528
-	for <linux-pm@archiver.kernel.org>; Sat, 15 Jul 2023 17:05:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44E22C04A6A
+	for <linux-pm@archiver.kernel.org>; Sat, 15 Jul 2023 17:06:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230255AbjGORFi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 15 Jul 2023 13:05:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58188 "EHLO
+        id S230323AbjGORGO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 15 Jul 2023 13:06:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229483AbjGORFi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Jul 2023 13:05:38 -0400
+        with ESMTP id S230308AbjGORGN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Jul 2023 13:06:13 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 303E7B5;
-        Sat, 15 Jul 2023 10:05:37 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 325AFB5;
+        Sat, 15 Jul 2023 10:06:12 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B761760BD4;
-        Sat, 15 Jul 2023 17:05:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C0321C433C8;
-        Sat, 15 Jul 2023 17:05:34 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id BDD5C60BE9;
+        Sat, 15 Jul 2023 17:06:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87225C433C7;
+        Sat, 15 Jul 2023 17:06:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1689440736;
-        bh=ncuBs4kxzk2VlZm7kfJfgZlSPKeTybZkTtdYydKCK18=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=k9TOh4ZDaNP4erpFLfnmoiw+h2TmkSY9NJv0apQm7CqXF3xU7UZA22oYIy3CmWXDL
-         S21PAMmPfcahzR3TC+SMWaYnKmDOIo4smNCrXt7gjGhtg86ICAxGeLV31ZUNCgTqZo
-         jcQoa016QrvOmJIxM0rCJbcdMTyDqTwvTuBTnlVWG69hTO22gQbWUtqM97oifq+5pE
-         1OM/nEiN/Nen1hIEM9lM3vNcoq4fuwL4uqc+acilKzQZ60iocC+Ro/lD6cewlLWdvi
-         eTaH9UxQLTgWebkdKCwnsKufKpIPtYIpVK+kTCgbKftUxiSk+TGmXAMBikgX7+G4AN
-         fiKJQAUS7Lsmw==
-Date:   Sat, 15 Jul 2023 10:09:03 -0700
+        s=k20201202; t=1689440771;
+        bh=FRKLC6Y48KPvzIpgRiRkf6BoysdzX77ksSV9Le/w/no=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=IzZc96rNv6jwf5SbCygHdmBX7M5mvGu+qos+F19nf3aRR3p2jTmMp39BoAfXheS9+
+         8GaZJsrZDtSKo2uexPagQA6fFQzFQDSc2PYEn+Vr+YXDlVjEy9+vqiN6XjQJtwbGjr
+         g3lTowIY0QlDneqcwbYMNdTs88rQOI3p7bscBbXLaOn+18KYttNEgc7hwe20j0WmcU
+         K2CJTmzGOKPHzpD+PCPg5LbGrGn/SjbQi4DO0AGDJnyPc3x1at6vTZW+81WslesTHg
+         X0JbrsLXPYUBBVY945Tw9QjuOtOmZkg25+/jLZ4VGW8UUSgGIKu2QBD0CUVK4D3Rsm
+         V4ECPvWZhMpcQ==
 From:   Bjorn Andersson <andersson@kernel.org>
-To:     Georgi Djakov <djakov@kernel.org>
-Cc:     Konrad Dybcio <konrad.dybcio@linaro.org>,
+To:     Konrad Dybcio <konrad.dybcio@linaro.org>,
         Andy Gross <agross@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Leo Yan <leo.yan@linaro.org>,
-        Evan Green <evgreen@chromium.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Marijn Suijten <marijn.suijten@somainline.org>,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>
-Subject: Re: [PATCH v7 00/22] Restructure RPM SMD ICC
-Message-ID: <yytpipulsnqnrfgn6tftwje7cpghburt3aau54x5hwecpwus4t@ayqunqa4pm4a>
-References: <20230526-topic-smd_icc-v7-0-09c78c175546@linaro.org>
- <de875511-7356-32cd-514a-ac532d75a8fd@kernel.org>
+        Rob Herring <robh@kernel.org>
+Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] soc: qcom: Explicitly include correct DT includes
+Date:   Sat, 15 Jul 2023 10:09:37 -0700
+Message-ID: <168944095053.1619705.12922488299155507753.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230714175142.4067795-1-robh@kernel.org>
+References: <20230714175142.4067795-1-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <de875511-7356-32cd-514a-ac532d75a8fd@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jul 13, 2023 at 08:37:57PM +0300, Georgi Djakov wrote:
-> On 19.06.23 16:04, Konrad Dybcio wrote:
-> > This series reshuffles things around, moving the management of SMD RPM
-> > bus clocks to the interconnect framework where they belong. This helps
-> > us solve a couple of issues:
-> > 
-[..]
+
+On Fri, 14 Jul 2023 11:51:41 -0600, Rob Herring wrote:
+> The DT of_device.h and of_platform.h date back to the separate
+> of_platform_bus_type before it as merged into the regular platform bus.
+> As part of that merge prepping Arm DT support 13 years ago, they
+> "temporarily" include each other. They also include platform_device.h
+> and of.h. As a result, there's a pretty much random mix of those include
+> files used throughout the tree. In order to detangle these headers and
+> replace the implicit includes with struct declarations, users need to
+> explicitly include the correct includes.
 > 
-> Thank you, Konrad!
-> 
-> Acked-by: Georgi Djakov <djakov@kernel.org>
+> [...]
 
-Thank you, Georgi.
+Applied, thanks!
 
-I've applied the patches to a branch based on v6.5-rc1, merged that into
-the qcom-tree and pushed the branch.
+[1/1] soc: qcom: Explicitly include correct DT includes
+      commit: 6484be9dd109bded43953ae7883bd69b5d841a0b
 
-Regards,
-Bjorn
-
-The following changes since commit 06c2afb862f9da8dc5efa4b6076a0e48c3fbaaa5:
-
-  Linux 6.5-rc1 (2023-07-09 13:53:13 -0700)
-
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux.git 20230526-topic-smd_icc-v7-0-09c78c175546@linaro.org
-
-for you to fetch changes up to 17fc623e0f728c35b82a0e79cd4f3b8aab495663:
-
-  interconnect: qcom: icc-rpm: Fix bandwidth calculations (2023-07-15 09:54:45 -0700)
-
-----------------------------------------------------------------
-Konrad Dybcio (21):
-      dt-bindings: interconnect: Add Qcom RPM ICC bindings
-      soc: qcom: smd-rpm: Add QCOM_SMD_RPM_STATE_NUM
-      soc: qcom: smd-rpm: Use tabs for defines
-      clk: qcom: smd-rpm: Move some RPM resources to the common header
-      interconnect: qcom: icc-rpm: Introduce keep_alive
-      interconnect: qcom: Add missing headers in icc-rpm.h
-      interconnect: qcom: Fold smd-rpm.h into icc-rpm.h
-      interconnect: qcom: smd-rpm: Add rpmcc handling skeleton code
-      interconnect: qcom: Define RPM bus clocks
-      interconnect: qcom: sdm660: Hook up RPM bus clk definitions
-      interconnect: qcom: msm8996: Hook up RPM bus clk definitions
-      interconnect: qcom: qcs404: Hook up RPM bus clk definitions
-      interconnect: qcom: msm8939: Hook up RPM bus clk definitions
-      interconnect: qcom: msm8916: Hook up RPM bus clk definitions
-      interconnect: qcom: qcm2290: Hook up RPM bus clk definitions
-      interconnect: qcom: icc-rpm: Control bus rpmcc from icc
-      clk: qcom: smd-rpm: Separate out interconnect bus clocks
-      interconnect: qcom: icc-rpm: Fix bucket number
-      interconnect: qcom: icc-rpm: Set bandwidth on both contexts
-      interconnect: qcom: icc-rpm: Set correct bandwidth through RPM bw req
-      interconnect: qcom: icc-rpm: Fix bandwidth calculations
-
-Stephan Gerhold (1):
-      soc: qcom: smd-rpm: Move icc_smd_rpm registration to clk-smd-rpm
-
- drivers/clk/qcom/clk-smd-rpm.c                  | 314 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- drivers/interconnect/qcom/Makefile              |   2 +-
- drivers/interconnect/qcom/icc-rpm-clocks.c      |  77 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/interconnect/qcom/icc-rpm.c             | 220 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------------------------------------------------------------------------
- drivers/interconnect/qcom/icc-rpm.h             |  56 +++++++++++++++++++++++++++++++++++++++++++++-----------
- drivers/interconnect/qcom/msm8916.c             |   5 +++--
- drivers/interconnect/qcom/msm8939.c             |   6 ++++--
- drivers/interconnect/qcom/msm8974.c             |   2 +-
- drivers/interconnect/qcom/msm8996.c             |  10 +++++++---
- drivers/interconnect/qcom/qcm2290.c             |   8 ++++++--
- drivers/interconnect/qcom/qcs404.c              |   5 +++--
- drivers/interconnect/qcom/sdm660.c              |   8 +++++---
- drivers/interconnect/qcom/smd-rpm.c             |  23 ++++++++++++++++++++++-
- drivers/interconnect/qcom/smd-rpm.h             |  15 ---------------
- drivers/soc/qcom/smd-rpm.c                      |  17 +----------------
- include/dt-bindings/interconnect/qcom,rpm-icc.h |  13 +++++++++++++
- include/linux/soc/qcom/smd-rpm.h                |  20 ++++++++++++++++++--
- 17 files changed, 456 insertions(+), 345 deletions(-)
- create mode 100644 drivers/interconnect/qcom/icc-rpm-clocks.c
- delete mode 100644 drivers/interconnect/qcom/smd-rpm.h
- create mode 100644 include/dt-bindings/interconnect/qcom,rpm-icc.h
+Best regards,
+-- 
+Bjorn Andersson <andersson@kernel.org>
