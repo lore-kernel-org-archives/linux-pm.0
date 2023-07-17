@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB4CFC001B0
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:29:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9479FC05052
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:29:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231503AbjGQR34 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 13:29:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45880 "EHLO
+        id S231515AbjGQR36 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 13:29:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45896 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231354AbjGQR3v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:29:51 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92544171B;
-        Mon, 17 Jul 2023 10:29:25 -0700 (PDT)
+        with ESMTP id S231303AbjGQR3x (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:29:53 -0400
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 572C41720;
+        Mon, 17 Jul 2023 10:29:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689614965; x=1721150965;
+  t=1689614970; x=1721150970;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=G+AngK5QVe4Gm3zAHe5kaHFbmfMaO7Hp6mv7Fr5FR+E=;
-  b=mphqTspQvNZ2Wo9YVLa1ercLgpX7hksdMKjRqe8Yh90GBuMzWVOzRqR5
-   uDjY6A3eyN7itaWXSlFzfZhKopDgb0CExLE3v55Exo83n5igmGpe2iiGu
-   tAgE5OHvdZbRFLbhNfup/KFLSNWruNldgExaayfgPFFsguL+RhuZs/RA+
-   yqeGIaNBBvndkMb7o9mbHKyVpnx9GWu7Iv993zftIKHuT8GCzKPNbId09
-   N2naplm5N1hSbgbNnquIL5evFNlmsvNknytBayxDTTwXmdXHbLmH6zhyL
-   qa6Pxn7iM3D9LO/wcwo6qmw4y4kwzwCoW0pzkUlUiKpeII9qWYbFOkCqW
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="350854507"
+  bh=B7c/2IAOq+QysQrRwOIUK5uC4eESX4PCd4P3LMdk97c=;
+  b=WuRzze1Y+/L64c2n/xwY175f+SEXpd4tlEJNKcYs3U99ggHUtsQMhNfC
+   Cr26z/NJLVw/LC8402ErDLEy/AKaF+mM/IULQ/amcK2OfVK4FgaG/oqz+
+   n4+wli124n9/35DOH8MymHBhSTVMaXlxFLq1xmaz9JXBhWPgFAA63BkY7
+   CIBbSR+iLM0YyQ1xac3D/LTEzDjvmq6SjX3zIY3N06o8U5pAF9d3YzA46
+   qOMA3Vt3KtlQUDaRuqkWI8GgI3uxPt7cpKPUn5H7kDc0t297BHpz21hVO
+   KORRGhm+kCMVDKuvU/Lywsd7ZHb0JjmLVLU+CNehGc2jI4WJASj5IGM0s
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="355927005"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="350854507"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:40 -0700
+   d="scan'208";a="355927005"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:49 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="813426657"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="673604218"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="813426657"
+   d="scan'208";a="673604218"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by FMSMGA003.fm.intel.com with ESMTP; 17 Jul 2023 10:28:33 -0700
+  by orsmga003.jf.intel.com with ESMTP; 17 Jul 2023 10:28:40 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id 023C6516; Mon, 17 Jul 2023 20:28:39 +0300 (EEST)
+        id 51B8F748; Mon, 17 Jul 2023 20:28:40 +0300 (EEST)
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -69,9 +69,9 @@ Cc:     Andy Shevchenko <andy@kernel.org>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH v2 03/10] pinctrl: cherryview: Switch to use DEFINE_NOIRQ_DEV_PM_OPS() helper
-Date:   Mon, 17 Jul 2023 20:28:14 +0300
-Message-Id: <20230717172821.62827-4-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 10/10] pinctrl: tegra: Switch to use DEFINE_NOIRQ_DEV_PM_OPS() helper
+Date:   Mon, 17 Jul 2023 20:28:21 +0300
+Message-Id: <20230717172821.62827-11-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
 In-Reply-To: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
 References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
@@ -86,44 +86,25 @@ switch the driver to use it instead of open coded variant.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/intel/pinctrl-cherryview.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ drivers/pinctrl/tegra/pinctrl-tegra.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/pinctrl/intel/pinctrl-cherryview.c b/drivers/pinctrl/intel/pinctrl-cherryview.c
-index eee0f9bc3d32..7a2fc9fe175d 100644
---- a/drivers/pinctrl/intel/pinctrl-cherryview.c
-+++ b/drivers/pinctrl/intel/pinctrl-cherryview.c
-@@ -1793,7 +1793,6 @@ static int chv_pinctrl_remove(struct platform_device *pdev)
+diff --git a/drivers/pinctrl/tegra/pinctrl-tegra.c b/drivers/pinctrl/tegra/pinctrl-tegra.c
+index 4547cf66d03b..734c71ef005b 100644
+--- a/drivers/pinctrl/tegra/pinctrl-tegra.c
++++ b/drivers/pinctrl/tegra/pinctrl-tegra.c
+@@ -747,10 +747,7 @@ static int tegra_pinctrl_resume(struct device *dev)
  	return 0;
  }
  
--#ifdef CONFIG_PM_SLEEP
- static int chv_pinctrl_suspend_noirq(struct device *dev)
- {
- 	struct intel_pinctrl *pctrl = dev_get_drvdata(dev);
-@@ -1877,12 +1876,8 @@ static int chv_pinctrl_resume_noirq(struct device *dev)
- 
- 	return 0;
- }
--#endif
- 
--static const struct dev_pm_ops chv_pinctrl_pm_ops = {
--	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(chv_pinctrl_suspend_noirq,
--				      chv_pinctrl_resume_noirq)
+-const struct dev_pm_ops tegra_pinctrl_pm = {
+-	.suspend_noirq = &tegra_pinctrl_suspend,
+-	.resume_noirq = &tegra_pinctrl_resume
 -};
-+static DEFINE_NOIRQ_DEV_PM_OPS(chv_pinctrl_pm_ops, chv_pinctrl_suspend_noirq, chv_pinctrl_resume_noirq);
++DEFINE_NOIRQ_DEV_PM_OPS(tegra_pinctrl_pm, tegra_pinctrl_suspend, tegra_pinctrl_resume);
  
- static const struct acpi_device_id chv_pinctrl_acpi_match[] = {
- 	{ "INT33FF", (kernel_ulong_t)chv_soc_data },
-@@ -1895,7 +1890,7 @@ static struct platform_driver chv_pinctrl_driver = {
- 	.remove = chv_pinctrl_remove,
- 	.driver = {
- 		.name = "cherryview-pinctrl",
--		.pm = &chv_pinctrl_pm_ops,
-+		.pm = pm_sleep_ptr(&chv_pinctrl_pm_ops),
- 		.acpi_match_table = chv_pinctrl_acpi_match,
- 	},
- };
+ static bool tegra_pinctrl_gpio_node_has_range(struct tegra_pmx *pmx)
+ {
 -- 
 2.40.0.1.gaa8946217a0b
 
