@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F64AC04E69
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:29:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB4CFC001B0
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:29:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231442AbjGQR3z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 13:29:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46016 "EHLO
+        id S231503AbjGQR34 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 13:29:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45880 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231297AbjGQR3v (ORCPT
+        with ESMTP id S231354AbjGQR3v (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:29:51 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E5BD171A;
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92544171B;
         Mon, 17 Jul 2023 10:29:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1689614965; x=1721150965;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=igrPqVNDiG+d18EW9HPDbcv/hLv1Vv/Njn91XssjJ2c=;
-  b=H15w2/DWOiuPX++WaDRYPn47gSeX2+2rjKc55ej15uLxZJAc7fLtZmfr
-   ak/UppvwYRl3LOr/epx5EH0nzDVXEU7AZYdUUdFfiQppvyj4pChe9m4XI
-   sh1R7K+a6HLL0l08+Aga9EkDgnSDhdRtSRbgzSp4gc6tA542tG3By2CTE
-   7WQXGoxDkz1/kl34f8MGqB25Jg/bUySHYh7VM3KFA31wqgQ65cWBzFxvk
-   P4X+AmdCqOpzvpsmPhv5XDTAFwyPT5NpUImw6l59JaoR/5CRi9kq58SJ/
-   qWChHZ7eXeoGcXNX4IJgPFw13AWIL1Bow3PM3bMSSIMsZI+PvPTie8wEM
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="355926981"
+  bh=G+AngK5QVe4Gm3zAHe5kaHFbmfMaO7Hp6mv7Fr5FR+E=;
+  b=mphqTspQvNZ2Wo9YVLa1ercLgpX7hksdMKjRqe8Yh90GBuMzWVOzRqR5
+   uDjY6A3eyN7itaWXSlFzfZhKopDgb0CExLE3v55Exo83n5igmGpe2iiGu
+   tAgE5OHvdZbRFLbhNfup/KFLSNWruNldgExaayfgPFFsguL+RhuZs/RA+
+   yqeGIaNBBvndkMb7o9mbHKyVpnx9GWu7Iv993zftIKHuT8GCzKPNbId09
+   N2naplm5N1hSbgbNnquIL5evFNlmsvNknytBayxDTTwXmdXHbLmH6zhyL
+   qa6Pxn7iM3D9LO/wcwo6qmw4y4kwzwCoW0pzkUlUiKpeII9qWYbFOkCqW
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="350854507"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="355926981"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:49 -0700
+   d="scan'208";a="350854507"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:40 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="673604211"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="813426657"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="673604211"
+   d="scan'208";a="813426657"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga003.jf.intel.com with ESMTP; 17 Jul 2023 10:28:40 -0700
+  by FMSMGA003.fm.intel.com with ESMTP; 17 Jul 2023 10:28:33 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id 2D1F469F; Mon, 17 Jul 2023 20:28:40 +0300 (EEST)
+        id 023C6516; Mon, 17 Jul 2023 20:28:39 +0300 (EEST)
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -69,9 +69,9 @@ Cc:     Andy Shevchenko <andy@kernel.org>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH v2 07/10] pinctrl: mediatek: Switch to use DEFINE_NOIRQ_DEV_PM_OPS() helper
-Date:   Mon, 17 Jul 2023 20:28:18 +0300
-Message-Id: <20230717172821.62827-8-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 03/10] pinctrl: cherryview: Switch to use DEFINE_NOIRQ_DEV_PM_OPS() helper
+Date:   Mon, 17 Jul 2023 20:28:14 +0300
+Message-Id: <20230717172821.62827-4-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
 In-Reply-To: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
 References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
@@ -86,58 +86,44 @@ switch the driver to use it instead of open coded variant.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/mediatek/pinctrl-mtk-common.c | 5 +----
- drivers/pinctrl/mediatek/pinctrl-paris.c      | 9 +++------
- 2 files changed, 4 insertions(+), 10 deletions(-)
+ drivers/pinctrl/intel/pinctrl-cherryview.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/pinctrl/mediatek/pinctrl-mtk-common.c b/drivers/pinctrl/mediatek/pinctrl-mtk-common.c
-index 665dec419e7c..2bf5082d3aa9 100644
---- a/drivers/pinctrl/mediatek/pinctrl-mtk-common.c
-+++ b/drivers/pinctrl/mediatek/pinctrl-mtk-common.c
-@@ -922,10 +922,7 @@ static int mtk_eint_resume(struct device *device)
- 	return mtk_eint_do_resume(pctl->eint);
+diff --git a/drivers/pinctrl/intel/pinctrl-cherryview.c b/drivers/pinctrl/intel/pinctrl-cherryview.c
+index eee0f9bc3d32..7a2fc9fe175d 100644
+--- a/drivers/pinctrl/intel/pinctrl-cherryview.c
++++ b/drivers/pinctrl/intel/pinctrl-cherryview.c
+@@ -1793,7 +1793,6 @@ static int chv_pinctrl_remove(struct platform_device *pdev)
+ 	return 0;
  }
  
--const struct dev_pm_ops mtk_eint_pm_ops = {
--	.suspend_noirq = mtk_eint_suspend,
--	.resume_noirq = mtk_eint_resume,
+-#ifdef CONFIG_PM_SLEEP
+ static int chv_pinctrl_suspend_noirq(struct device *dev)
+ {
+ 	struct intel_pinctrl *pctrl = dev_get_drvdata(dev);
+@@ -1877,12 +1876,8 @@ static int chv_pinctrl_resume_noirq(struct device *dev)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+-static const struct dev_pm_ops chv_pinctrl_pm_ops = {
+-	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(chv_pinctrl_suspend_noirq,
+-				      chv_pinctrl_resume_noirq)
 -};
-+DEFINE_NOIRQ_DEV_PM_OPS(mtk_eint_pm_ops, mtk_eint_suspend, mtk_eint_resume);
++static DEFINE_NOIRQ_DEV_PM_OPS(chv_pinctrl_pm_ops, chv_pinctrl_suspend_noirq, chv_pinctrl_resume_noirq);
  
- static int mtk_pctrl_build_state(struct platform_device *pdev)
- {
-diff --git a/drivers/pinctrl/mediatek/pinctrl-paris.c b/drivers/pinctrl/mediatek/pinctrl-paris.c
-index 33d6c3fb7908..b1cbd5bafa2e 100644
---- a/drivers/pinctrl/mediatek/pinctrl-paris.c
-+++ b/drivers/pinctrl/mediatek/pinctrl-paris.c
-@@ -1119,24 +1119,21 @@ int mtk_paris_pinctrl_probe(struct platform_device *pdev)
- }
- EXPORT_SYMBOL_GPL(mtk_paris_pinctrl_probe);
- 
--static int mtk_paris_pinctrl_suspend(struct device *device)
-+static int mtk_paris_suspend(struct device *device)
- {
- 	struct mtk_pinctrl *pctl = dev_get_drvdata(device);
- 
- 	return mtk_eint_do_suspend(pctl->eint);
- }
- 
--static int mtk_paris_pinctrl_resume(struct device *device)
-+static int mtk_paris_resume(struct device *device)
- {
- 	struct mtk_pinctrl *pctl = dev_get_drvdata(device);
- 
- 	return mtk_eint_do_resume(pctl->eint);
- }
- 
--const struct dev_pm_ops mtk_paris_pinctrl_pm_ops = {
--	.suspend_noirq = mtk_paris_pinctrl_suspend,
--	.resume_noirq = mtk_paris_pinctrl_resume,
--};
-+DEFINE_NOIRQ_DEV_PM_OPS(mtk_paris_pinctrl_pm_ops, mtk_paris_suspend, mtk_paris_resume);
- 
- MODULE_LICENSE("GPL v2");
- MODULE_DESCRIPTION("MediaTek Pinctrl Common Driver V2 Paris");
+ static const struct acpi_device_id chv_pinctrl_acpi_match[] = {
+ 	{ "INT33FF", (kernel_ulong_t)chv_soc_data },
+@@ -1895,7 +1890,7 @@ static struct platform_driver chv_pinctrl_driver = {
+ 	.remove = chv_pinctrl_remove,
+ 	.driver = {
+ 		.name = "cherryview-pinctrl",
+-		.pm = &chv_pinctrl_pm_ops,
++		.pm = pm_sleep_ptr(&chv_pinctrl_pm_ops),
+ 		.acpi_match_table = chv_pinctrl_acpi_match,
+ 	},
+ };
 -- 
 2.40.0.1.gaa8946217a0b
 
