@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA508C001DF
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:29:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED642C001DE
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:29:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231304AbjGQR3i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 13:29:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45564 "EHLO
+        id S231250AbjGQR3p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 13:29:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231228AbjGQR3a (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:29:30 -0400
+        with ESMTP id S231239AbjGQR3b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:29:31 -0400
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FE5AE49;
-        Mon, 17 Jul 2023 10:29:08 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EA86E55;
+        Mon, 17 Jul 2023 10:29:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689614948; x=1721150948;
+  t=1689614949; x=1721150949;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=F9KIcHfjcwmjCFthAgRpS39XfNA7at7pJaXPVBuC4kg=;
-  b=QWUAm4bkTf+O+dy5waaVyTAutx+EdCSUjBJqqVsaJyxJGbgpatwJR0kM
-   zfgoVCmn1Lp+m0nBC5/6bGKo9fuuZwsDOryvSInmaF1JJH8SaEh2TJ/13
-   tTFRw7f8epHkcm0D8CqXNthQcQoZmBaLpxY7MHNfCaDvL5lnpe5vAB659
-   1mbspXk5lnKpAGkWDcyssnJnDkHV43oaX4PR6UVomLLjG3qwwlc9/Rmqs
-   7y1K/rAT0uWbVp4/TnEdF/NlgKQnwwP9y/GttCibfDd6Gj2sdQxPlh2n9
-   CSTBB7RR0TeWz/RWz9w4N4AmW3qegAdHgrfgyTryoKqkLRaC1lsv7pa8S
+  bh=0/SbCMKprSAfQ28hQngw9HD0K6kiWmLO1+VHlEipr8A=;
+  b=NUzdG726O6hieiU68km/gA2xM1nOWjiZFhPs6yoGSdsZcMXF4MHy1yhr
+   XGcszn0BvDqw57/DqPRdv6ObC+O9lodjmW8xKfy8hOAYs2/kg3C6tdDyT
+   IXjWOMUajR4iH6DskqP3iyqLVNmjcYFAVimTugGvh0lI3PpQooKacq/EF
+   tflsz65ZkaZMS20UnS2ghkRDxlY5GWZHcVRZujDLXVnZOUBAdJg4rC2Pl
+   vrpIPGzkBS41BNSpUlBVLRUj3QsSKMqBmgcNPlRRalh0YtdCBLQ9xvoCF
+   cwWDuqCNV/Z2O0lAAWXe/Iwqg41LmLcr0c8rPMJKNzXiUIWg8LEo4snLi
    w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="355926938"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="355926961"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="355926938"
+   d="scan'208";a="355926961"
 Received: from orsmga003.jf.intel.com ([10.7.209.27])
   by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:48 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="673604201"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="673604209"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="673604201"
+   d="scan'208";a="673604209"
 Received: from black.fi.intel.com ([10.237.72.28])
   by orsmga003.jf.intel.com with ESMTP; 17 Jul 2023 10:28:40 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id 37B4B6B9; Mon, 17 Jul 2023 20:28:40 +0300 (EEST)
+        id 17FD1604; Mon, 17 Jul 2023 20:28:40 +0300 (EEST)
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -69,9 +69,9 @@ Cc:     Andy Shevchenko <andy@kernel.org>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH v2 08/10] pinctrl: mvebu: Switch to use DEFINE_NOIRQ_DEV_PM_OPS() helper
-Date:   Mon, 17 Jul 2023 20:28:19 +0300
-Message-Id: <20230717172821.62827-9-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 05/10] pinctrl: lynxpoint: Make use of pm_ptr()
+Date:   Mon, 17 Jul 2023 20:28:16 +0300
+Message-Id: <20230717172821.62827-6-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
 In-Reply-To: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
 References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
@@ -81,53 +81,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since pm.h provides a helper for system no-IRQ PM callbacks,
-switch the driver to use it instead of open coded variant.
+Cleaning up the driver to use pm_ptr() and *_PM_OPS() macros that
+make it simpler and allows the compiler to remove those functions
+if built without CONFIG_PM and CONFIG_PM_SLEEP support.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/mvebu/pinctrl-armada-37xx.c | 14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+ drivers/pinctrl/intel/pinctrl-lynxpoint.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c b/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
-index 67c6751a6f06..46351c00ee73 100644
---- a/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
-+++ b/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
-@@ -1013,7 +1013,6 @@ static int armada_37xx_pinctrl_register(struct platform_device *pdev,
- 	return 0;
+diff --git a/drivers/pinctrl/intel/pinctrl-lynxpoint.c b/drivers/pinctrl/intel/pinctrl-lynxpoint.c
+index cdace55aaeac..50d92bf80e20 100644
+--- a/drivers/pinctrl/intel/pinctrl-lynxpoint.c
++++ b/drivers/pinctrl/intel/pinctrl-lynxpoint.c
+@@ -948,9 +948,8 @@ static int lp_gpio_resume(struct device *dev)
  }
  
--#if defined(CONFIG_PM)
- static int armada_3700_pinctrl_suspend(struct device *dev)
- {
- 	struct armada_37xx_pinctrl *info = dev_get_drvdata(dev);
-@@ -1107,15 +1106,8 @@ static int armada_3700_pinctrl_resume(struct device *dev)
-  * Since pinctrl is an infrastructure module, its resume should be issued prior
-  * to other IO drivers.
-  */
--static const struct dev_pm_ops armada_3700_pinctrl_pm_ops = {
--	.suspend_noirq = armada_3700_pinctrl_suspend,
--	.resume_noirq = armada_3700_pinctrl_resume,
--};
--
--#define PINCTRL_ARMADA_37XX_DEV_PM_OPS (&armada_3700_pinctrl_pm_ops)
--#else
--#define PINCTRL_ARMADA_37XX_DEV_PM_OPS NULL
--#endif /* CONFIG_PM */
-+static DEFINE_NOIRQ_DEV_PM_OPS(armada_3700_pinctrl_pm_ops,
-+			       armada_3700_pinctrl_suspend, armada_3700_pinctrl_resume);
- 
- static const struct of_device_id armada_37xx_pinctrl_of_match[] = {
- 	{
-@@ -1182,7 +1174,7 @@ static struct platform_driver armada_37xx_pinctrl_driver = {
- 	.driver = {
- 		.name = "armada-37xx-pinctrl",
- 		.of_match_table = armada_37xx_pinctrl_of_match,
--		.pm = PINCTRL_ARMADA_37XX_DEV_PM_OPS,
-+		.pm = pm_sleep_ptr(&armada_3700_pinctrl_pm_ops),
- 	},
+ static const struct dev_pm_ops lp_gpio_pm_ops = {
+-	.runtime_suspend = lp_gpio_runtime_suspend,
+-	.runtime_resume = lp_gpio_runtime_resume,
+-	.resume = lp_gpio_resume,
++	SYSTEM_SLEEP_PM_OPS(NULL, lp_gpio_resume)
++	RUNTIME_PM_OPS(lp_gpio_runtime_suspend, lp_gpio_runtime_resume, NULL)
  };
  
+ static const struct acpi_device_id lynxpoint_gpio_acpi_match[] = {
+@@ -965,7 +964,7 @@ static struct platform_driver lp_gpio_driver = {
+ 	.remove         = lp_gpio_remove,
+ 	.driver         = {
+ 		.name   = "lp_gpio",
+-		.pm	= &lp_gpio_pm_ops,
++		.pm	= pm_ptr(&lp_gpio_pm_ops),
+ 		.acpi_match_table = lynxpoint_gpio_acpi_match,
+ 	},
+ };
 -- 
 2.40.0.1.gaa8946217a0b
 
