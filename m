@@ -2,78 +2,82 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACBA3EB64DC
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 14:53:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 855C9C001DF
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 15:20:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229953AbjGQOxc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 10:53:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37854 "EHLO
+        id S231691AbjGQPUB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 11:20:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229948AbjGQOxc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 10:53:32 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22F8AE72;
-        Mon, 17 Jul 2023 07:53:31 -0700 (PDT)
+        with ESMTP id S231715AbjGQPTl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 11:19:41 -0400
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 435021739
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2023 08:19:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689605611; x=1721141611;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=08bGGgW1l7rlQQS6ONjNOLDr+jtJ5xjVWBt/oOlKRLY=;
-  b=Dugj/fWzjt6WnCJp3buHNGFx2c8LOf2Omc7WMgJ/WX0WISsF1D2yondT
-   30q8epzlHxue6ak1Z7juWKB8DvRbtnIT2nDzE0JvBQJIsg9iaN+fUZlhK
-   SZIAwDbQJgXs8hAUmJEtpnZWSrpk5RIKFb2xrQLKxsezxwe18rrUm7KD8
-   mKZePPnEMBdU8hNkgwYRUaqWydBEc1yg1yKiJKgZTKUaqYKZQcIVCswfZ
-   ACPuIqi3HjZ3kjp+JZNY0Hp29eoXhT4tT0DVz1BccVnbTPowlRFlt76Df
-   NnwtFWP43hkWMsg8zSFHDsVxy6dSxEVjrqp3r/mnxg0mrTUmG0ckgL++0
+  t=1689607169; x=1721143169;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=HDyxnFMW6ToDi+AVUzlUAgIJLjyTYn/1ND+QK+JrqIk=;
+  b=UMq2iuZo9kid36PgF48qyE8kYaC926BtR1WUPWe6pXArE6l9KiZYOhKq
+   xZHP/cBVn01UW98cmc4cq4aw1COTAqtvSANsTHazRl7075b4USsb99f5l
+   I+pKyauAwaCMhGtUon67IKDePrpu1qFVQ6X6d5dZkIglpRNwbkd9hgGcF
+   BIEIP88p6BvTPc6L0VD1q0m1ntV5599CxXr2+5bndjJJWpfTHasZlvkCH
+   4Szoz5o+4lsVIQEEzL5TBBPgPAYkVIfbgOz13XbnTu1lkni1LgBkmeZK/
+   UPRLbZJTScboMrVHYYBnz+50igVrtTz3KaruZpz70kK3m1STRIFtSjxAp
    A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="355885111"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="429716547"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="355885111"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 07:53:29 -0700
+   d="scan'208";a="429716547"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 08:19:11 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="793274914"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="726581590"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="793274914"
-Received: from avandeve-mobl1.amr.corp.intel.com (HELO [10.209.118.243]) ([10.209.118.243])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 07:53:29 -0700
-Message-ID: <dc78085a-f9e2-b4ee-b85f-8709dfbe445e@linux.intel.com>
-Date:   Mon, 17 Jul 2023 07:53:28 -0700
+   d="scan'208";a="726581590"
+Received: from arjan-box.jf.intel.com ([10.54.74.119])
+  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 08:19:11 -0700
+From:   arjan@linux.intel.com
+To:     linux-pm@vger.kernel.org
+Cc:     rafael@kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH 3/4] intel_idle: add VM guest (non)handling to model_specific_fixups
+Date:   Mon, 17 Jul 2023 15:18:55 +0000
+Message-ID: <20230717151856.2529029-3-arjan@linux.intel.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20230717151856.2529029-1-arjan@linux.intel.com>
+References: <20230717151856.2529029-1-arjan@linux.intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Subject: Re: [PATCH 3/4] intel_idle: Add support for using intel_idle in a VM
- guest using just hlt
-Content-Language: en-US
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Xiaoyao Li <xiaoyao.li@intel.com>, linux-pm@vger.kernel.org,
-        artem.bityutskiy@linux.intel.com, kvm <kvm@vger.kernel.org>,
-        Dan Wu <dan1.wu@intel.com>
-References: <20230605154716.840930-1-arjan@linux.intel.com>
- <20230605154716.840930-4-arjan@linux.intel.com>
- <5c7de6d5-7706-c4a5-7c41-146db1269aff@intel.com>
- <747dca0b-7e79-738a-c622-3e2df61849ca@linux.intel.com>
- <CAJZ5v0h4PGFKB0kOL7-odNxNnSn-RxyGfj7atEcNLVfzep6pXw@mail.gmail.com>
-From:   Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <CAJZ5v0h4PGFKB0kOL7-odNxNnSn-RxyGfj7atEcNLVfzep6pXw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 7/17/2023 7:51 AM, Rafael J. Wysocki wrote:
-> On Mon, Jul 17, 2023 at 4:10 PM Arjan van de Ven <arjan@linux.intel.com> wrote:
->>
->>> It leads to below MSR access error on SPR.
->> yeah I have a fix for this but Peter instead wants to delete the whole thing...
->> ... so I'm sort of stuck in two worlds. I'll send the fix today but Rafael will need to
->> chose if he wants to revert or not
-> 
-> I thought that you wanted to fix this rather than to revert, but the
-> latter is entirely fine with me too.
-> 
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-I would rather fix of course, and will send the fixes out shorty (final test ongoing)
+The model specific fixups don't make sense in a VM guest; all the MSR
+accesses at best will be fiction, and at worse cause logspam
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/idle/intel_idle.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index f3eba9b147d2..4dd8081d2406 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -1957,6 +1957,10 @@ static bool should_verify_mwait(struct cpuidle_state *state)
+ 
+ static void __init model_specific_fixups(void)
+ {
++	/* when running in a hypervisor, none of these fixups will work */
++	if (boot_cpu_has(X86_FEATURE_HYPERVISOR))
++		return;
++
+ 	switch (boot_cpu_data.x86_model) {
+ 	case INTEL_FAM6_IVYBRIDGE_X:
+ 		ivt_idle_state_table_update();
+-- 
+2.41.0
 
