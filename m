@@ -2,114 +2,115 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9761CC04A6A
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 15:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 982E1C001DC
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:29:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231992AbjGQPUh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 11:20:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52238 "EHLO
+        id S230449AbjGQR30 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 13:29:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45426 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231744AbjGQPUO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 11:20:14 -0400
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D9C010C8
-        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2023 08:19:43 -0700 (PDT)
+        with ESMTP id S229789AbjGQR3Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:29:25 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B260D1989;
+        Mon, 17 Jul 2023 10:29:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689607183; x=1721143183;
+  t=1689614942; x=1721150942;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=bUOTX5dw2G75UiT+4rr7b+HzDjYK2xl9bzYO8LnFtu0=;
-  b=KbY/BcbEBRDnH12wVFrDdE2lQYYzydTnmMxcXRgrczc9kIaa9u6H/SXK
-   K/dwHiuQH5gSok45BkSwFS5HTfVWYDyF/tnMQeA4gn85GsNBJl1CGl4hU
-   QQc63eaGokzYTgMySqkd0ptK7iinz8Zj9g6A5ezGP+KmrIv+aOlOraXZa
-   BM//XZ5fVgZVbO0bFA6iS6ZrA0Z87DPJ0veCK+dPnqNGMlyj/dnvGZLFt
-   sskr2F74xGRL6srcYf4csqX+M5y3sP20GpGGXSLwnbmKUgYE6EA5J1vad
-   zvsuvPJvd77YKwumFBMF8NFWlS9rqCpe6h8sNyoy3hGneB3L2KiEA4r1/
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="429716552"
+  bh=zaKwe1xeE0MC6urnhJKPL5m7n74tZLwG88asISfLaWc=;
+  b=KUQxD30dU4icNkpJcqOBEKvwL0+CIE/ujp8yeKwO/ZUAYxRn1t3DHM6W
+   Zc4EuYAvt6CWJ9xiWwW1uis23uEC9wCXKrfp5CyzXpKXPiQJhoELi1CGQ
+   G8F4WrnQidL9Phoq1J9AgCtwVjWYtwvc1K6zLb8FNLDFH2VGzJogkIWas
+   KLOVcS0O3jgi1fvuCt5CVgQq8l6TPxAkgrLyPV/oLqYAicKQue7XPB61T
+   rSj3CDK7/snr/K8HFGrD5TKxZkGqF220ExhBcWmGvGsCbH/K43OxSgX6m
+   WSl1K/1K2tunNr/1zCG5qdDZtMh4rzU33UBmcKUPxzynbVLNhDZ4tOGLf
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="350854467"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="429716552"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 08:19:12 -0700
+   d="scan'208";a="350854467"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:40 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="726581596"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="813426651"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="726581596"
-Received: from arjan-box.jf.intel.com ([10.54.74.119])
-  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 08:19:12 -0700
-From:   arjan@linux.intel.com
-To:     linux-pm@vger.kernel.org
-Cc:     rafael@kernel.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH 4/4] intel_idle: remove intel_idle_hlt_irq_on
-Date:   Mon, 17 Jul 2023 15:18:56 +0000
-Message-ID: <20230717151856.2529029-4-arjan@linux.intel.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20230717151856.2529029-1-arjan@linux.intel.com>
-References: <20230717151856.2529029-1-arjan@linux.intel.com>
+   d="scan'208";a="813426651"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by FMSMGA003.fm.intel.com with ESMTP; 17 Jul 2023 10:28:33 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+        id DA2B524F; Mon, 17 Jul 2023 20:28:39 +0300 (EEST)
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-mediatek@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Cc:     Andy Shevchenko <andy@kernel.org>,
+        Sean Wang <sean.wang@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+        Ludovic Desroches <ludovic.desroches@microchip.com>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH v2 01/10] pm: Introduce DEFINE_NOIRQ_DEV_PM_OPS() helper
+Date:   Mon, 17 Jul 2023 20:28:12 +0300
+Message-Id: <20230717172821.62827-2-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
+In-Reply-To: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
+References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
+_DEFINE_DEV_PM_OPS() helps to define PM operations for the system sleep
+and/or runtime PM cases. Some of the existing users want to have _noirq()
+variants to be set. For that purpose introduce a new helper which sets
+up _noirq() callbacks to be set and struct dev_pm_ops be provided.
 
-PeterZ pointed out that the whole function is redundant as for hlt, it's always "irq on"
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/idle/intel_idle.c | 22 +---------------------
- 1 file changed, 1 insertion(+), 21 deletions(-)
+ include/linux/pm.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 4dd8081d2406..038322c23e34 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -224,17 +224,6 @@ static __cpuidle int intel_idle_hlt(struct cpuidle_device *dev,
- 	return __intel_idle_hlt(dev, drv, index);
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index badad7d11f4f..0f19af8d5493 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -448,6 +448,15 @@ const struct dev_pm_ops __maybe_unused name = { \
+ 	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
  }
  
--static __cpuidle int intel_idle_hlt_irq_on(struct cpuidle_device *dev,
--                                   struct cpuidle_driver *drv, int index)
--{
--       int ret;
--
--       raw_local_irq_enable();
--       ret = __intel_idle_hlt(dev, drv, index);
--       raw_local_irq_disable();
--
--       return ret;
--}
++/*
++ * Use this if you want to have the suspend and resume callbacks be called
++ * with disabled IRQs.
++ */
++#define DEFINE_NOIRQ_DEV_PM_OPS(name, suspend_fn, resume_fn) \
++const struct dev_pm_ops name = { \
++	NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
++}
++
+ #define pm_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM), (_ptr))
+ #define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
  
- /**
-  * intel_idle_s2idle - Ask the processor to enter the given idle state.
-@@ -1897,15 +1886,8 @@ static bool __init intel_idle_verify_cstate(unsigned int mwait_hint)
- 
- static void state_update_enter_method(struct cpuidle_state *state, int cstate)
- {
--	if (state->enter == intel_idle_hlt) {
--		if (force_irq_on) {
--			pr_info("forced intel_idle_irq for state %d\n", cstate);
--			state->enter = intel_idle_hlt_irq_on;
--		}
-+	if (state->enter == intel_idle_hlt)
- 		return;
--	}
--	if (state->enter == intel_idle_hlt_irq_on)
--		return; /* no update scenarios */
- 
- 	if (state->flags & CPUIDLE_FLAG_INIT_XSTATE) {
- 		/*
-@@ -1949,8 +1931,6 @@ static bool should_verify_mwait(struct cpuidle_state *state)
- {
- 	if (state->enter == intel_idle_hlt)
- 		return false;
--	if (state->enter == intel_idle_hlt_irq_on)
--		return false;
- 
- 	return true;
- }
 -- 
-2.41.0
+2.40.0.1.gaa8946217a0b
 
