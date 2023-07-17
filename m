@@ -2,34 +2,32 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C12ACC001B0
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 19:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4038C001B0
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 19:32:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231464AbjGQT2w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 15:28:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33324 "EHLO
+        id S231556AbjGQTco (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 15:32:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35166 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231470AbjGQT2v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 15:28:51 -0400
+        with ESMTP id S231538AbjGQTcn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 15:32:43 -0400
 Received: from aposti.net (aposti.net [89.234.176.197])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1852E76;
-        Mon, 17 Jul 2023 12:28:50 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CEBD12A;
+        Mon, 17 Jul 2023 12:32:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
-        s=mail; t=1689622129;
+        s=mail; t=1689621782;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=cz4KDI7jQOgLySCmtxM7bAVvDERRvoZFslEeJrBr46U=;
-        b=sCx4iMgLzSLx3zOM1pOieQ9sC68QbskB0MC3rPnMo1elWfZ1FJsj24vyXNFc8foPawL3El
-        rDVHj9lfLqqEYWgwpVJ8XTCZTKS7W0EvIs8ceg6v1aQnlUswXOVmS9zRLcFb4yvZckdJoM
-        6v8Jm4jG4nog3qpVDQ5eJ3FfI8rnEO4=
-Message-ID: <c9e57723425f77f3720301b55db460f9be1783f6.camel@crapouillou.net>
-Subject: Re: [PATCH v2 03/10] pinctrl: cherryview: Switch to use
- DEFINE_NOIRQ_DEV_PM_OPS() helper
+        bh=f2FsRW/iD1SQYNbltu5CgyPfz65E+yDxeasl/fxtjIM=;
+        b=QUSTalgEXSQDjPMLrB5o7QMCahRiCifDFiugm9rnJcn71JCyT7aOLymUOW/gQZyyCiY6hr
+        lbE3nKSj+Z4PhaVzbZbruA3x7Vy7tFZknM9Ts+Ht4ZWqsyw8XWam2OvmFRb7OQ5mbs1LP6
+        Ru1DyJG3Rjmuhfv6vH5laLD4/TLKACc=
+Message-ID: <108dbf8d020d7a4335743aa196ec7be9c8a777a3.camel@crapouillou.net>
+Subject: Re: [PATCH v2 05/10] pinctrl: lynxpoint: Make use of pm_ptr()
 From:   Paul Cercueil <paul@crapouillou.net>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         Linus Walleij <linus.walleij@linaro.org>,
         Balsam CHIHI <bchihi@baylibre.com>,
@@ -41,7 +39,8 @@ Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         linux-mediatek@lists.infradead.org,
         linux-arm-kernel@lists.infradead.org,
         linux-renesas-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>,
+        linux-pm@vger.kernel.org
+Cc:     Andy Shevchenko <andy@kernel.org>,
         Sean Wang <sean.wang@kernel.org>,
         Matthias Brugger <matthias.bgg@gmail.com>,
         AngeloGioacchino Del Regno 
@@ -55,38 +54,47 @@ Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Date:   Mon, 17 Jul 2023 21:28:46 +0200
-In-Reply-To: <CAHp75Vc6yYz94dZmf2QJ3jV1Yqqw-7_47sm5hSSU2M9B2O_BQg@mail.gmail.com>
+Date:   Mon, 17 Jul 2023 21:23:00 +0200
+In-Reply-To: <20230717172821.62827-6-andriy.shevchenko@linux.intel.com>
 References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
-         <20230717172821.62827-4-andriy.shevchenko@linux.intel.com>
-         <73161288a07eb34a458061151d9d9a5c10d79c1b.camel@crapouillou.net>
-         <CAHp75Vc6yYz94dZmf2QJ3jV1Yqqw-7_47sm5hSSU2M9B2O_BQg@mail.gmail.com>
+         <20230717172821.62827-6-andriy.shevchenko@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Le lundi 17 juillet 2023 =C3=A0 22:27 +0300, Andy Shevchenko a =C3=A9crit=
-=C2=A0:
-> On Mon, Jul 17, 2023 at 10:22=E2=80=AFPM Paul Cercueil <paul@crapouillou.=
-net>
-> wrote:
-> > Le lundi 17 juillet 2023 =C3=A0 20:28 +0300, Andy Shevchenko a =C3=A9cr=
-it :
->=20
-> ...
->=20
-> > > +static DEFINE_NOIRQ_DEV_PM_OPS(chv_pinctrl_pm_ops,
-> > > chv_pinctrl_suspend_noirq, chv_pinctrl_resume_noirq);
-> >=20
-> > That's over 100 characters, please break this line.
->=20
-> If it's a problem, I prefer to shorten the names of the callbacks.
-> Would it work for you?
->=20
+SGkgQW5keSwKCkxlIGx1bmRpIDE3IGp1aWxsZXQgMjAyMyDDoCAyMDoyOCArMDMwMCwgQW5keSBT
+aGV2Y2hlbmtvIGEgw6ljcml0wqA6Cj4gQ2xlYW5pbmcgdXAgdGhlIGRyaXZlciB0byB1c2UgcG1f
+cHRyKCkgYW5kICpfUE1fT1BTKCkgbWFjcm9zIHRoYXQKPiBtYWtlIGl0IHNpbXBsZXIgYW5kIGFs
+bG93cyB0aGUgY29tcGlsZXIgdG8gcmVtb3ZlIHRob3NlIGZ1bmN0aW9ucwo+IGlmIGJ1aWx0IHdp
+dGhvdXQgQ09ORklHX1BNIGFuZCBDT05GSUdfUE1fU0xFRVAgc3VwcG9ydC4KPiAKPiBTaWduZWQt
+b2ZmLWJ5OiBBbmR5IFNoZXZjaGVua28gPGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4LmludGVsLmNv
+bT4KClJldmlld2VkLWJ5OiBQYXVsIENlcmN1ZWlsIDxwYXVsQGNyYXBvdWlsbG91Lm5ldD4KCkNo
+ZWVycywKLVBhdWwKCj4gLS0tCj4gwqBkcml2ZXJzL3BpbmN0cmwvaW50ZWwvcGluY3RybC1seW54
+cG9pbnQuYyB8IDcgKysrLS0tLQo+IMKgMSBmaWxlIGNoYW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwg
+NCBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9waW5jdHJsL2ludGVsL3Bp
+bmN0cmwtbHlueHBvaW50LmMKPiBiL2RyaXZlcnMvcGluY3RybC9pbnRlbC9waW5jdHJsLWx5bnhw
+b2ludC5jCj4gaW5kZXggY2RhY2U1NWFhZWFjLi41MGQ5MmJmODBlMjAgMTAwNjQ0Cj4gLS0tIGEv
+ZHJpdmVycy9waW5jdHJsL2ludGVsL3BpbmN0cmwtbHlueHBvaW50LmMKPiArKysgYi9kcml2ZXJz
+L3BpbmN0cmwvaW50ZWwvcGluY3RybC1seW54cG9pbnQuYwo+IEBAIC05NDgsOSArOTQ4LDggQEAg
+c3RhdGljIGludCBscF9ncGlvX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gwqB9Cj4gwqAK
+PiDCoHN0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBscF9ncGlvX3BtX29wcyA9IHsKPiAt
+wqDCoMKgwqDCoMKgwqAucnVudGltZV9zdXNwZW5kID0gbHBfZ3Bpb19ydW50aW1lX3N1c3BlbmQs
+Cj4gLcKgwqDCoMKgwqDCoMKgLnJ1bnRpbWVfcmVzdW1lID0gbHBfZ3Bpb19ydW50aW1lX3Jlc3Vt
+ZSwKPiAtwqDCoMKgwqDCoMKgwqAucmVzdW1lID0gbHBfZ3Bpb19yZXN1bWUsCj4gK8KgwqDCoMKg
+wqDCoMKgU1lTVEVNX1NMRUVQX1BNX09QUyhOVUxMLCBscF9ncGlvX3Jlc3VtZSkKPiArwqDCoMKg
+wqDCoMKgwqBSVU5USU1FX1BNX09QUyhscF9ncGlvX3J1bnRpbWVfc3VzcGVuZCwKPiBscF9ncGlv
+X3J1bnRpbWVfcmVzdW1lLCBOVUxMKQo+IMKgfTsKPiDCoAo+IMKgc3RhdGljIGNvbnN0IHN0cnVj
+dCBhY3BpX2RldmljZV9pZCBseW54cG9pbnRfZ3Bpb19hY3BpX21hdGNoW10gPSB7Cj4gQEAgLTk2
+NSw3ICs5NjQsNyBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBscF9ncGlvX2RyaXZl
+ciA9IHsKPiDCoMKgwqDCoMKgwqDCoMKgLnJlbW92ZcKgwqDCoMKgwqDCoMKgwqAgPSBscF9ncGlv
+X3JlbW92ZSwKPiDCoMKgwqDCoMKgwqDCoMKgLmRyaXZlcsKgwqDCoMKgwqDCoMKgwqAgPSB7Cj4g
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAubmFtZcKgwqAgPSAibHBfZ3BpbyIsCj4g
+LcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoC5wbcKgwqDCoMKgwqA9ICZscF9ncGlvX3Bt
+X29wcywKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLnBtwqDCoMKgwqDCoD0gcG1f
+cHRyKCZscF9ncGlvX3BtX29wcyksCj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAu
+YWNwaV9tYXRjaF90YWJsZSA9IGx5bnhwb2ludF9ncGlvX2FjcGlfbWF0Y2gsCj4gwqDCoMKgwqDC
+oMKgwqDCoH0sCj4gwqB9OwoK
 
-That works.
-
--Paul
