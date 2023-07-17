@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DC99C001B0
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:30:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BFF2C001DE
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 17:30:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231363AbjGQRaD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 13:30:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46080 "EHLO
+        id S231391AbjGQRa0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 13:30:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231366AbjGQR3x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:29:53 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBD8C172C;
-        Mon, 17 Jul 2023 10:29:31 -0700 (PDT)
+        with ESMTP id S231535AbjGQRaK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 13:30:10 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75E2519B1;
+        Mon, 17 Jul 2023 10:29:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689614972; x=1721150972;
+  t=1689614987; x=1721150987;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=MwITHSBVrDyfYa+oKiF5RDbSxhBhmfNuKbxoQ4tvU/c=;
-  b=HdQDqBFYiZGGrmrJnq66emuqCjoX9KjIR+cwPI25LzOsdNdoUteBcONZ
-   Db3sV9Chv86gFY/hVUI7O/Rot/S01Xsqg7WhiLbDrv9h3VLlT7EZuGD23
-   Yh2OfjbXdTC9jjMPS9n2IKDcA+d/qCiJj5ZmuVSRabjnc2MXg9+REv9k/
-   LlNa5MhYHoI7jFDPBk9wPQSrbX+uCpCz2vM5yTmMvhwj+ltvrj9G5mkrC
-   3jodeg64zx4ky6Zpuf7Ft2LJ8rjyPrrt5IWeeUqci6C8XNxerwna3L4g/
-   2/JXKo4kI17+HTcX++83xzuc9VZbF72UZ14FA4vMf3H8dCGSfvpbG2zLP
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="355927001"
+  bh=WzIdieUjIIIcjkcN9h2WZt4G3gLcBLgRvdk3paxMv94=;
+  b=hJrFayGSOoqabwbJUBYQrIG77bKHR6P/OfRciOA9rMcFRsWXM1wbqOqN
+   RQbS1ZqGHRs4NH1X9lTJTsNSjSIUQZWf/p3paHZcDcS1X2vLhv1tkuZeh
+   g30k6q8cm8wB6n5K4XHXyhHzOCOFYzUplPVmUm3DlTeFE+97YNZRrCbNy
+   utjJmj4D4sGEP9hPRB7UJ8LJfNm/iNhUjbNYBA0UlDg2UmTHfOycdudVe
+   YlOJO4OFaHQPXeVKqJBbeJqMh0gOrIXb5AHYMzJ4tHWtyasZDn8v3GnJ5
+   7svAGBzuLsT3hBuUP1ditS/0P5POsuBAz10DZY7FGK98H/+9eJyA6kSgw
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="350854514"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="355927001"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:49 -0700
+   d="scan'208";a="350854514"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 10:28:40 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="673604213"
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="813426656"
 X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="673604213"
+   d="scan'208";a="813426656"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga003.jf.intel.com with ESMTP; 17 Jul 2023 10:28:40 -0700
+  by FMSMGA003.fm.intel.com with ESMTP; 17 Jul 2023 10:28:33 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id 22B3869A; Mon, 17 Jul 2023 20:28:40 +0300 (EEST)
+        id 0D2A65FC; Mon, 17 Jul 2023 20:28:40 +0300 (EEST)
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -69,9 +69,9 @@ Cc:     Andy Shevchenko <andy@kernel.org>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH v2 06/10] pinctrl: at91: Switch to use DEFINE_NOIRQ_DEV_PM_OPS() helper
-Date:   Mon, 17 Jul 2023 20:28:17 +0300
-Message-Id: <20230717172821.62827-7-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 04/10] pinctrl: intel: Switch to use DEFINE_NOIRQ_DEV_PM_OPS() helper
+Date:   Mon, 17 Jul 2023 20:28:15 +0300
+Message-Id: <20230717172821.62827-5-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
 In-Reply-To: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
 References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
@@ -86,49 +86,69 @@ switch the driver to use it instead of open coded variant.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/pinctrl/pinctrl-at91.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/pinctrl/intel/pinctrl-intel.c | 5 +----
+ drivers/pinctrl/intel/pinctrl-intel.h | 9 ++-------
+ 2 files changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/pinctrl/pinctrl-at91.c b/drivers/pinctrl/pinctrl-at91.c
-index 39956d821ad7..608f55c5ba5f 100644
---- a/drivers/pinctrl/pinctrl-at91.c
-+++ b/drivers/pinctrl/pinctrl-at91.c
-@@ -1657,7 +1657,7 @@ static int gpio_irq_set_wake(struct irq_data *d, unsigned state)
- 	return 0;
- }
- 
--static int __maybe_unused at91_gpio_suspend(struct device *dev)
-+static int at91_gpio_suspend(struct device *dev)
+diff --git a/drivers/pinctrl/intel/pinctrl-intel.c b/drivers/pinctrl/intel/pinctrl-intel.c
+index 64c3e62b4348..40e45c4889ee 100644
+--- a/drivers/pinctrl/intel/pinctrl-intel.c
++++ b/drivers/pinctrl/intel/pinctrl-intel.c
+@@ -929,7 +929,7 @@ static int intel_gpio_to_pin(struct intel_pinctrl *pctrl, unsigned int offset,
+  *
+  * Return: a GPIO offset, or negative error code if translation can't be done.
+  */
+-static __maybe_unused int intel_pin_to_gpio(struct intel_pinctrl *pctrl, int pin)
++static int intel_pin_to_gpio(struct intel_pinctrl *pctrl, int pin)
  {
- 	struct at91_gpio_chip *at91_chip = dev_get_drvdata(dev);
- 	void __iomem *pio = at91_chip->regbase;
-@@ -1675,7 +1675,7 @@ static int __maybe_unused at91_gpio_suspend(struct device *dev)
- 	return 0;
- }
+ 	const struct intel_community *community;
+ 	const struct intel_padgroup *padgrp;
+@@ -1488,7 +1488,6 @@ static int intel_pinctrl_pm_init(struct intel_pinctrl *pctrl)
+ 	if (!communities)
+ 		return -ENOMEM;
  
--static int __maybe_unused at91_gpio_resume(struct device *dev)
-+static int at91_gpio_resume(struct device *dev)
+-
+ 	for (i = 0; i < pctrl->ncommunities; i++) {
+ 		struct intel_community *community = &pctrl->communities[i];
+ 		u32 *intmask, *hostown;
+@@ -1712,7 +1711,6 @@ const struct intel_pinctrl_soc_data *intel_pinctrl_get_soc_data(struct platform_
+ }
+ EXPORT_SYMBOL_GPL(intel_pinctrl_get_soc_data);
+ 
+-#ifdef CONFIG_PM_SLEEP
+ static bool __intel_gpio_is_direct_irq(u32 value)
  {
- 	struct at91_gpio_chip *at91_chip = dev_get_drvdata(dev);
- 	void __iomem *pio = at91_chip->regbase;
-@@ -1903,15 +1903,13 @@ static int at91_gpio_probe(struct platform_device *pdev)
+ 	return (value & PADCFG0_GPIROUTIOXAPIC) && (value & PADCFG0_GPIOTXDIS) &&
+@@ -1913,7 +1911,6 @@ int intel_pinctrl_resume_noirq(struct device *dev)
  	return 0;
  }
+ EXPORT_SYMBOL_GPL(intel_pinctrl_resume_noirq);
+-#endif
  
--static const struct dev_pm_ops at91_gpio_pm_ops = {
--	NOIRQ_SYSTEM_SLEEP_PM_OPS(at91_gpio_suspend, at91_gpio_resume)
--};
-+static DEFINE_NOIRQ_DEV_PM_OPS(at91_gpio_pm_ops, at91_gpio_suspend, at91_gpio_resume);
+ MODULE_AUTHOR("Mathias Nyman <mathias.nyman@linux.intel.com>");
+ MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
+diff --git a/drivers/pinctrl/intel/pinctrl-intel.h b/drivers/pinctrl/intel/pinctrl-intel.h
+index 1faf2ada480a..65b1699a2ed5 100644
+--- a/drivers/pinctrl/intel/pinctrl-intel.h
++++ b/drivers/pinctrl/intel/pinctrl-intel.h
+@@ -255,15 +255,10 @@ struct intel_pinctrl {
+ int intel_pinctrl_probe_by_hid(struct platform_device *pdev);
+ int intel_pinctrl_probe_by_uid(struct platform_device *pdev);
  
- static struct platform_driver at91_gpio_driver = {
- 	.driver = {
- 		.name = "gpio-at91",
- 		.of_match_table = at91_gpio_of_match,
--		.pm = pm_ptr(&at91_gpio_pm_ops),
-+		.pm = pm_sleep_ptr(&at91_gpio_pm_ops),
- 	},
- 	.probe = at91_gpio_probe,
- };
+-#ifdef CONFIG_PM_SLEEP
+ int intel_pinctrl_suspend_noirq(struct device *dev);
+ int intel_pinctrl_resume_noirq(struct device *dev);
+-#endif
+ 
+-#define INTEL_PINCTRL_PM_OPS(_name)					\
+-const struct dev_pm_ops _name = {					\
+-	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(intel_pinctrl_suspend_noirq,	\
+-				      intel_pinctrl_resume_noirq)	\
+-}
++#define INTEL_PINCTRL_PM_OPS(_name)								\
++	DEFINE_NOIRQ_DEV_PM_OPS(_name, intel_pinctrl_suspend_noirq, intel_pinctrl_resume_noirq)
+ 
+ #endif /* PINCTRL_INTEL_H */
 -- 
 2.40.0.1.gaa8946217a0b
 
