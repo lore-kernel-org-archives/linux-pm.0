@@ -2,149 +2,131 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F234C001DE
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 19:55:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 880EAC001DC
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 19:56:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231535AbjGQTzK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 15:55:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46114 "EHLO
+        id S231370AbjGQT4y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 15:56:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48152 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231358AbjGQTzH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 15:55:07 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83AA5134;
-        Mon, 17 Jul 2023 12:54:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689623698; x=1721159698;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=8SCVtq0jwJnIgDEqSUfdMECCxn6Y1V/lCZdkQvBUQFQ=;
-  b=JhQ3cDb4CepQ1TI6LNZVwwll9qkPsUNy+OlEFYn6wQckhmJs6MPi7+wA
-   Muw+nXNfwnZGIcoqsqrUGjNH3wi5ienB4gbaEYuLkX7jlZotsW64QDg9/
-   NIQ9y7h711I7upAa+4pUGfJhJHdIDgQ3K98A98BNcYYR5tjuD2jhiNtde
-   9u7zjnfWrbXiwwsBtl4uFp8ZtB/PGA+CcLgjORD0UHGMNwAsfPU4tozkw
-   5RIoHAqO/BVMvvl4zEmV4BaXbeJLfqR+/ydFrjhilT4mv7atCpcyrpjjU
-   g2a5crmasFpNs+96R9j8OL4X2/mGoCgQjBvJmsCT81MOMu0OvlK40AC5h
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="366064615"
-X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="366064615"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2023 12:54:56 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="788770763"
-X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; 
-   d="scan'208";a="788770763"
-Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
-  by fmsmga008.fm.intel.com with ESMTP; 17 Jul 2023 12:54:55 -0700
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 6/7] thermal/drivers/int340x: Support workload hint interrupts
-Date:   Mon, 17 Jul 2023 12:54:04 -0700
-Message-Id: <20230717195405.730869-7-srinivas.pandruvada@linux.intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230717195405.730869-1-srinivas.pandruvada@linux.intel.com>
-References: <20230717195405.730869-1-srinivas.pandruvada@linux.intel.com>
+        with ESMTP id S231352AbjGQT4r (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 15:56:47 -0400
+Received: from aposti.net (aposti.net [89.234.176.197])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10BB2170D;
+        Mon, 17 Jul 2023 12:56:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
+        s=mail; t=1689623760;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=fEo4GP83lIE+lgHyH0OgrfVUmqIaUGHnS8773OANhBk=;
+        b=l0iyJWMpe6xSAJOeof6UhbOiLwEzGtfdQOenOHe7x1WEX87oLs/sqcILqWR/6F6vYNbyxW
+        0jHoBbsL1LxSF1a8umousHQ+ObYLfz2FWrXHnM3il1OBsIaAXM+DyopoqtpVwrV8RDMkRz
+        nihLU0iVibpyCgWAkHsF50Li29isdlU=
+Message-ID: <8c66f79025ddd8388eeb9bdb3f0e789fe9f362d9.camel@crapouillou.net>
+Subject: Re: [PATCH v2 04/10] pinctrl: intel: Switch to use
+ DEFINE_NOIRQ_DEV_PM_OPS() helper
+From:   Paul Cercueil <paul@crapouillou.net>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Balsam CHIHI <bchihi@baylibre.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-mediatek@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, Andy Shevchenko <andy@kernel.org>,
+        Sean Wang <sean.wang@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+        Ludovic Desroches <ludovic.desroches@microchip.com>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Date:   Mon, 17 Jul 2023 21:55:57 +0200
+In-Reply-To: <CAHp75Vcjq9=Q2_fsGJ9oCw=WYR3p3ot_cNLiDJV93psNcXXHLw@mail.gmail.com>
+References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
+         <20230717172821.62827-5-andriy.shevchenko@linux.intel.com>
+         <c47c26ba7ea5bcbdcbe1d001b6cc527cee6c7d03.camel@crapouillou.net>
+         <CAHp75Vcjq9=Q2_fsGJ9oCw=WYR3p3ot_cNLiDJV93psNcXXHLw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On thermal device interrupt, if the interrupt is generated for passing
-workload hint, call the callback to pass notification to the user
-space.
+Le lundi 17 juillet 2023 =C3=A0 22:33 +0300, Andy Shevchenko a =C3=A9crit=
+=C2=A0:
+> On Mon, Jul 17, 2023 at 10:02=E2=80=AFPM Paul Cercueil <paul@crapouillou.=
+net>
+> wrote:
+> > Le lundi 17 juillet 2023 =C3=A0 20:28 +0300, Andy Shevchenko a =C3=A9cr=
+it :
+>=20
+> ...
+>=20
+> > Unrelated change.
+>=20
+> OK.
+>=20
+> ...
+>=20
+> > So the correct way to update this driver would be to have a
+> > conditionally-exported dev_pm_ops structure:
+> >=20
+> > EXPORT_GPL_DEV_PM_OPS(intel_pinctrl_pm_ops) =3D {
+> > =C2=A0=C2=A0=C2=A0 NOIRQ_SYSTEM_SLEEP_PM_OPS(intel_pinctrl_suspend_noir=
+q,
+> > intel_pinctrl_resume_noirq),
+> > };
+>=20
+> This looks ugly. I didn't know that EXPORT*PM_OPS designed that way,
+> but it seems pm.h in such case needs EXPORT for NOIRQ case as well.
 
-First call proc_thermal_check_wlt_intr() to check interrupt, if this
-callback returns true, wake IRQ thread. Call
-proc_thermal_wlt_intr_callback() to notify user space.
+It's designed so that when CONFIG_PM is disabled, the dev_pm_ops is
+garbage-collected along with all its callbacks.
 
-While here remove function pkg_thermal_schedule_work() and move the
-processing to the caller. The function pkg_thermal_schedule_work() just
-called schedule_delayed_work().
+I know it looks ugly, but we already have 4 variants (regular,
+namespace, GPL, namespace + GPL), if we start to add macros for
+specific use-cases then it will become bloated really quick.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-v2:
-No change
+And the "bloat" I'm trying to avoid here is the extreme expansion of
+the API which makes it hard for people not familiar to the code to
+understand what should be used and how.
 
- .../processor_thermal_device_pci.c            | 33 ++++++++++++++-----
- 1 file changed, 24 insertions(+), 9 deletions(-)
+> > Then your two callbacks can be "static" and without #ifdef guards.
+> >=20
+> > The resulting "intel_pinctrl_pm_ops" can be marked as "extern" in
+> > the
+> > pinctrl-intel.h without any guards, as long as it is only
+> > referenced
+> > with the pm_ptr() macro.
+>=20
+> I'm not sure I got this. Currently drivers do not have any guards.
+> Moreover, the correct one for noirq is pm_sleep_ptr(), isn't it?
+>=20
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-index ee5a4c227d96..83177ed9db49 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -115,27 +115,40 @@ static void proc_thermal_threshold_work_fn(struct work_struct *work)
- 	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 1);
- }
- 
--static void pkg_thermal_schedule_work(struct delayed_work *work)
-+static irqreturn_t proc_thermal_irq_thread_handler(int irq, void *devid)
- {
--	unsigned long ms = msecs_to_jiffies(notify_delay_ms);
-+	struct proc_thermal_pci *pci_info = devid;
-+
-+	proc_thermal_wlt_intr_callback(pci_info->pdev, pci_info->proc_priv);
- 
--	schedule_delayed_work(work, ms);
-+	return IRQ_HANDLED;
- }
- 
- static irqreturn_t proc_thermal_irq_handler(int irq, void *devid)
- {
- 	struct proc_thermal_pci *pci_info = devid;
-+	struct proc_thermal_device *proc_priv;
-+	int ret = IRQ_HANDLED;
- 	u32 status;
- 
-+	proc_priv = pci_info->proc_priv;
-+
-+	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_WLT_HINT) {
-+		if (proc_thermal_check_wlt_intr(pci_info->proc_priv))
-+			ret = IRQ_WAKE_THREAD;
-+	}
-+
- 	proc_thermal_mmio_read(pci_info, PROC_THERMAL_MMIO_INT_STATUS_0, &status);
-+	if (status) {
-+		unsigned long ms = msecs_to_jiffies(notify_delay_ms);
- 
--	/* Disable enable interrupt flag */
--	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
-+		/* Disable enable interrupt flag */
-+		proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
-+		schedule_delayed_work(&pci_info->work, ms);
-+	}
- 	pci_write_config_byte(pci_info->pdev, 0xdc, 0x01);
- 
--	pkg_thermal_schedule_work(&pci_info->work);
--
--	return IRQ_HANDLED;
-+	return ret;
- }
- 
- static int sys_get_curr_temp(struct thermal_zone_device *tzd, int *temp)
-@@ -269,7 +282,7 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
- 	}
- 
- 	ret = devm_request_threaded_irq(&pdev->dev, irq,
--					proc_thermal_irq_handler, NULL,
-+					proc_thermal_irq_handler, proc_thermal_irq_thread_handler,
- 					irq_flag, KBUILD_MODNAME, pci_info);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Request IRQ %d failed\n", pdev->irq);
-@@ -383,6 +396,8 @@ static struct pci_driver proc_thermal_pci_driver = {
- 
- module_pci_driver(proc_thermal_pci_driver);
- 
-+MODULE_IMPORT_NS(INT340X_THERMAL);
-+
- MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>");
- MODULE_DESCRIPTION("Processor Thermal Reporting Device Driver");
- MODULE_LICENSE("GPL v2");
--- 
-2.38.1
+The EXPORT_*_DEV_PM_OPS() macros do export the "dev_pm_ops"
+conditionally depending on CONFIG_PM. We could add variants that export
+it conditionally depending on CONFIG_PM_SLEEP, but we're back at the
+problem of adding bloat.
 
+You could use pm_sleep_ptr() indeed, with the existing macros, with the
+drawback that in the case where CONFIG_PM && !CONFIG_PM_SLEEP, the
+dev_pm_ops + callbacks are compiled in but never referenced.
+
+Cheers,
+-Paul
