@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02D03EB64DC
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 19:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D9D3C0015E
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jul 2023 19:26:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229982AbjGQTWF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jul 2023 15:22:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58106 "EHLO
+        id S231297AbjGQT0A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jul 2023 15:26:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229471AbjGQTWE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 15:22:04 -0400
+        with ESMTP id S231294AbjGQTZ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2023 15:25:59 -0400
 Received: from aposti.net (aposti.net [89.234.176.197])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF72A1B1;
-        Mon, 17 Jul 2023 12:22:03 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8010B1B1;
+        Mon, 17 Jul 2023 12:25:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
-        s=mail; t=1689621722;
+        s=mail; t=1689621956;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=JYJF9jUuoH8+OSLTUvKgDFX+MUf4KcBqy49yggghDsQ=;
-        b=oUtYDNGboR/faJdt+5APnkwTfthP6RjP3VjaPaKSTvgHCJAXiUfjanp7jmD1aZrczGxWJg
-        4h2wwFdqw/Gq5YP2uux75jP3mi5Z7BQHSHXbltNX+W/OC8y+fyApzhTIfFV+CIBBIjFF8V
-        t5zXX7QCaIuYrRWE4BnWL3FaDNFov1I=
-Message-ID: <73161288a07eb34a458061151d9d9a5c10d79c1b.camel@crapouillou.net>
-Subject: Re: [PATCH v2 03/10] pinctrl: cherryview: Switch to use
+        bh=eOtYH4hKBzhGlvN/2fJcmQb/NBgM69hMecTKLntsWYw=;
+        b=fHjDCzU4z1U9SSlFa3/lUwZK96EDFjpO/zr6IzuhUvDGLP7d8yoCF79Jk5d8FEC1OUnO65
+        hHw88RTt5nyzHziz9KI8NhteJirq0XzqMM+He1hvrnBAre+PYf2PfrVO8Jy6Cs9fmjo9WE
+        ww3ao4cdyfwmSh+hig5l1G/je/6rhGY=
+Message-ID: <e356066d5e4001d5ae26a1f55996086ce0b59cf2.camel@crapouillou.net>
+Subject: Re: [PATCH v2 06/10] pinctrl: at91: Switch to use
  DEFINE_NOIRQ_DEV_PM_OPS() helper
 From:   Paul Cercueil <paul@crapouillou.net>
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -55,10 +55,10 @@ Cc:     Andy Shevchenko <andy@kernel.org>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Date:   Mon, 17 Jul 2023 21:21:59 +0200
-In-Reply-To: <20230717172821.62827-4-andriy.shevchenko@linux.intel.com>
+Date:   Mon, 17 Jul 2023 21:25:53 +0200
+In-Reply-To: <20230717172821.62827-7-andriy.shevchenko@linux.intel.com>
 References: <20230717172821.62827-1-andriy.shevchenko@linux.intel.com>
-         <20230717172821.62827-4-andriy.shevchenko@linux.intel.com>
+         <20230717172821.62827-7-andriy.shevchenko@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
@@ -74,65 +74,75 @@ Le lundi 17 juillet 2023 =C3=A0 20:28 +0300, Andy Shevchenko a =C3=A9crit=
 > switch the driver to use it instead of open coded variant.
 >=20
 > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
-> =C2=A0drivers/pinctrl/intel/pinctrl-cherryview.c | 9 ++-------
-> =C2=A01 file changed, 2 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/pinctrl/intel/pinctrl-cherryview.c
-> b/drivers/pinctrl/intel/pinctrl-cherryview.c
-> index eee0f9bc3d32..7a2fc9fe175d 100644
-> --- a/drivers/pinctrl/intel/pinctrl-cherryview.c
-> +++ b/drivers/pinctrl/intel/pinctrl-cherryview.c
-> @@ -1793,7 +1793,6 @@ static int chv_pinctrl_remove(struct
-> platform_device *pdev)
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
-> =C2=A0}
-> =C2=A0
-> -#ifdef CONFIG_PM_SLEEP
-> =C2=A0static int chv_pinctrl_suspend_noirq(struct device *dev)
-> =C2=A0{
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct intel_pinctrl *pct=
-rl =3D dev_get_drvdata(dev);
-> @@ -1877,12 +1876,8 @@ static int chv_pinctrl_resume_noirq(struct
-> device *dev)
-> =C2=A0
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
-> =C2=A0}
-> -#endif
-> =C2=A0
-> -static const struct dev_pm_ops chv_pinctrl_pm_ops =3D {
-> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(=
-chv_pinctrl_suspend_noirq,
-> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 chv_p=
-inctrl_resume_noirq)
-> -};
-> +static DEFINE_NOIRQ_DEV_PM_OPS(chv_pinctrl_pm_ops,
-> chv_pinctrl_suspend_noirq, chv_pinctrl_resume_noirq);
 
-That's over 100 characters, please break this line.
+Reviewed-by: Paul Cercueil <paul@crapouillou.net>
+
+Although you could add a bit more info in the message of this patch, to
+explain why it's OK to remove the __maybe_unused tags (the code is
+always visible) and why switch from pm_ptr() to pm_sleep_ptr() (it's
+only used for system-PM callbacks).
 
 Cheers,
 -Paul
 
+> ---
+> =C2=A0drivers/pinctrl/pinctrl-at91.c | 10 ++++------
+> =C2=A01 file changed, 4 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/pinctrl/pinctrl-at91.c
+> b/drivers/pinctrl/pinctrl-at91.c
+> index 39956d821ad7..608f55c5ba5f 100644
+> --- a/drivers/pinctrl/pinctrl-at91.c
+> +++ b/drivers/pinctrl/pinctrl-at91.c
+> @@ -1657,7 +1657,7 @@ static int gpio_irq_set_wake(struct irq_data
+> *d, unsigned state)
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
+> =C2=A0}
 > =C2=A0
-> =C2=A0static const struct acpi_device_id chv_pinctrl_acpi_match[] =3D {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0{ "INT33FF", (kernel_ulon=
-g_t)chv_soc_data },
-> @@ -1895,7 +1890,7 @@ static struct platform_driver
-> chv_pinctrl_driver =3D {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0.remove =3D chv_pinctrl_r=
-emove,
+> -static int __maybe_unused at91_gpio_suspend(struct device *dev)
+> +static int at91_gpio_suspend(struct device *dev)
+> =C2=A0{
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct at91_gpio_chip *at=
+91_chip =3D dev_get_drvdata(dev);
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0void __iomem *pio =3D at9=
+1_chip->regbase;
+> @@ -1675,7 +1675,7 @@ static int __maybe_unused
+> at91_gpio_suspend(struct device *dev)
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
+> =C2=A0}
+> =C2=A0
+> -static int __maybe_unused at91_gpio_resume(struct device *dev)
+> +static int at91_gpio_resume(struct device *dev)
+> =C2=A0{
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct at91_gpio_chip *at=
+91_chip =3D dev_get_drvdata(dev);
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0void __iomem *pio =3D at9=
+1_chip->regbase;
+> @@ -1903,15 +1903,13 @@ static int at91_gpio_probe(struct
+> platform_device *pdev)
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
+> =C2=A0}
+> =C2=A0
+> -static const struct dev_pm_ops at91_gpio_pm_ops =3D {
+> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0NOIRQ_SYSTEM_SLEEP_PM_OPS(at91=
+_gpio_suspend,
+> at91_gpio_resume)
+> -};
+> +static DEFINE_NOIRQ_DEV_PM_OPS(at91_gpio_pm_ops, at91_gpio_suspend,
+> at91_gpio_resume);
+> =C2=A0
+> =C2=A0static struct platform_driver at91_gpio_driver =3D {
 > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0.driver =3D {
 > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0.name =3D "cherryview-pinctrl",
-> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0.pm =3D &chv_pinctrl_pm_ops,
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0.pm =3D pm_sleep_ptr(&chv_pinctrl_pm_ops),
+=C2=A0=C2=A0=C2=A0=C2=A0.name =3D "gpio-at91",
 > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0.acpi_match_table =3D chv_pinctrl_acpi_match,
+=C2=A0=C2=A0=C2=A0=C2=A0.of_match_table =3D at91_gpio_of_match,
+> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0.pm =3D pm_ptr(&at91_gpio_pm_ops),
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0.pm =3D pm_sleep_ptr(&at91_gpio_pm_ops),
 > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0},
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0.probe =3D at91_gpio_prob=
+e,
 > =C2=A0};
 
