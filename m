@@ -2,98 +2,131 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3E4CEB64DA
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Jul 2023 08:57:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4D1DEB64DC
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Jul 2023 08:57:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229554AbjGTI5o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Jul 2023 04:57:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38060 "EHLO
+        id S229688AbjGTI5p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Jul 2023 04:57:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231178AbjGTItK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2023 04:49:10 -0400
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 029E12699
-        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2023 01:49:09 -0700 (PDT)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-68336d06620so455801b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2023 01:49:08 -0700 (PDT)
+        with ESMTP id S231415AbjGTIyX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2023 04:54:23 -0400
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6936126A3
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2023 01:54:20 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-4fb96e2b573so775181e87.3
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2023 01:54:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689842948; x=1690447748;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=sBMJpDyItnzqWmy2aNUsMJagDM84bbHkArmMp29yfb8=;
-        b=KW+xgangek+Of71GV6+78KS6bQhvicOfRIonYCazciiUjQ9FaZOGt3AAtgm9JVsY5P
-         3D4oWw3iQ/qmIDRF2cHu8v1dRHlJFdzCwf3+RRT4l29uRWl93ibk5Krda+snkJdwpVD8
-         97jYTKO73nksmbBHYrQjYY+2j7yj9T9MmcNvpmXacFWM1CCaK+WadKYTlanPv4aaCavq
-         qS3nRVtLKkDwL0H6vnmk7EheGHlGoE67i4d/mBPw3ElH2FN34fBBGHX0in9OULLbqdME
-         g6N6NU+50Ptse51XDMFwuj/4L8VQhd3dSoWZS9kk49ypJRdnmTJAJGNnNEjFeNY0N/5G
-         tRTg==
+        d=linaro.org; s=google; t=1689843258; x=1692435258;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=hr3GYuI4RGrQA8MLYXyJLt2ld5PTqpatMnFPkHbCrNI=;
+        b=Shpu1expb9UmeNTzkrqLpZgKTTgNTFnWaaLHFYEs8X9t52qsEc2qqYzhSS1wKDUyy1
+         n4EpvR8sgcpL9FLYrJpRYmBpPkbJYzeu10lN6wdKe7Ba3JMVPmK04th61cyw1jW0vioh
+         2k3CoD0TVIieY7nwHyzHbt5z0gDLKPnvLw6UMDKlMyXki3gNfYPvuUq+SrKIZ7RFQuBd
+         Px9Xf/3N008B/kEnqXS6fqGuDaol6sbJt4f/XDWyLT7f7F4gTOg0Y1UdNeEYpRgxFEy7
+         DaXKvwDjYnKA9he3hNDcHOhrri5jmEMFtNNli0s0ezLRD1kzQDFHIjgsiSo66GqPF4gC
+         ZR0w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689842948; x=1690447748;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=sBMJpDyItnzqWmy2aNUsMJagDM84bbHkArmMp29yfb8=;
-        b=DpfNrxvDo9qwaLm2aakSdKcT551zvkF/57LIX869FvgRkGZ1vJIaHjVr7FAKOVcrY1
-         vO/yjbVDHw9xjrFyP3FR1Pne/zGNRtYEYv1wkIqZmYNFLq9ZCHKJH+kprA3EoOOB3yU4
-         1kKZ3ZBT586AHDVuhKS9ctTkSojZGvrTJPdPro4Z15e0YpZ+WjSnsClOiiAMiJSRjydP
-         P/hJuzaDl/8zn4yAckHrV9G1wlS3lqK6axzQ4Q/MzM+TjI+uCDn/QZP4siML1uPUQH7Y
-         6MFY7Tu0OmZOOyw09BxWiygeCyQtx/Ng4S5LXhpBrQSdD0EG5QxmCN8fgGqd0cZQVJIg
-         P2CA==
-X-Gm-Message-State: ABy/qLad+sDyV93k7ItSN/FJmayPFZPh/33/ppTDw8ovGnBOcC++JH/m
-        OW3IgAv91iKjKUTC+/Lwsf9D
-X-Google-Smtp-Source: APBJJlFIAqb3MRR0M7M6dUYduFnut83aN0mVypldnTsMftw0d3Itv+M+vqzqZFESpwa1wVIGfkJhrg==
-X-Received: by 2002:a05:6a00:8ce:b0:63a:ea82:b7b7 with SMTP id s14-20020a056a0008ce00b0063aea82b7b7mr1962948pfu.28.1689842948427;
-        Thu, 20 Jul 2023 01:49:08 -0700 (PDT)
-Received: from localhost.localdomain ([117.206.119.70])
-        by smtp.gmail.com with ESMTPSA id k23-20020aa790d7000000b0068285a7f107sm613277pfk.177.2023.07.20.01.49.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Jul 2023 01:49:07 -0700 (PDT)
-From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To:     myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        cw00.choi@samsung.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH] PM / devfreq: Reword the kernel-doc comment for devfreq_monitor_start() API
-Date:   Thu, 20 Jul 2023 14:18:54 +0530
-Message-Id: <20230720084854.18975-1-manivannan.sadhasivam@linaro.org>
-X-Mailer: git-send-email 2.25.1
+        d=1e100.net; s=20221208; t=1689843258; x=1692435258;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=hr3GYuI4RGrQA8MLYXyJLt2ld5PTqpatMnFPkHbCrNI=;
+        b=kFrg7RsqGQJvOVx8HPxSPJxgGXelpLg7v19dqYW0QgR/1vxRdU1tAjdF7W7cu9w5DL
+         poBJ8bDDVGWV4k3ZV6tLSZGS8OcMbQIFzh1mg/BL4XLSawBvKRDIlVoIyrxxMGiOBCK0
+         iLcQ+7qpb1IH5W6dWqoURt2nAFPv1mtqWZEwPhdFLzZA6wlhX+pAl0neyW9Ae99dl/gL
+         OvmZpqIlw9UIZin9kI+i19UESicc9/uk7vMT3ZVzbaGfFVSfIrqrjhBHDwg8SOYNGJvY
+         O/bCi/heZ5h0kbuLHU32TDL77vr/+B32crKSTCDg5OXzfb7daUuD+gox76Rr55GKDt/8
+         kTRg==
+X-Gm-Message-State: ABy/qLZ3/DrjRuj/KcyVdkv/Cb8v33BsRHMa56QFVmOEXJNMgi5qmRiB
+        M3oc8iclDSlSVryNBFdxDGANLA==
+X-Google-Smtp-Source: APBJJlEh3NvNHBbbxheUFFyvpgKd2C0hcz7XJqCW4yZ6/zAz5ujRsINO2b569mPpxzPaezD6Arr+tg==
+X-Received: by 2002:a19:ca4a:0:b0:4fb:8dcc:59e5 with SMTP id h10-20020a19ca4a000000b004fb8dcc59e5mr1681346lfj.39.1689843258307;
+        Thu, 20 Jul 2023 01:54:18 -0700 (PDT)
+Received: from [192.168.1.20] ([178.197.223.104])
+        by smtp.gmail.com with ESMTPSA id a12-20020a5d53cc000000b00313f9a0c521sm657889wrw.107.2023.07.20.01.54.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 20 Jul 2023 01:54:17 -0700 (PDT)
+Message-ID: <a6006558-5eca-a8a0-ed61-dfa746f223ae@linaro.org>
+Date:   Thu, 20 Jul 2023 10:54:12 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.0
+Subject: Re: [PATCH v3 00/42] ep93xx device tree conversion
+Content-Language: en-US
+To:     nikita.shubin@maquefel.me,
+        Hartley Sweeten <hsweeten@visionengravers.com>,
+        Lennert Buytenhek <kernel@wantstofly.org>,
+        Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Lukasz Majewski <lukma@denx.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Sebastian Reichel <sre@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Vinod Koul <vkoul@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Damien Le Moal <dlemoal@kernel.org>,
+        Sergey Shtylyov <s.shtylyov@omp.ru>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
+        soc@kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>,
+        Andy Shevchenko <andy@kernel.org>,
+        Michael Peters <mpeters@embeddedTS.com>,
+        Kris Bahnsen <kris@embeddedTS.com>
+Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-spi@vger.kernel.org,
+        netdev@vger.kernel.org, dmaengine@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-ide@vger.kernel.org,
+        linux-input@vger.kernel.org, alsa-devel@alsa-project.org,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Andrew Lunn <andrew@lunn.ch>
+References: <20230605-ep93xx-v3-0-3d63a5f1103e@maquefel.me>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230605-ep93xx-v3-0-3d63a5f1103e@maquefel.me>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Current kernel-doc comment doesn't specify the default timer used for the
-load monitoring. Also, it uses the term "default delayed work" which could
-be misunderstood as "default delayer timer". So reword the comment to
-clearly specify the default timer and also reword the last sentence to make
-it more understandable.
+On 20/07/2023 13:29, Nikita Shubin via B4 Relay wrote:
+> This series aims to convert ep93xx from platform to full device tree support.
+> 
+> The main goal is to receive ACK's to take it via Arnd's arm-soc branch.
+> 
+> I've moved to b4, tricking it to consider v0 as v1, so it consider's
+> this version to be v3, this exactly the third version.
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
----
- drivers/devfreq/devfreq.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+Fix your clock/timezone, so your patches are not sent in the future.
+Unfortunately this will stay at top of my queue, which is unfair, so I
+will just ignore for now.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 7686993d639f..e2939c1b7d1f 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -472,10 +472,11 @@ static void devfreq_monitor(struct work_struct *work)
-  * devfreq_monitor_start() - Start load monitoring of devfreq instance
-  * @devfreq:	the devfreq instance.
-  *
-- * Helper function for starting devfreq device load monitoring. By
-- * default delayed work based monitoring is supported. Function
-- * to be called from governor in response to DEVFREQ_GOV_START
-- * event when device is added to devfreq framework.
-+ * Helper function for starting devfreq device load monitoring. By default,
-+ * deferrable timer is used for load monitoring. But the users can change this
-+ * behavior using the "timer" type in devfreq_dev_profile. This function will be
-+ * called by devfreq governor in response to the DEVFREQ_GOV_START event
-+ * generated while adding a device to the devfreq framework.
-  */
- void devfreq_monitor_start(struct devfreq *devfreq)
- {
--- 
-2.25.1
+Best regards,
+Krzysztof
 
