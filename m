@@ -2,180 +2,139 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3371EB64DD
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Jul 2023 06:49:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E50BC001DC
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Jul 2023 08:57:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229947AbjGTGtA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Jul 2023 02:49:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58926 "EHLO
+        id S230062AbjGTI5m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Jul 2023 04:57:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229656AbjGTGtA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2023 02:49:00 -0400
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E43939E;
-        Wed, 19 Jul 2023 23:48:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1689835738; x=1721371738;
-  h=date:from:to:cc:subject:message-id;
-  bh=HXAj+8V54zZxR0vPJ4wdXLRSuOFhtmUrtPC+8Ofk2EI=;
-  b=F6bTywTsGOM329R6Ayp/Ym5OqH0AKeIq5vQL+TAl2zD/tkBwBXSzpLYN
-   +9FMxOZK2Q/uG8IULMeOaIfVtF7OJH6L89LhEkmn2GfGWLHs1b7dJSWk9
-   X0wq253LZcL8ghHXooVUQTBMsqnCgkOfSoz65SI0SrxnfGqNXeC/F7MFe
-   ru2SHNOwJTM3HIn5C6nPxwWxo1KiAkN7ti8u75MOmATjF+lqocTE/YflS
-   /y1Mmx6konNw96vZWpHdnb7LpCLqbZtGgDZlo/xW38co0yWNN9cXnAc4U
-   +xuSvYskICfAIKDcTDsn3/HqlJjjco/WpcW1Eljub+/yxQEdhIs88VE4X
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="397525205"
-X-IronPort-AV: E=Sophos;i="6.01,218,1684825200"; 
-   d="scan'208";a="397525205"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jul 2023 23:48:40 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; 
-   d="scan'208";a="867770550"
-Received: from lkp-server02.sh.intel.com (HELO 36946fcf73d7) ([10.239.97.151])
-  by fmsmga001.fm.intel.com with ESMTP; 19 Jul 2023 23:48:40 -0700
-Received: from kbuild by 36946fcf73d7 with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1qMNSo-0005qM-37;
-        Thu, 20 Jul 2023 06:48:38 +0000
-Date:   Thu, 20 Jul 2023 14:47:49 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-acpi@vger.kernel.org, devel@acpica.org,
-        linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 4cab9608dcf0062b5b978f2d10124a0f4958a91d
-Message-ID: <202307201447.9kMs1snB-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+        with ESMTP id S230474AbjGTIqA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2023 04:46:00 -0400
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com (mail-ve1eur01on2048.outbound.protection.outlook.com [40.107.14.48])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EDFF82690;
+        Thu, 20 Jul 2023 01:45:58 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=N3ln6wv9wgggE+sViIfBmqSyVxBT3NheHap5qfzp0FQw8A/rMN9/7BwN5bGoQ6oBTrsev51ki2uVqO0/WBZikT+5Oed4uw/zFNszIDJS4HDY7TEhnbg1EVd+lUkZtOw6lQMlFltgzfKqThW8nhmH5u4g3TAkiXQATvlxh3lm8OYv64NHjrVOQwxPyN0szsWgIbjNGHPLY9CBP/uWWUUiKhF5Uinmf7AmjBG89aVebR0DNlWKt8lND8ex1dMwrffmfxFsQs6NWaYyZu9OfuscLAW5sAnD+xtrzeN1uCgXM87T6Mgieu+0cEM1H1UtyjgIHV9G5OjLxbttMx1e7kFKcQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=oqXuJob1MKcmKEhzOn1N85uEhqNHdw1Wt8Esnxw13+A=;
+ b=akF3Y86FqUUayEIpMXaj5GsYGKYOLp1JffGiFfQ/Gxk2fs9Q1OKNp/Xh3El/HM34gtKrm5UzR27hIoVDAK47xwSYcIDDX2BR9c6tEQrzfTXKLM32/KUeUZds1JdGkktBQzvQaBST7G9xP81Plb3pjR/qy+fCJDYxOfk1jry6JVUqa80gcT3XaOubeZd+Lz6wZu4plAPYkZzCR57ytD8dXwJyybODnoR35fpcmPOX0zwhWgSKiLYTavpVNqKnxC+3xcqovJaBFgmxpiWu/QuG+aMPFAOSeEFWyv2tNUV/xD1iyFCgfh6pMK4mS7+wj41p4qc7h5SFtc5KDroa1Rp0BA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector2-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=oqXuJob1MKcmKEhzOn1N85uEhqNHdw1Wt8Esnxw13+A=;
+ b=XRjcnQVn0R4QPUIQ8zLiip1us96VVcfE64GiDJj8p0Nfe5VFm9oUb5qzcCcJiT68JTRIzw1AwXQN7rVFcbHEWH7x4dGkMpl5b0/XedvHRH3kHDfWHXJNUnljdJq+W4OeZDdJOpXNVdogMaG463sTElNHEU1D38PSOKvC2jSnLcI=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from DU0PR04MB9417.eurprd04.prod.outlook.com (2603:10a6:10:358::11)
+ by AM9PR04MB8537.eurprd04.prod.outlook.com (2603:10a6:20b:434::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.25; Thu, 20 Jul
+ 2023 08:45:55 +0000
+Received: from DU0PR04MB9417.eurprd04.prod.outlook.com
+ ([fe80::c874:7c87:c13b:64f8]) by DU0PR04MB9417.eurprd04.prod.outlook.com
+ ([fe80::c874:7c87:c13b:64f8%5]) with mapi id 15.20.6609.024; Thu, 20 Jul 2023
+ 08:45:55 +0000
+From:   "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
+To:     ulf.hansson@linaro.org, shawnguo@kernel.org, s.hauer@pengutronix.de
+Cc:     kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Peng Fan <peng.fan@nxp.com>
+Subject: [PATCH] genpd: Makefile: build imx
+Date:   Thu, 20 Jul 2023 16:50:41 +0800
+Message-Id: <20230720085041.501344-1-peng.fan@oss.nxp.com>
+X-Mailer: git-send-email 2.37.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2P153CA0024.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:4:190::13) To DU0PR04MB9417.eurprd04.prod.outlook.com
+ (2603:10a6:10:358::11)
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DU0PR04MB9417:EE_|AM9PR04MB8537:EE_
+X-MS-Office365-Filtering-Correlation-Id: 30b9af24-3b17-4227-256a-08db88fdbb32
+X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: mQQyJSnKrk/tmbn/ppGwDd5uogG09Et8rH1RvP9WMi04bFWRc+dZVriiOZ/X9JUzvgu5nY/BHN7OV+t9J4Lhz9h013oFX32nGoWcEeVD4yshiRGBQrfiOIwjVZsOQb3pA+tI5Oe90dzluoQtQZHsD4WceMn8oXNfXPL66zkofC44+MBE9yt395PXyT8V079fXmxyMxyLhwtqtXrsWYKj7sH99wPYWkh1ZfaOkEzQmkPSOZ2JRE4kAmO/uMZ2duMHD78djFeRa7ZIh4T4nF/cVscD2jhxdSsP6N9S2iz1j1YzX+35sTjbfRxqo1dpNskoR5tOstzNVdj6NaU47YkjsRF9E/A9GkyvbDIN3NqQcjawsAC72N+SB35en4XrM/DZNe9kDnxV4zxu2pYowcJ2Z6H/FCRqJbMIUmNaH1qDwI/rdFLb85pq0HWiFcj744lrjk3K3BJqL7q9v5qGXFR1IJSsxQObz1JFuHe19IqQFXYNNjZvO1VnE+o4uBCZlop/E9wotU6mNf7YiebeL8ftRes6CHaKB0A1mXHdAK+WYiEWcwJVthtnjCbuwZg9AWMS3+UAR4jRlc4yxitLS9nbDqIJhbMnJJTBbEFSJCCtg3PFjQeyfR5/xl8KcMHR1nRP
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9417.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(39860400002)(376002)(396003)(136003)(366004)(346002)(451199021)(4744005)(2906002)(2616005)(86362001)(38350700002)(38100700002)(66476007)(66556008)(316002)(66946007)(26005)(1076003)(41300700001)(186003)(6506007)(4326008)(478600001)(52116002)(6666004)(6512007)(6486002)(8936002)(8676002)(5660300002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?2w9Mq+4emCj5lta30WXbAYBtP58jf7KJkEGze1PlWdovgWHM7q7x1/YGbXsH?=
+ =?us-ascii?Q?SJrPOiXxka/GKl+eKvWoykxGfBcsPFNu5oc+staCe452kvwQsUu09zYzUJ98?=
+ =?us-ascii?Q?iUHXLI8Vp0EZqBEHeeKn/T3dbyNVyRRuspU1GFHkeFiGcER2EreDXL7Vsr4V?=
+ =?us-ascii?Q?B9qcyL7al9PUj5jNr+BC92Y63x8Zi/0Up3q4/Cuhcw0+KWW/itomhgvaZULR?=
+ =?us-ascii?Q?U77ol8G1x1tfLkYcqTt5Vn4vAGIlucrhkGqmdAr4OPE0TJ4jkLyfRvnYNtX6?=
+ =?us-ascii?Q?plVoks7To6gIidNvEyiTLAz3G0EBuFHAaxVtY24yaph4t5tpbCCeNfjKwBIk?=
+ =?us-ascii?Q?vevE+LHjNo4PgzBbwFUWh4wnYt1X4R4PVVtgGWSyDhOwRUOI/rnAeonk5yj0?=
+ =?us-ascii?Q?1SXWaT5QJ7X1GriZcTW+TkIeQoiA3eLtVQJtFETh2tQ4/ibMrL2ZYoN0iIW9?=
+ =?us-ascii?Q?PqoMzUfzpF+X4wT7o0Ksal/FZwVC1pot11/6/eGfGwVoG5lOhilI4j7VN7w4?=
+ =?us-ascii?Q?a7psNrLokT6o680s7BYYtWHpokIzGW9pe+Bll85Fj7FKM/hYNc/z08W3OFyU?=
+ =?us-ascii?Q?fhMcLGLpbCbyKhrOxzo7wfQ/j9eeSAil4J4/x8yMKKwgWJf9osOEAIH4/GMq?=
+ =?us-ascii?Q?wZI2qmm84CBNOg7wRLlaMpbNpwkbWeZoSVN8BB+swjjfwCRukD9xyhOtRVes?=
+ =?us-ascii?Q?ojb/a80/3befkIiGiuv9m7ODg8YvpcjVnRG02SU5FTbCQp+V6rSgsW7pYayn?=
+ =?us-ascii?Q?rB0GTbaiw19RE1vlX23pjmXLHgsmpW4+4kiknx2bxCC1VdWWOn7h5m7BR0Is?=
+ =?us-ascii?Q?PpTgj2MTEgvVWum5Dx0SurhmqVSOIrYjPyGjmb7DIe1aHbCEewMPDonAbs04?=
+ =?us-ascii?Q?Qow7dbauNZsKJVw86lcfTyyVgKGX5CUJUZXIwZYAzwGjw7cENPHHdOz1LI8f?=
+ =?us-ascii?Q?p07kS95S1wQx8uujKefRR5Nn2PIbMVM3buUZzzeTlC7pPILstb0qG7MgKf3b?=
+ =?us-ascii?Q?c6/RxPNE3ChCDGY14dWYzfWm5Yclm+YTndo4ZzkY2ML8JSX9VhdUl9A4J8fM?=
+ =?us-ascii?Q?j408RgrE/8rEZJCuUwD2Uucxo5052cD/buCob0e6JGCiL8YSbZ74NORtlgwD?=
+ =?us-ascii?Q?KEJZxXEFAnGf9Zkw22OO8kaTX7hUQytxZoIR5ASKCMzfg3av+9Gl1x3teO/C?=
+ =?us-ascii?Q?4hVQU6kwXN24RIjutXCrEIMk6GLlbNRUF2mar+I3L1IkDybmwaVO4aTdmauv?=
+ =?us-ascii?Q?PTTlQRxH2VQxpm6acyKnMFam6DJ9HPWmbXGtl7ouCQ6HDPnqpirS+lt45t0Q?=
+ =?us-ascii?Q?sHe84XbM2KojYL3Kk9J4YulsuXkTYYJFZq6MjxiXQkhDSnklb71ka8+VLCq4?=
+ =?us-ascii?Q?u1BXMlyvT+uPyBUwuXAxxMXwTKbJSFC4slGeySpGlPRV0JgM2zqBRhxWiRIL?=
+ =?us-ascii?Q?TNEOOhGCvs5doNje07xSLC/bryPCmSM1ELcqwRKg9m38Al7lLjRJprnZdgcs?=
+ =?us-ascii?Q?QdNwF9t4J+yfhIWk9cBzoQMnDwjrcx6T+aGZxplkfi2Rx9q8lLX5dokeKWbJ?=
+ =?us-ascii?Q?Mkg/zoup8kVgLf1H9ZuJmiKJKyNfZlPQIcqppUP5?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 30b9af24-3b17-4227-256a-08db88fdbb32
+X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9417.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2023 08:45:55.5175
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: HbY+ZfyFHOrQVGEbxCLtMap4zPXE4OsdgLoNyhfam3qCGWH+MwX/9mGvnWr0swB/47J7lWUAAUXMYqayiKIjAg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8537
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 4cab9608dcf0062b5b978f2d10124a0f4958a91d  Merge branch 'thermal/bleeding-edge' of ssh://gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux into bleeding-edge
+From: Peng Fan <peng.fan@nxp.com>
 
-elapsed time: 721m
+The imx genpd was missed to be built out, add it in Makefile
 
-configs tested: 110
-configs skipped: 4
+Signed-off-by: Peng Fan <peng.fan@nxp.com>
+---
+ drivers/genpd/Makefile                   | 1 +
+ drivers/{firmware => genpd}/imx/scu-pd.c | 0
+ 2 files changed, 1 insertion(+)
+ rename drivers/{firmware => genpd}/imx/scu-pd.c (100%)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-alpha                randconfig-r033-20230720   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r043-20230720   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r002-20230720   clang
-arm                  randconfig-r021-20230720   gcc  
-arm                  randconfig-r022-20230720   gcc  
-arm                  randconfig-r046-20230720   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-csky                                defconfig   gcc  
-csky                 randconfig-r013-20230720   gcc  
-csky                 randconfig-r026-20230720   gcc  
-hexagon              randconfig-r012-20230720   clang
-hexagon              randconfig-r015-20230720   clang
-hexagon              randconfig-r035-20230720   clang
-hexagon              randconfig-r041-20230720   clang
-hexagon              randconfig-r045-20230720   clang
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-r004-20230720   gcc  
-i386         buildonly-randconfig-r005-20230720   gcc  
-i386         buildonly-randconfig-r006-20230720   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                 randconfig-i001-20230720   gcc  
-i386                 randconfig-i002-20230720   gcc  
-i386                 randconfig-i003-20230720   gcc  
-i386                 randconfig-i004-20230720   gcc  
-i386                 randconfig-i005-20230720   gcc  
-i386                 randconfig-i006-20230720   gcc  
-i386                 randconfig-i011-20230720   clang
-i386                 randconfig-i012-20230720   clang
-i386                 randconfig-i013-20230720   clang
-i386                 randconfig-i014-20230720   clang
-i386                 randconfig-i015-20230720   clang
-i386                 randconfig-i016-20230720   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r004-20230720   gcc  
-loongarch            randconfig-r005-20230720   gcc  
-loongarch            randconfig-r036-20230720   gcc  
-m68k                             allmodconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r003-20230720   gcc  
-m68k                 randconfig-r006-20230720   gcc  
-m68k                 randconfig-r031-20230720   gcc  
-microblaze           randconfig-r004-20230720   gcc  
-microblaze           randconfig-r032-20230720   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-nios2                               defconfig   gcc  
-openrisc             randconfig-r023-20230720   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r034-20230720   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc              randconfig-r016-20230720   clang
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r042-20230720   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r003-20230720   gcc  
-s390                 randconfig-r044-20230720   clang
-sh                               allmodconfig   gcc  
-sh                   randconfig-r011-20230720   gcc  
-sh                   randconfig-r014-20230720   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r025-20230720   gcc  
-sparc64              randconfig-r024-20230720   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   clang
-um                                  defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64       buildonly-randconfig-r001-20230720   gcc  
-x86_64       buildonly-randconfig-r002-20230720   gcc  
-x86_64       buildonly-randconfig-r003-20230720   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-x001-20230720   clang
-x86_64               randconfig-x002-20230720   clang
-x86_64               randconfig-x003-20230720   clang
-x86_64               randconfig-x004-20230720   clang
-x86_64               randconfig-x005-20230720   clang
-x86_64               randconfig-x006-20230720   clang
-x86_64               randconfig-x011-20230720   gcc  
-x86_64               randconfig-x012-20230720   gcc  
-x86_64               randconfig-x013-20230720   gcc  
-x86_64               randconfig-x014-20230720   gcc  
-x86_64               randconfig-x015-20230720   gcc  
-x86_64               randconfig-x016-20230720   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-
+diff --git a/drivers/genpd/Makefile b/drivers/genpd/Makefile
+index c429485c13f6..666753676e5c 100644
+--- a/drivers/genpd/Makefile
++++ b/drivers/genpd/Makefile
+@@ -3,6 +3,7 @@ obj-y					+= actions/
+ obj-y					+= amlogic/
+ obj-y					+= apple/
+ obj-y					+= bcm/
++obj-y					+= imx/
+ obj-y					+= mediatek/
+ obj-y					+= qcom/
+ obj-y					+= renesas/
+diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/genpd/imx/scu-pd.c
+similarity index 100%
+rename from drivers/firmware/imx/scu-pd.c
+rename to drivers/genpd/imx/scu-pd.c
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.37.1
+
