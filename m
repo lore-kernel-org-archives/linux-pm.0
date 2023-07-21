@@ -2,91 +2,198 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 842A9EB64DC
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 14:38:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BB20C001DC
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 15:18:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230142AbjGUOhm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jul 2023 10:37:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53320 "EHLO
+        id S230345AbjGUPSP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jul 2023 11:18:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229977AbjGUOhc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2023 10:37:32 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E50510C3;
-        Fri, 21 Jul 2023 07:37:31 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        with ESMTP id S229536AbjGUPSO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2023 11:18:14 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA17B30DB;
+        Fri, 21 Jul 2023 08:18:12 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
+ id eb916d3108774ad8; Fri, 21 Jul 2023 17:18:10 +0200
+Received: from kreacher.localnet (unknown [195.136.19.94])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3401E61CB7;
-        Fri, 21 Jul 2023 14:37:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C8CFC433C8;
-        Fri, 21 Jul 2023 14:37:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1689950250;
-        bh=xpqxjfNAq5qfvoIZPKgroAgkBwTKCqC8LQuUTeKH068=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Qz82IEOVGRejf21pj2fxcQ3819Lc2X2kORWsZeIH7MAYoBDthODOVTRQQGY/gqYU6
-         gCC13j/7VQbLR/x9PmTnBmbGuhztJzZEvE/UL0lQ0jypssH0legAV0ikXYhQlVn6v0
-         fVnQkCZ2VTPy7aOuSK6OxnlRCcIQyyecEyucGhKTbeYBE7BgdUkR0OZ8ibIug/it76
-         dh+ighX2LLYodIUqqUuxwdewd1PEyrjBlSnYfDsnfaUVrdCxeEej+M9Lvp4Vne3Ti4
-         XXeIAV5SgJRyP4gKCJqKFdFec1h0oYZsbI9WtNbfZv9uFb+LP0YxhaH5xOfcWO9omf
-         2ymXAnyhOUnxQ==
-Received: (nullmailer pid 1104459 invoked by uid 1000);
-        Fri, 21 Jul 2023 14:37:28 -0000
-Date:   Fri, 21 Jul 2023 08:37:28 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nikunj Kela <nkela@quicinc.com>,
-        Prasad Sodagudi <psodagud@quicinc.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 09/11] cpufreq: scmi: Add support to parse domain-id
- using #power-domain-cells
-Message-ID: <20230721143728.GB1092306-robh@kernel.org>
-References: <20230713141738.23970-1-ulf.hansson@linaro.org>
- <20230713141738.23970-10-ulf.hansson@linaro.org>
- <20230719152426.qwc5qqewrfjsarlz@bogus>
- <CAPDyKFogrwFnz2ZuKE-mLrCQmTCQcrtjhhyzB4CnoVnxAXqKEg@mail.gmail.com>
+        by v370.home.net.pl (Postfix) with ESMTPSA id 703C6661901;
+        Fri, 21 Jul 2023 17:18:10 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Michal Wilczynski <michal.wilczynski@intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH v2 8/8] ACPI: thermal: Drop unnecessary thermal zone callbacks
+Date:   Fri, 21 Jul 2023 17:10:34 +0200
+Message-ID: <2178456.Icojqenx9y@kreacher>
+In-Reply-To: <5710197.DvuYhMxLoT@kreacher>
+References: <13318886.uLZWGnKmhe@kreacher> <5710197.DvuYhMxLoT@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFogrwFnz2ZuKE-mLrCQmTCQcrtjhhyzB4CnoVnxAXqKEg@mail.gmail.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 195.136.19.94
+X-CLIENT-HOSTNAME: 195.136.19.94
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedviedrhedvgdekvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepudelhedrudefiedrudelrdelgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleehrddufeeirdduledrleegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepmhhitghhrghlrdifihhltgiihihnshhkihesihhnthgvlhdrtghomhdprhgt
+ phhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jul 21, 2023 at 01:52:17PM +0200, Ulf Hansson wrote:
-> On Wed, 19 Jul 2023 at 17:24, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> >
-> > On Thu, Jul 13, 2023 at 04:17:36PM +0200, Ulf Hansson wrote:
-> > > The performance domain-id can be described in DT using the power-domains
-> > > property or the clock property. The latter is already supported, so let's
-> > > add support for the power-domains too.
-> > >
-> >
-> > How is this supposed to work for the CPUs ? The CPU power domains are
-> > generally PSCI on most of the platforms and the one using OSI explicitly
-> > need to specify the details while ones using PC will not need to. Also they
-> > can never be performance domains too. So I am not sure if I am following this
-> > correctly.
-> 
-> Your concerns are certainly correct, I completely forgot about this.
-> We need to specify what power-domain index belongs to what, by using
-> power-domain-names in DT. So a CPU node, that has both psci for power
-> and scmi for performance would then typically look like this:
-> 
-> power-domains = <&CPU_PD0>, <&scmi_dvfs 4>;
-> power-domain-names = "psci", "scmi";
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-That is completely backwards. Entries are named based on the consumer 
-side. The function of each clock or interrupt for example. Here your 
-entries are based on the provider which should be opaque to the 
-consumer.
+Drop the .get_trip_type(), .get_trip_temp() and .get_crit_temp() thermal
+zone callbacks that are not necessary any more from the ACPI thermal
+driver along with the corresponding callback functions.
 
-Rob
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/thermal.c |  115 -------------------------------------------------
+ 1 file changed, 115 deletions(-)
+
+Index: linux-pm/drivers/acpi/thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/thermal.c
++++ linux-pm/drivers/acpi/thermal.c
+@@ -465,118 +465,6 @@ static int thermal_get_temp(struct therm
+ 	return 0;
+ }
+ 
+-static int thermal_get_trip_type(struct thermal_zone_device *thermal,
+-				 int trip, enum thermal_trip_type *type)
+-{
+-	struct acpi_thermal *tz = thermal_zone_device_priv(thermal);
+-	int i;
+-
+-	if (!tz || trip < 0)
+-		return -EINVAL;
+-
+-	if (tz->trips.critical.valid) {
+-		if (!trip) {
+-			*type = THERMAL_TRIP_CRITICAL;
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	if (tz->trips.hot.valid) {
+-		if (!trip) {
+-			*type = THERMAL_TRIP_HOT;
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	if (tz->trips.passive.valid) {
+-		if (!trip) {
+-			*type = THERMAL_TRIP_PASSIVE;
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE && tz->trips.active[i].valid; i++) {
+-		if (!trip) {
+-			*type = THERMAL_TRIP_ACTIVE;
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	return -EINVAL;
+-}
+-
+-static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
+-				 int trip, int *temp)
+-{
+-	struct acpi_thermal *tz = thermal_zone_device_priv(thermal);
+-	int i;
+-
+-	if (!tz || trip < 0)
+-		return -EINVAL;
+-
+-	if (tz->trips.critical.valid) {
+-		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips.critical.temperature,
+-					tz->kelvin_offset);
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	if (tz->trips.hot.valid) {
+-		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips.hot.temperature,
+-					tz->kelvin_offset);
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	if (tz->trips.passive.valid) {
+-		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips.passive.temperature,
+-					tz->kelvin_offset);
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE &&
+-		tz->trips.active[i].valid; i++) {
+-		if (!trip) {
+-			*temp = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips.active[i].temperature,
+-					tz->kelvin_offset);
+-			return 0;
+-		}
+-		trip--;
+-	}
+-
+-	return -EINVAL;
+-}
+-
+-static int thermal_get_crit_temp(struct thermal_zone_device *thermal,
+-				int *temperature)
+-{
+-	struct acpi_thermal *tz = thermal_zone_device_priv(thermal);
+-
+-	if (tz->trips.critical.valid) {
+-		*temperature = deci_kelvin_to_millicelsius_with_offset(
+-					tz->trips.critical.temperature,
+-					tz->kelvin_offset);
+-		return 0;
+-	}
+-
+-	return -EINVAL;
+-}
+-
+ static struct thermal_trip *acpi_thermal_get_trip(struct acpi_thermal *tz,
+ 						  int trip_index)
+ {
+@@ -781,9 +669,6 @@ static struct thermal_zone_device_ops ac
+ 	.bind = acpi_thermal_bind_cooling_device,
+ 	.unbind	= acpi_thermal_unbind_cooling_device,
+ 	.get_temp = thermal_get_temp,
+-	.get_trip_type = thermal_get_trip_type,
+-	.get_trip_temp = thermal_get_trip_temp,
+-	.get_crit_temp = thermal_get_crit_temp,
+ 	.get_trend = thermal_get_trend,
+ 	.hot = acpi_thermal_zone_device_hot,
+ 	.critical = acpi_thermal_zone_device_critical,
+
+
+
+
