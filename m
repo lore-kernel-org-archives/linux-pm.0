@@ -2,95 +2,225 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EBADEB64DC
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 15:51:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BA1FC04FE1
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 15:59:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231204AbjGUPv2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jul 2023 11:51:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50672 "EHLO
+        id S232240AbjGUP7R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jul 2023 11:59:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59150 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231775AbjGUPvK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2023 11:51:10 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E115C3AAF;
-        Fri, 21 Jul 2023 08:50:44 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 35FB51515;
-        Fri, 21 Jul 2023 08:51:17 -0700 (PDT)
-Received: from e129166.arm.com (unknown [10.57.0.79])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0B7513F738;
-        Fri, 21 Jul 2023 08:50:30 -0700 (PDT)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rafael@kernel.org
-Cc:     lukasz.luba@arm.com, dietmar.eggemann@arm.com, rui.zhang@intel.com,
-        amit.kucheria@verdurent.com, amit.kachhap@gmail.com,
-        daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
-        len.brown@intel.com, pavel@ucw.cz, Pierre.Gondois@arm.com,
-        ionela.voinescu@arm.com, mhiramat@kernel.org
-Subject: [PATCH v3 11/12] PM: EM: Use runtime modified EM for CPUs energy estimation in EAS
-Date:   Fri, 21 Jul 2023 16:50:21 +0100
-Message-Id: <20230721155022.2339982-12-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230721155022.2339982-1-lukasz.luba@arm.com>
-References: <20230721155022.2339982-1-lukasz.luba@arm.com>
+        with ESMTP id S231893AbjGUP7O (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2023 11:59:14 -0400
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 014492D47;
+        Fri, 21 Jul 2023 08:59:12 -0700 (PDT)
+X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="397947175"
+X-IronPort-AV: E=Sophos;i="6.01,222,1684825200"; 
+   d="scan'208";a="397947175"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jul 2023 08:59:11 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="1055599368"
+X-IronPort-AV: E=Sophos;i="6.01,222,1684825200"; 
+   d="scan'208";a="1055599368"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmsmga005.fm.intel.com with ESMTP; 21 Jul 2023 08:58:59 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+        (envelope-from <andy@kernel.org>)
+        id 1qMsWt-00BQxg-0w;
+        Fri, 21 Jul 2023 18:58:55 +0300
+Date:   Fri, 21 Jul 2023 18:58:55 +0300
+From:   Andy Shevchenko <andy@kernel.org>
+To:     nikita.shubin@maquefel.me
+Cc:     Hartley Sweeten <hsweeten@visionengravers.com>,
+        Lennert Buytenhek <kernel@wantstofly.org>,
+        Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Lukasz Majewski <lukma@denx.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Sebastian Reichel <sre@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Mark Brown <broonie@kernel.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Vinod Koul <vkoul@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Damien Le Moal <dlemoal@kernel.org>,
+        Sergey Shtylyov <s.shtylyov@omp.ru>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
+        soc@kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>,
+        Michael Peters <mpeters@embeddedts.com>,
+        Kris Bahnsen <kris@embeddedts.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-spi@vger.kernel.org,
+        netdev@vger.kernel.org, dmaengine@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-ide@vger.kernel.org,
+        linux-input@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH v3 09/42] clocksource: ep93xx: Add driver for Cirrus
+ Logic EP93xx
+Message-ID: <ZLqrPw933NOv1J8v@smile.fi.intel.com>
+References: <20230605-ep93xx-v3-0-3d63a5f1103e@maquefel.me>
+ <20230605-ep93xx-v3-9-3d63a5f1103e@maquefel.me>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230605-ep93xx-v3-9-3d63a5f1103e@maquefel.me>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The new Energy Model (EM) supports runtime modification of the performance
-state table to better model the power used by the SoC. Use this new
-feature to improve energy estimation and therefore task placement in
-Energy Aware Scheduler (EAS).
+On Thu, Jul 20, 2023 at 02:29:09PM +0300, Nikita Shubin via B4 Relay wrote:
+> From: Nikita Shubin <nikita.shubin@maquefel.me>
+> 
+> This us a rewrite of EP93xx timer driver in
+> arch/arm/mach-ep93xx/timer-ep93xx.c trying to do everything
+> the device tree way:
+> 
+> - Make every IO-access relative to a base address and dynamic
+>   so we can do a dynamic ioremap and get going.
+> - Find register range and interrupt from the device tree.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- include/linux/energy_model.h | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+...
 
-diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-index fd4110166e97..62744547b8be 100644
---- a/include/linux/energy_model.h
-+++ b/include/linux/energy_model.h
-@@ -261,6 +261,7 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
- 				unsigned long max_util, unsigned long sum_util,
- 				unsigned long allowed_cpu_cap)
- {
-+	struct em_perf_table *runtime_table;
- 	unsigned long freq, scale_cpu;
- 	struct em_perf_state *ps;
- 	int cpu, i;
-@@ -278,7 +279,14 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
- 	 */
- 	cpu = cpumask_first(to_cpumask(pd->cpus));
- 	scale_cpu = arch_scale_cpu_capacity(cpu);
--	ps = &pd->table[pd->nr_perf_states - 1];
-+
-+	/*
-+	 * No rcu_read_lock() since it's already called by task scheduler.
-+	 * The runtime_table is always there for CPUs, so we don't check.
-+	 */
-+	runtime_table = rcu_dereference(pd->runtime_table);
-+
-+	ps = &runtime_table->state[pd->nr_perf_states - 1];
- 
- 	max_util = map_util_perf(max_util);
- 	max_util = min(max_util, allowed_cpu_cap);
-@@ -288,9 +296,9 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
- 	 * Find the lowest performance state of the Energy Model above the
- 	 * requested frequency.
- 	 */
--	i = em_pd_get_efficient_state(pd->table, pd->nr_perf_states, freq,
--				      pd->flags);
--	ps = &pd->table[i];
-+	i = em_pd_get_efficient_state(runtime_table->state, pd->nr_perf_states,
-+				      freq, pd->flags);
-+	ps = &runtime_table->state[i];
- 
- 	/*
- 	 * The capacity of a CPU in the domain at the performance state (ps)
++ bits.h
+
+> +#include <linux/clockchips.h>
+> +#include <linux/clocksource.h>
+> +#include <linux/init.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/io-64-nonatomic-lo-hi.h>
+> +#include <linux/irq.h>
+> +#include <linux/kernel.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+> +#include <linux/sched_clock.h>
+
+...
+
+> +/*************************************************************************
+
+Won't you marc it as a DOC: section?
+
+> + * Timer handling for EP93xx
+> + *************************************************************************
+> + * The ep93xx has four internal timers.  Timers 1, 2 (both 16 bit) and
+> + * 3 (32 bit) count down at 508 kHz, are self-reloading, and can generate
+> + * an interrupt on underflow.  Timer 4 (40 bit) counts down at 983.04 kHz,
+> + * is free-running, and can't generate interrupts.
+> + *
+> + * The 508 kHz timers are ideal for use for the timer interrupt, as the
+> + * most common values of HZ divide 508 kHz nicely.  We pick the 32 bit
+> + * timer (timer 3) to get as long sleep intervals as possible when using
+> + * CONFIG_NO_HZ.
+> + *
+> + * The higher clock rate of timer 4 makes it a better choice than the
+> + * other timers for use as clock source and for sched_clock(), providing
+> + * a stable 40 bit time base.
+> + *************************************************************************
+> + */
+
+...
+
+> +/*
+> + * This read-only register contains the low word of the time stamp debug timer
+> + * ( Timer4). When this register is read, the high byte of the Timer4 counter is
+
+One too many spaces.
+
+> + * saved in the Timer4ValueHigh register.
+> + */
+
+...
+
+> +static irqreturn_t ep93xx_timer_interrupt(int irq, void *dev_id)
+> +{
+> +	struct ep93xx_tcu *tcu = ep93xx_tcu;
+> +	struct clock_event_device *evt = dev_id;
+> +
+> +	/* Writing any value clears the timer interrupt */
+> +	writel(1, tcu->base + EP93XX_TIMER3_CLEAR);
+
+Would 0 suffice?
+
+> +	evt->event_handler(evt);
+> +
+> +	return IRQ_HANDLED;
+> +}
+
+...
+
+> +static int __init ep93xx_timer_of_init(struct device_node *np)
+> +{
+> +	int irq;
+> +	unsigned long flags = IRQF_TIMER | IRQF_IRQPOLL;
+> +	struct ep93xx_tcu *tcu;
+> +	int ret;
+> +
+> +	tcu = kzalloc(sizeof(*tcu), GFP_KERNEL);
+> +	if (!tcu)
+> +		return -ENOMEM;
+> +
+> +	tcu->base = of_iomap(np, 0);
+
+fwnode_iomap()?
+See below why it might make sense.
+
+> +	if (!tcu->base) {
+
+> +		pr_err("Can't remap registers\n");
+
+First of all, you may utilize pr_fmt().
+Second, you may add %pOF for better user experience.
+
+> +		ret = -ENXIO;
+> +		goto out_free;
+> +	}
+
+> +	irq = irq_of_parse_and_map(np, 0);
+
+fwnode_irq_get() which is better in terms of error handling.
+
+> +	if (irq == 0)
+> +		irq = -EINVAL;
+> +	if (irq < 0) {
+
+> +		pr_err("EP93XX Timer Can't parse IRQ %d", irq);
+
+As per above.
+
+> +		goto out_free;
+> +	}
+
+...
+
+> +}
+
 -- 
-2.25.1
+With Best Regards,
+Andy Shevchenko
+
 
