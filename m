@@ -2,59 +2,59 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB3A2EB64DD
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 14:01:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58660C04FE1
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 14:04:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231636AbjGUOB5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jul 2023 10:01:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58098 "EHLO
+        id S230117AbjGUOEr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jul 2023 10:04:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59888 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231157AbjGUOBw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2023 10:01:52 -0400
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F2FD30DF
-        for <linux-pm@vger.kernel.org>; Fri, 21 Jul 2023 07:01:45 -0700 (PDT)
-Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-3144098df56so1687287f8f.2
-        for <linux-pm@vger.kernel.org>; Fri, 21 Jul 2023 07:01:45 -0700 (PDT)
+        with ESMTP id S231320AbjGUOEp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2023 10:04:45 -0400
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F6312D47
+        for <linux-pm@vger.kernel.org>; Fri, 21 Jul 2023 07:04:41 -0700 (PDT)
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-3159d75606dso1552495f8f.1
+        for <linux-pm@vger.kernel.org>; Fri, 21 Jul 2023 07:04:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1689948104; x=1690552904;
+        d=linaro.org; s=google; t=1689948280; x=1690553080;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=kGZ5LqU0Zryf5RXxHBpf5dofqREFTyZTeFWlFYPBfA8=;
-        b=ZiVB2hHSTZRmiaMmbMREaMhbawMx/KUt3cg1qeF1gBfCQQAGIBGPHjWK50hX362tpU
-         fMapfTUkHNiMW2EcbBz3SgWGkAp6pnHxDhqm4HHqfVuIIfYvxWb4ogcWbai4vpYhJADI
-         nWulY7lsgECJ57xXy/eajLo129aMmkczTVRAjkIe0wiSagmvvtOEMM8dttszF+P0remm
-         RGTV8zYGxv0/wyu9CCIL2fyYMd0tbEu3edlaV1yZeI84Bkx+jEwwKA/R03nUuupkA/DL
-         bFjJcVPJ1Os8KPfwF5c406w0MGIwcfg3il9N5GJ9UXq+jvImjTaQ3Zov5AQGHQM9OcQ+
-         H5mg==
+        bh=i0hqft4rLykA1Qm+aWWngJrri1KXMWVHpmrflE+PpLU=;
+        b=PuGwprqKdpq8LkzNLASjiLmbz8p+yLCZy03ATCdJs8insWuhZan57oKC4jNZCzS4ND
+         E7w8hDj2JEk/yaK001S70oJdFPQrhUiTFfWV3ga4MQCxDAA5JM/JTtabf+JXMWw8QZqr
+         uoSOVXGMsahKvU4F69owM+VtHTiwZXV4Sac3eBA92YtCWMRlMuuTlEdryO1jsFqitT9q
+         Y1i7MCt3snL55MX8kx8uOg3fD3m9IlBurQS/nGi/qx0D8zW2mRSuqw3P0325+pIM+Zak
+         ouue3EcgaEHjRHxqHf3v/fAkDRZkz6EaGTuc3CsJGpLhr2+Jc9UQriimeNAwdK1RDAD2
+         VUsA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689948104; x=1690552904;
+        d=1e100.net; s=20221208; t=1689948280; x=1690553080;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=kGZ5LqU0Zryf5RXxHBpf5dofqREFTyZTeFWlFYPBfA8=;
-        b=ihpwQZo7FRrq9Q66e8UvHuPmcaAg/o00YhLnGviE4SbistMjd34XyF0YS2xhfsnsMT
-         xjUGagix0hYy/DCykFQljC20huklWDZ8LvYjFoDdqtuZU58qw67SIFbLMIbUul83S9bz
-         4GXl0XregaPxzPBvI1DUgL/0Me8EGcYod2p2uUJgc2zwM1577zhmP78vQkNd6l45C4DO
-         MWTTnkpJRixvEAUCpB0q2kyDOJPsOZ2o80ihUtPWyNDMDQGaqgZL4bHPc40IylUsFskT
-         sTxd82B1wncDqD2UknYQ0msxlPibhRIwOFaCvZxw9nJQicfUic0OfwMhBU8F7R/+Z8yd
-         0Xqg==
-X-Gm-Message-State: ABy/qLZhp+BcgwLckHHrZ1n8Rx1suQ1xD657V4FD5aHPTs0XbCE/uvas
-        cgj4kOgN4JNdZlMuCr4gnLGbIQ==
-X-Google-Smtp-Source: APBJJlFl0X021T0an8cBRN2rsT+BJ+nZ0MYlRyFEpg2gd2RFuh46KGFuFZP+LfRCosw99RkgkE80Jg==
-X-Received: by 2002:adf:ea50:0:b0:314:2732:e81e with SMTP id j16-20020adfea50000000b003142732e81emr1636390wrn.8.1689948103685;
-        Fri, 21 Jul 2023 07:01:43 -0700 (PDT)
+        bh=i0hqft4rLykA1Qm+aWWngJrri1KXMWVHpmrflE+PpLU=;
+        b=Yi5fYYd/tqNaE/ZAdd/4imTyklQpEIOdvmKPuBvDfGWNJlSbjA3/UfN38+105pC/pi
+         T77yJPL9uErb5mVGDD6hsdSBUCkhfohc6nGSrZHaUTkzz6zkKc3W8YGasZOwxUTTCYJ5
+         hEIAhFnkCCGrTExMAPqe0YWxYwS1JxD+oqVHCCNAl0Rmw8a3v7vDeNukx+0o2vIULntI
+         dQOI4BzW0yNX26txKtrVHJdJ3OCxsQiRoXmhqrjTZLDbl2K7jY5byUFLJDqpuN7AH/ik
+         irr2Wbtjc5DizvkSUU0v9h5cYVQgE9c4ejejXWodlj2AwVdQFKtSspW7PljjTL8Bzt/P
+         qiTw==
+X-Gm-Message-State: ABy/qLbMsVsdyt7qgsiSGglmhI5iQ0qZRCHa1ZKhW0DDUwNr+O38W2ks
+        fzCiVDJD9HgusAV92htL/LEAvg==
+X-Google-Smtp-Source: APBJJlEsMYe5JQ+pU4AezELFYdRQHmI7TefsDs6cDm78/h68oOlcICdvW129lDjtJ/t6VHgFfG467Q==
+X-Received: by 2002:adf:fc03:0:b0:314:1634:491e with SMTP id i3-20020adffc03000000b003141634491emr1269926wrr.20.1689948279591;
+        Fri, 21 Jul 2023 07:04:39 -0700 (PDT)
 Received: from [192.168.1.20] ([178.197.223.104])
-        by smtp.gmail.com with ESMTPSA id r5-20020adff105000000b003145521f4e5sm4278545wro.116.2023.07.21.07.01.39
+        by smtp.gmail.com with ESMTPSA id x8-20020a1c7c08000000b003f90b9b2c31sm6142028wmc.28.2023.07.21.07.04.34
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 21 Jul 2023 07:01:42 -0700 (PDT)
-Message-ID: <66fba798-c6ef-1105-656a-5d593a056448@linaro.org>
-Date:   Fri, 21 Jul 2023 16:01:38 +0200
+        Fri, 21 Jul 2023 07:04:38 -0700 (PDT)
+Message-ID: <5603264e-2efe-48ce-b025-797501f29fde@linaro.org>
+Date:   Fri, 21 Jul 2023 16:04:34 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.13.0
-Subject: Re: [PATCH v3 04/42] dt-bindings: pinctrl: Add Cirrus EP93xx
+Subject: Re: [PATCH v3 06/42] dt-bindings: soc: Add Cirrus EP93xx
 Content-Language: en-US
 To:     nikita.shubin@maquefel.me,
         Hartley Sweeten <hsweeten@visionengravers.com>,
@@ -105,9 +105,9 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-mtd@lists.infradead.org, linux-ide@vger.kernel.org,
         linux-input@vger.kernel.org, alsa-devel@alsa-project.org
 References: <20230605-ep93xx-v3-0-3d63a5f1103e@maquefel.me>
- <20230605-ep93xx-v3-4-3d63a5f1103e@maquefel.me>
+ <20230605-ep93xx-v3-6-3d63a5f1103e@maquefel.me>
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20230605-ep93xx-v3-4-3d63a5f1103e@maquefel.me>
+In-Reply-To: <20230605-ep93xx-v3-6-3d63a5f1103e@maquefel.me>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -117,53 +117,100 @@ X-Mailing-List: linux-pm@vger.kernel.org
 On 20/07/2023 13:29, Nikita Shubin via B4 Relay wrote:
 > From: Nikita Shubin <nikita.shubin@maquefel.me>
 > 
-> Add YAML bindings for ep93xx SoC pinctrl.
+> This adds device tree bindings for the Cirrus Logic EP93xx.
 > 
 > Signed-off-by: Nikita Shubin <nikita.shubin@maquefel.me>
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 > ---
->  .../bindings/pinctrl/cirrus,ep9301-pinctrl.yaml    | 58 ++++++++++++++++++++++
->  1 file changed, 58 insertions(+)
+>  .../bindings/arm/cirrus/ep9301-syscon.yaml         | 59 ++++++++++++++++++++++
+
+syscon goes to soc directory. Also, please add vendor prefix to the
+filenames.
+
+>  .../devicetree/bindings/arm/cirrus/ep9301.yaml     | 39 ++++++++++++++
+>  2 files changed, 98 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/pinctrl/cirrus,ep9301-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/cirrus,ep9301-pinctrl.yaml
+> diff --git a/Documentation/devicetree/bindings/arm/cirrus/ep9301-syscon.yaml b/Documentation/devicetree/bindings/arm/cirrus/ep9301-syscon.yaml
 > new file mode 100644
-> index 000000000000..d5682531b0da
+> index 000000000000..77fbe1f006fd
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/pinctrl/cirrus,ep9301-pinctrl.yaml
-> @@ -0,0 +1,58 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +++ b/Documentation/devicetree/bindings/arm/cirrus/ep9301-syscon.yaml
+> @@ -0,0 +1,59 @@
+> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/pinctrl/cirrus,ep9301-pinctrl.yaml#
+> +$id: http://devicetree.org/schemas/arm/cirrus/ep9301-syscon.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: Cirrus ep93xx pins mux controller
+> +title: Cirrus Logic EP93xx Platforms System Controller
 > +
 > +maintainers:
-> +  - Nikita Shubin <nikita.shubin@maquefel.me>
 > +  - Alexander Sverdlin <alexander.sverdlin@gmail.com>
+> +  - Nikita Shubin <nikita.shubin@maquefel.me>
 > +
 > +properties:
 > +  compatible:
 > +    oneOf:
-> +      - const: cirrus,ep9301-pinctrl
 > +      - items:
 > +          - enum:
-> +              - cirrus,ep9302-pinctrl
-> +              - cirrus,ep9307-pinctrl
-> +              - cirrus,ep9312-pinctrl
-> +              - cirrus,ep9315-pinctrl
-> +          - const: cirrus,ep9301-pinctrl
+> +              - cirrus,ep9302-syscon
+> +              - cirrus,ep9307-syscon
+> +              - cirrus,ep9312-syscon
+> +              - cirrus,ep9315-syscon
+> +          - const: cirrus,ep9301-syscon
+> +          - const: syscon
+> +          - const: simple-mfd
+> +      - items:
+> +          - const: cirrus,ep9301-syscon
+> +          - const: syscon
+> +          - const: simple-mfd
 > +
-> +patternProperties:
-> +  '^pins-':
+> +  reg:
+> +    maxItems: 1
+> +
+> +  reboot:
 > +    type: object
-> +    description: pin node
-> +    $ref: pinmux-node.yaml#
+> +    properties:
+> +      compatible:
+> +        const: cirrus,ep9301-reboot
 
-You need:
-unevaluatedProperties: false
+Patch introducing it should be before this one. Also, do not use
+different styles for your child nodes. Your other nodes use $ref.
 
+> +
+> +  clock-controller:
+> +    type: object
+> +    $ref: ../../clock/cirrus,ep9301-clk.yaml
+
+Absolute path, so /schemas/clock/cirrus.....
+
+> +
+> +  pinctrl:
+> +    type: object
+> +    $ref: ../../pinctrl/cirrus,ep9301-pinctrl.yaml
+
+Ditto
+
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    syscon@80930000 {
+> +      compatible = "cirrus,ep9301-syscon",
+> +                   "syscon", "simple-mfd";
+> +      reg = <0x80930000 0x1000>;
+
+Incomplete example.
+
+> +    };
+> diff --git a/Documentation/devicetree/bindings/arm/cirrus/ep9301.yaml b/Documentation/devicetree/bindings/arm/cirrus/ep9301.yaml
+> new file mode 100644
+> index 000000000000..6087784e93fb
+> --- /dev/null
 
 
 Best regards,
