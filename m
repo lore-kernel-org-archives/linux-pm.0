@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2482CEB64DC
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 14:07:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6181AC001DF
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jul 2023 14:07:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231622AbjGUOH2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jul 2023 10:07:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32874 "EHLO
+        id S231714AbjGUOH3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jul 2023 10:07:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32882 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231625AbjGUOH1 (ORCPT
+        with ESMTP id S231646AbjGUOH1 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2023 10:07:27 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1A2B10A;
-        Fri, 21 Jul 2023 07:07:23 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56FEB2D46;
+        Fri, 21 Jul 2023 07:07:25 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id e3471599fb4ca902; Fri, 21 Jul 2023 16:07:22 +0200
+ id 88502d5a1f03cecf; Fri, 21 Jul 2023 16:07:23 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 961476618ED;
-        Fri, 21 Jul 2023 16:07:21 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id DB2876618EA;
+        Fri, 21 Jul 2023 16:07:22 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -31,11 +31,11 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH v2 2/8] thermal: core: Do not handle trip points with invalid temperature
-Date:   Fri, 21 Jul 2023 14:47:47 +0200
-Message-ID: <2306949.ElGaqSPkdT@kreacher>
-In-Reply-To: <5710197.DvuYhMxLoT@kreacher>
-References: <13318886.uLZWGnKmhe@kreacher> <5710197.DvuYhMxLoT@kreacher>
+Subject: [PATCH v2 0/8] ACPI: thermal: Use trip point table to register thermal zones
+Date:   Fri, 21 Jul 2023 14:44:54 +0200
+Message-ID: <5710197.DvuYhMxLoT@kreacher>
+In-Reply-To: <13318886.uLZWGnKmhe@kreacher>
+References: <13318886.uLZWGnKmhe@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
@@ -49,34 +49,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Everyone,
 
-Trip points with temperature set to THERMAL_TEMP_INVALID are as good as
-disabled, so make handle_thermal_trip() ignore them.
+This is the second iteration of the $subject patch series and its original
+description below is still applicable
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+On Tuesday, July 18, 2023 8:01:20 PM CEST Rafael J. Wysocki wrote:
+> 
+> This patch series makes the ACPI thermal driver register thermal zones
+> with the help of thermal_zone_device_register_with_trips(), so it
+> doesn't need to use the thermal zone callbacks related to trip points
+> any more (and they are dropped in the last patch).
+> 
+> The approach presented here is quite radically different from the
+> previous attempts, as it doesn't really rearrange the driver's
+> internal data structures, but adds the trip table support on top of
+> them.  For this purpose, it uses an additional field in struct thermal_trip
+> introduced in the first patch.
 
-v1 -> v2: No changes.
+In the meantime I have updated the patches and tested them on a system with
+a couple of ACPI thermal zones.  No differences in functionality after applying
+the patches have been observed.
 
----
- drivers/thermal/thermal_core.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+The update is mostly related to adding extra locking around trip point
+temperature updates and some hardening of the .get_trend() callback routine
+against invalid trip point indices.
 
-Index: linux-pm/drivers/thermal/thermal_core.c
-===================================================================
---- linux-pm.orig/drivers/thermal/thermal_core.c
-+++ linux-pm/drivers/thermal/thermal_core.c
-@@ -348,7 +348,8 @@ static void handle_thermal_trip(struct t
- 	struct thermal_trip trip;
- 
- 	/* Ignore disabled trip points */
--	if (test_bit(trip_id, &tz->trips_disabled))
-+	if (test_bit(trip_id, &tz->trips_disabled) ||
-+	    trip.temperature == THERMAL_TEMP_INVALID)
- 		return;
- 
- 	__thermal_zone_get_trip(tz, trip_id, &trip);
+Please see patch changelogs for details.
+
+Thanks!
 
 
 
