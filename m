@@ -2,160 +2,85 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1421EC001B0
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jul 2023 08:01:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E932C001DF
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jul 2023 08:02:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231357AbjGXIBM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Jul 2023 04:01:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42908 "EHLO
+        id S229578AbjGXICp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Jul 2023 04:02:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43990 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230496AbjGXIBG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2023 04:01:06 -0400
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B876FA;
-        Mon, 24 Jul 2023 01:01:03 -0700 (PDT)
-Received: from dggpeml500019.china.huawei.com (unknown [172.30.72.54])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4R8Xcd2kB4zVjnx;
-        Mon, 24 Jul 2023 15:59:29 +0800 (CST)
-Received: from localhost.localdomain (10.67.165.2) by
- dggpeml500019.china.huawei.com (7.185.36.137) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Mon, 24 Jul 2023 16:01:00 +0800
-From:   Jie Zhan <zhanjie9@hisilicon.com>
-To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linuxarm@huawei.com>, <zhanjie9@hisilicon.com>,
-        <xuwei5@huawei.com>, <wanghuiqiang@huawei.com>,
-        <jonathan.cameron@huawei.com>, <wangxiongfeng2@huawei.com>
-Subject: [RFC PATCH] cpufreq: Support per-policy performance boost
-Date:   Mon, 24 Jul 2023 15:58:27 +0800
-Message-ID: <20230724075827.4160512-1-zhanjie9@hisilicon.com>
-X-Mailer: git-send-email 2.30.0
+        with ESMTP id S231368AbjGXICe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2023 04:02:34 -0400
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 880F81B8
+        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2023 01:02:25 -0700 (PDT)
+Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-1b8b4749013so32639445ad.2
+        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2023 01:02:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1690185745; x=1690790545;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Po9pQRZ/q0l1v90fsouYbF4Y7A8coEOIwxXQK/g5x80=;
+        b=Mo7fY7TnjVvd3tMfcTkVQSB95u/uNJ1NSTBjUA0p3K0DUMv2uFXwSpe3aGjKQK2VnA
+         dB9YJ0pjMUk2BhJLRhrjo1ppVL9KkesLTbe7b+6GJ7HKvLbJCh/uOxIDo6x79HaAILW/
+         4OXqEMzasa/Z2Yx+hn4hciFPT1Z+sM0CgIhbNeX8U41WpgY3cgh9xXKWC/S+xTmvlFlj
+         UisCf0eisyfrJbVMJQJZ16dnDruKyAVlMT8NAQbxiWiO2xhEqMSvaYNe0zhWzfdeePEd
+         2ShLCnWWe7MjIwn5nQiq0wExfSHzy1FlvKLyv8OqkDuri5KnXJt5kza3n2TpJFaGvTO9
+         4JTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690185745; x=1690790545;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Po9pQRZ/q0l1v90fsouYbF4Y7A8coEOIwxXQK/g5x80=;
+        b=SP7s9Kn+oijEhGRd/7CqObcsPHJzpeB4LqwhqCAUYim5myvV5kD0XngPxCbrS/rS2c
+         017fbBXeSTvyCrQLIr8TiyBDisCXoBCcFwFPpoID/7/TldA1VVsVvLiHgCB6xyAj3JSd
+         HpIWzFxbXpebrQq2emTdsTqfA+4DNufCHsNQ+zYJ4WJoFB+F51uudcE/SRBeV/mTBEWH
+         BqJ+wNlGrtx9DiwcfZvm1wD5gVzN2VdSHqaC3VaJVSczDfitipT5yOn2TZY6SZKSTien
+         +fyqgGWFAL+MnYLD+FfRTZv8KWupNz4xQfY9naIJEKu8uH2ZCR3JhW3igPXVNz4ecJ3s
+         g7sA==
+X-Gm-Message-State: ABy/qLbvAh3Jq9zuuz7Khq7bJp24ZG0v2dqk9WNpah7APvhXN04BTpOk
+        V0QxII8fEqeDD6/GBYX4UsHKdA==
+X-Google-Smtp-Source: APBJJlG1kMDbQVntm5M1zd32dTabRF9d4QCoISaVRhQUWeX3UV8ag6YZvPTEjHK1pFZZ/tOTYO2IFQ==
+X-Received: by 2002:a17:902:ea08:b0:1ac:aba5:7885 with SMTP id s8-20020a170902ea0800b001acaba57885mr12533742plg.47.1690185744988;
+        Mon, 24 Jul 2023 01:02:24 -0700 (PDT)
+Received: from localhost ([122.172.87.195])
+        by smtp.gmail.com with ESMTPSA id u2-20020a170902e80200b001b6740207d2sm8149549plg.215.2023.07.24.01.02.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Jul 2023 01:02:24 -0700 (PDT)
+Date:   Mon, 24 Jul 2023 13:32:22 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] OPP: Couple of smatch warning fixes
+Message-ID: <20230724080222.pn7iuzi2ku5q6efp@vireshk-i7>
+References: <20230721124634.63612-1-manivannan.sadhasivam@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.67.165.2]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- dggpeml500019.china.huawei.com (7.185.36.137)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230721124634.63612-1-manivannan.sadhasivam@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The boost control currently applies to the whole system.  However, users
-may prefer to boost a subset of cores in order to provide prioritized
-performance to workloads running on the boosted cores.
+On 21-07-23, 18:16, Manivannan Sadhasivam wrote:
+> Hi Viresh,
+> 
+> This series has a couple of fixes spotted by smatch tool in the OPP core.
+> This is on top of v6.5-rc1, so could be merged separately.
+> 
+> - Mani
+> 
+> Manivannan Sadhasivam (2):
+>   OPP: Fix potential null ptr dereference in
+>     dev_pm_opp_get_required_pstate()
+>   OPP: Fix passing 0 to PTR_ERR in _opp_attach_genpd()
+> 
+>  drivers/opp/core.c | 10 ++++------
+>  1 file changed, 4 insertions(+), 6 deletions(-)
 
-Enable per-policy boost by adding a 'local_boost' sysfs interface.  This
-can be found at:
+Applied. Thanks.
 
-	/sys/devices/system/cpu/cpufreq/policy<*>/local_boost
-
-Same to the global boost switch, writing 1/0 to 'local_boost'
-enables/disables boost on a cpufreq policy respectively.
-
-The user view of global and local boost controls should be:
-
-1. Enabling global boost initially enables local boost on all policies, and
-local boost can then be enabled or disabled individually on each policy,
-given that the platform does support so.
-
-2. Disabling global boost makes enabling local boost illegal, while writing
-0 to 'local_boost' is fine but takes no effect.
-
-A possible question could be: why not just limiting 'scaling_max_freq'?
-Well, the fundamental difference is that 'local_boost' could be more
-user-friendly.  When global boost is enabled, it is not straightforward to
-figure out the base frequency for setting 'scaling_max_freq' to a non-boost
-value. Also, this is supposed to take effect on the physical upper
-frequency limit, reflected through 'cpuinfo_max_freq'.
-
-Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
-Reviewed-by: Wei Xu <xuwei5@hisilicon.com>
----
- drivers/cpufreq/cpufreq.c | 33 +++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 36 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 6b52ebe5a890..14579c59f7ba 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -621,6 +621,35 @@ static ssize_t store_boost(struct kobject *kobj, struct kobj_attribute *attr,
- }
- define_one_global_rw(boost);
- 
-+static ssize_t show_local_boost(struct cpufreq_policy *policy, char *buf)
-+{
-+	return sysfs_emit(buf, "%d\n", policy->local_boost_enabled);
-+}
-+
-+static ssize_t store_local_boost(struct cpufreq_policy *policy,
-+				 const char *buf, size_t count)
-+{
-+	int ret, enable;
-+
-+	ret = kstrtoint(buf, 10, &enable);
-+	if (ret || enable < 0 || enable > 1)
-+		return -EINVAL;
-+
-+	if (enable && !cpufreq_driver->boost_enabled)
-+		return -EINVAL;
-+
-+	cpus_read_lock();
-+	ret = cpufreq_driver->set_boost(policy, enable);
-+	cpus_read_unlock();
-+
-+	if (ret)
-+		return ret;
-+
-+	policy->local_boost_enabled = enable;
-+
-+	return count;
-+}
-+
- static struct cpufreq_governor *find_governor(const char *str_governor)
- {
- 	struct cpufreq_governor *t;
-@@ -931,6 +960,7 @@ cpufreq_freq_attr_rw(scaling_min_freq);
- cpufreq_freq_attr_rw(scaling_max_freq);
- cpufreq_freq_attr_rw(scaling_governor);
- cpufreq_freq_attr_rw(scaling_setspeed);
-+cpufreq_freq_attr_rw(local_boost);
- 
- static struct attribute *cpufreq_attrs[] = {
- 	&cpuinfo_min_freq.attr,
-@@ -944,6 +974,7 @@ static struct attribute *cpufreq_attrs[] = {
- 	&scaling_driver.attr,
- 	&scaling_available_governors.attr,
- 	&scaling_setspeed.attr,
-+	&local_boost.attr,
- 	NULL
- };
- ATTRIBUTE_GROUPS(cpufreq);
-@@ -2716,6 +2747,8 @@ int cpufreq_boost_trigger_state(int state)
- 		ret = cpufreq_driver->set_boost(policy, state);
- 		if (ret)
- 			goto err_reset_state;
-+
-+		policy->local_boost_enabled = state;
- 	}
- 	cpus_read_unlock();
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 26e2eb399484..a99a48ac9fdb 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -140,6 +140,9 @@ struct cpufreq_policy {
- 	 */
- 	bool			dvfs_possible_from_any_cpu;
- 
-+	/* Per policy boost enabled flag. */
-+	bool			local_boost_enabled;
-+
- 	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
- 	unsigned int cached_target_freq;
- 	unsigned int cached_resolved_idx;
 -- 
-2.30.0
-
+viresh
