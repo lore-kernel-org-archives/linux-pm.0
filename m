@@ -2,138 +2,72 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCE33C00528
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jul 2023 07:53:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7205DC41513
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jul 2023 08:00:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230506AbjGXHw7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Jul 2023 03:52:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38314 "EHLO
+        id S229823AbjGXIAB convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Jul 2023 04:00:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231288AbjGXHwz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2023 03:52:55 -0400
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2057A1A7
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2023 00:52:53 -0700 (PDT)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-1b852785a65so26430165ad.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2023 00:52:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1690185172; x=1690789972;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=5VhedmatU6HoIII2qqg2OWSwifXoBo+6lC39h5T5OiE=;
-        b=mUo9VVHeJqvv5/13oniv8dSMGS0TwRRoZ2KGC3abbvQcQgCyHE0y/I3BncT8UWegAB
-         QWrfEcCgoxQLZ4QmMwWnZiAQy0jAF5vsrBxLwNgwv6FZfXOkT17iQMP7SuGCEOZ68J9C
-         hq5KnNtEkUFKZCEe8ti4FuHzKHW51XerefYzR4o6jijCVkNgf0HqWpQVVzWZjaKYNzyE
-         i/QLtR0woZdJ9OGfx+IhCvptaH499B2V5DfjzxHCTIqDniyB/JJDYGzqhrWFqwgu5i0q
-         XkxY6J+FInh4hQLedUHDckonZq6L0xz/BD204qrHCgkZG/kUh82WK6hEohn+CZjSjVLr
-         Tbjg==
+        with ESMTP id S229778AbjGXIAA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2023 04:00:00 -0400
+Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50BE5B3;
+        Mon, 24 Jul 2023 00:59:59 -0700 (PDT)
+Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-522205646fdso311113a12.0;
+        Mon, 24 Jul 2023 00:59:59 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690185172; x=1690789972;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5VhedmatU6HoIII2qqg2OWSwifXoBo+6lC39h5T5OiE=;
-        b=T+uKBRW4fvMAQYAYtdw1Y2nVbeudjH6s88Tc7KPWJ+K8KXbApaT3CjwQIdax1sJm70
-         F6ZJP4nobwDnELvtfam5eyBnXq0UZXORdiN/DSYdh7tXw5KIpCSAvoUKu+py6zpbQBzv
-         +WmlQMUb+CFifPQrROoNWLjl63lNuISHpMjl/hBb8V09OzyTm35CAtZlmmDRX0+8N4Ab
-         6wMlyJDcWOcTrh2YUOlVkDHZnbwzf55H0vVG95XZk/ec6ix6bZVUmfcG9hQHRwV8rOt9
-         sRHh+JFSGfiJYSGJXjgPicDrZ7/zTs292SGFUsIfEy67brF5Qv+FxgG8GQXoKIaS+Ly1
-         ehvw==
-X-Gm-Message-State: ABy/qLbpJLfJp9ypYI/wy2hI6mwfozv7Ot6sFTbDCsr3DziDQ7oBJodY
-        qdGFKGI8WF1Kiw8xLxufHJTqJQ==
-X-Google-Smtp-Source: APBJJlELM8SaJzazdwWH5EKfNF7REafvHJx9cgtFozFimBEV2JSUitEcnIudb1cDrOBfCk/uNxR82Q==
-X-Received: by 2002:a17:902:f687:b0:1bb:8cb6:3f99 with SMTP id l7-20020a170902f68700b001bb8cb63f99mr6534056plg.14.1690185172533;
-        Mon, 24 Jul 2023 00:52:52 -0700 (PDT)
-Received: from localhost ([122.172.87.195])
-        by smtp.gmail.com with ESMTPSA id v6-20020a170902b7c600b001bb7a736b4csm4613001plz.77.2023.07.24.00.52.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Jul 2023 00:52:52 -0700 (PDT)
-Date:   Mon, 24 Jul 2023 13:22:50 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        cw00.choi@samsung.com, andersson@kernel.org,
-        konrad.dybcio@linaro.org, robh+dt@kernel.org,
-        krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org,
-        jejb@linux.ibm.com, martin.petersen@oracle.com,
-        alim.akhtar@samsung.com, avri.altman@wdc.com, bvanassche@acm.org,
-        linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        quic_asutoshd@quicinc.com, quic_cang@quicinc.com,
-        quic_nitirawa@quicinc.com, quic_narepall@quicinc.com,
-        quic_bhaskarv@quicinc.com, quic_richardp@quicinc.com,
-        quic_nguyenb@quicinc.com, quic_ziqichen@quicinc.com,
-        bmasney@redhat.com, krzysztof.kozlowski@linaro.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 00/15] UFS: Add OPP and interconnect support
-Message-ID: <20230724075250.eezimnx4sum2ffjy@vireshk-i7>
-References: <20230720054100.9940-1-manivannan.sadhasivam@linaro.org>
- <20230721094206.dfgnn73kmzzj6rtw@vireshk-i7>
- <20230721115453.GA2536@thinkpad>
+        d=1e100.net; s=20221208; t=1690185598; x=1690790398;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=q/5/ZrAR5ynowHVv8V89+f8F5Dt7dmAy2TN6zfb4m1Q=;
+        b=FlyvR4GYAaipC0P1j74Hy2qEyqlxubQ77Vmk5DONYeGIXHzcN1y8aIf6X3flF0QXkp
+         yFORFFlU0Xy8Qa/1ybw7a1i9bncnuFcnJU7GlPX1eyh3VQz7E50r8X3xrI9oVCyfcS5l
+         rYF92nH9aqvTotwqqLQ9yWRBldi/7mpM7NM6r5JpP1q/KN2spNX9mrNjuhcPzsOfwC+g
+         E9xnMwkuSzkB0VoRfncp/Zt49NIfI968dQ5juAYToSamB7eHp8WlRHbA6MkliiEA8RY3
+         IVbMiI5ZHbG6ErNmK3NNsza0JloCufo1+u1uahYvlY500dP4bj+j5LN/rNs0KGil6zJ0
+         KnxQ==
+X-Gm-Message-State: ABy/qLaBV+aIugAQ3KiPU+SITWxpbl1r+Ui5MnsFFvI1Ohrr4zn356IF
+        1KIUD1ZkJgyvcEnY0jbAtvvFNZr3pLZr20bn1DY=
+X-Google-Smtp-Source: APBJJlGa3VLXPg293738Z5+iJqulgnrYSxN/fR8YIjxFGtrS9m9EWmlMmEkUJ8F7Dy4Ld0TOt+V4itWL/NZAtf2BSYY=
+X-Received: by 2002:a17:906:74d4:b0:992:387:44d1 with SMTP id
+ z20-20020a17090674d400b00992038744d1mr7537528ejl.7.1690185597476; Mon, 24 Jul
+ 2023 00:59:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230721115453.GA2536@thinkpad>
+References: <13318886.uLZWGnKmhe@kreacher> <5710197.DvuYhMxLoT@kreacher> <2e0bf65f-0452-c859-d287-a9762bd965ef@linaro.org>
+In-Reply-To: <2e0bf65f-0452-c859-d287-a9762bd965ef@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 24 Jul 2023 09:59:43 +0200
+Message-ID: <CAJZ5v0iQ207Xr3SXBedMkTeqcSN0cfkxicD+wZ6ETOq9E5vC3g@mail.gmail.com>
+Subject: Re: [PATCH v2 0/8] ACPI: thermal: Use trip point table to register
+ thermal zones
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Michal Wilczynski <michal.wilczynski@intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21-07-23, 17:24, Manivannan Sadhasivam wrote:
-> On Fri, Jul 21, 2023 at 03:12:06PM +0530, Viresh Kumar wrote:
-> > On 20-07-23, 11:10, Manivannan Sadhasivam wrote:
-> > > Hi,
-> > > 
-> > > This series adds OPP (Operating Points) support to UFSHCD driver and
-> > > interconnect support to Qcom UFS driver.
-> > > 
-> > > Motivation behind adding OPP support is to scale both clocks as well as
-> > > regulators/performance state dynamically. Currently, UFSHCD just scales
-> > > clock frequency during runtime with the help of "freq-table-hz" property
-> > > defined in devicetree. With the addition of OPP tables in devicetree (as
-> > > done for Qcom SDM845 and SM8250 SoCs in this series) UFSHCD can now scale
-> > > both clocks and performance state of power domain which helps in power
-> > > saving.
-> > > 
-> > > For the addition of OPP support to UFSHCD, there are changes required to
-> > > the OPP framework and devfreq drivers which are also added in this series.
-> > > 
-> > > Finally, interconnect support is added to Qcom UFS driver for scaling the
-> > > interconnect path dynamically. This is required to avoid boot crash in
-> > > recent SoCs and also to save power during runtime. More information is
-> > > available in patch 13/13.
-> > 
-> > Hi Mani,
-> > 
-> > I have picked the OPP related patches from here (apart from DT one)
-> > and sent them separately in a series, along with few changes from me.
-> > Also pushed them in my linux-next branch.
-> > 
-> 
-> Thanks Viresh! For patch 8/15, Kbuild bot has identified one potential null ptr
-> dereference issue. Could you please fix that in your branch?
-> 
-> You just need to remove the opp dereference in dev_pm_opp_get_freq_indexed()
-> before the IS_ERR_OR_NULL() check as below:
-> 
-> ```
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index 66dc0d0cfaed..683e6e61f80b 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -208,9 +208,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
->   */
->  unsigned long dev_pm_opp_get_freq_indexed(struct dev_pm_opp *opp, u32 index)
->  {
-> -       struct opp_table *opp_table = opp->opp_table;
-> -
-> -       if (IS_ERR_OR_NULL(opp) || index >= opp_table->clk_count) {
-> +       if (IS_ERR_OR_NULL(opp) || index >= opp->opp_table->clk_count) {
->                 pr_err("%s: Invalid parameters\n", __func__);
->                 return 0;
->         }
+Hi Daniel,
 
-Fixed.
+On Sun, Jul 23, 2023 at 12:19 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+>
+> Hi Rafael,
+>
+> could you wait before applying I would like to review the series but I'm
+> OoO ATM, coming back next week?
 
--- 
-viresh
+Yes, I can wait.
+
+Thanks!
