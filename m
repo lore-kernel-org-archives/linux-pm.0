@@ -2,144 +2,330 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43046C001E0
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jul 2023 10:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91BCFC001DF
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jul 2023 12:09:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233556AbjGYKYZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Jul 2023 06:24:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45880 "EHLO
+        id S232433AbjGYMJC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Jul 2023 08:09:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42246 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230462AbjGYKYT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2023 06:24:19 -0400
-Received: from EUR05-DB8-obe.outbound.protection.outlook.com (mail-db8eur05on2085.outbound.protection.outlook.com [40.107.20.85])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF8E5D3;
-        Tue, 25 Jul 2023 03:24:18 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=b1urEWJiaFGhfUhjO8w5wAYeuN+MFd7PnC9ZSf21tQQ4j0dcvkZ+ODYqVbJiH6d7cmtsTiuWP6Witwdq96zkVyOpTiX7F6HCNdmmh80j6MkaIuapIRYtOkHpJCHrd8Fgwx4Pu/Or6L8ExvvaN0XN8nFgzj71aK6wQ1QC/WYcbxpuIghya1sISshM2JXOedQz44I0C+60vD4GFxjs3FUg4FzvtOympfINFA/A3NS/UOzRfJYeq8tFDKzdFtnA5WUHP8b8sCNeXmRvD8rl0O+rBtRKbHaC/cBlzWYLx18rCs6noc8scCz+czqT0EdtUS1XESqJfLxe3tuNtYjZ4+h9Tg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=jTFYlVGy7vXRU0FQvlFcfoX/HPThOETjXSPAf87koXE=;
- b=dtIJMpC299zDbDp9OhiVDSi1+YiHEriw17E1XHKuh/7gFm3msH1c/l/PHNgdGoLFKoizLfROlWP36lhHi8zEfGD3JiRMRNA4ibdTAWVaFIHm4GZ+rC/QypX0Jw9nGYSqdggdOQz1QFXywTsDg+eGtU0b3I34+qLTb6vJ//enzJPnsUhkB1kaBObnAVuZYvtTgIrEu9tN1t3CdlzTH5vfXl6hCbfOxjIUhaAFflfhhKkVZHVW0MTSDNau7EGTulhD+PRMut6a1XaZLLOV5JVm6u/SIl79pdmI1vicaHJUfPIRXZccXTHqupRDjLfKQ89bIg224OSyCdspJAWidfdbbg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector2-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=jTFYlVGy7vXRU0FQvlFcfoX/HPThOETjXSPAf87koXE=;
- b=bPaiBUNIvBbE7pPceemvJOT2gyhqEFIeIXFyhOGwqybC7/m+hoclcKINFkdlVOcjwFLqy8F3aA8CFBgUwO0J+e/w5MdzQ4VIWuYCsFdAGwHNTiQzdK/UdJZ8lWGcqxyqRlfHlczp0QyhoHTPMVmasGdePOAH4F67wLjEyx475WE=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from DU0PR04MB9417.eurprd04.prod.outlook.com (2603:10a6:10:358::11)
- by GVXPR04MB9780.eurprd04.prod.outlook.com (2603:10a6:150:114::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6609.33; Tue, 25 Jul
- 2023 10:24:15 +0000
-Received: from DU0PR04MB9417.eurprd04.prod.outlook.com
- ([fe80::5d6a:ec53:f2a8:5b97]) by DU0PR04MB9417.eurprd04.prod.outlook.com
- ([fe80::5d6a:ec53:f2a8:5b97%6]) with mapi id 15.20.6609.032; Tue, 25 Jul 2023
- 10:24:14 +0000
-From:   "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
-To:     robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        conor+dt@kernel.org, ulf.hansson@linaro.org, shawnguo@kernel.org
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Peng Fan <peng.fan@nxp.com>
-Subject: [PATCH] dt-bindings: power: fsl,scu-pd: separate out fsl,scu-pd
-Date:   Tue, 25 Jul 2023 18:29:00 +0800
-Message-Id: <20230725102900.225262-1-peng.fan@oss.nxp.com>
-X-Mailer: git-send-email 2.37.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SG2PR01CA0180.apcprd01.prod.exchangelabs.com
- (2603:1096:4:28::36) To DU0PR04MB9417.eurprd04.prod.outlook.com
- (2603:10a6:10:358::11)
+        with ESMTP id S229874AbjGYMJB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2023 08:09:01 -0400
+Received: from mail-ot1-x333.google.com (mail-ot1-x333.google.com [IPv6:2607:f8b0:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73114A3;
+        Tue, 25 Jul 2023 05:08:59 -0700 (PDT)
+Received: by mail-ot1-x333.google.com with SMTP id 46e09a7af769-6b9d16c1f3bso4826259a34.2;
+        Tue, 25 Jul 2023 05:08:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1690286939; x=1690891739;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uqbTYqHPW5G2PshmRl+ifQ5TqeqIDG0r/Sx2QgnUwCM=;
+        b=C5V348bba05ggtGk26INvBjn5EZdSpLflXMX91bNHbmcrwtaWa5RlvONcCcvoCuYsz
+         PBvpIrIWJP+tYZPZVEKWf57tOMtBx1VALnzqaFhlvxxehhYUwYwb8tovKqngvzQSorsN
+         VfmOaxuZjtovZuPMet5dxo+bLLjGXpyy6kxlE+Dp1jXa1zFwehRnqLwdbGApGvCIrtKo
+         iIkcfqy+AAgKuLWCCSnnGdnYiRoZwmF369cQRdUJrwYTYdFMnHfjYxqs+PixvAPnACiz
+         rHTy4i3g3UXM2h0fFnvvlffQu7VUt+mXzD10nXXnPZZmO3vSKLb8SxgqN90JZ0cmZzcz
+         R3/w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1690286939; x=1690891739;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uqbTYqHPW5G2PshmRl+ifQ5TqeqIDG0r/Sx2QgnUwCM=;
+        b=FY24w964jNjXsLHWrp6jO95wZY205l3clCLghnQz6DLTMvPdziqo9YZgCJqjIFuldM
+         UD9oL4i+6G/8aYSo7GLXFIDySCrtH3dqi7cYkoc0CgbhXSTjyak6xjlg/1IzDqLAHJet
+         fKct8+aU5p6vPXbamTBtE3o9WYRMs82q9QTDdzgUcUWH3ZP2eduVRDOJJYCer0fSG7h/
+         hJjrInaufdbo/byVH1Z5lEfCUcfz4P2OQhZ46/MNjVzTMYDKAiIaxCctjVgpI2e1yogm
+         3MZzZeJ/3R4FO5/sK0w8R3KgimROjyudb12lNToEzs9A3zo0bE7FI3jVP5J/d4v4hj9n
+         EWJw==
+X-Gm-Message-State: ABy/qLbQKNjSYftHx1z5d/wlhh9QJIOK715Xn9tMJFudnw06HLUO98sE
+        X/jKbGalEAgvVRGKmk2xe77fHinHnc42b9HkL2I=
+X-Google-Smtp-Source: APBJJlE3b445OMBoqHVxrvPrZ+9Z+J48d6XyZOeRjIf+UI0qhpXJnjzwusIw+psipvUeiogRxI4xTXEQjCCg/In7FYI=
+X-Received: by 2002:a05:6870:f10e:b0:1bb:51e4:9489 with SMTP id
+ k14-20020a056870f10e00b001bb51e49489mr9200271oac.11.1690286938581; Tue, 25
+ Jul 2023 05:08:58 -0700 (PDT)
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU0PR04MB9417:EE_|GVXPR04MB9780:EE_
-X-MS-Office365-Filtering-Correlation-Id: a00a08f9-b08f-4017-7f20-08db8cf94b45
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: vsUyKabwjTP9QgblW1yonolm+1+f+ljmuCjdv18Sh8xkt+tMGvAvhzST4cHYinDpaLbg9dlgj5e6+6M+GfoN8zt8loxpNcd4NDs1HD2IHGwv+SVrE91vRMuapT7NlT9xrg/28qiMZ0oNQPHB1XQvgy3c6m+Tv1wrcYvEgCxqeDuCaq/4CxNVS3vt6EH9TTyTGzICop/fLyGnLAlo76ae9S3OWuyFFJmw11ZZKkuyNFuWkKiBSCWFAlurJUlkkRDyCSab5gdYSaAvLsPi+Ji24kMTwLblu2u0b7jNfi1x0s8du9a5rq1WMFhsZWVDcrZlrvfCLlPjN4jLm4mI57m4gFc/mhLxaSoTAFIfUVEug+xNn+hd4Nk/eKm+GrF4GGycpvy8NuxhvOcQ/EM+eOdS5O8KJ5IQMHfqwXvWFJAmBqFM1Uf/+cRzR/iin65udB6u4d3dHZmYTTL1Azh0SVOoi/uOTm6a+0aqF/nc3BykISrQgozzOY+zJCfh1+ro/msrOxv9lMDzp3GBeGS1cYVbVYzPIqXTqhpNrYPteyw3CNqyN89R/agqjfrlU4L3MKjOygGT2uXQFm+D5XAjZiUxLroldyioi87fBM+Ve6OtMQzxKg2efrHLk2PsuXe5198J
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9417.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(346002)(376002)(39860400002)(366004)(136003)(396003)(451199021)(66946007)(66556008)(66476007)(2616005)(83380400001)(86362001)(38100700002)(38350700002)(478600001)(6486002)(6666004)(26005)(6506007)(186003)(1076003)(52116002)(6512007)(41300700001)(5660300002)(316002)(4744005)(4326008)(2906002)(8676002)(8936002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?/1RKFMtf/0RaQNwiYKrIIegSFPnWJHIPx5T9KcfzgIL21Ni0GEHQidFmreNK?=
- =?us-ascii?Q?9OV+Xmx2ZZ5tLqrlOMsCkl4CDfauwfZnvZ1orculufmThAvTvSGHr4g6DTei?=
- =?us-ascii?Q?+F2/kL3F3hC2YMUrMkSih32Ci8Wt69SGz6XFo5st/fZy2FSGJF8EJ/TnCWt5?=
- =?us-ascii?Q?zeznKLp1BHHwvjK6SBTEYGsy2DLCHKbpR+JhFoGjsoH+83LTupVefRY9fZds?=
- =?us-ascii?Q?k+xrxLjuMLkYNkREYMpcfgfwMny+HKzolpGgz7+fc9NYyY48GMg9jdiSK47P?=
- =?us-ascii?Q?e4PkboImIvZqpuuA2ijN4jlavIVZKEP7Tket/x56PSMGDnZUq6KMsgBqx5tY?=
- =?us-ascii?Q?e9XNWjTsp2gHqv3y46NSVJOqKGygLEW0Zoav5vF4AhA+Dpms96l3NMgPi+75?=
- =?us-ascii?Q?Balk+LmXAcTmV20uxwGX9dimprZuYYzJD0Pn6fGP5inRHe+QOVpyiOlMd/Qs?=
- =?us-ascii?Q?NkmzyMnqT3FQmX/0Gz96yxhOYKvzUqklZwf/AP/Kj6L3LtcTQ5TvcC0uWDvs?=
- =?us-ascii?Q?da3qidTJ2obxZfIVeM+eKFGPa57+Qzw1XlejyKrFvOKyVRGgq/gUZYzovzSH?=
- =?us-ascii?Q?bYsiONbXC48tJLpc4/+j4sa7LMIw+9QREJMHC2GpTnaFgmyDtBYOCmqN4SB0?=
- =?us-ascii?Q?60H7T1I+oYIqaCo3VxqVLKJgAOPRwgoNEhAZoVl7y6XE582o6C4VVAP2WfD5?=
- =?us-ascii?Q?ARnpjMrU4lHQ8mmPU1OW7zrg6r6h41C95p6vyycU8s3p5K2/LRsmGQQm9F0j?=
- =?us-ascii?Q?RfkMp6MY4kuAXhqHfdWQX9BpU55W4924hITUDjGYFO35Z+JBe1en/rg501wX?=
- =?us-ascii?Q?ZpX0qb1KkPG8tvEI+trIigwccGqivH+7kDywOs444reuzUdNAvqbvuD8OXfj?=
- =?us-ascii?Q?MgZF57gON6EndlZKxlgK4rRMqqUoGUnYZti8YhXg0AOAAvz7T79UCnigDXsf?=
- =?us-ascii?Q?uXwuOLfcxPNGBycDXoqXPXr9B6KgsXj/Rbbz0Q8qBbdjpWkfIxrkmVgy4ghq?=
- =?us-ascii?Q?7PYZsJ/BwKFngUSbCSdn9evlB202e1eULCz8jJScIR04j2OWk3h2y3u3owWK?=
- =?us-ascii?Q?0w94qAJpmUzJzfqaQ41xiEl5Nm0YjIc5GCAe4V1PC8pymFofSIhXiD9sXPlC?=
- =?us-ascii?Q?2973H56hBNEQaAyCIzIGGBdvrkY34cW04ye/2+ygIZuxdwatnUeIoqnypLhH?=
- =?us-ascii?Q?9A04VOmKCJM+RaMMtUCokaUooWUuEBNLUpyt9rmLlmBKaPr2Qs1knJkLaWYn?=
- =?us-ascii?Q?fi1tOH1KMiU7CoOHYQiA0GO8X+kQPPgGTxzK3fiwUlV64HlQMhQK39ET9aZR?=
- =?us-ascii?Q?F4G5tDn3/AkIivtBH09TiCDJpC6Bpk8kdkmYUt3JB6DWPuSMeR+N/WsgNz0/?=
- =?us-ascii?Q?nqKwBw12wjOBSHCXF/Bm6fCxkSYB3KvYTL5jIPwX4ME5NBrUPxClLvhortfb?=
- =?us-ascii?Q?jmirkRTXgdLYW4w/Gi0s1ahqHenttMU+LMNEVqkIV+fNG4T2Zgs6ohxl7wUG?=
- =?us-ascii?Q?q4IvhAzE5cm2fkmLtiVPp+/Xqz+3q7Y1E7632ogwKfllTqiMQYvHfHUTIoM9?=
- =?us-ascii?Q?UIjtDpsxJzj9i3rR6zqTTs8IayOXZ+DwsSja0H1F?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a00a08f9-b08f-4017-7f20-08db8cf94b45
-X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9417.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jul 2023 10:24:14.3809
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: T7ViLCcdjUBJCLsOvyBi+EqBSUdvZON7g/M2CUl6Azi72dh51XJ161+uI6qJz6T4oN4kdrtHl4GLpwf506UjMQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR04MB9780
+References: <20230719130527.8074-1-xuewen.yan@unisoc.com> <20230721221944.dthg3tf25j4qgc2z@airbuntu>
+ <CAB8ipk8b8ZfwXN7KK-zFVPQ-8i37h64v-wz2ErB3AANaZ9w7aA@mail.gmail.com>
+ <20230724155328.7odez6dcoafksr3i@airbuntu> <CAB8ipk-VuD2oMDaV6B6i-eoKE+JZ0FpsUZAdT0R5S3to07JkFw@mail.gmail.com>
+ <CAJZ5v0gGXyURiqcspDdLf99dKjoFKDRZ=nc55b9OHXRdat8T_w@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gGXyURiqcspDdLf99dKjoFKDRZ=nc55b9OHXRdat8T_w@mail.gmail.com>
+From:   Xuewen Yan <xuewen.yan94@gmail.com>
+Date:   Tue, 25 Jul 2023 20:08:47 +0800
+Message-ID: <CAB8ipk9NBQKjOLurtzTQO8KwQAKLPJ8YGjnLwSo5q1BrPeLSbA@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: schedutil: next_freq need update when
+ cpufreq_limits changed
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Qais Yousef <qyousef@layalina.io>,
+        Xuewen Yan <xuewen.yan@unisoc.com>, viresh.kumar@linaro.org,
+        mingo@redhat.com, peterz@infradead.org, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        mgorman@suse.de, bristot@redhat.com, vschneid@redhat.com,
+        guohua.yan@unisoc.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Peng Fan <peng.fan@nxp.com>
+Hi Rafael
 
-Add an entry dedicated for fsl,scu-pd which could serve i.MX8DXL
+On Tue, Jul 25, 2023 at 4:51=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.or=
+g> wrote:
+>
+> On Tue, Jul 25, 2023 at 4:21=E2=80=AFAM Xuewen Yan <xuewen.yan94@gmail.co=
+m> wrote:
+> >
+> > On Mon, Jul 24, 2023 at 11:53=E2=80=AFPM Qais Yousef <qyousef@layalina.=
+io> wrote:
+> > >
+> > > On 07/24/23 11:36, Xuewen Yan wrote:
+> > > > On Sat, Jul 22, 2023 at 7:02=E2=80=AFAM Qais Yousef <qyousef@layali=
+na.io> wrote:
+> > > > >
+> > > > > On 07/19/23 21:05, Xuewen Yan wrote:
+> > > > > > When cpufreq's policy is single, there is a scenario that will
+> > > > > > cause sg_policy's next_freq to be unable to update.
+> > > > > >
+> > > > > > When the cpu's util is always max, the cpufreq will be max,
+> > > > > > and then if we change the policy's scaling_max_freq to be a
+> > > > > > lower freq, indeed, the sg_policy's next_freq need change to
+> > > > > > be the lower freq, however, because the cpu_is_busy, the next_f=
+req
+> > > > > > would keep the max_freq.
+> > > > > >
+> > > > > > For example:
+> > > > > > The cpu7 is single cpu:
+> > > > > >
+> > > > > > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # while true;do =
+done&
+> > > > > > [1] 4737
+> > > > > > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # taskset -p 80 =
+4737
+> > > > > > pid 4737's current affinity mask: ff
+> > > > > > pid 4737's new affinity mask: 80
+> > > > > > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # cat scaling_ma=
+x_freq
+> > > > > > 2301000
+> > > > > > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # cat scaling_cu=
+r_freq
+> > > > > > 2301000
+> > > > > > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # echo 2171000 >=
+ scaling_max_freq
+> > > > > > unisoc:/sys/devices/system/cpu/cpufreq/policy7 # cat scaling_ma=
+x_freq
+> > > > > > 2171000
+> > > > > >
+> > > > > > At this time, the sg_policy's next_freq would keep 2301000.
+> > > > > >
+> > > > > > To prevent the case happen, add the judgment of the need_freq_u=
+pdate flag.
+> > > > > >
+> > > > > > Signed-off-by: Xuewen Yan <xuewen.yan@unisoc.com>
+> > > > > > Co-developed-by: Guohua Yan <guohua.yan@unisoc.com>
+> > > > > > Signed-off-by: Guohua Yan <guohua.yan@unisoc.com>
+> > > > > > ---
+> > > > > >  kernel/sched/cpufreq_schedutil.c | 3 ++-
+> > > > > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > > > >
+> > > > > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cp=
+ufreq_schedutil.c
+> > > > > > index 4492608b7d7f..458d359f5991 100644
+> > > > > > --- a/kernel/sched/cpufreq_schedutil.c
+> > > > > > +++ b/kernel/sched/cpufreq_schedutil.c
+> > > > > > @@ -350,7 +350,8 @@ static void sugov_update_single_freq(struct=
+ update_util_data *hook, u64 time,
+> > > > > >        * Except when the rq is capped by uclamp_max.
+> > > > > >        */
+> > > > > >       if (!uclamp_rq_is_capped(cpu_rq(sg_cpu->cpu)) &&
+> > > > > > -         sugov_cpu_is_busy(sg_cpu) && next_f < sg_policy->next=
+_freq) {
+> > > > > > +         sugov_cpu_is_busy(sg_cpu) && next_f < sg_policy->next=
+_freq &&
+> > > > > > +         !sg_policy->need_freq_update) {
+> > > > >
+> > > > > What about sugov_update_single_perf()? It seems to have the same =
+problem, no?
+> > > >
+> > > > There is no problem in sugov_update_single_perf, because the next_f=
+req
+> > > > is updated by drivers, maybe the next_freq is not used when using
+> > > > sugov_update_single_perf..
+> > >
+> > > Ah I see; we just use prev_util but the request will go through and t=
+he driver
+> > > should observe the new limit regardless of what util value we pass to=
+ it. Got
+> > > ya.
+> > >
+> > > >
+> > > > But  for the last_freq_update_time, I think there are some problems
+> > > > when using sugov_update_single_perf:
+> > > > Now, there is no judgment condition for the update of the
+> > > > last_freq_update_time. That means the last_freq_update_time is alwa=
+ys
+> > > > updated in sugov_update_single_perf.
+> > > > And in sugov_should_update_freq: it would judge the
+> > > > freq_update_delay_ns. As a result, If we use the
+> > > > sugov_update_single_perf, the cpu frequency would only be periodica=
+lly
+> > > > updated according to freq_update_delay_ns.
+> > > > Maybe we should judge the cpufreq_driver_adjust_perf's return value=
+,
+> > > > if the freq is not updated, the last_freq_update_time also does not
+> > > > have to update.
+> > > >
+> > > > Just like:
+> > > > ---
+> > > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufre=
+q_schedutil.c
+> > > > index 458d359f5991..10f18b054f01 100644
+> > > > --- a/kernel/sched/cpufreq_schedutil.c
+> > > > +++ b/kernel/sched/cpufreq_schedutil.c
+> > > > @@ -381,6 +381,7 @@ static void sugov_update_single_perf(struct
+> > > > update_util_data *hook, u64 time,
+> > > >         struct sugov_cpu *sg_cpu =3D container_of(hook, struct
+> > > > sugov_cpu, update_util);
+> > > >         unsigned long prev_util =3D sg_cpu->util;
+> > > >         unsigned long max_cap;
+> > > > +       bool freq_updated;
+> > > >
+> > > >         /*
+> > > >          * Fall back to the "frequency" path if frequency invarianc=
+e is not
+> > > > @@ -407,10 +408,11 @@ static void sugov_update_single_perf(struct
+> > > > update_util_data *hook, u64 time,
+> > > >             sugov_cpu_is_busy(sg_cpu) && sg_cpu->util < prev_util)
+> > > >                 sg_cpu->util =3D prev_util;
+> > > >
+> > > > -       cpufreq_driver_adjust_perf(sg_cpu->cpu, map_util_perf(sg_cp=
+u->bw_dl),
+> > > > +       freq_updated =3D cpufreq_driver_adjust_perf(sg_cpu->cpu,
+> > > > map_util_perf(sg_cpu->bw_dl),
+> > > >                                    map_util_perf(sg_cpu->util), max=
+_cap);
+> > > >
+> > > > -       sg_cpu->sg_policy->last_freq_update_time =3D time;
+> > > > +       if (freq_updated)
+> > > > +               sg_cpu->sg_policy->last_freq_update_time =3D time;
+> > > >  }
+> > >
+> > > Sound reasonable in principle, but it could lead to overhead; for exa=
+mple when
+> > > the system is busy and maxed out, the last_freq_update_time will neve=
+r be
+> > > updated and will end up continuously calling to the driver to change =
+frequency
+> > > without any rate limit AFAICS. Which might not be an acceptable overh=
+ead,
+> > > I don't know. Logically this is wasted cycles preventing the tasks fr=
+om doing
+> > > useful work. I think we need to look at such corner cases and treat t=
+hem
+> > > appropriately to not call the driver if we go with this approach.
+> >
+> > Hi Qais,
+> >
+> > I can understand what you mean, but I don't think this is a problem.
+> > For the driver, the calculation of whether to update the frequency may
+> > not be the main time-consuming, but the main time-consuming may be the
+> > frequency conversion time of the hardware. If the hardware does not
+> > need frequency conversion, the operation of calculating the frequency
+> > takes a very short time.
+> > If the operation of calling the driver frequently is unacceptable, can
+> > prev_util be used?
+>
+> No, it's better to pass the data to the driver directly and let it
+> sort that out in this particular case.
 
-Signed-off-by: Peng Fan <peng.fan@nxp.com>
+Yes, I know. we should not interfere with the driver's behavior.
+
+By the way, What do you think of the patch fixing the sugov_update_single_f=
+req?
+
+Thanks!
+
 ---
- .../devicetree/bindings/power/fsl,scu-pd.yaml         | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+xuewen
 
-diff --git a/Documentation/devicetree/bindings/power/fsl,scu-pd.yaml b/Documentation/devicetree/bindings/power/fsl,scu-pd.yaml
-index 407b7cfec783..3a92e4fef7ae 100644
---- a/Documentation/devicetree/bindings/power/fsl,scu-pd.yaml
-+++ b/Documentation/devicetree/bindings/power/fsl,scu-pd.yaml
-@@ -18,11 +18,14 @@ allOf:
- 
- properties:
-   compatible:
--    items:
-+    oneOf:
-       - enum:
--          - fsl,imx8qm-scu-pd
--          - fsl,imx8qxp-scu-pd
--      - const: fsl,scu-pd
-+          - fsl,scu-pd
-+      - items:
-+          - enum:
-+              - fsl,imx8qm-scu-pd
-+              - fsl,imx8qxp-scu-pd
-+          - const: fsl,scu-pd
- 
-   '#power-domain-cells':
-     const: 1
--- 
-2.37.1
-
+>
+> > ---
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_sc=
+hedutil.c
+> > index 4492608b7d7f..3febfd032eee 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -379,7 +379,9 @@ static void sugov_update_single_perf(struct
+> > update_util_data *hook, u64 time,
+> >  {
+> >         struct sugov_cpu *sg_cpu =3D container_of(hook, struct
+> > sugov_cpu, update_util);
+> >         unsigned long prev_util =3D sg_cpu->util;
+> > +       unsigned long prev_bw_dl =3D sg_cpu->bw_dl;
+> >         unsigned long max_cap;
+> > +       bool freq_updated;
+> >
+> >         /*
+> >          * Fall back to the "frequency" path if frequency invariance is=
+ not
+> > @@ -406,10 +408,14 @@ static void sugov_update_single_perf(struct
+> > update_util_data *hook, u64 time,
+> >             sugov_cpu_is_busy(sg_cpu) && sg_cpu->util < prev_util)
+> >                 sg_cpu->util =3D prev_util;
+> >
+> > -       cpufreq_driver_adjust_perf(sg_cpu->cpu, map_util_perf(sg_cpu->b=
+w_dl),
+> > +       if (prev_util =3D=3D sg_cpu->util && prev_bw_dl =3D=3D sg_cpu->=
+bw_dl)
+> > +               return;
+> > +
+> > +       freq_updated =3D cpufreq_driver_adjust_perf(sg_cpu->cpu,
+> > map_util_perf(sg_cpu->bw_dl),
+> >                                    map_util_perf(sg_cpu->util), max_cap=
+);
+> >
+> > -       sg_cpu->sg_policy->last_freq_update_time =3D time;
+> > +       if (freq_updated)
+> > +               sg_cpu->sg_policy->last_freq_update_time =3D time;
+> >  }
+> >
+> >  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u=
+64 time)
+> >
+> >
+> > BR
+> > ---
+> > xuewen
+> > >
+> > >
+> > > Cheers
+> > >
+> > > --
+> > > Qais Yousef
+> > >
+> > > >
+> > > >
+> > > > BR
+> > > > Thanks!
+> > > >
+> > > > ---
+> > > > xuewen
+> > > > >
+> > > > > LGTM otherwise.
+> > > > >
+> > > > >
+> > > > > Cheers
+> > > > >
+> > > > > --
+> > > > > Qais Yousef
+> > > > >
+> > > > > >               next_f =3D sg_policy->next_freq;
+> > > > > >
+> > > > > >               /* Restore cached freq as next_freq has changed *=
+/
+> > > > > > --
+> > > > > > 2.25.1
+> > > > > >
