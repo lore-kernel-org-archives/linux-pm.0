@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D1E0C001E0
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jul 2023 12:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DF40C41513
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jul 2023 12:25:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233545AbjGYMZi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Jul 2023 08:25:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48670 "EHLO
+        id S233654AbjGYMZp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Jul 2023 08:25:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48720 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233485AbjGYMZd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2023 08:25:33 -0400
+        with ESMTP id S233524AbjGYMZg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2023 08:25:36 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24F46A7;
-        Tue, 25 Jul 2023 05:25:31 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8AC4F172A;
+        Tue, 25 Jul 2023 05:25:34 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.2.0)
- id 7b78a6bf7a2a48f1; Tue, 25 Jul 2023 14:25:30 +0200
+ id ba941fb0d1fb1fc1; Tue, 25 Jul 2023 14:25:32 +0200
 Received: from kreacher.localnet (unknown [195.136.19.94])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 0E3B6661B0F;
-        Tue, 25 Jul 2023 14:25:30 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 51406661B0E;
+        Tue, 25 Jul 2023 14:25:32 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -31,9 +31,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH v3 4/8] ACPI: thermal: Clean up acpi_thermal_register_thermal_zone()
-Date:   Tue, 25 Jul 2023 14:09:16 +0200
-Message-ID: <2895893.e9J7NaK4W3@kreacher>
+Subject: [PATCH v3 1/8] thermal: core: Add mechanism for connecting trips with driver data
+Date:   Tue, 25 Jul 2023 14:04:53 +0200
+Message-ID: <4501957.LvFx2qVVIh@kreacher>
 In-Reply-To: <12254967.O9o76ZdvQC@kreacher>
 References: <13318886.uLZWGnKmhe@kreacher> <12254967.O9o76ZdvQC@kreacher>
 MIME-Version: 1.0
@@ -51,13 +51,21 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Rename the trips variable in acpi_thermal_register_thermal_zone() to
-trip_count so its name better reflects the purpose, rearrange white
-space in the loop over active trips for clarity and reduce code
-duplication related to calling thermal_zone_device_register() by
-using an extra local variable to store the passive delay value.
+Some drivers need to update trip point data (temperature and/or
+hysteresis) upon notifications from the platform firmware or they
+may need to reprogram hardware when trip point parameters are changed
+via sysfs.  For those purposes, they need to connect struct thermal_trip
+to a private data set associated with the trip or the other way around
+and using a trip point index for that may not always work, because the
+core may need to reorder the trips during thermal zone registration (in
+particular, they may need to be sorted).
 
-No intentional functional impact.
+To allow that to be done without using a trip point index, introduce
+a new field in struct thermal_trip that can be pointed by the driver
+to its own data structure containing a trip pointer to be initialized
+by the core during thermal zone registration.  That pointer will then
+have to be updated by the core every time the location of the given
+trip point object in memory changes.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -67,63 +75,79 @@ v2 -> v3: No changes.
 v1 -> v2: No changes.
 
 ---
- drivers/acpi/thermal.c |   36 ++++++++++++++++--------------------
- 1 file changed, 16 insertions(+), 20 deletions(-)
+ drivers/thermal/thermal_core.c |   20 +++++++++++++++++---
+ include/linux/thermal.h        |   13 +++++++++++++
+ 2 files changed, 30 insertions(+), 3 deletions(-)
 
-Index: linux-pm/drivers/acpi/thermal.c
+Index: linux-pm/include/linux/thermal.h
 ===================================================================
---- linux-pm.orig/drivers/acpi/thermal.c
-+++ linux-pm/drivers/acpi/thermal.c
-@@ -745,34 +745,30 @@ static void acpi_thermal_zone_sysfs_remo
+--- linux-pm.orig/include/linux/thermal.h
++++ linux-pm/include/linux/thermal.h
+@@ -76,16 +76,29 @@ struct thermal_zone_device_ops {
+ 	void (*critical)(struct thermal_zone_device *);
+ };
  
- static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
- {
--	int trips = 0;
-+	int passive_delay = 0;
-+	int trip_count = 0;
- 	int result;
- 	acpi_status status;
- 	int i;
- 
- 	if (tz->trips.critical.valid)
--		trips++;
-+		trip_count++;
- 
- 	if (tz->trips.hot.valid)
--		trips++;
--
--	if (tz->trips.passive.valid)
--		trips++;
--
--	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE && tz->trips.active[i].valid;
--	     i++, trips++);
--
--	if (tz->trips.passive.valid)
--		tz->thermal_zone = thermal_zone_device_register("acpitz", trips, 0, tz,
--								&acpi_thermal_zone_ops, NULL,
--								tz->trips.passive.tsp * 100,
--								tz->polling_frequency * 100);
--	else
--		tz->thermal_zone =
--			thermal_zone_device_register("acpitz", trips, 0, tz,
--						     &acpi_thermal_zone_ops, NULL,
--						     0, tz->polling_frequency * 100);
-+		trip_count++;
- 
-+	if (tz->trips.passive.valid) {
-+		trip_count++;
-+		passive_delay = tz->trips.passive.tsp * 100;
-+	}
++struct thermal_trip_ref {
++	struct thermal_trip *trip;
++};
 +
-+	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE && tz->trips.active[i].valid; i++)
-+		trip_count++;
+ /**
+  * struct thermal_trip - representation of a point in temperature domain
+  * @temperature: temperature value in miliCelsius
+  * @hysteresis: relative hysteresis in miliCelsius
+  * @type: trip point type
++ * @driver_ref: driver's reference to this trip point
++ *
++ * If @driver_ref is not NULL, the trip pointer in the object pointed to by it
++ * will be initialized by the core during thermal zone registration and updated
++ * whenever the location of the given trip object changes.  This allows the
++ * driver to access the trip point data without knowing the relative ordering
++ * of trips within the trip table used by the core and, given a trip pointer,
++ * to get back to its private data associated with the given trip.
+  */
+ struct thermal_trip {
+ 	int temperature;
+ 	int hysteresis;
+ 	enum thermal_trip_type type;
++	struct thermal_trip_ref *driver_ref;
+ };
+ 
+ struct thermal_cooling_device_ops {
+Index: linux-pm/drivers/thermal/thermal_core.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/thermal_core.c
++++ linux-pm/drivers/thermal/thermal_core.c
+@@ -1306,14 +1306,28 @@ thermal_zone_device_register_with_trips(
+ 	if (result)
+ 		goto release_device;
+ 
++	mutex_lock(&tz->lock);
 +
-+	tz->thermal_zone = thermal_zone_device_register("acpitz", trip_count, 0,
-+							tz, &acpi_thermal_zone_ops,
-+							NULL, passive_delay,
-+							tz->polling_frequency * 100);
- 	if (IS_ERR(tz->thermal_zone))
- 		return -ENODEV;
+ 	for (count = 0; count < num_trips; count++) {
+-		struct thermal_trip trip;
++		int temperature = 0;
++
++		if (trips) {
++			temperature = trips[count].temperature;
++			if (trips[count].driver_ref)
++				trips[count].driver_ref->trip = &trips[count];
++		} else {
++			struct thermal_trip trip;
+ 
+-		result = thermal_zone_get_trip(tz, count, &trip);
+-		if (result || !trip.temperature)
++			result = __thermal_zone_get_trip(tz, count, &trip);
++			if (!result)
++				temperature = trip.temperature;
++		}
++		if (!temperature)
+ 			set_bit(count, &tz->trips_disabled);
+ 	}
+ 
++	mutex_unlock(&tz->lock);
++
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
  
 
 
